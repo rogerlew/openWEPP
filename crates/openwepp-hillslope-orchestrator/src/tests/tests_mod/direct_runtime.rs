@@ -1535,7 +1535,8 @@ fn r7b_constructor_type_size_layout_is_bounded() {
     // hourly surfaces (`hourly_runoff_fraction` + `hourly_sediment_mass_kg`,
     // two Option<[f64; 24]>), which ride the lane-scope publication/
     // downstream-operand embeddings (+352 B observed).
-    assert!(lane_frame <= 1_760);
+    // E.3: the boxed inter-OFE erosion inflow intake pointer (+8 B).
+    assert!(lane_frame <= 1_768);
     // FROST RESIDUE-COVER IMPLEMENTATION carries dynamic residue-depth operands;
     // the direct-cutover correction carries PMET storage-return closure operands.
     // DC01 (INV-RUNOFFPART-031) adds the WB14 hourly excess profile plus the
@@ -1548,7 +1549,8 @@ fn r7b_constructor_type_size_layout_is_bounded() {
     // (`wave1_hourly_weights`, +192 B), the hourly solve plan Vec header
     // (+24 B), and the paired hourly publication surfaces embedded in the
     // erosion operand/shadow/publication rows (+2,200 B total observed).
-    assert!(day_frame <= 15_448);
+    // E.3: the boxed inter-OFE erosion inflow intake pointer (+8 B).
+    assert!(day_frame <= 15_456);
 }
 
 fn r7b_breakpoint_management_pmet_day() -> DirectDayConstructorInputs {

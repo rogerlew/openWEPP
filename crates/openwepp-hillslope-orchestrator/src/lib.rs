@@ -129,8 +129,9 @@ pub use direct_runtime::{
     erosion_adjustment_factors, erosion_consolidation_baselines, resolve_erosion_frost_regime,
 };
 pub use direct_runtime::{
-    DirectErosionRuntimeCarry, DirectWave1DailyState, DirectWave1OperandSeed,
-    assemble_wave1_continuity_inputs, assemble_wave1_continuity_inputs_quantum,
+    DirectErosionInflowIntake, DirectErosionRuntimeCarry, DirectWave1DailyState,
+    DirectWave1OperandSeed, Wave1InflowOperands, assemble_wave1_continuity_inputs,
+    assemble_wave1_continuity_inputs_quantum,
 };
 pub use direct_runtime::{
     EROSION_PARTICLE_CLASS_COUNT, ErosionEffectiveIntensity, ErosionExcessInterval,

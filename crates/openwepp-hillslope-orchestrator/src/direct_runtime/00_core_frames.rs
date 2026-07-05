@@ -660,6 +660,12 @@ impl DirectRunFrame {
         // SC-SED-001 1b-C: carry the persistent erosion state into the day
         // (advanced in the erosion span, committed back at day end).
         day_frame.erosion_runtime_carry = lane.erosion_runtime_carry;
+        // E.3: the inter-OFE inflow intake is PER-DAY — cloned here and
+        // CLEARED at commit so a stale intake can never leak into a later
+        // day (the upstream publisher re-populates on days it routes).
+        day_frame
+            .erosion_inflow_intake
+            .clone_from(&lane.erosion_inflow_intake);
         Ok(day_frame)
     }
 
@@ -877,6 +883,10 @@ pub struct DirectLaneFrame {
     pub transfer: DirectTransferBuffers,
     pub publication: DirectPublicationFrame,
     pub erosion_downstream_operands: DirectErosionDownstreamOperands,
+    /// E.3: the inter-OFE erosion inflow published by the UPSTREAM lane's
+    /// erosion span for the current day (copied into this lane's day frame
+    /// at seeding; absent on OFE-1 / single-OFE lanes).
+    pub erosion_inflow_intake: Option<Box<DirectErosionInflowIntake>>,
     pub subsurface_layers: Vec<DirectSubsurfaceLayerState>,
     pub evapotranspiration_stage_state: Option<Box<DirectEvapotranspirationStageState>>,
     pub plant_growth_state: Box<DirectGrowthStateSurface>,
@@ -916,6 +926,7 @@ impl DirectLaneFrame {
             transfer: DirectTransferBuffers::zero(),
             publication: DirectPublicationFrame::empty(),
             erosion_downstream_operands: DirectErosionDownstreamOperands::zero(),
+            erosion_inflow_intake: None,
             subsurface_layers: Vec::new(),
             evapotranspiration_stage_state: None,
             plant_growth_state: Box::new(DirectGrowthStateSurface::zero()),
@@ -976,6 +987,7 @@ impl DirectLaneFrame {
             // for a freshly-disturbed start and inert behind the disabled
             // seed regardless.
             erosion_runtime_carry: DirectErosionRuntimeCarry::inert(),
+            erosion_inflow_intake: None,
             day_inputs: inputs.day_inputs,
         }
     }
@@ -1063,6 +1075,8 @@ impl DirectLaneFrame {
         // SC-SED-001 1b-C: persist the erosion carry advanced in the day's
         // erosion span (`rfcum`/`daydis`/`ifrost`/rill width) to the lane.
         self.erosion_runtime_carry = day_frame.erosion_runtime_carry;
+        // E.3: the day consumed (or dropped) this lane's inflow intake.
+        self.erosion_inflow_intake = None;
         Ok(())
     }
 }
@@ -1088,6 +1102,9 @@ pub struct DirectDayFrame {
     /// SC-SED-001 1b-C: persistent erosion carry threaded from the lane,
     /// advanced in the erosion span, committed back at day end.
     pub erosion_runtime_carry: DirectErosionRuntimeCarry,
+    /// E.3: the inter-OFE erosion inflow for THIS day (copied from the
+    /// lane intake at day seeding; absent on OFE-1 / single-OFE lanes).
+    pub erosion_inflow_intake: Option<Box<DirectErosionInflowIntake>>,
     /// ADR-0036 / INV-SED-013: the day's unit-normalized hourly runoff
     /// weights (`REF-SED-DC01-SHAPE`), set in the erosion span from the
     /// shared shape authority. All-zero on no-runoff days.
@@ -1237,6 +1254,7 @@ impl DirectDayFrame {
             wb14_hourly_excess_m: [0.0; 24],
             wb14_hourly_rainfall_m: [0.0; 24],
             erosion_runtime_carry: DirectErosionRuntimeCarry::inert(),
+            erosion_inflow_intake: None,
             wave1_hourly_weights: [0.0; 24],
             wave1_hourly_plan: Vec::new(),
             publication: DirectPublicationFrame::empty(),

@@ -157,6 +157,29 @@ impl DirectWave1OperandSeed {
     }
 }
 
+/// The per-DAY inter-OFE erosion intake published by the upstream lane's
+/// erosion span (E.3): the prior lane's hourly outflow discharge and
+/// sediment discharge, its static slopes, solve-final coefficient sets,
+/// and exiting class fractions. Boxed on the lane/day frames (absent on
+/// OFE-1 / single-OFE lanes).
+#[derive(Debug, Clone, PartialEq)]
+pub struct DirectErosionInflowIntake {
+    /// Prior lane's per-hour unit outflow discharge (m²/s).
+    pub hourly_qout_m2_s: [f64; 24],
+    /// Prior lane's per-hour exported sediment discharge per unit width
+    /// (kg·m⁻¹·s⁻¹, the `sloss.for:333` `qsout` basis).
+    pub hourly_qsout_kg_m_s: [f64; 24],
+    /// Prior lane's end-of-profile and average slopes.
+    pub prior_slpend: f64,
+    pub prior_cnslp: f64,
+    /// Prior lane's solve-final coefficient sets (`anflst`/`atclst`
+    /// families).
+    pub prior_end_shear: (f64, f64, f64),
+    pub prior_end_transport: (f64, f64, f64),
+    /// Prior lane's exiting class fractions (`route.for:142-160` handoff).
+    pub exit_fractions: [f64; 5],
+}
+
 /// The RAW per-quantum inter-OFE inflow handoff (E.3 / INV-SED-012): the
 /// prior lane's hour outflow discharge and sediment discharge (the
 /// `sloss.for:333` `qsout` basis), its exiting class fractions, its static

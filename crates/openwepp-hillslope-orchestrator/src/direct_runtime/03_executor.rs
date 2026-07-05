@@ -150,6 +150,9 @@ impl DirectFrameExecutor {
                 if Self::publish_dynamic_transfer_to_downstream(frame, &day_frame)? {
                     counters.record_dynamic_transfer_publication();
                 }
+                if Self::publish_erosion_inflow_to_downstream(frame, &day_frame)? {
+                    counters.record_dynamic_transfer_publication();
+                }
                 frame.commit_day_frame(&day_frame)?;
                 counters.record_day_frame_commit();
             }
@@ -329,6 +332,9 @@ impl DirectFrameExecutor {
                     },
                 )?;
                 if Self::publish_dynamic_transfer_to_downstream(frame, &day_frame)? {
+                    counters.record_dynamic_transfer_publication();
+                }
+                if Self::publish_erosion_inflow_to_downstream(frame, &day_frame)? {
                     counters.record_dynamic_transfer_publication();
                 }
                 frame.commit_day_frame(&day_frame)?;
@@ -543,6 +549,102 @@ impl DirectFrameExecutor {
             wb14_hourly_excess_m,
             hourly_saturation_carry_m,
         )
+    }
+
+    /// E.3 (INV-SED-012): publish the inter-OFE erosion inflow to the
+    /// downstream lane — the prior lane's hourly outflow discharge and
+    /// sediment discharge (EROSION lineage: the Wave-1 solve's own
+    /// surfaces, never water-transfer substitutes), its static slopes,
+    /// solve-final coefficient sets, and exiting class fractions.
+    fn publish_erosion_inflow_to_downstream(
+        frame: &mut DirectRunFrame,
+        day_frame: &DirectDayFrame,
+    ) -> Result<bool, DirectRuntimeError> {
+        if !day_frame.erosion_inputs.wave1_operand_seed.enabled
+            || day_frame.wave1_hourly_plan.is_empty()
+        {
+            return Ok(false);
+        }
+        let (_, _, downstream_lane_id) = {
+            let lane =
+                frame
+                    .lanes
+                    .get(day_frame.lane_index)
+                    .ok_or(DirectRuntimeError::LaneIndexOutOfRange {
+                        lane_index: day_frame.lane_index,
+                        lane_count: frame.lanes.len(),
+                    })?;
+            (lane.lane_id, lane.upstream_lane_id, lane.downstream_lane_id)
+        };
+        if downstream_lane_id == 0 {
+            return Ok(false);
+        }
+        let downstream_index = usize::try_from(downstream_lane_id - 1).map_err(|_| {
+            DirectRuntimeError::LaneIdOverflow {
+                lane_index: day_frame.lane_index,
+            }
+        })?;
+
+        let peak = day_frame.peak_runoff_shadow_projection.as_ref().ok_or(
+            DirectRuntimeError::MissingDirectUpstream {
+                upstream: "E.3 erosion inflow publisher peak-runoff producer",
+            },
+        )?;
+        let continuity = day_frame.erosion.wave1_continuity.as_deref().ok_or(
+            DirectRuntimeError::MissingDirectUpstream {
+                upstream: "E.3 erosion inflow publisher continuity state",
+            },
+        )?;
+        let publication = &day_frame.erosion_downstream_operands.publication;
+        let hourly_sediment_kg = publication.hourly_sediment_mass_kg.ok_or(
+            DirectRuntimeError::MissingDirectUpstream {
+                upstream: "E.3 erosion inflow publisher hourly sediment surface",
+            },
+        )?;
+        let seed = &day_frame.erosion_inputs.wave1_operand_seed;
+        if seed.field_width_m <= 0.0 || seed.efflen_m <= 0.0 {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "erosion.inflow_publisher.geometry",
+            });
+        }
+
+        let mut hourly_qout_m2_s = [0.0_f64; 24];
+        let mut hourly_qsout_kg_m_s = [0.0_f64; 24];
+        for hour in 0..24 {
+            hourly_qout_m2_s[hour] =
+                peak.q_runoff_m * day_frame.wave1_hourly_weights[hour] / 3600.0 * seed.efflen_m;
+            hourly_qsout_kg_m_s[hour] =
+                hourly_sediment_kg[hour] / seed.field_width_m / 3600.0;
+        }
+        let sedcon = publication.sediment_concentration_kg_m3.unwrap_or([0.0; 5]);
+        let sedcon_total: f64 = sedcon.iter().sum();
+        let exit_fractions = if sedcon_total > 0.0 {
+            core::array::from_fn(|index| sedcon[index] / sedcon_total)
+        } else {
+            // Legacy `route.for:158`: no exiting flow-load => zero fractions.
+            [0.0; 5]
+        };
+
+        let intake = DirectErosionInflowIntake {
+            hourly_qout_m2_s,
+            hourly_qsout_kg_m_s,
+            prior_slpend: seed.slpend,
+            prior_cnslp: seed.avg_slope,
+            prior_end_shear: continuity.end_shear_coefficients,
+            prior_end_transport: continuity.end_transport_coefficients,
+            exit_fractions,
+        };
+        let downstream_lane_count = frame.lanes.len();
+        let downstream_lane =
+            frame
+                .lanes
+                .get_mut(downstream_index)
+                .ok_or(DirectRuntimeError::LaneIndexOutOfRange {
+                    lane_index: downstream_index,
+                    lane_count: downstream_lane_count,
+                })?;
+        downstream_lane.erosion_inflow_intake = Some(Box::new(intake));
+        Ok(true)
     }
 
     fn publish_dynamic_transfer_to_downstream(

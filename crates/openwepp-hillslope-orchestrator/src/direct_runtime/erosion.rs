@@ -2,10 +2,11 @@ use crate::constants::WB11_ZERO_THRESHOLD;
 
 use super::{
     DIRECT_AUDIT, DIRECT_R7D6_EROSION_PHASE_SPAN_COUNT, DirectDayFrame,
-    DirectErosionConsolidationCarry, DirectErosionRuntimeCarry, DirectPublicationErosionOperands,
-    DirectRuntimeError, DirectWave1ContinuityInputs, DirectWave1ContinuityState,
-    DirectWave1DailyState, DirectWave1OperandSeed, ErosionExcessInterval, ErosionFrostInputs,
-    ErosionFrostRegime, ErosionParticleClass, ErosionRfcumInputs, advance_erosion_consolidation,
+    DirectErosionConsolidationCarry, DirectErosionInflowIntake, DirectErosionRuntimeCarry,
+    DirectPublicationErosionOperands, DirectRuntimeError, DirectWave1ContinuityInputs,
+    DirectWave1ContinuityState, DirectWave1DailyState, DirectWave1OperandSeed,
+    ErosionExcessInterval, ErosionFrostInputs, ErosionFrostRegime, ErosionParticleClass,
+    ErosionRfcumInputs, Wave1InflowOperands, advance_erosion_consolidation,
     assemble_wave1_continuity_inputs, assemble_wave1_continuity_inputs_quantum,
     compute_direct_wave1_continuity, compute_direct_wave1_continuity_quantum,
     resolve_erosion_frost_regime, validate_finite, validate_nonnegative_direct_m,
@@ -631,6 +632,7 @@ impl DirectDayFrame {
             &self.wb14_hourly_rainfall_m,
             &weights,
             carry.rill_width_m,
+            self.erosion_inflow_intake.as_deref(),
             &mut self.wave1_hourly_plan,
         )?;
         carry.rill_width_m = if self.wave1_hourly_plan.is_empty() {
@@ -751,30 +753,43 @@ impl DirectDayFrame {
         hourly_rainfall_m: &[f64; 24],
         weights: &[f64; 24],
         start_width_m: f64,
+        intake: Option<&DirectErosionInflowIntake>,
         plan: &mut Vec<(usize, DirectWave1ContinuityInputs)>,
     ) -> Result<f64, DirectRuntimeError> {
         plan.clear();
         let mut hourly_width_m = start_width_m;
-        if !wave1_day_routes_sediment(daily.runoff_depth_m, daily.peakro_m_s) {
+        // Day gate: the local passby event gate, OR any upstream inflow
+        // hour (INV-SED-013 — a locally-dry lane with routed upstream
+        // sediment must still solve to deposit it).
+        let intake_active =
+            intake.is_some_and(|intake| intake.hourly_qout_m2_s.iter().any(|qout| *qout > 0.0));
+        if !wave1_day_routes_sediment(daily.runoff_depth_m, daily.peakro_m_s) && !intake_active {
             return Ok(hourly_width_m);
         }
         for (hour, weight) in weights.iter().enumerate() {
             // Plan inclusion: positive-weight hours above the runtime's own
             // negligible-runoff bound (the WB16 "too small to produce a
-            // peak" class). A trace-weight hour cannot route sediment but
-            // CAN underflow the routed-operand domain (e.g. a first-storm
-            // Gilley width below the zero threshold at ~1e-12 m2/s shear
-            // discharge); excluding it contributes exactly zero to the day
-            // sums and leaves the published water weights untouched.
-            if *weight <= 0.0
-                || daily.runoff_depth_m * weight
-                    <= crate::constants::WB16_RUNOFF_NEAR_ZERO_THRESHOLD
-            {
+            // peak" class — a trace-weight hour cannot route sediment but
+            // CAN underflow the routed-operand domain), OR hours with
+            // positive upstream inflow (the full-reinfiltration quantum).
+            let hour_qin_m2_s = intake.map_or(0.0, |intake| intake.hourly_qout_m2_s[hour]);
+            let local_active = *weight > 0.0
+                && daily.runoff_depth_m * weight
+                    > crate::constants::WB16_RUNOFF_NEAR_ZERO_THRESHOLD;
+            if !local_active && hour_qin_m2_s <= 0.0 {
                 continue;
             }
             let mut hour_state = daily.clone();
-            hour_state.peakro_m_s = daily.runoff_depth_m * weight / EROSION_HOUR_BIN_S;
-            hour_state.runoff_depth_m = daily.runoff_depth_m * weight;
+            hour_state.peakro_m_s = if local_active {
+                daily.runoff_depth_m * weight / EROSION_HOUR_BIN_S
+            } else {
+                0.0
+            };
+            hour_state.runoff_depth_m = if local_active {
+                daily.runoff_depth_m * weight
+            } else {
+                0.0
+            };
             hour_state.effdrn_s = EROSION_HOUR_BIN_S;
             hour_state.excess_intervals =
                 build_erosion_hour_interval(hourly_excess_m, hourly_rainfall_m, hour);
@@ -784,6 +799,20 @@ impl DirectDayFrame {
                 1.0
             };
             hour_state.rill_width_prior_m = hourly_width_m;
+            hour_state.inflow = intake.and_then(|intake| {
+                if hour_qin_m2_s > 0.0 {
+                    Some(Wave1InflowOperands {
+                        qin_m2_s: hour_qin_m2_s,
+                        qsout_kg_m_s: intake.hourly_qsout_kg_m_s[hour],
+                        prior_slpend: intake.prior_slpend,
+                        prior_cnslp: intake.prior_cnslp,
+                        prior_end_shear: intake.prior_end_shear,
+                        prior_end_transport: intake.prior_end_transport,
+                    })
+                } else {
+                    None
+                }
+            });
             let hour_inputs = assemble_wave1_continuity_inputs_quantum(seed, &hour_state, true)?;
             hourly_width_m = hour_inputs.width_m;
             plan.push((hour, hour_inputs));
