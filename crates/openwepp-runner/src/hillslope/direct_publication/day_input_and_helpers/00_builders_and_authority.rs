@@ -606,6 +606,7 @@ fn direct_production_typed_lane_seed_authority(
         &management_projection,
         &peak_runoff,
         direct_production_management_has_active_tillage(management),
+        direct_production_schedule_lanuse_is_cropland(management)?,
     )?;
 
     Ok(DirectProductionTypedLaneSeedAuthority {
@@ -1082,6 +1083,7 @@ fn direct_production_wave1_operand_seed(
     slope: &openwepp_hillslope_orchestrator::runtime_inputs::TypedSlopeRuntimeProjection,
     management_projection: &openwepp_hillslope_orchestrator::runtime_inputs::HillslopePlRuntimeSurfaces,
     peak_runoff: &DirectProductionPeakRunoffAuthority,
+    is_cropland: bool,
 ) -> Result<openwepp_hillslope_orchestrator::DirectWave1OperandSeed, HillslopeCliError> {
     // The management PL projection indexes OFEs 1-based (`ofe1_*` / primary
     // symbol for the first OFE); the accessors only alias to the primary /
@@ -1213,7 +1215,7 @@ fn direct_production_wave1_operand_seed(
 
     Ok(openwepp_hillslope_orchestrator::DirectWave1OperandSeed {
         enabled: false,
-        is_cropland: false,
+        is_cropland,
         segments,
         slplen_m: slope_ofe.slplen_m,
         efflen_m: peak_runoff.efflen_m,
@@ -1258,6 +1260,44 @@ fn direct_production_wave1_operand_seed(
 /// cropland whose operands are NOT yet sourced, so Wave-1 stays disabled
 /// for it (narrowing the enable to the reviewed scope) until the cropland
 /// operand port lands.
+/// Schedule-scoped lanuse resolution for the erosion seed (the WS1
+/// tie-in): every schedule-referenced yearly must agree on the lanuse
+/// class — Cropland ⇒ the legacy `drinti` interrill-delivery branch
+/// (`param.for:412-450`; the masquerade managements legacy actually
+/// ran), Forest ⇒ the `lanuse ≠ 1` branch (`intdr = 1`). A mixed
+/// schedule fails closed (one lanuse per lane; the WS1 `.man`↔`.sol`
+/// reconciliation polices the forest side).
+fn direct_production_schedule_lanuse_is_cropland(
+    management: &ManagementParseOutput,
+) -> Result<bool, HillslopeCliError> {
+    let mut saw_cropland = false;
+    let mut saw_forest = false;
+    for slot in &management.schedule.slots {
+        for &yearly_ref in &slot.yearly_refs {
+            match management
+                .registries
+                .yearlies
+                .get(yearly_ref.wrapping_sub(1))
+                .map(|yearly| &yearly.data)
+            {
+                Some(openwepp_input_contract::parsers::management::YearlyScenarioData::Cropland(
+                    _,
+                )) => saw_cropland = true,
+                Some(openwepp_input_contract::parsers::management::YearlyScenarioData::Forest(
+                    _,
+                )) => saw_forest = true,
+                None => {}
+            }
+        }
+    }
+    if saw_cropland && saw_forest {
+        return Err(direct_production_executor_blocked(
+            "erosion lanuse resolution requires a single lanuse class per lane;              the schedule references both cropland and forest yearlies",
+        ));
+    }
+    Ok(saw_cropland)
+}
+
 fn direct_production_management_has_active_tillage(management: &ManagementParseOutput) -> bool {
     // SCHEDULE-scoped (the PMET shape, Codex WS1-rebase round-1): only
     // yearlies the schedule actually references count. A registry-wide
@@ -1310,6 +1350,7 @@ fn direct_production_typed_erosion_authority(
     management_projection: &openwepp_hillslope_orchestrator::runtime_inputs::HillslopePlRuntimeSurfaces,
     peak_runoff: &DirectProductionPeakRunoffAuthority,
     management_has_active_tillage: bool,
+    lanuse_is_cropland: bool,
 ) -> Result<DirectProductionErosionAuthority, HillslopeCliError> {
     // Wave-1 (SC-SED-001 sediment continuity): the spatial continuity
     // solve is PRODUCTION-ACTIVE post-1b-C via the operand-seed path
@@ -1334,6 +1375,7 @@ fn direct_production_typed_erosion_authority(
         slope,
         management_projection,
         peak_runoff,
+        lanuse_is_cropland,
     )?;
     // E.3 activation gate: Wave-1 enables on EVERY no-tillage lane —
     // single- and multi-OFE alike (each lane's seed is per-OFE by

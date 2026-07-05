@@ -1,6 +1,6 @@
 # FOREST-LANUSE SEDIMENT TIE-IN
 
-Status: `IN-EXECUTION` (Claude-executed, operator path direction
+Status: `EXECUTED — AWAITING CODEX REVIEW` (Claude-executed, operator path direction
 2026-07-05: "stay on the hillslope sediment in forest lanuse
 Papanicolaou path"). Branch: `forest-lanuse-sediment-tie-in`.
 
@@ -46,3 +46,23 @@ lanuse declarations.
 - SC-SED-001 amendment (lanuse-sourced `is_cropland` + the flagged
   universality question).
 - Gates per the local-ci standard; full at branch head; Codex review.
+
+## Execution record (2026-07-05)
+
+- `direct_production_schedule_lanuse_is_cropland` (schedule-scoped, the
+  tillage-detector shape; mixed lanuse fails closed) → threaded through
+  the erosion authority into the operand seed; the hardcoded
+  `is_cropland: false` and its 1b-C adjudication note are resolved.
+- **Evidence (Ran, full-length source inputs):** p61 dominant event
+  3.897 kg/m (was 3.965; legacy 4.2 — 0.93×, in band; the `drinti`
+  suppression is modest on this rill-dominated event); p102 outlet
+  detachment 14.7 kg/m/yr (was 17.4; legacy ~19.4 — 0.76×, in band).
+  erod16 (crafted non-cropland) untouched.
+- **First native-forest sediment proof:** the WS1 HJ Andrews
+  `ow-lanuse-1` fixture test now parses the emitted HBP and asserts a
+  minor-1 sediment event with positive detachment and the intake
+  closure — hillslope sediment on forest lanuse, end to end.
+- Contract: SC-SED-001 rev 52 (`INV-SED-017` (f) rewritten to the
+  lanuse-sourced branch selection; the roughness-delivery universality
+  question flagged for external authority, per the identity doc's
+  partition heuristic).

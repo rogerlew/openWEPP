@@ -98,5 +98,31 @@ fn native_forest_hillslope_runs_end_to_end_with_pmet_hit_and_reconciliation() {
         "run should execute on the direct production path"
     );
 
+    // Forest-lanuse sediment tie-in: the FIRST end-to-end sediment proof
+    // on native forest lanuse. Wave-1 enables by construction (Forest
+    // yearlies are never-tilled), the seed runs the source-true
+    // `lanuse ≠ 1` interrill branch (`intdr = 1`), the declared-cover
+    // authority seeds the ground pools — the emitted HBP must carry a
+    // real minor-1 sediment event satisfying the intake closure.
+    let (parsed, latest_event) =
+        openwepp_input_contract::parsers::hbp::parse_hbp_from_path_with_latest_event_payload(
+            &report.output_pass,
+            openwepp_input_contract::parsers::hbp::HbpParseOptions::strict(),
+        )
+        .expect("the native-forest shard must round-trip through the parser");
+    assert_eq!(parsed.schema_minor, 1, "the Wave-1 lane writes minor 1");
+    let event = latest_event.expect("a century of HJ Andrews rainfall must route sediment");
+    assert!(
+        event.total_detachment_kg > 0.0,
+        "native forest lanuse must detach sediment (tdet = {})",
+        event.total_detachment_kg
+    );
+    let sediment_sum: f64 = event.hourly_sediment_mass_kg.iter().sum();
+    let exported_kg = event.total_detachment_kg - event.total_deposition_kg;
+    assert!(
+        (sediment_sum - exported_kg).abs() <= 1.0e-6 * exported_kg.abs().max(1.0e-9),
+        "the intake closure must hold on forest lanuse (Σ S_h = {sediment_sum}, exported = {exported_kg})"
+    );
+
     fs::remove_dir_all(&run_dir).ok();
 }
