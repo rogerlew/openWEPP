@@ -1,6 +1,6 @@
 # MOFEFID LANE D — SUBSURFACE SEAM IMPLEMENTATION (INV-OFEROUTE-012, solver tier)
 
-Status: `EXECUTED — AWAITING CODEX REVIEW` (Claude-executed; operator: "scaffold and execute
+Status: `COMPLETE — MERGED TO MAIN `0cccf263` 2026-07-05` (Codex 2-round: contract-authority drift corrections in rev 14 + the stale-ref cleanup) (Claude-executed; operator: "scaffold and execute
 with that scope", 2026-07-05). Branch: `laned-seam-implementation`.
 
 ## Scope adjustment vs the recommendation (entry recon, on record)

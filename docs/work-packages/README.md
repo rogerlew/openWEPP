@@ -12,6 +12,14 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-05`:
+- `20260705-mofefid-laned-seam-implementation-001/` — COMPLETE, MERGED TO
+  MAIN `0cccf263` 2026-07-05: `ofe_routing::seam` lands the GAP-006
+  machinery (rate series + `/3600` helper, hourly-lane precondition, DC01
+  exclusion, forcing sampler, closure identity) with BOTH
+  `INV-OFEROUTE-012` gate fixtures passing at the solver/identity tier;
+  SC-OFEROUTE-001 rev 14 (monotonic renumbering, reconciled seam status,
+  `latqcc` mm governance). Runtime wiring + the real-H2637 executed
+  vector = the activation increment; the activation BLOCK stands.
 - `20260705-mofefid-laned-gap006-subsurface-seam-design-001/` — COMPLETE,
   MERGED TO MAIN `bce8da7a` 2026-07-05 (docs-only): `GAP-OFEROUTE-006`
   design-RESOLVED — the Lane D activation seam binds to existing surfaces
