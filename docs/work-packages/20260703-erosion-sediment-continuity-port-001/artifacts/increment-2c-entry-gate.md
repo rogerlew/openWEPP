@@ -1,0 +1,127 @@
+# Increment 2c (ROADMAP §E.3) — Multi-OFE Wave-1 Chaining: Execution Entry Gate
+
+Author: Claude Code, 2026-07-04. Evidence: **Static** at authoring (E.2 runtime
+recon + the Increment-2 entry gate §2/§3/§4a). Execution record appends below.
+Executor: Claude Code (operator: "merge and proceed with E.3"). Branch:
+`erosion-e3-multi-ofe-chaining` (off main `c4ad7832`, E.2 merged).
+
+Authority: [`increment-2-entry-gate.md`](increment-2-entry-gate.md) §2 (legacy
+chain), §3 (Wave-1 owns the per-OFE physics; Wave-2 retires to a comparator
+flag), **§4a (BINDING input authority: per-OFE particle-size sourcing — the
+`prtcmp` per-element default lineage; a single hillslope-global override is
+fail-closed rejected; legacy `partsize.dat` `usr_partsize` is a MOFE gap, do
+not inherit)**; ADR-0036 (the hourly substrate this chains on); SC-SED-001
+`INV-SED-012` + SC-RUNOFFPART-001 `INV-RUNOFFPART-030` (the sediment-coupled
+`qin` hold this lifts).
+
+## 1. What E.2 already provides (verified in-runtime)
+
+- The solver + assembly carry the **complete decreasing-flow/inflow limbs**:
+  `qin_m2_s`/`strldn` operands, the `qout <= 0` `qshear = qin·rspace` basis
+  (`xinflo.for:206`), theta suppression at `qout <= qin`, quantum activation
+  `w_h > 0 ∨ qin_h > 0` — all tested (the full-reinfiltration and
+  falling-limb quanta deposit). Production supplies `qin_h = 0`, `strldn = 0`
+  (erosion.rs daily-state build) — E.3 replaces those two zeros with the
+  handoff.
+- The hourly substrate: per-lane weights + plan; the downslope lane ordering
+  already exists per day (`publish_dynamic_transfer_to_downstream`,
+  03_executor.rs — water transfer lane N → N+1 within the day loop), which is
+  the same ordering the erosion handoff rides.
+- The erosion authority is built **per lane**
+  (`DirectProductionTypedLaneSeedAuthority`, 00_builders:560-600 — has
+  `execution_lane` context) but the seed builder indexes
+  `parsed_soil.ofes.first()` / `slope.ofes.first()` / management
+  `FIRST_OFE_INDEX = 1` unconditionally — the per-OFE generalization point.
+
+## 2. Design decisions
+
+### D1 — Per-lane, per-OFE seeds (§4a input authority)
+`direct_production_wave1_operand_seed` gains the lane's OFE index: soil OFE
+`ofes[i]`, slope OFE `ofes[i]` (per-OFE `fwidth`, segments, `slplen`,
+`avgslp`), management PL projection OFE index `i+1`. **Particle classes derive
+from each OFE's own surface soil** (`direct_production_erosion_particle_classes`
+gains the OFE index) — per-OFE by construction, satisfying §4a with no
+override surface at all (no `partsize.dat` analog exists in openWEPP; if one
+is ever added it must be per-OFE keyed or fail-closed, per §4a).
+
+### D2 — The hour-resolved handoff (the two zeros become real operands)
+Within a day, after lane `i`'s erosion span solves, publish to lane `i+1`'s
+erosion intake (a new lane-frame carry, alongside the water transfer):
+- **`qin_h`**: lane `i`'s hourly unit outflow discharge
+  `q_out_h = (q_runoff_i · w_h / 3600) · efflen_i` (m²/s) — the same
+  discharge basis the solve used (`xinflo` `qin = qout` OFE idiom).
+- **`ldtop_h` (→ `strldn_h`)**: lane `i`'s per-hour exported load per unit
+  width `G_out_h` (kg/m). The receiving assembly normalizes to `strldn_h =
+  G_out_h / (effdrn_h · tcend_{i+1} · width_{i+1} / rspace_{i+1})` — the
+  RECEIVING lane's denormalization scale inverted (the `sloss.for:166`
+  `dslod` scale), because `strldn` is nondimensional in the RECEIVER's
+  normalization (`route.for:136` `load[0] = strldn` under the receiver's
+  `param` scaling). **Recon item R2 verifies this against
+  `xinflo`/`route`/`param` before wiring** — the normalization basis is the
+  highest-risk correctness point of the increment.
+- **Exit class fractions**: lane `i`'s exiting composition (D4 rule) for the
+  receiver's inflow-blend and (E.4) enrichment lineage.
+
+### D3 — Enable + Wave-2 comparator
+The Wave-1 seed enables per lane on multi-OFE hillslopes
+(`contributor_ofe_count > 1`) under the same no-tillage scope; Wave-2/EROD14
+stops being the multi-OFE publication authority and is retained behind a
+comparator flag (Investigation tier) for one window, then deleted (stage 2e).
+Publication authority: the LAST lane's Wave-1 surfaces become the hillslope
+HBP EVENT basis (exit of the chain); per-lane surfaces feed the per-OFE pass
+rows as today.
+
+### D4 — Exit-fraction blend (extends GAP-SED-007, pre-enrichment)
+Non-cropland (`fidel = frac`, `param.for:452-458`) exit fractions on a
+no-deposition OFE are **exactly**
+`(G_in · frcflw_in + G_local · frac_own) / G_out` (the `enrich.for:205-213`
+terminal blend with `fidel = frac`); with deposition the same blend is the
+labeled un-enriched approximation (proportional depletion), superseded by
+E.4. Per-OFE `frac_own` comes from D1's per-OFE classes — the §4a gate's
+observable.
+
+### D5 — Hold lift (INV-SED-012 / INV-RUNOFFPART-030)
+The erosion `qin` now has lineage to the prior OFE's erosion `qout` + the
+sediment/class handoff — the exact acceptance condition of both holds. The
+INV-RUNOFFPART-031 interim clamp (erosion `qin` clamped to `qout`) retires:
+the decreasing-flow hour is an ordinary deposition solve. Contract work:
+SC-SED-001 amendment (multi-OFE chaining invariant + INV-SED-012
+disposition + the D4 blend rule extension of GAP-SED-007);
+SC-RUNOFFPART-001 amendment (030 hold disposition, 031 clamp retirement).
+Manifest: `erod14_qin_sediment_coupled` truthfully publishable on the
+Wave-1 chain (naming per the amendment).
+
+## 3. Stage plan
+
+- **2c-0 recon completion (FIRST):** R1 lane↔OFE index mapping (how
+  `execution_lane` indexes soil/slope/management surfaces; multi-OFE lane
+  construction); R2 the legacy inter-OFE load normalization
+  (`route.for:130-160` + `param.for` inflow scaling — pin `strldn`'s exact
+  basis); R3 the W7DC01 substrate + an in-repo multi-OFE fixture (the WS3
+  matrix is single-OFE; check dff_ws2/MOFE fixtures for a multi-OFE
+  soil-contrasting candidate or craft one); R4 where EROD14 currently
+  publishes so the authority switch is surgical.
+- **2c-1:** per-lane per-OFE seeds (D1) behind the still-single-OFE enable —
+  byte-stable (single-OFE lanes index OFE 0 as today).
+- **2c-2:** the handoff carry (D2) + receiving-side assembly wiring
+  (`qin_h`/`strldn_h`/fractions), still disabled for multi-OFE publication —
+  shadow-solvable.
+- **2c-3:** multi-OFE enable + publication authority switch + Wave-2
+  comparator flag (D3) + D4 blend + hold-lift wiring (D5) + contracts.
+- **2c-4:** gates — per-OFE mass closure each lane-day; the OFE-boundary
+  handoff identity `G_out(i) = G_in(i+1)` (per hour); hillslope-exit
+  closure; the §4a soil-contrasting-OFE fixture (per-OFE `sedcon`/exit
+  fractions differ by OFE soil); the multi-OFE directional law; W7DC01
+  substrate proof (multi-OFE HBP sediment nonzero, minor-1). Full AGENTS
+  battery; push for Codex review.
+
+## 4. Hold criteria
+
+1. R2 cannot pin the legacy `strldn` normalization basis unambiguously —
+   stop and present the candidates (the receiver-scale inversion must be
+   source-grounded, not inferred).
+2. The lane↔OFE mapping is not 1:1 (any aggregation between OFEs and lanes)
+   — the handoff design assumes lane = OFE (INV-RUNOFFPART-029 lane-state
+   lineage); a mismatch is a design stop.
+3. Per-OFE + handoff conservation gates fail materially on the real
+   multi-OFE substrate.
