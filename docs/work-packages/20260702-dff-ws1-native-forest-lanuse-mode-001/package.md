@@ -1,13 +1,14 @@
 # DFF-WS1 — Native Forest `lanuse` Mode Foundation
 
-Status: **INCREMENT 2 — rebased onto post-E-sequence main 2026-07-05
-(head `a4c43e16`, full suite 1356/1356); three Codex review rounds
-addressed pre-rebase; AWAITING the post-rebase re-check.** The rebase
-reconciliation composes WS1 with the erosion E-sequence: the forest
-initial seed supplies `residue_cover_factor` (the GAP-SED-009
-declared-cover fix applies to native forest lanuse), and the tillage
-detector treats Forest yearlies as never-tilled (Wave-1 erosion enabled
-by construction on native forest managements).
+Status: **INCREMENT 2 COMPLETE — MERGED TO MAIN `184616ba` 2026-07-05**
+(four Codex review rounds: three pre-rebase + the post-rebase round —
+schedule-scoped tillage detection + the `residue_cover_factor_cf`
+projection assertion). The openWEPP-native forest lanuse mode is live:
+`ow-lanuse-1` datver, forest sentinel, Forest scenario variants,
+all-section fail-closed policy, forest projection, `.man`↔`.sol`
+reconciliation in the production seed — and it COMPOSES with the
+erosion arc (declared-cover authority + Wave-1 enable lane-locally by
+construction). Growth physics remains WS-4.
 
 ## Objective
 
