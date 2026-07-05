@@ -353,6 +353,21 @@ Three findings (High/Medium/Low), all CONFIRMED and fixed:
    producer" (fail-closed behavior unchanged); pinned test string
    updated.
 
+## 5e. Stage 2e — Codex review round 2 response (2026-07-04)
+
+One Medium (registry/index rows still marked the deleted arm `active`
+while the body banners said deleted-historical): CONFIRMED, fixed. The
+four binding-exposure registry rows flipped to `deleted-historical`
+with obligations voided — SC-WATBAL-001 rev 164 (producer-coupling
+row), SC-SYSTEM-001 rev 85 (EROD14 boundary-carry + EROD15 HBP
+boundary-carry rows), SC-RUNOFFPART-001 rev 47 (producer-coupling row;
+its mapped runoff invariants noted as live in their own right). The
+closure contract test now also guards the REGISTRY posture: any
+registry row naming `EROD14-WAVE-2`/`EROD15-WAVE-3` must carry
+`deleted-historical` and must not be `active` — body banners and index
+rows can no longer diverge. Round-1 High/Low confirmed closed by the
+reviewer.
+
 ## 6. 2c-3 continuation spec (superseded by §5a — retained for the design record)
 
 1. **Enable:** 00_builders:1257 drops `contributor_ofe_count == 1` (the

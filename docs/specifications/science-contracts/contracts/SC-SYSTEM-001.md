@@ -4,7 +4,7 @@ title: System Integration Boundary and Watershed Assembly Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 84
+contract_version: 85
 producer_scope:
   - Hillslope-to-watershed pass-file state/flux surfaces
   - Channel and impoundment boundary assembly surfaces
@@ -429,8 +429,8 @@ core and is not sidecar-eligible.
 | `MOFE05-WATERSHED-CONTRIBUTOR-METADATA-INTAKE-VALIDATION-ADDENDUM` | `SC-SYSTEM-001.md#mofe05-watershed-contributor-metadata-intake-validation-addendum` | `active` | `undecidable` | `none` | `science-review-follow-on` | SCSTRUCT05 narrower HOLD: contributor metadata intake shape, consistency, and test vectors extend beyond exact `INV-SYSTEM-028/029` exposure. Owner: `SCSTRUCT05-MOFE05-BEI-PROMOTION`. Next gate: promote/map intake validation authority before relocation. |
 | `HPHYS0241-MOFE-HOURLY-CARRY-METADATA-ADDENDUM` | `SC-SYSTEM-001.md#hphys0241-mofe-hourly-carry-metadata-addendum` | `active` | `maps-to-existing-INV` | `INV-SYSTEM-028` | `none` | SCSTRUCT05 map-in-core: active 24-slot MOFE hourly carry metadata and watershed intake rejection posture are exposed by `INV-SYSTEM-028`. |
 | `EROD13-WAVE-1-ACTIVE-BOUNDARY-CARRY-ADDENDUM` | `SC-SYSTEM-001.md#erod13-wave-1-active-boundary-carry-addendum` | `active` | `undecidable` | `none` | `science-review-follow-on` | SCSTRUCT05 narrower HOLD: Wave-1 hydrology-to-erosion boundary-carry authority requires exact RUNOFFPART/WATBAL/SED/SYSTEM exposure. Owner: `SCSTRUCT05-EROD13-BEI-PROMOTION`. Next gate: promote/map before relocation. |
-| `EROD14-WAVE-2-ACTIVE-BOUNDARY-CARRY-ADDENDUM` | `SC-SYSTEM-001.md#erod14-wave-2-active-boundary-carry-addendum` | `active` | `undecidable` | `none` | `science-review-follow-on` | SCSTRUCT05 narrower HOLD: Wave-2 sediment enrichment/class-conservation boundary-carry authority requires exact SED/SYSTEM exposure. Owner: `SCSTRUCT05-EROD14-BEI-PROMOTION`. Next gate: promote/map before relocation. |
-| `EROD15-WAVE-3-HBP-BOUNDARY-CARRY-ADDENDUM` | `SC-SYSTEM-001.md#erod15-wave-3-hbp-boundary-carry-addendum` | `active` | `undecidable` | `none` | `science-review-follow-on` | SCSTRUCT05 narrower HOLD: Wave-3 HBP routing-boundary payload authority requires exact SED/ROUTE/SYSTEM exposure, including `SC-ROUTE-001#INV-ROUTE-011`. Owner: `SCSTRUCT05-EROD15-BEI-PROMOTION`. Next gate: promote/map before relocation. |
+| `EROD14-WAVE-2-ACTIVE-BOUNDARY-CARRY-ADDENDUM` | `SC-SYSTEM-001.md#erod14-wave-2-active-boundary-carry-addendum` | `deleted-historical` | `none` | `none` | `none` | E.3 stage 2e: the runtime arm is DELETED (SC-SED-001 rev 45); the addendum is retained as historical specification only — no live obligations, the SCSTRUCT promotion gate is void. The Wave-1 chain (`SC-SED-001#INV-SED-016`) owns all inter-OFE erosion coupling. |
+| `EROD15-WAVE-3-HBP-BOUNDARY-CARRY-ADDENDUM` | `SC-SYSTEM-001.md#erod15-wave-3-hbp-boundary-carry-addendum` | `deleted-historical` | `none` | `none` | `none` | E.3 stage 2e: the EROD15 projection served only the deleted Wave-2 arm and is removed with it (SC-SED-001 rev 45); historical specification only — the SCSTRUCT promotion gate is void. The Wave-1 publication projection owns the HBP export surface. |
 
 ## WS11 Channel-Routing Physics-Equivalence Integration Addendum
 
@@ -1000,6 +1000,7 @@ Minimum WS12 integration vectors:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-07-04` | `85` | `Claude Code` | E.3 stage 2e (Codex round-2): the EROD14/EROD15 binding-exposure REGISTRY rows flipped `active` → `deleted-historical` (the body-addendum banners landed in the prior revision; the registry posture now matches — no live obligations, SCSTRUCT promotion gates void). |
 | `2026-07-04` | `84` | `Claude Code` | E.3 stage 2e disposition: the EROD14 Wave-2 addendum is marked DELETED-historical (the runtime arm is removed; the Wave-1 chain `SC-SED-001#INV-SED-016` is the sole multi-OFE erosion engine); manifest lineage noted (`erod14_wave2_enabled` permanently false; kernel-status field replaced by `multi_ofe_wave1_chained`, true only on no-tillage multi-OFE runs). |
 | `2026-06-14` | `83` | `Codex` | MOFE01 M-G amendment: added `INV-SYSTEM-032` and manifest-boundary authority requiring `erod14_qin_source_policy` / `erod14_qin_sediment_coupled` provenance so water-transfer-only Wave-2 continuity is not mistaken for sediment-coupled `qin` closure. |
 | `2026-06-14` | `82` | `Codex` | MOFE01 M-F-REDO2 amendment: required per-OFE publication evidence for public `QOFE = runoff * efflen / slplen` and public `Q = runoff * efflen / totlen`, rejecting downstream `QOFE == Q` aliases while keeping conservation identities on raw transfer operands. |

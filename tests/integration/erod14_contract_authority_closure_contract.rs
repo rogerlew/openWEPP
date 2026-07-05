@@ -47,6 +47,23 @@ fn erod14_wave2_addenda_are_present_in_required_contracts() {
             banner_window.contains("DELETED — E.3 stage 2e"),
             "{path} section {section} must carry the E.3 stage-2e deleted-historical banner"
         );
+        // Codex 2e round-2: registry/index rows must agree with the body
+        // banners — a binding-exposure row for the deleted arm may not
+        // claim `active` status or live obligations.
+        for line in content.lines() {
+            let is_registry_row = line.starts_with('|')
+                && (line.contains("EROD14-WAVE-2") || line.contains("EROD15-WAVE-3"));
+            if is_registry_row {
+                assert!(
+                    !line.contains("| `active` |"),
+                    "{path} registry row for the deleted EROD14/EROD15 arm must not be `active`: {line}"
+                );
+                assert!(
+                    line.contains("deleted-historical"),
+                    "{path} registry row for the deleted EROD14/EROD15 arm must carry the deleted-historical status: {line}"
+                );
+            }
+        }
     }
 
     let sed_contract = fs::read_to_string(format!(
