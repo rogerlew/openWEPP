@@ -12,6 +12,15 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-06`:
+- `20260705-mofefid-d12-melt-limb-hourly-shape-001/` —
+  SCAFFOLDED: Lane D melt-limb hourly source-shape package. D12 closes the
+  `days_uniform_shape` activation blocker by adding/proving the
+  snowmelt/routed-liquid hourly source limb with exact daily-sum closure, or
+  by recording a contract-backed non-routing disposition for any residual
+  class. The package explicitly carries user authorization for subagent
+  spawning/delegation. No production/default activation, D10 shock-numerics,
+  D11 friction-source, D13 erosion-shape, D14 profiling, or D15/D16 policy
+  work.
 - `20260706-mofefid-d11-gap007-dynamic-friction-closure-001/` —
   EXECUTED-COMPLETE: D11 hold-lift package closed the remaining dynamic
   `GAP-OFEROUTE-007` operands for the opt-in Lane D shadow. `SC-OFEROUTE-001`
