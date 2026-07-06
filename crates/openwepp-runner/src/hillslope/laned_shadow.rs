@@ -27,7 +27,7 @@ use openwepp_hillslope_orchestrator::ofe_routing::kinematic_wave::{
 };
 use openwepp_hillslope_orchestrator::ofe_routing::profile as routing_profile;
 use openwepp_hillslope_orchestrator::ofe_routing::seam::{
-    SEAM_HOUR_BINS, seam_rate_at, seam_source_rates_from_hourly_depths,
+    SEAM_HOUR_BINS, SEAM_SECONDS_PER_HOUR, seam_rate_at, seam_source_rates_from_hourly_depths,
 };
 use std::time::Instant;
 
@@ -36,8 +36,15 @@ use std::time::Instant;
 const RESIDUAL_FLOOR_M3: f64 = 0.1;
 /// Cells per OFE for the shadow mesh (the D-val working resolution).
 const LANED_SHADOW_CELLS: usize = 10;
-/// Routing window: one day.
-const LANED_SHADOW_WINDOW_S: f64 = 24.0 * 3600.0;
+/// Source window: the seam publishes one day of hourly source rates. Routing
+/// may continue past this with zero source to drain water that entered in hour
+/// 24; this is diagnostics-only shadow timing, not an inter-day production
+/// carry claim.
+const LANED_SHADOW_SOURCE_WINDOW_S: f64 = 24.0 * 3600.0;
+/// Drain tail after the last active source hour. D14 added the tail to avoid
+/// clipping routed fronts; D15 blocker resolution removes the old one-day cap
+/// so an hour-24 source receives the same tail as earlier hours.
+const LANED_SHADOW_DRAIN_TAIL_S: f64 = 6.0 * 3600.0;
 // Resolution note (H2637 sweep, 2026-07-05): the cascade's run-level
 // conservation aggregate on the steep 19-OFE regime is RESOLUTION-
 // SENSITIVE in the GAP-OFEROUTE-005 class — (sample_dt, max_dt) of
@@ -179,6 +186,12 @@ impl LanedShadowCollector {
     #[must_use]
     fn env_profile_enabled() -> bool {
         std::env::var("OPENWEPP_LANED_SHADOW_PROFILE").is_ok_and(|value| value == "1")
+    }
+
+    fn routing_window_s(last_active_hour: usize) -> f64 {
+        #[allow(clippy::cast_precision_loss)]
+        let active_end_s = ((last_active_hour + 1) as f64) * SEAM_SECONDS_PER_HOUR;
+        active_end_s.min(LANED_SHADOW_SOURCE_WINDOW_S) + LANED_SHADOW_DRAIN_TAIL_S
     }
 
     /// Start a runner-side profiling span (None when profiling is off).
@@ -466,9 +479,7 @@ impl LanedShadowCollector {
             })
             .max()
             .unwrap_or(0);
-        #[allow(clippy::cast_precision_loss)]
-        let window_s =
-            (((last_active_hour + 1) as f64) * 3600.0 + 6.0 * 3600.0).min(LANED_SHADOW_WINDOW_S);
+        let window_s = Self::routing_window_s(last_active_hour);
         let cascade_span = self.profile_span_start();
         let result = run_cascade(
             &segments,
@@ -647,6 +658,20 @@ mod tests {
         assert!(profile.cascade_run_ns > 0, "cascade slot timed");
         assert!(profile.mesh_build_ns > 0, "mesh slot timed");
         assert!(profile.rate_series_ns > 0, "rate-series slot timed");
+    }
+
+    #[test]
+    fn routing_window_keeps_drain_tail_for_hour_24_source() {
+        let first_hour = LanedShadowCollector::routing_window_s(0);
+        let hour_24 = LanedShadowCollector::routing_window_s(SEAM_HOUR_BINS - 1);
+        assert!(
+            (first_hour - (SEAM_SECONDS_PER_HOUR + LANED_SHADOW_DRAIN_TAIL_S)).abs()
+                <= f64::EPSILON
+        );
+        assert!(
+            (hour_24 - (LANED_SHADOW_SOURCE_WINDOW_S + LANED_SHADOW_DRAIN_TAIL_S)).abs()
+                <= f64::EPSILON
+        );
     }
 
     fn routed_outlet_m3(hourly_rainfall_m: [f64; SEAM_HOUR_BINS]) -> f64 {

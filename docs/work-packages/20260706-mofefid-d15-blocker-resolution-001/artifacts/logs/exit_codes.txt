@@ -1,0 +1,6 @@
+off_routing_coefficients=19
+off=0
+shadow_on_routing_coefficients=19
+shadow_on=0
+shadow_profile_routing_coefficients=19
+shadow_profile=0
