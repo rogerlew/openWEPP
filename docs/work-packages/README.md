@@ -12,6 +12,14 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-06`:
+- `20260705-mofefid-d15-opt-in-production-activation-001/` —
+  EXECUTED-HOLD-SOURCE-AUTHORITY: Lane D opt-in production activation
+  preflight. D15 confirmed that `SC-OFEROUTE-001` rev 23 still blocks active
+  routed-water publication through `INV-OFEROUTE-011` / `GAP-OFEROUTE-005`
+  (Case-4 shock-numerics/source-authority hold). No runtime, contract, schema,
+  fixture, or test files changed; the next actionable item is the D10
+  source-authority reconciliation, then a D15 rerun against the D14 runtime
+  budget.
 - `20260705-mofefid-d14-laned-runtime-profile-optimization-001/` —
   EXECUTED-COMPLETE: Lane D runtime profiling/optimization package. D14
   re-pinned the H2637 Lane D shadow cost at release grade (+65.3 s user over
