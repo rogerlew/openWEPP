@@ -13,12 +13,13 @@
 
 State as of `2026-07-06`:
 - `20260705-mofefid-d13-routed-hydrograph-erosion-shape-001/` —
-  SCAFFOLDED: Lane D routed-hydrograph erosion-shape package. D13 closes the
-  ADR-0036 touchpoint that, when Lane D routing owns the surface-water path,
-  Wave-1 hourly erosion must consume the routed hydrograph rather than the
-  DC01 source-shape authority. No production/default activation, D10
-  shock-numerics, D11 friction-source, D12 melt-limb, D14 profiling, D15/D16
-  policy, or watershed/channel routing work.
+  EXECUTED-COMPLETE: Lane D routed-hydrograph erosion-shape package.
+  `SC-OFEROUTE-001` rev 23 and `SC-SED-001` rev 53 bind the active-candidate
+  erosion hourly-shape rule: when Lane D routed water owns the surface-water
+  path, Wave-1 erosion consumes the routed hydrograph rather than DC01
+  source-shape weights. Default/off remains on DC01; no production/default
+  activation, D10 shock-numerics, D11 friction-source, D12 melt-limb, D14
+  profiling, D15/D16 policy, or watershed/channel routing work.
 - `20260705-mofefid-d12-melt-limb-hourly-shape-001/` —
   EXECUTED-COMPLETE: Lane D melt-limb hourly source-shape package.
   `SC-OFEROUTE-001` rev 22 ratifies the producer-owned

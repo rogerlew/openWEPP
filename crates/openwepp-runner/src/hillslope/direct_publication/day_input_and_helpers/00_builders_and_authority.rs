@@ -1672,6 +1672,9 @@ fn direct_production_typed_erosion_authority(
                 openwepp_hillslope_orchestrator::DirectWave1ContinuityInputs::zero(),
             ),
             wave1_operand_seed: Box::new(wave1_operand_seed),
+            hydrograph_shape_authority:
+                openwepp_hillslope_orchestrator::DirectErosionHydrographShapeAuthority::Dc01SourceShape,
+            routed_hydrograph_runoff_fraction: None,
         },
     })
 }

@@ -9,8 +9,9 @@
 use super::direct_runtime_test_lock;
 use crate::direct_runtime::direct_wave1_publication_projection;
 use crate::{
-    DIRECT_WAVE1_GRID_POINTS, DirectDayFrame, DirectPeakRunoffShadowProjection, DirectRunIdentity,
-    DirectRuntimeError, DirectWave1ContinuityInputs, DirectWave1DailyState, DirectWave1OperandSeed,
+    DIRECT_WAVE1_GRID_POINTS, DirectDayFrame, DirectErosionHydrographShapeAuthority,
+    DirectPeakRunoffShadowProjection, DirectRunIdentity, DirectRuntimeError,
+    DirectWave1ContinuityInputs, DirectWave1DailyState, DirectWave1OperandSeed,
     DirectWave1SlopeSegment, ErosionConsolidationBaselines, ErosionExcessInterval,
     ErosionFrostRegime, ErosionParticleClass, Wave1InterOfeContinuity, Wave1ShearRegime,
     assemble_wave1_continuity_inputs_quantum, compute_direct_wave1_continuity,
@@ -105,6 +106,41 @@ fn crafted_particle_classes() -> [ErosionParticleClass; 5] {
         frsnd: [0.0, 0.0, 0.0, 0.4, 1.0][i],
         frorg: [0.02, 0.0, 0.008, 0.004, 0.0][i],
     })
+}
+
+fn d13_shape_test_day() -> DirectDayFrame {
+    let identity = DirectRunIdentity::new(7, 2637, 1, 1)
+        .expect("valid direct publication identity should construct");
+    let mut day = DirectDayFrame::seed(identity, 0, 0).expect("valid direct day should construct");
+    *day.erosion_inputs.wave1_operand_seed = crafted_enabled_seed();
+    for (hour, excess_m, rainfall_m) in [
+        (3_usize, 0.006, 0.008),
+        (4, 0.018, 0.020),
+        (10, 0.012, 0.015),
+        (11, 0.006, 0.008),
+    ] {
+        day.wb14_hourly_excess_m[hour] = excess_m;
+        day.wb14_hourly_rainfall_m[hour] = rainfall_m;
+        day.forcing.precipitation_m += rainfall_m;
+    }
+    day.peak_runoff_shadow_projection = Some(DirectPeakRunoffShadowProjection {
+        lane_index: 0,
+        day_index: 0,
+        q_runoff_m: 0.024,
+        peak_runoff_m3_s: 1.0e-5,
+        runoff_duration_s: 2000.0,
+        method_branch: 1.0,
+        tstar: 0.0,
+        qpstar: 0.0,
+        vstar: 0.0,
+    });
+    day.subsurface_compute.layer_state_after = vec![crate::DirectSubsurfaceLayerState {
+        depth_m: 0.2,
+        theta_m: 0.04,
+        field_capacity_theta: 0.25,
+        ..crate::DirectSubsurfaceLayerState::neutral()
+    }];
+    day
 }
 
 /// Crafted single-segment concave OFE: normalized slope `s*(x) = -2x + 2`
@@ -752,6 +788,95 @@ fn wave1_span_hourly_plan_aggregates_and_publishes_paired_surfaces() {
             "zero-deposition day: detached mass equals exported mass"
         );
     }
+}
+
+#[test]
+fn wave1_span_routed_hydrograph_shape_supersedes_dc01_weights() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+
+    let mut day = d13_shape_test_day();
+    let mut routed = [0.0_f64; 24];
+    routed[3] = 0.25;
+    routed[4] = 0.75;
+    day.erosion_inputs.hydrograph_shape_authority =
+        DirectErosionHydrographShapeAuthority::RoutedHydrograph;
+    day.erosion_inputs.routed_hydrograph_runoff_fraction = Some(Box::new(routed));
+
+    let report = day
+        .run_r7d6_erosion_span()
+        .expect("routed-hydrograph shape candidate should run");
+    let publication = report.erosion_shadow_projection.publication;
+    let weights = publication
+        .hourly_runoff_fraction
+        .expect("routed shape must publish as the hourly runoff fraction");
+
+    assert_eq!(
+        weights, routed,
+        "the active-routed-water candidate must consume the routed hydrograph, not DC01 weights"
+    );
+    assert_eq!(day.wave1_hourly_weights, routed);
+    assert_eq!(
+        day.wave1_hourly_plan
+            .iter()
+            .map(|(hour, _)| *hour)
+            .collect::<Vec<_>>(),
+        vec![3, 4],
+        "only routed-hydrograph active hours should enter the hourly plan"
+    );
+    assert_eq!(weights[10], 0.0);
+    assert_eq!(weights[11], 0.0);
+
+    let hourly_sediment = publication
+        .hourly_sediment_mass_kg
+        .expect("hourly sediment surface must remain paired with the water shape");
+    let sediment_sum: f64 = hourly_sediment.iter().sum();
+    assert!(
+        sediment_sum > 0.0,
+        "routed-shape storm must export sediment"
+    );
+}
+
+#[test]
+fn wave1_span_routed_hydrograph_shape_fails_closed_when_missing() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+
+    let mut day = d13_shape_test_day();
+    day.erosion_inputs.hydrograph_shape_authority =
+        DirectErosionHydrographShapeAuthority::RoutedHydrograph;
+    day.erosion_inputs.routed_hydrograph_runoff_fraction = None;
+
+    assert!(matches!(
+        day.run_r7d6_erosion_span(),
+        Err(DirectRuntimeError::MissingDirectUpstream {
+            upstream: "erosion.routed_hydrograph_runoff_fraction"
+        })
+    ));
+}
+
+#[test]
+fn wave1_span_routed_hydrograph_shape_fails_closed_when_nonclosing() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+
+    let mut day = d13_shape_test_day();
+    let mut nonclosing = [0.0_f64; 24];
+    nonclosing[3] = 0.25;
+    nonclosing[4] = 0.50;
+    day.erosion_inputs.hydrograph_shape_authority =
+        DirectErosionHydrographShapeAuthority::RoutedHydrograph;
+    day.erosion_inputs.routed_hydrograph_runoff_fraction = Some(Box::new(nonclosing));
+
+    assert!(matches!(
+        day.run_r7d6_erosion_span(),
+        Err(DirectRuntimeError::DirectClosureToleranceExceeded {
+            field: "erosion.routed_hydrograph_runoff_fraction_sum"
+        })
+    ));
 }
 
 #[test]

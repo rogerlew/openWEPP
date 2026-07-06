@@ -1,6 +1,6 @@
 # MOFEFID-D13 - Routed-Hydrograph Erosion Shape
 
-Status: **SCAFFOLDED** (2026-07-06). Campaign:
+Status: **EXECUTED-COMPLETE** (2026-07-06). Campaign:
 [MOFEFID](../../planning/mofe-fidelity-campaign-strategy.md) Lane D.
 Contract focus: ADR-0036 active-routed-water touchpoint across
 `SC-OFEROUTE-001` and `SC-SED-001`.
@@ -248,4 +248,3 @@ only when package governance permits substitution.
 - `artifacts/verification_agent_b.md`
 - `artifacts/worker-handoff.md`
 - `artifacts/final-disposition.md`
-

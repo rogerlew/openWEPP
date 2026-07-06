@@ -15,6 +15,8 @@ use super::{
 
 // SC-SED-001 1b-C: one hourly bin (`DC01_HOUR_BIN_COUNT` × 1 h).
 const EROSION_HOUR_BIN_S: f64 = 3600.0;
+const ROUTED_HYDROGRAPH_UNIT_SUM_TOLERANCE: f64 = 1.0e-9;
+const ROUTED_HYDROGRAPH_DRY_SUM_TOLERANCE: f64 = 1.0e-12;
 
 /// ADR-0036: the single-hour interval slice of the WB14 surfaces for one
 /// solve quantum — the hour's excess/rainfall depths on the hour's own
@@ -93,6 +95,12 @@ pub struct DirectErosionInputs {
     /// stay inside the R7B type-size bound; `seed.enabled` gates the
     /// assembly (disabled until the production flip).
     pub wave1_operand_seed: Box<DirectWave1OperandSeed>,
+    /// D13 / SC-SED-001 rev 53: select the hourly WATER shape consumed by
+    /// hydrograph-resolved Wave-1. Default/off uses DC01 source weights;
+    /// active-routed-water candidates must supply validated routed
+    /// hydrograph weights in `routed_hydrograph_runoff_fraction`.
+    pub hydrograph_shape_authority: DirectErosionHydrographShapeAuthority,
+    pub routed_hydrograph_runoff_fraction: Option<Box<[f64; 24]>>,
 }
 
 impl DirectErosionInputs {
@@ -103,8 +111,16 @@ impl DirectErosionInputs {
             wave1: DirectErod13Inputs::zero(),
             wave1_continuity: Box::new(DirectWave1ContinuityInputs::zero()),
             wave1_operand_seed: Box::new(DirectWave1OperandSeed::disabled()),
+            hydrograph_shape_authority: DirectErosionHydrographShapeAuthority::Dc01SourceShape,
+            routed_hydrograph_runoff_fraction: None,
         }
     }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DirectErosionHydrographShapeAuthority {
+    Dc01SourceShape,
+    RoutedHydrograph,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -387,6 +403,20 @@ impl DirectDayFrame {
         &self,
         q_runoff_m: f64,
     ) -> Result<[f64; 24], DirectRuntimeError> {
+        match self.erosion_inputs.hydrograph_shape_authority {
+            DirectErosionHydrographShapeAuthority::Dc01SourceShape => {
+                self.r7d8_dc01_surface_hourly_weights(q_runoff_m)
+            }
+            DirectErosionHydrographShapeAuthority::RoutedHydrograph => {
+                self.r7d8_routed_hydrograph_hourly_weights(q_runoff_m)
+            }
+        }
+    }
+
+    fn r7d8_dc01_surface_hourly_weights(
+        &self,
+        q_runoff_m: f64,
+    ) -> Result<[f64; 24], DirectRuntimeError> {
         let saturation_carry_m = self
             .subsurface_compute_shadow_projection
             .as_ref()
@@ -399,6 +429,46 @@ impl DirectDayFrame {
                 .hourly_routed_melt_m
                 .as_ref(),
         )
+    }
+
+    fn r7d8_routed_hydrograph_hourly_weights(
+        &self,
+        q_runoff_m: f64,
+    ) -> Result<[f64; 24], DirectRuntimeError> {
+        let weights = self
+            .erosion_inputs
+            .routed_hydrograph_runoff_fraction
+            .as_deref()
+            .ok_or(DirectRuntimeError::MissingDirectUpstream {
+                upstream: "erosion.routed_hydrograph_runoff_fraction",
+            })?;
+        Self::validate_routed_hydrograph_hourly_weights(q_runoff_m, weights)?;
+        Ok(*weights)
+    }
+
+    fn validate_routed_hydrograph_hourly_weights(
+        q_runoff_m: f64,
+        weights: &[f64; 24],
+    ) -> Result<(), DirectRuntimeError> {
+        validate_nonnegative_direct_m("erosion.routed_hydrograph.q_runoff_m", q_runoff_m)?;
+        let mut sum = 0.0_f64;
+        for weight in weights {
+            validate_nonnegative_direct_m("erosion.routed_hydrograph_runoff_fraction", *weight)?;
+            sum += *weight;
+        }
+        validate_finite("erosion.routed_hydrograph_runoff_fraction_sum", sum)?;
+        if q_runoff_m > WB11_ZERO_THRESHOLD {
+            if (sum - 1.0).abs() > ROUTED_HYDROGRAPH_UNIT_SUM_TOLERANCE {
+                return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
+                    field: "erosion.routed_hydrograph_runoff_fraction_sum",
+                });
+            }
+        } else if sum.abs() > ROUTED_HYDROGRAPH_DRY_SUM_TOLERANCE {
+            return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
+                field: "erosion.routed_hydrograph_runoff_fraction_dry_sum",
+            });
+        }
+        Ok(())
     }
 
     fn r7d8_assemble_wave1_continuity_from_frame(&mut self) -> Result<(), DirectRuntimeError> {
@@ -494,13 +564,14 @@ impl DirectDayFrame {
         let continuity = assemble_wave1_continuity_inputs(seed, &daily)?;
 
         // ADR-0036 / INV-SED-013: the hydrograph-resolved hourly plan. The
-        // weights (the shared DC01 shape authority) are a WATER surface —
-        // populated on every runoff day, sub-`passby` included, because the
-        // serialized `V_h` hydrograph exists independently of whether the
-        // day routes sediment. The PLAN is sediment-gated: the day-level
-        // `passby` event gate runs on the DAY totals, and active days then
-        // assemble one solve quantum per hydraulically-active hour
-        // (`w_h > 0`; production `qin_h = 0` until the E.3 handoff).
+        // selected weights are a WATER surface — default/off DC01 weights
+        // or the D13 routed-hydrograph candidate when routing owns water.
+        // They are populated on every runoff day, sub-`passby` included,
+        // because the serialized `V_h` hydrograph exists independently of
+        // whether the day routes sediment. The PLAN is sediment-gated: the
+        // day-level `passby` event gate runs on the DAY totals, and active
+        // days then assemble one solve quantum per hydraulically-active
+        // hour (`w_h > 0`; production `qin_h = 0` until the E.3 handoff).
         let weights = self.r7d8_surface_hourly_weights(daily.runoff_depth_m)?;
         self.wave1_hourly_weights = weights;
         let hourly_width_m = Self::build_wave1_hourly_plan(

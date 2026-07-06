@@ -1106,8 +1106,9 @@ pub struct DirectDayFrame {
     /// lane intake at day seeding; absent on OFE-1 / single-OFE lanes).
     pub erosion_inflow_intake: Option<Box<DirectErosionInflowIntake>>,
     /// ADR-0036 / INV-SED-013: the day's unit-normalized hourly runoff
-    /// weights (`REF-SED-DC01-SHAPE`), set in the erosion span from the
-    /// shared shape authority. All-zero on no-runoff days.
+    /// weights, set in the erosion span from the selected shape authority
+    /// (default/off DC01 source weights, or D13 routed-hydrograph weights
+    /// when explicitly selected). All-zero on no-runoff days.
     pub wave1_hourly_weights: [f64; 24],
     /// ADR-0036 / INV-SED-013: the per-hydraulically-active-hour Wave-1
     /// solve plan — `(hour, assembled continuity inputs)`. Empty on

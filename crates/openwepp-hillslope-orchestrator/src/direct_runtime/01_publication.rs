@@ -618,9 +618,9 @@ pub struct DirectPublicationErosionOperands {
     pub hbp_sediment_concentration_kg_m3: Option<f64>,
     pub sediment_concentration_kg_m3: Option<[f64; 5]>,
     /// ADR-0036 D2: the day's unit-normalized hourly runoff distribution
-    /// (`REF-SED-DC01-SHAPE` weights). `Some` on hydrograph-resolved Wave-1
-    /// lanes (the HBP writer forms `V_h = runvol · w_h`); `None` on lanes
-    /// without the hourly surfaces (Wave-2 multi-OFE — minor-0 payloads).
+    /// from the selected water-shape authority. `Some` on hydrograph-
+    /// resolved Wave-1 lanes (the HBP writer forms `V_h = runvol · w_h`);
+    /// `None` on lanes without the hourly surfaces.
     pub hourly_runoff_fraction: Option<[f64; 24]>,
     /// ADR-0036 D2: hour-integrated exported sediment mass (kg) on the
     /// same time base (`Σ = ` the day's exported mass; all-zero on

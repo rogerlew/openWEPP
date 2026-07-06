@@ -825,6 +825,8 @@ fn r7d6_typed_erosion_inputs() -> DirectErosionInputs {
         wave1_enabled: true,
         wave1_continuity: Box::new(DirectWave1ContinuityInputs::zero()),
         wave1_operand_seed: Box::new(DirectWave1OperandSeed::disabled()),
+        hydrograph_shape_authority: crate::DirectErosionHydrographShapeAuthority::Dc01SourceShape,
+        routed_hydrograph_runoff_fraction: None,
         wave1: DirectErod13Inputs {
             ie_m_s: 0.000_01,
             te_s: 60.0,
