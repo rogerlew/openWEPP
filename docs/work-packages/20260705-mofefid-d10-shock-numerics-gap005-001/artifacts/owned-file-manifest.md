@@ -1,7 +1,7 @@
 # Owned File Manifest
 
-Status: queued
-Evidence mode: not-run
+Status: executed
+Evidence mode: Static
 
 | Path | Class | Reason |
 |---|---|---|
@@ -9,3 +9,6 @@ Evidence mode: not-run
 | `docs/specifications/science-contracts/contracts/SC-OFEROUTE-001.md` | Primary | D10 `GAP-OFEROUTE-005` / `INV-OFEROUTE-011` Case-4 authority. |
 | `docs/work-packages/README.md` | Registry | Package discoverability/status. |
 | `docs/planning/mofe-fidelity-campaign-strategy.md` | Conditional planning | Status update after execution. |
+| `tools/dval/compare_dval.py` | Conditional harness | Case-4-only resolution controls for D10 diagnostics. |
+
+Final production Rust write set: none.

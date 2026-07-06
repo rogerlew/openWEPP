@@ -1,5 +1,5 @@
 # Prompts
 
-Status: queued
+Status: executed-hold
 
 Active kickoff prompts live in `active/`; retired prompts move to `archived/`.

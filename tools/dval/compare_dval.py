@@ -54,8 +54,14 @@ def main():
     ap.add_argument("--fig4", required=True, help="path to gitignored Figure_4.xlsx")
     ap.add_argument("--ko", type=float, default=None)
     ap.add_argument("--ks", type=float, default=None)
+    ap.add_argument("--cells", type=int, default=None)
+    ap.add_argument("--sample-dt", type=float, default=None)
+    ap.add_argument("--max-dt", type=float, default=None)
     ap.add_argument("--crate-dir", default=".")
     args = ap.parse_args()
+    if any(value is not None for value in (args.cells, args.sample_dt, args.max_dt)) and args.case != 4:
+        print(json.dumps({"error": "resolution controls are Case-4-only"}))
+        sys.exit(2)
 
     got = sha256(args.fig4)
     if got != FIG4_SHA256:
@@ -72,9 +78,26 @@ def main():
 
     cmd = ["cargo", "run", "--example", "dval_case", "-p",
            "openwepp-hillslope-orchestrator", "-q", "--", str(args.case)]
+    resolution_controls = None
+    effective_ko = args.ko
     # dval_case takes positional [case, ko, ks]; ks needs ko present, so
     # default ko to the case's ko-of-record (500) when only ks is scanned.
-    if args.ks is not None:
+    if args.case == 4 and any(value is not None for value in (args.cells, args.sample_dt, args.max_dt)):
+        ko = args.ko if args.ko is not None else 500.0
+        cells = args.cells if args.cells is not None else 120
+        sample_dt = args.sample_dt if args.sample_dt is not None else 1.0
+        max_dt = args.max_dt if args.max_dt is not None else 0.5
+        effective_ko = ko
+        resolution_controls = {
+            "cells": cells,
+            "sample_dt_s": sample_dt,
+            "max_dt_s": max_dt,
+        }
+        cmd.append(str(ko))
+        cmd.append(str(cells))
+        cmd.append(str(sample_dt))
+        cmd.append(str(max_dt))
+    elif args.ks is not None:
         cmd.append(str(args.ko if args.ko is not None else 500.0))
         cmd.append(str(args.ks))
     elif args.ko is not None:
@@ -90,7 +113,9 @@ def main():
     qr_i = np.interp(grid, tref, qref); qm_i = np.interp(grid, tm, qm)
 
     result = {
-        "case": args.case, "ko": args.ko, "ks_mm_h": args.ks,
+        "case": args.case, "ko": effective_ko, "ks_mm_h": args.ks,
+        "resolution_controls": resolution_controls,
+        "dval_command": cmd,
         "window_s": [float(lo), float(hi)],
         "NS_trace": nash_sutcliffe(qr_i, qm_i),
         "ref_peak_m2s": float(qref.max()), "ref_t_peak_s": float(tref[np.argmax(qref)]),

@@ -1,0 +1,118 @@
+{
+  "case": 4,
+  "ko": 200,
+  "commands": [
+    "cargo run --example dval_case -p openwepp-hillslope-orchestrator --quiet -- 4 200 120 1.0 0.5",
+    "cargo run --example dval_case -p openwepp-hillslope-orchestrator --quiet -- 4 200 40 1.0 0.5",
+    "cargo run --example dval_case -p openwepp-hillslope-orchestrator --quiet -- 4 200 240 1.0 0.5",
+    "cargo run --example dval_case -p openwepp-hillslope-orchestrator --quiet -- 4 200 120 0.25 0.5",
+    "cargo run --example dval_case -p openwepp-hillslope-orchestrator --quiet -- 4 200 120 1.0 0.25"
+  ],
+  "results": [
+    {
+      "window_s": [
+        0.0,
+        80.0
+      ],
+      "NS_trace": 0.2626773293282393,
+      "ref_peak_m2s": 0.00813231,
+      "ref_t_peak_s": 25.98,
+      "openwepp_peak_m2s": 0.0068034772,
+      "openwepp_t_peak_s": 37.0,
+      "peak_ratio": 0.836598358891877,
+      "ref_rise_10_90_s": 20.883439958627477,
+      "openwepp_rise_10_90_s": 29.409020535556635,
+      "tag": "baseline",
+      "cells": 120,
+      "sample_dt_s": 1.0,
+      "max_dt_s": 0.5,
+      "command": "cargo run --example dval_case -p openwepp-hillslope-orchestrator --quiet -- 4 200 120 1.0 0.5",
+      "exit": 0,
+      "stdout_lines": 82
+    },
+    {
+      "window_s": [
+        0.0,
+        80.0
+      ],
+      "NS_trace": 0.15463440134950568,
+      "ref_peak_m2s": 0.00813231,
+      "ref_t_peak_s": 25.98,
+      "openwepp_peak_m2s": 0.00517749895,
+      "openwepp_t_peak_s": 33.0,
+      "peak_ratio": 0.6366578438352694,
+      "ref_rise_10_90_s": 20.883439958627477,
+      "openwepp_rise_10_90_s": 25.325863530046195,
+      "tag": "coarse_cells",
+      "cells": 40,
+      "sample_dt_s": 1.0,
+      "max_dt_s": 0.5,
+      "command": "cargo run --example dval_case -p openwepp-hillslope-orchestrator --quiet -- 4 200 40 1.0 0.5",
+      "exit": 0,
+      "stdout_lines": 82
+    },
+    {
+      "window_s": [
+        0.0,
+        80.0
+      ],
+      "NS_trace": 0.13870735158912284,
+      "ref_peak_m2s": 0.00813231,
+      "ref_t_peak_s": 25.98,
+      "openwepp_peak_m2s": 0.00576795565,
+      "openwepp_t_peak_s": 33.0,
+      "peak_ratio": 0.7092641143783255,
+      "ref_rise_10_90_s": 20.883439958627477,
+      "openwepp_rise_10_90_s": 25.734980840784218,
+      "tag": "fine_cells",
+      "cells": 240,
+      "sample_dt_s": 1.0,
+      "max_dt_s": 0.5,
+      "command": "cargo run --example dval_case -p openwepp-hillslope-orchestrator --quiet -- 4 200 240 1.0 0.5",
+      "exit": 0,
+      "stdout_lines": 82
+    },
+    {
+      "window_s": [
+        0.0,
+        80.0
+      ],
+      "NS_trace": 0.257853964789181,
+      "ref_peak_m2s": 0.00813231,
+      "ref_t_peak_s": 25.98,
+      "openwepp_peak_m2s": 0.0068034772,
+      "openwepp_t_peak_s": 37.0,
+      "peak_ratio": 0.836598358891877,
+      "ref_rise_10_90_s": 20.883439958627477,
+      "openwepp_rise_10_90_s": 29.507356721159063,
+      "tag": "finer_sample",
+      "cells": 120,
+      "sample_dt_s": 0.25,
+      "max_dt_s": 0.5,
+      "command": "cargo run --example dval_case -p openwepp-hillslope-orchestrator --quiet -- 4 200 120 0.25 0.5",
+      "exit": 0,
+      "stdout_lines": 322
+    },
+    {
+      "window_s": [
+        0.0,
+        80.0
+      ],
+      "NS_trace": 0.2822419773459215,
+      "ref_peak_m2s": 0.00813231,
+      "ref_t_peak_s": 25.98,
+      "openwepp_peak_m2s": 0.00701020859,
+      "openwepp_t_peak_s": 30.0,
+      "peak_ratio": 0.8620193512052541,
+      "ref_rise_10_90_s": 20.883439958627477,
+      "openwepp_rise_10_90_s": 22.376879923683614,
+      "tag": "finer_max_dt",
+      "cells": 120,
+      "sample_dt_s": 1.0,
+      "max_dt_s": 0.25,
+      "command": "cargo run --example dval_case -p openwepp-hillslope-orchestrator --quiet -- 4 200 120 1.0 0.25",
+      "exit": 0,
+      "stdout_lines": 82
+    }
+  ]
+}

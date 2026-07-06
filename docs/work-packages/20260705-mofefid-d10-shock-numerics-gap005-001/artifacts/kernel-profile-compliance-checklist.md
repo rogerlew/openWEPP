@@ -1,13 +1,17 @@
 # Kernel-Profile Compliance Checklist
 
-Status: queued
-Evidence mode: not-run
+Status: executed
+Evidence mode: Static
 
 Checklist:
 
-- [ ] Contract-first sequence followed.
-- [ ] Guard/failure posture documented.
-- [ ] Symbol/unit governance updated where needed.
-- [ ] BEI / profile implications checked.
-- [ ] No surrogate/provisional/proxy numerics added.
-- [ ] Gate evidence non-deferral checked.
+- [x] Contract-first sequence followed.
+- [x] Guard/failure posture documented.
+- [x] Symbol/unit governance updated where needed.
+- [x] BEI / profile implications checked.
+- [x] No surrogate/provisional/proxy numerics added.
+- [x] Gate evidence non-deferral checked.
+
+Notes: D10 amended the contract before accepting the HOLD and did not modify
+production kernel behavior. The only executable change is D-val harness
+resolution control for Case 4.

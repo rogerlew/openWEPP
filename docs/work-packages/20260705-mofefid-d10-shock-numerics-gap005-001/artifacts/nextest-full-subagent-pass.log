@@ -1,0 +1,13 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.20s
+────────────
+ Nextest run ID 1377a309-72f2-4725-bfe2-57572bbd5e78 with nextest profile: full
+    Starting 1363 tests across 163 binaries (1 test skipped)
+        SLOW [> 90.000s] (─────────) openwepp::laned_shadow_h2637 h2637_executed_vector_shadow_on_off
+        SLOW [> 90.000s] (─────────) openwepp::snowdensity05e_melt_adjudication coe_melt_snowbench_runs_both_models_as_diagnostic_only
+        SLOW [>180.000s] (─────────) openwepp::laned_shadow_h2637 h2637_executed_vector_shadow_on_off
+        SLOW [>270.000s] (─────────) openwepp::laned_shadow_h2637 h2637_executed_vector_shadow_on_off
+────────────
+     Summary [ 596.517s] 1363 tests run: 1363 passed (2 slow), 1 skipped
+real 597.57
+user 1176.16
+sys 328.96

@@ -361,17 +361,18 @@ validation surface:
 | Seq | Proposed package | Closure slice | Why this boundary | Exit / handoff |
 |---|---|---|---|---|
 | D9 | `20260705-mofefid-d9-dval-disposition-001` | Close the non-numerics pieces of `INV-OFEROUTE-011`: re-run/adjudicate Cases 1-3 with the D8 corrections, execute the deferred Zone 1/Zone 2 taxonomy, and write the exact acceptance surface for Case 4. | This is validation/adjudication, not production wiring. It should not be bundled with new runtime code. | **EXECUTED-COMPLETE 2026-07-05:** Cases 1-3 retain named non-numerics dispositions, Zone taxonomy is executed and passing, and the remaining blocker is isolated to `GAP-OFEROUTE-005`. |
-| D10 | `20260705-mofefid-d10-shock-numerics-gap005-001` | Close `GAP-OFEROUTE-005`: TVD/shock numerics authority, convergence criteria, Iwagaki Case-4 evidence, and the real-H2637 resolution-sensitivity reproduction. | This is the numerical-method defect class. It must finish before active routing can use H2637 conservation diagnostics as acceptance rather than as a diagnostic bound. | `GAP-OFEROUTE-005` closed or held with primary-source evidence; `INV-OFEROUTE-011` can no longer be blocked by Case 4 / H2637 resolution sensitivity. |
+| D10 | `20260705-mofefid-d10-shock-numerics-gap005-001` | Close `GAP-OFEROUTE-005`: TVD/shock numerics authority, convergence criteria, Iwagaki Case-4 evidence, and the real-H2637 resolution-sensitivity reproduction. | This is the numerical-method defect class. It must finish before active routing can use H2637 conservation diagnostics as acceptance rather than as a diagnostic bound. | **EXECUTED-HOLD-SOURCE-AUTHORITY 2026-07-05:** Case 4 and H2637 were rerun, TVD primaries were acquired/read, and `SC-OFEROUTE-001` rev 18 records that production correction remains blocked until source authority binds the reduced-KWE limiter/handoff and Iwagaki friction mapping. `INV-OFEROUTE-011` remains blocked by Case 4. |
 | D11 | `20260705-mofefid-d11-friction-operand-authority-001` | Close `GAP-OFEROUTE-007`: source, default-authorize, or fail-close the active friction operands (`k_o`, rainfall-intensity `I`, `C_d`, `D_r`, `lambda`, `LAI`, `h_c`) and wire the active operand builder. | The shadow's `k_o=500`, bare-cell, `I=0` first cut is intentionally not production authority for vegetated/rough hillslopes. This is an input-authority package, not a solver package. | Active routing no longer depends on hardcoded shadow friction. Missing unsupported operands fail closed or are covered by a ratified default/sourcing rule. |
 | D12 | `20260705-mofefid-d12-melt-limb-hourly-shape-001` | Close the melt-limb coverage gap: add the snowmelt/routed-liquid hourly source limb to the activation source series or formally prove it is already represented, with exact daily-sum closure to lane-local supply. | The shadow found `10/731` H2637 runoff days with no hourly shape from the two D1 limbs. Uniform fallback is acceptable diagnostic plumbing; it is not an activation source-authority rule. | H2637 activation candidate has no unexplained uniform-shape event days, or any residual class has a contract-backed non-routing disposition. |
 | D13 | `20260705-mofefid-d13-routed-hydrograph-erosion-shape-001` | Amend/implement the ADR-0036 touchpoint: when Lane D routing owns the water path, erosion's hourly sediment substrate consumes the routed hydrograph rather than the DC01 shape authority. | This crosses `SC-OFEROUTE-001`/ADR-0036/`SC-SED-001`; keeping it separate prevents a water-router activation package from silently leaving sediment timed to the old hydrograph. | Active routed-water mode has an erosion hourly-shape consumer-path proof; default-off remains byte-flat. |
 | D14 | `20260705-mofefid-d14-opt-in-production-activation-001` | The opt-in production flip: routing owns the surface-water path, DC01 daily-lump runon is disabled for active lanes, the `INV-OFEROUTE-012` runtime closure hard-fail is live, `latqcc` bypass is included in closure, active outputs are published from the routed path, and subsystem-off protected outputs remain byte-identical. | This is the first package allowed to claim production activation, because D9-D13 remove the known blockers and define the active consumer surfaces. | Opt-in active H2637/real-vector evidence, default-off byte identity, closure hard-fails, manifest provenance, and performance evidence. No default promotion. |
 | D15 | `20260705-mofefid-d15-default-promotion-adjudication-001` | Decide whether the opt-in active router becomes default for any policy slice. | Default activation is a policy/performance/release gate, not the same as opt-in production correctness. | Default promotion, non-promotion, or policy-scoped activation with full endpoint timing and protected-output evidence. |
 
-The ordering is strict at D14: production activation must not start while
-D10-D13 remain open. D10-D13 can run in parallel where their write sets are
-independent (for example D11 and D12), but D14 consumes their dispositions. D15 is
-explicitly outside the opt-in activation package.
+The ordering is strict at D14: production activation must not start while the
+D10 source-authority hold or D11-D13 blockers remain open. D11-D13 can still
+run where their write sets are independent, but D14 consumes their
+dispositions and any D10 follow-on. D15 is explicitly outside the opt-in
+activation package.
 
 ## 7. Sequencing and gates
 
@@ -386,16 +387,17 @@ explicitly outside the opt-in activation package.
 | ✅ | `MOFEFID-B03` SC-SNOWFREEZE-015 melt-aggregation reconciliation | B | **complete 2026-07-02** (branch `worktree-mofefid-b03`): INV-019 already superseded INV-015 for the coexist case — B10 was a missing cross-reference, not a defect; INV-015 text now defers to INV-019 (positive-parts = storage loss, density-gate-grounded). Contract-text only |
 | ✅ | `MOFEFID-C01` authority promotion (metric/envelope/applicability) | C | complete 2026-07-02; envelope ratified |
 | ✅ | `MOFEFID-C03` evaluation + verdict | C | **complete 2026-07-02** (`b2807d5d`): H2637 not-contradicted on all four tiers; FARPOINT01 magnitude flag RESOLVED against field data. Load-bearing finding: event tiers need quickflow separation (INV-SUBHYD-033 rev 14) |
-| ✅ | `MOFEFID-D01` through `MOFEFID-D9` | D | complete through scaffold, contract, friction kernels, KWE/TVD solver, cascade, infiltration coupling, D-val execution, routing-fidelity defect closure, and D-val non-numerics disposition. `INV-OFEROUTE-011` now remains blocked only by the Case-4 / `GAP-OFEROUTE-005` shock/resolution-sensitivity surface. |
+| ✅ | `MOFEFID-D01` through `MOFEFID-D9` | D | complete through scaffold, contract, friction kernels, KWE/TVD solver, cascade, infiltration coupling, D-val execution, routing-fidelity defect closure, and D-val non-numerics disposition. `INV-OFEROUTE-011` remains isolated to Case 4. |
+| ✅ | `MOFEFID-D10` | D | executed-hold-source-authority: Case 4/H2637 rerun, TVD primaries acquired/read, `SC-OFEROUTE-001` rev 18 updated, and `INV-OFEROUTE-011` remains blocked by Case 4 pending source-authority reconciliation. |
 | ✅ | `20260705-mofefid-laned-gap006-subsurface-seam-design-001` | D | `GAP-OFEROUTE-006` design resolved: active seam sources `ui_SCrunf` + hourly excess; `ui_LfCrf` stays subsurface; outlet `latqcc` bypasses the router. |
 | ✅ | `20260705-mofefid-laned-seam-implementation-001` | D | seam machinery + both `INV-OFEROUTE-012` fixtures pass at solver/identity tier; production activation block stands. |
 | ✅ | `20260705-mofefid-laned-activation-increment-001` | D | runtime SHADOW + real-H2637 executed vector merged 2026-07-05; protected outputs byte-identical; review found and fixed the `QOFE` alias trap by moving source depth to `runvol/area`. |
-| ▶️ | D10-D15 sequence in §6.1 | D | remaining production-activation scope, ordered by dependency and authority surface. |
+| ▶️ | D10 follow-on + D11-D15 sequence in §6.1 | D | remaining production-activation scope, ordered by dependency and authority surface; D10 is held on source-authority reconciliation. |
 
 Stop conditions (current): A/B findings are dispositioned and Lane C proceeded
 only after its envelope was ratified. Lane D opt-in production activation
-cannot start until the §6.1 D10-D13 blockers close; Lane D default activation
-is D15 or later.
+cannot start until the §6.1 D10 source-authority hold and D11-D13 blockers
+close; Lane D default activation is D15 or later.
 
 ## 8. Guardrails
 

@@ -1,0 +1,62 @@
+{
+  "generated_at_utc": "2026-07-05T17:05:00Z",
+  "package": "docs/work-packages/20260705-mofefid-d10-shock-numerics-gap005-001",
+  "commands": [
+    {
+      "command": ".venv/bin/python tools/dval/compare_dval.py --case 4 --ko 200 --fig4 references/copyrighted/Papanicolaou2018-supplemental/wrcr23071-sup-0002-2017wr021109-ds01/Figure_4.xlsx --crate-dir .",
+      "exit_code": 0,
+      "status": "PASS-DIAGNOSTIC",
+      "artifacts": [
+        "artifacts/d10-s0-case4-compare-k200.log"
+      ]
+    },
+    {
+      "command": ".venv/bin/python tools/dval/compare_dval.py --case 4 --ko 200 --cells 120 --sample-dt 1.0 --max-dt 0.5 --fig4 references/copyrighted/Papanicolaou2018-supplemental/wrcr23071-sup-0002-2017wr021109-ds01/Figure_4.xlsx --crate-dir .",
+      "exit_code": 0,
+      "status": "PASS-DIAGNOSTIC",
+      "artifacts": [
+        "artifacts/case4-ko200-c120-s1-md05.log"
+      ]
+    },
+    {
+      "command": ".venv/bin/python tools/dval/compare_dval.py --case 4 --ko 200 --cells 240 --sample-dt 0.25 --max-dt 0.25 --fig4 references/copyrighted/Papanicolaou2018-supplemental/wrcr23071-sup-0002-2017wr021109-ds01/Figure_4.xlsx --crate-dir .",
+      "exit_code": 0,
+      "status": "PASS-DIAGNOSTIC",
+      "artifacts": [
+        "artifacts/case4-ko200-c240-s025-md025.log"
+      ]
+    },
+    {
+      "command": ".venv/bin/python tools/dval/compare_dval.py --case 4 --ko 200 --cells 480 --sample-dt 0.125 --max-dt 0.125 --fig4 references/copyrighted/Papanicolaou2018-supplemental/wrcr23071-sup-0002-2017wr021109-ds01/Figure_4.xlsx --crate-dir .",
+      "exit_code": 0,
+      "status": "PASS-DIAGNOSTIC",
+      "artifacts": [
+        "artifacts/case4-ko200-c480-s0125-md0125.log"
+      ]
+    },
+    {
+      "command": ".venv/bin/python tools/dval/compare_dval.py --case 1 --cells 120 --fig4 references/copyrighted/Papanicolaou2018-supplemental/wrcr23071-sup-0002-2017wr021109-ds01/Figure_4.xlsx --crate-dir .",
+      "exit_code": 2,
+      "status": "PASS-NEGATIVE-CONTROL",
+      "artifacts": [
+        "artifacts/case1-resolution-control-rejection.log"
+      ]
+    },
+    {
+      "command": ".venv/bin/python /tmp/d10_case4_resolution_sweep.py",
+      "exit_code": 0,
+      "status": "PASS-DIAGNOSTIC",
+      "artifacts": [
+        "artifacts/d10-s0-case4-resolution-sweeps.json"
+      ]
+    },
+    {
+      "command": "cargo nextest run -p openwepp --test laned_shadow_h2637 h2637_executed_vector_shadow_on_off",
+      "exit_code": 0,
+      "status": "PASS-DIAGNOSTIC",
+      "artifacts": [
+        "artifacts/d10-s0-h2637-shadow-evidence.json"
+      ]
+    }
+  ]
+}

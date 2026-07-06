@@ -1,0 +1,19 @@
+{
+  "h2637_shadow_run": {
+    "on_manifest": "/tmp/laned_shadow_h2637_on_1975141/manifest.json",
+    "off_manifest": "/tmp/laned_shadow_h2637_off_1975141/manifest.json",
+    "on.laned_shadow_present": true,
+    "off.laned_shadow_present": false,
+    "on.days_seen": 731,
+    "on.days_routed": 610,
+    "on.days_uniform_shape": 10,
+    "on.max_router_conservation_rel": 0.6110480463774477,
+    "on.aggregate_router_conservation_rel": 0.10476079527527117,
+    "on.max_supply_reconstruction_rel": 5.636938017290642e-16,
+    "on.total_source_m3": 1754945.2320957396,
+    "on.total_routed_outlet_m3": 1658805.6614024935,
+    "off.execution_days_seen": 731,
+    "on.runtime_selection": "direct-production-executor"
+  },
+  "command": "cargo nextest run -p openwepp --test laned_shadow_h2637 h2637_executed_vector_shadow_on_off"
+}

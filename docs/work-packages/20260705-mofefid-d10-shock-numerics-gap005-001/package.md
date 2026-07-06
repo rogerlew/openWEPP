@@ -1,6 +1,6 @@
 # MOFEFID-D10 - Shock Numerics GAP-005 Closure
 
-Status: **QUEUED** (scaffolded 2026-07-05). Campaign:
+Status: **EXECUTED-HOLD-SOURCE-AUTHORITY** (executed 2026-07-05). Campaign:
 [MOFEFID](../../planning/mofe-fidelity-campaign-strategy.md) Lane D.
 Contract focus: `SC-OFEROUTE-001#GAP-OFEROUTE-005` and the Case-4 residual
 of `SC-OFEROUTE-001#INV-OFEROUTE-011`.
@@ -309,16 +309,27 @@ locally only when package governance permits substitution.
 ## Progress
 
 - [x] 2026-07-05: Package scaffolded from D9 handoff and MOFEFID §6.1 D10 row.
-- [ ] D10-S0 intake and baseline.
-- [ ] D10-S1 source authority.
-- [ ] D10-S2 contract-first decision.
-- [ ] D10-S3 contract-derived tests and pre-implementation gate.
-- [ ] D10-S4 correction or legitimate HOLD.
-- [ ] D10-S5 evidence, review, verification, and closure.
+- [x] D10-S0 intake and baseline.
+- [x] D10-S1 source authority.
+- [x] D10-S2 contract-first decision.
+- [x] D10-S3 contract-derived tests and pre-implementation gate.
+- [x] D10-S4 correction or legitimate HOLD.
+- [x] D10-S5 evidence, review, verification, and closure.
 
 ## Surprises & Discoveries
 
-- None yet. Populate during execution.
+- Garcia-Navarro 1992 and Mingham 2001 are now primary-in-hand, so
+  `GAP-OFEROUTE-001`'s acquisition premise was stale, but the primaries do not
+  close the reduced-KWE/OFE-handoff production-correction authority gap.
+- Iwagaki 1955 primary names Manning `n=0.009`; D-val Case 4 uses `k_o`.
+  D10 rejected converting this into a `k_o` tuning/default route because D11
+  owns friction operand authority.
+- A source-shaped limiter-branch correction trial worsened Case 4 and failed
+  focused `ofe_routing` tests; it was reverted and not carried into the final
+  diff.
+- H2637 reproduces the production-shaped resolution sensitivity, but the
+  shadow block is diagnostics-only and has no D10 parameterized resolution
+  sweep CLI.
 
 ## Decision Log
 
@@ -327,7 +338,24 @@ locally only when package governance permits substitution.
   Rationale: D9 narrowed `INV-OFEROUTE-011` to Case 4 shock numerics, while
   D11-D14 own distinct activation blockers.
   Date/Author: 2026-07-05 / Codex.
+- Decision: Close D10 as `EXECUTED-HOLD-SOURCE-AUTHORITY`, not as a production
+  solver/cascade correction.
+  Rationale: reproduction, ownership, and testability were established, but
+  the authority and safety gates failed: the available primaries do not bind
+  the reduced Papanicolaou KWE limiter/handoff/Iwagaki operand mapping, and a
+  source-shaped limiter trial regressed tests.
+  Date/Author: 2026-07-05 / Codex.
+- Decision: Add Case-4-only resolution controls to the D-val comparator harness.
+  Rationale: D10 needs executable cell/sample/substep diagnostics while keeping
+  Cases 1-3 out of scope.
+  Date/Author: 2026-07-05 / Codex.
 
 ## Outcomes & Retrospective
 
-- Pending execution.
+D10 executed the Case-4 and H2637 evidence surfaces, amended
+`SC-OFEROUTE-001` to revision 18, added Case-4-only D-val resolution controls,
+and recorded a legitimate source-authority HOLD. Case 4 remains the only open
+`INV-OFEROUTE-011` D-val surface, and it remains non-acceptance evidence until
+a follow-on authority reconciliation binds limiter/CFL/dissipation,
+lateral-source/boundary handoff, and Iwagaki friction mapping into named
+tolerances. No production/default activation or D11-D13 work was performed.
