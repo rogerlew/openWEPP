@@ -543,6 +543,11 @@ later operator explicitly assigns a bounded write set.
   Focused suite 67/67; full workspace suite re-run recorded in
   gate-results. Evidence: `artifacts/review-response-claude.md`.
 
+- [x] 2026-07-06: Codex re-check at `2b8ba48d`: **no remaining findings**
+  (independent gates incl. anti-evasion guards; see the gate-results
+  re-check section). D10B is dual-model-accepted and FINAL. Forward queue:
+  D14 endpoint-timing refresh, then the D15 rerun.
+
 ## Surprises & Discoveries
 
 - Pre-execution (2026-07-06, scaffold): Davis 1984 eq. (3.20) — read

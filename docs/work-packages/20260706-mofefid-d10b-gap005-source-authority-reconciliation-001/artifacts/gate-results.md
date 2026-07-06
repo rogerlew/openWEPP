@@ -59,3 +59,15 @@ Agent B PASS-WITH-NOTES (notes closed; executional 64/64 confirmation).
 
 Markdown lint: no repo-pinned markdownlint tool exists; `git diff --check`
 clean stands as the docs whitespace gate (as at first closure).
+
+## Codex re-check (2026-07-06, at `2b8ba48d`)
+
+**No remaining findings** — prior blockers confirmed closed. Codex ran
+(attributed): `git diff --check`; `cargo fmt --check`; markdown-doc lint
+on touched docs; focused `d10b_reconciliation` 11/11; focused
+`ofe_routing` 67/67; `cargo clippy -p openwepp-hillslope-orchestrator
+--all-targets -- -D warnings`; the source-level anti-evasion guards
+(`check_authority_suite_antievasion.sh` +
+`auth11_required_suite_obligation_guards_contract` 2/2). Full workspace
+suite not re-run by Codex; the committed review-response gate record
+(1402/1402) stands. D10B is dual-model-accepted and final.
