@@ -77,12 +77,16 @@ only; no simulations run):
   dissipation (`phi = 0`) in smooth/monotone regions (`r >= 0`, including
   `r ≈ 1`) and amplified dissipation (`phi < 0`, so `1 - phi > 1`) at
   extrema — inverted relative to the standard Davis-symmetric-TVD
-  convention (`phi(r) = max(0, min(2r, 1))`, dissipation vanishing as
-  `r → 1`) defined by the sources R-63 itself cites for the scheme (Davis
-  1984; Mingham 2001). First-order smearing everywhere is consistent with
-  the recorded Case-4 signature (late `t_peak` 37.0 s vs 25.98 s, slow
-  10-90% rise, at every resolution), but this is a hypothesis until the
-  Leg-B harness adjudicates it.
+  convention defined by the sources R-63 itself cites for the scheme.
+  **Branch convention confirmed first-hand (2026-07-06, Ran: page render
+  + visual read):** Davis 1984 eq. (3.20), p. 9 of the acquired
+  `19840021490.pdf`, reads `phi(r) = min(2r, 1) if r > 0; 0 if r <= 0` —
+  the exact branch-swap of R-63's printed (11c). The *inconsistency* is
+  therefore primary-adjudicated, not hypothesized; what remains
+  hypothesis-grade is whether the implemented branch is the cause of the
+  recorded Case-4 signature (first-order smearing everywhere is consistent
+  with the late `t_peak` 37.0 s vs 25.98 s and slow 10-90% rise at every
+  resolution, but the Leg-B harness adjudicates causality).
 - **Additional scheme adjudication points.** One-sided single-ratio limiter
   (eq. 11d, `kinematic_wave.rs:449-459`) vs the two-sided per-face form in
   the Davis family; the pre-step-frozen `alpha` evaluation (D14 OPT-1
@@ -128,13 +132,27 @@ re-anchored harness evidence.
   supplies, Manning `n = 0.009`, characteristics solution, experimental
   hydrographs.
 - Garcia-Navarro 1992 (R-81, in hand), Mingham 2001 (R-82, in hand).
-- Acquisition targets from R-63's own reference list, under
-  `references/` copyright governance:
+- Acquired 2026-07-06 (operator), from R-63's own reference list, under
+  `references/` copyright governance; registered as bibliography rows
+  R-102 (Davis) and R-103 (Tseng) on 2026-07-06 (Claude Code); the
+  first-pass rights-log entries remain a D10B-S1 task:
   - Davis, S. F. (1984). *TVD finite difference schemes and artificial
-    viscosity* (Rep. 84). Hampton, VA: NASA Langley Research Center.
-    (US-government report; rights classification per governance.)
-  - Tseng, M. (2010). Kinematic wave computation using an efficient
-    implicit method. *Journal of Hydroinformatics*, 12(3), 329-338.
+    viscosity*. ICASE Report 84-20 / NASA CR-172373. Hampton, VA: NASA
+    Langley Research Center. In hand:
+    `references/copyrighted/19840021490.pdf` (identity verified: title
+    page read) plus a Gemini-converted markdown
+    `references/copyrighted/19840021490.md`. The markdown's load-bearing
+    eq. (3.20) was verified against the rendered PDF page (p. 9) —
+    faithful; other equations used as binding authority must be
+    spot-checked against the PDF before citation (conversion, not
+    primary).
+  - Tseng, M.-H. (2010). Kinematic wave computation using an efficient
+    implicit method. *Journal of Hydroinformatics*, 12(3), 329-338. In
+    hand: `references/copyrighted/Tseng2010_Hydroinformatics.pdf`
+    (identity verified: first page read). Note: the paper validates
+    MacCormack-family KWE schemes against analytical solutions and an
+    experimental measurement — directly relevant precedent for the Leg-B
+    oracle shape.
 - Lighthill & Whitham 1955 (in hand) for kinematic shock fitting
   (Rankine-Hugoniot for the kinematic flux) in the characteristics oracle.
 - A named in-library hydraulics source for the definitional Manning-`n` to
@@ -185,9 +203,10 @@ re-anchored harness evidence.
 
 ### Included
 
-- Acquisition/registration of Davis 1984 and Tseng 2010 (or a recorded
-  acquisition hand-off to the operator if the execution environment lacks
-  connectivity — see Phase D10B-S1).
+- Registration of the acquired Davis 1984 and Tseng 2010 references
+  (bibliography rows, rights classification) and conversion-fidelity
+  spot-checks of `19840021490.md` against the PDF for every equation cited
+  as binding authority.
 - Limiter/CFL/dissipation adjudication: printed (11c) vs the
   Davis/Mingham/Tseng family; one-sided vs two-sided ratios; `alpha` update
   timing; boundary-cell dissipation treatment.
@@ -233,7 +252,9 @@ re-anchored harness evidence.
   `references/copyrighted/Papanicolaou2018.md` (+ PDF and supplemental),
   `references/copyrighted/10.1061@ASCE0733-94291992118@101359.pdf`
   (Garcia-Navarro 1992), `references/copyrighted/mingham2001.pdf`,
-  `references/copyrighted/Lighthill_Whitham_1955_Kinematic_Waves.pdf`.
+  `references/copyrighted/Lighthill_Whitham_1955_Kinematic_Waves.pdf`,
+  `references/copyrighted/19840021490.pdf` (Davis 1984, + `.md` Gemini
+  conversion), `references/copyrighted/Tseng2010_Hydroinformatics.pdf`.
 
 ## Intended Write Set
 
@@ -272,14 +293,16 @@ Protected:
    pre-change metrics still reproduce; build the seam-decomposed
    conservation ledger (solver interior vs boundary cells vs inter-OFE
    handoff) on the H2637 fixture.
-2. **D10B-S1 - Acquisition and scheme adjudication (Leg A).** Acquire
-   Davis 1984 and Tseng 2010 under copyright governance; if the execution
-   environment lacks connectivity, record the exact acquisition list in the
-   worker handoff for the operator and proceed on the in-hand primaries,
-   recording whether Mingham 2001 + Garcia-Navarro 1992 suffice to bind and
-   which points remain Davis/Tseng-confirmatory. Adjudicate the printed
-   (11c) branch, ratio form, `alpha` update timing, CFL posture, and
-   boundary dissipation against the family authority.
+2. **D10B-S1 - Source adjudication (Leg A).**
+   Davis 1984 and Tseng 2010 are in hand (operator acquisition,
+   2026-07-06) and registered as bibliography rows R-102/R-103; record
+   the first-pass rights-log entries. Spot-check
+   `19840021490.md` conversion fidelity against the PDF for
+   every equation cited as binding authority. Adjudicate the printed
+   (11c) branch (Davis eq. 3.20 already confirms the branch-swap;
+   record it contract-side), ratio form (Davis eq. 3.18 is two-sided
+   per-face), `alpha` update timing (Tseng's implicit treatment), CFL
+   posture, and boundary dissipation against the family authority.
 3. **D10B-S2 - Contract-first amendment (Leg B + reclassification).** Amend
    `SC-OFEROUTE-001` before any production edit with the source-authority
    structure and test obligations: re-anchored Case-4 oracle, proposed
@@ -444,8 +467,15 @@ later operator explicitly assigns a bounded write set.
 
 - [x] 2026-07-06: Package scaffolded by Claude Code from the D10 hold, the
   D15 preflight, and the ROADMAP §M / strategy §6.1 D10 hold-lift row.
+- [x] 2026-07-06: Leg-A source acquisition satisfied by the operator
+  (Davis 1984 `19840021490.pdf` + `.md`, Tseng 2010
+  `Tseng2010_Hydroinformatics.pdf`); identities verified and the Davis
+  markdown's eq. (3.20) checked against the rendered PDF page (Claude
+  Code). Registered as bibliography rows R-102/R-103 (2026-07-06, Claude
+  Code); first-pass rights-log entries remain in D10B-S1.
 - [ ] D10B-S0 intake and baseline.
-- [ ] D10B-S1 acquisition and scheme adjudication.
+- [ ] D10B-S1 source adjudication (rights-log entries + scheme
+  adjudication).
 - [ ] D10B-S2 contract-first amendment.
 - [ ] D10B-S3 oracle harness and contract-derived tests.
 - [ ] D10B-S4 correction or legitimate HOLD.
@@ -453,7 +483,16 @@ later operator explicitly assigns a bounded write set.
 
 ## Surprises & Discoveries
 
-(recorded during execution)
+- Pre-execution (2026-07-06, scaffold): Davis 1984 eq. (3.20) — read
+  first-hand from the rendered page 9 of the acquired PDF — states
+  `phi(r) = min(2r, 1) if r > 0; 0 if r <= 0`, the exact branch-swap of
+  R-63's printed (11c). The printed-limiter inconsistency is
+  primary-adjudicated before execution begins; causality for the Case-4
+  signature remains the harness's question.
+- Pre-execution (2026-07-06, scaffold): Tseng 2010 validates its
+  MacCormack-family KWE schemes against analytical solutions and an
+  experimental measurement — published precedent for the Leg-B
+  analytic-oracle acceptance shape.
 
 ## Decision Log
 

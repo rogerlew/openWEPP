@@ -15,9 +15,10 @@ State as of `2026-07-06`:
 - `20260706-mofefid-d10b-gap005-source-authority-reconciliation-001/` —
   SCAFFOLDED: the §6.1 D10 hold-lift. Reconciles the
   `SC-OFEROUTE-001#GAP-OFEROUTE-005` source-authority hold via three legs:
-  (A) bind limiter/CFL/dissipation to the TVD family primaries (Mingham
-  2001 / Garcia-Navarro 1992 in hand; Davis 1984 and Tseng 2010 acquisition
-  targets from R-63's own citation chain); (B) re-anchor Case-4 acceptance
+  (A) bind limiter/CFL/dissipation to the TVD family primaries (all four
+  in hand: Mingham 2001, Garcia-Navarro 1992, and — acquired 2026-07-06
+  from R-63's own citation chain — Davis 1984 and Tseng 2010); (B)
+  re-anchor Case-4 acceptance
   to the Iwagaki 1955 primary (characteristics oracle, experimental
   hydrographs, `n = 0.009` via a named definitional mapping) and demote the
   digitized enhanced-WEPP trace to an ADR-0017 comparator flag; (C)

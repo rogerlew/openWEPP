@@ -1179,3 +1179,23 @@ openWEPP note (2026-05-11):
 **Topic**: Tabulated k₀ laminar friction coefficients by surface type.
 **MOFEFID Lane D role**: coefficients taken from the KINEROS documentation reproduction (Smith 1990, in repo) with R-63 as the usage context.
 **OAR-6 compliance status**: Companion-only.
+
+## R-102: Davis (1984) TVD finite difference schemes and artificial viscosity
+
+**Citation**: Davis, S. F. (1984). *TVD Finite Difference Schemes and Artificial Viscosity*. ICASE Report No. 84-20 / NASA CR-172373. Hampton, VA: Institute for Computer Applications in Science and Engineering, NASA Langley Research Center.
+**Local path**: `references/copyrighted/19840021490.pdf` (identity verified: title page read 2026-07-06). Companion Gemini-converted markdown: `references/copyrighted/19840021490.md` — conversion, not primary; eq. (3.20) verified faithful against the rendered PDF page (p. 9); any other equation cited as binding authority must be spot-checked against the PDF first.
+**Reference quality**: `verified-primary`
+**Distribution status**: NTRS public download (document ID 19840021490); first-pass rights classification pending (D10B-S1).
+**Topic**: Derivation of the symmetric (non-upwind-weighted), parameter-free TVD artificial-dissipation term addable to MacCormack/Lax-Wendroff codes — the family origin of the `Gr = 0.5·Cf·(1−φ)` construction in R-63 eqs. (11a–f) via R-82.
+**MOFEFID Lane D role**: adjudicates the R-63 printed limiter branch for `GAP-OFEROUTE-005` / D10B Leg A: eq. (3.20) (p. 9, read from the rendered page) defines `φ(r) = min(2r, 1) if r > 0; 0 if r ≤ 0` — the exact branch-swap of R-63's printed (11c); eq. (3.18) gives the two-sided per-face dissipation coefficients `K±` relevant to the one-sided-vs-two-sided ratio adjudication.
+**Notes / caveats**: Intake-level annotation. Acquired 2026-07-06 (operator) for `20260706-mofefid-d10b-gap005-source-authority-reconciliation-001`; named in R-63 §2.3's own citation chain, so clean-room-compatible.
+
+## R-103: Tseng (2010) kinematic wave computation, efficient implicit method
+
+**Citation**: Tseng, M.-H. (2010). *Kinematic wave computation using an efficient implicit method*. Journal of Hydroinformatics, 12(3), 329–338. IWA Publishing.
+**Local path**: `references/copyrighted/Tseng2010_Hydroinformatics.pdf` (identity verified: first page read 2026-07-06).
+**Reference quality**: `verified-primary`
+**Distribution status**: IWA Publishing copyright; local restricted cache; first-pass rights classification pending (D10B-S1).
+**Topic**: Finite-difference implicit MacCormack scheme for 1-D kinematic-wave overland/open-channel flow, benchmarked against an explicit MacCormack variant, analytical solutions, and experimental measurement.
+**MOFEFID Lane D role**: R-63 §2.3's named source for the applied TVD-MacCormack KWE computation ("MacCormack, 1969, 1985; Tseng, 2010"); D10B Leg-A authority for the `alpha` update-timing (explicit vs implicit) adjudication, and published precedent for the Leg-B acceptance shape (validating KWE schemes against analytic solutions plus experiment rather than another implementation's trace).
+**Notes / caveats**: Intake-level annotation. Acquired 2026-07-06 (operator) for `20260706-mofefid-d10b-gap005-source-authority-reconciliation-001`; named in R-63 §2.3's own citation chain, so clean-room-compatible.

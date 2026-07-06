@@ -1,10 +1,9 @@
 # D10B Kickoff Prompt
 
 Scope: local repository science-contract/kernel defect-closure task;
-flat-file reads/edits; external connectivity used ONLY for the D10B-S1
-reference acquisition (Davis 1984, Tseng 2010) — if unavailable, record the
-acquisition hand-off and proceed on in-hand primaries per the package phase
-plan.
+flat-file reads/edits only; no external connectivity required (the D10B-S1
+acquisition targets Davis 1984 and Tseng 2010 are already in hand —
+operator acquisition 2026-07-06; paths in package.md In-Scope Authority).
 
 Execution mode: package-end-to-end (default).
 
@@ -54,10 +53,13 @@ On-demand:
   `references/copyrighted/Papanicolaou2018.md` (+ PDF reference list),
   `references/copyrighted/10.1061@ASCE0733-94291992118@101359.pdf`,
   `references/copyrighted/mingham2001.pdf`,
-  `references/copyrighted/Lighthill_Whitham_1955_Kinematic_Waves.pdf`, and
-  acquired Davis 1984 / Tseng 2010 when source provenance is needed.
-  Copyright governance applies; summarize, do not vendor raw rows or long
-  source excerpts.
+  `references/copyrighted/Lighthill_Whitham_1955_Kinematic_Waves.pdf`,
+  `references/copyrighted/19840021490.pdf` (Davis 1984, ICASE 84-20 /
+  NASA CR-172373; `19840021490.md` is a Gemini conversion — spot-check
+  any equation against the PDF before citing it as binding authority),
+  and `references/copyrighted/Tseng2010_Hydroinformatics.pdf` when source
+  provenance is needed. Copyright governance applies; summarize, do not
+  vendor raw rows or long source excerpts.
 
 Required-reading budget: `347440` local bytes for core + triggered
 contract/kernel conditional pre-edit reading, `OK`; map:
@@ -75,8 +77,9 @@ Files:
 
 Task: execute the `GAP-OFEROUTE-005` source-authority reconciliation end to
 end per the package's three legs: (A) bind limiter/CFL/dissipation to the
-TVD family authority (Mingham/Garcia-Navarro in hand; Davis 1984 and
-Tseng 2010 acquisition targets from R-63's own citation chain); (B)
+TVD family authority (all four family primaries in hand: Mingham 2001,
+Garcia-Navarro 1992, Davis 1984, Tseng 2010 — the latter two from R-63's
+own citation chain, acquired 2026-07-06); (B)
 re-anchor Case-4 acceptance to the Iwagaki 1955 primary (characteristics
 oracle + experimental hydrographs + `n = 0.009` via a named definitional
 Manning-to-Darcy mapping) and demote the digitized enhanced-WEPP trace to
@@ -138,8 +141,7 @@ compact metrics, findings, log paths, and package-local artifact text.
 Write access: read-only unless a later operator grants a bounded write set.
 
 Autonomy: execute package phases end-to-end and update required artifacts
-without requesting additional user direction unless hard-blocked (the
-acquisition hand-off is not a hard block; proceed on in-hand primaries).
+without requesting additional user direction unless hard-blocked.
 
 Outputs: update package artifacts/disposition for all completed phases and
 leave no accepted review finding undispositioned.
