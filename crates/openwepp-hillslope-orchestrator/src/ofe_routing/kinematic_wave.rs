@@ -36,8 +36,9 @@ fn is_valid_forcing(value: f64) -> bool {
 
 /// Per-cell space-variant friction + geometry parameters. A single-OFE mesh
 /// with uniform roughness repeats one value across cells; Case 4 varies
-/// `slope` per section.
-#[derive(Debug, Clone, Copy)]
+/// `slope` per section. `PartialEq` identifies MATERIAL discontinuities
+/// (slope/roughness breaks) for the rev-24 dissipation interface rule.
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct CellParameters {
     /// OFE gradient `S_o` (m/m).
     pub slope: f64,
@@ -55,6 +56,14 @@ pub struct CellParameters {
     pub canopy_height_m: f64,
     /// Vegetation drag coefficient `C_d` (may differ from the form `C_d`).
     pub vegetation_drag_coefficient: f64,
+    /// Manning roughness `n` (s m^-1/3); when positive, the friction law is
+    /// the definitional Manning identity `f = 8 g n^2 / h^(1/3)` and the
+    /// Papanicolaou component menu is bypassed. Rev 24
+    /// (`SC-OFEROUTE-001#INV-OFEROUTE-011`, D10B): bound for the Iwagaki
+    /// Case-4 D-val configuration (`n = 0.009`, the primary's own law) so
+    /// oracle and solver run the same closure. Production operand paths
+    /// (D11 `routing_coefficients`) never set this; 0 disables it.
+    pub manning_n: f64,
 }
 
 impl CellParameters {
@@ -69,6 +78,7 @@ impl CellParameters {
             self.leaf_area_index,
             self.canopy_height_m,
             self.vegetation_drag_coefficient,
+            self.manning_n,
         ];
         if fields.iter().any(|v| !v.is_finite() || *v < 0.0) {
             return Err(RoutingError::InvalidCellParameter);
@@ -91,6 +101,24 @@ impl CellParameters {
             leaf_area_index: 0.0,
             canopy_height_m: 0.0,
             vegetation_drag_coefficient: 0.0,
+            manning_n: 0.0,
+        }
+    }
+
+    /// A Manning-law cell (`f = 8 g n^2 / h^(1/3)`): the rev-24 D-val
+    /// Case-4 configuration limb (`friction-mapping-evidence.md`).
+    #[must_use]
+    pub fn manning(slope: f64, manning_n: f64) -> Self {
+        Self {
+            slope,
+            friction_coefficient_ko: 0.0,
+            drag_coefficient: 0.0,
+            element_tip_height_m: 0.0,
+            roughness_concentration: 0.0,
+            leaf_area_index: 0.0,
+            canopy_height_m: 0.0,
+            vegetation_drag_coefficient: 0.0,
+            manning_n,
         }
     }
 
@@ -120,6 +148,13 @@ impl CellParameters {
         unit_discharge_m2_s: f64,
         skin_rain_term: f64,
     ) -> f64 {
+        if self.manning_n > 0.0 {
+            // Rev-24 Manning limb: the definitional identity
+            // `f = 8 g n^2 / h^(1/3)` (wide channel, R = h); no Re/Fr
+            // dependence, so the alpha fixed point converges immediately.
+            let h = flow_depth_m.max(DRY_DEPTH_M);
+            return 8.0 * GRAVITY_M_S2 * self.manning_n * self.manning_n / h.cbrt();
+        }
         let re = reynolds_number(unit_discharge_m2_s, KINEMATIC_VISCOSITY_M2_S);
         let fr = froude_number(unit_discharge_m2_s, flow_depth_m, GRAVITY_M_S2);
         let skin = skin_resistance_with_rain_term(skin_rain_term, self.friction_coefficient_ko, re);
@@ -252,6 +287,22 @@ pub struct MassBalance {
     /// arising as small negative-depth excursions are clamped at the wetting
     /// front during the transient. Surfaced so conservation is auditable.
     pub positivity_clamp_m2: f64,
+    /// Scheme-actual upstream injection. Post-rev-24 BOTH sweeps carry
+    /// `q_up` at the top face, so this equals `inflow_m2` by construction
+    /// (booked-equals-actual identity surface; pre-rev-24 it exposed the
+    /// `0.5 (q_up + q_0)` mismatch).
+    pub scheme_inflow_m2: f64,
+    /// D10B diagnostic: the DISCRETE SCHEME's actual downstream boundary
+    /// outflow, `0.5 (q_ghost + q_pred_out) dt` per step, where `q_ghost` is
+    /// the predictor's extrapolated outflow ghost and `q_pred_out` the
+    /// corrector's outlet predictor flux. Compare against `outflow_m2` (the
+    /// booked committed-state trapezoid) to expose the outflow mismatch.
+    pub scheme_outflow_m2: f64,
+    /// D10B diagnostic: net mass injected by the TVD dissipation term per
+    /// step, `[gr_{n-2} (h_{n-1}-h_{n-2}) - gr_0 (h_1-h_0)] dx`. The
+    /// cell-indexed TVD application exempts boundary cells, so its
+    /// telescoping sum does NOT vanish; this books the leak explicitly.
+    pub tvd_boundary_leak_m2: f64,
 }
 
 impl MassBalance {
@@ -283,6 +334,30 @@ pub struct RoutingResult {
     pub time_to_peak_s: f64,
     /// Max Courant number observed (CFL evidence; must stay <= 1).
     pub max_courant: f64,
+    /// D10B (rev 24): max single-step increase of the spatial total
+    /// variation of the flux `q` over HOMOGENEOUS steps (zero rainfall
+    /// excess and zero upstream inflow), measured over uniform-material
+    /// faces (the domain of the TVD theory; material-interface transients
+    /// are recorded separately by validation). Must stay at numerical
+    /// noise for a TVD scheme.
+    pub max_homogeneous_tv_increase_m2_s: f64,
+    /// D10B (rev 24, conservative handoff): per-sample-bin ACTUAL outlet
+    /// outflow mass (m^2 per unit width), bin k covering
+    /// `[k sample_dt, (k+1) sample_dt)` (last bin clipped to the window).
+    /// Sums exactly to `mass_balance.outflow_m2`; the cascade handoff
+    /// injects this series (piecewise-constant rate) so inter-OFE transfer
+    /// conserves the scheme's actual discharge at ANY sample resolution.
+    /// The instantaneous `hydrograph` remains the shape/metrics surface.
+    pub outlet_bin_outflow_m2: Vec<f64>,
+    /// The bin width (s) for `outlet_bin_outflow_m2` (= the run's
+    /// `sample_dt_s`).
+    pub outlet_bin_dt_s: f64,
+    /// Per-bin coverage spans (s): equal to `outlet_bin_dt_s` for full
+    /// bins; the final bin's span is the actual covered remainder when
+    /// `end_time_s` is not a multiple of the bin width (Review-B M3 — the
+    /// handoff integrates the final bin at `mass/span` over its covered
+    /// interval so no mass is stranded past `end_time_s`).
+    pub outlet_bin_spans_s: Vec<f64>,
 }
 
 /// Error conditions that fail closed (INV-OFEROUTE-005/007).
@@ -310,6 +385,8 @@ pub struct KinematicWaveSolver {
     depth_m: Vec<f64>,
     discharge_m2_s: Vec<f64>,
     scratch: StepScratch,
+    /// D10B TV diagnostic accumulator (reset per `run`).
+    max_tv_increase_m: f64,
 }
 
 /// Per-step workspace reused across steps (D14 OPT-2: was 8 `Vec`
@@ -320,6 +397,15 @@ struct StepScratch {
     /// step by the run loop; reused by dt selection, Courant evidence, and
     /// the step math).
     alpha: Vec<f64>,
+    /// Per-cell TRUE kinematic celerity `dq/dh` at the pre-step state
+    /// (rev 24): for depth-dependent friction the equilibrium celerity
+    /// exceeds the frozen-alpha `1.5 alpha h^0.5` (Manning `(5/3) q/h`,
+    /// laminar `k_o/Re` limb `3 q/h`), and CFL/dissipation must be
+    /// governed by the true wave speed — the D10B S4 evidence showed the
+    /// frozen-alpha estimate running the scheme at true Courant ~1.8 on
+    /// the laminar limb (latent instability formerly masked by the
+    /// inverted limiter's blanket dissipation).
+    celerity: Vec<f64>,
     v: Vec<f64>,
     h_pred: Vec<f64>,
     q_pred: Vec<f64>,
@@ -333,6 +419,7 @@ impl StepScratch {
     fn new(cell_count: usize) -> Self {
         Self {
             alpha: vec![0.0; cell_count],
+            celerity: vec![0.0; cell_count],
             v: vec![0.0; cell_count],
             h_pred: vec![0.0; cell_count],
             q_pred: vec![0.0; cell_count],
@@ -344,67 +431,129 @@ impl StepScratch {
     }
 }
 
-/// Outlet-hydrograph sampler: linear interpolation of the outlet state onto
-/// the `sample_dt_s` grid within each solver step (D8-2 sampling rule).
-struct SampleRecorder {
-    hydrograph: Vec<HydrographSample>,
-    next_sample_s: f64,
+/// Outlet-hydrograph accumulator (rev 24, D10B): per-sample-bin
+/// time-averages of the BOUNDARY FLUX (the scheme's actual discharge —
+/// the surface the mass ledger books and the cascade handoff conserves)
+/// and of the outlet-cell depth. The hydrograph sample for bin `k` is
+/// stamped at the bin midpoint with the bin-mean values (a discharge
+/// gauge reading at the chosen cadence). This replaces the pre-rev-24
+/// instantaneous committed-state sampler: the committed last-cell state
+/// carries an O(dx)-registration and a confined, zero-net-mass boundary
+/// limit cycle that must not pollute the exported hydrograph.
+struct BinRecorder {
+    flux_bins_m2: Vec<f64>,
+    stage_bins_ms: Vec<f64>,
+    span_bins_s: Vec<f64>,
     sample_dt_s: f64,
-    end_time_s: f64,
 }
 
-impl SampleRecorder {
+impl BinRecorder {
     fn new(sample_dt_s: f64, end_time_s: f64) -> Self {
-        // record initial (dry) sample
-        let hydrograph = vec![HydrographSample {
+        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+        let capacity = ((end_time_s / sample_dt_s).ceil() as usize).saturating_add(1);
+        Self {
+            flux_bins_m2: Vec::with_capacity(capacity),
+            stage_bins_ms: Vec::with_capacity(capacity),
+            span_bins_s: Vec::with_capacity(capacity),
+            sample_dt_s,
+        }
+    }
+
+    /// Apportion one step's outflow mass and outlet stage across the
+    /// sample bins it spans, pro-rata by time overlap.
+    ///
+    /// Review-B M1: the loop iterates the INTEGER bin index (guaranteed
+    /// progress) instead of re-deriving `k = floor(t/bin_dt)` from a
+    /// floating-point bin boundary — the latter has zero-progress
+    /// witnesses (e.g. `sample_dt = 0.003` at `t = 0.147`) that hang the
+    /// process.
+    fn record_step(&mut self, t_before: f64, dt: f64, outflow_m2: f64, outlet_depth_m: f64) {
+        let sample_span = profile::span_start();
+        let step_end = t_before + dt;
+        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+        let mut k = ((t_before / self.sample_dt_s).floor().max(0.0)) as usize;
+        loop {
+            #[allow(clippy::cast_precision_loss)]
+            let bin_start = k as f64 * self.sample_dt_s;
+            let bin_end = bin_start + self.sample_dt_s;
+            let lo = bin_start.max(t_before);
+            let hi = bin_end.min(step_end);
+            if hi > lo {
+                if k >= self.flux_bins_m2.len() {
+                    self.flux_bins_m2.resize(k + 1, 0.0);
+                    self.stage_bins_ms.resize(k + 1, 0.0);
+                    self.span_bins_s.resize(k + 1, 0.0);
+                }
+                let overlap = hi - lo;
+                self.flux_bins_m2[k] += outflow_m2 * overlap / dt;
+                self.stage_bins_ms[k] += outlet_depth_m * overlap;
+                self.span_bins_s[k] += overlap;
+            }
+            if bin_end >= step_end {
+                break;
+            }
+            k += 1;
+        }
+        profile::end_solver_sample(sample_span);
+    }
+
+    /// Build the exported hydrograph: bin-mean flux/stage at bin midpoints
+    /// (initial dry sample at t = 0), plus the conservative flux-bin
+    /// series (with per-bin coverage spans) for the handoff.
+    ///
+    /// Review-B M2: transient NEGATIVE per-bin outflow can occur at
+    /// front-arrival on a dry outlet (the predictor's telescoped boundary
+    /// attribution `2 q_{n-1} - q_{n-2}` dips negative for a step-scale
+    /// interval while the ledger total stays exact). The bin series is
+    /// redistributed FORWARD to non-negative values with the exact total
+    /// preserved (a deficit is carried into subsequent bins); a
+    /// pathological terminal deficit (physically unexpected: total
+    /// outflow is non-negative) is folded into the last covered bin so
+    /// the series ALWAYS sums exactly to the booked outflow.
+    fn finish(self) -> (Vec<HydrographSample>, Vec<f64>, Vec<f64>) {
+        let mut flux_bins = self.flux_bins_m2;
+        let mut carry = 0.0_f64;
+        let mut last_covered = None;
+        for (k, v) in flux_bins.iter_mut().enumerate() {
+            if self.span_bins_s[k] <= 0.0 {
+                continue;
+            }
+            last_covered = Some(k);
+            *v += carry;
+            if *v < 0.0 {
+                carry = *v;
+                *v = 0.0;
+            } else {
+                carry = 0.0;
+            }
+        }
+        if carry < 0.0 {
+            if let Some(k) = last_covered {
+                flux_bins[k] += carry;
+            }
+        }
+        let mut hydrograph = Vec::with_capacity(flux_bins.len() + 1);
+        hydrograph.push(HydrographSample {
             time_s: 0.0,
             outlet_unit_discharge_m2_s: 0.0,
             outlet_depth_m: 0.0,
-        }];
-        Self {
-            hydrograph,
-            next_sample_s: sample_dt_s,
-            sample_dt_s,
-            end_time_s,
-        }
-    }
-
-    /// Record all samples crossed by the step `[t_before, t]`, interpolating
-    /// between the pre-step and post-step outlet state.
-    fn record_step(&mut self, t_before: f64, t: f64, dt: f64, outlet: StepOutletSpan) {
-        if !(self.next_sample_s <= t + 1.0e-12 && self.next_sample_s <= self.end_time_s) {
-            return;
-        }
-        let sample_span = profile::span_start();
-        let mut samples_recorded = 0_u64;
-        while self.next_sample_s <= t + 1.0e-12 && self.next_sample_s <= self.end_time_s {
-            let frac = if dt > 0.0 {
-                ((self.next_sample_s - t_before) / dt).clamp(0.0, 1.0)
-            } else {
-                1.0
-            };
-            let q_sample = outlet.q_before + frac * (outlet.q_out - outlet.q_before);
-            let h_sample = outlet.h_before + frac * (outlet.h_out - outlet.h_before);
-            self.hydrograph.push(HydrographSample {
-                time_s: self.next_sample_s,
-                outlet_unit_discharge_m2_s: q_sample,
-                outlet_depth_m: h_sample,
+        });
+        for (k, flux_m2) in flux_bins.iter().enumerate() {
+            let span = self.span_bins_s[k];
+            if span <= 0.0 {
+                continue;
+            }
+            #[allow(clippy::cast_precision_loss)]
+            let t_mid = k as f64 * self.sample_dt_s + 0.5 * span;
+            hydrograph.push(HydrographSample {
+                time_s: t_mid,
+                outlet_unit_discharge_m2_s: flux_m2 / span,
+                outlet_depth_m: self.stage_bins_ms[k] / span,
             });
-            self.next_sample_s += self.sample_dt_s;
-            samples_recorded += 1;
         }
-        profile::count_hydrograph_samples(samples_recorded);
-        profile::end_solver_sample(sample_span);
+        profile::count_hydrograph_samples(hydrograph.len() as u64);
+        (hydrograph, flux_bins, self.span_bins_s)
     }
-}
-
-/// Pre-/post-step outlet state for sample interpolation.
-#[derive(Clone, Copy)]
-struct StepOutletSpan {
-    q_before: f64,
-    h_before: f64,
-    q_out: f64,
-    h_out: f64,
 }
 
 impl KinematicWaveSolver {
@@ -417,6 +566,7 @@ impl KinematicWaveSolver {
             depth_m: vec![0.0; n],
             discharge_m2_s: vec![0.0; n],
             scratch: StepScratch::new(n),
+            max_tv_increase_m: 0.0,
         }
     }
 
@@ -424,38 +574,47 @@ impl KinematicWaveSolver {
         self.depth_m.iter().sum::<f64>() * self.mesh.cell_length_m
     }
 
-    /// Evaluate `alpha` for every cell at the pre-step state into the step
-    /// scratch (D14 OPT-1: single evaluation per cell per step), returning
-    /// the max wet-cell celerity `c = 1.5 alpha h^0.5` for CFL dt selection
-    /// (eq. 12).
+    /// Evaluate `alpha` and the TRUE kinematic celerity for every cell at
+    /// the pre-step state into the step scratch, returning the max
+    /// wet-cell celerity for CFL dt selection (eq. 12, rev 24).
+    ///
+    /// The true celerity is `dq/dh` along the equilibrium
+    /// `q(h) = alpha(h, q) h^1.5`, evaluated numerically through the same
+    /// friction fixed point at a perturbed depth. This costs one extra
+    /// alpha evaluation per wet cell per step (D14 budget note recorded in
+    /// the package evidence); the frozen-alpha expression
+    /// `1.5 alpha h^0.5` under-estimates the wave speed for
+    /// depth-dependent friction (by 2x on the laminar `k_o/Re` limb) and
+    /// let the scheme run at true Courant well above 1.
     fn prepare_step_alpha(&mut self, skin_rain_term: f64) -> f64 {
         let mut max_celerity = 0.0_f64;
+        let mut evaluations = 0_u64;
         for (i, cell) in self.mesh.cells.iter().enumerate() {
             let h = self.depth_m[i];
             let alpha = cell.alpha(h, self.discharge_m2_s[i], skin_rain_term);
             self.scratch.alpha[i] = alpha;
+            evaluations += 1;
             if h <= DRY_DEPTH_M {
+                self.scratch.celerity[i] = 0.0;
                 continue;
             }
-            let celerity = DEPTH_DISCHARGE_EXPONENT * alpha * h.sqrt();
+            let q = alpha * h.powf(DEPTH_DISCHARGE_EXPONENT);
+            let dh = (1.0e-3 * h).max(1.0e-8);
+            let h2 = h + dh;
+            let alpha2 = cell.alpha(h2, q, skin_rain_term);
+            evaluations += 1;
+            let q2 = alpha2 * h2.powf(DEPTH_DISCHARGE_EXPONENT);
+            // Guarded true celerity: never below the frozen-alpha floor
+            // (the discrete flux actually advanced this step).
+            let frozen = DEPTH_DISCHARGE_EXPONENT * alpha * h.sqrt();
+            let celerity = ((q2 - q) / dh).max(frozen);
+            self.scratch.celerity[i] = celerity;
             if celerity > max_celerity {
                 max_celerity = celerity;
             }
         }
-        profile::count_alpha_evaluations(self.mesh.cell_count() as u64);
+        profile::count_alpha_evaluations(evaluations);
         max_celerity
-    }
-
-    /// Flux-limiter ratio `r_i` (eq. 11d) with a guarded denominator.
-    fn limiter_ratio(h: &[f64], i: usize) -> f64 {
-        if i == 0 || i + 1 >= h.len() {
-            return 1.0;
-        }
-        let denom = h[i + 1] - h[i];
-        if denom.abs() <= DRY_DEPTH_M {
-            return 1.0; // treat as monotone (phi -> 0, standard dissipation)
-        }
-        (h[i] - h[i - 1]) / denom
     }
 
     /// `Cf_i` (eq. 11e) from the local Courant number.
@@ -467,14 +626,25 @@ impl KinematicWaveSolver {
         }
     }
 
-    /// `phi_i` flux limiter (eq. 11c as stated in R-63): `min(2 r, 1)` for
-    /// `r < 0`, else `0`.
+    /// Flux limiter `phi(r) = min(2r, 1) for r > 0; 0 for r <= 0` — the
+    /// source-correct branch (Davis 1984 eq. 3.20; Mingham 2001 eq. 31f).
+    /// R-63's printed (11c) swaps the branch conditions and is adjudicated
+    /// a transcription error (`SC-OFEROUTE-001` rev 24,
+    /// REF-OFEROUTE-TVD-MACCORMACK): dissipation must VANISH in smooth
+    /// monotone regions (`r -> 1 => phi -> 1 => G -> 0`) and act at
+    /// extrema (`r <= 0 => phi = 0 => full G`).
     fn phi(ratio: f64) -> f64 {
-        if ratio < 0.0 {
+        if ratio > 0.0 {
             (2.0 * ratio).min(1.0)
         } else {
             0.0
         }
+    }
+
+    /// Face dissipation coefficient `G(r) = 0.5 Cf(Cr) (1 - phi(r))`
+    /// (Mingham eq. 28b / Davis eqs. 3.17-3.18).
+    fn g_coeff(courant: f64, ratio: f64) -> f64 {
+        0.5 * Self::cf(courant) * (1.0 - Self::phi(ratio))
     }
 
     /// Advance one TVD-MacCormack step of size `dt` (eqs. 8-14). Returns the
@@ -483,27 +653,23 @@ impl KinematicWaveSolver {
     /// Preconditions owned by the run loop (D14 OPT-1): `scratch.alpha`
     /// holds the pre-step per-cell alpha values and the rainfall intensity
     /// was validated before they were computed.
+    #[allow(clippy::too_many_lines)]
     fn step(
         &mut self,
         time_s: f64,
         dt: f64,
+        q_up: f64,
         forcing: &Forcing<'_>,
         mass: &mut MassBalance,
-    ) -> Result<(f64, f64), RoutingError> {
+    ) -> Result<(f64, f64, f64), RoutingError> {
         let n = self.mesh.cell_count();
         let dx = self.mesh.cell_length_m;
-        let q_up = (forcing.upstream_inflow_m2_s)(time_s);
-        // Rainfall excess, intensity, and upstream inflow are physically
-        // non-negative; a non-finite OR negative value is invalid input and
-        // fails closed (it is not silently normalized to zero). Intensity is
-        // validated by the run loop before the alpha evaluation.
-        if !is_valid_forcing(q_up) {
-            return Err(RoutingError::InvalidForcing);
-        }
         let mut clamp_injected_m2 = 0.0_f64;
 
         // Rainfall excess for this step (per-cell alpha is already in the
-        // step scratch).
+        // step scratch). Rainfall excess is physically non-negative; a
+        // non-finite OR negative value is invalid input and fails closed.
+        // Intensity and q_up are validated by the run loop.
         for i in 0..n {
             let v_raw = (forcing.rainfall_excess_m_s)(i, time_s);
             if !is_valid_forcing(v_raw) {
@@ -512,29 +678,43 @@ impl KinematicWaveSolver {
             self.scratch.v[i] = v_raw;
         }
 
-        // Predictor (eqs. 8-9): forward flux difference; upstream flux = q_up.
+        // Predictor (eqs. 8-9, rev-24 boundary closure): forward flux
+        // difference in the interior; the TOP face carries the prescribed
+        // inflow flux `q_up` in BOTH sweeps so the discrete injection
+        // equals the physical BC exactly; the LAST cell is a pure DONOR
+        // cell (true upwind backward difference `q_{n-1} - q_{n-2}`, its
+        // outflow face flux = its own kinematic flux). The upwind outflow
+        // closure is steady-exact (the backward difference reproduces
+        // `dq/dx = v` at discrete steady state) and, unlike the pre-rev-24
+        // linear-extrapolation ghost, has no feedback gain — the ghost
+        // both over-discharged (unbooked, the S0 ledger's dominant term)
+        // and sustained a period-2 boundary limit cycle.
         for i in 0..n {
-            let q_i = self.discharge_m2_s[i];
-            let q_ip1 = if i + 1 < n {
-                self.discharge_m2_s[i + 1]
-            } else if n >= 2 {
-                // downstream outflow ghost: linear extrapolation so the
-                // predictor actually advects mass out of the last cell
-                // (a zero-gradient ghost zeros the outlet flux difference and
-                // under-accounts boundary outflow -> spurious storage). Floor
-                // at 0; kinematic information travels downstream only.
-                (2.0 * self.discharge_m2_s[i] - self.discharge_m2_s[i - 1]).max(0.0)
+            let (q_lo, q_hi) = if i == 0 {
+                (q_up, self.discharge_m2_s[usize::from(n > 1)])
+            } else if i + 1 < n {
+                (self.discharge_m2_s[i], self.discharge_m2_s[i + 1])
             } else {
-                self.discharge_m2_s[i]
+                (self.discharge_m2_s[n - 2], self.discharge_m2_s[n - 1])
             };
-            let h_new = self.depth_m[i] - (dt / dx) * (q_ip1 - q_i) + self.scratch.v[i] * dt;
+            let h_new = self.depth_m[i] - (dt / dx) * (q_hi - q_lo) + self.scratch.v[i] * dt;
             if h_new < 0.0 {
-                clamp_injected_m2 += (-h_new) * dx;
+                // Stage clamps enter the committed state at half weight
+                // (the commit averages the two stages).
+                clamp_injected_m2 += 0.5 * (-h_new) * dx;
             }
             self.scratch.h_pred[i] = h_new.max(0.0);
             self.scratch.q_pred[i] =
                 self.scratch.alpha[i] * self.scratch.h_pred[i].powf(DEPTH_DISCHARGE_EXPONENT);
         }
+        // Predictor boundary drain (telescoped): the donor difference at
+        // the last cell drains `2 q_{n-1} - q_{n-2}` through the domain
+        // boundary per the flux-difference sum (for n = 1, `q_0`).
+        let pred_out_face = if n >= 2 {
+            2.0 * self.discharge_m2_s[n - 1] - self.discharge_m2_s[n - 2]
+        } else {
+            self.discharge_m2_s[0]
+        };
 
         // Corrector (eq. 10): backward flux difference; upstream ghost flux =
         // q_up entering cell 0.
@@ -547,29 +727,84 @@ impl KinematicWaveSolver {
             let h_new = self.depth_m[i] - (dt / dx) * (self.scratch.q_pred[i] - q_im1)
                 + self.scratch.v[i] * dt;
             if h_new < 0.0 {
-                clamp_injected_m2 += (-h_new) * dx;
+                clamp_injected_m2 += 0.5 * (-h_new) * dx;
             }
             self.scratch.h_corr[i] = h_new.max(0.0);
         }
 
-        // Average + TVD dissipation (eqs. 11a-e, 13). Gr uses the local
-        // Courant number from the pre-step state.
+        // Average (eq. 13 first half).
         for i in 0..n {
             self.scratch.averaged[i] = 0.5 * (self.scratch.h_pred[i] + self.scratch.h_corr[i]);
         }
+
+        // TVD dissipation, rev-24 FACE-BASED two-sided form (Mingham
+        // eqs. 28b/31a/31g; Davis eqs. 3.17-3.18): for each interior face
+        // f (between cells f and f+1),
+        //   D_f = [G(Cr_f, r+_f) + G(Cr_{f+1}, r-_{f+1})] (h_{f+1} - h_f)
+        // with r+_f = dh_{f-1/2}/dh_{f+1/2} and
+        // r-_{f+1} = dh_{f+3/2}/dh_{f+1/2}; a ratio whose stencil leaves
+        // the domain contributes no dissipation from that side. Cell i
+        // receives D_i - D_{i-1} with ZERO flux at the domain-boundary
+        // faces, so the term telescopes exactly (INV-OFEROUTE-006 rev 24).
+        // Face coefficients are stored in scratch.gr[f] for f in 0..n-1.
+        // Material-interface faces (cell PARAMETERS differ across the face
+        // — the section/slope breaks) carry a PHYSICAL equilibrium depth
+        // jump; the uniform-coefficient Davis/Mingham analysis does not
+        // apply there and h-based dissipation would diffuse a legitimate
+        // discontinuity. Such faces carry zero dissipative flux
+        // (conservative), and ratio stencils reaching across them
+        // contribute no dissipation from that side. NOTE: the detector
+        // compares MATERIAL parameters, not the state-dependent alpha
+        // (alpha varies per cell under depth-dependent friction even on
+        // uniform material).
+        let is_break = |f: usize| -> bool { self.mesh.cells[f] != self.mesh.cells[f + 1] };
+        for f in 0..n.saturating_sub(1) {
+            let dh_face = self.depth_m[f + 1] - self.depth_m[f];
+            if dh_face.abs() <= DRY_DEPTH_M || is_break(f) {
+                self.scratch.gr[f] = 0.0;
+                continue;
+            }
+            let courant_at = |i: usize| self.scratch.celerity[i] * dt / dx;
+            let r_plus_avail = f >= 1 && !is_break(f - 1);
+            let r_minus_avail = f + 2 < n && !is_break(f + 1);
+            let r_plus = if r_plus_avail {
+                Some((self.depth_m[f] - self.depth_m[f - 1]) / dh_face)
+            } else {
+                None
+            };
+            let r_minus = if r_minus_avail {
+                Some((self.depth_m[f + 2] - self.depth_m[f + 1]) / dh_face)
+            } else {
+                None
+            };
+            // Boundary-adjacent faces: a side whose smoothness-monitor
+            // stencil leaves the domain (or crosses a material break)
+            // mirrors the AVAILABLE side's ratio, so boundary-adjacent
+            // oscillations are still detected and damped (limiter-stencil
+            // ghost extension); a face with neither monitor carries no
+            // dissipation.
+            let g_plus = match (r_plus, r_minus) {
+                (Some(r), _) | (None, Some(r)) => Self::g_coeff(courant_at(f), r),
+                (None, None) => 0.0,
+            };
+            let g_minus = match (r_minus, r_plus) {
+                (Some(r), _) | (None, Some(r)) => Self::g_coeff(courant_at(f + 1), r),
+                (None, None) => 0.0,
+            };
+            self.scratch.gr[f] = (g_plus + g_minus) * dh_face;
+        }
+        // Literal telescoping check value (diagnostic; ~0 by construction).
+        let mut tvd_leak_m2 = 0.0_f64;
         for i in 0..n {
-            let h = self.depth_m[i];
-            let celerity = DEPTH_DISCHARGE_EXPONENT * self.scratch.alpha[i] * h.max(0.0).sqrt();
-            let courant = celerity * dt / dx;
-            let ratio = Self::limiter_ratio(&self.depth_m, i);
-            self.scratch.gr[i] = 0.5 * Self::cf(courant) * (1.0 - Self::phi(ratio));
+            let d_hi = if i + 1 < n { self.scratch.gr[i] } else { 0.0 };
+            let d_lo = if i >= 1 { self.scratch.gr[i - 1] } else { 0.0 };
+            tvd_leak_m2 += (d_hi - d_lo) * dx;
         }
         for i in 0..n {
-            let tvd = if i == 0 || i + 1 >= n {
-                0.0
-            } else {
-                self.scratch.gr[i] * (self.depth_m[i + 1] - self.depth_m[i])
-                    - self.scratch.gr[i - 1] * (self.depth_m[i] - self.depth_m[i - 1])
+            let tvd = {
+                let d_hi = if i + 1 < n { self.scratch.gr[i] } else { 0.0 };
+                let d_lo = if i >= 1 { self.scratch.gr[i - 1] } else { 0.0 };
+                d_hi - d_lo
             };
             let h_new = self.scratch.averaged[i] + tvd;
             if !h_new.is_finite() {
@@ -585,9 +820,39 @@ impl KinematicWaveSolver {
             self.scratch.h_next[i] = h_new.max(0.0);
         }
 
+        // D10B TV diagnostic (rev 24): on homogeneous steps (no forcing
+        // anywhere) the committed step must not increase the spatial total
+        // variation of the FLUX `q = alpha h^1.5` (continuous across
+        // material interfaces, unlike `h`, whose equilibrium jumps at
+        // slope breaks make TV(h) the wrong functional for
+        // variable-coefficient KWE). Both sides use the frozen per-step
+        // alpha (apples-to-apples within the step). Source terms
+        // legitimately change TV and are excluded. Measured pre-commit.
+        let homogeneous = q_up == 0.0 && self.scratch.v.iter().all(|v| *v == 0.0);
+        if homogeneous {
+            let q_at = |h: &[f64], i: usize| -> f64 {
+                self.scratch.alpha[i] * h[i].max(0.0).powf(DEPTH_DISCHARGE_EXPONENT)
+            };
+            let mut tv_before = 0.0_f64;
+            let mut tv_after = 0.0_f64;
+            for i in 0..n.saturating_sub(1) {
+                // Uniform-material faces only: the TVD property is a
+                // uniform-coefficient statement; material-interface
+                // transients are adjudicated separately by validation.
+                if self.mesh.cells[i] != self.mesh.cells[i + 1] {
+                    continue;
+                }
+                tv_before += (q_at(&self.depth_m, i + 1) - q_at(&self.depth_m, i)).abs();
+                tv_after +=
+                    (q_at(&self.scratch.h_next, i + 1) - q_at(&self.scratch.h_next, i)).abs();
+            }
+            let increase = (tv_after - tv_before).max(0.0);
+            if increase > self.max_tv_increase_m {
+                self.max_tv_increase_m = increase;
+            }
+        }
+
         // Commit state and recompute discharge (eq. 14).
-        // outflow leaving the last cell over dt = q_out * dt (unit width)
-        let outlet_flux_before = self.discharge_m2_s[n - 1];
         for i in 0..n {
             self.depth_m[i] = self.scratch.h_next[i];
             self.discharge_m2_s[i] =
@@ -597,23 +862,56 @@ impl KinematicWaveSolver {
             }
         }
 
-        // Mass ledger (per unit width): inflow, rain, outflow over dt.
+        // Mass ledger (rev 24: booked = the scheme's ACTUAL boundary
+        // fluxes, Algorithm item 5). Inflow: both sweeps carry `q_up` at
+        // the top face, so the discrete injection is exactly `q_up dt`.
+        // Outflow: predictor face flux = the extrapolated ghost, corrector
+        // face flux = `q_pred[n-1]`; the committed average discharges
+        // their mean.
+        let outflow_actual_m2 = 0.5 * (pred_out_face + self.scratch.q_pred[n - 1]) * dt;
         mass.inflow_m2 += q_up * dt;
         mass.rainfall_excess_m2 += self.scratch.v.iter().sum::<f64>() * dx * dt;
-        // Use the trapezoidal outflow over the step for a stable ledger.
-        let outlet_flux_after = self.discharge_m2_s[n - 1];
-        mass.outflow_m2 += 0.5 * (outlet_flux_before + outlet_flux_after) * dt;
+        mass.outflow_m2 += outflow_actual_m2;
         mass.positivity_clamp_m2 += clamp_injected_m2;
+        // Scheme-actual diagnostics coincide with the booked ledger by
+        // construction post-rev-24; kept as the booked-equals-actual
+        // identity surface (`INV-OFEROUTE-006` rev 24 tests).
+        mass.scheme_inflow_m2 += q_up * dt;
+        mass.scheme_outflow_m2 += outflow_actual_m2;
+        mass.tvd_boundary_leak_m2 += tvd_leak_m2;
 
-        Ok((self.discharge_m2_s[n - 1], self.depth_m[n - 1]))
+        Ok((
+            self.discharge_m2_s[n - 1],
+            self.depth_m[n - 1],
+            outflow_actual_m2,
+        ))
     }
 
     /// Run to `end_time_s`, recording the outlet hydrograph at ~`sample_dt_s`.
     /// `max_dt_s` caps the CFL-adaptive step. Fails closed on CFL/non-finite/
-    /// negative-depth conditions.
+    /// negative-depth conditions. The upstream boundary flux is the
+    /// point-evaluated `forcing.upstream_inflow_m2_s` at each step start.
     pub fn run(
         &mut self,
         forcing: &Forcing<'_>,
+        end_time_s: f64,
+        sample_dt_s: f64,
+        max_dt_s: f64,
+    ) -> Result<RoutingResult, RoutingError> {
+        self.run_with_upstream_integral(forcing, None, end_time_s, sample_dt_s, max_dt_s)
+    }
+
+    /// Rev-24 conservative-handoff entry point (Algorithm item 6): when
+    /// `upstream_integral_m2` is provided (`(t0, t1) -> integral of the
+    /// upstream unit discharge over [t0, t1]`, m^2 per unit width), each
+    /// step's boundary flux is the exact interval MEAN of the upstream
+    /// hydrograph, so the injected mass equals the upstream series'
+    /// integral exactly instead of a left-endpoint point sample.
+    #[allow(clippy::too_many_lines)]
+    pub fn run_with_upstream_integral(
+        &mut self,
+        forcing: &Forcing<'_>,
+        upstream_integral_m2: Option<&dyn Fn(f64, f64) -> f64>,
         end_time_s: f64,
         sample_dt_s: f64,
         max_dt_s: f64,
@@ -635,8 +933,9 @@ impl KinematicWaveSolver {
         }
         let dx = self.mesh.cell_length_m;
         let storage_initial = self.total_storage_m2();
+        self.max_tv_increase_m = 0.0;
         let mut mass = MassBalance::default();
-        let mut recorder = SampleRecorder::new(sample_dt_s, end_time_s);
+        let mut recorder = BinRecorder::new(sample_dt_s, end_time_s);
         let mut t = 0.0_f64;
         let mut peak = 0.0_f64;
         let mut time_to_peak = 0.0_f64;
@@ -669,13 +968,12 @@ impl KinematicWaveSolver {
                 profile::end_solver_cfl(cfl_span);
                 break;
             }
-            // CFL evidence at the chosen dt (reuses the per-cell alphas).
+            // CFL evidence at the chosen dt (true celerity, rev 24).
             for i in 0..self.mesh.cell_count() {
-                let h = self.depth_m[i];
-                if h <= DRY_DEPTH_M {
+                if self.depth_m[i] <= DRY_DEPTH_M {
                     continue;
                 }
-                let courant = DEPTH_DISCHARGE_EXPONENT * self.scratch.alpha[i] * h.sqrt() * dt / dx;
+                let courant = self.scratch.celerity[i] * dt / dx;
                 if courant > max_courant {
                     max_courant = courant;
                 }
@@ -685,30 +983,41 @@ impl KinematicWaveSolver {
             }
             profile::end_solver_cfl(cfl_span);
 
+            // Upstream boundary flux for this step: exact interval mean
+            // when the integral closure is provided (rev 24), else the
+            // point sample. Physically non-negative; fails closed.
+            let q_up = match upstream_integral_m2 {
+                Some(integral) => {
+                    let injected = integral(t, t + dt);
+                    if !is_valid_forcing(injected) {
+                        return Err(RoutingError::InvalidForcing);
+                    }
+                    injected / dt
+                }
+                None => (forcing.upstream_inflow_m2_s)(t),
+            };
+            if !is_valid_forcing(q_up) {
+                return Err(RoutingError::InvalidForcing);
+            }
+
             let t_before = t;
-            let q_before = self.discharge_m2_s[self.mesh.cell_count() - 1];
-            let h_before = self.depth_m[self.mesh.cell_count() - 1];
             let step_span = profile::span_start();
-            let (q_out, h_out) = self.step(t, dt, forcing, &mut mass)?;
+            let (_q_cell_out, h_out, outflow_step_m2) =
+                self.step(t, dt, q_up, forcing, &mut mass)?;
             profile::end_solver_step(step_span);
             profile::count_solver_steps(1);
             t += dt;
 
+            // Rev 24: the exported hydrograph is the bin-mean BOUNDARY
+            // FLUX (the surface the ledger books and the handoff
+            // conserves); the step-mean rate carries the sub-step peak
+            // diagnostic.
+            let q_out = outflow_step_m2 / dt;
             if q_out > peak {
                 peak = q_out;
                 time_to_peak = t;
             }
-            recorder.record_step(
-                t_before,
-                t,
-                dt,
-                StepOutletSpan {
-                    q_before,
-                    h_before,
-                    q_out,
-                    h_out,
-                },
-            );
+            recorder.record_step(t_before, dt, outflow_step_m2, h_out);
 
             guard_steps += 1;
             if guard_steps > max_steps {
@@ -717,12 +1026,17 @@ impl KinematicWaveSolver {
         }
 
         mass.storage_change_m2 = self.total_storage_m2() - storage_initial;
+        let (hydrograph, outlet_bin_outflow_m2, outlet_bin_spans_s) = recorder.finish();
         Ok(RoutingResult {
-            hydrograph: recorder.hydrograph,
+            hydrograph,
             mass_balance: mass,
             peak_unit_discharge_m2_s: peak,
             time_to_peak_s: time_to_peak,
             max_courant,
+            max_homogeneous_tv_increase_m2_s: self.max_tv_increase_m,
+            outlet_bin_outflow_m2,
+            outlet_bin_dt_s: sample_dt_s,
+            outlet_bin_spans_s,
         })
     }
 }
@@ -777,16 +1091,28 @@ mod tests {
         };
         let res = solver.run(&forcing, 3600.0, 10.0, 2.0).expect("run ok");
 
-        // steady-state outlet unit discharge = v * L
+        // Steady-state outlet discharge = v * L. Rev 24 (D10B): the
+        // authoritative steady measure is the BOOKED discharge (the
+        // scheme's actual boundary flux); the exported bin-mean hydrograph
+        // carries a bounded slow boundary ripple at coarse grids
+        // (characterized in the D10B evidence) and gets a looser band.
+        let bins = &res.outlet_bin_outflow_m2;
+        let tail_bins = 60.min(bins.len());
+        let q_booked_tail: f64 = bins[bins.len() - tail_bins..].iter().sum::<f64>()
+            / (res.outlet_bin_dt_s * f64::from(u32::try_from(tail_bins).unwrap_or(u32::MAX)));
+        let q_expected = v * length;
+        assert!(
+            (q_booked_tail - q_expected).abs() / q_expected < 0.005,
+            "booked steady outlet {q_booked_tail} should equal v*L {q_expected}"
+        );
         let q_steady = res
             .hydrograph
             .last()
             .expect("hydrograph")
             .outlet_unit_discharge_m2_s;
-        let q_expected = v * length;
         assert!(
-            (q_steady - q_expected).abs() / q_expected < 0.02,
-            "steady outlet q {q_steady} should approach v*L {q_expected}"
+            (q_steady - q_expected).abs() / q_expected < 0.06,
+            "sampled steady outlet {q_steady} outside the ripple band around v*L {q_expected}"
         );
         // mass conservation (INV-OFEROUTE-006): the scheme conserves exactly
         // once the surfaced positivity-clamp injection is accounted; the raw
@@ -903,12 +1229,12 @@ mod tests {
     }
 
     #[test]
-    fn hydrograph_sampling_interpolates_within_large_solver_steps() {
-        // D8-2: sample times crossed by one solver step must receive the
-        // interpolated outlet value at that sample time, not the step-end
-        // value. A dry-start run takes a large first step when celerity is
-        // zero; the old sampler stamped the same q onto all samples crossed by
-        // that step.
+    fn hydrograph_bins_are_conservative_and_rise_at_bin_scale() {
+        // Rev 24 (D10B, supersedes the D8-2 interpolating-sampler pin):
+        // the exported hydrograph is the bin-mean boundary flux. The bin
+        // series must carry the booked outflow EXACTLY (conservative
+        // resampling), and the rising limb must be visible at bin scale
+        // once solver steps are shorter than the bins.
         let mesh = KinematicWaveMesh::uniform(7.5, 20, CellParameters::bare(0.09, 500.0));
         let mut solver = KinematicWaveSolver::new(mesh);
         let v = 60.0 / 3.6e6;
@@ -920,12 +1246,23 @@ mod tests {
             upstream_inflow_m2_s: &inflow,
             rainfall_intensity_m_s: &intensity,
         };
-        let res = solver.run(&forcing, 20.0, 1.0, 5.0).expect("run ok");
-        let q6 = res.hydrograph[6].outlet_unit_discharge_m2_s;
-        let q10 = res.hydrograph[10].outlet_unit_discharge_m2_s;
+        let res = solver.run(&forcing, 200.0, 1.0, 5.0).expect("run ok");
+        let bin_sum: f64 = res.outlet_bin_outflow_m2.iter().sum();
         assert!(
-            q6 < q10,
-            "interpolated samples should rise within the first wet step: q6={q6}, q10={q10}"
+            (bin_sum - res.mass_balance.outflow_m2).abs()
+                <= 1.0e-12 * res.mass_balance.outflow_m2.max(1.0e-12),
+            "bin series must carry the booked outflow exactly: bins {bin_sum} vs ledger {}",
+            res.mass_balance.outflow_m2
+        );
+        let mid = res.hydrograph[res.hydrograph.len() / 2].outlet_unit_discharge_m2_s;
+        let late = res
+            .hydrograph
+            .last()
+            .expect("hydrograph")
+            .outlet_unit_discharge_m2_s;
+        assert!(
+            mid < late,
+            "rising limb must be visible at bin scale: mid={mid}, late={late}"
         );
     }
 

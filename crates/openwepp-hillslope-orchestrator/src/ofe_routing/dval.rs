@@ -40,6 +40,11 @@ pub struct DvalRun {
     pub max_courant: f64,
     /// Event runoff coefficient (Cases 1-3; `None` for the impermeable flume).
     pub runoff_coefficient: Option<f64>,
+    /// D10B (rev 24): booked TVD boundary-leak mass (m^2 per unit width),
+    /// exposed by the single-OFE Case-4 paths for the mass-neutrality gate.
+    pub diagnostic_tvd_boundary_leak_m2: Option<f64>,
+    /// D10B (rev 24): max homogeneous-step total-variation increase (m^2/s).
+    pub diagnostic_max_homogeneous_tv_increase_m2_s: Option<f64>,
 }
 
 fn mm_h_to_m_s(v: f64) -> f64 {
@@ -108,6 +113,37 @@ pub fn run_iwagaki_with_options(
     sample_dt_s: f64,
     max_dt_s: f64,
 ) -> Result<DvalRun, RoutingError> {
+    run_iwagaki_cells(
+        |slope| CellParameters::bare(slope, ko),
+        cell_count,
+        sample_dt_s,
+        max_dt_s,
+    )
+}
+
+/// Case 4 under the rev-24 acceptance configuration: the primary's own
+/// Manning law (`n = 0.009`, m-s units) via the definitional
+/// `f = 8 g n^2 / h^(1/3)` limb, so the solver runs the same PDE as the
+/// `iwagaki_oracle` (SC-OFEROUTE-001 rev 24, `INV-OFEROUTE-011`).
+pub fn run_iwagaki_manning(
+    cell_count: usize,
+    sample_dt_s: f64,
+    max_dt_s: f64,
+) -> Result<DvalRun, RoutingError> {
+    run_iwagaki_cells(
+        |slope| CellParameters::manning(slope, 0.009),
+        cell_count,
+        sample_dt_s,
+        max_dt_s,
+    )
+}
+
+fn run_iwagaki_cells(
+    cell_for_slope: impl Fn(f64) -> CellParameters,
+    cell_count: usize,
+    sample_dt_s: f64,
+    max_dt_s: f64,
+) -> Result<DvalRun, RoutingError> {
     let n = cell_count;
     let dx = 24.0 / f64::from(u32::try_from(n).unwrap_or(u32::MAX));
     let mut cells = Vec::with_capacity(n);
@@ -120,7 +156,7 @@ pub fn run_iwagaki_with_options(
         } else {
             0.01
         };
-        cells.push(CellParameters::bare(slope, ko));
+        cells.push(cell_for_slope(slope));
     }
     let mut solver = KinematicWaveSolver::new(KinematicWaveMesh {
         cell_length_m: dx,
@@ -169,6 +205,8 @@ pub fn run_iwagaki_with_options(
         diagnostic_substep_time_to_peak_s: Some(res.time_to_peak_s),
         max_courant: res.max_courant,
         runoff_coefficient: None,
+        diagnostic_tvd_boundary_leak_m2: Some(res.mass_balance.tvd_boundary_leak_m2),
+        diagnostic_max_homogeneous_tv_increase_m2_s: Some(res.max_homogeneous_tv_increase_m2_s),
     })
 }
 
@@ -302,6 +340,8 @@ pub fn run_rain_case(c: &RainCase) -> Result<DvalRun, RoutingError> {
         max_courant: res.cascade.max_courant,
         runoff_coefficient: Some(res.per_ofe_runoff_coefficient[0]),
         hydrograph: hydro,
+        diagnostic_tvd_boundary_leak_m2: None,
+        diagnostic_max_homogeneous_tv_increase_m2_s: None,
     })
 }
 
@@ -339,13 +379,13 @@ mod tests {
     }
 
     // Case 4 (Iwagaki) — NO rain: water is supplied laterally, so the
-    // skin-term rainfall intensity is ZERO (see run_iwagaki). D8 corrected
-    // sampled-hydrograph attribution: sample values are interpolated to their
-    // actual sample times instead of stamped with the step-end value. Under that
-    // corrected metric the prior "timing reproduces" claim no longer holds;
-    // Case 4 remains a shock-capture / operand boundary, not a clean pass.
+    // skin-term rainfall intensity is ZERO (see run_iwagaki). Rev 24
+    // (D10B): the `k_o = 200` configuration is a COMPARATOR-FLAG
+    // diagnostic (the acceptance configuration is `run_iwagaki_manning`
+    // with the primary's `n = 0.009` vs the characteristics oracle); this
+    // test pins its diagnostic coherence, not acceptance.
     #[test]
-    fn case4_iwagaki_sampling_correction_exposes_timing_boundary() {
+    fn case4_iwagaki_ko_diagnostic_remains_coherent() {
         let run = run_iwagaki(200.0).expect("iwagaki runs");
         let ratio = run.peak_m2_s / CITED_ENHANCED_PEAK_CASE4;
         assert!(
@@ -354,32 +394,30 @@ mod tests {
             run.peak_m2_s,
             CITED_ENHANCED_PEAK_CASE4
         );
-        assert!(
-            (34.0..=40.0).contains(&run.time_to_peak_s),
-            "Case4 corrected sampled t_peak {:.1}s should expose the D8 timing boundary",
-            run.time_to_peak_s
-        );
         let substep_t = run.diagnostic_substep_time_to_peak_s.unwrap();
         assert!(
             (substep_t - run.time_to_peak_s).abs() <= 1.0,
-            "D8-2 sampling correction should reconcile sub-step and sampled t_peak within one sample: substep {substep_t}, sampled {}",
+            "sub-step and sampled t_peak must agree within one sample: substep {substep_t}, sampled {}",
             run.time_to_peak_s
         );
         assert!(run.max_courant <= 1.0 + 1.0e-9);
     }
 
+    // Rev 24 (D10B): INVERTED pin — the pre-rev-24 scheme's Case-4 peak
+    // was resolution-sensitive (>20% shift, `GAP-OFEROUTE-005` defect
+    // evidence); the corrected scheme must remain resolution-STABLE.
     #[test]
-    fn case4_iwagaki_peak_is_resolution_sensitive_boundary() {
+    fn case4_iwagaki_peak_is_resolution_stable_after_rev24() {
         let baseline = run_iwagaki_with_options(200.0, 120, 1.0, 0.5).expect("baseline runs");
         let refined = run_iwagaki_with_options(200.0, 240, 0.25, 0.25).expect("refined runs");
         let peak_shift = (refined.peak_m2_s - baseline.peak_m2_s).abs() / baseline.peak_m2_s;
         assert!(
-            peak_shift > 0.20,
-            "D8-2 boundary evidence: Case4 shock peak must remain flagged as resolution-sensitive, shift={peak_shift}"
+            peak_shift < 0.10,
+            "rev-24 Case4 shock peak must be resolution-stable: shift={peak_shift}"
         );
         assert!(
-            (refined.time_to_peak_s - baseline.time_to_peak_s).abs() >= 2.0,
-            "D8-2 boundary evidence: Case4 shock timing must remain resolution-sensitive"
+            (refined.time_to_peak_s - baseline.time_to_peak_s).abs() < 2.0,
+            "rev-24 Case4 shock timing must be resolution-stable"
         );
     }
 

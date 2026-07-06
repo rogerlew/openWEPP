@@ -16,7 +16,7 @@
 //! handoff; the rainfall->excess coupling is `super::infiltration`.
 
 use super::kinematic_wave::{
-    Forcing, HydrographSample, KinematicWaveMesh, KinematicWaveSolver, RoutingError,
+    Forcing, HydrographSample, KinematicWaveMesh, KinematicWaveSolver, MassBalance, RoutingError,
 };
 use super::profile;
 
@@ -73,6 +73,12 @@ pub struct CascadeResult {
     pub per_ofe_outlet_m3: Vec<f64>,
     /// Per-OFE received upstream (runon) volume (m^3); OFE 0 is 0.
     pub per_ofe_received_upstream_m3: Vec<f64>,
+    /// Per-OFE solver mass ledgers (per unit width, m^2), upstream to
+    /// downstream. D10B seam diagnostic: exposes each OFE's own
+    /// inflow/rain/outflow/storage/clamp ledger so cascade conservation
+    /// residuals can be decomposed into per-OFE solver residuals and
+    /// inter-OFE handoff (sampling/injection) mismatches.
+    pub per_ofe_solver_mass: Vec<MassBalance>,
     pub mass_balance: CascadeMassBalance,
     /// Max Courant number over the whole cascade (CFL evidence).
     pub max_courant: f64,
@@ -114,22 +120,58 @@ fn interpolate_unit_discharge(hydrograph: &[HydrographSample], time_s: f64) -> f
         .max(0.0)
 }
 
-/// Trapezoidal integral of a hydrograph's unit discharge over its samples
-/// (m^2, per unit width).
-fn hydrograph_volume_m2(hydrograph: &[HydrographSample]) -> f64 {
-    let mut total = 0.0;
-    for w in hydrograph.windows(2) {
-        let dt = w[1].time_s - w[0].time_s;
-        if dt > 0.0 {
-            total += 0.5 * (w[0].outlet_unit_discharge_m2_s + w[1].outlet_unit_discharge_m2_s) * dt;
+/// Exact integral of the CONSERVATIVE per-bin outflow series over
+/// `[t0, t1]` (m^2 per unit width): bin `k` holds the actual outflow mass
+/// over `[k bin_dt, (k+1) bin_dt)`; the rate within a bin is uniform.
+/// Rev 24 (Algorithm item 6): the downstream OFE's injection integrates
+/// this exactly so the handoff conserves the upstream scheme's actual
+/// discharged mass. Zero outside the recorded bins.
+fn integrate_bin_series(bins_m2: &[f64], spans_s: &[f64], bin_dt_s: f64, t0: f64, t1: f64) -> f64 {
+    if bins_m2.is_empty() || bin_dt_s <= 0.0 || t1 <= t0 {
+        return 0.0;
+    }
+    let mut total = 0.0_f64;
+    let start = t0.max(0.0);
+    // Review-B M1: iterate the INTEGER bin index (guaranteed progress; the
+    // floating-point boundary re-derivation has zero-progress witnesses).
+    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+    let mut k = ((start / bin_dt_s).floor().max(0.0)) as usize;
+    while k < bins_m2.len() {
+        // Review-B M3: each bin covers `[k bin_dt, k bin_dt + span_k)` at
+        // rate `mass_k / span_k`; the final bin's span is its actual
+        // covered remainder, so its whole mass is injectable by the
+        // window end.
+        #[allow(clippy::cast_precision_loss)]
+        let bin_start = k as f64 * bin_dt_s;
+        let span = spans_s.get(k).copied().unwrap_or(bin_dt_s);
+        if span > 0.0 {
+            let lo = bin_start.max(start);
+            let hi = (bin_start + span).min(t1);
+            if hi > lo {
+                total += bins_m2[k] * (hi - lo) / span;
+            }
         }
+        if bin_start + bin_dt_s >= t1 {
+            break;
+        }
+        k += 1;
     }
     total
+}
+
+/// Upstream handoff payload: the instantaneous sampled hydrograph (shape,
+/// point-BC fallback) plus the conservative bin series (mass).
+struct UpstreamHandoff {
+    samples: Vec<HydrographSample>,
+    bins_m2: Vec<f64>,
+    bin_spans_s: Vec<f64>,
+    bin_dt_s: f64,
 }
 
 /// Run the OFE-by-OFE cascade summit -> outlet. Each OFE is routed with the
 /// D4 solver; OFE `i`'s outlet hydrograph, scaled by the width ratio
 /// `w_i / w_{i+1}` for discharge continuity, is OFE `i+1`'s upstream boundary.
+#[allow(clippy::too_many_lines)]
 pub fn run_cascade(
     segments: &[CascadeSegment],
     forcing: &CascadeForcing<'_>,
@@ -150,9 +192,11 @@ pub fn run_cascade(
     let mut per_ofe_peak = Vec::with_capacity(segments.len());
     let mut per_ofe_outlet_m3 = Vec::with_capacity(segments.len());
     let mut per_ofe_received_m3 = Vec::with_capacity(segments.len());
-    let mut prev_hydrograph: Option<Vec<HydrographSample>> = None;
+    let mut per_ofe_solver_mass = Vec::with_capacity(segments.len());
+    let mut prev_hydrograph: Option<UpstreamHandoff> = None;
     let mut prev_width = 0.0_f64;
     let mut outlet_hydrograph: Vec<HydrographSample> = Vec::new();
+    let mut terminal_outlet_m3 = 0.0_f64;
     let mut max_courant = 0.0_f64;
 
     for (i, seg) in segments.iter().enumerate() {
@@ -169,7 +213,22 @@ pub fn run_cascade(
             match &prev {
                 Some(h) => {
                     profile::count_upstream_interpolation_calls(1);
-                    interpolate_unit_discharge(h, t) * width_ratio
+                    interpolate_unit_discharge(&h.samples, t) * width_ratio
+                }
+                None => 0.0,
+            }
+        };
+        // Rev 24 (Algorithm item 6): the downstream solver injects the
+        // EXACT integral of the upstream CONSERVATIVE bin series
+        // (piecewise-constant per-bin actual outflow) over each of its
+        // steps, so the handoff carries the upstream scheme's actual
+        // discharged mass at any sample resolution.
+        let upstream_integral = |t0: f64, t1: f64| -> f64 {
+            match &prev {
+                Some(h) => {
+                    profile::count_upstream_interpolation_calls(1);
+                    integrate_bin_series(&h.bins_m2, &h.bin_spans_s, h.bin_dt_s, t0, t1)
+                        * width_ratio
                 }
                 None => 0.0,
             }
@@ -185,7 +244,18 @@ pub fn run_cascade(
         let setup_span = profile::span_start();
         let mut solver = KinematicWaveSolver::new(seg.mesh.clone());
         profile::end_solver_setup(setup_span);
-        let result = solver.run(&ofe_forcing, end_time_s, sample_dt_s, max_dt_s)?;
+        let integral_closure: Option<&dyn Fn(f64, f64) -> f64> = if prev.is_some() {
+            Some(&upstream_integral)
+        } else {
+            None
+        };
+        let result = solver.run_with_upstream_integral(
+            &ofe_forcing,
+            integral_closure,
+            end_time_s,
+            sample_dt_s,
+            max_dt_s,
+        )?;
 
         // Received upstream (runon) volume into this OFE (m^3): the width-scaled
         // upstream unit-discharge integral times this OFE's width.
@@ -196,7 +266,10 @@ pub fn run_cascade(
         mass.storage_change_m3 += result.mass_balance.storage_change_m2 * seg.width_m;
         mass.positivity_clamp_m3 += result.mass_balance.positivity_clamp_m2 * seg.width_m;
         per_ofe_peak.push(result.peak_unit_discharge_m2_s);
-        per_ofe_outlet_m3.push(hydrograph_volume_m2(&result.hydrograph) * seg.width_m);
+        per_ofe_solver_mass.push(result.mass_balance);
+        // Rev 24: outlet volumes are booked from the solver's ACTUAL
+        // outflow (== bin-series sum), not a sample-grid quadrature.
+        per_ofe_outlet_m3.push(result.mass_balance.outflow_m2 * seg.width_m);
         if result.max_courant > max_courant {
             max_courant = result.max_courant;
         }
@@ -204,16 +277,22 @@ pub fn run_cascade(
         // Hand off to the next OFE (move, no clone): the terminal OFE's
         // hydrograph is the cascade outlet; interior OFEs feed the next.
         if i + 1 < segments.len() {
-            prev_hydrograph = Some(result.hydrograph);
+            prev_hydrograph = Some(UpstreamHandoff {
+                samples: result.hydrograph,
+                bins_m2: result.outlet_bin_outflow_m2,
+                bin_spans_s: result.outlet_bin_spans_s,
+                bin_dt_s: result.outlet_bin_dt_s,
+            });
             prev_width = seg.width_m;
         } else {
+            terminal_outlet_m3 = result.mass_balance.outflow_m2 * seg.width_m;
             outlet_hydrograph = result.hydrograph;
         }
     }
 
-    // Cascade outlet volume: terminal OFE outlet integral times its width.
+    // Cascade outlet volume: the terminal OFE's actual discharged mass.
     let terminal_width = segments[segments.len() - 1].width_m;
-    mass.outlet_m3 = hydrograph_volume_m2(&outlet_hydrograph) * terminal_width;
+    mass.outlet_m3 = terminal_outlet_m3;
 
     // Peak total discharge (m^3/s) at the cascade outlet.
     let mut peak_total_discharge = 0.0_f64;
@@ -233,6 +312,7 @@ pub fn run_cascade(
         per_ofe_peak_unit_discharge_m2_s: per_ofe_peak,
         per_ofe_outlet_m3,
         per_ofe_received_upstream_m3: per_ofe_received_m3,
+        per_ofe_solver_mass,
         mass_balance: mass,
         max_courant,
     })
@@ -372,16 +452,20 @@ mod tests {
 
         let bare_depth = bare_res.outlet_hydrograph.last().unwrap().outlet_depth_m;
         let veg_depth = veg_res.outlet_hydrograph.last().unwrap().outlet_depth_m;
-        let bare_q = bare_res
-            .outlet_hydrograph
-            .last()
-            .unwrap()
-            .outlet_unit_discharge_m2_s;
-        let veg_q = veg_res
-            .outlet_hydrograph
-            .last()
-            .unwrap()
-            .outlet_unit_discharge_m2_s;
+        // Steady discharge from the tail-mean of the bin-flux hydrograph
+        // (rev 24: the exported series is bin-mean boundary flux with a
+        // bounded slow boundary ripple; the tail mean is the steady
+        // measure).
+        let tail_mean = |h: &[HydrographSample]| -> f64 {
+            let n = 40.min(h.len());
+            h[h.len() - n..]
+                .iter()
+                .map(|s| s.outlet_unit_discharge_m2_s)
+                .sum::<f64>()
+                / f64::from(u32::try_from(n).unwrap_or(u32::MAX))
+        };
+        let bare_q = tail_mean(&bare_res.outlet_hydrograph);
+        let veg_q = tail_mean(&veg_res.outlet_hydrograph);
 
         // steady discharge is the same (mass balance): roughness does not change it
         assert!(

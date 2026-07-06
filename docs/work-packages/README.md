@@ -13,28 +13,39 @@
 
 State as of `2026-07-06`:
 - `20260706-mofefid-d10b-gap005-source-authority-reconciliation-001/` —
-  SCAFFOLDED: the §6.1 D10 hold-lift. Reconciles the
-  `SC-OFEROUTE-001#GAP-OFEROUTE-005` source-authority hold via three legs:
-  (A) bind limiter/CFL/dissipation to the TVD family primaries (all four
-  in hand: Mingham 2001, Garcia-Navarro 1992, and — acquired 2026-07-06
-  from R-63's own citation chain — Davis 1984 and Tseng 2010); (B)
-  re-anchor Case-4 acceptance
-  to the Iwagaki 1955 primary (characteristics oracle, experimental
-  hydrographs, `n = 0.009` via a named definitional mapping) and demote the
-  digitized enhanced-WEPP trace to an ADR-0017 comparator flag; (C)
-  reclassify the OFE sampled handoff under the conservation hard gate and
-  adjudicate the H2637 resolution sensitivity with a seam-decomposed
-  ledger. Clean-room boundary preserved; no production/default activation. A
-  non-HOLD closure lifts the D15-rerun blocker; a HOLD must narrow D10's
-  boundary and leaves D15 blocked.
+  EXECUTED-COMPLETE (2026-07-06, Claude Code, operator-directed end-to-end
+  run): the §6.1 D10 hold-lift. `SC-OFEROUTE-001` rev 24 bound the scheme
+  against the acquired primaries (R-63's printed limiter (11c) adjudicated
+  a TRANSCRIPTION ERROR against Davis 1984 eq. 3.20 + Mingham 2001
+  eq. 31f; two-sided face-based dissipation; boundary/ledger/handoff bound
+  under the conservation hard gate; Case-4 acceptance RE-ANCHORED to the
+  Iwagaki-primary entropy-solution oracle with the digitized enhanced-WEPP
+  trace demoted to an ADR-0017 comparator flag; Manning `n = 0.009` via
+  the definitional identity). Rev 25 landed + validated the production
+  correction (limiter branch; exactly-telescoping face dissipation;
+  prescribed-flux inflow BC; donor outflow closure with
+  booked-equals-actual ledger; TRUE kinematic celerity CFL — fixing a
+  latent true-Courant ~1.8 condition the inverted limiter had masked;
+  conservative bin-series handoff; bin-mean boundary-flux hydrograph):
+  Case-4 oracle acceptance MET (peak <= 2.6% vs 5%, `t_peak` <= 0.09 s,
+  rise <= 0.11 s), 19-OFE H2637-class cascade conservation IDENTICALLY
+  ZERO across the recorded sweep grid (pre: 9-54% anti-convergent), 5/5
+  contract-derived tests flipped from failing, 61/61 `ofe_routing` tests
+  green. `GAP-OFEROUTE-005` RESOLVED; `GAP-OFEROUTE-001` CLOSED. Named
+  bounded residuals recorded (strict-TVD transient, boundary-flux ripple,
+  shock-peak wobble). D15-rerun precondition: D14 endpoint-timing REFRESH
+  (celerity/handoff changed the profiled path). No production/default
+  activation; clean-room preserved.
 - `20260705-mofefid-d15-opt-in-production-activation-001/` —
   EXECUTED-HOLD-SOURCE-AUTHORITY: Lane D opt-in production activation
   preflight. D15 confirmed that `SC-OFEROUTE-001` rev 23 still blocks active
   routed-water publication through `INV-OFEROUTE-011` / `GAP-OFEROUTE-005`
   (Case-4 shock-numerics/source-authority hold). No runtime, contract, schema,
-  fixture, or test files changed; the next actionable item is the D10
-  source-authority reconciliation, then a D15 rerun against the D14 runtime
-  budget.
+  fixture, or test files changed; the D10 source-authority reconciliation
+  is now EXECUTED-COMPLETE (D10B, `GAP-OFEROUTE-005` RESOLVED at rev 25),
+  so the next actionable items are the D14 endpoint-timing refresh
+  (required by the §6.1 ordering rule after D10B's celerity/handoff
+  changes) and then the D15 rerun.
 - `20260705-mofefid-d14-laned-runtime-profile-optimization-001/` —
   EXECUTED-COMPLETE: Lane D runtime profiling/optimization package. D14
   re-pinned the H2637 Lane D shadow cost at release grade (+65.3 s user over

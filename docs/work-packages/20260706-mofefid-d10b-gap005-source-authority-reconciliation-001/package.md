@@ -1,6 +1,8 @@
 # MOFEFID-D10B - GAP-005 Source-Authority Reconciliation
 
-Status: **SCAFFOLDED** (2026-07-06, Claude Code). Campaign:
+Status: **EXECUTED-COMPLETE** (2026-07-06, Claude Code, operator-directed
+end-to-end run; `GAP-OFEROUTE-005` RESOLVED at `SC-OFEROUTE-001` rev 26).
+Campaign:
 [MOFEFID](../../planning/mofe-fidelity-campaign-strategy.md) Lane D, §6.1
 D10 hold-lift. Contract focus: `SC-OFEROUTE-001#GAP-OFEROUTE-005` and the
 Case-4 residual of `SC-OFEROUTE-001#INV-OFEROUTE-011`.
@@ -473,13 +475,58 @@ later operator explicitly assigns a bounded write set.
   markdown's eq. (3.20) checked against the rendered PDF page (Claude
   Code). Registered as bibliography rows R-102/R-103 (2026-07-06, Claude
   Code); first-pass rights-log entries remain in D10B-S1.
-- [ ] D10B-S0 intake and baseline.
-- [ ] D10B-S1 source adjudication (rights-log entries + scheme
-  adjudication).
-- [ ] D10B-S2 contract-first amendment.
-- [ ] D10B-S3 oracle harness and contract-derived tests.
-- [ ] D10B-S4 correction or legitimate HOLD.
-- [ ] D10B-S5 evidence, review, verification, and closure.
+- [x] 2026-07-06: D10B-S0 intake and baseline (Claude Code, executing on
+  operator direction): Case-4 D10 baselines reproduced exactly; the
+  D10-era H2637 executed-vector test no longer exists (D11 rev-20
+  fail-closed gate) — class reproduced on an H2637-shaped cascade fixture;
+  seam-decomposed conservation ledger built and executed
+  (`artifacts/seam-conservation-ledger.md`) with an EXACT decomposition
+  identity. Mechanism ranking REVERSED vs the scaffold hypothesis: solver
+  ledger-vs-scheme flux mismatches (outflow ghost, inflow booking) + an
+  unbooked anti-convergent TVD boundary leak dominate; handoff aliasing is
+  secondary.
+- [x] 2026-07-06: D10B-S1 source adjudication (Claude Code):
+  rights-log addendum recorded; Davis (3.20)/(3.18) conversion
+  spot-checks done; Mingham (28b)/(31a)/(31f)/(31g) + `C(x)` + CFL 0.9
+  extracted; all five held surfaces adjudicated in
+  `artifacts/limiter-adjudication-evidence.md` (A1 branch bound, A2
+  two-sided face form bound, A3 no-change, A4 frozen-alpha adjudicated
+  with Tseng precedent, A5 conservation-gate-owned corrections named, A6
+  Iwagaki Manning `n=0.009` mapping bound).
+- [x] 2026-07-06: D10B-S2 contract-first amendment — `SC-OFEROUTE-001`
+  rev 24 (bindings + re-anchored oracle + demotion + gap reconciliation);
+  evidence artifacts written (`contract-implementation-evidence.md`,
+  `oracle-reanchoring-evidence.md`, `friction-mapping-evidence.md`).
+- [x] 2026-07-06: D10B-S3 oracle harness + contract-derived tests — the
+  Iwagaki oracle landed as TWO independent constructions (monotone FV
+  reference + Lagrangian characteristics fan) cross-validating within
+  3%/1 s, with closed-form anchors and exact conservation; converged
+  Case-4 truth: peak ~0.00831 m^2/s, `t_peak` ~24.6 s, rise ~19.65 s.
+  Five contract-derived tests authored and recorded FAILING 5/5 against
+  the pre-correction scheme; pre-implementation gate recorded (7/7 DC
+  gates PASS -> proceed).
+- [x] 2026-07-06: D10B-S4 correction LANDED (not HOLD): source-correct
+  limiter branch; two-sided face-based exactly-telescoping dissipation
+  (material-interface faces zero, boundary-stencil mirroring);
+  prescribed-flux upstream BC; donor outflow closure with
+  booked-equals-actual ledger; half-weight stage clamps; TRUE kinematic
+  celerity for CFL (fixes a latent true-Courant ~1.8 condition on the
+  laminar limb); conservative bin-series handoff + bin-mean boundary-flux
+  hydrograph export; Manning limb + `run_iwagaki_manning`. Validation:
+  5/5 contract tests green; Case-4 within ratified tolerances
+  (peak <= 2.6%/5%, `t_peak` <= 0.09 s/1.5 s, rise <= 0.11 s/2.0 s);
+  19-OFE cascade conservation IDENTICALLY ZERO at every sweep point
+  (pre: 9-54% anti-convergent); full `ofe_routing` suite 61/61 with
+  behavior-pinned tests dispositioned. `SC-OFEROUTE-001` rev 25 ratifies
+  tolerances and RESOLVES `GAP-OFEROUTE-005`.
+- [x] 2026-07-06: D10B-S5 evidence, review, verification, and closure:
+  gates fmt/clippy/deny PASS, full workspace nextest PASS twice (1396/1396
+  pre-review, 1399/1399 after the review fixes + 3 regressions); dual
+  review (A: GO-WITH-AMENDMENTS, B: GO-WITH-AMENDMENTS, no CRITICAL) with
+  every finding dispositioned and all accepted amendments landed
+  (contract rev 26 + Review-B production fixes M1/M2/M3 with
+  regressions); dual verification (A: PASS-WITH-NOTES, B:
+  PASS-WITH-NOTES, all notes closed in-package).
 
 ## Surprises & Discoveries
 
@@ -493,9 +540,79 @@ later operator explicitly assigns a bounded write set.
   MacCormack-family KWE schemes against analytical solutions and an
   experimental measurement — published precedent for the Leg-B
   analytic-oracle acceptance shape.
+- S0 (2026-07-06): the seam ledger REVERSED the scaffold's mechanism
+  ranking. The handoff-aliasing hypothesis is secondary; the dominant
+  terms are solver-internal — the ledger books `q_up dt` in and a
+  committed-state trapezoid out while the scheme actually injects
+  `0.5(q_up+q_0) dt` and discharges through an extrapolated ghost
+  (16-28% of source at the operating point), and the boundary-exempt TVD
+  term leaks unbooked mass ANTI-CONVERGENTLY (Cf saturates at 0.25 under
+  CFL-active stepping, so refinement multiplies the leak). Evidence:
+  `artifacts/seam-conservation-ledger.md` with an exact (<=6e-14)
+  decomposition identity.
+- S1 (2026-07-06): Iwagaki 1955 experiment (B) IS the D-val Case-4
+  configuration verbatim (slopes, supplies, duration, geometry), analyzed
+  by the primary itself with Manning `n=0.009` — the friction-mapping leg
+  dissolves into "run the primary's own law on both sides."
+- S0/S1 (2026-07-06): the Case-4 D-val slopes/supplies carry an OCR trap:
+  Iwagaki's text prints `q = 0.800 cm/s` for the third reach where the
+  physical value is `0.0800 cm/s` (dropped leading zero); the in-repo
+  D-val operand (0.08 cm/s) is correct.
+- S3 (2026-07-06): the demoted digitized enhanced-WEPP trace lands within
+  ~2% peak / ~1.4 s of the primary-anchored oracle — the trace was CLOSE
+  to the true entropy solution, and the pre-correction solver's failure
+  against it was a REAL numerics failure compounded by the un-primary
+  `k_o=200` operand (the `f = k_o/Re` law converges to `q ∝ h^3`, a
+  different physics than Manning's `q ∝ h^{5/3}`). The demotion stands as
+  an authority decision; the flag observation is recorded.
+- S4 (2026-07-06): the corrected limiter EXPOSED a latent instability the
+  inverted branch had been masking — the frozen-alpha celerity
+  under-estimates the true kinematic celerity 2x on the laminar limb, so
+  the scheme ran at true Courant ~1.8 with blanket dissipation hiding the
+  oscillation. The D10 limiter-flip trial's "worse" result is thereby
+  EXPLAINED: flipping the branch alone removed the mask without fixing
+  the celerity. True-celerity CFL + the face-form dissipation resolve it.
+- S4 (2026-07-06): a first "upwind outflow closure" attempt was WRONG
+  (zero-gradient, steady-biased O(dx)) and was caught by the steady-state
+  law tests; the donor-difference closure is algebraically the
+  extrapolated ghost for mass purposes, and the residual confined
+  boundary-flux ripple (zero-mean, mass-exact) is characterized in
+  `iwagaki-case4-evidence.md` with the bin-mean export bounding it.
 
 ## Decision Log
 
+- Decision: the acceptance oracle is the exact ENTROPY SOLUTION carried by
+  two independent constructions (monotone finite-volume reference primary;
+  Lagrangian characteristics fan with Rankine-Hugoniot shock tracking as
+  cross-check), rather than a single hand-built characteristics solution.
+  Rationale: monotone schemes provably converge to the same entropy
+  solution MOC constructs; two independent constructions agreeing (3%/1 s)
+  is stronger oracle self-evidence than either alone; the first MOC cut
+  missed the cutoff rarefaction (-66% mass) and the miss was caught by the
+  cross-validation design.
+  Date/Author: 2026-07-06 / Claude Code.
+- Decision: land the correction (conversion rule), not HOLD; ratify
+  tolerances from measured evidence (peak 5% vs Richardson-extrapolated
+  reference with non-divergence, `t_peak` 1.5 s, rise 2.0 s, conservation
+  exactness 1e-9, TV-transient bound 1e-3 m^2/s); record three named
+  bounded residuals (strict-TVD transient, boundary-flux ripple,
+  shock-peak wobble) as refinement items rather than blockers.
+  Rationale: all seven DC gates passed; the acceptance surfaces that gate
+  activation (oracle convergence + conservation) are met with wide
+  margins; the residuals are measured, bounded by tests, confined, and
+  mass-exact — holding on them would be a grind-HOLD on quality-of-polish
+  rather than a legitimate boundary.
+  Date/Author: 2026-07-06 / Claude Code.
+- Decision: the exported outlet hydrograph becomes the bin-mean BOUNDARY
+  FLUX (with bin-mean stage), and the inter-OFE handoff consumes the
+  conservative bin series.
+  Rationale: the boundary flux is what the ledger books, what the
+  downstream OFE physically receives, and what a gauge measures; the
+  committed last-cell state carries O(dx) registration and a confined
+  boundary ripple that must not pollute exported surfaces; bin semantics
+  make the handoff exactly conservative at ANY sample resolution and fit
+  the INV-008 hourly-profile intent.
+  Date/Author: 2026-07-06 / Claude Code.
 - Decision: D10B reconciles `GAP-OFEROUTE-005` by re-anchoring the Case-4
   acceptance oracle to the Iwagaki primary and reclassifying the OFE
   handoff under the conservation hard gate, instead of seeking further
@@ -508,4 +625,29 @@ later operator explicitly assigns a bounded write set.
 
 ## Outcomes & Retrospective
 
-(recorded at closure)
+D10B closed `GAP-OFEROUTE-005` end-to-end as a landed, validated
+correction — the DC conversion rule's intended path, not a hold. The
+reconciliation thesis held: implementation parity with enhanced-WEPP was
+never closable under clean-room, and re-anchoring to the Iwagaki-primary
+entropy-solution oracle plus the conservation hard gate made every held
+surface decidable from in-hand authority. The S0 exact seam-ledger
+decomposition was the pivotal instrument: it overturned the scaffold's
+mechanism ranking (handoff aliasing was secondary; unbooked scheme-flux
+mismatches and an anti-convergent TVD boundary leak dominated), and later
+pinpointed each residual as corrections landed. The corrected scheme now
+matches the oracle to <= 2.6% peak / 0.09 s timing and conserves
+IDENTICALLY (machine epsilon) on the 19-OFE H2637-class regime at every
+recorded resolution — the defect class is eliminated at its mechanism.
+Notable science outcomes: R-63's printed limiter adjudicated a
+transcription error against its own citation chain; a latent
+true-Courant-~1.8 instability exposed and fixed (explaining D10's failed
+limiter-flip trial); the demoted digitized trace turned out to agree with
+the oracle within ~2% — recorded as a flag, with the demotion standing on
+authority grounds. Dual review added three real latent-bug fixes (fp
+loop-progress, negative front-arrival bins, partial-final-bin seam) that
+D10B's own evidence configurations could not have caught — the
+adversarial-review stage earned its cost. Remaining forward items are the
+D14 endpoint-timing refresh (required) and the D15 rerun; three named
+bounded residuals are recorded as refinement candidates. Total: contract
+revs 24-26, ~1500 lines of solver/oracle/test code, 28 artifacts, all
+root gates green (1399/1399).

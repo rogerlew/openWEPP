@@ -90,8 +90,17 @@ sits in `vendorable/`.)
   - local v6.4.1 extract (`references/vendorable/HEC_RAS_Hydraulic_Reference_Manual_v6_4_1.md`)
   - local v6.6 PDF front matter (`references/vendorable/R16_2024_HEC_RAS_Hydraulic_Reference_Manual_v6_6.pdf`)
 
+## Addendum 2026-07-06 (D10B acquisitions)
+
+| File | First-pass classification | Basis |
+|---|---|---|
+| `copyrighted/19840021490.pdf` (+ `19840021490.md` extract) | `copyrighted/` (conservative) | Davis 1984, ICASE Report 84-20 / NASA CR-172373. NTRS public download (doc 19840021490), but ICASE was USRA-operated under NASA contract, so 17 U.S.C. 105 public-domain status is not automatic for contractor reports. Vendorable candidate pending an explicit NTRS rights statement. Indexed as R-102. |
+| `copyrighted/Tseng2010_Hydroinformatics.pdf` | `copyrighted/` | Tseng 2010, Journal of Hydroinformatics 12(3) — IWA Publishing copyright. Indexed as R-103. |
+
 ## Follow-up
 
 - Add per-entry rights status fields in `annotated_bibliography.md`.
 - Review HEC-HMS web exports and USDA/ASCE/AGU-derived artifacts individually.
 - Reclassify from `copyrighted/` to `vendorable/` only with explicit evidence.
+- Check the NTRS rights statement for doc 19840021490 (R-102) for possible
+  `vendorable/` reclassification.

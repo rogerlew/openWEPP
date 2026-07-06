@@ -1,0 +1,43 @@
+{
+  "case": 4,
+  "ko": 200.0,
+  "ks_mm_h": null,
+  "resolution_controls": {
+    "cells": 480,
+    "sample_dt_s": 0.125,
+    "max_dt_s": 0.125
+  },
+  "dval_command": [
+    "cargo",
+    "run",
+    "--example",
+    "dval_case",
+    "-p",
+    "openwepp-hillslope-orchestrator",
+    "-q",
+    "--",
+    "4",
+    "200.0",
+    "480",
+    "0.125",
+    "0.125"
+  ],
+  "window_s": [
+    0.0,
+    80.0
+  ],
+  "NS_trace": 0.10124431408027501,
+  "ref_peak_m2s": 0.00813231,
+  "ref_t_peak_s": 25.98,
+  "openwepp_peak_m2s": 0.00686447589,
+  "openwepp_t_peak_s": 36.125,
+  "peak_ratio": 0.8440991415723208,
+  "ref_rise_10_90_s": 20.883439958627477,
+  "openwepp_rise_10_90_s": 28.745439092358602,
+  "provenance": {
+    "fig4_sha256": "2bf68787de6a715049ee635c154c640214936fd1181d08c8f7da7a34892d2fe8",
+    "sheet": "Enhanced_WEPP",
+    "t_col": 2,
+    "q_col": 1
+  }
+}
