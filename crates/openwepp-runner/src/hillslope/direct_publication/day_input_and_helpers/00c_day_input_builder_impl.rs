@@ -351,6 +351,21 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
         })
     }
 
+    pub(crate) fn laned_shadow_lane_day_operands(
+        &self,
+        day_frame: &openwepp_hillslope_orchestrator::DirectDayFrame,
+    ) -> Result<crate::hillslope::laned_shadow::LanedShadowLaneDayOperands, HillslopeCliError>
+    {
+        let authority = self.lane_authority(day_frame.lane_index)?;
+        build_laned_shadow_lane_day_operands(
+            day_frame.lane_index,
+            day_frame.day_index,
+            day_frame.wb14_hourly_rainfall_m,
+            day_frame.evapotranspiration_compute_inputs.leaf_area_index,
+            authority.evapotranspiration.canopy_height_m,
+        )
+    }
+
     fn validate_active_snow_forcing(
         authority: &DirectProductionLaneDayInputAuthority,
         lane_index: usize,
@@ -1030,4 +1045,139 @@ fn direct_production_growth_state_for_publication(
             .map_err(|source| direct_publication_runtime_error(&source));
     }
     Ok(growth_state_before)
+}
+
+fn build_laned_shadow_lane_day_operands(
+    lane_index: usize,
+    day_index: usize,
+    hourly_rainfall_m: [f64; openwepp_hillslope_orchestrator::ofe_routing::seam::SEAM_HOUR_BINS],
+    leaf_area_index: f64,
+    canopy_height_m: Option<f64>,
+) -> Result<crate::hillslope::laned_shadow::LanedShadowLaneDayOperands, HillslopeCliError> {
+    if !leaf_area_index.is_finite() || leaf_area_index < 0.0 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "laned_shadow_dynamic_operands",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} Lane D shadow requires finite nonnegative post-growth LAI for lane {} day {}, observed {}",
+                lane_index + 1,
+                day_index + 1,
+                leaf_area_index
+            ),
+        });
+    }
+    for (hour_index, rainfall_m) in hourly_rainfall_m.iter().enumerate() {
+        if !rainfall_m.is_finite() || *rainfall_m < 0.0 {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "laned_shadow_dynamic_operands",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} Lane D shadow requires finite nonnegative WB14 hourly rainfall for lane {} day {} hour {}, observed {}",
+                    lane_index + 1,
+                    day_index + 1,
+                    hour_index + 1,
+                    rainfall_m
+                ),
+            });
+        }
+    }
+    let canopy_height_m = match canopy_height_m {
+        Some(height_m) if height_m.is_finite() && height_m >= 0.0 => height_m,
+        Some(height_m) => {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "laned_shadow_dynamic_operands",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} Lane D shadow typed-management canhgt must be finite and nonnegative for lane {}, observed {}",
+                    lane_index + 1,
+                    height_m
+                ),
+            });
+        }
+        None if leaf_area_index <= 0.0 => 0.0,
+        None => {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "laned_shadow_dynamic_operands",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} Lane D shadow requires typed-management canhgt when post-growth LAI is positive for lane {} day {} (LAI={})",
+                    lane_index + 1,
+                    day_index + 1,
+                    leaf_area_index
+                ),
+            });
+        }
+    };
+    if leaf_area_index > 0.0 && canopy_height_m <= 0.0 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "laned_shadow_dynamic_operands",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} Lane D shadow requires canhgt > 0 when post-growth LAI is positive for lane {} day {} (LAI={}, canhgt={})",
+                lane_index + 1,
+                day_index + 1,
+                leaf_area_index,
+                canopy_height_m
+            ),
+        });
+    }
+    Ok(
+        crate::hillslope::laned_shadow::LanedShadowLaneDayOperands {
+            hourly_rainfall_m,
+            leaf_area_index,
+            canopy_height_m,
+        },
+    )
+}
+
+#[cfg(test)]
+mod laned_shadow_dynamic_operand_tests {
+    use super::*;
+
+    fn dynamic_operand_error_detail(
+        result: Result<
+            crate::hillslope::laned_shadow::LanedShadowLaneDayOperands,
+            HillslopeCliError,
+        >,
+    ) -> String {
+        match result {
+            Err(HillslopeCliError::RuntimeSurfaceFailure { surface, detail }) => {
+                assert_eq!(surface, "laned_shadow_dynamic_operands");
+                detail
+            }
+            Err(error) => panic!("unexpected error: {error}"),
+            Ok(_) => panic!("expected dynamic operand validation failure"),
+        }
+    }
+
+    #[test]
+    fn laned_shadow_dynamic_operands_reject_missing_canhgt_when_lai_positive() {
+        let detail = dynamic_operand_error_detail(build_laned_shadow_lane_day_operands(
+            0, 0, [0.0; 24], 1.25, None,
+        ));
+
+        assert!(detail.contains("requires typed-management canhgt"));
+    }
+
+    #[test]
+    fn laned_shadow_dynamic_operands_reject_zero_canhgt_when_lai_positive() {
+        let detail = dynamic_operand_error_detail(build_laned_shadow_lane_day_operands(
+            0,
+            0,
+            [0.0; 24],
+            1.25,
+            Some(0.0),
+        ));
+
+        assert!(detail.contains("requires canhgt > 0"));
+    }
+
+    #[test]
+    fn laned_shadow_dynamic_operands_preserve_hourly_rainfall_when_valid() {
+        let mut hourly_rainfall_m = [0.0; 24];
+        hourly_rainfall_m[3] = 0.0125;
+
+        let operands =
+            build_laned_shadow_lane_day_operands(0, 0, hourly_rainfall_m, 0.0, None)
+                .expect("bare day operands should accept absent canopy height");
+
+        assert_eq!(operands.hourly_rainfall_m[3].to_bits(), 0.0125_f64.to_bits());
+        assert_eq!(operands.leaf_area_index.to_bits(), 0.0_f64.to_bits());
+        assert_eq!(operands.canopy_height_m.to_bits(), 0.0_f64.to_bits());
+    }
 }

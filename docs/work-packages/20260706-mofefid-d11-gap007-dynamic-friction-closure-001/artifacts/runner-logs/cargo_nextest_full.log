@@ -1,0 +1,11 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.20s
+────────────
+ Nextest run ID d5301a27-b79e-4f94-8c8a-7ee34a4b0289 with nextest profile: full
+    Starting 1372 tests across 163 binaries (1 test skipped)
+        SLOW [> 90.000s] (─────────) openwepp::snowdensity05e_melt_adjudication coe_melt_snowbench_runs_both_models_as_diagnostic_only
+────────────
+     Summary [ 569.138s] 1372 tests run: 1372 passed (1 slow), 1 skipped
+real 570.20
+user 917.66
+sys 312.47
+exit_code:0

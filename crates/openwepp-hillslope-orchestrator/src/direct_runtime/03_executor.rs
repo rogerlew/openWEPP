@@ -262,7 +262,7 @@ impl DirectFrameExecutor {
         &self,
         frame: &mut DirectRunFrame,
         metadata: DirectPublicationRunMetadata,
-        mut build_day_input: F,
+        build_day_input: F,
         mut consume_row: S,
     ) -> Result<DirectStreamingPublicationExecution, DirectRuntimeError>
     where
@@ -272,6 +272,29 @@ impl DirectFrameExecutor {
             usize,
         ) -> Result<DirectPublicationDayInput, DirectRuntimeError>,
         S: FnMut(&DirectPublicationDayRow) -> Result<(), DirectRuntimeError>,
+    {
+        self.run_publication_stream_with_interleaved_day_inputs_and_day_frames(
+            frame,
+            metadata,
+            build_day_input,
+            |row, _day_frame| consume_row(row),
+        )
+    }
+
+    pub fn run_publication_stream_with_interleaved_day_inputs_and_day_frames<F, S>(
+        &self,
+        frame: &mut DirectRunFrame,
+        metadata: DirectPublicationRunMetadata,
+        mut build_day_input: F,
+        mut consume_row: S,
+    ) -> Result<DirectStreamingPublicationExecution, DirectRuntimeError>
+    where
+        F: FnMut(
+            &DirectRunFrame,
+            usize,
+            usize,
+        ) -> Result<DirectPublicationDayInput, DirectRuntimeError>,
+        S: FnMut(&DirectPublicationDayRow, &DirectDayFrame) -> Result<(), DirectRuntimeError>,
     {
         DIRECT_AUDIT.record_publication_capture_run();
         let expected_row_count = frame
@@ -325,7 +348,7 @@ impl DirectFrameExecutor {
                             lane_count: frame.lanes.len(),
                         })?;
                 let row = DirectPublicationDayRow::from_day_frame(&day_frame, &day_input, lane)?;
-                consume_row(&row)?;
+                consume_row(&row, &day_frame)?;
                 row_count = row_count.checked_add(1).ok_or(
                     DirectRuntimeError::DirectDomainViolation {
                         field: "publication.row_count",

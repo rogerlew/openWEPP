@@ -442,6 +442,52 @@
         );
     }
 
+    #[test]
+    fn laned_shadow_consumes_live_dynamic_friction_operands() {
+        let runner_source = include_str!("../05_runner_execution_and_outputs.rs");
+        let shadow_source = include_str!("../laned_shadow.rs");
+        let builder_source = direct_publication_day_input_and_helpers_source();
+
+        assert!(
+            runner_source
+                .contains("run_publication_stream_with_interleaved_day_inputs_and_day_frames"),
+            "Lane D shadow must use the frame-aware stream so dynamic operands come from the executed day frame"
+        );
+        assert!(
+            runner_source.contains("laned_shadow_lane_day_operands(day_frame)")
+                && runner_source.contains("collector")
+                && runner_source.contains("observe_row(row, operands)"),
+            "Lane D shadow consumer must pass live day-frame operands into the collector"
+        );
+        assert!(
+            builder_source.contains("day_frame.wb14_hourly_rainfall_m")
+                && builder_source.contains(
+                    "day_frame.evapotranspiration_compute_inputs.leaf_area_index",
+                )
+                && builder_source.contains("authority.evapotranspiration.canopy_height_m"),
+            "Lane D shadow operand builder must source I, LAI, and h_c from live frame/typed authority"
+        );
+        assert!(
+            builder_source.contains("leaf_area_index > 0.0 && canopy_height_m <= 0.0"),
+            "Lane D shadow must fail closed when vegetation is active but canhgt is missing/non-positive"
+        );
+        assert!(
+            shadow_source.contains(
+                "seam_source_rates_from_hourly_depths(&operands.hourly_rainfall_m)",
+            ),
+            "Lane D shadow must convert WB14 hourly rainfall depth to rate for skin intensity"
+        );
+        assert!(
+            shadow_source.contains("cell.leaf_area_index = operands.leaf_area_index")
+                && shadow_source.contains("cell.canopy_height_m = operands.canopy_height_m"),
+            "Lane D shadow must write dynamic vegetation operands into CellParameters"
+        );
+        assert!(
+            !shadow_source.contains("let intensity = |_ofe: usize, _t: f64| 0.0"),
+            "Lane D shadow must not retain the missing-source all-lane I=0 placeholder"
+        );
+    }
+
     fn r7g_snow_forcing(tmax_c: f64, tmin_c: f64) -> HillslopeDirectClimateDayForcing {
         HillslopeDirectClimateDayForcing {
             prcp_m: 0.0,

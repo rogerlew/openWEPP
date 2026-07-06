@@ -144,6 +144,7 @@ struct DirectProductionInfiltrationAuthority {
 #[derive(Clone, Debug, PartialEq)]
 struct DirectProductionEvapotranspirationAuthority {
     leaf_area_index: f64,
+    canopy_height_m: Option<f64>,
     canopy_cover_fraction: f64,
     residue_interception_m: f64,
     root_depth_m: f64,
@@ -1218,6 +1219,14 @@ fn direct_production_typed_evapotranspiration_authority(
             solthk_m: soil.layers.iter().map(|layer| Some(layer.solthk_m)).collect(),
         })
     };
+    let canopy_height_m = if let Some(pmet) = &pmet {
+        Some(pmet.canhgt)
+    } else {
+        direct_production_pl_projection_optional_nonnegative_scalar(
+            management_projection,
+            "canhgt",
+        )?
+    };
 
     Ok(DirectProductionEvapotranspirationAuthority {
         leaf_area_index: direct_production_pl_projection_required_ofe_scalar(
@@ -1225,6 +1234,7 @@ fn direct_production_typed_evapotranspiration_authority(
             1,
             "lai",
         )?,
+        canopy_height_m,
         canopy_cover_fraction: direct_production_pl_projection_required_ofe_scalar(
             management_projection,
             1,

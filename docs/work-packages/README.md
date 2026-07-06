@@ -12,14 +12,24 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-06`:
+- `20260706-mofefid-d11-gap007-dynamic-friction-closure-001/` —
+  EXECUTED-COMPLETE: D11 hold-lift package closed the remaining dynamic
+  `GAP-OFEROUTE-007` operands for the opt-in Lane D shadow. `SC-OFEROUTE-001`
+  rev 21 ratifies source/timing for skin rainfall intensity `I` from live WB14
+  hourly rainfall depth (`/3600 s`), post-growth `LAI` from the executed direct
+  day frame, and canopy height `h_c` from typed-management `canhgt`; tests and
+  review prove the real shadow consumer reads those operands. No
+  production/default activation or Case-4 shock acceptance claim.
 - `20260705-mofefid-d11-friction-operand-authority-001/` —
-  EXECUTED-HOLD-SOURCE-AUTHORITY: Lane D friction operand authority package.
-  `SC-OFEROUTE-001` rev 19 records the exact `GAP-OFEROUTE-007` boundary:
-  rainfall intensity `I` and plant `LAI` have source candidates, `h_c` has
-  incomplete candidate lineage, and no ratified WEPP-runtime mapping/default
-  exists for `k_o`, form/vegetation `C_d`, `D_r`, or `lambda`. The current
-  shadow remains diagnostic-only with labeled bare `k_o=500` / `I=0`; no
-  friction-fidelity, Case-4, activation, or default-promotion claim.
+  EXECUTED-HOLD-SOURCE-AUTHORITY then follow-on PARTIAL-CLOSED: Lane D
+  friction operand authority package. Rev 19 recorded the original
+  `GAP-OFEROUTE-007` boundary; follow-on rev 20 plus commit `f72e7749`
+  ratified native management `routing_coefficients` for static Lane D shadow
+  operands (`k_o`, form `C_d`, `D_r`, `lambda`, vegetation `C_d`) and made
+  `OPENWEPP_LANED_SHADOW=1` fail closed unless every scheduled MOFE lane
+  landuse has a complete, schedule-consistent native extension. Dynamic
+  `I`/`LAI`/`h_c` closure completed in
+  `20260706-mofefid-d11-gap007-dynamic-friction-closure-001/`.
 - `20260705-mofefid-d10-shock-numerics-gap005-001/` —
   EXECUTED-HOLD-SOURCE-AUTHORITY: Lane D shock-numerics defect-closure
   package. Case 4 and the real-H2637 shadow reproduction were rerun, TVD
@@ -40,9 +50,9 @@ State as of `2026-07-06`:
   source-depth basis, the real H2637 vector executes, protected outputs
   remain byte-identical, and Codex subagent review findings are
   dispositioned. Production activation remains blocked by the enumerated
-  flip preconditions (`INV-OFEROUTE-011`,
-  `GAP-OFEROUTE-005`, melt-limb coverage, `GAP-OFEROUTE-007`, and the
-  ADR-0036 erosion hourly-shape switch).
+  flip preconditions (`INV-OFEROUTE-011`, `GAP-OFEROUTE-005`, melt-limb
+  coverage, future production-consumer proof for the rev-21 friction operand
+  path, and the ADR-0036 erosion hourly-shape switch).
 - `20260705-mofefid-laned-seam-implementation-001/` — COMPLETE, MERGED TO
   MAIN `0cccf263` 2026-07-05: `ofe_routing::seam` lands the GAP-006
   machinery (rate series + `/3600` helper, hourly-lane precondition, DC01

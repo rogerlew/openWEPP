@@ -97,7 +97,7 @@ fn execute_direct_publication_stream(
         None
     };
     let execution = DirectFrameExecutor::new(DirectExecutorMode::ProductionDirect)
-        .run_publication_stream_with_interleaved_day_inputs(
+        .run_publication_stream_with_interleaved_day_inputs_and_day_frames(
             frame,
             metadata,
             |frame, day_index, lane_index| {
@@ -105,11 +105,16 @@ fn execute_direct_publication_stream(
                     .build(frame, day_index, lane_index)
                     .map_err(|error| direct_publication_day_input_build_error(&error))
             },
-            |row| {
+            |row, day_frame| {
                 if let Some(collector) = laned_shadow.as_mut() {
-                    collector.observe_row(row).map_err(|detail| {
-                        DirectRuntimeError::PublicationSinkFailure { detail }
-                    })?;
+                    let operands = day_input_builder
+                        .laned_shadow_lane_day_operands(day_frame)
+                        .map_err(|error| direct_publication_day_input_build_error(&error))?;
+                    collector
+                        .observe_row(row, operands)
+                        .map_err(|detail| {
+                            DirectRuntimeError::PublicationSinkFailure { detail }
+                        })?;
                 }
                 stream_sink.observe_row(row).map_err(|error| {
                     DirectRuntimeError::PublicationSinkFailure {

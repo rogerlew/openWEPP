@@ -1,0 +1,6 @@
+    Checking openwepp v0.1.0 (/home/workdir/openWEPP)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.41s
+real 1.72
+user 14.76
+sys 9.10
+exit_code:0
