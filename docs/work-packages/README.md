@@ -11,13 +11,15 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-07-05`:
+State as of `2026-07-06`:
 - `20260705-mofefid-d11-friction-operand-authority-001/` —
-  QUEUED: Lane D friction operand authority package. Scope is
-  `SC-OFEROUTE-001#GAP-OFEROUTE-007`: source, default-authorize, or
-  fail-close active friction operands (`I`, `k_o`, `C_d`, `D_r`, `lambda`,
-  `LAI`, `h_c`) and wire the active/shadow operand builder without claiming
-  Case-4 shock acceptance or production activation.
+  EXECUTED-HOLD-SOURCE-AUTHORITY: Lane D friction operand authority package.
+  `SC-OFEROUTE-001` rev 19 records the exact `GAP-OFEROUTE-007` boundary:
+  rainfall intensity `I` and plant `LAI` have source candidates, `h_c` has
+  incomplete candidate lineage, and no ratified WEPP-runtime mapping/default
+  exists for `k_o`, form/vegetation `C_d`, `D_r`, or `lambda`. The current
+  shadow remains diagnostic-only with labeled bare `k_o=500` / `I=0`; no
+  friction-fidelity, Case-4, activation, or default-promotion claim.
 - `20260705-mofefid-d10-shock-numerics-gap005-001/` —
   EXECUTED-HOLD-SOURCE-AUTHORITY: Lane D shock-numerics defect-closure
   package. Case 4 and the real-H2637 shadow reproduction were rerun, TVD

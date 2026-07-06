@@ -1,6 +1,7 @@
 # MOFEFID-D11 - Friction Operand Authority
 
-Status: **QUEUED** (scaffolded 2026-07-05). Campaign:
+Status: **EXECUTED-HOLD-SOURCE-AUTHORITY** (scaffolded 2026-07-05;
+executed 2026-07-06). Campaign:
 [MOFEFID](../../planning/mofe-fidelity-campaign-strategy.md) Lane D.
 Contract focus: `SC-OFEROUTE-001#GAP-OFEROUTE-007` and active Lane D
 friction operands.
@@ -237,16 +238,34 @@ only when package governance permits substitution.
 
 - [x] 2026-07-05: Package scaffolded from MOFEFID §6.1 D11 row and
       `SC-OFEROUTE-001#GAP-OFEROUTE-007`.
-- [ ] D11-S0 intake and baseline.
-- [ ] D11-S1 operand-source audit.
-- [ ] D11-S2 contract-first authority.
-- [ ] D11-S3 contract-derived tests and pre-implementation gate.
-- [ ] D11-S4 builder implementation or authority HOLD.
-- [ ] D11-S5 evidence, review, verification, and closure.
+- [x] 2026-07-06: D11-S0 intake and baseline completed; D10 Case-4
+      boundary confirmed and current shadow hardcoded `k_o=500` / `I=0`
+      path located.
+- [x] 2026-07-06: D11-S1 operand-source audit completed with explorer
+      subagent support. `I` and `LAI` have source candidates; `h_c` has
+      incomplete candidate lineage; `k_o`, `C_d`, `D_r`, and `lambda` have
+      no D11-ratified WEPP-runtime mapping/default.
+- [x] 2026-07-06: D11-S2 contract-first authority completed in
+      `SC-OFEROUTE-001` rev 19.
+- [x] 2026-07-06: D11-S3 pre-implementation contract gate recorded as
+      blocked by missing source/default authority; no contract-derived
+      production tests were authored.
+- [x] 2026-07-06: D11-S4 closed as authority HOLD rather than wiring a
+      surrogate friction builder.
+- [x] 2026-07-06: D11-S5 package artifacts, review, verification, and
+      disposition completed.
 
 ## Surprises & Discoveries
 
-- None yet. Populate during execution.
+- The direct runtime already carries a usable rainfall-intensity lineage for
+  `I`: climate `intsty_m_s`, plus `wb14_hourly_rainfall_m[h] / 3600 s` as an
+  hourly-bin candidate if carried through a builder. The shadow still forces
+  the skin term to `I=0`.
+- Plant state exposes `LAI`, and `canhgt`/`Hc` candidates exist, but the
+  shadow observes only `DirectPublicationDayRow`, which currently does not
+  carry a friction operand payload.
+- Chapter-10 hydraulics roughness/cover terms are adjacent authority, not a
+  direct alias to Papanicolaou `k_o`, `C_d`, `D_r`, or `lambda`.
 
 ## Decision Log
 
@@ -256,7 +275,18 @@ only when package governance permits substitution.
   explicitly rejected `k_o` scans as tuning. D11 can remove hardcoded shadow
   friction without treating the Iwagaki comparand as accepted.
   Date/Author: 2026-07-05 / Codex.
+- Decision: Close D11 as `EXECUTED-HOLD-SOURCE-AUTHORITY`, not by adding a
+  bare-soil default or roughness surrogate.
+  Rationale: D11 found source candidates for `I` and plant operands, but no
+  ratified WEPP-runtime mapping/default for `k_o`, `C_d`, `D_r`, or
+  `lambda`. Any builder using fabricated values would violate the package's
+  no-surrogate-physics boundary.
+  Date/Author: 2026-07-06 / Codex.
 
 ## Outcomes & Retrospective
 
-- Pending execution.
+D11 did not close `GAP-OFEROUTE-007`; it made the blocker exact. The current
+shadow may remain a labeled diagnostic first cut, but it cannot carry
+friction-fidelity, Case-4, activation, or default-promotion claims. The first
+actionable follow-on is to ratify every missing friction operand source or
+default, then wire and test a real consumer-read builder.
