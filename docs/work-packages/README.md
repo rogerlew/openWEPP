@@ -12,6 +12,13 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-06`:
+- `20260705-mofefid-d14-laned-runtime-profile-optimization-001/` —
+  SCAFFOLDED: Lane D runtime profiling/optimization package. D14 owns the
+  empirical H2637 shadow cost breakdown, persistent slot timing diagnostics
+  needed by local CI agents, behavior-preserving runtime optimizations, and
+  before/after endpoint timing for the D15 opt-in activation decision. It must
+  not perform production/default activation, D10 shock-numerics correction,
+  D11/D12/D13 semantic changes, D15/D16 policy, or surrogate physics.
 - `20260705-mofefid-d13-routed-hydrograph-erosion-shape-001/` —
   EXECUTED-COMPLETE: Lane D routed-hydrograph erosion-shape package.
   `SC-OFEROUTE-001` rev 23 and `SC-SED-001` rev 53 bind the active-candidate
