@@ -12,6 +12,19 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-06`:
+- `20260706-mofefid-d15-opt-in-production-activation-rerun-001/` —
+  EXECUTED-HOLD-TIMING-ACTIVE-PATH: D15 rerun package. Phase A confirmed
+  default/off timing remains acceptable (`2.58 s` user / `2.60 s` wall on the
+  2-year H2637-class fixture) but the D10B-corrected
+  `OPENWEPP_LANED_SHADOW=1` path fails before endpoint with
+  `NegativeOutletBin`, so no routed endpoint timing, counters, or slot
+  profile exist. Phase B confirmed `INV-OFEROUTE-011` / `GAP-OFEROUTE-005`
+  is closed by D10B, but the current tree still has only diagnostics-only
+  shadow/candidate surfaces: no active production owner path, no DC01-disable
+  in production, no active closure hard-fail, and no routed producer feeding
+  D13. No partial activation flip. First follow-on: close the Lane D
+  terminal-bin/day-boundary routed-path blocker; second follow-on: active
+  owner implementation package. D16 remains blocked.
 - `20260706-mofefid-d10b-gap005-source-authority-reconciliation-001/` —
   EXECUTED-COMPLETE (2026-07-06, Claude Code, operator-directed end-to-end
   run): the §6.1 D10 hold-lift. `SC-OFEROUTE-001` rev 24 bound the scheme
@@ -43,9 +56,9 @@ State as of `2026-07-06`:
   (Case-4 shock-numerics/source-authority hold). No runtime, contract, schema,
   fixture, or test files changed; the D10 source-authority reconciliation
   is now EXECUTED-COMPLETE (D10B, `GAP-OFEROUTE-005` RESOLVED at rev 25),
-  so the next actionable items are the D14 endpoint-timing refresh
-  (required by the §6.1 ordering rule after D10B's celerity/handoff
-  changes) and then the D15 rerun.
+  the follow-on D15 rerun is now EXECUTED-HOLD-TIMING-ACTIVE-PATH:
+  default/off timing is acceptable, but the D10B-corrected shadow path fails
+  with `NegativeOutletBin` and the active production owner path remains absent.
 - `20260705-mofefid-d14-laned-runtime-profile-optimization-001/` —
   EXECUTED-COMPLETE: Lane D runtime profiling/optimization package. D14
   re-pinned the H2637 Lane D shadow cost at release grade (+65.3 s user over

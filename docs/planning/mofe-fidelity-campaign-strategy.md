@@ -1,7 +1,7 @@
 # MOFE Fidelity Campaign Strategy
 
 Status: **active strategy** (2026-07-01; activation sequence refreshed
-2026-07-05). Campaign code: **MOFEFID**.
+2026-07-06). Campaign code: **MOFEFID**.
 Owner: maintainers (operator-directed campaign; Claude Code authored this plan).
 
 Evidence mode: **Static** synthesis of three grounding documents (the
@@ -14,7 +14,7 @@ ADR-0011/0017/0024, and `docs/ROADMAP.md`.
 
 ## 0. TL;DR
 
-> **MOFEFID A-C complete; Lane D is in activation-gate closure (2026-07-05).**
+> **MOFEFID A-C complete; Lane D is in activation-gate closure (2026-07-06).**
 > The FARPOINT01 magnitude arc is closed end-to-end: mechanism found (A01
 > F-A2) → confirmed first-order (A02) → corrected in production (DC01,
 > runon re-infiltration) → validated against field authority (C01/C03,
@@ -23,11 +23,13 @@ ADR-0011/0017/0024, and `docs/ROADMAP.md`.
 > the reference for H2637 forest lateral flow; the observed wet-forest field
 > band is. Lane D has advanced beyond "optional scaffold": D1-D8, the
 > subsurface seam design, the solver/identity seam implementation, and the
-> opt-in runtime SHADOW + real-H2637 executed vector are merged. **Production
-> activation is not one remaining task.** It is blocked by the enumerated
-> `SC-OFEROUTE-001` flip preconditions: `INV-OFEROUTE-011`,
-> `GAP-OFEROUTE-005`, melt-limb hourly-source coverage,
-> `GAP-OFEROUTE-007`, and the ADR-0036 erosion hourly-shape switch.
+> opt-in runtime SHADOW + real-H2637 executed vector are merged. D10B/D11/D12/
+> D13 closed the former source-authority, operand, melt-limb, and erosion-shape
+> blockers. **Production activation is still not one remaining task.** The D15
+> rerun held because the D10B-corrected routed timing path fails with
+> `NegativeOutletBin` before endpoint and because the active production owner
+> path is still absent. Next: terminal-bin/day-boundary hold-lift, then active
+> owner implementation with real consumer proof.
 
 
 The MOFE **closure** rung is complete: MOFE01/FARPOINT01 closed inter-OFE
@@ -367,19 +369,16 @@ validation surface:
 | D12 | `20260705-mofefid-d12-melt-limb-hourly-shape-001` | Close the melt-limb coverage gap: add the snowmelt/routed-liquid hourly source limb to the activation source series or formally prove it is already represented, with exact daily-sum closure to lane-local supply. | The shadow found `10/731` H2637 runoff days with no hourly shape from the two D1 limbs. Uniform fallback is acceptable diagnostic plumbing; it is not an activation source-authority rule. | **EXECUTED-COMPLETE 2026-07-06:** `snow.hourly_routed_melt_m` is source-authorized and consumed by the DC01/ADR-0036/Lane D path; H2637 has `0` uniform-fallback days with routed melt. The remaining `6` uniform days are no-authorized-source-shape residuals and remain diagnostic-only. |
 | D13 | `20260705-mofefid-d13-routed-hydrograph-erosion-shape-001` | Amend/implement the ADR-0036 touchpoint: when Lane D routing owns the water path, erosion's hourly sediment substrate consumes the routed hydrograph rather than the DC01 shape authority. | This crosses `SC-OFEROUTE-001`/ADR-0036/`SC-SED-001`; keeping it separate prevents a water-router activation package from silently leaving sediment timed to the old hydrograph. | **EXECUTED-COMPLETE 2026-07-06:** rev 23/rev 53 bind the active-candidate routed-hydrograph erosion shape; tests prove it supersedes DC01 for the Wave-1 substrate, fails closed when missing/malformed, and keeps default/off on DC01 with protected-output identity. |
 | D14 | `20260705-mofefid-d14-laned-runtime-profile-optimization-001` | Profile and optimize the Lane D runtime physics path before the opt-in flip: break the H2637 shadow overhead into solver math, per-day/OFE setup, allocation, hydrograph sampling/interpolation, handoff, and diagnostics; land behavior-preserving optimizations that keep numerical authority and closure evidence intact. | The current H2637 shadow estimate is about `+207 s` CPU over the default path, mostly in `ofe_routing` cascade work. That is too large to bury inside the activation package, and activation needs a fresh endpoint budget after D10-D13 settle the candidate path. | **EXECUTED-COMPLETE 2026-07-06:** release-grade baseline re-pinned the overhead at `+65.3 s` user CPU on the 2-year H2637 fixture (the `+207 s` figure was a dev-profile estimate); slot + perf attribution: ~97 % solver math, 51 % of the run in redundant per-step alpha recomputation, libm `pow` 36 %, allocation ~2 %, everything runner-side < 0.2 %. Landed three bit-identical optimizations (single alpha evaluation per cell per step; per-solver step scratch replacing 8 per-step allocations; hoisted skin rain term `3393 I^0.407` per step): shadow-on `67.6 s → 29.9 s` wall (2.26×), overhead −58 % to `+27.6 s`, shadow multiplier ~29× → ~13×. Protected outputs and the `laned_shadow` manifest diagnostics are bit-identical pre/post, with identical trajectory counters (10,334,879 steps) as the preservation witness. Persistent opt-in slot diagnostics live in `ofe_routing::profile` (`OPENWEPP_LANED_SHADOW_PROFILE=1`). No numerical-method, tolerance, resolution, or activation change. |
-| D15 | `20260705-mofefid-d15-opt-in-production-activation-001` | The opt-in production flip: routing owns the surface-water path, DC01 daily-lump runon is disabled for active lanes, the `INV-OFEROUTE-012` runtime closure hard-fail is live, `latqcc` bypass is included in closure, active outputs are published from the routed path, and subsystem-off protected outputs remain byte-identical. | This is the first package allowed to claim production activation only after the remaining source-authority blocker is closed. D9-D14 remove the other known blockers, define the active consumer surfaces, and characterize/optimize the runtime cost. | **EXECUTED-HOLD-SOURCE-AUTHORITY 2026-07-06 -> RERUN UNBLOCKED by D10B:** the original preflight held on rev-23 `INV-OFEROUTE-011`/`GAP-OFEROUTE-005`; D10B RESOLVED that blocker (rev 25/26). The D15 rerun's remaining preconditions are the **D14 endpoint-timing refresh** (required — D10B's true-celerity + conservative-handoff changes altered the profiled path) and D15's own activation gates (`INV-OFEROUTE-012` wiring, DC01-disable, rev-21 operand consumer proof, byte-flat default). |
+| D15 | `20260705-mofefid-d15-opt-in-production-activation-001` + rerun `20260706-mofefid-d15-opt-in-production-activation-rerun-001` | The opt-in production flip: routing owns the surface-water path, DC01 daily-lump runon is disabled for active lanes, the `INV-OFEROUTE-012` runtime closure hard-fail is live, `latqcc` bypass is included in closure, active outputs are published from the routed path, and subsystem-off protected outputs remain byte-identical. | This is the first package allowed to claim production activation only after the remaining source-authority blocker is closed. D9-D14 remove the other known blockers, define the active consumer surfaces, and characterize/optimize the runtime cost. | **EXECUTED-HOLD-TIMING-ACTIVE-PATH 2026-07-06:** the original D15 source-authority hold was unblocked by D10B (`GAP-OFEROUTE-005` resolved), but the rerun stopped before activation. Phase A default/off timing was acceptable (`2.58 s` user / `2.60 s` wall), while the D10B-corrected shadow path failed before endpoint with `NegativeOutletBin`. Phase B found no active production owner path yet: current code remains diagnostics-only shadow/candidate surfaces with DC01 still feeding production. First follow-on is a terminal-bin/day-boundary hold-lift; second is the active-owner implementation. |
 | D16 | `20260705-mofefid-d16-default-promotion-adjudication-001` | Decide whether the opt-in active router becomes default for any policy slice. | Default activation is a policy/performance/release gate, not the same as opt-in production correctness. | Default promotion, non-promotion, or policy-scoped activation with full endpoint timing and protected-output evidence. |
 
-The ordering is strict at D15: production activation must not start while the
-D10 source-authority hold remains open. D15's first execution confirmed that
-blocker and held before runtime edits; D10B then LIFTED it (2026-07-06,
-`GAP-OFEROUTE-005` RESOLVED at rev 25/26). A D15 rerun consumes D13's
-routed-hydrograph erosion consumer, the rev-21 D11 operand path, the D12
-source-shape closure, D14's runtime disposition, and the executed D10B
-hold-lift. D10B DID materially change the activation candidate (true-celerity
-CFL, conservative bin-series handoff, bin-mean hydrograph export), so D14's
-endpoint timing MUST be refreshed before the D15
-activation claim. D16 is explicitly outside the opt-in activation package.
+The ordering is strict at D15: production activation must not start while a
+current activation precondition is failing. D10B lifted the original
+source-authority hold (`GAP-OFEROUTE-005` resolved at rev 25/26), but the
+D15 rerun found two remaining blockers: the D10B-corrected shadow timing path
+fails with `NegativeOutletBin` before endpoint, and the active production owner
+path is still absent. D16 is explicitly outside the opt-in activation package
+and remains blocked.
 
 ## 7. Sequencing and gates
 
@@ -399,15 +398,16 @@ activation claim. D16 is explicitly outside the opt-in activation package.
 | ✅ | `20260705-mofefid-laned-gap006-subsurface-seam-design-001` | D | `GAP-OFEROUTE-006` design resolved: active seam sources `ui_SCrunf` + hourly excess; `ui_LfCrf` stays subsurface; outlet `latqcc` bypasses the router. |
 | ✅ | `20260705-mofefid-laned-seam-implementation-001` | D | seam machinery + both `INV-OFEROUTE-012` fixtures pass at solver/identity tier; production activation block stands. |
 | ✅ | `20260705-mofefid-laned-activation-increment-001` | D | runtime SHADOW + real-H2637 executed vector merged 2026-07-05; protected outputs byte-identical; review found and fixed the `QOFE` alias trap by moving source depth to `runvol/area`. |
-| ▶️ | D14 endpoint-timing refresh + D15 rerun + D16 sequence in §6.1 | D | remaining production-activation scope. D10B (2026-07-06) resolved the GAP-005 source-authority hold — the former D15 blocker; D11-D13 authority closures and the original D14 profile are complete for the opt-in candidate. Next: refresh D14's endpoint timing against the D10B-corrected path (true-celerity CFL + conservative handoff), then rerun D15 against the fresh budget. |
+| ▶️ | D15 hold-lifts + D16 sequence in §6.1 | D | remaining production-activation scope. D10B (2026-07-06) resolved the GAP-005 source-authority hold — the former D15 blocker. The D15 rerun then held on (1) `NegativeOutletBin` before the D10B-corrected H2637 shadow endpoint and (2) absent active production owner path. Next: terminal-bin/day-boundary hold-lift, then active-owner implementation; D16 only after opt-in activation evidence exists. |
 
 Stop conditions (current): A/B findings are dispositioned and Lane C proceeded
 only after its envelope was ratified. The §6.1 D10 source-authority hold is
-CLOSED (D10B, 2026-07-06). Lane D opt-in production activation now waits on
-the D14 endpoint-timing REFRESH (mandatory: D10B changed the profiled path)
-and then the D15 rerun, where the rev-21 D11 operand path, D12 source-shape
-closure, and D13 routed-hydrograph erosion shape must be proven in the active
-consumer; Lane D default activation is D16 or later.
+CLOSED (D10B, 2026-07-06). Lane D opt-in production activation now waits on the
+D15 hold-lifts: terminal-bin/day-boundary correction for the H2637
+`NegativeOutletBin`, then the active production owner path where the rev-21 D11
+operand path, D12 source-shape closure, and D13 routed-hydrograph erosion shape
+must be proven in the active consumer. Lane D default activation is D16 or
+later and remains blocked.
 
 ## 8. Guardrails
 
