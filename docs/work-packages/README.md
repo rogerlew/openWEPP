@@ -12,6 +12,14 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-06`:
+- `20260706-mofefid-d15-active-owner-optimization-001/` —
+  QUEUED: D15A active-owner and timing-optimization hold-lift package. It is
+  scaffolded to resolve the absent active production owner path and
+  optimize/adjudicate the `91.59 s` H2637 opt-in routed timing regression
+  before any D15 activation claim. The optimization portion follows the D14
+  intake/baseline, slot instrumentation, empirical profile, optimization plan,
+  implementation, and evidence/closure structure. D16/default promotion
+  remains blocked.
 - `20260706-mofefid-d15-blocker-resolution-001/` —
   EXECUTED-HOLD-ACTIVE-OWNER-TIMING-BUDGET: D15 blocker-resolution package.
   The terminal-bin/day-boundary blocker is closed: the D10B-corrected H2637
@@ -20,8 +28,8 @@ State as of `2026-07-06`:
   `OPENWEPP_LANED_SHADOW=1` (`+89.10 s` user over default/off and about
   `3.06x` D14's optimized shadow budget). No production activation flip was
   made because the active production owner path is still absent and the timing
-  regression is adjudicated as a hold. Next package: resolve active production
-  ownership and optimize/adjudicate D15 timing before activation.
+  regression is adjudicated as a hold. Follow-on:
+  `20260706-mofefid-d15-active-owner-optimization-001/`.
 - `20260706-mofefid-d15-opt-in-production-activation-rerun-001/` —
   EXECUTED-HOLD-TIMING-ACTIVE-PATH: D15 rerun package. Phase A confirmed
   default/off timing remains acceptable (`2.58 s` user / `2.60 s` wall on the
