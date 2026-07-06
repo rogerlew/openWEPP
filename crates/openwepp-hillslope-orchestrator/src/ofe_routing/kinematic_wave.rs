@@ -14,9 +14,10 @@
 
 use super::friction::{
     GRAVITY_M_S2, KINEMATIC_VISCOSITY_M2_S, chezy_from_friction, equivalent_friction_factor,
-    form_resistance_abrahams, froude_number, reynolds_number, skin_resistance,
-    vegetation_resistance_katul, wave_resistance_hu_abrahams,
+    form_resistance_abrahams, froude_number, reynolds_number, skin_rain_term,
+    skin_resistance_with_rain_term, vegetation_resistance_katul, wave_resistance_hu_abrahams,
 };
+use super::profile;
 
 /// Depth-discharge exponent `m` (eq. A2): `q = alpha h^m`, `m = 1.5`.
 pub const DEPTH_DISCHARGE_EXPONENT: f64 = 1.5;
@@ -102,9 +103,26 @@ impl CellParameters {
         unit_discharge_m2_s: f64,
         rainfall_intensity_m_s: f64,
     ) -> f64 {
+        self.equivalent_friction_with_rain_term(
+            flow_depth_m,
+            unit_discharge_m2_s,
+            skin_rain_term(rainfall_intensity_m_s),
+        )
+    }
+
+    /// `f_eq` with the skin rain term precomputed (D14 OPT-3): the hot solver
+    /// path hoists `3393 I^0.407` once per step because `I` is constant
+    /// within a step. Bit-identical to `equivalent_friction` (the public form
+    /// delegates here).
+    fn equivalent_friction_with_rain_term(
+        &self,
+        flow_depth_m: f64,
+        unit_discharge_m2_s: f64,
+        skin_rain_term: f64,
+    ) -> f64 {
         let re = reynolds_number(unit_discharge_m2_s, KINEMATIC_VISCOSITY_M2_S);
         let fr = froude_number(unit_discharge_m2_s, flow_depth_m, GRAVITY_M_S2);
-        let skin = skin_resistance(rainfall_intensity_m_s, self.friction_coefficient_ko, re);
+        let skin = skin_resistance_with_rain_term(skin_rain_term, self.friction_coefficient_ko, re);
         let form = form_resistance_abrahams(
             self.drag_coefficient,
             flow_depth_m,
@@ -135,13 +153,11 @@ impl CellParameters {
     /// this resolves the implicit relation by a short fixed-point iteration
     /// seeded with a Chezy estimate `q0 ~ sqrt(g S_o) h^1.5` to break the
     /// zero-flow singularity (the skin term diverges as `Re -> 0`).
+    ///
+    /// Takes the precomputed `skin_rain_term` (D14 OPT-3); the run loop
+    /// evaluates it once per step from the validated intensity.
     #[must_use]
-    fn alpha(
-        &self,
-        flow_depth_m: f64,
-        unit_discharge_m2_s: f64,
-        rainfall_intensity_m_s: f64,
-    ) -> f64 {
+    fn alpha(&self, flow_depth_m: f64, unit_discharge_m2_s: f64, skin_rain_term: f64) -> f64 {
         if flow_depth_m <= DRY_DEPTH_M || self.slope <= 0.0 {
             return 0.0;
         }
@@ -153,7 +169,7 @@ impl CellParameters {
         };
         let mut alpha = 0.0;
         for _ in 0..4 {
-            let f_eq = self.equivalent_friction(flow_depth_m, q_est, rainfall_intensity_m_s);
+            let f_eq = self.equivalent_friction_with_rain_term(flow_depth_m, q_est, skin_rain_term);
             if f_eq <= 0.0 {
                 return 0.0;
             }
@@ -293,6 +309,102 @@ pub struct KinematicWaveSolver {
     mesh: KinematicWaveMesh,
     depth_m: Vec<f64>,
     discharge_m2_s: Vec<f64>,
+    scratch: StepScratch,
+}
+
+/// Per-step workspace reused across steps (D14 OPT-2: was 8 `Vec`
+/// allocations per step). Every slot is written before it is read within
+/// the same step; no value crosses steps through the scratch.
+struct StepScratch {
+    /// Per-cell `alpha` at the pre-step state (D14 OPT-1: computed once per
+    /// step by the run loop; reused by dt selection, Courant evidence, and
+    /// the step math).
+    alpha: Vec<f64>,
+    v: Vec<f64>,
+    h_pred: Vec<f64>,
+    q_pred: Vec<f64>,
+    h_corr: Vec<f64>,
+    averaged: Vec<f64>,
+    gr: Vec<f64>,
+    h_next: Vec<f64>,
+}
+
+impl StepScratch {
+    fn new(cell_count: usize) -> Self {
+        Self {
+            alpha: vec![0.0; cell_count],
+            v: vec![0.0; cell_count],
+            h_pred: vec![0.0; cell_count],
+            q_pred: vec![0.0; cell_count],
+            h_corr: vec![0.0; cell_count],
+            averaged: vec![0.0; cell_count],
+            gr: vec![0.0; cell_count],
+            h_next: vec![0.0; cell_count],
+        }
+    }
+}
+
+/// Outlet-hydrograph sampler: linear interpolation of the outlet state onto
+/// the `sample_dt_s` grid within each solver step (D8-2 sampling rule).
+struct SampleRecorder {
+    hydrograph: Vec<HydrographSample>,
+    next_sample_s: f64,
+    sample_dt_s: f64,
+    end_time_s: f64,
+}
+
+impl SampleRecorder {
+    fn new(sample_dt_s: f64, end_time_s: f64) -> Self {
+        // record initial (dry) sample
+        let hydrograph = vec![HydrographSample {
+            time_s: 0.0,
+            outlet_unit_discharge_m2_s: 0.0,
+            outlet_depth_m: 0.0,
+        }];
+        Self {
+            hydrograph,
+            next_sample_s: sample_dt_s,
+            sample_dt_s,
+            end_time_s,
+        }
+    }
+
+    /// Record all samples crossed by the step `[t_before, t]`, interpolating
+    /// between the pre-step and post-step outlet state.
+    fn record_step(&mut self, t_before: f64, t: f64, dt: f64, outlet: StepOutletSpan) {
+        if !(self.next_sample_s <= t + 1.0e-12 && self.next_sample_s <= self.end_time_s) {
+            return;
+        }
+        let sample_span = profile::span_start();
+        let mut samples_recorded = 0_u64;
+        while self.next_sample_s <= t + 1.0e-12 && self.next_sample_s <= self.end_time_s {
+            let frac = if dt > 0.0 {
+                ((self.next_sample_s - t_before) / dt).clamp(0.0, 1.0)
+            } else {
+                1.0
+            };
+            let q_sample = outlet.q_before + frac * (outlet.q_out - outlet.q_before);
+            let h_sample = outlet.h_before + frac * (outlet.h_out - outlet.h_before);
+            self.hydrograph.push(HydrographSample {
+                time_s: self.next_sample_s,
+                outlet_unit_discharge_m2_s: q_sample,
+                outlet_depth_m: h_sample,
+            });
+            self.next_sample_s += self.sample_dt_s;
+            samples_recorded += 1;
+        }
+        profile::count_hydrograph_samples(samples_recorded);
+        profile::end_solver_sample(sample_span);
+    }
+}
+
+/// Pre-/post-step outlet state for sample interpolation.
+#[derive(Clone, Copy)]
+struct StepOutletSpan {
+    q_before: f64,
+    h_before: f64,
+    q_out: f64,
+    h_out: f64,
 }
 
 impl KinematicWaveSolver {
@@ -304,6 +416,7 @@ impl KinematicWaveSolver {
             mesh,
             depth_m: vec![0.0; n],
             discharge_m2_s: vec![0.0; n],
+            scratch: StepScratch::new(n),
         }
     }
 
@@ -311,27 +424,26 @@ impl KinematicWaveSolver {
         self.depth_m.iter().sum::<f64>() * self.mesh.cell_length_m
     }
 
-    /// CFL-limited sub-timestep at the current state (eq. 12), clamped to
-    /// `[min_dt, max_dt]`. Uses celerity `c = 1.5 C S_o^0.5 h^0.5 = 1.5 alpha h^0.5`.
-    fn cfl_dt(&self, time_s: f64, forcing: &Forcing<'_>, max_dt_s: f64) -> f64 {
-        let dx = self.mesh.cell_length_m;
-        let intensity = (forcing.rainfall_intensity_m_s)(time_s);
+    /// Evaluate `alpha` for every cell at the pre-step state into the step
+    /// scratch (D14 OPT-1: single evaluation per cell per step), returning
+    /// the max wet-cell celerity `c = 1.5 alpha h^0.5` for CFL dt selection
+    /// (eq. 12).
+    fn prepare_step_alpha(&mut self, skin_rain_term: f64) -> f64 {
         let mut max_celerity = 0.0_f64;
         for (i, cell) in self.mesh.cells.iter().enumerate() {
             let h = self.depth_m[i];
+            let alpha = cell.alpha(h, self.discharge_m2_s[i], skin_rain_term);
+            self.scratch.alpha[i] = alpha;
             if h <= DRY_DEPTH_M {
                 continue;
             }
-            let alpha = cell.alpha(h, self.discharge_m2_s[i], intensity);
             let celerity = DEPTH_DISCHARGE_EXPONENT * alpha * h.sqrt();
             if celerity > max_celerity {
                 max_celerity = celerity;
             }
         }
-        if max_celerity <= 0.0 {
-            return max_dt_s;
-        }
-        (CFL_TARGET * dx / max_celerity).min(max_dt_s)
+        profile::count_alpha_evaluations(self.mesh.cell_count() as u64);
+        max_celerity
     }
 
     /// Flux-limiter ratio `r_i` (eq. 11d) with a guarded denominator.
@@ -367,6 +479,10 @@ impl KinematicWaveSolver {
 
     /// Advance one TVD-MacCormack step of size `dt` (eqs. 8-14). Returns the
     /// outlet sample, or a `RoutingError` on a fail-closed condition.
+    ///
+    /// Preconditions owned by the run loop (D14 OPT-1): `scratch.alpha`
+    /// holds the pre-step per-cell alpha values and the rainfall intensity
+    /// was validated before they were computed.
     fn step(
         &mut self,
         time_s: f64,
@@ -376,31 +492,27 @@ impl KinematicWaveSolver {
     ) -> Result<(f64, f64), RoutingError> {
         let n = self.mesh.cell_count();
         let dx = self.mesh.cell_length_m;
-        let intensity = (forcing.rainfall_intensity_m_s)(time_s);
         let q_up = (forcing.upstream_inflow_m2_s)(time_s);
         // Rainfall excess, intensity, and upstream inflow are physically
         // non-negative; a non-finite OR negative value is invalid input and
-        // fails closed (it is not silently normalized to zero).
-        if !is_valid_forcing(q_up) || !is_valid_forcing(intensity) {
+        // fails closed (it is not silently normalized to zero). Intensity is
+        // validated by the run loop before the alpha evaluation.
+        if !is_valid_forcing(q_up) {
             return Err(RoutingError::InvalidForcing);
         }
         let mut clamp_injected_m2 = 0.0_f64;
 
-        // Per-cell alpha and rainfall excess for this step.
-        let mut alpha = vec![0.0_f64; n];
-        let mut v = vec![0.0_f64; n];
+        // Rainfall excess for this step (per-cell alpha is already in the
+        // step scratch).
         for i in 0..n {
-            alpha[i] = self.mesh.cells[i].alpha(self.depth_m[i], self.discharge_m2_s[i], intensity);
             let v_raw = (forcing.rainfall_excess_m_s)(i, time_s);
             if !is_valid_forcing(v_raw) {
                 return Err(RoutingError::InvalidForcing);
             }
-            v[i] = v_raw;
+            self.scratch.v[i] = v_raw;
         }
 
         // Predictor (eqs. 8-9): forward flux difference; upstream flux = q_up.
-        let mut h_pred = vec![0.0_f64; n];
-        let mut q_pred = vec![0.0_f64; n];
         for i in 0..n {
             let q_i = self.discharge_m2_s[i];
             let q_ip1 = if i + 1 < n {
@@ -415,46 +527,51 @@ impl KinematicWaveSolver {
             } else {
                 self.discharge_m2_s[i]
             };
-            let h_new = self.depth_m[i] - (dt / dx) * (q_ip1 - q_i) + v[i] * dt;
+            let h_new = self.depth_m[i] - (dt / dx) * (q_ip1 - q_i) + self.scratch.v[i] * dt;
             if h_new < 0.0 {
                 clamp_injected_m2 += (-h_new) * dx;
             }
-            h_pred[i] = h_new.max(0.0);
-            q_pred[i] = alpha[i] * h_pred[i].powf(DEPTH_DISCHARGE_EXPONENT);
+            self.scratch.h_pred[i] = h_new.max(0.0);
+            self.scratch.q_pred[i] =
+                self.scratch.alpha[i] * self.scratch.h_pred[i].powf(DEPTH_DISCHARGE_EXPONENT);
         }
 
         // Corrector (eq. 10): backward flux difference; upstream ghost flux =
         // q_up entering cell 0.
-        let mut h_corr = vec![0.0_f64; n];
         for i in 0..n {
-            let q_im1 = if i == 0 { q_up } else { q_pred[i - 1] };
-            let h_new = self.depth_m[i] - (dt / dx) * (q_pred[i] - q_im1) + v[i] * dt;
+            let q_im1 = if i == 0 {
+                q_up
+            } else {
+                self.scratch.q_pred[i - 1]
+            };
+            let h_new = self.depth_m[i] - (dt / dx) * (self.scratch.q_pred[i] - q_im1)
+                + self.scratch.v[i] * dt;
             if h_new < 0.0 {
                 clamp_injected_m2 += (-h_new) * dx;
             }
-            h_corr[i] = h_new.max(0.0);
+            self.scratch.h_corr[i] = h_new.max(0.0);
         }
 
         // Average + TVD dissipation (eqs. 11a-e, 13). Gr uses the local
         // Courant number from the pre-step state.
-        let averaged: Vec<f64> = (0..n).map(|i| 0.5 * (h_pred[i] + h_corr[i])).collect();
-        let mut gr = vec![0.0_f64; n];
+        for i in 0..n {
+            self.scratch.averaged[i] = 0.5 * (self.scratch.h_pred[i] + self.scratch.h_corr[i]);
+        }
         for i in 0..n {
             let h = self.depth_m[i];
-            let celerity = DEPTH_DISCHARGE_EXPONENT * alpha[i] * h.max(0.0).sqrt();
+            let celerity = DEPTH_DISCHARGE_EXPONENT * self.scratch.alpha[i] * h.max(0.0).sqrt();
             let courant = celerity * dt / dx;
             let ratio = Self::limiter_ratio(&self.depth_m, i);
-            gr[i] = 0.5 * Self::cf(courant) * (1.0 - Self::phi(ratio));
+            self.scratch.gr[i] = 0.5 * Self::cf(courant) * (1.0 - Self::phi(ratio));
         }
-        let mut h_next = vec![0.0_f64; n];
         for i in 0..n {
             let tvd = if i == 0 || i + 1 >= n {
                 0.0
             } else {
-                gr[i] * (self.depth_m[i + 1] - self.depth_m[i])
-                    - gr[i - 1] * (self.depth_m[i] - self.depth_m[i - 1])
+                self.scratch.gr[i] * (self.depth_m[i + 1] - self.depth_m[i])
+                    - self.scratch.gr[i - 1] * (self.depth_m[i] - self.depth_m[i - 1])
             };
-            let h_new = averaged[i] + tvd;
+            let h_new = self.scratch.averaged[i] + tvd;
             if !h_new.is_finite() {
                 return Err(RoutingError::NonFiniteState);
             }
@@ -465,15 +582,16 @@ impl KinematicWaveSolver {
                 // small negative excursion clamped to dry: record injected mass
                 clamp_injected_m2 += (-h_new) * dx;
             }
-            h_next[i] = h_new.max(0.0);
+            self.scratch.h_next[i] = h_new.max(0.0);
         }
 
         // Commit state and recompute discharge (eq. 14).
         // outflow leaving the last cell over dt = q_out * dt (unit width)
         let outlet_flux_before = self.discharge_m2_s[n - 1];
         for i in 0..n {
-            self.depth_m[i] = h_next[i];
-            self.discharge_m2_s[i] = alpha[i] * self.depth_m[i].powf(DEPTH_DISCHARGE_EXPONENT);
+            self.depth_m[i] = self.scratch.h_next[i];
+            self.discharge_m2_s[i] =
+                self.scratch.alpha[i] * self.depth_m[i].powf(DEPTH_DISCHARGE_EXPONENT);
             if !self.discharge_m2_s[i].is_finite() {
                 return Err(RoutingError::NonFiniteState);
             }
@@ -481,7 +599,7 @@ impl KinematicWaveSolver {
 
         // Mass ledger (per unit width): inflow, rain, outflow over dt.
         mass.inflow_m2 += q_up * dt;
-        mass.rainfall_excess_m2 += v.iter().sum::<f64>() * dx * dt;
+        mass.rainfall_excess_m2 += self.scratch.v.iter().sum::<f64>() * dx * dt;
         // Use the trapezoidal outflow over the step for a stable ledger.
         let outlet_flux_after = self.discharge_m2_s[n - 1];
         mass.outflow_m2 += 0.5 * (outlet_flux_before + outlet_flux_after) * dt;
@@ -518,37 +636,46 @@ impl KinematicWaveSolver {
         let dx = self.mesh.cell_length_m;
         let storage_initial = self.total_storage_m2();
         let mut mass = MassBalance::default();
-        let mut hydrograph = Vec::new();
+        let mut recorder = SampleRecorder::new(sample_dt_s, end_time_s);
         let mut t = 0.0_f64;
-        let mut next_sample = 0.0_f64;
         let mut peak = 0.0_f64;
         let mut time_to_peak = 0.0_f64;
         let mut max_courant = 0.0_f64;
 
-        // record initial (dry) sample
-        hydrograph.push(HydrographSample {
-            time_s: 0.0,
-            outlet_unit_discharge_m2_s: 0.0,
-            outlet_depth_m: 0.0,
-        });
-        next_sample += sample_dt_s;
-
+        profile::count_solver_runs(1);
         let mut guard_steps = 0_u64;
         let max_steps = 50_000_000_u64; // runaway backstop
         while t < end_time_s {
-            let dt = self.cfl_dt(t, forcing, max_dt_s).min(end_time_s - t);
+            let cfl_span = profile::span_start();
+            // One intensity fetch and one alpha evaluation per cell per step
+            // (D14 OPT-1): dt selection, Courant evidence, and the step math
+            // all reuse the same pre-step alpha values. Intensity is
+            // validated here, before any consumer.
+            let intensity = (forcing.rainfall_intensity_m_s)(t);
+            if !is_valid_forcing(intensity) {
+                return Err(RoutingError::InvalidForcing);
+            }
+            let rain_term = skin_rain_term(intensity);
+            let max_celerity = self.prepare_step_alpha(rain_term);
+            // CFL-limited sub-timestep (eq. 12), clamped to max_dt and the
+            // remaining window.
+            let dt_cfl = if max_celerity <= 0.0 {
+                max_dt_s
+            } else {
+                (CFL_TARGET * dx / max_celerity).min(max_dt_s)
+            };
+            let dt = dt_cfl.min(end_time_s - t);
             if dt <= 0.0 {
+                profile::end_solver_cfl(cfl_span);
                 break;
             }
-            // CFL evidence at the chosen dt.
-            let intensity = (forcing.rainfall_intensity_m_s)(t);
-            for (i, cell) in self.mesh.cells.iter().enumerate() {
+            // CFL evidence at the chosen dt (reuses the per-cell alphas).
+            for i in 0..self.mesh.cell_count() {
                 let h = self.depth_m[i];
                 if h <= DRY_DEPTH_M {
                     continue;
                 }
-                let alpha = cell.alpha(h, self.discharge_m2_s[i], intensity);
-                let courant = DEPTH_DISCHARGE_EXPONENT * alpha * h.sqrt() * dt / dx;
+                let courant = DEPTH_DISCHARGE_EXPONENT * self.scratch.alpha[i] * h.sqrt() * dt / dx;
                 if courant > max_courant {
                     max_courant = courant;
                 }
@@ -556,32 +683,32 @@ impl KinematicWaveSolver {
                     return Err(RoutingError::CflViolation);
                 }
             }
+            profile::end_solver_cfl(cfl_span);
 
             let t_before = t;
             let q_before = self.discharge_m2_s[self.mesh.cell_count() - 1];
             let h_before = self.depth_m[self.mesh.cell_count() - 1];
+            let step_span = profile::span_start();
             let (q_out, h_out) = self.step(t, dt, forcing, &mut mass)?;
+            profile::end_solver_step(step_span);
+            profile::count_solver_steps(1);
             t += dt;
 
             if q_out > peak {
                 peak = q_out;
                 time_to_peak = t;
             }
-            while next_sample <= t + 1.0e-12 && next_sample <= end_time_s {
-                let frac = if dt > 0.0 {
-                    ((next_sample - t_before) / dt).clamp(0.0, 1.0)
-                } else {
-                    1.0
-                };
-                let q_sample = q_before + frac * (q_out - q_before);
-                let h_sample = h_before + frac * (h_out - h_before);
-                hydrograph.push(HydrographSample {
-                    time_s: next_sample,
-                    outlet_unit_discharge_m2_s: q_sample,
-                    outlet_depth_m: h_sample,
-                });
-                next_sample += sample_dt_s;
-            }
+            recorder.record_step(
+                t_before,
+                t,
+                dt,
+                StepOutletSpan {
+                    q_before,
+                    h_before,
+                    q_out,
+                    h_out,
+                },
+            );
 
             guard_steps += 1;
             if guard_steps > max_steps {
@@ -591,7 +718,7 @@ impl KinematicWaveSolver {
 
         mass.storage_change_m2 = self.total_storage_m2() - storage_initial;
         Ok(RoutingResult {
-            hydrograph,
+            hydrograph: recorder.hydrograph,
             mass_balance: mass,
             peak_unit_discharge_m2_s: peak,
             time_to_peak_s: time_to_peak,
@@ -980,6 +1107,61 @@ mod tests {
             solver.run(&forcing, 100.0, 10.0, 2.0),
             Err(RoutingError::InvalidCellParameter)
         ));
+    }
+
+    // D14: slot profiling is opt-in and accumulates counters/spans for the
+    // solver loop. The enable flag is process-global, so flag-toggling tests
+    // hold `profile::test_flag_guard` to stay correct under plain
+    // `cargo test` (libtest threads) as well as nextest process isolation.
+    #[test]
+    fn profile_slots_accumulate_when_enabled_and_stay_zero_when_disabled() {
+        use super::super::profile;
+
+        let _flag_guard = profile::test_flag_guard();
+        profile::set_enabled(false);
+        let _ = profile::snapshot_and_reset();
+        let run_small = || {
+            let mesh = KinematicWaveMesh::uniform(7.5, 10, CellParameters::bare(0.09, 500.0));
+            let mut solver = KinematicWaveSolver::new(mesh);
+            let v = 60.0 / 3.6e6;
+            let excess = |_i: usize, _t: f64| v;
+            let inflow = |_t: f64| 0.0;
+            let intensity = |_t: f64| v;
+            let forcing = Forcing {
+                rainfall_excess_m_s: &excess,
+                upstream_inflow_m2_s: &inflow,
+                rainfall_intensity_m_s: &intensity,
+            };
+            solver.run(&forcing, 120.0, 10.0, 2.0).expect("run ok")
+        };
+
+        let disabled_result = run_small();
+        assert_eq!(
+            profile::snapshot_and_reset(),
+            profile::RoutingProfileSnapshot::default(),
+            "disabled profiling must accumulate nothing"
+        );
+
+        profile::set_enabled(true);
+        let enabled_result = run_small();
+        let snapshot = profile::snapshot_and_reset();
+        profile::set_enabled(false);
+        assert_eq!(snapshot.solver_runs, 1);
+        assert!(snapshot.solver_steps > 0, "steps counted");
+        assert!(snapshot.alpha_evaluations > 0, "alpha evals counted");
+        assert!(snapshot.hydrograph_samples > 0, "samples counted");
+        assert!(snapshot.solver_cfl_ns > 0, "cfl slot timed");
+        assert!(snapshot.solver_step_ns > 0, "step slot timed");
+        // Profiling must not change solver results.
+        assert_eq!(
+            disabled_result.mass_balance.residual_m2().to_bits(),
+            enabled_result.mass_balance.residual_m2().to_bits(),
+            "profiling must not perturb solver output"
+        );
+        assert_eq!(
+            disabled_result.hydrograph.len(),
+            enabled_result.hydrograph.len()
+        );
     }
 
     #[test]

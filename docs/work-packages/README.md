@@ -13,12 +13,19 @@
 
 State as of `2026-07-06`:
 - `20260705-mofefid-d14-laned-runtime-profile-optimization-001/` —
-  SCAFFOLDED: Lane D runtime profiling/optimization package. D14 owns the
-  empirical H2637 shadow cost breakdown, persistent slot timing diagnostics
-  needed by local CI agents, behavior-preserving runtime optimizations, and
-  before/after endpoint timing for the D15 opt-in activation decision. It must
-  not perform production/default activation, D10 shock-numerics correction,
-  D11/D12/D13 semantic changes, D15/D16 policy, or surrogate physics.
+  EXECUTED-COMPLETE: Lane D runtime profiling/optimization package. D14
+  re-pinned the H2637 Lane D shadow cost at release grade (+65.3 s user over
+  the 2.3 s default path on the 2-year fixture), attributed it with
+  persistent slot diagnostics (`ofe_routing::profile`,
+  `OPENWEPP_LANED_SHADOW_PROFILE=1`) plus perf evidence (~97 % solver math;
+  51 % redundant alpha recomputation; pow 36 %), and landed three
+  bit-identical optimizations (single alpha evaluation per cell per step,
+  per-solver step scratch, hoisted skin rain term): shadow-on 67.6 s →
+  29.9 s (2.26×), overhead −58 %, protected outputs and the `laned_shadow`
+  manifest diagnostics bit-identical, solver trajectory counters identical
+  (10,334,879 steps). D15 receives the fresh runtime budget. No production/default
+  activation, D10 shock-numerics correction, D11/D12/D13 semantic changes,
+  D15/D16 policy, or surrogate physics.
 - `20260705-mofefid-d13-routed-hydrograph-erosion-shape-001/` —
   EXECUTED-COMPLETE: Lane D routed-hydrograph erosion-shape package.
   `SC-OFEROUTE-001` rev 23 and `SC-SED-001` rev 53 bind the active-candidate

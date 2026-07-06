@@ -1,6 +1,7 @@
 # Required Reading Map
 
-Status: **SCAFFOLDED**.
+Status: **EXECUTED-COMPLETE** (scaffold map retained as the execution intake
+record).
 
 Core required-reading byte total: **356,093 bytes** (`OK`, below the
 400,000-byte WARN threshold in

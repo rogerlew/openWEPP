@@ -18,6 +18,7 @@
 use super::kinematic_wave::{
     Forcing, HydrographSample, KinematicWaveMesh, KinematicWaveSolver, RoutingError,
 };
+use super::profile;
 
 /// One OFE in the cascade: its routing mesh and flow width. The flow width
 /// converts unit-width discharge (m^2/s) between OFEs so total discharge
@@ -166,7 +167,10 @@ pub fn run_cascade(
         };
         let upstream = |t: f64| -> f64 {
             match &prev {
-                Some(h) => interpolate_unit_discharge(h, t) * width_ratio,
+                Some(h) => {
+                    profile::count_upstream_interpolation_calls(1);
+                    interpolate_unit_discharge(h, t) * width_ratio
+                }
                 None => 0.0,
             }
         };
@@ -178,7 +182,9 @@ pub fn run_cascade(
             rainfall_intensity_m_s: &intensity,
         };
 
+        let setup_span = profile::span_start();
         let mut solver = KinematicWaveSolver::new(seg.mesh.clone());
+        profile::end_solver_setup(setup_span);
         let result = solver.run(&ofe_forcing, end_time_s, sample_dt_s, max_dt_s)?;
 
         // Received upstream (runon) volume into this OFE (m^3): the width-scaled
@@ -422,6 +428,38 @@ mod tests {
                 < 1.0e-2,
             "width-scaled handoff must conserve total volume"
         );
+    }
+
+    // D14: cascade-level slots — per-OFE solver setup span and the upstream
+    // handoff interpolation counter. Holds `profile::test_flag_guard`
+    // because the enable flag is process-global (libtest threads share it).
+    #[test]
+    fn cascade_profile_counts_setup_and_upstream_interpolation() {
+        use super::super::profile;
+
+        let _flag_guard = profile::test_flag_guard();
+        profile::set_enabled(true);
+        let _ = profile::snapshot_and_reset();
+        let v = 60.0 / 3.6e6;
+        let segs = vec![
+            bare_segment(10.0, 10, 0.08, 500.0, 2.0),
+            bare_segment(10.0, 10, 0.06, 500.0, 2.0),
+        ];
+        let excess = |_ofe: usize, _cell: usize, _t: f64| v;
+        let intensity = |_ofe: usize, _t: f64| v;
+        let forcing = CascadeForcing {
+            rainfall_excess_m_s: &excess,
+            rainfall_intensity_m_s: &intensity,
+        };
+        let _ = run_cascade(&segs, &forcing, 600.0, 30.0, 2.0).expect("cascade runs");
+        let snapshot = profile::snapshot_and_reset();
+        profile::set_enabled(false);
+        assert_eq!(snapshot.solver_runs, 2, "one solver run per OFE");
+        assert!(
+            snapshot.upstream_interpolation_calls > 0,
+            "downstream OFE must interpolate the upstream hydrograph"
+        );
+        assert!(snapshot.solver_setup_ns > 0, "setup slot timed");
     }
 
     #[test]

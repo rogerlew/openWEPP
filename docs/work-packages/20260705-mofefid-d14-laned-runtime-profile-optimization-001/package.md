@@ -1,9 +1,16 @@
 # MOFEFID-D14 - Lane D Runtime Profiling and Optimization
 
-Status: **SCAFFOLDED** (2026-07-06). Campaign:
+Status: **EXECUTED-COMPLETE** (2026-07-06). Campaign:
 [MOFEFID](../../planning/mofe-fidelity-campaign-strategy.md) Lane D.
 Contract focus: Lane D opt-in production-activation precondition in
 `SC-OFEROUTE-001`.
+
+Result: shadow-on H2637 `67.6 s → 29.9 s` wall (2.26×), overhead
+`+65.3 s → +27.6 s` user CPU (−58 %), with protected outputs, the
+`laned_shadow` manifest diagnostics, and the solver trajectory counters
+bit-identical; persistent opt-in slot diagnostics landed
+(`OPENWEPP_LANED_SHADOW_PROFILE=1`). Evidence, reviews, and disposition in
+`artifacts/`.
 
 ## Objective
 
@@ -120,6 +127,15 @@ Conditional, only for profiling or behavior-preserving optimization:
 - Focused Lane D timing, H2637, or profiler tests.
 - Local profiling helpers under `tools/` only if the package records why the
   existing test/runner hooks are insufficient.
+
+Write-set note (execution, 2026-07-06): the persistent slot diagnostics
+required by the Included scope ("add or extend persistent timing
+diagnostics") landed as a new module
+`crates/openwepp-hillslope-orchestrator/src/ofe_routing/profile.rs` plus its
+one-line registration in `crates/openwepp-hillslope-orchestrator/src/ofe_routing.rs`.
+Neither path was enumerated above; both are inside the `ofe_routing`
+subsystem this write set covers and are diagnostics-only (recorded per the
+QA review's write-set-conformance finding).
 
 Protected:
 

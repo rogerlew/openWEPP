@@ -107,11 +107,13 @@ fn execute_direct_publication_stream(
             },
             |row, day_frame| {
                 if let Some(collector) = laned_shadow.as_mut() {
+                    let operand_span = collector.profile_span_start();
                     let operands = Box::new(
                         day_input_builder
                             .laned_shadow_lane_day_operands(day_frame)
                             .map_err(|error| direct_publication_day_input_build_error(&error))?,
                     );
+                    collector.record_operand_build(operand_span);
                     collector
                         .observe_row(row, operands)
                         .map_err(|detail| {

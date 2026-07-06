@@ -88,6 +88,35 @@ pub fn skin_resistance(
     }
 }
 
+/// Precomputed Shen & Li rainfall numerator term `3393 * I^0.407` (the
+/// rain-dependent part of eq. (2)). D14 OPT-3: `I` is constant within one
+/// solver step, so the hot path computes this once per step and reuses it
+/// across cells and fixed-point iterations. Bit-identical to the inline
+/// evaluation in `skin_resistance_shen_li` (same operations in the same
+/// order; see `skin_rain_term_dispatch_is_bit_identical`).
+#[must_use]
+pub fn skin_rain_term(rainfall_intensity_m_s: f64) -> f64 {
+    3393.0 * rainfall_intensity_m_s.powf(0.407)
+}
+
+/// Skin resistance with regime dispatch, consuming a precomputed
+/// `skin_rain_term`. Must remain bit-identical to `skin_resistance`
+/// (unit-enforced).
+#[must_use]
+pub fn skin_resistance_with_rain_term(
+    skin_rain_term: f64,
+    friction_coefficient_ko: f64,
+    reynolds_number: f64,
+) -> f64 {
+    if reynolds_number > SKIN_REGIME_REYNOLDS_THRESHOLD {
+        skin_resistance_hirsch(reynolds_number)
+    } else if reynolds_number <= 0.0 {
+        0.0
+    } else {
+        (skin_rain_term + friction_coefficient_ko) / reynolds_number
+    }
+}
+
 /// Form (isolated-roughness-element) resistance (eq. (4); Abrahams 1998 /
 /// Lawrence 1997, R-77): `f_f = (16/pi) * C_d * (h / D_r) * lambda`, where
 /// `D_r` is the element tip height (m) and `lambda` the roughness
@@ -314,6 +343,49 @@ mod tests {
         assert!(approx(c, (8.0 * GRAVITY_M_S2 / 1.4).sqrt(), 1e-12));
         // higher friction -> lower Chezy conveyance
         assert!(chezy_from_friction(2.0, GRAVITY_M_S2) < c);
+    }
+
+    // D14 OPT-3 bit-identity contract: the precomputed-rain-term dispatch
+    // must be indistinguishable from the canonical `skin_resistance` at the
+    // bit level for every regime branch, including NaN propagation for
+    // negative intensity (guarded upstream in active callers).
+    #[test]
+    fn skin_rain_term_dispatch_is_bit_identical() {
+        let intensities = [
+            0.0,
+            1.0e-9,
+            60.0 / 3.6e6,
+            100.0 / 3.6e6,
+            0.5,
+            -1.0e-6, // NaN path: both forms must produce NaN identically
+        ];
+        let kos = [0.0, 0.25, 1.0, 500.0, 10_000.0];
+        let res = [
+            f64::NAN,
+            -1.0,
+            0.0,
+            1.0e-6,
+            1.0,
+            500.0,
+            999.9,
+            1000.0,
+            1000.1,
+            2.0e6,
+        ];
+        for &i in &intensities {
+            let term = skin_rain_term(i);
+            for &ko in &kos {
+                for &re in &res {
+                    let canonical = skin_resistance(i, ko, re);
+                    let hoisted = skin_resistance_with_rain_term(term, ko, re);
+                    assert_eq!(
+                        canonical.to_bits(),
+                        hoisted.to_bits(),
+                        "bit mismatch at I={i}, ko={ko}, Re={re}: canonical {canonical} vs hoisted {hoisted}"
+                    );
+                }
+            }
+        }
     }
 
     #[test]

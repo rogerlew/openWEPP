@@ -25,9 +25,11 @@ use openwepp_hillslope_orchestrator::ofe_routing::cascade::{
 use openwepp_hillslope_orchestrator::ofe_routing::kinematic_wave::{
     CellParameters, KinematicWaveMesh,
 };
+use openwepp_hillslope_orchestrator::ofe_routing::profile as routing_profile;
 use openwepp_hillslope_orchestrator::ofe_routing::seam::{
     SEAM_HOUR_BINS, seam_rate_at, seam_source_rates_from_hourly_depths,
 };
+use std::time::Instant;
 
 /// Days below this injected volume are excluded from the MAX relative
 /// residual (they still fold into the volume-weighted aggregate).
@@ -114,6 +116,19 @@ pub(crate) struct LanedShadowSummary {
     residual_abs_m3: f64,
 }
 
+/// D14 runner-side slot accumulators (opt-in via
+/// `OPENWEPP_LANED_SHADOW_PROFILE=1`). Diagnostics-only: reported to stderr at
+/// finalize; never touches published outputs or the manifest.
+#[derive(Debug, Clone, Copy, Default)]
+struct LanedShadowProfileSlots {
+    operand_build_ns: u64,
+    observe_row_ns: u64,
+    mesh_build_ns: u64,
+    rate_series_ns: u64,
+    cascade_run_ns: u64,
+    rows_observed: u64,
+}
+
 pub(crate) struct LanedShadowCollector {
     geometry: Vec<LanedShadowLaneGeometry>,
     day_depths: Vec<[f64; SEAM_HOUR_BINS]>,
@@ -125,12 +140,20 @@ pub(crate) struct LanedShadowCollector {
     day_saw_uniform_shape_with_routed_melt: bool,
     current_day: Option<usize>,
     summary: LanedShadowSummary,
+    profile: Option<LanedShadowProfileSlots>,
 }
 
 impl LanedShadowCollector {
     #[must_use]
     pub(crate) fn new(geometry: Vec<LanedShadowLaneGeometry>) -> Self {
         let lane_count = geometry.len();
+        let profile = if Self::env_profile_enabled() {
+            routing_profile::set_enabled(true);
+            let _ = routing_profile::snapshot_and_reset();
+            Some(LanedShadowProfileSlots::default())
+        } else {
+            None
+        };
         Self {
             geometry,
             day_depths: vec![[0.0; SEAM_HOUR_BINS]; lane_count],
@@ -142,6 +165,7 @@ impl LanedShadowCollector {
             day_saw_uniform_shape_with_routed_melt: false,
             current_day: None,
             summary: LanedShadowSummary::default(),
+            profile,
         }
     }
 
@@ -149,6 +173,32 @@ impl LanedShadowCollector {
     #[must_use]
     pub(crate) fn env_enabled() -> bool {
         std::env::var("OPENWEPP_LANED_SHADOW").is_ok_and(|value| value == "1")
+    }
+
+    /// D14 slot-profiling env opt-in: `OPENWEPP_LANED_SHADOW_PROFILE=1`.
+    #[must_use]
+    fn env_profile_enabled() -> bool {
+        std::env::var("OPENWEPP_LANED_SHADOW_PROFILE").is_ok_and(|value| value == "1")
+    }
+
+    /// Start a runner-side profiling span (None when profiling is off).
+    #[must_use]
+    pub(crate) fn profile_span_start(&self) -> Option<Instant> {
+        self.profile.as_ref().map(|_| Instant::now())
+    }
+
+    fn span_ns(started: Option<Instant>) -> u64 {
+        started.map_or(0, |instant| {
+            u64::try_from(instant.elapsed().as_nanos()).unwrap_or(u64::MAX)
+        })
+    }
+
+    /// Fold an operand-build span (runner streaming closure) into the slots.
+    pub(crate) fn record_operand_build(&mut self, started: Option<Instant>) {
+        let ns = Self::span_ns(started);
+        if let Some(profile) = self.profile.as_mut() {
+            profile.operand_build_ns += ns;
+        }
     }
 
     /// Observe one published lane-day row (stream order: day-major,
@@ -162,6 +212,9 @@ impl LanedShadowCollector {
         if self.current_day.is_some_and(|day| day != row.day_index) {
             self.commit_day()?;
         }
+        // Row-local slot only: commit_day above accounts its own cascade
+        // slots (mesh/rate/cascade), so the observe span starts after it.
+        let observe_span = self.profile_span_start();
         self.current_day = Some(row.day_index);
         let lane = row.lane_index;
         if lane >= self.geometry.len() {
@@ -221,6 +274,11 @@ impl LanedShadowCollector {
         self.day_source_m3 += depth_sum * area_m2;
         self.day_supply_reference_m3 += row.runoff.runvol_m3;
         self.lanes_seen_today += 1;
+        let observe_ns = Self::span_ns(observe_span);
+        if let Some(profile) = self.profile.as_mut() {
+            profile.observe_row_ns += observe_ns;
+            profile.rows_observed += 1;
+        }
         Ok(())
     }
 
@@ -317,11 +375,12 @@ impl LanedShadowCollector {
         Ok(())
     }
 
-    fn route_buffered_day(&mut self, source_m3: f64) -> Result<(), String> {
-        let day_operands =
-            std::mem::replace(&mut self.day_operands, vec![None; self.geometry.len()]);
-        let segments: Vec<CascadeSegment> = self
-            .geometry
+    /// Build the day's cascade segments from lane geometry + dynamic operands.
+    fn build_cascade_segments(
+        &self,
+        day_operands: &[Option<LanedShadowLaneDayOperands>],
+    ) -> Result<Vec<CascadeSegment>, String> {
+        self.geometry
             .iter()
             .enumerate()
             .map(|(lane_index, geom)| {
@@ -341,20 +400,25 @@ impl LanedShadowCollector {
                     width_m: geom.width_m,
                 })
             })
-            .collect::<Result<Vec<_>, String>>()?;
-        let day_depths = std::mem::replace(
-            &mut self.day_depths,
-            vec![[0.0; SEAM_HOUR_BINS]; self.geometry.len()],
-        );
+            .collect::<Result<Vec<_>, String>>()
+    }
+
+    /// Build the per-lane source-rate and rainfall-intensity series.
+    #[allow(clippy::type_complexity)]
+    fn build_day_rate_series(
+        &self,
+        day_depths: &[[f64; SEAM_HOUR_BINS]],
+        day_operands: &[Option<LanedShadowLaneDayOperands>],
+    ) -> Result<(Vec<[f64; SEAM_HOUR_BINS]>, Vec<[f64; SEAM_HOUR_BINS]>), String> {
         let mut rate_series = Vec::with_capacity(day_depths.len());
-        for depths in &day_depths {
+        for depths in day_depths {
             rate_series.push(
                 seam_source_rates_from_hourly_depths(depths)
                     .map_err(|error| format!("laned shadow seam rates: {error:?}"))?,
             );
         }
         let mut intensity_series = Vec::with_capacity(day_operands.len());
-        for operands in &day_operands {
+        for operands in day_operands {
             let operands = operands.as_ref().ok_or_else(|| {
                 format!(
                     "laned shadow: missing dynamic operands for day {}",
@@ -366,6 +430,23 @@ impl LanedShadowCollector {
                     .map_err(|error| format!("laned shadow rainfall-intensity rates: {error:?}"))?,
             );
         }
+        Ok((rate_series, intensity_series))
+    }
+
+    fn route_buffered_day(&mut self, source_m3: f64) -> Result<(), String> {
+        let mesh_span = self.profile_span_start();
+        let day_operands =
+            std::mem::replace(&mut self.day_operands, vec![None; self.geometry.len()]);
+        let segments = self.build_cascade_segments(&day_operands)?;
+        let mesh_ns = Self::span_ns(mesh_span);
+        let rate_span = self.profile_span_start();
+        let day_depths = std::mem::replace(
+            &mut self.day_depths,
+            vec![[0.0; SEAM_HOUR_BINS]; self.geometry.len()],
+        );
+        let (rate_series, intensity_series) =
+            self.build_day_rate_series(&day_depths, &day_operands)?;
+        let rate_ns = Self::span_ns(rate_span);
         let excess = |ofe: usize, _cell: usize, t: f64| seam_rate_at(&rate_series[ofe], t);
         let intensity = |ofe: usize, t: f64| seam_rate_at(&intensity_series[ofe], t);
         let forcing = CascadeForcing {
@@ -388,6 +469,7 @@ impl LanedShadowCollector {
         #[allow(clippy::cast_precision_loss)]
         let window_s =
             (((last_active_hour + 1) as f64) * 3600.0 + 6.0 * 3600.0).min(LANED_SHADOW_WINDOW_S);
+        let cascade_span = self.profile_span_start();
         let result = run_cascade(
             &segments,
             &forcing,
@@ -396,6 +478,12 @@ impl LanedShadowCollector {
             LANED_SHADOW_MAX_DT_S,
         )
         .map_err(|error| format!("laned shadow cascade: {error:?}"))?;
+        let cascade_ns = Self::span_ns(cascade_span);
+        if let Some(profile) = self.profile.as_mut() {
+            profile.mesh_build_ns += mesh_ns;
+            profile.rate_series_ns += rate_ns;
+            profile.cascade_run_ns += cascade_ns;
+        }
         let rain_m3 = result.mass_balance.rainfall_excess_m3;
         if rain_m3 > 0.0 {
             let residual_abs = result.mass_balance.conservation_residual_m3().abs();
@@ -422,7 +510,57 @@ impl LanedShadowCollector {
             self.summary.aggregate_router_conservation_rel =
                 self.summary.residual_abs_m3 / self.summary.total_source_m3;
         }
+        if let Some(profile) = self.profile {
+            Self::emit_profile_report(&profile, &self.summary);
+        }
         Ok(self.summary)
+    }
+
+    /// D14 slot report: one stderr JSON line, emitted only under
+    /// `OPENWEPP_LANED_SHADOW_PROFILE=1`. Protected outputs and the manifest
+    /// are untouched; this is the local-CI-discoverable timing diagnostic.
+    fn emit_profile_report(profile: &LanedShadowProfileSlots, summary: &LanedShadowSummary) {
+        let routing = routing_profile::snapshot_and_reset();
+        eprintln!(
+            concat!(
+                "laned_shadow_profile {{",
+                "\"rows_observed\":{},",
+                "\"days_seen\":{},",
+                "\"days_routed\":{},",
+                "\"operand_build_ns\":{},",
+                "\"observe_row_ns\":{},",
+                "\"mesh_build_ns\":{},",
+                "\"rate_series_ns\":{},",
+                "\"cascade_run_ns\":{},",
+                "\"solver_runs\":{},",
+                "\"solver_steps\":{},",
+                "\"alpha_evaluations\":{},",
+                "\"hydrograph_samples\":{},",
+                "\"upstream_interpolation_calls\":{},",
+                "\"solver_setup_ns\":{},",
+                "\"solver_cfl_ns\":{},",
+                "\"solver_step_ns\":{},",
+                "\"solver_sample_ns\":{}",
+                "}}"
+            ),
+            profile.rows_observed,
+            summary.days_seen,
+            summary.days_routed,
+            profile.operand_build_ns,
+            profile.observe_row_ns,
+            profile.mesh_build_ns,
+            profile.rate_series_ns,
+            profile.cascade_run_ns,
+            routing.solver_runs,
+            routing.solver_steps,
+            routing.alpha_evaluations,
+            routing.hydrograph_samples,
+            routing.upstream_interpolation_calls,
+            routing.solver_setup_ns,
+            routing.solver_cfl_ns,
+            routing.solver_step_ns,
+            routing.solver_sample_ns,
+        );
     }
 }
 
@@ -471,6 +609,44 @@ mod tests {
             (wet_intensity_outlet_m3 - dry_intensity_outlet_m3).abs() > 1.0e-9,
             "expected nonzero rainfall intensity to change routed outlet volume: dry={dry_intensity_outlet_m3}, wet={wet_intensity_outlet_m3}"
         );
+    }
+
+    // D14: runner-side slots accumulate when the profile struct is armed
+    // (field set directly here; production arms it via
+    // OPENWEPP_LANED_SHADOW_PROFILE=1).
+    #[test]
+    fn runner_profile_slots_accumulate_for_routed_day() {
+        let routing = LanedShadowRoutingCoefficients {
+            skin_friction_coefficient_ko: 0.25,
+            form_drag_coefficient: 0.0,
+            roughness_element_height_m: 0.0,
+            roughness_concentration: 0.0,
+            vegetation_drag_coefficient: 0.0,
+        };
+        let mut collector = LanedShadowCollector::new(vec![LanedShadowLaneGeometry {
+            slplen_m: 80.0,
+            width_m: 1.0,
+            mean_gradient: 0.01,
+            routing,
+        }]);
+        collector.profile = Some(LanedShadowProfileSlots::default());
+        collector.current_day = Some(0);
+        collector.day_depths[0][0] = 0.01;
+        collector.day_operands[0] = Some(LanedShadowLaneDayOperands {
+            hourly_rainfall_m: [0.0; SEAM_HOUR_BINS],
+            hourly_routed_melt_m: [0.0; SEAM_HOUR_BINS],
+            leaf_area_index: 0.0,
+            canopy_height_m: 0.0,
+        });
+
+        collector
+            .route_buffered_day(0.01)
+            .expect("buffered day should route");
+
+        let profile = collector.profile.expect("profile armed");
+        assert!(profile.cascade_run_ns > 0, "cascade slot timed");
+        assert!(profile.mesh_build_ns > 0, "mesh slot timed");
+        assert!(profile.rate_series_ns > 0, "rate-series slot timed");
     }
 
     fn routed_outlet_m3(hourly_rainfall_m: [f64; SEAM_HOUR_BINS]) -> f64 {
