@@ -528,6 +528,21 @@ later operator explicitly assigns a bounded write set.
   regressions); dual verification (A: PASS-WITH-NOTES, B:
   PASS-WITH-NOTES, all notes closed in-package).
 
+- [x] 2026-07-06: Codex post-execution review response (review-codex.md,
+  reviewed `1d202b10`): ALL findings accepted and fixed — High-1 CFL
+  fail-closed guards + regression; High-2 Case-4 single-sourced from
+  `OracleConfig::iwagaki_case4()` with exact breakpoint-clipped cutoff +
+  source-history regression (acceptance metrics improved: peak errors
+  now -0.3%..+2.1%); Medium-1 typed `NegativeOutletBin` fail-closed +
+  single-OFE outlet regression; Medium-2 seam-ledger relabel + explicit
+  sampled-quadrature diagnostic; Medium-3/4 stale GAP-005/D15 authority
+  language swept from contract/strategy/ROADMAP; Low 1-5 (superseded
+  wording, rights sync, test rename, six-point sweep expansion, stale
+  docs/counts). One transparent re-disposition: the k_o diagnostic
+  stability pin (confounded ratification) replaced with law-like guards.
+  Focused suite 67/67; full workspace suite re-run recorded in
+  gate-results. Evidence: `artifacts/review-response-claude.md`.
+
 ## Surprises & Discoveries
 
 - Pre-execution (2026-07-06, scaffold): Davis 1984 eq. (3.20) — read

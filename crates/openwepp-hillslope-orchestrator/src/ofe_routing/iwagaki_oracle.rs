@@ -33,6 +33,11 @@
 /// Manning depth-discharge exponent for the wide-channel oracle.
 pub const ORACLE_M: f64 = 5.0 / 3.0;
 
+/// The Iwagaki 1955 primary's Manning roughness (m-s units), the single
+/// source of truth shared by the oracle configuration and the D-val
+/// solver path (Codex review High-2).
+pub const IWAGAKI_MANNING_N: f64 = 0.009;
+
 /// One reach of the piecewise-uniform channel.
 #[derive(Debug, Clone, Copy)]
 pub struct OracleReach {
@@ -63,7 +68,7 @@ impl OracleConfig {
     /// configuration bound by `SC-OFEROUTE-001` rev 24 (`n = 0.009`).
     #[must_use]
     pub fn iwagaki_case4() -> Self {
-        let n = 0.009;
+        let n = IWAGAKI_MANNING_N;
         Self {
             reaches: vec![
                 OracleReach {

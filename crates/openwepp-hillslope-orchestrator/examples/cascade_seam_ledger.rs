@@ -10,18 +10,29 @@
 //! - `ofe_internal_m3`: sum of per-OFE solver ledger residuals
 //!   (`inflow + rain - outflow - storage`, clamp-adjusted) — the solver's own
 //!   discretization/ledger mismatch.
-//! - `seam_sampling_m3`: per seam, the upstream solver's step-level outflow
-//!   ledger minus the sampled-hydrograph trapezoid volume — what the
-//!   sample-grid resampling loses or invents.
-//! - `seam_injection_m3`: per seam, the sampled-hydrograph volume minus what
-//!   the downstream solver actually booked as received inflow — the
-//!   left-endpoint injection aliasing.
-//! - `terminal_quadrature_m3`: terminal OFE ledger outflow minus the sampled
-//!   outlet volume used by the cascade ledger.
+//! - `seam_transfer_identity_m3`: per seam, the upstream solver's booked
+//!   ledger outflow minus the cascade's booked per-OFE outlet volume.
+//!   POST-rev-26 SEMANTICS (Codex review Medium-2): `per_ofe_outlet_m3`
+//!   IS the ledger outflow, so this term is a structural identity
+//!   (zero by construction), NOT sampled-quadrature evidence. The
+//!   PRE-rev-26 runs of this example measured the then-sampled-trapezoid
+//!   field and those historical numbers retain their original
+//!   quadrature meaning.
+//! - `seam_injection_m3`: per seam, the booked per-OFE outlet volume minus
+//!   what the downstream solver booked as received inflow — the handoff
+//!   transfer error (zero post-rev-26 by the conservative bin series).
+//! - `terminal_booking_identity_m3`: terminal OFE ledger outflow minus the
+//!   cascade's outlet booking — likewise a structural identity
+//!   post-rev-26.
+//! - `terminal_sampled_quadrature_m3`: an EXPLICIT sampled-quadrature
+//!   diagnostic (trapezoid of the exported terminal bin-mean hydrograph
+//!   minus the booked outlet mass) — the surviving measurement of what a
+//!   sample-grid quadrature would mis-state relative to booked mass.
 //!
 //! Identity check: the cascade residual equals
-//! `ofe_internal + seam_sampling + seam_injection + terminal_quadrature`
-//! (all in m^3), so the decomposition is complete, not approximate.
+//! `ofe_internal + seam_transfer_identity + seam_injection +
+//! terminal_booking_identity` (all in m^3), so the decomposition is
+//! complete, not approximate.
 
 #![allow(
     clippy::cast_precision_loss,
@@ -122,24 +133,37 @@ fn main() {
                 * w;
         }
         // Seam terms per interior handoff i -> i+1.
-        let mut seam_sampling_m3 = 0.0;
+        let mut seam_transfer_identity_m3 = 0.0;
         let mut seam_injection_m3 = 0.0;
         for i in 0..n - 1 {
             let ledger_outflow_m3 = res.per_ofe_solver_mass[i].outflow_m2 * segments[i].width_m;
             let sampled_m3 = res.per_ofe_outlet_m3[i];
             let injected_m3 = res.per_ofe_received_upstream_m3[i + 1];
-            seam_sampling_m3 += ledger_outflow_m3 - sampled_m3;
+            seam_transfer_identity_m3 += ledger_outflow_m3 - sampled_m3;
             seam_injection_m3 += sampled_m3 - injected_m3;
         }
-        // Terminal outlet: ledger outflow vs the sampled volume the cascade
-        // ledger uses.
+        // Terminal outlet: booking identity (ledger vs cascade booking) +
+        // the explicit sampled-quadrature diagnostic (exported hydrograph
+        // trapezoid vs booked mass).
         let terminal_ledger_m3 =
             res.per_ofe_solver_mass[n - 1].outflow_m2 * segments[n - 1].width_m;
-        let terminal_quadrature_m3 = terminal_ledger_m3 - res.mass_balance.outlet_m3;
+        let terminal_booking_identity_m3 = terminal_ledger_m3 - res.mass_balance.outlet_m3;
+        let mut hydro_trapezoid_m2 = 0.0_f64;
+        for w in res.outlet_hydrograph.windows(2) {
+            let dt = w[1].time_s - w[0].time_s;
+            if dt > 0.0 {
+                hydro_trapezoid_m2 +=
+                    0.5 * (w[0].outlet_unit_discharge_m2_s + w[1].outlet_unit_discharge_m2_s) * dt;
+            }
+        }
+        let terminal_sampled_quadrature_m3 =
+            hydro_trapezoid_m2 * segments[n - 1].width_m - res.mass_balance.outlet_m3;
 
         let residual_m3 = res.mass_balance.conservation_residual_m3();
-        let decomposed_m3 =
-            ofe_internal_m3 + seam_sampling_m3 + seam_injection_m3 + terminal_quadrature_m3;
+        let decomposed_m3 = ofe_internal_m3
+            + seam_transfer_identity_m3
+            + seam_injection_m3
+            + terminal_booking_identity_m3;
         let rain_m3 = res.mass_balance.rainfall_excess_m3;
         let comma = if idx + 1 < grid.len() { "," } else { "" };
         println!(
@@ -147,8 +171,9 @@ fn main() {
                 "  {{\"sample_dt_s\": {}, \"max_dt_s\": {}, ",
                 "\"rain_m3\": {:.6}, \"residual_m3\": {:.6}, ",
                 "\"residual_rel\": {:.6}, ",
-                "\"ofe_internal_m3\": {:.6}, \"seam_sampling_m3\": {:.6}, ",
-                "\"seam_injection_m3\": {:.6}, \"terminal_quadrature_m3\": {:.6}, ",
+                "\"ofe_internal_m3\": {:.6}, \"seam_transfer_identity_m3\": {:.6}, ",
+                "\"seam_injection_m3\": {:.6}, \"terminal_booking_identity_m3\": {:.6}, ",
+                "\"terminal_sampled_quadrature_m3\": {:.6}, ",
                 "\"decomposition_gap_m3\": {:.3e}, ",
                 "\"inflow_booking_m3\": {:.6}, \"outflow_booking_m3\": {:.6}, ",
                 "\"tvd_leak_m3\": {:.6}, \"scheme_identity_m3\": {:.3e}, ",
@@ -160,9 +185,10 @@ fn main() {
             residual_m3,
             residual_m3.abs() / rain_m3,
             ofe_internal_m3,
-            seam_sampling_m3,
+            seam_transfer_identity_m3,
             seam_injection_m3,
-            terminal_quadrature_m3,
+            terminal_booking_identity_m3,
+            terminal_sampled_quadrature_m3,
             (residual_m3 - decomposed_m3).abs(),
             inflow_booking_m3,
             outflow_booking_m3,

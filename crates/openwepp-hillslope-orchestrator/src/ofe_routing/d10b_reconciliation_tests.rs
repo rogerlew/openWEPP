@@ -13,7 +13,8 @@
 //!   multi-OFE conservation is resolution-convergent.
 //! - Algorithm item 6: the inter-OFE handoff injection integrates the
 //!   conservative per-bin outflow series exactly.
-//! - TVD property: no homogeneous-step total-variation increase.
+//! - Bounded TV transient: homogeneous-step total-variation increase
+//!   stays under the ratified 1e-3 m^2/s bound (rev 26).
 
 #![allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
 
@@ -91,7 +92,7 @@ fn case4_manning_solver_converges_to_iwagaki_oracle() {
 }
 
 #[test]
-fn case4_manning_tvd_dissipation_is_mass_neutral_and_tv_diminishing() {
+fn case4_manning_tvd_dissipation_is_mass_neutral_and_tv_transient_bounded() {
     let run = run_iwagaki_manning(240, 0.125, 0.0625).expect("manning case4 runs");
     // Face-based dissipation must be exactly mass-neutral (rev 24): the
     // booked TVD boundary leak is zero to numerical noise relative to the
@@ -238,7 +239,14 @@ fn nineteen_ofe_conservation_is_resolution_convergent() {
     };
     let window = 15.0 * 3600.0;
     let mut residuals = Vec::new();
-    for (sample_dt, max_dt) in [(900.0, 300.0), (120.0, 120.0), (15.0, 5.0)] {
+    for (sample_dt, max_dt) in [
+        (900.0, 300.0),
+        (900.0, 120.0),
+        (120.0, 300.0),
+        (120.0, 120.0),
+        (60.0, 30.0),
+        (15.0, 5.0),
+    ] {
         let res =
             run_cascade(&segments, &forcing, window, sample_dt, max_dt).expect("cascade runs");
         residuals.push(
@@ -366,5 +374,94 @@ fn partial_final_bin_handoff_is_exact() {
         res.mass_balance.conservation_residual_m3().abs() / res.mass_balance.rainfall_excess_m3
             < 1.0e-9,
         "cascade must conserve exactly with a partial final bin"
+    );
+}
+
+#[test]
+fn unsatisfiable_cfl_fails_closed_not_partial_ok() {
+    // Codex review High-1 regression: a finite-but-extreme parameter state
+    // whose celerity admits no positive sub-timestep (dt underflows to 0)
+    // must return a typed CFL failure, never a partial Ok result. The
+    // pre-fix `dt <= 0 -> break` returned Ok(RoutingResult).
+    let mesh = KinematicWaveMesh::uniform(1.0e-199, 10, CellParameters::manning(1.0e308, 0.009));
+    let mut solver = super::kinematic_wave::KinematicWaveSolver::new(mesh);
+    let excess = |_i: usize, _t: f64| 1.0;
+    let inflow = |_t: f64| 0.0;
+    let intensity = |_t: f64| 0.0;
+    let forcing = super::kinematic_wave::Forcing {
+        rainfall_excess_m_s: &excess,
+        upstream_inflow_m2_s: &inflow,
+        rainfall_intensity_m_s: &intensity,
+    };
+    let result = solver.run(&forcing, 10.0, 1.0, 1.0);
+    assert!(
+        matches!(
+            result,
+            Err(super::kinematic_wave::RoutingError::CflViolation
+                | super::kinematic_wave::RoutingError::NonFiniteState)
+        ),
+        "unsatisfiable CFL must fail closed, got {result:?}"
+    );
+}
+
+#[test]
+fn case4_solver_and_oracle_source_histories_agree_exactly() {
+    // Codex review High-2 regression: the solver's integrated lateral
+    // source must equal the oracle configuration's supplied volume
+    // (sum of reach supply x reach length x supply duration) exactly —
+    // one source of truth, exact cutoff at T (no step straddles it).
+    let config = OracleConfig::iwagaki_case4();
+    let mut supplied_m2 = 0.0_f64;
+    let mut x0 = 0.0_f64;
+    for reach in &config.reaches {
+        supplied_m2 += reach.supply_m_s * (reach.x_end_m - x0) * config.supply_end_s;
+        x0 = reach.x_end_m;
+    }
+    for (cells, sample_dt, max_dt) in [(120usize, 0.25, 0.125), (240, 0.125, 0.0625)] {
+        let run = run_iwagaki_manning(cells, sample_dt, max_dt).expect("manning case4 runs");
+        let solver_rain = run
+            .diagnostic_rainfall_excess_m2
+            .expect("case4 exposes the source-total diagnostic");
+        assert!(
+            (solver_rain - supplied_m2).abs() <= 1.0e-9 * supplied_m2,
+            "solver source history must match the oracle configuration exactly: solver {solver_rain} vs config {supplied_m2} (cells {cells})"
+        );
+    }
+}
+
+#[test]
+fn single_ofe_outlet_bins_stay_nonnegative_under_front_arrival() {
+    // Codex review Medium-1 regression (terminal/single-OFE surface): a
+    // dry OFE fed only by an upstream inflow pulse sees the front-arrival
+    // negative boundary-attribution transient at its own outlet; the
+    // PUBLISHED hydrograph and bin series must stay non-negative and the
+    // bins must still sum exactly to the booked outflow.
+    let mesh = KinematicWaveMesh::uniform(10.0, 20, CellParameters::bare(0.06, 500.0));
+    let mut solver = super::kinematic_wave::KinematicWaveSolver::new(mesh);
+    let excess = |_i: usize, _t: f64| 0.0;
+    let inflow = |t: f64| if t < 600.0 { 5.0e-4 } else { 0.0 };
+    let intensity = |_t: f64| 0.0;
+    let forcing = super::kinematic_wave::Forcing {
+        rainfall_excess_m_s: &excess,
+        upstream_inflow_m2_s: &inflow,
+        rainfall_intensity_m_s: &intensity,
+    };
+    let res = solver.run(&forcing, 3600.0, 30.0, 15.0).expect("run ok");
+    assert!(
+        res.hydrograph
+            .iter()
+            .all(|s| s.outlet_unit_discharge_m2_s >= 0.0),
+        "published outlet discharge must be non-negative"
+    );
+    assert!(
+        res.outlet_bin_outflow_m2.iter().all(|v| *v >= 0.0),
+        "published outlet bins must be non-negative"
+    );
+    let bin_sum: f64 = res.outlet_bin_outflow_m2.iter().sum();
+    assert!(
+        (bin_sum - res.mass_balance.outflow_m2).abs()
+            <= 1.0e-9 * res.mass_balance.outflow_m2.max(1.0e-12),
+        "bins must sum to the booked outflow: {bin_sum} vs {}",
+        res.mass_balance.outflow_m2
     );
 }

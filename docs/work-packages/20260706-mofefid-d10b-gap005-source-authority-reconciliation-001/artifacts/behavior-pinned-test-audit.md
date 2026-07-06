@@ -23,3 +23,24 @@ Evidence: `cargo test -p openwepp-hillslope-orchestrator --release ofe_routing`
 = 61 passed / 0 failed. D10's rejected limiter-flip trial is superseded: it
 was judged against the demoted digitized-trace oracle and against the two
 defect-pinning tests dispositioned above.
+
+## Review-response addendum (Codex review, 2026-07-06)
+
+- Focused-count refresh (Codex Low-5): the audit's 61/61 evidence predates
+  the dual-review regressions; current focused sweep = **67/67**
+  (61 + 3 internal-review regressions + 3 Codex-review regressions,
+  with the k_o pin replaced 1-for-1).
+- `case4_iwagaki_peak_is_resolution_stable_after_rev24` RE-DISPOSITIONED
+  (transparently supersedes this audit's earlier "inverted pin"
+  disposition): the <10% stability pin was ratified from a CONFOUNDED
+  measurement — mixed sample grids (1.0 s vs 0.25 s bin-mean peaks) plus
+  the pre-High-2 straddle-mass surplus at coarse dt. With the exact
+  source history and like-for-like grids, the `k_o = 200` comparator
+  DIAGNOSTIC measurably wobbles (+-13% peak across 120..960 cells, no
+  defect trend — the `f = k_o/Re` law's `q ∝ h^3` shock is
+  near-discontinuous at these grids). Resolution stability is enforced
+  where the contract binds it (the Manning ACCEPTANCE surface, which
+  passes with margin); the diagnostic's durable guards are now its
+  law-like surfaces (`case4_iwagaki_ko_diagnostic_conserves_and_stays_positive`:
+  conservation exactness, positivity, CFL, dissipation mass-neutrality).
+  Measured wobble recorded in the review-response artifact.

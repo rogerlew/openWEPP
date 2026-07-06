@@ -43,3 +43,19 @@ run read-only by Review Agent A (Ran, attributed).
 
 Dual verification: Agent A PASS-WITH-NOTES (all notes closed in-package);
 Agent B PASS-WITH-NOTES (notes closed; executional 64/64 confirmation).
+
+## Review-response gates (Codex review fixes, 2026-07-06)
+
+| Gate | Result |
+|---|---|
+| `git diff --check` | PASS |
+| `cargo fmt --check` | PASS |
+| `cargo clippy --workspace --all-targets -- -D warnings` | PASS (0 errors) |
+| Focused `ofe_routing` suite | PASS **67/67** (64 + 3 Codex-review regressions, k_o pin replaced 1-for-1) |
+| `cargo deny check` | PASS |
+| `cargo nextest run --workspace --profile full` | **PASS — 1402 tests run: 1402 passed (7 slow), 2 skipped** (738.5 s) |
+| Solver ladder re-dump (exact source history) | `logs/rr-oracle-solver-final.json` — peaks 0.008288/0.008391/0.008484/0.008402; errors -0.3%..+2.1% vs extrapolated oracle; `t_peak` within 0.06 s (IMPROVED vs pre-fix) |
+| Relabeled seam ledger | `logs/rr-seam-ledger-final.json` — identities zero; explicit `terminal_sampled_quadrature_m3` -0.0004% |
+
+Markdown lint: no repo-pinned markdownlint tool exists; `git diff --check`
+clean stands as the docs whitespace gate (as at first closure).

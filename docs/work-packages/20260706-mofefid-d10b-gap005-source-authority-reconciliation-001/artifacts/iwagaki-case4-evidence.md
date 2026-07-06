@@ -88,3 +88,29 @@ boundary-flux values while the oracle's are near-instantaneous (0.02 s
 recording); the ladder refines `sample_dt` proportionally (0.25 -> 0.03125
 s), so the comparison limit is consistent and the mismatch is well inside
 the 5% peak tolerance at the acceptance resolutions.
+
+## Review-response addendum (exact source history, Codex High-2 fix)
+
+The solver ladder re-measured after single-sourcing the Case-4
+configuration and enforcing the exact 10 s cutoff (breakpoint-clipped
+steps; `logs/rr-oracle-solver-final.json`) — the S4 table above retains
+the pre-fix history:
+
+| cells | peak (m^2/s) | t_peak (s) | rise (s) | max Courant | TV transient |
+|---:|---:|---:|---:|---:|---:|
+| 120 | 0.00828767 | 24.6250 | 19.6625 | 0.7973 | 5.263e-4 |
+| 240 | 0.00839107 | 24.5625 | 19.7927 | 0.7994 | 4.929e-4 |
+| 480 | 0.00848403 | 24.5938 | 19.7921 | 0.8000 | 4.708e-4 |
+| 960 | 0.00840157 | 24.6406 | 19.7001 | 0.8001 | 5.086e-4 |
+
+Errors vs the extrapolated oracle limit (~0.00831): peak -0.3%..+2.1%
+(IMPROVED — the pre-fix coarse-grid peaks carried a straddle-mass
+surplus), `t_peak` within 0.06 s, rise within 0.14 s. All ratified
+tolerances met with wider margins.
+
+k_o-diagnostic characterization (review-response): at fixed sampling
+(0.25/0.125) the `k_o = 200` comparator diagnostic's bin-mean peak
+wobbles with grid registration — 0.00543/0.00606/0.00528/0.00590 across
+120/240/480/960 cells (±13%, no trend; `q ∝ h^3` near-discontinuous
+shock). Recorded as the diagnostic's inherent behavior; acceptance-grade
+resolution stability lives on the Manning surface above.

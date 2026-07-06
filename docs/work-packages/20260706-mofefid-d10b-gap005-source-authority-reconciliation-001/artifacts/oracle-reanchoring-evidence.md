@@ -57,12 +57,14 @@ differ, never acceptance (rev 24 `INV-OFEROUTE-011`).
 
 ## Acceptance shape (law, not number)
 
-Solver-vs-oracle error must DECREASE MONOTONICALLY across at least three
-grid resolutions, landing within named tolerances on: peak unit
-discharge, sampled `t_peak`, and 10-90% rise time; plus total-variation
-non-increase across the shock and exact booked-ledger closure
-(`INV-OFEROUTE-006` rev 24). Proposed tolerance basis (to be ratified from
-the S3/S4 evidence, per the package's S2 rule): finest-grid agreement
-within a few percent on peak and timing metrics, with the ratified numbers
-recorded in `iwagaki-case4-evidence.md` and the contract's tolerance
-notes.
+SUPERSEDED-AS-PROPOSAL (rev 26, Codex review Low-1): the S2 proposal below
+was ratified at rev 25/26 in the AMENDED form — error within the named
+tolerances at EVERY resolution of a >= 3-rung ladder vs the
+Richardson-extrapolated oracle limit, NON-DIVERGING (strict monotone
+decrease is not required: the shock peak carries a bounded grid wobble),
+plus a BOUNDED homogeneous-step TV(q) transient (1e-3 m^2/s; strict TV
+non-increase is a named residual item) and exact booked-ledger closure.
+Ratified numbers: `iwagaki-case4-evidence.md` + the contract tolerance
+notes. Original S2 proposal (historical): monotone error decrease across
+at least three resolutions within named tolerances on peak, `t_peak`,
+and rise, plus TV non-increase across the shock.

@@ -33,3 +33,14 @@ CRITICAL findings. All amendments applied in-package before closure.
 No finding rejected on substance except A-MINOR-7 (stale observation,
 verified). Post-fix gates: focused `ofe_routing` 64/64; fmt PASS; clippy
 0 errors; full workspace nextest re-run recorded in gate-results.
+
+## Codex post-execution review disposition (review-response pass)
+
+See `review-response-claude.md` for the finding-by-finding table: ALL
+Codex findings (High 1-2, Medium 1-4, Low 1-5) ACCEPTED and FIXED in the
+review-response commit, with three new regressions (CFL fail-closed,
+source-history agreement, single-OFE outlet non-negativity), the
+six-point sweep expansion, and one transparent re-disposition (the k_o
+diagnostic stability pin, replaced with law-like guards after the
+confounded ratification was exposed — flagged for Codex re-check). No
+finding remains open.

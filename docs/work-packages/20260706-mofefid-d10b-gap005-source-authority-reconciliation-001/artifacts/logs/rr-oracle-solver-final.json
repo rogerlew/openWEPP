@@ -1,0 +1,9 @@
+{"oracle": "upwind", "cells": 2000, "peak_m2_s": 0.00814291, "t_peak_s": 24.6600, "rise_10_90_s": 19.6181, "mass_residual_rel": 3.802e-14}
+{"oracle": "upwind", "cells": 4000, "peak_m2_s": 0.00820783, "t_peak_s": 24.6400, "rise_10_90_s": 19.6377, "mass_residual_rel": 7.344e-14}
+{"oracle": "upwind", "cells": 8000, "peak_m2_s": 0.00825080, "t_peak_s": 24.6200, "rise_10_90_s": 19.6487, "mass_residual_rel": 1.460e-14}
+{"oracle": "upwind", "cells": 16000, "peak_m2_s": 0.00827536, "t_peak_s": 24.6200, "rise_10_90_s": 19.6559, "mass_residual_rel": -8.488e-14}
+{"solver": "manning", "cells": 120, "peak_m2_s": 0.00828767, "t_peak_s": 24.6250, "rise_10_90_s": 19.6625, "max_courant": 0.7973, "tv_increase_m2_s": 5.263e-4}
+{"solver": "manning", "cells": 240, "peak_m2_s": 0.00839107, "t_peak_s": 24.5625, "rise_10_90_s": 19.7927, "max_courant": 0.7994, "tv_increase_m2_s": 4.929e-4}
+{"solver": "manning", "cells": 480, "peak_m2_s": 0.00848403, "t_peak_s": 24.5938, "rise_10_90_s": 19.7921, "max_courant": 0.8000, "tv_increase_m2_s": 4.708e-4}
+{"solver": "manning", "cells": 960, "peak_m2_s": 0.00840157, "t_peak_s": 24.6406, "rise_10_90_s": 19.7001, "max_courant": 0.8001, "tv_increase_m2_s": 5.086e-4}
+{"oracle": "characteristics_fan", "particles": 1200, "peak_m2_s": 0.00829174, "t_peak_s": 24.5240, "rise_10_90_s": 19.6600, "mass_residual_rel": -6.993e-4, "shocks_tracked": 1}

@@ -6,11 +6,14 @@
 //! is not wired into any production phase span; the default hillslope runtime
 //! does not call it (INV-OFEROUTE-010).
 //!
-//! Frozen-library posture (GAP-OFEROUTE-001): the TVD-MacCormack numerics
-//! primaries are un-acquired; the scheme is implemented as stated in R-63
-//! §2.3 and validated by mass conservation (INV-006), CFL stability
-//! (INV-007), steady-state, and shock structure rather than by a
-//! digit-by-digit primary read.
+//! Primary-bound posture (GAP-OFEROUTE-001 CLOSED, rev 26): the
+//! TVD-MacCormack primaries are in hand (Davis 1984 R-102, Mingham 2001
+//! R-82, Garcia-Navarro 1992 R-81, Tseng 2010 R-103) and the scheme is
+//! implemented in the SOURCE-CORRECT form — R-63 §2.3's printed limiter
+//! (11c) is adjudicated a transcription error; see the rev-24/25/26
+//! Algorithm Specification and `GAP-OFEROUTE-005` (RESOLVED). Validated
+//! by the Iwagaki-primary entropy-solution oracle, exact booked-ledger
+//! conservation, CFL stability, and steady-state/shock structure.
 
 use super::friction::{
     GRAVITY_M_S2, KINEMATIC_VISCOSITY_M2_S, chezy_from_friction, equivalent_friction_factor,
@@ -369,6 +372,10 @@ pub enum RoutingError {
     NonFiniteState,
     /// A negative depth was produced (scheme positivity failure).
     NegativeDepth,
+    /// The outlet bin series carried a material terminal deficit that a
+    /// non-negative exact-total redistribution cannot absorb (rev 26 /
+    /// Codex review Medium-1: never publish negative outlet discharge).
+    NegativeOutletBin,
     /// Degenerate configuration (empty mesh, non-positive spacing/end time,
     /// non-positive sample or max sub-timestep).
     DegenerateConfiguration,
@@ -508,9 +515,11 @@ impl BinRecorder {
     /// redistributed FORWARD to non-negative values with the exact total
     /// preserved (a deficit is carried into subsequent bins); a
     /// pathological terminal deficit (physically unexpected: total
-    /// outflow is non-negative) is folded into the last covered bin so
-    /// the series ALWAYS sums exactly to the booked outflow.
-    fn finish(self) -> (Vec<HydrographSample>, Vec<f64>, Vec<f64>) {
+    /// outflow is non-negative) is RETURNED to the caller, which fails
+    /// closed rather than publishing a negative outlet bin (Codex review
+    /// Medium-1); sub-noise deficits are folded into the last covered bin
+    /// so the series sums exactly to the booked outflow.
+    fn finish(self) -> (Vec<HydrographSample>, Vec<f64>, Vec<f64>, f64) {
         let mut flux_bins = self.flux_bins_m2;
         let mut carry = 0.0_f64;
         let mut last_covered = None;
@@ -527,9 +536,20 @@ impl BinRecorder {
                 carry = 0.0;
             }
         }
+        // Terminal deficit handling (Medium-1): fp-noise deficits fold
+        // into the last covered bin (keeps the exact total; cannot go
+        // materially negative); anything larger is returned for the
+        // caller's typed fail-closed decision.
+        let total_abs: f64 = flux_bins.iter().map(|v| v.abs()).sum();
+        let noise_floor = 1.0e-9 * total_abs.max(1.0e-12);
+        let mut terminal_deficit = 0.0_f64;
         if carry < 0.0 {
-            if let Some(k) = last_covered {
-                flux_bins[k] += carry;
+            if carry.abs() <= noise_floor {
+                if let Some(k) = last_covered {
+                    flux_bins[k] += carry;
+                }
+            } else {
+                terminal_deficit = carry;
             }
         }
         let mut hydrograph = Vec::with_capacity(flux_bins.len() + 1);
@@ -552,7 +572,7 @@ impl BinRecorder {
             });
         }
         profile::count_hydrograph_samples(hydrograph.len() as u64);
-        (hydrograph, flux_bins, self.span_bins_s)
+        (hydrograph, flux_bins, self.span_bins_s, terminal_deficit)
     }
 }
 
@@ -916,6 +936,34 @@ impl KinematicWaveSolver {
         sample_dt_s: f64,
         max_dt_s: f64,
     ) -> Result<RoutingResult, RoutingError> {
+        self.run_with_options(
+            forcing,
+            upstream_integral_m2,
+            &[],
+            end_time_s,
+            sample_dt_s,
+            max_dt_s,
+        )
+    }
+
+    /// Full-options run (Codex review High-2): `forcing_breakpoints_s` are
+    /// known discontinuity times of the forcing closures (e.g. a lateral
+    /// supply cutoff); the CFL-adaptive step is clipped so no step
+    /// STRADDLES a breakpoint — the solver samples forcing at the step
+    /// start and holds it constant over the step, so a straddling step
+    /// would integrate the pre-breakpoint rate across the post-breakpoint
+    /// interval and the discrete source history would diverge from the
+    /// forcing definition. Breakpoints must be sorted ascending.
+    #[allow(clippy::too_many_lines)]
+    pub fn run_with_options(
+        &mut self,
+        forcing: &Forcing<'_>,
+        upstream_integral_m2: Option<&dyn Fn(f64, f64) -> f64>,
+        forcing_breakpoints_s: &[f64],
+        end_time_s: f64,
+        sample_dt_s: f64,
+        max_dt_s: f64,
+    ) -> Result<RoutingResult, RoutingError> {
         if self.mesh.cell_count() == 0
             || !self.mesh.cell_length_m.is_finite()
             || self.mesh.cell_length_m <= 0.0
@@ -956,6 +1004,15 @@ impl KinematicWaveSolver {
             }
             let rain_term = skin_rain_term(intensity);
             let max_celerity = self.prepare_step_alpha(rain_term);
+            // Codex review High-1: CFL must FAIL CLOSED, never open. A
+            // non-finite celerity is corrupt state; a celerity so large
+            // that no positive sub-timestep exists (dt underflows to 0)
+            // violates INV-OFEROUTE-007's hard-fail posture. The pre-fix
+            // `dt <= 0 -> break` returned a partial Ok result instead.
+            if !max_celerity.is_finite() {
+                profile::end_solver_cfl(cfl_span);
+                return Err(RoutingError::NonFiniteState);
+            }
             // CFL-limited sub-timestep (eq. 12), clamped to max_dt and the
             // remaining window.
             let dt_cfl = if max_celerity <= 0.0 {
@@ -963,10 +1020,18 @@ impl KinematicWaveSolver {
             } else {
                 (CFL_TARGET * dx / max_celerity).min(max_dt_s)
             };
-            let dt = dt_cfl.min(end_time_s - t);
-            if dt <= 0.0 {
+            let mut dt = dt_cfl.min(end_time_s - t);
+            // Clip at the next forcing breakpoint so no step straddles a
+            // source discontinuity (High-2 exact source-history rule).
+            for bp in forcing_breakpoints_s {
+                if *bp > t + 1.0e-12 && *bp < t + dt {
+                    dt = *bp - t;
+                    break;
+                }
+            }
+            if !dt.is_finite() || dt <= 0.0 {
                 profile::end_solver_cfl(cfl_span);
-                break;
+                return Err(RoutingError::CflViolation);
             }
             // CFL evidence at the chosen dt (true celerity, rev 24).
             for i in 0..self.mesh.cell_count() {
@@ -1026,7 +1091,16 @@ impl KinematicWaveSolver {
         }
 
         mass.storage_change_m2 = self.total_storage_m2() - storage_initial;
-        let (hydrograph, outlet_bin_outflow_m2, outlet_bin_spans_s) = recorder.finish();
+        let (hydrograph, outlet_bin_outflow_m2, outlet_bin_spans_s, terminal_deficit_m2) =
+            recorder.finish();
+        if terminal_deficit_m2 < 0.0 {
+            // Medium-1: a material terminal deficit means the outflow
+            // series cannot be represented as a non-negative exact-total
+            // bin series — physically unexpected (total outflow is
+            // non-negative); publishing a negative outlet bin is not an
+            // option, so fail closed.
+            return Err(RoutingError::NegativeOutletBin);
+        }
         Ok(RoutingResult {
             hydrograph,
             mass_balance: mass,
