@@ -4,7 +4,7 @@ title: Hillslope OFE-by-OFE Overland-Flow Routing Process Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 21
+contract_version: 22
 producer_scope:
   - Space/time-variant overland-flow resistance (skin/form/wave/vegetation) surfaces
   - 1-D kinematic-wave routing state (depth, unit discharge) per OFE per sub-timestep
@@ -61,6 +61,11 @@ In scope:
   hillslope water balance. The subsurface *flow physics* stays `SC-SUBHYD-001`'s;
   the coupling *seam* is an activation requirement here (`GAP-OFEROUTE-006`,
   `INV-OFEROUTE-012`).
+- Activation-candidate hourly surface-source shape governance for the Lane D
+  shadow and the future active seam: DC01/ADR-0036 source weights may combine
+  rainfall excess, subsurface exfiltration/saturation carry, and a
+  source-authorized snowmelt/routed-liquid hourly limb owned by
+  `SC-RUNOFFPART-001`.
 
 Out of scope:
 - Rainfall-excess / infiltration internals owned by `SC-RUNOFFPART-001`.
@@ -118,6 +123,7 @@ Out of scope:
 |---|---|---|---|
 | Required inputs | Rainfall-excess rate `v`, upstream boundary unit discharge, OFE geometry (`Delta x`, OFE length, `S_o`), mesh depth/discharge initial state, and friction operands (`I`, `k_o`, `C_d`, `D_r`, `lambda`, `LAI`, `h_c`, `nu`, `g`) | `SC-RUNOFFPART-001` for rainfall excess and inter-OFE transfer; SC-OFEROUTE for routed state and friction operands | D4/D5 must name exact Rust/API boundary fields before runtime binding. |
 | Required inputs (subsurface seam, ACTIVE routing — `GAP-OFEROUTE-006` design) | Per-hour exfiltration depth `ui_SCrunf[h]` (m per hour slot, `SC-SUBHYD-001#INV-SUBHYD-023`) combined with `wb14_hourly_excess_m[h]` into the routed source RATE `s_h = (wb14_hourly_excess_m[h] + ui_SCrunf[h]) / 3600 s` (m s⁻¹, uniform over the hour's routing substeps) | `SC-SUBHYD-001` produces the carries; SC-OFEROUTE owns the rate conversion and consumption | Depth-per-hour → rate conversion is a REQUIRED recorded helper (unit-governance row below). `ui_LfCrf` is deliberately NOT a router input (stays subsurface); outlet `latqcc` is NOT a router input (bypasses on the subsurface export, carried only in the `INV-OFEROUTE-012` closure identity). Hourly lane required — daily lanes fail closed. |
+| Required inputs (D12 source-shape limb) | Unit-normalized surface-source weights built from non-negative per-hour `wb14_hourly_excess_m[h]`, `ui_SCrunf`-lineage saturation carry, and `snow.hourly_routed_melt_m[h]`. The snow/routed-liquid limb MUST be producer-owned by `SC-RUNOFFPART-001` and MUST close exactly to daily `snow.routed_melt_m` within `1.0e-12 m`. | `SC-RUNOFFPART-001#INV-RUNOFFPART-022` owns snowmelt/routed-liquid timing and the daily scalar; SC-OFEROUTE owns consumption of that limb as part of the Lane D source-shape / future routing source-rate series. | Uniform fallback remains diagnostic-only for positive-runoff days with no authorized profile and cannot support activation. D12 does not authorize production/default activation, D10 shock-numerics acceptance, D13 erosion promotion, or D14/D15 policy. |
 | Required outputs | Cell/sub-timestep `h`, `q`, `f_s`, `f_f`, `f_w`, `f_veg`, `f_eq`, `C`, `alpha`, `Cr`, OFE outlet hydrograph, conservation residual, and validation diagnostics | SC-OFEROUTE | Published output metadata is required before any user-visible or retained artifact publication. |
 | Mutated state | Transient OFE routing mesh state and, when active, the downstream OFE hourly runon supply carried over `INV-RUNOFFPART-029` | SC-OFEROUTE + `SC-RUNOFFPART-001` seam | With subsystem off, no routed state is allocated into the default hillslope phase path and no protected output may change. |
 
@@ -153,6 +159,7 @@ Out of scope:
 | CFL stability | `Cr > 1` candidate sub-timestep | Reduce `Delta t` until `Cr <= 1`; if no finite positive sub-timestep can satisfy CFL, fail closed. | Typed runtime hard fail. | `INV-OFEROUTE-007` |
 | Cascade handoff | Active multi-OFE routing | Publish upstream OFE outlet hydrograph as downstream upstream-boundary profile; do not synthesize from daily `Q`. | D5 closure requires seam evidence; activation requires typed runtime hard fail for malformed handoffs. | `INV-OFEROUTE-008` |
 | DC01 runon ownership | Active routing SUPERSEDES DC01 runon re-infiltration | The routed subsystem owns the hourly runon supply (surface-routed, not re-infiltrated) and supersedes DC01's daily-lump admission; per-OFE infiltration acts on rainfall only. | Design resolved by `GAP-OFEROUTE-003` (SUPERSEDE); runtime integration must hard-fail if the routed hourly runon and DC01 daily-lump paths both feed the same active lane. | `INV-OFEROUTE-009` |
+| D12 surface-source hourly shape | Lane D shadow/DC01/ADR-0036 source-shape construction on a day with positive runoff | Build one source-shape vector from finite non-negative hourly `wb14_hourly_excess_m`, `ui_SCrunf`-lineage carry, and `snow.hourly_routed_melt_m`; normalize only after the snow limb closes to daily `snow.routed_melt_m` within `1.0e-12 m`. | Typed runtime hard fail for malformed/non-closing limbs; uniform fallback is allowed only as a surfaced diagnostic residual class and cannot carry activation evidence. | `INV-OFEROUTE-012`, `SC-RUNOFFPART-001#INV-RUNOFFPART-022` |
 | Subsurface coupling & baseflow | Active routing on a hillslope with subsurface excess / baseflow | Subsurface exfiltration (return flow / saturation excess) enters the OFE surface routing as a source term; baseflow (non-exfiltrated subsurface outflow) is conserved and exported; the full hillslope water balance closes with the subsurface terms present. | Production activation BLOCKED until implemented + fixture-verified; typed runtime hard fail on water-balance non-closure when active. | `INV-OFEROUTE-012` |
 | Default activation | Subsystem off | Preserve byte identity of protected outputs and publish no phase-span routed side effects. | Protected-output diff blocks promotion. | `INV-OFEROUTE-010` |
 
@@ -191,6 +198,25 @@ adjudicated under `GAP-OFEROUTE-005` as
 per D9. Case 4 remains non-acceptance evidence until the source-authority
 reconciliation named in `GAP-OFEROUTE-005` is complete.
 
+`INV-OFEROUTE-012` D12 note (2026-07-06): the melt-limb activation blocker is
+governed by `SC-RUNOFFPART-001#INV-RUNOFFPART-022`. A valid Lane D
+source-shape claim must pass the producer-owned hourly routed-melt vector
+through the real DC01/ADR-0036/Lane D consumer path, prove
+`sum_h snow.hourly_routed_melt_m[h] == snow.routed_melt_m` within
+`1.0e-12 m`, and eliminate `days_uniform_shape` on H2637 or record every
+remaining uniform day as a contract-backed residual class. Uniform spreading
+of active melt is diagnostic plumbing only, not source authority.
+
+`INV-OFEROUTE-012` D12 disposition (2026-07-06, WP
+`20260705-mofefid-d12-melt-limb-hourly-shape-001`): the real H2637 native
+shadow evidence records `days_seen=731`, `days_routed=622`,
+`days_uniform_shape=6`, `days_uniform_shape_with_routed_melt=0`, and
+`days_uniform_shape_without_routed_melt=6`. The melt-limb activation blocker
+is closed: every H2637 uniform fallback day is now classified as a no
+authorized-source-shape residual with no routed-melt limb, not as hidden active
+melt. The residual class remains diagnostic-only and cannot support
+production/default activation.
+
 ## Producer Obligations
 
 | Obligation ID | Producer | Obligation | Guard / evidence |
@@ -200,7 +226,7 @@ reconciliation named in `GAP-OFEROUTE-005` is complete.
 | OBL-OFEROUTE-P-003 | Cascade runtime | Carry upstream OFE outlet hydrograph as the downstream boundary profile without daily aggregation. | D5 downstream-consumer proof. |
 | OBL-OFEROUTE-P-004 | Runon ownership | Apply the resolved `GAP-OFEROUTE-003` SUPERSEDE design (per-OFE infiltration on rainfall; routed runon surface-routed, not re-infiltrated; DC01 daily-lump disabled when active) before active multi-OFE routing. | D5/D6 design disposition plus integration runtime double-count guard. |
 | OBL-OFEROUTE-P-005 | Activation gate | Keep subsystem default-off byte-flat and require a separate default-activation gate. | Protected-output identity evidence. |
-| OBL-OFEROUTE-P-006 | Subsurface coupling | Before active multi-OFE routing, couple subsurface excess (return flow / saturation excess) into the OFE surface router as a source term and conserve/export baseflow, closing the full hillslope water balance. Seam ownership is RESOLVED (`GAP-OFEROUTE-006`, rev 11) and the seam machinery + gate fixtures are landed at the solver/identity tier (rev 13); the runtime SHADOW is landed and the real-H2637 vector executed (rev 15: live-surface forcing, diagnostics-only, byte-identity); the remaining obligation is the ACTIVATION wiring — routing takes ownership of the surface water path with the runtime closure hard-fail and the DC01-disable engaged — gated on the rev-15 flip-precondition set (INV-011, GAP-005 numerics on this regime, the melt-limb disposition, GAP-007 operand sourcing, the ADR-0036 erosion hourly-shape switch). | `INV-OFEROUTE-012` gate: subsurface-excess-to-runoff fixture + subsurface-dominated closure vector + activation block until functional. |
+| OBL-OFEROUTE-P-006 | Subsurface coupling | Before active multi-OFE routing, couple subsurface excess (return flow / saturation excess) into the OFE surface router as a source term and conserve/export baseflow, closing the full hillslope water balance. Seam ownership is RESOLVED (`GAP-OFEROUTE-006`, rev 11) and the seam machinery + gate fixtures are landed at the solver/identity tier (rev 13); the runtime SHADOW is landed and the real-H2637 vector executed (rev 15: live-surface forcing, diagnostics-only, byte-identity); D12 closes the melt-limb source-shape precondition for the shadow. The remaining obligation is the ACTIVATION wiring — routing takes ownership of the surface water path with the runtime closure hard-fail and the DC01-disable engaged — still gated on GAP-005 numerics on this regime, future production-consumer proof for the rev-21 friction operands, and the ADR-0036 erosion hourly-shape switch. | `INV-OFEROUTE-012` gate: subsurface-excess-to-runoff fixture + subsurface-dominated closure vector + activation block until functional. |
 | OBL-OFEROUTE-P-007 | Friction operand builder | Before any active or activation-candidate path claims friction fidelity, build the friction operand surface from source-authorized `I`, `k_o`, `C_d`, `D_r`, `lambda`, `LAI`, and `h_c` inputs, or fail closed on the unsupported component/policy. The native management `routing_coefficients` extension supplies the static `k_o`, form `C_d`, `D_r`, `lambda`, and vegetation `C_d` values for native forest/native cropland Lane D shadow runs. The live direct day frame supplies `I` as `wb14_hourly_rainfall_m[h] / 3600 s` and post-growth `LAI`; typed management `canhgt` supplies `h_c` and is mandatory when `LAI > 0`. No all-lane `k_o=500`, `I=0`, `LAI=0`, or `h_c=0` missing-source production default is ratified. | `GAP-OFEROUTE-007` gate: per-operand source/default/fail-closed map, contract-derived tests, real consumer proof, negative proof that hardcoded/placeholder operands are gone from the Lane D shadow consumer, and an explicit no-production-activation disposition. |
 
 ## Consumer Obligations
@@ -321,6 +347,7 @@ satisfied by an un-implemented subsystem.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-07-06` | `22` | `Codex` | D12 contract-first amendment and implementation disposition: ratified the source-authorized hourly snowmelt/routed-liquid limb for Lane D/DC01 source-shape construction, bound it to `SC-RUNOFFPART-001#INV-RUNOFFPART-022`, required exact daily-sum closure to `snow.routed_melt_m` within `1.0e-12 m`, and kept uniform fallback diagnostic-only. H2637 now has `0` uniform-fallback days with routed melt; the remaining `6` uniform days are no-authorized-source-shape residuals. No production/default activation, D10 Case-4 acceptance, D13 erosion promotion, or D14/D15 claim. |
 | `2026-07-06` | `21` | `Codex` | Closed `GAP-OFEROUTE-007` for the opt-in Lane D shadow by ratifying dynamic friction operand sources and guards: `I_h = wb14_hourly_rainfall_m[h] / 3600 s` from the live direct day frame, `LAI` from post-growth `DirectDayFrame.evapotranspiration_compute_inputs.leaf_area_index`, and `h_c` from typed-management `canhgt` with a hard failure when vegetation is active and `h_c` is missing/non-positive. No production/default activation, D10 Case-4 acceptance, D12, D13, D14, or D15 claim. |
 | `2026-07-06` | `20` | `Codex` | Added the native management `routing_coefficients` source for static Lane D shadow routing operands (`k_o`, form `C_d`, `D_r`, `lambda`, vegetation `C_d`) on native forest/native cropland landuses; recorded `OPENWEPP_LANED_SHADOW` fail-closed enforcement for every scheduled MOFE lane landuse. `GAP-OFEROUTE-007` remains open for `I`, `LAI`, and `h_c`, and this revision makes no production/default activation or Case-4 acceptance claim. |
 | `2026-07-06` | `19` | `Codex` | MOFEFID-D11 friction operand authority audit: identified source candidates for rainfall intensity `I` and plant vegetation operands but held `GAP-OFEROUTE-007` on missing `k_o`, `C_d`, `D_r`, `lambda`, and `h_c` builder authority/consumer wiring. Added operand sourcing guard, alias/unit-governance rows, `OBL-OFEROUTE-P-007`, a held BEI row, and explicit non-authority for all-lane `k_o=500` / `I=0`; no production/default activation and no Case-4 acceptance. |

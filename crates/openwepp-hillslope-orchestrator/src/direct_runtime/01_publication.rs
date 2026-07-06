@@ -275,9 +275,9 @@ pub struct DirectPublicationDayRow {
 
 /// The lane's OWN surface-runoff hourly weights for the seam shadow:
 /// the DC01 M2 distribution over the lane's own WB14 excess + saturation
-/// carry, against its own runoff total. Zero-vector on no-runoff days;
+/// carry + routed melt/liquid limb, against its own runoff total. Zero-vector on no-runoff days;
 /// uniform when runoff exists with no hourly shape (the DC01 lump-only
-/// day class — e.g. melt-sourced runoff outside the two D1 limbs).
+/// day class).
 fn direct_publication_own_surface_hourly_weights(
     day_frame: &DirectDayFrame,
 ) -> Result<[f64; DIRECT_TRANSFER_HOUR_COUNT], DirectRuntimeError> {
@@ -292,11 +292,15 @@ fn direct_publication_own_surface_hourly_weights(
         .ok_or(DirectRuntimeError::MissingDirectUpstream {
             upstream: "R4O subsurface compute producer (publication weights)",
         })?;
-    Ok(crate::direct_runtime::runoff::dc01_surface_runoff_hourly_weights(
+    crate::direct_runtime::runoff::dc01_surface_runoff_hourly_weights(
         runoff.q_runoff_m,
         &day_frame.wb14_hourly_excess_m,
         &subsurface.hourly_saturation_carry_m,
-    ))
+        day_frame
+            .snow_coupling_downstream_operands
+            .hourly_routed_melt_m
+            .as_ref(),
+    )
 }
 
 impl DirectPublicationDayRow {

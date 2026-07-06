@@ -253,6 +253,8 @@ struct LanedShadowProvenance {
     days_seen: u64,
     days_routed: u64,
     days_uniform_shape: u64,
+    days_uniform_shape_with_routed_melt: u64,
+    days_uniform_shape_without_routed_melt: u64,
     max_router_conservation_rel: f64,
     aggregate_router_conservation_rel: f64,
     max_supply_reconstruction_rel: f64,

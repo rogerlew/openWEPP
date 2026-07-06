@@ -102,6 +102,11 @@ fn r7g_r4g_snow_coupling_mutates_winter_column_snow_state() {
         snow_state_projected: true,
         active_snow_coupling: true,
         routed_melt_m: 0.003_906_25,
+        hourly_routed_melt_m: {
+            let mut hourly = [0.0; 24];
+            hourly[0] = 0.003_906_25;
+            hourly
+        },
         post_winter_rain_m: 0.011_718_75,
         runtime_swe_after_m: 0.03125,
         runtime_depth_after_m: 0.125,

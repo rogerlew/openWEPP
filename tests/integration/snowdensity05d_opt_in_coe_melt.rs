@@ -135,6 +135,7 @@ fn snowdensity05d_opt_in_changes_only_shortwave_amelt_operand() {
     assert!((opt_in.raw_melt_m - opt_in_expected_raw_m).abs() <= TOL);
     assert!((opt_in.redistributed_melt_m - opt_in.raw_melt_m).abs() <= TOL);
     assert!((opt_in.routed_melt_m - opt_in.raw_melt_m).abs() <= TOL);
+    assert!((opt_in.hourly_routed_melt_m.iter().sum::<f64>() - opt_in.routed_melt_m).abs() <= TOL);
     assert!((opt_in.snowpack_swe_loss_m - opt_in.raw_melt_m).abs() <= TOL);
     assert!((opt_in.snow_coupling_signed_s_m - opt_in.raw_melt_m).abs() <= TOL);
     assert!((opt_in.runtime_swe_after_m - (0.4 - opt_in.snowpack_swe_loss_m)).abs() <= TOL);
@@ -175,6 +176,7 @@ fn snowdensity05d_direct_runtime_projects_routed_melt_and_albedo_carry() {
         raw_melt_m: opt_in.raw_melt_m,
         redistributed_melt_m: opt_in.redistributed_melt_m,
         routed_melt_m: opt_in.routed_melt_m,
+        hourly_routed_melt_m: opt_in.hourly_routed_melt_m,
         snowpack_swe_loss_m: opt_in.snowpack_swe_loss_m,
         sublimation_m: opt_in.sublimation_m,
         post_winter_rain_m: opt_in.post_winter_rain_m,

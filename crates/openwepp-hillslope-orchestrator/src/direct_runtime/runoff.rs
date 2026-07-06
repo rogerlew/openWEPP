@@ -1394,37 +1394,55 @@ fn normalize_r4a_nonnegative_depth(
 
 /// ADR-0036 `REF-SED-DC01-SHAPE`: the SINGLE hourly-runoff shape authority.
 /// Unit-normalized hourly distribution of the day's surface runoff (WB14
-/// infiltration-excess profile + hourly saturation carry). Uniform fallback
-/// when the day has runoff without a profile shape (the ratified
-/// INV-RUNOFFPART-031 synthesized-time-base case); all-zero when there is no
-/// runoff. Consumed by (1) the MOFE dynamic-transfer publication, (2) the
-/// hydrograph-resolved Wave-1 erosion substrate (`INV-SED-013`), and (3) the
-/// serialized `V_h` HBP surface (`V_h = runvol · w_h`) — one shape, three
-/// consumers, so the solve, the interchange, and downstream runon admission
-/// see the same hydrograph.
+/// infiltration-excess profile + hourly saturation carry + producer-owned
+/// hourly routed snowmelt/liquid). Uniform fallback when the day has runoff
+/// without a profile shape (the ratified INV-RUNOFFPART-031 synthesized-time-
+/// base case); all-zero when there is no runoff. Consumed by (1) the MOFE
+/// dynamic-transfer publication, (2) the hydrograph-resolved Wave-1 erosion
+/// substrate (`INV-SED-013`), and (3) the serialized `V_h` HBP surface
+/// (`V_h = runvol · w_h`) — one shape, three consumers, so the solve, the
+/// interchange, and downstream runon admission see the same hydrograph.
 pub(crate) fn dc01_surface_runoff_hourly_weights(
     q_runoff_m: f64,
     wb14_hourly_excess_m: &[f64; DC01_HOUR_BIN_COUNT],
     hourly_saturation_carry_m: &[f64; DC01_HOUR_BIN_COUNT],
-) -> [f64; DC01_HOUR_BIN_COUNT] {
+    hourly_routed_melt_m: &[f64; DC01_HOUR_BIN_COUNT],
+) -> Result<[f64; DC01_HOUR_BIN_COUNT], DirectRuntimeError> {
     let mut weights = [0.0_f64; DC01_HOUR_BIN_COUNT];
-    if q_runoff_m <= 0.0 {
-        return weights;
-    }
+    validate_nonnegative_direct_m("dc01_surface_shape.q_runoff_m", q_runoff_m)?;
     let mut raw_total_m = 0.0_f64;
     for hour in 0..DC01_HOUR_BIN_COUNT {
-        let raw = wb14_hourly_excess_m[hour].max(0.0) + hourly_saturation_carry_m[hour].max(0.0);
+        validate_nonnegative_direct_m(
+            "dc01_surface_shape.wb14_hourly_excess_m",
+            wb14_hourly_excess_m[hour],
+        )?;
+        validate_nonnegative_direct_m(
+            "dc01_surface_shape.hourly_saturation_carry_m",
+            hourly_saturation_carry_m[hour],
+        )?;
+        validate_nonnegative_direct_m(
+            "dc01_surface_shape.hourly_routed_melt_m",
+            hourly_routed_melt_m[hour],
+        )?;
+        let raw = wb14_hourly_excess_m[hour]
+            + hourly_saturation_carry_m[hour]
+            + hourly_routed_melt_m[hour];
+        validate_finite("dc01_surface_shape.raw_hourly_source_m", raw)?;
         weights[hour] = raw;
         raw_total_m += raw;
+        validate_finite("dc01_surface_shape.raw_total_m", raw_total_m)?;
+    }
+    if q_runoff_m <= 0.0 {
+        return Ok([0.0; DC01_HOUR_BIN_COUNT]);
     }
     if raw_total_m <= 0.0 {
         let uniform = 1.0 / DC01_HOUR_BIN_COUNT_F64;
-        return [uniform; DC01_HOUR_BIN_COUNT];
+        return Ok([uniform; DC01_HOUR_BIN_COUNT]);
     }
     for weight in &mut weights {
         *weight /= raw_total_m;
     }
-    weights
+    Ok(weights)
 }
 
 pub(crate) const DC01_HOUR_BIN_COUNT: usize = 24;

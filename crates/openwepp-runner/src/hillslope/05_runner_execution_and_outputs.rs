@@ -107,9 +107,11 @@ fn execute_direct_publication_stream(
             },
             |row, day_frame| {
                 if let Some(collector) = laned_shadow.as_mut() {
-                    let operands = day_input_builder
-                        .laned_shadow_lane_day_operands(day_frame)
-                        .map_err(|error| direct_publication_day_input_build_error(&error))?;
+                    let operands = Box::new(
+                        day_input_builder
+                            .laned_shadow_lane_day_operands(day_frame)
+                            .map_err(|error| direct_publication_day_input_build_error(&error))?,
+                    );
                     collector
                         .observe_row(row, operands)
                         .map_err(|detail| {
@@ -389,6 +391,8 @@ fn build_hillslope_execution_provenance(
             days_seen: summary.days_seen,
             days_routed: summary.days_routed,
             days_uniform_shape: summary.days_uniform_shape,
+            days_uniform_shape_with_routed_melt: summary.days_uniform_shape_with_routed_melt,
+            days_uniform_shape_without_routed_melt: summary.days_uniform_shape_without_routed_melt,
             max_router_conservation_rel: summary.max_router_conservation_rel,
             aggregate_router_conservation_rel: summary.aggregate_router_conservation_rel,
             max_supply_reconstruction_rel: summary.max_supply_reconstruction_rel,

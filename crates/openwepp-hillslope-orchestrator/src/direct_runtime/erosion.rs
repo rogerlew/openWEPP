@@ -366,23 +366,39 @@ impl DirectDayFrame {
     /// runoff day (the hydrograph exists; only the sediment is skipped) —
     /// otherwise the serialized `Σ V_h = runvol` closure would fail
     /// exactly on GAP-SED-THAW days.
-    fn r7d8_thaw_day_skip(&mut self, carry: DirectErosionRuntimeCarry) {
+    fn r7d8_thaw_day_skip(
+        &mut self,
+        carry: DirectErosionRuntimeCarry,
+    ) -> Result<(), DirectRuntimeError> {
         let mut inert = DirectWave1ContinuityInputs::zero();
         inert.enabled = self.erosion_inputs.wave1_operand_seed.enabled;
         *self.erosion_inputs.wave1_continuity = inert;
-        let thaw_saturation_carry_m = self
-            .subsurface_compute_shadow_projection
-            .as_ref()
-            .map_or([0.0; 24], |subsurface| subsurface.hourly_saturation_carry_m);
-        self.wave1_hourly_weights = super::runoff::dc01_surface_runoff_hourly_weights(
+        self.wave1_hourly_weights = self.r7d8_surface_hourly_weights(
             self.peak_runoff_shadow_projection
                 .as_ref()
                 .map_or(0.0, |peak| peak.q_runoff_m),
-            &self.wb14_hourly_excess_m,
-            &thaw_saturation_carry_m,
-        );
+        )?;
         self.wave1_hourly_plan.clear();
         self.erosion_runtime_carry = carry;
+        Ok(())
+    }
+
+    fn r7d8_surface_hourly_weights(
+        &self,
+        q_runoff_m: f64,
+    ) -> Result<[f64; 24], DirectRuntimeError> {
+        let saturation_carry_m = self
+            .subsurface_compute_shadow_projection
+            .as_ref()
+            .map_or([0.0; 24], |subsurface| subsurface.hourly_saturation_carry_m);
+        super::runoff::dc01_surface_runoff_hourly_weights(
+            q_runoff_m,
+            &self.wb14_hourly_excess_m,
+            &saturation_carry_m,
+            self.snow_coupling_downstream_operands
+                .hourly_routed_melt_m
+                .as_ref(),
+        )
     }
 
     fn r7d8_assemble_wave1_continuity_from_frame(&mut self) -> Result<(), DirectRuntimeError> {
@@ -425,7 +441,7 @@ impl DirectDayFrame {
         // only this day's sediment is skipped. Surfacing thaw-day erosion
         // is a winter-subsystem work package (`GAP-SED-THAW`).
         if frost_regime == ErosionFrostRegime::Thawing {
-            self.r7d8_thaw_day_skip(carry);
+            self.r7d8_thaw_day_skip(carry)?;
             return Ok(());
         }
 
@@ -485,15 +501,7 @@ impl DirectDayFrame {
         // `passby` event gate runs on the DAY totals, and active days then
         // assemble one solve quantum per hydraulically-active hour
         // (`w_h > 0`; production `qin_h = 0` until the E.3 handoff).
-        let saturation_carry_m = self
-            .subsurface_compute_shadow_projection
-            .as_ref()
-            .map_or([0.0; 24], |subsurface| subsurface.hourly_saturation_carry_m);
-        let weights = super::runoff::dc01_surface_runoff_hourly_weights(
-            daily.runoff_depth_m,
-            &self.wb14_hourly_excess_m,
-            &saturation_carry_m,
-        );
+        let weights = self.r7d8_surface_hourly_weights(daily.runoff_depth_m)?;
         self.wave1_hourly_weights = weights;
         let hourly_width_m = Self::build_wave1_hourly_plan(
             seed,

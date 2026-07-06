@@ -201,6 +201,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             raw_melt_m: snow_liquid.raw_melt_m,
             redistributed_melt_m: snow_liquid.redistributed_melt_m,
             routed_melt_m: snow_liquid.routed_melt_m,
+            hourly_routed_melt_m: snow_liquid.hourly_routed_melt_m,
             snowpack_swe_loss_m: snow_liquid.snowpack_swe_loss_m,
             sublimation_m: snow_liquid.sublimation_m,
             post_winter_rain_m: snow_liquid.post_winter_rain_m,
@@ -361,6 +362,9 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             day_frame.lane_index,
             day_frame.day_index,
             day_frame.wb14_hourly_rainfall_m,
+            *day_frame
+                .snow_coupling_downstream_operands
+                .hourly_routed_melt_m,
             day_frame.evapotranspiration_compute_inputs.leaf_area_index,
             authority.evapotranspiration.canopy_height_m,
         )
@@ -1051,6 +1055,7 @@ fn build_laned_shadow_lane_day_operands(
     lane_index: usize,
     day_index: usize,
     hourly_rainfall_m: [f64; openwepp_hillslope_orchestrator::ofe_routing::seam::SEAM_HOUR_BINS],
+    hourly_routed_melt_m: [f64; openwepp_hillslope_orchestrator::ofe_routing::seam::SEAM_HOUR_BINS],
     leaf_area_index: f64,
     canopy_height_m: Option<f64>,
 ) -> Result<crate::hillslope::laned_shadow::LanedShadowLaneDayOperands, HillslopeCliError> {
@@ -1075,6 +1080,20 @@ fn build_laned_shadow_lane_day_operands(
                     day_index + 1,
                     hour_index + 1,
                     rainfall_m
+                ),
+            });
+        }
+    }
+    for (hour_index, routed_melt_m) in hourly_routed_melt_m.iter().enumerate() {
+        if !routed_melt_m.is_finite() || *routed_melt_m < 0.0 {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "laned_shadow_dynamic_operands",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} Lane D shadow requires finite nonnegative hourly routed melt for lane {} day {} hour {}, observed {}",
+                    lane_index + 1,
+                    day_index + 1,
+                    hour_index + 1,
+                    routed_melt_m
                 ),
             });
         }
@@ -1119,6 +1138,7 @@ fn build_laned_shadow_lane_day_operands(
     Ok(
         crate::hillslope::laned_shadow::LanedShadowLaneDayOperands {
             hourly_rainfall_m,
+            hourly_routed_melt_m,
             leaf_area_index,
             canopy_height_m,
         },
@@ -1148,7 +1168,7 @@ mod laned_shadow_dynamic_operand_tests {
     #[test]
     fn laned_shadow_dynamic_operands_reject_missing_canhgt_when_lai_positive() {
         let detail = dynamic_operand_error_detail(build_laned_shadow_lane_day_operands(
-            0, 0, [0.0; 24], 1.25, None,
+            0, 0, [0.0; 24], [0.0; 24], 1.25, None,
         ));
 
         assert!(detail.contains("requires typed-management canhgt"));
@@ -1159,6 +1179,7 @@ mod laned_shadow_dynamic_operand_tests {
         let detail = dynamic_operand_error_detail(build_laned_shadow_lane_day_operands(
             0,
             0,
+            [0.0; 24],
             [0.0; 24],
             1.25,
             Some(0.0),
@@ -1172,11 +1193,24 @@ mod laned_shadow_dynamic_operand_tests {
         let mut hourly_rainfall_m = [0.0; 24];
         hourly_rainfall_m[3] = 0.0125;
 
-        let operands =
-            build_laned_shadow_lane_day_operands(0, 0, hourly_rainfall_m, 0.0, None)
-                .expect("bare day operands should accept absent canopy height");
+        let mut hourly_routed_melt_m = [0.0; 24];
+        hourly_routed_melt_m[7] = 0.0025;
+
+        let operands = build_laned_shadow_lane_day_operands(
+            0,
+            0,
+            hourly_rainfall_m,
+            hourly_routed_melt_m,
+            0.0,
+            None,
+        )
+        .expect("bare day operands should accept absent canopy height");
 
         assert_eq!(operands.hourly_rainfall_m[3].to_bits(), 0.0125_f64.to_bits());
+        assert_eq!(
+            operands.hourly_routed_melt_m[7].to_bits(),
+            0.0025_f64.to_bits()
+        );
         assert_eq!(operands.leaf_area_index.to_bits(), 0.0_f64.to_bits());
         assert_eq!(operands.canopy_height_m.to_bits(), 0.0_f64.to_bits());
     }

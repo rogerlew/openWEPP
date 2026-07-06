@@ -1,6 +1,6 @@
 # MOFEFID-D12 - Melt-Limb Hourly Source Shape
 
-Status: **SCAFFOLDED** (2026-07-06). Campaign:
+Status: **EXECUTED-COMPLETE** (2026-07-06). Campaign:
 [MOFEFID](../../planning/mofe-fidelity-campaign-strategy.md) Lane D.
 Contract focus: `SC-OFEROUTE-001#INV-OFEROUTE-012` melt-limb activation
 precondition and the shared DC01/ADR-0036 hourly source-shape authority.
@@ -96,10 +96,14 @@ package, activation flip, or default-promotion package.
 - ADR-0036 hourly substrate:
   `docs/decisions/0036-hydrograph-resolved-sediment-transport-and-routing.md`.
 - Current source-shape code:
+  - `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/infiltration_reconciliation.rs`,
+  - `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/runoff_reconciliation.rs`,
   - `crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs`,
   - `crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs`,
+  - `crates/openwepp-hillslope-orchestrator/src/direct_runtime/03_executor.rs`,
   - `crates/openwepp-hillslope-orchestrator/src/direct_runtime/00_core_frames.rs`,
   - `crates/openwepp-hillslope-orchestrator/src/direct_runtime/storage.rs`,
+  - `crates/openwepp-hillslope-orchestrator/src/direct_runtime/erosion.rs`,
   - `crates/openwepp-runner/src/hillslope/laned_shadow.rs`, and
   - direct-publication day-input helpers under
     `crates/openwepp-runner/src/hillslope/direct_publication/`.
@@ -117,13 +121,24 @@ Conditional, only if D12 source authority supports implementation:
 
 - `crates/openwepp-hillslope-orchestrator/src/direct_runtime/runoff.rs`
 - `crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs`
+- `crates/openwepp-hillslope-orchestrator/src/direct_runtime/03_executor.rs`
 - `crates/openwepp-hillslope-orchestrator/src/direct_runtime/00_core_frames.rs`
 - `crates/openwepp-hillslope-orchestrator/src/direct_runtime/storage.rs`
+- `crates/openwepp-hillslope-orchestrator/src/direct_runtime/erosion.rs`
+- `crates/openwepp-hillslope-orchestrator/src/hydrology/support_helpers_mod/`
+- `crates/openwepp-hillslope-orchestrator/src/hydrology/03_kernel_support_00_support_helpers.rs`
+- `crates/openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs`
+- `crates/openwepp-runner/src/hillslope/05_runner_execution_and_outputs.rs`
 - `crates/openwepp-runner/src/hillslope/laned_shadow.rs`
 - `crates/openwepp-runner/src/hillslope/direct_publication/`
 - Focused Lane D, H2637, runoff/shape, or direct-publication tests.
 - Companion `SC-*` contracts only if the source-shape owner is not
   `SC-OFEROUTE-001`.
+
+Execution boundary note: D12 touched `erosion.rs` only to keep the
+already-shared DC01/ADR-0036 source-shape helper consuming the same D12 limb.
+D12 does not claim the D13 erosion hourly-shape switch, Wave-1 acceptance, or
+erosion production promotion.
 
 Protected:
 
@@ -157,6 +172,20 @@ Protected:
    `HOLD` only after a hold-legitimacy audit proves the boundary.
 6. **D12-S5 - Evidence and closure.** Run required gates, update artifacts,
    complete dual review/disposition/verification, and set final package status.
+
+## Execution Result
+
+D12 closed the melt-limb hourly source-shape blocker for the opt-in Lane D
+shadow. `SC-OFEROUTE-001` rev 22 ratifies a producer-owned
+`snow.hourly_routed_melt_m[h]` limb bound to
+`SC-RUNOFFPART-001#INV-RUNOFFPART-022`, and the runtime passes that closed
+vector through the DC01/ADR-0036/Lane D consumer path. H2637 evidence records
+`days_uniform_shape_with_routed_melt=0`; the remaining `6` uniform-shape days
+are classified as no-authorized-source-shape residuals, diagnostic-only.
+
+No production/default Lane D activation, D10 shock-numerics, D11 friction
+source, D13 erosion promotion, D14 profiling, or D15/D16 policy work is
+claimed.
 
 ## Exit Criteria
 
@@ -261,4 +290,3 @@ only when package governance permits substitution.
 - `artifacts/verification_agent_b.md`
 - `artifacts/worker-handoff.md`
 - `artifacts/final-disposition.md`
-

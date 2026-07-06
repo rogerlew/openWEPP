@@ -3,7 +3,8 @@ use super::{
     DIRECT_R4D_PHASE_SPAN_COUNT, DIRECT_R4E_PHASE_SPAN_COUNT, DIRECT_R4F_PHASE_SPAN_COUNT,
     DIRECT_R4G_PHASE_SPAN_COUNT, DirectDayFrame, DirectRuntimeError, DirectSnowLaneState,
     DirectSnowRuntimeCarry, DirectSnowStage3Diagnostics, DirectSubsurfaceLayerState,
-    SnowAlbedoState, WB11_ZERO_THRESHOLD, validate_finite, validate_nonnegative_direct_m,
+    SnowAlbedoState, WB11_ZERO_THRESHOLD, sum_nonnegative_direct_m, validate_finite,
+    validate_nonnegative_direct_m,
 };
 use crate::winter_column::DirectSnowLayerState;
 
@@ -555,7 +556,10 @@ impl DirectDayFrame {
         self.storage_reconciliation_inputs.snow_coupling_m = snow_coupling.snow_coupling_m;
         DIRECT_AUDIT.record_direct_state_mutation();
         self.snow_coupling_downstream_operands =
-            DirectSnowCouplingDownstreamOperands::from(snow_coupling);
+            DirectSnowCouplingDownstreamOperands::from_state_and_hourly_routed_melt(
+                snow_coupling,
+                self.snow_coupling_inputs.hourly_routed_melt_m,
+            );
         DIRECT_AUDIT.record_downstream_operand_production();
 
         let snow_coupling_shadow_projection = DirectSnowCouplingShadowProjection {
@@ -913,6 +917,17 @@ impl DirectDayFrame {
             "snow_coupling.routed_melt_m",
             self.snow_coupling_inputs.routed_melt_m,
         )?;
+        let hourly_routed_melt_total_m = sum_nonnegative_direct_m(
+            "snow_coupling.hourly_routed_melt_m",
+            &self.snow_coupling_inputs.hourly_routed_melt_m,
+        )?;
+        if (hourly_routed_melt_total_m - self.snow_coupling_inputs.routed_melt_m).abs()
+            > WB11_ZERO_THRESHOLD
+        {
+            return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
+                field: "snow_coupling.hourly_routed_melt_m",
+            });
+        }
         validate_nonnegative_direct_m(
             "snow_coupling.post_winter_rain_m",
             self.snow_coupling_inputs.post_winter_rain_m,
@@ -1301,6 +1316,7 @@ pub struct DirectSnowCouplingInputs {
     pub raw_melt_m: f64,
     pub redistributed_melt_m: f64,
     pub routed_melt_m: f64,
+    pub hourly_routed_melt_m: [f64; 24],
     pub snowpack_swe_loss_m: f64,
     pub sublimation_m: f64,
     pub post_winter_rain_m: f64,
@@ -1329,6 +1345,7 @@ impl DirectSnowCouplingInputs {
             raw_melt_m: 0.0,
             redistributed_melt_m: 0.0,
             routed_melt_m: 0.0,
+            hourly_routed_melt_m: [0.0; 24],
             snowpack_swe_loss_m: 0.0,
             sublimation_m: 0.0,
             post_winter_rain_m: 0.0,
@@ -1412,6 +1429,7 @@ pub struct DirectSnowCouplingDownstreamOperands {
     pub raw_melt_m: f64,
     pub redistributed_melt_m: f64,
     pub routed_melt_m: f64,
+    pub hourly_routed_melt_m: Box<[f64; 24]>,
     pub snowpack_swe_loss_m: f64,
     pub sublimation_m: f64,
     pub post_winter_rain_m: f64,
@@ -1431,13 +1449,14 @@ pub struct DirectSnowCouplingDownstreamOperands {
 
 impl DirectSnowCouplingDownstreamOperands {
     #[must_use]
-    pub const fn zero() -> Self {
+    pub fn zero() -> Self {
         Self {
             snow_coupling_m: 0.0,
             active_snow_coupling: false,
             raw_melt_m: 0.0,
             redistributed_melt_m: 0.0,
             routed_melt_m: 0.0,
+            hourly_routed_melt_m: Box::new([0.0; 24]),
             snowpack_swe_loss_m: 0.0,
             sublimation_m: 0.0,
             post_winter_rain_m: 0.0,
@@ -1457,14 +1476,19 @@ impl DirectSnowCouplingDownstreamOperands {
     }
 }
 
-impl From<DirectSnowCouplingState> for DirectSnowCouplingDownstreamOperands {
-    fn from(state: DirectSnowCouplingState) -> Self {
+impl DirectSnowCouplingDownstreamOperands {
+    #[must_use]
+    pub fn from_state_and_hourly_routed_melt(
+        state: DirectSnowCouplingState,
+        hourly_routed_melt_m: [f64; 24],
+    ) -> Self {
         Self {
             snow_coupling_m: state.snow_coupling_m,
             active_snow_coupling: state.active_snow_coupling,
             raw_melt_m: state.raw_melt_m,
             redistributed_melt_m: state.redistributed_melt_m,
             routed_melt_m: state.routed_melt_m,
+            hourly_routed_melt_m: Box::new(hourly_routed_melt_m),
             snowpack_swe_loss_m: state.snowpack_swe_loss_m,
             sublimation_m: state.sublimation_m,
             post_winter_rain_m: state.post_winter_rain_m,

@@ -244,6 +244,20 @@ pub(crate) fn dc01_test_hourly_supply_basis(
     runoff::dc01_hourly_supply_basis(hyetograph, runon_hourly_supply_m)
 }
 #[cfg(test)]
+pub(crate) fn dc01_test_surface_runoff_hourly_weights(
+    q_runoff_m: f64,
+    wb14_hourly_excess_m: &[f64; 24],
+    hourly_saturation_carry_m: &[f64; 24],
+    hourly_routed_melt_m: &[f64; 24],
+) -> Result<[f64; 24], DirectRuntimeError> {
+    runoff::dc01_surface_runoff_hourly_weights(
+        q_runoff_m,
+        wb14_hourly_excess_m,
+        hourly_saturation_carry_m,
+        hourly_routed_melt_m,
+    )
+}
+#[cfg(test)]
 pub(crate) fn dc01_test_wb14_with_profile(
     inputs: &DirectWb14InfiltrationProducerInputs,
 ) -> Result<runoff::DirectWb14OutcomeWithProfile, DirectRuntimeError> {

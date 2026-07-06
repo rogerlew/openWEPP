@@ -566,11 +566,13 @@ impl DirectFrameExecutor {
         q_runoff_m: f64,
         wb14_hourly_excess_m: &[f64; DIRECT_TRANSFER_HOUR_COUNT],
         hourly_saturation_carry_m: &[f64; DIRECT_TRANSFER_HOUR_COUNT],
-    ) -> [f64; DIRECT_TRANSFER_HOUR_COUNT] {
+        hourly_routed_melt_m: &[f64; DIRECT_TRANSFER_HOUR_COUNT],
+    ) -> Result<[f64; DIRECT_TRANSFER_HOUR_COUNT], DirectRuntimeError> {
         crate::direct_runtime::runoff::dc01_surface_runoff_hourly_weights(
             q_runoff_m,
             wb14_hourly_excess_m,
             hourly_saturation_carry_m,
+            hourly_routed_melt_m,
         )
     }
 
@@ -737,7 +739,11 @@ impl DirectFrameExecutor {
             runoff.q_runoff_m,
             &day_frame.wb14_hourly_excess_m,
             &subsurface.hourly_saturation_carry_m,
-        );
+            day_frame
+                .snow_coupling_downstream_operands
+                .hourly_routed_melt_m
+                .as_ref(),
+        )?;
         for (target, source) in lateral_carry_m
             .iter_mut()
             .zip(subsurface.hourly_lateral_carry_m.iter())

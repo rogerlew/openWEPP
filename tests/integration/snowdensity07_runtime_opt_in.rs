@@ -161,6 +161,7 @@ fn snowdensity07_r4g_projects_runtime_and_boundary_carry_without_compat_edge() {
         raw_melt_m: opt_in.raw_melt_m,
         redistributed_melt_m: opt_in.redistributed_melt_m,
         routed_melt_m: opt_in.routed_melt_m,
+        hourly_routed_melt_m: opt_in.hourly_routed_melt_m,
         snowpack_swe_loss_m: opt_in.snowpack_swe_loss_m,
         sublimation_m: opt_in.sublimation_m,
         post_winter_rain_m: opt_in.post_winter_rain_m,

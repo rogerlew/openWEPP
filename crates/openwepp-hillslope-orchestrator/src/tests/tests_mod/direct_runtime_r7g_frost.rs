@@ -602,6 +602,11 @@ fn r7h_active_snowmelt_local_liquid_routes_through_wb18_same_pass() {
         snow_state_projected: true,
         active_snow_coupling: true,
         routed_melt_m: liquid_input_m,
+        hourly_routed_melt_m: {
+            let mut hourly = [0.0; 24];
+            hourly[0] = liquid_input_m;
+            hourly
+        },
         post_winter_rain_m: 0.0,
         runtime_swe_after_m: 0.0,
         runtime_depth_after_m: 0.0,
@@ -726,6 +731,11 @@ fn r7h_mixed_rain_snowmelt_uses_wb14_same_pass_infiltration() {
         snow_state_projected: true,
         active_snow_coupling: true,
         routed_melt_m,
+        hourly_routed_melt_m: {
+            let mut hourly = [0.0; 24];
+            hourly[0] = routed_melt_m;
+            hourly
+        },
         post_winter_rain_m,
         runtime_swe_after_m: 0.0,
         runtime_depth_after_m: 0.0,

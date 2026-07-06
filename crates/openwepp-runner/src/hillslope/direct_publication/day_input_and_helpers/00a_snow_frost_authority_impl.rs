@@ -460,6 +460,7 @@ fn inactive_direct_snow_liquid_partition(
         raw_melt_m: 0.0,
         redistributed_melt_m: 0.0,
         routed_melt_m: 0.0,
+        hourly_routed_melt_m: [0.0; 24],
         snowpack_swe_loss_m: 0.0,
         accumulation_m: 0.0,
         rain_retained_m: 0.0,

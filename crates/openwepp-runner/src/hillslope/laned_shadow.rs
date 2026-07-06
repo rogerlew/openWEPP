@@ -3,7 +3,7 @@
 //! reconstructs each lane-day's routed source series from the LIVE
 //! published surfaces (`dc01_surface_hourly_weights × runvol/area` — the
 //! ADR-0036 weights-times-total hourly-flow authority on the lane-local
-//! runoff-volume basis over exactly the two GAP-006 D1 limbs), routes event
+//! runoff-volume basis over the D12 surface-source shape limbs), routes event
 //! days through the real
 //! `ofe_routing::cascade`, and accumulates conservation diagnostics
 //! into the manifest. DIAGNOSTIC ONLY: water authority stays DC01;
@@ -13,8 +13,9 @@
 //! Static friction operands are sourced from the openWEPP native
 //! `routing_coefficients` management extension when the shadow is enabled;
 //! missing extension data fails closed before streaming starts. Dynamic
-//! rainfall-intensity and canopy-state operands are sourced from the live
-//! direct day frame: WB14 hourly rainfall depth, post-growth LAI, and
+//! rainfall-intensity, routed-melt timing, and canopy-state operands are
+//! sourced from the live direct day frame: WB14 hourly rainfall depth,
+//! source-authorized hourly routed snow liquid, post-growth LAI, and
 //! typed-management canopy height.
 
 use openwepp_hillslope_orchestrator::DirectPublicationDayRow;
@@ -68,7 +69,7 @@ pub(crate) struct LanedShadowRoutingCoefficients {
 }
 
 impl LanedShadowRoutingCoefficients {
-    fn cell_parameters(self, slope: f64, operands: LanedShadowLaneDayOperands) -> CellParameters {
+    fn cell_parameters(self, slope: f64, operands: &LanedShadowLaneDayOperands) -> CellParameters {
         let mut cell = CellParameters::bare(slope, self.skin_friction_coefficient_ko);
         cell.drag_coefficient = self.form_drag_coefficient;
         cell.element_tip_height_m = self.roughness_element_height_m;
@@ -81,9 +82,10 @@ impl LanedShadowRoutingCoefficients {
 }
 
 /// Per-lane dynamic friction operands for one direct day frame.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub(crate) struct LanedShadowLaneDayOperands {
     pub hourly_rainfall_m: [f64; SEAM_HOUR_BINS],
+    pub hourly_routed_melt_m: [f64; SEAM_HOUR_BINS],
     pub leaf_area_index: f64,
     pub canopy_height_m: f64,
 }
@@ -107,6 +109,8 @@ pub(crate) struct LanedShadowSummary {
     /// DC01 lump-only class, e.g. melt-sourced runoff outside the two
     /// GAP-006 D1 limbs). Surfaced as a labeled seam-coverage finding.
     pub days_uniform_shape: u64,
+    pub days_uniform_shape_with_routed_melt: u64,
+    pub days_uniform_shape_without_routed_melt: u64,
     residual_abs_m3: f64,
 }
 
@@ -118,6 +122,7 @@ pub(crate) struct LanedShadowCollector {
     day_supply_reference_m3: f64,
     lanes_seen_today: usize,
     day_saw_uniform_shape: bool,
+    day_saw_uniform_shape_with_routed_melt: bool,
     current_day: Option<usize>,
     summary: LanedShadowSummary,
 }
@@ -134,6 +139,7 @@ impl LanedShadowCollector {
             day_supply_reference_m3: 0.0,
             lanes_seen_today: 0,
             day_saw_uniform_shape: false,
+            day_saw_uniform_shape_with_routed_melt: false,
             current_day: None,
             summary: LanedShadowSummary::default(),
         }
@@ -150,8 +156,9 @@ impl LanedShadowCollector {
     pub(crate) fn observe_row(
         &mut self,
         row: &DirectPublicationDayRow,
-        operands: LanedShadowLaneDayOperands,
+        operands: Box<LanedShadowLaneDayOperands>,
     ) -> Result<(), String> {
+        let operands = *operands;
         if self.current_day.is_some_and(|day| day != row.day_index) {
             self.commit_day()?;
         }
@@ -163,7 +170,7 @@ impl LanedShadowCollector {
                 self.geometry.len()
             ));
         }
-        Self::validate_lane_day_operands(row, operands)?;
+        Self::validate_lane_day_operands(row, &operands)?;
         let area_m2 = row.area_m2;
         if !area_m2.is_finite() || area_m2 <= 0.0 {
             return Err(format!(
@@ -197,6 +204,9 @@ impl LanedShadowCollector {
                 .all(|weight| (weight - uniform).abs() < 1.0e-12)
             {
                 self.day_saw_uniform_shape = true;
+                if operands.hourly_routed_melt_m.iter().sum::<f64>() > 1.0e-12 {
+                    self.day_saw_uniform_shape_with_routed_melt = true;
+                }
             }
             for (depth, weight) in depths
                 .iter_mut()
@@ -216,7 +226,7 @@ impl LanedShadowCollector {
 
     fn validate_lane_day_operands(
         row: &DirectPublicationDayRow,
-        operands: LanedShadowLaneDayOperands,
+        operands: &LanedShadowLaneDayOperands,
     ) -> Result<(), String> {
         for (hour_index, rainfall_m) in operands.hourly_rainfall_m.iter().enumerate() {
             if !rainfall_m.is_finite() || *rainfall_m < 0.0 {
@@ -226,6 +236,17 @@ impl LanedShadowCollector {
                     row.day_index + 1,
                     hour_index + 1,
                     rainfall_m
+                ));
+            }
+        }
+        for (hour_index, routed_melt_m) in operands.hourly_routed_melt_m.iter().enumerate() {
+            if !routed_melt_m.is_finite() || *routed_melt_m < 0.0 {
+                return Err(format!(
+                    "laned shadow: lane {} day {} hourly routed melt slot {} must be finite and nonnegative, observed {}",
+                    row.lane_index + 1,
+                    row.day_index + 1,
+                    hour_index + 1,
+                    routed_melt_m
                 ));
             }
         }
@@ -282,11 +303,17 @@ impl LanedShadowCollector {
         }
         if self.day_saw_uniform_shape {
             self.summary.days_uniform_shape += 1;
+            if self.day_saw_uniform_shape_with_routed_melt {
+                self.summary.days_uniform_shape_with_routed_melt += 1;
+            } else {
+                self.summary.days_uniform_shape_without_routed_melt += 1;
+            }
         }
         self.day_source_m3 = 0.0;
         self.day_supply_reference_m3 = 0.0;
         self.lanes_seen_today = 0;
         self.day_saw_uniform_shape = false;
+        self.day_saw_uniform_shape_with_routed_melt = false;
         Ok(())
     }
 
@@ -298,7 +325,7 @@ impl LanedShadowCollector {
             .iter()
             .enumerate()
             .map(|(lane_index, geom)| {
-                let operands = day_operands[lane_index].ok_or_else(|| {
+                let operands = day_operands[lane_index].as_ref().ok_or_else(|| {
                     format!(
                         "laned shadow: missing dynamic operands for lane {} day {}",
                         lane_index + 1,
@@ -328,7 +355,7 @@ impl LanedShadowCollector {
         }
         let mut intensity_series = Vec::with_capacity(day_operands.len());
         for operands in &day_operands {
-            let operands = operands.ok_or_else(|| {
+            let operands = operands.as_ref().ok_or_else(|| {
                 format!(
                     "laned shadow: missing dynamic operands for day {}",
                     self.current_day.map_or(0, |day| day + 1)
@@ -414,11 +441,12 @@ mod tests {
         };
         let operands = LanedShadowLaneDayOperands {
             hourly_rainfall_m: [0.0; SEAM_HOUR_BINS],
+            hourly_routed_melt_m: [0.0; SEAM_HOUR_BINS],
             leaf_area_index: 2.5,
             canopy_height_m: 0.8,
         };
 
-        let cell = routing.cell_parameters(0.04, operands);
+        let cell = routing.cell_parameters(0.04, &operands);
 
         assert_eq!(cell.friction_coefficient_ko.to_bits(), 501.0_f64.to_bits());
         assert_eq!(cell.drag_coefficient.to_bits(), 0.9_f64.to_bits());
@@ -463,6 +491,7 @@ mod tests {
         collector.day_depths[0][0] = 0.01;
         collector.day_operands[0] = Some(LanedShadowLaneDayOperands {
             hourly_rainfall_m,
+            hourly_routed_melt_m: [0.0; SEAM_HOUR_BINS],
             leaf_area_index: 0.0,
             canopy_height_m: 0.0,
         });

@@ -1678,6 +1678,11 @@ impl Wb11HydrologyKernel {
             state.depth_m,
             state.density_kg_m3,
         )?;
+        let hourly_routed_melt = Self::build_active_snow_hourly_routed_melt_from_shape(
+            phase_class,
+            &hourly_state,
+            routed_melt_total_m,
+        )?;
 
         Ok(SnowCouplingOutcome {
             signed_s,
@@ -1690,6 +1695,7 @@ impl Wb11HydrologyKernel {
             sublimation: bounded_sublimation_m,
             raw_melt: raw_melt_total_m,
             redistributed_melt: melt_redistribution.routed_melt_total_m,
+            hourly_routed_melt,
             snowpack_state_loss: bounded_state_loss_m,
             runtime_swe: runtime_swe_after,
             runtime_depth_m: state.depth_m,
@@ -1697,6 +1703,82 @@ impl Wb11HydrologyKernel {
             runtime_settle_day_count: state.settle_day_count,
             snow_albedo_state_after: state.snow_albedo_state_after,
         })
+    }
+
+    fn build_active_snow_hourly_routed_melt_from_shape(
+        phase_class: HillslopeKernelPhaseClass,
+        hourly_state: &[SnowHourlyState],
+        routed_melt_total_m: f64,
+    ) -> Result<[f64; SIMIMPL29_HOURS_PER_DAY], Wb11HydrologyKernelGuardError> {
+        if hourly_state.len() != SIMIMPL29_HOURS_PER_DAY {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from("snow.hourly.melt_m.count"),
+                value: f64::from(u32::try_from(hourly_state.len()).unwrap_or(u32::MAX)),
+                minimum: Some(24.0),
+                maximum: Some(24.0),
+            });
+        }
+
+        let mut hourly_routed_melt = [0.0_f64; SIMIMPL29_HOURS_PER_DAY];
+        let mut hourly_total_m = 0.0;
+        for (hour, hourly) in hourly_state.iter().enumerate() {
+            Self::require_direct_typed_snow_value_with(
+                phase_class,
+                || BoundarySymbol::from(SNOW_HOURLY_MELT_ROOT),
+                hourly.melt_m,
+                Some(0.0),
+                None,
+            )?;
+            hourly_routed_melt[hour] = hourly.melt_m;
+            hourly_total_m += hourly.melt_m;
+            Self::require_direct_typed_snow_value_with(
+                phase_class,
+                || BoundarySymbol::from("snow.hourly.melt_m.total"),
+                hourly_total_m,
+                Some(0.0),
+                None,
+            )?;
+        }
+
+        if routed_melt_total_m <= WB11_ZERO_THRESHOLD {
+            return Ok([0.0; SIMIMPL29_HOURS_PER_DAY]);
+        }
+        if hourly_total_m <= WB11_ZERO_THRESHOLD {
+            return Err(Wb11HydrologyKernelGuardError::StateSymbolOutOfRange {
+                phase_class,
+                symbol: BoundarySymbol::from(SNOW_HOURLY_MELT_ROOT),
+                value: hourly_total_m,
+                minimum: Some(WB11_ZERO_THRESHOLD),
+                maximum: None,
+            });
+        }
+
+        // SC-RUNOFFPART-001#INV-RUNOFFPART-022 owns this allocation:
+        // producer hourly melt shape supplies timing, while daily
+        // snow.routed_melt_m remains the magnitude authority.
+        if (hourly_total_m - routed_melt_total_m).abs() > WB11_ZERO_THRESHOLD {
+            let scale = routed_melt_total_m / hourly_total_m;
+            Self::require_direct_typed_snow_value_with(
+                phase_class,
+                || BoundarySymbol::from("snow.hourly_routed_melt_m.scale"),
+                scale,
+                Some(0.0),
+                None,
+            )?;
+            for hourly_melt_m in &mut hourly_routed_melt {
+                *hourly_melt_m *= scale;
+            }
+        }
+
+        let closed_total_m = hourly_routed_melt.iter().sum::<f64>();
+        Self::require_active_snow_total_closure(
+            phase_class,
+            SNOW_HOURLY_MELT_ROOT,
+            closed_total_m,
+            routed_melt_total_m,
+        )?;
+        Ok(hourly_routed_melt)
     }
 
     fn validate_active_snow_hourly_totals(
@@ -1911,5 +1993,41 @@ impl Wb11HydrologyKernel {
             Some(SIMIMPL29_SNOW_DENSITY_CAP_KG_M3),
         )?;
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn hourly_state(melt_m: f64) -> SnowHourlyState {
+        SnowHourlyState {
+            rain_released_m: 0.0,
+            liquid_holding_capacity_m: 0.0,
+            liquid_water_retained_before_m: 0.0,
+            liquid_water_retained_after_m: 0.0,
+            liquid_water_released_m: 0.0,
+            sublimation_m: 0.0,
+            melt_raw_m: melt_m,
+            melt_m,
+        }
+    }
+
+    #[test]
+    fn active_snow_hourly_routed_melt_preserves_shape_and_closes_daily_scalar() {
+        let mut hourly = [hourly_state(0.0); SIMIMPL29_HOURS_PER_DAY];
+        hourly[5] = hourly_state(0.006);
+        hourly[6] = hourly_state(0.002);
+
+        let routed = Wb11HydrologyKernel::build_active_snow_hourly_routed_melt_from_shape(
+            HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+            &hourly,
+            0.004,
+        )
+        .expect("positive producer melt shape should allocate daily routed scalar");
+
+        assert!((routed[5] - 0.003).abs() <= 1.0e-15);
+        assert!((routed[6] - 0.001).abs() <= 1.0e-15);
+        assert!((routed.iter().sum::<f64>() - 0.004).abs() <= 1.0e-15);
     }
 }
