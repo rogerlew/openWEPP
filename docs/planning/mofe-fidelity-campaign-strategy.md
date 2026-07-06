@@ -123,7 +123,7 @@ FARPOINT01 continuation and does not depend on A/B outcomes (it judges
 magnitude against observations, not against internal structure). Lane D is
 the large build; its contract/fixture, solver, cascade, infiltration, seam,
 and runtime-shadow stages are now merged. D9 is complete. What remains is the
-D10-D15 activation-gate sequence in §6.1.
+D10-D16 activation-gate sequence in §6.1.
 
 ## 3. Lane A — proactive MOFE defect-review sweep
 
@@ -365,14 +365,18 @@ validation surface:
 | D11 | `20260705-mofefid-d11-friction-operand-authority-001` | Close `GAP-OFEROUTE-007`: source, default-authorize, or fail-close the active friction operands (`k_o`, rainfall-intensity `I`, `C_d`, `D_r`, `lambda`, `LAI`, `h_c`) and wire the active operand builder. | The shadow's `k_o=500`, bare-cell, `I=0` first cut is intentionally not production authority for vegetated/rough hillslopes. This is an input-authority package, not a solver package. | Active routing no longer depends on hardcoded shadow friction. Missing unsupported operands fail closed or are covered by a ratified default/sourcing rule. |
 | D12 | `20260705-mofefid-d12-melt-limb-hourly-shape-001` | Close the melt-limb coverage gap: add the snowmelt/routed-liquid hourly source limb to the activation source series or formally prove it is already represented, with exact daily-sum closure to lane-local supply. | The shadow found `10/731` H2637 runoff days with no hourly shape from the two D1 limbs. Uniform fallback is acceptable diagnostic plumbing; it is not an activation source-authority rule. | H2637 activation candidate has no unexplained uniform-shape event days, or any residual class has a contract-backed non-routing disposition. |
 | D13 | `20260705-mofefid-d13-routed-hydrograph-erosion-shape-001` | Amend/implement the ADR-0036 touchpoint: when Lane D routing owns the water path, erosion's hourly sediment substrate consumes the routed hydrograph rather than the DC01 shape authority. | This crosses `SC-OFEROUTE-001`/ADR-0036/`SC-SED-001`; keeping it separate prevents a water-router activation package from silently leaving sediment timed to the old hydrograph. | Active routed-water mode has an erosion hourly-shape consumer-path proof; default-off remains byte-flat. |
-| D14 | `20260705-mofefid-d14-opt-in-production-activation-001` | The opt-in production flip: routing owns the surface-water path, DC01 daily-lump runon is disabled for active lanes, the `INV-OFEROUTE-012` runtime closure hard-fail is live, `latqcc` bypass is included in closure, active outputs are published from the routed path, and subsystem-off protected outputs remain byte-identical. | This is the first package allowed to claim production activation, because D9-D13 remove the known blockers and define the active consumer surfaces. | Opt-in active H2637/real-vector evidence, default-off byte identity, closure hard-fails, manifest provenance, and performance evidence. No default promotion. |
-| D15 | `20260705-mofefid-d15-default-promotion-adjudication-001` | Decide whether the opt-in active router becomes default for any policy slice. | Default activation is a policy/performance/release gate, not the same as opt-in production correctness. | Default promotion, non-promotion, or policy-scoped activation with full endpoint timing and protected-output evidence. |
+| D14 | `20260705-mofefid-d14-laned-runtime-profile-optimization-001` | Profile and optimize the Lane D runtime physics path before the opt-in flip: break the H2637 shadow overhead into solver math, per-day/OFE setup, allocation, hydrograph sampling/interpolation, handoff, and diagnostics; land behavior-preserving optimizations that keep numerical authority and closure evidence intact. | The current H2637 shadow estimate is about `+207 s` CPU over the default path, mostly in `ofe_routing` cascade work. That is too large to bury inside the activation package, and activation needs a fresh endpoint budget after D10-D13 settle the candidate path. | Slot-level timing artifact, before/after H2637 timing, protected-output identity/default-off byte-flat evidence, closure/diagnostic parity for the routed path, and explicit non-goals for numerical-method changes or surrogate physics. |
+| D15 | `20260705-mofefid-d15-opt-in-production-activation-001` | The opt-in production flip: routing owns the surface-water path, DC01 daily-lump runon is disabled for active lanes, the `INV-OFEROUTE-012` runtime closure hard-fail is live, `latqcc` bypass is included in closure, active outputs are published from the routed path, and subsystem-off protected outputs remain byte-identical. | This is the first package allowed to claim production activation, because D9-D14 remove the known blockers, define the active consumer surfaces, and characterize/optimize the runtime cost. | Opt-in active H2637/real-vector evidence, default-off byte identity, closure hard-fails, manifest provenance, and performance evidence. No default promotion. |
+| D16 | `20260705-mofefid-d16-default-promotion-adjudication-001` | Decide whether the opt-in active router becomes default for any policy slice. | Default activation is a policy/performance/release gate, not the same as opt-in production correctness. | Default promotion, non-promotion, or policy-scoped activation with full endpoint timing and protected-output evidence. |
 
-The ordering is strict at D14: production activation must not start while the
-D10 source-authority hold or D11-D13 blockers remain open. D11-D13 can still
-run where their write sets are independent, but D14 consumes their
-dispositions and any D10 follow-on. D15 is explicitly outside the opt-in
-activation package.
+The ordering is strict at D15: production activation must not start while the
+D10 source-authority hold or D11-D14 blockers remain open. D11-D14 can still
+run where their write sets are independent, but D15 consumes their
+dispositions and any D10 follow-on. If D10-D13 materially change the
+activation candidate's solver resolution, friction operands, source-shape, or
+handoff policy after D14 has profiled a prior path, D14's endpoint timing must
+be refreshed before D15. D16 is explicitly outside the opt-in activation
+package.
 
 ## 7. Sequencing and gates
 
@@ -392,12 +396,13 @@ activation package.
 | ✅ | `20260705-mofefid-laned-gap006-subsurface-seam-design-001` | D | `GAP-OFEROUTE-006` design resolved: active seam sources `ui_SCrunf` + hourly excess; `ui_LfCrf` stays subsurface; outlet `latqcc` bypasses the router. |
 | ✅ | `20260705-mofefid-laned-seam-implementation-001` | D | seam machinery + both `INV-OFEROUTE-012` fixtures pass at solver/identity tier; production activation block stands. |
 | ✅ | `20260705-mofefid-laned-activation-increment-001` | D | runtime SHADOW + real-H2637 executed vector merged 2026-07-05; protected outputs byte-identical; review found and fixed the `QOFE` alias trap by moving source depth to `runvol/area`. |
-| ▶️ | D10 follow-on + D11-D15 sequence in §6.1 | D | remaining production-activation scope, ordered by dependency and authority surface; D10 is held on source-authority reconciliation. |
+| ▶️ | D10 follow-on + D11-D16 sequence in §6.1 | D | remaining production-activation scope, ordered by dependency and authority surface; D10 is held on source-authority reconciliation, and D14 now owns Lane D runtime profiling/optimization before opt-in activation. |
 
 Stop conditions (current): A/B findings are dispositioned and Lane C proceeded
 only after its envelope was ratified. Lane D opt-in production activation
 cannot start until the §6.1 D10 source-authority hold and D11-D13 blockers
-close; Lane D default activation is D15 or later.
+close and D14 runtime profiling/optimization is dispositioned; Lane D default
+activation is D16 or later.
 
 ## 8. Guardrails
 
@@ -458,10 +463,14 @@ Current open decisions are package-local in §6.1:
 
 1. **D11 friction authority:** source every active friction operand from WEPP
    inputs, ratify a bounded default set, or fail closed by policy slice.
-2. **D14 opt-in surface:** exact user/runtime selector and output-publication
+2. **D14 runtime budget:** how much of the current `+207 s` H2637 shadow
+   overhead is solver math vs setup/allocation/sampling/handoff/diagnostics,
+   and which behavior-preserving optimizations are legitimate before
+   activation.
+3. **D15 opt-in surface:** exact user/runtime selector and output-publication
    scope for production-active routed water.
-3. **D15 default ambition:** whether any policy slice promotes from opt-in to
-   default after D14 evidence.
+4. **D16 default ambition:** whether any policy slice promotes from opt-in to
+   default after D15 evidence.
 
 ## 11. References / authority
 
