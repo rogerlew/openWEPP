@@ -91,7 +91,7 @@ fn execute_direct_publication_stream(
     let mut laned_shadow = if crate::hillslope::laned_shadow::LanedShadowCollector::env_enabled()
     {
         Some(crate::hillslope::laned_shadow::LanedShadowCollector::new(
-            day_input_builder.laned_shadow_geometry(),
+            day_input_builder.laned_shadow_geometry()?,
         ))
     } else {
         None

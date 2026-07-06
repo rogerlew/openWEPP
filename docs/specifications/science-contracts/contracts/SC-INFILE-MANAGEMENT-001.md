@@ -4,9 +4,9 @@ title: Management Input Parser Contract (.man)
 status: in_review
 maturity: draft
 owner: openWEPP
-contract_version: 0.3.0
+contract_version: 0.4.0
 evidence_mode: Static
-last_updated_utc: 2026-07-02T00:00:00Z
+last_updated_utc: 2026-07-06T00:00:00Z
 ---
 
 # SC-INFILE-MANAGEMENT-001 Management Input Parser Contract
@@ -37,7 +37,7 @@ This contract governs parser behavior for surface `infile-management-man` (`.man
 | `98.4` | Accept. | Parse baseline structure and legacy-compatible option subsets. | `[DIRECT][E-SPEC-MAN-01]` |
 | `2016.3` | Accept. | Parse extended residue/understory/permanent-contour option fields. | `[DIRECT][E-SPEC-MAN-01]` |
 | `2017.1` | Accept. | Parse as `2016.3`-family extension until stricter divergence is identified. | `[DIRECT][E-SPEC-MAN-01]`, `[INFERENCE][E-WP-MAN-01]` |
-| `ow-lanuse-1` | Accept (openWEPP-native). | Parse the first-class forest `lanuse` carve (see §1.4); legacy option domains follow the `2016.3+` family. | ADR-0034; `openwepp-management-lanuse-authority-contract.md` (`LANUSE-AUTH-1..6`) |
+| `ow-lanuse-1` | Accept (openWEPP-native). | Parse the first-class forest `landuse=3` carve and native cropland `landuse=4` carve (see §1.4); native forest/cropland plant records may carry the marked Lane D routing-coefficient extension; legacy option domains follow the `2016.3+` family. | ADR-0034; `openwepp-management-lanuse-authority-contract.md` (`LANUSE-AUTH-1..6`) |
 | unknown | Strict reject. Compat reject unless explicitly allowlisted. | Emit typed `UnsupportedDatver`. | `[INFERENCE][E-SPEC-MAN-01]` |
 
 ### 1.3 Executable Parser Profile (INIMPL09)
@@ -51,19 +51,28 @@ This contract governs parser behavior for surface `infile-management-man` (`.man
 - Date-domain guard `G-MAN-008` is executable for parsed cropland surface/yearly date fields (`1..366`, with explicit `0` sentinel support only for perennial `jdharv`, `jdplt`, `jdstop`).
 - Rangeland (`landuse=2`) remains explicitly unsupported for openWEPP `.man` execution under **every** datver (abandoned legacy model; ADR-0017), rejected with typed `MAN-E-004`.
 
-### 1.4 openWEPP-Native Forest `lanuse` Branch (`ow-lanuse-1`, INIMPL forest carve)
+### 1.4 openWEPP-Native `lanuse` Branches (`ow-lanuse-1`)
 
 Under ADR-0034 and the management-`lanuse` authority contract
 (`openwepp-management-lanuse-authority-contract.md`, `LANUSE-AUTH-1..6`), the
-openWEPP-native datver `ow-lanuse-1` unlocks a **first-class forest `lanuse`
-mode**. This is distinct from the abandoned legacy forest branch
+openWEPP-native datver `ow-lanuse-1` unlocks first-class native `lanuse`
+modes. Forest `landuse=3` is distinct from the abandoned legacy forest branch
 (`iplant=3`, empty in legacy WEPP) and from the rejected rangeland branch.
+Native cropland `landuse=4` reuses the cropland record grammar while keeping
+new-physics authority separate from legacy compatibility cropland
+(`landuse=1`).
 
 - **Sentinel.** `landuse = 3` (the legacy forest code) selects the native
   forest carve **only** under the `ow-lanuse-1` datver. Under every legacy
   datver `landuse=3` stays rejected with `MAN-E-004`
   (`InvalidOptionDomain{iplant/lanuse/iscen}`), preserving the
   compatibility-input quarantine (`LANUSE-AUTH-4`).
+- **Native cropland sentinel.** `landuse = 4` selects native cropland only under
+  `ow-lanuse-1`. The plant, operation, initial, surface, contour, drain, and
+  yearly sections consume the cropland grammar for `landuse=4`; under legacy
+  datvers the sentinel is rejected with `MAN-E-004`. Legacy `landuse=1`
+  remains parseable as compatibility cropland but is not the authority for
+  new-physics Lane D routing coefficients.
 - **Supported sections.** `plant` (`PlantScenarioData::Forest`, Tier-A growth +
   Tier-A decomposition + Tier-B community operands), `initial`
   (`InitialScenarioData::Forest`, first-class cover/roughness), and `yearly`
@@ -89,6 +98,15 @@ mode**. This is distinct from the abandoned legacy forest branch
   symbols + decomposition), so the kernel is unchanged (`LANUSE-AUTH-1`). The
   concrete operand schema is `openwepp-management-lanuse-v1`
   (`docs/work-packages/20260702-dff-ws1-native-forest-lanuse-mode-001/artifacts/lanuse-v1-schema.md`).
+- **Lane D routing coefficient extension.** Native forest (`landuse=3`) and
+  native cropland (`landuse=4`) plant records may append a marker line
+  `routing_coefficients` or `routing_coefficients_v1`, followed by exactly five
+  real values: `k_o`, form `C_d`, `D_r` (m), `lambda`, and vegetation `C_d`.
+  The parser stores this as an optional typed extension; runtime Lane D shadow
+  enforcement owns the "every scheduled MOFE lane landuse must have a complete,
+  schedule-consistent set" rule. The marker is rejected outside native
+  forest/native cropland with `MAN-E-004`, and malformed value
+  arity/non-numeric tokens fail with the existing parse errors.
 
 ## 2. Source Grammar and Source-vs-Simulation Model
 
@@ -170,6 +188,11 @@ management_section = final_management_schedule ;
 | `xmxlai` | `plant[i].cropland.xmxlai` | `management.plants[i].cropland.xmxlai` | none | real | subset(ncrop, `iplant=1`) | conditional | all | none | `plants.cropland.xmxlai` |
 | `yld` | `plant[i].cropland.yld` | `management.plants[i].cropland.yld` | kg/m^2 | real | subset(ncrop, `iplant=1`) | conditional | all | none | `plants.cropland.yld` |
 | `rcc` | `plant[i].cropland.rcc` | `management.plants[i].cropland.rcc` | none | real | subset(ncrop, `iplant=1`) | conditional | 2016.3+ | none | `plants.cropland.rcc` |
+| `route_skin_friction_coefficient_ko` | `plant[i].routing_coefficients[0]` | `management.plants[i].routing.skin_friction_coefficient_ko` | none | real | subset(ncrop, native `landuse=3/4`) | conditional | `ow-lanuse-1` | none | `ofeN_route_skin_friction_coefficient_ko` |
+| `route_form_drag_coefficient` | `plant[i].routing_coefficients[1]` | `management.plants[i].routing.form_drag_coefficient` | none | real | subset(ncrop, native `landuse=3/4`) | conditional | `ow-lanuse-1` | none | `ofeN_route_form_drag_coefficient` |
+| `route_roughness_element_height_m` | `plant[i].routing_coefficients[2]` | `management.plants[i].routing.roughness_element_height_m` | m | real | subset(ncrop, native `landuse=3/4`) | conditional | `ow-lanuse-1` | none | `ofeN_route_roughness_element_height_m` |
+| `route_roughness_concentration` | `plant[i].routing_coefficients[3]` | `management.plants[i].routing.roughness_concentration` | none | real | subset(ncrop, native `landuse=3/4`) | conditional | `ow-lanuse-1` | none | `ofeN_route_roughness_concentration` |
+| `route_vegetation_drag_coefficient` | `plant[i].routing_coefficients[4]` | `management.plants[i].routing.vegetation_drag_coefficient` | none | real | subset(ncrop, native `landuse=3/4`) | conditional | `ow-lanuse-1` | none | `ofeN_route_vegetation_drag_coefficient` |
 | `aca` | `plant[i].rangeland.aca` | `management.plants[i].rangeland.aca` | none | real | subset(ncrop, `iplant=2`) | conditional | all | none | `plants.rangeland.aca` |
 | `aleaf` | `plant[i].rangeland.aleaf` | `management.plants[i].rangeland.aleaf` | none | real | subset(ncrop, `iplant=2`) | conditional | all | none | `plants.rangeland.aleaf` |
 | `ar` | `plant[i].rangeland.ar` | `management.plants[i].rangeland.ar` | none | real | subset(ncrop, `iplant=2`) | conditional | all | none | `plants.rangeland.ar` |
@@ -376,7 +399,7 @@ Closure hooks:
 | `MAN-E-001` | syntax | token parse failure for required numeric fields |
 | `MAN-E-002` | syntax | missing section/record before expected count closure |
 | `MAN-E-003` | semantic | unsupported datver |
-| `MAN-E-004` | semantic | invalid enum/options domain (`lanuse`, `iplant`, `iop`, `mgtopt`, etc.); explicit unsupported `landuse=2` (rangeland) execution paths; legacy-datver `landuse=3` (forest sentinel is supported **only** under `ow-lanuse-1`, §1.4); and a forest sentinel appearing in a not-applicable section (`ForestSectionNotApplicable`). The native forest branch under `ow-lanuse-1` is **not** swept by this reject. |
+| `MAN-E-004` | semantic | invalid enum/options domain (`lanuse`, `iplant`, `iop`, `mgtopt`, etc.); explicit unsupported `landuse=2` (rangeland) execution paths; legacy-datver `landuse=3` / `landuse=4` (native forest/cropland sentinels are supported **only** under `ow-lanuse-1`, §1.4); a forest sentinel appearing in a not-applicable section (`ForestSectionNotApplicable`); or a `routing_coefficients` marker outside native forest/native cropland. The native forest and native cropland branches under `ow-lanuse-1` are **not** swept by this reject. |
 | `MAN-E-005` | semantic | negative or invalid section counts |
 | `MAN-E-006` | semantic | section ordering violation |
 | `MAN-E-007` | cross-file | topology mismatch with slope/soil/watershed surfaces |
@@ -456,6 +479,7 @@ openWEPP names are explicit aliases only (Section 3 table).
 
 | Date UTC | Version | Change |
 | --- | --- | --- |
+| `2026-07-06` | `0.4.0` | Added native cropland `landuse=4` under `ow-lanuse-1` and the marked native forest/native cropland `routing_coefficients` plant-record extension (`k_o`, form `C_d`, `D_r`, `lambda`, vegetation `C_d`). Documented `MAN-E-004` rejection for legacy-datver sentinel use and for routing markers outside native forest/native cropland. |
 | `2026-07-02` | `0.3.0` | DFF-WS1 Increment-2: registered the openWEPP-native forest `lanuse` branch under the `ow-lanuse-1` datver (§1.2 matrix, §1.4). Un-swept the native forest branch from the generic `MAN-E-004` reject; added `ForestSectionNotApplicable` and the legacy-datver forest-sentinel reject to the `MAN-E-004` trigger. Registered `MAN-GAP-004` (Tier-B WS-4 consumption) and `MAN-GAP-005` (lookup/`disturbed.json` ingestion follow-on). Governed by ADR-0034 + `openwepp-management-lanuse-authority-contract.md`. |
 | `2026-05-28` | `0.2.1` | HILLSTAB02 amendment: compatibility-mode authority now permits `tilseq=0` as explicit no-surface-effect sentinel even when `nseq>0`, while strict mode keeps full positive index-domain enforcement. |
 | `2026-05-21` | `0.2.0` | Ratified executable INIMPL09 parser profile: canonical section-order non-zero parsing, typed registry/schedule output, explicit rangeland unsupported policy, and executable date-domain guard linkage. |

@@ -71,6 +71,26 @@ Out of scope:
   lookup both carry a parameter, the lookup is authoritative and the template
   value MUST be reconciled or dropped.
 
+### Native `ow-lanuse-1` routing extension
+
+Under the native `ow-lanuse-1` datver, `landuse=3` is the first-class forest
+mode and `landuse=4` is the first-class native cropland mode. Native cropland
+reuses the cropland section grammar but is no longer legacy compatibility
+cropland (`landuse=1`) for new-physics authority.
+
+Native forest and native cropland plant records MAY carry a marked
+`routing_coefficients` extension followed by exactly five real values:
+`k_o`, form `C_d`, `D_r` (m), `lambda`, and vegetation `C_d`. This extension is
+the management-file authority for the static Lane D routing coefficients. It is
+not inferred from row width, ridge spacing, random roughness, canopy cover, or
+other legacy cropland fields.
+
+When `OPENWEPP_LANED_SHADOW=1` is enabled, Lane D MUST fail closed unless every
+MOFE lane's scheduled native landuses supply a complete, schedule-consistent
+extension. Legacy compatibility cropland (`landuse=1`) remains parseable under
+`ow-lanuse-1` for non-Lane-D compatibility workflows, but it is not a valid
+source of Lane D routing coefficients.
+
 ## Operand surface (skeleton — populated at WS-1)
 
 The `lanuse` record carries, per active physics domain, the operands the
@@ -120,4 +140,5 @@ skeleton.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-07-06` | `1` | `Codex` | Added the native cropland `landuse=4` mode and the `routing_coefficients` plant-record extension for static Lane D routing coefficients; recorded the `OPENWEPP_LANED_SHADOW` fail-closed requirement for every scheduled MOFE landuse. |
 | `2026-07-02` | `0` (skeleton) | `Claude Code` | Initial skeleton under ADR-0034: authority model + `LANUSE-AUTH-1..6` normative rules + operand-surface stub. Concrete `lanuse` operand schema deferred to the disturbed-forest campaign WS-1 foundation work-package. |

@@ -10,10 +10,11 @@
 //! protected outputs are byte-identical with the shadow on or off;
 //! production activation remains BLOCKED (`INV-OFEROUTE-011` open).
 //!
-//! Friction operands are the LABELED bare-cell first cut
-//! (`GAP-OFEROUTE-007`): `k_o = 500` (the R-63 base grain roughness
-//! used across the paper's validation cases); form/wave/vegetation
-//! elements are not sourced from WEPP inputs yet.
+//! Static friction operands are sourced from the openWEPP native
+//! `routing_coefficients` management extension when the shadow is enabled;
+//! missing extension data fails closed before streaming starts. Dynamic
+//! rainfall-intensity and canopy-state operands are still not threaded here, so
+//! this remains diagnostics-only and not a production physics path.
 
 use openwepp_hillslope_orchestrator::DirectPublicationDayRow;
 use openwepp_hillslope_orchestrator::ofe_routing::cascade::{
@@ -26,8 +27,6 @@ use openwepp_hillslope_orchestrator::ofe_routing::seam::{
     SEAM_HOUR_BINS, seam_rate_at, seam_source_rates_from_hourly_depths,
 };
 
-/// The GAP-OFEROUTE-007 labeled first-cut base grain roughness.
-const LANED_SHADOW_KO: f64 = 500.0;
 /// Days below this injected volume are excluded from the MAX relative
 /// residual (they still fold into the volume-weighted aggregate).
 const RESIDUAL_FLOOR_M3: f64 = 0.1;
@@ -53,6 +52,29 @@ pub(crate) struct LanedShadowLaneGeometry {
     pub slplen_m: f64,
     pub width_m: f64,
     pub mean_gradient: f64,
+    pub routing: LanedShadowRoutingCoefficients,
+}
+
+/// Static per-lane friction coefficients sourced from the native management
+/// routing extension.
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct LanedShadowRoutingCoefficients {
+    pub skin_friction_coefficient_ko: f64,
+    pub form_drag_coefficient: f64,
+    pub roughness_element_height_m: f64,
+    pub roughness_concentration: f64,
+    pub vegetation_drag_coefficient: f64,
+}
+
+impl LanedShadowRoutingCoefficients {
+    fn cell_parameters(self, slope: f64) -> CellParameters {
+        let mut cell = CellParameters::bare(slope, self.skin_friction_coefficient_ko);
+        cell.drag_coefficient = self.form_drag_coefficient;
+        cell.element_tip_height_m = self.roughness_element_height_m;
+        cell.roughness_concentration = self.roughness_concentration;
+        cell.vegetation_drag_coefficient = self.vegetation_drag_coefficient;
+        cell
+    }
 }
 
 /// Run-level shadow accumulators surfaced into the manifest.
@@ -194,7 +216,7 @@ impl LanedShadowCollector {
                     mesh: KinematicWaveMesh::uniform(
                         geom.slplen_m,
                         LANED_SHADOW_CELLS,
-                        CellParameters::bare(geom.mean_gradient, LANED_SHADOW_KO),
+                        geom.routing.cell_parameters(geom.mean_gradient),
                     ),
                     width_m: geom.width_m,
                 })

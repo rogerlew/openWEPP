@@ -43,6 +43,8 @@ type ManagementYearlyCroplandData =
 type ManagementYearlyPerennialData =
     openwepp_input_contract::parsers::management::YearlyPerennialData;
 type ManagementPlantCroplandData = openwepp_input_contract::parsers::management::PlantCroplandData;
+type ManagementRoutingCoefficientExtension =
+    openwepp_input_contract::parsers::management::RoutingCoefficientExtension;
 
 #[derive(Debug, Default)]
 struct PlRuntimeSurfaceBuilder {
@@ -85,6 +87,7 @@ struct InitialSeedProjection {
     /// residue plant) — the `covcal.for`/`init1.for` covers↔mass operand
     /// (GAP-SED-009 closure).
     residue_cover_factor: f64,
+    routing: Option<ManagementRoutingCoefficientExtension>,
 }
 
 /// Build strict typed PL runtime projection surfaces from parsed management
@@ -346,6 +349,7 @@ fn build_initial_seed_projection(
         sumrtm,
         sumsrm,
         residue_cover_factor,
+        routing: residue_plant_cropland.routing,
     })
 }
 
@@ -417,6 +421,7 @@ fn build_initial_seed_projection_forest(
         sumrtm,
         sumsrm,
         residue_cover_factor,
+        routing: residue_plant.routing,
 })
 }
 
@@ -493,7 +498,42 @@ fn insert_initial_seed_symbols(
     );
 
     insert_initial_growth_seed_symbols(&mut surfaces.growth, ofe_index, seed)?;
+    insert_initial_routing_coefficient_symbols(&mut surfaces.schedule, ofe_index, seed);
     insert_initial_decomp_seed_symbols(&mut surfaces.decomp, ofe_index, seed)
+}
+
+fn insert_initial_routing_coefficient_symbols(
+    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    ofe_index: usize,
+    seed: &InitialSeedProjection,
+) {
+    let Some(routing) = seed.routing else {
+        return;
+    };
+    for (root, value) in [
+        (
+            "route_skin_friction_coefficient_ko",
+            routing.skin_friction_coefficient_ko,
+        ),
+        ("route_form_drag_coefficient", routing.form_drag_coefficient),
+        (
+            "route_roughness_element_height_m",
+            routing.roughness_element_height_m,
+        ),
+        (
+            "route_roughness_concentration",
+            routing.roughness_concentration,
+        ),
+        (
+            "route_vegetation_drag_coefficient",
+            routing.vegetation_drag_coefficient,
+        ),
+    ] {
+        surface.insert(
+            slope_ofe_symbol(root, ofe_index),
+            BoundaryValue::scalar(value),
+        );
+    }
 }
 
 fn insert_initial_growth_seed_symbols(
@@ -591,8 +631,39 @@ fn insert_primary_initial_seed_aliases(
         BoundarySymbol::from("lanuse"),
         BoundaryValue::scalar(usize_to_f64("lanuse", landuse)?),
     );
+    insert_primary_initial_routing_coefficient_aliases(&mut surfaces.schedule, seed);
     insert_primary_initial_growth_aliases(&mut surfaces.growth, seed)?;
     insert_primary_initial_decomp_aliases(&mut surfaces.decomp, seed)
+}
+
+fn insert_primary_initial_routing_coefficient_aliases(
+    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    seed: &InitialSeedProjection,
+) {
+    let Some(routing) = seed.routing else {
+        return;
+    };
+    for (symbol, value) in [
+        (
+            "route_skin_friction_coefficient_ko",
+            routing.skin_friction_coefficient_ko,
+        ),
+        ("route_form_drag_coefficient", routing.form_drag_coefficient),
+        (
+            "route_roughness_element_height_m",
+            routing.roughness_element_height_m,
+        ),
+        (
+            "route_roughness_concentration",
+            routing.roughness_concentration,
+        ),
+        (
+            "route_vegetation_drag_coefficient",
+            routing.vegetation_drag_coefficient,
+        ),
+    ] {
+        surface.insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(value));
+    }
 }
 
 fn insert_primary_initial_growth_aliases(
@@ -785,6 +856,12 @@ fn project_yearly_cropland_slot(
     )?;
 
     let plant_cropland = plant_cropland_for_yearly(management, slot_index, crop_slot_index, cropland)?;
+    insert_schedule_routing_coefficient_symbols(
+        &mut surfaces.schedule,
+        slot_index,
+        crop_slot_index,
+        plant_cropland.routing,
+    );
     project_growth_equation_symbols(
         &mut surfaces.growth,
         slot_index,
@@ -893,6 +970,12 @@ fn project_yearly_forest_slot(
     }
 
     let plant_forest = plant_forest_for_yearly(management, slot_index, crop_slot_index, forest)?;
+    insert_schedule_routing_coefficient_symbols(
+        &mut surfaces.schedule,
+        slot_index,
+        crop_slot_index,
+        plant_forest.routing,
+    );
     project_growth_equation_symbols_forest(
         &mut surfaces.growth,
         slot_index,
@@ -975,6 +1058,41 @@ fn project_forest_perennial_schedule_symbols(
     }
 
     Ok(())
+}
+
+fn insert_schedule_routing_coefficient_symbols(
+    surface: &mut BTreeMap<BoundarySymbol, BoundaryValue>,
+    slot_index: usize,
+    crop_slot_index: usize,
+    routing: Option<ManagementRoutingCoefficientExtension>,
+) {
+    let Some(routing) = routing else {
+        return;
+    };
+    for (root, value) in [
+        (
+            "route_skin_friction_coefficient_ko",
+            routing.skin_friction_coefficient_ko,
+        ),
+        ("route_form_drag_coefficient", routing.form_drag_coefficient),
+        (
+            "route_roughness_element_height_m",
+            routing.roughness_element_height_m,
+        ),
+        (
+            "route_roughness_concentration",
+            routing.roughness_concentration,
+        ),
+        (
+            "route_vegetation_drag_coefficient",
+            routing.vegetation_drag_coefficient,
+        ),
+    ] {
+        surface.insert(
+            pl_schedule_slot_crop_symbol(root, slot_index, crop_slot_index),
+            BoundaryValue::scalar(value),
+        );
+    }
 }
 
 /// Resolve the forest plant scenario referenced by a forest yearly slot
@@ -2150,6 +2268,76 @@ description 3
                 .pl_growth_surface
                 .contains_key(&BoundarySymbol::from("cancov")),
             "primary cancov state should be present after live-canopy assimilation"
+        );
+    }
+
+    #[test]
+    fn native_lanuse_routing_coefficients_project_to_ofe_symbols() {
+        let management_text = FOREST_MAN.replace(
+            "0.02 2.0 8.0 500.0\n0\n1\n",
+            "0.02 2.0 8.0 500.0\nrouting_coefficients\n500.0 1.25 0.06 0.2 0.7\n0\n1\n",
+        );
+        let management = openwepp_input_contract::parsers::management::parse_management_from_str(
+            &management_text,
+            openwepp_input_contract::parsers::management::ParseMode::Strict,
+        )
+        .expect("native forest routing extension should parse");
+
+        let surfaces = build_hillslope_pl_runtime_surfaces_from_management(&management)
+            .expect("native routing coefficients should project");
+
+        assert_scalar_close(
+            scalar_at(
+                &surfaces.pl_schedule_surface,
+                &slope_ofe_symbol("route_skin_friction_coefficient_ko", 1),
+            ),
+            500.0,
+        );
+        assert_scalar_close(
+            scalar_at(
+                &surfaces.pl_schedule_surface,
+                &slope_ofe_symbol("route_form_drag_coefficient", 1),
+            ),
+            1.25,
+        );
+        assert_scalar_close(
+            scalar_at(
+                &surfaces.pl_schedule_surface,
+                &slope_ofe_symbol("route_roughness_element_height_m", 1),
+            ),
+            0.06,
+        );
+        assert_scalar_close(
+            scalar_at(
+                &surfaces.pl_schedule_surface,
+                &slope_ofe_symbol("route_roughness_concentration", 1),
+            ),
+            0.2,
+        );
+        assert_scalar_close(
+            scalar_at(
+                &surfaces.pl_schedule_surface,
+                &slope_ofe_symbol("route_vegetation_drag_coefficient", 1),
+            ),
+            0.7,
+        );
+        assert_scalar_close(
+            scalar_at(
+                &surfaces.pl_schedule_surface,
+                &pl_schedule_slot_crop_symbol(
+                    "route_skin_friction_coefficient_ko",
+                    1,
+                    1,
+                ),
+            ),
+            500.0,
+        );
+        assert_scalar_close(
+            scalar_at(
+                &surfaces.pl_schedule_surface,
+                &pl_schedule_slot_crop_symbol("route_form_drag_coefficient", 1, 1),
+            ),
+            1.25,
         );
     }
 

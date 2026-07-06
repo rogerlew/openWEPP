@@ -919,6 +919,68 @@ fn native_ow_lanuse_1_datver_parses_forest_scenarios() {
 }
 
 #[test]
+fn native_ow_lanuse_1_forest_parses_routing_coefficients_extension() {
+    let native = fixture_text(FOREST_FIXTURE);
+    let with_routing = native.replace(
+        "0.02000 2.00000 8.00000 500.00000           # tree: coeff diam hgt pop",
+        "0.02000 2.00000 8.00000 500.00000           # tree: coeff diam hgt pop\nrouting_coefficients\n500.00000 1.25000 0.06000 0.20000 0.70000",
+    );
+
+    let parsed = parse_management_from_str(&with_routing, ParseMode::Strict)
+        .expect("forest routing coefficient extension should parse");
+    let PlantScenarioData::Forest(plant) = &parsed.registries.plants[0].data else {
+        panic!("expected forest plant scenario");
+    };
+    let routing = plant
+        .routing
+        .expect("forest routing coefficients should be present");
+    assert_f64_close(routing.skin_friction_coefficient_ko, 500.0);
+    assert_f64_close(routing.form_drag_coefficient, 1.25);
+    assert_f64_close(routing.roughness_element_height_m, 0.06);
+    assert_f64_close(routing.roughness_concentration, 0.2);
+    assert_f64_close(routing.vegetation_drag_coefficient, 0.7);
+}
+
+#[test]
+fn native_ow_lanuse_1_accepts_native_cropland_sentinel_with_routing_coefficients() {
+    let native = fixture_text("canonical_cropland_nonzero_98_4.man")
+        .replacen("98.4", "ow-lanuse-1", 1)
+        .replace("1  #landuse", "4  #landuse")
+        .replace(
+            "1  # landuse  - cropland",
+            "4  # landuse  - native cropland",
+        )
+        .replace(
+            "1  # landuse <cropland>",
+            "4  # landuse <native cropland>",
+        )
+        .replace(
+            "0.00000 3.50000 0.00000",
+            "0.00000 3.50000 0.00000\nrouting_coefficients\n650.00000 0.80000 0.03000 0.10000 0.40000",
+        );
+
+    let parsed = parse_management_from_str(&native, ParseMode::Strict)
+        .expect("native cropland sentinel should parse under ow-lanuse-1");
+    assert_eq!(parsed.registries.plants[0].meta.landuse, 4);
+    assert_eq!(parsed.registries.operations[0].meta.landuse, 4);
+    assert_eq!(parsed.registries.initials[0].meta.landuse, 4);
+    assert_eq!(parsed.registries.surfaces[0].meta.landuse, 4);
+    assert_eq!(parsed.registries.yearlies[0].meta.landuse, 4);
+
+    let PlantScenarioData::Cropland(plant) = &parsed.registries.plants[0].data else {
+        panic!("expected native cropland plant scenario");
+    };
+    let routing = plant
+        .routing
+        .expect("native cropland routing coefficients should be present");
+    assert_f64_close(routing.skin_friction_coefficient_ko, 650.0);
+    assert_f64_close(routing.form_drag_coefficient, 0.8);
+    assert_f64_close(routing.roughness_element_height_m, 0.03);
+    assert_f64_close(routing.roughness_concentration, 0.1);
+    assert_f64_close(routing.vegetation_drag_coefficient, 0.4);
+}
+
+#[test]
 fn forest_sentinel_rejected_under_legacy_datver() {
     // Same fixture but with a legacy datver: the forest sentinel (landuse 3)
     // stays rejected (compatibility quarantine, LANUSE-AUTH-4).

@@ -9,9 +9,10 @@ use std::path::{Path, PathBuf};
 const ALLOWED_DATVERS: &[&str] = &["95.7", "98.4", "2016.3", "2017.1", OW_LANUSE_1_DATVER];
 
 /// openWEPP-native management datver that unlocks first-class `lanuse` modes
-/// (currently the forest branch) under ADR-0034 / the management-`lanuse`
-/// authority contract (`LANUSE-AUTH-1..6`). Deliberately not a legacy WEPP
-/// datver token, so no legacy `.man` collides with the native carve.
+/// (currently the forest branch plus native-cropland authoring) under ADR-0034
+/// / the management-`lanuse` authority contract (`LANUSE-AUTH-1..6`).
+/// Deliberately not a legacy WEPP datver token, so no legacy `.man` collides
+/// with the native carve.
 pub const OW_LANUSE_1_DATVER: &str = "ow-lanuse-1";
 
 /// Native forest `lanuse` sentinel (legacy WEPP forest code). Under the
@@ -19,6 +20,11 @@ pub const OW_LANUSE_1_DATVER: &str = "ow-lanuse-1";
 /// / `InitialScenarioData::Forest` / `YearlyScenarioData::Forest` carve; under
 /// every legacy datver it stays rejected (`LANUSE-AUTH-4` quarantine).
 const FOREST_LANUSE_SENTINEL: usize = 3;
+
+/// Native cropland `lanuse` sentinel. This keeps first-class openWEPP cropland
+/// inputs distinct from legacy WEPP cropland compatibility records
+/// (`landuse=1`) while reusing the cropland section grammar.
+pub const NATIVE_CROPLAND_LANUSE_SENTINEL: usize = 4;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ParseMode {
@@ -68,6 +74,23 @@ pub struct PlantCroplandData {
     pub residue_line: [f64; 10],
     pub terminal_line: [f64; 3],
     pub rcc: Option<f64>,
+    pub routing: Option<RoutingCoefficientExtension>,
+}
+
+/// Optional native-landuse Lane D routing coefficient extension. Presence is
+/// enforced by the Lane D builder, not by legacy parse compatibility.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct RoutingCoefficientExtension {
+    /// Laminar skin friction coefficient `k_o`.
+    pub skin_friction_coefficient_ko: f64,
+    /// Form-resistance drag coefficient `C_d`.
+    pub form_drag_coefficient: f64,
+    /// Roughness-element tip height `D_r` (m).
+    pub roughness_element_height_m: f64,
+    /// Roughness concentration `lambda`.
+    pub roughness_concentration: f64,
+    /// Vegetation drag coefficient `C_d`.
+    pub vegetation_drag_coefficient: f64,
 }
 
 /// First-class forest plant-growth operand block for the openWEPP-native forest
@@ -95,6 +118,7 @@ pub struct PlantForestData {
     pub diam: f64,
     pub decomposition: PlantForestDecomposition,
     pub community: PlantForestCommunity,
+    pub routing: Option<RoutingCoefficientExtension>,
 }
 
 /// Tier-A shared growth-kernel operands (the 19 symbols the daily growth kernel
@@ -797,7 +821,7 @@ enum DatverFamily {
     V95_7,
     V98_4,
     V2016Plus,
-    /// openWEPP-native `ow-lanuse-1` family: first-class `lanuse` modes (forest)
+    /// openWEPP-native `ow-lanuse-1` family: first-class `lanuse` modes
     /// unlocked; legacy option extensions parse as the `2016.3+` family.
     OwLanuse1,
 }
@@ -808,6 +832,12 @@ impl DatverFamily {
         matches!(self, Self::OwLanuse1)
     }
 
+    /// The `ow-lanuse-1` native family also allows an explicit native cropland
+    /// sentinel, distinct from legacy compatibility cropland (`landuse=1`).
+    const fn native_cropland_mode_enabled(self) -> bool {
+        matches!(self, Self::OwLanuse1)
+    }
+
     /// Legacy option domains (operation pcode, resmgt, mgtopt) for the native
     /// family follow the `2016.3+` datver superset.
     const fn legacy_option_family(self) -> Self {
@@ -815,6 +845,20 @@ impl DatverFamily {
             Self::OwLanuse1 => Self::V2016Plus,
             other => other,
         }
+    }
+}
+
+fn cropland_landuse_allowed(datver_family: DatverFamily, landuse: usize) -> bool {
+    landuse == 1
+        || (datver_family.native_cropland_mode_enabled()
+            && landuse == NATIVE_CROPLAND_LANUSE_SENTINEL)
+}
+
+fn cropland_allowed_label(datver_family: DatverFamily) -> &'static str {
+    if datver_family.native_cropland_mode_enabled() {
+        "1 or 4 (native cropland)"
+    } else {
+        "1"
     }
 }
 
@@ -852,7 +896,7 @@ fn parse_plant_section(
     for _ in 0..count {
         let meta = parse_scenario_meta(cursor, "plant")?;
         if datver_family.forest_mode_enabled() && meta.landuse == FOREST_LANUSE_SENTINEL {
-            let data = parse_plant_forest(cursor)?;
+            let data = parse_plant_forest(cursor, datver_family)?;
             scenarios.push(PlantScenario {
                 meta,
                 data: PlantScenarioData::Forest(data),
@@ -865,11 +909,11 @@ fn parse_plant_section(
                 landuse: meta.landuse,
             });
         }
-        if meta.landuse != 1 {
+        if !cropland_landuse_allowed(datver_family, meta.landuse) {
             return Err(ManagementParseError::InvalidOptionDomain {
                 field: "iplant",
                 value: i64::try_from(meta.landuse).unwrap_or(i64::MAX),
-                allowed: "1",
+                allowed: cropland_allowed_label(datver_family),
             });
         }
 
@@ -903,6 +947,12 @@ fn parse_plant_section(
             None
         };
 
+        let routing = parse_optional_routing_coefficients(
+            cursor,
+            datver_family.native_cropland_mode_enabled()
+                && meta.landuse == NATIVE_CROPLAND_LANUSE_SENTINEL,
+        )?;
+
         scenarios.push(PlantScenario {
             meta,
             data: PlantScenarioData::Cropland(PlantCroplandData {
@@ -913,6 +963,7 @@ fn parse_plant_section(
                 residue_line,
                 terminal_line: terminal_values,
                 rcc,
+                routing,
             }),
         });
     }
@@ -924,7 +975,10 @@ fn parse_plant_section(
 /// required; a missing or non-numeric value fails closed at parse
 /// (`LANUSE-AUTH-2`). Domain validation (fraction/positive bounds) is enforced
 /// downstream in the runtime projection, mirroring the cropland parser.
-fn parse_plant_forest(cursor: &mut Cursor<'_>) -> Result<PlantForestData, ManagementParseError> {
+fn parse_plant_forest(
+    cursor: &mut Cursor<'_>,
+    datver_family: DatverFamily,
+) -> Result<PlantForestData, ManagementParseError> {
     let class_raw = cursor.next_required("plant.forest.class")?;
     let forest_class = cursor.parse_token("plant.forest.class", class_raw)?;
 
@@ -945,6 +999,7 @@ fn parse_plant_forest(cursor: &mut Cursor<'_>) -> Result<PlantForestData, Manage
     let grass = parse_f64_array::<4>(cursor, "plant.forest.grass_coeff_diam_hgt_pop")?;
     let shrub = parse_f64_array::<4>(cursor, "plant.forest.shrub_coeff_diam_hgt_pop")?;
     let tree = parse_f64_array::<4>(cursor, "plant.forest.tree_coeff_diam_hgt_pop")?;
+    let routing = parse_optional_routing_coefficients(cursor, datver_family.forest_mode_enabled())?;
 
     Ok(PlantForestData {
         forest_class,
@@ -999,6 +1054,7 @@ fn parse_plant_forest(cursor: &mut Cursor<'_>) -> Result<PlantForestData, Manage
                 pop: tree[3],
             },
         },
+        routing,
     })
 }
 
@@ -1018,11 +1074,11 @@ fn parse_operation_section(
                 landuse: meta.landuse,
             });
         }
-        if meta.landuse != 1 {
+        if !cropland_landuse_allowed(datver_family, meta.landuse) {
             return Err(ManagementParseError::InvalidOptionDomain {
                 field: "iop",
                 value: i64::try_from(meta.landuse).unwrap_or(i64::MAX),
-                allowed: "1",
+                allowed: cropland_allowed_label(datver_family),
             });
         }
 
@@ -1155,11 +1211,11 @@ fn parse_initial_section(
                 landuse: meta.landuse,
             });
         }
-        if meta.landuse != 1 {
+        if !cropland_landuse_allowed(datver_family, meta.landuse) {
             return Err(ManagementParseError::InvalidOptionDomain {
                 field: "lanuse",
                 value: i64::try_from(meta.landuse).unwrap_or(i64::MAX),
-                allowed: "1",
+                allowed: cropland_allowed_label(datver_family),
             });
         }
 
@@ -1290,11 +1346,11 @@ fn parse_surface_section(
                 landuse: meta.landuse,
             });
         }
-        if meta.landuse != 1 {
+        if !cropland_landuse_allowed(datver_family, meta.landuse) {
             return Err(ManagementParseError::InvalidOptionDomain {
                 field: "iseq",
                 value: i64::try_from(meta.landuse).unwrap_or(i64::MAX),
-                allowed: "1",
+                allowed: cropland_allowed_label(datver_family),
             });
         }
 
@@ -1345,11 +1401,11 @@ fn parse_contour_section(
                 landuse: meta.landuse,
             });
         }
-        if meta.landuse != 1 {
+        if !cropland_landuse_allowed(datver_family, meta.landuse) {
             return Err(ManagementParseError::InvalidOptionDomain {
                 field: "icont",
                 value: i64::try_from(meta.landuse).unwrap_or(i64::MAX),
-                allowed: "1",
+                allowed: cropland_allowed_label(datver_family),
             });
         }
 
@@ -1406,11 +1462,11 @@ fn parse_drain_section(
                 landuse: meta.landuse,
             });
         }
-        if meta.landuse != 1 {
+        if !cropland_landuse_allowed(datver_family, meta.landuse) {
             return Err(ManagementParseError::InvalidOptionDomain {
                 field: "dcont",
                 value: i64::try_from(meta.landuse).unwrap_or(i64::MAX),
-                allowed: "1",
+                allowed: cropland_allowed_label(datver_family),
             });
         }
 
@@ -1448,11 +1504,11 @@ fn parse_yearly_section(
                 landuse: meta.landuse,
             });
         }
-        if meta.landuse != 1 {
+        if !cropland_landuse_allowed(datver_family, meta.landuse) {
             return Err(ManagementParseError::InvalidOptionDomain {
                 field: "iscen",
                 value: i64::try_from(meta.landuse).unwrap_or(i64::MAX),
-                allowed: "1",
+                allowed: cropland_allowed_label(datver_family),
             });
         }
 
@@ -1979,6 +2035,35 @@ fn parse_f64_array<const N: usize>(
     Ok(values)
 }
 
+fn parse_optional_routing_coefficients(
+    cursor: &mut Cursor<'_>,
+    extension_allowed: bool,
+) -> Result<Option<RoutingCoefficientExtension>, ManagementParseError> {
+    let Some(marker) = cursor.peek_value() else {
+        return Ok(None);
+    };
+    if marker != "routing_coefficients" && marker != "routing_coefficients_v1" {
+        return Ok(None);
+    }
+    if !extension_allowed {
+        return Err(ManagementParseError::InvalidOptionDomain {
+            field: "plant.routing_coefficients",
+            value: 1,
+            allowed: "ow-lanuse-1 native forest (landuse=3) or native cropland (landuse=4)",
+        });
+    }
+
+    let _ = cursor.next_required("plant.routing_coefficients.marker")?;
+    let values = parse_f64_array::<5>(cursor, "plant.routing_coefficients")?;
+    Ok(Some(RoutingCoefficientExtension {
+        skin_friction_coefficient_ko: values[0],
+        form_drag_coefficient: values[1],
+        roughness_element_height_m: values[2],
+        roughness_concentration: values[3],
+        vegetation_drag_coefficient: values[4],
+    }))
+}
+
 fn parse_julian_day(
     cursor: &mut Cursor<'_>,
     field: &'static str,
@@ -2097,6 +2182,10 @@ impl<'a> Cursor<'a> {
             .ok_or(ManagementParseError::MissingRecord { field })?;
         self.index += 1;
         Ok(value)
+    }
+
+    fn peek_value(&self) -> Option<&'a str> {
+        self.lines.get(self.index).map(|line| line.value.as_str())
     }
 
     fn parse_token(&self, field: &'static str, raw: &str) -> Result<String, ManagementParseError> {

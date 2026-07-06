@@ -22,10 +22,21 @@ impl DirectProductionDayInputBuilder<'_> {
     /// the bare-cell mesh valid.
     pub(crate) fn laned_shadow_geometry(
         &self,
-    ) -> Vec<crate::hillslope::laned_shadow::LanedShadowLaneGeometry> {
+    ) -> Result<Vec<crate::hillslope::laned_shadow::LanedShadowLaneGeometry>, HillslopeCliError>
+    {
         self.lane_authority
             .iter()
-            .map(|lane| {
+            .enumerate()
+            .map(|(lane_index, lane)| {
+                let routing = lane.ofe_routing.ok_or_else(|| {
+                    HillslopeCliError::RuntimeSurfaceFailure {
+                        surface: "laned_shadow_routing_coefficients",
+                        detail: format!(
+                            "{SIMOUT_GUARD_ID} OPENWEPP_LANED_SHADOW requires a complete, schedule-consistent routing coefficient extension for every MOFE landuse; lane {} is missing or has inconsistent route_* authority symbols",
+                            lane_index + 1
+                        ),
+                    }
+                })?;
                 let seed = &lane.erosion.erosion_inputs.wave1_operand_seed;
                 let mean_gradient = seed
                     .segments
@@ -37,11 +48,12 @@ impl DirectProductionDayInputBuilder<'_> {
                     })
                     .sum::<f64>()
                     .max(0.001);
-                crate::hillslope::laned_shadow::LanedShadowLaneGeometry {
+                Ok(crate::hillslope::laned_shadow::LanedShadowLaneGeometry {
                     slplen_m: seed.slplen_m,
                     width_m: seed.field_width_m,
                     mean_gradient,
-                }
+                    routing: routing.into_laned_shadow(),
+                })
             })
             .collect()
     }
@@ -79,6 +91,7 @@ struct DirectProductionTypedLaneSeedAuthority {
     growth: DirectProductionGrowthAuthority,
     erosion: DirectProductionErosionAuthority,
     snow_frost: DirectProductionSnowFrostAuthority,
+    ofe_routing: Option<DirectProductionOfeRoutingCoefficientAuthority>,
 }
 
 #[derive(Clone)]
@@ -109,6 +122,7 @@ struct DirectProductionLaneDayInputAuthority {
     hydrology_projection: DirectHydrologyProjectionInputs,
     erosion: DirectProductionErosionAuthority,
     snow_frost: DirectProductionSnowFrostAuthority,
+    ofe_routing: Option<DirectProductionOfeRoutingCoefficientAuthority>,
 }
 
 #[derive(Clone)]
@@ -247,6 +261,27 @@ struct DirectProductionErosionAuthority {
 struct DirectProductionWinterHourlyGeometry {
     avg_slope: f64,
     azimuth: f64,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+struct DirectProductionOfeRoutingCoefficientAuthority {
+    skin_friction_coefficient_ko: f64,
+    form_drag_coefficient: f64,
+    roughness_element_height_m: f64,
+    roughness_concentration: f64,
+    vegetation_drag_coefficient: f64,
+}
+
+impl DirectProductionOfeRoutingCoefficientAuthority {
+    fn into_laned_shadow(self) -> crate::hillslope::laned_shadow::LanedShadowRoutingCoefficients {
+        crate::hillslope::laned_shadow::LanedShadowRoutingCoefficients {
+            skin_friction_coefficient_ko: self.skin_friction_coefficient_ko,
+            form_drag_coefficient: self.form_drag_coefficient,
+            roughness_element_height_m: self.roughness_element_height_m,
+            roughness_concentration: self.roughness_concentration,
+            vegetation_drag_coefficient: self.vegetation_drag_coefficient,
+        }
+    }
 }
 
 impl DirectProductionWinterHourlyGeometry {
@@ -554,6 +589,7 @@ fn direct_production_day_input_authority_from_typed_seed(
         hydrology_projection: seed.hydrology_projection,
         erosion: seed.erosion,
         snow_frost: seed.snow_frost,
+        ofe_routing: seed.ofe_routing,
     }
 }
 
@@ -610,6 +646,8 @@ fn direct_production_typed_lane_seed_authority(
             surface: "direct_production_typed_seed",
             detail: error.to_string(),
         })?;
+    let ofe_routing =
+        direct_production_optional_lane_routing_coefficient_authority(&management_projection)?;
     let mut pmetpara_projection_source = pmetpara.clone();
     let pmetpara_projection = crate::hillslope::intake_lane_setup::project_typed_pmetpara_runtime(
         management,
@@ -691,7 +729,191 @@ fn direct_production_typed_lane_seed_authority(
             &frost_projection,
             climate_request,
         )?,
+        ofe_routing,
     })
+}
+
+fn direct_production_optional_lane_routing_coefficient_authority(
+    projection: &openwepp_hillslope_orchestrator::runtime_inputs::HillslopePlRuntimeSurfaces,
+) -> Result<Option<DirectProductionOfeRoutingCoefficientAuthority>, HillslopeCliError> {
+    let Some(slot_count_value) =
+        direct_production_pl_projection_optional_scalar(projection, "pl_schedule_slot_count")
+    else {
+        return Ok(None);
+    };
+    let slot_count =
+        direct_growth_integral_usize("pl_schedule_slot_count", slot_count_value, 1, usize::MAX)?;
+    let mut lane_authority = None;
+    for slot_index in 1..=slot_count {
+        let crop_slots = direct_growth_projection_required_integral_usize(
+            projection,
+            &direct_growth_schedule_slot_symbol(slot_index, "crop_slots"),
+            1,
+            usize::MAX,
+        )?;
+        for crop_slot_index in 1..=crop_slots {
+            let Some(slot_authority) =
+                direct_production_optional_slot_crop_routing_coefficient_authority(
+                    projection,
+                    slot_index,
+                    crop_slot_index,
+                )?
+            else {
+                return Ok(None);
+            };
+            if let Some(existing) = lane_authority {
+                if existing != slot_authority {
+                    return Ok(None);
+                }
+            } else {
+                lane_authority = Some(slot_authority);
+            }
+        }
+    }
+    Ok(lane_authority)
+}
+
+fn direct_production_optional_slot_crop_routing_coefficient_authority(
+    projection: &openwepp_hillslope_orchestrator::runtime_inputs::HillslopePlRuntimeSurfaces,
+    slot_index: usize,
+    crop_slot_index: usize,
+) -> Result<Option<DirectProductionOfeRoutingCoefficientAuthority>, HillslopeCliError> {
+    let skin_friction_coefficient_ko = direct_production_pl_projection_optional_scalar(
+        projection,
+        &direct_growth_schedule_slot_crop_symbol(
+            slot_index,
+            crop_slot_index,
+            "route_skin_friction_coefficient_ko",
+        ),
+    );
+    let form_drag_coefficient = direct_production_pl_projection_optional_scalar(
+        projection,
+        &direct_growth_schedule_slot_crop_symbol(
+            slot_index,
+            crop_slot_index,
+            "route_form_drag_coefficient",
+        ),
+    );
+    let roughness_element_height_m = direct_production_pl_projection_optional_scalar(
+        projection,
+        &direct_growth_schedule_slot_crop_symbol(
+            slot_index,
+            crop_slot_index,
+            "route_roughness_element_height_m",
+        ),
+    );
+    let roughness_concentration = direct_production_pl_projection_optional_scalar(
+        projection,
+        &direct_growth_schedule_slot_crop_symbol(
+            slot_index,
+            crop_slot_index,
+            "route_roughness_concentration",
+        ),
+    );
+    let vegetation_drag_coefficient = direct_production_pl_projection_optional_scalar(
+        projection,
+        &direct_growth_schedule_slot_crop_symbol(
+            slot_index,
+            crop_slot_index,
+            "route_vegetation_drag_coefficient",
+        ),
+    );
+
+    if [
+        skin_friction_coefficient_ko,
+        form_drag_coefficient,
+        roughness_element_height_m,
+        roughness_concentration,
+        vegetation_drag_coefficient,
+    ]
+    .iter()
+    .all(Option::is_none)
+    {
+        return Ok(None);
+    }
+
+    let required = |root: &'static str, value: Option<f64>| {
+        value.ok_or_else(|| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_production_typed_seed",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} partial routing coefficient extension for slot {slot_index} crop {crop_slot_index}: missing {root}"
+            ),
+        })
+    };
+
+    let authority = DirectProductionOfeRoutingCoefficientAuthority {
+        skin_friction_coefficient_ko: required(
+            "route_skin_friction_coefficient_ko",
+            skin_friction_coefficient_ko,
+        )?,
+        form_drag_coefficient: required("route_form_drag_coefficient", form_drag_coefficient)?,
+        roughness_element_height_m: required(
+            "route_roughness_element_height_m",
+            roughness_element_height_m,
+        )?,
+        roughness_concentration: required(
+            "route_roughness_concentration",
+            roughness_concentration,
+        )?,
+        vegetation_drag_coefficient: required(
+            "route_vegetation_drag_coefficient",
+            vegetation_drag_coefficient,
+        )?,
+    };
+    validate_direct_production_routing_coefficient_authority(
+        &format!("slot {slot_index} crop {crop_slot_index}"),
+        authority,
+    )?;
+    Ok(Some(authority))
+}
+
+fn validate_direct_production_routing_coefficient_authority(
+    context: &str,
+    authority: DirectProductionOfeRoutingCoefficientAuthority,
+) -> Result<(), HillslopeCliError> {
+    let fields = [
+        (
+            "route_skin_friction_coefficient_ko",
+            authority.skin_friction_coefficient_ko,
+            "> 0.0",
+        ),
+        (
+            "route_form_drag_coefficient",
+            authority.form_drag_coefficient,
+            ">= 0.0",
+        ),
+        (
+            "route_roughness_element_height_m",
+            authority.roughness_element_height_m,
+            ">= 0.0",
+        ),
+        (
+            "route_roughness_concentration",
+            authority.roughness_concentration,
+            "0.0..=1.0",
+        ),
+        (
+            "route_vegetation_drag_coefficient",
+            authority.vegetation_drag_coefficient,
+            ">= 0.0",
+        ),
+    ];
+    for (root, value, allowed) in fields {
+        let valid = match root {
+            "route_skin_friction_coefficient_ko" => value.is_finite() && value > 0.0,
+            "route_roughness_concentration" => value.is_finite() && (0.0..=1.0).contains(&value),
+            _ => value.is_finite() && value >= 0.0,
+        };
+        if !valid {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "direct_production_typed_seed",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} routing coefficient extension {context} {root} must be finite and {allowed}, observed {value}"
+                ),
+            });
+        }
+    }
+    Ok(())
 }
 
 fn direct_production_typed_peak_runoff_authority(
