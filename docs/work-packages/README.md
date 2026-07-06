@@ -12,6 +12,20 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-06`:
+- `20260706-mofefid-d10b-gap005-source-authority-reconciliation-001/` —
+  SCAFFOLDED: the §6.1 D10 hold-lift. Reconciles the
+  `SC-OFEROUTE-001#GAP-OFEROUTE-005` source-authority hold via three legs:
+  (A) bind limiter/CFL/dissipation to the TVD family primaries (Mingham
+  2001 / Garcia-Navarro 1992 in hand; Davis 1984 and Tseng 2010 acquisition
+  targets from R-63's own citation chain); (B) re-anchor Case-4 acceptance
+  to the Iwagaki 1955 primary (characteristics oracle, experimental
+  hydrographs, `n = 0.009` via a named definitional mapping) and demote the
+  digitized enhanced-WEPP trace to an ADR-0017 comparator flag; (C)
+  reclassify the OFE sampled handoff under the conservation hard gate and
+  adjudicate the H2637 resolution sensitivity with a seam-decomposed
+  ledger. Clean-room boundary preserved; no production/default activation. A
+  non-HOLD closure lifts the D15-rerun blocker; a HOLD must narrow D10's
+  boundary and leaves D15 blocked.
 - `20260705-mofefid-d15-opt-in-production-activation-001/` —
   EXECUTED-HOLD-SOURCE-AUTHORITY: Lane D opt-in production activation
   preflight. D15 confirmed that `SC-OFEROUTE-001` rev 23 still blocks active
