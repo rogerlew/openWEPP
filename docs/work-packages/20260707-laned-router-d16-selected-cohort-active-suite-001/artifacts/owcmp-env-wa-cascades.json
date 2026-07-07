@@ -1,0 +1,83 @@
+{
+  "checks": [
+    {
+      "name": "python_executable",
+      "path": "/home/workdir/openWEPP/.venv/bin/python",
+      "status": "PASS"
+    },
+    {
+      "name": "repo_venv_python",
+      "path": "/home/workdir/openWEPP/.venv/bin/python",
+      "status": "PASS"
+    },
+    {
+      "name": "pyarrow",
+      "status": "PASS",
+      "version": "24.0.0"
+    },
+    {
+      "name": "default_tolerance_config",
+      "path": "/home/workdir/openWEPP/tools/owcmp/configs/pl14s_wat_tolerances.json",
+      "status": "PASS"
+    }
+  ],
+  "manifest_check": {
+    "checks": [
+      {
+        "kind": "directory",
+        "name": "run_root",
+        "path": "/wc1/runs/ar/arboreal-dendrite",
+        "required": true,
+        "status": "PASS"
+      },
+      {
+        "kind": "directory",
+        "name": "wepp_output_dir",
+        "path": "/wc1/runs/ar/arboreal-dendrite/wepp/output",
+        "required": true,
+        "status": "PASS"
+      },
+      {
+        "end": 36,
+        "expected": 36,
+        "kind": "pattern-range",
+        "missing": [],
+        "name": "hillslope_wat_outputs",
+        "path_pattern": "/wc1/runs/ar/arboreal-dendrite/wepp/output/H{h}.wat.dat",
+        "present": 36,
+        "required": true,
+        "start": 1,
+        "status": "PASS"
+      },
+      {
+        "end": 36,
+        "expected": 36,
+        "kind": "pattern-range",
+        "missing": [],
+        "name": "hillslope_plot_outputs",
+        "path_pattern": "/wc1/runs/ar/arboreal-dendrite/wepp/output/H{h}.plot.dat",
+        "present": 36,
+        "required": true,
+        "start": 1,
+        "status": "PASS"
+      },
+      {
+        "kind": "file",
+        "name": "watershed_structure",
+        "path": "/wc1/runs/ar/arboreal-dendrite/watershed/structure.json",
+        "required": true,
+        "status": "PASS"
+      }
+    ],
+    "lane": "cohort-inventory",
+    "manifest": "tools/owcmp/suites/wa-cascades-mofe-ksflag0.json",
+    "run_root": "/wc1/runs/ar/arboreal-dendrite",
+    "schema_version": "owcmp-suite-check-v1",
+    "status": "PASS",
+    "suite_id": "wa-cascades-mofe-ksflag0",
+    "title": "Washington Cascades MOFE H1-H36 ksflag=0 validation cohort"
+  },
+  "schema_version": "owcmp-env-v1",
+  "status": "PASS",
+  "suite_manifest_count": 3
+}

@@ -12,6 +12,19 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-07`:
+- `20260707-laned-router-d16-selected-cohort-active-suite-001/` -
+  EXECUTED-HOLD-ACTIVE-RUN (2026-07-07): constructed package-local active
+  openWEPP run directories for H2637 plus one representative hillslope from
+  each current owcmp inventory root using source `landuse.parquet`
+  disturbed-class bindings and WEPPpy Disturbed native `ow-lanuse-1`
+  management production. Corrected H2637 active evidence ran with separate
+  output dirs and true hybrid env (`39.64 s` user active plain vs `33.33 s`
+  active hybrid; outlet delta `-0.4396%`, pass sediment sums about
+  `-6.474%`). The selected suite did not complete: `mn_corn_h4` active plain
+  fails closed on day 136 because LAI is positive while typed `canhgt` is
+  missing/non-positive. Follow-on: add an authority-backed active row-crop
+  canopy-height runtime publication/source-lift, then rerun this selected
+  suite before D16 default promotion.
 - `20260707-laned-router-d16-hybrid-disturbed-route-coeff-source-acquisition-001/` -
   EXECUTED-HOLD-D16-SUITE (2026-07-07): implemented WEPPpy management
   support for opt-in native `ow-lanuse-1` cropland with
