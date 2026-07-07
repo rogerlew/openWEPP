@@ -12,6 +12,14 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-07`:
+- `20260708-laned-router-tier2-dx-target-mesh-policy-rescope-001/` -
+  QUEUED (scaffolded 2026-07-07 using ADR-0037's successor id): executable
+  successor to the stale Tier-2 mesh package. Scope is plain Lane D active
+  routing only: inventory current fixed `10 cells/OFE` behavior, adjudicate
+  target-`dx` mesh policies with Case-4 oracle/self-convergence and the real
+  selected cohort (`mn_corn_h4`, `n_idaho_forest_h1`,
+  `wa_cascades_forest_h1`), and report H2637 separately as synthetic stress
+  evidence. No hybrid revival or H2637-only promotion claim is in scope.
 - `20260707-laned-router-hybrid-abandonment-removal-001/` -
   EXECUTED-COMPLETE-ADR0037-REMOVAL (2026-07-07): executed ADR-0037 terminal
   abandonment of the hybrid implicit-explicit Lane D stepper. The final
@@ -129,9 +137,10 @@ State as of `2026-07-07`:
   fail the ratified `5%` tolerance, so fidelity ratification is blocked and no
   selector promotion is made. Delegable Tier-1/Tier-2 packages are scaffolded.
 - `20260707-laned-router-tier2-mesh-resolution-adjudication-001/` -
-  QUEUED (2026-07-07): delegable Tier-2 package to adjudicate candidate
-  production mesh-resolution policy (notably 5 cells/OFE) against Case-4 and
-  H2637 fidelity/timing evidence before any config change.
+  SUPERSEDED (2026-07-07): original delegable Tier-2 package retained as
+  historical context only. Its hybrid-era 5-cells/OFE and H2637-centered
+  framing is replaced by
+  `20260708-laned-router-tier2-dx-target-mesh-policy-rescope-001/`.
 - `20260707-laned-router-t3agg-qa-m3-build-provenance-guidance-001/` -
   EXECUTED-COMPLETE (2026-07-07): closed the Codex-owned QA-M3 remainder from
   LANED-T3-AGG by promoting the stale-release-binary mitigation into durable

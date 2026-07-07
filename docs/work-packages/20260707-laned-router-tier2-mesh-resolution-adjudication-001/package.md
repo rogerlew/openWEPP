@@ -1,6 +1,12 @@
 # LANED Router Tier-2 Mesh-Resolution Adjudication
 
-Status: QUEUED
+Status: SUPERSEDED-BY-20260708-DX-TARGET-RESCOPE
+
+Supersession note (2026-07-07): do not execute this package as scaffolded.
+ADR-0037 abandoned the hybrid implicit stepper and demoted H2637 to synthetic
+stress evidence only, so this hybrid-era, 5-cells/OFE framing is replaced by
+`docs/work-packages/20260708-laned-router-tier2-dx-target-mesh-policy-rescope-001/`.
+This file remains as historical context for the re-scope.
 
 ## Objective
 
@@ -103,4 +109,3 @@ unless unavailable; record any tool-policy block before running locally.
 - `cargo nextest run --workspace --profile full`
 - `cargo deny check`
 - `.rs` line-count governance
-

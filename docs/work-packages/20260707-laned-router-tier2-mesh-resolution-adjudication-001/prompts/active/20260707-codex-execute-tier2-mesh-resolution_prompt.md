@@ -1,5 +1,10 @@
 # Codex Execution Prompt
 
+SUPERSEDED - DO NOT EXECUTE AS WRITTEN. Use
+`docs/work-packages/20260708-laned-router-tier2-dx-target-mesh-policy-rescope-001/prompts/active/20260708-codex-execute-tier2-dx-target-mesh-policy-rescope_prompt.md`
+instead. ADR-0037 abandoned hybrid work and requires the Tier-2 question to be
+re-scoped around plain active target-`dx` mesh policy.
+
 Scope: local repository science-contract/kernel adjudication task; flat-file
 reads/edits only; no external connectivity.
 
@@ -20,4 +25,3 @@ unless separately bounded.
 
 Autonomy: execute phases end-to-end; hold only with a package-local hold
 legitimacy audit naming the exact blocker and first follow-on.
-
