@@ -20,13 +20,6 @@ State as of `2026-07-07`:
   evaluations), but Case-4 hybrid ladder peak errors `22.8% / 15.5% / 10.2%`
   fail the ratified `5%` tolerance, so fidelity ratification is blocked and no
   selector promotion is made. Delegable Tier-1/Tier-2 packages are scaffolded.
-- `20260707-laned-router-tier1-local-numerics-001/` -
-  SUPERSEDED-BY-GAP-OFEHYB-002 (2026-07-07): retained as the earlier broad
-  Tier-1 local-numerics scaffold; the gap-shaped
-  `20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001/` has now
-  executed the current source-memory hybrid solve-cost closure. Keep this
-  package only as historical broad-scope context unless a future non-bare
-  optimization needs it.
 - `20260707-laned-router-tier2-mesh-resolution-adjudication-001/` -
   QUEUED (2026-07-07): delegable Tier-2 package to adjudicate candidate
   production mesh-resolution policy (notably 5 cells/OFE) against Case-4 and
@@ -322,6 +315,16 @@ State as of `2026-07-07`:
 
 ## Execution Log
 
+- `20260707-laned-router-tier1-local-numerics-001/` is complete as LANED ROUTER
+  TIER-1 LOCAL NUMERICS. Result:
+  `EXECUTED-SUPERSEDED-BY-GAP-OFEHYB-002`. It was the earlier broad Tier-1
+  local-numerics scaffold, but its own package status redirected execution to
+  the narrower `GAP-OFEHYB-002` solve-cost package. That superseding package is
+  complete on `main` at `75b339c9`, with `SC-OFEROUTE-002` rev 4 resolving the
+  H2637 source-memory hybrid solve-cost bottleneck (`151435969 -> 0` map
+  evaluations, `38.39 s -> 33.37 s` user) without selector/default promotion.
+  No new code, contract, comparator, or timing work was executed from this
+  obsolete broad scaffold.
 - `20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001/` is
   complete as LANED HYBRID GAP-OFEHYB-002 SOLVE-COST RATIFICATION. Result:
   `EXECUTED-COMPLETE-NO-PROMOTION`. It amended `SC-OFEROUTE-002` rev 4 to
