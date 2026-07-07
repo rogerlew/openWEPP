@@ -1,7 +1,10 @@
 # Worker Handoff (T3)
 
 Status: HANDOFF-RECORDED. I0/I1 complete; I2 landed as an experimental
-opt-in (strict rule) with all closure gates green.
+opt-in (strict rule); the run-level gates that exist are green
+(`gate-results.md`) but the I2 CLOSURE acceptance (Case-4 hybrid ladder +
+fidelity ratification) is OPEN and rev 28 is NOT settled (Codex dual
+review; fixes in `review-disposition.md`).
 
 Next actionable items, in value order:
 

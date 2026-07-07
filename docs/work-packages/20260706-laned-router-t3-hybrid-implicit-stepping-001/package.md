@@ -1,12 +1,18 @@
 # LANED-T3 — Hybrid implicit kinematic-wave stepping (router numerics Tier 3)
 
-Status: **EXECUTED THROUGH I2 (strict rule, experimental opt-in)** —
-2026-07-06; operator-directed same-session start after D15A closure
-("prioritize the tiers to maximize your remaining availability and do the
-most complex work first — partition the kinematic wave stepping first").
-I0/I1 complete; I2 landed at `SC-OFEROUTE-001` rev 28 with all closure gates
-green; dual review + the aggressive-rule composition fix are the recorded
-next actions (`artifacts/worker-handoff.md`). Backlog authority:
+Status: **EXECUTED-HOLD-REV28-RATIFICATION** (2026-07-07, post-dual-review;
+originally 2026-07-06, operator-directed same-session start after D15A
+closure: "prioritize the tiers to maximize your remaining availability and
+do the most complex work first — partition the kinematic wave stepping
+first"). I0/I1 complete. I2 is landed as an EXPERIMENTAL evidence-gathering
+opt-in only: the run-level gates that exist are green
+(`artifacts/gate-results.md`), but the I2 CLOSURE acceptance below (the
+full hybrid Case-4 oracle ladder and the fidelity-tolerance ratification)
+is NOT met and rev 28 is NOT settled — the Codex dual review (NO-GO for
+settling rev 28 / GO-WITH-AMENDMENTS as experimental evidence) and the
+finding fixes are recorded in `artifacts/review-disposition.md`. Remaining
+acceptance + the aggressive-rule composition fix are the recorded next
+actions (`artifacts/worker-handoff.md`). Backlog authority:
 [docs/backlog/20260706-laned-router-numerics-performance-tiers.md](../../backlog/20260706-laned-router-numerics-performance-tiers.md).
 Contract focus: `SC-OFEROUTE-001` (rev-28 amendment, contract-first per
 increment).

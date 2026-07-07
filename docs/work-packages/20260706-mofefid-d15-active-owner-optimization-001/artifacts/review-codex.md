@@ -84,3 +84,60 @@ I/O fault at output finalize (best timing fit; unfalsifiable). Not
 candidates: nextest timeout, assertion nondeterminism (single-threaded
 deterministic runtime). The package's unreproduced-monitor disposition is
 reasonable; fixing CR-M2 and CR-L2 makes any recurrence self-diagnosing.
+
+## Codex Re-check - 2026-07-07
+
+Status: **EXECUTED**.
+
+Evidence mode: **Static**. Reviewed current `main` at `64d57f51`, execution
+commit `bd64d2c8`, and the final D15A artifacts after the in-session review
+disposition. No tests or gates were run in this re-check.
+
+Verdict: **GO-WITH-AMENDMENTS**. The final technical dispositions hold on the
+tree inspected: the seam cross-ledger repair is present, the two-phase active
+loop ordering matches the rev-27 production-owner claim, rev-27 contract text
+matches the implementation surfaces checked below, and the default/off path is
+selector-isolated. One package-governance amendment remains.
+
+### Findings
+
+- **Low - D15A package-local status is stale.**
+  `docs/work-packages/20260706-mofefid-d15-active-owner-optimization-001/package.md:3`
+  still says `QUEUED`, while
+  `docs/work-packages/20260706-mofefid-d15-active-owner-optimization-001/artifacts/final-disposition.md:3`
+  says `EXECUTED-COMPLETE`. The code and evidence dispositions remain valid,
+  but the package entrypoint should be amended for truthfulness.
+
+### Re-checks
+
+- Seam cross-ledger repair holds:
+  `crates/openwepp-hillslope-orchestrator/src/direct_runtime/laned_active.rs:452`
+  applies the mesh-basis conversion,
+  `crates/openwepp-hillslope-orchestrator/src/direct_runtime/laned_active.rs:490`
+  passes hourly forcing breakpoints, and
+  `crates/openwepp-hillslope-orchestrator/src/direct_runtime/laned_active.rs:681`
+  enforces router-booked injection against `q_runoff * area` from the soil
+  ledger.
+- Two-phase ordering holds:
+  `crates/openwepp-hillslope-orchestrator/src/direct_runtime/03_executor.rs:493`
+  runs all hydrology first,
+  `crates/openwepp-hillslope-orchestrator/src/direct_runtime/03_executor.rs:512`
+  suppresses surface transfer while preserving lateral transfer,
+  `crates/openwepp-hillslope-orchestrator/src/direct_runtime/03_executor.rs:559`
+  refreshes erosion intake before erosion, and
+  `crates/openwepp-hillslope-orchestrator/src/direct_runtime/03_executor.rs:638`
+  enforces day closure after lane commits.
+- Rev-27 text/code alignment holds for the inspected selector, window/reset,
+  tail-fold/full-mesh-hold degeneracy, `latqcc` booking, uniform fallback, and
+  mesh-basis surfaces. Contract anchors:
+  `docs/specifications/science-contracts/contracts/SC-OFEROUTE-001.md:218`,
+  `docs/specifications/science-contracts/contracts/SC-OFEROUTE-001.md:222`,
+  and
+  `docs/specifications/science-contracts/contracts/SC-OFEROUTE-001.md:392`.
+- Off-path isolation holds statically:
+  `crates/openwepp-hillslope-orchestrator/src/direct_runtime/03_executor.rs:309`
+  dispatches active mode only when `frame.laned_active` is present, and
+  `crates/openwepp-hillslope-orchestrator/src/ofe_routing/cascade.rs:286`
+  keeps the default/shadow cascade path on `route_single_ofe` with `&[]`
+  breakpoints. Byte evidence remains recorded in
+  `artifacts/protected-output-byte-identity.md`.

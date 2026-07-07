@@ -15,7 +15,15 @@ Status: **EXECUTED (strict rule; experimental opt-in)**. Evidence mode:
   selector (runner env → `DirectLanedActiveConfig.hybrid_implicit`);
   manifest records `hybrid_implicit_stepping`; profile line records
   `solver_steps_implicit`.
-- Solve hardening discovered by execution (all contract-recorded at rev 28):
+- POST-REVIEW CORRECTION (rev 29, 2026-07-07): the Filippov filled-jump
+  COMMIT described below was removed after the Codex code review (T3-H1) —
+  the monotonicity argument in the rev-29 changelog proves a both-jump
+  outcome is unreachable for genuine physics, so it now FAILS CLOSED as a
+  solve failure; Steffensen is basin-locked (T3-H2); direct
+  LOW-jump→HIGH-root and dust-accumulation vectors are retained tests. The
+  H2637 hybrid evidence below was re-executed on the fixed tree (numbers
+  updated in `review-disposition.md`).
+- Solve hardening discovered by execution (contract-recorded at rev 28/29):
   Steffensen acceleration (deterministic, same fixed points — cold-seed
   fixed-point cost was the hybrid's first timing killer);
   bisection-interleaved outer solve (false position stalls on the convex

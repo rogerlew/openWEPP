@@ -326,7 +326,20 @@ impl CellParameters {
             } else {
                 q_est - (q1 - q_est) * (q1 - q_est) / denom
             };
-            let same_basin = (accelerated > crossover_q) == (q2 > crossover_q);
+            // T3-H2 (review-hardened): acceleration is accepted ONLY when
+            // the WHOLE plain triple (q_est, q1, q2) sits in one basin AND
+            // the accelerated point stays on that side — the accelerated
+            // sequence is then side-locked to the plain iteration at every
+            // cycle, so it converges to the SAME fixed point the plain
+            // iteration defines (the function's value IS the plain-iteration
+            // limit from the given seed). While the plain trajectory is
+            // mid-migration across `Q_c` (a legitimate basin move when the
+            // seeded basin is empty at this depth), no acceleration is
+            // applied.
+            let plain_side = q2 > crossover_q;
+            let same_basin = (accelerated > crossover_q) == plain_side
+                && (q1 > crossover_q) == plain_side
+                && (q_est > crossover_q) == plain_side;
             q_est = if accelerated.is_finite() && accelerated > 0.0 && same_basin {
                 accelerated
             } else {

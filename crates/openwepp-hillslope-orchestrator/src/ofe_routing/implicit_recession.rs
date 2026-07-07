@@ -198,7 +198,10 @@ fn is_valid_state(value: f64) -> bool {
 /// onto the rating's JUMP carrying the Filippov (filled-jump) candidate.
 enum CellSolve {
     Root(f64, f64, u64),
-    Jump(f64, f64, u64),
+    /// Bracket collapse onto the rating's jump (iterations spent) — the
+    /// caller resolves it via the other branch or fails closed (rev 29:
+    /// the filled-jump commit is removed, so no state payload is carried).
+    Jump(u64),
 }
 
 /// Deterministic branch selection for the Z-shaped rating.
@@ -250,11 +253,19 @@ fn solve_cell(
     if rhs <= 0.0 {
         return Ok((0.0, 0.0, 0));
     }
-    // Branch preference (rev-28 rule): LOW root, else HIGH root (a genuine
-    // turbulent equilibrium can exist BELOW the low rating's collapse
-    // point), else the FILIPPOV filled-jump closure from the LOW collapse —
-    // used ONLY when neither branch hosts a root (the Z-rating's
-    // no-equilibrium window). Every path is mass-exact and deterministic.
+    // Branch chain (rev-29 form, T3-H1 review): LOW root, else HIGH root.
+    // A BOTH-JUMP outcome FAILS CLOSED: for this rating geometry it is
+    // provably unreachable for genuine physics — each branch rating has
+    // exactly one UPWARD jump (LOW at the laminar-basin edge `h_b`, HIGH at
+    // the turbulent-basin edge `h_a`, with `h_a < h_b`), and the cell line
+    // `q = (rhs − h)/(Δt/Δx)` is strictly DECREASING, so crossing the LOW
+    // jump requires `line(h_b) > Q_c` while crossing the HIGH jump requires
+    // `line(h_a) < Q_c` — contradicting `line(h_a) > line(h_b)`. Whenever
+    // the LOW rating jumps over the root, the HIGH rating (turbulent above
+    // `h_a`, laminar below) must host a genuine root; a double collapse can
+    // therefore only be a solve failure (tolerance miss, fixed-point
+    // pathology) and MUST NOT be masked by a mass-exact filled-jump commit
+    // (the earlier Filippov arm is REMOVED on exactly these grounds).
     match solve_cell_on_branch(
         cell,
         rhs,
@@ -264,7 +275,7 @@ fn solve_cell(
         RatingBranch::Low,
     )? {
         CellSolve::Root(h, q, iterations) => Ok((h, q, iterations)),
-        CellSolve::Jump(h_jump, q_jump, low_iterations) => {
+        CellSolve::Jump(low_iterations) => {
             match solve_cell_on_branch(
                 cell,
                 rhs,
@@ -274,9 +285,7 @@ fn solve_cell(
                 RatingBranch::High,
             )? {
                 CellSolve::Root(h, q, iterations) => Ok((h, q, low_iterations + iterations)),
-                CellSolve::Jump(_, _, high_iterations) => {
-                    Ok((h_jump, q_jump, low_iterations + high_iterations))
-                }
+                CellSolve::Jump(_) => Err(RoutingError::ImplicitSolveNonConvergence),
             }
         }
     }
@@ -355,12 +364,7 @@ fn solve_cell_on_branch(
             // construction, `q` inside the jump's convex hull
             // (`q_low < q < q_high` follows from the bracketing signs),
             // and deterministic (the collapse point is unique).
-            let h_jump = 0.5 * (lo + hi);
-            let q_jump = (rhs - h_jump) / dt_over_dx;
-            if q_jump.is_finite() && q_jump >= 0.0 {
-                return Ok(CellSolve::Jump(h_jump, q_jump, iterations));
-            }
-            return Err(RoutingError::ImplicitSolveNonConvergence);
+            return Ok(CellSolve::Jump(iterations));
         }
     }
     Err(RoutingError::ImplicitSolveNonConvergence)
@@ -415,6 +419,76 @@ mod tests {
             depths[i] = 0.5 * (lo + hi);
         }
         depths
+    }
+
+    /// T3-M2/QA-M2 (review-required direct vector): the LOW→HIGH branch
+    /// chain on a constructed jump-crossing cell. For `bare(0.05, 500)`
+    /// the laminar-basin edge is `h_b ≈ 5.49e-3 m` (where
+    /// `q_lam = 6884·h³` reaches `Q_c = 1.14e-3`); with `Δt/Δx = 450` and
+    /// `rhs = h_b + 450·1.5e-3` the cell line crosses the LOW rating's
+    /// jump (required `q ≈ 1.5e-3 > Q_c` at `h_b`), so the LOW solve MUST
+    /// report `Jump` and the chain MUST recover the genuine TURBULENT root
+    /// from the HIGH branch (per the rev-29 monotonicity argument a real
+    /// root always exists on the other branch; a both-jump outcome fails
+    /// closed).
+    #[test]
+    fn low_jump_recovers_high_branch_root_and_never_commits_filippov() {
+        let cell = CellParameters::bare(0.05, 500.0);
+        let dt_over_dx = 450.0_f64;
+        let rhs = 5.49e-3 + dt_over_dx * 1.5e-3;
+        // The LOW branch alone reports the jump.
+        match solve_cell_on_branch(&cell, rhs, dt_over_dx, 0.0, 4.0e-3, RatingBranch::Low)
+            .expect("low-branch solve runs")
+        {
+            CellSolve::Jump(_) => {}
+            CellSolve::Root(h, q, _) => {
+                panic!("expected LOW jump for the constructed line, got root h={h} q={q}")
+            }
+        }
+        // The chain recovers a genuine HIGH-branch (turbulent) root.
+        let (h, q, _) = solve_cell(&cell, rhs, dt_over_dx, 0.0, 4.0e-3).expect("chain resolves");
+        // Mass identity holds exactly.
+        assert!(
+            (h + dt_over_dx * q - rhs).abs() <= 1.0e-10 * rhs,
+            "cell equation must hold: h={h} q={q}"
+        );
+        // The committed q IS the converged HIGH-branch equilibrium at h —
+        // i.e. a real root, not a filled-jump artifact.
+        let q_eq_high = cell
+            .equilibrium_discharge_converged(h, 0.0, CROSSOVER_Q_M2_S * 1.0e3, 1.0e-13, 80)
+            .expect("high equilibrium");
+        assert!(
+            (q - q_eq_high).abs() <= 1.0e-9 * q_eq_high,
+            "committed q {q} must equal the high-branch equilibrium {q_eq_high}"
+        );
+        assert!(
+            q > CROSSOVER_Q_M2_S,
+            "the recovered root must be on the turbulent side: q={q}"
+        );
+    }
+
+    /// T3-L1 (review-required accumulation vector): repeated dust-scale
+    /// implicit steps on a short mesh must not accumulate a material
+    /// ledger leak behind the dust-floor guard — the cumulative absolute
+    /// residual over 10,000 steps stays far below one dry-threshold depth
+    /// over the mesh.
+    #[test]
+    fn dust_scale_steps_do_not_accumulate_a_material_leak() {
+        let mesh = bare_mesh(6.0, 3, 0.05, 500.0);
+        let mut depths = vec![5.0e-10_f64; 3]; // sub-dry dust everywhere
+        let zero = vec![0.0_f64; 3];
+        let mut cumulative_residual = 0.0_f64;
+        for _ in 0..10_000 {
+            let outcome =
+                implicit_step(&mesh, &mut depths, 0.0, &zero, 0.0, 900.0).expect("dust step");
+            cumulative_residual += outcome.residual_m2().abs();
+            assert!(depths.iter().all(|h| *h >= 0.0));
+        }
+        let dust_floor_m2 = 1.0e-9 * 6.0; // DRY_DEPTH_M * mesh length
+        assert!(
+            cumulative_residual < 0.01 * dust_floor_m2,
+            "accumulated dust residual {cumulative_residual} must stay far below the mesh dust floor {dust_floor_m2}"
+        );
     }
 
     #[test]

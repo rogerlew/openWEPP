@@ -1,9 +1,10 @@
 //! HARNESS CONTRACT (CR-M1): the env-mutating tests in this file are
 //! supported ONLY under nextest (process-per-test isolation). The stock
 //! threaded `cargo test` harness races `set_var`/`remove_var` against
-//! concurrent `getenv` (glibc UB). Every run helper neutralizes BOTH Lane D
-//! selector variables at entry so inherited shell state cannot leak in
-//! (CR-M2).
+//! concurrent `getenv` (glibc UB). Every run helper neutralizes ALL Lane D
+//! selector variables at entry (`OPENWEPP_LANED_SHADOW`,
+//! `OPENWEPP_LANED_ACTIVE`, `OPENWEPP_LANED_ACTIVE_IMPLICIT`) so inherited
+//! shell state cannot leak in (CR-M2, T3-QA-M3).
 //!
 //! Lane D activation guard — the REAL-H2637 legacy executed vector
 //! (`SC-OFEROUTE-001#INV-OFEROUTE-012`): the opt-in seam shadow must fail
@@ -43,10 +44,13 @@ fn run_h2637(
     let run_dir = copy_fixture_to_temp(tag);
     let output_dir = run_dir.join("output");
     let manifest_path = run_dir.join("manifest.json");
-    // CR-M2: neutralize BOTH selector variables so inherited shell state
-    // cannot turn a baseline leg into a shadow/active run.
+    // CR-M2/T3-QA-M3: neutralize ALL sibling selector variables so
+    // inherited shell state cannot turn a baseline leg into a
+    // shadow/active/hybrid run.
     // SAFETY: single-threaded test setup before any runner threads.
     unsafe { std::env::remove_var("OPENWEPP_LANED_ACTIVE") };
+    // SAFETY: as above.
+    unsafe { std::env::remove_var("OPENWEPP_LANED_ACTIVE_IMPLICIT") };
     // nextest runs each test in its own process, and both runs execute
     // serially inside this one test — the env mutation cannot leak.
     if shadow {
@@ -112,9 +116,12 @@ fn run_h2637_native_routing(
     enable_native_cropland_routing_coefficients(&run_dir);
     let output_dir = run_dir.join("output");
     let manifest_path = run_dir.join("manifest.json");
-    // CR-M2: neutralize the sibling selector (inherited shell state).
+    // CR-M2/T3-QA-M3: neutralize the sibling selectors (inherited shell
+    // state).
     // SAFETY: single-threaded test setup before any runner threads.
     unsafe { std::env::remove_var("OPENWEPP_LANED_ACTIVE") };
+    // SAFETY: as above.
+    unsafe { std::env::remove_var("OPENWEPP_LANED_ACTIVE_IMPLICIT") };
     if shadow {
         // SAFETY: single-threaded test setup before any runner threads.
         unsafe { std::env::set_var("OPENWEPP_LANED_SHADOW", "1") };
@@ -240,9 +247,13 @@ fn run_h2637_native_active(
     enable_native_cropland_routing_coefficients(&run_dir);
     let output_dir = run_dir.join("output");
     let manifest_path = run_dir.join("manifest.json");
-    // CR-M2: neutralize the sibling selector (inherited shell state).
+    // CR-M2/T3-QA-M3: neutralize the sibling selectors (inherited shell
+    // state) — including the hybrid selector, so the "plain active"
+    // rev-27 evidence leg can never silently run the hybrid path.
     // SAFETY: single-threaded test setup before any runner threads.
     unsafe { std::env::remove_var("OPENWEPP_LANED_SHADOW") };
+    // SAFETY: as above.
+    unsafe { std::env::remove_var("OPENWEPP_LANED_ACTIVE_IMPLICIT") };
     if active {
         // SAFETY: single-threaded test setup before any runner threads.
         unsafe { std::env::set_var("OPENWEPP_LANED_ACTIVE", "1") };

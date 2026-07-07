@@ -1,6 +1,9 @@
 # MOFEFID-D15A - Active Owner and Timing Optimization
 
-Status: **QUEUED** (2026-07-06; scaffolded, not executed). Campaign:
+Status: **EXECUTED-COMPLETE** (2026-07-06; Claude Code end-to-end; final
+call in `artifacts/final-disposition.md`; Codex re-check 2026-07-07
+GO-WITH-AMENDMENTS with this status line as the remaining amendment).
+Originally scaffolded 2026-07-06. Campaign:
 [MOFEFID](../../planning/mofe-fidelity-campaign-strategy.md) Lane D.
 Contract focus: `SC-OFEROUTE-001` opt-in production activation.
 
