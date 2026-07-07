@@ -2341,6 +2341,74 @@ description 3
         );
     }
 
+    #[test]
+    fn disturbed_native_route_coefficients_project_to_ofe_symbols() {
+        let management_text =
+            include_str!("../../../../tests/fixtures/disturbed_native_route_coefficients/p1.man");
+        let management = openwepp_input_contract::parsers::management::parse_management_from_str(
+            management_text,
+            openwepp_input_contract::parsers::management::ParseMode::Strict,
+        )
+        .expect("Disturbed native cropland routing fixture should parse");
+
+        let surfaces = build_hillslope_pl_runtime_surfaces_from_management(&management)
+            .expect("Disturbed native routing coefficients should project");
+
+        assert_scalar_close(
+            scalar_at(
+                &surfaces.pl_schedule_surface,
+                &slope_ofe_symbol("route_skin_friction_coefficient_ko", 1),
+            ),
+            490.0,
+        );
+        assert_scalar_close(
+            scalar_at(
+                &surfaces.pl_schedule_surface,
+                &slope_ofe_symbol("route_form_drag_coefficient", 1),
+            ),
+            0.4,
+        );
+        assert_scalar_close(
+            scalar_at(
+                &surfaces.pl_schedule_surface,
+                &slope_ofe_symbol("route_roughness_element_height_m", 1),
+            ),
+            0.016,
+        );
+        assert_scalar_close(
+            scalar_at(
+                &surfaces.pl_schedule_surface,
+                &slope_ofe_symbol("route_roughness_concentration", 1),
+            ),
+            0.05,
+        );
+        assert_scalar_close(
+            scalar_at(
+                &surfaces.pl_schedule_surface,
+                &slope_ofe_symbol("route_vegetation_drag_coefficient", 1),
+            ),
+            0.2,
+        );
+        assert_scalar_close(
+            scalar_at(
+                &surfaces.pl_schedule_surface,
+                &pl_schedule_slot_crop_symbol(
+                    "route_skin_friction_coefficient_ko",
+                    1,
+                    1,
+                ),
+            ),
+            490.0,
+        );
+        assert_scalar_close(
+            scalar_at(
+                &surfaces.pl_schedule_surface,
+                &pl_schedule_slot_crop_symbol("route_form_drag_coefficient", 1, 1),
+            ),
+            0.4,
+        );
+    }
+
     fn scalar_at(
         surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
         symbol: &BoundarySymbol,

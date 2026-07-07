@@ -85,6 +85,12 @@ the management-file authority for the static Lane D routing coefficients. It is
 not inferred from row width, ridge spacing, random roughness, canopy cover, or
 other legacy cropland fields.
 
+WEPPpy Disturbed is an authorized producer of this native extension when it
+emits explicit route-coefficient columns from its extended lookup table with
+operator-calibration provenance. That producer authority is limited to explicit
+lookup fields and does not authorize any hidden bridge from legacy WEPP
+management operands.
+
 When `OPENWEPP_LANED_SHADOW=1` is enabled, Lane D MUST fail closed unless every
 MOFE lane's scheduled native landuses supply a complete, schedule-consistent
 extension. Legacy compatibility cropland (`landuse=1`) remains parseable under
@@ -140,5 +146,6 @@ skeleton.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-07-07` | `2` | `Codex` | Named WEPPpy Disturbed extended lookup as an authorized explicit producer of native `routing_coefficients` with operator-calibration provenance, while preserving the no-legacy-field-bridge rule. |
 | `2026-07-06` | `1` | `Codex` | Added the native cropland `landuse=4` mode and the `routing_coefficients` plant-record extension for static Lane D routing coefficients; recorded the `OPENWEPP_LANED_SHADOW` fail-closed requirement for every scheduled MOFE landuse. |
 | `2026-07-02` | `0` (skeleton) | `Claude Code` | Initial skeleton under ADR-0034: authority model + `LANUSE-AUTH-1..6` normative rules + operand-surface stub. Concrete `lanuse` operand schema deferred to the disturbed-forest campaign WS-1 foundation work-package. |

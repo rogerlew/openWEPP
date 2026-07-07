@@ -12,6 +12,17 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-07`:
+- `20260707-laned-router-d16-hybrid-disturbed-route-coeff-source-acquisition-001/` -
+  EXECUTED-HOLD-D16-SUITE (2026-07-07): implemented WEPPpy management
+  support for opt-in native `ow-lanuse-1` cropland with
+  `routing_coefficients`, added Disturbed class route-coefficient defaults
+  covering the base and extended lookup classes, wired explicit opt-in
+  Disturbed native output into the WEPP prep management write path, and
+  proved openWEPP parses/projects a Disturbed-generated native fixture plus
+  retains active fail-closed behavior for missing coefficients. Source
+  authority is lifted for explicit Disturbed route-coefficient inputs; the
+  remaining hold is the D16 selected-cohort active plain-vs-hybrid suite and
+  sensitivity/tolerance execution.
 - `20260707-laned-router-d16-hybrid-route-coeff-authoring-bridge-001/` -
   EXECUTED-HOLD-ROUTE-COEFFICIENT-BRIDGE-AUTHORITY (2026-07-07): executed
   the named D16 route-coefficient authoring bridge follow-on. The selected
