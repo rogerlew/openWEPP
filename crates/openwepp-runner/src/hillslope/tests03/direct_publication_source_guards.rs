@@ -464,8 +464,11 @@
                 && builder_source.contains(
                     "day_frame.evapotranspiration_compute_inputs.leaf_area_index",
                 )
-                && builder_source.contains("authority.evapotranspiration.canopy_height_m"),
-            "Lane D shadow operand builder must source I, LAI, and h_c from live frame/typed authority"
+                && builder_source.contains(
+                    "day_frame.evapotranspiration_compute_inputs.canopy_height_m",
+                )
+                && !builder_source.contains("authority.evapotranspiration.canopy_height_m"),
+            "Lane D shadow operand builder must source I, LAI, and h_c from the live post-growth frame"
         );
         assert!(
             builder_source.contains("leaf_area_index > 0.0 && canopy_height_m <= 0.0"),

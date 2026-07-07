@@ -587,6 +587,7 @@ fn r4b_evapotranspiration_compute_inputs() -> DirectEvapotranspirationComputeInp
     DirectEvapotranspirationComputeInputs {
         et_demand_m: 0.0625,
         leaf_area_index: 0.0,
+        canopy_height_m: 0.0,
         canopy_cover_fraction: 0.0,
         residue_interception_m: 0.0625,
         same_pass_infiltration_m: 0.0,

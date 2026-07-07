@@ -12,6 +12,14 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-07`:
+- `20260707-laned-router-d16-rowcrop-canhgt-active-runtime-publication-001/` -
+  EXECUTED-COMPLETE (2026-07-07): closed the selected-cohort `mn_corn_h4`
+  active-run blocker by adding contract-backed daily PL `Hc`/`canhgt`
+  publication from the legacy WEPP growth equation and routing Lane D
+  active/shadow friction operands to the post-growth canopy-height surface.
+  The selected-cohort active plain/hybrid suite completed for all four
+  members; the remaining D16 work is hybrid default-promotion/tolerance
+  adjudication, not this row-crop publication defect.
 - `20260707-laned-router-d16-selected-cohort-active-suite-001/` -
   EXECUTED-HOLD-ACTIVE-RUN (2026-07-07): constructed package-local active
   openWEPP run directories for H2637 plus one representative hillslope from

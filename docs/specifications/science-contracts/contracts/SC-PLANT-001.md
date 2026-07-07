@@ -4,7 +4,7 @@ title: Plant Growth Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 17
+contract_version: 19
 producer_scope:
   - Plant state evolution for cropland and rangeland growth submodels
   - Plant to water-balance coupling surfaces (LAI, root depth, plant biomass/residue descriptors)
@@ -16,7 +16,7 @@ consumer_scope:
   - Residue decomposition and management surfaces consuming plant-to-residue transfers
   - Scheduler and PL kernel boundaries consuming projected management transition controls
 evidence_level: static
-last_reviewed: 2026-06-02
+last_reviewed: 2026-07-07
 supersedes: []
 superseded_by: []
 ---
@@ -115,6 +115,8 @@ Out of scope:
 | `decfct` | `fraction` | Fraction of canopy retained through senescence period. | plant parameterization projection | senescence canopy decline update |
 | `spriod` | `day` | Senescence-period duration. | plant parameterization projection | senescence rate denominator |
 | `bb` | `m^2 kg^-1` | Empirical canopy-cover coefficient. | plant parameterization projection | canopy-cover update |
+| `bbb` | `m^2 kg^-1` | Empirical canopy-height coefficient. | plant parameterization projection | canopy-height update |
+| `hmax` | `m` | Maximum crop/community canopy height. | plant parameterization projection | canopy-height update |
 | `beinp` | `dimensionless` | Biomass energy-ratio parameter. | plant parameterization projection | daily biomass increment |
 | `extnct` | `dimensionless` | Radiation extinction coefficient for PAR calculation. | plant parameterization projection | daily biomass increment |
 | `hi` | `fraction` | Harvest-index cap parameter. | plant parameterization projection | harvest-index update |
@@ -216,23 +218,23 @@ This projection algorithm is pure with respect to plant-process state:
 | Surface | Symbols |
 |---|---|
 | Runtime day/climate forcing | `day`, `tmax`, `tmin`, `rad`, `obmaxt[1..12]`, `obmint[1..12]` |
-| Runtime growth state | `sumgdd`, `vdmt`, `cancov`, `lai`, `rtmass`, `rtd`, `hia` |
+| Runtime growth state | `sumgdd`, `vdmt`, `canhgt`, `cancov`, `lai`, `rtmass`, `rtd`, `hia` |
 | Coupled stress carryover | `Ws` (previous-day water-stress factor) |
 | Active crop transition controls | `imngmt`, `jdplt`, `jdharv`, `jdstop`, `mgtopt` |
-| Projected crop parameters | `btemp`, `otemp`, `gddmax`, `dlai`, `dropfc`, `decfct`, `spriod`, `bb`, `beinp`, `extnct`, `hi`, `xmxlai`, `rsr`, `rtmmax`, `rdmax` |
+| Projected crop parameters | `btemp`, `otemp`, `gddmax`, `dlai`, `dropfc`, `decfct`, `spriod`, `bb`, `bbb`, `hmax`, `beinp`, `extnct`, `hi`, `xmxlai`, `rsr`, `rtmmax`, `rdmax` |
 | Soil-depth envelope | `solthk` |
 
 ### Required Outputs
 
 | Surface | Symbols |
 |---|---|
-| Updated growth state | `sumgdd`, `vdmt`, `cancov`, `lai`, `rtmass`, `rtd`, `hia` |
+| Updated growth state | `sumgdd`, `vdmt`, `canhgt`, `cancov`, `lai`, `rtmass`, `rtd`, `hia` |
 | Transition payload snapshot | `state_before`, `state_after`, active growth control/action |
 
 ### Mutated State Surfaces
 
 PL16 growth kernel mutates only growth-state symbols:
-- `sumgdd`, `vdmt`, `cancov`, `lai`, `rtmass`, `rtd`, `hia`.
+- `sumgdd`, `vdmt`, `canhgt`, `cancov`, `lai`, `rtmass`, `rtd`, `hia`.
 
 No mutation of schedule/control projection symbols is allowed in this update
 algorithm.
@@ -246,7 +248,7 @@ algorithm.
    - perennial: `planting_reset` (`day == jdplt`), `stop_reset`
      (`jdstop > 0 && day == jdstop`).
 3. On explicit reset actions, emit zero-state payload for
-   `sumgdd`, `vdmt`, `cancov`, `lai`, `rtmass`, `rtd`, `hia`.
+   `sumgdd`, `vdmt`, `canhgt`, `cancov`, `lai`, `rtmass`, `rtd`, `hia`.
 4. On non-reset active-growth updates, compute daily heat units:
    `gdd = max(0, ((tmax + tmin) / 2) - btemp)`.
 5. Resolve effective maturity heat-unit requirement (`gddmax_eff`) before
@@ -284,6 +286,10 @@ algorithm.
    `0 <= hia_next <= hi`.
 11. Update canopy and LAI from equation-driven biomass state:
     - canopy: `cancov = 1 - exp(-bb * vdmt_effective)` (bounded to `[0,0.999]`);
+    - canopy height: `canhgt = (1 - exp(-bbb * vdmt)) * hmax` using total
+      above-ground dry biomass, as in legacy WEPP Equation 8.2.6; `canhgt`
+      must be finite and non-negative and is zero only when biomass or
+      maximum-height authority is zero;
     - annual LAI uses vegetative biomass (`vdmt*(1-hia)`) with chapter-form
       denominator constants;
     - perennial LAI uses total biomass formulation.
@@ -342,7 +348,7 @@ algorithm.
 | INV-PLANT-015 | Projection failure posture: invalid transition-control runtime projection domains must hard-fail as typed errors; silent defaults or clamps are prohibited. | hard-fail | REF-PLANT-LEGACY-TILAGE, REF-PLANT-INFILE-CONTRACT | `[INFERENCE][Static]` |
 | INV-PLANT-016 | Decomposition-transition dispatch determinism: scheduler assembly of typed decomposition context consumes projected annual/perennial control families and produces deterministic per-day transition selector semantics; invalid payload/index/window states are hard-fail typed errors. | hard-fail | REF-PLANT-LEGACY-DECOMP, REF-PLANT-LEGACY-TILAGE, REF-PLANT-INFILE-CONTRACT | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PLANT-017 | INT10 coupled lane-ordering invariant: daily coupled execution must preserve `decomp -> growth -> watbal` ordering through explicit ordering flags (`pl_order_decomp_before_soil`, `pl_order_growth_after_decomp`, `pl_order_watbal_after_growth`) and typed transition-context carriage. Missing/non-finite/out-of-domain ordering symbols are hard-fail and must block hydrology lane entry. | hard-fail | REF-PLANT-CH8-INTRO, REF-PLANT-CH5-COUPLING, REF-PLANT-LEGACY-DECOMP | `[DIRECT][Static] + [INFERENCE][Static]` |
-| INV-PLANT-018 | PL16 active-growth update invariant: on active non-reset growth days, `sumgdd`, `vdmt`, `cancov`, `lai`, `rtmass`, `rtd`, and `hia` are updated by equations (GDD, stress regulation, biomass, canopy/LAI, root growth) rather than pass-through/no-op or unconditional zero-reset behavior. | hard-fail | REF-PLANT-CH8-PHENO, REF-PLANT-CH8-GROWTH, REF-PLANT-LEGACY-GROW | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-PLANT-018 | PL16 active-growth update invariant: on active non-reset growth days, `sumgdd`, `vdmt`, `canhgt`, `cancov`, `lai`, `rtmass`, `rtd`, and `hia` are updated by equations (GDD, stress regulation, biomass, canopy height/cover/LAI, root growth) rather than pass-through/no-op or unconditional zero-reset behavior. | hard-fail | REF-PLANT-CH8-PHENO, REF-PLANT-CH8-GROWTH, REF-PLANT-LEGACY-GROW | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PLANT-019 | GDD and phenology boundedness: `gdd = max(0, ((tmax+tmin)/2)-btemp)`, cumulative `sumgdd` is monotone non-decreasing between explicit reset events, and `fphu=sumgdd/gddmax` is bounded to `[0,1]`. | hard-fail | REF-PLANT-CH8-PHENO, REF-PLANT-LEGACY-GROW | `[DIRECT][Static]` |
 | INV-PLANT-020 | Senescence/harvest dynamics: post-threshold senescence uses explicit decline equations/parameters (`dropfc`, `decfct`, `spriod`) and preserves non-negative biomass/canopy state while enforcing explicit reset only for canonical reset-class actions (`planting`, `harvest`, `stop`). | hard-fail | REF-PLANT-CH8-SENESCENCE, REF-PLANT-LEGACY-GROW, REF-PLANT-LEGACY-PTGRA | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PLANT-021 | Growth-physics required-symbol guard: climate/stress/parameter inputs required by PL16 equations (`tmax`, `tmin`, `rad`, `Ws`, `btemp`, `otemp`, `gddmax`, `bb`, `beinp`, `extnct`, `rdmax`, `rsr`, `xmxlai`, etc.) must be present, finite, and domain-valid or runtime must hard-fail as typed boundary error. | hard-fail | REF-PLANT-CH8-GROWTH, REF-PLANT-CH8-STRESS, REF-PLANT-LEGACY-GROW | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -377,7 +383,7 @@ algorithm.
 - Transition-control projection domain violations handled through silent default or clamp. `[INFERENCE][Static]`
 - `gddmax<=0` branch without valid monthly climate vectors (`obmaxt`, `obmint`) or with non-positive resolved `gddmax_eff`. `[DIRECT][Static] + [INFERENCE][Static]`
 - Negative decomposition-rate constants (`oratea`, `orater`) in projected transition payloads. `[DIRECT][Static] + [INFERENCE][Static]`
-- Established perennial initial condition (`imngmt=2`, `jdplt=0`) with positive `cancov` but zero/absent initialized `vdmt`, `lai`, `rtmass`, or `rtd`. `[DIRECT][Static] + [INFERENCE][Static]`
+- Established perennial initial condition (`imngmt=2`, `jdplt=0`) with positive `cancov` but zero/absent initialized `vdmt`, `canhgt`, `lai`, `rtmass`, or `rtd`. `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Producer Obligations
 
@@ -440,11 +446,11 @@ algorithm.
 | `INV-PLANT-018` | runtime | Growth transition payload assembler (`state_after`) on active non-reset days | Typed hard error when active branch returns pass-through/no-op or unconditional zero-reset in place of equation update | Tier-A gate for PL16 growth physics closure | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-PLANT-019` | runtime | Daily GDD / phenology update path | Typed hard error on out-of-domain GDD/fphu or non-monotone cumulative heat units outside reset actions | Tier-A gate | `[DIRECT][Static]` |
 | `INV-PLANT-020` | runtime | Senescence/harvest branch update path | Typed hard error on invalid senescence-rate parameters, negative post-update state, or unauthorized implicit reset | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `INV-PLANT-021` | runtime | Growth input symbol validator before equation execution | Typed hard error on missing/non-finite/out-of-domain required growth-physics symbols | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-PLANT-021` | runtime | Growth input symbol validator before equation execution | Typed hard error on missing/non-finite/out-of-domain required growth-physics symbols, including `bbb`/`hmax` when active daily canopy height must be published | Tier-A gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-PLANT-022` | runtime | Decomposition-kinetics parameter projection validator (`oratea`, `orater`) | Typed hard error on missing/non-finite/negative decomposition-rate projection symbols; zero is accepted as no-decay | Tier-A gate for PL17 decomposition transition execution | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-PLANT-023` | runtime + governance | ET stress/root-uptake lineage validator for coupled growth regulation | Typed hard error / explicit `HOLD` when `Ws` and root-uptake lineage are not traceable to WB11 `swu` semantics | SIMIMPL plant-hydrology coupling gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-PLANT-024` | runtime | Legacy `gddmax` sentinel resolver (`yldopt/gdmax` branch) | Typed hard error on missing/non-finite monthly climate vectors or non-positive resolved `gddmax_eff` | Tier-A gate for PL16 growth physics closure | `[DIRECT][Static] + [INFERENCE][Static]` |
-| `INV-PLANT-025` | runtime | Initial-condition projection for primary live plant state (`cancov`, `vdmt`, `lai`, `sumgdd`, `rtmass`, `rtd`) | Typed hard error on missing/non-finite/out-of-domain assimilation inputs; zero live-state publication is invalid when established perennial initial cover is present | Tier-A gate for WB17 Ep lineage closure | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-PLANT-025` | runtime | Initial-condition projection for primary live plant state (`cancov`, `vdmt`, `canhgt`, `lai`, `sumgdd`, `rtmass`, `rtd`) | Typed hard error on missing/non-finite/out-of-domain assimilation inputs; zero live-state publication is invalid when established perennial initial cover is present | Tier-A gate for WB17 Ep lineage closure | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-PLANT-026` | runtime | Runner PL activation lifecycle across inactive-to-active annual windows | Preserve schedule/runtime sentinel surfaces across day boundaries while allowing day-local PL phase skip before `jdplt`; hard error or explicit defect hold when a valid annual crop cannot re-activate after planting | FQ3-DC Corn ET engagement closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
@@ -462,7 +468,7 @@ states required deterministic alias mapping for transition-control projections.
 | `Rd` | `Rd` (canonical) / `rtd` (runtime growth-state alias) | plant->ET root-depth coupling surface | `m` -> `m` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `LAI` | `LAI` (identity) | plant->ET/erosion coupling surface | `m^2 m^-2` -> `m^2 m^-2` | `[DIRECT][Static]` |
 | `Cc` | `Cc` (identity) | plant->erosion coupling surface | `fraction` -> `fraction` | `[DIRECT][Static]` |
-| `Hc` | `Hc` (identity) | plant->erosion coupling surface | `m` -> `m` | `[DIRECT][Static]` |
+| `Hc` | `Hc` (canonical) / `canhgt` (runtime growth-state alias) | plant->erosion/interception/routing coupling surface | `m` -> `m` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `YLD` | `YLD` (identity) | output/reporting surface | `kg m^-2` -> `kg m^-2` | `[DIRECT][Static]` |
 | `Mf` | `Mf` (identity) | plant->residue coupling surface | `kg m^-2` -> `kg m^-2` | `[DIRECT][Static]` |
 | `Ms` | `Ms` (identity) | plant->residue coupling surface | `kg m^-2` -> `kg m^-2` | `[DIRECT][Static]` |
@@ -713,3 +719,4 @@ Minimum required scenario families for contract conformance:
 | `2026-06-02` | `16` | `Codex` | HPHYS0250 amendment: added initial live-canopy assimilation authority from baseline `init1/initgr`, introduced `INV-PLANT-025`, and tied established-perennial initial state to WB17 Ep lineage closure. |
 | `2026-06-02` | `17` | `Codex` | HPHYS0250 review disposition: disclosed `CANCOV_MAX=0.999` as an openWEPP finite-domain guard for initial live-canopy assimilation and named the corresponding production constants at the code site. |
 | `2026-06-07` | `18` | `Codex` | FQ3-DC Corn ET amendment: added `INV-PLANT-026` requiring day-local annual PL activation skips to preserve carried schedule sentinels so pre-plant annual days do not suppress post-plant growth and ET engagement. |
+| `2026-07-07` | `19` | `Codex` | D16 row-crop canopy-height runtime-publication amendment: made `canhgt`/`Hc` an explicit PL16 daily growth state surface and required output, added projected `bbb`/`hmax` to active growth inputs, bound the baseline `grow.for` daily canopy-height equation `canhgt=(1-exp(-bbb*vdmt))*hmax`, and clarified alias/guard rows so downstream Lane D routing consumers receive daily post-growth canopy height rather than a stale static seed. |

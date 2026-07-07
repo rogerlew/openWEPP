@@ -122,6 +122,8 @@ impl DirectDayFrame {
             self.evapotranspiration_compute_inputs.et_demand_m = operands.et_demand_m;
             self.evapotranspiration_compute_inputs.leaf_area_index =
                 operands.state_after.leaf_area_index;
+            self.evapotranspiration_compute_inputs.canopy_height_m =
+                operands.state_after.canopy_height_m;
             self.evapotranspiration_compute_inputs.canopy_cover_fraction =
                 operands.state_after.canopy_cover_fraction;
             self.evapotranspiration_compute_inputs.root_depth_m = operands.state_after.root_depth_m;
@@ -224,6 +226,7 @@ pub struct DirectGrowthStateSurface {
     pub sumgdd: f64,
     pub live_biomass_kg_m2: f64,
     pub interception_live_biomass_kg_m2: f64,
+    pub canopy_height_m: f64,
     pub canopy_cover_fraction: f64,
     pub leaf_area_index: f64,
     pub root_mass_kg_m2: f64,
@@ -238,6 +241,7 @@ impl DirectGrowthStateSurface {
             sumgdd: 0.0,
             live_biomass_kg_m2: 0.0,
             interception_live_biomass_kg_m2: 0.0,
+            canopy_height_m: 0.0,
             canopy_cover_fraction: 0.0,
             leaf_area_index: 0.0,
             root_mass_kg_m2: 0.0,
@@ -250,6 +254,7 @@ impl DirectGrowthStateSurface {
         validate_nonnegative_direct_m(field_root, self.sumgdd)?;
         validate_nonnegative_direct_m(field_root, self.live_biomass_kg_m2)?;
         validate_nonnegative_direct_m(field_root, self.interception_live_biomass_kg_m2)?;
+        validate_nonnegative_direct_m("growth.canopy_height_m", self.canopy_height_m)?;
         validate_between(
             "growth.canopy_cover_fraction",
             self.canopy_cover_fraction,
@@ -286,6 +291,8 @@ pub struct DirectGrowthInputs {
     pub decfct: f64,
     pub spriod: f64,
     pub bb: f64,
+    pub bbb: f64,
+    pub hmax: f64,
     pub beinp: f64,
     pub extnct: f64,
     pub hi: f64,
@@ -323,6 +330,8 @@ impl DirectGrowthInputs {
             decfct: 0.0,
             spriod: 0.0,
             bb: 0.0,
+            bbb: 0.0,
+            hmax: 0.0,
             beinp: 0.0,
             extnct: 0.0,
             hi: 0.0,
@@ -555,6 +564,8 @@ impl DirectGrowthInputs {
         validate_between("growth.decfct", self.decfct, 0.0, 1.0)?;
         validate_nonnegative_direct_m("growth.spriod", self.spriod)?;
         validate_nonnegative_direct_m("growth.bb", self.bb)?;
+        validate_nonnegative_direct_m("growth.bbb", self.bbb)?;
+        validate_nonnegative_direct_m("growth.hmax", self.hmax)?;
         validate_nonnegative_direct_m("growth.beinp", self.beinp)?;
         validate_nonnegative_direct_m("growth.extnct", self.extnct)?;
         validate_between("growth.hi", self.hi, 0.0, 1.0)?;
@@ -732,6 +743,12 @@ impl DirectGrowthInputs {
             )?;
             cancov_next = (cancov_next * (1.0 - canopy_decline)).clamp(0.0, PL_GROWTH_CANCOV_MAX);
         }
+        let canopy_height_m = if vdmt_next > 0.0 && self.hmax > 0.0 {
+            (1.0 - (-self.bbb * vdmt_next).exp()) * self.hmax
+        } else {
+            0.0
+        };
+        validate_nonnegative_direct_m("growth.canopy_height_m", canopy_height_m)?;
 
         let lai_next = if management_class == DirectGrowthManagementClass::Perennial {
             let denom = vdmt_next
@@ -776,6 +793,7 @@ impl DirectGrowthInputs {
             sumgdd: sumgdd_next,
             live_biomass_kg_m2: vdmt_next,
             interception_live_biomass_kg_m2: interception_live_biomass_next,
+            canopy_height_m,
             canopy_cover_fraction: cancov_next,
             leaf_area_index: lai_next,
             root_mass_kg_m2: rtmass_next,
@@ -1172,6 +1190,7 @@ mod cqr_row6_growth_tests {
                 sumgdd: 100.0,
                 live_biomass_kg_m2: 0.30,
                 interception_live_biomass_kg_m2: 0.28,
+                canopy_height_m: 0.10,
                 canopy_cover_fraction: 0.20,
                 leaf_area_index: 0.80,
                 root_mass_kg_m2: 0.05,
@@ -1196,6 +1215,8 @@ mod cqr_row6_growth_tests {
             decfct: 0.60,
             spriod: 20.0,
             bb: 1.80,
+            bbb: 1.20,
+            hmax: 1.10,
             beinp: 30.0,
             extnct: 0.65,
             hi: 0.50,
@@ -1217,6 +1238,7 @@ mod cqr_row6_growth_tests {
                 sumgdd: 220.0,
                 live_biomass_kg_m2: 0.42,
                 interception_live_biomass_kg_m2: 0.42,
+                canopy_height_m: 0.16,
                 canopy_cover_fraction: 0.30,
                 leaf_area_index: 1.20,
                 root_mass_kg_m2: 0.35,
@@ -1241,6 +1263,8 @@ mod cqr_row6_growth_tests {
             decfct: 0.65,
             spriod: 25.0,
             bb: 1.60,
+            bbb: 1.10,
+            hmax: 1.20,
             beinp: 28.0,
             extnct: 0.70,
             hi: 0.40,
@@ -1537,6 +1561,22 @@ mod cqr_row6_growth_tests {
             DirectGrowthInputs { hi: 1.1, ..annual }
                 .validate_equation_inputs(DirectGrowthManagementClass::AnnualOrFallow),
             "growth.hi",
+        );
+        assert_negative(
+            DirectGrowthInputs {
+                bbb: -1.0e-6,
+                ..annual
+            }
+            .validate_equation_inputs(DirectGrowthManagementClass::AnnualOrFallow),
+            "growth.bbb",
+        );
+        assert_negative(
+            DirectGrowthInputs {
+                hmax: -1.0e-6,
+                ..annual
+            }
+            .validate_equation_inputs(DirectGrowthManagementClass::AnnualOrFallow),
+            "growth.hmax",
         );
         assert_negative(
             DirectGrowthInputs {

@@ -1,0 +1,14 @@
+{
+  "climate_day_count": 1461,
+  "executed_day_count": 1461,
+  "first_day_julian": 1,
+  "first_day_year": 2013,
+  "frost_wint_red": 1,
+  "last_day_julian": 366,
+  "last_day_year": 2016,
+  "ofe_count": 1,
+  "precipitation_mm": 0.0,
+  "run_name": "n_idaho_forest_h1",
+  "schema": "openwepp-hillslope-loss-v1",
+  "snow_override_applied": true
+}

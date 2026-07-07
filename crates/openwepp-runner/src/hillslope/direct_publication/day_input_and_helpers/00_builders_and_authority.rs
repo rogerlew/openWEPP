@@ -28,9 +28,9 @@ impl DirectProductionDayInputBuilder<'_> {
     }
 
     /// D15A (rev 27): the ACTIVE owner's per-lane configuration — the SAME
-    /// rev-20/21 authority extraction as the shadow (fail-closed on missing
-    /// native `routing_coefficients`), plus the typed-management `canhgt`
-    /// canopy height from the lane authority.
+    /// rev-20/21/36 authority extraction as the shadow (fail-closed on
+    /// missing native `routing_coefficients`). Dynamic `LAI`/`canhgt` comes
+    /// from the live post-growth day frame at consumption time.
     pub(crate) fn laned_active_config(
         &self,
     ) -> Result<openwepp_hillslope_orchestrator::DirectLanedActiveConfig, HillslopeCliError> {
@@ -240,6 +240,8 @@ struct DirectProductionGrowthCropAuthority {
     decfct: f64,
     spriod: f64,
     bb: f64,
+    bbb: f64,
+    hmax: f64,
     beinp: f64,
     extnct: f64,
     hi: f64,
@@ -1898,6 +1900,14 @@ fn direct_production_typed_growth_crop_authority(
             management_projection,
             &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "bb"),
         )?,
+        bbb: direct_growth_projection_required_scalar(
+            management_projection,
+            &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "bbb"),
+        )?,
+        hmax: direct_growth_projection_required_scalar(
+            management_projection,
+            &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "hmax"),
+        )?,
         beinp: direct_growth_projection_required_scalar(
             management_projection,
             &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "beinp"),
@@ -2534,6 +2544,7 @@ fn direct_growth_state_surface_from_pl_projection(
         } else {
             vdmt
         },
+        canopy_height_m: value("canhgt")?,
         canopy_cover_fraction: value("cancov")?,
         leaf_area_index: value("lai")?,
         root_mass_kg_m2: value("rtmass")?,

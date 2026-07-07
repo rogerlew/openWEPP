@@ -425,6 +425,7 @@ mod cqr_row9_direct_runtime_tests {
         DirectEvapotranspirationComputeInputs {
             et_demand_m: 0.006,
             leaf_area_index: 2.5,
+            canopy_height_m: 0.30,
             canopy_cover_fraction: 0.45,
             residue_interception_m: 0.0002,
             same_pass_infiltration_m: 0.0,

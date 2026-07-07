@@ -41,7 +41,7 @@ fn r5d_annual_growth_phase_computes_mutates_downstream_shadow_and_r4n_context() 
     let expected_shadow = DirectGrowthShadowProjection::from_operands(0, 0, expected_operands);
 
     assert_eq!(day.annual_growth_inputs, inputs);
-    assert_growth_state_close(day.annual_growth, expected_state);
+    assert_growth_state_close(&day.annual_growth, &expected_state);
     assert_growth_operands_close(day.annual_growth_downstream_operands, expected_operands);
     assert_growth_shadow_close(day.annual_growth_shadow_projection, expected_shadow);
     assert_eq!(
@@ -72,7 +72,7 @@ fn r5d_annual_growth_phase_computes_mutates_downstream_shadow_and_r4n_context() 
         day.evapotranspiration_compute_inputs
             .growth_context_required
     );
-    assert_r5d_growth_anti_aliases(expected_state, &day);
+    assert_r5d_growth_anti_aliases(&expected_state, &day);
 
     let audit = crate::direct_runtime_audit_snapshot();
     assert_eq!(audit.phase_span_runs, 5);
@@ -108,7 +108,7 @@ fn r5d_perennial_growth_phase_supports_grazing_after_annual_phase_identity() {
         DIRECT_R5D_PERENNIAL_GROWTH_PHASE_SPAN_COUNT
     );
     assert_eq!(report.compatibility_edge_invocation_count, 0);
-    assert_growth_state_close(day.perennial_growth, expected_state);
+    assert_growth_state_close(&day.perennial_growth, &expected_state);
     assert_eq!(
         day.perennial_growth.active_action,
         DirectGrowthAction::Grazing
@@ -320,6 +320,7 @@ fn annual_active_inputs() -> DirectGrowthInputs {
             sumgdd: 100.0,
             live_biomass_kg_m2: 0.30,
             interception_live_biomass_kg_m2: 0.294,
+            canopy_height_m: 0.10,
             canopy_cover_fraction: 0.20,
             leaf_area_index: 0.80,
             root_mass_kg_m2: 0.05,
@@ -344,6 +345,8 @@ fn annual_active_inputs() -> DirectGrowthInputs {
         decfct: 0.60,
         spriod: 20.0,
         bb: 1.80,
+        bbb: 1.20,
+        hmax: 1.10,
         beinp: 30.0,
         extnct: 0.65,
         hi: 0.50,
@@ -369,6 +372,7 @@ fn perennial_grazing_inputs() -> DirectGrowthInputs {
             sumgdd: 220.0,
             live_biomass_kg_m2: 0.42,
             interception_live_biomass_kg_m2: 0.42,
+            canopy_height_m: 0.16,
             canopy_cover_fraction: 0.30,
             leaf_area_index: 1.20,
             root_mass_kg_m2: 0.35,
@@ -393,6 +397,8 @@ fn perennial_grazing_inputs() -> DirectGrowthInputs {
         decfct: 0.65,
         spriod: 25.0,
         bb: 1.60,
+        bbb: 1.10,
+        hmax: 1.20,
         beinp: 28.0,
         extnct: 0.70,
         hi: 0.40,
@@ -493,6 +499,11 @@ fn expected_growth_surface(
         vdmt_next * (1.0 - hia_next)
     };
     let cancov_next = (1.0 - (-inputs.bb * canopy_biomass).exp()).clamp(0.0, 0.999);
+    let canopy_height_m = if vdmt_next > 0.0 && inputs.hmax > 0.0 {
+        (1.0 - (-inputs.bbb * vdmt_next).exp()) * inputs.hmax
+    } else {
+        0.0
+    };
     let lai_next = if perennial {
         let denom = vdmt_next + 0.2756 * (-13.6 * vdmt_next).exp();
         inputs.xmxlai * vdmt_next / denom
@@ -523,6 +534,7 @@ fn expected_growth_surface(
         live_biomass_kg_m2: vdmt_next,
         interception_live_biomass_kg_m2: inputs.state_before.interception_live_biomass_kg_m2
             + 0.0001 * inputs.beinp * par * reg,
+        canopy_height_m,
         canopy_cover_fraction: cancov_next,
         leaf_area_index: lai_next,
         root_mass_kg_m2: rtmass_next,
@@ -573,7 +585,7 @@ fn day_count_to_f64(day_count: usize) -> f64 {
     f64::from(u16::try_from(day_count).expect("fixture day count fits u16"))
 }
 
-fn assert_r5d_growth_anti_aliases(expected_state: DirectGrowthState, day: &DirectDayFrame) {
+fn assert_r5d_growth_anti_aliases(expected_state: &DirectGrowthState, day: &DirectDayFrame) {
     assert_ne!(
         expected_state.state_after.leaf_area_index.to_bits(),
         expected_state.state_before.leaf_area_index.to_bits()
@@ -592,7 +604,7 @@ fn assert_r5d_growth_anti_aliases(expected_state: DirectGrowthState, day: &Direc
     );
 }
 
-fn assert_growth_state_close(observed: DirectGrowthState, expected: DirectGrowthState) {
+fn assert_growth_state_close(observed: &DirectGrowthState, expected: &DirectGrowthState) {
     assert_eq!(observed.active_context, expected.active_context);
     assert_eq!(observed.active_action, expected.active_action);
     assert_growth_surface_close(observed.state_before, expected.state_before);
@@ -616,6 +628,7 @@ fn assert_growth_surface_close(
 ) {
     assert_close(observed.sumgdd, expected.sumgdd);
     assert_close(observed.live_biomass_kg_m2, expected.live_biomass_kg_m2);
+    assert_close(observed.canopy_height_m, expected.canopy_height_m);
     assert_close(
         observed.canopy_cover_fraction,
         expected.canopy_cover_fraction,

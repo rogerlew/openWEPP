@@ -436,6 +436,7 @@ impl DirectProductionEvapotranspirationAuthority {
         Ok(DirectEvapotranspirationComputeInputs {
             et_demand_m,
             leaf_area_index: self.leaf_area_index,
+            canopy_height_m: self.canopy_height_m.unwrap_or(0.0),
             canopy_cover_fraction: self.canopy_cover_fraction,
             residue_interception_m: self.residue_interception_m,
             same_pass_infiltration_m: 0.0,
@@ -465,6 +466,7 @@ impl DirectProductionEvapotranspirationAuthority {
 
     fn apply_growth_surface(&mut self, growth_surface: DirectGrowthStateSurface) {
         self.leaf_area_index = growth_surface.leaf_area_index;
+        self.canopy_height_m = Some(growth_surface.canopy_height_m);
         self.canopy_cover_fraction = growth_surface.canopy_cover_fraction;
         self.root_depth_m = growth_surface.root_depth_m;
     }
@@ -980,6 +982,8 @@ impl DirectProductionGrowthAuthority {
             decfct: crop.decfct,
             spriod: crop.spriod,
             bb: crop.bb,
+            bbb: crop.bbb,
+            hmax: crop.hmax,
             beinp: crop.beinp,
             extnct: crop.extnct,
             hi: crop.hi,

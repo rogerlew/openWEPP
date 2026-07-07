@@ -630,6 +630,7 @@ pub struct DirectEvapotranspirationPmetComputeInputs {
 pub struct DirectEvapotranspirationComputeInputs {
     pub et_demand_m: f64,
     pub leaf_area_index: f64,
+    pub canopy_height_m: f64,
     pub canopy_cover_fraction: f64,
     pub residue_interception_m: f64,
     pub same_pass_infiltration_m: f64,
@@ -648,6 +649,7 @@ impl DirectEvapotranspirationComputeInputs {
         Self {
             et_demand_m: 0.0,
             leaf_area_index: 0.0,
+            canopy_height_m: 0.0,
             canopy_cover_fraction: 0.0,
             residue_interception_m: 0.0,
             same_pass_infiltration_m: 0.0,

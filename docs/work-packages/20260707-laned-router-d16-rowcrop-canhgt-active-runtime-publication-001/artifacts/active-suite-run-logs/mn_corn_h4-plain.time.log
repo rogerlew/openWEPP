@@ -1,0 +1,24 @@
+laned_active_profile {"solver_runs":209,"solver_steps":43819,"solver_steps_homogeneous":21965,"solver_steps_source_free":21965,"solver_steps_implicit":0,"implicit_equilibrium_map_evaluations":0,"implicit_branch_evaluations":0,"alpha_evaluations":611120,"solver_cfl_ns":79781881,"solver_step_ns":48171652,"solver_sample_ns":2708609}
+	Command being timed: "target/release/openwepp-cli-hill --run-dir /home/workdir/openWEPP/docs/work-packages/20260707-laned-router-d16-rowcrop-canhgt-active-runtime-publication-001/artifacts/selected-cohort-runs/mn_corn_h4 --run-file p4.plain.run.toml --output-dir /home/workdir/openWEPP/docs/work-packages/20260707-laned-router-d16-rowcrop-canhgt-active-runtime-publication-001/artifacts/selected-cohort-runs/mn_corn_h4/output-plain"
+	User time (seconds): 0.56
+	System time (seconds): 0.01
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.58
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 23452
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 4905
+	Voluntary context switches: 4
+	Involuntary context switches: 1
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 512
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

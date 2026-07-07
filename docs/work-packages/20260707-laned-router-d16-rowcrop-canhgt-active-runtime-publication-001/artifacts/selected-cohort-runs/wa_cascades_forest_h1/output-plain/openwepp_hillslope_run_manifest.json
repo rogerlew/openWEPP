@@ -1,0 +1,225 @@
+{
+  "schema": "openwepp-hillslope-run-manifest-v1",
+  "engine": "openwepp",
+  "binary_path": "/home/workdir/openWEPP/target/release/openwepp-cli-hill",
+  "binary_sha256": "c815c9b6446a9247e307b34d0d691ad2103191727d8629819c84fdf528c69827",
+  "binary_sidecar_path": "/home/workdir/openWEPP/target/release/openwepp-cli-hill.json",
+  "binary_sidecar_sha256": "4227f4b10b784b0d19237dfeaa5b09a23d89e51ecf63be1fc1b2de86faae0b6b",
+  "source_commit": "a47c403608eebc2e6303ad78b5ac7713c63dcb0f",
+  "invoked_utc": "2026-07-07T18:19:18.935979335Z",
+  "argv": [
+    "target/release/openwepp-cli-hill",
+    "--run-dir",
+    "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-d16-rowcrop-canhgt-active-runtime-publication-001/artifacts/selected-cohort-runs/wa_cascades_forest_h1",
+    "--run-file",
+    "p1.plain.run.toml",
+    "--output-dir",
+    "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-d16-rowcrop-canhgt-active-runtime-publication-001/artifacts/selected-cohort-runs/wa_cascades_forest_h1/output-plain"
+  ],
+  "run_dir": "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-d16-rowcrop-canhgt-active-runtime-publication-001/artifacts/selected-cohort-runs/wa_cascades_forest_h1",
+  "run_file": "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-d16-rowcrop-canhgt-active-runtime-publication-001/artifacts/selected-cohort-runs/wa_cascades_forest_h1/p1.plain.run.toml",
+  "sidecar_policy": "compat",
+  "sidecar_discovery_mode": "runfile-sidecar-overrides",
+  "resolved_sidecars": {
+    "pmetpara": "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-d16-rowcrop-canhgt-active-runtime-publication-001/artifacts/selected-cohort-runs/wa_cascades_forest_h1/pmetpara.txt",
+    "snow": "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-d16-rowcrop-canhgt-active-runtime-publication-001/artifacts/selected-cohort-runs/wa_cascades_forest_h1/snow.txt",
+    "wepp_ui": "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-d16-rowcrop-canhgt-active-runtime-publication-001/artifacts/selected-cohort-runs/wa_cascades_forest_h1/wepp_ui.txt"
+  },
+  "input_checksums": {
+    "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-d16-rowcrop-canhgt-active-runtime-publication-001/artifacts/selected-cohort-runs/wa_cascades_forest_h1/p1.cli": "c86fd687c32357545c58f75f0fb241b1b27e393e0cb4bb8390b72fb0ea1eb05b",
+    "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-d16-rowcrop-canhgt-active-runtime-publication-001/artifacts/selected-cohort-runs/wa_cascades_forest_h1/p1.man": "f8827c00e97e0016b56455ad65f583e9e8828f5f5e4702bd0ab93b4895a072bd",
+    "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-d16-rowcrop-canhgt-active-runtime-publication-001/artifacts/selected-cohort-runs/wa_cascades_forest_h1/p1.plain.run.toml": "53c32ed75aca89c0a346f05e4fd0b79e2a4b73c76cc23a31aab0160e534172ea",
+    "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-d16-rowcrop-canhgt-active-runtime-publication-001/artifacts/selected-cohort-runs/wa_cascades_forest_h1/p1.slp": "d35964d27a1f8180851dce9c3ee780e27a9b0ef5ddd3b2043879f472c1637009",
+    "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-d16-rowcrop-canhgt-active-runtime-publication-001/artifacts/selected-cohort-runs/wa_cascades_forest_h1/p1.sol": "b098f9999ffe41f73f30a654e552ee4fcc069146567261ec6e0a913134f8423e",
+    "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-d16-rowcrop-canhgt-active-runtime-publication-001/artifacts/selected-cohort-runs/wa_cascades_forest_h1/pmetpara.txt": "06af3bcab0c583bd917d641e72292877a3708df1a8359afc9e5b1f029ac9ba60",
+    "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-d16-rowcrop-canhgt-active-runtime-publication-001/artifacts/selected-cohort-runs/wa_cascades_forest_h1/snow.txt": "85216000b7c03edad6ab27b02bde39ca8c6c4f7736450e3974d74fd5aa6904ba",
+    "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-d16-rowcrop-canhgt-active-runtime-publication-001/artifacts/selected-cohort-runs/wa_cascades_forest_h1/wepp_ui.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "output_checksums": {
+    "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-d16-rowcrop-canhgt-active-runtime-publication-001/artifacts/selected-cohort-runs/wa_cascades_forest_h1/output-plain/H1.hbp": "3640fdf3b3c1d3bf61189a9430fe268143ce9db0e1996cb89e614cfd4d5c4f23",
+    "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-d16-rowcrop-canhgt-active-runtime-publication-001/artifacts/selected-cohort-runs/wa_cascades_forest_h1/output-plain/H1.loss.json": "b40d44abb91777df1d08a9cbd34dc7405a6ff177d1179437a27ca78a6d5b72da",
+    "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-d16-rowcrop-canhgt-active-runtime-publication-001/artifacts/selected-cohort-runs/wa_cascades_forest_h1/output-plain/H1.pass.parquet": "bb3b2e03f3fbd5834eb65a06c59476aba8a383bb021e9f669be7825a342f9e63",
+    "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-d16-rowcrop-canhgt-active-runtime-publication-001/artifacts/selected-cohort-runs/wa_cascades_forest_h1/output-plain/H1.wat.parquet": "e43000276a84ad709b9889d493b4657d332a014499a68bc5bfe879212d776c52"
+  },
+  "runtime_selection": {
+    "requested": "default-candidate",
+    "selected": "direct-production-executor",
+    "selection_reason": "default-candidate-direct-production-single-authority",
+    "default_activation_gate": "direct-production-candidate",
+    "fallback_reason": null,
+    "output_policy": "direct-production-executor/direct-publication-frame",
+    "rollback_runtime": "none",
+    "compatibility_rollback_available": false
+  },
+  "mode_selection": {
+    "wepp_ui": {
+      "requested": 1,
+      "effective": 1,
+      "selected_lane": "hourly",
+      "mode_divergence": false,
+      "guard_id": "WUI-E-005"
+    }
+  },
+  "timestep_policy": {
+    "scheduler_mode": "hourly",
+    "requested_mode": "hourly",
+    "effective_mode": "hourly",
+    "selected_lane": "hourly",
+    "policy": "hourly",
+    "timestep_seconds": 3600,
+    "physics_enabled": true,
+    "subhourly_scaffold_available": true,
+    "guard_id": "HS-SIMMODE-E-001"
+  },
+  "adapter_boundary": {
+    "selected_lane": "hourly",
+    "scheduler_mode": "hourly",
+    "requested_mode": "hourly",
+    "effective_mode": "hourly",
+    "adopt_profile": "SIMIMPL08-adopt-only",
+    "reject_surfaces_excluded": true,
+    "defer_surfaces_excluded": true,
+    "guard_id": "HS-SIMCONS-E-001"
+  },
+  "execution_provenance": {
+    "scheduler_kernel_executed": false,
+    "publication_source": "direct-publication-frame",
+    "simpipe_guard_id": "HS-SIMPIPE-E-001",
+    "selected_lane": "hourly",
+    "scheduler_outcome_class": "completed",
+    "scheduler_status_message_id": "R7C-DIRECT-PRODUCTION-EXECUTOR",
+    "climate_day_count": 2192,
+    "executed_day_count": 2192,
+    "kernel_phase_message_ids": [],
+    "erod14_wave2_enabled": false,
+    "multi_ofe_wave1_chained": true,
+    "erod14_qin_source_policy": "wave1-hourly-sediment-coupled-handoff",
+    "erod14_qin_sediment_coupled": true,
+    "wb16_ealpha_compatibility_seed_used": false,
+    "wb16_ealpha_seed_policy": "runtime_provided",
+    "laned_active": {
+      "days_seen": 2192,
+      "days_routed": 1381,
+      "days_uniform_shape": 10,
+      "total_source_m3": 865400.7095073939,
+      "total_routed_outlet_m3": 1007798.7596702089,
+      "total_end_window_storage_m3": 4835.1165998893775,
+      "total_clamp_m3": 147233.16676270508,
+      "total_tail_fold_m3": 8875.011254557006,
+      "total_latqcc_outlet_m3": 729943.7198742138,
+      "max_supply_reconstruction_rel": 5.714626530090617e-16,
+      "max_day_cascade_residual_rel": 1.4549378953536465e-14,
+      "max_day_seam_residual_rel": 2.5899548259786116e-14,
+      "max_day_identity_residual_rel": 5.933273356520313e-14,
+      "lane_days_erosion_source_shape_degenerate": 1,
+      "hybrid_implicit_stepping": false
+    }
+  },
+  "wb13_publication": {
+    "source": "direct-publication-frame",
+    "projection_fallback_used": false,
+    "guard_id": "HS-SIMOUT-E-001",
+    "replay_candidate_surfaces": [],
+    "publication_ofe_policy": "per-ofe-dynamic-water-balance-state",
+    "contributor_ofe_count": 5,
+    "static_per_ofe_slice_count": 5,
+    "per_ofe_state_policy": "published-per-ofe-wb13-records",
+    "per_ofe_dynamic_water_balance_state": true,
+    "per_ofe_dynamic_wb_state": true,
+    "per_ofe_record_count": 10960,
+    "transfer_identity_status": "pass-published-per-ofe-wb13-records",
+    "per_element_identity_status": "pass-published-per-ofe-wb13-records",
+    "aggregate_identity_status": "pass-published-per-ofe-wb13-records",
+    "area_policy": "sum-ofe-geometry-area",
+    "storage_lineage_policy": "per-ofe-dynamic-wb-state",
+    "per_ofe_internal_day_count": 2192,
+    "per_ofe_expected_record_count": 10960,
+    "transfer_identity_max_abs_mm": 0.0,
+    "per_element_identity_max_abs_mm": 0.0,
+    "aggregate_transfer_cancellation_max_abs_mm": 0.0,
+    "hillslope_total_identity_max_abs_mm": 0.0,
+    "publication_area_m2": 166518.58000000002,
+    "row_count": 10960,
+    "sim_day_index_monotonic": true,
+    "first_row_key": {
+      "year": 2000,
+      "julian_day": 1,
+      "ofe": 1,
+      "sim_day_index": 1
+    },
+    "last_row_key": {
+      "year": 2005,
+      "julian_day": 365,
+      "ofe": 5,
+      "sim_day_index": 2192
+    }
+  },
+  "mofe_hourly_carry": {
+    "policy": "baseline-wathour-24-slot-copy-forward",
+    "active": true,
+    "substep_count": 24,
+    "required_arrays": [
+      "ui_SUrunf",
+      "ui_SCrunf",
+      "ui_LfUrf",
+      "ui_LfCrf"
+    ],
+    "upstream_carry_total_m": 78.26282592373612,
+    "current_carry_total_m": 78.26282592373612
+  },
+  "direct_runtime_counters": {
+    "run_frame_constructions": 1,
+    "day_frame_constructions": 10960,
+    "day_frame_commits": 10960,
+    "executor_constructions": 1,
+    "skeleton_runs": 0,
+    "publication_capture_runs": 1,
+    "phase_view_constructions": 153440,
+    "erod14_qin_clamped_events": 0,
+    "wave1_flux_refused_quanta": 46,
+    "phase_span_runs": 241121,
+    "direct_phase_entries": 460323,
+    "direct_compute_operations": 252081,
+    "direct_state_mutations": 261076,
+    "downstream_operand_productions": 249889,
+    "shadow_projections": 241121,
+    "compatibility_edge_invocations": 0,
+    "ksatadj_effective_conductivity_evaluations": 0
+  },
+  "coupling_vectors": {
+    "guard_id": "HS-SIMCOUP-E-001",
+    "winter": {
+      "active": false,
+      "snow_file_present": true,
+      "rst": 0.0,
+      "newsnw": 100.0,
+      "ssd": 250.0,
+      "runtime_swe": 0.0
+    },
+    "soil": {
+      "ssc": 0.000016666666666666667,
+      "infiltration_capacity_frozen": 0.000016666666666666667,
+      "infcap_within_ssc": true
+    },
+    "frsoil": {
+      "active": true,
+      "frost_file_present": false,
+      "wint_red_enabled": true,
+      "dfrost": 0.0,
+      "dthaw": 0.0,
+      "nft": 211.0,
+      "ws_frz": 0.0,
+      "infcap_frz": 0.000016666666666666667
+    },
+    "hydout_equivalent": {
+      "source": "direct-publication-frame",
+      "total_soil": 524.9844573794952,
+      "frozwt": 0.0,
+      "snow_water": 0.0,
+      "soil_water_total": 524.9844573794952,
+      "closure_delta": 0.0,
+      "closure_tolerance": 1e-6,
+      "closure_within_tolerance": true
+    }
+  }
+}

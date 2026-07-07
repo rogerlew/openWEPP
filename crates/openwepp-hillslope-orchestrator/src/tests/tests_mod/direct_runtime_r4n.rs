@@ -28,6 +28,7 @@ fn r4n_surface_et_matches_wb17_soil_evaporation_layer_mutation_fixture() {
     day.evapotranspiration_compute_inputs = DirectEvapotranspirationComputeInputs {
         et_demand_m: 0.04,
         leaf_area_index: 0.0,
+        canopy_height_m: 0.0,
         canopy_cover_fraction: 0.0,
         residue_interception_m: 0.0,
         same_pass_infiltration_m: 0.0,
@@ -102,6 +103,7 @@ fn r4n_root_uptake_matches_swu_fixture_and_finalizes_aggregate_et() {
     day.evapotranspiration_compute_inputs = DirectEvapotranspirationComputeInputs {
         et_demand_m: 0.0,
         leaf_area_index: 0.0,
+        canopy_height_m: 0.0,
         canopy_cover_fraction: 0.0,
         residue_interception_m: 0.0,
         same_pass_infiltration_m: 0.0,
@@ -186,6 +188,7 @@ fn r4o_consumes_r4n_surface_et_mutated_layer_state_when_present() {
     day.evapotranspiration_compute_inputs = DirectEvapotranspirationComputeInputs {
         et_demand_m: 0.04,
         leaf_area_index: 0.0,
+        canopy_height_m: 0.0,
         canopy_cover_fraction: 0.0,
         residue_interception_m: 0.0,
         same_pass_infiltration_m: 0.0,
@@ -244,6 +247,7 @@ fn r4n_feeds_r4b_final_et_not_handoff_or_publication_aliases() {
     day.evapotranspiration_compute_inputs = DirectEvapotranspirationComputeInputs {
         et_demand_m: 0.0,
         leaf_area_index: 0.0,
+        canopy_height_m: 0.0,
         canopy_cover_fraction: 0.0,
         residue_interception_m: 0.01,
         same_pass_infiltration_m: 0.0,
@@ -349,6 +353,7 @@ fn r4n_fails_closed_on_missing_upstream_and_invalid_domain() {
         DirectEvapotranspirationComputeInputs {
             et_demand_m: 0.0,
             leaf_area_index: 0.0,
+            canopy_height_m: 0.0,
             canopy_cover_fraction: 0.0,
             residue_interception_m: 0.0,
             same_pass_infiltration_m: 0.0,

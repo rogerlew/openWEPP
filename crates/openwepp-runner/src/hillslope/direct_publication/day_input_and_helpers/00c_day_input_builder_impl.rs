@@ -357,7 +357,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
         day_frame: &openwepp_hillslope_orchestrator::DirectDayFrame,
     ) -> Result<crate::hillslope::laned_shadow::LanedShadowLaneDayOperands, HillslopeCliError>
     {
-        let authority = self.lane_authority(day_frame.lane_index)?;
+        let _ = self.lane_authority(day_frame.lane_index)?;
         build_laned_shadow_lane_day_operands(
             day_frame.lane_index,
             day_frame.day_index,
@@ -366,7 +366,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
                 .snow_coupling_downstream_operands
                 .hourly_routed_melt_m,
             day_frame.evapotranspiration_compute_inputs.leaf_area_index,
-            authority.evapotranspiration.canopy_height_m,
+            Some(day_frame.evapotranspiration_compute_inputs.canopy_height_m),
         )
     }
 
@@ -1104,7 +1104,7 @@ fn build_laned_shadow_lane_day_operands(
             return Err(HillslopeCliError::RuntimeSurfaceFailure {
                 surface: "laned_shadow_dynamic_operands",
                 detail: format!(
-                    "{SIMOUT_GUARD_ID} Lane D shadow typed-management canhgt must be finite and nonnegative for lane {}, observed {}",
+                    "{SIMOUT_GUARD_ID} Lane D shadow post-growth canhgt must be finite and nonnegative for lane {}, observed {}",
                     lane_index + 1,
                     height_m
                 ),
@@ -1115,7 +1115,7 @@ fn build_laned_shadow_lane_day_operands(
             return Err(HillslopeCliError::RuntimeSurfaceFailure {
                 surface: "laned_shadow_dynamic_operands",
                 detail: format!(
-                    "{SIMOUT_GUARD_ID} Lane D shadow requires typed-management canhgt when post-growth LAI is positive for lane {} day {} (LAI={})",
+                    "{SIMOUT_GUARD_ID} Lane D shadow requires post-growth canhgt when post-growth LAI is positive for lane {} day {} (LAI={})",
                     lane_index + 1,
                     day_index + 1,
                     leaf_area_index
@@ -1171,7 +1171,7 @@ mod laned_shadow_dynamic_operand_tests {
             0, 0, [0.0; 24], [0.0; 24], 1.25, None,
         ));
 
-        assert!(detail.contains("requires typed-management canhgt"));
+        assert!(detail.contains("requires post-growth canhgt"));
     }
 
     #[test]

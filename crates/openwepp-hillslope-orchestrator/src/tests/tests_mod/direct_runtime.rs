@@ -1020,6 +1020,7 @@ fn r6h_typed_evapotranspiration_inputs(
     DirectEvapotranspirationComputeInputs {
         et_demand_m: soil_evaporation_m,
         leaf_area_index: 0.0,
+        canopy_height_m: 0.0,
         canopy_cover_fraction: 0.0,
         residue_interception_m: 0.0,
         same_pass_infiltration_m: 0.0,
@@ -1418,7 +1419,9 @@ fn r7b_constructor_type_size_layout_is_bounded() {
     // DC01 (INV-RUNOFFPART-031): lane constructor inputs also carry the 24-slot
     // surface hourly-weights transfer channel (+192 B).
     assert!(lane_constructor <= 1_216);
-    assert!(day_constructor <= 4_096);
+    // D16 row-crop canhgt publication adds daily canopy height to two growth
+    // inputs and the ET operand bundle.
+    assert!(day_constructor <= 4_160);
     assert!(run_frame <= 512);
     // R7G carries typed snow runtime state plus SNOWDENSITY-07 CoE boundary carry and
     // SNOWDENSITY-10.3.8 retained-liquid storage at lane scope.
@@ -1443,7 +1446,9 @@ fn r7b_constructor_type_size_layout_is_bounded() {
     // (+24 B), and the paired hourly publication surfaces embedded in the
     // erosion operand/shadow/publication rows (+2,200 B total observed).
     // E.3: the boxed inter-OFE erosion inflow intake pointer (+8 B).
-    assert!(day_frame <= 15_456);
+    // D16 row-crop canhgt publication adds daily canopy height to the ET
+    // operand bundle (+8 B).
+    assert!(day_frame <= 15_488);
 }
 
 fn r7b_breakpoint_management_pmet_day() -> DirectDayConstructorInputs {
@@ -1496,6 +1501,7 @@ fn r7b_breakpoint_management_pmet_day() -> DirectDayConstructorInputs {
     day.evapotranspiration_compute_inputs = DirectEvapotranspirationComputeInputs {
         et_demand_m: 0.004,
         leaf_area_index: 1.2,
+        canopy_height_m: 0.35,
         canopy_cover_fraction: 0.45,
         residue_interception_m: 0.0002,
         same_pass_infiltration_m: 0.006,

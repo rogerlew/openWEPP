@@ -53,9 +53,10 @@ pub(crate) const LANED_ACTIVE_SEAM_REL_TOL: f64 = 1.0e-9;
 pub(crate) const LANED_ACTIVE_IDENTITY_REL_TOL: f64 = 1.0e-6;
 
 /// Per-lane static configuration for the active owner. Sources
-/// (rev 20/21, same as the shadow): native management `routing_coefficients`
-/// for the friction statics, the Wave-1 operand seed for geometry, and
-/// typed-management `canhgt` for the canopy height.
+/// (rev 20/21/36, same as the shadow): native management
+/// `routing_coefficients` for the friction statics and the Wave-1 operand
+/// seed for geometry. Daily `LAI`/`canhgt` are consumed from the post-growth
+/// day frame at route time.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct DirectLanedActiveLaneConfig {
     pub slplen_m: f64,
@@ -66,8 +67,9 @@ pub struct DirectLanedActiveLaneConfig {
     pub roughness_element_height_m: f64,
     pub roughness_concentration: f64,
     pub vegetation_drag_coefficient: f64,
-    /// Typed-management `canhgt` (m); `None` when the management carries no
-    /// canopy height. Fails closed per day when `LAI > 0` (rev 21).
+    /// Static typed-management `canhgt` seed retained for validation and
+    /// compatibility surfaces; active friction uses post-growth day-frame
+    /// canopy height.
     pub canopy_height_m: Option<f64>,
 }
 
@@ -401,25 +403,27 @@ pub(crate) fn laned_active_route_lane(
         books.max_supply_reconstruction_rel = source.supply_reconstruction_rel;
     }
 
-    // Rev-21 dynamic operands from the live day frame (same guards as the
-    // shadow builder, typed).
+    // Rev-21/36 dynamic operands from the live post-growth day frame (same
+    // guards as the shadow builder, typed).
     let leaf_area_index = day_frame.evapotranspiration_compute_inputs.leaf_area_index;
     validate_finite("laned_active.leaf_area_index", leaf_area_index)?;
     validate_nonnegative_direct_m("laned_active.leaf_area_index", leaf_area_index)?;
-    let canopy_height_m = match lane_config.canopy_height_m {
-        Some(value) if value > 0.0 => value,
+    let canopy_height_m = day_frame.evapotranspiration_compute_inputs.canopy_height_m;
+    validate_finite("laned_active.canopy_height_m", canopy_height_m)?;
+    validate_nonnegative_direct_m("laned_active.canopy_height_m", canopy_height_m)?;
+    let canopy_height_m = match canopy_height_m {
+        value if value > 0.0 => value,
         _ if leaf_area_index > 0.0 => {
             return Err(DirectRuntimeError::DirectKernelGuardFailure {
                 phase: "laned_active_rev21_operands",
                 detail: format!(
-                    "lane {} day {} has LAI {leaf_area_index} > 0 with missing/non-positive typed-management canhgt (rev-21 fail-closed)",
+                    "lane {} day {} has LAI {leaf_area_index} > 0 with missing/non-positive post-growth canhgt (rev-21/rev-36 fail-closed)",
                     day_frame.lane_index + 1,
                     day_frame.day_index + 1
                 ),
             });
         }
-        Some(value) => value,
-        None => 0.0,
+        value => value,
     };
     for (hour, rainfall_m) in day_frame.wb14_hourly_rainfall_m.iter().enumerate() {
         if !rainfall_m.is_finite() || *rainfall_m < 0.0 {
@@ -741,6 +745,40 @@ pub(crate) fn laned_active_enforce_day_closure(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::direct_runtime::DirectRunIdentity;
+
+    fn lane_config_with_static_canhgt(canopy_height_m: Option<f64>) -> DirectLanedActiveLaneConfig {
+        DirectLanedActiveLaneConfig {
+            slplen_m: 1.0,
+            width_m: 1.0,
+            mean_gradient: 0.01,
+            skin_friction_coefficient_ko: 500.0,
+            form_drag_coefficient: 0.0,
+            roughness_element_height_m: 0.0,
+            roughness_concentration: 0.0,
+            vegetation_drag_coefficient: 0.2,
+            canopy_height_m,
+        }
+    }
+
+    fn vegetated_day_with_post_growth_canhgt(canopy_height_m: f64) -> DirectDayFrame {
+        let identity =
+            DirectRunIdentity::new(36, 2637, 1, 1).expect("valid direct identity should construct");
+        let mut day =
+            DirectDayFrame::seed(identity, 0, 0).expect("valid direct day should construct");
+        day.evapotranspiration_compute_inputs.leaf_area_index = 0.3;
+        day.evapotranspiration_compute_inputs.canopy_height_m = canopy_height_m;
+        day
+    }
+
+    fn dry_lane_source() -> LanedActiveLaneSource {
+        LanedActiveLaneSource {
+            depths_m: [0.0; SEAM_HOUR_BINS],
+            q_runoff_m: 0.0,
+            uniform_shape: false,
+            supply_reconstruction_rel: 0.0,
+        }
+    }
 
     fn routing_result_with_bins(bins_m2: Vec<f64>, bin_dt_s: f64) -> RoutingResult {
         let spans = vec![bin_dt_s; bins_m2.len()];
@@ -776,6 +814,42 @@ mod tests {
         assert!((weights[23] - 0.5).abs() < 1.0e-12);
         let sum: f64 = weights.iter().sum();
         assert!((sum - 1.0).abs() < 1.0e-12, "unit sum, got {sum}");
+    }
+
+    #[test]
+    fn active_route_uses_post_growth_canhgt_not_static_lane_config() {
+        let mut day = vegetated_day_with_post_growth_canhgt(0.45);
+        let mut books = DirectLanedActiveDayBooks::default();
+        laned_active_route_lane(
+            &mut day,
+            &lane_config_with_static_canhgt(Some(0.0)),
+            1.0,
+            None,
+            3600.0,
+            &mut books,
+            &dry_lane_source(),
+            false,
+        )
+        .expect("positive post-growth canhgt should satisfy the vegetated guard");
+
+        let mut stale_static_day = vegetated_day_with_post_growth_canhgt(0.0);
+        let mut stale_static_books = DirectLanedActiveDayBooks::default();
+        assert!(matches!(
+            laned_active_route_lane(
+                &mut stale_static_day,
+                &lane_config_with_static_canhgt(Some(0.75)),
+                1.0,
+                None,
+                3600.0,
+                &mut stale_static_books,
+                &dry_lane_source(),
+                false,
+            ),
+            Err(DirectRuntimeError::DirectKernelGuardFailure {
+                phase: "laned_active_rev21_operands",
+                ..
+            })
+        ));
     }
 
     #[test]

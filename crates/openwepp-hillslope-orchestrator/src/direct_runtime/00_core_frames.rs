@@ -2396,6 +2396,7 @@ fn validate_direct_evapotranspiration_compute_inputs(
 ) -> Result<(), DirectRuntimeError> {
     validate_nonnegative_direct_m("constructor.et.et_demand_m", inputs.et_demand_m)?;
     validate_nonnegative_direct_m("constructor.et.leaf_area_index", inputs.leaf_area_index)?;
+    validate_nonnegative_direct_m("constructor.et.canopy_height_m", inputs.canopy_height_m)?;
     validate_unit_interval(
         "constructor.et.canopy_cover_fraction",
         inputs.canopy_cover_fraction,
