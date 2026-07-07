@@ -102,6 +102,67 @@ finding is left to the follow-on author/executor.
   defect class. This attribution is also where lever 4 (erosion-sensitive
   eligibility) is either justified or ruled out.
 
+### CL-M3 (Medium, predeclared exit criteria): the follow-on package must
+### carry its own kill conditions and the test-retirement obligation
+
+- Rationale: kill criteria chosen after another failed package will be
+  negotiated against sunk cost (the same governance logic as CL-M1's
+  tolerance predeclaration). The hybrid is an option with bounded downside
+  (INV-OFEHYB-007 non-perturbation; opt-in selector), so it dies by
+  carrying cost, not by losing — the criteria below name when that verdict
+  is reached. Adopt or amend them in the follow-on package text before
+  execution.
+- Abandonment falsifiers (any one is sufficient):
+  1. Fidelity-savings death curve: after the CL-M2 attribution, shrink
+     implicit eligibility until pass-sediment/hydrograph-shape deltas sit
+     inside the ratified tolerance and measure the speedup that survives.
+     If surviving speedup is approximately zero, the time savings and the
+     hydrograph shape are the same thing being spent — no promotable
+     configuration exists for erosion-bearing runs, which is the product.
+  2. Non-bare algebraic wall: if a genuine lever-2 attempt (direct residual
+     solve or extended exact evaluators) cannot bring generic non-bare
+     per-implicit-step cost within break-even (one implicit solve cheaper
+     than the explicit steps it replaces; WA pays `196.17` map evals/step
+     today) while preserving `INV-OFEHYB-003` determinism and the Z-rating
+     branch discipline, the forest fleet is permanently out of reach.
+  3. Tier-2 supersession: if 5 cells/OFE ratifies (backlog: cost ∝ n²,
+     router projected to ~4-6 s), re-run the value arithmetic before any
+     further hybrid spend — coarser mesh also doubles `dt` and shrinks the
+     explicit-step pool the hybrid saves from. The backlog's own sequencing
+     note already requires reassessing before Tier-3.
+  4. Time-box: the follow-on package plus at most one successor. If the
+     cohort no-harm gate has not flipped by then, stop regardless of how
+     close the last attempt looked.
+- Scope-narrowing precedes abandonment: if falsifier 2 hits but 1 does not,
+  the recorded retreat is a bare-skin-only hybrid — bare/low-cover surfaces
+  are the disturbed/burned post-fire classes at the center of this
+  program's use case, and H2637's `-16.31 %` with `0` map evals is an
+  existing win on that class. Permanently opt-in, never default, shedding
+  the promotion machinery. Full abandonment applies only if even that
+  class's win does not justify the remaining maintenance surface.
+- Non-triggers (record these explicitly so they cannot be cited later):
+  the current cohort loss (a reason not to default, already correctly
+  concluded by this package), fidelity deltas before they are attributed,
+  or any single disappointing timing endpoint in isolation.
+- Test-retirement obligation (the test tax): any abandonment or
+  scope-narrowing disposition MUST retire the corresponding test surface in
+  the same package. Deprecation is three moves together — contract
+  lifecycle (`maturity: deprecated` on the affected `SC-OFEROUTE-002`
+  surfaces), code removal or quarantine, and test retirement — so that
+  `cargo nextest run --workspace --profile full` does not permanently tax
+  every future package for a subsystem that can no longer be promoted.
+  Non-perturbation pins (the `INV-OFEHYB-007` byte-identity vectors) live
+  exactly as long as the hybrid code exists; if the code is deleted the
+  pins go with it. The durable record of the negative result is the
+  contract/WP evidence chain, not living tests. Interim, while the
+  subsystem remains experimental: tier the surface explicitly — cheap
+  invariant guards stay in the always-run gate; heavy
+  acceptance/ratification vectors (the Case-4 hybrid ladder class) may
+  carry `#[ignore]` plus a documented reproduction command (the existing
+  house pattern from the rev-31 package) and run in packages that touch the
+  subsystem. The specific tiering is disposition-open; the obligation is
+  that the tax is priced and assigned deliberately rather than accreted.
+
 ### CL-L1 (Low, record hygiene): stale template line in a closed package
 
 - `../20260707-laned-router-gap-ofehyb-001-hold-lift-design-001/artifacts/final-disposition.md`

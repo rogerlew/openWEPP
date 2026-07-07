@@ -53,3 +53,35 @@ Success target:
   selects plain.
 - Fidelity/tolerance surfaces are predeclared before renewed tuning or
   promotion evidence.
+
+Kill / scope-narrowing criteria:
+
+- Predeclare these criteria in the follow-on package before execution; do not
+  negotiate them after another failed tuning attempt.
+- Any one of these is sufficient to abandon broad default-promotion pursuit:
+  - the fidelity-savings death curve shows that shrinking implicit eligibility
+    into ratified pass-sediment/hydrograph-shape tolerance removes essentially
+    all surviving speedup;
+  - a genuine non-bare solve-cost attempt cannot make generic non-bare
+    implicit steps cheaper than the explicit steps they replace while
+    preserving `INV-OFEHYB-003` determinism and Z-rating branch discipline;
+  - Tier-2 5 cells/OFE mesh ratifies and re-run arithmetic shows the hybrid
+    value pool is superseded;
+  - this follow-on plus at most one successor fails to flip the cohort no-harm
+    gate.
+- Scope-narrowing comes before full abandonment: if non-bare solve-cost remains
+  out of reach but bare/low-cover hybrid value remains real, retreat to
+  bare-skin-only opt-in hybrid for disturbed/burned post-fire classes rather
+  than default promotion.
+- Do not cite these as abandonment triggers: the current cohort loss, fidelity
+  deltas before first-divergent-day/OFE attribution, or any single timing
+  endpoint in isolation.
+- If broad hybrid or a narrowed hybrid surface is abandoned, retire the
+  corresponding tests in the same package as the contract lifecycle and
+  code-removal/quarantine change. The durable record of a negative result is
+  the contract/work-package evidence chain, not permanent live tests for a
+  dead subsystem.
+- While hybrid remains experimental, tier the test surface deliberately:
+  cheap invariant guards stay always-run; heavy acceptance vectors may be
+  ignored with documented reproduction commands only when the package records
+  the tradeoff explicitly.
