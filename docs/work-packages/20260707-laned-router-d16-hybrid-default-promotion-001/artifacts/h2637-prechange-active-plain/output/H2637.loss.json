@@ -1,0 +1,14 @@
+{
+  "climate_day_count": 731,
+  "executed_day_count": 731,
+  "first_day_julian": 1,
+  "first_day_year": 1987,
+  "frost_wint_red": 1,
+  "last_day_julian": 366,
+  "last_day_year": 1988,
+  "ofe_count": 19,
+  "precipitation_mm": 45.2,
+  "run_name": "h2637-laned-seam-shadow",
+  "schema": "openwepp-hillslope-loss-v1",
+  "snow_override_applied": true
+}

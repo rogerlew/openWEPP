@@ -12,6 +12,16 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-07`:
+- `20260707-laned-router-d16-hybrid-default-promotion-001/` -
+  EXECUTED-HOLD-FIDELITY-TOLERANCE (2026-07-07): adjudicated whether the
+  hybrid implicit-explicit stepper can be promoted from experimental env opt-in
+  to the default stepper inside the already opt-in
+  `OPENWEPP_LANED_ACTIVE=1` path at the current 10-cell/OFE mesh. Current
+  hybrid timing is favorable (`33.45 s` user vs `39.73 s` active plain) and
+  Case-4 passes, but H2637 publication deltas are not covered by a ratified
+  default-promotion tolerance (`-0.4396 %` routed outlet, `-6.474 %` pass
+  sediment sums). No selector flip landed; broader no-env Lane-D active owner
+  default activation and Tier-2 mesh policy remain separate.
 - `20260707-laned-router-t3-ratification-solve-cost-001/` -
   EXECUTED-HOLD-CASE4-HYBRID-LADDER (2026-07-07): executed the parent LANED-T3
   open ratification gates and landed rev-31 deterministic branch-local warm

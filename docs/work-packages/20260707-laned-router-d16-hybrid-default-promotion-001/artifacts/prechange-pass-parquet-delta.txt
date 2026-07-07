@@ -1,0 +1,10 @@
+shape_plain=(731, 17)
+shape_hybrid=(731, 17)
+columns_identical=True
+index_identical=True
+tdet: changed_rows=2 max_abs=0.41939720031984962 max_rel=1
+sedcon_1: changed_rows=4 max_abs=0.00021812595406975099 max_rel=1
+sedcon_2: changed_rows=4 max_abs=0.00318799471332713 max_rel=1
+sedcon_3: changed_rows=4 max_abs=0.0015101027589444302 max_rel=1
+sedcon_4: changed_rows=4 max_abs=0.0037891082139251751 max_rel=1
+sedcon_5: changed_rows=4 max_abs=0.019259534266111857 max_rel=1
