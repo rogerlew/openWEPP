@@ -1,0 +1,29 @@
+DOC_LINT_DISCOVERY=
+wctl: /usr/local/bin/wctl
+4: wctl2 – Python-based control wrapper for the WEPPcloud docker compose stack.   
+17:│ doc-lint                                                                     │
+18:│ doc-catalog                                                                  │
+19:│ doc-toc                                                                      │
+20:│ doc-mv                                                                       │
+21:│ doc-refs                                                                     │
+22:│ doc-bench                                                                    │
+24:│ restore-docker-data-permissions                                              │
+markdown-doc: /usr/local/bin/markdown-doc
+markdown-doc toolkit
+
+Usage: markdown-doc <COMMAND>
+
+Commands:
+  catalog   Generate the unified documentation catalog
+  lint      Run lint rules
+  validate  Validate documentation against schemas
+  toc       Synchronise table-of-contents blocks
+  refs      List references to files or anchors
+  mv        Move or rename a Markdown file and update references
+  help      Print this message or the help of the given subcommand(s)
+
+Options:
+  -h, --help     Print help
+  -V, --version  Print version
+WCTL_DOC_LINT_CMD:
+wctl doc-lint: AVAILABLE

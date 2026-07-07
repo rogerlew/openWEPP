@@ -1,0 +1,7 @@
+FILE\tLINES\tSTATUS
+crates/openwepp-hillslope-orchestrator/src/ofe_routing/d10b_reconciliation_tests.rs	524	PASS
+crates/openwepp-hillslope-orchestrator/src/ofe_routing/dval.rs	731	PASS
+crates/openwepp-hillslope-orchestrator/src/ofe_routing/implicit_recession.rs	859	PASS
+crates/openwepp-hillslope-orchestrator/src/ofe_routing/kinematic_wave.rs	1859	PASS
+crates/openwepp-hillslope-orchestrator/src/ofe_routing/profile.rs	213	PASS
+crates/openwepp-runner/src/hillslope/05_runner_execution_and_outputs.rs	1335	PASS

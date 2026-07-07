@@ -27,9 +27,10 @@ Status: **EXECUTED (strict rule; experimental opt-in)**. Evidence mode:
   Steffensen acceleration (deterministic, same fixed points — cold-seed
   fixed-point cost was the hybrid's first timing killer);
   bisection-interleaved outer solve (false position stalls on the convex
-  `q~h³` rating); the FILIPPOV filled-jump closure with LOW→HIGH branch
-  preference (a genuine turbulent root can exist below the low-branch
-  collapse — the steady-state regression caught an over-eager Filippov);
+  `q~h³` rating); LOW-jump→HIGH-root recovery with fail-closed
+  double-collapse (a genuine turbulent root can exist below the low-branch
+  collapse — the steady-state regression caught the over-eager earlier
+  filled-jump path);
   the `DRY_DEPTH·L` dust floor on the step-residual guard (femto-scale
   near-dry steps tripped the relative test with zero physical mass).
 

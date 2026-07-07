@@ -286,6 +286,7 @@ impl CellParameters {
         };
         // One fixed-point map application.
         let map = |q: f64| -> Option<f64> {
+            profile::count_implicit_equilibrium_map_evaluations(1);
             let f_eq = self.equivalent_friction_with_rain_term(flow_depth_m, q, skin_rain_term);
             if f_eq <= 0.0 {
                 return Some(0.0);

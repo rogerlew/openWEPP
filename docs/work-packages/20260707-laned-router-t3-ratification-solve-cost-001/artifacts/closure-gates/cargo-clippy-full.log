@@ -1,0 +1,19 @@
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+error: this function has too many lines (111/100)
+   --> crates/openwepp-hillslope-orchestrator/src/ofe_routing/dval.rs:273:1
+    |
+273 | / fn run_iwagaki_cells_hybrid(
+274 | |     cell_for_slope: impl Fn(f64) -> CellParameters,
+275 | |     cell_count: usize,
+276 | |     sample_dt_s: f64,
+277 | |     max_dt_s: f64,
+278 | | ) -> Result<DvalRun, RoutingError> {
+    | |__________________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#too_many_lines
+    = note: `-D clippy::too-many-lines` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::too_many_lines)]`
+
+error: could not compile `openwepp-hillslope-orchestrator` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `openwepp-hillslope-orchestrator` (lib test) due to 1 previous error

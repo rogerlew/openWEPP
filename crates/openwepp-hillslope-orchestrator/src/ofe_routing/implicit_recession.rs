@@ -18,6 +18,7 @@
 
 use super::friction::{KINEMATIC_VISCOSITY_M2_S, SKIN_REGIME_REYNOLDS_THRESHOLD};
 use super::kinematic_wave::{DRY_DEPTH_M, KinematicWaveMesh, RoutingError};
+use super::profile;
 
 /// The skin-regime crossover discharge `Q_c = Re_c · ν` (m²/s). The
 /// INV-OFEROUTE-002 dispatch makes the friction law DISCONTINUOUS here, so
@@ -148,8 +149,15 @@ pub fn implicit_step_with_discharges(
         // Warm start: recession depths move slowly, so the old state is an
         // excellent bracket-interior start (the RATING itself is seeded
         // deterministically per branch — determinism over warmth there).
-        let (h_new, q_new, iterations) =
-            solve_cell(cell, rhs, dt_over_dx, skin_rain_term, h_old.min(rhs))?;
+        let warm_q_seed = if i == 0 { None } else { Some(q_in) };
+        let (h_new, q_new, iterations) = solve_cell(
+            cell,
+            rhs,
+            dt_over_dx,
+            skin_rain_term,
+            h_old.min(rhs),
+            warm_q_seed,
+        )?;
         outcome.solve_iterations += iterations;
         outcome.rainfall_excess_m2 += v * dt_s * dx;
         outcome.storage_change_m2 += (h_new - h_old) * dx;
@@ -221,11 +229,11 @@ fn equilibrium_q(
     h: f64,
     skin_rain_term: f64,
     branch: RatingBranch,
+    warm_q_seed: Option<f64>,
 ) -> Result<f64, RoutingError> {
-    let seed = match branch {
-        RatingBranch::Low => CROSSOVER_Q_M2_S * 1.0e-3,
-        RatingBranch::High => CROSSOVER_Q_M2_S * 1.0e3,
-    };
+    let seed = warm_q_seed
+        .filter(|q| branch_accepts_seed(*q, branch))
+        .unwrap_or_else(|| cold_branch_seed(branch));
     cell.equilibrium_discharge_converged(
         h,
         skin_rain_term,
@@ -234,6 +242,24 @@ fn equilibrium_q(
         IMPLICIT_EQ_MAX_ITER,
     )
     .ok_or(RoutingError::ImplicitSolveNonConvergence)
+}
+
+#[inline]
+fn cold_branch_seed(branch: RatingBranch) -> f64 {
+    match branch {
+        RatingBranch::Low => CROSSOVER_Q_M2_S * 1.0e-3,
+        RatingBranch::High => CROSSOVER_Q_M2_S * 1.0e3,
+    }
+}
+
+#[inline]
+fn branch_accepts_seed(q_seed: f64, branch: RatingBranch) -> bool {
+    q_seed.is_finite()
+        && q_seed > 0.0
+        && match branch {
+            RatingBranch::Low => q_seed < CROSSOVER_Q_M2_S,
+            RatingBranch::High => q_seed > CROSSOVER_Q_M2_S,
+        }
 }
 
 /// Solve `h + (dt/dx)·q_eq(h) = rhs` with the LOW-branch rating, falling
@@ -248,6 +274,7 @@ fn solve_cell(
     dt_over_dx: f64,
     skin_rain_term: f64,
     h_start: f64,
+    warm_q_seed: Option<f64>,
 ) -> Result<(f64, f64, u64), RoutingError> {
     // Degenerate dry cell: nothing to hold or move.
     if rhs <= 0.0 {
@@ -273,6 +300,7 @@ fn solve_cell(
         skin_rain_term,
         h_start,
         RatingBranch::Low,
+        warm_q_seed,
     )? {
         CellSolve::Root(h, q, iterations) => Ok((h, q, iterations)),
         CellSolve::Jump(low_iterations) => {
@@ -283,6 +311,7 @@ fn solve_cell(
                 skin_rain_term,
                 h_start,
                 RatingBranch::High,
+                warm_q_seed,
             )? {
                 CellSolve::Root(h, q, iterations) => Ok((h, q, low_iterations + iterations)),
                 CellSolve::Jump(_) => Err(RoutingError::ImplicitSolveNonConvergence),
@@ -298,10 +327,12 @@ fn solve_cell_on_branch(
     skin_rain_term: f64,
     h_start: f64,
     branch: RatingBranch,
+    warm_q_seed: Option<f64>,
 ) -> Result<CellSolve, RoutingError> {
     let tol = IMPLICIT_NEWTON_TOL_REL * rhs.max(1.0e-18);
     let f_at = |h: f64| -> Result<(f64, f64), RoutingError> {
-        let q = equilibrium_q(cell, h, skin_rain_term, branch)?;
+        profile::count_implicit_branch_evaluations(1);
+        let q = equilibrium_q(cell, h, skin_rain_term, branch, warm_q_seed)?;
         Ok((h + dt_over_dx * q - rhs, q))
     };
 
@@ -437,7 +468,7 @@ mod tests {
         let dt_over_dx = 450.0_f64;
         let rhs = 5.49e-3 + dt_over_dx * 1.5e-3;
         // The LOW branch alone reports the jump.
-        match solve_cell_on_branch(&cell, rhs, dt_over_dx, 0.0, 4.0e-3, RatingBranch::Low)
+        match solve_cell_on_branch(&cell, rhs, dt_over_dx, 0.0, 4.0e-3, RatingBranch::Low, None)
             .expect("low-branch solve runs")
         {
             CellSolve::Jump(_) => {}
@@ -446,7 +477,8 @@ mod tests {
             }
         }
         // The chain recovers a genuine HIGH-branch (turbulent) root.
-        let (h, q, _) = solve_cell(&cell, rhs, dt_over_dx, 0.0, 4.0e-3).expect("chain resolves");
+        let (h, q, _) =
+            solve_cell(&cell, rhs, dt_over_dx, 0.0, 4.0e-3, None).expect("chain resolves");
         // Mass identity holds exactly.
         assert!(
             (h + dt_over_dx * q - rhs).abs() <= 1.0e-10 * rhs,
@@ -465,6 +497,79 @@ mod tests {
             q > CROSSOVER_Q_M2_S,
             "the recovered root must be on the turbulent side: q={q}"
         );
+    }
+
+    #[test]
+    fn branch_warm_seed_preserves_solution_and_reduces_or_matches_map_work() {
+        use super::super::profile;
+
+        let _flag_guard = profile::test_flag_guard();
+        let cell = CellParameters::bare(0.055, 500.0);
+        let rhs = 0.028_f64;
+        let dt_over_dx = 180.0_f64;
+        let h_start = 0.018_f64;
+
+        profile::set_enabled(true);
+        let _ = profile::snapshot_and_reset();
+        let (h_cold, q_cold, _) =
+            solve_cell(&cell, rhs, dt_over_dx, 0.0, h_start, None).expect("cold solve");
+        let cold_profile = profile::snapshot_and_reset();
+
+        let (h_warm, q_warm, _) =
+            solve_cell(&cell, rhs, dt_over_dx, 0.0, h_start, Some(q_cold)).expect("warm solve");
+        let warm_profile = profile::snapshot_and_reset();
+        profile::set_enabled(false);
+
+        assert!(
+            (h_cold + dt_over_dx * q_cold - rhs).abs() <= 1.0e-10 * rhs,
+            "cold residual"
+        );
+        assert!(
+            (h_warm + dt_over_dx * q_warm - rhs).abs() <= 1.0e-10 * rhs,
+            "warm residual"
+        );
+        assert!(
+            (h_warm - h_cold).abs() <= 1.0e-10 * h_cold.max(1.0e-18),
+            "warm seed must preserve the branch root h: cold={h_cold} warm={h_warm}"
+        );
+        assert!(
+            (q_warm - q_cold).abs() <= 1.0e-10 * q_cold.max(1.0e-18),
+            "warm seed must preserve the branch root q: cold={q_cold} warm={q_warm}"
+        );
+        assert!(
+            warm_profile.implicit_equilibrium_map_evaluations
+                <= cold_profile.implicit_equilibrium_map_evaluations,
+            "warm map evals {} should not exceed cold {}",
+            warm_profile.implicit_equilibrium_map_evaluations,
+            cold_profile.implicit_equilibrium_map_evaluations
+        );
+        assert!(
+            warm_profile.implicit_branch_evaluations > 0
+                && cold_profile.implicit_branch_evaluations > 0,
+            "branch evaluations must be counted"
+        );
+    }
+
+    #[test]
+    fn branch_warm_seed_acceptance_is_basin_locked() {
+        assert!(branch_accepts_seed(
+            CROSSOVER_Q_M2_S * 0.5,
+            RatingBranch::Low
+        ));
+        assert!(!branch_accepts_seed(
+            CROSSOVER_Q_M2_S * 1.5,
+            RatingBranch::Low
+        ));
+        assert!(branch_accepts_seed(
+            CROSSOVER_Q_M2_S * 1.5,
+            RatingBranch::High
+        ));
+        assert!(!branch_accepts_seed(
+            CROSSOVER_Q_M2_S * 0.5,
+            RatingBranch::High
+        ));
+        assert!(!branch_accepts_seed(f64::NAN, RatingBranch::Low));
+        assert!(!branch_accepts_seed(0.0, RatingBranch::High));
     }
 
     /// T3-L1 (review-required accumulation vector): repeated dust-scale

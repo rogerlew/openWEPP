@@ -171,12 +171,14 @@ fn execute_direct_publication_stream(
         let routing =
             openwepp_hillslope_orchestrator::ofe_routing::profile::snapshot_and_reset();
         eprintln!(
-            "laned_active_profile {{\"solver_runs\":{},\"solver_steps\":{},\"solver_steps_homogeneous\":{},\"solver_steps_source_free\":{},\"solver_steps_implicit\":{},\"alpha_evaluations\":{},\"solver_cfl_ns\":{},\"solver_step_ns\":{},\"solver_sample_ns\":{}}}",
+            "laned_active_profile {{\"solver_runs\":{},\"solver_steps\":{},\"solver_steps_homogeneous\":{},\"solver_steps_source_free\":{},\"solver_steps_implicit\":{},\"implicit_equilibrium_map_evaluations\":{},\"implicit_branch_evaluations\":{},\"alpha_evaluations\":{},\"solver_cfl_ns\":{},\"solver_step_ns\":{},\"solver_sample_ns\":{}}}",
             routing.solver_runs,
             routing.solver_steps,
             routing.solver_steps_homogeneous,
             routing.solver_steps_source_free,
             routing.solver_steps_implicit,
+            routing.implicit_equilibrium_map_evaluations,
+            routing.implicit_branch_evaluations,
             routing.alpha_evaluations,
             routing.solver_cfl_ns,
             routing.solver_step_ns,

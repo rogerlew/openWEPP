@@ -12,6 +12,24 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-07`:
+- `20260707-laned-router-t3-ratification-solve-cost-001/` -
+  EXECUTED-HOLD-CASE4-HYBRID-LADDER (2026-07-07): executed the parent LANED-T3
+  open ratification gates and landed rev-31 deterministic branch-local warm
+  seeding plus implicit solve-cost profile counters. H2637 active hybrid timing
+  improved to `36.61 s` user with counters live (`274.7M` implicit map
+  evaluations), but Case-4 hybrid ladder peak errors `22.8% / 15.5% / 10.2%`
+  fail the ratified `5%` tolerance, so fidelity ratification is blocked and no
+  selector promotion is made. Delegable Tier-1/Tier-2 packages are scaffolded.
+- `20260707-laned-router-tier1-local-numerics-001/` -
+  QUEUED (2026-07-07): delegable Tier-1 local-numerics package for
+  contract-first analytic/cheaper celerity, Newton/equilibrium-solve
+  reductions, and local math reductions, structured with the D14
+  baseline/profile -> optimization-plan -> implementation -> timing/fidelity
+  evidence loop.
+- `20260707-laned-router-tier2-mesh-resolution-adjudication-001/` -
+  QUEUED (2026-07-07): delegable Tier-2 package to adjudicate candidate
+  production mesh-resolution policy (notably 5 cells/OFE) against Case-4 and
+  H2637 fidelity/timing evidence before any config change.
 - `20260707-laned-router-t3agg-qa-m3-build-provenance-guidance-001/` -
   EXECUTED-COMPLETE (2026-07-07): closed the Codex-owned QA-M3 remainder from
   LANED-T3-AGG by promoting the stale-release-binary mitigation into durable
@@ -41,7 +59,8 @@ State as of `2026-07-07`:
   revision. I0 (prize measurement: 30 % strict / 55.5 % aggressive
   implicit-eligible steps) and I1 (implicit backward-Euler upwind stepper,
   machine-exact ledgers, full dt/mesh acceptance ladder; Z-shaped-rating
-  discovery + basin-split/Filippov closure rules) are complete; I2 landed
+  discovery + basin-split seeding, LOW-jump-to-HIGH-root recovery, and
+  fail-closed double-collapse rules) are complete; I2 landed
   the hybrid behind the EXPERIMENTAL `OPENWEPP_LANED_ACTIVE_IMPLICIT=1`
   selector (`SC-OFEROUTE-001` rev 28): strict-rule H2637 runs green on all
   rev-27 closure hard-fails at `37.0-37.2 s` (vs `37.9 s` plain-active).

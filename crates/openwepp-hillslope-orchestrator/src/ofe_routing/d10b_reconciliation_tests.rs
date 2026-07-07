@@ -19,7 +19,7 @@
 #![allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
 
 use super::cascade::{CascadeForcing, CascadeSegment, run_cascade};
-use super::dval::run_iwagaki_manning;
+use super::dval::{run_iwagaki_manning, run_iwagaki_manning_hybrid};
 use super::iwagaki_oracle::{OracleConfig, run_upwind_reference};
 use super::kinematic_wave::{CellParameters, KinematicWaveMesh};
 
@@ -88,6 +88,63 @@ fn case4_manning_solver_converges_to_iwagaki_oracle() {
     assert!(
         peak_err[2] <= peak_err[0] + 0.5 * TOL_PEAK_REL,
         "peak error diverges under refinement: {peak_err:?}"
+    );
+}
+
+#[test]
+#[ignore = "rev-31 ratification gate: currently fails Case-4 peak tolerance; run explicitly for hold evidence"]
+fn case4_hybrid_manning_ladder_meets_iwagaki_oracle() {
+    // Rev-31 LANED-T3 closure gate: the hybrid Case-4 harness runs the
+    // active source phase explicitly, then drains the same state with the
+    // implicit recession stepper. It must satisfy the same oracle-shaped
+    // Case-4 acceptance tolerances before selector promotion can be claimed.
+    let o2 = run_upwind_reference(&OracleConfig::iwagaki_case4(), 2000);
+    let o4 = run_upwind_reference(&OracleConfig::iwagaki_case4(), 4000);
+    let o8 = run_upwind_reference(&OracleConfig::iwagaki_case4(), 8000);
+    let r = (o8.peak_m2_s - o4.peak_m2_s) / (o4.peak_m2_s - o2.peak_m2_s);
+    assert!(
+        (0.2..0.9).contains(&r),
+        "oracle refinement ratio out of family: {r}"
+    );
+    let peak_ref = o8.peak_m2_s + (o8.peak_m2_s - o4.peak_m2_s) * r / (1.0 - r);
+    let t_peak_ref = o8.time_to_peak_s;
+    let rise_ref = o8.rise_10_90_s.expect("oracle rise");
+
+    let mut peak_err = Vec::new();
+    let mut t_peak_err = Vec::new();
+    let mut rise_err = Vec::new();
+    for (cells, sample_dt, max_dt) in [
+        (120usize, 0.25, 0.125),
+        (240, 0.125, 0.0625),
+        (480, 0.0625, 0.03125),
+    ] {
+        let run = run_iwagaki_manning_hybrid(cells, sample_dt, max_dt).expect("hybrid case4 runs");
+        peak_err.push((run.peak_m2_s - peak_ref).abs() / peak_ref);
+        t_peak_err.push((run.time_to_peak_s - t_peak_ref).abs());
+        let rise = super::dval::sampled_rise_time_10_90(&run.hydrograph).expect("rise resolvable");
+        rise_err.push((rise - rise_ref).abs());
+    }
+    for (k, err) in peak_err.iter().enumerate() {
+        assert!(
+            *err < TOL_PEAK_REL,
+            "hybrid peak error at ladder step {k}: {err} (ref {peak_ref}); ladder {peak_err:?}"
+        );
+    }
+    for (k, err) in t_peak_err.iter().enumerate() {
+        assert!(
+            *err < TOL_T_PEAK_S,
+            "hybrid t_peak error at ladder step {k}: {err} (ref {t_peak_ref}); ladder {t_peak_err:?}"
+        );
+    }
+    for (k, err) in rise_err.iter().enumerate() {
+        assert!(
+            *err < TOL_RISE_S,
+            "hybrid rise error at ladder step {k}: {err} (ref {rise_ref}); ladder {rise_err:?}"
+        );
+    }
+    assert!(
+        peak_err[2] <= peak_err[0] + 0.5 * TOL_PEAK_REL,
+        "hybrid peak error diverges under refinement: {peak_err:?}"
     );
 }
 
