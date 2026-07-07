@@ -12,6 +12,15 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-07`:
+- `20260707-laned-router-d16-hybrid-route-coeff-authoring-bridge-001/` -
+  EXECUTED-HOLD-ROUTE-COEFFICIENT-BRIDGE-AUTHORITY (2026-07-07): executed
+  the named D16 route-coefficient authoring bridge follow-on. The selected
+  external roots currently expose `157` `.man` files but still contain zero
+  native `ow-lanuse-1` datvers, zero `routing_coefficients`, and zero
+  `*.run.toml` active inputs. Current LANUSE/SC authority and D11 evidence
+  do not authorize a legacy-field bridge for all five static route
+  coefficients, so no bridge, suite posture change, or D16 promotion landed.
+  Follow-on: `D16-HYB-ROUTE-COEFF-SOURCE-ACQUISITION`.
 - `20260707-laned-router-d16-hybrid-cohort-authority-hold-lift-001/` -
   EXECUTED-HOLD-ROUTE-COEFFICIENT-AUTHORITY (2026-07-07): executed the
   first D16 cohort-authority hold-lift. The intended cohort is H2637 plus the
