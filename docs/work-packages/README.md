@@ -12,6 +12,13 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-07`:
+- `20260707-laned-router-t3agg-qa-m3-build-provenance-guidance-001/` -
+  EXECUTED-COMPLETE (2026-07-07): closed the Codex-owned QA-M3 remainder from
+  LANED-T3-AGG by promoting the stale-release-binary mitigation into durable
+  workflow guidance. Work-package and Rust crate AGENTS.md files now require
+  exact runner-binary release builds plus recorded binary path/mtime/hash before
+  timing, comparator, or acceptance evidence can be used; `tools/local_ci`
+  carries copyable `openwepp-runner --bins`, `stat`, and `sha256sum` commands.
 - `20260706-laned-router-t3-aggressive-deficit-carry-001/` —
   EXECUTED-PRIZE-NOT-REALIZED (2026-07-07): the T3 follow-on defect-closure
   package. The rev-30 deficit-carry composition CLOSED the named defect

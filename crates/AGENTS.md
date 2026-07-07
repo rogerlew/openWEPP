@@ -45,6 +45,12 @@
 - Use `cargo nextest run --workspace --profile quick` for ordinary local loops and `cargo nextest run --workspace --profile frost` for snow/frost-focused work; fall back to `cargo test` only for libtest-specific behavior or explicitly required legacy harness checks.
 - Contract-derived tests and closure checks for touched state surfaces.
 - Legacy comparator delta review using confidence tiers when migration/parity is in scope.
+- For release CLI timing/comparator evidence, build the exact runner binary
+  target before execution. Use
+  `cargo build --release -p openwepp-runner --bins` for broad runner evidence
+  or explicit `--bin` names for a narrower package, then record binary path,
+  mtime/size or hash, and run command in the package artifact. Do not rely on
+  generic workspace `cargo build --release` to refresh non-default runner bins.
 
 ## Line-Count Governance
 - `.rs` files at or above 2000 lines are `WARN` and need decomposition rationale plus follow-on split intent in review/checklist artifacts.

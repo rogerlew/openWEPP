@@ -40,3 +40,32 @@ python tools/local_ci/nextest_timing.py sweep \
 
 The latest summary is written to `target/local-ci-history/latest.md`; the full
 append-only log is `target/local-ci-history/nextest-runs.jsonl`.
+
+## Release CLI Evidence
+
+For timing, comparator, or package evidence that invokes a release runner CLI,
+build the exact runner binary target first. A generic workspace
+`cargo build --release` can leave non-default runner bins stale.
+
+Broad runner build:
+
+```bash
+cargo build --release -p openwepp-runner --bins
+```
+
+Narrow hillslope-only build:
+
+```bash
+cargo build --release -p openwepp-runner --bin openwepp-cli-hill
+```
+
+Record binary provenance before accepting timings or output hashes:
+
+```bash
+stat -c '%y %s %n' target/release/openwepp-cli-hill
+sha256sum target/release/openwepp-cli-hill
+```
+
+If a fixture runfile hardcodes output paths, verify where the CLI writes real
+artifacts before comparing hashes. For H2637-class timing runs, sequence
+plain/hybrid runs and hash the actual `output/` artifacts between runs.

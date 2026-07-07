@@ -177,6 +177,23 @@
 - Source-level anti-evasion guards when touching external-authority suite posture, cohort fixtures, or required-case bindings.
 - Dual review, review-disposition, dual verification, line-count governance, worker handoff, and disposition artifacts.
 
+## Release-Binary Evidence Provenance
+- For timing, comparator, release-candidate, or acceptance evidence that invokes
+  a release CLI binary, build the exact binary target before running evidence;
+  do not assume generic workspace `cargo build --release` relinks every
+  non-default binary member.
+- For openWEPP runner CLI evidence, the canonical broad build is
+  `cargo build --release -p openwepp-runner --bins`; a narrower package may use
+  explicit `--bin` names only when it records the exact binaries required.
+- Record the build command, binary path, mtime/size or hash, and evidence run
+  command in the package artifact before accepting output hashes, timings, or
+  comparator deltas. If the binary provenance is stale, missing, or ambiguous,
+  rerun the evidence after rebuilding.
+- When a runfile or fixture hardcodes output paths, record that behavior and
+  sequence/hash the actual output directories. Do not infer that an
+  `--output-dir` flag relocates every produced artifact unless the fixture
+  proves it.
+
 ## Common Pitfalls
 - Do not close a package while accepted review findings remain unfixed or undispositioned.
 - Do not mark gates as run when they were reasoned about or partially executed.
