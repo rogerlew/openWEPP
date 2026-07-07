@@ -12,6 +12,17 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-07`:
+- `20260707-laned-router-d16-hybrid-cohort-authority-hold-lift-001/` -
+  EXECUTED-HOLD-ROUTE-COEFFICIENT-AUTHORITY (2026-07-07): executed the
+  first D16 cohort-authority hold-lift. The intended cohort is H2637 plus the
+  three current owcmp inventory roots. All owcmp env checks pass, but all
+  manifests remain inventory-only; the selected external roots contain
+  `120` management files with zero native `ow-lanuse-1` datvers, zero
+  `routing_coefficients`, and zero external `*.run.toml` active inputs.
+  Current LANUSE/SC authority forbids inferring Lane-D route coefficients from
+  legacy cropland fields, so no executable active plain-vs-hybrid suite,
+  tolerance ratification, or selector flip landed. Follow-on:
+  `D16-HYB-ROUTE-COEFF-AUTHORING-BRIDGE`.
 - `20260707-laned-router-d16-hybrid-fidelity-tolerance-hold-lift-001/` -
   EXECUTED-HOLD-COHORT-AUTHORITY (2026-07-07): executed the D16 hold-lift
   preflight. It predeclared non-binding promotion comparison surfaces, confirmed
