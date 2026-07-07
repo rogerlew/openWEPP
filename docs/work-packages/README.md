@@ -12,6 +12,18 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-07`:
+- `20260707-laned-router-d16-hybrid-viability-adjudication-001/` -
+  EXECUTED-HOLD-HYBRID-VIABILITY (2026-07-07): re-adjudicated hybrid default
+  promotion after the selected-cohort active suite became executable. Current
+  hybrid remains explicit opt-in: H2637 is a real positive signal
+  (`40.17 s` active plain vs `33.62 s` active hybrid user time), but the
+  selected cohort fails timing no-harm (`57.34 s` aggregate plain vs
+  `59.95 s` hybrid) and WA Cascades regresses materially (`15.65 s` plain vs
+  `24.50 s` hybrid). The profile-counter discriminator is clear: H2637 wins
+  with zero implicit map evaluations via exact bare-skin evaluation, while WA
+  pays `98.2 M` generic non-bare map evaluations. Follow-on:
+  adaptive no-harm selector plus non-bare implicit solve-cost hold lift before
+  any renewed default-promotion/tolerance ratification.
 - `20260707-laned-router-d16-rowcrop-canhgt-active-runtime-publication-001/` -
   EXECUTED-COMPLETE (2026-07-07): closed the selected-cohort `mn_corn_h4`
   active-run blocker by adding contract-backed daily PL `Hc`/`canhgt`
