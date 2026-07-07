@@ -12,6 +12,15 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-07`:
+- `20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001/` -
+  QUEUED (2026-07-07): contract-first package for
+  `SC-OFEROUTE-002#GAP-OFEHYB-002`, the remaining implicit solve-cost and
+  fidelity/timing ratification blocker after GAP-OFEHYB-001. Scope: refresh
+  the source-memory hybrid H2637 baseline, choose and implement one
+  deterministic solve-cost lever set under `INV-OFEHYB-003`, rerun Case-4
+  full-hybrid and H2637 timing/profile evidence, and audit `INV-OFEHYB-008`
+  promotion readiness. No mesh-policy change, no tolerance weakening, and no
+  selector/default promotion unless every promotion gate is directly proven.
 - `20260707-laned-router-t3-ratification-solve-cost-001/` -
   EXECUTED-HOLD-CASE4-HYBRID-LADDER (2026-07-07): executed the parent LANED-T3
   open ratification gates and landed rev-31 deterministic branch-local warm
@@ -21,11 +30,12 @@ State as of `2026-07-07`:
   fail the ratified `5%` tolerance, so fidelity ratification is blocked and no
   selector promotion is made. Delegable Tier-1/Tier-2 packages are scaffolded.
 - `20260707-laned-router-tier1-local-numerics-001/` -
-  QUEUED (2026-07-07): delegable Tier-1 local-numerics package for
-  contract-first analytic/cheaper celerity, Newton/equilibrium-solve
-  reductions, and local math reductions, structured with the D14
-  baseline/profile -> optimization-plan -> implementation -> timing/fidelity
-  evidence loop.
+  SUPERSEDED-BY-GAP-OFEHYB-002 (2026-07-07): retained as the earlier broad
+  Tier-1 local-numerics scaffold, but the primary execution package is now the
+  gap-shaped
+  `20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001/`, which
+  carries the current source-memory hybrid baseline and `INV-OFEHYB-008`
+  ratification obligations.
 - `20260707-laned-router-tier2-mesh-resolution-adjudication-001/` -
   QUEUED (2026-07-07): delegable Tier-2 package to adjudicate candidate
   production mesh-resolution policy (notably 5 cells/OFE) against Case-4 and

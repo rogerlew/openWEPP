@@ -1,6 +1,14 @@
 # LANED Router Tier-1 Local Numerics
 
-Status: QUEUED
+Status: SUPERSEDED-BY-GAP-OFEHYB-002
+
+Superseded by:
+`docs/work-packages/20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001/`
+
+This package is retained as the earlier broad Tier-1 scaffold. Execute the
+GAP-OFEHYB-002 package instead; it carries the current source-memory hybrid
+baseline, the explicit `SC-OFEROUTE-002#GAP-OFEHYB-002` closure target, and
+`INV-OFEHYB-008` fidelity/timing ratification obligations.
 
 ## Objective
 
@@ -111,4 +119,3 @@ running locally.
 - `cargo nextest run --workspace --profile full`
 - `cargo deny check`
 - `.rs` line-count governance
-
