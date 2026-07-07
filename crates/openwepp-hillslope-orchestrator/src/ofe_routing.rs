@@ -11,7 +11,6 @@ pub mod cascade;
 mod d10b_reconciliation_tests;
 pub mod dval;
 pub mod friction;
-pub mod implicit_recession;
 pub mod infiltration;
 pub mod iwagaki_oracle;
 pub mod kinematic_wave;

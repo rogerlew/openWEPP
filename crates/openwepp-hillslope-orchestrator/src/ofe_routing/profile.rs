@@ -39,21 +39,12 @@ pub struct RoutingProfileSnapshot {
     pub hydrograph_samples: u64,
     /// Upstream-boundary interpolation calls (cascade handoff lookups).
     pub upstream_interpolation_calls: u64,
-    /// T3-I0: steps whose interval carries ZERO source on every cell AND
-    /// zero upstream boundary mass — the implicit-stepping eligibility
-    /// predicate of the T3 hybrid design (and the TV-diagnostic gate).
+    /// Steps whose interval carries zero source on every cell and zero
+    /// upstream boundary mass; retained as the TV-diagnostic gate.
     pub solver_steps_homogeneous: u64,
-    /// T3-I0: steps with ZERO source on every cell but possibly nonzero
-    /// upstream inflow — the AGGRESSIVE hybrid-rule eligibility (recession
-    /// fed by a smooth upstream hydrograph).
+    /// Steps with zero source on every cell but possibly nonzero upstream
+    /// inflow; retained as a recession/source-free work counter.
     pub solver_steps_source_free: u64,
-    /// T3-I2: steps taken by the IMPLICIT stepper under the hybrid rule.
-    pub solver_steps_implicit: u64,
-    /// T3 rev-31: fixed-point map applications inside implicit equilibrium
-    /// solves. Diagnostics-only, disabled unless profiling is enabled.
-    pub implicit_equilibrium_map_evaluations: u64,
-    /// T3 rev-31: branch residual evaluations inside implicit cell solves.
-    pub implicit_branch_evaluations: u64,
     /// Per-OFE solver setup: mesh clone + solver construction + validation.
     pub solver_setup_ns: u64,
     /// CFL sub-timestep selection + Courant evidence (pre-step, per step).
@@ -79,9 +70,6 @@ impl RoutingProfileSnapshot {
             upstream_interpolation_calls: 0,
             solver_steps_homogeneous: 0,
             solver_steps_source_free: 0,
-            solver_steps_implicit: 0,
-            implicit_equilibrium_map_evaluations: 0,
-            implicit_branch_evaluations: 0,
             solver_setup_ns: 0,
             solver_cfl_ns: 0,
             solver_step_ns: 0,
@@ -144,15 +132,6 @@ counter_fn!(
 );
 counter_fn!(count_solver_steps_homogeneous, solver_steps_homogeneous);
 counter_fn!(count_solver_steps_source_free, solver_steps_source_free);
-counter_fn!(count_solver_steps_implicit, solver_steps_implicit);
-counter_fn!(
-    count_implicit_equilibrium_map_evaluations,
-    implicit_equilibrium_map_evaluations
-);
-counter_fn!(
-    count_implicit_branch_evaluations,
-    implicit_branch_evaluations
-);
 
 /// Read and clear the current thread's accumulated slots.
 #[must_use]
@@ -199,14 +178,10 @@ mod tests {
         end_solver_cfl(span);
         count_solver_steps(2);
         count_alpha_evaluations(40);
-        count_implicit_equilibrium_map_evaluations(3);
-        count_implicit_branch_evaluations(2);
         let snapshot = snapshot_and_reset();
         set_enabled(false);
         assert_eq!(snapshot.solver_steps, 2);
         assert_eq!(snapshot.alpha_evaluations, 40);
-        assert_eq!(snapshot.implicit_equilibrium_map_evaluations, 3);
-        assert_eq!(snapshot.implicit_branch_evaluations, 2);
         assert!(snapshot.solver_cfl_ns > 0);
         assert_eq!(snapshot_and_reset(), RoutingProfileSnapshot::default());
     }

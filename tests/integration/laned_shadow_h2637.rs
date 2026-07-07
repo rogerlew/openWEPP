@@ -3,8 +3,8 @@
 //! threaded `cargo test` harness races `set_var`/`remove_var` against
 //! concurrent `getenv` (glibc UB). Every run helper neutralizes ALL Lane D
 //! selector variables at entry (`OPENWEPP_LANED_SHADOW`,
-//! `OPENWEPP_LANED_ACTIVE`, `OPENWEPP_LANED_ACTIVE_IMPLICIT`) so inherited
-//! shell state cannot leak in (CR-M2, T3-QA-M3).
+//! `OPENWEPP_LANED_ACTIVE`, plus the abandoned implicit selector env var) so
+//! inherited shell state cannot leak in (CR-M2, T3-QA-M3).
 //!
 //! Lane D activation guard — the REAL-H2637 legacy executed vector
 //! (`SC-OFEROUTE-001#INV-OFEROUTE-012`): the opt-in seam shadow must fail
@@ -37,6 +37,41 @@ fn copy_fixture_to_temp(tag: &str) -> PathBuf {
     destination
 }
 
+struct AbandonedImplicitEnvCleanup;
+
+impl Drop for AbandonedImplicitEnvCleanup {
+    fn drop(&mut self) {
+        unsafe { std::env::remove_var("OPENWEPP_LANED_ACTIVE_IMPLICIT") };
+    }
+}
+
+#[test]
+fn abandoned_implicit_selector_env_fails_closed_at_startup() {
+    unsafe { std::env::set_var("OPENWEPP_LANED_ACTIVE_IMPLICIT", "0") };
+    let _cleanup = AbandonedImplicitEnvCleanup;
+
+    let result = execute_hillslope_run(
+        &HillslopeRunRequest {
+            run_dir: PathBuf::from("/tmp/openwepp_missing_run_dir_for_abandoned_selector_guard"),
+            run_file: PathBuf::from("case.run"),
+            output_dir: PathBuf::from("/tmp/openwepp_missing_output_for_abandoned_selector_guard"),
+            sidecar_policy: SidecarPolicy::Compat,
+            legacy_sidecar_discovery: false,
+            manifest_path: None,
+        },
+        &["openwepp-cli-hill".to_string()],
+    );
+
+    match result.expect_err("abandoned implicit selector env must fail before run setup") {
+        HillslopeCliError::RuntimeSurfaceFailure { surface, detail } => {
+            assert_eq!(surface, "OPENWEPP_LANED_ACTIVE_IMPLICIT");
+            assert!(detail.contains("ADR-0037"));
+            assert!(detail.contains("abandoned"));
+        }
+        other => panic!("unexpected error variant: {other:?}"),
+    }
+}
+
 fn run_h2637(
     tag: &str,
     shadow: bool,
@@ -44,9 +79,9 @@ fn run_h2637(
     let run_dir = copy_fixture_to_temp(tag);
     let output_dir = run_dir.join("output");
     let manifest_path = run_dir.join("manifest.json");
-    // CR-M2/T3-QA-M3: neutralize ALL sibling selector variables so
-    // inherited shell state cannot turn a baseline leg into a
-    // shadow/active/hybrid run.
+    // CR-M2/T3-QA-M3: neutralize ALL sibling selector variables so inherited
+    // shell state cannot turn a baseline leg into a shadow/active run or
+    // stale abandoned-selector startup failure.
     // SAFETY: single-threaded test setup before any runner threads.
     unsafe { std::env::remove_var("OPENWEPP_LANED_ACTIVE") };
     // SAFETY: as above.
@@ -116,8 +151,8 @@ fn run_h2637_native_routing(
     enable_native_cropland_routing_coefficients(&run_dir);
     let output_dir = run_dir.join("output");
     let manifest_path = run_dir.join("manifest.json");
-    // CR-M2/T3-QA-M3: neutralize the sibling selectors (inherited shell
-    // state).
+    // CR-M2/T3-QA-M3: neutralize the sibling selectors and the abandoned
+    // implicit selector (inherited shell state).
     // SAFETY: single-threaded test setup before any runner threads.
     unsafe { std::env::remove_var("OPENWEPP_LANED_ACTIVE") };
     // SAFETY: as above.
@@ -248,8 +283,8 @@ fn run_h2637_native_active(
     let output_dir = run_dir.join("output");
     let manifest_path = run_dir.join("manifest.json");
     // CR-M2/T3-QA-M3: neutralize the sibling selectors (inherited shell
-    // state) — including the hybrid selector, so the "plain active"
-    // rev-27 evidence leg can never silently run the hybrid path.
+    // state) plus the abandoned implicit selector, so the "plain active"
+    // evidence leg cannot fail on stale operator environment.
     // SAFETY: single-threaded test setup before any runner threads.
     unsafe { std::env::remove_var("OPENWEPP_LANED_SHADOW") };
     // SAFETY: as above.

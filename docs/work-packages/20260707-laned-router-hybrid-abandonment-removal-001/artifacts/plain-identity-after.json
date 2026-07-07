@@ -1,0 +1,220 @@
+{
+  "build": {
+    "command": "cargo build --release -p openwepp-runner --bins",
+    "exit_code": 0,
+    "log_path": "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-hybrid-abandonment-removal-001/artifacts/plain-identity-after-logs/build.log"
+  },
+  "comparison": {
+    "all_identical": true,
+    "baseline_path": "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-hybrid-abandonment-removal-001/artifacts/plain-identity-baseline.json",
+    "comparisons": [
+      {
+        "after_hbp_sha256": "efd8c4255fbe976ecafb2bc89defb7bebd4e2054c9e65c89cd5353c4c31c3790",
+        "after_pass_parquet_sha256": "21c54bf2b045c3fb2f79f39ca174e36a4d188b39f7064f2a75f1170be6bb1656",
+        "baseline_hbp_sha256": "efd8c4255fbe976ecafb2bc89defb7bebd4e2054c9e65c89cd5353c4c31c3790",
+        "baseline_pass_parquet_sha256": "21c54bf2b045c3fb2f79f39ca174e36a4d188b39f7064f2a75f1170be6bb1656",
+        "hbp_identical": true,
+        "member_id": "h2637",
+        "pass_parquet_identical": true
+      },
+      {
+        "after_hbp_sha256": "2f200c2ee0ad4f1b581d6d95aafe7bc2ff2ba5368afa96846263ea86b5243e18",
+        "after_pass_parquet_sha256": "a364287f6fe348f609d25f341823781fdb6885607644eb531050ba1abbf5084f",
+        "baseline_hbp_sha256": "2f200c2ee0ad4f1b581d6d95aafe7bc2ff2ba5368afa96846263ea86b5243e18",
+        "baseline_pass_parquet_sha256": "a364287f6fe348f609d25f341823781fdb6885607644eb531050ba1abbf5084f",
+        "hbp_identical": true,
+        "member_id": "mn_corn_h4",
+        "pass_parquet_identical": true
+      },
+      {
+        "after_hbp_sha256": "5ccf8c4edb1bacb862b92161171b35fb0790df263424a47647ca3df47e52a394",
+        "after_pass_parquet_sha256": "be510725f5bd7bc92c2cb86742d352c7931e02831ef85853093d83e4e2726c77",
+        "baseline_hbp_sha256": "5ccf8c4edb1bacb862b92161171b35fb0790df263424a47647ca3df47e52a394",
+        "baseline_pass_parquet_sha256": "be510725f5bd7bc92c2cb86742d352c7931e02831ef85853093d83e4e2726c77",
+        "hbp_identical": true,
+        "member_id": "n_idaho_forest_h1",
+        "pass_parquet_identical": true
+      },
+      {
+        "after_hbp_sha256": "3640fdf3b3c1d3bf61189a9430fe268143ce9db0e1996cb89e614cfd4d5c4f23",
+        "after_pass_parquet_sha256": "bb3b2e03f3fbd5834eb65a06c59476aba8a383bb021e9f669be7825a342f9e63",
+        "baseline_hbp_sha256": "3640fdf3b3c1d3bf61189a9430fe268143ce9db0e1996cb89e614cfd4d5c4f23",
+        "baseline_pass_parquet_sha256": "bb3b2e03f3fbd5834eb65a06c59476aba8a383bb021e9f669be7825a342f9e63",
+        "hbp_identical": true,
+        "member_id": "wa_cascades_forest_h1",
+        "pass_parquet_identical": true
+      }
+    ]
+  },
+  "generated_at": "2026-07-07T21:17:56.341434+00:00",
+  "members": [
+    {
+      "command": "/usr/bin/time -v target/release/openwepp-cli-hill --run-dir /home/workdir/openWEPP/docs/work-packages/20260707-laned-router-hybrid-abandonment-removal-001/artifacts/plain-identity-runs/h2637 --run-file p2637.post.plain.run.toml --output-dir /home/workdir/openWEPP/docs/work-packages/20260707-laned-router-hybrid-abandonment-removal-001/artifacts/plain-identity-runs/h2637/output-post",
+      "exit_code": 0,
+      "failure_detail": null,
+      "hbp_path": "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-hybrid-abandonment-removal-001/artifacts/plain-identity-runs/h2637/output-post/H2637.hbp",
+      "hbp_sha256": "efd8c4255fbe976ecafb2bc89defb7bebd4e2054c9e65c89cd5353c4c31c3790",
+      "laned_active": {
+        "days_routed": 610,
+        "days_seen": 731,
+        "days_uniform_shape": 3,
+        "lane_days_erosion_source_shape_degenerate": 1,
+        "max_day_cascade_residual_rel": 2.4765580376695655e-13,
+        "max_day_identity_residual_rel": 2.4507313136493173e-13,
+        "max_day_seam_residual_rel": 5.0415846159888125e-14,
+        "max_supply_reconstruction_rel": 7.31201193525081e-16,
+        "total_clamp_m3": 3207.052552219107,
+        "total_end_window_storage_m3": 3167.32249029797,
+        "total_latqcc_outlet_m3": 208132.8460294917,
+        "total_routed_outlet_m3": 374463.0826831916,
+        "total_source_m3": 374423.3526212723,
+        "total_tail_fold_m3": 36426.08375542731
+      },
+      "log_path": "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-hybrid-abandonment-removal-001/artifacts/plain-identity-after-logs/h2637-post.time.log",
+      "manifest_exists": true,
+      "manifest_path": "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-hybrid-abandonment-removal-001/artifacts/plain-identity-runs/h2637/output-post/openwepp_hillslope_run_manifest.json",
+      "member_id": "h2637",
+      "output_dir": "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-hybrid-abandonment-removal-001/artifacts/plain-identity-runs/h2637/output-post",
+      "pass_parquet_path": "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-hybrid-abandonment-removal-001/artifacts/plain-identity-runs/h2637/output-post/H2637.pass.parquet",
+      "pass_parquet_sha256": "21c54bf2b045c3fb2f79f39ca174e36a4d188b39f7064f2a75f1170be6bb1656",
+      "phase": "post",
+      "run_dir": "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-hybrid-abandonment-removal-001/artifacts/plain-identity-runs/h2637",
+      "run_file": "p2637.post.plain.run.toml",
+      "status": "PASS",
+      "timing": {
+        "sys_seconds": "0.03",
+        "user_seconds": "39.86",
+        "wall_seconds": "0:39.91"
+      }
+    },
+    {
+      "command": "/usr/bin/time -v target/release/openwepp-cli-hill --run-dir /home/workdir/openWEPP/docs/work-packages/20260707-laned-router-hybrid-abandonment-removal-001/artifacts/plain-identity-runs/mn_corn_h4 --run-file p4.post.plain.run.toml --output-dir /home/workdir/openWEPP/docs/work-packages/20260707-laned-router-hybrid-abandonment-removal-001/artifacts/plain-identity-runs/mn_corn_h4/output-post",
+      "exit_code": 0,
+      "failure_detail": null,
+      "hbp_path": "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-hybrid-abandonment-removal-001/artifacts/plain-identity-runs/mn_corn_h4/output-post/H4.hbp",
+      "hbp_sha256": "2f200c2ee0ad4f1b581d6d95aafe7bc2ff2ba5368afa96846263ea86b5243e18",
+      "laned_active": {
+        "days_routed": 209,
+        "days_seen": 2557,
+        "days_uniform_shape": 16,
+        "lane_days_erosion_source_shape_degenerate": 22,
+        "max_day_cascade_residual_rel": 1.0388136044916921e-14,
+        "max_day_identity_residual_rel": 8.75248386022179e-14,
+        "max_day_seam_residual_rel": 3.591523851495889e-15,
+        "max_supply_reconstruction_rel": 4.438822286981392e-16,
+        "total_clamp_m3": 0.0,
+        "total_end_window_storage_m3": 36.73695518632866,
+        "total_latqcc_outlet_m3": 57914.55660394729,
+        "total_routed_outlet_m3": 4473.730010803795,
+        "total_source_m3": 4510.466965990123,
+        "total_tail_fold_m3": 9.22310370055062
+      },
+      "log_path": "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-hybrid-abandonment-removal-001/artifacts/plain-identity-after-logs/mn_corn_h4-post.time.log",
+      "manifest_exists": true,
+      "manifest_path": "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-hybrid-abandonment-removal-001/artifacts/plain-identity-runs/mn_corn_h4/output-post/openwepp_hillslope_run_manifest.json",
+      "member_id": "mn_corn_h4",
+      "output_dir": "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-hybrid-abandonment-removal-001/artifacts/plain-identity-runs/mn_corn_h4/output-post",
+      "pass_parquet_path": "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-hybrid-abandonment-removal-001/artifacts/plain-identity-runs/mn_corn_h4/output-post/H4.pass.parquet",
+      "pass_parquet_sha256": "a364287f6fe348f609d25f341823781fdb6885607644eb531050ba1abbf5084f",
+      "phase": "post",
+      "run_dir": "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-hybrid-abandonment-removal-001/artifacts/plain-identity-runs/mn_corn_h4",
+      "run_file": "p4.post.plain.run.toml",
+      "status": "PASS",
+      "timing": {
+        "sys_seconds": "0.01",
+        "user_seconds": "0.53",
+        "wall_seconds": "0:00.55"
+      }
+    },
+    {
+      "command": "/usr/bin/time -v target/release/openwepp-cli-hill --run-dir /home/workdir/openWEPP/docs/work-packages/20260707-laned-router-hybrid-abandonment-removal-001/artifacts/plain-identity-runs/n_idaho_forest_h1 --run-file p1.post.plain.run.toml --output-dir /home/workdir/openWEPP/docs/work-packages/20260707-laned-router-hybrid-abandonment-removal-001/artifacts/plain-identity-runs/n_idaho_forest_h1/output-post",
+      "exit_code": 0,
+      "failure_detail": null,
+      "hbp_path": "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-hybrid-abandonment-removal-001/artifacts/plain-identity-runs/n_idaho_forest_h1/output-post/H1.hbp",
+      "hbp_sha256": "5ccf8c4edb1bacb862b92161171b35fb0790df263424a47647ca3df47e52a394",
+      "laned_active": {
+        "days_routed": 185,
+        "days_seen": 1461,
+        "days_uniform_shape": 14,
+        "lane_days_erosion_source_shape_degenerate": 0,
+        "max_day_cascade_residual_rel": 7.73290181217564e-15,
+        "max_day_identity_residual_rel": 5.258449812093418e-14,
+        "max_day_seam_residual_rel": 5.211801858232392e-15,
+        "max_supply_reconstruction_rel": 8.378371644554163e-16,
+        "total_clamp_m3": 0.0,
+        "total_end_window_storage_m3": 1240.1565430837632,
+        "total_latqcc_outlet_m3": 254933.24890910255,
+        "total_routed_outlet_m3": 99723.5338460626,
+        "total_source_m3": 100963.69038914645,
+        "total_tail_fold_m3": 1276.5414381164533
+      },
+      "log_path": "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-hybrid-abandonment-removal-001/artifacts/plain-identity-after-logs/n_idaho_forest_h1-post.time.log",
+      "manifest_exists": true,
+      "manifest_path": "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-hybrid-abandonment-removal-001/artifacts/plain-identity-runs/n_idaho_forest_h1/output-post/openwepp_hillslope_run_manifest.json",
+      "member_id": "n_idaho_forest_h1",
+      "output_dir": "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-hybrid-abandonment-removal-001/artifacts/plain-identity-runs/n_idaho_forest_h1/output-post",
+      "pass_parquet_path": "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-hybrid-abandonment-removal-001/artifacts/plain-identity-runs/n_idaho_forest_h1/output-post/H1.pass.parquet",
+      "pass_parquet_sha256": "be510725f5bd7bc92c2cb86742d352c7931e02831ef85853093d83e4e2726c77",
+      "phase": "post",
+      "run_dir": "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-hybrid-abandonment-removal-001/artifacts/plain-identity-runs/n_idaho_forest_h1",
+      "run_file": "p1.post.plain.run.toml",
+      "status": "PASS",
+      "timing": {
+        "sys_seconds": "0.02",
+        "user_seconds": "0.96",
+        "wall_seconds": "0:00.98"
+      }
+    },
+    {
+      "command": "/usr/bin/time -v target/release/openwepp-cli-hill --run-dir /home/workdir/openWEPP/docs/work-packages/20260707-laned-router-hybrid-abandonment-removal-001/artifacts/plain-identity-runs/wa_cascades_forest_h1 --run-file p1.post.plain.run.toml --output-dir /home/workdir/openWEPP/docs/work-packages/20260707-laned-router-hybrid-abandonment-removal-001/artifacts/plain-identity-runs/wa_cascades_forest_h1/output-post",
+      "exit_code": 0,
+      "failure_detail": null,
+      "hbp_path": "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-hybrid-abandonment-removal-001/artifacts/plain-identity-runs/wa_cascades_forest_h1/output-post/H1.hbp",
+      "hbp_sha256": "3640fdf3b3c1d3bf61189a9430fe268143ce9db0e1996cb89e614cfd4d5c4f23",
+      "laned_active": {
+        "days_routed": 1381,
+        "days_seen": 2192,
+        "days_uniform_shape": 10,
+        "lane_days_erosion_source_shape_degenerate": 1,
+        "max_day_cascade_residual_rel": 1.4549378953536465e-14,
+        "max_day_identity_residual_rel": 5.933273356520313e-14,
+        "max_day_seam_residual_rel": 2.5899548259786116e-14,
+        "max_supply_reconstruction_rel": 5.714626530090617e-16,
+        "total_clamp_m3": 147233.16676270508,
+        "total_end_window_storage_m3": 4835.1165998893775,
+        "total_latqcc_outlet_m3": 729943.7198742138,
+        "total_routed_outlet_m3": 1007798.7596702089,
+        "total_source_m3": 865400.7095073939,
+        "total_tail_fold_m3": 8875.011254557006
+      },
+      "log_path": "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-hybrid-abandonment-removal-001/artifacts/plain-identity-after-logs/wa_cascades_forest_h1-post.time.log",
+      "manifest_exists": true,
+      "manifest_path": "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-hybrid-abandonment-removal-001/artifacts/plain-identity-runs/wa_cascades_forest_h1/output-post/openwepp_hillslope_run_manifest.json",
+      "member_id": "wa_cascades_forest_h1",
+      "output_dir": "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-hybrid-abandonment-removal-001/artifacts/plain-identity-runs/wa_cascades_forest_h1/output-post",
+      "pass_parquet_path": "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-hybrid-abandonment-removal-001/artifacts/plain-identity-runs/wa_cascades_forest_h1/output-post/H1.pass.parquet",
+      "pass_parquet_sha256": "bb3b2e03f3fbd5834eb65a06c59476aba8a383bb021e9f669be7825a342f9e63",
+      "phase": "post",
+      "run_dir": "/home/workdir/openWEPP/docs/work-packages/20260707-laned-router-hybrid-abandonment-removal-001/artifacts/plain-identity-runs/wa_cascades_forest_h1",
+      "run_file": "p1.post.plain.run.toml",
+      "status": "PASS",
+      "timing": {
+        "sys_seconds": "0.02",
+        "user_seconds": "15.57",
+        "wall_seconds": "0:15.60"
+      }
+    }
+  ],
+  "phase": "post",
+  "release_binary": {
+    "git_branch": "main",
+    "git_head": "b1d5fd4410b700012d857ef4056000163e6aa6a0",
+    "git_status_short": "M crates/openwepp-hillslope-orchestrator/src/direct_runtime/03_executor.rs\n M crates/openwepp-hillslope-orchestrator/src/direct_runtime/laned_active.rs\n M crates/openwepp-hillslope-orchestrator/src/ofe_routing.rs\n M crates/openwepp-hillslope-orchestrator/src/ofe_routing/cascade.rs\n M crates/openwepp-hillslope-orchestrator/src/ofe_routing/d10b_reconciliation_tests.rs\n M crates/openwepp-hillslope-orchestrator/src/ofe_routing/dval.rs\n D crates/openwepp-hillslope-orchestrator/src/ofe_routing/implicit_recession.rs\n M crates/openwepp-hillslope-orchestrator/src/ofe_routing/kinematic_wave.rs\n M crates/openwepp-hillslope-orchestrator/src/ofe_routing/profile.rs\n M crates/openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs\n M crates/openwepp-runner/src/hillslope/05_runner_execution_and_outputs.rs\n M crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00_builders_and_authority.rs\n M crates/openwepp-runner/src/hillslope/laned_active.rs\n M docs/decisions/README.md\n M docs/numerics/README.md\n M docs/specifications/science-contracts/contracts/SC-OFEROUTE-001.md\n D docs/specifications/science-contracts/contracts/SC-OFEROUTE-002.md\n M docs/specifications/science-contracts/index.md\n M tests/integration/laned_shadow_h2637.rs\n?? docs/decisions/0037-abandon-hybrid-implicit-stepping.md\n?? docs/numerics/kinematic-wave-equilibrium-rating-z-structure.md\n?? docs/work-packages/20260707-laned-router-hybrid-abandonment-removal-001/",
+    "mtime_utc": "2026-07-07T21:17:51.622626+00:00",
+    "path": "target/release/openwepp-cli-hill",
+    "sha256": "11cb3d49f74c1b00966d9fd41b2dba6077313f6dc9919f56ded526155182c43a",
+    "size_bytes": 9876840
+  },
+  "schema": "adr0037-active-plain-identity-v1",
+  "status": "PASS"
+}

@@ -166,19 +166,16 @@ fn execute_direct_publication_stream(
     // fails closed rather than publishing an activation-free manifest.
     let laned_active = frame.laned_active_summary.take().map(|summary| *summary);
     if laned_active_profile_enabled {
-        // T3-I0 diagnostics: one stderr line, same posture as the shadow's
+        // Lane D diagnostics: one stderr line, same posture as the shadow's
         // profile report (never touches outputs or the manifest).
         let routing =
             openwepp_hillslope_orchestrator::ofe_routing::profile::snapshot_and_reset();
         eprintln!(
-            "laned_active_profile {{\"solver_runs\":{},\"solver_steps\":{},\"solver_steps_homogeneous\":{},\"solver_steps_source_free\":{},\"solver_steps_implicit\":{},\"implicit_equilibrium_map_evaluations\":{},\"implicit_branch_evaluations\":{},\"alpha_evaluations\":{},\"solver_cfl_ns\":{},\"solver_step_ns\":{},\"solver_sample_ns\":{}}}",
+            "laned_active_profile {{\"solver_runs\":{},\"solver_steps\":{},\"solver_steps_homogeneous\":{},\"solver_steps_source_free\":{},\"alpha_evaluations\":{},\"solver_cfl_ns\":{},\"solver_step_ns\":{},\"solver_sample_ns\":{}}}",
             routing.solver_runs,
             routing.solver_steps,
             routing.solver_steps_homogeneous,
             routing.solver_steps_source_free,
-            routing.solver_steps_implicit,
-            routing.implicit_equilibrium_map_evaluations,
-            routing.implicit_branch_evaluations,
             routing.alpha_evaluations,
             routing.solver_cfl_ns,
             routing.solver_step_ns,
@@ -472,11 +469,6 @@ fn build_hillslope_execution_provenance(
             max_day_identity_residual_rel: summary.max_day_identity_residual_rel,
             lane_days_erosion_source_shape_degenerate: summary
                 .lane_days_erosion_source_shape_degenerate,
-            hybrid_implicit_stepping: crate::hillslope::laned_active::env_hybrid_implicit_enabled(),
-            hybrid_implicit_requested_lane_days: summary.hybrid_implicit_requested_lane_days,
-            hybrid_implicit_selected_lane_days: summary.hybrid_implicit_selected_lane_days,
-            hybrid_implicit_plain_fallback_lane_days: summary
-                .hybrid_implicit_plain_fallback_lane_days,
         }),
     }
 }
@@ -1213,6 +1205,8 @@ pub fn execute_hillslope_run_with_runtime_policy(
     argv: &[String],
     runtime_policy: HillslopeRuntimeSelectionPolicy,
 ) -> Result<HillslopeRunReport, HillslopeCliError> {
+    crate::hillslope::laned_active::reject_abandoned_implicit_selector_env()?;
+
     if !request.run_dir.is_dir() {
         return Err(HillslopeCliError::RunDirectoryMissing {
             path: request.run_dir.clone(),

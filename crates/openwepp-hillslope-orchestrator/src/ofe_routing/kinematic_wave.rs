@@ -238,239 +238,6 @@ impl CellParameters {
         }
         (alpha, q_est)
     }
-
-    /// True when the active equilibrium closure is effectively the skin-only
-    /// Papanicolaou menu (`k_o` + optional rain term) with no q-dependent
-    /// form/wave/vegetation addends and no Manning override. The test mirrors
-    /// the additive friction guards: a nonzero canopy height does not activate
-    /// vegetation when `LAI == 0` or vegetation drag is zero; a nonzero form
-    /// drag does not activate roughness elements when `D_r` or `lambda` is
-    /// zero. Any actually active addend stays on the generic fixed-point path
-    /// unless a contract ratifies its own direct evaluator.
-    #[must_use]
-    pub fn is_bare_skin_only(&self) -> bool {
-        let roughness_elements_absent =
-            self.element_tip_height_m == 0.0 || self.roughness_concentration == 0.0;
-        let vegetation_absent = self.leaf_area_index == 0.0
-            || self.canopy_height_m == 0.0
-            || self.vegetation_drag_coefficient == 0.0;
-        self.manning_n == 0.0 && roughness_elements_absent && vegetation_absent
-    }
-
-    /// GAP-OFEHYB-002: exact fixed-point evaluator for the bare skin-only
-    /// branches. For Shen-Li laminar skin resistance,
-    /// `q = 8 g S h^3 / ((rain_term + k_o) nu)`. For Hirsch turbulent
-    /// skin resistance, `q^(1 - 0.45/2) =
-    /// sqrt(8 g S / 3.19) * nu^(-0.45/2) * h^1.5`.
-    ///
-    /// The returned branch value is the same deterministic basin-selected
-    /// equilibrium the iterative map defines: prefer the seed side when that
-    /// side has an in-regime fixed point, otherwise migrate to the only valid
-    /// fixed point. No empirical fallback or tolerance relaxation exists.
-    fn bare_skin_equilibrium_discharge_direct(
-        &self,
-        flow_depth_m: f64,
-        skin_rain_term: f64,
-        q_seed: f64,
-    ) -> Option<f64> {
-        if flow_depth_m <= DRY_DEPTH_M || self.slope <= 0.0 {
-            return Some(0.0);
-        }
-        if !flow_depth_m.is_finite()
-            || !self.slope.is_finite()
-            || !skin_rain_term.is_finite()
-            || !self.friction_coefficient_ko.is_finite()
-        {
-            return None;
-        }
-
-        let h_pow = flow_depth_m.powf(DEPTH_DISCHARGE_EXPONENT);
-        let q_initial = if q_seed > 0.0 && q_seed.is_finite() {
-            q_seed
-        } else {
-            (GRAVITY_M_S2 * self.slope).sqrt() * h_pow
-        };
-        if !q_initial.is_finite() {
-            return None;
-        }
-        let crossover_q = KINEMATIC_VISCOSITY_M2_S * 1000.0;
-        let prefer_high = q_initial > crossover_q;
-
-        let laminar_resistance_numerator = skin_rain_term + self.friction_coefficient_ko;
-        let q_low = if laminar_resistance_numerator <= 0.0 {
-            0.0
-        } else {
-            8.0 * GRAVITY_M_S2 * self.slope * flow_depth_m.powi(3)
-                / (laminar_resistance_numerator * KINEMATIC_VISCOSITY_M2_S)
-        };
-        if !q_low.is_finite() || q_low < 0.0 {
-            return None;
-        }
-        let low_valid = q_low <= crossover_q;
-
-        let turbulent_base = (8.0 * GRAVITY_M_S2 * self.slope / 3.19).sqrt()
-            * KINEMATIC_VISCOSITY_M2_S.powf(-0.225)
-            * h_pow;
-        if !turbulent_base.is_finite() || turbulent_base < 0.0 {
-            return None;
-        }
-        let q_high = turbulent_base.powf(1.0 / 0.775);
-        if !q_high.is_finite() || q_high < 0.0 {
-            return None;
-        }
-        let high_valid = q_high > crossover_q;
-
-        if prefer_high {
-            if high_valid {
-                Some(q_high)
-            } else if low_valid {
-                Some(q_low)
-            } else {
-                None
-            }
-        } else if low_valid {
-            Some(q_low)
-        } else if high_valid {
-            Some(q_high)
-        } else {
-            None
-        }
-    }
-
-    /// T3-I1 (implicit stepper): the CONVERGED equilibrium discharge
-    /// `q_eq(h)` — the fixed point of `q ↦ alpha(h, q)·h^1.5`, iterated to
-    /// `tol_rel` instead of the explicit scheme's frozen 4-iteration cap.
-    /// Seeded from `q_seed` when positive (warm start), else the Chezy
-    /// estimate (the same zero-flow-singularity break `alpha_q` uses).
-    /// Returns `None` when the fixed point does not meet `tol_rel` within
-    /// `max_iterations` (caller fails closed) — the laminar limb contracts
-    /// at ~0.5 per iteration IN LOG SPACE, so 80 iterations covers 1e-13
-    /// from any finite seed. This is a NEW scheme entry point (no
-    /// bit-compatibility constraint with `alpha_q`, which the explicit
-    /// scheme keeps unchanged).
-    ///
-    /// REGIME-CROSSOVER STRUCTURE (T3-I1 discovery, rev-28 draft): the
-    /// `INV-OFEROUTE-002` skin dispatch is DISCONTINUOUS at `Re = 1000`
-    /// (`f` drops laminar→turbulent), which makes the equilibrium rating
-    /// Z-SHAPED: in an overlap depth band BOTH a laminar-branch and a
-    /// turbulent-branch equilibrium exist, and the fixed-point basins
-    /// split exactly at the crossover discharge `Q_c = 1000·ν` (the map
-    /// is increasing with an upward jump at `Q_c`; each concave branch
-    /// attracts its own side). The SEED therefore selects the branch —
-    /// callers needing a single-valued rating must seed deterministically
-    /// (`implicit_recession`'s basin-split rule — measured: basin-split
-    /// seeding alone yields machine-exact ledgers across the full
-    /// dt/mesh ladder). The explicit scheme's frozen 4-iteration cap
-    /// rides over this structure without ever resolving it.
-    #[must_use]
-    pub(super) fn equilibrium_discharge_converged(
-        &self,
-        flow_depth_m: f64,
-        skin_rain_term: f64,
-        q_seed: f64,
-        tol_rel: f64,
-        max_iterations: usize,
-    ) -> Option<f64> {
-        if self.is_bare_skin_only() {
-            return self.bare_skin_equilibrium_discharge_direct(
-                flow_depth_m,
-                skin_rain_term,
-                q_seed,
-            );
-        }
-        self.equilibrium_discharge_converged_iterated(
-            flow_depth_m,
-            skin_rain_term,
-            q_seed,
-            tol_rel,
-            max_iterations,
-        )
-    }
-
-    fn equilibrium_discharge_converged_iterated(
-        &self,
-        flow_depth_m: f64,
-        skin_rain_term: f64,
-        q_seed: f64,
-        tol_rel: f64,
-        max_iterations: usize,
-    ) -> Option<f64> {
-        if flow_depth_m <= DRY_DEPTH_M || self.slope <= 0.0 {
-            return Some(0.0);
-        }
-        let h_pow = flow_depth_m.powf(DEPTH_DISCHARGE_EXPONENT);
-        let slope_sqrt = self.slope.sqrt();
-        let crossover_q = KINEMATIC_VISCOSITY_M2_S * 1000.0;
-        let mut q_est = if q_seed > 0.0 && q_seed.is_finite() {
-            q_seed
-        } else {
-            (GRAVITY_M_S2 * self.slope).sqrt() * h_pow
-        };
-        // One fixed-point map application.
-        let map = |q: f64| -> Option<f64> {
-            profile::count_implicit_equilibrium_map_evaluations(1);
-            let f_eq = self.equivalent_friction_with_rain_term(flow_depth_m, q, skin_rain_term);
-            if f_eq <= 0.0 {
-                return Some(0.0);
-            }
-            let alpha = chezy_from_friction(f_eq, GRAVITY_M_S2) * slope_sqrt;
-            let q_new = alpha * h_pow;
-            if q_new.is_finite() { Some(q_new) } else { None }
-        };
-        // STEFFENSEN-accelerated iteration (T3-I2 performance): the plain
-        // laminar-limb map contracts at only ~0.5 per iteration in log
-        // space (~40-60 evaluations from a cold basin-split seed);
-        // Steffensen converges quadratically to the SAME fixed point, so
-        // the deterministic rating stays a pure function of the inputs.
-        // The accelerated proposal is accepted only when it is finite,
-        // positive, and on the SAME side of the regime crossover as the
-        // plain iterate (the basin guard — jumping basins would break the
-        // branch-pinned determinism); otherwise the plain iterate stands.
-        let mut budget = max_iterations;
-        while budget >= 2 {
-            let q1 = map(q_est)?;
-            if q1 == 0.0 {
-                return Some(0.0);
-            }
-            if (q1 - q_est).abs() <= tol_rel * q1.max(1.0e-18) {
-                return Some(q1);
-            }
-            let q2 = map(q1)?;
-            if q2 == 0.0 {
-                return Some(0.0);
-            }
-            if (q2 - q1).abs() <= tol_rel * q2.max(1.0e-18) {
-                return Some(q2);
-            }
-            budget -= 2;
-            let denom = q2 - 2.0 * q1 + q_est;
-            let accelerated = if denom == 0.0 {
-                q2
-            } else {
-                q_est - (q1 - q_est) * (q1 - q_est) / denom
-            };
-            // T3-H2 (review-hardened): acceleration is accepted ONLY when
-            // the WHOLE plain triple (q_est, q1, q2) sits in one basin AND
-            // the accelerated point stays on that side — the accelerated
-            // sequence is then side-locked to the plain iteration at every
-            // cycle, so it converges to the SAME fixed point the plain
-            // iteration defines (the function's value IS the plain-iteration
-            // limit from the given seed). While the plain trajectory is
-            // mid-migration across `Q_c` (a legitimate basin move when the
-            // seeded basin is empty at this depth), no acceleration is
-            // applied.
-            let plain_side = q2 > crossover_q;
-            let same_basin = (accelerated > crossover_q) == plain_side
-                && (q1 > crossover_q) == plain_side
-                && (q_est > crossover_q) == plain_side;
-            q_est = if accelerated.is_finite() && accelerated > 0.0 && same_basin {
-                accelerated
-            } else {
-                q2
-            };
-        }
-        None
-    }
 }
 
 /// The single-OFE kinematic-wave mesh: uniform cell length, per-cell params.
@@ -634,9 +401,6 @@ pub enum RoutingError {
     InvalidForcing,
     /// A cell parameter is out of domain (non-finite, negative slope/ko/etc.).
     InvalidCellParameter,
-    /// T3-I1: an implicit-stepper nonlinear solve (equilibrium fixed point
-    /// or the cell Newton) failed to converge within its iteration budget.
-    ImplicitSolveNonConvergence,
 }
 
 /// Single-OFE TVD-MacCormack kinematic-wave solver state.
@@ -860,41 +624,6 @@ impl KinematicWaveSolver {
 
     fn total_storage_m2(&self) -> f64 {
         self.depth_m.iter().sum::<f64>() * self.mesh.cell_length_m
-    }
-
-    /// T3 (hybrid stepping seam): the committed per-cell depth state.
-    /// Successive `run*` calls CONTINUE from this state (each run books its
-    /// own ledger from the state at entry), so a scheme switch hands off
-    /// exactly this vector. Read-only; the implicit stepper owns its copy.
-    #[must_use]
-    pub(super) fn depth_state(&self) -> &[f64] {
-        &self.depth_m
-    }
-
-    /// T3-I2 (hybrid seam, exit-implicit → enter-explicit): install the
-    /// per-cell state committed by the implicit stepper. Discharges are the
-    /// implicit solve's own converged equilibria (`q_eq(h)` per the design
-    /// §2.2 exit rule), so the explicit scheme's next pre-step alpha
-    /// evaluation sees the same shape of state it would after any explicit
-    /// step. Lengths must match the mesh.
-    pub(super) fn set_state(
-        &mut self,
-        depth_m: &[f64],
-        discharge_m2_s: &[f64],
-    ) -> Result<(), RoutingError> {
-        if depth_m.len() != self.depth_m.len() || discharge_m2_s.len() != self.depth_m.len() {
-            return Err(RoutingError::DegenerateConfiguration);
-        }
-        self.depth_m.copy_from_slice(depth_m);
-        self.discharge_m2_s.copy_from_slice(discharge_m2_s);
-        Ok(())
-    }
-
-    /// T3-I2 (hybrid seam, exit-explicit): the committed per-cell discharge
-    /// state paired with `depth_state`.
-    #[must_use]
-    pub(super) fn discharge_state(&self) -> &[f64] {
-        &self.discharge_m2_s
     }
 
     /// Evaluate `alpha` and the TRUE kinematic celerity for every cell at
@@ -1274,6 +1003,7 @@ impl KinematicWaveSolver {
     /// would integrate the pre-breakpoint rate across the post-breakpoint
     /// interval and the discrete source history would diverge from the
     /// forcing definition. Breakpoints must be sorted ascending.
+    #[allow(clippy::too_many_lines)]
     pub fn run_with_options(
         &mut self,
         forcing: &Forcing<'_>,
@@ -1283,47 +1013,6 @@ impl KinematicWaveSolver {
         sample_dt_s: f64,
         max_dt_s: f64,
     ) -> Result<RoutingResult, RoutingError> {
-        let (result, terminal_deficit_m2) = self.run_with_options_deficit_carry(
-            forcing,
-            upstream_integral_m2,
-            forcing_breakpoints_s,
-            end_time_s,
-            sample_dt_s,
-            max_dt_s,
-        )?;
-        if terminal_deficit_m2 < 0.0 {
-            // Medium-1: a material terminal deficit means the outflow
-            // series cannot be represented as a non-negative exact-total
-            // bin series — physically unexpected (total outflow is
-            // non-negative); publishing a negative outlet bin is not an
-            // option, so fail closed.
-            return Err(RoutingError::NegativeOutletBin);
-        }
-        Ok(result)
-    }
-
-    /// Rev-30 composition-scoped variant of [`Self::run_with_options`]: a
-    /// MATERIAL terminal bin deficit (the Review-B M2 front-arrival
-    /// attribution class that the recorder's forward redistribution could
-    /// not absorb inside this window) is RETURNED (`<= 0`, m^2) instead of
-    /// failing closed. When the deficit is nonzero the returned
-    /// `outlet_bin_outflow_m2` series (and the hydrograph derived from it)
-    /// OVER-COUNTS by exactly `|deficit|`; the caller MUST continue the
-    /// forward redistribution into subsequent bins under the exact-total
-    /// rule or fail closed itself. All mass ledgers in the result book
-    /// actual boundary fluxes and are unaffected. Only the hybrid span
-    /// composition (`route_single_ofe_hybrid`) may consume this; every
-    /// other path goes through the fail-closed wrapper.
-    #[allow(clippy::too_many_lines)]
-    pub(super) fn run_with_options_deficit_carry(
-        &mut self,
-        forcing: &Forcing<'_>,
-        upstream_integral_m2: Option<&dyn Fn(f64, f64) -> f64>,
-        forcing_breakpoints_s: &[f64],
-        end_time_s: f64,
-        sample_dt_s: f64,
-        max_dt_s: f64,
-    ) -> Result<(RoutingResult, f64), RoutingError> {
         if self.mesh.cell_count() == 0
             || !self.mesh.cell_length_m.is_finite()
             || self.mesh.cell_length_m <= 0.0
@@ -1453,20 +1142,24 @@ impl KinematicWaveSolver {
         mass.storage_change_m2 = self.total_storage_m2() - storage_initial;
         let (hydrograph, outlet_bin_outflow_m2, outlet_bin_spans_s, terminal_deficit_m2) =
             recorder.finish();
-        Ok((
-            RoutingResult {
-                hydrograph,
-                mass_balance: mass,
-                peak_unit_discharge_m2_s: peak,
-                time_to_peak_s: time_to_peak,
-                max_courant,
-                max_homogeneous_tv_increase_m2_s: self.max_tv_increase_m,
-                outlet_bin_outflow_m2,
-                outlet_bin_dt_s: sample_dt_s,
-                outlet_bin_spans_s,
-            },
-            terminal_deficit_m2,
-        ))
+        if terminal_deficit_m2 < 0.0 {
+            // Medium-1: a material terminal deficit means the outflow
+            // series cannot be represented as a non-negative exact-total
+            // bin series. Publishing a negative outlet bin is not an
+            // option, so the public path fails closed.
+            return Err(RoutingError::NegativeOutletBin);
+        }
+        Ok(RoutingResult {
+            hydrograph,
+            mass_balance: mass,
+            peak_unit_discharge_m2_s: peak,
+            time_to_peak_s: time_to_peak,
+            max_courant,
+            max_homogeneous_tv_increase_m2_s: self.max_tv_increase_m,
+            outlet_bin_outflow_m2,
+            outlet_bin_dt_s: sample_dt_s,
+            outlet_bin_spans_s,
+        })
     }
 }
 
@@ -1498,182 +1191,6 @@ mod tests {
 
     fn constant<'a>(value: f64) -> impl Fn(f64) -> f64 + 'a {
         move |_t: f64| value
-    }
-
-    /// Rev-30 (deficit-carry composition seam): when the terminal bin nets
-    /// negative beyond the noise floor, `finish()` RETURNS the material
-    /// deficit (it is not folded), the published bins stay non-negative,
-    /// and the series over-counts by exactly `|deficit|` — the identity
-    /// `Σ bins == booked total − deficit` the hybrid composition relies on
-    /// to continue the forward redistribution across span boundaries.
-    #[test]
-    fn bin_recorder_returns_material_terminal_deficit_exactly() {
-        let mut recorder = BinRecorder::new(900.0, 1800.0);
-        recorder.record_step(0.0, 900.0, 5.0, 0.001);
-        recorder.record_step(900.0, 890.0, 0.001, 0.0);
-        // Front-arrival class: a step-scale negative attribution at the
-        // very end of the window (no later bin can absorb it).
-        recorder.record_step(1790.0, 10.0, -0.002, 0.0);
-        let booked_total = 5.0 + 0.001 - 0.002;
-        let (_hydrograph, bins, _spans, deficit) = recorder.finish();
-        assert!(
-            (deficit - (-0.001)).abs() < 1.0e-15,
-            "material deficit returned exactly: {deficit:e}"
-        );
-        assert!(
-            bins.iter().all(|v| *v >= 0.0),
-            "bins non-negative: {bins:?}"
-        );
-        let bin_total: f64 = bins.iter().sum();
-        assert!(
-            (bin_total - (booked_total - deficit)).abs() < 1.0e-15,
-            "over-count identity: bins {bin_total} vs booked {booked_total} - deficit {deficit}"
-        );
-    }
-
-    #[test]
-    fn bare_skin_direct_equilibrium_matches_iterated_branch_values() {
-        let crossover_q = KINEMATIC_VISCOSITY_M2_S * 1000.0;
-        let laminar_edge_h =
-            (crossover_q * 500.0 * KINEMATIC_VISCOSITY_M2_S / (8.0 * GRAVITY_M_S2 * 0.05)).cbrt();
-        let cases = [
-            (
-                CellParameters::bare(0.05, 500.0),
-                0.0,
-                0.001_f64,
-                crossover_q * 1.0e-3,
-            ),
-            (
-                CellParameters::bare(0.05, 500.0),
-                0.0,
-                0.001,
-                crossover_q * 1.0e3,
-            ),
-            (
-                CellParameters::bare(0.05, 500.0),
-                0.0,
-                0.004,
-                crossover_q * 1.0e-3,
-            ),
-            (
-                CellParameters::bare(0.05, 500.0),
-                0.0,
-                0.004,
-                crossover_q * 1.0e3,
-            ),
-            (
-                CellParameters::bare(0.05, 500.0),
-                0.0,
-                0.020,
-                crossover_q * 1.0e-3,
-            ),
-            (
-                CellParameters::bare(0.05, 500.0),
-                0.0,
-                0.020,
-                crossover_q * 1.0e3,
-            ),
-            (
-                CellParameters::bare(0.05, 500.0),
-                0.0,
-                laminar_edge_h * (1.0 - 1.0e-6),
-                crossover_q * 1.0e-3,
-            ),
-            (
-                CellParameters::bare(0.05, 500.0),
-                0.0,
-                laminar_edge_h * (1.0 + 1.0e-6),
-                crossover_q * 1.0e-3,
-            ),
-            (
-                CellParameters::bare(0.05, 500.0),
-                25.0,
-                0.006,
-                crossover_q * 1.0e-3,
-            ),
-            (
-                CellParameters::bare(0.05, 500.0),
-                25.0,
-                0.006,
-                crossover_q * 1.0e3,
-            ),
-            (
-                CellParameters::bare(0.05, 0.0),
-                0.0,
-                0.001,
-                crossover_q * 1.0e-3,
-            ),
-            (
-                CellParameters::bare(0.05, 0.0),
-                0.0,
-                0.006,
-                crossover_q * 1.0e3,
-            ),
-        ];
-
-        for (cell, rain_term, h, seed) in cases {
-            let direct = cell
-                .bare_skin_equilibrium_discharge_direct(h, rain_term, seed)
-                .expect("direct branch value");
-            let iterated = cell
-                .equilibrium_discharge_converged_iterated(h, rain_term, seed, 1.0e-13, 80)
-                .expect("iterated branch value");
-            assert!(
-                (direct - iterated).abs() <= 2.0e-12 * iterated.max(1.0e-18),
-                "rain_term={rain_term} h={h} seed={seed}: direct {direct} vs iterated {iterated}"
-            );
-        }
-    }
-
-    #[test]
-    fn bare_skin_direct_equilibrium_tracks_effective_addends() {
-        let bare = CellParameters::bare(0.05, 500.0);
-        assert!(bare.is_bare_skin_only());
-
-        let mut disabled_form_drag = bare;
-        disabled_form_drag.drag_coefficient = 1.0;
-        assert!(disabled_form_drag.is_bare_skin_only());
-
-        let mut with_roughness_elements = bare;
-        with_roughness_elements.drag_coefficient = 1.0;
-        with_roughness_elements.element_tip_height_m = 0.05;
-        with_roughness_elements.roughness_concentration = 0.2;
-        assert!(!with_roughness_elements.is_bare_skin_only());
-
-        let mut disabled_canopy = bare;
-        disabled_canopy.canopy_height_m = 0.4;
-        disabled_canopy.vegetation_drag_coefficient = 1.0;
-        assert!(disabled_canopy.is_bare_skin_only());
-
-        let mut disabled_vegetation_drag = bare;
-        disabled_vegetation_drag.leaf_area_index = 1.0;
-        disabled_vegetation_drag.canopy_height_m = 0.4;
-        assert!(disabled_vegetation_drag.is_bare_skin_only());
-
-        let mut with_vegetation = bare;
-        with_vegetation.leaf_area_index = 1.0;
-        with_vegetation.canopy_height_m = 0.4;
-        with_vegetation.vegetation_drag_coefficient = 1.0;
-        assert!(!with_vegetation.is_bare_skin_only());
-
-        let manning = CellParameters::manning(0.05, 0.009);
-        assert!(!manning.is_bare_skin_only());
-    }
-
-    #[test]
-    fn bare_skin_direct_equilibrium_does_not_authorize_invalid_raw_operands() {
-        let mut invalid_disabled_form = CellParameters::bare(0.05, 500.0);
-        invalid_disabled_form.roughness_concentration = 0.0;
-        invalid_disabled_form.element_tip_height_m = f64::NAN;
-        assert!(invalid_disabled_form.is_bare_skin_only());
-        assert!(invalid_disabled_form.validate().is_err());
-
-        let mut invalid_disabled_vegetation = CellParameters::bare(0.05, 500.0);
-        invalid_disabled_vegetation.leaf_area_index = 0.0;
-        invalid_disabled_vegetation.canopy_height_m = f64::INFINITY;
-        invalid_disabled_vegetation.vegetation_drag_coefficient = 1.0;
-        assert!(invalid_disabled_vegetation.is_bare_skin_only());
-        assert!(invalid_disabled_vegetation.validate().is_err());
     }
 
     // Case 1 (bare surface): 60 mm/h over a 7.5 m plot at 9%, k_o=500.
@@ -1869,6 +1386,32 @@ mod tests {
             mid < late,
             "rising limb must be visible at bin scale: mid={mid}, late={late}"
         );
+    }
+
+    #[test]
+    fn material_terminal_bin_deficit_fails_closed_on_public_path() {
+        let mesh = KinematicWaveMesh::uniform(20.0, 2, CellParameters::bare(0.05, 100.0));
+        let mut solver = KinematicWaveSolver::new(mesh);
+        // Construct the retained front-arrival attribution class directly on
+        // the explicit solver state: the upstream cell is carrying discharge,
+        // the outlet cell is dry, and the one-step window ends before a later
+        // positive bin can absorb the boundary-attribution deficit.
+        solver.discharge_m2_s[0] = 1.0e-4;
+        solver.discharge_m2_s[1] = 0.0;
+
+        let excess = |_i: usize, _t: f64| 0.0;
+        let inflow = |_t: f64| 0.0;
+        let intensity = |_t: f64| 0.0;
+        let forcing = Forcing {
+            rainfall_excess_m_s: &excess,
+            upstream_inflow_m2_s: &inflow,
+            rainfall_intensity_m_s: &intensity,
+        };
+
+        assert!(matches!(
+            solver.run_with_options(&forcing, None, &[], 1.0, 1.0, 1.0),
+            Err(RoutingError::NegativeOutletBin)
+        ));
     }
 
     #[test]

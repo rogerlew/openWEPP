@@ -571,7 +571,6 @@ impl DirectFrameExecutor {
                         window_s,
                         &mut books,
                         &lane_sources[lane_index],
-                        config.hybrid_implicit,
                     )
                     .map_err(|source| {
                         Self::day_execution_failure(day_frame, lane_index, day_index, &source)

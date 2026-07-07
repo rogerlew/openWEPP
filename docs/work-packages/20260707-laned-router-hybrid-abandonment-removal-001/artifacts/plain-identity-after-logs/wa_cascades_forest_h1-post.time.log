@@ -1,0 +1,24 @@
+laned_active_profile {"solver_runs":6905,"solver_steps":3285282,"solver_steps_homogeneous":1739890,"solver_steps_source_free":2015262,"alpha_evaluations":46177740,"solver_cfl_ns":10432457405,"solver_step_ns":2998261717,"solver_sample_ns":194460953}
+	Command being timed: "target/release/openwepp-cli-hill --run-dir /home/workdir/openWEPP/docs/work-packages/20260707-laned-router-hybrid-abandonment-removal-001/artifacts/plain-identity-runs/wa_cascades_forest_h1 --run-file p1.post.plain.run.toml --output-dir /home/workdir/openWEPP/docs/work-packages/20260707-laned-router-hybrid-abandonment-removal-001/artifacts/plain-identity-runs/wa_cascades_forest_h1/output-post"
+	User time (seconds): 15.57
+	System time (seconds): 0.02
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:15.60
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 25476
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 6545
+	Voluntary context switches: 7
+	Involuntary context switches: 63
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 1440
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

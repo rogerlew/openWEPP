@@ -52,10 +52,7 @@ impl DirectProductionDayInputBuilder<'_> {
                 }
             })
             .collect();
-        Ok(openwepp_hillslope_orchestrator::DirectLanedActiveConfig {
-            lanes,
-            hybrid_implicit: crate::hillslope::laned_active::env_hybrid_implicit_enabled(),
-        })
+        Ok(openwepp_hillslope_orchestrator::DirectLanedActiveConfig { lanes })
     }
 
     fn laned_geometry_with_selector(

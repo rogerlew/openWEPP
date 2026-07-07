@@ -15,6 +15,12 @@ Comparator interpretation follows confidence tiers from
 ## Within-config determinism
 A single openWEPP run with a single thread of execution and a pinned RNG seed must be bit-reproducible run-to-run on the same target. Cross-thread and cross-platform bit reproducibility are not required.
 
+Runtime policy selectors must be pure functions of run inputs available at
+the decision boundary. They must not depend on wall time, host load,
+measured runtime counters, observed mid-run iteration counts, or any other
+execution-cost signal. This rule is retained from the abandoned hybrid
+selector's ADR-0037 knowledge extraction.
+
 ## Floating-point types
 - Default to `f64` for state-bearing arithmetic.
 - `f32` is permitted only for I/O surfaces or where a science contract names it explicitly.
@@ -33,3 +39,7 @@ Off by default. Enabled per kernel only with documented justification in the sci
 
 ## Open work
 The above are commitments. Specific kernel-level numerics decisions are made in each kernel-port work package, citing this policy.
+
+## Notes
+
+- [Kinematic-wave equilibrium rating Z structure](kinematic-wave-equilibrium-rating-z-structure.md)

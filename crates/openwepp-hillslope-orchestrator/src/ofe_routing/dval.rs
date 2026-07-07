@@ -12,12 +12,10 @@
 //! No copyrighted series are embedded; the cited peak scalars in the tests are
 //! digitized published values with provenance.
 
-use super::cascade::{CascadeSegment, HYBRID_SOURCE_MEMORY_COOLDOWN_MULTIPLIER};
-use super::implicit_recession::implicit_step_with_discharges;
+use super::cascade::CascadeSegment;
 use super::infiltration::{GreenAmptSoil, RainfallInterval, run_infiltrated_cascade};
 use super::kinematic_wave::{
-    CellParameters, Forcing, KinematicWaveMesh, KinematicWaveSolver, MassBalance, RoutingError,
-    RoutingResult,
+    CellParameters, Forcing, KinematicWaveMesh, KinematicWaveSolver, RoutingError,
 };
 
 /// One recorded outlet sample (time, unit discharge).
@@ -144,31 +142,6 @@ pub fn run_iwagaki_manning(
     )
 }
 
-/// Case 4 under the rev-33 hybrid acceptance harness: explicit
-/// TVD-MacCormack while the Iwagaki lateral supply is active and during the
-/// shared source-memory cooldown, then the implicit backward-Euler recession
-/// stepper after the cooldown.
-pub fn run_iwagaki_manning_hybrid(
-    cell_count: usize,
-    sample_dt_s: f64,
-    max_dt_s: f64,
-) -> Result<DvalRun, RoutingError> {
-    run_iwagaki_cells_hybrid(
-        |slope| CellParameters::manning(slope, super::iwagaki_oracle::IWAGAKI_MANNING_N),
-        cell_count,
-        sample_dt_s,
-        max_dt_s,
-    )
-}
-
-fn iwagaki_hybrid_source_memory_explicit_end_s(
-    config: &super::iwagaki_oracle::OracleConfig,
-) -> f64 {
-    #[allow(clippy::cast_precision_loss)]
-    let cooldown_multiplier = HYBRID_SOURCE_MEMORY_COOLDOWN_MULTIPLIER as f64;
-    (config.supply_end_s * (1.0 + cooldown_multiplier)).min(config.end_time_s)
-}
-
 fn iwagaki_domain_end(config: &super::iwagaki_oracle::OracleConfig) -> f64 {
     config.reaches.last().map_or(24.0, |reach| reach.x_end_m)
 }
@@ -278,179 +251,6 @@ fn run_iwagaki_cells(
         diagnostic_max_homogeneous_tv_increase_m2_s: Some(res.max_homogeneous_tv_increase_m2_s),
         diagnostic_rainfall_excess_m2: Some(res.mass_balance.rainfall_excess_m2),
     })
-}
-
-fn run_iwagaki_cells_hybrid(
-    cell_for_slope: impl Fn(f64) -> CellParameters,
-    cell_count: usize,
-    sample_dt_s: f64,
-    max_dt_s: f64,
-) -> Result<DvalRun, RoutingError> {
-    let config = super::iwagaki_oracle::OracleConfig::iwagaki_case4();
-    if sample_dt_s <= 0.0 || max_dt_s <= 0.0 || cell_count == 0 {
-        return Err(RoutingError::DegenerateConfiguration);
-    }
-    let explicit_end_s = iwagaki_hybrid_source_memory_explicit_end_s(&config);
-    let (explicit_bins, total_bins) =
-        checked_iwagaki_bin_counts(&config, explicit_end_s, sample_dt_s)?;
-    let mesh = build_iwagaki_mesh(&config, cell_for_slope, cell_count);
-    let (solver, explicit) =
-        run_iwagaki_hybrid_supply_phase(&mesh, &config, explicit_end_s, sample_dt_s, max_dt_s)?;
-    if explicit.outlet_bin_outflow_m2.len() != explicit_bins {
-        return Err(RoutingError::DegenerateConfiguration);
-    }
-    let mut bins_m2 = vec![0.0_f64; total_bins];
-    bins_m2[..explicit_bins].copy_from_slice(&explicit.outlet_bin_outflow_m2);
-    let mut mass = explicit.mass_balance;
-    let max_courant = explicit.max_courant;
-    let max_tv = explicit.max_homogeneous_tv_increase_m2_s;
-    let mut substep_peak = explicit.peak_unit_discharge_m2_s;
-    let mut substep_peak_time = explicit.time_to_peak_s;
-
-    append_iwagaki_hybrid_recession(
-        &mesh,
-        &solver,
-        &mut bins_m2,
-        explicit_bins,
-        sample_dt_s,
-        &mut mass,
-        &mut substep_peak,
-        &mut substep_peak_time,
-    )?;
-
-    let hydrograph = sampled_hydrograph_from_bins(&bins_m2, sample_dt_s);
-    let (time_to_peak_s, peak_m2_s) = sampled_peak(&hydrograph);
-    Ok(DvalRun {
-        hydrograph,
-        peak_m2_s,
-        time_to_peak_s,
-        diagnostic_substep_peak_m2_s: Some(substep_peak),
-        diagnostic_substep_time_to_peak_s: Some(substep_peak_time),
-        max_courant,
-        runoff_coefficient: None,
-        diagnostic_tvd_boundary_leak_m2: Some(mass.tvd_boundary_leak_m2),
-        diagnostic_max_homogeneous_tv_increase_m2_s: Some(max_tv),
-        diagnostic_rainfall_excess_m2: Some(mass.rainfall_excess_m2),
-    })
-}
-
-fn checked_iwagaki_bin_counts(
-    config: &super::iwagaki_oracle::OracleConfig,
-    explicit_end_s: f64,
-    sample_dt_s: f64,
-) -> Result<(usize, usize), RoutingError> {
-    let supply_bins_f = explicit_end_s / sample_dt_s;
-    let total_bins_f = config.end_time_s / sample_dt_s;
-    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-    let supply_bins = supply_bins_f.round() as usize;
-    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-    let total_bins = total_bins_f.round() as usize;
-    #[allow(clippy::cast_precision_loss)]
-    let supply_reconstructed = supply_bins as f64 * sample_dt_s;
-    #[allow(clippy::cast_precision_loss)]
-    let total_reconstructed = total_bins as f64 * sample_dt_s;
-    if supply_bins == 0
-        || total_bins <= supply_bins
-        || (supply_reconstructed - explicit_end_s).abs() > 1.0e-9
-        || (total_reconstructed - config.end_time_s).abs() > 1.0e-9
-    {
-        return Err(RoutingError::DegenerateConfiguration);
-    }
-    Ok((supply_bins, total_bins))
-}
-
-fn run_iwagaki_hybrid_supply_phase(
-    mesh: &KinematicWaveMesh,
-    config: &super::iwagaki_oracle::OracleConfig,
-    explicit_end_s: f64,
-    sample_dt_s: f64,
-    max_dt_s: f64,
-) -> Result<(KinematicWaveSolver, RoutingResult), RoutingError> {
-    let dx = mesh.cell_length_m;
-    let mut solver = KinematicWaveSolver::new(mesh.clone());
-    let supply_end = config.supply_end_s;
-    let excess = |i: usize, t: f64| {
-        if t >= supply_end {
-            return 0.0;
-        }
-        let x = (f64::from(u32::try_from(i).unwrap_or(u32::MAX)) + 0.5) * dx;
-        iwagaki_reach_supply(config, x)
-    };
-    let inflow = |_t: f64| 0.0;
-    let intensity = |_t: f64| 0.0;
-    let forcing = Forcing {
-        rainfall_excess_m_s: &excess,
-        upstream_inflow_m2_s: &inflow,
-        rainfall_intensity_m_s: &intensity,
-    };
-    let explicit = solver.run_with_options(
-        &forcing,
-        None,
-        &[config.supply_end_s],
-        explicit_end_s,
-        sample_dt_s,
-        max_dt_s,
-    )?;
-    Ok((solver, explicit))
-}
-
-#[allow(clippy::too_many_arguments)]
-fn append_iwagaki_hybrid_recession(
-    mesh: &KinematicWaveMesh,
-    solver: &KinematicWaveSolver,
-    bins_m2: &mut [f64],
-    supply_bins: usize,
-    sample_dt_s: f64,
-    mass: &mut MassBalance,
-    substep_peak: &mut f64,
-    substep_peak_time: &mut f64,
-) -> Result<(), RoutingError> {
-    let mut depths = solver.depth_state().to_vec();
-    let mut discharges = solver.discharge_state().to_vec();
-    let zero_source = vec![0.0_f64; mesh.cell_count()];
-    for (bin, slot) in bins_m2.iter_mut().enumerate().skip(supply_bins) {
-        let outcome = implicit_step_with_discharges(
-            mesh,
-            &mut depths,
-            Some(&mut discharges),
-            0.0,
-            &zero_source,
-            0.0,
-            sample_dt_s,
-        )?;
-        *slot = outcome.outflow_m2;
-        mass.inflow_m2 += outcome.inflow_m2;
-        mass.scheme_inflow_m2 += outcome.inflow_m2;
-        mass.outflow_m2 += outcome.outflow_m2;
-        mass.scheme_outflow_m2 += outcome.outflow_m2;
-        mass.rainfall_excess_m2 += outcome.rainfall_excess_m2;
-        mass.storage_change_m2 += outcome.storage_change_m2;
-        if outcome.outlet_unit_discharge_m2_s > *substep_peak {
-            *substep_peak = outcome.outlet_unit_discharge_m2_s;
-            #[allow(clippy::cast_precision_loss)]
-            {
-                *substep_peak_time = (bin + 1) as f64 * sample_dt_s;
-            }
-        }
-    }
-    Ok(())
-}
-
-fn sampled_hydrograph_from_bins(bins_m2: &[f64], sample_dt_s: f64) -> Vec<Sample> {
-    let mut hydrograph = Vec::with_capacity(bins_m2.len() + 1);
-    hydrograph.push(Sample {
-        time_s: 0.0,
-        q_m2_s: 0.0,
-    });
-    for (k, bin_mass) in bins_m2.iter().enumerate() {
-        #[allow(clippy::cast_precision_loss)]
-        let time_s = k as f64 * sample_dt_s + 0.5 * sample_dt_s;
-        hydrograph.push(Sample {
-            time_s,
-            q_m2_s: bin_mass / sample_dt_s,
-        });
-    }
-    hydrograph
 }
 
 /// Operands for a rainfall-on-soil validation case (Cases 1-3).

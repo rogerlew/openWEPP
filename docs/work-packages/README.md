@@ -12,6 +12,21 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-07`:
+- `20260707-laned-router-hybrid-abandonment-removal-001/` -
+  EXECUTED-COMPLETE-ADR0037-REMOVAL (2026-07-07): executed ADR-0037 terminal
+  abandonment of the hybrid implicit-explicit Lane D stepper. The final
+  working hybrid state is archived on branch
+  `abandoned/hybrid-implicit-stepping` at
+  `b1d5fd4410b700012d857ef4056000163e6aa6a0`; main deletes
+  `SC-OFEROUTE-002`, withdraws its registry row, removes hybrid code,
+  selector, manifest/profile counters, and hybrid tests, and makes
+  `OPENWEPP_LANED_ACTIVE_IMPLICIT` fail closed with an ADR-0037 startup
+  error. The hard acceptance gate passed: active-plain HBP and pass-parquet
+  hashes are byte-identical pre/post strip for H2637, `mn_corn_h4`,
+  `n_idaho_forest_h1`, and `wa_cascades_forest_h1`; final full workspace
+  gate `1414/1414` passed. Follow-on: a separate Tier-2 Δx-target
+  mesh-policy re-scope package; do not continue hybrid optimization from
+  main.
 - `20260707-laned-router-d16-hybrid-noharm-selector-solvecost-hold-lift-001/` -
   EXECUTED-COMPLETE-NOHARM-SELECTOR (2026-07-07): amended
   `SC-OFEROUTE-002` rev 5 and implemented selector-first hybrid request
