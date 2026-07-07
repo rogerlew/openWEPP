@@ -111,6 +111,15 @@ impl DirectFrameExecutor {
         frame: &mut DirectRunFrame,
     ) -> Result<DirectExecutionReport, DirectRuntimeError> {
         DIRECT_AUDIT.record_skeleton_run();
+        // D15A: the active owner is a publication-stream integration; a
+        // skeleton run with the selector present would silently not route,
+        // which is exactly the shadow-only-activation shape rev 27 forbids.
+        if frame.laned_active.is_some() {
+            return Err(DirectRuntimeError::DirectKernelGuardFailure {
+                phase: "laned_active_selector",
+                detail: "the skeleton executor does not support the active routing owner; use the publication stream".to_string(),
+            });
+        }
         let mut phase_view_count = 0_u64;
         let mut counters = DirectExecutionCounters::default();
         let phase_plan = *frame.phase_plan.phases();
@@ -281,6 +290,7 @@ impl DirectFrameExecutor {
         )
     }
 
+    #[allow(clippy::too_many_lines)]
     pub fn run_publication_stream_with_interleaved_day_inputs_and_day_frames<F, S>(
         &self,
         frame: &mut DirectRunFrame,
@@ -296,6 +306,17 @@ impl DirectFrameExecutor {
         ) -> Result<DirectPublicationDayInput, DirectRuntimeError>,
         S: FnMut(&DirectPublicationDayRow, &DirectDayFrame) -> Result<(), DirectRuntimeError>,
     {
+        // D15A (rev 27): the opt-in ACTIVE owner takes the two-phase day
+        // loop; the default path below is textually untouched
+        // (`INV-OFEROUTE-010`).
+        if frame.laned_active.is_some() {
+            return self.run_laned_active_publication_stream(
+                frame,
+                metadata,
+                build_day_input,
+                consume_row,
+            );
+        }
         DIRECT_AUDIT.record_publication_capture_run();
         let expected_row_count = frame
             .identity
@@ -370,6 +391,259 @@ impl DirectFrameExecutor {
                 actual_row_count: row_count,
             });
         }
+
+        Ok(DirectStreamingPublicationExecution {
+            report: DirectExecutionReport {
+                mode: self.mode,
+                lane_count: frame.lanes.len(),
+                day_count: frame.identity.day_count,
+                planned_phase_count: frame.phase_plan.len(),
+                canonical_phase_entry_count: phase_view_count,
+                phase_view_count,
+                phase_status_counts: counters.phase_status_counts(),
+                phase_span_run_count: counters.spans,
+                direct_phase_entry_count: counters.entries,
+                direct_compute_count: counters.computes,
+                state_mutation_count: counters.mutations,
+                downstream_operand_count: counters.downstream_operands,
+                shadow_projection_count: counters.shadows,
+                compatibility_edge_invocation_count: counters.compatibility_edges,
+                day_frame_commit_count: counters.day_frame_commits,
+            },
+            identity,
+            metadata,
+            row_count,
+        })
+    }
+
+    /// D15A (rev 27): the ACTIVE publication stream — the two-phase day loop
+    /// in which Lane D routing OWNS the surface-water path. Phase 1 runs
+    /// every lane's hydrology (with the surface transfer suppressed — DC01
+    /// disable) so the shared day window is derivable; phase 2 routes each
+    /// lane in cascade order, flips the D13 erosion authority to the routed
+    /// shape, runs the erosion/ledger tail, publishes rows, and enforces the
+    /// day-closure hard-fails.
+    #[allow(clippy::too_many_lines)]
+    fn run_laned_active_publication_stream<F, S>(
+        &self,
+        frame: &mut DirectRunFrame,
+        metadata: DirectPublicationRunMetadata,
+        mut build_day_input: F,
+        mut consume_row: S,
+    ) -> Result<DirectStreamingPublicationExecution, DirectRuntimeError>
+    where
+        F: FnMut(
+            &DirectRunFrame,
+            usize,
+            usize,
+        ) -> Result<DirectPublicationDayInput, DirectRuntimeError>,
+        S: FnMut(&DirectPublicationDayRow, &DirectDayFrame) -> Result<(), DirectRuntimeError>,
+    {
+        DIRECT_AUDIT.record_publication_capture_run();
+        let config = frame
+            .laned_active
+            .clone()
+            .ok_or(DirectRuntimeError::MissingDirectUpstream {
+                upstream: "laned_active configuration",
+            })?;
+        config.validate(frame.identity.lane_count)?;
+        // Active routing requires the linear MOFE chain in lane-index order
+        // (the cascade handoff and the closure books assume it).
+        for (lane_index, lane) in frame.lanes.iter().enumerate() {
+            let expected_downstream = if lane_index + 1 < frame.lanes.len() {
+                u32::try_from(lane_index + 2).map_err(|_| {
+                    DirectRuntimeError::LaneIdOverflow { lane_index }
+                })?
+            } else {
+                0
+            };
+            if lane.downstream_lane_id != expected_downstream {
+                return Err(DirectRuntimeError::InvalidLaneTopology {
+                    lane_index,
+                    lane_id: lane.lane_id,
+                    upstream_lane_id: lane.upstream_lane_id,
+                    downstream_lane_id: lane.downstream_lane_id,
+                });
+            }
+        }
+        let expected_row_count = frame
+            .identity
+            .lane_count
+            .checked_mul(frame.identity.day_count)
+            .ok_or(DirectRuntimeError::DirectDomainViolation {
+                field: "publication.expected_row_count",
+            })?;
+        let identity = frame.identity;
+        let mut phase_view_count = 0_u64;
+        let mut counters = DirectExecutionCounters::default();
+        let phase_plan = *frame.phase_plan.phases();
+        let mut row_count = 0_usize;
+        let mut summary = laned_active::DirectLanedActiveRunSummary::default();
+
+        let transfer_span_report = frame.run_r3c_lane_transfer_span()?;
+        counters.record_span(
+            transfer_span_report.phase_entry_count,
+            transfer_span_report.direct_compute_count,
+            transfer_span_report.state_mutation_count,
+            transfer_span_report.downstream_operand_count,
+            transfer_span_report.shadow_projection_count,
+            transfer_span_report.compatibility_edge_invocation_count,
+        );
+
+        let lane_count = frame.identity.lane_count;
+        for day_index in 0..frame.identity.day_count {
+            // Phase 1: hydrology for every lane, in lane order, with the
+            // SURFACE transfer suppressed (router ownership) and the LATERAL
+            // transfer published unchanged.
+            let mut day_frames: Vec<DirectDayFrame> = Vec::with_capacity(lane_count);
+            let mut day_inputs: Vec<DirectPublicationDayInput> = Vec::with_capacity(lane_count);
+            for lane_index in 0..lane_count {
+                let day_input = build_day_input(frame, day_index, lane_index)?;
+                let mut day_frame = frame.seed_day_frame(lane_index, day_index)?;
+                Self::apply_publication_day_input(&mut day_frame, &day_input)?;
+                Self::run_day_spans_hydrology(
+                    &mut day_frame,
+                    &mut counters,
+                    day_input.winter_frost_compute_inputs.as_ref(),
+                )
+                .map_err(|source| {
+                    Self::day_execution_failure(&day_frame, lane_index, day_index, &source)
+                })?;
+                if Self::publish_dynamic_transfer_to_downstream_with_ownership(
+                    frame, &day_frame, true,
+                )? {
+                    counters.record_dynamic_transfer_publication();
+                }
+                day_inputs.push(day_input);
+                day_frames.push(day_frame);
+            }
+
+            // The shared day window (rev-27 window row): last active source
+            // hour over ALL lanes + the drain tail; `None` = zero-source day.
+            let mut last_active_hour: Option<usize> = None;
+            let mut lane_sources = Vec::with_capacity(lane_count);
+            for (lane_index, day_frame) in day_frames.iter().enumerate() {
+                let source =
+                    laned_active::laned_active_lane_source(day_frame).map_err(|source_error| {
+                        Self::day_execution_failure(
+                            day_frame,
+                            lane_index,
+                            day_index,
+                            &source_error,
+                        )
+                    })?;
+                for (hour, depth) in source.depths_m.iter().enumerate() {
+                    if *depth > 0.0 {
+                        last_active_hour =
+                            Some(last_active_hour.map_or(hour, |current| current.max(hour)));
+                    }
+                }
+                lane_sources.push(source);
+            }
+            let window_s = last_active_hour.map(laned_active::laned_active_window_s);
+
+            // Phase 2: route -> erosion -> ledger -> row -> publishers ->
+            // commit, lane order preserved.
+            let mut books = laned_active::DirectLanedActiveDayBooks::default();
+            let mut upstream: Option<crate::ofe_routing::cascade::UpstreamHandoff> = None;
+            for lane_index in 0..lane_count {
+                let area_m2 = frame
+                    .lanes
+                    .get(lane_index)
+                    .ok_or(DirectRuntimeError::LaneIndexOutOfRange {
+                        lane_index,
+                        lane_count: frame.lanes.len(),
+                    })?
+                    .area_m2;
+                let day_frame = &mut day_frames[lane_index];
+                // The upstream lane's phase 2 published this lane's erosion
+                // inflow intake AFTER this frame was seeded; refresh it so
+                // the erosion span sees the same intake the DC01 loop would.
+                day_frame
+                    .erosion_inflow_intake
+                    .clone_from(&frame.lanes[lane_index].erosion_inflow_intake);
+                if let Some(window_s) = window_s {
+                    let handoff = laned_active::laned_active_route_lane(
+                        day_frame,
+                        &config.lanes[lane_index],
+                        area_m2,
+                        upstream.as_ref(),
+                        window_s,
+                        &mut books,
+                        &lane_sources[lane_index],
+                        config.hybrid_implicit,
+                    )
+                    .map_err(|source| {
+                        Self::day_execution_failure(day_frame, lane_index, day_index, &source)
+                    })?;
+                    upstream = Some(handoff);
+                } else {
+                    // Zero-source day: nothing to route, but the erosion
+                    // authority still owns the (all-zero) shape so no DC01
+                    // shape is consumed on an active lane, and the
+                    // double-feed guard still runs.
+                    laned_active::laned_active_assert_no_dc01_surface_feed(day_frame).map_err(
+                        |source| {
+                            Self::day_execution_failure(day_frame, lane_index, day_index, &source)
+                        },
+                    )?;
+                    day_frame.erosion_inputs.hydrograph_shape_authority =
+                        DirectErosionHydrographShapeAuthority::RoutedHydrograph;
+                    day_frame.erosion_inputs.routed_hydrograph_runoff_fraction =
+                        Some(Box::new([0.0; 24]));
+                    // CR-L1: the INV-OFEROUTE-012 latqcc bypass exists on
+                    // zero-source days too; record the terminal lane's
+                    // lateral export so the manifest total covers ALL days.
+                    if lane_index + 1 == lane_count {
+                        books.latqcc_outlet_m3 = day_frame
+                            .subsurface_compute_shadow_projection
+                            .as_ref()
+                            .map_or(0.0, |subsurface| subsurface.lateral_flow_m * area_m2);
+                    }
+                }
+                Self::run_day_spans_erosion_and_ledger(day_frame, &mut counters).map_err(
+                    |source| {
+                        Self::day_execution_failure(day_frame, lane_index, day_index, &source)
+                    },
+                )?;
+                for phase in phase_plan {
+                    let view = day_frame.phase_view(phase);
+                    let _phase = view.phase();
+                    phase_view_count += 1;
+                    counters.record_phase_status(phase, Self::phase_lifecycle_status(phase));
+                }
+                let lane =
+                    frame
+                        .lanes
+                        .get(lane_index)
+                        .ok_or(DirectRuntimeError::LaneIndexOutOfRange {
+                            lane_index,
+                            lane_count: frame.lanes.len(),
+                        })?;
+                let row =
+                    DirectPublicationDayRow::from_day_frame(day_frame, &day_inputs[lane_index], lane)?;
+                consume_row(&row, day_frame)?;
+                row_count =
+                    row_count
+                        .checked_add(1)
+                        .ok_or(DirectRuntimeError::DirectDomainViolation {
+                            field: "publication.row_count",
+                        })?;
+                if Self::publish_erosion_inflow_to_downstream(frame, &day_frames[lane_index])? {
+                    counters.record_dynamic_transfer_publication();
+                }
+                frame.commit_day_frame(&day_frames[lane_index])?;
+                counters.record_day_frame_commit();
+            }
+            laned_active::laned_active_enforce_day_closure(day_index, &books, &mut summary)?;
+        }
+        if row_count != expected_row_count {
+            return Err(DirectRuntimeError::PublicationRowCountMismatch {
+                expected_row_count,
+                actual_row_count: row_count,
+            });
+        }
+        frame.laned_active_summary = Some(Box::new(summary));
 
         Ok(DirectStreamingPublicationExecution {
             report: DirectExecutionReport {
@@ -676,6 +950,21 @@ impl DirectFrameExecutor {
         frame: &mut DirectRunFrame,
         day_frame: &DirectDayFrame,
     ) -> Result<bool, DirectRuntimeError> {
+        Self::publish_dynamic_transfer_to_downstream_with_ownership(frame, day_frame, false)
+    }
+
+    /// D15A (rev 27, `INV-OFEROUTE-009`): when `router_owns_surface` the
+    /// SURFACE portion of the dynamic transfer is NOT published — the active
+    /// router carries the inter-OFE surface water as the routed hydrograph
+    /// handoff, and DC01's daily-lump surface admission must see zero (the
+    /// double-feed guard in the routing step enforces it). The LATERAL
+    /// (`ui_LfCrf`-lineage) carry is published unchanged: the router
+    /// supersedes surface runon only (`GAP-OFEROUTE-006`).
+    fn publish_dynamic_transfer_to_downstream_with_ownership(
+        frame: &mut DirectRunFrame,
+        day_frame: &DirectDayFrame,
+        router_owns_surface: bool,
+    ) -> Result<bool, DirectRuntimeError> {
         let (lane_id, upstream_lane_id, downstream_lane_id) = {
             let lane =
                 frame
@@ -729,21 +1018,27 @@ impl DirectFrameExecutor {
         let mut surface_carry_m = [0.0; DIRECT_TRANSFER_HOUR_COUNT];
         let mut lateral_carry_m = [0.0; DIRECT_TRANSFER_HOUR_COUNT];
         validate_nonnegative_direct_m("dynamic_transfer.surface_runoff_m", runoff.q_runoff_m)?;
-        surface_carry_m[0] = runoff.q_runoff_m;
         // DC01 (INV-RUNOFFPART-031 / M2): the transferred TOTAL stays the exact
         // slot-0 lump (bitwise-identical R4J totals); the hourly DISTRIBUTION
         // rides separately as unit-normalized weights shaped by the WB14
         // infiltration-excess profile plus the hourly saturation carry. Nothing
         // consumes the weights until M3 supply admission.
-        let surface_hourly_weights = Self::dc01_surface_transfer_weights(
-            runoff.q_runoff_m,
-            &day_frame.wb14_hourly_excess_m,
-            &subsurface.hourly_saturation_carry_m,
-            day_frame
-                .snow_coupling_downstream_operands
-                .hourly_routed_melt_m
-                .as_ref(),
-        )?;
+        // D15A: with `router_owns_surface` the surface lump and weights stay
+        // zero — the routed hydrograph handoff is the surface carrier.
+        let surface_hourly_weights = if router_owns_surface {
+            [0.0; DIRECT_TRANSFER_HOUR_COUNT]
+        } else {
+            surface_carry_m[0] = runoff.q_runoff_m;
+            Self::dc01_surface_transfer_weights(
+                runoff.q_runoff_m,
+                &day_frame.wb14_hourly_excess_m,
+                &subsurface.hourly_saturation_carry_m,
+                day_frame
+                    .snow_coupling_downstream_operands
+                    .hourly_routed_melt_m
+                    .as_ref(),
+            )?
+        };
         for (target, source) in lateral_carry_m
             .iter_mut()
             .zip(subsurface.hourly_lateral_carry_m.iter())
@@ -865,6 +1160,22 @@ impl DirectFrameExecutor {
         counters: &mut DirectExecutionCounters,
         winter_frost_compute_inputs: Option<&crate::hydrology::DirectWinterFrostComputeInputs>,
     ) -> Result<(), DirectRuntimeError> {
+        Self::run_day_spans_hydrology(day_frame, counters, winter_frost_compute_inputs)?;
+        Self::run_day_spans_erosion_and_ledger(day_frame, counters)
+    }
+
+    /// The day pipeline through the hydrology projection (everything before
+    /// the erosion span). D15A (rev 27): split point for the active owner —
+    /// the routed source operands (`wb14_hourly_excess`, the R4O hourly
+    /// carries, routed melt, `q_runoff`) are all committed here, and the
+    /// routing step must run after this half and before the erosion half so
+    /// the D13 consumer sees the routed shape. The default path calls both
+    /// halves back-to-back (identical span sequence).
+    fn run_day_spans_hydrology(
+        day_frame: &mut DirectDayFrame,
+        counters: &mut DirectExecutionCounters,
+        winter_frost_compute_inputs: Option<&crate::hydrology::DirectWinterFrostComputeInputs>,
+    ) -> Result<(), DirectRuntimeError> {
         record_direct_span_report!(counters, day_frame.run_r5b_normalization_phase());
         record_direct_span_report!(counters, day_frame.run_r5b_storage_bounds_phase());
         record_direct_span_report!(counters, day_frame.run_r5c_decomposition_phase());
@@ -895,6 +1206,16 @@ impl DirectFrameExecutor {
         record_direct_span_report!(counters, day_frame.run_r7d6_peak_runoff_span());
         record_direct_span_report!(counters, day_frame.run_r4b_storage_reconciliation_span());
         record_direct_span_report!(counters, day_frame.run_r4pqz_hydrology_projection_span());
+
+        Ok(())
+    }
+
+    /// The erosion span + the water-ledger span (the day pipeline tail after
+    /// the D15A routing split point).
+    fn run_day_spans_erosion_and_ledger(
+        day_frame: &mut DirectDayFrame,
+        counters: &mut DirectExecutionCounters,
+    ) -> Result<(), DirectRuntimeError> {
         record_direct_span_report!(counters, day_frame.run_r7d6_erosion_span());
         record_direct_span_report!(counters, day_frame.run_r3b_water_ledger_span());
 

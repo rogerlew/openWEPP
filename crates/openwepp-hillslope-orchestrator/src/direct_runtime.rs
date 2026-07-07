@@ -153,6 +153,7 @@ mod erosion_operands;
 mod erosion_seed;
 mod evapotranspiration;
 mod growth;
+mod laned_active;
 mod normalization;
 mod projection;
 mod runoff;
@@ -225,6 +226,10 @@ pub use growth::{
     DirectGrowthAction, DirectGrowthActiveContext, DirectGrowthDownstreamOperands,
     DirectGrowthInputs, DirectGrowthShadowProjection, DirectGrowthSpanReport, DirectGrowthState,
     DirectGrowthStateSurface,
+};
+pub use laned_active::{
+    DirectLanedActiveConfig, DirectLanedActiveDayRouting, DirectLanedActiveLaneConfig,
+    DirectLanedActiveRunSummary,
 };
 pub use normalization::{
     DirectNormalizationDownstreamOperands, DirectNormalizationInputs,

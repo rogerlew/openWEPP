@@ -62,6 +62,7 @@ fn execute_hillslope_direct_production_days(
     let executed_day_count = climate_span.days.len();
     let multi_ofe_wave1_chained = seed_authority.multi_ofe_wave1_chained;
     let laned_shadow = retained_direct_publication.laned_shadow;
+    let laned_active = retained_direct_publication.laned_active;
 
     Ok(HillslopeClimateExecution {
         selected_lane: lane_context.lane,
@@ -69,6 +70,7 @@ fn execute_hillslope_direct_production_days(
         coupling_vectors,
         multi_ofe_wave1_chained,
         laned_shadow,
+        laned_active,
         scheduler_outcome_class: "completed",
         scheduler_status_message_id: "R7C-DIRECT-PRODUCTION-EXECUTOR".to_string(),
         kernel_phase_message_ids: Vec::new(),
@@ -86,6 +88,28 @@ fn execute_direct_publication_stream(
 ) -> Result<RetainedDirectPublication, HillslopeCliError> {
     let mut stream_sink =
         DirectPublicationStreamingSink::create(frame.identity, metadata.clone(), streaming_targets)?;
+    // Lane D ACTIVE owner (SC-OFEROUTE-001 rev 27): opt-in production
+    // activation. Mutually exclusive with the diagnostic shadow — the
+    // shadow's published-row reconstruction basis is DC01-shaped and is not
+    // defined over an active run (fail closed, never silent precedence).
+    let laned_active_enabled = crate::hillslope::laned_active::env_enabled();
+    if laned_active_enabled
+        && crate::hillslope::laned_shadow::LanedShadowCollector::env_enabled()
+    {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "laned_active_selector",
+            detail: "OPENWEPP_LANED_ACTIVE=1 and OPENWEPP_LANED_SHADOW=1 are mutually exclusive: the shadow reconstructs DC01-shaped published rows and is undefined over an active routed run".to_string(),
+        });
+    }
+    let laned_active_profile_enabled = laned_active_enabled
+        && std::env::var("OPENWEPP_LANED_SHADOW_PROFILE").is_ok_and(|value| value == "1");
+    if laned_active_enabled {
+        frame.laned_active = Some(Box::new(day_input_builder.laned_active_config()?));
+        if laned_active_profile_enabled {
+            openwepp_hillslope_orchestrator::ofe_routing::profile::set_enabled(true);
+            let _ = openwepp_hillslope_orchestrator::ofe_routing::profile::snapshot_and_reset();
+        }
+    }
     // Lane D seam shadow (INV-OFEROUTE-012 activation increment):
     // opt-in, diagnostics-only; geometry from the Wave-1 operand seeds.
     let mut laned_shadow = if crate::hillslope::laned_shadow::LanedShadowCollector::env_enabled()
@@ -137,10 +161,39 @@ fn execute_direct_publication_stream(
                 detail,
             })
         })?;
+    // D15A: the executor accumulated the active evidence on the frame; a
+    // missing summary under the active selector is a wiring defect and
+    // fails closed rather than publishing an activation-free manifest.
+    let laned_active = frame.laned_active_summary.take().map(|summary| *summary);
+    if laned_active_profile_enabled {
+        // T3-I0 diagnostics: one stderr line, same posture as the shadow's
+        // profile report (never touches outputs or the manifest).
+        let routing =
+            openwepp_hillslope_orchestrator::ofe_routing::profile::snapshot_and_reset();
+        eprintln!(
+            "laned_active_profile {{\"solver_runs\":{},\"solver_steps\":{},\"solver_steps_homogeneous\":{},\"solver_steps_source_free\":{},\"solver_steps_implicit\":{},\"alpha_evaluations\":{},\"solver_cfl_ns\":{},\"solver_step_ns\":{},\"solver_sample_ns\":{}}}",
+            routing.solver_runs,
+            routing.solver_steps,
+            routing.solver_steps_homogeneous,
+            routing.solver_steps_source_free,
+            routing.solver_steps_implicit,
+            routing.alpha_evaluations,
+            routing.solver_cfl_ns,
+            routing.solver_step_ns,
+            routing.solver_sample_ns,
+        );
+    }
+    if laned_active_enabled && laned_active.is_none() {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "laned_active_summary",
+            detail: "OPENWEPP_LANED_ACTIVE=1 but the executor produced no active summary (active loop not engaged)".to_string(),
+        });
+    }
     Ok(RetainedDirectPublication {
         execution,
         stream,
         laned_shadow,
+        laned_active,
     })
 }
 
@@ -400,6 +453,24 @@ fn build_hillslope_execution_provenance(
             max_supply_reconstruction_rel: summary.max_supply_reconstruction_rel,
             total_source_m3: summary.total_source_m3,
             total_routed_outlet_m3: summary.total_routed_outlet_m3,
+        }),
+        laned_active: execution.laned_active.map(|summary| LanedActiveProvenance {
+            days_seen: summary.days_seen,
+            days_routed: summary.days_routed,
+            days_uniform_shape: summary.days_uniform_shape,
+            total_source_m3: summary.total_source_m3,
+            total_routed_outlet_m3: summary.total_routed_outlet_m3,
+            total_end_window_storage_m3: summary.total_end_window_storage_m3,
+            total_clamp_m3: summary.total_clamp_m3,
+            total_tail_fold_m3: summary.total_tail_fold_m3,
+            total_latqcc_outlet_m3: summary.total_latqcc_outlet_m3,
+            max_supply_reconstruction_rel: summary.max_supply_reconstruction_rel,
+            max_day_cascade_residual_rel: summary.max_day_cascade_residual_rel,
+            max_day_seam_residual_rel: summary.max_day_seam_residual_rel,
+            max_day_identity_residual_rel: summary.max_day_identity_residual_rel,
+            lane_days_erosion_source_shape_degenerate: summary
+                .lane_days_erosion_source_shape_degenerate,
+            hybrid_implicit_stepping: crate::hillslope::laned_active::env_hybrid_implicit_enabled(),
         }),
     }
 }

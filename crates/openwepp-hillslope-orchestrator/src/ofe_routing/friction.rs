@@ -196,9 +196,16 @@ pub fn vegetation_resistance_katul(
     if flow_depth_m <= 0.0 || canopy_height_m <= 0.0 || leaf_area_index <= 0.0 {
         return 0.0;
     }
-    let beta = vegetation_momentum_absorption(leaf_area_index, canopy_height_m);
+    // D15A OPT-8b: the zero-length-scale branch (e.g. zero vegetation drag)
+    // returns 0 regardless of beta, so `L_c` is checked before the
+    // beta sqrt is spent. Both orderings return identical values on every
+    // input (pure function; the zero branches all return exactly 0.0).
     let l_c = vegetation_length_scale(drag_coefficient, leaf_area_index, canopy_height_m);
-    if l_c <= 0.0 || beta <= 0.0 {
+    if l_c <= 0.0 {
+        return 0.0;
+    }
+    let beta = vegetation_momentum_absorption(leaf_area_index, canopy_height_m);
+    if beta <= 0.0 {
         return 0.0;
     }
     let two_beta_sq = 2.0 * beta * beta;

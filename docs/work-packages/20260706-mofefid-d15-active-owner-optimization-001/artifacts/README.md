@@ -1,8 +1,8 @@
 # Artifacts
 
-Status: **QUEUED**.
+Status: **EXECUTED** (see `final-disposition.md`).
 
-This directory will hold D15A active-owner and timing-optimization evidence.
+This directory holds the D15A active-owner and timing-optimization evidence.
 Artifacts must label evidence mode as `Static`, `Ran`, or `Static + Ran`.
 
 Required artifact set:

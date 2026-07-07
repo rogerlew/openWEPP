@@ -39,6 +39,16 @@ pub struct RoutingProfileSnapshot {
     pub hydrograph_samples: u64,
     /// Upstream-boundary interpolation calls (cascade handoff lookups).
     pub upstream_interpolation_calls: u64,
+    /// T3-I0: steps whose interval carries ZERO source on every cell AND
+    /// zero upstream boundary mass — the implicit-stepping eligibility
+    /// predicate of the T3 hybrid design (and the TV-diagnostic gate).
+    pub solver_steps_homogeneous: u64,
+    /// T3-I0: steps with ZERO source on every cell but possibly nonzero
+    /// upstream inflow — the AGGRESSIVE hybrid-rule eligibility (recession
+    /// fed by a smooth upstream hydrograph).
+    pub solver_steps_source_free: u64,
+    /// T3-I2: steps taken by the IMPLICIT stepper under the hybrid rule.
+    pub solver_steps_implicit: u64,
     /// Per-OFE solver setup: mesh clone + solver construction + validation.
     pub solver_setup_ns: u64,
     /// CFL sub-timestep selection + Courant evidence (pre-step, per step).
@@ -62,6 +72,9 @@ impl RoutingProfileSnapshot {
             alpha_evaluations: 0,
             hydrograph_samples: 0,
             upstream_interpolation_calls: 0,
+            solver_steps_homogeneous: 0,
+            solver_steps_source_free: 0,
+            solver_steps_implicit: 0,
             solver_setup_ns: 0,
             solver_cfl_ns: 0,
             solver_step_ns: 0,
@@ -122,6 +135,9 @@ counter_fn!(
     count_upstream_interpolation_calls,
     upstream_interpolation_calls
 );
+counter_fn!(count_solver_steps_homogeneous, solver_steps_homogeneous);
+counter_fn!(count_solver_steps_source_free, solver_steps_source_free);
+counter_fn!(count_solver_steps_implicit, solver_steps_implicit);
 
 /// Read and clear the current thread's accumulated slots.
 #[must_use]

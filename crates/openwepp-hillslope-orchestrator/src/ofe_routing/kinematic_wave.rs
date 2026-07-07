@@ -28,7 +28,7 @@ pub const DEPTH_DISCHARGE_EXPONENT: f64 = 1.5;
 /// Conservative default; the hard CFL ceiling is 1.0.
 pub const CFL_TARGET: f64 = 0.9;
 /// Minimum positive depth used to guard divisions; below this a cell is dry.
-const DRY_DEPTH_M: f64 = 1.0e-9;
+pub(super) const DRY_DEPTH_M: f64 = 1.0e-9;
 
 /// A forcing value is valid iff finite and non-negative (rainfall excess,
 /// rainfall intensity, and upstream inflow are physically non-negative).
@@ -159,7 +159,6 @@ impl CellParameters {
             return 8.0 * GRAVITY_M_S2 * self.manning_n * self.manning_n / h.cbrt();
         }
         let re = reynolds_number(unit_discharge_m2_s, KINEMATIC_VISCOSITY_M2_S);
-        let fr = froude_number(unit_discharge_m2_s, flow_depth_m, GRAVITY_M_S2);
         let skin = skin_resistance_with_rain_term(skin_rain_term, self.friction_coefficient_ko, re);
         let form = form_resistance_abrahams(
             self.drag_coefficient,
@@ -168,8 +167,11 @@ impl CellParameters {
             self.roughness_concentration,
         );
         // Wave resistance applies when the element is not fully submerged
-        // (h/D_r < 1); above full submergence it vanishes.
+        // (h/D_r < 1); above full submergence it vanishes. D15A OPT-8a: the
+        // Froude number is consumed ONLY by this branch, so it is built
+        // lazily here (bit-identical; its value was dead elsewhere).
         let wave = if self.element_tip_height_m > 0.0 && flow_depth_m < self.element_tip_height_m {
+            let fr = froude_number(unit_discharge_m2_s, flow_depth_m, GRAVITY_M_S2);
             wave_resistance_hu_abrahams(self.roughness_concentration, fr)
         } else {
             0.0
@@ -194,12 +196,27 @@ impl CellParameters {
     ///
     /// Takes the precomputed `skin_rain_term` (D14 OPT-3); the run loop
     /// evaluates it once per step from the validated intensity.
+    ///
+    /// Returns `(alpha, q)` where `q = alpha * h^1.5` is the fixed point's
+    /// own final iterate (D15A OPT-5): the caller's celerity evaluation needs
+    /// exactly this discharge, and recomputing `alpha * h.powf(1.5)` outside
+    /// was a redundant `powf` with bit-identical value (same `alpha`, same
+    /// `h_pow` operands). Every zero-alpha path returns `(0.0, 0.0)`, which
+    /// matches the caller-side `0.0 * h_pow = +0.0` it replaces.
     #[must_use]
-    fn alpha(&self, flow_depth_m: f64, unit_discharge_m2_s: f64, skin_rain_term: f64) -> f64 {
+    fn alpha_q(
+        &self,
+        flow_depth_m: f64,
+        unit_discharge_m2_s: f64,
+        skin_rain_term: f64,
+    ) -> (f64, f64) {
         if flow_depth_m <= DRY_DEPTH_M || self.slope <= 0.0 {
-            return 0.0;
+            return (0.0, 0.0);
         }
         let h_pow = flow_depth_m.powf(DEPTH_DISCHARGE_EXPONENT);
+        // D15A OPT-7: loop-invariant hoist (same deterministic sqrt value
+        // every iteration).
+        let slope_sqrt = self.slope.sqrt();
         let mut q_est = if unit_discharge_m2_s > 0.0 {
             unit_discharge_m2_s
         } else {
@@ -209,9 +226,9 @@ impl CellParameters {
         for _ in 0..4 {
             let f_eq = self.equivalent_friction_with_rain_term(flow_depth_m, q_est, skin_rain_term);
             if f_eq <= 0.0 {
-                return 0.0;
+                return (0.0, 0.0);
             }
-            alpha = chezy_from_friction(f_eq, GRAVITY_M_S2) * self.slope.sqrt();
+            alpha = chezy_from_friction(f_eq, GRAVITY_M_S2) * slope_sqrt;
             let q_new = alpha * h_pow;
             let converged = (q_new - q_est).abs() <= 1.0e-12 * q_new.max(1.0e-12);
             q_est = q_new;
@@ -219,7 +236,104 @@ impl CellParameters {
                 break;
             }
         }
-        alpha
+        (alpha, q_est)
+    }
+
+    /// T3-I1 (implicit stepper): the CONVERGED equilibrium discharge
+    /// `q_eq(h)` — the fixed point of `q ↦ alpha(h, q)·h^1.5`, iterated to
+    /// `tol_rel` instead of the explicit scheme's frozen 4-iteration cap.
+    /// Seeded from `q_seed` when positive (warm start), else the Chezy
+    /// estimate (the same zero-flow-singularity break `alpha_q` uses).
+    /// Returns `None` when the fixed point does not meet `tol_rel` within
+    /// `max_iterations` (caller fails closed) — the laminar limb contracts
+    /// at ~0.5 per iteration IN LOG SPACE, so 80 iterations covers 1e-13
+    /// from any finite seed. This is a NEW scheme entry point (no
+    /// bit-compatibility constraint with `alpha_q`, which the explicit
+    /// scheme keeps unchanged).
+    ///
+    /// REGIME-CROSSOVER STRUCTURE (T3-I1 discovery, rev-28 draft): the
+    /// `INV-OFEROUTE-002` skin dispatch is DISCONTINUOUS at `Re = 1000`
+    /// (`f` drops laminar→turbulent), which makes the equilibrium rating
+    /// Z-SHAPED: in an overlap depth band BOTH a laminar-branch and a
+    /// turbulent-branch equilibrium exist, and the fixed-point basins
+    /// split exactly at the crossover discharge `Q_c = 1000·ν` (the map
+    /// is increasing with an upward jump at `Q_c`; each concave branch
+    /// attracts its own side). The SEED therefore selects the branch —
+    /// callers needing a single-valued rating must seed deterministically
+    /// (`implicit_recession`'s basin-split rule — measured: basin-split
+    /// seeding alone yields machine-exact ledgers across the full
+    /// dt/mesh ladder). The explicit scheme's frozen 4-iteration cap
+    /// rides over this structure without ever resolving it.
+    #[must_use]
+    pub(super) fn equilibrium_discharge_converged(
+        &self,
+        flow_depth_m: f64,
+        skin_rain_term: f64,
+        q_seed: f64,
+        tol_rel: f64,
+        max_iterations: usize,
+    ) -> Option<f64> {
+        if flow_depth_m <= DRY_DEPTH_M || self.slope <= 0.0 {
+            return Some(0.0);
+        }
+        let h_pow = flow_depth_m.powf(DEPTH_DISCHARGE_EXPONENT);
+        let slope_sqrt = self.slope.sqrt();
+        let crossover_q = KINEMATIC_VISCOSITY_M2_S * 1000.0;
+        let mut q_est = if q_seed > 0.0 && q_seed.is_finite() {
+            q_seed
+        } else {
+            (GRAVITY_M_S2 * self.slope).sqrt() * h_pow
+        };
+        // One fixed-point map application.
+        let map = |q: f64| -> Option<f64> {
+            let f_eq = self.equivalent_friction_with_rain_term(flow_depth_m, q, skin_rain_term);
+            if f_eq <= 0.0 {
+                return Some(0.0);
+            }
+            let alpha = chezy_from_friction(f_eq, GRAVITY_M_S2) * slope_sqrt;
+            let q_new = alpha * h_pow;
+            if q_new.is_finite() { Some(q_new) } else { None }
+        };
+        // STEFFENSEN-accelerated iteration (T3-I2 performance): the plain
+        // laminar-limb map contracts at only ~0.5 per iteration in log
+        // space (~40-60 evaluations from a cold basin-split seed);
+        // Steffensen converges quadratically to the SAME fixed point, so
+        // the deterministic rating stays a pure function of the inputs.
+        // The accelerated proposal is accepted only when it is finite,
+        // positive, and on the SAME side of the regime crossover as the
+        // plain iterate (the basin guard — jumping basins would break the
+        // branch-pinned determinism); otherwise the plain iterate stands.
+        let mut budget = max_iterations;
+        while budget >= 2 {
+            let q1 = map(q_est)?;
+            if q1 == 0.0 {
+                return Some(0.0);
+            }
+            if (q1 - q_est).abs() <= tol_rel * q1.max(1.0e-18) {
+                return Some(q1);
+            }
+            let q2 = map(q1)?;
+            if q2 == 0.0 {
+                return Some(0.0);
+            }
+            if (q2 - q1).abs() <= tol_rel * q2.max(1.0e-18) {
+                return Some(q2);
+            }
+            budget -= 2;
+            let denom = q2 - 2.0 * q1 + q_est;
+            let accelerated = if denom == 0.0 {
+                q2
+            } else {
+                q_est - (q1 - q_est) * (q1 - q_est) / denom
+            };
+            let same_basin = (accelerated > crossover_q) == (q2 > crossover_q);
+            q_est = if accelerated.is_finite() && accelerated > 0.0 && same_basin {
+                accelerated
+            } else {
+                q2
+            };
+        }
+        None
     }
 }
 
@@ -384,6 +498,9 @@ pub enum RoutingError {
     InvalidForcing,
     /// A cell parameter is out of domain (non-finite, negative slope/ko/etc.).
     InvalidCellParameter,
+    /// T3-I1: an implicit-stepper nonlinear solve (equilibrium fixed point
+    /// or the cell Newton) failed to converge within its iteration budget.
+    ImplicitSolveNonConvergence,
 }
 
 /// Single-OFE TVD-MacCormack kinematic-wave solver state.
@@ -392,6 +509,11 @@ pub struct KinematicWaveSolver {
     depth_m: Vec<f64>,
     discharge_m2_s: Vec<f64>,
     scratch: StepScratch,
+    /// Per-face material-interface flags, `breaks[f] = cells[f] != cells[f+1]`
+    /// (D15A OPT-9): the mesh is immutable for the solver's lifetime, so the
+    /// rev-24 interface detection is computed once instead of re-comparing
+    /// 9-field `CellParameters` per face per step. Same comparison, hoisted.
+    material_breaks: Vec<bool>,
     /// D10B TV diagnostic accumulator (reset per `run`).
     max_tv_increase_m: f64,
 }
@@ -404,6 +526,11 @@ struct StepScratch {
     /// step by the run loop; reused by dt selection, Courant evidence, and
     /// the step math).
     alpha: Vec<f64>,
+    /// Per-cell pre-step discharge `q = alpha h^1.5` from the celerity
+    /// evaluation (D15A OPT-5/OPT-6): reused by the homogeneous TV(q)
+    /// diagnostic's `tv_before` so the diagnostic recomputes no `powf`.
+    /// Dry/zero-alpha cells carry `0.0` (bit-equal to `alpha·h^1.5 = +0.0`).
+    q0: Vec<f64>,
     /// Per-cell TRUE kinematic celerity `dq/dh` at the pre-step state
     /// (rev 24): for depth-dependent friction the equilibrium celerity
     /// exceeds the frozen-alpha `1.5 alpha h^0.5` (Manning `(5/3) q/h`,
@@ -426,6 +553,7 @@ impl StepScratch {
     fn new(cell_count: usize) -> Self {
         Self {
             alpha: vec![0.0; cell_count],
+            q0: vec![0.0; cell_count],
             celerity: vec![0.0; cell_count],
             v: vec![0.0; cell_count],
             h_pred: vec![0.0; cell_count],
@@ -581,17 +709,56 @@ impl KinematicWaveSolver {
     #[must_use]
     pub fn new(mesh: KinematicWaveMesh) -> Self {
         let n = mesh.cell_count();
+        let material_breaks = (0..n.saturating_sub(1))
+            .map(|f| mesh.cells[f] != mesh.cells[f + 1])
+            .collect();
         Self {
             mesh,
             depth_m: vec![0.0; n],
             discharge_m2_s: vec![0.0; n],
             scratch: StepScratch::new(n),
+            material_breaks,
             max_tv_increase_m: 0.0,
         }
     }
 
     fn total_storage_m2(&self) -> f64 {
         self.depth_m.iter().sum::<f64>() * self.mesh.cell_length_m
+    }
+
+    /// T3 (hybrid stepping seam): the committed per-cell depth state.
+    /// Successive `run*` calls CONTINUE from this state (each run books its
+    /// own ledger from the state at entry), so a scheme switch hands off
+    /// exactly this vector. Read-only; the implicit stepper owns its copy.
+    #[must_use]
+    pub(super) fn depth_state(&self) -> &[f64] {
+        &self.depth_m
+    }
+
+    /// T3-I2 (hybrid seam, exit-implicit → enter-explicit): install the
+    /// per-cell state committed by the implicit stepper. Discharges are the
+    /// implicit solve's own converged equilibria (`q_eq(h)` per the design
+    /// §2.2 exit rule), so the explicit scheme's next pre-step alpha
+    /// evaluation sees the same shape of state it would after any explicit
+    /// step. Lengths must match the mesh.
+    pub(super) fn set_state(
+        &mut self,
+        depth_m: &[f64],
+        discharge_m2_s: &[f64],
+    ) -> Result<(), RoutingError> {
+        if depth_m.len() != self.depth_m.len() || discharge_m2_s.len() != self.depth_m.len() {
+            return Err(RoutingError::DegenerateConfiguration);
+        }
+        self.depth_m.copy_from_slice(depth_m);
+        self.discharge_m2_s.copy_from_slice(discharge_m2_s);
+        Ok(())
+    }
+
+    /// T3-I2 (hybrid seam, exit-explicit): the committed per-cell discharge
+    /// state paired with `depth_state`.
+    #[must_use]
+    pub(super) fn discharge_state(&self) -> &[f64] {
+        &self.discharge_m2_s
     }
 
     /// Evaluate `alpha` and the TRUE kinematic celerity for every cell at
@@ -611,19 +778,23 @@ impl KinematicWaveSolver {
         let mut evaluations = 0_u64;
         for (i, cell) in self.mesh.cells.iter().enumerate() {
             let h = self.depth_m[i];
-            let alpha = cell.alpha(h, self.discharge_m2_s[i], skin_rain_term);
+            // D15A OPT-5: the fixed point returns its own final
+            // `q = alpha·h^1.5` iterate, replacing the two redundant
+            // caller-side `powf` recomputations at the base and perturbed
+            // depths (bit-identical operands; see `alpha_q`).
+            let (alpha, q) = cell.alpha_q(h, self.discharge_m2_s[i], skin_rain_term);
             self.scratch.alpha[i] = alpha;
             evaluations += 1;
             if h <= DRY_DEPTH_M {
                 self.scratch.celerity[i] = 0.0;
+                self.scratch.q0[i] = 0.0;
                 continue;
             }
-            let q = alpha * h.powf(DEPTH_DISCHARGE_EXPONENT);
+            self.scratch.q0[i] = q;
             let dh = (1.0e-3 * h).max(1.0e-8);
             let h2 = h + dh;
-            let alpha2 = cell.alpha(h2, q, skin_rain_term);
+            let (_, q2) = cell.alpha_q(h2, q, skin_rain_term);
             evaluations += 1;
-            let q2 = alpha2 * h2.powf(DEPTH_DISCHARGE_EXPONENT);
             // Guarded true celerity: never below the frozen-alpha floor
             // (the discrete flux actually advanced this step).
             let frozen = DEPTH_DISCHARGE_EXPONENT * alpha * h.sqrt();
@@ -777,7 +948,7 @@ impl KinematicWaveSolver {
         // compares MATERIAL parameters, not the state-dependent alpha
         // (alpha varies per cell under depth-dependent friction even on
         // uniform material).
-        let is_break = |f: usize| -> bool { self.mesh.cells[f] != self.mesh.cells[f + 1] };
+        let is_break = |f: usize| -> bool { self.material_breaks[f] };
         for f in 0..n.saturating_sub(1) {
             let dh_face = self.depth_m[f + 1] - self.depth_m[f];
             if dh_face.abs() <= DRY_DEPTH_M || is_break(f) {
@@ -840,38 +1011,6 @@ impl KinematicWaveSolver {
             self.scratch.h_next[i] = h_new.max(0.0);
         }
 
-        // D10B TV diagnostic (rev 24): on homogeneous steps (no forcing
-        // anywhere) the committed step must not increase the spatial total
-        // variation of the FLUX `q = alpha h^1.5` (continuous across
-        // material interfaces, unlike `h`, whose equilibrium jumps at
-        // slope breaks make TV(h) the wrong functional for
-        // variable-coefficient KWE). Both sides use the frozen per-step
-        // alpha (apples-to-apples within the step). Source terms
-        // legitimately change TV and are excluded. Measured pre-commit.
-        let homogeneous = q_up == 0.0 && self.scratch.v.iter().all(|v| *v == 0.0);
-        if homogeneous {
-            let q_at = |h: &[f64], i: usize| -> f64 {
-                self.scratch.alpha[i] * h[i].max(0.0).powf(DEPTH_DISCHARGE_EXPONENT)
-            };
-            let mut tv_before = 0.0_f64;
-            let mut tv_after = 0.0_f64;
-            for i in 0..n.saturating_sub(1) {
-                // Uniform-material faces only: the TVD property is a
-                // uniform-coefficient statement; material-interface
-                // transients are adjudicated separately by validation.
-                if self.mesh.cells[i] != self.mesh.cells[i + 1] {
-                    continue;
-                }
-                tv_before += (q_at(&self.depth_m, i + 1) - q_at(&self.depth_m, i)).abs();
-                tv_after +=
-                    (q_at(&self.scratch.h_next, i + 1) - q_at(&self.scratch.h_next, i)).abs();
-            }
-            let increase = (tv_after - tv_before).max(0.0);
-            if increase > self.max_tv_increase_m {
-                self.max_tv_increase_m = increase;
-            }
-        }
-
         // Commit state and recompute discharge (eq. 14).
         for i in 0..n {
             self.depth_m[i] = self.scratch.h_next[i];
@@ -879,6 +1018,51 @@ impl KinematicWaveSolver {
                 self.scratch.alpha[i] * self.depth_m[i].powf(DEPTH_DISCHARGE_EXPONENT);
             if !self.discharge_m2_s[i].is_finite() {
                 return Err(RoutingError::NonFiniteState);
+            }
+        }
+
+        // D10B TV diagnostic (rev 24): on homogeneous steps (no forcing
+        // anywhere) the committed step must not increase the spatial total
+        // variation of the FLUX `q = alpha h^1.5` (continuous across
+        // material interfaces, unlike `h`, whose equilibrium jumps at
+        // slope breaks make TV(h) the wrong functional for
+        // variable-coefficient KWE). Both sides use the frozen per-step
+        // alpha (apples-to-apples within the step). Source terms
+        // legitimately change TV and are excluded.
+        //
+        // D15A OPT-6 (bit-identical value reuse): `tv_before`'s
+        // `alpha_i·h_i^1.5` at the pre-step state IS the celerity
+        // evaluation's own `q` (cached in `scratch.q0`; dry/zero-alpha
+        // cells carry the same `+0.0`), and `tv_after`'s
+        // `alpha_i·h_next_i^1.5` IS the committed discharge written by the
+        // commit loop above (depths are non-negative, so the previous
+        // `.max(0.0)` was the identity). The diagnostic therefore runs
+        // after the commit and recomputes no `powf`. The only ordering
+        // change is that a non-finite committed discharge now fails before
+        // the TV accumulator updates — on that path the run returns `Err`
+        // and no result (including the TV maximum) is ever published.
+        let source_free = self.scratch.v.iter().all(|v| *v == 0.0);
+        if source_free {
+            profile::count_solver_steps_source_free(1);
+        }
+        let homogeneous = q_up == 0.0 && source_free;
+        if homogeneous {
+            profile::count_solver_steps_homogeneous(1);
+            let mut tv_before = 0.0_f64;
+            let mut tv_after = 0.0_f64;
+            for i in 0..n.saturating_sub(1) {
+                // Uniform-material faces only: the TVD property is a
+                // uniform-coefficient statement; material-interface
+                // transients are adjudicated separately by validation.
+                if self.material_breaks[i] {
+                    continue;
+                }
+                tv_before += (self.scratch.q0[i + 1] - self.scratch.q0[i]).abs();
+                tv_after += (self.discharge_m2_s[i + 1] - self.discharge_m2_s[i]).abs();
+            }
+            let increase = (tv_after - tv_before).max(0.0);
+            if increase > self.max_tv_increase_m {
+                self.max_tv_increase_m = increase;
             }
         }
 

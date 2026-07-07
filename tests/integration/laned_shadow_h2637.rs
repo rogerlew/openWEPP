@@ -1,3 +1,10 @@
+//! HARNESS CONTRACT (CR-M1): the env-mutating tests in this file are
+//! supported ONLY under nextest (process-per-test isolation). The stock
+//! threaded `cargo test` harness races `set_var`/`remove_var` against
+//! concurrent `getenv` (glibc UB). Every run helper neutralizes BOTH Lane D
+//! selector variables at entry so inherited shell state cannot leak in
+//! (CR-M2).
+//!
 //! Lane D activation guard — the REAL-H2637 legacy executed vector
 //! (`SC-OFEROUTE-001#INV-OFEROUTE-012`): the opt-in seam shadow must fail
 //! closed when a legacy management lacks native `routing_coefficients`
@@ -36,6 +43,10 @@ fn run_h2637(
     let run_dir = copy_fixture_to_temp(tag);
     let output_dir = run_dir.join("output");
     let manifest_path = run_dir.join("manifest.json");
+    // CR-M2: neutralize BOTH selector variables so inherited shell state
+    // cannot turn a baseline leg into a shadow/active run.
+    // SAFETY: single-threaded test setup before any runner threads.
+    unsafe { std::env::remove_var("OPENWEPP_LANED_ACTIVE") };
     // nextest runs each test in its own process, and both runs execute
     // serially inside this one test — the env mutation cannot leak.
     if shadow {
@@ -101,6 +112,9 @@ fn run_h2637_native_routing(
     enable_native_cropland_routing_coefficients(&run_dir);
     let output_dir = run_dir.join("output");
     let manifest_path = run_dir.join("manifest.json");
+    // CR-M2: neutralize the sibling selector (inherited shell state).
+    // SAFETY: single-threaded test setup before any runner threads.
+    unsafe { std::env::remove_var("OPENWEPP_LANED_ACTIVE") };
     if shadow {
         // SAFETY: single-threaded test setup before any runner threads.
         unsafe { std::env::set_var("OPENWEPP_LANED_SHADOW", "1") };
@@ -212,4 +226,178 @@ fn h2637_native_shadow_classifies_uniform_shape_after_d12() {
     assert_eq!(days_uniform_shape, 6);
     assert_eq!(days_uniform_shape_with_routed_melt, 0);
     assert_eq!(days_uniform_shape_without_routed_melt, 6);
+}
+
+// ---------------------------------------------------------------------------
+// D15A (SC-OFEROUTE-001 rev 27): the opt-in ACTIVE production owner.
+// ---------------------------------------------------------------------------
+
+fn run_h2637_native_active(
+    tag: &str,
+    active: bool,
+) -> Result<(PathBuf, serde_json::Value, Vec<u8>, Vec<u8>), HillslopeCliError> {
+    let run_dir = copy_fixture_to_temp(tag);
+    enable_native_cropland_routing_coefficients(&run_dir);
+    let output_dir = run_dir.join("output");
+    let manifest_path = run_dir.join("manifest.json");
+    // CR-M2: neutralize the sibling selector (inherited shell state).
+    // SAFETY: single-threaded test setup before any runner threads.
+    unsafe { std::env::remove_var("OPENWEPP_LANED_SHADOW") };
+    if active {
+        // SAFETY: single-threaded test setup before any runner threads.
+        unsafe { std::env::set_var("OPENWEPP_LANED_ACTIVE", "1") };
+    } else {
+        // SAFETY: as above.
+        unsafe { std::env::remove_var("OPENWEPP_LANED_ACTIVE") };
+    }
+    let report = execute_hillslope_run(
+        &HillslopeRunRequest {
+            run_dir: run_dir.clone(),
+            run_file: PathBuf::from("p2637.run.toml"),
+            output_dir,
+            sidecar_policy: SidecarPolicy::Compat,
+            legacy_sidecar_discovery: false,
+            manifest_path: Some(manifest_path.clone()),
+        },
+        &["openwepp-cli-hill".to_string()],
+    );
+    if active {
+        // SAFETY: restore the process env immediately after the single run.
+        unsafe { std::env::remove_var("OPENWEPP_LANED_ACTIVE") };
+    }
+    let report = report?;
+    let manifest: serde_json::Value =
+        serde_json::from_str(&fs::read_to_string(&manifest_path).expect("manifest readable"))
+            .expect("manifest parses");
+    let pass_bytes = fs::read(&report.output_pass).expect("HBP bytes");
+    let parquet_bytes = fs::read(report.output_pass.with_file_name("H2637.pass.parquet"))
+        .expect("pass parquet bytes");
+    Ok((run_dir, manifest, pass_bytes, parquet_bytes))
+}
+
+#[test]
+fn h2637_active_fails_closed_without_routing_coefficients() {
+    // Legacy management (no native routing_coefficients): the ACTIVE
+    // selector must fail closed before streaming, mirroring the shadow's
+    // rev-20 guard.
+    let run_dir = copy_fixture_to_temp("active_legacy");
+    let output_dir = run_dir.join("output");
+    // SAFETY: single-threaded test setup before any runner threads.
+    unsafe { std::env::set_var("OPENWEPP_LANED_ACTIVE", "1") };
+    let report = execute_hillslope_run(
+        &HillslopeRunRequest {
+            run_dir: run_dir.clone(),
+            run_file: PathBuf::from("p2637.run.toml"),
+            output_dir,
+            sidecar_policy: SidecarPolicy::Compat,
+            legacy_sidecar_discovery: false,
+            manifest_path: Some(run_dir.join("manifest.json")),
+        },
+        &["openwepp-cli-hill".to_string()],
+    );
+    // SAFETY: restore the process env for any later in-process work.
+    unsafe { std::env::remove_var("OPENWEPP_LANED_ACTIVE") };
+    let message = report
+        .expect_err("active selector must fail closed")
+        .to_string();
+    assert!(
+        message.contains("routing coefficient extension"),
+        "expected routing coefficient extension error, got {message}"
+    );
+    assert!(
+        message.contains("OPENWEPP_LANED_ACTIVE"),
+        "expected active opt-in error, got {message}"
+    );
+}
+
+#[test]
+fn h2637_active_and_shadow_are_mutually_exclusive() {
+    let run_dir = copy_fixture_to_temp("active_shadow_conflict");
+    enable_native_cropland_routing_coefficients(&run_dir);
+    let output_dir = run_dir.join("output");
+    // SAFETY: single-threaded test setup before any runner threads.
+    unsafe { std::env::set_var("OPENWEPP_LANED_ACTIVE", "1") };
+    // SAFETY: as above.
+    unsafe { std::env::set_var("OPENWEPP_LANED_SHADOW", "1") };
+    let report = execute_hillslope_run(
+        &HillslopeRunRequest {
+            run_dir: run_dir.clone(),
+            run_file: PathBuf::from("p2637.run.toml"),
+            output_dir,
+            sidecar_policy: SidecarPolicy::Compat,
+            legacy_sidecar_discovery: false,
+            manifest_path: Some(run_dir.join("manifest.json")),
+        },
+        &["openwepp-cli-hill".to_string()],
+    );
+    // SAFETY: restore the process env for any later in-process work.
+    unsafe { std::env::remove_var("OPENWEPP_LANED_ACTIVE") };
+    // SAFETY: as above.
+    unsafe { std::env::remove_var("OPENWEPP_LANED_SHADOW") };
+    let message = report
+        .expect_err("active + shadow must fail closed")
+        .to_string();
+    assert!(
+        message.contains("mutually exclusive"),
+        "expected mutual-exclusion error, got {message}"
+    );
+}
+
+#[test]
+#[ignore = "D15A H2637 active-owner evidence: runs the full H2637 fixture twice"]
+fn h2637_native_active_owner_routes_and_closes() {
+    // Default/off on the SAME native-patched fixture: no active keys. This
+    // test asserts only presence/absence; the INV-OFEROUTE-010 BYTE
+    // comparison itself lives in the P4 gate evidence (SHA256 vs the
+    // recorded package baseline), not in this test.
+    let (_dir_off, manifest_off, pass_off, parquet_off) =
+        run_h2637_native_active("active_off", false)
+            .expect("native-routed H2637 must run with the active owner disabled");
+    assert!(
+        find_key(&manifest_off, "laned_active").is_none(),
+        "no active keys when the active owner is off"
+    );
+    assert!(!pass_off.is_empty() && !parquet_off.is_empty());
+
+    // ACTIVE: routing owns the surface-water path (rev 27). The run must
+    // complete with the day-closure hard-fails live, which means every
+    // routed day satisfied the rev-27 tolerances.
+    let (_dir_on, manifest_on, _pass_on, _parquet_on) = run_h2637_native_active("active_on", true)
+        .expect("native-routed H2637 must run with the active owner enabled");
+    let active = find_key(&manifest_on, "laned_active").expect("manifest laned_active block");
+    let days_seen = find_key(active, "days_seen")
+        .and_then(serde_json::Value::as_u64)
+        .expect("days_seen");
+    let days_routed = find_key(active, "days_routed")
+        .and_then(serde_json::Value::as_u64)
+        .expect("days_routed");
+    assert_eq!(days_seen, 731);
+    assert!(days_routed > 0, "active owner must route event days");
+    let total_source_m3 = find_key(active, "total_source_m3")
+        .and_then(serde_json::Value::as_f64)
+        .expect("total_source_m3");
+    let total_routed_outlet_m3 = find_key(active, "total_routed_outlet_m3")
+        .and_then(serde_json::Value::as_f64)
+        .expect("total_routed_outlet_m3");
+    assert!(total_source_m3 > 0.0 && total_routed_outlet_m3 > 0.0);
+    let max_supply = find_key(active, "max_supply_reconstruction_rel")
+        .and_then(serde_json::Value::as_f64)
+        .expect("max_supply_reconstruction_rel");
+    let max_cascade = find_key(active, "max_day_cascade_residual_rel")
+        .and_then(serde_json::Value::as_f64)
+        .expect("max_day_cascade_residual_rel");
+    let max_identity = find_key(active, "max_day_identity_residual_rel")
+        .and_then(serde_json::Value::as_f64)
+        .expect("max_day_identity_residual_rel");
+    assert!(max_supply <= 1.0e-9, "supply reconstruction {max_supply}");
+    assert!(max_cascade <= 1.0e-9, "day cascade residual {max_cascade}");
+    assert!(
+        max_identity <= 1.0e-6,
+        "day identity residual {max_identity}"
+    );
+    // The shadow block must be absent on an active run (mutual exclusion).
+    assert!(
+        find_key(&manifest_on, "laned_shadow").is_none(),
+        "no shadow keys on an active run"
+    );
 }

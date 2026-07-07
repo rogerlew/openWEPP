@@ -1,0 +1,12 @@
+{
+ "aggregate_router_conservation_rel": 3.232606608593326e-13,
+ "days_routed": 622,
+ "days_seen": 731,
+ "days_uniform_shape": 6,
+ "days_uniform_shape_with_routed_melt": 0,
+ "days_uniform_shape_without_routed_melt": 6,
+ "max_router_conservation_rel": 3.3424685678652526e-12,
+ "max_supply_reconstruction_rel": 5.434281268840262e-16,
+ "total_routed_outlet_m3": 1837037.5470260957,
+ "total_source_m3": 1769606.816247753
+}

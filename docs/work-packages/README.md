@@ -12,14 +12,36 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-06`:
+- `20260706-laned-router-t3-hybrid-implicit-stepping-001/` —
+  ACTIVE (operator-directed, same-session after D15A): Tier-3 router-numerics
+  revision. I0 (prize measurement: 30 % strict / 55.5 % aggressive
+  implicit-eligible steps) and I1 (implicit backward-Euler upwind stepper,
+  machine-exact ledgers, full dt/mesh acceptance ladder; Z-shaped-rating
+  discovery + basin-split/Filippov closure rules) are complete; I2 landed
+  the hybrid behind the EXPERIMENTAL `OPENWEPP_LANED_ACTIVE_IMPLICIT=1`
+  selector (`SC-OFEROUTE-001` rev 28): strict-rule H2637 runs green on all
+  rev-27 closure hard-fails at `37.0-37.2 s` (vs `37.9 s` plain-active).
+  Named follow-ons in the handoff: the aggressive-rule composition fix (the
+  ~1.9x prize; blocked on a recorder-API deficit-carry defect), fidelity
+  ratification, then delegable Tier-1/Tier-2. Dual review pending before
+  merge.
 - `20260706-mofefid-d15-active-owner-optimization-001/` —
-  QUEUED: D15A active-owner and timing-optimization hold-lift package. It is
-  scaffolded to resolve the absent active production owner path and
-  optimize/adjudicate the `91.59 s` H2637 opt-in routed timing regression
-  before any D15 activation claim. The optimization portion follows the D14
-  intake/baseline, slot instrumentation, empirical profile, optimization plan,
-  implementation, and evidence/closure structure. D16/default promotion
-  remains blocked.
+  EXECUTED-COMPLETE (2026-07-06): D15A active-owner and timing-optimization
+  hold-lift. Timing: five bit-identical solver optimizations cut the H2637
+  shadow endpoint `92.4 → 78.8 s` user, and the residual regression is
+  adjudicated as contract-mandated (rev-26 true-celerity trajectory + the
+  perturbed celerity evaluation; the D14 `29.9 s` budget priced the
+  pre-rev-24 defective scheme) — adjudication flagged for operator
+  ratification. Activation: the opt-in ACTIVE owner is landed at
+  `SC-OFEROUTE-001` rev 27 (`OPENWEPP_LANED_ACTIVE=1`): two-phase active day
+  loop, DC01-surface-disable with a live INV-009 double-feed guard (lateral
+  unchanged), live rev-27 day-closure hard-fails (which caught two real seam
+  defects during implementation), routed erosion shape into the D13 consumer,
+  rev-21 operand consumption, and default/off byte identity held throughout.
+  Executed H2637 active endpoint: `37.4 s` user, 610/731 days routed, day
+  closures machine-exact. Named follow-on gates: watershed-facing HBP outlet
+  re-pointing; active-mode erosion water-magnitude coupling. D16/default
+  promotion remains blocked.
 - `20260706-mofefid-d15-blocker-resolution-001/` —
   EXECUTED-HOLD-ACTIVE-OWNER-TIMING-BUDGET: D15 blocker-resolution package.
   The terminal-bin/day-boundary blocker is closed: the D10B-corrected H2637

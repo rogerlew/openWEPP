@@ -24,6 +24,45 @@ impl DirectProductionDayInputBuilder<'_> {
         &self,
     ) -> Result<Vec<crate::hillslope::laned_shadow::LanedShadowLaneGeometry>, HillslopeCliError>
     {
+        self.laned_geometry_with_selector("OPENWEPP_LANED_SHADOW")
+    }
+
+    /// D15A (rev 27): the ACTIVE owner's per-lane configuration — the SAME
+    /// rev-20/21 authority extraction as the shadow (fail-closed on missing
+    /// native `routing_coefficients`), plus the typed-management `canhgt`
+    /// canopy height from the lane authority.
+    pub(crate) fn laned_active_config(
+        &self,
+    ) -> Result<openwepp_hillslope_orchestrator::DirectLanedActiveConfig, HillslopeCliError> {
+        let lanes = self
+            .laned_geometry_with_selector("OPENWEPP_LANED_ACTIVE")?
+            .into_iter()
+            .zip(self.lane_authority.iter())
+            .map(|(geometry, lane)| {
+                openwepp_hillslope_orchestrator::DirectLanedActiveLaneConfig {
+                    slplen_m: geometry.slplen_m,
+                    width_m: geometry.width_m,
+                    mean_gradient: geometry.mean_gradient,
+                    skin_friction_coefficient_ko: geometry.routing.skin_friction_coefficient_ko,
+                    form_drag_coefficient: geometry.routing.form_drag_coefficient,
+                    roughness_element_height_m: geometry.routing.roughness_element_height_m,
+                    roughness_concentration: geometry.routing.roughness_concentration,
+                    vegetation_drag_coefficient: geometry.routing.vegetation_drag_coefficient,
+                    canopy_height_m: lane.evapotranspiration.canopy_height_m,
+                }
+            })
+            .collect();
+        Ok(openwepp_hillslope_orchestrator::DirectLanedActiveConfig {
+            lanes,
+            hybrid_implicit: crate::hillslope::laned_active::env_hybrid_implicit_enabled(),
+        })
+    }
+
+    fn laned_geometry_with_selector(
+        &self,
+        selector: &'static str,
+    ) -> Result<Vec<crate::hillslope::laned_shadow::LanedShadowLaneGeometry>, HillslopeCliError>
+    {
         self.lane_authority
             .iter()
             .enumerate()
@@ -32,7 +71,7 @@ impl DirectProductionDayInputBuilder<'_> {
                     HillslopeCliError::RuntimeSurfaceFailure {
                         surface: "laned_shadow_routing_coefficients",
                         detail: format!(
-                            "{SIMOUT_GUARD_ID} OPENWEPP_LANED_SHADOW requires a complete, schedule-consistent routing coefficient extension for every MOFE landuse; lane {} is missing or has inconsistent route_* authority symbols",
+                            "{SIMOUT_GUARD_ID} {selector} requires a complete, schedule-consistent routing coefficient extension for every MOFE landuse; lane {} is missing or has inconsistent route_* authority symbols",
                             lane_index + 1
                         ),
                     }

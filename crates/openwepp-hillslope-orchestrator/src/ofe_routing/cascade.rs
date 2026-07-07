@@ -15,10 +15,14 @@
 //! only (Papanicolaou assumption 2). This module implements the routing +
 //! handoff; the rainfall->excess coupling is `super::infiltration`.
 
+use super::friction::skin_rain_term;
+use super::implicit_recession::implicit_step_with_discharges;
 use super::kinematic_wave::{
     Forcing, HydrographSample, KinematicWaveMesh, KinematicWaveSolver, MassBalance, RoutingError,
+    RoutingResult,
 };
 use super::profile;
+use super::seam::{SEAM_HOUR_BINS, seam_rate_at};
 
 /// One OFE in the cascade: its routing mesh and flow width. The flow width
 /// converts unit-width discharge (m^2/s) between OFEs so total discharge
@@ -161,11 +165,84 @@ fn integrate_bin_series(bins_m2: &[f64], spans_s: &[f64], bin_dt_s: f64, t0: f64
 
 /// Upstream handoff payload: the instantaneous sampled hydrograph (shape,
 /// point-BC fallback) plus the conservative bin series (mass).
-struct UpstreamHandoff {
-    samples: Vec<HydrographSample>,
-    bins_m2: Vec<f64>,
-    bin_spans_s: Vec<f64>,
-    bin_dt_s: f64,
+pub struct UpstreamHandoff {
+    pub samples: Vec<HydrographSample>,
+    pub bins_m2: Vec<f64>,
+    pub bin_spans_s: Vec<f64>,
+    pub bin_dt_s: f64,
+    /// Width (m) of the OFE that produced this outlet series.
+    pub width_m: f64,
+}
+
+/// Route ONE OFE with the D4 solver under the cascade's exact handoff
+/// semantics (rev 24 conservative bin-series injection; rev-27 extraction so
+/// the `run_cascade` shadow path and the D15A active production path share
+/// one code path — the closure construction and width-ratio scaling here are
+/// the loop body `run_cascade` previously inlined, unchanged).
+///
+/// `forcing_breakpoints_s` are known forcing discontinuity times (the
+/// solver's High-2 exact-source-history rule: no step may straddle one).
+/// The diagnostic shadow/cascade path passes `&[]` (its recorded behavior,
+/// bit-identity-frozen); the ACTIVE owner passes the hourly source
+/// boundaries so its booked injection integrates the piecewise-constant
+/// seam series exactly (rev-27 seam cross-ledger check).
+#[allow(clippy::too_many_arguments)]
+pub fn route_single_ofe(
+    segment: &CascadeSegment,
+    rainfall_excess_m_s: &dyn Fn(usize, f64) -> f64,
+    rainfall_intensity_m_s: &dyn Fn(f64) -> f64,
+    upstream: Option<&UpstreamHandoff>,
+    forcing_breakpoints_s: &[f64],
+    end_time_s: f64,
+    sample_dt_s: f64,
+    max_dt_s: f64,
+) -> Result<RoutingResult, RoutingError> {
+    if !segment.width_m.is_finite() || segment.width_m <= 0.0 {
+        return Err(RoutingError::DegenerateConfiguration);
+    }
+    let width_ratio = match upstream {
+        Some(handoff) => handoff.width_m / segment.width_m,
+        None => 0.0,
+    };
+    let upstream_point = |t: f64| -> f64 {
+        match upstream {
+            Some(h) => {
+                profile::count_upstream_interpolation_calls(1);
+                interpolate_unit_discharge(&h.samples, t) * width_ratio
+            }
+            None => 0.0,
+        }
+    };
+    let upstream_integral = |t0: f64, t1: f64| -> f64 {
+        match upstream {
+            Some(h) => {
+                profile::count_upstream_interpolation_calls(1);
+                integrate_bin_series(&h.bins_m2, &h.bin_spans_s, h.bin_dt_s, t0, t1) * width_ratio
+            }
+            None => 0.0,
+        }
+    };
+    let ofe_forcing = Forcing {
+        rainfall_excess_m_s,
+        upstream_inflow_m2_s: &upstream_point,
+        rainfall_intensity_m_s,
+    };
+    let setup_span = profile::span_start();
+    let mut solver = KinematicWaveSolver::new(segment.mesh.clone());
+    profile::end_solver_setup(setup_span);
+    let integral_closure: Option<&dyn Fn(f64, f64) -> f64> = if upstream.is_some() {
+        Some(&upstream_integral)
+    } else {
+        None
+    };
+    solver.run_with_options(
+        &ofe_forcing,
+        integral_closure,
+        forcing_breakpoints_s,
+        end_time_s,
+        sample_dt_s,
+        max_dt_s,
+    )
 }
 
 /// Run the OFE-by-OFE cascade summit -> outlet. Each OFE is routed with the
@@ -194,64 +271,24 @@ pub fn run_cascade(
     let mut per_ofe_received_m3 = Vec::with_capacity(segments.len());
     let mut per_ofe_solver_mass = Vec::with_capacity(segments.len());
     let mut prev_hydrograph: Option<UpstreamHandoff> = None;
-    let mut prev_width = 0.0_f64;
     let mut outlet_hydrograph: Vec<HydrographSample> = Vec::new();
     let mut terminal_outlet_m3 = 0.0_f64;
     let mut max_courant = 0.0_f64;
 
     for (i, seg) in segments.iter().enumerate() {
         // Upstream boundary from the previous OFE's outlet, scaled to this
-        // OFE's width for total-discharge continuity. `prev` is an owned local
-        // so the forcing closure borrows it cleanly within this iteration.
+        // OFE's width for total-discharge continuity (rev 24: the downstream
+        // solver injects the EXACT integral of the upstream CONSERVATIVE bin
+        // series). The routing itself is the shared `route_single_ofe`.
         let prev = prev_hydrograph.take();
-        let width_ratio = if prev.is_some() {
-            prev_width / seg.width_m
-        } else {
-            0.0
-        };
-        let upstream = |t: f64| -> f64 {
-            match &prev {
-                Some(h) => {
-                    profile::count_upstream_interpolation_calls(1);
-                    interpolate_unit_discharge(&h.samples, t) * width_ratio
-                }
-                None => 0.0,
-            }
-        };
-        // Rev 24 (Algorithm item 6): the downstream solver injects the
-        // EXACT integral of the upstream CONSERVATIVE bin series
-        // (piecewise-constant per-bin actual outflow) over each of its
-        // steps, so the handoff carries the upstream scheme's actual
-        // discharged mass at any sample resolution.
-        let upstream_integral = |t0: f64, t1: f64| -> f64 {
-            match &prev {
-                Some(h) => {
-                    profile::count_upstream_interpolation_calls(1);
-                    integrate_bin_series(&h.bins_m2, &h.bin_spans_s, h.bin_dt_s, t0, t1)
-                        * width_ratio
-                }
-                None => 0.0,
-            }
-        };
         let excess = |cell: usize, t: f64| (forcing.rainfall_excess_m_s)(i, cell, t);
         let intensity = |t: f64| (forcing.rainfall_intensity_m_s)(i, t);
-        let ofe_forcing = Forcing {
-            rainfall_excess_m_s: &excess,
-            upstream_inflow_m2_s: &upstream,
-            rainfall_intensity_m_s: &intensity,
-        };
-
-        let setup_span = profile::span_start();
-        let mut solver = KinematicWaveSolver::new(seg.mesh.clone());
-        profile::end_solver_setup(setup_span);
-        let integral_closure: Option<&dyn Fn(f64, f64) -> f64> = if prev.is_some() {
-            Some(&upstream_integral)
-        } else {
-            None
-        };
-        let result = solver.run_with_upstream_integral(
-            &ofe_forcing,
-            integral_closure,
+        let result = route_single_ofe(
+            seg,
+            &excess,
+            &intensity,
+            prev.as_ref(),
+            &[],
             end_time_s,
             sample_dt_s,
             max_dt_s,
@@ -282,8 +319,8 @@ pub fn run_cascade(
                 bins_m2: result.outlet_bin_outflow_m2,
                 bin_spans_s: result.outlet_bin_spans_s,
                 bin_dt_s: result.outlet_bin_dt_s,
+                width_m: seg.width_m,
             });
-            prev_width = seg.width_m;
         } else {
             terminal_outlet_m3 = result.mass_balance.outflow_m2 * seg.width_m;
             outlet_hydrograph = result.hydrograph;
@@ -315,6 +352,238 @@ pub fn run_cascade(
         per_ofe_solver_mass,
         mass_balance: mass,
         max_courant,
+    })
+}
+
+/// T3-I2 (`SC-OFEROUTE-001` rev 28, EXPERIMENTAL opt-in): route one OFE with
+/// HYBRID stepping — the explicit TVD-MacCormack scheme on source-active or
+/// upstream-fed sample bins, the implicit backward-Euler upwind stepper
+/// (`implicit_recession`) on STRICT smooth bins (zero source on every cell
+/// AND zero upstream mass over the bin). The switching predicate is
+/// FORCING-derived per 900 s outlet bin (deterministic, hysteresis-free);
+/// implicit bins step at exactly the bin cadence, so the conservative
+/// outlet-bin series keeps its exact per-bin semantics. State hands off at
+/// span boundaries per the design's §2.2 seam rule (depths carry; entering
+/// explicit installs the implicit solve's own converged equilibrium
+/// discharges). The composed ledger is exact by construction (both schemes
+/// carry exact ledgers; the seam moves no mass).
+#[allow(clippy::too_many_lines, clippy::too_many_arguments)]
+pub fn route_single_ofe_hybrid(
+    segment: &CascadeSegment,
+    source_rates_m_s: &[f64; SEAM_HOUR_BINS],
+    intensity_rates_m_s: &[f64; SEAM_HOUR_BINS],
+    upstream: Option<&UpstreamHandoff>,
+    forcing_breakpoints_s: &[f64],
+    end_time_s: f64,
+    sample_dt_s: f64,
+    max_dt_s: f64,
+) -> Result<RoutingResult, RoutingError> {
+    if !segment.width_m.is_finite() || segment.width_m <= 0.0 {
+        return Err(RoutingError::DegenerateConfiguration);
+    }
+    if sample_dt_s <= 0.0 || end_time_s <= 0.0 || !end_time_s.is_finite() {
+        return Err(RoutingError::DegenerateConfiguration);
+    }
+    // The hybrid partitions the window by OUTLET BINS; a non-integral
+    // window would need partial-bin regime logic — the active-path windows
+    // are hour+tail multiples of the bin width by construction.
+    let bins_f = end_time_s / sample_dt_s;
+    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+    let n_bins = bins_f.round() as usize;
+    #[allow(clippy::cast_precision_loss)]
+    let reconstructed = n_bins as f64 * sample_dt_s;
+    if n_bins == 0 || (reconstructed - end_time_s).abs() > 1.0e-9 {
+        return Err(RoutingError::DegenerateConfiguration);
+    }
+    let n = segment.mesh.cell_count();
+    if n == 0 {
+        return Err(RoutingError::DegenerateConfiguration);
+    }
+    let width_ratio = match upstream {
+        Some(handoff) => handoff.width_m / segment.width_m,
+        None => 0.0,
+    };
+    let upstream_mass_in = |t0: f64, t1: f64| -> f64 {
+        match upstream {
+            Some(h) => {
+                integrate_bin_series(&h.bins_m2, &h.bin_spans_s, h.bin_dt_s, t0, t1) * width_ratio
+            }
+            None => 0.0,
+        }
+    };
+    // Per-bin STRICT smoothness mask (rev-28 rule): implicit-eligible when
+    // the bin has ZERO source on every cell AND zero upstream mass. The
+    // AGGRESSIVE form (zero source only; smooth upstream inflow booked by
+    // the implicit step — I0 measures 55.5 % coverage vs 30 % strict) is a
+    // NAMED follow-on blocked on one composition defect: short explicit
+    // spans sandwiched between implicit bins can leave front-arrival
+    // terminal deficits that the BinRecorder's forward redistribution
+    // cannot absorb (observed `NegativeOutletBin`, H2637 lane 17 day 54);
+    // absorbing a deficit across span boundaries needs a solver-API
+    // extension, not a mask change.
+    #[allow(clippy::cast_precision_loss)]
+    let bin_smooth: Vec<bool> = (0..n_bins)
+        .map(|b| {
+            let t0 = b as f64 * sample_dt_s;
+            let t1 = t0 + sample_dt_s;
+            seam_rate_at(source_rates_m_s, t0) == 0.0 && upstream_mass_in(t0, t1) == 0.0
+        })
+        .collect();
+
+    let mut depths = vec![0.0_f64; n];
+    let mut discharges = vec![0.0_f64; n];
+    let mut global_bins_m2 = vec![0.0_f64; n_bins];
+    let mut mass = MassBalance::default();
+    let mut max_courant = 0.0_f64;
+    let mut max_tv = 0.0_f64;
+    let mut peak = 0.0_f64;
+    let mut time_to_peak = 0.0_f64;
+    let mut clamp_total = 0.0_f64;
+    profile::count_solver_runs(1);
+
+    let mut bin = 0_usize;
+    while bin < n_bins {
+        let span_smooth = bin_smooth[bin];
+        let mut span_end = bin + 1;
+        while span_end < n_bins && bin_smooth[span_end] == span_smooth {
+            span_end += 1;
+        }
+        #[allow(clippy::cast_precision_loss)]
+        let t0 = bin as f64 * sample_dt_s;
+        #[allow(clippy::cast_precision_loss)]
+        let t1 = span_end as f64 * sample_dt_s;
+        if span_smooth {
+            // IMPLICIT span: one step per bin at the bin cadence.
+            let zero_source = vec![0.0_f64; n];
+            for (offset, slot) in global_bins_m2[bin..span_end].iter_mut().enumerate() {
+                #[allow(clippy::cast_precision_loss)]
+                let t_bin = t0 + offset as f64 * sample_dt_s;
+                let rain_term = skin_rain_term(seam_rate_at(intensity_rates_m_s, t_bin));
+                // Interval-mean upstream inflow for the bin — booked exactly
+                // by the implicit step (aggressive-rule recession inflow).
+                let q_up_bin = upstream_mass_in(t_bin, t_bin + sample_dt_s) / sample_dt_s;
+                let outcome = implicit_step_with_discharges(
+                    &segment.mesh,
+                    &mut depths,
+                    Some(&mut discharges),
+                    q_up_bin,
+                    &zero_source,
+                    rain_term,
+                    sample_dt_s,
+                )?;
+                profile::count_solver_steps(1);
+                profile::count_solver_steps_implicit(1);
+                *slot += outcome.outflow_m2;
+                mass.inflow_m2 += outcome.inflow_m2;
+                mass.scheme_inflow_m2 += outcome.inflow_m2;
+                mass.outflow_m2 += outcome.outflow_m2;
+                mass.scheme_outflow_m2 += outcome.outflow_m2;
+                let q_mean = outcome.outflow_m2 / sample_dt_s;
+                if q_mean > peak {
+                    peak = q_mean;
+                    time_to_peak = t_bin + sample_dt_s;
+                }
+            }
+        } else {
+            // EXPLICIT span: the D10B scheme over [t0, t1), continuing from
+            // the hybrid state; forcing closures shift to global time.
+            let mut solver = KinematicWaveSolver::new(segment.mesh.clone());
+            solver.set_state(&depths, &discharges)?;
+            let excess = |_cell: usize, t_local: f64| seam_rate_at(source_rates_m_s, t0 + t_local);
+            let intensity = |t_local: f64| seam_rate_at(intensity_rates_m_s, t0 + t_local);
+            let upstream_point = |t_local: f64| -> f64 {
+                match upstream {
+                    Some(h) => {
+                        profile::count_upstream_interpolation_calls(1);
+                        interpolate_unit_discharge(&h.samples, t0 + t_local) * width_ratio
+                    }
+                    None => 0.0,
+                }
+            };
+            let upstream_integral = |a: f64, b: f64| -> f64 {
+                profile::count_upstream_interpolation_calls(1);
+                upstream_mass_in(t0 + a, t0 + b)
+            };
+            let forcing = Forcing {
+                rainfall_excess_m_s: &excess,
+                upstream_inflow_m2_s: &upstream_point,
+                rainfall_intensity_m_s: &intensity,
+            };
+            let integral_closure: Option<&dyn Fn(f64, f64) -> f64> = if upstream.is_some() {
+                Some(&upstream_integral)
+            } else {
+                None
+            };
+            let local_breakpoints: Vec<f64> = forcing_breakpoints_s
+                .iter()
+                .filter(|bp| **bp > t0 + 1.0e-9 && **bp < t1 - 1.0e-9)
+                .map(|bp| bp - t0)
+                .collect();
+            let result = solver.run_with_options(
+                &forcing,
+                integral_closure,
+                &local_breakpoints,
+                t1 - t0,
+                sample_dt_s,
+                max_dt_s,
+            )?;
+            for (offset, bin_mass) in result.outlet_bin_outflow_m2.iter().enumerate() {
+                if bin + offset < n_bins {
+                    global_bins_m2[bin + offset] += bin_mass;
+                }
+            }
+            mass.inflow_m2 += result.mass_balance.inflow_m2;
+            mass.scheme_inflow_m2 += result.mass_balance.inflow_m2;
+            mass.rainfall_excess_m2 += result.mass_balance.rainfall_excess_m2;
+            mass.outflow_m2 += result.mass_balance.outflow_m2;
+            mass.scheme_outflow_m2 += result.mass_balance.outflow_m2;
+            clamp_total += result.mass_balance.positivity_clamp_m2;
+            if result.max_courant > max_courant {
+                max_courant = result.max_courant;
+            }
+            if result.max_homogeneous_tv_increase_m2_s > max_tv {
+                max_tv = result.max_homogeneous_tv_increase_m2_s;
+            }
+            if result.peak_unit_discharge_m2_s > peak {
+                peak = result.peak_unit_discharge_m2_s;
+                time_to_peak = t0 + result.time_to_peak_s;
+            }
+            depths.copy_from_slice(solver.depth_state());
+            discharges.copy_from_slice(solver.discharge_state());
+        }
+        bin = span_end;
+    }
+
+    mass.positivity_clamp_m2 = clamp_total;
+    mass.storage_change_m2 = depths.iter().sum::<f64>() * segment.mesh.cell_length_m;
+    // Bin-mean hydrograph over the composed global bins (same shape the
+    // BinRecorder exports).
+    let mut hydrograph = Vec::with_capacity(n_bins + 1);
+    hydrograph.push(HydrographSample {
+        time_s: 0.0,
+        outlet_unit_discharge_m2_s: 0.0,
+        outlet_depth_m: 0.0,
+    });
+    for (k, bin_mass) in global_bins_m2.iter().enumerate() {
+        #[allow(clippy::cast_precision_loss)]
+        let t_mid = k as f64 * sample_dt_s + 0.5 * sample_dt_s;
+        hydrograph.push(HydrographSample {
+            time_s: t_mid,
+            outlet_unit_discharge_m2_s: bin_mass / sample_dt_s,
+            outlet_depth_m: 0.0,
+        });
+    }
+    profile::count_hydrograph_samples(hydrograph.len() as u64);
+    Ok(RoutingResult {
+        hydrograph,
+        mass_balance: mass,
+        peak_unit_discharge_m2_s: peak,
+        time_to_peak_s: time_to_peak,
+        max_courant,
+        max_homogeneous_tv_increase_m2_s: max_tv,
+        outlet_bin_outflow_m2: global_bins_m2,
+        outlet_bin_dt_s: sample_dt_s,
+        outlet_bin_spans_s: vec![sample_dt_s; n_bins],
     })
 }
 
@@ -544,6 +813,146 @@ mod tests {
             "downstream OFE must interpolate the upstream hydrograph"
         );
         assert!(snapshot.solver_setup_ns > 0, "setup slot timed");
+    }
+
+    /// T3-I2: a window whose every bin is source-active takes ONE explicit
+    /// span — the hybrid must be BIT-IDENTICAL to `route_single_ofe` there
+    /// (same solver, same state, same breakpoints, same window).
+    #[test]
+    fn hybrid_is_bit_identical_on_all_explicit_windows() {
+        use super::super::seam::{SEAM_HOUR_BINS, seam_rate_at};
+        let segment = bare_segment(80.0, 10, 0.05, 500.0, 2.0);
+        let mut source = [0.0_f64; SEAM_HOUR_BINS];
+        source[0] = 60.0 / 3.6e6;
+        source[1] = 30.0 / 3.6e6;
+        let intensity = [0.0_f64; SEAM_HOUR_BINS];
+        let window_s = 2.0 * 3600.0; // both hours active: all bins explicit
+        let breakpoints = [3600.0_f64];
+        let excess = |_cell: usize, t: f64| seam_rate_at(&source, t);
+        let intensity_at = |t: f64| seam_rate_at(&intensity, t);
+        let explicit = route_single_ofe(
+            &segment,
+            &excess,
+            &intensity_at,
+            None,
+            &breakpoints,
+            window_s,
+            900.0,
+            300.0,
+        )
+        .expect("explicit route");
+        let hybrid = route_single_ofe_hybrid(
+            &segment,
+            &source,
+            &intensity,
+            None,
+            &breakpoints,
+            window_s,
+            900.0,
+            300.0,
+        )
+        .expect("hybrid route");
+        assert_eq!(
+            explicit.outlet_bin_outflow_m2.len(),
+            hybrid.outlet_bin_outflow_m2.len()
+        );
+        for (a, b) in explicit
+            .outlet_bin_outflow_m2
+            .iter()
+            .zip(hybrid.outlet_bin_outflow_m2.iter())
+        {
+            assert_eq!(a.to_bits(), b.to_bits(), "all-explicit bins bit-identical");
+        }
+        assert_eq!(
+            explicit.mass_balance.outflow_m2.to_bits(),
+            hybrid.mass_balance.outflow_m2.to_bits()
+        );
+    }
+
+    /// T3-I2: event day (source hour 0) + smooth tail — the hybrid ledger is
+    /// exact, positivity holds (no clamps on implicit bins), and the
+    /// hybrid-vs-explicit per-bin fidelity delta stays within the
+    /// I1-ladder-informed regression bound.
+    #[test]
+    fn hybrid_event_day_ledger_exact_and_fidelity_bounded() {
+        use super::super::seam::{SEAM_HOUR_BINS, seam_rate_at};
+        let segment = bare_segment(80.0, 10, 0.05, 500.0, 2.0);
+        let mut source = [0.0_f64; SEAM_HOUR_BINS];
+        source[0] = 60.0 / 3.6e6;
+        let intensity = [0.0_f64; SEAM_HOUR_BINS];
+        let window_s = 7.0 * 3600.0; // hour 0 active + 6 h smooth tail
+        let breakpoints = [3600.0_f64];
+        let hybrid = route_single_ofe_hybrid(
+            &segment,
+            &source,
+            &intensity,
+            None,
+            &breakpoints,
+            window_s,
+            900.0,
+            300.0,
+        )
+        .expect("hybrid route");
+        let residual = hybrid.mass_balance.conservation_residual_m2();
+        let scale = hybrid.mass_balance.rainfall_excess_m2.max(1.0e-12);
+        assert!(
+            residual.abs() / scale < 1.0e-9,
+            "hybrid ledger residual {residual} vs rain {scale}"
+        );
+        // Fidelity vs all-explicit on the same window.
+        let excess = |_cell: usize, t: f64| seam_rate_at(&source, t);
+        let intensity_at = |t: f64| seam_rate_at(&intensity, t);
+        let explicit = route_single_ofe(
+            &segment,
+            &excess,
+            &intensity_at,
+            None,
+            &breakpoints,
+            window_s,
+            900.0,
+            300.0,
+        )
+        .expect("explicit route");
+        let ref_total: f64 = explicit.outlet_bin_outflow_m2.iter().sum();
+        let l1: f64 = hybrid
+            .outlet_bin_outflow_m2
+            .iter()
+            .zip(explicit.outlet_bin_outflow_m2.iter())
+            .map(|(a, b)| (a - b).abs())
+            .sum::<f64>()
+            / ref_total.max(1.0e-18);
+        // I1 ladder measured ~0.43 per-bin L1 at dt=900 on pure recession;
+        // an event day dilutes it with identical explicit bins. Regression
+        // bound, not the ratified tolerance (rev-28 ratification is the
+        // H2637/Case-class evidence).
+        assert!(l1 < 0.5, "hybrid per-bin L1 vs explicit: {l1}");
+        // Totals close (both conservative; differences are end-storage).
+        let hybrid_total: f64 = hybrid.outlet_bin_outflow_m2.iter().sum();
+        assert!(
+            (hybrid_total - ref_total).abs() / ref_total < 0.05,
+            "drained totals hybrid {hybrid_total} vs explicit {ref_total}"
+        );
+    }
+
+    #[test]
+    fn hybrid_rejects_non_integral_windows() {
+        use super::super::seam::SEAM_HOUR_BINS;
+        let segment = bare_segment(80.0, 10, 0.05, 500.0, 2.0);
+        let source = [0.0_f64; SEAM_HOUR_BINS];
+        let intensity = [0.0_f64; SEAM_HOUR_BINS];
+        assert!(matches!(
+            route_single_ofe_hybrid(
+                &segment,
+                &source,
+                &intensity,
+                None,
+                &[],
+                1000.0,
+                900.0,
+                300.0
+            ),
+            Err(RoutingError::DegenerateConfiguration)
+        ));
     }
 
     #[test]

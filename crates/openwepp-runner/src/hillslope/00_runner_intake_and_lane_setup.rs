@@ -246,6 +246,29 @@ struct HillslopeExecutionProvenance {
     /// shadow ran (`INV-OFEROUTE-012` activation increment).
     #[serde(skip_serializing_if = "Option::is_none")]
     laned_shadow: Option<LanedShadowProvenance>,
+    /// Lane D ACTIVE owner evidence — present ONLY when the opt-in active
+    /// selector ran (`SC-OFEROUTE-001` rev 27).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    laned_active: Option<LanedActiveProvenance>,
+}
+
+#[derive(Debug, Serialize)]
+struct LanedActiveProvenance {
+    days_seen: u64,
+    days_routed: u64,
+    days_uniform_shape: u64,
+    total_source_m3: f64,
+    total_routed_outlet_m3: f64,
+    total_end_window_storage_m3: f64,
+    total_clamp_m3: f64,
+    total_tail_fold_m3: f64,
+    total_latqcc_outlet_m3: f64,
+    max_supply_reconstruction_rel: f64,
+    max_day_cascade_residual_rel: f64,
+    max_day_seam_residual_rel: f64,
+    max_day_identity_residual_rel: f64,
+    lane_days_erosion_source_shape_degenerate: u64,
+    hybrid_implicit_stepping: bool,
 }
 
 #[derive(Debug, Serialize)]
@@ -601,6 +624,7 @@ struct HillslopeClimateExecution {
     coupling_vectors: HillslopeCouplingVectorProvenance,
     multi_ofe_wave1_chained: bool,
     laned_shadow: Option<crate::hillslope::laned_shadow::LanedShadowSummary>,
+    laned_active: Option<openwepp_hillslope_orchestrator::DirectLanedActiveRunSummary>,
     scheduler_outcome_class: &'static str,
     scheduler_status_message_id: String,
     kernel_phase_message_ids: Vec<String>,
@@ -626,6 +650,10 @@ struct RetainedDirectPublication {
     /// `None` when the shadow is off — the manifest then carries no
     /// shadow keys (`INV-OFEROUTE-010` byte-identity posture).
     laned_shadow: Option<crate::hillslope::laned_shadow::LanedShadowSummary>,
+    /// Lane D ACTIVE owner run summary (`OPENWEPP_LANED_ACTIVE=1` opt-in,
+    /// rev 27); `None` when inactive — the manifest then carries no active
+    /// keys.
+    laned_active: Option<openwepp_hillslope_orchestrator::DirectLanedActiveRunSummary>,
 }
 
 struct DirectPublicationStreamResult {

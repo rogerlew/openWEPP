@@ -552,6 +552,14 @@ pub struct DirectRunFrame {
     pub lane_transfer_ledger: Vec<DirectLaneTransferLedger>,
     pub lane_transfer_downstream_operands: DirectRunTransferDownstreamOperands,
     pub lane_transfer_shadow_projection: Option<DirectRunTransferShadowProjection>,
+    /// D15A (rev 27): the opt-in ACTIVE routing configuration. `Some` IS the
+    /// activation selector inside the orchestrator (the runner sets it from
+    /// `OPENWEPP_LANED_ACTIVE=1` after its fail-closed preflight); `None`
+    /// keeps the default execution path untouched (`INV-OFEROUTE-010`).
+    pub laned_active: Option<Box<laned_active::DirectLanedActiveConfig>>,
+    /// D15A (rev 27): run-level active evidence accumulated by the executor;
+    /// the runner surfaces it as the manifest `laned_active` block.
+    pub laned_active_summary: Option<Box<laned_active::DirectLanedActiveRunSummary>>,
 }
 
 impl DirectRunFrame {
@@ -569,6 +577,8 @@ impl DirectRunFrame {
             lane_transfer_ledger: vec![DirectLaneTransferLedger::zero(); identity.lane_count],
             lane_transfer_downstream_operands: DirectRunTransferDownstreamOperands::zero(),
             lane_transfer_shadow_projection: None,
+            laned_active: None,
+            laned_active_summary: None,
         })
     }
 
@@ -591,6 +601,8 @@ impl DirectRunFrame {
             lane_transfer_ledger: vec![DirectLaneTransferLedger::zero(); inputs.identity.lane_count],
             lane_transfer_downstream_operands: DirectRunTransferDownstreamOperands::zero(),
             lane_transfer_shadow_projection: None,
+            laned_active: None,
+            laned_active_summary: None,
         })
     }
 
@@ -1231,6 +1243,10 @@ pub struct DirectDayFrame {
     pub water_ledger: DirectWaterLedgerState,
     pub ledger_downstream_operands: DirectLedgerDownstreamOperands,
     pub ledger_shadow_projection: Option<DirectLedgerShadowProjection>,
+    /// D15A (rev 27): per-lane-day routed evidence when the opt-in active
+    /// owner routes this lane-day; `None` on the default path and on
+    /// zero-source active days.
+    pub laned_active_routing: Option<Box<laned_active::DirectLanedActiveDayRouting>>,
 }
 
 impl DirectDayFrame {
@@ -1375,6 +1391,7 @@ impl DirectDayFrame {
             water_ledger: DirectWaterLedgerState::zero(),
             ledger_downstream_operands: DirectLedgerDownstreamOperands::zero(),
             ledger_shadow_projection: None,
+            laned_active_routing: None,
         })
     }
 
