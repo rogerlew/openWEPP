@@ -1,7 +1,7 @@
 # Science Contract Registry
 
 Status: Active
-Last updated: 2026-07-06
+Last updated: 2026-07-07
 
 This is the canonical lifecycle registry for openWEPP science contracts.
 
@@ -53,7 +53,7 @@ Unit governance remains mandatory for science contracts, runtime boundary symbol
 | `SC-PERC-001` | Percolation Process Contract | `in_review` | `draft` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-PERC-001.md` | `static` | `2026-06-02` |  | Lifecycle-only row; amendment history lives in the canonical contract. |
 | `SC-PLANT-001` | Plant Growth Process Contract | `in_review` | `draft` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-PLANT-001.md` | `static` | `2026-06-02` |  | Lifecycle-only row; amendment history lives in the canonical contract. |
 | `SC-OFEROUTE-001` | Hillslope OFE-by-OFE Overland-Flow Routing Process Contract | `approved` | `active` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-OFEROUTE-001.md` | `static` | `2026-07-07` |  | Ratified D4 prerequisite; amendment history lives in the canonical contract. |
-| `SC-OFEROUTE-002` | Hybrid Implicit-Explicit Kinematic-Wave Stepping Contract | `draft` | `draft` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-OFEROUTE-002.md` | `static` | `2026-07-07` |  | Consolidates SC-OFEROUTE-001 rev 28-31 hybrid authority (rev-32 transfer); pending dual-agent contract review; ratification HELD on GAP-OFEHYB-001. |
+| `SC-OFEROUTE-002` | Hybrid Implicit-Explicit Kinematic-Wave Stepping Contract | `approved` | `active` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-OFEROUTE-002.md` | `static` | `2026-07-07` |  | Approved consolidation of SC-OFEROUTE-001 rev 28-31 hybrid authority (rev-32 transfer); subsystem promotion remains HELD on GAP-OFEHYB-001. |
 | `SC-RESIDUE-001` | Residue Management Process Contract | `in_review` | `draft` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-RESIDUE-001.md` | `static` | `2026-05-23` |  | Lifecycle-only row; amendment history lives in the canonical contract. |
 | `SC-ROUTE-001` | Watershed Routing and Channel Process Contract | `in_review` | `draft` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-ROUTE-001.md` | `static` | `2026-05-28` |  | Lifecycle-only row; amendment history lives in the canonical contract. |
 | `SC-RUNOFFPART-001` | Surface Runoff Partition Process Contract | `in_review` | `draft` | openWEPP maintainers + hydrology reviewer | `docs/specifications/science-contracts/contracts/SC-RUNOFFPART-001.md` | `static` | `2026-06-14` |  | Lifecycle-only row; amendment history lives in the canonical contract. |

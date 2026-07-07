@@ -12,22 +12,6 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-07`:
-- `20260707-laned-router-hybrid-contract-authority-001/` —
-  AUTHORED-PENDING-DUAL-REVIEW (2026-07-07): authored `SC-OFEROUTE-002`
-  (Hybrid Implicit-Explicit Kinematic-Wave Stepping Contract, rev 1,
-  draft/experimental) consolidating the hybrid subsystem's authority from
-  the `SC-OFEROUTE-001` rev 28-31 changelog entries + the T3 design record
-  into one normative document (invariants `INV-OFEHYB-001..010`;
-  `GAP-OFEHYB-001` = the Case-4 shock-outlives-source HOLD with its two
-  recorded design levers; `GAP-OFEHYB-002` = implicit solve cost).
-  `SC-OFEROUTE-001` rev 32 re-points its hybrid rows; index registered;
-  doc/SC lints pass. Dual-agent review EXECUTED (A NO-GO / B
-  GO-WITH-AMENDMENTS) and all findings FIXED same-day (warm-seed
-  finite+positive restored, lever provenance relabeled, C-L1 exception
-  threaded through the exact-total surfaces, B-M2 transactionality wording,
-  maturity vocabulary, real test names, registry date) — disposition in the
-  package. Open gate: the verification pass; `draft` lifts to `approved` at
-  its confirmation.
 - `20260707-laned-router-t3-ratification-solve-cost-001/` -
   EXECUTED-HOLD-CASE4-HYBRID-LADDER (2026-07-07): executed the parent LANED-T3
   open ratification gates and landed rev-31 deterministic branch-local warm
@@ -337,6 +321,20 @@ State as of `2026-07-07`:
 
 ## Execution Log
 
+- `20260707-laned-router-hybrid-contract-authority-001/` is complete as
+  LANED-HYB-SC AUTHORITATIVE HYBRID CONTRACT CONSOLIDATION. Result:
+  `EXECUTED-COMPLETE`. It authored and approved `SC-OFEROUTE-002` (Hybrid
+  Implicit-Explicit Kinematic-Wave Stepping Contract, rev 2, `approved` /
+  `active`) as the single normative home for the hybrid subsystem previously
+  spread across `SC-OFEROUTE-001` revs 28-31 and the T3 design/evidence
+  chain. `SC-OFEROUTE-001` rev 32 re-points its hybrid rows and rev 33 records
+  the approval-lift synchronization; the science-contract registry is updated.
+  Dual-agent review findings were accepted and fixed, Agent A verification
+  returned GO, Agent B's one Low follow-up was fixed by naming the retained
+  deficit-carry test functions directly, and Agent B follow-up returned GO.
+  The lifecycle approval does not promote the selector: `INV-OFEHYB-008`
+  remains HELD on `GAP-OFEHYB-001`, and `GAP-OFEHYB-002` remains the solve-cost
+  optimization gap.
 - `20260705-local-ci-timing-profile-optimization-001/` is complete as LOCAL CI
   TIMING AND PROFILE OPTIMIZATION. Result: `EXECUTED-COMPLETE`. It added
   persistent local nextest timing diagnostics under `tools/local_ci/`, installed

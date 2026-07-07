@@ -1,10 +1,10 @@
 ---
 contract_id: SC-OFEROUTE-002
 title: Hybrid Implicit-Explicit Kinematic-Wave Stepping Contract
-status: draft
-maturity: draft
+status: approved
+maturity: active
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 1
+contract_version: 2
 producer_scope:
   - Implicit backward-Euler upwind kinematic-wave stepping on smooth sample bins (per-cell scalar equilibrium solves, machine-exact ledger)
   - Hybrid span composition over a routed day window (implicit/explicit span partition, state seams, cross-span deficit carry, composed outlet-bin series)
@@ -20,8 +20,8 @@ superseded_by: []
 
 # SC-OFEROUTE-002 Hybrid Implicit-Explicit Kinematic-Wave Stepping Contract
 
-Status: `draft` (pending dual-agent contract review)
-Maturity: `draft` (lifecycle vocabulary; the SUBSYSTEM posture is EXPERIMENTAL/unpromoted — selector-gated evidence-gathering, see INV-OFEHYB-008)
+Status: `approved`
+Maturity: `active` (lifecycle vocabulary; the SUBSYSTEM posture remains EXPERIMENTAL/unpromoted — selector-gated evidence-gathering, see INV-OFEHYB-008)
 Evidence mode: `static` (consolidation) over an executed evidence chain
 
 ## Purpose
@@ -306,7 +306,7 @@ this subsystem MUST include them).
 | `INV-OFEHYB-003` | seed/acceleration acceptance rules + `steady_state_is_a_fixed_point_of_the_implicit_step`, `branch_warm_seed_preserves_solution_and_reduces_or_matches_map_work`, `branch_warm_seed_acceptance_is_basin_locked` | runtime + test | deterministic fallback; divergence = defect | T3 rev-29 disposition; rev-31 WP |
 | `INV-OFEHYB-004` | solve-chain ordering + double-collapse typed error + `low_jump_recovers_high_branch_root_and_never_commits_filippov` | runtime + test | typed hard fail | rev-29 disposition |
 | `INV-OFEHYB-005` | hybrid preflight guards + `hybrid_rejects_cadence_that_does_not_partition_the_seam_hour`, `hybrid_rejects_non_integral_windows` | runtime + test | typed degenerate-configuration | T3-AGG WP |
-| `INV-OFEHYB-006` | `absorb_deficit`/`dispose_terminal_carry` + the `rev30_deficit_carry_tests` functions + `bin_recorder_returns_material_terminal_deficit_exactly` | runtime + test | `NegativeOutletBin` / bounded documented drop | T3-AGG `fix-evidence.md` |
+| `INV-OFEHYB-006` | `absorb_deficit`/`dispose_terminal_carry` + `absorb_deficit_exact_total_and_non_negative`, `dispose_terminal_carry_material_deficit_fails_closed`, `dispose_terminal_carry_subnoise_absorbs_backward_exactly`, `dispose_terminal_carry_all_dry_subnoise_drop_is_bounded`, `bin_recorder_returns_material_terminal_deficit_exactly` | runtime + test | `NegativeOutletBin` / bounded documented drop | T3-AGG `fix-evidence.md` |
 | `INV-OFEHYB-007` | `hybrid_is_bit_identical_on_all_explicit_windows` + plain-parquet pin + `pub(super)` scoping of the deficit variant | test + run evidence | bit/byte diff blocks | T3/T3-AGG gate results |
 | `INV-OFEHYB-008` | `case4_hybrid_manning_ladder_meets_iwagaki_oracle` (retained, ignored-with-reason; ignored-only reproduction command recorded) | validation | HOLD | rev-31 `ratification-evidence.md` |
 | `INV-OFEHYB-009` | rev-27 live closure guards (unchanged) | runtime | typed hard fail | H2637 evidence blocks |
@@ -410,4 +410,5 @@ Evidence mode: `Static`
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-07-07` | `2` | `Codex` | Approval-lift after dual review, accepted finding disposition, and dual verification in WP `20260707-laned-router-hybrid-contract-authority-001`: Agent A verification GO; Agent B initial verification found one remaining Low guard-map shorthand, the row was amended to name the retained deficit-carry tests directly, and Agent B follow-up verification returned GO. Lifecycle status is now `approved` / `active`; no behavior, tolerance, selector posture, or promotion change is made. `INV-OFEHYB-008` remains HELD on `GAP-OFEHYB-001`; `GAP-OFEHYB-002` remains an optimization gap. |
 | `2026-07-07` | `1` | `Claude Code` | Initial authority CONSOLIDATION (WP `20260707-laned-router-hybrid-contract-authority-001`): normative content assembled from `SC-OFEROUTE-001` revs 28 (scheme + selector + Z-rating discovery), 29 (double-collapse theorem, basin-locked Steffensen, dust floor), 30 (aggressive mask, hour-partition guard, cross-span deficit carry + dispositions), 31 (branch-local warm seeding, solve-cost counters), the T3 design record (`i0-scheme-design.md` — including the recorded explicit cool-down fallback now carried in GAP-OFEHYB-001), and the executed evidence chain (T3 / T3-AGG / rev-31 WPs). New in this document relative to that provenance: stable invariant IDs (`INV-OFEHYB-001..010`), obligation/BEI/guard-map organization, and the gap register carrying the Case-4 HOLD (`22.8/15.5/10.2 %` vs `5 %`) with the one I0-recorded design lever (explicit cool-down) plus clearly-labeled non-binding assessment candidates. Status `draft` pending dual-agent contract review; lifecycle maturity `draft` (the EXPERIMENTAL selector posture is carried in the body/INV-OFEHYB-008, not the lifecycle field). `SC-OFEROUTE-001` rev 32 re-points its hybrid rows here. |

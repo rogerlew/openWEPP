@@ -1,10 +1,10 @@
 # Disposition — SC-OFEROUTE-002 dual-agent review
 
-Status: **EXECUTED** (2026-07-07). Lane verdicts: Agent A **NO-GO** (1 High,
-1 Medium), Agent B **GO-WITH-AMENDMENTS** (3 Medium, 2 Low). Every finding
-is ACCEPTED and FIXED in this disposition; the contract remains
-`status: draft` pending the verification pass (below). Evidence mode:
-**Ran** for all re-gates.
+Status: **EXECUTED-COMPLETE** (2026-07-07). Lane verdicts: Agent A **NO-GO**
+(1 High, 1 Medium), Agent B **GO-WITH-AMENDMENTS** (3 Medium, 2 Low). Every
+finding is ACCEPTED, FIXED, and VERIFIED in this disposition; the contract is
+now `status: approved` / `maturity: active`. Evidence mode: **Ran** for all
+re-gates.
 
 ## Agent A
 
@@ -70,8 +70,13 @@ enumerated (`implicit_step_ledger_is_exact_and_positive`,
 `branch_warm_seed_acceptance_is_basin_locked`,
 `hybrid_is_bit_identical_on_all_explicit_windows`,
 `hybrid_rejects_non_integral_windows`,
+`hybrid_rejects_cadence_that_does_not_partition_the_seam_hour`,
+`absorb_deficit_exact_total_and_non_negative`,
+`dispose_terminal_carry_material_deficit_fails_closed`,
+`dispose_terminal_carry_subnoise_absorbs_backward_exactly`,
+`dispose_terminal_carry_all_dry_subnoise_drop_is_bounded`,
 `bin_recorder_returns_material_terminal_deficit_exactly`, plus the
-`rev30_deficit_carry_tests` functions and the two already-named vectors).
+already-named Case-4 held vector).
 
 **B-L2 (Low) — stale registry `last_reviewed` for SC-OFEROUTE-001.
 ACCEPTED, FIXED.** Index row updated to `2026-07-07`, matching the rev-32
@@ -85,12 +90,15 @@ front matter.
   (4 rows, 4 follow-on — expected).
 - `tools/release/check_sc_unit_compliance.sh` on SC-OFEROUTE-002: `PASS`.
 
-## Verification request (the open gate)
+## Verification closure
 
 Per the authoring procedure, `verification_agent_a.md` /
-`verification_agent_b.md` should confirm each fix against this disposition
-(A: the three A-H1 surfaces + the A-M1 relabel; B: the five B-M1 surfaces,
-the B-M2 wording, vocabulary, test names, registry row). On both lanes
-confirming, the disposition act is: lift `status: draft` → `approved`
-(front matter + body + registry row) and record rev 2 in the contract
-changelog. Until then the contract remains `draft`.
+`verification_agent_b.md` checked each fix against this disposition.
+Agent A returned GO. Agent B returned NO-GO on one Low residue in B-L1: the
+`INV-OFEHYB-006` guard-map row still used the
+`rev30_deficit_carry_tests` shorthand. The row was amended to name the five
+retained deficit-carry tests directly, and
+`verification_agent_b_followup.md` returned GO. The recorded disposition act
+is now executed: `SC-OFEROUTE-002` is lifted to `status: approved` /
+`maturity: active` (front matter + body + registry row) and rev 2 is recorded
+in the contract changelog.
