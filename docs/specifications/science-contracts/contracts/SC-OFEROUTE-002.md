@@ -4,7 +4,7 @@ title: Hybrid Implicit-Explicit Kinematic-Wave Stepping Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 2
+contract_version: 3
 producer_scope:
   - Implicit backward-Euler upwind kinematic-wave stepping on smooth sample bins (per-cell scalar equilibrium solves, machine-exact ledger)
   - Hybrid span composition over a routed day window (implicit/explicit span partition, state seams, cross-span deficit carry, composed outlet-bin series)
@@ -202,26 +202,29 @@ Solve rules, all normative:
   closed without publishing them. Staging the commit behind the guard is a
   recorded non-blocking hardening candidate.
 
-### 4. Switching predicate (rev 30, AGGRESSIVE; one named open gap)
+### 4. Switching predicate (rev 30/33, source-memory cooldown)
 
 The day window is partitioned into outlet sample bins. A bin is
 IMPLICIT-ELIGIBLE iff its seam SOURCE rate is zero on every cell of the
-lane (zero-source-only; upstream inflow does NOT force explicit stepping —
-the implicit step books the interval-mean upstream mass exactly).
+lane AND the bin is outside the source-memory cooldown window
+(zero-source-after-cooldown; upstream inflow does NOT force explicit
+stepping — the implicit step books the interval-mean upstream mass exactly).
 Properties this contract binds:
 
-- The predicate is FORCING-derived, deterministic, and hysteresis-free —
-  knowable at bin start from the seam series alone.
+- The predicate is FORCING-derived and deterministic — knowable from the
+  seam series and bin cadence alone before routing. It carries source-history
+  memory only; it is not state-derived and cannot chatter on solver state.
 - The bin-start point sample is exact ONLY for bin-constant source, so the
   composition FAILS CLOSED unless the sample cadence partitions the seam
   hour exactly (rev-30 C-M1 guard).
-- **Named open design gap (GAP-OFEHYB-001, ratification HOLD):** the
-  predicate proxies "smooth" by "source-quiet", but a kinematic front can
-  OUTLIVE its source — the Case-4 (Iwagaki) post-cutoff phase carries the
-  shock through source-quiet bins, where the implicit scheme's first-order
-  diffusion smears the peak beyond the ratified oracle tolerance. Any
-  predicate change (e.g. a wave-quiet term) amends THIS section
-  contract-first.
+- **Source-memory cooldown (rev 33 / GAP-OFEHYB-001 lift candidate):** after
+  a contiguous source-active burst ends, the next `2 * burst_duration` of
+  source-free bins remain EXPLICIT. Only after that cooldown expires may
+  source-free bins route implicitly. A later source-active burst resets the
+  rule for its own post-source cooldown. The multiplier `2` is a numerical
+  switching constant, not process physics; it was selected by the
+  package-local Case-4 cooldown scan (`10 s` after the `10 s` Iwagaki source
+  still failed, `20 s` passed).
 
 Implicit bins step once per bin at the bin cadence (`Δt` = bin width; no
 CFL constraint applies). Contiguous same-class bins form spans.
@@ -281,7 +284,8 @@ this subsystem MUST include them).
 | Step-residual guard | booked step identity off by > `1e-9` relative (dust-floor scale) | Typed failure; no unvalidated state commits. | Typed runtime hard fail. | `INV-OFEHYB-001` |
 | Material terminal deficit | end-of-window carry beyond the noise floor | Fail closed. | `NegativeOutletBin`. | `INV-OFEHYB-006` |
 | Sub-noise terminal remainder | carry within the noise floor | Backward absorption; bounded all-dry drop. | Approved bounded disposition (documented + test-pinned). | `INV-OFEHYB-006` |
-| Promotion | any attempt to ratify/promote the selector | Must meet the full acceptance surface (§Tolerances). | HOLD — currently failing (gap register). | `INV-OFEHYB-008` |
+| Source-memory cooldown | bin is source-free but inside `2 * preceding_source_burst_duration` after source shutoff | Route explicitly; implicit remains ineligible until cooldown expires. | Test failure or ratification failure blocks closure/promotion. | `INV-OFEHYB-005`, `INV-OFEHYB-008` |
+| Promotion | any attempt to ratify/promote the selector | Must meet the full acceptance surface (§Tolerances). | HOLD until every acceptance subgate passes. | `INV-OFEHYB-008` |
 
 ## Invariants
 
@@ -291,10 +295,10 @@ this subsystem MUST include them).
 | INV-OFEHYB-002 | Unconditional positivity: no negative depth/discharge for any `Δt`; no `max(0)` clamps anywhere in the implicit path. | construction + I1 vectors | Typed failure (a negative would indicate a solve defect). | §Algorithm 1 | `[DIRECT][Static] + [DIRECT][Ran]` |
 | INV-OFEHYB-003 | Determinism: the converged cell state is a pure function of (cell parameters, `rhs`, `Δt/Δx`, branch) — independent of run history. Warm seeds and acceleration must provably converge to the same value (warm-seed acceptance requires FINITE + POSITIVE + evaluated-branch-side, else cold fallback; acceleration is basin-locked). | seed/acceleration guards + regression vectors | Deterministic fallback/rejection; divergence is a defect. | §Algorithm 2/3; rev-29/31 rules | `[DIRECT][Ran]` (rev-29 bit-identical books; rev-31 evidence) |
 | INV-OFEHYB-004 | Branch closure: LOW→HIGH preference; a both-branches-jump outcome is unreachable for genuine physics (double-collapse theorem) and fails closed. No mass-exact filled-jump commit exists. | solve-chain structure + LOW-jump→HIGH-root vector | Typed non-convergence hard fail. | §Algorithm 2 theorem | `[DIRECT][Static] (proof) + [DIRECT][Ran]` |
-| INV-OFEHYB-005 | Switching-predicate soundness: forcing-derived, deterministic, hysteresis-free; implicit only on zero-source bins; the cadence must partition the seam hour (fail closed) so the bin-start sample is provably bin-constant. | preflight guards + C-M1 vector | Typed degenerate-configuration failure. | §Algorithm 4 | `[DIRECT][Ran]` |
+| INV-OFEHYB-005 | Switching-predicate soundness: forcing-derived, deterministic, source-memory bounded; implicit only on zero-source bins after the `2 * preceding_source_burst_duration` cooldown; the cadence must partition the seam hour (fail closed) so the bin-start sample is provably bin-constant. | preflight guards + C-M1/cooldown vectors | Typed degenerate-configuration failure or test failure. | §Algorithm 4 | `[DIRECT][Ran]` |
 | INV-OFEHYB-006 | Composition exact-total: the composed published bin series is non-negative and sums to the booked outflow EXACTLY EXCEPT for the single approved C-L1 disposition (an un-absorbable sub-noise remainder on an all-dry/insufficient-gross series is dropped, bounded by the noise floor); deficits move ATTRIBUTION forward in time, never mass; material end-of-window deficits fail closed. | carry algebra + disposition guards + rev-30 vectors | `NegativeOutletBin` / bounded documented disposition. | §Algorithm 5 | `[DIRECT][Ran]` (H2637 6-event carry evidence) |
 | INV-OFEHYB-007 | Non-perturbation: selector unset ⟹ plain/default byte identity; all-explicit windows bit-identical to the plain path; the deficit-returning solver variant is composition-scoped and every other caller keeps the fail-closed wrapper. | bit-identity vector + parquet pin + call-site audit | Byte/bit diff blocks; wrapper regression is a defect. | §Algorithm 5/6 | `[DIRECT][Ran]` (parquet `21c54bf2…` pinned) |
-| INV-OFEHYB-008 | Acceptance/promotion gate: the hybrid must meet the `SC-OFEROUTE-001#INV-OFEROUTE-011` Case-4 oracle surface at EVERY ladder rung AND carry ratified fidelity tolerances before any promotion beyond evidence-gathering. CURRENTLY FAILING (GAP-OFEHYB-001) — promotion is HELD. | Case-4 hybrid ladder vector (retained, ignored-with-reason) + ratification process | HOLD; no promotion path exists while failing. | Parent oracle surface | `[DIRECT][Ran]` (`22.8/15.5/10.2 %` vs 5 %) |
+| INV-OFEHYB-008 | Acceptance/promotion gate: the hybrid must meet the `SC-OFEROUTE-001#INV-OFEROUTE-011` Case-4 oracle surface at EVERY ladder rung AND carry ratified fidelity/timing tolerances before any promotion beyond evidence-gathering. GAP-OFEHYB-001 is the Case-4 subgate; closing it does not by itself promote the selector. | Case-4 hybrid ladder vector + ratification process | HOLD until every promotion subgate passes. | Parent oracle surface | `[DIRECT][Ran]` |
 | INV-OFEHYB-009 | Day-closure inheritance: the rev-27 `SC-OFEROUTE-001` day-closure hard-fails (supply, router-internal, seam cross-ledger, day identity) apply VERBATIM under the selector at their named tolerances. | live rev-27 guards | Typed runtime hard fail. | SC-OFEROUTE-001 rev 27 | `[DIRECT][Ran]` (H2637 machine-exact under hybrid) |
 | INV-OFEHYB-010 | Diagnostics obligations: implicit step and solve-cost counters are surfaced on every profiled run; subsystem timing claims must cite them. | profile plumbing + evidence convention | Missing counters invalidate timing evidence. | §Algorithm 6 | `[DIRECT][Ran]` |
 
@@ -305,10 +309,10 @@ this subsystem MUST include them).
 | `INV-OFEHYB-001..002` | `ofe_routing::implicit_recession` step guard + `implicit_step_ledger_is_exact_and_positive`, `implicit_step_books_upstream_inflow_exactly`, `dust_scale_steps_do_not_accumulate_a_material_leak` | runtime + test | typed hard fail | T3 `i1-implicit-stepper-evidence.md` |
 | `INV-OFEHYB-003` | seed/acceleration acceptance rules + `steady_state_is_a_fixed_point_of_the_implicit_step`, `branch_warm_seed_preserves_solution_and_reduces_or_matches_map_work`, `branch_warm_seed_acceptance_is_basin_locked` | runtime + test | deterministic fallback; divergence = defect | T3 rev-29 disposition; rev-31 WP |
 | `INV-OFEHYB-004` | solve-chain ordering + double-collapse typed error + `low_jump_recovers_high_branch_root_and_never_commits_filippov` | runtime + test | typed hard fail | rev-29 disposition |
-| `INV-OFEHYB-005` | hybrid preflight guards + `hybrid_rejects_cadence_that_does_not_partition_the_seam_hour`, `hybrid_rejects_non_integral_windows` | runtime + test | typed degenerate-configuration | T3-AGG WP |
+| `INV-OFEHYB-005` | hybrid preflight guards + source-memory cooldown mask + `hybrid_rejects_cadence_that_does_not_partition_the_seam_hour`, `hybrid_rejects_non_integral_windows`, `hybrid_source_memory_cooldown_keeps_post_source_bins_explicit` | runtime + test | typed degenerate-configuration / test failure | GAP001 WP |
 | `INV-OFEHYB-006` | `absorb_deficit`/`dispose_terminal_carry` + `absorb_deficit_exact_total_and_non_negative`, `dispose_terminal_carry_material_deficit_fails_closed`, `dispose_terminal_carry_subnoise_absorbs_backward_exactly`, `dispose_terminal_carry_all_dry_subnoise_drop_is_bounded`, `bin_recorder_returns_material_terminal_deficit_exactly` | runtime + test | `NegativeOutletBin` / bounded documented drop | T3-AGG `fix-evidence.md` |
 | `INV-OFEHYB-007` | `hybrid_is_bit_identical_on_all_explicit_windows` + plain-parquet pin + `pub(super)` scoping of the deficit variant | test + run evidence | bit/byte diff blocks | T3/T3-AGG gate results |
-| `INV-OFEHYB-008` | `case4_hybrid_manning_ladder_meets_iwagaki_oracle` (retained, ignored-with-reason; ignored-only reproduction command recorded) | validation | HOLD | rev-31 `ratification-evidence.md` |
+| `INV-OFEHYB-008` | `case4_hybrid_manning_ladder_meets_iwagaki_oracle` | validation | HOLD until all promotion subgates pass | GAP001 `design-evidence.md` / `gate-results.md` |
 | `INV-OFEHYB-009` | rev-27 live closure guards (unchanged) | runtime | typed hard fail | H2637 evidence blocks |
 | `INV-OFEHYB-010` | `ofe_routing::profile` counters + manifest/profile line | diagnostics | evidence-invalidating | rev-31 timing artifact |
 
@@ -343,6 +347,7 @@ this subsystem MUST include them).
 | Basin-split discharge `Q_c` | `1000·ν` | `INV-OFEROUTE-002` crossover; rev 28 |
 | Cold branch seeds | `Q_c·1e-3` (LOW) / `Q_c·1e3` (HIGH) | rev 29 determinism rule |
 | Implicit `Δt` | outlet sample-bin width (900 s active cadence) | rev 28 dt policy |
+| Source-memory cooldown multiplier | `2 * preceding_source_burst_duration` | rev 33 GAP-OFEHYB-001 design increment; Case-4 scan bracket (`10 s` fail, `20 s` pass) |
 | Step-residual guard | relative `1e-9`; absolute dust floor `DRY_DEPTH_M · Δx · n` (`DRY_DEPTH_M = 1e-9 m`) | rev 28 dust-floor rule |
 | Terminal-carry noise floor | `1e-9 ×` series gross, floor `1e-12 m^2` | rev 30 (recorder noise rule at composed level) |
 | All-dry drop bound | `<=` noise floor (absolute floor class `1e-21 m^2` at the degenerate gross floor) | rev 30 C-L1 disposition |
@@ -368,13 +373,16 @@ symbol must register per `docs/specifications/unit-governance.md`.
   `SC-OFEROUTE-001#INV-OFEROUTE-011` rev-25/26 ratified Case-4 oracle
   tolerances at every rung (peak `<= 5 %`, `t_peak <= 1.5 s`, rise
   `<= 2.0 s`, non-diverging) run with the FULL hybrid, plus named ratified
-  fidelity tolerances for the implicit phase. **Current executed result:
-  FAIL — peak `22.8 / 15.5 / 10.2 %` (improving under refinement; every
-  rung out of tolerance). Ratification and promotion are HELD
-  (GAP-OFEHYB-001).**
+  fidelity/timing tolerances for the implicit phase. **Rev-33 design evidence:
+  the old zero-source-only rule failed at peak `22.8 / 15.5 / 10.2 %`; a
+  `10 s` cooldown after the `10 s` Iwagaki source still failed
+  (`13.1 / 8.1 / 5.03 %`), while `20 s` passed.**
 - Timing evidence convention: endpoint claims must cite the rev-31 counters
   (H2637 record: `36.61 s` user hybrid vs `37.9 s` plain; `274.7 M` map
-  evaluations / `37.2 M` branch evaluations).
+  evaluations / `37.2 M` branch evaluations). Rev-33 GAP-OFEHYB-001
+  source-memory record: `37.96 s` user, `980804` implicit steps, `151.4 M`
+  map evaluations, `20.1 M` branch evaluations; `+3.69 %` vs rev-31 hybrid
+  and `+0.16 %` vs plain active.
 
 ## Test-Vector Obligations
 
@@ -382,10 +390,10 @@ symbol must register per `docs/specifications/unit-governance.md`.
 |---|---|---|
 | Implicit stepper (I1 family) | Exactness + positivity at every dt/mesh rung; steady-state fixed point; recession dt-refinement ladder vs the upwind/characteristics reference; 10k-step dust accumulation; LOW-jump→HIGH-root recovery. | Retained `implicit_recession` suites; T3 I1 evidence. |
 | Solve determinism | Warm-seed fallback and basin-lock regressions (converged values unchanged vs plain iteration). | rev-29/31 retained vectors + evidence. |
-| Switching predicate | Hour-partition fail-closed (C-M1 scenario); non-integral window; aggressive coverage pin (zero-source + upstream ⟹ all-implicit, upstream mass booked exactly). | `rev30_deficit_carry_tests` + rejection vectors. |
+| Switching predicate | Hour-partition fail-closed (C-M1 scenario); non-integral window; source-memory cooldown pin; zero-source/no-prior-source upstream-fed bins remain implicit and book upstream mass exactly. | `rev30_deficit_carry_tests` + rejection/cooldown vectors. |
 | Composition deficit carry | Recorder deficit-return identity; absorb/dispose exact-total + non-negativity; material end-of-window fail-closed (incl. all-dry); sub-noise backward absorption; bounded all-dry drop. | rev-30 vector family. |
 | Non-perturbation | All-explicit bit-identity; plain-parquet pin under selector-off. | T3/T3-AGG gate artifacts. |
-| Acceptance (HELD) | Case-4 FULL-hybrid oracle ladder at the parent ratified tolerances (retained, ignored-with-reason while failing; ignored-only reproduction command recorded). | rev-31 `ratification-evidence.md` + `case4-hybrid-ignored-ratification.log`. |
+| Acceptance (Case-4 subgate CLOSED; selector promotion still HELD) | Case-4 FULL-hybrid oracle ladder at the parent ratified tolerances; retained unignored after the rev-33 source-memory cooldown amendment. | GAP001 `design-evidence.md`, `gate-results.md`, and `verification-case4-cooldown-scan.md`. |
 
 ## Binding Exposure Index
 
@@ -403,12 +411,13 @@ Evidence mode: `Static`
 
 | Gap ID | Statement | Impact | Disposition | Evidence |
 |---|---|---|---|---|
-| GAP-OFEHYB-001 | **Shock-outlives-source: the forcing-derived switching predicate routes shock-carrying source-quiet bins implicitly.** The Case-4 hybrid ladder fails the parent ratified peak tolerance at every rung (`22.8 / 15.5 / 10.2 %` vs `5 %`, improving under refinement — the implicit phase's first-order diffusion smearing an in-mesh front). ONE recorded design lever exists for the lift, to be adjudicated contract-first in a design increment: the I0-recorded **explicit cool-down** — remain explicit for K bins after source-off until the homogeneous TV(q) transient is below the rev-25 bound (provenance: T3 `i0-scheme-design.md` §2 residual-risk fallback). NON-BINDING ASSESSMENT CANDIDATES (no provenance beyond this WP's authoring session, 2026-07-07; NOT authority until a contract-first design increment adopts one): a spatial wave-quiet predicate (e.g. max relative inter-cell depth jump below a named threshold), noting that a q-vs-equilibrium departure test cannot discriminate because kinematic state sits ON the rating — any state-derived discriminator must be spatial or transit-time-based. The same smearing class plausibly contributes to the H2637 aggressive fidelity delta (`−0.84 %`), so the lift feeds both held gates. | **Blocks INV-OFEHYB-008**: no ratification, no promotion; the selector stays evidence-gathering. | OPEN — next design increment on the T3 queue. | `[DIRECT][Ran]` (rev-31 ladder) |
+| GAP-OFEHYB-001 | **Shock-outlives-source: the old zero-source-only predicate routed shock-carrying source-quiet bins implicitly.** The rev-31 Case-4 hybrid ladder failed the parent ratified peak tolerance at every rung (`22.8 / 15.5 / 10.2 %` vs `5 %`, improving under refinement — the implicit phase's first-order diffusion smearing an in-mesh front). Rev 33 selects the recorded explicit cool-down lever as a source-memory predicate: after a source-active burst, route the next `2 * burst_duration` source-free bins explicitly before implicit recession is eligible. The Case-4 scan proved `10 s` cooldown still failed and `20 s` passed for the `10 s` Iwagaki source; the retained Case-4 ladder now passes unignored under the same parent tolerances. | Case-4 subgate no longer blocks the selector; closing this gap does not by itself promote the selector, which still requires the full `INV-OFEHYB-008` fidelity/timing ratification process. | RESOLVED — WP `20260707-laned-router-gap-ofehyb-001-hold-lift-design-001`. | `[DIRECT][Ran]` (cooldown scan + retained ladder + H2637 timing/profile) |
 | GAP-OFEHYB-002 | **Implicit solve cost remains the endpoint bottleneck.** H2637: `274.7 M` equilibrium map evaluations ≈ 12 per cell-solve after rev-31 warm seeding (endpoint `36.61 s` vs `37.9 s` plain — first net win, modest). Remaining levers: Newton on the composed cell residual (replacing nested fixed-point iteration), Tier-1 friction-evaluation cost cuts (compose multiplicatively), further deterministic seeding improvements under INV-OFEHYB-003. | Bounds the subsystem's endpoint value; does not block correctness. | OPEN — optimization increments; each must re-prove INV-OFEHYB-003. | `[DIRECT][Ran]` (rev-31 counters) |
 
 ## Revision History
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-07-07` | `3` | `Codex` | GAP-OFEHYB-001 hold-lift design amendment (WP `20260707-laned-router-gap-ofehyb-001-hold-lift-design-001`): replaces the old zero-source-only switching predicate with a deterministic source-memory cooldown. After any contiguous source-active burst, the next `2 * burst_duration` source-free bins remain explicit; only later source-free bins are implicit-eligible. This is a numerical switching rule, not process physics; upstream inflow remains allowed after cooldown because implicit steps book interval-mean upstream mass exactly. Design evidence: Case-4 cooldown scan bracketed the transition (`10 s` after the `10 s` source still failed; `20 s` passed), the retained Case-4 hybrid ladder now passes unignored at the parent tolerances, and H2637 active hybrid timing/profile is recorded at `37.96 s` user with `980804` implicit steps. GAP-OFEHYB-001 is resolved as the Case-4 subgate; no selector promotion/default change is made. |
 | `2026-07-07` | `2` | `Codex` | Approval-lift after dual review, accepted finding disposition, and dual verification in WP `20260707-laned-router-hybrid-contract-authority-001`: Agent A verification GO; Agent B initial verification found one remaining Low guard-map shorthand, the row was amended to name the retained deficit-carry tests directly, and Agent B follow-up verification returned GO. Lifecycle status is now `approved` / `active`; no behavior, tolerance, selector posture, or promotion change is made. `INV-OFEHYB-008` remains HELD on `GAP-OFEHYB-001`; `GAP-OFEHYB-002` remains an optimization gap. |
 | `2026-07-07` | `1` | `Claude Code` | Initial authority CONSOLIDATION (WP `20260707-laned-router-hybrid-contract-authority-001`): normative content assembled from `SC-OFEROUTE-001` revs 28 (scheme + selector + Z-rating discovery), 29 (double-collapse theorem, basin-locked Steffensen, dust floor), 30 (aggressive mask, hour-partition guard, cross-span deficit carry + dispositions), 31 (branch-local warm seeding, solve-cost counters), the T3 design record (`i0-scheme-design.md` — including the recorded explicit cool-down fallback now carried in GAP-OFEHYB-001), and the executed evidence chain (T3 / T3-AGG / rev-31 WPs). New in this document relative to that provenance: stable invariant IDs (`INV-OFEHYB-001..010`), obligation/BEI/guard-map organization, and the gap register carrying the Case-4 HOLD (`22.8/15.5/10.2 %` vs `5 %`) with the one I0-recorded design lever (explicit cool-down) plus clearly-labeled non-binding assessment candidates. Status `draft` pending dual-agent contract review; lifecycle maturity `draft` (the EXPERIMENTAL selector posture is carried in the body/INV-OFEHYB-008, not the lifecycle field). `SC-OFEROUTE-001` rev 32 re-points its hybrid rows here. |

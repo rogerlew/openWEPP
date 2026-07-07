@@ -321,6 +321,22 @@ State as of `2026-07-07`:
 
 ## Execution Log
 
+- `20260707-laned-router-gap-ofehyb-001-hold-lift-design-001/` is complete as
+  LANED HYBRID GAP-OFEHYB-001 HOLD-LIFT DESIGN. Result:
+  `EXECUTED-COMPLETE`. It amended `SC-OFEROUTE-002` rev 3 to replace the old
+  zero-source-only predicate with a deterministic source-memory cooldown:
+  after a contiguous source-active burst, the next `2 * burst_duration`
+  source-free bins remain explicit before implicit recession is eligible.
+  The Case-4 cooldown scan bracketed the rule (`0/5/10 s` cooldown failed,
+  `20 s` after the `10 s` source passed), the retained Case-4 hybrid ladder is
+  now unignored and passing under the parent tolerances, and H2637 active
+  hybrid timing/profile records `37.96 s` user, `980804` implicit steps,
+  `151.4M` map evaluations, and `20.1M` branch evaluations. Review findings
+  were dispositioned with a shared production/harness cooldown constant, a
+  multi-burst reset vector, stale artifact cleanup, and contract/status
+  wording repair. No selector/default promotion is made: `INV-OFEHYB-008`
+  remains the promotion gate and `GAP-OFEHYB-002` remains open for solve-cost
+  optimization/fidelity timing ratification.
 - `20260707-laned-router-hybrid-contract-authority-001/` is complete as
   LANED-HYB-SC AUTHORITATIVE HYBRID CONTRACT CONSOLIDATION. Result:
   `EXECUTED-COMPLETE`. It authored and approved `SC-OFEROUTE-002` (Hybrid
@@ -332,9 +348,10 @@ State as of `2026-07-07`:
   Dual-agent review findings were accepted and fixed, Agent A verification
   returned GO, Agent B's one Low follow-up was fixed by naming the retained
   deficit-carry test functions directly, and Agent B follow-up returned GO.
-  The lifecycle approval does not promote the selector: `INV-OFEHYB-008`
-  remains HELD on `GAP-OFEHYB-001`, and `GAP-OFEHYB-002` remains the solve-cost
-  optimization gap.
+  The lifecycle approval did not promote the selector: at closure time
+  `INV-OFEHYB-008` remained held on `GAP-OFEHYB-001`, which is later closed by
+  `20260707-laned-router-gap-ofehyb-001-hold-lift-design-001`; `GAP-OFEHYB-002`
+  remains the solve-cost optimization gap.
 - `20260705-local-ci-timing-profile-optimization-001/` is complete as LOCAL CI
   TIMING AND PROFILE OPTIMIZATION. Result: `EXECUTED-COMPLETE`. It added
   persistent local nextest timing diagnostics under `tools/local_ci/`, installed

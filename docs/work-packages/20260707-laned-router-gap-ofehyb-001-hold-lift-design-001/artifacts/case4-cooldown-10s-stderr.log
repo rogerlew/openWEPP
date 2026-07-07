@@ -1,0 +1,50 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.05s
+────────────
+ Nextest run ID 1ecf2f2d-140c-4753-8ada-1276e27d4285 with nextest profile: quick
+    Starting 1 test across 1 binary (333 tests skipped)
+        SLOW [> 60.000s] (───) openwepp-hillslope-orchestrator ofe_routing::d10b_reconciliation_tests::case4_hybrid_manning_ladder_meets_iwagaki_oracle
+        SLOW [>120.000s] (───) openwepp-hillslope-orchestrator ofe_routing::d10b_reconciliation_tests::case4_hybrid_manning_ladder_meets_iwagaki_oracle
+        FAIL [ 144.668s] (1/1) openwepp-hillslope-orchestrator ofe_routing::d10b_reconciliation_tests::case4_hybrid_manning_ladder_meets_iwagaki_oracle
+  stdout ───
+
+    running 1 test
+    test ofe_routing::d10b_reconciliation_tests::case4_hybrid_manning_ladder_meets_iwagaki_oracle has been running for over 60 seconds
+    test ofe_routing::d10b_reconciliation_tests::case4_hybrid_manning_ladder_meets_iwagaki_oracle ... FAILED
+
+    failures:
+
+    failures:
+        ofe_routing::d10b_reconciliation_tests::case4_hybrid_manning_ladder_meets_iwagaki_oracle
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 333 filtered out; finished in 144.66s
+
+  stderr ───
+
+    thread 'ofe_routing::d10b_reconciliation_tests::case4_hybrid_manning_ladder_meets_iwagaki_oracle' (487132) panicked at crates/openwepp-hillslope-orchestrator/src/ofe_routing/d10b_reconciliation_tests.rs:128:9:
+    hybrid peak error at ladder step 0: 0.13110798999821136 (ref 0.008334954309852328); ladder [0.13110798999821136, 0.08141395499148471, 0.050327402891367674]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [ 144.671s] 1 test run: 0 passed, 1 failed, 333 skipped
+        FAIL [ 144.668s] (1/1) openwepp-hillslope-orchestrator ofe_routing::d10b_reconciliation_tests::case4_hybrid_manning_ladder_meets_iwagaki_oracle
+  stdout ───
+
+    running 1 test
+    test ofe_routing::d10b_reconciliation_tests::case4_hybrid_manning_ladder_meets_iwagaki_oracle has been running for over 60 seconds
+    test ofe_routing::d10b_reconciliation_tests::case4_hybrid_manning_ladder_meets_iwagaki_oracle ... FAILED
+
+    failures:
+
+    failures:
+        ofe_routing::d10b_reconciliation_tests::case4_hybrid_manning_ladder_meets_iwagaki_oracle
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 333 filtered out; finished in 144.66s
+
+  stderr ───
+
+    thread 'ofe_routing::d10b_reconciliation_tests::case4_hybrid_manning_ladder_meets_iwagaki_oracle' (487132) panicked at crates/openwepp-hillslope-orchestrator/src/ofe_routing/d10b_reconciliation_tests.rs:128:9:
+    hybrid peak error at ladder step 0: 0.13110798999821136 (ref 0.008334954309852328); ladder [0.13110798999821136, 0.08141395499148471, 0.050327402891367674]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+error: test run failed

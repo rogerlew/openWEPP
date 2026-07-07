@@ -92,12 +92,12 @@ fn case4_manning_solver_converges_to_iwagaki_oracle() {
 }
 
 #[test]
-#[ignore = "rev-31 ratification gate: currently fails Case-4 peak tolerance; run explicitly for hold evidence"]
 fn case4_hybrid_manning_ladder_meets_iwagaki_oracle() {
-    // Rev-31 LANED-T3 closure gate: the hybrid Case-4 harness runs the
-    // active source phase explicitly, then drains the same state with the
-    // implicit recession stepper. It must satisfy the same oracle-shaped
-    // Case-4 acceptance tolerances before selector promotion can be claimed.
+    // Rev-33 GAP-OFEHYB-001 closure gate: the hybrid Case-4 harness runs the
+    // active source phase and source-memory cooldown explicitly, then drains
+    // the same state with the implicit recession stepper. It must satisfy the
+    // same oracle-shaped Case-4 acceptance tolerances before the Case-4
+    // subgate can be claimed closed.
     let o2 = run_upwind_reference(&OracleConfig::iwagaki_case4(), 2000);
     let o4 = run_upwind_reference(&OracleConfig::iwagaki_case4(), 4000);
     let o8 = run_upwind_reference(&OracleConfig::iwagaki_case4(), 8000);

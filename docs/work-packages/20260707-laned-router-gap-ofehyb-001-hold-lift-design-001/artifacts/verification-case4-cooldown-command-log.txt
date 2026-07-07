@@ -1,0 +1,4 @@
+[0] OPENWEPP_IWAGAKI_HYBRID_COOLDOWN_S=0 cargo nextest run -p openwepp-hillslope-orchestrator 'ofe_routing::d10b_reconciliation_tests::case4_hybrid_manning_ladder_meets_iwagaki_oracle' --profile quick --run-ignored ignored-only
+[5] OPENWEPP_IWAGAKI_HYBRID_COOLDOWN_S=5 cargo nextest run -p openwepp-hillslope-orchestrator 'ofe_routing::d10b_reconciliation_tests::case4_hybrid_manning_ladder_meets_iwagaki_oracle' --profile quick --run-ignored ignored-only
+[10] OPENWEPP_IWAGAKI_HYBRID_COOLDOWN_S=10 cargo nextest run -p openwepp-hillslope-orchestrator 'ofe_routing::d10b_reconciliation_tests::case4_hybrid_manning_ladder_meets_iwagaki_oracle' --profile quick --run-ignored ignored-only
+[20] OPENWEPP_IWAGAKI_HYBRID_COOLDOWN_S=20 cargo nextest run -p openwepp-hillslope-orchestrator 'ofe_routing::d10b_reconciliation_tests::case4_hybrid_manning_ladder_meets_iwagaki_oracle' --profile quick --run-ignored ignored-only

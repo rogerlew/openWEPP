@@ -12,7 +12,7 @@
 //! No copyrighted series are embedded; the cited peak scalars in the tests are
 //! digitized published values with provenance.
 
-use super::cascade::CascadeSegment;
+use super::cascade::{CascadeSegment, HYBRID_SOURCE_MEMORY_COOLDOWN_MULTIPLIER};
 use super::implicit_recession::implicit_step_with_discharges;
 use super::infiltration::{GreenAmptSoil, RainfallInterval, run_infiltrated_cascade};
 use super::kinematic_wave::{
@@ -144,9 +144,10 @@ pub fn run_iwagaki_manning(
     )
 }
 
-/// Case 4 under the rev-31 hybrid acceptance harness: explicit
-/// TVD-MacCormack while the Iwagaki lateral supply is active, then the
-/// implicit backward-Euler recession stepper after the primary cutoff.
+/// Case 4 under the rev-33 hybrid acceptance harness: explicit
+/// TVD-MacCormack while the Iwagaki lateral supply is active and during the
+/// shared source-memory cooldown, then the implicit backward-Euler recession
+/// stepper after the cooldown.
 pub fn run_iwagaki_manning_hybrid(
     cell_count: usize,
     sample_dt_s: f64,
@@ -158,6 +159,14 @@ pub fn run_iwagaki_manning_hybrid(
         sample_dt_s,
         max_dt_s,
     )
+}
+
+fn iwagaki_hybrid_source_memory_explicit_end_s(
+    config: &super::iwagaki_oracle::OracleConfig,
+) -> f64 {
+    #[allow(clippy::cast_precision_loss)]
+    let cooldown_multiplier = HYBRID_SOURCE_MEMORY_COOLDOWN_MULTIPLIER as f64;
+    (config.supply_end_s * (1.0 + cooldown_multiplier)).min(config.end_time_s)
 }
 
 fn iwagaki_domain_end(config: &super::iwagaki_oracle::OracleConfig) -> f64 {
@@ -281,15 +290,17 @@ fn run_iwagaki_cells_hybrid(
     if sample_dt_s <= 0.0 || max_dt_s <= 0.0 || cell_count == 0 {
         return Err(RoutingError::DegenerateConfiguration);
     }
-    let (supply_bins, total_bins) = checked_iwagaki_bin_counts(&config, sample_dt_s)?;
+    let explicit_end_s = iwagaki_hybrid_source_memory_explicit_end_s(&config);
+    let (explicit_bins, total_bins) =
+        checked_iwagaki_bin_counts(&config, explicit_end_s, sample_dt_s)?;
     let mesh = build_iwagaki_mesh(&config, cell_for_slope, cell_count);
     let (solver, explicit) =
-        run_iwagaki_hybrid_supply_phase(&mesh, &config, sample_dt_s, max_dt_s)?;
-    if explicit.outlet_bin_outflow_m2.len() != supply_bins {
+        run_iwagaki_hybrid_supply_phase(&mesh, &config, explicit_end_s, sample_dt_s, max_dt_s)?;
+    if explicit.outlet_bin_outflow_m2.len() != explicit_bins {
         return Err(RoutingError::DegenerateConfiguration);
     }
     let mut bins_m2 = vec![0.0_f64; total_bins];
-    bins_m2[..supply_bins].copy_from_slice(&explicit.outlet_bin_outflow_m2);
+    bins_m2[..explicit_bins].copy_from_slice(&explicit.outlet_bin_outflow_m2);
     let mut mass = explicit.mass_balance;
     let max_courant = explicit.max_courant;
     let max_tv = explicit.max_homogeneous_tv_increase_m2_s;
@@ -300,7 +311,7 @@ fn run_iwagaki_cells_hybrid(
         &mesh,
         &solver,
         &mut bins_m2,
-        supply_bins,
+        explicit_bins,
         sample_dt_s,
         &mut mass,
         &mut substep_peak,
@@ -325,9 +336,10 @@ fn run_iwagaki_cells_hybrid(
 
 fn checked_iwagaki_bin_counts(
     config: &super::iwagaki_oracle::OracleConfig,
+    explicit_end_s: f64,
     sample_dt_s: f64,
 ) -> Result<(usize, usize), RoutingError> {
-    let supply_bins_f = config.supply_end_s / sample_dt_s;
+    let supply_bins_f = explicit_end_s / sample_dt_s;
     let total_bins_f = config.end_time_s / sample_dt_s;
     #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
     let supply_bins = supply_bins_f.round() as usize;
@@ -339,7 +351,7 @@ fn checked_iwagaki_bin_counts(
     let total_reconstructed = total_bins as f64 * sample_dt_s;
     if supply_bins == 0
         || total_bins <= supply_bins
-        || (supply_reconstructed - config.supply_end_s).abs() > 1.0e-9
+        || (supply_reconstructed - explicit_end_s).abs() > 1.0e-9
         || (total_reconstructed - config.end_time_s).abs() > 1.0e-9
     {
         return Err(RoutingError::DegenerateConfiguration);
@@ -350,6 +362,7 @@ fn checked_iwagaki_bin_counts(
 fn run_iwagaki_hybrid_supply_phase(
     mesh: &KinematicWaveMesh,
     config: &super::iwagaki_oracle::OracleConfig,
+    explicit_end_s: f64,
     sample_dt_s: f64,
     max_dt_s: f64,
 ) -> Result<(KinematicWaveSolver, RoutingResult), RoutingError> {
@@ -373,8 +386,8 @@ fn run_iwagaki_hybrid_supply_phase(
     let explicit = solver.run_with_options(
         &forcing,
         None,
-        &[],
-        config.supply_end_s,
+        &[config.supply_end_s],
+        explicit_end_s,
         sample_dt_s,
         max_dt_s,
     )?;

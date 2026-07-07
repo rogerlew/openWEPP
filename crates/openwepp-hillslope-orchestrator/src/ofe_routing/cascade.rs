@@ -24,6 +24,11 @@ use super::kinematic_wave::{
 use super::profile;
 use super::seam::{SEAM_HOUR_BINS, SEAM_SECONDS_PER_HOUR, seam_rate_at};
 
+/// SC-OFEROUTE-002 rev 3 / GAP-OFEHYB-001: after a contiguous source-active
+/// burst ends, keep the next `2 * burst_duration` source-free bins explicit so
+/// a post-source front can clear before first-order implicit recession owns it.
+pub(super) const HYBRID_SOURCE_MEMORY_COOLDOWN_MULTIPLIER: usize = 2;
+
 /// One OFE in the cascade: its routing mesh and flow width. The flow width
 /// converts unit-width discharge (m^2/s) between OFEs so total discharge
 /// `Q = q * width` is continuous across the handoff.
@@ -402,23 +407,57 @@ fn dispose_terminal_carry(bins_m2: &mut [f64], mut carry_m2: f64) -> Result<(), 
     Ok(())
 }
 
-/// T3-I2/T3-AGG (`SC-OFEROUTE-001` rev 28/30, EXPERIMENTAL opt-in): route
+fn hybrid_implicit_eligibility_mask(
+    source_rates_m_s: &[f64; SEAM_HOUR_BINS],
+    n_bins: usize,
+    sample_dt_s: f64,
+) -> Vec<bool> {
+    let mut mask = Vec::with_capacity(n_bins);
+    let mut active_run_bins = 0_usize;
+    let mut cooldown_remaining = 0_usize;
+    for b in 0..n_bins {
+        #[allow(clippy::cast_precision_loss)]
+        let t0 = b as f64 * sample_dt_s;
+        let source_free = seam_rate_at(source_rates_m_s, t0) == 0.0;
+        if !source_free {
+            active_run_bins = active_run_bins.saturating_add(1);
+            cooldown_remaining = 0;
+            mask.push(false);
+            continue;
+        }
+        if active_run_bins > 0 {
+            cooldown_remaining =
+                HYBRID_SOURCE_MEMORY_COOLDOWN_MULTIPLIER.saturating_mul(active_run_bins);
+            active_run_bins = 0;
+        }
+        if cooldown_remaining > 0 {
+            cooldown_remaining -= 1;
+            mask.push(false);
+        } else {
+            mask.push(true);
+        }
+    }
+    mask
+}
+
+/// T3-I2/T3-AGG/GAP001 (`SC-OFEROUTE-002` rev 3, EXPERIMENTAL opt-in): route
 /// one OFE with HYBRID stepping — the explicit TVD-MacCormack scheme on
-/// source-active sample bins, the implicit backward-Euler upwind stepper
-/// (`implicit_recession`) on AGGRESSIVE smooth bins (zero source on every
-/// cell; upstream inflow is booked exactly as the bin's interval mean by
-/// the implicit step — rev 30 supersedes the rev-28 strict rule). The
-/// switching predicate is FORCING-derived per 900 s outlet bin
-/// (deterministic, hysteresis-free); implicit bins step at exactly the bin
-/// cadence, so the conservative outlet-bin series keeps its exact per-bin
-/// semantics. State hands off at span boundaries per the design's §2.2 seam
-/// rule (depths carry; entering explicit installs the implicit solve's own
-/// converged equilibrium discharges). The composed ledger is exact by
-/// construction (both schemes carry exact ledgers; the seam moves no mass);
-/// a short explicit span's terminal front-arrival attribution deficit
-/// carries forward across span boundaries under the exact-total rule
-/// (rev 30), and a material deficit surviving the whole window fails
-/// closed (`NegativeOutletBin`).
+/// source-active bins and their source-memory cooldown, the implicit
+/// backward-Euler upwind stepper (`implicit_recession`) only on source-free
+/// bins after that cooldown expires. Upstream inflow is still booked exactly
+/// as the bin's interval mean by the implicit step. The switching predicate is
+/// forcing-derived per outlet bin: after a source-active burst, the next
+/// `2 * burst_duration` source-free bins remain explicit so a post-source
+/// front can clear before first-order implicit recession owns it. Implicit
+/// bins step at exactly the bin cadence, so the conservative outlet-bin series
+/// keeps its exact per-bin semantics. State hands off at span boundaries per
+/// the design's §2.2 seam rule (depths carry; entering explicit installs the
+/// implicit solve's own converged equilibrium discharges). The composed ledger
+/// is exact by construction (both schemes carry exact ledgers; the seam moves
+/// no mass); a short explicit span's terminal front-arrival attribution deficit
+/// carries forward across span boundaries under the exact-total rule (rev 30),
+/// and a material deficit surviving the whole window fails closed
+/// (`NegativeOutletBin`).
 #[allow(clippy::too_many_lines, clippy::too_many_arguments)]
 pub fn route_single_ofe_hybrid(
     segment: &CascadeSegment,
@@ -478,22 +517,12 @@ pub fn route_single_ofe_hybrid(
             None => 0.0,
         }
     };
-    // Per-bin AGGRESSIVE smoothness mask (rev-30 rule): implicit-eligible
-    // when the bin has ZERO source on every cell. Upstream inflow does NOT
-    // force explicit stepping — the implicit step books the interval-mean
-    // upstream mass exactly (I0 measures 55.5 % coverage vs 30 % for the
-    // superseded rev-28 strict rule). The composition defect that blocked
-    // this rule (short explicit spans sandwiched between implicit bins
-    // stranding front-arrival terminal deficits — `NegativeOutletBin`,
-    // H2637 lane 17 day 54) is closed by the rev-30 cross-span deficit
-    // carry below.
-    #[allow(clippy::cast_precision_loss)]
-    let bin_smooth: Vec<bool> = (0..n_bins)
-        .map(|b| {
-            let t0 = b as f64 * sample_dt_s;
-            seam_rate_at(source_rates_m_s, t0) == 0.0
-        })
-        .collect();
+    // Per-bin source-memory mask (SC-OFEROUTE-002 rev 3): implicit-eligible
+    // when the bin has ZERO source on every cell AND the post-source cooldown
+    // has expired. Upstream inflow does NOT force explicit stepping once the
+    // cooldown is clear — the implicit step books the interval-mean upstream
+    // mass exactly.
+    let bin_smooth = hybrid_implicit_eligibility_mask(source_rates_m_s, n_bins, sample_dt_s);
 
     let mut depths = vec![0.0_f64; n];
     let mut discharges = vec![0.0_f64; n];
@@ -1034,6 +1063,129 @@ mod tests {
     }
 
     #[test]
+    fn hybrid_source_memory_cooldown_keeps_post_source_bins_explicit() {
+        use super::super::seam::{SEAM_HOUR_BINS, seam_rate_at};
+
+        let segment = bare_segment(80.0, 10, 0.05, 500.0, 2.0);
+        let mut source = [0.0_f64; SEAM_HOUR_BINS];
+        source[0] = 60.0 / 3.6e6;
+        let intensity = [0.0_f64; SEAM_HOUR_BINS];
+        let window_s = 3.0 * 3600.0; // 1 h source + 2 h source-memory cooldown
+        let breakpoints = [3600.0_f64];
+
+        let _flag_guard = profile::test_flag_guard();
+        profile::set_enabled(true);
+        let _ = profile::snapshot_and_reset();
+        let hybrid = route_single_ofe_hybrid(
+            &segment,
+            &source,
+            &intensity,
+            None,
+            &breakpoints,
+            window_s,
+            900.0,
+            300.0,
+        )
+        .expect("hybrid route");
+        let snapshot = profile::snapshot_and_reset();
+        profile::set_enabled(false);
+
+        assert_eq!(
+            snapshot.solver_steps_implicit, 0,
+            "source-memory cooldown should keep the full 3 h window explicit"
+        );
+
+        let excess = |_cell: usize, t: f64| seam_rate_at(&source, t);
+        let intensity_at = |t: f64| seam_rate_at(&intensity, t);
+        let explicit = route_single_ofe(
+            &segment,
+            &excess,
+            &intensity_at,
+            None,
+            &breakpoints,
+            window_s,
+            900.0,
+            300.0,
+        )
+        .expect("explicit route");
+        assert_eq!(
+            explicit.outlet_bin_outflow_m2.len(),
+            hybrid.outlet_bin_outflow_m2.len()
+        );
+        for (a, b) in explicit
+            .outlet_bin_outflow_m2
+            .iter()
+            .zip(hybrid.outlet_bin_outflow_m2.iter())
+        {
+            assert_eq!(a.to_bits(), b.to_bits(), "cooldown bins are explicit");
+        }
+    }
+
+    #[test]
+    fn hybrid_source_memory_allows_implicit_after_cooldown() {
+        use super::super::seam::SEAM_HOUR_BINS;
+
+        let segment = bare_segment(80.0, 10, 0.05, 500.0, 2.0);
+        let mut source = [0.0_f64; SEAM_HOUR_BINS];
+        source[0] = 60.0 / 3.6e6;
+        let intensity = [0.0_f64; SEAM_HOUR_BINS];
+        let window_s = 4.0 * 3600.0; // final hour is after the 2 h cooldown
+        let breakpoints = [3600.0_f64];
+
+        let _flag_guard = profile::test_flag_guard();
+        profile::set_enabled(true);
+        let _ = profile::snapshot_and_reset();
+        let result = route_single_ofe_hybrid(
+            &segment,
+            &source,
+            &intensity,
+            None,
+            &breakpoints,
+            window_s,
+            900.0,
+            300.0,
+        )
+        .expect("hybrid route");
+        let snapshot = profile::snapshot_and_reset();
+        profile::set_enabled(false);
+
+        assert_eq!(
+            snapshot.solver_steps_implicit, 4,
+            "four 900 s bins should become implicit after cooldown"
+        );
+        let residual = result.mass_balance.conservation_residual_m2();
+        let scale = result.mass_balance.rainfall_excess_m2.max(1.0e-12);
+        assert!(
+            residual.abs() / scale < 1.0e-9,
+            "hybrid ledger residual {residual} vs rain {scale}"
+        );
+    }
+
+    #[test]
+    fn hybrid_source_memory_resets_on_later_source_burst() {
+        use super::super::seam::SEAM_HOUR_BINS;
+
+        let mut source = [0.0_f64; SEAM_HOUR_BINS];
+        source[0] = 60.0 / 3.6e6;
+        source[2] = 60.0 / 3.6e6;
+
+        let mask = hybrid_implicit_eligibility_mask(&source, 24, 900.0);
+        assert_eq!(
+            mask.iter().filter(|eligible| **eligible).count(),
+            4,
+            "only the final hour should be implicit after the second burst resets cooldown"
+        );
+        assert!(
+            mask[..20].iter().all(|eligible| !*eligible),
+            "hour 0 source, hour 1 first cooldown, hour 2 source, and hours 3-4 second cooldown stay explicit"
+        );
+        assert!(
+            mask[20..].iter().all(|eligible| *eligible),
+            "hour 5 is after the second cooldown"
+        );
+    }
+
+    #[test]
     fn degenerate_cascade_fails_closed() {
         let excess = |_o: usize, _c: usize, _t: f64| 0.0;
         let intensity = |_o: usize, _t: f64| 0.0;
@@ -1153,7 +1305,7 @@ mod rev30_deficit_carry_tests {
         assert_eq!(bins, vec![0.0, 0.0], "bins untouched, never negative");
     }
 
-    /// Review C-M1 pin: the aggressive mask's bin-start source sample is
+    /// Review C-M1 pin: the source-memory mask's bin-start source sample is
     /// exact only when every bin lies within one seam hour. A cadence that
     /// does NOT partition the hour (here 1000 s: bin [3000,4000) straddles
     /// the hour-0→1 source turn-on at 3600 s) must fail closed instead of
@@ -1179,12 +1331,13 @@ mod rev30_deficit_carry_tests {
         ));
     }
 
-    /// Rev-30 AGGRESSIVE rule: zero-source bins step implicitly even when
-    /// upstream inflow is present (the rev-28 strict rule forced them
-    /// explicit). The upstream mass must be booked EXACTLY (interval mean
-    /// per bin) and the composed ledger must close at machine precision.
+    /// Rev-33 source-memory rule preserves the rev-30 upstream treatment:
+    /// zero-source bins outside cooldown step implicitly even when upstream
+    /// inflow is present (the rev-28 strict rule forced them explicit). The
+    /// upstream mass must be booked EXACTLY (interval mean per bin) and the
+    /// composed ledger must close at machine precision.
     #[test]
-    fn hybrid_aggressive_routes_upstream_fed_zero_source_bins_implicitly() {
+    fn hybrid_source_memory_routes_upstream_fed_zero_source_bins_implicitly() {
         let segment = bare_segment(80.0, 10, 0.05, 500.0, 2.0);
         let source = [0.0_f64; SEAM_HOUR_BINS];
         let intensity = [0.0_f64; SEAM_HOUR_BINS];
@@ -1215,7 +1368,7 @@ mod rev30_deficit_carry_tests {
             900.0,
             300.0,
         )
-        .expect("aggressive hybrid route");
+        .expect("source-memory hybrid route");
         let snapshot = profile::snapshot_and_reset();
         profile::set_enabled(false);
         // Every bin is zero-source => every bin steps implicitly (one step
