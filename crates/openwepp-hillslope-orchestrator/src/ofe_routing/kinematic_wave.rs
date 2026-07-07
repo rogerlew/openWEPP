@@ -1151,7 +1151,6 @@ impl KinematicWaveSolver {
     /// would integrate the pre-breakpoint rate across the post-breakpoint
     /// interval and the discrete source history would diverge from the
     /// forcing definition. Breakpoints must be sorted ascending.
-    #[allow(clippy::too_many_lines)]
     pub fn run_with_options(
         &mut self,
         forcing: &Forcing<'_>,
@@ -1161,6 +1160,47 @@ impl KinematicWaveSolver {
         sample_dt_s: f64,
         max_dt_s: f64,
     ) -> Result<RoutingResult, RoutingError> {
+        let (result, terminal_deficit_m2) = self.run_with_options_deficit_carry(
+            forcing,
+            upstream_integral_m2,
+            forcing_breakpoints_s,
+            end_time_s,
+            sample_dt_s,
+            max_dt_s,
+        )?;
+        if terminal_deficit_m2 < 0.0 {
+            // Medium-1: a material terminal deficit means the outflow
+            // series cannot be represented as a non-negative exact-total
+            // bin series — physically unexpected (total outflow is
+            // non-negative); publishing a negative outlet bin is not an
+            // option, so fail closed.
+            return Err(RoutingError::NegativeOutletBin);
+        }
+        Ok(result)
+    }
+
+    /// Rev-30 composition-scoped variant of [`Self::run_with_options`]: a
+    /// MATERIAL terminal bin deficit (the Review-B M2 front-arrival
+    /// attribution class that the recorder's forward redistribution could
+    /// not absorb inside this window) is RETURNED (`<= 0`, m^2) instead of
+    /// failing closed. When the deficit is nonzero the returned
+    /// `outlet_bin_outflow_m2` series (and the hydrograph derived from it)
+    /// OVER-COUNTS by exactly `|deficit|`; the caller MUST continue the
+    /// forward redistribution into subsequent bins under the exact-total
+    /// rule or fail closed itself. All mass ledgers in the result book
+    /// actual boundary fluxes and are unaffected. Only the hybrid span
+    /// composition (`route_single_ofe_hybrid`) may consume this; every
+    /// other path goes through the fail-closed wrapper.
+    #[allow(clippy::too_many_lines)]
+    pub(super) fn run_with_options_deficit_carry(
+        &mut self,
+        forcing: &Forcing<'_>,
+        upstream_integral_m2: Option<&dyn Fn(f64, f64) -> f64>,
+        forcing_breakpoints_s: &[f64],
+        end_time_s: f64,
+        sample_dt_s: f64,
+        max_dt_s: f64,
+    ) -> Result<(RoutingResult, f64), RoutingError> {
         if self.mesh.cell_count() == 0
             || !self.mesh.cell_length_m.is_finite()
             || self.mesh.cell_length_m <= 0.0
@@ -1290,25 +1330,20 @@ impl KinematicWaveSolver {
         mass.storage_change_m2 = self.total_storage_m2() - storage_initial;
         let (hydrograph, outlet_bin_outflow_m2, outlet_bin_spans_s, terminal_deficit_m2) =
             recorder.finish();
-        if terminal_deficit_m2 < 0.0 {
-            // Medium-1: a material terminal deficit means the outflow
-            // series cannot be represented as a non-negative exact-total
-            // bin series — physically unexpected (total outflow is
-            // non-negative); publishing a negative outlet bin is not an
-            // option, so fail closed.
-            return Err(RoutingError::NegativeOutletBin);
-        }
-        Ok(RoutingResult {
-            hydrograph,
-            mass_balance: mass,
-            peak_unit_discharge_m2_s: peak,
-            time_to_peak_s: time_to_peak,
-            max_courant,
-            max_homogeneous_tv_increase_m2_s: self.max_tv_increase_m,
-            outlet_bin_outflow_m2,
-            outlet_bin_dt_s: sample_dt_s,
-            outlet_bin_spans_s,
-        })
+        Ok((
+            RoutingResult {
+                hydrograph,
+                mass_balance: mass,
+                peak_unit_discharge_m2_s: peak,
+                time_to_peak_s: time_to_peak,
+                max_courant,
+                max_homogeneous_tv_increase_m2_s: self.max_tv_increase_m,
+                outlet_bin_outflow_m2,
+                outlet_bin_dt_s: sample_dt_s,
+                outlet_bin_spans_s,
+            },
+            terminal_deficit_m2,
+        ))
     }
 }
 
@@ -1340,6 +1375,37 @@ mod tests {
 
     fn constant<'a>(value: f64) -> impl Fn(f64) -> f64 + 'a {
         move |_t: f64| value
+    }
+
+    /// Rev-30 (deficit-carry composition seam): when the terminal bin nets
+    /// negative beyond the noise floor, `finish()` RETURNS the material
+    /// deficit (it is not folded), the published bins stay non-negative,
+    /// and the series over-counts by exactly `|deficit|` — the identity
+    /// `Σ bins == booked total − deficit` the hybrid composition relies on
+    /// to continue the forward redistribution across span boundaries.
+    #[test]
+    fn bin_recorder_returns_material_terminal_deficit_exactly() {
+        let mut recorder = BinRecorder::new(900.0, 1800.0);
+        recorder.record_step(0.0, 900.0, 5.0, 0.001);
+        recorder.record_step(900.0, 890.0, 0.001, 0.0);
+        // Front-arrival class: a step-scale negative attribution at the
+        // very end of the window (no later bin can absorb it).
+        recorder.record_step(1790.0, 10.0, -0.002, 0.0);
+        let booked_total = 5.0 + 0.001 - 0.002;
+        let (_hydrograph, bins, _spans, deficit) = recorder.finish();
+        assert!(
+            (deficit - (-0.001)).abs() < 1.0e-15,
+            "material deficit returned exactly: {deficit:e}"
+        );
+        assert!(
+            bins.iter().all(|v| *v >= 0.0),
+            "bins non-negative: {bins:?}"
+        );
+        let bin_total: f64 = bins.iter().sum();
+        assert!(
+            (bin_total - (booked_total - deficit)).abs() < 1.0e-15,
+            "over-count identity: bins {bin_total} vs booked {booked_total} - deficit {deficit}"
+        );
     }
 
     // Case 1 (bare surface): 60 mm/h over a 7.5 m plot at 9%, k_o=500.

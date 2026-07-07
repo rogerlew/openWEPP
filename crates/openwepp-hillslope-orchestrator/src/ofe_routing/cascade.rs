@@ -22,7 +22,7 @@ use super::kinematic_wave::{
     RoutingResult,
 };
 use super::profile;
-use super::seam::{SEAM_HOUR_BINS, seam_rate_at};
+use super::seam::{SEAM_HOUR_BINS, SEAM_SECONDS_PER_HOUR, seam_rate_at};
 
 /// One OFE in the cascade: its routing mesh and flow width. The flow width
 /// converts unit-width discharge (m^2/s) between OFEs so total discharge
@@ -355,18 +355,70 @@ pub fn run_cascade(
     })
 }
 
-/// T3-I2 (`SC-OFEROUTE-001` rev 28, EXPERIMENTAL opt-in): route one OFE with
-/// HYBRID stepping — the explicit TVD-MacCormack scheme on source-active or
-/// upstream-fed sample bins, the implicit backward-Euler upwind stepper
-/// (`implicit_recession`) on STRICT smooth bins (zero source on every cell
-/// AND zero upstream mass over the bin). The switching predicate is
-/// FORCING-derived per 900 s outlet bin (deterministic, hysteresis-free);
-/// implicit bins step at exactly the bin cadence, so the conservative
-/// outlet-bin series keeps its exact per-bin semantics. State hands off at
-/// span boundaries per the design's §2.2 seam rule (depths carry; entering
-/// explicit installs the implicit solve's own converged equilibrium
-/// discharges). The composed ledger is exact by construction (both schemes
-/// carry exact ledgers; the seam moves no mass).
+/// Rev-30 deficit-carry absorption step: book one bin's non-negative mass
+/// against a pending (<= 0) attribution deficit. Returns the booked value
+/// (never negative); the deficit shrinks by exactly what was absorbed, so
+/// `booked + new_carry == mass + old_carry` (exact total by construction).
+fn absorb_deficit(mass_m2: f64, carry_m2: &mut f64) -> f64 {
+    let booked = mass_m2 + *carry_m2;
+    if booked < 0.0 {
+        *carry_m2 = booked;
+        0.0
+    } else {
+        *carry_m2 = 0.0;
+        booked
+    }
+}
+
+/// Rev-30 end-of-window carry disposition: a MATERIAL deficit still fails
+/// closed — the whole day window could not absorb it, which is physically
+/// unexpected (total outflow is non-negative) and must not publish
+/// (`NegativeOutletBin`, the same posture as the plain path). A sub-noise
+/// remainder (the recorder's noise rule applied at the composed level:
+/// `1e-9` of the series gross) is absorbed BACKWARD from the trailing
+/// positive bins — exact total, all bins stay non-negative
+/// (`Σ bins >= |carry|` whenever the booked total outflow is
+/// non-negative). Review C-L1 (documented + pinned by test): on an
+/// all-zero / insufficient-gross series the sub-noise remainder cannot be
+/// absorbed and is DROPPED — a bounded attribution slack (`<=` the noise
+/// floor, absolute floor `1e-21 m^2`), never a mass-ledger change (the
+/// ledgers book actual boundary fluxes independently of bin attribution);
+/// bins are left untouched rather than published negative.
+fn dispose_terminal_carry(bins_m2: &mut [f64], mut carry_m2: f64) -> Result<(), RoutingError> {
+    if carry_m2 >= 0.0 {
+        return Ok(());
+    }
+    let gross: f64 = bins_m2.iter().sum();
+    let noise_floor = 1.0e-9 * gross.max(1.0e-12);
+    if -carry_m2 > noise_floor {
+        return Err(RoutingError::NegativeOutletBin);
+    }
+    for slot in bins_m2.iter_mut().rev() {
+        if carry_m2 >= 0.0 {
+            break;
+        }
+        *slot = absorb_deficit(*slot, &mut carry_m2);
+    }
+    Ok(())
+}
+
+/// T3-I2/T3-AGG (`SC-OFEROUTE-001` rev 28/30, EXPERIMENTAL opt-in): route
+/// one OFE with HYBRID stepping — the explicit TVD-MacCormack scheme on
+/// source-active sample bins, the implicit backward-Euler upwind stepper
+/// (`implicit_recession`) on AGGRESSIVE smooth bins (zero source on every
+/// cell; upstream inflow is booked exactly as the bin's interval mean by
+/// the implicit step — rev 30 supersedes the rev-28 strict rule). The
+/// switching predicate is FORCING-derived per 900 s outlet bin
+/// (deterministic, hysteresis-free); implicit bins step at exactly the bin
+/// cadence, so the conservative outlet-bin series keeps its exact per-bin
+/// semantics. State hands off at span boundaries per the design's §2.2 seam
+/// rule (depths carry; entering explicit installs the implicit solve's own
+/// converged equilibrium discharges). The composed ledger is exact by
+/// construction (both schemes carry exact ledgers; the seam moves no mass);
+/// a short explicit span's terminal front-arrival attribution deficit
+/// carries forward across span boundaries under the exact-total rule
+/// (rev 30), and a material deficit surviving the whole window fails
+/// closed (`NegativeOutletBin`).
 #[allow(clippy::too_many_lines, clippy::too_many_arguments)]
 pub fn route_single_ofe_hybrid(
     segment: &CascadeSegment,
@@ -395,6 +447,21 @@ pub fn route_single_ofe_hybrid(
     if n_bins == 0 || (reconstructed - end_time_s).abs() > 1.0e-9 {
         return Err(RoutingError::DegenerateConfiguration);
     }
+    // Rev-30 review C-M1: the smoothness mask samples the source at bin
+    // START only, which is exact ONLY when every bin lies within one seam
+    // hour (the source series is piecewise-constant per hour). Enforce
+    // locally rather than trusting the caller: the sample cadence must
+    // partition `SEAM_SECONDS_PER_HOUR` exactly, else a bin could straddle
+    // an hourly source transition and route implicitly with a stale zero
+    // sample (a silent source drop).
+    let per_hour_f = SEAM_SECONDS_PER_HOUR / sample_dt_s;
+    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+    let per_hour = per_hour_f.round() as usize;
+    #[allow(clippy::cast_precision_loss)]
+    let hour_reconstructed = per_hour as f64 * sample_dt_s;
+    if per_hour == 0 || (hour_reconstructed - SEAM_SECONDS_PER_HOUR).abs() > 1.0e-9 {
+        return Err(RoutingError::DegenerateConfiguration);
+    }
     let n = segment.mesh.cell_count();
     if n == 0 {
         return Err(RoutingError::DegenerateConfiguration);
@@ -411,22 +478,20 @@ pub fn route_single_ofe_hybrid(
             None => 0.0,
         }
     };
-    // Per-bin STRICT smoothness mask (rev-28 rule): implicit-eligible when
-    // the bin has ZERO source on every cell AND zero upstream mass. The
-    // AGGRESSIVE form (zero source only; smooth upstream inflow booked by
-    // the implicit step — I0 measures 55.5 % coverage vs 30 % strict) is a
-    // NAMED follow-on blocked on one composition defect: short explicit
-    // spans sandwiched between implicit bins can leave front-arrival
-    // terminal deficits that the BinRecorder's forward redistribution
-    // cannot absorb (observed `NegativeOutletBin`, H2637 lane 17 day 54);
-    // absorbing a deficit across span boundaries needs a solver-API
-    // extension, not a mask change.
+    // Per-bin AGGRESSIVE smoothness mask (rev-30 rule): implicit-eligible
+    // when the bin has ZERO source on every cell. Upstream inflow does NOT
+    // force explicit stepping — the implicit step books the interval-mean
+    // upstream mass exactly (I0 measures 55.5 % coverage vs 30 % for the
+    // superseded rev-28 strict rule). The composition defect that blocked
+    // this rule (short explicit spans sandwiched between implicit bins
+    // stranding front-arrival terminal deficits — `NegativeOutletBin`,
+    // H2637 lane 17 day 54) is closed by the rev-30 cross-span deficit
+    // carry below.
     #[allow(clippy::cast_precision_loss)]
     let bin_smooth: Vec<bool> = (0..n_bins)
         .map(|b| {
             let t0 = b as f64 * sample_dt_s;
-            let t1 = t0 + sample_dt_s;
-            seam_rate_at(source_rates_m_s, t0) == 0.0 && upstream_mass_in(t0, t1) == 0.0
+            seam_rate_at(source_rates_m_s, t0) == 0.0
         })
         .collect();
 
@@ -439,6 +504,13 @@ pub fn route_single_ofe_hybrid(
     let mut peak = 0.0_f64;
     let mut time_to_peak = 0.0_f64;
     let mut clamp_total = 0.0_f64;
+    // Rev-30 cross-span deficit carry (<= 0, m^2): continues the
+    // BinRecorder's forward-redistribution rule ACROSS span boundaries — a
+    // short explicit span's terminal front-arrival attribution deficit is
+    // absorbed by subsequent composed bins under the same exact-total,
+    // non-negative rule. Attribution only: every mass ledger books actual
+    // boundary fluxes and never sees the carry.
+    let mut carry_m2 = 0.0_f64;
     profile::count_solver_runs(1);
 
     let mut bin = 0_usize;
@@ -473,7 +545,7 @@ pub fn route_single_ofe_hybrid(
                 )?;
                 profile::count_solver_steps(1);
                 profile::count_solver_steps_implicit(1);
-                *slot += outcome.outflow_m2;
+                *slot += absorb_deficit(outcome.outflow_m2, &mut carry_m2);
                 mass.inflow_m2 += outcome.inflow_m2;
                 mass.scheme_inflow_m2 += outcome.inflow_m2;
                 mass.outflow_m2 += outcome.outflow_m2;
@@ -519,7 +591,7 @@ pub fn route_single_ofe_hybrid(
                 .filter(|bp| **bp > t0 + 1.0e-9 && **bp < t1 - 1.0e-9)
                 .map(|bp| bp - t0)
                 .collect();
-            let result = solver.run_with_options(
+            let (result, span_deficit_m2) = solver.run_with_options_deficit_carry(
                 &forcing,
                 integral_closure,
                 &local_breakpoints,
@@ -529,9 +601,13 @@ pub fn route_single_ofe_hybrid(
             )?;
             for (offset, bin_mass) in result.outlet_bin_outflow_m2.iter().enumerate() {
                 if bin + offset < n_bins {
-                    global_bins_m2[bin + offset] += bin_mass;
+                    global_bins_m2[bin + offset] += absorb_deficit(*bin_mass, &mut carry_m2);
                 }
             }
+            // The span's own terminal deficit joins the carry AFTER its
+            // bins (it belongs at the span end; the recorder's forward
+            // redistribution already exhausted the in-span bins).
+            carry_m2 += span_deficit_m2;
             mass.inflow_m2 += result.mass_balance.inflow_m2;
             mass.scheme_inflow_m2 += result.mass_balance.inflow_m2;
             mass.rainfall_excess_m2 += result.mass_balance.rainfall_excess_m2;
@@ -553,6 +629,8 @@ pub fn route_single_ofe_hybrid(
         }
         bin = span_end;
     }
+
+    dispose_terminal_carry(&mut global_bins_m2, carry_m2)?;
 
     mass.positivity_clamp_m2 = clamp_total;
     mass.storage_change_m2 = depths.iter().sum::<f64>() * segment.mesh.cell_length_m;
@@ -972,5 +1050,198 @@ mod tests {
             run_cascade(&bad_width, &forcing, 100.0, 10.0, 2.0),
             Err(RoutingError::DegenerateConfiguration)
         ));
+    }
+}
+
+#[cfg(test)]
+mod rev30_deficit_carry_tests {
+    use super::super::kinematic_wave::CellParameters;
+    use super::*;
+
+    fn bare_segment(length: f64, cells: usize, slope: f64, ko: f64, width: f64) -> CascadeSegment {
+        CascadeSegment {
+            mesh: KinematicWaveMesh::uniform(length, cells, CellParameters::bare(slope, ko)),
+            width_m: width,
+        }
+    }
+
+    /// Rev-30: `absorb_deficit` preserves the exact total
+    /// (`booked + new_carry == mass + old_carry`), never books negative,
+    /// and passes an unabsorbed remainder through zero bins unchanged.
+    #[test]
+    #[allow(clippy::float_cmp)] // exact-by-construction assertions (rev-30 exact-total rule)
+    fn absorb_deficit_exact_total_and_non_negative() {
+        // Full absorption.
+        let mut carry = -2.0_f64;
+        let booked = absorb_deficit(5.0, &mut carry);
+        assert_eq!(booked, 3.0);
+        assert_eq!(carry, 0.0);
+        // Partial absorption: bin smaller than the deficit.
+        let mut carry = -2.0_f64;
+        let booked = absorb_deficit(0.5, &mut carry);
+        assert_eq!(booked, 0.0);
+        assert_eq!(carry, -1.5);
+        // Pass-through on a zero bin.
+        let mut carry = -1.5_f64;
+        let booked = absorb_deficit(0.0, &mut carry);
+        assert_eq!(booked, 0.0);
+        assert_eq!(carry, -1.5);
+        // No pending deficit: identity booking.
+        let mut carry = 0.0_f64;
+        let booked = absorb_deficit(7.25, &mut carry);
+        assert_eq!(booked, 7.25);
+        assert_eq!(carry, 0.0);
+    }
+
+    /// Rev-30: a MATERIAL end-of-window deficit fails closed
+    /// (`NegativeOutletBin`) — the same posture the plain path keeps.
+    #[test]
+    fn dispose_terminal_carry_material_deficit_fails_closed() {
+        let mut bins = vec![4.0_f64, 2.0, 1.0];
+        let err = dispose_terminal_carry(&mut bins, -1.0e-3);
+        assert!(matches!(err, Err(RoutingError::NegativeOutletBin)));
+        // All-dry series with any beyond-floor deficit also fails closed.
+        let mut dry = vec![0.0_f64; 4];
+        assert!(matches!(
+            dispose_terminal_carry(&mut dry, -1.0e-15),
+            Err(RoutingError::NegativeOutletBin)
+        ));
+    }
+
+    /// Rev-30: a sub-noise remainder is absorbed BACKWARD from the trailing
+    /// positive bins — exact total, all bins non-negative, leading bins
+    /// untouched.
+    #[test]
+    #[allow(clippy::float_cmp)] // exact-by-construction assertions (rev-30 exact-total rule)
+    fn dispose_terminal_carry_subnoise_absorbs_backward_exactly() {
+        let mut bins = vec![4.0_f64, 2.0, 1.0e-10, 0.0];
+        let total_before: f64 = bins.iter().sum();
+        // noise floor = 1e-9 * 6.0000000001 ~ 6e-9; carry below it.
+        let carry = -2.0e-9_f64;
+        dispose_terminal_carry(&mut bins, carry).expect("sub-noise absorbs");
+        let total_after: f64 = bins.iter().sum();
+        assert!(
+            bins.iter().all(|v| *v >= 0.0),
+            "bins non-negative: {bins:?}"
+        );
+        assert!(
+            ((total_before + carry) - total_after).abs() < 1.0e-24,
+            "exact total: before {total_before:e} carry {carry:e} after {total_after:e}"
+        );
+        // Backward: the tiny trailing bin zeroes first, the remainder comes
+        // out of the last bin large enough to host it.
+        assert_eq!(bins[3], 0.0);
+        assert_eq!(bins[2], 0.0);
+        assert!(bins[1] < 2.0 && bins[1] > 2.0 - 3.0e-9);
+        assert_eq!(bins[0], 4.0);
+        // Zero carry is a no-op.
+        let mut untouched = vec![1.0_f64, 2.0];
+        dispose_terminal_carry(&mut untouched, 0.0).expect("no-op");
+        assert_eq!(untouched, vec![1.0, 2.0]);
+    }
+
+    /// Review C-L1 pin: on an ALL-ZERO series a sub-noise carry (under the
+    /// `1e-21` absolute floor) cannot be absorbed — it is DROPPED as a
+    /// bounded attribution slack: `Ok(())`, bins untouched (never published
+    /// negative). Anything above the floor on the same series fails closed
+    /// (covered by the material-deficit vector).
+    #[test]
+    #[allow(clippy::float_cmp)] // exact-by-construction assertions (rev-30 exact-total rule)
+    fn dispose_terminal_carry_all_dry_subnoise_drop_is_bounded() {
+        let mut bins = vec![0.0_f64, 0.0];
+        dispose_terminal_carry(&mut bins, -5.0e-22).expect("bounded all-dry drop");
+        assert_eq!(bins, vec![0.0, 0.0], "bins untouched, never negative");
+    }
+
+    /// Review C-M1 pin: the aggressive mask's bin-start source sample is
+    /// exact only when every bin lies within one seam hour. A cadence that
+    /// does NOT partition the hour (here 1000 s: bin [3000,4000) straddles
+    /// the hour-0→1 source turn-on at 3600 s) must fail closed instead of
+    /// routing the straddling bin implicitly with a stale zero sample.
+    #[test]
+    fn hybrid_rejects_cadence_that_does_not_partition_the_seam_hour() {
+        let segment = bare_segment(80.0, 10, 0.05, 500.0, 2.0);
+        let mut source = [0.0_f64; SEAM_HOUR_BINS];
+        source[1] = 60.0 / 3.6e6; // hour 0 silent, hour 1 active
+        let intensity = [0.0_f64; SEAM_HOUR_BINS];
+        assert!(matches!(
+            route_single_ofe_hybrid(
+                &segment,
+                &source,
+                &intensity,
+                None,
+                &[3600.0],
+                4000.0,
+                1000.0,
+                300.0
+            ),
+            Err(RoutingError::DegenerateConfiguration)
+        ));
+    }
+
+    /// Rev-30 AGGRESSIVE rule: zero-source bins step implicitly even when
+    /// upstream inflow is present (the rev-28 strict rule forced them
+    /// explicit). The upstream mass must be booked EXACTLY (interval mean
+    /// per bin) and the composed ledger must close at machine precision.
+    #[test]
+    fn hybrid_aggressive_routes_upstream_fed_zero_source_bins_implicitly() {
+        let segment = bare_segment(80.0, 10, 0.05, 500.0, 2.0);
+        let source = [0.0_f64; SEAM_HOUR_BINS];
+        let intensity = [0.0_f64; SEAM_HOUR_BINS];
+        // Upstream drain: 8 x 900 s bins of decaying mass (m^2 per bin at
+        // the upstream OFE's width, same width here so ratio = 1).
+        let up_bins: Vec<f64> = (0..8).map(|k| 0.4 / f64::from(1 << k)).collect();
+        let upstream_total: f64 = up_bins.iter().sum();
+        let upstream = UpstreamHandoff {
+            samples: Vec::new(),
+            bins_m2: up_bins,
+            bin_spans_s: vec![900.0; 8],
+            bin_dt_s: 900.0,
+            width_m: 2.0,
+        };
+        let window_s = 2.0 * 3600.0;
+        // Process-global enable flag: hold the guard for the full body so
+        // concurrent profile tests cannot race (see profile::test_flag_guard).
+        let _flag_guard = profile::test_flag_guard();
+        profile::set_enabled(true);
+        let _ = profile::snapshot_and_reset();
+        let result = route_single_ofe_hybrid(
+            &segment,
+            &source,
+            &intensity,
+            Some(&upstream),
+            &[],
+            window_s,
+            900.0,
+            300.0,
+        )
+        .expect("aggressive hybrid route");
+        let snapshot = profile::snapshot_and_reset();
+        profile::set_enabled(false);
+        // Every bin is zero-source => every bin steps implicitly (one step
+        // per 900 s bin), no explicit sub-solver runs.
+        assert_eq!(snapshot.solver_steps_implicit, 8, "all bins implicit");
+        assert_eq!(snapshot.solver_steps, 8, "no explicit steps");
+        // Upstream mass booked exactly.
+        assert!(
+            (result.mass_balance.inflow_m2 - upstream_total).abs() <= 1.0e-12 * upstream_total,
+            "booked inflow {} vs upstream total {upstream_total}",
+            result.mass_balance.inflow_m2
+        );
+        // Composed ledger closes at machine precision and the bin series
+        // carries exactly the booked outflow.
+        let residual = result.mass_balance.conservation_residual_m2();
+        assert!(
+            residual.abs() <= 1.0e-12 * upstream_total,
+            "ledger residual {residual:e}"
+        );
+        let bin_total: f64 = result.outlet_bin_outflow_m2.iter().sum();
+        assert!(
+            (bin_total - result.mass_balance.outflow_m2).abs()
+                <= 1.0e-12 * upstream_total.max(1.0e-12),
+            "bin series total {bin_total:e} vs booked outflow {:e}",
+            result.mass_balance.outflow_m2
+        );
+        assert!(result.outlet_bin_outflow_m2.iter().all(|v| *v >= 0.0));
     }
 }

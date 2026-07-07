@@ -61,6 +61,21 @@ hillslope run (~2.5 s).
    shock hours, implicit during recession and the 6 h drain tail (smooth,
    homogeneous — a large share of steps on event days). Method-switching
    criteria become contract text; full D-val re-adjudication required.
+   **STATUS (2026-07-07, revs 28-30 executed):** the hybrid is LANDED
+   experimental (strict rule rev 28, hardened rev 29, AGGRESSIVE rule +
+   deficit-carry composition rev 30 — WPs
+   `20260706-laned-router-t3-hybrid-implicit-stepping-001` and
+   `…-t3-aggressive-deficit-carry-001`). MEASURED OUTCOME: the coverage
+   arithmetic held (explicit steps −55.5 % on H2637) but the endpoint prize
+   did NOT materialize — the implicit CELL-SOLVE cost (cold basin-split
+   seeded equilibrium fixed points, ~23 M scalar solves/yr) consumes the
+   win (`38.0-38.3 s` vs `37.9 s` plain). **Tier-3's remaining lever is
+   implicit solve-cost reduction** under the rev-29 determinism constraint:
+   deterministic WITHIN-STEP warm seeding (seed cell `i` from the same
+   step's already-solved upstream neighbor — step-local state, not run
+   history), Newton on the composed cell residual instead of the nested
+   fixed-point, and the Tier-1 friction-eval cuts which price every
+   equilibrium iteration. Re-estimate the tier AFTER Tier-1 lands.
 5. **SIMD-batched friction evaluations** (vector libm across cells):
    ~1.2-1.4x, orthogonal; bits change only via vector-libm ulp.
 

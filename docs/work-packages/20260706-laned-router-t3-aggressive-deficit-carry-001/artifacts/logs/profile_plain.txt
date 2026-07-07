@@ -1,0 +1,1 @@
+laned_active_profile {"solver_runs":11590,"solver_steps":10479200,"solver_steps_homogeneous":3139424,"solver_steps_source_free":5817107,"solver_steps_implicit":0,"alpha_evaluations":173774272,"solver_cfl_ns":24618278872,"solver_step_ns":10426335521,"solver_sample_ns":631448642}

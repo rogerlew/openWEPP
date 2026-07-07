@@ -120,11 +120,13 @@ impl DirectLanedActiveLaneConfig {
 #[derive(Debug, Clone, PartialEq)]
 pub struct DirectLanedActiveConfig {
     pub lanes: Vec<DirectLanedActiveLaneConfig>,
-    /// T3-I2 (rev 28, EXPERIMENTAL opt-in `OPENWEPP_LANED_ACTIVE_IMPLICIT=1`
+    /// T3 (rev 28/30, EXPERIMENTAL opt-in `OPENWEPP_LANED_ACTIVE_IMPLICIT=1`
     /// composing with the active selector): route lanes with HYBRID
-    /// stepping — implicit backward-Euler on strict smooth bins, the
-    /// explicit D10B scheme elsewhere. Default false: rev-27 behavior
-    /// unchanged.
+    /// stepping — implicit backward-Euler on AGGRESSIVE smooth bins (zero
+    /// source on every cell; upstream inflow booked exactly by the implicit
+    /// step — the rev-30 rule superseding rev-28 strict), the explicit D10B
+    /// scheme elsewhere, with the rev-30 cross-span deficit carry. Default
+    /// false: rev-27 behavior unchanged.
     pub hybrid_implicit: bool,
 }
 

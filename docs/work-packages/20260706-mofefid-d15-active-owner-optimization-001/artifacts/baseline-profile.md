@@ -11,6 +11,16 @@ Static.
   clean tree.
 - Binary: `cargo build --release -p openwepp-runner --bin openwepp-cli-hill`,
   stable toolchain per `rust-toolchain.toml`.
+- **BUILD CAUTION (recipe rule, T3-AGG QA-M3 promotion):** a workspace-level
+  `cargo build --release` does NOT relink `openwepp-cli-hill` (non-default
+  bin member) — it can silently leave a STALE binary while reporting
+  `Finished`. Always build with the explicit `-p openwepp-runner
+  --bin openwepp-cli-hill` (or `--bins`) form above and VERIFY the binary
+  mtime/hash changed before any timing or evidence run. The staleness tell
+  that caught this once: run books bit-identical to a prior record after a
+  real physics change. Also note the fixture's `p2637.run.toml` hardcodes
+  its output paths (`output/H2637.*`) — `--output-dir` relocates only the
+  manifest, so sequence selector variants and hash `output/` between runs.
 - Host: 48-core Linux 6.8.0-111-generic; runs pinned with `taskset -c 4`.
 - Fixture: `tests/fixtures/laned_shadow_h2637` copied to scratchpad run dirs,
   `p2637.man` patched exactly as the `laned_shadow_h2637` native test helper

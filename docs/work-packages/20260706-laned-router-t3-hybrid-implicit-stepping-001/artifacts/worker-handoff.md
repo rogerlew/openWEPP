@@ -8,16 +8,21 @@ review; fixes in `review-disposition.md`).
 
 Next actionable items, in value order:
 
-1. **Aggressive-rule composition fix** (the 55.5 %-coverage prize, est.
-   ~1.9x active endpoint): extend the hybrid span composition so a
-   front-arrival terminal-bin deficit from a SHORT explicit span carries
-   into the next span's bins instead of failing closed
-   (`NegativeOutletBin`, H2637 lane 17 day 54). Shape: return the terminal
-   deficit from the solver run (or expose it on `RoutingResult`) and let
-   `route_single_ofe_hybrid` absorb it in the global bin composition with
-   the exact-total rule. Then flip the mask predicate to zero-source-only
-   (one expression, already written and reverted in-history) and re-run the
-   H2637 evidence + closure gates.
+1. **Aggressive-rule composition fix — EXECUTED (2026-07-07, WP
+   `20260706-laned-router-t3-aggressive-deficit-carry-001`, rev 30):** the
+   deficit-carry composition landed exactly in the shape above
+   (`run_with_options_deficit_carry` + cross-span carry + fail-closed
+   end-of-window disposition) and the mask is flipped to zero-source-only.
+   H2637 runs green through the former failure coordinates with all rev-27
+   closures at machine precision; the carry fired 6×/yr (all absorbed).
+   HONEST OUTCOME: the ~1.9x prize did NOT materialize — explicit work fell
+   by the full 55.5 % coverage but the implicit cell-solve cost (cold
+   basin-split seeds, ~23 M scalar solves/yr) consumes it (endpoint
+   `38.0-38.3 s` vs `37.9 s` plain). NEW top lever: **implicit solve-cost
+   reduction** under the rev-29 determinism constraint (deterministic
+   within-step warm seeding from the downstream march's own upstream cell;
+   Newton on the composed cell residual; composes with Tier-1
+   friction-eval cuts). See the WP's `fix-evidence.md`.
 2. **Fidelity ratification** (rev-28 follow-on): pick the implicit-phase dt
    (900 vs 300) against a named per-bin tolerance using the I1 ladder +
    H2637 hydrograph-surface deltas; ratify in SC-OFEROUTE-001 and graduate

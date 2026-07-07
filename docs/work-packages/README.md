@@ -11,7 +11,24 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-07-06`:
+State as of `2026-07-07`:
+- `20260706-laned-router-t3-aggressive-deficit-carry-001/` —
+  EXECUTED-PRIZE-NOT-REALIZED (2026-07-07): the T3 follow-on defect-closure
+  package. The rev-30 deficit-carry composition CLOSED the named defect
+  (short explicit spans stranding front-arrival terminal-bin deficits,
+  `NegativeOutletBin` H2637 lane 17 day 54) and flipped the hybrid mask to
+  the AGGRESSIVE zero-source-only rule: H2637 runs the full year green on
+  all rev-27 closures at machine precision, the carry path fired 6×/yr
+  (instrumented; all absorbed), plain-path parquet unchanged. HONEST
+  OUTCOME: the ~1.9x timing prize did NOT materialize — the explicit-work
+  cut matched I0's 55.5 % coverage exactly but implicit cell-solve cost
+  consumes it (`38.0-38.3 s` vs `37.9 s` plain); the new top lever is
+  implicit solve-cost reduction (deterministic within-step warm seeding /
+  Newton on the composed residual; composes with Tier-1). Dual review
+  COMPLETE (both lanes GO-WITH-AMENDMENTS, no High; all findings fixed
+  same-day — C-M1 hour-partition guard test-pinned, canonical re-gates
+  `1426/1426`, rev-30 semantics promoted into the contract's normative
+  tables/BEI; post-fix H2637 books bit-identical).
 - `20260706-laned-router-t3-hybrid-implicit-stepping-001/` —
   ACTIVE (operator-directed, same-session after D15A): Tier-3 router-numerics
   revision. I0 (prize measurement: 30 % strict / 55.5 % aggressive

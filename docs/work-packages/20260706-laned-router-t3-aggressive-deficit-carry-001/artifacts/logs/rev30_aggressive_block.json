@@ -1,0 +1,17 @@
+{
+ "days_seen": 731,
+ "days_routed": 610,
+ "days_uniform_shape": 3,
+ "total_source_m3": 374423.35262127244,
+ "total_routed_outlet_m3": 371322.66377028974,
+ "total_end_window_storage_m3": 3440.961693989098,
+ "total_clamp_m3": 340.2728430359542,
+ "total_tail_fold_m3": 37069.41279053048,
+ "total_latqcc_outlet_m3": 208132.8460294917,
+ "max_supply_reconstruction_rel": 7.31201193525081e-16,
+ "max_day_cascade_residual_rel": 3.259940244505371e-13,
+ "max_day_seam_residual_rel": 1.6502864664900547e-14,
+ "max_day_identity_residual_rel": 3.303270519507041e-13,
+ "lane_days_erosion_source_shape_degenerate": 1,
+ "hybrid_implicit_stepping": true
+}
