@@ -1,0 +1,5 @@
+Running command 12
+cargo deny check
+cwd: /home/workdir/openWEPP
+start: 2026-07-07T08:20:12.084212Z
+advisories ok, bans ok, licenses ok, sources ok

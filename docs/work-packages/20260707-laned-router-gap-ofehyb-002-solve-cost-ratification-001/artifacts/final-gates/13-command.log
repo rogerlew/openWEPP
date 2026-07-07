@@ -1,0 +1,5 @@
+Running command 13
+bash tools/release/check_authority_suite_antievasion.sh
+cwd: /home/workdir/openWEPP
+start: 2026-07-07T08:20:12.850911Z
+PASS: authority suite anti-evasion checks passed.

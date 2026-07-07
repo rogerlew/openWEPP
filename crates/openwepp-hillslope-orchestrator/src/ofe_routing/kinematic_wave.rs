@@ -71,7 +71,7 @@ pub struct CellParameters {
 
 impl CellParameters {
     /// Validate the parameter domain (finite; non-negative physical fields).
-    fn validate(&self) -> Result<(), RoutingError> {
+    pub(super) fn validate(&self) -> Result<(), RoutingError> {
         let fields = [
             self.slope,
             self.friction_coefficient_ko,
@@ -239,6 +239,103 @@ impl CellParameters {
         (alpha, q_est)
     }
 
+    /// True when the active equilibrium closure is effectively the skin-only
+    /// Papanicolaou menu (`k_o` + optional rain term) with no q-dependent
+    /// form/wave/vegetation addends and no Manning override. The test mirrors
+    /// the additive friction guards: a nonzero canopy height does not activate
+    /// vegetation when `LAI == 0` or vegetation drag is zero; a nonzero form
+    /// drag does not activate roughness elements when `D_r` or `lambda` is
+    /// zero. Any actually active addend stays on the generic fixed-point path
+    /// unless a contract ratifies its own direct evaluator.
+    fn is_bare_skin_only(&self) -> bool {
+        let roughness_elements_absent =
+            self.element_tip_height_m == 0.0 || self.roughness_concentration == 0.0;
+        let vegetation_absent = self.leaf_area_index == 0.0
+            || self.canopy_height_m == 0.0
+            || self.vegetation_drag_coefficient == 0.0;
+        self.manning_n == 0.0 && roughness_elements_absent && vegetation_absent
+    }
+
+    /// GAP-OFEHYB-002: exact fixed-point evaluator for the bare skin-only
+    /// branches. For Shen-Li laminar skin resistance,
+    /// `q = 8 g S h^3 / ((rain_term + k_o) nu)`. For Hirsch turbulent
+    /// skin resistance, `q^(1 - 0.45/2) =
+    /// sqrt(8 g S / 3.19) * nu^(-0.45/2) * h^1.5`.
+    ///
+    /// The returned branch value is the same deterministic basin-selected
+    /// equilibrium the iterative map defines: prefer the seed side when that
+    /// side has an in-regime fixed point, otherwise migrate to the only valid
+    /// fixed point. No empirical fallback or tolerance relaxation exists.
+    fn bare_skin_equilibrium_discharge_direct(
+        &self,
+        flow_depth_m: f64,
+        skin_rain_term: f64,
+        q_seed: f64,
+    ) -> Option<f64> {
+        if flow_depth_m <= DRY_DEPTH_M || self.slope <= 0.0 {
+            return Some(0.0);
+        }
+        if !flow_depth_m.is_finite()
+            || !self.slope.is_finite()
+            || !skin_rain_term.is_finite()
+            || !self.friction_coefficient_ko.is_finite()
+        {
+            return None;
+        }
+
+        let h_pow = flow_depth_m.powf(DEPTH_DISCHARGE_EXPONENT);
+        let q_initial = if q_seed > 0.0 && q_seed.is_finite() {
+            q_seed
+        } else {
+            (GRAVITY_M_S2 * self.slope).sqrt() * h_pow
+        };
+        if !q_initial.is_finite() {
+            return None;
+        }
+        let crossover_q = KINEMATIC_VISCOSITY_M2_S * 1000.0;
+        let prefer_high = q_initial > crossover_q;
+
+        let laminar_resistance_numerator = skin_rain_term + self.friction_coefficient_ko;
+        let q_low = if laminar_resistance_numerator <= 0.0 {
+            0.0
+        } else {
+            8.0 * GRAVITY_M_S2 * self.slope * flow_depth_m.powi(3)
+                / (laminar_resistance_numerator * KINEMATIC_VISCOSITY_M2_S)
+        };
+        if !q_low.is_finite() || q_low < 0.0 {
+            return None;
+        }
+        let low_valid = q_low <= crossover_q;
+
+        let turbulent_base = (8.0 * GRAVITY_M_S2 * self.slope / 3.19).sqrt()
+            * KINEMATIC_VISCOSITY_M2_S.powf(-0.225)
+            * h_pow;
+        if !turbulent_base.is_finite() || turbulent_base < 0.0 {
+            return None;
+        }
+        let q_high = turbulent_base.powf(1.0 / 0.775);
+        if !q_high.is_finite() || q_high < 0.0 {
+            return None;
+        }
+        let high_valid = q_high > crossover_q;
+
+        if prefer_high {
+            if high_valid {
+                Some(q_high)
+            } else if low_valid {
+                Some(q_low)
+            } else {
+                None
+            }
+        } else if low_valid {
+            Some(q_low)
+        } else if high_valid {
+            Some(q_high)
+        } else {
+            None
+        }
+    }
+
     /// T3-I1 (implicit stepper): the CONVERGED equilibrium discharge
     /// `q_eq(h)` — the fixed point of `q ↦ alpha(h, q)·h^1.5`, iterated to
     /// `tol_rel` instead of the explicit scheme's frozen 4-iteration cap.
@@ -266,6 +363,30 @@ impl CellParameters {
     /// rides over this structure without ever resolving it.
     #[must_use]
     pub(super) fn equilibrium_discharge_converged(
+        &self,
+        flow_depth_m: f64,
+        skin_rain_term: f64,
+        q_seed: f64,
+        tol_rel: f64,
+        max_iterations: usize,
+    ) -> Option<f64> {
+        if self.is_bare_skin_only() {
+            return self.bare_skin_equilibrium_discharge_direct(
+                flow_depth_m,
+                skin_rain_term,
+                q_seed,
+            );
+        }
+        self.equilibrium_discharge_converged_iterated(
+            flow_depth_m,
+            skin_rain_term,
+            q_seed,
+            tol_rel,
+            max_iterations,
+        )
+    }
+
+    fn equilibrium_discharge_converged_iterated(
         &self,
         flow_depth_m: f64,
         skin_rain_term: f64,
@@ -1407,6 +1528,151 @@ mod tests {
             (bin_total - (booked_total - deficit)).abs() < 1.0e-15,
             "over-count identity: bins {bin_total} vs booked {booked_total} - deficit {deficit}"
         );
+    }
+
+    #[test]
+    fn bare_skin_direct_equilibrium_matches_iterated_branch_values() {
+        let crossover_q = KINEMATIC_VISCOSITY_M2_S * 1000.0;
+        let laminar_edge_h =
+            (crossover_q * 500.0 * KINEMATIC_VISCOSITY_M2_S / (8.0 * GRAVITY_M_S2 * 0.05)).cbrt();
+        let cases = [
+            (
+                CellParameters::bare(0.05, 500.0),
+                0.0,
+                0.001_f64,
+                crossover_q * 1.0e-3,
+            ),
+            (
+                CellParameters::bare(0.05, 500.0),
+                0.0,
+                0.001,
+                crossover_q * 1.0e3,
+            ),
+            (
+                CellParameters::bare(0.05, 500.0),
+                0.0,
+                0.004,
+                crossover_q * 1.0e-3,
+            ),
+            (
+                CellParameters::bare(0.05, 500.0),
+                0.0,
+                0.004,
+                crossover_q * 1.0e3,
+            ),
+            (
+                CellParameters::bare(0.05, 500.0),
+                0.0,
+                0.020,
+                crossover_q * 1.0e-3,
+            ),
+            (
+                CellParameters::bare(0.05, 500.0),
+                0.0,
+                0.020,
+                crossover_q * 1.0e3,
+            ),
+            (
+                CellParameters::bare(0.05, 500.0),
+                0.0,
+                laminar_edge_h * (1.0 - 1.0e-6),
+                crossover_q * 1.0e-3,
+            ),
+            (
+                CellParameters::bare(0.05, 500.0),
+                0.0,
+                laminar_edge_h * (1.0 + 1.0e-6),
+                crossover_q * 1.0e-3,
+            ),
+            (
+                CellParameters::bare(0.05, 500.0),
+                25.0,
+                0.006,
+                crossover_q * 1.0e-3,
+            ),
+            (
+                CellParameters::bare(0.05, 500.0),
+                25.0,
+                0.006,
+                crossover_q * 1.0e3,
+            ),
+            (
+                CellParameters::bare(0.05, 0.0),
+                0.0,
+                0.001,
+                crossover_q * 1.0e-3,
+            ),
+            (
+                CellParameters::bare(0.05, 0.0),
+                0.0,
+                0.006,
+                crossover_q * 1.0e3,
+            ),
+        ];
+
+        for (cell, rain_term, h, seed) in cases {
+            let direct = cell
+                .bare_skin_equilibrium_discharge_direct(h, rain_term, seed)
+                .expect("direct branch value");
+            let iterated = cell
+                .equilibrium_discharge_converged_iterated(h, rain_term, seed, 1.0e-13, 80)
+                .expect("iterated branch value");
+            assert!(
+                (direct - iterated).abs() <= 2.0e-12 * iterated.max(1.0e-18),
+                "rain_term={rain_term} h={h} seed={seed}: direct {direct} vs iterated {iterated}"
+            );
+        }
+    }
+
+    #[test]
+    fn bare_skin_direct_equilibrium_tracks_effective_addends() {
+        let bare = CellParameters::bare(0.05, 500.0);
+        assert!(bare.is_bare_skin_only());
+
+        let mut disabled_form_drag = bare;
+        disabled_form_drag.drag_coefficient = 1.0;
+        assert!(disabled_form_drag.is_bare_skin_only());
+
+        let mut with_roughness_elements = bare;
+        with_roughness_elements.drag_coefficient = 1.0;
+        with_roughness_elements.element_tip_height_m = 0.05;
+        with_roughness_elements.roughness_concentration = 0.2;
+        assert!(!with_roughness_elements.is_bare_skin_only());
+
+        let mut disabled_canopy = bare;
+        disabled_canopy.canopy_height_m = 0.4;
+        disabled_canopy.vegetation_drag_coefficient = 1.0;
+        assert!(disabled_canopy.is_bare_skin_only());
+
+        let mut disabled_vegetation_drag = bare;
+        disabled_vegetation_drag.leaf_area_index = 1.0;
+        disabled_vegetation_drag.canopy_height_m = 0.4;
+        assert!(disabled_vegetation_drag.is_bare_skin_only());
+
+        let mut with_vegetation = bare;
+        with_vegetation.leaf_area_index = 1.0;
+        with_vegetation.canopy_height_m = 0.4;
+        with_vegetation.vegetation_drag_coefficient = 1.0;
+        assert!(!with_vegetation.is_bare_skin_only());
+
+        let manning = CellParameters::manning(0.05, 0.009);
+        assert!(!manning.is_bare_skin_only());
+    }
+
+    #[test]
+    fn bare_skin_direct_equilibrium_does_not_authorize_invalid_raw_operands() {
+        let mut invalid_disabled_form = CellParameters::bare(0.05, 500.0);
+        invalid_disabled_form.roughness_concentration = 0.0;
+        invalid_disabled_form.element_tip_height_m = f64::NAN;
+        assert!(invalid_disabled_form.is_bare_skin_only());
+        assert!(invalid_disabled_form.validate().is_err());
+
+        let mut invalid_disabled_vegetation = CellParameters::bare(0.05, 500.0);
+        invalid_disabled_vegetation.leaf_area_index = 0.0;
+        invalid_disabled_vegetation.canopy_height_m = f64::INFINITY;
+        invalid_disabled_vegetation.vegetation_drag_coefficient = 1.0;
+        assert!(invalid_disabled_vegetation.is_bare_skin_only());
+        assert!(invalid_disabled_vegetation.validate().is_err());
     }
 
     // Case 1 (bare surface): 60 mm/h over a 7.5 m plot at 9%, k_o=500.

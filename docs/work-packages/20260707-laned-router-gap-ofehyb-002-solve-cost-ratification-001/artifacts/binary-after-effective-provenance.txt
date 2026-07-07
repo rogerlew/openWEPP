@@ -1,0 +1,19 @@
+f7bafb4044ac8eb75ea834243279443a743e32fc
+ M crates/openwepp-hillslope-orchestrator/src/ofe_routing/cascade.rs
+ M crates/openwepp-hillslope-orchestrator/src/ofe_routing/implicit_recession.rs
+ M crates/openwepp-hillslope-orchestrator/src/ofe_routing/kinematic_wave.rs
+ M docs/specifications/science-contracts/contracts/SC-OFEROUTE-001.md
+ M docs/specifications/science-contracts/contracts/SC-OFEROUTE-002.md
+ M docs/work-packages/20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001/artifacts/baseline-profile.md
+?? docs/work-packages/20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001/artifacts/binary-after-effective-provenance.txt
+?? docs/work-packages/20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001/artifacts/binary-after-provenance.txt
+?? docs/work-packages/20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001/artifacts/h2637-active-hybrid-after-time.log
+?? docs/work-packages/20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001/artifacts/h2637-active-hybrid-time.log
+?? docs/work-packages/20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001/artifacts/h2637-active-hybrid.log
+?? docs/work-packages/20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001/artifacts/h2637-scratch-after-effective/
+?? docs/work-packages/20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001/artifacts/h2637-scratch/
+?? docs/work-packages/20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001/artifacts/runner-build-after-effective.log
+?? docs/work-packages/20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001/artifacts/runner-build-after.log
+?? docs/work-packages/20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001/artifacts/runner-build.log
+path=target/release/openwepp-cli-hill size=9898296 mtime=2026-07-07 00:59:31.634345729 -0700
+ac4e883c19d39efd0280963b80a1c44b0edf2e520a026c36dcb4b7a9b71e9228  target/release/openwepp-cli-hill

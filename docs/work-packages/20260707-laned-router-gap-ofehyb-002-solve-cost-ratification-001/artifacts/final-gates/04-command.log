@@ -1,0 +1,5 @@
+Running command 4
+markdown-doc lint --path docs/specifications/science-contracts/contracts/SC-OFEROUTE-001.md --path docs/specifications/science-contracts/contracts/SC-OFEROUTE-002.md --path docs/work-packages/20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001
+cwd: /home/workdir/openWEPP
+start: 2026-07-07T08:07:21.377211Z
+✅ 15 files validated, 0 errors, 0 warnings

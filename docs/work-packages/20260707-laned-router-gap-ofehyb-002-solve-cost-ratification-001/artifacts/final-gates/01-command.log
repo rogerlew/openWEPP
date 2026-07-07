@@ -1,0 +1,23 @@
+Running command 1
+git status --short --branch
+cwd: /home/workdir/openWEPP
+start: 2026-07-07T08:07:19.409627Z
+## main...origin/main [ahead 1]
+ M crates/openwepp-hillslope-orchestrator/src/ofe_routing/cascade.rs
+ M crates/openwepp-hillslope-orchestrator/src/ofe_routing/implicit_recession.rs
+ M crates/openwepp-hillslope-orchestrator/src/ofe_routing/kinematic_wave.rs
+ M docs/specifications/science-contracts/contracts/SC-OFEROUTE-001.md
+ M docs/specifications/science-contracts/contracts/SC-OFEROUTE-002.md
+ M docs/work-packages/20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001/artifacts/baseline-profile.md
+?? docs/work-packages/20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001/artifacts/binary-after-effective-provenance.txt
+?? docs/work-packages/20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001/artifacts/binary-after-provenance.txt
+?? docs/work-packages/20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001/artifacts/final-gates/
+?? docs/work-packages/20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001/artifacts/h2637-active-hybrid-after-effective-time.log
+?? docs/work-packages/20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001/artifacts/h2637-active-hybrid-after-time.log
+?? docs/work-packages/20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001/artifacts/h2637-active-hybrid-time.log
+?? docs/work-packages/20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001/artifacts/h2637-active-hybrid.log
+?? docs/work-packages/20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001/artifacts/h2637-scratch-after-effective/
+?? docs/work-packages/20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001/artifacts/h2637-scratch/
+?? docs/work-packages/20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001/artifacts/runner-build-after-effective.log
+?? docs/work-packages/20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001/artifacts/runner-build-after.log
+?? docs/work-packages/20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001/artifacts/runner-build.log

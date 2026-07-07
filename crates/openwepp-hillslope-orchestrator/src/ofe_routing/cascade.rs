@@ -1153,6 +1153,14 @@ mod tests {
             snapshot.solver_steps_implicit, 4,
             "four 900 s bins should become implicit after cooldown"
         );
+        assert!(
+            snapshot.implicit_branch_evaluations > 0,
+            "implicit skin-only bins still evaluate the outer cell residual"
+        );
+        assert_eq!(
+            snapshot.implicit_equilibrium_map_evaluations, 0,
+            "skin-only source-memory implicit bins must use the exact branch evaluator"
+        );
         let residual = result.mass_balance.conservation_residual_m2();
         let scale = result.mass_balance.rainfall_excess_m2.max(1.0e-12);
         assert!(

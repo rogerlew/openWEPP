@@ -134,6 +134,7 @@ pub fn implicit_step_with_discharges(
     let mut q_out_last = 0.0_f64;
     for i in 0..n {
         let cell = &mesh.cells[i];
+        cell.validate()?;
         let h_old = depth_m[i];
         let v = v_m_s[i];
         if !is_valid_state(h_old) || !is_valid_state(v) {
@@ -404,6 +405,7 @@ fn solve_cell_on_branch(
 #[cfg(test)]
 #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
 mod tests {
+    use super::super::friction::GRAVITY_M_S2;
     use super::super::kinematic_wave::{
         CellParameters, Forcing, KinematicWaveMesh, KinematicWaveSolver,
     };
@@ -504,7 +506,10 @@ mod tests {
         use super::super::profile;
 
         let _flag_guard = profile::test_flag_guard();
-        let cell = CellParameters::bare(0.055, 500.0);
+        let mut cell = CellParameters::bare(0.055, 500.0);
+        cell.drag_coefficient = 1.0;
+        cell.element_tip_height_m = 0.05;
+        cell.roughness_concentration = 0.2;
         let rhs = 0.028_f64;
         let dt_over_dx = 180.0_f64;
         let h_start = 0.018_f64;
@@ -544,10 +549,116 @@ mod tests {
             cold_profile.implicit_equilibrium_map_evaluations
         );
         assert!(
+            cold_profile.implicit_equilibrium_map_evaluations > 0,
+            "non-bare fixture must exercise the generic fixed-point evaluator"
+        );
+        assert!(
             warm_profile.implicit_branch_evaluations > 0
                 && cold_profile.implicit_branch_evaluations > 0,
             "branch evaluations must be counted"
         );
+    }
+
+    #[test]
+    fn bare_skin_direct_equilibrium_avoids_fixed_point_map_work() {
+        use super::super::profile;
+
+        let _flag_guard = profile::test_flag_guard();
+        let cell = CellParameters::bare(0.055, 500.0);
+        let rhs = 0.028_f64;
+        let dt_over_dx = 180.0_f64;
+        let h_start = 0.018_f64;
+
+        profile::set_enabled(true);
+        let _ = profile::snapshot_and_reset();
+        let (h, q, _) = solve_cell(&cell, rhs, dt_over_dx, 0.0, h_start, None).expect("bare solve");
+        let snapshot = profile::snapshot_and_reset();
+        profile::set_enabled(false);
+
+        assert!(
+            (h + dt_over_dx * q - rhs).abs() <= 1.0e-10 * rhs,
+            "cell residual"
+        );
+        assert!(
+            snapshot.implicit_branch_evaluations > 0,
+            "outer branch residuals must still be counted"
+        );
+        assert_eq!(
+            snapshot.implicit_equilibrium_map_evaluations, 0,
+            "bare skin-only direct evaluator must not spend fixed-point map work"
+        );
+    }
+
+    #[test]
+    fn bare_skin_direct_equilibrium_composed_edge_cases_close_cell_residuals() {
+        use super::super::profile;
+
+        let _flag_guard = profile::test_flag_guard();
+        let crossover_q = CROSSOVER_Q_M2_S;
+        let laminar_edge_h =
+            (crossover_q * 500.0 * KINEMATIC_VISCOSITY_M2_S / (8.0 * GRAVITY_M_S2 * 0.05)).cbrt();
+        let cases = [
+            (
+                "rain-term",
+                CellParameters::bare(0.05, 500.0),
+                0.028,
+                180.0,
+                0.018,
+                25.0,
+            ),
+            (
+                "zero-ko",
+                CellParameters::bare(0.05, 0.0),
+                0.006,
+                120.0,
+                0.004,
+                0.0,
+            ),
+            (
+                "near-crossover",
+                CellParameters::bare(0.05, 500.0),
+                laminar_edge_h,
+                240.0,
+                laminar_edge_h * (1.0 - 1.0e-6),
+                0.0,
+            ),
+        ];
+
+        for (name, cell, rhs, dt_over_dx, h_start, rain_term) in cases {
+            profile::set_enabled(true);
+            let _ = profile::snapshot_and_reset();
+            let (h, q, _) =
+                solve_cell(&cell, rhs, dt_over_dx, rain_term, h_start, None).expect(name);
+            let snapshot = profile::snapshot_and_reset();
+            profile::set_enabled(false);
+
+            assert!(
+                (h + dt_over_dx * q - rhs).abs() <= 1.0e-10 * rhs.max(1.0e-18),
+                "{name} cell residual"
+            );
+            assert!(
+                snapshot.implicit_branch_evaluations > 0,
+                "{name} branch residuals must be counted"
+            );
+            assert_eq!(
+                snapshot.implicit_equilibrium_map_evaluations, 0,
+                "{name} bare direct path must not execute fixed-point map work"
+            );
+        }
+    }
+
+    #[test]
+    fn implicit_step_rejects_invalid_inactive_raw_operands_before_direct_path() {
+        let mut invalid = CellParameters::bare(0.05, 500.0);
+        invalid.roughness_concentration = 0.0;
+        invalid.element_tip_height_m = f64::NAN;
+        let mesh = KinematicWaveMesh::uniform(10.0, 2, invalid);
+        let mut depths = vec![0.002_f64; 2];
+        let source = vec![0.0_f64; 2];
+
+        let err = implicit_step(&mesh, &mut depths, 0.0, &source, 0.0, 60.0)
+            .expect_err("invalid inactive raw operand must fail closed");
+        assert!(matches!(err, RoutingError::InvalidCellParameter));
     }
 
     #[test]

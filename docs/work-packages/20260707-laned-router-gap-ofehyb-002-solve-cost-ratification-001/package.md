@@ -1,6 +1,6 @@
 # LANED Hybrid GAP-OFEHYB-002 Solve-Cost Ratification
 
-Status: QUEUED
+Status: EXECUTED-COMPLETE-NO-PROMOTION
 
 ## Objective
 
@@ -14,16 +14,25 @@ source-memory hybrid baseline. The package should implement only deterministic,
 contract-authorized local numerical reductions, then re-run the promotion
 ratification evidence needed by `SC-OFEROUTE-002#INV-OFEHYB-008`.
 
-## Current Baseline
+## Baseline At Package Start
 
 - `GAP-OFEHYB-001` is resolved by the source-memory cooldown predicate.
 - Current H2637 active hybrid evidence: `37.96 s` user, `0:37.99` wall,
   `980804` implicit steps, `151435969` implicit equilibrium map evaluations,
   `20110816` implicit branch evaluations.
-- `GAP-OFEHYB-002` remains open: rev-31 H2637 had `274.7 M` map evaluations
-  and the source-memory baseline still carries `151.4 M` map evaluations.
+- At package start, `GAP-OFEHYB-002` remained open: rev-31 H2637 had
+  `274.7 M` map evaluations and the source-memory baseline still carried
+  `151.4 M` map evaluations.
 - The selector remains `experimental-unpromoted`; no default/D16 promotion is
   authorized by this package unless all promotion gates explicitly pass.
+
+## Execution Outcome
+
+`GAP-OFEHYB-002` is closed for the current H2637 source-memory hybrid
+solve-cost bottleneck. The package lands and ratifies the exact bare skin-only
+branch evaluator, reducing H2637 active hybrid map evaluations
+`151435969 -> 0` and user time `38.39 s -> 33.37 s`. The selector remains
+experimental/unpromoted; no default/D16 activation is made.
 
 ## Scope
 

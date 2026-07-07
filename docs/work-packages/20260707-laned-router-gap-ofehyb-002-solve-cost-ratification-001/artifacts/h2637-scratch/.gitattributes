@@ -1,0 +1,11 @@
+# Legacy WEPP fixed-column data fixtures: trailing whitespace and column
+# padding are part of the on-disk format and must be preserved byte-for-byte.
+# Exclude them from the whitespace lint (`git diff --check`).
+gwcoeff.txt -whitespace
+p2637.cli -whitespace
+p2637.man -whitespace
+p2637.slp -whitespace
+p2637.sol -whitespace
+pmetpara.txt -whitespace
+snow.txt -whitespace
+wepp_ui.txt -whitespace

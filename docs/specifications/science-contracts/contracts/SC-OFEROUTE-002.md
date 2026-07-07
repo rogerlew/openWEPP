@@ -4,7 +4,7 @@ title: Hybrid Implicit-Explicit Kinematic-Wave Stepping Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 3
+contract_version: 4
 producer_scope:
   - Implicit backward-Euler upwind kinematic-wave stepping on smooth sample bins (per-cell scalar equilibrium solves, machine-exact ledger)
   - Hybrid span composition over a routed day window (implicit/explicit span partition, state seams, cross-span deficit carry, composed outlet-bin series)
@@ -75,6 +75,7 @@ Out of scope (owned elsewhere):
 | WP `20260706-laned-router-t3-hybrid-implicit-stepping-001` | Design + I0/I1/I2 evidence (scheme derivation, prize measurement, dt-refinement ladder, rev-29 review hardening). |
 | WP `20260706-laned-router-t3-aggressive-deficit-carry-001` | Rev-30 composition rules + executed H2637 carry evidence + dual review. |
 | WP `20260707-laned-router-t3-ratification-solve-cost-001` | Rev-31 warm seeding + counters; the executed Case-4 hybrid ladder FAIL that holds ratification. |
+| WP `20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001` | Rev-4 exact bare-skin branch evaluator for the solve-cost gap, with before/after H2637 timing and retained ratification gates. |
 
 Legacy WEPP has no counterpart subsystem; no legacy anchor exists or is
 sought (ADR-0011/ADR-0017 posture).
@@ -185,6 +186,26 @@ Solve rules, all normative:
   any candidate failing any of the three conditions falls back to the cold
   seed. It may not change the converged value, the residual form, the
   branch preference, or the fail-closed posture.
+- **Exact bare-skin branch evaluator (rev 4 / GAP-OFEHYB-002):** when the
+  active cell's additive friction closure is effectively ONLY skin
+  resistance (`k_o` plus optional rain term) with no active form, wave,
+  vegetation, or Manning addend, the implementation may replace fixed-point
+  map iteration with the algebraic fixed points of the exact same Shen-Li
+  and Hirsch branch equations. "No active addend" follows the same guards as
+  the friction equations: e.g. zero roughness concentration or zero element
+  height disables form/wave; `LAI = 0`, zero canopy height, or zero
+  vegetation drag disables vegetation. These are exact zero component-absence
+  guards, not near-zero thresholds, and the cell must still pass the finite,
+  non-negative roughness-domain validation before the direct path can execute.
+  Seed-side selection remains deterministic: prefer the seed's branch side
+  when that side has an in-regime fixed point, otherwise migrate only to the
+  single valid in-regime fixed point. This is a solve-method optimization, not
+  a byte-identity promise: it may not alter LOW→HIGH outer preference,
+  residual equations, tolerance guards, publication schema/ownership surfaces,
+  or fail-closed behavior, and any active-output numeric deltas must remain at
+  the branch-equilibrium tolerance scale recorded for the ratified H2637
+  vector. It records no `implicit_equilibrium_map_evaluations` because no map
+  applications are executed.
 - **Basin-locked Steffensen acceleration (rev 29):** an accelerated point
   is accepted only when the whole plain iteration triple sits in one basin
   and the accelerated point stays on that side of `Q_c`, so the accelerated
@@ -280,6 +301,7 @@ this subsystem MUST include them).
 | Non-integral window | window not an integral bin count | Fail closed. | Typed degenerate-configuration failure. | `INV-OFEHYB-005` |
 | Branch closure | LOW converges / LOW jumps / both jump | Accept LOW root; else accept HIGH root; else typed solve failure (double-collapse theorem). | Typed non-convergence failure; no filled-jump commit. | `INV-OFEHYB-004` |
 | Warm-seed validity | candidate seed non-finite, non-positive, OR off the evaluated branch's basin side | Fall back to the cold basin-split seed (all three acceptance conditions must hold). | Deterministic fallback (cost-only lever). | `INV-OFEHYB-003` |
+| Exact bare-skin evaluator | no active form/wave/vegetation/Manning addend; exact Shen-Li/Hirsch branch fixed points exist | Use the algebraic branch value selected by the same seed-side rule; otherwise use the generic fixed-point path. | Typed non-convergence if the exact value is non-finite or no valid branch value exists. | `INV-OFEHYB-003` |
 | Acceleration basin lock | plain triple or accelerated point crosses `Q_c` | Reject the accelerated point; continue plain iteration. | Deterministic rejection. | `INV-OFEHYB-003` |
 | Step-residual guard | booked step identity off by > `1e-9` relative (dust-floor scale) | Typed failure; no unvalidated state commits. | Typed runtime hard fail. | `INV-OFEHYB-001` |
 | Material terminal deficit | end-of-window carry beyond the noise floor | Fail closed. | `NegativeOutletBin`. | `INV-OFEHYB-006` |
@@ -293,7 +315,7 @@ this subsystem MUST include them).
 |---|---|---|---|---|---|
 | INV-OFEHYB-001 | Implicit-step ledger exactness BY CONSTRUCTION: booked inflow/rain/outflow/storage equal the scheme's actual fluxes to the solve residual tolerance; no clamp class; the step-residual hard guard (relative `1e-9`, dust-floor absolute scale) rejects any violation. | runtime guard + I1 exactness vectors | Typed runtime hard fail. | This contract §Algorithm 1/3 | `[DIRECT][Ran]` (I1 ladder residuals ≤ 1.7e-14) |
 | INV-OFEHYB-002 | Unconditional positivity: no negative depth/discharge for any `Δt`; no `max(0)` clamps anywhere in the implicit path. | construction + I1 vectors | Typed failure (a negative would indicate a solve defect). | §Algorithm 1 | `[DIRECT][Static] + [DIRECT][Ran]` |
-| INV-OFEHYB-003 | Determinism: the converged cell state is a pure function of (cell parameters, `rhs`, `Δt/Δx`, branch) — independent of run history. Warm seeds and acceleration must provably converge to the same value (warm-seed acceptance requires FINITE + POSITIVE + evaluated-branch-side, else cold fallback; acceleration is basin-locked). | seed/acceleration guards + regression vectors | Deterministic fallback/rejection; divergence is a defect. | §Algorithm 2/3; rev-29/31 rules | `[DIRECT][Ran]` (rev-29 bit-identical books; rev-31 evidence) |
+| INV-OFEHYB-003 | Determinism: the converged cell state is a pure function of (cell parameters, `rhs`, `Δt/Δx`, branch) — independent of run history. Warm seeds, acceleration, and exact direct evaluators must provably converge to the same branch value (warm-seed acceptance requires FINITE + POSITIVE + evaluated-branch-side, else cold fallback; acceleration is basin-locked; bare-skin direct evaluation is algebraically exact and seed-side valid). | seed/acceleration/direct-evaluator guards + regression vectors | Deterministic fallback/rejection; divergence is a defect. | §Algorithm 2/3; rev-29/31/GAP002 rules | `[DIRECT][Ran]` (rev-29 bit-identical books; rev-31 evidence; GAP002 exactness vector) |
 | INV-OFEHYB-004 | Branch closure: LOW→HIGH preference; a both-branches-jump outcome is unreachable for genuine physics (double-collapse theorem) and fails closed. No mass-exact filled-jump commit exists. | solve-chain structure + LOW-jump→HIGH-root vector | Typed non-convergence hard fail. | §Algorithm 2 theorem | `[DIRECT][Static] (proof) + [DIRECT][Ran]` |
 | INV-OFEHYB-005 | Switching-predicate soundness: forcing-derived, deterministic, source-memory bounded; implicit only on zero-source bins after the `2 * preceding_source_burst_duration` cooldown; the cadence must partition the seam hour (fail closed) so the bin-start sample is provably bin-constant. | preflight guards + C-M1/cooldown vectors | Typed degenerate-configuration failure or test failure. | §Algorithm 4 | `[DIRECT][Ran]` |
 | INV-OFEHYB-006 | Composition exact-total: the composed published bin series is non-negative and sums to the booked outflow EXACTLY EXCEPT for the single approved C-L1 disposition (an un-absorbable sub-noise remainder on an all-dry/insufficient-gross series is dropped, bounded by the noise floor); deficits move ATTRIBUTION forward in time, never mass; material end-of-window deficits fail closed. | carry algebra + disposition guards + rev-30 vectors | `NegativeOutletBin` / bounded documented disposition. | §Algorithm 5 | `[DIRECT][Ran]` (H2637 6-event carry evidence) |
@@ -307,7 +329,7 @@ this subsystem MUST include them).
 | Invariant ID | Enforcement path | Guard class | Failure behavior | Evidence artifact |
 |---|---|---|---|---|
 | `INV-OFEHYB-001..002` | `ofe_routing::implicit_recession` step guard + `implicit_step_ledger_is_exact_and_positive`, `implicit_step_books_upstream_inflow_exactly`, `dust_scale_steps_do_not_accumulate_a_material_leak` | runtime + test | typed hard fail | T3 `i1-implicit-stepper-evidence.md` |
-| `INV-OFEHYB-003` | seed/acceleration acceptance rules + `steady_state_is_a_fixed_point_of_the_implicit_step`, `branch_warm_seed_preserves_solution_and_reduces_or_matches_map_work`, `branch_warm_seed_acceptance_is_basin_locked` | runtime + test | deterministic fallback; divergence = defect | T3 rev-29 disposition; rev-31 WP |
+| `INV-OFEHYB-003` | seed/acceleration/direct-evaluator acceptance rules + `steady_state_is_a_fixed_point_of_the_implicit_step`, `branch_warm_seed_preserves_solution_and_reduces_or_matches_map_work`, `branch_warm_seed_acceptance_is_basin_locked`, `bare_skin_direct_equilibrium_matches_iterated_branch_values`, `bare_skin_direct_equilibrium_avoids_fixed_point_map_work` | runtime + test | deterministic fallback; divergence = defect | T3 rev-29 disposition; rev-31 WP; GAP002 WP |
 | `INV-OFEHYB-004` | solve-chain ordering + double-collapse typed error + `low_jump_recovers_high_branch_root_and_never_commits_filippov` | runtime + test | typed hard fail | rev-29 disposition |
 | `INV-OFEHYB-005` | hybrid preflight guards + source-memory cooldown mask + `hybrid_rejects_cadence_that_does_not_partition_the_seam_hour`, `hybrid_rejects_non_integral_windows`, `hybrid_source_memory_cooldown_keeps_post_source_bins_explicit` | runtime + test | typed degenerate-configuration / test failure | GAP001 WP |
 | `INV-OFEHYB-006` | `absorb_deficit`/`dispose_terminal_carry` + `absorb_deficit_exact_total_and_non_negative`, `dispose_terminal_carry_material_deficit_fails_closed`, `dispose_terminal_carry_subnoise_absorbs_backward_exactly`, `dispose_terminal_carry_all_dry_subnoise_drop_is_bounded`, `bin_recorder_returns_material_terminal_deficit_exactly` | runtime + test | `NegativeOutletBin` / bounded documented drop | T3-AGG `fix-evidence.md` |
@@ -383,13 +405,25 @@ symbol must register per `docs/specifications/unit-governance.md`.
   source-memory record: `37.96 s` user, `980804` implicit steps, `151.4 M`
   map evaluations, `20.1 M` branch evaluations; `+3.69 %` vs rev-31 hybrid
   and `+0.16 %` vs plain active.
+- Rev-4 exact bare-skin H2637 record (GAP-OFEHYB-002): `33.37 s` user,
+  `0:33.43` wall, `980804` implicit steps, `0` equilibrium map evaluations,
+  and `20.1 M` branch evaluations. Active output is not byte-identical to the
+  iterative baseline: `H2637.loss.json` remains byte-identical; `H2637.hbp`
+  differs by 54 bytes; `H2637.pass.parquet` keeps the same shape, columns, and
+  index with sparse numeric movement only (`tdet` one row, max absolute
+  `3.48e-9`, max relative `1.54e-10`; `sedcon_1..5` three rows each, max
+  relative `3.84e-10`, max absolute `1.89e-11`). Manifest closure remains at
+  the existing machine-precision ledger surface (`max_day_identity_residual_rel
+  <= 4.5e-13`, WB13 identity maxima `0.0`). These deltas are ratified for the
+  exact evaluator as branch-equilibrium numeric dust; they are not a
+  publication schema, publication ownership, default, or tolerance change.
 
 ## Test-Vector Obligations
 
 | Obligation | Minimum vectors | Expected evidence |
 |---|---|---|
 | Implicit stepper (I1 family) | Exactness + positivity at every dt/mesh rung; steady-state fixed point; recession dt-refinement ladder vs the upwind/characteristics reference; 10k-step dust accumulation; LOW-jump→HIGH-root recovery. | Retained `implicit_recession` suites; T3 I1 evidence. |
-| Solve determinism | Warm-seed fallback and basin-lock regressions (converged values unchanged vs plain iteration). | rev-29/31 retained vectors + evidence. |
+| Solve determinism | Warm-seed fallback, basin-lock regressions, exact bare-skin evaluator equivalence (converged values unchanged vs the branch-defining iterative map where iteration is still the authority fallback), composed bare-skin cell solves for rain-term / zero-`k_o` / near-crossover edges, and invalid inactive-operand fail-closed validation before any direct path. | rev-29/31 retained vectors + GAP002 exactness evidence. |
 | Switching predicate | Hour-partition fail-closed (C-M1 scenario); non-integral window; source-memory cooldown pin; zero-source/no-prior-source upstream-fed bins remain implicit and book upstream mass exactly. | `rev30_deficit_carry_tests` + rejection/cooldown vectors. |
 | Composition deficit carry | Recorder deficit-return identity; absorb/dispose exact-total + non-negativity; material end-of-window fail-closed (incl. all-dry); sub-noise backward absorption; bounded all-dry drop. | rev-30 vector family. |
 | Non-perturbation | All-explicit bit-identity; plain-parquet pin under selector-off. | T3/T3-AGG gate artifacts. |
@@ -412,12 +446,13 @@ Evidence mode: `Static`
 | Gap ID | Statement | Impact | Disposition | Evidence |
 |---|---|---|---|---|
 | GAP-OFEHYB-001 | **Shock-outlives-source: the old zero-source-only predicate routed shock-carrying source-quiet bins implicitly.** The rev-31 Case-4 hybrid ladder failed the parent ratified peak tolerance at every rung (`22.8 / 15.5 / 10.2 %` vs `5 %`, improving under refinement — the implicit phase's first-order diffusion smearing an in-mesh front). Rev 33 selects the recorded explicit cool-down lever as a source-memory predicate: after a source-active burst, route the next `2 * burst_duration` source-free bins explicitly before implicit recession is eligible. The Case-4 scan proved `10 s` cooldown still failed and `20 s` passed for the `10 s` Iwagaki source; the retained Case-4 ladder now passes unignored under the same parent tolerances. | Case-4 subgate no longer blocks the selector; closing this gap does not by itself promote the selector, which still requires the full `INV-OFEHYB-008` fidelity/timing ratification process. | RESOLVED — WP `20260707-laned-router-gap-ofehyb-001-hold-lift-design-001`. | `[DIRECT][Ran]` (cooldown scan + retained ladder + H2637 timing/profile) |
-| GAP-OFEHYB-002 | **Implicit solve cost remains the endpoint bottleneck.** H2637: `274.7 M` equilibrium map evaluations ≈ 12 per cell-solve after rev-31 warm seeding (endpoint `36.61 s` vs `37.9 s` plain — first net win, modest). Remaining levers: Newton on the composed cell residual (replacing nested fixed-point iteration), Tier-1 friction-evaluation cost cuts (compose multiplicatively), further deterministic seeding improvements under INV-OFEHYB-003. | Bounds the subsystem's endpoint value; does not block correctness. | OPEN — optimization increments; each must re-prove INV-OFEHYB-003. | `[DIRECT][Ran]` (rev-31 counters) |
+| GAP-OFEHYB-002 | **Implicit solve cost was the endpoint bottleneck for the H2637 source-memory hybrid path.** Rev-33 source-memory H2637 carried `151.4 M` equilibrium map evaluations and `38.39 s` user in this package's refreshed baseline. Rev-4 exact bare-skin evaluation removes the nested map work on the H2637-active cell class (`0` map evaluations, `33.37 s` user, `0:33.43` wall) while preserving branch rules, fail-closed validation, and closure surfaces. | No longer blocks the H2637 endpoint value for the current active source-memory hybrid vector. It does not by itself promote the selector; generic non-bare solve optimization remains optional Tier-2/Tier-1 performance work. | RESOLVED-FOR-H2637-SOLVE-COST — WP `20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001`; selector remains experimental/unpromoted under `INV-OFEHYB-008`. | `[DIRECT][Ran]` (before/after H2637 counters, output-delta audit, retained tests) |
 
 ## Revision History
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-07-07` | `4` | `Codex` | GAP-OFEHYB-002 solve-cost amendment and execution (WP `20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001`): authorizes and ratifies an exact bare skin-only branch evaluator for cells with no active form/wave/vegetation/Manning addend under exact-zero component-absence guards plus the ordinary finite/non-negative cell-parameter validation. The evaluator computes the algebraic Shen-Li and Hirsch fixed points of the same branch equations, preserves deterministic seed-side selection and LOW→HIGH outer preference, records no map applications because no fixed-point map is executed, and falls back to the generic basin-locked iterative path for every non-bare operand class. H2637 source-memory hybrid timing moves from `38.39 s` user / `151.4 M` map evaluations to `33.37 s` user / `0` map evaluations. Active outputs are not byte-identical but are bounded to sparse branch-equilibrium numeric dust as recorded in the tolerance notes; no physics, selector posture, publication schema/ownership, default activation, or promotion change is made here. GAP-OFEHYB-002 is resolved for the current H2637 solve-cost bottleneck; `INV-OFEHYB-008` remains the selector promotion gate. |
 | `2026-07-07` | `3` | `Codex` | GAP-OFEHYB-001 hold-lift design amendment (WP `20260707-laned-router-gap-ofehyb-001-hold-lift-design-001`): replaces the old zero-source-only switching predicate with a deterministic source-memory cooldown. After any contiguous source-active burst, the next `2 * burst_duration` source-free bins remain explicit; only later source-free bins are implicit-eligible. This is a numerical switching rule, not process physics; upstream inflow remains allowed after cooldown because implicit steps book interval-mean upstream mass exactly. Design evidence: Case-4 cooldown scan bracketed the transition (`10 s` after the `10 s` source still failed; `20 s` passed), the retained Case-4 hybrid ladder now passes unignored at the parent tolerances, and H2637 active hybrid timing/profile is recorded at `37.96 s` user with `980804` implicit steps. GAP-OFEHYB-001 is resolved as the Case-4 subgate; no selector promotion/default change is made. |
 | `2026-07-07` | `2` | `Codex` | Approval-lift after dual review, accepted finding disposition, and dual verification in WP `20260707-laned-router-hybrid-contract-authority-001`: Agent A verification GO; Agent B initial verification found one remaining Low guard-map shorthand, the row was amended to name the retained deficit-carry tests directly, and Agent B follow-up verification returned GO. Lifecycle status is now `approved` / `active`; no behavior, tolerance, selector posture, or promotion change is made. `INV-OFEHYB-008` remains HELD on `GAP-OFEHYB-001`; `GAP-OFEHYB-002` remains an optimization gap. |
 | `2026-07-07` | `1` | `Claude Code` | Initial authority CONSOLIDATION (WP `20260707-laned-router-hybrid-contract-authority-001`): normative content assembled from `SC-OFEROUTE-001` revs 28 (scheme + selector + Z-rating discovery), 29 (double-collapse theorem, basin-locked Steffensen, dust floor), 30 (aggressive mask, hour-partition guard, cross-span deficit carry + dispositions), 31 (branch-local warm seeding, solve-cost counters), the T3 design record (`i0-scheme-design.md` — including the recorded explicit cool-down fallback now carried in GAP-OFEHYB-001), and the executed evidence chain (T3 / T3-AGG / rev-31 WPs). New in this document relative to that provenance: stable invariant IDs (`INV-OFEHYB-001..010`), obligation/BEI/guard-map organization, and the gap register carrying the Case-4 HOLD (`22.8/15.5/10.2 %` vs `5 %`) with the one I0-recorded design lever (explicit cool-down) plus clearly-labeled non-binding assessment candidates. Status `draft` pending dual-agent contract review; lifecycle maturity `draft` (the EXPERIMENTAL selector posture is carried in the body/INV-OFEHYB-008, not the lifecycle field). `SC-OFEROUTE-001` rev 32 re-points its hybrid rows here. |

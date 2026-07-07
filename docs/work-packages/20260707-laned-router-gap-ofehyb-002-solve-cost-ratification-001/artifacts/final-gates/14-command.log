@@ -1,0 +1,22 @@
+Running command 14
+cargo nextest run --test auth11_required_suite_obligation_guards_contract
+cwd: /home/workdir/openWEPP
+start: 2026-07-07T08:20:12.920011Z
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+warning: unused import: `GRAVITY_M_S2`
+  --> crates/openwepp-hillslope-orchestrator/src/ofe_routing/implicit_recession.rs:19:23
+   |
+19 | use super::friction::{GRAVITY_M_S2, KINEMATIC_VISCOSITY_M2_S, SKIN_REGIME_REYNOLDS_THRESHOLD};
+   |                       ^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+   Compiling openwepp-runner v0.1.0 (/home/workdir/openWEPP/crates/openwepp-runner)
+warning: `openwepp-hillslope-orchestrator` (lib) generated 1 warning (run `cargo fix --lib -p openwepp-hillslope-orchestrator` to apply 1 suggestion)
+   Compiling openwepp v0.1.0 (/home/workdir/openWEPP)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.16s
+────────────
+ Nextest run ID 223de251-8b8d-4006-acd8-e5ef1df91bb9 with nextest profile: default
+    Starting 2 tests across 1 binary
+────────────
+     Summary [   0.009s] 2 tests run: 2 passed, 0 skipped

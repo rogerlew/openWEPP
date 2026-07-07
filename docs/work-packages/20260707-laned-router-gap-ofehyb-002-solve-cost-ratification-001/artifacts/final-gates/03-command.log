@@ -1,0 +1,4 @@
+Running command 3
+cargo fmt --check
+cwd: /home/workdir/openWEPP
+start: 2026-07-07T08:07:19.594355Z

@@ -12,15 +12,6 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-07`:
-- `20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001/` -
-  QUEUED (2026-07-07): contract-first package for
-  `SC-OFEROUTE-002#GAP-OFEHYB-002`, the remaining implicit solve-cost and
-  fidelity/timing ratification blocker after GAP-OFEHYB-001. Scope: refresh
-  the source-memory hybrid H2637 baseline, choose and implement one
-  deterministic solve-cost lever set under `INV-OFEHYB-003`, rerun Case-4
-  full-hybrid and H2637 timing/profile evidence, and audit `INV-OFEHYB-008`
-  promotion readiness. No mesh-policy change, no tolerance weakening, and no
-  selector/default promotion unless every promotion gate is directly proven.
 - `20260707-laned-router-t3-ratification-solve-cost-001/` -
   EXECUTED-HOLD-CASE4-HYBRID-LADDER (2026-07-07): executed the parent LANED-T3
   open ratification gates and landed rev-31 deterministic branch-local warm
@@ -31,11 +22,11 @@ State as of `2026-07-07`:
   selector promotion is made. Delegable Tier-1/Tier-2 packages are scaffolded.
 - `20260707-laned-router-tier1-local-numerics-001/` -
   SUPERSEDED-BY-GAP-OFEHYB-002 (2026-07-07): retained as the earlier broad
-  Tier-1 local-numerics scaffold, but the primary execution package is now the
-  gap-shaped
-  `20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001/`, which
-  carries the current source-memory hybrid baseline and `INV-OFEHYB-008`
-  ratification obligations.
+  Tier-1 local-numerics scaffold; the gap-shaped
+  `20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001/` has now
+  executed the current source-memory hybrid solve-cost closure. Keep this
+  package only as historical broad-scope context unless a future non-bare
+  optimization needs it.
 - `20260707-laned-router-tier2-mesh-resolution-adjudication-001/` -
   QUEUED (2026-07-07): delegable Tier-2 package to adjudicate candidate
   production mesh-resolution policy (notably 5 cells/OFE) against Case-4 and
@@ -331,6 +322,19 @@ State as of `2026-07-07`:
 
 ## Execution Log
 
+- `20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001/` is
+  complete as LANED HYBRID GAP-OFEHYB-002 SOLVE-COST RATIFICATION. Result:
+  `EXECUTED-COMPLETE-NO-PROMOTION`. It amended `SC-OFEROUTE-002` rev 4 to
+  authorize and ratify an exact bare skin-only branch evaluator under
+  exact-zero component-absence guards plus ordinary finite/non-negative cell
+  validation; `SC-OFEROUTE-001` rev 35 syncs the parent pointer. H2637 active
+  hybrid timing improved from `38.39 s` user / `0:38.41` wall to `33.37 s`
+  user / `0:33.43` wall, and implicit equilibrium map evaluations moved
+  `151435969 -> 0`. Active outputs are not byte-identical but are bounded to
+  sparse branch-equilibrium numeric dust (`H2637.loss.json` byte-identical,
+  pass parquet max relative `3.84e-10`, closure residuals unchanged at
+  machine-precision scale). The hybrid selector remains
+  experimental/unpromoted; no default/D16 activation is made.
 - `20260707-laned-router-gap-ofehyb-001-hold-lift-design-001/` is complete as
   LANED HYBRID GAP-OFEHYB-001 HOLD-LIFT DESIGN. Result:
   `EXECUTED-COMPLETE`. It amended `SC-OFEROUTE-002` rev 3 to replace the old
@@ -344,9 +348,10 @@ State as of `2026-07-07`:
   `151.4M` map evaluations, and `20.1M` branch evaluations. Review findings
   were dispositioned with a shared production/harness cooldown constant, a
   multi-burst reset vector, stale artifact cleanup, and contract/status
-  wording repair. No selector/default promotion is made: `INV-OFEHYB-008`
-  remains the promotion gate and `GAP-OFEHYB-002` remains open for solve-cost
-  optimization/fidelity timing ratification.
+  wording repair. No selector/default promotion was made: `INV-OFEHYB-008`
+  remained the promotion gate; `GAP-OFEHYB-002` was later closed for H2637
+  solve-cost by
+  `20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001`.
 - `20260707-laned-router-hybrid-contract-authority-001/` is complete as
   LANED-HYB-SC AUTHORITATIVE HYBRID CONTRACT CONSOLIDATION. Result:
   `EXECUTED-COMPLETE`. It authored and approved `SC-OFEROUTE-002` (Hybrid
@@ -360,8 +365,9 @@ State as of `2026-07-07`:
   deficit-carry test functions directly, and Agent B follow-up returned GO.
   The lifecycle approval did not promote the selector: at closure time
   `INV-OFEHYB-008` remained held on `GAP-OFEHYB-001`, which is later closed by
-  `20260707-laned-router-gap-ofehyb-001-hold-lift-design-001`; `GAP-OFEHYB-002`
-  remains the solve-cost optimization gap.
+  `20260707-laned-router-gap-ofehyb-001-hold-lift-design-001`; the
+  `GAP-OFEHYB-002` solve-cost gap is later closed for H2637 by
+  `20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001`.
 - `20260705-local-ci-timing-profile-optimization-001/` is complete as LOCAL CI
   TIMING AND PROFILE OPTIMIZATION. Result: `EXECUTED-COMPLETE`. It added
   persistent local nextest timing diagnostics under `tools/local_ci/`, installed

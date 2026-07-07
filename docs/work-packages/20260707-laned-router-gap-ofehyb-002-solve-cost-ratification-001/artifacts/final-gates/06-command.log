@@ -1,0 +1,5 @@
+Running command 6
+python3 tools/check_sc_binding_exposure.py docs/specifications/science-contracts/contracts/SC-OFEROUTE-002.md
+cwd: /home/workdir/openWEPP
+start: 2026-07-07T08:07:21.441257Z
+PASS-DEFERRED docs/specifications/science-contracts/contracts/SC-OFEROUTE-002.md: 4 binding exposure row(s), 4 science-review-follow-on row(s) not yet consolidated

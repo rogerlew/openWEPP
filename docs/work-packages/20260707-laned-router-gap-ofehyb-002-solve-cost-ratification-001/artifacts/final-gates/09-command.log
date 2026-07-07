@@ -1,0 +1,107 @@
+Running command 9
+cargo test -p openwepp-hillslope-orchestrator ofe_routing -- --nocapture
+cwd: /home/workdir/openWEPP
+start: 2026-07-07T08:07:21.688267Z
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.05s
+     Running unittests src/lib.rs (target/debug/deps/openwepp_hillslope_orchestrator-91e2e30b62787e75)
+
+running 93 tests
+test ofe_routing::cascade::rev30_deficit_carry_tests::absorb_deficit_exact_total_and_non_negative ... ok
+test ofe_routing::cascade::rev30_deficit_carry_tests::dispose_terminal_carry_all_dry_subnoise_drop_is_bounded ... ok
+test ofe_routing::cascade::rev30_deficit_carry_tests::dispose_terminal_carry_material_deficit_fails_closed ... ok
+test ofe_routing::cascade::rev30_deficit_carry_tests::dispose_terminal_carry_subnoise_absorbs_backward_exactly ... ok
+test ofe_routing::cascade::rev30_deficit_carry_tests::hybrid_rejects_cadence_that_does_not_partition_the_seam_hour ... ok
+test ofe_routing::cascade::tests::degenerate_cascade_fails_closed ... ok
+test ofe_routing::cascade::tests::hybrid_rejects_non_integral_windows ... ok
+test ofe_routing::cascade::tests::hybrid_source_memory_resets_on_later_source_burst ... ok
+test ofe_routing::cascade::rev30_deficit_carry_tests::hybrid_source_memory_routes_upstream_fed_zero_source_bins_implicitly ... ok
+test ofe_routing::d10b_reconciliation_tests::bin_loops_progress_on_non_dyadic_sample_dt ... ok
+test ofe_routing::d10b_reconciliation_tests::unsatisfiable_cfl_fails_closed_not_partial_ok ... ok
+test ofe_routing::friction::tests::additive_equivalent_and_chezy ... ok
+test ofe_routing::friction::tests::degenerate_inputs_return_zero_not_nan ... ok
+test ofe_routing::friction::tests::form_resistance_matches_equation_case2 ... ok
+test ofe_routing::friction::tests::shen_li_low_ko_vector_pins_si_rainfall_intensity ... ok
+test ofe_routing::friction::tests::shen_li_negative_intensity_is_not_silently_zeroed ... ok
+test ofe_routing::friction::tests::skin_rain_term_dispatch_is_bit_identical ... ok
+test ofe_routing::friction::tests::skin_regime_dispatch_and_continuity ... ok
+test ofe_routing::friction::tests::vegetation_beta_is_capped_and_resistance_positive ... ok
+test ofe_routing::friction::tests::wave_resistance_ramps_below_half_and_decays_above ... ok
+test ofe_routing::implicit_recession::tests::branch_warm_seed_acceptance_is_basin_locked ... ok
+test ofe_routing::implicit_recession::tests::implicit_step_books_upstream_inflow_exactly ... ok
+test ofe_routing::implicit_recession::tests::recession_ladder_diagnostic ... ignored, T3-I1 diagnostic: prints the full ladder + mesh-refinement probe
+test ofe_routing::implicit_recession::tests::implicit_step_ledger_is_exact_and_positive ... ok
+test ofe_routing::implicit_recession::tests::low_jump_recovers_high_branch_root_and_never_commits_filippov ... ok
+test ofe_routing::infiltration::tests::capacity_diverges_at_dry_and_decays_with_cumulative ... ok
+test ofe_routing::infiltration::tests::conservation_holds_across_variable_rainfall ... ok
+test ofe_routing::infiltration::tests::coupled_run_validates_config_and_soil_domains ... ok
+test ofe_routing::infiltration::tests::explicit_ponding_split_conserves_and_delays_excess ... ok
+test ofe_routing::infiltration::tests::hyetograph_fails_closed_on_invalid_inputs ... ok
+test ofe_routing::implicit_recession::tests::steady_state_is_a_fixed_point_of_the_implicit_step ... ok
+test ofe_routing::infiltration::tests::impermeable_soil_makes_all_rainfall_excess ... ok
+test ofe_routing::infiltration::tests::low_rainfall_below_ks_never_ponds_all_infiltrates ... ok
+test ofe_routing::infiltration::tests::high_rainfall_ponds_and_produces_excess_with_decaying_infiltration ... ok
+test ofe_routing::kinematic_wave::tests::bare_skin_direct_equilibrium_matches_iterated_branch_values ... ok
+test ofe_routing::kinematic_wave::tests::bare_skin_direct_equilibrium_tracks_effective_addends ... ok
+test ofe_routing::kinematic_wave::tests::bin_recorder_returns_material_terminal_deficit_exactly ... ok
+test ofe_routing::kinematic_wave::tests::degenerate_configuration_fails_closed ... ok
+test ofe_routing::kinematic_wave::tests::invalid_cell_parameter_fails_closed ... ok
+test ofe_routing::kinematic_wave::tests::nan_forcing_fails_closed ... ok
+test ofe_routing::kinematic_wave::tests::nan_inflow_fails_closed ... ok
+test ofe_routing::kinematic_wave::tests::nash_sutcliffe_perfect_and_mean ... ok
+test ofe_routing::kinematic_wave::tests::negative_forcing_fails_closed_not_zeroed ... ok
+test ofe_routing::kinematic_wave::tests::nonpositive_sample_dt_fails_closed_not_hang ... ok
+test ofe_routing::seam::tests::activation_preconditions_fail_closed ... ok
+test ofe_routing::seam::tests::gate_fixture_b_subsurface_dominated_closure_vector ... ok
+test ofe_routing::seam::tests::source_rate_series_is_the_recorded_unit_helper ... ok
+test ofe_routing::kinematic_wave::tests::hydrograph_bins_are_conservative_and_rise_at_bin_scale ... ok
+test ofe_routing::implicit_recession::tests::dust_scale_steps_do_not_accumulate_a_material_leak ... ok
+test ofe_routing::cascade::tests::cascade_profile_counts_setup_and_upstream_interpolation ... ok
+test ofe_routing::cascade::tests::hybrid_is_bit_identical_on_all_explicit_windows ... ok
+test ofe_routing::cascade::tests::hybrid_source_memory_allows_implicit_after_cooldown ... ok
+test ofe_routing::cascade::tests::hybrid_event_day_ledger_exact_and_fidelity_bounded ... ok
+test ofe_routing::kinematic_wave::tests::upstream_inflow_boundary_routes_through ... ok
+test ofe_routing::d10b_reconciliation_tests::single_ofe_outlet_bins_stay_nonnegative_under_front_arrival ... ok
+test ofe_routing::cascade::tests::hybrid_source_memory_cooldown_keeps_post_source_bins_explicit ... ok
+test ofe_routing::implicit_recession::tests::bare_skin_direct_equilibrium_avoids_fixed_point_map_work ... ok
+test ofe_routing::implicit_recession::tests::branch_warm_seed_preserves_solution_and_reduces_or_matches_map_work ... ok
+test ofe_routing::kinematic_wave::tests::profile_slots_accumulate_when_enabled_and_stay_zero_when_disabled ... ok
+test ofe_routing::profile::tests::disabled_profile_accumulates_nothing ... ok
+test ofe_routing::profile::tests::enabled_profile_accumulates_and_resets ... ok
+test ofe_routing::dval::tests::case3_enhanced_peak_exceeds_recorded_rainfall_length_ceiling ... ok
+test ofe_routing::d10b_reconciliation_tests::runon_only_ofe_handoff_is_nonnegative_and_conservative ... ok
+test ofe_routing::kinematic_wave::tests::case4_lateral_pulse_conserves_mass_and_captures_front ... ok
+test ofe_routing::d10b_reconciliation_tests::handoff_injection_is_flux_integral_conservative ... ok
+test ofe_routing::dval::tests::case4_iwagaki_ko_diagnostic_remains_coherent ... ok
+test ofe_routing::d10b_reconciliation_tests::partial_final_bin_handoff_is_exact ... ok
+test ofe_routing::infiltration::tests::coupled_impermeable_routes_all_rainfall ... ok
+test ofe_routing::cascade::tests::two_ofe_cascade_conserves_and_hands_off ... ok
+test ofe_routing::d10b_reconciliation_tests::solver_ledger_books_scheme_actual_boundary_fluxes ... ok
+test ofe_routing::kinematic_wave::tests::case1_bare_surface_reaches_steady_state_and_conserves_mass ... ok
+test ofe_routing::infiltration::tests::coupled_case1_rainfall_to_runoff_conserves_and_produces_runoff ... ok
+test ofe_routing::dval::tests::case2_underprediction_is_ks_operand_limited ... ok
+test ofe_routing::kinematic_wave::tests::cfl_adaptive_step_keeps_courant_bounded_on_steep_slope ... ok
+test ofe_routing::cascade::tests::three_ofe_cascade_accumulates_downslope ... ok
+test ofe_routing::cascade::tests::width_change_scales_handoff_for_discharge_continuity ... ok
+test ofe_routing::infiltration::tests::coupled_two_ofe_infiltration_varies_runoff_downslope ... ok
+test ofe_routing::implicit_recession::tests::recession_converges_to_the_explicit_reference_under_dt_refinement ... ok
+test ofe_routing::seam::tests::gate_fixture_a_exfiltration_reaches_the_routed_toe ... ok
+test ofe_routing::cascade::tests::case3_vegetated_strip_backs_up_more_water_than_bare ... ok
+test ofe_routing::dval::tests::case1_bare_reproduces_steady_magnitude ... ok
+test ofe_routing::dval::tests::case4_iwagaki_ko_diagnostic_conserves_and_stays_positive ... ok
+test ofe_routing::d10b_reconciliation_tests::case4_manning_tvd_dissipation_is_mass_neutral_and_tv_transient_bounded ... ok
+test ofe_routing::d10b_reconciliation_tests::case4_solver_and_oracle_source_histories_agree_exactly ... ok
+test ofe_routing::dval::tests::case1_rising_limb_lag_is_green_ampt_operand_limited ... ok
+test ofe_routing::kinematic_wave::tests::conservation_residual_converges_with_resolution ... ok
+test ofe_routing::d10b_reconciliation_tests::nineteen_ofe_conservation_is_resolution_convergent ... ok
+test ofe_routing::iwagaki_oracle::tests::upwind_case4_conserves_and_peaks_after_cutoff ... ok
+test ofe_routing::iwagaki_oracle::tests::upwind_single_reach_matches_closed_form ... ok
+test ofe_routing::d10b_reconciliation_tests::case4_hybrid_manning_ladder_meets_iwagaki_oracle has been running for over 60 seconds
+test ofe_routing::d10b_reconciliation_tests::case4_manning_solver_converges_to_iwagaki_oracle has been running for over 60 seconds
+test ofe_routing::iwagaki_oracle::tests::characteristics_fan_cross_validates_upwind_reference has been running for over 60 seconds
+test ofe_routing::iwagaki_oracle::tests::upwind_case4_self_convergence has been running for over 60 seconds
+test ofe_routing::iwagaki_oracle::tests::characteristics_fan_cross_validates_upwind_reference ... ok
+test ofe_routing::iwagaki_oracle::tests::upwind_case4_self_convergence ... ok
+test ofe_routing::d10b_reconciliation_tests::case4_manning_solver_converges_to_iwagaki_oracle ... ok
+test ofe_routing::d10b_reconciliation_tests::case4_hybrid_manning_ladder_meets_iwagaki_oracle ... ok
+
+test result: ok. 92 passed; 0 failed; 1 ignored; 0 measured; 247 filtered out; finished in 154.28s

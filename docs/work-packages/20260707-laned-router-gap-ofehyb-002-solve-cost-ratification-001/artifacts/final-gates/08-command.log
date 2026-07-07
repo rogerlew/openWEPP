@@ -1,0 +1,5 @@
+Running command 8
+bash tools/release/check_sc_unit_compliance.sh --path docs/specifications/science-contracts/contracts/SC-OFEROUTE-002.md
+cwd: /home/workdir/openWEPP
+start: 2026-07-07T08:07:21.586751Z
+PASS: SC unit compliance lint found no findings
