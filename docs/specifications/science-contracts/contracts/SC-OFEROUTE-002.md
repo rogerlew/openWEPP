@@ -4,11 +4,11 @@ title: Hybrid Implicit-Explicit Kinematic-Wave Stepping Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 4
+contract_version: 5
 producer_scope:
   - Implicit backward-Euler upwind kinematic-wave stepping on smooth sample bins (per-cell scalar equilibrium solves, machine-exact ledger)
   - Hybrid span composition over a routed day window (implicit/explicit span partition, state seams, cross-span deficit carry, composed outlet-bin series)
-  - Hybrid selector plumbing and solve-cost diagnostics counters
+  - Hybrid request/adaptive selector plumbing and solve-cost diagnostics counters
 consumer_scope:
   - SC-OFEROUTE-001 routing surfaces (the hybrid produces the same outlet-bin series, ledger, and handoff surfaces the plain path produces)
   - Rev-27 active day-closure hard-fails (apply verbatim under the selector)
@@ -31,8 +31,8 @@ stepping subsystem selected by `OPENWEPP_LANED_ACTIVE_IMPLICIT=1` on the
 Lane-D active path: the implicit backward-Euler upwind stepper, the
 equilibrium-rating solve chain and its determinism rules, the switching
 predicate, the hybrid span composition (including the cross-span deficit
-carry), the selector/diagnostics plumbing, and the acceptance posture that
-gates any promotion.
+carry), the adaptive selector/diagnostics plumbing, and the acceptance posture
+that gates any promotion.
 
 It CONSOLIDATES authority previously fragmented across `SC-OFEROUTE-001`
 revision-history entries 28-31, that contract's hybrid Branch-and-Guard /
@@ -283,20 +283,37 @@ CFL constraint applies). Contiguous same-class bins form spans.
    fluxes from both schemes; peak diagnostics use physical (pre-carry)
    values while exported bins are post-carry conservative attribution.
 
-### 6. Selector and diagnostics
+### 6. Adaptive selector and diagnostics
 
 `OPENWEPP_LANED_ACTIVE_IMPLICIT=1` composes with `OPENWEPP_LANED_ACTIVE=1`;
-unset means plain rev-27 active behavior (byte-identical). The run manifest
-records `hybrid_implicit_stepping`; the profile line surfaces
-`solver_steps_implicit`, `implicit_equilibrium_map_evaluations`, and
-`implicit_branch_evaluations` (rev-31 counters; endpoint-timing claims for
-this subsystem MUST include them).
+unset means plain rev-27 active behavior (byte-identical). When set, the flag
+is a HYBRID REQUEST, not unconditional hybrid execution. The active lane-day
+selector is deterministic and input-pure:
+
+- select hybrid only when every routed active cell in the lane-day is exact
+  bare-skin eligible under the same predicate that authorizes the rev-4
+  algebraic branch evaluator (no Manning override, no active roughness-element
+  addend, no active vegetation addend);
+- otherwise route the lane-day through the plain rev-27 active path while
+  preserving active surface-water ownership, no DC01 double feed, routed
+  erosion-shape publication, and day closure;
+- decide only from run inputs already present at the active lane-day boundary
+  (static lane friction/cover operands and post-growth daily LAI/canhgt);
+- never use wall time, host load, measured profile counters, or observed
+  mid-run solve iteration counts as selector inputs.
+
+The run manifest records `hybrid_implicit_stepping` for request compatibility
+and MUST also record requested/selected/fallback lane-day counters. The profile
+line surfaces `solver_steps_implicit`,
+`implicit_equilibrium_map_evaluations`, and `implicit_branch_evaluations`
+(rev-31 counters; endpoint-timing claims for this subsystem MUST include
+them).
 
 ## Branch and Guard Table
 
 | Branch / guard | Trigger | Required behavior | Failure posture | Invariants |
 |---|---|---|---|---|
-| Selector | `OPENWEPP_LANED_ACTIVE_IMPLICIT=1` + active selector | Hybrid composition per §Algorithm; provenance + counters surfaced. | Unset ⟹ plain path byte-identical; no default/shadow surface touched. | `INV-OFEHYB-007` |
+| Selector request | `OPENWEPP_LANED_ACTIVE_IMPLICIT=1` + active selector | Evaluate the deterministic exact-bare-skin no-harm selector per §6; selected lane-days use hybrid composition, fallback lane-days use plain rev-27 active routing; provenance + counters surfaced. | Unset ⟹ plain path byte-identical; non-bare request fallback is explicit and counted; no default/shadow surface touched. | `INV-OFEHYB-007`, `INV-OFEHYB-011` |
 | Hour-partition cadence | sample cadence does not partition the seam hour | Fail closed before routing. | Typed degenerate-configuration failure. | `INV-OFEHYB-005` |
 | Non-integral window | window not an integral bin count | Fail closed. | Typed degenerate-configuration failure. | `INV-OFEHYB-005` |
 | Branch closure | LOW converges / LOW jumps / both jump | Accept LOW root; else accept HIGH root; else typed solve failure (double-collapse theorem). | Typed non-convergence failure; no filled-jump commit. | `INV-OFEHYB-004` |
@@ -323,6 +340,7 @@ this subsystem MUST include them).
 | INV-OFEHYB-008 | Acceptance/promotion gate: the hybrid must meet the `SC-OFEROUTE-001#INV-OFEROUTE-011` Case-4 oracle surface at EVERY ladder rung AND carry ratified fidelity/timing tolerances before any promotion beyond evidence-gathering. GAP-OFEHYB-001 is the Case-4 subgate; closing it does not by itself promote the selector. | Case-4 hybrid ladder vector + ratification process | HOLD until every promotion subgate passes. | Parent oracle surface | `[DIRECT][Ran]` |
 | INV-OFEHYB-009 | Day-closure inheritance: the rev-27 `SC-OFEROUTE-001` day-closure hard-fails (supply, router-internal, seam cross-ledger, day identity) apply VERBATIM under the selector at their named tolerances. | live rev-27 guards | Typed runtime hard fail. | SC-OFEROUTE-001 rev 27 | `[DIRECT][Ran]` (H2637 machine-exact under hybrid) |
 | INV-OFEHYB-010 | Diagnostics obligations: implicit step and solve-cost counters are surfaced on every profiled run; subsystem timing claims must cite them. | profile plumbing + evidence convention | Missing counters invalidate timing evidence. | §Algorithm 6 | `[DIRECT][Ran]` |
+| INV-OFEHYB-011 | Adaptive no-harm selector determinism: hybrid request selection/fallback is a pure function of lane-day input operands, and a fallback lane-day is routed by the same active plain owner that would run with the request unset. Wall time, host load, measured solve counters, and mid-run observed iteration counts cannot influence published routing. | exact-bare-skin predicate + request/selected/fallback counters + focused vectors | Selector nondeterminism, uncounted fallback, or fallback outside active ownership is a defect. | §Algorithm 6; WP `20260707-laned-router-d16-hybrid-noharm-selector-solvecost-hold-lift-001` | `[DIRECT][Ran]` (selector vectors + selected-cohort counters) |
 
 ## Invariant Guard Map
 
@@ -337,6 +355,7 @@ this subsystem MUST include them).
 | `INV-OFEHYB-008` | `case4_hybrid_manning_ladder_meets_iwagaki_oracle` | validation | HOLD until all promotion subgates pass | GAP001 `design-evidence.md` / `gate-results.md` |
 | `INV-OFEHYB-009` | rev-27 live closure guards (unchanged) | runtime | typed hard fail | H2637 evidence blocks |
 | `INV-OFEHYB-010` | `ofe_routing::profile` counters + manifest/profile line | diagnostics | evidence-invalidating | rev-31 timing artifact |
+| `INV-OFEHYB-011` | active lane-day exact-bare-skin selector + manifest request/selected/fallback counters | runtime + test + run evidence | deterministic fallback / evidence-invalidating | D16 no-harm selector package |
 
 ## Producer Obligations
 
@@ -344,7 +363,7 @@ this subsystem MUST include them).
 |---|---|---|
 | OBL-OFEHYB-P-001 | Hybrid composition | Publish only non-negative composed bin series that are exact-total up to the approved C-L1 bounded all-dry drop; never expose an unresolved MATERIAL deficit beyond the composition boundary. |
 | OBL-OFEHYB-P-002 | Implicit stepper | Book actual fluxes; return `Ok` only for validated `(h, q)` states — on typed failure the working buffers are undefined and callers must fail the routing window closed without consuming them; surface counters. |
-| OBL-OFEHYB-P-003 | Runner plumbing | Record selector provenance in the manifest; neutralize the selector in harness helpers that claim plain-path evidence. |
+| OBL-OFEHYB-P-003 | Runner plumbing | Record selector request provenance and requested/selected/fallback lane-day counters in the manifest; neutralize the selector in harness helpers that claim plain-path evidence. |
 
 ## Consumer Obligations
 
@@ -361,6 +380,7 @@ this subsystem MUST include them).
 | hybrid composition | `ofe_routing::cascade::route_single_ofe_hybrid` | orchestrator cascade tier | SI; composed bin masses m^2 per unit width |
 | deficit-returning windowed run | `KinematicWaveSolver::run_with_options_deficit_carry` | composition-scoped (`pub(super)`) | SI; returned deficit m^2 (`<= 0`) |
 | selector | `OPENWEPP_LANED_ACTIVE_IMPLICIT` | runner environment | dimensionless flag |
+| selector counters | `hybrid_implicit_requested_lane_days`, `hybrid_implicit_selected_lane_days`, `hybrid_implicit_plain_fallback_lane_days` | runner manifest | counts |
 
 ## Constants and Parameters
 
@@ -417,6 +437,12 @@ symbol must register per `docs/specifications/unit-governance.md`.
   <= 4.5e-13`, WB13 identity maxima `0.0`). These deltas are ratified for the
   exact evaluator as branch-equilibrium numeric dust; they are not a
   publication schema, publication ownership, default, or tolerance change.
+- Rev-5 no-harm selector staging: exact-bare-skin lane-days may retain the
+  rev-4 hybrid win, while non-bare lane-days route plain under the active owner
+  and are counted as fallback. This is a timing no-harm stage only. It does not
+  ratify promotion tolerances, does not close first-divergent-day/OFE
+  attribution for H2637 output deltas, and does not claim non-bare
+  solve-cost viability.
 
 ## Test-Vector Obligations
 
@@ -427,6 +453,7 @@ symbol must register per `docs/specifications/unit-governance.md`.
 | Switching predicate | Hour-partition fail-closed (C-M1 scenario); non-integral window; source-memory cooldown pin; zero-source/no-prior-source upstream-fed bins remain implicit and book upstream mass exactly. | `rev30_deficit_carry_tests` + rejection/cooldown vectors. |
 | Composition deficit carry | Recorder deficit-return identity; absorb/dispose exact-total + non-negativity; material end-of-window fail-closed (incl. all-dry); sub-noise backward absorption; bounded all-dry drop. | rev-30 vector family. |
 | Non-perturbation | All-explicit bit-identity; plain-parquet pin under selector-off. | T3/T3-AGG gate artifacts. |
+| Adaptive no-harm selector | Bare lane-day selects hybrid and increments selected counters; non-bare lane-day falls back to plain active routing and increments fallback counters; selected-cohort timing evidence cites counters. | D16 no-harm selector package focused vectors + timing evidence. |
 | Acceptance (Case-4 subgate CLOSED; selector promotion still HELD) | Case-4 FULL-hybrid oracle ladder at the parent ratified tolerances; retained unignored after the rev-33 source-memory cooldown amendment. | GAP001 `design-evidence.md`, `gate-results.md`, and `verification-case4-cooldown-scan.md`. |
 
 ## Binding Exposure Index
@@ -438,7 +465,7 @@ Evidence mode: `Static`
 |---|---|---|---|---|---|---|
 | `OFEHYB-IMPLICIT-STEPPER` | `SC-OFEROUTE-002.md#algorithm-specification` §1-3 | `active` | `unpromoted-binding` | `INV-OFEHYB-001, INV-OFEHYB-002, INV-OFEHYB-003, INV-OFEHYB-004` | `science-review-follow-on` | `ofe_routing::implicit_recession` + the equilibrium solve rules in `ofe_routing::kinematic_wave`. |
 | `OFEHYB-SWITCHING-COMPOSITION` | `SC-OFEROUTE-002.md#algorithm-specification` §4-5 | `active` | `unpromoted-binding` | `INV-OFEHYB-005, INV-OFEHYB-006, INV-OFEHYB-007` | `science-review-follow-on` | `route_single_ofe_hybrid` + `run_with_options_deficit_carry` + carry/disposition helpers. |
-| `OFEHYB-SELECTOR-DIAGNOSTICS` | `SC-OFEROUTE-002.md#algorithm-specification` §6 | `active` | `unpromoted-binding` | `INV-OFEHYB-009, INV-OFEHYB-010` | `science-review-follow-on` | Runner selector/provenance/counter plumbing; rev-27 closure inheritance. |
+| `OFEHYB-SELECTOR-DIAGNOSTICS` | `SC-OFEROUTE-002.md#algorithm-specification` §6 | `active` | `unpromoted-binding` | `INV-OFEHYB-009, INV-OFEHYB-010, INV-OFEHYB-011` | `science-review-follow-on` | Runner selector/provenance/counter plumbing; adaptive no-harm fallback; rev-27 closure inheritance. |
 | `OFEHYB-ACCEPTANCE-HOLD` | `SC-OFEROUTE-002.md#tolerance-and-numeric-notes` | `active` | `maps-to-existing-INV` | `INV-OFEHYB-008` | `science-review-follow-on` | The HELD promotion gate; lifts only via GAP-OFEHYB-001 adjudication + ratified tolerances. |
 
 ## Gaps
@@ -447,11 +474,13 @@ Evidence mode: `Static`
 |---|---|---|---|---|
 | GAP-OFEHYB-001 | **Shock-outlives-source: the old zero-source-only predicate routed shock-carrying source-quiet bins implicitly.** The rev-31 Case-4 hybrid ladder failed the parent ratified peak tolerance at every rung (`22.8 / 15.5 / 10.2 %` vs `5 %`, improving under refinement — the implicit phase's first-order diffusion smearing an in-mesh front). Rev 33 selects the recorded explicit cool-down lever as a source-memory predicate: after a source-active burst, route the next `2 * burst_duration` source-free bins explicitly before implicit recession is eligible. The Case-4 scan proved `10 s` cooldown still failed and `20 s` passed for the `10 s` Iwagaki source; the retained Case-4 ladder now passes unignored under the same parent tolerances. | Case-4 subgate no longer blocks the selector; closing this gap does not by itself promote the selector, which still requires the full `INV-OFEHYB-008` fidelity/timing ratification process. | RESOLVED — WP `20260707-laned-router-gap-ofehyb-001-hold-lift-design-001`. | `[DIRECT][Ran]` (cooldown scan + retained ladder + H2637 timing/profile) |
 | GAP-OFEHYB-002 | **Implicit solve cost was the endpoint bottleneck for the H2637 source-memory hybrid path.** Rev-33 source-memory H2637 carried `151.4 M` equilibrium map evaluations and `38.39 s` user in this package's refreshed baseline. Rev-4 exact bare-skin evaluation removes the nested map work on the H2637-active cell class (`0` map evaluations, `33.37 s` user, `0:33.43` wall) while preserving branch rules, fail-closed validation, and closure surfaces. | No longer blocks the H2637 endpoint value for the current active source-memory hybrid vector. It does not by itself promote the selector; generic non-bare solve optimization remains optional Tier-2/Tier-1 performance work. | RESOLVED-FOR-H2637-SOLVE-COST — WP `20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001`; selector remains experimental/unpromoted under `INV-OFEHYB-008`. | `[DIRECT][Ran]` (before/after H2637 counters, output-delta audit, retained tests) |
+| GAP-OFEHYB-003 | **Selected-cohort hybrid timing no-harm: the pre-rev-5 selector routed generic non-bare lane-days through hybrid and regressed the selected cohort (`57.34 s` active plain vs `59.95 s` hybrid user), driven by WA Cascades (`15.65 s` plain vs `24.50 s` hybrid).** Rev 5 authorizes selector-first staging: exact-bare-skin lane-days can select hybrid, non-bare lane-days fall back to plain active routing and are counted. | Lifts the selected-cohort timing no-harm blocker for opt-in hybrid request. Does not close non-bare solve-cost viability or `INV-OFEHYB-008` default-promotion/tolerance ratification. | RESOLVED-NOHARM-SELECTOR — WP `20260707-laned-router-d16-hybrid-noharm-selector-solvecost-hold-lift-001`; non-bare solve-cost viability remains held. | `[DIRECT][Ran]` (selected cohort `57.01 s` active plain vs `50.58 s` hybrid request user; H2637 selected `11590/11590`, non-bare members fallback `7299/7299`) |
 
 ## Revision History
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-07-07` | `5` | `Codex` | D16 no-harm selector amendment (WP `20260707-laned-router-d16-hybrid-noharm-selector-solvecost-hold-lift-001`): redefines `OPENWEPP_LANED_ACTIVE_IMPLICIT=1` as a hybrid REQUEST with deterministic exact-bare-skin lane-day selection. Selected lane-days run hybrid composition; non-bare lane-days fall back to the plain rev-27 active owner and are counted. The selector may inspect only run-input operands already present at the active lane-day boundary (static friction/cover and post-growth LAI/canhgt), never wall time, host load, measured profile counters, or observed mid-run solve iterations. Adds `INV-OFEHYB-011`, manifest counter obligations, and `GAP-OFEHYB-003` for selected-cohort timing no-harm. No promotion, default activation, tolerance ratification, or non-bare solve-cost closure is made by this amendment. |
 | `2026-07-07` | `4` | `Codex` | GAP-OFEHYB-002 solve-cost amendment and execution (WP `20260707-laned-router-gap-ofehyb-002-solve-cost-ratification-001`): authorizes and ratifies an exact bare skin-only branch evaluator for cells with no active form/wave/vegetation/Manning addend under exact-zero component-absence guards plus the ordinary finite/non-negative cell-parameter validation. The evaluator computes the algebraic Shen-Li and Hirsch fixed points of the same branch equations, preserves deterministic seed-side selection and LOW→HIGH outer preference, records no map applications because no fixed-point map is executed, and falls back to the generic basin-locked iterative path for every non-bare operand class. H2637 source-memory hybrid timing moves from `38.39 s` user / `151.4 M` map evaluations to `33.37 s` user / `0` map evaluations. Active outputs are not byte-identical but are bounded to sparse branch-equilibrium numeric dust as recorded in the tolerance notes; no physics, selector posture, publication schema/ownership, default activation, or promotion change is made here. GAP-OFEHYB-002 is resolved for the current H2637 solve-cost bottleneck; `INV-OFEHYB-008` remains the selector promotion gate. |
 | `2026-07-07` | `3` | `Codex` | GAP-OFEHYB-001 hold-lift design amendment (WP `20260707-laned-router-gap-ofehyb-001-hold-lift-design-001`): replaces the old zero-source-only switching predicate with a deterministic source-memory cooldown. After any contiguous source-active burst, the next `2 * burst_duration` source-free bins remain explicit; only later source-free bins are implicit-eligible. This is a numerical switching rule, not process physics; upstream inflow remains allowed after cooldown because implicit steps book interval-mean upstream mass exactly. Design evidence: Case-4 cooldown scan bracketed the transition (`10 s` after the `10 s` source still failed; `20 s` passed), the retained Case-4 hybrid ladder now passes unignored at the parent tolerances, and H2637 active hybrid timing/profile is recorded at `37.96 s` user with `980804` implicit steps. GAP-OFEHYB-001 is resolved as the Case-4 subgate; no selector promotion/default change is made. |
 | `2026-07-07` | `2` | `Codex` | Approval-lift after dual review, accepted finding disposition, and dual verification in WP `20260707-laned-router-hybrid-contract-authority-001`: Agent A verification GO; Agent B initial verification found one remaining Low guard-map shorthand, the row was amended to name the retained deficit-carry tests directly, and Agent B follow-up verification returned GO. Lifecycle status is now `approved` / `active`; no behavior, tolerance, selector posture, or promotion change is made. `INV-OFEHYB-008` remains HELD on `GAP-OFEHYB-001`; `GAP-OFEHYB-002` remains an optimization gap. |

@@ -178,6 +178,9 @@ pub struct DirectLanedActiveRunSummary {
     pub max_day_seam_residual_rel: f64,
     pub max_day_identity_residual_rel: f64,
     pub days_uniform_shape: u64,
+    pub hybrid_implicit_requested_lane_days: u64,
+    pub hybrid_implicit_selected_lane_days: u64,
+    pub hybrid_implicit_plain_fallback_lane_days: u64,
     /// Rev-27 full-mesh-hold degeneracy class: lane-days whose erosion shape
     /// degenerated to the normalized routed source series (zero outlet mass
     /// above the wet-gate).
@@ -205,6 +208,9 @@ pub(crate) struct DirectLanedActiveDayBooks {
     pub tail_fold_m3: f64,
     pub uniform_shape_days: u64,
     pub erosion_source_shape_degenerate_lane_days: u64,
+    pub hybrid_implicit_requested_lane_days: u64,
+    pub hybrid_implicit_selected_lane_days: u64,
+    pub hybrid_implicit_plain_fallback_lane_days: u64,
     pub routed: bool,
 }
 
@@ -450,6 +456,15 @@ pub(crate) fn laned_active_route_lane(
     cell.vegetation_drag_coefficient = lane_config.vegetation_drag_coefficient;
     cell.leaf_area_index = leaf_area_index;
     cell.canopy_height_m = canopy_height_m;
+    let hybrid_implicit_selected = hybrid_implicit && cell.is_bare_skin_only();
+    if hybrid_implicit {
+        books.hybrid_implicit_requested_lane_days += 1;
+        if hybrid_implicit_selected {
+            books.hybrid_implicit_selected_lane_days += 1;
+        } else {
+            books.hybrid_implicit_plain_fallback_lane_days += 1;
+        }
+    }
     let segment = CascadeSegment {
         mesh: KinematicWaveMesh::uniform(lane_config.slplen_m, LANED_ACTIVE_CELLS, cell),
         width_m: lane_config.width_m,
@@ -503,7 +518,7 @@ pub(crate) fn laned_active_route_lane(
             breakpoint_count += 1;
         }
     }
-    let result = if hybrid_implicit {
+    let result = if hybrid_implicit_selected {
         route_single_ofe_hybrid(
             &segment,
             &source_rates,
@@ -648,6 +663,10 @@ pub(crate) fn laned_active_enforce_day_closure(
     summary.total_clamp_m3 += books.clamp_m3;
     summary.total_tail_fold_m3 += books.tail_fold_m3;
     summary.days_uniform_shape += books.uniform_shape_days;
+    summary.hybrid_implicit_requested_lane_days += books.hybrid_implicit_requested_lane_days;
+    summary.hybrid_implicit_selected_lane_days += books.hybrid_implicit_selected_lane_days;
+    summary.hybrid_implicit_plain_fallback_lane_days +=
+        books.hybrid_implicit_plain_fallback_lane_days;
     summary.lane_days_erosion_source_shape_degenerate +=
         books.erosion_source_shape_degenerate_lane_days;
     if books.max_supply_reconstruction_rel > summary.max_supply_reconstruction_rel {
@@ -853,6 +872,63 @@ mod tests {
     }
 
     #[test]
+    fn hybrid_request_selects_exact_bare_skin_lane_day() {
+        let identity =
+            DirectRunIdentity::new(36, 2637, 1, 1).expect("valid direct identity should construct");
+        let mut day =
+            DirectDayFrame::seed(identity, 0, 0).expect("valid direct day should construct");
+        let mut books = DirectLanedActiveDayBooks::default();
+
+        laned_active_route_lane(
+            &mut day,
+            &lane_config_with_static_canhgt(None),
+            1.0,
+            None,
+            3600.0,
+            &mut books,
+            &dry_lane_source(),
+            true,
+        )
+        .expect("bare lane-day should select hybrid");
+
+        assert_eq!(books.hybrid_implicit_requested_lane_days, 1);
+        assert_eq!(books.hybrid_implicit_selected_lane_days, 1);
+        assert_eq!(books.hybrid_implicit_plain_fallback_lane_days, 0);
+        let mut summary = DirectLanedActiveRunSummary::default();
+        laned_active_enforce_day_closure(0, &books, &mut summary).expect("closed day");
+        assert_eq!(summary.hybrid_implicit_requested_lane_days, 1);
+        assert_eq!(summary.hybrid_implicit_selected_lane_days, 1);
+        assert_eq!(summary.hybrid_implicit_plain_fallback_lane_days, 0);
+    }
+
+    #[test]
+    fn hybrid_request_falls_back_to_plain_on_post_growth_vegetation() {
+        let mut day = vegetated_day_with_post_growth_canhgt(0.45);
+        let mut books = DirectLanedActiveDayBooks::default();
+
+        laned_active_route_lane(
+            &mut day,
+            &lane_config_with_static_canhgt(None),
+            1.0,
+            None,
+            3600.0,
+            &mut books,
+            &dry_lane_source(),
+            true,
+        )
+        .expect("vegetated lane-day should route through active plain fallback");
+
+        assert_eq!(books.hybrid_implicit_requested_lane_days, 1);
+        assert_eq!(books.hybrid_implicit_selected_lane_days, 0);
+        assert_eq!(books.hybrid_implicit_plain_fallback_lane_days, 1);
+        let mut summary = DirectLanedActiveRunSummary::default();
+        laned_active_enforce_day_closure(0, &books, &mut summary).expect("closed day");
+        assert_eq!(summary.hybrid_implicit_requested_lane_days, 1);
+        assert_eq!(summary.hybrid_implicit_selected_lane_days, 0);
+        assert_eq!(summary.hybrid_implicit_plain_fallback_lane_days, 1);
+    }
+
+    #[test]
     fn routed_erosion_weights_dry_lane_is_all_zero() {
         let result = routing_result_with_bins(vec![1.0, 2.0], 900.0);
         let zero_source = [0.0_f64; SEAM_HOUR_BINS];
@@ -920,6 +996,9 @@ mod tests {
             tail_fold_m3: 0.0,
             uniform_shape_days: 0,
             erosion_source_shape_degenerate_lane_days: 0,
+            hybrid_implicit_requested_lane_days: 0,
+            hybrid_implicit_selected_lane_days: 0,
+            hybrid_implicit_plain_fallback_lane_days: 0,
             routed: true,
         };
         laned_active_enforce_day_closure(0, &books, &mut summary).expect("closed day");

@@ -473,6 +473,10 @@ fn build_hillslope_execution_provenance(
             lane_days_erosion_source_shape_degenerate: summary
                 .lane_days_erosion_source_shape_degenerate,
             hybrid_implicit_stepping: crate::hillslope::laned_active::env_hybrid_implicit_enabled(),
+            hybrid_implicit_requested_lane_days: summary.hybrid_implicit_requested_lane_days,
+            hybrid_implicit_selected_lane_days: summary.hybrid_implicit_selected_lane_days,
+            hybrid_implicit_plain_fallback_lane_days: summary
+                .hybrid_implicit_plain_fallback_lane_days,
         }),
     }
 }

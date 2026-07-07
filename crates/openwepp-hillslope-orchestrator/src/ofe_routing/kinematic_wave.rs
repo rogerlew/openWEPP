@@ -247,7 +247,8 @@ impl CellParameters {
     /// drag does not activate roughness elements when `D_r` or `lambda` is
     /// zero. Any actually active addend stays on the generic fixed-point path
     /// unless a contract ratifies its own direct evaluator.
-    fn is_bare_skin_only(&self) -> bool {
+    #[must_use]
+    pub fn is_bare_skin_only(&self) -> bool {
         let roughness_elements_absent =
             self.element_tip_height_m == 0.0 || self.roughness_concentration == 0.0;
         let vegetation_absent = self.leaf_area_index == 0.0

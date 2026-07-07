@@ -12,6 +12,16 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-07`:
+- `20260707-laned-router-d16-hybrid-noharm-selector-solvecost-hold-lift-001/` -
+  EXECUTED-COMPLETE-NOHARM-SELECTOR (2026-07-07): amended
+  `SC-OFEROUTE-002` rev 5 and implemented selector-first hybrid request
+  staging. H2637 selected hybrid for `11590/11590` requested lane-days and
+  preserved the bare-skin win (`40.05 s` plain vs `33.62 s` hybrid request
+  user); the three non-bare selected members fell back to active plain for
+  `7299/7299` requested lane-days. Selected-cohort aggregate timing improved
+  from `57.01 s` active plain to `50.58 s` hybrid request user. Non-bare
+  solve-cost viability and default-promotion/tolerance ratification remain
+  held.
 - `20260707-laned-router-d16-hybrid-viability-adjudication-001/` -
   EXECUTED-HOLD-HYBRID-VIABILITY (2026-07-07): re-adjudicated hybrid default
   promotion after the selected-cohort active suite became executable. Current

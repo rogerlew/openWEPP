@@ -269,6 +269,9 @@ struct LanedActiveProvenance {
     max_day_identity_residual_rel: f64,
     lane_days_erosion_source_shape_degenerate: u64,
     hybrid_implicit_stepping: bool,
+    hybrid_implicit_requested_lane_days: u64,
+    hybrid_implicit_selected_lane_days: u64,
+    hybrid_implicit_plain_fallback_lane_days: u64,
 }
 
 #[derive(Debug, Serialize)]

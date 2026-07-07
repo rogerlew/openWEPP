@@ -1,0 +1,922 @@
+[
+  {
+    "hybrid_laned_active": {
+      "days_routed": 610,
+      "days_seen": 731,
+      "days_uniform_shape": 3,
+      "hybrid_implicit_plain_fallback_lane_days": 0,
+      "hybrid_implicit_requested_lane_days": 11590,
+      "hybrid_implicit_selected_lane_days": 11590,
+      "hybrid_implicit_stepping": true,
+      "lane_days_erosion_source_shape_degenerate": 1,
+      "max_day_cascade_residual_rel": 4.579976970630865e-13,
+      "max_day_identity_residual_rel": 4.443101533649709e-13,
+      "max_day_seam_residual_rel": 4.082921815102614e-14,
+      "max_supply_reconstruction_rel": 7.31201193525081e-16,
+      "total_clamp_m3": 1655.1105346072773,
+      "total_end_window_storage_m3": 3261.408449926588,
+      "total_latqcc_outlet_m3": 208132.8460294917,
+      "total_routed_outlet_m3": 372817.05470593827,
+      "total_source_m3": 374423.35262127244,
+      "total_tail_fold_m3": 36681.65010117003
+    },
+    "hybrid_manifest_exists": true,
+    "hybrid_pass_summary": {
+      "columns": [
+        "wepp_id",
+        "year",
+        "sim_day_index",
+        "julian",
+        "month",
+        "day_of_month",
+        "water_year",
+        "runvol",
+        "sbrunv",
+        "peakro",
+        "tdet",
+        "tdep",
+        "sedcon_1",
+        "sedcon_2",
+        "sedcon_3",
+        "sedcon_4",
+        "sedcon_5"
+      ],
+      "rows": 731,
+      "sedcon_1_nonzero": 3,
+      "sedcon_1_sum": 0.003078835252837724,
+      "sedcon_2_nonzero": 3,
+      "sedcon_2_sum": 0.04499836138762825,
+      "sedcon_3_nonzero": 3,
+      "sedcon_3_sum": 0.02131501328887655,
+      "sedcon_4_nonzero": 3,
+      "sedcon_4_sum": 0.05348304375608286,
+      "sedcon_5_nonzero": 3,
+      "sedcon_5_sum": 0.27184721462710326,
+      "tdep_nonzero": 0,
+      "tdep_sum": 0.0,
+      "tdet_nonzero": 1,
+      "tdet_sum": 22.614819809849912
+    },
+    "laned_active_deltas": {
+      "max_day_cascade_residual_rel": {
+        "delta": 2.1034189329612995e-13,
+        "hybrid": 4.579976970630865e-13,
+        "plain": 2.4765580376695655e-13,
+        "relative_delta": 0.8493315726776228
+      },
+      "max_day_identity_residual_rel": {
+        "delta": 1.992370220000392e-13,
+        "hybrid": 4.443101533649709e-13,
+        "plain": 2.4507313136493173e-13,
+        "relative_delta": 0.8129696670148665
+      },
+      "max_day_seam_residual_rel": {
+        "delta": -9.586628008861983e-15,
+        "hybrid": 4.082921815102614e-14,
+        "plain": 5.0415846159888125e-14,
+        "relative_delta": -0.1901510881808684
+      },
+      "max_supply_reconstruction_rel": {
+        "delta": 0.0,
+        "hybrid": 7.31201193525081e-16,
+        "plain": 7.31201193525081e-16,
+        "relative_delta": 0.0
+      },
+      "total_clamp_m3": {
+        "delta": -1551.9420176118297,
+        "hybrid": 1655.1105346072773,
+        "plain": 3207.052552219107,
+        "relative_delta": -0.4839153685018257
+      },
+      "total_end_window_storage_m3": {
+        "delta": 94.08595962861818,
+        "hybrid": 3261.408449926588,
+        "plain": 3167.32249029797,
+        "relative_delta": 0.029705203659184994
+      },
+      "total_latqcc_outlet_m3": {
+        "delta": 0.0,
+        "hybrid": 208132.8460294917,
+        "plain": 208132.8460294917,
+        "relative_delta": 0.0
+      },
+      "total_routed_outlet_m3": {
+        "delta": -1646.0279772533104,
+        "hybrid": 372817.05470593827,
+        "plain": 374463.0826831916,
+        "relative_delta": -0.004395701614852927
+      },
+      "total_source_m3": {
+        "delta": 1.1641532182693481e-10,
+        "hybrid": 374423.35262127244,
+        "plain": 374423.3526212723,
+        "relative_delta": 3.109189664905555e-16
+      },
+      "total_tail_fold_m3": {
+        "delta": 255.56634574272175,
+        "hybrid": 36681.65010117003,
+        "plain": 36426.08375542731,
+        "relative_delta": 0.007016025863736823
+      }
+    },
+    "member_id": "h2637",
+    "output_hashes": {
+      "hybrid_hbp": "bfb2b002f8b67cd3c4b42504ae9cbc02189c13651f658b0c035c51cd23f50621",
+      "hybrid_pass_parquet": "44e3da28ed5a2c4b310507d8d2f03e65c3a902e2f01e59f08e11e732d80e1f34",
+      "plain_hbp": "efd8c4255fbe976ecafb2bc89defb7bebd4e2054c9e65c89cd5353c4c31c3790",
+      "plain_pass_parquet": "21c54bf2b045c3fb2f79f39ca174e36a4d188b39f7064f2a75f1170be6bb1656"
+    },
+    "pass_deltas": {
+      "sedcon_1_sum": {
+        "delta": -0.00021312983270374173,
+        "hybrid": 0.003078835252837724,
+        "plain": 0.003291965085541466,
+        "relative_delta": -0.06474243412842452
+      },
+      "sedcon_2_sum": {
+        "delta": -0.003114974477977789,
+        "hybrid": 0.04499836138762825,
+        "plain": 0.04811333586560604,
+        "relative_delta": -0.06474243412842504
+      },
+      "sedcon_3_sum": {
+        "delta": -0.0014755142264105195,
+        "hybrid": 0.02131501328887655,
+        "plain": 0.022790527515287068,
+        "relative_delta": -0.06474243412842452
+      },
+      "sedcon_4_sum": {
+        "delta": -0.0037023196215889356,
+        "hybrid": 0.05348304375608286,
+        "plain": 0.05718536337767179,
+        "relative_delta": -0.06474243412842451
+      },
+      "sedcon_5_sum": {
+        "delta": -0.018818399367439842,
+        "hybrid": 0.27184721462710326,
+        "plain": 0.2906656139945431,
+        "relative_delta": -0.06474243412842474
+      },
+      "tdep_sum": {
+        "delta": 0.0,
+        "hybrid": 0.0,
+        "plain": 0.0,
+        "relative_delta": null
+      },
+      "tdet_sum": {
+        "delta": -0.4352624865553878,
+        "hybrid": 22.614819809849912,
+        "plain": 23.0500822964053,
+        "relative_delta": -0.018883337636641226
+      }
+    },
+    "plain_laned_active": {
+      "days_routed": 610,
+      "days_seen": 731,
+      "days_uniform_shape": 3,
+      "hybrid_implicit_plain_fallback_lane_days": 0,
+      "hybrid_implicit_requested_lane_days": 0,
+      "hybrid_implicit_selected_lane_days": 0,
+      "hybrid_implicit_stepping": false,
+      "lane_days_erosion_source_shape_degenerate": 1,
+      "max_day_cascade_residual_rel": 2.4765580376695655e-13,
+      "max_day_identity_residual_rel": 2.4507313136493173e-13,
+      "max_day_seam_residual_rel": 5.0415846159888125e-14,
+      "max_supply_reconstruction_rel": 7.31201193525081e-16,
+      "total_clamp_m3": 3207.052552219107,
+      "total_end_window_storage_m3": 3167.32249029797,
+      "total_latqcc_outlet_m3": 208132.8460294917,
+      "total_routed_outlet_m3": 374463.0826831916,
+      "total_source_m3": 374423.3526212723,
+      "total_tail_fold_m3": 36426.08375542731
+    },
+    "plain_manifest_exists": true,
+    "plain_pass_summary": {
+      "columns": [
+        "wepp_id",
+        "year",
+        "sim_day_index",
+        "julian",
+        "month",
+        "day_of_month",
+        "water_year",
+        "runvol",
+        "sbrunv",
+        "peakro",
+        "tdet",
+        "tdep",
+        "sedcon_1",
+        "sedcon_2",
+        "sedcon_3",
+        "sedcon_4",
+        "sedcon_5"
+      ],
+      "rows": 731,
+      "sedcon_1_nonzero": 4,
+      "sedcon_1_sum": 0.003291965085541466,
+      "sedcon_2_nonzero": 4,
+      "sedcon_2_sum": 0.04811333586560604,
+      "sedcon_3_nonzero": 4,
+      "sedcon_3_sum": 0.022790527515287068,
+      "sedcon_4_nonzero": 4,
+      "sedcon_4_sum": 0.05718536337767179,
+      "sedcon_5_nonzero": 4,
+      "sedcon_5_sum": 0.2906656139945431,
+      "tdep_nonzero": 0,
+      "tdep_sum": 0.0,
+      "tdet_nonzero": 2,
+      "tdet_sum": 23.0500822964053
+    },
+    "wepp_id": 2637
+  },
+  {
+    "hybrid_laned_active": {
+      "days_routed": 209,
+      "days_seen": 2557,
+      "days_uniform_shape": 16,
+      "hybrid_implicit_plain_fallback_lane_days": 209,
+      "hybrid_implicit_requested_lane_days": 209,
+      "hybrid_implicit_selected_lane_days": 0,
+      "hybrid_implicit_stepping": true,
+      "lane_days_erosion_source_shape_degenerate": 22,
+      "max_day_cascade_residual_rel": 1.0388136044916921e-14,
+      "max_day_identity_residual_rel": 8.75248386022179e-14,
+      "max_day_seam_residual_rel": 3.591523851495889e-15,
+      "max_supply_reconstruction_rel": 4.438822286981392e-16,
+      "total_clamp_m3": 0.0,
+      "total_end_window_storage_m3": 36.73695518632866,
+      "total_latqcc_outlet_m3": 57914.55660394729,
+      "total_routed_outlet_m3": 4473.730010803795,
+      "total_source_m3": 4510.466965990123,
+      "total_tail_fold_m3": 9.22310370055062
+    },
+    "hybrid_manifest_exists": true,
+    "hybrid_pass_summary": {
+      "columns": [
+        "wepp_id",
+        "year",
+        "sim_day_index",
+        "julian",
+        "month",
+        "day_of_month",
+        "water_year",
+        "runvol",
+        "sbrunv",
+        "peakro",
+        "tdet",
+        "tdep",
+        "sedcon_1",
+        "sedcon_2",
+        "sedcon_3",
+        "sedcon_4",
+        "sedcon_5"
+      ],
+      "rows": 2557,
+      "sedcon_1_nonzero": 0,
+      "sedcon_1_sum": 0.0,
+      "sedcon_2_nonzero": 0,
+      "sedcon_2_sum": 0.0,
+      "sedcon_3_nonzero": 0,
+      "sedcon_3_sum": 0.0,
+      "sedcon_4_nonzero": 0,
+      "sedcon_4_sum": 0.0,
+      "sedcon_5_nonzero": 0,
+      "sedcon_5_sum": 0.0,
+      "tdep_nonzero": 0,
+      "tdep_sum": 0.0,
+      "tdet_nonzero": 0,
+      "tdet_sum": 0.0
+    },
+    "laned_active_deltas": {
+      "max_day_cascade_residual_rel": {
+        "delta": 0.0,
+        "hybrid": 1.0388136044916921e-14,
+        "plain": 1.0388136044916921e-14,
+        "relative_delta": 0.0
+      },
+      "max_day_identity_residual_rel": {
+        "delta": 0.0,
+        "hybrid": 8.75248386022179e-14,
+        "plain": 8.75248386022179e-14,
+        "relative_delta": 0.0
+      },
+      "max_day_seam_residual_rel": {
+        "delta": 0.0,
+        "hybrid": 3.591523851495889e-15,
+        "plain": 3.591523851495889e-15,
+        "relative_delta": 0.0
+      },
+      "max_supply_reconstruction_rel": {
+        "delta": 0.0,
+        "hybrid": 4.438822286981392e-16,
+        "plain": 4.438822286981392e-16,
+        "relative_delta": 0.0
+      },
+      "total_clamp_m3": {
+        "delta": 0.0,
+        "hybrid": 0.0,
+        "plain": 0.0,
+        "relative_delta": null
+      },
+      "total_end_window_storage_m3": {
+        "delta": 0.0,
+        "hybrid": 36.73695518632866,
+        "plain": 36.73695518632866,
+        "relative_delta": 0.0
+      },
+      "total_latqcc_outlet_m3": {
+        "delta": 0.0,
+        "hybrid": 57914.55660394729,
+        "plain": 57914.55660394729,
+        "relative_delta": 0.0
+      },
+      "total_routed_outlet_m3": {
+        "delta": 0.0,
+        "hybrid": 4473.730010803795,
+        "plain": 4473.730010803795,
+        "relative_delta": 0.0
+      },
+      "total_source_m3": {
+        "delta": 0.0,
+        "hybrid": 4510.466965990123,
+        "plain": 4510.466965990123,
+        "relative_delta": 0.0
+      },
+      "total_tail_fold_m3": {
+        "delta": 0.0,
+        "hybrid": 9.22310370055062,
+        "plain": 9.22310370055062,
+        "relative_delta": 0.0
+      }
+    },
+    "member_id": "mn_corn_h4",
+    "output_hashes": {
+      "hybrid_hbp": "2f200c2ee0ad4f1b581d6d95aafe7bc2ff2ba5368afa96846263ea86b5243e18",
+      "hybrid_pass_parquet": "a364287f6fe348f609d25f341823781fdb6885607644eb531050ba1abbf5084f",
+      "plain_hbp": "2f200c2ee0ad4f1b581d6d95aafe7bc2ff2ba5368afa96846263ea86b5243e18",
+      "plain_pass_parquet": "a364287f6fe348f609d25f341823781fdb6885607644eb531050ba1abbf5084f"
+    },
+    "pass_deltas": {
+      "sedcon_1_sum": {
+        "delta": 0.0,
+        "hybrid": 0.0,
+        "plain": 0.0,
+        "relative_delta": null
+      },
+      "sedcon_2_sum": {
+        "delta": 0.0,
+        "hybrid": 0.0,
+        "plain": 0.0,
+        "relative_delta": null
+      },
+      "sedcon_3_sum": {
+        "delta": 0.0,
+        "hybrid": 0.0,
+        "plain": 0.0,
+        "relative_delta": null
+      },
+      "sedcon_4_sum": {
+        "delta": 0.0,
+        "hybrid": 0.0,
+        "plain": 0.0,
+        "relative_delta": null
+      },
+      "sedcon_5_sum": {
+        "delta": 0.0,
+        "hybrid": 0.0,
+        "plain": 0.0,
+        "relative_delta": null
+      },
+      "tdep_sum": {
+        "delta": 0.0,
+        "hybrid": 0.0,
+        "plain": 0.0,
+        "relative_delta": null
+      },
+      "tdet_sum": {
+        "delta": 0.0,
+        "hybrid": 0.0,
+        "plain": 0.0,
+        "relative_delta": null
+      }
+    },
+    "plain_laned_active": {
+      "days_routed": 209,
+      "days_seen": 2557,
+      "days_uniform_shape": 16,
+      "hybrid_implicit_plain_fallback_lane_days": 0,
+      "hybrid_implicit_requested_lane_days": 0,
+      "hybrid_implicit_selected_lane_days": 0,
+      "hybrid_implicit_stepping": false,
+      "lane_days_erosion_source_shape_degenerate": 22,
+      "max_day_cascade_residual_rel": 1.0388136044916921e-14,
+      "max_day_identity_residual_rel": 8.75248386022179e-14,
+      "max_day_seam_residual_rel": 3.591523851495889e-15,
+      "max_supply_reconstruction_rel": 4.438822286981392e-16,
+      "total_clamp_m3": 0.0,
+      "total_end_window_storage_m3": 36.73695518632866,
+      "total_latqcc_outlet_m3": 57914.55660394729,
+      "total_routed_outlet_m3": 4473.730010803795,
+      "total_source_m3": 4510.466965990123,
+      "total_tail_fold_m3": 9.22310370055062
+    },
+    "plain_manifest_exists": true,
+    "plain_pass_summary": {
+      "columns": [
+        "wepp_id",
+        "year",
+        "sim_day_index",
+        "julian",
+        "month",
+        "day_of_month",
+        "water_year",
+        "runvol",
+        "sbrunv",
+        "peakro",
+        "tdet",
+        "tdep",
+        "sedcon_1",
+        "sedcon_2",
+        "sedcon_3",
+        "sedcon_4",
+        "sedcon_5"
+      ],
+      "rows": 2557,
+      "sedcon_1_nonzero": 0,
+      "sedcon_1_sum": 0.0,
+      "sedcon_2_nonzero": 0,
+      "sedcon_2_sum": 0.0,
+      "sedcon_3_nonzero": 0,
+      "sedcon_3_sum": 0.0,
+      "sedcon_4_nonzero": 0,
+      "sedcon_4_sum": 0.0,
+      "sedcon_5_nonzero": 0,
+      "sedcon_5_sum": 0.0,
+      "tdep_nonzero": 0,
+      "tdep_sum": 0.0,
+      "tdet_nonzero": 0,
+      "tdet_sum": 0.0
+    },
+    "wepp_id": 4
+  },
+  {
+    "hybrid_laned_active": {
+      "days_routed": 185,
+      "days_seen": 1461,
+      "days_uniform_shape": 14,
+      "hybrid_implicit_plain_fallback_lane_days": 185,
+      "hybrid_implicit_requested_lane_days": 185,
+      "hybrid_implicit_selected_lane_days": 0,
+      "hybrid_implicit_stepping": true,
+      "lane_days_erosion_source_shape_degenerate": 0,
+      "max_day_cascade_residual_rel": 7.73290181217564e-15,
+      "max_day_identity_residual_rel": 5.258449812093418e-14,
+      "max_day_seam_residual_rel": 5.211801858232392e-15,
+      "max_supply_reconstruction_rel": 8.378371644554163e-16,
+      "total_clamp_m3": 0.0,
+      "total_end_window_storage_m3": 1240.1565430837632,
+      "total_latqcc_outlet_m3": 254933.24890910255,
+      "total_routed_outlet_m3": 99723.5338460626,
+      "total_source_m3": 100963.69038914645,
+      "total_tail_fold_m3": 1276.5414381164533
+    },
+    "hybrid_manifest_exists": true,
+    "hybrid_pass_summary": {
+      "columns": [
+        "wepp_id",
+        "year",
+        "sim_day_index",
+        "julian",
+        "month",
+        "day_of_month",
+        "water_year",
+        "runvol",
+        "sbrunv",
+        "peakro",
+        "tdet",
+        "tdep",
+        "sedcon_1",
+        "sedcon_2",
+        "sedcon_3",
+        "sedcon_4",
+        "sedcon_5"
+      ],
+      "rows": 1461,
+      "sedcon_1_nonzero": 36,
+      "sedcon_1_sum": 0.15112391928950186,
+      "sedcon_2_nonzero": 36,
+      "sedcon_2_sum": 5.25058745223782,
+      "sedcon_3_nonzero": 36,
+      "sedcon_3_sum": 1.0462425181580894,
+      "sedcon_4_nonzero": 36,
+      "sedcon_4_sum": 1.1776799652985976,
+      "sedcon_5_nonzero": 36,
+      "sedcon_5_sum": 2.061796868702007,
+      "tdep_nonzero": 0,
+      "tdep_sum": 0.0,
+      "tdet_nonzero": 36,
+      "tdet_sum": 11025.38026029445
+    },
+    "laned_active_deltas": {
+      "max_day_cascade_residual_rel": {
+        "delta": 0.0,
+        "hybrid": 7.73290181217564e-15,
+        "plain": 7.73290181217564e-15,
+        "relative_delta": 0.0
+      },
+      "max_day_identity_residual_rel": {
+        "delta": 0.0,
+        "hybrid": 5.258449812093418e-14,
+        "plain": 5.258449812093418e-14,
+        "relative_delta": 0.0
+      },
+      "max_day_seam_residual_rel": {
+        "delta": 0.0,
+        "hybrid": 5.211801858232392e-15,
+        "plain": 5.211801858232392e-15,
+        "relative_delta": 0.0
+      },
+      "max_supply_reconstruction_rel": {
+        "delta": 0.0,
+        "hybrid": 8.378371644554163e-16,
+        "plain": 8.378371644554163e-16,
+        "relative_delta": 0.0
+      },
+      "total_clamp_m3": {
+        "delta": 0.0,
+        "hybrid": 0.0,
+        "plain": 0.0,
+        "relative_delta": null
+      },
+      "total_end_window_storage_m3": {
+        "delta": 0.0,
+        "hybrid": 1240.1565430837632,
+        "plain": 1240.1565430837632,
+        "relative_delta": 0.0
+      },
+      "total_latqcc_outlet_m3": {
+        "delta": 0.0,
+        "hybrid": 254933.24890910255,
+        "plain": 254933.24890910255,
+        "relative_delta": 0.0
+      },
+      "total_routed_outlet_m3": {
+        "delta": 0.0,
+        "hybrid": 99723.5338460626,
+        "plain": 99723.5338460626,
+        "relative_delta": 0.0
+      },
+      "total_source_m3": {
+        "delta": 0.0,
+        "hybrid": 100963.69038914645,
+        "plain": 100963.69038914645,
+        "relative_delta": 0.0
+      },
+      "total_tail_fold_m3": {
+        "delta": 0.0,
+        "hybrid": 1276.5414381164533,
+        "plain": 1276.5414381164533,
+        "relative_delta": 0.0
+      }
+    },
+    "member_id": "n_idaho_forest_h1",
+    "output_hashes": {
+      "hybrid_hbp": "5ccf8c4edb1bacb862b92161171b35fb0790df263424a47647ca3df47e52a394",
+      "hybrid_pass_parquet": "be510725f5bd7bc92c2cb86742d352c7931e02831ef85853093d83e4e2726c77",
+      "plain_hbp": "5ccf8c4edb1bacb862b92161171b35fb0790df263424a47647ca3df47e52a394",
+      "plain_pass_parquet": "be510725f5bd7bc92c2cb86742d352c7931e02831ef85853093d83e4e2726c77"
+    },
+    "pass_deltas": {
+      "sedcon_1_sum": {
+        "delta": 0.0,
+        "hybrid": 0.15112391928950186,
+        "plain": 0.15112391928950186,
+        "relative_delta": 0.0
+      },
+      "sedcon_2_sum": {
+        "delta": 0.0,
+        "hybrid": 5.25058745223782,
+        "plain": 5.25058745223782,
+        "relative_delta": 0.0
+      },
+      "sedcon_3_sum": {
+        "delta": 0.0,
+        "hybrid": 1.0462425181580894,
+        "plain": 1.0462425181580894,
+        "relative_delta": 0.0
+      },
+      "sedcon_4_sum": {
+        "delta": 0.0,
+        "hybrid": 1.1776799652985976,
+        "plain": 1.1776799652985976,
+        "relative_delta": 0.0
+      },
+      "sedcon_5_sum": {
+        "delta": 0.0,
+        "hybrid": 2.061796868702007,
+        "plain": 2.061796868702007,
+        "relative_delta": 0.0
+      },
+      "tdep_sum": {
+        "delta": 0.0,
+        "hybrid": 0.0,
+        "plain": 0.0,
+        "relative_delta": null
+      },
+      "tdet_sum": {
+        "delta": 0.0,
+        "hybrid": 11025.38026029445,
+        "plain": 11025.38026029445,
+        "relative_delta": 0.0
+      }
+    },
+    "plain_laned_active": {
+      "days_routed": 185,
+      "days_seen": 1461,
+      "days_uniform_shape": 14,
+      "hybrid_implicit_plain_fallback_lane_days": 0,
+      "hybrid_implicit_requested_lane_days": 0,
+      "hybrid_implicit_selected_lane_days": 0,
+      "hybrid_implicit_stepping": false,
+      "lane_days_erosion_source_shape_degenerate": 0,
+      "max_day_cascade_residual_rel": 7.73290181217564e-15,
+      "max_day_identity_residual_rel": 5.258449812093418e-14,
+      "max_day_seam_residual_rel": 5.211801858232392e-15,
+      "max_supply_reconstruction_rel": 8.378371644554163e-16,
+      "total_clamp_m3": 0.0,
+      "total_end_window_storage_m3": 1240.1565430837632,
+      "total_latqcc_outlet_m3": 254933.24890910255,
+      "total_routed_outlet_m3": 99723.5338460626,
+      "total_source_m3": 100963.69038914645,
+      "total_tail_fold_m3": 1276.5414381164533
+    },
+    "plain_manifest_exists": true,
+    "plain_pass_summary": {
+      "columns": [
+        "wepp_id",
+        "year",
+        "sim_day_index",
+        "julian",
+        "month",
+        "day_of_month",
+        "water_year",
+        "runvol",
+        "sbrunv",
+        "peakro",
+        "tdet",
+        "tdep",
+        "sedcon_1",
+        "sedcon_2",
+        "sedcon_3",
+        "sedcon_4",
+        "sedcon_5"
+      ],
+      "rows": 1461,
+      "sedcon_1_nonzero": 36,
+      "sedcon_1_sum": 0.15112391928950186,
+      "sedcon_2_nonzero": 36,
+      "sedcon_2_sum": 5.25058745223782,
+      "sedcon_3_nonzero": 36,
+      "sedcon_3_sum": 1.0462425181580894,
+      "sedcon_4_nonzero": 36,
+      "sedcon_4_sum": 1.1776799652985976,
+      "sedcon_5_nonzero": 36,
+      "sedcon_5_sum": 2.061796868702007,
+      "tdep_nonzero": 0,
+      "tdep_sum": 0.0,
+      "tdet_nonzero": 36,
+      "tdet_sum": 11025.38026029445
+    },
+    "wepp_id": 1
+  },
+  {
+    "hybrid_laned_active": {
+      "days_routed": 1381,
+      "days_seen": 2192,
+      "days_uniform_shape": 10,
+      "hybrid_implicit_plain_fallback_lane_days": 6905,
+      "hybrid_implicit_requested_lane_days": 6905,
+      "hybrid_implicit_selected_lane_days": 0,
+      "hybrid_implicit_stepping": true,
+      "lane_days_erosion_source_shape_degenerate": 1,
+      "max_day_cascade_residual_rel": 1.4549378953536465e-14,
+      "max_day_identity_residual_rel": 5.933273356520313e-14,
+      "max_day_seam_residual_rel": 2.5899548259786116e-14,
+      "max_supply_reconstruction_rel": 5.714626530090617e-16,
+      "total_clamp_m3": 147233.16676270508,
+      "total_end_window_storage_m3": 4835.1165998893775,
+      "total_latqcc_outlet_m3": 729943.7198742138,
+      "total_routed_outlet_m3": 1007798.7596702089,
+      "total_source_m3": 865400.7095073939,
+      "total_tail_fold_m3": 8875.011254557006
+    },
+    "hybrid_manifest_exists": true,
+    "hybrid_pass_summary": {
+      "columns": [
+        "wepp_id",
+        "year",
+        "sim_day_index",
+        "julian",
+        "month",
+        "day_of_month",
+        "water_year",
+        "runvol",
+        "sbrunv",
+        "peakro",
+        "tdet",
+        "tdep",
+        "sedcon_1",
+        "sedcon_2",
+        "sedcon_3",
+        "sedcon_4",
+        "sedcon_5"
+      ],
+      "rows": 2192,
+      "sedcon_1_nonzero": 177,
+      "sedcon_1_sum": 1.6365471460994783,
+      "sedcon_2_nonzero": 177,
+      "sedcon_2_sum": 12.229143509314783,
+      "sedcon_3_nonzero": 177,
+      "sedcon_3_sum": 11.3299417806887,
+      "sedcon_4_nonzero": 177,
+      "sedcon_4_sum": 22.936852917962902,
+      "sedcon_5_nonzero": 177,
+      "sedcon_5_sum": 41.716530851426995,
+      "tdep_nonzero": 5,
+      "tdep_sum": 73.50811166432146,
+      "tdet_nonzero": 177,
+      "tdet_sum": 35137.0467081843
+    },
+    "laned_active_deltas": {
+      "max_day_cascade_residual_rel": {
+        "delta": 0.0,
+        "hybrid": 1.4549378953536465e-14,
+        "plain": 1.4549378953536465e-14,
+        "relative_delta": 0.0
+      },
+      "max_day_identity_residual_rel": {
+        "delta": 0.0,
+        "hybrid": 5.933273356520313e-14,
+        "plain": 5.933273356520313e-14,
+        "relative_delta": 0.0
+      },
+      "max_day_seam_residual_rel": {
+        "delta": 0.0,
+        "hybrid": 2.5899548259786116e-14,
+        "plain": 2.5899548259786116e-14,
+        "relative_delta": 0.0
+      },
+      "max_supply_reconstruction_rel": {
+        "delta": 0.0,
+        "hybrid": 5.714626530090617e-16,
+        "plain": 5.714626530090617e-16,
+        "relative_delta": 0.0
+      },
+      "total_clamp_m3": {
+        "delta": 0.0,
+        "hybrid": 147233.16676270508,
+        "plain": 147233.16676270508,
+        "relative_delta": 0.0
+      },
+      "total_end_window_storage_m3": {
+        "delta": 0.0,
+        "hybrid": 4835.1165998893775,
+        "plain": 4835.1165998893775,
+        "relative_delta": 0.0
+      },
+      "total_latqcc_outlet_m3": {
+        "delta": 0.0,
+        "hybrid": 729943.7198742138,
+        "plain": 729943.7198742138,
+        "relative_delta": 0.0
+      },
+      "total_routed_outlet_m3": {
+        "delta": 0.0,
+        "hybrid": 1007798.7596702089,
+        "plain": 1007798.7596702089,
+        "relative_delta": 0.0
+      },
+      "total_source_m3": {
+        "delta": 0.0,
+        "hybrid": 865400.7095073939,
+        "plain": 865400.7095073939,
+        "relative_delta": 0.0
+      },
+      "total_tail_fold_m3": {
+        "delta": 0.0,
+        "hybrid": 8875.011254557006,
+        "plain": 8875.011254557006,
+        "relative_delta": 0.0
+      }
+    },
+    "member_id": "wa_cascades_forest_h1",
+    "output_hashes": {
+      "hybrid_hbp": "3640fdf3b3c1d3bf61189a9430fe268143ce9db0e1996cb89e614cfd4d5c4f23",
+      "hybrid_pass_parquet": "bb3b2e03f3fbd5834eb65a06c59476aba8a383bb021e9f669be7825a342f9e63",
+      "plain_hbp": "3640fdf3b3c1d3bf61189a9430fe268143ce9db0e1996cb89e614cfd4d5c4f23",
+      "plain_pass_parquet": "bb3b2e03f3fbd5834eb65a06c59476aba8a383bb021e9f669be7825a342f9e63"
+    },
+    "pass_deltas": {
+      "sedcon_1_sum": {
+        "delta": 0.0,
+        "hybrid": 1.6365471460994783,
+        "plain": 1.6365471460994783,
+        "relative_delta": 0.0
+      },
+      "sedcon_2_sum": {
+        "delta": 0.0,
+        "hybrid": 12.229143509314783,
+        "plain": 12.229143509314783,
+        "relative_delta": 0.0
+      },
+      "sedcon_3_sum": {
+        "delta": 0.0,
+        "hybrid": 11.3299417806887,
+        "plain": 11.3299417806887,
+        "relative_delta": 0.0
+      },
+      "sedcon_4_sum": {
+        "delta": 0.0,
+        "hybrid": 22.936852917962902,
+        "plain": 22.936852917962902,
+        "relative_delta": 0.0
+      },
+      "sedcon_5_sum": {
+        "delta": 0.0,
+        "hybrid": 41.716530851426995,
+        "plain": 41.716530851426995,
+        "relative_delta": 0.0
+      },
+      "tdep_sum": {
+        "delta": 0.0,
+        "hybrid": 73.50811166432146,
+        "plain": 73.50811166432146,
+        "relative_delta": 0.0
+      },
+      "tdet_sum": {
+        "delta": 0.0,
+        "hybrid": 35137.0467081843,
+        "plain": 35137.0467081843,
+        "relative_delta": 0.0
+      }
+    },
+    "plain_laned_active": {
+      "days_routed": 1381,
+      "days_seen": 2192,
+      "days_uniform_shape": 10,
+      "hybrid_implicit_plain_fallback_lane_days": 0,
+      "hybrid_implicit_requested_lane_days": 0,
+      "hybrid_implicit_selected_lane_days": 0,
+      "hybrid_implicit_stepping": false,
+      "lane_days_erosion_source_shape_degenerate": 1,
+      "max_day_cascade_residual_rel": 1.4549378953536465e-14,
+      "max_day_identity_residual_rel": 5.933273356520313e-14,
+      "max_day_seam_residual_rel": 2.5899548259786116e-14,
+      "max_supply_reconstruction_rel": 5.714626530090617e-16,
+      "total_clamp_m3": 147233.16676270508,
+      "total_end_window_storage_m3": 4835.1165998893775,
+      "total_latqcc_outlet_m3": 729943.7198742138,
+      "total_routed_outlet_m3": 1007798.7596702089,
+      "total_source_m3": 865400.7095073939,
+      "total_tail_fold_m3": 8875.011254557006
+    },
+    "plain_manifest_exists": true,
+    "plain_pass_summary": {
+      "columns": [
+        "wepp_id",
+        "year",
+        "sim_day_index",
+        "julian",
+        "month",
+        "day_of_month",
+        "water_year",
+        "runvol",
+        "sbrunv",
+        "peakro",
+        "tdet",
+        "tdep",
+        "sedcon_1",
+        "sedcon_2",
+        "sedcon_3",
+        "sedcon_4",
+        "sedcon_5"
+      ],
+      "rows": 2192,
+      "sedcon_1_nonzero": 177,
+      "sedcon_1_sum": 1.6365471460994783,
+      "sedcon_2_nonzero": 177,
+      "sedcon_2_sum": 12.229143509314783,
+      "sedcon_3_nonzero": 177,
+      "sedcon_3_sum": 11.3299417806887,
+      "sedcon_4_nonzero": 177,
+      "sedcon_4_sum": 22.936852917962902,
+      "sedcon_5_nonzero": 177,
+      "sedcon_5_sum": 41.716530851426995,
+      "tdep_nonzero": 5,
+      "tdep_sum": 73.50811166432146,
+      "tdet_nonzero": 177,
+      "tdet_sum": 35137.0467081843
+    },
+    "wepp_id": 1
+  }
+]
