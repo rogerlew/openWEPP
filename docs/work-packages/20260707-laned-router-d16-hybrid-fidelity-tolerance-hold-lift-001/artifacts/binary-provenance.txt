@@ -1,0 +1,9 @@
+2026-07-07T14:33:17Z
+build_command=cargo build --release -p openwepp-runner --bins
+0dab44bbfbf0012a3bcce332218646ff5239017c
+ M docs/work-packages/README.md
+?? docs/work-packages/20260707-laned-router-d16-hybrid-fidelity-tolerance-hold-lift-001/
+path=target/release/openwepp-cli-hill
+size=9899552
+mtime=2026-07-07 01:54:02.996178042 -0700
+57a5ffb0df6040d166d4d768439861dc1d4d138dfbb24af709bb785444cf62c8  target/release/openwepp-cli-hill

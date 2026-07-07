@@ -1,0 +1,38 @@
+# owcmp env preflight
+## tools/owcmp/suites/minnesota-corn-ksflag1.json
+owcmp env: PASS
+- python_executable: PASS /home/workdir/openWEPP/.venv/bin/python
+- repo_venv_python: PASS /home/workdir/openWEPP/.venv/bin/python
+- pyarrow: PASS 24.0.0
+- default_tolerance_config: PASS /home/workdir/openWEPP/tools/owcmp/configs/pl14s_wat_tolerances.json
+- suite_manifest_count: 3
+- manifest minnesota-corn-ksflag1: PASS
+  - run_root: PASS /wc1/runs/al/algebraic-radium
+  - wepp_output_dir: PASS /wc1/runs/al/algebraic-radium/wepp/output
+  - hillslope_wat_outputs: PASS /wc1/runs/al/algebraic-radium/wepp/output/H{h}.wat.dat
+  - hillslope_plot_outputs: PASS /wc1/runs/al/algebraic-radium/wepp/output/H{h}.plot.dat
+## tools/owcmp/suites/n-idaho-single-ofe-ksflag0.json
+owcmp env: PASS
+- python_executable: PASS /home/workdir/openWEPP/.venv/bin/python
+- repo_venv_python: PASS /home/workdir/openWEPP/.venv/bin/python
+- pyarrow: PASS 24.0.0
+- default_tolerance_config: PASS /home/workdir/openWEPP/tools/owcmp/configs/pl14s_wat_tolerances.json
+- suite_manifest_count: 3
+- manifest n-idaho-single-ofe-ksflag0: PASS
+  - run_root: PASS /wc1/runs/un/unpalatable-rind
+  - wepp_output_dir: PASS /wc1/runs/un/unpalatable-rind/wepp/output
+  - hillslope_plot_outputs: PASS /wc1/runs/un/unpalatable-rind/wepp/output/H{h}.plot.dat
+  - interchange_wat: PASS /wc1/runs/un/unpalatable-rind/wepp/output/interchange/H.wat.parquet
+## tools/owcmp/suites/wa-cascades-mofe-ksflag0.json
+owcmp env: PASS
+- python_executable: PASS /home/workdir/openWEPP/.venv/bin/python
+- repo_venv_python: PASS /home/workdir/openWEPP/.venv/bin/python
+- pyarrow: PASS 24.0.0
+- default_tolerance_config: PASS /home/workdir/openWEPP/tools/owcmp/configs/pl14s_wat_tolerances.json
+- suite_manifest_count: 3
+- manifest wa-cascades-mofe-ksflag0: PASS
+  - run_root: PASS /wc1/runs/ar/arboreal-dendrite
+  - wepp_output_dir: PASS /wc1/runs/ar/arboreal-dendrite/wepp/output
+  - hillslope_wat_outputs: PASS /wc1/runs/ar/arboreal-dendrite/wepp/output/H{h}.wat.dat
+  - hillslope_plot_outputs: PASS /wc1/runs/ar/arboreal-dendrite/wepp/output/H{h}.plot.dat
+  - watershed_structure: PASS /wc1/runs/ar/arboreal-dendrite/watershed/structure.json

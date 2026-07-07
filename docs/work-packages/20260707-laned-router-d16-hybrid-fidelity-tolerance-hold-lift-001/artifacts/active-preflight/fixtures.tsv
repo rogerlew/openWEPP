@@ -1,0 +1,4 @@
+dff_ws1	tests/fixtures/dff_ws1_native_forest/hjandrews_conifer_forest	p2.run.toml
+disturbed_clay	tests/fixtures/disturbed_burn/forest_high_severity_clay_loam	p4.run.toml
+disturbed_loam	tests/fixtures/disturbed_burn/forest_high_severity_loam	p313.run.toml
+repo_h2637	tests/fixtures/laned_shadow_h2637	p2637.run.toml

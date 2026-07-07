@@ -1,0 +1,7 @@
+# owcmp manifest-run preflight
+## tools/owcmp/suites/minnesota-corn-ksflag1.json
+owcmp cohort inventory manifests are preflight declarations; use `owcmp env --manifest <path>` or `owcmp manifest show --manifest <path>`
+## tools/owcmp/suites/n-idaho-single-ofe-ksflag0.json
+owcmp cohort inventory manifests are preflight declarations; use `owcmp env --manifest <path>` or `owcmp manifest show --manifest <path>`
+## tools/owcmp/suites/wa-cascades-mofe-ksflag0.json
+owcmp cohort inventory manifests are preflight declarations; use `owcmp env --manifest <path>` or `owcmp manifest show --manifest <path>`

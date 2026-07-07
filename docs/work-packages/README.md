@@ -12,6 +12,15 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-07`:
+- `20260707-laned-router-d16-hybrid-fidelity-tolerance-hold-lift-001/` -
+  EXECUTED-HOLD-COHORT-AUTHORITY (2026-07-07): executed the D16 hold-lift
+  preflight. It predeclared non-binding promotion comparison surfaces, confirmed
+  the owcmp cohorts are inventory-only manifests, and proved no broad
+  active-runnable cohort exists in the repo/session: searched repo fixtures and
+  the three external run roots found zero `routing_coefficients`, and copied
+  active preflights all failed closed. No selector flip or tolerance
+  ratification landed; follow-on is a cohort-authority package that constructs
+  source-authorized active plain-vs-hybrid inputs and an executable suite.
 - `20260707-laned-router-d16-hybrid-default-promotion-001/` -
   EXECUTED-HOLD-FIDELITY-TOLERANCE (2026-07-07): adjudicated whether the
   hybrid implicit-explicit stepper can be promoted from experimental env opt-in

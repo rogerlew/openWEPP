@@ -1,0 +1,3 @@
+## repo_h2637
+CLIHILL-E-011 runtime surface failure for laned_shadow_routing_coefficients: HS-SIMOUT-E-001 OPENWEPP_LANED_ACTIVE requires a complete, schedule-consistent routing coefficient extension for every MOFE landuse; lane 1 is missing or has inconsistent route_* authority symbols
+exit=1

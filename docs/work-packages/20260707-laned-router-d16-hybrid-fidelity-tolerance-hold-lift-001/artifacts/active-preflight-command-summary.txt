@@ -1,0 +1,29 @@
+# Active preflight commands
+## dff_ws1
+source=tests/fixtures/dff_ws1_native_forest/hjandrews_conifer_forest
+runfile=p2.run.toml
+command=env -u OPENWEPP_LANED_SHADOW OPENWEPP_LANED_ACTIVE=1 target/release/openwepp-cli-hill --run-dir artifacts/active-preflight/dff_ws1 --run-file p2.run.toml --output-dir artifacts/active-preflight/dff_ws1/output
+## dff_ws1
+CLIHILL-E-011 runtime surface failure for laned_shadow_routing_coefficients: HS-SIMOUT-E-001 OPENWEPP_LANED_ACTIVE requires a complete, schedule-consistent routing coefficient extension for every MOFE landuse; lane 1 is missing or has inconsistent route_* authority symbols
+exit=1
+## disturbed_clay
+source=tests/fixtures/disturbed_burn/forest_high_severity_clay_loam
+runfile=p4.run.toml
+command=env -u OPENWEPP_LANED_SHADOW OPENWEPP_LANED_ACTIVE=1 target/release/openwepp-cli-hill --run-dir artifacts/active-preflight/disturbed_clay --run-file p4.run.toml --output-dir artifacts/active-preflight/disturbed_clay/output
+## disturbed_clay
+CLIHILL-E-011 runtime surface failure for climate: CLIM-RUNTIME-E-005: non-finite climate field tdpt=NaN
+exit=1
+## disturbed_loam
+source=tests/fixtures/disturbed_burn/forest_high_severity_loam
+runfile=p313.run.toml
+command=env -u OPENWEPP_LANED_SHADOW OPENWEPP_LANED_ACTIVE=1 target/release/openwepp-cli-hill --run-dir artifacts/active-preflight/disturbed_loam --run-file p313.run.toml --output-dir artifacts/active-preflight/disturbed_loam/output
+## disturbed_loam
+CLIHILL-E-011 runtime surface failure for laned_shadow_routing_coefficients: HS-SIMOUT-E-001 OPENWEPP_LANED_ACTIVE requires a complete, schedule-consistent routing coefficient extension for every MOFE landuse; lane 1 is missing or has inconsistent route_* authority symbols
+exit=1
+## repo_h2637
+source=tests/fixtures/laned_shadow_h2637
+runfile=p2637.run.toml
+command=env -u OPENWEPP_LANED_SHADOW OPENWEPP_LANED_ACTIVE=1 target/release/openwepp-cli-hill --run-dir artifacts/active-preflight/repo_h2637 --run-file p2637.run.toml --output-dir artifacts/active-preflight/repo_h2637/output
+## repo_h2637
+CLIHILL-E-011 runtime surface failure for laned_shadow_routing_coefficients: HS-SIMOUT-E-001 OPENWEPP_LANED_ACTIVE requires a complete, schedule-consistent routing coefficient extension for every MOFE landuse; lane 1 is missing or has inconsistent route_* authority symbols
+exit=1
