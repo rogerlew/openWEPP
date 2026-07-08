@@ -52,6 +52,17 @@ State as of `2026-07-08`:
   required for active/default coefficient authority; coefficient-absent legacy
   cropland stays legacy/off and mixed authority fails closed. No Rust behavior
   was changed; M-T2B may proceed with this boundary.
+- `20260708-laned-router-ow-lanuse-canonical-production-datver-authority-001/` -
+  EXECUTED-COMPLETE-AUTHORITY (2026-07-08, M-T2Q): amended
+  `SC-OFEROUTE-001` rev 49, the plant-file spec, and the management-lanuse
+  authority contract. The package locks `ow-lanuse-1` or later native
+  management files with embedded `routing_coefficients` as the canonical
+  production input surface for new Lane D physics. Pre-native datvers remain
+  deprecated compatibility/validation/rollback inputs on legacy/off paths;
+  native missing coefficients, mixed native/legacy scheduled datvers, optional
+  sidecars, and mixed coefficient authority fail closed. No Rust behavior was
+  changed; the next implementation package owns runtime guards and WEPPpy
+  producer materialization.
 - `20260708-laned-router-conditional-default-activation-001/` -
   EXECUTED-COMPLETE-CONDITIONAL-DEFAULT-ACTIVATION (2026-07-08): amended
   `SC-OFEROUTE-001` rev 46 and made Lane D active routing the hillslope

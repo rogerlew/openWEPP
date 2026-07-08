@@ -6,7 +6,7 @@
 - `status`: `draft`
 - `owner`: `openWEPP`
 - `spec_version`: `0.3.0`
-- `last_updated_utc`: `2026-07-08T22:10:39Z`
+- `last_updated_utc`: `2026-07-08T22:55:53Z`
 - `evidence_mode`: `Static`
 
 ## Parser-Contract Authority Note
@@ -17,6 +17,10 @@
 
 ## openWEPP Parser Profile (Executable)
 - Supported datver allowlist: `95.7`, `98.4`, `2016.3`, `2017.1`, `ow-lanuse-1`.
+- Production-authority note: `ow-lanuse-1` and later ratified
+  openWEPP-native datvers are the canonical input surface for new openWEPP
+  landuse physics. Earlier datvers remain deprecated compatibility,
+  validation, rollback, and regression-diagnosis inputs.
 - Parser reads section counts and scenario loops in canonical order:
   - `ncrop` + plant loops, `nop` + operation loops, `nini` + initial loops, `nseq` + surface loops, `ncnt` + contour loops, `ndrain` + drain loops, `nscen` + yearly loops, then management loop (`nofes`, `ofeindx`, `nrots`, `nyears`, `nycrop`, `manindx`).
 - Parser output surface includes typed scenario registries and expanded management schedule slots (`rotation_index`, `year_in_rotation`, `ofe_index`, `crop_slots`, yearly refs).
@@ -35,7 +39,7 @@
 
 ## openWEPP-Native `ow-lanuse-1` Profile
 
-`ow-lanuse-1` is an openWEPP-native management-file `datver`. It is not a legacy WEPP version number. Use it only when a file intentionally carries first-class openWEPP landuse operands.
+`ow-lanuse-1` is an openWEPP-native management-file `datver`. It is not a legacy WEPP version number. It is the canonical production datver for new openWEPP landuse physics; use it only when a file intentionally carries first-class openWEPP landuse operands.
 
 For end users, the important rule is that the first line of the `.man` file controls how landuse codes are interpreted:
 
@@ -48,7 +52,7 @@ Native cropland (`landuse=4` under `ow-lanuse-1`) uses the cropland record layou
 
 ### Native Routing Coefficients
 
-Native forest and native cropland plant records may append an openWEPP routing block immediately after the plant data. The block is:
+Native forest and native cropland plant records may append an openWEPP routing block immediately after the plant data. For canonical Lane D production/default activation, the block is required for every scheduled native forest/native cropland landuse. The block is:
 
 ```text
 routing_coefficients
@@ -63,9 +67,15 @@ routing_coefficients
 - `lambda`: roughness-element concentration.
 - `vegetation_C_d`: vegetation drag coefficient.
 
-The routing block is optional for parsing a native plant record. It is required by Lane D routing paths that need source-authorized coefficients for every scheduled native lane. Missing coefficients, partial coverage, or a marker outside native forest/native cropland is a hard error for those routing paths, not a silent fallback.
+The routing block remains parse-optional only so native files without Lane D
+authority can be inspected, validated, or used by explicitly non-Lane-D
+compatibility workflows. It is required for canonical `ow-lanuse-1` Lane D
+production/default activation. Missing coefficients, partial coverage, a
+marker outside native forest/native cropland, or a mix of native coefficient
+authority with legacy datver scheduled lanes is a hard error for Lane D
+production paths, not a silent fallback.
 
-These coefficients are explicit routing inputs. They are not inferred from row width, ridge spacing, rill width, random roughness (`rrc`/`rrough`), canopy cover, residue cover, interrill/rill cover, legacy friction factors, erosion delivery ratios, or other legacy cropland fields. A producer may satisfy this surface only by writing the five route-coefficient values explicitly, with provenance, under a ratified openWEPP authority.
+These coefficients are explicit routing inputs. They are not inferred from row width, ridge spacing, rill width, random roughness (`rrc`/`rrough`), canopy cover, residue cover, interrill/rill cover, legacy friction factors, erosion delivery ratios, or other legacy cropland fields. A producer may satisfy this surface only by writing the five route-coefficient values explicitly into the native management file, with provenance, under a ratified openWEPP authority. Optional sidecars are not production routing-coefficient authority.
 
 ### Native Forest Plant Record Layout
 
@@ -186,7 +196,7 @@ The plant/management file for WEPP v95.7 is described in Table 16. Please note t
         * `95.7` Initial version
         * `98.4` - Update
         * `2016.3` and `2017.1` Residue management updates, additional parameters
-        * `ow-lanuse-1` - openWEPP-native management file with native landuse records and optional routing coefficients
+        * `ow-lanuse-1` - openWEPP-native management file with native landuse records; routing coefficients are required for Lane D/new-physics production authority
         * ***Note*** `datver` is used to detect older management file formats, which are incompatible with the current WEPP erosion model.
 * **Info.header**
     * 2.1) number of Overland Flow Elements for hillslopes, integer (`nofe`), or number of channels for watershed (`nchan`)
