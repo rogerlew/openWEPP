@@ -1,0 +1,9 @@
+# Package-local heavy/generated evidence. Keep summaries and command logs in
+# artifacts, but do not commit raw run trees.
+run-trees/
+raw-runs/
+tmp/
+*.duckdb
+*.parquet
+*.hbp
+*.zip
