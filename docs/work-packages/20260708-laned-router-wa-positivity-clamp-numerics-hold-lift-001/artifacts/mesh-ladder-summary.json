@@ -1,0 +1,108 @@
+{
+  "comparisons": [
+    {
+      "comparison_skip": {
+        "comparison_role": "fine_reference_adequacy",
+        "member_id": "wa_cascades_forest_h1",
+        "reason": "dx2p5 or dx1p25 reference rung failed or lacks trace output"
+      }
+    }
+  ],
+  "created_utc": "2026-07-08T01:59:30.881921+00:00",
+  "expected_fail_guard": "laned_active_clamp_exceeds_source",
+  "release_binary": {
+    "build_command": "cargo build --release -p openwepp-runner --bins",
+    "git_branch": "main",
+    "git_head": "148583efdef3272b717cf5fecfd0262ef9f2231d",
+    "git_status_short": "M crates/openwepp-hillslope-orchestrator/src/direct_runtime/03_executor.rs\n M crates/openwepp-hillslope-orchestrator/src/direct_runtime/laned_active.rs\n M docs/specifications/science-contracts/contracts/SC-OFEROUTE-001.md\n M docs/work-packages/README.md\n?? docs/work-packages/20260708-laned-router-wa-positivity-clamp-numerics-hold-lift-001/",
+    "mtime_utc": "2026-07-08T01:58:42.100364+00:00",
+    "path": "target/release/openwepp-cli-hill",
+    "sha256": "2331d10073cc4c0428d12b8a717d6e934e5eff14ba5fff07e56daa4a2b236579",
+    "size_bytes": 9904392
+  },
+  "rungs": {
+    "baseline_fixed10": null,
+    "dx10": 10.0,
+    "dx1p25": 1.25,
+    "dx20": 20.0,
+    "dx2p5": 2.5,
+    "dx5": 5.0
+  },
+  "runs": [
+    {
+      "command": "/usr/bin/time -v target/release/openwepp-cli-hill --run-dir /home/workdir/openWEPP/docs/work-packages/20260708-laned-router-wa-positivity-clamp-numerics-hold-lift-001/artifacts/mesh-ladder-runs/wa_cascades_forest_h1/baseline_fixed10/run_dir --run-file p1.plain.run.toml --output-dir /home/workdir/openWEPP/docs/work-packages/20260708-laned-router-wa-positivity-clamp-numerics-hold-lift-001/artifacts/mesh-ladder-runs/wa_cascades_forest_h1/baseline_fixed10/run_dir/output",
+      "exit_code": 1,
+      "failure_clamp_m3": 145981.7238747406,
+      "failure_clamp_source_ratio": 14.291141234409194,
+      "failure_day": 1418,
+      "failure_phase": "laned_active_clamp_exceeds_source",
+      "failure_source_cap_m3": 10214.84019227633,
+      "failure_tail": "CLIHILL-E-011 runtime surface failure for r7c_direct_production_executor: HS-SIMPIPE-E-001 direct runtime kernel guard failed in laned_active_clamp_exceeds_source: day 1418 positivity clamp 145981.7238747406 m3 exceeds active routed source cap 10214.84019227633 m3 (rel 14.291141234409194 > 1)\nCommand exited with non-zero status 1\n\tCommand being timed: \"target/release/openwepp-cli-hill --run-dir /home/workdir/openWEPP/docs/work-packages/20260708-laned-router-wa-positivity-clamp-numerics-hold-lift-001/artifacts/mesh-ladder-runs/wa_cascades_forest_h1/baseline_fixed10/run_dir --run-file p1.plain.run.toml --output-dir /home/workdir/openWEPP/docs/work-packages/20260708-laned-router-wa-positivity-clamp-numerics-hold-lift-001/artifacts/mesh-ladder-runs/wa_cascades_forest_h1/baseline_fixed10/run_dir/output\"\n\tUser time (seconds): 9.65\n\tSystem time (seconds): 0.00\n\tPercent of CPU this job got: 99%\n\tElapsed (wall clock) time (h:mm:ss or m:ss): 0:09.67\n\tAverage shared text size (kbytes): 0\n\tAverage unshared data size (kbytes): 0\n\tAverage stack size (kbytes): 0\n\tAverage total size (kbytes): 0\n\tMaximum resident set size (kbytes): 13056\n\tAverage resident set size (kbytes): 0\n\tMajor (requiring I/O) page faults: 0\n\tMinor (reclaiming a frame) page faults: 2107\n\tVoluntary context switches: 1\n\tInvoluntary context switches: 28\n\tSwaps: 0\n\tFile system inputs: 0\n\tFile system outputs: 24\n\tSocket messages sent: 0\n\tSocket messages received: 0\n\tSignals delivered: 0\n\tPage size (bytes): 4096\n\tExit status: 1",
+      "failure_threshold": 1.0,
+      "hbp_path": null,
+      "hbp_sha256": null,
+      "laned_active": {},
+      "log_path": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-wa-positivity-clamp-numerics-hold-lift-001/artifacts/mesh-ladder-runs/wa_cascades_forest_h1/baseline_fixed10/time.log",
+      "manifest_exists": false,
+      "manifest_path": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-wa-positivity-clamp-numerics-hold-lift-001/artifacts/mesh-ladder-runs/wa_cascades_forest_h1/baseline_fixed10/run_dir/output/openwepp_hillslope_run_manifest.json",
+      "member_id": "wa_cascades_forest_h1",
+      "output_dir": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-wa-positivity-clamp-numerics-hold-lift-001/artifacts/mesh-ladder-runs/wa_cascades_forest_h1/baseline_fixed10/run_dir/output",
+      "pass_parquet_path": null,
+      "pass_parquet_sha256": null,
+      "pass_summary": null,
+      "role": "real_cohort",
+      "run_dir": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-wa-positivity-clamp-numerics-hold-lift-001/artifacts/mesh-ladder-runs/wa_cascades_forest_h1/baseline_fixed10/run_dir",
+      "run_file": "p1.plain.run.toml",
+      "rung": "baseline_fixed10",
+      "solver_profile": null,
+      "status": "FAIL",
+      "target_dx_m": null,
+      "timing": {
+        "sys_seconds": "0.00",
+        "user_seconds": "9.65",
+        "wall_seconds_raw": "0:09.67"
+      },
+      "trace_path": null,
+      "trace_sha256": null,
+      "trace_summary": null
+    },
+    {
+      "command": "/usr/bin/time -v target/release/openwepp-cli-hill --run-dir /home/workdir/openWEPP/docs/work-packages/20260708-laned-router-wa-positivity-clamp-numerics-hold-lift-001/artifacts/mesh-ladder-runs/wa_cascades_forest_h1/dx5/run_dir --run-file p1.plain.run.toml --output-dir /home/workdir/openWEPP/docs/work-packages/20260708-laned-router-wa-positivity-clamp-numerics-hold-lift-001/artifacts/mesh-ladder-runs/wa_cascades_forest_h1/dx5/run_dir/output",
+      "exit_code": 1,
+      "failure_clamp_m3": 95922302.77342197,
+      "failure_clamp_source_ratio": 11335.893753002358,
+      "failure_day": 1167,
+      "failure_phase": "laned_active_clamp_exceeds_source",
+      "failure_source_cap_m3": 8461.820908299935,
+      "failure_tail": "CLIHILL-E-011 runtime surface failure for r7c_direct_production_executor: HS-SIMPIPE-E-001 direct runtime kernel guard failed in laned_active_clamp_exceeds_source: day 1167 positivity clamp 95922302.77342197 m3 exceeds active routed source cap 8461.820908299935 m3 (rel 11335.893753002358 > 1)\nCommand exited with non-zero status 1\n\tCommand being timed: \"target/release/openwepp-cli-hill --run-dir /home/workdir/openWEPP/docs/work-packages/20260708-laned-router-wa-positivity-clamp-numerics-hold-lift-001/artifacts/mesh-ladder-runs/wa_cascades_forest_h1/dx5/run_dir --run-file p1.plain.run.toml --output-dir /home/workdir/openWEPP/docs/work-packages/20260708-laned-router-wa-positivity-clamp-numerics-hold-lift-001/artifacts/mesh-ladder-runs/wa_cascades_forest_h1/dx5/run_dir/output\"\n\tUser time (seconds): 34.55\n\tSystem time (seconds): 0.01\n\tPercent of CPU this job got: 99%\n\tElapsed (wall clock) time (h:mm:ss or m:ss): 0:34.57\n\tAverage shared text size (kbytes): 0\n\tAverage unshared data size (kbytes): 0\n\tAverage stack size (kbytes): 0\n\tAverage total size (kbytes): 0\n\tMaximum resident set size (kbytes): 12288\n\tAverage resident set size (kbytes): 0\n\tMajor (requiring I/O) page faults: 0\n\tMinor (reclaiming a frame) page faults: 1922\n\tVoluntary context switches: 3\n\tInvoluntary context switches: 130\n\tSwaps: 0\n\tFile system inputs: 0\n\tFile system outputs: 24\n\tSocket messages sent: 0\n\tSocket messages received: 0\n\tSignals delivered: 0\n\tPage size (bytes): 4096\n\tExit status: 1",
+      "failure_threshold": 1.0,
+      "hbp_path": null,
+      "hbp_sha256": null,
+      "laned_active": {},
+      "log_path": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-wa-positivity-clamp-numerics-hold-lift-001/artifacts/mesh-ladder-runs/wa_cascades_forest_h1/dx5/time.log",
+      "manifest_exists": false,
+      "manifest_path": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-wa-positivity-clamp-numerics-hold-lift-001/artifacts/mesh-ladder-runs/wa_cascades_forest_h1/dx5/run_dir/output/openwepp_hillslope_run_manifest.json",
+      "member_id": "wa_cascades_forest_h1",
+      "output_dir": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-wa-positivity-clamp-numerics-hold-lift-001/artifacts/mesh-ladder-runs/wa_cascades_forest_h1/dx5/run_dir/output",
+      "pass_parquet_path": null,
+      "pass_parquet_sha256": null,
+      "pass_summary": null,
+      "role": "real_cohort",
+      "run_dir": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-wa-positivity-clamp-numerics-hold-lift-001/artifacts/mesh-ladder-runs/wa_cascades_forest_h1/dx5/run_dir",
+      "run_file": "p1.plain.run.toml",
+      "rung": "dx5",
+      "solver_profile": null,
+      "status": "FAIL",
+      "target_dx_m": 5.0,
+      "timing": {
+        "sys_seconds": "0.01",
+        "user_seconds": "34.55",
+        "wall_seconds_raw": "0:34.57"
+      },
+      "trace_path": null,
+      "trace_sha256": null,
+      "trace_summary": null
+    }
+  ],
+  "status": "PASS_EXPECTED_FAIL"
+}

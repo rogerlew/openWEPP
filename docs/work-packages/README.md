@@ -12,6 +12,15 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-08`:
+- `20260708-laned-router-wa-positivity-clamp-numerics-hold-lift-001/` -
+  EXECUTED-HOLD-SOLVER-CORRECTION-REQUIRED (2026-07-08): added
+  `SC-OFEROUTE-001` rev 40 and active executor ordering so days whose
+  positivity-clamp mass exceeds active source mass fail before row consumers or
+  commits. WA fixed10 now fails closed at day 1418
+  (`laned_active_clamp_exceeds_source`, clamp/source `14.29`); WA `dx5` fails
+  at day 1167 (clamp/source `11335.89`). This closes the silent-publication
+  class but keeps WA active routing and target-`dx` promotion held pending a
+  positivity-preserving solver correction.
 - `20260708-laned-router-wa-day1122-high-resolution-closure-investigation-001/` -
   EXECUTED-HOLD-ACTIVE-ROUTER-CLAMP-NUMERICS (2026-07-08): reran the WA
   selected-cohort active-plain mesh ladder on current `main` and reproduced

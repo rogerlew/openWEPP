@@ -41,6 +41,9 @@ pub(crate) const LANED_ACTIVE_DRAIN_TAIL_S: f64 = 6.0 * 3600.0;
 pub(crate) const LANED_ACTIVE_SUPPLY_REL_TOL: f64 = 1.0e-9;
 /// Rev-27 tolerance: per-day clamp-adjusted cascade residual (relative).
 pub(crate) const LANED_ACTIVE_CASCADE_REL_TOL: f64 = 1.0e-9;
+/// Rev-40 active publication guard: positivity-clamp injection may close the
+/// numerical ledger but may not exceed the external source mass routed that day.
+pub(crate) const LANED_ACTIVE_CLAMP_INPUT_REL_CAP: f64 = 1.0;
 /// Rev-27 tolerance: per-day soil-to-router SEAM cross-ledger residual
 /// (relative) — the router's booked injection vs the soil books' released
 /// runoff volume. The two quantities come from INDEPENDENT ledgers (the
@@ -886,6 +889,30 @@ pub(crate) fn laned_active_enforce_day_closure(
         summary.max_supply_reconstruction_rel = books.max_supply_reconstruction_rel;
     }
 
+    // Rev 40 WA numerics guard: clamp mass is an auditable numerical
+    // correction, not an unbounded source term. If the active day needs more
+    // positivity-clamp injection than the external source mass fed into the
+    // router, fail before publication even if the clamp-adjusted identity can
+    // be made algebraically exact.
+    let clamp_cap_m3 = books.injected_m3 * LANED_ACTIVE_CLAMP_INPUT_REL_CAP;
+    let clamp_slack_m3 = (LANED_ACTIVE_CASCADE_REL_TOL * books.injected_m3.max(1.0)).max(1.0e-12);
+    if books.clamp_m3 > clamp_cap_m3 + clamp_slack_m3 {
+        let clamp_rel = if books.injected_m3 > 0.0 {
+            books.clamp_m3 / books.injected_m3
+        } else {
+            f64::INFINITY
+        };
+        return Err(DirectRuntimeError::DirectKernelGuardFailure {
+            phase: "laned_active_clamp_exceeds_source",
+            detail: format!(
+                "day {} positivity clamp {} m3 exceeds active routed source cap {} m3 (rel {clamp_rel} > {LANED_ACTIVE_CLAMP_INPUT_REL_CAP})",
+                day_index + 1,
+                books.clamp_m3,
+                clamp_cap_m3
+            ),
+        });
+    }
+
     // (b) day cascade residual: injected + clamp − terminal outlet − ΣΔS_mesh.
     // ROUTER-INTERNAL identity: all four operands come from the solver
     // family's own mass ledgers, so this validates per-lane solver
@@ -1172,6 +1199,17 @@ mod tests {
         };
         laned_active_enforce_day_closure(0, &books, &mut summary).expect("closed day");
         assert_eq!(summary.days_routed, 1);
+
+        // Equality at the source cap is allowed; only clamp > source fails.
+        let at_clamp_cap = DirectLanedActiveDayBooks {
+            terminal_outlet_m3: 188.0,
+            clamp_m3: 100.0,
+            lane_net_m3: -(100.0 + 100.0 - 188.0 - 12.0),
+            ..books
+        };
+        laned_active_enforce_day_closure(0, &at_clamp_cap, &mut summary)
+            .expect("clamp equal to source cap is allowed");
+
         // Broken router books fail (b).
         let broken = DirectLanedActiveDayBooks {
             terminal_outlet_m3: 80.0,
@@ -1184,6 +1222,42 @@ mod tests {
                 ..
             })
         ));
+        // Clamp mass cannot exceed the active day source cap even when the
+        // clamp-adjusted router books are algebraically exact.
+        let excessive_clamp = DirectLanedActiveDayBooks {
+            terminal_outlet_m3: 189.0,
+            clamp_m3: 101.0,
+            lane_net_m3: 0.0,
+            ..books
+        };
+        assert!(matches!(
+            laned_active_enforce_day_closure(0, &excessive_clamp, &mut summary),
+            Err(DirectRuntimeError::DirectKernelGuardFailure {
+                phase: "laned_active_clamp_exceeds_source",
+                ..
+            })
+        ));
+
+        // Zero-source, nonzero-clamp active books are never publishable even
+        // if outlet/storage terms make the algebraic identity exact.
+        let zero_source_clamp = DirectLanedActiveDayBooks {
+            injected_m3: 0.0,
+            soil_release_m3: 0.0,
+            terminal_outlet_m3: 0.0,
+            mesh_storage_m3: 1.0e-6,
+            clamp_m3: 1.0e-6,
+            lane_net_m3: 0.0,
+            max_abs_term_m3: 1.0e-6,
+            ..books
+        };
+        assert!(matches!(
+            laned_active_enforce_day_closure(0, &zero_source_clamp, &mut summary),
+            Err(DirectRuntimeError::DirectKernelGuardFailure {
+                phase: "laned_active_clamp_exceeds_source",
+                ..
+            })
+        ));
+
         // Router books exact but the soil ledger disagrees: the SEAM check
         // fires (the cross-ledger guard QA-H2 demanded).
         let broken_seam = DirectLanedActiveDayBooks {

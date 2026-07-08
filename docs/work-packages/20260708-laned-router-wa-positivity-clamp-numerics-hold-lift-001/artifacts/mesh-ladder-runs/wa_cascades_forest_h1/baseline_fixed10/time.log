@@ -1,0 +1,25 @@
+CLIHILL-E-011 runtime surface failure for r7c_direct_production_executor: HS-SIMPIPE-E-001 direct runtime kernel guard failed in laned_active_clamp_exceeds_source: day 1418 positivity clamp 145981.7238747406 m3 exceeds active routed source cap 10214.84019227633 m3 (rel 14.291141234409194 > 1)
+Command exited with non-zero status 1
+	Command being timed: "target/release/openwepp-cli-hill --run-dir /home/workdir/openWEPP/docs/work-packages/20260708-laned-router-wa-positivity-clamp-numerics-hold-lift-001/artifacts/mesh-ladder-runs/wa_cascades_forest_h1/baseline_fixed10/run_dir --run-file p1.plain.run.toml --output-dir /home/workdir/openWEPP/docs/work-packages/20260708-laned-router-wa-positivity-clamp-numerics-hold-lift-001/artifacts/mesh-ladder-runs/wa_cascades_forest_h1/baseline_fixed10/run_dir/output"
+	User time (seconds): 9.65
+	System time (seconds): 0.00
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:09.67
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 13056
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 2107
+	Voluntary context switches: 1
+	Involuntary context switches: 28
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 24
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 1

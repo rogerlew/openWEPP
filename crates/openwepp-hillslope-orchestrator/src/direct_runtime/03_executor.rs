@@ -545,8 +545,10 @@ impl DirectFrameExecutor {
             }
             let window_s = last_active_hour.map(laned_active::laned_active_window_s);
 
-            // Phase 2: route -> erosion -> ledger -> row -> publishers ->
-            // commit, lane order preserved.
+            // Phase 2a: route every lane into local day frames/books before
+            // any row consumer or committed frame can observe active-routed
+            // outputs. Rev 40's clamp-source guard lives in the closure below,
+            // so publishing before this point would not be fail-closed.
             let mut books = laned_active::DirectLanedActiveDayBooks::default();
             let mut upstream: Option<crate::ofe_routing::cascade::UpstreamHandoff> = None;
             for lane_index in 0..lane_count {
@@ -559,12 +561,6 @@ impl DirectFrameExecutor {
                     })?
                     .area_m2;
                 let day_frame = &mut day_frames[lane_index];
-                // The upstream lane's phase 2 published this lane's erosion
-                // inflow intake AFTER this frame was seeded; refresh it so
-                // the erosion span sees the same intake the DC01 loop would.
-                day_frame
-                    .erosion_inflow_intake
-                    .clone_from(&frame.lanes[lane_index].erosion_inflow_intake);
                 if let Some(window_s) = window_s {
                     let handoff = laned_active::laned_active_route_lane(
                         day_frame,
@@ -617,6 +613,19 @@ impl DirectFrameExecutor {
                             .map_or(0.0, |subsurface| subsurface.lateral_flow_m * area_m2);
                     }
                 }
+            }
+
+            laned_active::laned_active_enforce_day_closure(day_index, &books, &mut summary)?;
+
+            // Phase 2b: after active route books have passed their fail-closed
+            // guards, run erosion/ledger, build rows, publish dynamic transfer
+            // operands, and commit in lane order. The erosion-inflow refresh
+            // remains here so lane N+1 sees lane N's same-day erosion output.
+            for lane_index in 0..lane_count {
+                let day_frame = &mut day_frames[lane_index];
+                day_frame
+                    .erosion_inflow_intake
+                    .clone_from(&frame.lanes[lane_index].erosion_inflow_intake);
                 Self::run_day_spans_erosion_and_ledger(day_frame, &mut counters).map_err(
                     |source| {
                         Self::day_execution_failure(day_frame, lane_index, day_index, &source)
@@ -660,7 +669,6 @@ impl DirectFrameExecutor {
                 frame.commit_day_frame(&day_frames[lane_index])?;
                 counters.record_day_frame_commit();
             }
-            laned_active::laned_active_enforce_day_closure(day_index, &books, &mut summary)?;
         }
         if row_count != expected_row_count {
             return Err(DirectRuntimeError::PublicationRowCountMismatch {
