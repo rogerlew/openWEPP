@@ -1,0 +1,67 @@
+{
+  "status": "COMPLETE",
+  "evidence_mode": "Ran",
+  "commands": [
+    {
+      "command": "cargo nextest run --workspace --profile full --test laned_shadow_h2637",
+      "result": "PASS",
+      "summary": "8 tests run: 8 passed, 2 skipped",
+      "wall_seconds": 38.125
+    },
+    {
+      "command": "cargo nextest run --workspace --profile full --test laned_shadow_h2637 h2637_native_active_owner_routes_and_closes --run-ignored ignored-only",
+      "result": "PASS",
+      "summary": "1 test run: 1 passed, 9 skipped",
+      "wall_seconds": 563.62
+    }
+  ],
+  "all_coefficients_default_active": {
+    "hbp_sha256": "28897e3517c0e5f210c28f3b31c48106338e9cbf24263fbc7c0f44021aeb5dd5",
+    "pass_parquet_sha256": "bbb0a9d60540d6556711ae1343feeaa7a47242711aa7d3e52f3d8fde93f961cc",
+    "matches_explicit_active": true,
+    "active_manifest": {
+      "mesh_policy": {
+        "mode": "target_dx",
+        "target_dx_m": 5.0,
+        "min_cells": 10,
+        "max_cells": 4096
+      },
+      "max_dt_s": 300.0,
+      "days_seen": 731,
+      "days_routed": 610,
+      "days_uniform_shape": 3,
+      "total_source_m3": 374423.35262127215,
+      "total_routed_outlet_m3": 371256.0302455183,
+      "total_end_window_storage_m3": 3167.322375757055,
+      "total_clamp_m3": 8.558695924465149e-14,
+      "total_tail_fold_m3": 36426.08442024077,
+      "total_latqcc_outlet_m3": 208132.8460294917,
+      "max_supply_reconstruction_rel": 7.31201193525081e-16,
+      "max_day_cascade_residual_rel": 2.2762831518726353e-13,
+      "max_day_seam_residual_rel": 5.0415846159888125e-14,
+      "max_day_identity_residual_rel": 2.1906143827108124e-13,
+      "lane_days_erosion_source_shape_degenerate": 1
+    }
+  },
+  "explicit_active": {
+    "hbp_sha256": "28897e3517c0e5f210c28f3b31c48106338e9cbf24263fbc7c0f44021aeb5dd5",
+    "pass_parquet_sha256": "bbb0a9d60540d6556711ae1343feeaa7a47242711aa7d3e52f3d8fde93f961cc"
+  },
+  "no_coefficients_default_fallback": {
+    "hbp_sha256": "453e441cf065544fccb41737145ed228625cf9386423671e2a63887ecf0c072f",
+    "pass_parquet_sha256": "fd47c341b300860de7007164ad0797cec4f70985958869eff829daf75a20966a",
+    "laned_active_manifest_present": false
+  },
+  "explicit_disable_all_coefficients": {
+    "hbp_sha256": "948faf82c7edc2a60177b9567a92d8e6999f2d95e1d6f13953fda48b492c0467",
+    "pass_parquet_sha256": "f0d1be11ee9f24b407479a7cdad7e3229981c49b7d2cadb179d4f0a74027e2a3",
+    "laned_active_manifest_present": false
+  },
+  "fail_closed_cases": {
+    "explicit_active_missing_coefficients": "PASS",
+    "active_shadow_conflict": "PASS",
+    "active_disable_conflict": "PASS",
+    "mixed_coefficients_default": "PASS",
+    "malformed_coefficients_default": "PASS"
+  }
+}

@@ -12,6 +12,19 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-08`:
+- `20260708-laned-router-conditional-default-activation-001/` -
+  EXECUTED-COMPLETE-CONDITIONAL-DEFAULT-ACTIVATION (2026-07-08): amended
+  `SC-OFEROUTE-001` rev 46 and made Lane D active routing the hillslope
+  default only when every scheduled lane has complete native
+  `routing_coefficients`. Runs with no scheduled-lane route coefficients remain
+  on the legacy/off path, mixed coefficient authority fails closed before
+  streaming, explicit active still requires complete coefficients, and
+  `OPENWEPP_LANED_ACTIVE_DISABLE=1` provides an explicit rollback selector.
+  Final gates: focused Lane D integration `8/8`, ignored H2637 default-active
+  acceptance vector passed (`563.620s`), full workspace nextest `1427/1427`,
+  clippy/fmt/deny/doc lint/diff-check green. Remaining follow-ons:
+  watershed-facing HBP outlet re-pointing and active-mode sediment
+  process-physics adjudication.
 - `20260708-laned-router-tier1-local-numerics-001/` -
   QUEUED (2026-07-08): scaffolded a contract-first execution package for the
   backlog `Tier 1 - local numerics` active-router optimizations: analytic

@@ -1,19 +1,23 @@
-//! Lane D ACTIVE production owner selector (`SC-OFEROUTE-001` rev 27,
-//! `INV-OFEROUTE-012` activation): opt-in via `OPENWEPP_LANED_ACTIVE=1` on
-//! the production publication-stream path. The runner builds the per-lane
-//! active configuration from the SAME rev-20/21 authority sources as the
-//! diagnostic shadow (native management `routing_coefficients`, Wave-1
-//! operand-seed geometry, typed-management `canhgt`) and attaches it to the
-//! direct run frame; the orchestrator executor then owns the two-phase
-//! active day loop, the DC01-surface-disable, the D13 erosion producer
-//! flip, the rev-45 `dx5` active production mesh default, and the day-closure
+//! Lane D ACTIVE production owner selector (`SC-OFEROUTE-001` rev 46,
+//! `INV-OFEROUTE-010` / `INV-OFEROUTE-012` activation): explicit opt-in via
+//! `OPENWEPP_LANED_ACTIVE=1`, plus conditional default activation when every
+//! scheduled lane has native management `routing_coefficients`. The runner
+//! builds the per-lane active configuration from the SAME rev-20/21 authority
+//! sources as the diagnostic shadow (native management `routing_coefficients`,
+//! Wave-1 operand-seed geometry, typed-management `canhgt`) and attaches it to
+//! the direct run frame; the orchestrator executor then owns the two-phase
+//! active day loop, the DC01-surface-disable, the D13 erosion producer flip,
+//! the rev-45 `dx5` active production mesh default, and the day-closure
 //! hard-fails. Mutually exclusive with
 //! `OPENWEPP_LANED_SHADOW=1` (the shadow's published-row reconstruction
-//! basis is DC01-shaped and is not defined over an active run).
+//! basis is DC01-shaped and is not defined over an active run). The explicit
+//! disable selector forces the legacy/off path for rollback and cannot coexist
+//! with explicit active opt-in.
 
 use crate::HillslopeCliError;
 
 pub(crate) const ACTIVE_MAX_DT_ENV: &str = "OPENWEPP_LANED_ACTIVE_MAX_DT_S";
+pub(crate) const ACTIVE_DISABLE_ENV: &str = "OPENWEPP_LANED_ACTIVE_DISABLE";
 pub(crate) const ACTIVE_MESH_TARGET_DX_ENV: &str = "OPENWEPP_LANED_ACTIVE_MESH_TARGET_DX_M";
 pub(crate) const ACTIVE_STEP_TRACE_ENV: &str = "OPENWEPP_LANED_ACTIVE_STEP_TRACE";
 pub(crate) const ACTIVE_TRACE_DETAIL_ENV: &str = "OPENWEPP_LANED_ACTIVE_TRACE_DETAIL";
@@ -23,6 +27,11 @@ pub(crate) const ACTIVE_TRACE_ENV: &str = "OPENWEPP_LANED_ACTIVE_TRACE";
 #[must_use]
 pub(crate) fn env_enabled() -> bool {
     std::env::var("OPENWEPP_LANED_ACTIVE").is_ok_and(|value| value == "1")
+}
+
+#[must_use]
+pub(crate) fn disable_enabled() -> bool {
+    std::env::var(ACTIVE_DISABLE_ENV).is_ok_and(|value| value == "1")
 }
 
 #[must_use]

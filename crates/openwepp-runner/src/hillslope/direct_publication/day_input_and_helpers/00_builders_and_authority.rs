@@ -14,7 +14,38 @@ struct DirectProductionDayInputBuilder<'a> {
     sturm_climate_class: Option<openwepp_hillslope_orchestrator::SnowClimateClass>,
 }
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(crate) enum DirectLanedActiveDefaultEligibility {
+    Complete,
+    Absent,
+    Mixed { present: usize, absent: usize },
+}
+
 impl DirectProductionDayInputBuilder<'_> {
+    /// SC-OFEROUTE-001 rev 46: default active routing is authorized only
+    /// when every scheduled lane carries native `routing_coefficients`;
+    /// no-lane authority is a protected legacy/off fallback, and mixed
+    /// authority must fail closed before streaming.
+    pub(crate) fn laned_active_default_eligibility(
+        &self,
+    ) -> DirectLanedActiveDefaultEligibility {
+        let present = self
+            .lane_authority
+            .iter()
+            .filter(|lane| lane.ofe_routing.is_some())
+            .count();
+        match present {
+            0 => DirectLanedActiveDefaultEligibility::Absent,
+            count if count == self.lane_authority.len() => {
+                DirectLanedActiveDefaultEligibility::Complete
+            }
+            count => DirectLanedActiveDefaultEligibility::Mixed {
+                present: count,
+                absent: self.lane_authority.len() - count,
+            },
+        }
+    }
+
     /// Per-lane static geometry for the Lane D seam shadow (from the
     /// Wave-1 operand seeds): slope length, hillslope field width, and
     /// the mean profile gradient (integral of the normalized `a·x + b`
@@ -795,6 +826,8 @@ fn direct_production_optional_lane_routing_coefficient_authority(
     let slot_count =
         direct_growth_integral_usize("pl_schedule_slot_count", slot_count_value, 1, usize::MAX)?;
     let mut lane_authority = None;
+    let mut present_slots = 0_usize;
+    let mut absent_slots = 0_usize;
     for slot_index in 1..=slot_count {
         let crop_slots = direct_growth_projection_required_integral_usize(
             projection,
@@ -803,23 +836,39 @@ fn direct_production_optional_lane_routing_coefficient_authority(
             usize::MAX,
         )?;
         for crop_slot_index in 1..=crop_slots {
-            let Some(slot_authority) =
-                direct_production_optional_slot_crop_routing_coefficient_authority(
-                    projection,
-                    slot_index,
-                    crop_slot_index,
-                )?
-            else {
-                return Ok(None);
-            };
-            if let Some(existing) = lane_authority {
-                if existing != slot_authority {
-                    return Ok(None);
+            match direct_production_optional_slot_crop_routing_coefficient_authority(
+                projection,
+                slot_index,
+                crop_slot_index,
+            )? {
+                Some(slot_authority) => {
+                    present_slots += 1;
+                    if let Some(existing) = lane_authority {
+                        if existing != slot_authority {
+                            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                                surface: "direct_production_typed_seed",
+                                detail: format!(
+                                    "{SIMOUT_GUARD_ID} inconsistent routing coefficient extension across schedule crop slots: slot {slot_index} crop {crop_slot_index} differs from previous route_* authority"
+                                ),
+                            });
+                        }
+                    } else {
+                        lane_authority = Some(slot_authority);
+                    }
                 }
-            } else {
-                lane_authority = Some(slot_authority);
+                None => {
+                    absent_slots += 1;
+                }
             }
         }
+    }
+    if present_slots > 0 && absent_slots > 0 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "direct_production_typed_seed",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} incomplete schedule routing coefficient extension: {present_slots} schedule crop slot(s) carry route_* authority and {absent_slots} slot(s) do not"
+            ),
+        });
     }
     Ok(lane_authority)
 }

@@ -80,6 +80,37 @@ fn execute_hillslope_direct_production_days(
     })
 }
 
+fn resolve_laned_active_enabled(
+    day_input_builder: &DirectProductionDayInputBuilder<'_>,
+) -> Result<bool, HillslopeCliError> {
+    let explicit_laned_active_enabled = crate::hillslope::laned_active::env_enabled();
+    let explicit_laned_active_disabled = crate::hillslope::laned_active::disable_enabled();
+    if explicit_laned_active_enabled && explicit_laned_active_disabled {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "laned_active_selector",
+            detail: "OPENWEPP_LANED_ACTIVE=1 and OPENWEPP_LANED_ACTIVE_DISABLE=1 are mutually exclusive: active rollback cannot coexist with explicit active ownership".to_string(),
+        });
+    }
+    if explicit_laned_active_enabled {
+        return Ok(true);
+    }
+    if explicit_laned_active_disabled {
+        return Ok(false);
+    }
+    match day_input_builder.laned_active_default_eligibility() {
+        DirectLanedActiveDefaultEligibility::Complete => Ok(true),
+        DirectLanedActiveDefaultEligibility::Absent => Ok(false),
+        DirectLanedActiveDefaultEligibility::Mixed { present, absent } => {
+            Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "laned_active_default_eligibility",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} conditional Lane D default activation requires all scheduled lanes to agree on native routing_coefficients authority; found {present} lane(s) with coefficients and {absent} lane(s) without coefficients"
+                ),
+            })
+        }
+    }
+}
+
 fn execute_direct_publication_stream(
     frame: &mut DirectRunFrame,
     metadata: DirectPublicationRunMetadata,
@@ -88,17 +119,17 @@ fn execute_direct_publication_stream(
 ) -> Result<RetainedDirectPublication, HillslopeCliError> {
     let mut stream_sink =
         DirectPublicationStreamingSink::create(frame.identity, metadata.clone(), streaming_targets)?;
-    // Lane D ACTIVE owner (SC-OFEROUTE-001 rev 27): opt-in production
-    // activation. Mutually exclusive with the diagnostic shadow — the
-    // shadow's published-row reconstruction basis is DC01-shaped and is not
-    // defined over an active run (fail closed, never silent precedence).
-    let laned_active_enabled = crate::hillslope::laned_active::env_enabled();
+    // Lane D ACTIVE owner (SC-OFEROUTE-001 rev 46): explicit active opt-in
+    // or conditional default activation when every scheduled lane carries
+    // native routing-coefficient authority. A no-coefficient run remains
+    // legacy/off; mixed authority fails closed before streaming.
+    let laned_active_enabled = resolve_laned_active_enabled(day_input_builder)?;
     if laned_active_enabled
         && crate::hillslope::laned_shadow::LanedShadowCollector::env_enabled()
     {
         return Err(HillslopeCliError::RuntimeSurfaceFailure {
             surface: "laned_active_selector",
-            detail: "OPENWEPP_LANED_ACTIVE=1 and OPENWEPP_LANED_SHADOW=1 are mutually exclusive: the shadow reconstructs DC01-shaped published rows and is undefined over an active routed run".to_string(),
+            detail: "Lane D active ownership and OPENWEPP_LANED_SHADOW=1 are mutually exclusive: the shadow reconstructs DC01-shaped published rows and is undefined over an active routed run".to_string(),
         });
     }
     let laned_active_profile_enabled = laned_active_enabled
@@ -185,7 +216,7 @@ fn execute_direct_publication_stream(
     if laned_active_enabled && laned_active.is_none() {
         return Err(HillslopeCliError::RuntimeSurfaceFailure {
             surface: "laned_active_summary",
-            detail: "OPENWEPP_LANED_ACTIVE=1 but the executor produced no active summary (active loop not engaged)".to_string(),
+            detail: "Lane D active ownership was selected but the executor produced no active summary (active loop not engaged)".to_string(),
         });
     }
     Ok(RetainedDirectPublication {

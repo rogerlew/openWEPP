@@ -3,7 +3,8 @@
 //! threaded `cargo test` harness races `set_var`/`remove_var` against
 //! concurrent `getenv` (glibc UB). Every run helper neutralizes ALL Lane D
 //! selector variables at entry (`OPENWEPP_LANED_SHADOW`,
-//! `OPENWEPP_LANED_ACTIVE`, `OPENWEPP_LANED_ACTIVE_TRACE`,
+//! `OPENWEPP_LANED_ACTIVE`, `OPENWEPP_LANED_ACTIVE_DISABLE`,
+//! `OPENWEPP_LANED_ACTIVE_TRACE`,
 //! `OPENWEPP_LANED_ACTIVE_MESH_TARGET_DX_M`, plus the abandoned implicit
 //! selector env var) so inherited shell state cannot leak in (CR-M2, T3-QA-M3).
 //!
@@ -59,6 +60,7 @@ fn clear_laned_selector_env() {
     // tests; callers clear the variables before runner work starts.
     unsafe {
         std::env::remove_var("OPENWEPP_LANED_ACTIVE");
+        std::env::remove_var("OPENWEPP_LANED_ACTIVE_DISABLE");
         std::env::remove_var("OPENWEPP_LANED_ACTIVE_TRACE");
         std::env::remove_var("OPENWEPP_LANED_ACTIVE_MESH_TARGET_DX_M");
         std::env::remove_var("OPENWEPP_LANED_SHADOW");
@@ -195,6 +197,45 @@ fn enable_native_cropland_routing_coefficients(run_dir: &Path) {
     fs::write(path, patched).expect("patched management fixture writable");
 }
 
+fn remove_first_native_routing_coefficient_block(run_dir: &Path) {
+    let path = run_dir.join("p2637.man");
+    let text = fs::read_to_string(&path).expect("management fixture readable");
+    let mut patched = String::with_capacity(text.len());
+    let mut lines = text.lines();
+    let mut removed = false;
+    while let Some(line) = lines.next() {
+        if !removed && line == "routing_coefficients" {
+            let coefficient_line = lines
+                .next()
+                .expect("routing_coefficients block should have coefficient line");
+            assert_eq!(
+                coefficient_line, "500.0 0.0 0.0 0.0 0.0",
+                "test fixture should remove exactly the native routing coefficient line"
+            );
+            removed = true;
+            continue;
+        }
+        patched.push_str(line);
+        patched.push('\n');
+    }
+    assert!(
+        removed,
+        "one native routing coefficient block should be removed"
+    );
+    fs::write(path, patched).expect("mixed management fixture writable");
+}
+
+fn truncate_first_native_routing_coefficient_block(run_dir: &Path) {
+    let path = run_dir.join("p2637.man");
+    let text = fs::read_to_string(&path).expect("management fixture readable");
+    let patched = text.replacen("500.0 0.0 0.0 0.0 0.0", "500.0 0.0 0.0 0.0", 1);
+    assert_ne!(
+        patched, text,
+        "one native routing coefficient block should be truncated"
+    );
+    fs::write(path, patched).expect("malformed management fixture writable");
+}
+
 fn run_h2637_native_routing(
     tag: &str,
     shadow: bool,
@@ -204,8 +245,12 @@ fn run_h2637_native_routing(
     let output_dir = run_dir.join("output");
     let manifest_path = run_dir.join("manifest.json");
     // CR-M2/T3-QA-M3: neutralize the sibling selectors and the abandoned
-    // implicit selector (inherited shell state).
+    // implicit selector (inherited shell state). Native coefficients are
+    // default-active under SC-OFEROUTE-001 rev 46, so shadow diagnostics use
+    // the explicit active-disable rollback selector.
     clear_laned_selector_env();
+    // SAFETY: single-threaded test setup before any runner threads.
+    unsafe { std::env::set_var("OPENWEPP_LANED_ACTIVE_DISABLE", "1") };
     if shadow {
         // SAFETY: single-threaded test setup before any runner threads.
         unsafe { std::env::set_var("OPENWEPP_LANED_SHADOW", "1") };
@@ -228,6 +273,8 @@ fn run_h2637_native_routing(
         // SAFETY: restore the process env immediately after the single run.
         unsafe { std::env::remove_var("OPENWEPP_LANED_SHADOW") };
     }
+    // SAFETY: restore the process env immediately after the single run.
+    unsafe { std::env::remove_var("OPENWEPP_LANED_ACTIVE_DISABLE") };
     let report = report?;
     let manifest: serde_json::Value =
         serde_json::from_str(&fs::read_to_string(&manifest_path).expect("manifest readable"))
@@ -255,6 +302,10 @@ fn h2637_legacy_shadow_fails_closed_without_routing_coefficients() {
     assert!(
         find_key(&manifest_off, "laned_shadow").is_none(),
         "no shadow keys when the shadow is off"
+    );
+    assert!(
+        find_key(&manifest_off, "laned_active").is_none(),
+        "legacy no-coefficient default path must not attach active routing"
     );
     assert!(!pass_off.is_empty(), "shadow-off HBP should be written");
     assert!(
@@ -319,12 +370,19 @@ fn h2637_native_shadow_classifies_uniform_shape_after_d12() {
 }
 
 // ---------------------------------------------------------------------------
-// D15A (SC-OFEROUTE-001 rev 27): the opt-in ACTIVE production owner.
+// D15A/D16 (SC-OFEROUTE-001 rev 27/rev 46): ACTIVE production owner.
 // ---------------------------------------------------------------------------
+
+#[derive(Clone, Copy)]
+enum NativeActiveSelector {
+    Default,
+    ExplicitActive,
+    ExplicitDisable,
+}
 
 fn run_h2637_native_active(
     tag: &str,
-    active: bool,
+    selector: NativeActiveSelector,
 ) -> Result<(PathBuf, serde_json::Value, Vec<u8>, Vec<u8>), HillslopeCliError> {
     let run_dir = copy_fixture_to_temp(tag);
     enable_native_cropland_routing_coefficients(&run_dir);
@@ -334,12 +392,16 @@ fn run_h2637_native_active(
     // state) plus the abandoned implicit selector, so the "plain active"
     // evidence leg cannot fail on stale operator environment.
     clear_laned_selector_env();
-    if active {
-        // SAFETY: single-threaded test setup before any runner threads.
-        unsafe { std::env::set_var("OPENWEPP_LANED_ACTIVE", "1") };
-    } else {
-        // SAFETY: as above.
-        unsafe { std::env::remove_var("OPENWEPP_LANED_ACTIVE") };
+    match selector {
+        NativeActiveSelector::Default => {}
+        NativeActiveSelector::ExplicitActive => {
+            // SAFETY: single-threaded test setup before any runner threads.
+            unsafe { std::env::set_var("OPENWEPP_LANED_ACTIVE", "1") };
+        }
+        NativeActiveSelector::ExplicitDisable => {
+            // SAFETY: as above.
+            unsafe { std::env::set_var("OPENWEPP_LANED_ACTIVE_DISABLE", "1") };
+        }
     }
     let report = execute_hillslope_run(
         &HillslopeRunRequest {
@@ -352,10 +414,7 @@ fn run_h2637_native_active(
         },
         &["openwepp-cli-hill".to_string()],
     );
-    if active {
-        // SAFETY: restore the process env immediately after the single run.
-        unsafe { std::env::remove_var("OPENWEPP_LANED_ACTIVE") };
-    }
+    clear_laned_selector_env();
     let report = report?;
     let manifest: serde_json::Value =
         serde_json::from_str(&fs::read_to_string(&manifest_path).expect("manifest readable"))
@@ -433,14 +492,93 @@ fn h2637_active_and_shadow_are_mutually_exclusive() {
 }
 
 #[test]
-#[ignore = "D15A H2637 active-owner evidence: runs the full H2637 fixture twice"]
+fn h2637_active_and_disable_are_mutually_exclusive() {
+    let run_dir = copy_fixture_to_temp("active_disable_conflict");
+    enable_native_cropland_routing_coefficients(&run_dir);
+    let output_dir = run_dir.join("output");
+    let _cleanup = LaneDSelectorEnvCleanup;
+    clear_laned_selector_env();
+    // SAFETY: single-threaded test setup before any runner threads.
+    unsafe { std::env::set_var("OPENWEPP_LANED_ACTIVE", "1") };
+    // SAFETY: as above.
+    unsafe { std::env::set_var("OPENWEPP_LANED_ACTIVE_DISABLE", "1") };
+    let report = execute_hillslope_run(
+        &HillslopeRunRequest {
+            run_dir: run_dir.clone(),
+            run_file: PathBuf::from("p2637.run.toml"),
+            output_dir,
+            sidecar_policy: SidecarPolicy::Compat,
+            legacy_sidecar_discovery: false,
+            manifest_path: Some(run_dir.join("manifest.json")),
+        },
+        &["openwepp-cli-hill".to_string()],
+    );
+    let message = report
+        .expect_err("active + disable must fail closed")
+        .to_string();
+    assert!(
+        message.contains("mutually exclusive"),
+        "expected mutual-exclusion error, got {message}"
+    );
+}
+
+fn run_h2637_default_expect_error(run_dir: &Path) -> String {
+    let output_dir = run_dir.join("output");
+    let _cleanup = LaneDSelectorEnvCleanup;
+    clear_laned_selector_env();
+    let report = execute_hillslope_run(
+        &HillslopeRunRequest {
+            run_dir: run_dir.to_path_buf(),
+            run_file: PathBuf::from("p2637.run.toml"),
+            output_dir,
+            sidecar_policy: SidecarPolicy::Compat,
+            legacy_sidecar_discovery: false,
+            manifest_path: Some(run_dir.join("manifest.json")),
+        },
+        &["openwepp-cli-hill".to_string()],
+    );
+    report
+        .expect_err("default run must fail closed")
+        .to_string()
+}
+
+#[test]
+fn h2637_default_mixed_routing_coefficients_fails_closed() {
+    let run_dir = copy_fixture_to_temp("default_mixed_coefficients");
+    enable_native_cropland_routing_coefficients(&run_dir);
+    remove_first_native_routing_coefficient_block(&run_dir);
+    let message = run_h2637_default_expect_error(&run_dir);
+    assert!(
+        message.contains("conditional Lane D default activation"),
+        "expected conditional default error, got {message}"
+    );
+    assert!(
+        message.contains("with coefficients") && message.contains("without coefficients"),
+        "expected mixed-authority counts, got {message}"
+    );
+}
+
+#[test]
+fn h2637_default_malformed_routing_coefficients_fails_closed() {
+    let run_dir = copy_fixture_to_temp("default_malformed_coefficients");
+    enable_native_cropland_routing_coefficients(&run_dir);
+    truncate_first_native_routing_coefficient_block(&run_dir);
+    let message = run_h2637_default_expect_error(&run_dir);
+    assert!(
+        message.contains("routing_coefficients"),
+        "expected malformed routing_coefficients error, got {message}"
+    );
+}
+
+#[test]
+#[ignore = "D16 H2637 active-owner evidence: runs the full H2637 fixture three times"]
 fn h2637_native_active_owner_routes_and_closes() {
-    // Default/off on the SAME native-patched fixture: no active keys. This
+    // Explicit disable on the SAME native-patched fixture: no active keys. This
     // test asserts only presence/absence; the INV-OFEROUTE-010 BYTE
     // comparison itself lives in the P4 gate evidence (SHA256 vs the
     // recorded package baseline), not in this test.
     let (_dir_off, manifest_off, pass_off, parquet_off) =
-        run_h2637_native_active("active_off", false)
+        run_h2637_native_active("active_off", NativeActiveSelector::ExplicitDisable)
             .expect("native-routed H2637 must run with the active owner disabled");
     assert!(
         find_key(&manifest_off, "laned_active").is_none(),
@@ -448,11 +586,33 @@ fn h2637_native_active_owner_routes_and_closes() {
     );
     assert!(!pass_off.is_empty() && !parquet_off.is_empty());
 
-    // ACTIVE: routing owns the surface-water path (rev 27). The run must
-    // complete with the day-closure hard-fails live, which means every
-    // routed day satisfied the rev-27 tolerances.
-    let (_dir_on, manifest_on, _pass_on, _parquet_on) = run_h2637_native_active("active_on", true)
-        .expect("native-routed H2637 must run with the active owner enabled");
+    // DEFAULT ACTIVE: coefficient-complete native management should attach
+    // the active owner without OPENWEPP_LANED_ACTIVE=1.
+    let (_dir_default, manifest_default, pass_default, parquet_default) =
+        run_h2637_native_active("active_default", NativeActiveSelector::Default)
+            .expect("native-routed H2637 must run active by default");
+
+    // EXPLICIT ACTIVE: same owner as the default path.
+    let (_dir_on, manifest_on, pass_on, parquet_on) =
+        run_h2637_native_active("active_on", NativeActiveSelector::ExplicitActive)
+            .expect("native-routed H2637 must run with the active owner enabled");
+    assert_eq!(
+        pass_default, pass_on,
+        "default active and explicit active should write identical HBP bytes"
+    );
+    assert_eq!(
+        parquet_default, parquet_on,
+        "default active and explicit active should write identical pass parquet bytes"
+    );
+    let active_default =
+        find_key(&manifest_default, "laned_active").expect("default manifest laned_active block");
+    let default_days_routed = find_key(active_default, "days_routed")
+        .and_then(serde_json::Value::as_u64)
+        .expect("default days_routed");
+    assert!(
+        default_days_routed > 0,
+        "default active must route event days"
+    );
     let active = find_key(&manifest_on, "laned_active").expect("manifest laned_active block");
     let days_seen = find_key(active, "days_seen")
         .and_then(serde_json::Value::as_u64)
