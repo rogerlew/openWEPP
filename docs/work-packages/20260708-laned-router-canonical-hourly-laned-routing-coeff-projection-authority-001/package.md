@@ -1,11 +1,12 @@
 # Canonical Hourly Lane D Routing-Coefficient Projection Authority
 
-Status: `QUEUED`
+Status: `EXECUTED-HOLD-PROJECTION-AUTHORITY`
 Package ID:
 `20260708-laned-router-canonical-hourly-laned-routing-coeff-projection-authority-001`
 Owner: Codex
 Scaffold date: `2026-07-08`
-Evidence mode: `Static scaffold; no contract or implementation executed`
+Execution date: `2026-07-08`
+Evidence mode: `Static authority audit plus contract/spec amendments; no Rust implementation executed`
 Execution order: after
 `20260708-groundwater-baseflow-srivastava-authority-001` closes or records a
 handoff that does not invalidate this package's authority basis, and before the
@@ -277,4 +278,15 @@ Conditionally required if implementation scope is added:
 
 ## Final Outcome
 
-Queued scaffold. Execution has not started.
+`EXECUTED-HOLD-PROJECTION-AUTHORITY`.
+
+The package did not ratify legacy cropland projection to Lane D route
+coefficients. Baseline legacy sources compute aggregate rill/interrill/equivalent
+friction and erosion-delivery diagnostics, but they do not expose a bounded,
+deterministic mapping for all five static Lane D operands. `SC-OFEROUTE-001`
+rev 48 records the rejection/hold and keeps default activation limited to
+complete source-authorized static route coefficients. `plant-file.spec.md` now
+states the end-user no-inference rule explicitly.
+
+No Rust implementation, selector/default broadening, coefficient formula,
+tolerance change, or legacy-path deletion was made.

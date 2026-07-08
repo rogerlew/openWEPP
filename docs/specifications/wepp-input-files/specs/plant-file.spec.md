@@ -6,7 +6,7 @@
 - `status`: `draft`
 - `owner`: `openWEPP`
 - `spec_version`: `0.3.0`
-- `last_updated_utc`: `2026-07-08T17:13:26Z`
+- `last_updated_utc`: `2026-07-08T22:10:39Z`
 - `evidence_mode`: `Static`
 
 ## Parser-Contract Authority Note
@@ -63,7 +63,9 @@ routing_coefficients
 - `lambda`: roughness-element concentration.
 - `vegetation_C_d`: vegetation drag coefficient.
 
-The routing block is optional for parsing a native plant record. It is required by Lane D routing paths that need source-authorized coefficients for every scheduled native lane. Missing coefficients, partial coverage, or a marker outside native forest/native cropland is a hard error for those routing paths, not a silent fallback. These coefficients are not inferred from row width, ridge spacing, random roughness, canopy cover, residue cover, or other legacy cropland fields.
+The routing block is optional for parsing a native plant record. It is required by Lane D routing paths that need source-authorized coefficients for every scheduled native lane. Missing coefficients, partial coverage, or a marker outside native forest/native cropland is a hard error for those routing paths, not a silent fallback.
+
+These coefficients are explicit routing inputs. They are not inferred from row width, ridge spacing, rill width, random roughness (`rrc`/`rrough`), canopy cover, residue cover, interrill/rill cover, legacy friction factors, erosion delivery ratios, or other legacy cropland fields. A producer may satisfy this surface only by writing the five route-coefficient values explicitly, with provenance, under a ratified openWEPP authority.
 
 ### Native Forest Plant Record Layout
 

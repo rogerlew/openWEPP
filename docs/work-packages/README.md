@@ -42,14 +42,16 @@ State as of `2026-07-08`:
   `/workdir/wepp-forest_260430_baseline` code authority. No production code
   was changed; M-T2B now owns single-OFE and Lane D MOFE implementation.
 - `20260708-laned-router-canonical-hourly-laned-routing-coeff-projection-authority-001/` -
-  QUEUED (2026-07-08, M-T2P): scaffolded the contract-first authority package
-  for making hourly water balance plus Lane D active routing the canonical
-  production path for single-OFE and MOFE. The package will adjudicate legacy
-  cropland routing-coefficient projection authority, retain explicit and
-  disturbed/native coefficient authority, demote non-hourly/DC01-only/non-Lane-D
-  paths to validation/reference/rollback use, and hand off implementation only
-  after a predeclared fidelity envelope is accepted. Execute after M-T2A and
-  before M-T2B.
+  EXECUTED-HOLD-PROJECTION-AUTHORITY (2026-07-08, M-T2P): amended
+  `SC-OFEROUTE-001` rev 48 and updated the plant-file spec. The package audited
+  baseline `frcfac.for`, `param.for`, `bigout.for`, and `watbal_hourly.for` and
+  rejected implicit legacy-cropland projection from row/rill geometry, random
+  roughness, cover/residue/canopy-cover, aggregate friction, erosion delivery,
+  or diagnostic fields into the five static Lane D route coefficients. Complete
+  explicit `routing_coefficients` or another ratified explicit producer remains
+  required for active/default coefficient authority; coefficient-absent legacy
+  cropland stays legacy/off and mixed authority fails closed. No Rust behavior
+  was changed; M-T2B may proceed with this boundary.
 - `20260708-laned-router-conditional-default-activation-001/` -
   EXECUTED-COMPLETE-CONDITIONAL-DEFAULT-ACTIVATION (2026-07-08): amended
   `SC-OFEROUTE-001` rev 46 and made Lane D active routing the hillslope

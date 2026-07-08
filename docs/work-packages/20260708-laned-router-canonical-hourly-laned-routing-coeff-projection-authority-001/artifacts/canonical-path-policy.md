@@ -1,15 +1,39 @@
 # Canonical Path Policy
 
-Status: queued placeholder.
+Status: complete with projection hold.
+Evidence class: Static.
 
-Proposed policy to adjudicate:
+## Policy
 
-- Hourly water balance plus Lane D active routing is the canonical production
-  water/sediment path for single-OFE and MOFE.
-- Non-hourly water balance, DC01-only surface routing, and non-Lane-D MOFE stay
-  in the codebase for legacy validation, comparator work, protected rollback,
-  and regression diagnosis.
-- No new production consumers may be added to the retained legacy/reference
-  paths after this policy is ratified.
-- Explicit disable/rollback selectors remain protected and byte-identity tested
-  where already required.
+Hourly water balance plus Lane D active routing remains the preferred production
+path when every scheduled lane has complete source-authorized static route
+coefficients and the active/baseflow/watershed gates are otherwise satisfied.
+
+This package does not make Lane D active routing universal for coefficient-absent
+legacy cropland. Because legacy-field projection was not ratified, the protected
+legacy/off path remains the production behavior for no-coefficient runs.
+
+## Retained Paths
+
+The retained non-hourly, DC01-only, and non-Lane-D surfaces remain valid for:
+
+- protected no-coefficient fallback;
+- explicit disable/rollback selectors;
+- legacy validation and comparator evidence;
+- regression diagnosis;
+- workflows whose coefficient authority has not been authored.
+
+They are not a license to add new downstream consumer claims that bypass the
+hourly Lane D path when route-coefficient authority is available.
+
+## Implementation Consequence
+
+M-T2B may implement groundwater/baseflow for single-OFE and Lane D MOFE, but it
+must not assume coefficient-absent legacy cropland will become active by
+default. It should preserve the current default eligibility:
+
+- coefficient-complete lanes can use active hourly Lane D routing;
+- no-coefficient lanes remain legacy/off;
+- mixed coefficient authority fails closed;
+- groundwater/baseflow outputs must distinguish disabled/missing authority from
+generated zero values.
