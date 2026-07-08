@@ -5,8 +5,8 @@
 - `surface_id`: `infile-management-man`
 - `status`: `draft`
 - `owner`: `openWEPP`
-- `spec_version`: `0.2.0`
-- `last_updated_utc`: `2026-05-21T19:00:00Z`
+- `spec_version`: `0.3.0`
+- `last_updated_utc`: `2026-07-08T17:13:26Z`
 - `evidence_mode`: `Static`
 
 ## Parser-Contract Authority Note
@@ -16,7 +16,7 @@
 - Legacy canonical symbols and section labels (for example `datver`, `ncrop`, `nop`, `nini`, `nscen`, `nofe`, `nyears`, `nrots`, `manindx`) are normative unless parser-contract alias mapping explicitly states otherwise.
 
 ## openWEPP Parser Profile (Executable)
-- Supported datver allowlist: `95.7`, `98.4`, `2016.3`, `2017.1`.
+- Supported datver allowlist: `95.7`, `98.4`, `2016.3`, `2017.1`, `ow-lanuse-1`.
 - Parser reads section counts and scenario loops in canonical order:
   - `ncrop` + plant loops, `nop` + operation loops, `nini` + initial loops, `nseq` + surface loops, `ncnt` + contour loops, `ndrain` + drain loops, `nscen` + yearly loops, then management loop (`nofes`, `ofeindx`, `nrots`, `nyears`, `nycrop`, `manindx`).
 - Parser output surface includes typed scenario registries and expanded management schedule slots (`rotation_index`, `year_in_rotation`, `ofe_index`, `crop_slots`, yearly refs).
@@ -32,6 +32,99 @@
 - Strict vs compatibility token policy:
   - strict mode rejects trailing tokens on single-token control records;
   - compatibility mode reads the first token for those records.
+
+## openWEPP-Native `ow-lanuse-1` Profile
+
+`ow-lanuse-1` is an openWEPP-native management-file `datver`. It is not a legacy WEPP version number. Use it only when a file intentionally carries first-class openWEPP landuse operands.
+
+For end users, the important rule is that the first line of the `.man` file controls how landuse codes are interpreted:
+
+| First line (`datver`) | `landuse=1` | `landuse=3` | `landuse=4` |
+| --- | --- | --- | --- |
+| `95.7`, `98.4`, `2016.3`, `2017.1` | Legacy cropland compatibility. | Legacy forest code, rejected by openWEPP for this parser surface. | Legacy roads code, not a native cropland record. |
+| `ow-lanuse-1` | Legacy cropland compatibility. | Native forest. | Native cropland. |
+
+Native cropland (`landuse=4` under `ow-lanuse-1`) uses the cropland record layout in the plant, operation, initial, surface, contour, drain, and yearly sections. Native forest (`landuse=3` under `ow-lanuse-1`) has native plant, initial, and yearly records; it must not define operation, surface-effect, contour, or drain scenarios.
+
+### Native Routing Coefficients
+
+Native forest and native cropland plant records may append an openWEPP routing block immediately after the plant data. The block is:
+
+```text
+routing_coefficients
+<k_o> <form_C_d> <D_r_m> <lambda> <vegetation_C_d>
+```
+
+`routing_coefficients_v1` is accepted as an equivalent marker. The five values are explicit Lane D overland-flow routing inputs:
+
+- `k_o`: skin-friction coefficient.
+- `form_C_d`: form-drag coefficient.
+- `D_r_m`: roughness-element height, in meters.
+- `lambda`: roughness-element concentration.
+- `vegetation_C_d`: vegetation drag coefficient.
+
+The routing block is optional for parsing a native plant record. It is required by Lane D routing paths that need source-authorized coefficients for every scheduled native lane. Missing coefficients, partial coverage, or a marker outside native forest/native cropland is a hard error for those routing paths, not a silent fallback. These coefficients are not inferred from row width, ridge spacing, random roughness, canopy cover, residue cover, or other legacy cropland fields.
+
+### Native Forest Plant Record Layout
+
+A native forest plant scenario (`datver=ow-lanuse-1`, `landuse=3`) uses this plant payload after the scenario name, three description lines, and landuse line:
+
+```text
+<forest_class>
+<bb> <bbb> <beinp> <btemp> <extnct>
+<flivmx> <hmax> <hi> <gddmax> <dlai>
+<otemp> <pltol> <spriod> <rsr> <rtmmax>
+<xmxlai> <rdmax> <decfct> <dropfc>
+<cf> <diam>
+<oratea> <orater>
+<tempmn> <gtemp> <plive> <wood>
+<grass_coeff> <grass_diam> <grass_hgt> <grass_pop>
+<shrub_coeff> <shrub_diam> <shrub_hgt> <shrub_pop>
+<tree_coeff> <tree_diam> <tree_hgt> <tree_pop>
+[optional routing coefficient block]
+```
+
+`forest_class` is the class key that ties the management record to the authoritative disturbed/forest parameterization row. All listed numeric fields are explicit; openWEPP does not supply hidden cropland or rangeland defaults for a native forest record.
+
+### Native Cropland With Routing Coefficients Example
+
+This is the end of a native cropland plant record. The normal cropland terminal line is followed by the native routing block:
+
+```text
+-40.00000 3.00000 0.00000
+routing_coefficients
+490.00000 0.40000 0.01600 0.05000 0.20000
+```
+
+### Native Forest Initial And Yearly Records
+
+A native forest initial-condition scenario (`datver=ow-lanuse-1`, `landuse=3`) uses this payload:
+
+```text
+<cancov> <inrcov> <rilcov> <rrinit>
+<iresd>
+<imngmt>
+<tillay1> <tillay2>
+<sumrtm> <sumsrm>
+```
+
+A native forest yearly scenario (`datver=ow-lanuse-1`, `landuse=3`) uses this payload:
+
+```text
+<itype>
+<tilseq>
+<conset>
+<drset>
+<imngmt>
+<jdharv>
+<jdplt>
+<jdstop>
+<rw>
+<mgtopt>
+```
+
+For an established idle forest, `tilseq`, `conset`, and `drset` are normally `0`, `imngmt` is `2`, `jdharv`, `jdplt`, and `jdstop` may use the explicit `0` sentinel, and `mgtopt` is `3`.
+
 The plant/management input file contains all of the information needed by the WEPP model related to plant parameters (rangeland plant communities and cropland annual and perennial crops), tillage sequences and tillage implement parameters, plant and residue management, initial conditions, contouring, subsurface drainage, and crop rotations.
 
 For readability, the WEPP management file is structured into **Sections**. A **Section** is a group of data which are related in some manner. The WEPP management file can become very complex, especially for multiple OFE simulations. It is recommend to use the WEPP user interface or other software to assist in creating these files.
@@ -91,6 +184,7 @@ The plant/management file for WEPP v95.7 is described in Table 16. Please note t
         * `95.7` Initial version
         * `98.4` - Update
         * `2016.3` and `2017.1` Residue management updates, additional parameters
+        * `ow-lanuse-1` - openWEPP-native management file with native landuse records and optional routing coefficients
         * ***Note*** `datver` is used to detect older management file formats, which are incompatible with the current WEPP erosion model.
 * **Info.header**
     * 2.1) number of Overland Flow Elements for hillslopes, integer (`nofe`), or number of channels for watershed (`nchan`)
@@ -112,8 +206,9 @@ The plant/management file for WEPP v95.7 is described in Table 16. Please note t
         * 2) range
         * 3) forest
         * 4) roads
+        * ***openWEPP-native note*** Under `datver=ow-lanuse-1`, `3` selects native forest and `4` selects native cropland. Native cropland uses the cropland record layout. Native forest uses the native forest layout in the `ow-lanuse-1` profile above.
 
-#### Plant.loop.cropland: (read when iplant=1; cropland)
+#### Plant.loop.cropland: (read when iplant=1; cropland, or iplant=4 under `ow-lanuse-1`; native cropland)
 * 6.1) harvest units, (i.e., bu/a, kg/ha, t/a, etc.) up to 15 characters - (`crunit`)
 * 7.1) canopy cover coefficient, real - (`bb`)
 * 7.2) parameter value for canopy height equation, real - (`bbb`)
@@ -151,6 +246,7 @@ The plant/management file for WEPP v95.7 is described in Table 16. Please note t
 * 11.3) optimum yield under no stress conditions ($kg/m^2$), real - (`yld`)
 * 11.4) Release canopy cover, real (version 2016.3) - (`rcc`)
 * ***Note*** (input 0.0 on Line 11.3 to use model calculated optimum yield)
+* ***openWEPP-native note*** When `datver=ow-lanuse-1` and `iplant=4`, the same cropland lines are read as native cropland. The optional `routing_coefficients` block may follow the terminal line.
 
 #### Plant.loop.rangeland: (read when iplant = 2; rangeland)
 * 6.1) change in surface residue mass coefficient, real - (`aca`)
@@ -189,9 +285,11 @@ The plant/management file for WEPP v95.7 is described in Table 16. Please note t
 
 #### Plant.loop.forest: (read when iplant = 3; forest)
 * ***Note*** no values; plants for Forestland not yet supported.
+* ***openWEPP-native note*** Under `datver=ow-lanuse-1`, `iplant=3` is a native forest plant scenario and does have values. See "Native Forest Plant Record Layout" above. Under legacy datvers, openWEPP still rejects the forest branch for this parser surface.
 
 #### Plant.loop.roads: (read when iplant = 4; roads)
 * ***Note*** no values; plants for Roads not yet supported.
+* ***openWEPP-native note*** Under `datver=ow-lanuse-1`, `iplant=4` is native cropland, not roads, and uses `Plant.loop.cropland`.
 
 ***Note*** Plant.loop values repeat `ncrop` times.
 
@@ -210,8 +308,9 @@ The plant/management file for WEPP v95.7 is described in Table 16. Please note t
         * 2) range
         * 3) forest
         * 4) roads
+        * ***openWEPP-native note*** Under `datver=ow-lanuse-1`, `4` selects native cropland and uses the cropland operation layout. Native forest (`3`) must not define operation scenarios.
 
-#### Op.loop.cropland: (read when iop=1; cropland)
+#### Op.loop.cropland: (read when iop=1; cropland, or iop=4 under `ow-lanuse-1`; native cropland)
 * 6.1) interrill tillage intensity for fragile crops, real - (`mfo1`)
 * 6.2) interrill tillage intensity for non-fragile crops, real (`mfo2`)
 * 6.3) number of rows of tillage implement, integer - (`numof`)
@@ -261,9 +360,11 @@ The plant/management file for WEPP v95.7 is described in Table 16. Please note t
 
 #### Op.loop.forest: (read when iop=3; forest)
 * ***Note*** no values; operations for Forestland not yet supported.
+* ***openWEPP-native note*** Native forest operation scenarios are not applicable. Under `ow-lanuse-1`, `iop=3` fails closed instead of creating an empty forest operation scenario.
 
 #### Op.loop.roads: (read when iop = 4; roads)
 * ***Note*** no values; operations for Roads not yet supported.
+* ***openWEPP-native note*** Under `datver=ow-lanuse-1`, `iop=4` is native cropland, not roads, and uses `Op.loop.cropland`.
 
 ***Note*** Op.loop values repeat `nop` times.
 
@@ -285,8 +386,9 @@ The plant/management file for WEPP v95.7 is described in Table 16. Please note t
         * 2) range
         * 3) forest
         * 4) roads
+        * ***openWEPP-native note*** Under `datver=ow-lanuse-1`, `3` selects native forest and `4` selects native cropland. Native cropland uses the cropland initial-condition layout.
 
-#### Ini.loop.landuse.cropland: (read when lanuse = 1; cropland)
+#### Ini.loop.landuse.cropland: (read when lanuse = 1; cropland, or lanuse=4 under `ow-lanuse-1`; native cropland)
 * 6.1) bulk density after last tillage ($g/cm^3$), real - (`bdtill`)
 * 6.2) initial canopy cover (0-1), real - (`cancov`)
 * 6.3) days since last tillage, real - (`daydis`)
@@ -346,9 +448,11 @@ The plant/management file for WEPP v95.7 is described in Table 16. Please note t
 
 #### Ini.loop.landuse.forest: (read when lanuse = 3; forest)
 * ***Note*** no values; initial conditions for Forestland not yet supported.
+* ***openWEPP-native note*** Under `datver=ow-lanuse-1`, `lanuse=3` is a native forest initial-condition scenario. See "Native Forest Initial And Yearly Records" above.
 
 #### Ini.loop.landuse.roads: (read when lanuse=4; roads)
 * ***Note*** no values; initial conditions for Roads not yet supported.
+* ***openWEPP-native note*** Under `datver=ow-lanuse-1`, `lanuse=4` is native cropland, not roads, and uses `Ini.loop.landuse.cropland`.
 
 ***Note*** Ini.loop values repeat `nini` times.
 
@@ -369,10 +473,11 @@ The plant/management file for WEPP v95.7 is described in Table 16. Please note t
         * 2) range
         * 3) forest
         * 4) roads
+        * ***openWEPP-native note*** Under `datver=ow-lanuse-1`, `4` selects native cropland and uses the cropland surface-effect layout. Native forest (`3`) must not define surface-effect scenarios.
 * **Surf.loop.number:**
     * 6.1) number of operations for surface effect scenario, integer - (`ntill`)
 
-#### Surf.loop.loop.cropland: (read when iseq = 1; cropland)
+#### Surf.loop.loop.cropland: (read when iseq = 1; cropland, or iseq=4 under `ow-lanuse-1`; native cropland)
 * 7.1) day of tillage (julian), integer - (`mdate`)
 * 8.1) Operation Scenario index, integer - (`op`)
 * ***Note*** `op` refers to the Operation Scenario.
@@ -387,9 +492,11 @@ The plant/management file for WEPP v95.7 is described in Table 16. Please note t
 
 #### Surf.loop.loop.forest: (read when iseq = 3; forest)
 * ***Note*** no values; surface effects for Forestland not yet supported.
+* ***openWEPP-native note*** Native forest surface-effect scenarios are not applicable. Under `ow-lanuse-1`, `iseq=3` fails closed instead of creating an empty forest surface scenario.
 
 #### Surf.loop.loop.roads: (read when iseq = 4; roads)
 * ***Note*** no values; surface effects for Roads not yet supported.
+* ***openWEPP-native note*** Under `datver=ow-lanuse-1`, `iseq=4` is native cropland, not roads, and uses `Surf.loop.loop.cropland`.
 
 ***Note*** Surf.loop.loop values repeat `ntill` times. Surf.loop values repeat `nseq` times.
 
@@ -408,8 +515,9 @@ The plant/management file for WEPP v95.7 is described in Table 16. Please note t
     * 5.1) for use on land type..., integer - (`icont`)
         * 1) crop
         * ***Note*** `icont` must be 1, as only cropland supports contouring.
+        * ***openWEPP-native note*** Under `datver=ow-lanuse-1`, native cropland may use `icont=4` with the cropland contour layout. Native forest contour scenarios are not applicable.
 
-#### Cont.loop.cropland: (read when icont = 1; cropland)
+#### Cont.loop.cropland: (read when icont = 1; cropland, or icont=4 under `ow-lanuse-1`; native cropland)
 * 6.1) contour slope ($m/m$), real - (`cntslp`)
 * 6.2) contour ridge height (m), real - (`rdghgt`)
 * 6.3) contour row length (m), real - (`rowlen`)
@@ -434,8 +542,9 @@ The plant/management file for WEPP v95.7 is described in Table 16. Please note t
         * 2) range
         * 4) roads
         * ***Note*** `dcont` must be 1, 2, or 4, as forestland does not support drainage.
+        * ***openWEPP-native note*** Under `datver=ow-lanuse-1`, `4` selects native cropland and uses the cropland drainage layout. Native forest (`3`) must not define drainage scenarios.
 
-#### Drain.loop.drainage: (read when dcont = 1; cropland)
+#### Drain.loop.drainage: (read when dcont = 1; cropland, or dcont=4 under `ow-lanuse-1`; native cropland)
 * 6.1) depth to tile drain (m), real - (`ddrain`)
 * 6.2) drainage coefficient ($m/day$), real - (`drainc`)
 * 6.3) drain tile diameter (m), real - (`drdiam`)
@@ -446,6 +555,7 @@ The plant/management file for WEPP v95.7 is described in Table 16. Please note t
 
 #### Drain.loop.roads: (read when dcont = 4; roads)
 * ***Note*** no values; drainage for Roads not yet supported.
+* ***openWEPP-native note*** Under `datver=ow-lanuse-1`, `dcont=4` is native cropland, not roads, and uses `Drain.loop.drainage`.
 
 ***Note*** Drain.loop values repeat `ndrain` times.
 
@@ -466,8 +576,9 @@ The plant/management file for WEPP v95.7 is described in Table 16. Please note t
         * 2) range
         * 3) forest
         * 4) roads
+        * ***openWEPP-native note*** Under `datver=ow-lanuse-1`, `3` selects native forest and `4` selects native cropland. Native cropland uses the cropland yearly layout.
 
-#### Year.loop.cropland: (read when iscen = 1; cropland)
+#### Year.loop.cropland: (read when iscen = 1; cropland, or iscen=4 under `ow-lanuse-1`; native cropland)
 * 6.1) Plant Growth Scenario index, integer (`itype`)
 * ***Note*** `itype` refers to a Plant Growth Scenario. The value for `itype` corresponds to the order that the plants are read into WEPP from the Plant Growth Section. For example, if the plants being grown are corn and soybeans and in the Plant Growth Section the first plant read in is corn and the second soybeans, then corn will have a reference index of 1 and soybeans will have a reference index of 2. So for any year when corn is being grown, `itype` will equal 1 and for any year when soybeans are being grown, `itype` will equal 2.
 * 7.1) Surface Effect Scenario index, integer - (`tilseq`)
@@ -626,9 +737,11 @@ The plant/management file for WEPP v95.7 is described in Table 16. Please note t
 
 #### Year.loop.forest: (read when iscen = 3; forest)
 * ***Note*** no values; yearly information for Forestland not yet supported.
+* ***openWEPP-native note*** Under `datver=ow-lanuse-1`, `iscen=3` is a native forest yearly scenario. See "Native Forest Initial And Yearly Records" above.
 
 #### Year.loop.roads: (read when iscen=4; roads)
 * ***Note*** no values; yearly information for Roads not yet supported.
+* ***openWEPP-native note*** Under `datver=ow-lanuse-1`, `iscen=4` is native cropland, not roads, and uses `Year.loop.cropland`.
 
 ***Note*** Year.loop values repeat `nscen` times.
 

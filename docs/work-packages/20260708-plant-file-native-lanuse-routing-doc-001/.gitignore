@@ -1,0 +1,3 @@
+# Keep large ad hoc logs out of package evidence.
+*.log
+*.tmp

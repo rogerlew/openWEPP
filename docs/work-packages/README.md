@@ -12,6 +12,12 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-08`:
+- `20260708-plant-file-native-lanuse-routing-doc-001/` -
+  EXECUTED-COMPLETE-DOC-ALIGNMENT (2026-07-08): docs-only package updated
+  `docs/specifications/wepp-input-files/specs/plant-file.spec.md` for the
+  executable `ow-lanuse-1` native management branch, native forest/native
+  cropland landuse sentinels, and the five-value Lane D
+  `routing_coefficients` plant-record extension in end-user-legible language.
 - `20260708-laned-router-dx5-production-mesh-policy-ratification-001/` -
   EXECUTED-COMPLETE-DX5-PRODUCTION-MESH-POLICY (2026-07-08): amended
   `SC-OFEROUTE-001` rev 45 and promoted the active production mesh default to
