@@ -230,7 +230,7 @@ pub use growth::{
 pub use laned_active::{
     DirectLanedActiveConfig, DirectLanedActiveDayRouting, DirectLanedActiveLaneConfig,
     DirectLanedActiveMeshPolicy, DirectLanedActiveMeshPolicySummary, DirectLanedActiveRunSummary,
-    DirectLanedActiveTraceRecord,
+    DirectLanedActiveTraceDetail, DirectLanedActiveTraceDetailFilter, DirectLanedActiveTraceRecord,
 };
 pub use normalization::{
     DirectNormalizationDownstreamOperands, DirectNormalizationInputs,

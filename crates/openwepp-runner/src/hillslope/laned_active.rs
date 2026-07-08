@@ -13,6 +13,7 @@
 use crate::HillslopeCliError;
 
 pub(crate) const ACTIVE_MESH_TARGET_DX_ENV: &str = "OPENWEPP_LANED_ACTIVE_MESH_TARGET_DX_M";
+pub(crate) const ACTIVE_TRACE_DETAIL_ENV: &str = "OPENWEPP_LANED_ACTIVE_TRACE_DETAIL";
 pub(crate) const ACTIVE_TRACE_ENV: &str = "OPENWEPP_LANED_ACTIVE_TRACE";
 
 /// Env opt-in: `OPENWEPP_LANED_ACTIVE=1`.
@@ -35,11 +36,75 @@ pub(crate) fn validate_trace_selector_env() -> Result<(), HillslopeCliError> {
             ),
         });
     }
+    if std::env::var_os(ACTIVE_TRACE_DETAIL_ENV).is_some() && (!env_enabled() || !trace_enabled()) {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: ACTIVE_TRACE_DETAIL_ENV,
+            detail: format!(
+                "{ACTIVE_TRACE_DETAIL_ENV}=<sim_day:lane> requires {ACTIVE_TRACE_ENV}=1 and OPENWEPP_LANED_ACTIVE=1"
+            ),
+        });
+    }
     Ok(())
 }
 
 fn trace_enabled_from_value(value: Option<&str>) -> bool {
     value.is_some_and(|value| value == "1")
+}
+
+pub(crate) fn trace_detail_filter_from_env() -> Result<
+    Option<openwepp_hillslope_orchestrator::DirectLanedActiveTraceDetailFilter>,
+    HillslopeCliError,
+> {
+    match std::env::var(ACTIVE_TRACE_DETAIL_ENV) {
+        Ok(value) => trace_detail_filter_from_value(Some(&value)),
+        Err(std::env::VarError::NotPresent) => trace_detail_filter_from_value(None),
+        Err(std::env::VarError::NotUnicode(_)) => Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: ACTIVE_TRACE_DETAIL_ENV,
+            detail: "expected UTF-8 one-based sim_day:lane selector".to_string(),
+        }),
+    }
+}
+
+fn trace_detail_filter_from_value(
+    value: Option<&str>,
+) -> Result<
+    Option<openwepp_hillslope_orchestrator::DirectLanedActiveTraceDetailFilter>,
+    HillslopeCliError,
+> {
+    let Some(value) = value else {
+        return Ok(None);
+    };
+    let (day, lane) =
+        value
+            .split_once(':')
+            .ok_or_else(|| HillslopeCliError::RuntimeSurfaceFailure {
+                surface: ACTIVE_TRACE_DETAIL_ENV,
+                detail: "expected one-based sim_day:lane selector, e.g. 792:1".to_string(),
+            })?;
+    let sim_day =
+        day.parse::<usize>()
+            .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+                surface: ACTIVE_TRACE_DETAIL_ENV,
+                detail: format!("expected positive integer sim_day: {error}"),
+            })?;
+    let lane_index =
+        lane.parse::<usize>()
+            .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+                surface: ACTIVE_TRACE_DETAIL_ENV,
+                detail: format!("expected positive integer lane: {error}"),
+            })?;
+    if sim_day == 0 || lane_index == 0 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: ACTIVE_TRACE_DETAIL_ENV,
+            detail: "sim_day and lane are one-based and must be >= 1".to_string(),
+        });
+    }
+    Ok(Some(
+        openwepp_hillslope_orchestrator::DirectLanedActiveTraceDetailFilter {
+            day_index: sim_day - 1,
+            lane_index: lane_index - 1,
+        },
+    ))
 }
 
 pub(crate) fn mesh_policy_from_env()
@@ -90,7 +155,9 @@ pub(crate) fn reject_abandoned_implicit_selector_env() -> Result<(), HillslopeCl
 
 #[cfg(test)]
 mod tests {
-    use super::{mesh_policy_from_target_dx_value, trace_enabled_from_value};
+    use super::{
+        mesh_policy_from_target_dx_value, trace_detail_filter_from_value, trace_enabled_from_value,
+    };
     use openwepp_hillslope_orchestrator::DirectLanedActiveMeshPolicy;
 
     #[test]
@@ -112,5 +179,17 @@ mod tests {
         assert!(!trace_enabled_from_value(None));
         assert!(!trace_enabled_from_value(Some("0")));
         assert!(trace_enabled_from_value(Some("1")));
+    }
+
+    #[test]
+    fn trace_detail_filter_parses_one_based_day_lane() {
+        assert_eq!(trace_detail_filter_from_value(None).expect("none"), None);
+        let filter = trace_detail_filter_from_value(Some("792:1"))
+            .expect("detail selector")
+            .expect("filter");
+        assert_eq!(filter.day_index, 791);
+        assert_eq!(filter.lane_index, 0);
+        assert!(trace_detail_filter_from_value(Some("0:1")).is_err());
+        assert!(trace_detail_filter_from_value(Some("792")).is_err());
     }
 }

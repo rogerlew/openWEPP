@@ -12,6 +12,17 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-08`:
+- `20260708-laned-router-mn-corn-h4-routed-shape-attribution-001/` -
+  EXECUTED-HOLD-SOLVER-CLASS-DAY792 (2026-07-08): attributed the persistent
+  `mn_corn_h4` day-792 lane-1 routed-shape fine-reference adequacy miss. The
+  binding tests did not classify it as metric-class: the failing
+  `dx1p25` vs `dx0p625` hourly-shape L1 maps to
+  `0.011445388178193001 m3` of hourly mass movement, not the
+  `9.04e-5 m3` outlet/storage residual scale; hourly CDF distance and raw
+  outlet-hydrograph deltas also worsen on the fine pair. No
+  `SC-OFEROUTE-001` amendment, shape threshold widening, `dx5` promotion, or
+  production mesh-policy flip landed. Follow-on:
+  `20260708-laned-router-mn-corn-h4-day792-raw-hydrograph-numerics-001`.
 - `20260708-laned-router-tier2-dx5-fine-reference-hold-lift-001/` -
   EXECUTED-HOLD-MN-CORN-H4-SHAPE-NONCONVERGED (2026-07-08): executed the
   narrow rev-41 Tier-2 hold-lift by adding the `mn_corn_h4` `dx0p625`

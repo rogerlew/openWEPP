@@ -562,6 +562,9 @@ impl DirectFrameExecutor {
                     .area_m2;
                 let day_frame = &mut day_frames[lane_index];
                 if let Some(window_s) = window_s {
+                    let trace_detail = config.trace_detail_filter.is_some_and(|filter| {
+                        filter.matches(day_index, lane_index)
+                    });
                     let handoff = laned_active::laned_active_route_lane(
                         day_frame,
                         &config.lanes[lane_index],
@@ -571,6 +574,7 @@ impl DirectFrameExecutor {
                         window_s,
                         &mut books,
                         &lane_sources[lane_index],
+                        trace_detail,
                     )
                     .map_err(|source| {
                         Self::day_execution_failure(day_frame, lane_index, day_index, &source)
@@ -601,6 +605,7 @@ impl DirectFrameExecutor {
                                 routed_weights: [0.0; 24],
                                 uniform_shape: false,
                                 erosion_source_shape_degenerate: false,
+                                trace_detail: None,
                             }));
                     }
                     // CR-L1: the INV-OFEROUTE-012 latqcc bypass exists on

@@ -284,6 +284,7 @@ pub struct DirectLanedActiveConfig {
     pub lanes: Vec<DirectLanedActiveLaneConfig>,
     pub mesh_policy: DirectLanedActiveMeshPolicy,
     pub trace_enabled: bool,
+    pub trace_detail_filter: Option<DirectLanedActiveTraceDetailFilter>,
 }
 
 impl DirectLanedActiveConfig {
@@ -298,8 +299,37 @@ impl DirectLanedActiveConfig {
             lane.validate()?;
         }
         self.mesh_policy.validate()?;
+        if self.trace_detail_filter.is_some() && !self.trace_enabled {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "laned_active.trace_detail_filter",
+            });
+        }
         Ok(())
     }
+}
+
+/// Optional diagnostic trace detail target. Indices are zero-based inside the
+/// orchestrator; runner env parsing accepts one-based `sim_day:lane`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct DirectLanedActiveTraceDetailFilter {
+    pub day_index: usize,
+    pub lane_index: usize,
+}
+
+impl DirectLanedActiveTraceDetailFilter {
+    #[must_use]
+    pub const fn matches(self, day_index: usize, lane_index: usize) -> bool {
+        self.day_index == day_index && self.lane_index == lane_index
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct DirectLanedActiveTraceDetail {
+    pub outlet_bin_m3: Vec<f64>,
+    pub outlet_bin_spans_s: Vec<f64>,
+    pub hydrograph_time_s: Vec<f64>,
+    pub hydrograph_outlet_m3_s: Vec<f64>,
+    pub hydrograph_outlet_depth_m: Vec<f64>,
 }
 
 /// Per-lane-day routed evidence, stored on the day frame so the runner's
@@ -314,6 +344,7 @@ pub struct DirectLanedActiveDayRouting {
     pub routed_weights: [f64; 24],
     pub uniform_shape: bool,
     pub erosion_source_shape_degenerate: bool,
+    pub trace_detail: Option<Box<DirectLanedActiveTraceDetail>>,
 }
 
 /// Run-level evidence summary accumulated by the executor and surfaced by
@@ -359,6 +390,7 @@ pub struct DirectLanedActiveTraceRecord {
     pub routed_weights: [f64; 24],
     pub uniform_shape: bool,
     pub erosion_source_shape_degenerate: bool,
+    pub trace_detail: Option<Box<DirectLanedActiveTraceDetail>>,
 }
 
 impl Default for DirectLanedActiveRunSummary {
@@ -427,6 +459,7 @@ pub(crate) fn laned_active_record_trace(
         routed_weights: routing.routed_weights,
         uniform_shape: routing.uniform_shape,
         erosion_source_shape_degenerate: routing.erosion_source_shape_degenerate,
+        trace_detail: routing.trace_detail.clone(),
     });
     Ok(())
 }
@@ -638,6 +671,7 @@ pub(crate) fn laned_active_route_lane(
     window_s: f64,
     books: &mut DirectLanedActiveDayBooks,
     source: &LanedActiveLaneSource,
+    trace_detail: bool,
 ) -> Result<UpstreamHandoff, DirectRuntimeError> {
     validate_finite("laned_active.area_m2", area_m2)?;
     if area_m2 <= 0.0 {
@@ -801,6 +835,31 @@ pub(crate) fn laned_active_route_lane(
     let outlet_m3 = result.mass_balance.outflow_m2 * width;
     let mesh_storage_m3 = result.mass_balance.storage_change_m2 * width;
     let clamp_m3 = result.mass_balance.positivity_clamp_m2 * width;
+    let trace_detail = trace_detail.then(|| {
+        Box::new(DirectLanedActiveTraceDetail {
+            outlet_bin_m3: result
+                .outlet_bin_outflow_m2
+                .iter()
+                .map(|value| value * width)
+                .collect(),
+            outlet_bin_spans_s: result.outlet_bin_spans_s.clone(),
+            hydrograph_time_s: result
+                .hydrograph
+                .iter()
+                .map(|sample| sample.time_s)
+                .collect(),
+            hydrograph_outlet_m3_s: result
+                .hydrograph
+                .iter()
+                .map(|sample| sample.outlet_unit_discharge_m2_s * width)
+                .collect(),
+            hydrograph_outlet_depth_m: result
+                .hydrograph
+                .iter()
+                .map(|sample| sample.outlet_depth_m)
+                .collect(),
+        })
+    });
     books.injected_m3 += injected_m3;
     books.soil_release_m3 += soil_release_m3;
     books.mesh_storage_m3 += mesh_storage_m3;
@@ -850,6 +909,7 @@ pub(crate) fn laned_active_route_lane(
         routed_weights,
         uniform_shape: source.uniform_shape,
         erosion_source_shape_degenerate: source_shape_degenerate,
+        trace_detail,
     }));
 
     Ok(UpstreamHandoff {
@@ -1088,6 +1148,7 @@ mod tests {
             3600.0,
             &mut books,
             &dry_lane_source(),
+            false,
         )
         .expect("positive post-growth canhgt should satisfy the vegetated guard");
 
@@ -1103,6 +1164,7 @@ mod tests {
                 3600.0,
                 &mut stale_static_books,
                 &dry_lane_source(),
+                false,
             ),
             Err(DirectRuntimeError::DirectKernelGuardFailure {
                 phase: "laned_active_rev21_operands",

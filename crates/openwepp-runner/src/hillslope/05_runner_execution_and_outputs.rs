@@ -958,6 +958,16 @@ fn write_laned_active_trace_output(
     let mut payload = String::new();
     for record in records {
         let weight_sum: f64 = record.routed_weights.iter().sum();
+        let trace_detail = record.trace_detail.as_ref().map(|detail| {
+            serde_json::json!({
+                "schema": "openwepp-laned-active-trace-detail-v1",
+                "outlet_bin_m3": &detail.outlet_bin_m3,
+                "outlet_bin_spans_s": &detail.outlet_bin_spans_s,
+                "hydrograph_time_s": &detail.hydrograph_time_s,
+                "hydrograph_outlet_m3_s": &detail.hydrograph_outlet_m3_s,
+                "hydrograph_outlet_depth_m": &detail.hydrograph_outlet_depth_m,
+            })
+        });
         let line = serde_json::to_string(&serde_json::json!({
             "schema": "openwepp-laned-active-trace-row-v1",
             "day_index_zero_based": record.day_index,
@@ -975,6 +985,7 @@ fn write_laned_active_trace_output(
             "routed_hourly_weight_sum": weight_sum,
             "uniform_shape": record.uniform_shape,
             "erosion_source_shape_degenerate": record.erosion_source_shape_degenerate,
+            "trace_detail": trace_detail,
         }))
         .map_err(|source| HillslopeCliError::ManifestSerialize { source })?;
         payload.push_str(&line);
