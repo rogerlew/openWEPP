@@ -6,7 +6,8 @@
 //! operand-seed geometry, typed-management `canhgt`) and attaches it to the
 //! direct run frame; the orchestrator executor then owns the two-phase
 //! active day loop, the DC01-surface-disable, the D13 erosion producer
-//! flip, and the day-closure hard-fails. Mutually exclusive with
+//! flip, the rev-45 `dx5` active production mesh default, and the day-closure
+//! hard-fails. Mutually exclusive with
 //! `OPENWEPP_LANED_SHADOW=1` (the shadow's published-row reconstruction
 //! basis is DC01-shaped and is not defined over an active run).
 
@@ -298,6 +299,12 @@ mod tests {
         assert_eq!(
             mesh_policy_from_target_dx_value(None).expect("default policy"),
             DirectLanedActiveMeshPolicy::production_default()
+        );
+        assert_eq!(
+            DirectLanedActiveMeshPolicy::production_default()
+                .cell_count_for_length_m(300.0)
+                .expect("production dx5"),
+            60
         );
         assert_eq!(
             mesh_policy_from_target_dx_value(Some("20.0")).expect("target dx policy"),

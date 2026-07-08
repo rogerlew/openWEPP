@@ -1,0 +1,1019 @@
+{
+  "closure_assertions": [
+    {
+      "member_id": "mn_corn_h4",
+      "mode": "active_default_dx5",
+      "observed": {
+        "days_routed": 209,
+        "days_seen": 2557,
+        "lane_days_erosion_source_shape_degenerate": 22,
+        "max_day_cascade_residual_rel": 1.0388136044916924e-14,
+        "max_day_identity_residual_rel": 8.752483860221787e-14,
+        "max_day_seam_residual_rel": 5.092454815097145e-15,
+        "max_supply_reconstruction_rel": 4.438822286981392e-16,
+        "total_clamp_m3": 0.0,
+        "total_clamp_rel_source": 0.0,
+        "total_end_window_storage_m3": 36.856222321031304,
+        "total_latqcc_outlet_m3": 57914.55660394729,
+        "total_routed_outlet_m3": 4473.6107436690945,
+        "total_source_m3": 4510.466965990121,
+        "total_tail_fold_m3": 9.23907663324175
+      },
+      "status": "PASS"
+    },
+    {
+      "member_id": "mn_corn_h4",
+      "mode": "active_explicit_dx5",
+      "observed": {
+        "days_routed": 209,
+        "days_seen": 2557,
+        "lane_days_erosion_source_shape_degenerate": 22,
+        "max_day_cascade_residual_rel": 1.0388136044916924e-14,
+        "max_day_identity_residual_rel": 8.752483860221787e-14,
+        "max_day_seam_residual_rel": 5.092454815097145e-15,
+        "max_supply_reconstruction_rel": 4.438822286981392e-16,
+        "total_clamp_m3": 0.0,
+        "total_clamp_rel_source": 0.0,
+        "total_end_window_storage_m3": 36.856222321031304,
+        "total_latqcc_outlet_m3": 57914.55660394729,
+        "total_routed_outlet_m3": 4473.6107436690945,
+        "total_source_m3": 4510.466965990121,
+        "total_tail_fold_m3": 9.23907663324175
+      },
+      "status": "PASS"
+    },
+    {
+      "member_id": "n_idaho_forest_h1",
+      "mode": "active_default_dx5",
+      "observed": {
+        "days_routed": 185,
+        "days_seen": 1461,
+        "lane_days_erosion_source_shape_degenerate": 0,
+        "max_day_cascade_residual_rel": 9.435478910085368e-15,
+        "max_day_identity_residual_rel": 5.254588131978787e-14,
+        "max_day_seam_residual_rel": 6.427411888066303e-15,
+        "max_supply_reconstruction_rel": 8.378371644554163e-16,
+        "total_clamp_m3": 0.0,
+        "total_clamp_rel_source": 0.0,
+        "total_end_window_storage_m3": 1243.5713546111863,
+        "total_latqcc_outlet_m3": 254933.24890910255,
+        "total_routed_outlet_m3": 99720.11903453514,
+        "total_source_m3": 100963.69038914639,
+        "total_tail_fold_m3": 1277.3919840113401
+      },
+      "status": "PASS"
+    },
+    {
+      "member_id": "n_idaho_forest_h1",
+      "mode": "active_explicit_dx5",
+      "observed": {
+        "days_routed": 185,
+        "days_seen": 1461,
+        "lane_days_erosion_source_shape_degenerate": 0,
+        "max_day_cascade_residual_rel": 9.435478910085368e-15,
+        "max_day_identity_residual_rel": 5.254588131978787e-14,
+        "max_day_seam_residual_rel": 6.427411888066303e-15,
+        "max_supply_reconstruction_rel": 8.378371644554163e-16,
+        "total_clamp_m3": 0.0,
+        "total_clamp_rel_source": 0.0,
+        "total_end_window_storage_m3": 1243.5713546111863,
+        "total_latqcc_outlet_m3": 254933.24890910255,
+        "total_routed_outlet_m3": 99720.11903453514,
+        "total_source_m3": 100963.69038914639,
+        "total_tail_fold_m3": 1277.3919840113401
+      },
+      "status": "PASS"
+    },
+    {
+      "member_id": "wa_cascades_forest_h1",
+      "mode": "active_default_dx5",
+      "observed": {
+        "days_routed": 1381,
+        "days_seen": 2192,
+        "lane_days_erosion_source_shape_degenerate": 1,
+        "max_day_cascade_residual_rel": 4.705058001136025e-14,
+        "max_day_identity_residual_rel": 5.933273356520313e-14,
+        "max_day_seam_residual_rel": 4.832475752036399e-14,
+        "max_supply_reconstruction_rel": 5.714626530090617e-16,
+        "total_clamp_m3": 7.305156020320419e-13,
+        "total_clamp_rel_source": 8.44135663405994e-19,
+        "total_end_window_storage_m3": 4870.587280992438,
+        "total_latqcc_outlet_m3": 729943.7198742138,
+        "total_routed_outlet_m3": 860530.122226401,
+        "total_source_m3": 865400.7095073939,
+        "total_tail_fold_m3": 8913.530961605135
+      },
+      "status": "PASS"
+    },
+    {
+      "member_id": "wa_cascades_forest_h1",
+      "mode": "active_explicit_dx5",
+      "observed": {
+        "days_routed": 1381,
+        "days_seen": 2192,
+        "lane_days_erosion_source_shape_degenerate": 1,
+        "max_day_cascade_residual_rel": 4.705058001136025e-14,
+        "max_day_identity_residual_rel": 5.933273356520313e-14,
+        "max_day_seam_residual_rel": 4.832475752036399e-14,
+        "max_supply_reconstruction_rel": 5.714626530090617e-16,
+        "total_clamp_m3": 7.305156020320419e-13,
+        "total_clamp_rel_source": 8.44135663405994e-19,
+        "total_end_window_storage_m3": 4870.587280992438,
+        "total_latqcc_outlet_m3": 729943.7198742138,
+        "total_routed_outlet_m3": 860530.122226401,
+        "total_source_m3": 865400.7095073939,
+        "total_tail_fold_m3": 8913.530961605135
+      },
+      "status": "PASS"
+    }
+  ],
+  "created_utc": "2026-07-08T16:04:44.193665+00:00",
+  "identity_comparisons": [
+    {
+      "comparison": "active_default_vs_explicit_dx5",
+      "left_mode": "active_default_dx5",
+      "member_id": "mn_corn_h4",
+      "mismatches": [],
+      "right_mode": "active_explicit_dx5",
+      "status": "PASS"
+    },
+    {
+      "comparison": "off_default_vs_mesh_env_control",
+      "left_mode": "off_default",
+      "member_id": "mn_corn_h4",
+      "mismatches": [],
+      "right_mode": "off_mesh_env_control",
+      "status": "PASS"
+    },
+    {
+      "comparison": "active_default_vs_explicit_dx5",
+      "left_mode": "active_default_dx5",
+      "member_id": "n_idaho_forest_h1",
+      "mismatches": [],
+      "right_mode": "active_explicit_dx5",
+      "status": "PASS"
+    },
+    {
+      "comparison": "off_default_vs_mesh_env_control",
+      "left_mode": "off_default",
+      "member_id": "n_idaho_forest_h1",
+      "mismatches": [],
+      "right_mode": "off_mesh_env_control",
+      "status": "PASS"
+    },
+    {
+      "comparison": "active_default_vs_explicit_dx5",
+      "left_mode": "active_default_dx5",
+      "member_id": "wa_cascades_forest_h1",
+      "mismatches": [],
+      "right_mode": "active_explicit_dx5",
+      "status": "PASS"
+    },
+    {
+      "comparison": "off_default_vs_mesh_env_control",
+      "left_mode": "off_default",
+      "member_id": "wa_cascades_forest_h1",
+      "mismatches": [],
+      "right_mode": "off_mesh_env_control",
+      "status": "PASS"
+    }
+  ],
+  "materialization": "docs/work-packages/20260707-laned-router-d16-rowcrop-canhgt-active-runtime-publication-001/artifacts/selected-cohort-materialization.json",
+  "members": [
+    "mn_corn_h4",
+    "n_idaho_forest_h1",
+    "wa_cascades_forest_h1"
+  ],
+  "mesh_policy_assertions": [
+    {
+      "member_id": "mn_corn_h4",
+      "mode": "active_default_dx5",
+      "observed": {
+        "days_routed": 209,
+        "days_seen": 2557,
+        "days_uniform_shape": 16,
+        "lane_days_erosion_source_shape_degenerate": 22,
+        "max_day_cascade_residual_rel": 1.0388136044916924e-14,
+        "max_day_identity_residual_rel": 8.752483860221787e-14,
+        "max_day_seam_residual_rel": 5.092454815097145e-15,
+        "max_dt_s": 300.0,
+        "max_supply_reconstruction_rel": 4.438822286981392e-16,
+        "mesh_policy": {
+          "max_cells": 4096,
+          "min_cells": 10,
+          "mode": "target_dx",
+          "target_dx_m": 5.0
+        },
+        "total_clamp_m3": 0.0,
+        "total_end_window_storage_m3": 36.856222321031304,
+        "total_latqcc_outlet_m3": 57914.55660394729,
+        "total_routed_outlet_m3": 4473.6107436690945,
+        "total_source_m3": 4510.466965990121,
+        "total_tail_fold_m3": 9.23907663324175,
+        "trace_record_count": 2557
+      },
+      "status": "PASS"
+    },
+    {
+      "member_id": "mn_corn_h4",
+      "mode": "active_explicit_dx5",
+      "observed": {
+        "days_routed": 209,
+        "days_seen": 2557,
+        "days_uniform_shape": 16,
+        "lane_days_erosion_source_shape_degenerate": 22,
+        "max_day_cascade_residual_rel": 1.0388136044916924e-14,
+        "max_day_identity_residual_rel": 8.752483860221787e-14,
+        "max_day_seam_residual_rel": 5.092454815097145e-15,
+        "max_dt_s": 300.0,
+        "max_supply_reconstruction_rel": 4.438822286981392e-16,
+        "mesh_policy": {
+          "max_cells": 4096,
+          "min_cells": 10,
+          "mode": "target_dx",
+          "target_dx_m": 5.0
+        },
+        "total_clamp_m3": 0.0,
+        "total_end_window_storage_m3": 36.856222321031304,
+        "total_latqcc_outlet_m3": 57914.55660394729,
+        "total_routed_outlet_m3": 4473.6107436690945,
+        "total_source_m3": 4510.466965990121,
+        "total_tail_fold_m3": 9.23907663324175,
+        "trace_record_count": 2557
+      },
+      "status": "PASS"
+    },
+    {
+      "member_id": "mn_corn_h4",
+      "mode": "off_default",
+      "observed": null,
+      "status": "PASS"
+    },
+    {
+      "member_id": "mn_corn_h4",
+      "mode": "off_mesh_env_control",
+      "observed": null,
+      "status": "PASS"
+    },
+    {
+      "member_id": "n_idaho_forest_h1",
+      "mode": "active_default_dx5",
+      "observed": {
+        "days_routed": 185,
+        "days_seen": 1461,
+        "days_uniform_shape": 14,
+        "lane_days_erosion_source_shape_degenerate": 0,
+        "max_day_cascade_residual_rel": 9.435478910085368e-15,
+        "max_day_identity_residual_rel": 5.254588131978787e-14,
+        "max_day_seam_residual_rel": 6.427411888066303e-15,
+        "max_dt_s": 300.0,
+        "max_supply_reconstruction_rel": 8.378371644554163e-16,
+        "mesh_policy": {
+          "max_cells": 4096,
+          "min_cells": 10,
+          "mode": "target_dx",
+          "target_dx_m": 5.0
+        },
+        "total_clamp_m3": 0.0,
+        "total_end_window_storage_m3": 1243.5713546111863,
+        "total_latqcc_outlet_m3": 254933.24890910255,
+        "total_routed_outlet_m3": 99720.11903453514,
+        "total_source_m3": 100963.69038914639,
+        "total_tail_fold_m3": 1277.3919840113401,
+        "trace_record_count": 1461
+      },
+      "status": "PASS"
+    },
+    {
+      "member_id": "n_idaho_forest_h1",
+      "mode": "active_explicit_dx5",
+      "observed": {
+        "days_routed": 185,
+        "days_seen": 1461,
+        "days_uniform_shape": 14,
+        "lane_days_erosion_source_shape_degenerate": 0,
+        "max_day_cascade_residual_rel": 9.435478910085368e-15,
+        "max_day_identity_residual_rel": 5.254588131978787e-14,
+        "max_day_seam_residual_rel": 6.427411888066303e-15,
+        "max_dt_s": 300.0,
+        "max_supply_reconstruction_rel": 8.378371644554163e-16,
+        "mesh_policy": {
+          "max_cells": 4096,
+          "min_cells": 10,
+          "mode": "target_dx",
+          "target_dx_m": 5.0
+        },
+        "total_clamp_m3": 0.0,
+        "total_end_window_storage_m3": 1243.5713546111863,
+        "total_latqcc_outlet_m3": 254933.24890910255,
+        "total_routed_outlet_m3": 99720.11903453514,
+        "total_source_m3": 100963.69038914639,
+        "total_tail_fold_m3": 1277.3919840113401,
+        "trace_record_count": 1461
+      },
+      "status": "PASS"
+    },
+    {
+      "member_id": "n_idaho_forest_h1",
+      "mode": "off_default",
+      "observed": null,
+      "status": "PASS"
+    },
+    {
+      "member_id": "n_idaho_forest_h1",
+      "mode": "off_mesh_env_control",
+      "observed": null,
+      "status": "PASS"
+    },
+    {
+      "member_id": "wa_cascades_forest_h1",
+      "mode": "active_default_dx5",
+      "observed": {
+        "days_routed": 1381,
+        "days_seen": 2192,
+        "days_uniform_shape": 10,
+        "lane_days_erosion_source_shape_degenerate": 1,
+        "max_day_cascade_residual_rel": 4.705058001136025e-14,
+        "max_day_identity_residual_rel": 5.933273356520313e-14,
+        "max_day_seam_residual_rel": 4.832475752036399e-14,
+        "max_dt_s": 300.0,
+        "max_supply_reconstruction_rel": 5.714626530090617e-16,
+        "mesh_policy": {
+          "max_cells": 4096,
+          "min_cells": 10,
+          "mode": "target_dx",
+          "target_dx_m": 5.0
+        },
+        "total_clamp_m3": 7.305156020320419e-13,
+        "total_end_window_storage_m3": 4870.587280992438,
+        "total_latqcc_outlet_m3": 729943.7198742138,
+        "total_routed_outlet_m3": 860530.122226401,
+        "total_source_m3": 865400.7095073939,
+        "total_tail_fold_m3": 8913.530961605135,
+        "trace_record_count": 10960
+      },
+      "status": "PASS"
+    },
+    {
+      "member_id": "wa_cascades_forest_h1",
+      "mode": "active_explicit_dx5",
+      "observed": {
+        "days_routed": 1381,
+        "days_seen": 2192,
+        "days_uniform_shape": 10,
+        "lane_days_erosion_source_shape_degenerate": 1,
+        "max_day_cascade_residual_rel": 4.705058001136025e-14,
+        "max_day_identity_residual_rel": 5.933273356520313e-14,
+        "max_day_seam_residual_rel": 4.832475752036399e-14,
+        "max_dt_s": 300.0,
+        "max_supply_reconstruction_rel": 5.714626530090617e-16,
+        "mesh_policy": {
+          "max_cells": 4096,
+          "min_cells": 10,
+          "mode": "target_dx",
+          "target_dx_m": 5.0
+        },
+        "total_clamp_m3": 7.305156020320419e-13,
+        "total_end_window_storage_m3": 4870.587280992438,
+        "total_latqcc_outlet_m3": 729943.7198742138,
+        "total_routed_outlet_m3": 860530.122226401,
+        "total_source_m3": 865400.7095073939,
+        "total_tail_fold_m3": 8913.530961605135,
+        "trace_record_count": 10960
+      },
+      "status": "PASS"
+    },
+    {
+      "member_id": "wa_cascades_forest_h1",
+      "mode": "off_default",
+      "observed": null,
+      "status": "PASS"
+    },
+    {
+      "member_id": "wa_cascades_forest_h1",
+      "mode": "off_mesh_env_control",
+      "observed": null,
+      "status": "PASS"
+    }
+  ],
+  "modes": [
+    "active_default_dx5",
+    "active_explicit_dx5",
+    "off_default",
+    "off_mesh_env_control"
+  ],
+  "release_binary": {
+    "build_command": "cargo build --release -p openwepp-runner --bins",
+    "git_branch": "main",
+    "git_head": "ed32fa4175196d6b8b8055e36e4f5a51ee3787de",
+    "git_status_short": "M crates/openwepp-hillslope-orchestrator/src/direct_runtime/laned_active.rs\n M crates/openwepp-runner/src/hillslope/laned_active.rs\n M docs/specifications/science-contracts/contracts/SC-OFEROUTE-001.md\n?? docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/",
+    "mtime_utc": "2026-07-08T15:57:57.212100+00:00",
+    "path": "target/release/openwepp-cli-hill",
+    "sha256": "3f60d8bd064a11c514edd1558951051782f2e757f4ce71ce4b2e7be292c9524b",
+    "size_bytes": 9944384
+  },
+  "runs": [
+    {
+      "command": "/usr/bin/time -v target/release/openwepp-cli-hill --run-dir /home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/mn_corn_h4/active_default_dx5/run_dir --run-file p4.plain.run.toml --output-dir /home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/mn_corn_h4/active_default_dx5/run_dir/output",
+      "exit_code": 0,
+      "failure_tail": null,
+      "laned_active": {
+        "days_routed": 209,
+        "days_seen": 2557,
+        "days_uniform_shape": 16,
+        "lane_days_erosion_source_shape_degenerate": 22,
+        "max_day_cascade_residual_rel": 1.0388136044916924e-14,
+        "max_day_identity_residual_rel": 8.752483860221787e-14,
+        "max_day_seam_residual_rel": 5.092454815097145e-15,
+        "max_dt_s": 300.0,
+        "max_supply_reconstruction_rel": 4.438822286981392e-16,
+        "mesh_policy": {
+          "max_cells": 4096,
+          "min_cells": 10,
+          "mode": "target_dx",
+          "target_dx_m": 5.0
+        },
+        "total_clamp_m3": 0.0,
+        "total_end_window_storage_m3": 36.856222321031304,
+        "total_latqcc_outlet_m3": 57914.55660394729,
+        "total_routed_outlet_m3": 4473.6107436690945,
+        "total_source_m3": 4510.466965990121,
+        "total_tail_fold_m3": 9.23907663324175,
+        "trace_record_count": 2557
+      },
+      "log_path": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/mn_corn_h4/active_default_dx5/time.log",
+      "manifest_exists": true,
+      "manifest_path": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/mn_corn_h4/active_default_dx5/run_dir/output/openwepp_hillslope_run_manifest.json",
+      "member_id": "mn_corn_h4",
+      "mode": "active_default_dx5",
+      "output_dir": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/mn_corn_h4/active_default_dx5/run_dir/output",
+      "output_hashes": {
+        ".hbp": "2f200c2ee0ad4f1b581d6d95aafe7bc2ff2ba5368afa96846263ea86b5243e18",
+        ".loss.json": "51f8fa26774deee4ca1dff0ddf644035b2a12a05ac4bb8200320a5740e56e980",
+        ".pass.parquet": "a364287f6fe348f609d25f341823781fdb6885607644eb531050ba1abbf5084f",
+        ".wat.parquet": "b5b4e9b12f94b36b019074aee666f9824a965e3d49e6dc00ccb97f7e633ba3ea",
+        "laned_active_trace.jsonl": "35dfc59aba55404c703739ecf4103ce9f98c0bbb3fdcf497c4c59c6c7ec2d387"
+      },
+      "run_dir": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/mn_corn_h4/active_default_dx5/run_dir",
+      "run_file": "p4.plain.run.toml",
+      "solver_profile": {
+        "alpha_evaluations": 1294074,
+        "solver_cfl_ns": 179461202,
+        "solver_runs": 209,
+        "solver_sample_ns": 3030826,
+        "solver_step_ns": 109275385,
+        "solver_steps": 51324,
+        "solver_steps_homogeneous": 22209,
+        "solver_steps_source_free": 22209
+      },
+      "status": "PASS",
+      "timing": {
+        "sys_seconds": "0.02",
+        "user_seconds": "0.72",
+        "wall_seconds_raw": "0:00.74"
+      },
+      "trace_summary": {
+        "end_storage_total_m3": 36.856222321031304,
+        "erosion_source_shape_degenerate_rows": 22,
+        "path": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/mn_corn_h4/active_default_dx5/run_dir/output/laned_active_trace.jsonl",
+        "rows": 2557,
+        "sha256": "35dfc59aba55404c703739ecf4103ce9f98c0bbb3fdcf497c4c59c6c7ec2d387",
+        "source_total_m3": 4510.466965990125,
+        "tail_fold_total_m3": 9.239076633241751,
+        "terminal_days": 2557,
+        "terminal_outlet_total_m3": 4473.6107436690945
+      }
+    },
+    {
+      "command": "/usr/bin/time -v target/release/openwepp-cli-hill --run-dir /home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/mn_corn_h4/active_explicit_dx5/run_dir --run-file p4.plain.run.toml --output-dir /home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/mn_corn_h4/active_explicit_dx5/run_dir/output",
+      "exit_code": 0,
+      "failure_tail": null,
+      "laned_active": {
+        "days_routed": 209,
+        "days_seen": 2557,
+        "days_uniform_shape": 16,
+        "lane_days_erosion_source_shape_degenerate": 22,
+        "max_day_cascade_residual_rel": 1.0388136044916924e-14,
+        "max_day_identity_residual_rel": 8.752483860221787e-14,
+        "max_day_seam_residual_rel": 5.092454815097145e-15,
+        "max_dt_s": 300.0,
+        "max_supply_reconstruction_rel": 4.438822286981392e-16,
+        "mesh_policy": {
+          "max_cells": 4096,
+          "min_cells": 10,
+          "mode": "target_dx",
+          "target_dx_m": 5.0
+        },
+        "total_clamp_m3": 0.0,
+        "total_end_window_storage_m3": 36.856222321031304,
+        "total_latqcc_outlet_m3": 57914.55660394729,
+        "total_routed_outlet_m3": 4473.6107436690945,
+        "total_source_m3": 4510.466965990121,
+        "total_tail_fold_m3": 9.23907663324175,
+        "trace_record_count": 2557
+      },
+      "log_path": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/mn_corn_h4/active_explicit_dx5/time.log",
+      "manifest_exists": true,
+      "manifest_path": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/mn_corn_h4/active_explicit_dx5/run_dir/output/openwepp_hillslope_run_manifest.json",
+      "member_id": "mn_corn_h4",
+      "mode": "active_explicit_dx5",
+      "output_dir": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/mn_corn_h4/active_explicit_dx5/run_dir/output",
+      "output_hashes": {
+        ".hbp": "2f200c2ee0ad4f1b581d6d95aafe7bc2ff2ba5368afa96846263ea86b5243e18",
+        ".loss.json": "51f8fa26774deee4ca1dff0ddf644035b2a12a05ac4bb8200320a5740e56e980",
+        ".pass.parquet": "a364287f6fe348f609d25f341823781fdb6885607644eb531050ba1abbf5084f",
+        ".wat.parquet": "b5b4e9b12f94b36b019074aee666f9824a965e3d49e6dc00ccb97f7e633ba3ea",
+        "laned_active_trace.jsonl": "35dfc59aba55404c703739ecf4103ce9f98c0bbb3fdcf497c4c59c6c7ec2d387"
+      },
+      "run_dir": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/mn_corn_h4/active_explicit_dx5/run_dir",
+      "run_file": "p4.plain.run.toml",
+      "solver_profile": {
+        "alpha_evaluations": 1294074,
+        "solver_cfl_ns": 188131363,
+        "solver_runs": 209,
+        "solver_sample_ns": 3245778,
+        "solver_step_ns": 113617896,
+        "solver_steps": 51324,
+        "solver_steps_homogeneous": 22209,
+        "solver_steps_source_free": 22209
+      },
+      "status": "PASS",
+      "timing": {
+        "sys_seconds": "0.01",
+        "user_seconds": "0.75",
+        "wall_seconds_raw": "0:00.77"
+      },
+      "trace_summary": {
+        "end_storage_total_m3": 36.856222321031304,
+        "erosion_source_shape_degenerate_rows": 22,
+        "path": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/mn_corn_h4/active_explicit_dx5/run_dir/output/laned_active_trace.jsonl",
+        "rows": 2557,
+        "sha256": "35dfc59aba55404c703739ecf4103ce9f98c0bbb3fdcf497c4c59c6c7ec2d387",
+        "source_total_m3": 4510.466965990125,
+        "tail_fold_total_m3": 9.239076633241751,
+        "terminal_days": 2557,
+        "terminal_outlet_total_m3": 4473.6107436690945
+      }
+    },
+    {
+      "command": "/usr/bin/time -v target/release/openwepp-cli-hill --run-dir /home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/mn_corn_h4/off_default/run_dir --run-file p4.plain.run.toml --output-dir /home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/mn_corn_h4/off_default/run_dir/output",
+      "exit_code": 0,
+      "failure_tail": null,
+      "laned_active": null,
+      "log_path": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/mn_corn_h4/off_default/time.log",
+      "manifest_exists": true,
+      "manifest_path": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/mn_corn_h4/off_default/run_dir/output/openwepp_hillslope_run_manifest.json",
+      "member_id": "mn_corn_h4",
+      "mode": "off_default",
+      "output_dir": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/mn_corn_h4/off_default/run_dir/output",
+      "output_hashes": {
+        ".hbp": "2f200c2ee0ad4f1b581d6d95aafe7bc2ff2ba5368afa96846263ea86b5243e18",
+        ".loss.json": "51f8fa26774deee4ca1dff0ddf644035b2a12a05ac4bb8200320a5740e56e980",
+        ".pass.parquet": "a364287f6fe348f609d25f341823781fdb6885607644eb531050ba1abbf5084f",
+        ".wat.parquet": "b5b4e9b12f94b36b019074aee666f9824a965e3d49e6dc00ccb97f7e633ba3ea",
+        "laned_active_trace.jsonl": null
+      },
+      "run_dir": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/mn_corn_h4/off_default/run_dir",
+      "run_file": "p4.plain.run.toml",
+      "solver_profile": null,
+      "status": "PASS",
+      "timing": {
+        "sys_seconds": "0.02",
+        "user_seconds": "0.40",
+        "wall_seconds_raw": "0:00.43"
+      },
+      "trace_summary": null
+    },
+    {
+      "command": "/usr/bin/time -v target/release/openwepp-cli-hill --run-dir /home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/mn_corn_h4/off_mesh_env_control/run_dir --run-file p4.plain.run.toml --output-dir /home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/mn_corn_h4/off_mesh_env_control/run_dir/output",
+      "exit_code": 0,
+      "failure_tail": null,
+      "laned_active": null,
+      "log_path": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/mn_corn_h4/off_mesh_env_control/time.log",
+      "manifest_exists": true,
+      "manifest_path": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/mn_corn_h4/off_mesh_env_control/run_dir/output/openwepp_hillslope_run_manifest.json",
+      "member_id": "mn_corn_h4",
+      "mode": "off_mesh_env_control",
+      "output_dir": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/mn_corn_h4/off_mesh_env_control/run_dir/output",
+      "output_hashes": {
+        ".hbp": "2f200c2ee0ad4f1b581d6d95aafe7bc2ff2ba5368afa96846263ea86b5243e18",
+        ".loss.json": "51f8fa26774deee4ca1dff0ddf644035b2a12a05ac4bb8200320a5740e56e980",
+        ".pass.parquet": "a364287f6fe348f609d25f341823781fdb6885607644eb531050ba1abbf5084f",
+        ".wat.parquet": "b5b4e9b12f94b36b019074aee666f9824a965e3d49e6dc00ccb97f7e633ba3ea",
+        "laned_active_trace.jsonl": null
+      },
+      "run_dir": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/mn_corn_h4/off_mesh_env_control/run_dir",
+      "run_file": "p4.plain.run.toml",
+      "solver_profile": null,
+      "status": "PASS",
+      "timing": {
+        "sys_seconds": "0.01",
+        "user_seconds": "0.38",
+        "wall_seconds_raw": "0:00.40"
+      },
+      "trace_summary": null
+    },
+    {
+      "command": "/usr/bin/time -v target/release/openwepp-cli-hill --run-dir /home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/n_idaho_forest_h1/active_default_dx5/run_dir --run-file p1.plain.run.toml --output-dir /home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/n_idaho_forest_h1/active_default_dx5/run_dir/output",
+      "exit_code": 0,
+      "failure_tail": null,
+      "laned_active": {
+        "days_routed": 185,
+        "days_seen": 1461,
+        "days_uniform_shape": 14,
+        "lane_days_erosion_source_shape_degenerate": 0,
+        "max_day_cascade_residual_rel": 9.435478910085368e-15,
+        "max_day_identity_residual_rel": 5.254588131978787e-14,
+        "max_day_seam_residual_rel": 6.427411888066303e-15,
+        "max_dt_s": 300.0,
+        "max_supply_reconstruction_rel": 8.378371644554163e-16,
+        "mesh_policy": {
+          "max_cells": 4096,
+          "min_cells": 10,
+          "mode": "target_dx",
+          "target_dx_m": 5.0
+        },
+        "total_clamp_m3": 0.0,
+        "total_end_window_storage_m3": 1243.5713546111863,
+        "total_latqcc_outlet_m3": 254933.24890910255,
+        "total_routed_outlet_m3": 99720.11903453514,
+        "total_source_m3": 100963.69038914639,
+        "total_tail_fold_m3": 1277.3919840113401,
+        "trace_record_count": 1461
+      },
+      "log_path": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/n_idaho_forest_h1/active_default_dx5/time.log",
+      "manifest_exists": true,
+      "manifest_path": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/n_idaho_forest_h1/active_default_dx5/run_dir/output/openwepp_hillslope_run_manifest.json",
+      "member_id": "n_idaho_forest_h1",
+      "mode": "active_default_dx5",
+      "output_dir": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/n_idaho_forest_h1/active_default_dx5/run_dir/output",
+      "output_hashes": {
+        ".hbp": "c5c970de615496bbdbc52dc9f40b1c3401678e24a78def90df504873a36de37c",
+        ".loss.json": "da7c4bf97659f728ece37799206d00d498875cfa80f34cc30134b7370ae719a4",
+        ".pass.parquet": "0ccbf4c247031a683c521a3501513efa56ada5efe1bda15a1e2e2c9ff1cc6be2",
+        ".wat.parquet": "2e6539761ae2a78f1204f28134eea85f10299ebd02532b3fb9e54fab139f4a3c",
+        "laned_active_trace.jsonl": "2d2c8989b0d9db03ddf463a2b7d52137d130f0944aa1f2b5e39c9f6110601183"
+      },
+      "run_dir": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/n_idaho_forest_h1/active_default_dx5/run_dir",
+      "run_file": "p1.plain.run.toml",
+      "solver_profile": {
+        "alpha_evaluations": 47776980,
+        "solver_cfl_ns": 17984894462,
+        "solver_runs": 185,
+        "solver_sample_ns": 27601004,
+        "solver_step_ns": 3319613925,
+        "solver_steps": 403843,
+        "solver_steps_homogeneous": 41236,
+        "solver_steps_source_free": 41236
+      },
+      "status": "PASS",
+      "timing": {
+        "sys_seconds": "0.03",
+        "user_seconds": "21.76",
+        "wall_seconds_raw": "0:21.79"
+      },
+      "trace_summary": {
+        "end_storage_total_m3": 1243.5713546111867,
+        "erosion_source_shape_degenerate_rows": 0,
+        "path": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/n_idaho_forest_h1/active_default_dx5/run_dir/output/laned_active_trace.jsonl",
+        "rows": 1461,
+        "sha256": "2d2c8989b0d9db03ddf463a2b7d52137d130f0944aa1f2b5e39c9f6110601183",
+        "source_total_m3": 100963.69038914637,
+        "tail_fold_total_m3": 1277.3919840113406,
+        "terminal_days": 1461,
+        "terminal_outlet_total_m3": 99720.11903453518
+      }
+    },
+    {
+      "command": "/usr/bin/time -v target/release/openwepp-cli-hill --run-dir /home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/n_idaho_forest_h1/active_explicit_dx5/run_dir --run-file p1.plain.run.toml --output-dir /home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/n_idaho_forest_h1/active_explicit_dx5/run_dir/output",
+      "exit_code": 0,
+      "failure_tail": null,
+      "laned_active": {
+        "days_routed": 185,
+        "days_seen": 1461,
+        "days_uniform_shape": 14,
+        "lane_days_erosion_source_shape_degenerate": 0,
+        "max_day_cascade_residual_rel": 9.435478910085368e-15,
+        "max_day_identity_residual_rel": 5.254588131978787e-14,
+        "max_day_seam_residual_rel": 6.427411888066303e-15,
+        "max_dt_s": 300.0,
+        "max_supply_reconstruction_rel": 8.378371644554163e-16,
+        "mesh_policy": {
+          "max_cells": 4096,
+          "min_cells": 10,
+          "mode": "target_dx",
+          "target_dx_m": 5.0
+        },
+        "total_clamp_m3": 0.0,
+        "total_end_window_storage_m3": 1243.5713546111863,
+        "total_latqcc_outlet_m3": 254933.24890910255,
+        "total_routed_outlet_m3": 99720.11903453514,
+        "total_source_m3": 100963.69038914639,
+        "total_tail_fold_m3": 1277.3919840113401,
+        "trace_record_count": 1461
+      },
+      "log_path": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/n_idaho_forest_h1/active_explicit_dx5/time.log",
+      "manifest_exists": true,
+      "manifest_path": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/n_idaho_forest_h1/active_explicit_dx5/run_dir/output/openwepp_hillslope_run_manifest.json",
+      "member_id": "n_idaho_forest_h1",
+      "mode": "active_explicit_dx5",
+      "output_dir": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/n_idaho_forest_h1/active_explicit_dx5/run_dir/output",
+      "output_hashes": {
+        ".hbp": "c5c970de615496bbdbc52dc9f40b1c3401678e24a78def90df504873a36de37c",
+        ".loss.json": "da7c4bf97659f728ece37799206d00d498875cfa80f34cc30134b7370ae719a4",
+        ".pass.parquet": "0ccbf4c247031a683c521a3501513efa56ada5efe1bda15a1e2e2c9ff1cc6be2",
+        ".wat.parquet": "2e6539761ae2a78f1204f28134eea85f10299ebd02532b3fb9e54fab139f4a3c",
+        "laned_active_trace.jsonl": "2d2c8989b0d9db03ddf463a2b7d52137d130f0944aa1f2b5e39c9f6110601183"
+      },
+      "run_dir": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/n_idaho_forest_h1/active_explicit_dx5/run_dir",
+      "run_file": "p1.plain.run.toml",
+      "solver_profile": {
+        "alpha_evaluations": 47776980,
+        "solver_cfl_ns": 18292333591,
+        "solver_runs": 185,
+        "solver_sample_ns": 26904822,
+        "solver_step_ns": 3296402433,
+        "solver_steps": 403843,
+        "solver_steps_homogeneous": 41236,
+        "solver_steps_source_free": 41236
+      },
+      "status": "PASS",
+      "timing": {
+        "sys_seconds": "0.02",
+        "user_seconds": "22.04",
+        "wall_seconds_raw": "0:22.07"
+      },
+      "trace_summary": {
+        "end_storage_total_m3": 1243.5713546111867,
+        "erosion_source_shape_degenerate_rows": 0,
+        "path": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/n_idaho_forest_h1/active_explicit_dx5/run_dir/output/laned_active_trace.jsonl",
+        "rows": 1461,
+        "sha256": "2d2c8989b0d9db03ddf463a2b7d52137d130f0944aa1f2b5e39c9f6110601183",
+        "source_total_m3": 100963.69038914637,
+        "tail_fold_total_m3": 1277.3919840113406,
+        "terminal_days": 1461,
+        "terminal_outlet_total_m3": 99720.11903453518
+      }
+    },
+    {
+      "command": "/usr/bin/time -v target/release/openwepp-cli-hill --run-dir /home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/n_idaho_forest_h1/off_default/run_dir --run-file p1.plain.run.toml --output-dir /home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/n_idaho_forest_h1/off_default/run_dir/output",
+      "exit_code": 0,
+      "failure_tail": null,
+      "laned_active": null,
+      "log_path": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/n_idaho_forest_h1/off_default/time.log",
+      "manifest_exists": true,
+      "manifest_path": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/n_idaho_forest_h1/off_default/run_dir/output/openwepp_hillslope_run_manifest.json",
+      "member_id": "n_idaho_forest_h1",
+      "mode": "off_default",
+      "output_dir": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/n_idaho_forest_h1/off_default/run_dir/output",
+      "output_hashes": {
+        ".hbp": "891086a4359bfa09885ea12031ec9350882ec792722483f65f9dfbcc78094cd6",
+        ".loss.json": "da7c4bf97659f728ece37799206d00d498875cfa80f34cc30134b7370ae719a4",
+        ".pass.parquet": "db67428fed2d8c7fabaccb475f0045d4f36efb48e0c7a7cc6c6affe599f397b9",
+        ".wat.parquet": "2e6539761ae2a78f1204f28134eea85f10299ebd02532b3fb9e54fab139f4a3c",
+        "laned_active_trace.jsonl": null
+      },
+      "run_dir": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/n_idaho_forest_h1/off_default/run_dir",
+      "run_file": "p1.plain.run.toml",
+      "solver_profile": null,
+      "status": "PASS",
+      "timing": {
+        "sys_seconds": "0.02",
+        "user_seconds": "0.38",
+        "wall_seconds_raw": "0:00.40"
+      },
+      "trace_summary": null
+    },
+    {
+      "command": "/usr/bin/time -v target/release/openwepp-cli-hill --run-dir /home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/n_idaho_forest_h1/off_mesh_env_control/run_dir --run-file p1.plain.run.toml --output-dir /home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/n_idaho_forest_h1/off_mesh_env_control/run_dir/output",
+      "exit_code": 0,
+      "failure_tail": null,
+      "laned_active": null,
+      "log_path": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/n_idaho_forest_h1/off_mesh_env_control/time.log",
+      "manifest_exists": true,
+      "manifest_path": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/n_idaho_forest_h1/off_mesh_env_control/run_dir/output/openwepp_hillslope_run_manifest.json",
+      "member_id": "n_idaho_forest_h1",
+      "mode": "off_mesh_env_control",
+      "output_dir": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/n_idaho_forest_h1/off_mesh_env_control/run_dir/output",
+      "output_hashes": {
+        ".hbp": "891086a4359bfa09885ea12031ec9350882ec792722483f65f9dfbcc78094cd6",
+        ".loss.json": "da7c4bf97659f728ece37799206d00d498875cfa80f34cc30134b7370ae719a4",
+        ".pass.parquet": "db67428fed2d8c7fabaccb475f0045d4f36efb48e0c7a7cc6c6affe599f397b9",
+        ".wat.parquet": "2e6539761ae2a78f1204f28134eea85f10299ebd02532b3fb9e54fab139f4a3c",
+        "laned_active_trace.jsonl": null
+      },
+      "run_dir": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/n_idaho_forest_h1/off_mesh_env_control/run_dir",
+      "run_file": "p1.plain.run.toml",
+      "solver_profile": null,
+      "status": "PASS",
+      "timing": {
+        "sys_seconds": "0.01",
+        "user_seconds": "0.35",
+        "wall_seconds_raw": "0:00.37"
+      },
+      "trace_summary": null
+    },
+    {
+      "command": "/usr/bin/time -v target/release/openwepp-cli-hill --run-dir /home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/wa_cascades_forest_h1/active_default_dx5/run_dir --run-file p1.plain.run.toml --output-dir /home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/wa_cascades_forest_h1/active_default_dx5/run_dir/output",
+      "exit_code": 0,
+      "failure_tail": null,
+      "laned_active": {
+        "days_routed": 1381,
+        "days_seen": 2192,
+        "days_uniform_shape": 10,
+        "lane_days_erosion_source_shape_degenerate": 1,
+        "max_day_cascade_residual_rel": 4.705058001136025e-14,
+        "max_day_identity_residual_rel": 5.933273356520313e-14,
+        "max_day_seam_residual_rel": 4.832475752036399e-14,
+        "max_dt_s": 300.0,
+        "max_supply_reconstruction_rel": 5.714626530090617e-16,
+        "mesh_policy": {
+          "max_cells": 4096,
+          "min_cells": 10,
+          "mode": "target_dx",
+          "target_dx_m": 5.0
+        },
+        "total_clamp_m3": 7.305156020320419e-13,
+        "total_end_window_storage_m3": 4870.587280992438,
+        "total_latqcc_outlet_m3": 729943.7198742138,
+        "total_routed_outlet_m3": 860530.122226401,
+        "total_source_m3": 865400.7095073939,
+        "total_tail_fold_m3": 8913.530961605135,
+        "trace_record_count": 10960
+      },
+      "log_path": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/wa_cascades_forest_h1/active_default_dx5/time.log",
+      "manifest_exists": true,
+      "manifest_path": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/wa_cascades_forest_h1/active_default_dx5/run_dir/output/openwepp_hillslope_run_manifest.json",
+      "member_id": "wa_cascades_forest_h1",
+      "mode": "active_default_dx5",
+      "output_dir": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/wa_cascades_forest_h1/active_default_dx5/run_dir/output",
+      "output_hashes": {
+        ".hbp": "800176e73bffa709c0b19ef650a5436c5ed4719992986b80fba6242e893bf386",
+        ".loss.json": "b40d44abb91777df1d08a9cbd34dc7405a6ff177d1179437a27ca78a6d5b72da",
+        ".pass.parquet": "c9a516cfe6eb115bc8803182a95da1981750cbfb6bf2d1aa39ed982e3a16f744",
+        ".wat.parquet": "e43000276a84ad709b9889d493b4657d332a014499a68bc5bfe879212d776c52",
+        "laned_active_trace.jsonl": "c6f9a2292f16100e568f17f863f7a088ac4bea4c578690bcd27ce2f3be17e8dd"
+      },
+      "run_dir": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/wa_cascades_forest_h1/active_default_dx5/run_dir",
+      "run_file": "p1.plain.run.toml",
+      "solver_profile": {
+        "alpha_evaluations": 172281208,
+        "solver_cfl_ns": 49703399909,
+        "solver_runs": 6905,
+        "solver_sample_ns": 306510556,
+        "solver_step_ns": 12840477670,
+        "solver_steps": 4891877,
+        "solver_steps_homogeneous": 1760842,
+        "solver_steps_source_free": 2338384
+      },
+      "status": "PASS",
+      "timing": {
+        "sys_seconds": "0.05",
+        "user_seconds": "65.30",
+        "wall_seconds_raw": "1:05.37"
+      },
+      "trace_summary": {
+        "end_storage_total_m3": 4870.587280992435,
+        "erosion_source_shape_degenerate_rows": 1,
+        "path": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/wa_cascades_forest_h1/active_default_dx5/run_dir/output/laned_active_trace.jsonl",
+        "rows": 10960,
+        "sha256": "c6f9a2292f16100e568f17f863f7a088ac4bea4c578690bcd27ce2f3be17e8dd",
+        "source_total_m3": 865400.7095073938,
+        "tail_fold_total_m3": 8913.530961605135,
+        "terminal_days": 2192,
+        "terminal_outlet_total_m3": 860530.1222264016
+      }
+    },
+    {
+      "command": "/usr/bin/time -v target/release/openwepp-cli-hill --run-dir /home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/wa_cascades_forest_h1/active_explicit_dx5/run_dir --run-file p1.plain.run.toml --output-dir /home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/wa_cascades_forest_h1/active_explicit_dx5/run_dir/output",
+      "exit_code": 0,
+      "failure_tail": null,
+      "laned_active": {
+        "days_routed": 1381,
+        "days_seen": 2192,
+        "days_uniform_shape": 10,
+        "lane_days_erosion_source_shape_degenerate": 1,
+        "max_day_cascade_residual_rel": 4.705058001136025e-14,
+        "max_day_identity_residual_rel": 5.933273356520313e-14,
+        "max_day_seam_residual_rel": 4.832475752036399e-14,
+        "max_dt_s": 300.0,
+        "max_supply_reconstruction_rel": 5.714626530090617e-16,
+        "mesh_policy": {
+          "max_cells": 4096,
+          "min_cells": 10,
+          "mode": "target_dx",
+          "target_dx_m": 5.0
+        },
+        "total_clamp_m3": 7.305156020320419e-13,
+        "total_end_window_storage_m3": 4870.587280992438,
+        "total_latqcc_outlet_m3": 729943.7198742138,
+        "total_routed_outlet_m3": 860530.122226401,
+        "total_source_m3": 865400.7095073939,
+        "total_tail_fold_m3": 8913.530961605135,
+        "trace_record_count": 10960
+      },
+      "log_path": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/wa_cascades_forest_h1/active_explicit_dx5/time.log",
+      "manifest_exists": true,
+      "manifest_path": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/wa_cascades_forest_h1/active_explicit_dx5/run_dir/output/openwepp_hillslope_run_manifest.json",
+      "member_id": "wa_cascades_forest_h1",
+      "mode": "active_explicit_dx5",
+      "output_dir": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/wa_cascades_forest_h1/active_explicit_dx5/run_dir/output",
+      "output_hashes": {
+        ".hbp": "800176e73bffa709c0b19ef650a5436c5ed4719992986b80fba6242e893bf386",
+        ".loss.json": "b40d44abb91777df1d08a9cbd34dc7405a6ff177d1179437a27ca78a6d5b72da",
+        ".pass.parquet": "c9a516cfe6eb115bc8803182a95da1981750cbfb6bf2d1aa39ed982e3a16f744",
+        ".wat.parquet": "e43000276a84ad709b9889d493b4657d332a014499a68bc5bfe879212d776c52",
+        "laned_active_trace.jsonl": "c6f9a2292f16100e568f17f863f7a088ac4bea4c578690bcd27ce2f3be17e8dd"
+      },
+      "run_dir": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/wa_cascades_forest_h1/active_explicit_dx5/run_dir",
+      "run_file": "p1.plain.run.toml",
+      "solver_profile": {
+        "alpha_evaluations": 172281208,
+        "solver_cfl_ns": 49162170348,
+        "solver_runs": 6905,
+        "solver_sample_ns": 304849133,
+        "solver_step_ns": 12727559525,
+        "solver_steps": 4891877,
+        "solver_steps_homogeneous": 1760842,
+        "solver_steps_source_free": 2338384
+      },
+      "status": "PASS",
+      "timing": {
+        "sys_seconds": "0.05",
+        "user_seconds": "64.62",
+        "wall_seconds_raw": "1:04.69"
+      },
+      "trace_summary": {
+        "end_storage_total_m3": 4870.587280992435,
+        "erosion_source_shape_degenerate_rows": 1,
+        "path": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/wa_cascades_forest_h1/active_explicit_dx5/run_dir/output/laned_active_trace.jsonl",
+        "rows": 10960,
+        "sha256": "c6f9a2292f16100e568f17f863f7a088ac4bea4c578690bcd27ce2f3be17e8dd",
+        "source_total_m3": 865400.7095073938,
+        "tail_fold_total_m3": 8913.530961605135,
+        "terminal_days": 2192,
+        "terminal_outlet_total_m3": 860530.1222264016
+      }
+    },
+    {
+      "command": "/usr/bin/time -v target/release/openwepp-cli-hill --run-dir /home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/wa_cascades_forest_h1/off_default/run_dir --run-file p1.plain.run.toml --output-dir /home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/wa_cascades_forest_h1/off_default/run_dir/output",
+      "exit_code": 0,
+      "failure_tail": null,
+      "laned_active": null,
+      "log_path": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/wa_cascades_forest_h1/off_default/time.log",
+      "manifest_exists": true,
+      "manifest_path": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/wa_cascades_forest_h1/off_default/run_dir/output/openwepp_hillslope_run_manifest.json",
+      "member_id": "wa_cascades_forest_h1",
+      "mode": "off_default",
+      "output_dir": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/wa_cascades_forest_h1/off_default/run_dir/output",
+      "output_hashes": {
+        ".hbp": "d0cdfb6d4a2e1e247eb230c2725664908c75f65fc29cf3d5b69bcf352678c0de",
+        ".loss.json": "b40d44abb91777df1d08a9cbd34dc7405a6ff177d1179437a27ca78a6d5b72da",
+        ".pass.parquet": "860ca7f61169053bcf7779d8276dffe1a7f9168124943edd5324c9000a67ef25",
+        ".wat.parquet": "4ff7162e3fcdc1a7f9757a9cb5cdc07ff2d4d3667feb1f046d011a4da910c466",
+        "laned_active_trace.jsonl": null
+      },
+      "run_dir": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/wa_cascades_forest_h1/off_default/run_dir",
+      "run_file": "p1.plain.run.toml",
+      "solver_profile": null,
+      "status": "PASS",
+      "timing": {
+        "sys_seconds": "0.03",
+        "user_seconds": "1.32",
+        "wall_seconds_raw": "0:01.35"
+      },
+      "trace_summary": null
+    },
+    {
+      "command": "/usr/bin/time -v target/release/openwepp-cli-hill --run-dir /home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/wa_cascades_forest_h1/off_mesh_env_control/run_dir --run-file p1.plain.run.toml --output-dir /home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/wa_cascades_forest_h1/off_mesh_env_control/run_dir/output",
+      "exit_code": 0,
+      "failure_tail": null,
+      "laned_active": null,
+      "log_path": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/wa_cascades_forest_h1/off_mesh_env_control/time.log",
+      "manifest_exists": true,
+      "manifest_path": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/wa_cascades_forest_h1/off_mesh_env_control/run_dir/output/openwepp_hillslope_run_manifest.json",
+      "member_id": "wa_cascades_forest_h1",
+      "mode": "off_mesh_env_control",
+      "output_dir": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/wa_cascades_forest_h1/off_mesh_env_control/run_dir/output",
+      "output_hashes": {
+        ".hbp": "d0cdfb6d4a2e1e247eb230c2725664908c75f65fc29cf3d5b69bcf352678c0de",
+        ".loss.json": "b40d44abb91777df1d08a9cbd34dc7405a6ff177d1179437a27ca78a6d5b72da",
+        ".pass.parquet": "860ca7f61169053bcf7779d8276dffe1a7f9168124943edd5324c9000a67ef25",
+        ".wat.parquet": "4ff7162e3fcdc1a7f9757a9cb5cdc07ff2d4d3667feb1f046d011a4da910c466",
+        "laned_active_trace.jsonl": null
+      },
+      "run_dir": "/home/workdir/openWEPP/docs/work-packages/20260708-laned-router-dx5-production-mesh-policy-ratification-001/artifacts/default-dx5-runs/wa_cascades_forest_h1/off_mesh_env_control/run_dir",
+      "run_file": "p1.plain.run.toml",
+      "solver_profile": null,
+      "status": "PASS",
+      "timing": {
+        "sys_seconds": "0.03",
+        "user_seconds": "1.35",
+        "wall_seconds_raw": "0:01.39"
+      },
+      "trace_summary": null
+    }
+  ],
+  "schema": "openwepp-dx5-production-default-evidence-v1",
+  "status": "PASS"
+}

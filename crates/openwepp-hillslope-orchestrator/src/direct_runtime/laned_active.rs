@@ -27,8 +27,8 @@ use crate::ofe_routing::seam::{
     SEAM_HOUR_BINS, SEAM_SECONDS_PER_HOUR, seam_rate_at, seam_source_rates_from_hourly_depths,
 };
 
-/// Production-default cells per OFE for the active mesh.
-pub(crate) const LANED_ACTIVE_DEFAULT_CELLS: usize = 10;
+/// Rev-45 production-default target mesh spacing for the active mesh.
+pub(crate) const LANED_ACTIVE_PRODUCTION_TARGET_DX_M: f64 = 5.0;
 /// Rev-38 scheme-regime floor for target-`dx` diagnostics.
 pub(crate) const LANED_ACTIVE_MESH_MIN_CELLS: usize = 10;
 /// Rev-38 fail-closed safety cap for target-`dx` diagnostics.
@@ -125,9 +125,8 @@ impl DirectLanedActiveLaneConfig {
     }
 }
 
-/// Rev-38 active mesh policy. The production default is fixed-cell; target
-/// `dx` is diagnostic evidence-gathering only until T2R ratifies a production
-/// policy.
+/// Active mesh policy. Rev 45 production default is target `dx = 5 m`; the
+/// explicit target-`dx` selector remains a diagnostic override.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum DirectLanedActiveMeshPolicy {
     FixedCells {
@@ -152,9 +151,9 @@ pub struct DirectLanedActiveMeshPolicySummary {
 impl Default for DirectLanedActiveMeshPolicySummary {
     fn default() -> Self {
         Self {
-            mode: "fixed_cells",
-            fixed_cells: Some(LANED_ACTIVE_DEFAULT_CELLS),
-            target_dx_m: None,
+            mode: "target_dx",
+            fixed_cells: None,
+            target_dx_m: Some(LANED_ACTIVE_PRODUCTION_TARGET_DX_M),
             min_cells: LANED_ACTIVE_MESH_MIN_CELLS,
             max_cells: LANED_ACTIVE_MESH_MAX_CELLS,
         }
@@ -170,8 +169,10 @@ impl Default for DirectLanedActiveMeshPolicy {
 impl DirectLanedActiveMeshPolicy {
     #[must_use]
     pub const fn production_default() -> Self {
-        Self::FixedCells {
-            cells: LANED_ACTIVE_DEFAULT_CELLS,
+        Self::TargetDx {
+            target_dx_m: LANED_ACTIVE_PRODUCTION_TARGET_DX_M,
+            min_cells: LANED_ACTIVE_MESH_MIN_CELLS,
+            max_cells: LANED_ACTIVE_MESH_MAX_CELLS,
         }
     }
 
@@ -1388,12 +1389,10 @@ mod tests {
     }
 
     #[test]
-    fn mesh_policy_resolves_fixed_target_floor_and_cap() {
-        let fixed = DirectLanedActiveMeshPolicy::production_default();
-        assert_eq!(
-            fixed.cell_count_for_length_m(26.0).expect("fixed cells"),
-            10
-        );
+    fn mesh_policy_resolves_production_dx5_target_floor_and_cap() {
+        let dx5 = DirectLanedActiveMeshPolicy::production_default();
+        assert_eq!(dx5.cell_count_for_length_m(26.0).expect("min floor"), 10);
+        assert_eq!(dx5.cell_count_for_length_m(300.0).expect("ceil dx"), 60);
 
         let dx20 = DirectLanedActiveMeshPolicy::diagnostic_target_dx(20.0).expect("target dx");
         assert_eq!(dx20.cell_count_for_length_m(26.0).expect("min floor"), 10);

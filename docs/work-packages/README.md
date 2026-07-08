@@ -12,6 +12,18 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-08`:
+- `20260708-laned-router-dx5-production-mesh-policy-ratification-001/` -
+  EXECUTED-COMPLETE-DX5-PRODUCTION-MESH-POLICY (2026-07-08): amended
+  `SC-OFEROUTE-001` rev 45 and promoted the active production mesh default to
+  `target_dx_m = 5.0` with the retained `10` cell/OFE floor, `4096` cell/OFE
+  cap, 900 s sample interval, and 300 s production max substep. The rev-44
+  promotion matrix has `21` adjudicated rows, zero gate-class blockers, and
+  zero missing annual replay rows. Runtime proof over `mn_corn_h4`,
+  `n_idaho_forest_h1`, and `wa_cascades_forest_h1` shows no-env active
+  production serializes `target_dx_m = 5.0`, byte-matches explicit `dx5`
+  control outputs, preserves subsystem-off protected-output identity with the
+  mesh env present, and passes active closure/DC01/routed-consumer evidence.
+  Shadow mesh remains separate and unchanged.
 - `20260708-laned-router-annual-sediment-adequacy-metric-authority-001/` -
   EXECUTED-COMPLETE-METRIC-AUTHORITY (2026-07-08): amended
   `SC-OFEROUTE-001` rev 44 so active target-`dx` mesh-policy annual
@@ -21,9 +33,8 @@ State as of `2026-07-08`:
   blocker (`wa_cascades_forest_h1` refined-75 `tdep:4`
   `0.022131684 > 0.0066666667`), while rev 44 has zero blockers. No `dx5`
   production mesh default flip, active default change, routed-water/shape
-  change, or sediment process-physics change landed. Follow-on: renewed
-  `dx5` production mesh-policy ratification/default-promotion on the rev-44
-  basis.
+  change, or sediment process-physics change landed. Follow-on executed by
+  `20260708-laned-router-dx5-production-mesh-policy-ratification-001/`.
 - `20260708-laned-router-wa-sediment-reference-adequacy-attribution-001/` -
   EXECUTED-HOLD-SEDIMENT-METRIC-AUTHORITY (2026-07-08): attributed the
   `wa_cascades_forest_h1` refined-75 fine-reference annual pass-sediment miss
