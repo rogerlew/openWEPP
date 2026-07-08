@@ -63,6 +63,27 @@ State as of `2026-07-08`:
   sidecars, and mixed coefficient authority fail closed. No Rust behavior was
   changed; the next implementation package owns runtime guards and WEPPpy
   producer materialization.
+- `20260708-openwepp-management-yaml-canonical-authorization-001/` -
+  QUEUED (2026-07-08, M-T2S): scaffolded the canonical openWEPP management YAML
+  authorization package. The package will authorize typed producer-side YAML for
+  `ow-lanuse-1+`, freeze flat `.man` as source-only for native producer
+  evolution, add typed schema/parser/validator support, ratify producer
+  lowercase `.yaml` output with informal `.man.yaml` migrated-source naming,
+  recommend `crates/openwepp-management-schema` as the long-term shared schema
+  owner, and prove the real runtime consumer reads YAML directly before
+  production-readiness closure.
+- `20260708-landuse-migration-cli-spec-implementation-001/` -
+  QUEUED (2026-07-08, M-T2R): scaffolded the Rust landuse migration CLI/library
+  implementation package and drafted
+  `docs/specifications/wepp-input-files/specs/landuse-migration-cli.spec.md`.
+  The CLI will support crates.io distribution by converting frozen legacy flat
+  management files and flat `ow-lanuse-1` sources to canonical native YAML
+  without sidecars. Legacy cropland to `ow-lanuse-1` YAML requires
+  disturbed-class authority and must write explicit `routing_coefficients`;
+  compatibility-only native output for pre-native datvers and native flat
+  `.man` writing are forbidden. Producer output defaults to `.man.yaml` for
+  flat `.man` inputs and emits only lowercase `.yaml`. The spec now includes
+  `--validate`.
 - `20260708-laned-router-conditional-default-activation-001/` -
   EXECUTED-COMPLETE-CONDITIONAL-DEFAULT-ACTIVATION (2026-07-08): amended
   `SC-OFEROUTE-001` rev 46 and made Lane D active routing the hillslope

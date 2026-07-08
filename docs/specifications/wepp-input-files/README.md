@@ -15,6 +15,8 @@ openWEPP owns these specifications.
 
 - `specs/cligenparms.md`
 - `specs/climate-file.spec.md`
+- `specs/landuse-migration-cli.spec.md`
+- `specs/management-yaml.spec.md`
 - `specs/plant-file.spec.md`
 - `specs/soil-file.spec.md`
 
