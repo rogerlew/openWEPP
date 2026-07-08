@@ -1,0 +1,25 @@
+CLIHILL-E-011 runtime surface failure for r7c_direct_production_executor: HS-SIMPIPE-E-001 direct runtime kernel guard failed in laned_active_day_cascade_residual: day 1122 cascade residual -0.0001100301742553711 m3 (rel 0.000000022504181899264942 > 0.000000001): injected 4889.321226956712 + clamp 857952342.2988955 - outlet 544903.2235842549 - mesh_storage 857412328.3966482
+Command exited with non-zero status 1
+	Command being timed: "target/release/openwepp-cli-hill --run-dir /home/workdir/openWEPP/docs/work-packages/20260708-laned-router-wa-day1122-high-resolution-closure-investigation-001/artifacts/mesh-ladder-runs/wa_cascades_forest_h1/dx2p5/run_dir --run-file p1.plain.run.toml --output-dir /home/workdir/openWEPP/docs/work-packages/20260708-laned-router-wa-day1122-high-resolution-closure-investigation-001/artifacts/mesh-ladder-runs/wa_cascades_forest_h1/dx2p5/run_dir/output"
+	User time (seconds): 137.32
+	System time (seconds): 0.01
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:17.35
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 11904
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 3275
+	Voluntary context switches: 1
+	Involuntary context switches: 657
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 24
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 1

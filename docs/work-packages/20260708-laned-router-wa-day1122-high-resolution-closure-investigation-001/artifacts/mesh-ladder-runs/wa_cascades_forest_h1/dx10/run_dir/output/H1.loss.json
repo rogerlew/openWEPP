@@ -1,0 +1,14 @@
+{
+  "climate_day_count": 2192,
+  "executed_day_count": 2192,
+  "first_day_julian": 1,
+  "first_day_year": 2000,
+  "frost_wint_red": 1,
+  "last_day_julian": 365,
+  "last_day_year": 2005,
+  "ofe_count": 5,
+  "precipitation_mm": 29.0,
+  "run_name": "wa_cascades_forest_h1",
+  "schema": "openwepp-hillslope-loss-v1",
+  "snow_override_applied": true
+}

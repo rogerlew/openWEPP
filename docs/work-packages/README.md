@@ -11,15 +11,28 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-07-07`:
+State as of `2026-07-08`:
+- `20260708-laned-router-wa-day1122-high-resolution-closure-investigation-001/` -
+  EXECUTED-HOLD-ACTIVE-ROUTER-CLAMP-NUMERICS (2026-07-08): reran the WA
+  selected-cohort active-plain mesh ladder on current `main` and reproduced
+  the Tier-2 blocker. `dx2p5` and `dx1p25` fail the first active day-cascade
+  closure guard on day 1122 with sub-litre absolute residuals but
+  `190M-858M m3` clamp/storage operands; completed rungs show the dominant
+  magnitude at day 1418 lane 5, including a material clamp event at the retained
+  fixed `10 cells/OFE` active default. Hydrology-source rows are invariant
+  across completed rungs, so the issue is active-router numerics, not crop,
+  climate, management, or runoff source publication. No production mesh-policy
+  or code change landed. Follow-on:
+  `20260708-laned-router-wa-positivity-clamp-numerics-hold-lift-001`.
 - `20260708-laned-router-tier2-dx-target-mesh-policy-rescope-001/` -
-  QUEUED (scaffolded 2026-07-07 using ADR-0037's successor id): executable
-  successor to the stale Tier-2 mesh package. Scope is plain Lane D active
-  routing only: inventory current fixed `10 cells/OFE` behavior, adjudicate
-  target-`dx` mesh policies with Case-4 oracle/self-convergence and the real
-  selected cohort (`mn_corn_h4`, `n_idaho_forest_h1`,
-  `wa_cascades_forest_h1`), and report H2637 separately as synthetic stress
-  evidence. No hybrid revival or H2637-only promotion claim is in scope.
+  EXECUTED-HOLD-DX-REFERENCE-ADEQUACY (2026-07-08): executed the ADR-0037
+  successor Tier-2 plain-active target-`dx` mesh-policy adjudication. The
+  current fixed `10 cells/OFE` production default is retained. `mn_corn_h4`
+  and `n_idaho_forest_h1` pass the fine-reference adequacy/candidate evidence,
+  but `wa_cascades_forest_h1` blocks target-`dx` promotion: `dx2p5` and
+  `dx1p25` fail active closure at day 1122, while `dx10/dx5` produce
+  non-promotable outlet/storage/clamp magnitudes. H2637 remains synthetic
+  stress only. Follow-on is the WA day-1122/clamp-numerics investigation above.
 - `20260707-laned-router-hybrid-abandonment-removal-001/` -
   EXECUTED-COMPLETE-ADR0037-REMOVAL (2026-07-07): executed ADR-0037 terminal
   abandonment of the hybrid implicit-explicit Lane D stepper. The final
