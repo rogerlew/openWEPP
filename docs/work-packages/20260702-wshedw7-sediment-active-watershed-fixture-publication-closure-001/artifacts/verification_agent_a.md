@@ -2,18 +2,21 @@
 
 Status: `completed-local-substitution`
 
-Evidence mode: `Static:` and `Ran:` local verification.
+Evidence mode: `Ran:` local verification and `Static:` source review.
 
-Verification result: W7 hold is legitimate.
+Verification result: W7R closure is supported.
 
 Checks:
 
-- Required nonzero-sediment fixture gate is unmet and cannot be reclassified as
-  future scope while closing complete.
-- No surrogate or manually edited sediment values were introduced.
-- The only production edit is path canonicalization for generated child inputs.
-- Focused regression and clippy passed.
-- Review findings are dispositioned.
+- Current-main p102 producer emits nonzero `tdet`, `tdep`, and all five
+  `sedcon_*` sums.
+- Accepted fixture is committed and manifest-validated.
+- Release serial and parallel watershed runs pass.
+- Public parquet decoded schema/row identity passes.
+- Focused guard proves generated HBP detachment/deposition reaches public
+  `totalwatsed3`.
+- No surrogate sediment or manual pass edits are introduced.
 
-Residual: full output identity and conservation reconstruction must run after a
-hold-lift package produces a committed nonzero-sediment fixture.
+Residual risk: the accepted fixture is intentionally small. Large onshore
+channel dispatch remains outside W7R closure and should not be treated as closed
+by this package.

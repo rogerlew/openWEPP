@@ -1,21 +1,14 @@
 # Output Identity Evidence
 
-Status: `blocked`
+Status: `passed`
 
-Evidence mode: `Ran:` one public watershed probe; full W7 identity blocked.
+Evidence mode: `Ran:`
 
-Full W7 `--jobs 1` vs `--jobs N` identity was not run because no accepted
-sediment-active fixture exists.
+W7R release runs on
+`tests/fixtures/watershed/p102-sediment-active/runs` passed with `--jobs 1` and
+`--jobs 4`.
 
-Supporting public-path probe:
+All required public parquet outputs have decoded `schema_delta=0` and
+`row_delta=0`.
 
-- Fixture: `tests/fixtures/watershed/carnivorous-adobo/`
-- Command: `target/release/openwepp-cli-watershed --jobs 8`
-- Output: `/tmp/wshedw7_probe_carn/out`
-- Result: command completed and wrote required watershed outputs after the
-  relative-path supervisor fix.
-- Sediment result: rejected for W7 acceptance because detachment, deposition,
-  and sediment delivery remained zero.
-
-Identity must be rerun by the hold-lift package after a committed fixture
-produces nonzero sediment.
+Detailed per-file identity evidence is in `serial-parallel-identity.md`.

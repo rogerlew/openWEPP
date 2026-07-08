@@ -1,16 +1,22 @@
 # Fixture Manifest Evidence
 
-Status: `executed-hold`
+Status: `passed`
 
-Evidence mode: `Static:` no W7 fixture adopted.
+Evidence mode: `Ran:`
 
-No W7 acceptance fixture was adopted, so no new fixture checksum manifest was
-generated.
+Accepted fixture:
+`tests/fixtures/watershed/p102-sediment-active/`
 
-Existing fixture manifests remain owned by their adopting packages:
+Manifest:
+`tests/fixtures/watershed/p102-sediment-active/input-manifest.sha256`
 
-- `tests/fixtures/watershed/carnivorous-adobo/input-manifest.sha256`
-- `tests/fixtures/watershed/onshore-xenophobia/input-manifest.sha256`
+Validation:
 
-W7 complete closure remains blocked until a committed fixture can validate with
-production-generated nonzero sediment response.
+```sh
+(cd tests/fixtures/watershed/p102-sediment-active && sha256sum -c input-manifest.sha256)
+```
+
+Result: all `18` entries `OK`.
+
+The manifest hashes resolved symlink contents for p102 source inputs and direct
+contents for the generated watershed wrapper files.

@@ -12,6 +12,16 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-08`:
+- `20260702-wshedw7-sediment-active-watershed-fixture-publication-closure-001/` -
+  EXECUTED-COMPLETE-W7R-SEDIMENT-ACTIVE-PUBLICATION-CLOSURE (2026-07-08):
+  resumed W7 after the p102 producer-side blocker was closed. Adopted
+  `tests/fixtures/watershed/p102-sediment-active/`, proved current-main release
+  p102 HBP production with nonzero `tdet`, `tdep`, and all `sedcon_*`, ran the
+  public watershed supervisor with `--jobs 1` and `--jobs 4`, proved decoded
+  schema/row identity across all 14 public parquets, and added
+  `wshedw7r_p102_sediment_active_fixture_publishes_nonzero_sediment_and_jobs_identity`.
+  WSHED-W7DC01 is now historical unless a fresh zero-sediment producer
+  regression appears.
 - `20260708-laned-router-post-tier1-hotpath-sweep-001/` -
   EXECUTED-COMPLETE-POST-TIER1-HOTPATH-SWEEP (2026-07-08): bounded post-Tier1
   explicit-router hotpath sweep for Lane D active routing. Landed
@@ -22,7 +32,8 @@ State as of `2026-07-08`:
   `2488591327` to `2277134095`. No hybrid implicit work, mesh/fidelity
   readjudication, tolerance change, watershed/channel routing, baseflow
   export, sediment physics, or `Re^0.45` approximation landed. WSHED-W7R
-  remains the next queued production-path package.
+  has since closed; the next watershed-facing action is Lane D active
+  baseflow export closure.
 - `20260708-laned-router-conditional-default-activation-001/` -
   EXECUTED-COMPLETE-CONDITIONAL-DEFAULT-ACTIVATION (2026-07-08): amended
   `SC-OFEROUTE-001` rev 46 and made Lane D active routing the hillslope
@@ -45,9 +56,10 @@ State as of `2026-07-08`:
   target (`37.48 s` -> `11.90 s` median user, `3.15x`) and passed focused
   unit/D10B/H2637/full-nextest/clippy/fmt/deny gates. It closes on hold only for
   the unimplemented Hirsch `Re^0.45` approximation, which lacks a ratified
-  bounded-error envelope. WSHED-W7R is the next queued action.
+  bounded-error envelope. WSHED-W7R has since closed; the next queued action is
+  Lane D active baseflow export closure.
 - `20260708-laned-router-watershed-hbp-hourly-water-sediment-consumption-001/` -
-  QUEUED (2026-07-08, execute after Tier 1, WSHED-W7 resume, and Lane D active
+  QUEUED (2026-07-08, execute after Tier 1, WSHED-W7R, and Lane D active
   baseflow export closure): scaffolded a consumer-path closure package for Lane
   D active routed HBP minor-1 hourly runoff and hourly sediment surfaces. The
   package requires contract-first authority if needed, active HBP producer
@@ -563,19 +575,19 @@ State as of `2026-07-08`:
   operand-limited, and Case 4 carried as `GAP-OFEROUTE-005` shock-capture
   resolution sensitivity. Routing remains shadow-first; no production wiring.
 - `20260702-wshedw7dc01-hillslope-sediment-production-hold-lift-001/` is
-  queued as WSHED-W7DC01 HILLSLOPE SEDIMENT PRODUCTION HOLD LIFT. Result:
-  `QUEUED`. It is the next concrete watershed hold-lift action from
-  `docs/ROADMAP.md`, scoped to closing `WSHED-W7-HOLD-001`: production
-  hillslope HBP sediment remains zero for inspected real multi-OFE source
-  substrates even when EROD14 is enabled.
+  historical as WSHED-W7DC01 HILLSLOPE SEDIMENT PRODUCTION HOLD LIFT. Result:
+  `SUPERSEDED-HISTORICAL`. Later E.3/E.4 work closed the producer-side p102
+  cause, and W7R verified current-main nonzero production before closing W7.
+  Reopen only for a fresh zero-sediment producer regression.
 - `20260702-wshedw7-sediment-active-watershed-fixture-publication-closure-001/`
-  is held as WSHED-W7 SEDIMENT-ACTIVE WATERSHED FIXTURE AND PUBLICATION
-  CLOSURE. Result: `EXECUTED-HOLD-HILLSLOPE-SEDIMENT-PRODUCTION-MISSING`. It
-  fixed relative `--run-dir` generated child input canonicalization and proved
-  the public watershed path still runs, but no inspected committed or local
-  candidate produced production-generated nonzero openWEPP sediment. The
-  package holds before fixture adoption, serial/parallel identity, and
-  conservation reconstruction.
+  is complete as WSHED-W7 SEDIMENT-ACTIVE WATERSHED FIXTURE AND PUBLICATION
+  CLOSURE. Result:
+  `EXECUTED-COMPLETE-W7R-SEDIMENT-ACTIVE-PUBLICATION-CLOSURE`. The original
+  2026-07-02 execution fixed relative `--run-dir` generated child input
+  canonicalization and held on zero sediment. W7R resumed on current main,
+  adopted `tests/fixtures/watershed/p102-sediment-active/`, proved release
+  serial/parallel public parquet identity and nonzero public sediment, and
+  reconstructed sediment operands from generated HBP/public output artifacts.
 - `20260630-typed-direct-setup-symbol-map-elimination-001/` is held after Stage
   0. Result: `EXECUTED-HOLD-STAGE0-PREMISE-CORRECTED`.
 - `20260630-typed-direct-setup-symbol-map-carrier-deletion-001/` is held as

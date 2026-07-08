@@ -1,45 +1,72 @@
 # Disposition
 
-Status: `EXECUTED-HOLD-HILLSLOPE-SEDIMENT-PRODUCTION-MISSING`
+Status: `EXECUTED-COMPLETE-W7R-SEDIMENT-ACTIVE-PUBLICATION-CLOSURE`
 
-Evidence mode: `Ran:` fixture probes, focused validation, and docs lint;
-`Static:` source/package review.
+Evidence mode: `Ran:` release fixture runs, focused test, fixture manifest, and
+local gates; `Static:` source-path review.
 
 ## Summary
 
-W7 is executed and held, not complete.
+W7 resumed and closed on current main through W7R.
 
-What landed:
+What changed:
 
-- Fixed generated hillslope child input path resolution for relative public
-  `--run-dir` invocations.
-- Added
-  `wshedw7_watershed_cli_generated_mode_accepts_relative_run_dir`.
-- Rebuilt release CLIs and reran the committed carnivorous public watershed
-  fixture successfully after the path fix.
-- Probed committed and local sediment candidates and recorded that current
-  openWEPP-generated pass sediment remains zero.
-- Scaffolded W7DC01 as the hold-lift package.
+- Adopted committed fixture
+  `tests/fixtures/watershed/p102-sediment-active/`, a complete one-channel
+  watershed wrapper around the real W7DC01 p102 two-OFE sediment producer.
+- Added focused guard
+  `wshedw7r_p102_sediment_active_fixture_publishes_nonzero_sediment_and_jobs_identity`.
+- Proved release `openwepp-cli-watershed` runs the fixture with `--jobs 1` and
+  `--jobs 4`, generating production HBP/pass artifacts through
+  `openwepp-cli-hill`.
+- Proved decoded schema and row identity across all 14 required public parquet
+  outputs.
+- Reconstructed public detachment/deposition from the generated HBP latest
+  event payload and rejected zero-fill and detachment-minus-deposition aliasing
+  for routed `sed_del`.
 
-Hold blocker:
+Historical note: the original 2026-07-02 W7 execution held because inspected
+fixtures emitted zero production HBP sediment. Later E.3/E.4 work closed that
+producer-side blocker on the W7DC01 p102 substrate. W7R is the current-main
+resume and closure evidence.
 
-`WSHED-W7-HOLD-001`: production hillslope HBP sediment emission remains zero
-for inspected sediment-active source substrates. W7 cannot adopt a committed
-sediment-active watershed fixture, run serial/parallel sediment output identity,
-or perform independent nonzero sediment reconstruction until this is fixed or
-held under canonical sediment authority.
+## Release Evidence
 
-Why hold is legitimate:
+- Current commit under test: `97b23132b85c579041dee5de530d0b5aa319fbd7`.
+- `target/release/openwepp-cli-hill`
+  SHA-256: `e88c5552f6fa98fae4282eb87095fb271a8dd5c0cf30a97431a483c46a8694e7`.
+- `target/release/openwepp-cli-watershed`
+  SHA-256: `160f7f5d54d5aef4a1d2c12d82ada09f9326c2a6cf60840bf6882766675e6996`.
+- Serial release run:
+  `target/release/openwepp-cli-watershed --run-dir tests/fixtures/watershed/p102-sediment-active/runs --run-file case.run --output-dir /tmp/wshedw7r_p102_fixture_jobs1 --policy compat --jobs 1 --hillslope-binary target/release/openwepp-cli-hill`
+  completed: `wall=0:00.78`, `maxrss=20516`.
+- Parallel release run:
+  same command with `--jobs 4` and
+  `/tmp/wshedw7r_p102_fixture_jobs4` completed: `wall=0:00.74`,
+  `maxrss=20492`.
 
-- W7 explicitly excludes changing hillslope erosion/sediment physics for
-  convenience.
-- Legacy source evidence for `/wc1/runs/in/insensible-aliquot/wepp/output/H1.loss.dat`
-  is sediment-active, but current openWEPP HBP pass parquet probes for
-  multi-OFE hillslopes `1`, `21`, `172`, `297`, `333`, `390`, and `437` all
-  produced zero `tdet`, `tdep`, and `sedcon_*`.
-- Closing W7 on zero-only fixtures would violate the package objective and the
-  Gate Evidence Non-Deferral Rule.
+## Public Sediment Result
 
-Next package:
+`/tmp/wshedw7r_p102_fixture_jobs1/interchange/totalwatsed3.parquet`:
 
-- `docs/work-packages/20260702-wshedw7dc01-hillslope-sediment-production-hold-lift-001/`
+- rows: `1`
+- `tdet = 584.2332653870001 kg`
+- `tdep = 282.14618621700004 kg`
+- `tdet - tdep = 302.08707917000004 kg`
+- `sed_del = 0.08391307754719238 kg`
+- `runvol = 2329.7636065586953 m^3`
+- `Runoff = 63.1600928292383 mm`
+
+Generated pass parquet:
+
+- rows: `3652`
+- `sum(tdet) = 41531.85795763501 kg`
+- `sum(tdep) = 29195.4647928195 kg`
+- `sum(tdet - tdep) = 12336.39316481551 kg`
+- all five `sedcon_*` sums are nonzero.
+
+## Closure
+
+All W7R acceptance claims are closed. No surrogate sediment physics, manual pass
+edits, watershed/channel routing changes, or publication schema changes were
+introduced.

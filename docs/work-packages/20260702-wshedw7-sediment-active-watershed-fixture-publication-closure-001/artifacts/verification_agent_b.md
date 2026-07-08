@@ -2,15 +2,20 @@
 
 Status: `completed-local-substitution`
 
-Evidence mode: `Static:` local verification.
+Evidence mode: `Ran:` local verification and `Static:` artifact review.
 
-Verification result: package must not close complete.
+Verification result: W7R acceptance evidence matches the package exit criteria.
 
-The evidence distinguishes:
+Checks:
 
-- valid code fix: relative `--run-dir` generated-mode path resolution;
-- blocked package objective: sediment-active full watershed publication closure.
+- A committed full watershed fixture exists:
+  `tests/fixtures/watershed/p102-sediment-active/`.
+- The fixture produces actual nonzero sediment from generated hillslope pass
+  artifacts.
+- Public watershed execution uses typed dispatch and typed publication.
+- `--jobs 1` and `--jobs 4` outputs are decoded-identical.
+- Sediment reconstruction rejects zero-fill and simple detachment/deposition
+  aliases.
+- Final gates are recorded in `gate-results.md`.
 
-The W7 artifacts correctly avoid claiming serial/parallel identity or
-independent sediment reconstruction on a zero-only fixture. The handoff names
-the first actionable hold-lift task.
+No verification blocker remains.

@@ -1,23 +1,23 @@
 # Fixture Adoption Evidence
 
-Status: `executed-hold`
+Status: `passed`
 
-Evidence mode: `Ran:` fixture/source probes.
+Evidence mode: `Static:` committed fixture review plus `Ran:` release replay.
 
-No W7 acceptance fixture was adopted.
+W7R adopts
+`tests/fixtures/watershed/p102-sediment-active/` as the sediment-active
+watershed acceptance fixture.
 
-Reason: all current committed full watershed fixtures and inspected local
-sediment-active source substrates fail the W7 acceptance requirement for
-production-generated nonzero sediment response. Adopting a zero-only fixture
-would repeat the W6 residual-risk gap, and manually editing HBP/pass sediment
-values is explicitly prohibited.
+The fixture is a complete one-channel watershed wrapper around the committed
+W7DC01 p102 two-OFE source substrate. It does not commit generated pass/HBP
+outputs and does not edit sediment values.
 
-The closest source substrate,
-`/wc1/runs/in/insensible-aliquot/wepp`, is not directly a full watershed fixture
-because it lacks the public watershed topology inputs required by
-`openwepp-cli-watershed`. Constructing a new watershed wrapper around it before
-fixing hillslope sediment production would still publish zero sediment from the
-current openWEPP passes.
+Release replay:
 
-Hold-lift requirement: first close the production hillslope sediment emission
-blocker, then rerun W7 fixture adoption from committed inputs.
+- `--jobs 1`: passed, `wall=0:00.78`
+- `--jobs 4`: passed, `wall=0:00.74`
+- public `totalwatsed3` sediment is nonzero:
+  `tdet=584.2332653870001`, `tdep=282.14618621700004`,
+  `sed_del=0.08391307754719238`
+
+Detailed provenance is in `fixture-provenance.md`.

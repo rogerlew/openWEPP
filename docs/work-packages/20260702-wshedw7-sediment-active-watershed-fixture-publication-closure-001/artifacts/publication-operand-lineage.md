@@ -2,25 +2,21 @@
 
 Status: `passed`
 
-Evidence mode: `Static:`
+Evidence mode: `Static:` source review plus `Ran:` W7R reconstruction.
 
-W7 did not change sediment-sensitive publication formulas, schemas, units, or
-normalization bases. W6 lineage remains authoritative for the public typed
-publication writer:
+W7R does not change sediment-sensitive publication formulas, schemas, units, or
+normalization bases. The accepted fixture proves the existing lineage on
+nonzero sediment.
 
-- `sediment_yield_kg`: routed channel sediment yield from typed routed state.
-- `total_detachment_kg`: sum of pass-backed latest-event detachment over
-  contributing hillslopes.
-- `total_deposition_kg`: sum of pass-backed latest-event deposition over
-  contributing hillslopes.
-- `sediment_class_deposition_kg` and
-  `sediment_volume_concentration_m3_m3`: unavailable in current W6/W7 public
-  watershed frames and emitted null.
+Summary:
 
-Rejected W7 closure aliases:
+- `total_detachment_kg`: generated HBP latest event payload, published as
+  `totalwatsed3.tdet`.
+- `total_deposition_kg`: generated HBP latest event payload, published as
+  `totalwatsed3.tdep`.
+- `sediment_yield_kg`: typed routed channel state, published as
+  `ebe_pw0.sediment_yield` and `totalwatsed3.sed_del`.
+- `runoff_volume_m3`: typed routed channel state, published as `runvol`,
+  `ebe_pw0.runoff_volume`, and `chanwb.Inflow`.
 
-- zero-fill as acceptance sediment;
-- manually edited pass/HBP sediment values;
-- legacy `loss.dat` soil-loss summaries as a substitute for
-  production-generated openWEPP HBP sediment;
-- producer self-consistency without an independently nonzero produced signal.
+Detailed lineage and rejected aliases are in `operand-lineage.md`.

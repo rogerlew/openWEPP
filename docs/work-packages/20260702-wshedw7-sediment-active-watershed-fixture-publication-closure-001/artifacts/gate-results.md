@@ -1,22 +1,26 @@
 # Gate Results
 
-Status: `executed-hold`
+Status: `executed-complete`
 
-Evidence mode: `Ran:` local validation plus `Static:` hold disposition.
+Evidence mode: `Ran:` local gates and `Static:` source review.
 
 | Gate | Status | Evidence |
 |------|--------|----------|
-| `cargo fmt --check` | PASS | Ran after supervisor/test edit. |
-| `cargo clippy --workspace --all-targets -- -D warnings` | PASS | Ran after retained production/test edit. Focused runner clippy also passed: `cargo clippy -p openwepp-runner --test watershed_cli_behavior_contract -- -D warnings`. |
-| `cargo nextest run --workspace --profile full` | NOT RUN | W7 is held before complete closure; no accepted sediment-active fixture exists. |
-| `cargo deny check` | NOT RUN | W7 is held before complete closure. |
-| focused W7 path regression | PASS | `cargo test -p openwepp-runner --test watershed_cli_behavior_contract wshedw7_watershed_cli_generated_mode_accepts_relative_run_dir -- --nocapture`: `1 passed`. |
-| release CLI build | PASS | `cargo build -p openwepp-runner --release --bins`: finished release build. |
-| W7 sediment-active fixture gate | BLOCKED | No inspected fixture produced production-generated nonzero sediment; see `sediment-fixture-inventory.md`. |
-| W7 output-identity gate | BLOCKED | No accepted sediment-active fixture exists; see `output-identity-evidence.md`. |
-| W7 conservation-reconstruction gate | BLOCKED | No nonzero produced sediment signal exists; see `conservation-reconstruction.md`. |
-| fixture checksum manifest validation | NOT RUN | No new W7 fixture was adopted. |
-| scoped docs lint | PASS | `markdown-doc lint --path ...`: `54 files validated, 0 errors, 0 warnings`. |
+| Release CLI build | PASS | `cargo build --release -p openwepp-runner --bins`. |
+| Current-main producer proof | PASS | `target/release/openwepp-cli-hill` on `tests/fixtures/erosion_multi_ofe_p102`: pass rows `3652`, `sum(tdet)=41531.85795763501`, `sum(tdep)=29195.4647928195`, all `sedcon_*` sums nonzero. |
+| Full W7R fixture serial run | PASS | `openwepp-cli-watershed` on `tests/fixtures/watershed/p102-sediment-active/runs`, `--jobs 1`, `wall=0:00.78`. |
+| Full W7R fixture parallel run | PASS | Same fixture, `--jobs 4`, `wall=0:00.74`. |
+| Serial/parallel public parquet identity | PASS | All 14 required outputs have `schema_delta=0`, `row_delta=0`. |
+| Nonzero public sediment | PASS | `totalwatsed3`: `tdet=584.2332653870001`, `tdep=282.14618621700004`, `sed_del=0.08391307754719238`. |
+| Independent sediment reconstruction | PASS | Focused test parses generated HBP latest event and proves `totalwatsed3.tdet/tdep` match HBP payload; hourly sediment sum equals `tdet - tdep`; `sed_del` matches EBE routed sediment yield and is not a detachment-minus-deposition alias. |
+| Source guard | PASS | `wshedw7r_p102_sediment_active_fixture_publishes_nonzero_sediment_and_jobs_identity` plus existing typed-frame public path guards. |
+| Fixture checksum manifest | PASS | `(cd tests/fixtures/watershed/p102-sediment-active && sha256sum -c input-manifest.sha256)`. |
+| Focused W7R test | PASS | `cargo test -p openwepp-runner --test watershed_cli_behavior_contract wshedw7r_p102_sediment_active_fixture_publishes_nonzero_sediment_and_jobs_identity -- --nocapture`: `1 passed`. |
+| `cargo fmt --check` | PASS | Ran after rustfmt. |
+| `cargo clippy --workspace --all-targets -- -D warnings` | PASS | Finished `dev` profile with no warnings. |
+| `cargo nextest run --workspace --profile full` | PASS | `1438` tests run: `1438` passed, `3` skipped; elapsed `591.493s`. |
+| `cargo deny check` | PASS | `advisories ok, bans ok, licenses ok, sources ok`. |
+| Scoped docs lint | PASS | `markdown-doc lint --path ...`: `42 files validated, 0 errors, 0 warnings`. |
 | `git diff --check` | PASS | Clean. |
 
-Complete closure is intentionally not claimed.
+Complete closure is claimed with all required W7R gates green.

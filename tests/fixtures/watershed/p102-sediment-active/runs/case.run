@@ -1,0 +1,41 @@
+schema = "openwepp-watershed-runfile-v1"
+run_name = "wshedw7r-p102-one-channel"
+unit_system = "metric"
+
+[inputs]
+pw0_str = "pw0.str"
+pw0_chn = "pw0.chn"
+pw0_imp = "pw0.imp"
+pw0_man = "pw0.man"
+pw0_slp = "pw0.slp"
+pw0_cli = "pw0.cli"
+pw0_sol = "pw0.sol"
+chaninp = "chan.inp"
+
+[inputs.applicability]
+chapter13_small_watershed_intent = true
+allow_partial_area_response = false
+allow_headcutting = false
+allow_bank_sloughing = false
+allow_perennial_streams = false
+
+[[inputs.hillslopes_block]]
+hillslope_id = 1
+run_file = "H1.source.run"
+use_existing_pass_file = false
+
+[outputs]
+ebe_pw0 = "interchange/ebe_pw0.parquet"
+chan_out = "interchange/chan.out.parquet"
+chanwb = "interchange/chanwb.parquet"
+chnwb = "interchange/chnwb.parquet"
+soil_pw0 = "interchange/soil_pw0.parquet"
+totalwatsed3 = "interchange/totalwatsed3.parquet"
+loss_hill = "interchange/loss_pw0.hill.parquet"
+loss_chn = "interchange/loss_pw0.chn.parquet"
+loss_out = "interchange/loss_pw0.out.parquet"
+loss_class_data = "interchange/loss_pw0.class_data.parquet"
+loss_all_years_hill = "interchange/loss_pw0.all_years.hill.parquet"
+loss_all_years_chn = "interchange/loss_pw0.all_years.chn.parquet"
+loss_all_years_out = "interchange/loss_pw0.all_years.out.parquet"
+loss_all_years_class_data = "interchange/loss_pw0.all_years.class_data.parquet"

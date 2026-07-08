@@ -1,23 +1,20 @@
 # Consumer Path Evidence
 
-Status: `passed-for-hold`
+Status: `passed`
 
-Evidence mode: `Static:` source inspection plus `Ran:` public CLI probe.
+Evidence mode: `Static:` source inspection plus `Ran:` focused test.
 
-## Public Consumer Path
+Public consumer path:
 
-- Entrypoint: `crates/openwepp-runner/src/bin/openwepp-cli-watershed.rs`
-- Run plan: `WatershedRunPlan`
-- Worker fanout: `WatershedRunPlan::execute_hillslope_jobs`
-- Pass handoff: `PassInventory::validate`
-- Typed routing frame: `WatershedNetworkFrame`
-- Dispatch: `execute_watershed_dispatch_with_frame`
-- Typed publication: `WatershedNetworkFrame::publish_typed_routing_report`
-- Output writer: `write_typed_publication_parquet_outputs`
+- `openwepp-cli-watershed`
+- `WatershedRunPlan::execute_hillslope_jobs`
+- `PassInventory::validate`
+- `WatershedNetworkFrame`
+- `execute_watershed_dispatch_with_frame`
+- `WatershedNetworkFrame::publish_typed_routing_report`
+- `write_typed_publication_parquet_outputs`
 
-Static source inspection confirms the public CLI routes through typed frame and
-typed publication. The W7 production edit preserves that path.
+The W7R focused test proves the public path consumes the generated p102 HBP
+payload and publishes nonzero sediment through public parquet outputs.
 
-`/tmp/wshedw7_probe_carn/out` proves the public CLI can complete after the
-path-resolution fix. It does not close W7 because the fixture sediment signal is
-zero.
+Detailed evidence is in `publication-consumer-proof.md`.

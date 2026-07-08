@@ -1,0 +1,16 @@
+schema = "openwepp-hillslope-runfile-v1"
+run_name = "wshedw7r-p102-H1"
+unit_system = "metric"
+
+[inputs]
+soil = "H1.sol"
+management = "H1.man"
+slope = "H1.slp"
+climate = "H1.cli"
+wepp_ui = true
+pmetpara = "pmetpara.txt"
+
+[outputs]
+pass = "unused/H1.hbp"
+loss = "unused/H1.loss.json"
+pass_parquet = "unused/H1.pass.parquet"

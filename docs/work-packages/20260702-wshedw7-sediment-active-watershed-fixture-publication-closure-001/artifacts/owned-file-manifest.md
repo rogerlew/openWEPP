@@ -1,16 +1,16 @@
 # Owned File Manifest
 
-Status: `passed-for-hold`
+Status: `passed`
 
 Evidence mode: `Static:` git diff inspection.
-
-## Source
-
-- `crates/openwepp-runner/src/watershed_supervisor.rs`
 
 ## Tests
 
 - `crates/openwepp-runner/tests/watershed_cli_behavior_contract.rs`
+
+## Fixtures
+
+- `tests/fixtures/watershed/p102-sediment-active/**`
 
 ## Work-Package Artifacts
 
@@ -21,9 +21,4 @@ Evidence mode: `Static:` git diff inspection.
 - `docs/ROADMAP.md`
 - `docs/work-packages/README.md`
 
-## Follow-Up Scaffold
-
-- `docs/work-packages/20260702-wshedw7dc01-hillslope-sediment-production-hold-lift-001/**`
-
-All edited paths are within the W7 package write set or the required hold-lift
-package/index scope.
+All edited paths are within the W7 package write set or package/index scope.

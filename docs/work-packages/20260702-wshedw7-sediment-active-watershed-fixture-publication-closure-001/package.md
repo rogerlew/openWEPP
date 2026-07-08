@@ -1,6 +1,6 @@
 # WSHED-W7 Sediment-Active Watershed Fixture and Publication Closure
 
-Status: `EXECUTED-HOLD-HILLSLOPE-SEDIMENT-PRODUCTION-MISSING`
+Status: `EXECUTED-COMPLETE-W7R-SEDIMENT-ACTIVE-PUBLICATION-CLOSURE`
 
 Date opened: `2026-07-02`
 

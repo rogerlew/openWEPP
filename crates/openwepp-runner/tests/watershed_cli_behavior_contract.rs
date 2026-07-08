@@ -16,6 +16,9 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::{Mutex, OnceLock};
 
+use openwepp_input_contract::parsers::hbp::{
+    HbpParseOptions, parse_hbp_from_path_with_latest_event_payload,
+};
 use parquet::file::reader::{FileReader, SerializedFileReader};
 use parquet::record::{Row, RowAccessor};
 
@@ -319,6 +322,105 @@ fn wshedw7_watershed_cli_generated_mode_accepts_relative_run_dir() {
         String::from_utf8_lossy(&output.stderr)
     );
     assert_all_watershed_outputs_exist(&output_dir);
+}
+
+#[test]
+fn wshedw7r_p102_sediment_active_fixture_publishes_nonzero_sediment_and_jobs_identity() {
+    let _execution_guard = watershed_execution_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+
+    let repo_root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let run_dir = repo_root.join("tests/fixtures/watershed/p102-sediment-active/runs");
+    let hill_binary = Path::new(env!("CARGO_BIN_EXE_openwepp-cli-hill"));
+    let jobs1_output_dir = unique_temp_dir("wshedw7r_p102_jobs1");
+    let jobs4_output_dir = unique_temp_dir("wshedw7r_p102_jobs4");
+
+    for (jobs, output_dir) in [("1", &jobs1_output_dir), ("4", &jobs4_output_dir)] {
+        let output = run_watershed_cli_with_options(
+            &run_dir,
+            output_dir,
+            Some("compat"),
+            false,
+            Some(jobs),
+            Some(hill_binary),
+        );
+        assert!(
+            output.status.success(),
+            "p102 sediment-active watershed run should complete for --jobs {jobs}; stderr={}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        assert_all_watershed_outputs_exist(output_dir);
+    }
+
+    assert_watershed_outputs_row_equivalent(&jobs1_output_dir, &jobs4_output_dir);
+
+    let (hbp, latest_event_payload) = parse_hbp_from_path_with_latest_event_payload(
+        jobs1_output_dir.join("hillslope-jobs/H1/H1.hbp"),
+        HbpParseOptions {
+            expected_hillslope_id: Some(1),
+        },
+    )
+    .expect("generated p102 HBP should parse through the production HBP parser");
+    let payload = latest_event_payload.expect("generated p102 HBP should contain an EventPayload");
+
+    assert_eq!(hbp.schema_major, 1);
+    assert_eq!(hbp.schema_minor, 1);
+    assert_eq!(hbp.nofe, 2);
+    assert_eq!(hbp.npart, 5);
+    assert_eq!(payload.hourly_runoff_volume_m3.len(), 24);
+    assert_eq!(payload.hourly_sediment_mass_kg.len(), 24);
+    assert!(payload.total_detachment_kg > 0.0);
+    assert!(payload.total_deposition_kg > 0.0);
+    assert!(
+        payload
+            .particle_flow_fraction
+            .iter()
+            .any(|fraction| *fraction > 0.0),
+        "p102 HBP should carry nonzero sediment class fractions"
+    );
+
+    let exported_sediment_kg = payload.total_detachment_kg - payload.total_deposition_kg;
+    let hourly_sediment_kg = payload.hourly_sediment_mass_kg.iter().sum::<f64>();
+    assert_relative_close(
+        hourly_sediment_kg,
+        exported_sediment_kg,
+        1.0e-9,
+        1.0e-6,
+        "HBP hourly sediment export",
+    );
+
+    let totalwatsed3_row =
+        read_first_parquet_row(&jobs1_output_dir.join("interchange/totalwatsed3.parquet"));
+    let ebe_row = read_first_parquet_row(&jobs1_output_dir.join("interchange/ebe_pw0.parquet"));
+    assert_relative_close(
+        row_f64_value(&totalwatsed3_row, "tdet"),
+        payload.total_detachment_kg,
+        1.0e-9,
+        1.0e-6,
+        "totalwatsed3 tdet",
+    );
+    assert_relative_close(
+        row_f64_value(&totalwatsed3_row, "tdep"),
+        payload.total_deposition_kg,
+        1.0e-9,
+        1.0e-6,
+        "totalwatsed3 tdep",
+    );
+
+    let sediment_yield_kg = row_f64_value(&ebe_row, "sediment_yield");
+    assert!(sediment_yield_kg > 0.0);
+    assert_relative_close(
+        row_f64_value(&totalwatsed3_row, "sed_del"),
+        sediment_yield_kg,
+        1.0e-9,
+        1.0e-12,
+        "totalwatsed3 sed_del",
+    );
+    assert!(
+        (sediment_yield_kg - exported_sediment_kg).abs() > 1.0,
+        "sed_del should be routed sediment yield, not a detachment-minus-deposition alias"
+    );
 }
 
 #[test]
@@ -1705,11 +1807,7 @@ fn watershed_cli_mf_accepts_valid_per_ofe_publication_metadata() {
 }
 
 fn build_watershed_fixture_dir(prefix: &str) -> PathBuf {
-    let timestamp = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .expect("unix epoch should be before now")
-        .as_nanos();
-    let destination = std::env::temp_dir().join(format!("{prefix}_{timestamp}"));
+    let destination = unique_temp_dir(prefix);
     fs::create_dir_all(&destination).expect("fixture directory should be creatable");
 
     copy_fixture_file(
@@ -1751,6 +1849,14 @@ fn build_watershed_fixture_dir(prefix: &str) -> PathBuf {
         .expect("chan.inp fixture should be writable");
 
     destination
+}
+
+fn unique_temp_dir(prefix: &str) -> PathBuf {
+    let timestamp = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .expect("unix epoch should be before now")
+        .as_nanos();
+    std::env::temp_dir().join(format!("{prefix}_{timestamp}"))
 }
 
 fn copy_fixture_file(source: &Path, destination: &Path) {
