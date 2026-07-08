@@ -11,6 +11,9 @@ Artifacts:
 - `legacy-cropland-source-audit.md` - baseline source-line classification.
 - `projection-rule-design.md` - no accepted legacy-cropland projection rule.
 - `canonical-path-policy.md` - conditional canonical hourly Lane D policy.
+- `ow-lanuse-canonical-consensus-addendum.md` - post-closure consensus that
+  `ow-lanuse-1` is the canonical new-physics production surface and legacy
+  datvers stay compatibility/legacy-driver inputs.
 - `fidelity-envelope.md` - future bridge/implementation envelope.
 - `contract-disposition.md` - `SC-OFEROUTE-001` rev 48 and plant spec deltas.
 - `kernel-profile-compliance-checklist.md` - profile conformance check for the contract amendment.

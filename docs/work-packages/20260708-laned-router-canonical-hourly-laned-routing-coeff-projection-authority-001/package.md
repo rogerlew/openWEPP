@@ -290,3 +290,11 @@ states the end-user no-inference rule explicitly.
 
 No Rust implementation, selector/default broadening, coefficient formula,
 tolerance change, or legacy-path deletion was made.
+
+Post-closure consensus recorded in
+`artifacts/ow-lanuse-canonical-consensus-addendum.md`: do not add coefficient
+sidecars. The preferred follow-on is to make `ow-lanuse-1` the canonical
+production datver for new openWEPP physics, require WEPPpy to embed
+Disturbed/native route coefficients directly in native management files, and
+keep legacy datvers on compatibility/legacy single/MOFE driver paths unless
+explicitly converted.

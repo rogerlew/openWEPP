@@ -22,6 +22,14 @@ Changes made:
 No Rust implementation, default selector broadening, coefficient formula,
 solver/mesh/tolerance change, or legacy path deletion was made.
 
+Post-closure consensus addendum: the preferred next authority direction is not
+a new runfile or disturbed-class sidecar. To reduce operator error and avoid
+sidecar omission changing physics, `ow-lanuse-1` should become the canonical
+production datver for new openWEPP physics. WEPPpy should embed Disturbed/native
+route coefficients directly in native management files; legacy datvers remain
+compatibility inputs routed through legacy single/MOFE driver behavior unless
+explicitly converted.
+
 Validation summary:
 
 - BEI non-strict: `PASS-DEFERRED`.

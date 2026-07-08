@@ -12,7 +12,10 @@ No deterministic legacy-cropland projection rule is accepted in this package.
 - Explicit native `routing_coefficients` in `ow-lanuse-1` native forest or
   native cropland records.
 - Authorized explicit producers that emit the same five route fields with
-  provenance under the management-lanuse authority contract.
+  provenance under the management-lanuse authority contract. Post-closure
+  consensus narrows the preferred producer boundary: WEPPpy should materialize
+  those fields into native `ow-lanuse-1` management files rather than rely on
+  additional runfile sidecars.
 
 ## Rejected Authority Classes
 
@@ -24,6 +27,10 @@ No deterministic legacy-cropland projection rule is accepted in this package.
 - Using canopy cover, residue cover, rill/interrill cover, or erosion delivery
   ratios as roughness concentration or drag coefficients.
 - Selecting class defaults without an explicit, ratified coefficient table.
+- Treating legacy `lanuse=1` cropland by itself as coefficient-complete. Legacy
+  datvers are compatibility inputs unless migrated to native `ow-lanuse-1`.
+- Adding a separate sidecar whose absence silently changes the physics for the
+  same legacy management file.
 
 ## Default Eligibility Rule
 
@@ -36,14 +43,21 @@ The rev-46 all/none/mixed rule remains binding, with rev-48 authority wording:
 - attempted legacy-field synthesis: fail closed unless a later bridge contract
   ratifies all five operands.
 
-## Future Bridge Requirements
+## Preferred Follow-On Route
 
-A future bridge may reopen this only if it supplies:
+Do not reopen this as another sidecar bridge by default. The preferred follow-on
+is an `ow-lanuse-1` canonicalization/migration package that:
 
-- all five static Lane D operands;
-- source lines or table provenance for every operand;
-- units and finite domain bounds;
-- fail-closed behavior for missing, mixed, or out-of-domain values;
-- manifest/source labels distinguishing explicit, table, and projected origins;
-- tests proving the real active consumer reads the bridge output;
-- predeclared multi-case fidelity acceptance before any coefficient tuning.
+- declares `ow-lanuse-1` the production-authoritative datver for new physics;
+- requires WEPPpy Disturbed/native producers to embed the five route
+  coefficients directly in the `.man`;
+- keeps legacy datvers on legacy/off single/MOFE driver paths unless explicitly
+  converted;
+- proves legacy datver runs cannot silently activate Lane D by missing sidecar
+  accident;
+- preserves all/none/mixed fail-closed behavior for native coefficient
+  authority.
+
+If a future bridge is still proposed, it must avoid optional sidecar semantics
+and supply all five operands with provenance, bounds, consumer tests, manifest
+labels, and predeclared multi-case fidelity acceptance.
