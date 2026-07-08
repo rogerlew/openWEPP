@@ -257,6 +257,7 @@ struct LanedActiveProvenance {
     #[serde(skip_serializing_if = "Option::is_none")]
     trace_record_count: Option<usize>,
     mesh_policy: LanedActiveMeshPolicyProvenance,
+    max_dt_s: f64,
     days_seen: u64,
     days_routed: u64,
     days_uniform_shape: u64,

@@ -36,8 +36,8 @@ pub(crate) const LANED_ACTIVE_MESH_MAX_CELLS: usize = 4096;
 /// Outlet-bin sample width (s); 3600/900 = 4 bins per hour, so the erosion
 /// hourly mapping is exact hour-aligned bin sums.
 pub(crate) const LANED_ACTIVE_SAMPLE_DT_S: f64 = 900.0;
-/// CFL step cap (s).
-pub(crate) const LANED_ACTIVE_MAX_DT_S: f64 = 300.0;
+/// Production CFL step cap (s).
+pub const LANED_ACTIVE_MAX_DT_S: f64 = 300.0;
 /// One day of hourly source (s).
 pub(crate) const LANED_ACTIVE_SOURCE_WINDOW_S: f64 = 24.0 * 3600.0;
 /// Drain tail after the last active source hour (rev-27 window row).
@@ -288,6 +288,7 @@ impl DirectLanedActiveMeshPolicy {
 pub struct DirectLanedActiveConfig {
     pub lanes: Vec<DirectLanedActiveLaneConfig>,
     pub mesh_policy: DirectLanedActiveMeshPolicy,
+    pub max_dt_s: f64,
     pub trace_enabled: bool,
     pub trace_detail_filter: Option<DirectLanedActiveTraceDetailFilter>,
     pub step_trace_enabled: bool,
@@ -305,6 +306,12 @@ impl DirectLanedActiveConfig {
             lane.validate()?;
         }
         self.mesh_policy.validate()?;
+        validate_finite("laned_active.max_dt_s", self.max_dt_s)?;
+        if self.max_dt_s <= 0.0 || self.max_dt_s > LANED_ACTIVE_MAX_DT_S {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "laned_active.max_dt_s",
+            });
+        }
         if self.trace_detail_filter.is_some() && !self.trace_enabled {
             return Err(DirectRuntimeError::DirectDomainViolation {
                 field: "laned_active.trace_detail_filter",
@@ -338,6 +345,7 @@ impl DirectLanedActiveTraceDetailFilter {
 pub struct DirectLanedActiveTraceDetail {
     pub mesh_cell_count: usize,
     pub mesh_dx_m: f64,
+    pub max_dt_s: f64,
     pub outlet_bin_m3: Vec<f64>,
     pub outlet_bin_spans_s: Vec<f64>,
     pub hydrograph_time_s: Vec<f64>,
@@ -408,6 +416,7 @@ pub struct DirectLanedActiveDayRouting {
 #[derive(Debug, Clone, PartialEq)]
 pub struct DirectLanedActiveRunSummary {
     pub mesh_policy: DirectLanedActiveMeshPolicySummary,
+    pub max_dt_s: f64,
     pub days_seen: u64,
     pub days_routed: u64,
     pub total_source_m3: f64,
@@ -436,6 +445,7 @@ pub struct DirectLanedActiveRunSummary {
 pub struct DirectLanedActiveTraceRecord {
     pub day_index: usize,
     pub lane_index: usize,
+    pub max_dt_s: f64,
     pub is_terminal_lane: bool,
     pub source_m3: f64,
     pub outlet_m3: f64,
@@ -453,6 +463,7 @@ impl Default for DirectLanedActiveRunSummary {
     fn default() -> Self {
         Self {
             mesh_policy: DirectLanedActiveMeshPolicySummary::default(),
+            max_dt_s: LANED_ACTIVE_MAX_DT_S,
             days_seen: 0,
             days_routed: 0,
             total_source_m3: 0.0,
@@ -474,9 +485,14 @@ impl Default for DirectLanedActiveRunSummary {
 
 impl DirectLanedActiveRunSummary {
     #[must_use]
-    pub fn for_mesh_policy(mesh_policy: DirectLanedActiveMeshPolicy, trace_enabled: bool) -> Self {
+    pub fn for_mesh_policy(
+        mesh_policy: DirectLanedActiveMeshPolicy,
+        max_dt_s: f64,
+        trace_enabled: bool,
+    ) -> Self {
         Self {
             mesh_policy: mesh_policy.summary(),
+            max_dt_s,
             trace_records: trace_enabled.then(Vec::new),
             ..Self::default()
         }
@@ -505,6 +521,7 @@ pub(crate) fn laned_active_record_trace(
     trace_records.push(DirectLanedActiveTraceRecord {
         day_index: day_frame.day_index,
         lane_index: day_frame.lane_index,
+        max_dt_s: summary.max_dt_s,
         is_terminal_lane,
         source_m3: routing.source_m3,
         outlet_m3: routing.outlet_m3,
@@ -778,6 +795,7 @@ pub(crate) fn laned_active_route_lane(
     window_s: f64,
     books: &mut DirectLanedActiveDayBooks,
     source: &LanedActiveLaneSource,
+    max_dt_s: f64,
     trace_detail: bool,
     trace_steps: bool,
 ) -> Result<UpstreamHandoff, DirectRuntimeError> {
@@ -785,6 +803,12 @@ pub(crate) fn laned_active_route_lane(
     if area_m2 <= 0.0 {
         return Err(DirectRuntimeError::DirectDomainViolation {
             field: "laned_active.area_m2",
+        });
+    }
+    validate_finite("laned_active.max_dt_s", max_dt_s)?;
+    if max_dt_s <= 0.0 || max_dt_s > LANED_ACTIVE_MAX_DT_S {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "laned_active.max_dt_s",
         });
     }
     laned_active_assert_no_dc01_surface_feed(day_frame)?;
@@ -902,7 +926,7 @@ pub(crate) fn laned_active_route_lane(
         &breakpoints[..breakpoint_count],
         window_s,
         LANED_ACTIVE_SAMPLE_DT_S,
-        LANED_ACTIVE_MAX_DT_S,
+        max_dt_s,
         trace_steps,
     )
     .map_err(|error| DirectRuntimeError::DirectKernelGuardFailure {
@@ -955,6 +979,7 @@ pub(crate) fn laned_active_route_lane(
         Box::new(DirectLanedActiveTraceDetail {
             mesh_cell_count: active_cells,
             mesh_dx_m,
+            max_dt_s,
             outlet_bin_m3: result
                 .outlet_bin_outflow_m2
                 .iter()
@@ -1268,10 +1293,25 @@ mod tests {
             3600.0,
             &mut books,
             &dry_lane_source(),
-            false,
+            150.0,
+            true,
             false,
         )
         .expect("positive post-growth canhgt should satisfy the vegetated guard");
+        let trace_detail = day
+            .laned_active_routing
+            .as_ref()
+            .and_then(|routing| routing.trace_detail.as_ref())
+            .expect("trace detail");
+        assert!((trace_detail.max_dt_s - 150.0).abs() < f64::EPSILON);
+        let mut summary = DirectLanedActiveRunSummary::for_mesh_policy(
+            DirectLanedActiveMeshPolicy::production_default(),
+            150.0,
+            true,
+        );
+        laned_active_record_trace(&mut summary, &day, true, 0.0).expect("trace row");
+        let trace_record = &summary.trace_records.as_ref().expect("records")[0];
+        assert!((trace_record.max_dt_s - 150.0).abs() < f64::EPSILON);
 
         let mut stale_static_day = vegetated_day_with_post_growth_canhgt(0.0);
         let mut stale_static_books = DirectLanedActiveDayBooks::default();
@@ -1285,6 +1325,7 @@ mod tests {
                 3600.0,
                 &mut stale_static_books,
                 &dry_lane_source(),
+                LANED_ACTIVE_MAX_DT_S,
                 false,
                 false,
             ),

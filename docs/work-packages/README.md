@@ -12,6 +12,15 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-08`:
+- `20260708-laned-router-active-router-timestep-policy-adjudication-001/` -
+  EXECUTED-COMPLETE (2026-07-08): added the trace-gated diagnostic
+  `OPENWEPP_LANED_ACTIVE_MAX_DT_S` selector and adjudicated `mn_corn_h4` day
+  792 lane 1. The fixed-300 `dx1p25`/`dx0p625` shape miss
+  (`0.0209449 > 0.0166667`) closes under a shared 75 s max substep
+  (`0.0029828 <= 0.0166667`), so the miss is a timestep-policy artifact, not
+  a routed-shape tolerance failure. `SC-OFEROUTE-001` rev 43 now requires
+  coupled space-time evidence for renewed target-`dx` promotion. No production
+  mesh default flip or routed-shape tolerance widening landed.
 - `20260708-laned-router-mn-corn-h4-day792-raw-hydrograph-numerics-001/` -
   EXECUTED-HOLD-CFL-TIMESTEP-TRANSITION (2026-07-08): added row-scoped
   active-router step tracing and reran `mn_corn_h4` day 792 lane 1 at

@@ -480,6 +480,7 @@ impl DirectFrameExecutor {
         let mut row_count = 0_usize;
         let mut summary = laned_active::DirectLanedActiveRunSummary::for_mesh_policy(
             config.mesh_policy,
+            config.max_dt_s,
             config.trace_enabled,
         );
 
@@ -575,6 +576,7 @@ impl DirectFrameExecutor {
                         window_s,
                         &mut books,
                         &lane_sources[lane_index],
+                        config.max_dt_s,
                         trace_detail,
                         trace_steps,
                     )

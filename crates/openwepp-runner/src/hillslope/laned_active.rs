@@ -12,6 +12,7 @@
 
 use crate::HillslopeCliError;
 
+pub(crate) const ACTIVE_MAX_DT_ENV: &str = "OPENWEPP_LANED_ACTIVE_MAX_DT_S";
 pub(crate) const ACTIVE_MESH_TARGET_DX_ENV: &str = "OPENWEPP_LANED_ACTIVE_MESH_TARGET_DX_M";
 pub(crate) const ACTIVE_STEP_TRACE_ENV: &str = "OPENWEPP_LANED_ACTIVE_STEP_TRACE";
 pub(crate) const ACTIVE_TRACE_DETAIL_ENV: &str = "OPENWEPP_LANED_ACTIVE_TRACE_DETAIL";
@@ -29,7 +30,64 @@ pub(crate) fn trace_enabled() -> bool {
 }
 
 pub(crate) fn validate_trace_selector_env() -> Result<(), HillslopeCliError> {
-    if trace_enabled() && !env_enabled() {
+    let mut state = ActiveTraceSelectorState::default();
+    if env_enabled() {
+        state = state.with_active();
+    }
+    if trace_enabled() {
+        state = state.with_trace();
+    }
+    if std::env::var_os(ACTIVE_TRACE_DETAIL_ENV).is_some() {
+        state = state.with_trace_detail();
+    }
+    if step_trace_enabled() {
+        state = state.with_step_trace();
+    }
+    if std::env::var_os(ACTIVE_MAX_DT_ENV).is_some() {
+        state = state.with_max_dt();
+    }
+    validate_trace_selector_combination(state)
+}
+
+#[derive(Debug, Default, Clone, Copy)]
+struct ActiveTraceSelectorState(u8);
+
+impl ActiveTraceSelectorState {
+    const ACTIVE: u8 = 1 << 0;
+    const TRACE: u8 = 1 << 1;
+    const TRACE_DETAIL: u8 = 1 << 2;
+    const STEP_TRACE: u8 = 1 << 3;
+    const MAX_DT: u8 = 1 << 4;
+
+    const fn with_active(self) -> Self {
+        Self(self.0 | Self::ACTIVE)
+    }
+
+    const fn with_trace(self) -> Self {
+        Self(self.0 | Self::TRACE)
+    }
+
+    const fn with_trace_detail(self) -> Self {
+        Self(self.0 | Self::TRACE_DETAIL)
+    }
+
+    const fn with_step_trace(self) -> Self {
+        Self(self.0 | Self::STEP_TRACE)
+    }
+
+    const fn with_max_dt(self) -> Self {
+        Self(self.0 | Self::MAX_DT)
+    }
+
+    const fn has(self, flag: u8) -> bool {
+        self.0 & flag != 0
+    }
+}
+
+fn validate_trace_selector_combination(
+    state: ActiveTraceSelectorState,
+) -> Result<(), HillslopeCliError> {
+    if state.has(ActiveTraceSelectorState::TRACE) && !state.has(ActiveTraceSelectorState::ACTIVE) {
         return Err(HillslopeCliError::RuntimeSurfaceFailure {
             surface: ACTIVE_TRACE_ENV,
             detail: format!(
@@ -37,7 +95,10 @@ pub(crate) fn validate_trace_selector_env() -> Result<(), HillslopeCliError> {
             ),
         });
     }
-    if std::env::var_os(ACTIVE_TRACE_DETAIL_ENV).is_some() && (!env_enabled() || !trace_enabled()) {
+    if state.has(ActiveTraceSelectorState::TRACE_DETAIL)
+        && (!state.has(ActiveTraceSelectorState::ACTIVE)
+            || !state.has(ActiveTraceSelectorState::TRACE))
+    {
         return Err(HillslopeCliError::RuntimeSurfaceFailure {
             surface: ACTIVE_TRACE_DETAIL_ENV,
             detail: format!(
@@ -45,10 +106,21 @@ pub(crate) fn validate_trace_selector_env() -> Result<(), HillslopeCliError> {
             ),
         });
     }
-    if step_trace_enabled()
-        && (!env_enabled()
-            || !trace_enabled()
-            || std::env::var_os(ACTIVE_TRACE_DETAIL_ENV).is_none())
+    if state.has(ActiveTraceSelectorState::MAX_DT)
+        && (!state.has(ActiveTraceSelectorState::ACTIVE)
+            || !state.has(ActiveTraceSelectorState::TRACE))
+    {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: ACTIVE_MAX_DT_ENV,
+            detail: format!(
+                "{ACTIVE_MAX_DT_ENV}=<seconds> is diagnostic evidence only and requires {ACTIVE_TRACE_ENV}=1 and OPENWEPP_LANED_ACTIVE=1"
+            ),
+        });
+    }
+    if state.has(ActiveTraceSelectorState::STEP_TRACE)
+        && (!state.has(ActiveTraceSelectorState::ACTIVE)
+            || !state.has(ActiveTraceSelectorState::TRACE)
+            || !state.has(ActiveTraceSelectorState::TRACE_DETAIL))
     {
         return Err(HillslopeCliError::RuntimeSurfaceFailure {
             surface: ACTIVE_STEP_TRACE_ENV,
@@ -163,6 +235,43 @@ fn mesh_policy_from_target_dx_value(
         })
 }
 
+pub(crate) fn max_dt_s_from_env() -> Result<f64, HillslopeCliError> {
+    match std::env::var(ACTIVE_MAX_DT_ENV) {
+        Ok(value) => max_dt_s_from_value(Some(&value)),
+        Err(std::env::VarError::NotPresent) => max_dt_s_from_value(None),
+        Err(std::env::VarError::NotUnicode(_)) => Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: ACTIVE_MAX_DT_ENV,
+            detail: "expected UTF-8 finite positive max dt in seconds".to_string(),
+        }),
+    }
+}
+
+fn max_dt_s_from_value(value: Option<&str>) -> Result<f64, HillslopeCliError> {
+    let Some(value) = value else {
+        return Ok(openwepp_hillslope_orchestrator::LANED_ACTIVE_MAX_DT_S);
+    };
+    let max_dt_s =
+        value
+            .parse::<f64>()
+            .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+                surface: ACTIVE_MAX_DT_ENV,
+                detail: format!("expected finite positive max dt in seconds: {error}"),
+            })?;
+    if !max_dt_s.is_finite()
+        || max_dt_s <= 0.0
+        || max_dt_s > openwepp_hillslope_orchestrator::LANED_ACTIVE_MAX_DT_S
+    {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: ACTIVE_MAX_DT_ENV,
+            detail: format!(
+                "expected finite positive max dt in (0, {}] seconds, got {max_dt_s}",
+                openwepp_hillslope_orchestrator::LANED_ACTIVE_MAX_DT_S
+            ),
+        });
+    }
+    Ok(max_dt_s)
+}
+
 /// ADR-0037 abandonment removal: the former implicit selector is rejected
 /// whenever present so stale operator environments cannot silently proceed.
 pub(crate) fn reject_abandoned_implicit_selector_env() -> Result<(), HillslopeCliError> {
@@ -178,8 +287,9 @@ pub(crate) fn reject_abandoned_implicit_selector_env() -> Result<(), HillslopeCl
 #[cfg(test)]
 mod tests {
     use super::{
-        mesh_policy_from_target_dx_value, step_trace_enabled_from_value,
-        trace_detail_filter_from_value, trace_enabled_from_value,
+        ActiveTraceSelectorState, max_dt_s_from_value, mesh_policy_from_target_dx_value,
+        step_trace_enabled_from_value, trace_detail_filter_from_value, trace_enabled_from_value,
+        validate_trace_selector_combination,
     };
     use openwepp_hillslope_orchestrator::DirectLanedActiveMeshPolicy;
 
@@ -198,6 +308,18 @@ mod tests {
     }
 
     #[test]
+    fn max_dt_parser_defaults_parses_and_rejects_invalid_caps() {
+        assert!((max_dt_s_from_value(None).expect("default max dt") - 300.0).abs() < f64::EPSILON);
+        assert!(
+            (max_dt_s_from_value(Some("150")).expect("valid max dt") - 150.0).abs() < f64::EPSILON
+        );
+        assert!(max_dt_s_from_value(Some("0")).is_err());
+        assert!(max_dt_s_from_value(Some("301")).is_err());
+        assert!(max_dt_s_from_value(Some("NaN")).is_err());
+        assert!(max_dt_s_from_value(Some("not-a-number")).is_err());
+    }
+
+    #[test]
     fn trace_selector_requires_explicit_one() {
         assert!(!trace_enabled_from_value(None));
         assert!(!trace_enabled_from_value(Some("0")));
@@ -209,6 +331,46 @@ mod tests {
         assert!(!step_trace_enabled_from_value(None));
         assert!(!step_trace_enabled_from_value(Some("0")));
         assert!(step_trace_enabled_from_value(Some("1")));
+    }
+
+    #[test]
+    fn diagnostic_max_dt_selector_requires_active_trace() {
+        assert!(
+            validate_trace_selector_combination(
+                ActiveTraceSelectorState::default()
+                    .with_active()
+                    .with_trace()
+                    .with_max_dt(),
+            )
+            .is_ok()
+        );
+        assert!(
+            validate_trace_selector_combination(
+                ActiveTraceSelectorState::default()
+                    .with_trace()
+                    .with_max_dt(),
+            )
+            .is_err()
+        );
+        assert!(
+            validate_trace_selector_combination(
+                ActiveTraceSelectorState::default()
+                    .with_active()
+                    .with_max_dt(),
+            )
+            .is_err()
+        );
+        assert!(
+            validate_trace_selector_combination(
+                ActiveTraceSelectorState::default()
+                    .with_active()
+                    .with_trace()
+                    .with_trace_detail()
+                    .with_step_trace()
+                    .with_max_dt(),
+            )
+            .is_ok()
+        );
     }
 
     #[test]

@@ -232,7 +232,7 @@ pub use laned_active::{
     DirectLanedActiveMeshPolicy, DirectLanedActiveMeshPolicySummary, DirectLanedActiveRunSummary,
     DirectLanedActiveStageLimiterTrace, DirectLanedActiveStepTraceRecord,
     DirectLanedActiveTraceDetail, DirectLanedActiveTraceDetailFilter, DirectLanedActiveTraceRecord,
-    DirectLanedActiveTvdTrace,
+    DirectLanedActiveTvdTrace, LANED_ACTIVE_MAX_DT_S,
 };
 pub use normalization::{
     DirectNormalizationDownstreamOperands, DirectNormalizationInputs,
