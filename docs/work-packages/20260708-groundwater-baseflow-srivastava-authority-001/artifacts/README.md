@@ -1,13 +1,19 @@
 # Artifacts
 
-Status: queued placeholders for M-T2A scaffold.
+Status: executed M-T2A authority artifacts.
 
-Expected artifacts:
+Authority output:
+
+- `docs/specifications/science-contracts/contracts/SC-GWBASEFLOW-001.md`
+- `docs/specifications/science-contracts/index.md`
+
+Package evidence:
 
 - `required-reading-map.md`
 - `authority-source-inventory.md`
 - `baseline-code-map.md`
 - `contract-design.md`
+- `kernel-profile-compliance-checklist.md`
 - `gate-results.md`
 - `review-*.md`
 - `verification-*.md`
@@ -15,6 +21,6 @@ Expected artifacts:
 - `final-disposition.md`
 - `worker-handoff.md`
 
-Raw PDF extracts or scratch line maps should stay package-local and small. Do
-not commit copied paper text beyond short citation/evidence snippets needed for
-fair-use provenance.
+No raw PDF extracts are committed. Local scratch extraction used `pdftotext`
+under `/tmp/openwepp_gwbaseflow_pdf/`; the committed artifacts paraphrase source
+roles and cite source/file-line authority rather than copying paper text.

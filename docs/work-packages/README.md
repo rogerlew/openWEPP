@@ -35,12 +35,12 @@ State as of `2026-07-08`:
   has since closed; the next watershed-facing action is the
   groundwater/baseflow authority chain.
 - `20260708-groundwater-baseflow-srivastava-authority-001/` -
-  QUEUED (2026-07-08, M-T2A): scaffolded the contract-first authority package
-  for WEPP groundwater/baseflow. The package binds Srivastava (2013)
-  dissertation authority, Srivastava et al. (2013/2017), Dun et al. (2009),
-  and `/workdir/wepp-forest_260430_baseline` code authority before any
-  single-OFE or Lane D MOFE implementation work. No production code or
-  contract amendment has been executed by the scaffold.
+  EXECUTED-COMPLETE-AUTHORITY (2026-07-08, M-T2A): created
+  `SC-GWBASEFLOW-001` as the canonical linear groundwater-reservoir baseflow
+  authority, binding Srivastava (2013) dissertation authority, Srivastava et
+  al. (2013/2017), Dun et al. (2009), and
+  `/workdir/wepp-forest_260430_baseline` code authority. No production code
+  was changed; M-T2B now owns single-OFE and Lane D MOFE implementation.
 - `20260708-laned-router-canonical-hourly-laned-routing-coeff-projection-authority-001/` -
   QUEUED (2026-07-08, M-T2P): scaffolded the contract-first authority package
   for making hourly water balance plus Lane D active routing the canonical

@@ -1,11 +1,11 @@
 # Srivastava Groundwater/Baseflow Authority
 
-Status: `QUEUED`
+Status: `EXECUTED-COMPLETE-AUTHORITY`
 Package ID: `20260708-groundwater-baseflow-srivastava-authority-001`
 Queue row: `M-T2A`
 Owner: Codex
 Scaffold date: `2026-07-08`
-Evidence mode: `Static scaffold; no contract or implementation executed`
+Evidence mode: `Static authority; no production implementation executed`
 
 ## Objective
 

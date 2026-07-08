@@ -1,6 +1,6 @@
 # Required Reading Map
 
-Status: scaffolded.
+Status: executed input map.
 Package: `20260708-groundwater-baseflow-srivastava-authority-001`
 
 ## Budget
