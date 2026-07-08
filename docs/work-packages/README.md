@@ -23,27 +23,24 @@ State as of `2026-07-08`:
   Final gates: focused Lane D integration `8/8`, ignored H2637 default-active
   acceptance vector passed (`563.620s`), full workspace nextest `1427/1427`,
   clippy/fmt/deny/doc lint/diff-check green. Remaining follow-ons:
-  watershed HBP hourly water/sediment consumption (queued after Tier 1) and
-  active-mode sediment process-physics adjudication.
+  watershed HBP hourly water/sediment consumption (queued after Tier 1 and
+  WSHED-W7 resume) and active-mode sediment process-physics adjudication.
 - `20260708-laned-router-tier1-local-numerics-001/` -
-  QUEUED (2026-07-08): scaffolded a contract-first execution package for the
-  backlog `Tier 1 - local numerics` active-router optimizations: analytic
-  celerity, bounded Newton alpha solve, hot-path `h * h.sqrt()` substitution,
-  and bounded `Re^0.45` optimization if approximation evidence supports it.
-  The scaffold records the required `SC-OFEROUTE-001` amendment, D10B/Iwagaki
-  oracle and conservation gates, H2637 active endpoint/fidelity deltas, and
-  D14/D15A two-instrument timing protocol. No contract or production-code
-  implementation landed in this scaffold.
+  ACTIVE (2026-07-08): current first package in the binding order before
+  WSHED-W7 resume. In-progress artifacts record rev-47 Tier 1 local numerics
+  work and H2637 timing evidence, but final disposition is not recorded here
+  until the package closes. Downstream WSHED-W7R and Lane D watershed hourly
+  consumption remain queued behind this package.
 - `20260708-laned-router-watershed-hbp-hourly-water-sediment-consumption-001/` -
-  QUEUED (2026-07-08, execute after Tier 1): scaffolded a consumer-path
-  closure package for Lane D active routed HBP minor-1 hourly runoff and
-  hourly sediment surfaces. The package requires contract-first authority if
-  needed, active HBP producer evidence, watershed supervisor intake proof,
-  `WatershedNetworkFrame` handoff proof, production channel/watershed consumer
-  proof, equal-daily-total/different-hourly-distribution sensitivity evidence,
-  fail-closed active missing/malformed/mixed hourly authority, and protected
-  legacy/off fallback evidence. Producer-only, parser-only, inventory-only, or
-  shadow-only proof cannot close it.
+  QUEUED (2026-07-08, execute after Tier 1 and WSHED-W7 resume): scaffolded a
+  consumer-path closure package for Lane D active routed HBP minor-1 hourly
+  runoff and hourly sediment surfaces. The package requires contract-first
+  authority if needed, active HBP producer evidence, watershed supervisor intake
+  proof, `WatershedNetworkFrame` handoff proof, production channel/watershed
+  consumer proof, equal-daily-total/different-hourly-distribution sensitivity
+  evidence, fail-closed active missing/malformed/mixed hourly authority, and
+  protected legacy/off fallback evidence. Producer-only, parser-only,
+  inventory-only, or shadow-only proof cannot close it.
 - `20260708-plant-file-native-lanuse-routing-doc-001/` -
   EXECUTED-COMPLETE-DOC-ALIGNMENT (2026-07-08): docs-only package updated
   `docs/specifications/wepp-input-files/specs/plant-file.spec.md` for the

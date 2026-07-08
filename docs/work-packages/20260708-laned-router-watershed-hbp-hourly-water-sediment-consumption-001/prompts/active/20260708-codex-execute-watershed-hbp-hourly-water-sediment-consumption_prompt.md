@@ -9,7 +9,8 @@ Phase plan: execute all phases in
 `docs/work-packages/20260708-laned-router-watershed-hbp-hourly-water-sediment-consumption-001/package.md`
 sequentially through disposition, but do not implement until
 `20260708-laned-router-tier1-local-numerics-001` has completed and its final
-disposition has been read.
+disposition has been read, and WSHED-W7 resume has completed under
+`docs/ROADMAP.md` `## Watershed Runtime Performance Queue`.
 
 Required reading:
 
@@ -28,6 +29,8 @@ Conditional:
 
 - Tier 1 `artifacts/final-disposition.md` and `artifacts/worker-handoff.md`
   after Tier 1 completes.
+- WSHED-W7 resume final disposition and worker handoff after that package
+  completes.
 - Contract-authoring procedure/profile docs before any `SC-*` edit.
 - `SC-INFILE-HBP-001`, `SC-ROUTE-001`, `SC-OFEROUTE-001`, `SC-SED-001`, and
   `SC-RUNOFFPART-001` by touched mechanism as defined in the required-reading

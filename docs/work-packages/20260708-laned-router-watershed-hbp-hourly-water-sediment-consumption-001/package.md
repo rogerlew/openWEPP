@@ -8,7 +8,8 @@ Scaffold date: `2026-07-08`
 Evidence mode: `Static scaffold; no implementation executed`
 Execution order: after
 `20260708-laned-router-tier1-local-numerics-001` completes and records its
-final disposition.
+final disposition, and after WSHED-W7 has resumed and closed the
+sediment-active watershed fixture/publication path on current main.
 
 ## Objective
 
@@ -79,6 +80,9 @@ Conditional:
 
 - `docs/work-packages/20260708-laned-router-tier1-local-numerics-001/artifacts/final-disposition.md`
   and `artifacts/worker-handoff.md` after Tier 1 completes.
+- WSHED-W7 resume final disposition and worker handoff after that package
+  closes. The canonical ordering source is `docs/ROADMAP.md`
+  `## Watershed Runtime Performance Queue`.
 - `docs/specifications/science-contract-authoring-procedure.md` and
   `docs/specifications/science-contracts/kernel-process-contract-profile.md`
   before any `SC-*` contract edit.
@@ -157,6 +161,10 @@ Implementation-local:
 
 - Tier 1 local numerics must complete first so this package consumes the active
   router's post-Tier-1 production behavior and contract revision.
+- WSHED-W7 resume must complete next so this package builds on a proven
+  sediment-active watershed fixture/publication path. `WSHED-W7DC01` is
+  historical/superseded unless a fresh producer-side zero-sediment regression
+  reappears.
 - Conditional Lane D default activation:
   `20260708-laned-router-conditional-default-activation-001`.
 - Active `dx5` production mesh-policy ratification:
@@ -169,6 +177,9 @@ Implementation-local:
 If Tier 1 exits in `EXECUTED-HOLD-*`, this package must start by deciding
 whether the hold changes the active router behavior or contract basis. If it
 does, this package must remain queued or be amended before execution.
+If WSHED-W7 resume exits in `EXECUTED-HOLD-*`, this package must decide whether
+the hold invalidates watershed sediment-active publication as a prerequisite. If
+it does, this package remains queued or must be amended before execution.
 
 ## Intended Write Set
 
@@ -219,11 +230,13 @@ Protected:
 1. Record `git status --short --branch` and identify unrelated dirty files.
 2. Confirm Tier 1 has completed; if not complete, stop before implementation
    and keep this package queued.
-3. Update `artifacts/required-reading-map.md` with current byte counts.
-4. Produce `artifacts/source-map.md` naming the producer, HBP parser,
+3. Confirm WSHED-W7 resume has completed; if not complete, stop before
+   implementation and keep this package queued.
+4. Update `artifacts/required-reading-map.md` with current byte counts.
+5. Produce `artifacts/source-map.md` naming the producer, HBP parser,
    supervisor intake, typed frame, route kernel, and publication/output
    consumers.
-5. Produce `artifacts/operand-lineage.md` for hourly water and sediment
+6. Produce `artifacts/operand-lineage.md` for hourly water and sediment
    operands and reject daily scalar aliases explicitly.
 
 ### Phase B - Contract-First Authority
@@ -363,6 +376,8 @@ the following are true:
 
 - Tier 1 has completed or this package is explicitly amended to account for its
   hold/disposition.
+- WSHED-W7 resume has completed or this package is explicitly amended to account
+  for its hold/disposition.
 - Required contract authority is current before production code.
 - Active Lane D HBP producer evidence shows the 24-slot water/sediment pair is
   sourced from active routed outlet behavior.
@@ -379,6 +394,8 @@ Legitimate hold outcomes include:
 
 - `EXECUTED-HOLD-TIER1-DEPENDENCY`: Tier 1 has not completed or its disposition
   changes this package's authority basis.
+- `EXECUTED-HOLD-WSHED-W7-DEPENDENCY`: WSHED-W7 resume has not completed or its
+  disposition leaves sediment-active watershed publication unavailable.
 - `EXECUTED-HOLD-CONTRACT-AUTHORITY`: current contracts do not authorize the
   consumer behavior and cannot be safely amended in this package.
 - `EXECUTED-HOLD-HBP-PRODUCER`: active HBP hourly water/sediment producer
