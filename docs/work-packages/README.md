@@ -12,6 +12,17 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-08`:
+- `20260708-laned-router-tier2-dx5-fine-reference-hold-lift-001/` -
+  EXECUTED-HOLD-MN-CORN-H4-SHAPE-NONCONVERGED (2026-07-08): executed the
+  narrow rev-41 Tier-2 hold-lift by adding the `mn_corn_h4` `dx0p625`
+  reference. The unchanged one-third adequacy gate still fails on routed
+  hourly shape: `dx1p25` vs `dx0p625` max L1 `0.020944940 > 0.0166667`.
+  The named cliff counters do not flip (`uniform_shape_rows`, degenerate
+  shape rows, positive-shape rows all unchanged; tail-fold/end-storage shifts
+  are small), so promotion stops as a shape-surface convergence hold. `dx5`
+  cost remains priced but non-blocking under the fidelity-first posture; no
+  contract or production mesh-policy flip landed. Follow-on:
+  `20260708-laned-router-mn-corn-h4-routed-shape-attribution-001`.
 - `20260708-laned-router-tier2-dx-target-mesh-policy-readjudication-rev41-001/` -
   EXECUTED-HOLD-DX5-PROMOTION-UNRATIFIED (2026-07-08): re-adjudicated the
   Tier-2 target-`dx` active mesh-policy question on the `SC-OFEROUTE-001`
