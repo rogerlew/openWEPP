@@ -52,7 +52,13 @@ impl DirectProductionDayInputBuilder<'_> {
                 }
             })
             .collect();
-        Ok(openwepp_hillslope_orchestrator::DirectLanedActiveConfig { lanes })
+        let mesh_policy = crate::hillslope::laned_active::mesh_policy_from_env()?;
+        let trace_enabled = crate::hillslope::laned_active::trace_enabled();
+        Ok(openwepp_hillslope_orchestrator::DirectLanedActiveConfig {
+            lanes,
+            mesh_policy,
+            trace_enabled,
+        })
     }
 
     fn laned_geometry_with_selector(

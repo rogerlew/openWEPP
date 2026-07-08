@@ -1,30 +1,34 @@
 # Fixture Cohort Plan
 
-Status: QUEUED
-Evidence mode: Static scaffold.
+Status: EXECUTED-COMPLETE
+Evidence mode: Static + Ran.
 
-## Primary Decision Cohort
+## Decision Cohort
 
-The production mesh-policy decision must be priced on the real active-plain
-selected cohort, not on H2637 alone.
+The production decision was priced on the real selected cohort:
 
-| Member | Role | Climate | Prior routed-day shape | Materialization source |
-|--------|------|---------|------------------------|------------------------|
-| `mn_corn_h4` | Real row-crop/agriculture | `p4.cli` | 2557 days seen, 209 routed | `20260707-laned-router-d16-rowcrop-canhgt-active-runtime-publication-001/artifacts/selected-cohort-materialization.json` |
-| `n_idaho_forest_h1` | Real forest | `p1.cli` | 1461 days seen, 185 routed | same |
-| `wa_cascades_forest_h1` | Real wet forest/runtime stress | `p1.cli` | 2192 days seen, 1381 routed | same |
+| Member | Role | Climate | Trace rows per rung | Materialization |
+|--------|------|---------|--------------------:|-----------------|
+| `mn_corn_h4` | Real row-crop/agriculture | `p4.cli` | 2557 | `20260707-laned-router-d16-rowcrop-canhgt-active-runtime-publication-001/artifacts/selected-cohort-materialization.json` |
+| `n_idaho_forest_h1` | Real forest | `p1.cli` | 1461 | same |
+| `wa_cascades_forest_h1` | Real wet forest/runtime stress | `p1.cli` | 10960 for completed rungs | same |
 
-## Synthetic Stress Case
+Synthetic stress evidence was reported separately:
 
-| Member | Role | Climate | Prior routed-day shape | Materialization source |
-|--------|------|---------|------------------------|------------------------|
-| `h2637` | Synthetic short-OFE stress only | `p2637.cli` | 731 days seen, 610 routed | selected-cohort and ADR-0037 plain identity artifacts |
+| Member | Role | Climate | Trace rows per rung | Constraint |
+|--------|------|---------|--------------------:|------------|
+| `h2637` | Synthetic short-OFE stress only | `p2637.cli` | 13889 | Not fleet-general proof |
 
-## Execution Requirements
+The ladder harness copied each source run directory into
+`artifacts/mesh-ladder-runs/<member>/<rung>/run_dir/` and rewrote outputs to
+`run_dir/output/`. The source materialization directories were not reused as
+output targets.
 
-- Materialize package-local copies or stable references for each selected member
-  before timing/comparator evidence.
-- Record input hashes, runfile paths, output directories, release binary hash,
-  and environment for every timing/comparator run.
-- Report real-cohort aggregate and H2637 stress evidence separately.
-- Do not treat H2637 as fleet-general proof.
+## Outcome
+
+The cohort was sufficient to reject production target-`dx` promotion:
+- `mn_corn_h4` and `n_idaho_forest_h1` passed reference/candidate tolerances.
+- `wa_cascades_forest_h1` failed the active closure guard for `dx2p5` and
+  `dx1p25` at day 1122, so no adequate fine reference exists for that member.
+- `wa_cascades_forest_h1` `dx10`/`dx5` completed but produced non-promotable
+  routed outlet/storage magnitudes.

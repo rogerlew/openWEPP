@@ -3,8 +3,9 @@
 //! threaded `cargo test` harness races `set_var`/`remove_var` against
 //! concurrent `getenv` (glibc UB). Every run helper neutralizes ALL Lane D
 //! selector variables at entry (`OPENWEPP_LANED_SHADOW`,
-//! `OPENWEPP_LANED_ACTIVE`, plus the abandoned implicit selector env var) so
-//! inherited shell state cannot leak in (CR-M2, T3-QA-M3).
+//! `OPENWEPP_LANED_ACTIVE`, `OPENWEPP_LANED_ACTIVE_TRACE`,
+//! `OPENWEPP_LANED_ACTIVE_MESH_TARGET_DX_M`, plus the abandoned implicit
+//! selector env var) so inherited shell state cannot leak in (CR-M2, T3-QA-M3).
 //!
 //! Lane D activation guard — the REAL-H2637 legacy executed vector
 //! (`SC-OFEROUTE-001#INV-OFEROUTE-012`): the opt-in seam shadow must fail
@@ -45,6 +46,26 @@ impl Drop for AbandonedImplicitEnvCleanup {
     }
 }
 
+struct LaneDSelectorEnvCleanup;
+
+impl Drop for LaneDSelectorEnvCleanup {
+    fn drop(&mut self) {
+        clear_laned_selector_env();
+    }
+}
+
+fn clear_laned_selector_env() {
+    // SAFETY: these env-mutating tests are nextest-only process-isolated
+    // tests; callers clear the variables before runner work starts.
+    unsafe {
+        std::env::remove_var("OPENWEPP_LANED_ACTIVE");
+        std::env::remove_var("OPENWEPP_LANED_ACTIVE_TRACE");
+        std::env::remove_var("OPENWEPP_LANED_ACTIVE_MESH_TARGET_DX_M");
+        std::env::remove_var("OPENWEPP_LANED_SHADOW");
+        std::env::remove_var("OPENWEPP_LANED_ACTIVE_IMPLICIT");
+    }
+}
+
 #[test]
 fn abandoned_implicit_selector_env_fails_closed_at_startup() {
     unsafe { std::env::set_var("OPENWEPP_LANED_ACTIVE_IMPLICIT", "0") };
@@ -72,6 +93,40 @@ fn abandoned_implicit_selector_env_fails_closed_at_startup() {
     }
 }
 
+#[test]
+fn active_trace_selector_requires_active_before_outputs() {
+    let run_dir = copy_fixture_to_temp("active_trace_without_active");
+    let output_dir = run_dir.join("output");
+    clear_laned_selector_env();
+    // SAFETY: single-threaded test setup before runner work starts.
+    unsafe { std::env::set_var("OPENWEPP_LANED_ACTIVE_TRACE", "1") };
+    let _cleanup = LaneDSelectorEnvCleanup;
+
+    let result = execute_hillslope_run(
+        &HillslopeRunRequest {
+            run_dir: run_dir.clone(),
+            run_file: PathBuf::from("p2637.run.toml"),
+            output_dir: output_dir.clone(),
+            sidecar_policy: SidecarPolicy::Compat,
+            legacy_sidecar_discovery: false,
+            manifest_path: Some(run_dir.join("manifest.json")),
+        },
+        &["openwepp-cli-hill".to_string()],
+    );
+
+    match result.expect_err("trace selector without active must fail at startup") {
+        HillslopeCliError::RuntimeSurfaceFailure { surface, detail } => {
+            assert_eq!(surface, "OPENWEPP_LANED_ACTIVE_TRACE");
+            assert!(detail.contains("OPENWEPP_LANED_ACTIVE=1"));
+        }
+        other => panic!("unexpected error variant: {other:?}"),
+    }
+    assert!(
+        !output_dir.exists(),
+        "trace-only selector must fail before output directory creation"
+    );
+}
+
 fn run_h2637(
     tag: &str,
     shadow: bool,
@@ -82,10 +137,7 @@ fn run_h2637(
     // CR-M2/T3-QA-M3: neutralize ALL sibling selector variables so inherited
     // shell state cannot turn a baseline leg into a shadow/active run or
     // stale abandoned-selector startup failure.
-    // SAFETY: single-threaded test setup before any runner threads.
-    unsafe { std::env::remove_var("OPENWEPP_LANED_ACTIVE") };
-    // SAFETY: as above.
-    unsafe { std::env::remove_var("OPENWEPP_LANED_ACTIVE_IMPLICIT") };
+    clear_laned_selector_env();
     // nextest runs each test in its own process, and both runs execute
     // serially inside this one test — the env mutation cannot leak.
     if shadow {
@@ -153,10 +205,7 @@ fn run_h2637_native_routing(
     let manifest_path = run_dir.join("manifest.json");
     // CR-M2/T3-QA-M3: neutralize the sibling selectors and the abandoned
     // implicit selector (inherited shell state).
-    // SAFETY: single-threaded test setup before any runner threads.
-    unsafe { std::env::remove_var("OPENWEPP_LANED_ACTIVE") };
-    // SAFETY: as above.
-    unsafe { std::env::remove_var("OPENWEPP_LANED_ACTIVE_IMPLICIT") };
+    clear_laned_selector_env();
     if shadow {
         // SAFETY: single-threaded test setup before any runner threads.
         unsafe { std::env::set_var("OPENWEPP_LANED_SHADOW", "1") };
@@ -215,8 +264,7 @@ fn h2637_legacy_shadow_fails_closed_without_routing_coefficients() {
 
     let err = run_h2637("on", true)
         .expect_err("legacy H2637 must fail closed when Lane D shadow lacks routing coefficients");
-    // SAFETY: restore the process env for any later in-process work.
-    unsafe { std::env::remove_var("OPENWEPP_LANED_SHADOW") };
+    clear_laned_selector_env();
     let message = err.to_string();
     assert!(
         message.contains("routing coefficient extension"),
@@ -285,10 +333,7 @@ fn run_h2637_native_active(
     // CR-M2/T3-QA-M3: neutralize the sibling selectors (inherited shell
     // state) plus the abandoned implicit selector, so the "plain active"
     // evidence leg cannot fail on stale operator environment.
-    // SAFETY: single-threaded test setup before any runner threads.
-    unsafe { std::env::remove_var("OPENWEPP_LANED_SHADOW") };
-    // SAFETY: as above.
-    unsafe { std::env::remove_var("OPENWEPP_LANED_ACTIVE_IMPLICIT") };
+    clear_laned_selector_env();
     if active {
         // SAFETY: single-threaded test setup before any runner threads.
         unsafe { std::env::set_var("OPENWEPP_LANED_ACTIVE", "1") };
@@ -328,6 +373,8 @@ fn h2637_active_fails_closed_without_routing_coefficients() {
     // rev-20 guard.
     let run_dir = copy_fixture_to_temp("active_legacy");
     let output_dir = run_dir.join("output");
+    let _cleanup = LaneDSelectorEnvCleanup;
+    clear_laned_selector_env();
     // SAFETY: single-threaded test setup before any runner threads.
     unsafe { std::env::set_var("OPENWEPP_LANED_ACTIVE", "1") };
     let report = execute_hillslope_run(
@@ -341,8 +388,6 @@ fn h2637_active_fails_closed_without_routing_coefficients() {
         },
         &["openwepp-cli-hill".to_string()],
     );
-    // SAFETY: restore the process env for any later in-process work.
-    unsafe { std::env::remove_var("OPENWEPP_LANED_ACTIVE") };
     let message = report
         .expect_err("active selector must fail closed")
         .to_string();
@@ -361,6 +406,8 @@ fn h2637_active_and_shadow_are_mutually_exclusive() {
     let run_dir = copy_fixture_to_temp("active_shadow_conflict");
     enable_native_cropland_routing_coefficients(&run_dir);
     let output_dir = run_dir.join("output");
+    let _cleanup = LaneDSelectorEnvCleanup;
+    clear_laned_selector_env();
     // SAFETY: single-threaded test setup before any runner threads.
     unsafe { std::env::set_var("OPENWEPP_LANED_ACTIVE", "1") };
     // SAFETY: as above.
@@ -376,10 +423,6 @@ fn h2637_active_and_shadow_are_mutually_exclusive() {
         },
         &["openwepp-cli-hill".to_string()],
     );
-    // SAFETY: restore the process env for any later in-process work.
-    unsafe { std::env::remove_var("OPENWEPP_LANED_ACTIVE") };
-    // SAFETY: as above.
-    unsafe { std::env::remove_var("OPENWEPP_LANED_SHADOW") };
     let message = report
         .expect_err("active + shadow must fail closed")
         .to_string();

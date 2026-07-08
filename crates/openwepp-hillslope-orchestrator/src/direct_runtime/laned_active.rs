@@ -22,9 +22,12 @@ use crate::ofe_routing::seam::{
     SEAM_HOUR_BINS, SEAM_SECONDS_PER_HOUR, seam_rate_at, seam_source_rates_from_hourly_depths,
 };
 
-/// Cells per OFE for the active mesh (the D-val working resolution — the
-/// same constant the diagnostic shadow uses).
-pub(crate) const LANED_ACTIVE_CELLS: usize = 10;
+/// Production-default cells per OFE for the active mesh.
+pub(crate) const LANED_ACTIVE_DEFAULT_CELLS: usize = 10;
+/// Rev-38 scheme-regime floor for target-`dx` diagnostics.
+pub(crate) const LANED_ACTIVE_MESH_MIN_CELLS: usize = 10;
+/// Rev-38 fail-closed safety cap for target-`dx` diagnostics.
+pub(crate) const LANED_ACTIVE_MESH_MAX_CELLS: usize = 4096;
 /// Outlet-bin sample width (s); 3600/900 = 4 bins per hour, so the erosion
 /// hourly mapping is exact hour-aligned bin sums.
 pub(crate) const LANED_ACTIVE_SAMPLE_DT_S: f64 = 900.0;
@@ -114,12 +117,170 @@ impl DirectLanedActiveLaneConfig {
     }
 }
 
+/// Rev-38 active mesh policy. The production default is fixed-cell; target
+/// `dx` is diagnostic evidence-gathering only until T2R ratifies a production
+/// policy.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum DirectLanedActiveMeshPolicy {
+    FixedCells {
+        cells: usize,
+    },
+    TargetDx {
+        target_dx_m: f64,
+        min_cells: usize,
+        max_cells: usize,
+    },
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectLanedActiveMeshPolicySummary {
+    pub mode: &'static str,
+    pub fixed_cells: Option<usize>,
+    pub target_dx_m: Option<f64>,
+    pub min_cells: usize,
+    pub max_cells: usize,
+}
+
+impl Default for DirectLanedActiveMeshPolicySummary {
+    fn default() -> Self {
+        Self {
+            mode: "fixed_cells",
+            fixed_cells: Some(LANED_ACTIVE_DEFAULT_CELLS),
+            target_dx_m: None,
+            min_cells: LANED_ACTIVE_MESH_MIN_CELLS,
+            max_cells: LANED_ACTIVE_MESH_MAX_CELLS,
+        }
+    }
+}
+
+impl Default for DirectLanedActiveMeshPolicy {
+    fn default() -> Self {
+        Self::production_default()
+    }
+}
+
+impl DirectLanedActiveMeshPolicy {
+    #[must_use]
+    pub const fn production_default() -> Self {
+        Self::FixedCells {
+            cells: LANED_ACTIVE_DEFAULT_CELLS,
+        }
+    }
+
+    pub fn diagnostic_target_dx(target_dx_m: f64) -> Result<Self, DirectRuntimeError> {
+        let policy = Self::TargetDx {
+            target_dx_m,
+            min_cells: LANED_ACTIVE_MESH_MIN_CELLS,
+            max_cells: LANED_ACTIVE_MESH_MAX_CELLS,
+        };
+        policy.validate()?;
+        Ok(policy)
+    }
+
+    pub fn validate(&self) -> Result<(), DirectRuntimeError> {
+        match *self {
+            Self::FixedCells { cells } => {
+                if !(LANED_ACTIVE_MESH_MIN_CELLS..=LANED_ACTIVE_MESH_MAX_CELLS).contains(&cells) {
+                    return Err(DirectRuntimeError::DirectDomainViolation {
+                        field: "laned_active.mesh_policy.fixed_cells",
+                    });
+                }
+            }
+            Self::TargetDx {
+                target_dx_m,
+                min_cells,
+                max_cells,
+            } => {
+                validate_finite("laned_active.mesh_policy.target_dx_m", target_dx_m)?;
+                if target_dx_m <= 0.0 {
+                    return Err(DirectRuntimeError::DirectDomainViolation {
+                        field: "laned_active.mesh_policy.target_dx_m",
+                    });
+                }
+                if min_cells != LANED_ACTIVE_MESH_MIN_CELLS
+                    || max_cells != LANED_ACTIVE_MESH_MAX_CELLS
+                    || min_cells == 0
+                    || min_cells > max_cells
+                {
+                    return Err(DirectRuntimeError::DirectDomainViolation {
+                        field: "laned_active.mesh_policy.cell_bounds",
+                    });
+                }
+            }
+        }
+        Ok(())
+    }
+
+    pub fn cell_count_for_length_m(&self, slplen_m: f64) -> Result<usize, DirectRuntimeError> {
+        validate_finite("laned_active.mesh_policy.slplen_m", slplen_m)?;
+        if slplen_m <= 0.0 {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "laned_active.mesh_policy.slplen_m",
+            });
+        }
+        self.validate()?;
+        match *self {
+            Self::FixedCells { cells } => Ok(cells),
+            Self::TargetDx {
+                target_dx_m,
+                min_cells,
+                max_cells,
+            } => {
+                let raw_cells = (slplen_m / target_dx_m).ceil();
+                let cap_count_u32 = u32::try_from(max_cells).map_err(|_| {
+                    DirectRuntimeError::DirectDomainViolation {
+                        field: "laned_active.mesh_policy.max_cells",
+                    }
+                })?;
+                let cap_count_magnitude = f64::from(cap_count_u32);
+                if !raw_cells.is_finite() || raw_cells < 1.0 || raw_cells > cap_count_magnitude {
+                    return Err(DirectRuntimeError::DirectKernelGuardFailure {
+                        phase: "laned_active_mesh_policy",
+                        detail: format!(
+                            "target dx {target_dx_m} m over slope length {slplen_m} m requires {raw_cells} cells, outside max {max_cells}"
+                        ),
+                    });
+                }
+                #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+                let cells = raw_cells as usize;
+                Ok(cells.max(min_cells))
+            }
+        }
+    }
+
+    #[must_use]
+    pub fn summary(&self) -> DirectLanedActiveMeshPolicySummary {
+        match *self {
+            Self::FixedCells { cells } => DirectLanedActiveMeshPolicySummary {
+                mode: "fixed_cells",
+                fixed_cells: Some(cells),
+                target_dx_m: None,
+                min_cells: LANED_ACTIVE_MESH_MIN_CELLS,
+                max_cells: LANED_ACTIVE_MESH_MAX_CELLS,
+            },
+            Self::TargetDx {
+                target_dx_m,
+                min_cells,
+                max_cells,
+            } => DirectLanedActiveMeshPolicySummary {
+                mode: "target_dx",
+                fixed_cells: None,
+                target_dx_m: Some(target_dx_m),
+                min_cells,
+                max_cells,
+            },
+        }
+    }
+}
+
 /// Run-level active configuration, attached to the run frame by the runner
 /// when `OPENWEPP_LANED_ACTIVE=1`. Its presence IS the activation selector
 /// inside the orchestrator.
 #[derive(Debug, Clone, PartialEq)]
 pub struct DirectLanedActiveConfig {
     pub lanes: Vec<DirectLanedActiveLaneConfig>,
+    pub mesh_policy: DirectLanedActiveMeshPolicy,
+    pub trace_enabled: bool,
 }
 
 impl DirectLanedActiveConfig {
@@ -133,6 +294,7 @@ impl DirectLanedActiveConfig {
         for lane in &self.lanes {
             lane.validate()?;
         }
+        self.mesh_policy.validate()?;
         Ok(())
     }
 }
@@ -153,8 +315,9 @@ pub struct DirectLanedActiveDayRouting {
 
 /// Run-level evidence summary accumulated by the executor and surfaced by
 /// the runner manifest.
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct DirectLanedActiveRunSummary {
+    pub mesh_policy: DirectLanedActiveMeshPolicySummary,
     pub days_seen: u64,
     pub days_routed: u64,
     pub total_source_m3: f64,
@@ -172,6 +335,97 @@ pub struct DirectLanedActiveRunSummary {
     /// degenerated to the normalized routed source series (zero outlet mass
     /// above the wet-gate).
     pub lane_days_erosion_source_shape_degenerate: u64,
+    /// Diagnostic-only lane-day trace rows. `None` is the production default
+    /// and preserves the active path's normal memory/output posture.
+    pub trace_records: Option<Vec<DirectLanedActiveTraceRecord>>,
+}
+
+/// Rev-38 diagnostic mesh-adjudication row. The runner serializes these rows
+/// only under the explicit `OPENWEPP_LANED_ACTIVE_TRACE=1` evidence opt-in.
+#[derive(Debug, Clone, PartialEq)]
+pub struct DirectLanedActiveTraceRecord {
+    pub day_index: usize,
+    pub lane_index: usize,
+    pub is_terminal_lane: bool,
+    pub source_m3: f64,
+    pub outlet_m3: f64,
+    pub terminal_day_outlet_m3: Option<f64>,
+    pub mesh_end_storage_m3: f64,
+    pub clamp_m3: f64,
+    pub tail_fold_m3: f64,
+    pub routed_weights: [f64; 24],
+    pub uniform_shape: bool,
+    pub erosion_source_shape_degenerate: bool,
+}
+
+impl Default for DirectLanedActiveRunSummary {
+    fn default() -> Self {
+        Self {
+            mesh_policy: DirectLanedActiveMeshPolicySummary::default(),
+            days_seen: 0,
+            days_routed: 0,
+            total_source_m3: 0.0,
+            total_routed_outlet_m3: 0.0,
+            total_end_window_storage_m3: 0.0,
+            total_clamp_m3: 0.0,
+            total_tail_fold_m3: 0.0,
+            total_latqcc_outlet_m3: 0.0,
+            max_supply_reconstruction_rel: 0.0,
+            max_day_cascade_residual_rel: 0.0,
+            max_day_seam_residual_rel: 0.0,
+            max_day_identity_residual_rel: 0.0,
+            days_uniform_shape: 0,
+            lane_days_erosion_source_shape_degenerate: 0,
+            trace_records: None,
+        }
+    }
+}
+
+impl DirectLanedActiveRunSummary {
+    #[must_use]
+    pub fn for_mesh_policy(mesh_policy: DirectLanedActiveMeshPolicy, trace_enabled: bool) -> Self {
+        Self {
+            mesh_policy: mesh_policy.summary(),
+            trace_records: trace_enabled.then(Vec::new),
+            ..Self::default()
+        }
+    }
+}
+
+pub(crate) fn laned_active_record_trace(
+    summary: &mut DirectLanedActiveRunSummary,
+    day_frame: &DirectDayFrame,
+    is_terminal_lane: bool,
+    terminal_day_outlet_m3: f64,
+) -> Result<(), DirectRuntimeError> {
+    let Some(trace_records) = summary.trace_records.as_mut() else {
+        return Ok(());
+    };
+    let routing = day_frame.laned_active_routing.as_ref().ok_or(
+        DirectRuntimeError::DirectKernelGuardFailure {
+            phase: "laned_active_trace",
+            detail: format!(
+                "trace enabled but lane {} day {} has no active routing record",
+                day_frame.lane_index + 1,
+                day_frame.day_index + 1
+            ),
+        },
+    )?;
+    trace_records.push(DirectLanedActiveTraceRecord {
+        day_index: day_frame.day_index,
+        lane_index: day_frame.lane_index,
+        is_terminal_lane,
+        source_m3: routing.source_m3,
+        outlet_m3: routing.outlet_m3,
+        terminal_day_outlet_m3: is_terminal_lane.then_some(terminal_day_outlet_m3),
+        mesh_end_storage_m3: routing.mesh_end_storage_m3,
+        clamp_m3: routing.clamp_m3,
+        tail_fold_m3: routing.tail_fold_m3,
+        routed_weights: routing.routed_weights,
+        uniform_shape: routing.uniform_shape,
+        erosion_source_shape_degenerate: routing.erosion_source_shape_degenerate,
+    });
+    Ok(())
 }
 
 /// Per-day closure books (rev-27 tolerance notes). `lane_net_m3` accumulates
@@ -375,6 +629,7 @@ pub(crate) fn laned_active_routed_erosion_weights(
 pub(crate) fn laned_active_route_lane(
     day_frame: &mut DirectDayFrame,
     lane_config: &DirectLanedActiveLaneConfig,
+    mesh_policy: &DirectLanedActiveMeshPolicy,
     area_m2: f64,
     upstream: Option<&UpstreamHandoff>,
     window_s: f64,
@@ -439,8 +694,9 @@ pub(crate) fn laned_active_route_lane(
     cell.vegetation_drag_coefficient = lane_config.vegetation_drag_coefficient;
     cell.leaf_area_index = leaf_area_index;
     cell.canopy_height_m = canopy_height_m;
+    let active_cells = mesh_policy.cell_count_for_length_m(lane_config.slplen_m)?;
     let segment = CascadeSegment {
-        mesh: KinematicWaveMesh::uniform(lane_config.slplen_m, LANED_ACTIVE_CELLS, cell),
+        mesh: KinematicWaveMesh::uniform(lane_config.slplen_m, active_cells, cell),
         width_m: lane_config.width_m,
     };
 
@@ -799,6 +1055,7 @@ mod tests {
         laned_active_route_lane(
             &mut day,
             &lane_config_with_static_canhgt(Some(0.0)),
+            &DirectLanedActiveMeshPolicy::production_default(),
             1.0,
             None,
             3600.0,
@@ -813,6 +1070,7 @@ mod tests {
             laned_active_route_lane(
                 &mut stale_static_day,
                 &lane_config_with_static_canhgt(Some(0.75)),
+                &DirectLanedActiveMeshPolicy::production_default(),
                 1.0,
                 None,
                 3600.0,
@@ -875,6 +1133,22 @@ mod tests {
                 .abs()
                 < f64::EPSILON
         );
+    }
+
+    #[test]
+    fn mesh_policy_resolves_fixed_target_floor_and_cap() {
+        let fixed = DirectLanedActiveMeshPolicy::production_default();
+        assert_eq!(
+            fixed.cell_count_for_length_m(26.0).expect("fixed cells"),
+            10
+        );
+
+        let dx20 = DirectLanedActiveMeshPolicy::diagnostic_target_dx(20.0).expect("target dx");
+        assert_eq!(dx20.cell_count_for_length_m(26.0).expect("min floor"), 10);
+        assert_eq!(dx20.cell_count_for_length_m(300.0).expect("ceil dx"), 15);
+
+        assert!(DirectLanedActiveMeshPolicy::diagnostic_target_dx(0.0).is_err());
+        assert!(dx20.cell_count_for_length_m(90_000.0).is_err());
     }
 
     #[test]

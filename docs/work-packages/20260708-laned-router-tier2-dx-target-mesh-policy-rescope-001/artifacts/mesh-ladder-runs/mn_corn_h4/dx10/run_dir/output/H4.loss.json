@@ -1,0 +1,14 @@
+{
+  "climate_day_count": 2557,
+  "executed_day_count": 2557,
+  "first_day_julian": 1,
+  "first_day_year": 1990,
+  "frost_wint_red": 1,
+  "last_day_julian": 366,
+  "last_day_year": 1996,
+  "ofe_count": 1,
+  "precipitation_mm": 0.0,
+  "run_name": "mn_corn_h4",
+  "schema": "openwepp-hillslope-loss-v1",
+  "snow_override_applied": true
+}

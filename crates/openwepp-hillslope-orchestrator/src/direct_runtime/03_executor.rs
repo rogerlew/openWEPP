@@ -478,7 +478,10 @@ impl DirectFrameExecutor {
         let mut counters = DirectExecutionCounters::default();
         let phase_plan = *frame.phase_plan.phases();
         let mut row_count = 0_usize;
-        let mut summary = laned_active::DirectLanedActiveRunSummary::default();
+        let mut summary = laned_active::DirectLanedActiveRunSummary::for_mesh_policy(
+            config.mesh_policy,
+            config.trace_enabled,
+        );
 
         let transfer_span_report = frame.run_r3c_lane_transfer_span()?;
         counters.record_span(
@@ -566,6 +569,7 @@ impl DirectFrameExecutor {
                     let handoff = laned_active::laned_active_route_lane(
                         day_frame,
                         &config.lanes[lane_index],
+                        &config.mesh_policy,
                         area_m2,
                         upstream.as_ref(),
                         window_s,
@@ -590,6 +594,19 @@ impl DirectFrameExecutor {
                         DirectErosionHydrographShapeAuthority::RoutedHydrograph;
                     day_frame.erosion_inputs.routed_hydrograph_runoff_fraction =
                         Some(Box::new([0.0; 24]));
+                    if config.trace_enabled {
+                        day_frame.laned_active_routing =
+                            Some(Box::new(laned_active::DirectLanedActiveDayRouting {
+                                source_m3: 0.0,
+                                outlet_m3: 0.0,
+                                mesh_end_storage_m3: 0.0,
+                                clamp_m3: 0.0,
+                                tail_fold_m3: 0.0,
+                                routed_weights: [0.0; 24],
+                                uniform_shape: false,
+                                erosion_source_shape_degenerate: false,
+                            }));
+                    }
                     // CR-L1: the INV-OFEROUTE-012 latqcc bypass exists on
                     // zero-source days too; record the terminal lane's
                     // lateral export so the manifest total covers ALL days.
@@ -605,6 +622,15 @@ impl DirectFrameExecutor {
                         Self::day_execution_failure(day_frame, lane_index, day_index, &source)
                     },
                 )?;
+                laned_active::laned_active_record_trace(
+                    &mut summary,
+                    day_frame,
+                    lane_index + 1 == lane_count,
+                    books.terminal_outlet_m3,
+                )
+                .map_err(|source| {
+                    Self::day_execution_failure(day_frame, lane_index, day_index, &source)
+                })?;
                 for phase in phase_plan {
                     let view = day_frame.phase_view(phase);
                     let _phase = view.phase();

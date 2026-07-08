@@ -254,6 +254,9 @@ struct HillslopeExecutionProvenance {
 
 #[derive(Debug, Serialize)]
 struct LanedActiveProvenance {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    trace_record_count: Option<usize>,
+    mesh_policy: LanedActiveMeshPolicyProvenance,
     days_seen: u64,
     days_routed: u64,
     days_uniform_shape: u64,
@@ -268,6 +271,17 @@ struct LanedActiveProvenance {
     max_day_seam_residual_rel: f64,
     max_day_identity_residual_rel: f64,
     lane_days_erosion_source_shape_degenerate: u64,
+}
+
+#[derive(Debug, Serialize)]
+struct LanedActiveMeshPolicyProvenance {
+    mode: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    fixed_cells: Option<usize>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    target_dx_m: Option<f64>,
+    min_cells: usize,
+    max_cells: usize,
 }
 
 #[derive(Debug, Serialize)]
@@ -581,6 +595,7 @@ struct HillslopeOutputTargets {
     output_pass: PathBuf,
     output_loss: PathBuf,
     optional_outputs: Vec<PathBuf>,
+    laned_active_trace: Option<PathBuf>,
     output_hillslope_id: u32,
 }
 
@@ -833,11 +848,18 @@ fn resolve_hillslope_output_targets(
 ) -> Result<HillslopeOutputTargets, HillslopeCliError> {
     let [output_pass, output_loss] = required_output_paths(&runfile.output_config);
     let optional_outputs = optional_output_paths(&runfile.output_config);
+    let laned_active_trace = crate::hillslope::laned_active::trace_enabled().then(|| {
+        output_pass.parent().map_or_else(
+            || PathBuf::from("laned_active_trace.jsonl"),
+            |parent| parent.join("laned_active_trace.jsonl"),
+        )
+    });
     let output_hillslope_id = parse_hillslope_id_from_output_pass_path(&output_pass)?;
     Ok(HillslopeOutputTargets {
         output_pass,
         output_loss,
         optional_outputs,
+        laned_active_trace,
         output_hillslope_id,
     })
 }

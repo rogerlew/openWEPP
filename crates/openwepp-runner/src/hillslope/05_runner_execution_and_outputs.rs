@@ -62,7 +62,7 @@ fn execute_hillslope_direct_production_days(
     let executed_day_count = climate_span.days.len();
     let multi_ofe_wave1_chained = seed_authority.multi_ofe_wave1_chained;
     let laned_shadow = retained_direct_publication.laned_shadow;
-    let laned_active = retained_direct_publication.laned_active;
+    let laned_active = retained_direct_publication.laned_active.clone();
 
     Ok(HillslopeClimateExecution {
         selected_lane: lane_context.lane,
@@ -453,7 +453,15 @@ fn build_hillslope_execution_provenance(
             total_source_m3: summary.total_source_m3,
             total_routed_outlet_m3: summary.total_routed_outlet_m3,
         }),
-        laned_active: execution.laned_active.map(|summary| LanedActiveProvenance {
+        laned_active: execution.laned_active.as_ref().map(|summary| LanedActiveProvenance {
+            trace_record_count: summary.trace_records.as_ref().map(Vec::len),
+            mesh_policy: LanedActiveMeshPolicyProvenance {
+                mode: summary.mesh_policy.mode.to_string(),
+                fixed_cells: summary.mesh_policy.fixed_cells,
+                target_dx_m: summary.mesh_policy.target_dx_m,
+                min_cells: summary.mesh_policy.min_cells,
+                max_cells: summary.mesh_policy.max_cells,
+            },
             days_seen: summary.days_seen,
             days_routed: summary.days_routed,
             days_uniform_shape: summary.days_uniform_shape,
@@ -552,6 +560,7 @@ fn write_hillslope_direct_publication_outputs(
         }
     })?;
     write_hillslope_direct_publication_optional_outputs(inputs, targets, execution, artifacts)?;
+    write_laned_active_trace_output(targets, execution)?;
     validate_required_hillslope_outputs(targets)
 }
 
@@ -864,6 +873,9 @@ fn ensure_hillslope_output_parent_directories(
     {
         crate::hillslope::intake_lane_setup::ensure_output_parent_directory(path)?;
     }
+    if let Some(path) = &targets.laned_active_trace {
+        crate::hillslope::intake_lane_setup::ensure_output_parent_directory(path)?;
+    }
     Ok(())
 }
 
@@ -892,6 +904,88 @@ fn write_generic_optional_outputs(
     Ok(())
 }
 
+fn write_laned_active_trace_output(
+    targets: &HillslopeOutputTargets,
+    execution: &HillslopeClimateExecution,
+) -> Result<(), HillslopeCliError> {
+    let Some(trace_path) = &targets.laned_active_trace else {
+        return Ok(());
+    };
+    let summary = execution
+        .laned_active
+        .as_ref()
+        .ok_or_else(|| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "laned_active_trace",
+            detail: "OPENWEPP_LANED_ACTIVE_TRACE=1 requires OPENWEPP_LANED_ACTIVE=1 active summary"
+                .to_string(),
+        })?;
+    let records =
+        summary
+            .trace_records
+            .as_ref()
+            .ok_or_else(|| HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "laned_active_trace",
+                detail: "active summary did not retain diagnostic trace records".to_string(),
+            })?;
+    let artifacts =
+        execution
+            .direct_publication
+            .as_ref()
+            .ok_or_else(|| HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "laned_active_trace",
+                detail:
+                    "direct publication artifacts are required for trace row-count validation"
+                        .to_string(),
+            })?;
+    let expected_rows = artifacts
+        .execution
+        .identity
+        .day_count
+        .checked_mul(artifacts.execution.identity.lane_count)
+        .ok_or_else(|| HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "laned_active_trace",
+            detail: "trace expected row count overflow".to_string(),
+        })?;
+    if records.len() != expected_rows {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "laned_active_trace",
+            detail: format!(
+                "trace row-count mismatch: expected {expected_rows}, observed {}",
+                records.len()
+            ),
+        });
+    }
+    let mut payload = String::new();
+    for record in records {
+        let weight_sum: f64 = record.routed_weights.iter().sum();
+        let line = serde_json::to_string(&serde_json::json!({
+            "schema": "openwepp-laned-active-trace-row-v1",
+            "day_index_zero_based": record.day_index,
+            "sim_day_index": record.day_index + 1,
+            "lane_index_zero_based": record.lane_index,
+            "lane_index": record.lane_index + 1,
+            "is_terminal_lane": record.is_terminal_lane,
+            "source_m3": record.source_m3,
+            "outlet_m3": record.outlet_m3,
+            "terminal_day_outlet_m3": record.terminal_day_outlet_m3,
+            "mesh_end_storage_m3": record.mesh_end_storage_m3,
+            "clamp_m3": record.clamp_m3,
+            "tail_fold_m3": record.tail_fold_m3,
+            "routed_hourly_weights": record.routed_weights,
+            "routed_hourly_weight_sum": weight_sum,
+            "uniform_shape": record.uniform_shape,
+            "erosion_source_shape_degenerate": record.erosion_source_shape_degenerate,
+        }))
+        .map_err(|source| HillslopeCliError::ManifestSerialize { source })?;
+        payload.push_str(&line);
+        payload.push('\n');
+    }
+    fs::write(trace_path, payload).map_err(|source| HillslopeCliError::OutputWrite {
+        path: trace_path.clone(),
+        source,
+    })
+}
+
 fn validate_required_hillslope_outputs(
     targets: &HillslopeOutputTargets,
 ) -> Result<(), HillslopeCliError> {
@@ -903,6 +997,14 @@ fn validate_required_hillslope_outputs(
     if !targets.output_loss.is_file() {
         return Err(HillslopeCliError::MissingRequiredOutput {
             output_name: REQUIRED_RUN_OUTPUT_LOSS,
+        });
+    }
+    if let Some(trace_path) = &targets.laned_active_trace
+        && !trace_path.is_file()
+    {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "laned_active_trace",
+            detail: format!("trace output missing at {}", trace_path.display()),
         });
     }
     Ok(())
@@ -996,6 +1098,15 @@ fn build_hillslope_output_checksums(
             path.display().to_string(),
             sha256_file_hex(path).map_err(|source| HillslopeCliError::Io {
                 path: path.clone(),
+                source,
+            })?,
+        ));
+    }
+    if let Some(trace_path) = &targets.laned_active_trace {
+        output_checksum_entries.push(OutputChecksumEntry::new(
+            trace_path.display().to_string(),
+            sha256_file_hex(trace_path).map_err(|source| HillslopeCliError::Io {
+                path: trace_path.clone(),
                 source,
             })?,
         ));
@@ -1206,6 +1317,7 @@ pub fn execute_hillslope_run_with_runtime_policy(
     runtime_policy: HillslopeRuntimeSelectionPolicy,
 ) -> Result<HillslopeRunReport, HillslopeCliError> {
     crate::hillslope::laned_active::reject_abandoned_implicit_selector_env()?;
+    crate::hillslope::laned_active::validate_trace_selector_env()?;
 
     if !request.run_dir.is_dir() {
         return Err(HillslopeCliError::RunDirectoryMissing {

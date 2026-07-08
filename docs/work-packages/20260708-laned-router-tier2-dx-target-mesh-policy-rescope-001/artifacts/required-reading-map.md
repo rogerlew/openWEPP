@@ -1,6 +1,6 @@
 # Required Reading Map
 
-Status: QUEUED
+Status: EXECUTED-HOLD-DX-REFERENCE-ADEQUACY
 
 ## Authority and Maintenance Responsibility
 
@@ -62,3 +62,4 @@ Thresholds from `docs/standards/kernel-work-package-preparation.md`:
 | UTC | Agent | Change |
 |-----|-------|--------|
 | 2026-07-07T00:00:00Z | Codex | Initialized required-reading map from canonical template. |
+| 2026-07-07T00:00:00Z | Codex | Marked map current for executed-hold closure after final QA review. |

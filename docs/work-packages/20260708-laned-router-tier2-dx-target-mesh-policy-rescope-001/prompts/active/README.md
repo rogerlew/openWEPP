@@ -1,5 +1,6 @@
 # Active Prompts
 
-Status: QUEUED
+Status: EXECUTED-HOLD-DX-REFERENCE-ADEQUACY
 
-Use the active kickoff prompt to execute the package end-to-end.
+The kickoff prompt was used to execute the package end-to-end and is retained
+here for provenance.

@@ -1,6 +1,6 @@
 # Artifacts
 
-Status: QUEUED
+Status: EXECUTED-HOLD-DX-REFERENCE-ADEQUACY
 
 This directory holds package-local evidence for the Tier-2 plain-active
 dx-target mesh-policy re-scope. All evidence artifacts must label evidence as

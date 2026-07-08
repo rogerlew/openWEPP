@@ -1,0 +1,24 @@
+laned_active_profile {"solver_runs":209,"solver_steps":71475,"solver_steps_homogeneous":23480,"solver_steps_source_free":23480,"alpha_evaluations":3841992,"solver_cfl_ns":626254582,"solver_step_ns":259941532,"solver_sample_ns":4424449}
+	Command being timed: "target/release/openwepp-cli-hill --run-dir /home/workdir/openWEPP/docs/work-packages/20260708-laned-router-tier2-dx-target-mesh-policy-rescope-001/artifacts/mesh-ladder-runs/mn_corn_h4/dx2p5/run_dir --run-file p4.plain.run.toml --output-dir /home/workdir/openWEPP/docs/work-packages/20260708-laned-router-tier2-dx-target-mesh-policy-rescope-001/artifacts/mesh-ladder-runs/mn_corn_h4/dx2p5/run_dir/output"
+	User time (seconds): 1.32
+	System time (seconds): 0.02
+	Percent of CPU this job got: 100%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:01.35
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 23220
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 5209
+	Voluntary context switches: 5
+	Involuntary context switches: 4
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 3040
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

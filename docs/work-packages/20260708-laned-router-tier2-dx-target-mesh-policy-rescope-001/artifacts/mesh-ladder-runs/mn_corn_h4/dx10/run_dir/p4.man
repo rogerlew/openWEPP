@@ -1,0 +1,244 @@
+ow-lanuse-1
+1 # number of ofes or channels
+7 # sim_years
+
+#############################
+#   Plant Growth Section    #
+#############################
+2 # ncrop
+Corn
+High production level-125 bu/acre for Jefferson Iowa
+J. M. Laflen, Feb 28, 1998
+Cutting height 1 foot,  non-fragile residue,  30 inch r
+4 # Landuse - <NativeCropland>
+WeppWillSet
+3.60000 3.00000 35.00196 10.00000 2.30000 55.00000 0.00000 0.30404 0.65000 0.05100
+0.85000 0.98000 0.65000 0.99000 0.00000 1700.00000 0.50000 2.60099
+2
+0.00650 0.00650 25.00000 0.25000 0.21900 1.51995 0.25000 0.00000 30 0.00000
+0.00000 3.50000 0.00000 
+routing_coefficients
+480.00000 0.25000 0.01000 0.05000 0.12000
+
+soybean2
+`Soybeans - Medium Fertilization Level'
+(from WEPP distribution database)
+(null)
+4 # Landuse - <NativeCropland>
+WeppWillSet
+14.00000 3.00000 23.00000 10.00000 5.20000 60.00000 0.00000 0.15200 0.10000 0.00950
+0.90000 0.10000 0.31000 0.99000 0.00000 1150.00000 0.50000 1.01000
+1
+0.01300 0.01300 25.00000 0.00000 0.02500 1.00000 0.25000 0.00000 14 0.00000
+0.00000 5.00000 0.00000 
+routing_coefficients
+480.00000 0.25000 0.01000 0.05000 0.12000
+
+#############################
+#     Operation Section     #
+#############################
+5 # nop
+FCSTACDP
+`Field cultivator, secondary tillage, after duckfoot po
+(from WEPP distribution database)
+Maximum depth of 10 cm (4 inches)
+4 # Landuse - <NativeCropland>
+0.60000 0.35000 0
+4
+0.02500 0.30000 0.60000 0.35000 0.01500 1.00000 0.05000
+
+TAND0002
+`Tandem Disk'
+From converted V92.2 file `ANSI1.MAN'
+NOTE: MFO values are the min and max of original values
+4 # Landuse - <NativeCropland>
+0.50000 0.50000 0
+4
+0.05000 0.23000 0.50000 0.50000 0.02600 1.00000 0.10000
+
+PLDDO
+`Planter, double disk openers'
+(from WEPP distribution database)
+Tillage depth of 2 inches
+4 # Landuse - <NativeCropland>
+0.20000 0.10000 6
+1
+0.02500 0.75000 0.20000 0.10000 0.01200 0.15000 0.05000
+
+CULTMUSW
+`Cultivator, row, multiple sweeps per row'
+(from WEPP distribution database)
+(null)
+4 # Landuse - <NativeCropland>
+0.40000 0.20000 0
+4
+0.07500 0.75000 0.40000 0.20000 0.01500 0.85000 0.05000
+
+CHISSTSP
+`Chisel plow, straight with spike pts'
+(from WEPP distribution database)
+(null)
+4 # Landuse - <NativeCropland>
+0.50000 0.30000 0
+4
+0.05000 0.30000 0.50000 0.30000 0.02300 1.00000 0.15000
+
+#############################
+# Initial Condition Section
+#############################
+1 # nini
+Default
+Default corn initial conditions set - continuous corn -
+90 percent cover, approximately 200 days since last til
+500 mm of rain since last tillage in summer prior
+4 # Landuse - <NativeCropland>
+1.40000 0.00000 200 92 0.00000 0.90000
+1
+1
+500.12601 0.02000 0.90000 0.02000 0.00000
+1
+0.00000 0.00000 0.10000 0.20000 0.02540
+0.50003 0.19997  
+
+#############################
+#  Surface Effects Section  #
+#############################
+2 # nseq
+Year 1
+From WEPP database
+Your name, phone
+(null)
+4 # Landuse - <NativeCropland>
+5 # ntill
+   115 # mdate
+   1 # op
+     0.10200 # tildep
+     2 # typtil
+
+   125 # mdate
+   2 # op
+     0.10200 # tildep
+     2 # typtil
+
+   130 # mdate
+   3 # op
+     0.05100 # tildep
+     2 # typtil
+
+   156 # mdate
+   4 # op
+     0.07600 # tildep
+     2 # typtil
+
+   305 # mdate
+   5 # op
+     0.20300 # tildep
+     1 # typtil
+
+Year 2
+From WEPP database
+Your name, phone
+(null)
+4 # Landuse - <NativeCropland>
+5 # ntill
+   115 # mdate
+   1 # op
+     0.10200 # tildep
+     1 # typtil
+
+   121 # mdate
+   2 # op
+     0.10200 # tildep
+     2 # typtil
+
+   130 # mdate
+   3 # op
+     0.05100 # tildep
+     2 # typtil
+
+   156 # mdate
+   4 # op
+     0.10200 # tildep
+     2 # typtil
+
+   305 # mdate
+   5 # op
+     0.20300 # tildep
+     2 # typtil
+
+#############################
+#      Contour Section      #
+#############################
+0 # ncnt
+
+#############################
+#      Drainage Section     #
+#############################
+0 # ndrain
+
+#############################
+#       Yearly Section      #
+#############################
+2 # nscen
+Year 1
+(null)
+(null)
+(null)
+4 # Landuse - <NativeCropland>
+1 	# Plant Growth Scenario index (itype)
+1 	# Surface Effect Scenario index (itype)
+0 	# Contour Scenario index (conset)
+0 	# Drainage Scenario index (drset)
+1 	# Cropping system (imngmt)
+   288 	# Harvesting date or end of fallow period (jdharv)
+   130 	# Planting date or start of fallow period (jdplt)
+   0.76200 	# Row width (rw)
+   6 	# Residue management option (resmgt)
+   
+
+
+Year 2
+(null)
+(null)
+(null)
+4 # Landuse - <NativeCropland>
+2 	# Plant Growth Scenario index (itype)
+2 	# Surface Effect Scenario index (itype)
+0 	# Contour Scenario index (conset)
+0 	# Drainage Scenario index (drset)
+1 	# Cropping system (imngmt)
+   288 	# Harvesting date or end of fallow period (jdharv)
+   130 	# Planting date or start of fallow period (jdplt)
+   0.76200 	# Row width (rw)
+   6 	# Residue management option (resmgt)
+   
+
+
+#############################
+#     Management Section    #
+#############################
+Manage
+description 1
+description 2
+description 3
+1 # number of ofes in the rotation (nofe)
+# Initial Condition Scenario indices used for each OFE
+  1
+1 # number of times the rotation is repeated (nrots)
+7 # number of years in a single rotation
+   1 	# plants/year; <Year: 1 - OFE: 1>  (nycrop)
+      1 	# yearly index <Year 1>
+   1 	# plants/year; <Year: 2 - OFE: 1>  (nycrop)
+      2 	# yearly index <Year 2>
+   1 	# plants/year; <Year: 3 - OFE: 1>  (nycrop)
+      1 	# yearly index <Year 1>
+   1 	# plants/year; <Year: 4 - OFE: 1>  (nycrop)
+      2 	# yearly index <Year 2>
+   1 	# plants/year; <Year: 5 - OFE: 1>  (nycrop)
+      1 	# yearly index <Year 1>
+   1 	# plants/year; <Year: 6 - OFE: 1>  (nycrop)
+      2 	# yearly index <Year 2>
+   1 	# plants/year; <Year: 7 - OFE: 1>  (nycrop)
+      1 	# yearly index <Year 1>
+
+

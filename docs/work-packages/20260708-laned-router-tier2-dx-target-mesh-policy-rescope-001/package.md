@@ -1,6 +1,6 @@
 # LANED Router Tier-2 dx-Target Mesh-Policy Re-scope
 
-Status: QUEUED
+Status: EXECUTED-HOLD-DX-REFERENCE-ADEQUACY
 
 Package id uses the ADR-0037 handoff-suggested `20260708` successor name even
 though it was scaffolded on 2026-07-07.
@@ -136,9 +136,12 @@ initial real-member ladder for pricing is:
 - Candidate B: target `dx` about `10 m`.
 - Candidate C: target `dx` about `20 m`.
 
-Any implemented policy must use an explicit bounded form such as
-`cells_per_ofe = clamp(ceil(ofe_length_m / target_dx_m), min_cells, max_cells)`,
-with the bounds, units, and authority recorded before production code edits.
+Any implemented policy must use an explicit bounded form that records the raw
+target-`dx` cell count and the floor/cap behavior. The executed diagnostic form
+is `raw_cells = ceil(ofe_length_m / target_dx_m)`, fail closed when
+`raw_cells > max_cells`, otherwise
+`cells_per_ofe = max(raw_cells, min_cells)`, with the bounds, units, and
+authority recorded before production code edits.
 
 ### Error Basis and Reference Rule
 
