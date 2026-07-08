@@ -1,0 +1,7 @@
+*.log
+*.tmp
+perf.data
+perf.data.*
+timing-output/
+run-output/
+scratch/

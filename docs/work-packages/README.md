@@ -12,6 +12,15 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-08`:
+- `20260708-laned-router-tier1-local-numerics-001/` -
+  QUEUED (2026-07-08): scaffolded a contract-first execution package for the
+  backlog `Tier 1 - local numerics` active-router optimizations: analytic
+  celerity, bounded Newton alpha solve, hot-path `h * h.sqrt()` substitution,
+  and bounded `Re^0.45` optimization if approximation evidence supports it.
+  The scaffold records the required `SC-OFEROUTE-001` amendment, D10B/Iwagaki
+  oracle and conservation gates, H2637 active endpoint/fidelity deltas, and
+  D14/D15A two-instrument timing protocol. No contract or production-code
+  implementation landed in this scaffold.
 - `20260708-plant-file-native-lanuse-routing-doc-001/` -
   EXECUTED-COMPLETE-DOC-ALIGNMENT (2026-07-08): docs-only package updated
   `docs/specifications/wepp-input-files/specs/plant-file.spec.md` for the
