@@ -41,6 +41,15 @@ State as of `2026-07-08`:
   and `/workdir/wepp-forest_260430_baseline` code authority before any
   single-OFE or Lane D MOFE implementation work. No production code or
   contract amendment has been executed by the scaffold.
+- `20260708-laned-router-canonical-hourly-laned-routing-coeff-projection-authority-001/` -
+  QUEUED (2026-07-08, M-T2P): scaffolded the contract-first authority package
+  for making hourly water balance plus Lane D active routing the canonical
+  production path for single-OFE and MOFE. The package will adjudicate legacy
+  cropland routing-coefficient projection authority, retain explicit and
+  disturbed/native coefficient authority, demote non-hourly/DC01-only/non-Lane-D
+  paths to validation/reference/rollback use, and hand off implementation only
+  after a predeclared fidelity envelope is accepted. Execute after M-T2A and
+  before M-T2B.
 - `20260708-laned-router-conditional-default-activation-001/` -
   EXECUTED-COMPLETE-CONDITIONAL-DEFAULT-ACTIVATION (2026-07-08): amended
   `SC-OFEROUTE-001` rev 46 and made Lane D active routing the hillslope
