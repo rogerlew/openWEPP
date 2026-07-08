@@ -418,12 +418,12 @@ impl CellParameters {
             return Ok(LocalHydraulics { alpha, q, celerity });
         }
         let h_pow = depth_pow_3_2(flow_depth_m);
-        let slope_sqrt = self.slope.sqrt();
         if let Some(local) =
             self.skin_only_hydraulics(flow_depth_m, h_pow, unit_discharge_m2_s, skin_rain_term)
         {
             return local;
         }
+        let slope_sqrt = self.slope.sqrt();
         let mut q_est = if unit_discharge_m2_s > 0.0 {
             unit_discharge_m2_s
         } else {
@@ -516,6 +516,12 @@ impl LocalHydraulics {
             celerity: 0.0,
         }
     }
+}
+
+#[derive(Debug, Clone, Copy)]
+struct StepCelerity {
+    max_celerity: f64,
+    max_cell_index: usize,
 }
 
 /// The single-OFE kinematic-wave mesh: uniform cell length, per-cell params.
@@ -957,8 +963,9 @@ impl KinematicWaveSolver {
     /// Rev-47 computes `dq/dh` analytically from the selected implicit
     /// friction branch derivatives, with the frozen-alpha expression
     /// `1.5 alpha h^0.5` retained only as a lower bound.
-    fn prepare_step_alpha(&mut self, skin_rain_term: f64) -> Result<f64, RoutingError> {
+    fn prepare_step_alpha(&mut self, skin_rain_term: f64) -> Result<StepCelerity, RoutingError> {
         let mut max_celerity = 0.0_f64;
+        let mut max_cell_index = 0_usize;
         let mut evaluations = 0_u64;
         for (i, cell) in self.mesh.cells.iter().enumerate() {
             let h = self.depth_m[i];
@@ -974,10 +981,14 @@ impl KinematicWaveSolver {
             self.scratch.celerity[i] = local.celerity;
             if local.celerity > max_celerity {
                 max_celerity = local.celerity;
+                max_cell_index = i;
             }
         }
         profile::count_alpha_evaluations(evaluations);
-        Ok(max_celerity)
+        Ok(StepCelerity {
+            max_celerity,
+            max_cell_index,
+        })
     }
 
     /// `Cf_i` (eq. 11e) from the local Courant number.
@@ -1539,13 +1550,14 @@ impl KinematicWaveSolver {
                 return Err(RoutingError::InvalidForcing);
             }
             let rain_term = skin_rain_term(intensity);
-            let max_celerity = match self.prepare_step_alpha(rain_term) {
+            let step_celerity = match self.prepare_step_alpha(rain_term) {
                 Ok(value) => value,
                 Err(err) => {
                     profile::end_solver_cfl(cfl_span);
                     return Err(err);
                 }
             };
+            let max_celerity = step_celerity.max_celerity;
             // Codex review High-1: CFL must FAIL CLOSED, never open. A
             // non-finite celerity is corrupt state; a celerity so large
             // that no positive sub-timestep exists (dt underflows to 0)
@@ -1576,23 +1588,21 @@ impl KinematicWaveSolver {
                 return Err(RoutingError::CflViolation);
             }
             // CFL evidence at the chosen dt (true celerity, rev 24).
-            let mut step_max_courant = 0.0_f64;
-            let mut step_max_courant_cell_index = 0_usize;
-            for i in 0..self.mesh.cell_count() {
-                if self.depth_m[i] <= DRY_DEPTH_M {
-                    continue;
-                }
-                let courant = self.scratch.celerity[i] * dt / dx;
-                if courant > max_courant {
-                    max_courant = courant;
-                }
-                if courant > step_max_courant {
-                    step_max_courant = courant;
-                    step_max_courant_cell_index = i;
-                }
-                if courant > 1.0 + 1.0e-9 {
-                    return Err(RoutingError::CflViolation);
-                }
+            let step_max_courant = if max_celerity <= 0.0 {
+                0.0
+            } else {
+                max_celerity * dt / dx
+            };
+            let step_max_courant_cell_index = if step_max_courant > 0.0 {
+                step_celerity.max_cell_index
+            } else {
+                0
+            };
+            if !step_max_courant.is_finite() || step_max_courant > 1.0 + 1.0e-9 {
+                return Err(RoutingError::CflViolation);
+            }
+            if step_max_courant > max_courant {
+                max_courant = step_max_courant;
             }
             profile::end_solver_cfl(cfl_span);
 
@@ -1883,6 +1893,48 @@ mod tests {
             cell.alpha_q_celerity(1.0, 1.0e-6, 0.0),
             Err(RoutingError::NonFiniteState)
         ));
+    }
+
+    #[test]
+    fn post_tier1_prepare_step_alpha_retains_scan_max_celerity() {
+        let dx = 2.0;
+        let cells = vec![
+            CellParameters::manning(0.01, 0.03),
+            CellParameters::manning(0.04, 0.03),
+            CellParameters::manning(0.04, 0.03),
+            CellParameters::manning(0.01, 0.03),
+        ];
+        let mesh = KinematicWaveMesh {
+            cell_length_m: dx,
+            cells,
+        };
+        let mut solver = KinematicWaveSolver::new(mesh);
+        solver.depth_m = vec![0.02, 0.02, 0.02, 0.02];
+        solver.discharge_m2_s = vec![0.0; 4];
+
+        let summary = solver.prepare_step_alpha(0.0).expect("prepare alpha");
+        let scan = solver
+            .scratch
+            .celerity
+            .iter()
+            .enumerate()
+            .filter(|(i, _)| solver.depth_m[*i] > DRY_DEPTH_M)
+            .fold((0_usize, 0.0_f64), |best, (i, celerity)| {
+                if *celerity > best.1 {
+                    (i, *celerity)
+                } else {
+                    best
+                }
+            });
+
+        assert_eq!(summary.max_cell_index, scan.0);
+        assert_eq!(summary.max_cell_index, 1);
+        assert_eq!(summary.max_celerity.to_bits(), scan.1.to_bits());
+
+        let dt = 0.5;
+        let retained_courant = summary.max_celerity * dt / dx;
+        let scan_courant = scan.1 * dt / dx;
+        assert_eq!(retained_courant.to_bits(), scan_courant.to_bits());
     }
 
     // Case 1 (bare surface): 60 mm/h over a 7.5 m plot at 9%, k_o=500.

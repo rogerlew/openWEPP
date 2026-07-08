@@ -12,6 +12,17 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-08`:
+- `20260708-laned-router-post-tier1-hotpath-sweep-001/` -
+  EXECUTED-COMPLETE-POST-TIER1-HOTPATH-SWEEP (2026-07-08): bounded post-Tier1
+  explicit-router hotpath sweep for Lane D active routing. Landed
+  behavior-preserving reuse of the prepared max celerity for CFL evidence,
+  removed the duplicate wet-cell Courant scan, and avoided additive-path
+  prework on pure-skin cells. H2637 median user time measured `11.72 s`
+  versus Tier1 `11.90 s`; profiled `solver_cfl_ns` dropped from
+  `2488591327` to `2277134095`. No hybrid implicit work, mesh/fidelity
+  readjudication, tolerance change, watershed/channel routing, baseflow
+  export, sediment physics, or `Re^0.45` approximation landed. WSHED-W7R
+  remains the next queued production-path package.
 - `20260708-laned-router-conditional-default-activation-001/` -
   EXECUTED-COMPLETE-CONDITIONAL-DEFAULT-ACTIVATION (2026-07-08): amended
   `SC-OFEROUTE-001` rev 46 and made Lane D active routing the hillslope
