@@ -1,8 +1,12 @@
 # Artifacts
 
 This directory holds execution evidence for the Tier 1 local numerics package.
-The package is scaffolded only; placeholders below must be replaced with
-command output, analysis, review, and verification evidence during execution.
+Status: `EXECUTED-HOLD-APPROXIMATION-ENVELOPE`.
+
+The package landed the rev-47 local numerics changes and retained a hold only
+for the unratified Hirsch `Re^0.45` approximation. Timing scratch output lives
+under ignored `timing-output/`; package-closing evidence is summarized in the
+tracked Markdown artifacts.
 
 Required artifacts:
 

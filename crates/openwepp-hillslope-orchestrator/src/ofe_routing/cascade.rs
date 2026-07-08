@@ -533,10 +533,10 @@ mod tests {
             "steady outlet discharge must match (mass balance): veg {veg_q} bare {bare_q}"
         );
         // but the vegetated strip backs up more water: higher steady depth
-        // (directional, monotone in f_eq; ~1.7% for LAI=1 light canopy at this
-        // shallow flow depth - small but unambiguously above float noise).
+        // (directional, monotone in f_eq; rev-47 true local celerity yields a
+        // smaller ~0.18% signal here, still above float noise).
         assert!(
-            veg_depth > bare_depth * 1.005,
+            veg_depth > bare_depth * 1.001,
             "vegetated strip must back up more water (higher steady depth): veg {veg_depth} bare {bare_depth}"
         );
         // both conserve and hold CFL

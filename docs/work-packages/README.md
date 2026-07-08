@@ -26,12 +26,15 @@ State as of `2026-07-08`:
   active baseflow export closure, watershed HBP hourly water/sediment
   consumption, and active-mode sediment process-physics adjudication.
 - `20260708-laned-router-tier1-local-numerics-001/` -
-  ACTIVE (2026-07-08): current first package in the binding order before
-  WSHED-W7 resume. In-progress artifacts record rev-47 Tier 1 local numerics
-  work and H2637 timing evidence, but final disposition is not recorded here
-  until the package closes. Downstream WSHED-W7R, Lane D active baseflow export
-  closure, and Lane D watershed hourly consumption remain queued behind this
-  package.
+  EXECUTED-HOLD-APPROXIMATION-ENVELOPE (2026-07-08): amended
+  `SC-OFEROUTE-001` rev 47 and landed Lane D active-router Tier 1 local
+  numerics: analytic celerity, bounded Newton local hydraulics, hot-path
+  `h * sqrt(h)`, pure-skin branch-gap selection, and active-vegetation
+  fail-closed local numerics. The package met the H2637 active endpoint timing
+  target (`37.48 s` -> `11.90 s` median user, `3.15x`) and passed focused
+  unit/D10B/H2637/full-nextest/clippy/fmt/deny gates. It closes on hold only for
+  the unimplemented Hirsch `Re^0.45` approximation, which lacks a ratified
+  bounded-error envelope. WSHED-W7R is the next queued action.
 - `20260708-laned-router-watershed-hbp-hourly-water-sediment-consumption-001/` -
   QUEUED (2026-07-08, execute after Tier 1, WSHED-W7 resume, and Lane D active
   baseflow export closure): scaffolded a consumer-path closure package for Lane

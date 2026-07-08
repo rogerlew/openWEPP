@@ -1,10 +1,10 @@
 # Laned Router Tier 1 Local Numerics
 
-Status: `QUEUED`
+Status: `EXECUTED-HOLD-APPROXIMATION-ENVELOPE`
 Package ID: `20260708-laned-router-tier1-local-numerics-001`
 Owner: Codex
 Scaffold date: `2026-07-08`
-Evidence mode: `Static scaffold; no implementation executed`
+Evidence mode: `Ran + Static; implementation landed, final hold limited to unratified Re^0.45 approximation envelope`
 Backlog source:
 `docs/backlog/20260706-laned-router-numerics-performance-tiers.md`
 

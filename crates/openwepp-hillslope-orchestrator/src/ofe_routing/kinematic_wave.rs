@@ -2,9 +2,10 @@
 //! single-OFE 1-D kinematic-wave overland-flow solver with the TVD-MacCormack
 //! predictor/corrector scheme (Papanicolaou et al. 2018, eqs. (8)-(14)),
 //! space/time-variant friction (eqs. (2)-(7) via `super::friction`), and a
-//! CFL-adaptive sub-timestep (eq. (12)). Shadow-first and opt-in: this solver
-//! is not wired into any production phase span; the default hillslope runtime
-//! does not call it (INV-OFEROUTE-010).
+//! CFL-adaptive sub-timestep (eq. (12)). The solver was introduced
+//! shadow-first; rev-27 active owner and rev-46 conditional default activation
+//! now call it on coefficient-complete Lane D active runtime paths
+//! (INV-OFEROUTE-010).
 //!
 //! Primary-bound posture (GAP-OFEROUTE-001 CLOSED, rev 26): the
 //! TVD-MacCormack primaries are in hand (Davis 1984 R-102, Mingham 2001
@@ -16,9 +17,10 @@
 //! conservation, CFL stability, and steady-state/shock structure.
 
 use super::friction::{
-    GRAVITY_M_S2, KINEMATIC_VISCOSITY_M2_S, chezy_from_friction, equivalent_friction_factor,
-    form_resistance_abrahams, froude_number, reynolds_number, skin_rain_term,
-    skin_resistance_with_rain_term, vegetation_resistance_katul, wave_resistance_hu_abrahams,
+    GRAVITY_M_S2, KINEMATIC_VISCOSITY_M2_S, SKIN_REGIME_REYNOLDS_THRESHOLD, WAVE_FROUDE_THRESHOLD,
+    chezy_from_friction, equivalent_friction_factor, form_resistance_abrahams, froude_number,
+    reynolds_number, skin_rain_term, skin_resistance_with_rain_term, vegetation_length_scale,
+    vegetation_momentum_absorption, vegetation_resistance_katul, wave_resistance_hu_abrahams,
 };
 use super::profile;
 
@@ -29,6 +31,14 @@ pub const DEPTH_DISCHARGE_EXPONENT: f64 = 1.5;
 pub const CFL_TARGET: f64 = 0.9;
 /// Minimum positive depth used to guard divisions; below this a cell is dry.
 pub(super) const DRY_DEPTH_M: f64 = 1.0e-9;
+const ALPHA_NEWTON_MAX_ITERS: usize = 8;
+const ALPHA_NEWTON_REL_TOL: f64 = 1.0e-12;
+const ALPHA_NEWTON_ABS_TOL_M2_S: f64 = 1.0e-18;
+
+#[must_use]
+fn depth_pow_3_2(flow_depth_m: f64) -> f64 {
+    flow_depth_m * flow_depth_m.sqrt()
+}
 
 /// A forcing value is valid iff finite and non-negative (rainfall excess,
 /// rainfall intensity, and upstream inflow are physically non-negative).
@@ -154,7 +164,7 @@ impl CellParameters {
         if self.manning_n > 0.0 {
             // Rev-24 Manning limb: the definitional identity
             // `f = 8 g n^2 / h^(1/3)` (wide channel, R = h); no Re/Fr
-            // dependence, so the alpha fixed point converges immediately.
+            // dependence, so rev-47 evaluates alpha/q/celerity directly.
             let h = flow_depth_m.max(DRY_DEPTH_M);
             return 8.0 * GRAVITY_M_S2 * self.manning_n * self.manning_n / h.cbrt();
         }
@@ -185,58 +195,326 @@ impl CellParameters {
         equivalent_friction_factor(skin, form, wave, veg)
     }
 
-    /// Kinematic coefficient `alpha = C S_o^0.5`, `C = sqrt(8 g / f_eq)`.
-    ///
-    /// `alpha` is implicit: `f_eq` depends on `Re = q/nu` and `Fr`, while
-    /// `q = alpha h^1.5`. Papanicolaou updates `alpha` from the current flow at
-    /// the end of each step; from a dry start the stored discharge is zero, so
-    /// this resolves the implicit relation by a short fixed-point iteration
-    /// seeded with a Chezy estimate `q0 ~ sqrt(g S_o) h^1.5` to break the
-    /// zero-flow singularity (the skin term diverges as `Re -> 0`).
-    ///
-    /// Takes the precomputed `skin_rain_term` (D14 OPT-3); the run loop
-    /// evaluates it once per step from the validated intensity.
-    ///
-    /// Returns `(alpha, q)` where `q = alpha * h^1.5` is the fixed point's
-    /// own final iterate (D15A OPT-5): the caller's celerity evaluation needs
-    /// exactly this discharge, and recomputing `alpha * h.powf(1.5)` outside
-    /// was a redundant `powf` with bit-identical value (same `alpha`, same
-    /// `h_pow` operands). Every zero-alpha path returns `(0.0, 0.0)`, which
-    /// matches the caller-side `0.0 * h_pow = +0.0` it replaces.
-    #[must_use]
-    fn alpha_q(
+    fn vegetation_resistance_and_derivative(
+        &self,
+        flow_depth_m: f64,
+    ) -> Result<(f64, f64), RoutingError> {
+        if flow_depth_m <= 0.0
+            || self.canopy_height_m <= 0.0
+            || self.leaf_area_index <= 0.0
+            || self.vegetation_drag_coefficient <= 0.0
+        {
+            return Ok((0.0, 0.0));
+        }
+        let l_c = vegetation_length_scale(
+            self.vegetation_drag_coefficient,
+            self.leaf_area_index,
+            self.canopy_height_m,
+        );
+        if !l_c.is_finite() || l_c <= 0.0 {
+            return Err(RoutingError::NonFiniteState);
+        }
+        let beta = vegetation_momentum_absorption(self.leaf_area_index, self.canopy_height_m);
+        if !beta.is_finite() || beta <= 0.0 {
+            return Err(RoutingError::NonFiniteState);
+        }
+        let two_beta_sq = 2.0 * beta * beta;
+        let b = 1.0 / (two_beta_sq * l_c);
+        if !b.is_finite() {
+            return Err(RoutingError::NonFiniteState);
+        }
+        let z = b * flow_depth_m;
+        if !z.is_finite() {
+            return Err(RoutingError::NonFiniteState);
+        }
+        let expm1_z = z.exp_m1();
+        if expm1_z <= 0.0 || !expm1_z.is_finite() {
+            return Err(RoutingError::NonFiniteState);
+        }
+        let term_exp_neg = (-self.canopy_height_m / (two_beta_sq * l_c)).exp();
+        if !term_exp_neg.is_finite() {
+            return Err(RoutingError::NonFiniteState);
+        }
+        let radicand = 2.0 * beta * (l_c / flow_depth_m) * term_exp_neg * expm1_z;
+        if radicand <= 0.0 || !radicand.is_finite() {
+            return Err(RoutingError::NonFiniteState);
+        }
+        let resistance = radicand.sqrt();
+        let d_log_radicand_dh = b * (expm1_z + 1.0) / expm1_z - 1.0 / flow_depth_m;
+        let derivative = 0.5 * resistance * d_log_radicand_dh;
+        if !resistance.is_finite() || !derivative.is_finite() {
+            return Err(RoutingError::NonFiniteState);
+        }
+        Ok((resistance, derivative))
+    }
+
+    fn equivalent_friction_local(
         &self,
         flow_depth_m: f64,
         unit_discharge_m2_s: f64,
         skin_rain_term: f64,
-    ) -> (f64, f64) {
-        if flow_depth_m <= DRY_DEPTH_M || self.slope <= 0.0 {
-            return (0.0, 0.0);
+    ) -> Result<LocalFriction, RoutingError> {
+        if self.manning_n > 0.0 {
+            let h = flow_depth_m.max(DRY_DEPTH_M);
+            let f_eq = 8.0 * GRAVITY_M_S2 * self.manning_n * self.manning_n / h.cbrt();
+            return Ok(LocalFriction {
+                f_eq,
+                df_dq: 0.0,
+                df_dh: -(1.0 / 3.0) * f_eq / h,
+            });
         }
-        let h_pow = flow_depth_m.powf(DEPTH_DISCHARGE_EXPONENT);
-        // D15A OPT-7: loop-invariant hoist (same deterministic sqrt value
-        // every iteration).
+        if flow_depth_m <= DRY_DEPTH_M || unit_discharge_m2_s <= 0.0 {
+            return Ok(LocalFriction {
+                f_eq: 0.0,
+                df_dq: 0.0,
+                df_dh: 0.0,
+            });
+        }
+        let re = reynolds_number(unit_discharge_m2_s, KINEMATIC_VISCOSITY_M2_S);
+        let skin = skin_resistance_with_rain_term(skin_rain_term, self.friction_coefficient_ko, re);
+        let skin_dq = if re > SKIN_REGIME_REYNOLDS_THRESHOLD {
+            -0.45 * skin / unit_discharge_m2_s
+        } else if re > 0.0 {
+            -skin / unit_discharge_m2_s
+        } else {
+            0.0
+        };
+
+        let form = form_resistance_abrahams(
+            self.drag_coefficient,
+            flow_depth_m,
+            self.element_tip_height_m,
+            self.roughness_concentration,
+        );
+        let form_dh = if form > 0.0 { form / flow_depth_m } else { 0.0 };
+
+        let mut wave_flow_partial = 0.0;
+        let mut wave_depth_partial = 0.0;
+        let wave = if self.element_tip_height_m > 0.0 && flow_depth_m < self.element_tip_height_m {
+            let fr = froude_number(unit_discharge_m2_s, flow_depth_m, GRAVITY_M_S2);
+            let wave = wave_resistance_hu_abrahams(self.roughness_concentration, fr);
+            if fr > WAVE_FROUDE_THRESHOLD {
+                wave_flow_partial = -0.5 * wave / unit_discharge_m2_s;
+                wave_depth_partial = 0.75 * wave / flow_depth_m;
+            } else if fr > 0.0 {
+                wave_flow_partial = wave / unit_discharge_m2_s;
+                wave_depth_partial = -1.5 * wave / flow_depth_m;
+            }
+            wave
+        } else {
+            0.0
+        };
+
+        let (veg, veg_dh) = self.vegetation_resistance_and_derivative(flow_depth_m)?;
+        let f_eq = equivalent_friction_factor(skin, form, wave, veg);
+        let discharge_partial = skin_dq + wave_flow_partial;
+        let depth_partial = form_dh + wave_depth_partial + veg_dh;
+        if !f_eq.is_finite() || !discharge_partial.is_finite() || !depth_partial.is_finite() {
+            return Err(RoutingError::NonFiniteState);
+        }
+        Ok(LocalFriction {
+            f_eq,
+            df_dq: discharge_partial,
+            df_dh: depth_partial,
+        })
+    }
+
+    fn skin_only_hydraulics(
+        &self,
+        flow_depth_m: f64,
+        h_pow: f64,
+        unit_discharge_m2_s: f64,
+        skin_rain_term: f64,
+    ) -> Option<Result<LocalHydraulics, RoutingError>> {
+        let form_or_wave_active =
+            self.element_tip_height_m > 0.0 && self.roughness_concentration > 0.0;
+        let vegetation_active = self.vegetation_drag_coefficient > 0.0
+            && self.leaf_area_index > 0.0
+            && self.canopy_height_m > 0.0;
+        if form_or_wave_active || vegetation_active {
+            return None;
+        }
+        let skin_numerator = skin_rain_term + self.friction_coefficient_ko;
+        if skin_numerator <= 0.0 {
+            return Some(Ok(LocalHydraulics::zero()));
+        }
+
+        let q_laminar = 8.0 * GRAVITY_M_S2 * self.slope * flow_depth_m.powi(3)
+            / (skin_numerator * KINEMATIC_VISCOSITY_M2_S);
+        if q_laminar.is_finite()
+            && q_laminar > 0.0
+            && reynolds_number(q_laminar, KINEMATIC_VISCOSITY_M2_S)
+                <= SKIN_REGIME_REYNOLDS_THRESHOLD
+        {
+            return Some(Ok(LocalHydraulics {
+                alpha: q_laminar / h_pow,
+                q: q_laminar,
+                celerity: 3.0 * q_laminar / flow_depth_m,
+            }));
+        }
+
+        let laminar_hydraulics = || {
+            if q_laminar.is_finite() && q_laminar > 0.0 {
+                Some(LocalHydraulics {
+                    alpha: q_laminar / h_pow,
+                    q: q_laminar,
+                    celerity: 3.0 * q_laminar / flow_depth_m,
+                })
+            } else {
+                None
+            }
+        };
+
+        let hirsch_factor = 3.19 * KINEMATIC_VISCOSITY_M2_S.powf(0.45);
+        let q_hirsch_base = (8.0 * GRAVITY_M_S2 * self.slope / hirsch_factor).sqrt() * h_pow;
+        let q_hirsch = q_hirsch_base.powf(1.0 / 0.775);
+        if q_hirsch.is_finite()
+            && q_hirsch > 0.0
+            && reynolds_number(q_hirsch, KINEMATIC_VISCOSITY_M2_S) > SKIN_REGIME_REYNOLDS_THRESHOLD
+        {
+            return Some(Ok(LocalHydraulics {
+                alpha: q_hirsch / h_pow,
+                q: q_hirsch,
+                celerity: (DEPTH_DISCHARGE_EXPONENT / 0.775) * q_hirsch / flow_depth_m,
+            }));
+        }
+
+        let hirsch_hydraulics = || {
+            if q_hirsch.is_finite() && q_hirsch > 0.0 {
+                Some(LocalHydraulics {
+                    alpha: q_hirsch / h_pow,
+                    q: q_hirsch,
+                    celerity: (DEPTH_DISCHARGE_EXPONENT / 0.775) * q_hirsch / flow_depth_m,
+                })
+            } else {
+                None
+            }
+        };
+
+        let seed_re = reynolds_number(unit_discharge_m2_s.max(0.0), KINEMATIC_VISCOSITY_M2_S);
+        let selected = if seed_re > SKIN_REGIME_REYNOLDS_THRESHOLD {
+            hirsch_hydraulics()
+        } else {
+            laminar_hydraulics()
+        };
+        Some(selected.ok_or(RoutingError::NonFiniteState))
+    }
+
+    /// Kinematic coefficient, discharge, and celerity for the local
+    /// equilibrium relation `q = sqrt(8 g S_o / f_eq(q,h)) h^1.5`.
+    fn alpha_q_celerity(
+        &self,
+        flow_depth_m: f64,
+        unit_discharge_m2_s: f64,
+        skin_rain_term: f64,
+    ) -> Result<LocalHydraulics, RoutingError> {
+        if flow_depth_m <= DRY_DEPTH_M || self.slope <= 0.0 {
+            return Ok(LocalHydraulics::zero());
+        }
+        if self.manning_n > 0.0 {
+            let alpha = self.slope.sqrt() / self.manning_n * flow_depth_m.powf(1.0 / 6.0);
+            let q = alpha * depth_pow_3_2(flow_depth_m);
+            let celerity = (5.0 / 3.0) * q / flow_depth_m;
+            return Ok(LocalHydraulics { alpha, q, celerity });
+        }
+        let h_pow = depth_pow_3_2(flow_depth_m);
         let slope_sqrt = self.slope.sqrt();
+        if let Some(local) =
+            self.skin_only_hydraulics(flow_depth_m, h_pow, unit_discharge_m2_s, skin_rain_term)
+        {
+            return local;
+        }
         let mut q_est = if unit_discharge_m2_s > 0.0 {
             unit_discharge_m2_s
         } else {
             (GRAVITY_M_S2 * self.slope).sqrt() * h_pow
         };
-        let mut alpha = 0.0;
-        for _ in 0..4 {
-            let f_eq = self.equivalent_friction_with_rain_term(flow_depth_m, q_est, skin_rain_term);
-            if f_eq <= 0.0 {
-                return (0.0, 0.0);
+        if !q_est.is_finite() || q_est <= 0.0 {
+            return Err(RoutingError::NonFiniteState);
+        }
+        for _ in 0..ALPHA_NEWTON_MAX_ITERS {
+            let friction = self.equivalent_friction_local(flow_depth_m, q_est, skin_rain_term)?;
+            if friction.f_eq <= 0.0 {
+                return Ok(LocalHydraulics::zero());
             }
-            alpha = chezy_from_friction(f_eq, GRAVITY_M_S2) * slope_sqrt;
-            let q_new = alpha * h_pow;
-            let converged = (q_new - q_est).abs() <= 1.0e-12 * q_new.max(1.0e-12);
+            let alpha = chezy_from_friction(friction.f_eq, GRAVITY_M_S2) * slope_sqrt;
+            let q_model = alpha * h_pow;
+            if !alpha.is_finite() || !q_model.is_finite() || q_model <= 0.0 {
+                return Err(RoutingError::NonFiniteState);
+            }
+            let rel_residual = (q_est - q_model).abs() / q_model.max(1.0e-12);
+            if rel_residual <= ALPHA_NEWTON_REL_TOL {
+                q_est = q_model;
+                break;
+            }
+            let denom = 1.0 + 0.5 * q_est * friction.df_dq / friction.f_eq;
+            if !denom.is_finite() || denom.abs() <= 1.0e-12 {
+                return Err(RoutingError::NonFiniteState);
+            }
+            let log_residual = (q_est / q_model).ln();
+            if !log_residual.is_finite() {
+                return Err(RoutingError::NonFiniteState);
+            }
+            let log_step = (-log_residual / denom).clamp(-2.0, 2.0);
+            let q_new = q_est * log_step.exp();
+            if !q_new.is_finite() || q_new <= 0.0 {
+                return Err(RoutingError::NonFiniteState);
+            }
+            let step_rel = (q_new - q_est).abs() / q_new.max(1.0e-12);
             q_est = q_new;
-            if converged {
+            if step_rel <= ALPHA_NEWTON_REL_TOL {
                 break;
             }
         }
-        (alpha, q_est)
+        let friction = self.equivalent_friction_local(flow_depth_m, q_est, skin_rain_term)?;
+        if friction.f_eq <= 0.0 {
+            return Ok(LocalHydraulics::zero());
+        }
+        let alpha = chezy_from_friction(friction.f_eq, GRAVITY_M_S2) * slope_sqrt;
+        let q = alpha * h_pow;
+        if !alpha.is_finite() || !q.is_finite() || q < 0.0 {
+            return Err(RoutingError::NonFiniteState);
+        }
+        let rel_residual = (q_est - q).abs() / q.max(1.0e-12);
+        let abs_residual = (q_est - q).abs();
+        if rel_residual > ALPHA_NEWTON_REL_TOL && abs_residual > ALPHA_NEWTON_ABS_TOL_M2_S {
+            return Err(RoutingError::NonFiniteState);
+        }
+        let frozen = DEPTH_DISCHARGE_EXPONENT * alpha * flow_depth_m.sqrt();
+        let denom = 1.0 + 0.5 * q * friction.df_dq / friction.f_eq;
+        let numer = DEPTH_DISCHARGE_EXPONENT / flow_depth_m - 0.5 * friction.df_dh / friction.f_eq;
+        if !denom.is_finite() || !numer.is_finite() || denom <= 0.0 {
+            return Err(RoutingError::NonFiniteState);
+        }
+        let celerity = (q * numer / denom).max(frozen);
+        if !celerity.is_finite() || celerity < 0.0 {
+            return Err(RoutingError::NonFiniteState);
+        }
+        Ok(LocalHydraulics { alpha, q, celerity })
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+struct LocalFriction {
+    f_eq: f64,
+    df_dq: f64,
+    df_dh: f64,
+}
+
+#[derive(Debug, Clone, Copy)]
+struct LocalHydraulics {
+    alpha: f64,
+    q: f64,
+    celerity: f64,
+}
+
+impl LocalHydraulics {
+    fn zero() -> Self {
+        Self {
+            alpha: 0.0,
+            q: 0.0,
+            celerity: 0.0,
+        }
     }
 }
 
@@ -676,47 +954,30 @@ impl KinematicWaveSolver {
     /// the pre-step state into the step scratch, returning the max
     /// wet-cell celerity for CFL dt selection (eq. 12, rev 24).
     ///
-    /// The true celerity is `dq/dh` along the equilibrium
-    /// `q(h) = alpha(h, q) h^1.5`, evaluated numerically through the same
-    /// friction fixed point at a perturbed depth. This costs one extra
-    /// alpha evaluation per wet cell per step (D14 budget note recorded in
-    /// the package evidence); the frozen-alpha expression
-    /// `1.5 alpha h^0.5` under-estimates the wave speed for
-    /// depth-dependent friction (by 2x on the laminar `k_o/Re` limb) and
-    /// let the scheme run at true Courant well above 1.
-    fn prepare_step_alpha(&mut self, skin_rain_term: f64) -> f64 {
+    /// Rev-47 computes `dq/dh` analytically from the selected implicit
+    /// friction branch derivatives, with the frozen-alpha expression
+    /// `1.5 alpha h^0.5` retained only as a lower bound.
+    fn prepare_step_alpha(&mut self, skin_rain_term: f64) -> Result<f64, RoutingError> {
         let mut max_celerity = 0.0_f64;
         let mut evaluations = 0_u64;
         for (i, cell) in self.mesh.cells.iter().enumerate() {
             let h = self.depth_m[i];
-            // D15A OPT-5: the fixed point returns its own final
-            // `q = alpha·h^1.5` iterate, replacing the two redundant
-            // caller-side `powf` recomputations at the base and perturbed
-            // depths (bit-identical operands; see `alpha_q`).
-            let (alpha, q) = cell.alpha_q(h, self.discharge_m2_s[i], skin_rain_term);
-            self.scratch.alpha[i] = alpha;
+            let local = cell.alpha_q_celerity(h, self.discharge_m2_s[i], skin_rain_term)?;
+            self.scratch.alpha[i] = local.alpha;
             evaluations += 1;
             if h <= DRY_DEPTH_M {
                 self.scratch.celerity[i] = 0.0;
                 self.scratch.q0[i] = 0.0;
                 continue;
             }
-            self.scratch.q0[i] = q;
-            let dh = (1.0e-3 * h).max(1.0e-8);
-            let h2 = h + dh;
-            let (_, q2) = cell.alpha_q(h2, q, skin_rain_term);
-            evaluations += 1;
-            // Guarded true celerity: never below the frozen-alpha floor
-            // (the discrete flux actually advanced this step).
-            let frozen = DEPTH_DISCHARGE_EXPONENT * alpha * h.sqrt();
-            let celerity = ((q2 - q) / dh).max(frozen);
-            self.scratch.celerity[i] = celerity;
-            if celerity > max_celerity {
-                max_celerity = celerity;
+            self.scratch.q0[i] = local.q;
+            self.scratch.celerity[i] = local.celerity;
+            if local.celerity > max_celerity {
+                max_celerity = local.celerity;
             }
         }
         profile::count_alpha_evaluations(evaluations);
-        max_celerity
+        Ok(max_celerity)
     }
 
     /// `Cf_i` (eq. 11e) from the local Courant number.
@@ -898,8 +1159,7 @@ impl KinematicWaveSolver {
                 clamp_injected_m2 += 0.5 * (-h_new) * dx;
             }
             self.scratch.h_pred[i] = h_new.max(0.0);
-            self.scratch.q_pred[i] =
-                self.scratch.alpha[i] * self.scratch.h_pred[i].powf(DEPTH_DISCHARGE_EXPONENT);
+            self.scratch.q_pred[i] = self.scratch.alpha[i] * depth_pow_3_2(self.scratch.h_pred[i]);
         }
         let pred_out_face = self.scratch.face_flux[n];
 
@@ -1052,8 +1312,7 @@ impl KinematicWaveSolver {
         // Commit state and recompute discharge (eq. 14).
         for i in 0..n {
             self.depth_m[i] = self.scratch.h_next[i];
-            self.discharge_m2_s[i] =
-                self.scratch.alpha[i] * self.depth_m[i].powf(DEPTH_DISCHARGE_EXPONENT);
+            self.discharge_m2_s[i] = self.scratch.alpha[i] * depth_pow_3_2(self.depth_m[i]);
             if !self.discharge_m2_s[i].is_finite() {
                 return Err(RoutingError::NonFiniteState);
             }
@@ -1280,7 +1539,13 @@ impl KinematicWaveSolver {
                 return Err(RoutingError::InvalidForcing);
             }
             let rain_term = skin_rain_term(intensity);
-            let max_celerity = self.prepare_step_alpha(rain_term);
+            let max_celerity = match self.prepare_step_alpha(rain_term) {
+                Ok(value) => value,
+                Err(err) => {
+                    profile::end_solver_cfl(cfl_span);
+                    return Err(err);
+                }
+            };
             // Codex review High-1: CFL must FAIL CLOSED, never open. A
             // non-finite celerity is corrupt state; a celerity so large
             // that no positive sub-timestep exists (dt underflows to 0)
@@ -1438,6 +1703,186 @@ mod tests {
 
     fn constant<'a>(value: f64) -> impl Fn(f64) -> f64 + 'a {
         move |_t: f64| value
+    }
+
+    #[test]
+    fn rev47_depth_power_uses_sqrt_identity() {
+        for h in [0.0_f64, 1.0e-12, 1.0e-6, 0.0125, 1.0] {
+            assert_eq!(depth_pow_3_2(h).to_bits(), (h * h.sqrt()).to_bits());
+        }
+    }
+
+    #[test]
+    fn rev47_dust_residual_floor_matches_contract() {
+        assert_eq!(ALPHA_NEWTON_ABS_TOL_M2_S.to_bits(), 1.0e-18_f64.to_bits());
+    }
+
+    #[test]
+    fn rev47_dry_and_zero_slope_cells_are_zero_local_hydraulics() {
+        let dry = CellParameters::bare(0.01, 500.0)
+            .alpha_q_celerity(0.0, 0.0, 0.0)
+            .expect("dry local numerics");
+        let zero_slope = CellParameters::bare(0.0, 500.0)
+            .alpha_q_celerity(0.01, 0.0, 0.0)
+            .expect("zero-slope local numerics");
+
+        for local in [dry, zero_slope] {
+            assert_eq!(local.alpha.to_bits(), 0.0_f64.to_bits());
+            assert_eq!(local.q.to_bits(), 0.0_f64.to_bits());
+            assert_eq!(local.celerity.to_bits(), 0.0_f64.to_bits());
+        }
+    }
+
+    #[test]
+    fn rev47_manning_celerity_uses_five_thirds_q_over_h() {
+        let cell = CellParameters::manning(0.02, 0.009);
+        let h = 0.015;
+        let local = cell
+            .alpha_q_celerity(h, 0.0, 0.0)
+            .expect("manning local numerics");
+
+        let q_expected = 0.02_f64.sqrt() / 0.009 * h.powf(5.0 / 3.0);
+        assert!((local.q - q_expected).abs() / q_expected < 1.0e-13);
+        assert!((local.celerity - (5.0 / 3.0) * local.q / h).abs() / local.celerity < 1.0e-13);
+    }
+
+    #[test]
+    fn rev47_laminar_skin_celerity_uses_three_q_over_h() {
+        let cell = CellParameters::bare(0.01, 500.0);
+        let h = 1.0e-4;
+        let local = cell
+            .alpha_q_celerity(h, 0.0, 0.0)
+            .expect("laminar local numerics");
+        let re = super::reynolds_number(local.q, KINEMATIC_VISCOSITY_M2_S);
+
+        assert!(re <= super::SKIN_REGIME_REYNOLDS_THRESHOLD, "Re {re}");
+        assert!((local.celerity - 3.0 * local.q / h).abs() / local.celerity < 1.0e-12);
+    }
+
+    #[test]
+    fn rev47_hirsch_skin_celerity_uses_exact_turbulent_pow() {
+        let cell = CellParameters::bare(0.5, 500.0);
+        let h = 0.10;
+        let local = cell
+            .alpha_q_celerity(h, 0.0, 0.0)
+            .expect("hirsch local numerics");
+        let re = super::reynolds_number(local.q, KINEMATIC_VISCOSITY_M2_S);
+        let expected_multiplier = DEPTH_DISCHARGE_EXPONENT / (1.0 - 0.5 * 0.45);
+        let hirsch_factor = 3.19 * KINEMATIC_VISCOSITY_M2_S.powf(0.45);
+        let exact_q = ((8.0 * GRAVITY_M_S2 * cell.slope / hirsch_factor).sqrt() * depth_pow_3_2(h))
+            .powf(1.0 / 0.775);
+
+        assert!(re > super::SKIN_REGIME_REYNOLDS_THRESHOLD, "Re {re}");
+        assert!((local.q - exact_q).abs() / exact_q < 1.0e-13);
+        assert!(
+            (local.celerity - expected_multiplier * local.q / h).abs() / local.celerity < 1.0e-10,
+            "celerity {} q {} h {} multiplier {}",
+            local.celerity,
+            local.q,
+            h,
+            expected_multiplier
+        );
+    }
+
+    #[test]
+    fn rev47_pure_skin_branch_gap_uses_pre_step_branch_without_smoothing() {
+        let cell = CellParameters::bare(0.001, 10.0);
+        let h = 0.006_309_573_444_801_93;
+        let h_pow = depth_pow_3_2(h);
+        let laminar_q = 8.0 * GRAVITY_M_S2 * cell.slope * h.powi(3)
+            / (cell.friction_coefficient_ko * KINEMATIC_VISCOSITY_M2_S);
+        let hirsch_factor = 3.19 * KINEMATIC_VISCOSITY_M2_S.powf(0.45);
+        let hirsch_q =
+            ((8.0 * GRAVITY_M_S2 * cell.slope / hirsch_factor).sqrt() * h_pow).powf(1.0 / 0.775);
+        let laminar_re = super::reynolds_number(laminar_q, KINEMATIC_VISCOSITY_M2_S);
+        let hirsch_re = super::reynolds_number(hirsch_q, KINEMATIC_VISCOSITY_M2_S);
+
+        assert!(
+            laminar_re > super::SKIN_REGIME_REYNOLDS_THRESHOLD,
+            "laminar root Re {laminar_re}"
+        );
+        assert!(
+            hirsch_re <= super::SKIN_REGIME_REYNOLDS_THRESHOLD,
+            "Hirsch root Re {hirsch_re}"
+        );
+
+        let low_seed = 0.5 * super::SKIN_REGIME_REYNOLDS_THRESHOLD * KINEMATIC_VISCOSITY_M2_S;
+        let low_branch = cell
+            .alpha_q_celerity(h, low_seed, 0.0)
+            .expect("laminar fallback branch");
+        assert!((low_branch.q - laminar_q).abs() / laminar_q < 1.0e-13);
+        assert!(
+            (low_branch.celerity - 3.0 * low_branch.q / h).abs() / low_branch.celerity < 1.0e-13
+        );
+
+        let high_seed = 2.0 * super::SKIN_REGIME_REYNOLDS_THRESHOLD * KINEMATIC_VISCOSITY_M2_S;
+        let high_branch = cell
+            .alpha_q_celerity(h, high_seed, 0.0)
+            .expect("Hirsch fallback branch");
+        let expected_multiplier = DEPTH_DISCHARGE_EXPONENT / (1.0 - 0.5 * 0.45);
+        assert!((high_branch.q - hirsch_q).abs() / hirsch_q < 1.0e-13);
+        assert!(
+            (high_branch.celerity - expected_multiplier * high_branch.q / h).abs()
+                / high_branch.celerity
+                < 1.0e-13
+        );
+    }
+
+    #[test]
+    fn rev47_additive_menu_celerity_matches_small_finite_difference() {
+        let cell = CellParameters {
+            slope: 0.04,
+            friction_coefficient_ko: 80.0,
+            drag_coefficient: 1.1,
+            element_tip_height_m: 0.08,
+            roughness_concentration: 0.25,
+            leaf_area_index: 1.3,
+            canopy_height_m: 0.45,
+            vegetation_drag_coefficient: 0.9,
+            manning_n: 0.0,
+        };
+        let h = 0.025;
+        let rain_term = skin_rain_term(20.0 / 3.6e6);
+        let local = cell
+            .alpha_q_celerity(h, 0.0, rain_term)
+            .expect("additive local numerics");
+        let dh = 1.0e-6;
+        let q2 = cell
+            .alpha_q_celerity(h + dh, local.q, rain_term)
+            .expect("perturbed local numerics")
+            .q;
+        let finite_diff = (q2 - local.q) / dh;
+        let frozen_floor = DEPTH_DISCHARGE_EXPONENT * local.alpha * h.sqrt();
+        let expected_celerity = finite_diff.max(frozen_floor);
+
+        assert!(
+            (expected_celerity - local.celerity).abs() / local.celerity < 2.0e-4,
+            "analytic {} finite_diff {} frozen {} q {}",
+            local.celerity,
+            finite_diff,
+            frozen_floor,
+            local.q
+        );
+    }
+
+    #[test]
+    fn rev47_active_vegetation_nonfinite_local_numerics_fail_closed() {
+        let cell = CellParameters {
+            slope: 0.01,
+            friction_coefficient_ko: 100.0,
+            drag_coefficient: 0.0,
+            element_tip_height_m: 0.0,
+            roughness_concentration: 0.0,
+            leaf_area_index: 1.0,
+            canopy_height_m: 1.0,
+            vegetation_drag_coefficient: 1.0e308,
+            manning_n: 0.0,
+        };
+
+        assert!(matches!(
+            cell.alpha_q_celerity(1.0, 1.0e-6, 0.0),
+            Err(RoutingError::NonFiniteState)
+        ));
     }
 
     // Case 1 (bare surface): 60 mm/h over a 7.5 m plot at 9%, k_o=500.
