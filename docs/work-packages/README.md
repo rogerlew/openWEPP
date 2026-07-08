@@ -12,6 +12,17 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-08`:
+- `20260708-laned-router-tier2-dx5-coupled-spacetime-ratification-001/` -
+  EXECUTED-HOLD-DX5-UNRATIFIED (2026-07-08): ran the selected real-cohort
+  coupled space-time ladder (`dx5`/`dx2p5`/`dx1p25` at production 300 s and
+  diagnostic 75 s max substeps), completing 21/21 rungs without active
+  closure/clamp failure. `dx5` passes production candidate tolerances at both
+  `max_dt=300` and `max_dt=75`, but the fine-reference basis remains open:
+  `mn_corn_h4` production-cap shape `0.020180511 > 0.016666667` and
+  `wa_cascades_forest_h1` refined-75 annual sediment
+  `0.022131684 > 0.0066666667`. No `dx5` production default flip or contract
+  amendment landed. Follow-on: WA annual pass-sediment fine-reference
+  adequacy attribution.
 - `20260708-laned-router-active-router-timestep-policy-adjudication-001/` -
   EXECUTED-COMPLETE (2026-07-08): added the trace-gated diagnostic
   `OPENWEPP_LANED_ACTIVE_MAX_DT_S` selector and adjudicated `mn_corn_h4` day
