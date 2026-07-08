@@ -12,6 +12,21 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-08`:
+- `20260708-laned-router-wa-sediment-reference-adequacy-attribution-001/` -
+  EXECUTED-HOLD-SEDIMENT-METRIC-AUTHORITY (2026-07-08): attributed the
+  `wa_cascades_forest_h1` refined-75 fine-reference annual pass-sediment miss
+  (`dx2p5_dt75` versus `dx1p25_dt75`, `tdep:4`
+  `0.022131684 > 0.0066666667`). The whole annual delta is one daily row
+  (sim day 1126, julian 30): `0.013223319 kg` `tdep` movement in a
+  `0.597484 kg` reference year. Pass-row `runvol`/`sbrunv`/`peakro` and active
+  source mass are identical on that day; terminal routed outlet differs by
+  `-0.00336 m3` on a `4594 m3` event, terminal routed-shape L1 is
+  `0.000635`, and the implicated-day clamp/tail/fallback counters are clean.
+  Classified as annual sediment response to a sub-threshold routed-hydrograph
+  shape perturbation, not active-router numerics or daily water-magnitude
+  drift. No `dx5` promotion, tolerance widening, contract edit, or code change
+  landed. Follow-on: contract-first annual pass-sediment adequacy metric
+  authority.
 - `20260708-laned-router-tier2-dx5-coupled-spacetime-ratification-001/` -
   EXECUTED-HOLD-DX5-UNRATIFIED (2026-07-08): ran the selected real-cohort
   coupled space-time ladder (`dx5`/`dx2p5`/`dx1p25` at production 300 s and
