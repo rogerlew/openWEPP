@@ -12,6 +12,18 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-08`:
+- `20260708-laned-router-tier2-dx-target-mesh-policy-readjudication-rev41-001/` -
+  EXECUTED-HOLD-DX5-PROMOTION-UNRATIFIED (2026-07-08): re-adjudicated the
+  Tier-2 target-`dx` active mesh-policy question on the `SC-OFEROUTE-001`
+  rev-41 positivity-preserving solver. The full selected-cohort + H2637 ladder
+  ran 24/24 rungs without active closure/clamp failure. WA fine-reference
+  rungs now close, and `dx5` has the best provisional candidate-vs-`dx2p5`
+  deltas among tested target-`dx` rungs. No production flip:
+  `mn_corn_h4` still misses the one-third fine-reference shape adequacy
+  threshold (`0.02018 > 0.01667`), and `dx5` costs `84.70 s` aggregate real
+  user time vs fixed10 `17.46 s`. `SC-OFEROUTE-001` rev 42 records that fixed
+  `10 cells/OFE` remains the operational default but is not ratified here as
+  fidelity-adequate.
 - `20260708-laned-router-wa-active-router-positivity-preserving-solver-correction-001/` -
   EXECUTED-COMPLETE (2026-07-08): amended `SC-OFEROUTE-001` rev 41 and landed
   conservative predictor/corrector stage-face limiting plus final TVD scaling
