@@ -32,8 +32,15 @@ State as of `2026-07-08`:
   `2488591327` to `2277134095`. No hybrid implicit work, mesh/fidelity
   readjudication, tolerance change, watershed/channel routing, baseflow
   export, sediment physics, or `Re^0.45` approximation landed. WSHED-W7R
-  has since closed; the next watershed-facing action is Lane D active
-  baseflow export closure.
+  has since closed; the next watershed-facing action is the
+  groundwater/baseflow authority chain.
+- `20260708-groundwater-baseflow-srivastava-authority-001/` -
+  QUEUED (2026-07-08, M-T2A): scaffolded the contract-first authority package
+  for WEPP groundwater/baseflow. The package binds Srivastava (2013)
+  dissertation authority, Srivastava et al. (2013/2017), Dun et al. (2009),
+  and `/workdir/wepp-forest_260430_baseline` code authority before any
+  single-OFE or Lane D MOFE implementation work. No production code or
+  contract amendment has been executed by the scaffold.
 - `20260708-laned-router-conditional-default-activation-001/` -
   EXECUTED-COMPLETE-CONDITIONAL-DEFAULT-ACTIVATION (2026-07-08): amended
   `SC-OFEROUTE-001` rev 46 and made Lane D active routing the hillslope
@@ -57,12 +64,13 @@ State as of `2026-07-08`:
   unit/D10B/H2637/full-nextest/clippy/fmt/deny gates. It closes on hold only for
   the unimplemented Hirsch `Re^0.45` approximation, which lacks a ratified
   bounded-error envelope. WSHED-W7R has since closed; the next queued action is
-  Lane D active baseflow export closure.
+  the groundwater/baseflow authority chain.
 - `20260708-laned-router-watershed-hbp-hourly-water-sediment-consumption-001/` -
-  QUEUED (2026-07-08, execute after Tier 1, WSHED-W7R, and Lane D active
-  baseflow export closure): scaffolded a consumer-path closure package for Lane
-  D active routed HBP minor-1 hourly runoff and hourly sediment surfaces. The
-  package requires contract-first authority if needed, active HBP producer
+  QUEUED (2026-07-08, execute after Tier 1, WSHED-W7R, and the
+  groundwater/baseflow export chain): scaffolded a consumer-path closure package
+  for Lane D active routed HBP minor-1 hourly runoff and hourly sediment
+  surfaces. The package requires contract-first authority if needed, active HBP
+  producer
   evidence, watershed supervisor intake proof, `WatershedNetworkFrame` handoff
   proof, production channel/watershed consumer proof,
   equal-daily-total/different-hourly-distribution sensitivity

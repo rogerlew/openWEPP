@@ -297,7 +297,7 @@ openWEPP note (2026-05-11):
 ## R-21: Dun et al. (2009) WEPP forest-application adaptation
 
 **Citation**: Dun, S., J. Q. Wu, W. J. Elliot, P. R. Robichaud, D. C. Flanagan, J. R. Frankenberger, R. E. Brown, and A. C. Xu (2009). *Adapting the Water Erosion Prediction Project (WEPP) model for forest applications*. Journal of Hydrology, 366(1-4), 46-54. https://doi.org/10.1016/j.jhydrol.2008.12.019
-**Local path**: `/workdir/wepp-forest/references/dun2009.pdf`
+**Local path**: `references/copyrighted/dun2009.pdf`
 **Reference quality**: `verified-primary`
 **Topic**: Forest-hydrology adaptation of WEPP subsurface routines (deep percolation, lateral flow, and hillslope-to-channel transfer) for steep forested watersheds.
 **Key equations / concepts for WEPP forest subsurface-flow adaptation**:
@@ -327,6 +327,21 @@ openWEPP note (2026-05-11):
 **Kernel mapping**: `legacy hillslope subsurface hydrology (deep percolation + lateral flow)`, `groundwater linear-reservoir baseflow`, `hillslope-to-channel runoff transfer`, `daily water-balance with hourly winter snow routine`.
 **Notes / caveats**: Dissertation aggregates three studies (Priest River, Upper Cedar River, East Deer Creek) and includes both conceptual formulation and calibration/evaluation results; equation numbering and symbols are authoritative in the PDF body.
 **OAR-6 compliance status**: Primary authority for WEPP groundwater-baseflow integration logic and watershed-scale flow-component attribution in forested mountainous basins.
+
+## R-22A: Srivastava et al. (2013) WEPP linear-reservoir baseflow paper
+
+**Citation**: Srivastava, A., M. Dobre, J. Q. Wu, W. J. Elliot, E. A. Bruner, S. Dun, E. S. Brooks, and I. S. Miller (2013). *Modifying WEPP to improve streamflow simulation in a Pacific Northwest watershed*. Transactions of the ASABE, 56(2), 603-611. https://doi.org/10.13031/2013.42691
+**Local path**: `references/copyrighted/Srivastava2013.pdf`
+**Reference quality**: `verified-primary`
+**Topic**: Peer-reviewed companion to Srivastava (2013) dissertation's Priest River groundwater/baseflow work, adding a linear-reservoir baseflow routine to WEPP streamflow simulation.
+**Key equations / concepts for WEPP baseflow and channel-inflow behavior**:
+- `[DIRECT]` Streamflow components are surface runoff, subsurface lateral flow, and groundwater baseflow; WEPP already simulated the first two plus deep percolation, but required a baseflow component for groundwater-contributing watersheds.
+- `[DIRECT]` Baseflow is determined using a linear reservoir model driven by WEPP-simulated deep percolation and groundwater storage/outflow proportionality.
+- `[DIRECT]` Priest River evaluation reports improved streamflow agreement with baseflow included and identifies simulated baseflow as a substantial share of annual streamflow and precipitation.
+- `[INFERENCE]` Use as the peer-reviewed companion authority for the dissertation's linear-reservoir equations and for distinguishing subsurface lateral flow from groundwater baseflow in watershed routing.
+**Kernel mapping**: `groundwater linear-reservoir baseflow`, `deep-percolation recharge`, `hillslope-pass groundwater baseflow volume`, `watershed channel inflow partition`.
+**Notes / caveats**: This PDF is the 2013 ASABE paper, not the dissertation PDF. The dissertation remains the primary equation/source-code interpretation authority where it gives fuller derivations and calibration method detail.
+**OAR-6 compliance status**: Primary companion authority for the linear-reservoir WEPP baseflow implementation lineage.
 
 ## R-23: Wang (2012) dissertation on channel routing and WEPP integration
 
@@ -888,7 +903,7 @@ openWEPP note (2026-05-11):
 ## R-70: Srivastava et al. (2017) WEPP streamflow with baseflow, snow-dominated forest watershed
 
 **Citation**: Srivastava, A., J. Q. Wu, W. J. Elliot, E. S. Brooks, and D. C. Flanagan (2017). *Modeling streamflow in a snow-dominated forest watershed using the Water Erosion Prediction Project (WEPP) model*. Transactions of the ASABE, 60(4), 1171–1187. https://doi.org/10.13031/trans.12035
-**Local path**: `references/copyrighted/Srivastava2017_ToASABE_wepp_streamflow.pdf` (USDA Treesearch; title verified).
+**Local path**: `references/copyrighted/Srivastava2017_ToASABE_wepp_streamflow.pdf`
 **Reference quality**: `verified-primary`
 **Topic**: Adds nonlinear groundwater baseflow to WEPP v2012.8 and evaluates streamflow on an Upper Cedar River (PNW) subwatershed; WEPP-Cur vs WEPP-Mod NSE 0.55→0.76.
 **MOFEFID Lane C role**: the WEPP-lineage calibration precedent for partitioning lateral flow vs baseflow at watershed scale — context for what magnitude the lateral channel is *expected* to carry when baseflow is represented vs absent (bears on interpreting H2637's 71% routed-lateral share).
