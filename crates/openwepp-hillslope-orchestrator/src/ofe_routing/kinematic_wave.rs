@@ -302,40 +302,39 @@ pub struct MassBalance {
     pub outflow_m2: f64,
     /// Storage change (final - initial) per unit width (m^2).
     pub storage_change_m2: f64,
-    /// Mass injected by positivity clamps (`h.max(0)`), per unit width (m^2).
-    /// The scheme conserves exactly; this is the only non-conservative term,
-    /// arising as small negative-depth excursions are clamped at the wetting
-    /// front during the transient. Surfaced so conservation is auditable.
+    /// Mass injected by residual positivity clamps (`h.max(0)`), per unit
+    /// width (m^2). Rev 41 caps stage face fluxes and scales final TVD fluxes
+    /// before candidate depths go negative, so this should remain zero except
+    /// for sub-roundoff dry-floor cleanup.
     pub positivity_clamp_m2: f64,
     /// Scheme-actual upstream injection. Post-rev-24 BOTH sweeps carry
     /// `q_up` at the top face, so this equals `inflow_m2` by construction
     /// (booked-equals-actual identity surface; pre-rev-24 it exposed the
     /// `0.5 (q_up + q_0)` mismatch).
     pub scheme_inflow_m2: f64,
-    /// D10B diagnostic: the DISCRETE SCHEME's actual downstream boundary
-    /// outflow, `0.5 (q_ghost + q_pred_out) dt` per step, where `q_ghost` is
-    /// the predictor's extrapolated outflow ghost and `q_pred_out` the
-    /// corrector's outlet predictor flux. Compare against `outflow_m2` (the
-    /// booked committed-state trapezoid) to expose the outflow mismatch.
+    /// DISCRETE SCHEME's actual downstream boundary outflow,
+    /// `0.5 (q_pred_stage_out + q_corr_stage_out) dt` per step. Post-rev-24
+    /// this equals `outflow_m2` by construction and remains as the
+    /// booked-equals-actual identity surface.
     pub scheme_outflow_m2: f64,
-    /// D10B diagnostic: net mass injected by the TVD dissipation term per
-    /// step, `[gr_{n-2} (h_{n-1}-h_{n-2}) - gr_0 (h_1-h_0)] dx`. The
-    /// cell-indexed TVD application exempts boundary cells, so its
-    /// telescoping sum does NOT vanish; this books the leak explicitly.
+    /// D10B diagnostic retained as a literal telescoping check for the
+    /// face-based TVD term. Post-rev-24 this remains at machine noise because
+    /// boundary dissipative faces are zero and interior face contributions
+    /// cancel exactly.
     pub tvd_boundary_leak_m2: f64,
 }
 
 impl MassBalance {
-    /// Closure residual: `in + rain - out - storage_change`. Absorbs the
-    /// positivity-clamp injection (see `conservation_residual_m2`).
+    /// Closure residual: `in + rain - out - storage_change`.
     #[must_use]
     pub fn residual_m2(&self) -> f64 {
         self.inflow_m2 + self.rainfall_excess_m2 - self.outflow_m2 - self.storage_change_m2
     }
 
     /// Clamp-adjusted conservation residual: `residual + clamp`. The clamp
-    /// injects storage, so the raw residual is ~ -clamp; adding it back
-    /// recovers the scheme's true (machine-epsilon) conservation.
+    /// term is retained for residual sub-roundoff dry-floor cleanup; material
+    /// positivity is handled by rev-41 conservative flux limiting before
+    /// publication.
     #[must_use]
     pub fn conservation_residual_m2(&self) -> f64 {
         self.residual_m2() + self.positivity_clamp_m2
@@ -445,6 +444,7 @@ struct StepScratch {
     q_pred: Vec<f64>,
     h_corr: Vec<f64>,
     averaged: Vec<f64>,
+    face_flux: Vec<f64>,
     gr: Vec<f64>,
     h_next: Vec<f64>,
 }
@@ -460,6 +460,7 @@ impl StepScratch {
             q_pred: vec![0.0; cell_count],
             h_corr: vec![0.0; cell_count],
             averaged: vec![0.0; cell_count],
+            face_flux: vec![0.0; cell_count + 1],
             gr: vec![0.0; cell_count],
             h_next: vec![0.0; cell_count],
         }
@@ -703,6 +704,55 @@ impl KinematicWaveSolver {
         0.5 * Self::cf(courant) * (1.0 - Self::phi(ratio))
     }
 
+    /// Rev 41 positivity limiter: cap each outgoing stage face by the water
+    /// available in its upwind cell over this substep. The incoming face has
+    /// already been limited, so the operation is conservative over the stage
+    /// fluxes rather than a post-hoc mass injection.
+    fn limit_stage_face_fluxes(
+        depth_m: &[f64],
+        source_m_s: &[f64],
+        dt: f64,
+        dx: f64,
+        faces_m2_s: &mut [f64],
+    ) -> Result<(), RoutingError> {
+        for i in 0..depth_m.len() {
+            let available_m2 = depth_m[i] * dx + faces_m2_s[i] * dt + source_m_s[i] * dx * dt;
+            if !available_m2.is_finite() {
+                return Err(RoutingError::NonFiniteState);
+            }
+            let max_out_m2_s = (available_m2 / dt).max(0.0);
+            if faces_m2_s[i + 1] > max_out_m2_s {
+                faces_m2_s[i + 1] = max_out_m2_s;
+            }
+        }
+        Ok(())
+    }
+
+    /// Rev 41 final-stage positivity limiter. Returns one uniform scale for
+    /// the face-based TVD correction so the correction still telescopes exactly
+    /// while preventing negative committed depths.
+    fn tvd_positivity_scale(averaged_m: &[f64], tvd_delta_m: &[f64]) -> Result<f64, RoutingError> {
+        if averaged_m.len() != tvd_delta_m.len() {
+            return Err(RoutingError::DegenerateConfiguration);
+        }
+        let mut scale = 1.0_f64;
+        for (averaged, tvd) in averaged_m.iter().zip(tvd_delta_m) {
+            if !averaged.is_finite() || !tvd.is_finite() {
+                return Err(RoutingError::NonFiniteState);
+            }
+            if *averaged < -DRY_DEPTH_M {
+                return Err(RoutingError::NegativeDepth);
+            }
+            if *tvd < 0.0 {
+                let local_scale = averaged.max(0.0) / (-tvd);
+                if local_scale < scale {
+                    scale = local_scale;
+                }
+            }
+        }
+        Ok(scale)
+    }
+
     /// Advance one TVD-MacCormack step of size `dt` (eqs. 8-14). Returns the
     /// outlet sample, or a `RoutingError` on a fail-closed condition.
     ///
@@ -745,48 +795,74 @@ impl KinematicWaveSolver {
         // linear-extrapolation ghost, has no feedback gain — the ghost
         // both over-discharged (unbooked, the S0 ledger's dominant term)
         // and sustained a period-2 boundary limit cycle.
+        // Rev 41: express the same closure as stage faces, then cap those
+        // faces by per-cell available water before depths are formed. With no
+        // limiting, face[n] = 2q[n-1] - q[n-2] exactly reproduces the rev-24
+        // donor boundary difference for the last cell.
+        self.scratch.face_flux[0] = q_up;
+        for face in 1..n {
+            self.scratch.face_flux[face] = self.discharge_m2_s[face];
+        }
+        self.scratch.face_flux[n] = if n >= 2 {
+            2.0 * self.discharge_m2_s[n - 1] - self.discharge_m2_s[n - 2]
+        } else {
+            self.discharge_m2_s[0]
+        };
+        Self::limit_stage_face_fluxes(
+            &self.depth_m,
+            &self.scratch.v,
+            dt,
+            dx,
+            &mut self.scratch.face_flux[..=n],
+        )?;
         for i in 0..n {
-            let (q_lo, q_hi) = if i == 0 {
-                (q_up, self.discharge_m2_s[usize::from(n > 1)])
-            } else if i + 1 < n {
-                (self.discharge_m2_s[i], self.discharge_m2_s[i + 1])
-            } else {
-                (self.discharge_m2_s[n - 2], self.discharge_m2_s[n - 1])
-            };
-            let h_new = self.depth_m[i] - (dt / dx) * (q_hi - q_lo) + self.scratch.v[i] * dt;
+            let h_new = self.depth_m[i]
+                - (dt / dx) * (self.scratch.face_flux[i + 1] - self.scratch.face_flux[i])
+                + self.scratch.v[i] * dt;
+            if !h_new.is_finite() {
+                return Err(RoutingError::NonFiniteState);
+            }
+            if h_new < -DRY_DEPTH_M {
+                return Err(RoutingError::NegativeDepth);
+            }
             if h_new < 0.0 {
-                // Stage clamps enter the committed state at half weight
-                // (the commit averages the two stages).
                 clamp_injected_m2 += 0.5 * (-h_new) * dx;
             }
             self.scratch.h_pred[i] = h_new.max(0.0);
             self.scratch.q_pred[i] =
                 self.scratch.alpha[i] * self.scratch.h_pred[i].powf(DEPTH_DISCHARGE_EXPONENT);
         }
-        // Predictor boundary drain (telescoped): the donor difference at
-        // the last cell drains `2 q_{n-1} - q_{n-2}` through the domain
-        // boundary per the flux-difference sum (for n = 1, `q_0`).
-        let pred_out_face = if n >= 2 {
-            2.0 * self.discharge_m2_s[n - 1] - self.discharge_m2_s[n - 2]
-        } else {
-            self.discharge_m2_s[0]
-        };
+        let pred_out_face = self.scratch.face_flux[n];
 
         // Corrector (eq. 10): backward flux difference; upstream ghost flux =
         // q_up entering cell 0.
+        self.scratch.face_flux[0] = q_up;
+        for face in 1..=n {
+            self.scratch.face_flux[face] = self.scratch.q_pred[face - 1];
+        }
+        Self::limit_stage_face_fluxes(
+            &self.depth_m,
+            &self.scratch.v,
+            dt,
+            dx,
+            &mut self.scratch.face_flux[..=n],
+        )?;
         for i in 0..n {
-            let q_im1 = if i == 0 {
-                q_up
-            } else {
-                self.scratch.q_pred[i - 1]
-            };
-            let h_new = self.depth_m[i] - (dt / dx) * (self.scratch.q_pred[i] - q_im1)
+            let h_new = self.depth_m[i]
+                - (dt / dx) * (self.scratch.face_flux[i + 1] - self.scratch.face_flux[i])
                 + self.scratch.v[i] * dt;
+            if !h_new.is_finite() {
+                return Err(RoutingError::NonFiniteState);
+            }
+            if h_new < -DRY_DEPTH_M {
+                return Err(RoutingError::NegativeDepth);
+            }
             if h_new < 0.0 {
                 clamp_injected_m2 += 0.5 * (-h_new) * dx;
             }
             self.scratch.h_corr[i] = h_new.max(0.0);
         }
+        let corr_out_face = self.scratch.face_flux[n];
 
         // Average (eq. 13 first half).
         for i in 0..n {
@@ -862,7 +938,12 @@ impl KinematicWaveSolver {
                 let d_lo = if i >= 1 { self.scratch.gr[i - 1] } else { 0.0 };
                 d_hi - d_lo
             };
-            let h_new = self.scratch.averaged[i] + tvd;
+            self.scratch.h_next[i] = tvd;
+        }
+        let tvd_scale =
+            Self::tvd_positivity_scale(&self.scratch.averaged[..n], &self.scratch.h_next[..n])?;
+        for i in 0..n {
+            let h_new = self.scratch.averaged[i] + tvd_scale * self.scratch.h_next[i];
             if !h_new.is_finite() {
                 return Err(RoutingError::NonFiniteState);
             }
@@ -934,10 +1015,10 @@ impl KinematicWaveSolver {
         // Mass ledger (rev 24: booked = the scheme's ACTUAL boundary
         // fluxes, Algorithm item 5). Inflow: both sweeps carry `q_up` at
         // the top face, so the discrete injection is exactly `q_up dt`.
-        // Outflow: predictor face flux = the extrapolated ghost, corrector
-        // face flux = `q_pred[n-1]`; the committed average discharges
-        // their mean.
-        let outflow_actual_m2 = 0.5 * (pred_out_face + self.scratch.q_pred[n - 1]) * dt;
+        // Outflow: predictor and corrector stage boundary faces after any
+        // rev-41 conservative positivity limiting; the committed average
+        // discharges their mean.
+        let outflow_actual_m2 = 0.5 * (pred_out_face + corr_out_face) * dt;
         mass.inflow_m2 += q_up * dt;
         mass.rainfall_excess_m2 += self.scratch.v.iter().sum::<f64>() * dx * dt;
         mass.outflow_m2 += outflow_actual_m2;
@@ -1236,10 +1317,6 @@ mod tests {
             (q_steady - q_expected).abs() / q_expected < 0.06,
             "sampled steady outlet {q_steady} outside the ripple band around v*L {q_expected}"
         );
-        // mass conservation (INV-OFEROUTE-006): the scheme conserves exactly
-        // once the surfaced positivity-clamp injection is accounted; the raw
-        // residual equals -clamp to machine epsilon, and the clamp itself is a
-        // tiny transient wetting-front term.
         // Conservation (INV-OFEROUTE-006): the independent outlet-flux ledger
         // (physical q at the outlet, trapezoidally integrated) matches the
         // input+storage to ~0.3% at this resolution; the positivity clamp is
@@ -1303,8 +1380,7 @@ mod tests {
         };
         let res = solver.run(&forcing, 120.0, 0.5, 0.25).expect("run ok");
 
-        // conservation: all lateral input eventually leaves or is stored; the
-        // scheme conserves exactly modulo the surfaced positivity clamp.
+        // conservation: all lateral input eventually leaves or is stored.
         let input = res.mass_balance.rainfall_excess_m2;
         assert!(input > 0.0);
         assert!(
@@ -1343,8 +1419,8 @@ mod tests {
         // Primary assertion: CFL adaptivity holds Cr <= 1 despite a large
         // max_dt cap on a steep slope (INV-OFEROUTE-007).
         assert!(res.max_courant <= 1.0 + 1.0e-9);
-        // Secondary: the scheme conserves exactly modulo the surfaced clamp
-        // (INV-OFEROUTE-006), independent of dt/slope.
+        // Secondary: the scheme conserves (INV-OFEROUTE-006), independent of
+        // dt/slope.
         assert!(
             res.mass_balance.residual_m2().abs() / res.mass_balance.rainfall_excess_m2 < 1.0e-2
         );
@@ -1412,6 +1488,77 @@ mod tests {
             solver.run_with_options(&forcing, None, &[], 1.0, 1.0, 1.0),
             Err(RoutingError::NegativeOutletBin)
         ));
+    }
+
+    #[test]
+    fn stage_flux_limiter_prevents_positive_clamp_injection() {
+        let mesh = KinematicWaveMesh::uniform(3.0, 3, CellParameters::bare(0.05, 100.0));
+        let mut solver = KinematicWaveSolver::new(mesh);
+        solver.depth_m.copy_from_slice(&[1.0e-6, 1.0e-6, 1.0e-6]);
+        solver
+            .discharge_m2_s
+            .copy_from_slice(&[0.0, 1.0e-3, 1.0e-3]);
+        solver.scratch.alpha.fill(0.0);
+        solver.scratch.celerity.fill(0.0);
+
+        let excess = |_i: usize, _t: f64| 0.0;
+        let inflow = |_t: f64| 0.0;
+        let intensity = |_t: f64| 0.0;
+        let forcing = Forcing {
+            rainfall_excess_m_s: &excess,
+            upstream_inflow_m2_s: &inflow,
+            rainfall_intensity_m_s: &intensity,
+        };
+        let mut mass = MassBalance::default();
+        let storage_initial = solver.total_storage_m2();
+
+        solver
+            .step(0.0, 1.0, 0.0, &forcing, &mut mass)
+            .expect("limited step");
+        mass.storage_change_m2 = solver.total_storage_m2() - storage_initial;
+
+        assert!(
+            mass.positivity_clamp_m2 <= 1.0e-18,
+            "roundoff-only clamp {}",
+            mass.positivity_clamp_m2
+        );
+        assert!(
+            solver.depth_m.iter().all(|h| *h >= 0.0),
+            "limited stage must not publish negative depth"
+        );
+        assert!(
+            mass.residual_m2().abs() <= 1.0e-15,
+            "conservative limiter residual {}",
+            mass.residual_m2()
+        );
+    }
+
+    #[test]
+    fn final_tvd_scaling_preserves_positivity_and_total() {
+        let averaged = [0.10, 0.10, 0.10];
+        // Telescoping TVD cell deltas: sum is zero, but full strength would
+        // drive cell 0 negative.
+        let tvd_delta = [-0.20, 0.05, 0.15];
+
+        let scale =
+            KinematicWaveSolver::tvd_positivity_scale(&averaged, &tvd_delta).expect("scale finite");
+        assert!((scale - 0.5).abs() <= f64::EPSILON);
+
+        let committed = [
+            averaged[0] + scale * tvd_delta[0],
+            averaged[1] + scale * tvd_delta[1],
+            averaged[2] + scale * tvd_delta[2],
+        ];
+        assert!(
+            committed.iter().all(|h| *h >= 0.0),
+            "scaled TVD update must be non-negative: {committed:?}"
+        );
+        let before = averaged.iter().sum::<f64>();
+        let after = committed.iter().sum::<f64>();
+        assert!(
+            (after - before).abs() <= f64::EPSILON,
+            "scaled telescoping correction must preserve total: before {before}, after {after}"
+        );
     }
 
     #[test]
@@ -1491,11 +1638,14 @@ mod tests {
         };
         let (r_coarse, clamp_coarse) = run(30, 2.0);
         let (r_fine, clamp_fine) = run(120, 0.5);
-        // Discretization-only (no clamp mass at either resolution) and
-        // convergent: refining 4x cells / 4x smaller dt shrinks the residual.
+        // Discretization-only (no material clamp mass at either resolution)
+        // and machine-scale closure after the conservative stage limiter.
         assert_eq!(clamp_coarse.to_bits(), 0.0_f64.to_bits());
         assert_eq!(clamp_fine.to_bits(), 0.0_f64.to_bits());
-        assert!(r_fine < r_coarse, "residual should shrink with resolution");
+        assert!(
+            r_coarse < 1.0e-12 && r_fine < 1.0e-12,
+            "residuals should be machine-scale: coarse {r_coarse}, fine {r_fine}"
+        );
         assert!(
             r_fine < 2.0e-3,
             "fine-resolution residual {r_fine} should be small"

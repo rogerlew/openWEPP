@@ -12,15 +12,24 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-08`:
+- `20260708-laned-router-wa-active-router-positivity-preserving-solver-correction-001/` -
+  EXECUTED-COMPLETE (2026-07-08): amended `SC-OFEROUTE-001` rev 41 and landed
+  conservative predictor/corrector stage-face limiting plus final TVD scaling
+  in the active TVD-MacCormack solver. WA active fixed `10 cells/OFE` and
+  `dx5` now pass the retained rev-40 `laned_active_clamp_exceeds_source`
+  publication guard with roundoff-scale total clamp (`2.7e-13` and
+  `7.3e-13 m3`) and rev-27 closure residuals at `<= 5e-14`. No target-`dx`
+  promotion, source/coefficient tuning, closure-tolerance relaxation, or
+  hybrid revival was made.
 - `20260708-laned-router-wa-positivity-clamp-numerics-hold-lift-001/` -
   EXECUTED-HOLD-SOLVER-CORRECTION-REQUIRED (2026-07-08): added
   `SC-OFEROUTE-001` rev 40 and active executor ordering so days whose
   positivity-clamp mass exceeds active source mass fail before row consumers or
-  commits. WA fixed10 now fails closed at day 1418
-  (`laned_active_clamp_exceeds_source`, clamp/source `14.29`); WA `dx5` fails
-  at day 1167 (clamp/source `11335.89`). This closes the silent-publication
-  class but keeps WA active routing and target-`dx` promotion held pending a
-  positivity-preserving solver correction.
+  commits. WA fixed10 failed closed at day 1418
+  (`laned_active_clamp_exceeds_source`, clamp/source `14.29`); WA `dx5` failed
+  at day 1167 (clamp/source `11335.89`). This closed the silent-publication
+  class and handed off the solver correction, now completed by
+  `20260708-laned-router-wa-active-router-positivity-preserving-solver-correction-001`.
 - `20260708-laned-router-wa-day1122-high-resolution-closure-investigation-001/` -
   EXECUTED-HOLD-ACTIVE-ROUTER-CLAMP-NUMERICS (2026-07-08): reran the WA
   selected-cohort active-plain mesh ladder on current `main` and reproduced
