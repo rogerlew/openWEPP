@@ -194,6 +194,31 @@ pub fn route_single_ofe(
     sample_dt_s: f64,
     max_dt_s: f64,
 ) -> Result<RoutingResult, RoutingError> {
+    route_single_ofe_with_step_trace(
+        segment,
+        rainfall_excess_m_s,
+        rainfall_intensity_m_s,
+        upstream,
+        forcing_breakpoints_s,
+        end_time_s,
+        sample_dt_s,
+        max_dt_s,
+        false,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn route_single_ofe_with_step_trace(
+    segment: &CascadeSegment,
+    rainfall_excess_m_s: &dyn Fn(usize, f64) -> f64,
+    rainfall_intensity_m_s: &dyn Fn(f64) -> f64,
+    upstream: Option<&UpstreamHandoff>,
+    forcing_breakpoints_s: &[f64],
+    end_time_s: f64,
+    sample_dt_s: f64,
+    max_dt_s: f64,
+    trace_steps: bool,
+) -> Result<RoutingResult, RoutingError> {
     if !segment.width_m.is_finite() || segment.width_m <= 0.0 {
         return Err(RoutingError::DegenerateConfiguration);
     }
@@ -232,13 +257,14 @@ pub fn route_single_ofe(
     } else {
         None
     };
-    solver.run_with_options(
+    solver.run_with_options_and_step_trace(
         &ofe_forcing,
         integral_closure,
         forcing_breakpoints_s,
         end_time_s,
         sample_dt_s,
         max_dt_s,
+        trace_steps,
     )
 }
 

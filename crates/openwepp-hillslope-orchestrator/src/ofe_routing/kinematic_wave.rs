@@ -377,6 +377,51 @@ pub struct RoutingResult {
     /// handoff integrates the final bin at `mass/span` over its covered
     /// interval so no mass is stranded past `end_time_s`).
     pub outlet_bin_spans_s: Vec<f64>,
+    /// Optional diagnostic step trace. This is populated only by explicit
+    /// row-scoped active-router diagnostics; normal solver runs carry `None`.
+    pub step_trace: Option<Vec<KinematicWaveStepTraceRecord>>,
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+pub struct KinematicWaveStageLimiterTrace {
+    pub reductions: u32,
+    pub max_reduction_m2_s: f64,
+    pub face_index: usize,
+    pub face_x_m: f64,
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+pub struct KinematicWaveTvdTrace {
+    pub scale: f64,
+    pub max_abs_delta_m: f64,
+    pub cell_index: usize,
+    pub cell_center_x_m: f64,
+    pub signed_delta_m: f64,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct KinematicWaveStepTraceRecord {
+    pub step_index: u64,
+    pub t_start_s: f64,
+    pub t_end_s: f64,
+    pub dt_s: f64,
+    pub max_courant: f64,
+    pub max_courant_cell_index: usize,
+    pub max_courant_cell_center_x_m: f64,
+    pub q_up_m2_s: f64,
+    pub source_m2: f64,
+    pub upstream_inflow_m2: f64,
+    pub outflow_m2: f64,
+    pub storage_before_m2: f64,
+    pub storage_after_m2: f64,
+    pub clamp_injected_m2: f64,
+    pub pred_out_face_m2_s: f64,
+    pub corr_out_face_m2_s: f64,
+    pub outlet_depth_m: f64,
+    pub outlet_unit_discharge_m2_s: f64,
+    pub predictor_limiter: KinematicWaveStageLimiterTrace,
+    pub corrector_limiter: KinematicWaveStageLimiterTrace,
+    pub tvd: KinematicWaveTvdTrace,
 }
 
 /// Error conditions that fail closed (INV-OFEROUTE-005/007).
@@ -714,7 +759,9 @@ impl KinematicWaveSolver {
         dt: f64,
         dx: f64,
         faces_m2_s: &mut [f64],
-    ) -> Result<(), RoutingError> {
+        trace_enabled: bool,
+    ) -> Result<KinematicWaveStageLimiterTrace, RoutingError> {
+        let mut trace = KinematicWaveStageLimiterTrace::default();
         for i in 0..depth_m.len() {
             let available_m2 = depth_m[i] * dx + faces_m2_s[i] * dt + source_m_s[i] * dx * dt;
             if !available_m2.is_finite() {
@@ -722,10 +769,22 @@ impl KinematicWaveSolver {
             }
             let max_out_m2_s = (available_m2 / dt).max(0.0);
             if faces_m2_s[i + 1] > max_out_m2_s {
+                if trace_enabled {
+                    let reduction = faces_m2_s[i + 1] - max_out_m2_s;
+                    trace.reductions = trace.reductions.saturating_add(1);
+                    if reduction > trace.max_reduction_m2_s {
+                        trace.max_reduction_m2_s = reduction;
+                        trace.face_index = i + 1;
+                        #[allow(clippy::cast_precision_loss)]
+                        {
+                            trace.face_x_m = (i + 1) as f64 * dx;
+                        }
+                    }
+                }
                 faces_m2_s[i + 1] = max_out_m2_s;
             }
         }
-        Ok(())
+        Ok(trace)
     }
 
     /// Rev 41 final-stage positivity limiter. Returns one uniform scale for
@@ -759,18 +818,27 @@ impl KinematicWaveSolver {
     /// Preconditions owned by the run loop (D14 OPT-1): `scratch.alpha`
     /// holds the pre-step per-cell alpha values and the rainfall intensity
     /// was validated before they were computed.
-    #[allow(clippy::too_many_lines)]
+    #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
     fn step(
         &mut self,
+        step_index: u64,
         time_s: f64,
         dt: f64,
+        step_max_courant: f64,
+        step_max_courant_cell_index: usize,
         q_up: f64,
         forcing: &Forcing<'_>,
         mass: &mut MassBalance,
-    ) -> Result<(f64, f64, f64), RoutingError> {
+        trace_enabled: bool,
+    ) -> Result<(f64, f64, f64, Option<KinematicWaveStepTraceRecord>), RoutingError> {
         let n = self.mesh.cell_count();
         let dx = self.mesh.cell_length_m;
         let mut clamp_injected_m2 = 0.0_f64;
+        let storage_before_m2 = if trace_enabled {
+            self.total_storage_m2()
+        } else {
+            0.0
+        };
 
         // Rainfall excess for this step (per-cell alpha is already in the
         // step scratch). Rainfall excess is physically non-negative; a
@@ -808,12 +876,13 @@ impl KinematicWaveSolver {
         } else {
             self.discharge_m2_s[0]
         };
-        Self::limit_stage_face_fluxes(
+        let predictor_limiter = Self::limit_stage_face_fluxes(
             &self.depth_m,
             &self.scratch.v,
             dt,
             dx,
             &mut self.scratch.face_flux[..=n],
+            trace_enabled,
         )?;
         for i in 0..n {
             let h_new = self.depth_m[i]
@@ -840,12 +909,13 @@ impl KinematicWaveSolver {
         for face in 1..=n {
             self.scratch.face_flux[face] = self.scratch.q_pred[face - 1];
         }
-        Self::limit_stage_face_fluxes(
+        let corrector_limiter = Self::limit_stage_face_fluxes(
             &self.depth_m,
             &self.scratch.v,
             dt,
             dx,
             &mut self.scratch.face_flux[..=n],
+            trace_enabled,
         )?;
         for i in 0..n {
             let h_new = self.depth_m[i]
@@ -940,8 +1010,30 @@ impl KinematicWaveSolver {
             };
             self.scratch.h_next[i] = tvd;
         }
+        let mut tvd_trace = KinematicWaveTvdTrace {
+            scale: 1.0,
+            ..KinematicWaveTvdTrace::default()
+        };
+        if trace_enabled {
+            for i in 0..n {
+                let tvd = self.scratch.h_next[i];
+                let abs_tvd = tvd.abs();
+                if abs_tvd > tvd_trace.max_abs_delta_m {
+                    tvd_trace.max_abs_delta_m = abs_tvd;
+                    tvd_trace.cell_index = i;
+                    #[allow(clippy::cast_precision_loss)]
+                    {
+                        tvd_trace.cell_center_x_m = (i as f64 + 0.5) * dx;
+                    }
+                    tvd_trace.signed_delta_m = tvd;
+                }
+            }
+        }
         let tvd_scale =
             Self::tvd_positivity_scale(&self.scratch.averaged[..n], &self.scratch.h_next[..n])?;
+        if trace_enabled {
+            tvd_trace.scale = tvd_scale;
+        }
         for i in 0..n {
             let h_new = self.scratch.averaged[i] + tvd_scale * self.scratch.h_next[i];
             if !h_new.is_finite() {
@@ -1030,10 +1122,40 @@ impl KinematicWaveSolver {
         mass.scheme_outflow_m2 += outflow_actual_m2;
         mass.tvd_boundary_leak_m2 += tvd_leak_m2;
 
+        let step_trace = trace_enabled.then(|| KinematicWaveStepTraceRecord {
+            step_index,
+            t_start_s: time_s,
+            t_end_s: time_s + dt,
+            dt_s: dt,
+            max_courant: step_max_courant,
+            max_courant_cell_index: step_max_courant_cell_index,
+            max_courant_cell_center_x_m: {
+                #[allow(clippy::cast_precision_loss)]
+                {
+                    (step_max_courant_cell_index as f64 + 0.5) * dx
+                }
+            },
+            q_up_m2_s: q_up,
+            source_m2: self.scratch.v.iter().sum::<f64>() * dx * dt,
+            upstream_inflow_m2: q_up * dt,
+            outflow_m2: outflow_actual_m2,
+            storage_before_m2,
+            storage_after_m2: self.total_storage_m2(),
+            clamp_injected_m2,
+            pred_out_face_m2_s: pred_out_face,
+            corr_out_face_m2_s: corr_out_face,
+            outlet_depth_m: self.depth_m[n - 1],
+            outlet_unit_discharge_m2_s: self.discharge_m2_s[n - 1],
+            predictor_limiter,
+            corrector_limiter,
+            tvd: tvd_trace,
+        });
+
         Ok((
             self.discharge_m2_s[n - 1],
             self.depth_m[n - 1],
             outflow_actual_m2,
+            step_trace,
         ))
     }
 
@@ -1094,6 +1216,30 @@ impl KinematicWaveSolver {
         sample_dt_s: f64,
         max_dt_s: f64,
     ) -> Result<RoutingResult, RoutingError> {
+        self.run_with_options_and_step_trace(
+            forcing,
+            upstream_integral_m2,
+            forcing_breakpoints_s,
+            end_time_s,
+            sample_dt_s,
+            max_dt_s,
+            false,
+        )
+    }
+
+    /// Diagnostic variant of `run_with_options` that can retain a per-step
+    /// trace for one externally selected active lane-day.
+    #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+    pub fn run_with_options_and_step_trace(
+        &mut self,
+        forcing: &Forcing<'_>,
+        upstream_integral_m2: Option<&dyn Fn(f64, f64) -> f64>,
+        forcing_breakpoints_s: &[f64],
+        end_time_s: f64,
+        sample_dt_s: f64,
+        max_dt_s: f64,
+        trace_steps: bool,
+    ) -> Result<RoutingResult, RoutingError> {
         if self.mesh.cell_count() == 0
             || !self.mesh.cell_length_m.is_finite()
             || self.mesh.cell_length_m <= 0.0
@@ -1118,6 +1264,7 @@ impl KinematicWaveSolver {
         let mut peak = 0.0_f64;
         let mut time_to_peak = 0.0_f64;
         let mut max_courant = 0.0_f64;
+        let mut step_trace = trace_steps.then(Vec::new);
 
         profile::count_solver_runs(1);
         let mut guard_steps = 0_u64;
@@ -1164,6 +1311,8 @@ impl KinematicWaveSolver {
                 return Err(RoutingError::CflViolation);
             }
             // CFL evidence at the chosen dt (true celerity, rev 24).
+            let mut step_max_courant = 0.0_f64;
+            let mut step_max_courant_cell_index = 0_usize;
             for i in 0..self.mesh.cell_count() {
                 if self.depth_m[i] <= DRY_DEPTH_M {
                     continue;
@@ -1171,6 +1320,10 @@ impl KinematicWaveSolver {
                 let courant = self.scratch.celerity[i] * dt / dx;
                 if courant > max_courant {
                     max_courant = courant;
+                }
+                if courant > step_max_courant {
+                    step_max_courant = courant;
+                    step_max_courant_cell_index = i;
                 }
                 if courant > 1.0 + 1.0e-9 {
                     return Err(RoutingError::CflViolation);
@@ -1197,11 +1350,23 @@ impl KinematicWaveSolver {
 
             let t_before = t;
             let step_span = profile::span_start();
-            let (_q_cell_out, h_out, outflow_step_m2) =
-                self.step(t, dt, q_up, forcing, &mut mass)?;
+            let (_q_cell_out, h_out, outflow_step_m2, trace_record) = self.step(
+                guard_steps,
+                t,
+                dt,
+                step_max_courant,
+                step_max_courant_cell_index,
+                q_up,
+                forcing,
+                &mut mass,
+                trace_steps,
+            )?;
             profile::end_solver_step(step_span);
             profile::count_solver_steps(1);
             t += dt;
+            if let (Some(records), Some(record)) = (&mut step_trace, trace_record) {
+                records.push(record);
+            }
 
             // Rev 24: the exported hydrograph is the bin-mean BOUNDARY
             // FLUX (the surface the ledger books and the handoff
@@ -1240,6 +1405,7 @@ impl KinematicWaveSolver {
             outlet_bin_outflow_m2,
             outlet_bin_dt_s: sample_dt_s,
             outlet_bin_spans_s,
+            step_trace,
         })
     }
 }
@@ -1513,7 +1679,7 @@ mod tests {
         let storage_initial = solver.total_storage_m2();
 
         solver
-            .step(0.0, 1.0, 0.0, &forcing, &mut mass)
+            .step(0, 0.0, 1.0, 0.0, 0, 0.0, &forcing, &mut mass, false)
             .expect("limited step");
         mass.storage_change_m2 = solver.total_storage_m2() - storage_initial;
 

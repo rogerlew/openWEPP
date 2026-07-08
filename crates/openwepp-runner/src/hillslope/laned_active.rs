@@ -13,6 +13,7 @@
 use crate::HillslopeCliError;
 
 pub(crate) const ACTIVE_MESH_TARGET_DX_ENV: &str = "OPENWEPP_LANED_ACTIVE_MESH_TARGET_DX_M";
+pub(crate) const ACTIVE_STEP_TRACE_ENV: &str = "OPENWEPP_LANED_ACTIVE_STEP_TRACE";
 pub(crate) const ACTIVE_TRACE_DETAIL_ENV: &str = "OPENWEPP_LANED_ACTIVE_TRACE_DETAIL";
 pub(crate) const ACTIVE_TRACE_ENV: &str = "OPENWEPP_LANED_ACTIVE_TRACE";
 
@@ -44,10 +45,31 @@ pub(crate) fn validate_trace_selector_env() -> Result<(), HillslopeCliError> {
             ),
         });
     }
+    if step_trace_enabled()
+        && (!env_enabled()
+            || !trace_enabled()
+            || std::env::var_os(ACTIVE_TRACE_DETAIL_ENV).is_none())
+    {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: ACTIVE_STEP_TRACE_ENV,
+            detail: format!(
+                "{ACTIVE_STEP_TRACE_ENV}=1 requires OPENWEPP_LANED_ACTIVE=1, {ACTIVE_TRACE_ENV}=1, and {ACTIVE_TRACE_DETAIL_ENV}=<sim_day:lane>"
+            ),
+        });
+    }
     Ok(())
 }
 
 fn trace_enabled_from_value(value: Option<&str>) -> bool {
+    value.is_some_and(|value| value == "1")
+}
+
+#[must_use]
+pub(crate) fn step_trace_enabled() -> bool {
+    step_trace_enabled_from_value(std::env::var(ACTIVE_STEP_TRACE_ENV).ok().as_deref())
+}
+
+fn step_trace_enabled_from_value(value: Option<&str>) -> bool {
     value.is_some_and(|value| value == "1")
 }
 
@@ -156,7 +178,8 @@ pub(crate) fn reject_abandoned_implicit_selector_env() -> Result<(), HillslopeCl
 #[cfg(test)]
 mod tests {
     use super::{
-        mesh_policy_from_target_dx_value, trace_detail_filter_from_value, trace_enabled_from_value,
+        mesh_policy_from_target_dx_value, step_trace_enabled_from_value,
+        trace_detail_filter_from_value, trace_enabled_from_value,
     };
     use openwepp_hillslope_orchestrator::DirectLanedActiveMeshPolicy;
 
@@ -179,6 +202,13 @@ mod tests {
         assert!(!trace_enabled_from_value(None));
         assert!(!trace_enabled_from_value(Some("0")));
         assert!(trace_enabled_from_value(Some("1")));
+    }
+
+    #[test]
+    fn step_trace_selector_requires_explicit_one() {
+        assert!(!step_trace_enabled_from_value(None));
+        assert!(!step_trace_enabled_from_value(Some("0")));
+        assert!(step_trace_enabled_from_value(Some("1")));
     }
 
     #[test]

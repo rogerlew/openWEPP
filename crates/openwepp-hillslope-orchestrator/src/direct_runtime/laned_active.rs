@@ -16,8 +16,13 @@ use super::{
     validate_nonnegative_direct_m,
 };
 use crate::constants::WB11_ZERO_THRESHOLD;
-use crate::ofe_routing::cascade::{CascadeSegment, UpstreamHandoff, route_single_ofe};
+use crate::ofe_routing::cascade::{
+    CascadeSegment, UpstreamHandoff, route_single_ofe_with_step_trace,
+};
 use crate::ofe_routing::kinematic_wave::{CellParameters, KinematicWaveMesh, RoutingResult};
+use crate::ofe_routing::kinematic_wave::{
+    KinematicWaveStageLimiterTrace, KinematicWaveStepTraceRecord, KinematicWaveTvdTrace,
+};
 use crate::ofe_routing::seam::{
     SEAM_HOUR_BINS, SEAM_SECONDS_PER_HOUR, seam_rate_at, seam_source_rates_from_hourly_depths,
 };
@@ -285,6 +290,7 @@ pub struct DirectLanedActiveConfig {
     pub mesh_policy: DirectLanedActiveMeshPolicy,
     pub trace_enabled: bool,
     pub trace_detail_filter: Option<DirectLanedActiveTraceDetailFilter>,
+    pub step_trace_enabled: bool,
 }
 
 impl DirectLanedActiveConfig {
@@ -302,6 +308,11 @@ impl DirectLanedActiveConfig {
         if self.trace_detail_filter.is_some() && !self.trace_enabled {
             return Err(DirectRuntimeError::DirectDomainViolation {
                 field: "laned_active.trace_detail_filter",
+            });
+        }
+        if self.step_trace_enabled && (self.trace_detail_filter.is_none() || !self.trace_enabled) {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "laned_active.step_trace_enabled",
             });
         }
         Ok(())
@@ -325,11 +336,56 @@ impl DirectLanedActiveTraceDetailFilter {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct DirectLanedActiveTraceDetail {
+    pub mesh_cell_count: usize,
+    pub mesh_dx_m: f64,
     pub outlet_bin_m3: Vec<f64>,
     pub outlet_bin_spans_s: Vec<f64>,
     pub hydrograph_time_s: Vec<f64>,
     pub hydrograph_outlet_m3_s: Vec<f64>,
     pub hydrograph_outlet_depth_m: Vec<f64>,
+    pub step_trace: Option<Vec<DirectLanedActiveStepTraceRecord>>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectLanedActiveStageLimiterTrace {
+    pub reductions: u32,
+    pub max_reduction_m3_s: f64,
+    pub face_index: usize,
+    pub face_x_m: f64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectLanedActiveTvdTrace {
+    pub scale: f64,
+    pub max_abs_delta_m: f64,
+    pub cell_index: usize,
+    pub cell_center_x_m: f64,
+    pub signed_delta_m: f64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct DirectLanedActiveStepTraceRecord {
+    pub step_index: u64,
+    pub t_start_s: f64,
+    pub t_end_s: f64,
+    pub dt_s: f64,
+    pub max_courant: f64,
+    pub max_courant_cell_index: usize,
+    pub max_courant_cell_center_x_m: f64,
+    pub q_up_m3_s: f64,
+    pub source_m3: f64,
+    pub upstream_inflow_m3: f64,
+    pub outflow_m3: f64,
+    pub storage_before_m3: f64,
+    pub storage_after_m3: f64,
+    pub clamp_injected_m3: f64,
+    pub pred_out_face_m3_s: f64,
+    pub corr_out_face_m3_s: f64,
+    pub outlet_depth_m: f64,
+    pub outlet_discharge_m3_s: f64,
+    pub predictor_limiter: DirectLanedActiveStageLimiterTrace,
+    pub corrector_limiter: DirectLanedActiveStageLimiterTrace,
+    pub tvd: DirectLanedActiveTvdTrace,
 }
 
 /// Per-lane-day routed evidence, stored on the day frame so the runner's
@@ -657,6 +713,57 @@ pub(crate) fn laned_active_routed_erosion_weights(
     Ok((weights, tail_fold_m3, source_shape_degenerate))
 }
 
+fn laned_active_stage_trace_from_solver(
+    trace: KinematicWaveStageLimiterTrace,
+    width_m: f64,
+) -> DirectLanedActiveStageLimiterTrace {
+    DirectLanedActiveStageLimiterTrace {
+        reductions: trace.reductions,
+        max_reduction_m3_s: trace.max_reduction_m2_s * width_m,
+        face_index: trace.face_index,
+        face_x_m: trace.face_x_m,
+    }
+}
+
+fn laned_active_tvd_trace_from_solver(trace: KinematicWaveTvdTrace) -> DirectLanedActiveTvdTrace {
+    DirectLanedActiveTvdTrace {
+        scale: trace.scale,
+        max_abs_delta_m: trace.max_abs_delta_m,
+        cell_index: trace.cell_index,
+        cell_center_x_m: trace.cell_center_x_m,
+        signed_delta_m: trace.signed_delta_m,
+    }
+}
+
+fn laned_active_step_trace_from_solver(
+    record: &KinematicWaveStepTraceRecord,
+    width_m: f64,
+) -> DirectLanedActiveStepTraceRecord {
+    DirectLanedActiveStepTraceRecord {
+        step_index: record.step_index,
+        t_start_s: record.t_start_s,
+        t_end_s: record.t_end_s,
+        dt_s: record.dt_s,
+        max_courant: record.max_courant,
+        max_courant_cell_index: record.max_courant_cell_index,
+        max_courant_cell_center_x_m: record.max_courant_cell_center_x_m,
+        q_up_m3_s: record.q_up_m2_s * width_m,
+        source_m3: record.source_m2 * width_m,
+        upstream_inflow_m3: record.upstream_inflow_m2 * width_m,
+        outflow_m3: record.outflow_m2 * width_m,
+        storage_before_m3: record.storage_before_m2 * width_m,
+        storage_after_m3: record.storage_after_m2 * width_m,
+        clamp_injected_m3: record.clamp_injected_m2 * width_m,
+        pred_out_face_m3_s: record.pred_out_face_m2_s * width_m,
+        corr_out_face_m3_s: record.corr_out_face_m2_s * width_m,
+        outlet_depth_m: record.outlet_depth_m,
+        outlet_discharge_m3_s: record.outlet_unit_discharge_m2_s * width_m,
+        predictor_limiter: laned_active_stage_trace_from_solver(record.predictor_limiter, width_m),
+        corrector_limiter: laned_active_stage_trace_from_solver(record.corrector_limiter, width_m),
+        tvd: laned_active_tvd_trace_from_solver(record.tvd),
+    }
+}
+
 /// Route one active lane-day: rev-21 operand validation, the shared
 /// single-OFE cascade routine, the D13 erosion producer flip, the day-frame
 /// evidence record, and the day-books fold. Returns the conservative
@@ -672,6 +779,7 @@ pub(crate) fn laned_active_route_lane(
     books: &mut DirectLanedActiveDayBooks,
     source: &LanedActiveLaneSource,
     trace_detail: bool,
+    trace_steps: bool,
 ) -> Result<UpstreamHandoff, DirectRuntimeError> {
     validate_finite("laned_active.area_m2", area_m2)?;
     if area_m2 <= 0.0 {
@@ -736,6 +844,7 @@ pub(crate) fn laned_active_route_lane(
         mesh: KinematicWaveMesh::uniform(lane_config.slplen_m, active_cells, cell),
         width_m: lane_config.width_m,
     };
+    let mesh_dx_m = segment.mesh.cell_length_m;
 
     // Seam basis conversion (rev 27, recorded helper): the soil books
     // release `q_runoff × area` m³; the 1-D mesh's plan area is
@@ -785,7 +894,7 @@ pub(crate) fn laned_active_route_lane(
             breakpoint_count += 1;
         }
     }
-    let result = route_single_ofe(
+    let result = route_single_ofe_with_step_trace(
         &segment,
         &excess,
         &intensity,
@@ -794,6 +903,7 @@ pub(crate) fn laned_active_route_lane(
         window_s,
         LANED_ACTIVE_SAMPLE_DT_S,
         LANED_ACTIVE_MAX_DT_S,
+        trace_steps,
     )
     .map_err(|error| DirectRuntimeError::DirectKernelGuardFailure {
         phase: "laned_active_cascade",
@@ -835,8 +945,16 @@ pub(crate) fn laned_active_route_lane(
     let outlet_m3 = result.mass_balance.outflow_m2 * width;
     let mesh_storage_m3 = result.mass_balance.storage_change_m2 * width;
     let clamp_m3 = result.mass_balance.positivity_clamp_m2 * width;
+    let step_trace = result.step_trace.as_ref().map(|records| {
+        records
+            .iter()
+            .map(|record| laned_active_step_trace_from_solver(record, width))
+            .collect()
+    });
     let trace_detail = trace_detail.then(|| {
         Box::new(DirectLanedActiveTraceDetail {
+            mesh_cell_count: active_cells,
+            mesh_dx_m,
             outlet_bin_m3: result
                 .outlet_bin_outflow_m2
                 .iter()
@@ -858,6 +976,7 @@ pub(crate) fn laned_active_route_lane(
                 .iter()
                 .map(|sample| sample.outlet_depth_m)
                 .collect(),
+            step_trace,
         })
     });
     books.injected_m3 += injected_m3;
@@ -1111,6 +1230,7 @@ mod tests {
             outlet_bin_outflow_m2: bins_m2,
             outlet_bin_dt_s: bin_dt_s,
             outlet_bin_spans_s: spans,
+            step_trace: None,
         }
     }
 
@@ -1149,6 +1269,7 @@ mod tests {
             &mut books,
             &dry_lane_source(),
             false,
+            false,
         )
         .expect("positive post-growth canhgt should satisfy the vegetated guard");
 
@@ -1164,6 +1285,7 @@ mod tests {
                 3600.0,
                 &mut stale_static_books,
                 &dry_lane_source(),
+                false,
                 false,
             ),
             Err(DirectRuntimeError::DirectKernelGuardFailure {

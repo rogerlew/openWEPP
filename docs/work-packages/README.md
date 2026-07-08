@@ -12,6 +12,17 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-08`:
+- `20260708-laned-router-mn-corn-h4-day792-raw-hydrograph-numerics-001/` -
+  EXECUTED-HOLD-CFL-TIMESTEP-TRANSITION (2026-07-08): added row-scoped
+  active-router step tracing and reran `mn_corn_h4` day 792 lane 1 at
+  `dx2p5`/`dx1p25`/`dx0p625`. Source totals are identical, upstream inflow is
+  zero, clamp is zero, no negative outlet outflow appears, and no stage/TVD
+  limiting fires. The miss localizes to the fine rung crossing from the
+  300-second cap into CFL-limited substeps (`dx1p25` max Courant `0.85875`,
+  228 steps; `dx0p625` max Courant `0.9`, 330 steps), so the failing
+  comparison is not a pure spatial fine-reference check. No target-`dx`
+  promotion, tolerance widening, or production correction landed. Follow-on:
+  `20260708-laned-router-active-router-timestep-policy-adjudication-001`.
 - `20260708-laned-router-mn-corn-h4-routed-shape-attribution-001/` -
   EXECUTED-HOLD-SOLVER-CLASS-DAY792 (2026-07-08): attributed the persistent
   `mn_corn_h4` day-792 lane-1 routed-shape fine-reference adequacy miss. The

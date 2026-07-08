@@ -904,6 +904,7 @@ fn write_generic_optional_outputs(
     Ok(())
 }
 
+#[allow(clippy::too_many_lines)]
 fn write_laned_active_trace_output(
     targets: &HillslopeOutputTargets,
     execution: &HillslopeClimateExecution,
@@ -959,13 +960,62 @@ fn write_laned_active_trace_output(
     for record in records {
         let weight_sum: f64 = record.routed_weights.iter().sum();
         let trace_detail = record.trace_detail.as_ref().map(|detail| {
+            let step_trace = detail.step_trace.as_ref().map(|records| {
+                records
+                    .iter()
+                    .map(|step| {
+                        serde_json::json!({
+                            "step_index": step.step_index,
+                            "t_start_s": step.t_start_s,
+                            "t_end_s": step.t_end_s,
+                            "dt_s": step.dt_s,
+                            "max_courant": step.max_courant,
+                            "max_courant_cell_index": step.max_courant_cell_index,
+                            "max_courant_cell_center_x_m": step.max_courant_cell_center_x_m,
+                            "q_up_m3_s": step.q_up_m3_s,
+                            "source_m3": step.source_m3,
+                            "upstream_inflow_m3": step.upstream_inflow_m3,
+                            "outflow_m3": step.outflow_m3,
+                            "storage_before_m3": step.storage_before_m3,
+                            "storage_after_m3": step.storage_after_m3,
+                            "clamp_injected_m3": step.clamp_injected_m3,
+                            "pred_out_face_m3_s": step.pred_out_face_m3_s,
+                            "corr_out_face_m3_s": step.corr_out_face_m3_s,
+                            "outlet_depth_m": step.outlet_depth_m,
+                            "outlet_discharge_m3_s": step.outlet_discharge_m3_s,
+                            "predictor_limiter": {
+                                "reductions": step.predictor_limiter.reductions,
+                                "max_reduction_m3_s": step.predictor_limiter.max_reduction_m3_s,
+                                "face_index": step.predictor_limiter.face_index,
+                                "face_x_m": step.predictor_limiter.face_x_m,
+                            },
+                            "corrector_limiter": {
+                                "reductions": step.corrector_limiter.reductions,
+                                "max_reduction_m3_s": step.corrector_limiter.max_reduction_m3_s,
+                                "face_index": step.corrector_limiter.face_index,
+                                "face_x_m": step.corrector_limiter.face_x_m,
+                            },
+                            "tvd": {
+                                "scale": step.tvd.scale,
+                                "max_abs_delta_m": step.tvd.max_abs_delta_m,
+                                "cell_index": step.tvd.cell_index,
+                                "cell_center_x_m": step.tvd.cell_center_x_m,
+                                "signed_delta_m": step.tvd.signed_delta_m,
+                            }
+                        })
+                    })
+                    .collect::<Vec<_>>()
+            });
             serde_json::json!({
                 "schema": "openwepp-laned-active-trace-detail-v1",
+                "mesh_cell_count": detail.mesh_cell_count,
+                "mesh_dx_m": detail.mesh_dx_m,
                 "outlet_bin_m3": &detail.outlet_bin_m3,
                 "outlet_bin_spans_s": &detail.outlet_bin_spans_s,
                 "hydrograph_time_s": &detail.hydrograph_time_s,
                 "hydrograph_outlet_m3_s": &detail.hydrograph_outlet_m3_s,
                 "hydrograph_outlet_depth_m": &detail.hydrograph_outlet_depth_m,
+                "step_trace": step_trace,
             })
         });
         let line = serde_json::to_string(&serde_json::json!({
