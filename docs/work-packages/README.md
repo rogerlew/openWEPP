@@ -12,6 +12,18 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-08`:
+- `20260708-laned-router-annual-sediment-adequacy-metric-authority-001/` -
+  EXECUTED-COMPLETE-METRIC-AUTHORITY (2026-07-08): amended
+  `SC-OFEROUTE-001` rev 44 so active target-`dx` mesh-policy annual
+  pass-sediment evidence uses a material-year plus annual-vector rule instead
+  of strict relative-only per-member-year blocking. The selected real-cohort
+  replay covers 21 annual sediment comparisons: the pre-rev44 rule has one
+  blocker (`wa_cascades_forest_h1` refined-75 `tdep:4`
+  `0.022131684 > 0.0066666667`), while rev 44 has zero blockers. No `dx5`
+  production mesh default flip, active default change, routed-water/shape
+  change, or sediment process-physics change landed. Follow-on: renewed
+  `dx5` production mesh-policy ratification/default-promotion on the rev-44
+  basis.
 - `20260708-laned-router-wa-sediment-reference-adequacy-attribution-001/` -
   EXECUTED-HOLD-SEDIMENT-METRIC-AUTHORITY (2026-07-08): attributed the
   `wa_cascades_forest_h1` refined-75 fine-reference annual pass-sediment miss
