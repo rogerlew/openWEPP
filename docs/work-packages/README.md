@@ -22,22 +22,24 @@ State as of `2026-07-08`:
   `OPENWEPP_LANED_ACTIVE_DISABLE=1` provides an explicit rollback selector.
   Final gates: focused Lane D integration `8/8`, ignored H2637 default-active
   acceptance vector passed (`563.620s`), full workspace nextest `1427/1427`,
-  clippy/fmt/deny/doc lint/diff-check green. Remaining follow-ons:
-  watershed HBP hourly water/sediment consumption (queued after Tier 1 and
-  WSHED-W7 resume) and active-mode sediment process-physics adjudication.
+  clippy/fmt/deny/doc lint/diff-check green. Remaining follow-ons: Lane D
+  active baseflow export closure, watershed HBP hourly water/sediment
+  consumption, and active-mode sediment process-physics adjudication.
 - `20260708-laned-router-tier1-local-numerics-001/` -
   ACTIVE (2026-07-08): current first package in the binding order before
   WSHED-W7 resume. In-progress artifacts record rev-47 Tier 1 local numerics
   work and H2637 timing evidence, but final disposition is not recorded here
-  until the package closes. Downstream WSHED-W7R and Lane D watershed hourly
-  consumption remain queued behind this package.
+  until the package closes. Downstream WSHED-W7R, Lane D active baseflow export
+  closure, and Lane D watershed hourly consumption remain queued behind this
+  package.
 - `20260708-laned-router-watershed-hbp-hourly-water-sediment-consumption-001/` -
-  QUEUED (2026-07-08, execute after Tier 1 and WSHED-W7 resume): scaffolded a
-  consumer-path closure package for Lane D active routed HBP minor-1 hourly
-  runoff and hourly sediment surfaces. The package requires contract-first
-  authority if needed, active HBP producer evidence, watershed supervisor intake
-  proof, `WatershedNetworkFrame` handoff proof, production channel/watershed
-  consumer proof, equal-daily-total/different-hourly-distribution sensitivity
+  QUEUED (2026-07-08, execute after Tier 1, WSHED-W7 resume, and Lane D active
+  baseflow export closure): scaffolded a consumer-path closure package for Lane
+  D active routed HBP minor-1 hourly runoff and hourly sediment surfaces. The
+  package requires contract-first authority if needed, active HBP producer
+  evidence, watershed supervisor intake proof, `WatershedNetworkFrame` handoff
+  proof, production channel/watershed consumer proof,
+  equal-daily-total/different-hourly-distribution sensitivity
   evidence, fail-closed active missing/malformed/mixed hourly authority, and
   protected legacy/off fallback evidence. Producer-only, parser-only,
   inventory-only, or shadow-only proof cannot close it.
