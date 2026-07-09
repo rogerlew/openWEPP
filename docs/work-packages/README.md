@@ -83,6 +83,16 @@ State as of `2026-07-08`:
   `.man` writing are forbidden. Producer output defaults to `.man.yaml` for
   flat `.man` inputs and emits only lowercase `.yaml`. The spec now includes
   `--validate`.
+- `20260708-groundwater-baseflow-laned-single-ofe-mofe-implementation-001/` -
+  QUEUED (2026-07-08, M-T2B): scaffolded the contract-backed implementation
+  package for `SC-GWBASEFLOW-001` on the canonical Lane D path, with
+  `lane_count = 1` as the production single-OFE case and `lane_count > 1` as
+  MOFE. The package is queued after M-T2A/M-T2P/M-T2Q and the management
+  YAML/migration closing tests. It must implement the Srivastava
+  linear-reservoir recurrence, export generated `gwbfv`/`gwdsv` without
+  feeding active surface routing, prove the real HBP/pass or watershed
+  consumer path before export closure, and preserve non-Lane-D paths as
+  compatibility/validation/rollback surfaces.
 - `20260708-laned-router-conditional-default-activation-001/` -
   EXECUTED-COMPLETE-CONDITIONAL-DEFAULT-ACTIVATION (2026-07-08): amended
   `SC-OFEROUTE-001` rev 46 and made Lane D active routing the hillslope
