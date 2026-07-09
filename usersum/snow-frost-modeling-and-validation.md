@@ -1,5 +1,7 @@
 # Snow and Frost in openWEPP — Modeling and Validation
 
+*Version 0.3 — 2026-07-09*
+
 *Audience: hydrologists and scientific reviewers evaluating openWEPP's snowpack
 and soil-frost behavior, and how it differs from legacy WEPP.*
 
@@ -417,3 +419,11 @@ of Hydrometeorology, 11*(6), 1380–1394.
 U.S. Department of Agriculture, Natural Resources Conservation Service. (n.d.).
 *Snow Telemetry (SNOTEL) and snow course data and products* [Data set]. National
 Water and Climate Center.
+
+## Revision Log
+
+| Version | Date | Changes |
+| --- | --- | --- |
+| 0.1 | 2026-06-29 | Initial document, authored at the close of the frost validation arc. |
+| 0.2 | 2026-07-01 | Rewritten as a scientific narrative: framing problem first, results consolidated, internal vocabulary translated. Same claims, numbers, and references. |
+| 0.3 | 2026-07-09 | Adopted the version header and revision log convention; no content changes. |
