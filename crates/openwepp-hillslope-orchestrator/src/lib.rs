@@ -58,6 +58,7 @@ pub use direct_runtime::{
     DirectEvapotranspirationSurfaceState, DirectEvapotranspirationTraceEvent,
     DirectExecutionReport, DirectExecutorMode, DirectFrameExecutor, DirectFrostFineLayerCarry,
     DirectFrostLayerCarryProjection, DirectFrostLayerShadowCarry, DirectFrostRuntimeCarry,
+    DirectGroundwaterAuthority, DirectGroundwaterDayOutput, DirectGroundwaterRunState,
     DirectGrowthAction, DirectGrowthActiveContext, DirectGrowthDownstreamOperands,
     DirectGrowthInputs, DirectGrowthShadowProjection, DirectGrowthSpanReport, DirectGrowthState,
     DirectGrowthStateSurface, DirectHydrologyProjectionDownstreamOperands,

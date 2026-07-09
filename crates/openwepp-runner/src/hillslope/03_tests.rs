@@ -767,6 +767,7 @@ mod tests {
             up_strm_q: 0.0,
             sub_r_in: 0.0,
             latqcc: 0.0,
+            base: Some(0.0),
             total_soil_water: 100.0,
             frozwt: 0.0,
             frdp: 0.0,
@@ -788,6 +789,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::too_many_lines)]
     fn r6b_absent_operand_detector_suppresses_marker_for_nonzero_direct_operands() {
         let identity =
             DirectRunIdentity::new(19, 2637, 1, 1).expect("valid direct identity should construct");
@@ -833,6 +835,10 @@ mod tests {
                 latqcc_mm: 0.0,
                 tile_mm: 0.0,
                 sbrunv_m3: 0.0,
+                groundwater_baseflow_mm: 0.0,
+                groundwater_baseflow_m3: 0.0,
+                groundwater_deep_seepage_mm: 0.0,
+                groundwater_deep_seepage_m3: 0.0,
             },
             transfer: DirectPublicationTransferOperands {
                 upstream_surface_mm: 0.0,
@@ -955,6 +961,7 @@ mod tests {
         assert_eq!(wat_rows[0].q.to_bits(), 12.5_f64.to_bits());
         assert_eq!(wat_rows[0].qofe.to_bits(), 12.5_f64.to_bits()); // MOFEFID-B02: QOFE == Q
         assert_eq!(wat_rows[0].rm.to_bits(), 8.25_f64.to_bits());
+        assert_eq!(wat_rows[0].base, Some(6.0));
         assert_eq!(pass_rows[0].runvol_m3.to_bits(), 4.0_f64.to_bits());
         assert_eq!(pass_rows[0].peakro_m3_s.to_bits(), 0.75_f64.to_bits());
         let loss_json: serde_json::Value =
@@ -1008,6 +1015,10 @@ mod tests {
                 latqcc_mm: 2.5,
                 tile_mm: 0.5,
                 sbrunv_m3: 1.0,
+                groundwater_baseflow_mm: 6.0,
+                groundwater_baseflow_m3: 2.4,
+                groundwater_deep_seepage_mm: 3.0,
+                groundwater_deep_seepage_m3: 1.2,
             },
             transfer: DirectPublicationTransferOperands {
                 upstream_surface_mm: 0.25,
@@ -1154,6 +1165,10 @@ mod tests {
                 latqcc_mm: 2.5 + offset,
                 tile_mm: 0.5 + offset,
                 sbrunv_m3: 1.0 + offset,
+                groundwater_baseflow_mm: 0.0,
+                groundwater_baseflow_m3: 0.0,
+                groundwater_deep_seepage_mm: 0.0,
+                groundwater_deep_seepage_m3: 0.0,
             },
             transfer: DirectPublicationTransferOperands {
                 upstream_surface_mm: 0.25 + offset,

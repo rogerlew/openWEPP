@@ -81,15 +81,12 @@ State as of `2026-07-08`:
   and runtime-consumer proof. Spec:
   `docs/specifications/wepp-input-files/specs/landuse-migration-cli.spec.md`.
 - `20260708-groundwater-baseflow-laned-single-ofe-mofe-implementation-001/` -
-  QUEUED (2026-07-08, M-T2B): scaffolded the contract-backed implementation
-  package for `SC-GWBASEFLOW-001` on the canonical Lane D path, with
-  `lane_count = 1` as the production single-OFE case and `lane_count > 1` as
-  MOFE. The package is queued after M-T2A/M-T2P/M-T2Q and the management
-  YAML/migration closing tests. It must implement the Srivastava
-  linear-reservoir recurrence, export generated `gwbfv`/`gwdsv` without
-  feeding active surface routing, prove the real HBP/pass or watershed
-  consumer path before export closure, and preserve non-Lane-D paths as
-  compatibility/validation/rollback surfaces.
+  EXECUTED-HOLD-GWDSV-CHANNEL-CONSUMER (2026-07-09 UTC, M-T2B): implemented
+  the `SC-GWBASEFLOW-001` Lane D direct-runtime groundwater recurrence,
+  `gwcoeff.txt` parser handoff, single-OFE/MOFE recharge aggregation, active
+  summary totals, WAT `Base` publication, and real watershed WAT `Base`
+  consumer proof. Hold remains for generated `gwdsv` downstream consumption and
+  the `bftharea` watershed/channel threshold branch.
 - `20260708-laned-router-conditional-default-activation-001/` -
   EXECUTED-COMPLETE-CONDITIONAL-DEFAULT-ACTIVATION (2026-07-08): amended
   `SC-OFEROUTE-001` rev 46 and made Lane D active routing the hillslope

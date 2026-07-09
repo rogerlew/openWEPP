@@ -322,6 +322,21 @@ impl DirectPublicationDayRow {
         let storage = direct_publication_storage_operands(day_frame)?;
         let water_temperature = direct_publication_water_temperature_operands(day_frame)?;
         let erosion = direct_publication_erosion_operands(day_frame, day_input)?;
+        let terminal_groundwater_output = if lane.downstream_lane_id == 0 {
+            day_frame.groundwater_output
+        } else {
+            DirectGroundwaterDayOutput::zero()
+        };
+        let groundwater_baseflow_mm = publication_volume_m3_to_mm(
+            "publication.subsurface.groundwater_baseflow_mm",
+            terminal_groundwater_output.baseflow_m3,
+            lane.area_m2,
+        )?;
+        let groundwater_deep_seepage_mm = publication_volume_m3_to_mm(
+            "publication.subsurface.groundwater_deep_seepage_mm",
+            terminal_groundwater_output.deep_seepage_m3,
+            lane.area_m2,
+        )?;
 
         Ok(Self {
             run_id: day_frame.identity.run_id,
@@ -361,6 +376,10 @@ impl DirectPublicationDayRow {
                     m_to_mm(subsurface_lateral_m)?,
                     lane.area_m2,
                 )?,
+                groundwater_baseflow_mm,
+                groundwater_baseflow_m3: terminal_groundwater_output.baseflow_m3,
+                groundwater_deep_seepage_mm,
+                groundwater_deep_seepage_m3: terminal_groundwater_output.deep_seepage_m3,
             },
             transfer: DirectPublicationTransferOperands {
                 upstream_surface_mm: m_to_mm(day_frame.normalization.surface_transfer_m)?,
@@ -570,6 +589,10 @@ pub struct DirectPublicationSubsurfaceOperands {
     pub latqcc_mm: f64,
     pub tile_mm: f64,
     pub sbrunv_m3: f64,
+    pub groundwater_baseflow_mm: f64,
+    pub groundwater_baseflow_m3: f64,
+    pub groundwater_deep_seepage_mm: f64,
+    pub groundwater_deep_seepage_m3: f64,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]

@@ -199,6 +199,7 @@ pub struct HillslopeWatRow {
     pub up_strm_q: f64,
     pub sub_r_in: f64,
     pub latqcc: f64,
+    pub base: Option<f64>,
     pub total_soil_water: f64,
     pub frozwt: f64,
     pub frdp: f64,
@@ -377,6 +378,13 @@ pub fn hillslope_wat_schema(
                 false,
                 Some("mm"),
                 Some("Lateral subsurface flow"),
+            ),
+            field_with_meta(
+                "Base",
+                DataType::Float64,
+                true,
+                Some("mm"),
+                Some("Generated groundwater-reservoir baseflow"),
             ),
             field_with_meta(
                 "Total-Soil",
@@ -661,6 +669,7 @@ fn hillslope_wat_rows_to_batch(
     let mut up_strm_q = Vec::with_capacity(rows.len());
     let mut sub_r_in = Vec::with_capacity(rows.len());
     let mut latqcc = Vec::with_capacity(rows.len());
+    let mut base = Vec::with_capacity(rows.len());
     let mut total_soil_water = Vec::with_capacity(rows.len());
     let mut frozwt = Vec::with_capacity(rows.len());
     let mut frdp = Vec::with_capacity(rows.len());
@@ -699,6 +708,7 @@ fn hillslope_wat_rows_to_batch(
         up_strm_q.push(row.up_strm_q);
         sub_r_in.push(row.sub_r_in);
         latqcc.push(row.latqcc);
+        base.push(row.base);
         total_soil_water.push(row.total_soil_water);
         frozwt.push(row.frozwt);
         frdp.push(row.frdp);
@@ -738,6 +748,7 @@ fn hillslope_wat_rows_to_batch(
         Arc::new(Float64Array::from(up_strm_q)),
         Arc::new(Float64Array::from(sub_r_in)),
         Arc::new(Float64Array::from(latqcc)),
+        Arc::new(Float64Array::from(base)),
         Arc::new(Float64Array::from(total_soil_water)),
         Arc::new(Float64Array::from(frozwt)),
         Arc::new(Float64Array::from(frdp)),
@@ -790,6 +801,7 @@ mod tests {
             up_strm_q: 0.0,
             sub_r_in: 0.0,
             latqcc: 0.0,
+            base: Some(0.0),
             total_soil_water: 100.0,
             frozwt: 0.0,
             frdp: 0.0,

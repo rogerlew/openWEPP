@@ -152,6 +152,7 @@ mod erosion_enrichment;
 mod erosion_operands;
 mod erosion_seed;
 mod evapotranspiration;
+mod groundwater;
 mod growth;
 mod laned_active;
 mod normalization;
@@ -221,6 +222,9 @@ pub use evapotranspiration::{
     DirectEvapotranspirationSurfaceDownstreamOperands,
     DirectEvapotranspirationSurfaceShadowProjection, DirectEvapotranspirationSurfaceSpanReport,
     DirectEvapotranspirationSurfaceState,
+};
+pub use groundwater::{
+    DirectGroundwaterAuthority, DirectGroundwaterDayOutput, DirectGroundwaterRunState,
 };
 pub use growth::{
     DirectGrowthAction, DirectGrowthActiveContext, DirectGrowthDownstreamOperands,

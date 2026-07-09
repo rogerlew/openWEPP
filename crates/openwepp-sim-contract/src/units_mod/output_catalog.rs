@@ -58,6 +58,7 @@ pub fn canonical_output_unit_entries() -> Vec<OutputUnitEntry> {
         ),
         OutputUnitEntry::boundary_registry("hillslope_wat", "QOFE", "mm", "hillslope_wat.QOFE"),
         OutputUnitEntry::boundary_registry("hillslope_wat", "Tile", "mm", "hillslope_wat.Tile"),
+        OutputUnitEntry::boundary_registry("hillslope_wat", "Base", "mm", "hillslope_wat.Base"),
         OutputUnitEntry::boundary_registry("hillslope_wat", "Irr", "mm", "hillslope_wat.Irr"),
         OutputUnitEntry::boundary_registry("hillslope_wat", "Area", "m^2", "hillslope_wat.Area"),
         OutputUnitEntry::boundary_registry(

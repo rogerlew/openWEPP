@@ -33,6 +33,10 @@ fn execute_hillslope_direct_production_days(
         day_count: climate_span.days.len(),
         seed_authority: &seed_authority,
     })?;
+    let groundwater_authority = direct_groundwater_authority_from_gwcoeff(&sidecars.gwcoeff)?;
+    frame
+        .configure_groundwater(groundwater_authority)
+        .map_err(|source| direct_production_runtime_error(&source))?;
     let day_input_builder = DirectProductionDayInputBuilder::new(
         &climate_request,
         &climate_span,
@@ -302,6 +306,39 @@ fn build_direct_production_run_frame(
         .map_err(|source| direct_production_runtime_error(&source))
 }
 
+fn direct_groundwater_authority_from_gwcoeff(
+    gwcoeff: &GwcoeffFile,
+) -> Result<DirectGroundwaterAuthority, HillslopeCliError> {
+    if gwcoeff.lr_bf == 0 {
+        return Ok(DirectGroundwaterAuthority::disabled());
+    }
+    if gwcoeff.lr_bf != 1 {
+        return Err(direct_production_executor_blocked(format!(
+            "gwcoeff lr_bf must be 0 or 1, observed {}",
+            gwcoeff.lr_bf
+        )));
+    }
+    let initial_storage_depth_m = gwcoeff.igwstrd.ok_or_else(|| {
+        direct_production_executor_blocked("parsed gwcoeff lr_bf=1 missing igwstrd")
+    })? / 1_000.0;
+    let baseflow_coeff_per_day = gwcoeff.bfcoeff.ok_or_else(|| {
+        direct_production_executor_blocked("parsed gwcoeff lr_bf=1 missing bfcoeff")
+    })?;
+    let deep_seepage_coeff_per_day = gwcoeff.dscoeff.ok_or_else(|| {
+        direct_production_executor_blocked("parsed gwcoeff lr_bf=1 missing dscoeff")
+    })?;
+    let baseflow_threshold_area_ha = gwcoeff.bftharea.ok_or_else(|| {
+        direct_production_executor_blocked("parsed gwcoeff lr_bf=1 missing bftharea")
+    })?;
+    DirectGroundwaterAuthority::linear_reservoir(
+        initial_storage_depth_m,
+        baseflow_coeff_per_day,
+        deep_seepage_coeff_per_day,
+        baseflow_threshold_area_ha,
+    )
+    .map_err(|source| direct_production_runtime_error(&source))
+}
+
 #[derive(Clone, Copy, Debug)]
 struct DirectProductionRunoffPublicationGeometry {
     q_scale: f64,
@@ -503,6 +540,10 @@ fn build_hillslope_execution_provenance(
             total_clamp_m3: summary.total_clamp_m3,
             total_tail_fold_m3: summary.total_tail_fold_m3,
             total_latqcc_outlet_m3: summary.total_latqcc_outlet_m3,
+            groundwater_enabled_days: summary.groundwater_enabled_days,
+            total_groundwater_recharge_m3: summary.total_groundwater_recharge_m3,
+            total_groundwater_baseflow_m3: summary.total_groundwater_baseflow_m3,
+            total_groundwater_deep_seepage_m3: summary.total_groundwater_deep_seepage_m3,
             max_supply_reconstruction_rel: summary.max_supply_reconstruction_rel,
             max_day_cascade_residual_rel: summary.max_day_cascade_residual_rel,
             max_day_seam_residual_rel: summary.max_day_seam_residual_rel,
@@ -794,6 +835,10 @@ fn direct_publication_has_only_zero_or_absent_operands(
             row.subsurface.latqcc_mm,
             row.subsurface.tile_mm,
             row.subsurface.sbrunv_m3,
+            row.subsurface.groundwater_baseflow_mm,
+            row.subsurface.groundwater_baseflow_m3,
+            row.subsurface.groundwater_deep_seepage_mm,
+            row.subsurface.groundwater_deep_seepage_m3,
             row.transfer.upstream_surface_mm,
             row.transfer.upstream_lateral_mm,
             row.storage.total_soil_mm,
@@ -849,6 +894,10 @@ fn direct_publication_row_lacks_parity_grade_output_producers(
         row.subsurface.latqcc_mm,
         row.subsurface.tile_mm,
         row.subsurface.sbrunv_m3,
+        row.subsurface.groundwater_baseflow_mm,
+        row.subsurface.groundwater_baseflow_m3,
+        row.subsurface.groundwater_deep_seepage_mm,
+        row.subsurface.groundwater_deep_seepage_m3,
         row.transfer.upstream_surface_mm,
         row.transfer.upstream_lateral_mm,
         row.storage.total_soil_mm,
@@ -1175,6 +1224,7 @@ fn optional_sidecar_input_paths(input_paths: &HillslopeSidecarInputPaths) -> Vec
         input_paths.frost.as_deref(),
         input_paths.wepp_ui.as_deref(),
         input_paths.pmetpara.as_deref(),
+        input_paths.gwcoeff.as_deref(),
     ]
     .into_iter()
     .flatten()

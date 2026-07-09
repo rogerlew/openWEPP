@@ -1,11 +1,11 @@
 # Groundwater/Baseflow For Lane D Single-OFE And MOFE Implementation
 
-Status: `QUEUED`
+Status: `EXECUTED-HOLD-GWDSV-CHANNEL-CONSUMER`
 Package ID: `20260708-groundwater-baseflow-laned-single-ofe-mofe-implementation-001`
 Queue row: `M-T2B`
 Owner: Codex
 Scaffold date: `2026-07-08`
-Evidence mode: `Static scaffold; implementation not executed`
+Evidence mode: `Static + ran`
 
 ## Objective
 
@@ -34,12 +34,12 @@ rollback surfaces. This package must preserve them, but must not add new
 production groundwater/baseflow behavior to those paths unless a contract-first
 amendment explicitly widens scope before implementation.
 
-## Readiness Summary
+## Execution Summary
 
-Ready to scaffold and execute after the two management packages finish their
-closing tests.
+Executed on 2026-07-08 and exited with an explicit hold:
+`EXECUTED-HOLD-GWDSV-CHANNEL-CONSUMER`.
 
-Closed or closing prerequisites:
+Closed prerequisites:
 
 - M-T2A created `SC-GWBASEFLOW-001` and handed off exact implementation
   obligations.
@@ -53,10 +53,21 @@ Closed or closing prerequisites:
   YAML migration; package artifacts currently indicate implementation complete
   while local closing-test edits remain uncommitted.
 
-Current code already has a `gwcoeff` parser with explicit missing/parsed
-branches. The missing implementation is runtime ownership: direct state,
-recurrence, Lane D aggregation, boundary registry/output metadata, consumer
-path proof, and fail-closed guards.
+Implemented:
+
+- `gwcoeff.txt` parser handoff into runner sidecar resolution;
+- direct runtime groundwater storage carry and Srivastava linear-reservoir
+  recurrence;
+- Lane D single-OFE/MOFE recharge aggregation from deep percolation;
+- generated baseflow WAT `Base` publication and real watershed WAT consumer
+  proof; and
+- full Rust gates recorded in `artifacts/gate-results.md`.
+
+Held:
+
+- generated groundwater-reservoir deep seepage (`gwdsv`) real downstream
+  consumer proof; and
+- `bftharea` watershed/channel threshold branch.
 
 ## Scope
 

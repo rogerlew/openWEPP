@@ -773,6 +773,7 @@ fn build_hillslope_wat_row_from_direct_publication(
         up_strm_q: row.transfer.upstream_surface_mm,
         sub_r_in: row.transfer.upstream_lateral_mm,
         latqcc: row.subsurface.latqcc_mm,
+        base: Some(row.subsurface.groundwater_baseflow_mm),
         total_soil_water: row.storage.total_soil_mm,
         frozwt: row.storage.frozwt_mm,
         frdp: row.storage.frdp_mm.unwrap_or(0.0),

@@ -552,6 +552,7 @@ pub struct DirectRunFrame {
     pub lane_transfer_ledger: Vec<DirectLaneTransferLedger>,
     pub lane_transfer_downstream_operands: DirectRunTransferDownstreamOperands,
     pub lane_transfer_shadow_projection: Option<DirectRunTransferShadowProjection>,
+    pub groundwater: DirectGroundwaterRunState,
     /// D15A (rev 27): the opt-in ACTIVE routing configuration. `Some` IS the
     /// activation selector inside the orchestrator (the runner sets it from
     /// `OPENWEPP_LANED_ACTIVE=1` after its fail-closed preflight); `None`
@@ -577,6 +578,7 @@ impl DirectRunFrame {
             lane_transfer_ledger: vec![DirectLaneTransferLedger::zero(); identity.lane_count],
             lane_transfer_downstream_operands: DirectRunTransferDownstreamOperands::zero(),
             lane_transfer_shadow_projection: None,
+            groundwater: DirectGroundwaterRunState::disabled(),
             laned_active: None,
             laned_active_summary: None,
         })
@@ -601,9 +603,90 @@ impl DirectRunFrame {
             lane_transfer_ledger: vec![DirectLaneTransferLedger::zero(); inputs.identity.lane_count],
             lane_transfer_downstream_operands: DirectRunTransferDownstreamOperands::zero(),
             lane_transfer_shadow_projection: None,
+            groundwater: DirectGroundwaterRunState::disabled(),
             laned_active: None,
             laned_active_summary: None,
         })
+    }
+
+    pub fn configure_groundwater(
+        &mut self,
+        authority: DirectGroundwaterAuthority,
+    ) -> Result<(), DirectRuntimeError> {
+        let total_area_m2 = self.total_area_m2()?;
+        self.groundwater = DirectGroundwaterRunState::from_authority(authority, total_area_m2)?;
+        Ok(())
+    }
+
+    pub fn run_groundwater_day_from_lane_frames(
+        &mut self,
+        day_index: usize,
+        day_frames: &mut [DirectDayFrame],
+    ) -> Result<DirectGroundwaterDayOutput, DirectRuntimeError> {
+        if day_frames.len() != self.lanes.len() {
+            return Err(DirectRuntimeError::FrameLaneCountMismatch {
+                identity_lane_count: self.lanes.len(),
+                actual_lane_count: day_frames.len(),
+            });
+        }
+        let mut recharge_m3 = 0.0;
+        let mut total_area_m2 = 0.0;
+        for (lane_index, (lane, day_frame)) in
+            self.lanes.iter().zip(day_frames.iter()).enumerate()
+        {
+            if day_frame.day_index != day_index {
+                return Err(DirectRuntimeError::DayIndexOutOfRange {
+                    day_index: day_frame.day_index,
+                    day_count: self.identity.day_count,
+                });
+            }
+            if day_frame.lane_index != lane_index {
+                return Err(DirectRuntimeError::LaneIndexOutOfRange {
+                    lane_index: day_frame.lane_index,
+                    lane_count: self.lanes.len(),
+                });
+            }
+            validate_nonnegative_direct_m(
+                "groundwater.deep_percolation_m",
+                day_frame.hydrology_projection.deep_percolation_m,
+            )?;
+            validate_finite("groundwater.lane_area_m2", lane.area_m2)?;
+            if lane.area_m2 <= 0.0 {
+                return Err(DirectRuntimeError::InvalidPublicationArea {
+                    lane_id: lane.lane_id,
+                    area_m2: lane.area_m2,
+                });
+            }
+            recharge_m3 += day_frame.hydrology_projection.deep_percolation_m * lane.area_m2;
+            total_area_m2 += lane.area_m2;
+        }
+        validate_nonnegative_direct_m("groundwater.total_recharge_m3", recharge_m3)?;
+        let output = self.groundwater.run_day(recharge_m3, total_area_m2)?;
+        for day_frame in day_frames {
+            day_frame.groundwater_output = output;
+        }
+        Ok(output)
+    }
+
+    fn total_area_m2(&self) -> Result<f64, DirectRuntimeError> {
+        let mut total_area_m2 = 0.0;
+        for lane in &self.lanes {
+            validate_finite("groundwater.lane_area_m2", lane.area_m2)?;
+            if lane.area_m2 <= 0.0 {
+                return Err(DirectRuntimeError::InvalidPublicationArea {
+                    lane_id: lane.lane_id,
+                    area_m2: lane.area_m2,
+                });
+            }
+            total_area_m2 += lane.area_m2;
+        }
+        validate_finite("groundwater.total_area_m2", total_area_m2)?;
+        if total_area_m2 <= 0.0 {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "groundwater.total_area_m2",
+            });
+        }
+        Ok(total_area_m2)
     }
 
     fn seed_day_frame(
@@ -1227,6 +1310,7 @@ pub struct DirectDayFrame {
     pub hydrology_projection: DirectHydrologyProjectionState,
     pub hydrology_projection_downstream_operands: DirectHydrologyProjectionDownstreamOperands,
     pub hydrology_projection_shadow_projection: Option<DirectHydrologyProjectionShadowProjection>,
+    pub groundwater_output: DirectGroundwaterDayOutput,
     pub prior_erosion_downstream_operands: DirectErosionDownstreamOperands,
     pub upstream_erosion_downstream_operands: DirectErosionDownstreamOperands,
     pub erosion_inputs: DirectErosionInputs,
@@ -1377,6 +1461,7 @@ impl DirectDayFrame {
             hydrology_projection_downstream_operands:
                 DirectHydrologyProjectionDownstreamOperands::zero(),
             hydrology_projection_shadow_projection: None,
+            groundwater_output: DirectGroundwaterDayOutput::zero(),
             prior_erosion_downstream_operands: DirectErosionDownstreamOperands::zero(),
             upstream_erosion_downstream_operands: DirectErosionDownstreamOperands::zero(),
             erosion_inputs: DirectErosionInputs::zero(),

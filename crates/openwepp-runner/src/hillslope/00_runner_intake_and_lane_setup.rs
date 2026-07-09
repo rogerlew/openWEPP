@@ -26,6 +26,7 @@ use openwepp_hillslope_orchestrator::{
     DirectFrostPriorStateInput, DirectFrostRuntimeCarry, DirectFrostThermalInputs,
     FrostSeasonalTemperatureCurve,
     DirectDecompositionAction, DirectDecompositionActiveContext, DirectDecompositionInputs,
+    DirectGroundwaterAuthority,
     DirectGrowthAction, DirectGrowthActiveContext, DirectGrowthInputs, DirectGrowthStateSurface,
     DirectHydrologyProjectionInputs, DirectKsatadjEffectiveConductivityInputs,
     DirectKsatadjLayerInputs, DirectWinterFrostComputeInputs,
@@ -60,6 +61,7 @@ use openwepp_input_contract::parsers::climate::{
 use openwepp_input_contract::parsers::frost::{
     FrostParseOutput, parse_frost_from_path, parse_frost_from_str,
 };
+use openwepp_input_contract::parsers::gwcoeff::{GwcoeffFile, parse_gwcoeff_from_path};
 use openwepp_input_contract::parsers::management::{
     ManagementParseOutput, YearlyScenarioData, parse_management_document_from_path,
 };
@@ -267,6 +269,10 @@ struct LanedActiveProvenance {
     total_clamp_m3: f64,
     total_tail_fold_m3: f64,
     total_latqcc_outlet_m3: f64,
+    groundwater_enabled_days: u64,
+    total_groundwater_recharge_m3: f64,
+    total_groundwater_baseflow_m3: f64,
+    total_groundwater_deep_seepage_m3: f64,
     max_supply_reconstruction_rel: f64,
     max_day_cascade_residual_rel: f64,
     max_day_seam_residual_rel: f64,
@@ -606,11 +612,13 @@ struct HillslopeSidecarInputPaths {
     frost: Option<PathBuf>,
     wepp_ui: Option<PathBuf>,
     pmetpara: Option<PathBuf>,
+    gwcoeff: Option<PathBuf>,
 }
 
 struct HillslopeSidecarResolution {
     snow: SnowParseOutput,
     frost: FrostParseOutput,
+    gwcoeff: GwcoeffFile,
     mode_selection: HillslopeModeSelectionProvenance,
     pmetpara: PmetparaFile,
     pmetpara_mode: PmetparaParseMode,
@@ -909,6 +917,8 @@ fn resolve_legacy_hillslope_sidecars(
         legacy_sidecar_path(&sidecar_response.bindings, "wepp_ui", request, "wepp_ui.txt");
     let pmetpara_path =
         legacy_sidecar_path(&sidecar_response.bindings, "pmetpara", request, "pmetpara.txt");
+    let gwcoeff_path =
+        legacy_sidecar_path(&sidecar_response.bindings, "gwcoeff", request, "gwcoeff.txt");
     record_existing_legacy_sidecars(
         &mut resolved_sidecars,
         &mut input_paths,
@@ -916,6 +926,7 @@ fn resolve_legacy_hillslope_sidecars(
         &frost_path,
         &wepp_ui_path,
         &pmetpara_path,
+        &gwcoeff_path,
     );
 
     let snow = parse_legacy_snow_sidecar(request, &snow_path)?;
@@ -924,10 +935,13 @@ fn resolve_legacy_hillslope_sidecars(
     let wepp_ui = parse_wepp_ui_sidecar(request, &wepp_ui_path, wepp_ui_requested, soil_versions)?;
     sidecar_warnings.extend(wepp_ui_warnings(&wepp_ui));
     let pmetpara = parse_legacy_pmetpara_sidecar(request, &pmetpara_path)?;
+    let gwcoeff = parse_gwcoeff_sidecar(request, &gwcoeff_path)?;
+    sidecar_warnings.extend(gwcoeff_warnings(&gwcoeff));
 
     Ok(HillslopeSidecarResolution {
         snow,
         frost,
+        gwcoeff,
         mode_selection: crate::hillslope::intake_lane_setup::build_mode_selection_provenance(
             &wepp_ui,
         )?,
@@ -995,6 +1009,7 @@ fn record_existing_legacy_sidecars(
     frost_path: &Path,
     wepp_ui_path: &Path,
     pmetpara_path: &Path,
+    gwcoeff_path: &Path,
 ) {
     record_existing_sidecar(resolved_sidecars, &mut input_paths.snow, "snow", snow_path);
     record_existing_sidecar(resolved_sidecars, &mut input_paths.frost, "frost", frost_path);
@@ -1009,6 +1024,12 @@ fn record_existing_legacy_sidecars(
         &mut input_paths.pmetpara,
         "pmetpara",
         pmetpara_path,
+    );
+    record_existing_sidecar(
+        resolved_sidecars,
+        &mut input_paths.gwcoeff,
+        "gwcoeff",
+        gwcoeff_path,
     );
 }
 
@@ -1092,6 +1113,27 @@ fn parse_legacy_pmetpara_sidecar(
     })
 }
 
+fn parse_gwcoeff_sidecar(
+    request: &HillslopeRunRequest,
+    gwcoeff_path: &Path,
+) -> Result<GwcoeffFile, HillslopeCliError> {
+    parse_gwcoeff_from_path(gwcoeff_path, request.sidecar_policy.as_gwcoeff_parse_options())
+        .map_err(|error| HillslopeCliError::ParseFailure {
+            surface: "gwcoeff",
+            detail: error.to_string(),
+        })
+}
+
+fn gwcoeff_warnings(gwcoeff: &GwcoeffFile) -> impl Iterator<Item = String> + '_ {
+    gwcoeff.warnings.iter().map(|warning| {
+        format!(
+            "{} {}",
+            warning.code.as_str(),
+            warning.message
+        )
+    })
+}
+
 fn resolve_runfile_hillslope_sidecars(
     request: &HillslopeRunRequest,
     inputs: &ParsedHillslopeRunInputs,
@@ -1128,10 +1170,20 @@ fn resolve_runfile_hillslope_sidecars(
         &mut resolved_sidecars,
         &mut input_paths.pmetpara,
     )?;
+    let default_gwcoeff_path = request.run_dir.join("gwcoeff.txt");
+    record_existing_sidecar(
+        &mut resolved_sidecars,
+        &mut input_paths.gwcoeff,
+        "gwcoeff",
+        &default_gwcoeff_path,
+    );
+    let gwcoeff = parse_gwcoeff_sidecar(request, &default_gwcoeff_path)?;
+    sidecar_warnings.extend(gwcoeff_warnings(&gwcoeff));
 
     Ok(HillslopeSidecarResolution {
         snow,
         frost,
+        gwcoeff,
         mode_selection: crate::hillslope::intake_lane_setup::build_mode_selection_provenance(
             &wepp_ui,
         )?,

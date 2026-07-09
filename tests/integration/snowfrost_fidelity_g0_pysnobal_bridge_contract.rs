@@ -104,6 +104,7 @@ fn sample_wat_row() -> HillslopeWatRow {
         up_strm_q: 0.0,
         sub_r_in: 0.0,
         latqcc: 0.0,
+        base: Some(0.0),
         total_soil_water: 0.0,
         frozwt: 0.0,
         frdp: 0.0,

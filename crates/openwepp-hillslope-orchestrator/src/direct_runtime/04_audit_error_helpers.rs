@@ -481,6 +481,23 @@ fn publication_mm_to_volume_m3(
     Ok(volume_m3)
 }
 
+fn publication_volume_m3_to_mm(
+    field: &'static str,
+    volume_m3: f64,
+    area_m2: f64,
+) -> Result<f64, DirectRuntimeError> {
+    validate_nonnegative_direct_m(field, volume_m3)?;
+    validate_finite("publication.area_m2", area_m2)?;
+    if area_m2 <= 0.0 {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "publication.area_m2",
+        });
+    }
+    let depth_mm = volume_m3 * 1_000.0 / area_m2;
+    validate_finite(field, depth_mm)?;
+    Ok(depth_mm)
+}
+
 fn sum_nonnegative_direct_m(
     field: &'static str,
     values: &[f64; DIRECT_TRANSFER_HOUR_COUNT],

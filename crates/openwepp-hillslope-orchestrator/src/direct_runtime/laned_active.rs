@@ -426,6 +426,10 @@ pub struct DirectLanedActiveRunSummary {
     pub total_clamp_m3: f64,
     pub total_tail_fold_m3: f64,
     pub total_latqcc_outlet_m3: f64,
+    pub groundwater_enabled_days: u64,
+    pub total_groundwater_recharge_m3: f64,
+    pub total_groundwater_baseflow_m3: f64,
+    pub total_groundwater_deep_seepage_m3: f64,
     pub max_supply_reconstruction_rel: f64,
     pub max_day_cascade_residual_rel: f64,
     pub max_day_seam_residual_rel: f64,
@@ -473,6 +477,10 @@ impl Default for DirectLanedActiveRunSummary {
             total_clamp_m3: 0.0,
             total_tail_fold_m3: 0.0,
             total_latqcc_outlet_m3: 0.0,
+            groundwater_enabled_days: 0,
+            total_groundwater_recharge_m3: 0.0,
+            total_groundwater_baseflow_m3: 0.0,
+            total_groundwater_deep_seepage_m3: 0.0,
             max_supply_reconstruction_rel: 0.0,
             max_day_cascade_residual_rel: 0.0,
             max_day_seam_residual_rel: 0.0,
@@ -498,6 +506,18 @@ impl DirectLanedActiveRunSummary {
             ..Self::default()
         }
     }
+}
+
+pub(crate) fn laned_active_record_groundwater(
+    summary: &mut DirectLanedActiveRunSummary,
+    output: super::DirectGroundwaterDayOutput,
+) {
+    if output.enabled {
+        summary.groundwater_enabled_days += 1;
+    }
+    summary.total_groundwater_recharge_m3 += output.recharge_m3;
+    summary.total_groundwater_baseflow_m3 += output.baseflow_m3;
+    summary.total_groundwater_deep_seepage_m3 += output.deep_seepage_m3;
 }
 
 pub(crate) fn laned_active_record_trace(

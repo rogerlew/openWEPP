@@ -2,6 +2,7 @@ use openwepp_input_contract::parsers::climate::{
     CompatibilityOptions, ParserMode as ClimateParserMode,
 };
 use openwepp_input_contract::parsers::frost::ParseMode as FrostParseMode;
+use openwepp_input_contract::parsers::gwcoeff::GwcoeffParseOptions;
 use openwepp_input_contract::parsers::management::ParseMode as ManagementParseMode;
 use openwepp_input_contract::parsers::pmetpara::ParseMode as PmetparaParseMode;
 use openwepp_input_contract::parsers::slope::SlopeParserOptions;
@@ -66,6 +67,11 @@ impl SidecarPolicy {
     #[must_use]
     pub const fn as_pmetpara_parse_mode(self) -> PmetparaParseMode {
         PmetparaParseMode::Compatibility
+    }
+
+    #[must_use]
+    pub const fn as_gwcoeff_parse_options(self) -> GwcoeffParseOptions {
+        GwcoeffParseOptions::compatibility()
     }
 }
 

@@ -522,6 +522,13 @@ impl DirectFrameExecutor {
                 day_frames.push(day_frame);
             }
 
+            let groundwater_output = frame
+                .run_groundwater_day_from_lane_frames(day_index, &mut day_frames)
+                .map_err(|source| {
+                    let day_frame = &day_frames[0];
+                    Self::day_execution_failure(day_frame, 0, day_index, &source)
+                })?;
+
             // The shared day window (rev-27 window row): last active source
             // hour over ALL lanes + the drain tail; `None` = zero-source day.
             let mut last_active_hour: Option<usize> = None;
@@ -625,6 +632,7 @@ impl DirectFrameExecutor {
             }
 
             laned_active::laned_active_enforce_day_closure(day_index, &books, &mut summary)?;
+            laned_active::laned_active_record_groundwater(&mut summary, groundwater_output);
 
             // Phase 2b: after active route books have passed their fail-closed
             // guards, run erosion/ledger, build rows, publish dynamic transfer

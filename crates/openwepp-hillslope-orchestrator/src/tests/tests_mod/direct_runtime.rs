@@ -21,10 +21,11 @@ use crate::{
     DirectEvapotranspirationDownstreamOperands, DirectEvapotranspirationInputs,
     DirectEvapotranspirationPmetInputs, DirectEvapotranspirationShadowProjection,
     DirectEvapotranspirationState, DirectExecutorMode, DirectFrameExecutor,
-    DirectFrostLayerCarryProjection, DirectHydrologyProjectionInputs,
-    DirectInfiltrationDepressionInputs, DirectInputAccountingState, DirectLaneConstructorInputs,
-    DirectLaneTransferLedger, DirectLedgerDownstreamOperands, DirectLedgerShadowProjection,
-    DirectLiquidInputInputs, DirectNormalizationDownstreamOperands, DirectNormalizationInputs,
+    DirectFrostLayerCarryProjection, DirectGroundwaterAuthority, DirectGroundwaterRunState,
+    DirectHydrologyProjectionInputs, DirectInfiltrationDepressionInputs,
+    DirectInputAccountingState, DirectLaneConstructorInputs, DirectLaneTransferLedger,
+    DirectLedgerDownstreamOperands, DirectLedgerShadowProjection, DirectLiquidInputInputs,
+    DirectNormalizationDownstreamOperands, DirectNormalizationInputs,
     DirectNormalizationShadowProjection, DirectNormalizationState, DirectPeakRunoffInputs,
     DirectPercolationInputs, DirectPhaseKind, DirectPhaseLifecycleStatus,
     DirectPublicationCalendarDay, DirectPublicationDayInput, DirectPublicationRunMetadata,
@@ -1303,6 +1304,92 @@ fn r7b_typed_run_constructor_roundtrips_multiofe_daily_parsed_inputs() {
 }
 
 #[test]
+fn gwbaseflow_linear_reservoir_recurrence_uses_prior_day_exports() {
+    let authority = DirectGroundwaterAuthority::linear_reservoir(0.010, 0.10, 0.05, 0.0)
+        .expect("valid groundwater authority should construct");
+    let mut state = DirectGroundwaterRunState::from_authority(authority, 1_000.0)
+        .expect("groundwater state should initialize");
+
+    let day1 = state
+        .run_day(2.0, 1_000.0)
+        .expect("day 1 groundwater should run");
+    assert!(day1.enabled);
+    assert_r7b_close(day1.storage_before_m3, 10.0);
+    assert_r7b_close(day1.storage_after_m3, 12.0);
+    assert_r7b_close(day1.baseflow_m3, 1.2);
+    assert_r7b_close(day1.deep_seepage_m3, 0.6);
+
+    let day2 = state
+        .run_day(4.0, 1_000.0)
+        .expect("day 2 groundwater should run");
+    assert_r7b_close(day2.storage_before_m3, 12.0);
+    assert_r7b_close(day2.storage_after_m3, 14.2);
+    assert_r7b_close(day2.baseflow_m3, 1.42);
+    assert_r7b_close(day2.deep_seepage_m3, 0.71);
+}
+
+#[test]
+fn gwbaseflow_mofe_recharge_aggregates_lane_deep_percolation() {
+    let identity = DirectRunIdentity::new(79, 2637, 2, 1)
+        .expect("valid direct constructor identity should construct");
+    let mut lanes = vec![
+        DirectLaneConstructorInputs::from_topology(0, 2, 1)
+            .expect("upstream lane constructor input should build"),
+        DirectLaneConstructorInputs::from_topology(1, 2, 1)
+            .expect("outlet lane constructor input should build"),
+    ];
+    lanes[0].area_m2 = 100.0;
+    lanes[1].area_m2 = 300.0;
+    let mut frame =
+        DirectRunFrame::from_constructor_inputs(DirectRunConstructorInputs::new(identity, lanes))
+            .expect("typed multi OFE direct frame should construct");
+    frame
+        .configure_groundwater(
+            DirectGroundwaterAuthority::linear_reservoir(0.001, 0.10, 0.20, 0.0)
+                .expect("valid groundwater authority should construct"),
+        )
+        .expect("groundwater should configure");
+
+    let mut day_frames = vec![
+        DirectDayFrame::seed(identity, 0, 0).expect("lane 1 day frame should seed"),
+        DirectDayFrame::seed(identity, 1, 0).expect("lane 2 day frame should seed"),
+    ];
+    day_frames[0].hydrology_projection.deep_percolation_m = 0.002;
+    day_frames[1].hydrology_projection.deep_percolation_m = 0.003;
+
+    let output = frame
+        .run_groundwater_day_from_lane_frames(0, &mut day_frames)
+        .expect("groundwater day should run");
+
+    assert_r7b_close(output.recharge_m3, 1.1);
+    assert_r7b_close(output.storage_before_m3, 0.4);
+    assert_r7b_close(output.storage_after_m3, 1.5);
+    assert_r7b_close(output.baseflow_m3, 0.15);
+    assert_r7b_close(output.deep_seepage_m3, 0.30);
+    assert_eq!(day_frames[0].groundwater_output, output);
+    assert_eq!(day_frames[1].groundwater_output, output);
+}
+
+#[test]
+fn gwbaseflow_exports_over_accepted_storage_fail_closed() {
+    let authority = DirectGroundwaterAuthority::linear_reservoir(0.001, 0.80, 0.30, 0.0)
+        .expect("coefficient parser permits nonnegative coefficients");
+    let mut state = DirectGroundwaterRunState::from_authority(authority, 100.0)
+        .expect("groundwater state should initialize");
+
+    let error = state
+        .run_day(0.0, 100.0)
+        .expect_err("outflow over accepted storage should fail");
+    assert!(matches!(
+        error,
+        DirectRuntimeError::DirectKernelGuardFailure {
+            phase: "groundwater_linear_reservoir",
+            ..
+        }
+    ));
+}
+
+#[test]
 fn r7b_typed_day_constructor_supplies_r4_r5_inputs() {
     let _audit_guard = direct_runtime_test_lock()
         .lock()
@@ -1448,7 +1535,9 @@ fn r7b_constructor_type_size_layout_is_bounded() {
     // E.3: the boxed inter-OFE erosion inflow intake pointer (+8 B).
     // D16 row-crop canhgt publication adds daily canopy height to the ET
     // operand bundle (+8 B).
-    assert!(day_frame <= 15_488);
+    // GWBASEFLOW M-T2B adds the per-day groundwater output carried from the
+    // run-level linear-reservoir recurrence into terminal-row publication (+48 B).
+    assert!(day_frame <= 15_536);
 }
 
 fn r7b_breakpoint_management_pmet_day() -> DirectDayConstructorInputs {
