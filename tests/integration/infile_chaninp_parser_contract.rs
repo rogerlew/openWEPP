@@ -2,8 +2,8 @@ use std::collections::BTreeSet;
 use std::path::PathBuf;
 
 use openwepp_input_contract::parsers::chaninp::{
-    ChaninpParseError, ChaninpParseOptions, ChaninpParseOutcome, ChaninpWarningCode, ParseMode,
-    parse_chaninp_from_path,
+    ChaninpFile, ChaninpParseError, ChaninpParseOptions, ChaninpParseOutcome, ChaninpWarningCode,
+    ParseMode, parse_chaninp_from_path,
 };
 
 fn fixture_path(name: &str) -> PathBuf {
@@ -12,6 +12,23 @@ fn fixture_path(name: &str) -> PathBuf {
 
 fn valid_ids() -> BTreeSet<i32> {
     BTreeSet::from([4, 5, 6])
+}
+
+fn assert_wshedw10_default_options(parsed: &ChaninpFile) {
+    let options = parsed
+        .options
+        .as_ref()
+        .expect("WSHED-W10 default branch exports explicit options");
+    assert_eq!(options.ichout, 0);
+    assert!((options.dtchr_input_s - 60.0).abs() < 1.0e-9);
+    assert_eq!(options.dtchr_norm_s, 60);
+    assert_eq!(options.ntchr, 1_440);
+    assert!(options.cbase_m3_s_m2.abs() < 1.0e-12);
+    assert_eq!(options.nchnum_input, 0);
+    assert_eq!(options.nchnum_norm, 0);
+    assert!(options.ichnum_input.is_empty());
+    assert!(options.ichnum_norm.is_empty());
+    assert!(!options.chan_output_enabled);
 }
 
 #[test]
@@ -88,9 +105,7 @@ fn compatibility_missing_file_defaults_with_chn_w_001() {
             .any(|warning| warning.code == ChaninpWarningCode::ChnW001)
     );
 
-    let options = parsed.options.expect("default branch exports options");
-    assert_eq!(options.nchnum_norm, 0);
-    assert!(!options.chan_output_enabled);
+    assert_wshedw10_default_options(&parsed);
 }
 
 #[test]
@@ -125,6 +140,7 @@ fn compatibility_non_enoent_open_error_collapses_with_chn_w_002() {
             .iter()
             .any(|warning| warning.code == ChaninpWarningCode::ChnW002)
     );
+    assert_wshedw10_default_options(&parsed);
 }
 
 #[test]
@@ -329,6 +345,7 @@ fn compatibility_collapses_parse_failure_to_default_branch() {
             .iter()
             .any(|warning| warning.code == ChaninpWarningCode::ChnW003)
     );
+    assert_wshedw10_default_options(&parsed);
 }
 
 #[test]

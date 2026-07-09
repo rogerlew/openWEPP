@@ -3,7 +3,9 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::Instant;
 
-use openwepp_input_contract::parsers::chaninp::{ChaninpParseOptions, parse_chaninp_from_path};
+use openwepp_input_contract::parsers::chaninp::{
+    ChaninpParseOptions, ChaninpWarning, parse_chaninp_from_path,
+};
 use openwepp_input_contract::parsers::gwcoeff::parse_gwcoeff_from_path;
 use openwepp_input_contract::parsers::hbp::HbpLatestEventState;
 use openwepp_input_contract::parsers::slope::{SlopeParserOptions, parse_slope_file};
@@ -225,16 +227,19 @@ fn run() -> Result<(), String> {
         ));
     }
 
-    let mut channel_options = WatershedChannelParseOptions {
+    let chaninp_path_for_parse = runfile
+        .chaninp_path
+        .clone()
+        .unwrap_or_else(|| run_dir.join("chan.inp"));
+    let chaninp_sidecar_exists = chaninp_path_for_parse.is_file();
+
+    let channel_options = WatershedChannelParseOptions {
         mode: WatershedChannelParseMode::Compatibility,
         expected_channel_count: Some(structure.summary.channel_count),
-        chan_inp_present: runfile.chaninp_path.is_some(),
+        chan_inp_present: chaninp_sidecar_exists,
         tcr_overlay_present: runfile.tcr_overlay_present,
         slplst_override: None,
     };
-    if runfile.chaninp_path.is_none() {
-        channel_options.chan_inp_present = false;
-    }
 
     let watershed_channel =
         parse_watershed_channel_from_path(&runfile.watershed_channel_path, channel_options)
@@ -271,41 +276,38 @@ fn run() -> Result<(), String> {
 
     let mut sidecar_warnings = runfile.runfile_warnings;
 
-    let chaninp = if let Some(chaninp_path) = runfile.chaninp_path.as_ref() {
-        let valid_channel_element_ids = structure
-            .rows
-            .iter()
-            .filter(|row| row.element_type_code == 2)
-            .map(|row| row.element_id)
-            .map(|id| {
-                if id <= 0 {
-                    Err(format!(
-                        "CLIWAT-E-011 invalid channel element id {id} in watershed structure"
-                    ))
-                } else {
-                    Ok(id)
-                }
-            })
-            .collect::<Result<BTreeSet<_>, _>>()?;
+    let valid_channel_element_ids = structure
+        .rows
+        .iter()
+        .filter(|row| row.element_type_code == 2)
+        .map(|row| row.element_id)
+        .map(|id| {
+            if id <= 0 {
+                Err(format!(
+                    "CLIWAT-E-011 invalid channel element id {id} in watershed structure"
+                ))
+            } else {
+                Ok(id)
+            }
+        })
+        .collect::<Result<BTreeSet<_>, _>>()?;
 
-        let chaninp_options =
-            ChaninpParseOptions::compatibility(watershed_channel.ipeak, watershed_channel.nchan);
+    let chaninp_options =
+        ChaninpParseOptions::compatibility(watershed_channel.ipeak, watershed_channel.nchan);
 
-        let chaninp =
-            parse_chaninp_from_path(chaninp_path, chaninp_options, &valid_channel_element_ids)
-                .map_err(|error| {
-                    format!(
-                        "CLIWAT-E-012 failed parsing chan.inp {}: {error}",
-                        chaninp_path.display()
-                    )
-                })?;
-        Some(chaninp)
-    } else {
-        sidecar_warnings.push(
-            "chan.inp sidecar not provided; applying deterministic fallback channel globals (dtchr=3600, ntchr=24, nchnum=0, cbase=0).".to_string(),
-        );
-        None
-    };
+    let chaninp = parse_chaninp_from_path(
+        &chaninp_path_for_parse,
+        chaninp_options,
+        &valid_channel_element_ids,
+    )
+    .map_err(|error| {
+        format!(
+            "CLIWAT-E-012 failed parsing chan.inp {}: {error}",
+            chaninp_path_for_parse.display()
+        )
+    })?;
+    sidecar_warnings.extend(chaninp.warnings.iter().map(format_chaninp_warning));
+    let chaninp = Some(chaninp);
     let groundwater_authority = watershed_groundwater_authority_from_gwcoeff(
         runfile.gwcoeff_path.as_deref(),
         sidecar_policy,
@@ -500,6 +502,18 @@ fn run() -> Result<(), String> {
     )?;
 
     Ok(())
+}
+
+fn format_chaninp_warning(warning: &ChaninpWarning) -> String {
+    match warning.line {
+        Some(line) => format!(
+            "chan.inp {} line {} {}",
+            warning.code.as_str(),
+            line,
+            warning.message
+        ),
+        None => format!("chan.inp {} {}", warning.code.as_str(), warning.message),
+    }
 }
 
 #[derive(Debug, Clone, Copy)]

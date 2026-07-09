@@ -905,7 +905,7 @@ fn defaulted_output(
         unknown_ichnum_retained_warning_emitted: false,
         warnings: vec![warning],
         options: Some(ChaninpOptions {
-            ichout: 1,
+            ichout: 0,
             dtchr_input_s,
             cbase_m3_s_m2: 0.0,
             nchnum_input: 0,

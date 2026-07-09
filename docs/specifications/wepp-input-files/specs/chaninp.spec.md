@@ -4,21 +4,29 @@
 - `spec_id`: `SPEC-INFILE-CHANINP-001`
 - `surface_id`: `infile-channel-contrast`
 - `title`: `WEPP Channel Routing Options Sidecar (chan.inp)`
-- `status`: `draft-HOLD`
+- `status`: `in_review`
 - `owner`: `openWEPP`
-- `spec_version`: `0.1.0`
-- `last_updated_utc`: `2026-05-21T00:00:00Z`
+- `spec_version`: `0.1.1`
+- `last_updated_utc`: `2026-07-09T00:00:00Z`
 - `evidence_mode`: `Static`
 
 ## Evidence anchors
 - [DIRECT] `usersum2024` defines `chan.inp` purpose and four-line format.
   Evidence: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:9546-9558`.
-- [DIRECT] Legacy `wepp-forest` reads `chan.inp` only when `ipeak > 2`, applies clamps/defaults, and opens `chan.out`/`chanwb.out` conditionally.
-  Evidence: `/workdir/wepp-forest/src/wshinp.for:469-514`.
-- [DIRECT] Legacy symbols, meanings, and units for channel-routing control variables (`ichout`, `nchnum`, `dtchr`, `cbase`, `ichnum`) are declared in `cchrt.inc`.
-  Evidence: `/workdir/wepp-forest/src/cchrt.inc:7-40`.
-- [DIRECT] Legacy timestep limits come from `pmxchr.inc` (`dtlowl=60`, `dtupl1=3600`, `dtupl2=1800`, `mxtchr=1440`).
-  Evidence: `/workdir/wepp-forest/src/pmxchr.inc:6-16`.
+- [DIRECT] Pinned legacy `wepp-forest` reads `chan.inp` only when
+  `ipeak > 2`, applies clamps/defaults, and opens `chan.out`/`chanwb.out`
+  conditionally.
+  Evidence: `/workdir/wepp-forest_260430_baseline/src/wshinp.for:469-514`
+  at commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70`.
+- [DIRECT] Legacy symbols, meanings, and units for channel-routing control
+  variables (`ichout`, `nchnum`, `dtchr`, `cbase`, `ichnum`) are declared in
+  `cchrt.inc`.
+  Evidence: `/workdir/wepp-forest_260430_baseline/src/cchrt.inc:7-40`
+  at commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70`.
+- [DIRECT] Legacy timestep limits come from `pmxchr.inc` (`dtlowl=60`,
+  `dtupl1=3600`, `dtupl2=1800`, `mxtchr=1440`).
+  Evidence: `/workdir/wepp-forest_260430_baseline/src/pmxchr.inc:6-16`
+  at commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70`.
 - [DIRECT] `wepppy` writes `chan.inp` as four lines and constrains UI overrides (`ichout_override` in `{1,3}`, `dtchr_override >= 60`).
   Evidence: `/workdir/wepppy/wepppy/nodb/core/wepp.py:2514-2588`, `/workdir/wepppy/wepppy/nodb/core/wepp_input_parser.py:115-132`.
 - [DIRECT] `wepppyo3` repo scope is WEPP output/interchange and helper modules; no dedicated `chan.inp` parser contract is documented in module inventory.
@@ -33,7 +41,7 @@
 Evidence: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:9546-9558`.
 
 [DIRECT] Legacy code branches on `if(ipeak > 2)` before attempting to read `chan.inp`.
-Evidence: `/workdir/wepp-forest/src/wshinp.for:469-487`.
+Evidence: `/workdir/wepp-forest_260430_baseline/src/wshinp.for:469-487`.
 
 [INFERENCE] openWEPP should treat `chan.inp` as conditionally applicable by routing mode rather than universally required for watershed runs.
 
@@ -43,7 +51,7 @@ Evidence: `/workdir/wepp-forest/src/wshinp.for:469-487`.
 | --- | --- | --- | --- |
 | A | no `datver` line (canonical format) and `ipeak <= 2` | [DIRECT] read-path not entered. | [INFERENCE] `SurfaceNotApplicable(surface_id=infile-channel-contrast, reason=ipeak_le_2)`; no parser error. |
 | B | no `datver` line and `ipeak > 2`, full 4-line payload | [DIRECT] raw 4-line parse, then clamp/normalize controls. | [INFERENCE] canonical parse path with mode-dependent strict vs compat handling for normalization. |
-| C | no `datver` line and `ipeak > 2`, file missing | [DIRECT] open failure branch defaults output controls. | [INFERENCE] strict: `MissingRequiredSurfaceError(surface_id=infile-channel-contrast, when=ipeak_gt_2)`; compat: legacy-default branch with trace event. |
+| C | no `datver` line and `ipeak > 2`, file missing | [DIRECT] open failure branch defaults output controls. | [INFERENCE] strict: `MissingRequiredSurfaceError(surface_id=infile-channel-contrast, when=ipeak_gt_2)`; compat: WSHED-W10 default branch with `ichout=0`, `dtchr=60`, `ntchr=1440`, `cbase=0`, `nchnum=0`, empty `ichnum`, and no channel output. |
 | D | no `datver` line and `ipeak > 2`, open fails (non-ENOENT I/O) | [DIRECT] open/read error labels collapse to default branches. | [INFERENCE] strict: `InputOpenError(surface_id=infile-channel-contrast, cause=...)`; compat: legacy-default branch plus `CompatibilityWarning(open_error_collapsed_with_default=true)`. |
 | E | no `datver` line and `ipeak > 2`, truncated/malformed payload | [DIRECT] read error labels route to defaults; no typed distinction. | [INFERENCE] strict: `UnexpectedEof` / `ParseNumber`; compat: legacy-default branch plus parse-warning event. |
 | F | extraneous version/header text present | [DIRECT] no dedicated version record is parsed; values are consumed positionally. | [INFERENCE] strict: reject non-numeric first required token with `ParseNumber`; compat: if numeric-leading values still satisfy positional parse, trailing text policy applies per Section 8. |
@@ -52,7 +60,7 @@ Evidence: `/workdir/wepp-forest/src/wshinp.for:469-487`.
 Evidence: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:9548-9555`.
 
 [DIRECT] `ipeak` semantics originate in watershed channel file definitions and route method selection.
-Evidence: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:7245-7254`, `/workdir/wepp-forest/src/wshinp.for:469-514`.
+Evidence: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:7245-7254`, `/workdir/wepp-forest_260430_baseline/src/wshinp.for:469-514`.
 
 ## 4. Record grammar and line-by-line format definition
 
@@ -76,14 +84,14 @@ Evidence: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersu
 3. `read(24,*) nchnum`
 4. `read(24,*) (ichnum(ichan), ichan=1,nchnum)`
 5. clamp/normalize output controls and routing timestep.
-Evidence: `/workdir/wepp-forest/src/wshinp.for:473-514`.
+Evidence: `/workdir/wepp-forest_260430_baseline/src/wshinp.for:473-514`.
 
 [DIRECT] Legacy timestep normalization:
 - lower bound: `dtchr >= dtlowl (60 s)`
 - upper bound: `dtchr <= dtupl1 (3600 s)` for continuous (`imodel==1`)
 - upper bound: `dtchr <= dtupl2 (1800 s)` for event
 - derive integer daily step count: `ntchr = 86400/dtchr + 0.99`, capped at `mxtchr`, then recompute `dtchr = 86400/ntchr`.
-Evidence: `/workdir/wepp-forest/src/wshinp.for:488-496`, `/workdir/wepp-forest/src/pmxchr.inc:6-16`.
+Evidence: `/workdir/wepp-forest_260430_baseline/src/wshinp.for:488-496`, `/workdir/wepp-forest_260430_baseline/src/pmxchr.inc:6-16`.
 
 ## 5. Field dictionary table with canonical symbols and alias mapping
 
@@ -96,7 +104,7 @@ Evidence: `/workdir/wepp-forest/src/wshinp.for:488-496`, `/workdir/wepp-forest/s
 | `ichnum(i)` | 4 | element ID | int | `nchnum`/file | conditional (required when `nchnum>0`) | selected channel identifiers from watershed structure element IDs | `channel_output_element_ids` |
 
 [DIRECT] Variable definitions and enumerations are described in usersum and legacy include comments.
-Evidence: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:9548-9555`, `/workdir/wepp-forest/src/cchrt.inc:21-40`.
+Evidence: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:9548-9555`, `/workdir/wepp-forest_260430_baseline/src/cchrt.inc:21-40`.
 
 ### 5.1 Enum dictionary
 - `ichout=0`: no output.
@@ -105,7 +113,7 @@ Evidence: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersu
 - `ichout=3`: timestep flowrate.
 
 [DIRECT] Values and descriptions are listed in usersum and mirrored in `cchrt.inc`.
-Evidence: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:9549-9552`, `/workdir/wepp-forest/src/cchrt.inc:24-29`.
+Evidence: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:9549-9552`, `/workdir/wepp-forest_260430_baseline/src/cchrt.inc:24-29`.
 
 ### 5.2 Alias mapping policy
 [INFERENCE] Canonical WEPP names (`ichout`, `dtchr`, `cbase`, `nchnum`, `ichnum`) remain authoritative in this specification and parser-contract traces. openWEPP internal naming may differ but must preserve one-to-one alias mapping to these symbols for provenance continuity.
@@ -117,7 +125,7 @@ Evidence: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersu
 4. Branch D (`nchnum` clamp): values below 0 are clamped to 0; above `nchan` are clamped to `nchan`.
 
 [DIRECT] Branch behavior in legacy path.
-Evidence: `/workdir/wepp-forest/src/wshinp.for:469-514`.
+Evidence: `/workdir/wepp-forest_260430_baseline/src/wshinp.for:469-514`.
 
 ## 7. Cross-file consistency constraints and coupling dependencies
 1. `ipeak` coupling: `chan.inp` applicability depends on watershed channel-file routing-method selection (`.chn` line 3).
@@ -127,8 +135,8 @@ Evidence: `/workdir/wepp-forest/src/wshinp.for:469-514`.
 5. Workflow coupling: `wepppy` authoring path maps `chn_topaz_ids_of_interest` to WEPP element IDs, then emits `chan.inp` four-line payload.
 
 [DIRECT] Coupling evidence:
-- `ipeak` gate + `nchnum` clamp: `/workdir/wepp-forest/src/wshinp.for:469-514`
-- runtime matching against `ichnum`: `/workdir/wepp-forest/src/chnrt.for:773-774`
+- `ipeak` gate + `nchnum` clamp: `/workdir/wepp-forest_260430_baseline/src/wshinp.for:469-514`
+- runtime matching against `ichnum`: `/workdir/wepp-forest_260430_baseline/src/chnrt.for:773-774`
 - `wepppy` generation path: `/workdir/wepppy/wepppy/nodb/core/wepp.py:2568-2588`
 
 [INFERENCE] openWEPP parser/data-model contracts should validate channel-ID namespace against loaded watershed topology, not just parse token counts.
@@ -140,14 +148,42 @@ Evidence: `/workdir/wepp-forest/src/wshinp.for:469-514`.
 - `dtchr` is then bounded/normalized before daily routing-step setup.
 - Legacy sets `cbase=0.` before attempting to read line 2.
 
-[DIRECT] Evidence: `/workdir/wepp-forest/src/wshinp.for:470-496`.
+[DIRECT] Evidence: `/workdir/wepp-forest_260430_baseline/src/wshinp.for:470-496`.
+
+### 8.1a WSHED-W10 compatibility default branch
+
+WSHED-W10 ratifies the deterministic openWEPP compatibility state used when
+`chan.inp` is absent, unreadable, or collapsed after a parse/count failure in
+compatibility mode. The legacy open/read-error labels directly support
+`ichout=0`, `nchnum=0`, an empty selected-channel list, no channel output, and
+`cbase=0`. The legacy branch can reach timestep normalization without a freshly
+read `dtchr`; openWEPP resolves that ambiguous initialization point by fixing the
+compatibility default to the lower-bound/mxtchr closure already represented by
+the parser.
+
+| Field | WSHED-W10 compat default |
+| --- | --- |
+| `parse_outcome` | `DefaultedCompat` or `OpenErrorCollapsedCompat` |
+| `ichout` | `0` |
+| `dtchr_input_s` | `60` |
+| `dtchr_norm_s` | `60` |
+| `ntchr` | `1440` |
+| `cbase_m3_s_m2` | `0.0` |
+| `nchnum_input` / `nchnum_norm` | `0` / `0` |
+| `ichnum_input` / `ichnum_norm` | empty / empty |
+| `chan_output_enabled` | `false` |
+
+This default must be emitted as an explicit typed parser outcome with a
+compatibility warning. Watershed runtime may consume that typed state directly;
+it must not synthesize a separate hidden set of routing globals from an absent
+optional `chan.inp` object.
 
 ### 8.2 OpenWEPP strict-vs-compat typed expectations (draft)
 
 | Condition | strict mode | compat mode |
 | --- | --- | --- |
 | `ipeak <= 2` (surface not applicable) | `SurfaceNotApplicable(surface_id=infile-channel-contrast, reason=ipeak_le_2)` trace event only. | same as strict. |
-| `ipeak > 2` and `chan.inp` missing | `MissingRequiredSurfaceError(surface_id=infile-channel-contrast)` | legacy-default branch with `CompatibilityDefaultApplied(ichout=0, nchnum=0)`. |
+| `ipeak > 2` and `chan.inp` missing | `MissingRequiredSurfaceError(surface_id=infile-channel-contrast)` | WSHED-W10 branch with `CompatibilityDefaultApplied(ichout=0, dtchr=60, ntchr=1440, nchnum=0, cbase=0)`. |
 | `ipeak > 2` and open fails (non-ENOENT I/O) | `InputOpenError(surface_id=infile-channel-contrast, cause=...)` | legacy-default branch plus `CompatibilityWarning(open_error_collapsed_with_default=true)`. |
 | Required lines truncated | `UnexpectedEof(surface_id=infile-channel-contrast, line_no=...)` | legacy-default branch plus `CompatibilityWarning(truncated_payload_defaulted=true)`. |
 | Numeric parse failure on required tokens | `ParseNumber(surface_id=infile-channel-contrast, line_no=..., token=...)` | legacy-default branch plus `CompatibilityWarning(parse_failure_defaulted=true)`. |
@@ -198,14 +234,14 @@ Expected: `UnexpectedEof` / `ChannelOutputCountInvalid`.
 ```
 Legacy path clamps to lower bound; strict openWEPP mode should raise `RoutingTimestepOutOfRange`.
 
-## 10. Gap/conflict register with explicit `HOLD` conditions
+## 10. Gap/conflict register
 
 | Gap ID | Provenance tags | Statement | Evidence | Status |
 | --- | --- | --- | --- | --- |
-| `CHANINP-GAP-001` | `usersum2024`, `legacy-code` | `usersum2024` line-2 guidance says `cbase` typically `1e-6` or smaller, but static search in legacy source did not find downstream computational use of `cbase` outside parse/common-block storage. | [DIRECT] `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:9553`; `/workdir/wepp-forest/src/cchrt.inc:39`; `/workdir/wepp-forest/src/wshinp.for:470-474`; `rg -n "\bcbase\b" /workdir/wepp-forest/src` | `HOLD` |
-| `CHANINP-GAP-002` | `legacy-code` | Legacy error labels can bypass explicit `dtchr` assignment before clamp path when line-1 parse fails, creating ambiguous initialization semantics. | [DIRECT] `/workdir/wepp-forest/src/wshinp.for:473-496`; no `dtchr` initialization found via `rg -n "\bdtchr\s*=\s*" /workdir/wepp-forest/src` beyond `wshinp.for`. | `HOLD` |
-| `CHANINP-GAP-003` | `wepppy`, `usersum2024`, `legacy-code` | `wepppy` UI/parser constrains `ichout_override` to `{1,3}`, while usersum/legacy enumerate `0..3` and include mode `2`. | [DIRECT] `/workdir/wepppy/wepppy/nodb/core/wepp_input_parser.py:122-132`; `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:9549-9552`; `/workdir/wepp-forest/src/cchrt.inc:24-29` | `HOLD` |
-| `CHANINP-GAP-004` | `wepppyo3` | `wepppyo3` currently provides WEPP output/interchange surfaces but no dedicated `chan.inp` input parser contract in documented module surface. | [DIRECT] `/workdir/wepppyo3/README.md:70-73`; `/workdir/wepppyo3/README.md:128-146` | `HOLD` |
+| `CHANINP-GAP-001` | `usersum2024`, `legacy-code` | `usersum2024` line-2 guidance says `cbase` typically `1e-6` or smaller, but static search in legacy source did not find downstream computational use of `cbase` outside parse/common-block storage. | [DIRECT] `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:9553`; `/workdir/wepp-forest_260430_baseline/src/cchrt.inc:39`; `/workdir/wepp-forest_260430_baseline/src/wshinp.for:470-474`; `rg -n "\bcbase\b" /workdir/wepp-forest_260430_baseline/src` | `RATIFIED-W4DR-006` |
+| `CHANINP-GAP-002` | `legacy-code` | Legacy error labels can bypass explicit `dtchr` assignment before clamp path when line-1 parse fails, creating ambiguous initialization semantics. | [DIRECT] `/workdir/wepp-forest_260430_baseline/src/wshinp.for:473-496`; no `dtchr` initialization found via `rg -n "\bdtchr\s*=\s*" /workdir/wepp-forest_260430_baseline/src` beyond `wshinp.for`. | `RATIFIED-WSHED-W10` |
+| `CHANINP-GAP-003` | `wepppy`, `usersum2024`, `legacy-code` | `wepppy` UI/parser constrains `ichout_override` to `{1,3}`, while usersum/legacy enumerate `0..3` and include mode `2`. | [DIRECT] `/workdir/wepppy/wepppy/nodb/core/wepp_input_parser.py:122-132`; `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:9549-9552`; `/workdir/wepp-forest_260430_baseline/src/cchrt.inc:24-29` | `RATIFIED-W4DR-004` |
+| `CHANINP-GAP-004` | `wepppyo3` | `wepppyo3` currently provides WEPP output/interchange surfaces but no dedicated `chan.inp` input parser contract in documented module surface. | [DIRECT] `/workdir/wepppyo3/README.md:70-73`; `/workdir/wepppyo3/README.md:128-146` | `RATIFIED-W4DR-003` |
 
 ## 11. Parser-contract handoff map (`SC-INFILE-CHANINP-001`)
 
@@ -216,8 +252,14 @@ Legacy path clamps to lower bound; strict openWEPP mode should raise `RoutingTim
 | Symbol continuity + aliases | Section 5 | Preserve legacy symbol names as canonical; maintain explicit alias map for openWEPP data model. |
 | Cross-file coupling | Section 7 | Validate `ichnum` against watershed structure element IDs and channel topology closure. |
 | Defaults vs strict errors | Section 8 | Support explicit strict-mode typed errors; legacy-compat mode may emulate clamping/default branches with trace events. |
-| Conflict/gap carry-forward | Section 10 | Keep contract `HOLD` until `cbase` semantics, `dtchr` error-path initialization policy, and `ichout` domain policy are dispositioned. |
+| Conflict/gap carry-forward | Section 10 | Parser contract owns ratified default/compat posture; remaining implementation must preserve explicit strict-vs-compat outcomes. |
 
 - `parser_contract_id`: `SC-INFILE-CHANINP-001`
 - `canonical_contract_path`: `docs/specifications/science-contracts/contracts/SC-INFILE-CHANINP-001.md`
-- `handoff_status`: `ready-for-contract-authoring (with HOLD gaps)`
+- `handoff_status`: `ratified-for-wshed-w10-implementation`
+
+## 12. Revision history
+
+| Date | Version | Change |
+| --- | --- | --- |
+| 2026-07-09 | 0.1.1 | WSHED-W10 ratified typed compatibility defaults for absent/unreadable/malformed `chan.inp` and pinned legacy evidence paths to `/workdir/wepp-forest_260430_baseline`. |

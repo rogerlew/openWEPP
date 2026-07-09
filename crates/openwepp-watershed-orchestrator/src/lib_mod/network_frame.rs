@@ -21,6 +21,8 @@ const METERS_TO_FEET: f64 = 3.281;
 pub enum WatershedNetworkFrameError {
     ChaninpNotRuntimeReady {
         observed: ChaninpParseOutcome,
+        chaninp_ipeak: i32,
+        channel_ipeak: i32,
     },
     MissingChaninpOptions,
     ChannelIdOutOfRange {
@@ -49,9 +51,13 @@ pub enum WatershedNetworkFrameError {
 impl fmt::Display for WatershedNetworkFrameError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::ChaninpNotRuntimeReady { observed } => write!(
+            Self::ChaninpNotRuntimeReady {
+                observed,
+                chaninp_ipeak,
+                channel_ipeak,
+            } => write!(
                 formatter,
-                "WSHEDFRAME-E-001 chan.inp parse outcome {observed:?} is not runtime-ready"
+                "WSHEDFRAME-E-001 chan.inp parse outcome {observed:?} is not runtime-ready for chaninp ipeak {chaninp_ipeak} and channel ipeak {channel_ipeak}"
             ),
             Self::MissingChaninpOptions => {
                 write!(formatter, "WSHEDFRAME-E-002 chan.inp options are missing")
@@ -707,10 +713,40 @@ fn build_routing_globals(
     default_ntchr: f64,
 ) -> Result<WatershedRoutingGlobals, WatershedNetworkFrameError> {
     if let Some(chaninp) = chaninp {
-        if chaninp.parse_outcome != ChaninpParseOutcome::ParsedBranch {
+        if chaninp.ipeak != channel.ipeak {
             return Err(WatershedNetworkFrameError::ChaninpNotRuntimeReady {
                 observed: chaninp.parse_outcome,
+                chaninp_ipeak: chaninp.ipeak,
+                channel_ipeak: channel.ipeak,
             });
+        }
+        match chaninp.parse_outcome {
+            ChaninpParseOutcome::NotApplicable => {
+                if channel.ipeak > 2 {
+                    return Err(WatershedNetworkFrameError::ChaninpNotRuntimeReady {
+                        observed: chaninp.parse_outcome,
+                        chaninp_ipeak: chaninp.ipeak,
+                        channel_ipeak: channel.ipeak,
+                    });
+                }
+                let nchan = u32::try_from(channel.nchan).map_err(|_| {
+                    WatershedNetworkFrameError::ChannelIdOutOfRange {
+                        channel_id: channel.nchan,
+                    }
+                })?;
+                return Ok(WatershedRoutingGlobals {
+                    ipeak: channel.ipeak,
+                    nchan,
+                    dtchr_seconds: default_dtchr_seconds,
+                    ntchr: default_ntchr,
+                    nchnum: 0.0,
+                    cbase: 0.0,
+                    groundwater_baseflow: WatershedGroundwaterRoutingAuthority::disabled(),
+                });
+            }
+            ChaninpParseOutcome::ParsedBranch
+            | ChaninpParseOutcome::DefaultedCompat
+            | ChaninpParseOutcome::OpenErrorCollapsedCompat => {}
         }
         let Some(options) = chaninp.options.as_ref() else {
             return Err(WatershedNetworkFrameError::MissingChaninpOptions);
@@ -723,7 +759,7 @@ fn build_routing_globals(
         return Ok(WatershedRoutingGlobals {
             ipeak: chaninp.ipeak,
             nchan,
-            dtchr_seconds: options.dtchr_input_s,
+            dtchr_seconds: f64::from(options.dtchr_norm_s),
             ntchr: f64::from(options.ntchr),
             nchnum: f64::from(options.nchnum_norm),
             cbase: options.cbase_m3_s_m2,

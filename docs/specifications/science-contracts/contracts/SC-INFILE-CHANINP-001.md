@@ -4,9 +4,9 @@ title: Channel Routing Options Input Parser Contract (chan.inp)
 status: in_review
 maturity: draft
 owner: openWEPP
-contract_version: 0.1.0
+contract_version: 0.1.2
 evidence_mode: Static
-last_updated_utc: 2026-05-21T00:00:00Z
+last_updated_utc: 2026-07-09T00:00:00Z
 ---
 
 # SC-INFILE-CHANINP-001 Channel Routing Options Input Parser Contract
@@ -19,7 +19,7 @@ Evidence mode: `Static`
 
 - `[DIRECT][E-SPEC-CHN-01]` `/home/workdir/openWEPP/docs/specifications/wepp-input-files/specs/chaninp.spec.md` (canonical `chan.inp` specification and unresolved gaps).
 - `[DIRECT][E-SURVEY-CHN-01]` `/home/workdir/openWEPP/docs/planning/wepp-input-file-parser-survey.md` (surface provenance and ownership context).
-- `[DIRECT][E-WF-CHN-01]` `/workdir/wepp-forest/src/wshinp.for`, `/workdir/wepp-forest/src/cchrt.inc`, `/workdir/wepp-forest/src/pmxchr.inc`, `/workdir/wepp-forest/src/chnrt.for` (legacy parse path, symbols, clamps/normalization, and downstream consumption).
+- `[DIRECT][E-WF-CHN-01]` `/workdir/wepp-forest_260430_baseline/src/wshinp.for`, `/workdir/wepp-forest_260430_baseline/src/cchrt.inc`, `/workdir/wepp-forest_260430_baseline/src/pmxchr.inc`, `/workdir/wepp-forest_260430_baseline/src/chnrt.for` at commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` (legacy parse path, symbols, clamps/normalization, and downstream consumption).
 - `[DIRECT][E-WP-CHN-01]` `/workdir/wepppy/wepppy/nodb/core/wepp.py`, `/workdir/wepppy/wepppy/nodb/core/wepp_input_parser.py` (modern writer/input parser constraints and alias surfaces).
 - `[INFERENCE][E-PHYS-CHN-01]` Process/common-sense invariants: timestep/count fields must remain finite and physically meaningful; selected channel IDs must close against loaded watershed topology.
 
@@ -77,11 +77,11 @@ line4_compat           = ichnum { whitespace ichnum } [trailing_tokens] ;
 | Canonical symbol | Source-model field | Simulation-model field | Units | Type | Cardinality | Required | Datver applicability | Default/derivation | openWEPP alias |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `ipeak` | external `.chn` routing-mode field | `chaninp.context.ipeak` | enum/int | int | 1 | yes | all | sourced from channel-file parser context | `channel.routing_method_id` |
-| `ichout` | `line1.ichout` | `chaninp.options.ichout` | mode enum | int | 0..1 | conditional (`ipeak>2`) | all | none when parse succeeds | `channel_output_mode` |
-| `dtchr` | `line1.dtchr` | `chaninp.options.dtchr_input_s` | s | real | 0..1 | conditional (`ipeak>2`) | all | none when parse succeeds | `channel_routing_timestep_input_s` |
+| `ichout` | `line1.ichout` | `chaninp.options.ichout` | mode enum | int | 0..1 | conditional (`ipeak>2`) | all | default `0` only in compat default branch | `channel_output_mode` |
+| `dtchr` | `line1.dtchr` | `chaninp.options.dtchr_input_s` | s | real | 0..1 | conditional (`ipeak>2`) | all | default `60` only in compat default branch | `channel_routing_timestep_input_s` |
 | `cbase` | `line2.cbase` | `chaninp.options.cbase_m3_s_m2` | m^3/s/m^2 | real | 0..1 | conditional (`ipeak>2`) | all | legacy default `0.0` only in compat default branch | `unit_area_baseflow_coefficient` |
-| `nchnum` | `line3.nchnum` | `chaninp.options.nchnum_input` | count | int | 0..1 | conditional (`ipeak>2`) | all | none when parse succeeds | `channel_output_count_input` |
-| `ichnum(i)` | `line4.ichnum[i]` | `chaninp.options.ichnum_input[i]` | element id | int array | `nchnum` | conditional (`ipeak>2`, `nchnum>0`) | all | none when parse succeeds | `channel_output_element_ids_input` |
+| `nchnum` | `line3.nchnum` | `chaninp.options.nchnum_input` | count | int | 0..1 | conditional (`ipeak>2`) | all | default `0` only in compat default branch | `channel_output_count_input` |
+| `ichnum(i)` | `line4.ichnum[i]` | `chaninp.options.ichnum_input[i]` | element id | int array | `nchnum` | conditional (`ipeak>2`, `nchnum>0`) | all | empty only in compat default branch where `nchnum=0` | `channel_output_element_ids_input` |
 | derived `nchan` | external watershed topology context | `chaninp.context.nchan` | count | int | 1 | yes | all | sourced from watershed/channel topology inputs | `topology.channel_count` |
 | derived `valid_channel_element_ids` | external watershed topology ID namespace | `chaninp.context.valid_channel_element_ids` | element id set | set<int> | 1 | yes | all | sourced from watershed structure/channel topology surfaces | `topology.valid_channel_ids` |
 | derived `chaninp_required` | applicability branch | `chaninp.context.chaninp_required` | flag | bool | 1 | yes | all | `true` when `ipeak>2`; else `false` | `chaninp_required` |
@@ -134,6 +134,7 @@ line4_compat           = ichnum { whitespace ichnum } [trailing_tokens] ;
 | `D-CHN-003` | Derive normalized channel-count/list surfaces (`nchnum_norm`, `ichnum_norm`) from topology and policy gates. | parse/cross-file finalize | `C-CHN-003` |
 | `D-CHN-004` | Derive line/tokenization closure surfaces (`line_count_closed`, `trailing_token_lines`). | parse finalize | `C-CHN-004` |
 | `D-CHN-005` | Derive channel-output enable closure (`chan_output_enabled`). | parse/runtime finalize | `C-CHN-005` |
+| `D-CHN-006` | Derive the WSHED-W10 compatibility default branch from pinned legacy open/read error behavior: `ichout=0`, `nchnum=0`, `ichnum=[]`, `cbase=0`, `dtchr_input_s=60`, `ntchr=1440`, `dtchr_norm_s=60`, `chan_output_enabled=false`. | compat default finalize | `C-CHN-006` |
 
 Closure hooks:
 - `C-CHN-001`: applicability and branch outcome must be deterministic.
@@ -141,6 +142,7 @@ Closure hooks:
 - `C-CHN-003`: channel-count/list closure must be topology-consistent.
 - `C-CHN-004`: required-line and tokenization closure must be explicitly observable.
 - `C-CHN-005`: output-enable gate must close against normalized mode/count fields.
+- `C-CHN-006`: defaulted compatibility output must be explicit and runtime-ready; watershed runtime must not replace it with an untyped `None` branch.
 
 ## 7. Validation and Error Taxonomy
 
@@ -163,6 +165,34 @@ Closure hooks:
 | `CHN-W-005` | compat-warning | unknown `ichnum` IDs retained in compatibility mode with explicit topology-warning emission |
 
 No silent fallback/default masking is permitted in strict mode for required `chan.inp` branches.
+
+## 7a. WSHED-W10 Compatibility Default Branch
+
+For `ipeak > 2`, pinned legacy `wshinp.for` initializes `cbase=0` before
+opening `chan.inp`; if the open or first required read fails, the error-label
+path sets `ichout=0`, then sets `nchnum=0`, and continues through the common
+timestep normalization block. Because the legacy branch can reach that block
+without a freshly read `dtchr`, openWEPP fixes the compatibility default to the
+deterministic lower-bound/mxtchr normalization already used by the parser:
+`dtchr_input_s=60`, `ntchr=1440`, `dtchr_norm_s=60`.
+
+The complete defaulted compatibility state is:
+
+| Field | Required default |
+| --- | --- |
+| `parse_outcome` | `defaulted_compat` or `open_error_collapsed_compat` |
+| `ichout` | `0` |
+| `dtchr_input_s` | `60` |
+| `dtchr_norm_s` | `60` |
+| `ntchr` | `1440` |
+| `cbase_m3_s_m2` | `0.0` |
+| `nchnum_input` / `nchnum_norm` | `0` / `0` |
+| `ichnum_input` / `ichnum_norm` | empty / empty |
+| `chan_output_enabled` | `false` |
+
+Watershed runtime may consume this typed defaulted state directly. It must not
+substitute separate hardcoded routing globals from an absent optional
+`chan.inp` object.
 
 ## 8. Cross-File Consistency Constraints
 
@@ -210,6 +240,7 @@ No silent fallback/default masking is permitted in strict mode for required `cha
 | `G-CHN-009` | canonical numeric-leading tokenization policy | parse finalize/policy gate | `CHN-E-001` |
 | `G-CHN-010` | strict/compat default-branch observability closure | parse finalize | `CHN-E-007`/`CHN-W-001`/`CHN-W-003`/`CHN-W-004` |
 | `G-CHN-011` | output-enable closure (`ichout>0 && nchnum_norm>0`) | runtime output gate validator | `CHN-E-007` |
+| `G-CHN-012` | WSHED-W10 compatibility default branch is typed and runtime-ready; no untyped `None` fallback supplies `dtchr`, `ntchr`, `nchnum`, or `cbase` | parser default finalize + watershed frame intake | `CHN-E-007` or watershed runtime hard error |
 
 ## 12. Legacy Symbol Continuity and Alias Map
 
@@ -231,5 +262,6 @@ openWEPP boundary names are aliases only (Section 3).
 
 | Date UTC | Version | Change |
 | --- | --- | --- |
+| `2026-07-09` | `0.1.2` | WSHED-W10 amendment: ratified explicit compatibility default values for absent/open-error/malformed `chan.inp`, required runtime consumption of typed defaulted parser state, and added `D-CHN-006` / `G-CHN-012`. |
 | `2026-05-22` | `0.1.1` | Ratified HOLD gaps via ARCH13 decisions `W4DR-003/004/005/006`; kickoff HOLD removed for this contract surface. |
 | `2026-05-21` | `0.1.0` | Initial parser-contract draft authored for INFILE19. |

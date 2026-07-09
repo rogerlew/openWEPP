@@ -117,6 +117,16 @@ State as of `2026-07-09`:
   runoff payloads from no-event state. Final gates: focused parser/watershed
   tests passed, full workspace nextest `1471/1471`, quick nextest `1396/1396`,
   clippy/fmt/deny/doc lint/diff-check green.
+- `20260709-wshedw10-chaninp-absent-default-authority-001/` -
+  EXECUTED-COMPLETE (2026-07-09 UTC, WSHED-W10): amended
+  `SC-INFILE-CHANINP-001` v0.1.2 and `SC-SYSTEM-001` rev 88, updated the
+  end-user `chaninp` input-file spec, and replaced the watershed CLI hidden
+  absent-`chan.inp` routing-global fallback with typed parser defaults. Missing,
+  unreadable, or malformed compatibility `chan.inp` branches now carry explicit
+  parser warnings and runtime-ready defaults: `ichout=0`, `dtchr=60`,
+  `ntchr=1440`, `cbase=0`, `nchnum=0`, empty `ichnum`, and no channel output.
+  Final gates: focused parser/frame/CLI tests passed; broad gate results are
+  recorded in the package artifacts.
 - `20260708-laned-router-conditional-default-activation-001/` -
   EXECUTED-COMPLETE-CONDITIONAL-DEFAULT-ACTIVATION (2026-07-08): amended
   `SC-OFEROUTE-001` rev 46 and made Lane D active routing the hillslope

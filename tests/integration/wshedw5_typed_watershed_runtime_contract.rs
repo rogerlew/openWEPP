@@ -1,10 +1,14 @@
 #![allow(clippy::many_single_char_names, clippy::too_many_lines)]
 
 use std::collections::BTreeSet;
+use std::path::Path;
 
 use openwepp_input_contract::parsers::watershed_impoundment::DropSpillwayPayload;
 use openwepp_input_contract::parsers::{
-    chaninp::{ChaninpParseOptions, parse_chaninp_from_str},
+    chaninp::{
+        ChaninpFile, ChaninpParseOptions, ChaninpParseOutcome, parse_chaninp_from_path,
+        parse_chaninp_from_str,
+    },
     slope::{SlopeParserOptions, parse_slope_str},
     watershed_channel::{WatershedChannelParseOptions, parse_watershed_channel_from_str},
     watershed_impoundment::{
@@ -15,7 +19,7 @@ use openwepp_sim_contract::status::{BoundaryClass, StatusClassification};
 use openwepp_topology::{parse_topology_fixture_str, validate_pre_execution_topology};
 use openwepp_watershed_orchestrator::{
     HillslopeContribution, WatershedGroundwaterRoutingAuthority, WatershedNetworkFrame,
-    execute_watershed_dispatch_with_frame,
+    WatershedNetworkFrameError, execute_watershed_dispatch_with_frame,
 };
 
 const TYPED_TOPOLOGY: &str = r"
@@ -30,7 +34,7 @@ const STRICT_VALID_CHANINP: &str = include_str!("../fixtures/infile/chaninp/stri
 const STRICT_VALID_SLOPE: &str =
     include_str!("../fixtures/infile/slope/strict_valid_canonical.slp");
 const STRICT_VALID_WATERSHED_CHANNEL: &str =
-    include_str!("../fixtures/infile/watershed_channel/strict_valid_single_channel.chn");
+    include_str!("../fixtures/infile/watershed_channel/strict_sidecar_required.chn");
 const STRICT_VALID_WATERSHED_IMPOUNDMENT: &str =
     include_str!("../fixtures/infile/watershed_impoundment/strict_valid_minimal.imp");
 const DROP_SPILLWAY_IMPOUNDMENT: &str = r"
@@ -111,6 +115,39 @@ fn build_typed_frame() -> WatershedNetworkFrame {
     build_typed_frame_with_impoundment(STRICT_VALID_WATERSHED_IMPOUNDMENT, true)
 }
 
+fn build_typed_frame_with_chaninp(chaninp: ChaninpFile) -> WatershedNetworkFrame {
+    build_typed_frame_result_with_chaninp(chaninp)
+        .expect("typed watershed frame should build from chan.inp state")
+}
+
+fn build_typed_frame_result_with_chaninp(
+    chaninp: ChaninpFile,
+) -> Result<WatershedNetworkFrame, WatershedNetworkFrameError> {
+    let graph = parse_topology_fixture_str(TYPED_TOPOLOGY).expect("typed topology should parse");
+    let slope = parse_slope_str(STRICT_VALID_SLOPE, SlopeParserOptions::strict())
+        .expect("strict slope fixture should parse");
+    let channel = parse_watershed_channel_from_str(
+        STRICT_VALID_WATERSHED_CHANNEL,
+        WatershedChannelParseOptions::default(),
+    )
+    .expect("strict watershed channel fixture should parse");
+    let impoundment = parse_watershed_impoundment_from_str(
+        STRICT_VALID_WATERSHED_IMPOUNDMENT,
+        WatershedImpoundmentParseOptions::strict(),
+    )
+    .expect("strict watershed impoundment fixture should parse");
+
+    WatershedNetworkFrame::from_parsed_inputs(
+        graph,
+        Some(chaninp),
+        channel,
+        slope,
+        impoundment,
+        3600.0,
+        24.0,
+    )
+}
+
 fn build_typed_frame_with_impoundment(
     impoundment_fixture: &str,
     clamp_impoundment_stage: bool,
@@ -119,7 +156,7 @@ fn build_typed_frame_with_impoundment(
     let valid_channel_element_ids = BTreeSet::from([4_i32, 5_i32]);
     let chaninp = parse_chaninp_from_str(
         STRICT_VALID_CHANINP,
-        ChaninpParseOptions::strict(3, 2),
+        ChaninpParseOptions::strict(4, 2),
         &valid_channel_element_ids,
     )
     .expect("strict chan.inp fixture should parse");
@@ -156,6 +193,14 @@ fn build_typed_frame_with_impoundment(
     frame
 }
 
+fn assert_wshedw10_routing_globals(frame: &WatershedNetworkFrame) {
+    assert_eq!(frame.routing_globals.ipeak, 4);
+    assert!((frame.routing_globals.dtchr_seconds - 60.0).abs() <= 1.0e-12);
+    assert!((frame.routing_globals.ntchr - 1_440.0).abs() <= 1.0e-12);
+    assert!(frame.routing_globals.nchnum.abs() <= 1.0e-12);
+    assert!(frame.routing_globals.cbase.abs() <= 1.0e-12);
+}
+
 fn run_successful_frame(frame: &mut WatershedNetworkFrame) {
     frame.add_hillslope_contribution(contribution(1, 2.0, 300.0));
     frame.add_hillslope_contribution(contribution(2, 1.5, 400.0));
@@ -164,6 +209,62 @@ fn run_successful_frame(frame: &mut WatershedNetworkFrame) {
     let report = execute_watershed_dispatch_with_frame(frame, &topology_report)
         .expect("typed watershed dispatch should execute");
     assert!(report.dispatch_report.is_success());
+}
+
+#[test]
+fn wshedw10_defaulted_chaninp_states_are_runtime_ready() {
+    let valid_channel_element_ids = BTreeSet::from([4_i32, 5_i32]);
+    let defaulted = parse_chaninp_from_str(
+        "not-a-number\n",
+        ChaninpParseOptions::compatibility(4, 2),
+        &valid_channel_element_ids,
+    )
+    .expect("compatibility parser should collapse malformed payload");
+    assert_eq!(
+        defaulted.parse_outcome,
+        ChaninpParseOutcome::DefaultedCompat
+    );
+    let defaulted_frame = build_typed_frame_with_chaninp(defaulted);
+    assert_wshedw10_routing_globals(&defaulted_frame);
+
+    let open_error = parse_chaninp_from_path(
+        Path::new("tests/fixtures/infile/chaninp/."),
+        ChaninpParseOptions::compatibility(4, 2),
+        &valid_channel_element_ids,
+    )
+    .expect("compatibility parser should collapse open error");
+    assert_eq!(
+        open_error.parse_outcome,
+        ChaninpParseOutcome::OpenErrorCollapsedCompat
+    );
+    let open_error_frame = build_typed_frame_with_chaninp(open_error);
+    assert_wshedw10_routing_globals(&open_error_frame);
+}
+
+#[test]
+fn wshedw10_not_applicable_chaninp_cannot_mask_required_channel_sidecar() {
+    let valid_channel_element_ids = BTreeSet::from([4_i32, 5_i32]);
+    let not_applicable = parse_chaninp_from_str(
+        "",
+        ChaninpParseOptions::compatibility(2, 2),
+        &valid_channel_element_ids,
+    )
+    .expect("ipeak<=2 should produce not-applicable chan.inp state");
+    assert_eq!(
+        not_applicable.parse_outcome,
+        ChaninpParseOutcome::NotApplicable
+    );
+
+    let error = build_typed_frame_result_with_chaninp(not_applicable)
+        .expect_err("mismatched not-applicable chan.inp cannot feed ipeak>2 channel frame");
+    assert!(matches!(
+        error,
+        WatershedNetworkFrameError::ChaninpNotRuntimeReady {
+            observed: ChaninpParseOutcome::NotApplicable,
+            chaninp_ipeak: 2,
+            channel_ipeak: 4,
+        }
+    ));
 }
 
 #[test]
