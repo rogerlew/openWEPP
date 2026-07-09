@@ -1,7 +1,7 @@
 # CQR Nightly 02 - Watershed Runtime Impoundment Projection
 
 Package: `20260709-cqr-nightly-02-watershed-chaninp-001`
-Status: `QUEUED`
+Status: `EXECUTED-COMPLETE-CQR-NIGHTLY`
 ExecPlan: `docs/work-packages/cqr-nightly-burndown-execplan.md`
 Target module: `crates/openwepp-watershed-orchestrator/src/runtime_inputs_mod/chaninp.rs`
 Target rank: `2` of `10`

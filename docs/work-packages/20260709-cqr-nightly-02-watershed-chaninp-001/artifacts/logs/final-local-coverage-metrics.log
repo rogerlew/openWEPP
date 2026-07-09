@@ -1,0 +1,61 @@
+Unique target source regions including module tests
+{"regions": 2536, "covered": 2431, "percent": 95.8596214511041}
+
+Unique production/source-helper regions
+{"regions": 1610, "covered": 1517, "percent": 94.22360248447205}
+
+Module-local test/helper regions
+{"regions": 926, "covered": 914, "percent": 98.70410367170626}
+
+Production/source-helper per-function region-floor (<75%)
+count=0
+
+Production/source-helper per-function region-floor (<90%)
+count=7
+75.000000	69/92	sample_riser_unsubmerged_curve
+85.365854	35/41	derive_ws12_outflow_function_families
+85.937500	55/64	rockfill_discharge_at_stage
+86.111111	62/72	derive_culvert_like_active_projection
+87.500000	14/16	derive_riser_active_projection
+87.804878	108/123	derive_power_law_curve_coefficients
+89.361702	42/47	emergency_discharge_at_stage
+
+Production/source-helper function region summary
+100.000000	18/18	coefficient_at
+97.297297	36/37	collect_culvert_like_stage_thresholds
+100.000000	68/68	compute_riser_qs
+100.000000	43/43	culvert_pipe_discharge_at_stage
+100.000000	12/12	culvert_stage_threshold
+100.000000	11/11	derive_active_projection_reference_stage
+86.111111	62/72	derive_culvert_like_active_projection
+91.428571	32/35	derive_drop_spillway_projection
+87.804878	108/123	derive_power_law_curve_coefficients
+87.500000	14/16	derive_riser_active_projection
+90.000000	9/10	derive_riser_apr_coefficients
+97.101449	67/69	derive_riser_apr_coefficients_from_points
+100.000000	14/14	derive_riser_coefficient_from_reference
+95.000000	57/60	derive_ws12_active_structure_projection
+97.333333	73/75	derive_ws12_impoundment_coefficients
+85.365854	35/41	derive_ws12_outflow_function_families
+89.361702	42/47	emergency_discharge_at_stage
+100.000000	39/39	filter_barrier_discharge_at_stage
+97.297297	72/74	fit_quartic_least_squares
+100.000000	7/7	inactive_default
+100.000000	59/59	interpolate_rating_curve_discharge
+94.230769	49/52	perforated_riser_reference_discharge
+100.000000	66/66	project_culvert_function_families
+100.000000	106/106	project_drop_spillway_function_families
+97.590361	81/83	project_emergency_function
+100.000000	22/22	project_filter_function
+96.610169	57/59	project_riser_functions
+94.736842	36/38	project_rockfill_function
+100.000000	36/36	rockfill_arf
+85.937500	55/64	rockfill_discharge_at_stage
+75.000000	69/92	sample_riser_unsubmerged_curve
+100.000000	53/53	solve_linear_system_5x5
+100.000000	9/9	validate_active_projected_positive
+
+Matched function records
+105
+
+__EXIT_CODE__:0

@@ -1,0 +1,9 @@
+   Compiling openwepp-watershed-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-watershed-orchestrator)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.13s
+────────────
+ Nextest run ID d6b415c1-e50e-4e1f-83f5-221366b1526b with nextest profile: default
+    Starting 13 tests across 1 binary (9 tests skipped)
+────────────
+     Summary [   0.025s] 13 tests run: 13 passed, 9 skipped
+
+__EXIT_CODE__:0
