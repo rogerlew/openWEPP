@@ -343,17 +343,21 @@ impl Ws10ChannelImpoundmentKernel {
             ws21_enddet_segments: sediment_publication.ws21_enddet_segments,
         };
 
-        Ok(DirectWatershedKernelOutput::Channel(RoutedChannelState {
+        Ok(DirectWatershedKernelOutput::Channel(Box::new(RoutedChannelState {
             node_id,
             runoff_volume_m3: roff,
+            channel_inflow_m3: runvol_case,
+            channel_outflow_m3: roff,
+            channel_storage_m3: 0.0,
             peak_discharge_m3_s: qpo,
             duration_seconds: durrof,
             channel_baseflow_m3: channel_baseflow.volume_m3,
+            channel_loss_m3: 0.0,
             groundwater_deep_seepage_m3: channel_baseflow.deep_seepage_m3,
             sediment_yield_kg: sediment_state.qsed_kg_s,
             wave_state: routed_wave_state,
             sediment_state,
-        }))
+        })))
     }
 
     #[allow(clippy::too_many_lines)]

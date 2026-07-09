@@ -190,7 +190,7 @@ pub fn execute_watershed_dispatch_with_frame(
         if let Some(output) = response.output {
             match output {
                 DirectWatershedKernelOutput::Channel(state) => {
-                    frame.record_routed_channel_state(state);
+                    frame.record_routed_channel_state(*state);
                     routed_state_applied = true;
                 }
                 DirectWatershedKernelOutput::Impoundment(state) => {

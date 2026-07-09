@@ -288,9 +288,13 @@ pub struct RoutedChannelSedimentState {
 pub struct RoutedChannelState {
     pub node_id: u32,
     pub runoff_volume_m3: f64,
+    pub channel_inflow_m3: f64,
+    pub channel_outflow_m3: f64,
+    pub channel_storage_m3: f64,
     pub peak_discharge_m3_s: f64,
     pub duration_seconds: f64,
     pub channel_baseflow_m3: f64,
+    pub channel_loss_m3: f64,
     pub groundwater_deep_seepage_m3: f64,
     pub sediment_yield_kg: f64,
     pub wave_state: Option<RoutedChannelWaveState>,
@@ -324,6 +328,7 @@ pub struct WatershedPublicationFrame {
     pub sediment_yield_kg: f64,
     pub soluble_pollutant_kg: Option<f64>,
     pub particulate_pollutant_kg: Option<f64>,
+    pub channel_inflow_m3: Option<f64>,
     pub channel_outflow_m3: Option<f64>,
     pub channel_storage_m3: Option<f64>,
     pub channel_baseflow_m3: Option<f64>,
@@ -381,6 +386,7 @@ impl Default for WatershedPublicationFrame {
             sediment_yield_kg: 0.0,
             soluble_pollutant_kg: None,
             particulate_pollutant_kg: None,
+            channel_inflow_m3: None,
             channel_outflow_m3: None,
             channel_storage_m3: None,
             channel_baseflow_m3: None,
@@ -550,11 +556,35 @@ impl WatershedNetworkFrame {
             .filter_map(|node_id| self.routed_channels.get(node_id))
             .map(|state| state.runoff_volume_m3)
             .sum::<f64>();
+        let channel_inflow_m3 = dispatch_ids
+            .channel_ids
+            .iter()
+            .filter_map(|node_id| self.routed_channels.get(node_id))
+            .map(|state| state.channel_inflow_m3)
+            .sum::<f64>();
+        let channel_outflow_m3 = dispatch_ids
+            .channel_ids
+            .iter()
+            .filter_map(|node_id| self.routed_channels.get(node_id))
+            .map(|state| state.channel_outflow_m3)
+            .sum::<f64>();
+        let channel_storage_m3 = dispatch_ids
+            .channel_ids
+            .iter()
+            .filter_map(|node_id| self.routed_channels.get(node_id))
+            .map(|state| state.channel_storage_m3)
+            .sum::<f64>();
         let channel_baseflow_m3 = dispatch_ids
             .channel_ids
             .iter()
             .filter_map(|node_id| self.routed_channels.get(node_id))
             .map(|state| state.channel_baseflow_m3)
+            .sum::<f64>();
+        let channel_loss_m3 = dispatch_ids
+            .channel_ids
+            .iter()
+            .filter_map(|node_id| self.routed_channels.get(node_id))
+            .map(|state| state.channel_loss_m3)
             .sum::<f64>();
         let area_m2 = sum_contributing_area_m2(&self.hillslope_contributions, dispatch_ids);
         let runoff_mm = area_m2.map(|area| runoff_volume_m3 / area * 1_000.0);
@@ -587,8 +617,11 @@ impl WatershedNetworkFrame {
                 .filter_map(|node_id| self.routed_channels.get(node_id))
                 .map(|state| state.sediment_yield_kg)
                 .sum::<f64>(),
-            channel_outflow_m3: None,
+            channel_inflow_m3: Some(channel_inflow_m3),
+            channel_outflow_m3: Some(channel_outflow_m3),
+            channel_storage_m3: Some(channel_storage_m3),
             channel_baseflow_m3: Some(channel_baseflow_m3),
+            channel_loss_m3: Some(channel_loss_m3),
             area_m2,
             runoff_mm,
             total_detachment_kg,

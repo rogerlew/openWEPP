@@ -96,6 +96,15 @@ State as of `2026-07-09`:
   writer/parser/watershed consumer path. Final gates: focused HBP/watershed
   tests passed, full workspace nextest `1467/1467`, quick nextest `1392/1392`,
   clippy/fmt/deny/doc lint/diff-check green.
+- `20260709-wshedw8-channel-balance-operand-authority-001/` -
+  EXECUTED-COMPLETE (2026-07-09 UTC, WSHED-W8): amended `SC-SYSTEM-001` rev 86
+  with `INV-SYSTEM-033`, added typed routed channel-balance operands,
+  projected them through `WatershedPublicationFrame`, made `chanwb` read typed
+  channel inflow/outflow/storage/baseflow/loss, and reconstructed
+  `Balance = Inflow - Outflow - Loss - Storage` with null-on-unavailable
+  behavior. Final gates: focused writer/runtime tests passed, full workspace
+  nextest `1468/1468`, quick nextest `1393/1393`, clippy/fmt/deny/doc
+  lint/diff-check green.
 - `20260708-laned-router-conditional-default-activation-001/` -
   EXECUTED-COMPLETE-CONDITIONAL-DEFAULT-ACTIVATION (2026-07-08): amended
   `SC-OFEROUTE-001` rev 46 and made Lane D active routing the hillslope

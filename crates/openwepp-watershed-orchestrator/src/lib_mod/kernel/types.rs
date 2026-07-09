@@ -144,7 +144,7 @@ pub(crate) struct DirectWatershedKernelInput<'a> {
 }
 
 pub(crate) enum DirectWatershedKernelOutput {
-    Channel(RoutedChannelState),
+    Channel(Box<RoutedChannelState>),
     Impoundment(RoutedImpoundmentState),
 }
 

@@ -193,8 +193,17 @@ fn typed_frame_dispatch_records_and_publishes_direct_routed_state() {
         .get(&1)
         .expect("typed dispatch should route channel 1");
     assert!(channel.runoff_volume_m3 > 0.0);
+    assert!((channel.runoff_volume_m3 - channel.channel_outflow_m3).abs() <= 1.0e-12);
+    assert!(channel.channel_inflow_m3 >= 0.0);
+    assert!(channel.channel_storage_m3 >= 0.0);
+    assert!(channel.channel_loss_m3 >= 0.0);
     assert!(channel.peak_discharge_m3_s >= 0.0);
     assert_eq!(channel.sediment_state.particle_flow_fraction.len(), 3);
+    let channel_inflow_m3 = channel.channel_inflow_m3;
+    let channel_outflow_m3 = channel.channel_outflow_m3;
+    let channel_storage_m3 = channel.channel_storage_m3;
+    let channel_baseflow_m3 = channel.channel_baseflow_m3;
+    let channel_loss_m3 = channel.channel_loss_m3;
 
     let impoundment = frame
         .routed_impoundments
@@ -209,9 +218,89 @@ fn typed_frame_dispatch_records_and_publishes_direct_routed_state() {
         .expect("typed routed state should publish");
     assert_eq!(publication.channel_id, 1);
     assert!(publication.runoff_volume_m3 > 0.0);
+    assert_eq!(publication.channel_inflow_m3, Some(channel_inflow_m3));
+    assert_eq!(publication.channel_outflow_m3, Some(channel_outflow_m3));
+    assert_eq!(publication.channel_storage_m3, Some(channel_storage_m3));
+    assert_eq!(publication.channel_baseflow_m3, Some(channel_baseflow_m3));
+    assert_eq!(publication.channel_loss_m3, Some(channel_loss_m3));
     assert_eq!(publication.particulate_pollutant_kg, None);
     assert!(publication.total_detachment_kg > 0.0);
     assert!(publication.total_deposition_kg > 0.0);
+}
+
+#[test]
+fn typed_publication_projects_non_aliased_channel_balance_operands() {
+    let mut selected = None;
+
+    for ipeak in [3, 4, 5] {
+        let mut frame = build_typed_frame();
+        frame.routing_globals.ipeak = ipeak;
+        frame.add_hillslope_contribution(contribution(1, 2.0, 300.0));
+        frame.add_hillslope_contribution(contribution(2, 1.5, 400.0));
+
+        let topology_report =
+            validate_pre_execution_topology(frame.topology()).expect("topology gate should build");
+        let report = execute_watershed_dispatch_with_frame(&mut frame, &topology_report)
+            .expect("typed watershed dispatch should execute");
+        assert!(report.dispatch_report.is_success());
+
+        let channel = frame
+            .routed_channels
+            .get(&1)
+            .unwrap_or_else(|| panic!("ipeak={ipeak} should route channel 1"))
+            .clone();
+        if (channel.channel_inflow_m3 - channel.channel_outflow_m3).abs() > 1.0e-9 {
+            selected = Some((ipeak, frame, report, channel));
+            break;
+        }
+    }
+
+    let (ipeak, mut frame, report, channel) =
+        selected.expect("at least one WS11 wave branch should produce non-aliased channel volumes");
+    let publication = frame
+        .publish_typed_routing_report(&report)
+        .unwrap_or_else(|_| panic!("ipeak={ipeak} typed routed state should publish"));
+
+    assert!(
+        (publication
+            .channel_inflow_m3
+            .expect("inflow should publish")
+            - channel.channel_inflow_m3)
+            .abs()
+            <= 1.0e-9
+    );
+    assert!(
+        (publication
+            .channel_outflow_m3
+            .expect("outflow should publish")
+            - channel.channel_outflow_m3)
+            .abs()
+            <= 1.0e-9
+    );
+    assert!(
+        (publication
+            .channel_storage_m3
+            .expect("storage should publish")
+            - channel.channel_storage_m3)
+            .abs()
+            <= 1.0e-9
+    );
+    assert!(
+        (publication
+            .channel_baseflow_m3
+            .expect("baseflow should publish")
+            - channel.channel_baseflow_m3)
+            .abs()
+            <= 1.0e-9
+    );
+    assert!(
+        (publication.channel_loss_m3.expect("loss should publish") - channel.channel_loss_m3).abs()
+            <= 1.0e-9
+    );
+    assert!(
+        (publication.runoff_volume_m3 - channel.channel_outflow_m3).abs() <= 1.0e-9,
+        "runoff publication remains routed channel outflow, not upstream inflow"
+    );
 }
 
 #[test]

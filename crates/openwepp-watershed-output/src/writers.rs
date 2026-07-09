@@ -226,6 +226,7 @@ trait WatershedOutputRecord {
     fn sediment_yield_kg(&self) -> Option<f64>;
     fn soluble_pollutant_kg(&self) -> Option<f64>;
     fn particulate_pollutant_kg(&self) -> Option<f64>;
+    fn channel_inflow_m3(&self) -> Option<f64>;
     fn channel_outflow_m3(&self) -> Option<f64>;
     fn channel_storage_m3(&self) -> Option<f64>;
     fn channel_baseflow_m3(&self) -> Option<f64>;
@@ -321,6 +322,10 @@ impl WatershedOutputRecord for WatershedInterchangeRowSeed {
 
     fn particulate_pollutant_kg(&self) -> Option<f64> {
         Some(self.particulate_pollutant_kg)
+    }
+
+    fn channel_inflow_m3(&self) -> Option<f64> {
+        Some(self.runoff_volume_m3)
     }
 
     fn channel_outflow_m3(&self) -> Option<f64> {
@@ -536,6 +541,10 @@ impl WatershedOutputRecord for WatershedPublicationFrame {
 
     fn particulate_pollutant_kg(&self) -> Option<f64> {
         self.particulate_pollutant_kg
+    }
+
+    fn channel_inflow_m3(&self) -> Option<f64> {
+        self.channel_inflow_m3
     }
 
     fn channel_outflow_m3(&self) -> Option<f64> {
@@ -2270,15 +2279,17 @@ fn float64_value(field_name: &str, record: &impl WatershedOutputRecord) -> Optio
         "Tile" | "Tile (mm)" => record.tile_mm(),
         "Irr" | "Irr (mm)" => record.irrigation_mm(),
         "Baseflow" | "Base (mm)" => record.baseflow_mm(),
-        "Inflow (m^3)" | "value" => record.runoff_volume_m3(),
+        "Inflow (m^3)" => record.channel_inflow_m3(),
+        "value" => record.runoff_volume_m3(),
         "Outflow (m^3)" => record.channel_outflow_m3(),
         "Storage (m^3)" => record.channel_storage_m3(),
         "Baseflow (m^3)" => record.channel_baseflow_m3(),
         "Loss (m^3)" => record.channel_loss_m3(),
         "Balance (m^3)" => option_balance(
-            record.runoff_volume_m3(),
+            record.channel_inflow_m3(),
             record.channel_outflow_m3(),
             record.channel_loss_m3(),
+            record.channel_storage_m3(),
         ),
         "Specific Gravity" => Some(2.65),
         "Fraction In Flow Exiting" => Some(1.0),
@@ -2305,8 +2316,9 @@ fn option_balance(
     inflow_m3: Option<f64>,
     outflow_m3: Option<f64>,
     loss_m3: Option<f64>,
+    storage_m3: Option<f64>,
 ) -> Option<f64> {
-    Some(inflow_m3? - outflow_m3? - loss_m3?)
+    Some(inflow_m3? - outflow_m3? - loss_m3? - storage_m3?)
 }
 
 fn utf8_value(field_name: &str) -> &'static str {
@@ -2429,6 +2441,7 @@ mod tests {
             sediment_yield_kg: 6.0,
             soluble_pollutant_kg: Some(0.25),
             particulate_pollutant_kg: Some(0.75),
+            channel_inflow_m3: Some(31.0),
             channel_outflow_m3: Some(20.0),
             channel_storage_m3: Some(2.0),
             channel_baseflow_m3: Some(1.0),
@@ -2502,6 +2515,14 @@ mod tests {
         assert_int32_values(&batch, "Chan_ID", &[12]);
         assert_float64_values(&batch, "Peak_Discharge (m^3/s)", &[1.5]);
 
+        let batch = first_batch(&config.chanwb, "chanwb");
+        assert_float64_values(&batch, "Inflow (m^3)", &[31.0]);
+        assert_float64_values(&batch, "Outflow (m^3)", &[20.0]);
+        assert_float64_values(&batch, "Storage (m^3)", &[2.0]);
+        assert_float64_values(&batch, "Baseflow (m^3)", &[1.0]);
+        assert_float64_values(&batch, "Loss (m^3)", &[3.0]);
+        assert_float64_values(&batch, "Balance (m^3)", &[6.0]);
+
         if base.exists() {
             fs::remove_dir_all(base).expect("temp directory cleanup should succeed");
         }
@@ -2521,6 +2542,7 @@ mod tests {
         assert_float64_nulls(
             &batch,
             &[
+                "Inflow (m^3)",
                 "Outflow (m^3)",
                 "Storage (m^3)",
                 "Baseflow (m^3)",
