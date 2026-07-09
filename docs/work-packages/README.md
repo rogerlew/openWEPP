@@ -29,6 +29,14 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-09`:
+- `20260709-cqr-nightly-07-input-management-parser-001/` -
+  QUEUED (2026-07-09): CQR Nightly target #7 for behavior-preserving
+  CRAP/cyclomatic-complexity closure of
+  `crates/openwepp-input-contract/src/parsers/management.rs`. Baseline target
+  evidence has `6` deduplicated target functions above CRAP `30`, max CRAP
+  `203.62194460172833`, target LCOV `1474/1916`, and a 2000-line WARN
+  (`2851` lines). Package:
+  `20260709-cqr-nightly-07-input-management-parser-001/`.
 - `20260709-cqr-nightly-06-watershed-kernel-direct-001/` -
   EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-09): CQR Nightly target #6 completed
   behavior-preserving CRAP/cyclomatic-complexity closure of
