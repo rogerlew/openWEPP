@@ -1,7 +1,7 @@
 # CQR Nightly 03 - Runner Snowbench CLI
 
 Package: `20260709-cqr-nightly-03-runner-snowbench-001`
-Status: `QUEUED`
+Status: `EXECUTED-COMPLETE-CQR-NIGHTLY`
 ExecPlan: `docs/work-packages/cqr-nightly-burndown-execplan.md`
 Target module: `crates/openwepp-runner/src/bin/openwepp-snowbench.rs`
 Target rank: `3` of `10`

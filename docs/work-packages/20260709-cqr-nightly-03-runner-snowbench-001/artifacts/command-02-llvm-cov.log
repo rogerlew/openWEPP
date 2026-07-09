@@ -1,0 +1,1678 @@
+info: cargo-llvm-cov currently setting cfg(coverage); you can opt-out it by passing --no-cfg-coverage
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.75s
+     Running unittests src/lib.rs (target/llvm-cov-target/debug/deps/openwepp-c16c7f0d6c7e6da7)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/adr0017_comparator_distrust_ratification_contract.rs (target/llvm-cov-target/debug/deps/adr0017_comparator_distrust_ratification_contract-b3fffe2f68bce71c)
+
+running 4 tests
+test adr0017_is_accepted_and_registered_as_ratified_governance ... ok
+test ratification_package_is_autonomous_and_truthfulness_labeled ... ok
+test governance_docs_encode_comparator_flag_adjudication_gates ... ok
+test sc_contracts_carry_adr0017_invariants_obligations_and_versions ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/integration/arch22_typed_state_surface_contract.rs (target/llvm-cov-target/debug/deps/arch22_typed_state_surface_contract-7d15063e169451bc)
+
+running 17 tests
+test arch22_all_dynamic_irrigation_field_suffixes_match_authority_snapshot ... ok
+test arch22_all_hillslope_flux_symbol_projections_match_authority_snapshot ... ok
+test arch22_all_watershed_channel_symbols_match_authority_snapshot ... ok
+test arch22_all_watershed_impoundment_symbols_match_authority_snapshot ... ok
+test arch22_climate_forcing_surface_error_display_matches_authority_snapshot ... ok
+test arch22_climate_forcing_symbol_surface_accessors_match_authority_snapshot ... ok
+test arch22_hillslope_dynamic_irrigation_symbol_projection_matches_authority ... ok
+test arch22_hillslope_static_symbol_projection_matches_authority ... ok
+test arch22_irrigation_scalar_state_symbols_match_authority_snapshot ... ok
+test arch22_peak_method_state_symbols_match_authority_snapshot ... ok
+test arch22_plant_hyetograph_soil_state_symbols_match_authority_snapshot ... ok
+test arch22_snow_frost_state_symbols_match_authority_snapshot ... ok
+test arch22_watershed_hillslope_payload_symbol_projection_matches_authority ... ok
+test arch22_watershed_guard_accessor_signature_is_typed ... ok
+test arch22_watershed_node_scoped_symbol_projection_matches_authority ... ok
+test arch22_wb11_wb12_state_symbols_match_authority_snapshot ... ok
+test arch22_hillslope_guard_accessor_signature_is_typed ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/integration/auth04_release_gate_authority_stack_contract.rs (target/llvm-cov-target/debug/deps/auth04_release_gate_authority_stack_contract-644d003ee1c58503)
+
+running 4 tests
+test auth04_workflow_exposes_periodic_and_manual_authority_lane_triggers ... ok
+test auth04_release_runbook_and_release_readme_document_authority_stack_outputs ... ok
+test auth04_package_and_authority_model_capture_lane_policy ... ok
+test auth04_release_gate_script_enforces_lane_and_failure_class_semantics ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/auth06_fixture_provenance_hash_enforcement_contract.rs (target/llvm-cov-target/debug/deps/auth06_fixture_provenance_hash_enforcement_contract-1b902b8a6464abc3)
+
+running 4 tests
+test auth06_schema_requires_fixture_hash_and_source_provenance_fields ... ok
+test auth06_release_gate_script_enforces_fixture_integrity_before_lane_execution ... ok
+boundary_case.json: OK
+boundary_case.json: FAILED
+invalid_missing_theta_fc.json: OK
+invalid_missing_theta_fc.json: OK
+nominal_case.json: OK
+nominal_case.json: OK
+sha256sum: WARNING: 1 computed checksum did NOT match
+test auth06_tamper_detection_rejects_modified_lock_hash ... ok
+boundary_case.json: OK
+invalid_wp_gt_fc.json: OK
+nominal_case.json: OK
+above_fc_positive.json: OK
+invalid_missing_theta.json: OK
+near_fc_cutoff.json: OK
+cohort_case.json: OK
+h1_high_rock_fc_authority.sol: OK
+h1_real_rocky_p1_authority.sol: OK
+h1_worked_example_source.md: OK
+valid_7778.sol: OK
+valid_9002.sol: OK
+withdrawal_soilwater_cap_cases.json: OK
+layer_pool_withdrawal_cap_cases.json: OK
+lateral_saturated_thickness_response_cases.json: OK
+wb19_fcwp_coca_watyld_cases.json: OK
+solwpv_fcdep_branch_cases.json: OK
+test auth06_active_level4_and_level3_suites_publish_fixture_hashes_and_provenance_sidecars ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/integration/auth07_fc_authority_cohort_contract.rs (target/llvm-cov-target/debug/deps/auth07_fc_authority_cohort_contract-23e304ef44db8bb2)
+
+running 2 tests
+test auth07_package_and_suite_authority_sections_exist ... ok
+test auth07_profile_fc_authority_cohort_threshold_and_rock_bucket_classification ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/auth11_required_suite_obligation_guards_contract.rs (target/llvm-cov-target/debug/deps/auth11_required_suite_obligation_guards_contract-7d5904ec2bfb1f0a)
+
+running 2 tests
+test auth11_registry_posture_and_protocol_guard_paths_exist ... ok
+test auth11_obligations_schema_and_anchor_bindings_are_enforced ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/cancov_stratified_observations.rs (target/llvm-cov-target/debug/deps/cancov_stratified_observations-e4afc5066b2b045e)
+
+running 3 tests
+test cancov_stratified_observation_regeneration_tool_is_present ... ok
+test cancov_stratified_observation_manifest_installs_harvard_and_marcell_sources ... ok
+test cancov_stratified_observation_tables_bind_expected_model_strata ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+     Running tests/integration/cli01_runner_contract_derived_tests.rs (target/llvm-cov-target/debug/deps/cli01_runner_contract_derived_tests-248c358a1a8b6934)
+
+running 6 tests
+test cli01_sidecar_contract_missing_required_sidecar_is_hard_failure_in_compat ... ok
+test cli01_contract_surface_declares_release_sidecar_validation_fields ... ok
+test cli01_sidecar_contract_missing_required_sidecar_is_hard_failure_in_strict ... ok
+test cli01_sidecar_contract_unknown_discovery_warns_in_compat ... ok
+test cli01_contract_surface_declares_runner_commands_and_error_ids ... ok
+test cli01_contract_surface_declares_required_hillslope_sidecars_and_manifest_schema ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/cli01_runner_hillslope_integration.rs (target/llvm-cov-target/debug/deps/cli01_runner_hillslope_integration-f0e61ccd7a4e15a1)
+
+running 4 tests
+test cli01_contract_conformance_runner_crate_declares_hillslope_watershed_and_runner_binaries ... ok
+test cli01_contract_conformance_generated_release_sidecar_is_schema_valid ... ok
+test cli01_contract_conformance_hillslope_run_emits_required_outputs_and_manifest ... ok
+test cli01_contract_conformance_sidecar_policy_warns_on_unknown_discovery ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 25.37s
+
+     Running tests/integration/cli03_runner_contract_derived_tests.rs (target/llvm-cov-target/debug/deps/cli03_runner_contract_derived_tests-140512138d519edd)
+
+running 23 tests
+test cli03_contract_surface_declares_output_crate_layout ... ok
+test cli03_contract_surface_declares_metric_runfile_and_required_outputs ... ok
+test cli03_runner_crate_declares_hillslope_and_watershed_binary_targets ... ok
+test cli03_watershed_contract_surface_declares_pw0_inputs_and_hillslope_block ... ok
+test cli03_runner_crate_wires_output_surface_dependency ... ok
+test cli03_hphys0241_watershed_validator_requires_mofe_hourly_carry_metadata ... ok
+test cli03_watershed_cli_surface_uses_runfile_pattern_with_legacy_discovery_flag ... ok
+test cli03_fixture_run_emits_required_and_configured_optional_outputs_with_manifest_checksums ... ok
+test cli03_fixture_run_publishes_wb16_ealpha_runtime_seed_provenance ... FAILED
+test cli03_legacy_sidecar_discovery_mode_uses_legacy_sidecars_and_ignores_runfile_overrides ... FAILED
+test cli03_mf_multiofe_publication_emits_public_per_ofe_wat_rows ... FAILED
+test cli03_mofe02_enables_hillslope_soil_topology_scope_guard_when_slope_and_management_align ... ok
+test cli03_mofe02_rejects_full_triad_topology_mismatch ... ok
+test cli03_mofe02_rejects_management_soil_mismatch ... ok
+test cli03_mofe02_rejects_slope_management_and_slope_soil_mismatch ... ok
+test cli03_mofe03_no_till_multiofe_runfile_executes_wave1_chain ... FAILED
+test cli03_mofe03_single_ofe_policy_disables_wave2_by_default ... FAILED
+test cli03_mofe03_tilled_multiofe_run_does_not_claim_the_wave1_chain ... FAILED
+test cli03_mofe04_single_ofe_publication_reports_single_contributor_policy ... FAILED
+test cli03_runfile_validation_rejects_non_metric_unit_system ... ok
+test cli03_runfile_validation_rejects_schema_mismatch ... ok
+test cli03_runfile_validation_rejects_unresolved_required_input_paths ... ok
+test cli03_runtime_accepts_finite_daily_temperature_inversion_records ... FAILED
+
+failures:
+
+---- cli03_fixture_run_publishes_wb16_ealpha_runtime_seed_provenance stdout ----
+
+thread 'cli03_fixture_run_publishes_wb16_ealpha_runtime_seed_provenance' (764838) panicked at tests/integration/cli03_runner_contract_derived_tests.rs:321:14:
+fixture run should succeed: Io { path: "/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/cli03_runner_contract_derived_tests-140512138d519edd.json", source: Os { code: 2, kind: NotFound, message: "No such file or directory" } }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- cli03_legacy_sidecar_discovery_mode_uses_legacy_sidecars_and_ignores_runfile_overrides stdout ----
+
+thread 'cli03_legacy_sidecar_discovery_mode_uses_legacy_sidecars_and_ignores_runfile_overrides' (764840) panicked at tests/integration/cli03_runner_contract_derived_tests.rs:382:14:
+legacy discovery run should succeed: ReleaseMetadata { source: Io { path: "/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/cli03_runner_contract_derived_tests-140512138d519edd (deleted)", source: Os { code: 2, kind: NotFound, message: "No such file or directory" } } }
+
+---- cli03_mf_multiofe_publication_emits_public_per_ofe_wat_rows stdout ----
+
+thread 'cli03_mf_multiofe_publication_emits_public_per_ofe_wat_rows' (764841) panicked at tests/integration/cli03_runner_contract_derived_tests.rs:742:6:
+aligned multi-OFE fixture should execute: ReleaseMetadata { source: Io { path: "/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/cli03_runner_contract_derived_tests-140512138d519edd (deleted)", source: Os { code: 2, kind: NotFound, message: "No such file or directory" } } }
+
+---- cli03_mofe03_no_till_multiofe_runfile_executes_wave1_chain stdout ----
+
+thread 'cli03_mofe03_no_till_multiofe_runfile_executes_wave1_chain' (764848) panicked at tests/integration/cli03_runner_contract_derived_tests.rs:640:6:
+no-till multi-OFE fixture should execute through the Wave-1 chain: ReleaseMetadata { source: Io { path: "/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/cli03_runner_contract_derived_tests-140512138d519edd (deleted)", source: Os { code: 2, kind: NotFound, message: "No such file or directory" } } }
+
+---- cli03_mofe03_single_ofe_policy_disables_wave2_by_default stdout ----
+
+thread 'cli03_mofe03_single_ofe_policy_disables_wave2_by_default' (764850) panicked at tests/integration/cli03_runner_contract_derived_tests.rs:691:6:
+single-OFE baseline fixture should execute: ReleaseMetadata { source: Io { path: "/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/cli03_runner_contract_derived_tests-140512138d519edd (deleted)", source: Os { code: 2, kind: NotFound, message: "No such file or directory" } } }
+
+---- cli03_mofe03_tilled_multiofe_run_does_not_claim_the_wave1_chain stdout ----
+
+thread 'cli03_mofe03_tilled_multiofe_run_does_not_claim_the_wave1_chain' (764851) panicked at tests/integration/cli03_runner_contract_derived_tests.rs:575:6:
+aligned multi-OFE fixture should execute through the Wave-1 chain: ReleaseMetadata { source: Io { path: "/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/cli03_runner_contract_derived_tests-140512138d519edd (deleted)", source: Os { code: 2, kind: NotFound, message: "No such file or directory" } } }
+
+---- cli03_mofe04_single_ofe_publication_reports_single_contributor_policy stdout ----
+
+thread 'cli03_mofe04_single_ofe_publication_reports_single_contributor_policy' (764852) panicked at tests/integration/cli03_runner_contract_derived_tests.rs:1018:6:
+single-OFE fixture should execute: ReleaseMetadata { source: Io { path: "/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/cli03_runner_contract_derived_tests-140512138d519edd (deleted)", source: Os { code: 2, kind: NotFound, message: "No such file or directory" } } }
+
+---- cli03_runtime_accepts_finite_daily_temperature_inversion_records stdout ----
+
+thread 'cli03_runtime_accepts_finite_daily_temperature_inversion_records' (764859) panicked at tests/integration/cli03_runner_contract_derived_tests.rs:1092:6:
+finite tmax<tmin climate records should remain compatibility-valid: ReleaseMetadata { source: Io { path: "/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/cli03_runner_contract_derived_tests-140512138d519edd (deleted)", source: Os { code: 2, kind: NotFound, message: "No such file or directory" } } }
+
+
+failures:
+    cli03_fixture_run_publishes_wb16_ealpha_runtime_seed_provenance
+    cli03_legacy_sidecar_discovery_mode_uses_legacy_sidecars_and_ignores_runfile_overrides
+    cli03_mf_multiofe_publication_emits_public_per_ofe_wat_rows
+    cli03_mofe03_no_till_multiofe_runfile_executes_wave1_chain
+    cli03_mofe03_single_ofe_policy_disables_wave2_by_default
+    cli03_mofe03_tilled_multiofe_run_does_not_claim_the_wave1_chain
+    cli03_mofe04_single_ofe_publication_reports_single_contributor_policy
+    cli03_runtime_accepts_finite_daily_temperature_inversion_records
+
+test result: FAILED. 15 passed; 8 failed; 0 ignored; 0 measured; 0 filtered out; finished in 38.76s
+
+error: test failed, to rerun pass `-p openwepp --test cli03_runner_contract_derived_tests`
+     Running tests/integration/cli04_runner_wat_parquet_contract_derived_tests.rs (target/llvm-cov-target/debug/deps/cli04_runner_wat_parquet_contract_derived_tests-455ab59c3fa4c6c5)
+error: test failed, to rerun pass `-p openwepp --test cli04_runner_wat_parquet_contract_derived_tests`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/cli04_runner_wat_parquet_contract_derived_tests-455ab59c3fa4c6c5` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/comparator_tier_routing_metadata.rs (target/llvm-cov-target/debug/deps/comparator_tier_routing_metadata-9a24804277adb685)
+error: test failed, to rerun pass `-p openwepp --test comparator_tier_routing_metadata`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/comparator_tier_routing_metadata-9a24804277adb685` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/dff_ws1_native_forest_cli.rs (target/llvm-cov-target/debug/deps/dff_ws1_native_forest_cli-ef7fb67a319ccf0a)
+error: test failed, to rerun pass `-p openwepp --test dff_ws1_native_forest_cli`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/dff_ws1_native_forest_cli-ef7fb67a319ccf0a` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/dff_ws2_ksatadj_direct_runtime.rs (target/llvm-cov-target/debug/deps/dff_ws2_ksatadj_direct_runtime-678d1bf49156f164)
+error: test failed, to rerun pass `-p openwepp --test dff_ws2_ksatadj_direct_runtime`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/dff_ws2_ksatadj_direct_runtime-678d1bf49156f164` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/dff_ws3_directional_burn_validation.rs (target/llvm-cov-target/debug/deps/dff_ws3_directional_burn_validation-ddb2c8033acac20c)
+error: test failed, to rerun pass `-p openwepp --test dff_ws3_directional_burn_validation`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/dff_ws3_directional_burn_validation-ddb2c8033acac20c` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/erod11_alias_boundary_ownership_contract.rs (target/llvm-cov-target/debug/deps/erod11_alias_boundary_ownership_contract-b91e535ca939e726)
+
+running 4 tests
+test erod11_wave0_hillslope_alias_projection_matches_authority ... ok
+test erod11_wave0_watershed_alias_projection_matches_authority ... ok
+test erod11_peak_duration_alias_registry_entries_exist ... ok
+test erod11_contract_addenda_and_gap_posture_are_present ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/integration/erod12_cross_domain_contract_closure_contract.rs (target/llvm-cov-target/debug/deps/erod12_cross_domain_contract_closure_contract-e1b11d9ef9c70a17)
+
+running 3 tests
+test erod12_cross_domain_addenda_are_present ... ok
+test erod12_wave0_cross_domain_blockers_are_closed ... ok
+test erod12_non_wave0_posture_remains_explicit ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/erod13_contract_authority_closure_contract.rs (target/llvm-cov-target/debug/deps/erod13_contract_authority_closure_contract-72f245c11ab3f8ee)
+
+running 2 tests
+test erod13_wave1_addenda_are_present_in_required_contracts ... ok
+test erod13_contract_changelog_references_wave1_authority ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/erod14_contract_authority_closure_contract.rs (target/llvm-cov-target/debug/deps/erod14_contract_authority_closure_contract-687b7cfb4bf6f34e)
+
+running 2 tests
+test erod14_contract_changelog_references_wave2_authority ... ok
+test erod14_wave2_addenda_are_present_in_required_contracts ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/integration/erod15_wave3_contract_authority_closure_contract.rs (target/llvm-cov-target/debug/deps/erod15_wave3_contract_authority_closure_contract-8b0a780b6236bc0c)
+
+running 3 tests
+test erod15_contract_references_wave3_authority ... ok
+test erod15_wave3_addenda_are_present_in_required_contracts ... ok
+test erod15_alias_registry_contains_hbp_payload_templates ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/erod16_wave1_continuity_fixture_conservation.rs (target/llvm-cov-target/debug/deps/erod16_wave1_continuity_fixture_conservation-47385f1393b35cc5)
+
+running 1 test
+test erod16_wave1_continuity_conserves_on_mckenzie_clay_loam_storm_forcing ... FAILED
+
+failures:
+
+---- erod16_wave1_continuity_conserves_on_mckenzie_clay_loam_storm_forcing stdout ----
+
+thread 'erod16_wave1_continuity_conserves_on_mckenzie_clay_loam_storm_forcing' (773142) panicked at tests/integration/erod16_wave1_continuity_fixture_conservation.rs:95:6:
+clay-loam McKenzie fixture should run end-to-end: ReleaseMetadata { source: Io { path: "/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/erod16_wave1_continuity_fixture_conservation-47385f1393b35cc5 (deleted)", source: Os { code: 2, kind: NotFound, message: "No such file or directory" } } }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    erod16_wave1_continuity_conserves_on_mckenzie_clay_loam_storm_forcing
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.15s
+
+error: test failed, to rerun pass `-p openwepp --test erod16_wave1_continuity_fixture_conservation`
+     Running tests/integration/erosion_multi_ofe_p102_chain.rs (target/llvm-cov-target/debug/deps/erosion_multi_ofe_p102_chain-378920ec5bece150)
+error: test failed, to rerun pass `-p openwepp --test erosion_multi_ofe_p102_chain`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/erosion_multi_ofe_p102_chain-378920ec5bece150` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/erosion_single_ofe_p61_sediment.rs (target/llvm-cov-target/debug/deps/erosion_single_ofe_p61_sediment-77f8f7ca9f2370da)
+error: test failed, to rerun pass `-p openwepp --test erosion_single_ofe_p61_sediment`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/erosion_single_ofe_p61_sediment-77f8f7ca9f2370da` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/hparity01_hillslope_wat_lineage_contract.rs (target/llvm-cov-target/debug/deps/hparity01_hillslope_wat_lineage_contract-4e361fa68a7488a6)
+error: test failed, to rerun pass `-p openwepp --test hparity01_hillslope_wat_lineage_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/hparity01_hillslope_wat_lineage_contract-4e361fa68a7488a6` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/hphys0208_fc_threshold_coupled_residual_contract.rs (target/llvm-cov-target/debug/deps/hphys0208_fc_threshold_coupled_residual_contract-81045eecb92fd182)
+error: test failed, to rerun pass `-p openwepp --test hphys0208_fc_threshold_coupled_residual_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/hphys0208_fc_threshold_coupled_residual_contract-81045eecb92fd182` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/hphys0209_profilewp_adjudication_contract.rs (target/llvm-cov-target/debug/deps/hphys0209_profilewp_adjudication_contract-4c3f38255c66aa94)
+error: test failed, to rerun pass `-p openwepp --test hphys0209_profilewp_adjudication_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/hphys0209_profilewp_adjudication_contract-4c3f38255c66aa94` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/hphys0276_raw_unit_conversion_guard_contract.rs (target/llvm-cov-target/debug/deps/hphys0276_raw_unit_conversion_guard_contract-c673a0d332b565f5)
+error: test failed, to rerun pass `-p openwepp --test hphys0276_raw_unit_conversion_guard_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/hphys0276_raw_unit_conversion_guard_contract-c673a0d332b565f5` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/hphys0279_sc_unit_compliance_lint_contract.rs (target/llvm-cov-target/debug/deps/hphys0279_sc_unit_compliance_lint_contract-429a3908fca1c894)
+error: test failed, to rerun pass `-p openwepp --test hphys0279_sc_unit_compliance_lint_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/hphys0279_sc_unit_compliance_lint_contract-429a3908fca1c894` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/hphys0296_snow_rm_acceptance_authority_contract.rs (target/llvm-cov-target/debug/deps/hphys0296_snow_rm_acceptance_authority_contract-0aff1498016f3359)
+error: test failed, to rerun pass `-p openwepp --test hphys0296_snow_rm_acceptance_authority_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/hphys0296_snow_rm_acceptance_authority_contract-0aff1498016f3359` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/hphys0297_snow_rm_defect_ledger_contract.rs (target/llvm-cov-target/debug/deps/hphys0297_snow_rm_defect_ledger_contract-a68ba6cd9e944c6d)
+error: test failed, to rerun pass `-p openwepp --test hphys0297_snow_rm_defect_ledger_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/hphys0297_snow_rm_defect_ledger_contract-a68ba6cd9e944c6d` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/hphys0298_paired_lineage_partition_contract.rs (target/llvm-cov-target/debug/deps/hphys0298_paired_lineage_partition_contract-93a2a9e1bc74202e)
+error: test failed, to rerun pass `-p openwepp --test hphys0298_paired_lineage_partition_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/hphys0298_paired_lineage_partition_contract-93a2a9e1bc74202e` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/hphys0300_raw_hourly_melt_post_raw_routing_contract.rs (target/llvm-cov-target/debug/deps/hphys0300_raw_hourly_melt_post_raw_routing_contract-d56f5cce9c13d6f2)
+error: test failed, to rerun pass `-p openwepp --test hphys0300_raw_hourly_melt_post_raw_routing_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/hphys0300_raw_hourly_melt_post_raw_routing_contract-d56f5cce9c13d6f2` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/hphys0301_h39_forcing_melt_term_producer_contract.rs (target/llvm-cov-target/debug/deps/hphys0301_h39_forcing_melt_term_producer_contract-0fcbf3f79f25acb9)
+error: test failed, to rerun pass `-p openwepp --test hphys0301_h39_forcing_melt_term_producer_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/hphys0301_h39_forcing_melt_term_producer_contract-0fcbf3f79f25acb9` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/hphys0302_comparator_surface_audit_contract.rs (target/llvm-cov-target/debug/deps/hphys0302_comparator_surface_audit_contract-2b897021fc81c007)
+error: test failed, to rerun pass `-p openwepp --test hphys0302_comparator_surface_audit_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/hphys0302_comparator_surface_audit_contract-2b897021fc81c007` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/hphys0303_adr0016_comparator_ratification_contract.rs (target/llvm-cov-target/debug/deps/hphys0303_adr0016_comparator_ratification_contract-596e77b17a9b3f0f)
+error: test failed, to rerun pass `-p openwepp --test hphys0303_adr0016_comparator_ratification_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/hphys0303_adr0016_comparator_ratification_contract-596e77b17a9b3f0f` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/hphys0304_fixed_comparator_semantic_rerun_contract.rs (target/llvm-cov-target/debug/deps/hphys0304_fixed_comparator_semantic_rerun_contract-2e1c37a6227f186c)
+error: test failed, to rerun pass `-p openwepp --test hphys0304_fixed_comparator_semantic_rerun_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/hphys0304_fixed_comparator_semantic_rerun_contract-2e1c37a6227f186c` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/hphys0306_baseline_melt_observe_semantics_contract.rs (target/llvm-cov-target/debug/deps/hphys0306_baseline_melt_observe_semantics_contract-7681d63f3eab0d73)
+error: test failed, to rerun pass `-p openwepp --test hphys0306_baseline_melt_observe_semantics_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/hphys0306_baseline_melt_observe_semantics_contract-7681d63f3eab0d73` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/hphys0307_melt_call_branch_activation_contract.rs (target/llvm-cov-target/debug/deps/hphys0307_melt_call_branch_activation_contract-c72b68b9f055564a)
+error: test failed, to rerun pass `-p openwepp --test hphys0307_melt_call_branch_activation_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/hphys0307_melt_call_branch_activation_contract-c72b68b9f055564a` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/hphys0308_snowd_branch_state_ordering_contract.rs (target/llvm-cov-target/debug/deps/hphys0308_snowd_branch_state_ordering_contract-1211e8c41e8c8e8a)
+error: test failed, to rerun pass `-p openwepp --test hphys0308_snowd_branch_state_ordering_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/hphys0308_snowd_branch_state_ordering_contract-1211e8c41e8c8e8a` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/hphys0309_snow_carry_depletion_lineage_contract.rs (target/llvm-cov-target/debug/deps/hphys0309_snow_carry_depletion_lineage_contract-a8355110fbc38e86)
+error: test failed, to rerun pass `-p openwepp --test hphys0309_snow_carry_depletion_lineage_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/hphys0309_snow_carry_depletion_lineage_contract-a8355110fbc38e86` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/hphys0310_prior_day_snow_carry_divergence_contract.rs (target/llvm-cov-target/debug/deps/hphys0310_prior_day_snow_carry_divergence_contract-552db6e18c505dd4)
+error: test failed, to rerun pass `-p openwepp --test hphys0310_prior_day_snow_carry_divergence_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/hphys0310_prior_day_snow_carry_divergence_contract-552db6e18c505dd4` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/hphys0311_snow_carry_source_line_parity_contract.rs (target/llvm-cov-target/debug/deps/hphys0311_snow_carry_source_line_parity_contract-809e64708c07c8b0)
+error: test failed, to rerun pass `-p openwepp --test hphys0311_snow_carry_source_line_parity_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/hphys0311_snow_carry_source_line_parity_contract-809e64708c07c8b0` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/hphys0312_prior_year_terminal_snowpack_lineage_contract.rs (target/llvm-cov-target/debug/deps/hphys0312_prior_year_terminal_snowpack_lineage_contract-184b08ccca6ff997)
+error: test failed, to rerun pass `-p openwepp --test hphys0312_prior_year_terminal_snowpack_lineage_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/hphys0312_prior_year_terminal_snowpack_lineage_contract-184b08ccca6ff997` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/hphys0313_snowpack_settling_carry_recursion_contract.rs (target/llvm-cov-target/debug/deps/hphys0313_snowpack_settling_carry_recursion_contract-e4c3363fac81adba)
+error: test failed, to rerun pass `-p openwepp --test hphys0313_snowpack_settling_carry_recursion_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/hphys0313_snowpack_settling_carry_recursion_contract-e4c3363fac81adba` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/hphys0314_adr0017_snow_rm_reclassification_contract.rs (target/llvm-cov-target/debug/deps/hphys0314_adr0017_snow_rm_reclassification_contract-83a32bc7c943b6b9)
+error: test failed, to rerun pass `-p openwepp --test hphys0314_adr0017_snow_rm_reclassification_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/hphys0314_adr0017_snow_rm_reclassification_contract-83a32bc7c943b6b9` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/hphys0315_hourly_snowfall_input_lineage_contract.rs (target/llvm-cov-target/debug/deps/hphys0315_hourly_snowfall_input_lineage_contract-93c998a43be1551d)
+error: test failed, to rerun pass `-p openwepp --test hphys0315_hourly_snowfall_input_lineage_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/hphys0315_hourly_snowfall_input_lineage_contract-93c998a43be1551d` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/hphys0316_2013_terminal_carry_recursion_contract.rs (target/llvm-cov-target/debug/deps/hphys0316_2013_terminal_carry_recursion_contract-60318cce08fa8c9e)
+error: test failed, to rerun pass `-p openwepp --test hphys0316_2013_terminal_carry_recursion_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/hphys0316_2013_terminal_carry_recursion_contract-60318cce08fa8c9e` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/hphys0317_hourly_snowfall_input_surface_parity_contract.rs (target/llvm-cov-target/debug/deps/hphys0317_hourly_snowfall_input_surface_parity_contract-e8edddf7d5b8ab8d)
+error: test failed, to rerun pass `-p openwepp --test hphys0317_hourly_snowfall_input_surface_parity_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/hphys0317_hourly_snowfall_input_surface_parity_contract-e8edddf7d5b8ab8d` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/hphys0319_fixed_baseline_stmtim_observe_contract.rs (target/llvm-cov-target/debug/deps/hphys0319_fixed_baseline_stmtim_observe_contract-c8a4d5de332574e5)
+error: test failed, to rerun pass `-p openwepp --test hphys0319_fixed_baseline_stmtim_observe_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/hphys0319_fixed_baseline_stmtim_observe_contract-c8a4d5de332574e5` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/hphys0320_stmtim_start_time_source_line_contract.rs (target/llvm-cov-target/debug/deps/hphys0320_stmtim_start_time_source_line_contract-94955e630fc8dd60)
+error: test failed, to rerun pass `-p openwepp --test hphys0320_stmtim_start_time_source_line_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/hphys0320_stmtim_start_time_source_line_contract-94955e630fc8dd60` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/infile_chaninp_parser_contract.rs (target/llvm-cov-target/debug/deps/infile_chaninp_parser_contract-d3e8daba97b8dc6d)
+error: test failed, to rerun pass `-p openwepp --test infile_chaninp_parser_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/infile_chaninp_parser_contract-d3e8daba97b8dc6d` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/infile_climate_parser_contract.rs (target/llvm-cov-target/debug/deps/infile_climate_parser_contract-757f1a1734ae39d0)
+error: test failed, to rerun pass `-p openwepp --test infile_climate_parser_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/infile_climate_parser_contract-757f1a1734ae39d0` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/infile_frost_parser_contract.rs (target/llvm-cov-target/debug/deps/infile_frost_parser_contract-5853a0a00b9421b0)
+error: test failed, to rerun pass `-p openwepp --test infile_frost_parser_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/infile_frost_parser_contract-5853a0a00b9421b0` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/infile_gwcoeff_parser_contract.rs (target/llvm-cov-target/debug/deps/infile_gwcoeff_parser_contract-2244deb4b5d5b90c)
+error: test failed, to rerun pass `-p openwepp --test infile_gwcoeff_parser_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/infile_gwcoeff_parser_contract-2244deb4b5d5b90c` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/infile_hbp_parser_contract.rs (target/llvm-cov-target/debug/deps/infile_hbp_parser_contract-39f8a0b31a5d3609)
+error: test failed, to rerun pass `-p openwepp --test infile_hbp_parser_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/infile_hbp_parser_contract-39f8a0b31a5d3609` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/infile_irrigation_depletion_parser_contract.rs (target/llvm-cov-target/debug/deps/infile_irrigation_depletion_parser_contract-37a82fe1ccce0963)
+error: test failed, to rerun pass `-p openwepp --test infile_irrigation_depletion_parser_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/infile_irrigation_depletion_parser_contract-37a82fe1ccce0963` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/infile_irrigation_fixeddate_parser_contract.rs (target/llvm-cov-target/debug/deps/infile_irrigation_fixeddate_parser_contract-c7f84614b727ae9c)
+error: test failed, to rerun pass `-p openwepp --test infile_irrigation_fixeddate_parser_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/infile_irrigation_fixeddate_parser_contract-c7f84614b727ae9c` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/infile_lcwb_parser_contract.rs (target/llvm-cov-target/debug/deps/infile_lcwb_parser_contract-61fba50826262206)
+error: test failed, to rerun pass `-p openwepp --test infile_lcwb_parser_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/infile_lcwb_parser_contract-61fba50826262206` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/infile_management_parser_contract.rs (target/llvm-cov-target/debug/deps/infile_management_parser_contract-b3b016ef3e28ea64)
+error: test failed, to rerun pass `-p openwepp --test infile_management_parser_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/infile_management_parser_contract-b3b016ef3e28ea64` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/infile_management_yaml_contract.rs (target/llvm-cov-target/debug/deps/infile_management_yaml_contract-a348fa8a193cba50)
+error: test failed, to rerun pass `-p openwepp --test infile_management_yaml_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/infile_management_yaml_contract-a348fa8a193cba50` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/infile_phosphorus_parser_contract.rs (target/llvm-cov-target/debug/deps/infile_phosphorus_parser_contract-e43e4a156e7c25a5)
+error: test failed, to rerun pass `-p openwepp --test infile_phosphorus_parser_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/infile_phosphorus_parser_contract-e43e4a156e7c25a5` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/infile_pmetpara_parser_contract.rs (target/llvm-cov-target/debug/deps/infile_pmetpara_parser_contract-19f8eca0627edd9f)
+error: test failed, to rerun pass `-p openwepp --test infile_pmetpara_parser_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/infile_pmetpara_parser_contract-19f8eca0627edd9f` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/infile_slope_parser_contract.rs (target/llvm-cov-target/debug/deps/infile_slope_parser_contract-e9e81069351b6290)
+error: test failed, to rerun pass `-p openwepp --test infile_slope_parser_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/infile_slope_parser_contract-e9e81069351b6290` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/infile_snow_parser_contract.rs (target/llvm-cov-target/debug/deps/infile_snow_parser_contract-f55b2297855595c8)
+error: test failed, to rerun pass `-p openwepp --test infile_snow_parser_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/infile_snow_parser_contract-f55b2297855595c8` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/infile_soil_parser_contract.rs (target/llvm-cov-target/debug/deps/infile_soil_parser_contract-aaeb4e3fcc5ad2b0)
+error: test failed, to rerun pass `-p openwepp --test infile_soil_parser_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/infile_soil_parser_contract-aaeb4e3fcc5ad2b0` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/infile_tc_parser_contract.rs (target/llvm-cov-target/debug/deps/infile_tc_parser_contract-b388228113f63336)
+error: test failed, to rerun pass `-p openwepp --test infile_tc_parser_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/infile_tc_parser_contract-b388228113f63336` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/infile_tcr_parser_contract.rs (target/llvm-cov-target/debug/deps/infile_tcr_parser_contract-dd01f20b51742d69)
+error: test failed, to rerun pass `-p openwepp --test infile_tcr_parser_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/infile_tcr_parser_contract-dd01f20b51742d69` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/infile_watershed_channel_parser_contract.rs (target/llvm-cov-target/debug/deps/infile_watershed_channel_parser_contract-520181b46631606c)
+error: test failed, to rerun pass `-p openwepp --test infile_watershed_channel_parser_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/infile_watershed_channel_parser_contract-520181b46631606c` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/infile_watershed_impoundment_parser_contract.rs (target/llvm-cov-target/debug/deps/infile_watershed_impoundment_parser_contract-9f29544c4c4bebab)
+error: test failed, to rerun pass `-p openwepp --test infile_watershed_impoundment_parser_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/infile_watershed_impoundment_parser_contract-9f29544c4c4bebab` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/infile_watershed_structure_parser_contract.rs (target/llvm-cov-target/debug/deps/infile_watershed_structure_parser_contract-eed1d9edcb0f305f)
+error: test failed, to rerun pass `-p openwepp --test infile_watershed_structure_parser_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/infile_watershed_structure_parser_contract-eed1d9edcb0f305f` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/infile_weppui_parser_contract.rs (target/llvm-cov-target/debug/deps/infile_weppui_parser_contract-b40b487f8ad9d88f)
+error: test failed, to rerun pass `-p openwepp --test infile_weppui_parser_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/infile_weppui_parser_contract-b40b487f8ad9d88f` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/landuse_migration_cli_contract.rs (target/llvm-cov-target/debug/deps/landuse_migration_cli_contract-42783d9a29639912)
+error: test failed, to rerun pass `-p openwepp --test landuse_migration_cli_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/landuse_migration_cli_contract-42783d9a29639912` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/laned_shadow_h2637.rs (target/llvm-cov-target/debug/deps/laned_shadow_h2637-033799bb7dbfbbfe)
+error: test failed, to rerun pass `-p openwepp --test laned_shadow_h2637`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/laned_shadow_h2637-033799bb7dbfbbfe` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/mofe01_inter_ofe_route_contract.rs (target/llvm-cov-target/debug/deps/mofe01_inter_ofe_route_contract-0059b9d76ce6a5bf)
+error: test failed, to rerun pass `-p openwepp --test mofe01_inter_ofe_route_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/mofe01_inter_ofe_route_contract-0059b9d76ce6a5bf` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/mofe04_publication_contract_authority_closure_contract.rs (target/llvm-cov-target/debug/deps/mofe04_publication_contract_authority_closure_contract-4b7c836d38d93a97)
+error: test failed, to rerun pass `-p openwepp --test mofe04_publication_contract_authority_closure_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/mofe04_publication_contract_authority_closure_contract-4b7c836d38d93a97` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/mofe05_watershed_contributor_metadata_contract_authority_closure_contract.rs (target/llvm-cov-target/debug/deps/mofe05_watershed_contributor_metadata_contract_authority_closure_contract-b02d3289d0e41f86)
+error: test failed, to rerun pass `-p openwepp --test mofe05_watershed_contributor_metadata_contract_authority_closure_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/mofe05_watershed_contributor_metadata_contract_authority_closure_contract-b02d3289d0e41f86` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/owcmp_agent_config_contract.rs (target/llvm-cov-target/debug/deps/owcmp_agent_config_contract-2b8df672d66b9026)
+error: test failed, to rerun pass `-p openwepp --test owcmp_agent_config_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/owcmp_agent_config_contract-2b8df672d66b9026` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/owcmp_cli_contract.rs (target/llvm-cov-target/debug/deps/owcmp_cli_contract-28e2f732511e5dd5)
+error: test failed, to rerun pass `-p openwepp --test owcmp_cli_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/owcmp_cli_contract-28e2f732511e5dd5` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/paradigm2_multilayer_promotion.rs (target/llvm-cov-target/debug/deps/paradigm2_multilayer_promotion-a3c788351598f9d2)
+error: test failed, to rerun pass `-p openwepp --test paradigm2_multilayer_promotion`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/paradigm2_multilayer_promotion-a3c788351598f9d2` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/paradigm2_stage0_surface_energy_balance_contract.rs (target/llvm-cov-target/debug/deps/paradigm2_stage0_surface_energy_balance_contract-00019753d79d7dc5)
+error: test failed, to rerun pass `-p openwepp --test paradigm2_stage0_surface_energy_balance_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/paradigm2_stage0_surface_energy_balance_contract-00019753d79d7dc5` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/paradigm2_stage1_layered_snow_density.rs (target/llvm-cov-target/debug/deps/paradigm2_stage1_layered_snow_density-805250287e7c7dac)
+error: test failed, to rerun pass `-p openwepp --test paradigm2_stage1_layered_snow_density`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/paradigm2_stage1_layered_snow_density-805250287e7c7dac` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/paradigm2_stage2_snow_frost_insulation_profile.rs (target/llvm-cov-target/debug/deps/paradigm2_stage2_snow_frost_insulation_profile-a7668121ac7958dc)
+error: test failed, to rerun pass `-p openwepp --test paradigm2_stage2_snow_frost_insulation_profile`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/paradigm2_stage2_snow_frost_insulation_profile-a7668121ac7958dc` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/paradigm2_stage3_decouple_water_temperature.rs (target/llvm-cov-target/debug/deps/paradigm2_stage3_decouple_water_temperature-18aad388ee60b11b)
+error: test failed, to rerun pass `-p openwepp --test paradigm2_stage3_decouple_water_temperature`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/paradigm2_stage3_decouple_water_temperature-18aad388ee60b11b` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/paradigm2_stage3_liquid_routing_meltwater_temperature.rs (target/llvm-cov-target/debug/deps/paradigm2_stage3_liquid_routing_meltwater_temperature-6cbf1ccc45a169b6)
+error: test failed, to rerun pass `-p openwepp --test paradigm2_stage3_liquid_routing_meltwater_temperature`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/paradigm2_stage3_liquid_routing_meltwater_temperature-6cbf1ccc45a169b6` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/pl14_tier_a_candidate_replay_contract.rs (target/llvm-cov-target/debug/deps/pl14_tier_a_candidate_replay_contract-516214e62c030062)
+error: test failed, to rerun pass `-p openwepp --test pl14_tier_a_candidate_replay_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/pl14_tier_a_candidate_replay_contract-516214e62c030062` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/pl14r_tier_a_replay_rerun_contract.rs (target/llvm-cov-target/debug/deps/pl14r_tier_a_replay_rerun_contract-c764bb621786fa45)
+error: test failed, to rerun pass `-p openwepp --test pl14r_tier_a_replay_rerun_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/pl14r_tier_a_replay_rerun_contract-c764bb621786fa45` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/pl14s_tier_a_candidate_emission_and_replay_contract.rs (target/llvm-cov-target/debug/deps/pl14s_tier_a_candidate_emission_and_replay_contract-bed27fae74229032)
+error: test failed, to rerun pass `-p openwepp --test pl14s_tier_a_candidate_emission_and_replay_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/pl14s_tier_a_candidate_emission_and_replay_contract-bed27fae74229032` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/pl15_tier_a_delta_closeout_contract.rs (target/llvm-cov-target/debug/deps/pl15_tier_a_delta_closeout_contract-edc81829bb32e272)
+error: test failed, to rerun pass `-p openwepp --test pl15_tier_a_delta_closeout_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/pl15_tier_a_delta_closeout_contract-edc81829bb32e272` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/pl15r_tier_a_delta_recloseout_contract.rs (target/llvm-cov-target/debug/deps/pl15r_tier_a_delta_recloseout_contract-896174768eb46d56)
+error: test failed, to rerun pass `-p openwepp --test pl15r_tier_a_delta_recloseout_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/pl15r_tier_a_delta_recloseout_contract-896174768eb46d56` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/sim_contract_boundary_unit_registry.rs (target/llvm-cov-target/debug/deps/sim_contract_boundary_unit_registry-d77818d166380605)
+error: test failed, to rerun pass `-p openwepp --test sim_contract_boundary_unit_registry`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/sim_contract_boundary_unit_registry-d77818d166380605` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/sim_contract_closure_checks.rs (target/llvm-cov-target/debug/deps/sim_contract_closure_checks-8825547c4c716ad7)
+error: test failed, to rerun pass `-p openwepp --test sim_contract_closure_checks`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/sim_contract_closure_checks-8825547c4c716ad7` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/sim_contract_status_taxonomy.rs (target/llvm-cov-target/debug/deps/sim_contract_status_taxonomy-5f58ac514eab2c57)
+error: test failed, to rerun pass `-p openwepp --test sim_contract_status_taxonomy`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/sim_contract_status_taxonomy-5f58ac514eab2c57` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/sim_contract_symbol_alias_registry.rs (target/llvm-cov-target/debug/deps/sim_contract_symbol_alias_registry-64eb0d8963aab744)
+error: test failed, to rerun pass `-p openwepp --test sim_contract_symbol_alias_registry`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/sim_contract_symbol_alias_registry-64eb0d8963aab744` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/snowdensity02_contract_adr_guard.rs (target/llvm-cov-target/debug/deps/snowdensity02_contract_adr_guard-c0840ce424329fed)
+error: test failed, to rerun pass `-p openwepp --test snowdensity02_contract_adr_guard`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/snowdensity02_contract_adr_guard-c0840ce424329fed` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/snowdensity03_physics_bulk_offline_contract.rs (target/llvm-cov-target/debug/deps/snowdensity03_physics_bulk_offline_contract-80113205c1237d15)
+error: test failed, to rerun pass `-p openwepp --test snowdensity03_physics_bulk_offline_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/snowdensity03_physics_bulk_offline_contract-80113205c1237d15` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/snowdensity05a_melt_contract_guard.rs (target/llvm-cov-target/debug/deps/snowdensity05a_melt_contract_guard-f2b59b54f1629436)
+error: test failed, to rerun pass `-p openwepp --test snowdensity05a_melt_contract_guard`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/snowdensity05a_melt_contract_guard-f2b59b54f1629436` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/snowdensity05b_shortwave_source_contract.rs (target/llvm-cov-target/debug/deps/snowdensity05b_shortwave_source_contract-d7b2afe0dabe9a26)
+error: test failed, to rerun pass `-p openwepp --test snowdensity05b_shortwave_source_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/snowdensity05b_shortwave_source_contract-d7b2afe0dabe9a26` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/snowdensity05c_albedo_state_core.rs (target/llvm-cov-target/debug/deps/snowdensity05c_albedo_state_core-d2d72e95f48cfb44)
+error: test failed, to rerun pass `-p openwepp --test snowdensity05c_albedo_state_core`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/snowdensity05c_albedo_state_core-d2d72e95f48cfb44` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/snowdensity05d_opt_in_coe_melt.rs (target/llvm-cov-target/debug/deps/snowdensity05d_opt_in_coe_melt-2d4da298a97a3549)
+error: test failed, to rerun pass `-p openwepp --test snowdensity05d_opt_in_coe_melt`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/snowdensity05d_opt_in_coe_melt-2d4da298a97a3549` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/snowdensity05e_melt_adjudication.rs (target/llvm-cov-target/debug/deps/snowdensity05e_melt_adjudication-f1daa27119c9bd96)
+error: test failed, to rerun pass `-p openwepp --test snowdensity05e_melt_adjudication`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/snowdensity05e_melt_adjudication-f1daa27119c9bd96` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/snowdensity05f_melt_closure_handoff.rs (target/llvm-cov-target/debug/deps/snowdensity05f_melt_closure_handoff-1fde8b88f5044a9a)
+error: test failed, to rerun pass `-p openwepp --test snowdensity05f_melt_closure_handoff`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/snowdensity05f_melt_closure_handoff-1fde8b88f5044a9a` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/snowdensity05g_harness_fidelity_rerun.rs (target/llvm-cov-target/debug/deps/snowdensity05g_harness_fidelity_rerun-ce59f50428ac5973)
+error: test failed, to rerun pass `-p openwepp --test snowdensity05g_harness_fidelity_rerun`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/snowdensity05g_harness_fidelity_rerun-ce59f50428ac5973` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/snowdensity06_density_compaction.rs (target/llvm-cov-target/debug/deps/snowdensity06_density_compaction-9ad30f0106336d83)
+error: test failed, to rerun pass `-p openwepp --test snowdensity06_density_compaction`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/snowdensity06_density_compaction-9ad30f0106336d83` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/snowdensity06b_coe_bound_density_replay.rs (target/llvm-cov-target/debug/deps/snowdensity06b_coe_bound_density_replay-b27f6640ec2996e7)
+error: test failed, to rerun pass `-p openwepp --test snowdensity06b_coe_bound_density_replay`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/snowdensity06b_coe_bound_density_replay-b27f6640ec2996e7` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/snowdensity07_runtime_opt_in.rs (target/llvm-cov-target/debug/deps/snowdensity07_runtime_opt_in-f56a5a75f6f289ea)
+
+running 4 tests
+test snowdensity07_opt_in_changes_only_runtime_density_depth_surface ... ok
+test snowdensity07_r4g_projects_runtime_and_boundary_carry_without_compat_edge ... ok
+test snowdensity07_runtime_opt_in_is_superseded_by_10_3_15_default_activation ... ok
+test snowdensity07_contract_and_package_bind_runtime_opt_in_authority ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/integration/snowdensity08_gate_rerun.rs (target/llvm-cov-target/debug/deps/snowdensity08_gate_rerun-518a2ce5120e0b31)
+
+running 3 tests
+test snowdensity08_executed_report_keeps_frost_attribution_blocked ... ok
+test snowdensity08_default_is_superseded_by_10_3_15_and_script_reports_blocker ... ok
+test snowdensity08_contract_and_package_bind_gate_rerun_authority ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/integration/snowdensity09_coupled_wat_rerun.rs (target/llvm-cov-target/debug/deps/snowdensity09_coupled_wat_rerun-4412f8b5693b46b2)
+
+running 4 tests
+test snowdensity09_script_preserves_coupled_path_and_report_contract ... ok
+test snowdensity09_executed_report_is_truthful_if_present ... ok
+test snowdensity09_selector_is_now_10_3_15_default_with_legacy_rollback ... ok
+test snowdensity09_contract_and_package_authorize_diagnostic_coupled_wat ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/integration/snowdensity10_3_10_spring_pack_depletion_compaction.rs (target/llvm-cov-target/debug/deps/snowdensity10_3_10_spring_pack_depletion_compaction-f3ec3706faffc94c)
+
+running 3 tests
+test snowdensity10_3_10_package_defines_density_cap_feasibility_gate ... ok
+test snowdensity10_3_10_tool_preserves_diagnostic_boundaries ... ok
+test snowdensity10_3_10_committed_report_has_required_disposition ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/snowdensity10_3_11_spring_compaction_densification.rs (target/llvm-cov-target/debug/deps/snowdensity10_3_11_spring_compaction_densification-da7978201438a5df)
+
+running 4 tests
+test runtime_candidate_preserves_swe_and_density_cap ... ok
+test selector_and_tool_keep_diagnostic_boundaries ... ok
+test executed_report_records_coupled_candidate_disposition ... ok
+test contract_and_package_bind_spring_densification_candidate ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/integration/snowdensity10_3_12_bundle_activation_adjudication.rs (target/llvm-cov-target/debug/deps/snowdensity10_3_12_bundle_activation_adjudication-664834cfb24c793f)
+
+running 3 tests
+test tool_uses_real_direct_bundle_and_preserves_boundaries ... ok
+test executed_report_records_hold_not_activation ... ok
+test contract_and_package_bind_bundle_activation_boundary ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/integration/snowdensity10_3_13_residual_policy_b_diagnostic.rs (target/llvm-cov-target/debug/deps/snowdensity10_3_13_residual_policy_b_diagnostic-23193b4605b999c9)
+
+running 3 tests
+test tool_preserves_diagnostic_boundaries_and_uses_real_wat_lineage ... ok
+test executed_report_records_transition_diagnostic_not_activation ... ok
+test contract_and_package_bind_residual_policy_b_diagnostic ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/integration/snowdensity10_3_14_policy_b_no_regression_cap_authority.rs (target/llvm-cov-target/debug/deps/snowdensity10_3_14_policy_b_no_regression_cap_authority-313948733459ad08)
+
+running 3 tests
+test tool_preserves_active_cap_and_protected_boundaries ... ok
+test executed_report_records_policy_b_readiness_under_active_cap_only ... ok
+test contract_and_package_bind_policy_b_cap_authority ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/integration/snowdensity10_3_15_default_activation_active_cap.rs (target/llvm-cov-target/debug/deps/snowdensity10_3_15_default_activation_active_cap-bfaa3fd9668231ba)
+
+running 4 tests
+test diagnostic_tool_proves_no_env_default_and_rollback_boundaries ... ok
+test implementation_selects_activated_default_without_user_surface ... ok
+test executed_report_records_default_activation_and_residual_blocker ... ok
+test contract_and_package_bind_default_activation_authority ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/integration/snowdensity10_3_16_open_surface_ablation_stage_a.rs (target/llvm-cov-target/debug/deps/snowdensity10_3_16_open_surface_ablation_stage_a-85eaa3dabbaf58b3)
+
+running 3 tests
+test stage_a_exports_vapor_without_routing_it_as_liquid ... ok
+test selector_and_trace_are_opt_in_only ... ok
+test contract_and_package_bind_stage_a_without_activation ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/integration/snowdensity10_3_17_shallow_pack_compaction_guard.rs (target/llvm-cov-target/debug/deps/snowdensity10_3_17_shallow_pack_compaction_guard-14d41e0ef8868d73)
+
+running 4 tests
+test shallow_guard_reduces_only_shallow_density_aggression ... ok
+test selector_and_tool_keep_diagnostic_boundaries ... ok
+test executed_report_records_coupled_candidate_disposition ... ok
+test contract_and_package_bind_shallow_guard_candidate ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/integration/snowdensity10_3_18_cross_snotel_mechanism_rubric.rs (target/llvm-cov-target/debug/deps/snowdensity10_3_18_cross_snotel_mechanism_rubric-ed981a7a08f5c9b5)
+
+running 2 tests
+test package_keeps_no_activation_boundary ... ok
+test cross_snotel_rubric_tool_is_diagnostic_and_contract_bound ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/snowdensity10_3_19_harder_pomeroy_default_activation.rs (target/llvm-cov-target/debug/deps/snowdensity10_3_19_harder_pomeroy_default_activation-d74bf8e97d92ce23)
+
+running 4 tests
+test activation_tool_is_policy_b_bound_and_not_a_runfile_disable_surface ... ok
+test implementation_selects_harder_pomeroy_without_env_and_preserves_rollback ... ok
+test contract_and_package_bind_harder_pomeroy_default_activation ... ok
+test executed_report_records_activation_gates_and_release_notes ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+     Running tests/integration/snowdensity10_3_1a_per_day_cancov.rs (target/llvm-cov-target/debug/deps/snowdensity10_3_1a_per_day_cancov-2270f2acfe615062)
+
+running 3 tests
+test snowdensity10_3_1a_source_uses_direct_runtime_series_not_scalar_replay ... ok
+test snowdensity10_3_1a_contract_and_package_bind_daily_cancov ... ok
+test snowdensity10_3_1a_coe_melt_consumes_daily_canopy_sidecar has been running for over 60 seconds
+test snowdensity10_3_1a_coe_melt_consumes_daily_canopy_sidecar ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 107.36s
+
+     Running tests/integration/snowdensity10_3_20_sublimation_stage_b_unlock.rs (target/llvm-cov-target/debug/deps/snowdensity10_3_20_sublimation_stage_b_unlock-7d8e97120127f503)
+error: test failed, to rerun pass `-p openwepp --test snowdensity10_3_20_sublimation_stage_b_unlock`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/snowdensity10_3_20_sublimation_stage_b_unlock-7d8e97120127f503` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/snowdensity10_3_21_post_partition_residual_decomposition.rs (target/llvm-cov-target/debug/deps/snowdensity10_3_21_post_partition_residual_decomposition-81bcfa951b239d59)
+error: test failed, to rerun pass `-p openwepp --test snowdensity10_3_21_post_partition_residual_decomposition`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/snowdensity10_3_21_post_partition_residual_decomposition-81bcfa951b239d59` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/snowdensity10_3_22_climate_class_density_specialization.rs (target/llvm-cov-target/debug/deps/snowdensity10_3_22_climate_class_density_specialization-37fce2456263a615)
+error: test failed, to rerun pass `-p openwepp --test snowdensity10_3_22_climate_class_density_specialization`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/snowdensity10_3_22_climate_class_density_specialization-37fce2456263a615` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/snowdensity10_3_3_gradient_melt_adjudication.rs (target/llvm-cov-target/debug/deps/snowdensity10_3_3_gradient_melt_adjudication-a182c9187969f06d)
+error: test failed, to rerun pass `-p openwepp --test snowdensity10_3_3_gradient_melt_adjudication`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/snowdensity10_3_3_gradient_melt_adjudication-a182c9187969f06d` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/snowdensity10_3_4_maritime_overaccumulation_diagnosis.rs (target/llvm-cov-target/debug/deps/snowdensity10_3_4_maritime_overaccumulation_diagnosis-e48e61429582d93d)
+error: test failed, to rerun pass `-p openwepp --test snowdensity10_3_4_maritime_overaccumulation_diagnosis`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/snowdensity10_3_4_maritime_overaccumulation_diagnosis-e48e61429582d93d` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/snowdensity10_3_5a_meteorology_crate_contract.rs (target/llvm-cov-target/debug/deps/snowdensity10_3_5a_meteorology_crate_contract-cb2c404082809229)
+error: test failed, to rerun pass `-p openwepp --test snowdensity10_3_5a_meteorology_crate_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/snowdensity10_3_5a_meteorology_crate_contract-cb2c404082809229` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/snowdensity10_3_5b_hourly_partition_jennings_contract.rs (target/llvm-cov-target/debug/deps/snowdensity10_3_5b_hourly_partition_jennings_contract-88c41a3cabedfb3b)
+error: test failed, to rerun pass `-p openwepp --test snowdensity10_3_5b_hourly_partition_jennings_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/snowdensity10_3_5b_hourly_partition_jennings_contract-88c41a3cabedfb3b` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/snowdensity10_3_5c_phase_partition_snowdepth_impact.rs (target/llvm-cov-target/debug/deps/snowdensity10_3_5c_phase_partition_snowdepth_impact-4b86f7a684fc1c48)
+error: test failed, to rerun pass `-p openwepp --test snowdensity10_3_5c_phase_partition_snowdepth_impact`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/snowdensity10_3_5c_phase_partition_snowdepth_impact-4b86f7a684fc1c48` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/snowdensity10_3_6_winter_thaw_melt_response.rs (target/llvm-cov-target/debug/deps/snowdensity10_3_6_winter_thaw_melt_response-33e225f722667f59)
+error: test failed, to rerun pass `-p openwepp --test snowdensity10_3_6_winter_thaw_melt_response`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/snowdensity10_3_6_winter_thaw_melt_response-33e225f722667f59` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/snowdensity10_3_7_winter_thaw_melt_response_correction.rs (target/llvm-cov-target/debug/deps/snowdensity10_3_7_winter_thaw_melt_response_correction-d871c51242bd8d9c)
+error: test failed, to rerun pass `-p openwepp --test snowdensity10_3_7_winter_thaw_melt_response_correction`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/snowdensity10_3_7_winter_thaw_melt_response_correction-d871c51242bd8d9c` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/snowdensity10_3_8_liquid_holding_capacity.rs (target/llvm-cov-target/debug/deps/snowdensity10_3_8_liquid_holding_capacity-bf55aa36ffca510b)
+error: test failed, to rerun pass `-p openwepp --test snowdensity10_3_8_liquid_holding_capacity`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/snowdensity10_3_8_liquid_holding_capacity-bf55aa36ffca510b` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/snowdensity10_3_9_march_april_residual_attribution.rs (target/llvm-cov-target/debug/deps/snowdensity10_3_9_march_april_residual_attribution-e89e8f26dab22eb0)
+error: test failed, to rerun pass `-p openwepp --test snowdensity10_3_9_march_april_residual_attribution`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/snowdensity10_3_9_march_april_residual_attribution-e89e8f26dab22eb0` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/snowfreeze_observed_frost_depth_contract.rs (target/llvm-cov-target/debug/deps/snowfreeze_observed_frost_depth_contract-3fd7222c268a3251)
+error: test failed, to rerun pass `-p openwepp --test snowfreeze_observed_frost_depth_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/snowfreeze_observed_frost_depth_contract-3fd7222c268a3251` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/snowfrost_fidelity_c_diagnostics_contract.rs (target/llvm-cov-target/debug/deps/snowfrost_fidelity_c_diagnostics_contract-4bb8325ac6d550ed)
+error: test failed, to rerun pass `-p openwepp --test snowfrost_fidelity_c_diagnostics_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/snowfrost_fidelity_c_diagnostics_contract-4bb8325ac6d550ed` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/snowfrost_fidelity_g0_pysnobal_bridge_contract.rs (target/llvm-cov-target/debug/deps/snowfrost_fidelity_g0_pysnobal_bridge_contract-5fc8595d32fea267)
+error: test failed, to rerun pass `-p openwepp --test snowfrost_fidelity_g0_pysnobal_bridge_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/snowfrost_fidelity_g0_pysnobal_bridge_contract-5fc8595d32fea267` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/soilauth02_soil_producer_reconciliation_contract.rs (target/llvm-cov-target/debug/deps/soilauth02_soil_producer_reconciliation_contract-9f401a6ffbfd22a9)
+error: test failed, to rerun pass `-p openwepp --test soilauth02_soil_producer_reconciliation_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/soilauth02_soil_producer_reconciliation_contract-9f401a6ffbfd22a9` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/soilauth03_soil_producer_contract_drift_guards_contract.rs (target/llvm-cov-target/debug/deps/soilauth03_soil_producer_contract_drift_guards_contract-0db78ebbb1c5c3ae)
+error: test failed, to rerun pass `-p openwepp --test soilauth03_soil_producer_contract_drift_guards_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/soilauth03_soil_producer_contract_drift_guards_contract-0db78ebbb1c5c3ae` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/topology_graph_validation_gate.rs (target/llvm-cov-target/debug/deps/topology_graph_validation_gate-52d27325d89396ce)
+error: test failed, to rerun pass `-p openwepp --test topology_graph_validation_gate`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/topology_graph_validation_gate-52d27325d89396ce` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/wb13_daily_water_balance_output_surface_contract.rs (target/llvm-cov-target/debug/deps/wb13_daily_water_balance_output_surface_contract-6d60faf624aa1160)
+error: test failed, to rerun pass `-p openwepp --test wb13_daily_water_balance_output_surface_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/wb13_daily_water_balance_output_surface_contract-6d60faf624aa1160` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/workspace_integration_ownership_acceptance.rs (target/llvm-cov-target/debug/deps/workspace_integration_ownership_acceptance-8a928f02a5f57edd)
+error: test failed, to rerun pass `-p openwepp --test workspace_integration_ownership_acceptance`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/workspace_integration_ownership_acceptance-8a928f02a5f57edd` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/integration/wshedw5_typed_watershed_runtime_contract.rs (target/llvm-cov-target/debug/deps/wshedw5_typed_watershed_runtime_contract-ec0605e92540f9ae)
+error: test failed, to rerun pass `-p openwepp --test wshedw5_typed_watershed_runtime_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/wshedw5_typed_watershed_runtime_contract-ec0605e92540f9ae` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running unittests src/lib.rs (target/llvm-cov-target/debug/deps/openwepp_climate_runtime_adapter-2ca329ad7055514c)
+error: test failed, to rerun pass `-p openwepp-climate-runtime-adapter --lib`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/openwepp_climate_runtime_adapter-2ca329ad7055514c` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running unittests src/lib.rs (target/llvm-cov-target/debug/deps/openwepp_comparator_metadata-24d7edcdd434ed21)
+error: test failed, to rerun pass `-p openwepp-comparator-metadata --lib`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/openwepp_comparator_metadata-24d7edcdd434ed21` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running unittests src/lib.rs (target/llvm-cov-target/debug/deps/openwepp_hillslope_orchestrator-cbf6fb41dee232a3)
+error: test failed, to rerun pass `-p openwepp-hillslope-orchestrator --lib`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/openwepp_hillslope_orchestrator-cbf6fb41dee232a3` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running unittests src/lib.rs (target/llvm-cov-target/debug/deps/openwepp_hillslope_output-17b4ec64784988ef)
+error: test failed, to rerun pass `-p openwepp-hillslope-output --lib`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/openwepp_hillslope_output-17b4ec64784988ef` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running unittests src/lib.rs (target/llvm-cov-target/debug/deps/openwepp_input_contract-f68961d45e188651)
+error: test failed, to rerun pass `-p openwepp-input-contract --lib`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/openwepp_input_contract-f68961d45e188651` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running unittests src/lib.rs (target/llvm-cov-target/debug/deps/openwepp_kernel_contract-aceefee11430d009)
+error: test failed, to rerun pass `-p openwepp-kernel-contract --lib`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/openwepp_kernel_contract-aceefee11430d009` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running unittests src/lib.rs (target/llvm-cov-target/debug/deps/openwepp_landuse_migrate-0b667a7d162322b2)
+error: test failed, to rerun pass `-p openwepp-landuse-migrate --lib`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/openwepp_landuse_migrate-0b667a7d162322b2` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running unittests src/main.rs (target/llvm-cov-target/debug/deps/openwepp_landuse_migrate-e1e023d4d48a7b5f)
+error: test failed, to rerun pass `-p openwepp-landuse-migrate --bin openwepp-landuse-migrate`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/openwepp_landuse_migrate-e1e023d4d48a7b5f` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/cli.rs (target/llvm-cov-target/debug/deps/cli-5427e36f2ead435e)
+error: test failed, to rerun pass `-p openwepp-landuse-migrate --test cli`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/cli-5427e36f2ead435e` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running unittests src/lib.rs (target/llvm-cov-target/debug/deps/openwepp_legacy_bridge-580fb2e0b4c53ef4)
+error: test failed, to rerun pass `-p openwepp-legacy-bridge --lib`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/openwepp_legacy_bridge-580fb2e0b4c53ef4` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running unittests src/lib.rs (target/llvm-cov-target/debug/deps/openwepp_management_schema-21d716ac020e5edc)
+error: test failed, to rerun pass `-p openwepp-management-schema --lib`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/openwepp_management_schema-21d716ac020e5edc` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running unittests src/lib.rs (target/llvm-cov-target/debug/deps/openwepp_meteorology-595391dbc9d780ad)
+error: test failed, to rerun pass `-p openwepp-meteorology --lib`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/openwepp_meteorology-595391dbc9d780ad` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running unittests src/lib.rs (target/llvm-cov-target/debug/deps/openwepp_runner-ed64b98132ca12b4)
+error: test failed, to rerun pass `-p openwepp-runner --lib`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/openwepp_runner-ed64b98132ca12b4` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running unittests src/bin/open_wepp_runner.rs (target/llvm-cov-target/debug/deps/open_wepp_runner-74ac6a40d029310e)
+error: test failed, to rerun pass `-p openwepp-runner --bin open_wepp_runner`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/open_wepp_runner-74ac6a40d029310e` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running unittests src/bin/openwepp-cli-hill.rs (target/llvm-cov-target/debug/deps/openwepp_cli_hill-334c79b2f9eb696d)
+error: test failed, to rerun pass `-p openwepp-runner --bin openwepp-cli-hill`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/openwepp_cli_hill-334c79b2f9eb696d` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running unittests src/bin/openwepp-cli-totalwatsed3.rs (target/llvm-cov-target/debug/deps/openwepp_cli_totalwatsed3-33757b337a4ca56b)
+error: test failed, to rerun pass `-p openwepp-runner --bin openwepp-cli-totalwatsed3`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/openwepp_cli_totalwatsed3-33757b337a4ca56b` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running unittests src/bin/openwepp-cli-watershed.rs (target/llvm-cov-target/debug/deps/openwepp_cli_watershed-8019a339b841422c)
+error: test failed, to rerun pass `-p openwepp-runner --bin openwepp-cli-watershed`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/openwepp_cli_watershed-8019a339b841422c` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running unittests src/bin/openwepp-snowbench.rs (target/llvm-cov-target/debug/deps/openwepp_snowbench-8c85d7d26fc77115)
+error: test failed, to rerun pass `-p openwepp-runner --bin openwepp-snowbench`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/openwepp_snowbench-8c85d7d26fc77115` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/mt3_hbp_hourly_consumer_contract.rs (target/llvm-cov-target/debug/deps/mt3_hbp_hourly_consumer_contract-fc96774f1c4514d7)
+error: test failed, to rerun pass `-p openwepp-runner --test mt3_hbp_hourly_consumer_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/mt3_hbp_hourly_consumer_contract-fc96774f1c4514d7` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/simimpl04_runner_kernel_execution_contract.rs (target/llvm-cov-target/debug/deps/simimpl04_runner_kernel_execution_contract-05e5119b64baaf76)
+error: test failed, to rerun pass `-p openwepp-runner --test simimpl04_runner_kernel_execution_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/simimpl04_runner_kernel_execution_contract-05e5119b64baaf76` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/simimpl04_wb13_publication_contract.rs (target/llvm-cov-target/debug/deps/simimpl04_wb13_publication_contract-316b7f2718db3364)
+error: test failed, to rerun pass `-p openwepp-runner --test simimpl04_wb13_publication_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/simimpl04_wb13_publication_contract-316b7f2718db3364` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/simimpl04_wepp_ui_mode_closure_contract.rs (target/llvm-cov-target/debug/deps/simimpl04_wepp_ui_mode_closure_contract-75c467b5d914b864)
+error: test failed, to rerun pass `-p openwepp-runner --test simimpl04_wepp_ui_mode_closure_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/simimpl04_wepp_ui_mode_closure_contract-75c467b5d914b864` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/totalwatsed3_cli_contract.rs (target/llvm-cov-target/debug/deps/totalwatsed3_cli_contract-4f8aff7d4872bf3c)
+error: test failed, to rerun pass `-p openwepp-runner --test totalwatsed3_cli_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/totalwatsed3_cli_contract-4f8aff7d4872bf3c` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/watershed_cli_behavior_contract.rs (target/llvm-cov-target/debug/deps/watershed_cli_behavior_contract-93a351120d148367)
+error: test failed, to rerun pass `-p openwepp-runner --test watershed_cli_behavior_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/watershed_cli_behavior_contract-93a351120d148367` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running tests/wshedw10_chaninp_absent_default_contract.rs (target/llvm-cov-target/debug/deps/wshedw10_chaninp_absent_default_contract-c68ff88b4c7dd805)
+error: test failed, to rerun pass `-p openwepp-runner --test wshedw10_chaninp_absent_default_contract`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/wshedw10_chaninp_absent_default_contract-c68ff88b4c7dd805` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running unittests src/lib.rs (target/llvm-cov-target/debug/deps/openwepp_sim_contract-223879c1f7ff1d33)
+error: test failed, to rerun pass `-p openwepp-sim-contract --lib`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/openwepp_sim_contract-223879c1f7ff1d33` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running unittests src/lib.rs (target/llvm-cov-target/debug/deps/openwepp_summary_accumulator-df7a4e9e3b895f0f)
+error: test failed, to rerun pass `-p openwepp-summary-accumulator --lib`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/openwepp_summary_accumulator-df7a4e9e3b895f0f` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running unittests src/lib.rs (target/llvm-cov-target/debug/deps/openwepp_topology-03869915ea2dab36)
+error: test failed, to rerun pass `-p openwepp-topology --lib`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/openwepp_topology-03869915ea2dab36` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running unittests src/lib.rs (target/llvm-cov-target/debug/deps/openwepp_unit_boundary-10f35f71ff367d25)
+error: test failed, to rerun pass `-p openwepp-unit-boundary --lib`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/openwepp_unit_boundary-10f35f71ff367d25` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running unittests src/lib.rs (target/llvm-cov-target/debug/deps/openwepp_watershed_orchestrator-05964b3c2fe4edf9)
+error: test failed, to rerun pass `-p openwepp-watershed-orchestrator --lib`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/openwepp_watershed_orchestrator-05964b3c2fe4edf9` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+     Running unittests src/lib.rs (target/llvm-cov-target/debug/deps/openwepp_watershed_output-d85d5d7847dcf31e)
+error: test failed, to rerun pass `-p openwepp-watershed-output --lib`
+
+Caused by:
+  could not execute process `/home/workdir/openWEPP/target/llvm-cov-target/debug/deps/openwepp_watershed_output-d85d5d7847dcf31e` (never executed)
+
+Caused by:
+  No such file or directory (os error 2)
+error: 142 targets failed:
+    `-p openwepp --test cli03_runner_contract_derived_tests`
+    `-p openwepp --test cli04_runner_wat_parquet_contract_derived_tests`
+    `-p openwepp --test comparator_tier_routing_metadata`
+    `-p openwepp --test dff_ws1_native_forest_cli`
+    `-p openwepp --test dff_ws2_ksatadj_direct_runtime`
+    `-p openwepp --test dff_ws3_directional_burn_validation`
+    `-p openwepp --test erod16_wave1_continuity_fixture_conservation`
+    `-p openwepp --test erosion_multi_ofe_p102_chain`
+    `-p openwepp --test erosion_single_ofe_p61_sediment`
+    `-p openwepp --test hparity01_hillslope_wat_lineage_contract`
+    `-p openwepp --test hphys0208_fc_threshold_coupled_residual_contract`
+    `-p openwepp --test hphys0209_profilewp_adjudication_contract`
+    `-p openwepp --test hphys0276_raw_unit_conversion_guard_contract`
+    `-p openwepp --test hphys0279_sc_unit_compliance_lint_contract`
+    `-p openwepp --test hphys0296_snow_rm_acceptance_authority_contract`
+    `-p openwepp --test hphys0297_snow_rm_defect_ledger_contract`
+    `-p openwepp --test hphys0298_paired_lineage_partition_contract`
+    `-p openwepp --test hphys0300_raw_hourly_melt_post_raw_routing_contract`
+    `-p openwepp --test hphys0301_h39_forcing_melt_term_producer_contract`
+    `-p openwepp --test hphys0302_comparator_surface_audit_contract`
+    `-p openwepp --test hphys0303_adr0016_comparator_ratification_contract`
+    `-p openwepp --test hphys0304_fixed_comparator_semantic_rerun_contract`
+    `-p openwepp --test hphys0306_baseline_melt_observe_semantics_contract`
+    `-p openwepp --test hphys0307_melt_call_branch_activation_contract`
+    `-p openwepp --test hphys0308_snowd_branch_state_ordering_contract`
+    `-p openwepp --test hphys0309_snow_carry_depletion_lineage_contract`
+    `-p openwepp --test hphys0310_prior_day_snow_carry_divergence_contract`
+    `-p openwepp --test hphys0311_snow_carry_source_line_parity_contract`
+    `-p openwepp --test hphys0312_prior_year_terminal_snowpack_lineage_contract`
+    `-p openwepp --test hphys0313_snowpack_settling_carry_recursion_contract`
+    `-p openwepp --test hphys0314_adr0017_snow_rm_reclassification_contract`
+    `-p openwepp --test hphys0315_hourly_snowfall_input_lineage_contract`
+    `-p openwepp --test hphys0316_2013_terminal_carry_recursion_contract`
+    `-p openwepp --test hphys0317_hourly_snowfall_input_surface_parity_contract`
+    `-p openwepp --test hphys0319_fixed_baseline_stmtim_observe_contract`
+    `-p openwepp --test hphys0320_stmtim_start_time_source_line_contract`
+    `-p openwepp --test infile_chaninp_parser_contract`
+    `-p openwepp --test infile_climate_parser_contract`
+    `-p openwepp --test infile_frost_parser_contract`
+    `-p openwepp --test infile_gwcoeff_parser_contract`
+    `-p openwepp --test infile_hbp_parser_contract`
+    `-p openwepp --test infile_irrigation_depletion_parser_contract`
+    `-p openwepp --test infile_irrigation_fixeddate_parser_contract`
+    `-p openwepp --test infile_lcwb_parser_contract`
+    `-p openwepp --test infile_management_parser_contract`
+    `-p openwepp --test infile_management_yaml_contract`
+    `-p openwepp --test infile_phosphorus_parser_contract`
+    `-p openwepp --test infile_pmetpara_parser_contract`
+    `-p openwepp --test infile_slope_parser_contract`
+    `-p openwepp --test infile_snow_parser_contract`
+    `-p openwepp --test infile_soil_parser_contract`
+    `-p openwepp --test infile_tc_parser_contract`
+    `-p openwepp --test infile_tcr_parser_contract`
+    `-p openwepp --test infile_watershed_channel_parser_contract`
+    `-p openwepp --test infile_watershed_impoundment_parser_contract`
+    `-p openwepp --test infile_watershed_structure_parser_contract`
+    `-p openwepp --test infile_weppui_parser_contract`
+    `-p openwepp --test landuse_migration_cli_contract`
+    `-p openwepp --test laned_shadow_h2637`
+    `-p openwepp --test mofe01_inter_ofe_route_contract`
+    `-p openwepp --test mofe04_publication_contract_authority_closure_contract`
+    `-p openwepp --test mofe05_watershed_contributor_metadata_contract_authority_closure_contract`
+    `-p openwepp --test owcmp_agent_config_contract`
+    `-p openwepp --test owcmp_cli_contract`
+    `-p openwepp --test paradigm2_multilayer_promotion`
+    `-p openwepp --test paradigm2_stage0_surface_energy_balance_contract`
+    `-p openwepp --test paradigm2_stage1_layered_snow_density`
+    `-p openwepp --test paradigm2_stage2_snow_frost_insulation_profile`
+    `-p openwepp --test paradigm2_stage3_decouple_water_temperature`
+    `-p openwepp --test paradigm2_stage3_liquid_routing_meltwater_temperature`
+    `-p openwepp --test pl14_tier_a_candidate_replay_contract`
+    `-p openwepp --test pl14r_tier_a_replay_rerun_contract`
+    `-p openwepp --test pl14s_tier_a_candidate_emission_and_replay_contract`
+    `-p openwepp --test pl15_tier_a_delta_closeout_contract`
+    `-p openwepp --test pl15r_tier_a_delta_recloseout_contract`
+    `-p openwepp --test sim_contract_boundary_unit_registry`
+    `-p openwepp --test sim_contract_closure_checks`
+    `-p openwepp --test sim_contract_status_taxonomy`
+    `-p openwepp --test sim_contract_symbol_alias_registry`
+    `-p openwepp --test snowdensity02_contract_adr_guard`
+    `-p openwepp --test snowdensity03_physics_bulk_offline_contract`
+    `-p openwepp --test snowdensity05a_melt_contract_guard`
+    `-p openwepp --test snowdensity05b_shortwave_source_contract`
+    `-p openwepp --test snowdensity05c_albedo_state_core`
+    `-p openwepp --test snowdensity05d_opt_in_coe_melt`
+    `-p openwepp --test snowdensity05e_melt_adjudication`
+    `-p openwepp --test snowdensity05f_melt_closure_handoff`
+    `-p openwepp --test snowdensity05g_harness_fidelity_rerun`
+    `-p openwepp --test snowdensity06_density_compaction`
+    `-p openwepp --test snowdensity06b_coe_bound_density_replay`
+    `-p openwepp --test snowdensity10_3_20_sublimation_stage_b_unlock`
+    `-p openwepp --test snowdensity10_3_21_post_partition_residual_decomposition`
+    `-p openwepp --test snowdensity10_3_22_climate_class_density_specialization`
+    `-p openwepp --test snowdensity10_3_3_gradient_melt_adjudication`
+    `-p openwepp --test snowdensity10_3_4_maritime_overaccumulation_diagnosis`
+    `-p openwepp --test snowdensity10_3_5a_meteorology_crate_contract`
+    `-p openwepp --test snowdensity10_3_5b_hourly_partition_jennings_contract`
+    `-p openwepp --test snowdensity10_3_5c_phase_partition_snowdepth_impact`
+    `-p openwepp --test snowdensity10_3_6_winter_thaw_melt_response`
+    `-p openwepp --test snowdensity10_3_7_winter_thaw_melt_response_correction`
+    `-p openwepp --test snowdensity10_3_8_liquid_holding_capacity`
+    `-p openwepp --test snowdensity10_3_9_march_april_residual_attribution`
+    `-p openwepp --test snowfreeze_observed_frost_depth_contract`
+    `-p openwepp --test snowfrost_fidelity_c_diagnostics_contract`
+    `-p openwepp --test snowfrost_fidelity_g0_pysnobal_bridge_contract`
+    `-p openwepp --test soilauth02_soil_producer_reconciliation_contract`
+    `-p openwepp --test soilauth03_soil_producer_contract_drift_guards_contract`
+    `-p openwepp --test topology_graph_validation_gate`
+    `-p openwepp --test wb13_daily_water_balance_output_surface_contract`
+    `-p openwepp --test workspace_integration_ownership_acceptance`
+    `-p openwepp --test wshedw5_typed_watershed_runtime_contract`
+    `-p openwepp-climate-runtime-adapter --lib`
+    `-p openwepp-comparator-metadata --lib`
+    `-p openwepp-hillslope-orchestrator --lib`
+    `-p openwepp-hillslope-output --lib`
+    `-p openwepp-input-contract --lib`
+    `-p openwepp-kernel-contract --lib`
+    `-p openwepp-landuse-migrate --lib`
+    `-p openwepp-landuse-migrate --bin openwepp-landuse-migrate`
+    `-p openwepp-landuse-migrate --test cli`
+    `-p openwepp-legacy-bridge --lib`
+    `-p openwepp-management-schema --lib`
+    `-p openwepp-meteorology --lib`
+    `-p openwepp-runner --lib`
+    `-p openwepp-runner --bin open_wepp_runner`
+    `-p openwepp-runner --bin openwepp-cli-hill`
+    `-p openwepp-runner --bin openwepp-cli-totalwatsed3`
+    `-p openwepp-runner --bin openwepp-cli-watershed`
+    `-p openwepp-runner --bin openwepp-snowbench`
+    `-p openwepp-runner --test mt3_hbp_hourly_consumer_contract`
+    `-p openwepp-runner --test simimpl04_runner_kernel_execution_contract`
+    `-p openwepp-runner --test simimpl04_wb13_publication_contract`
+    `-p openwepp-runner --test simimpl04_wepp_ui_mode_closure_contract`
+    `-p openwepp-runner --test totalwatsed3_cli_contract`
+    `-p openwepp-runner --test watershed_cli_behavior_contract`
+    `-p openwepp-runner --test wshedw10_chaninp_absent_default_contract`
+    `-p openwepp-sim-contract --lib`
+    `-p openwepp-summary-accumulator --lib`
+    `-p openwepp-topology --lib`
+    `-p openwepp-unit-boundary --lib`
+    `-p openwepp-watershed-orchestrator --lib`
+    `-p openwepp-watershed-output --lib`
+warning: process didn't exit successfully: `/home/roger/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo test --no-fail-fast --tests --manifest-path /home/workdir/openWEPP/Cargo.toml --target-dir /home/workdir/openWEPP/target/llvm-cov-target --workspace` (exit status: 101)
+
+    Finished report saved to /tmp/openwepp-cqr-nightly-03-final.lcov

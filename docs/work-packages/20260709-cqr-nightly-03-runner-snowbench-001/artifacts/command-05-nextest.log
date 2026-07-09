@@ -1,0 +1,16 @@
+   Compiling openwepp-runner v0.1.0 (/home/workdir/openWEPP/crates/openwepp-runner)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.47s
+────────────
+ Nextest run ID 99b865c7-8632-4aad-b1e1-3d623b1d88ce with nextest profile: full
+    Starting 1512 tests across 171 binaries (3 tests skipped)
+        SLOW [> 90.000s] (─────────) openwepp-hillslope-orchestrator ofe_routing::d10b_reconciliation_tests::case4_manning_solver_converges_to_iwagaki_oracle
+        SLOW [> 90.000s] (─────────) openwepp-hillslope-orchestrator ofe_routing::iwagaki_oracle::tests::upwind_case4_self_convergence
+        SLOW [> 90.000s] (─────────) openwepp-hillslope-orchestrator ofe_routing::iwagaki_oracle::tests::characteristics_fan_cross_validates_upwind_reference
+        SLOW [> 90.000s] (─────────) openwepp::snowdensity05e_melt_adjudication coe_melt_snowbench_runs_both_models_as_diagnostic_only
+        SLOW [>180.000s] (─────────) openwepp::snowdensity05e_melt_adjudication coe_melt_snowbench_runs_both_models_as_diagnostic_only
+        SLOW [> 90.000s] (─────────) openwepp::snowdensity06_density_compaction density_compaction_snowbench_runs_offline_with_closure
+        SLOW [> 90.000s] (─────────) openwepp::snowdensity10_3_1a_per_day_cancov snowdensity10_3_1a_coe_melt_consumes_daily_canopy_sidecar
+        SLOW [> 90.000s] (─────────) openwepp::snowfrost_fidelity_g0_pysnobal_bridge_contract g0_exporter_emits_pysnobal_schema_and_required_anti_alias_lineage
+────────────
+     Summary [ 715.256s] 1512 tests run: 1512 passed (7 slow), 3 skipped
+ed (7 slow), 3 skipped

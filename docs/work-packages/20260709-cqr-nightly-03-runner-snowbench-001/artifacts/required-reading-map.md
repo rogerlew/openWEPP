@@ -46,3 +46,31 @@ contract-derived tests or contract authority.
 
 Core pre-edit required reading is `103090` bytes, which is below the `OK`
 threshold (`<=400000` bytes).
+
+## Instruction Chain Check
+
+Ran after local instruction-discovery tooling appeared in the worktree:
+
+```sh
+tools/agents/find-agents --for crates/openwepp-runner/src/bin/openwepp-snowbench.rs docs/work-packages/20260709-cqr-nightly-03-runner-snowbench-001/package.md tests/integration/snowdensity05f_melt_closure_handoff.rs tests/integration/snowdensity03_physics_bulk_offline_contract.rs
+```
+
+Outcome:
+
+```text
+crates/openwepp-runner/src/bin/openwepp-snowbench.rs:
+  AGENTS.md
+  crates/AGENTS.md
+
+docs/work-packages/20260709-cqr-nightly-03-runner-snowbench-001/package.md:
+  AGENTS.md
+  docs/work-packages/AGENTS.md
+
+tests/integration/snowdensity05f_melt_closure_handoff.rs:
+  AGENTS.md
+  tests/AGENTS.md
+
+tests/integration/snowdensity03_physics_bulk_offline_contract.rs:
+  AGENTS.md
+  tests/AGENTS.md
+```
