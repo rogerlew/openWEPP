@@ -18,11 +18,13 @@ package disposition in HOLD until corrected.
 
 ## Reading Budget
 
-- local_required_bytes_total: `78723`
-- threshold_outcome: `OK` for the core pre-edit set; large contracts are
-  conditional/on-demand by touched mechanism.
-- measurement_method: `wc -c <core files>`
-- measured_at_utc: `2026-07-08T18:11:19Z`
+- local_required_bytes_total: `479183` for all files actually read during
+  execution, including conditional contract and Rust/test playbooks.
+- threshold_outcome: `REQUIRES-JUSTIFICATION`; justified by the package
+  touching `SC-ROUTE-001`, WS10 direct routing, runner HBP handoff evidence,
+  and watershed runtime tests.
+- measurement_method: `wc -c <core + conditional files>`
+- measured_at_utc: `2026-07-09T06:30:00Z`
 
 The full relevant contract set is intentionally not a mandatory pre-edit read.
 The executor must read the target contract before touching that contract or the
@@ -58,3 +60,4 @@ mechanism it governs.
 | UTC | Agent | Change |
 | --- | --- | --- |
 | `2026-07-08T18:11:19Z` | Codex | Initialized required-reading map from canonical template. |
+| `2026-07-09T06:30:00Z` | Codex | Refreshed after execution; read conditional contracts and Rust/test playbooks required by `SC-ROUTE-001` rev 49/50 and WS10 runtime edits. |

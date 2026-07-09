@@ -429,8 +429,9 @@ mod tests {
         contributions.insert(1, with_pair(1));
         contributions.insert(2, without_pair);
 
-        // Mixed set: any minor-0 contributor demotes the WHOLE inlet to
-        // the triangular fallback (no mixed-basis superposition).
+        // Mixed set: the complete-pair predicate is false. Production
+        // dispatch applies the stricter SC-ROUTE-001 rev-49 fail-closed
+        // guard before falling back to the triangular daily branch.
         assert!(!Ws10ChannelImpoundmentKernel::hourly_pair_carried_by_all(
             &contributions,
             &[1, 2]

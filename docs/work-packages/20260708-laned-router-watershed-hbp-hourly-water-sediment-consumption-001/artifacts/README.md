@@ -1,11 +1,11 @@
 # Artifacts
 
-Status: `QUEUED`
+Status: `EXECUTED`
 
-This directory will hold package-local evidence for
+This directory holds package-local evidence for
 `20260708-laned-router-watershed-hbp-hourly-water-sediment-consumption-001`.
 
-Expected artifacts:
+Artifacts:
 
 - `required-reading-map.md`
 - `source-map.md`
@@ -27,3 +27,6 @@ Expected artifacts:
 
 Raw run trees and bulky binary outputs are package-local ignored evidence; keep
 commit summaries, hashes, command lines, and compact logs in artifacts.
+
+Primary raw evidence run tree:
+`/tmp/mt3_p102_release`.

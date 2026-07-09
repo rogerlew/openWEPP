@@ -165,17 +165,14 @@ State as of `2026-07-09`:
   bounded-error envelope. WSHED-W7R has since closed; the next queued action is
   the groundwater/baseflow authority chain.
 - `20260708-laned-router-watershed-hbp-hourly-water-sediment-consumption-001/` -
-  QUEUED (2026-07-08, execute after Tier 1, WSHED-W7R, and the
-  groundwater/baseflow export chain): scaffolded a consumer-path closure package
-  for Lane D active routed HBP minor-1 hourly runoff and hourly sediment
-  surfaces. The package requires contract-first authority if needed, active HBP
-  producer
-  evidence, watershed supervisor intake proof, `WatershedNetworkFrame` handoff
-  proof, production channel/watershed consumer proof,
-  equal-daily-total/different-hourly-distribution sensitivity
-  evidence, fail-closed active missing/malformed/mixed hourly authority, and
-  protected legacy/off fallback evidence. Producer-only, parser-only,
-  inventory-only, or shadow-only proof cannot close it.
+  EXECUTED-COMPLETE-WATERSHED-HBP-HOURLY-CONSUMPTION (2026-07-09): amended
+  `SC-ROUTE-001` rev 49/50, implemented all-hourly/no-hourly WS10 inlet
+  authority, preserved the no-hourly triangular fallback, and failed closed for
+  malformed, partial, mixed, or dependency-node hourly authority. Added focused
+  route-kernel tests plus a production watershed CLI schema-1.1 HBP proof that
+  equal daily runoff/sediment totals with different hourly distributions change
+  consumer outputs. Final gates passed: fmt, clippy, full nextest, deny, diff
+  check, scoped Markdown lint, contract BEI/unit checks, and unit registry.
 - `20260708-plant-file-native-lanuse-routing-doc-001/` -
   EXECUTED-COMPLETE-DOC-ALIGNMENT (2026-07-08): docs-only package updated
   `docs/specifications/wepp-input-files/specs/plant-file.spec.md` for the

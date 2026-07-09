@@ -30,6 +30,13 @@ NODE CHANNEL 1 H 1 0 0 C 0 0 0 I 0 0 0
 NODE IMPOUNDMENT 1 H 2 0 0 C 1 0 0 I 0 0 0
 ";
 
+const TWO_HILLSLOPE_CHANNEL_TOPOLOGY: &str = r"
+HILLSLOPES 2
+CHANNELS 1
+IMPOUNDMENTS 0
+NODE CHANNEL 1 H 1 2 0 C 0 0 0 I 0 0 0
+";
+
 const STRICT_VALID_CHANINP: &str = include_str!("../fixtures/infile/chaninp/strict_valid.chaninp");
 const STRICT_VALID_SLOPE: &str =
     include_str!("../fixtures/infile/slope/strict_valid_canonical.slp");
@@ -96,6 +103,48 @@ fn contribution_with_diameters(
         particle_flow_fraction: vec![0.2, 0.3, 0.5],
         hourly_runoff_volume_m3: Vec::new(),
         hourly_sediment_mass_kg: Vec::new(),
+    }
+}
+
+fn contribution_with_hourly_pair(
+    hillslope_id: u32,
+    hourly_runoff_volume_m3: [f64; 24],
+    hourly_sediment_mass_kg: [f64; 24],
+) -> HillslopeContribution {
+    let runoff_peak_m3_s = hourly_runoff_volume_m3
+        .iter()
+        .copied()
+        .fold(0.0_f64, f64::max)
+        / 3600.0;
+    let duration_seconds = active_hour_span_seconds(&hourly_runoff_volume_m3);
+    let sediment_total_kg = hourly_sediment_mass_kg.iter().copied().sum::<f64>();
+    HillslopeContribution {
+        hillslope_id,
+        area_m2: Some(1_800.0),
+        peak_runoff_m3_s: runoff_peak_m3_s,
+        duration_seconds,
+        generated_baseflow_m3: 0.0,
+        groundwater_deep_seepage_m3: 0.0,
+        total_detachment_kg: sediment_total_kg,
+        total_deposition_kg: 0.0,
+        sediment_concentration_kg_m3: vec![0.35, 0.45, 0.55],
+        particle_diameter_m: vec![0.000_01, 0.000_02, 0.000_03],
+        particle_flow_fraction: vec![0.2, 0.3, 0.5],
+        hourly_runoff_volume_m3: hourly_runoff_volume_m3.to_vec(),
+        hourly_sediment_mass_kg: hourly_sediment_mass_kg.to_vec(),
+    }
+}
+
+fn active_hour_span_seconds(hourly_volume_m3: &[f64; 24]) -> f64 {
+    let first = hourly_volume_m3.iter().position(|value| *value > 0.0);
+    let last = hourly_volume_m3.iter().rposition(|value| *value > 0.0);
+    match (first, last) {
+        (Some(first), Some(last)) => {
+            let active_hours = last - first + 1;
+            f64::from(u32::try_from(active_hours).expect("24-slot active span fits in u32"))
+                * 3600.0
+        }
+        _ => 0.0,
     }
 }
 
@@ -191,6 +240,41 @@ fn build_typed_frame_with_impoundment(
         impoundment.h = impoundment.h.min(impoundment.hfull);
     }
     frame
+}
+
+fn build_two_hillslope_channel_frame() -> WatershedNetworkFrame {
+    let graph = parse_topology_fixture_str(TWO_HILLSLOPE_CHANNEL_TOPOLOGY)
+        .expect("two-hillslope channel topology should parse");
+    let valid_channel_element_ids = BTreeSet::from([4_i32, 5_i32]);
+    let chaninp = parse_chaninp_from_str(
+        STRICT_VALID_CHANINP,
+        ChaninpParseOptions::strict(4, 2),
+        &valid_channel_element_ids,
+    )
+    .expect("strict chan.inp fixture should parse");
+    let slope = parse_slope_str(STRICT_VALID_SLOPE, SlopeParserOptions::strict())
+        .expect("strict slope fixture should parse");
+    let channel = parse_watershed_channel_from_str(
+        STRICT_VALID_WATERSHED_CHANNEL,
+        WatershedChannelParseOptions::default(),
+    )
+    .expect("strict watershed channel fixture should parse");
+    let impoundment = parse_watershed_impoundment_from_str(
+        STRICT_VALID_WATERSHED_IMPOUNDMENT,
+        WatershedImpoundmentParseOptions::strict(),
+    )
+    .expect("strict watershed impoundment fixture should parse");
+
+    WatershedNetworkFrame::from_parsed_inputs(
+        graph,
+        Some(chaninp),
+        channel,
+        slope,
+        impoundment,
+        3600.0,
+        24.0,
+    )
+    .expect("two-hillslope channel frame should build")
 }
 
 fn assert_wshedw10_routing_globals(frame: &WatershedNetworkFrame) {
@@ -402,6 +486,225 @@ fn typed_publication_projects_non_aliased_channel_balance_operands() {
         (publication.runoff_volume_m3 - channel.channel_outflow_m3).abs() <= 1.0e-9,
         "runoff publication remains routed channel outflow, not upstream inflow"
     );
+}
+
+#[test]
+fn mt3_hourly_pair_distribution_changes_channel_water_and_sediment_outputs() {
+    let mut spike_runoff = [0.0_f64; 24];
+    spike_runoff[10] = 7_200.0;
+    let mut spike_sediment = [0.0_f64; 24];
+    spike_sediment[10] = 240.0;
+
+    let mut spread_runoff = [0.0_f64; 24];
+    let mut spread_sediment = [0.0_f64; 24];
+    for hour in 8..12 {
+        spread_runoff[hour] = 1_800.0;
+        spread_sediment[hour] = 60.0;
+    }
+
+    let mut spike_frame = build_typed_frame();
+    spike_frame.add_hillslope_contribution(contribution_with_hourly_pair(
+        1,
+        spike_runoff,
+        spike_sediment,
+    ));
+    spike_frame.add_hillslope_contribution(contribution(2, 0.5, 300.0));
+    let topology_report = validate_pre_execution_topology(spike_frame.topology())
+        .expect("topology gate should build");
+    let spike_report = execute_watershed_dispatch_with_frame(&mut spike_frame, &topology_report)
+        .expect("spike hourly dispatch should execute");
+    assert!(spike_report.dispatch_report.is_success());
+    let spike_channel = spike_frame
+        .routed_channels
+        .get(&1)
+        .expect("spike channel should route");
+
+    let mut spread_frame = build_typed_frame();
+    spread_frame.add_hillslope_contribution(contribution_with_hourly_pair(
+        1,
+        spread_runoff,
+        spread_sediment,
+    ));
+    spread_frame.add_hillslope_contribution(contribution(2, 0.5, 300.0));
+    let topology_report = validate_pre_execution_topology(spread_frame.topology())
+        .expect("topology gate should build");
+    let spread_report = execute_watershed_dispatch_with_frame(&mut spread_frame, &topology_report)
+        .expect("spread hourly dispatch should execute");
+    assert!(spread_report.dispatch_report.is_success());
+    let spread_channel = spread_frame
+        .routed_channels
+        .get(&1)
+        .expect("spread channel should route");
+
+    assert!((spike_channel.channel_inflow_m3 - spread_channel.channel_inflow_m3).abs() <= 1.0e-9);
+    assert!(
+        (spike_channel.peak_discharge_m3_s - spread_channel.peak_discharge_m3_s).abs() > 1.0e-9,
+        "same daily runoff total must not erase hourly water timing"
+    );
+    assert!(
+        (spike_channel.sediment_state.qsed_kg_s - spread_channel.sediment_state.qsed_kg_s).abs()
+            > 1.0e-9,
+        "same daily sediment total must not erase hourly sediment timing"
+    );
+}
+
+#[test]
+fn mt3_all_hourly_contributors_superpose_at_channel_inlet() {
+    let mut first_runoff = [0.0_f64; 24];
+    first_runoff[10] = 3_600.0;
+    let mut first_sediment = [0.0_f64; 24];
+    first_sediment[10] = 90.0;
+
+    let mut second_runoff = [0.0_f64; 24];
+    second_runoff[10] = 7_200.0;
+    let mut second_sediment = [0.0_f64; 24];
+    second_sediment[10] = 150.0;
+
+    let mut frame = build_two_hillslope_channel_frame();
+    frame.add_hillslope_contribution(contribution_with_hourly_pair(
+        1,
+        first_runoff,
+        first_sediment,
+    ));
+    frame.add_hillslope_contribution(contribution_with_hourly_pair(
+        2,
+        second_runoff,
+        second_sediment,
+    ));
+    let topology_report =
+        validate_pre_execution_topology(frame.topology()).expect("topology gate should build");
+    let report = execute_watershed_dispatch_with_frame(&mut frame, &topology_report)
+        .expect("all-hourly dispatch should execute");
+    assert!(report.dispatch_report.is_success());
+
+    let channel = frame
+        .routed_channels
+        .get(&1)
+        .expect("all-hourly channel should route");
+    assert!(channel.channel_inflow_m3 >= 10_800.0);
+    assert!(channel.peak_discharge_m3_s > 0.0);
+    assert!(channel.sediment_state.qsed_kg_s > 0.0);
+}
+
+#[test]
+fn mt3_hourly_contributor_with_dependency_node_fails_closed() {
+    let mut hourly_runoff = [0.0_f64; 24];
+    hourly_runoff[10] = 3_600.0;
+    let mut hourly_sediment = [0.0_f64; 24];
+    hourly_sediment[10] = 100.0;
+
+    let mut frame = build_typed_frame();
+    frame.add_hillslope_contribution(contribution_with_hourly_pair(
+        1,
+        hourly_runoff,
+        hourly_sediment,
+    ));
+    frame.add_hillslope_contribution(contribution_with_hourly_pair(
+        2,
+        hourly_runoff,
+        hourly_sediment,
+    ));
+    let topology_report =
+        validate_pre_execution_topology(frame.topology()).expect("topology gate should build");
+    let report = execute_watershed_dispatch_with_frame(&mut frame, &topology_report)
+        .expect("dependency-node hourly authority should return a failure report");
+
+    assert_eq!(
+        report.dispatch_report.dispatch_status.classification(),
+        StatusClassification::Failure
+    );
+    let failing_step = report
+        .step_reports
+        .last()
+        .expect("dependency-node hourly failure should be reported downstream");
+    assert_eq!(
+        failing_step.kernel_status.boundary_class(),
+        BoundaryClass::DomainViolation
+    );
+    assert_eq!(
+        failing_step.kernel_status.message_id(),
+        "WKERNEL-WS10-IMPOUNDMENT-E-003"
+    );
+    assert!(
+        frame.routed_channels.contains_key(&1),
+        "upstream all-hourly channel may publish before downstream guard"
+    );
+    assert!(frame.routed_impoundments.is_empty());
+}
+
+#[test]
+fn mt3_mixed_or_malformed_hourly_pair_fails_closed_before_routing_state() {
+    let mut hourly_runoff = [0.0_f64; 24];
+    hourly_runoff[10] = 3_600.0;
+    let mut hourly_sediment = [0.0_f64; 24];
+    hourly_sediment[10] = 100.0;
+
+    let mut mixed_frame = build_two_hillslope_channel_frame();
+    mixed_frame.add_hillslope_contribution(contribution_with_hourly_pair(
+        1,
+        hourly_runoff,
+        hourly_sediment,
+    ));
+    mixed_frame.add_hillslope_contribution(contribution(2, 1.0, 300.0));
+    let topology_report = validate_pre_execution_topology(mixed_frame.topology())
+        .expect("topology gate should build");
+    let mixed_report = execute_watershed_dispatch_with_frame(&mut mixed_frame, &topology_report)
+        .expect("mixed hourly authority should return a failure report");
+    assert_eq!(
+        mixed_report
+            .dispatch_report
+            .dispatch_status
+            .classification(),
+        StatusClassification::Failure
+    );
+    let failing_step = mixed_report
+        .step_reports
+        .first()
+        .expect("mixed hourly failure should be reported on the channel step");
+    assert_eq!(
+        failing_step.kernel_status.boundary_class(),
+        BoundaryClass::DomainViolation
+    );
+    assert_eq!(
+        failing_step.kernel_status.message_id(),
+        "WKERNEL-WS10-CHANNEL-E-003"
+    );
+    assert!(mixed_frame.routed_channels.is_empty());
+
+    let mut malformed = contribution_with_hourly_pair(1, hourly_runoff, hourly_sediment);
+    malformed.hourly_sediment_mass_kg.pop();
+    let mut malformed_frame = build_two_hillslope_channel_frame();
+    malformed_frame.add_hillslope_contribution(malformed);
+    malformed_frame.add_hillslope_contribution(contribution_with_hourly_pair(
+        2,
+        hourly_runoff,
+        hourly_sediment,
+    ));
+    let topology_report = validate_pre_execution_topology(malformed_frame.topology())
+        .expect("topology gate should build");
+    let malformed_report =
+        execute_watershed_dispatch_with_frame(&mut malformed_frame, &topology_report)
+            .expect("malformed hourly authority should return a failure report");
+    assert_eq!(
+        malformed_report
+            .dispatch_report
+            .dispatch_status
+            .classification(),
+        StatusClassification::Failure
+    );
+    let failing_step = malformed_report
+        .step_reports
+        .first()
+        .expect("malformed hourly failure should be reported on the channel step");
+    assert_eq!(
+        failing_step.kernel_status.boundary_class(),
+        BoundaryClass::DomainViolation
+    );
+    assert_eq!(
+        failing_step.kernel_status.message_id(),
+        "WKERNEL-WS10-CHANNEL-E-003"
+    );
+    assert!(malformed_frame.routed_channels.is_empty());
 }
 
 #[test]

@@ -1,19 +1,19 @@
 # Worker Handoff
 
-Status: `QUEUED`
+Status: `EXECUTED-COMPLETE-WATERSHED-HBP-HOURLY-CONSUMPTION`
 
-Execution is queued until:
+Current state:
 
-1. `20260708-laned-router-tier1-local-numerics-001` records final disposition.
-2. WSHED-W7 resume closes the sediment-active watershed fixture/publication
-   path on current main.
+- Dependency order is satisfied for execution.
+- `SC-ROUTE-001` rev 49 is amended for the M-T3 all-hourly/no-hourly inlet
+  rule; rev 50 adds the Binding Exposure Index profile closure.
+- Production WS10 direct routing has a new fail-closed hourly authority guard.
+- Focused tests, production CLI HBP consumer evidence, release CLI evidence,
+  and final workspace gates pass.
 
-First action after both prerequisites complete:
+Follow-on boundary:
 
-1. Read Tier 1 final disposition and worker handoff.
-2. Read WSHED-W7 resume final disposition and worker handoff.
-3. Confirm this package's authority basis still matches the retained active
-   router behavior.
-4. Confirm sediment-active watershed publication is available for downstream
-   hourly water/sediment consumer proof.
-5. If the basis changed, amend this package before implementation.
+1. If future work needs hourly routing through downstream channel dependency
+   nodes, add explicit channel-hourly state publication/consumption authority
+   first. M-T3 intentionally fails closed for that mixed dependency surface.
+2. No M-T3 hold remains.

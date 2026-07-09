@@ -620,17 +620,24 @@ impl Ws10ChannelImpoundmentKernel {
         let mut hillslope_duration_s = 0.0_f64;
         let mut dependency_duration_s = 0.0_f64;
 
-        // INV-ROUTE-005 (ADR-0036 D3): the hillslope limb superposes the
-        // serialized minor-1 hourly pair when EVERY contributor carries it
-        // and the inlet has no dependency nodes (routed channel outputs
-        // carry no hourly surfaces yet); otherwise the WHOLE inlet uses the
-        // Eq. [13.4.1]-[13.4.2] rectangular fallback — mixed-basis
-        // superposition at one inlet is invalid.
-        let hourly_resolved = input.step.dependency_nodes.is_empty()
-            && Self::hourly_pair_carried_by_all(
-                &input.frame.hillslope_contributions,
-                &input.step.contributor_hillslopes,
-            );
+        // INV-ROUTE-005 (ADR-0036 D3 / SC-ROUTE-001 rev 49): an inlet is
+        // either all-hourly or no-hourly. Partial/malformed hourly authority
+        // and hourly hillslopes mixed with dependency nodes fail closed
+        // instead of silently falling back to the daily scalar branch.
+        let hillslope_hourly_authority =
+            Self::direct_hillslope_hourly_authority(input, node_class)?;
+        let hourly_resolved = if hillslope_hourly_authority {
+            if !input.step.dependency_nodes.is_empty() {
+                return Err(Self::domain_violation(
+                    node_class,
+                    "hillslope_hourly_with_dependency_without_channel_hourly",
+                    f64::from(u32::try_from(input.step.dependency_nodes.len()).unwrap_or(u32::MAX)),
+                ));
+            }
+            true
+        } else {
+            false
+        };
         let mut summed_hourly_volume_m3 = [0.0_f64; 24];
         let mut hourly_sediment_inlet_kg = [0.0_f64; 24];
 
@@ -928,6 +935,7 @@ impl Ws10ChannelImpoundmentKernel {
 
     /// INV-ROUTE-005(a) eligibility: every contributor carries the paired
     /// minor-1 24-slot hourly surfaces.
+    #[cfg(test)]
     pub(crate) fn hourly_pair_carried_by_all(
         contributions: &std::collections::BTreeMap<u32, HillslopeContribution>,
         contributor_ids: &[u32],
@@ -939,6 +947,47 @@ impl Ws10ChannelImpoundmentKernel {
                         && contribution.hourly_sediment_mass_kg.len() == 24
                 })
             })
+    }
+
+    fn direct_hillslope_hourly_authority(
+        input: &DirectWatershedKernelInput<'_>,
+        node_class: Ws10NodeClass,
+    ) -> Result<bool, Ws10GuardError> {
+        let mut hourly_count = 0_usize;
+        let mut no_hourly_count = 0_usize;
+
+        for &hillslope_id in &input.step.contributor_hillslopes {
+            let contribution = input
+                .frame
+                .hillslope_contributions
+                .get(&hillslope_id)
+                .ok_or_else(|| Self::missing_required(node_class, "hillslope_contribution"))?;
+            match (
+                contribution.hourly_runoff_volume_m3.len(),
+                contribution.hourly_sediment_mass_kg.len(),
+            ) {
+                (0, 0) => no_hourly_count += 1,
+                (24, 24) => hourly_count += 1,
+                (runoff_len, sediment_len) => {
+                    let observed_len = runoff_len.max(sediment_len);
+                    return Err(Self::domain_violation(
+                        node_class,
+                        "hillslope_hourly_pair_cardinality",
+                        f64::from(u32::try_from(observed_len).unwrap_or(u32::MAX)),
+                    ));
+                }
+            }
+        }
+
+        if hourly_count > 0 && no_hourly_count > 0 {
+            return Err(Self::domain_violation(
+                node_class,
+                "hillslope_hourly_pair_mixed_authority",
+                f64::from(u32::try_from(no_hourly_count).unwrap_or(u32::MAX)),
+            ));
+        }
+
+        Ok(hourly_count > 0)
     }
 
     /// INV-ROUTE-005(a): the superposed modeled hydrograph — inlet peak =

@@ -1,17 +1,23 @@
 # Lane D Watershed HBP Hourly Water/Sediment Consumption
 
-Status: `QUEUED`
+Status: `EXECUTED-COMPLETE-WATERSHED-HBP-HOURLY-CONSUMPTION`
 Package ID:
 `20260708-laned-router-watershed-hbp-hourly-water-sediment-consumption-001`
 Owner: Codex
 Scaffold date: `2026-07-08`
-Evidence mode: `Static scaffold; no implementation executed`
+Close date: `2026-07-09`
+Evidence mode: `Static` plus `Ran`
 Execution order: after
 `20260708-laned-router-tier1-local-numerics-001` completes and records its
 final disposition, and after WSHED-W7 has resumed and closed the
 sediment-active watershed fixture/publication path on current main, and after
 the Lane D active baseflow export closure package closes the `INV-OFEROUTE-012`
 baseflow leg on current main.
+
+Execution summary: completed `SC-ROUTE-001` rev 49/50 authority, implemented
+all-hourly/no-hourly WS10 inlet authority, added focused and production CLI HBP
+consumer tests, proved equal-daily-total hourly distribution sensitivity for
+water and sediment surfaces, and passed final workspace gates.
 
 ## Objective
 
