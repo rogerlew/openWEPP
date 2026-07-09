@@ -259,173 +259,238 @@ pub enum HillslopeProductionStateSymbol {
 }
 
 impl From<HillslopeProductionStateSymbol> for BoundarySymbol {
-    #[allow(clippy::too_many_lines)]
     fn from(value: HillslopeProductionStateSymbol) -> Self {
+        use HillslopeProductionStateSymbol as H;
+
         match value {
-            HillslopeProductionStateSymbol::Wb11SoilWater => Self::from("wb11_soil_water"),
-            HillslopeProductionStateSymbol::Wb11EtDemand => Self::from("wb11_et_demand"),
-            HillslopeProductionStateSymbol::Wb17ResidueInterception => {
-                Self::from("wb17_residue_interception")
+            H::Wb11SoilWater
+            | H::Wb11EtDemand
+            | H::Wb17ResidueInterception
+            | H::Wb11FieldCapacity
+            | H::Wb11PercFraction
+            | H::Wb11LateralFraction
+            | H::Wb11DrainageFraction
+            | H::Wb11DrainageCoefficient
+            | H::Wb11DrainableStorage => Self::from(hillslope_wb11_state_symbol(value)),
+            H::Wb12RainfallInput
+            | H::Wb12RunonInput
+            | H::Wb12Infiltration
+            | H::Wb12DepressionStorageDelta
+            | H::Wb12RunoffObserved
+            | H::Wb12RunoffClosureTolerance
+            | H::Wb12RunoffReconciled
+            | H::Wb12StorageInitial
+            | H::Wb12StorageObserved
+            | H::Wb12StorageClosureTolerance
+            | H::Wb12PrecipInput
+            | H::Wb12StorageReconciled => Self::from(hillslope_wb12_state_symbol(value)),
+            H::IrrigRuntimeSource
+            | H::IrrigRuntimeDepthMeters
+            | H::IrrigRuntimeDurationSeconds
+            | H::IrrigRuntimeRateMetersPerSecond
+            | H::IrrigRuntimeEventIndex
+            | H::IrrigRuntimeSystemType
+            | H::IrrigDepletionEnabled
+            | H::IrrigDepletionSystemType
+            | H::IrrigDepletionMinDepthMeters
+            | H::IrrigDepletionMaxDepthMeters
+            | H::IrrigDepletionPeriodCount
+            | H::IrrigFixedDateEnabled
+            | H::IrrigFixedDateSystemType
+            | H::IrrigFixedDateEventCount => {
+                Self::from(hillslope_irrigation_scalar_state_symbol(value))
             }
-            HillslopeProductionStateSymbol::Wb11FieldCapacity => Self::from("wb11_field_capacity"),
-            HillslopeProductionStateSymbol::Wb11PercFraction => Self::from("wb11_perc_fraction"),
-            HillslopeProductionStateSymbol::Wb11LateralFraction => {
-                Self::from("wb11_lateral_fraction")
+            H::Wb15PlantCancov
+            | H::Wb15PlantLai
+            | H::Wb15PlantVdmt
+            | H::Wb14HyetographNinten
+            | H::Wb14HyetographNbrkpt
+            | H::Wb14SoilConductivity
+            | H::Wb14SoilLayerDepth
+            | H::Wb14SoilThetaResidual
+            | H::Wb14SoilThetaFieldCapacity => {
+                Self::from(hillslope_plant_hyetograph_soil_state_symbol(value))
             }
-            HillslopeProductionStateSymbol::Wb11DrainageFraction => {
-                Self::from("wb11_drainage_fraction")
+            H::Wb14SnowFilePresent
+            | H::Wb14SnowRst
+            | H::Wb14SnowNewsnw
+            | H::Wb14SnowSsd
+            | H::Wb14SnowRuntimeSwe
+            | H::Wb14FrostFilePresent
+            | H::Wb14FrostWintRed
+            | H::Wb14FrostFineTop
+            | H::Wb14FrostFineBot
+            | H::Wb14FrostKsnowf
+            | H::Wb14FrostKresf
+            | H::Wb14FrostKsoilf
+            | H::Wb14FrostKfactor1
+            | H::Wb14FrostKfactor2
+            | H::Wb14FrostKfactor3
+            | H::Wb14FrostRuntimeDfrost
+            | H::Wb14FrostRuntimeDthaw
+            | H::Wb14FrostRuntimeNft
+            | H::Wb14FrostRuntimeWsFrz
+            | H::Wb14FrostRuntimeInfcapFrz => {
+                Self::from(hillslope_snow_frost_state_symbol(value))
             }
-            HillslopeProductionStateSymbol::Wb11DrainageCoefficient => {
-                Self::from("wb11_drainage_coefficient")
-            }
-            HillslopeProductionStateSymbol::Wb11DrainableStorage => {
-                Self::from("wb11_drainable_storage")
-            }
-            HillslopeProductionStateSymbol::Wb12RainfallInput => Self::from("wb12_rainfall_input"),
-            HillslopeProductionStateSymbol::Wb12RunonInput => Self::from("wb12_runon_input"),
-            HillslopeProductionStateSymbol::Wb12Infiltration => Self::from("wb12_infiltration"),
-            HillslopeProductionStateSymbol::Wb12DepressionStorageDelta => {
-                Self::from("wb12_depression_storage_delta")
-            }
-            HillslopeProductionStateSymbol::Wb12RunoffObserved => {
-                Self::from("wb12_runoff_observed")
-            }
-            HillslopeProductionStateSymbol::Wb12RunoffClosureTolerance => {
-                Self::from("wb12_runoff_closure_tolerance")
-            }
-            HillslopeProductionStateSymbol::Wb12RunoffReconciled => {
-                Self::from("wb12_runoff_reconciled")
-            }
-            HillslopeProductionStateSymbol::Wb12StorageInitial => {
-                Self::from("wb12_storage_initial")
-            }
-            HillslopeProductionStateSymbol::Wb12StorageObserved => {
-                Self::from("wb12_storage_observed")
-            }
-            HillslopeProductionStateSymbol::Wb12StorageClosureTolerance => {
-                Self::from("wb12_storage_closure_tolerance")
-            }
-            HillslopeProductionStateSymbol::Wb12PrecipInput => Self::from("wb12_precip_input"),
-            HillslopeProductionStateSymbol::Wb12StorageReconciled => {
-                Self::from("wb12_storage_reconciled")
-            }
-            HillslopeProductionStateSymbol::IrrigRuntimeSource => {
-                Self::from("irrigation.runtime_schedule_source")
-            }
-            HillslopeProductionStateSymbol::IrrigRuntimeDepthMeters => {
-                Self::from("irrigation.runtime_depth_m")
-            }
-            HillslopeProductionStateSymbol::IrrigRuntimeDurationSeconds => {
-                Self::from("irrigation.runtime_duration_s")
-            }
-            HillslopeProductionStateSymbol::IrrigRuntimeRateMetersPerSecond => {
-                Self::from("irrigation.runtime_rate_m_per_s")
-            }
-            HillslopeProductionStateSymbol::IrrigRuntimeEventIndex => {
-                Self::from("irrigation.runtime_event_index")
-            }
-            HillslopeProductionStateSymbol::IrrigRuntimeSystemType => {
-                Self::from("irrigation.runtime_system_type")
-            }
-            HillslopeProductionStateSymbol::IrrigDepletionEnabled => {
-                Self::from("irrigation.depletion.enabled")
-            }
-            HillslopeProductionStateSymbol::IrrigDepletionSystemType => {
-                Self::from("irrigation.depletion.system_type")
-            }
-            HillslopeProductionStateSymbol::IrrigDepletionMinDepthMeters => {
-                Self::from("irrigation.depletion.min_depth_m")
-            }
-            HillslopeProductionStateSymbol::IrrigDepletionMaxDepthMeters => {
-                Self::from("irrigation.depletion.max_depth_m")
-            }
-            HillslopeProductionStateSymbol::IrrigDepletionPeriodCount => {
-                Self::from("irrigation.depletion.period_count")
-            }
-            HillslopeProductionStateSymbol::IrrigFixedDateEnabled => {
-                Self::from("irrigation.fixeddate.enabled")
-            }
-            HillslopeProductionStateSymbol::IrrigFixedDateSystemType => {
-                Self::from("irrigation.fixeddate.system_type")
-            }
-            HillslopeProductionStateSymbol::IrrigFixedDateEventCount => {
-                Self::from("irrigation.fixeddate.event_count")
-            }
-            HillslopeProductionStateSymbol::Wb15PlantCancov => Self::from("cancov"),
-            HillslopeProductionStateSymbol::Wb15PlantLai => Self::from("lai"),
-            HillslopeProductionStateSymbol::Wb15PlantVdmt => Self::from("vdmt"),
-            HillslopeProductionStateSymbol::Wb14HyetographNinten => Self::from("ninten"),
-            HillslopeProductionStateSymbol::Wb14HyetographNbrkpt => Self::from("nbrkpt"),
-            HillslopeProductionStateSymbol::Wb14SoilConductivity => Self::from("ssc"),
-            HillslopeProductionStateSymbol::Wb14SoilLayerDepth => Self::from("dg"),
-            HillslopeProductionStateSymbol::Wb14SoilThetaResidual => Self::from("thetdr"),
-            HillslopeProductionStateSymbol::Wb14SoilThetaFieldCapacity => Self::from("thetfc"),
-            HillslopeProductionStateSymbol::Wb14SnowFilePresent => {
-                Self::from("snow.options.snow_file_present")
-            }
-            HillslopeProductionStateSymbol::Wb14SnowRst => Self::from("snow.options.rst"),
-            HillslopeProductionStateSymbol::Wb14SnowNewsnw => Self::from("snow.options.newsnw"),
-            HillslopeProductionStateSymbol::Wb14SnowSsd => Self::from("snow.options.ssd"),
-            HillslopeProductionStateSymbol::Wb14SnowRuntimeSwe => Self::from("snow.runtime_swe"),
-            HillslopeProductionStateSymbol::Wb14FrostFilePresent => {
-                Self::from("frost.options.frost_file_present")
-            }
-            HillslopeProductionStateSymbol::Wb14FrostWintRed => Self::from("frost.options.wintRed"),
-            HillslopeProductionStateSymbol::Wb14FrostFineTop => Self::from("frost.options.fineTop"),
-            HillslopeProductionStateSymbol::Wb14FrostFineBot => Self::from("frost.options.fineBot"),
-            HillslopeProductionStateSymbol::Wb14FrostKsnowf => Self::from("frost.options.ksnowf"),
-            HillslopeProductionStateSymbol::Wb14FrostKresf => Self::from("frost.options.kresf"),
-            HillslopeProductionStateSymbol::Wb14FrostKsoilf => Self::from("frost.options.ksoilf"),
-            HillslopeProductionStateSymbol::Wb14FrostKfactor1 => {
-                Self::from("frost.options.kfactor1")
-            }
-            HillslopeProductionStateSymbol::Wb14FrostKfactor2 => {
-                Self::from("frost.options.kfactor2")
-            }
-            HillslopeProductionStateSymbol::Wb14FrostKfactor3 => {
-                Self::from("frost.options.kfactor3")
-            }
-            HillslopeProductionStateSymbol::Wb14FrostRuntimeDfrost => {
-                Self::from("frost.runtime_dfrost")
-            }
-            HillslopeProductionStateSymbol::Wb14FrostRuntimeDthaw => {
-                Self::from("frost.runtime_dthaw")
-            }
-            HillslopeProductionStateSymbol::Wb14FrostRuntimeNft => Self::from("frost.runtime_nft"),
-            HillslopeProductionStateSymbol::Wb14FrostRuntimeWsFrz => {
-                Self::from("frost.runtime_ws_frz")
-            }
-            HillslopeProductionStateSymbol::Wb14FrostRuntimeInfcapFrz => {
-                Self::from("frost.runtime_infcap_frz")
-            }
-            HillslopeProductionStateSymbol::Wb14Tmax => Self::from("tmax"),
-            HillslopeProductionStateSymbol::Wb14Tmin => Self::from("tmin"),
-            HillslopeProductionStateSymbol::Wb16Timep => Self::from("timep"),
-            HillslopeProductionStateSymbol::Wb16Efflen => Self::from("efflen"),
-            HillslopeProductionStateSymbol::Wb16Ealpha => Self::from("ealpha"),
-            HillslopeProductionStateSymbol::Wb16ExponentM => Self::from("m"),
-            HillslopeProductionStateSymbol::Wb16Peakro => Self::from("peakro"),
-            HillslopeProductionStateSymbol::Wb16Watdur => Self::from("watdur"),
-            HillslopeProductionStateSymbol::Wb16MethodBranch => {
-                Self::from("wb16_peak_method_branch")
-            }
-            HillslopeProductionStateSymbol::Wb16Tstar => Self::from("wb16_tstar"),
-            HillslopeProductionStateSymbol::Wb16Qpstar => Self::from("wb16_qpstar"),
-            HillslopeProductionStateSymbol::Wb16Vstar => Self::from("wb16_vstar"),
-            HillslopeProductionStateSymbol::IrrigationDepletionPeriod {
+            H::Wb14Tmax
+            | H::Wb14Tmin
+            | H::Wb16Timep
+            | H::Wb16Efflen
+            | H::Wb16Ealpha
+            | H::Wb16ExponentM
+            | H::Wb16Peakro
+            | H::Wb16Watdur
+            | H::Wb16MethodBranch
+            | H::Wb16Tstar
+            | H::Wb16Qpstar
+            | H::Wb16Vstar => Self::from(hillslope_peak_method_state_symbol(value)),
+            H::IrrigationDepletionPeriod {
                 period_index,
                 field,
             } => Self::from(format!(
                 "irrigation.depletion.period_{period_index:04}.{}",
                 field.as_str()
             )),
-            HillslopeProductionStateSymbol::IrrigationFixedDateEvent { event_index, field } => {
-                Self::from(format!(
-                    "irrigation.fixeddate.event_{event_index:04}.{}",
-                    field.as_str()
-                ))
-            }
+            H::IrrigationFixedDateEvent { event_index, field } => Self::from(format!(
+                "irrigation.fixeddate.event_{event_index:04}.{}",
+                field.as_str()
+            )),
         }
+    }
+}
+
+fn hillslope_wb11_state_symbol(value: HillslopeProductionStateSymbol) -> &'static str {
+    use HillslopeProductionStateSymbol as H;
+
+    match value {
+        H::Wb11SoilWater => "wb11_soil_water",
+        H::Wb11EtDemand => "wb11_et_demand",
+        H::Wb17ResidueInterception => "wb17_residue_interception",
+        H::Wb11FieldCapacity => "wb11_field_capacity",
+        H::Wb11PercFraction => "wb11_perc_fraction",
+        H::Wb11LateralFraction => "wb11_lateral_fraction",
+        H::Wb11DrainageFraction => "wb11_drainage_fraction",
+        H::Wb11DrainageCoefficient => "wb11_drainage_coefficient",
+        H::Wb11DrainableStorage => "wb11_drainable_storage",
+        // The exhaustive caller match only routes WB11 variants here.
+        _ => unreachable!("caller must pass a WB11 state symbol"),
+    }
+}
+
+fn hillslope_wb12_state_symbol(value: HillslopeProductionStateSymbol) -> &'static str {
+    use HillslopeProductionStateSymbol as H;
+
+    match value {
+        H::Wb12RainfallInput => "wb12_rainfall_input",
+        H::Wb12RunonInput => "wb12_runon_input",
+        H::Wb12Infiltration => "wb12_infiltration",
+        H::Wb12DepressionStorageDelta => "wb12_depression_storage_delta",
+        H::Wb12RunoffObserved => "wb12_runoff_observed",
+        H::Wb12RunoffClosureTolerance => "wb12_runoff_closure_tolerance",
+        H::Wb12RunoffReconciled => "wb12_runoff_reconciled",
+        H::Wb12StorageInitial => "wb12_storage_initial",
+        H::Wb12StorageObserved => "wb12_storage_observed",
+        H::Wb12StorageClosureTolerance => "wb12_storage_closure_tolerance",
+        H::Wb12PrecipInput => "wb12_precip_input",
+        H::Wb12StorageReconciled => "wb12_storage_reconciled",
+        // The exhaustive caller match only routes WB12 variants here.
+        _ => unreachable!("caller must pass a WB12 state symbol"),
+    }
+}
+
+fn hillslope_irrigation_scalar_state_symbol(
+    value: HillslopeProductionStateSymbol,
+) -> &'static str {
+    use HillslopeProductionStateSymbol as H;
+
+    match value {
+        H::IrrigRuntimeSource => "irrigation.runtime_schedule_source",
+        H::IrrigRuntimeDepthMeters => "irrigation.runtime_depth_m",
+        H::IrrigRuntimeDurationSeconds => "irrigation.runtime_duration_s",
+        H::IrrigRuntimeRateMetersPerSecond => "irrigation.runtime_rate_m_per_s",
+        H::IrrigRuntimeEventIndex => "irrigation.runtime_event_index",
+        H::IrrigRuntimeSystemType => "irrigation.runtime_system_type",
+        H::IrrigDepletionEnabled => "irrigation.depletion.enabled",
+        H::IrrigDepletionSystemType => "irrigation.depletion.system_type",
+        H::IrrigDepletionMinDepthMeters => "irrigation.depletion.min_depth_m",
+        H::IrrigDepletionMaxDepthMeters => "irrigation.depletion.max_depth_m",
+        H::IrrigDepletionPeriodCount => "irrigation.depletion.period_count",
+        H::IrrigFixedDateEnabled => "irrigation.fixeddate.enabled",
+        H::IrrigFixedDateSystemType => "irrigation.fixeddate.system_type",
+        H::IrrigFixedDateEventCount => "irrigation.fixeddate.event_count",
+        // The exhaustive caller match only routes irrigation scalar variants here.
+        _ => unreachable!("caller must pass an irrigation scalar state symbol"),
+    }
+}
+
+fn hillslope_plant_hyetograph_soil_state_symbol(
+    value: HillslopeProductionStateSymbol,
+) -> &'static str {
+    use HillslopeProductionStateSymbol as H;
+
+    match value {
+        H::Wb15PlantCancov => "cancov",
+        H::Wb15PlantLai => "lai",
+        H::Wb15PlantVdmt => "vdmt",
+        H::Wb14HyetographNinten => "ninten",
+        H::Wb14HyetographNbrkpt => "nbrkpt",
+        H::Wb14SoilConductivity => "ssc",
+        H::Wb14SoilLayerDepth => "dg",
+        H::Wb14SoilThetaResidual => "thetdr",
+        H::Wb14SoilThetaFieldCapacity => "thetfc",
+        // The exhaustive caller match only routes plant, hyetograph, and soil variants here.
+        _ => unreachable!("caller must pass a plant, hyetograph, or soil state symbol"),
+    }
+}
+
+fn hillslope_snow_frost_state_symbol(value: HillslopeProductionStateSymbol) -> &'static str {
+    use HillslopeProductionStateSymbol as H;
+
+    match value {
+        H::Wb14SnowFilePresent => "snow.options.snow_file_present",
+        H::Wb14SnowRst => "snow.options.rst",
+        H::Wb14SnowNewsnw => "snow.options.newsnw",
+        H::Wb14SnowSsd => "snow.options.ssd",
+        H::Wb14SnowRuntimeSwe => "snow.runtime_swe",
+        H::Wb14FrostFilePresent => "frost.options.frost_file_present",
+        H::Wb14FrostWintRed => "frost.options.wintRed",
+        H::Wb14FrostFineTop => "frost.options.fineTop",
+        H::Wb14FrostFineBot => "frost.options.fineBot",
+        H::Wb14FrostKsnowf => "frost.options.ksnowf",
+        H::Wb14FrostKresf => "frost.options.kresf",
+        H::Wb14FrostKsoilf => "frost.options.ksoilf",
+        H::Wb14FrostKfactor1 => "frost.options.kfactor1",
+        H::Wb14FrostKfactor2 => "frost.options.kfactor2",
+        H::Wb14FrostKfactor3 => "frost.options.kfactor3",
+        H::Wb14FrostRuntimeDfrost => "frost.runtime_dfrost",
+        H::Wb14FrostRuntimeDthaw => "frost.runtime_dthaw",
+        H::Wb14FrostRuntimeNft => "frost.runtime_nft",
+        H::Wb14FrostRuntimeWsFrz => "frost.runtime_ws_frz",
+        H::Wb14FrostRuntimeInfcapFrz => "frost.runtime_infcap_frz",
+        // The exhaustive caller match only routes snow and frost variants here.
+        _ => unreachable!("caller must pass a snow or frost state symbol"),
+    }
+}
+
+fn hillslope_peak_method_state_symbol(value: HillslopeProductionStateSymbol) -> &'static str {
+    use HillslopeProductionStateSymbol as H;
+
+    match value {
+        H::Wb14Tmax => "tmax",
+        H::Wb14Tmin => "tmin",
+        H::Wb16Timep => "timep",
+        H::Wb16Efflen => "efflen",
+        H::Wb16Ealpha => "ealpha",
+        H::Wb16ExponentM => "m",
+        H::Wb16Peakro => "peakro",
+        H::Wb16Watdur => "watdur",
+        H::Wb16MethodBranch => "wb16_peak_method_branch",
+        H::Wb16Tstar => "wb16_tstar",
+        H::Wb16Qpstar => "wb16_qpstar",
+        H::Wb16Vstar => "wb16_vstar",
+        // The exhaustive caller match only routes temperature and peak-method variants here.
+        _ => unreachable!("caller must pass a temperature or peak-method state symbol"),
     }
 }
 

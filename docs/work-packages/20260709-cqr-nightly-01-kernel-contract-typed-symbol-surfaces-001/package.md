@@ -1,7 +1,7 @@
 # CQR Nightly 01 - Kernel Contract Typed Symbol Surfaces
 
 Package: `20260709-cqr-nightly-01-kernel-contract-typed-symbol-surfaces-001`
-Status: `QUEUED`
+Status: `EXECUTED-COMPLETE-CQR-NIGHTLY`
 ExecPlan: `docs/work-packages/cqr-nightly-burndown-execplan.md`
 Target module: `crates/openwepp-kernel-contract/src/lib_mod/core_types/01_typed_symbol_surfaces.rs`
 Target rank: `1` of `10`
