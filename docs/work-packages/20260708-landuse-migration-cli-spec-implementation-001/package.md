@@ -1,11 +1,12 @@
 # Landuse Migration CLI Specification And Implementation
 
-Status: `QUEUED`
+Status: `EXECUTED-COMPLETE`
 Package ID: `20260708-landuse-migration-cli-spec-implementation-001`
 Owner: Codex
 Scaffold date: `2026-07-08`
 Amended: `2026-07-08` for canonical YAML output
-Evidence mode: `Static scaffold plus draft spec; no Rust implementation executed`
+Execution date: `2026-07-09 UTC`
+Evidence mode: `Static + Ran`
 
 ## Objective
 
@@ -33,15 +34,11 @@ pre-native datvers.
 
 ## Dependencies
 
-Hard dependency before Rust implementation closure:
+Closed dependency:
 
 - `docs/work-packages/20260708-openwepp-management-yaml-canonical-authorization-001/`
-  must authorize the canonical YAML schema, typed Rust schema surface, and real
-  openWEPP runtime consumer path.
-
-This package may proceed with CLI planning before that package closes, but it
-must not claim implementation completion until the YAML schema and consumer path
-are authoritative.
+  authorized the canonical YAML schema, typed Rust schema surface, and real
+  openWEPP runtime consumer path before this implementation closed.
 
 ## Scope
 
@@ -65,15 +62,14 @@ In scope:
 - Update package catalog and roadmap pointers.
 - Record review, verification, gates, and implementation handoff.
 
-Out of scope for scaffold:
+Out of scope for implementation:
 
-- No Rust implementation yet.
 - No crates.io publish.
 - No runtime hillslope-driver behavior change.
 - No hidden coefficient inference from legacy fields.
 - No sidecar-based coefficient authority.
 
-Out of scope for the future implementation unless the package is amended:
+Out of scope for this implementation unless the package is amended:
 
 - No compatibility-only output mode for pre-native datvers.
 - No native flat `.man` writer.
@@ -112,7 +108,7 @@ Conditional before Rust implementation:
 
 ## Intended Write Set
 
-Scaffold/spec:
+Spec/docs:
 
 - `docs/specifications/wepp-input-files/specs/landuse-migration-cli.spec.md`
 - `docs/specifications/wepp-input-files/specs/management-yaml.spec.md`
@@ -123,10 +119,12 @@ Scaffold/spec:
 - `docs/ROADMAP.md`
 - `docs/work-packages/20260708-landuse-migration-cli-spec-implementation-001/**`
 
-Future implementation:
+Implementation:
 
 - `Cargo.toml`
 - `crates/openwepp-landuse-migrate/**`
+- `crates/openwepp-input-contract/Cargo.toml` for publishable parser-crate
+  metadata required by the migration crate's crates.io path
 - `crates/openwepp-management-schema/**` or the shared YAML schema owner
   ratified by the YAML authorization package
 - focused integration tests under `tests/integration/**`.
@@ -268,5 +266,6 @@ Required for implementation closure:
 
 ## Final Outcome
 
-Queued scaffold with draft spec amended to YAML-only output. Rust implementation
-has not started.
+Executed complete. The Rust library/CLI, public spec, embedded Disturbed
+coefficient table, focused tests, runtime consumer proof, package metadata
+checks, reviews, verification, and closure gates are complete.

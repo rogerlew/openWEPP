@@ -160,6 +160,7 @@ routing_coefficients:
     version: "<version>"
     checksum: "<checksum>"
     disturbed_class: "agriculture crops"
+    source_authority: "ADR-0014; openWEPP WP ..."
 ```
 
 The exact numeric values above are placeholders in this illustrative fragment.
@@ -167,6 +168,9 @@ Producer tooling must write the real authorized class row values and provenance.
 The schema validates positive finite `k_o`, finite non-negative form `C_d`,
 `D_r`, and vegetation `C_d`, `lambda` in `0..=1`, and non-empty authority
 fields; it does not infer coefficients from legacy fields or sidecars.
+`source_authority` is optional for older fixtures but, when present, must be
+non-empty and should name the contract/ADR/work-package authority behind the
+coefficient row.
 
 ## Producer Obligations
 

@@ -4,11 +4,11 @@
 
 - `spec_id`: `SPEC-TOOL-LANDUSE-MIGRATION-CLI-001`
 - `surface_id`: `tool-landuse-migrate`
-- `status`: `draft`
+- `status`: `draft-implemented`
 - `owner`: `openWEPP`
-- `spec_version`: `0.2.0`
-- `last_updated_utc`: `2026-07-08T23:45:00Z`
-- `evidence_mode`: `Static`
+- `spec_version`: `1.0.0`
+- `last_updated_utc`: `2026-07-09T01:26:27Z`
+- `evidence_mode`: `Static + Ran`
 
 ## Purpose
 
@@ -28,7 +28,7 @@ consumer requirement.
 
 ## Package And Binary
 
-Planned Rust package:
+Implemented Rust package:
 
 - workspace member crate: `crates/openwepp-landuse-migrate`
 - library crate name: `openwepp_landuse_migrate`
@@ -37,6 +37,15 @@ Planned Rust package:
 The library owns migration planning, argument discovery, validation, output
 serialization, and report generation. The binary is a thin CLI wrapper around
 that library.
+
+Implementation details:
+
+- publishable package metadata: `publish = true`, Apache-2.0 license,
+  repository metadata, and crate description;
+- parser dependency: `openwepp-input-contract`;
+- YAML schema dependency: `openwepp-management-schema`;
+- embedded Disturbed coefficient table: no WEPPpy checkout or network runtime
+  dependency.
 
 ## Source And Target Policy
 
@@ -176,6 +185,8 @@ Semantics:
   validation, and report generation but does not write output YAML.
 - `--report` writes an audit report. The output YAML remains standalone even if
   the report is discarded.
+- `--force` is not implemented in schema version 1. Existing output paths fail
+  closed.
 
 ## Class Map Contract
 
@@ -183,27 +194,74 @@ The class map must be explicit enough to assign a disturbed class to every
 legacy cropland site that will become native coefficient-complete. Accepted key
 forms are target-specific and must be reported by `--args-for-migration-to`.
 
-Initial `ow-lanuse-1` key forms:
+Implemented `ow-lanuse-1` key forms:
 
 - `plant_scenario_name`;
 - `plant_index`;
-- `schedule_slot`;
-- `ofe_index` only when it resolves unambiguously to scheduled crop slots.
+- `schedule_slot`, keyed as `rotation_index:year_in_rotation:ofe_index:crop_slot`
+  using one-based indices;
+- `ofe_index`, applying one class to every scheduled crop slot on that OFE.
 
 The CLI must fail if two class-map entries assign different classes to the same
 scheduled crop slot unless the user supplies an explicit conflict-resolution
 argument added by a later spec revision. The initial revision has no conflict
 resolution flag.
 
+Because YAML schema version 1 stores routing coefficients at the plant-scenario
+record, the CLI also fails if one plant scenario would need two different
+disturbed classes across scheduled slots. Producers must split such source
+plant scenarios before migration.
+
 Example TOML:
 
 ```toml
-[plant_scenario_name."Corn Year 1"]
+[plant_scenario_name."Corn"]
 disturbed_class = "agriculture crops"
 
-[plant_scenario_name."Small Grain Rotation"]
+[schedule_slot."1:1:1:1"]
 disturbed_class = "agriculture small grain"
 ```
+
+Equivalent JSON:
+
+```json
+{
+  "plant_scenario_name": {
+    "Corn": { "disturbed_class": "agriculture crops" }
+  },
+  "schedule_slot": {
+    "1:1:1:1": { "disturbed_class": "agriculture small grain" }
+  }
+}
+```
+
+`--disturbed-class-map` accepts `.toml`, `.json`, `.yaml`, and `.yml` inputs.
+Those files are migration-time inputs only. The migrated management YAML remains
+standalone.
+
+## Args File Contract
+
+`--args-file` accepts `.toml`, `.json`, `.yaml`, and `.yml` files with the same
+authority fields available on the CLI:
+
+```toml
+target = "ow-lanuse-1"
+disturbed_class = "agriculture crops"
+
+[disturbed_class_map.plant_index.1]
+disturbed_class = "agriculture crops"
+```
+
+Schema:
+
+- `target`: optional, `ow-lanuse-1` or `latest`;
+- `disturbed_class`: optional global disturbed class;
+- `disturbed_class_map`: optional class-map object using the class-map contract
+  above.
+
+CLI flags may supply `--disturbed-class` or `--disturbed-class-map` directly.
+The args file is not a runtime sidecar and is not required after output YAML is
+written.
 
 ## Disturbed Route Coefficient Table
 
@@ -222,8 +280,8 @@ Authority:
 - management-lanuse authority contract rev 2;
 - `SC-OFEROUTE-001` rev 49 native datver authority.
 
-The table must be embedded in the crate source or generated into checked-in Rust
-source. It must not be fetched at runtime.
+The table is embedded in `crates/openwepp-landuse-migrate/src/disturbed.rs`.
+It is not fetched at runtime.
 
 The migration report and emitted YAML must include enough provenance to identify
 the table row used for each migrated coefficient site:
@@ -234,6 +292,14 @@ the table row used for each migrated coefficient site:
 - source authority string;
 - normalized disturbed class;
 - emitted five coefficient values.
+
+Implemented table identity:
+
+- table id: `disturbed-route-coefficients`
+- table version: `ADR-0014-2026-07-07`
+- checksum strategy: SHA-256 over the canonical embedded table text
+- current checksum:
+  `sha256:55b0d88fe89a968a4d19c80b55f766a16c0c92c84ba97e97366ea664ac3cd051`
 
 ## Output Requirements
 
@@ -324,20 +390,47 @@ Required library concepts:
 
 Production code must use typed errors, not broad boxed errors.
 
-## Schema Finalization Gate
+## Report Schemas
 
-Before implementation closure, this spec or a directly linked normative schema
-appendix must replace the schema open questions with final formats for:
+`--args-for-migration-to` emits a `MigrationArgSpec` report with:
 
-- `--disturbed-class-map`;
-- `--args-file`;
-- migration reports;
-- canonical management YAML output.
+- source format and datver;
+- target format, YAML schema version, and target datver;
+- detected plant landuse records;
+- scheduled crop slots with one-based rotation/year/OFE/crop-slot indices;
+- required migration arguments;
+- accepted class-map key types;
+- blocking unsupported source landuses;
+- global disturbed-class admissibility.
 
-The implementation must include tests for class-map conflict detection, partial
-map failure, global disturbed-class admissibility, and `--validate` success and
-failure modes. Rust code must not land as complete while these schemas remain
-only descriptive or unresolved.
+`--validate` emits a `ValidationReport` with:
+
+- `valid`;
+- source format and datver;
+- target format and datver;
+- validation message;
+- resolved coefficient rows when a dry migration plan is validated.
+
+Migration and `--dry-run` emit or write a `MigrationReport` with:
+
+- source path, format, and datver;
+- target format, schema version, and datver;
+- output path or `null` for dry-run;
+- dry-run flag;
+- disturbed table id, version, and checksum;
+- resolved coefficient rows;
+- migration step list.
+
+All reports support `text`, `json`, and `toml` rendering where the corresponding
+flag is available. Text is intended for humans. JSON/TOML are stable enough for
+pipeline inspection within this spec revision.
+
+## Canonical YAML Output Schema
+
+The migration output schema is
+`docs/specifications/wepp-input-files/specs/management-yaml.spec.md` and the
+implemented Rust type surface in `crates/openwepp-management-schema`. This CLI
+does not define a separate YAML management dialect.
 
 ## Test Obligations
 
@@ -375,12 +468,24 @@ Minimum tests for the implementation package:
   metadata.
 - Keep the binary usable independently of the openWEPP workspace checkout.
 
-## Open Questions
+Implemented disposition:
 
-- Exact class-map schema for schedule slots should be finalized during
-  implementation after inspecting the parsed management schedule model.
-- Whether the first implementation should support native forest migration from
-  flat `ow-lanuse-1` source is unresolved; default posture is fail closed unless
-  the YAML authorization package ratifies it.
-- The latest native datver alias initially resolves to `ow-lanuse-1` YAML;
-  future native datvers must add explicit migrator steps.
+- `openwepp-landuse-migrate` is publishable and packages successfully when its
+  openWEPP parser/schema dependencies are available.
+- `openwepp-management-schema` is publishable.
+- `openwepp-input-contract` is marked publishable because the migration crate's
+  crates.io path depends on the frozen flat parser surface.
+- Runtime behavior has no WEPPpy path or network dependency.
+
+## Resolved Questions
+
+- Schedule-slot class-map keys use one-based
+  `rotation_index:year_in_rotation:ofe_index:crop_slot`.
+- Flat native `ow-lanuse-1` sources with explicit routing coefficients migrate
+  to YAML without requiring disturbed-class authority. Their YAML route
+  authority records `flat-ow-lanuse-1-routing_coefficients` and preserves the
+  embedded values.
+- Native YAML `ow-lanuse-1` to `latest` is an identity/pass-through migration
+  while `latest` resolves to `ow-lanuse-1`.
+- Future native datvers must add explicit migrator steps before changing the
+  `latest` target.

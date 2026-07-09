@@ -5,7 +5,8 @@ edition.workspace = true
 license.workspace = true
 rust-version.workspace = true
 repository.workspace = true
-publish = false
+publish = true
+description = "Typed openWEPP input parser contracts for WEPP source files"
 
 [lints]
 workspace = true

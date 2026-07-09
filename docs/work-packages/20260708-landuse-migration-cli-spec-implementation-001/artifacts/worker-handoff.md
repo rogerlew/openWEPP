@@ -1,23 +1,48 @@
 # Worker Handoff
 
-Status: scaffolded and amended for YAML-only output.
+Status: implementation complete; publish-order handoff remains.
 
-First implementation actions:
+## Completed
 
-1. Confirm the canonical management YAML authorization package has closed, or
-   coordinate schema work with it.
-2. Add `crates/openwepp-landuse-migrate` to the workspace.
-3. Implement `--args-for-migration-to ow-lanuse-1` for legacy cropland inputs
-   with YAML target reporting.
-4. Implement `--validate` for native YAML and flat-source migratability.
-5. Embed/version the Disturbed route-coefficient table.
-6. Implement fail-closed legacy cropland to coefficient-complete `ow-lanuse-1`
-   YAML migration.
-7. Implement default `.man.yaml` naming for flat `.man` inputs and reject
-   explicit producer outputs that do not end in lowercase `.yaml`.
-8. Add schema and runtime consumer tests proving migrated YAML is native and
-   coefficient-complete.
+- Added `crates/openwepp-landuse-migrate` as a publishable library/binary crate.
+- Embedded the Disturbed route-coefficient table in Rust source.
+- Implemented `--args-for-migration-to`, `--validate`, migration, dry-run, and
+  reports.
+- Implemented legacy cropland to coefficient-complete `ow-lanuse-1` YAML with
+  required disturbed-class authority.
+- Implemented flat `ow-lanuse-1` to YAML and native YAML `latest`
+  pass-through.
+- Enforced lowercase `.yaml` producer output and default `.man.yaml` naming.
+- Proved migrated YAML is read by the real management YAML parser and projects
+  all five route coefficients into PL runtime surfaces.
 
-Do not add sidecars, compatibility-only native output for pre-native datvers, or
-a native flat `.man` writer. Do not emit `.yml`, `.YML`, or `.YAML` from
-openWEPP producer tools.
+## Publish Order
+
+No crates were published by this package. Cargo package verification for crates
+that depend on unpublished openWEPP crates cannot complete against the crates.io
+index until the dependencies exist there.
+
+Publish order:
+
+1. `openwepp-management-schema`
+2. `openwepp-input-contract`
+3. `openwepp-landuse-migrate`
+
+Evidence:
+
+- `cargo package -p openwepp-management-schema --allow-dirty`: passed and
+  verified.
+- `cargo package -p openwepp-input-contract --allow-dirty --list`: package file
+  list produced.
+- `cargo package -p openwepp-landuse-migrate --allow-dirty --list`: package
+  file list produced.
+- Full package verification for `openwepp-input-contract` and
+  `openwepp-landuse-migrate` is expected only after the preceding crates are in
+  the registry.
+
+## Follow-On
+
+Before an actual crates.io release, publish the crates in the order above and
+rerun `cargo package` without `--allow-dirty` for each crate from a clean
+worktree. No sidecars, hidden coefficient inference, or native flat `.man`
+writer should be added during that release step.

@@ -1,0 +1,25 @@
+[package]
+name = "openwepp-landuse-migrate"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+publish = true
+description = "CLI and library for migrating WEPP management files to canonical openWEPP YAML"
+
+[lints]
+workspace = true
+
+[dependencies]
+openwepp-input-contract = { path = "../openwepp-input-contract", version = "0.1.0" }
+openwepp-management-schema = { path = "../openwepp-management-schema", version = "0.1.0" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_yaml = "0.9"
+sha2 = "0.10"
+toml = "0.8"
+
+[[bin]]
+name = "openwepp-landuse-migrate"
+path = "src/main.rs"

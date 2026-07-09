@@ -14,6 +14,7 @@ members = [
     "crates/openwepp-hillslope-output",
     "crates/openwepp-watershed-output",
     "crates/openwepp-management-schema",
+    "crates/openwepp-landuse-migrate",
     "crates/openwepp-input-contract",
     "crates/openwepp-sim-contract",
     "crates/openwepp-kernel-contract",
@@ -59,6 +60,7 @@ workspace = true
 [dependencies]
 openwepp-climate-runtime-adapter = { path = "crates/openwepp-climate-runtime-adapter", version = "0.1.0" }
 openwepp-management-schema = { path = "crates/openwepp-management-schema", version = "0.1.0" }
+openwepp-landuse-migrate = { path = "crates/openwepp-landuse-migrate", version = "0.1.0" }
 openwepp-input-contract = { path = "crates/openwepp-input-contract", version = "0.1.0" }
 openwepp-sim-contract = { path = "crates/openwepp-sim-contract", version = "0.1.0" }
 openwepp-kernel-contract = { path = "crates/openwepp-kernel-contract", version = "0.1.0" }
@@ -80,6 +82,7 @@ parquet = "54.2.1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 openwepp-hillslope-output = { path = "crates/openwepp-hillslope-output", version = "0.1.0" }
+openwepp-landuse-migrate = { path = "crates/openwepp-landuse-migrate", version = "0.1.0" }
 
 [[test]]
 name = "infile_slope_parser_contract"
@@ -108,6 +111,10 @@ path = "tests/integration/infile_management_parser_contract.rs"
 [[test]]
 name = "infile_management_yaml_contract"
 path = "tests/integration/infile_management_yaml_contract.rs"
+
+[[test]]
+name = "landuse_migration_cli_contract"
+path = "tests/integration/landuse_migration_cli_contract.rs"
 
 [[test]]
 name = "infile_frost_parser_contract"

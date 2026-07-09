@@ -1,16 +1,16 @@
 # Artifacts
 
-Status: scaffolded.
+Status: executed complete.
 
 Artifacts:
 
 - `required-reading-map.md` - required reading and source budget.
-- `spec-draft.md` - summary of the draft CLI specification.
-- `implementation-plan.md` - implementation scaffold and phase plan.
-- `crate-design.md` - initial Rust crate/API design notes.
-- `gate-results.md` - scaffold gate evidence.
+- `spec-draft.md` - implemented CLI specification summary.
+- `implementation-plan.md` - implementation evidence and phase disposition.
+- `crate-design.md` - Rust crate/API design notes and crates.io disposition.
+- `gate-results.md` - focused and closure gate evidence.
 - `review-*.md` - review artifacts.
 - `verification-*.md` - verification artifacts.
 - `disposition.md` - finding disposition.
-- `final-disposition.md` - scaffold outcome.
-- `worker-handoff.md` - next implementation handoff.
+- `final-disposition.md` - final package outcome.
+- `worker-handoff.md` - publish-order and follow-on handoff.

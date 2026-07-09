@@ -701,6 +701,7 @@ dependencies = [
  "openwepp-hillslope-output",
  "openwepp-input-contract",
  "openwepp-kernel-contract",
+ "openwepp-landuse-migrate",
  "openwepp-legacy-bridge",
  "openwepp-management-schema",
  "openwepp-runner",
@@ -766,6 +767,19 @@ version = "0.1.0"
 dependencies = [
  "openwepp-sim-contract",
  "openwepp-unit-boundary",
+]
+
+[[package]]
+name = "openwepp-landuse-migrate"
+version = "0.1.0"
+dependencies = [
+ "openwepp-input-contract",
+ "openwepp-management-schema",
+ "serde",
+ "serde_json",
+ "serde_yaml",
+ "sha2",
+ "toml",
 ]
 
 [[package]]

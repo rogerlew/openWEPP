@@ -72,17 +72,14 @@ State as of `2026-07-08`:
   adapter and runner intake, and proved YAML route coefficients project into PL
   schedule surfaces with `cargo test --test infile_management_yaml_contract`.
 - `20260708-landuse-migration-cli-spec-implementation-001/` -
-  QUEUED (2026-07-08, M-T2R): scaffolded the Rust landuse migration CLI/library
-  implementation package and drafted
-  `docs/specifications/wepp-input-files/specs/landuse-migration-cli.spec.md`.
-  The CLI will support crates.io distribution by converting frozen legacy flat
+  EXECUTED-COMPLETE (2026-07-09 UTC, M-T2R): implemented the Rust landuse
+  migration CLI/library and public CLI spec for converting frozen legacy flat
   management files and flat `ow-lanuse-1` sources to canonical native YAML
-  without sidecars. Legacy cropland to `ow-lanuse-1` YAML requires
-  disturbed-class authority and must write explicit `routing_coefficients`;
-  compatibility-only native output for pre-native datvers and native flat
-  `.man` writing are forbidden. Producer output defaults to `.man.yaml` for
-  flat `.man` inputs and emits only lowercase `.yaml`. The spec now includes
-  `--validate`.
+  without sidecars. Adds `crates/openwepp-landuse-migrate`, embedded Disturbed
+  route-coefficient table, discovery/validation/migration/report modes,
+  lowercase `.yaml` producer enforcement, default `.man.yaml` output naming,
+  and runtime-consumer proof. Spec:
+  `docs/specifications/wepp-input-files/specs/landuse-migration-cli.spec.md`.
 - `20260708-groundwater-baseflow-laned-single-ofe-mofe-implementation-001/` -
   QUEUED (2026-07-08, M-T2B): scaffolded the contract-backed implementation
   package for `SC-GWBASEFLOW-001` on the canonical Lane D path, with

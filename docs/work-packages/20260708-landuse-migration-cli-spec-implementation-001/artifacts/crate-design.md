@@ -1,62 +1,69 @@
 # Crate Design
 
-Status: draft and amended for YAML-only output.
+Status: implemented.
 
 ## Public Types
 
-Initial API concepts:
+Implemented API concepts:
 
-- `Datver`
 - `SourceManagement`
-- `CanonicalManagementYaml`
-- `MigrationPlan`
-- `MigrationArgSpec`
-- `MigrationArgs`
+- `MigrationTarget`
+- `MigrationAuthority`
 - `ClassMap`
-- `DisturbedRouteCoefficientTable`
+- `MigrationArgSpec`
 - `ValidationReport`
 - `MigrationReport`
+- `MigrationRequest`
+- `MigrationOutputYaml`
 - `LanduseMigrationError`
+- `LanduseMigrator`
 
 ## Trait Shape
 
 ```rust
 pub trait LanduseMigrator {
-    fn source_versions(&self) -> &[Datver];
-    fn target_version(&self) -> Datver;
-    fn required_args(&self, parsed: &SourceManagement) -> MigrationArgSpec;
+    fn source_versions(&self) -> &[&'static str];
+    fn target_version(&self) -> MigrationTarget;
+    fn required_args(
+        &self,
+        source: &SourceManagement,
+    ) -> Result<MigrationArgSpec, LanduseMigrationError>;
     fn validate(
         &self,
-        parsed: &SourceManagement,
-        args: &MigrationArgs,
+        source: &SourceManagement,
+        args: &MigrationAuthority,
     ) -> Result<ValidationReport, LanduseMigrationError>;
     fn migrate(
         &self,
-        parsed: SourceManagement,
-        args: MigrationArgs,
+        source: SourceManagement,
+        request: &MigrationRequest,
     ) -> Result<MigrationOutputYaml, LanduseMigrationError>;
 }
 ```
 
-## Initial Migrators
+## Implemented Migrators
 
-- `LegacyCroplandToOwLanuse1Yaml`
-- `FlatOwLanuse1ToYaml`
-- `OwLanuse1YamlToLatest`
+- legacy cropland flat datvers to `ow-lanuse-1` YAML with required
+  disturbed-class authority;
+- flat `ow-lanuse-1` with explicit routing coefficients to canonical YAML;
+- native YAML `ow-lanuse-1` to `latest` pass-through while `latest` resolves to
+  `ow-lanuse-1`.
 
 ## Schema Dependency
 
-The migration crate should depend on the shared schema owner ratified by
-`20260708-openwepp-management-yaml-canonical-authorization-001`. Current
-recommendation is a dedicated publishable crate:
+The migration crate depends on the shared schema owner ratified by
+`20260708-openwepp-management-yaml-canonical-authorization-001`:
 `crates/openwepp-management-schema`.
 
-The migration crate should not own canonical YAML structs itself; runtime intake
-must use the same schema crate.
+The migration crate does not own canonical YAML structs itself; runtime intake
+uses the same schema crate.
 
 ## Error Model
 
-Use a typed error enum. Errors should identify:
+Implemented typed error enum: `LanduseMigrationError`. Production code does not
+use broad boxed errors or silent defaulting for migration authority.
+
+Errors identify:
 
 - source file parse failure;
 - YAML schema validation failure;
@@ -68,4 +75,12 @@ Use a typed error enum. Errors should identify:
 - invalid route coefficient row;
 - output path exists;
 - invalid producer output extension;
-- runtime consumer projection failure.
+- invalid structured args/class-map files.
+
+## Crates.io Disposition
+
+- `openwepp-landuse-migrate`: `publish = true`.
+- `openwepp-management-schema`: already `publish = true`.
+- `openwepp-input-contract`: changed to `publish = true` because the migration
+  crate's distributable parser path depends on it.
+- Runtime behavior has no WEPPpy checkout or network dependency.

@@ -122,6 +122,8 @@ pub struct RouteCoefficientAuthority {
     pub version: String,
     pub checksum: String,
     pub disturbed_class: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source_authority: Option<String>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -623,7 +625,14 @@ fn validate_route_coefficients(
     validate_non_empty(
         &format!("{path}.authority.disturbed_class"),
         &routing.authority.disturbed_class,
-    )
+    )?;
+    if let Some(source_authority) = &routing.authority.source_authority {
+        validate_non_empty(
+            &format!("{path}.authority.source_authority"),
+            source_authority,
+        )?;
+    }
+    Ok(())
 }
 
 fn validate_operation(

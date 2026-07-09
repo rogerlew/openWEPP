@@ -1,22 +1,50 @@
 # Final Disposition
 
-Status: `SCAFFOLDED-SPEC-DRAFTED-AMENDED`.
+Status: `EXECUTED-COMPLETE`.
 
-The work-package scaffold, active execution prompt, and draft CLI specification
-exist. The scaffold is amended so `openwepp-landuse-migrate` emits canonical
-management YAML rather than native flat `.man` output, includes `--validate`,
-defaults flat management migration output to informal `.man.yaml` naming while
-requiring lowercase `.yaml` producer output, and depends on the YAML
-authorization package before Rust implementation closure.
+The work package implemented the Rust landuse migration library/CLI and
+finalized the public CLI specification.
 
-Rust implementation has not started.
+## Delivered
+
+- `crates/openwepp-landuse-migrate` library and `openwepp-landuse-migrate`
+  binary.
+- Frozen legacy cropland flat `.man` to coefficient-complete `ow-lanuse-1`
+  management YAML migration requiring disturbed-class authority.
+- Flat `ow-lanuse-1` to canonical YAML bridge preserving explicit routing
+  coefficients.
+- Native YAML `ow-lanuse-1` to `latest` pass-through while `latest` resolves to
+  `ow-lanuse-1`.
+- `--args-for-migration-to`, `--validate`, `--dry-run`, `--report`, and
+  report-format support.
+- Lowercase `.yaml` producer enforcement and default `.man.yaml` naming.
+- Embedded/versioned Disturbed route-coefficient table with checksum.
+- Schema/runtime consumer proof for migrated YAML route-coefficient projection.
 
 ## Verification
 
 Ran:
 
-- `markdown-doc lint --path docs/work-packages/20260708-landuse-migration-cli-spec-implementation-001 --path docs/work-packages/20260708-openwepp-management-yaml-canonical-authorization-001 --path docs/specifications/wepp-input-files/specs/landuse-migration-cli.spec.md --path docs/specifications/wepp-input-files/specs/management-yaml.spec.md --path docs/specifications/wepp-input-files/specs/README.md --path docs/specifications/wepp-input-files/README.md --path docs/specifications/wepp-input-files/input-surface-registry.md --path docs/ROADMAP.md --path docs/work-packages/README.md`
+- `cargo fmt --check`
+- `cargo clippy --workspace --all-targets -- -D warnings`
+- `cargo nextest run --workspace --profile full`
+- `cargo deny check`
+- `cargo test -p openwepp-landuse-migrate`
+- `cargo test --test landuse_migration_cli_contract`
+- `cargo package -p openwepp-management-schema --allow-dirty`
+- `cargo package -p openwepp-input-contract --allow-dirty --list`
+- `cargo package -p openwepp-landuse-migrate --allow-dirty --list`
+- scoped `markdown-doc lint`
 - `git diff --check`
 
-Result: both passed. Markdown lint validated 33 files with 0 errors and 0
-warnings.
+Result: required implementation gates passed. Full nextest final result:
+1459 tests run, 1459 passed, 3 skipped.
+
+## Publish Handoff
+
+No crates were published. Full package verification for dependent openWEPP
+crates must be rerun after publishing dependencies in this order:
+
+1. `openwepp-management-schema`
+2. `openwepp-input-contract`
+3. `openwepp-landuse-migrate`
