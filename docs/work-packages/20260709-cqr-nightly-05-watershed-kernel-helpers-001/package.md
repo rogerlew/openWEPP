@@ -1,7 +1,7 @@
 # CQR Nightly 05 - Watershed Kernel Helpers
 
 Package: `20260709-cqr-nightly-05-watershed-kernel-helpers-001`
-Status: `QUEUED`
+Status: `EXECUTED-COMPLETE-CQR-NIGHTLY`
 ExecPlan: `docs/work-packages/cqr-nightly-burndown-execplan.md`
 Target module:
 `crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/helpers.rs`

@@ -1,3 +1,10 @@
+#[derive(Debug, Clone, Copy)]
+struct Ws12CulvertFamilyParams {
+    start_index: usize,
+    first_b_symbol: &'static str,
+    middle_bd_symbol: &'static str,
+}
+
 impl Ws10ChannelImpoundmentKernel {
     fn missing_required(
         node_class: Ws10NodeClass,
@@ -36,7 +43,6 @@ impl Ws10ChannelImpoundmentKernel {
         }
     }
 
-    #[allow(clippy::too_many_lines)]
     fn impoundment_outflow_at_stage(
         node_class: Ws10NodeClass,
         stage: f64,
@@ -45,7 +51,45 @@ impl Ws10ChannelImpoundmentKernel {
         let mut q = [0.0_f64; 15];
         let htw = 0.0;
 
-        // Drop spillway family (qo1..qo3)
+        Self::impoundment_drop_spillway_outflows(stage, coefficients, htw, &mut q);
+        Self::impoundment_culvert_family_outflows(
+            node_class,
+            stage,
+            coefficients,
+            htw,
+            Ws12CulvertFamilyParams {
+                start_index: 3,
+                first_b_symbol: "f04_b",
+                middle_bd_symbol: "f05_bd",
+            },
+            &mut q,
+        )?;
+        Self::impoundment_culvert_family_outflows(
+            node_class,
+            stage,
+            coefficients,
+            htw,
+            Ws12CulvertFamilyParams {
+                start_index: 6,
+                first_b_symbol: "f07_b",
+                middle_bd_symbol: "f08_bd",
+            },
+            &mut q,
+        )?;
+        Self::impoundment_rockfill_outflow(node_class, stage, coefficients, &mut q)?;
+        Self::impoundment_emergency_spillway_outflow(stage, coefficients, &mut q);
+        Self::impoundment_filter_fence_outflow(stage, coefficients, &mut q);
+        Self::impoundment_perforated_riser_outflows(node_class, stage, coefficients, &mut q)?;
+
+        Self::impoundment_validate_total_outflow(node_class, &q)
+    }
+
+    fn impoundment_drop_spillway_outflows(
+        stage: f64,
+        coefficients: &Ws12ImpoundmentCoefficients,
+        htw: f64,
+        q: &mut [f64; 15],
+    ) {
         if stage > coefficients.ha[0] {
             q[0] = coefficients.b[0] * (stage - coefficients.ha[0]).powf(coefficients.c[0]);
         }
@@ -62,90 +106,69 @@ impl Ws10ChannelImpoundmentKernel {
                 q[2] = coefficients.b[2] * adjusted_head.powf(coefficients.c[2]);
             }
         }
+    }
 
-        // Culvert #1 family (qo4..qo6)
-        if stage > coefficients.ha[3] {
-            if coefficients.b[3] <= WS10_ZERO_THRESHOLD {
+    fn impoundment_culvert_family_outflows(
+        node_class: Ws10NodeClass,
+        stage: f64,
+        coefficients: &Ws12ImpoundmentCoefficients,
+        htw: f64,
+        params: Ws12CulvertFamilyParams,
+        q: &mut [f64; 15],
+    ) -> Result<(), Ws10GuardError> {
+        let first = params.start_index;
+        let middle = first + 1;
+        let last = first + 2;
+
+        if stage > coefficients.ha[first] {
+            if coefficients.b[first] <= WS10_ZERO_THRESHOLD {
                 return Err(Self::domain_violation(
                     node_class,
-                    BoundarySymbol::from("f04_b"),
-                    coefficients.b[3],
+                    BoundarySymbol::from(params.first_b_symbol),
+                    coefficients.b[first],
                 ));
             }
-            let base = (stage - coefficients.ha[3]) / coefficients.b[3];
+            let base = (stage - coefficients.ha[first]) / coefficients.b[first];
             if base > 0.0 {
-                q[3] = coefficients.a[3] * base.powf(coefficients.c[3]);
+                q[first] = coefficients.a[first] * base.powf(coefficients.c[first]);
             }
         }
-        if stage > coefficients.ha[4] {
-            if coefficients.b[4].abs() <= WS10_ZERO_THRESHOLD
-                || coefficients.d[4].abs() <= WS10_ZERO_THRESHOLD
+        if stage > coefficients.ha[middle] {
+            if coefficients.b[middle].abs() <= WS10_ZERO_THRESHOLD
+                || coefficients.d[middle].abs() <= WS10_ZERO_THRESHOLD
             {
                 return Err(Self::domain_violation(
                     node_class,
-                    BoundarySymbol::from("f05_bd"),
-                    coefficients.b[4] + coefficients.d[4],
+                    BoundarySymbol::from(params.middle_bd_symbol),
+                    coefficients.b[middle] + coefficients.d[middle],
                 ));
             }
-            let base = (((stage - coefficients.ha[4]) / coefficients.b[4]) + coefficients.c[4])
-                / coefficients.d[4];
+            let base = (((stage - coefficients.ha[middle]) / coefficients.b[middle])
+                + coefficients.c[middle])
+                / coefficients.d[middle];
             if base > 0.0 {
-                q[4] = coefficients.a[4] * base.sqrt();
+                q[middle] = coefficients.a[middle] * base.sqrt();
             }
         }
-        if stage > coefficients.ha[5] {
-            let adjusted_head = if htw > coefficients.a[5] {
-                stage - (coefficients.ha[5] + htw - coefficients.a[5])
+        if stage > coefficients.ha[last] {
+            let adjusted_head = if htw > coefficients.a[last] {
+                stage - (coefficients.ha[last] + htw - coefficients.a[last])
             } else {
-                stage - coefficients.ha[5]
+                stage - coefficients.ha[last]
             };
             if adjusted_head > 0.0 {
-                q[5] = coefficients.b[5] * adjusted_head.powf(coefficients.c[5]);
+                q[last] = coefficients.b[last] * adjusted_head.powf(coefficients.c[last]);
             }
         }
+        Ok(())
+    }
 
-        // Culvert #2 family (qo7..qo9)
-        if stage > coefficients.ha[6] {
-            if coefficients.b[6] <= WS10_ZERO_THRESHOLD {
-                return Err(Self::domain_violation(
-                    node_class,
-                    BoundarySymbol::from("f07_b"),
-                    coefficients.b[6],
-                ));
-            }
-            let base = (stage - coefficients.ha[6]) / coefficients.b[6];
-            if base > 0.0 {
-                q[6] = coefficients.a[6] * base.powf(coefficients.c[6]);
-            }
-        }
-        if stage > coefficients.ha[7] {
-            if coefficients.b[7].abs() <= WS10_ZERO_THRESHOLD
-                || coefficients.d[7].abs() <= WS10_ZERO_THRESHOLD
-            {
-                return Err(Self::domain_violation(
-                    node_class,
-                    BoundarySymbol::from("f08_bd"),
-                    coefficients.b[7] + coefficients.d[7],
-                ));
-            }
-            let base = (((stage - coefficients.ha[7]) / coefficients.b[7]) + coefficients.c[7])
-                / coefficients.d[7];
-            if base > 0.0 {
-                q[7] = coefficients.a[7] * base.sqrt();
-            }
-        }
-        if stage > coefficients.ha[8] {
-            let adjusted_head = if htw > coefficients.a[8] {
-                stage - (coefficients.ha[8] + htw - coefficients.a[8])
-            } else {
-                stage - coefficients.ha[8]
-            };
-            if adjusted_head > 0.0 {
-                q[8] = coefficients.b[8] * adjusted_head.powf(coefficients.c[8]);
-            }
-        }
-
-        // Rockfill family (qo10)
+    fn impoundment_rockfill_outflow(
+        node_class: Ws10NodeClass,
+        stage: f64,
+        coefficients: &Ws12ImpoundmentCoefficients,
+        q: &mut [f64; 15],
+    ) -> Result<(), Ws10GuardError> {
         if stage > coefficients.ha[9] {
             if coefficients.b[9] <= WS10_ZERO_THRESHOLD {
                 return Err(Self::domain_violation(
@@ -162,8 +185,14 @@ impl Ws10ChannelImpoundmentKernel {
         if stage > coefficients.e[9] {
             q[9] += coefficients.d[9] * (stage - coefficients.e[9]).powf(1.5);
         }
+        Ok(())
+    }
 
-        // Emergency spillway family (qo11)
+    fn impoundment_emergency_spillway_outflow(
+        stage: f64,
+        coefficients: &Ws12ImpoundmentCoefficients,
+        q: &mut [f64; 15],
+    ) {
         if stage > coefficients.ha[10] {
             let depth = stage - coefficients.ha[10];
             let polynomial = coefficients.a[10]
@@ -175,8 +204,13 @@ impl Ws10ChannelImpoundmentKernel {
                 q[10] = polynomial;
             }
         }
+    }
 
-        // Filter fence family (qo12)
+    fn impoundment_filter_fence_outflow(
+        stage: f64,
+        coefficients: &Ws12ImpoundmentCoefficients,
+        q: &mut [f64; 15],
+    ) {
         if stage > coefficients.ha[11] {
             q[11] = coefficients.a[11] * (stage - coefficients.ha[11]);
             if stage > coefficients.d[11] {
@@ -185,8 +219,14 @@ impl Ws10ChannelImpoundmentKernel {
                     * overtopping_depth.powf(1.5);
             }
         }
+    }
 
-        // Perforated riser family (qo13..qo15)
+    fn impoundment_perforated_riser_outflows(
+        node_class: Ws10NodeClass,
+        stage: f64,
+        coefficients: &Ws12ImpoundmentCoefficients,
+        q: &mut [f64; 15],
+    ) -> Result<(), Ws10GuardError> {
         if stage > coefficients.ha[12] {
             let depth = stage - coefficients.ha[12];
             if depth > 0.0 {
@@ -207,7 +247,13 @@ impl Ws10ChannelImpoundmentKernel {
         if stage > coefficients.ha[14] {
             q[14] = coefficients.b[14] * (stage - coefficients.ha[14]).powf(coefficients.c[14]);
         }
+        Ok(())
+    }
 
+    fn impoundment_validate_total_outflow(
+        node_class: Ws10NodeClass,
+        q: &[f64; 15],
+    ) -> Result<f64, Ws10GuardError> {
         let group_1 = q[0].min(q[1]).min(q[2]);
         let group_2 = q[3].min(q[4]).min(q[5]);
         let group_3 = q[6].min(q[7]).min(q[8]);
@@ -538,5 +584,480 @@ impl Ws10ChannelImpoundmentKernel {
 
         Ok((stage, last_accepted_dt))
     }
+}
 
+#[cfg(test)]
+const WS12_TEST_EPS: f64 = 1.0e-9;
+
+#[cfg(test)]
+fn assert_close(actual: f64, expected: f64) {
+    assert!(
+        (actual - expected).abs() <= WS12_TEST_EPS,
+        "actual {actual} differs from expected {expected}"
+    );
+}
+
+#[cfg(test)]
+fn test_impoundment_coefficients() -> Ws12ImpoundmentCoefficients {
+    Ws12ImpoundmentCoefficients {
+        a: [0.0; 15],
+        b: [0.0; 15],
+        c: [1.0; 15],
+        d: [0.0; 15],
+        e: [0.0; 15],
+        ha: [100.0; 15],
+        a0: 10.0,
+        a1: 0.0,
+        a2: 1.0,
+    }
+}
+
+#[cfg(test)]
+fn full_outflow_coefficients() -> Ws12ImpoundmentCoefficients {
+    let mut coefficients = test_impoundment_coefficients();
+    coefficients.ha = [
+        1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 1.0, 2.0, 3.0, 1.0, 6.0, 9.0,
+    ];
+    coefficients.a[3] = 5.0;
+    coefficients.a[4] = 6.0;
+    coefficients.a[6] = 7.0;
+    coefficients.a[7] = 8.0;
+    coefficients.a[9] = 2.0;
+    coefficients.a[10] = 1.0;
+    coefficients.a[11] = 2.0;
+    coefficients.a[12] = 30.0;
+    coefficients.a[13] = 4.0;
+    coefficients.b[0] = 2.0;
+    coefficients.b[1] = 3.0;
+    coefficients.b[2] = 4.0;
+    coefficients.b[3] = 1.0;
+    coefficients.b[4] = 2.0;
+    coefficients.b[5] = 4.0;
+    coefficients.b[6] = 1.0;
+    coefficients.b[7] = 2.0;
+    coefficients.b[8] = 9.0;
+    coefficients.b[9] = 3.0;
+    coefficients.b[10] = 0.5;
+    coefficients.b[11] = 0.5;
+    coefficients.b[12] = 2.0;
+    coefficients.b[14] = 5.0;
+    coefficients.c[4] = 1.0;
+    coefficients.c[7] = 1.0;
+    coefficients.c[9] = 1.0;
+    coefficients.c[10] = 0.1;
+    coefficients.c[11] = 0.25;
+    coefficients.c[12] = 27.0;
+    coefficients.c[14] = 1.0;
+    coefficients.d[4] = 1.0;
+    coefficients.d[7] = 1.0;
+    coefficients.d[9] = 0.5;
+    coefficients.d[10] = 0.01;
+    coefficients.d[11] = 6.0;
+    coefficients.e[9] = 4.0;
+    coefficients.e[10] = 0.001;
+    coefficients
+}
+
+#[test]
+fn impoundment_outflow_at_stage_combines_all_structure_families() {
+    let coefficients = full_outflow_coefficients();
+    let qo = Ws10ChannelImpoundmentKernel::impoundment_outflow_at_stage(
+        Ws10NodeClass::Impoundment,
+        10.0,
+        &coefficients,
+    )
+    .expect("valid structure families should compute outflow");
+
+    let group_1 = 18.0_f64.min(24.0).min(28.0);
+    let group_2 = 30.0_f64.min(6.0 * 3.5_f64.sqrt()).min(16.0);
+    let group_3 = 21.0_f64.min(8.0 * 2.0_f64.sqrt()).min(9.0);
+    let rockfill = 6.0 + 0.5 * 6.0_f64.powf(1.5);
+    let emergency =
+        1.0 + 0.5 * 8.0 + 0.1 * 8.0_f64.powi(2) + 0.01 * 8.0_f64.powi(3) + 0.001 * 8.0_f64.powi(4);
+    let filter_fence = 14.0 + 1.5 * 4.0_f64.powf(1.5);
+    let group_4 = 10.0_f64.min(8.0).min(5.0);
+    assert_close(
+        qo,
+        group_1 + group_2 + group_3 + rockfill + emergency + filter_fence + group_4,
+    );
+}
+
+#[test]
+fn impoundment_outflow_at_stage_rejects_bad_culvert_denominator() {
+    let mut coefficients = test_impoundment_coefficients();
+    coefficients.ha[3] = 1.0;
+    coefficients.a[3] = 1.0;
+    coefficients.b[3] = 0.0;
+
+    let error = Ws10ChannelImpoundmentKernel::impoundment_outflow_at_stage(
+        Ws10NodeClass::Impoundment,
+        2.0,
+        &coefficients,
+    )
+    .expect_err("zero culvert denominator should fail closed");
+
+    assert_eq!(error.boundary_class(), BoundaryClass::DomainViolation);
+}
+
+#[test]
+fn impoundment_outflow_at_stage_rejects_bad_riser_denominator() {
+    let mut coefficients = test_impoundment_coefficients();
+    coefficients.ha[12] = 1.0;
+    coefficients.a[12] = 1.0;
+    coefficients.b[12] = 0.0;
+    coefficients.c[12] = 0.0;
+
+    let error = Ws10ChannelImpoundmentKernel::impoundment_outflow_at_stage(
+        Ws10NodeClass::Impoundment,
+        2.0,
+        &coefficients,
+    )
+    .expect_err("zero riser denominator should fail closed");
+
+    assert_eq!(error.boundary_class(), BoundaryClass::DomainViolation);
+}
+
+#[test]
+fn impoundment_outflow_at_stage_rejects_negative_total_outflow() {
+    let mut coefficients = test_impoundment_coefficients();
+    coefficients.ha[11] = 1.0;
+    coefficients.a[11] = -2.0;
+    coefficients.d[11] = 100.0;
+
+    let error = Ws10ChannelImpoundmentKernel::impoundment_outflow_at_stage(
+        Ws10NodeClass::Impoundment,
+        2.0,
+        &coefficients,
+    )
+    .expect_err("negative total outflow should fail closed");
+
+    assert_eq!(error.boundary_class(), BoundaryClass::DomainViolation);
+}
+
+#[test]
+fn impoundment_private_guard_constructors_map_boundary_classes() {
+    let missing =
+        Ws10ChannelImpoundmentKernel::missing_required(Ws10NodeClass::Impoundment, "required");
+    let non_finite =
+        Ws10ChannelImpoundmentKernel::non_finite(Ws10NodeClass::Impoundment, "nan", f64::NAN);
+
+    assert_eq!(
+        missing.boundary_class(),
+        BoundaryClass::MissingRequiredInput
+    );
+    assert_eq!(non_finite.boundary_class(), BoundaryClass::NonFinite);
+}
+
+#[test]
+fn impoundment_internal_outflow_helpers_cover_tailwater_and_guards() {
+    let mut coefficients = full_outflow_coefficients();
+    let mut q = [0.0; 15];
+    coefficients.a[2] = 1.0;
+    Ws10ChannelImpoundmentKernel::impoundment_drop_spillway_outflows(
+        10.0,
+        &coefficients,
+        2.0,
+        &mut q,
+    );
+    assert_close(q[2], 24.0);
+
+    q = [0.0; 15];
+    coefficients.a[5] = 1.0;
+    Ws10ChannelImpoundmentKernel::impoundment_culvert_family_outflows(
+        Ws10NodeClass::Impoundment,
+        10.0,
+        &coefficients,
+        2.0,
+        Ws12CulvertFamilyParams {
+            start_index: 3,
+            first_b_symbol: "f04_b",
+            middle_bd_symbol: "f05_bd",
+        },
+        &mut q,
+    )
+    .expect("valid culvert family should compute with tailwater adjustment");
+    assert_close(q[5], 12.0);
+
+    coefficients.b[4] = 0.0;
+    let error = Ws10ChannelImpoundmentKernel::impoundment_culvert_family_outflows(
+        Ws10NodeClass::Impoundment,
+        10.0,
+        &coefficients,
+        0.0,
+        Ws12CulvertFamilyParams {
+            start_index: 3,
+            first_b_symbol: "f04_b",
+            middle_bd_symbol: "f05_bd",
+        },
+        &mut q,
+    )
+    .expect_err("zero middle culvert denominator should fail closed");
+    assert_eq!(error.boundary_class(), BoundaryClass::DomainViolation);
+
+    coefficients.b[4] = 2.0;
+    coefficients.b[9] = 0.0;
+    let error = Ws10ChannelImpoundmentKernel::impoundment_rockfill_outflow(
+        Ws10NodeClass::Impoundment,
+        10.0,
+        &coefficients,
+        &mut q,
+    )
+    .expect_err("zero rockfill denominator should fail closed");
+    assert_eq!(error.boundary_class(), BoundaryClass::DomainViolation);
+}
+
+#[test]
+fn impoundment_geometry_and_continuity_guards_fail_closed() {
+    let coefficients = test_impoundment_coefficients();
+    let area_error = Ws10ChannelImpoundmentKernel::impoundment_area_at_stage(
+        Ws10NodeClass::Impoundment,
+        1.0,
+        &coefficients,
+    )
+    .expect("baseline geometry should be valid");
+    assert_close(area_error, 10.0);
+
+    let mut bad_area = coefficients;
+    bad_area.a0 = 0.0;
+    let error = Ws10ChannelImpoundmentKernel::impoundment_area_at_stage(
+        Ws10NodeClass::Impoundment,
+        1.0,
+        &bad_area,
+    )
+    .expect_err("non-positive area should fail closed");
+    assert_eq!(error.boundary_class(), BoundaryClass::DomainViolation);
+
+    let q = [f64::INFINITY; 15];
+    let error = Ws10ChannelImpoundmentKernel::impoundment_validate_total_outflow(
+        Ws10NodeClass::Impoundment,
+        &q,
+    )
+    .expect_err("non-finite total outflow should fail closed");
+    assert_eq!(error.boundary_class(), BoundaryClass::NonFinite);
+
+    let error = Ws10ChannelImpoundmentKernel::impoundment_continuity_rate(
+        Ws10NodeClass::Impoundment,
+        f64::NAN,
+        1.0,
+        0.0,
+        &coefficients,
+    )
+    .expect_err("non-finite stage should fail closed");
+    assert_eq!(error.boundary_class(), BoundaryClass::NonFinite);
+
+    let error = Ws10ChannelImpoundmentKernel::impoundment_continuity_rate(
+        Ws10NodeClass::Impoundment,
+        -1.0,
+        1.0,
+        0.0,
+        &coefficients,
+    )
+    .expect_err("negative stage should fail closed");
+    assert_eq!(error.boundary_class(), BoundaryClass::DomainViolation);
+
+    let error = Ws10ChannelImpoundmentKernel::impoundment_continuity_rate(
+        Ws10NodeClass::Impoundment,
+        1.0,
+        1.0,
+        -1.0,
+        &coefficients,
+    )
+    .expect_err("negative continuity outflow should fail closed");
+    assert_eq!(error.boundary_class(), BoundaryClass::DomainViolation);
+
+    let error = Ws10ChannelImpoundmentKernel::impoundment_continuity_rate(
+        Ws10NodeClass::Impoundment,
+        1.0,
+        f64::INFINITY,
+        0.0,
+        &coefficients,
+    )
+    .expect_err("non-finite dhdt should fail closed");
+    assert_eq!(error.boundary_class(), BoundaryClass::NonFinite);
+}
+
+#[test]
+fn impoundment_rk4_step_rejects_invalid_timestep() {
+    let coefficients = test_impoundment_coefficients();
+    let error = Ws10ChannelImpoundmentKernel::impoundment_rk4_step(
+        Ws10NodeClass::Impoundment,
+        1.0,
+        0.0,
+        1.0,
+        0.0,
+        &coefficients,
+    )
+    .expect_err("zero rk4 timestep should fail closed");
+
+    assert_eq!(error.boundary_class(), BoundaryClass::DomainViolation);
+}
+
+#[test]
+fn integrate_impoundment_stage_accepts_stable_step() {
+    let coefficients = test_impoundment_coefficients();
+    let (hnext, accepted_dt) =
+        Ws10ChannelImpoundmentKernel::integrate_impoundment_stage_with_adaptive_retry(
+            Ws10NodeClass::Impoundment,
+            1.0,
+            2.0,
+            1.0,
+            1.0,
+            0.0,
+            &coefficients,
+        )
+        .expect("stable step should integrate");
+
+    assert_close(hnext, 1.1);
+    assert_close(accepted_dt, 1.0);
+}
+
+#[test]
+fn integrate_impoundment_stage_retries_regime_transition() {
+    let mut coefficients = test_impoundment_coefficients();
+    coefficients.ha[0] = 1.05;
+    let (_hnext, accepted_dt) =
+        Ws10ChannelImpoundmentKernel::integrate_impoundment_stage_with_adaptive_retry(
+            Ws10NodeClass::Impoundment,
+            1.0,
+            2.0,
+            1.0,
+            1.0,
+            0.0,
+            &coefficients,
+        )
+        .expect("transition crossing should retry with a smaller step");
+
+    assert!(accepted_dt < 1.0);
+    assert!(accepted_dt > 0.0);
+}
+
+#[test]
+fn integrate_impoundment_stage_rejects_invalid_timestep() {
+    let coefficients = test_impoundment_coefficients();
+    let error = Ws10ChannelImpoundmentKernel::integrate_impoundment_stage_with_adaptive_retry(
+        Ws10NodeClass::Impoundment,
+        1.0,
+        2.0,
+        0.0,
+        1.0,
+        0.0,
+        &coefficients,
+    )
+    .expect_err("zero timestep should fail closed");
+
+    assert_eq!(error.boundary_class(), BoundaryClass::DomainViolation);
+}
+
+#[test]
+fn integrate_impoundment_stage_rejects_half_timestep_underflow() {
+    let coefficients = test_impoundment_coefficients();
+    let error = Ws10ChannelImpoundmentKernel::integrate_impoundment_stage_with_adaptive_retry(
+        Ws10NodeClass::Impoundment,
+        1.0,
+        2.0,
+        1.5e-12,
+        1.0,
+        0.0,
+        &coefficients,
+    )
+    .expect_err("half timestep below threshold should fail closed");
+
+    assert_eq!(error.boundary_class(), BoundaryClass::DomainViolation);
+}
+
+#[test]
+fn integrate_impoundment_stage_rejects_stage_outside_pool_capacity() {
+    let coefficients = test_impoundment_coefficients();
+    let error = Ws10ChannelImpoundmentKernel::integrate_impoundment_stage_with_adaptive_retry(
+        Ws10NodeClass::Impoundment,
+        1.0,
+        1.05,
+        1.0,
+        1.0,
+        0.0,
+        &coefficients,
+    )
+    .expect_err("stage above full pool should fail closed");
+
+    assert_eq!(error.boundary_class(), BoundaryClass::DomainViolation);
+}
+
+#[test]
+fn integrate_impoundment_stage_retries_error_control() {
+    let mut coefficients = test_impoundment_coefficients();
+    coefficients.ha[11] = 0.0;
+    coefficients.a[11] = 5.0;
+    coefficients.d[11] = 100.0;
+
+    let (hnext, accepted_dt) =
+        Ws10ChannelImpoundmentKernel::integrate_impoundment_stage_with_adaptive_retry(
+            Ws10NodeClass::Impoundment,
+            1.0,
+            2.0,
+            1.0,
+            0.0,
+            0.0,
+            &coefficients,
+        )
+        .expect("large truncation error should retry to a smaller valid step");
+
+    assert!(accepted_dt < 1.0);
+    assert!(accepted_dt > 0.0);
+    assert!(hnext < 1.0);
+    assert!(hnext >= 0.0);
+}
+
+#[test]
+fn route_impoundment_stage_over_duration_advances_across_multiple_steps() {
+    let coefficients = test_impoundment_coefficients();
+    let (hnext, accepted_dt) = Ws10ChannelImpoundmentKernel::route_impoundment_stage_over_duration(
+        Ws10NodeClass::Impoundment,
+        1.0,
+        2.0,
+        0.25,
+        1.0,
+        1.0,
+        0.0,
+        &coefficients,
+    )
+    .expect("valid horizon should route across substeps");
+
+    assert_close(hnext, 1.1);
+    assert_close(accepted_dt, 0.25);
+}
+
+#[test]
+fn route_impoundment_stage_over_duration_rejects_bad_duration() {
+    let coefficients = test_impoundment_coefficients();
+    let error = Ws10ChannelImpoundmentKernel::route_impoundment_stage_over_duration(
+        Ws10NodeClass::Impoundment,
+        1.0,
+        2.0,
+        1.0,
+        0.0,
+        1.0,
+        0.0,
+        &coefficients,
+    )
+    .expect_err("zero routing duration should fail closed");
+
+    assert_eq!(error.boundary_class(), BoundaryClass::DomainViolation);
+}
+
+#[test]
+fn route_impoundment_stage_over_duration_rejects_iteration_exhaustion() {
+    let coefficients = test_impoundment_coefficients();
+    let error = Ws10ChannelImpoundmentKernel::route_impoundment_stage_over_duration(
+        Ws10NodeClass::Impoundment,
+        1.0,
+        100.0,
+        1.0e-3,
+        1.0,
+        1.0,
+        0.0,
+        &coefficients,
+    )
+    .expect_err("iteration cap should fail closed when accepted steps cannot exhaust horizon");
+
+    assert_eq!(error.boundary_class(), BoundaryClass::DomainViolation);
 }

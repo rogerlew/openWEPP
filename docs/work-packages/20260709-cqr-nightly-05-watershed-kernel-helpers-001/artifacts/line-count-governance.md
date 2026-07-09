@@ -2,16 +2,18 @@
 
 Evidence label: Static/Ran.
 
-Status: `SCAFFOLDED`
+Status: `COMPLETE`
 
 Target file:
 `crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/helpers.rs`
 
-Baseline line count:
+Line counts:
 
 - `542` lines.
+- After implementation: `1063` lines.
 
 Disposition:
 
 - Below the 2000-line WARN threshold.
-- No line-count split is required for scaffold closure.
+- Increase is driven mainly by in-file characterization tests required by the
+  include-order constraint; no line-count split is required.
