@@ -40,6 +40,10 @@ pub enum WatershedNetworkFrameError {
     MissingRoutedImpoundmentState {
         node_id: u32,
     },
+    InvalidGroundwaterAuthority {
+        field: &'static str,
+        value: f64,
+    },
 }
 
 impl fmt::Display for WatershedNetworkFrameError {
@@ -78,6 +82,10 @@ impl fmt::Display for WatershedNetworkFrameError {
                 formatter,
                 "WSHEDFRAME-E-008 missing routed impoundment state for node {node_id}"
             ),
+            Self::InvalidGroundwaterAuthority { field, value } => write!(
+                formatter,
+                "WSHEDFRAME-E-009 invalid groundwater authority field {field}={value}"
+            ),
         }
     }
 }
@@ -92,7 +100,8 @@ impl Error for WatershedNetworkFrameError {
             | Self::ImpoundmentIdOutOfRange { .. }
             | Self::MissingSlopeProfile { .. }
             | Self::MissingRoutedChannelState { .. }
-            | Self::MissingRoutedImpoundmentState { .. } => None,
+            | Self::MissingRoutedImpoundmentState { .. }
+            | Self::InvalidGroundwaterAuthority { .. } => None,
         }
     }
 }
@@ -112,6 +121,43 @@ pub struct WatershedRoutingGlobals {
     pub ntchr: f64,
     pub nchnum: f64,
     pub cbase: f64,
+    pub groundwater_baseflow: WatershedGroundwaterRoutingAuthority,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum WatershedGroundwaterRoutingAuthority {
+    Disabled,
+    LinearReservoir { baseflow_threshold_area_ha: f64 },
+}
+
+impl WatershedGroundwaterRoutingAuthority {
+    #[must_use]
+    pub const fn disabled() -> Self {
+        Self::Disabled
+    }
+
+    /// # Errors
+    ///
+    /// Returns [`WatershedNetworkFrameError::InvalidGroundwaterAuthority`] if
+    /// the threshold area is negative or non-finite.
+    pub fn linear_reservoir(
+        baseflow_threshold_area_ha: f64,
+    ) -> Result<Self, WatershedNetworkFrameError> {
+        if !baseflow_threshold_area_ha.is_finite() || baseflow_threshold_area_ha < 0.0 {
+            return Err(WatershedNetworkFrameError::InvalidGroundwaterAuthority {
+                field: "baseflow_threshold_area_ha",
+                value: baseflow_threshold_area_ha,
+            });
+        }
+        Ok(Self::LinearReservoir {
+            baseflow_threshold_area_ha,
+        })
+    }
+
+    #[must_use]
+    pub const fn is_enabled(self) -> bool {
+        matches!(self, Self::LinearReservoir { .. })
+    }
 }
 
 /// Typed channel rating-curve controls.
@@ -188,6 +234,8 @@ pub struct HillslopeContribution {
     pub area_m2: Option<f64>,
     pub peak_runoff_m3_s: f64,
     pub duration_seconds: f64,
+    pub generated_baseflow_m3: f64,
+    pub groundwater_deep_seepage_m3: f64,
     pub total_detachment_kg: f64,
     pub total_deposition_kg: f64,
     pub sediment_concentration_kg_m3: Vec<f64>,
@@ -242,6 +290,8 @@ pub struct RoutedChannelState {
     pub runoff_volume_m3: f64,
     pub peak_discharge_m3_s: f64,
     pub duration_seconds: f64,
+    pub channel_baseflow_m3: f64,
+    pub groundwater_deep_seepage_m3: f64,
     pub sediment_yield_kg: f64,
     pub wave_state: Option<RoutedChannelWaveState>,
     pub sediment_state: RoutedChannelSedimentState,
@@ -443,6 +493,13 @@ impl WatershedNetworkFrame {
             .insert(contribution.hillslope_id, contribution);
     }
 
+    pub fn configure_groundwater_baseflow_routing(
+        &mut self,
+        authority: WatershedGroundwaterRoutingAuthority,
+    ) {
+        self.routing_globals.groundwater_baseflow = authority;
+    }
+
     pub(crate) fn record_routed_channel_state(&mut self, state: RoutedChannelState) {
         self.routed_channels.insert(state.node_id, state);
     }
@@ -493,6 +550,12 @@ impl WatershedNetworkFrame {
             .filter_map(|node_id| self.routed_channels.get(node_id))
             .map(|state| state.runoff_volume_m3)
             .sum::<f64>();
+        let channel_baseflow_m3 = dispatch_ids
+            .channel_ids
+            .iter()
+            .filter_map(|node_id| self.routed_channels.get(node_id))
+            .map(|state| state.channel_baseflow_m3)
+            .sum::<f64>();
         let area_m2 = sum_contributing_area_m2(&self.hillslope_contributions, dispatch_ids);
         let runoff_mm = area_m2.map(|area| runoff_volume_m3 / area * 1_000.0);
         let total_detachment_kg = dispatch_ids
@@ -525,7 +588,7 @@ impl WatershedNetworkFrame {
                 .map(|state| state.sediment_yield_kg)
                 .sum::<f64>(),
             channel_outflow_m3: None,
-            channel_baseflow_m3: None,
+            channel_baseflow_m3: Some(channel_baseflow_m3),
             area_m2,
             runoff_mm,
             total_detachment_kg,
@@ -631,6 +694,7 @@ fn build_routing_globals(
             ntchr: f64::from(options.ntchr),
             nchnum: f64::from(options.nchnum_norm),
             cbase: options.cbase_m3_s_m2,
+            groundwater_baseflow: WatershedGroundwaterRoutingAuthority::disabled(),
         });
     }
 
@@ -646,6 +710,7 @@ fn build_routing_globals(
         ntchr: default_ntchr,
         nchnum: 0.0,
         cbase: 0.0,
+        groundwater_baseflow: WatershedGroundwaterRoutingAuthority::disabled(),
     })
 }
 

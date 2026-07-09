@@ -14,7 +14,8 @@ use openwepp_input_contract::parsers::{
 use openwepp_sim_contract::status::{BoundaryClass, StatusClassification};
 use openwepp_topology::{parse_topology_fixture_str, validate_pre_execution_topology};
 use openwepp_watershed_orchestrator::{
-    HillslopeContribution, WatershedNetworkFrame, execute_watershed_dispatch_with_frame,
+    HillslopeContribution, WatershedGroundwaterRoutingAuthority, WatershedNetworkFrame,
+    execute_watershed_dispatch_with_frame,
 };
 
 const TYPED_TOPOLOGY: &str = r"
@@ -82,6 +83,8 @@ fn contribution_with_diameters(
         area_m2: Some(1_800.0),
         peak_runoff_m3_s,
         duration_seconds,
+        generated_baseflow_m3: 0.0,
+        groundwater_deep_seepage_m3: 0.0,
         total_detachment_kg: peak_runoff_m3_s * duration_seconds * 0.01,
         total_deposition_kg: peak_runoff_m3_s * duration_seconds * 0.0025,
         sediment_concentration_kg_m3: vec![0.35, 0.45, 0.55],
@@ -89,6 +92,18 @@ fn contribution_with_diameters(
         particle_flow_fraction: vec![0.2, 0.3, 0.5],
         hourly_runoff_volume_m3: Vec::new(),
         hourly_sediment_mass_kg: Vec::new(),
+    }
+}
+
+fn contribution_with_groundwater(
+    hillslope_id: u32,
+    generated_baseflow_m3: f64,
+    groundwater_deep_seepage_m3: f64,
+) -> HillslopeContribution {
+    HillslopeContribution {
+        generated_baseflow_m3,
+        groundwater_deep_seepage_m3,
+        ..contribution(hillslope_id, 1.0, 300.0)
     }
 }
 
@@ -197,6 +212,86 @@ fn typed_frame_dispatch_records_and_publishes_direct_routed_state() {
     assert_eq!(publication.particulate_pollutant_kg, None);
     assert!(publication.total_detachment_kg > 0.0);
     assert!(publication.total_deposition_kg > 0.0);
+}
+
+#[test]
+fn gwbaseflow_lr_bf1_channel_branch_consumes_generated_hbp_not_cbase() {
+    let mut with_cbase = build_typed_frame();
+    with_cbase.routing_globals.cbase = 99.0;
+    with_cbase.configure_groundwater_baseflow_routing(
+        WatershedGroundwaterRoutingAuthority::linear_reservoir(0.10)
+            .expect("valid threshold should construct"),
+    );
+    with_cbase.add_hillslope_contribution(contribution_with_groundwater(1, 24.0, 5.0));
+    with_cbase.add_hillslope_contribution(contribution(2, 0.5, 300.0));
+    let topology_report =
+        validate_pre_execution_topology(with_cbase.topology()).expect("topology gate should build");
+    let report = execute_watershed_dispatch_with_frame(&mut with_cbase, &topology_report)
+        .expect("generated-baseflow dispatch should execute");
+    assert!(report.dispatch_report.is_success());
+    let channel = with_cbase
+        .routed_channels
+        .get(&1)
+        .expect("channel should route");
+    assert!((channel.channel_baseflow_m3 - 24.0).abs() <= 1.0e-9);
+    assert!((channel.groundwater_deep_seepage_m3 - 5.0).abs() <= 1.0e-9);
+
+    let mut without_cbase = build_typed_frame();
+    without_cbase.routing_globals.cbase = 0.0;
+    without_cbase.configure_groundwater_baseflow_routing(
+        WatershedGroundwaterRoutingAuthority::linear_reservoir(0.10)
+            .expect("valid threshold should construct"),
+    );
+    without_cbase.add_hillslope_contribution(contribution_with_groundwater(1, 24.0, 5.0));
+    without_cbase.add_hillslope_contribution(contribution(2, 0.5, 300.0));
+    let topology_report = validate_pre_execution_topology(without_cbase.topology())
+        .expect("topology gate should build");
+    let report = execute_watershed_dispatch_with_frame(&mut without_cbase, &topology_report)
+        .expect("generated-baseflow dispatch should execute");
+    assert!(report.dispatch_report.is_success());
+    let no_cbase_channel = without_cbase
+        .routed_channels
+        .get(&1)
+        .expect("channel should route");
+    assert!((no_cbase_channel.channel_baseflow_m3 - 24.0).abs() <= 1.0e-9);
+    assert!(
+        (channel.runoff_volume_m3 - no_cbase_channel.runoff_volume_m3).abs() <= 1.0e-9,
+        "lr_bf=1 must not substitute cbase into the generated-baseflow branch"
+    );
+}
+
+#[test]
+fn gwbaseflow_bftharea_suppresses_below_threshold_side_baseflow() {
+    let mut frame = build_typed_frame();
+    frame.configure_groundwater_baseflow_routing(
+        WatershedGroundwaterRoutingAuthority::linear_reservoir(1.0)
+            .expect("valid threshold should construct"),
+    );
+    frame.add_hillslope_contribution(contribution_with_groundwater(1, 24.0, 5.0));
+    frame.add_hillslope_contribution(contribution(2, 0.5, 300.0));
+    let topology_report =
+        validate_pre_execution_topology(frame.topology()).expect("topology gate should build");
+    let report = execute_watershed_dispatch_with_frame(&mut frame, &topology_report)
+        .expect("threshold dispatch should execute");
+    assert!(report.dispatch_report.is_success());
+    let channel = frame.routed_channels.get(&1).expect("channel should route");
+    assert!(channel.channel_baseflow_m3.abs() <= 1.0e-12);
+    assert!((channel.groundwater_deep_seepage_m3 - 5.0).abs() <= 1.0e-9);
+}
+
+#[test]
+fn gwbaseflow_generated_hbp_payload_without_gwcoeff_authority_fails_closed() {
+    let mut frame = build_typed_frame();
+    frame.add_hillslope_contribution(contribution_with_groundwater(1, 24.0, 5.0));
+    frame.add_hillslope_contribution(contribution(2, 0.5, 300.0));
+    let topology_report =
+        validate_pre_execution_topology(frame.topology()).expect("topology gate should build");
+    let report = execute_watershed_dispatch_with_frame(&mut frame, &topology_report)
+        .expect("typed dispatch should report guard failure, not panic");
+    assert!(
+        !report.dispatch_report.is_success(),
+        "generated groundwater payloads require gwcoeff authority"
+    );
 }
 
 #[test]

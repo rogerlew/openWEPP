@@ -11,6 +11,8 @@ struct HbpEventFixtureInput {
     duration_seconds: f64,
     total_detachment_kg: f64,
     total_deposition_kg: f64,
+    baseflow_volume_m3: f64,
+    deep_seepage_volume_m3: f64,
     sediment_concentration_kg_m3: Vec<f64>,
     particle_flow_fraction: Vec<f64>,
     particle_diameter_m: Vec<f64>,
@@ -28,6 +30,8 @@ struct HbpEventPayloadInput {
     duration_seconds: f64,
     total_detachment_kg: f64,
     total_deposition_kg: f64,
+    baseflow_volume_m3: f64,
+    deep_seepage_volume_m3: f64,
     sediment_concentration_kg_m3: Vec<f64>,
     particle_flow_fraction: Vec<f64>,
     hourly_runoff_volume_m3: Option<[f64; 24]>,
@@ -179,6 +183,8 @@ fn build_schema1_hbp_event_fixture(
         duration_seconds: input.duration_seconds,
         total_detachment_kg: input.total_detachment_kg,
         total_deposition_kg: input.total_deposition_kg,
+        baseflow_volume_m3: input.baseflow_volume_m3,
+        deep_seepage_volume_m3: input.deep_seepage_volume_m3,
         sediment_concentration_kg_m3: input.sediment_concentration_kg_m3,
         particle_flow_fraction: input.particle_flow_fraction,
         hourly_runoff_volume_m3: input.hourly_runoff_volume_m3,
@@ -286,10 +292,9 @@ fn build_hbp_event_payload(input: &HbpEventPayloadInput) -> Result<Vec<u8>, Hill
     for value in &input.particle_flow_fraction {
         put_f64(&mut payload, *value);
     }
-    // ADR-0036 D2 (SC-INFILE-HBP-001 §3a): the paired hourly surfaces sit
-    // BEFORE the reserved trailing i64s, written only at payload minor >= 1
-    // (strict-consumption parsing requires writer/parser placement
-    // identity).
+    // ADR-0036 D2 / SC-INFILE-HBP-001 §3a: the paired hourly surfaces sit
+    // before the final groundwater/baseflow i64 pair. Strict consumption makes
+    // any writer/parser placement divergence a typed failure.
     if let (Some(hourly_volume), Some(hourly_sediment)) = (
         &input.hourly_runoff_volume_m3,
         &input.hourly_sediment_mass_kg,
@@ -303,8 +308,8 @@ fn build_hbp_event_payload(input: &HbpEventPayloadInput) -> Result<Vec<u8>, Hill
             put_f64(&mut payload, *value);
         }
     }
-    put_i64(&mut payload, 0);
-    put_i64(&mut payload, 0);
+    put_i64(&mut payload, scaled_i64(input.baseflow_volume_m3)?);
+    put_i64(&mut payload, scaled_i64(input.deep_seepage_volume_m3)?);
 
     for state_id in HBP_REQUIRED_STATE_IDS {
         payload.extend_from_slice(&build_hbp_state_entry(*state_id, nofe, max_layers)?);
@@ -657,6 +662,8 @@ fn build_hbp_output_from_direct_publication(
                 .hbp_total_deposition_kg
                 .or(sediment_row.erosion.total_deposition_kg),
         )?,
+        baseflow_volume_m3: latest_row.subsurface.groundwater_baseflow_m3,
+        deep_seepage_volume_m3: latest_row.subsurface.groundwater_deep_seepage_m3,
         sediment_concentration_kg_m3: vec![sediment_concentration_kg_m3],
         particle_flow_fraction: vec![1.0],
         particle_diameter_m: vec![HBP_DEFAULT_PARTICLE_DIAMETER_M],

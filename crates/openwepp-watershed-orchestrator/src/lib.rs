@@ -11,10 +11,10 @@ pub use lib_mod::{
     RoutedChannelWaveState, RoutedImpoundmentState, WatershedChannelControlRecord,
     WatershedChannelRatingCurveControl, WatershedChannelSegmentPoint, WatershedDispatchError,
     WatershedDispatchReport, WatershedFrameExecutionReport, WatershedFrameStepReport,
-    WatershedImpoundmentControlRecord, WatershedNetworkFrame, WatershedNetworkFrameError,
-    WatershedPublicationFrame, WatershedRoutingGlobals, Ws10ChannelImpoundmentKernel,
-    execute_watershed_dispatch_with_frame, schedule_watershed_dispatch,
-    schedule_watershed_dispatch_with_gate,
+    WatershedGroundwaterRoutingAuthority, WatershedImpoundmentControlRecord, WatershedNetworkFrame,
+    WatershedNetworkFrameError, WatershedPublicationFrame, WatershedRoutingGlobals,
+    Ws10ChannelImpoundmentKernel, execute_watershed_dispatch_with_frame,
+    schedule_watershed_dispatch, schedule_watershed_dispatch_with_gate,
 };
 
 #[cfg(test)]
@@ -411,6 +411,8 @@ mod tests {
             area_m2: None,
             peak_runoff_m3_s: 1.0,
             duration_seconds: 100.0,
+            generated_baseflow_m3: 0.0,
+            groundwater_deep_seepage_m3: 0.0,
             total_detachment_kg: 1.0,
             total_deposition_kg: 0.0,
             sediment_concentration_kg_m3: vec![0.1],

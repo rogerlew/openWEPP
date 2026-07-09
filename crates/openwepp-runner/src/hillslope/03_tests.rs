@@ -23,7 +23,9 @@ mod tests {
         DirectPublicationSubsurfaceOperands, DirectPublicationTransferOperands,
         DirectPublicationWaterTemperatureOperands, DirectRunIdentity, DirectRunPublicationFrame,
     };
-    use openwepp_input_contract::parsers::hbp::{HbpParseOptions, parse_hbp_from_path};
+    use openwepp_input_contract::parsers::hbp::{
+        HbpParseOptions, parse_hbp_from_bytes_with_latest_event_payload, parse_hbp_from_path,
+    };
     use openwepp_input_contract::parsers::slope::{
         DatverSource, DistanceMode, SlopeOfe, SlopePoint, SlopeProfile,
     };
@@ -968,6 +970,35 @@ mod tests {
             serde_json::from_str(&loss).expect("direct loss projection should be JSON");
         assert_eq!(loss_json["run_name"], "r6a_projection");
         assert!(manifest.contains("row_count=1"));
+    }
+
+    #[test]
+    fn r6a_direct_hbp_writer_serializes_groundwater_payload_operands() {
+        let frame = r6a_direct_projection_fixture_frame();
+        let hbp_path = Path::new("H2637.hbp");
+        let hbp_bytes = build_hbp_output_from_direct_publication(hbp_path, &frame)
+            .expect("direct HBP projection should build");
+
+        let (_parsed, latest_event_payload) = parse_hbp_from_bytes_with_latest_event_payload(
+            &hbp_bytes,
+            hbp_path,
+            HbpParseOptions {
+                expected_hillslope_id: Some(2637),
+            },
+        )
+        .expect("direct HBP projection should parse");
+        let payload = latest_event_payload.expect("direct HBP should expose latest event payload");
+
+        assert!(
+            (payload.baseflow_volume_m3 - 2.4).abs() <= 1.0e-9,
+            "expected baseflow 2.4 m3, got {}",
+            payload.baseflow_volume_m3
+        );
+        assert!(
+            (payload.deep_seepage_volume_m3 - 1.2).abs() <= 1.0e-9,
+            "expected deep seepage 1.2 m3, got {}",
+            payload.deep_seepage_volume_m3
+        );
     }
 
     fn r6a_direct_projection_fixture_frame() -> DirectRunPublicationFrame {

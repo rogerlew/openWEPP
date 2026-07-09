@@ -11,7 +11,7 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-07-08`:
+State as of `2026-07-09`:
 - `20260702-wshedw7-sediment-active-watershed-fixture-publication-closure-001/` -
   EXECUTED-COMPLETE-W7R-SEDIMENT-ACTIVE-PUBLICATION-CLOSURE (2026-07-08):
   resumed W7 after the p102 producer-side blocker was closed. Adopted
@@ -81,12 +81,21 @@ State as of `2026-07-08`:
   and runtime-consumer proof. Spec:
   `docs/specifications/wepp-input-files/specs/landuse-migration-cli.spec.md`.
 - `20260708-groundwater-baseflow-laned-single-ofe-mofe-implementation-001/` -
-  EXECUTED-HOLD-GWDSV-CHANNEL-CONSUMER (2026-07-09 UTC, M-T2B): implemented
+  EXECUTED-COMPLETE-VIA-MT2 (2026-07-09 UTC, M-T2B): implemented
   the `SC-GWBASEFLOW-001` Lane D direct-runtime groundwater recurrence,
   `gwcoeff.txt` parser handoff, single-OFE/MOFE recharge aggregation, active
   summary totals, WAT `Base` publication, and real watershed WAT `Base`
-  consumer proof. Hold remains for generated `gwdsv` downstream consumption and
-  the `bftharea` watershed/channel threshold branch.
+  consumer proof. The original package held on generated `gwdsv` downstream
+  consumption and `bftharea`; those holds were lifted by
+  `20260709-laned-active-baseflow-export-closure-001/`.
+- `20260709-laned-active-baseflow-export-closure-001/` -
+  EXECUTED-COMPLETE (2026-07-09 UTC, M-T2): amended the HBP/baseflow contracts,
+  serialized and parsed generated HBP `gwbfv`/`gwdsv`, threaded the fields into
+  watershed contributions, made `lr_bf=1` consume generated HBP baseflow instead
+  of `cbase`, implemented `bftharea` threshold handling, and proved the real
+  writer/parser/watershed consumer path. Final gates: focused HBP/watershed
+  tests passed, full workspace nextest `1467/1467`, quick nextest `1392/1392`,
+  clippy/fmt/deny/doc lint/diff-check green.
 - `20260708-laned-router-conditional-default-activation-001/` -
   EXECUTED-COMPLETE-CONDITIONAL-DEFAULT-ACTIVATION (2026-07-08): amended
   `SC-OFEROUTE-001` rev 46 and made Lane D active routing the hillslope

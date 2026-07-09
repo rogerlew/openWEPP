@@ -4,9 +4,9 @@ title: Hillslope Binary Pass Input Parser Contract (H<hillslope_id>.hbp)
 status: in_review
 maturity: draft
 owner: openWEPP
-contract_version: 0.2.1
+contract_version: 0.2.2
 evidence_mode: Static
-last_updated_utc: 2026-05-29T00:00:00Z
+last_updated_utc: 2026-07-09T00:00:00Z
 ---
 
 # SC-INFILE-HBP-001 Hillslope Binary Pass Input Parser Contract
@@ -122,14 +122,18 @@ the payload end (no silent skip of unknown bytes). Fields by
 | `event.particle_flow_fraction[npart]` | >=0 | none | u32 count + f64[] | per-class exiting fractions (`SC-SED-001` GAP-SED-007 basis) |
 | `event.hourly_runoff_volume_m3[24]` | >=1 | m³ | u32 count (= 24) + f64[24] | hour-integrated runoff volume at the hillslope exit; `Σ = ` event runoff volume (`SC-SED-001#INV-SED-014`) |
 | `event.hourly_sediment_mass_kg[24]` | >=1 | kg | u32 count (= 24) + f64[24] | hour-integrated exported sediment mass on the same time base; `Σ = ` event exported mass |
-| reserved trailing `2 × i64` | >=0 | none | i64 | zero; retained after the minor-1 arrays |
+| `event.baseflow_volume_m3` / `gwbfv` | >=0 | m³ | i64 ×1e9 | generated groundwater-reservoir baseflow volume for the day; zero when the reservoir branch is disabled or produces true zero |
+| `event.deep_seepage_volume_m3` / `gwdsv` | >=0 | m³ | i64 ×1e9 | generated groundwater-reservoir deep-seepage volume for the day; zero when the reservoir branch is disabled or produces true zero |
 
-Minor-1 fields are inserted **before** the reserved trailing `2 × i64`,
-identically in writer and parser (strict consumption makes any divergence a
-typed `HBP-E-013`/`HBP-E-015` failure, not a silent shift). Structural
-validation for the hourly arrays: count exactly `24`, every element finite
-and non-negative. Integral-closure checks against runoff volume / sediment
-mass are **run-level intake validation** (Section 8), not parser-local.
+Minor-1 fields are inserted **before** the final groundwater/baseflow
+`2 × i64` pair, identically in writer and parser (strict consumption makes any
+divergence a typed `HBP-E-013`/`HBP-E-015` failure, not a silent shift).
+Structural validation for the hourly arrays: count exactly `24`, every element
+finite and non-negative. Integral-closure checks against runoff volume /
+sediment mass are **run-level intake validation** (Section 8), not
+parser-local.
+The final two scaled integers are fixed-position groundwater/baseflow fields
+owned by `SC-GWBASEFLOW-001`, not skippable padding.
 
 ## 4. Propagation Map Table
 
@@ -226,6 +230,7 @@ No silent fallback to legacy text pass family is permitted.
 | `year_table[]` | `hbp.year_entries[]` | `openwepp.boundary.parser.hbp.v1.year_table` | canonical year-entry mapping | day iterator source of truth |
 | `day_directory[]` | `hbp.directory_entries[]` | `openwepp.boundary.parser.hbp.v1.directory` | schema-specific payload locator variants | payload lookup surface |
 | `payload_block_table[]` | `hbp.payload_blocks[]` | `openwepp.boundary.parser.hbp.v1.payload_blocks` | schema2 block metadata | absent for schema1 |
+| `event.baseflow_volume_m3` / `event.deep_seepage_volume_m3` | `HbpLatestEventPayload.baseflow_volume_m3` / `HbpLatestEventPayload.deep_seepage_volume_m3` | `openwepp.boundary.parser.hbp.v1.latest_event_payload` | `gwbfv`/`gwdsv` pass handoff | `SC-GWBASEFLOW-001`; non-negative scaled volumes |
 | path/warning branch | `hbp.path_resolution`, `hbp.warnings` | `openwepp.boundary.observability.parser_warnings.v1` | deterministic path observability; warning list must be empty | strict-mode auditability |
 
 ## 10. Naming Policy
@@ -252,6 +257,7 @@ No silent fallback to legacy text pass family is permitted.
 | `G-HBP-009` | footer and file-level CRC closure | footer validator | `HBP-E-012` |
 | `G-HBP-010` | strict naming/path observability closure | path resolver | `HBP-E-001` |
 | `G-HBP-011` | minor-1 hourly-surface structural closure (count = 24, finite, non-negative) | runoff-EVENT payload validator | `HBP-E-015` |
+| `G-HBP-012` | groundwater/baseflow pass handoff fields are fixed-position scaled non-negative volumes | runoff-EVENT payload validator + watershed pass inventory | `HBP-E-013` or run-level inventory failure |
 
 ## 12. Legacy Symbol Continuity and Alias Map
 
@@ -271,6 +277,7 @@ openWEPP boundary names are aliases only (Section 3).
 
 | Date UTC | Version | Change |
 | --- | --- | --- |
+| `2026-07-09` | `0.2.2` | M-T2 baseflow export closure: named the existing final runoff-EVENT scaled integer pair as `event.baseflow_volume_m3` (`gwbfv`) and `event.deep_seepage_volume_m3` (`gwdsv`) under `SC-GWBASEFLOW-001`, added parser boundary mapping and `G-HBP-012`; layout/order unchanged. |
 | `2026-07-04` | `0.2.1` | E.3 chain-form amendment: Section 8.5 intake closure generalized — multi-OFE EVENT totals are chain-aggregated (Σ across OFEs, event day) with the EXIT-scoped hourly sediment surface, keeping the single identity `Σ S_h = tdet − tdep` valid for both single- and multi-OFE shards (`SC-SED-001#INV-SED-016` (e)). |
 | `2026-07-04` | `0.2.0` | E.2/ADR-0036 minor-1 EVENT extension: schema/payload minor `<=1` accepted (Section 1.2), new Section 3a runoff-EVENT payload field block (paired `hourly_runoff_volume_m3[24]` m³ + `hourly_sediment_mass_kg[24]` kg before the reserved trailing i64s; `npart = 5` per-class production from minor 1; `peak_runoff_m3_s` true-volumetric from minor 1 with the minor-0 depth-rate caveat labeled), `HBP-E-015`/`G-HBP-011` structural validation, and the Section 8.5 run-level integral-closure intake rule. |
 | `2026-05-29` | `0.1.1` | WSHEDIMPL43 amendment: retired `.pass.dat` compatibility derivation and warning branch; parser naming policy is strict canonical `.hbp` only with no ASCII fallback support. |

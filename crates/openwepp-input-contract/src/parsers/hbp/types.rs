@@ -109,6 +109,8 @@ pub struct HbpLatestEventPayload {
     pub peak_runoff_m3_s: f64,
     pub total_detachment_kg: f64,
     pub total_deposition_kg: f64,
+    pub baseflow_volume_m3: f64,
+    pub deep_seepage_volume_m3: f64,
     pub particle_diameter_m: Vec<f64>,
     pub sediment_concentration_kg_m3: Vec<f64>,
     pub particle_flow_fraction: Vec<f64>,

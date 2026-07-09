@@ -4,6 +4,7 @@ use std::path::{Path, PathBuf};
 use std::time::Instant;
 
 use openwepp_input_contract::parsers::chaninp::{ChaninpParseOptions, parse_chaninp_from_path};
+use openwepp_input_contract::parsers::gwcoeff::parse_gwcoeff_from_path;
 use openwepp_input_contract::parsers::slope::{SlopeParserOptions, parse_slope_file};
 use openwepp_input_contract::parsers::watershed_channel::{
     WatershedChannelParseMode, WatershedChannelParseOptions, parse_watershed_channel_from_path,
@@ -29,7 +30,8 @@ use openwepp_topology::{
     TopologyNodeKind, validate_pre_execution_topology,
 };
 use openwepp_watershed_orchestrator::{
-    HillslopeContribution, WatershedNetworkFrame, execute_watershed_dispatch_with_frame,
+    HillslopeContribution, WatershedGroundwaterRoutingAuthority, WatershedNetworkFrame,
+    execute_watershed_dispatch_with_frame,
 };
 use openwepp_watershed_output::contracts::{WatershedOutputConfig, validate_output_contract};
 use openwepp_watershed_output::writers::write_typed_publication_parquet_outputs;
@@ -303,6 +305,10 @@ fn run() -> Result<(), String> {
         );
         None
     };
+    let groundwater_authority = watershed_groundwater_authority_from_gwcoeff(
+        runfile.gwcoeff_path.as_deref(),
+        sidecar_policy,
+    )?;
 
     let mut network_frame = WatershedNetworkFrame::from_parsed_inputs(
         topology.clone(),
@@ -316,6 +322,7 @@ fn run() -> Result<(), String> {
     .map_err(|error| {
         format!("CLIWAT-E-013 failed building typed watershed network frame: {error}")
     })?;
+    network_frame.configure_groundwater_baseflow_routing(groundwater_authority);
 
     let contributor_hillslopes = contributor_hillslope_ids(&topology);
     for hillslope_id in &contributor_hillslopes {
@@ -402,6 +409,8 @@ fn run() -> Result<(), String> {
             area_m2,
             peak_runoff_m3_s: peak,
             duration_seconds: duration,
+            generated_baseflow_m3: payload.baseflow_volume_m3,
+            groundwater_deep_seepage_m3: payload.deep_seepage_volume_m3,
             total_detachment_kg: total_detachment,
             total_deposition_kg: total_deposition,
             sediment_concentration_kg_m3: typed_sediment_concentrations,
@@ -764,6 +773,7 @@ struct WatershedRunfileInputs {
     #[serde(default)]
     applicability: WatershedRunfileApplicability,
     chaninp: Option<String>,
+    gwcoeff: Option<String>,
     tcr: Option<String>,
 }
 
@@ -832,6 +842,7 @@ struct WatershedRunfileResolved {
     watershed_impoundment_path: PathBuf,
     slope_path: PathBuf,
     chaninp_path: Option<PathBuf>,
+    gwcoeff_path: Option<PathBuf>,
     tcr_overlay_present: bool,
     hillslope_blocks_by_id: BTreeMap<u32, WatershedHillslopeBlockResolved>,
     runfile_warnings: Vec<String>,
@@ -1030,10 +1041,15 @@ fn parse_watershed_runfile(
     }
 
     let mut runfile_warnings = Vec::new();
-    let (chaninp_path, tcr_overlay_present) = if legacy_sidecar_discovery {
+    let (chaninp_path, gwcoeff_path, tcr_overlay_present) = if legacy_sidecar_discovery {
         if runfile.inputs.chaninp.is_some() {
             runfile_warnings.push(
                 "legacy-sidecar-discovery is active; ignoring configured inputs.chaninp and probing run_dir/chan.inp".to_string(),
+            );
+        }
+        if runfile.inputs.gwcoeff.is_some() {
+            runfile_warnings.push(
+                "legacy-sidecar-discovery is active; ignoring configured inputs.gwcoeff and probing run_dir/gwcoeff.txt".to_string(),
             );
         }
         if runfile.inputs.tcr.is_some() {
@@ -1083,6 +1099,8 @@ fn parse_watershed_runfile(
 
         let chaninp_path = optional_sidecar_binding_path(&sidecar_response.bindings, "chaninp")
             .unwrap_or_else(|| run_dir.join("chan.inp"));
+        let gwcoeff_path = optional_sidecar_binding_path(&sidecar_response.bindings, "gwcoeff")
+            .unwrap_or_else(|| run_dir.join("gwcoeff.txt"));
         let tcr_path = optional_sidecar_binding_path(&sidecar_response.bindings, "tcr")
             .unwrap_or_else(|| run_dir.join("tcr.txt"));
 
@@ -1091,7 +1109,12 @@ fn parse_watershed_runfile(
         } else {
             None
         };
-        (chaninp_path, tcr_path.is_file())
+        let gwcoeff_path = if gwcoeff_path.is_file() {
+            Some(gwcoeff_path)
+        } else {
+            None
+        };
+        (chaninp_path, gwcoeff_path, tcr_path.is_file())
     } else {
         let configured_chaninp = resolve_optional_runfile_path(
             run_file_path,
@@ -1107,6 +1130,23 @@ fn parse_watershed_runfile(
             ));
         }
 
+        let configured_gwcoeff = resolve_optional_runfile_path(
+            run_file_path,
+            runfile.inputs.gwcoeff.as_deref(),
+            "inputs.gwcoeff",
+        )?;
+        if let Some(path) = configured_gwcoeff.as_ref()
+            && !path.is_file()
+        {
+            return Err(format!(
+                "CLIWAT-E-029 configured inputs.gwcoeff path '{}' is not a readable file",
+                path.display()
+            ));
+        }
+        let default_gwcoeff = run_dir.join("gwcoeff.txt");
+        let gwcoeff_path =
+            configured_gwcoeff.or_else(|| default_gwcoeff.is_file().then_some(default_gwcoeff));
+
         let configured_tcr = resolve_optional_runfile_path(
             run_file_path,
             runfile.inputs.tcr.as_deref(),
@@ -1121,7 +1161,7 @@ fn parse_watershed_runfile(
             ));
         }
 
-        (configured_chaninp, configured_tcr.is_some())
+        (configured_chaninp, gwcoeff_path, configured_tcr.is_some())
     };
 
     let outputs = WatershedOutputsResolved {
@@ -1202,11 +1242,44 @@ fn parse_watershed_runfile(
         watershed_impoundment_path,
         slope_path,
         chaninp_path,
+        gwcoeff_path,
         tcr_overlay_present,
         hillslope_blocks_by_id,
         runfile_warnings,
         outputs,
     })
+}
+
+fn watershed_groundwater_authority_from_gwcoeff(
+    gwcoeff_path: Option<&Path>,
+    sidecar_policy: SidecarPolicy,
+) -> Result<WatershedGroundwaterRoutingAuthority, String> {
+    let Some(gwcoeff_path) = gwcoeff_path else {
+        return Ok(WatershedGroundwaterRoutingAuthority::disabled());
+    };
+    let gwcoeff = parse_gwcoeff_from_path(gwcoeff_path, sidecar_policy.as_gwcoeff_parse_options())
+        .map_err(|error| {
+            format!(
+                "CLIWAT-E-048 failed parsing gwcoeff {}: {error}",
+                gwcoeff_path.display()
+            )
+        })?;
+    match gwcoeff.lr_bf {
+        0 => Ok(WatershedGroundwaterRoutingAuthority::disabled()),
+        1 => {
+            let bftharea = gwcoeff.bftharea.ok_or_else(|| {
+                format!(
+                    "CLIWAT-E-048 parsed gwcoeff {} lr_bf=1 missing bftharea",
+                    gwcoeff_path.display()
+                )
+            })?;
+            WatershedGroundwaterRoutingAuthority::linear_reservoir(bftharea)
+                .map_err(|error| format!("CLIWAT-E-048 invalid gwcoeff authority: {error}"))
+        }
+        observed => Err(format!(
+            "CLIWAT-E-048 gwcoeff lr_bf must be 0 or 1, observed {observed}"
+        )),
+    }
 }
 
 fn validate_watershed_runfile_applicability(

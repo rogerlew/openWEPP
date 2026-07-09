@@ -311,4 +311,5 @@ following:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-07-09` | `0.1.1` | Codex | M-T2 closure amendment: generated `gwbfv`/`gwdsv` HBP payload fields are consumed as fixed-position scaled volumes under `SC-INFILE-HBP-001` v0.2.2; watershed/channel routing must use generated HBP baseflow under `lr_bf=1`, keep `cbase` exclusive to `lr_bf=0`, and evaluate `bftharea` against contributing area hectares before adding generated baseflow to the channel branch. |
 | `2026-07-08` | `0.1.0` | Codex | Initial groundwater/baseflow process authority for M-T2A, binding Srivastava linear-reservoir equations, pinned baseline code maps, parser handoff, Lane D boundary obligations, and M-T2B test-vector handoff. |

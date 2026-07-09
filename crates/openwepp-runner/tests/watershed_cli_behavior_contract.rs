@@ -424,6 +424,38 @@ fn wshedw7r_p102_sediment_active_fixture_publishes_nonzero_sediment_and_jobs_ide
 }
 
 #[test]
+fn hbp_latest_event_payload_exposes_groundwater_baseflow_and_deep_seepage() {
+    let run_dir = build_watershed_fixture_dir("hbp_groundwater_payload");
+    let hbp_path = run_dir.join("H1.hbp");
+    let bytes = build_schema1_event_fixture_with_groundwater(1, 1, 2.5, 0.75);
+    fs::write(&hbp_path, bytes).expect("HBP groundwater fixture should be writable");
+
+    let (_, latest_event_payload) = parse_hbp_from_path_with_latest_event_payload(
+        &hbp_path,
+        HbpParseOptions {
+            expected_hillslope_id: Some(1),
+        },
+    )
+    .expect("groundwater HBP fixture should parse");
+    let payload = latest_event_payload.expect("fixture should include EVENT payload");
+
+    assert_relative_close(
+        payload.baseflow_volume_m3,
+        2.5,
+        1.0e-12,
+        1.0e-12,
+        "HBP gwbfv",
+    );
+    assert_relative_close(
+        payload.deep_seepage_volume_m3,
+        0.75,
+        1.0e-12,
+        1.0e-12,
+        "HBP gwdsv",
+    );
+}
+
+#[test]
 #[cfg(unix)]
 fn wshedw2_watershed_cli_rejects_stale_generated_pass_when_child_does_not_publish() {
     let _execution_guard = watershed_execution_lock()
@@ -2429,6 +2461,37 @@ fn build_event_payload(
     total_detachment_kg: f64,
     total_deposition_kg: f64,
 ) -> Vec<u8> {
+    build_event_payload_with_groundwater(
+        nofe,
+        sim_year_index,
+        calendar_year,
+        julian_day,
+        concentration,
+        fraction,
+        peak_runoff_m3_s,
+        duration_seconds,
+        total_detachment_kg,
+        total_deposition_kg,
+        0.0,
+        0.0,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn build_event_payload_with_groundwater(
+    nofe: u16,
+    sim_year_index: u32,
+    calendar_year: i32,
+    julian_day: u16,
+    concentration: f64,
+    fraction: f64,
+    peak_runoff_m3_s: f64,
+    duration_seconds: f64,
+    total_detachment_kg: f64,
+    total_deposition_kg: f64,
+    baseflow_volume_m3: f64,
+    deep_seepage_volume_m3: f64,
+) -> Vec<u8> {
     let nofe = u32::from(nofe);
     let max_layers = 1u32;
 
@@ -2455,8 +2518,8 @@ fn build_event_payload(
     put_f64(&mut payload, concentration);
     put_u32(&mut payload, 1);
     put_f64(&mut payload, fraction);
-    put_i64(&mut payload, 0);
-    put_i64(&mut payload, 0);
+    put_i64(&mut payload, scaled_i64(baseflow_volume_m3));
+    put_i64(&mut payload, scaled_i64(deep_seepage_volume_m3));
 
     for state_id in REQUIRED_STATE_IDS {
         payload.extend_from_slice(&build_state_entry(*state_id, nofe, max_layers));
@@ -2513,6 +2576,56 @@ fn build_schema1_event_fixture(
         duration_seconds,
         total_detachment_kg,
         total_deposition_kg,
+    );
+    let payload_crc = crc32c(&payload);
+
+    let directory_start = file.len();
+    let directory_len = 4 + 27;
+    let payload_offset = directory_start + directory_len;
+    let mut directory = Vec::new();
+    put_u32(&mut directory, 1);
+    put_u32(&mut directory, 1);
+    put_i32(&mut directory, 2004);
+    put_u16(&mut directory, 1);
+    put_u8(&mut directory, 2);
+    put_u64(&mut directory, payload_offset as u64);
+    put_u32(&mut directory, payload.len() as u32);
+    put_u32(&mut directory, payload_crc);
+
+    file.extend_from_slice(&directory);
+    file.extend_from_slice(&payload);
+
+    let directory_crc = crc32c(&directory);
+    put_u32(&mut file, directory_crc);
+    let file_crc_pos = file.len();
+    put_u32(&mut file, 0);
+    put_u32(&mut file, 1);
+    file.extend_from_slice(FOOTER_MAGIC);
+    let file_crc = crc32c(&file);
+    put_u32_at(&mut file, file_crc_pos, file_crc);
+    file
+}
+
+fn build_schema1_event_fixture_with_groundwater(
+    hillslope_id: u32,
+    nofe: u16,
+    baseflow_volume_m3: f64,
+    deep_seepage_volume_m3: f64,
+) -> Vec<u8> {
+    let mut file = append_common_prefix(SUPPORTED_MAJOR_V1, 0, hillslope_id, nofe, 1, 2004, 1);
+    let payload = build_event_payload_with_groundwater(
+        nofe,
+        1,
+        2004,
+        1,
+        0.25,
+        1.0,
+        5.0,
+        4.0,
+        1_800.0,
+        1_200.0,
+        baseflow_volume_m3,
+        deep_seepage_volume_m3,
     );
     let payload_crc = crc32c(&payload);
 

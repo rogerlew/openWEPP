@@ -98,6 +98,13 @@ struct Ws20IncomingPeakPartition {
     hourly_sediment_inlet_kg: [f64; 24],
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub(crate) struct Ws10ChannelBaseflowPartition {
+    pub peak_m3_s: f64,
+    pub volume_m3: f64,
+    pub deep_seepage_m3: f64,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 #[allow(clippy::struct_field_names)]
 struct Ws20SegmentRoutingDiagnostics {

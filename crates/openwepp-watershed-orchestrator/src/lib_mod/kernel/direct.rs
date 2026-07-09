@@ -93,14 +93,9 @@ impl Ws10ChannelImpoundmentKernel {
             return Err(Self::domain_violation(node_class, "routing_gain", routing_gain));
         }
 
-        let baseflow_peak = cbase * nchnum * (1.0 + conductivity * dtchr);
-        if !baseflow_peak.is_finite() || baseflow_peak < 0.0 {
-            return Err(Self::domain_violation(
-                node_class,
-                "baseflow_peak",
-                baseflow_peak,
-            ));
-        }
+        let channel_baseflow =
+            Self::assemble_direct_channel_baseflow(input, node_class, dtchr, cbase, nchnum, conductivity)?;
+        let baseflow_peak = channel_baseflow.peak_m3_s;
 
         let available_peak = incoming_peak + baseflow_peak;
         if !available_peak.is_finite() || available_peak < 0.0 {
@@ -142,7 +137,7 @@ impl Ws10ChannelImpoundmentKernel {
         }
 
         let channel_runoff_volume_m3 =
-            Self::require_non_negative_computed(node_class, "rofc", baseflow_peak * dtchr)?;
+            Self::require_non_negative_computed(node_class, "rofc", channel_baseflow.volume_m3)?;
         let ws11_case_id =
             if rvolon <= WS10_ZERO_THRESHOLD && channel_runoff_volume_m3 <= WS10_ZERO_THRESHOLD {
                 1_u32
@@ -353,6 +348,8 @@ impl Ws10ChannelImpoundmentKernel {
             runoff_volume_m3: roff,
             peak_discharge_m3_s: qpo,
             duration_seconds: durrof,
+            channel_baseflow_m3: channel_baseflow.volume_m3,
+            groundwater_deep_seepage_m3: channel_baseflow.deep_seepage_m3,
             sediment_yield_kg: sediment_state.qsed_kg_s,
             wave_state: routed_wave_state,
             sediment_state,
@@ -764,6 +761,165 @@ impl Ws10ChannelImpoundmentKernel {
                 .hillslope_duration_s
                 .max(partition.dependency_duration_s),
         ))
+    }
+
+    fn assemble_direct_channel_baseflow(
+        input: &DirectWatershedKernelInput<'_>,
+        node_class: Ws10NodeClass,
+        dtchr: f64,
+        cbase: f64,
+        nchnum: f64,
+        conductivity: f64,
+    ) -> Result<Ws10ChannelBaseflowPartition, Ws10GuardError> {
+        match input.frame.routing_globals.groundwater_baseflow {
+            WatershedGroundwaterRoutingAuthority::Disabled => {
+                let generated = Self::generated_groundwater_from_step(input, node_class)?;
+                if generated.volume_m3 > WS10_ZERO_THRESHOLD
+                    || generated.deep_seepage_m3 > WS10_ZERO_THRESHOLD
+                {
+                    return Err(Self::domain_violation(
+                        node_class,
+                        "groundwater_without_gwcoeff_authority",
+                        generated.volume_m3.max(generated.deep_seepage_m3),
+                    ));
+                }
+                let baseflow_peak = cbase * nchnum * (1.0 + conductivity * dtchr);
+                if !baseflow_peak.is_finite() || baseflow_peak < 0.0 {
+                    return Err(Self::domain_violation(
+                        node_class,
+                        "baseflow_peak",
+                        baseflow_peak,
+                    ));
+                }
+                Ok(Ws10ChannelBaseflowPartition {
+                    peak_m3_s: baseflow_peak,
+                    volume_m3: baseflow_peak * dtchr,
+                    deep_seepage_m3: 0.0,
+                })
+            }
+            WatershedGroundwaterRoutingAuthority::LinearReservoir {
+                baseflow_threshold_area_ha,
+            } => {
+                let generated = Self::generated_groundwater_from_step(input, node_class)?;
+                let side_area_ha = Self::contributor_area_ha(input, node_class)?;
+                let side_baseflow_m3 = if side_area_ha >= baseflow_threshold_area_ha {
+                    generated.volume_m3
+                } else {
+                    0.0
+                };
+                let dependency_baseflow_m3 =
+                    Self::dependency_channel_baseflow_m3(input, node_class)?;
+                let volume_m3 = side_baseflow_m3 + dependency_baseflow_m3;
+                let peak_m3_s = volume_m3 / 86_400.0;
+                if !peak_m3_s.is_finite() || peak_m3_s < 0.0 {
+                    return Err(Self::domain_violation(
+                        node_class,
+                        "generated_baseflow_peak",
+                        peak_m3_s,
+                    ));
+                }
+                Ok(Ws10ChannelBaseflowPartition {
+                    peak_m3_s,
+                    volume_m3,
+                    deep_seepage_m3: generated.deep_seepage_m3
+                        + Self::dependency_channel_deep_seepage_m3(input, node_class)?,
+                })
+            }
+        }
+    }
+
+    fn generated_groundwater_from_step(
+        input: &DirectWatershedKernelInput<'_>,
+        node_class: Ws10NodeClass,
+    ) -> Result<Ws10ChannelBaseflowPartition, Ws10GuardError> {
+        let mut volume_m3 = 0.0_f64;
+        let mut deep_seepage_m3 = 0.0_f64;
+        for &hillslope_id in &input.step.contributor_hillslopes {
+            let contribution = input
+                .frame
+                .hillslope_contributions
+                .get(&hillslope_id)
+                .ok_or_else(|| Self::missing_required(node_class, "hillslope_contribution"))?;
+            Self::direct_require_range(
+                node_class,
+                "hillslope_generated_baseflow_m3",
+                contribution.generated_baseflow_m3,
+                Some(0.0),
+                None,
+            )?;
+            Self::direct_require_range(
+                node_class,
+                "hillslope_groundwater_deep_seepage_m3",
+                contribution.groundwater_deep_seepage_m3,
+                Some(0.0),
+                None,
+            )?;
+            volume_m3 += contribution.generated_baseflow_m3;
+            deep_seepage_m3 += contribution.groundwater_deep_seepage_m3;
+        }
+        Ok(Ws10ChannelBaseflowPartition {
+            peak_m3_s: 0.0,
+            volume_m3,
+            deep_seepage_m3,
+        })
+    }
+
+    fn contributor_area_ha(
+        input: &DirectWatershedKernelInput<'_>,
+        node_class: Ws10NodeClass,
+    ) -> Result<f64, Ws10GuardError> {
+        let mut area_m2 = 0.0_f64;
+        for &hillslope_id in &input.step.contributor_hillslopes {
+            let contribution = input
+                .frame
+                .hillslope_contributions
+                .get(&hillslope_id)
+                .ok_or_else(|| Self::missing_required(node_class, "hillslope_contribution"))?;
+            let Some(contribution_area_m2) = contribution.area_m2 else {
+                return Err(Self::missing_required(node_class, "hillslope_area_m2"));
+            };
+            Self::direct_require_range(
+                node_class,
+                "hillslope_area_m2",
+                contribution_area_m2,
+                Some(WS10_ZERO_THRESHOLD),
+                None,
+            )?;
+            area_m2 += contribution_area_m2;
+        }
+        Ok(area_m2 / 10_000.0)
+    }
+
+    fn dependency_channel_baseflow_m3(
+        input: &DirectWatershedKernelInput<'_>,
+        node_class: Ws10NodeClass,
+    ) -> Result<f64, Ws10GuardError> {
+        let mut baseflow_m3 = 0.0_f64;
+        for dependency in &input.step.dependency_nodes {
+            let state = input
+                .frame
+                .routed_channels
+                .get(&dependency.id)
+                .ok_or_else(|| Self::missing_required(node_class, "dependency_channel_state"))?;
+            baseflow_m3 += state.channel_baseflow_m3;
+        }
+        Ok(baseflow_m3)
+    }
+
+    fn dependency_channel_deep_seepage_m3(
+        input: &DirectWatershedKernelInput<'_>,
+        node_class: Ws10NodeClass,
+    ) -> Result<f64, Ws10GuardError> {
+        let mut deep_seepage_m3 = 0.0_f64;
+        for dependency in &input.step.dependency_nodes {
+            let state = input
+                .frame
+                .routed_channels
+                .get(&dependency.id)
+                .ok_or_else(|| Self::missing_required(node_class, "dependency_channel_state"))?;
+            deep_seepage_m3 += state.groundwater_deep_seepage_m3;
+        }
+        Ok(deep_seepage_m3)
     }
 
     /// INV-ROUTE-005(a) eligibility: every contributor carries the paired

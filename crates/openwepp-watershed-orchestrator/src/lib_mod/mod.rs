@@ -11,8 +11,9 @@ pub use kernel::Ws10ChannelImpoundmentKernel;
 pub use network_frame::{
     HillslopeContribution, RoutedChannelSedimentState, RoutedChannelState, RoutedChannelWaveState,
     RoutedImpoundmentState, WatershedChannelControlRecord, WatershedChannelRatingCurveControl,
-    WatershedChannelSegmentPoint, WatershedImpoundmentControlRecord, WatershedNetworkFrame,
-    WatershedNetworkFrameError, WatershedPublicationFrame, WatershedRoutingGlobals,
+    WatershedChannelSegmentPoint, WatershedGroundwaterRoutingAuthority,
+    WatershedImpoundmentControlRecord, WatershedNetworkFrame, WatershedNetworkFrameError,
+    WatershedPublicationFrame, WatershedRoutingGlobals,
 };
 pub use types::{
     DispatchDiagnostic, DispatchDiagnosticCode, DispatchStep, MESSAGE_CYCLE_DETECTED,

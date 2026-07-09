@@ -476,6 +476,8 @@ fn build_hbp_output_from_direct_publication_summary(
                     .or(sediment_row.erosion.total_deposition_kg),
             )?,
         },
+        baseflow_volume_m3: event_row.subsurface.groundwater_baseflow_m3,
+        deep_seepage_volume_m3: event_row.subsurface.groundwater_deep_seepage_m3,
         sediment_concentration_kg_m3: surfaces.sediment_concentration_classes,
         particle_flow_fraction: surfaces.particle_flow_fraction,
         particle_diameter_m: surfaces.particle_diameter_m,

@@ -4,8 +4,8 @@ use openwepp_topology::TopologyNodeKind;
 
 use super::super::network_frame::{
     HillslopeContribution, RoutedChannelSedimentState, RoutedChannelState, RoutedChannelWaveState,
-    RoutedImpoundmentState, WatershedChannelControlRecord, WatershedImpoundmentControlRecord,
-    WatershedNetworkFrame,
+    RoutedImpoundmentState, WatershedChannelControlRecord, WatershedGroundwaterRoutingAuthority,
+    WatershedImpoundmentControlRecord, WatershedNetworkFrame,
 };
 use super::super::types::DispatchStep;
 

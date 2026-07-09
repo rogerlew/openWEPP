@@ -300,7 +300,8 @@ fn parse_runoff_event_payload(
         (Vec::new(), Vec::new())
     };
 
-    read_payload_i64_values(cursor, 2)?;
+    let baseflow_volume_m3 = scaled_i64_to_nonnegative_volume(read_payload_i64(cursor)?)?;
+    let deep_seepage_volume_m3 = scaled_i64_to_nonnegative_volume(read_payload_i64(cursor)?)?;
 
     Ok(Some(HbpLatestEventPayload {
         sim_year_index: header.sim_year_index,
@@ -310,12 +311,25 @@ fn parse_runoff_event_payload(
         peak_runoff_m3_s,
         total_detachment_kg: scaled_i64_to_f64(total_detachment_scaled)? * SCALE_I64,
         total_deposition_kg: scaled_i64_to_f64(total_deposition_scaled)? * SCALE_I64,
+        baseflow_volume_m3,
+        deep_seepage_volume_m3,
         particle_diameter_m: layout.particle_diameter_m.clone(),
         sediment_concentration_kg_m3,
         particle_flow_fraction,
         hourly_runoff_volume_m3,
         hourly_sediment_mass_kg,
     }))
+}
+
+fn scaled_i64_to_nonnegative_volume(value: i64) -> Result<f64, HbpParseError> {
+    let volume = scaled_i64_to_f64(value)? * SCALE_I64;
+    if !volume.is_finite() || volume < 0.0 {
+        return Err(format_violation(
+            HbpFormatErrorCode::HbpE013,
+            "groundwater/baseflow payload volumes must be finite and non-negative",
+        ));
+    }
+    Ok(volume)
 }
 
 /// SC-INFILE-HBP-001 §3a hourly-surface time base (24 × 1 h).
