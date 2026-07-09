@@ -3,7 +3,7 @@
 Status: Active
 Scope: all end-user documentation under `usersum/`
 Owner: maintainers (Claude Code maintains this guide)
-Last updated: 2026-07-01
+Last updated: 2026-07-09
 
 `usersum/` is openWEPP's end-user documentation, vendored into wepppy's
 in-app documentation engine (manifest-driven, role-gated, rendered in a
@@ -153,6 +153,16 @@ reader-facing form:
 - **References:** author–date in text, APA-style list under `## References`,
   ordered alphabetically. Cite the published source, not the work package
   that implemented it.
+- **Versioning (narrative documents):** science/authority narratives carry
+  `*Version X.Y — YYYY-MM-DD*` on the line under the title, and close with
+  a `## Revision Log` section as the document's final section (after
+  `## References`): a `Version | Date | Changes` table, oldest row first,
+  one row per landed revision with a one-sentence summary of what changed
+  and why (an operator review, a model change, a validation update). Bump
+  the minor version for any content change; the header line always matches
+  the newest log row. Scientific reviewers cite these documents, so they
+  need to know which version they read. Reference and index pages are
+  exempt — they version with the binaries and the tree.
 - **Headings and terms are the search surface.** The vendored engine is
   full-text-indexed; put the words a user would search for (the binary name,
   the process name, the observable) in headings and first sentences.
@@ -190,5 +200,7 @@ Before landing a usersum document (human or agent):
       behavior labeled (§5).
 - [ ] CLI examples verified against the current release binary (§5).
 - [ ] No links outside `usersum/` (§6).
+- [ ] Narrative docs: version line under the title matches the newest
+      `## Revision Log` row, and the log has a row for this change (§6).
 - [ ] Read one section aloud. If it sounds like it is reassuring you rather
       than telling you something, rewrite it.
