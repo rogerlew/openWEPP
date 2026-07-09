@@ -4,6 +4,136 @@ use crate::runtime_inputs::{
 };
 use openwepp_topology::TopologyNodeKey;
 
+#[derive(Debug, Clone, Copy)]
+struct Ws11DirectChannelContext<'input> {
+    node_id: u32,
+    control: &'input WatershedChannelControlRecord,
+    dtchr: f64,
+    nchnum: f64,
+    cbase: f64,
+    ipeak_branch: Ws11IpeakBranch,
+    roughness: f64,
+    control_slope: f64,
+    conductivity: f64,
+    sediment_controls: Ws15ChannelSedimentControls,
+    nslpts: usize,
+    channel_length: f64,
+    ishape: u32,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+struct Ws11DirectChannelHydrology {
+    peak_partition: Ws20IncomingPeakPartition,
+    channel_baseflow: Ws10ChannelBaseflowPartition,
+    incoming_peak: f64,
+    baseflow_peak: f64,
+    available_peak: f64,
+    routing_gain: f64,
+    watdur: f64,
+    runvol_case: f64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+struct Ws11DirectChannelRunon {
+    watdur: f64,
+    runvol_case: f64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+struct Ws11DirectChannelPeak {
+    qpo: f64,
+    wave_state: Option<Ws11WaveRoutingState>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+struct Ws11DirectChannelRunoff {
+    roff: f64,
+    durrof: f64,
+}
+
+#[derive(Debug, Default, Clone, Copy, PartialEq)]
+struct Ws20RunonTotals {
+    peak_cms: f64,
+    volume_m3: f64,
+    duration_s: f64,
+}
+
+#[derive(Debug, Clone, Copy)]
+struct Ws12DirectImpoundmentContext<'input> {
+    node_id: u32,
+    control: &'input WatershedImpoundmentControlRecord,
+    stage_h: f64,
+    hfull: f64,
+    deltat: f64,
+    qinf: f64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+struct Ws12DirectImpoundmentOutflow {
+    qo: f64,
+    durout: f64,
+    hnext: f64,
+}
+
+#[derive(Debug, Clone, Copy)]
+enum Ws19SedimentIngress {
+    Hillslope,
+    DependencyChannel,
+}
+
+impl Ws19SedimentIngress {
+    const fn fraction_sum_label(self) -> &'static str {
+        match self {
+            Self::Hillslope => "hillslope_particle_fraction_sum",
+            Self::DependencyChannel => "dependency_particle_fraction_sum",
+        }
+    }
+}
+
+#[derive(Debug, Default, Clone, PartialEq)]
+struct Ws19SedimentAccumulator {
+    incoming_sediment_mass_kg: f64,
+    class_mass_kg: Vec<f64>,
+    class_diameter_mass_m: Vec<f64>,
+    top_class_mass_kg: Vec<f64>,
+    lateral_class_mass_kg: Vec<f64>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+struct Ws19ActiveSedimentClasses {
+    class_mass_kg: Vec<f64>,
+    top_class_mass_kg: Vec<f64>,
+    lateral_class_mass_kg: Vec<f64>,
+    particle_diameters_m: Vec<f64>,
+    class_numbers: Vec<usize>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+struct Ws19RoutedSedimentClasses {
+    outgoing_class_mass_kg: Vec<f64>,
+    diagnostics: Ws20SegmentRoutingDiagnostics,
+    widb_points_ft: Option<Vec<f64>>,
+    wida_points_ft: Option<Vec<f64>>,
+}
+
+#[derive(Debug, Clone, Copy)]
+struct Ws19SedimentRoutingContext<'input> {
+    control: &'input WatershedChannelControlRecord,
+    node_class: Ws10NodeClass,
+    event_duration: f64,
+    qpo: f64,
+    roughness: f64,
+    sediment_controls: Ws15ChannelSedimentControls,
+    nslpts: usize,
+    peak_partition: Ws20IncomingPeakPartition,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+struct Ws19TerminalSedimentHydraulics {
+    flow_width_ft: f64,
+    effsh: f64,
+}
+
 impl Ws10ChannelImpoundmentKernel {
     pub(crate) fn run_direct_watershed_node(
         input: &DirectWatershedKernelInput<'_>,
@@ -41,10 +171,37 @@ impl Ws10ChannelImpoundmentKernel {
         status
     }
 
-    #[allow(clippy::too_many_lines, clippy::similar_names)]
     fn run_direct_channel_node(
         input: &DirectWatershedKernelInput<'_>,
     ) -> Result<DirectWatershedKernelOutput, Ws10GuardError> {
+        let context = Self::read_direct_channel_context(input)?;
+        let hydrology = Self::assemble_direct_channel_hydrology(input, &context)?;
+        let peak = Self::compute_direct_channel_peak(input, &context, &hydrology)?;
+        let runoff = Self::compute_direct_channel_runoff(&context, &hydrology, peak.qpo)?;
+        let sediment_publication = Self::assemble_direct_incoming_sediment_load_and_capacity(
+            input,
+            context.control,
+            Ws10NodeClass::Channel,
+            hydrology.watdur,
+            peak.qpo,
+            context.roughness,
+            context.sediment_controls,
+            context.nslpts,
+            hydrology.peak_partition,
+        )?;
+
+        Ok(Self::direct_channel_output(
+            &context,
+            &hydrology,
+            peak,
+            runoff,
+            sediment_publication,
+        ))
+    }
+
+    fn read_direct_channel_context<'frame>(
+        input: &DirectWatershedKernelInput<'frame>,
+    ) -> Result<Ws11DirectChannelContext<'frame>, Ws10GuardError> {
         let node_class = Ws10NodeClass::Channel;
         let node_id = input.step.node.id;
         let globals = &input.frame.routing_globals;
@@ -85,16 +242,48 @@ impl Ws10ChannelImpoundmentKernel {
             .parse::<u32>()
             .map_err(|_| Self::domain_violation(node_class, "ishape", sediment_controls.ishape))?;
 
+        Ok(Ws11DirectChannelContext {
+            node_id,
+            control,
+            dtchr,
+            nchnum,
+            cbase,
+            ipeak_branch,
+            roughness,
+            control_slope,
+            conductivity,
+            sediment_controls,
+            nslpts,
+            channel_length,
+            ishape,
+        })
+    }
+
+    fn assemble_direct_channel_hydrology(
+        input: &DirectWatershedKernelInput<'_>,
+        context: &Ws11DirectChannelContext<'_>,
+    ) -> Result<Ws11DirectChannelHydrology, Ws10GuardError> {
+        let node_class = Ws10NodeClass::Channel;
         let peak_partition = Self::assemble_direct_incoming_peak_partition(input, node_class)?;
         let incoming_peak = peak_partition.hillslope_peak_cms + peak_partition.dependency_peak_cms;
 
-        let routing_gain = (1.0 + control_slope) / (1.0 + roughness);
+        let routing_gain = (1.0 + context.control_slope) / (1.0 + context.roughness);
         if !routing_gain.is_finite() || routing_gain <= 0.0 {
-            return Err(Self::domain_violation(node_class, "routing_gain", routing_gain));
+            return Err(Self::domain_violation(
+                node_class,
+                "routing_gain",
+                routing_gain,
+            ));
         }
 
-        let channel_baseflow =
-            Self::assemble_direct_channel_baseflow(input, node_class, dtchr, cbase, nchnum, conductivity)?;
+        let channel_baseflow = Self::assemble_direct_channel_baseflow(
+            input,
+            node_class,
+            context.dtchr,
+            context.cbase,
+            context.nchnum,
+            context.conductivity,
+        )?;
         let baseflow_peak = channel_baseflow.peak_m3_s;
 
         let available_peak = incoming_peak + baseflow_peak;
@@ -106,6 +295,27 @@ impl Ws10ChannelImpoundmentKernel {
             ));
         }
 
+        let runon =
+            Self::compute_direct_channel_runon(peak_partition, channel_baseflow, context.dtchr)?;
+
+        Ok(Ws11DirectChannelHydrology {
+            peak_partition,
+            channel_baseflow,
+            incoming_peak,
+            baseflow_peak,
+            available_peak,
+            routing_gain,
+            watdur: runon.watdur,
+            runvol_case: runon.runvol_case,
+        })
+    }
+
+    fn compute_direct_channel_runon(
+        peak_partition: Ws20IncomingPeakPartition,
+        channel_baseflow: Ws10ChannelBaseflowPartition,
+        dtchr: f64,
+    ) -> Result<Ws11DirectChannelRunon, Ws10GuardError> {
+        let node_class = Ws10NodeClass::Channel;
         let rvolat = Self::require_non_negative_computed(
             node_class,
             "rvolat",
@@ -167,133 +377,220 @@ impl Ws10ChannelImpoundmentKernel {
         let _ = Self::require_non_negative_computed(node_class, "qci", qci)?;
         let _ = Self::require_non_negative_computed(node_class, "qcf", qcf)?;
 
+        Ok(Ws11DirectChannelRunon {
+            watdur,
+            runvol_case,
+        })
+    }
+
+    fn compute_direct_channel_peak(
+        input: &DirectWatershedKernelInput<'_>,
+        context: &Ws11DirectChannelContext<'_>,
+        hydrology: &Ws11DirectChannelHydrology,
+    ) -> Result<Ws11DirectChannelPeak, Ws10GuardError> {
+        let node_class = Ws10NodeClass::Channel;
         let prior_wave = input
             .frame
             .routed_channels
-            .get(&node_id)
+            .get(&context.node_id)
             .and_then(|state| state.wave_state.as_ref());
-        let mut wave_state: Option<Ws11WaveRoutingState> = None;
-        let qpo = if available_peak <= WS10_ZERO_THRESHOLD {
-            0.0
+        let peak = if hydrology.available_peak <= WS10_ZERO_THRESHOLD {
+            Ws11DirectChannelPeak {
+                qpo: 0.0,
+                wave_state: None,
+            }
         } else {
-            match ipeak_branch {
+            match context.ipeak_branch {
                 Ws11IpeakBranch::Rational => {
-                    if runvol_case <= 0.001 {
-                        0.0
-                    } else {
-                        (runvol_case / watdur) * routing_gain
-                    }
+                    Self::compute_direct_channel_rational_peak(hydrology)
                 }
                 Ws11IpeakBranch::Creams => {
-                    if runvol_case <= 0.001 {
-                        0.0
-                    } else {
-                        let creams_attenuation = 1.0 + (conductivity * dtchr);
-                        if !creams_attenuation.is_finite() || creams_attenuation <= 0.0 {
-                            return Err(Self::domain_violation(
-                                node_class,
-                                "creams_attenuation",
-                                creams_attenuation,
-                            ));
-                        }
-
-                        let creams_gain = (routing_gain / creams_attenuation).sqrt();
-                        if !creams_gain.is_finite() || creams_gain <= 0.0 {
-                            return Err(Self::domain_violation(
-                                node_class,
-                                "creams_gain",
-                                creams_gain,
-                            ));
-                        }
-
-                        (runvol_case / watdur) * creams_gain
-                    }
+                    Self::compute_direct_channel_creams_peak(context, hydrology)?
                 }
                 Ws11IpeakBranch::KinematicWave => {
-                    if runvol_case <= 0.001 && incoming_peak <= WS10_ZERO_THRESHOLD {
-                        0.0
-                    } else {
-                        let state = Self::compute_kinematic_wave_state(
-                            node_class,
-                            roughness,
-                            conductivity,
-                            nchnum,
-                            routing_gain,
-                            incoming_peak,
-                            available_peak,
-                            baseflow_peak,
-                            dtchr,
-                            watdur,
-                        )?;
-                        let q1 = state.q1;
-                        wave_state = Some(state);
-                        q1
-                    }
+                    Self::compute_direct_channel_kinematic_peak(context, hydrology)?
                 }
                 Ws11IpeakBranch::MuskingumCunge => {
-                    if runvol_case <= 0.001 && incoming_peak <= WS10_ZERO_THRESHOLD {
-                        0.0
-                    } else {
-                        let state = Self::compute_muskingum_cunge_state(
-                            node_class,
-                            roughness,
-                            control_slope,
-                            conductivity,
-                            nchnum,
-                            available_peak,
-                            baseflow_peak,
-                            dtchr,
-                            watdur,
-                            prior_wave.map(|state| state.qin_m3_s),
-                            prior_wave.map(|state| state.q1_m3_s),
-                        )?;
-                        let q1 = state.q1;
-                        wave_state = Some(state);
-                        q1
-                    }
+                    Self::compute_direct_channel_muskingum_peak(context, hydrology, prior_wave)?
                 }
-                Ws11IpeakBranch::MuskingumCungeVariable => {
-                    if runvol_case <= 0.001 && incoming_peak <= WS10_ZERO_THRESHOLD {
-                        0.0
-                    } else {
-                        let state = Self::compute_variable_muskingum_cunge_state(
-                            node_class,
-                            roughness,
-                            control_slope,
-                            sediment_controls.ctlz,
-                            sediment_controls.chnz,
-                            ishape,
-                            channel_length,
-                            available_peak,
-                            baseflow_peak,
-                            dtchr,
-                            watdur,
-                            prior_wave.map(|state| state.qin_m3_s),
-                            prior_wave.map(|state| state.q1_m3_s),
-                        )?;
-                        let q1 = state.q1;
-                        wave_state = Some(state);
-                        q1
-                    }
-                }
+                Ws11IpeakBranch::MuskingumCungeVariable => Self::compute_direct_channel_variable_muskingum_peak(
+                    context,
+                    hydrology,
+                    prior_wave,
+                )?,
             }
         };
 
-        if !qpo.is_finite() || qpo < 0.0 {
-            return Err(Self::domain_violation(node_class, "qpo", qpo));
+        if !peak.qpo.is_finite() || peak.qpo < 0.0 {
+            return Err(Self::domain_violation(node_class, "qpo", peak.qpo));
         }
 
+        Ok(peak)
+    }
+
+    fn compute_direct_channel_rational_peak(
+        hydrology: &Ws11DirectChannelHydrology,
+    ) -> Ws11DirectChannelPeak {
+        let qpo = if hydrology.runvol_case <= 0.001 {
+            0.0
+        } else {
+            (hydrology.runvol_case / hydrology.watdur) * hydrology.routing_gain
+        };
+        Ws11DirectChannelPeak {
+            qpo,
+            wave_state: None,
+        }
+    }
+
+    fn compute_direct_channel_creams_peak(
+        context: &Ws11DirectChannelContext<'_>,
+        hydrology: &Ws11DirectChannelHydrology,
+    ) -> Result<Ws11DirectChannelPeak, Ws10GuardError> {
+        let node_class = Ws10NodeClass::Channel;
+        if hydrology.runvol_case <= 0.001 {
+            return Ok(Ws11DirectChannelPeak {
+                qpo: 0.0,
+                wave_state: None,
+            });
+        }
+
+        let creams_attenuation = 1.0 + (context.conductivity * context.dtchr);
+        if !creams_attenuation.is_finite() || creams_attenuation <= 0.0 {
+            return Err(Self::domain_violation(
+                node_class,
+                "creams_attenuation",
+                creams_attenuation,
+            ));
+        }
+
+        let creams_gain = (hydrology.routing_gain / creams_attenuation).sqrt();
+        if !creams_gain.is_finite() || creams_gain <= 0.0 {
+            return Err(Self::domain_violation(
+                node_class,
+                "creams_gain",
+                creams_gain,
+            ));
+        }
+
+        Ok(Ws11DirectChannelPeak {
+            qpo: (hydrology.runvol_case / hydrology.watdur) * creams_gain,
+            wave_state: None,
+        })
+    }
+
+    fn compute_direct_channel_kinematic_peak(
+        context: &Ws11DirectChannelContext<'_>,
+        hydrology: &Ws11DirectChannelHydrology,
+    ) -> Result<Ws11DirectChannelPeak, Ws10GuardError> {
+        let node_class = Ws10NodeClass::Channel;
+        if hydrology.runvol_case <= 0.001 && hydrology.incoming_peak <= WS10_ZERO_THRESHOLD {
+            return Ok(Ws11DirectChannelPeak {
+                qpo: 0.0,
+                wave_state: None,
+            });
+        }
+
+        let state = Self::compute_kinematic_wave_state(
+            node_class,
+            context.roughness,
+            context.conductivity,
+            context.nchnum,
+            hydrology.routing_gain,
+            hydrology.incoming_peak,
+            hydrology.available_peak,
+            hydrology.baseflow_peak,
+            context.dtchr,
+            hydrology.watdur,
+        )?;
+        Ok(Ws11DirectChannelPeak {
+            qpo: state.q1,
+            wave_state: Some(state),
+        })
+    }
+
+    fn compute_direct_channel_muskingum_peak(
+        context: &Ws11DirectChannelContext<'_>,
+        hydrology: &Ws11DirectChannelHydrology,
+        prior_wave: Option<&RoutedChannelWaveState>,
+    ) -> Result<Ws11DirectChannelPeak, Ws10GuardError> {
+        let node_class = Ws10NodeClass::Channel;
+        if hydrology.runvol_case <= 0.001 && hydrology.incoming_peak <= WS10_ZERO_THRESHOLD {
+            return Ok(Ws11DirectChannelPeak {
+                qpo: 0.0,
+                wave_state: None,
+            });
+        }
+
+        let state = Self::compute_muskingum_cunge_state(
+            node_class,
+            context.roughness,
+            context.control_slope,
+            context.conductivity,
+            context.nchnum,
+            hydrology.available_peak,
+            hydrology.baseflow_peak,
+            context.dtchr,
+            hydrology.watdur,
+            prior_wave.map(|state| state.qin_m3_s),
+            prior_wave.map(|state| state.q1_m3_s),
+        )?;
+        Ok(Ws11DirectChannelPeak {
+            qpo: state.q1,
+            wave_state: Some(state),
+        })
+    }
+
+    fn compute_direct_channel_variable_muskingum_peak(
+        context: &Ws11DirectChannelContext<'_>,
+        hydrology: &Ws11DirectChannelHydrology,
+        prior_wave: Option<&RoutedChannelWaveState>,
+    ) -> Result<Ws11DirectChannelPeak, Ws10GuardError> {
+        let node_class = Ws10NodeClass::Channel;
+        if hydrology.runvol_case <= 0.001 && hydrology.incoming_peak <= WS10_ZERO_THRESHOLD {
+            return Ok(Ws11DirectChannelPeak {
+                qpo: 0.0,
+                wave_state: None,
+            });
+        }
+
+        let state = Self::compute_variable_muskingum_cunge_state(
+            node_class,
+            context.roughness,
+            context.control_slope,
+            context.sediment_controls.ctlz,
+            context.sediment_controls.chnz,
+            context.ishape,
+            context.channel_length,
+            hydrology.available_peak,
+            hydrology.baseflow_peak,
+            context.dtchr,
+            hydrology.watdur,
+            prior_wave.map(|state| state.qin_m3_s),
+            prior_wave.map(|state| state.q1_m3_s),
+        )?;
+        Ok(Ws11DirectChannelPeak {
+            qpo: state.q1,
+            wave_state: Some(state),
+        })
+    }
+
+    fn compute_direct_channel_runoff(
+        context: &Ws11DirectChannelContext<'_>,
+        hydrology: &Ws11DirectChannelHydrology,
+        qpo: f64,
+    ) -> Result<Ws11DirectChannelRunoff, Ws10GuardError> {
+        let node_class = Ws10NodeClass::Channel;
         let roff = if matches!(
-            ipeak_branch,
+            context.ipeak_branch,
             Ws11IpeakBranch::Rational | Ws11IpeakBranch::Creams
         ) {
-            if runvol_case <= 0.001 {
+            if hydrology.runvol_case <= 0.001 {
                 0.0
             } else {
-                runvol_case
+                hydrology.runvol_case
             }
         } else {
-            qpo * watdur
+            qpo * hydrology.watdur
         };
         if !roff.is_finite() || roff < 0.0 {
             return Err(Self::domain_violation(node_class, "roff", roff));
@@ -308,19 +605,17 @@ impl Ws10ChannelImpoundmentKernel {
             return Err(Self::domain_violation(node_class, "durrof", durrof));
         }
 
-        let sediment_publication = Self::assemble_direct_incoming_sediment_load_and_capacity(
-            input,
-            control,
-            node_class,
-            watdur,
-            qpo,
-            roughness,
-            sediment_controls,
-            nslpts,
-            peak_partition,
-        )?;
+        Ok(Ws11DirectChannelRunoff { roff, durrof })
+    }
 
-        let routed_wave_state = wave_state.map(|state| RoutedChannelWaveState {
+    fn direct_channel_output(
+        context: &Ws11DirectChannelContext<'_>,
+        hydrology: &Ws11DirectChannelHydrology,
+        peak: Ws11DirectChannelPeak,
+        runoff: Ws11DirectChannelRunoff,
+        sediment_publication: Ws19ChannelSedimentPublication,
+    ) -> DirectWatershedKernelOutput {
+        let routed_wave_state = peak.wave_state.map(|state| RoutedChannelWaveState {
             q1_m3_s: state.q1,
             qin_m3_s: state.qin,
             qlat_m3_s: state.qlat,
@@ -343,27 +638,46 @@ impl Ws10ChannelImpoundmentKernel {
             ws21_enddet_segments: sediment_publication.ws21_enddet_segments,
         };
 
-        Ok(DirectWatershedKernelOutput::Channel(Box::new(RoutedChannelState {
-            node_id,
-            runoff_volume_m3: roff,
-            channel_inflow_m3: runvol_case,
-            channel_outflow_m3: roff,
+        DirectWatershedKernelOutput::Channel(Box::new(RoutedChannelState {
+            node_id: context.node_id,
+            runoff_volume_m3: runoff.roff,
+            channel_inflow_m3: hydrology.runvol_case,
+            channel_outflow_m3: runoff.roff,
             channel_storage_m3: 0.0,
-            peak_discharge_m3_s: qpo,
-            duration_seconds: durrof,
-            channel_baseflow_m3: channel_baseflow.volume_m3,
+            peak_discharge_m3_s: peak.qpo,
+            duration_seconds: runoff.durrof,
+            channel_baseflow_m3: hydrology.channel_baseflow.volume_m3,
             channel_loss_m3: 0.0,
-            groundwater_deep_seepage_m3: channel_baseflow.deep_seepage_m3,
+            groundwater_deep_seepage_m3: hydrology.channel_baseflow.deep_seepage_m3,
             sediment_yield_kg: sediment_state.qsed_kg_s,
             wave_state: routed_wave_state,
             sediment_state,
-        })))
+        }))
     }
 
-    #[allow(clippy::too_many_lines)]
     fn run_direct_impoundment_node(
         input: &DirectWatershedKernelInput<'_>,
     ) -> Result<DirectWatershedKernelOutput, Ws10GuardError> {
+        let context = Self::read_direct_impoundment_context(input)?;
+        let (incoming_peak, incoming_duration) =
+            Self::assemble_direct_incoming_peak_and_duration(input, Ws10NodeClass::Impoundment)?;
+        let coefficients = Self::direct_ws12_impoundment_coefficients(context.control)?;
+        let integration_horizon_hours =
+            Self::direct_impoundment_integration_horizon(context.deltat, incoming_duration)?;
+        let outflow = Self::route_direct_impoundment_outflow(
+            &context,
+            incoming_peak,
+            incoming_duration,
+            integration_horizon_hours,
+            &coefficients,
+        )?;
+
+        Ok(Self::direct_impoundment_output(&context, outflow))
+    }
+
+    fn read_direct_impoundment_context<'frame>(
+        input: &DirectWatershedKernelInput<'frame>,
+    ) -> Result<Ws12DirectImpoundmentContext<'frame>, Ws10GuardError> {
         let node_class = Ws10NodeClass::Impoundment;
         let node_id = input.step.node.id;
         let control = input
@@ -384,10 +698,21 @@ impl Ws10ChannelImpoundmentKernel {
         Self::direct_require_range(node_class, "deltat", deltat, Some(WS10_ZERO_THRESHOLD), None)?;
         Self::direct_require_range(node_class, "qinf", qinf, Some(0.0), None)?;
 
-        let (incoming_peak, incoming_duration) =
-            Self::assemble_direct_incoming_peak_and_duration(input, node_class)?;
-        let coefficients = Self::direct_ws12_impoundment_coefficients(control)?;
+        Ok(Ws12DirectImpoundmentContext {
+            node_id,
+            control,
+            stage_h,
+            hfull,
+            deltat,
+            qinf,
+        })
+    }
 
+    fn direct_impoundment_integration_horizon(
+        deltat: f64,
+        incoming_duration: f64,
+    ) -> Result<f64, Ws10GuardError> {
+        let node_class = Ws10NodeClass::Impoundment;
         let incoming_duration_hours = incoming_duration / 3600.0;
         if !incoming_duration_hours.is_finite() || incoming_duration_hours < 0.0 {
             return Err(Self::domain_violation(
@@ -410,20 +735,30 @@ impl Ws10ChannelImpoundmentKernel {
                 integration_horizon_hours,
             ));
         }
+        Ok(integration_horizon_hours)
+    }
 
+    fn route_direct_impoundment_outflow(
+        context: &Ws12DirectImpoundmentContext<'_>,
+        incoming_peak: f64,
+        incoming_duration: f64,
+        integration_horizon_hours: f64,
+        coefficients: &Ws12ImpoundmentCoefficients,
+    ) -> Result<Ws12DirectImpoundmentOutflow, Ws10GuardError> {
+        let node_class = Ws10NodeClass::Impoundment;
         let (hnext, accepted_deltat) = Self::route_impoundment_stage_over_duration(
             node_class,
-            stage_h,
-            hfull,
-            deltat,
+            context.stage_h,
+            context.hfull,
+            context.deltat,
             integration_horizon_hours,
             incoming_peak,
-            qinf,
-            &coefficients,
+            context.qinf,
+            coefficients,
         )?;
 
-        let qo = Self::impoundment_outflow_at_stage(node_class, hnext, &coefficients)?;
-        let continuity_outflow = qo + qinf;
+        let qo = Self::impoundment_outflow_at_stage(node_class, hnext, coefficients)?;
+        let continuity_outflow = qo + context.qinf;
         if !continuity_outflow.is_finite() || continuity_outflow < 0.0 {
             return Err(Self::domain_violation(
                 node_class,
@@ -455,15 +790,20 @@ impl Ws10ChannelImpoundmentKernel {
             ));
         }
 
-        Ok(DirectWatershedKernelOutput::Impoundment(
-            RoutedImpoundmentState {
-                node_id,
-                outflow_volume_m3: outflow_volume,
-                outflow_rate_m3_s: qo,
-                duration_seconds: durout,
-                hnext_m: hnext,
-            },
-        ))
+        Ok(Ws12DirectImpoundmentOutflow { qo, durout, hnext })
+    }
+
+    fn direct_impoundment_output(
+        context: &Ws12DirectImpoundmentContext<'_>,
+        outflow: Ws12DirectImpoundmentOutflow,
+    ) -> DirectWatershedKernelOutput {
+        DirectWatershedKernelOutput::Impoundment(RoutedImpoundmentState {
+            node_id: context.node_id,
+            outflow_volume_m3: outflow.qo * outflow.durout,
+            outflow_rate_m3_s: outflow.qo,
+            duration_seconds: outflow.durout,
+            hnext_m: outflow.hnext,
+        })
     }
 
     fn direct_require_range(
@@ -605,39 +945,58 @@ impl Ws10ChannelImpoundmentKernel {
         Ok(channel_length)
     }
 
-    // One pass over the contributor set feeding BOTH superposition bases
-    // (hourly + rectangular fallback); splitting would loop contributors
-    // twice or scatter the INV-ROUTE-005 whole-inlet rule.
-    #[allow(clippy::too_many_lines)]
     fn assemble_direct_incoming_peak_partition(
         input: &DirectWatershedKernelInput<'_>,
         node_class: Ws10NodeClass,
     ) -> Result<Ws20IncomingPeakPartition, Ws10GuardError> {
-        let mut hillslope_peak = 0.0_f64;
-        let mut dependency_peak = 0.0_f64;
-        let mut hillslope_volume_m3 = 0.0_f64;
-        let mut dependency_volume_m3 = 0.0_f64;
-        let mut hillslope_duration_s = 0.0_f64;
-        let mut dependency_duration_s = 0.0_f64;
+        let hourly_resolved = Self::direct_hourly_resolved_runon(input, node_class)?;
+        let (hillslope, hourly_sediment_inlet_kg) =
+            Self::accumulate_direct_hillslope_runon(input, node_class, hourly_resolved)?;
+        let dependency = Self::accumulate_direct_dependency_runon(input, node_class)?;
+        Self::validate_direct_incoming_runon_totals(node_class, hillslope, dependency)?;
 
+        Ok(Ws20IncomingPeakPartition {
+            hillslope_peak_cms: hillslope.peak_cms,
+            dependency_peak_cms: dependency.peak_cms,
+            hillslope_volume_m3: hillslope.volume_m3,
+            dependency_volume_m3: dependency.volume_m3,
+            hillslope_duration_s: hillslope.duration_s,
+            dependency_duration_s: dependency.duration_s,
+            hourly_resolved,
+            hourly_sediment_inlet_kg,
+        })
+    }
+
+    fn direct_hourly_resolved_runon(
+        input: &DirectWatershedKernelInput<'_>,
+        node_class: Ws10NodeClass,
+    ) -> Result<bool, Ws10GuardError> {
         // INV-ROUTE-005 (ADR-0036 D3 / SC-ROUTE-001 rev 49): an inlet is
         // either all-hourly or no-hourly. Partial/malformed hourly authority
         // and hourly hillslopes mixed with dependency nodes fail closed
         // instead of silently falling back to the daily scalar branch.
-        let hillslope_hourly_authority =
-            Self::direct_hillslope_hourly_authority(input, node_class)?;
-        let hourly_resolved = if hillslope_hourly_authority {
-            if !input.step.dependency_nodes.is_empty() {
-                return Err(Self::domain_violation(
-                    node_class,
-                    "hillslope_hourly_with_dependency_without_channel_hourly",
-                    f64::from(u32::try_from(input.step.dependency_nodes.len()).unwrap_or(u32::MAX)),
-                ));
-            }
-            true
-        } else {
-            false
-        };
+        if !Self::direct_hillslope_hourly_authority(input, node_class)? {
+            return Ok(false);
+        }
+        if !input.step.dependency_nodes.is_empty() {
+            return Err(Self::domain_violation(
+                node_class,
+                "hillslope_hourly_with_dependency_without_channel_hourly",
+                f64::from(u32::try_from(input.step.dependency_nodes.len()).unwrap_or(u32::MAX)),
+            ));
+        }
+        Ok(true)
+    }
+
+    // One pass over the contributor set feeds BOTH superposition bases
+    // (hourly + rectangular fallback), preserving the INV-ROUTE-005
+    // whole-inlet rule without looping contributors twice.
+    fn accumulate_direct_hillslope_runon(
+        input: &DirectWatershedKernelInput<'_>,
+        node_class: Ws10NodeClass,
+        hourly_resolved: bool,
+    ) -> Result<(Ws20RunonTotals, [f64; 24]), Ws10GuardError> {
+        let mut totals = Ws20RunonTotals::default();
         let mut summed_hourly_volume_m3 = [0.0_f64; 24];
         let mut hourly_sediment_inlet_kg = [0.0_f64; 24];
 
@@ -651,78 +1010,112 @@ impl Ws10ChannelImpoundmentKernel {
                 Self::read_direct_hillslope_peak_payload(contribution, node_class)?;
             let _ = Self::read_direct_hillslope_sediment_payload(contribution, node_class)?;
             if hourly_resolved {
-                for (slot, volume_m3) in summed_hourly_volume_m3
-                    .iter_mut()
-                    .zip(contribution.hourly_runoff_volume_m3.iter())
-                {
-                    if !volume_m3.is_finite() || *volume_m3 < 0.0 {
-                        return Err(Self::domain_violation(
-                            node_class,
-                            "hillslope_hourly_runoff_volume_m3",
-                            *volume_m3,
-                        ));
-                    }
-                    *slot += volume_m3;
-                }
-                for (slot, sediment_kg) in hourly_sediment_inlet_kg
-                    .iter_mut()
-                    .zip(contribution.hourly_sediment_mass_kg.iter())
-                {
-                    if !sediment_kg.is_finite() || *sediment_kg < 0.0 {
-                        return Err(Self::domain_violation(
-                            node_class,
-                            "hillslope_hourly_sediment_mass_kg",
-                            *sediment_kg,
-                        ));
-                    }
-                    *slot += sediment_kg;
-                }
+                Self::accumulate_direct_hillslope_hourly_runon(
+                    node_class,
+                    contribution,
+                    &mut summed_hourly_volume_m3,
+                    &mut hourly_sediment_inlet_kg,
+                )?;
                 continue;
             }
-            let volume = peak * duration;
-            if !volume.is_finite() {
-                return Err(Self::non_finite(node_class, "hillslope_runon_volume", volume));
-            }
-            if volume < 0.0 {
-                return Err(Self::domain_violation(
-                    node_class,
-                    "hillslope_runon_volume",
-                    volume,
-                ));
-            }
-            hillslope_peak += peak;
-            hillslope_volume_m3 += volume;
-            hillslope_duration_s = hillslope_duration_s.max(duration);
+            let volume =
+                Self::direct_checked_runon_volume(node_class, "hillslope_runon_volume", peak, duration)?;
+            totals.peak_cms += peak;
+            totals.volume_m3 += volume;
+            totals.duration_s = totals.duration_s.max(duration);
         }
 
         if hourly_resolved {
             let (peak_cms, volume_m3, duration_s) =
                 Self::superposed_hourly_limb(&summed_hourly_volume_m3);
-            hillslope_peak = peak_cms;
-            hillslope_volume_m3 = volume_m3;
-            hillslope_duration_s = duration_s;
+            totals = Ws20RunonTotals {
+                peak_cms,
+                volume_m3,
+                duration_s,
+            };
         }
 
+        Ok((totals, hourly_sediment_inlet_kg))
+    }
+
+    fn accumulate_direct_hillslope_hourly_runon(
+        node_class: Ws10NodeClass,
+        contribution: &HillslopeContribution,
+        summed_hourly_volume_m3: &mut [f64; 24],
+        hourly_sediment_inlet_kg: &mut [f64; 24],
+    ) -> Result<(), Ws10GuardError> {
+        for (slot, volume_m3) in summed_hourly_volume_m3
+            .iter_mut()
+            .zip(contribution.hourly_runoff_volume_m3.iter())
+        {
+            if !volume_m3.is_finite() || *volume_m3 < 0.0 {
+                return Err(Self::domain_violation(
+                    node_class,
+                    "hillslope_hourly_runoff_volume_m3",
+                    *volume_m3,
+                ));
+            }
+            *slot += volume_m3;
+        }
+        for (slot, sediment_kg) in hourly_sediment_inlet_kg
+            .iter_mut()
+            .zip(contribution.hourly_sediment_mass_kg.iter())
+        {
+            if !sediment_kg.is_finite() || *sediment_kg < 0.0 {
+                return Err(Self::domain_violation(
+                    node_class,
+                    "hillslope_hourly_sediment_mass_kg",
+                    *sediment_kg,
+                ));
+            }
+            *slot += sediment_kg;
+        }
+        Ok(())
+    }
+
+    fn accumulate_direct_dependency_runon(
+        input: &DirectWatershedKernelInput<'_>,
+        node_class: Ws10NodeClass,
+    ) -> Result<Ws20RunonTotals, Ws10GuardError> {
+        let mut totals = Ws20RunonTotals::default();
         for dependency in &input.step.dependency_nodes {
             let (peak, duration) =
                 Self::read_direct_dependency_peak_payload(input.frame, node_class, *dependency)?;
-            let volume = peak * duration;
-            if !volume.is_finite() {
-                return Err(Self::non_finite(node_class, "dependency_runon_volume", volume));
-            }
-            if volume < 0.0 {
-                return Err(Self::domain_violation(
-                    node_class,
-                    "dependency_runon_volume",
-                    volume,
-                ));
-            }
-            dependency_peak += peak;
-            dependency_volume_m3 += volume;
-            dependency_duration_s = dependency_duration_s.max(duration);
+            let volume = Self::direct_checked_runon_volume(
+                node_class,
+                "dependency_runon_volume",
+                peak,
+                duration,
+            )?;
+            totals.peak_cms += peak;
+            totals.volume_m3 += volume;
+            totals.duration_s = totals.duration_s.max(duration);
         }
+        Ok(totals)
+    }
 
-        let incoming_peak = hillslope_peak + dependency_peak;
+    fn direct_checked_runon_volume(
+        node_class: Ws10NodeClass,
+        label: &'static str,
+        peak: f64,
+        duration: f64,
+    ) -> Result<f64, Ws10GuardError> {
+        let volume = peak * duration;
+        if !volume.is_finite() {
+            return Err(Self::non_finite(node_class, label, volume));
+        }
+        if volume < 0.0 {
+            return Err(Self::domain_violation(node_class, label, volume));
+        }
+        Ok(volume)
+    }
+
+    fn validate_direct_incoming_runon_totals(
+        node_class: Ws10NodeClass,
+        hillslope: Ws20RunonTotals,
+        dependency: Ws20RunonTotals,
+    ) -> Result<(), Ws10GuardError> {
+        let incoming_peak = hillslope.peak_cms + dependency.peak_cms;
         if !incoming_peak.is_finite() {
             return Err(Self::non_finite(node_class, "incoming_peak", incoming_peak));
         }
@@ -733,7 +1126,7 @@ impl Ws10ChannelImpoundmentKernel {
                 incoming_peak,
             ));
         }
-        let incoming_duration = hillslope_duration_s.max(dependency_duration_s);
+        let incoming_duration = hillslope.duration_s.max(dependency.duration_s);
         if !incoming_duration.is_finite() {
             return Err(Self::non_finite(
                 node_class,
@@ -748,17 +1141,7 @@ impl Ws10ChannelImpoundmentKernel {
                 incoming_duration,
             ));
         }
-
-        Ok(Ws20IncomingPeakPartition {
-            hillslope_peak_cms: hillslope_peak,
-            dependency_peak_cms: dependency_peak,
-            hillslope_volume_m3,
-            dependency_volume_m3,
-            hillslope_duration_s,
-            dependency_duration_s,
-            hourly_resolved,
-            hourly_sediment_inlet_kg,
-        })
+        Ok(())
     }
 
     fn assemble_direct_incoming_peak_and_duration(
@@ -1254,6 +1637,443 @@ impl Ws10ChannelImpoundmentKernel {
         })
     }
 
+    fn validate_direct_sediment_routing_inputs(
+        node_class: Ws10NodeClass,
+        event_duration: f64,
+        qpo: f64,
+        roughness: f64,
+    ) -> Result<(), Ws10GuardError> {
+        if !event_duration.is_finite() || event_duration <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                node_class,
+                "event_duration",
+                event_duration,
+            ));
+        }
+        Self::direct_require_range(node_class, "qpo", qpo, Some(0.0), None)?;
+        Self::direct_require_range(
+            node_class,
+            "roughness",
+            roughness,
+            Some(WS10_ZERO_THRESHOLD),
+            None,
+        )
+    }
+
+    fn add_direct_sediment_payload_to_accumulator(
+        accumulator: &mut Ws19SedimentAccumulator,
+        payload: &Ws18HillslopeSedimentPayload,
+        ingress: Ws19SedimentIngress,
+        node_class: Ws10NodeClass,
+    ) -> Result<(), Ws10GuardError> {
+        accumulator.incoming_sediment_mass_kg += payload.mass_kg;
+        if payload.mass_kg <= WS10_ZERO_THRESHOLD {
+            return Ok(());
+        }
+
+        let fraction_sum = payload.fractions.iter().sum::<f64>();
+        if !fraction_sum.is_finite() || fraction_sum <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                node_class,
+                ingress.fraction_sum_label(),
+                fraction_sum,
+            ));
+        }
+
+        for class_offset in 0..payload.fractions.len() {
+            if accumulator.class_mass_kg.len() <= class_offset {
+                accumulator.class_mass_kg.resize(class_offset + 1, 0.0);
+                accumulator
+                    .class_diameter_mass_m
+                    .resize(class_offset + 1, 0.0);
+                accumulator.top_class_mass_kg.resize(class_offset + 1, 0.0);
+                accumulator
+                    .lateral_class_mass_kg
+                    .resize(class_offset + 1, 0.0);
+            }
+
+            let normalized_fraction = payload.fractions[class_offset] / fraction_sum;
+            let class_mass = payload.mass_kg * normalized_fraction;
+            accumulator.class_mass_kg[class_offset] += class_mass;
+            accumulator.class_diameter_mass_m[class_offset] +=
+                class_mass * payload.particle_diameters_m[class_offset];
+            match ingress {
+                Ws19SedimentIngress::Hillslope => {
+                    accumulator.lateral_class_mass_kg[class_offset] += class_mass;
+                }
+                Ws19SedimentIngress::DependencyChannel => {
+                    accumulator.top_class_mass_kg[class_offset] += class_mass;
+                }
+            }
+        }
+
+        Ok(())
+    }
+
+    fn accumulate_direct_hillslope_sediment(
+        input: &DirectWatershedKernelInput<'_>,
+        node_class: Ws10NodeClass,
+        accumulator: &mut Ws19SedimentAccumulator,
+    ) -> Result<(), Ws10GuardError> {
+        for &hillslope_id in &input.step.contributor_hillslopes {
+            let contribution = input
+                .frame
+                .hillslope_contributions
+                .get(&hillslope_id)
+                .ok_or_else(|| Self::missing_required(node_class, "hillslope_contribution"))?;
+            let payload = Self::read_direct_hillslope_sediment_payload(contribution, node_class)?;
+            Self::add_direct_sediment_payload_to_accumulator(
+                accumulator,
+                &payload,
+                Ws19SedimentIngress::Hillslope,
+                node_class,
+            )?;
+        }
+        Ok(())
+    }
+
+    fn accumulate_direct_dependency_sediment(
+        input: &DirectWatershedKernelInput<'_>,
+        node_class: Ws10NodeClass,
+        event_duration: f64,
+        accumulator: &mut Ws19SedimentAccumulator,
+    ) -> Result<(), Ws10GuardError> {
+        for dependency in input
+            .step
+            .dependency_nodes
+            .iter()
+            .filter(|dependency| dependency.kind == TopologyNodeKind::Channel)
+        {
+            let state = input
+                .frame
+                .routed_channels
+                .get(&dependency.id)
+                .ok_or_else(|| Self::missing_required(node_class, "dependency_channel"))?;
+            let payload =
+                Self::read_direct_channel_sediment_payload(state, node_class, event_duration)?;
+            Self::add_direct_sediment_payload_to_accumulator(
+                accumulator,
+                &payload,
+                Ws19SedimentIngress::DependencyChannel,
+                node_class,
+            )?;
+        }
+        Ok(())
+    }
+
+    fn direct_active_sediment_classes(
+        accumulator: &Ws19SedimentAccumulator,
+        node_class: Ws10NodeClass,
+    ) -> Result<Ws19ActiveSedimentClasses, Ws10GuardError> {
+        let mut active = Ws19ActiveSedimentClasses {
+            class_mass_kg: Vec::new(),
+            top_class_mass_kg: Vec::new(),
+            lateral_class_mass_kg: Vec::new(),
+            particle_diameters_m: Vec::new(),
+            class_numbers: Vec::new(),
+        };
+        let class_mass_total = accumulator.class_mass_kg.iter().copied().sum::<f64>();
+        if class_mass_total <= WS10_ZERO_THRESHOLD {
+            return Ok(active);
+        }
+
+        for class_offset in 0..accumulator.class_mass_kg.len() {
+            let class_mass = accumulator.class_mass_kg[class_offset];
+            if class_mass <= WS10_ZERO_THRESHOLD {
+                continue;
+            }
+
+            let class_diameter_m = accumulator.class_diameter_mass_m[class_offset] / class_mass;
+            if !class_diameter_m.is_finite() || class_diameter_m <= WS10_ZERO_THRESHOLD {
+                return Err(Self::domain_violation(
+                    node_class,
+                    "class_diameter_m",
+                    class_diameter_m,
+                ));
+            }
+
+            active.class_mass_kg.push(class_mass);
+            active.top_class_mass_kg.push(
+                *accumulator
+                    .top_class_mass_kg
+                    .get(class_offset)
+                    .unwrap_or(&0.0),
+            );
+            active.lateral_class_mass_kg.push(
+                *accumulator
+                    .lateral_class_mass_kg
+                    .get(class_offset)
+                    .unwrap_or(&0.0),
+            );
+            active.particle_diameters_m.push(class_diameter_m);
+            active.class_numbers.push(class_offset + 1);
+        }
+
+        Ok(active)
+    }
+
+    fn route_direct_ws20_sediment_if_enabled(
+        context: &Ws19SedimentRoutingContext<'_>,
+        active: &Ws19ActiveSedimentClasses,
+        incoming_sediment_mass_kg: f64,
+    ) -> Result<Ws19RoutedSedimentClasses, Ws10GuardError> {
+        let mut routed = Ws19RoutedSedimentClasses {
+            outgoing_class_mass_kg: active.class_mass_kg.clone(),
+            diagnostics: Ws20SegmentRoutingDiagnostics::default(),
+            widb_points_ft: None,
+            wida_points_ft: None,
+        };
+        let ws20_case12_enabled = context.control.ws20_case12_enabled;
+        let ws21_case34_enabled = ws20_case12_enabled || context.control.ws21_case34_enabled;
+
+        if ws20_case12_enabled
+            && context.qpo > WS10_ZERO_THRESHOLD
+            && incoming_sediment_mass_kg > WS10_ZERO_THRESHOLD
+            && !active.class_mass_kg.is_empty()
+        {
+            let profile = Self::direct_ws20_channel_profile(context.control, context.nslpts)?;
+            let crfrac = if ws21_case34_enabled {
+                Some(Self::direct_ws20_crfrac(
+                    context.control,
+                    &active.class_numbers,
+                )?)
+            } else {
+                None
+            };
+            let routing_result = Self::ws20_route_case12_segment_family_core(
+                context.control.node_id,
+                context.node_class,
+                ws21_case34_enabled,
+                context.event_duration,
+                context.qpo,
+                context.roughness,
+                context.sediment_controls,
+                context.nslpts,
+                context.peak_partition,
+                &active.top_class_mass_kg,
+                &active.lateral_class_mass_kg,
+                &active.particle_diameters_m,
+                &active.class_numbers,
+                profile,
+                context.control.chnk,
+                crfrac.as_deref(),
+            )?;
+            routed.outgoing_class_mass_kg = routing_result.routed_class_masses_kg;
+            routed.diagnostics = routing_result.diagnostics;
+            routed.widb_points_ft = Some(routing_result.widb_points_ft);
+            routed.wida_points_ft = Some(routing_result.wida_points_ft);
+        }
+
+        Ok(routed)
+    }
+
+    fn direct_sediment_rate_duration_s(
+        peak_partition: Ws20IncomingPeakPartition,
+        event_duration: f64,
+    ) -> f64 {
+        // INV-ROUTE-005(a): on an hourly-resolved inlet the quasi-steady
+        // sediment-rate time base is the superposed S_h active span — the
+        // serialized sediment TIMING, not the event duration (the
+        // single-rate reduction itself is the labeled SC-ROUTE-001 scope
+        // limit until channels carry hourly surfaces).
+        if peak_partition.hourly_resolved {
+            let (_, _, span_s) =
+                Self::superposed_hourly_limb(&peak_partition.hourly_sediment_inlet_kg);
+            if span_s > WS10_ZERO_THRESHOLD {
+                span_s
+            } else {
+                event_duration
+            }
+        } else {
+            event_duration
+        }
+    }
+
+    fn direct_sediment_publication_particles(
+        outgoing_class_mass_kg: &[f64],
+        active: &Ws19ActiveSedimentClasses,
+        node_class: Ws10NodeClass,
+    ) -> Result<(Vec<f64>, Vec<f64>), Ws10GuardError> {
+        let mut particle_flow_fractions = Vec::new();
+        let mut particle_diameters_m = Vec::new();
+        let routed_class_total = outgoing_class_mass_kg.iter().copied().sum::<f64>();
+        if routed_class_total <= WS10_ZERO_THRESHOLD {
+            return Ok((particle_flow_fractions, particle_diameters_m));
+        }
+
+        for (class_offset, class_mass) in outgoing_class_mass_kg.iter().copied().enumerate() {
+            if class_mass <= WS10_ZERO_THRESHOLD {
+                continue;
+            }
+            particle_flow_fractions.push(class_mass / routed_class_total);
+            particle_diameters_m.push(active.particle_diameters_m[class_offset]);
+        }
+
+        let published_fraction_sum = particle_flow_fractions.iter().copied().sum::<f64>();
+        if !published_fraction_sum.is_finite() || published_fraction_sum <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                node_class,
+                "published_fraction_sum",
+                published_fraction_sum,
+            ));
+        }
+        for fraction in &mut particle_flow_fractions {
+            *fraction /= published_fraction_sum;
+        }
+
+        Ok((particle_flow_fractions, particle_diameters_m))
+    }
+
+    fn direct_sediment_transport_capacity(
+        context: &Ws19SedimentRoutingContext<'_>,
+        accumulator: &Ws19SedimentAccumulator,
+    ) -> Result<f64, Ws10GuardError> {
+        let hydraulics = Self::direct_terminal_sediment_hydraulics(context)?;
+        let mut qs = Vec::new();
+        let mut crdia_ft = Vec::new();
+        let mut crspg = Vec::new();
+        for class_offset in 0..accumulator.class_mass_kg.len() {
+            let class_mass = accumulator.class_mass_kg[class_offset];
+            if class_mass <= WS10_ZERO_THRESHOLD {
+                continue;
+            }
+            let class_diameter_m = accumulator.class_diameter_mass_m[class_offset] / class_mass;
+            if !class_diameter_m.is_finite() || class_diameter_m <= WS10_ZERO_THRESHOLD {
+                return Err(Self::domain_violation(
+                    context.node_class,
+                    "capacity_class_diameter_m",
+                    class_diameter_m,
+                ));
+            }
+            let class_load_lbs_per_s =
+                class_mass * WS18_LBS_PER_KG / context.event_duration;
+            if !class_load_lbs_per_s.is_finite() || class_load_lbs_per_s < 0.0 {
+                return Err(Self::domain_violation(
+                    context.node_class,
+                    "class_load_lbs_s",
+                    class_load_lbs_per_s,
+                ));
+            }
+
+            qs.push(class_load_lbs_per_s / hydraulics.flow_width_ft);
+            crdia_ft.push(class_diameter_m * WS15_DEPTH_FROM_METERS_TO_FEET);
+            let specific_gravity =
+                WS18_DEFAULT_CRSPG
+                    .get(class_offset)
+                    .copied()
+                    .ok_or_else(|| {
+                        Self::domain_violation(
+                            context.node_class,
+                            "particle_class_index",
+                            f64::from(u32::try_from(class_offset + 1).unwrap_or(u32::MAX)),
+                        )
+                    })?;
+            crspg.push(specific_gravity);
+        }
+
+        let tc_per_width = Self::ws18_trncap(hydraulics.effsh, &qs, &crdia_ft, &crspg);
+        let tc_lbs_per_s =
+            tc_per_width.iter().copied().sum::<f64>() * hydraulics.flow_width_ft;
+        let tc = tc_lbs_per_s / WS18_LBS_PER_KG;
+        if !tc.is_finite() || tc < 0.0 {
+            return Err(Self::domain_violation(context.node_class, "tc", tc));
+        }
+
+        Ok(tc)
+    }
+
+    fn direct_terminal_sediment_hydraulics(
+        context: &Ws19SedimentRoutingContext<'_>,
+    ) -> Result<Ws19TerminalSedimentHydraulics, Ws10GuardError> {
+        let terminal_point = context
+            .control
+            .segment_points
+            .get(context.nslpts - 1)
+            .ok_or_else(|| Self::missing_required(context.node_class, "terminal_segment"))?;
+        Self::direct_require_range(
+            context.node_class,
+            "terminal_slope",
+            terminal_point.slope,
+            Some(WS18_MIN_CHANNEL_SLOPE),
+            None,
+        )?;
+        Self::direct_require_range(
+            context.node_class,
+            "terminal_width",
+            terminal_point.width_b_ft,
+            Some(WS10_ZERO_THRESHOLD),
+            None,
+        )?;
+        Self::direct_require_range(
+            context.node_class,
+            "terminal_depth",
+            terminal_point.depth_b_ft,
+            Some(0.0),
+            None,
+        )?;
+
+        let q_cfs = context.qpo * WS18_CFS_PER_CMS;
+        if !q_cfs.is_finite() || q_cfs < 0.0 {
+            return Err(Self::domain_violation(context.node_class, "q_cfs", q_cfs));
+        }
+
+        let flagct = Self::ws30_shape_flag_from_ishape(
+            context.node_class,
+            context.control.node_id,
+            context.sediment_controls.ishape,
+        )?;
+        let flagc =
+            Self::ws30_apply_erodible_rectangular_fallback(flagct, terminal_point.depth_b_ft);
+        let crsh = context.sediment_controls.chntcr * WS15_CRSH_FROM_CHNTCR_SCALE;
+        let (flow_width_ft, effsh) = Self::ws18_hydchn(
+            context.node_class,
+            flagc,
+            q_cfs,
+            terminal_point.slope,
+            context.sediment_controls.ctlz,
+            context.sediment_controls.chnz,
+            terminal_point.width_b_ft,
+            context.roughness,
+            crsh,
+            context.sediment_controls.chnnbr,
+        )?;
+        if flow_width_ft <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                context.node_class,
+                "flow_width_ft",
+                flow_width_ft,
+            ));
+        }
+
+        Ok(Ws19TerminalSedimentHydraulics {
+            flow_width_ft,
+            effsh,
+        })
+    }
+
+    fn direct_sediment_publication(
+        qsed: f64,
+        tc: f64,
+        particle_flow_fractions: Vec<f64>,
+        particle_diameters_m: Vec<f64>,
+        routed: Ws19RoutedSedimentClasses,
+    ) -> Ws19ChannelSedimentPublication {
+        Ws19ChannelSedimentPublication {
+            qsed,
+            tc,
+            particle_flow_fractions,
+            particle_diameters_m,
+            ws29_widb_points_ft: routed.widb_points_ft,
+            ws31_wida_points_ft: routed.wida_points_ft,
+            ws20_case1_segments: routed.diagnostics.case1_segments,
+            ws20_case2_segments: routed.diagnostics.case2_segments,
+            ws24_case2_detach_segments: routed.diagnostics.ws24_case2_detach_segments,
+            ws21_case3_segments: routed.diagnostics.case3_segments,
+            ws21_case4_segments: routed.diagnostics.case4_segments,
+            ws21_enddet_segments: routed.diagnostics.enddet_segments,
+        }
+    }
+
     #[allow(
         clippy::similar_names,
         clippy::too_many_lines,
@@ -1270,373 +2090,80 @@ impl Ws10ChannelImpoundmentKernel {
         nslpts: usize,
         peak_partition: Ws20IncomingPeakPartition,
     ) -> Result<Ws19ChannelSedimentPublication, Ws10GuardError> {
-        if !event_duration.is_finite() || event_duration <= WS10_ZERO_THRESHOLD {
-            return Err(Self::domain_violation(
-                node_class,
-                "event_duration",
-                event_duration,
-            ));
-        }
-        Self::direct_require_range(node_class, "qpo", qpo, Some(0.0), None)?;
-        Self::direct_require_range(
+        Self::validate_direct_sediment_routing_inputs(
             node_class,
-            "roughness",
+            event_duration,
+            qpo,
             roughness,
-            Some(WS10_ZERO_THRESHOLD),
-            None,
         )?;
-
-        let mut incoming_sediment_mass_kg = 0.0_f64;
-        let mut class_mass_kg: Vec<f64> = Vec::new();
-        let mut class_diameter_mass_m: Vec<f64> = Vec::new();
-        let mut top_class_mass_kg: Vec<f64> = Vec::new();
-        let mut lateral_class_mass_kg: Vec<f64> = Vec::new();
-
-        for &hillslope_id in &input.step.contributor_hillslopes {
-            let contribution = input
-                .frame
-                .hillslope_contributions
-                .get(&hillslope_id)
-                .ok_or_else(|| Self::missing_required(node_class, "hillslope_contribution"))?;
-            let payload = Self::read_direct_hillslope_sediment_payload(contribution, node_class)?;
-            incoming_sediment_mass_kg += payload.mass_kg;
-            if payload.mass_kg <= WS10_ZERO_THRESHOLD {
-                continue;
-            }
-
-            let fraction_sum = payload.fractions.iter().sum::<f64>();
-            if !fraction_sum.is_finite() || fraction_sum <= WS10_ZERO_THRESHOLD {
-                return Err(Self::domain_violation(
-                    node_class,
-                    "hillslope_particle_fraction_sum",
-                    fraction_sum,
-                ));
-            }
-
-            for class_offset in 0..payload.fractions.len() {
-                if class_mass_kg.len() <= class_offset {
-                    class_mass_kg.resize(class_offset + 1, 0.0);
-                    class_diameter_mass_m.resize(class_offset + 1, 0.0);
-                    top_class_mass_kg.resize(class_offset + 1, 0.0);
-                    lateral_class_mass_kg.resize(class_offset + 1, 0.0);
-                }
-
-                let normalized_fraction = payload.fractions[class_offset] / fraction_sum;
-                let class_mass = payload.mass_kg * normalized_fraction;
-                class_mass_kg[class_offset] += class_mass;
-                class_diameter_mass_m[class_offset] +=
-                    class_mass * payload.particle_diameters_m[class_offset];
-                lateral_class_mass_kg[class_offset] += class_mass;
-            }
-        }
-
-        for dependency in &input.step.dependency_nodes {
-            if dependency.kind != TopologyNodeKind::Channel {
-                continue;
-            }
-            let state = input
-                .frame
-                .routed_channels
-                .get(&dependency.id)
-                .ok_or_else(|| Self::missing_required(node_class, "dependency_channel"))?;
-            let payload =
-                Self::read_direct_channel_sediment_payload(state, node_class, event_duration)?;
-            incoming_sediment_mass_kg += payload.mass_kg;
-            if payload.mass_kg <= WS10_ZERO_THRESHOLD {
-                continue;
-            }
-
-            let fraction_sum = payload.fractions.iter().sum::<f64>();
-            if !fraction_sum.is_finite() || fraction_sum <= WS10_ZERO_THRESHOLD {
-                return Err(Self::domain_violation(
-                    node_class,
-                    "dependency_particle_fraction_sum",
-                    fraction_sum,
-                ));
-            }
-
-            for class_offset in 0..payload.fractions.len() {
-                if class_mass_kg.len() <= class_offset {
-                    class_mass_kg.resize(class_offset + 1, 0.0);
-                    class_diameter_mass_m.resize(class_offset + 1, 0.0);
-                    top_class_mass_kg.resize(class_offset + 1, 0.0);
-                    lateral_class_mass_kg.resize(class_offset + 1, 0.0);
-                }
-
-                let normalized_fraction = payload.fractions[class_offset] / fraction_sum;
-                let class_mass = payload.mass_kg * normalized_fraction;
-                class_mass_kg[class_offset] += class_mass;
-                class_diameter_mass_m[class_offset] +=
-                    class_mass * payload.particle_diameters_m[class_offset];
-                top_class_mass_kg[class_offset] += class_mass;
-            }
-        }
-
-        if !incoming_sediment_mass_kg.is_finite() || incoming_sediment_mass_kg < 0.0 {
+        let context = Ws19SedimentRoutingContext {
+            control,
+            node_class,
+            event_duration,
+            qpo,
+            roughness,
+            sediment_controls,
+            nslpts,
+            peak_partition,
+        };
+        let mut accumulator = Ws19SedimentAccumulator::default();
+        Self::accumulate_direct_hillslope_sediment(input, node_class, &mut accumulator)?;
+        Self::accumulate_direct_dependency_sediment(
+            input,
+            node_class,
+            event_duration,
+            &mut accumulator,
+        )?;
+        if !accumulator.incoming_sediment_mass_kg.is_finite()
+            || accumulator.incoming_sediment_mass_kg < 0.0
+        {
             return Err(Self::domain_violation(
                 node_class,
                 "incoming_sediment_mass_kg",
-                incoming_sediment_mass_kg,
+                accumulator.incoming_sediment_mass_kg,
             ));
         }
 
-        let class_mass_total = class_mass_kg.iter().copied().sum::<f64>();
-        let mut active_class_mass_kg = Vec::new();
-        let mut active_top_class_mass_kg = Vec::new();
-        let mut active_lateral_class_mass_kg = Vec::new();
-        let mut active_particle_diameters_m = Vec::new();
-        let mut active_class_numbers = Vec::new();
-        if class_mass_total > WS10_ZERO_THRESHOLD {
-            for class_offset in 0..class_mass_kg.len() {
-                let class_mass = class_mass_kg[class_offset];
-                if class_mass <= WS10_ZERO_THRESHOLD {
-                    continue;
-                }
-
-                let class_diameter_m = class_diameter_mass_m[class_offset] / class_mass;
-                if !class_diameter_m.is_finite() || class_diameter_m <= WS10_ZERO_THRESHOLD {
-                    return Err(Self::domain_violation(
-                        node_class,
-                        "class_diameter_m",
-                        class_diameter_m,
-                    ));
-                }
-
-                active_class_mass_kg.push(class_mass);
-                active_top_class_mass_kg.push(*top_class_mass_kg.get(class_offset).unwrap_or(&0.0));
-                active_lateral_class_mass_kg
-                    .push(*lateral_class_mass_kg.get(class_offset).unwrap_or(&0.0));
-                active_particle_diameters_m.push(class_diameter_m);
-                active_class_numbers.push(class_offset + 1);
-            }
-        }
-
-        let mut outgoing_class_mass_kg = active_class_mass_kg.clone();
-        let mut ws20_diagnostics = Ws20SegmentRoutingDiagnostics::default();
-        let mut ws29_widb_points_ft: Option<Vec<f64>> = None;
-        let mut ws31_wida_points_ft: Option<Vec<f64>> = None;
-        let ws20_case12_enabled = control.ws20_case12_enabled;
-        let ws21_case34_enabled = ws20_case12_enabled || control.ws21_case34_enabled;
-
-        if ws20_case12_enabled
-            && qpo > WS10_ZERO_THRESHOLD
-            && incoming_sediment_mass_kg > WS10_ZERO_THRESHOLD
-            && !active_class_mass_kg.is_empty()
-        {
-            let profile = Self::direct_ws20_channel_profile(control, nslpts)?;
-            let crfrac = if ws21_case34_enabled {
-                Some(Self::direct_ws20_crfrac(control, &active_class_numbers)?)
-            } else {
-                None
-            };
-            let routing_result = Self::ws20_route_case12_segment_family_core(
-                control.node_id,
-                node_class,
-                ws21_case34_enabled,
-                event_duration,
-                qpo,
-                roughness,
-                sediment_controls,
-                nslpts,
-                peak_partition,
-                &active_top_class_mass_kg,
-                &active_lateral_class_mass_kg,
-                &active_particle_diameters_m,
-                &active_class_numbers,
-                profile,
-                control.chnk,
-                crfrac.as_deref(),
-            )?;
-            outgoing_class_mass_kg = routing_result.routed_class_masses_kg;
-            ws20_diagnostics = routing_result.diagnostics;
-            ws29_widb_points_ft = Some(routing_result.widb_points_ft);
-            ws31_wida_points_ft = Some(routing_result.wida_points_ft);
-        }
-
-        // INV-ROUTE-005(a): on an hourly-resolved inlet the quasi-steady
-        // sediment-rate time base is the superposed S_h active span — the
-        // serialized sediment TIMING, not the event duration (the
-        // single-rate reduction itself is the labeled SC-ROUTE-001 scope
-        // limit until channels carry hourly surfaces).
-        let sediment_rate_duration_s = if peak_partition.hourly_resolved {
-            let (_, _, span_s) =
-                Self::superposed_hourly_limb(&peak_partition.hourly_sediment_inlet_kg);
-            if span_s > WS10_ZERO_THRESHOLD {
-                span_s
-            } else {
-                event_duration
-            }
-        } else {
-            event_duration
-        };
+        let active = Self::direct_active_sediment_classes(&accumulator, node_class)?;
+        let routed = Self::route_direct_ws20_sediment_if_enabled(
+            &context,
+            &active,
+            accumulator.incoming_sediment_mass_kg,
+        )?;
+        let sediment_rate_duration_s =
+            Self::direct_sediment_rate_duration_s(peak_partition, event_duration);
         let qsed =
-            outgoing_class_mass_kg.iter().copied().sum::<f64>() / sediment_rate_duration_s;
+            routed.outgoing_class_mass_kg.iter().copied().sum::<f64>() / sediment_rate_duration_s;
         if !qsed.is_finite() || qsed < 0.0 {
             return Err(Self::domain_violation(node_class, "qsed", qsed));
         }
 
-        let mut particle_flow_fractions = Vec::new();
-        let mut particle_diameters_m = Vec::new();
-        let routed_class_total = outgoing_class_mass_kg.iter().copied().sum::<f64>();
-        if routed_class_total > WS10_ZERO_THRESHOLD {
-            for class_offset in 0..outgoing_class_mass_kg.len() {
-                let class_mass = outgoing_class_mass_kg[class_offset];
-                if class_mass <= WS10_ZERO_THRESHOLD {
-                    continue;
-                }
-                particle_flow_fractions.push(class_mass / routed_class_total);
-                particle_diameters_m.push(active_particle_diameters_m[class_offset]);
-            }
-
-            let published_fraction_sum = particle_flow_fractions.iter().copied().sum::<f64>();
-            if !published_fraction_sum.is_finite() || published_fraction_sum <= WS10_ZERO_THRESHOLD
-            {
-                return Err(Self::domain_violation(
-                    node_class,
-                    "published_fraction_sum",
-                    published_fraction_sum,
-                ));
-            }
-            for fraction in &mut particle_flow_fractions {
-                *fraction /= published_fraction_sum;
-            }
-        }
-
-        if qpo <= WS10_ZERO_THRESHOLD || incoming_sediment_mass_kg <= WS10_ZERO_THRESHOLD {
-            return Ok(Ws19ChannelSedimentPublication {
+        let (particle_flow_fractions, particle_diameters_m) =
+            Self::direct_sediment_publication_particles(
+                &routed.outgoing_class_mass_kg,
+                &active,
+                node_class,
+            )?;
+        if qpo <= WS10_ZERO_THRESHOLD
+            || accumulator.incoming_sediment_mass_kg <= WS10_ZERO_THRESHOLD
+        {
+            return Ok(Self::direct_sediment_publication(
                 qsed,
-                tc: 0.0,
+                0.0,
                 particle_flow_fractions,
                 particle_diameters_m,
-                ws29_widb_points_ft,
-                ws31_wida_points_ft,
-                ws20_case1_segments: ws20_diagnostics.case1_segments,
-                ws20_case2_segments: ws20_diagnostics.case2_segments,
-                ws24_case2_detach_segments: ws20_diagnostics.ws24_case2_detach_segments,
-                ws21_case3_segments: ws20_diagnostics.case3_segments,
-                ws21_case4_segments: ws20_diagnostics.case4_segments,
-                ws21_enddet_segments: ws20_diagnostics.enddet_segments,
-            });
-        }
-
-        let terminal_point = control
-            .segment_points
-            .get(nslpts - 1)
-            .ok_or_else(|| Self::missing_required(node_class, "terminal_segment"))?;
-        Self::direct_require_range(
-            node_class,
-            "terminal_slope",
-            terminal_point.slope,
-            Some(WS18_MIN_CHANNEL_SLOPE),
-            None,
-        )?;
-        Self::direct_require_range(
-            node_class,
-            "terminal_width",
-            terminal_point.width_b_ft,
-            Some(WS10_ZERO_THRESHOLD),
-            None,
-        )?;
-        Self::direct_require_range(
-            node_class,
-            "terminal_depth",
-            terminal_point.depth_b_ft,
-            Some(0.0),
-            None,
-        )?;
-
-        let q_cfs = qpo * WS18_CFS_PER_CMS;
-        if !q_cfs.is_finite() || q_cfs < 0.0 {
-            return Err(Self::domain_violation(node_class, "q_cfs", q_cfs));
-        }
-
-        let flagct =
-            Self::ws30_shape_flag_from_ishape(node_class, control.node_id, sediment_controls.ishape)?;
-        let flagc =
-            Self::ws30_apply_erodible_rectangular_fallback(flagct, terminal_point.depth_b_ft);
-        let crsh = sediment_controls.chntcr * WS15_CRSH_FROM_CHNTCR_SCALE;
-        let (flow_width_ft, effsh) = Self::ws18_hydchn(
-            node_class,
-            flagc,
-            q_cfs,
-            terminal_point.slope,
-            sediment_controls.ctlz,
-            sediment_controls.chnz,
-            terminal_point.width_b_ft,
-            roughness,
-            crsh,
-            sediment_controls.chnnbr,
-        )?;
-        if flow_width_ft <= WS10_ZERO_THRESHOLD {
-            return Err(Self::domain_violation(
-                node_class,
-                "flow_width_ft",
-                flow_width_ft,
+                routed,
             ));
         }
 
-        let mut qs = Vec::new();
-        let mut crdia_ft = Vec::new();
-        let mut crspg = Vec::new();
-        for class_offset in 0..class_mass_kg.len() {
-            let class_mass = class_mass_kg[class_offset];
-            if class_mass <= WS10_ZERO_THRESHOLD {
-                continue;
-            }
-            let class_diameter_m = class_diameter_mass_m[class_offset] / class_mass;
-            if !class_diameter_m.is_finite() || class_diameter_m <= WS10_ZERO_THRESHOLD {
-                return Err(Self::domain_violation(
-                    node_class,
-                    "capacity_class_diameter_m",
-                    class_diameter_m,
-                ));
-            }
-            let class_load_lbs_per_s = class_mass * WS18_LBS_PER_KG / event_duration;
-            if !class_load_lbs_per_s.is_finite() || class_load_lbs_per_s < 0.0 {
-                return Err(Self::domain_violation(
-                    node_class,
-                    "class_load_lbs_s",
-                    class_load_lbs_per_s,
-                ));
-            }
-
-            qs.push(class_load_lbs_per_s / flow_width_ft);
-            crdia_ft.push(class_diameter_m * WS15_DEPTH_FROM_METERS_TO_FEET);
-            let specific_gravity =
-                WS18_DEFAULT_CRSPG
-                    .get(class_offset)
-                    .copied()
-                    .ok_or_else(|| {
-                        Self::domain_violation(
-                            node_class,
-                            "particle_class_index",
-                            f64::from(u32::try_from(class_offset + 1).unwrap_or(u32::MAX)),
-                        )
-                    })?;
-            crspg.push(specific_gravity);
-        }
-
-        let tc_per_width = Self::ws18_trncap(effsh, &qs, &crdia_ft, &crspg);
-        let tc_lbs_per_s = tc_per_width.iter().copied().sum::<f64>() * flow_width_ft;
-        let tc = tc_lbs_per_s / WS18_LBS_PER_KG;
-        if !tc.is_finite() || tc < 0.0 {
-            return Err(Self::domain_violation(node_class, "tc", tc));
-        }
-
-        Ok(Ws19ChannelSedimentPublication {
+        let tc = Self::direct_sediment_transport_capacity(&context, &accumulator)?;
+        Ok(Self::direct_sediment_publication(
             qsed,
             tc,
             particle_flow_fractions,
             particle_diameters_m,
-            ws29_widb_points_ft,
-            ws31_wida_points_ft,
-            ws20_case1_segments: ws20_diagnostics.case1_segments,
-            ws20_case2_segments: ws20_diagnostics.case2_segments,
-            ws24_case2_detach_segments: ws20_diagnostics.ws24_case2_detach_segments,
-            ws21_case3_segments: ws20_diagnostics.case3_segments,
-            ws21_case4_segments: ws20_diagnostics.case4_segments,
-            ws21_enddet_segments: ws20_diagnostics.enddet_segments,
-        })
+            routed,
+        ))
     }
 
     fn direct_ws20_channel_profile(
@@ -1778,3 +2305,6 @@ impl Ws10ChannelImpoundmentKernel {
         }
     }
 }
+
+#[cfg(test)]
+include!("direct_tests.rs");

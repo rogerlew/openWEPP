@@ -29,6 +29,16 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-09`:
+- `20260709-cqr-nightly-06-watershed-kernel-direct-001/` -
+  EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-09): CQR Nightly target #6 completed
+  behavior-preserving CRAP/cyclomatic-complexity closure of
+  `crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs`.
+  The target reduced functions above CRAP `30` from `7` to `0`; final max CRAP
+  is `23.069544598035826`, target LCOV is `1782/1888`, target region coverage
+  is `2123/2274`, and final gates passed, including workspace clippy,
+  full-nextest `1558/1558`, deny, package doc lint, review, and verification.
+  Package:
+  `20260709-cqr-nightly-06-watershed-kernel-direct-001/`.
 - `20260709-agent-instruction-discovery-index-tooling-001/` -
   EXECUTED-COMPLETE-AGENT-INSTRUCTION-DISCOVERY (2026-07-09): added
   `tools/agents/find-agents`, `docs/agent-guidance-map.md`, and work-package/root

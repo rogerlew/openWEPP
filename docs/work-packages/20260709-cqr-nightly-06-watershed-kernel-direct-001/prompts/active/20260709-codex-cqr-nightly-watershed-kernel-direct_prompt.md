@@ -39,18 +39,21 @@ Conditional:
 On-demand:
 
 - `crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs`
+- `crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct_tests.rs`
 - `crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/helpers.rs`
 - `crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/types.rs`
 - `crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/01_ws22_ws23_ws26_detachment.rs`
 - `crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/02_ws20_segment_routing.rs`
 - adjacent watershed direct/runtime tests if characterization needs fixtures
 
-Required-reading budget: `375407` bytes, `OK`; map:
+Required-reading budget: `479857` bytes after the package-authored
+`direct_tests.rs` split, `OVER-BUDGET` with accepted disposition in
 `artifacts/required-reading-map.md`.
 
 Files:
 
 - `crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs`
+- `crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct_tests.rs`
 - `docs/work-packages/20260709-cqr-nightly-06-watershed-kernel-direct-001/**`
 
 Task: execute the CQR nightly package for
@@ -100,7 +103,8 @@ behavior-identity verification, review, and verification. Outputs:
 `artifacts/verification_agent_a.md`, `artifacts/verification_agent_b.md`,
 compact metrics, command logs, and artifact paths. Write access: read-only
 unless a subagent is explicitly assigned a bounded implementation fix in
-`crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs` or
+`crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs`,
+`crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct_tests.rs`, or
 package-local artifacts.
 
 Autonomy: execute package phases end-to-end and update required artifacts

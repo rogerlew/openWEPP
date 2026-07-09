@@ -1,10 +1,12 @@
 # CQR Nightly 06 - Watershed Kernel Direct
 
 Package: `20260709-cqr-nightly-06-watershed-kernel-direct-001`
-Status: `QUEUED`
+Status: `EXECUTED-COMPLETE-CQR-NIGHTLY`
 ExecPlan: `docs/work-packages/cqr-nightly-burndown-execplan.md`
 Target module:
 `crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs`
+Target test include:
+`crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct_tests.rs`
 Target rank: `6` of `10`
 Quality dimension: `CRAP/cyclomatic-complexity`
 
@@ -94,8 +96,11 @@ Out of scope:
 ## Intended Write Set
 
 - `crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs`
+- `crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct_tests.rs`
 - package-local artifacts under
   `docs/work-packages/20260709-cqr-nightly-06-watershed-kernel-direct-001/**`
+- local raw gate logs under
+  `artifacts/20260709-cqr-nightly-06-watershed-kernel-direct-001/**`
 - `docs/work-packages/README.md` after closure if catalog update is needed
 
 Do not edit unrelated dirty files. If the target path is already dirty from
