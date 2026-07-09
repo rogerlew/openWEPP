@@ -1,0 +1,19 @@
+command-07-start: 2026-07-09T17:56:08Z
+   Compiling openwepp-watershed-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-watershed-orchestrator)
+   Compiling openwepp-watershed-output v0.1.0 (/home/workdir/openWEPP/crates/openwepp-watershed-output)
+   Compiling openwepp-runner v0.1.0 (/home/workdir/openWEPP/crates/openwepp-runner)
+   Compiling openwepp v0.1.0 (/home/workdir/openWEPP)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.63s
+────────────
+ Nextest run ID e7829f31-864d-46ed-ad1d-816b9a5a67da with nextest profile: full
+    Starting 1527 tests across 171 binaries (3 tests skipped)
+        SLOW [> 90.000s] (─────────) openwepp-hillslope-orchestrator ofe_routing::d10b_reconciliation_tests::case4_manning_solver_converges_to_iwagaki_oracle
+        SLOW [> 90.000s] (─────────) openwepp-hillslope-orchestrator ofe_routing::iwagaki_oracle::tests::characteristics_fan_cross_validates_upwind_reference
+        SLOW [> 90.000s] (─────────) openwepp-hillslope-orchestrator ofe_routing::iwagaki_oracle::tests::upwind_case4_self_convergence
+        SLOW [> 90.000s] (─────────) openwepp::snowdensity05e_melt_adjudication coe_melt_snowbench_runs_both_models_as_diagnostic_only
+  Cancelling due to interrupt: 1 test still running
+      SIGINT [  56.656s] (1507/1527) openwepp::snowdensity10_3_1a_per_day_cancov snowdensity10_3_1a_coe_melt_consumes_daily_canopy_sidecar
+────────────
+     Summary [ 508.112s] 1507/1527 tests run: 1506 passed (4 slow), 1 failed, 3 skipped
+warning: 20/1527 tests were not run due to interrupt
+error: test run failed

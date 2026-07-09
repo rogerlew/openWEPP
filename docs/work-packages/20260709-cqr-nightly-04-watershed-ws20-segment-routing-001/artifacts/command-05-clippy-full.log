@@ -1,0 +1,40 @@
+    Checking openwepp-watershed-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-watershed-orchestrator)
+error: items after a test module
+    --> crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/02_ws20_segment_routing.rs:1190:1
+     |
+1190 |   mod ws20_segment_routing_tests {
+     |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/diagnostics.rs:1:1
+     |
+   1 |   impl Ws10ChannelImpoundmentKernel {
+     |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/validation.rs:1:1
+     |
+   1 |   impl Ws10ChannelImpoundmentKernel {
+     |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+    ::: crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs:1:5
+     |
+   1 |   use crate::runtime_inputs::{
+     |  _____^
+   2 | |     WatershedRuntimeInputError, derive_ws12_impoundment_coefficients,
+     | |     ^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   3 | |     derive_ws12_outflow_function_families,
+     | |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   4 | | };
+     | |_^
+   5 |   use openwepp_topology::TopologyNodeKey;
+     |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   6 |
+   7 |   impl Ws10ChannelImpoundmentKernel {
+     |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#items_after_test_module
+     = note: `-D clippy::items-after-test-module` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::items_after_test_module)]`
+
+    Checking openwepp-watershed-output v0.1.0 (/home/workdir/openWEPP/crates/openwepp-watershed-output)
+error: could not compile `openwepp-watershed-orchestrator` (lib test) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...

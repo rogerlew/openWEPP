@@ -1,7 +1,7 @@
 # CQR Nightly 04 - Watershed WS20 Segment Routing
 
 Package: `20260709-cqr-nightly-04-watershed-ws20-segment-routing-001`
-Status: `QUEUED`
+Status: `EXECUTED-HOLD-CQR-NIGHTLY-LOCAL-ADR0021-COVERAGE-BLOCKER`
 ExecPlan: `docs/work-packages/cqr-nightly-burndown-execplan.md`
 Target module:
 `crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/02_ws20_segment_routing.rs`
