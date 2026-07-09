@@ -9,6 +9,19 @@
 > package-local `package.md`, and the active/held package pointer below; they
 > enter the execution log after closure.
 
+## Reusable Execution Plans And Templates
+
+- `cqr-nightly-burndown-execplan.md` defines the operator shorthand
+  `execute cqr nightly for <N> modules`: measure live workspace CRAP/LCOV, select
+  the top eligible production modules, scaffold one ordinary CQR work package per
+  target, commit the scaffold, execute, and commit completion or hold evidence.
+- `templates/cqr-nightly-package.md` is the package-local template for each
+  selected CQR nightly target.
+- `templates/cqr-nightly-kickoff-prompt.md` is the active kickoff prompt template
+  for each selected CQR nightly target.
+- `kernel-boundary-cqr-burndown-execplan.md` is historical: it closed the
+  fixed-scope kernel-boundary CQR row series on 2026-07-01.
+
 ## Current Active/Held Packages
 
 State as of `2026-07-09`:

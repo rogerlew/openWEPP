@@ -18,8 +18,12 @@
 - `docs/codex_exec_plans.md` — base ExecPlan expectations.
 - `docs/defect_closure_execplans.md` — DC-ExecPlan requirements.
 - `docs/standards/mechanical-refactor-authoring-guide.md` — mechanical refactor closure loop and artifact expectations.
+- `docs/standards/code-quality-refactor-authoring-guide.md` — metric-driven behavior-preserving CQR requirements.
 - `docs/standards/kernel-work-package-preparation.md` — required kernel package preparation procedure.
 - `docs/standards/prompt-wording-guidance.md` — required prompt wording standard.
+- `docs/work-packages/cqr-nightly-burndown-execplan.md` — operator-facing rolling CQR nightly process.
+- `docs/work-packages/templates/cqr-nightly-package.md` — per-target CQR nightly package template.
+- `docs/work-packages/templates/cqr-nightly-kickoff-prompt.md` — per-target CQR nightly kickoff prompt template.
 - Package-local `package.md`, `prompts/`, and `artifacts/` directories.
 
 ## Standard Workflow
@@ -165,6 +169,31 @@
 - Fall back to `cargo test --workspace` only for libtest-specific behavior or explicitly required legacy harness checks, and label that as a compatibility run rather than the default closure path.
 - Package-required validation overrides generic ambient instructions to skip tests.
 - Reconcile tests mechanically only; do not hide semantic changes inside refactor diffs.
+
+## CQR Nightly Burndowns
+- Operator phrasing such as `execute cqr nightly for 8 modules` means: read
+  `docs/work-packages/cqr-nightly-burndown-execplan.md`, measure live workspace
+  CRAP/LCOV, select the requested number of eligible production modules, scaffold
+  one package per module from
+  `docs/work-packages/templates/cqr-nightly-package.md`, and execute each package
+  end-to-end.
+- Each scaffolded package must also copy
+  `docs/work-packages/templates/cqr-nightly-kickoff-prompt.md` into
+  `prompts/active/` and fill in `Execution mode`, `Autonomy`, tiered required
+  reading, required-reading budget/map, and required heavy-run subagent wording.
+- CQR nightly packages are behavior-preserving maintenance. They may add
+  characterization tests and decompose high-CRAP functions, but they must not
+  change science formulas, contract authority, thresholds, serialization,
+  fail-closed semantics, or public output meaning.
+- When characterization tests are added or materially changed, record ADR-0021
+  coverage closure: tier assignment, line/region threshold status,
+  per-function region-floor disposition, and obligation-to-test binding.
+- Commit discipline is part of the process: create a scaffold commit before
+  implementation edits for each selected module, then create either a completion
+  commit or a hold-evidence commit before moving to the next selected module.
+- Local target holds roll back only that package's implementation edits, preserve
+  and commit hold evidence, and may continue to the next target. Global/process
+  holds stop the nightly batch.
 
 ## Validation Checklist
 - Package-specific gates from `package.md`.
