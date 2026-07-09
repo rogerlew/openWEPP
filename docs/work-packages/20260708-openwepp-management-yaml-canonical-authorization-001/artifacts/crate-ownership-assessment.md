@@ -1,6 +1,6 @@
 # Crate Ownership Assessment
 
-Status: draft recommendation.
+Status: implemented disposition.
 
 ## Recommendation
 
@@ -10,19 +10,19 @@ Create a publishable shared schema crate:
 crates/openwepp-management-schema
 ```
 
-This crate should own canonical management YAML Rust types, serde
+Implemented. This crate owns canonical management YAML Rust types, serde
 serialization/deserialization, extension policy helpers, typed validation
 errors, schema-version dispatch, and optional generated schema artifacts.
 
-`openwepp-input-contract` should remain the legacy/parser-contract crate for
-flat WEPP input surfaces. It may depend on `openwepp-management-schema` only if
-contract tests need shared types, but it should not become the owner of the new
-native YAML schema.
+`openwepp-input-contract` remains the legacy/parser-contract crate for flat WEPP
+input surfaces and now depends on `openwepp-management-schema` for the YAML
+adapter. It does not own the native YAML schema API.
 
 `openwepp-landuse-migrate` should depend on `openwepp-management-schema` to emit
-and validate YAML. The hillslope orchestrator/runtime intake should depend on
-the same crate to consume YAML. This keeps producer and consumer on one type
-surface.
+and validate YAML. The current runtime consumer path reaches the schema through
+`openwepp-input-contract::parsers::management::parse_management_document_from_path`.
+This keeps producer and consumer on one type surface without making the runner
+own schema details directly.
 
 ## Rationale
 
@@ -77,8 +77,5 @@ It should not own:
 
 ## Implementation Note
 
-The YAML authorization package should disposition this recommendation before
-code lands. Deviating from the dedicated crate path requires a recorded review
-finding explaining why the chosen owner remains publishable, shared by producer
-and consumer, and does not entangle legacy flat-parser compatibility with native
-YAML schema ownership.
+The YAML authorization package adopted the dedicated crate path. No deviation
+was taken.

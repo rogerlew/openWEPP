@@ -1,0 +1,120 @@
+format: openwepp-management-yaml
+schema_version: 1
+datver: ow-lanuse-1
+topology:
+  nofes: 1
+  total_years: 1
+metadata:
+  name: Forest_Management
+  description:
+    - d1
+    - d2
+    - d3
+  provenance:
+    source_path: canonical_forest_nonzero_ow_lanuse_1.man
+    source_datver: ow-lanuse-1
+    migrator: openwepp-landuse-migrate scaffold fixture
+plants:
+  - landuse: native_forest
+    name: Forest_High_Severity_Fire
+    description:
+      - d1
+      - d2
+      - d3
+    forest_class: forest_high_sev_fire
+    growth:
+      bb: 14.0
+      bbb: 3.0
+      beinp: 0.0
+      btemp: 2.0
+      otemp: 20.0
+      gddmax: 0.1
+      dlai: 0.5
+      dropfc: 1.0
+      decfct: 1.0
+      spriod: 90.0
+      extnct: 0.45
+      flivmx: 17.0
+      hmax: 0.2
+      hi: 0.42
+      pltol: 0.0
+      xmxlai: 2.0
+      rsr: 0.33
+      rtmmax: 0.2
+      rdmax: 0.3
+    cf: 5.0
+    diam: 0.005
+    decomposition:
+      oratea: 0.0
+      orater: 0.0
+    community:
+      tempmn: -5.0
+      gtemp: 5.0
+      plive: 0.2
+      wood: 0.1
+      grass:
+        coeff: 0.0
+        diam: 0.0
+        hgt: 0.0
+        pop: 0.0
+      shrub:
+        coeff: 0.0
+        diam: 0.0
+        hgt: 0.0
+        pop: 0.0
+      tree:
+        coeff: 0.02
+        diam: 2.0
+        hgt: 8.0
+        pop: 500.0
+    routing_coefficients:
+      k_o: 500.0
+      form_c_d: 1.25
+      d_r_m: 0.06
+      lambda: 0.2
+      vegetation_c_d: 0.7
+      authority:
+        source: disturbed-route-coefficients
+        version: 2026-07-08
+        checksum: fixture
+        disturbed_class: high_severity_fire
+initial_conditions:
+  - landuse: native_forest
+    name: Forest_Initial
+    description:
+      - d1
+      - d2
+      - d3
+    cancov: 0.4
+    inrcov: 0.3
+    rilcov: 0.3
+    rrinit: 0.06
+    iresd: 1
+    imngmt: 2
+    sumrtm: 0.1
+    sumsrm: 0.2
+    tillay1: 0.1
+    tillay2: 0.2
+yearly_scenarios:
+  - landuse: native_forest
+    name: Forest_Yearly
+    description:
+      - d1
+      - d2
+      - d3
+    itype: 1
+    jdharv: 0
+    jdplt: 0
+    jdstop: 0
+    rw: 0.0
+schedule:
+  ofe_initial_refs:
+    - 1
+  rotation_repeats: 1
+  rotation_years: 1
+  slots:
+    - rotation_index: 1
+      year_in_rotation: 1
+      ofe_index: 1
+      yearly_refs:
+        - 1

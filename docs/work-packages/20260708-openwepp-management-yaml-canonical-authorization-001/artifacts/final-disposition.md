@@ -1,22 +1,30 @@
 # Final Disposition
 
-Status: `SCAFFOLDED-AUTHORIZATION-PACKAGE`.
+Status: `EXECUTED-COMPLETE`.
 
-The work-package scaffold, active execution prompt, draft YAML specification,
-input-surface registry row, roadmap entry, and package catalog entry exist. The
-package is ready to execute as the authority and implementation prerequisite
-for the migration CLI. The scaffold records the extension policy and recommends
-a dedicated publishable `crates/openwepp-management-schema` crate for long-term
-schema ownership.
+The package authorized and implemented canonical management YAML for
+`ow-lanuse-1+`. The implementation added a publishable shared schema crate,
+strict YAML validation, a YAML-to-`ManagementParseOutput` adapter, runner intake
+dispatch, and fixture-backed tests proving YAML route coefficients reach both
+runner intake and existing PL route coefficient symbols.
 
-Rust implementation has not started.
+Authority landed:
 
-## Verification
+- `SC-INFILE-MANAGEMENT-YAML-001`
+- `SC-OFEROUTE-001` rev 50
+- `LANUSE-AUTH-8`
+- active `infile-management-yaml` registry row
 
-Ran:
+Final verification:
 
-- `markdown-doc lint --path docs/work-packages/20260708-landuse-migration-cli-spec-implementation-001 --path docs/work-packages/20260708-openwepp-management-yaml-canonical-authorization-001 --path docs/specifications/wepp-input-files/specs/landuse-migration-cli.spec.md --path docs/specifications/wepp-input-files/specs/management-yaml.spec.md --path docs/specifications/wepp-input-files/specs/README.md --path docs/specifications/wepp-input-files/README.md --path docs/specifications/wepp-input-files/input-surface-registry.md --path docs/ROADMAP.md --path docs/work-packages/README.md`
+- `cargo fmt --check`
+- `cargo clippy --workspace --all-targets -- -D warnings`
+- `cargo nextest run --workspace --profile full` -> 1446 passed, 3 skipped
+- `cargo deny check`
+- `cargo test -p openwepp-management-schema`
+- `cargo test --test infile_management_yaml_contract`
+- `cargo test -p openwepp-runner runner_management_intake_dispatches_canonical_yaml_path`
+- scoped `markdown-doc lint` -> 21 files, 0 errors, 0 warnings
 - `git diff --check`
 
-Result: both passed. Markdown lint validated 33 files with 0 errors and 0
-warnings.
+Publish dry-run and final hygiene are recorded in `artifacts/gate-results.md`.

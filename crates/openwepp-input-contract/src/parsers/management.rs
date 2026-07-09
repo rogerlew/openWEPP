@@ -6,6 +6,8 @@ use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
 
+use openwepp_management_schema as management_yaml;
+
 const ALLOWED_DATVERS: &[&str] = &["95.7", "98.4", "2016.3", "2017.1", OW_LANUSE_1_DATVER];
 
 /// openWEPP-native management datver that unlocks first-class `lanuse` modes
@@ -500,6 +502,9 @@ pub enum ManagementParseError {
     TrailingInput {
         first_unconsumed_line: usize,
     },
+    YamlInputError {
+        detail: String,
+    },
 }
 
 impl ManagementParseError {
@@ -519,6 +524,7 @@ impl ManagementParseError {
             Self::TotalYearMismatch { .. } => "MAN-E-008",
             Self::DanglingScenarioReference { .. } => "MAN-E-009",
             Self::DateDomainError { .. } => "MAN-E-010",
+            Self::YamlInputError { .. } => "MAN-YAML-E-000",
         }
     }
 }
@@ -614,6 +620,9 @@ impl fmt::Display for ManagementParseError {
                 self.contract_error_id(),
                 first_unconsumed_line
             ),
+            Self::YamlInputError { detail } => {
+                write!(f, "{}: {detail}", self.contract_error_id())
+            }
         }
     }
 }
@@ -638,6 +647,599 @@ pub fn parse_management_from_path(
             source,
         })?;
     parse_management_from_str(&content, mode)
+}
+
+pub fn parse_management_document_from_path(
+    path: impl AsRef<Path>,
+    mode: ParseMode,
+) -> Result<ManagementParseOutput, ManagementParseError> {
+    let path_ref = path.as_ref();
+    if management_yaml::consumer_accepts_management_yaml_extension(path_ref) {
+        let document = management_yaml::parse_management_yaml_from_path(path_ref)
+            .map_err(map_management_yaml_error)?;
+        return management_yaml_document_to_parse_output(document);
+    }
+    parse_management_from_path(path_ref, mode)
+}
+
+fn map_management_yaml_error(error: management_yaml::ManagementYamlError) -> ManagementParseError {
+    match error {
+        management_yaml::ManagementYamlError::InputOpen { path, source } => {
+            ManagementParseError::InputOpenError { path, source }
+        }
+        other => ManagementParseError::YamlInputError {
+            detail: other.to_string(),
+        },
+    }
+}
+
+fn management_yaml_document_to_parse_output(
+    document: management_yaml::ManagementYamlDocument,
+) -> Result<ManagementParseOutput, ManagementParseError> {
+    management_yaml::validate_management_yaml_document(&document)
+        .map_err(map_management_yaml_error)?;
+
+    let plants = document
+        .plants
+        .into_iter()
+        .map(yaml_plant_to_management)
+        .collect::<Result<Vec<_>, _>>()?;
+    let operations = document
+        .operations
+        .into_iter()
+        .map(yaml_operation_to_management)
+        .collect::<Result<Vec<_>, _>>()?;
+    let initials = document
+        .initial_conditions
+        .into_iter()
+        .map(yaml_initial_to_management)
+        .collect::<Result<Vec<_>, _>>()?;
+    let surfaces = document
+        .surface_effects
+        .into_iter()
+        .map(yaml_surface_to_management)
+        .collect::<Result<Vec<_>, _>>()?;
+    let contours = document
+        .contours
+        .into_iter()
+        .map(yaml_contour_to_management)
+        .collect::<Result<Vec<_>, _>>()?;
+    let drains = document
+        .drains
+        .into_iter()
+        .map(yaml_drain_to_management)
+        .collect::<Result<Vec<_>, _>>()?;
+    let yearlies = document
+        .yearly_scenarios
+        .into_iter()
+        .map(yaml_yearly_to_management)
+        .collect::<Result<Vec<_>, _>>()?;
+
+    let section_counts = ManagementSectionCounts {
+        ncrop: plants.len(),
+        nop: operations.len(),
+        nini: initials.len(),
+        nseq: surfaces.len(),
+        ncnt: contours.len(),
+        ndrain: drains.len(),
+        nscen: yearlies.len(),
+    };
+    let schedule = ManagementSchedule {
+        ofe_initial_refs: document.schedule.ofe_initial_refs,
+        rotation_repeats: document.schedule.rotation_repeats,
+        rotation_years: document.schedule.rotation_years,
+        slots: document
+            .schedule
+            .slots
+            .into_iter()
+            .map(yaml_schedule_slot_to_management)
+            .collect::<Result<Vec<_>, _>>()?,
+    };
+    Ok(ManagementParseOutput {
+        datver: document.datver,
+        topology_count: document.topology.nofes,
+        declared_total_years: document.topology.total_years,
+        section_counts,
+        registries: ManagementScenarioRegistries {
+            plants,
+            operations,
+            initials,
+            surfaces,
+            contours,
+            drains,
+            yearlies,
+            management_meta: ManagementSectionMeta {
+                name: document.metadata.name,
+                description: vec_description_to_array(
+                    "metadata.description",
+                    document.metadata.description,
+                )?,
+                nofes: document.topology.nofes,
+            },
+        },
+        schedule,
+    })
+}
+
+fn yaml_plant_to_management(
+    plant: management_yaml::PlantScenario,
+) -> Result<PlantScenario, ManagementParseError> {
+    match plant {
+        management_yaml::PlantScenario::NativeCropland {
+            name,
+            description,
+            crunit,
+            canopy_line,
+            growth_line,
+            mfocod,
+            residue_line,
+            terminal_line,
+            rcc,
+            routing_coefficients,
+        } => Ok(PlantScenario {
+            meta: yaml_scenario_meta(
+                name,
+                description,
+                NATIVE_CROPLAND_LANUSE_SENTINEL,
+                "plants[].description",
+            )?,
+            data: PlantScenarioData::Cropland(PlantCroplandData {
+                crunit,
+                canopy_line,
+                growth_line,
+                mfocod,
+                residue_line,
+                terminal_line,
+                rcc,
+                routing: routing_coefficients
+                    .as_ref()
+                    .map(yaml_routing_to_management),
+            }),
+        }),
+        management_yaml::PlantScenario::NativeForest {
+            name,
+            description,
+            forest_class,
+            growth,
+            cf,
+            diam,
+            decomposition,
+            community,
+            routing_coefficients,
+        } => Ok(PlantScenario {
+            meta: yaml_scenario_meta(
+                name,
+                description,
+                FOREST_LANUSE_SENTINEL,
+                "plants[].description",
+            )?,
+            data: PlantScenarioData::Forest(PlantForestData {
+                forest_class,
+                growth: PlantForestGrowth {
+                    bb: growth.bb,
+                    bbb: growth.bbb,
+                    beinp: growth.beinp,
+                    btemp: growth.btemp,
+                    otemp: growth.otemp,
+                    gddmax: growth.gddmax,
+                    dlai: growth.dlai,
+                    dropfc: growth.dropfc,
+                    decfct: growth.decfct,
+                    spriod: growth.spriod,
+                    extnct: growth.extnct,
+                    flivmx: growth.flivmx,
+                    hmax: growth.hmax,
+                    hi: growth.hi,
+                    pltol: growth.pltol,
+                    xmxlai: growth.xmxlai,
+                    rsr: growth.rsr,
+                    rtmmax: growth.rtmmax,
+                    rdmax: growth.rdmax,
+                },
+                cf,
+                diam,
+                decomposition: PlantForestDecomposition {
+                    oratea: decomposition.oratea,
+                    orater: decomposition.orater,
+                },
+                community: PlantForestCommunity {
+                    tempmn: community.tempmn,
+                    gtemp: community.gtemp,
+                    plive: community.plive,
+                    wood: community.wood,
+                    grass: yaml_stratum_to_management(community.grass),
+                    shrub: yaml_stratum_to_management(community.shrub),
+                    tree: yaml_stratum_to_management(community.tree),
+                },
+                routing: routing_coefficients
+                    .as_ref()
+                    .map(yaml_routing_to_management),
+            }),
+        }),
+    }
+}
+
+fn yaml_operation_to_management(
+    operation: management_yaml::OperationScenario,
+) -> Result<OperationScenario, ManagementParseError> {
+    match operation {
+        management_yaml::OperationScenario::NativeCropland {
+            name,
+            description,
+            mfo1,
+            mfo2,
+            numof,
+            pcode,
+            cltpos,
+            effect_line,
+            extension_lines,
+        } => Ok(OperationScenario {
+            meta: yaml_scenario_meta(
+                name,
+                description,
+                NATIVE_CROPLAND_LANUSE_SENTINEL,
+                "operations[].description",
+            )?,
+            data: OperationScenarioData::Cropland(OperationCroplandData {
+                mfo1,
+                mfo2,
+                numof,
+                pcode,
+                cltpos,
+                effect_line,
+                extension_lines,
+            }),
+        }),
+    }
+}
+
+fn yaml_initial_to_management(
+    initial: management_yaml::InitialConditionScenario,
+) -> Result<InitialScenario, ManagementParseError> {
+    match initial {
+        management_yaml::InitialConditionScenario::NativeCropland {
+            name,
+            description,
+            base_line,
+            iresd,
+            imngmt,
+            residue_line,
+            rtyp,
+            thaw_line,
+            terminal_line,
+            understory_line,
+        } => Ok(InitialScenario {
+            meta: yaml_scenario_meta(
+                name,
+                description,
+                NATIVE_CROPLAND_LANUSE_SENTINEL,
+                "initial_conditions[].description",
+            )?,
+            data: InitialScenarioData::Cropland(InitialCroplandData {
+                base_line,
+                iresd,
+                imngmt,
+                residue_line,
+                rtyp,
+                thaw_line,
+                terminal_line,
+                understory_line,
+            }),
+        }),
+        management_yaml::InitialConditionScenario::NativeForest {
+            name,
+            description,
+            cancov,
+            inrcov,
+            rilcov,
+            rrinit,
+            iresd,
+            imngmt,
+            sumrtm,
+            sumsrm,
+            tillay1,
+            tillay2,
+            understory_line,
+        } => Ok(InitialScenario {
+            meta: yaml_scenario_meta(
+                name,
+                description,
+                FOREST_LANUSE_SENTINEL,
+                "initial_conditions[].description",
+            )?,
+            data: InitialScenarioData::Forest(InitialForestData {
+                cancov,
+                inrcov,
+                rilcov,
+                rrinit,
+                iresd,
+                imngmt,
+                sumrtm,
+                sumsrm,
+                tillay1,
+                tillay2,
+                understory_line,
+            }),
+        }),
+    }
+}
+
+fn yaml_surface_to_management(
+    surface: management_yaml::SurfaceEffectScenario,
+) -> Result<SurfaceScenario, ManagementParseError> {
+    match surface {
+        management_yaml::SurfaceEffectScenario::NativeCropland {
+            name,
+            description,
+            ntill,
+            operations,
+        } => Ok(SurfaceScenario {
+            meta: yaml_scenario_meta(
+                name,
+                description,
+                NATIVE_CROPLAND_LANUSE_SENTINEL,
+                "surface_effects[].description",
+            )?,
+            ntill,
+            operations: operations
+                .into_iter()
+                .map(|operation| SurfaceOperation {
+                    mdate: operation.mdate,
+                    op_ref: operation.op_ref,
+                    tildep: operation.tildep,
+                    typtil: operation.typtil,
+                })
+                .collect(),
+        }),
+    }
+}
+
+fn yaml_contour_to_management(
+    contour: management_yaml::ContourScenario,
+) -> Result<ContourScenario, ManagementParseError> {
+    Ok(ContourScenario {
+        meta: yaml_scenario_meta(
+            contour.name,
+            contour.description,
+            NATIVE_CROPLAND_LANUSE_SENTINEL,
+            "contours[].description",
+        )?,
+        cntslp: contour.cntslp,
+        rdghgt: contour.rdghgt,
+        rowlen: contour.rowlen,
+        rowspc: contour.rowspc,
+        contours_perm: contour.contours_perm,
+    })
+}
+
+fn yaml_drain_to_management(
+    drain: management_yaml::DrainScenario,
+) -> Result<DrainScenario, ManagementParseError> {
+    Ok(DrainScenario {
+        meta: yaml_scenario_meta(
+            drain.name,
+            drain.description,
+            NATIVE_CROPLAND_LANUSE_SENTINEL,
+            "drains[].description",
+        )?,
+        ddrain: drain.ddrain,
+        drainc: drain.drainc,
+        drdiam: drain.drdiam,
+        sdrain: drain.sdrain,
+    })
+}
+
+fn yaml_yearly_to_management(
+    yearly: management_yaml::YearlyScenario,
+) -> Result<YearlyScenario, ManagementParseError> {
+    match yearly {
+        management_yaml::YearlyScenario::NativeCropland {
+            name,
+            description,
+            itype,
+            tilseq,
+            conset,
+            drset,
+            imngmt,
+            branch,
+        } => Ok(YearlyScenario {
+            meta: yaml_scenario_meta(
+                name,
+                description,
+                NATIVE_CROPLAND_LANUSE_SENTINEL,
+                "yearly_scenarios[].description",
+            )?,
+            data: YearlyScenarioData::Cropland(YearlyCroplandData {
+                itype,
+                tilseq,
+                conset,
+                drset,
+                imngmt,
+                branch: yaml_yearly_branch_to_management(branch),
+            }),
+        }),
+        management_yaml::YearlyScenario::NativeForest {
+            name,
+            description,
+            itype,
+            jdharv,
+            jdplt,
+            jdstop,
+            rw,
+        } => Ok(YearlyScenario {
+            meta: yaml_scenario_meta(
+                name,
+                description,
+                FOREST_LANUSE_SENTINEL,
+                "yearly_scenarios[].description",
+            )?,
+            data: YearlyScenarioData::Forest(YearlyForestData {
+                itype,
+                jdharv,
+                jdplt,
+                jdstop,
+                rw,
+            }),
+        }),
+    }
+}
+
+fn yaml_yearly_branch_to_management(
+    branch: management_yaml::YearlyCroplandBranch,
+) -> YearlyCroplandBranch {
+    match branch {
+        management_yaml::YearlyCroplandBranch::AnnualOrFallow {
+            jdharv,
+            jdplt,
+            rw,
+            resmgt,
+            extension,
+        } => YearlyCroplandBranch::AnnualOrFallow(YearlyAnnualFallowData {
+            jdharv,
+            jdplt,
+            rw,
+            resmgt,
+            extension: extension.as_ref().map(yaml_yearly_extension_to_management),
+        }),
+        management_yaml::YearlyCroplandBranch::Perennial {
+            jdharv,
+            jdplt,
+            jdstop,
+            rw,
+            mgtopt,
+            cut_days,
+            grazing_cycles,
+        } => YearlyCroplandBranch::Perennial(YearlyPerennialData {
+            jdharv,
+            jdplt,
+            jdstop,
+            rw,
+            mgtopt,
+            cut_days,
+            grazing_cycles: grazing_cycles
+                .into_iter()
+                .map(|cycle| YearlyPerennialGrazingCycle {
+                    animal: cycle.animal,
+                    area: cycle.area,
+                    bodywt: cycle.bodywt,
+                    digest: cycle.digest,
+                    gday: cycle.gday,
+                    gend: cycle.gend,
+                })
+                .collect(),
+        }),
+    }
+}
+
+fn yaml_yearly_extension_to_management(
+    extension: &management_yaml::YearlyAnnualExtension,
+) -> YearlyAnnualExtension {
+    match extension {
+        management_yaml::YearlyAnnualExtension::Herbicide { jdherb } => {
+            YearlyAnnualExtension::Herbicide { jdherb: *jdherb }
+        }
+        management_yaml::YearlyAnnualExtension::Burn {
+            jdburn,
+            fbmag,
+            fbrnog,
+        } => YearlyAnnualExtension::Burn {
+            jdburn: *jdburn,
+            fbmag: *fbmag,
+            fbrnog: *fbrnog,
+        },
+        management_yaml::YearlyAnnualExtension::Silage { jdslge } => {
+            YearlyAnnualExtension::Silage { jdslge: *jdslge }
+        }
+        management_yaml::YearlyAnnualExtension::Cut { jdcut, frcut } => {
+            YearlyAnnualExtension::Cut {
+                jdcut: *jdcut,
+                frcut: *frcut,
+            }
+        }
+        management_yaml::YearlyAnnualExtension::Remove { jdmove, frmove } => {
+            YearlyAnnualExtension::Remove {
+                jdmove: *jdmove,
+                frmove: *frmove,
+            }
+        }
+    }
+}
+
+fn yaml_schedule_slot_to_management(
+    slot: management_yaml::ManagementScheduleSlot,
+) -> Result<ManagementScheduleSlot, ManagementParseError> {
+    Ok(ManagementScheduleSlot {
+        rotation_index: yaml_one_based_to_zero_based(
+            "schedule.slots[].rotation_index",
+            slot.rotation_index,
+        )?,
+        year_in_rotation: yaml_one_based_to_zero_based(
+            "schedule.slots[].year_in_rotation",
+            slot.year_in_rotation,
+        )?,
+        ofe_index: yaml_one_based_to_zero_based("schedule.slots[].ofe_index", slot.ofe_index)?,
+        crop_slots: slot.yearly_refs.len(),
+        yearly_refs: slot.yearly_refs,
+    })
+}
+
+fn yaml_routing_to_management(
+    routing: &management_yaml::RouteCoefficients,
+) -> RoutingCoefficientExtension {
+    RoutingCoefficientExtension {
+        skin_friction_coefficient_ko: routing.k_o,
+        form_drag_coefficient: routing.form_c_d,
+        roughness_element_height_m: routing.d_r_m,
+        roughness_concentration: routing.lambda,
+        vegetation_drag_coefficient: routing.vegetation_c_d,
+    }
+}
+
+const fn yaml_stratum_to_management(
+    stratum: management_yaml::PlantForestStratum,
+) -> PlantForestStratum {
+    PlantForestStratum {
+        coeff: stratum.coeff,
+        diam: stratum.diam,
+        hgt: stratum.hgt,
+        pop: stratum.pop,
+    }
+}
+
+fn yaml_scenario_meta(
+    name: String,
+    description: Vec<String>,
+    landuse: usize,
+    description_field: &'static str,
+) -> Result<ScenarioMeta, ManagementParseError> {
+    Ok(ScenarioMeta {
+        name,
+        description: vec_description_to_array(description_field, description)?,
+        landuse,
+    })
+}
+
+fn vec_description_to_array(
+    field: &'static str,
+    description: Vec<String>,
+) -> Result<[String; 3], ManagementParseError> {
+    let observed = description.len();
+    description
+        .try_into()
+        .map_err(|_| ManagementParseError::RecordArityError {
+            field,
+            observed,
+            expected: "3 description lines",
+        })
+}
+
+fn yaml_one_based_to_zero_based(
+    field: &'static str,
+    value: usize,
+) -> Result<usize, ManagementParseError> {
+    value
+        .checked_sub(1)
+        .ok_or(ManagementParseError::InvalidCount { field, value: 0 })
 }
 
 pub fn parse_management_from_str(

@@ -1,7 +1,7 @@
 # Parser Input Surface Registry
 
 Status: Active
-Last updated: 2026-05-21
+Last updated: 2026-07-08
 
 Purpose: canonical registry of parser-governed input surfaces across hillslope,
 watershed, and sidecar domains.
@@ -17,7 +17,7 @@ Disposition meanings:
 | `infile-climate-cli` | hillslope | `.cli` | active | `SC-INFILE-CLIMATE-001` |
 | `infile-soil-sol` | hillslope | `.sol` | active | `SC-INFILE-SOIL-001` |
 | `infile-management-man` | hillslope | `.man` | active | `SC-INFILE-MANAGEMENT-001` |
-| `infile-management-yaml` | hillslope | openWEPP management `.yaml` | planned | `SC-INFILE-MANAGEMENT-YAML-001` |
+| `infile-management-yaml` | hillslope | openWEPP management `.yaml` | active | `SC-INFILE-MANAGEMENT-YAML-001` |
 | `infile-slope-slp` | hillslope | `.slp` | active | `SC-INFILE-SLOPE-001` |
 | `infile-watershed-structure-str` | watershed | `.str` | active | `SC-INFILE-WATERSHED-STRUCTURE-001` |
 | `infile-watershed-channel-chn` | watershed | `.chn` | active | `SC-INFILE-WATERSHED-CHANNEL-001` |

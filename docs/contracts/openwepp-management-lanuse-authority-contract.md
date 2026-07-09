@@ -1,8 +1,6 @@
 # openWEPP Management-File `lanuse` Authority Contract
 
-Status: `draft-normative` (**skeleton** — ADR-0034 ratifies the authority model
-and `LANUSE-AUTH-1..6`; the concrete `lanuse` operand schema is designed in the
-disturbed-forest campaign WS-1 foundation work-package.)
+Status: `draft-normative`
 
 Governing decision: [ADR-0034](../decisions/0034-management-file-lanuse-input-authority.md).
 Campaign: [disturbed-forest-fidelity-strategy](../planning/disturbed-forest-fidelity-strategy.md).
@@ -15,10 +13,10 @@ provenance.
 
 ## Scope
 
-- The **management-file `lanuse` block** as the authoritative source of opt-in,
-  first-class landuse-physics operands (forest / shrub / grass / …).
+- The **management document `lanuse` block** as the authoritative source of
+  opt-in, first-class landuse-physics operands (forest / shrub / grass / ...).
 - The **authority relationship** between the `.run` file, the management
-  file/`lanuse` record, the authoritative `(texture × class)` land-soil
+  document/`lanuse` record, the authoritative `(texture × class)` land-soil
   parameterization lookup, and the consuming science contracts.
 - The **provenance and fail-closed rules** (typed presence, no legacy-field
   inference, compatibility-input quarantine, reproducibility).
@@ -32,7 +30,7 @@ Out of scope:
 ## Authority model
 
 1. **Management file is authoritative** for opt-in landuse-physics operands. The
-   `.run` file **points to** the management sidecar and is reproducibility
+   `.run` file **points to** the management input document and is reproducibility
    metadata only; it carries no physics selectors and is not the sole record
    that a run used an enhanced path.
 2. **`lanuse` selects a physical mode**, not a cropland masquerade. Each mode's
@@ -76,6 +74,14 @@ Out of scope:
   compatibility, validation, rollback, and regression-diagnosis inputs. They
   MUST NOT satisfy new-physics production authority unless explicitly migrated
   to a native datver with the required operands.
+- **`LANUSE-AUTH-8` — Canonical native producer document.**
+  `openwepp-management-yaml` is the canonical native producer document for
+  `ow-lanuse-1` and later native datvers. Flat `ow-lanuse-1` `.man` remains a
+  parseable source/compatibility bridge, but new producers should emit typed
+  YAML directly once this surface is available. YAML is not a sidecar: it is the
+  management input document referenced by the runfile. Producers emit lowercase
+  `.yaml`; consumers may accept `.yaml`, `.YAML`, `.yml`, and `.YML` only as
+  dispatch extensions and must still validate document identity and operands.
 
 ### Native `ow-lanuse-1` routing extension
 
@@ -84,23 +90,25 @@ mode and `landuse=4` is the first-class native cropland mode. Native cropland
 reuses the cropland section grammar but is no longer legacy compatibility
 cropland (`landuse=1`) for new-physics authority.
 
-Native forest and native cropland plant records MAY carry a marked
-`routing_coefficients` extension followed by exactly five real values:
-`k_o`, form `C_d`, `D_r` (m), `lambda`, and vegetation `C_d`. This extension is
-the management-file authority for the static Lane D routing coefficients. It is
-required for canonical Lane D production/default activation on `ow-lanuse-1` or
-later native datvers. Parser compatibility may still read native records without
-the extension for inspection or explicitly non-Lane-D workflows, but those
-records are not Lane D production-authoritative. The extension is not inferred
-from row width, ridge spacing, random roughness, canopy cover, or other legacy
-cropland fields.
+Native forest and native cropland plant records MUST carry explicit route
+coefficients to be Lane D production/default-activation authority. In canonical
+YAML, this is the typed `routing_coefficients` object with all five static
+operands and provenance. In flat `ow-lanuse-1` `.man`, the bridge encoding is a
+marked `routing_coefficients` extension followed by exactly five real values:
+`k_o`, form `C_d`, `D_r` (m), `lambda`, and vegetation `C_d`. Parser
+compatibility may still read native records without the extension for inspection
+or explicitly non-Lane-D workflows, but those records are not Lane D
+production-authoritative. Route coefficients are not inferred from row width,
+ridge spacing, random roughness, canopy cover, or other legacy cropland fields.
 
 WEPPpy Disturbed is an authorized producer of this native extension when it
 emits explicit route-coefficient columns from its extended lookup table with
 operator-calibration provenance. That producer authority is limited to explicit
-lookup fields materialized into the native `.man`; it does not authorize an
-optional sidecar, hidden bridge from legacy WEPP management operands, or active
-Lane D production from pre-`ow-lanuse-1` datvers.
+lookup fields materialized into the native management document. The canonical
+openWEPP producer target is YAML; flat `.man` materialization is a
+source/compatibility bridge only. This authority does not authorize an optional
+sidecar, hidden bridge from legacy WEPP management operands, or active Lane D
+production from pre-`ow-lanuse-1` datvers.
 
 When `OPENWEPP_LANED_SHADOW=1`, `OPENWEPP_LANED_ACTIVE=1`, or default active
 Lane D production is enabled, Lane D MUST fail closed unless every MOFE lane's
@@ -160,7 +168,8 @@ skeleton.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
-| `2026-07-08` | `3` | `Codex` | Added `LANUSE-AUTH-7`: `ow-lanuse-1` and later native datvers are canonical for new-physics production, route coefficients are required for Lane D production authority, explicit producers must materialize operands into the native `.man`, and legacy datvers stay compatibility/validation/rollback inputs. |
+| `2026-07-08` | `4` | `Codex` | Added `LANUSE-AUTH-8`: `openwepp-management-yaml` is the canonical native producer document for `ow-lanuse-1+`; flat native `.man` remains a source/compatibility bridge; YAML is a primary management input, not a sidecar; producers emit lowercase `.yaml` and consumers accept YAML extension aliases only before schema validation. |
+| `2026-07-08` | `3` | `Codex` | Added `LANUSE-AUTH-7`: `ow-lanuse-1` and later native datvers are canonical for new-physics production, route coefficients are required for Lane D production authority, explicit producers must materialize operands into the native management document, and legacy datvers stay compatibility/validation/rollback inputs. |
 | `2026-07-07` | `2` | `Codex` | Named WEPPpy Disturbed extended lookup as an authorized explicit producer of native `routing_coefficients` with operator-calibration provenance, while preserving the no-legacy-field-bridge rule. |
 | `2026-07-06` | `1` | `Codex` | Added the native cropland `landuse=4` mode and the `routing_coefficients` plant-record extension for static Lane D routing coefficients; recorded the `OPENWEPP_LANED_SHADOW` fail-closed requirement for every scheduled MOFE landuse. |
 | `2026-07-02` | `0` (skeleton) | `Claude Code` | Initial skeleton under ADR-0034: authority model + `LANUSE-AUTH-1..6` normative rules + operand-surface stub. Concrete `lanuse` operand schema deferred to the disturbed-forest campaign WS-1 foundation work-package. |

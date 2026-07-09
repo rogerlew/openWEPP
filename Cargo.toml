@@ -13,6 +13,7 @@ members = [
     "crates/openwepp-climate-runtime-adapter",
     "crates/openwepp-hillslope-output",
     "crates/openwepp-watershed-output",
+    "crates/openwepp-management-schema",
     "crates/openwepp-input-contract",
     "crates/openwepp-sim-contract",
     "crates/openwepp-kernel-contract",
@@ -57,6 +58,7 @@ workspace = true
 
 [dependencies]
 openwepp-climate-runtime-adapter = { path = "crates/openwepp-climate-runtime-adapter", version = "0.1.0" }
+openwepp-management-schema = { path = "crates/openwepp-management-schema", version = "0.1.0" }
 openwepp-input-contract = { path = "crates/openwepp-input-contract", version = "0.1.0" }
 openwepp-sim-contract = { path = "crates/openwepp-sim-contract", version = "0.1.0" }
 openwepp-kernel-contract = { path = "crates/openwepp-kernel-contract", version = "0.1.0" }
@@ -102,6 +104,10 @@ path = "tests/integration/infile_climate_parser_contract.rs"
 [[test]]
 name = "infile_management_parser_contract"
 path = "tests/integration/infile_management_parser_contract.rs"
+
+[[test]]
+name = "infile_management_yaml_contract"
+path = "tests/integration/infile_management_yaml_contract.rs"
 
 [[test]]
 name = "infile_frost_parser_contract"

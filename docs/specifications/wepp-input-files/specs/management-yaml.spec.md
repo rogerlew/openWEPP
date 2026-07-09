@@ -4,11 +4,11 @@
 
 - `spec_id`: `SPEC-INFILE-MANAGEMENT-YAML-001`
 - `surface_id`: `infile-management-yaml`
-- `status`: `draft`
+- `status`: `draft-implemented`
 - `owner`: `openWEPP`
-- `spec_version`: `0.1.0`
-- `last_updated_utc`: `2026-07-08T23:45:00Z`
-- `evidence_mode`: `Static`
+- `spec_version`: `0.2.0`
+- `last_updated_utc`: `2026-07-08T00:00:00Z`
+- `evidence_mode`: `Static + Ran`
 
 ## Purpose
 
@@ -22,7 +22,7 @@ datver and physics eligibility.
 
 ## Format Identity
 
-Initial file surface:
+Canonical file identity:
 
 ```yaml
 format: openwepp-management-yaml
@@ -85,21 +85,61 @@ For new Lane D/native landuse physics:
 
 ## Typed Schema Requirements
 
-The implementation package must define Rust types and a machine-readable schema
-for the YAML surface. The schema must be strict by default.
+The implemented Rust schema surface is
+`crates/openwepp-management-schema/src/lib.rs`. The runtime adapter is
+`crates/openwepp-input-contract/src/parsers/management.rs`.
+
+The schema is strict by default. Unknown fields, missing required fields,
+unsupported identity values, invalid counts, dangling references, and invalid
+route-coefficient authority fail closed before runtime projection.
 
 Minimum top-level concepts:
 
 - document identity: `format`, `schema_version`, `datver`;
 - management metadata: name, description, provenance;
+- topology: `nofes`, `total_years`;
 - typed plant scenarios;
 - typed operation scenarios;
 - typed initial-condition scenarios;
 - typed surface-effect scenarios;
 - typed contour and drainage scenarios where present;
 - typed yearly scenarios;
-- typed management schedule with OFE, rotation, year, and crop-slot references;
+- typed management schedule with OFE, rotation, year, and yearly references;
 - validation metadata sufficient to report source/migration provenance.
+
+Implemented top-level layout (section arrays shown structurally; a valid file
+must populate required plant, initial-condition, yearly, and schedule records):
+
+```yaml
+format: openwepp-management-yaml
+schema_version: 1
+datver: ow-lanuse-1
+topology:
+  nofes: 1
+  total_years: 1
+metadata:
+  name: Forest_Management
+  description: [d1, d2, d3]
+plants: []
+operations: []
+initial_conditions: []
+surface_effects: []
+contours: []
+drains: []
+yearly_scenarios: []
+schedule:
+  ofe_initial_refs: [1]
+  rotation_repeats: 1
+  rotation_years: 1
+  slots:
+    - rotation_index: 1
+      year_in_rotation: 1
+      ofe_index: 1
+      yearly_refs: [1]
+```
+
+YAML schedule indices are one-based for author legibility. The runtime adapter
+converts them to the existing internal zero-based slot shape.
 
 ## Route Coefficient Schema
 
@@ -110,20 +150,23 @@ Required route coefficient object:
 
 ```yaml
 routing_coefficients:
-  authority: disturbed-route-coefficients
-  authority_version: "<version>"
-  authority_checksum: "<checksum>"
-  disturbed_class: "agriculture crops"
-  k_o: 0.0
+  k_o: 500.0
   form_c_d: 0.0
   d_r_m: 0.0
   lambda: 0.0
   vegetation_c_d: 0.0
+  authority:
+    source: disturbed-route-coefficients
+    version: "<version>"
+    checksum: "<checksum>"
+    disturbed_class: "agriculture crops"
 ```
 
 The exact numeric values above are placeholders in this illustrative fragment.
-The normative implementation must embed the authorized Disturbed coefficient
-table and write the real class row values.
+Producer tooling must write the real authorized class row values and provenance.
+The schema validates positive finite `k_o`, finite non-negative form `C_d`,
+`D_r`, and vegetation `C_d`, `lambda` in `0..=1`, and non-empty authority
+fields; it does not infer coefficients from legacy fields or sidecars.
 
 ## Producer Obligations
 
@@ -165,17 +208,13 @@ Validation must support:
 
 Validation failures must be typed and name the missing or invalid field path.
 
+Implemented executable checks:
+
+- `cargo test -p openwepp-management-schema`
+- `cargo test --test infile_management_yaml_contract`
+
 ## Migration Relationship
 
 `openwepp-landuse-migrate` is the initial producer for this format. It reads
 frozen legacy `.man` sources or flat `ow-lanuse-1` source and emits canonical
 management YAML. It must not emit a native flat `.man` as its production output.
-
-## Open Questions
-
-- Final review/disposition of the recommended `openwepp-management-schema`
-  crate ownership before implementation.
-- Exact YAML layout for operation, initial-condition, and yearly schedule
-  records after mapping the current parsed management model.
-- Whether YAML schema publication should include generated JSON Schema in the
-  crate artifact.

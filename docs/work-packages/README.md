@@ -64,14 +64,13 @@ State as of `2026-07-08`:
   changed; the next implementation package owns runtime guards and WEPPpy
   producer materialization.
 - `20260708-openwepp-management-yaml-canonical-authorization-001/` -
-  QUEUED (2026-07-08, M-T2S): scaffolded the canonical openWEPP management YAML
-  authorization package. The package will authorize typed producer-side YAML for
-  `ow-lanuse-1+`, freeze flat `.man` as source-only for native producer
-  evolution, add typed schema/parser/validator support, ratify producer
-  lowercase `.yaml` output with informal `.man.yaml` migrated-source naming,
-  recommend `crates/openwepp-management-schema` as the long-term shared schema
-  owner, and prove the real runtime consumer reads YAML directly before
-  production-readiness closure.
+  EXECUTED-COMPLETE (2026-07-08, M-T2S): authorized and implemented canonical
+  openWEPP management YAML for `ow-lanuse-1+`. Added
+  `SC-INFILE-MANAGEMENT-YAML-001`, amended `SC-OFEROUTE-001` rev 50 and the
+  management-lanuse authority contract, promoted the input-surface registry row,
+  added publishable `crates/openwepp-management-schema`, wired the input-contract
+  adapter and runner intake, and proved YAML route coefficients project into PL
+  schedule surfaces with `cargo test --test infile_management_yaml_contract`.
 - `20260708-landuse-migration-cli-spec-implementation-001/` -
   QUEUED (2026-07-08, M-T2R): scaffolded the Rust landuse migration CLI/library
   implementation package and drafted

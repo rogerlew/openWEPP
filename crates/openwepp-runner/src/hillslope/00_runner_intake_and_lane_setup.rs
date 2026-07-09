@@ -61,7 +61,7 @@ use openwepp_input_contract::parsers::frost::{
     FrostParseOutput, parse_frost_from_path, parse_frost_from_str,
 };
 use openwepp_input_contract::parsers::management::{
-    ManagementParseOutput, YearlyScenarioData, parse_management_from_path,
+    ManagementParseOutput, YearlyScenarioData, parse_management_document_from_path,
 };
 use openwepp_input_contract::parsers::pmetpara::{
     ParseMode as PmetparaParseMode, PmetLookupState, PmetparaFile, PmetparaParseOptions,
@@ -784,7 +784,7 @@ fn parse_hillslope_management_input(
     request: &HillslopeRunRequest,
     management_path: &Path,
 ) -> Result<ManagementParseOutput, HillslopeCliError> {
-    parse_management_from_path(
+    parse_management_document_from_path(
         management_path,
         request.sidecar_policy.as_management_parser_mode(),
     )

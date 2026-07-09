@@ -118,6 +118,34 @@ mod tests {
         (report, temp_run_dir)
     }
 
+    #[test]
+    fn runner_management_intake_dispatches_canonical_yaml_path() {
+        let management_path = Path::new(env!("CARGO_MANIFEST_DIR")).join(
+            "../../tests/fixtures/infile/management/canonical_forest_nonzero_ow_lanuse_1.man.yaml",
+        );
+        let request = HillslopeRunRequest {
+            run_dir: PathBuf::new(),
+            run_file: PathBuf::new(),
+            output_dir: PathBuf::new(),
+            sidecar_policy: SidecarPolicy::Compat,
+            legacy_sidecar_discovery: false,
+            manifest_path: None,
+        };
+
+        let management = parse_hillslope_management_input(&request, &management_path)
+            .expect("runner intake should dispatch YAML management path");
+        assert_eq!(management.datver, "ow-lanuse-1");
+        let openwepp_input_contract::parsers::management::PlantScenarioData::Forest(plant) =
+            &management.registries.plants[0].data
+        else {
+            panic!("expected YAML native forest plant");
+        };
+        let routing = plant
+            .routing
+            .expect("YAML route coefficients should reach runner intake output");
+        assert!((routing.skin_friction_coefficient_ko - 500.0).abs() <= 1.0e-12);
+    }
+
     fn r5c_day_span_run_count() -> u64 {
         22
     }

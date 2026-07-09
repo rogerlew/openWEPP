@@ -1,0 +1,16 @@
+[package]
+name = "openwepp-management-schema"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+publish = true
+description = "Typed openWEPP canonical management YAML schema and validator"
+
+[lints]
+workspace = true
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_yaml = "0.9"

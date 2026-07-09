@@ -12,3 +12,4 @@ workspace = true
 
 [dependencies]
 flate2 = "1.1.0"
+openwepp-management-schema = { path = "../openwepp-management-schema", version = "0.1.0" }
