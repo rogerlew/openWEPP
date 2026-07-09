@@ -105,6 +105,18 @@ State as of `2026-07-09`:
   behavior. Final gates: focused writer/runtime tests passed, full workspace
   nextest `1468/1468`, quick nextest `1393/1393`, clippy/fmt/deny/doc
   lint/diff-check green.
+- `20260709-wshedw9-canonical-noevent-pass-semantics-001/` -
+  EXECUTED-COMPLETE (2026-07-09 UTC, WSHED-W9): amended `SC-INFILE-HBP-001`
+  v0.2.3 and `SC-SYSTEM-001` rev 87, added typed latest HBP state
+  (`EventPayload` or `NoEvent` with source-kind provenance), made pass
+  inventory consume that state, and routed valid no-event pass artifacts as
+  explicit zero runoff/sediment contributions while preserving parsed
+  baseflow/deep-seepage volumes. Stale earlier `EVENT` payloads are no longer
+  reused when a later latest day is `NO_EVENT`, malformed no-event groundwater
+  fails closed, and the compatibility latest-payload API does not synthesize
+  runoff payloads from no-event state. Final gates: focused parser/watershed
+  tests passed, full workspace nextest `1471/1471`, quick nextest `1396/1396`,
+  clippy/fmt/deny/doc lint/diff-check green.
 - `20260708-laned-router-conditional-default-activation-001/` -
   EXECUTED-COMPLETE-CONDITIONAL-DEFAULT-ACTIVATION (2026-07-08): amended
   `SC-OFEROUTE-001` rev 46 and made Lane D active routing the hillslope

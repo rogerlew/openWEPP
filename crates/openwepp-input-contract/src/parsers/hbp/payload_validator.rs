@@ -5,7 +5,7 @@ use std::collections::HashSet;
 use super::*;
 
 pub(super) struct PayloadValidationResult {
-    pub(super) latest_event_payload: Option<HbpLatestEventPayload>,
+    pub(super) latest_event_state: HbpLatestEventState,
 }
 
 struct PayloadHeader {
@@ -42,16 +42,14 @@ pub(super) fn validate_payload(
     validate_payload_key(&header, entry)?;
     validate_payload_minor(layout.schema_major, header.payload_schema_minor)?;
 
-    let latest_event_payload = parse_latest_event_payload(&mut cursor, layout, &header)?;
+    let latest_event_state = parse_latest_event_state(&mut cursor, layout, &header)?;
     let state_ids_seen =
         validate_state_snapshots(&payload, &mut cursor, layout, header.state_snapshot_count)?;
 
     validate_payload_consumed(&cursor, payload.len())?;
     validate_required_state_ids(&state_ids_seen)?;
 
-    Ok(PayloadValidationResult {
-        latest_event_payload,
-    })
+    Ok(PayloadValidationResult { latest_event_state })
 }
 
 fn extract_payload(
@@ -223,14 +221,14 @@ fn validate_payload_minor(
     Ok(())
 }
 
-fn parse_latest_event_payload(
+fn parse_latest_event_state(
     cursor: &mut Cursor<'_>,
     layout: &Layout,
     header: &PayloadHeader,
-) -> Result<Option<HbpLatestEventPayload>, HbpParseError> {
+) -> Result<HbpLatestEventState, HbpParseError> {
     match header.event_kind {
-        0 => parse_no_event_payload(cursor),
-        1 => parse_non_runoff_event_payload(cursor),
+        0 => parse_no_event_payload(cursor, header),
+        1 => parse_non_runoff_event_payload(cursor, header),
         2 => parse_runoff_event_payload(cursor, layout, header),
         _ => Err(format_violation(
             HbpFormatErrorCode::HbpE010,
@@ -241,24 +239,61 @@ fn parse_latest_event_payload(
 
 fn parse_no_event_payload(
     cursor: &mut Cursor<'_>,
-) -> Result<Option<HbpLatestEventPayload>, HbpParseError> {
-    let _baseflow = read_payload_i64(cursor)?;
-    let _dissolved = read_payload_i64(cursor)?;
-    Ok(None)
+    header: &PayloadHeader,
+) -> Result<HbpLatestEventState, HbpParseError> {
+    let baseflow_volume_m3 =
+        scaled_i64_to_nonnegative(read_payload_i64(cursor)?, "baseflow_volume_m3")?;
+    let deep_seepage_volume_m3 =
+        scaled_i64_to_nonnegative(read_payload_i64(cursor)?, "deep_seepage_volume_m3")?;
+    Ok(HbpLatestEventState::NoEvent(HbpNoEventPayload {
+        sim_year_index: header.sim_year_index,
+        calendar_year: header.calendar_year,
+        julian_day: header.julian_day,
+        source_event_kind: HbpNoEventKind::NoEvent,
+        subsurface_flow_depth_m: None,
+        subsurface_flow_volume_m3: None,
+        tile_drainage_depth_m: None,
+        tile_drainage_volume_m3: None,
+        baseflow_volume_m3,
+        deep_seepage_volume_m3,
+    }))
 }
 
 fn parse_non_runoff_event_payload(
     cursor: &mut Cursor<'_>,
-) -> Result<Option<HbpLatestEventPayload>, HbpParseError> {
-    read_payload_i64_values(cursor, 6)?;
-    Ok(None)
+    header: &PayloadHeader,
+) -> Result<HbpLatestEventState, HbpParseError> {
+    let subsurface_flow_depth_m =
+        scaled_i64_to_nonnegative(read_payload_i64(cursor)?, "subsurface_flow_depth_m")?;
+    let subsurface_flow_volume_m3 =
+        scaled_i64_to_nonnegative(read_payload_i64(cursor)?, "subsurface_flow_volume_m3")?;
+    let tile_drainage_depth_m =
+        scaled_i64_to_nonnegative(read_payload_i64(cursor)?, "tile_drainage_depth_m")?;
+    let tile_drainage_volume_m3 =
+        scaled_i64_to_nonnegative(read_payload_i64(cursor)?, "tile_drainage_volume_m3")?;
+    let baseflow_volume_m3 =
+        scaled_i64_to_nonnegative(read_payload_i64(cursor)?, "baseflow_volume_m3")?;
+    let deep_seepage_volume_m3 =
+        scaled_i64_to_nonnegative(read_payload_i64(cursor)?, "deep_seepage_volume_m3")?;
+    Ok(HbpLatestEventState::NoEvent(HbpNoEventPayload {
+        sim_year_index: header.sim_year_index,
+        calendar_year: header.calendar_year,
+        julian_day: header.julian_day,
+        source_event_kind: HbpNoEventKind::Subevent,
+        subsurface_flow_depth_m: Some(subsurface_flow_depth_m),
+        subsurface_flow_volume_m3: Some(subsurface_flow_volume_m3),
+        tile_drainage_depth_m: Some(tile_drainage_depth_m),
+        tile_drainage_volume_m3: Some(tile_drainage_volume_m3),
+        baseflow_volume_m3,
+        deep_seepage_volume_m3,
+    }))
 }
 
 fn parse_runoff_event_payload(
     cursor: &mut Cursor<'_>,
     layout: &Layout,
     header: &PayloadHeader,
-) -> Result<Option<HbpLatestEventPayload>, HbpParseError> {
+) -> Result<HbpLatestEventState, HbpParseError> {
     let duration_seconds = read_payload_f64(cursor)?;
     let _time_of_concentration_hours = read_payload_f64(cursor)?;
     let _overland_flow_alpha = read_payload_f64(cursor)?;
@@ -303,7 +338,7 @@ fn parse_runoff_event_payload(
     let baseflow_volume_m3 = scaled_i64_to_nonnegative_volume(read_payload_i64(cursor)?)?;
     let deep_seepage_volume_m3 = scaled_i64_to_nonnegative_volume(read_payload_i64(cursor)?)?;
 
-    Ok(Some(HbpLatestEventPayload {
+    Ok(HbpLatestEventState::EventPayload(HbpLatestEventPayload {
         sim_year_index: header.sim_year_index,
         calendar_year: header.calendar_year,
         julian_day: header.julian_day,
@@ -322,11 +357,15 @@ fn parse_runoff_event_payload(
 }
 
 fn scaled_i64_to_nonnegative_volume(value: i64) -> Result<f64, HbpParseError> {
+    scaled_i64_to_nonnegative(value, "groundwater/baseflow payload volumes")
+}
+
+fn scaled_i64_to_nonnegative(value: i64, field_name: &str) -> Result<f64, HbpParseError> {
     let volume = scaled_i64_to_f64(value)? * SCALE_I64;
     if !volume.is_finite() || volume < 0.0 {
         return Err(format_violation(
             HbpFormatErrorCode::HbpE013,
-            "groundwater/baseflow payload volumes must be finite and non-negative",
+            format!("{field_name} must be finite and non-negative"),
         ));
     }
     Ok(volume)

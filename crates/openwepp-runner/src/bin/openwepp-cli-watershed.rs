@@ -5,6 +5,7 @@ use std::time::Instant;
 
 use openwepp_input_contract::parsers::chaninp::{ChaninpParseOptions, parse_chaninp_from_path};
 use openwepp_input_contract::parsers::gwcoeff::parse_gwcoeff_from_path;
+use openwepp_input_contract::parsers::hbp::HbpLatestEventState;
 use openwepp_input_contract::parsers::slope::{SlopeParserOptions, parse_slope_file};
 use openwepp_input_contract::parsers::watershed_channel::{
     WatershedChannelParseMode, WatershedChannelParseOptions, parse_watershed_channel_from_path,
@@ -349,7 +350,6 @@ fn run() -> Result<(), String> {
             entry.manifest_file_path.as_deref(),
         )?;
 
-        let payload = &entry.latest_event_payload;
         let block = runfile
             .hillslope_blocks_by_id
             .get(&hillslope_id)
@@ -363,61 +363,100 @@ fn run() -> Result<(), String> {
         } else {
             manifest_area_m2
         };
-        let peak = payload.peak_runoff_m3_s;
-        let duration = payload.duration_seconds;
-        let total_detachment = payload.total_detachment_kg;
-        let total_deposition = payload.total_deposition_kg;
-        let sediment_concentrations = &payload.sediment_concentration_kg_m3;
-        let particle_diameters = &payload.particle_diameter_m;
-        let particle_flow_fractions = &payload.particle_flow_fraction;
-        let mut typed_sediment_concentrations = Vec::with_capacity(class_count);
-        let mut typed_particle_diameters = Vec::with_capacity(class_count);
-        let mut typed_particle_flow_fractions = Vec::with_capacity(class_count);
+        let (
+            peak,
+            duration,
+            generated_baseflow_m3,
+            groundwater_deep_seepage_m3,
+            total_detachment,
+            total_deposition,
+            typed_sediment_concentrations,
+            typed_particle_diameters,
+            typed_particle_flow_fractions,
+            hourly_runoff_volume_m3,
+            hourly_sediment_mass_kg,
+        ) = match &entry.latest_event_state {
+            HbpLatestEventState::EventPayload(payload) => {
+                let sediment_concentrations = &payload.sediment_concentration_kg_m3;
+                let particle_diameters = &payload.particle_diameter_m;
+                let particle_flow_fractions = &payload.particle_flow_fraction;
+                let mut typed_sediment_concentrations = Vec::with_capacity(class_count);
+                let mut typed_particle_diameters = Vec::with_capacity(class_count);
+                let mut typed_particle_flow_fractions = Vec::with_capacity(class_count);
 
-        for class_index in 1..=class_count {
-            let concentration = sediment_concentrations
-                .get(class_index - 1)
-                .copied()
-                .ok_or_else(|| {
-                    format!(
-                        "CLIWAT-E-018 missing sediment_concentration_kg_m3 class={class_index} for hillslope {hillslope_id}"
-                    )
-                })?;
-            let particle_diameter = particle_diameters
-                .get(class_index - 1)
-                .copied()
-                .ok_or_else(|| {
-                    format!(
-                        "CLIWAT-E-018 missing particle_diameter_m class={class_index} for hillslope {hillslope_id}"
-                    )
-                })?;
-            let fraction = particle_flow_fractions
-                .get(class_index - 1)
-                .copied()
-                .ok_or_else(|| {
-                    format!(
-                        "CLIWAT-E-018 missing particle_flow_fraction class={class_index} for hillslope {hillslope_id}"
-                    )
-                })?;
-            typed_sediment_concentrations.push(concentration);
-            typed_particle_diameters.push(particle_diameter);
-            typed_particle_flow_fractions.push(fraction);
-        }
+                for class_index in 1..=class_count {
+                    let concentration = sediment_concentrations
+                        .get(class_index - 1)
+                        .copied()
+                        .ok_or_else(|| {
+                            format!(
+                                "CLIWAT-E-018 missing sediment_concentration_kg_m3 class={class_index} for hillslope {hillslope_id}"
+                            )
+                        })?;
+                    let particle_diameter = particle_diameters
+                        .get(class_index - 1)
+                        .copied()
+                        .ok_or_else(|| {
+                            format!(
+                                "CLIWAT-E-018 missing particle_diameter_m class={class_index} for hillslope {hillslope_id}"
+                            )
+                        })?;
+                    let fraction = particle_flow_fractions
+                        .get(class_index - 1)
+                        .copied()
+                        .ok_or_else(|| {
+                            format!(
+                                "CLIWAT-E-018 missing particle_flow_fraction class={class_index} for hillslope {hillslope_id}"
+                            )
+                        })?;
+                    typed_sediment_concentrations.push(concentration);
+                    typed_particle_diameters.push(particle_diameter);
+                    typed_particle_flow_fractions.push(fraction);
+                }
+
+                (
+                    payload.peak_runoff_m3_s,
+                    payload.duration_seconds,
+                    payload.baseflow_volume_m3,
+                    payload.deep_seepage_volume_m3,
+                    payload.total_detachment_kg,
+                    payload.total_deposition_kg,
+                    typed_sediment_concentrations,
+                    typed_particle_diameters,
+                    typed_particle_flow_fractions,
+                    payload.hourly_runoff_volume_m3.clone(),
+                    payload.hourly_sediment_mass_kg.clone(),
+                )
+            }
+            HbpLatestEventState::NoEvent(no_event) => (
+                0.0,
+                0.0,
+                no_event.baseflow_volume_m3,
+                no_event.deep_seepage_volume_m3,
+                0.0,
+                0.0,
+                vec![0.0; class_count],
+                entry.particle_diameter_m.clone(),
+                vec![0.0; class_count],
+                Vec::new(),
+                Vec::new(),
+            ),
+        };
 
         network_frame.add_hillslope_contribution(HillslopeContribution {
             hillslope_id,
             area_m2,
             peak_runoff_m3_s: peak,
             duration_seconds: duration,
-            generated_baseflow_m3: payload.baseflow_volume_m3,
-            groundwater_deep_seepage_m3: payload.deep_seepage_volume_m3,
+            generated_baseflow_m3,
+            groundwater_deep_seepage_m3,
             total_detachment_kg: total_detachment,
             total_deposition_kg: total_deposition,
             sediment_concentration_kg_m3: typed_sediment_concentrations,
             particle_diameter_m: typed_particle_diameters,
             particle_flow_fraction: typed_particle_flow_fractions,
-            hourly_runoff_volume_m3: payload.hourly_runoff_volume_m3.clone(),
-            hourly_sediment_mass_kg: payload.hourly_sediment_mass_kg.clone(),
+            hourly_runoff_volume_m3,
+            hourly_sediment_mass_kg,
         });
     }
     let routing_input_elapsed_ms = routing_input_started.elapsed().as_millis();

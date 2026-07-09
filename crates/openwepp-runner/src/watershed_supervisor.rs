@@ -7,7 +7,8 @@ use std::thread;
 use std::time::{Instant, SystemTime};
 
 use openwepp_input_contract::parsers::hbp::{
-    HbpLatestEventPayload, HbpParseOptions, parse_hbp_from_path_with_latest_event_payload,
+    HbpLatestEventPayload, HbpLatestEventState, HbpParseOptions,
+    parse_hbp_from_path_with_latest_event_state,
 };
 use serde_json::json;
 use toml::Value;
@@ -472,7 +473,8 @@ pub struct PassInventoryEntry {
     pub pass_size_bytes: u64,
     pub nofe: u16,
     pub npart: u16,
-    pub latest_event_payload: HbpLatestEventPayload,
+    pub particle_diameter_m: Vec<f64>,
+    pub latest_event_state: HbpLatestEventState,
     pub produced_by_job: bool,
 }
 
@@ -501,7 +503,7 @@ impl PassInventoryEntry {
         }
         validate_generated_freshness(expectation, &metadata)?;
 
-        let (hbp, latest_event_payload) = parse_hbp_from_path_with_latest_event_payload(
+        let (hbp, latest_event_state) = parse_hbp_from_path_with_latest_event_state(
             &expectation.pass_file_path,
             HbpParseOptions {
                 expected_hillslope_id: Some(expectation.hillslope_id),
@@ -521,19 +523,30 @@ impl PassInventoryEntry {
                 expectation.hillslope_id
             ));
         }
-        let latest_event_payload = latest_event_payload.ok_or_else(|| {
+        if hbp.particle_diameter_m.len() != usize::from(hbp.npart) {
+            return Err(format!(
+                "CLIWAT-E-045 pass inventory file {} has particle_diameter_m length {}, expected npart={} for hillslope {}",
+                expectation.pass_file_path.display(),
+                hbp.particle_diameter_m.len(),
+                hbp.npart,
+                expectation.hillslope_id
+            ));
+        }
+        let latest_event_state = latest_event_state.ok_or_else(|| {
             format!(
-                "CLIWAT-E-045 pass inventory file {} for hillslope {} has no latest EventPayload; no canonical NoEvent authority is cited for watershed routing",
+                "CLIWAT-E-045 pass inventory file {} for hillslope {} has no latest HBP event state",
                 expectation.pass_file_path.display(),
                 expectation.hillslope_id
             )
         })?;
-        validate_latest_event_vectors(
-            expectation.hillslope_id,
-            hbp.npart,
-            &expectation.pass_file_path,
-            &latest_event_payload,
-        )?;
+        if let HbpLatestEventState::EventPayload(payload) = &latest_event_state {
+            validate_latest_event_vectors(
+                expectation.hillslope_id,
+                hbp.npart,
+                &expectation.pass_file_path,
+                payload,
+            )?;
+        }
 
         Ok(Self {
             hillslope_id: expectation.hillslope_id,
@@ -542,7 +555,8 @@ impl PassInventoryEntry {
             pass_size_bytes: metadata.len(),
             nofe: hbp.nofe,
             npart: hbp.npart,
-            latest_event_payload,
+            particle_diameter_m: hbp.particle_diameter_m,
+            latest_event_state,
             produced_by_job: expectation.produced_by_job,
         })
     }

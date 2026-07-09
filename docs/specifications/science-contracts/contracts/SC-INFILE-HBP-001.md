@@ -4,7 +4,7 @@ title: Hillslope Binary Pass Input Parser Contract (H<hillslope_id>.hbp)
 status: in_review
 maturity: draft
 owner: openWEPP
-contract_version: 0.2.2
+contract_version: 0.2.3
 evidence_mode: Static
 last_updated_utc: 2026-07-09T00:00:00Z
 ---
@@ -135,6 +135,25 @@ parser-local.
 The final two scaled integers are fixed-position groundwater/baseflow fields
 owned by `SC-GWBASEFLOW-001`, not skippable padding.
 
+## 3b. Latest-Day NoEvent / Non-Runoff Payload State
+
+The parser must expose the latest represented day as typed state, not as an
+optional runoff payload whose absence can be confused with missing data.
+Source event kinds:
+
+| Source `event_kind` | Source name | Simulation state | Required payload fields | Watershed routing consequence |
+| --- | --- | --- | --- | --- |
+| `0` | `NO_EVENT` | `HbpLatestEventState::NoEvent` with `source_event_kind = NoEvent` | `baseflow_volume_m3`, `dissolved_storage_volume_m3`, process-state snapshots | No surface runoff/sediment event; watershed may zero-fill surface runoff/sediment fields only as typed no-event consequence. |
+| `1` | `SUBEVENT` | `HbpLatestEventState::NoEvent` with `source_event_kind = Subevent` | `subsurface_flow_depth_m`, `subsurface_flow_volume_m3`, `tile_drainage_depth_m`, `tile_drainage_volume_m3`, `baseflow_volume_m3`, `dissolved_storage_volume_m3`, process-state snapshots | No full runoff/sediment event; current watershed routing may zero-fill surface runoff/sediment fields while preserving parsed non-runoff fields for future consumers. |
+| `2` | `EVENT` | `HbpLatestEventState::EventPayload` | Section 3a runoff-EVENT block and process-state snapshots | Existing runoff/sediment watershed routing payload. |
+
+`NO_EVENT` and `SUBEVENT` do not authorize fallback from missing payload bytes or
+from a missing pass file. They are valid only after the payload key, required
+state snapshots, fixed fields, and non-negative scaled volume/depth fields have
+passed parser validation. The latest represented day must overwrite prior state:
+an earlier runoff `EVENT` must not remain visible when a later directory record
+is `NO_EVENT` or `SUBEVENT`.
+
 ## 4. Propagation Map Table
 
 | Source symbol | Parser model field | Runtime state field | Owning module | Phase | Mutability | Downstream consumers | Guard IDs |
@@ -150,6 +169,7 @@ owned by `SC-GWBASEFLOW-001`, not skippable padding.
 | `footer fields` | `footer.*` | `hbp.footer_closure` | `input::hbp` | init | immutable | record-count and CRC closure | `G-HBP-009` |
 | derived `path_resolution` | `derived.path_resolution` | `hbp.path_resolution` | `input::hbp` | init | immutable | naming-policy observability | `G-HBP-010` |
 | derived `warnings` | `derived.warnings` | `hbp.warnings` | `input::hbp` | init | immutable | reserved warning surface (must be empty) | `G-HBP-010` |
+| latest-day payload state | `HbpLatestEventState` | watershed pass inventory | `input::hbp` -> `runner::watershed` | watershed routing | immutable handoff | `PassInventory`, `HillslopeContribution` | `G-HBP-013` |
 
 ## 5. State Ownership and Mutability
 
@@ -220,6 +240,11 @@ No silent fallback to legacy text pass family is permitted.
    parquet publishes; a concentration × volume reconstruction is NOT a valid
    intake gate (it would embed the producer's `efflen`/`slplen` geometry).
    Parser-local validation stays structural (`HBP-E-015`).
+6. Latest-day no-event intake (run-level, WSHED-W9): watershed pass inventory
+   must consume `HbpLatestEventState`, not `Option<HbpLatestEventPayload>`, so
+   valid `NO_EVENT`/`SUBEVENT` records are distinguishable from missing or
+   malformed payload state. Surface runoff/sediment zeros are valid only when
+   derived from a validated typed no-event state.
 
 ## 9. Boundary Export Mapping
 
@@ -231,6 +256,7 @@ No silent fallback to legacy text pass family is permitted.
 | `day_directory[]` | `hbp.directory_entries[]` | `openwepp.boundary.parser.hbp.v1.directory` | schema-specific payload locator variants | payload lookup surface |
 | `payload_block_table[]` | `hbp.payload_blocks[]` | `openwepp.boundary.parser.hbp.v1.payload_blocks` | schema2 block metadata | absent for schema1 |
 | `event.baseflow_volume_m3` / `event.deep_seepage_volume_m3` | `HbpLatestEventPayload.baseflow_volume_m3` / `HbpLatestEventPayload.deep_seepage_volume_m3` | `openwepp.boundary.parser.hbp.v1.latest_event_payload` | `gwbfv`/`gwdsv` pass handoff | `SC-GWBASEFLOW-001`; non-negative scaled volumes |
+| `NO_EVENT` / `SUBEVENT` latest-day state | `HbpLatestEventState::NoEvent` | `openwepp.boundary.parser.hbp.v1.latest_event_state` | source event kind plus parsed non-runoff fields | WSHED-W9; no stale prior `EVENT` reuse |
 | path/warning branch | `hbp.path_resolution`, `hbp.warnings` | `openwepp.boundary.observability.parser_warnings.v1` | deterministic path observability; warning list must be empty | strict-mode auditability |
 
 ## 10. Naming Policy
@@ -258,6 +284,7 @@ No silent fallback to legacy text pass family is permitted.
 | `G-HBP-010` | strict naming/path observability closure | path resolver | `HBP-E-001` |
 | `G-HBP-011` | minor-1 hourly-surface structural closure (count = 24, finite, non-negative) | runoff-EVENT payload validator | `HBP-E-015` |
 | `G-HBP-012` | groundwater/baseflow pass handoff fields are fixed-position scaled non-negative volumes | runoff-EVENT payload validator + watershed pass inventory | `HBP-E-013` or run-level inventory failure |
+| `G-HBP-013` | latest represented day state is typed as runoff `EVENT` or validated no-event/non-runoff state; stale prior `EVENT` must not survive later `NO_EVENT`/`SUBEVENT` records | payload validator + parser finalization + watershed pass inventory | `HBP-E-013` or `CLIWAT-E-045` |
 
 ## 12. Legacy Symbol Continuity and Alias Map
 
@@ -277,6 +304,7 @@ openWEPP boundary names are aliases only (Section 3).
 
 | Date UTC | Version | Change |
 | --- | --- | --- |
+| `2026-07-09` | `0.2.3` | WSHED-W9 amendment: added typed latest-day no-event/non-runoff parser state, source event-kind preservation, no stale prior-`EVENT` reuse after later `NO_EVENT`/`SUBEVENT`, and `G-HBP-013` watershed inventory handoff authority. |
 | `2026-07-09` | `0.2.2` | M-T2 baseflow export closure: named the existing final runoff-EVENT scaled integer pair as `event.baseflow_volume_m3` (`gwbfv`) and `event.deep_seepage_volume_m3` (`gwdsv`) under `SC-GWBASEFLOW-001`, added parser boundary mapping and `G-HBP-012`; layout/order unchanged. |
 | `2026-07-04` | `0.2.1` | E.3 chain-form amendment: Section 8.5 intake closure generalized — multi-OFE EVENT totals are chain-aggregated (Σ across OFEs, event day) with the EXIT-scoped hourly sediment surface, keeping the single identity `Σ S_h = tdet − tdep` valid for both single- and multi-OFE shards (`SC-SED-001#INV-SED-016` (e)). |
 | `2026-07-04` | `0.2.0` | E.2/ADR-0036 minor-1 EVENT extension: schema/payload minor `<=1` accepted (Section 1.2), new Section 3a runoff-EVENT payload field block (paired `hourly_runoff_volume_m3[24]` m³ + `hourly_sediment_mass_kg[24]` kg before the reserved trailing i64s; `npart = 5` per-class production from minor 1; `peak_runoff_m3_s` true-volumetric from minor 1 with the minor-0 depth-rate caveat labeled), `HBP-E-015`/`G-HBP-011` structural validation, and the Section 8.5 run-level integral-closure intake rule. |

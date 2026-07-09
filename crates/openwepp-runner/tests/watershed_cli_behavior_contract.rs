@@ -17,7 +17,8 @@ use std::process::Command;
 use std::sync::{Mutex, OnceLock};
 
 use openwepp_input_contract::parsers::hbp::{
-    HbpParseOptions, parse_hbp_from_path_with_latest_event_payload,
+    HbpLatestEventState, HbpNoEventKind, HbpParseOptions,
+    parse_hbp_from_path_with_latest_event_payload, parse_hbp_from_path_with_latest_event_state,
 };
 use parquet::file::reader::{FileReader, SerializedFileReader};
 use parquet::record::{Row, RowAccessor};
@@ -589,13 +590,137 @@ fn wshedw2_watershed_cli_rejects_ambiguous_reuse_block_with_run_file() {
 }
 
 #[test]
-fn wshedw2_watershed_cli_rejects_pass_without_latest_event_payload() {
+fn wshedw9_watershed_cli_accepts_latest_no_event_pass_as_zero_runoff() {
     let _execution_guard = watershed_execution_lock()
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner);
 
-    let run_dir = build_watershed_fixture_dir("wshedw2_no_latest_event_payload");
-    write_hbp_no_event_fixture(run_dir.join("H1.hbp"), 1);
+    let run_dir = build_watershed_fixture_dir("wshedw9_no_event_zero_runoff");
+    let hbp_path = run_dir.join("H1.hbp");
+    write_hbp_no_event_fixture(hbp_path.clone(), 1);
+    write_watershed_runfile(&run_dir, &[1]);
+    prepare_output_guard_fixture(&run_dir);
+
+    let (_, latest_event_state) = parse_hbp_from_path_with_latest_event_state(
+        &hbp_path,
+        HbpParseOptions {
+            expected_hillslope_id: Some(1),
+        },
+    )
+    .expect("no-event fixture should parse");
+    let HbpLatestEventState::NoEvent(no_event) =
+        latest_event_state.expect("no-event fixture should expose latest state")
+    else {
+        panic!("latest state should be NoEvent");
+    };
+    assert_eq!(no_event.source_event_kind, HbpNoEventKind::NoEvent);
+
+    let output_dir = run_dir.join("out");
+    let output = run_watershed_cli(&run_dir, &output_dir, Some("compat"), false);
+    assert!(
+        output.status.success(),
+        "watershed CLI should accept canonical latest NoEvent pass state; stderr={}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert_all_watershed_outputs_exist(&output_dir);
+
+    let ebe_row = read_first_parquet_row(&output_dir.join("interchange/ebe_pw0.parquet"));
+    assert_relative_close(
+        row_f64_value(&ebe_row, "peak_runoff"),
+        0.0,
+        0.0,
+        1.0e-12,
+        "no-event EBE peak_runoff",
+    );
+    assert_relative_close(
+        row_f64_value(&ebe_row, "runoff_volume"),
+        0.0,
+        0.0,
+        1.0e-12,
+        "no-event EBE runoff_volume",
+    );
+
+    let totalwatsed3_row =
+        read_first_parquet_row(&output_dir.join("interchange/totalwatsed3.parquet"));
+    for column in ["runvol", "tdet", "tdep", "sed_del"] {
+        assert_relative_close(
+            row_f64_value(&totalwatsed3_row, column),
+            0.0,
+            0.0,
+            1.0e-12,
+            column,
+        );
+    }
+}
+
+#[test]
+fn wshedw9_watershed_cli_uses_latest_no_event_not_stale_prior_event_payload() {
+    let _execution_guard = watershed_execution_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+
+    let run_dir = build_watershed_fixture_dir("wshedw9_stale_event_then_no_event");
+    let hbp_path = run_dir.join("H1.hbp");
+    write_hbp_event_then_no_event_fixture(hbp_path.clone(), 1);
+    write_watershed_runfile(&run_dir, &[1]);
+    prepare_output_guard_fixture(&run_dir);
+
+    let (hbp, latest_event_state) = parse_hbp_from_path_with_latest_event_state(
+        &hbp_path,
+        HbpParseOptions {
+            expected_hillslope_id: Some(1),
+        },
+    )
+    .expect("event-then-no-event fixture should parse");
+    assert_eq!(hbp.record_count, 2);
+    let HbpLatestEventState::NoEvent(no_event) =
+        latest_event_state.expect("fixture should expose latest state")
+    else {
+        panic!("latest state should be NoEvent, not stale EventPayload");
+    };
+    assert_eq!(no_event.julian_day, 2);
+    let (_, stale_compat_payload) = parse_hbp_from_path_with_latest_event_payload(
+        &hbp_path,
+        HbpParseOptions {
+            expected_hillslope_id: Some(1),
+        },
+    )
+    .expect("compat payload API should parse event-then-no-event fixture");
+    assert!(
+        stale_compat_payload.is_none(),
+        "compat latest EventPayload API must not return the day-1 stale EVENT"
+    );
+
+    let output_dir = run_dir.join("out");
+    let output = run_watershed_cli(&run_dir, &output_dir, Some("compat"), false);
+    assert!(
+        output.status.success(),
+        "watershed CLI should route day-2 NoEvent instead of day-1 EVENT; stderr={}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert_all_watershed_outputs_exist(&output_dir);
+
+    let totalwatsed3_row =
+        read_first_parquet_row(&output_dir.join("interchange/totalwatsed3.parquet"));
+    for column in ["runvol", "tdet", "tdep", "sed_del"] {
+        assert_relative_close(
+            row_f64_value(&totalwatsed3_row, column),
+            0.0,
+            0.0,
+            1.0e-12,
+            column,
+        );
+    }
+}
+
+#[test]
+fn wshedw9_watershed_cli_rejects_malformed_no_event_groundwater_payload() {
+    let _execution_guard = watershed_execution_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+
+    let run_dir = build_watershed_fixture_dir("wshedw9_malformed_no_event_groundwater");
+    write_hbp_no_event_fixture_with_groundwater(run_dir.join("H1.hbp"), 1, -1.0, 0.0);
     write_watershed_runfile(&run_dir, &[1]);
     prepare_output_guard_fixture(&run_dir);
 
@@ -603,12 +728,18 @@ fn wshedw2_watershed_cli_rejects_pass_without_latest_event_payload() {
     let output = run_watershed_cli(&run_dir, &output_dir, Some("compat"), false);
     assert!(
         !output.status.success(),
-        "watershed CLI should fail closed when pass inventory lacks latest EventPayload"
+        "watershed CLI should fail closed on malformed NoEvent groundwater payload"
     );
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(
-        stderr.contains("CLIWAT-E-045") && stderr.contains("NoEvent"),
-        "expected pass-inventory NoEvent authority failure, observed: {stderr}"
+        stderr.contains("CLIWAT-E-045")
+            && stderr.contains("HBP-E-013")
+            && stderr.contains("baseflow_volume_m3"),
+        "expected typed malformed NoEvent groundwater failure, observed: {stderr}"
+    );
+    assert!(
+        !output_dir.join("interchange/ebe_pw0.parquet").exists(),
+        "malformed pass inventory must fail before watershed publication"
     );
 }
 
@@ -2371,6 +2502,7 @@ fn append_common_prefix(
     nyear: u32,
     begin_year: i32,
     simulation_mode: u8,
+    last_julian_day: u16,
 ) -> Vec<u8> {
     let mut file = Vec::new();
 
@@ -2421,9 +2553,9 @@ fn append_common_prefix(
     put_u32(&mut file, nyear);
     put_u32(&mut file, 1);
     put_i32(&mut file, begin_year);
+    put_u16(&mut file, last_julian_day);
     put_u16(&mut file, 1);
-    put_u16(&mut file, 1);
-    put_u16(&mut file, 1);
+    put_u16(&mut file, last_julian_day);
     put_u8(&mut file, 0);
 
     put_u32(&mut file, REQUIRED_STATE_IDS.len() as u32);
@@ -2534,6 +2666,24 @@ fn build_no_event_payload(
     calendar_year: i32,
     julian_day: u16,
 ) -> Vec<u8> {
+    build_no_event_payload_with_groundwater(
+        nofe,
+        sim_year_index,
+        calendar_year,
+        julian_day,
+        0.0,
+        0.0,
+    )
+}
+
+fn build_no_event_payload_with_groundwater(
+    nofe: u16,
+    sim_year_index: u32,
+    calendar_year: i32,
+    julian_day: u16,
+    baseflow_volume_m3: f64,
+    deep_seepage_volume_m3: f64,
+) -> Vec<u8> {
     let nofe = u32::from(nofe);
     let max_layers = 1u32;
 
@@ -2544,8 +2694,8 @@ fn build_no_event_payload(
     put_u8(&mut payload, 0);
     put_u16(&mut payload, 0);
     put_u16(&mut payload, REQUIRED_STATE_IDS.len() as u16);
-    put_i64(&mut payload, 0);
-    put_i64(&mut payload, 0);
+    put_i64(&mut payload, scaled_i64(baseflow_volume_m3));
+    put_i64(&mut payload, scaled_i64(deep_seepage_volume_m3));
 
     for state_id in REQUIRED_STATE_IDS {
         payload.extend_from_slice(&build_state_entry(*state_id, nofe, max_layers));
@@ -2564,7 +2714,7 @@ fn build_schema1_event_fixture(
     total_detachment_kg: f64,
     total_deposition_kg: f64,
 ) -> Vec<u8> {
-    let mut file = append_common_prefix(SUPPORTED_MAJOR_V1, 0, hillslope_id, nofe, 1, 2004, 1);
+    let mut file = append_common_prefix(SUPPORTED_MAJOR_V1, 0, hillslope_id, nofe, 1, 2004, 1, 1);
     let payload = build_event_payload(
         nofe,
         1,
@@ -2612,7 +2762,7 @@ fn build_schema1_event_fixture_with_groundwater(
     baseflow_volume_m3: f64,
     deep_seepage_volume_m3: f64,
 ) -> Vec<u8> {
-    let mut file = append_common_prefix(SUPPORTED_MAJOR_V1, 0, hillslope_id, nofe, 1, 2004, 1);
+    let mut file = append_common_prefix(SUPPORTED_MAJOR_V1, 0, hillslope_id, nofe, 1, 2004, 1, 1);
     let payload = build_event_payload_with_groundwater(
         nofe,
         1,
@@ -2657,8 +2807,24 @@ fn build_schema1_event_fixture_with_groundwater(
 }
 
 fn build_schema1_no_event_fixture(hillslope_id: u32, nofe: u16) -> Vec<u8> {
-    let mut file = append_common_prefix(SUPPORTED_MAJOR_V1, 0, hillslope_id, nofe, 1, 2004, 1);
-    let payload = build_no_event_payload(nofe, 1, 2004, 1);
+    build_schema1_no_event_fixture_with_groundwater(hillslope_id, nofe, 0.0, 0.0)
+}
+
+fn build_schema1_no_event_fixture_with_groundwater(
+    hillslope_id: u32,
+    nofe: u16,
+    baseflow_volume_m3: f64,
+    deep_seepage_volume_m3: f64,
+) -> Vec<u8> {
+    let mut file = append_common_prefix(SUPPORTED_MAJOR_V1, 0, hillslope_id, nofe, 1, 2004, 1, 1);
+    let payload = build_no_event_payload_with_groundwater(
+        nofe,
+        1,
+        2004,
+        1,
+        baseflow_volume_m3,
+        deep_seepage_volume_m3,
+    );
     let payload_crc = crc32c(&payload);
 
     let directory_start = file.len();
@@ -2682,6 +2848,50 @@ fn build_schema1_no_event_fixture(hillslope_id: u32, nofe: u16) -> Vec<u8> {
     let file_crc_pos = file.len();
     put_u32(&mut file, 0);
     put_u32(&mut file, 1);
+    file.extend_from_slice(FOOTER_MAGIC);
+    let file_crc = crc32c(&file);
+    put_u32_at(&mut file, file_crc_pos, file_crc);
+    file
+}
+
+fn build_schema1_event_then_no_event_fixture(hillslope_id: u32, nofe: u16) -> Vec<u8> {
+    let mut file = append_common_prefix(SUPPORTED_MAJOR_V1, 0, hillslope_id, nofe, 1, 2004, 1, 2);
+    let event_payload =
+        build_event_payload(nofe, 1, 2004, 1, 0.25, 1.0, 5.0, 4.0, 1_800.0, 1_200.0);
+    let no_event_payload = build_no_event_payload(nofe, 1, 2004, 2);
+    let event_crc = crc32c(&event_payload);
+    let no_event_crc = crc32c(&no_event_payload);
+
+    let directory_start = file.len();
+    let directory_len = 4 + 2 * 27;
+    let event_payload_offset = directory_start + directory_len;
+    let no_event_payload_offset = event_payload_offset + event_payload.len();
+    let mut directory = Vec::new();
+    put_u32(&mut directory, 2);
+    put_u32(&mut directory, 1);
+    put_i32(&mut directory, 2004);
+    put_u16(&mut directory, 1);
+    put_u8(&mut directory, 2);
+    put_u64(&mut directory, event_payload_offset as u64);
+    put_u32(&mut directory, event_payload.len() as u32);
+    put_u32(&mut directory, event_crc);
+    put_u32(&mut directory, 1);
+    put_i32(&mut directory, 2004);
+    put_u16(&mut directory, 2);
+    put_u8(&mut directory, 0);
+    put_u64(&mut directory, no_event_payload_offset as u64);
+    put_u32(&mut directory, no_event_payload.len() as u32);
+    put_u32(&mut directory, no_event_crc);
+
+    file.extend_from_slice(&directory);
+    file.extend_from_slice(&event_payload);
+    file.extend_from_slice(&no_event_payload);
+
+    let directory_crc = crc32c(&directory);
+    put_u32(&mut file, directory_crc);
+    let file_crc_pos = file.len();
+    put_u32(&mut file, 0);
+    put_u32(&mut file, 2);
     file.extend_from_slice(FOOTER_MAGIC);
     let file_crc = crc32c(&file);
     put_u32_at(&mut file, file_crc_pos, file_crc);
@@ -2738,4 +2948,24 @@ fn write_hbp_fixture_with_nofe(
 fn write_hbp_no_event_fixture(path: PathBuf, hillslope_id: u32) {
     let bytes = build_schema1_no_event_fixture(hillslope_id, 1);
     fs::write(path, bytes).expect("HBP no-event fixture should be writable");
+}
+
+fn write_hbp_no_event_fixture_with_groundwater(
+    path: PathBuf,
+    hillslope_id: u32,
+    baseflow_volume_m3: f64,
+    deep_seepage_volume_m3: f64,
+) {
+    let bytes = build_schema1_no_event_fixture_with_groundwater(
+        hillslope_id,
+        1,
+        baseflow_volume_m3,
+        deep_seepage_volume_m3,
+    );
+    fs::write(path, bytes).expect("HBP no-event fixture should be writable");
+}
+
+fn write_hbp_event_then_no_event_fixture(path: PathBuf, hillslope_id: u32) {
+    let bytes = build_schema1_event_then_no_event_fixture(hillslope_id, 1);
+    fs::write(path, bytes).expect("HBP event-then-no-event fixture should be writable");
 }

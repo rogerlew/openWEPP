@@ -34,8 +34,9 @@ use helpers::{
 };
 use internal_types::{DirectoryEntry, EntryPayload, Layout, PayloadBlockEntry, YearEntry};
 pub use types::{
-    HbpDirectoryEntry, HbpLatestEventPayload, HbpParseOptions, HbpParseResult, HbpPathResolution,
-    HbpPayloadBlock, HbpPayloadLocator, HbpSchemaProfile, HbpWarning, HbpWarningCode, HbpYearEntry,
+    HbpDirectoryEntry, HbpLatestEventPayload, HbpLatestEventState, HbpNoEventKind,
+    HbpNoEventPayload, HbpParseOptions, HbpParseResult, HbpPathResolution, HbpPayloadBlock,
+    HbpPayloadLocator, HbpSchemaProfile, HbpWarning, HbpWarningCode, HbpYearEntry,
 };
 
 pub(super) const MAGIC: &[u8; 8] = b"WFPHBP01";
@@ -61,7 +62,7 @@ pub(super) fn parse_hbp_from_bytes_internal(
     bytes: &[u8],
     source_path: &Path,
     options: HbpParseOptions,
-) -> Result<(HbpParseResult, Option<HbpLatestEventPayload>), HbpParseError> {
+) -> Result<(HbpParseResult, Option<HbpLatestEventState>), HbpParseError> {
     let (resolved_path, path_resolution, warnings) = resolve_path(source_path)?;
 
     let layout = parse_layout(bytes)?;
@@ -75,12 +76,10 @@ pub(super) fn parse_hbp_from_bytes_internal(
         });
     }
 
-    let mut latest_event_payload = None;
+    let mut latest_event_state = None;
     for entry in &layout.entries {
         let payload_validation = validate_payload(bytes, &layout, entry)?;
-        if let Some(event_payload) = payload_validation.latest_event_payload {
-            latest_event_payload = Some(event_payload);
-        }
+        latest_event_state = Some(payload_validation.latest_event_state);
     }
 
     let year_entries = layout
@@ -180,7 +179,7 @@ pub(super) fn parse_hbp_from_bytes_internal(
             payload_blocks,
             warnings,
         },
-        latest_event_payload,
+        latest_event_state,
     ))
 }
 
@@ -198,6 +197,25 @@ pub fn parse_hbp_from_bytes_with_latest_event_payload(
     source_path: &Path,
     options: HbpParseOptions,
 ) -> Result<(HbpParseResult, Option<HbpLatestEventPayload>), HbpParseError> {
+    let (parsed, latest_event_state) =
+        parse_hbp_from_bytes_with_latest_event_state(bytes, source_path, options)?;
+    Ok((parsed, latest_payload_from_state(latest_event_state)))
+}
+
+fn latest_payload_from_state(
+    latest_event_state: Option<HbpLatestEventState>,
+) -> Option<HbpLatestEventPayload> {
+    match latest_event_state {
+        Some(HbpLatestEventState::EventPayload(payload)) => Some(payload),
+        Some(HbpLatestEventState::NoEvent(_)) | None => None,
+    }
+}
+
+pub fn parse_hbp_from_bytes_with_latest_event_state(
+    bytes: &[u8],
+    source_path: &Path,
+    options: HbpParseOptions,
+) -> Result<(HbpParseResult, Option<HbpLatestEventState>), HbpParseError> {
     parse_hbp_from_bytes_internal(bytes, source_path, options)
 }
 
@@ -217,10 +235,18 @@ pub fn parse_hbp_from_path_with_latest_event_payload(
     path: impl AsRef<Path>,
     options: HbpParseOptions,
 ) -> Result<(HbpParseResult, Option<HbpLatestEventPayload>), HbpParseError> {
+    let (parsed, latest_event_state) = parse_hbp_from_path_with_latest_event_state(path, options)?;
+    Ok((parsed, latest_payload_from_state(latest_event_state)))
+}
+
+pub fn parse_hbp_from_path_with_latest_event_state(
+    path: impl AsRef<Path>,
+    options: HbpParseOptions,
+) -> Result<(HbpParseResult, Option<HbpLatestEventState>), HbpParseError> {
     let (resolved_path, _path_resolution, _warnings) = resolve_path(path.as_ref())?;
     let bytes = fs::read(&resolved_path).map_err(|source| HbpParseError::InputOpenError {
         path: resolved_path.clone(),
         source,
     })?;
-    parse_hbp_from_bytes_with_latest_event_payload(&bytes, path.as_ref(), options)
+    parse_hbp_from_bytes_with_latest_event_state(&bytes, path.as_ref(), options)
 }

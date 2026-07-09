@@ -122,6 +122,32 @@ pub struct HbpLatestEventPayload {
     pub hourly_sediment_mass_kg: Vec<f64>,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum HbpNoEventKind {
+    NoEvent,
+    Subevent,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct HbpNoEventPayload {
+    pub sim_year_index: u32,
+    pub calendar_year: i32,
+    pub julian_day: u16,
+    pub source_event_kind: HbpNoEventKind,
+    pub subsurface_flow_depth_m: Option<f64>,
+    pub subsurface_flow_volume_m3: Option<f64>,
+    pub tile_drainage_depth_m: Option<f64>,
+    pub tile_drainage_volume_m3: Option<f64>,
+    pub baseflow_volume_m3: f64,
+    pub deep_seepage_volume_m3: f64,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum HbpLatestEventState {
+    EventPayload(HbpLatestEventPayload),
+    NoEvent(HbpNoEventPayload),
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct HbpParseResult {
     pub resolved_path: PathBuf,

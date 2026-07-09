@@ -16,8 +16,10 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use flate2::Compression;
 use flate2::write::ZlibEncoder;
 use openwepp_input_contract::parsers::hbp::{
-    HbpFormatErrorCode, HbpParseError, HbpParseOptions, HbpPathResolution, HbpSchemaProfile,
-    HbpWarningCode as ParserHbpWarningCode, parse_hbp_from_bytes, parse_hbp_from_path,
+    HbpFormatErrorCode, HbpLatestEventState, HbpNoEventKind, HbpParseError, HbpParseOptions,
+    HbpPathResolution, HbpSchemaProfile, HbpWarningCode as ParserHbpWarningCode,
+    parse_hbp_from_bytes, parse_hbp_from_bytes_with_latest_event_payload,
+    parse_hbp_from_bytes_with_latest_event_state, parse_hbp_from_path,
 };
 use openwepp_legacy_bridge::hbp::{
     HbpAdapterRequest, HbpHeaderContract, HbpMagicSource, HbpWarningCode as BridgeHbpWarningCode,
@@ -733,6 +735,41 @@ fn payload_validator_header_guards_are_typed() {
     // claim without the hourly block is exercised by the strict
     // count-prefixed reads (count-mismatch on the reserved i64 region) —
     // covered end-to-end by the p61 minor-1 round-trip.
+}
+
+#[test]
+fn latest_event_state_represents_no_event_without_synthesizing_event_payload() {
+    let bytes = build_schema1_fixture(1);
+    let (_, latest_event_state) = parse_hbp_from_bytes_with_latest_event_state(
+        &bytes,
+        Path::new("H1.hbp"),
+        HbpParseOptions {
+            expected_hillslope_id: Some(1),
+        },
+    )
+    .expect("schema-1 no-event fixture should parse");
+    let HbpLatestEventState::NoEvent(no_event) =
+        latest_event_state.expect("fixture should expose latest no-event state")
+    else {
+        panic!("latest HBP state should be NoEvent");
+    };
+    assert_eq!(no_event.source_event_kind, HbpNoEventKind::NoEvent);
+    assert_eq!(no_event.julian_day, 1);
+    assert!(no_event.baseflow_volume_m3.abs() <= f64::EPSILON);
+    assert!(no_event.deep_seepage_volume_m3.abs() <= f64::EPSILON);
+
+    let (_, latest_event_payload) = parse_hbp_from_bytes_with_latest_event_payload(
+        &bytes,
+        Path::new("H1.hbp"),
+        HbpParseOptions {
+            expected_hillslope_id: Some(1),
+        },
+    )
+    .expect("compat latest-event-payload API should parse no-event fixture");
+    assert!(
+        latest_event_payload.is_none(),
+        "compat EventPayload API must not synthesize runoff payload from NoEvent state"
+    );
 }
 
 #[test]
