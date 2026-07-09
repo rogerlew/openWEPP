@@ -13,6 +13,10 @@
 - Instruction precedence is nearest-to-workdir: global defaults -> repo root -> nested directories.
 - When a nested `AGENTS.md` exists for files you are editing, treat it as the primary local playbook.
 - Use root `AGENTS.md` for repository-wide invariants and routing only.
+- Fast lookup: run `tools/agents/find-agents --for <write-path> [...]` before
+  edits to list the applicable root-to-nearest instruction chain. Use
+  `tools/agents/find-agents --all` for the full inventory and
+  `docs/agent-guidance-map.md` for the current index.
 
 ## Local Python Environment
 - Repo-local Python tooling should use `.venv/bin/python`.
@@ -86,6 +90,8 @@ Before declaring Rust kernel implementation complete, run and record:
 
 ## Documentation Map
 - Work packages: `docs/work-packages/AGENTS.md`, `docs/work-packages/README.md`, `docs/codex_exec_plans.md`, `docs/defect_closure_execplans.md`.
+- Agent instruction discovery: `docs/agent-guidance-map.md`,
+  `tools/agents/find-agents`.
 - Array-native burn-down ExecPlans: R4 hydrology direct paths in `docs/work-packages/r4-burndown-execplan.md`; R5 full OFE-day direct path in `docs/work-packages/r5-burndown-execplan.md`.
 - Science contracts: `docs/specifications/science-contracts/AGENTS.md`, `docs/specifications/science-contract-authoring-procedure.md`, `docs/specifications/science-contracts/kernel-process-contract-profile.md`, `docs/specifications/science-contracts/index.md`.
 - Standards and prompt wording: `docs/standards/AGENTS.md`, `docs/standards/kernel-work-package-preparation.md`, `docs/standards/prompt-wording-guidance.md`, `docs/standards/mechanical-refactor-authoring-guide.md`, `docs/standards/local-ci-gate-selection.md`.

@@ -11,6 +11,10 @@
 
 ## Reusable Execution Plans And Templates
 
+- `../agent-guidance-map.md` and `../../tools/agents/find-agents` provide fast
+  discovery for applicable `AGENTS.md` files. Before package edits, run
+  `tools/agents/find-agents --for <declared-write-set>` and record the applicable
+  chain in package intake evidence.
 - `cqr-nightly-burndown-execplan.md` defines the operator shorthand
   `execute cqr nightly for <N> modules`: measure live workspace CRAP/LCOV, select
   the top eligible production modules, scaffold one ordinary CQR work package per
@@ -25,6 +29,13 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-09`:
+- `20260709-agent-instruction-discovery-index-tooling-001/` -
+  EXECUTED-COMPLETE-AGENT-INSTRUCTION-DISCOVERY (2026-07-09): added
+  `tools/agents/find-agents`, `docs/agent-guidance-map.md`, and work-package/root
+  discoverability wiring so agents can quickly identify the applicable
+  `AGENTS.md` chain for a declared write set. Acceptance and review subagents
+  verified inventory, path-chain, JSON, usage-failure, and package-closure
+  behavior.
 - `20260702-wshedw7-sediment-active-watershed-fixture-publication-closure-001/` -
   EXECUTED-COMPLETE-W7R-SEDIMENT-ACTIVE-PUBLICATION-CLOSURE (2026-07-08):
   resumed W7 after the p102 producer-side blocker was closed. Adopted

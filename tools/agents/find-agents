@@ -1,0 +1,181 @@
+#!/usr/bin/env python3
+"""Find openWEPP AGENTS.md instruction files quickly.
+
+The tool has two modes:
+
+* --all: list every tracked/unignored AGENTS.md file in the repository.
+* --for PATH...: list the root-to-nearest AGENTS.md chain that applies to each
+  intended write path.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+
+def run_git(args: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        ["git", *args],
+        cwd=cwd,
+        check=False,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+
+
+def repo_root() -> Path:
+    here = Path.cwd()
+    proc = run_git(["rev-parse", "--show-toplevel"], here)
+    if proc.returncode == 0:
+        return Path(proc.stdout.strip()).resolve()
+
+    for candidate in [here, *here.parents]:
+        if (candidate / ".git").exists():
+            return candidate.resolve()
+
+    print("find-agents: not inside a git repository", file=sys.stderr)
+    raise SystemExit(2)
+
+
+def normalize_repo_path(root: Path, value: str) -> Path:
+    path = Path(value)
+    if not path.is_absolute():
+        path = root / path
+    path = path.resolve(strict=False)
+    try:
+        path.relative_to(root)
+    except ValueError:
+        print(f"find-agents: path is outside repository: {value}", file=sys.stderr)
+        raise SystemExit(2) from None
+    return path
+
+
+def discover_agents(root: Path) -> list[Path]:
+    proc = run_git(
+        ["ls-files", "-co", "--exclude-standard", "--", "AGENTS.md", "*/AGENTS.md"],
+        root,
+    )
+    if proc.returncode != 0:
+        print(proc.stderr.strip(), file=sys.stderr)
+        raise SystemExit(proc.returncode)
+
+    agents = []
+    for line in proc.stdout.splitlines():
+        rel = Path(line)
+        if rel.name == "AGENTS.md":
+            agents.append(rel)
+    return sorted(set(agents), key=str)
+
+
+def applicable_chain(root: Path, agents: set[Path], value: str) -> list[Path]:
+    path = normalize_repo_path(root, value)
+    start = path if not path.exists() or path.is_dir() else path.parent
+
+    try:
+        rel_start = start.relative_to(root)
+    except ValueError:
+        print(f"find-agents: path is outside repository: {value}", file=sys.stderr)
+        raise SystemExit(2) from None
+
+    dirs = [Path(".")]
+    current = Path(".")
+    for part in rel_start.parts:
+        current = current / part
+        dirs.append(current)
+
+    chain = []
+    for directory in dirs:
+        rel_agent = (directory / "AGENTS.md") if str(directory) != "." else Path("AGENTS.md")
+        if rel_agent in agents:
+            chain.append(rel_agent)
+    return chain
+
+
+def rel_string(path: Path) -> str:
+    return str(path).replace("\\", "/")
+
+
+def print_text_all(agents: list[Path]) -> None:
+    for agent in agents:
+        print(rel_string(agent))
+
+
+def print_text_for(root: Path, agents: set[Path], paths: list[str]) -> None:
+    for index, value in enumerate(paths):
+        if index:
+            print()
+        normalized = normalize_repo_path(root, value).relative_to(root)
+        print(f"{value} ({rel_string(normalized)}):")
+        chain = applicable_chain(root, agents, value)
+        if not chain:
+            print("  <no AGENTS.md found>")
+            continue
+        for agent in chain:
+            print(f"  {rel_string(agent)}")
+
+
+def print_json(root: Path, agents: list[Path], paths: list[str]) -> None:
+    agent_set = set(agents)
+    payload: dict[str, object] = {
+        "repo_root": str(root),
+        "agents": [rel_string(agent) for agent in agents],
+    }
+    if paths:
+        payload["queries"] = [
+            {
+                "path": value,
+                "normalized_path": rel_string(normalize_repo_path(root, value).relative_to(root)),
+                "applicable": [
+                    rel_string(agent) for agent in applicable_chain(root, agent_set, value)
+                ],
+            }
+            for value in paths
+        ]
+    print(json.dumps(payload, indent=2, sort_keys=True))
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="List openWEPP AGENTS.md files and applicable instruction chains.",
+    )
+    parser.add_argument("--all", action="store_true", help="list every repository AGENTS.md")
+    parser.add_argument(
+        "--for",
+        dest="paths",
+        nargs="+",
+        metavar="PATH",
+        help="show applicable AGENTS.md chain for one or more intended paths",
+    )
+    parser.add_argument("--json", action="store_true", help="emit machine-readable JSON")
+    args = parser.parse_args()
+    if not args.all and not args.paths:
+        parser.error("specify --all and/or --for PATH...")
+    return args
+
+
+def main() -> int:
+    args = parse_args()
+    root = repo_root()
+    agents = discover_agents(root)
+    paths = args.paths or []
+
+    if args.json:
+        print_json(root, agents, paths)
+        return 0
+
+    if args.all:
+        print_text_all(agents)
+        if paths:
+            print()
+    if paths:
+        print_text_for(root, set(agents), paths)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

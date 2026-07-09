@@ -29,10 +29,13 @@
 ## Standard Workflow
 1. Confirm the package is authorized by queue, decision, or user direction.
 2. Read root `AGENTS.md`, this file, package-local `package.md`, and any nested `AGENTS.md` for files in the write set.
-3. For kernel-affecting work, also read `docs/specifications/science-contracts/AGENTS.md` before edits.
-4. Execute package phases end-to-end unless a declared hard blocker is reached.
-5. Update artifacts truthfully as work proceeds; label `Static:` vs `Ran:` evidence.
-6. Complete dual independent reviews, explicit finding disposition, dual verification, line-count governance, and final disposition before closure.
+3. Run `tools/agents/find-agents --for <declared-write-set>` before edits and
+   record the applicable instruction files in `artifacts/required-reading-map.md`
+   or equivalent package intake evidence.
+4. For kernel-affecting work, also read `docs/specifications/science-contracts/AGENTS.md` before edits.
+5. Execute package phases end-to-end unless a declared hard blocker is reached.
+6. Update artifacts truthfully as work proceeds; label `Static:` vs `Ran:` evidence.
+7. Complete dual independent reviews, explicit finding disposition, dual verification, line-count governance, and final disposition before closure.
 
 ## Gate Evidence Non-Deferral Rule
 - A package, phase, or staged increment is complete only when every required
