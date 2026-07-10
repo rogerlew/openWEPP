@@ -221,6 +221,34 @@ fn build_no_event_payload(
     payload
 }
 
+fn build_non_runoff_event_payload(
+    sim_year_index: u32,
+    calendar_year: i32,
+    julian_day: u16,
+    nofe: u32,
+    max_layers: u32,
+) -> Vec<u8> {
+    let mut payload = Vec::new();
+    put_u32(&mut payload, sim_year_index);
+    put_i32(&mut payload, calendar_year);
+    put_u16(&mut payload, julian_day);
+    put_u8(&mut payload, 1); // SUBEVENT / non-runoff event
+    put_u16(&mut payload, 0); // payload_minor
+    put_u16(&mut payload, REQUIRED_STATE_IDS.len() as u16);
+    put_i64(&mut payload, 1_000_000_000); // subsurface_flow_depth_m
+    put_i64(&mut payload, 2_000_000_000); // subsurface_flow_volume_m3
+    put_i64(&mut payload, 3_000_000_000); // tile_drainage_depth_m
+    put_i64(&mut payload, 4_000_000_000); // tile_drainage_volume_m3
+    put_i64(&mut payload, 5_000_000_000); // baseflow_volume_m3
+    put_i64(&mut payload, 6_000_000_000); // deep_seepage_volume_m3
+
+    for state_id in REQUIRED_STATE_IDS {
+        payload.extend_from_slice(&build_state_entry(*state_id, nofe, max_layers));
+    }
+
+    payload
+}
+
 fn append_common_prefix(
     schema_major: u16,
     schema_minor: u16,
@@ -312,9 +340,22 @@ fn append_common_prefix(
 }
 
 fn build_schema1_fixture(hillslope_id: u32) -> Vec<u8> {
-    let mut file = append_common_prefix(SUPPORTED_MAJOR_V1, 0, 1, 2004, 1, hillslope_id);
     let payload = build_no_event_payload(1, 2004, 1, 1, 1);
-    let payload_crc = crc32c(&payload);
+    build_schema1_fixture_with_payload(hillslope_id, 0, &payload)
+}
+
+fn build_schema1_non_runoff_fixture(hillslope_id: u32) -> Vec<u8> {
+    let payload = build_non_runoff_event_payload(1, 2004, 1, 1, 1);
+    build_schema1_fixture_with_payload(hillslope_id, 1, &payload)
+}
+
+fn build_schema1_fixture_with_payload(
+    hillslope_id: u32,
+    event_kind: u8,
+    payload: &[u8],
+) -> Vec<u8> {
+    let mut file = append_common_prefix(SUPPORTED_MAJOR_V1, 0, 1, 2004, 1, hillslope_id);
+    let payload_crc = crc32c(payload);
 
     let directory_start = file.len();
     let directory_len = 4 + 27;
@@ -325,13 +366,13 @@ fn build_schema1_fixture(hillslope_id: u32) -> Vec<u8> {
     put_u32(&mut directory, 1); // sim_year_index
     put_i32(&mut directory, 2004);
     put_u16(&mut directory, 1); // julian day
-    put_u8(&mut directory, 0); // NO_EVENT
+    put_u8(&mut directory, event_kind);
     put_u64(&mut directory, payload_offset as u64);
     put_u32(&mut directory, payload.len() as u32);
     put_u32(&mut directory, payload_crc);
 
     file.extend_from_slice(&directory);
-    file.extend_from_slice(&payload);
+    file.extend_from_slice(payload);
 
     let directory_crc = crc32c(&directory);
     put_u32(&mut file, directory_crc);
@@ -769,6 +810,49 @@ fn latest_event_state_represents_no_event_without_synthesizing_event_payload() {
     assert!(
         latest_event_payload.is_none(),
         "compat EventPayload API must not synthesize runoff payload from NoEvent state"
+    );
+}
+
+#[test]
+fn latest_event_state_represents_non_runoff_subevent_payload() {
+    let bytes = build_schema1_non_runoff_fixture(1);
+    let (_, latest_event_state) = parse_hbp_from_bytes_with_latest_event_state(
+        &bytes,
+        Path::new("H1.hbp"),
+        HbpParseOptions {
+            expected_hillslope_id: Some(1),
+        },
+    )
+    .expect("schema-1 non-runoff fixture should parse");
+
+    let HbpLatestEventState::NoEvent(no_event) =
+        latest_event_state.expect("fixture should expose latest subevent state")
+    else {
+        panic!("latest HBP state should be non-runoff NoEvent payload");
+    };
+
+    assert_eq!(no_event.source_event_kind, HbpNoEventKind::Subevent);
+    assert_eq!(no_event.sim_year_index, 1);
+    assert_eq!(no_event.calendar_year, 2004);
+    assert_eq!(no_event.julian_day, 1);
+    assert_eq!(no_event.subsurface_flow_depth_m, Some(1.0));
+    assert_eq!(no_event.subsurface_flow_volume_m3, Some(2.0));
+    assert_eq!(no_event.tile_drainage_depth_m, Some(3.0));
+    assert_eq!(no_event.tile_drainage_volume_m3, Some(4.0));
+    assert!((no_event.baseflow_volume_m3 - 5.0).abs() <= f64::EPSILON);
+    assert!((no_event.deep_seepage_volume_m3 - 6.0).abs() <= f64::EPSILON);
+
+    let (_, latest_event_payload) = parse_hbp_from_bytes_with_latest_event_payload(
+        &bytes,
+        Path::new("H1.hbp"),
+        HbpParseOptions {
+            expected_hillslope_id: Some(1),
+        },
+    )
+    .expect("compat latest-event-payload API should parse non-runoff fixture");
+    assert!(
+        latest_event_payload.is_none(),
+        "compat EventPayload API must not synthesize runoff payload from a non-runoff subevent"
     );
 }
 

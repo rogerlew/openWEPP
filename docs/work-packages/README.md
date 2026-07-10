@@ -29,6 +29,16 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-10`:
+- `20260709-cqr-nightly-b02-10-hbp-payload-validator-001/` -
+  EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-10): CQR nightly batch 02 target #10
+  completed characterization-only closure of
+  `crates/openwepp-input-contract/src/parsers/hbp/payload_validator.rs`.
+  Production source was unchanged; a public HBP parser contract test now covers
+  schema-1 non-runoff subevent payloads. Target CRAP rows above `30` reduced
+  from `1` to `0`, maximum CRAP is `21.255`, and target full-workspace LCOV is
+  `531/621` lines / `47/64` functions. Final workspace clippy, full-nextest
+  `1653/1653` with `3` skipped, and deny passed. Package:
+  `20260709-cqr-nightly-b02-10-hbp-payload-validator-001/`.
 - `20260709-cqr-nightly-b02-09-slope-parser-001/` -
   EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-10): CQR nightly batch 02 target #9
   completed behavior-preserving slope parser decomposition and seven-test

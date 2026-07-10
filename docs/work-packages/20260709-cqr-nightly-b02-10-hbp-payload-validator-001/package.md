@@ -1,7 +1,7 @@
 # CQR Nightly Batch 02, Target 10 — HBP Payload Validator
 
 Package: `20260709-cqr-nightly-b02-10-hbp-payload-validator-001`
-Status: `SCAFFOLDED-CQR-NIGHTLY`
+Status: `EXECUTED-COMPLETE-CQR-NIGHTLY`
 ExecPlan: `docs/work-packages/cqr-nightly-burndown-execplan.md`
 Nightly batch: `02`
 Target module:
@@ -177,4 +177,3 @@ Complete only when:
 - dual review findings are dispositioned and accepted findings are fixed;
 - dual verification passes;
 - completion or hold commit exists before ending batch 02.
-
