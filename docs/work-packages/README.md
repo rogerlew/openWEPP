@@ -29,6 +29,14 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-09`:
+- `20260709-cqr-nightly-08-runner-errors-001/` -
+  QUEUED (2026-07-09): CQR Nightly target #8 for behavior-preserving
+  CRAP/cyclomatic-complexity closure of
+  `crates/openwepp-runner/src/errors.rs`. Baseline target evidence has `6`
+  deduplicated target functions above CRAP `30`, max CRAP
+  `192.89940656693898`, target LCOV `56/267`, and no production line-count
+  WARN (`549` lines). Package:
+  `20260709-cqr-nightly-08-runner-errors-001/`.
 - `20260709-cqr-nightly-07-input-management-parser-001/` -
   EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-09): CQR Nightly target #7 completed
   behavior-preserving CRAP/cyclomatic-complexity closure of
