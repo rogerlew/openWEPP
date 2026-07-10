@@ -29,6 +29,13 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-10`:
+- `20260709-cqr-nightly-b02-07-sim-status-001/` -
+  EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-10): CQR nightly batch 02 target #7
+  completed exhaustive status-taxonomy characterization and private boundary
+  mapper decomposition of `crates/openwepp-sim-contract/src/status.rs`. Target
+  CRAP rows above `30` reduced from `1` to `0`; coverage is 100% lines/regions.
+  Final clippy, full-nextest `1638/1638` with `3` skipped, and deny passed.
+  Package: `20260709-cqr-nightly-b02-07-sim-status-001/`.
 - `20260709-cqr-nightly-b02-06-irrigation-depletion-001/` -
   EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-10): CQR nightly batch 02 target #6
   completed behavior-preserving irrigation-depletion parser decomposition and

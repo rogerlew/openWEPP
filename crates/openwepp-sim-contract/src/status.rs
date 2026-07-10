@@ -68,38 +68,73 @@ pub enum BoundaryClass {
     MissingRequiredInput,
 }
 
+#[derive(Debug, Clone, Copy)]
+struct BoundaryClassDefinition {
+    label: &'static str,
+    classification: StatusClassification,
+}
+
 impl BoundaryClass {
     #[must_use]
     pub const fn as_str(self) -> &'static str {
-        match self {
-            Self::Ok => "OK",
-            Self::Dry => "DRY",
-            Self::Saturated => "SATURATED",
-            Self::NegativeInput => "NEGATIVE_INPUT",
-            Self::ZeroGeometry => "ZERO_GEOMETRY",
-            Self::ModeMismatch => "MODE_MISMATCH",
-            Self::CapBinding => "CAP_BINDING",
-            Self::TopologyInvalid => "TOPOLOGY_INVALID",
-            Self::ClosureViolation => "CLOSURE_VIOLATION",
-            Self::DomainViolation => "DOMAIN_VIOLATION",
-            Self::NonFinite => "NON_FINITE",
-            Self::MissingRequiredInput => "MISSING_REQUIRED_INPUT",
-        }
+        self.definition().label
     }
 
     #[must_use]
     pub const fn classification(self) -> StatusClassification {
+        self.definition().classification
+    }
+
+    const fn definition(self) -> BoundaryClassDefinition {
         match self {
-            Self::Ok => StatusClassification::Nominal,
-            Self::Dry | Self::Saturated | Self::CapBinding => StatusClassification::Advisory,
-            Self::NegativeInput
-            | Self::ZeroGeometry
-            | Self::ModeMismatch
-            | Self::TopologyInvalid
-            | Self::ClosureViolation
-            | Self::DomainViolation
-            | Self::NonFinite
-            | Self::MissingRequiredInput => StatusClassification::Failure,
+            Self::Ok => BoundaryClassDefinition {
+                label: "OK",
+                classification: StatusClassification::Nominal,
+            },
+            Self::Dry => BoundaryClassDefinition {
+                label: "DRY",
+                classification: StatusClassification::Advisory,
+            },
+            Self::Saturated => BoundaryClassDefinition {
+                label: "SATURATED",
+                classification: StatusClassification::Advisory,
+            },
+            Self::NegativeInput => BoundaryClassDefinition {
+                label: "NEGATIVE_INPUT",
+                classification: StatusClassification::Failure,
+            },
+            Self::ZeroGeometry => BoundaryClassDefinition {
+                label: "ZERO_GEOMETRY",
+                classification: StatusClassification::Failure,
+            },
+            Self::ModeMismatch => BoundaryClassDefinition {
+                label: "MODE_MISMATCH",
+                classification: StatusClassification::Failure,
+            },
+            Self::CapBinding => BoundaryClassDefinition {
+                label: "CAP_BINDING",
+                classification: StatusClassification::Advisory,
+            },
+            Self::TopologyInvalid => BoundaryClassDefinition {
+                label: "TOPOLOGY_INVALID",
+                classification: StatusClassification::Failure,
+            },
+            Self::ClosureViolation => BoundaryClassDefinition {
+                label: "CLOSURE_VIOLATION",
+                classification: StatusClassification::Failure,
+            },
+            Self::DomainViolation => BoundaryClassDefinition {
+                label: "DOMAIN_VIOLATION",
+                classification: StatusClassification::Failure,
+            },
+            Self::NonFinite => BoundaryClassDefinition {
+                label: "NON_FINITE",
+                classification: StatusClassification::Failure,
+            },
+            Self::MissingRequiredInput => BoundaryClassDefinition {
+                label: "MISSING_REQUIRED_INPUT",
+                classification: StatusClassification::Failure,
+            },
         }
     }
 }

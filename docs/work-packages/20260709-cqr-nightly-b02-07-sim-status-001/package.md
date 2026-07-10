@@ -1,7 +1,7 @@
 # CQR Nightly Batch 02, Target 07 — Simulation Status
 
 Package: `20260709-cqr-nightly-b02-07-sim-status-001`
-Status: `SCAFFOLDED-CQR-NIGHTLY`
+Status: `EXECUTED-COMPLETE-CQR-NIGHTLY`
 ExecPlan: `docs/work-packages/cqr-nightly-burndown-execplan.md`
 Nightly batch: `02`
 Target module: `crates/openwepp-sim-contract/src/status.rs`
@@ -23,6 +23,7 @@ semantics, failure/advisory policy, API, or contract changes.
 Intended write set:
 
 - `crates/openwepp-sim-contract/src/status.rs`
+- `tests/integration/sim_contract_status_taxonomy.rs`
 - `docs/work-packages/20260709-cqr-nightly-b02-07-sim-status-001/**`
 - `docs/work-packages/README.md` after closure
 
@@ -34,3 +35,10 @@ or test edits. Add exhaustive real API characterisation first; preserve all
 public strings and mappings; use delegated runner for heavy metrics/workspace
 gates; complete dual review/verification and completion or local hold commit
 before target 08.
+
+## Subagent Authorization
+
+This package explicitly authorizes bounded read-only review, verification, and
+comparator/closure-runner delegation. Heavy coverage/CRAP and workspace gates
+must use a comparator suite runner; no agent may edit outside the declared
+target/test/package paths without a new explicit assignment.
