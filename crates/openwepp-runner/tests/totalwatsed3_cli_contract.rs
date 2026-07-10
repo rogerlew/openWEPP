@@ -389,3 +389,137 @@ fn totalwatsed3_cli_reads_openwepp_per_hillslope_pass_and_wat_surfaces() {
         fs::remove_dir_all(base).expect("temp dir cleanup should succeed");
     }
 }
+
+#[test]
+fn totalwatsed3_cli_help_and_argument_errors_preserve_cli_contract() {
+    let binary = env!("CARGO_BIN_EXE_openwepp-cli-totalwatsed3");
+
+    let help = Command::new(binary)
+        .arg("--help")
+        .output()
+        .expect("totalwatsed3 help process should run");
+    assert!(help.status.success(), "--help should succeed");
+    assert!(
+        String::from_utf8_lossy(&help.stdout).contains("--input-dir <interchange-dir>"),
+        "help should preserve the required input directory synopsis"
+    );
+
+    let missing_value = Command::new(binary)
+        .arg("--input-dir")
+        .output()
+        .expect("totalwatsed3 missing-value process should run");
+    assert!(
+        !missing_value.status.success(),
+        "missing values should fail closed"
+    );
+    assert!(
+        String::from_utf8_lossy(&missing_value.stderr)
+            .contains("CLITW3-E-001 missing value for --input-dir"),
+        "missing --input-dir value should retain its typed error"
+    );
+
+    let unknown = Command::new(binary)
+        .arg("--unknown")
+        .output()
+        .expect("totalwatsed3 unknown-argument process should run");
+    assert!(
+        !unknown.status.success(),
+        "unknown arguments should fail closed"
+    );
+    assert!(
+        String::from_utf8_lossy(&unknown.stderr)
+            .contains("CLITW3-E-001 unrecognized argument --unknown"),
+        "unknown arguments should retain their typed error"
+    );
+}
+
+#[test]
+fn totalwatsed3_cli_explicit_relative_and_absolute_inputs_override_default_discovery() {
+    let base = unique_temp_dir("totalwatsed3_explicit_input_precedence");
+    let input_dir = base.join("interchange");
+    fs::create_dir_all(&input_dir).expect("input dir should be created");
+    fs::write(
+        input_dir.join("H.pass.parquet"),
+        "invalid default PASS fixture",
+    )
+    .expect("invalid default PASS fixture should be written");
+    fs::write(
+        input_dir.join("H.wat.parquet"),
+        "invalid default WAT fixture",
+    )
+    .expect("invalid default WAT fixture should be written");
+
+    let relative_pass = input_dir.join("selected.pass.parquet");
+    write_pass_fixture(&relative_pass);
+    let absolute_wat = base.join("external").join("selected.wat.parquet");
+    write_wat_fixture(&absolute_wat);
+    let output_path = base.join("totalwatsed3.parquet");
+
+    let output = Command::new(env!("CARGO_BIN_EXE_openwepp-cli-totalwatsed3"))
+        .arg("--input-dir")
+        .arg(&input_dir)
+        .arg("--output")
+        .arg(&output_path)
+        .arg("--pass")
+        .arg("selected.pass.parquet")
+        .arg("--wat")
+        .arg(&absolute_wat)
+        .output()
+        .expect("totalwatsed3 CLI process should run");
+
+    assert!(
+        output.status.success(),
+        "explicit inputs should override invalid discovered defaults; stderr={}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let batch = read_first_output_batch(&output_path);
+    assert_eq!(batch.num_rows(), 1);
+    assert!((f64_column(&batch, "runvol") - 12.0).abs() <= 1.0e-12);
+    assert!((f64_column(&batch, "Q") - 181.5).abs() <= 1.0e-12);
+
+    if base.exists() {
+        fs::remove_dir_all(base).expect("temp dir cleanup should succeed");
+    }
+}
+
+#[test]
+fn totalwatsed3_cli_rejects_missing_explicit_optional_inputs() {
+    let base = unique_temp_dir("totalwatsed3_missing_explicit_optional_input");
+    let input_dir = base.join("interchange");
+    fs::create_dir_all(&input_dir).expect("input dir should be created");
+    write_pass_fixture(&input_dir.join("H.pass.parquet"));
+    write_wat_fixture(&input_dir.join("H.wat.parquet"));
+
+    for (flag, missing_name) in [
+        ("--soil", "missing.soil.parquet"),
+        ("--element", "missing.element.parquet"),
+    ] {
+        let output = Command::new(env!("CARGO_BIN_EXE_openwepp-cli-totalwatsed3"))
+            .arg("--input-dir")
+            .arg(&input_dir)
+            .arg("--output")
+            .arg(base.join(format!("{missing_name}.output.parquet")))
+            .arg(flag)
+            .arg(missing_name)
+            .output()
+            .expect("totalwatsed3 CLI process should run");
+
+        assert!(
+            !output.status.success(),
+            "missing explicit {flag} input should fail closed"
+        );
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        let expected = format!(
+            "CLITW3-E-006 optional input was explicitly configured but does not exist: {}",
+            input_dir.join(missing_name).display()
+        );
+        assert!(
+            stderr.contains(&expected),
+            "missing explicit {flag} input should retain its typed error, observed: {stderr}"
+        );
+    }
+
+    if base.exists() {
+        fs::remove_dir_all(base).expect("temp dir cleanup should succeed");
+    }
+}

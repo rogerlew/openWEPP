@@ -29,6 +29,14 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-10`:
+- `20260709-cqr-nightly-b02-05-runner-totalwatsed3-001/` -
+  EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-10): CQR nightly batch 02 target #5
+  completed behavior-preserving decomposition and public CLI characterization
+  of `crates/openwepp-runner/src/bin/openwepp-cli-totalwatsed3.rs`. Target CRAP
+  rows above `30` reduced from `1` to `0`, maximum CRAP is `16`, and production
+  coverage is `186/197` lines / `285/305` deduplicated regions. Final delegated
+  clippy, full-nextest `1624/1624` with `3` skipped, and deny gates passed.
+  Package: `20260709-cqr-nightly-b02-05-runner-totalwatsed3-001/`.
 - `20260709-cqr-nightly-b02-04-runner-watershed-cli-001/` -
   EXECUTED-HOLD-CQR-NIGHTLY-LOCAL-COVERAGE-TESTABILITY (2026-07-10): CQR
   nightly batch 02 target #4 attempted a behavior-preserving decomposition of

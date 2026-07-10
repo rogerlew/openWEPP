@@ -10,69 +10,93 @@ fn main() {
     }
 }
 
-#[allow(clippy::too_many_lines)]
 fn run() -> Result<(), String> {
     let args: Vec<String> = std::env::args().collect();
-    let mut input_dir: Option<PathBuf> = None;
-    let mut output_path: Option<PathBuf> = None;
-    let mut pass_path: Option<PathBuf> = None;
-    let mut wat_path: Option<PathBuf> = None;
-    let mut soil_path: Option<PathBuf> = None;
-    let mut element_path: Option<PathBuf> = None;
+    let invocation = parse_invocation(&args)?;
+    let Invocation::Run(options) = invocation else {
+        print_help();
+        return Ok(());
+    };
+
+    let options = validate_required_options(options)?;
+    let config = collect_resolved_inputs(options)?;
+    execute_totalwatsed3(&config)
+}
+
+#[derive(Default)]
+struct ParsedOptions {
+    input_dir: Option<PathBuf>,
+    output_path: Option<PathBuf>,
+    pass_path: Option<PathBuf>,
+    wat_path: Option<PathBuf>,
+    soil_path: Option<PathBuf>,
+    element_path: Option<PathBuf>,
+}
+
+struct ValidatedOptions {
+    input_dir: PathBuf,
+    output_path: PathBuf,
+    pass_path: Option<PathBuf>,
+    wat_path: Option<PathBuf>,
+    soil_path: Option<PathBuf>,
+    element_path: Option<PathBuf>,
+}
+
+enum Invocation {
+    Help,
+    Run(ParsedOptions),
+}
+
+fn parse_invocation(args: &[String]) -> Result<Invocation, String> {
+    let mut options = ParsedOptions::default();
 
     let mut cursor = 1_usize;
     while cursor < args.len() {
         match args[cursor].as_str() {
             "--input-dir" => {
-                cursor += 1;
-                let Some(value) = args.get(cursor) else {
-                    return Err("CLITW3-E-001 missing value for --input-dir".to_string());
-                };
-                input_dir = Some(PathBuf::from(value));
+                options.input_dir = Some(parse_path_option(args, &mut cursor, "--input-dir")?);
             }
             "--output" => {
-                cursor += 1;
-                let Some(value) = args.get(cursor) else {
-                    return Err("CLITW3-E-001 missing value for --output".to_string());
-                };
-                output_path = Some(PathBuf::from(value));
+                options.output_path = Some(parse_path_option(args, &mut cursor, "--output")?);
             }
             "--pass" => {
-                cursor += 1;
-                let Some(value) = args.get(cursor) else {
-                    return Err("CLITW3-E-001 missing value for --pass".to_string());
-                };
-                pass_path = Some(PathBuf::from(value));
+                options.pass_path = Some(parse_path_option(args, &mut cursor, "--pass")?);
             }
             "--wat" => {
-                cursor += 1;
-                let Some(value) = args.get(cursor) else {
-                    return Err("CLITW3-E-001 missing value for --wat".to_string());
-                };
-                wat_path = Some(PathBuf::from(value));
+                options.wat_path = Some(parse_path_option(args, &mut cursor, "--wat")?);
             }
             "--soil" => {
-                cursor += 1;
-                let Some(value) = args.get(cursor) else {
-                    return Err("CLITW3-E-001 missing value for --soil".to_string());
-                };
-                soil_path = Some(PathBuf::from(value));
+                options.soil_path = Some(parse_path_option(args, &mut cursor, "--soil")?);
             }
             "--element" => {
-                cursor += 1;
-                let Some(value) = args.get(cursor) else {
-                    return Err("CLITW3-E-001 missing value for --element".to_string());
-                };
-                element_path = Some(PathBuf::from(value));
+                options.element_path = Some(parse_path_option(args, &mut cursor, "--element")?);
             }
-            "--help" | "-h" => {
-                print_help();
-                return Ok(());
-            }
+            "--help" | "-h" => return Ok(Invocation::Help),
             flag => return Err(format!("CLITW3-E-001 unrecognized argument {flag}")),
         }
         cursor += 1;
     }
+
+    Ok(Invocation::Run(options))
+}
+
+fn parse_path_option(args: &[String], cursor: &mut usize, flag: &str) -> Result<PathBuf, String> {
+    *cursor += 1;
+    let Some(value) = args.get(*cursor) else {
+        return Err(format!("CLITW3-E-001 missing value for {flag}"));
+    };
+    Ok(PathBuf::from(value))
+}
+
+fn validate_required_options(options: ParsedOptions) -> Result<ValidatedOptions, String> {
+    let ParsedOptions {
+        input_dir,
+        output_path,
+        pass_path,
+        wat_path,
+        soil_path,
+        element_path,
+    } = options;
 
     let Some(input_dir) = input_dir else {
         return Err("CLITW3-E-001 missing --input-dir".to_string());
@@ -86,6 +110,26 @@ fn run() -> Result<(), String> {
             input_dir.display()
         ));
     }
+
+    Ok(ValidatedOptions {
+        input_dir,
+        output_path,
+        pass_path,
+        wat_path,
+        soil_path,
+        element_path,
+    })
+}
+
+fn collect_resolved_inputs(options: ValidatedOptions) -> Result<Totalwatsed3Config, String> {
+    let ValidatedOptions {
+        input_dir,
+        output_path,
+        pass_path,
+        wat_path,
+        soil_path,
+        element_path,
+    } = options;
 
     let pass_paths =
         resolve_required_input_paths(&input_dir, pass_path, "H.pass.parquet", ".pass.parquet");
@@ -112,14 +156,18 @@ fn run() -> Result<(), String> {
         ".element.parquet",
     )?;
 
-    let summary = write_totalwatsed3(&Totalwatsed3Config {
+    Ok(Totalwatsed3Config {
         pass_paths,
         wat_paths,
         soil_paths,
         element_paths,
         output_path,
     })
-    .map_err(|error| format!("CLITW3-E-010 totalwatsed3 production failed: {error}"))?;
+}
+
+fn execute_totalwatsed3(config: &Totalwatsed3Config) -> Result<(), String> {
+    let summary = write_totalwatsed3(config)
+        .map_err(|error| format!("CLITW3-E-010 totalwatsed3 production failed: {error}"))?;
 
     eprintln!(
         "CLITW3-I-001 wrote {} rows to {}",
