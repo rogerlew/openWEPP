@@ -29,6 +29,16 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-09`:
+- `20260709-cqr-nightly-b02-03-soil-parser-001/` -
+  EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-10): CQR nightly batch 02 target #3
+  completed behavior-preserving decomposition and all-datver parser
+  characterization of `crates/openwepp-input-contract/src/parsers/soil.rs`.
+  Target CRAP rows above `30` reduced from `4` to `0`, maximum CRAP is
+  `29.91740980561775`, and cfg-test-excluded production coverage is `1085/1108`
+  lines and `1434/1571` regions. Final delegated clippy, full-nextest
+  `1621/1621` with `3` skipped, and deny gates passed. The `2393`-line parser
+  WARN remains below the `3000` blocker with documented split intent. Package:
+  `20260709-cqr-nightly-b02-03-soil-parser-001/`.
 - `20260709-cqr-nightly-b02-02-direct-runtime-audit-error-helpers-001/` -
   EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-09): CQR nightly batch 02 target #2
   completed behavior-preserving decomposition and 20-case direct diagnostic

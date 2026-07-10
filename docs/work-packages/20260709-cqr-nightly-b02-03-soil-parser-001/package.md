@@ -1,7 +1,7 @@
 # CQR Nightly Batch 02, Target 03 — Soil Parser
 
 Package: `20260709-cqr-nightly-b02-03-soil-parser-001`
-Status: `SCAFFOLDED-CQR-NIGHTLY`
+Status: `EXECUTED-COMPLETE-CQR-NIGHTLY`
 ExecPlan: `docs/work-packages/cqr-nightly-burndown-execplan.md`
 Nightly batch: `02`
 Target module: `crates/openwepp-input-contract/src/parsers/soil.rs`
