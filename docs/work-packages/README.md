@@ -29,6 +29,15 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-09`:
+- `20260709-cqr-nightly-09-watershed-detachment-001/` -
+  SCAFFOLDED-CQR-NIGHTLY (2026-07-09): CQR Nightly target #9 for
+  `crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/01_ws22_ws23_ws26_detachment.rs`.
+  Baseline target LCOV is `193/749` lines (`25.767690253672%`), function
+  coverage is `7/52`, baseline CRAP has `4` rows above `30`, max CRAP is
+  `272.0`, total excess over `30` is `386`, and the production target starts at
+  `867` lines. Scaffold must be committed before characterization or
+  implementation edits. Package:
+  `20260709-cqr-nightly-09-watershed-detachment-001/`.
 - `20260709-cqr-nightly-08-runner-errors-001/` -
   EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-09): CQR Nightly target #8 completed
   behavior-preserving CRAP/cyclomatic-complexity closure of
