@@ -4,7 +4,7 @@ title: Watershed Routing and Channel Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 50
+contract_version: 51
 producer_scope:
   - Channel runon/runoff volume routing and transmission-loss accounting surfaces
   - Channel peak-discharge and duration routing surfaces at inlet/outlet boundaries
@@ -14,7 +14,7 @@ consumer_scope:
   - Impoundment and watershed-node consumers requiring channel flux/state payloads
   - Comparator/replay surfaces using watershed confidence-tier signals
 evidence_level: static
-last_reviewed: 2026-06-14
+last_reviewed: 2026-07-10
 supersedes: []
 superseded_by: []
 ---
@@ -73,6 +73,14 @@ Out of scope:
 | REF-ROUTE-CH13-SHEAR | `chap13.pdf` §13.5.4 Eq. [13.5.13]-[13.5.16] | Shear stress partition between soil and vegetation and detachment-driving stress terms. | `[DIRECT][Static]` |
 | REF-ROUTE-CH13-CONT | `chap13.pdf` §13.5.5 Eq. [13.5.17]-[13.5.18] | Quasi-steady sediment continuity and inlet/lateral sediment load assembly semantics. | `[DIRECT][Static]` |
 | REF-ROUTE-CH13-DETDEP | `chap13.pdf` §13.5.6 Eq. [13.5.19]-[13.5.29] | Detachment-capacity, deposition, and transport-capacity branch logic for segment updates. | `[DIRECT][Static]` |
+| REF-ROUTE-CH13-GEOMCARRY | `chap13.pdf` §13.5.1 (p. 13.10: "The ephemeral gully cross-sectional geometry is updated after each precipitation event that causes detachment in order to calculate channel hydraulics for subsequent events.") | Lineage authority that eroded channel geometry state carries forward between solves rather than resetting. | `[DIRECT][Static]` |
+| REF-ROUTE-CREAMS-CH3-QS | `references/vendorable/creams/312-ch3.pdf` (+ `312-ch3.md` conversion) Eq. [I-56] and introduction | Primary-source quasi-steady rationale: "The assumption of quasisteady state allows deletion of time terms"; the event-scalar collapse is documented as a compute-cost reduction ("excessive use of computer time practically prohibits simulating 20 to 30 years of record ... a single time step for models which simulate over the entire runoff event"), not a physics claim. Also the `Leff/10` segment-discretization lineage. | `[DIRECT][Static]` |
+| REF-ROUTE-CREAMS-CH3-WIDEN | `references/vendorable/creams/312-ch3.pdf` Eq. [I-128]-[I-140] (widening law verified against the rendered scan pp. 54-55, 2026-07-10) | Concentrated-flow detachment (`[I-128]`), incision rate `d_ch = e_m / rho_soil` (`[I-131]`), active-channel loss (`[I-132]`), and the post-nonerodible-layer widening time-evolution law: `omega = 1 - exp(-t_star)` with `omega = (W - W_i)/(W_f - W_i)`, `t_star = (t - t_i)(dW/dt)_i/(W_f - W_i)` (`[I-133]-[I-135]`), initial widening rate (`[I-136]-[I-138]`), and flow-dependent final width `W_f(Q)` (`[I-139]-[I-140]`). | `[DIRECT][Static]` |
+| REF-ROUTE-ARS77-SAMEGRID | `references/vendorable/kineros/703.pdf` (+ `703.md` conversion; Woolhiser, Smith & Goodrich 1990, USDA-ARS ARS-77) | External canonical same-grid coupling authority: the sediment mass-balance equation (Bennett 1974 lineage, restated with citation) is solved on the same time/space grid as the kinematic water solution; channels with zero inlet transport capacity deposit incoming lateral sediment. Also the recorded unsteady-advection fallback form. | `[DIRECT][Static]` |
+| REF-ROUTE-HECRAS-QUS | `references/vendorable/HEC_RAS_1D_Sediment_Transport_UserManual_20260710.pdf` (USACE web capture; user-manual text carrying the Technical Reference Manual's quasi-unsteady semantics — treated as **class corroboration** co-anchored with REF-ROUTE-ARS77-SAMEGRID and REF-ROUTE-CREAMS-CH3-QS; the formal TRM citation remains pinned for acquisition, bibliography R-107) | External canonical quasi-steady-sequence class authority: a flow hydrograph approximated by a series of steady profiles; the computational increment is the hydraulic and sediment-transport time step; bed geometry updates after each increment and carries to the next, justified when per-increment bed change does not alter hydrodynamics appreciably. | `[DIRECT][Static]` |
+| REF-ROUTE-CH14-TIMESTEP | `references/50201000/chap14.pdf` §14.1-§14.2 | Internal lineage precedent that time-resolved sediment routing exists inside the WEPP document family: WEPPSIE impoundment sediment runs per adaptive time step ("the amount of sediment deposited and the outflow concentration for each time step"). | `[DIRECT][Static]` |
+| REF-ROUTE-GULLY-STATE | `/workdir/wepp-forest_260430_baseline/src/cgully.inc` + `chncon.for` + `chnrt.for` + `dcap.for` + `detach.for` + `wshdrv.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Secondary static-code provenance for geometry state carry: `/gully/` COMMON arrays (`depa/depb/wida/widb/wera/werb`) initialized once (`chncon`), mutated in place during the event solve (`dcap`/`detach`/`chnrt`), never event-reset, reseeded only by primary tillage on `ishape=3` channels (`wshdrv.for:1179-1189`); the event-scalar solve basis (`qe = peakot`, `tb = 2*rundur` triangular shear-time surrogate, `gstu = gpart/rundur`). | `[DIRECT][Static]` |
+| REF-ROUTE-JIMF2023-CARRY | `/workdir/wepp-forest/docs/jimf-wepp-2023-diff-audit.md` (r1305 rows) | Maintainer-intent evidence (graded corroboration, not physics authority): the 2023 upstream revision added a "channel sediment initialization fix to prevent carryover to following storms" — cross-event sediment-mass carry treated as a defect while geometry carry remains design. | `[DIRECT][Static]` |
 | REF-ROUTE-CH13-LIMIT | `chap13.pdf` §13.6 summary limitations | Applicability bounds: intended small agricultural watersheds and explicit limitations (no partial-area response, no headcutting, no bank sloughing, no perennial streams). | `[DIRECT][Static]` |
 | REF-ROUTE-RUNFILE-APPLICABILITY | `docs/contracts/openwepp-watershed-runfile-contract.md` (`inputs.applicability` selectors) + `crates/openwepp-runner/src/bin/openwepp-cli-watershed.rs` (`CLIWAT-E-040`) | Concrete input-validator binding for Chapter-13 applicability declarations (`chapter13_small_watershed_intent=true`, excluded-process selectors=false) with typed fail-closed runtime behavior. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-ROUTE-CH4-COUPLING | `references/50201000/chap4.pdf` Eq. [4.2.1]-[4.2.9], [4.3.1]-[4.3.5], [4.4.27]-[4.4.29], [4.5.4], [4.5.6] | Channel hydrology uses hillslope infiltration/rainfall-excess and recession-infiltration relationships by explicit Chapter-13 linkage. | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -107,6 +115,13 @@ Out of scope:
 | `qsed`, `qsed_top`, `qsed_lat`, `Tc` | `lb ft^-1 s^-1`, `lb s^-1`, `lb s^-1 ft^-1`, `lb ft^-1 s^-1` | Segment sediment load, inlet/lateral sediment fluxes, and transport capacity. | sediment continuity + transport-capacity solver | downstream segment and outlet sediment yield |
 | `Kch`, `wc`, `Ech` | `s^-1`, `ft`, `lb ft^-1 s^-1` | Channel erodibility, active width, and per-length soil loss for active-channel branch (Eq. [13.5.20]). | detachment-capacity routine | erosion-width update and sediment load integration |
 | `mofe_hourly_carry` | manifest metadata | Contributor-level evidence that multi-OFE hourly hillslope pass payloads were produced with explicit 24-slot carry arrays rather than aggregate-only runon substitution. | hillslope runner manifest | watershed routing admission validator |
+| `V_h`, `S_h` | `m^3`, `kg` | Hour-integrated runoff volume and exported sediment mass (minor-1 HBP EVENT surfaces; ADR-0036 D2), consumed on the interval lane as projection sources only. | hillslope HBP producer (`SC-SED-001`/`SC-INFILE-HBP-001`) | interval-projection assembler (INV-ROUTE-015) |
+| `q1(it)`, `ntchr`, `dtchr` | `m^3 s^-1`, count, `s` | Routed interval discharge series, interval count, and interval length on the normalized water grid (`ntchr * dtchr = 86400 s`). | WS11 wave-routing branch | channel-interval sediment lane |
+| `W`, `W_i`, `W_f`, `wera`, `werb` | `ft` | Current/anchor/final eroded channel widths and eroded-width state at segment boundaries (CREAMS widening family, lineage realization). | widening-clock evaluator + geometry carrier | subsequent-interval hydraulics and geometry publication |
+| `omega`, `t_star` | dimensionless | Nondimensional width and time of the lineage-modified exponential widening law (`wstar = (1 - exp(-1.0176*t_star))/1.0176`). | widening-clock evaluator | widening-state advance |
+| `(dW/dt)_i`, `e_m`, `d_ch` | `ft s^-1`, `lb ft^-2 s^-1`, `ft s^-1` | Widening rate basis, maximum-shear erosion rate, and incision rate (`d_ch = e_m / rho_soil`, Eq. [I-131] lineage). | detachment-capacity/widening routines | geometry mutation and detached-mass derivation |
+| `rho_soil` | `lb ft^-3` | In-place soil weight density (baseline `wtdsoi` basis, from the channel soil input); the [I-131]/[I-136] denominator. | channel soil-input projection | incision/widening rates and detached-mass derivation |
+| `timpot`, `timex` | `s` | Erosion-time budget partition at nonerodible-layer contact: incision-completion time and residual widening time within the contact interval (`dcap` lineage). | widening-clock evaluator | INV-ROUTE-018 budget accounting |
 
 ## Invariants
 
@@ -116,7 +131,7 @@ Out of scope:
 | INV-ROUTE-002 | Duration-selection invariant: channel event duration must be selected by Eq. [13.2.3] (`durc = max(durrunon, durchan, durirrig)`) with declared units and no implicit duration fallback. | hard-fail | REF-ROUTE-CH13-RUNON | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-ROUTE-003 | Runoff-case invariant: Case I-IV branching from §13.2 must be explicit for (`qci`, `rod`) combinations, including Case IV zero-flow branch (`qcf = 0`, `roff = 0`) and Case III branch using Eq. [13.2.5]-[13.2.6]. | hard-fail | REF-ROUTE-CH13-TLOSS, REF-ROUTE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-ROUTE-004 | Transmission-loss closure invariant: for Case I/II, transmission losses must satisfy Eq. [13.2.4]; for Case III, losses must satisfy Eq. [13.2.6], and computed losses cannot imply runoff volume greater than entering water volume. | hard-fail | REF-ROUTE-CH13-TLOSS, REF-ROUTE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
-| INV-ROUTE-005 | Inlet-peak superposition invariant (conditional per ADR-0036 D3): (a) when **every** contributing element's payload carries the minor-1 paired hourly surfaces (`hourly_runoff_volume_m3[24]`, `hourly_sediment_mass_kg[24]`) and no upstream dependency element lacks channel-hourly surfaces, inlet superposition must be **hour-resolved on the shared time base** — per-hour water and sediment inflows summed across contributors, combined inlet peak = the maximum hour-mean discharge (`max_h(Σ V_h / 3600 s)`), inlet volumes = `Σ_h Σ_contributors V_h`, and inlet sediment timing taken from `S_h` (never reconstructed from event aggregates); (b) when **no** contributing element carries either hourly surface, the triangular hydrograph procedure of Eq. [13.4.1]-[13.4.2] applies to the **entire** contributor set for that inlet, and the combined peak must be the maximum discharge on the superimposed hydrograph; (c) partial, malformed, or mixed hourly authority is invalid: any contributor with only one hourly surface, a non-24-slot surface, a mixture of hourly and non-hourly contributor payloads at one inlet, or an hourly hillslope contributor feeding an inlet with dependency nodes that do not yet carry channel-hourly surfaces must fail closed rather than silently collapsing to the triangular daily-scalar branch. (d) Sediment **mass authority is per-contribution**: any contribution carrying the serialized `hourly_sediment_mass_kg` surface contributes `Σ S_h` as its sediment mass on BOTH authorized branches — never the `total_detachment − total_deposition` reconstruction. (e) **Labeled single-rate reduction (scope limit):** the channel sediment solve remains quasi-steady per event until channels themselves carry hourly surfaces; on branch (a) its sediment-rate time base must be the superposed `S_h` **active-hour span** (the serialized sediment timing), and the per-hour inlet sediment array must be carried on the routed-inlet state for the future channel-hourly extension. Reducing sediment timing to the water/event duration on an hourly-resolved inlet is invalid. | hard-fail | REF-ROUTE-CH13-PEAKIN, REF-ROUTE-ADR0036-HOURLY | `[DIRECT][Static]` |
+| INV-ROUTE-005 | Inlet-peak superposition invariant (conditional per ADR-0036 D3): (a) when **every** contributing element's payload carries the minor-1 paired hourly surfaces (`hourly_runoff_volume_m3[24]`, `hourly_sediment_mass_kg[24]`) and no upstream dependency element lacks channel-hourly surface authority (dependency-authority definition, W11A: an upstream channel node on the **active interval lane** (INV-ROUTE-015), publishing same-grid per-interval per-class egress, carries channel-hourly surface authority for this clause and clause (c); it is the only non-hourly dependency form that does; impoundment dependency nodes carry no such authority), inlet superposition must be **hour-resolved on the shared time base** — per-hour water and sediment inflows summed across contributors, combined inlet peak = the maximum hour-mean discharge (`max_h(Σ V_h / 3600 s)`), inlet volumes = `Σ_h Σ_contributors V_h`, and inlet sediment timing taken from `S_h` (never reconstructed from event aggregates); (b) when **no** contributing element carries either hourly surface, the triangular hydrograph procedure of Eq. [13.4.1]-[13.4.2] applies to the **entire** contributor set for that inlet, and the combined peak must be the maximum discharge on the superimposed hydrograph; (c) partial, malformed, or mixed hourly authority is invalid: any contributor with only one hourly surface, a non-24-slot surface, a mixture of hourly and non-hourly contributor payloads at one inlet, or an hourly hillslope contributor feeding an inlet with dependency nodes that do not yet carry channel-hourly surfaces must fail closed rather than silently collapsing to the triangular daily-scalar branch. (d) Sediment **mass authority is per-contribution**: any contribution carrying the serialized `hourly_sediment_mass_kg` surface contributes `Σ S_h` as its sediment mass on BOTH authorized branches — never the `total_detachment − total_deposition` reconstruction. (e) **Labeled single-rate reduction (conditional scope limit, W11A):** when the channel-interval sediment lane (INV-ROUTE-015..INV-ROUTE-020) is **inactive**, the channel sediment solve remains quasi-steady per event; on branch (a) its sediment-rate time base must be the superposed `S_h` **active-hour span** (the serialized sediment timing), and the per-hour inlet sediment array must be carried on the routed-inlet state. When the channel-interval sediment lane is **active**, the per-interval sequencing authority of INV-ROUTE-015..INV-ROUTE-020 governs the channel sediment solve instead, consuming that carried per-hour inlet array as its interval-projection source. Reducing sediment timing to the water/event duration on an hourly-resolved inlet is invalid on both lanes. | hard-fail | REF-ROUTE-CH13-PEAKIN, REF-ROUTE-ADR0036-HOURLY | `[DIRECT][Static]` |
 | INV-ROUTE-006 | Outlet-method branch invariant: channel outlet routing must execute exactly one branch selected by `ipeak` (`1` = modified Rational Eq. [13.4.3]-[13.4.24], `2` = CREAMS Eq. [13.4.25], `3` = linear kinematic-wave channel routing, `>=4` = Muskingum-Cunge channel routing); implicit fallback/mixing is invalid and selected-branch inputs/outputs must be finite and unit-consistent. | hard-fail | REF-ROUTE-CH13-RAT, REF-ROUTE-CH13-CREAMS, REF-ROUTE-WSHPEK-IPEAK, REF-ROUTE-WSHCHR-WAVE, REF-ROUTE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-ROUTE-007 | Peak-duration closure invariant: for `ipeak <= 2`, if `roff <= 0.001 m^3`, peak runoff and runoff duration are both zero per §13.4.1; for `ipeak >= 3`, routed channel flow may still be evaluated from incoming hydrograph when local channel runoff is zero, but emitted outputs must obey non-negative finite closure (`roff = qpo * durrof` for `qpo > 0`, and `durrof = 0` when `qpo <= 1e-12`). | hard-fail | REF-ROUTE-CH13-DUR, REF-ROUTE-CH13-RAT, REF-ROUTE-CH13-CREAMS, REF-ROUTE-WSHDRV-ORDER, REF-ROUTE-WSHCHR-WAVE, REF-ROUTE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-ROUTE-008 | Spatially-varied flow/shear invariant: channel erosion solver must use consistent spatially-varied flow outputs (`Sf`, `Sstar`, `leff`, `q`) to compute shear terms, and soil shear relation Eq. [13.5.13]-[13.5.16] must preserve finite physically valid domains. | hard-fail | REF-ROUTE-CH13-SVF, REF-ROUTE-CH13-SHEAR | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -126,6 +141,12 @@ Out of scope:
 | INV-ROUTE-012 | Governance invariant: channel-routing outputs are watershed-integrated Tier-B surfaces; unresolved major discrepancies must route to investigation/disposition and cannot be silently promoted as Tier-A-equivalent confidence. | governance-fail | REF-ROUTE-CH13-RUNON, REF-ROUTE-CH13-DETDEP, REF-ROUTE-PHYS-BOUNDS | `[INFERENCE][Static]` |
 | INV-ROUTE-013 | Applicability-bound invariant: authoritative scope is limited to small agricultural watersheds (Chapter-13 summary intent) with explicit exclusions (`no partial area response`, `no headcutting`, `no bank sloughing`, `no perennial streams`); watershed runfile intake must declare these selectors explicitly and fail closed when declarations are absent or violated. | hard-fail | REF-ROUTE-CH13-LIMIT, REF-ROUTE-RUNFILE-APPLICABILITY | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-ROUTE-014 | HPHYS0241 MOFE hourly carry routing-continuity invariant: watershed routing admission for multi-OFE hourly hillslope contributors must validate `mofe_hourly_carry` manifest provenance before consuming HBP pass payloads; aggregate-only carry metadata, inactive carry metadata, non-24-slot metadata, or malformed carry totals are coupling-incomplete and must hard-fail before channel routing. | hard-fail | REF-ROUTE-MOFE-HOURLY-CARRY, REF-ROUTE-CH13-RUNON, REF-ROUTE-HBP-FORMAT, REF-ROUTE-HBP-READER | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-ROUTE-015 | Channel sediment temporal-quantum and lane-activation invariant (W11A): **lane activation is biconditional and mandatory** — the interval lane is active for a channel if and only if (i) the channel executes a wave-routing branch (`ipeak >= 3`) producing the routed interval series `q1(it)` on the normalized `dtchr` grid, and (ii) the channel's inlet satisfies INV-ROUTE-005(a) authority (every hillslope contribution carries the paired hourly surfaces; every upstream channel dependency is itself interval-lane active per the (a) dependency-authority definition; any impoundment dependency precludes activation). When the predicate holds, executing the event-scalar sediment solve is invalid; when it does not hold, the INV-ROUTE-005(e) event-scalar lane governs. On the active lane the channel sediment solve executes once per `dtchr` interval on the routed water grid — the same normalized `ntchr`-interval grid the water routing produces (`q1(it)` basis). The hourly `V_h`/`S_h` HBP surfaces enter only as boundary conditions projected onto that grid by exact interval overlap (hour-uniform within each hour, per the ADR-0036 D2 hour-integrated definition). A sediment solve grid coarser than the water grid, an independent sediment grid, or direct consumption of hourly surfaces as the solve quantum is invalid. | hard-fail | REF-ROUTE-ARS77-SAMEGRID, REF-ROUTE-HECRAS-QUS, REF-ROUTE-ADR0036-HOURLY | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-ROUTE-016 | Per-interval quasi-steady solve-form invariant (W11A): each hydraulically active interval executes the complete Chapter-13 quasi-steady spatially-varied segment solve (the REF-ROUTE-CH13-SVF/EFFLEN/SHEAR/CONT/DETDEP machinery in the WSHEDIMPL18-41 migrated segment-solve lanes — the WS20/WS21 runtime families) at that interval's operands: segment discharges derived from the routed interval discharge and interval-projected lateral inflow; inlet sediment flux = interval-projected inlet class mass / interval duration (replacing the event-scalar `qsed_top = qsed_tot / durrof` reduction of Eq. [13.5.18]); upstream-channel sediment ingress = the upstream channel's same-interval egress on the shared grid. Published daily channel sediment surfaces are the interval sums. This quasi-steady-sequence form is a labeled refinement beyond legacy event-scalar source-intent (REF-ROUTE-CREAMS-CH3-QS documents the time-term deletion as a compute-cost reduction); the recorded fallback if per-interval quasi-steady proves untenable is the unsteady advection continuity form (REF-ROUTE-ARS77-SAMEGRID lineage) — never a return to the single event-peak solve. | hard-fail | REF-ROUTE-HECRAS-QUS, REF-ROUTE-CREAMS-CH3-QS, REF-ROUTE-CH13-CONT, REF-ROUTE-CH13-DETDEP, REF-ROUTE-CH14-TIMESTEP | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-ROUTE-017 | Channel geometry carry invariant (W11A): channel geometry state (depth-to-nonerodible-layer `depa/depb`, bottom widths `wida/widb`, eroded widths `wera/werb`) advances monotonically through the interval sequence in time order and carries across events, days, and the whole simulation. Interval, event, day, or calendar resets are invalid. The only authorized reseeds are run-start initialization (`chncon` lineage from `chnedm`/`chneds`/`chnwid` inputs) and the primary-tillage reseed for `ishape=3` channels (`wshdrv.for:1179-1189` lineage). Geometry is non-narrowing and non-refilling: eroded width never decreases and eroded depth never refills; deposition does not create a re-erodible bed store (GAP-ROUTE-012). | hard-fail | REF-ROUTE-CH13-GEOMCARRY, REF-ROUTE-GULLY-STATE, REF-ROUTE-HECRAS-QUS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-ROUTE-018 | Widening-clock invariant (W11A): post-nonerodible-layer channel widening follows the **WEPP-adapted lineage realization** of the CREAMS widening law — the linear widening rate (the `dwdti = excess * 2 * Kch * (tau_b - taucr) / rho_soil` lineage form, with the CREAMS `^1.05` exponent dropped exactly as the lineage detachment path drops the [I-128] `1.35`/`^1.05` factors), the lineage-modified exponential (`wstar = (1 - exp(-1.0176*t_star))/1.0176`), and the fitted shear-distribution `f(x_b)` (`shdist` lineage) — as implemented in the WSHEDIMPL18-41 migrated segment-solve lanes; CREAMS Eq. [I-133]-[I-140] is cited as **structural provenance** for the law's form, not as a literal override of the lineage realization. Evaluation is per interval with carried state: each active interval computes its own final width `W_f(Q_interval)` and rate basis from that interval's hydraulics, advances the lineage exponential by the interval's widening-time budget with `W_i := W_current`, and holds geometry unchanged when `W_f(Q_interval) <= W_current` (the Chapter-13 "flow is too shallow to cause detachment" branch). Gate operands per lineage: detachment gates on average soil shear (`tau`, the `effsh` lineage); widening gates on boundary shear (`tau_b = tau * f(x_b)`). Within a layer-contact interval the erosion-time budget partitions per the lineage `timpot`/`timex` semantics: incision consumes `timpot = depmid * rho_soil / d_i` and only the residual budget drives widening. Per-interval re-anchoring is the interval-ization of the lineage's own per-event re-anchoring (carried eroded width plus each event's own discharge) — a **labeled refinement** with the same recorded-fallback posture as INV-ROUTE-016; no persistent widening state exists beyond the carried geometry. The event-scalar triangular shear-time surrogate (`tb = 2*rundur`, `timsh = tb*(1 - taucr/tau)` `dcap` lineage) is invalid on the interval lane: time-above-critical-shear is resolved directly by the interval series (an interval's erosion-time budget is `dtchr` when its gate shear exceeds `taucr`, else zero). | hard-fail | REF-ROUTE-CREAMS-CH3-WIDEN, REF-ROUTE-GULLY-STATE, REF-ROUTE-CH13-DETDEP | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-ROUTE-019 | Per-interval class mass-closure invariant (W11A): per particle class per interval, inlet ingress + lateral ingress + flow detachment = egress + deposition (TOL-ROUTE-006); per class per day, the interval sums equal the published daily class masses (TOL-ROUTE-007); interval projection is exact — the interval-projected inlet/lateral class masses sum to the source hourly masses (`Σ_intervals = Σ_h S_h` per contribution, TOL-ROUTE-008). No suspended sediment mass pool carries between intervals, events, or days: the quasi-steady interval solve carries no storage term, so each interval closes exactly and no sediment mass is attributable to end-of-grid routed water storage on this lane (INV-ROUTE-020(c)). Boundary-detached mass is **defined constructively** as eroded geometry volume * `rho_soil` (`d_ch = e_m / rho_soil`, Eq. [I-131] lineage; `rho_soil` = in-place soil weight density, baseline `wtdsoi` basis) — a derivation rule, not a separately checked residual. Per-class time resolution of ingress is the day-level class-fraction blend applied uniformly to projected interval masses; treating that uniform split as enriched timing is invalid (`SC-SED-001#GAP-SED-008` interchange scope — the serialized `S_h` is total-mass). | hard-fail | REF-ROUTE-CH13-CONT, REF-ROUTE-CREAMS-CH3-WIDEN, REF-ROUTE-ADR0036-HOURLY, REF-ROUTE-JIMF2023-CARRY | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-ROUTE-020 | Channel-interval degenerate-state invariant (W11A): (a) zero-flow interval — when the routed interval discharge is at or below the routed-closure constant of INV-ROUTE-007 (the `qpo` floor, `1e-12 m^3 s^-1`, applied here per interval), no detachment/transport solve executes and any interval-projected incoming sediment mass deposits in the reach (zero inlet transport capacity rule); geometry is unchanged; (b) the zero-flow floor is that existing routed-closure constant — introducing a separate sediment-specific flow threshold is invalid; (c) end-of-grid storage disposition — on the quasi-steady interval lane each interval closes without a suspended-storage term, so the sediment mass attributable to end-of-grid routed water storage is **zero by construction** and day closure is unaffected by nonzero water storage; should the recorded unsteady fallback lane (INV-ROUTE-016) ever activate, its grid-end suspended concentration state deposits in the reach at grid end (deposit-at-grid-end; GAP-ROUTE-013 records the labeled decision); carrying a suspended pool across midnight is invalid on both lanes; (d) cross-midnight — the `dtchr` grid covers exactly 86400 s (water-routing normalization lineage; a non-covering grid handed to the sediment lane is a typed hard failure) and the only cross-day channel sediment state is geometry (INV-ROUTE-017). | hard-fail | REF-ROUTE-ARS77-SAMEGRID, REF-ROUTE-JIMF2023-CARRY, REF-ROUTE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -145,6 +166,12 @@ Out of scope:
 | `INV-ROUTE-012` | governance | Review/disposition/verification + comparator policy gate | Promotion `HOLD` when Tier-B discrepancies are undispositioned or misclassified | Governance gate | `[INFERENCE][Static]` |
 | `INV-ROUTE-013` | runtime + governance | Watershed runfile applicability validator (`inputs.applicability.*`) + promotion checklist | Typed hard error (`CLIWAT-E-040`) on missing/invalid applicability declarations; governance `HOLD` still required for any intentional out-of-scope workload claims | Governance + runtime gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-ROUTE-014` | runtime + governance | Watershed contributor manifest validator before HBP routing dispatch | Typed hard error (`CLIWAT-E-037`) when multi-OFE hourly contributors lack active 24-slot MOFE carry-array provenance or publish malformed carry totals | HPHYS MOFE routing-continuity gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-ROUTE-015` | runtime | Channel-interval sediment grid selector | Typed hard error (`WKERNEL-WS10-CHANNEL-E-003` family) on non-water-grid sediment quantum or unprojected hourly-surface consumption | Tier-B investigation gate | `[DIRECT][Static]` |
+| `INV-ROUTE-016` | runtime | Per-interval segment-solve dispatcher (WSHEDIMPL18-41 lanes; `WKERNEL-WS10-CHANNEL-E-001..003` family) | Typed hard error on missing interval operands, event-scalar operand substitution, or skipped active-interval solves | Tier-B investigation gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-ROUTE-017` | runtime | Channel geometry state carrier (`WKERNEL-WS10-CHANNEL-E-001..003` family) | Typed hard error on out-of-order interval application, unauthorized geometry reset, width decrease, or depth refill | Tier-B investigation gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-ROUTE-018` | runtime | Widening-clock evaluator (`WKERNEL-WS10-CHANNEL-E-001..003` family) | Typed hard error on triangular shear-time surrogate use on the interval lane, widening-state advance under `W_f(Q) <= W_current`, or budget double-count at layer contact | Tier-B investigation gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-ROUTE-019` | runtime | Per-interval class mass-closure checker (`WKERNEL-WS10-CHANNEL-E-001..003` family) | Typed hard error on interval/day closure residual beyond TOL-ROUTE-006/007, projection inexactness beyond TOL-ROUTE-008, or suspended-pool carry | Tier-B investigation gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-ROUTE-020` | runtime | Channel-interval degenerate-state handler (`WKERNEL-WS10-CHANNEL-E-001..003` family) | Typed hard error on zero-flow-interval detachment, sediment-specific flow thresholds, cross-midnight suspended carry, or non-covering grids | Tier-B investigation gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Binding Exposure Index
 
@@ -156,6 +183,7 @@ Out of scope:
 | `BEI-ROUTE-004` | Channel sediment continuity, shear, detachment, deposition, and transport capacity. | `active` | `maps-to-existing-INV` | `INV-ROUTE-008, INV-ROUTE-009, INV-ROUTE-010` | `runtime-guard` | Segment sediment process bindings are exposed through existing channel sediment guards. |
 | `BEI-ROUTE-005` | Comparator confidence and Chapter-13 applicability declarations. | `active` | `maps-to-existing-INV` | `INV-ROUTE-012, INV-ROUTE-013` | `governance-runtime-guard` | Runtime admission and Tier-B promotion posture are both binding surfaces. |
 | `BEI-ROUTE-006` | MOFE hourly carry routing-continuity metadata. | `active` | `maps-to-existing-INV` | `INV-ROUTE-014` | `runtime-guard` | Admission remains fail-closed before HBP routing dispatch. |
+| `BEI-ROUTE-007` | W11A channel-interval sediment sequencing addendum (quantum, solve form, geometry carry, widening clock, closure, degenerate states). | `active` | `maps-to-existing-INV` | `INV-ROUTE-015, INV-ROUTE-016, INV-ROUTE-017, INV-ROUTE-018, INV-ROUTE-019, INV-ROUTE-020` | `runtime-guard` | Addendum narrative binds only through these invariant rows; INV-ROUTE-015 defines the biconditional activation predicate and INV-ROUTE-005(e) states which authority governs each side of it. |
 
 ## Symbol Alias Map
 
@@ -210,6 +238,9 @@ channel erosion internals.
 | No lateral inflow routing | `qlat = 0` leading to `qu = qpo` and `qlat_eff = 0`. | Explicit Eq. [13.5.10]-[13.5.11] branch semantics. | `[DIRECT][Static]` |
 | Channel event below peak-routing threshold (`ipeak <= 2`) | `roff <= 0.001 m^3` yields zero peak runoff and zero runoff duration. | Explicit §13.4.1 threshold branch. | `[DIRECT][Static]` |
 | Net deposition segment | Segment state where `qsed > Tc` and Eq. [13.5.21] governs deposition. | Explicit §13.5.6 branch semantics. | `[DIRECT][Static]` |
+| Zero-flow channel interval (interval lane) | `q1(it) <= 1e-12 m^3 s^-1` with no detachment/transport solve; interval-projected incoming sediment deposits in the reach; geometry unchanged. | INV-ROUTE-020(a) zero-transport-capacity rule (REF-ROUTE-ARS77-SAMEGRID, extended by inference from the flowing-channel boundary condition to the dry interval). | `[DIRECT][Static] + [INFERENCE][Static]` |
+| Non-widening active interval (interval lane) | `W_f(Q_interval) <= W_current` after nonerodible-layer contact: solve proceeds, geometry unchanged. | INV-ROUTE-018 widening-clock hold branch. | `[DIRECT][Static]` |
+| End-of-grid residual channel storage (interval lane) | Nonzero routed water storage at grid end; sediment day closure unaffected (storage-associated suspended mass is zero by construction on the quasi-steady lane). | INV-ROUTE-020(c) (GAP-ROUTE-013 records the fallback-lane deposit-at-grid-end rule). | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invalid States
 
@@ -223,6 +254,10 @@ channel erosion internals.
 - Sediment continuity violation where segment-to-segment `qsed` updates break Eq. [13.5.17] semantics. `[DIRECT][Static]`
 - Missing mandatory handoff payload fields (runon, duration, peak, and HBP sediment payload family fields) before routing/erosion calculations. `[DIRECT][Static] + [INFERENCE][Static]`
 - Applying this contract to conditions outside §13.6 scope without explicit governance disposition. `[DIRECT][Static] + [INFERENCE][Static]`
+- Interval-lane channel sediment computed on a grid other than the routed water grid, or hourly `V_h`/`S_h` surfaces consumed as the solve quantum without interval projection. `[DIRECT][Static]`
+- Channel geometry state reset at interval/event/day boundaries, applied out of time order, narrowed, or refilled outside the run-start and primary-tillage reseeds. `[DIRECT][Static]`
+- Suspended channel sediment mass carried between intervals, events, or days; end-of-grid storage sediment left unclosed. `[DIRECT][Static] + [INFERENCE][Static]`
+- Triangular shear-time surrogate (`tb = 2*rundur` lineage) used to derive erosion time on the interval-resolved lane. `[DIRECT][Static]`
 
 ## Producer Obligations
 
@@ -262,6 +297,9 @@ bit-for-bit parity). Contract-specific tolerances:
 | TOL-ROUTE-003 | Non-negative-domain comparator tolerance for runon/runoff/loss volumes | lower bound `>= -1e-12 m^3` | Comparator-noise allowance only; runtime does not silently clamp. | `[INFERENCE][Static]` |
 | TOL-ROUTE-004 | Outlet peak and duration positivity tolerance (`qpo`, `durrof`) | lower bound `>= -1e-12` in declared units | Required only for floating-noise interpretation; physical domain remains non-negative. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | TOL-ROUTE-005 | Sediment continuity residual per segment/class | `<= 1e-9 lb ft^-1 s^-1` | Continuity residual for Eq. [13.5.17] diagnostics. | `[DIRECT][Static] + [INFERENCE][Static]` |
+| TOL-ROUTE-006 | Per-interval per-class mass-closure residual (interval lane) | `<= 1e-9 kg` | INV-ROUTE-019 interval closure: ingress + detachment vs egress + deposition per class per `dtchr` interval. | `[INFERENCE][Static]` |
+| TOL-ROUTE-007 | Daily class-mass sum residual (interval lane) | `<= 1e-9 kg` | Published daily class masses vs interval sums; structural f64 summation, tolerance covers rounding only. | `[INFERENCE][Static]` |
+| TOL-ROUTE-008 | Hourly-to-interval projection exactness (interval lane) | `<= 1e-12` relative per contribution; contributions with `Σ_h S_h = 0` require exactly zero projected mass (absolute) | `Σ_intervals` of projected masses vs `Σ_h S_h`; exact interval-overlap projection, tolerance covers f64 rounding only. | `[INFERENCE][Static]` |
 
 ## WB16 Hillslope Peak-Flow Intake Addendum
 
@@ -553,6 +591,167 @@ Minimum WS11 routing conformance vectors:
    array completeness from canonicalized WB13 row ids or daily aggregate
    `wb12_runoff_carryover` alone.
 
+## W11A Channel-Interval Sediment Sequencing Addendum
+
+Authority disposition of `20260710-wshedw11a-channel-hourly-sediment-authority-001`
+(lifting `WSHED-W11-HOLD-001`). Binding residue is exposed through
+`INV-ROUTE-015..020` (`BEI-ROUTE-007`); this addendum records the executable
+sequencing for W11 implementation.
+
+### Activation
+
+Lane activation is the INV-ROUTE-015 biconditional, evaluated per channel:
+the interval lane is active if and only if the channel runs a wave-routing
+branch (`ipeak >= 3`) producing `q1(it)` on the normalized `dtchr` grid AND
+the inlet satisfies INV-ROUTE-005(a) authority, where an upstream channel
+dependency satisfies (a) exactly when it is itself interval-lane active
+(publishing same-grid per-interval per-class egress — the INV-ROUTE-005(a)
+dependency-authority definition). Activation is therefore evaluated in
+topological order and propagates down an all-hourly network. When the
+predicate holds, running the event-scalar sediment solve is invalid; when it
+does not hold, the channel remains on the INV-ROUTE-005(e) event-scalar lane
+or its existing fail-closed branches.
+
+Inlets with impoundment dependency nodes do not activate: impoundments carry
+no hourly or interval surface authority (impoundment sediment routing is out
+of scope), so such inlets remain on the existing INV-ROUTE-005 branches.
+An interval-lane-active channel feeding an inlet whose own predicate cannot
+hold (for example, additional non-hourly contributors join downstream) is
+the INV-ROUTE-005(c) mixed-authority state and fails closed.
+
+On an activated channel, partial execution is invalid: consuming interval
+water with event-scalar sediment operands, or event-scalar water with
+interval sediment operands, on the same channel-day is a typed hard failure.
+(Non-activated `ipeak >= 3` channels routing interval water with the
+event-scalar sediment solve are the ordinary INV-ROUTE-005(e) lane, not
+partial execution.)
+
+### Interval Operand Assembly
+
+| Operand | Basis |
+|---|---|
+| Interval discharge | routed `q1(it)` at the reach outlet on the shared grid; upstream dependency inflow already superposed per the wave-routing branch (`qin(it)`) |
+| Interval inlet sediment mass per class | carried per-hour inlet sediment array (INV-ROUTE-005(e)) projected to the interval by exact interval overlap, split per class by the day-level class-fraction blend (`SC-SED-001#GAP-SED-008` interchange scope) |
+| Interval lateral sediment mass per class | lateral contributor `S_h` surfaces projected and class-split identically |
+| Interval inlet sediment flux | interval inlet class mass / `dtchr` (replaces event `qsed_top = qsed_tot / durrof`) |
+| Upstream-channel sediment ingress | upstream channel's same-interval per-class egress on the shared grid |
+| Erosion-time budget | `dtchr` when the interval's gate shear exceeds `taucr` (detachment gate: average soil shear `tau`; widening gate: boundary shear `tau_b = tau * f(x_b)`), else zero; partitioned per `timpot`/`timex` within a layer-contact interval (replaces the `tb = 2*rundur` triangular surrogate; INV-ROUTE-018) |
+
+**Projection formula (INV-ROUTE-015):** for interval `i` and contribution
+with hourly masses `S_h` and day-level class fractions `f_k`:
+`mass_i(k) = f_k * Σ_h S_h * overlap(interval_i, hour_h) / 3600 s`, with the
+grid anchored at 00:00 of the simulation day (interval `i` spans
+`[(i-1)*dtchr, i*dtchr)`). The analogous formula projects `V_h` where the
+water lane has not already projected it.
+
+**Unit bridge (unit-governance declaration):** interval-lane external
+operands are SI (`q1(it)` in `m^3 s^-1`, projected masses in `kg`, `dtchr`
+in `s`); the migrated segment solve operates in the Chapter-13 English-unit
+system (`ft^3 s^-1`, `lb ft^-1 s^-1`). The lane crosses SI to English at the
+same named conversion boundary the WSHEDIMPL18-41 migrated lanes already
+implement (baseline `chnrt` conversion lineage — the discharge and
+volume conversion sites `chnrt.for:166`/`chnrt.for:846` preserved by
+migration), and the TOL-ROUTE-006/007/008 closures are evaluated on the SI
+(kg) side after the inverse conversion. No new conversion constants are
+introduced by this lane.
+
+### Sequencing Steps (per day, per channel, in interval order)
+
+1. For each interval `it = 1..ntchr` in time order:
+   a. If `q1(it) <= 1e-12 m^3 s^-1`: deposit all interval-projected incoming
+      sediment in the reach (INV-ROUTE-020(a)); geometry unchanged; publish
+      zero egress for the interval; continue.
+   b. Otherwise run the Chapter-13 quasi-steady segment solve (effective
+      length, spatially-varied flow, shear partition, transport capacity,
+      the §13.5.6 detachment-deposition Cases I-IV — the case12/case34
+      branch families of the WSHEDIMPL18-41 migrated lanes; distinct from
+      the §13.2 runoff Cases I-IV of INV-ROUTE-003) at the interval
+      operands, against the CURRENT carried geometry.
+   c. Apply geometry mutations produced by the solve (incision toward the
+      nonerodible layer; post-contact widening per the INV-ROUTE-018
+      widening clock) to the carried state before the next interval.
+   d. Close the interval per class (INV-ROUTE-019, TOL-ROUTE-006) and hand
+      the interval egress to downstream dependents on the shared grid.
+2. At grid end: close the day per class (TOL-ROUTE-007) and against the
+   projection sources (TOL-ROUTE-008); storage-associated suspended mass is
+   zero by construction on this lane (INV-ROUTE-020(c)), so nonzero residual
+   water storage does not enter the sediment closure.
+3. Publish daily channel sediment surfaces as the interval sums; geometry
+   carries to the next day unmodified (INV-ROUTE-017).
+
+### Widening Clock (per INV-ROUTE-018)
+
+Realization: the **WEPP-adapted lineage forms** govern (linear rate,
+`1.0176`-modified exponential, fitted `f(x_b)` — the WSHEDIMPL18-41 lane
+implementations); the CREAMS equation numbers below cite structural
+provenance, not literal forms. For a reach section with carried geometry:
+
+1. If the section has not reached the nonerodible layer: incision proceeds
+   at the lineage rate (`d_ch` from [I-131] structure) over the interval's
+   erosion-time budget. If the layer is reached mid-interval, the budget
+   partitions per the lineage `timpot`/`timex` semantics: incision consumes
+   `timpot = depmid * rho_soil / d_i`; only `timex = budget - timpot`
+   drives widening in that interval.
+2. At/after layer contact: compute `W_f(Q_interval)` ([I-139]-[I-140]
+   structure) and the lineage rate basis ([I-136]-[I-138] structure) at the
+   interval hydraulics; if `W_f(Q_interval) > W_current` and the widening
+   gate shear (`tau_b`) exceeds `taucr`, advance the lineage exponential
+   with the interval's widening-time budget from `W_i := W_current`.
+3. Else: hold geometry (the erosion-rate-zero branch).
+4. Width advances monotonically; state carries per INV-ROUTE-017; no
+   persistent widening state exists beyond the carried geometry.
+
+**Known-divergence note (comparator posture):** the interval lane replaces
+{event-peak shear held over the reduced `timsh` window} with {interval
+shear over the interval budget}; above-critical excursions shorter than the
+hourly serialization quantum are truncated by the hour-mean water authority.
+Comparator deltas on widening/detachment magnitude against the event-scalar
+arm or legacy are Investigation-tier flags (ADR-0017, ADR-0036 D5), never
+acceptance gates.
+
+### Contract-Derived Test Vector Obligations (W11 implementation gates)
+
+1. **Single-interval equivalence**: a day whose routed series has exactly one
+   active interval (discharge `Q`, duration `dtchr`) reproduces the shared
+   segment-solve core invoked once with pinned operands `durrof := dtchr`,
+   `qsed_top := interval class mass / dtchr`, and erosion-time budget
+   `:= dtchr` (i.e., the event-scalar path minus the triangular surrogate
+   and minus interval sequencing) — per-class egress equal within
+   TOL-ROUTE-006. This vector verifies sequencing/wiring identity, not
+   operand-law differences (the surrogate retirement is a deliberate
+   operand change covered by the known-divergence note).
+2. **Interval-sum closure**: a multi-interval day closes per class per
+   interval (TOL-ROUTE-006), per day (TOL-ROUTE-007), and against the
+   projected `Σ_h S_h` sources (TOL-ROUTE-008).
+3. **Geometry carry**: two consecutive active intervals with decreasing
+   discharge — the second consumes the first's mutated geometry; width is
+   non-decreasing; no reset.
+4. **Widening clock**: an interval with `W_f(Q) > W_current` widens per the
+   INV-ROUTE-018 lineage realization ([I-133]-[I-136] structure); a
+   following smaller-flow interval with `W_f(Q) <= W_current` leaves width
+   unchanged.
+5. **Zero-flow deposition**: an interval at the `1e-12 m^3 s^-1` floor with
+   positive projected inlet mass deposits the full mass, executes no
+   detachment, and leaves geometry unchanged.
+6. **End-of-grid storage**: a day ending with nonzero routed water storage
+   closes per TOL-ROUTE-007 with zero storage-attributed sediment mass
+   (INV-ROUTE-020(c) zero-by-construction), and no suspended surface
+   crosses the day boundary.
+7. **Cross-day carry**: geometry mutated on day N is the day N+1 starting
+   state; no sediment mass surface carries across the day boundary.
+8. **Tillage reseed**: primary tillage on an `ishape=3` channel reseeds
+   geometry to input values; all other days never reseed.
+9. **Fail-closed vectors**: non-water-grid sediment quantum, event-scalar
+   operand substitution on an active interval lane, unauthorized geometry
+   reset, suspended-pool carry, and triangular-surrogate erosion time each
+   fail with the `WKERNEL-WS10-CHANNEL-E-001..003` guard family.
+10. **Mid-interval layer contact**: an interval in which incision reaches
+    the nonerodible layer partway through partitions its erosion-time
+    budget per `timpot`/`timex` (no double-count: incision through the
+    residual `depmid` plus widening only over `timex`), and the contact
+    interval's detached mass matches the constructive geometry derivation
+    of INV-ROUTE-019.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -568,11 +767,14 @@ Minimum WS11 routing conformance vectors:
 | GAP-ROUTE-009 | WSHEDIMPL38 closed the residual watershed channel sediment parity seam by retiring unresolved fallback diagnostics (`ws20_detachment_unmigrated_segment_count`, `ws21_detach_unmigrated_segment_count`) and converting residual invalid-segment fallback branches in WS20/WS21 routing to typed fail-closed domain guards (`ws20_case12_next_flux_{class:04}`, `ws21_case3_next_flux_{class:04}`, `ws21_case4_next_flux_{class:04}`), while preserving baseline-authoritative `chnero/chnrt/detach` execution lineage and migrated width/shape/transition semantics from WSHEDIMPL20-37. | Watershed channel sediment routing now executes without unresolved-detachment surrogate counters; residual numeric/domain violations surface as explicit typed guard failures instead of fallback continuation. | closed | `[DIRECT][Static] + [Ran]` |
 | GAP-ROUTE-010 | WSHEDIMPL40 identified residual WS11 Muskingum-Cunge drift versus pinned baseline in prior-state memory ingestion and coefficient publication semantics (`c4` lateral term scaling and sign-permissive coefficient handling). | Without this closure, successive-event MC routing could ignore prior routed state and incorrectly force coefficient sign, reducing branch-equivalence confidence for `ipeak >= 4` vectors. | closed | `[DIRECT][Static] + [Ran]` |
 | GAP-ROUTE-011 | WSHEDIMPL41 migrated WS11 `ipeak = 5` variable-parameter Muskingum-Cunge dynamic-coefficient refresh behavior into the current single-segment WS10 runtime lane by executing dynamic reference-flow lineage and per-step coefficient refresh semantics (`c0..c4`) under typed fail-closed guards. | `ipeak = 5` branch behavior no longer reuses static `ipeak = 4` coefficients when dynamic refresh inputs are valid; dynamic-coefficient parity closure is explicit for the current WS10 lane. | closed | `[DIRECT][Static] + [Ran]` |
+| GAP-ROUTE-012 | No re-erodible deposited-bed store (W11A recorded limitation): interval-lane deposition leaves the active sediment accounting permanently, matching the WEPP/CREAMS lineage in which detachment draws only on channel-boundary soil down to the nonerodible layer. External unsteady models (KINEROS2, HEC-RAS) carry exchangeable bed layers; importing one would be new physics with no WEPP-lineage support and no acceptance driver at this tier. Retained deliberately with governance risk acceptance. | Deposited channel sediment cannot later re-entrain; long-duration aggradation/degradation cycling is out of authoritative scope (consistent with INV-ROUTE-013 applicability bounds). | closed | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-ROUTE-013 | End-of-grid storage sediment disposition (W11A labeled decision): on the ratified quasi-steady interval lane the question is **moot by construction** — each interval solve closes without a suspended-storage term, so no sediment mass is attributable to end-of-grid routed water storage (INV-ROUTE-020(c)). The decision recorded here governs the recorded unsteady fallback lane only, where suspended concentration state exists: external precedent diverges (HEC-RAS carries suspended state continuously; the lineage record — event-closed solves and the 2023 upstream fix treating cross-storm sediment-mass carry as a defect, REF-ROUTE-JIMF2023-CARRY — closes it), and the ratified fallback-lane default is deposit-at-grid-end. Revisit only with an explicit acceptance driver for suspended carry (e.g. perennial-stream scope change, outside INV-ROUTE-013 bounds today). | Days always mass-close on both lanes; on the fallback lane, suspended sediment in end-of-day residual storage is recorded as reach deposition rather than carried concentration state. | closed | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Revision History
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-07-10` | `51` | `Claude Code` | WSHED-W11A channel-interval sediment sequencing authority (lifts `WSHED-W11-HOLD-001`): added anchors `REF-ROUTE-CH13-GEOMCARRY`, `REF-ROUTE-CREAMS-CH3-QS/WIDEN` (vendored CREAMS Ch. 3, widening law [I-133]-[I-140] verified against the rendered scan), `REF-ROUTE-ARS77-SAMEGRID`, `REF-ROUTE-HECRAS-QUS` (class-corroboration grade), `REF-ROUTE-CH14-TIMESTEP`, `REF-ROUTE-GULLY-STATE`, `REF-ROUTE-JIMF2023-CARRY`; added `INV-ROUTE-015..020` (biconditional mandatory lane activation + dtchr-grid sediment quantum; per-interval quasi-steady sequence on the WSHEDIMPL18-41 lanes with recorded unsteady fallback; monotonic geometry carry with tillage-only reseed; the widening clock on the **WEPP-adapted lineage realization** — linear rate, 1.0176-modified exponential, fitted `f(x_b)`, `timpot/timex` budget partition — with CREAMS as structural provenance and the per-interval re-anchoring labeled as a refinement; per-interval/day class mass closure with projection exactness and the constructive geometry-mass derivation; degenerate states incl. zero-flow deposition and the zero-by-construction storage disposition with the fallback-lane deposit-at-grid-end rule); extended `INV-ROUTE-005(a)` with the interval-lane dependency-authority definition and made `(e)` conditional on lane activation; added `BEI-ROUTE-007`, `TOL-ROUTE-006..008`, new Variables-and-Units rows with the SI/English unit-bridge declaration, the W11A sequencing addendum (activation topology incl. the impoundment exclusion, projection formula, comparator known-divergence note) with ten contract-derived test-vector obligations, and `GAP-ROUTE-012/013`. Dual review (W11A package review_agent_a/b, both GO-WITH-AMENDMENTS) dispositioned within this cycle: the widening-law realization adjudication (A-1), layer-contact budget partition (A-2), storage-closure reconciliation (A-3), activation biconditional and network dependency-authority (B-1/B-2), and unit-bridge/symbol-table completion (B-4) are incorporated above. |
 | `2026-07-09` | `50` | `Codex` | M-T3 profile-only closure: added a Binding Exposure Index mapping active route/channel authority and obligations to existing `INV-ROUTE-*` / `OBL-ROUTE-*` bindings; no process-physics authority changed. |
 | `2026-07-09` | `49` | `Codex` | M-T3 hourly watershed consumer amendment: tightened `INV-ROUTE-005` to an all-hourly or no-hourly inlet rule. Complete minor-1 contributor sets use the serialized `V_h`/`S_h` time base; all contributors without hourly authority retain the triangular fallback; partial, malformed, mixed hourly/non-hourly contributors or hourly contributors with dependency nodes lacking channel-hourly surfaces fail closed. |
 | `2026-07-04` | `48` | `Claude Code` | E.3 stage 2e disposition: the EROD14 Wave-2 addendum is marked DELETED-historical (the runtime arm is removed; the Wave-1 chain `SC-SED-001#INV-SED-016` is the sole multi-OFE erosion engine); manifest lineage noted (`erod14_wave2_enabled` permanently false; kernel-status field replaced by `multi_ofe_wave1_chained`, true only on no-tillage multi-OFE runs). |

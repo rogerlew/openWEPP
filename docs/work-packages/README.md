@@ -29,6 +29,30 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-10`:
+- `20260710-wshedw11a-channel-hourly-sediment-authority-001/` -
+  EXECUTED-COMPLETE-AUTHORITY (2026-07-10, Claude Code operator-directed
+  end-to-end; Codex post-hoc review requested via the package dispatch
+  prompt): ratified per-`dtchr`-interval quasi-steady channel sediment
+  sequencing in `SC-ROUTE-001` v51 (`INV-ROUTE-015..020`: biconditional lane
+  activation, water-grid quantum, monotonic geometry carry with tillage-only
+  reseed, lineage-realization widening clock with `timpot`/`timex` budget
+  partition, per-interval/day class mass closure, degenerate states, ten
+  contract-derived vectors) on convergent WEPP Ch. 13/14 + CREAMS Ch. 3 +
+  KINEROS ARS-77 + HEC-RAS quasi-unsteady authority (all vendored). Dual
+  review (21 findings: 20 accepted+fixed, 1 rejected with validated
+  rationale) and dual verification (both PASS-WITH-NOTES, notes addressed)
+  complete. `WSHED-W11-HOLD-001` lifted; W11 resumes at Phase B per
+  `artifacts/w11-handoff.md`.
+- `20260710-wshedw11-channel-network-hourly-water-sediment-routing-001/` -
+  EXECUTED-HOLD-MISSING-CHANNEL-HOURLY-SEDIMENT-SEQUENCING-AUTHORITY
+  (2026-07-10; **hold lifted same day by WSHED-W11A**): Phase A established
+  baseline `q1` water-series routing and channel dependency propagation for
+  `ipeak` 3-5 and confirmed ADR-0036's limited uniform event-fraction class
+  reconstruction. It also proved baseline channel sediment is event-only and
+  (pre-v51) contracts did not define per-interval WS18-WS26 sequencing or
+  bed/profile carry. No contract, Rust, test, fixture, or output edits
+  landed in W11 itself; existing M-T3 fail-closed behavior remains until W11
+  resumes at Phase B on the v51 authority.
 - `20260709-cqr-nightly-b02-10-hbp-payload-validator-001/` -
   EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-10): CQR nightly batch 02 target #10
   completed characterization-only closure of
