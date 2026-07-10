@@ -64,6 +64,11 @@ fn main() {
     }
 }
 
+// TODO(CQR-20260709-b02-04): Do not add CRAP/coverage special-case exceptions
+// for this watershed CLI. The held CQR package proved the blocker is missing
+// real-CLI testability/fixture coverage across runfile, manifest, HBP,
+// topology, MOFE, and groundwater-authority branches. Add a reusable real CLI
+// fixture/driver package first, then retry the CQR target.
 #[allow(clippy::too_many_lines, clippy::similar_names)]
 fn run() -> Result<(), String> {
     let mut run_dir: Option<PathBuf> = None;
