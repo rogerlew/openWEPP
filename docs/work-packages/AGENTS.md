@@ -180,6 +180,12 @@
   one package per module from
   `docs/work-packages/templates/cqr-nightly-package.md`, and execute each package
   end-to-end.
+- Treat each new imperative CQR-nightly request as authorization for a **fresh,
+  separately numbered batch**, even when a completed nightly batch is already
+  present in the worktree or recent history. A prior batch may inform exclusions,
+  but it never satisfies or suppresses the new request. Interpret the request as
+  status-only or audit-only only when the operator explicitly asks to inspect,
+  summarize, verify, or avoid rerunning an existing batch.
 - Each scaffolded package must also copy
   `docs/work-packages/templates/cqr-nightly-kickoff-prompt.md` into
   `prompts/active/` and fill in `Execution mode`, `Autonomy`, tiered required

@@ -15,6 +15,13 @@ ordinary work package per selected module, commit each scaffold, execute each
 package end-to-end, and commit either completion evidence or hold evidence before
 moving to the next selected target.
 
+Each occurrence of this imperative is a fresh operator-authorized nightly batch.
+Do not treat a completed batch in the current worktree or recent Git history as
+completion of a later request. Use prior batches only as context or an exclusion
+signal; perform the new live measurement and create newly numbered packages.
+Only an explicit request to inspect, summarize, audit, verify, or avoid rerunning
+the existing batch changes this interpretation.
+
 ## Governance
 
 This plan is subordinate to:
