@@ -1,7 +1,7 @@
 # CQR Nightly Batch 02, Target 08 — Topology
 
 Package: `20260709-cqr-nightly-b02-08-topology-001`
-Status: `SCAFFOLDED-CQR-NIGHTLY`
+Status: `EXECUTED-COMPLETE-CQR-NIGHTLY`
 ExecPlan: `docs/work-packages/cqr-nightly-burndown-execplan.md`
 Nightly batch: `02`
 Target module: `crates/openwepp-topology/src/lib.rs`

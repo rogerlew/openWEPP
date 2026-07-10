@@ -29,6 +29,14 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-10`:
+- `20260709-cqr-nightly-b02-08-topology-001/` -
+  EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-10): CQR nightly batch 02 target #8
+  completed behavior-preserving topology parser/validation decomposition and
+  public integration characterization for `crates/openwepp-topology/src/lib.rs`.
+  Target CRAP rows above `30` reduced from `3` to `0`, maximum CRAP is `10`,
+  and target coverage is `710/746` lines / `841/874` regions. Final delegated
+  clippy, full-nextest `1645/1645` with `3` skipped, and deny passed. Package:
+  `20260709-cqr-nightly-b02-08-topology-001/`.
 - `20260709-cqr-nightly-b02-07-sim-status-001/` -
   EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-10): CQR nightly batch 02 target #7
   completed exhaustive status-taxonomy characterization and private boundary
