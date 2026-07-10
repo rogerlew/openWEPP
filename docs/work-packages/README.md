@@ -29,6 +29,14 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-09`:
+- `20260709-cqr-nightly-10-runner-laned-shadow-001/` -
+  SCAFFOLDED-CQR-NIGHTLY (2026-07-09): CQR Nightly target #10 is scaffolded
+  for behavior-preserving CRAP/cyclomatic-complexity closure of
+  `crates/openwepp-runner/src/hillslope/laned_shadow.rs`. Baseline target
+  metrics from the saved nightly run are `251/452` line coverage, `23/39`
+  function coverage, `3` production functions above CRAP `30`, max CRAP
+  `210.0`, and production target line count `706`. Package:
+  `20260709-cqr-nightly-10-runner-laned-shadow-001/`.
 - `20260709-cqr-nightly-09-watershed-detachment-001/` -
   EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-09): CQR Nightly target #9 completed
   characterization-only CRAP/cyclomatic-complexity closure of
