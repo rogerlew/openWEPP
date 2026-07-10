@@ -29,6 +29,15 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-10`:
+- `20260709-cqr-nightly-b02-09-slope-parser-001/` -
+  EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-10): CQR nightly batch 02 target #9
+  completed behavior-preserving slope parser decomposition and seven-test
+  public characterization for
+  `crates/openwepp-input-contract/src/parsers/slope.rs`. Target CRAP rows above
+  `30` reduced from `2` to `0`, maximum CRAP is `17.1852`, and focused target
+  coverage is `628/677` lines / `668/728` regions. Final workspace clippy,
+  full-nextest `1652/1652` with `3` skipped, and deny passed. Package:
+  `20260709-cqr-nightly-b02-09-slope-parser-001/`.
 - `20260709-cqr-nightly-b02-08-topology-001/` -
   EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-10): CQR nightly batch 02 target #8
   completed behavior-preserving topology parser/validation decomposition and

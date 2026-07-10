@@ -1,7 +1,6 @@
 #![allow(
     clippy::cast_precision_loss,
     clippy::missing_errors_doc,
-    clippy::too_many_lines,
     clippy::uninlined_format_args
 )]
 
@@ -155,80 +154,89 @@ pub enum SlopeParserError {
 
 impl fmt::Display for SlopeParserError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::InputFileMissing { path } => write!(f, "missing slope file: {}", path.display()),
-            Self::InputFileOpenError { path, message } => {
-                write!(f, "failed to open slope file {}: {message}", path.display())
-            }
-            Self::TokenParseError {
-                line,
-                column,
-                token,
-                expected,
-            } => write!(
-                f,
-                "token parse error at line {line}, column {column}: expected {expected}, got '{token}'"
-            ),
-            Self::RecordCountError { context } => write!(f, "record count error: {context}"),
-            Self::MissingDatverHeaderError => {
-                write!(f, "missing required datver header in strict mode")
-            }
-            Self::UnsupportedDatver {
-                datver,
-                mode,
-                canonical_datver,
-                compatibility_min_datver,
-            } => write!(
-                f,
-                "unsupported datver {datver} for mode {:?} (strict requires {canonical_datver} or {SLOPE_PERIDOT_DATVER}, compat min {compatibility_min_datver})",
-                mode
-            ),
-            Self::FieldRangeError {
-                field,
-                value,
-                expected,
-                guard_id,
-                ofe_index,
-            } => {
-                if let Some(idx) = ofe_index {
-                    write!(
-                        f,
-                        "field range error [{guard_id}] for {field} in OFE {}: got {value}, expected {expected}",
-                        idx + 1
-                    )
-                } else {
-                    write!(
-                        f,
-                        "field range error [{guard_id}] for {field}: got {value}, expected {expected}"
-                    )
-                }
-            }
-            Self::DistanceModeMixError { ofe_index, message } => {
-                write!(f, "distance mode mix in OFE {}: {message}", ofe_index + 1)
-            }
-            Self::EndpointConstraintError { ofe_index, message } => {
-                write!(f, "endpoint constraint in OFE {}: {message}", ofe_index + 1)
-            }
-            Self::CrossOfeBoundaryError {
-                left_ofe_index,
-                right_ofe_index,
-                left_terminal_slope,
-                right_initial_slope,
-                tolerance,
-            } => write!(
-                f,
-                "cross-OFE boundary slope mismatch OFE {} -> OFE {} ({left_terminal_slope} vs {right_initial_slope}, tol {tolerance})",
-                left_ofe_index + 1,
-                right_ofe_index + 1
-            ),
-            Self::InvariantViolation { guard_id, message } => {
-                write!(f, "invariant violation [{guard_id}]: {message}")
-            }
-        }
+        f.write_str(&slope_parser_error_message(self))
     }
 }
 
 impl std::error::Error for SlopeParserError {}
+
+fn slope_parser_error_message(error: &SlopeParserError) -> String {
+    match error {
+        SlopeParserError::InputFileMissing { path } => {
+            format!("missing slope file: {}", path.display())
+        }
+        SlopeParserError::InputFileOpenError { path, message } => {
+            format!("failed to open slope file {}: {message}", path.display())
+        }
+        SlopeParserError::TokenParseError {
+            line,
+            column,
+            token,
+            expected,
+        } => format!(
+            "token parse error at line {line}, column {column}: expected {expected}, got '{token}'"
+        ),
+        SlopeParserError::RecordCountError { context } => {
+            format!("record count error: {context}")
+        }
+        SlopeParserError::MissingDatverHeaderError => {
+            "missing required datver header in strict mode".to_string()
+        }
+        SlopeParserError::UnsupportedDatver {
+            datver,
+            mode,
+            canonical_datver,
+            compatibility_min_datver,
+        } => format!(
+            "unsupported datver {datver} for mode {:?} (strict requires {canonical_datver} or {SLOPE_PERIDOT_DATVER}, compat min {compatibility_min_datver})",
+            mode
+        ),
+        SlopeParserError::FieldRangeError {
+            field,
+            value,
+            expected,
+            guard_id,
+            ofe_index,
+        } => slope_field_range_error_message(field, *value, expected, guard_id, *ofe_index),
+        SlopeParserError::DistanceModeMixError { ofe_index, message } => {
+            format!("distance mode mix in OFE {}: {message}", ofe_index + 1)
+        }
+        SlopeParserError::EndpointConstraintError { ofe_index, message } => {
+            format!("endpoint constraint in OFE {}: {message}", ofe_index + 1)
+        }
+        SlopeParserError::CrossOfeBoundaryError {
+            left_ofe_index,
+            right_ofe_index,
+            left_terminal_slope,
+            right_initial_slope,
+            tolerance,
+        } => format!(
+            "cross-OFE boundary slope mismatch OFE {} -> OFE {} ({left_terminal_slope} vs {right_initial_slope}, tol {tolerance})",
+            left_ofe_index + 1,
+            right_ofe_index + 1
+        ),
+        SlopeParserError::InvariantViolation { guard_id, message } => {
+            format!("invariant violation [{guard_id}]: {message}")
+        }
+    }
+}
+
+fn slope_field_range_error_message(
+    field: &'static str,
+    value: f64,
+    expected: &'static str,
+    guard_id: &'static str,
+    ofe_index: Option<usize>,
+) -> String {
+    if let Some(idx) = ofe_index {
+        format!(
+            "field range error [{guard_id}] for {field} in OFE {}: got {value}, expected {expected}",
+            idx + 1
+        )
+    } else {
+        format!("field range error [{guard_id}] for {field}: got {value}, expected {expected}")
+    }
+}
 
 pub fn parse_slope_file(
     path: &Path,
@@ -273,74 +281,177 @@ pub fn parse_slope_str(
         .next_token()
         .ok_or_else(|| SlopeParserError::RecordCountError {
             context: "missing first record".to_string(),
-        })?;
-    let first_value = parse_f64(first_token)?;
+        })?
+        .clone();
+    let first_value = parse_f64(&first_token)?;
 
-    let (datver, datver_source, ofe_count) = if first_value > 10.0 {
-        validate_datver(first_value, options)?;
-        let nelem = parse_count(
-            cursor
-                .next_token()
-                .ok_or_else(|| SlopeParserError::RecordCountError {
-                    context: "missing nelem after datver".to_string(),
-                })?,
-            "nelem",
-            "G-SLP-002",
-            None,
-        )?;
-        (first_value, DatverSource::Header, nelem)
-    } else {
-        if options.mode == SlopeParserMode::Strict {
-            return Err(SlopeParserError::MissingDatverHeaderError);
-        }
+    let header = parse_slope_header(&first_token, first_value, &mut cursor, options)?;
 
-        let nelem = parse_count(first_token, "nelem", "G-SLP-002", None)?;
-        (
-            options.canonical_datver,
-            DatverSource::LegacyCompatImputed,
-            nelem,
-        )
-    };
-
-    let peridot_2023_3 = approx_eq(datver, SLOPE_PERIDOT_DATVER, options.abs_tolerance);
+    let peridot_2023_3 = approx_eq(header.datver, SLOPE_PERIDOT_DATVER, options.abs_tolerance);
     let data_start_index = cursor.index;
-    let mut ofes =
-        match parse_ofes_per_ofe_geometry(&mut cursor, ofe_count, peridot_2023_3, options) {
-            Ok(parsed) => parsed,
-            Err(primary_error) => {
-                if options.mode == SlopeParserMode::Compatibility && !peridot_2023_3 {
-                    let mut shared_cursor = TokenCursor {
-                        tokens: tokens.clone(),
-                        index: data_start_index,
-                    };
-                    match parse_ofes_shared_geometry(&mut shared_cursor, ofe_count, options) {
-                        Ok(shared_form) => {
-                            cursor = shared_cursor;
-                            shared_form
-                        }
-                        Err(_) => return Err(primary_error),
-                    }
-                } else {
-                    return Err(primary_error);
-                }
-            }
-        };
+    let mut ofes = parse_slope_geometry(
+        &tokens,
+        &mut cursor,
+        data_start_index,
+        header.ofe_count,
+        peridot_2023_3,
+        options,
+    )?;
 
-    if options.mode == SlopeParserMode::Compatibility
-        && !peridot_2023_3
-        && !cursor.at_end_of_tokens()
-    {
-        let mut shared_cursor = TokenCursor {
-            tokens: tokens.clone(),
-            index: data_start_index,
-        };
-        if let Ok(shared_form) = parse_ofes_shared_geometry(&mut shared_cursor, ofe_count, options)
-        {
-            cursor = shared_cursor;
-            ofes = shared_form;
-        }
+    prefer_shared_geometry_when_trailing_tokens(
+        &tokens,
+        &mut cursor,
+        &mut ofes,
+        data_start_index,
+        header.ofe_count,
+        peridot_2023_3,
+        options,
+    );
+
+    reject_trailing_tokens(&mut cursor)?;
+    verify_strict_boundary_continuity(&ofes, options)?;
+
+    Ok(SlopeProfile {
+        datver: header.datver,
+        datver_source: header.datver_source,
+        ofe_count: header.ofe_count,
+        ofes,
+    })
+}
+
+struct ParsedSlopeHeader {
+    datver: f64,
+    datver_source: DatverSource,
+    ofe_count: usize,
+}
+
+fn parse_slope_header(
+    first_token: &Token,
+    first_value: f64,
+    cursor: &mut TokenCursor,
+    options: SlopeParserOptions,
+) -> Result<ParsedSlopeHeader, SlopeParserError> {
+    if first_value > 10.0 {
+        parse_header_datver_slope_header(first_value, cursor, options)
+    } else {
+        parse_legacy_compat_slope_header(first_token, options)
+    }
+}
+
+fn parse_header_datver_slope_header(
+    datver: f64,
+    cursor: &mut TokenCursor,
+    options: SlopeParserOptions,
+) -> Result<ParsedSlopeHeader, SlopeParserError> {
+    validate_datver(datver, options)?;
+    let nelem = parse_count(
+        cursor
+            .next_token()
+            .ok_or_else(|| SlopeParserError::RecordCountError {
+                context: "missing nelem after datver".to_string(),
+            })?,
+        "nelem",
+        "G-SLP-002",
+        None,
+    )?;
+
+    Ok(ParsedSlopeHeader {
+        datver,
+        datver_source: DatverSource::Header,
+        ofe_count: nelem,
+    })
+}
+
+fn parse_legacy_compat_slope_header(
+    first_token: &Token,
+    options: SlopeParserOptions,
+) -> Result<ParsedSlopeHeader, SlopeParserError> {
+    if options.mode == SlopeParserMode::Strict {
+        return Err(SlopeParserError::MissingDatverHeaderError);
     }
 
+    let nelem = parse_count(first_token, "nelem", "G-SLP-002", None)?;
+
+    Ok(ParsedSlopeHeader {
+        datver: options.canonical_datver,
+        datver_source: DatverSource::LegacyCompatImputed,
+        ofe_count: nelem,
+    })
+}
+
+fn parse_slope_geometry(
+    tokens: &[Token],
+    cursor: &mut TokenCursor,
+    data_start_index: usize,
+    ofe_count: usize,
+    peridot_2023_3: bool,
+    options: SlopeParserOptions,
+) -> Result<Vec<SlopeOfe>, SlopeParserError> {
+    match parse_ofes_per_ofe_geometry(cursor, ofe_count, peridot_2023_3, options) {
+        Ok(parsed) => Ok(parsed),
+        Err(primary_error) => try_shared_geometry_after_primary_error(
+            tokens,
+            cursor,
+            data_start_index,
+            ofe_count,
+            peridot_2023_3,
+            options,
+            primary_error,
+        ),
+    }
+}
+
+fn try_shared_geometry_after_primary_error(
+    tokens: &[Token],
+    cursor: &mut TokenCursor,
+    data_start_index: usize,
+    ofe_count: usize,
+    peridot_2023_3: bool,
+    options: SlopeParserOptions,
+    primary_error: SlopeParserError,
+) -> Result<Vec<SlopeOfe>, SlopeParserError> {
+    if options.mode != SlopeParserMode::Compatibility || peridot_2023_3 {
+        return Err(primary_error);
+    }
+
+    let mut shared_cursor = TokenCursor {
+        tokens: tokens.to_vec(),
+        index: data_start_index,
+    };
+    match parse_ofes_shared_geometry(&mut shared_cursor, ofe_count, options) {
+        Ok(shared_form) => {
+            *cursor = shared_cursor;
+            Ok(shared_form)
+        }
+        Err(_) => Err(primary_error),
+    }
+}
+
+fn prefer_shared_geometry_when_trailing_tokens(
+    tokens: &[Token],
+    cursor: &mut TokenCursor,
+    ofes: &mut Vec<SlopeOfe>,
+    data_start_index: usize,
+    ofe_count: usize,
+    peridot_2023_3: bool,
+    options: SlopeParserOptions,
+) {
+    if options.mode != SlopeParserMode::Compatibility || peridot_2023_3 || cursor.at_end_of_tokens()
+    {
+        return;
+    }
+
+    let mut shared_cursor = TokenCursor {
+        tokens: tokens.to_vec(),
+        index: data_start_index,
+    };
+    if let Ok(shared_form) = parse_ofes_shared_geometry(&mut shared_cursor, ofe_count, options) {
+        *cursor = shared_cursor;
+        *ofes = shared_form;
+    }
+}
+
+fn reject_trailing_tokens(cursor: &mut TokenCursor) -> Result<(), SlopeParserError> {
     if let Some(extra) = cursor.next_token() {
         return Err(SlopeParserError::RecordCountError {
             context: format!(
@@ -350,16 +461,18 @@ pub fn parse_slope_str(
         });
     }
 
+    Ok(())
+}
+
+fn verify_strict_boundary_continuity(
+    ofes: &[SlopeOfe],
+    options: SlopeParserOptions,
+) -> Result<(), SlopeParserError> {
     if options.mode == SlopeParserMode::Strict {
-        verify_cross_ofe_boundary_continuity(&ofes, options.abs_tolerance)?;
+        verify_cross_ofe_boundary_continuity(ofes, options.abs_tolerance)?;
     }
 
-    Ok(SlopeProfile {
-        datver,
-        datver_source,
-        ofe_count,
-        ofes,
-    })
+    Ok(())
 }
 
 fn parse_ofes_per_ofe_geometry(

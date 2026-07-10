@@ -1,19 +1,23 @@
 # Required Reading Map
 
-| Path | Tier | Why | Status |
-|---|---|---|---|
-| `AGENTS.md` | Core | Root governance, CQR fresh-batch intent, validation gates. | Read before scaffold. |
-| `crates/AGENTS.md` | Core | Rust crate rules, typed errors, no production unwrap/expect. | Read before scaffold. |
-| `tests/AGENTS.md` | Core | Integration-test conventions and focused/full gate selection. | Read before scaffold. |
-| `docs/work-packages/AGENTS.md` | Core | CQR package phases, subagent authorization, review/verification/disposition rules. | Read before scaffold. |
-| `docs/standards/prompt-wording-guidance.md` | Core | Prompt wording, subagent requirement wording, autonomous scope. | Read before scaffold. |
-| `docs/work-packages/cqr-nightly-burndown-execplan.md` | Core | Fresh nightly batch and package sequencing. | Read for batch setup. |
-| `docs/standards/mechanical-refactor-authoring-guide.md` | Core | Behavior-preserving refactor closure loop. | Read before production edits. |
-| `docs/standards/code-quality-refactor-authoring-guide.md` | Core | Metric-driven CQR artifact requirements. | Read before production edits. |
-| `docs/decisions/0021-module-coverage-closure-thresholds.md` | Core | ADR-0021 coverage closure thresholds. | Read before coverage disposition. |
-| `crates/openwepp-input-contract/src/parsers/slope.rs` | On-demand | Target source. | Read during scaffold. |
-| `tests/integration/infile_slope_parser_contract.rs` | On-demand | Existing public parser behavior oracle. | Read before test edits. |
+Ran:
+`tools/agents/find-agents --for crates/openwepp-input-contract/src/parsers/slope.rs tests/integration/infile_slope_parser_contract.rs docs/work-packages/20260709-cqr-nightly-b02-09-slope-parser-001/package.md docs/work-packages/20260709-cqr-nightly-b02-09-slope-parser-001/prompts/active/20260710-codex-cqr-nightly-b02-slope-parser_prompt.md`
 
-Instruction discovery:
+| Path | Tier | Rationale | Trigger | Status |
+|---|---|---|---|---|
+| `AGENTS.md` | Core | Root repository governance. | All edits. | Read |
+| `crates/AGENTS.md` | Core | Rust crate implementation guidance. | Target parser source. | Read |
+| `tests/AGENTS.md` | Core | Integration-test guidance. | Focused test write set. | Read |
+| `docs/work-packages/AGENTS.md` | Core | Package governance and CQR rules. | Work-package artifacts. | Read |
+| `docs/work-packages/20260709-cqr-nightly-b02-09-slope-parser-001/package.md` | Core | Package-local authority. | Current package. | Read after scaffold |
+| `docs/work-packages/cqr-nightly-burndown-execplan.md` | Core | Batch execution protocol. | User requested CQR nightly batch. | Read |
+| `docs/standards/mechanical-refactor-authoring-guide.md` | Core | Behavior-preserving refactor gates. | CQR decomposition. | Read |
+| `docs/standards/code-quality-refactor-authoring-guide.md` | Core | CRAP-specific workflow. | Quality dimension is CRAP. | Read |
+| `docs/decisions/0021-module-coverage-closure-thresholds.md` | Core | CRAP and coverage closure thresholds. | ADR-0021 CQR binding. | Read |
+| `docs/standards/prompt-wording-guidance.md` | Core | Subagent and package prompt wording. | Prompt/package scaffolding. | Read |
+| `crates/openwepp-input-contract/src/parsers/slope.rs` | On-demand | Target module. | Implementation phase. | Read |
+| `tests/integration/infile_slope_parser_contract.rs` | On-demand | Focused behavior oracle. | Characterization phase. | Read |
+| `docs/specifications/science-contracts/AGENTS.md` | Conditional | Contract governance. | Only if contract authority is touched. | Not triggered |
 
-`tools/agents/find-agents --for crates/openwepp-input-contract/src/parsers/slope.rs docs/work-packages/20260709-cqr-nightly-b02-09-slope-parser-001 tests/integration`
+Required-reading budget: 126,343 bytes across core, standards, target, and
+focused test paths.
