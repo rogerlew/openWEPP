@@ -1,7 +1,7 @@
 # CQR Nightly 08 - Runner Errors
 
 Package: `20260709-cqr-nightly-08-runner-errors-001`
-Status: `QUEUED`
+Status: `EXECUTED-COMPLETE-CQR-NIGHTLY`
 ExecPlan: `docs/work-packages/cqr-nightly-burndown-execplan.md`
 Target module:
 `crates/openwepp-runner/src/errors.rs`

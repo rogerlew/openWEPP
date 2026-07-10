@@ -30,12 +30,17 @@
 
 State as of `2026-07-09`:
 - `20260709-cqr-nightly-08-runner-errors-001/` -
-  QUEUED (2026-07-09): CQR Nightly target #8 for behavior-preserving
-  CRAP/cyclomatic-complexity closure of
-  `crates/openwepp-runner/src/errors.rs`. Baseline target evidence has `6`
-  deduplicated target functions above CRAP `30`, max CRAP
-  `192.89940656693898`, target LCOV `56/267`, and no production line-count
-  WARN (`549` lines). Package:
+  EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-09): CQR Nightly target #8 completed
+  behavior-preserving CRAP/cyclomatic-complexity closure of
+  `crates/openwepp-runner/src/errors.rs`. The target reduced functions above
+  CRAP `30` from `6` to `0`; final max CRAP is `20.0`, target LCOV is
+  `266/267`, target region coverage is `390/395`, and the production target
+  remains below line-count WARN at `549` lines. Final gates passed, including
+  workspace clippy, full-nextest `1573/1573` with `3` skipped, deny, package
+  doc lint, review, and verification. Full-workspace coverage/CRAP was blocked
+  by unrelated coverage-instrumented `laned_shadow_h2637` failures before LCOV
+  emission, so package closure uses the documented Phase D targeted
+  coverage/CRAP equivalent. Package:
   `20260709-cqr-nightly-08-runner-errors-001/`.
 - `20260709-cqr-nightly-07-input-management-parser-001/` -
   EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-09): CQR Nightly target #7 completed

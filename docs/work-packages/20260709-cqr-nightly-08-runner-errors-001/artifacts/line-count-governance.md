@@ -2,16 +2,19 @@
 
 Evidence label: Static/Ran.
 
-Status: `SCAFFOLDED-PASS`
+Status: `EXECUTED-PASS`
 
 Target file:
 `crates/openwepp-runner/src/errors.rs`
 
-Baseline line count:
+Observed counts:
 
-- `549` lines.
+| File | Lines | Disposition |
+|---|---:|---|
+| `crates/openwepp-runner/src/errors.rs` | `549` | Below WARN/blocker thresholds |
+| `tests/integration/cli01_runner_contract_derived_tests.rs` | `559` | Test file |
 
 Disposition:
 
-- Target starts below the 2000-line WARN threshold and below the 3000-line
-  blocker.
+- Production target remains below the 2000-line WARN threshold and below the
+  3000-line blocker.
