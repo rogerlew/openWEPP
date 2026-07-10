@@ -2,7 +2,7 @@
 
 Evidence label: Static/Ran.
 
-Status: `SCAFFOLDED`
+Status: `EXECUTED`
 
 Required-reading budget:
 

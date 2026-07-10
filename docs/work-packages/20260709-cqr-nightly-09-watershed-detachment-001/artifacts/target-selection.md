@@ -2,7 +2,7 @@
 
 Evidence label: Static.
 
-Status: `SCAFFOLDED`
+Status: `EXECUTED`
 
 Selected target:
 

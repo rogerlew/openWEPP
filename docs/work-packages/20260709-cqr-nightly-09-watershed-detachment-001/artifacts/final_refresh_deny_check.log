@@ -1,0 +1,2 @@
+[2026-07-10T02:49:30Z] START: cargo deny check
+advisories ok, bans ok, licenses ok, sources ok

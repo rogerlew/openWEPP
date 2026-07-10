@@ -1,0 +1,1431 @@
+info: cargo-llvm-cov currently setting cfg(coverage); you can opt-out it by passing --no-cfg-coverage
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.21s
+     Running unittests src/lib.rs (target/llvm-cov-target/debug/deps/openwepp-c16c7f0d6c7e6da7)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/adr0017_comparator_distrust_ratification_contract.rs (target/llvm-cov-target/debug/deps/adr0017_comparator_distrust_ratification_contract-b3fffe2f68bce71c)
+
+running 4 tests
+test adr0017_is_accepted_and_registered_as_ratified_governance ... ok
+test ratification_package_is_autonomous_and_truthfulness_labeled ... ok
+test governance_docs_encode_comparator_flag_adjudication_gates ... ok
+test sc_contracts_carry_adr0017_invariants_obligations_and_versions ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/integration/arch22_typed_state_surface_contract.rs (target/llvm-cov-target/debug/deps/arch22_typed_state_surface_contract-7d15063e169451bc)
+
+running 17 tests
+test arch22_all_dynamic_irrigation_field_suffixes_match_authority_snapshot ... ok
+test arch22_all_hillslope_flux_symbol_projections_match_authority_snapshot ... ok
+test arch22_all_watershed_channel_symbols_match_authority_snapshot ... ok
+test arch22_all_watershed_impoundment_symbols_match_authority_snapshot ... ok
+test arch22_climate_forcing_surface_error_display_matches_authority_snapshot ... ok
+test arch22_climate_forcing_symbol_surface_accessors_match_authority_snapshot ... ok
+test arch22_hillslope_dynamic_irrigation_symbol_projection_matches_authority ... ok
+test arch22_hillslope_static_symbol_projection_matches_authority ... ok
+test arch22_irrigation_scalar_state_symbols_match_authority_snapshot ... ok
+test arch22_peak_method_state_symbols_match_authority_snapshot ... ok
+test arch22_plant_hyetograph_soil_state_symbols_match_authority_snapshot ... ok
+test arch22_snow_frost_state_symbols_match_authority_snapshot ... ok
+test arch22_watershed_hillslope_payload_symbol_projection_matches_authority ... ok
+test arch22_watershed_guard_accessor_signature_is_typed ... ok
+test arch22_watershed_node_scoped_symbol_projection_matches_authority ... ok
+test arch22_wb11_wb12_state_symbols_match_authority_snapshot ... ok
+test arch22_hillslope_guard_accessor_signature_is_typed ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/integration/auth04_release_gate_authority_stack_contract.rs (target/llvm-cov-target/debug/deps/auth04_release_gate_authority_stack_contract-644d003ee1c58503)
+
+running 4 tests
+test auth04_workflow_exposes_periodic_and_manual_authority_lane_triggers ... ok
+test auth04_release_runbook_and_release_readme_document_authority_stack_outputs ... ok
+test auth04_package_and_authority_model_capture_lane_policy ... ok
+test auth04_release_gate_script_enforces_lane_and_failure_class_semantics ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/auth06_fixture_provenance_hash_enforcement_contract.rs (target/llvm-cov-target/debug/deps/auth06_fixture_provenance_hash_enforcement_contract-1b902b8a6464abc3)
+
+running 4 tests
+test auth06_schema_requires_fixture_hash_and_source_provenance_fields ... ok
+test auth06_release_gate_script_enforces_fixture_integrity_before_lane_execution ... ok
+boundary_case.json: OK
+invalid_missing_theta_fc.json: OK
+nominal_case.json: OK
+boundary_case.json: FAILED
+invalid_missing_theta_fc.json: OK
+nominal_case.json: OK
+sha256sum: WARNING: 1 computed checksum did NOT match
+test auth06_tamper_detection_rejects_modified_lock_hash ... ok
+boundary_case.json: OK
+invalid_wp_gt_fc.json: OK
+nominal_case.json: OK
+above_fc_positive.json: OK
+invalid_missing_theta.json: OK
+near_fc_cutoff.json: OK
+cohort_case.json: OK
+h1_high_rock_fc_authority.sol: OK
+h1_real_rocky_p1_authority.sol: OK
+h1_worked_example_source.md: OK
+valid_7778.sol: OK
+valid_9002.sol: OK
+withdrawal_soilwater_cap_cases.json: OK
+layer_pool_withdrawal_cap_cases.json: OK
+lateral_saturated_thickness_response_cases.json: OK
+wb19_fcwp_coca_watyld_cases.json: OK
+solwpv_fcdep_branch_cases.json: OK
+test auth06_active_level4_and_level3_suites_publish_fixture_hashes_and_provenance_sidecars ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.51s
+
+     Running tests/integration/auth07_fc_authority_cohort_contract.rs (target/llvm-cov-target/debug/deps/auth07_fc_authority_cohort_contract-23e304ef44db8bb2)
+
+running 2 tests
+test auth07_package_and_suite_authority_sections_exist ... ok
+test auth07_profile_fc_authority_cohort_threshold_and_rock_bucket_classification ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/auth11_required_suite_obligation_guards_contract.rs (target/llvm-cov-target/debug/deps/auth11_required_suite_obligation_guards_contract-7d5904ec2bfb1f0a)
+
+running 2 tests
+test auth11_registry_posture_and_protocol_guard_paths_exist ... ok
+test auth11_obligations_schema_and_anchor_bindings_are_enforced ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/cancov_stratified_observations.rs (target/llvm-cov-target/debug/deps/cancov_stratified_observations-e4afc5066b2b045e)
+
+running 3 tests
+test cancov_stratified_observation_regeneration_tool_is_present ... ok
+test cancov_stratified_observation_manifest_installs_harvard_and_marcell_sources ... ok
+test cancov_stratified_observation_tables_bind_expected_model_strata ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+     Running tests/integration/cli01_runner_contract_derived_tests.rs (target/llvm-cov-target/debug/deps/cli01_runner_contract_derived_tests-248c358a1a8b6934)
+
+running 13 tests
+test cli01_contract_surface_declares_release_sidecar_validation_fields ... ok
+test cli01_sidecar_contract_missing_required_sidecar_is_hard_failure_in_compat ... ok
+test cli01_sidecar_contract_missing_required_sidecar_is_hard_failure_in_strict ... ok
+test cli01_contract_surface_declares_runner_commands_and_error_ids ... ok
+test cli01_contract_surface_declares_required_hillslope_sidecars_and_manifest_schema ... ok
+test cli01_sidecar_contract_unknown_discovery_warns_in_compat ... ok
+test hillslope_cli_metadata_manifest_and_io_errors_preserve_codes_display_and_sources ... ok
+test hillslope_cli_output_errors_preserve_codes_display_and_sources ... ok
+test hillslope_cli_path_and_core_errors_preserve_codes_display_and_sources ... ok
+test hillslope_cli_sidecar_and_runtime_errors_preserve_codes_display_and_sources ... ok
+test runner_errors_preserve_codes_display_and_sources ... ok
+test runner_release_lint_errors_preserve_codes_display_and_sources ... ok
+test runner_release_metadata_errors_preserve_codes_display_and_sources ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/cli01_runner_hillslope_integration.rs (target/llvm-cov-target/debug/deps/cli01_runner_hillslope_integration-f0e61ccd7a4e15a1)
+
+running 4 tests
+test cli01_contract_conformance_runner_crate_declares_hillslope_watershed_and_runner_binaries ... ok
+test cli01_contract_conformance_generated_release_sidecar_is_schema_valid ... ok
+test cli01_contract_conformance_sidecar_policy_warns_on_unknown_discovery ... ok
+test cli01_contract_conformance_hillslope_run_emits_required_outputs_and_manifest ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 25.04s
+
+     Running tests/integration/cli03_runner_contract_derived_tests.rs (target/llvm-cov-target/debug/deps/cli03_runner_contract_derived_tests-140512138d519edd)
+
+running 23 tests
+test cli03_contract_surface_declares_output_crate_layout ... ok
+test cli03_contract_surface_declares_metric_runfile_and_required_outputs ... ok
+test cli03_runner_crate_declares_hillslope_and_watershed_binary_targets ... ok
+test cli03_watershed_contract_surface_declares_pw0_inputs_and_hillslope_block ... ok
+test cli03_runner_crate_wires_output_surface_dependency ... ok
+test cli03_hphys0241_watershed_validator_requires_mofe_hourly_carry_metadata ... ok
+test cli03_watershed_cli_surface_uses_runfile_pattern_with_legacy_discovery_flag ... ok
+test cli03_fixture_run_emits_required_and_configured_optional_outputs_with_manifest_checksums ... ok
+test cli03_fixture_run_publishes_wb16_ealpha_runtime_seed_provenance ... ok
+test cli03_legacy_sidecar_discovery_mode_uses_legacy_sidecars_and_ignores_runfile_overrides ... ok
+test cli03_mf_multiofe_publication_emits_public_per_ofe_wat_rows has been running for over 60 seconds
+test cli03_mofe02_enables_hillslope_soil_topology_scope_guard_when_slope_and_management_align has been running for over 60 seconds
+test cli03_mofe02_rejects_full_triad_topology_mismatch has been running for over 60 seconds
+test cli03_mofe02_rejects_management_soil_mismatch has been running for over 60 seconds
+test cli03_mofe02_rejects_slope_management_and_slope_soil_mismatch has been running for over 60 seconds
+test cli03_mofe03_no_till_multiofe_runfile_executes_wave1_chain has been running for over 60 seconds
+test cli03_mofe03_single_ofe_policy_disables_wave2_by_default has been running for over 60 seconds
+test cli03_mofe03_tilled_multiofe_run_does_not_claim_the_wave1_chain has been running for over 60 seconds
+test cli03_mofe04_single_ofe_publication_reports_single_contributor_policy has been running for over 60 seconds
+test cli03_runfile_validation_rejects_non_metric_unit_system has been running for over 60 seconds
+test cli03_runfile_validation_rejects_schema_mismatch has been running for over 60 seconds
+test cli03_runfile_validation_rejects_unresolved_required_input_paths has been running for over 60 seconds
+test cli03_runtime_accepts_finite_daily_temperature_inversion_records has been running for over 60 seconds
+test cli03_mofe02_enables_hillslope_soil_topology_scope_guard_when_slope_and_management_align ... ok
+test cli03_mofe02_rejects_full_triad_topology_mismatch ... ok
+test cli03_mf_multiofe_publication_emits_public_per_ofe_wat_rows ... ok
+test cli03_mofe02_rejects_management_soil_mismatch ... ok
+test cli03_mofe02_rejects_slope_management_and_slope_soil_mismatch ... ok
+test cli03_mofe03_no_till_multiofe_runfile_executes_wave1_chain ... ok
+test cli03_mofe03_single_ofe_policy_disables_wave2_by_default ... ok
+test cli03_mofe03_tilled_multiofe_run_does_not_claim_the_wave1_chain ... ok
+test cli03_mofe04_single_ofe_publication_reports_single_contributor_policy ... ok
+test cli03_runfile_validation_rejects_non_metric_unit_system ... ok
+test cli03_runfile_validation_rejects_schema_mismatch ... ok
+test cli03_runfile_validation_rejects_unresolved_required_input_paths ... ok
+test cli03_runtime_accepts_finite_daily_temperature_inversion_records ... ok
+
+test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 126.29s
+
+     Running tests/integration/cli04_runner_wat_parquet_contract_derived_tests.rs (target/llvm-cov-target/debug/deps/cli04_runner_wat_parquet_contract_derived_tests-455ab59c3fa4c6c5)
+
+running 2 tests
+test cli04_contract_surface_declares_wat_metadata_parity_and_dependency_posture ... ok
+test cli04_fixture_run_emits_valid_wat_parquet_with_required_metadata_keys ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 24.15s
+
+     Running tests/integration/comparator_tier_routing_metadata.rs (target/llvm-cov-target/debug/deps/comparator_tier_routing_metadata-9a24804277adb685)
+
+running 7 tests
+test candidate_source_class_policy_distinguishes_native_vs_conversion_dat ... ok
+test deterministic_tier_mapping_routes_hourly_and_watershed_to_investigation ... ok
+test missing_required_single_ofe_metadata_is_typed_error ... ok
+test strict_lane_policy_mode_is_deterministic_by_candidate_extension ... ok
+test deterministic_tier_mapping_routes_single_ofe_daily_to_higher_confidence ... ok
+test summary_constructor_rejects_invalid_routing_metadata ... ok
+test summary_rollups_propagate_routing_metadata ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/dff_ws1_native_forest_cli.rs (target/llvm-cov-target/debug/deps/dff_ws1_native_forest_cli-ef7fb67a319ccf0a)
+
+running 1 test
+test native_forest_hillslope_runs_end_to_end_with_pmet_hit_and_reconciliation ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 39.84s
+
+     Running tests/integration/dff_ws2_ksatadj_direct_runtime.rs (target/llvm-cov-target/debug/deps/dff_ws2_ksatadj_direct_runtime-678d1bf49156f164)
+
+running 1 test
+test dff_ws2_forest_high_severity_loam_runs_with_live_direct_ksatadj_effect ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 40.75s
+
+     Running tests/integration/dff_ws3_directional_burn_validation.rs (target/llvm-cov-target/debug/deps/dff_ws3_directional_burn_validation-ddb2c8033acac20c)
+
+running 2 tests
+test dff_ws3_mckenzie_bridge_matrix_fixture_catalog_is_complete ... ok
+test dff_ws3_representative_clay_loam_documents_runoff_peak_and_directional_sediment ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 41.94s
+
+     Running tests/integration/erod11_alias_boundary_ownership_contract.rs (target/llvm-cov-target/debug/deps/erod11_alias_boundary_ownership_contract-b91e535ca939e726)
+
+running 4 tests
+test erod11_wave0_hillslope_alias_projection_matches_authority ... ok
+test erod11_wave0_watershed_alias_projection_matches_authority ... ok
+test erod11_peak_duration_alias_registry_entries_exist ... ok
+test erod11_contract_addenda_and_gap_posture_are_present ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/integration/erod12_cross_domain_contract_closure_contract.rs (target/llvm-cov-target/debug/deps/erod12_cross_domain_contract_closure_contract-e1b11d9ef9c70a17)
+
+running 3 tests
+test erod12_wave0_cross_domain_blockers_are_closed ... ok
+test erod12_cross_domain_addenda_are_present ... ok
+test erod12_non_wave0_posture_remains_explicit ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/erod13_contract_authority_closure_contract.rs (target/llvm-cov-target/debug/deps/erod13_contract_authority_closure_contract-72f245c11ab3f8ee)
+
+running 2 tests
+test erod13_wave1_addenda_are_present_in_required_contracts ... ok
+test erod13_contract_changelog_references_wave1_authority ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/erod14_contract_authority_closure_contract.rs (target/llvm-cov-target/debug/deps/erod14_contract_authority_closure_contract-687b7cfb4bf6f34e)
+
+running 2 tests
+test erod14_contract_changelog_references_wave2_authority ... ok
+test erod14_wave2_addenda_are_present_in_required_contracts ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/integration/erod15_wave3_contract_authority_closure_contract.rs (target/llvm-cov-target/debug/deps/erod15_wave3_contract_authority_closure_contract-8b0a780b6236bc0c)
+
+running 3 tests
+test erod15_contract_references_wave3_authority ... ok
+test erod15_wave3_addenda_are_present_in_required_contracts ... ok
+test erod15_alias_registry_contains_hbp_payload_templates ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/erod16_wave1_continuity_fixture_conservation.rs (target/llvm-cov-target/debug/deps/erod16_wave1_continuity_fixture_conservation-47385f1393b35cc5)
+
+running 1 test
+test erod16_wave1_continuity_conserves_on_mckenzie_clay_loam_storm_forcing ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 27.94s
+
+     Running tests/integration/erosion_multi_ofe_p102_chain.rs (target/llvm-cov-target/debug/deps/erosion_multi_ofe_p102_chain-378920ec5bece150)
+
+running 1 test
+test erosion_multi_ofe_p102_wave1_chain_routes_sediment ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 45.67s
+
+     Running tests/integration/erosion_single_ofe_p61_sediment.rs (target/llvm-cov-target/debug/deps/erosion_single_ofe_p61_sediment-77f8f7ca9f2370da)
+
+running 1 test
+test erosion_single_ofe_p61_produces_nonzero_sediment_through_direct_runtime ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 29.73s
+
+     Running tests/integration/hparity01_hillslope_wat_lineage_contract.rs (target/llvm-cov-target/debug/deps/hparity01_hillslope_wat_lineage_contract-4e361fa68a7488a6)
+
+running 3 tests
+test hparity01_closure_target_requires_zero_fail_counts ... ignored, HPARITY01 scaffold: expected to fail until HPARITY02-HPARITY05 production closure packages land and rerun evidence is refreshed
+test hparity01_baseline_residual_snapshot_covers_expected_column_set ... ok
+test hparity01_contract_authority_sections_exist ... ok
+
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/integration/hphys0208_fc_threshold_coupled_residual_contract.rs (target/llvm-cov-target/debug/deps/hphys0208_fc_threshold_coupled_residual_contract-81045eecb92fd182)
+
+running 2 tests
+test hphys0208_package_and_contract_authority_sections_exist ... ok
+test hphys0208_sat_perturbation_changes_coupled_wb13_publications ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 36.18s
+
+     Running tests/integration/hphys0209_profilewp_adjudication_contract.rs (target/llvm-cov-target/debug/deps/hphys0209_profilewp_adjudication_contract-4c3f38255c66aa94)
+
+running 2 tests
+test hphys0209_package_and_contract_authority_sections_exist ... ok
+test hphys0209_wp_authority_perturbation_changes_profile_wp_without_profile_geometry_regression ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 36.78s
+
+     Running tests/integration/hphys0276_raw_unit_conversion_guard_contract.rs (target/llvm-cov-target/debug/deps/hphys0276_raw_unit_conversion_guard_contract-c673a0d332b565f5)
+
+running 5 tests
+test hphys0276_raw_unit_conversion_guard_accepts_helper_based_source ... ok
+test hphys0276_raw_unit_conversion_guard_accepts_documented_exception ... ok
+test hphys0276_raw_unit_conversion_guard_rejects_equivalent_rust_spellings ... ok
+test hphys0276_raw_unit_conversion_guard_rejects_unauthorized_literal ... ok
+test hphys0276_raw_unit_conversion_guard_does_not_overapply_allow_marker ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+     Running tests/integration/hphys0279_sc_unit_compliance_lint_contract.rs (target/llvm-cov-target/debug/deps/hphys0279_sc_unit_compliance_lint_contract-429a3908fca1c894)
+
+running 9 tests
+test hphys0279_sc_unit_lint_fails_closed_when_registry_source_is_missing ... ok
+test hphys0279_sc_unit_lint_cross_checks_registry_units ... ok
+test hphys0279_sc_unit_lint_fails_closed_when_registry_source_is_unparseable ... ok
+test hphys0279_sc_unit_lint_requires_registered_alias_rows ... ok
+test hphys0279_sc_unit_lint_reports_empty_variables_table_against_registry ... ok
+test hphys0279_sc_unit_lint_requires_canonical_variables_coverage ... ok
+test hphys0279_sc_unit_lint_accepts_compliant_contract_fixture ... ok
+test hphys0279_sc_unit_lint_rejects_missing_variables_and_alias_sections ... ok
+test hphys0279_sc_unit_lint_rejects_missing_alias_units_check ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+     Running tests/integration/hphys0296_snow_rm_acceptance_authority_contract.rs (target/llvm-cov-target/debug/deps/hphys0296_snow_rm_acceptance_authority_contract-0aff1498016f3359)
+
+running 3 tests
+test hphys0296_preserves_single_source_negative_melt_boundary_not_bug_compatibility ... ok
+test hphys0296_contracts_define_snow_rm_acceptance_authority ... ok
+test hphys0296_runner_trace_preserves_snow_rm_acceptance_surfaces ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+     Running tests/integration/hphys0297_snow_rm_defect_ledger_contract.rs (target/llvm-cov-target/debug/deps/hphys0297_snow_rm_defect_ledger_contract-a68ba6cd9e944c6d)
+
+running 3 tests
+test hphys0297_package_is_defect_ledger_not_acceptance_bucket ... ok
+test hphys0297_preserves_snowsci_single_source_openwepp_negative_melt_lineage ... ok
+test hphys0297_contracts_require_defect_ledger_reconstruction ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/integration/hphys0298_paired_lineage_partition_contract.rs (target/llvm-cov-target/debug/deps/hphys0298_paired_lineage_partition_contract-93a2a9e1bc74202e)
+
+running 5 tests
+test hphys0298_prompt_is_end_to_end_and_baseline_scoped ... ok
+test hphys0298_package_names_all_target_windows_and_outputs ... ok
+test hphys0298_harness_checks_forcing_before_raw_melt_and_fails_closed_on_missing_trace ... ok
+test hphys0298_contracts_require_paired_lineage_partition ... ok
+test hphys0298_harness_rejects_historical_hrsnow_water_equiv_pairing ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.58s
+
+     Running tests/integration/hphys0300_raw_hourly_melt_post_raw_routing_contract.rs (target/llvm-cov-target/debug/deps/hphys0300_raw_hourly_melt_post_raw_routing_contract-d56f5cce9c13d6f2)
+
+running 3 tests
+test hphys0300_package_and_prompt_are_autonomous_and_corrected_ledger_scoped ... ok
+test hphys0300_runner_routes_special_cases_without_authorizing_edits ... ok
+test hphys0300_contracts_require_term_state_evidence_before_melt_edits ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/integration/hphys0301_h39_forcing_melt_term_producer_contract.rs (target/llvm-cov-target/debug/deps/hphys0301_h39_forcing_melt_term_producer_contract-0fcbf3f79f25acb9)
+
+running 3 tests
+test hphys0301_package_and_prompt_require_implementation_or_blocker ... ok
+test hphys0301_runner_and_ledger_block_raw_rain_production_edit ... ok
+test hphys0301_contracts_reclassify_h39_raw_rain_to_release_lineage ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/integration/hphys0302_comparator_surface_audit_contract.rs (target/llvm-cov-target/debug/deps/hphys0302_comparator_surface_audit_contract-2b897021fc81c007)
+
+running 3 tests
+test hphys0302_package_and_prompt_prohibit_aggregate_delta_edits ... ok
+test hphys0302_runner_and_ledger_hold_on_missing_term_surfaces ... ok
+test hphys0302_contracts_require_same_surface_before_defect_claims ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/integration/hphys0303_adr0016_comparator_ratification_contract.rs (target/llvm-cov-target/debug/deps/hphys0303_adr0016_comparator_ratification_contract-596e77b17a9b3f0f)
+
+running 3 tests
+test hphys0303_package_requires_local_only_ratification_gates ... ok
+test hphys0303_runner_encodes_fixed_comparator_identity_without_remote_push ... ok
+test hphys0303_ledger_and_adrs_are_status_coherent ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/integration/hphys0304_fixed_comparator_semantic_rerun_contract.rs (target/llvm-cov-target/debug/deps/hphys0304_fixed_comparator_semantic_rerun_contract-2e1c37a6227f186c)
+
+running 3 tests
+test hphys0304_package_executes_adr0016_continuation_order_without_production_edits ... ok
+test hphys0304_artifacts_and_follow_on_are_status_coherent_when_executed ... ok
+test hphys0304_runner_uses_fixed_baseline_and_requires_fresh_candidate_identity ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/hphys0306_baseline_melt_observe_semantics_contract.rs (target/llvm-cov-target/debug/deps/hphys0306_baseline_melt_observe_semantics_contract-7681d63f3eab0d73)
+
+running 4 tests
+test hphys0306_package_requires_branch_active_semantics ... ok
+test hphys0306_runner_preserves_fixed_comparator_and_no_remote_actions ... ok
+test hphys0306_executed_ledger_is_status_coherent ... ok
+test hphys0306_contract_authority_is_registered ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/integration/hphys0307_melt_call_branch_activation_contract.rs (target/llvm-cov-target/debug/deps/hphys0307_melt_call_branch_activation_contract-c72b68b9f055564a)
+
+running 5 tests
+test hphys0307_package_requires_source_lineage_before_edits ... ok
+test hphys0307_source_lineage_cites_baseline_and_openwepp_predicates ... ok
+test hphys0307_executed_ledger_is_classification_coherent ... ok
+test hphys0307_runner_preserves_prior_ledger_and_no_remote_actions ... ok
+test hphys0307_contract_authority_is_registered ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/integration/hphys0308_snowd_branch_state_ordering_contract.rs (target/llvm-cov-target/debug/deps/hphys0308_snowd_branch_state_ordering_contract-1211e8c41e8c8e8a)
+
+running 5 tests
+test hphys0308_source_lineage_cites_predicate_and_state_surfaces ... ok
+test hphys0308_package_requires_key_level_state_ordering_before_edits ... ok
+test hphys0308_runner_uses_prior_ledgers_without_remote_actions ... ok
+test hphys0308_executed_ledger_is_key_level_and_hold_gated ... ok
+test hphys0308_contract_authority_is_registered ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/integration/hphys0309_snow_carry_depletion_lineage_contract.rs (target/llvm-cov-target/debug/deps/hphys0309_snow_carry_depletion_lineage_contract-a8355110fbc38e86)
+
+running 5 tests
+test hphys0309_source_lineage_cites_carry_publication ... ok
+test hphys0309_package_requires_carry_state_before_edits ... ok
+test hphys0309_runner_uses_prior_ledgers_and_source_lines ... ok
+test hphys0309_contract_authority_is_registered ... ok
+test hphys0309_executed_ledger_is_complete_and_hold_gated ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/integration/hphys0310_prior_day_snow_carry_divergence_contract.rs (target/llvm-cov-target/debug/deps/hphys0310_prior_day_snow_carry_divergence_contract-552db6e18c505dd4)
+
+running 6 tests
+test hphys0310_package_is_autonomous_and_compensation_prohibited ... ok
+test hphys0310_source_lineage_cites_carry_and_runtime_surfaces ... ok
+test hphys0310_executed_ledger_is_complete_and_hold_gated ... ok
+test hphys0310_runner_uses_prior_ledgers_and_fails_closed ... ok
+test hphys0310_contract_authority_is_registered ... ok
+test hphys0310_runner_negative_fixture_fails_closed_on_missing_pair ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+     Running tests/integration/hphys0311_snow_carry_source_line_parity_contract.rs (target/llvm-cov-target/debug/deps/hphys0311_snow_carry_source_line_parity_contract-809e64708c07c8b0)
+
+running 6 tests
+test hphys0311_package_is_autonomous_and_source_line_scoped ... ok
+test hphys0311_source_lineage_artifact_verifies_expanded_requirements ... ok
+test hphys0311_executed_ledger_is_complete_and_hold_gated ... ok
+test hphys0311_runner_fails_closed_and_cites_required_sources ... ok
+test hphys0311_contract_authority_is_registered ... ok
+HPHYS0311 failed closed: source line mismatch for snowd.for:50-53: expected 'INTENTIONALLY_MISSING_HPHYS0311_SOURCE_TOKEN' at /workdir/wepp-forest_260430_baseline/src/snowd.for:50
+test hphys0311_runner_negative_fixture_fails_closed_on_missing_source_line ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests/integration/hphys0312_prior_year_terminal_snowpack_lineage_contract.rs (target/llvm-cov-target/debug/deps/hphys0312_prior_year_terminal_snowpack_lineage_contract-184b08ccca6ff997)
+
+running 6 tests
+test hphys0312_package_is_autonomous_and_continuation_scoped ... ok
+test hphys0312_source_lineage_artifact_verifies_requirements ... ok
+test hphys0312_executed_ledger_is_complete_and_hold_gated ... ok
+test hphys0312_runner_fails_closed_and_cites_required_sources ... ok
+test hphys0312_contract_authority_is_registered ... ok
+HPHYS0312 failed closed: source line mismatch for snowd.for:61-65: expected 'INTENTIONALLY_MISSING_HPHYS0312_SOURCE_TOKEN' at /workdir/wepp-forest_260430_baseline/src/snowd.for:61
+test hphys0312_runner_negative_fixture_fails_closed_on_missing_source_line ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+     Running tests/integration/hphys0313_snowpack_settling_carry_recursion_contract.rs (target/llvm-cov-target/debug/deps/hphys0313_snowpack_settling_carry_recursion_contract-e4c3363fac81adba)
+
+running 6 tests
+test hphys0313_package_is_autonomous_and_continuation_scoped ... ok
+test hphys0313_source_lineage_and_patch_artifacts_verify_requirements ... ok
+test hphys0313_runner_fails_closed_and_cites_required_sources ... ok
+test hphys0313_executed_ledger_is_complete_and_hold_gated ... ok
+test hphys0313_contract_authority_is_registered ... ok
+HPHYS0313 failed closed: source line mismatch for snowd.for:125: expected 'INTENTIONALLY_MISSING_HPHYS0313_SOURCE_TOKEN' at /workdir/wepp-forest_260430_baseline/src/snowd.for:125
+test hphys0313_runner_negative_fixture_fails_closed_on_missing_source_line ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+     Running tests/integration/hphys0314_adr0017_snow_rm_reclassification_contract.rs (target/llvm-cov-target/debug/deps/hphys0314_adr0017_snow_rm_reclassification_contract-83a32bc7c943b6b9)
+
+running 5 tests
+test hphys0314_route_summary_accounts_for_all_carried_rows ... ok
+test hphys0314_package_is_autonomous_no_production_edits ... ok
+test hphys0314_reclassification_ledger_preserves_routes_and_gates_followons ... ok
+test hphys0314_metrics_and_evidence_artifacts_are_not_scaffold_placeholders ... ok
+test hphys0314_contract_authority_is_registered ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/integration/hphys0315_hourly_snowfall_input_lineage_contract.rs (target/llvm-cov-target/debug/deps/hphys0315_hourly_snowfall_input_lineage_contract-93c998a43be1551d)
+
+running 5 tests
+test hphys0315_ledger_preserves_all_spring_2014_rows_as_unresolved_hold ... ok
+test hphys0315_package_is_autonomous_and_scoped_to_no_production_edits ... ok
+test hphys0315_source_lineage_records_the_remaining_input_surface_gap ... ok
+test hphys0315_artifacts_are_executed_and_gates_are_recorded ... ok
+test hphys0315_contract_authority_is_registered ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/integration/hphys0316_2013_terminal_carry_recursion_contract.rs (target/llvm-cov-target/debug/deps/hphys0316_2013_terminal_carry_recursion_contract-60318cce08fa8c9e)
+
+running 5 tests
+test hphys0316_ledger_routes_all_spring_2016_rows_to_hphys0317_hold ... ok
+test hphys0316_source_lineage_records_terminal_carry_and_first_material_lane ... ok
+test hphys0316_package_is_autonomous_and_scoped_to_no_production_edits ... ok
+test hphys0316_artifacts_are_executed_and_gates_are_recorded ... ok
+test hphys0316_contract_authority_is_registered ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/integration/hphys0317_hourly_snowfall_input_surface_parity_contract.rs (target/llvm-cov-target/debug/deps/hphys0317_hourly_snowfall_input_surface_parity_contract-e8edddf7d5b8ab8d)
+
+running 5 tests
+test hphys0317_source_lineage_records_missing_controlling_surface_evidence ... ok
+test hphys0317_artifacts_are_executed_and_gates_are_recorded ... ok
+test hphys0317_ledger_preserves_all_carried_rows_under_instrumentation_hold ... ok
+test hphys0317_package_is_autonomous_and_scoped_to_no_production_edits ... ok
+test hphys0317_contract_authority_is_registered ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/integration/hphys0319_fixed_baseline_stmtim_observe_contract.rs (target/llvm-cov-target/debug/deps/hphys0319_fixed_baseline_stmtim_observe_contract-c8a4d5de332574e5)
+
+running 5 tests
+test hphys0319_artifacts_publish_paired_observe_classification ... ok
+test hphys0319_package_is_autonomous_and_no_production_edit_scoped ... ok
+test hphys0319_recovery_script_is_scoped_and_records_required_tags ... ok
+test hphys0319_artifacts_are_executed_and_gates_are_recorded ... ok
+test hphys0319_contract_authority_is_registered ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/integration/hphys0320_stmtim_start_time_source_line_contract.rs (target/llvm-cov-target/debug/deps/hphys0320_stmtim_start_time_source_line_contract-94955e630fc8dd60)
+
+running 3 tests
+test hphys0320_package_scope_is_autonomous_and_right_sized ... ok
+test hphys0320_artifacts_publish_source_line_classification_and_disposition ... ok
+test hphys0320_contract_authority_is_registered ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/integration/infile_chaninp_parser_contract.rs (target/llvm-cov-target/debug/deps/infile_chaninp_parser_contract-d3e8daba97b8dc6d)
+
+running 17 tests
+test cbase_namespace_is_explicit_and_not_gwcoeff_alias ... ok
+test compatibility_collapses_parse_failure_to_default_branch ... ok
+test compatibility_missing_file_defaults_with_chn_w_001 ... ok
+test compatibility_non_enoent_open_error_collapses_with_chn_w_002 ... ok
+test compatibility_normalizes_ichout_to_writer_subset_with_warning ... ok
+test ipeak_le_two_returns_not_applicable_without_file_dependency ... ok
+test prefixed_variant_is_rejected_in_both_modes ... ok
+test strict_enforces_topology_closure_and_compatibility_clamps_count ... ok
+test strict_mode_captures_trailing_token_provenance ... ok
+test strict_mode_enforces_line4_arity ... ok
+test strict_mode_missing_required_file_is_chn_e_009 ... ok
+test strict_mode_non_enoent_open_error_is_chn_e_000 ... ok
+test strict_mode_parses_canonical_payload ... ok
+test strict_mode_rejects_invalid_ichout_domain ... ok
+test strict_rejects_dtchr_out_of_range_and_compatibility_normalizes ... ok
+test strict_rejects_negative_cbase_and_compatibility_clamps ... ok
+test strict_rejects_unknown_ichnum_and_compatibility_retains_with_w005 ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/infile_climate_parser_contract.rs (target/llvm-cov-target/debug/deps/infile_climate_parser_contract-757f1a1734ae39d0)
+
+running 26 tests
+test climate_parse_error_display_strings_are_stable_for_breakpoints_and_counts ... ok
+test climate_parse_error_display_strings_are_stable_for_domain_errors ... ok
+test climate_parse_error_display_strings_are_stable_for_io_and_record_shape ... ok
+test climate_parse_error_source_is_only_io_source ... ok
+test compat_mode_allows_itemp2_when_enabled ... ok
+test compat_mode_can_enable_legacy_zero_drain_non_positive_dtime ... ok
+test compatibility_itemp2_parse_is_rejected_by_hillslope_runtime_request ... ok
+test parse_file_reports_io_error_for_missing_path ... ok
+test direct_day_forcing_reports_out_of_range_runtime_error ... ok
+test legacy_datver_zero_projects_direct_runtime_without_v4_intensity_policy ... ok
+test strict_climate_parser_projects_non_breakpoint_direct_runtime_request ... ok
+test strict_climate_parser_projects_breakpoint_direct_runtime_request ... ok
+test strict_mode_accepts_breakpoint_cardinality_51_under_1500_policy ... ok
+test strict_mode_accepts_curated_wc1_breakpoint_fixture_with_42_points ... ok
+test strict_mode_accepts_curated_wc1_breakpoint_fixture_with_zero_points ... ok
+test strict_mode_accepts_datver_5_323_and_canonicalizes_to_5_3 ... ok
+test strict_mode_accepts_valid_non_breakpoint_fixture ... ok
+test strict_mode_rejects_daily_record_arity_mismatch ... ok
+test strict_mode_rejects_datver_5_4_boundary ... ok
+test strict_mode_rejects_itemp2_single_storm ... ok
+test strict_mode_rejects_duplicate_breakpoint_times ... ok
+test strict_mode_rejects_non_monotone_breakpoint_precipitation ... ok
+test strict_mode_rejects_unsupported_datver ... ok
+test strict_mode_rejects_breakpoint_cardinality_over_1500 ... ok
+test compat_mode_can_override_breakpoint_cardinality_policy ... ok
+test strict_mode_accepts_breakpoint_cardinality_at_1500_boundary ... ok
+
+test result: ok. 26 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/integration/infile_frost_parser_contract.rs (target/llvm-cov-target/debug/deps/infile_frost_parser_contract-5853a0a00b9421b0)
+
+running 10 tests
+test compatibility_mode_defaults_line2_on_arity_failure ... ok
+test compatibility_mode_clamps_out_of_range_values_and_marks_provenance ... ok
+test missing_file_returns_defaults_with_mode_specific_warning_behavior ... ok
+test compatibility_mode_defaults_missing_line2_with_warnings ... ok
+test strict_mode_parses_two_line_frost_file ... ok
+test strict_mode_rejects_line1_arity_violation ... ok
+test prefixed_variant_is_rejected_in_both_modes ... ok
+test strict_mode_rejects_line2_token_parse_error ... ok
+test strict_mode_rejects_missing_line2_record ... ok
+test strict_mode_rejects_out_of_range_values ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/infile_gwcoeff_parser_contract.rs (target/llvm-cov-target/debug/deps/infile_gwcoeff_parser_contract-2244deb4b5d5b90c)
+
+running 12 tests
+test compatibility_mode_collapses_non_enoent_open_error_with_warning ... ok
+test namespace_conflation_is_rejected_with_typed_cross_file_error ... ok
+test compatibility_mode_keeps_record_closure_guard_for_extra_nonempty_line ... ok
+test compatibility_mode_missing_file_emits_warning ... ok
+test strict_mode_non_enoent_open_error_is_typed_failure ... ok
+test strict_mode_missing_file_is_optional_absence_branch_without_defaults ... ok
+test strict_mode_parses_valid_gwcoeff_with_trailing_tokens ... ok
+test strict_mode_rejects_missing_record_count ... ok
+test strict_mode_rejects_negative_domain_values ... ok
+test strict_mode_rejects_non_finite_tokens ... ok
+test strict_mode_rejects_non_numeric_tokens ... ok
+test strict_mode_rejects_prefixed_variant ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/infile_hbp_parser_contract.rs (target/llvm-cov-target/debug/deps/infile_hbp_parser_contract-39f8a0b31a5d3609)
+
+running 25 tests
+test header_truncation_maps_to_hbp_e_013 ... ok
+test parser_and_bridge_share_hbp_w_001_warning_id ... ok
+test non_enoent_open_error_is_typed_hbp_e_000 ... ok
+test required_state_registry_ids_are_covered_by_fixture_schema ... ok
+test expected_hillslope_id_mismatch_maps_to_hbp_e_014 ... ok
+test parser_rejects_legacy_path_while_bridge_compatibility_warning_remains ... ok
+test forbidden_pass_suffix_is_rejected ... ok
+test bad_magic_maps_to_hbp_e_002 ... ok
+test legacy_pass_dat_input_is_rejected ... ok
+test footer_corruption_maps_to_hbp_e_012 ... ok
+test strict_policy_rejects_legacy_forms_across_parser_and_bridge ... ok
+test strict_schema1_parse_succeeds_with_expected_hillslope_id ... ok
+test strict_mode_rejects_pass_dat_input_name ... ok
+test latest_event_state_represents_no_event_without_synthesizing_event_payload ... ok
+test payload_validator_header_guards_are_typed ... ok
+test layout_registry_guards_reject_duplicate_mismatch_and_missing_required_ids ... ok
+test payload_validator_state_snapshot_guards_are_typed ... ok
+test schema1_directory_and_footer_layout_guards_are_typed ... ok
+test layout_dimension_metadata_and_year_table_guards_are_typed ... ok
+test layout_header_control_fields_fail_closed_with_specific_codes ... ok
+test layout_cursor_truncation_guards_report_typed_contexts ... ok
+test payload_validator_crc_and_schema2_raw_payload_crc_guards_are_typed ... ok
+test strict_schema2_parse_succeeds ... ok
+test schema2_block_table_and_footer_layout_guards_are_typed ... ok
+test schema2_checksum_raw_block_and_day_slice_guards_are_typed ... ok
+
+test result: ok. 25 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.30s
+
+     Running tests/integration/infile_irrigation_depletion_parser_contract.rs (target/llvm-cov-target/debug/deps/infile_irrigation_depletion_parser_contract-37a82fe1ccce0963)
+
+running 12 tests
+test compat_accepts_legacy_no_datver_and_injects_nozzle_defaults ... ok
+test compat_accepts_legacy_furrow_datver_and_normalizes_depsrg ... ok
+test missing_file_reports_typed_input_open_error ... ok
+test rejects_unknown_element_ids_when_topology_context_is_provided ... ok
+test compat_mode_warns_and_marks_disabled_when_furrow_context_is_disallowed ... ok
+test reports_cross_file_element_count_mismatch ... ok
+test strict_mode_errors_when_furrow_context_is_disallowed ... ok
+test strict_parses_valid_sprinkler_with_continuation_rows ... ok
+test strict_rejects_invalid_initialization_order ... ok
+test strict_rejects_invalid_ktemp_header_domain ... ok
+test strict_rejects_legacy_no_datver_branch ... ok
+test strict_rejects_non_monotone_continuation_order ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/infile_irrigation_fixeddate_parser_contract.rs (target/llvm-cov-target/debug/deps/infile_irrigation_fixeddate_parser_contract-c7f84614b727ae9c)
+
+running 14 tests
+test compatibility_mode_accepts_initial_ordering_anomaly_with_warning ... ok
+test compatibility_mode_accepts_legacy_explicit_datver_with_warning ... ok
+test furrow_surge_range_violation_is_typed ... ok
+test compatibility_mode_accepts_legacy_furrow_line5_arity_with_warning ... ok
+test header_domain_violation_is_typed ... ok
+test compatibility_mode_accepts_no_datver_and_missing_nozzle ... ok
+test missing_event_successor_line3_is_typed_as_closure_error ... ok
+test missing_file_is_typed_open_error ... ok
+test strict_mode_parses_valid_furrow_fixture ... ok
+test strict_mode_parses_valid_sprinkler_fixture ... ok
+test strict_mode_rejects_initial_ordering_anomaly ... ok
+test strict_mode_rejects_legacy_explicit_datver ... ok
+test strict_mode_rejects_legacy_furrow_line5_arity ... ok
+test strict_mode_rejects_no_datver_compatibility_branch ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/infile_lcwb_parser_contract.rs (target/llvm-cov-target/debug/deps/infile_lcwb_parser_contract-61fba50826262206)
+
+running 13 tests
+test compatibility_missing_sentinel_warns_and_records_divergence ... ok
+test compatibility_non_enoent_open_error_collapses_with_warning ... ok
+test compatibility_non_watershed_context_is_not_applicable_branch ... ok
+test compatibility_nonempty_payload_is_accepted_with_warning ... ok
+test strict_missing_sentinel_with_requested_mode_errors ... ok
+test strict_missing_sentinel_without_request_is_valid_missing_branch ... ok
+test strict_non_enoent_open_error_is_typed ... ok
+test strict_non_watershed_context_is_rejected ... ok
+test strict_nonwhitespace_payload_is_rejected ... ok
+test strict_watershed_accepts_whitespace_only_payload ... ok
+test strict_watershed_open_success_with_empty_sentinel_enables_lcwb_mode ... ok
+test w4dr_001_legacy_source_authority_presence_controls_lcwbflg ... ok
+test w4dr_003_and_w4dr_011_policy_projection_is_derived_not_payload_parsed ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/infile_management_parser_contract.rs (target/llvm-cov-target/debug/deps/infile_management_parser_contract-b3b016ef3e28ea64)
+
+running 45 tests
+test display_includes_contract_ids_for_error_variants ... ok
+test compatibility_mode_accepts_tilseq_zero_when_nseq_nonzero ... ok
+test dangling_operation_reference_rejected ... ok
+test compatibility_mode_accepts_trailing_tokens_on_control_records ... ok
+test dangling_yearly_reference_rejected ... ok
+test forest_plant_block_missing_operand_fails_closed ... ok
+test forest_scenario_in_operation_section_fails_closed ... ok
+test forest_sentinel_rejected_under_legacy_datver ... ok
+test forest_scenario_blank_description_slots_preserved ... ok
+test missing_required_line_rejected ... ok
+test forest_yearly_rejects_nonzero_surface_effect_reference ... ok
+test invalid_surface_date_domain_rejected ... ok
+test open_failure_is_typed ... ok
+test negative_count_rejected ... ok
+test native_ow_lanuse_1_datver_parses_forest_scenarios ... ok
+test native_ow_lanuse_1_accepts_native_cropland_sentinel_with_routing_coefficients ... ok
+test native_ow_lanuse_1_forest_parses_routing_coefficients_extension ... ok
+test rangeland_landuse_is_explicitly_unsupported ... ok
+test strict_mode_parses_2016_annual_cut_records ... ok
+test strict_mode_parses_contour_scenarios_by_datver_shape ... ok
+test strict_mode_parses_canonical_nonzero_cropland_fixture ... ok
+test strict_mode_accepts_supported_datver_branches ... ok
+test strict_mode_parses_drain_scenario_references ... ok
+test strict_mode_parses_perennial_cutday_yearly_branch ... ok
+test strict_mode_parses_perennial_grazing_yearly_branch ... ok
+test strict_mode_parses_perennial_no_action_yearly_branch ... ok
+test strict_mode_rejects_annual_cut_zero_count ... ok
+test strict_mode_rejects_annual_cut_short_entry ... ok
+test strict_mode_parses_operation_cltpos_and_extension_lines ... ok
+test strict_mode_rejects_legacy_annual_residue_management_seven ... ok
+test strict_mode_rejects_legacy_contours_perm_extension ... ok
+test strict_mode_parses_annual_residue_management_extensions ... ok
+test strict_mode_parses_initial_understory_and_rejects_invalid_options ... ok
+test strict_mode_rejects_perennial_grazing_cycle_arity ... ok
+test strict_mode_rejects_operation_cltpos_shape_and_domain_errors ... ok
+test strict_mode_rejects_legacy_perennial_mgtopt_out_of_domain ... ok
+test strict_mode_rejects_perennial_cutday_arity ... ok
+test strict_mode_rejects_perennial_zero_cut_count ... ok
+test strict_mode_rejects_tilseq_zero_when_nseq_nonzero ... ok
+test unsupported_datver_rejected ... ok
+test strict_mode_rejects_trailing_tokens_on_control_records ... ok
+test strict_mode_rejects_perennial_zero_grazing_cycle_count ... ok
+test strict_mode_rejects_unimplemented_2016_perennial_mgtopt ... ok
+test total_year_closure_enforced ... ok
+test strict_mode_parses_rotation_fixture_with_schedule_expansion ... ok
+
+test result: ok. 45 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/integration/infile_management_yaml_contract.rs (target/llvm-cov-target/debug/deps/infile_management_yaml_contract-a348fa8a193cba50)
+
+running 2 tests
+test canonical_management_yaml_projects_route_coefficients_to_pl_surfaces ... ok
+test native_cropland_yaml_preserves_annual_residue_extensions ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/infile_phosphorus_parser_contract.rs (target/llvm-cov-target/debug/deps/infile_phosphorus_parser_contract-e43e4a156e7c25a5)
+
+running 12 tests
+test compatibility_mode_accepts_noncanonical_header_with_warning ... ok
+test negative_concentration_is_typed ... ok
+test non_finite_concentration_is_typed ... ok
+test optional_missing_sidecar_in_compat_mode_emits_warning ... ok
+test non_numeric_concentration_is_typed ... ok
+test optional_missing_sidecar_in_strict_mode_defaults_disabled_without_warning ... ok
+test required_missing_sidecar_is_typed_open_error ... ok
+test short_record_count_is_typed ... ok
+test strict_mode_accepts_numeric_leading_lines_with_trailing_tokens ... ok
+test strict_mode_parses_canonical_fixture_and_fanout_closes ... ok
+test strict_mode_rejects_header_literal_mismatch ... ok
+test w4dr_009_non_negative_only_policy_accepts_large_positive_values ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/infile_pmetpara_parser_contract.rs (target/llvm-cov-target/debug/deps/infile_pmetpara_parser_contract-19f8eca0627edd9f)
+
+running 13 tests
+test absent_sidecar_optional_sets_iflget_one_and_warning_in_compat ... ok
+test compatibility_lookup_uses_first_row_fallback_and_marks_state ... ok
+test compatibility_mode_truncates_long_crop_key_with_warning ... ok
+test compatibility_mode_normalizes_multitoken_actlnam_with_warning ... ok
+test strict_mode_accepts_canonical_count_and_rows ... ok
+test strict_lookup_rejects_crop_name_miss ... ok
+test strict_mode_rejects_datver_prefixed_header_variant ... ok
+test strict_mode_rejects_duplicate_normalized_crop_keys ... ok
+test strict_mode_rejects_long_crop_key_width ... ok
+test strict_mode_rejects_multitoken_actlnam_form ... ok
+test strict_mode_rejects_record_count_mismatch ... ok
+test strict_mode_rejects_row_arity_mismatch ... ok
+test strict_required_mode_rejects_missing_sidecar ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/infile_slope_parser_contract.rs (target/llvm-cov-target/debug/deps/infile_slope_parser_contract-e9e81069351b6290)
+
+running 20 tests
+test compatibility_mode_accepts_cross_ofe_boundary_discontinuity ... ok
+test compatibility_mode_accepts_legacy_threshold_datver ... ok
+test compatibility_mode_accepts_missing_datver_header ... ok
+test compatibility_mode_accepts_near_endpoint_terminal_distance ... ok
+test compatibility_mode_accepts_shared_geometry_multi_ofe_form ... ok
+test compatibility_mode_rejects_datver_below_threshold ... ok
+test parse_file_returns_missing_file_error ... ok
+test parser_rejects_cross_ofe_boundary_slope_discontinuity ... ok
+test parser_rejects_missing_terminal_endpoint ... ok
+test parser_rejects_mixed_distance_mode ... ok
+test parser_rejects_non_numeric_tokens ... ok
+test parser_rejects_nslpts_less_than_two ... ok
+test parser_rejects_peridot_metadata_arity_violation ... ok
+test parser_rejects_peridot_non_numeric_pair_token ... ok
+test parser_rejects_peridot_pair_cardinality_violation ... ok
+test strict_mode_accepts_canonical_datver_profile ... ok
+test strict_mode_accepts_peridot_2023_3_profile ... ok
+test strict_mode_rejects_missing_datver_header ... ok
+test strict_mode_rejects_non_canonical_datver ... ok
+test strict_mode_rejects_shared_geometry_multi_ofe_form ... ok
+
+test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/infile_snow_parser_contract.rs (target/llvm-cov-target/debug/deps/infile_snow_parser_contract-f55b2297855595c8)
+
+running 12 tests
+test compatibility_mode_accepts_surplus_records_with_warning ... ok
+test compatibility_mode_accepts_trailing_tokens_with_provenance_warning ... ok
+test compatibility_mode_missing_file_emits_default_warning ... ok
+test prefixed_variant_is_rejected_in_both_modes ... ok
+test strict_mode_missing_file_uses_defaults_without_warning ... ok
+test strict_mode_parses_canonical_three_record_file ... ok
+test strict_mode_rejects_non_finite_values ... ok
+test strict_mode_rejects_non_numeric_token ... ok
+test strict_mode_rejects_non_positive_density_values ... ok
+test strict_mode_rejects_record_count_underflow ... ok
+test strict_mode_rejects_surplus_records ... ok
+test strict_mode_rejects_trailing_tokens ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/infile_soil_parser_contract.rs (target/llvm-cov-target/debug/deps/infile_soil_parser_contract-aaeb4e3fcc5ad2b0)
+
+running 17 tests
+test compatibility_accepts_explicit_datver_alias_only_when_enabled ... ok
+test compatibility_accepts_quoted_7778_soil_header_form ... ok
+test compatibility_accepts_quoted_7778_with_per_ofe_restrictive_rows ... ok
+test compatibility_accepts_quoted_9002_policy_first_header_form ... ok
+test compatibility_accepts_quoted_9002_policy_row_with_whitespace_luse ... ok
+test returns_sol_e_007_on_cross_file_topology_count_mismatch ... ok
+test compatibility_parses_9002_policy_first_variant ... ok
+test strict_9002_soil_parser_preserves_policy_and_measured_layer_values ... ok
+test strict_9002_soil_parser_projects_corrected_theta_to_typed_state ... ok
+test strict_9002_soil_parser_projects_harmonic_vertical_ssc_below_top_interval ... ok
+test strict_accepts_quoted_7778_with_per_ofe_restrictive_rows ... ok
+test strict_accepts_quoted_9002_policy_row_with_whitespace_luse ... ok
+test strict_parses_9002_profile_with_policy_and_restrictive_footer ... ok
+test strict_parses_97_5_base_profile ... ok
+test strict_rejects_layer_arity_mismatch_with_sol_e_006 ... ok
+test strict_rejects_non_monotone_layer_depth_with_sol_e_009 ... ok
+test strict_rejects_unknown_datver_with_sol_e_003 ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/infile_tc_parser_contract.rs (target/llvm-cov-target/debug/deps/infile_tc_parser_contract-b388228113f63336)
+
+running 8 tests
+test compatibility_missing_sentinel_emits_tc_w_001 ... ok
+test compatibility_non_enoent_open_error_collapses_with_tc_w_002 ... ok
+test compatibility_nonempty_payload_emits_tc_w_003_and_marker ... ok
+test hillslope_context_is_rejected_with_tc_e_001 ... ok
+test strict_missing_sentinel_is_normalized_without_warning ... ok
+test strict_non_enoent_open_error_is_typed_tc_e_000 ... ok
+test strict_nonempty_payload_is_content_insensitive_without_warning ... ok
+test strict_watershed_empty_sentinel_enables_tc_output ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/infile_tcr_parser_contract.rs (target/llvm-cov-target/debug/deps/infile_tcr_parser_contract-dd01f20b51742d69)
+
+running 16 tests
+test compatibility_mode_accepts_blank_present_file_as_missing_branch ... ok
+test compatibility_mode_accepts_relational_invariant_with_tcr_w003 ... ok
+test compatibility_mode_missing_file_emits_tcr_w001 ... ok
+test strict_mode_missing_file_uses_optional_absence_branch_without_warning ... ok
+test compatibility_mode_non_enoent_open_error_collapses_with_tcr_w002 ... ok
+test strict_mode_non_enoent_open_error_is_typed_tcr_e_000 ... ok
+test strict_mode_parses_valid_tcr_and_applies_override_curve ... ok
+test strict_mode_rejects_blank_present_file_with_tcr_e_002 ... ok
+test strict_mode_rejects_context_cardinality_mismatch_with_tcr_e_005 ... ok
+test strict_mode_rejects_denominator_curve_domain_with_tcr_e_008 ... ok
+test strict_mode_rejects_missing_line_with_tcr_e_002 ... ok
+test strict_mode_rejects_domain_kch_zero_with_tcr_e_004 ... ok
+test strict_mode_rejects_prefixed_variant_with_tcr_e_007 ... ok
+test strict_mode_rejects_relational_invariant_with_tcr_e_009 ... ok
+test strict_mode_rejects_token_parse_error_with_tcr_e_001 ... ok
+test strict_mode_requires_cross_file_context_when_sidecar_present ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/infile_watershed_channel_parser_contract.rs (target/llvm-cov-target/debug/deps/infile_watershed_channel_parser_contract-520181b46631606c)
+
+running 21 tests
+test compatibility_mode_accepts_legacy_datver_with_warning ... ok
+test compatibility_mode_applies_icntrl0_override_with_warning ... ok
+test compatibility_mode_normalizes_legacy_ishape ... ok
+test compatibility_mode_warns_for_missing_chan_inp_sidecar ... ok
+test strict_mode_accepts_naturally_eroded_ishape_class ... ok
+test strict_mode_enforces_cross_file_channel_count_closure ... ok
+test strict_mode_parses_canonical_single_channel_rating_curve_profile ... ok
+test strict_mode_rejects_chnn_less_than_chnnbr ... ok
+test strict_mode_rejects_extra_trailing_records ... ok
+test strict_mode_rejects_flgout_out_of_domain ... ok
+test strict_mode_rejects_icntrl_out_of_domain ... ok
+test strict_mode_rejects_ishape_out_of_domain ... ok
+test strict_mode_rejects_ienslp_out_of_domain ... ok
+test strict_mode_rejects_non_numeric_tokens ... ok
+test strict_mode_rejects_missing_rating_curve_line_for_icntrl4 ... ok
+test strict_mode_rejects_rating_curve_rccoef_non_positive ... ok
+test strict_mode_rejects_rating_curve_rcoset_negative ... ok
+test strict_mode_rejects_unsupported_datver ... ok
+test strict_mode_requires_chan_inp_sidecar_when_ipeak_gt_2 ... ok
+test strict_mode_requires_slplst_override_for_icntrl0_closure ... ok
+test tcr_overlay_presence_is_exported_as_compatibility_warning_marker ... ok
+
+test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/infile_watershed_impoundment_parser_contract.rs (target/llvm-cov-target/debug/deps/infile_watershed_impoundment_parser_contract-9f29544c4c4bebab)
+
+running 22 tests
+test compatibility_mode_accepts_legacy_no_datver_with_warning ... ok
+test compatibility_mode_accepts_zero_impoundments_when_structure_declares_none ... ok
+test compatibility_mode_truncates_surplus_impoundments_with_warning ... ok
+test ies_rating_branch_missing_qes_vector_is_typed_eof_error ... ok
+test invalid_drop_spillway_domain_is_typed ... ok
+test missing_file_is_typed_open_error ... ok
+test negative_initial_timestep_is_typed_physical_domain_error ... ok
+test non_monotone_stage_curve_is_typed_invariant_error ... ok
+test oversupplied_curve_vector_is_typed_branch_arity_error ... ok
+test strict_mode_accepts_zero_impoundments_when_structure_declares_none ... ok
+test strict_mode_parses_active_structure_payload_exports ... ok
+test strict_mode_parses_ids2_drop_spillway_and_open_channel_emergency_branch ... ok
+test strict_mode_parses_ids3_drop_spillway_without_optional_branches ... ok
+test strict_mode_parses_minimal_valid_impoundment ... ok
+test strict_mode_rejects_datver_below_minimum ... ok
+test strict_mode_rejects_legacy_no_datver_preamble ... ok
+test strict_mode_rejects_structural_count_mismatch ... ok
+test token_parse_error_maps_to_imp_e_001 ... ok
+test watershed_impoundment_parse_error_source_is_only_input_open_source ... ok
+test watershed_impoundment_parse_error_display_strings_are_stable ... ok
+test zero_impoundments_rejects_positive_structural_count_as_mismatch ... ok
+test zero_impoundments_without_structure_context_remains_domain_error ... ok
+
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/infile_watershed_structure_parser_contract.rs (target/llvm-cov-target/debug/deps/infile_watershed_structure_parser_contract-eed1d9edcb0f305f)
+
+running 22 tests
+test compatibility_mode_accepts_legacy_no_datver_and_warns ... ok
+test strict_mode_parses_valid_watershed_structure ... ok
+test strict_mode_rejects_channel_count_mismatch ... ok
+test strict_mode_rejects_disconnected_structure_row ... ok
+test strict_mode_rejects_hillslope_coverage_mismatch ... ok
+test strict_mode_rejects_impoundment_count_mismatch ... ok
+test strict_mode_rejects_invalid_element_type_domain ... ok
+test strict_mode_rejects_invalid_hillslope_domain ... ok
+test strict_mode_rejects_invalid_nhill_context ... ok
+test strict_mode_rejects_invalid_row_arity ... ok
+test strict_mode_rejects_invalid_upstream_reference_domain ... ok
+test strict_mode_rejects_missing_file_with_typed_open_error ... ok
+test strict_mode_rejects_no_datver_path ... ok
+test strict_mode_rejects_row_count_mismatch ... ok
+test strict_mode_rejects_unsupported_datver ... ok
+test watershed_structure_parse_error_display_strings_are_stable_for_counts ... ok
+test strict_mode_requires_expected_rows_context ... ok
+test watershed_structure_parse_error_display_strings_are_stable_for_domains ... ok
+test watershed_structure_parse_error_display_strings_are_stable_for_input_shape ... ok
+test watershed_structure_parse_error_source_is_only_input_open_source ... ok
+test carnivorous_adobo_committed_fixture_is_repo_local_32_hillslope_gate ... ok
+test onshore_xenophobia_committed_fixture_is_full_1305_hillslope_gate ... ok
+
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.17s
+
+     Running tests/integration/infile_weppui_parser_contract.rs (target/llvm-cov-target/debug/deps/infile_weppui_parser_contract-b40b487f8ad9d88f)
+
+running 11 tests
+test compatibility_hourly_mode_with_legacy_soil_versions_warns ... ok
+test compatibility_missing_sentinel_with_hourly_request_warns_and_diverges ... ok
+test compatibility_nonempty_payload_is_accepted_with_warning ... ok
+test compatibility_non_enoent_open_error_collapses_with_warning ... ok
+test strict_hourly_mode_with_legacy_soil_versions_is_rejected ... ok
+test strict_hourly_mode_without_soil_versions_is_rejected ... ok
+test strict_missing_sentinel_with_daily_request_defaults_daily_without_error ... ok
+test strict_missing_sentinel_with_hourly_request_errors_on_mode_closure_mismatch ... ok
+test strict_non_enoent_open_error_is_typed ... ok
+test strict_nonempty_sentinel_payload_is_rejected ... ok
+test strict_requested_hourly_with_empty_sentinel_and_compatible_soil_enables_hourly_mode ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/landuse_migration_cli_contract.rs (target/llvm-cov-target/debug/deps/landuse_migration_cli_contract-42783d9a29639912)
+
+running 1 test
+test migrated_legacy_cropland_yaml_is_consumed_by_real_runtime_projection ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/integration/laned_shadow_h2637.rs (target/llvm-cov-target/debug/deps/laned_shadow_h2637-033799bb7dbfbbfe)
+
+running 10 tests
+test abandoned_implicit_selector_env_fails_closed_at_startup ... ok
+test h2637_native_active_owner_routes_and_closes ... ignored, D16 H2637 active-owner evidence: runs the full H2637 fixture three times
+test h2637_native_shadow_classifies_uniform_shape_after_d12 ... ignored, D12 H2637 shadow evidence: runs the full H2637 fixture twice
+test active_trace_selector_requires_active_before_outputs ... ok
+test h2637_default_malformed_routing_coefficients_fails_closed ... ok
+test h2637_default_mixed_routing_coefficients_fails_closed ... ok
+test h2637_active_fails_closed_without_routing_coefficients ... FAILED
+test h2637_legacy_shadow_fails_closed_without_routing_coefficients ... ok
+test h2637_active_and_disable_are_mutually_exclusive has been running for over 60 seconds
+test h2637_active_and_shadow_are_mutually_exclusive has been running for over 60 seconds
+test h2637_active_and_shadow_are_mutually_exclusive ... FAILED
+test h2637_active_and_disable_are_mutually_exclusive ... FAILED
+
+failures:
+
+---- h2637_active_fails_closed_without_routing_coefficients stdout ----
+
+thread 'h2637_active_fails_closed_without_routing_coefficients' (1245875) panicked at tests/integration/laned_shadow_h2637.rs:451:10:
+active selector must fail closed: HillslopeRunReport { output_pass: "/tmp/laned_shadow_h2637_active_legacy_1245870/output/H2637.hbp", output_loss: "/tmp/laned_shadow_h2637_active_legacy_1245870/output/H2637.loss.json", optional_outputs: ["/tmp/laned_shadow_h2637_active_legacy_1245870/output/H2637.pass.parquet"], manifest_path: "/tmp/laned_shadow_h2637_active_legacy_1245870/manifest.json", sidecar_warnings: [] }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- h2637_active_and_shadow_are_mutually_exclusive stdout ----
+
+thread 'h2637_active_and_shadow_are_mutually_exclusive' (1245874) panicked at tests/integration/laned_shadow_h2637.rs:486:10:
+active + shadow must fail closed: HillslopeRunReport { output_pass: "/tmp/laned_shadow_h2637_active_shadow_conflict_1245870/output/H2637.hbp", output_loss: "/tmp/laned_shadow_h2637_active_shadow_conflict_1245870/output/H2637.loss.json", optional_outputs: ["/tmp/laned_shadow_h2637_active_shadow_conflict_1245870/output/H2637.pass.parquet"], manifest_path: "/tmp/laned_shadow_h2637_active_shadow_conflict_1245870/manifest.json", sidecar_warnings: [] }
+
+---- h2637_active_and_disable_are_mutually_exclusive stdout ----
+
+thread 'h2637_active_and_disable_are_mutually_exclusive' (1245873) panicked at tests/integration/laned_shadow_h2637.rs:517:10:
+active + disable must fail closed: HillslopeRunReport { output_pass: "/tmp/laned_shadow_h2637_active_disable_conflict_1245870/output/H2637.hbp", output_loss: "/tmp/laned_shadow_h2637_active_disable_conflict_1245870/output/H2637.loss.json", optional_outputs: ["/tmp/laned_shadow_h2637_active_disable_conflict_1245870/output/H2637.pass.parquet"], manifest_path: "/tmp/laned_shadow_h2637_active_disable_conflict_1245870/manifest.json", sidecar_warnings: [] }
+
+
+failures:
+    h2637_active_and_disable_are_mutually_exclusive
+    h2637_active_and_shadow_are_mutually_exclusive
+    h2637_active_fails_closed_without_routing_coefficients
+
+test result: FAILED. 5 passed; 3 failed; 2 ignored; 0 measured; 0 filtered out; finished in 317.84s
+
+error: test failed, to rerun pass `-p openwepp --test laned_shadow_h2637`
+     Running tests/integration/mofe01_inter_ofe_route_contract.rs (target/llvm-cov-target/debug/deps/mofe01_inter_ofe_route_contract-0059b9d76ce6a5bf)
+
+running 3 tests
+test mofe01_mg_erosion_qin_boundary_contract_authority_is_present ... ok
+test mofe01_mb_inter_ofe_route_contract_authority_is_present ... ok
+test mofe01_mi_hillslope_total_closure_contract_authority_is_present ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/integration/mofe04_publication_contract_authority_closure_contract.rs (target/llvm-cov-target/debug/deps/mofe04_publication_contract_authority_closure_contract-4b7c836d38d93a97)
+
+running 1 test
+test mofe04_addenda_are_present_in_required_contracts ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests/integration/mofe05_watershed_contributor_metadata_contract_authority_closure_contract.rs (target/llvm-cov-target/debug/deps/mofe05_watershed_contributor_metadata_contract_authority_closure_contract-b02d3289d0e41f86)
+
+running 1 test
+test mofe05_addenda_are_present_in_required_contracts ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/integration/owcmp_agent_config_contract.rs (target/llvm-cov-target/debug/deps/owcmp_agent_config_contract-2b8df672d66b9026)
+
+running 2 tests
+test comparator_suite_runner_is_registered_and_uses_spark_model ... ok
+test comparator_suite_runner_discovers_owcmp_not_retired_legacy_suite ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/owcmp_cli_contract.rs (target/llvm-cov-target/debug/deps/owcmp_cli_contract-28e2f732511e5dd5)
+
+running 12 tests
+test owcmp_declares_pl14s_contract_markers_and_deferred_observe_boundary ... ok
+test owcmp_manifest_list_discovers_seeded_suites ... ok
+test owcmp_summarize_reports_policy_skipped_commands_as_skipped ... ok
+test owcmp_summarize_reports_failed_commands_as_failed_verdict ... ok
+test owcmp_observe_normalize_is_deferred ... ok
+test owcmp_wat_semantic_rejects_duplicate_row_keys ... ok
+test owcmp_batch_h1_h39_semantic_missing_inputs_emit_failure_artifacts ... ok
+test owcmp_batch_h1_h39_semantic_command_failure_emits_failure_artifacts ... ok
+test owcmp_pl14s_run_emits_provenance_with_strict_and_semantic_lanes ... ok
+test owcmp_summarize_emits_compact_json_and_markdown ... ok
+test owcmp_batch_h1_h39_semantic_emits_compact_summary ... ok
+test owcmp_env_checks_temp_manifest_and_rejects_inventory_run ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.42s
+
+     Running tests/integration/paradigm2_multilayer_promotion.rs (target/llvm-cov-target/debug/deps/paradigm2_multilayer_promotion-a3c788351598f9d2)
+
+running 4 tests
+test direct_publication_consumes_stage3_diagnostics_and_default_path_is_null ... ok
+test selector_remains_internal_and_hbp_temperature_serialization_is_deferred ... ok
+test promotion_contract_and_package_ratify_supported_opt_in_capability ... ok
+test meltwater_temperature_is_a_supported_nullable_wat_output ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+     Running tests/integration/paradigm2_stage0_surface_energy_balance_contract.rs (target/llvm-cov-target/debug/deps/paradigm2_stage0_surface_energy_balance_contract-00019753d79d7dc5)
+
+running 4 tests
+test clean_room_provenance_records_cc0_and_equation_sources ... ok
+test stage0_package_declares_pure_surface_energy_boundary ... ok
+test meteorology_surface_energy_module_is_public_and_complete ... ok
+test production_runtime_sources_only_wire_stage0_flux_primitives_through_stage3_opt_in ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.39s
+
+     Running tests/integration/paradigm2_stage1_layered_snow_density.rs (target/llvm-cov-target/debug/deps/paradigm2_stage1_layered_snow_density-805250287e7c7dac)
+
+running 6 tests
+test multilayer_density_fails_closed_on_bad_layer_aggregate ... ok
+test multilayer_density_adds_new_snow_as_surface_layer ... ok
+test multilayer_density_respects_aggregate_density_cap ... ok
+test multilayer_density_uses_local_overburden_top_to_bottom ... ok
+test r4g_snow_coupling_persists_layer_stack_into_winter_column_and_carry ... ok
+test stage1_contract_and_selector_are_package_bound ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/integration/paradigm2_stage2_snow_frost_insulation_profile.rs (target/llvm-cov-target/debug/deps/paradigm2_stage2_snow_frost_insulation_profile-a7668121ac7958dc)
+
+running 2 tests
+test stage2_internal_selector_not_user_cli_exposed ... ok
+test stage2_contract_package_and_trace_are_bound ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/integration/paradigm2_stage3_decouple_water_temperature.rs (target/llvm-cov-target/debug/deps/paradigm2_stage3_decouple_water_temperature-18aad388ee60b11b)
+
+running 3 tests
+test stage3_decouple_carries_geometry_but_removes_density_gradient ... ok
+test stage3_decouple_synthesizes_bulk_equivalent_layers_without_stage1_density ... ok
+test stage3_decouple_contract_package_and_selector_are_bound ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/integration/paradigm2_stage3_liquid_routing_meltwater_temperature.rs (target/llvm-cov-target/debug/deps/paradigm2_stage3_liquid_routing_meltwater_temperature-6cbf1ccc45a169b6)
+
+running 6 tests
+test stage3_accepts_bulk_density_model_after_decouple ... ok
+test stage3_disabled_default_leaves_diagnostics_off ... ok
+test stage3_caps_persisted_cold_content_to_current_layer_mass ... ok
+test stage3_routes_liquid_closes_energy_and_produces_typed_temperature ... ok
+test stage3_internal_selector_not_user_cli_exposed ... ok
+test stage3_contract_package_and_selector_are_bound ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/integration/pl14_tier_a_candidate_replay_contract.rs (target/llvm-cov-target/debug/deps/pl14_tier_a_candidate_replay_contract-516214e62c030062)
+
+running 7 tests
+test pl14_contract_conformance_rejects_key_domain_mismatch_before_comparator_promotion ... ok
+test pl14_contract_conformance_emits_replay_staging_rows_with_canonical_25_columns ... ok
+test pl14_contract_conformance_rejects_missing_or_mismatched_single_ofe_metadata ... ok
+test pl14_contract_conformance_requires_nonzero_replay_span_overlap_for_promotion ... ok
+test pl14_contract_conformance_requires_total_soil_in_investigation_columns ... ok
+test pl14_contract_conformance_routes_single_ofe_daily_lane_to_higher_confidence ... ok
+test pl14_contract_conformance_rejects_missing_required_replay_symbol ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/pl14r_tier_a_replay_rerun_contract.rs (target/llvm-cov-target/debug/deps/pl14r_tier_a_replay_rerun_contract-c764bb621786fa45)
+
+running 9 tests
+test pl14r_contract_conformance_holds_when_required_surface_missing_or_strict_failure_present ... ok
+test pl14r_contract_conformance_holds_when_strict_source_is_non_promotable ... ok
+test pl14r_contract_conformance_requires_complete_hash_provenance_for_pass ... ok
+test pl14r_contract_conformance_rejects_missing_required_single_ofe_metadata ... ok
+test pl14r_contract_conformance_rejects_skipped_strict_lane_for_dat_mode ... ok
+test pl14r_contract_conformance_requires_interchange_wat_and_pass_include_surfaces ... ok
+test pl14r_contract_conformance_requires_strict_equivalent_compensation_when_parquet_strict_skips ... ok
+test pl14r_contract_conformance_routes_single_ofe_daily_lane_to_higher_confidence ... ok
+test pl14r_contract_conformance_wb13_rows_remain_canonical_25_column_schema ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/pl14s_tier_a_candidate_emission_and_replay_contract.rs (target/llvm-cov-target/debug/deps/pl14s_tier_a_candidate_emission_and_replay_contract-bed27fae74229032)
+
+running 8 tests
+test pl14s_contract_conformance_classifies_candidate_source_provenance ... ok
+test pl14s_contract_conformance_enforces_strict_lane_required_vs_strict_equivalent_modes ... ok
+test pl14s_contract_conformance_requires_conversion_dat_row_consistency_for_evidence_readiness ... ok
+test pl14s_contract_conformance_routes_single_ofe_daily_lane_to_higher_confidence ... ok
+test pl14s_contract_conformance_declares_semantic_report_and_provenance_schema_markers ... ok
+test pl14s_contract_conformance_rejects_duplicate_row_keys_in_semantic_lane_inputs ... ok
+test simimpl18_contract_requires_cold_day_partition_zero_rm_and_runtime_snow_storage ... ok
+test simimpl18_contract_requires_multi_day_storage_state_mutation ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 36.36s
+
+     Running tests/integration/pl15_tier_a_delta_closeout_contract.rs (target/llvm-cov-target/debug/deps/pl15_tier_a_delta_closeout_contract-edc81829bb32e272)
+
+running 4 tests
+test pl15_contract_conformance_flags_plot_artifact_absence_from_pl14_replay ... ok
+test pl15_contract_conformance_flags_wat_structure_delta_from_pl14_replay ... ok
+test pl15_contract_conformance_routes_tier_a_surface_as_higher_confidence ... ok
+test pl15_contract_conformance_requires_explicit_risk_acceptance_reference ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/pl15r_tier_a_delta_recloseout_contract.rs (target/llvm-cov-target/debug/deps/pl15r_tier_a_delta_recloseout_contract-896174768eb46d56)
+
+running 5 tests
+test pl15r_contract_conformance_requires_day_by_day_25_measure_parity ... ok
+test pl15r_contract_conformance_requires_explicit_risk_acceptance_only_when_blockers_remain ... ok
+test pl15r_contract_conformance_requires_schema_aligned_wat_strict_pass ... ok
+test pl15r_contract_conformance_requires_schema_aligned_plot_strict_pass ... ok
+test pl15r_contract_conformance_routes_tier_a_surface_as_higher_confidence ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/sim_contract_boundary_unit_registry.rs (target/llvm-cov-target/debug/deps/sim_contract_boundary_unit_registry-d77818d166380605)
+
+running 21 tests
+test cqr16_boundary_registry_authority_field_display_messages_are_stable ... ok
+test cqr16_boundary_registry_conflict_display_messages_are_stable ... ok
+test cqr16_boundary_registry_required_field_display_messages_are_stable ... ok
+test cqr16_boundary_registry_shape_and_lookup_display_messages_are_stable ... ok
+test cqr16_output_registry_authority_display_messages_are_stable ... ok
+test cqr16_output_registry_display_messages_are_stable ... ok
+test registry_rejects_bad_templates_and_ambiguous_template_matches ... ok
+test registry_rejects_duplicate_and_ambiguous_aliases ... ok
+test registry_rejects_missing_dimensional_units_and_missing_scalar_exception_reasons ... ok
+test registry_rejects_duplicate_publication_aliases ... ok
+test canonical_registry_contains_hydrology_et_percolation_publication_units ... ok
+test canonical_registry_keeps_prcp_meters_distinct_from_p_publication_mm ... ok
+test hphys0290_registry_declares_post_winter_rain_flux_metadata ... ok
+test wshed01_totalwatsed3_runoff_unit_lineage_is_pass_volume_publication ... ok
+test hphys0278_output_registry_rejects_stale_boundary_units_and_unexplained_publication_units ... ok
+test canonical_registry_gate_rejects_missing_required_aliases ... ok
+test canonical_registry_resolves_climate_soil_and_snow_runtime_aliases ... ok
+test hphys0275_registry_marks_only_migrated_aliases_typed_required ... ok
+test registry_units_cover_hillslope_wat_schema_metadata ... ok
+test hphys0278_dynamic_row_level_output_units_are_registry_governed ... ok
+test hphys0278_output_unit_registry_covers_output_schema_unit_metadata ... ok
+
+test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.52s
+
+     Running tests/integration/sim_contract_closure_checks.rs (target/llvm-cov-target/debug/deps/sim_contract_closure_checks-8825547c4c716ad7)
+
+running 6 tests
+test count_check_rejects_cardinality_mismatch ... ok
+test finite_check_accepts_finite_values ... ok
+test finite_check_rejects_nan_with_typed_violation ... ok
+test min_check_rejects_negative_values_with_typed_violation ... ok
+test range_and_unit_interval_checks_enforce_domain_bounds ... ok
+test residual_check_enforces_closure_tolerance ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/sim_contract_status_taxonomy.rs (target/llvm-cov-target/debug/deps/sim_contract_status_taxonomy-5f58ac514eab2c57)
+
+running 6 tests
+test advisory_constructor_rejects_failure_boundary_class ... ok
+test boundary_advisory_class_without_clamp_is_warning ... ok
+test clamp_status_is_classified_as_advisory ... ok
+test empty_message_id_is_rejected ... ok
+test nominal_status_is_classified_as_ok ... ok
+test non_finite_status_is_classified_as_failure ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/sim_contract_symbol_alias_registry.rs (target/llvm-cov-target/debug/deps/sim_contract_symbol_alias_registry-64eb0d8963aab744)
+
+running 13 tests
+test constructor_rejects_ambiguous_boundary_aliases ... ok
+test constructor_rejects_ambiguous_template_alias_strings ... ok
+test constructor_rejects_duplicate_rows ... ok
+test constructor_rejects_invalid_template_token ... ok
+test reverse_lookup_reports_ambiguous_template_matches ... ok
+test canonical_wepp_registry_contains_pl04_schedule_growth_and_decomp_alias_entries ... ok
+test canonical_wepp_registry_contains_arch03_baseline_aliases ... ok
+test canonical_wepp_registry_contains_pl11_slot_crop_projection_alias_entries ... ok
+test canonical_wepp_registry_contains_sr04_slope_soil_alias_entries ... ok
+test missing_canonical_or_boundary_alias_returns_typed_errors ... ok
+test reverse_lookup_resolves_each_boundary_alias_to_single_canonical_symbol ... ok
+test reverse_lookup_resolves_pl04_aliases_to_single_canonical_symbol ... ok
+test reverse_lookup_resolves_pl11_slot_crop_projection_aliases ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration/snowdensity02_contract_adr_guard.rs (target/llvm-cov-target/debug/deps/snowdensity02_contract_adr_guard-c0840ce424329fed)
+
+running 3 tests
+test snowdensity02_adr_records_deliberate_legacy_divergence_without_default_activation ... ok
+test snowdensity02_package_closes_as_contract_only_with_follow_on_runtime_hold ... ok
+test snowdensity02_contract_ratifies_opt_in_physics_bulk_envelope ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/integration/snowdensity03_physics_bulk_offline_contract.rs (target/llvm-cov-target/debug/deps/snowdensity03_physics_bulk_offline_contract-80113205c1237d15)
+
+running 2 tests
+test physics_bulk_runtime_mentions_are_confined_to_authorized_opt_in_surfaces ... ok
+test physics_bulk_snowbench_runs_offline_for_snotel_fixture has been running for over 60 seconds
+test physics_bulk_snowbench_runs_offline_for_snotel_fixture ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 65.06s
+
+     Running tests/integration/snowdensity05a_melt_contract_guard.rs (target/llvm-cov-target/debug/deps/snowdensity05a_melt_contract_guard-f2b59b54f1629436)
+
+running 3 tests
+test snowdensity05a_package_closes_as_contract_only_with_follow_on_handoff ... ok
+test snowdensity05a_contract_reconciles_bmelt_signed_trace_convention ... ok
+test snowdensity05a_contract_ratifies_melt_modernization_envelope ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/integration/snowdensity05b_shortwave_source_contract.rs (target/llvm-cov-target/debug/deps/snowdensity05b_shortwave_source_contract-d7b2afe0dabe9a26)
+
+running 3 tests
+test snowdensity05b_package_closes_source_binding_without_runtime_changes ... ok
+test snowdensity05b_contract_preserves_climate_and_et_shared_authority ... ok
+test snowdensity05b_contract_binds_shortwave_source_authority ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/integration/snowdensity05c_albedo_state_core.rs (target/llvm-cov-target/debug/deps/snowdensity05c_albedo_state_core-d2d72e95f48cfb44)
+
+running 5 tests
+test snowdensity05c_brock_core_bounds_decay_and_resets ... ok
+test snowdensity05c_core_is_inactive_for_legacy_coe_default ... ok
+test snowdensity05c_core_fails_closed_when_opt_in_state_is_missing ... ok
+test snowdensity05c_package_closes_with_05d_handoff ... ok
+test snowdensity05c_contract_ratifies_albedo_state_core ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/integration/snowdensity05d_opt_in_coe_melt.rs (target/llvm-cov-target/debug/deps/snowdensity05d_opt_in_coe_melt-2d4da298a97a3549)
+
+running 4 tests
+test snowdensity05d_direct_runtime_projects_routed_melt_and_albedo_carry ... ok
+test snowdensity05d_missing_active_opt_in_albedo_state_fails_closed ... ok
+test snowdensity05d_opt_in_changes_only_shortwave_amelt_operand ... ok
+test snowdensity05d_contract_markers_bind_opt_in_melt_wiring ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/integration/snowdensity05e_melt_adjudication.rs (target/llvm-cov-target/debug/deps/snowdensity05e_melt_adjudication-f1daa27119c9bd96)
+
+running 2 tests
+test coe_melt_adjudication_tool_is_documented_as_non_activation ... ok
+test coe_melt_snowbench_runs_both_models_as_diagnostic_only has been running for over 60 seconds
+test coe_melt_snowbench_runs_both_models_as_diagnostic_only ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 150.95s
+
+     Running tests/integration/snowdensity05f_melt_closure_handoff.rs (target/llvm-cov-target/debug/deps/snowdensity05f_melt_closure_handoff-1fde8b88f5044a9a)
+
+running 3 tests
+test snowdensity05f_package_closes_with_density_handoff ... ok
+test snowdensity05f_production_default_and_cli_remain_confined ... ok
+test snowdensity05f_contract_closes_melt_without_default_activation ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/integration/snowdensity05g_harness_fidelity_rerun.rs (target/llvm-cov-target/debug/deps/snowdensity05g_harness_fidelity_rerun-ce59f50428ac5973)
+
+running 3 tests
+test snowdensity05g_package_and_source_preserve_diagnostic_confinement ... ok
+test snowdensity05g_contract_records_harness_fidelity_gate ... ok
+test snowdensity05g_coe_melt_replay_uses_configured_canopy_and_proven_shortwave has been running for over 60 seconds
+test snowdensity05g_coe_melt_replay_uses_configured_canopy_and_proven_shortwave ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 76.49s
+
+     Running tests/integration/snowdensity06_density_compaction.rs (target/llvm-cov-target/debug/deps/snowdensity06_density_compaction-9ad30f0106336d83)
+
+running 3 tests
+test density_compaction_variant_preserves_melt_and_changes_density_only ... ok
+test snowdensity06_contract_records_density_only_gate ... ok

@@ -30,13 +30,18 @@
 
 State as of `2026-07-09`:
 - `20260709-cqr-nightly-09-watershed-detachment-001/` -
-  SCAFFOLDED-CQR-NIGHTLY (2026-07-09): CQR Nightly target #9 for
+  EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-09): CQR Nightly target #9 completed
+  characterization-only CRAP/cyclomatic-complexity closure of
   `crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/01_ws22_ws23_ws26_detachment.rs`.
-  Baseline target LCOV is `193/749` lines (`25.767690253672%`), function
-  coverage is `7/52`, baseline CRAP has `4` rows above `30`, max CRAP is
-  `272.0`, total excess over `30` is `386`, and the production target starts at
-  `867` lines. Scaffold must be committed before characterization or
-  implementation edits. Package:
+  The target reduced functions above CRAP `30` from `4` to `0`; final max CRAP
+  is `16.153567674676058`, target LCOV is `1331/1373`, target region coverage is
+  `1348/1399`, and the production target remains below line-count WARN at
+  `1744` lines. Final post-review gates passed, including workspace clippy,
+  full-nextest `1587/1587` with `3` skipped, deny, package doc lint, review,
+  and verification. Full-workspace coverage/CRAP was blocked on the known
+  unrelated coverage-instrumented `laned_shadow_h2637` workspace path before
+  LCOV emission, so package closure uses the documented Phase D targeted
+  coverage/CRAP equivalent. Package:
   `20260709-cqr-nightly-09-watershed-detachment-001/`.
 - `20260709-cqr-nightly-08-runner-errors-001/` -
   EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-09): CQR Nightly target #8 completed

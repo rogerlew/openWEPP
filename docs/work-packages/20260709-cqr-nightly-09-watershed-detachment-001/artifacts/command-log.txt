@@ -1,0 +1,3 @@
+cargo_clippy|0
+cargo_nextest|0
+cargo_deny|0

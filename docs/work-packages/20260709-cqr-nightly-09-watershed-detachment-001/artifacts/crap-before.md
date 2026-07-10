@@ -2,7 +2,7 @@
 
 Evidence label: Static.
 
-Status: `SCAFFOLDED`
+Status: `EXECUTED`
 
 Source: `/tmp/openwepp-cqr-nightly-crap.json`
 

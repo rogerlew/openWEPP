@@ -1,0 +1,24 @@
+Run timestamp: 20260710T023911Z
+Package: 20260709-cqr-nightly-09-watershed-detachment-001
+Target: crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/01_ws22_ws23_ws26_detachment.rs
+Mode: final_refresh
+Verdict: PASS
+
+Clippy:
+  exit_code=0
+  status=PASS
+
+Nextest Full:
+  exit_code=0
+  status=PASS
+
+Cargo Deny Check:
+  exit_code=0
+  status=PASS
+
+Command log artifacts:
+- final_refresh_clippy.log
+- final_refresh_nextest_full.log
+- final_refresh_deny_check.log
+
+Blocker: none

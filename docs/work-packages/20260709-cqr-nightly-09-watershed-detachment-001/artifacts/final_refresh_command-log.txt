@@ -1,0 +1,27 @@
+[GATE clippy]
+command=cargo clippy --workspace --all-targets -- -D warnings
+log=final_refresh_clippy.log
+start=2026-07-10T02:39:11Z
+end=2026-07-10T02:39:18Z
+exit_code=0
+status=PASS
+summary=    Finished `dev` profile [unoptimized + debuginfo] target(s) in 5.80s
+
+[GATE nextest_full]
+command=cargo nextest run --workspace --profile full
+log=final_refresh_nextest_full.log
+start=2026-07-10T02:39:18Z
+end=2026-07-10T02:49:30Z
+exit_code=0
+status=PASS
+summary=        SLOW [> 90.000s] (─────────) openwepp-hillslope-orchestrator ofe_routing::iwagaki_oracle::tests::characteristics_fan_cross_validates_upwind_reference         SLOW [> 90.000s] (─────────) openwepp-hillslope-orchestrator ofe_routing::iwagaki_oracle::tests::upwind_case4_self_convergence         SLOW [> 90.000s] (─────────) openwepp::snowdensity05e_melt_adjudication coe_melt_snowbench_runs_both_models_as_diagnostic_only ────────────      Summary [ 603.541s] 1587 tests run: 1587 passed (4 slow), 3 skipped 
+
+[GATE deny_check]
+command=cargo deny check
+log=final_refresh_deny_check.log
+start=2026-07-10T02:49:30Z
+end=2026-07-10T02:49:31Z
+exit_code=0
+status=PASS
+summary=[2026-07-10T02:49:30Z] START: cargo deny check advisories ok, bans ok, licenses ok, sources ok 
+

@@ -865,3 +865,880 @@ impl Ws10ChannelImpoundmentKernel {
     }
 
 }
+
+#[cfg(test)]
+mod ws22_ws23_ws26_detachment_tests {
+    use super::*;
+
+    fn assert_close(actual: f64, expected: f64) {
+        assert!(
+            (actual - expected).abs() <= 1e-12,
+            "actual {actual} expected {expected}"
+        );
+    }
+
+    fn ws26_test_input(crfrac: &[f64]) -> Ws26DcapInput<'_> {
+        Ws26DcapInput {
+            node_class: Ws10NodeClass::Channel,
+            flagm: 2,
+            q_cfs: 10.0,
+            sf: 0.05,
+            c1: 0.03,
+            z: 20.0,
+            effsh: 4.0,
+            depsid: 1.0,
+            wflow: 2.0,
+            roughness: 0.05,
+            crsh: 1.0,
+            excess: 0.5,
+            tb: 10.0,
+            flagt: 3,
+            chnk: 2.0,
+            nbarch: 0.04,
+            maxe: 0.2,
+            crfrac,
+        }
+    }
+
+    fn ws26_test_state(
+        class_count: usize,
+        depmid: f64,
+        werod: f64,
+        timpot: f64,
+        timsh: f64,
+        di: f64,
+    ) -> Ws26DcapLayerState {
+        Ws26DcapLayerState {
+            df: vec![0.0; class_count],
+            depmid,
+            werod,
+            timpot,
+            timsh,
+            di,
+        }
+    }
+
+    #[test]
+    fn wshedimpl20_fall_velocity_and_shdist_cover_boundaries() {
+        assert_close(
+            Ws10ChannelImpoundmentKernel::ws20_fall_velocity_ft_s(2.65, 0.0),
+            0.0,
+        );
+        assert_close(
+            Ws10ChannelImpoundmentKernel::ws20_fall_velocity_ft_s(2.65, 1.0e-5),
+            2.811_111_111_111_111_8e-5,
+        );
+        assert_close(
+            Ws10ChannelImpoundmentKernel::ws20_fall_velocity_ft_s(2.65, 1.0e-4),
+            0.003_066_666_615_362_89,
+        );
+        assert_close(
+            Ws10ChannelImpoundmentKernel::ws20_fall_velocity_ft_s(2.65, 1.0),
+            1.05,
+        );
+
+        assert_close(Ws10ChannelImpoundmentKernel::ws22_shdist(0.01), 0.065);
+        assert_close(
+            Ws10ChannelImpoundmentKernel::ws22_shdist(0.02),
+            0.129_993_398_320_733_62,
+        );
+        assert_close(
+            Ws10ChannelImpoundmentKernel::ws22_shdist(0.5),
+            1.350_044_264_997_289_5,
+        );
+
+    }
+
+    #[test]
+    fn wshedimpl30_shape_and_rectangular_fallback_characterize_guards() {
+        assert_eq!(
+            Ws10ChannelImpoundmentKernel::ws30_shape_flag_from_ishape(
+                Ws10NodeClass::Channel,
+                7,
+                1.0,
+            )
+            .expect("shape 1 should be accepted"),
+            1
+        );
+        assert_eq!(
+            Ws10ChannelImpoundmentKernel::ws30_shape_flag_from_ishape(
+                Ws10NodeClass::Channel,
+                7,
+                2.0,
+            )
+            .expect("shape 2 should be accepted"),
+            2
+        );
+        assert_eq!(
+            Ws10ChannelImpoundmentKernel::ws30_shape_flag_from_ishape(
+                Ws10NodeClass::Channel,
+                7,
+                3.0,
+            )
+            .expect("shape 3 should be accepted"),
+            3
+        );
+
+        let fractional_shape = Ws10ChannelImpoundmentKernel::ws30_shape_flag_from_ishape(
+            Ws10NodeClass::Channel,
+            7,
+            1.25,
+        )
+        .expect_err("fractional shape should fail closed");
+        assert_eq!(
+            fractional_shape.boundary_class(),
+            BoundaryClass::DomainViolation
+        );
+        assert_eq!(fractional_shape.message_id(), WS10_CHANNEL_GUARD_DOMAIN);
+
+        let out_of_range_shape = Ws10ChannelImpoundmentKernel::ws30_shape_flag_from_ishape(
+            Ws10NodeClass::Channel,
+            7,
+            4.0,
+        )
+        .expect_err("out-of-range shape should fail closed");
+        assert_eq!(
+            out_of_range_shape.boundary_class(),
+            BoundaryClass::DomainViolation
+        );
+        assert_eq!(out_of_range_shape.message_id(), WS10_CHANNEL_GUARD_DOMAIN);
+
+        assert_eq!(
+            Ws10ChannelImpoundmentKernel::ws30_apply_erodible_rectangular_fallback(3, 1.0e-4),
+            2
+        );
+        assert_eq!(
+            Ws10ChannelImpoundmentKernel::ws30_apply_erodible_rectangular_fallback(3, 2.0e-4),
+            3
+        );
+    }
+
+    #[test]
+    fn wshedimpl24_transition_rejects_nonpositive_length() {
+        let dx_error = Ws10ChannelImpoundmentKernel::ws24_case12_detach_transition_closure(
+            Ws10NodeClass::Channel,
+            1.0,
+            0.02,
+            0.03,
+            2.0,
+            1.0,
+            1.0,
+            0.5,
+            1.0,
+            0.04,
+            0.02,
+            100.0,
+            3,
+            0.1,
+            0.04,
+            &[1.0],
+            &[0.1],
+            &[0.01],
+            0.0,
+            &[0.0002],
+            &[2.65],
+        )
+        .expect_err("nonpositive transition length should fail closed");
+        assert_eq!(dx_error.boundary_class(), BoundaryClass::DomainViolation);
+        assert_eq!(dx_error.message_id(), WS10_CHANNEL_GUARD_DOMAIN);
+    }
+
+    #[test]
+    fn wshedimpl22_table_lookup_characterizes_direction_and_bounds() {
+        let col1 = [10.0, 20.0, 30.0];
+        let increasing = [0.0, 5.0, 10.0];
+        let decreasing = [10.0, 5.0, 0.0];
+
+        let increasing_mid = Ws10ChannelImpoundmentKernel::ws22_table_column2_to_column1(
+            &col1,
+            &increasing,
+            2.5,
+            true,
+        )
+        .expect("increasing table should interpolate in range");
+        let decreasing_mid = Ws10ChannelImpoundmentKernel::ws22_table_column2_to_column1(
+            &col1,
+            &decreasing,
+            7.5,
+            false,
+        )
+        .expect("decreasing table should interpolate in range");
+
+        assert!((increasing_mid - 15.0).abs() <= 1e-12);
+        assert!((decreasing_mid - 15.0).abs() <= 1e-12);
+        assert!(Ws10ChannelImpoundmentKernel::ws22_table_column2_to_column1(
+            &col1,
+            &increasing,
+            12.0,
+            true,
+        )
+        .is_none());
+        assert!(Ws10ChannelImpoundmentKernel::ws22_table_column2_to_column1(
+            &[1.0],
+            &[2.0],
+            2.0,
+            true,
+        )
+        .is_none());
+        assert!(Ws10ChannelImpoundmentKernel::ws22_table_column2_to_column1(
+            &[1.0, 2.0],
+            &[1.0],
+            1.0,
+            true,
+        )
+        .is_none());
+    }
+
+    #[test]
+    fn wshedimpl23_detach_rejects_invalid_validation_inputs() {
+        let crfrac = [1.0];
+        let gstu = [0.1];
+        let dlat = [0.01, 0.02];
+        let du = [0.01];
+        let crdia = [0.0002];
+        let crspg = [2.65];
+
+        let cardinality_error = Ws10ChannelImpoundmentKernel::ws23_detach_case4_iterative_closure(
+            Ws10NodeClass::Channel,
+            1.0,
+            0.02,
+            0.03,
+            2.0,
+            1.0,
+            1.0,
+            0.5,
+            1.0,
+            0.04,
+            0.02,
+            100.0,
+            3,
+            0.1,
+            0.04,
+            &crfrac,
+            &gstu,
+            &dlat,
+            &du,
+            10.0,
+            &crdia,
+            &crspg,
+        )
+        .expect_err("class-cardinality mismatch should fail closed");
+        assert_eq!(
+            cardinality_error.boundary_class(),
+            BoundaryClass::DomainViolation
+        );
+        assert_eq!(cardinality_error.message_id(), WS10_CHANNEL_GUARD_DOMAIN);
+
+        let dlat = [0.01];
+        let dx_error = Ws10ChannelImpoundmentKernel::ws23_detach_case4_iterative_closure(
+            Ws10NodeClass::Channel,
+            1.0,
+            0.02,
+            0.03,
+            2.0,
+            1.0,
+            1.0,
+            0.5,
+            1.0,
+            0.04,
+            0.02,
+            100.0,
+            3,
+            0.1,
+            0.04,
+            &crfrac,
+            &gstu,
+            &dlat,
+            &du,
+            0.0,
+            &crdia,
+            &crspg,
+        )
+        .expect_err("nonpositive segment length should fail closed");
+        assert_eq!(dx_error.boundary_class(), BoundaryClass::DomainViolation);
+        assert_eq!(dx_error.message_id(), WS10_CHANNEL_GUARD_DOMAIN);
+    }
+
+    #[test]
+    fn wshedimpl23_detach_case4_closure_path_is_finite() {
+        let outcome = Ws10ChannelImpoundmentKernel::ws23_detach_case4_iterative_closure(
+            Ws10NodeClass::Channel,
+            10.0,
+            0.05,
+            0.03,
+            20.0,
+            8.0,
+            1.0,
+            0.25,
+            1.0,
+            0.05,
+            0.02,
+            100.0,
+            3,
+            0.5,
+            0.04,
+            &[0.2, 0.3, 0.5],
+            &[0.05, 0.04, 0.03],
+            &[0.005, 0.004, 0.003],
+            &[0.002, 0.002, 0.002],
+            10.0,
+            &[0.0001, 0.0002, 0.0003],
+            &[2.60, 2.65, 2.65],
+        )
+        .expect("case-4 detachment closure should converge for characterized inputs");
+
+        let expected_flux = [
+            7.315_907_199_757_94,
+            10.898_860_799_636_909,
+            18.084_767_999_394_845,
+        ];
+        for (actual, expected) in outcome.next_gstu_lbs_s.iter().zip(expected_flux) {
+            assert!((*actual - expected).abs() <= 1e-12);
+        }
+        assert!((outcome.werod_ft - 8.256_153_333_081_187).abs() <= 1e-12);
+    }
+
+    #[test]
+    fn wshedimpl23_detach_case4_iterative_loop_low_shear_is_characterized() {
+        let outcome = Ws10ChannelImpoundmentKernel::ws23_detach_case4_iterative_closure(
+            Ws10NodeClass::Channel,
+            10.0,
+            0.05,
+            0.03,
+            20.0,
+            0.021,
+            1.0,
+            0.25,
+            1.0,
+            0.05,
+            0.02,
+            100.0,
+            3,
+            0.5,
+            0.04,
+            &[0.2, 0.3, 0.5],
+            &[10.0, 8.0, 6.0],
+            &[0.005, 0.004, 0.003],
+            &[0.002, 0.002, 0.002],
+            10.0,
+            &[0.0001, 0.0002, 0.0003],
+            &[2.60, 2.65, 2.65],
+        )
+        .expect("low-shear case-4 detachment should iterate to a finite outcome");
+
+        let expected_flux = [
+            0.010_271_239_667_832_036,
+            0.007_376_358_644_761_355,
+            0.006_762_460_067_254_847,
+        ];
+        for (actual, expected) in outcome.next_gstu_lbs_s.iter().zip(expected_flux) {
+            assert_close(*actual, expected);
+        }
+        assert_close(outcome.werod_ft, 1.0);
+    }
+
+    #[test]
+    fn wshedimpl23_detach_leaf_helpers_characterize_sums_and_flux_guards() {
+        let crfrac = [0.4, 0.6];
+        let gstu = [0.05, 0.04];
+        let dlat = [0.005, 0.004];
+        let du = [0.002, 0.003];
+        let crdia = [0.0001, 0.0002];
+        let crspg = [2.60, 2.65];
+        let input = Ws23DetachInput {
+            node_class: Ws10NodeClass::Channel,
+            ql_cfs: 5.0,
+            sfl: 0.04,
+            c1: 0.03,
+            z: 15.0,
+            effshl: 6.0,
+            depsid_ft: 1.0,
+            depmid_ft: 0.25,
+            wfl_ft: 1.0,
+            roughness: 0.05,
+            crsh: 0.02,
+            tb_s: 100.0,
+            flagc: 3,
+            chnk: 0.5,
+            nbarch: 0.04,
+            crfrac: &crfrac,
+            gstu_lbs_s: &gstu,
+            dlat_lbs_s_ft: &dlat,
+            du_lbs_s_ft: &du,
+            dx_ft: 10.0,
+            crdia_ft: &crdia,
+            crspg: &crspg,
+        };
+        let working = Ws10ChannelImpoundmentKernel::ws23_build_detach_working(
+            &input,
+            Ws26DcapOutcome {
+                df_lbs_s_ft2: vec![0.01, 0.02],
+                depmid_ft: 0.2,
+                werod_ft: 1.25,
+            },
+        );
+        let sums = Ws10ChannelImpoundmentKernel::ws23_detach_transport_sums(&input, &working);
+        assert!((sums.sumtcl - 0.0).abs() <= 1e-12);
+        assert!((sums.sumpld - 0.355).abs() <= 1e-12);
+        assert!((sums.sumdf - 0.03).abs() <= 1e-12);
+        assert!((sums.sumexd - -0.041).abs() <= 1e-12);
+        Ws10ChannelImpoundmentKernel::ws23_validate_detach_sums(
+            Ws10NodeClass::Channel,
+            sums.sumtcl,
+            sums.sumpld,
+        )
+        .expect("finite nonzero potential-load sum should validate");
+
+        let potential =
+            Ws10ChannelImpoundmentKernel::ws23_potential_load_outcome(&input, &working);
+        assert_eq!(potential.next_gstu_lbs_s, vec![0.16, 0.195]);
+        assert!((potential.werod_ft - 1.25).abs() <= 1e-12);
+
+        let mut final_working = working.clone();
+        final_working.tcl_lbs_s_ft = vec![0.03, 0.04];
+        let final_outcome =
+            Ws10ChannelImpoundmentKernel::ws23_final_detach_outcome(&input, &final_working)
+                .expect("nonnegative final fluxes should pass");
+        assert_eq!(final_outcome.next_gstu_lbs_s, vec![0.03, 0.04]);
+        assert!((final_outcome.werod_ft - 1.25).abs() <= 1e-12);
+
+        final_working.tcl_lbs_s_ft[0] = -0.01;
+        assert!(
+            Ws10ChannelImpoundmentKernel::ws23_final_detach_outcome(&input, &final_working)
+                .is_err()
+        );
+        assert!(Ws10ChannelImpoundmentKernel::ws23_validate_detach_sums(
+            Ws10NodeClass::Channel,
+            f64::NAN,
+            1.0,
+        )
+        .is_err());
+        assert!(Ws10ChannelImpoundmentKernel::ws23_validate_detach_sums(
+            Ws10NodeClass::Channel,
+            1.0,
+            0.0,
+        )
+        .is_err());
+    }
+
+    #[test]
+    fn wshedimpl26_dcap_characterizes_expanding_width_path() {
+        let outcome = Ws10ChannelImpoundmentKernel::ws26_dcap(
+            Ws10NodeClass::Channel,
+            2,
+            10.0,
+            0.05,
+            0.03,
+            20.0,
+            120.0,
+            1.0,
+            0.25,
+            1.0,
+            1.0,
+            0.05,
+            0.02,
+            1.0,
+            100.0,
+            3,
+            100.0,
+            0.04,
+            WS22_DCAP_MAXE,
+            &[0.2, 0.3, 0.5],
+        )
+        .expect("expanding-width detachment capacity should evaluate");
+
+        let expected_df = [
+            2.633_526_687_031_146_5,
+            3.950_290_030_546_719,
+            6.583_816_717_577_865,
+        ];
+        for (actual, expected) in outcome.df_lbs_s_ft2.iter().zip(expected_df) {
+            assert!((*actual - expected).abs() <= 1e-12);
+        }
+        assert!((outcome.depmid_ft - 0.25).abs() <= 1e-12);
+        assert!((outcome.werod_ft - 14.466_284_828_287_218).abs() <= 1e-12);
+    }
+
+    #[test]
+    fn wshedimpl26_dcap_midlayer_step_characterizes_terminals_and_caps() {
+        let crfrac = [0.25, 0.75];
+        let input = ws26_test_input(&crfrac);
+
+        match Ws10ChannelImpoundmentKernel::ws26_dcap_midlayer_step(
+            &input,
+            ws26_test_state(crfrac.len(), 0.0, 0.0, 0.0, 2.0, 0.0),
+        )
+        .expect("empty midlayer should continue to width step")
+        {
+            Ws26DcapLayerStep::Continue(state) => {
+                assert_close(state.depmid, 0.0);
+                assert_close(state.werod, 0.0);
+            }
+            Ws26DcapLayerStep::Complete(_) => panic!("empty midlayer should not complete"),
+        }
+
+        let low_shear_input = Ws26DcapInput {
+            effsh: 1.0,
+            crsh: 2.0,
+            ..input
+        };
+        match Ws10ChannelImpoundmentKernel::ws26_dcap_midlayer_step(
+            &low_shear_input,
+            ws26_test_state(crfrac.len(), 0.25, 0.0, 0.0, 2.0, 0.0),
+        )
+        .expect("negative shear difference should complete without detachment")
+        {
+            Ws26DcapLayerStep::Complete(outcome) => {
+                assert_eq!(outcome.df_lbs_s_ft2, vec![0.0, 0.0]);
+                assert_close(outcome.depmid_ft, 0.25);
+                assert_close(outcome.werod_ft, 2.0);
+            }
+            Ws26DcapLayerStep::Continue(_) => panic!("negative shear difference should complete"),
+        }
+
+        let zero_di_input = Ws26DcapInput {
+            excess: 0.0,
+            ..input
+        };
+        match Ws10ChannelImpoundmentKernel::ws26_dcap_midlayer_step(
+            &zero_di_input,
+            ws26_test_state(crfrac.len(), 0.25, 0.0, 0.0, 2.0, 0.0),
+        )
+        .expect("zero excess should complete without detachment")
+        {
+            Ws26DcapLayerStep::Complete(outcome) => {
+                assert_eq!(outcome.df_lbs_s_ft2, vec![0.0, 0.0]);
+                assert_close(outcome.depmid_ft, 0.25);
+                assert_close(outcome.werod_ft, 2.0);
+            }
+            Ws26DcapLayerStep::Continue(_) => panic!("zero excess should complete"),
+        }
+
+        match Ws10ChannelImpoundmentKernel::ws26_dcap_midlayer_step(
+            &input,
+            ws26_test_state(crfrac.len(), 0.01, 0.0, 0.0, 2.0, 0.0),
+        )
+        .expect("sub-timestep detachment should continue")
+        {
+            Ws26DcapLayerStep::Continue(state) => {
+                assert_close(state.di, 3.0);
+                assert_close(state.timpot, 0.32);
+                assert_close(state.werod, 2.0);
+            }
+            Ws26DcapLayerStep::Complete(_) => panic!("sub-timestep detachment should continue"),
+        }
+
+        match Ws10ChannelImpoundmentKernel::ws26_dcap_midlayer_step(
+            &input,
+            ws26_test_state(crfrac.len(), 0.1, 0.0, 0.0, 2.0, 0.0),
+        )
+        .expect("capped complete detachment should evaluate")
+        {
+            Ws26DcapLayerStep::Complete(outcome) => {
+                assert_close(outcome.df_lbs_s_ft2[0], 0.05);
+                assert_close(outcome.df_lbs_s_ft2[1], 0.15);
+                assert_close(outcome.depmid_ft, 0.079_166_666_666_666_68);
+                assert_close(outcome.werod_ft, 2.0);
+            }
+            Ws26DcapLayerStep::Continue(_) => panic!("capped detachment should complete"),
+        }
+
+        let uncapped_input = Ws26DcapInput {
+            flagm: 1,
+            maxe: WS22_DCAP_MAXE,
+            ..input
+        };
+        match Ws10ChannelImpoundmentKernel::ws26_dcap_midlayer_step(
+            &uncapped_input,
+            ws26_test_state(crfrac.len(), 0.065, 0.0, 0.0, 2.0, 0.0),
+        )
+        .expect("depleted layer should clamp to zero")
+        {
+            Ws26DcapLayerStep::Complete(outcome) => {
+                assert_close(outcome.df_lbs_s_ft2[0], 0.15);
+                assert_close(outcome.df_lbs_s_ft2[1], 0.45);
+                assert_close(outcome.depmid_ft, 0.0);
+                assert_close(outcome.werod_ft, 2.0);
+            }
+            Ws26DcapLayerStep::Continue(_) => panic!("depleted layer should complete"),
+        }
+    }
+
+    #[test]
+    fn wshedimpl26_dcap_expanding_width_characterizes_terminal_and_cap_paths() {
+        let crfrac = [0.2, 0.3, 0.5];
+        let input = Ws26DcapInput {
+            node_class: Ws10NodeClass::Channel,
+            flagm: 2,
+            q_cfs: 10.0,
+            sf: 0.05,
+            c1: 0.03,
+            z: 20.0,
+            effsh: 120.0,
+            depsid: 1.0,
+            wflow: 1.0,
+            roughness: 0.05,
+            crsh: 0.02,
+            excess: 1.0,
+            tb: 100.0,
+            flagt: 3,
+            chnk: 100.0,
+            nbarch: 0.04,
+            maxe: 0.1,
+            crfrac: &crfrac,
+        };
+        let state = Ws26DcapLayerState {
+            df: vec![0.0, 0.0, 0.0],
+            depmid: 0.25,
+            werod: 1.0,
+            timpot: 0.0,
+            timsh: 0.0,
+            di: 0.0,
+        };
+        let ab = input.q_cfs * input.roughness / (1.49 * input.sf.sqrt());
+
+        let capped = Ws10ChannelImpoundmentKernel::ws26_dcap_expanding_width_outcome(
+            &input,
+            state.clone(),
+            100.0,
+            ab,
+            100.0,
+        )
+        .expect("capped expanding-width path should evaluate");
+        assert_close(capped.df_lbs_s_ft2[0], 0.02);
+        assert_close(capped.df_lbs_s_ft2[1], 0.03);
+        assert_close(capped.df_lbs_s_ft2[2], 0.05);
+        assert_close(capped.df_lbs_s_ft2.iter().sum::<f64>(), 0.1);
+        assert!(capped.werod_ft > state.werod);
+
+        let low_ad_input = Ws26DcapInput {
+            crsh: 1.0e9,
+            ..input
+        };
+        let low_ad = Ws10ChannelImpoundmentKernel::ws26_dcap_expanding_width_outcome(
+            &low_ad_input,
+            state.clone(),
+            100.0,
+            ab,
+            100.0,
+        )
+        .expect("low ad should return the incoming layer state");
+        assert_eq!(low_ad.df_lbs_s_ft2, vec![0.0, 0.0, 0.0]);
+        assert_close(low_ad.depmid_ft, 0.25);
+        assert_close(low_ad.werod_ft, 1.0);
+
+        let wide_state = Ws26DcapLayerState {
+            werod: 100.0,
+            ..state
+        };
+        let already_wide = Ws10ChannelImpoundmentKernel::ws26_dcap_expanding_width_outcome(
+            &input, wide_state, 100.0, ab, 100.0,
+        )
+        .expect("already-wide layer should return without widening");
+        assert_eq!(already_wide.df_lbs_s_ft2, vec![0.0, 0.0, 0.0]);
+        assert_close(already_wide.depmid_ft, 0.25);
+        assert_close(already_wide.werod_ft, 100.0);
+    }
+
+    #[test]
+    fn wshedimpl26_dcap_low_width_shear_outcome_characterizes_terminals() {
+        let crfrac = [0.4, 0.6];
+        let input = Ws26DcapInput {
+            node_class: Ws10NodeClass::Channel,
+            flagm: 2,
+            q_cfs: 10.0,
+            sf: 0.05,
+            c1: 0.03,
+            z: 20.0,
+            effsh: 1.0,
+            depsid: 1.0,
+            wflow: 1.0,
+            roughness: 0.05,
+            crsh: 2.0,
+            excess: 1.0,
+            tb: 100.0,
+            flagt: 3,
+            chnk: 0.5,
+            nbarch: 0.04,
+            maxe: WS22_DCAP_MAXE,
+            crfrac: &crfrac,
+        };
+
+        let outcome = Ws10ChannelImpoundmentKernel::ws26_dcap_low_width_shear_outcome(
+            &input,
+            Ws26DcapLayerState {
+                df: vec![0.0, 0.0],
+                depmid: 1.0,
+                werod: 1.0,
+                timpot: 2.0,
+                timsh: 10.0,
+                di: 0.5,
+            },
+        );
+        assert!((outcome.df_lbs_s_ft2[0] - 0.004).abs() <= 1e-12);
+        assert!((outcome.df_lbs_s_ft2[1] - 0.006).abs() <= 1e-12);
+        assert!((outcome.df_lbs_s_ft2.iter().sum::<f64>() - 0.01).abs() <= 1e-12);
+        assert!((outcome.depmid_ft - 1.0).abs() <= 1e-12);
+        assert!((outcome.werod_ft - 1.0).abs() <= 1e-12);
+
+        let empty_depmid = Ws10ChannelImpoundmentKernel::ws26_dcap_low_width_shear_outcome(
+            &input,
+            Ws26DcapLayerState {
+                df: vec![0.0, 0.0],
+                depmid: 0.0,
+                werod: 1.0,
+                timpot: 2.0,
+                timsh: 10.0,
+                di: 0.5,
+            },
+        );
+        assert_eq!(empty_depmid.df_lbs_s_ft2, vec![0.0, 0.0]);
+
+        let no_detachment = Ws10ChannelImpoundmentKernel::ws26_dcap_low_width_shear_outcome(
+            &input,
+            Ws26DcapLayerState {
+                df: vec![0.0, 0.0],
+                depmid: 1.0,
+                werod: 1.0,
+                timpot: 2.0,
+                timsh: 10.0,
+                di: 0.0,
+            },
+        );
+        assert_eq!(no_detachment.df_lbs_s_ft2, vec![0.0, 0.0]);
+
+        let capped_input = Ws26DcapInput {
+            maxe: 0.005,
+            ..input
+        };
+        let capped = Ws10ChannelImpoundmentKernel::ws26_dcap_low_width_shear_outcome(
+            &capped_input,
+            Ws26DcapLayerState {
+                df: vec![0.0, 0.0],
+                depmid: 1.0,
+                werod: 1.0,
+                timpot: 2.0,
+                timsh: 10.0,
+                di: 0.5,
+            },
+        );
+        assert_close(capped.df_lbs_s_ft2[0], 0.002);
+        assert_close(capped.df_lbs_s_ft2[1], 0.003);
+        assert_close(capped.df_lbs_s_ft2.iter().sum::<f64>(), 0.005);
+    }
+
+    #[test]
+    fn wshedimpl23_detach_start_and_iteration_helpers_cover_terminals() {
+        let complete_crfrac = [1.0];
+        let complete_gstu = [0.0];
+        let complete_dlat = [0.0];
+        let complete_du = [0.0];
+        let complete_crdia = [0.0002];
+        let complete_crspg = [2.65];
+        let complete_input = Ws23DetachInput {
+            node_class: Ws10NodeClass::Channel,
+            ql_cfs: 1.0,
+            sfl: 0.02,
+            c1: 0.03,
+            z: 2.0,
+            effshl: 0.01,
+            depsid_ft: 1.0,
+            depmid_ft: 0.25,
+            wfl_ft: 1.0,
+            roughness: 0.04,
+            crsh: 0.02,
+            tb_s: 100.0,
+            flagc: 3,
+            chnk: 0.1,
+            nbarch: 0.04,
+            crfrac: &complete_crfrac,
+            gstu_lbs_s: &complete_gstu,
+            dlat_lbs_s_ft: &complete_dlat,
+            du_lbs_s_ft: &complete_du,
+            dx_ft: 10.0,
+            crdia_ft: &complete_crdia,
+            crspg: &complete_crspg,
+        };
+        match Ws10ChannelImpoundmentKernel::ws23_initial_detach_working(&complete_input)
+            .expect("zero-load initial detach should evaluate")
+        {
+            Ws23DetachStart::Complete(outcome) => {
+                assert_eq!(outcome.next_gstu_lbs_s, vec![0.0]);
+                assert_close(outcome.werod_ft, 1.0);
+            }
+            Ws23DetachStart::Iterate(_) => panic!("zero-load initial detach should complete"),
+        }
+
+        let crfrac = [0.2, 0.3, 0.5];
+        let gstu = [10.0, 8.0, 6.0];
+        let dlat = [0.005, 0.004, 0.003];
+        let du = [0.002, 0.002, 0.002];
+        let crdia = [0.0001, 0.0002, 0.0003];
+        let crspg = [2.60, 2.65, 2.65];
+        let iterate_input = Ws23DetachInput {
+            node_class: Ws10NodeClass::Channel,
+            ql_cfs: 10.0,
+            sfl: 0.05,
+            c1: 0.03,
+            z: 20.0,
+            effshl: 0.021,
+            depsid_ft: 1.0,
+            depmid_ft: 0.25,
+            wfl_ft: 1.0,
+            roughness: 0.05,
+            crsh: 0.02,
+            tb_s: 100.0,
+            flagc: 3,
+            chnk: 0.5,
+            nbarch: 0.04,
+            crfrac: &crfrac,
+            gstu_lbs_s: &gstu,
+            dlat_lbs_s_ft: &dlat,
+            du_lbs_s_ft: &du,
+            dx_ft: 10.0,
+            crdia_ft: &crdia,
+            crspg: &crspg,
+        };
+        match Ws10ChannelImpoundmentKernel::ws23_initial_detach_working(&iterate_input)
+            .expect("loaded initial detach should evaluate")
+        {
+            Ws23DetachStart::Iterate(working) => {
+                let sums =
+                    Ws10ChannelImpoundmentKernel::ws23_detach_transport_sums(&iterate_input, &working);
+                assert!(sums.sumtcl > 0.0);
+                assert!(sums.sumpld > 0.0);
+            }
+            Ws23DetachStart::Complete(_) => panic!("loaded initial detach should iterate"),
+        }
+
+        let iteration =
+            Ws10ChannelImpoundmentKernel::ws23_detach_iteration_working(&iterate_input, 1.0)
+                .expect("iteration helper should evaluate");
+        let sums =
+            Ws10ChannelImpoundmentKernel::ws23_detach_transport_sums(&iterate_input, &iteration);
+        assert!(sums.sumtcl.is_finite());
+        assert!(sums.sumpld.is_finite());
+        assert!(sums.sumdf > 0.0);
+        assert!(iteration.tcl_lbs_s_ft.iter().all(|value| value.is_finite()));
+    }
+
+    #[test]
+    fn wshedimpl27_enddet_bracket_characterizes_iteration_cap() {
+        let mut potld_case4 = [0.0];
+        let mut tcl_case4 = [0.0];
+        let progress = Ws10ChannelImpoundmentKernel::ws27_case4_enddet_bracket_closure(
+            0.0,
+            10.0,
+            1.0,
+            10.0,
+            &[0.0],
+            &[0.0],
+            &[0.0],
+            &mut potld_case4,
+            &mut tcl_case4,
+            |_| vec![0.0],
+        );
+        assert_eq!(progress.iteration_count, 4);
+        assert!(progress.used_xdbig_rebracket);
+    }
+}
