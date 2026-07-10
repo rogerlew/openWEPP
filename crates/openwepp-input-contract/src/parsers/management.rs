@@ -1242,6 +1242,38 @@ fn yaml_one_based_to_zero_based(
         .ok_or(ManagementParseError::InvalidCount { field, value: 0 })
 }
 
+#[derive(Debug)]
+struct ParsedManagementHeader {
+    datver: String,
+    topology_count: usize,
+    declared_total_years: usize,
+    datver_family: DatverFamily,
+}
+
+#[derive(Debug)]
+struct ParsedManagementSections {
+    counts: ManagementSectionCounts,
+    plants: Vec<PlantScenario>,
+    operations: Vec<OperationScenario>,
+    initials: Vec<InitialScenario>,
+    surfaces: Vec<SurfaceScenario>,
+    contours: Vec<ContourScenario>,
+    drains: Vec<DrainScenario>,
+    yearlies: Vec<YearlyScenario>,
+}
+
+#[derive(Debug)]
+struct ParsedManagementMeta {
+    name: String,
+    description: [String; 3],
+}
+
+#[derive(Debug)]
+struct ParsedManagementSchedule {
+    nofes: usize,
+    schedule: ManagementSchedule,
+}
+
 pub fn parse_management_from_str(
     input: &str,
     mode: ParseMode,
@@ -1249,50 +1281,99 @@ pub fn parse_management_from_str(
     let lines = normalize_lines(input);
     let mut cursor = Cursor::new(lines.as_slice(), mode);
 
+    let header = parse_management_header(&mut cursor)?;
+    let sections = parse_management_sections(&mut cursor, header.datver_family)?;
+    let meta = parse_management_meta(&mut cursor)?;
+    let parsed_schedule = parse_management_schedule(
+        &mut cursor,
+        header.topology_count,
+        header.declared_total_years,
+        &sections.counts,
+    )?;
+
+    validate_cross_section_references(
+        &sections.counts,
+        &sections.plants,
+        &sections.operations,
+        &sections.initials,
+        &sections.surfaces,
+        &sections.yearlies,
+        mode,
+    )?;
+
+    if let Some(first_unconsumed_line) = cursor.first_unconsumed_line_number() {
+        return Err(ManagementParseError::TrailingInput {
+            first_unconsumed_line,
+        });
+    }
+
+    Ok(ManagementParseOutput {
+        datver: header.datver,
+        topology_count: header.topology_count,
+        declared_total_years: header.declared_total_years,
+        section_counts: sections.counts,
+        registries: ManagementScenarioRegistries {
+            plants: sections.plants,
+            operations: sections.operations,
+            initials: sections.initials,
+            surfaces: sections.surfaces,
+            contours: sections.contours,
+            drains: sections.drains,
+            yearlies: sections.yearlies,
+            management_meta: ManagementSectionMeta {
+                name: meta.name,
+                description: meta.description,
+                nofes: parsed_schedule.nofes,
+            },
+        },
+        schedule: parsed_schedule.schedule,
+    })
+}
+
+fn parse_management_header(
+    cursor: &mut Cursor<'_>,
+) -> Result<ParsedManagementHeader, ManagementParseError> {
     let datver_raw = cursor.next_required("datver")?;
     let datver = cursor.parse_token("datver", datver_raw)?;
     if !ALLOWED_DATVERS.contains(&datver.as_str()) {
         return Err(ManagementParseError::UnsupportedDatver { datver });
     }
 
-    let topology_count = cursor.parse_non_negative_required("nofe_or_nchan")?;
-    if topology_count == 0 {
-        return Err(ManagementParseError::InvalidCount {
-            field: "nofe_or_nchan",
-            value: 0,
-        });
-    }
+    let topology_count = parse_positive_required(cursor, "nofe_or_nchan")?;
+    let declared_total_years = parse_positive_required(cursor, "total_years")?;
 
-    let declared_total_years = cursor.parse_non_negative_required("total_years")?;
-    if declared_total_years == 0 {
-        return Err(ManagementParseError::InvalidCount {
-            field: "total_years",
-            value: 0,
-        });
-    }
+    Ok(ParsedManagementHeader {
+        datver_family: datver_family(&datver),
+        datver,
+        topology_count,
+        declared_total_years,
+    })
+}
 
-    let datver_family = datver_family(&datver);
-
+fn parse_management_sections(
+    cursor: &mut Cursor<'_>,
+    datver_family: DatverFamily,
+) -> Result<ParsedManagementSections, ManagementParseError> {
     let ncrop = cursor.parse_non_negative_required("ncrop")?;
-    let plants = parse_plant_section(&mut cursor, ncrop, datver_family)?;
+    let plants = parse_plant_section(cursor, ncrop, datver_family)?;
 
     let nop = cursor.parse_non_negative_required("nop")?;
-    let operations = parse_operation_section(&mut cursor, nop, datver_family)?;
+    let operations = parse_operation_section(cursor, nop, datver_family)?;
 
     let nini = cursor.parse_non_negative_required("nini")?;
-    let initials = parse_initial_section(&mut cursor, nini, datver_family)?;
+    let initials = parse_initial_section(cursor, nini, datver_family)?;
 
     let nseq = cursor.parse_non_negative_required("nseq")?;
-    let surfaces = parse_surface_section(&mut cursor, nseq, datver_family)?;
+    let surfaces = parse_surface_section(cursor, nseq, datver_family)?;
 
     let ncnt = cursor.parse_non_negative_required("ncnt")?;
-    let contours = parse_contour_section(&mut cursor, ncnt, datver_family)?;
+    let contours = parse_contour_section(cursor, ncnt, datver_family)?;
 
     let ndrain = cursor.parse_non_negative_required("ndrain")?;
-    let drains = parse_drain_section(&mut cursor, ndrain, datver_family)?;
+    let drains = parse_drain_section(cursor, ndrain, datver_family)?;
 
     let nscen = cursor.parse_non_negative_required("nscen")?;
-    let yearlies = parse_yearly_section(&mut cursor, nscen, datver_family)?;
+    let yearlies = parse_yearly_section(cursor, nscen, datver_family)?;
 
     let section_counts = ManagementSectionCounts {
         ncrop,
@@ -1304,13 +1385,37 @@ pub fn parse_management_from_str(
         nscen,
     };
 
-    let management_name = cursor.next_required("man_name")?.to_string();
-    let management_description = [
-        cursor.next_required("man_desc_1")?.to_string(),
-        cursor.next_required("man_desc_2")?.to_string(),
-        cursor.next_required("man_desc_3")?.to_string(),
-    ];
+    Ok(ParsedManagementSections {
+        counts: section_counts,
+        plants,
+        operations,
+        initials,
+        surfaces,
+        contours,
+        drains,
+        yearlies,
+    })
+}
 
+fn parse_management_meta(
+    cursor: &mut Cursor<'_>,
+) -> Result<ParsedManagementMeta, ManagementParseError> {
+    Ok(ParsedManagementMeta {
+        name: cursor.next_required("man_name")?.to_string(),
+        description: [
+            cursor.next_required("man_desc_1")?.to_string(),
+            cursor.next_required("man_desc_2")?.to_string(),
+            cursor.next_required("man_desc_3")?.to_string(),
+        ],
+    })
+}
+
+fn parse_management_schedule(
+    cursor: &mut Cursor<'_>,
+    topology_count: usize,
+    declared_total_years: usize,
+    section_counts: &ManagementSectionCounts,
+) -> Result<ParsedManagementSchedule, ManagementParseError> {
     let nofes = cursor.parse_non_negative_required("nofes")?;
     if nofes != topology_count {
         return Err(ManagementParseError::DanglingScenarioReference {
@@ -1327,21 +1432,8 @@ pub fn parse_management_from_str(
         ofe_initial_refs.push(ofe_ref);
     }
 
-    let rotation_repeats = cursor.parse_non_negative_required("nrots")?;
-    if rotation_repeats == 0 {
-        return Err(ManagementParseError::InvalidCount {
-            field: "nrots",
-            value: 0,
-        });
-    }
-
-    let rotation_years = cursor.parse_non_negative_required("nyears")?;
-    if rotation_years == 0 {
-        return Err(ManagementParseError::InvalidCount {
-            field: "nyears",
-            value: 0,
-        });
-    }
+    let rotation_repeats = parse_positive_required(cursor, "nrots")?;
+    let rotation_years = parse_positive_required(cursor, "nyears")?;
 
     let derived_total_years = rotation_repeats.saturating_mul(rotation_years);
     if declared_total_years != derived_total_years {
@@ -1374,41 +1466,8 @@ pub fn parse_management_from_str(
         }
     }
 
-    validate_cross_section_references(
-        &section_counts,
-        &plants,
-        &operations,
-        &initials,
-        &surfaces,
-        &yearlies,
-        mode,
-    )?;
-
-    if let Some(first_unconsumed_line) = cursor.first_unconsumed_line_number() {
-        return Err(ManagementParseError::TrailingInput {
-            first_unconsumed_line,
-        });
-    }
-
-    Ok(ManagementParseOutput {
-        datver,
-        topology_count,
-        declared_total_years,
-        section_counts,
-        registries: ManagementScenarioRegistries {
-            plants,
-            operations,
-            initials,
-            surfaces,
-            contours,
-            drains,
-            yearlies,
-            management_meta: ManagementSectionMeta {
-                name: management_name,
-                description: management_description,
-                nofes,
-            },
-        },
+    Ok(ParsedManagementSchedule {
+        nofes,
         schedule: ManagementSchedule {
             ofe_initial_refs,
             rotation_repeats,
@@ -1416,6 +1475,17 @@ pub fn parse_management_from_str(
             slots,
         },
     })
+}
+
+fn parse_positive_required(
+    cursor: &mut Cursor<'_>,
+    field: &'static str,
+) -> Result<usize, ManagementParseError> {
+    let value = cursor.parse_non_negative_required(field)?;
+    if value == 0 {
+        return Err(ManagementParseError::InvalidCount { field, value: 0 });
+    }
+    Ok(value)
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -1666,129 +1736,188 @@ fn parse_operation_section(
     datver_family: DatverFamily,
 ) -> Result<Vec<OperationScenario>, ManagementParseError> {
     let pcode_family = datver_family.legacy_option_family();
-    let mut scenarios = Vec::with_capacity(count);
-    for _ in 0..count {
-        let meta = parse_scenario_meta(cursor, "operation")?;
-        forest_section_not_applicable_guard(datver_family, meta.landuse, "operation")?;
-        if meta.landuse == 2 {
-            return Err(ManagementParseError::UnsupportedLanduse {
-                section: "operation",
-                landuse: meta.landuse,
-            });
-        }
-        if !cropland_landuse_allowed(datver_family, meta.landuse) {
-            return Err(ManagementParseError::InvalidOptionDomain {
-                field: "iop",
-                value: i64::try_from(meta.landuse).unwrap_or(i64::MAX),
-                allowed: cropland_allowed_label(datver_family),
-            });
-        }
+    (0..count)
+        .map(|_| parse_operation_scenario(cursor, datver_family, pcode_family))
+        .collect()
+}
 
-        let mfo_tokens = cursor.parse_tokens_required("op.mfo_line")?;
-        if mfo_tokens.len() != 3 {
-            return Err(ManagementParseError::RecordArityError {
-                field: "op.mfo_line",
-                observed: mfo_tokens.len(),
-                expected: "3",
-            });
-        }
-        let mfo1 = parse_f64_token("op.mfo1", &mfo_tokens[0])?;
-        let mfo2 = parse_f64_token("op.mfo2", &mfo_tokens[1])?;
-        let numof = parse_usize_token("op.numof", &mfo_tokens[2])?;
+fn parse_operation_scenario(
+    cursor: &mut Cursor<'_>,
+    datver_family: DatverFamily,
+    pcode_family: DatverFamily,
+) -> Result<OperationScenario, ManagementParseError> {
+    let meta = parse_scenario_meta(cursor, "operation")?;
+    validate_non_forest_cropland_landuse(datver_family, meta.landuse, "operation", "iop")?;
 
-        let pcode_tokens = cursor.parse_tokens_required("op.pcode")?;
-        if pcode_tokens.is_empty() || pcode_tokens.len() > 2 {
-            return Err(ManagementParseError::RecordArityError {
-                field: "op.pcode",
-                observed: pcode_tokens.len(),
-                expected: "1 or 2",
-            });
-        }
-        let pcode = parse_usize_token("op.pcode", &pcode_tokens[0])?;
-        let valid_pcodes = match pcode_family {
-            DatverFamily::V95_7 => &[1, 2, 3, 4][..],
-            DatverFamily::V98_4 => &[1, 2, 3, 4, 10, 11, 12, 13][..],
-            DatverFamily::V2016Plus | DatverFamily::OwLanuse1 => {
-                &[1, 2, 3, 4, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19][..]
-            }
-        };
-        if !valid_pcodes.contains(&pcode) {
-            return Err(ManagementParseError::InvalidOptionDomain {
-                field: "pcode",
-                value: i64::try_from(pcode).unwrap_or(i64::MAX),
-                allowed: "datver-specific operation-code allowlist",
-            });
-        }
-        let cltpos = if pcode == 3 {
-            if pcode_tokens.len() != 2 {
-                return Err(ManagementParseError::RecordArityError {
-                    field: "op.cltpos",
-                    observed: pcode_tokens.len(),
-                    expected: "2",
-                });
-            }
-            let cltpos = parse_usize_token("op.cltpos", &pcode_tokens[1])?;
-            if cltpos != 1 && cltpos != 2 {
-                return Err(ManagementParseError::InvalidOptionDomain {
-                    field: "cltpos",
-                    value: i64::try_from(cltpos).unwrap_or(i64::MAX),
-                    allowed: "1 or 2",
-                });
-            }
-            Some(cltpos)
-        } else {
-            if pcode_tokens.len() != 1 {
-                return Err(ManagementParseError::RecordArityError {
-                    field: "op.pcode",
-                    observed: pcode_tokens.len(),
-                    expected: "1",
-                });
-            }
-            None
-        };
+    let (mfo1, mfo2, numof) = parse_operation_mfo_line(cursor)?;
+    let (pcode, cltpos) = parse_operation_code(cursor, pcode_family)?;
+    let effect_line = parse_operation_effect_line(cursor)?;
+    let extension_lines = parse_operation_extension_lines(cursor, pcode)?;
 
-        let effect_tokens = cursor.parse_tokens_required("op.effect_line")?;
-        if effect_tokens.len() != 7 && effect_tokens.len() != 9 {
-            return Err(ManagementParseError::RecordArityError {
-                field: "op.effect_line",
-                observed: effect_tokens.len(),
-                expected: "7 or 9",
-            });
-        }
-        let mut effect_line = Vec::with_capacity(effect_tokens.len());
-        for token in &effect_tokens {
-            effect_line.push(parse_f64_token("op.effect_line", token)?);
-        }
+    Ok(OperationScenario {
+        meta,
+        data: OperationScenarioData::Cropland(OperationCroplandData {
+            mfo1,
+            mfo2,
+            numof,
+            pcode,
+            cltpos,
+            effect_line,
+            extension_lines,
+        }),
+    })
+}
 
-        let mut extension_lines = Vec::new();
-        match pcode {
-            10 | 12 | 15 | 18 | 19 => {
-                extension_lines.push(cursor.next_required("op.ext_line_1")?.to_string());
-                let token_count = extension_lines[0].split_whitespace().count();
-                if token_count < 2 {
-                    extension_lines.push(cursor.next_required("op.ext_line_2")?.to_string());
-                }
-            }
-            11 | 13 | 14 => {
-                extension_lines.push(cursor.next_required("op.ext_line_1")?.to_string());
-            }
-            _ => {}
-        }
-
-        scenarios.push(OperationScenario {
-            meta,
-            data: OperationScenarioData::Cropland(OperationCroplandData {
-                mfo1,
-                mfo2,
-                numof,
-                pcode,
-                cltpos,
-                effect_line,
-                extension_lines,
-            }),
+fn validate_non_forest_cropland_landuse(
+    datver_family: DatverFamily,
+    landuse: usize,
+    section: &'static str,
+    option_field: &'static str,
+) -> Result<(), ManagementParseError> {
+    forest_section_not_applicable_guard(datver_family, landuse, section)?;
+    if landuse == 2 {
+        return Err(ManagementParseError::UnsupportedLanduse { section, landuse });
+    }
+    if !cropland_landuse_allowed(datver_family, landuse) {
+        return Err(ManagementParseError::InvalidOptionDomain {
+            field: option_field,
+            value: i64::try_from(landuse).unwrap_or(i64::MAX),
+            allowed: cropland_allowed_label(datver_family),
         });
     }
-    Ok(scenarios)
+    Ok(())
+}
+
+fn parse_operation_mfo_line(
+    cursor: &mut Cursor<'_>,
+) -> Result<(f64, f64, usize), ManagementParseError> {
+    let tokens = cursor.parse_tokens_required("op.mfo_line")?;
+    if tokens.len() != 3 {
+        return Err(ManagementParseError::RecordArityError {
+            field: "op.mfo_line",
+            observed: tokens.len(),
+            expected: "3",
+        });
+    }
+    Ok((
+        parse_f64_token("op.mfo1", &tokens[0])?,
+        parse_f64_token("op.mfo2", &tokens[1])?,
+        parse_usize_token("op.numof", &tokens[2])?,
+    ))
+}
+
+fn parse_operation_code(
+    cursor: &mut Cursor<'_>,
+    pcode_family: DatverFamily,
+) -> Result<(usize, Option<usize>), ManagementParseError> {
+    let tokens = cursor.parse_tokens_required("op.pcode")?;
+    if tokens.is_empty() || tokens.len() > 2 {
+        return Err(ManagementParseError::RecordArityError {
+            field: "op.pcode",
+            observed: tokens.len(),
+            expected: "1 or 2",
+        });
+    }
+
+    let pcode = parse_usize_token("op.pcode", &tokens[0])?;
+    validate_operation_pcode(pcode_family, pcode)?;
+    Ok((pcode, parse_operation_cltpos(pcode, &tokens)?))
+}
+
+fn validate_operation_pcode(
+    pcode_family: DatverFamily,
+    pcode: usize,
+) -> Result<(), ManagementParseError> {
+    let valid_pcodes = match pcode_family {
+        DatverFamily::V95_7 => &[1, 2, 3, 4][..],
+        DatverFamily::V98_4 => &[1, 2, 3, 4, 10, 11, 12, 13][..],
+        DatverFamily::V2016Plus | DatverFamily::OwLanuse1 => {
+            &[1, 2, 3, 4, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19][..]
+        }
+    };
+    if !valid_pcodes.contains(&pcode) {
+        return Err(ManagementParseError::InvalidOptionDomain {
+            field: "pcode",
+            value: i64::try_from(pcode).unwrap_or(i64::MAX),
+            allowed: "datver-specific operation-code allowlist",
+        });
+    }
+    Ok(())
+}
+
+fn parse_operation_cltpos(
+    pcode: usize,
+    tokens: &[String],
+) -> Result<Option<usize>, ManagementParseError> {
+    if pcode != 3 {
+        if tokens.len() != 1 {
+            return Err(ManagementParseError::RecordArityError {
+                field: "op.pcode",
+                observed: tokens.len(),
+                expected: "1",
+            });
+        }
+        return Ok(None);
+    }
+
+    if tokens.len() != 2 {
+        return Err(ManagementParseError::RecordArityError {
+            field: "op.cltpos",
+            observed: tokens.len(),
+            expected: "2",
+        });
+    }
+    let cltpos = parse_usize_token("op.cltpos", &tokens[1])?;
+    if cltpos != 1 && cltpos != 2 {
+        return Err(ManagementParseError::InvalidOptionDomain {
+            field: "cltpos",
+            value: i64::try_from(cltpos).unwrap_or(i64::MAX),
+            allowed: "1 or 2",
+        });
+    }
+    Ok(Some(cltpos))
+}
+
+fn parse_operation_effect_line(cursor: &mut Cursor<'_>) -> Result<Vec<f64>, ManagementParseError> {
+    let tokens = cursor.parse_tokens_required("op.effect_line")?;
+    if tokens.len() != 7 && tokens.len() != 9 {
+        return Err(ManagementParseError::RecordArityError {
+            field: "op.effect_line",
+            observed: tokens.len(),
+            expected: "7 or 9",
+        });
+    }
+    tokens
+        .iter()
+        .map(|token| parse_f64_token("op.effect_line", token))
+        .collect()
+}
+
+fn parse_operation_extension_lines(
+    cursor: &mut Cursor<'_>,
+    pcode: usize,
+) -> Result<Vec<String>, ManagementParseError> {
+    let mut lines = Vec::new();
+    if !operation_reads_extension_line(pcode) {
+        return Ok(lines);
+    }
+
+    let first = cursor.next_required("op.ext_line_1")?.to_string();
+    let needs_second =
+        operation_may_read_second_extension_line(pcode) && first.split_whitespace().count() < 2;
+    lines.push(first);
+    if needs_second {
+        lines.push(cursor.next_required("op.ext_line_2")?.to_string());
+    }
+    Ok(lines)
+}
+
+const fn operation_reads_extension_line(pcode: usize) -> bool {
+    matches!(pcode, 10 | 11 | 12 | 13 | 14 | 15 | 18 | 19)
+}
+
+const fn operation_may_read_second_extension_line(pcode: usize) -> bool {
+    matches!(pcode, 10 | 12 | 15 | 18 | 19)
 }
 
 fn parse_initial_section(
@@ -1796,88 +1925,91 @@ fn parse_initial_section(
     count: usize,
     datver_family: DatverFamily,
 ) -> Result<Vec<InitialScenario>, ManagementParseError> {
-    let mut scenarios = Vec::with_capacity(count);
-    for _ in 0..count {
-        let meta = parse_scenario_meta(cursor, "initial")?;
-        if datver_family.forest_mode_enabled() && meta.landuse == FOREST_LANUSE_SENTINEL {
-            let data = parse_initial_forest(cursor)?;
-            scenarios.push(InitialScenario {
-                meta,
-                data: InitialScenarioData::Forest(data),
-            });
-            continue;
-        }
-        if meta.landuse == 2 {
-            return Err(ManagementParseError::UnsupportedLanduse {
-                section: "initial",
-                landuse: meta.landuse,
-            });
-        }
-        if !cropland_landuse_allowed(datver_family, meta.landuse) {
-            return Err(ManagementParseError::InvalidOptionDomain {
-                field: "lanuse",
-                value: i64::try_from(meta.landuse).unwrap_or(i64::MAX),
-                allowed: cropland_allowed_label(datver_family),
-            });
-        }
+    (0..count)
+        .map(|_| parse_initial_scenario(cursor, datver_family))
+        .collect()
+}
 
-        let base_line = parse_f64_array::<6>(cursor, "ini.base_line")?;
-        let iresd = cursor.parse_non_negative_required("iresd")?;
-        let imngmt = cursor.parse_non_negative_required("imngmt")?;
-        if !(1..=3).contains(&imngmt) {
-            return Err(ManagementParseError::InvalidOptionDomain {
-                field: "imngmt",
-                value: i64::try_from(imngmt).unwrap_or(i64::MAX),
-                allowed: "1..3",
-            });
-        }
-        let residue_line = parse_f64_array::<5>(cursor, "ini.residue_line")?;
-        let rtyp = cursor.parse_non_negative_required("rtyp")?;
-        if !(1..=2).contains(&rtyp) {
-            return Err(ManagementParseError::InvalidOptionDomain {
-                field: "rtyp",
-                value: i64::try_from(rtyp).unwrap_or(i64::MAX),
-                allowed: "1..2",
-            });
-        }
-        let thaw_line = parse_f64_array::<5>(cursor, "ini.thaw_line")?;
-
-        let terminal_tokens = cursor.parse_tokens_required("ini.terminal_line")?;
-        if terminal_tokens.len() != 2 && terminal_tokens.len() != 4 {
-            return Err(ManagementParseError::RecordArityError {
-                field: "ini.terminal_line",
-                observed: terminal_tokens.len(),
-                expected: "2 or 4",
-            });
-        }
-        let terminal_line = [
-            parse_f64_token("ini.sumrtm", &terminal_tokens[0])?,
-            parse_f64_token("ini.sumsrm", &terminal_tokens[1])?,
-        ];
-        let understory_line = if terminal_tokens.len() == 4 {
-            Some([
-                parse_f64_token("ini.usinrcol", &terminal_tokens[2])?,
-                parse_f64_token("ini.usrilcol", &terminal_tokens[3])?,
-            ])
-        } else {
-            None
-        };
-
-        scenarios.push(InitialScenario {
+fn parse_initial_scenario(
+    cursor: &mut Cursor<'_>,
+    datver_family: DatverFamily,
+) -> Result<InitialScenario, ManagementParseError> {
+    let meta = parse_scenario_meta(cursor, "initial")?;
+    if datver_family.forest_mode_enabled() && meta.landuse == FOREST_LANUSE_SENTINEL {
+        return Ok(InitialScenario {
             meta,
-            data: InitialScenarioData::Cropland(InitialCroplandData {
-                base_line,
-                iresd,
-                imngmt,
-                residue_line,
-                rtyp,
-                thaw_line,
-                terminal_line,
-                understory_line,
-            }),
+            data: InitialScenarioData::Forest(parse_initial_forest(cursor)?),
         });
     }
-    Ok(scenarios)
+
+    validate_non_forest_cropland_landuse(datver_family, meta.landuse, "initial", "lanuse")?;
+    Ok(InitialScenario {
+        meta,
+        data: InitialScenarioData::Cropland(parse_initial_cropland(cursor)?),
+    })
+}
+
+fn parse_initial_cropland(
+    cursor: &mut Cursor<'_>,
+) -> Result<InitialCroplandData, ManagementParseError> {
+    let base_line = parse_f64_array::<6>(cursor, "ini.base_line")?;
+    let iresd = cursor.parse_non_negative_required("iresd")?;
+    let imngmt = cursor.parse_non_negative_required("imngmt")?;
+    if !(1..=3).contains(&imngmt) {
+        return Err(ManagementParseError::InvalidOptionDomain {
+            field: "imngmt",
+            value: i64::try_from(imngmt).unwrap_or(i64::MAX),
+            allowed: "1..3",
+        });
+    }
+    let residue_line = parse_f64_array::<5>(cursor, "ini.residue_line")?;
+    let rtyp = cursor.parse_non_negative_required("rtyp")?;
+    if !(1..=2).contains(&rtyp) {
+        return Err(ManagementParseError::InvalidOptionDomain {
+            field: "rtyp",
+            value: i64::try_from(rtyp).unwrap_or(i64::MAX),
+            allowed: "1..2",
+        });
+    }
+    let thaw_line = parse_f64_array::<5>(cursor, "ini.thaw_line")?;
+    let (terminal_line, understory_line) = parse_initial_terminal_line(cursor)?;
+
+    Ok(InitialCroplandData {
+        base_line,
+        iresd,
+        imngmt,
+        residue_line,
+        rtyp,
+        thaw_line,
+        terminal_line,
+        understory_line,
+    })
+}
+
+fn parse_initial_terminal_line(
+    cursor: &mut Cursor<'_>,
+) -> Result<([f64; 2], Option<[f64; 2]>), ManagementParseError> {
+    let tokens = cursor.parse_tokens_required("ini.terminal_line")?;
+    if tokens.len() != 2 && tokens.len() != 4 {
+        return Err(ManagementParseError::RecordArityError {
+            field: "ini.terminal_line",
+            observed: tokens.len(),
+            expected: "2 or 4",
+        });
+    }
+    let terminal_line = [
+        parse_f64_token("ini.sumrtm", &tokens[0])?,
+        parse_f64_token("ini.sumsrm", &tokens[1])?,
+    ];
+    let understory_line = if tokens.len() == 4 {
+        Some([
+            parse_f64_token("ini.usinrcol", &tokens[2])?,
+            parse_f64_token("ini.usrilcol", &tokens[3])?,
+        ])
+    } else {
+        None
+    };
+    Ok((terminal_line, understory_line))
 }
 
 /// Parse the openWEPP-native forest initial-condition block (`ow-lanuse-1`).
@@ -1941,20 +2073,7 @@ fn parse_surface_section(
     let mut scenarios = Vec::with_capacity(count);
     for _ in 0..count {
         let meta = parse_scenario_meta(cursor, "surface")?;
-        forest_section_not_applicable_guard(datver_family, meta.landuse, "surface")?;
-        if meta.landuse == 2 {
-            return Err(ManagementParseError::UnsupportedLanduse {
-                section: "surface",
-                landuse: meta.landuse,
-            });
-        }
-        if !cropland_landuse_allowed(datver_family, meta.landuse) {
-            return Err(ManagementParseError::InvalidOptionDomain {
-                field: "iseq",
-                value: i64::try_from(meta.landuse).unwrap_or(i64::MAX),
-                allowed: cropland_allowed_label(datver_family),
-            });
-        }
+        validate_non_forest_cropland_landuse(datver_family, meta.landuse, "surface", "iseq")?;
 
         let ntill = cursor.parse_non_negative_required("ntill")?;
         let mut operations = Vec::with_capacity(ntill);
@@ -1993,60 +2112,63 @@ fn parse_contour_section(
     count: usize,
     datver_family: DatverFamily,
 ) -> Result<Vec<ContourScenario>, ManagementParseError> {
-    let mut scenarios = Vec::with_capacity(count);
-    for _ in 0..count {
-        let meta = parse_scenario_meta(cursor, "contour")?;
-        forest_section_not_applicable_guard(datver_family, meta.landuse, "contour")?;
-        if meta.landuse == 2 {
-            return Err(ManagementParseError::UnsupportedLanduse {
-                section: "contour",
-                landuse: meta.landuse,
-            });
-        }
-        if !cropland_landuse_allowed(datver_family, meta.landuse) {
-            return Err(ManagementParseError::InvalidOptionDomain {
-                field: "icont",
-                value: i64::try_from(meta.landuse).unwrap_or(i64::MAX),
-                allowed: cropland_allowed_label(datver_family),
-            });
-        }
+    (0..count)
+        .map(|_| parse_contour_scenario(cursor, datver_family))
+        .collect()
+}
 
-        let tokens = cursor.parse_tokens_required("contour.values")?;
-        if tokens.len() != 4 && tokens.len() != 5 {
-            return Err(ManagementParseError::RecordArityError {
-                field: "contour.values",
-                observed: tokens.len(),
-                expected: "4 or 5",
-            });
-        }
-        if tokens.len() == 5 && datver_family.legacy_option_family() != DatverFamily::V2016Plus {
-            return Err(ManagementParseError::InvalidOptionDomain {
-                field: "contours_perm",
-                value: 1,
-                allowed: "2016.3+ datver only",
-            });
-        }
+fn parse_contour_scenario(
+    cursor: &mut Cursor<'_>,
+    datver_family: DatverFamily,
+) -> Result<ContourScenario, ManagementParseError> {
+    let meta = parse_scenario_meta(cursor, "contour")?;
+    validate_non_forest_cropland_landuse(datver_family, meta.landuse, "contour", "icont")?;
+    let (cntslp, rdghgt, rowlen, rowspc, contours_perm) =
+        parse_contour_values(cursor, datver_family)?;
+    Ok(ContourScenario {
+        meta,
+        cntslp,
+        rdghgt,
+        rowlen,
+        rowspc,
+        contours_perm,
+    })
+}
 
-        let cntslp = parse_f64_token("cntslp", &tokens[0])?;
-        let rdghgt = parse_f64_token("rdghgt", &tokens[1])?;
-        let rowlen = parse_f64_token("rowlen", &tokens[2])?;
-        let rowspc = parse_f64_token("rowspc", &tokens[3])?;
-        let contours_perm = if tokens.len() == 5 {
-            Some(parse_usize_token("contours_perm", &tokens[4])?)
-        } else {
-            None
-        };
-
-        scenarios.push(ContourScenario {
-            meta,
-            cntslp,
-            rdghgt,
-            rowlen,
-            rowspc,
-            contours_perm,
+fn parse_contour_values(
+    cursor: &mut Cursor<'_>,
+    datver_family: DatverFamily,
+) -> Result<(f64, f64, f64, f64, Option<usize>), ManagementParseError> {
+    let tokens = cursor.parse_tokens_required("contour.values")?;
+    if tokens.len() != 4 && tokens.len() != 5 {
+        return Err(ManagementParseError::RecordArityError {
+            field: "contour.values",
+            observed: tokens.len(),
+            expected: "4 or 5",
         });
     }
-    Ok(scenarios)
+    if tokens.len() == 5 && datver_family.legacy_option_family() != DatverFamily::V2016Plus {
+        return Err(ManagementParseError::InvalidOptionDomain {
+            field: "contours_perm",
+            value: 1,
+            allowed: "2016.3+ datver only",
+        });
+    }
+
+    Ok((
+        parse_f64_token("cntslp", &tokens[0])?,
+        parse_f64_token("rdghgt", &tokens[1])?,
+        parse_f64_token("rowlen", &tokens[2])?,
+        parse_f64_token("rowspc", &tokens[3])?,
+        parse_optional_contours_perm(&tokens)?,
+    ))
+}
+
+fn parse_optional_contours_perm(tokens: &[String]) -> Result<Option<usize>, ManagementParseError> {
+    if tokens.len() == 5 {
+        return Ok(Some(parse_usize_token("contours_perm", &tokens[4])?));
+    }
+    Ok(None)
 }
 
 fn parse_drain_section(
@@ -2057,20 +2179,7 @@ fn parse_drain_section(
     let mut scenarios = Vec::with_capacity(count);
     for _ in 0..count {
         let meta = parse_scenario_meta(cursor, "drain")?;
-        forest_section_not_applicable_guard(datver_family, meta.landuse, "drain")?;
-        if meta.landuse == 2 {
-            return Err(ManagementParseError::UnsupportedLanduse {
-                section: "drain",
-                landuse: meta.landuse,
-            });
-        }
-        if !cropland_landuse_allowed(datver_family, meta.landuse) {
-            return Err(ManagementParseError::InvalidOptionDomain {
-                field: "dcont",
-                value: i64::try_from(meta.landuse).unwrap_or(i64::MAX),
-                allowed: cropland_allowed_label(datver_family),
-            });
-        }
+        validate_non_forest_cropland_landuse(datver_family, meta.landuse, "drain", "dcont")?;
 
         let values = parse_f64_array::<4>(cursor, "drain.values")?;
         scenarios.push(DrainScenario {

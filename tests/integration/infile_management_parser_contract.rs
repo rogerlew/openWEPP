@@ -1,10 +1,11 @@
 use std::fs;
+use std::io;
 use std::path::{Path, PathBuf};
 
 use openwepp_input_contract::parsers::management::{
-    InitialScenarioData, ManagementParseError, ParseMode, PlantScenarioData, YearlyAnnualExtension,
-    YearlyAnnualFallowData, YearlyCroplandBranch, YearlyScenarioData, parse_management_from_path,
-    parse_management_from_str,
+    InitialScenarioData, ManagementParseError, OperationScenarioData, ParseMode, PlantScenarioData,
+    YearlyAnnualExtension, YearlyAnnualFallowData, YearlyCroplandBranch, YearlyScenarioData,
+    parse_management_from_path, parse_management_from_str,
 };
 
 fn fixture_path(name: &str) -> PathBuf {
@@ -117,6 +118,71 @@ fn strict_mode_parses_rotation_fixture_with_schedule_expansion() {
 }
 
 #[test]
+fn display_includes_contract_ids_for_error_variants() {
+    let errors = vec![
+        ManagementParseError::InputOpenError {
+            path: PathBuf::from("missing.man"),
+            source: io::Error::new(io::ErrorKind::NotFound, "not found"),
+        },
+        ManagementParseError::MissingRecord { field: "field" },
+        ManagementParseError::TokenParseError {
+            field: "field",
+            value: "abc".to_string(),
+        },
+        ManagementParseError::RecordArityError {
+            field: "field",
+            observed: 1,
+            expected: "2",
+        },
+        ManagementParseError::UnsupportedDatver {
+            datver: "99.9".to_string(),
+        },
+        ManagementParseError::InvalidCount {
+            field: "count",
+            value: -1,
+        },
+        ManagementParseError::InvalidOptionDomain {
+            field: "option",
+            value: 9,
+            allowed: "1..2",
+        },
+        ManagementParseError::UnsupportedLanduse {
+            section: "plant",
+            landuse: 2,
+        },
+        ManagementParseError::ForestSectionNotApplicable { section: "drain" },
+        ManagementParseError::DanglingScenarioReference {
+            field: "ref",
+            value: 3,
+            max_allowed: 1,
+        },
+        ManagementParseError::TotalYearMismatch {
+            declared_total_years: 3,
+            derived_total_years: 2,
+        },
+        ManagementParseError::DateDomainError {
+            field: "jdplt",
+            value: 367,
+            allowed: "1..366",
+        },
+        ManagementParseError::TrailingInput {
+            first_unconsumed_line: 42,
+        },
+        ManagementParseError::YamlInputError {
+            detail: "bad yaml".to_string(),
+        },
+    ];
+
+    for error in &errors {
+        let message = error.to_string();
+        assert!(
+            message.starts_with(error.contract_error_id()),
+            "display message should start with contract id: {message}"
+        );
+    }
+}
+
+#[test]
 fn strict_mode_accepts_supported_datver_branches() {
     for fixture in [
         "canonical_cropland_nonzero_95_7.man",
@@ -126,6 +192,174 @@ fn strict_mode_accepts_supported_datver_branches() {
     ] {
         parse_management_from_path(fixture_path(fixture), ParseMode::Strict)
             .unwrap_or_else(|err| panic!("fixture {fixture} should parse: {err}"));
+    }
+}
+
+#[test]
+fn strict_mode_parses_operation_cltpos_and_extension_lines() {
+    let cltpos_fixture = fixture_text("canonical_cropland_nonzero_98_4.man")
+        .replace("4 # pcode - other", "3 2 # pcode - cultivator position");
+    let parsed = parse_strict_fixture_text(&cltpos_fixture);
+    let OperationScenarioData::Cropland(operation) = &parsed.registries.operations[0].data;
+    assert_eq!(operation.pcode, 3);
+    assert_eq!(operation.cltpos, Some(2));
+    assert!(operation.extension_lines.is_empty());
+
+    let extension_fixture = fixture_text("canonical_cropland_nonzero_98_4.man")
+        .replace("4 # pcode - other", "10 # pcode - extension")
+        .replace(
+            "0.0250 0.7500 0.2500 0.1500 0.0120 0.1500 0.0000",
+            "0.0250 0.7500 0.2500 0.1500 0.0120 0.1500 0.0000\n0.42\n1.0 2.0",
+        );
+    let parsed = parse_strict_fixture_text(&extension_fixture);
+    let OperationScenarioData::Cropland(operation) = &parsed.registries.operations[0].data;
+    assert_eq!(operation.pcode, 10);
+    assert_eq!(
+        operation.extension_lines,
+        vec!["0.42".to_string(), "1.0 2.0".to_string()]
+    );
+}
+
+#[test]
+fn strict_mode_rejects_operation_cltpos_shape_and_domain_errors() {
+    let missing_cltpos = fixture_text("canonical_cropland_nonzero_98_4.man")
+        .replace("4 # pcode - other", "3 # pcode - missing cltpos");
+    let err = parse_management_from_str(&missing_cltpos, ParseMode::Strict)
+        .expect_err("pcode 3 must include cltpos");
+    match err {
+        ManagementParseError::RecordArityError {
+            field,
+            observed,
+            expected,
+        } => {
+            assert_eq!(field, "op.cltpos");
+            assert_eq!(observed, 1);
+            assert_eq!(expected, "2");
+            assert_eq!(err.contract_error_id(), "MAN-E-002");
+        }
+        other => panic!("unexpected error variant: {other:?}"),
+    }
+
+    let invalid_cltpos = fixture_text("canonical_cropland_nonzero_98_4.man")
+        .replace("4 # pcode - other", "3 9 # pcode - invalid cltpos");
+    let err = parse_management_from_str(&invalid_cltpos, ParseMode::Strict)
+        .expect_err("cltpos must stay in its allowed domain");
+    match err {
+        ManagementParseError::InvalidOptionDomain {
+            field,
+            value,
+            allowed,
+        } => {
+            assert_eq!(field, "cltpos");
+            assert_eq!(value, 9);
+            assert_eq!(allowed, "1 or 2");
+            assert_eq!(err.contract_error_id(), "MAN-E-004");
+        }
+        other => panic!("unexpected error variant: {other:?}"),
+    }
+}
+
+#[test]
+fn strict_mode_parses_contour_scenarios_by_datver_shape() {
+    let legacy_fixture = fixture_text("canonical_cropland_nonzero_98_4.man")
+        .replace(
+            "0  # Number of contour scenarios",
+            "1 # Number of contour scenarios\n\nContour One\ndesc 1\ndesc 2\ndesc 3\n1 # landuse\n0.10 0.20 30.0 0.762",
+        )
+        .replace("0  # contour scenario", "1 # contour scenario");
+    let parsed = parse_strict_fixture_text(&legacy_fixture);
+    assert_eq!(parsed.section_counts.ncnt, 1);
+    assert_f64_eq(parsed.registries.contours[0].cntslp, 0.10);
+    assert_f64_eq(parsed.registries.contours[0].rowspc, 0.762);
+    assert_eq!(parsed.registries.contours[0].contours_perm, None);
+
+    let modern_fixture = fixture_text("canonical_cropland_nonzero_2016_3.man")
+        .replace(
+            "0  # Number of contour scenarios",
+            "1 # Number of contour scenarios\n\nContour One\ndesc 1\ndesc 2\ndesc 3\n1 # landuse\n0.10 0.20 30.0 0.762 1",
+        )
+        .replace("0  # contour scenario", "1 # contour scenario");
+    let parsed = parse_strict_fixture_text(&modern_fixture);
+    assert_eq!(parsed.section_counts.ncnt, 1);
+    assert_eq!(parsed.registries.contours[0].contours_perm, Some(1));
+}
+
+#[test]
+fn strict_mode_rejects_legacy_contours_perm_extension() {
+    let fixture = fixture_text("canonical_cropland_nonzero_98_4.man")
+        .replace(
+            "0  # Number of contour scenarios",
+            "1 # Number of contour scenarios\n\nContour One\ndesc 1\ndesc 2\ndesc 3\n1 # landuse\n0.10 0.20 30.0 0.762 1",
+        )
+        .replace("0  # contour scenario", "1 # contour scenario");
+    let err = parse_management_from_str(&fixture, ParseMode::Strict)
+        .expect_err("legacy datver must reject the 2016+ contour extension");
+    match err {
+        ManagementParseError::InvalidOptionDomain {
+            field,
+            value,
+            allowed,
+        } => {
+            assert_eq!(field, "contours_perm");
+            assert_eq!(value, 1);
+            assert_eq!(allowed, "2016.3+ datver only");
+            assert_eq!(err.contract_error_id(), "MAN-E-004");
+        }
+        other => panic!("unexpected error variant: {other:?}"),
+    }
+}
+
+#[test]
+fn strict_mode_parses_drain_scenario_references() {
+    let fixture = fixture_text("canonical_cropland_nonzero_98_4.man")
+        .replace(
+            "0  # Number of drainage scenarios",
+            "1 # Number of drainage scenarios\n\nDrain One\ndesc 1\ndesc 2\ndesc 3\n1 # landuse\n1.0 2.0 3.0 4.0",
+        )
+        .replace("0  # drainage scenario", "1 # drainage scenario");
+
+    let parsed = parse_strict_fixture_text(&fixture);
+    assert_eq!(parsed.section_counts.ndrain, 1);
+    assert_f64_eq(parsed.registries.drains[0].ddrain, 1.0);
+    assert_f64_eq(parsed.registries.drains[0].drainc, 2.0);
+    assert_f64_eq(parsed.registries.drains[0].drdiam, 3.0);
+    assert_f64_eq(parsed.registries.drains[0].sdrain, 4.0);
+}
+
+#[test]
+fn strict_mode_parses_initial_understory_and_rejects_invalid_options() {
+    let understory_fixture = fixture_text("canonical_cropland_nonzero_98_4.man")
+        .replace("0.50003 0.19997", "0.50003 0.19997 0.12 0.34");
+    let parsed = parse_strict_fixture_text(&understory_fixture);
+    let InitialScenarioData::Cropland(initial) = &parsed.registries.initials[0].data else {
+        panic!("expected cropland initial scenario");
+    };
+    assert_eq!(initial.understory_line, Some([0.12, 0.34]));
+
+    let invalid_imngmt = fixture_text("canonical_cropland_nonzero_98_4.man")
+        .replace("1 # mang annual", "4 # mang invalid");
+    let err = parse_management_from_str(&invalid_imngmt, ParseMode::Strict)
+        .expect_err("imngmt must stay in its allowed domain");
+    match err {
+        ManagementParseError::InvalidOptionDomain { field, value, .. } => {
+            assert_eq!(field, "imngmt");
+            assert_eq!(value, 4);
+            assert_eq!(err.contract_error_id(), "MAN-E-004");
+        }
+        other => panic!("unexpected error variant: {other:?}"),
+    }
+
+    let invalid_rtyp = fixture_text("canonical_cropland_nonzero_98_4.man")
+        .replace("1  # rtyp - temporary", "3 # rtyp invalid");
+    let err = parse_management_from_str(&invalid_rtyp, ParseMode::Strict)
+        .expect_err("rtyp must stay in its allowed domain");
+    match err {
+        ManagementParseError::InvalidOptionDomain { field, value, .. } => {
+            assert_eq!(field, "rtyp");
+            assert_eq!(value, 3);
+            assert_eq!(err.contract_error_id(), "MAN-E-004");
+        }
+        other => panic!("unexpected error variant: {other:?}"),
     }
 }
 

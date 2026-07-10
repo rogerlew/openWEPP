@@ -29,7 +29,7 @@ Instruction discovery:
 | `tests/AGENTS.md` | Core | yes | Integration-test conventions and full gate expectations. | Adding/materially changing tests | Read |
 | `docs/specifications/wepp-input-files/parser-contract-requirements.md` | Core | yes | Parser contract taxonomy and fail-closed surface separation. | Parser target | Read |
 | `docs/contracts/openwepp-management-lanuse-authority-contract.md` | Core | yes | `lanuse`, datver, native routing extension, and fail-closed authority this parser preserves. | Parser target | Read |
-| `docs/specifications/wepp-input-files/specs/plant-file.spec.md` | On-demand | yes | Plant/management input wording and native landuse/routing coefficient context. | If refactor touches plant/native branches | Pending before relevant edits |
+| `docs/specifications/wepp-input-files/specs/plant-file.spec.md` | On-demand | yes | Plant/management input wording and native landuse/routing coefficient context. | If refactor touches plant/native branches | Read |
 | `docs/work-packages/20260709-cqr-nightly-07-input-management-parser-001/package.md` | Core | yes | Package-local scope, phases, and exit criteria. | Always | Authored |
 | `docs/work-packages/20260709-cqr-nightly-07-input-management-parser-001/artifacts/required-reading-map.md` | Core | yes | Local instruction map and reading state. | Always | Authored |
 | `crates/openwepp-input-contract/src/parsers/management.rs` | On-demand | yes | Target module and source surface. | Before implementation | Inspected for scaffold sizing |

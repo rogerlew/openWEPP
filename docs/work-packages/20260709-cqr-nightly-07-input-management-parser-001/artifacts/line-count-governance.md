@@ -2,20 +2,29 @@
 
 Evidence label: Static/Ran.
 
-Status: `SCAFFOLDED-WARN`
+Status: `EXECUTED-WARN`
 
-Target file:
-`crates/openwepp-input-contract/src/parsers/management.rs`
+Ran:
 
-Baseline line count:
+`wc -l crates/openwepp-input-contract/src/parsers/management.rs tests/integration/infile_management_parser_contract.rs tests/integration/infile_management_yaml_contract.rs`
 
-- `2851` lines.
+Observed counts:
+
+| File | Lines | Disposition |
+|---|---:|---|
+| `crates/openwepp-input-contract/src/parsers/management.rs` | `2960` | WARN: above `2000`, below `3000` blocker |
+| `tests/integration/infile_management_parser_contract.rs` | `1317` | Test file, outside production `.rs` blocker |
+| `tests/integration/infile_management_yaml_contract.rs` | `316` | Test file |
+
+Baseline:
+
+- Target production file started at `2851` lines.
 
 Disposition:
 
-- Target starts above the 2000-line WARN threshold and below the 3000-line
-  blocker.
-- Closure must keep the target below `3000` lines or include a valid production
-  split/refactor before completion.
-- Characterization tests should be added to integration tests or a dedicated
-  test include, not appended inside the target file.
+- Production target remains below the `3000` line blocker.
+- The package added characterization in integration tests instead of appending
+  tests inside the production module.
+- The target remains a large parser module. Follow-up CQR or parser seam work
+  should split production sections into submodules before future work risks
+  crossing the `3000` line blocker.
