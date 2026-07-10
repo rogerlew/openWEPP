@@ -1,7 +1,7 @@
 # CQR Nightly Batch 02, Target 04 — Watershed CLI
 
 Package: `20260709-cqr-nightly-b02-04-runner-watershed-cli-001`
-Status: `SCAFFOLDED-CQR-NIGHTLY`
+Status: `EXECUTED-HOLD-CQR-NIGHTLY-LOCAL-COVERAGE-TESTABILITY`
 ExecPlan: `docs/work-packages/cqr-nightly-burndown-execplan.md`
 Nightly batch: `02`
 Target module: `crates/openwepp-runner/src/bin/openwepp-cli-watershed.rs`

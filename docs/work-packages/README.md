@@ -28,7 +28,16 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-07-09`:
+State as of `2026-07-10`:
+- `20260709-cqr-nightly-b02-04-runner-watershed-cli-001/` -
+  EXECUTED-HOLD-CQR-NIGHTLY-LOCAL-COVERAGE-TESTABILITY (2026-07-10): CQR
+  nightly batch 02 target #4 attempted a behavior-preserving decomposition of
+  `crates/openwepp-runner/src/bin/openwepp-cli-watershed.rs`. The real 29-test
+  watershed CLI suite passed, but isolated target coverage was 74.378% lines /
+  36.451% regions with 33 functions below the 75% floor and one CRAP row above
+  30. The attempted source was rolled back; a dedicated CLI
+  testability/fixture package is required before retrying. Package:
+  `20260709-cqr-nightly-b02-04-runner-watershed-cli-001/`.
 - `20260709-cqr-nightly-b02-03-soil-parser-001/` -
   EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-10): CQR nightly batch 02 target #3
   completed behavior-preserving decomposition and all-datver parser
