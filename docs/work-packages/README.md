@@ -29,6 +29,16 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-09`:
+- `20260709-cqr-nightly-b02-01-boundary-values-and-kernel-requests-001/` -
+  EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-09): CQR nightly batch 02 target #1
+  completed behavior-preserving decomposition and characterization of
+  `crates/openwepp-kernel-contract/src/lib_mod/core_types/02_boundary_values_and_kernel_requests.rs`.
+  Target CRAP rows above `30` reduced from `4` to `0`, maximum CRAP is `18`, and
+  cfg-test-excluded production coverage is `603/603` lines and `628/628`
+  regions. Final delegated clippy, full-nextest, and deny gates passed. The
+  package passed final closeout verification and is recorded in its completion
+  commit. Package:
+  `20260709-cqr-nightly-b02-01-boundary-values-and-kernel-requests-001/`.
 - `20260709-cqr-nightly-10-runner-laned-shadow-001/` -
   EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-09): CQR Nightly target #10 completed
   characterization-only CRAP/cyclomatic-complexity closure of

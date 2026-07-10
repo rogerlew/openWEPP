@@ -1,7 +1,7 @@
 # CQR Nightly Batch 02, Target 01 — Boundary Values and Kernel Requests
 
 Package: `20260709-cqr-nightly-b02-01-boundary-values-and-kernel-requests-001`
-Status: `QUEUED`
+Status: `EXECUTED-COMPLETE-CQR-NIGHTLY`
 ExecPlan: `docs/work-packages/cqr-nightly-burndown-execplan.md`
 Nightly batch: `02`
 Target module: `crates/openwepp-kernel-contract/src/lib_mod/core_types/02_boundary_values_and_kernel_requests.rs`
@@ -35,15 +35,17 @@ Intended write set:
 - `crates/AGENTS.md`
 - `docs/work-packages/AGENTS.md`
 - `docs/specifications/science-contracts/AGENTS.md`
+- `docs/specifications/science-contracts/kernel-writeback-contract.md`
+- `docs/specifications/science-contracts/unit-safe-boundary-types-contract.md`
 - `docs/work-packages/cqr-nightly-burndown-execplan.md`
 - `docs/standards/mechanical-refactor-authoring-guide.md`
 - `docs/standards/code-quality-refactor-authoring-guide.md`
 - `docs/decisions/0021-module-coverage-closure-thresholds.md`
 - the target module and its existing `#[cfg(test)]` coverage
 
-No target-specific `SC-*` contract names this type surface. If source reading
-shows a contract-derived invariant, read that contract before changing tests or
-production code.
+The writeback contract governs `HillslopeKernelRequest`, `KernelRunResponse`,
+and writeback payloads; the unit-safe contract governs typed `BoundaryValue`
+constructors. Characterization must preserve their named invariants.
 
 ## Subagent Authorization
 

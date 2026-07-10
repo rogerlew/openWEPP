@@ -13,11 +13,11 @@ Required reading:
 
 Core: `AGENTS.md`, `crates/AGENTS.md`, `docs/work-packages/AGENTS.md`,
 `docs/specifications/science-contracts/AGENTS.md`, the package, the CQR ExecPlan,
-the mechanical/CQR guides, ADR-0021, and the target module.
+the mechanical/CQR guides, ADR-0021, the kernel-writeback and unit-safe-boundary
+contracts, and the target module.
 
-Conditional: the specific `SC-*` contract if reading identifies a
-contract-derived invariant; `docs/standards/local-ci-gate-selection.md` when a
-focused gate needs tier selection.
+Conditional: `docs/standards/local-ci-gate-selection.md` when a focused gate
+needs tier selection.
 
 On-demand: adjacent callers and the target module's existing tests.
 

@@ -78,6 +78,10 @@ impl BoundaryValue {
 
     #[must_use]
     pub fn as_f64(self) -> f64 {
+        self.scalar_value()
+    }
+
+    fn scalar_value(self) -> f64 {
         match self {
             Self::Scalar(value) => value,
             Self::RunoffDepthMillimeters(value) => value.as_millimeters(),
@@ -105,6 +109,10 @@ impl BoundaryValue {
 
     #[must_use]
     pub const fn unit_label(self) -> &'static str {
+        self.unit_label_for_variant()
+    }
+
+    const fn unit_label_for_variant(self) -> &'static str {
         match self {
             Self::Scalar(_) => "scalar",
             Self::RunoffDepthMillimeters(_) => "mm",
@@ -571,6 +579,10 @@ pub enum HillslopeKernelPhaseClass {
 impl HillslopeKernelPhaseClass {
     #[must_use]
     pub const fn as_str(self) -> &'static str {
+        self.phase_label()
+    }
+
+    const fn phase_label(self) -> &'static str {
         match self {
             Self::Hydrology => "hydrology",
             Self::HydrologyEvapotranspiration => "hydrology_evapotranspiration",
@@ -704,6 +716,10 @@ pub enum HillslopeConsumerAdapter {
 impl HillslopeConsumerAdapter {
     #[must_use]
     pub const fn as_str(self) -> &'static str {
+        self.adapter_label()
+    }
+
+    const fn adapter_label(self) -> &'static str {
         match self {
             Self::Runoff => "runoff",
             Self::Soil => "soil",
@@ -1111,4 +1127,635 @@ impl<'a> HillslopeKernelRequest<'a> {
 /// Hillslope kernel trait boundary.
 pub trait HillslopeKernel {
     fn run_hillslope_phase(&mut self, request: &HillslopeKernelRequest<'_>) -> KernelRunResponse;
+}
+
+#[cfg(test)]
+mod cqr_boundary_request_tests {
+    use std::collections::BTreeMap;
+
+    use openwepp_sim_contract::status::SimulationPhase;
+    use openwepp_unit_boundary::{
+        DensityKilogramsPerCubicMeter, DirectionDegrees, ElapsedTimeSeconds,
+        FlowRateCubicMetersPerSecond, FractionUnitInterval, HourOfDay,
+        LinearRateMetersPerSecond, ProcessRateMillimetersPerHour,
+        RunoffDepthMillimeters, SolarRadiationLangleysPerDay,
+        SolarRadiationMegajoulesPerSquareMeterPerDay,
+        SolarRadiationMegajoulesPerSquareMeterPerHour, StorageVolumeCubicMeters,
+        SurfaceAreaSquareMeters, TemperatureCelsius, WaterDepthMeters,
+    };
+
+    use super::*;
+
+    fn assert_boundary_value_cases(cases: &[(BoundaryValue, f64, &'static str)]) {
+        for (value, expected_scalar, expected_unit) in cases {
+            assert!((value.as_f64() - expected_scalar).abs() <= f64::EPSILON);
+            assert_eq!(value.unit_label(), *expected_unit);
+        }
+    }
+
+    #[test]
+    fn boundary_value_units_and_scalars_cover_hydrologic_variants() {
+        assert_boundary_value_cases(&[
+            (BoundaryValue::scalar(1.0), 1.0, "scalar"),
+            (
+                RunoffDepthMillimeters::try_new(2.0).expect("valid runoff depth").into(),
+                2.0,
+                "mm",
+            ),
+            (
+                FlowRateCubicMetersPerSecond::try_new(3.0)
+                    .expect("valid flow rate")
+                    .into(),
+                3.0,
+                "m3/s",
+            ),
+            (
+                StorageVolumeCubicMeters::try_new(4.0)
+                    .expect("valid storage volume")
+                    .into(),
+                4.0,
+                "m3",
+            ),
+            (
+                ProcessRateMillimetersPerHour::try_new(5.0)
+                    .expect("valid process rate")
+                    .into(),
+                5.0,
+                "mm/hr",
+            ),
+            (
+                SurfaceAreaSquareMeters::try_new(6.0)
+                    .expect("valid surface area")
+                    .into(),
+                6.0,
+                "m2",
+            ),
+            (
+                WaterDepthMeters::try_new(7.0).expect("valid water depth").into(),
+                7.0,
+                "m",
+            ),
+            (
+                ElapsedTimeSeconds::try_new(8.0)
+                    .expect("valid elapsed time")
+                    .into(),
+                8.0,
+                "s",
+            ),
+            (
+                HourOfDay::try_new(9.0).expect("valid hour").into(),
+                9.0,
+                "h",
+            ),
+            (
+                LinearRateMetersPerSecond::try_new(10.0)
+                    .expect("valid linear rate")
+                    .into(),
+                10.0,
+                "m s^-1",
+            ),
+        ]);
+    }
+
+    #[test]
+    fn boundary_value_units_and_scalars_cover_climate_variants() {
+        assert_boundary_value_cases(&[
+            (
+                SolarRadiationLangleysPerDay::try_new(11.0)
+                    .expect("valid daily langleys")
+                    .into(),
+                11.0,
+                "Ly d^-1",
+            ),
+            (
+                SolarRadiationMegajoulesPerSquareMeterPerDay::try_new(12.0)
+                    .expect("valid daily radiation")
+                    .into(),
+                12.0,
+                "MJ m^-2 d^-1",
+            ),
+            (
+                SolarRadiationMegajoulesPerSquareMeterPerHour::try_new(13.0)
+                    .expect("valid hourly radiation")
+                    .into(),
+                13.0,
+                "MJ m^-2 h^-1",
+            ),
+            (
+                TemperatureCelsius::try_new(14.0)
+                    .expect("valid temperature")
+                    .into(),
+                14.0,
+                "degC",
+            ),
+            (
+                DirectionDegrees::try_new(15.0)
+                    .expect("valid direction")
+                    .into(),
+                15.0,
+                "deg",
+            ),
+            (
+                DensityKilogramsPerCubicMeter::try_new(16.0)
+                    .expect("valid density")
+                    .into(),
+                16.0,
+                "kg m^-3",
+            ),
+            (
+                FractionUnitInterval::try_new(0.5)
+                    .expect("valid fraction")
+                    .into(),
+                0.5,
+                "dimensionless",
+            ),
+        ]);
+    }
+
+    #[test]
+    fn boundary_value_named_constructors_preserve_unit_validation() {
+        let values = [
+            BoundaryValue::water_depth_meters(1.0),
+            BoundaryValue::elapsed_time_seconds(2.0),
+            BoundaryValue::hour_of_day(3.0),
+            BoundaryValue::linear_rate_meters_per_second(4.0),
+            BoundaryValue::solar_radiation_langleys_per_day(5.0),
+            BoundaryValue::solar_radiation_megajoules_per_square_meter_per_day(6.0),
+            BoundaryValue::solar_radiation_megajoules_per_square_meter_per_hour(7.0),
+            BoundaryValue::temperature_celsius(8.0),
+            BoundaryValue::direction_degrees(9.0),
+            BoundaryValue::density_kilograms_per_cubic_meter(10.0),
+            BoundaryValue::fraction_unit_interval(0.25),
+        ];
+
+        assert!(values.into_iter().all(|value| value.is_ok()));
+        assert!(matches!(
+            BoundaryValue::water_depth_meters(-1.0),
+            Err(BoundaryError::BelowMinimum { .. })
+        ));
+        assert!(matches!(
+            BoundaryValue::fraction_unit_interval(1.1),
+            Err(BoundaryError::AboveMaximum { .. })
+        ));
+        assert!(matches!(
+            BoundaryValue::temperature_celsius(f64::NAN),
+            Err(BoundaryError::NonFinite { .. })
+        ));
+    }
+
+    #[test]
+    fn writeback_payloads_and_responses_preserve_typed_fields() {
+        let state = WritebackField::unbounded("state", BoundaryValue::scalar(1.0));
+        let flux = WritebackField::bounded("flux", BoundaryValue::scalar(2.0), Some(0.0), None);
+        let payload = KernelWritebackPayload::with_updates(vec![state.clone()], vec![flux.clone()]);
+        assert_eq!(KernelWritebackPayload::empty(), KernelWritebackPayload::default());
+        assert_eq!(payload.state_updates, vec![state]);
+        assert_eq!(payload.flux_updates, vec![flux]);
+
+        let status = SimulationStatus::ok(SimulationPhase::HillslopeKernel, "CQR-T01-OK")
+            .expect("valid nominal status");
+        let response = KernelRunResponse::new(status.clone(), payload.clone());
+        assert_eq!(response.status, status);
+        assert_eq!(response.writeback, payload);
+        assert_eq!(response.indexed_writeback, None);
+
+        let indexed_payload = IndexedKernelWritebackPayload::with_updates(
+            vec![IndexedWritebackField::unbounded(
+                SymbolRegistry::from_symbols(["state"])
+                    .expect("registry")
+                    .id_of(&BoundarySymbol::from("state"))
+                    .expect("registered state"),
+                BoundaryValue::scalar(3.0),
+            )],
+            vec![],
+        );
+        assert_eq!(IndexedKernelWritebackPayload::empty(), IndexedKernelWritebackPayload::default());
+        assert_eq!(
+            IndexedWritebackField::bounded(
+                SymbolRegistry::from_symbols(["bounded"])
+                    .expect("registry")
+                    .id_of(&BoundarySymbol::from("bounded"))
+                    .expect("registered bounded field"),
+                BoundaryValue::scalar(4.0),
+                Some(1.0),
+                Some(5.0),
+            )
+            .minimum,
+            Some(1.0)
+        );
+        assert!(KernelRunResponse::with_indexed_writeback(
+            SimulationStatus::ok(SimulationPhase::HillslopeKernel, "CQR-T01-INDEXED")
+                .expect("valid nominal status"),
+            indexed_payload
+        )
+        .indexed_writeback
+        .is_some());
+    }
+
+    #[test]
+    fn phase_and_consumer_labels_cover_all_dispatch_classes() {
+        let phases = [
+            (HillslopeKernelPhaseClass::Hydrology, "hydrology", true, false, false),
+            (
+                HillslopeKernelPhaseClass::HydrologyEvapotranspiration,
+                "hydrology_evapotranspiration",
+                true,
+                false,
+                false,
+            ),
+            (
+                HillslopeKernelPhaseClass::HydrologyPercolationDeepSeepage,
+                "hydrology_percolation_deep_seepage",
+                true,
+                false,
+                false,
+            ),
+            (
+                HillslopeKernelPhaseClass::HydrologyLateralTransfer,
+                "hydrology_lateral_transfer",
+                true,
+                false,
+                false,
+            ),
+            (HillslopeKernelPhaseClass::HydrologyDrainage, "hydrology_drainage", true, false, false),
+            (
+                HillslopeKernelPhaseClass::HydrologyPlantRootUptake,
+                "hydrology_plant_root_uptake",
+                true,
+                false,
+                false,
+            ),
+            (
+                HillslopeKernelPhaseClass::HydrologyRunoffReconciliation,
+                "hydrology_runoff_reconciliation",
+                true,
+                false,
+                false,
+            ),
+            (
+                HillslopeKernelPhaseClass::HydrologyStorageReconciliation,
+                "hydrology_storage_reconciliation",
+                true,
+                false,
+                false,
+            ),
+            (
+                HillslopeKernelPhaseClass::HydrologyPeakRunoff,
+                "hydrology_peak_runoff",
+                true,
+                false,
+                false,
+            ),
+            (
+                HillslopeKernelPhaseClass::DecompositionTransition,
+                "decomposition_transition",
+                false,
+                false,
+                true,
+            ),
+            (
+                HillslopeKernelPhaseClass::ResiduePartitionTransition,
+                "residue_partition_transition",
+                false,
+                false,
+                true,
+            ),
+            (
+                HillslopeKernelPhaseClass::GrowthAnnualTransition,
+                "growth_annual_transition",
+                false,
+                true,
+                false,
+            ),
+            (
+                HillslopeKernelPhaseClass::GrowthPerennialTransition,
+                "growth_perennial_transition",
+                false,
+                true,
+                false,
+            ),
+        ];
+
+        for (phase, label, hydrology, growth, decomposition) in phases {
+            assert_eq!(phase.as_str(), label);
+            assert_eq!(phase.is_hydrology_phase(), hydrology);
+            assert_eq!(phase.is_growth_transition(), growth);
+            assert_eq!(phase.is_decomposition_transition(), decomposition);
+        }
+
+        let adapters = [
+            (HillslopeConsumerAdapter::Runoff, "runoff"),
+            (HillslopeConsumerAdapter::Soil, "soil"),
+            (HillslopeConsumerAdapter::Watbal, "watbal"),
+            (HillslopeConsumerAdapter::Perc, "perc"),
+            (HillslopeConsumerAdapter::Decomposition, "decomposition"),
+            (HillslopeConsumerAdapter::Growth, "growth"),
+        ];
+        for (adapter, label) in adapters {
+            assert_eq!(adapter.as_str(), label);
+        }
+    }
+
+    #[test]
+    fn dense_slot_request_reads_dense_values_before_indexed_fallback() {
+        let state_symbol = BoundarySymbol::from("state");
+        let flux_symbol = BoundarySymbol::from("flux");
+        let mut state_surface = BTreeMap::new();
+        let mut flux_surface = BTreeMap::new();
+        state_surface.insert(state_symbol.clone(), BoundaryValue::scalar(1.0));
+        flux_surface.insert(flux_symbol.clone(), BoundaryValue::scalar(2.0));
+        let registry = SymbolRegistry::from_surfaces(&state_surface, &flux_surface)
+            .expect("registry from surfaces");
+        let state_id = registry.id_of(&state_symbol).expect("state id");
+        let flux_id = registry.id_of(&flux_symbol).expect("flux id");
+        let mut state_slots = vec![None; registry.len()];
+        let mut flux_slots = vec![None; registry.len()];
+        state_slots[state_id.as_usize()] = Some(BoundaryValue::scalar(3.0));
+        flux_slots[flux_id.as_usize()] = Some(BoundaryValue::scalar(4.0));
+        let id_to_slot = (0..registry.len()).map(Some).collect::<Vec<_>>();
+        let indexed_surface = IndexedWritebackSurface::from_btreemap_surfaces(
+            &registry,
+            &state_surface,
+            &flux_surface,
+        )
+        .expect("indexed surface");
+        let request = HillslopeKernelRequest::with_transition_context_and_dense_slot_views(
+            "dense",
+            HillslopeKernelPhaseClass::Hydrology,
+            HillslopeConsumerAdapter::Runoff,
+            None,
+            None,
+            &state_surface,
+            &flux_surface,
+            Some(DenseBoundarySlotView::new(&id_to_slot, &state_slots)),
+            Some(DenseBoundarySlotView::new(&id_to_slot, &flux_slots)),
+            Some(&registry),
+            Some(&indexed_surface),
+            None,
+        );
+        let indexed_state = IndexedBoundarySymbol::new(state_symbol.clone(), state_id);
+        let indexed_flux = IndexedBoundarySymbol::new(flux_symbol.clone(), flux_id);
+
+        assert!(request.has_dense_state_surface());
+        assert!(request.has_dense_flux_surface());
+        assert!(request.has_indexed_state_surface());
+        assert!(request.has_indexed_flux_surface());
+        assert_eq!(request.indexed_state_value(&indexed_state), Some(BoundaryValue::scalar(3.0)));
+        assert_eq!(request.indexed_flux_value(&indexed_flux), Some(BoundaryValue::scalar(4.0)));
+        assert_eq!(request.dense_state_value_for_symbol(&state_symbol), Some(BoundaryValue::scalar(3.0)));
+        assert_eq!(request.dense_flux_value_for_symbol(&flux_symbol), Some(BoundaryValue::scalar(4.0)));
+        assert!(DenseBoundarySlotView::new(&id_to_slot, &state_slots).contains_id(state_id));
+        assert_eq!(DenseBoundarySlotView::new(&id_to_slot, &state_slots).slot_count(), registry.len());
+    }
+
+    fn assert_plain_and_indexed_fallback(
+        state_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+        flux_surface: &BTreeMap<BoundarySymbol, BoundaryValue>,
+        indexed_surface: &IndexedWritebackSurface,
+        indexed_state: &IndexedBoundarySymbol,
+        indexed_flux: &IndexedBoundarySymbol,
+    ) {
+        let plain_request = HillslopeKernelRequest::new(
+            "plain",
+            HillslopeConsumerAdapter::Runoff,
+            state_surface,
+            flux_surface,
+        );
+        assert!(!plain_request.has_indexed_state_surface());
+        assert!(!plain_request.has_indexed_flux_surface());
+        assert_eq!(plain_request.indexed_state_value(indexed_state), None);
+        assert_eq!(plain_request.indexed_flux_value(indexed_flux), None);
+
+        let no_dense_request = HillslopeKernelRequest::with_transition_context_and_indexed(
+            "indexed",
+            HillslopeKernelPhaseClass::Hydrology,
+            HillslopeConsumerAdapter::Runoff,
+            None,
+            None,
+            state_surface,
+            flux_surface,
+            Some(indexed_surface),
+            None,
+        );
+        assert_eq!(
+            no_dense_request.indexed_state_value(indexed_state),
+            Some(BoundaryValue::scalar(1.0))
+        );
+        assert_eq!(
+            no_dense_request.indexed_flux_value(indexed_flux),
+            Some(BoundaryValue::scalar(2.0))
+        );
+    }
+
+    #[test]
+    fn request_lookup_preserves_legacy_slot_and_indexed_fallback_order() {
+        let state_symbol = BoundarySymbol::from("state");
+        let flux_symbol = BoundarySymbol::from("flux");
+        let mut state_surface = BTreeMap::new();
+        let mut flux_surface = BTreeMap::new();
+        state_surface.insert(state_symbol.clone(), BoundaryValue::scalar(1.0));
+        flux_surface.insert(flux_symbol.clone(), BoundaryValue::scalar(2.0));
+        let registry = SymbolRegistry::from_surfaces(&state_surface, &flux_surface)
+            .expect("registry from surfaces");
+        let state_id = registry.id_of(&state_symbol).expect("state id");
+        let flux_id = registry.id_of(&flux_symbol).expect("flux id");
+        let indexed_surface = IndexedWritebackSurface::from_btreemap_surfaces(
+            &registry,
+            &state_surface,
+            &flux_surface,
+        )
+        .expect("indexed surface");
+        let indexed_state = IndexedBoundarySymbol::new(state_symbol.clone(), state_id);
+        let indexed_flux = IndexedBoundarySymbol::new(flux_symbol.clone(), flux_id);
+
+        assert_plain_and_indexed_fallback(
+            &state_surface,
+            &flux_surface,
+            &indexed_surface,
+            &indexed_state,
+            &indexed_flux,
+        );
+
+        let mut legacy_state_slots = vec![None; registry.len()];
+        let mut legacy_flux_slots = vec![None; registry.len()];
+        legacy_state_slots[state_id.as_usize()] = Some(BoundaryValue::scalar(5.0));
+        legacy_flux_slots[flux_id.as_usize()] = Some(BoundaryValue::scalar(6.0));
+        let legacy_request = HillslopeKernelRequest::with_transition_context_and_dense_slots(
+            "legacy",
+            HillslopeKernelPhaseClass::Hydrology,
+            HillslopeConsumerAdapter::Runoff,
+            None,
+            None,
+            &state_surface,
+            &flux_surface,
+            Some(&legacy_state_slots),
+            Some(&legacy_flux_slots),
+            Some(&indexed_surface),
+            None,
+        );
+        assert_eq!(
+            legacy_request.indexed_state_value(&indexed_state),
+            Some(BoundaryValue::scalar(5.0))
+        );
+        assert_eq!(
+            legacy_request.indexed_flux_value(&indexed_flux),
+            Some(BoundaryValue::scalar(6.0))
+        );
+        assert_eq!(legacy_request.dense_state_value_for_symbol(&state_symbol), None);
+        assert_eq!(legacy_request.dense_flux_value_for_symbol(&flux_symbol), None);
+
+        let missing_slots = vec![None; registry.len()];
+        let fallback_request = HillslopeKernelRequest::with_transition_context_and_dense_slots(
+            "fallback",
+            HillslopeKernelPhaseClass::Hydrology,
+            HillslopeConsumerAdapter::Runoff,
+            None,
+            None,
+            &state_surface,
+            &flux_surface,
+            Some(&missing_slots),
+            Some(&missing_slots),
+            Some(&indexed_surface),
+            None,
+        );
+        assert_eq!(
+            fallback_request.indexed_state_value(&indexed_state),
+            Some(BoundaryValue::scalar(1.0))
+        );
+        assert_eq!(
+            fallback_request.indexed_flux_value(&indexed_flux),
+            Some(BoundaryValue::scalar(2.0))
+        );
+        assert_eq!(fallback_request.dense_state_value_for_symbol(&state_symbol), None);
+        assert_eq!(fallback_request.dense_flux_value_for_symbol(&flux_symbol), None);
+        let missing_symbol = BoundarySymbol::from("missing");
+        assert_eq!(fallback_request.dense_state_value_for_symbol(&missing_symbol), None);
+        assert_eq!(fallback_request.dense_flux_value_for_symbol(&missing_symbol), None);
+
+        let missing_slot_map = vec![None; registry.len()];
+        let missing_view = DenseBoundarySlotView::new(&missing_slot_map, &missing_slots);
+        assert_eq!(missing_view.get(state_id), None);
+        assert!(!missing_view.contains_id(state_id));
+    }
+
+    #[test]
+    fn dense_symbol_lookup_falls_back_from_empty_view_to_legacy_slots() {
+        let state_symbol = BoundarySymbol::from("state");
+        let flux_symbol = BoundarySymbol::from("flux");
+        let mut state_surface = BTreeMap::new();
+        let mut flux_surface = BTreeMap::new();
+        state_surface.insert(state_symbol.clone(), BoundaryValue::scalar(1.0));
+        flux_surface.insert(flux_symbol.clone(), BoundaryValue::scalar(2.0));
+        let registry = SymbolRegistry::from_surfaces(&state_surface, &flux_surface)
+            .expect("registry from surfaces");
+        let state_id = registry.id_of(&state_symbol).expect("state id");
+        let flux_id = registry.id_of(&flux_symbol).expect("flux id");
+        let mut state_slots = vec![None; registry.len()];
+        let mut flux_slots = vec![None; registry.len()];
+        state_slots[state_id.as_usize()] = Some(BoundaryValue::scalar(7.0));
+        flux_slots[flux_id.as_usize()] = Some(BoundaryValue::scalar(8.0));
+        let missing_slots = vec![None; registry.len()];
+        let missing_slot_map = vec![None; registry.len()];
+        let mut request = HillslopeKernelRequest::with_transition_context_and_dense_slots(
+            "fallback_view",
+            HillslopeKernelPhaseClass::Hydrology,
+            HillslopeConsumerAdapter::Runoff,
+            None,
+            None,
+            &state_surface,
+            &flux_surface,
+            Some(&state_slots),
+            Some(&flux_slots),
+            None,
+            None,
+        );
+        request.symbol_registry = Some(&registry);
+        request.dense_state_slot_view = Some(DenseBoundarySlotView::new(
+            &missing_slot_map,
+            &missing_slots,
+        ));
+        request.dense_flux_slot_view = Some(DenseBoundarySlotView::new(
+            &missing_slot_map,
+            &missing_slots,
+        ));
+
+        assert_eq!(
+            request.dense_state_value_for_symbol(&state_symbol),
+            Some(BoundaryValue::scalar(7.0))
+        );
+        assert_eq!(
+            request.dense_flux_value_for_symbol(&flux_symbol),
+            Some(BoundaryValue::scalar(8.0))
+        );
+    }
+
+    #[test]
+    fn request_hot_symbol_accessors_preserve_state_and_flux_lookup_identity() {
+        let state_surface = BTreeMap::new();
+        let flux_surface = BTreeMap::new();
+        let registry = SymbolRegistry::from_symbols([
+            "state_scalar",
+            "flux_scalar",
+            "state_series_0001",
+            "flux_series_0001",
+            "state_grid_0001_0002",
+            "flux_grid_0001_0002",
+        ])
+        .expect("registry");
+        let hot_tables = HotSymbolTables::from_registry(
+            &registry,
+            &["state_scalar"],
+            &["flux_scalar"],
+            &["state_series"],
+            &["flux_series"],
+            &["state_grid"],
+            &["flux_grid"],
+        );
+        let request = HillslopeKernelRequest::with_transition_context_and_indexed(
+            "hot",
+            HillslopeKernelPhaseClass::Hydrology,
+            HillslopeConsumerAdapter::Runoff,
+            None,
+            None,
+            &state_surface,
+            &flux_surface,
+            None,
+            Some(&hot_tables),
+        );
+
+        assert_eq!(
+            request.hot_state_scalar("state_scalar").map(|entry| entry.symbol.as_str()),
+            Some("state_scalar")
+        );
+        assert_eq!(
+            request.hot_flux_scalar("flux_scalar").map(|entry| entry.symbol.as_str()),
+            Some("flux_scalar")
+        );
+        assert_eq!(
+            request
+                .hot_state_series_symbol("state_series", 1)
+                .map(|entry| entry.symbol.as_str()),
+            Some("state_series_0001")
+        );
+        assert_eq!(
+            request
+                .hot_flux_series_symbol("flux_series", 1)
+                .map(|entry| entry.symbol.as_str()),
+            Some("flux_series_0001")
+        );
+        assert_eq!(
+            request
+                .hot_state_grid_symbol("state_grid", 1, 2)
+                .map(|entry| entry.symbol.as_str()),
+            Some("state_grid_0001_0002")
+        );
+        assert_eq!(
+            request
+                .hot_flux_grid_symbol("flux_grid", 1, 2)
+                .map(|entry| entry.symbol.as_str()),
+            Some("flux_grid_0001_0002")
+        );
+        assert_eq!(request.hot_state_scalar("missing"), None);
+        assert_eq!(request.hot_flux_scalar("missing"), None);
+    }
 }
