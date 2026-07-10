@@ -30,12 +30,19 @@
 
 State as of `2026-07-09`:
 - `20260709-cqr-nightly-10-runner-laned-shadow-001/` -
-  SCAFFOLDED-CQR-NIGHTLY (2026-07-09): CQR Nightly target #10 is scaffolded
-  for behavior-preserving CRAP/cyclomatic-complexity closure of
+  EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-09): CQR Nightly target #10 completed
+  characterization-only CRAP/cyclomatic-complexity closure of
   `crates/openwepp-runner/src/hillslope/laned_shadow.rs`. Baseline target
-  metrics from the saved nightly run are `251/452` line coverage, `23/39`
-  function coverage, `3` production functions above CRAP `30`, max CRAP
-  `210.0`, and production target line count `706`. Package:
+  functions above CRAP `30` dropped from `3` to `0`; final max CRAP is
+  `14.016830348056178`, target LCOV is `684/699`, target region coverage is
+  `842/877`, and the ADR-0021 production split is `321/330` lines and
+  `406/437` regions. The production target remains below line-count WARN at
+  `1003` lines. Final gates passed, including workspace clippy, full-nextest
+  `1594/1594` with `3` skipped, deny, package doc lint, review, and
+  verification. Full-workspace coverage/CRAP was blocked on the known unrelated
+  coverage-instrumented `laned_shadow_h2637` workspace path before LCOV
+  emission, so package closure uses the documented Phase D targeted
+  coverage/CRAP equivalent. Package:
   `20260709-cqr-nightly-10-runner-laned-shadow-001/`.
 - `20260709-cqr-nightly-09-watershed-detachment-001/` -
   EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-09): CQR Nightly target #9 completed

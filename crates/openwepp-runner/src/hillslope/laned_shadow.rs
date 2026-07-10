@@ -578,6 +578,303 @@ impl LanedShadowCollector {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use openwepp_hillslope_orchestrator::{
+        DirectPublicationCalendarDay, DirectPublicationClimateOperands,
+        DirectPublicationErosionOperands, DirectPublicationEvaporationOperands,
+        DirectPublicationInterceptionOperands, DirectPublicationLiquidInputOperands,
+        DirectPublicationProfileOperands, DirectPublicationRunoffOperands,
+        DirectPublicationStorageOperands, DirectPublicationSubsurfaceOperands,
+        DirectPublicationTransferOperands, DirectPublicationWaterTemperatureOperands,
+    };
+
+    fn test_routing() -> LanedShadowRoutingCoefficients {
+        LanedShadowRoutingCoefficients {
+            skin_friction_coefficient_ko: 0.25,
+            form_drag_coefficient: 0.0,
+            roughness_element_height_m: 0.0,
+            roughness_concentration: 0.0,
+            vegetation_drag_coefficient: 0.0,
+        }
+    }
+
+    fn test_geometry(lane_count: usize) -> Vec<LanedShadowLaneGeometry> {
+        (0..lane_count)
+            .map(|lane| LanedShadowLaneGeometry {
+                slplen_m: 80.0 + f64::from(u32::try_from(lane).expect("test lane fits u32")),
+                width_m: 1.0,
+                mean_gradient: 0.01,
+                routing: test_routing(),
+            })
+            .collect()
+    }
+
+    fn test_operands() -> LanedShadowLaneDayOperands {
+        LanedShadowLaneDayOperands {
+            hourly_rainfall_m: [0.0; SEAM_HOUR_BINS],
+            hourly_routed_melt_m: [0.0; SEAM_HOUR_BINS],
+            leaf_area_index: 0.0,
+            canopy_height_m: 0.0,
+        }
+    }
+
+    fn test_row(lane_index: usize, day_index: usize, runvol_m3: f64) -> DirectPublicationDayRow {
+        DirectPublicationDayRow {
+            dc01_surface_hourly_weights: [0.0; SEAM_HOUR_BINS],
+            run_id: 19,
+            hillslope_id: 2637,
+            lane_id: u32::try_from(lane_index + 1).expect("test lane fits u32"),
+            ofe_id: u32::try_from(lane_index + 1).expect("test ofe fits u32"),
+            lane_index,
+            day_index,
+            sim_day_index: i32::try_from(day_index + 1).expect("test day fits i32"),
+            calendar: DirectPublicationCalendarDay {
+                year: 2026,
+                julian_day: u16::try_from(day_index + 1).expect("test day fits u16"),
+                month: 1,
+                day_of_month: i8::try_from(day_index + 1).expect("test day fits i8"),
+                water_year: 2026,
+            },
+            area_m2: 240.0,
+            climate: DirectPublicationClimateOperands {
+                precipitation_mm: 0.0,
+            },
+            liquid_input: DirectPublicationLiquidInputOperands {
+                rm_mm: 0.0,
+                irrigation_mm: 0.0,
+            },
+            runoff: DirectPublicationRunoffOperands {
+                q_mm: 0.0,
+                qofe_mm: 0.0,
+                runvol_m3,
+                peak_runoff_m3_s: None,
+                runoff_duration_s: None,
+            },
+            evaporation: DirectPublicationEvaporationOperands {
+                ep_mm: 0.0,
+                es_mm: 0.0,
+                er_mm: 0.0,
+                total_evapotranspiration_mm: 0.0,
+            },
+            subsurface: DirectPublicationSubsurfaceOperands {
+                dp_mm: 0.0,
+                latqcc_mm: 0.0,
+                tile_mm: 0.0,
+                sbrunv_m3: 0.0,
+                groundwater_baseflow_mm: 0.0,
+                groundwater_baseflow_m3: 0.0,
+                groundwater_deep_seepage_mm: 0.0,
+                groundwater_deep_seepage_m3: 0.0,
+            },
+            transfer: DirectPublicationTransferOperands {
+                upstream_surface_mm: 0.0,
+                upstream_lateral_mm: 0.0,
+            },
+            storage: DirectPublicationStorageOperands {
+                total_soil_mm: 0.0,
+                soil_water_total_mm: 0.0,
+                frozwt_mm: 0.0,
+                frdp_mm: None,
+                snow_water_mm: 0.0,
+                snow_depth_mm: 0.0,
+            },
+            water_temperature: DirectPublicationWaterTemperatureOperands {
+                meltwater_temperature_c: None,
+            },
+            profile: DirectPublicationProfileOperands {
+                depth_mm: None,
+                porosity_cap_mm: None,
+                fc_store_mm: None,
+                wp_store_mm: None,
+            },
+            interception: DirectPublicationInterceptionOperands {
+                interception_mm: 0.0,
+                interception_storage_mm: None,
+            },
+            erosion: DirectPublicationErosionOperands::absent_authority(),
+        }
+    }
+
+    fn uniform_weights() -> [f64; SEAM_HOUR_BINS] {
+        [1.0 / 24.0; SEAM_HOUR_BINS]
+    }
+
+    #[test]
+    fn validate_lane_day_operands_rejects_invalid_dynamic_inputs() {
+        let row = test_row(0, 1, 0.0);
+
+        let mut invalid_rain = test_operands();
+        invalid_rain.hourly_rainfall_m[3] = f64::NAN;
+        let err = LanedShadowCollector::validate_lane_day_operands(&row, &invalid_rain)
+            .expect_err("non-finite rainfall must fail closed");
+        assert!(err.contains("hourly rainfall slot 4"));
+
+        let mut invalid_melt = test_operands();
+        invalid_melt.hourly_routed_melt_m[5] = -1.0e-6;
+        let err = LanedShadowCollector::validate_lane_day_operands(&row, &invalid_melt)
+            .expect_err("negative routed melt must fail closed");
+        assert!(err.contains("hourly routed melt slot 6"));
+
+        let mut invalid_lai = test_operands();
+        invalid_lai.leaf_area_index = f64::INFINITY;
+        let err = LanedShadowCollector::validate_lane_day_operands(&row, &invalid_lai)
+            .expect_err("non-finite LAI must fail closed");
+        assert!(err.contains("LAI must be finite and nonnegative"));
+
+        let mut invalid_height = test_operands();
+        invalid_height.canopy_height_m = -0.1;
+        let err = LanedShadowCollector::validate_lane_day_operands(&row, &invalid_height)
+            .expect_err("negative canopy height must fail closed");
+        assert!(err.contains("canopy height must be finite and nonnegative"));
+
+        let mut missing_height = test_operands();
+        missing_height.leaf_area_index = 0.5;
+        missing_height.canopy_height_m = 0.0;
+        let err = LanedShadowCollector::validate_lane_day_operands(&row, &missing_height)
+            .expect_err("positive LAI without canopy height must fail closed");
+        assert!(err.contains("canopy height must be > 0 when LAI is positive"));
+
+        let mut valid_vegetated = test_operands();
+        valid_vegetated.leaf_area_index = 0.5;
+        valid_vegetated.canopy_height_m = 0.4;
+        LanedShadowCollector::validate_lane_day_operands(&row, &valid_vegetated)
+            .expect("finite positive canopy state should validate");
+    }
+
+    #[test]
+    fn observe_row_rejects_invalid_lane_area_and_runoff_domains() {
+        let mut collector = LanedShadowCollector::new(test_geometry(1));
+        let err = collector
+            .observe_row(&test_row(1, 0, 0.0), Box::new(test_operands()))
+            .expect_err("lane outside geometry must fail closed");
+        assert!(err.contains("lane index 1 outside geometry (1)"));
+
+        let mut bad_area = test_row(0, 0, 0.0);
+        bad_area.area_m2 = 0.0;
+        let mut collector = LanedShadowCollector::new(test_geometry(1));
+        let err = collector
+            .observe_row(&bad_area, Box::new(test_operands()))
+            .expect_err("non-positive area must fail closed");
+        assert!(err.contains("area must be finite and > 0"));
+
+        let mut bad_runvol = test_row(0, 0, -1.0);
+        bad_runvol.area_m2 = 240.0;
+        let mut collector = LanedShadowCollector::new(test_geometry(1));
+        let err = collector
+            .observe_row(&bad_runvol, Box::new(test_operands()))
+            .expect_err("negative runvol must fail closed");
+        assert!(err.contains("runvol must be finite and nonnegative"));
+    }
+
+    #[test]
+    fn day_change_commits_zero_source_day_and_finalize_commits_tail_day() {
+        let mut collector = LanedShadowCollector::new(test_geometry(1));
+        collector
+            .observe_row(&test_row(0, 0, 0.0), Box::new(test_operands()))
+            .expect("zero-source first day should buffer");
+        collector
+            .observe_row(&test_row(0, 1, 0.0), Box::new(test_operands()))
+            .expect("day change should commit previous zero-source day");
+
+        let summary = collector
+            .finalize()
+            .expect("finalize should commit tail day");
+
+        assert_eq!(summary.days_seen, 2);
+        assert_eq!(summary.days_routed, 0);
+        assert_eq!(summary.days_uniform_shape, 0);
+        assert_eq!(summary.total_source_m3.to_bits(), 0.0_f64.to_bits());
+        assert_eq!(
+            summary.aggregate_router_conservation_rel.to_bits(),
+            0.0_f64.to_bits()
+        );
+    }
+
+    #[test]
+    fn positive_uniform_shape_day_routes_and_classifies_routed_melt_source() {
+        let mut row = test_row(0, 0, 2.4);
+        row.dc01_surface_hourly_weights = uniform_weights();
+        let mut operands = test_operands();
+        operands.hourly_routed_melt_m[0] = 2.0e-12;
+        let mut collector = LanedShadowCollector::new(test_geometry(1));
+
+        collector
+            .observe_row(&row, Box::new(operands))
+            .expect("positive uniform source should buffer");
+        let summary = collector.finalize().expect("positive day should route");
+
+        assert_eq!(summary.days_seen, 1);
+        assert_eq!(summary.days_routed, 1);
+        assert_eq!(summary.days_uniform_shape, 1);
+        assert_eq!(summary.days_uniform_shape_with_routed_melt, 1);
+        assert_eq!(summary.days_uniform_shape_without_routed_melt, 0);
+        assert!((summary.total_source_m3 - 2.4).abs() <= 1.0e-12);
+        assert!(summary.total_routed_outlet_m3 >= 0.0);
+        assert!(summary.max_supply_reconstruction_rel <= 1.0e-12);
+    }
+
+    #[test]
+    fn positive_uniform_shape_day_without_routed_melt_classifies_lump_only_source() {
+        let mut row = test_row(0, 0, 1.2);
+        row.dc01_surface_hourly_weights = uniform_weights();
+        let mut collector = LanedShadowCollector::new(test_geometry(1));
+
+        collector
+            .observe_row(&row, Box::new(test_operands()))
+            .expect("positive uniform source should buffer");
+        let summary = collector.finalize().expect("positive day should route");
+
+        assert_eq!(summary.days_seen, 1);
+        assert_eq!(summary.days_routed, 1);
+        assert_eq!(summary.days_uniform_shape, 1);
+        assert_eq!(summary.days_uniform_shape_with_routed_melt, 0);
+        assert_eq!(summary.days_uniform_shape_without_routed_melt, 1);
+        assert!((summary.total_source_m3 - 1.2).abs() <= 1.0e-12);
+    }
+
+    #[test]
+    fn missing_buffered_operands_fail_closed_before_cascade() {
+        let mut collector = LanedShadowCollector::new(test_geometry(1));
+        collector.current_day = Some(4);
+        let missing_operands: Vec<Option<LanedShadowLaneDayOperands>> = vec![None];
+
+        let err = collector
+            .build_cascade_segments(&missing_operands)
+            .expect_err("cascade segment build requires dynamic operands");
+        assert!(err.contains("missing dynamic operands for lane 1 day 5"));
+
+        let day_depths = vec![[0.0; SEAM_HOUR_BINS]];
+        let err = collector
+            .build_day_rate_series(&day_depths, &missing_operands)
+            .expect_err("rate series build requires dynamic operands");
+        assert!(err.contains("missing dynamic operands for day 5"));
+    }
+
+    #[test]
+    fn diagnostic_profile_helpers_cover_opt_in_surfaces_without_public_outputs() {
+        let _ = LanedShadowCollector::env_enabled();
+        let mut collector = LanedShadowCollector::new(test_geometry(1));
+        collector.profile = None;
+        collector.record_operand_build(None);
+        assert!(collector.profile.is_none());
+
+        collector.profile = Some(LanedShadowProfileSlots::default());
+        let started = Instant::now()
+            .checked_sub(std::time::Duration::from_millis(1))
+            .unwrap_or_else(Instant::now);
+        collector.record_operand_build(Some(started));
+        assert!(
+            collector
+                .profile
+                .expect("profile should remain armed")
+                .operand_build_ns
+                > 0
+        );
+
+        LanedShadowCollector::emit_profile_report(
+            &LanedShadowProfileSlots::default(),
+            &LanedShadowSummary::default(),
+        );
+    }
 
     #[test]
     fn dynamic_canopy_operands_reach_cell_parameters() {

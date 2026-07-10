@@ -1,7 +1,7 @@
 # CQR Nightly 10 - Runner Laned Shadow
 
 Package: `20260709-cqr-nightly-10-runner-laned-shadow-001`
-Status: `SCAFFOLDED-CQR-NIGHTLY`
+Status: `EXECUTED-COMPLETE-CQR-NIGHTLY`
 ExecPlan: `docs/work-packages/cqr-nightly-burndown-execplan.md`
 Target module:
 `crates/openwepp-runner/src/hillslope/laned_shadow.rs`

@@ -1,0 +1,20 @@
+Command: cargo clippy --workspace --all-targets -- -D warnings
+Exit: 0
+Log: docs/work-packages/20260709-cqr-nightly-10-runner-laned-shadow-001/artifacts/final_heavy_clippy.log
+Size-bytes: 314
+SHA256: 027fc132f5824c2ccb0d88755c8a6592ada6039b1e6f9f4ca420e2debebb3986
+Summary:     Finished `dev` profile [unoptimized + debuginfo] target(s) in 5.29s
+
+Command: cargo nextest run --workspace --profile full
+Exit: 0
+Log: docs/work-packages/20260709-cqr-nightly-10-runner-laned-shadow-001/artifacts/final_heavy_nextest_full.log
+Size-bytes: 1213
+SHA256: c915030f606fcf33ef1c818eae522744f6686c23665f2e26180cd1c495b708ef
+Summary:      Summary [ 610.954s] 1594 tests run: 1594 passed (4 slow), 3 skipped
+
+Command: cargo deny check
+Exit: 0
+Log: docs/work-packages/20260709-cqr-nightly-10-runner-laned-shadow-001/artifacts/final_heavy_deny_check.log
+Size-bytes: 48
+SHA256: f1a0fca39d4280363937aabd77783990ea6480bd9ca257816de3b68fc8efa845
+Summary: advisories ok, bans ok, licenses ok, sources ok

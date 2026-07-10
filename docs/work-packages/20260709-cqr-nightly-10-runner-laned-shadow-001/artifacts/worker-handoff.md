@@ -1,18 +1,23 @@
 # Worker Handoff
 
-Evidence label: Static.
+Evidence label: Static/Ran.
 
-Status: `SCAFFOLDED`
+Status: `COMPLETE`
 
 Current state:
 
-- Package scaffolded for CQR nightly target #10.
-- No production or test implementation edits have been made.
-- Required scaffold commit is the next boundary before implementation.
+- Package scaffolded and scaffold commit created: `8b4c79c5`.
+- Implementation is test-only in `laned_shadow.rs`.
+- Target CRAP is closed: `0` rows above `30`, max `14.016830348056178`.
+- Target coverage passes science-tier line/region thresholds:
+  `684/699` lines and `842/877` regions.
+- Production-only ADR-0021 coverage split also passes:
+  `321/330` lines and `406/437` regions before `#[cfg(test)]`.
+- Focused tests, focused nextest, focused clippy, fmt, diff-check, targeted
+  coverage, and targeted CRAP are green.
+- Workspace clippy, full workspace nextest, deny, doc lint, dual review, and
+  dual verification are complete.
 
-Next step:
+Remaining package action:
 
-1. Commit the scaffold.
-2. Read the target source and relevant tests fully.
-3. Add characterization for the zero-covered high-CRAP collector helpers.
-4. Decompose behavior-preservingly until target CRAP rows are `<= 30`.
+- Commit completion evidence.
