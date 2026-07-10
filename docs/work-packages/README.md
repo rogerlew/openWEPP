@@ -29,6 +29,14 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-10`:
+- `20260709-cqr-nightly-b02-06-irrigation-depletion-001/` -
+  EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-10): CQR nightly batch 02 target #6
+  completed behavior-preserving irrigation-depletion parser decomposition and
+  21-case public contract characterization. Target CRAP rows above `30` reduced
+  from `3` to `0`, maximum CRAP is `13.731`, and production coverage is
+  `1023/1108` lines / `1128/1231` regions. Final delegated clippy, full-nextest
+  `1633/1633` with `3` skipped, and deny passed. Package:
+  `20260709-cqr-nightly-b02-06-irrigation-depletion-001/`.
 - `20260709-cqr-nightly-b02-05-runner-totalwatsed3-001/` -
   EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-10): CQR nightly batch 02 target #5
   completed behavior-preserving decomposition and public CLI characterization

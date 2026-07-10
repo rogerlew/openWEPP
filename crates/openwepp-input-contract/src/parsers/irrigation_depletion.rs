@@ -277,106 +277,183 @@ impl IrrigationDepletionParseError {
 impl fmt::Display for IrrigationDepletionParseError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::InputOpenError { path, source } => {
-                write!(
-                    f,
-                    "{}: could not open {} ({source})",
-                    self.contract_error_id(),
-                    path.display()
-                )
+            Self::InputOpenError { path, source } => format_input_open_error(f, path, source),
+            Self::MissingRecord { field } => format_missing_record_error(f, field),
+            Self::TokenParseError { line, field, token } => {
+                format_token_parse_error(f, *line, field, token)
             }
-            Self::MissingRecord { field } => {
-                write!(
-                    f,
-                    "{}: missing required record: {field}",
-                    self.contract_error_id()
-                )
-            }
-            Self::TokenParseError { line, field, token } => write!(
-                f,
-                "{}: line {line} could not parse field '{field}' from token '{token}'",
-                self.contract_error_id()
-            ),
             Self::RecordArityError {
                 line,
                 context,
                 expected,
                 found,
-            } => write!(
-                f,
-                "{}: line {line} {context} expects {expected} token(s), found {found}",
-                self.contract_error_id()
-            ),
+            } => format_record_arity_error(f, *line, context, expected, *found),
             Self::UnsupportedDatver {
                 line,
                 observed,
                 reason,
-            } => {
-                if let Some(datver) = observed {
-                    write!(
-                        f,
-                        "{}: line {line} datver {datver} unsupported ({reason})",
-                        self.contract_error_id()
-                    )
-                } else {
-                    write!(
-                        f,
-                        "{}: line {line} unsupported datver/header branch ({reason})",
-                        self.contract_error_id()
-                    )
-                }
-            }
+            } => format_unsupported_datver_error(f, *line, *observed, reason),
             Self::InvalidHeaderDomain {
                 line,
                 field,
                 value,
                 allowed,
-            } => write!(
-                f,
-                "{}: line {line} invalid header field '{field}' value {value}; expected {allowed}",
-                self.contract_error_id()
-            ),
+            } => format_invalid_header_domain_error(f, *line, field, *value, allowed),
             Self::FieldRangeError {
                 line,
                 field,
                 value,
                 expected,
-            } => write!(
-                f,
-                "{}: line {line} field '{field}' value {value} violates {expected}",
-                self.contract_error_id()
-            ),
+            } => format_field_range_error(f, *line, field, *value, expected),
             Self::CrossFileMismatch {
                 line,
                 field,
                 expected,
                 observed,
-            } => write!(
-                f,
-                "{}: line {line} cross-file mismatch for '{field}' (expected {expected}, observed {observed})",
-                self.contract_error_id()
-            ),
-            Self::InvalidElementId { line, field, value } => write!(
-                f,
-                "{}: line {line} invalid element id for '{field}': {value}",
-                self.contract_error_id()
-            ),
+            } => format_cross_file_mismatch_error(f, *line, field, expected, observed),
+            Self::InvalidElementId { line, field, value } => {
+                format_invalid_element_id_error(f, *line, field, *value)
+            }
             Self::ContinuationOrderingError {
                 line,
                 previous,
                 current,
-            } => write!(
-                f,
-                "{}: line {line} continuation ordering violation prev={previous:?} current={current:?}",
-                self.contract_error_id()
-            ),
-            Self::FurrowDisallowed { line, reason } => write!(
-                f,
-                "{}: line {line} furrow irrigation disallowed ({reason})",
-                self.contract_error_id()
-            ),
+            } => format_continuation_ordering_error(f, *line, *previous, *current),
+            Self::FurrowDisallowed { line, reason } => {
+                format_furrow_disallowed_error(f, *line, reason)
+            }
         }
     }
+}
+
+fn format_input_open_error(
+    f: &mut fmt::Formatter<'_>,
+    path: &Path,
+    source: &io::Error,
+) -> fmt::Result {
+    write!(f, "IRD-E-000: could not open {} ({source})", path.display())
+}
+
+fn format_missing_record_error(f: &mut fmt::Formatter<'_>, field: &str) -> fmt::Result {
+    write!(f, "IRD-E-002: missing required record: {field}")
+}
+
+fn format_token_parse_error(
+    f: &mut fmt::Formatter<'_>,
+    line: usize,
+    field: &str,
+    token: &str,
+) -> fmt::Result {
+    write!(
+        f,
+        "IRD-E-001: line {line} could not parse field '{field}' from token '{token}'"
+    )
+}
+
+fn format_record_arity_error(
+    f: &mut fmt::Formatter<'_>,
+    line: usize,
+    context: &str,
+    expected: &str,
+    found: usize,
+) -> fmt::Result {
+    write!(
+        f,
+        "IRD-E-002: line {line} {context} expects {expected} token(s), found {found}"
+    )
+}
+
+fn format_unsupported_datver_error(
+    f: &mut fmt::Formatter<'_>,
+    line: usize,
+    observed: Option<f64>,
+    reason: &str,
+) -> fmt::Result {
+    if let Some(datver) = observed {
+        write!(
+            f,
+            "IRD-E-003: line {line} datver {datver} unsupported ({reason})"
+        )
+    } else {
+        write!(
+            f,
+            "IRD-E-003: line {line} unsupported datver/header branch ({reason})"
+        )
+    }
+}
+
+fn format_invalid_header_domain_error(
+    f: &mut fmt::Formatter<'_>,
+    line: usize,
+    field: &str,
+    value: i32,
+    allowed: &str,
+) -> fmt::Result {
+    write!(
+        f,
+        "IRD-E-004: line {line} invalid header field '{field}' value {value}; expected {allowed}"
+    )
+}
+
+fn format_field_range_error(
+    f: &mut fmt::Formatter<'_>,
+    line: usize,
+    field: &str,
+    value: f64,
+    expected: &str,
+) -> fmt::Result {
+    write!(
+        f,
+        "IRD-E-005: line {line} field '{field}' value {value} violates {expected}"
+    )
+}
+
+fn format_cross_file_mismatch_error(
+    f: &mut fmt::Formatter<'_>,
+    line: usize,
+    field: &str,
+    expected: &str,
+    observed: &str,
+) -> fmt::Result {
+    write!(
+        f,
+        "IRD-E-006: line {line} cross-file mismatch for '{field}' (expected {expected}, observed {observed})"
+    )
+}
+
+fn format_invalid_element_id_error(
+    f: &mut fmt::Formatter<'_>,
+    line: usize,
+    field: &str,
+    value: i32,
+) -> fmt::Result {
+    write!(
+        f,
+        "IRD-E-007: line {line} invalid element id for '{field}': {value}"
+    )
+}
+
+fn format_continuation_ordering_error(
+    f: &mut fmt::Formatter<'_>,
+    line: usize,
+    previous: (i32, i32, usize),
+    current: (i32, i32, usize),
+) -> fmt::Result {
+    write!(
+        f,
+        "IRD-E-008: line {line} continuation ordering violation prev={previous:?} current={current:?}"
+    )
+}
+
+fn format_furrow_disallowed_error(
+    f: &mut fmt::Formatter<'_>,
+    line: usize,
+    reason: &str,
+) -> fmt::Result {
+    write!(
+        f,
+        "IRD-E-009: line {line} furrow irrigation disallowed ({reason})"
+    )
 }
 
 impl std::error::Error for IrrigationDepletionParseError {
@@ -415,35 +492,114 @@ pub fn parse_irrigation_depletion_from_str(
         });
     }
 
-    let mut cursor = 0usize;
     let mut warnings = Vec::new();
+    let mut preamble = parse_datver_preamble(&lines, options.mode, &mut warnings)?;
+    let header = parse_depletion_header(&lines, &mut preamble.cursor)?;
 
+    validate_datver_policy(
+        header.line,
+        preamble.datver,
+        preamble.datver_explicit,
+        header.system_type,
+        options.mode,
+        &mut warnings,
+    )?;
+
+    let element_count = header.element_count;
+    validate_cross_file_constraints(header.line, element_count, header.system_type, options)?;
+
+    let static_depths = parse_static_depths(&lines, &mut preamble.cursor, header.system_type)?;
+    let period_context = PeriodParseContext {
+        system_type: header.system_type,
+        datver: preamble.datver,
+        options,
+        topology,
+    };
+    let periods = parse_periods(
+        &lines,
+        &mut preamble.cursor,
+        element_count,
+        period_context,
+        &mut warnings,
+    )?;
+
+    validate_initialization_rows(element_count, &periods)?;
+
+    if options.enforce_continuation_order {
+        validate_continuation_ordering(element_count, &periods)?;
+    }
+
+    Ok(IrrigationDepletionFile {
+        datver: preamble.datver,
+        datver_explicit: preamble.datver_explicit,
+        element_count,
+        system_type: header.system_type,
+        schedule_type: header.schedule_type,
+        min_depth_m: static_depths.min_depth_m,
+        max_depth_m: static_depths.max_depth_m,
+        periods,
+        initialization_complete: true,
+        warnings,
+    })
+}
+
+#[derive(Clone, Copy)]
+struct DatverPreamble {
+    cursor: usize,
+    datver: Option<f64>,
+    datver_explicit: bool,
+}
+
+fn parse_datver_preamble(
+    lines: &[LocatedLine<'_>],
+    mode: ParseMode,
+    warnings: &mut Vec<IrrigationDepletionWarning>,
+) -> Result<DatverPreamble, IrrigationDepletionParseError> {
     let first_line = lines[0];
     let first_tokens = tokenize(first_line.text);
 
-    let mut datver = None;
-    let mut datver_explicit = false;
-
     if first_tokens.len() == 1 {
-        let value = parse_f64(first_tokens[0], first_line.number, "datver")?;
-        datver = Some(value);
-        datver_explicit = true;
-        cursor += 1;
-    } else if options.mode == ParseMode::Compatibility {
+        let datver = parse_f64(first_tokens[0], first_line.number, "datver")?;
+        return Ok(DatverPreamble {
+            cursor: 1,
+            datver: Some(datver),
+            datver_explicit: true,
+        });
+    }
+
+    if mode == ParseMode::Compatibility {
         warnings.push(IrrigationDepletionWarning::new(
             IrrigationDepletionWarningCode::IrdW001,
             first_line.number,
             "compatibility path accepted legacy no-datver header branch",
         ));
-    } else {
-        return Err(IrrigationDepletionParseError::UnsupportedDatver {
-            line: first_line.number,
-            observed: None,
-            reason: "strict mode requires explicit datver header",
+        return Ok(DatverPreamble {
+            cursor: 0,
+            datver: None,
+            datver_explicit: false,
         });
     }
 
-    let header_line = require_line(&lines, &mut cursor, "header_line")?;
+    Err(IrrigationDepletionParseError::UnsupportedDatver {
+        line: first_line.number,
+        observed: None,
+        reason: "strict mode requires explicit datver header",
+    })
+}
+
+#[derive(Clone, Copy)]
+struct IrrigationDepletionHeader {
+    line: usize,
+    element_count: usize,
+    system_type: IrrigationSystemType,
+    schedule_type: i32,
+}
+
+fn parse_depletion_header(
+    lines: &[LocatedLine<'_>],
+    cursor: &mut usize,
+) -> Result<IrrigationDepletionHeader, IrrigationDepletionParseError> {
+    let header_line = require_line(lines, cursor, "header_line")?;
     let header_tokens = tokenize(header_line.text);
     if header_tokens.len() != 3 {
         return Err(IrrigationDepletionParseError::RecordArityError {
@@ -456,7 +612,7 @@ pub fn parse_irrigation_depletion_from_str(
 
     let itemp_raw = parse_i32(header_tokens[0], header_line.number, "itemp")?;
     let jtemp_raw = parse_i32(header_tokens[1], header_line.number, "jtemp")?;
-    let ktemp = parse_i32(header_tokens[2], header_line.number, "ktemp")?;
+    let schedule_type = parse_i32(header_tokens[2], header_line.number, "ktemp")?;
 
     if itemp_raw <= 0 {
         return Err(IrrigationDepletionParseError::InvalidHeaderDomain {
@@ -466,6 +622,14 @@ pub fn parse_irrigation_depletion_from_str(
             allowed: "> 0",
         });
     }
+    let element_count = usize::try_from(itemp_raw).map_err(|_| {
+        IrrigationDepletionParseError::InvalidHeaderDomain {
+            line: header_line.number,
+            field: "itemp",
+            value: itemp_raw,
+            allowed: "> 0",
+        }
+    })?;
 
     let system_type = IrrigationSystemType::from_raw(jtemp_raw).map_err(|allowed| {
         IrrigationDepletionParseError::InvalidHeaderDomain {
@@ -476,41 +640,36 @@ pub fn parse_irrigation_depletion_from_str(
         }
     })?;
 
-    if ktemp != 1 {
+    if schedule_type != 1 {
         return Err(IrrigationDepletionParseError::InvalidHeaderDomain {
             line: header_line.number,
             field: "ktemp",
-            value: ktemp,
+            value: schedule_type,
             allowed: "1 (depletion schedule)",
         });
     }
 
-    validate_datver_policy(
-        header_line.number,
-        datver,
-        datver_explicit,
+    Ok(IrrigationDepletionHeader {
+        line: header_line.number,
+        element_count,
         system_type,
-        options.mode,
-        &mut warnings,
-    )?;
+        schedule_type,
+    })
+}
 
-    validate_cross_file_constraints(
-        header_line.number,
-        usize::try_from(itemp_raw).map_err(|_| {
-            IrrigationDepletionParseError::InvalidHeaderDomain {
-                line: header_line.number,
-                field: "itemp",
-                value: itemp_raw,
-                allowed: "> 0",
-            }
-        })?,
-        system_type,
-        options,
-    )?;
+#[derive(Clone, Copy)]
+struct StaticDepths {
+    min_depth_m: f64,
+    max_depth_m: Option<f64>,
+}
 
-    let static_line = require_line(&lines, &mut cursor, "static_line")?;
+fn parse_static_depths(
+    lines: &[LocatedLine<'_>],
+    cursor: &mut usize,
+    system_type: IrrigationSystemType,
+) -> Result<StaticDepths, IrrigationDepletionParseError> {
+    let static_line = require_line(lines, cursor, "static_line")?;
     let static_tokens = tokenize(static_line.text);
-
     let min_depth_m = parse_f64(
         static_tokens
             .first()
@@ -553,62 +712,57 @@ pub fn parse_irrigation_depletion_from_str(
         }
     };
 
-    let itemp = usize::try_from(itemp_raw).map_err(|_| {
-        IrrigationDepletionParseError::InvalidHeaderDomain {
-            line: header_line.number,
-            field: "itemp",
-            value: itemp_raw,
-            allowed: "> 0",
-        }
-    })?;
+    Ok(StaticDepths {
+        min_depth_m,
+        max_depth_m,
+    })
+}
 
+#[derive(Clone, Copy)]
+struct PeriodParseContext<'a> {
+    system_type: IrrigationSystemType,
+    datver: Option<f64>,
+    options: IrrigationDepletionParserOptions,
+    topology: &'a IrrigationDepletionTopologyContext,
+}
+
+fn parse_periods(
+    lines: &[LocatedLine<'_>],
+    cursor: &mut usize,
+    element_count: usize,
+    context: PeriodParseContext<'_>,
+    warnings: &mut Vec<IrrigationDepletionWarning>,
+) -> Result<Vec<IrrigationPeriodRecord>, IrrigationDepletionParseError> {
     let mut periods = Vec::new();
-    for index in 0..itemp {
-        let row = require_line(&lines, &mut cursor, "period_line")?;
+    for index in 0..element_count {
+        let row = require_line(lines, cursor, "period_line")?;
         let record = parse_period_row(
             row,
             index,
-            system_type,
-            datver,
-            options,
-            topology,
-            &mut warnings,
+            context.system_type,
+            context.datver,
+            context.options,
+            context.topology,
+            warnings,
         )?;
         periods.push(record);
     }
 
-    while let Some(row) = lines.get(cursor).copied() {
-        cursor += 1;
+    while let Some(row) = lines.get(*cursor).copied() {
+        *cursor += 1;
         let record = parse_period_row(
             row,
             periods.len(),
-            system_type,
-            datver,
-            options,
-            topology,
-            &mut warnings,
+            context.system_type,
+            context.datver,
+            context.options,
+            context.topology,
+            warnings,
         )?;
         periods.push(record);
     }
 
-    validate_initialization_rows(itemp, &periods)?;
-
-    if options.enforce_continuation_order {
-        validate_continuation_ordering(itemp, &periods)?;
-    }
-
-    Ok(IrrigationDepletionFile {
-        datver,
-        datver_explicit,
-        element_count: itemp,
-        system_type,
-        schedule_type: ktemp,
-        min_depth_m,
-        max_depth_m,
-        periods,
-        initialization_complete: true,
-        warnings,
-    })
+    Ok(periods)
 }
 
 fn validate_datver_policy(
@@ -762,6 +916,94 @@ fn parse_sprinkler_row(
     mode: ParseMode,
     warnings: &mut Vec<IrrigationDepletionWarning>,
 ) -> Result<IrrigationPeriodRecord, IrrigationDepletionParseError> {
+    let values = parse_sprinkler_values(row, tokens, datver, mode, warnings)?;
+    let zero_start_transition = derive_zero_start_transition(
+        values.start_doy,
+        options_for_zero(mode),
+        row.number,
+        warnings,
+    );
+
+    Ok(IrrigationPeriodRecord {
+        line: row.number,
+        element_id: usize::try_from(values.element_id).map_err(|_| {
+            IrrigationDepletionParseError::InvalidElementId {
+                line: row.number,
+                field: "ofeflg",
+                value: values.element_id,
+            }
+        })?,
+        depletion_trigger_ratio: values.depletion_trigger_ratio,
+        start_doy: values.start_doy,
+        start_year: values.start_year,
+        end_doy: values.end_doy,
+        end_year: values.end_year,
+        continuation_order_key: (
+            values.end_year,
+            values.end_doy,
+            usize::try_from(values.element_id).unwrap_or_default(),
+        ),
+        zero_start_transition,
+        furrow_disabled_by_landuse: false,
+        data: IrrigationPeriodData::Sprinkler(SprinklerPeriodData {
+            rate_m_per_s: values.rate_m_per_s,
+            depth_ratio: values.depth_ratio,
+            nozzle_factor: values.nozzle_factor,
+        }),
+    })
+}
+
+struct SprinklerRowValues {
+    element_id: i32,
+    rate_m_per_s: f64,
+    depth_ratio: f64,
+    depletion_trigger_ratio: f64,
+    nozzle_factor: f64,
+    start_doy: i32,
+    start_year: i32,
+    end_doy: i32,
+    end_year: i32,
+}
+
+fn parse_sprinkler_values(
+    row: LocatedLine<'_>,
+    tokens: &[&str],
+    datver: Option<f64>,
+    mode: ParseMode,
+    warnings: &mut Vec<IrrigationDepletionWarning>,
+) -> Result<SprinklerRowValues, IrrigationDepletionParseError> {
+    let layout = parse_sprinkler_layout(row, tokens, datver, mode, warnings)?;
+    let (element_id, rate_m_per_s, depth_ratio, depletion_trigger_ratio) =
+        parse_sprinkler_application_values(row, tokens)?;
+    let nozzle_factor = parse_sprinkler_nozzle(row, tokens, layout.has_nozzle)?;
+    let (start_doy, start_year, end_doy, end_year) =
+        parse_sprinkler_schedule(row, tokens, layout.date_offset)?;
+
+    Ok(SprinklerRowValues {
+        element_id,
+        rate_m_per_s,
+        depth_ratio,
+        depletion_trigger_ratio,
+        nozzle_factor,
+        start_doy,
+        start_year,
+        end_doy,
+        end_year,
+    })
+}
+
+struct SprinklerRowLayout {
+    has_nozzle: bool,
+    date_offset: usize,
+}
+
+fn parse_sprinkler_layout(
+    row: LocatedLine<'_>,
+    tokens: &[&str],
+    datver: Option<f64>,
+    mode: ParseMode,
+    warnings: &mut Vec<IrrigationDepletionWarning>,
+) -> Result<SprinklerRowLayout, IrrigationDepletionParseError> {
     let has_nozzle = match tokens.len() {
         9 => true,
         8 if mode == ParseMode::Compatibility => false,
@@ -775,24 +1017,28 @@ fn parse_sprinkler_row(
         }
     };
 
-    if !has_nozzle && mode == ParseMode::Compatibility {
-        if let Some(value) = datver {
-            if value >= DATVER_SPRINKLER_COMPAT_MIN {
-                warnings.push(IrrigationDepletionWarning::new(
-                    IrrigationDepletionWarningCode::IrdW002,
-                    row.number,
-                    "compatibility injected legacy default nozzle=1.0",
-                ));
-            }
-        } else {
-            warnings.push(IrrigationDepletionWarning::new(
-                IrrigationDepletionWarningCode::IrdW002,
-                row.number,
-                "compatibility injected legacy default nozzle=1.0",
-            ));
-        }
+    if !has_nozzle && should_warn_legacy_sprinkler_nozzle(datver) {
+        warnings.push(IrrigationDepletionWarning::new(
+            IrrigationDepletionWarningCode::IrdW002,
+            row.number,
+            "compatibility injected legacy default nozzle=1.0",
+        ));
     }
 
+    Ok(SprinklerRowLayout {
+        has_nozzle,
+        date_offset: usize::from(has_nozzle) + 4,
+    })
+}
+
+fn should_warn_legacy_sprinkler_nozzle(datver: Option<f64>) -> bool {
+    datver.is_none_or(|value| value >= DATVER_SPRINKLER_COMPAT_MIN)
+}
+
+fn parse_sprinkler_application_values(
+    row: LocatedLine<'_>,
+    tokens: &[&str],
+) -> Result<(i32, f64, f64, f64), IrrigationDepletionParseError> {
     let element_id = parse_positive_i32(tokens[0], row.number, "ofeflg")?;
     let rate_m_per_s = parse_f64(tokens[1], row.number, "irrate")?;
     validate_nonnegative(row.number, "irrate", rate_m_per_s)?;
@@ -803,15 +1049,33 @@ fn parse_sprinkler_row(
     let depletion_trigger_ratio = parse_f64(tokens[3], row.number, "deplev")?;
     validate_nonnegative(row.number, "deplev", depletion_trigger_ratio)?;
 
-    let nozzle_factor = if has_nozzle {
-        let parsed = parse_f64(tokens[4], row.number, "nozzle")?;
-        validate_positive(row.number, "nozzle", parsed)?;
-        parsed
-    } else {
-        1.0
-    };
+    Ok((
+        element_id,
+        rate_m_per_s,
+        depth_ratio,
+        depletion_trigger_ratio,
+    ))
+}
 
-    let date_offset = if has_nozzle { 5 } else { 4 };
+fn parse_sprinkler_nozzle(
+    row: LocatedLine<'_>,
+    tokens: &[&str],
+    has_nozzle: bool,
+) -> Result<f64, IrrigationDepletionParseError> {
+    if has_nozzle {
+        let nozzle_factor = parse_f64(tokens[4], row.number, "nozzle")?;
+        validate_positive(row.number, "nozzle", nozzle_factor)?;
+        Ok(nozzle_factor)
+    } else {
+        Ok(1.0)
+    }
+}
+
+fn parse_sprinkler_schedule(
+    row: LocatedLine<'_>,
+    tokens: &[&str],
+    date_offset: usize,
+) -> Result<(i32, i32, i32, i32), IrrigationDepletionParseError> {
     let start_doy = parse_i32(tokens[date_offset], row.number, "irbeg")?;
     let start_year = parse_i32(tokens[date_offset + 1], row.number, "yrbeg")?;
     let end_doy = parse_i32(tokens[date_offset + 2], row.number, "irend")?;
@@ -821,36 +1085,7 @@ fn parse_sprinkler_row(
     validate_day_year_tuple(row.number, "irend/yrend", end_doy, end_year)?;
     validate_period_bounds(row.number, start_doy, start_year, end_doy, end_year)?;
 
-    let zero_start_transition =
-        derive_zero_start_transition(start_doy, options_for_zero(mode), row.number, warnings);
-
-    Ok(IrrigationPeriodRecord {
-        line: row.number,
-        element_id: usize::try_from(element_id).map_err(|_| {
-            IrrigationDepletionParseError::InvalidElementId {
-                line: row.number,
-                field: "ofeflg",
-                value: element_id,
-            }
-        })?,
-        depletion_trigger_ratio,
-        start_doy,
-        start_year,
-        end_doy,
-        end_year,
-        continuation_order_key: (
-            end_year,
-            end_doy,
-            usize::try_from(element_id).unwrap_or_default(),
-        ),
-        zero_start_transition,
-        furrow_disabled_by_landuse: false,
-        data: IrrigationPeriodData::Sprinkler(SprinklerPeriodData {
-            rate_m_per_s,
-            depth_ratio,
-            nozzle_factor,
-        }),
-    })
+    Ok((start_doy, start_year, end_doy, end_year))
 }
 
 fn parse_furrow_row(
@@ -859,6 +1094,71 @@ fn parse_furrow_row(
     options: IrrigationDepletionParserOptions,
     warnings: &mut Vec<IrrigationDepletionWarning>,
 ) -> Result<IrrigationPeriodRecord, IrrigationDepletionParseError> {
+    let values = parse_furrow_values(row, tokens, options.mode, warnings)?;
+    let zero_start_transition = derive_zero_start_transition(
+        values.start_doy,
+        options.irschd_on_entry,
+        row.number,
+        warnings,
+    );
+
+    Ok(IrrigationPeriodRecord {
+        line: row.number,
+        element_id: usize::try_from(values.element_id).map_err(|_| {
+            IrrigationDepletionParseError::InvalidElementId {
+                line: row.number,
+                field: "ofeflg",
+                value: values.element_id,
+            }
+        })?,
+        depletion_trigger_ratio: values.depletion_trigger_ratio,
+        start_doy: values.start_doy,
+        start_year: values.start_year,
+        end_doy: values.end_doy,
+        end_year: values.end_year,
+        continuation_order_key: (
+            values.end_year,
+            values.end_doy,
+            usize::try_from(values.element_id).unwrap_or_default(),
+        ),
+        zero_start_transition,
+        furrow_disabled_by_landuse: false,
+        data: IrrigationPeriodData::Furrow(FurrowPeriodData {
+            end_element_id: usize::try_from(values.end_element_id).map_err(|_| {
+                IrrigationDepletionParseError::InvalidElementId {
+                    line: row.number,
+                    field: "endpln",
+                    value: values.end_element_id,
+                }
+            })?,
+            supply_rate_m3_per_s: values.supply_rate_m3_per_s,
+            supply_duration_s: values.supply_duration_s,
+            surge_code: values.surge_code,
+            fill_ratio: values.fill_ratio,
+        }),
+    })
+}
+
+struct FurrowRowValues {
+    element_id: i32,
+    end_element_id: i32,
+    supply_rate_m3_per_s: f64,
+    supply_duration_s: f64,
+    surge_code: i32,
+    fill_ratio: f64,
+    depletion_trigger_ratio: f64,
+    start_doy: i32,
+    start_year: i32,
+    end_doy: i32,
+    end_year: i32,
+}
+
+fn parse_furrow_values(
+    row: LocatedLine<'_>,
+    tokens: &[&str],
+    mode: ParseMode,
+    warnings: &mut Vec<IrrigationDepletionWarning>,
+) -> Result<FurrowRowValues, IrrigationDepletionParseError> {
     if tokens.len() != 11 {
         return Err(IrrigationDepletionParseError::RecordArityError {
             line: row.number,
@@ -871,14 +1171,47 @@ fn parse_furrow_row(
     let element_id = parse_positive_i32(tokens[0], row.number, "ofeflg")?;
     let end_element_id = parse_positive_i32(tokens[1], row.number, "endpln")?;
 
+    let (supply_rate_m3_per_s, supply_duration_s) = parse_furrow_supply(row, tokens)?;
+    let surge_code = parse_furrow_surge_code(row, tokens[4], mode, warnings)?;
+    let (fill_ratio, depletion_trigger_ratio) = parse_furrow_ratios(row, tokens)?;
+    let (start_doy, start_year, end_doy, end_year) = parse_furrow_schedule(row, tokens)?;
+
+    Ok(FurrowRowValues {
+        element_id,
+        end_element_id,
+        supply_rate_m3_per_s,
+        supply_duration_s,
+        surge_code,
+        fill_ratio,
+        depletion_trigger_ratio,
+        start_doy,
+        start_year,
+        end_doy,
+        end_year,
+    })
+}
+
+fn parse_furrow_supply(
+    row: LocatedLine<'_>,
+    tokens: &[&str],
+) -> Result<(f64, f64), IrrigationDepletionParseError> {
     let supply_rate_m3_per_s = parse_f64(tokens[2], row.number, "florat")?;
     validate_nonnegative(row.number, "florat", supply_rate_m3_per_s)?;
 
     let supply_duration_s = parse_f64(tokens[3], row.number, "timest")?;
     validate_nonnegative(row.number, "timest", supply_duration_s)?;
 
-    let mut surge_code = parse_i32(tokens[4], row.number, "depsrg")?;
-    if options.mode == ParseMode::Strict {
+    Ok((supply_rate_m3_per_s, supply_duration_s))
+}
+
+fn parse_furrow_surge_code(
+    row: LocatedLine<'_>,
+    token: &str,
+    mode: ParseMode,
+    warnings: &mut Vec<IrrigationDepletionWarning>,
+) -> Result<i32, IrrigationDepletionParseError> {
+    let mut surge_code = parse_i32(token, row.number, "depsrg")?;
+    if mode == ParseMode::Strict {
         if !matches!(surge_code, 1 | 2 | 4 | 5 | 6) {
             return Err(IrrigationDepletionParseError::FieldRangeError {
                 line: row.number,
@@ -910,12 +1243,26 @@ fn parse_furrow_row(
         });
     }
 
+    Ok(surge_code)
+}
+
+fn parse_furrow_ratios(
+    row: LocatedLine<'_>,
+    tokens: &[&str],
+) -> Result<(f64, f64), IrrigationDepletionParseError> {
     let fill_ratio = parse_f64(tokens[5], row.number, "filrat")?;
     validate_nonnegative(row.number, "filrat", fill_ratio)?;
 
     let depletion_trigger_ratio = parse_f64(tokens[6], row.number, "deplev")?;
     validate_nonnegative(row.number, "deplev", depletion_trigger_ratio)?;
 
+    Ok((fill_ratio, depletion_trigger_ratio))
+}
+
+fn parse_furrow_schedule(
+    row: LocatedLine<'_>,
+    tokens: &[&str],
+) -> Result<(i32, i32, i32, i32), IrrigationDepletionParseError> {
     let start_doy = parse_i32(tokens[7], row.number, "irbeg")?;
     let start_year = parse_i32(tokens[8], row.number, "yrbeg")?;
     let end_doy = parse_i32(tokens[9], row.number, "irend")?;
@@ -925,44 +1272,7 @@ fn parse_furrow_row(
     validate_day_year_tuple(row.number, "irend/yrend", end_doy, end_year)?;
     validate_period_bounds(row.number, start_doy, start_year, end_doy, end_year)?;
 
-    let zero_start_transition =
-        derive_zero_start_transition(start_doy, options.irschd_on_entry, row.number, warnings);
-
-    Ok(IrrigationPeriodRecord {
-        line: row.number,
-        element_id: usize::try_from(element_id).map_err(|_| {
-            IrrigationDepletionParseError::InvalidElementId {
-                line: row.number,
-                field: "ofeflg",
-                value: element_id,
-            }
-        })?,
-        depletion_trigger_ratio,
-        start_doy,
-        start_year,
-        end_doy,
-        end_year,
-        continuation_order_key: (
-            end_year,
-            end_doy,
-            usize::try_from(element_id).unwrap_or_default(),
-        ),
-        zero_start_transition,
-        furrow_disabled_by_landuse: false,
-        data: IrrigationPeriodData::Furrow(FurrowPeriodData {
-            end_element_id: usize::try_from(end_element_id).map_err(|_| {
-                IrrigationDepletionParseError::InvalidElementId {
-                    line: row.number,
-                    field: "endpln",
-                    value: end_element_id,
-                }
-            })?,
-            supply_rate_m3_per_s,
-            supply_duration_s,
-            surge_code,
-            fill_ratio,
-        }),
-    })
+    Ok((start_doy, start_year, end_doy, end_year))
 }
 
 fn validate_initialization_rows(
