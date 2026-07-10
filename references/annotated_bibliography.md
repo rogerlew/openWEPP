@@ -1214,3 +1214,98 @@ openWEPP note (2026-05-11):
 **Topic**: Finite-difference implicit MacCormack scheme for 1-D kinematic-wave overland/open-channel flow, benchmarked against an explicit MacCormack variant, analytical solutions, and experimental measurement.
 **MOFEFID Lane D role**: R-63 §2.3's named source for the applied TVD-MacCormack KWE computation ("MacCormack, 1969, 1985; Tseng, 2010"); D10B Leg-A authority for the `alpha` update-timing (explicit vs implicit) adjudication, and published precedent for the Leg-B acceptance shape (validating KWE schemes against analytic solutions plus experiment rather than another implementation's trace).
 **Notes / caveats**: Intake-level annotation. Acquired 2026-07-06 (operator) for `20260706-mofefid-d10b-gap005-source-authority-reconciliation-001`; named in R-63 §2.3's own citation chain, so clean-room-compatible.
+
+## R-104: Knisel (ed.) 1980 CREAMS report — Conservation Research Report 26
+
+**Citation**: Knisel, W. G. (Ed.) (1980). *CREAMS: A Field-Scale Model for Chemicals, Runoff, and Erosion from Agricultural Management Systems*. USDA Conservation Research Report No. 26. 640 pp.
+**Local path**: `references/vendorable/creams/312.pdf` (identity verified: title page read 2026-07-10; 690 PDF pages).
+**Reference quality**: `verified-primary`
+**Distribution status**: USDA publication, US-government work (17 U.S.C. 105) → `vendorable/`. First-pass rights classification RECORDED (2026-07-10 addendum, `rights_classification_first_pass_2026-05-11.md`).
+**Topic**: The parent field-scale model of the WEPP watershed channel erosion component; container volume for R-105.
+**WSHED-W11A role**: parent-model provenance for the `chnrt` lineage (Ch. 13 §13.5.1 "adapted and modified from the CREAMS model channel erosion routines").
+**Notes / caveats**: Acquired 2026-07-10 (operator) for `20260710-wshedw11a-channel-hourly-sediment-authority-001`. Scanned document; not text-searchable.
+
+## R-105: Foster, Lane, Nowlin, Laflen & Young 1980 — CREAMS Chapter 3 (erosion model development)
+
+**Citation**: Foster, G. R., L. J. Lane, J. D. Nowlin, J. M. Laflen and R. A. Young (1980). "Chapter 3. A model to estimate sediment yield from field-sized areas: development of model." In Knisel (Ed.), *CREAMS*, USDA Conservation Research Report No. 26.
+**Local path**: `references/vendorable/creams/312-ch3.pdf` (scan; not text-searchable). Companion converted markdown: `references/vendorable/creams/312-ch3.md` — conversion, not primary. Widening-law equations [I-133]–[I-140] and quasi-steady statement at [I-56] verified faithful against the rendered scan (report pp. 54–55, PDF pp. 19–20, read 2026-07-10); any other equation cited as binding authority must be spot-checked against the rendered PDF first.
+**Reference quality**: `verified-primary`
+**Distribution status**: USDA publication, US-government work → `vendorable/`. RECORDED in 2026-07-10 rights addendum.
+**Topic**: Primary source of the WEPP channel erosion physics: quasi-steady sediment continuity with the compute-cost rationale for deleting time terms [I-56]; concentrated-flow detachment [I-128]–[I-132]; the post-nonerodible-layer channel-widening time-evolution law ω = 1 − exp(−t*) with carried state (W_i, t_i) and flow-dependent final width W_f(Q) [I-133]–[I-140]; Yalin transport with multi-class modification [I-93]ff; shear partition [I-141]–[I-143]; L_eff/10 segment discretization.
+**WSHED-W11A role**: resolves the widening-clock question for per-interval channel sediment sequencing (authority-matrix Row 3); primary provenance for Rows 2 and 6. Also the held secondary source for Foster & Meyer 1972 (R-111), Yalin 1963 (R-112), and McCool et al. 1966 (R-113).
+**Notes / caveats**: Acquired 2026-07-10 (operator) for `20260710-wshedw11a-channel-hourly-sediment-authority-001`.
+
+## R-106: Woolhiser, Smith & Goodrich 1990 — KINEROS documentation (ARS-77)
+
+**Citation**: Woolhiser, D. A., R. E. Smith and D. C. Goodrich (1990). *KINEROS, A Kinematic Runoff and Erosion Model: Documentation and User Manual*. USDA-ARS, ARS-77. 130 pp.
+**Local path**: `references/vendorable/kineros/703.pdf` (identity verified: title page read 2026-07-10). Companion converted markdown: `references/vendorable/kineros/703.md` — conversion, not primary; equations cited as binding authority must be spot-checked against the PDF.
+**Reference quality**: `verified-primary`
+**Distribution status**: USDA-ARS publication, US-government work → `vendorable/`. RECORDED in 2026-07-10 rights addendum.
+**Topic**: Formal documentation behind the R-11 chapter extract: kinematic water routing plus unsteady sediment mass balance solved on the same time/space grid as the water solution, kinetic-transfer erosion/deposition source term, per-class routing.
+**WSHED-W11A role**: external-canonical authority for the sediment-quantum-equals-water-grid rule (authority-matrix Row 1) and the unsteady fallback form (Row 2). Restates the Bennett 1974 sediment mass-balance equation with citation (`703.md:974`), providing held secondary coverage for R-109.
+**Notes / caveats**: Acquired 2026-07-10 (operator) for `20260710-wshedw11a-channel-hourly-sediment-authority-001`.
+
+## R-107: USACE HEC-RAS 1D Sediment Transport manual (2026 web capture)
+
+**Citation**: USACE Hydrologic Engineering Center. *HEC-RAS 1D Sediment Transport* (User's Manual page tree, incl. quasi-unsteady flow chapters). Web capture 2026-07-10 from hec.usace.army.mil confluence documentation.
+**Local path**: `references/vendorable/HEC_RAS_1D_Sediment_Transport_UserManual_20260710.pdf` (identity verified: title page read 2026-07-10; quasi-unsteady passages verified present — "series of steady flow profiles", per-computational-increment bed update and its small-bed-change justification).
+**Reference quality**: `verified-primary`
+**Distribution status**: USACE public documentation, consistent with existing HEC-RAS entries (R-16) → `vendorable/`. RECORDED in 2026-07-10 rights addendum.
+**Topic**: The canonical quasi-steady-sequence sediment model class: flow hydrograph approximated by a series of steady profiles; the computational increment is the hydraulic and sediment-transport time step; bed geometry updates each increment and carries to the next.
+**WSHED-W11A role**: external-canonical authority for the per-interval quasi-steady solve form and the geometry-carry rule (authority-matrix Rows 1–3). The online 1D Sediment Transport Technical Reference Manual remains the formal citable source; this capture holds the load-bearing passages locally.
+**Notes / caveats**: Acquired 2026-07-10 (operator) for `20260710-wshedw11a-channel-hourly-sediment-authority-001`.
+
+## R-108: Gilley, Woolhiser & McWhorter 1985 — interrill erosion model equations (Part I)
+
+**Citation**: Gilley, J. E., D. A. Woolhiser and D. B. McWhorter (1985). "Interrill soil erosion — Part I: Development of model equations." *Transactions of the ASAE* 28(1):147–153.
+**Local path**: `references/copyrighted/Gilley,Woolhiser,McWhorter_1985.pdf` (identity verified: title/abstract read 2026-07-10; local-only cache, not committed). Companion converted markdown: `references/copyrighted/Gilley,Woolhiser,McWhorter_1985.md` — conversion, not primary.
+**Reference quality**: `verified-primary`
+**Distribution status**: ASAE journal copyright → `copyrighted/` (gitignored local cache; metadata tracked here). RECORDED in 2026-07-10 rights addendum.
+**Topic**: Rainfall-driven interrill detachment and transport-capacity model equations (Darcy-Weisbach rainfall-resistance depth, impact-pressure detachment, shear×velocity transport factor).
+**WSHED-W11A role**: KINEROS-lineage source-term development supporting R-106's upland erosion terms; secondary context only — not channel-sediment physics.
+**Notes / caveats**: Acquired 2026-07-10 (operator).
+
+## R-109: Bennett (1974) sediment-yield modeling concepts — secondary-cited
+
+**Citation**: Bennett, J. P. (1974). "Concepts of mathematical modeling of sediment yield." *Water Resources Research* 10(3):485–492.
+**Local path**: `not-acquired`.
+**Reference quality**: `secondary-via-KINEROS`
+**Topic**: The foundational unsteady sediment continuity formulation — the "time terms" whose deletion CREAMS Ch. 3 [I-56] and WEPP Ch. 13 §13.5.5 both state as the quasi-steady assumption.
+**WSHED-W11A role**: parent-equation authority for the recorded unsteady fallback form (authority-matrix Row 2); equation restated with citation in held R-106 (`703.md:974`).
+**OAR-6 compliance status**: Companion-only.
+
+## R-110: Jeong et al. (2011) sub-daily SWAT sediment algorithms — citation-only
+
+**Citation**: Jeong, J., N. Kannan, J. G. Arnold, R. Glick, L. Gosselink, R. Srinivasan and R. D. Harmel (2011). "Development of sub-daily erosion and sediment transport algorithms for SWAT." *Transactions of the ASABE* 54(5):1685–1691.
+**Local path**: `not-acquired` (no open copy located 2026-07-10; ASABE paywall).
+**Reference quality**: `citation-only`
+**Topic**: Procedural precedent: a daily agricultural watershed model retrofitted with physically based sub-daily channel erosion/sediment routing computed at the flow-routing time step.
+**WSHED-W11A role**: non-gating precedent for the sediment-quantum-equals-water-grid rule (authority-matrix Row 1).
+**OAR-6 compliance status**: Companion-only.
+
+## R-111: Foster & Meyer (1972) closed-form erosion equation — secondary-cited
+
+**Citation**: Foster, G. R. and L. D. Meyer (1972). "A closed-form soil erosion equation for upland areas." In H. W. Shen (Ed.), *Sedimentation: Symposium to Honor Professor H. A. Einstein*, Ft. Collins, CO. Chapter 12.
+**Local path**: `not-acquired`.
+**Reference quality**: `secondary-via-CREAMS`
+**Topic**: The steady-state sediment-continuity and detachment/transport-coupling model that both the hillslope (Ch. 11) and channel (Ch. 13) WEPP erosion components build on.
+**WSHED-W11A role**: parent of the four-case detachment/deposition machinery; working form abstracted in held R-105 ("abstracted from Foster and Meyer (10)") and WEPP Ch. 13 §13.5.1.
+**OAR-6 compliance status**: Companion-only.
+
+## R-112: Yalin (1963) bedload transport equation — secondary-cited
+
+**Citation**: Yalin, Y. S. (1963). "An expression for bedload transportation." *Journal of the Hydraulics Division, ASCE* 89(HY3):221–250.
+**Local path**: `not-acquired`.
+**Reference quality**: `secondary-via-CREAMS`
+**Topic**: The channel/overland transport-capacity equation of the CREAMS/WEPP lineage.
+**WSHED-W11A role**: transport-capacity authority (authority-matrix Row 6); the full working form including the multi-class excess-capacity modification — which is what the baseline `trncap.for` implements — is carried in held R-105 ([I-93]ff).
+**OAR-6 compliance status**: Companion-only.
+
+## R-113: McCool, Gwinn, Ree & Garton (1966) spatially-varied flow in vegetated channels — secondary-cited
+
+**Citation**: McCool, D. K., W. R. Gwinn, W. O. Ree and J. E. Garton (1966). "Spatially varied steady flow in a vegetated channel." *Transactions of the ASAE* 9(3):440–444.
+**Local path**: `not-acquired`.
+**Reference quality**: `secondary-via-CREAMS`
+**Topic**: Source of the β = 1.56 energy coefficient in the spatially-varied flow equations (WEPP Ch. 13 Eq. [13.5.4]).
+**WSHED-W11A role**: constant provenance; restated in held R-105 ("β = energy coefficient [1.56 used from McCool and others (23)]").
+**OAR-6 compliance status**: Companion-only.

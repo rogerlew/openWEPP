@@ -104,3 +104,13 @@ sits in `vendorable/`.)
 - Reclassify from `copyrighted/` to `vendorable/` only with explicit evidence.
 - Check the NTRS rights statement for doc 19840021490 (R-102) for possible
   `vendorable/` reclassification.
+
+## Addendum 2026-07-10 (WSHED-W11A channel-sediment authority acquisitions)
+
+| File | First-pass classification | Basis |
+|---|---|---|
+| `vendorable/creams/312.pdf` | `vendorable/` | Knisel (ed.) 1980, USDA Conservation Research Report No. 26 — US-government work (17 U.S.C. 105). Indexed as R-104. |
+| `vendorable/creams/312-ch3.pdf` (+ `312-ch3.md` conversion) | `vendorable/` | Foster et al. 1980, chapter of the same USDA report. Indexed as R-105. |
+| `vendorable/kineros/703.pdf` (+ `703.md` conversion) | `vendorable/` | Woolhiser, Smith & Goodrich 1990, USDA-ARS ARS-77 — US-government work. Indexed as R-106. |
+| `vendorable/HEC_RAS_1D_Sediment_Transport_UserManual_20260710.pdf` | `vendorable/` | USACE HEC-RAS public documentation capture, consistent with existing HEC-RAS classifications (R-16). Indexed as R-107. |
+| `copyrighted/Gilley,Woolhiser,McWhorter_1985.pdf` (+ `.md` conversion) | `copyrighted/` | Transactions of the ASAE 28(1) — ASAE journal copyright; local-only cache, metadata tracked. Indexed as R-108. |
