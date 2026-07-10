@@ -1,6 +1,8 @@
 # Final Disposition
 
-Status: `EXECUTED-COMPLETE-AUTHORITY`
+Status: `EXECUTED-COMPLETE-AUTHORITY` (v52 post-hoc amendments applied
+2026-07-10; **Codex re-confirmation pending** — see the reopen-cycle record
+at the end)
 
 Evidence mode: `Static` + `Ran`, per-artifact labels throughout the package.
 
@@ -28,7 +30,8 @@ with monotonic geometry carry — convergent from the WEPP/CREAMS lineage
 event-scalar collapse; Ch. 14 internal per-time-step precedent), USDA-ARS
 KINEROS ARS-77 (same-grid sediment/water coupling; the Bennett 1974 unsteady
 parent recorded as the fallback form), and USACE HEC-RAS quasi-unsteady
-(the sequence-of-steady-profiles class with per-increment bed carry,
+(the sequence-of-steady-profiles class with per-increment bed-change
+**state carry** — cross-section refresh is threshold-gated in HEC;
 class-corroboration grade). The two labeled refinements beyond legacy
 source-intent (per-interval solve form; per-interval re-anchored widening
 clock on the WEPP-adapted lineage realization) are explicitly labeled with
@@ -65,3 +68,33 @@ required no amendment (rationale in `contract-disposition.md`).
 
 `WSHED-W11-HOLD-001` is lifted. W11 resumes at its contract-first phase
 (Phase B) per `w11-handoff.md`.
+
+## Codex post-hoc reopen cycle (2026-07-10)
+
+The operator-dispatched Codex post-hoc review (`codex_posthoc_review.md`)
+returned `REOPEN` (`WSHED-W11A-POSTHOC-001`): 2 High (H1 hydraulic-profile
+operand under-determination; H2 migrated-lane terminals diverging from
+pinned `dcap.for`), 3 Medium (M1 erosion-clock normalization operand; M2
+undefined `d_i` + density convention; M3 anchor overclaims), 1 Low (L1
+stale record claims). It simultaneously ratified the activation
+biconditional, the A-8 rejection, the widening-law primitive adjudication,
+and the model-class corroboration.
+
+All six findings were accepted and closed in `SC-ROUTE-001` v52
+(`codex-review-disposition.md` carries the row-by-row disposition; both H2
+terminal claims were independently re-verified against pinned
+`dcap.for:160-262` before being bound into contract text). The v52
+additions: the unique hydraulic-profile operand map
+(`qe/qt/qlat := q1(it)/qin(it)/qlat(it)`), the `t_exp`/`t_norm` operand
+split, `d_i` and the `rho_soil` mass-density convention, the
+pinned-`dcap.for`-as-realization binding with `GAP-ROUTE-014` (open: the
+two migrated terminals must be corrected in W11 Phase B before interval
+reuse), vectors 10(b)/(c) and 11, and the three anchor narrowings.
+Post-fix BEI lint: PASS (7 rows).
+
+The exit-criteria adjudication above stands with these substitutions: the
+vector count is eleven; the "no executor science choice" claim now rests on
+the v52 operand maps; and `GAP-ROUTE-014` is an open, W11-assigned
+correction obligation (a code-parity defect flag, not missing authority).
+Final closure of this cycle awaits Codex re-confirmation
+(`prompts/active/20260710_wshedw11a_codex_reconfirmation_prompt.md`).

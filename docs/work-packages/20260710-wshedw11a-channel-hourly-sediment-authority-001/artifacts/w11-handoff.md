@@ -27,13 +27,15 @@ already established by W11 Phase A and is unchanged.
 | Network dependency authority | `INV-ROUTE-005(a)` dependency-authority definition (active-interval-lane channel egress is the only non-hourly form) |
 | Solve per interval | `INV-ROUTE-016`: the WSHEDIMPL18-41 migrated segment-solve lanes (WS20/WS21 runtime families) invoked per `dtchr` interval at interval operands; event-scalar operand substitution is a typed hard failure |
 | Interval operands | W11A addendum operand table + projection formula (00:00-anchored exact interval overlap; day-level class-fraction blend per `SC-SED-001#GAP-SED-008` — do not treat the uniform split as enriched timing) |
+| Hydraulic profile (v52) | `INV-ROUTE-016` unique operand map: `qe(it) := q1(it)`, `qt(it) := qin(it)`, `qlat(it) :=` the wave-routing lateral series; event-peak fractions/event-duration rates invalid; storage deliberately unreconciled (outlet-anchored steadiness); vector 11 is the anti-alias gate |
+| Erosion clock/normalization (v52) | `t_exp(it)` fills every legacy `timsh` slot; `t_norm(it) := dtchr` fills every legacy `tb` denominator slot (the factor 2 retires); `d_i` = baseline `di` (`dcap.for:166`); `rho_soil` = in-place bulk mass density (`wtdsoi` provenance, lbm) |
 | Unit handling | Addendum unit-bridge declaration: SI operands cross at the migrated `chnrt` conversion lineage sites; TOL closures evaluated on the SI side; **no new conversion constants** |
 | Geometry state | `INV-ROUTE-017`: monotonic carry, in-time-order application, run-start + primary-tillage-only reseeds, non-narrowing/non-refilling |
 | Widening clock | `INV-ROUTE-018`: **WEPP-adapted lineage realization** (linear rate, `1.0176`-modified exponential, fitted `f(x_b)`; CREAMS equations are structural provenance only); `timpot`/`timex` budget partition at layer contact; detachment gates on average soil shear, widening on boundary shear; triangular surrogate banned on this lane |
 | Mass closure | `INV-ROUTE-019` + `TOL-ROUTE-006/007/008` (incl. the zero-mass carve-out); detached mass is the constructive geometry derivation |
 | Degenerate states | `INV-ROUTE-020`: zero-flow interval deposition at the reused `1e-12 m^3 s^-1` floor; storage-attributed sediment zero-by-construction; geometry-only cross-day state; non-covering grid hard failure |
 | Guards | `WKERNEL-WS10-CHANNEL-E-001..003` family throughout (guard-map rows 015-020) |
-| Tests | The ten contract-derived vector obligations in the W11A addendum are W11's implementation gates; vector 1's comparator construction is pinned (shared solve core with `durrof := dtchr`, `qsed_top := interval mass / dtchr`, budget `:= dtchr`) |
+| Tests | The eleven contract-derived vector obligations (v52) are W11's implementation gates; vector 1's comparator construction is fully pinned (profile, exposure, and normalization operands); vectors 10(b)/(c) gate the GAP-ROUTE-014 terminal corrections; vector 11 is the hydraulic anti-alias |
 | Comparator posture | Known-divergence note (Widening Clock section): interval-vs-surrogate deltas are Investigation-tier (ADR-0017/ADR-0036 D5), never acceptance gates |
 
 ## Do-not-do list (unchanged or newly bound)
@@ -49,6 +51,12 @@ already established by W11 Phase A and is unchanged.
 - Do not amend `SC-INFILE-HBP-001` — no schema change is authorized; the
   per-class-hourly channel remains a future additive extension
   (`GAP-SED-008`).
+- **Do not reuse the two GAP-ROUTE-014 migrated terminals uncorrected**:
+  the capped-widening and post-contact subcritical-boundary-shear terminals
+  in `01_ws22_ws23_ws26_detachment.rs` (and their lock-in tests) must be
+  corrected to pinned `dcap.for` behavior (`dcap.for:238-261` and
+  `:210-215, 173-190`) before the interval lane activates; vectors
+  10(b)/(c) are the correction gates.
 
 ## Kernel-profile note
 

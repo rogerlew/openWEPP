@@ -426,3 +426,12 @@ text as fixed:
   anchored at layer contact; per-interval re-anchoring is the
   interval-ization of the lineage's per-event re-anchoring — an inference-
   graded labeled refinement, not a direct evaluation.
+
+Third correction (Codex post-hoc review M3, 2026-07-10): Row 1's HEC-RAS
+bullet says "bed geometry updates after each increment" — the manual's
+precise claim is that bed-change **state** advances/carries each increment
+while the cross-section *refresh* is gated behind a minimum-bed-change
+threshold (vendored manual PDF p. 178). The contract anchor
+(`REF-ROUTE-HECRAS-QUS`) is narrowed accordingly in v52; geometry-update
+authority for the lane is the Chapter-13/lineage carry, not HEC
+cross-section refresh policy.
