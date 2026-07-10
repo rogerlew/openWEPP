@@ -22,6 +22,13 @@ signal; perform the new live measurement and create newly numbered packages.
 Only an explicit request to inspect, summarize, audit, verify, or avoid rerunning
 the existing batch changes this interpretation.
 
+For a second or later batch on the same calendar date, assign the next two-digit
+batch ordinal (`b02`, `b03`, ...) and use it in every package identifier:
+`YYYYMMDD-cqr-nightly-bNN-<rank>-<module-slug>-001`. The rank remains local to
+that batch (`1` through `N`), so a new request for `10` modules always produces
+ten newly selected package targets rather than extending or inspecting the prior
+batch.
+
 ## Governance
 
 This plan is subordinate to:
@@ -79,7 +86,10 @@ and repeat the selected target row in each module package.
 
 Each selected module is executed as its own normal work package:
 
-`docs/work-packages/YYYYMMDD-cqr-nightly-<rank>-<module-slug>-001/`
+`docs/work-packages/YYYYMMDD-cqr-nightly-<batch-prefix><rank>-<module-slug>-001/`
+
+Use an empty `<batch-prefix>` for the first batch on a date and `bNN-` for a
+second or later batch that day.
 
 Use `docs/work-packages/templates/cqr-nightly-package.md` as the package-local
 starting point and `docs/work-packages/templates/cqr-nightly-kickoff-prompt.md`

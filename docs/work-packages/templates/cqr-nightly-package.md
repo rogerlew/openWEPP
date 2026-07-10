@@ -2,7 +2,7 @@
 
 Copy this template to:
 
-`docs/work-packages/YYYYMMDD-cqr-nightly-<rank>-<module-slug>-001/package.md`
+`docs/work-packages/YYYYMMDD-cqr-nightly-<batch-prefix><rank>-<module-slug>-001/package.md`
 
 Also copy `docs/work-packages/templates/cqr-nightly-kickoff-prompt.md` into
 `prompts/active/` for the package kickoff prompt. Then replace every
@@ -13,6 +13,7 @@ Also copy `docs/work-packages/templates/cqr-nightly-kickoff-prompt.md` into
 Package: `{{package_id}}`
 Status: `QUEUED`
 ExecPlan: `docs/work-packages/cqr-nightly-burndown-execplan.md`
+Nightly batch: `{{batch_ordinal}}`
 Target module: `{{target_module_path}}`
 Target rank: `{{rank}}` of `{{selected_count}}`
 Quality dimension: `CRAP/cyclomatic-complexity`

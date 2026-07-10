@@ -2,7 +2,7 @@
 
 Copy this template to:
 
-`docs/work-packages/{{package_id}}/prompts/active/{{date}}-codex-cqr-nightly-{{module_slug}}_prompt.md`
+`docs/work-packages/{{package_id}}/prompts/active/{{date}}-codex-cqr-nightly-{{batch_ordinal}}-{{module_slug}}_prompt.md`
 
 Then replace every `{{placeholder}}` before execution.
 
