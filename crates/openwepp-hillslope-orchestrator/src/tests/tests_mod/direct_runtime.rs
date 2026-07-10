@@ -44,8 +44,26 @@ use crate::{
     DirectSubsurfaceLossDownstreamOperands, DirectSubsurfaceLossInputs,
     DirectSubsurfaceLossShadowProjection, DirectSubsurfaceLossState, DirectWaterLedgerState,
     DirectWave1ContinuityInputs, DirectWave1OperandSeed, DirectWb14HyetographInterval,
+    direct_runtime_audit_snapshot, record_direct_runtime_compatibility_edge_invocation,
+    record_direct_runtime_ksatadj_effective_conductivity_evaluation,
     reset_direct_runtime_audit_counters,
 };
+
+#[test]
+fn cqr_direct_runtime_audit_api_records_specialized_events() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    record_direct_runtime_compatibility_edge_invocation();
+    record_direct_runtime_ksatadj_effective_conductivity_evaluation();
+
+    let audit = direct_runtime_audit_snapshot();
+    assert_eq!(audit.compatibility_edge_invocations, 1);
+    assert_eq!(audit.ksatadj_effective_conductivity_evaluations, 1);
+    reset_direct_runtime_audit_counters();
+}
 
 fn r5c_day_span_run_count() -> u64 {
     22

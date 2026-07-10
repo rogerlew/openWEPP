@@ -25,7 +25,9 @@ On-demand: adjacent callers and
 Required-reading budget: `~60 KiB`, `OK`; map:
 `artifacts/required-reading-map.md`.
 
-Files: the target module and package-local artifacts only.
+Files: the target module,
+`crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/direct_runtime.rs`,
+and package-local artifacts only.
 
 Task: close target CRAP above `30` behavior-preservingly, or create a legitimate
 local hold with rollback proof. Do not change science formulas, thresholds,

@@ -1,7 +1,7 @@
 # CQR Nightly Batch 02, Target 02 — Direct Runtime Audit/Error Helpers
 
 Package: `20260709-cqr-nightly-b02-02-direct-runtime-audit-error-helpers-001`
-Status: `SCAFFOLDED-CQR-NIGHTLY`
+Status: `EXECUTED-COMPLETE-CQR-NIGHTLY`
 ExecPlan: `docs/work-packages/cqr-nightly-burndown-execplan.md`
 Nightly batch: `02`
 Target module: `crates/openwepp-hillslope-orchestrator/src/direct_runtime/04_audit_error_helpers.rs`
@@ -17,14 +17,15 @@ string, fail-closed behavior, API, numeric expression order, and output meaning.
 
 ## Scope and Write Set
 
-In scope: target-local characterization tests, private `Display` helper
-extraction, target module test code, and this package's artifacts/prompt. Out of
-scope: science or contract changes, new physics, thresholds, serialization,
-public API changes, or behavior changes.
+In scope: target-local characterization tests, the existing serialized
+direct-runtime audit test seam, private `Display` helper extraction, and this
+package's artifacts/prompt. Out of scope: science or contract changes, new
+physics, thresholds, serialization, public API changes, or behavior changes.
 
 Intended write set:
 
 - `crates/openwepp-hillslope-orchestrator/src/direct_runtime/04_audit_error_helpers.rs`
+- `crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/direct_runtime.rs`
 - `docs/work-packages/20260709-cqr-nightly-b02-02-direct-runtime-audit-error-helpers-001/**`
 - `docs/work-packages/README.md` after closure
 
@@ -40,7 +41,8 @@ Intended write set:
 - `docs/standards/mechanical-refactor-authoring-guide.md`
 - `docs/standards/code-quality-refactor-authoring-guide.md`
 - `docs/decisions/0021-module-coverage-closure-thresholds.md`
-- the target module and its existing direct-runtime tests
+- the target module and `crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/direct_runtime.rs`
+  (the existing serialized direct-runtime audit test seam)
 
 `SC-WATBAL-001` requires typed hard errors for invalid runtime domain,
 precondition, and closure states. `SC-OFEROUTE-001` requires missing or invalid

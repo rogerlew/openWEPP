@@ -284,22 +284,176 @@ pub enum DirectRuntimeError {
 }
 
 impl fmt::Display for DirectRuntimeError {
-    #[allow(clippy::too_many_lines)]
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.display_parts().fmt(formatter)
+    }
+}
+
+impl DirectRuntimeError {
+    fn display_parts(&self) -> DirectRuntimeErrorDisplay<'_> {
+        use DirectRuntimeGuardDisplay as Guard;
+        use DirectRuntimeIdentityDisplay as Identity;
+        use DirectRuntimePublicationDisplay as Publication;
+
+        match self {
+            Self::InvalidLaneCount { lane_count } => Identity::InvalidLaneCount(*lane_count).into(),
+            Self::InvalidDayCount { day_count } => Identity::InvalidDayCount(*day_count).into(),
+            Self::LaneIdOverflow { lane_index } => Identity::LaneIdOverflow(*lane_index).into(),
+            Self::FrameLaneCountMismatch {
+                identity_lane_count,
+                actual_lane_count,
+            } => Identity::FrameLaneCountMismatch {
+                identity_lane_count: *identity_lane_count,
+                actual_lane_count: *actual_lane_count,
+            }
+            .into(),
+            Self::InvalidLaneTopology {
+                lane_index,
+                lane_id,
+                upstream_lane_id,
+                downstream_lane_id,
+            } => Identity::InvalidLaneTopology {
+                lane_index: *lane_index,
+                lane_id: *lane_id,
+                upstream_lane_id: *upstream_lane_id,
+                downstream_lane_id: *downstream_lane_id,
+            }
+            .into(),
+            Self::InvalidLaneOutletCount { outlet_count } => {
+                Identity::InvalidLaneOutletCount(*outlet_count).into()
+            }
+            Self::CalendarDayCountMismatch {
+                identity_day_count,
+                calendar_day_count,
+            } => Publication::CalendarDayCountMismatch {
+                identity_day_count: *identity_day_count,
+                calendar_day_count: *calendar_day_count,
+            }
+            .into(),
+            Self::PublicationRowCountMismatch {
+                expected_row_count,
+                actual_row_count,
+            } => Publication::RowCountMismatch {
+                expected_row_count: *expected_row_count,
+                actual_row_count: *actual_row_count,
+            }
+            .into(),
+            Self::InvalidPublicationArea { lane_id, area_m2 } => Publication::InvalidArea {
+                lane_id: *lane_id,
+                area_m2: *area_m2,
+            }
+            .into(),
+            Self::LaneIndexOutOfRange {
+                lane_index,
+                lane_count,
+            } => Publication::LaneIndexOutOfRange {
+                lane_index: *lane_index,
+                lane_count: *lane_count,
+            }
+            .into(),
+            Self::DayIndexOutOfRange {
+                day_index,
+                day_count,
+            } => Publication::DayIndexOutOfRange {
+                day_index: *day_index,
+                day_count: *day_count,
+            }
+            .into(),
+            Self::MissingDirectUpstream { upstream } => Guard::MissingUpstream(upstream).into(),
+            Self::NonFiniteDirectValue { field } => Guard::NonFinite(field).into(),
+            Self::NegativeDirectValue { field } => Guard::Negative(field).into(),
+            Self::DirectDomainViolation { field } => Guard::Domain(field).into(),
+            Self::DirectKernelGuardFailure { phase, detail } => Guard::KernelFailure {
+                phase,
+                detail: detail.as_str(),
+            }
+            .into(),
+            Self::PublicationDayInputBuildFailure { detail } => {
+                Guard::DayInputBuildFailure(detail.as_str()).into()
+            }
+            Self::PublicationSinkFailure { detail } => Guard::SinkFailure(detail.as_str()).into(),
+            Self::DirectClosureToleranceExceeded { field } => Guard::ClosureTolerance(field).into(),
+            Self::DirectDayExecutionFailure {
+                lane_index,
+                day_index,
+                detail,
+            } => Guard::DayExecutionFailure {
+                lane_index: *lane_index,
+                day_index: *day_index,
+                detail: detail.as_str(),
+            }
+            .into(),
+        }
+    }
+}
+
+enum DirectRuntimeErrorDisplay<'a> {
+    Identity(DirectRuntimeIdentityDisplay),
+    Publication(DirectRuntimePublicationDisplay),
+    Guard(DirectRuntimeGuardDisplay<'a>),
+}
+
+impl From<DirectRuntimeIdentityDisplay> for DirectRuntimeErrorDisplay<'_> {
+    fn from(display: DirectRuntimeIdentityDisplay) -> Self {
+        Self::Identity(display)
+    }
+}
+
+impl From<DirectRuntimePublicationDisplay> for DirectRuntimeErrorDisplay<'_> {
+    fn from(display: DirectRuntimePublicationDisplay) -> Self {
+        Self::Publication(display)
+    }
+}
+
+impl<'a> From<DirectRuntimeGuardDisplay<'a>> for DirectRuntimeErrorDisplay<'a> {
+    fn from(display: DirectRuntimeGuardDisplay<'a>) -> Self {
+        Self::Guard(display)
+    }
+}
+
+impl fmt::Display for DirectRuntimeErrorDisplay<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::InvalidLaneCount { lane_count } => {
+            Self::Identity(display) => display.fmt(formatter),
+            Self::Publication(display) => display.fmt(formatter),
+            Self::Guard(display) => display.fmt(formatter),
+        }
+    }
+}
+
+enum DirectRuntimeIdentityDisplay {
+    InvalidLaneCount(usize),
+    InvalidDayCount(usize),
+    LaneIdOverflow(usize),
+    FrameLaneCountMismatch {
+        identity_lane_count: usize,
+        actual_lane_count: usize,
+    },
+    InvalidLaneTopology {
+        lane_index: usize,
+        lane_id: u32,
+        upstream_lane_id: u32,
+        downstream_lane_id: u32,
+    },
+    InvalidLaneOutletCount(usize),
+}
+
+impl fmt::Display for DirectRuntimeIdentityDisplay {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::InvalidLaneCount(lane_count) => {
                 write!(
                     formatter,
                     "direct runtime requires at least one lane, observed {lane_count}"
                 )
             }
-            Self::InvalidDayCount { day_count } => {
+            Self::InvalidDayCount(day_count) => {
                 write!(
                     formatter,
                     "direct runtime requires at least one day, observed {day_count}"
                 )
             }
-            Self::LaneIdOverflow { lane_index } => {
+            Self::LaneIdOverflow(lane_index) => {
                 write!(
                     formatter,
                     "direct runtime lane index {lane_index} cannot be represented as a u32 lane id"
@@ -325,12 +479,42 @@ impl fmt::Display for DirectRuntimeError {
                     "direct runtime lane topology is invalid at index {lane_index}: lane {lane_id}, upstream {upstream_lane_id}, downstream {downstream_lane_id}"
                 )
             }
-            Self::InvalidLaneOutletCount { outlet_count } => {
+            Self::InvalidLaneOutletCount(outlet_count) => {
                 write!(
                     formatter,
                     "direct runtime requires exactly one lane outlet, observed {outlet_count}"
                 )
             }
+        }
+    }
+}
+
+enum DirectRuntimePublicationDisplay {
+    CalendarDayCountMismatch {
+        identity_day_count: usize,
+        calendar_day_count: usize,
+    },
+    RowCountMismatch {
+        expected_row_count: usize,
+        actual_row_count: usize,
+    },
+    InvalidArea {
+        lane_id: u32,
+        area_m2: f64,
+    },
+    LaneIndexOutOfRange {
+        lane_index: usize,
+        lane_count: usize,
+    },
+    DayIndexOutOfRange {
+        day_index: usize,
+        day_count: usize,
+    },
+}
+
+impl fmt::Display for DirectRuntimePublicationDisplay {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
             Self::CalendarDayCountMismatch {
                 identity_day_count,
                 calendar_day_count,
@@ -340,7 +524,7 @@ impl fmt::Display for DirectRuntimeError {
                     "direct publication calendar day count {calendar_day_count} does not match identity day count {identity_day_count}"
                 )
             }
-            Self::PublicationRowCountMismatch {
+            Self::RowCountMismatch {
                 expected_row_count,
                 actual_row_count,
             } => {
@@ -349,7 +533,7 @@ impl fmt::Display for DirectRuntimeError {
                     "direct publication row count {actual_row_count} does not match expected row count {expected_row_count}"
                 )
             }
-            Self::InvalidPublicationArea { lane_id, area_m2 } => {
+            Self::InvalidArea { lane_id, area_m2 } => {
                 write!(
                     formatter,
                     "direct publication lane {lane_id} area must be finite and > 0.0 m^2, observed {area_m2}"
@@ -373,49 +557,75 @@ impl fmt::Display for DirectRuntimeError {
                     "direct runtime day index {day_index} is outside day count {day_count}"
                 )
             }
-            Self::MissingDirectUpstream { upstream } => {
+        }
+    }
+}
+
+enum DirectRuntimeGuardDisplay<'a> {
+    MissingUpstream(&'static str),
+    NonFinite(&'static str),
+    Negative(&'static str),
+    Domain(&'static str),
+    KernelFailure {
+        phase: &'static str,
+        detail: &'a str,
+    },
+    DayInputBuildFailure(&'a str),
+    SinkFailure(&'a str),
+    ClosureTolerance(&'static str),
+    DayExecutionFailure {
+        lane_index: usize,
+        day_index: usize,
+        detail: &'a str,
+    },
+}
+
+impl fmt::Display for DirectRuntimeGuardDisplay<'_> {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::MissingUpstream(upstream) => {
                 write!(
                     formatter,
                     "direct runtime upstream span {upstream} must execute before this span"
                 )
             }
-            Self::NonFiniteDirectValue { field } => {
+            Self::NonFinite(field) => {
                 write!(formatter, "direct runtime field {field} must be finite")
             }
-            Self::NegativeDirectValue { field } => {
+            Self::Negative(field) => {
                 write!(
                     formatter,
                     "direct runtime field {field} must be nonnegative"
                 )
             }
-            Self::DirectDomainViolation { field } => {
+            Self::Domain(field) => {
                 write!(
                     formatter,
                     "direct runtime field {field} violates its direct-domain constraints"
                 )
             }
-            Self::DirectKernelGuardFailure { phase, detail } => {
+            Self::KernelFailure { phase, detail } => {
                 write!(
                     formatter,
                     "direct runtime kernel guard failed in {phase}: {detail}"
                 )
             }
-            Self::PublicationDayInputBuildFailure { detail } => {
+            Self::DayInputBuildFailure(detail) => {
                 write!(
                     formatter,
                     "direct publication day-input builder failed: {detail}"
                 )
             }
-            Self::PublicationSinkFailure { detail } => {
+            Self::SinkFailure(detail) => {
                 write!(formatter, "direct publication sink failed: {detail}")
             }
-            Self::DirectClosureToleranceExceeded { field } => {
+            Self::ClosureTolerance(field) => {
                 write!(
                     formatter,
                     "direct runtime field {field} exceeds declared closure tolerance"
                 )
             }
-            Self::DirectDayExecutionFailure {
+            Self::DayExecutionFailure {
                 lane_index,
                 day_index,
                 detail,
@@ -535,4 +745,172 @@ fn sum_finite_direct_m(field: &'static str, values: &[f64]) -> Result<f64, Direc
         validate_finite(field, total)?;
     }
     Ok(total)
+}
+
+#[cfg(test)]
+mod cqr_direct_runtime_error_display_tests {
+    use super::{DirectRuntimeAuditCounters, DirectRuntimeError};
+
+    fn assert_display(error: &DirectRuntimeError, expected: &str) {
+        assert_eq!(error.to_string(), expected);
+    }
+
+    #[test]
+    fn direct_runtime_error_display_preserves_identity_and_topology_diagnostics() {
+        assert_display(
+            &DirectRuntimeError::InvalidLaneCount { lane_count: 0 },
+            "direct runtime requires at least one lane, observed 0",
+        );
+        assert_display(
+            &DirectRuntimeError::InvalidDayCount { day_count: 0 },
+            "direct runtime requires at least one day, observed 0",
+        );
+        assert_display(
+            &DirectRuntimeError::LaneIdOverflow { lane_index: 42 },
+            "direct runtime lane index 42 cannot be represented as a u32 lane id",
+        );
+        assert_display(
+            &DirectRuntimeError::FrameLaneCountMismatch {
+                identity_lane_count: 3,
+                actual_lane_count: 2,
+            },
+            "direct runtime frame lane count 2 does not match identity lane count 3",
+        );
+        assert_display(
+            &DirectRuntimeError::InvalidLaneTopology {
+                lane_index: 4,
+                lane_id: 7,
+                upstream_lane_id: 6,
+                downstream_lane_id: 0,
+            },
+            "direct runtime lane topology is invalid at index 4: lane 7, upstream 6, downstream 0",
+        );
+    }
+
+    #[test]
+    fn direct_runtime_error_display_preserves_frame_and_publication_diagnostics() {
+        assert_display(
+            &DirectRuntimeError::InvalidLaneOutletCount { outlet_count: 2 },
+            "direct runtime requires exactly one lane outlet, observed 2",
+        );
+        assert_display(
+            &DirectRuntimeError::CalendarDayCountMismatch {
+                identity_day_count: 365,
+                calendar_day_count: 364,
+            },
+            "direct publication calendar day count 364 does not match identity day count 365",
+        );
+        assert_display(
+            &DirectRuntimeError::PublicationRowCountMismatch {
+                expected_row_count: 8,
+                actual_row_count: 7,
+            },
+            "direct publication row count 7 does not match expected row count 8",
+        );
+        assert_display(
+            &DirectRuntimeError::InvalidPublicationArea {
+                lane_id: 3,
+                area_m2: 12.5,
+            },
+            "direct publication lane 3 area must be finite and > 0.0 m^2, observed 12.5",
+        );
+        assert_display(
+            &DirectRuntimeError::LaneIndexOutOfRange {
+                lane_index: 2,
+                lane_count: 2,
+            },
+            "direct runtime lane index 2 is outside lane count 2",
+        );
+    }
+
+    #[test]
+    fn direct_runtime_error_display_preserves_index_and_domain_diagnostics() {
+        assert_display(
+            &DirectRuntimeError::DayIndexOutOfRange {
+                day_index: 5,
+                day_count: 5,
+            },
+            "direct runtime day index 5 is outside day count 5",
+        );
+        assert_display(
+            &DirectRuntimeError::MissingDirectUpstream {
+                upstream: "R5B normalization phase",
+            },
+            "direct runtime upstream span R5B normalization phase must execute before this span",
+        );
+        assert_display(
+            &DirectRuntimeError::NonFiniteDirectValue {
+                field: "forcing.precipitation_m",
+            },
+            "direct runtime field forcing.precipitation_m must be finite",
+        );
+        assert_display(
+            &DirectRuntimeError::NegativeDirectValue {
+                field: "transfer.surface_carry_m",
+            },
+            "direct runtime field transfer.surface_carry_m must be nonnegative",
+        );
+        assert_display(
+            &DirectRuntimeError::DirectDomainViolation {
+                field: "publication.area_m2",
+            },
+            "direct runtime field publication.area_m2 violates its direct-domain constraints",
+        );
+    }
+
+    #[test]
+    fn direct_runtime_error_display_preserves_guard_and_execution_diagnostics() {
+        assert_display(
+            &DirectRuntimeError::DirectKernelGuardFailure {
+                phase: "groundwater_linear_reservoir",
+                detail: "outflow exceeded storage".to_owned(),
+            },
+            "direct runtime kernel guard failed in groundwater_linear_reservoir: outflow exceeded storage",
+        );
+        assert_display(
+            &DirectRuntimeError::PublicationDayInputBuildFailure {
+                detail: "missing calendar row".to_owned(),
+            },
+            "direct publication day-input builder failed: missing calendar row",
+        );
+        assert_display(
+            &DirectRuntimeError::PublicationSinkFailure {
+                detail: "writer rejected row".to_owned(),
+            },
+            "direct publication sink failed: writer rejected row",
+        );
+        assert_display(
+            &DirectRuntimeError::DirectClosureToleranceExceeded {
+                field: "water_ledger.residual_m",
+            },
+            "direct runtime field water_ledger.residual_m exceeds declared closure tolerance",
+        );
+        assert_display(
+            &DirectRuntimeError::DirectDayExecutionFailure {
+                lane_index: 2,
+                day_index: 3,
+                detail: "upstream guard failed".to_owned(),
+            },
+            "direct runtime day execution failed at lane 3 day 4: upstream guard failed",
+        );
+    }
+
+    #[test]
+    fn direct_runtime_audit_counter_records_specialized_events_locally() {
+        let audit = DirectRuntimeAuditCounters::new();
+        audit.record_wave1_flux_refused_quantum();
+        audit.record_compatibility_edge_invocation();
+        audit.record_ksatadj_effective_conductivity_evaluation();
+
+        let snapshot = audit.snapshot();
+        assert_eq!(snapshot.wave1_flux_refused_quanta, 1);
+        assert_eq!(snapshot.compatibility_edge_invocations, 1);
+        assert_eq!(snapshot.ksatadj_effective_conductivity_evaluations, 1);
+
+        audit.reset();
+        let reset = audit.snapshot();
+        assert_eq!(reset.wave1_flux_refused_quanta, 0);
+        assert_eq!(reset.compatibility_edge_invocations, 0);
+        assert_eq!(reset.ksatadj_effective_conductivity_evaluations, 0);
+    }
 }

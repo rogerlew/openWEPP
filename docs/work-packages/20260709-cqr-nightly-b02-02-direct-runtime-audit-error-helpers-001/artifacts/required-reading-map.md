@@ -10,7 +10,7 @@
 | `SC-OFEROUTE-001` unit/guard map | Invalid or missing direct routing operands remain fail-closed. | Read relevant direct-runtime unit/guard sections. |
 | CQR ExecPlan and mechanical/CQR guides | Behavior-preserving CQR scope, metrics, scaffold/completion commits. | Read before scaffold. |
 | ADR-0021 | Test/coverage closure threshold and real-production-consumer requirements. | Read before scaffold. |
-| Target module and direct-runtime tests | Existing type variants, exact output strings, and test seams. | Read before scaffold. |
+| Target module and `src/tests/tests_mod/direct_runtime.rs` | Existing type variants, exact output strings, and the serialized audit test seam. | Read before scaffold. |
 
 The relevant contract constraint is semantic rather than formula-specific: this
 refactor cannot weaken, default, redirect, rename, or silently recover a typed

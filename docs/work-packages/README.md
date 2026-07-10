@@ -29,6 +29,16 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-09`:
+- `20260709-cqr-nightly-b02-02-direct-runtime-audit-error-helpers-001/` -
+  EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-09): CQR nightly batch 02 target #2
+  completed behavior-preserving decomposition and 20-case direct diagnostic
+  characterization of
+  `crates/openwepp-hillslope-orchestrator/src/direct_runtime/04_audit_error_helpers.rs`.
+  Target CRAP rows above `30` reduced from `1` to `0`, maximum CRAP is `21`, and
+  cfg-test-excluded production coverage is `417/426` lines and `528/542`
+  regions. Final delegated clippy, full-nextest `1609/1609` with `3` skipped,
+  and deny gates passed. Package:
+  `20260709-cqr-nightly-b02-02-direct-runtime-audit-error-helpers-001/`.
 - `20260709-cqr-nightly-b02-01-boundary-values-and-kernel-requests-001/` -
   EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-09): CQR nightly batch 02 target #1
   completed behavior-preserving decomposition and characterization of
