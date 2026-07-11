@@ -33,9 +33,12 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-11 UTC`:
-- `20260711-cqr-followup-totalwatsed3-001/` - ACTIVE: FQ-04 science-tier
-  totalwatsed3 coverage prerequisite, independent operand reconstruction, and
-  cover-then-decompose CRAP closure.
+- `20260711-cqr-followup-totalwatsed3-001/` - EXECUTED-COMPLETE (2026-07-11):
+  FQ-04 closes the totalwatsed3 science-tier prerequisite at 97.328% lines /
+  93.011% regions and maximum CRAP 23.0. The focused all-operand suite passes
+  17/17, the workspace passes 1,776/1,776 with 3 configured skips, and dual
+  review/verification pass. `for_batch` retains one reviewed non-science
+  infrastructure floor exclusion at 66.667%, CC 7, CRAP 8.815.
 - `20260711-dc-watershed-channel-extra-rating-001/` - EXECUTED-COMPLETE
   (2026-07-11): FQ-03 closes structurally recognized prohibited rating rows
   without lexical heuristics or accepted-grammar change. Coverage is 99.549%

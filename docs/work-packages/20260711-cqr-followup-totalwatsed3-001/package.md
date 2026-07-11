@@ -1,7 +1,7 @@
 # FQ-04 totalwatsed3 cover-then-decompose closure
 
 Package: `20260711-cqr-followup-totalwatsed3-001`
-Status: `ACTIVE`
+Status: `EXECUTED-COMPLETE`
 ExecPlan: `docs/work-packages/cqr-nightly-followup-burndown-execplan.md`
 Queue item: `FQ-04`
 Target: `crates/openwepp-runner/src/totalwatsed3.rs`

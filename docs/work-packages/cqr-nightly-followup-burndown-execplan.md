@@ -40,7 +40,7 @@ scaffolded, reviewed, verified, and committed.
 - [x] (2026-07-11 UTC) Execute queue item `FQ-01` through its terminal package commit.
 - [x] (2026-07-11 UTC) Execute queue item `FQ-02` through its terminal package commit.
 - [x] (2026-07-11 UTC) Execute queue item `FQ-03` through its terminal package commit.
-- [ ] Execute queue item `FQ-04` through its terminal package commit.
+- [x] (2026-07-11 UTC) Execute queue item `FQ-04` through its terminal package commit.
 - [ ] Run the final fresh workspace LCOV/CRAP rerank and record the outcome.
 
 ## Surprises & Discoveries
@@ -60,6 +60,10 @@ scaffolded, reviewed, verified, and committed.
   97.397% lines / 98.065% regions, but full coverage could not lower CC 39 below
   CRAP 30; extracting whole preamble and event blocks reduced maximum CRAP to
   17 without changing finite-input behavior.
+- Observation: FQ-04's original hold was entirely a safety-net prerequisite.
+  Cover-first characterization reached 97.177% lines / 92.937% regions before
+  the production source changed; final decomposition retained 97.328% /
+  93.011% and reduced maximum CRAP from 110 to 23.0.
 
 ## Decision Log
 
@@ -92,6 +96,12 @@ scaffolded, reviewed, verified, and committed.
   denominator reduction, so retaining defensive fail-closed code is clearer
   than exclusion or deletion.
   Date/Author: 2026-07-11 / Codex.
+- Decision: accept `totalwatsed3::for_batch` as the sole closed-list
+  infrastructure per-function exclusion.
+  Rationale: public/selectable paths are covered, the remaining dependency
+  reader failure arms require corrupt-Parquet implementation coupling or a
+  test-only seam, and the helper is non-science with CC 7 / CRAP 8.815.
+  Date/Author: 2026-07-11 / Codex.
 
 ## Outcomes & Retrospective
 
@@ -108,6 +118,14 @@ FQ-01 outcome: package `20260711-dc-fdir-finite-value-guard-001` completed.
 coverage is 97.397% lines / 98.065% regions, minimum function coverage is
 85.366%, maximum CRAP is 17, full workspace is 1,730/1,730 with 3 configured
 skips, and dual review/verification are GO/PASS. Closure is parser-boundary only.
+
+FQ-04 outcome: package `20260711-cqr-followup-totalwatsed3-001` completed.
+Cover-first characterization passed before production changed. Final focused
+tests pass 17/17 with independent two-day all-field water/storage/sediment
+reconstruction and accepted real-cohort binding. Coverage is 97.328% lines /
+93.011% regions, maximum CRAP is 23.0, full workspace is 1,776/1,776 with 3
+configured skips, and dual review/verification are GO/PASS. The final fresh
+workspace rerank remains the only unchecked queue step.
 
 ## Context And Orientation
 
@@ -175,7 +193,7 @@ must repeat this authorization and requirement.
 | `FQ-01` | Close `FDIR-FINITE-VALUE-GUARD-001` | One contract-first DC package through science-tier coverage, obligations, and CRAP closure | `COMPLETE` — package `20260711-dc-fdir-finite-value-guard-001`, terminal transition commit |
 | `FQ-02` | Close `CHANINP-RAW-NCHNUM-CARDINALITY` | One contract-first DC package through science-tier coverage, obligations, and CRAP closure | `COMPLETE` — package `20260711-dc-chaninp-raw-cardinality-001`, terminal transition commit |
 | `FQ-03` | Close `CHN-E006-EXTRA-RATING-ROW` | One contract-first DC package through science-tier coverage, obligations, and CRAP closure | `COMPLETE` — package `20260711-dc-watershed-channel-extra-rating-001`, terminal transition commit |
-| `FQ-04` | Close `totalwatsed3.rs` coverage and CRAP debt | One science-tier cover-then-decompose CQR package | `ACTIVE` — package `20260711-cqr-followup-totalwatsed3-001`, 2026-07-11 UTC |
+| `FQ-04` | Close `totalwatsed3.rs` coverage and CRAP debt | One science-tier cover-then-decompose CQR package | `COMPLETE` — package `20260711-cqr-followup-totalwatsed3-001`, terminal transition commit |
 | `FQ-05` | PMETPARA formatter disposition | No package; preserve originating hold history | `DISPOSITIONED-NO-ACTION / NOT-QUEUED` |
 
 Package IDs use the scaffold date and these stable slugs:
@@ -567,3 +585,8 @@ FQ-03 is the next serialized row.
 2026-07-11: FQ-03 completed structural extra-rating recognition without lexical
 heuristics, exact error precedence, real frame projection proof, science-tier
 coverage, and CRAP closure with dual PASS verification. FQ-04 is the next row.
+
+2026-07-11: FQ-04 completed cover-first science-tier characterization,
+independent conservation/publication reconstruction, behavior-preserving WAT
+reader decomposition, CRAP closure, full gates, dual review, and dual PASS
+verification. Only the final fresh workspace rerank remains.

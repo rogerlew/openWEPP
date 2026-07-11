@@ -330,6 +330,116 @@ struct WatValues {
     irrigation_mm: f64,
 }
 
+struct WatBatchColumns<'a> {
+    identity: WatIdentityColumns<'a>,
+    required: WatRequiredColumns<'a>,
+    storage: WatStorageColumns<'a>,
+}
+
+impl<'a> WatBatchColumns<'a> {
+    fn from_batch(path: &Path, batch: &'a RecordBatch) -> Result<Self, Totalwatsed3Error> {
+        Ok(Self {
+            identity: WatIdentityColumns::from_batch(path, batch)?,
+            required: WatRequiredColumns::from_batch(path, batch)?,
+            storage: WatStorageColumns::from_batch(path, batch)?,
+        })
+    }
+}
+
+struct WatIdentityColumns<'a> {
+    wepp_ids: &'a Int32Array,
+    ofe_ids: Option<&'a Int16Array>,
+    years: &'a Int16Array,
+    sim_day_indexes: &'a Int32Array,
+    julians: &'a Int16Array,
+    months: &'a Int8Array,
+    day_of_months: &'a Int8Array,
+    water_years: &'a Int16Array,
+    areas: &'a Float64Array,
+}
+
+impl<'a> WatIdentityColumns<'a> {
+    fn from_batch(path: &Path, batch: &'a RecordBatch) -> Result<Self, Totalwatsed3Error> {
+        Ok(Self {
+            wepp_ids: int32_column(path, batch, "wepp_id")?,
+            ofe_ids: optional_int16_column_any(path, batch, &["ofe_id", "OFE"])?,
+            years: int16_column(path, batch, "year")?,
+            sim_day_indexes: int32_column_any(path, batch, &["sim_day_index", "day"])?,
+            julians: int16_column(path, batch, "julian")?,
+            months: int8_column(path, batch, "month")?,
+            day_of_months: int8_column(path, batch, "day_of_month")?,
+            water_years: int16_column(path, batch, "water_year")?,
+            areas: f64_column(path, batch, "Area")?,
+        })
+    }
+}
+
+struct WatRequiredColumns<'a> {
+    precipitation: &'a Float64Array,
+    rain_melt: &'a Float64Array,
+    q_diagnostic: &'a Float64Array,
+    deep_percolation: &'a Float64Array,
+    lateral_flow: &'a Float64Array,
+    qofe: &'a Float64Array,
+    transpiration: &'a Float64Array,
+    evaporation_soil: &'a Float64Array,
+    evaporation_residue: &'a Float64Array,
+    upstream_q: &'a Float64Array,
+    subsurface_runon: &'a Float64Array,
+    total_soil_water: &'a Float64Array,
+}
+
+impl<'a> WatRequiredColumns<'a> {
+    fn from_batch(path: &Path, batch: &'a RecordBatch) -> Result<Self, Totalwatsed3Error> {
+        Ok(Self {
+            precipitation: f64_column(path, batch, "P")?,
+            rain_melt: f64_column(path, batch, "RM")?,
+            q_diagnostic: f64_column(path, batch, "Q")?,
+            deep_percolation: f64_column(path, batch, "Dp")?,
+            lateral_flow: f64_column(path, batch, "latqcc")?,
+            qofe: f64_column(path, batch, "QOFE")?,
+            transpiration: f64_column(path, batch, "Ep")?,
+            evaporation_soil: f64_column(path, batch, "Es")?,
+            evaporation_residue: f64_column(path, batch, "Er")?,
+            upstream_q: f64_column(path, batch, "UpStrmQ")?,
+            subsurface_runon: f64_column(path, batch, "SubRIn")?,
+            total_soil_water: f64_column_any(path, batch, &["Total-Soil Water", "Total-Soil"])?,
+        })
+    }
+}
+
+struct WatStorageColumns<'a> {
+    soil_water_total: Option<&'a Float64Array>,
+    profile_depth: Option<&'a Float64Array>,
+    profile_porosity_cap: Option<&'a Float64Array>,
+    profile_fc_store: Option<&'a Float64Array>,
+    profile_wp_store: Option<&'a Float64Array>,
+    interception: Option<&'a Float64Array>,
+    interception_storage: Option<&'a Float64Array>,
+    frozen_water: &'a Float64Array,
+    snow_water: &'a Float64Array,
+    tile: Option<&'a Float64Array>,
+    irrigation: Option<&'a Float64Array>,
+}
+
+impl<'a> WatStorageColumns<'a> {
+    fn from_batch(path: &Path, batch: &'a RecordBatch) -> Result<Self, Totalwatsed3Error> {
+        Ok(Self {
+            soil_water_total: optional_f64_column(path, batch, "SoilWaterTotal")?,
+            profile_depth: optional_f64_column(path, batch, "ProfileDepth")?,
+            profile_porosity_cap: optional_f64_column(path, batch, "ProfilePorosityCap")?,
+            profile_fc_store: optional_f64_column(path, batch, "ProfileFCStore")?,
+            profile_wp_store: optional_f64_column(path, batch, "ProfileWPStore")?,
+            interception: optional_f64_column(path, batch, "Interception")?,
+            interception_storage: optional_f64_column(path, batch, "InterceptionStorage")?,
+            frozen_water: f64_column(path, batch, "frozwt")?,
+            snow_water: f64_column(path, batch, "Snow-Water")?,
+            tile: optional_f64_column(path, batch, "Tile")?,
+            irrigation: optional_f64_column(path, batch, "Irr")?,
+        })
+    }
+}
+
 #[derive(Debug, Clone, Copy)]
 struct WatInputRow {
     key: DayKey,
@@ -653,166 +763,182 @@ fn read_wat_batch(
     rows: &mut Vec<WatInputRow>,
     area_lookup: &mut BTreeMap<DateOfeKey, AreaLookupEntry>,
 ) -> Result<(), Totalwatsed3Error> {
-    let wepp_ids = int32_column(path, batch, "wepp_id")?;
-    let ofe_ids = optional_int16_column_any(path, batch, &["ofe_id", "OFE"])?;
-    let years = int16_column(path, batch, "year")?;
-    let sim_day_indexes = int32_column_any(path, batch, &["sim_day_index", "day"])?;
-    let julians = int16_column(path, batch, "julian")?;
-    let months = int8_column(path, batch, "month")?;
-    let day_of_months = int8_column(path, batch, "day_of_month")?;
-    let water_years = int16_column(path, batch, "water_year")?;
-    let areas = f64_column(path, batch, "Area")?;
-    let precipitation = f64_column(path, batch, "P")?;
-    let rain_melt = f64_column(path, batch, "RM")?;
-    let q_diagnostic = f64_column(path, batch, "Q")?;
-    let deep_percolation = f64_column(path, batch, "Dp")?;
-    let lateral_flow = f64_column(path, batch, "latqcc")?;
-    let qofe = f64_column(path, batch, "QOFE")?;
-    let transpiration = f64_column(path, batch, "Ep")?;
-    let evaporation_soil = f64_column(path, batch, "Es")?;
-    let evaporation_residue = f64_column(path, batch, "Er")?;
-    let upstream_q = f64_column(path, batch, "UpStrmQ")?;
-    let subsurface_runon = f64_column(path, batch, "SubRIn")?;
-    let total_soil_water = f64_column_any(path, batch, &["Total-Soil Water", "Total-Soil"])?;
-    let soil_water_total = optional_f64_column(path, batch, "SoilWaterTotal")?;
-    let profile_depth = optional_f64_column(path, batch, "ProfileDepth")?;
-    let profile_porosity_cap = optional_f64_column(path, batch, "ProfilePorosityCap")?;
-    let profile_fc_store = optional_f64_column(path, batch, "ProfileFCStore")?;
-    let profile_wp_store = optional_f64_column(path, batch, "ProfileWPStore")?;
-    let interception = optional_f64_column(path, batch, "Interception")?;
-    let interception_storage = optional_f64_column(path, batch, "InterceptionStorage")?;
-    let frozen_water = f64_column(path, batch, "frozwt")?;
-    let snow_water = f64_column(path, batch, "Snow-Water")?;
-    let tile = optional_f64_column(path, batch, "Tile")?;
-    let irrigation = optional_f64_column(path, batch, "Irr")?;
+    let columns = WatBatchColumns::from_batch(path, batch)?;
 
     for row in 0..batch.num_rows() {
         let row_index = row_offset + row;
-        let wepp_id =
-            wepp_id_override.unwrap_or(int32_value(path, "wepp_id", wepp_ids, row, row_index)?);
-        let ofe_id = optional_int16_value(path, "ofe_id|OFE", ofe_ids, row, row_index)?;
-        let area_m2 = nonnegative_f64_value(path, "Area", areas, row, row_index)?;
-        if area_m2 <= 0.0 {
-            return Err(Totalwatsed3Error::InvalidValue {
-                path: path.to_path_buf(),
-                column: "Area".to_string(),
-                row_index,
-                value: area_m2,
-            });
-        }
-        let key = day_key_from_columns(
+        rows.push(read_wat_row(
             path,
-            years,
-            sim_day_indexes,
-            julians,
-            months,
-            day_of_months,
-            water_years,
+            &columns,
             row,
             row_index,
-        )?;
-        if let Some(ofe_id) = ofe_id {
-            area_lookup.insert(
-                DateOfeKey {
-                    wepp_id,
-                    ofe_id,
-                    year: key.year,
-                    julian: key.julian,
-                    month: key.month,
-                    day_of_month: key.day_of_month,
-                    water_year: key.water_year,
-                },
-                AreaLookupEntry {
-                    day_key: key,
-                    area_m2,
-                },
-            );
-        }
-        let total_soil_water_mm =
-            f64_value(path, "Total-Soil Water", total_soil_water, row, row_index)?;
-        rows.push(WatInputRow {
-            key,
-            wepp_id,
-            ofe_id,
-            area_m2,
-            values: WatValues {
-                precipitation_mm: f64_value(path, "P", precipitation, row, row_index)?,
-                rain_melt_mm: f64_value(path, "RM", rain_melt, row, row_index)?,
-                q_diagnostic_mm: f64_value(path, "Q", q_diagnostic, row, row_index)?,
-                deep_percolation_mm: f64_value(path, "Dp", deep_percolation, row, row_index)?,
-                lateral_flow_mm: f64_value(path, "latqcc", lateral_flow, row, row_index)?,
-                qofe_mm: f64_value(path, "QOFE", qofe, row, row_index)?,
-                transpiration_mm: f64_value(path, "Ep", transpiration, row, row_index)?,
-                evaporation_soil_mm: f64_value(path, "Es", evaporation_soil, row, row_index)?,
-                evaporation_residue_mm: f64_value(path, "Er", evaporation_residue, row, row_index)?,
-                upstream_q_mm: f64_value(path, "UpStrmQ", upstream_q, row, row_index)?,
-                subsurface_runon_mm: f64_value(path, "SubRIn", subsurface_runon, row, row_index)?,
-                total_soil_water_mm,
-                soil_water_total_mm: optional_f64_value(
-                    path,
-                    "SoilWaterTotal",
-                    soil_water_total,
-                    row,
-                    row_index,
-                )?
-                .unwrap_or(total_soil_water_mm),
-                profile_depth_mm: optional_f64_value(
-                    path,
-                    "ProfileDepth",
-                    profile_depth,
-                    row,
-                    row_index,
-                )?
-                .unwrap_or(0.0),
-                profile_porosity_cap_mm: optional_f64_value(
-                    path,
-                    "ProfilePorosityCap",
-                    profile_porosity_cap,
-                    row,
-                    row_index,
-                )?
-                .unwrap_or(0.0),
-                profile_fc_store_mm: optional_f64_value(
-                    path,
-                    "ProfileFCStore",
-                    profile_fc_store,
-                    row,
-                    row_index,
-                )?
-                .unwrap_or(0.0),
-                profile_wp_store_mm: optional_f64_value(
-                    path,
-                    "ProfileWPStore",
-                    profile_wp_store,
-                    row,
-                    row_index,
-                )?
-                .unwrap_or(0.0),
-                interception_mm: optional_f64_value(
-                    path,
-                    "Interception",
-                    interception,
-                    row,
-                    row_index,
-                )?
-                .unwrap_or(0.0),
-                interception_storage_mm: optional_f64_value(
-                    path,
-                    "InterceptionStorage",
-                    interception_storage,
-                    row,
-                    row_index,
-                )?
-                .unwrap_or(0.0),
-                frozen_water_mm: f64_value(path, "frozwt", frozen_water, row, row_index)?,
-                snow_water_mm: f64_value(path, "Snow-Water", snow_water, row, row_index)?,
-                tile_mm: optional_f64_value(path, "Tile", tile, row, row_index)?.unwrap_or(0.0),
-                irrigation_mm: optional_f64_value(path, "Irr", irrigation, row, row_index)?
-                    .unwrap_or(0.0),
-            },
-        });
+            wepp_id_override,
+            area_lookup,
+        )?);
     }
     Ok(())
+}
+
+fn read_wat_row(
+    path: &Path,
+    columns: &WatBatchColumns<'_>,
+    row: usize,
+    row_index: usize,
+    wepp_id_override: Option<i32>,
+    area_lookup: &mut BTreeMap<DateOfeKey, AreaLookupEntry>,
+) -> Result<WatInputRow, Totalwatsed3Error> {
+    let identity = &columns.identity;
+    let wepp_id = wepp_id_override.unwrap_or(int32_value(
+        path,
+        "wepp_id",
+        identity.wepp_ids,
+        row,
+        row_index,
+    )?);
+    let ofe_id = optional_int16_value(path, "ofe_id|OFE", identity.ofe_ids, row, row_index)?;
+    let area_m2 = nonnegative_f64_value(path, "Area", identity.areas, row, row_index)?;
+    if area_m2 <= 0.0 {
+        return Err(Totalwatsed3Error::InvalidValue {
+            path: path.to_path_buf(),
+            column: "Area".to_string(),
+            row_index,
+            value: area_m2,
+        });
+    }
+    let key = day_key_from_columns(
+        path,
+        identity.years,
+        identity.sim_day_indexes,
+        identity.julians,
+        identity.months,
+        identity.day_of_months,
+        identity.water_years,
+        row,
+        row_index,
+    )?;
+    if let Some(ofe_id) = ofe_id {
+        area_lookup.insert(
+            DateOfeKey {
+                wepp_id,
+                ofe_id,
+                year: key.year,
+                julian: key.julian,
+                month: key.month,
+                day_of_month: key.day_of_month,
+                water_year: key.water_year,
+            },
+            AreaLookupEntry {
+                day_key: key,
+                area_m2,
+            },
+        );
+    }
+    let total_soil_water_mm = f64_value(
+        path,
+        "Total-Soil Water",
+        columns.required.total_soil_water,
+        row,
+        row_index,
+    )?;
+    Ok(WatInputRow {
+        key,
+        wepp_id,
+        ofe_id,
+        area_m2,
+        values: read_wat_values(path, columns, row, row_index, total_soil_water_mm)?,
+    })
+}
+
+fn read_wat_values(
+    path: &Path,
+    columns: &WatBatchColumns<'_>,
+    row: usize,
+    row_index: usize,
+    total_soil_water_mm: f64,
+) -> Result<WatValues, Totalwatsed3Error> {
+    let required = &columns.required;
+    let storage = &columns.storage;
+    Ok(WatValues {
+        precipitation_mm: f64_value(path, "P", required.precipitation, row, row_index)?,
+        rain_melt_mm: f64_value(path, "RM", required.rain_melt, row, row_index)?,
+        q_diagnostic_mm: f64_value(path, "Q", required.q_diagnostic, row, row_index)?,
+        deep_percolation_mm: f64_value(path, "Dp", required.deep_percolation, row, row_index)?,
+        lateral_flow_mm: f64_value(path, "latqcc", required.lateral_flow, row, row_index)?,
+        qofe_mm: f64_value(path, "QOFE", required.qofe, row, row_index)?,
+        transpiration_mm: f64_value(path, "Ep", required.transpiration, row, row_index)?,
+        evaporation_soil_mm: f64_value(path, "Es", required.evaporation_soil, row, row_index)?,
+        evaporation_residue_mm: f64_value(
+            path,
+            "Er",
+            required.evaporation_residue,
+            row,
+            row_index,
+        )?,
+        upstream_q_mm: f64_value(path, "UpStrmQ", required.upstream_q, row, row_index)?,
+        subsurface_runon_mm: f64_value(path, "SubRIn", required.subsurface_runon, row, row_index)?,
+        total_soil_water_mm,
+        soil_water_total_mm: optional_f64_value(
+            path,
+            "SoilWaterTotal",
+            storage.soil_water_total,
+            row,
+            row_index,
+        )?
+        .unwrap_or(total_soil_water_mm),
+        profile_depth_mm: optional_f64_value(
+            path,
+            "ProfileDepth",
+            storage.profile_depth,
+            row,
+            row_index,
+        )?
+        .unwrap_or(0.0),
+        profile_porosity_cap_mm: optional_f64_value(
+            path,
+            "ProfilePorosityCap",
+            storage.profile_porosity_cap,
+            row,
+            row_index,
+        )?
+        .unwrap_or(0.0),
+        profile_fc_store_mm: optional_f64_value(
+            path,
+            "ProfileFCStore",
+            storage.profile_fc_store,
+            row,
+            row_index,
+        )?
+        .unwrap_or(0.0),
+        profile_wp_store_mm: optional_f64_value(
+            path,
+            "ProfileWPStore",
+            storage.profile_wp_store,
+            row,
+            row_index,
+        )?
+        .unwrap_or(0.0),
+        interception_mm: optional_f64_value(
+            path,
+            "Interception",
+            storage.interception,
+            row,
+            row_index,
+        )?
+        .unwrap_or(0.0),
+        interception_storage_mm: optional_f64_value(
+            path,
+            "InterceptionStorage",
+            storage.interception_storage,
+            row,
+            row_index,
+        )?
+        .unwrap_or(0.0),
+        frozen_water_mm: f64_value(path, "frozwt", storage.frozen_water, row, row_index)?,
+        snow_water_mm: f64_value(path, "Snow-Water", storage.snow_water, row, row_index)?,
+        tile_mm: optional_f64_value(path, "Tile", storage.tile, row, row_index)?.unwrap_or(0.0),
+        irrigation_mm: optional_f64_value(path, "Irr", storage.irrigation, row, row_index)?
+            .unwrap_or(0.0),
+    })
 }
 
 fn wepp_id_override_for_per_hillslope_file(path: &Path, suffix: &str) -> Option<i32> {
