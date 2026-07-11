@@ -119,6 +119,15 @@ State as of `2026-07-11 UTC`:
   floor. Target CRAP rows above `30` fell from `3` to `0` (maximum `25.625`),
   and dual review, dual verification, 1,700-test full nextest, clippy, deny, and
   documentation gates passed.
+- `20260711-cqr-nightly-03-input-watershed-channel-001/` -
+  EXECUTED-HOLD-CQR-NIGHTLY-LOCAL-CONTRACT-MISMATCH (2026-07-11): fresh nightly
+  batch 01 target #3 passed provisional module coverage/CRAP metrics but
+  decomposed before its per-function floor was closed. Broader obligation review
+  then found scaffold behavior classifies an extra rating row under
+  `icntrl != 4` as `CHN-E-002` while canonical
+  `G-CHN-013` requires `CHN-E-006`. Production/test edits are rolled back to
+  scaffold `a7d07708`; the first follow-on is defect closure
+  `CHN-E006-EXTRA-RATING-ROW`, including multi-channel syntax ambiguity.
 - `20260709-cqr-nightly-b02-10-hbp-payload-validator-001/` -
   EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-10): CQR nightly batch 02 target #10
   completed characterization-only closure of
