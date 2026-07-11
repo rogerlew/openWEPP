@@ -29,6 +29,13 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-10`:
+- `20260710-wshedw11b-channel-interval-sediment-implementation-001/` -
+  QUEUED: bounded implementation/DC successor to held WSHED-W11 and completed
+  WSHED-W11A. Implements `SC-ROUTE-001` v53 on the real two-channel production
+  path, closes both `GAP-ROUTE-014` detachment terminals, executes all eleven
+  W11A vectors, and requires independent water/sediment reconstruction plus
+  protected fallback and full workspace gates. Package:
+  `20260710-wshedw11b-channel-interval-sediment-implementation-001/package.md`.
 - `20260710-wshedw11a-channel-hourly-sediment-authority-001/` -
   EXECUTED-COMPLETE-AUTHORITY (2026-07-10, Claude Code operator-directed
   end-to-end; two Codex post-hoc REOPEN cycles dispositioned same day;
@@ -59,8 +66,17 @@ State as of `2026-07-10`:
   reconstruction. It also proved baseline channel sediment is event-only and
   (pre-v51) contracts did not define per-interval WS18-WS26 sequencing or
   bed/profile carry. No contract, Rust, test, fixture, or output edits
-  landed in W11 itself; existing M-T3 fail-closed behavior remains until W11
-  resumes at Phase B on the v51 authority.
+  landed in W11 itself; the original package remains the Phase-A/hold evidence
+  record. Its WSHED-W11B successor completed the ratified v53 implementation
+  and closure the same day.
+- `20260710-wshedw11b-channel-interval-sediment-implementation-001/` -
+  EXECUTED-COMPLETE (2026-07-10): implemented the `SC-ROUTE-001` v53 active
+  interval lane on the production CLI/network path, closed both
+  `GAP-ROUTE-014` terminals and `WSHED-W11B-DIRECT-001`, routed same-grid water
+  and particle classes through two serial channels, bound watershed-soil
+  `prtcmp -> crfrac`, and independently closed water/sediment output. Dual
+  verification, release provenance, full 1,677-test, erosion 312-test, deny,
+  clippy, comparator, and documentation gates passed.
 - `20260709-cqr-nightly-b02-10-hbp-payload-validator-001/` -
   EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-10): CQR nightly batch 02 target #10
   completed characterization-only closure of

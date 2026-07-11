@@ -47,7 +47,9 @@ impl Ws10ChannelImpoundmentKernel {
                 channel_width,
             ));
         }
-        if !channel_shape.is_finite() || channel_shape <= WS10_ZERO_THRESHOLD {
+        if !channel_shape.is_finite()
+            || (ishape != 2 && channel_shape <= WS10_ZERO_THRESHOLD)
+        {
             return Err(Self::domain_violation(
                 node_class,
                 BoundarySymbol::from("ws11_muskingum_channel_shape"),
@@ -84,6 +86,13 @@ impl Ws10ChannelImpoundmentKernel {
                         * chnz0
                         * (((1.0 + (depth / chnz0)).sqrt()) + (depth / chnz0).sqrt()).ln());
                 Ok((top_width, area, wetted_perimeter, chnz0))
+            }
+            4.. => {
+                let top_width = channel_width + (2.0 * channel_shape * depth);
+                let area = (channel_width + (channel_shape * depth)) * depth;
+                let wetted_perimeter = channel_width
+                    + (2.0 * depth * (1.0 + (channel_shape * channel_shape)).sqrt());
+                Ok((top_width, area, wetted_perimeter, channel_shape))
             }
             _ => Err(Self::domain_violation(
                 node_class,
@@ -472,8 +481,8 @@ impl Ws10ChannelImpoundmentKernel {
             BoundarySymbol::from("qref_dynamic"),
             (qin + qin_previous + q1_previous) / 3.0,
         )?;
-        if qref < WS10_ZERO_THRESHOLD {
-            qref = WS10_ZERO_THRESHOLD;
+        if qref < WS11_DYNAMIC_MC_QREF_EPS_CMS {
+            qref = WS11_DYNAMIC_MC_QREF_EPS_CMS;
         }
 
         let depth = Self::ws11_solve_depth_for_discharge(

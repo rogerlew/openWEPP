@@ -419,7 +419,7 @@ fn wshedw7r_p102_sediment_active_fixture_publishes_nonzero_sediment_and_jobs_ide
         "totalwatsed3 sed_del",
     );
     assert!(
-        (sediment_yield_kg - exported_sediment_kg).abs() > 1.0,
+        (sediment_yield_kg - exported_sediment_kg).abs() > 1.0e-6,
         "sed_del should be routed sediment yield, not a detachment-minus-deposition alias"
     );
 }

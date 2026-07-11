@@ -175,6 +175,9 @@ impl Ws10ChannelImpoundmentKernel {
         input: &DirectWatershedKernelInput<'_>,
     ) -> Result<DirectWatershedKernelOutput, Ws10GuardError> {
         let context = Self::read_direct_channel_context(input)?;
+        if Self::ws11_interval_lane_active(input, context.ipeak_branch)? {
+            return Self::run_direct_interval_channel_node(input, &context);
+        }
         let hydrology = Self::assemble_direct_channel_hydrology(input, &context)?;
         let peak = Self::compute_direct_channel_peak(input, &context, &hydrology)?;
         let runoff = Self::compute_direct_channel_runoff(&context, &hydrology, peak.qpo)?;
@@ -651,7 +654,9 @@ impl Ws10ChannelImpoundmentKernel {
             groundwater_deep_seepage_m3: hydrology.channel_baseflow.deep_seepage_m3,
             sediment_yield_kg: sediment_state.qsed_kg_s,
             wave_state: routed_wave_state,
+            interval_water_state: None,
             sediment_state,
+            interval_sediment_state: None,
         }))
     }
 
@@ -1850,6 +1855,9 @@ impl Ws10ChannelImpoundmentKernel {
                 context.sediment_controls,
                 context.nslpts,
                 context.peak_partition,
+                None,
+                None,
+                2.0 * context.event_duration,
                 &active.top_class_mass_kg,
                 &active.lateral_class_mass_kg,
                 &active.particle_diameters_m,
@@ -2178,6 +2186,8 @@ impl Ws10ChannelImpoundmentKernel {
             depth_b_points_ft: Vec::with_capacity(nslpts),
             width_a_points_ft: Vec::with_capacity(nslpts),
             width_b_points_ft: Vec::with_capacity(nslpts),
+            eroded_width_a_points_ft: Vec::with_capacity(nslpts),
+            eroded_width_b_points_ft: Vec::with_capacity(nslpts),
         };
 
         for point in &control.segment_points {
@@ -2205,6 +2215,8 @@ impl Ws10ChannelImpoundmentKernel {
             profile.depth_b_points_ft.push(point.depth_b_ft);
             profile.width_a_points_ft.push(point.width_a_ft);
             profile.width_b_points_ft.push(point.width_b_ft);
+            profile.eroded_width_a_points_ft.push(point.width_a_ft);
+            profile.eroded_width_b_points_ft.push(point.width_b_ft);
         }
 
         Ok(profile)
@@ -2308,3 +2320,6 @@ impl Ws10ChannelImpoundmentKernel {
 
 #[cfg(test)]
 include!("direct_tests.rs");
+
+#[cfg(test)]
+include!("hourly_tests.rs");

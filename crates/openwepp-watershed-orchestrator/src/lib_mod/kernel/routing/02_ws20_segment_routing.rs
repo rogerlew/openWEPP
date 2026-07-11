@@ -2,9 +2,17 @@ impl Ws10ChannelImpoundmentKernel {
     fn ws20_empty_segment_result() -> Ws20SegmentRoutingResult {
         Ws20SegmentRoutingResult {
             routed_class_masses_kg: Vec::new(),
+            detached_class_masses_kg: Vec::new(),
+            deposited_class_masses_kg: Vec::new(),
             diagnostics: Ws20SegmentRoutingDiagnostics::default(),
+            depth_a_points_ft: Vec::new(),
+            depth_b_points_ft: Vec::new(),
             widb_points_ft: Vec::new(),
             wida_points_ft: Vec::new(),
+            werb_points_ft: Vec::new(),
+            wera_points_ft: Vec::new(),
+            max_effective_shear_lb_ft2: 0.0,
+            outlet_transport_capacity_kg_s: Vec::new(),
         }
     }
 
@@ -340,28 +348,47 @@ impl Ws10ChannelImpoundmentKernel {
         profile: &mut Ws20ChannelProfile,
         state: &mut Ws20ClassTransportState,
         diagnostics: &mut Ws20SegmentRoutingDiagnostics,
-    ) -> Result<(), Ws10GuardError> {
+    ) -> Result<Ws20SegmentProcessOutcome, Ws10GuardError> {
         let segment = Self::ws20_segment_hydraulics(ctx, segment_index, profile)?;
         let snapshot = Self::ws20_transport_snapshot(ctx, &segment, state);
-        if snapshot.excess > 0.0 {
-            return Self::ws20_route_case34_segment(
+        let detached_lbs_s = if snapshot.excess > 0.0 {
+            Self::ws20_route_case34_segment(
                 ctx,
                 profile,
                 state,
                 diagnostics,
                 &segment,
                 &snapshot,
-            );
-        }
-
-        Self::ws20_route_case12_segment(
-            ctx,
-            profile,
-            state,
-            diagnostics,
-            &segment,
-            &snapshot,
+            )?
+        } else {
+            Self::ws20_route_case12_segment(
+                ctx,
+                profile,
+                state,
+                diagnostics,
+                &segment,
+                &snapshot,
+            )?
+        };
+        let outgoing_load_lbs_s_ft = state
+            .gstu_lbs_s
+            .iter()
+            .map(|flux| flux / segment.wfl_ft)
+            .collect::<Vec<_>>();
+        let outlet_transport_capacity_lbs_s = Self::ws18_trncap(
+            segment.effshl,
+            &outgoing_load_lbs_s_ft,
+            &state.crdia_ft,
+            &state.crspg,
         )
+        .into_iter()
+        .map(|capacity| capacity * segment.wfl_ft)
+        .collect();
+        Ok(Ws20SegmentProcessOutcome {
+            detached_lbs_s,
+            max_effective_shear_lb_ft2: segment.effshu.max(segment.effshl),
+            outlet_transport_capacity_lbs_s,
+        })
     }
 
     fn ws20_segment_crfrac<'a>(
@@ -387,37 +414,32 @@ impl Ws10ChannelImpoundmentKernel {
         diagnostics: &mut Ws20SegmentRoutingDiagnostics,
         segment: &Ws20SegmentHydraulics,
         snapshot: &Ws20TransportSnapshot,
-    ) -> Result<(), Ws10GuardError> {
+    ) -> Result<Vec<f64>, Ws10GuardError> {
         let crfrac = Self::ws20_segment_crfrac(ctx)?;
         let depsid_ft = ctx.sediment_controls.chneds * WS15_DEPTH_FROM_METERS_TO_FEET;
-        let tb_s = 2.0 * ctx.event_duration;
+        let tb_s = ctx.t_norm_s;
         let depmid_ft = profile.depth_b_points_ft[segment.segment_index - 1];
-        let dcap_outcome = Self::ws26_dcap(
-            ctx.node_class,
-            1,
+        let dcap_outcome = Self::ws20_interval_or_event_dcap(
+            ctx,
             segment.qu_cfs,
-            profile.slopes[segment.segment_index - 1].max(WS22_DCAP_MIN_SLOPE),
-            ctx.sediment_controls.ctlz,
-            ctx.sediment_controls.chnz,
+            profile.slopes[segment.segment_index - 1],
             segment.effshu,
             depsid_ft,
             depmid_ft,
-            profile.width_b_points_ft[segment.segment_index - 1],
+            profile.eroded_width_b_points_ft[segment.segment_index - 1],
             segment.wfu_ft,
-            ctx.roughness,
-            ctx.crsh,
             snapshot.excess,
-            tb_s,
             segment.upper_flagc,
-            ctx.chnk,
-            ctx.sediment_controls.chnnbr,
-            WS22_DCAP_MAXE,
             crfrac,
         )?;
-        let depmid_ft = dcap_outcome.depmid_ft;
         profile.depth_b_points_ft[segment.segment_index - 1] = dcap_outcome.depmid_ft;
+        profile.eroded_width_b_points_ft[segment.segment_index - 1] = profile
+            .eroded_width_b_points_ft[segment.segment_index - 1]
+            .max(dcap_outcome.werod_ft);
         if segment.upper_flagc == 2 && dcap_outcome.werod_ft > segment.wfu_ft {
-            profile.width_b_points_ft[segment.segment_index - 1] = dcap_outcome.werod_ft;
+            profile.width_b_points_ft[segment.segment_index - 1] = profile.width_b_points_ft
+                [segment.segment_index - 1]
+                .max(dcap_outcome.werod_ft);
         }
 
         let mut du_lbs_s_ft = vec![0.0_f64; state.gstu_lbs_s.len()];
@@ -433,11 +455,14 @@ impl Ws10ChannelImpoundmentKernel {
 
         if case3_segment {
             diagnostics.case3_segments = diagnostics.case3_segments.saturating_add(1);
-            state.gstu_lbs_s = Self::ws20_case3_next_fluxes(ctx, segment, state, snapshot, &du_lbs_s_ft)?;
-            return Ok(());
+            let (next_fluxes, detached_lbs_s) =
+                Self::ws20_case3_next_fluxes(ctx, segment, state, snapshot, &du_lbs_s_ft)?;
+            state.gstu_lbs_s = next_fluxes;
+            return Ok(detached_lbs_s);
         }
 
         diagnostics.case4_segments = diagnostics.case4_segments.saturating_add(1);
+        let lower_depmid_ft = profile.depth_a_points_ft[segment.segment_index];
         Self::ws20_route_case4_segment(
             ctx,
             profile,
@@ -447,8 +472,71 @@ impl Ws10ChannelImpoundmentKernel {
             crfrac,
             &du_lbs_s_ft,
             depsid_ft,
-            depmid_ft,
+            lower_depmid_ft,
             tb_s,
+        )
+    }
+
+    #[allow(clippy::similar_names, clippy::too_many_arguments)]
+    fn ws20_interval_or_event_dcap(
+        ctx: &Ws20RouteContext<'_>,
+        q_cfs: f64,
+        slope: f64,
+        effsh: f64,
+        depsid_ft: f64,
+        depmid_ft: f64,
+        werod_ft: f64,
+        wflow_ft: f64,
+        excess: f64,
+        flagc: i32,
+        crfrac: &[f64],
+    ) -> Result<Ws26DcapOutcome, Ws10GuardError> {
+        if let Some(t_exp_s) = ctx.t_exp_s {
+            return Self::ws26_dcap_interval(
+                ctx.node_class,
+                1,
+                q_cfs,
+                slope.max(WS22_DCAP_MIN_SLOPE),
+                ctx.sediment_controls.ctlz,
+                ctx.sediment_controls.chnz,
+                effsh,
+                depsid_ft,
+                depmid_ft,
+                werod_ft,
+                wflow_ft,
+                ctx.roughness,
+                ctx.crsh,
+                excess,
+                t_exp_s,
+                ctx.t_norm_s,
+                flagc,
+                ctx.chnk,
+                ctx.sediment_controls.chnnbr,
+                WS22_DCAP_MAXE,
+                crfrac,
+            );
+        }
+        Self::ws26_dcap(
+            ctx.node_class,
+            1,
+            q_cfs,
+            slope.max(WS22_DCAP_MIN_SLOPE),
+            ctx.sediment_controls.ctlz,
+            ctx.sediment_controls.chnz,
+            effsh,
+            depsid_ft,
+            depmid_ft,
+            werod_ft,
+            wflow_ft,
+            ctx.roughness,
+            ctx.crsh,
+            excess,
+            ctx.t_norm_s,
+            flagc,
+            ctx.chnk,
+            ctx.sediment_controls.chnnbr,
+            WS22_DCAP_MAXE,
+            crfrac,
         )
     }
 
@@ -459,13 +547,14 @@ impl Ws10ChannelImpoundmentKernel {
         state: &Ws20ClassTransportState,
         snapshot: &Ws20TransportSnapshot,
         du_lbs_s_ft: &[f64],
-    ) -> Result<Vec<f64>, Ws10GuardError> {
+    ) -> Result<(Vec<f64>, Vec<f64>), Ws10GuardError> {
         let class_count = state.gstu_lbs_s.len();
         let all_detaching = Self::ws20_case3_all_detaching(class_count, snapshot, du_lbs_s_ft);
         let xdbeg_ft =
             Self::ws20_case3_xdbeg_points(segment, state, snapshot, du_lbs_s_ft, all_detaching);
 
         let mut next_gstu_lbs_s = vec![0.0_f64; class_count];
+        let mut detached_lbs_s = vec![0.0_f64; class_count];
         for class_offset in 0..class_count {
             let next_flux =
                 Self::ws20_case3_next_flux(ctx, segment, state, snapshot, &xdbeg_ft, class_offset);
@@ -481,9 +570,13 @@ impl Ws10ChannelImpoundmentKernel {
                 ));
             }
             next_gstu_lbs_s[class_offset] = next_flux;
+            let detached_length_ft =
+                (xdbeg_ft[class_offset] - segment.x_upper_ft).clamp(0.0, segment.dx_ft);
+            detached_lbs_s[class_offset] =
+                0.5 * du_lbs_s_ft[class_offset].max(0.0) * detached_length_ft;
         }
 
-        Ok(next_gstu_lbs_s)
+        Ok((next_gstu_lbs_s, detached_lbs_s))
     }
 
     fn ws20_case3_all_detaching(
@@ -627,7 +720,7 @@ impl Ws10ChannelImpoundmentKernel {
         depsid_ft: f64,
         depmid_ft: f64,
         tb_s: f64,
-    ) -> Result<(), Ws10GuardError> {
+    ) -> Result<Vec<f64>, Ws10GuardError> {
         let class_count = state.gstu_lbs_s.len();
         let mut potld_case4_lbs_s_ft = vec![0.0_f64; class_count];
         for class_offset in 0..class_count {
@@ -660,9 +753,11 @@ impl Ws10ChannelImpoundmentKernel {
                 depsid_ft,
                 depmid_ft,
                 segment.wfl_ft,
+                profile.eroded_width_a_points_ft[segment.segment_index],
                 ctx.roughness,
                 ctx.crsh,
                 tb_s,
+                ctx.t_exp_s,
                 segment.lower_flagc,
                 ctx.chnk,
                 ctx.sediment_controls.chnnbr,
@@ -674,15 +769,29 @@ impl Ws10ChannelImpoundmentKernel {
                 &state.crdia_ft,
                 &state.crspg,
             )?;
+            profile.depth_a_points_ft[segment.segment_index] = ws23_outcome.depmid_ft;
+            profile.eroded_width_a_points_ft[segment.segment_index] = profile
+                .eroded_width_a_points_ft[segment.segment_index]
+                .max(ws23_outcome.werod_ft);
             if segment.lower_flagc == 2 && ws23_outcome.werod_ft > segment.wfl_ft {
-                profile.width_a_points_ft[segment.segment_index] = ws23_outcome.werod_ft;
+                profile.width_a_points_ft[segment.segment_index] = profile.width_a_points_ft
+                    [segment.segment_index]
+                    .max(ws23_outcome.werod_ft);
             }
+            let detached_lbs_s = du_lbs_s_ft
+                .iter()
+                .zip(&ws23_outcome.df_lbs_s_ft2)
+                .map(|(upper, lower)| {
+                    0.5 * (upper.max(0.0) + lower.max(0.0) * segment.wfl_ft)
+                        * segment.dx_ft
+                })
+                .collect();
             state.gstu_lbs_s = ws23_outcome.next_gstu_lbs_s;
-            return Ok(());
+            return Ok(detached_lbs_s);
         }
 
         diagnostics.enddet_segments = diagnostics.enddet_segments.saturating_add(1);
-        let _ = Self::ws27_case4_enddet_bracket_closure(
+        let enddet = Self::ws27_case4_enddet_bracket_closure(
             segment.x_upper_ft,
             segment.x_lower_ft,
             segment.wfl_ft,
@@ -712,7 +821,10 @@ impl Ws10ChannelImpoundmentKernel {
         }
 
         state.gstu_lbs_s = next_gstu_lbs_s;
-        Ok(())
+        Ok(du_lbs_s_ft
+            .iter()
+            .map(|upper| 0.5 * upper.max(0.0) * enddet.detachment_span_ft)
+            .collect())
     }
 
     fn ws20_route_case12_segment(
@@ -722,7 +834,7 @@ impl Ws10ChannelImpoundmentKernel {
         diagnostics: &mut Ws20SegmentRoutingDiagnostics,
         segment: &Ws20SegmentHydraulics,
         snapshot: &Ws20TransportSnapshot,
-    ) -> Result<(), Ws10GuardError> {
+    ) -> Result<Vec<f64>, Ws10GuardError> {
         let class_count = state.gstu_lbs_s.len();
         let mut saw_case1 = false;
         let mut saw_case2 = false;
@@ -757,7 +869,7 @@ impl Ws10ChannelImpoundmentKernel {
             gstde_lbs_s[class_offset] = update.gstde_lbs_s;
         }
 
-        if Self::ws20_try_case12_transition(
+        if let Some(detached_lbs_s) = Self::ws20_try_case12_transition(
             ctx,
             profile,
             state,
@@ -769,12 +881,12 @@ impl Ws10ChannelImpoundmentKernel {
             &xde_ft,
             &gstde_lbs_s,
         )? {
-            return Ok(());
+            return Ok(detached_lbs_s);
         }
 
         Self::ws20_record_case12_diagnostics(diagnostics, saw_case1, saw_case2);
         state.gstu_lbs_s = next_gstu_lbs_s;
-        Ok(())
+        Ok(vec![0.0; class_count])
     }
 
     #[allow(clippy::similar_names)]
@@ -892,15 +1004,15 @@ impl Ws10ChannelImpoundmentKernel {
         case12_nz: usize,
         xde_ft: &[f64],
         gstde_lbs_s: &[f64],
-    ) -> Result<bool, Ws10GuardError> {
+    ) -> Result<Option<Vec<f64>>, Ws10GuardError> {
         let class_count = state.gstu_lbs_s.len();
         if !(ctx.ws21_case34_enabled && saw_case2 && case12_nz < class_count) {
-            return Ok(false);
+            return Ok(None);
         }
 
         let xdemax_ft = xde_ft.iter().copied().fold(segment.x_upper_ft, f64::max);
         if xdemax_ft + WS10_ZERO_THRESHOLD >= segment.x_lower_ft {
-            return Ok(false);
+            return Ok(None);
         }
 
         let dx_remaining_ft = segment.x_lower_ft - xdemax_ft;
@@ -911,9 +1023,9 @@ impl Ws10ChannelImpoundmentKernel {
         }
 
         let crfrac = Self::ws20_segment_crfrac(ctx)?;
-        let depmid_ft = ctx.sediment_controls.chnedm * WS15_DEPTH_FROM_METERS_TO_FEET;
+        let depmid_ft = profile.depth_a_points_ft[segment.segment_index];
         let depsid_ft = ctx.sediment_controls.chneds * WS15_DEPTH_FROM_METERS_TO_FEET;
-        let tb_s = 2.0 * ctx.event_duration;
+        let tb_s = ctx.t_norm_s;
 
         let ws24_outcome = Self::ws24_case12_detach_transition_closure(
             ctx.node_class,
@@ -925,9 +1037,11 @@ impl Ws10ChannelImpoundmentKernel {
             depsid_ft,
             depmid_ft,
             segment.wfl_ft,
+            profile.eroded_width_a_points_ft[segment.segment_index],
             ctx.roughness,
             ctx.crsh,
             tb_s,
+            ctx.t_exp_s,
             segment.lower_flagc,
             ctx.chnk,
             ctx.sediment_controls.chnnbr,
@@ -938,14 +1052,25 @@ impl Ws10ChannelImpoundmentKernel {
             &state.crdia_ft,
             &state.crspg,
         )?;
+        profile.depth_a_points_ft[segment.segment_index] = ws24_outcome.depmid_ft;
+        profile.eroded_width_a_points_ft[segment.segment_index] = profile
+            .eroded_width_a_points_ft[segment.segment_index]
+            .max(ws24_outcome.werod_ft);
         if segment.lower_flagc == 2 && ws24_outcome.werod_ft > segment.wfl_ft {
-            profile.width_a_points_ft[segment.segment_index] = ws24_outcome.werod_ft;
+            profile.width_a_points_ft[segment.segment_index] = profile.width_a_points_ft
+                [segment.segment_index]
+                .max(ws24_outcome.werod_ft);
         }
+        let detached_lbs_s = ws24_outcome
+            .df_lbs_s_ft2
+            .iter()
+            .map(|lower| 0.5 * lower.max(0.0) * segment.wfl_ft * dx_remaining_ft)
+            .collect();
         state.gstu_lbs_s = ws24_outcome.next_gstu_lbs_s;
         diagnostics.ws24_case2_detach_segments =
             diagnostics.ws24_case2_detach_segments.saturating_add(1);
         Self::ws20_record_case12_diagnostics(diagnostics, saw_case1, saw_case2);
-        Ok(true)
+        Ok(Some(detached_lbs_s))
     }
 
     fn ws20_record_case12_diagnostics(
@@ -986,6 +1111,7 @@ impl Ws10ChannelImpoundmentKernel {
 
     #[allow(
         clippy::too_many_arguments,
+        clippy::too_many_lines,
         clippy::many_single_char_names,
         clippy::similar_names
     )]
@@ -999,6 +1125,9 @@ impl Ws10ChannelImpoundmentKernel {
         sediment_controls: Ws15ChannelSedimentControls,
         nslpts: usize,
         peak_partition: Ws20IncomingPeakPartition,
+        interval_operands: Option<Ws11IntervalHydraulicOperands>,
+        t_exp_s: Option<f64>,
+        t_norm_s: f64,
         top_class_mass_kg: &[f64],
         lateral_class_mass_kg: &[f64],
         class_diameters_m: &[f64],
@@ -1020,9 +1149,18 @@ impl Ws10ChannelImpoundmentKernel {
             class_numbers,
         )?;
 
-        let leff_ft = Self::ws20_effective_length(node_class, &profile)?;
-        let (qu_top_cfs, qlat_cfs_per_ft) =
-            Self::ws20_flow_partition(node_class, qpo, peak_partition, leff_ft)?;
+        let (leff_ft, qu_top_cfs, qlat_cfs_per_ft) = if let Some(operands) = interval_operands {
+            (
+                operands.leff_ft,
+                operands.qu_top_cfs,
+                operands.qlat_eff_cfs_per_ft,
+            )
+        } else {
+            let leff_ft = Self::ws20_effective_length(node_class, &profile)?;
+            let (qu_top_cfs, qlat_cfs_per_ft) =
+                Self::ws20_flow_partition(node_class, qpo, peak_partition, leff_ft)?;
+            (leff_ft, qu_top_cfs, qlat_cfs_per_ft)
+        };
         let mut class_state = Self::ws20_prepare_class_transport(
             node_class,
             event_duration,
@@ -1043,6 +1181,8 @@ impl Ws10ChannelImpoundmentKernel {
             node_class,
             ws21_case34_enabled,
             event_duration,
+            t_exp_s,
+            t_norm_s,
             roughness,
             sediment_controls,
             class_numbers,
@@ -1055,22 +1195,89 @@ impl Ws10ChannelImpoundmentKernel {
         };
 
         let mut diagnostics = Ws20SegmentRoutingDiagnostics::default();
+        let mut detached_flux_lbs_s = vec![0.0_f64; class_count];
+        let mut deposited_flux_lbs_s = vec![0.0_f64; class_count];
+        let mut max_effective_shear_lb_ft2 = 0.0_f64;
+        let mut outlet_transport_capacity_lbs_s = vec![0.0_f64; class_count];
         for segment_index in 1..nslpts {
-            Self::ws20_route_one_segment(
+            let incoming_flux_lbs_s = class_state.gstu_lbs_s.clone();
+            let dx_ft = profile.x_points_ft[segment_index] - profile.x_points_ft[segment_index - 1];
+            let process = Self::ws20_route_one_segment(
                 &ctx,
                 segment_index,
                 &mut profile,
                 &mut class_state,
                 &mut diagnostics,
             )?;
+            max_effective_shear_lb_ft2 = max_effective_shear_lb_ft2
+                .max(process.max_effective_shear_lb_ft2);
+            outlet_transport_capacity_lbs_s = process.outlet_transport_capacity_lbs_s;
+            for class_offset in 0..class_count {
+                let detached = process.detached_lbs_s[class_offset];
+                if incoming_flux_lbs_s[class_offset] == 0.0
+                    && class_state.dlat_lbs_s_ft[class_offset] == 0.0
+                    && detached == 0.0
+                {
+                    // INV-ROUTE-019 zero-by-construction class continuity:
+                    // without inlet, lateral, or detachment mass, a segment
+                    // cannot synthesize an outgoing particle load.
+                    class_state.gstu_lbs_s[class_offset] = 0.0;
+                    continue;
+                }
+                let deposited = incoming_flux_lbs_s[class_offset]
+                    + class_state.dlat_lbs_s_ft[class_offset] * dx_ft
+                    + detached
+                    - class_state.gstu_lbs_s[class_offset];
+                let tolerance = 1.0e-10
+                    * (incoming_flux_lbs_s[class_offset].abs()
+                        + detached.abs()
+                        + class_state.gstu_lbs_s[class_offset].abs())
+                    .max(1.0);
+                if !detached.is_finite() || detached < 0.0 || !deposited.is_finite() {
+                    return Err(Self::domain_violation(
+                        node_class,
+                        BoundarySymbol::from("ws20_constructive_segment_mass"),
+                        deposited,
+                    ));
+                }
+                if deposited < -tolerance {
+                    return Err(Self::domain_violation(
+                        node_class,
+                        BoundarySymbol::from("ws20_constructive_deposition"),
+                        deposited,
+                    ));
+                }
+                detached_flux_lbs_s[class_offset] += detached;
+                deposited_flux_lbs_s[class_offset] += deposited.max(0.0);
+            }
         }
 
         let outgoing_class_mass_kg = Self::ws20_outgoing_class_masses(&ctx, &class_state)?;
+        let detached_class_masses_kg = detached_flux_lbs_s
+            .iter()
+            .map(|value| value * event_duration / WS18_LBS_PER_KG)
+            .collect();
+        let deposited_class_masses_kg = deposited_flux_lbs_s
+            .iter()
+            .map(|value| value * event_duration / WS18_LBS_PER_KG)
+            .collect();
+        let outlet_transport_capacity_kg_s = outlet_transport_capacity_lbs_s
+            .iter()
+            .map(|value| value / WS18_LBS_PER_KG)
+            .collect();
         Ok(Ws20SegmentRoutingResult {
             routed_class_masses_kg: outgoing_class_mass_kg,
+            detached_class_masses_kg,
+            deposited_class_masses_kg,
             diagnostics,
+            depth_a_points_ft: profile.depth_a_points_ft,
+            depth_b_points_ft: profile.depth_b_points_ft,
             widb_points_ft: profile.width_b_points_ft,
             wida_points_ft: profile.width_a_points_ft,
+            werb_points_ft: profile.eroded_width_b_points_ft,
+            wera_points_ft: profile.eroded_width_a_points_ft,
+            max_effective_shear_lb_ft2,
+            outlet_transport_capacity_kg_s,
         })
     }
 

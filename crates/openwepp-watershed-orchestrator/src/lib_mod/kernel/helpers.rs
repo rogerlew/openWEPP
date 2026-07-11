@@ -10,10 +10,12 @@ impl Ws10ChannelImpoundmentKernel {
         node_class: Ws10NodeClass,
         symbol: impl Into<BoundarySymbol>,
     ) -> Ws10GuardError {
-        let _ = symbol.into();
+        let symbol = symbol.into();
         Ws10GuardError {
             node_class,
             guard_class: Ws10GuardClass::MissingRequiredInput,
+            symbol,
+            value: None,
         }
     }
 
@@ -22,11 +24,12 @@ impl Ws10ChannelImpoundmentKernel {
         symbol: impl Into<BoundarySymbol>,
         value: f64,
     ) -> Ws10GuardError {
-        let _ = symbol.into();
-        let _ = value;
+        let symbol = symbol.into();
         Ws10GuardError {
             node_class,
             guard_class: Ws10GuardClass::NonFinite,
+            symbol,
+            value: Some(value),
         }
     }
 
@@ -35,11 +38,12 @@ impl Ws10ChannelImpoundmentKernel {
         symbol: impl Into<BoundarySymbol>,
         value: f64,
     ) -> Ws10GuardError {
-        let _ = symbol.into();
-        let _ = value;
+        let symbol = symbol.into();
         Ws10GuardError {
             node_class,
             guard_class: Ws10GuardClass::DomainViolation,
+            symbol,
+            value: Some(value),
         }
     }
 

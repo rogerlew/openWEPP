@@ -1,0 +1,10 @@
+aaf4da12e4916a2183d5e69f458f70eb9d6c8db43676a725589ac30c597e1117  target/release/open_wepp_runner
+target/release/open_wepp_runner	size=652560	mtime=2026-07-10 19:46:15.200569390 -0700
+e4f03a8247ab19ec720e4b351c048ae5441fd146f6ed1e702e30dbe12c67f99e  target/release/openwepp-cli-hill
+target/release/openwepp-cli-hill	size=10687640	mtime=2026-07-10 19:46:47.351225305 -0700
+0e0ce234d1807dc64f01ac7a579541e72f0c3c08d2c416c39e54df021b1b8357  target/release/openwepp-cli-watershed
+target/release/openwepp-cli-watershed	size=9336832	mtime=2026-07-10 19:46:55.491391372 -0700
+7de09091001df0c3d29a115b6dcf26788c5baaa9e4364a423a3cf737394a35f0  target/release/openwepp-cli-totalwatsed3
+target/release/openwepp-cli-totalwatsed3	size=8989456	mtime=2026-07-10 19:46:47.482227978 -0700
+4e12f85a55ce97004003f193733bd04d17cc6bd184c410d5e1ab863c85761f0f  target/release/openwepp-snowbench
+target/release/openwepp-snowbench	size=12602056	mtime=2026-07-10 19:46:46.935216818 -0700

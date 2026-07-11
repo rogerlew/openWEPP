@@ -61,13 +61,97 @@ fn mt3_watershed_cli_hbp_hourly_pair_reaches_channel_consumer() {
     );
     assert!(spike.ebe_runoff_volume_m3 > 0.0);
     assert!(spread.ebe_runoff_volume_m3 > 0.0);
+    assert_eq!(spike.ebe_element_id, 1);
+    assert_eq!(spread.ebe_element_id, 1);
     assert!(
         (spike.ebe_peak_runoff_m3_s - spread.ebe_peak_runoff_m3_s).abs() > 1.0e-9,
         "identical scalar HBP fields must not erase hourly water timing"
     );
+    assert_relative_close(
+        spike.ebe_sediment_yield_kg,
+        spike.hbp_hourly_sediment_sum_kg,
+        1.0e-9,
+        "single-channel spike sediment closure",
+    );
+    assert_relative_close(
+        spread.ebe_sediment_yield_kg,
+        spread.hbp_hourly_sediment_sum_kg,
+        1.0e-9,
+        "single-channel spread sediment closure",
+    );
+}
+
+#[test]
+fn wshedw11b_two_channel_cli_consumes_same_grid_sediment_egress() {
+    let mut spike_runoff = [0.0_f64; 24];
+    spike_runoff[23] = 7_200.0;
+    let mut spike_sediment = [0.0_f64; 24];
+    spike_sediment[23] = 240.0;
+
+    let mut spread_runoff = [0.0_f64; 24];
+    let mut spread_sediment = [0.0_f64; 24];
+    for hour in 20..24 {
+        spread_runoff[hour] = 1_800.0;
+        spread_sediment[hour] = 60.0;
+    }
+
+    let spike = run_two_channel_hourly_fixture("w11b_cli_spike", spike_runoff, spike_sediment);
+    let spread = run_two_channel_hourly_fixture("w11b_cli_spread", spread_runoff, spread_sediment);
+    assert_relative_close(
+        spike.hbp_hourly_runoff_sum_m3,
+        spread.hbp_hourly_runoff_sum_m3,
+        1.0e-9,
+        "two-channel HBP hourly runoff total",
+    );
+    assert_relative_close(
+        spike.hbp_hourly_sediment_sum_kg,
+        spread.hbp_hourly_sediment_sum_kg,
+        1.0e-9,
+        "two-channel HBP hourly sediment total",
+    );
+    assert!(spike.ebe_runoff_volume_m3 > 0.0);
+    assert!(spread.ebe_runoff_volume_m3 > 0.0);
+    assert!(spike.ebe_sediment_yield_kg > 0.0);
+    assert!(spread.ebe_sediment_yield_kg > 0.0);
+    assert_eq!(spike.ebe_element_id, 2);
+    assert_eq!(spread.ebe_element_id, 2);
+    for (label, output) in [("spike", &spike), ("spread", &spread)] {
+        assert!(
+            output.ebe_runoff_volume_m3 <= output.hbp_hourly_runoff_sum_m3 + 1.0e-9,
+            "{label} terminal outflow cannot exceed external hourly runoff"
+        );
+        assert!(
+            output.channel_storage_m3 >= 0.0,
+            "{label} first-day residual channel storage must be non-negative"
+        );
+        assert_relative_close(
+            output.ebe_runoff_volume_m3 + output.channel_storage_m3,
+            output.hbp_hourly_runoff_sum_m3,
+            1.0e-9,
+            "{label} independently reconstructed network water closure",
+        );
+        assert_relative_close(
+            output.channel_balance_m3,
+            0.0,
+            1.0e-9,
+            "{label} published channel water balance",
+        );
+    }
     assert!(
-        (spike.ebe_sediment_yield_kg - spread.ebe_sediment_yield_kg).abs() > 1.0e-9,
-        "identical scalar/daily HBP fields must not erase hourly sediment timing"
+        (spike.ebe_peak_runoff_m3_s - spread.ebe_peak_runoff_m3_s).abs() > 1.0e-9,
+        "downstream peak must retain upstream timing sensitivity"
+    );
+    assert_relative_close(
+        spike.ebe_sediment_yield_kg,
+        spike.hbp_hourly_sediment_sum_kg,
+        1.0e-9,
+        "spike downstream sediment closure",
+    );
+    assert_relative_close(
+        spread.ebe_sediment_yield_kg,
+        spread.hbp_hourly_sediment_sum_kg,
+        1.0e-9,
+        "spread downstream sediment closure",
     );
 }
 
@@ -77,6 +161,9 @@ struct HourlyFixtureOutput {
     ebe_peak_runoff_m3_s: f64,
     ebe_runoff_volume_m3: f64,
     ebe_sediment_yield_kg: f64,
+    ebe_element_id: i64,
+    channel_storage_m3: f64,
+    channel_balance_m3: f64,
 }
 
 fn run_hourly_fixture(
@@ -119,12 +206,96 @@ fn run_hourly_fixture(
     );
 
     let ebe_row = read_first_parquet_row(&output_dir.join("interchange/ebe_pw0.parquet"));
+    let channel_row = read_first_parquet_row(&output_dir.join("interchange/chanwb.parquet"));
     HourlyFixtureOutput {
         hbp_hourly_runoff_sum_m3: payload.hourly_runoff_volume_m3.iter().sum(),
         hbp_hourly_sediment_sum_kg: payload.hourly_sediment_mass_kg.iter().sum(),
         ebe_peak_runoff_m3_s: row_f64_value(&ebe_row, "peak_runoff"),
         ebe_runoff_volume_m3: row_f64_value(&ebe_row, "runoff_volume"),
         ebe_sediment_yield_kg: row_f64_value(&ebe_row, "sediment_yield"),
+        ebe_element_id: row_i64_value(&ebe_row, "element_id"),
+        channel_storage_m3: row_f64_value(&channel_row, "Storage (m^3)"),
+        channel_balance_m3: row_f64_value(&channel_row, "Balance (m^3)"),
+    }
+}
+
+fn run_two_channel_hourly_fixture(
+    prefix: &str,
+    hourly_runoff_volume_m3: [f64; 24],
+    hourly_sediment_mass_kg: [f64; 24],
+) -> HourlyFixtureOutput {
+    let run_dir = build_watershed_fixture_dir(prefix);
+    fs::write(
+        run_dir.join("pw0.str"),
+        "94.301\n2 1 0 0 0 0 0 0 0 0\n2 2 0 0 3 0 0 0 0 0\n",
+    )
+    .expect("two-channel structure should be writable");
+    fs::write(
+        run_dir.join("pw0.chn"),
+        concat!(
+            "99.1\n2\n4\n1.500000\n",
+            "channel 1 comment a\nchannel 1 comment b\nchannel 1 comment c\n",
+            "1\n1\n1\n0\n19.99 0.03\n0.04 0.000001 19.0 900.0 0.0001\n0.02 4.0 0.04\n",
+            "channel 2 comment a\nchannel 2 comment b\nchannel 2 comment c\n",
+            "1\n1\n1\n0\n19.99 0.03\n0.04 0.000001 19.0 900.0 0.0001\n0.02 4.0 0.04\n",
+        ),
+    )
+    .expect("two-channel controls should be writable");
+    copy_fixture_file(
+        &repo_root().join("tests/fixtures/infile/slope/strict_valid_canonical.slp"),
+        &run_dir.join("pw0.slp"),
+    );
+    fs::write(run_dir.join("chan.inp"), "3 600\n0.000001\n0\n")
+        .expect("two-channel chan.inp should be writable");
+
+    write_hourly_hbp_fixture(
+        run_dir.join("H1.hbp"),
+        1,
+        2.0,
+        3_600.0,
+        240.0,
+        0.0,
+        hourly_runoff_volume_m3,
+        hourly_sediment_mass_kg,
+    );
+    write_hourly_hbp_fixture(
+        run_dir.join("H2.hbp"),
+        2,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        [0.0; 24],
+        [0.0; 24],
+    );
+    write_watershed_runfile(&run_dir, &[1, 2]);
+
+    let (_, payload) = parse_hbp_from_path_with_latest_event_payload(
+        run_dir.join("H1.hbp"),
+        HbpParseOptions {
+            expected_hillslope_id: Some(1),
+        },
+    )
+    .expect("two-channel HBP should parse");
+    let payload = payload.expect("two-channel HBP should contain event");
+    let output_dir = run_dir.join("out");
+    let output = run_watershed_cli(&run_dir, &output_dir);
+    assert!(
+        output.status.success(),
+        "two-channel watershed CLI should consume interval state; stderr={}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let ebe_row = read_first_parquet_row(&output_dir.join("interchange/ebe_pw0.parquet"));
+    let channel_row = read_first_parquet_row(&output_dir.join("interchange/chanwb.parquet"));
+    HourlyFixtureOutput {
+        hbp_hourly_runoff_sum_m3: payload.hourly_runoff_volume_m3.iter().sum(),
+        hbp_hourly_sediment_sum_kg: payload.hourly_sediment_mass_kg.iter().sum(),
+        ebe_peak_runoff_m3_s: row_f64_value(&ebe_row, "peak_runoff"),
+        ebe_runoff_volume_m3: row_f64_value(&ebe_row, "runoff_volume"),
+        ebe_sediment_yield_kg: row_f64_value(&ebe_row, "sediment_yield"),
+        ebe_element_id: row_i64_value(&ebe_row, "element_id"),
+        channel_storage_m3: row_f64_value(&channel_row, "Storage (m^3)"),
+        channel_balance_m3: row_f64_value(&channel_row, "Balance (m^3)"),
     }
 }
 
@@ -315,6 +486,20 @@ fn row_f64_value(row: &Row, column_name: &str) -> f64 {
         return value as f64;
     }
     panic!("column '{column_name}' does not decode as numeric");
+}
+
+fn row_i64_value(row: &Row, column_name: &str) -> i64 {
+    let index = row_index(row, column_name);
+    if let Ok(value) = row.get_long(index) {
+        return value;
+    }
+    if let Ok(value) = row.get_int(index) {
+        return i64::from(value);
+    }
+    if let Ok(value) = row.get_short(index) {
+        return i64::from(value);
+    }
+    panic!("column '{column_name}' does not decode as an integer");
 }
 
 fn assert_relative_close(observed: f64, expected: f64, tolerance: f64, label: &str) {

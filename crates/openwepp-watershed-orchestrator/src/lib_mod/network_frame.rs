@@ -274,6 +274,74 @@ pub struct RoutedChannelWaveState {
     pub c4: f64,
 }
 
+/// `SC-ROUTE-001#INV-ROUTE-015..016` routed water on the normalized channel
+/// grid. Each vector has exactly `ntchr` entries and uses the same index.
+#[derive(Debug, Clone, PartialEq)]
+pub struct RoutedChannelIntervalWaterState {
+    pub dtchr_seconds: f64,
+    pub qin_m3_s: Vec<f64>,
+    pub qlat_total_m3_s: Vec<f64>,
+    pub q1_m3_s: Vec<f64>,
+    pub storage_change_m3: Vec<f64>,
+}
+
+/// Carried channel geometry for the active interval sediment lane.
+#[derive(Debug, Clone, PartialEq)]
+pub struct RoutedChannelGeometryState {
+    pub depth_a_points_ft: Vec<f64>,
+    pub depth_b_points_ft: Vec<f64>,
+    pub width_a_points_ft: Vec<f64>,
+    pub width_b_points_ft: Vec<f64>,
+    pub eroded_width_a_points_ft: Vec<f64>,
+    pub eroded_width_b_points_ft: Vec<f64>,
+}
+
+/// Pinned hydraulic profile operands consumed by one active sediment interval.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct RoutedChannelIntervalHydraulicState {
+    pub qe_m3_s: f64,
+    pub qt_m3_s: f64,
+    pub qlat_total_m3_s: f64,
+    pub leff_ft: f64,
+    pub qu_top_cfs: f64,
+    pub qlat_eff_cfs_per_ft: f64,
+}
+
+/// Explicit day-level tillage authority for carried `ishape=3` geometry.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ChannelTillageDayState {
+    NoPrimaryTillage,
+    PrimaryTillage,
+}
+
+/// Per-class mass ledger for one routed channel interval, in kilograms.
+#[derive(Debug, Clone, PartialEq)]
+pub struct RoutedChannelIntervalClassLedger {
+    pub inlet_kg: Vec<f64>,
+    pub lateral_kg: Vec<f64>,
+    pub detached_kg: Vec<f64>,
+    pub deposited_kg: Vec<f64>,
+    pub egress_kg: Vec<f64>,
+    pub hydraulic: Option<RoutedChannelIntervalHydraulicState>,
+    pub max_effective_shear_lb_ft2: f64,
+    pub outlet_transport_capacity_kg_s: Vec<f64>,
+}
+
+/// `SC-ROUTE-001#INV-ROUTE-017..020` sediment and geometry state carried by
+/// the real downstream channel consumer.
+#[derive(Debug, Clone, PartialEq)]
+pub struct RoutedChannelIntervalSedimentState {
+    pub particle_diameter_m: Vec<f64>,
+    pub intervals: Vec<RoutedChannelIntervalClassLedger>,
+    pub daily_inlet_kg: Vec<f64>,
+    pub daily_lateral_kg: Vec<f64>,
+    pub daily_detached_kg: Vec<f64>,
+    pub daily_deposited_kg: Vec<f64>,
+    pub daily_egress_kg: Vec<f64>,
+    pub geometry_start: RoutedChannelGeometryState,
+    pub geometry_end: RoutedChannelGeometryState,
+}
+
 /// WS18/WS20 routed sediment state retained for downstream typed routing steps.
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct RoutedChannelSedimentState {
@@ -304,7 +372,9 @@ pub struct RoutedChannelState {
     pub groundwater_deep_seepage_m3: f64,
     pub sediment_yield_kg: f64,
     pub wave_state: Option<RoutedChannelWaveState>,
+    pub interval_water_state: Option<RoutedChannelIntervalWaterState>,
     pub sediment_state: RoutedChannelSedimentState,
+    pub interval_sediment_state: Option<RoutedChannelIntervalSedimentState>,
 }
 
 /// Routed impoundment state after deterministic watershed dispatch.
@@ -449,6 +519,7 @@ pub struct WatershedNetworkFrame {
     pub impoundment_controls: BTreeMap<u32, WatershedImpoundmentControlRecord>,
     pub hillslope_contributions: BTreeMap<u32, HillslopeContribution>,
     pub routed_channels: BTreeMap<u32, RoutedChannelState>,
+    pub channel_tillage_day_state: BTreeMap<u32, ChannelTillageDayState>,
     pub routed_impoundments: BTreeMap<u32, RoutedImpoundmentState>,
     pub publication_frame: Option<WatershedPublicationFrame>,
 }
@@ -490,6 +561,7 @@ impl WatershedNetworkFrame {
             impoundment_controls,
             hillslope_contributions: BTreeMap::new(),
             routed_channels: BTreeMap::new(),
+            channel_tillage_day_state: BTreeMap::new(),
             routed_impoundments: BTreeMap::new(),
             publication_frame: None,
         })
@@ -510,6 +582,14 @@ impl WatershedNetworkFrame {
         authority: WatershedGroundwaterRoutingAuthority,
     ) {
         self.routing_globals.groundwater_baseflow = authority;
+    }
+
+    pub fn set_channel_tillage_day_state(
+        &mut self,
+        channel_id: u32,
+        state: ChannelTillageDayState,
+    ) {
+        self.channel_tillage_day_state.insert(channel_id, state);
     }
 
     pub(crate) fn record_routed_channel_state(&mut self, state: RoutedChannelState) {
@@ -556,8 +636,17 @@ impl WatershedNetworkFrame {
             }
         }
 
-        let runoff_volume_m3 = dispatch_ids
+        let active_interval_publication = dispatch_ids
             .channel_ids
+            .iter()
+            .filter_map(|node_id| self.routed_channels.get(node_id))
+            .any(|state| state.interval_water_state.is_some());
+        let publication_channel_ids = if active_interval_publication {
+            &dispatch_ids.outlet_channel_ids
+        } else {
+            &dispatch_ids.channel_ids
+        };
+        let runoff_volume_m3 = publication_channel_ids
             .iter()
             .filter_map(|node_id| self.routed_channels.get(node_id))
             .map(|state| state.runoff_volume_m3)
@@ -580,14 +669,12 @@ impl WatershedNetworkFrame {
             .filter_map(|node_id| self.routed_channels.get(node_id))
             .map(|state| state.channel_storage_m3)
             .sum::<f64>();
-        let channel_baseflow_m3 = dispatch_ids
-            .channel_ids
+        let channel_baseflow_m3 = publication_channel_ids
             .iter()
             .filter_map(|node_id| self.routed_channels.get(node_id))
             .map(|state| state.channel_baseflow_m3)
             .sum::<f64>();
-        let channel_loss_m3 = dispatch_ids
-            .channel_ids
+        let channel_loss_m3 = publication_channel_ids
             .iter()
             .filter_map(|node_id| self.routed_channels.get(node_id))
             .map(|state| state.channel_loss_m3)
@@ -610,15 +697,11 @@ impl WatershedNetworkFrame {
         Ok(WatershedPublicationFrame {
             sim_day_index: i32::try_from(report.dispatch_report.steps.len().max(1))
                 .unwrap_or(i32::MAX),
-            element_id: first_i32_or_default(&dispatch_ids.channel_ids, 1),
-            channel_id: first_i32_or_default(&dispatch_ids.channel_ids, 1),
+            element_id: first_i32_or_default(publication_channel_ids, 1),
+            channel_id: first_i32_or_default(publication_channel_ids, 1),
             runoff_volume_m3,
-            peak_discharge_m3_s: first_channel_peak(
-                &self.routed_channels,
-                &dispatch_ids.channel_ids,
-            ),
-            sediment_yield_kg: dispatch_ids
-                .channel_ids
+            peak_discharge_m3_s: first_channel_peak(&self.routed_channels, publication_channel_ids),
+            sediment_yield_kg: publication_channel_ids
                 .iter()
                 .filter_map(|node_id| self.routed_channels.get(node_id))
                 .map(|state| state.sediment_yield_kg)
@@ -657,12 +740,14 @@ fn sum_contributing_area_m2(
 
 struct TypedDispatchIds {
     channel_ids: BTreeSet<u32>,
+    outlet_channel_ids: BTreeSet<u32>,
     impoundment_ids: BTreeSet<u32>,
     contributor_hillslopes: BTreeSet<u32>,
 }
 
 fn collect_dispatch_ids_from_steps(steps: &[DispatchStep]) -> TypedDispatchIds {
     let mut channel_ids = BTreeSet::new();
+    let mut dependency_channel_ids = BTreeSet::new();
     let mut impoundment_ids = BTreeSet::new();
     let mut contributor_hillslopes = BTreeSet::new();
 
@@ -677,10 +762,22 @@ fn collect_dispatch_ids_from_steps(steps: &[DispatchStep]) -> TypedDispatchIds {
             TopologyNodeKind::Hillslope => {}
         }
         contributor_hillslopes.extend(step.contributor_hillslopes.iter().copied());
+        dependency_channel_ids.extend(
+            step.dependency_nodes
+                .iter()
+                .filter(|dependency| dependency.kind == TopologyNodeKind::Channel)
+                .map(|dependency| dependency.id),
+        );
     }
+
+    let outlet_channel_ids = channel_ids
+        .difference(&dependency_channel_ids)
+        .copied()
+        .collect();
 
     TypedDispatchIds {
         channel_ids,
+        outlet_channel_ids,
         impoundment_ids,
         contributor_hillslopes,
     }

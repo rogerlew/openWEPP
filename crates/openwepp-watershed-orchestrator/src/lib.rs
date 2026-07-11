@@ -5,9 +5,11 @@ pub mod runtime_inputs;
 mod lib_mod;
 
 pub use lib_mod::{
-    DispatchDiagnostic, DispatchDiagnosticCode, DispatchStep, HillslopeContribution,
-    MESSAGE_CYCLE_DETECTED, MESSAGE_DISPATCH_OK, MESSAGE_MISSING_DEPENDENCY,
-    MESSAGE_PRECONDITION_FAILED, RoutedChannelSedimentState, RoutedChannelState,
+    ChannelTillageDayState, DispatchDiagnostic, DispatchDiagnosticCode, DispatchStep,
+    HillslopeContribution, MESSAGE_CYCLE_DETECTED, MESSAGE_DISPATCH_OK, MESSAGE_MISSING_DEPENDENCY,
+    MESSAGE_PRECONDITION_FAILED, RoutedChannelGeometryState, RoutedChannelIntervalClassLedger,
+    RoutedChannelIntervalHydraulicState, RoutedChannelIntervalSedimentState,
+    RoutedChannelIntervalWaterState, RoutedChannelSedimentState, RoutedChannelState,
     RoutedChannelWaveState, RoutedImpoundmentState, WatershedChannelControlRecord,
     WatershedChannelRatingCurveControl, WatershedChannelSegmentPoint, WatershedDispatchError,
     WatershedDispatchReport, WatershedFrameExecutionReport, WatershedFrameStepReport,

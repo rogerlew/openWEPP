@@ -3,12 +3,14 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::Instant;
 
+use openwepp_hillslope_orchestrator::{ErosionTextureInputs, erosion_particle_composition};
 use openwepp_input_contract::parsers::chaninp::{
     ChaninpParseOptions, ChaninpWarning, parse_chaninp_from_path,
 };
 use openwepp_input_contract::parsers::gwcoeff::parse_gwcoeff_from_path;
 use openwepp_input_contract::parsers::hbp::HbpLatestEventState;
 use openwepp_input_contract::parsers::slope::{SlopeParserOptions, parse_slope_file};
+use openwepp_input_contract::parsers::soil::{SoilParserOptions, parse_soil};
 use openwepp_input_contract::parsers::watershed_channel::{
     WatershedChannelParseMode, WatershedChannelParseOptions, parse_watershed_channel_from_path,
 };
@@ -348,9 +350,11 @@ fn run() -> Result<(), String> {
     let pass_inventory_elapsed_ms = pass_inventory_started.elapsed().as_millis();
 
     let routing_input_started = Instant::now();
+    let mut routed_particle_class_count = 0_usize;
     for entry in pass_inventory.entries() {
         let hillslope_id = entry.hillslope_id;
         let class_count = usize::from(entry.npart);
+        routed_particle_class_count = routed_particle_class_count.max(class_count);
         let manifest_area_m2 = validate_contributor_mofe_metadata(
             hillslope_id,
             entry.nofe,
@@ -466,6 +470,14 @@ fn run() -> Result<(), String> {
             hourly_sediment_mass_kg,
         });
     }
+    if routed_particle_class_count > 1 {
+        project_channel_crfrac_from_watershed_soil(
+            &mut network_frame,
+            &runfile.soil_path,
+            routed_particle_class_count,
+            sidecar_policy,
+        )?;
+    }
     let routing_input_elapsed_ms = routing_input_started.elapsed().as_millis();
 
     let watershed_dispatch_started = Instant::now();
@@ -519,6 +531,74 @@ fn format_chaninp_warning(warning: &ChaninpWarning) -> String {
         ),
         None => format!("chan.inp {} {}", warning.code.as_str(), warning.message),
     }
+}
+
+fn project_channel_crfrac_from_watershed_soil(
+    frame: &mut WatershedNetworkFrame,
+    soil_path: &Path,
+    routed_particle_class_count: usize,
+    sidecar_policy: SidecarPolicy,
+) -> Result<(), String> {
+    if routed_particle_class_count > 5 {
+        return Err(format!(
+            "CLIWAT-E-018 watershed channel particle class count {routed_particle_class_count} exceeds the five-class prtcmp authority"
+        ));
+    }
+    let soil_payload = fs::read_to_string(soil_path).map_err(|error| {
+        format!(
+            "CLIWAT-E-018 failed reading watershed soil authority {}: {error}",
+            soil_path.display()
+        )
+    })?;
+    let soil = parse_soil(
+        &soil_payload,
+        SoilParserOptions {
+            mode: sidecar_policy.as_soil_parser_mode(),
+            allow_legacy_aliases: true,
+            expected_topology_count: None,
+            topology_scope: None,
+        },
+    )
+    .map_err(|error| {
+        format!(
+            "CLIWAT-E-018 failed parsing watershed soil authority {}: {error}",
+            soil_path.display()
+        )
+    })?;
+
+    for (channel_offset, (channel_id, control)) in frame.channel_controls.iter_mut().enumerate() {
+        // Pinned `convrt.for:84-88` maps channel-indexed `frac(k,ichan)`
+        // (the `prtcmp` surface) directly to `crfrac(k,ich(ichan))`.
+        let ofe = soil.ofes.get(channel_offset).ok_or_else(|| {
+            format!(
+                "CLIWAT-E-018 watershed soil authority has {} OFEs but channel {channel_id} requires channel index {}",
+                soil.ofes.len(),
+                channel_offset + 1
+            )
+        })?;
+        let layer = ofe.layers.first().ok_or_else(|| {
+            format!(
+                "CLIWAT-E-018 watershed soil authority OFE {} has no surface layer for channel {channel_id}",
+                channel_offset + 1
+            )
+        })?;
+        let sand = layer.sand_pct / 100.0;
+        let clay = layer.clay_pct / 100.0;
+        let silt = 1.0 - sand - clay;
+        let classes = erosion_particle_composition(&ErosionTextureInputs {
+            sand,
+            clay,
+            silt,
+            orgmat: layer.orgmat_pct / 100.0,
+        })
+        .map_err(|error| {
+            format!(
+                "CLIWAT-E-018 failed deriving channel {channel_id} prtcmp/crfrac authority: {error}"
+            )
+        })?;
+        control.crfrac = classes.iter().map(|class| class.frac).collect();
+    }
+    Ok(())
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -899,6 +979,7 @@ struct WatershedRunfileResolved {
     watershed_channel_path: PathBuf,
     watershed_impoundment_path: PathBuf,
     slope_path: PathBuf,
+    soil_path: PathBuf,
     chaninp_path: Option<PathBuf>,
     gwcoeff_path: Option<PathBuf>,
     tcr_overlay_present: bool,
@@ -1299,6 +1380,7 @@ fn parse_watershed_runfile(
         watershed_channel_path,
         watershed_impoundment_path,
         slope_path,
+        soil_path,
         chaninp_path,
         gwcoeff_path,
         tcr_overlay_present,

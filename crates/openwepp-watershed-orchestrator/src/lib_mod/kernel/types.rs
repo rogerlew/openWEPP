@@ -32,6 +32,13 @@ struct Ws11WaveRoutingState {
     c4: f64,
 }
 
+#[derive(Debug, Clone, PartialEq)]
+struct Ws11BaselineWaveSeries {
+    q1_m3_s: Vec<f64>,
+    storage_change_m3: Vec<f64>,
+    representative: Option<Ws11WaveRoutingState>,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 struct Ws12ImpoundmentCoefficients {
     a: [f64; 15],
@@ -119,16 +126,97 @@ struct Ws20SegmentRoutingDiagnostics {
 #[derive(Debug, Clone, PartialEq)]
 struct Ws20SegmentRoutingResult {
     routed_class_masses_kg: Vec<f64>,
+    detached_class_masses_kg: Vec<f64>,
+    deposited_class_masses_kg: Vec<f64>,
     diagnostics: Ws20SegmentRoutingDiagnostics,
+    depth_a_points_ft: Vec<f64>,
+    depth_b_points_ft: Vec<f64>,
     widb_points_ft: Vec<f64>,
     wida_points_ft: Vec<f64>,
+    werb_points_ft: Vec<f64>,
+    wera_points_ft: Vec<f64>,
+    max_effective_shear_lb_ft2: f64,
+    outlet_transport_capacity_kg_s: Vec<f64>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, PartialEq)]
+#[allow(clippy::struct_field_names)]
+struct Ws11IntervalGeometry {
+    depth_a_points_ft: Vec<f64>,
+    depth_b_points_ft: Vec<f64>,
+    width_a_points_ft: Vec<f64>,
+    width_b_points_ft: Vec<f64>,
+    eroded_width_a_points_ft: Vec<f64>,
+    eroded_width_b_points_ft: Vec<f64>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+struct Ws11IntervalHydraulicOperands {
+    qe_m3_s: f64,
+    qt_m3_s: f64,
+    qlat_total_m3_s: f64,
+    qe_cfs: f64,
+    qt_cfs: f64,
+    qlat_total_cfs: f64,
+    channel_length_ft: f64,
+    leff_ft: f64,
+    qu_top_cfs: f64,
+    qlat_eff_cfs_per_ft: f64,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[allow(clippy::struct_field_names)]
+struct Ws11IntervalMassLedger {
+    inlet_kg: Vec<f64>,
+    lateral_kg: Vec<f64>,
+    detached_kg: Vec<f64>,
+    egress_kg: Vec<f64>,
+    deposited_kg: Vec<f64>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+struct Ws11ZeroFlowOutcome {
+    geometry_end: Ws11IntervalGeometry,
+    detached_kg: Vec<f64>,
+    deposited_kg: Vec<f64>,
+    egress_kg: Vec<f64>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+struct Ws11GridEndDisposition {
+    water_storage_m3: f64,
+    suspended_sediment_storage_kg: f64,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+#[cfg(test)]
+struct Ws11CrossDayState {
+    geometry: Ws11IntervalGeometry,
+    suspended_class_mass_kg: Vec<f64>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+#[cfg(test)]
+struct Ws11ContactBudget {
+    timpot_s: f64,
+    timex_s: f64,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+struct Ws11IntervalSedimentSources {
+    particle_diameter_m: Vec<f64>,
+    class_numbers: Vec<usize>,
+    inlet_kg: Vec<Vec<f64>>,
+    lateral_kg: Vec<Vec<f64>>,
+    projected_lateral_daily_kg: Vec<f64>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub(crate) struct Ws27EnddetBracketProgress {
     pub(crate) used_xdbig_rebracket: bool,
     pub(crate) used_midpoint_rebracket: bool,
     pub(crate) iteration_count: u8,
+    pub(crate) detachment_span_ft: f64,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -156,6 +244,8 @@ pub(crate) struct DirectWatershedKernelResponse {
 #[derive(Debug, Clone, PartialEq)]
 struct Ws23DetachClosureOutcome {
     next_gstu_lbs_s: Vec<f64>,
+    df_lbs_s_ft2: Vec<f64>,
+    depmid_ft: f64,
     werod_ft: f64,
 }
 
@@ -172,6 +262,8 @@ struct Ws15ChannelSedimentScaffold {
 pub(crate) struct Ws10GuardError {
     node_class: Ws10NodeClass,
     guard_class: Ws10GuardClass,
+    symbol: BoundarySymbol,
+    value: Option<f64>,
 }
 
 impl Ws10GuardError {

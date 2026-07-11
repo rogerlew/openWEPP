@@ -186,7 +186,7 @@ fn build_typed_frame_result_with_chaninp(
     )
     .expect("strict watershed impoundment fixture should parse");
 
-    WatershedNetworkFrame::from_parsed_inputs(
+    let mut frame = WatershedNetworkFrame::from_parsed_inputs(
         graph,
         Some(chaninp),
         channel,
@@ -194,7 +194,9 @@ fn build_typed_frame_result_with_chaninp(
         impoundment,
         3600.0,
         24.0,
-    )
+    )?;
+    bind_test_channel_crfrac(&mut frame);
+    Ok(frame)
 }
 
 fn build_typed_frame_with_impoundment(
@@ -232,6 +234,7 @@ fn build_typed_frame_with_impoundment(
         24.0,
     )
     .expect("typed watershed frame should build");
+    bind_test_channel_crfrac(&mut frame);
     if clamp_impoundment_stage {
         let impoundment = frame
             .impoundment_controls
@@ -265,7 +268,7 @@ fn build_two_hillslope_channel_frame() -> WatershedNetworkFrame {
     )
     .expect("strict watershed impoundment fixture should parse");
 
-    WatershedNetworkFrame::from_parsed_inputs(
+    let mut frame = WatershedNetworkFrame::from_parsed_inputs(
         graph,
         Some(chaninp),
         channel,
@@ -274,7 +277,15 @@ fn build_two_hillslope_channel_frame() -> WatershedNetworkFrame {
         3600.0,
         24.0,
     )
-    .expect("two-hillslope channel frame should build")
+    .expect("two-hillslope channel frame should build");
+    bind_test_channel_crfrac(&mut frame);
+    frame
+}
+
+fn bind_test_channel_crfrac(frame: &mut WatershedNetworkFrame) {
+    for control in frame.channel_controls.values_mut() {
+        control.crfrac = vec![0.2, 0.3, 0.5];
+    }
 }
 
 fn assert_wshedw10_routing_globals(frame: &WatershedNetworkFrame) {
@@ -502,13 +513,13 @@ fn mt3_hourly_pair_distribution_changes_channel_water_and_sediment_outputs() {
         spread_sediment[hour] = 60.0;
     }
 
-    let mut spike_frame = build_typed_frame();
+    let mut spike_frame = build_two_hillslope_channel_frame();
     spike_frame.add_hillslope_contribution(contribution_with_hourly_pair(
         1,
         spike_runoff,
         spike_sediment,
     ));
-    spike_frame.add_hillslope_contribution(contribution(2, 0.5, 300.0));
+    spike_frame.add_hillslope_contribution(contribution_with_hourly_pair(2, [0.0; 24], [0.0; 24]));
     let topology_report = validate_pre_execution_topology(spike_frame.topology())
         .expect("topology gate should build");
     let spike_report = execute_watershed_dispatch_with_frame(&mut spike_frame, &topology_report)
@@ -519,13 +530,13 @@ fn mt3_hourly_pair_distribution_changes_channel_water_and_sediment_outputs() {
         .get(&1)
         .expect("spike channel should route");
 
-    let mut spread_frame = build_typed_frame();
+    let mut spread_frame = build_two_hillslope_channel_frame();
     spread_frame.add_hillslope_contribution(contribution_with_hourly_pair(
         1,
         spread_runoff,
         spread_sediment,
     ));
-    spread_frame.add_hillslope_contribution(contribution(2, 0.5, 300.0));
+    spread_frame.add_hillslope_contribution(contribution_with_hourly_pair(2, [0.0; 24], [0.0; 24]));
     let topology_report = validate_pre_execution_topology(spread_frame.topology())
         .expect("topology gate should build");
     let spread_report = execute_watershed_dispatch_with_frame(&mut spread_frame, &topology_report)
@@ -543,8 +554,31 @@ fn mt3_hourly_pair_distribution_changes_channel_water_and_sediment_outputs() {
     );
     assert!(
         (spike_channel.sediment_state.qsed_kg_s - spread_channel.sediment_state.qsed_kg_s).abs()
-            > 1.0e-9,
-        "same daily sediment total must not erase hourly sediment timing"
+            <= 1.0e-12,
+        "equal closed daily sediment totals should publish equal daily rates"
+    );
+    let spike_egress = spike_channel
+        .interval_sediment_state
+        .as_ref()
+        .expect("spike interval sediment")
+        .intervals
+        .iter()
+        .map(|interval| interval.egress_kg.iter().sum::<f64>())
+        .collect::<Vec<_>>();
+    let spread_egress = spread_channel
+        .interval_sediment_state
+        .as_ref()
+        .expect("spread interval sediment")
+        .intervals
+        .iter()
+        .map(|interval| interval.egress_kg.iter().sum::<f64>())
+        .collect::<Vec<_>>();
+    assert!(
+        spike_egress
+            .iter()
+            .zip(&spread_egress)
+            .any(|(spike, spread)| (spike - spread).abs() > 1.0e-9),
+        "same daily sediment total must retain distinct interval egress timing"
     );
 }
 
@@ -575,7 +609,10 @@ fn mt3_all_hourly_contributors_superpose_at_channel_inlet() {
         validate_pre_execution_topology(frame.topology()).expect("topology gate should build");
     let report = execute_watershed_dispatch_with_frame(&mut frame, &topology_report)
         .expect("all-hourly dispatch should execute");
-    assert!(report.dispatch_report.is_success());
+    assert!(
+        report.dispatch_report.is_success(),
+        "hourly superposition dispatch should succeed: {report:?}"
+    );
 
     let channel = frame
         .routed_channels

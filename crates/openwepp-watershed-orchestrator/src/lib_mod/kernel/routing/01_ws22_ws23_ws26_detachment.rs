@@ -155,23 +155,83 @@ impl Ws10ChannelImpoundmentKernel {
             maxe,
             crfrac,
         };
-        let df = vec![0.0; crfrac.len()];
-        if effsh <= crsh {
+        let t_exp_s = if effsh > crsh {
+            tb * (1.0 - (crsh / effsh))
+        } else {
+            0.0
+        };
+        Self::ws26_dcap_with_input_clock(&input, depmid_input, werod_input, t_exp_s)
+    }
+
+    #[allow(clippy::too_many_arguments, clippy::similar_names)]
+    fn ws26_dcap_interval(
+        node_class: Ws10NodeClass,
+        flagm: i32,
+        q_cfs: f64,
+        sf: f64,
+        c1: f64,
+        z: f64,
+        effsh: f64,
+        depsid: f64,
+        depmid_input: f64,
+        werod_input: f64,
+        wflow: f64,
+        roughness: f64,
+        crsh: f64,
+        excess: f64,
+        t_exp_s: f64,
+        t_norm_s: f64,
+        flagt: i32,
+        chnk: f64,
+        nbarch: f64,
+        maxe: f64,
+        crfrac: &[f64],
+    ) -> Result<Ws26DcapOutcome, Ws10GuardError> {
+        Self::ws11_validate_interval_clock(t_exp_s, t_norm_s, t_norm_s)?;
+        let input = Ws26DcapInput {
+            node_class,
+            flagm,
+            q_cfs,
+            sf,
+            c1,
+            z,
+            effsh,
+            depsid,
+            wflow,
+            roughness,
+            crsh,
+            excess,
+            tb: t_norm_s,
+            flagt,
+            chnk,
+            nbarch,
+            maxe,
+            crfrac,
+        };
+        Self::ws26_dcap_with_input_clock(&input, depmid_input, werod_input, t_exp_s)
+    }
+
+    fn ws26_dcap_with_input_clock(
+        input: &Ws26DcapInput<'_>,
+        depmid_input: f64,
+        werod_input: f64,
+        t_exp_s: f64,
+    ) -> Result<Ws26DcapOutcome, Ws10GuardError> {
+        let df = vec![0.0; input.crfrac.len()];
+        if input.effsh <= input.crsh || t_exp_s <= WS10_ZERO_THRESHOLD {
             return Ok(Self::ws26_dcap_outcome(df, depmid_input, werod_input));
         }
-
         let layer_state = Ws26DcapLayerState {
             df,
             depmid: depmid_input,
             werod: werod_input,
             timpot: 0.0,
-            timsh: tb * (1.0 - (crsh / effsh)),
+            timsh: t_exp_s,
             di: 0.0,
         };
-
-        match Self::ws26_dcap_midlayer_step(&input, layer_state)? {
+        match Self::ws26_dcap_midlayer_step(input, layer_state)? {
             Ws26DcapLayerStep::Complete(outcome) => Ok(outcome),
-            Ws26DcapLayerStep::Continue(state) => Self::ws26_dcap_width_step(&input, state),
+            Ws26DcapLayerStep::Continue(state) => Self::ws26_dcap_width_step(input, state),
         }
     }
 
@@ -249,21 +309,32 @@ impl Ws10ChannelImpoundmentKernel {
             return Ok(Ws26DcapLayerStep::Continue(state));
         }
 
-        let mut dct = state.di * state.timsh * state.werod / (input.tb * input.wflow);
+        let exposure_s = state.timsh;
+        Ok(Ws26DcapLayerStep::Complete(
+            Self::ws26_dcap_incision_outcome(input, state, exposure_s),
+        ))
+    }
+
+    fn ws26_dcap_incision_outcome(
+        input: &Ws26DcapInput<'_>,
+        mut state: Ws26DcapLayerState,
+        exposure_s: f64,
+    ) -> Ws26DcapOutcome {
+        state.timsh = exposure_s;
+        if state.di <= WS10_ZERO_THRESHOLD {
+            return Self::ws26_dcap_outcome(state.df, state.depmid, state.werod);
+        }
+        let mut dct = state.di * exposure_s * state.werod / (input.tb * input.wflow);
         if input.flagm != 1 && dct >= input.maxe {
             state.di *= input.maxe / dct;
             dct = input.maxe;
         }
         Self::ws26_apply_dct_to_classes(&mut state.df, dct, input.crfrac);
-        state.depmid -= state.di * state.timsh / WS22_DCAP_WTDSOI;
+        state.depmid -= state.di * exposure_s / WS22_DCAP_WTDSOI;
         if state.depmid < 0.005 {
             state.depmid = 0.0;
         }
-        Ok(Ws26DcapLayerStep::Complete(Self::ws26_dcap_outcome(
-            state.df,
-            state.depmid,
-            state.werod,
-        )))
+        Self::ws26_dcap_outcome(state.df, state.depmid, state.werod)
     }
 
     fn ws26_dcap_width_step(
@@ -302,21 +373,13 @@ impl Ws10ChannelImpoundmentKernel {
 
     fn ws26_dcap_low_width_shear_outcome(
         input: &Ws26DcapInput<'_>,
-        mut state: Ws26DcapLayerState,
+        state: Ws26DcapLayerState,
     ) -> Ws26DcapOutcome {
         if state.depmid <= 0.0 {
             return Self::ws26_dcap_outcome(state.df, state.depmid, state.werod);
         }
-        state.timsh = state.timpot;
-        if state.di <= WS10_ZERO_THRESHOLD {
-            return Self::ws26_dcap_outcome(state.df, state.depmid, state.werod);
-        }
-        let mut dct = state.di * state.timsh * state.werod / (input.tb * input.wflow);
-        if input.flagm != 1 && dct >= input.maxe {
-            dct = input.maxe;
-        }
-        Self::ws26_apply_dct_to_classes(&mut state.df, dct, input.crfrac);
-        Self::ws26_dcap_outcome(state.df, state.depmid, state.werod)
+        let timpot = state.timpot;
+        Self::ws26_dcap_incision_outcome(input, state, timpot)
     }
 
     fn ws26_dcap_expanding_width_outcome(
@@ -376,14 +439,33 @@ impl Ws10ChannelImpoundmentKernel {
         let tstar = timex * dwdti / (wfin - state.werod);
         let wstar = (1.0 - (-1.0176 * tstar).exp()) / 1.0176;
         let we = wstar * (wfin - state.werod) + state.werod;
-        let eros = (we - state.werod) * input.depsid + state.depmid * state.werod;
+        if we > state.werod && input.depsid <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                input.node_class,
+                BoundarySymbol::from("ws22_dcap_depsid"),
+                input.depsid,
+            ));
+        }
+        let mut eros = (we - state.werod) * input.depsid + state.depmid * state.werod;
         let mut dct = eros * WS22_DCAP_WTDSOI / (input.tb * input.wflow);
         if input.flagm != 1 && dct >= input.maxe {
             dct = input.maxe;
+            eros = dct * input.tb * input.wflow / WS22_DCAP_WTDSOI;
         }
 
         Self::ws26_apply_dct_to_classes(&mut state.df, dct, input.crfrac);
-        Ok(Self::ws26_dcap_outcome(state.df, state.depmid, we))
+        if eros >= state.depmid * state.werod {
+            let widening_erosion = eros - state.depmid * state.werod;
+            state.werod += widening_erosion / input.depsid;
+            state.depmid = 0.0;
+        } else {
+            state.depmid -= eros / state.werod;
+        }
+        Ok(Self::ws26_dcap_outcome(
+            state.df,
+            state.depmid,
+            state.werod,
+        ))
     }
 
     #[allow(
@@ -401,9 +483,11 @@ impl Ws10ChannelImpoundmentKernel {
         depsid_ft: f64,
         depmid_ft: f64,
         wfl_ft: f64,
+        werod_ft: f64,
         roughness: f64,
         crsh: f64,
         tb_s: f64,
+        t_exp_s: Option<f64>,
         flagc: i32,
         chnk: f64,
         nbarch: f64,
@@ -425,9 +509,11 @@ impl Ws10ChannelImpoundmentKernel {
             depsid_ft,
             depmid_ft,
             wfl_ft,
+            werod_ft,
             roughness,
             crsh,
             tb_s,
+            t_exp_s,
             flagc,
             chnk,
             nbarch,
@@ -518,28 +604,7 @@ impl Ws10ChannelImpoundmentKernel {
     fn ws23_initial_detach_working(
         input: &Ws23DetachInput<'_>,
     ) -> Result<Ws23DetachStart, Ws10GuardError> {
-        let dcap_outcome = Self::ws26_dcap(
-            input.node_class,
-            1,
-            input.ql_cfs,
-            input.sfl,
-            input.c1,
-            input.z,
-            input.effshl,
-            input.depsid_ft,
-            input.depmid_ft,
-            input.wfl_ft,
-            input.wfl_ft,
-            input.roughness,
-            input.crsh,
-            1.0,
-            input.tb_s,
-            input.flagc,
-            input.chnk,
-            input.nbarch,
-            WS22_DCAP_MAXE,
-            input.crfrac,
-        )?;
+        let dcap_outcome = Self::ws23_run_dcap(input, 1, 1.0)?;
         let mut working = Self::ws23_build_detach_working(input, dcap_outcome);
         let nt3 = working
             .dl_lbs_s_ft
@@ -577,9 +642,50 @@ impl Ws10ChannelImpoundmentKernel {
         input: &Ws23DetachInput<'_>,
         excess: f64,
     ) -> Result<Ws23DetachWorking, Ws10GuardError> {
-        let dcap_outcome = Self::ws26_dcap(
+        let dcap_outcome = Self::ws23_run_dcap(input, 2, excess)?;
+        let mut working = Self::ws23_build_detach_working(input, dcap_outcome);
+        working.tcl_lbs_s_ft = Self::ws18_trncap(
+            input.effshl,
+            &working.potld_lbs_s_ft,
+            input.crdia_ft,
+            input.crspg,
+        );
+        Ok(working)
+    }
+
+    fn ws23_run_dcap(
+        input: &Ws23DetachInput<'_>,
+        flagm: i32,
+        excess: f64,
+    ) -> Result<Ws26DcapOutcome, Ws10GuardError> {
+        if let Some(t_exp_s) = input.t_exp_s {
+            return Self::ws26_dcap_interval(
+                input.node_class,
+                flagm,
+                input.ql_cfs,
+                input.sfl,
+                input.c1,
+                input.z,
+                input.effshl,
+                input.depsid_ft,
+                input.depmid_ft,
+                input.werod_ft,
+                input.wfl_ft,
+                input.roughness,
+                input.crsh,
+                excess,
+                t_exp_s,
+                input.tb_s,
+                input.flagc,
+                input.chnk,
+                input.nbarch,
+                WS22_DCAP_MAXE,
+                input.crfrac,
+            );
+        }
+        Self::ws26_dcap(
             input.node_class,
-            2,
+            flagm,
             input.ql_cfs,
             input.sfl,
             input.c1,
@@ -587,7 +693,7 @@ impl Ws10ChannelImpoundmentKernel {
             input.effshl,
             input.depsid_ft,
             input.depmid_ft,
-            input.wfl_ft,
+            input.werod_ft,
             input.wfl_ft,
             input.roughness,
             input.crsh,
@@ -598,15 +704,7 @@ impl Ws10ChannelImpoundmentKernel {
             input.nbarch,
             WS22_DCAP_MAXE,
             input.crfrac,
-        )?;
-        let mut working = Self::ws23_build_detach_working(input, dcap_outcome);
-        working.tcl_lbs_s_ft = Self::ws18_trncap(
-            input.effshl,
-            &working.potld_lbs_s_ft,
-            input.crdia_ft,
-            input.crspg,
-        );
-        Ok(working)
+        )
     }
 
     fn ws23_build_detach_working(
@@ -687,6 +785,8 @@ impl Ws10ChannelImpoundmentKernel {
         }
         Ws23DetachClosureOutcome {
             next_gstu_lbs_s,
+            df_lbs_s_ft2: working.dcap_outcome.df_lbs_s_ft2.clone(),
+            depmid_ft: working.dcap_outcome.depmid_ft,
             werod_ft: working.dcap_outcome.werod_ft,
         }
     }
@@ -710,6 +810,8 @@ impl Ws10ChannelImpoundmentKernel {
         }
         Ok(Ws23DetachClosureOutcome {
             next_gstu_lbs_s,
+            df_lbs_s_ft2: working.dcap_outcome.df_lbs_s_ft2.clone(),
+            depmid_ft: working.dcap_outcome.depmid_ft,
             werod_ft: working.dcap_outcome.werod_ft,
         })
     }
@@ -725,9 +827,11 @@ impl Ws10ChannelImpoundmentKernel {
         depsid_ft: f64,
         depmid_ft: f64,
         wfl_ft: f64,
+        werod_ft: f64,
         roughness: f64,
         crsh: f64,
         tb_s: f64,
+        t_exp_s: Option<f64>,
         flagc: i32,
         chnk: f64,
         nbarch: f64,
@@ -757,9 +861,11 @@ impl Ws10ChannelImpoundmentKernel {
             depsid_ft,
             depmid_ft,
             wfl_ft,
+            werod_ft,
             roughness,
             crsh,
             tb_s,
+            t_exp_s,
             flagc,
             chnk,
             nbarch,
@@ -861,6 +967,7 @@ impl Ws10ChannelImpoundmentKernel {
             }
         }
 
+        progress.detachment_span_ft = (xdbmin_ft - x_upper_ft).clamp(0.0, dx_ft);
         progress
     }
 
@@ -1025,9 +1132,11 @@ mod ws22_ws23_ws26_detachment_tests {
             1.0,
             0.5,
             1.0,
+            1.0,
             0.04,
             0.02,
             100.0,
+            None,
             3,
             0.1,
             0.04,
@@ -1108,9 +1217,11 @@ mod ws22_ws23_ws26_detachment_tests {
             1.0,
             0.5,
             1.0,
+            1.0,
             0.04,
             0.02,
             100.0,
+            None,
             3,
             0.1,
             0.04,
@@ -1140,9 +1251,11 @@ mod ws22_ws23_ws26_detachment_tests {
             1.0,
             0.5,
             1.0,
+            1.0,
             0.04,
             0.02,
             100.0,
+            None,
             3,
             0.1,
             0.04,
@@ -1171,9 +1284,11 @@ mod ws22_ws23_ws26_detachment_tests {
             1.0,
             0.25,
             1.0,
+            1.0,
             0.05,
             0.02,
             100.0,
+            None,
             3,
             0.5,
             0.04,
@@ -1210,9 +1325,11 @@ mod ws22_ws23_ws26_detachment_tests {
             1.0,
             0.25,
             1.0,
+            1.0,
             0.05,
             0.02,
             100.0,
+            None,
             3,
             0.5,
             0.04,
@@ -1255,9 +1372,11 @@ mod ws22_ws23_ws26_detachment_tests {
             depsid_ft: 1.0,
             depmid_ft: 0.25,
             wfl_ft: 1.0,
+            werod_ft: 1.0,
             roughness: 0.05,
             crsh: 0.02,
             tb_s: 100.0,
+            t_exp_s: None,
             flagc: 3,
             chnk: 0.5,
             nbarch: 0.04,
@@ -1355,7 +1474,7 @@ mod ws22_ws23_ws26_detachment_tests {
         for (actual, expected) in outcome.df_lbs_s_ft2.iter().zip(expected_df) {
             assert!((*actual - expected).abs() <= 1e-12);
         }
-        assert!((outcome.depmid_ft - 0.25).abs() <= 1e-12);
+        assert_close(outcome.depmid_ft, 0.0);
         assert!((outcome.werod_ft - 14.466_284_828_287_218).abs() <= 1e-12);
     }
 
@@ -1509,7 +1628,33 @@ mod ws22_ws23_ws26_detachment_tests {
         assert_close(capped.df_lbs_s_ft2[1], 0.03);
         assert_close(capped.df_lbs_s_ft2[2], 0.05);
         assert_close(capped.df_lbs_s_ft2.iter().sum::<f64>(), 0.1);
-        assert!(capped.werod_ft > state.werod);
+        assert_close(capped.depmid_ft, 0.145_833_333_333_333_31);
+        assert_close(capped.werod_ft, 1.0);
+        let reconstructed_capped_flux =
+            (state.depmid - capped.depmid_ft) * state.werod * WS22_DCAP_WTDSOI
+                / (input.tb * input.wflow);
+        assert_close(reconstructed_capped_flux, 0.1);
+
+        let zero_side_depth = Ws26DcapInput {
+            depsid: 0.0,
+            ..input
+        };
+        let zero_side_depth_error =
+            Ws10ChannelImpoundmentKernel::ws26_dcap_expanding_width_outcome(
+                &zero_side_depth,
+                Ws26DcapLayerState {
+                    depmid: 0.0,
+                    ..state.clone()
+                },
+                100.0,
+                ab,
+                100.0,
+            )
+            .expect_err("positive widening with zero side depth must fail");
+        assert_eq!(
+            zero_side_depth_error.symbol,
+            BoundarySymbol::from("ws22_dcap_depsid")
+        );
 
         let low_ad_input = Ws26DcapInput {
             crsh: 1.0e9,
@@ -1578,8 +1723,11 @@ mod ws22_ws23_ws26_detachment_tests {
         assert!((outcome.df_lbs_s_ft2[0] - 0.004).abs() <= 1e-12);
         assert!((outcome.df_lbs_s_ft2[1] - 0.006).abs() <= 1e-12);
         assert!((outcome.df_lbs_s_ft2.iter().sum::<f64>() - 0.01).abs() <= 1e-12);
-        assert!((outcome.depmid_ft - 1.0).abs() <= 1e-12);
+        assert_close(outcome.depmid_ft, 0.989_583_333_333_333_4);
         assert!((outcome.werod_ft - 1.0).abs() <= 1e-12);
+        let reconstructed_flux =
+            (1.0 - outcome.depmid_ft) * WS22_DCAP_WTDSOI / (input.tb * input.wflow);
+        assert_close(reconstructed_flux, 0.01);
 
         let empty_depmid = Ws10ChannelImpoundmentKernel::ws26_dcap_low_width_shear_outcome(
             &input,
@@ -1625,6 +1773,10 @@ mod ws22_ws23_ws26_detachment_tests {
         assert_close(capped.df_lbs_s_ft2[0], 0.002);
         assert_close(capped.df_lbs_s_ft2[1], 0.003);
         assert_close(capped.df_lbs_s_ft2.iter().sum::<f64>(), 0.005);
+        assert_close(capped.depmid_ft, 0.994_791_666_666_666_6);
+        let reconstructed_capped_flux =
+            (1.0 - capped.depmid_ft) * WS22_DCAP_WTDSOI / (input.tb * input.wflow);
+        assert_close(reconstructed_capped_flux, 0.005);
     }
 
     #[test]
@@ -1645,9 +1797,11 @@ mod ws22_ws23_ws26_detachment_tests {
             depsid_ft: 1.0,
             depmid_ft: 0.25,
             wfl_ft: 1.0,
+            werod_ft: 1.0,
             roughness: 0.04,
             crsh: 0.02,
             tb_s: 100.0,
+            t_exp_s: None,
             flagc: 3,
             chnk: 0.1,
             nbarch: 0.04,
@@ -1685,9 +1839,11 @@ mod ws22_ws23_ws26_detachment_tests {
             depsid_ft: 1.0,
             depmid_ft: 0.25,
             wfl_ft: 1.0,
+            werod_ft: 1.0,
             roughness: 0.05,
             crsh: 0.02,
             tb_s: 100.0,
+            t_exp_s: None,
             flagc: 3,
             chnk: 0.5,
             nbarch: 0.04,
@@ -1740,5 +1896,28 @@ mod ws22_ws23_ws26_detachment_tests {
         );
         assert_eq!(progress.iteration_count, 4);
         assert!(progress.used_xdbig_rebracket);
+        assert_close(progress.detachment_span_ft, 10.0);
+    }
+
+    #[test]
+    fn wshedw11b_enddet_gross_detachment_uses_solved_span() {
+        let mut potld_case4 = [10.0];
+        let mut tcl_case4 = [1.0];
+        let progress = Ws10ChannelImpoundmentKernel::ws27_case4_enddet_bracket_closure(
+            0.0,
+            10.0,
+            1.0,
+            10.0,
+            &[0.0],
+            &[0.0],
+            &[2.0],
+            &mut potld_case4,
+            &mut tcl_case4,
+            |_| vec![1.0],
+        );
+        assert_close(progress.detachment_span_ft, 1.0);
+        let constructive_detachment_lbs_s = 0.5 * 2.0 * progress.detachment_span_ft;
+        assert_close(constructive_detachment_lbs_s, 1.0);
+        assert!((constructive_detachment_lbs_s - 10.0).abs() > 1.0);
     }
 }

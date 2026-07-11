@@ -6,6 +6,8 @@ struct Ws20ChannelProfile {
     depth_b_points_ft: Vec<f64>,
     width_a_points_ft: Vec<f64>,
     width_b_points_ft: Vec<f64>,
+    eroded_width_a_points_ft: Vec<f64>,
+    eroded_width_b_points_ft: Vec<f64>,
 }
 
 #[derive(Debug, Clone)]
@@ -31,6 +33,12 @@ struct Ws20SegmentHydraulics {
     effshl: f64,
     upper_flagc: i32,
     lower_flagc: i32,
+}
+
+struct Ws20SegmentProcessOutcome {
+    detached_lbs_s: Vec<f64>,
+    max_effective_shear_lb_ft2: f64,
+    outlet_transport_capacity_lbs_s: Vec<f64>,
 }
 
 #[derive(Debug, Clone)]
@@ -63,6 +71,8 @@ struct Ws20RouteContext<'a> {
     node_class: Ws10NodeClass,
     ws21_case34_enabled: bool,
     event_duration: f64,
+    t_exp_s: Option<f64>,
+    t_norm_s: f64,
     roughness: f64,
     sediment_controls: Ws15ChannelSedimentControls,
     class_numbers: &'a [usize],
@@ -159,9 +169,11 @@ struct Ws23DetachInput<'a> {
     depsid_ft: f64,
     depmid_ft: f64,
     wfl_ft: f64,
+    werod_ft: f64,
     roughness: f64,
     crsh: f64,
     tb_s: f64,
+    t_exp_s: Option<f64>,
     flagc: i32,
     chnk: f64,
     nbarch: f64,

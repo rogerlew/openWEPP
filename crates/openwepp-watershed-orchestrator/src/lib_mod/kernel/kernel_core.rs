@@ -3,8 +3,11 @@ use openwepp_sim_contract::status::{BoundaryClass, SimulationPhase, SimulationSt
 use openwepp_topology::TopologyNodeKind;
 
 use super::super::network_frame::{
-    HillslopeContribution, RoutedChannelSedimentState, RoutedChannelState, RoutedChannelWaveState,
-    RoutedImpoundmentState, WatershedChannelControlRecord, WatershedGroundwaterRoutingAuthority,
+    ChannelTillageDayState, HillslopeContribution, RoutedChannelGeometryState,
+    RoutedChannelIntervalClassLedger, RoutedChannelIntervalHydraulicState,
+    RoutedChannelIntervalSedimentState, RoutedChannelIntervalWaterState,
+    RoutedChannelSedimentState, RoutedChannelState, RoutedChannelWaveState, RoutedImpoundmentState,
+    WatershedChannelControlRecord, WatershedGroundwaterRoutingAuthority,
     WatershedImpoundmentControlRecord, WatershedNetworkFrame,
 };
 use super::super::types::DispatchStep;
@@ -15,4 +18,5 @@ include!("helpers.rs");
 include!("routing.rs");
 include!("diagnostics.rs");
 include!("validation.rs");
+include!("hourly.rs");
 include!("direct.rs");

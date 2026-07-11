@@ -9,8 +9,11 @@ pub use dispatch::{
 };
 pub use kernel::Ws10ChannelImpoundmentKernel;
 pub use network_frame::{
-    HillslopeContribution, RoutedChannelSedimentState, RoutedChannelState, RoutedChannelWaveState,
-    RoutedImpoundmentState, WatershedChannelControlRecord, WatershedChannelRatingCurveControl,
+    ChannelTillageDayState, HillslopeContribution, RoutedChannelGeometryState,
+    RoutedChannelIntervalClassLedger, RoutedChannelIntervalHydraulicState,
+    RoutedChannelIntervalSedimentState, RoutedChannelIntervalWaterState,
+    RoutedChannelSedimentState, RoutedChannelState, RoutedChannelWaveState, RoutedImpoundmentState,
+    WatershedChannelControlRecord, WatershedChannelRatingCurveControl,
     WatershedChannelSegmentPoint, WatershedGroundwaterRoutingAuthority,
     WatershedImpoundmentControlRecord, WatershedNetworkFrame, WatershedNetworkFrameError,
     WatershedPublicationFrame, WatershedRoutingGlobals,

@@ -33,7 +33,7 @@ NODE IMPOUNDMENT 1 H 2 0 0 C 1 0 0 I 0 0 0
         "../../../../../tests/fixtures/infile/watershed_impoundment/strict_valid_minimal.imp"
     );
 
-    fn test_channel_control() -> WatershedChannelControlRecord {
+    pub(super) fn test_channel_control() -> WatershedChannelControlRecord {
         WatershedChannelControlRecord {
             node_id: 7,
             ishape: 2,
@@ -75,7 +75,7 @@ NODE IMPOUNDMENT 1 H 2 0 0 C 1 0 0 I 0 0 0
         }
     }
 
-    fn test_network_frame() -> WatershedNetworkFrame {
+    pub(super) fn test_network_frame() -> WatershedNetworkFrame {
         let graph = parse_topology_fixture_str(TYPED_TOPOLOGY).expect("typed topology should parse");
         let valid_channel_element_ids = BTreeSet::from([4_i32, 5_i32]);
         let chaninp = parse_chaninp_from_str(
@@ -109,7 +109,7 @@ NODE IMPOUNDMENT 1 H 2 0 0 C 1 0 0 I 0 0 0
         .expect("typed watershed frame should build")
     }
 
-    fn test_hillslope_contribution() -> HillslopeContribution {
+    pub(super) fn test_hillslope_contribution() -> HillslopeContribution {
         HillslopeContribution {
             hillslope_id: 3,
             area_m2: Some(12_000.0),
@@ -154,6 +154,7 @@ NODE IMPOUNDMENT 1 H 2 0 0 C 1 0 0 I 0 0 0
             groundwater_deep_seepage_m3: 0.0,
             sediment_yield_kg: qsed_kg_s,
             wave_state: None,
+            interval_water_state: None,
             sediment_state: RoutedChannelSedimentState {
                 qsed_kg_s,
                 transport_capacity_kg_s: qsed_kg_s * 2.0,
@@ -161,6 +162,7 @@ NODE IMPOUNDMENT 1 H 2 0 0 C 1 0 0 I 0 0 0
                 particle_diameter_m: vec![0.0001, 0.0003],
                 ..RoutedChannelSedimentState::default()
             },
+            interval_sediment_state: None,
         }
     }
 
