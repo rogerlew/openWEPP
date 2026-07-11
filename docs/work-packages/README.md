@@ -29,6 +29,12 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-11 UTC`:
+- `20260710-laned-router-h2637-34yr-negativeoutletbin-defect-closure-001/` -
+  EXECUTED-COMPLETE (2026-07-11 UTC): closed `LANED-NOB-001` with
+  `SC-OFEROUTE-001` rev 51 and exact-zero one-way predictor outlet-face
+  admissibility. Both effective 34-year H2637 modes, five-output disabled-path
+  byte identity, the selected active cohort, Case-4/19-OFE gates, final
+  1,694/1,694 workspace tests, dual review, and dual verification pass.
 - `20260711-wshedw11e-hourly-routing-sanity-rerun-001/` -
   EXECUTED-COMPLETE-SANITY-PASS-WITH-FINDING (2026-07-11 UTC): fresh debug and
   exact release consumers pass 7/7; corrected KW/CREAMS, canonical typed MC

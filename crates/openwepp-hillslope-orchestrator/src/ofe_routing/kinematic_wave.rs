@@ -866,17 +866,14 @@ impl BinRecorder {
     /// (initial dry sample at t = 0), plus the conservative flux-bin
     /// series (with per-bin coverage spans) for the handoff.
     ///
-    /// Review-B M2: transient NEGATIVE per-bin outflow can occur at
-    /// front-arrival on a dry outlet (the predictor's telescoped boundary
-    /// attribution `2 q_{n-1} - q_{n-2}` dips negative for a step-scale
-    /// interval while the ledger total stays exact). The bin series is
-    /// redistributed FORWARD to non-negative values with the exact total
-    /// preserved (a deficit is carried into subsequent bins); a
-    /// pathological terminal deficit (physically unexpected: total
-    /// outflow is non-negative) is RETURNED to the caller, which fails
-    /// closed rather than publishing a negative outlet bin (Codex review
-    /// Medium-1); sub-noise deficits are folded into the last covered bin
-    /// so the series sums exactly to the booked outflow.
+    /// Rev 51: valid production stage faces are non-negative by construction,
+    /// so their accumulated per-bin outflow is non-negative without borrowing
+    /// from later bins. The exact-total forward redistribution remains only as
+    /// a defensive invariant path for an invalid or independently injected
+    /// negative recorder sample. A material terminal deficit is RETURNED to
+    /// the caller, which fails closed rather than publishing a negative outlet
+    /// bin; sub-noise deficits are folded into the last covered bin so the
+    /// series sums exactly to the booked outflow.
     fn finish(self) -> (Vec<HydrographSample>, Vec<f64>, Vec<f64>, f64) {
         let mut flux_bins = self.flux_bins_m2;
         let mut carry = 0.0_f64;
@@ -1136,18 +1133,30 @@ impl KinematicWaveSolver {
         // both over-discharged (unbooked, the S0 ledger's dominant term)
         // and sustained a period-2 boundary limit cycle.
         // Rev 41: express the same closure as stage faces, then cap those
-        // faces by per-cell available water before depths are formed. With no
-        // limiting, face[n] = 2q[n-1] - q[n-2] exactly reproduces the rev-24
-        // donor boundary difference for the last cell.
+        // faces by per-cell available water before depths are formed. Rev 51
+        // retains `2q[n-1] - q[n-2]` on its physically admissible non-negative
+        // branch and applies the one-way outlet's exact-zero lower bound before
+        // the rev-41 available-water upper cap.
         self.scratch.face_flux[0] = q_up;
         for face in 1..n {
             self.scratch.face_flux[face] = self.discharge_m2_s[face];
         }
-        self.scratch.face_flux[n] = if n >= 2 {
+        let raw_predictor_outlet_m2_s = if n >= 2 {
             2.0 * self.discharge_m2_s[n - 1] - self.discharge_m2_s[n - 2]
         } else {
             self.discharge_m2_s[0]
         };
+        if !raw_predictor_outlet_m2_s.is_finite() {
+            return Err(RoutingError::NonFiniteState);
+        }
+        // SC-OFEROUTE-001 rev 51 / LANED-NOB-001: the downstream boundary is
+        // one-way outflow. A dry-front/recession gradient can make the raw
+        // donor extrapolation negative even though all committed discharges
+        // and forcing are non-negative. Enforce the exact physical lower
+        // bound inside face construction, before the rev-41 available-water
+        // upper cap, so the state update and ledger book the same admissible
+        // flux without a post-update clamp or future-bin borrowing.
+        self.scratch.face_flux[n] = raw_predictor_outlet_m2_s.max(0.0);
         let predictor_limiter = Self::limit_stage_face_fluxes(
             &self.depth_m,
             &self.scratch.v,
@@ -2128,15 +2137,33 @@ mod tests {
     }
 
     #[test]
-    fn material_terminal_bin_deficit_fails_closed_on_public_path() {
-        let mesh = KinematicWaveMesh::uniform(20.0, 2, CellParameters::bare(0.05, 100.0));
+    fn source_quiet_dry_front_outlet_flux_stays_nonnegative_and_conservative() {
+        let params = CellParameters::bare(0.05, 100.0);
+        let penultimate_depth_m = 1.0e-4;
+        let outlet_depth_m = 1.0e-6;
+        let penultimate_local = params
+            .alpha_q_celerity(penultimate_depth_m, 0.0, 0.0)
+            .expect("finite penultimate-cell local hydraulics");
+        let outlet_local = params
+            .alpha_q_celerity(outlet_depth_m, 0.0, 0.0)
+            .expect("finite near-dry outlet local hydraulics");
+        assert!(penultimate_local.q > 0.0);
+        assert!(outlet_local.q > 0.0);
+        let raw_predictor_outlet_m2_s = 2.0 * outlet_local.q - penultimate_local.q;
+        assert!(raw_predictor_outlet_m2_s < 0.0);
+        let mesh = KinematicWaveMesh::uniform(20.0, 2, params);
         let mut solver = KinematicWaveSolver::new(mesh);
-        // Construct the retained front-arrival attribution class directly on
-        // the explicit solver state: the upstream cell is carrying discharge,
-        // the outlet cell is dry, and the one-step window ends before a later
-        // positive bin can absorb the boundary-attribution deficit.
-        solver.discharge_m2_s[0] = 1.0e-4;
-        solver.discharge_m2_s[1] = 0.0;
+        // SC-OFEROUTE-001 rev 51 / LANED-NOB-001: a wet penultimate cell
+        // followed by a near-dry but positive outlet makes the raw predictor
+        // donor extrapolation `2 q[n-1] - q[n-2]` negative. The one-way outlet
+        // face must enforce its exact zero lower bound inside the conservative
+        // update; it must not alias the positive committed outlet discharge or
+        // depend on borrowing mass from a later outlet bin.
+        solver.depth_m[0] = penultimate_depth_m;
+        solver.discharge_m2_s[0] = penultimate_local.q;
+        solver.depth_m[1] = outlet_depth_m;
+        solver.discharge_m2_s[1] = outlet_local.q;
+        let initial_storage_m2 = solver.total_storage_m2();
 
         let excess = |_i: usize, _t: f64| 0.0;
         let inflow = |_t: f64| 0.0;
@@ -2147,10 +2174,71 @@ mod tests {
             rainfall_intensity_m_s: &intensity,
         };
 
-        assert!(matches!(
-            solver.run_with_options(&forcing, None, &[], 1.0, 1.0, 1.0),
-            Err(RoutingError::NegativeOutletBin)
-        ));
+        let result = solver
+            .run_with_options_and_step_trace(&forcing, None, &[], 1.0, 1.0, 1.0, true)
+            .expect("rev-51 source-quiet dry front must complete");
+        let step_trace = result.step_trace.as_ref().expect("step trace retained");
+        assert!(!step_trace.is_empty());
+        assert_eq!(
+            step_trace[0].pred_out_face_m2_s.to_bits(),
+            0.0_f64.to_bits(),
+            "raw-negative predictor must use the exact positive-zero boundary face"
+        );
+        assert_ne!(
+            step_trace[0].pred_out_face_m2_s.to_bits(),
+            outlet_local.q.to_bits(),
+            "scheme face must not alias the positive committed outlet discharge"
+        );
+        assert!(step_trace.iter().all(|record| {
+            record.pred_out_face_m2_s.is_finite()
+                && record.pred_out_face_m2_s >= 0.0
+                && record.corr_out_face_m2_s.is_finite()
+                && record.corr_out_face_m2_s >= 0.0
+        }));
+        assert!(result.mass_balance.outflow_m2 >= 0.0);
+        assert!(
+            result
+                .outlet_bin_outflow_m2
+                .iter()
+                .all(|value| *value >= 0.0)
+        );
+        assert!(
+            result
+                .hydrograph
+                .iter()
+                .all(|sample| sample.outlet_unit_discharge_m2_s >= 0.0)
+        );
+        let bin_sum_m2: f64 = result.outlet_bin_outflow_m2.iter().sum();
+        assert_eq!(
+            bin_sum_m2.to_bits(),
+            result.mass_balance.outflow_m2.to_bits(),
+            "outlet bins must equal the independently booked scheme outflow"
+        );
+        assert!(result.mass_balance.positivity_clamp_m2 <= 1.0e-18);
+
+        // Anti-tautology: reconstruct storage change from committed cell
+        // depths rather than reusing the mass ledger's storage-change field.
+        let committed_storage_m2 = solver.total_storage_m2();
+        let reconstructed_storage_change_m2 = committed_storage_m2 - initial_storage_m2;
+        let reconstructed_residual_m2 = result.mass_balance.inflow_m2
+            + result.mass_balance.rainfall_excess_m2
+            + result.mass_balance.positivity_clamp_m2
+            - result.mass_balance.outflow_m2
+            - reconstructed_storage_change_m2;
+        assert!(
+            reconstructed_residual_m2.abs() <= 1.0e-15,
+            "independent dry-front closure residual {reconstructed_residual_m2}"
+        );
+    }
+
+    #[test]
+    fn bin_recorder_retains_material_terminal_deficit_signal() {
+        let mut recorder = BinRecorder::new(1.0, 1.0);
+        recorder.record_step(0.0, 1.0, -1.0e-4, 0.0);
+        let (_hydrograph, bins, _spans, terminal_deficit) = recorder.finish();
+
+        assert_eq!(terminal_deficit.to_bits(), (-1.0e-4_f64).to_bits());
+        assert!(bins.iter().all(|value| *value >= 0.0));
     }
 
     #[test]
