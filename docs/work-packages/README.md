@@ -159,6 +159,14 @@ State as of `2026-07-11 UTC`:
   `nchnum=99` is normalized to exposed input/cardinality `2`, conflicting with
   the raw-vs-normalized source model. Source/tests are unchanged; focused tests
   pass `20/20`. A contract-first cardinality defect package is required.
+- `20260711-cqr-nightly-08-orchestrator-network-frame-001/` -
+  EXECUTED-HOLD-CQR-NIGHTLY-LOCAL-COVERAGE-PRECONDITION (2026-07-11): target #8
+  safely characterized `direct_terminal_event_duration_s` provisionally to
+  CRAP `17.126`, `92.424%` lines, and `98.077%` regions, but canonical package
+  measurement reached only `63.687%` lines / `66.087%` regions with 16 logical
+  functions below floor. Tests were rolled back exactly; production was never
+  edited. A dedicated science-tier module-test-enhancement package must precede
+  CQR decomposition. This closes the eight-module nightly batch.
 - `20260709-cqr-nightly-b02-10-hbp-payload-validator-001/` -
   EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-10): CQR nightly batch 02 target #10
   completed characterization-only closure of
