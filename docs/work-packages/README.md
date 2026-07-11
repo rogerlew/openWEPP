@@ -102,6 +102,14 @@ State as of `2026-07-11 UTC`:
   `prtcmp -> crfrac`, and independently closed water/sediment output. Dual
   verification, release provenance, full 1,677-test, erosion 312-test, deny,
   clippy, comparator, and documentation gates passed.
+- `20260711-cqr-nightly-01-runner-totalwatsed3-001/` -
+  EXECUTED-HOLD-CQR-NIGHTLY-LOCAL-COVERAGE-PRECONDITION (2026-07-11): fresh
+  nightly batch 01 target #1 attempted behavior-preserving decomposition of
+  `crates/openwepp-runner/src/totalwatsed3.rs`, but independent review rejected
+  closure because the module began at only `67.238%` line coverage without
+  region/per-function closure and retained two eligible CRAP rows above `30`.
+  Rust/test edits are rolled back to scaffold `e2ff321e`; the first follow-on is
+  a dedicated ADR-0021 module-test-enhancement package before CQR repeats.
 - `20260709-cqr-nightly-b02-10-hbp-payload-validator-001/` -
   EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-10): CQR nightly batch 02 target #10
   completed characterization-only closure of

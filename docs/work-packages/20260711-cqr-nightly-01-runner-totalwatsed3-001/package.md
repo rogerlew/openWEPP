@@ -1,7 +1,7 @@
 # CQR Nightly Batch 01, Target 01 — Runner Totalwatsed3
 
 Package: `20260711-cqr-nightly-01-runner-totalwatsed3-001`
-Status: `QUEUED`
+Status: `EXECUTED-HOLD-CQR-NIGHTLY-LOCAL-COVERAGE-PRECONDITION`
 ExecPlan: `docs/work-packages/cqr-nightly-burndown-execplan.md`
 Nightly batch: `01`
 Target module: `crates/openwepp-runner/src/totalwatsed3.rs`
