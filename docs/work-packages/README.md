@@ -33,6 +33,9 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-11 UTC`:
+- `20260711-cqr-followup-totalwatsed3-001/` - ACTIVE: FQ-04 science-tier
+  totalwatsed3 coverage prerequisite, independent operand reconstruction, and
+  cover-then-decompose CRAP closure.
 - `20260711-dc-watershed-channel-extra-rating-001/` - EXECUTED-COMPLETE
   (2026-07-11): FQ-03 closes structurally recognized prohibited rating rows
   without lexical heuristics or accepted-grammar change. Coverage is 99.549%
