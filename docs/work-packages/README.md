@@ -33,6 +33,9 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-11 UTC`:
+- `20260711-dc-chaninp-raw-cardinality-001/` - ACTIVE: FQ-02 contract-first
+  closure of CHAN.INP raw record cardinality versus normalized topology,
+  including network-frame consumer proof and science-tier/CRAP gates.
 - `20260711-dc-fdir-finite-value-guard-001/` - EXECUTED-COMPLETE (2026-07-11):
   FQ-01 closes non-finite fixed-date irrigation input for all eight typed real
   fields in both modes through `FDIR-E-005`. Final public tests pass 27/27;
