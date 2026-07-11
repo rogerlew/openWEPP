@@ -136,6 +136,13 @@ State as of `2026-07-11 UTC`:
   all-ID pre-resolution atomicity. Science-tier coverage is `98.344%` lines /
   `97.543%` regions, target CRAP rows above `30` fell from `4` to `0`, and dual
   review plus the 1,709-test full closure loop passed.
+- `20260711-cqr-nightly-05-input-pmetpara-001/` -
+  EXECUTED-HOLD-CQR-NIGHTLY-LOCAL-FORMATTER-DISPOSITION (2026-07-11): target
+  #5 was safely dispositioned without source/test edits. Fresh coverage was
+  `321/477` lines (`67.296%`); the only deduplicated CRAP row above `30` was
+  `PmetparaParseError::fmt` (CC `12`, coverage `0%`, CRAP `156`). Dual review
+  applied the nightly formatting/error-display local-hold rule and ADR-0021
+  observability-only formatting exclusion. Focused tests passed `13/13`.
 - `20260709-cqr-nightly-b02-10-hbp-payload-validator-001/` -
   EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-10): CQR nightly batch 02 target #10
   completed characterization-only closure of

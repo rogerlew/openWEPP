@@ -1,7 +1,7 @@
 # CQR Nightly Batch 01, Target 05 — PMETPARA Parser
 
 Package: `20260711-cqr-nightly-05-input-pmetpara-001`
-Status: `QUEUED`
+Status: `EXECUTED-HOLD-CQR-NIGHTLY-LOCAL-FORMATTER-DISPOSITION`
 ExecPlan: `docs/work-packages/cqr-nightly-burndown-execplan.md`
 Nightly batch: `01`
 Target module: `crates/openwepp-input-contract/src/parsers/pmetpara.rs`
