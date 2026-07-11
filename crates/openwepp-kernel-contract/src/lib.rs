@@ -10,8 +10,9 @@ pub use lib_mod::*;
 mod tests {
     use std::collections::BTreeMap;
 
+    use openwepp_sim_contract::closure::ClosureViolationKind;
     use openwepp_sim_contract::status::{
-        BoundaryClass, SimulationPhase, SimulationStatus, StatusClassification,
+        BoundaryClass, SimulationPhase, SimulationStatus, StatusClassification, StatusError,
     };
     use openwepp_unit_boundary::{FlowRateCubicMetersPerSecond, StorageVolumeCubicMeters};
 
@@ -28,6 +29,7 @@ mod tests {
             .expect("decision should construct");
 
         assert_eq!(decision.outcome, WritebackDecisionOutcome::Accept);
+        assert_eq!(decision.status.message_id(), WRITEBACK_ACCEPT_MESSAGE_ID);
         assert_eq!(
             decision.status.classification(),
             StatusClassification::Nominal
@@ -104,6 +106,461 @@ mod tests {
                 outcome: WritebackDecisionOutcome::Reject
             }
         ));
+    }
+
+    #[test]
+    fn writeback_errors_preserve_display_sources_and_conversions() {
+        let status_error = WritebackError::from(StatusError::MessageIdEmpty);
+        assert_eq!(
+            status_error.to_string(),
+            "failed constructing writeback status: message_id must not be empty"
+        );
+        assert!(std::error::Error::source(&status_error).is_some());
+
+        let decision_error = WritebackError::DecisionNotAccept {
+            outcome: WritebackDecisionOutcome::Reject,
+        };
+        assert_eq!(
+            decision_error.to_string(),
+            "cannot apply writeback for non-accept outcome: Reject"
+        );
+        assert!(std::error::Error::source(&decision_error).is_none());
+
+        let registry_error = WritebackError::from(SymbolRegistryError::UnknownSymbol {
+            symbol: BoundarySymbol::from("unknown"),
+        });
+        assert_eq!(
+            registry_error.to_string(),
+            "indexed writeback registry error: symbol unknown is not present in the frozen registry"
+        );
+        assert!(std::error::Error::source(&registry_error).is_some());
+    }
+
+    #[test]
+    fn indexed_writeback_evaluation_accepts_inclusive_boundaries() {
+        let registry = SymbolRegistry::from_symbols(["state", "flux"])
+            .expect("writeback symbols should register");
+        let state_id = registry
+            .id_of(&BoundarySymbol::from("state"))
+            .expect("state id should resolve");
+        let flux_id = registry
+            .id_of(&BoundarySymbol::from("flux"))
+            .expect("flux id should resolve");
+
+        let accepted = IndexedKernelWritebackPayload::with_updates(
+            vec![IndexedWritebackField::bounded(
+                state_id,
+                BoundaryValue::from(0.0),
+                Some(0.0),
+                Some(2.0),
+            )],
+            vec![IndexedWritebackField::bounded(
+                flux_id,
+                BoundaryValue::from(2.0),
+                Some(0.0),
+                Some(2.0),
+            )],
+        );
+        let accepted_decision =
+            evaluate_indexed_kernel_writeback(SimulationPhase::HillslopeKernel, &accepted)
+                .expect("accepted indexed decision should construct");
+        assert_eq!(accepted_decision.outcome, WritebackDecisionOutcome::Accept);
+        assert_eq!(
+            accepted_decision.status.message_id(),
+            WRITEBACK_ACCEPT_MESSAGE_ID
+        );
+        assert!(accepted_decision.violations.is_empty());
+    }
+
+    #[test]
+    fn indexed_writeback_evaluation_reports_ordered_domain_violations() {
+        let registry = SymbolRegistry::from_symbols(["state", "flux"])
+            .expect("writeback symbols should register");
+        let state_id = registry
+            .id_of(&BoundarySymbol::from("state"))
+            .expect("state id should resolve");
+        let flux_id = registry
+            .id_of(&BoundarySymbol::from("flux"))
+            .expect("flux id should resolve");
+
+        let domain_invalid = IndexedKernelWritebackPayload::with_updates(
+            vec![
+                IndexedWritebackField::bounded(
+                    state_id,
+                    BoundaryValue::from(3.0),
+                    Some(0.0),
+                    Some(2.0),
+                ),
+                IndexedWritebackField::bounded(
+                    state_id,
+                    BoundaryValue::from(-1.0),
+                    Some(0.0),
+                    None,
+                ),
+                IndexedWritebackField::bounded(
+                    state_id,
+                    BoundaryValue::from(1.0),
+                    Some(2.0),
+                    Some(0.0),
+                ),
+            ],
+            vec![IndexedWritebackField::bounded(
+                flux_id,
+                BoundaryValue::from(3.0),
+                None,
+                Some(2.0),
+            )],
+        );
+        let domain_decision =
+            evaluate_indexed_kernel_writeback(SimulationPhase::WatershedKernel, &domain_invalid)
+                .expect("domain-reject decision should construct");
+        assert_eq!(domain_decision.outcome, WritebackDecisionOutcome::Reject);
+        assert_eq!(
+            domain_decision.status.message_id(),
+            WRITEBACK_REJECT_DOMAIN_MESSAGE_ID
+        );
+        assert_eq!(domain_decision.violations.len(), 4);
+        assert_eq!(
+            domain_decision
+                .violations
+                .iter()
+                .map(|violation| (
+                    violation.check_id.as_str(),
+                    violation.message_id.as_str(),
+                    violation.kind,
+                ))
+                .collect::<Vec<_>>(),
+            vec![
+                (
+                    "INV-WRITEBACK-002",
+                    WRITEBACK_REJECT_DOMAIN_MESSAGE_ID,
+                    ClosureViolationKind::DomainRange,
+                ),
+                (
+                    "INV-WRITEBACK-003",
+                    WRITEBACK_REJECT_DOMAIN_MESSAGE_ID,
+                    ClosureViolationKind::DomainLowerBound,
+                ),
+                (
+                    "INV-WRITEBACK-002",
+                    "CLOSURE-PRIMITIVE-INVALID-BOUNDS",
+                    ClosureViolationKind::DomainRange,
+                ),
+                (
+                    "INV-WRITEBACK-004",
+                    WRITEBACK_REJECT_DOMAIN_MESSAGE_ID,
+                    ClosureViolationKind::DomainUpperBound,
+                ),
+            ]
+        );
+    }
+
+    #[test]
+    fn indexed_writeback_evaluation_prioritizes_nonfinite_failures() {
+        let registry =
+            SymbolRegistry::from_symbols(["state"]).expect("writeback symbol should register");
+        let state_id = registry
+            .id_of(&BoundarySymbol::from("state"))
+            .expect("state id should resolve");
+        for value in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
+            let nonfinite = IndexedKernelWritebackPayload::with_updates(
+                vec![IndexedWritebackField::bounded(
+                    state_id,
+                    BoundaryValue::from(value),
+                    Some(0.0),
+                    Some(1.0),
+                )],
+                Vec::new(),
+            );
+            let decision =
+                evaluate_indexed_kernel_writeback(SimulationPhase::HillslopeKernel, &nonfinite)
+                    .expect("non-finite reject decision should construct");
+            assert_eq!(decision.outcome, WritebackDecisionOutcome::Reject);
+            assert_eq!(
+                decision.status.message_id(),
+                WRITEBACK_REJECT_NON_FINITE_MESSAGE_ID
+            );
+            assert_eq!(decision.violations.len(), 2);
+            assert_eq!(
+                decision
+                    .violations
+                    .iter()
+                    .map(|violation| (violation.check_id.as_str(), violation.kind))
+                    .collect::<Vec<_>>(),
+                vec![
+                    ("INV-WRITEBACK-001", ClosureViolationKind::NonFinite),
+                    ("INV-WRITEBACK-002", ClosureViolationKind::DomainRange),
+                ]
+            );
+        }
+    }
+
+    #[test]
+    fn indexed_writeback_application_sorts_and_updates_both_surfaces() {
+        let registry = SymbolRegistry::from_symbols(["state_z", "state_a", "flux_q"])
+            .expect("writeback symbols should register");
+        let upper_state_id = registry
+            .id_of(&BoundarySymbol::from("state_z"))
+            .expect("state_z id should resolve");
+        let lower_state_id = registry
+            .id_of(&BoundarySymbol::from("state_a"))
+            .expect("state_a id should resolve");
+        let flux_q_id = registry
+            .id_of(&BoundarySymbol::from("flux_q"))
+            .expect("flux_q id should resolve");
+        let payload = IndexedKernelWritebackPayload::with_updates(
+            vec![
+                IndexedWritebackField::unbounded(upper_state_id, BoundaryValue::from(9.0)),
+                IndexedWritebackField::unbounded(lower_state_id, BoundaryValue::from(1.0)),
+            ],
+            vec![IndexedWritebackField::unbounded(
+                flux_q_id,
+                BoundaryValue::from(4.0),
+            )],
+        );
+        let decision =
+            evaluate_indexed_kernel_writeback(SimulationPhase::WatershedKernel, &payload)
+                .expect("indexed decision should construct");
+        let mut state = BTreeMap::new();
+        let mut flux = BTreeMap::new();
+        let mut indexed = IndexedWritebackSurface::from_btreemap_surfaces(&registry, &state, &flux)
+            .expect("empty surfaces should index");
+
+        let result = apply_indexed_kernel_writeback(
+            SimulationPhase::WatershedKernel,
+            &decision,
+            &payload,
+            &mut indexed,
+            &registry,
+            &mut state,
+            &mut flux,
+        )
+        .expect("accepted indexed writeback should apply");
+
+        assert_eq!(result.outcome, WritebackDecisionOutcome::Apply);
+        assert_eq!(result.status.message_id(), WRITEBACK_APPLY_MESSAGE_ID);
+        assert_eq!(
+            result.applied_state_symbols,
+            vec![
+                BoundarySymbol::from("state_a"),
+                BoundarySymbol::from("state_z")
+            ]
+        );
+        assert_eq!(
+            result.applied_flux_symbols,
+            vec![BoundarySymbol::from("flux_q")]
+        );
+        assert_eq!(
+            indexed.state_value(lower_state_id),
+            Some(BoundaryValue::from(1.0))
+        );
+        assert_eq!(
+            indexed.state_value(upper_state_id),
+            Some(BoundaryValue::from(9.0))
+        );
+        assert_eq!(
+            indexed.flux_value(flux_q_id),
+            Some(BoundaryValue::from(4.0))
+        );
+        assert_eq!(
+            state[&BoundarySymbol::from("state_a")],
+            BoundaryValue::from(1.0)
+        );
+        assert_eq!(
+            state[&BoundarySymbol::from("state_z")],
+            BoundaryValue::from(9.0)
+        );
+        assert_eq!(
+            flux[&BoundarySymbol::from("flux_q")],
+            BoundaryValue::from(4.0)
+        );
+    }
+
+    #[test]
+    fn indexed_writeback_resolves_all_ids_before_any_mutation() {
+        let full_registry =
+            SymbolRegistry::from_symbols(["known", "unknown"]).expect("full registry should build");
+        let small_registry =
+            SymbolRegistry::from_symbols(["known"]).expect("small registry should build");
+        let known_id = full_registry
+            .id_of(&BoundarySymbol::from("known"))
+            .expect("known id should resolve");
+        let unknown_id = full_registry
+            .id_of(&BoundarySymbol::from("unknown"))
+            .expect("unknown id should resolve in full registry");
+        let payload = IndexedKernelWritebackPayload::with_updates(
+            vec![IndexedWritebackField::unbounded(
+                known_id,
+                BoundaryValue::from(1.0),
+            )],
+            vec![IndexedWritebackField::unbounded(
+                unknown_id,
+                BoundaryValue::from(2.0),
+            )],
+        );
+        let decision =
+            evaluate_indexed_kernel_writeback(SimulationPhase::WatershedKernel, &payload)
+                .expect("indexed decision should construct");
+        let mut state = BTreeMap::new();
+        let mut flux = BTreeMap::new();
+        let mut indexed =
+            IndexedWritebackSurface::from_btreemap_surfaces(&small_registry, &state, &flux)
+                .expect("empty surfaces should index");
+
+        let error = apply_indexed_kernel_writeback(
+            SimulationPhase::WatershedKernel,
+            &decision,
+            &payload,
+            &mut indexed,
+            &small_registry,
+            &mut state,
+            &mut flux,
+        )
+        .expect_err("unknown id should reject before mutation");
+
+        assert!(matches!(
+            error,
+            WritebackError::SymbolRegistry(SymbolRegistryError::UnknownSymbolId { id })
+                if id == unknown_id
+        ));
+        assert!(state.is_empty());
+        assert!(flux.is_empty());
+        assert!(indexed.state_surface().is_empty());
+        assert!(indexed.flux_surface().is_empty());
+    }
+
+    #[test]
+    fn indexed_writeback_application_requires_accept_outcome() {
+        let registry =
+            SymbolRegistry::from_symbols(["known"]).expect("writeback symbol should register");
+        let payload = IndexedKernelWritebackPayload::empty();
+        let reject_decision = KernelWritebackDecision {
+            outcome: WritebackDecisionOutcome::Reject,
+            status: SimulationStatus::domain_failure(
+                SimulationPhase::WatershedKernel,
+                BoundaryClass::DomainViolation,
+                WRITEBACK_REJECT_DOMAIN_MESSAGE_ID,
+            )
+            .expect("status should construct"),
+            violations: Vec::new(),
+        };
+        let mut state = BTreeMap::new();
+        let mut flux = BTreeMap::new();
+        let mut indexed = IndexedWritebackSurface::from_btreemap_surfaces(&registry, &state, &flux)
+            .expect("empty surfaces should index");
+
+        let error = apply_indexed_kernel_writeback(
+            SimulationPhase::WatershedKernel,
+            &reject_decision,
+            &payload,
+            &mut indexed,
+            &registry,
+            &mut state,
+            &mut flux,
+        )
+        .expect_err("reject decision should not apply");
+        assert!(matches!(
+            error,
+            WritebackError::DecisionNotAccept {
+                outcome: WritebackDecisionOutcome::Reject
+            }
+        ));
+    }
+
+    #[test]
+    fn logical_writeback_evaluation_covers_every_domain_bound_shape() {
+        let payload = KernelWritebackPayload::with_updates(
+            vec![
+                WritebackField::bounded("range", 3.0, Some(0.0), Some(2.0)),
+                WritebackField::bounded("minimum", -1.0, Some(0.0), None),
+            ],
+            vec![
+                WritebackField::bounded("maximum", 3.0, None, Some(2.0)),
+                WritebackField::unbounded("valid", 1.0),
+            ],
+        );
+
+        let decision = evaluate_kernel_writeback(SimulationPhase::HillslopeKernel, &payload)
+            .expect("domain-reject decision should construct");
+
+        assert_eq!(decision.outcome, WritebackDecisionOutcome::Reject);
+        assert_eq!(
+            decision.status.message_id(),
+            WRITEBACK_REJECT_DOMAIN_MESSAGE_ID
+        );
+        assert_eq!(decision.violations.len(), 3);
+        assert_eq!(
+            decision
+                .violations
+                .iter()
+                .map(|violation| (violation.check_id.as_str(), violation.kind))
+                .collect::<Vec<_>>(),
+            vec![
+                ("INV-WRITEBACK-002", ClosureViolationKind::DomainRange),
+                ("INV-WRITEBACK-003", ClosureViolationKind::DomainLowerBound,),
+                ("INV-WRITEBACK-004", ClosureViolationKind::DomainUpperBound,),
+            ]
+        );
+    }
+
+    #[test]
+    fn logical_writeback_application_sorts_and_updates_both_surfaces() {
+        let payload = KernelWritebackPayload::with_updates(
+            vec![
+                WritebackField::unbounded("state_z", 9.0),
+                WritebackField::unbounded("state_a", 1.0),
+            ],
+            vec![
+                WritebackField::unbounded("flux_z", 8.0),
+                WritebackField::unbounded("flux_a", 4.0),
+            ],
+        );
+        let decision = evaluate_kernel_writeback(SimulationPhase::WatershedKernel, &payload)
+            .expect("accepted decision should construct");
+        let mut state = BTreeMap::new();
+        let mut flux = BTreeMap::new();
+
+        let result = apply_kernel_writeback(
+            SimulationPhase::WatershedKernel,
+            &decision,
+            &payload,
+            &mut state,
+            &mut flux,
+        )
+        .expect("accepted writeback should apply");
+
+        assert_eq!(result.outcome, WritebackDecisionOutcome::Apply);
+        assert_eq!(result.status.message_id(), WRITEBACK_APPLY_MESSAGE_ID);
+        assert_eq!(
+            result.applied_state_symbols,
+            vec![
+                BoundarySymbol::from("state_a"),
+                BoundarySymbol::from("state_z")
+            ]
+        );
+        assert_eq!(
+            result.applied_flux_symbols,
+            vec![
+                BoundarySymbol::from("flux_a"),
+                BoundarySymbol::from("flux_z")
+            ]
+        );
+        assert_eq!(
+            state[&BoundarySymbol::from("state_a")],
+            BoundaryValue::from(1.0)
+        );
+        assert_eq!(
+            state[&BoundarySymbol::from("state_z")],
+            BoundaryValue::from(9.0)
+        );
+        assert_eq!(
+            flux[&BoundarySymbol::from("flux_a")],
+            BoundaryValue::from(4.0)
+        );
+        assert_eq!(
+            flux[&BoundarySymbol::from("flux_z")],
+            BoundaryValue::from(8.0)
+        );
     }
 
     #[test]

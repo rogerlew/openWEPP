@@ -1,7 +1,7 @@
 # CQR Nightly Batch 01, Target 04 — Kernel Writeback
 
 Package: `20260711-cqr-nightly-04-kernel-writeback-001`
-Status: `QUEUED`
+Status: `EXECUTED-COMPLETE-CQR-NIGHTLY`
 ExecPlan: `docs/work-packages/cqr-nightly-burndown-execplan.md`
 Nightly batch: `01`
 Target module: `crates/openwepp-kernel-contract/src/lib_mod/writeback.rs`
