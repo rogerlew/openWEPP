@@ -1,0 +1,10 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.22s
+────────────
+ Nextest run ID 6f4f2479-68f4-4f2f-8e78-e4c24a80d949 with nextest profile: full
+    Starting 1678 tests across 171 binaries (3 tests skipped)
+        SLOW [> 90.000s] (─────────) openwepp-hillslope-orchestrator ofe_routing::d10b_reconciliation_tests::case4_manning_solver_converges_to_iwagaki_oracle
+        SLOW [> 90.000s] (─────────) openwepp-hillslope-orchestrator ofe_routing::iwagaki_oracle::tests::characteristics_fan_cross_validates_upwind_reference
+        SLOW [> 90.000s] (─────────) openwepp-hillslope-orchestrator ofe_routing::iwagaki_oracle::tests::upwind_case4_self_convergence
+        SLOW [> 90.000s] (─────────) openwepp::snowdensity05e_melt_adjudication coe_melt_snowbench_runs_both_models_as_diagnostic_only
+────────────
+     Summary [ 571.999s] 1678 tests run: 1678 passed (4 slow), 3 skipped

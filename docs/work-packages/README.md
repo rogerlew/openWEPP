@@ -29,13 +29,20 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-10`:
-- `20260710-wshedw11b-channel-interval-sediment-implementation-001/` -
-  QUEUED: bounded implementation/DC successor to held WSHED-W11 and completed
-  WSHED-W11A. Implements `SC-ROUTE-001` v53 on the real two-channel production
-  path, closes both `GAP-ROUTE-014` detachment terminals, executes all eleven
-  W11A vectors, and requires independent water/sediment reconstruction plus
-  protected fallback and full workspace gates. Package:
-  `20260710-wshedw11b-channel-interval-sediment-implementation-001/package.md`.
+- `20260710-wshedw11d-hourly-routing-numerical-defect-closure-001/` -
+  QUEUED hold-lift successor to WSHED-W11C. Owns negative hourly channel
+  storage/generated terminal volume, MC peak/timestep anomalies, non-terminal
+  legacy serial-network publication, and `chan.inp nchnum=0` timestep aliasing
+  under one contract-first routing/CLI authority envelope. Package:
+  `20260710-wshedw11d-hourly-routing-numerical-defect-closure-001/package.md`.
+- `20260710-wshedw11c-hourly-routing-sanity-001/` -
+  EXECUTED-HOLD-SANITY-FAIL (2026-07-10): the corrected real release-CLI matrix
+  executes CREAMS, kinematic-wave, static Muskingum-Cunge, and variable
+  Muskingum-Cunge routing, but reproduces material negative storage/generated
+  volume, MC peak/timestep anomalies, non-terminal legacy publication, and the
+  prior `nchnum=0` timestep alias. Both verifications ratified the hold; W11D
+  owns contract-first defect closure.
+  Package: `20260710-wshedw11c-hourly-routing-sanity-001/package.md`.
 - `20260710-wshedw11a-channel-hourly-sediment-authority-001/` -
   EXECUTED-COMPLETE-AUTHORITY (2026-07-10, Claude Code operator-directed
   end-to-end; two Codex post-hoc REOPEN cycles dispositioned same day;
