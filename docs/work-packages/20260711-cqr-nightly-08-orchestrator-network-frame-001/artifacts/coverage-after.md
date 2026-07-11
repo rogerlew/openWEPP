@@ -1,10 +1,10 @@
 # Coverage After
 
-Ran provisionally with package-lib llvm-cov: target was `691/1085` lines
-(`63.687%`), `760/1150` regions (`66.087%`), and `36/66` functions. Sixteen
-logical functions remained below `75%`. This failed science-tier closure, so
-tests were rolled back; final production baseline remains unchanged.
+Ran after reopened characterization with package-lib llvm-cov: target is
+`1209/1308` lines (`92.431%`), `1443/1534` regions (`94.068%`), and `66/70`
+functions (`94.286%`). Every eligible function is above the `75%` floor; the
+only below-floor logical row is the reviewed observability formatter.
 
 Raw hashes: LCOV
-`bd446401a7cefff4c4b3ea477544fd634326af4dcbb7904aef89b84c3749e465`;
-JSON `d80c90aa4d3ee8dbdbda3641510323a66c9013df795ab51c84a5c8544f3c6aa0`.
+`60feda264c14aa5bf127e1fb4e3232fd17e66b0c82c110c9aa640606321a2533`;
+JSON `6bf1603bf76425012a018b48f29942d0238f20e278857e6d5ca2fbf95a57a09f`.

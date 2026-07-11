@@ -1,7 +1,7 @@
 # CQR Nightly Batch 01, Target 08 — Watershed Network Frame
 
 Package: `20260711-cqr-nightly-08-orchestrator-network-frame-001`
-Status: `EXECUTED-HOLD-CQR-NIGHTLY-LOCAL-COVERAGE-PRECONDITION`
+Status: `EXECUTED-COMPLETE-CQR-NIGHTLY`
 ExecPlan: `docs/work-packages/cqr-nightly-burndown-execplan.md`
 Nightly batch: `01`
 Target module: `crates/openwepp-watershed-orchestrator/src/lib_mod/network_frame.rs`

@@ -160,13 +160,14 @@ State as of `2026-07-11 UTC`:
   the raw-vs-normalized source model. Source/tests are unchanged; focused tests
   pass `20/20`. A contract-first cardinality defect package is required.
 - `20260711-cqr-nightly-08-orchestrator-network-frame-001/` -
-  EXECUTED-HOLD-CQR-NIGHTLY-LOCAL-COVERAGE-PRECONDITION (2026-07-11): target #8
-  safely characterized `direct_terminal_event_duration_s` provisionally to
-  CRAP `17.126`, `92.424%` lines, and `98.077%` regions, but canonical package
-  measurement reached only `63.687%` lines / `66.087%` regions with 16 logical
-  functions below floor. Tests were rolled back exactly; production was never
-  edited. A dedicated science-tier module-test-enhancement package must precede
-  CQR decomposition. This closes the eight-module nightly batch.
+  EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-11): target #8 completed
+  characterization-only closure of `network_frame.rs`; production is unchanged.
+  Eight contract groups bind duration maxima/guards, sediment timing,
+  publication, area, globals, conversions, wrappers, and error sources. Final
+  science-tier coverage is `92.431%` lines / `94.068%` regions; all eligible
+  functions clear `75%`, all eligible CRAP rows are at most `30`, and selected
+  helper CRAP is `17.126`. Full workspace closure passed `1717/1717`. This
+  closes the eight-module nightly batch.
 - `20260709-cqr-nightly-b02-10-hbp-payload-validator-001/` -
   EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-10): CQR nightly batch 02 target #10
   completed characterization-only closure of

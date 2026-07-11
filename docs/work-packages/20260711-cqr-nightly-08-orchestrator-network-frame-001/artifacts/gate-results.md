@@ -1,8 +1,17 @@
 # Gate Results
 
-Ran: provisional new tests `6/6`, existing W11D tests `10/10`, terminal-selector
-tests `2/2`, and real CLI terminal-publication test `1/1` passed. Ran: package-lib
-LCOV/JSON and CRAP exited `0`; coverage gates failed numerically. Ran:
-`cargo fmt --check`, documentation lint, and `git diff --check` passed. Full workspace
-clippy/nextest/deny were not run because implementation was rolled back; they
-are not completion evidence for this local hold.
+| Gate | Result |
+|---|---|
+| Package library | PASS: `121/121` |
+| Focused network frame | PASS: `10/10` |
+| Science-tier coverage | PASS: `92.431%` lines, `94.068%` regions, `66/70` functions; all eligible functions above `75%` |
+| Target CRAP | PASS: zero eligible rows above `30`; selected helper `17.126` |
+| `cargo fmt --check` | PASS: exit `0`, `2.08s` |
+| Workspace clippy | PASS: exit `0`, `7.20s` |
+| Full workspace nextest | PASS: `1717/1717`, `4` slow, `3` skipped, run `fa6912ff-84b6-4a6d-a16e-9e7ca1513172`, `613.19s` |
+| `cargo deny check` | PASS: exit `0`, `0.85s` |
+| `git diff --check` | PASS: exit `0`, `0.02s` |
+| Package/catalog Markdown lint | PASS: zero errors/warnings |
+
+Final delegated logs are under
+`/tmp/openwepp-cqr-20260711-t08-closure-final/`; the runner edited no file.

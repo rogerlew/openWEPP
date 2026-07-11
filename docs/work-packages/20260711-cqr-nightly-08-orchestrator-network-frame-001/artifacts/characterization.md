@@ -1,7 +1,8 @@
 # Characterization
 
-Ran provisionally: six inline tests covered valid duration maxima and every
-reachable error family. New tests passed `6/6`; existing W11D tests passed
-`10/10`. They raised the selected helper to `92.424%` lines / `98.077%` regions
-and CRAP `17.126`, but full module closure failed. All provisional test edits
-were rolled back exactly to scaffold before hold disposition.
+Ran: the initial six-test probe closed the selected helper but not the module and
+was rolled back. Review rejected deferral, so characterization reopened and
+landed eight compact contract groups covering duration, sediment timing/guards,
+publication, area, routing globals, value conversions, wrappers, and error
+sources. The complete library passed `121/121`; focused network-frame tests
+passed `10/10`. Production code is unchanged.

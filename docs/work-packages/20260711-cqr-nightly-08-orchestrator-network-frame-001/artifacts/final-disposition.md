@@ -1,7 +1,8 @@
 # Final Disposition
 
-Status: `EXECUTED-HOLD-CQR-NIGHTLY-LOCAL-COVERAGE-PRECONDITION`.
+Status: `EXECUTED-COMPLETE-CQR-NIGHTLY`.
 
-The target and inline tests are exactly restored to scaffold. Safe provisional
-characterization proved the selected helper is testable but the full module
-safety net is not closed. This is the eighth and final nightly target.
+Characterization-only completion: production is byte-identical, applicable
+obligations are bound, science-tier coverage and per-function floors pass, and
+all eligible CRAP rows are at most `30`. Dual review corrections and all final
+workspace gates pass. This is the eighth and final nightly target.

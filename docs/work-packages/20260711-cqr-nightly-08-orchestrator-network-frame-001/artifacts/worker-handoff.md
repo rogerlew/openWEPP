@@ -1,6 +1,5 @@
 # Worker Handoff
 
-Nightly batch 01 is complete at eight committed target dispositions. First
-target-08 follow-up: authorize a science-tier `network_frame.rs` module-test-
-enhancement package to close `90/90`, per-function floors, and obligation mapping;
-then rerun the selected helper CQR.
+Target 08 is characterization-only with production unchanged. Science-tier
+coverage, per-function floor, obligation binding, CRAP, dual review, and all
+workspace gates close. Commit completion; no target-local follow-up is required.

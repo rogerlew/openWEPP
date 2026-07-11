@@ -1,6 +1,6 @@
 # Verification Agent B
 
-Verified: exact-path baseline/CRAP, direct-consumer chain, focused `2/2`, and
-scaffold SHA/line identity. Formatter is excluded, selected helper remains
-eligible after rollback, and the dedicated module-coverage follow-up is the
-first actionable step. No closure claim remains.
+Verified: production prefix identity, direct-consumer chain, corrected A-H
+families, final raw coverage/CRAP, `121/121` library tests, focused `10/10`,
+formatter exclusion, and full `1717/1717` workspace closure. No review finding
+or required follow-up remains.

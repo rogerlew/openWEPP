@@ -1,5 +1,5 @@
 # Line-Count Governance
 
-Ran: final target including inline tests is `1,457` lines, below the `2,000`-line
-escalation threshold and exactly equal to scaffold. Provisional characterization
-reached `1,694` lines before rollback.
+Ran: target including inline tests is `1,998` lines, below the `2,000`-line
+warning/escalation threshold. Production remains `1,284` lines before the test
+module and was not enlarged.

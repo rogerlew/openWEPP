@@ -1283,10 +1283,37 @@ fn build_impoundment_controls(
 
 #[cfg(test)]
 mod network_frame_tests {
+    use openwepp_input_contract::parsers::{
+        chaninp::{ChaninpParseOptions, parse_chaninp_from_str},
+        slope::{SlopeParserOptions, parse_slope_str},
+        watershed_channel::{WatershedChannelParseOptions, parse_watershed_channel_from_str},
+        watershed_impoundment::{
+            WatershedImpoundmentParseOptions, parse_watershed_impoundment_from_str,
+        },
+    };
     use openwepp_sim_contract::status::{SimulationPhase, SimulationStatus};
-    use openwepp_topology::TopologyNodeKey;
+    use openwepp_topology::{TopologyNodeKey, parse_topology_fixture_str};
 
     use super::*;
+    use crate::lib_mod::types::{WatershedDispatchReport, WatershedFrameExecutionReport};
+
+    const TEST_TOPOLOGY: &str = r"
+HILLSLOPES 2
+CHANNELS 1
+IMPOUNDMENTS 1
+NODE CHANNEL 1 H 1 0 0 C 0 0 0 I 0 0 0
+NODE IMPOUNDMENT 1 H 2 0 0 C 1 0 0 I 0 0 0
+";
+    const TEST_CHANINP: &str =
+        include_str!("../../../../tests/fixtures/infile/chaninp/strict_valid.chaninp");
+    const TEST_SLOPE: &str =
+        include_str!("../../../../tests/fixtures/infile/slope/strict_valid_canonical.slp");
+    const TEST_CHANNEL: &str = include_str!(
+        "../../../../tests/fixtures/infile/watershed_channel/strict_sidecar_required.chn"
+    );
+    const TEST_IMPOUNDMENT: &str = include_str!(
+        "../../../../tests/fixtures/infile/watershed_impoundment/strict_valid_minimal.imp"
+    );
 
     fn ok_status() -> SimulationStatus {
         SimulationStatus::ok(SimulationPhase::WatershedKernel, "WSHED-W11D-TEST-OK")
@@ -1348,6 +1375,48 @@ mod network_frame_tests {
             particle_flow_fraction: vec![1.0],
             hourly_runoff_volume_m3: vec![0.0; 24],
             hourly_sediment_mass_kg,
+        }
+    }
+
+    fn parsed_test_frame() -> WatershedNetworkFrame {
+        let topology = parse_topology_fixture_str(TEST_TOPOLOGY).expect("valid test topology");
+        let channel =
+            parse_watershed_channel_from_str(TEST_CHANNEL, WatershedChannelParseOptions::default())
+                .expect("valid channel fixture");
+        let chaninp = parse_chaninp_from_str(
+            TEST_CHANINP,
+            ChaninpParseOptions::strict(channel.ipeak, 2),
+            &BTreeSet::from([4, 5]),
+        )
+        .expect("valid chaninp fixture");
+        let slope =
+            parse_slope_str(TEST_SLOPE, SlopeParserOptions::strict()).expect("valid slope fixture");
+        let impoundment = parse_watershed_impoundment_from_str(
+            TEST_IMPOUNDMENT,
+            WatershedImpoundmentParseOptions::strict(),
+        )
+        .expect("valid impoundment fixture");
+        WatershedNetworkFrame::from_parsed_inputs(
+            topology,
+            Some(chaninp),
+            channel,
+            slope,
+            impoundment,
+            3_600.0,
+            24.0,
+        )
+        .expect("valid parsed test frame")
+    }
+
+    fn execution_report(steps: Vec<DispatchStep>) -> WatershedFrameExecutionReport {
+        WatershedFrameExecutionReport {
+            dispatch_report: WatershedDispatchReport {
+                precondition_status: ok_status(),
+                dispatch_status: ok_status(),
+                steps,
+                diagnostics: Vec::new(),
+            },
+            step_reports: Vec::new(),
         }
     }
 
@@ -1453,5 +1522,477 @@ mod network_frame_tests {
         )
         .expect("post-impoundment terminal mass should publish without upstream aliasing");
         assert!((mass_kg - 120.0).abs() <= 1.0e-12);
+    }
+
+    #[test]
+    fn duration_contract_valid_maxima_and_dtchr_floor() {
+        let dtchr_only_duration_s = direct_terminal_event_duration_s(
+            3,
+            &channel_step(3, Vec::new(), Vec::new()),
+            &BTreeMap::new(),
+            &BTreeMap::new(),
+            &BTreeMap::new(),
+            600.0,
+        )
+        .expect("dtchr-only duration");
+        assert!((dtchr_only_duration_s - 600.0).abs() <= f64::EPSILON);
+
+        for (step, contributions, channels, impoundments, expected) in [
+            (
+                channel_step(4, Vec::new(), vec![1]),
+                BTreeMap::from([(1, hourly_contribution(1, vec![0.0; 24]))]),
+                BTreeMap::new(),
+                BTreeMap::new(),
+                1_800.0,
+            ),
+            (
+                channel_step(
+                    5,
+                    vec![TopologyNodeKey::new(TopologyNodeKind::Channel, 7)],
+                    Vec::new(),
+                ),
+                BTreeMap::new(),
+                BTreeMap::from([(7, direct_channel_state(7, 0.0))]),
+                BTreeMap::new(),
+                1_200.0,
+            ),
+            (
+                channel_step(
+                    6,
+                    vec![TopologyNodeKey::new(TopologyNodeKind::Impoundment, 9)],
+                    Vec::new(),
+                ),
+                BTreeMap::new(),
+                BTreeMap::new(),
+                BTreeMap::from([(
+                    9,
+                    RoutedImpoundmentState {
+                        node_id: 9,
+                        outflow_volume_m3: 0.0,
+                        outflow_rate_m3_s: 0.0,
+                        duration_seconds: 2_400.0,
+                        hnext_m: 0.0,
+                    },
+                )]),
+                2_400.0,
+            ),
+        ] {
+            let mut contributions = contributions;
+            let mut channels = channels;
+            if let Some(contribution) = contributions.get_mut(&1) {
+                contribution.duration_seconds = 1_800.0;
+            }
+            if let Some(channel) = channels.get_mut(&7) {
+                channel.duration_seconds = 1_200.0;
+            }
+            let duration_s = direct_terminal_event_duration_s(
+                step.node.id,
+                &step,
+                &contributions,
+                &channels,
+                &impoundments,
+                600.0,
+            )
+            .expect("each duration source can dominate independently");
+            assert!((duration_s - expected).abs() <= f64::EPSILON);
+        }
+    }
+
+    #[test]
+    fn duration_contract_reachable_input_guards() {
+        let empty = channel_step(2, Vec::new(), Vec::new());
+        for value in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY, 0.0, -1.0] {
+            assert!(matches!(
+                direct_terminal_event_duration_s(
+                    2,
+                    &empty,
+                    &BTreeMap::new(),
+                    &BTreeMap::new(),
+                    &BTreeMap::new(),
+                    value,
+                ),
+                Err(WatershedNetworkFrameError::InvalidTerminalPublication {
+                    field: "dtchr_seconds",
+                    ..
+                })
+            ));
+        }
+        let contributor_step = channel_step(2, Vec::new(), vec![1]);
+        assert!(matches!(
+            direct_terminal_event_duration_s(
+                2,
+                &contributor_step,
+                &BTreeMap::new(),
+                &BTreeMap::new(),
+                &BTreeMap::new(),
+                600.0,
+            ),
+            Err(WatershedNetworkFrameError::InvalidTerminalPublication {
+                field: "hillslope_contribution",
+                ..
+            })
+        ));
+        for value in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY, -1.0] {
+            let mut contribution = hourly_contribution(1, vec![0.0; 24]);
+            contribution.duration_seconds = value;
+            assert!(matches!(
+                direct_terminal_event_duration_s(
+                    2,
+                    &contributor_step,
+                    &BTreeMap::from([(1, contribution)]),
+                    &BTreeMap::new(),
+                    &BTreeMap::new(),
+                    600.0,
+                ),
+                Err(WatershedNetworkFrameError::InvalidTerminalPublication {
+                    field: "hillslope_duration_seconds",
+                    ..
+                })
+            ));
+        }
+    }
+
+    #[test]
+    fn duration_contract_reachable_dependency_guards() {
+        for kind in [TopologyNodeKind::Channel, TopologyNodeKind::Impoundment] {
+            let step = channel_step(2, vec![TopologyNodeKey::new(kind, 7)], Vec::new());
+            let error = direct_terminal_event_duration_s(
+                2,
+                &step,
+                &BTreeMap::new(),
+                &BTreeMap::new(),
+                &BTreeMap::new(),
+                600.0,
+            );
+            assert!(matches!(
+                (kind, error),
+                (
+                    TopologyNodeKind::Channel,
+                    Err(WatershedNetworkFrameError::MissingRoutedChannelState { .. })
+                ) | (
+                    TopologyNodeKind::Impoundment,
+                    Err(WatershedNetworkFrameError::MissingRoutedImpoundmentState { .. })
+                )
+            ));
+        }
+        let channel_dependency = channel_step(
+            2,
+            vec![TopologyNodeKey::new(TopologyNodeKind::Channel, 7)],
+            Vec::new(),
+        );
+        let impoundment_dependency = channel_step(
+            2,
+            vec![TopologyNodeKey::new(TopologyNodeKind::Impoundment, 9)],
+            Vec::new(),
+        );
+        for value in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY, -1.0] {
+            let mut channel = direct_channel_state(7, 0.0);
+            channel.duration_seconds = value;
+            assert!(matches!(
+                direct_terminal_event_duration_s(
+                    2,
+                    &channel_dependency,
+                    &BTreeMap::new(),
+                    &BTreeMap::from([(7, channel)]),
+                    &BTreeMap::new(),
+                    600.0,
+                ),
+                Err(WatershedNetworkFrameError::InvalidTerminalPublication {
+                    field: "dependency_duration_seconds",
+                    ..
+                })
+            ));
+            let impoundment = RoutedImpoundmentState {
+                node_id: 9,
+                outflow_volume_m3: 0.0,
+                outflow_rate_m3_s: 0.0,
+                duration_seconds: value,
+                hnext_m: 0.0,
+            };
+            assert!(matches!(
+                direct_terminal_event_duration_s(
+                    2,
+                    &impoundment_dependency,
+                    &BTreeMap::new(),
+                    &BTreeMap::new(),
+                    &BTreeMap::from([(9, impoundment)]),
+                    600.0,
+                ),
+                Err(WatershedNetworkFrameError::InvalidTerminalPublication {
+                    field: "dependency_duration_seconds",
+                    ..
+                })
+            ));
+        }
+        let hillslope_dependency = channel_step(
+            2,
+            vec![TopologyNodeKey::new(TopologyNodeKind::Hillslope, 1)],
+            Vec::new(),
+        );
+        assert!(matches!(
+            direct_terminal_event_duration_s(
+                2,
+                &hillslope_dependency,
+                &BTreeMap::new(),
+                &BTreeMap::new(),
+                &BTreeMap::new(),
+                600.0,
+            ),
+            Err(WatershedNetworkFrameError::InvalidTerminalPublication {
+                field: "dependency_kind",
+                ..
+            })
+        ));
+    }
+
+    #[test]
+    fn sediment_duration_contract_covers_hourly_fallback_and_guards() {
+        let step = channel_step(2, Vec::new(), vec![1]);
+        let mut contribution = hourly_contribution(1, vec![0.0; 24]);
+        contribution.duration_seconds = 1_800.0;
+        contribution.hourly_sediment_mass_kg[3] = 1.0;
+        contribution.hourly_sediment_mass_kg[5] = 1.0;
+        let contributions = BTreeMap::from([(1, contribution.clone())]);
+        let hourly_duration_s = direct_terminal_sediment_duration_s(
+            2,
+            &step,
+            &BTreeSet::from([1]),
+            &contributions,
+            &BTreeMap::new(),
+            &BTreeMap::new(),
+            600.0,
+        )
+        .expect("hourly active span");
+        assert!((hourly_duration_s - 10_800.0).abs() <= f64::EPSILON);
+        contribution.hourly_sediment_mass_kg.fill(0.0);
+        let fallback_duration_s = direct_terminal_sediment_duration_s(
+            2,
+            &step,
+            &BTreeSet::from([1]),
+            &BTreeMap::from([(1, contribution.clone())]),
+            &BTreeMap::new(),
+            &BTreeMap::new(),
+            600.0,
+        )
+        .expect("zero hourly sediment falls back to event duration");
+        assert!((fallback_duration_s - 1_800.0).abs() <= f64::EPSILON);
+        contribution.hourly_runoff_volume_m3.pop();
+        assert!(matches!(
+            direct_terminal_sediment_duration_s(
+                2,
+                &step,
+                &BTreeSet::from([1]),
+                &BTreeMap::from([(1, contribution.clone())]),
+                &BTreeMap::new(),
+                &BTreeMap::new(),
+                600.0,
+            ),
+            Err(WatershedNetworkFrameError::InvalidTerminalPublication {
+                field: "hourly_pair_cardinality",
+                ..
+            })
+        ));
+        contribution.hourly_runoff_volume_m3.push(0.0);
+        for value in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY, -1.0] {
+            let mut invalid = contribution.clone();
+            invalid.hourly_sediment_mass_kg[0] = value;
+            assert!(matches!(
+                direct_terminal_sediment_duration_s(
+                    2,
+                    &step,
+                    &BTreeSet::from([1]),
+                    &BTreeMap::from([(1, invalid)]),
+                    &BTreeMap::new(),
+                    &BTreeMap::new(),
+                    600.0,
+                ),
+                Err(WatershedNetworkFrameError::InvalidTerminalPublication {
+                    field: "hourly_sediment_mass_kg",
+                    ..
+                })
+            ));
+        }
+    }
+
+    #[test]
+    fn terminal_publication_contract_covers_wrapper_success_and_missing_states() {
+        let channel = channel_step(1, Vec::new(), vec![1]);
+        let impoundment = DispatchStep {
+            sequence_index: 2,
+            node: TopologyNodeKey::new(TopologyNodeKind::Impoundment, 1),
+            dependency_nodes: vec![TopologyNodeKey::new(TopologyNodeKind::Channel, 1)],
+            contributor_hillslopes: Vec::new(),
+            status: ok_status(),
+        };
+        let report = execution_report(vec![channel, impoundment]);
+        let mut frame = parsed_test_frame();
+        let _topology = frame.topology();
+        frame.add_hillslope_contribution(hourly_contribution(1, vec![0.0; 24]));
+        frame.configure_groundwater_baseflow_routing(
+            WatershedGroundwaterRoutingAuthority::linear_reservoir(2.0)
+                .expect("valid groundwater authority"),
+        );
+        frame.set_channel_tillage_day_state(1, ChannelTillageDayState::PrimaryTillage);
+        frame.record_routed_channel_state(direct_channel_state(1, 0.0));
+        frame.record_routed_impoundment_state(RoutedImpoundmentState {
+            node_id: 1,
+            outflow_volume_m3: 0.0,
+            outflow_rate_m3_s: 0.0,
+            duration_seconds: 600.0,
+            hnext_m: 0.0,
+        });
+        let published = frame
+            .publish_typed_routing_report(&report)
+            .expect("complete routed state publishes");
+        assert_eq!(published.element_id, 1);
+        assert_eq!(frame.publication_frame, Some(published));
+
+        let mut missing_channel = parsed_test_frame();
+        assert!(matches!(
+            missing_channel.publish_typed_routing_report(&report),
+            Err(WatershedNetworkFrameError::MissingRoutedChannelState { node_id: 1 })
+        ));
+        missing_channel.record_routed_channel_state(direct_channel_state(1, 0.0));
+        assert!(matches!(
+            missing_channel.publish_typed_routing_report(&report),
+            Err(WatershedNetworkFrameError::MissingRoutedImpoundmentState { node_id: 1 })
+        ));
+    }
+
+    #[test]
+    fn contributing_area_contract_covers_complete_and_rejected_operands() {
+        let ids = TypedDispatchIds {
+            channel_ids: BTreeSet::new(),
+            outlet_channel_ids: BTreeSet::new(),
+            impoundment_ids: BTreeSet::new(),
+            contributor_hillslopes: BTreeSet::from([1, 2]),
+        };
+        let mut first = hourly_contribution(1, vec![0.0; 24]);
+        first.area_m2 = Some(2.0);
+        let mut second = hourly_contribution(2, vec![0.0; 24]);
+        second.area_m2 = Some(3.0);
+        let mut contributions = BTreeMap::from([(1, first), (2, second)]);
+        assert_eq!(sum_contributing_area_m2(&contributions, &ids), Some(5.0));
+        contributions.get_mut(&2).expect("second").area_m2 = None;
+        assert_eq!(sum_contributing_area_m2(&contributions, &ids), None);
+        contributions.get_mut(&2).expect("second").area_m2 = Some(-1.0);
+        assert_eq!(sum_contributing_area_m2(&contributions, &ids), None);
+        contributions.get_mut(&2).expect("second").area_m2 = Some(0.0);
+        assert_eq!(sum_contributing_area_m2(&contributions, &ids), None);
+        contributions.get_mut(&2).expect("second").area_m2 = Some(f64::NAN);
+        assert_eq!(sum_contributing_area_m2(&contributions, &ids), None);
+        contributions.get_mut(&2).expect("second").area_m2 = Some(f64::INFINITY);
+        assert_eq!(sum_contributing_area_m2(&contributions, &ids), None);
+        assert_eq!(sum_contributing_area_m2(&BTreeMap::new(), &ids), None);
+        let empty_ids = TypedDispatchIds {
+            channel_ids: BTreeSet::new(),
+            outlet_channel_ids: BTreeSet::new(),
+            impoundment_ids: BTreeSet::new(),
+            contributor_hillslopes: BTreeSet::new(),
+        };
+        assert_eq!(sum_contributing_area_m2(&BTreeMap::new(), &empty_ids), None);
+    }
+
+    #[test]
+    fn routing_global_contract_covers_authorized_branches_and_failures() {
+        let frame = parsed_test_frame();
+        let channel = frame.channel_source.clone();
+        let chaninp = frame.chaninp_source.clone().expect("parsed chaninp");
+        let parsed = build_routing_globals(Some(&chaninp), &channel, 3_600.0, 24.0)
+            .expect("parsed routing globals");
+        assert!((parsed.dtchr_seconds - 600.0).abs() <= f64::EPSILON);
+        let absent = build_routing_globals(None, &channel, 3_600.0, 24.0)
+            .expect("absent sidecar uses explicit defaults");
+        assert!((absent.dtchr_seconds - 3_600.0).abs() <= f64::EPSILON);
+
+        let mut mismatch = chaninp.clone();
+        mismatch.ipeak += 1;
+        assert!(matches!(
+            build_routing_globals(Some(&mismatch), &channel, 3_600.0, 24.0),
+            Err(WatershedNetworkFrameError::ChaninpNotRuntimeReady { .. })
+        ));
+        let mut no_options = chaninp.clone();
+        no_options.options = None;
+        assert!(matches!(
+            build_routing_globals(Some(&no_options), &channel, 3_600.0, 24.0),
+            Err(WatershedNetworkFrameError::MissingChaninpOptions)
+        ));
+        let mut not_applicable = chaninp.clone();
+        not_applicable.parse_outcome = ChaninpParseOutcome::NotApplicable;
+        assert!(matches!(
+            build_routing_globals(Some(&not_applicable), &channel, 3_600.0, 24.0),
+            Err(WatershedNetworkFrameError::ChaninpNotRuntimeReady { .. })
+        ));
+        let mut low_peak_channel = channel.clone();
+        low_peak_channel.ipeak = 2;
+        not_applicable.ipeak = 2;
+        let defaults =
+            build_routing_globals(Some(&not_applicable), &low_peak_channel, 3_600.0, 24.0)
+                .expect("not-applicable low-peak branch");
+        assert!(defaults.nchnum.abs() <= f64::EPSILON);
+        let mut oversized_channel = channel.clone();
+        oversized_channel.nchan = usize::MAX;
+        assert!(matches!(
+            build_routing_globals(None, &oversized_channel, 3_600.0, 24.0),
+            Err(WatershedNetworkFrameError::ChannelIdOutOfRange { .. })
+        ));
+        let mut oversized_chaninp = chaninp;
+        oversized_chaninp.nchan = usize::MAX;
+        assert!(matches!(
+            build_routing_globals(Some(&oversized_chaninp), &channel, 3_600.0, 24.0),
+            Err(WatershedNetworkFrameError::ChannelIdOutOfRange { .. })
+        ));
+    }
+
+    #[test]
+    fn small_surface_contracts_cover_conversions_helpers_and_error_sources() {
+        let disabled = WatershedGroundwaterRoutingAuthority::disabled();
+        assert!(!disabled.is_enabled());
+        assert!(
+            WatershedGroundwaterRoutingAuthority::linear_reservoir(0.0)
+                .expect("zero threshold is valid")
+                .is_enabled()
+        );
+        for value in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY, -1.0] {
+            assert!(matches!(
+                WatershedGroundwaterRoutingAuthority::linear_reservoir(value),
+                Err(WatershedNetworkFrameError::InvalidGroundwaterAuthority { .. })
+            ));
+        }
+        let curve = ChannelRatingCurve {
+            rccoef: 1.0,
+            rcexp: 2.0,
+            rcoset: 3.0,
+        };
+        assert_eq!(
+            WatershedChannelRatingCurveControl::from(&curve),
+            WatershedChannelRatingCurveControl {
+                rccoef: 1.0,
+                rcexp: 2.0,
+                rcoset: 3.0,
+            }
+        );
+        assert_eq!(first_i32_or_default(&BTreeSet::new(), 9), 9);
+        assert_eq!(first_i32_or_default(&BTreeSet::from([4]), 9), 4);
+        assert_eq!(first_i32_or_default(&BTreeSet::from([u32::MAX]), 9), 9);
+        assert!(first_channel_peak(&BTreeMap::new(), &BTreeSet::new()).abs() <= f64::EPSILON);
+        let mut state = direct_channel_state(4, 0.0);
+        state.peak_discharge_m3_s = 2.5;
+        let peak = first_channel_peak(&BTreeMap::from([(4, state)]), &BTreeSet::from([4]));
+        assert!((peak - 2.5).abs() <= f64::EPSILON);
+        assert!(WatershedPublicationFrame::default().runoff_volume_m3.abs() <= f64::EPSILON);
+
+        let runtime = WatershedRuntimeInputError::ImpoundmentSymbolNonFinite {
+            symbol: "h".to_owned(),
+            value: f64::NAN,
+        };
+        let wrapped = WatershedNetworkFrameError::from(runtime);
+        assert!(wrapped.source().is_some());
+        assert!(
+            WatershedNetworkFrameError::MissingChaninpOptions
+                .source()
+                .is_none()
+        );
+        assert!(wrapped.to_string().contains("WSHEDFRAME-E-006"));
     }
 }
