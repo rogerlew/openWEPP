@@ -151,6 +151,14 @@ State as of `2026-07-11 UTC`:
   `FDIR-FINITE-VALUE-GUARD-001`: required finite real fields currently allow
   `NaN` through inequality guards. Source/tests remain scaffold-identical and
   the focused suite passes `14/14`; a contract-first defect package is required.
+- `20260711-cqr-nightly-07-input-chaninp-001/` -
+  EXECUTED-HOLD-CQR-NIGHTLY-LOCAL-CONTRACT-MISMATCH (2026-07-11): target #7
+  stopped before characterization/decomposition. Fresh coverage is `487/668`
+  lines (`72.904%`); formatter CRAP `132` is dispositioned and eligible
+  `parse_required_branch` remains `39.254`. Dual review found compatibility raw
+  `nchnum=99` is normalized to exposed input/cardinality `2`, conflicting with
+  the raw-vs-normalized source model. Source/tests are unchanged; focused tests
+  pass `20/20`. A contract-first cardinality defect package is required.
 - `20260709-cqr-nightly-b02-10-hbp-payload-validator-001/` -
   EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-10): CQR nightly batch 02 target #10
   completed characterization-only closure of

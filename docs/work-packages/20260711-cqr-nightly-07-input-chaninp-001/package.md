@@ -1,7 +1,7 @@
 # CQR Nightly Batch 01, Target 07 — CHAN.INP Parser
 
 Package: `20260711-cqr-nightly-07-input-chaninp-001`
-Status: `QUEUED`
+Status: `EXECUTED-HOLD-CQR-NIGHTLY-LOCAL-CONTRACT-MISMATCH`
 ExecPlan: `docs/work-packages/cqr-nightly-burndown-execplan.md`
 Nightly batch: `01`
 Target module: `crates/openwepp-input-contract/src/parsers/chaninp.rs`
