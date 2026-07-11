@@ -1,7 +1,7 @@
 # CQR Nightly Batch 01, Target 02 — Runner Watershed WAT
 
 Package: `20260711-cqr-nightly-02-runner-watershed-wat-001`
-Status: `QUEUED`
+Status: `EXECUTED-COMPLETE-CQR-NIGHTLY`
 ExecPlan: `docs/work-packages/cqr-nightly-burndown-execplan.md`
 Nightly batch: `01`
 Target module: `crates/openwepp-runner/src/watershed_wat.rs`

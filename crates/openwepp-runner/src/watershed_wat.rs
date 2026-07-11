@@ -896,10 +896,14 @@ fn null_value(path: &Path, column_name: &str, row_index: usize) -> WatershedWatP
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::fs;
+    use std::ops::Deref;
     use std::sync::Arc;
+    use std::sync::atomic::{AtomicU64, Ordering};
 
     use arrow_array::ArrayRef;
     use arrow_schema::{DataType, Field, Schema};
+    use parquet::arrow::ArrowWriter;
 
     fn day_key() -> DayKey {
         DayKey {
@@ -970,7 +974,48 @@ mod tests {
         Arc::new(Float64Array::from(values))
     }
 
-    fn wat_batch_for_reader_tests(area: Vec<f64>) -> RecordBatch {
+    static NEXT_TEMP_ID: AtomicU64 = AtomicU64::new(0);
+
+    struct TestDir(PathBuf);
+
+    impl TestDir {
+        fn new(name: &str) -> Self {
+            let id = NEXT_TEMP_ID.fetch_add(1, Ordering::Relaxed);
+            Self(std::env::temp_dir().join(format!(
+                "openwepp_watershed_wat_{name}_{}_{id}",
+                std::process::id()
+            )))
+        }
+    }
+
+    impl Deref for TestDir {
+        type Target = Path;
+
+        fn deref(&self) -> &Self::Target {
+            &self.0
+        }
+    }
+
+    impl Drop for TestDir {
+        fn drop(&mut self) {
+            let _ = fs::remove_dir_all(&self.0);
+        }
+    }
+
+    fn write_wat_parquet(path: &Path, batch: &RecordBatch) {
+        fs::create_dir_all(path.parent().expect("WAT fixture should have a parent"))
+            .expect("WAT fixture parent should be created");
+        let file = File::create(path).expect("WAT fixture should be created");
+        let mut writer = ArrowWriter::try_new(file, batch.schema(), None)
+            .expect("WAT fixture writer should initialize");
+        writer.write(batch).expect("WAT fixture should write");
+        writer.close().expect("WAT fixture should close");
+    }
+
+    fn wat_batch_for_reader_tests(area: Vec<f64>, same_day: bool) -> RecordBatch {
+        let sim_day_indexes = if same_day { vec![1, 1] } else { vec![1, 2] };
+        let julians = if same_day { vec![1, 1] } else { vec![1, 2] };
+        let day_of_months = if same_day { vec![1, 1] } else { vec![1, 2] };
         let schema = Schema::new(vec![
             field("wepp_id", DataType::Int32, false),
             field("OFE", DataType::Int16, false),
@@ -1010,10 +1055,10 @@ mod tests {
             i32_array(vec![7, 7]),
             i16_array(vec![1, 2]),
             i16_array(vec![2004, 2004]),
-            i32_array(vec![1, 2]),
-            i16_array(vec![1, 2]),
+            i32_array(sim_day_indexes),
+            i16_array(julians),
             i8_array(vec![1, 1]),
-            i8_array(vec![1, 2]),
+            i8_array(day_of_months),
             i16_array(vec![2004, 2004]),
             f64_array(area),
             f64_array(vec![10.0, 20.0]),
@@ -1122,7 +1167,7 @@ mod tests {
     #[test]
     fn read_batch_into_reads_aliases_optional_defaults_and_row_values() {
         let path = Path::new("<wat-batch-test>");
-        let batch = wat_batch_for_reader_tests(vec![100.0, 300.0]);
+        let batch = wat_batch_for_reader_tests(vec![100.0, 300.0], false);
         let mut rows = Vec::new();
 
         read_batch_into(path, &batch, 5, &mut rows).expect("batch should read");
@@ -1158,7 +1203,7 @@ mod tests {
     #[test]
     fn read_batch_into_rejects_invalid_area_with_absolute_row_index() {
         let path = Path::new("<wat-batch-test>");
-        let batch = wat_batch_for_reader_tests(vec![100.0, -1.0]);
+        let batch = wat_batch_for_reader_tests(vec![100.0, -1.0], false);
         let mut rows = Vec::new();
 
         let error = read_batch_into(path, &batch, 10, &mut rows)
@@ -1173,5 +1218,279 @@ mod tests {
                 ..
             } if column == "Area" && (value + 1.0).abs() <= 1.0e-12
         ));
+    }
+
+    #[test]
+    fn display_formats_every_watershed_wat_error_variant() {
+        let path = PathBuf::from("/tmp/H1.wat.parquet");
+        let pass_file = PathBuf::from("/tmp/H1.pass.parquet");
+        let errors = [
+            (
+                WatershedWatPublicationError::MissingWatSibling {
+                    pass_file: pass_file.clone(),
+                    expected_wat_file: path.clone(),
+                },
+                "missing sibling WAT parquet for pass file /tmp/H1.pass.parquet: expected /tmp/H1.wat.parquet".to_string(),
+            ),
+            (
+                WatershedWatPublicationError::Open {
+                    path: path.clone(),
+                    detail: "open detail".to_string(),
+                },
+                "failed opening WAT parquet /tmp/H1.wat.parquet: open detail".to_string(),
+            ),
+            (
+                WatershedWatPublicationError::Read {
+                    path: path.clone(),
+                    detail: "read detail".to_string(),
+                },
+                "failed reading WAT parquet /tmp/H1.wat.parquet: read detail".to_string(),
+            ),
+            (
+                WatershedWatPublicationError::MissingColumn {
+                    path: path.clone(),
+                    column: "P".to_string(),
+                },
+                "WAT parquet /tmp/H1.wat.parquet is missing required column P".to_string(),
+            ),
+            (
+                WatershedWatPublicationError::UnsupportedColumnType {
+                    path: path.clone(),
+                    column: "P".to_string(),
+                },
+                "WAT parquet /tmp/H1.wat.parquet has unsupported type for column P".to_string(),
+            ),
+            (
+                WatershedWatPublicationError::NullValue {
+                    path: path.clone(),
+                    column: "P".to_string(),
+                    row_index: 4,
+                },
+                "WAT parquet /tmp/H1.wat.parquet has null value in column P at row 4".to_string(),
+            ),
+            (
+                WatershedWatPublicationError::InvalidValue {
+                    path,
+                    column: "Area".to_string(),
+                    row_index: 5,
+                    value: -1.0,
+                },
+                "WAT parquet /tmp/H1.wat.parquet has invalid value -1 in column Area at row 5"
+                    .to_string(),
+            ),
+        ];
+
+        for (error, expected) in errors {
+            assert_eq!(error.to_string(), expected);
+        }
+    }
+
+    #[test]
+    fn build_handles_absent_and_partial_wat_sibling_inventories() {
+        let base = TestDir::new("sibling_inventory");
+        fs::create_dir_all(&*base).expect("fixture directory should be created");
+        let first_pass = base.join("H1.pass.parquet");
+        let second_pass = base.join("H2.pass.parquet");
+
+        let absent = build_watershed_daily_rows_from_wat(
+            vec![&first_pass],
+            WatershedInterchangeRowSeed::default(),
+        )
+        .expect("all-absent WAT inventory should be optional");
+        assert!(absent.is_none());
+
+        let first_wat = first_pass.with_extension("wat.parquet");
+        write_wat_parquet(
+            &first_wat,
+            &wat_batch_for_reader_tests(vec![100.0, 300.0], false),
+        );
+        let error = build_watershed_daily_rows_from_wat(
+            vec![&first_pass, &second_pass],
+            WatershedInterchangeRowSeed::default(),
+        )
+        .expect_err("partial WAT inventory should fail closed");
+        assert!(matches!(
+            error,
+            WatershedWatPublicationError::MissingWatSibling {
+                pass_file,
+                expected_wat_file,
+            } if pass_file == second_pass
+                && expected_wat_file == second_pass.with_extension("wat.parquet")
+        ));
+    }
+
+    #[test]
+    fn build_reads_wat_parquet_and_publishes_daily_rows() {
+        let base = TestDir::new("daily_rows");
+        fs::create_dir_all(&*base).expect("fixture directory should be created");
+        let pass_file = base.join("H1.pass.parquet");
+        let wat_file = pass_file.with_extension("wat.parquet");
+        write_wat_parquet(
+            &wat_file,
+            &wat_batch_for_reader_tests(vec![100.0, 300.0], true),
+        );
+
+        let rows = build_watershed_daily_rows_from_wat(
+            vec![&pass_file],
+            WatershedInterchangeRowSeed::default(),
+        )
+        .expect("valid WAT sibling should publish")
+        .expect("valid WAT sibling should produce rows");
+
+        assert_eq!(rows.len(), 1);
+        assert_eq!(rows[0].sim_day_index, 1);
+        assert!((rows[0].area_m2 - 400.0).abs() <= 1.0e-12);
+        assert!((rows[0].runoff_mm - 6.5).abs() <= 1.0e-12);
+        assert!((rows[0].runoff_volume_m3 - 2.6).abs() <= 1.0e-12);
+        assert!((rows[0].qofe_mm - 7.5).abs() <= 1.0e-12);
+        assert!((rows[0].lateral_flow_mm - 0.3).abs() <= 1.0e-12);
+        assert!((rows[0].profile_porosity_cap_mm - 257.5).abs() <= 1.0e-12);
+        assert!(rows[0].interception_storage_mm.abs() <= 1.0e-12);
+        assert!(rows[0].baseflow_mm.abs() <= 1.0e-12);
+    }
+
+    #[test]
+    fn read_wat_file_reports_open_read_and_schema_failures() {
+        let base = TestDir::new("file_errors");
+        fs::create_dir_all(&*base).expect("fixture directory should be created");
+        let mut daily = BTreeMap::new();
+
+        let missing_path = base.join("missing.wat.parquet");
+        assert!(matches!(
+            read_wat_file_into(&missing_path, &mut daily),
+            Err(WatershedWatPublicationError::Open { .. })
+        ));
+
+        let invalid_path = base.join("invalid.wat.parquet");
+        fs::write(&invalid_path, b"not parquet").expect("invalid fixture should be written");
+        assert!(matches!(
+            read_wat_file_into(&invalid_path, &mut daily),
+            Err(WatershedWatPublicationError::Read { .. })
+        ));
+
+        let mut missing_column_batch = wat_batch_for_reader_tests(vec![100.0, 300.0], false);
+        missing_column_batch.remove_column(9);
+        let missing_column_path = base.join("missing-column.wat.parquet");
+        write_wat_parquet(&missing_column_path, &missing_column_batch);
+        assert!(matches!(
+            read_wat_file_into(&missing_column_path, &mut daily),
+            Err(WatershedWatPublicationError::MissingColumn { column, .. }) if column == "P"
+        ));
+    }
+
+    #[test]
+    fn build_rejects_non_finite_aggregated_area() {
+        let base = TestDir::new("aggregate_area_overflow");
+        fs::create_dir_all(&*base).expect("fixture directory should be created");
+        let pass_file = base.join("H1.pass.parquet");
+        let wat_file = pass_file.with_extension("wat.parquet");
+        write_wat_parquet(
+            &wat_file,
+            &wat_batch_for_reader_tests(vec![f64::MAX, f64::MAX], true),
+        );
+
+        let error = build_watershed_daily_rows_from_wat(
+            vec![&pass_file],
+            WatershedInterchangeRowSeed::default(),
+        )
+        .expect_err("overflowed aggregate area should fail closed");
+        assert!(matches!(
+            error,
+            WatershedWatPublicationError::InvalidValue {
+                column,
+                value,
+                ..
+            } if column == "Area" && value.is_infinite()
+        ));
+    }
+
+    #[test]
+    fn column_and_scalar_guards_cover_type_null_and_nonfinite_errors() {
+        let path = Path::new("<guard-test>");
+        let schema = Schema::new(vec![field("wrong", DataType::Int16, true)]);
+        let batch = RecordBatch::try_new(
+            Arc::new(schema),
+            vec![Arc::new(Int16Array::from(vec![Some(1_i16)]))],
+        )
+        .expect("guard batch should build");
+
+        assert!(matches!(
+            f64_column_any(path, &batch, &["P", "RM"]),
+            Err(WatershedWatPublicationError::MissingColumn { column, .. })
+                if column == "P|RM"
+        ));
+        assert!(matches!(
+            f64_column_any(path, &batch, &["wrong"]),
+            Err(WatershedWatPublicationError::UnsupportedColumnType { column, .. })
+                if column == "wrong"
+        ));
+        assert!(
+            optional_int16_column(path, &batch, "missing")
+                .expect("missing optional i16 column should be absent")
+                .is_none()
+        );
+        assert!(
+            optional_int32_column(path, &batch, "missing")
+                .expect("missing optional i32 column should be absent")
+                .is_none()
+        );
+        assert!(
+            optional_f64_column(path, &batch, "missing")
+                .expect("missing optional f64 column should be absent")
+                .is_none()
+        );
+        assert!(matches!(
+            optional_int32_column(path, &batch, "wrong"),
+            Err(WatershedWatPublicationError::UnsupportedColumnType { column, .. })
+                if column == "wrong"
+        ));
+        assert!(matches!(
+            optional_f64_column(path, &batch, "wrong"),
+            Err(WatershedWatPublicationError::UnsupportedColumnType { column, .. })
+                if column == "wrong"
+        ));
+        let wrong_i32_batch = RecordBatch::try_new(
+            Arc::new(Schema::new(vec![field("wrong32", DataType::Int32, true)])),
+            vec![Arc::new(Int32Array::from(vec![Some(1_i32)]))],
+        )
+        .expect("wrong-type i32 batch should build");
+        assert!(matches!(
+            optional_int16_column(path, &wrong_i32_batch, "wrong32"),
+            Err(WatershedWatPublicationError::UnsupportedColumnType { column, .. })
+                if column == "wrong32"
+        ));
+
+        let null_i8 = Int8Array::from(vec![None]);
+        let null_i16 = Int16Array::from(vec![None]);
+        let null_i32 = Int32Array::from(vec![None]);
+        let null_float = Float64Array::from(vec![None]);
+        assert!(matches!(
+            int8_value(path, "month", &null_i8, 0, 3),
+            Err(WatershedWatPublicationError::NullValue { row_index: 3, .. })
+        ));
+        assert!(matches!(
+            int16_value(path, "year", &null_i16, 0, 4),
+            Err(WatershedWatPublicationError::NullValue { row_index: 4, .. })
+        ));
+        assert!(matches!(
+            int32_value(path, "day", &null_i32, 0, 5),
+            Err(WatershedWatPublicationError::NullValue { row_index: 5, .. })
+        ));
+        assert!(matches!(
+            f64_value(path, "P", &null_float, 0, 6),
+            Err(WatershedWatPublicationError::NullValue { row_index: 6, .. })
+        ));
+
+        for value in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
+            let array = Float64Array::from(vec![value]);
+            assert!(matches!(
+                f64_value(path, "P", &array, 0, 7),
+                Err(WatershedWatPublicationError::InvalidValue {
+                    row_index: 7,
+                    value: observed,
+                    ..
+                }) if !observed.is_finite()
+            ));
+        }
     }
 }

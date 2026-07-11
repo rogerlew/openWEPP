@@ -110,6 +110,15 @@ State as of `2026-07-11 UTC`:
   region/per-function closure and retained two eligible CRAP rows above `30`.
   Rust/test edits are rolled back to scaffold `e2ff321e`; the first follow-on is
   a dedicated ADR-0021 module-test-enhancement package before CQR repeats.
+- `20260711-cqr-nightly-02-runner-watershed-wat-001/` -
+  EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-11): fresh nightly batch 01 target #2
+  completed characterization-only closure of
+  `crates/openwepp-runner/src/watershed_wat.rs`. Production source is unchanged;
+  deterministic real-Parquet tests raise production coverage to `96.502%`
+  lines and `90.854%` regions, with every logical function above the science-tier
+  floor. Target CRAP rows above `30` fell from `3` to `0` (maximum `25.625`),
+  and dual review, dual verification, 1,700-test full nextest, clippy, deny, and
+  documentation gates passed.
 - `20260709-cqr-nightly-b02-10-hbp-payload-validator-001/` -
   EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-10): CQR nightly batch 02 target #10
   completed characterization-only closure of
