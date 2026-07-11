@@ -1,7 +1,7 @@
 # CQR Nightly Batch 01, Target 06 — Fixed-Date Irrigation Parser
 
 Package: `20260711-cqr-nightly-06-input-irrigation-fixeddate-001`
-Status: `QUEUED`
+Status: `EXECUTED-HOLD-CQR-NIGHTLY-LOCAL-CONTRACT-MISMATCH`
 ExecPlan: `docs/work-packages/cqr-nightly-burndown-execplan.md`
 Nightly batch: `01`
 Target module: `crates/openwepp-input-contract/src/parsers/irrigation_fixeddate.rs`

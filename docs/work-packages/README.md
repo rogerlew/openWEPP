@@ -143,6 +143,14 @@ State as of `2026-07-11 UTC`:
   `PmetparaParseError::fmt` (CC `12`, coverage `0%`, CRAP `156`). Dual review
   applied the nightly formatting/error-display local-hold rule and ADR-0021
   observability-only formatting exclusion. Focused tests passed `13/13`.
+- `20260711-cqr-nightly-06-input-irrigation-fixeddate-001/` -
+  EXECUTED-HOLD-CQR-NIGHTLY-LOCAL-CONTRACT-MISMATCH (2026-07-11): target #6
+  stopped before characterization/decomposition. Fresh coverage is `398/614`
+  lines (`64.821%`); formatter CRAP `132` is dispositioned, while
+  `parse_fixeddate_str` remains CRAP `53.909`. Dual review confirmed
+  `FDIR-FINITE-VALUE-GUARD-001`: required finite real fields currently allow
+  `NaN` through inequality guards. Source/tests remain scaffold-identical and
+  the focused suite passes `14/14`; a contract-first defect package is required.
 - `20260709-cqr-nightly-b02-10-hbp-payload-validator-001/` -
   EXECUTED-COMPLETE-CQR-NIGHTLY (2026-07-10): CQR nightly batch 02 target #10
   completed characterization-only closure of

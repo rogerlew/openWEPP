@@ -1,3 +1,4 @@
 # Line-Count Governance
 
-Scaffold: target is `896` lines; focused test is `225` lines.
+Ran: target is `896` lines and remains below the `2,000`-line escalation
+threshold; focused test is `225` lines. Both are unchanged.
