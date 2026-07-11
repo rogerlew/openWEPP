@@ -396,19 +396,11 @@ fn parse_required_branch(
     options: ChaninpParseOptions,
     valid_channel_element_ids: &BTreeSet<i32>,
 ) -> Result<ChaninpFile, ChaninpParseError> {
-    if lines.len() < 4 {
+    if lines.len() < 3 {
         return Err(ChaninpParseError::ChnE002 {
             line: lines.last().map_or(1, |entry| entry.0),
             field: "file",
-            expected: 4,
-            found: lines.len(),
-        });
-    }
-    if lines.len() > 4 {
-        return Err(ChaninpParseError::ChnE002 {
-            line: lines[4].0,
-            field: "file",
-            expected: 4,
+            expected: 3,
             found: lines.len(),
         });
     }
@@ -462,10 +454,6 @@ fn parse_required_branch(
     }
     let nchnum_input_raw = parse_i32(line3_tokens[0], line3_no, "nchnum")?;
 
-    let (line4_no, line4) = lines[3];
-    let line4_tokens = tokenize(line4);
-    let ichnum_input = parse_ichnum_tokens(line4_no, &line4_tokens)?;
-
     let mut warnings = Vec::new();
 
     let ichout = normalize_ichout(ichout_raw, options.mode, line1_no, &mut warnings)?;
@@ -476,6 +464,28 @@ fn parse_required_branch(
 
     let (nchnum_input, nchnum_norm) =
         normalize_nchnum(nchnum_input_raw, options, line3_no, &mut warnings)?;
+
+    let expected_record_count = if nchnum_input == 0 { 3 } else { 4 };
+    if lines.len() != expected_record_count {
+        let line = lines
+            .get(expected_record_count)
+            .or_else(|| lines.last())
+            .map_or(line3_no, |entry| entry.0);
+        return Err(ChaninpParseError::ChnE002 {
+            line,
+            field: "file",
+            expected: expected_record_count,
+            found: lines.len(),
+        });
+    }
+
+    let (line4_no, ichnum_input) = if nchnum_input == 0 {
+        (line3_no, Vec::new())
+    } else {
+        let (line_no, line) = lines[3];
+        let tokens = tokenize(line);
+        (line_no, parse_ichnum_tokens(line_no, &tokens)?)
+    };
 
     let mut unknown_ichnum_retained_warning_emitted = false;
     if usize::try_from(nchnum_input).ok() != Some(ichnum_input.len()) {

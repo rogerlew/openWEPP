@@ -15,6 +15,36 @@ mod hourly_tests {
         );
     }
 
+    fn independent_rectangular_manning_area_m2(
+        discharge_m3_s: f64,
+        width_m: f64,
+        roughness: f64,
+        slope: f64,
+    ) -> f64 {
+        if discharge_m3_s <= 0.0 {
+            return 0.0;
+        }
+        let capacity = |depth_m: f64| {
+            let area_m2 = width_m * depth_m;
+            let hydraulic_radius_m = area_m2 / (width_m + (2.0 * depth_m));
+            area_m2 * hydraulic_radius_m.powf(2.0 / 3.0) * slope.sqrt() / roughness
+        };
+        let mut lower_m = 0.0;
+        let mut upper_m = 1.0;
+        while capacity(upper_m) < discharge_m3_s {
+            upper_m *= 2.0;
+        }
+        for _ in 0..200 {
+            let midpoint_m = 0.5 * (lower_m + upper_m);
+            if capacity(midpoint_m) < discharge_m3_s {
+                lower_m = midpoint_m;
+            } else {
+                upper_m = midpoint_m;
+            }
+        }
+        width_m * 0.5 * (lower_m + upper_m)
+    }
+
     fn geometry(depth: f64, width: f64) -> Ws11IntervalGeometry {
         Ws11IntervalGeometry {
             depth_a_points_ft: vec![depth, depth],
@@ -172,6 +202,10 @@ mod hourly_tests {
             .expect("nonzero water storage is valid");
         assert_close(disposition.water_storage_m3, 7.5);
         assert_close(disposition.suspended_sediment_storage_kg, 0.0);
+
+        let error = Ws10ChannelImpoundmentKernel::ws11_grid_end_disposition(-0.25)
+            .expect_err("WSHED-W11D material negative hydraulic storage must fail typed");
+        assert_eq!(error.message_id(), "WKERNEL-WS10-CHANNEL-E-003");
     }
 
     #[test]
@@ -420,7 +454,7 @@ mod hourly_tests {
     }
 
     #[test]
-    fn wshedw11b_wave_branches_three_through_six_publish_covering_grids() {
+    fn wshedw11d_wave_branches_publish_or_reject_inadmissible_mc_grids() {
         for ipeak in [3, 4, 5, 6] {
             let mut frame = test_network_frame();
             frame.routing_globals.ipeak = ipeak;
@@ -455,10 +489,17 @@ mod hourly_tests {
                     step: &step,
                     frame: &frame,
                 },
-            )
-            .unwrap_or_else(|error| panic!("ipeak={ipeak} should route: {error:?}"));
+            );
+            if ipeak != 3 {
+                let Err(error) = output else {
+                    panic!("W11C MC grids are numerically inadmissible");
+                };
+                assert_eq!(error.message_id(), "WKERNEL-WS10-CHANNEL-E-003");
+                continue;
+            }
+            let output = output.expect("ipeak=3 KW grid should route");
             let DirectWatershedKernelOutput::Channel(state) = output else {
-                panic!("ipeak={ipeak} should publish channel state");
+                panic!("ipeak=3 should publish channel state");
             };
             let water = state.interval_water_state.expect("wave grid");
             assert_eq!(water.q1_m3_s.len(), 24);
@@ -467,6 +508,189 @@ mod hourly_tests {
             );
             assert_close(water.dtchr_seconds * interval_count, 86_400.0);
             assert!(state.interval_sediment_state.is_some());
+        }
+    }
+
+    #[test]
+    fn wshedw11d_kw_terminal_storage_uses_every_spatial_node() {
+        let mut frame = test_network_frame();
+        frame.routing_globals.ipeak = 3;
+        frame.routing_globals.dtchr_seconds = 1.0;
+        frame.routing_globals.ntchr = 86_400.0;
+        let mut control = test_channel_control();
+        control.node_id = 7;
+        control.segment_points[1].x_m = 12_000.0;
+        frame.channel_controls.insert(7, control);
+        let step = DispatchStep {
+            sequence_index: 0,
+            node: TopologyNodeKey::new(TopologyNodeKind::Channel, 7),
+            dependency_nodes: Vec::new(),
+            contributor_hillslopes: Vec::new(),
+            status: Ws10ChannelImpoundmentKernel::direct_ok_status(TopologyNodeKind::Channel),
+        };
+        let input = DirectWatershedKernelInput {
+            step: &step,
+            frame: &frame,
+        };
+        let context = Ws10ChannelImpoundmentKernel::read_direct_channel_context(&input)
+            .expect("synthetic KW context");
+        let (routed, storage_m3) =
+            Ws10ChannelImpoundmentKernel::ws11_route_baseline_wave_series(
+                &context,
+                &[0.0, 0.0],
+                &[1.0, 1.0],
+                None,
+            )
+            .expect("steady KW profile should route");
+
+        // The 12-km reach forces the pinned 101-segment cap. A constant
+        // one-cubic-metre-per-second lateral source preserves the fresh
+        // linear steady profile q(is)=is/101 at every routed terminal.
+        assert_eq!(routed.q1_m3_s.len(), 2);
+        assert_close(routed.q1_m3_s[0], 1.0);
+        assert_close(routed.q1_m3_s[1], 1.0);
+        let width_m = context.control.segment_points[0].width_a_ft
+            / WS15_DEPTH_FROM_METERS_TO_FEET;
+        let expected_area_sum_m2 = (0..=101)
+            .map(|segment| {
+                independent_rectangular_manning_area_m2(
+                    f64::from(segment) / 101.0,
+                    width_m,
+                    context.roughness,
+                    context.control.segment_points[0].slope,
+                )
+            })
+            .sum::<f64>();
+        let expected_storage_m3 = expected_area_sum_m2 / 102.0 * context.channel_length;
+        let boundary_mean_storage_m3 = 0.5
+            * independent_rectangular_manning_area_m2(
+                1.0,
+                width_m,
+                context.roughness,
+                context.control.segment_points[0].slope,
+            )
+            * context.channel_length;
+        let unrestricted_flux_residual_m3 = routed.storage_change_m3.iter().sum::<f64>();
+        assert!((storage_m3 - expected_storage_m3).abs() <= 1.0e-8);
+        assert!(
+            (storage_m3 - boundary_mean_storage_m3).abs() > 1.0,
+            "spatial mean must anti-alias the MC boundary mean"
+        );
+        assert!(
+            (storage_m3 - unrestricted_flux_residual_m3).abs() > 1.0,
+            "hydraulic storage must anti-alias the interval flux residual"
+        );
+        let boundary_ratio = storage_m3 / boundary_mean_storage_m3;
+        assert!(boundary_ratio.is_finite());
+        assert!((boundary_ratio - 1.0).abs() > 1.0e-3);
+    }
+
+    #[test]
+    fn wshedw11d_fresh_storage_and_daily_volume_reconstruct_independently() {
+        let mut frame = test_network_frame();
+        frame.routing_globals.ipeak = 3;
+        frame.routing_globals.dtchr_seconds = 3_600.0;
+        frame.routing_globals.ntchr = 24.0;
+        frame.routing_globals.cbase = 0.0;
+        frame.routing_globals.nchnum = 0.0;
+        let control = test_channel_control();
+        frame.channel_controls.insert(7, control.clone());
+        let mut contribution = test_hillslope_contribution();
+        contribution.hourly_runoff_volume_m3 = vec![3_600.0; 24];
+        contribution.hourly_sediment_mass_kg = vec![0.0; 24];
+        frame.add_hillslope_contribution(contribution);
+
+        let state = run_test_channel(&frame, 7, vec![3], Vec::new());
+        let water = state
+            .interval_water_state
+            .as_ref()
+            .expect("KW water state should publish");
+        let width_m = control.segment_points[0].width_a_ft / WS15_DEPTH_FROM_METERS_TO_FEET;
+        let area_at_one_m2 = independent_rectangular_manning_area_m2(
+            1.0,
+            width_m,
+            control.chnn,
+            control.segment_points[0].slope,
+        );
+        let channel_length_m = control.segment_points[1].x_m;
+        let expected_initial_storage_m3 = 0.5 * area_at_one_m2 * channel_length_m;
+        let terminal_q1_m3_s = *water.q1_m3_s.last().expect("covering terminal grid");
+        let expected_final_storage_m3 = 0.5
+            * independent_rectangular_manning_area_m2(
+                terminal_q1_m3_s,
+                width_m,
+                control.chnn,
+                control.segment_points[0].slope,
+            )
+            * channel_length_m;
+        let external_inflow_m3 = 24.0 * 3_600.0;
+        let expected_outlet_m3 =
+            external_inflow_m3 + expected_initial_storage_m3 - expected_final_storage_m3;
+
+        assert!((water.initial_storage_m3 - expected_initial_storage_m3).abs() <= 1.0e-9);
+        assert!((water.final_storage_m3 - expected_final_storage_m3).abs() <= 1.0e-9);
+        assert!((state.channel_outflow_m3 - expected_outlet_m3).abs() <= 1.0e-9);
+        assert!((state.channel_inflow_m3
+            - (external_inflow_m3 + expected_initial_storage_m3))
+            .abs()
+            <= 1.0e-9);
+        assert!((state.channel_storage_m3 - expected_final_storage_m3).abs() <= 1.0e-9);
+        assert!(
+            (water.storage_change_m3.iter().sum::<f64>() - expected_final_storage_m3).abs()
+                > 1.0,
+            "the unrestricted flux residual must not alias hydraulic storage"
+        );
+    }
+
+    #[test]
+    fn wshedw11d_last_projected_slot_reaches_last_terminal_at_both_timesteps() {
+        for (dtchr_seconds, ntchr) in [(3_600.0, 24_usize), (600.0, 144_usize)] {
+            let mut frame = test_network_frame();
+            frame.routing_globals.ipeak = 3;
+            frame.routing_globals.dtchr_seconds = dtchr_seconds;
+            frame.routing_globals.ntchr =
+                f64::from(u32::try_from(ntchr).expect("test grid fits u32"));
+            let mut control = test_channel_control();
+            control.node_id = 7;
+            frame.channel_controls.insert(7, control);
+            let step = DispatchStep {
+                sequence_index: 0,
+                node: TopologyNodeKey::new(TopologyNodeKind::Channel, 7),
+                dependency_nodes: Vec::new(),
+                contributor_hillslopes: Vec::new(),
+                status: Ws10ChannelImpoundmentKernel::direct_ok_status(
+                    TopologyNodeKind::Channel,
+                ),
+            };
+            let input = DirectWatershedKernelInput {
+                step: &step,
+                frame: &frame,
+            };
+            let context = Ws10ChannelImpoundmentKernel::read_direct_channel_context(&input)
+                .expect("synthetic KW context");
+            let qin_m3_s = vec![0.0; ntchr];
+            let mut qlat_m3_s = vec![0.0; ntchr];
+            qlat_m3_s[ntchr - 1] = 1.0;
+            let (routed, final_storage_m3) =
+                Ws10ChannelImpoundmentKernel::ws11_route_baseline_wave_series(
+                    &context,
+                    &qin_m3_s,
+                    &qlat_m3_s,
+                    None,
+                )
+                .expect("final-slot KW pulse should route");
+
+            assert_eq!(routed.q1_m3_s.len(), ntchr);
+            assert!(
+                routed.q1_m3_s[..ntchr - 1]
+                    .iter()
+                    .all(|value| value.abs() <= EPS)
+            );
+            assert!(
+                routed.q1_m3_s[ntchr - 1] > 0.0,
+                "dtchr={dtchr_seconds} final forcing slot must reach terminal ntchr"
+            );
+            assert!(final_storage_m3 > 0.0);
         }
     }
 
@@ -491,6 +715,105 @@ mod hourly_tests {
         assert_close(kw, 4.0);
         assert_close(static_mc, 2.0);
         assert_close(dynamic_mc, 2.0);
+    }
+
+    #[test]
+    fn wshedw11d_mc_coefficients_enforce_convex_passive_recurrence() {
+        let mut frame = test_network_frame();
+        frame.routing_globals.ipeak = 4;
+        frame.routing_globals.dtchr_seconds = 200.0;
+        frame.routing_globals.ntchr = 432.0;
+        let mut control = test_channel_control();
+        control.node_id = 7;
+        frame.channel_controls.insert(7, control);
+        let step = DispatchStep {
+            sequence_index: 0,
+            node: TopologyNodeKey::new(TopologyNodeKind::Channel, 7),
+            dependency_nodes: Vec::new(),
+            contributor_hillslopes: Vec::new(),
+            status: Ws10ChannelImpoundmentKernel::direct_ok_status(TopologyNodeKind::Channel),
+        };
+        let input = DirectWatershedKernelInput {
+            step: &step,
+            frame: &frame,
+        };
+        let mut context = Ws10ChannelImpoundmentKernel::read_direct_channel_context(&input)
+            .expect("synthetic MC context");
+
+        let error = Ws10ChannelImpoundmentKernel::ws11_route_muskingum_segment(
+            &context, 1.0, 10.0, 5.0, 0.01, 100.0, 0.0, 2.0, 1.0, 1.0,
+        )
+        .expect_err("dt=200 produces a materially negative c3");
+        assert_eq!(error.message_id(), "WKERNEL-WS10-CHANNEL-E-003");
+
+        context.dtchr = 100.0;
+        let (q1, coefficients) =
+            Ws10ChannelImpoundmentKernel::ws11_route_muskingum_segment(
+                &context, 1.0, 10.0, 5.0, 0.01, 100.0, 0.0, 2.0, 1.0, 1.0,
+            )
+            .expect("dt=100 gives a convex MC recurrence");
+        assert_close(coefficients[1], 0.2);
+        assert_close(coefficients[2], 0.6);
+        assert_close(coefficients[3], 0.2);
+        assert_close(coefficients[1] + coefficients[2] + coefficients[3], 1.0);
+        assert_close(q1, 1.2);
+        assert!(q1 <= 2.0 + EPS, "passive route cannot amplify its source maximum");
+    }
+
+    #[test]
+    fn wshedw11d_admissible_static_and_dynamic_mc_execute_full_route() {
+        let mut branch_outputs = Vec::new();
+        for ipeak in [4, 5] {
+            let mut frame = test_network_frame();
+            frame.routing_globals.ipeak = ipeak;
+            frame.routing_globals.dtchr_seconds = 60.0;
+            frame.routing_globals.ntchr = 1_440.0;
+            frame.routing_globals.cbase = 0.0;
+            frame.routing_globals.nchnum = 0.0;
+            let mut control = test_channel_control();
+            control.node_id = 7;
+            control.segment_points[1].x_m = 100.0;
+            frame.channel_controls.insert(7, control);
+            let mut contribution = test_hillslope_contribution();
+            contribution.hourly_runoff_volume_m3 = vec![3_600.0; 24];
+            contribution.hourly_runoff_volume_m3[6] = 3_960.0;
+            contribution.hourly_sediment_mass_kg = vec![0.0; 24];
+            frame.add_hillslope_contribution(contribution);
+
+            let state = run_test_channel(&frame, 7, vec![3], Vec::new());
+            let water = state
+                .interval_water_state
+                .as_ref()
+                .expect("admissible MC should publish its full interval grid");
+            assert_eq!(water.q1_m3_s.len(), 1_440);
+            assert!(water.q1_m3_s.iter().all(|value| value.is_finite() && *value >= 0.0));
+            assert!(state.peak_discharge_m3_s > 0.0);
+            assert!(
+                state.peak_discharge_m3_s <= 1.1 + 1.0e-12,
+                "admissible passive MC route cannot amplify the inlet maximum"
+            );
+            assert_close(
+                state.channel_inflow_m3,
+                state.channel_outflow_m3 + state.channel_storage_m3,
+            );
+            let representative = state.wave_state.expect("MC coefficients should publish");
+            assert!(representative.c1 >= -EPS);
+            assert!(representative.c2 >= -EPS);
+            assert!(representative.c3 >= -EPS);
+            assert_close(representative.c1 + representative.c2 + representative.c3, 1.0);
+            branch_outputs.push((representative, water.q1_m3_s.clone()));
+        }
+        let coefficient_delta = (branch_outputs[0].0.c1 - branch_outputs[1].0.c1).abs()
+            + (branch_outputs[0].0.c2 - branch_outputs[1].0.c2).abs()
+            + (branch_outputs[0].0.c3 - branch_outputs[1].0.c3).abs();
+        let hydrograph_delta = branch_outputs[0]
+            .1
+            .iter()
+            .zip(&branch_outputs[1].1)
+            .map(|(static_q1, dynamic_q1)| (static_q1 - dynamic_q1).abs())
+            .fold(0.0_f64, f64::max);
+        assert!(coefficient_delta > 1.0e-9, "dynamic coefficients must refresh");
+        assert!(hydrograph_delta > 1.0e-9, "matched static/dynamic routes must diverge");
     }
 
     #[test]
@@ -528,8 +851,8 @@ mod hourly_tests {
             .expect("segment update after MC gate");
         let gate = &source[gate_start..gate_end];
         for operand in [
-            "qin_m3_s[interval - 1]",
-            "q1_m3_s[interval - 1]",
+            "previous_qin",
+            "previous_spatial[nseg]",
             "qin_m3_s[interval]",
             "qlat_per_m",
         ] {
@@ -634,6 +957,8 @@ mod hourly_tests {
         qlat_total_m3_s[6] = 0.5;
         let water = RoutedChannelIntervalWaterState {
             dtchr_seconds: 3600.0,
+            initial_storage_m3: 0.0,
+            final_storage_m3: 0.0,
             storage_change_m3: qin_m3_s
                 .iter()
                 .zip(&qlat_total_m3_s)
@@ -719,7 +1044,7 @@ mod hourly_tests {
     }
 
     #[test]
-    fn wshedw11b_kinematic_wave_seeds_next_day_from_prior_q1() {
+    fn wshedw11d_kinematic_wave_advances_first_interval_from_prior_q1() {
         let mut frame = test_network_frame();
         frame.routing_globals.ipeak = 3;
         frame.routing_globals.dtchr_seconds = 3600.0;
@@ -741,9 +1066,16 @@ mod hourly_tests {
             .q1_m3_s
             .last()
             .expect("covering grid");
+        let prior_storage_m3 = first
+            .interval_water_state
+            .as_ref()
+            .expect("first day water")
+            .final_storage_m3;
         assert!(prior_q1 > 0.0);
+        assert!(prior_storage_m3 > 0.0);
         frame.record_routed_channel_state(first);
         contribution.hourly_runoff_volume_m3.fill(0.0);
+        contribution.hourly_runoff_volume_m3[0] = 7_200.0;
         frame.add_hillslope_contribution(contribution);
         let second = run_test_channel(&frame, 7, vec![3], Vec::new());
         let next_q1 = second
@@ -751,9 +1083,61 @@ mod hourly_tests {
             .as_ref()
             .expect("second day water")
             .q1_m3_s[0];
-        // Pinned `wshchr.for:307` seeds the next grid at midnight from the
-        // prior day's terminal outlet before advancing later intervals.
-        assert_close(next_q1, prior_q1);
+        let second_water = second
+            .interval_water_state
+            .as_ref()
+            .expect("second day water");
+        // Pinned `wshchr.for:307,397-448` seeds the time-zero boundary from
+        // yesterday and then advances `it=1`; the first published terminal
+        // must not alias the seed when today's first forcing differs.
+        assert!(
+            next_q1 > prior_q1,
+            "first interval must advance from the prior seed under new forcing: next={next_q1:.16e} prior={prior_q1:.16e}"
+        );
+        assert_close(second_water.initial_storage_m3, prior_storage_m3);
+        assert_close(
+            prior_storage_m3 + 7_200.0,
+            second.channel_outflow_m3 + second_water.final_storage_m3,
+        );
+    }
+
+    #[test]
+    fn wshedw11d_zero_peak_retains_available_carried_storage() {
+        let mut frame = test_network_frame();
+        frame.routing_globals.ipeak = 3;
+        frame.routing_globals.dtchr_seconds = 3600.0;
+        frame.routing_globals.ntchr = 24.0;
+        frame.routing_globals.cbase = 0.0;
+        frame.routing_globals.nchnum = 0.0;
+        frame.channel_controls.insert(7, test_channel_control());
+        let mut contribution = test_hillslope_contribution();
+        contribution.hourly_runoff_volume_m3 = vec![0.0; 24];
+        contribution.hourly_sediment_mass_kg = vec![0.0; 24];
+        frame.add_hillslope_contribution(contribution);
+
+        let mut prior = run_test_channel(&frame, 7, vec![3], Vec::new());
+        let water = prior
+            .interval_water_state
+            .as_mut()
+            .expect("wave state should exist");
+        water.q1_m3_s.fill(0.0);
+        water.qin_m3_s.fill(0.0);
+        water.qlat_total_m3_s.fill(0.0);
+        water.final_storage_m3 = 7.5;
+        prior.channel_storage_m3 = 7.5;
+        frame.record_routed_channel_state(prior);
+
+        let routed = run_test_channel(&frame, 7, vec![3], Vec::new());
+        let water = routed
+            .interval_water_state
+            .as_ref()
+            .expect("wave state should exist");
+        assert_close(routed.peak_discharge_m3_s, 0.0);
+        assert_close(routed.channel_outflow_m3, 0.0);
+        assert_close(routed.channel_inflow_m3, 7.5);
+        assert_close(routed.channel_storage_m3, 7.5);
+        assert_close(water.initial_storage_m3, 7.5);
+        assert_close(water.final_storage_m3, 7.5);
     }
 
     #[test]
@@ -868,11 +1252,21 @@ mod hourly_tests {
             .iter()
             .all(|value| value.abs() <= EPS));
         let external_water_m3 = 864.0;
+        let initial_storage_m3 = upstream_water.initial_storage_m3
+            + downstream_water.initial_storage_m3;
+        let final_storage_m3 = upstream_water.final_storage_m3
+            + downstream_water.final_storage_m3;
         assert_close(
-            external_water_m3,
-            downstream.channel_outflow_m3
-                + frame.routed_channels[&7].channel_storage_m3
-                + downstream.channel_storage_m3,
+            external_water_m3 + initial_storage_m3,
+            downstream.channel_outflow_m3 + final_storage_m3,
+        );
+        assert_close(
+            frame.routed_channels[&7].channel_storage_m3,
+            upstream_water.final_storage_m3,
+        );
+        assert_close(
+            downstream.channel_storage_m3,
+            downstream_water.final_storage_m3,
         );
     }
 

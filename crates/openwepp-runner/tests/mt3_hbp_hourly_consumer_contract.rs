@@ -86,6 +86,86 @@ fn mt3_watershed_cli_hbp_hourly_pair_reaches_channel_consumer() {
 }
 
 #[test]
+fn wshedw11d_cli_accepts_three_record_zero_count_chaninp_without_defaulting() {
+    let mut runoff = [0.0_f64; 24];
+    runoff[6] = 7_200.0;
+    let mut sediment = [0.0_f64; 24];
+    sediment[6] = 240.0;
+    let run_grid = |prefix: &str, chaninp: &str| {
+        let run_dir = build_watershed_fixture_dir(prefix);
+        let channel_controls = fs::read_to_string(run_dir.join("pw0.chn"))
+            .expect("channel controls should be readable")
+            .replacen("\n4\n", "\n3\n", 1);
+        fs::write(run_dir.join("pw0.chn"), channel_controls)
+            .expect("KW channel controls should be writable");
+        fs::write(run_dir.join("chan.inp"), chaninp)
+            .expect("chan.inp grid control should be writable");
+        write_hourly_hbp_fixture(
+            run_dir.join("H1.hbp"),
+            1,
+            2.0,
+            3_600.0,
+            240.0,
+            0.0,
+            runoff,
+            sediment,
+        );
+        write_watershed_runfile(&run_dir, &[1]);
+        let output_dir = run_dir.join("out");
+        let output = run_watershed_cli(&run_dir, &output_dir);
+        assert!(
+            output.status.success(),
+            "CLI should accept {prefix} chan.inp: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        let ebe_row = read_first_parquet_row(&output_dir.join("interchange/ebe_pw0.parquet"));
+        let channel_row = read_first_parquet_row(&output_dir.join("interchange/chanwb.parquet"));
+        (
+            run_dir,
+            [
+                row_f64_value(&ebe_row, "peak_runoff"),
+                row_f64_value(&ebe_row, "runoff_volume"),
+                row_f64_value(&channel_row, "Storage (m^3)"),
+                row_f64_value(&channel_row, "Balance (m^3)"),
+            ],
+        )
+    };
+
+    let (run_dir, zero_count_600) = run_grid("w11d_chaninp_zero_600", "3 600\n0.0\n0\n");
+
+    let parsed = parse_chaninp_from_path(
+        run_dir.join("chan.inp"),
+        ChaninpParseOptions::compatibility(3, 1),
+        &BTreeSet::from([2]),
+    )
+    .expect("canonical zero-count sidecar should parse");
+    assert_eq!(parsed.parse_outcome, ChaninpParseOutcome::ParsedBranch);
+    assert!(parsed.warnings.is_empty());
+    let options = parsed.options.expect("wave sidecar should expose options");
+    assert_eq!(options.dtchr_norm_s, 600);
+    assert_eq!(options.ntchr, 144);
+    assert_eq!(options.nchnum_norm, 0);
+    assert!(options.ichnum_norm.is_empty());
+    assert!(!options.chan_output_enabled);
+
+    let (_, positive_count_600) = run_grid("w11d_chaninp_positive_600", "3 600\n0.0\n1\n2\n");
+    let (_, positive_count_60) = run_grid("w11d_chaninp_positive_60", "3 60\n0.0\n1\n2\n");
+    for (field, zero, control) in [
+        ("peak", zero_count_600[0], positive_count_600[0]),
+        ("volume", zero_count_600[1], positive_count_600[1]),
+        ("storage", zero_count_600[2], positive_count_600[2]),
+        ("balance", zero_count_600[3], positive_count_600[3]),
+    ] {
+        assert_relative_close(zero, control, 1.0e-12, field);
+    }
+    assert!(
+        (zero_count_600[0] - positive_count_60[0]).abs() > 1.0e-6
+            || (zero_count_600[2] - positive_count_60[2]).abs() > 1.0e-6,
+        "parsed zero-count dtchr=600 must not alias the 60-second compatibility default"
+    );
+}
+
+#[test]
 fn wshedw11b_two_channel_cli_consumes_same_grid_sediment_egress() {
     let mut spike_runoff = [0.0_f64; 24];
     spike_runoff[23] = 7_200.0;
@@ -160,10 +240,91 @@ fn wshedw11b_two_channel_cli_consumes_same_grid_sediment_egress() {
 }
 
 #[test]
+fn wshedw11d_creams_serial_publication_uses_terminal_extensive_outputs() {
+    let scenario = sanity_scenarios()
+        .into_iter()
+        .find(|scenario| scenario.name == "early_spike")
+        .expect("early-spike contract vector");
+    let output =
+        run_two_channel_sanity_fixture("w11d_creams_terminal_publication", &scenario, 2, 3_600);
+
+    assert_eq!(
+        output.ebe_element_id, 2,
+        "channel 2 is the topology terminal"
+    );
+    assert_scaled_close(
+        output.ebe_runoff_volume_m3,
+        output.hbp_hourly_runoff_sum_m3,
+        1.0e-9,
+        "terminal CREAMS outlet volume",
+    );
+    assert_scaled_close(
+        output.ebe_sediment_yield_kg,
+        output.hbp_hourly_sediment_sum_kg,
+        1.0e-9,
+        "terminal CREAMS sediment mass",
+    );
+}
+
+#[test]
+fn wshedw11d_release_cli_rejects_inadmissible_mc_grids_typed() {
+    for (ipeak, dtchr_seconds) in [(4, 3_600), (4, 600), (5, 3_600), (5, 600)] {
+        for scenario in sanity_scenarios() {
+            let prefix = format!("w11d_mc_i{ipeak}_dt{dtchr_seconds}_{}", scenario.name);
+            let result = try_run_two_channel_fixture(
+                &prefix,
+                &scenario,
+                ipeak,
+                dtchr_seconds,
+                scenario.input_peak_m3_s(),
+                scenario.scalar_duration_seconds(),
+                scenario.hourly_sediment_mass_kg.iter().sum(),
+            );
+            if scenario.name == "zero" {
+                let output = result.expect("zero MC control executes no unstable recurrence");
+                assert!(output.ebe_runoff_volume_m3.abs() <= 1.0e-12);
+                assert!(output.ebe_peak_runoff_m3_s.abs() <= 1.0e-12);
+                continue;
+            }
+            let error = result.expect_err("active W11C MC grids must fail before publication");
+            assert!(
+                error.contains("WKERNEL-WS10-CHANNEL-E-003"),
+                "MC grid rejection must preserve typed guard identity: {error}"
+            );
+        }
+    }
+}
+
+#[test]
+fn wshedw11d_release_cli_accepts_admissible_static_and_dynamic_mc_grid() {
+    let mut scenario = SanityScenario {
+        name: "admissible_mc",
+        hourly_runoff_volume_m3: [3_600.0; 24],
+        hourly_sediment_mass_kg: [0.0; 24],
+    };
+    scenario.hourly_runoff_volume_m3[6] = 3_960.0;
+    for ipeak in [4, 5] {
+        let output =
+            run_admitted_mc_fixture(&format!("w11d_admitted_mc_i{ipeak}"), &scenario, ipeak);
+        assert!(output.ebe_peak_runoff_m3_s.is_finite());
+        assert!(output.ebe_peak_runoff_m3_s > 0.0);
+        assert!(output.ebe_peak_runoff_m3_s <= 1.1 + 1.0e-12);
+        assert!(output.ebe_runoff_volume_m3.is_finite());
+        assert!(output.channel_storage_m3.is_finite());
+        assert_scaled_close(
+            output.channel_balance_m3,
+            0.0,
+            1.0e-9,
+            "admitted MC channel balance",
+        );
+    }
+}
+
+#[test]
 fn wshedw11c_hourly_routing_sanity_matrix() {
     let scenarios = sanity_scenarios();
     let mut observations = Vec::new();
-    for ipeak in [3, 4, 5, 2] {
+    for ipeak in [3, 2] {
         let timesteps: &[u32] = if ipeak == 2 { &[3_600] } else { &[3_600, 600] };
         for dtchr_seconds in timesteps {
             for scenario in &scenarios {
@@ -199,7 +360,7 @@ fn wshedw11c_hourly_routing_sanity_matrix() {
         "ipeak=2 shifted-pulse peak identity",
     );
 
-    for ipeak in [3, 4, 5] {
+    for ipeak in [3] {
         for dtchr_seconds in [3_600, 600] {
             let spike = find_sanity_observation(&observations, ipeak, dtchr_seconds, "early_spike");
             let spread =
@@ -220,7 +381,7 @@ fn wshedw11c_hourly_routing_sanity_matrix() {
         }
     }
 
-    for ipeak in [3, 4, 5] {
+    for ipeak in [3] {
         for scenario in ["early_spike", "early_spread", "uniform", "late_spike"] {
             let hourly = find_sanity_observation(&observations, ipeak, 3_600, scenario);
             let subhourly = find_sanity_observation(&observations, ipeak, 600, scenario);
@@ -337,49 +498,27 @@ fn assert_sanity_observation(observation: &SanityObservation) {
             observation.scenario,
         );
     }
-    if observation.ipeak == 2 && output.ebe_element_id != 2 {
-        println!(
-            "W11C_FINDING kind=legacy_event_publication_uses_first_channel scenario={} element_id={}",
-            observation.scenario, output.ebe_element_id,
-        );
-    } else if observation.ipeak > 2 {
-        assert_eq!(output.ebe_element_id, 2);
-    }
-    if output.channel_storage_m3 < -1.0e-9 {
-        println!(
-            "W11C_FINDING kind=negative_storage ipeak={} dtchr={} scenario={} storage_m3={:.15}",
-            observation.ipeak,
-            observation.dtchr_seconds,
-            observation.scenario,
-            output.channel_storage_m3,
-        );
-    }
-    if output.ebe_runoff_volume_m3 > output.hbp_hourly_runoff_sum_m3 + 1.0e-9 {
-        println!(
-            "W11C_FINDING kind=terminal_outflow_exceeds_input ipeak={} dtchr={} scenario={} input_m3={:.15} outlet_m3={:.15}",
-            observation.ipeak,
-            observation.dtchr_seconds,
-            observation.scenario,
-            output.hbp_hourly_runoff_sum_m3,
-            output.ebe_runoff_volume_m3,
-        );
-    }
-    if observation.ipeak == 2 {
-        if output.hbp_hourly_runoff_sum_m3 > 0.0 {
-            println!(
-                "W11C_FINDING kind=legacy_event_volume_is_serial_throughflow_sum scenario={} input_m3={:.15} published_m3={:.15} ratio={:.15}",
-                observation.scenario,
-                output.hbp_hourly_runoff_sum_m3,
-                output.ebe_runoff_volume_m3,
-                output.ebe_runoff_volume_m3 / output.hbp_hourly_runoff_sum_m3,
-            );
-        }
-    } else {
+    assert_eq!(output.ebe_element_id, 2, "public event channel is terminal");
+    assert!(
+        output.channel_storage_m3 >= -1.0e-9,
+        "hydraulic end storage must be nonnegative"
+    );
+    assert!(
+        output.ebe_runoff_volume_m3 <= output.hbp_hourly_runoff_sum_m3 + 1.0e-9,
+        "terminal volume cannot exceed the only external water input"
+    );
+    let authorized_initial_storage_m3 =
+        output.ebe_runoff_volume_m3 + output.channel_storage_m3 - output.hbp_hourly_runoff_sum_m3;
+    assert!(
+        authorized_initial_storage_m3 >= -1.0e-9,
+        "terminal volume plus final storage cannot fall below external input without a sink"
+    );
+    if observation.scenario != "uniform" {
         assert_scaled_close(
-            output.ebe_runoff_volume_m3 + output.channel_storage_m3,
-            output.hbp_hourly_runoff_sum_m3,
+            authorized_initial_storage_m3,
+            0.0,
             1.0e-9,
-            "serialized-input routed water ledger",
+            "fresh zero-flow initial storage",
         );
     }
     assert_scaled_close(
@@ -388,12 +527,18 @@ fn assert_sanity_observation(observation: &SanityObservation) {
         1.0e-9,
         "published channel balance",
     );
-    if observation.ipeak != 2 {
-        assert!(
-            output.ebe_sediment_yield_kg <= output.hbp_hourly_sediment_sum_kg + 1.0e-9,
-            "terminal sediment cannot exceed external sediment without channel detachment: input={}, outlet={}",
-            output.hbp_hourly_sediment_sum_kg,
+    assert!(
+        output.ebe_sediment_yield_kg <= output.hbp_hourly_sediment_sum_kg + 1.0e-9,
+        "terminal sediment cannot exceed external sediment without channel detachment: input={}, outlet={}",
+        output.hbp_hourly_sediment_sum_kg,
+        output.ebe_sediment_yield_kg,
+    );
+    if observation.ipeak == 2 {
+        assert_scaled_close(
             output.ebe_sediment_yield_kg,
+            output.hbp_hourly_sediment_sum_kg,
+            1.0e-9,
+            "CREAMS terminal sediment mass",
         );
     }
     let sediment_residual = output.hbp_hourly_sediment_sum_kg - output.ebe_sediment_yield_kg;
@@ -493,6 +638,11 @@ fn run_hourly_fixture(
     hourly_sediment_mass_kg: [f64; 24],
 ) -> HourlyFixtureOutput {
     let run_dir = build_watershed_fixture_dir(prefix);
+    let channel_controls = fs::read_to_string(run_dir.join("pw0.chn"))
+        .expect("channel controls should be readable")
+        .replacen("\n4\n", "\n3\n", 1);
+    fs::write(run_dir.join("pw0.chn"), channel_controls)
+        .expect("KW channel controls should be writable");
     write_hourly_hbp_fixture(
         run_dir.join("H1.hbp"),
         1,
@@ -540,6 +690,65 @@ fn run_hourly_fixture(
     }
 }
 
+fn run_admitted_mc_fixture(
+    prefix: &str,
+    scenario: &SanityScenario,
+    ipeak: i32,
+) -> HourlyFixtureOutput {
+    let run_dir = build_watershed_fixture_dir(prefix);
+    let channel_controls = format!(
+        concat!(
+            "99.1\n1\n{}\n1.500000\n",
+            "channel 1 comment a\nchannel 1 comment b\nchannel 1 comment c\n",
+            "2\n1\n1\n0\n1.0 0.04\n0.05 0.001 2.0 0.25 0.15\n0.02 1.4 0.045\n",
+        ),
+        ipeak,
+    );
+    fs::write(run_dir.join("pw0.chn"), channel_controls)
+        .expect("MC channel controls should be writable");
+    fs::write(
+        run_dir.join("pw0.slp"),
+        concat!(
+            "# W11D admitted MC geometry\n97.5\n2\n",
+            "100.0 0.6096\n3 60.0\n0.0 0.0100 0.6 0.0100 1.0 0.0100\n",
+            "100.0 0.6096\n3 40.0\n0.0 0.0100 0.5 0.0100 1.0 0.0100\n",
+        ),
+    )
+    .expect("admitted MC slope fixture should be writable");
+    fs::write(run_dir.join("chan.inp"), "3 60\n0.0\n1\n3\n")
+        .expect("admitted MC chan.inp should be writable");
+    write_hourly_hbp_fixture(
+        run_dir.join("H1.hbp"),
+        1,
+        scenario.input_peak_m3_s(),
+        scenario.scalar_duration_seconds(),
+        0.0,
+        0.0,
+        scenario.hourly_runoff_volume_m3,
+        scenario.hourly_sediment_mass_kg,
+    );
+    write_watershed_runfile(&run_dir, &[1]);
+    let output_dir = run_dir.join("out");
+    let output = run_watershed_cli(&run_dir, &output_dir);
+    assert!(
+        output.status.success(),
+        "admitted ipeak={ipeak} MC CLI route should succeed: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let ebe_row = read_first_parquet_row(&output_dir.join("interchange/ebe_pw0.parquet"));
+    let channel_row = read_first_parquet_row(&output_dir.join("interchange/chanwb.parquet"));
+    HourlyFixtureOutput {
+        hbp_hourly_runoff_sum_m3: scenario.hourly_runoff_volume_m3.iter().sum(),
+        hbp_hourly_sediment_sum_kg: scenario.hourly_sediment_mass_kg.iter().sum(),
+        ebe_peak_runoff_m3_s: row_f64_value(&ebe_row, "peak_runoff"),
+        ebe_runoff_volume_m3: row_f64_value(&ebe_row, "runoff_volume"),
+        ebe_sediment_yield_kg: row_f64_value(&ebe_row, "sediment_yield"),
+        ebe_element_id: row_i64_value(&ebe_row, "element_id"),
+        channel_storage_m3: row_f64_value(&channel_row, "Storage (m^3)"),
+        channel_balance_m3: row_f64_value(&channel_row, "Balance (m^3)"),
+    }
+}
+
 fn run_two_channel_hourly_fixture(
     prefix: &str,
     hourly_runoff_volume_m3: [f64; 24],
@@ -550,7 +759,7 @@ fn run_two_channel_hourly_fixture(
         hourly_runoff_volume_m3,
         hourly_sediment_mass_kg,
     };
-    run_two_channel_fixture(prefix, &scenario, 4, 600, 2.0, 3_600.0, 240.0)
+    run_two_channel_fixture(prefix, &scenario, 3, 600, 2.0, 3_600.0, 240.0)
 }
 
 fn run_two_channel_sanity_fixture(
@@ -580,6 +789,28 @@ fn run_two_channel_fixture(
     scalar_duration_seconds: f64,
     total_detachment_kg: f64,
 ) -> HourlyFixtureOutput {
+    try_run_two_channel_fixture(
+        prefix,
+        scenario,
+        ipeak,
+        dtchr_seconds,
+        scalar_peak_runoff_m3_s,
+        scalar_duration_seconds,
+        total_detachment_kg,
+    )
+    .unwrap_or_else(|error| panic!("two-channel watershed CLI fixture should route: {error}"))
+}
+
+#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+fn try_run_two_channel_fixture(
+    prefix: &str,
+    scenario: &SanityScenario,
+    ipeak: i32,
+    dtchr_seconds: u32,
+    scalar_peak_runoff_m3_s: f64,
+    scalar_duration_seconds: f64,
+    total_detachment_kg: f64,
+) -> Result<HourlyFixtureOutput, String> {
     let run_dir = build_watershed_fixture_dir(prefix);
     fs::write(
         run_dir.join("pw0.str"),
@@ -695,14 +926,15 @@ fn run_two_channel_fixture(
         );
     let output_dir = run_dir.join("out");
     let output = run_watershed_cli(&run_dir, &output_dir);
-    assert!(
-        output.status.success(),
-        "two-channel watershed CLI fixture '{prefix}' ipeak={ipeak} dtchr={dtchr_seconds} should route; stderr={}",
-        String::from_utf8_lossy(&output.stderr)
-    );
+    if !output.status.success() {
+        return Err(format!(
+            "fixture='{prefix}' ipeak={ipeak} dtchr={dtchr_seconds}: {}",
+            String::from_utf8_lossy(&output.stderr)
+        ));
+    }
     let ebe_row = read_first_parquet_row(&output_dir.join("interchange/ebe_pw0.parquet"));
     let channel_row = read_first_parquet_row(&output_dir.join("interchange/chanwb.parquet"));
-    HourlyFixtureOutput {
+    Ok(HourlyFixtureOutput {
         hbp_hourly_runoff_sum_m3,
         hbp_hourly_sediment_sum_kg,
         ebe_peak_runoff_m3_s: row_f64_value(&ebe_row, "peak_runoff"),
@@ -711,7 +943,7 @@ fn run_two_channel_fixture(
         ebe_element_id: row_i64_value(&ebe_row, "element_id"),
         channel_storage_m3: row_f64_value(&channel_row, "Storage (m^3)"),
         channel_balance_m3: row_f64_value(&channel_row, "Balance (m^3)"),
-    }
+    })
 }
 
 fn parsed_hbp_event_totals(path: &Path, expected_hillslope_id: u32) -> Option<(f64, f64)> {

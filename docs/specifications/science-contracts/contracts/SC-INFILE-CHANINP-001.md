@@ -4,9 +4,9 @@ title: Channel Routing Options Input Parser Contract (chan.inp)
 status: in_review
 maturity: draft
 owner: openWEPP
-contract_version: 0.1.2
+contract_version: 0.1.4
 evidence_mode: Static
-last_updated_utc: 2026-07-09T00:00:00Z
+last_updated_utc: 2026-07-11T00:00:00Z
 ---
 
 # SC-INFILE-CHANINP-001 Channel Routing Options Input Parser Contract
@@ -34,7 +34,8 @@ This contract governs parser behavior for `chan.inp` (`infile-channel-contrast`)
 | Case | Input form | Source-model stance | Simulation-model stance | Evidence |
 | --- | --- | --- | --- | --- |
 | A | `ipeak <= 2` (surface not applicable) | Accept as non-applicable branch. | Emit explicit `surface_not_applicable` outcome; no parser error. | `[DIRECT][E-SPEC-CHN-01]`, `[DIRECT][E-WF-CHN-01]` |
-| B | `ipeak > 2` and full 4-line canonical payload | Accept canonical parse path. | Parse fields and apply deterministic normalization/closure rules. | `[DIRECT][E-SPEC-CHN-01]`, `[DIRECT][E-WF-CHN-01]` |
+| B1 | `ipeak > 2`, `nchnum > 0`, and full 4-record canonical payload | Accept canonical positive-count parse path. | Parse fields and apply deterministic normalization/ID-closure rules. | `[DIRECT][E-SPEC-CHN-01]`, `[DIRECT][E-WF-CHN-01]` |
+| B2 | `ipeak > 2`, `nchnum = 0`, and canonical 3-record payload | Accept canonical zero-count parse path; the implied-DO consumes no fourth record. | Parse fields, retain the requested timestep, normalize `ichnum=[]`, and disable selected-channel output. | `[DIRECT][E-WF-CHN-01]` |
 | C | `ipeak > 2` and file missing | Strict reject; compatibility may take legacy-default branch. | strict typed missing-surface error vs compat default/warning branch. | `[DIRECT][E-SPEC-CHN-01]`, `[DIRECT][E-WF-CHN-01]` |
 | D | `ipeak > 2` and open fails (non-ENOENT) | Strict reject; compatibility may collapse to default branch. | Explicit strict/compat divergence required. | `[DIRECT][E-SPEC-CHN-01]`, `[DIRECT][E-WF-CHN-01]` |
 | E | malformed/truncated payload | Strict reject. | Emit typed parse/count errors; no silent default in strict mode. | `[INFERENCE][E-SPEC-CHN-01]` |
@@ -48,8 +49,8 @@ No datver/version line is defined for this surface.
 
 ```ebnf
 chaninp_file           = strict_chaninp_file | compat_chaninp_file ;
-strict_chaninp_file    = line1 line2 line3 line4 ;
-compat_chaninp_file    = line1_compat line2_compat line3_compat line4_compat ;
+strict_chaninp_file    = line1 line2 line3 [line4] ;
+compat_chaninp_file    = line1_compat line2_compat line3_compat [line4_compat] ;
 
 line1                  = ichout dtchr [trailing_tokens] ;
 line2                  = cbase [trailing_tokens] ;
@@ -61,6 +62,12 @@ line2_compat           = cbase [trailing_tokens] ;
 line3_compat           = nchnum [trailing_tokens] ;
 line4_compat           = ichnum { whitespace ichnum } [trailing_tokens] ;
 ```
+
+Record 4 is cardinality-conditional, matching the pinned implied-DO read:
+when parsed `nchnum > 0`, exactly `nchnum` element IDs are required on record
+4; when `nchnum = 0`, the canonical payload closes after record 3 and
+`ichnum=[]`. An additional nonempty record is trailing input and fails strict
+record closure. Blank physical lines are not records.
 
 ### 2.2 Two-Layer Model Contract
 
@@ -81,7 +88,7 @@ line4_compat           = ichnum { whitespace ichnum } [trailing_tokens] ;
 | `dtchr` | `line1.dtchr` | `chaninp.options.dtchr_input_s` | s | real | 0..1 | conditional (`ipeak>2`) | all | default `60` only in compat default branch | `channel_routing_timestep_input_s` |
 | `cbase` | `line2.cbase` | `chaninp.options.cbase_m3_s_m2` | m^3/s/m^2 | real | 0..1 | conditional (`ipeak>2`) | all | legacy default `0.0` only in compat default branch | `unit_area_baseflow_coefficient` |
 | `nchnum` | `line3.nchnum` | `chaninp.options.nchnum_input` | count | int | 0..1 | conditional (`ipeak>2`) | all | default `0` only in compat default branch | `channel_output_count_input` |
-| `ichnum(i)` | `line4.ichnum[i]` | `chaninp.options.ichnum_input[i]` | element id | int array | `nchnum` | conditional (`ipeak>2`, `nchnum>0`) | all | empty only in compat default branch where `nchnum=0` | `channel_output_element_ids_input` |
+| `ichnum(i)` | `line4.ichnum[i]` | `chaninp.options.ichnum_input[i]` | element id | int array | `nchnum` | conditional (`ipeak>2`, `nchnum>0`) | all | empty for every canonical `nchnum=0` payload, including parsed strict/compat input | `channel_output_element_ids_input` |
 | derived `nchan` | external watershed topology context | `chaninp.context.nchan` | count | int | 1 | yes | all | sourced from watershed/channel topology inputs | `topology.channel_count` |
 | derived `valid_channel_element_ids` | external watershed topology ID namespace | `chaninp.context.valid_channel_element_ids` | element id set | set<int> | 1 | yes | all | sourced from watershed structure/channel topology surfaces | `topology.valid_channel_ids` |
 | derived `chaninp_required` | applicability branch | `chaninp.context.chaninp_required` | flag | bool | 1 | yes | all | `true` when `ipeak>2`; else `false` | `chaninp_required` |
@@ -151,7 +158,7 @@ Closure hooks:
 | `CHN-E-000` | io | open failure in strict mode when `chan.inp` is required (`ipeak>2`) |
 | `CHN-E-009` | io | missing required `chan.inp` surface in strict mode when `ipeak>2` |
 | `CHN-E-001` | syntax | numeric parse failure on required fields |
-| `CHN-E-002` | syntax | required line/cardinality mismatch (including line4 list arity vs `nchnum`) |
+| `CHN-E-002` | syntax | required record/cardinality mismatch (record 4 missing or wrong-arity when `nchnum>0`, or a nonempty record 4/trailing record when `nchnum=0`) |
 | `CHN-E-003` | semantic | non-finite numeric values |
 | `CHN-E-004` | semantic | invalid field range/domain (`ichout` domain, timestep domain, negative counts) |
 | `CHN-E-005` | cross-file | topology consistency failure (`nchnum`/`ichnum` vs `nchan`/valid structure IDs) |
@@ -231,7 +238,7 @@ substitute separate hardcoded routing globals from an absent optional
 | --- | --- | --- | --- |
 | `G-CHN-001` | deterministic applicability/requiredness branch from `ipeak` | parse preamble | strict missing surface: `CHN-E-009`; strict open failure: `CHN-E-000`; strict unsupported format: `CHN-E-008`; compat: `CHN-W-001`/`CHN-W-002` |
 | `G-CHN-002` | required numeric parse for line1..line3 fields | parse lines 1..3 | `CHN-E-001`/`CHN-E-003` |
-| `G-CHN-003` | line4 list arity and record closure (`nchnum`-bound) | parse line4/finalize | `CHN-E-002` |
+| `G-CHN-003` | cardinality-conditional record closure: record 4 has exactly `nchnum` IDs when `nchnum>0`; canonical `nchnum=0` closes after record 3 with `ichnum=[]` | parse record 3, conditional record 4, and finalize | `CHN-E-002` |
 | `G-CHN-004` | `ichout` domain and output-gate semantic closure | parse/runtime validator | `CHN-E-004`/`CHN-E-007` |
 | `G-CHN-005` | timestep normalization bounds/closure (`dtchr_norm_s`, `ntchr`) | parse normalize validator | `CHN-E-004`/`CHN-E-006` |
 | `G-CHN-006` | `cbase` finite/domain semantics | parse finalize | `CHN-E-003`/`CHN-E-004` |
@@ -262,6 +269,8 @@ openWEPP boundary names are aliases only (Section 3).
 
 | Date UTC | Version | Change |
 | --- | --- | --- |
+| `2026-07-11` | `0.1.4` | WSHED-W11D review correction: split the applicability matrix into positive-count four-record and zero-count three-record canonical forms and refreshed lifecycle metadata; grammar/runtime authority is unchanged from 0.1.3. |
+| `2026-07-11` | `0.1.3` | WSHED-W11D contract-first defect closure: made record 4 cardinality-conditional under pinned implied-DO semantics. Canonical `nchnum=0` input is a three-record payload with an empty ID list; strict extra nonempty records fail closure. |
 | `2026-07-09` | `0.1.2` | WSHED-W10 amendment: ratified explicit compatibility default values for absent/open-error/malformed `chan.inp`, required runtime consumption of typed defaulted parser state, and added `D-CHN-006` / `G-CHN-012`. |
 | `2026-05-22` | `0.1.1` | Ratified HOLD gaps via ARCH13 decisions `W4DR-003/004/005/006`; kickoff HOLD removed for this contract surface. |
 | `2026-05-21` | `0.1.0` | Initial parser-contract draft authored for INFILE19. |

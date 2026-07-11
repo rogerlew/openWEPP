@@ -4,7 +4,7 @@ title: System Integration Boundary and Watershed Assembly Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 88
+contract_version: 90
 producer_scope:
   - Hillslope-to-watershed pass-file state/flux surfaces
   - Channel and impoundment boundary assembly surfaces
@@ -14,7 +14,7 @@ consumer_scope:
   - Watershed outlet hydrograph/sediment-yield accounting consumers
   - Comparator/replay and governance-gate consumers
 evidence_level: Static
-last_reviewed: 2026-07-09
+last_reviewed: 2026-07-11
 supersedes: []
 superseded_by: []
 ---
@@ -148,9 +148,10 @@ Out of scope:
 | INV-SYSTEM-030 | MOFE01 M-E0 per-OFE dynamic-state publication-policy manifest invariant: transition from MOFE04 aggregate to per-OFE WB13/H.wat publication must be manifest-gated by `publication_ofe_policy = "per-ofe-dynamic-water-balance-state"`, `contributor_ofe_count`, `per_ofe_record_count`, `per_ofe_state_policy`, `transfer_identity_status`, `per_element_identity_status`, `aggregate_identity_status`, and `storage_lineage_policy = "per-ofe-dynamic-wb-state"`. Consumers fail closed when multi-OFE publication lacks OFE-keyed records, policy fields are missing or malformed, row cardinality disagrees with contributor count, or aggregate-only rows are relabeled as per-OFE records. | hard-fail | REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-LEGACY-WATBAL, SC-WATBAL-001#INV-WATBAL-097, SC-RUNOFFPART-001#INV-RUNOFFPART-029, INV-SYSTEM-028, INV-SYSTEM-029 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SYSTEM-031 | MOFE01 M-F-REDO per-OFE publication anti-clone and M-F-REDO2 runoff-normalization manifest/consumer invariant: multi-OFE WB13/H.wat publication manifests and consumer gates must not treat row cardinality, monotonic OFE keys, or conservation residual closure alone as proof of per-OFE genuineness. Publication must provide or reference anti-clone evidence for active routed days: lane-local source lineage, nonzero adjacent surface handoff from independently stored transfer operands, non-identical hydrology vectors, raw non-cloned local runoff across OFEs, and public runoff-normalization consistency (`Q = runoff * efflen / totlen`, with `QOFE == Q` the canonical published convention per `SC-RUNOFFPART-001#INV-RUNOFFPART-032` / MOFE04 canonicalized policy; the retained per-OFE local-length basis feeds only byte-invariant `H.pass.runvol`/peak). Missing anti-clone evidence, all-OFE-identical active-day hydrology or raw local runoff, WB14 multistep-lane acceptance of seeded/stale `wb12_infiltration`, zero-on-zero transfer acceptance, or public-row synthesis of transfer fields hard-fails publication promotion and downstream consumption. **Superseded (2026-07-02, MOFEFID-B02):** the former `QOFE == Q where slplen != totlen` rejection is removed — genuineness is proven by the distinctness/lineage evidence above, not by `QOFE != Q`. | hard-fail | REF-SYSTEM-CH1-COMPONENTS, REF-SYSTEM-LEGACY-WATBAL, SC-WATBAL-001#INV-WATBAL-098, INV-SYSTEM-030 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SYSTEM-032 | MOFE01 M-G EROD14 `qin` manifest-boundary invariant: hillslope run manifests and downstream consumers must distinguish water-transfer-only EROD14 `qin` compatibility seeding from accepted sediment-coupled `qin` closure. When Wave-2 runs without prior-OFE erosion `qout` plus particle/class-fraction handoff evidence, manifests must publish `erod14_qin_source_policy = "water-transfer-only-mofe01-mg-sediment-coupling-follow-on"` and `erod14_qin_sediment_coupled = false`; downstream consumers must not infer sediment coupling from `UpStrmQ`, `SubRIn`, public WB13/WAT rows, aggregate runoff, or Wave-2 kernel execution alone. | governance-hold | REF-SYSTEM-CH1-COMPONENTS, SC-RUNOFFPART-001#INV-RUNOFFPART-030, SC-WATBAL-001#INV-WATBAL-099, SC-SED-001#INV-SED-012, INV-SYSTEM-028, INV-SYSTEM-031 | `[DIRECT][Static] + [INFERENCE][Static]` |
-| INV-SYSTEM-033 | WSHED-W8 channel-balance publication invariant: public `chanwb` operands `Inflow (m^3)`, `Outflow (m^3)`, `Storage (m^3)`, `Baseflow (m^3)`, `Loss (m^3)`, and `Balance (m^3)` must be typed-publication outputs traceable to routed channel state or explicit writer reconstruction. `Outflow`, `Storage`, `Baseflow`, and `Loss` must not be synthesized from inflow/runoff aliases. `Balance = Inflow - Outflow - Loss - Storage` and is null unless every required operand is present. | hard-fail | INV-SYSTEM-004, INV-SYSTEM-005, INV-SYSTEM-006, SC-GWBASEFLOW-001 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SYSTEM-033 | WSHED-W8 channel-balance publication invariant: public `chanwb` operands `Inflow (m^3)`, `Outflow (m^3)`, `Storage (m^3)`, `Baseflow (m^3)`, `Loss (m^3)`, and `Balance (m^3)` must be typed-publication outputs traceable to routed channel state or explicit writer reconstruction. `Outflow`, `Storage`, `Baseflow`, and `Loss` must not be synthesized from inflow/runoff aliases. `Balance = Inflow - Outflow - Loss - Storage` and is null unless every required operand is present. For an `INV-ROUTE-021` wave route, the four-term writer's typed `Inflow` operand is the day's available volume `volint + sinit`, while `Storage` is final hydraulic storage `sfnl`; this is algebraically equivalent to the pinned physical-inflow balance `volint - chvol - (sfnl - sinit) - loss = 0` and prevents prior storage from becoming an unrepresented source. | hard-fail | INV-SYSTEM-004, INV-SYSTEM-005, INV-SYSTEM-006, SC-GWBASEFLOW-001, SC-ROUTE-001#INV-ROUTE-021 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SYSTEM-034 | WSHED-W9 latest-day HBP no-event inventory invariant: watershed `PassInventory` must consume `SC-INFILE-HBP-001` typed latest-day state (`EventPayload` or validated `NoEvent`/non-runoff state), not `Option<EventPayload>`. A valid no-event state may produce explicit zero surface runoff, zero event duration, zero detachment/deposition, zero sediment concentration/fraction arrays, and empty hourly EVENT arrays only as typed no-event consequences; parsed `gwbfv`/`gwdsv` volumes must be preserved. Missing pass files, malformed no-event payloads, unsupported event kinds, or stale prior `EVENT` reuse after a later `NO_EVENT`/`SUBEVENT` hard-fail before routing. | hard-fail | REF-SYSTEM-HBP-FORMAT, REF-SYSTEM-HBP-READER, SC-INFILE-HBP-001#G-HBP-013, SC-GWBASEFLOW-001 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-SYSTEM-035 | WSHED-W10 typed `chan.inp` absent-default invariant: watershed runtime must consume the `SC-INFILE-CHANINP-001` typed parser state for absent, unreadable, or malformed `chan.inp` compatibility branches (`DefaultedCompat` or `OpenErrorCollapsedCompat`) rather than an untyped optional-object fallback. The accepted default state is `ichout=0`, `dtchr_input_s=60`, `dtchr_norm_s=60`, `ntchr=1440`, `cbase=0`, `nchnum=0`, empty `ichnum`, and `chan_output_enabled=false`. Strict missing/open/parse failures remain typed errors where `SC-INFILE-CHANINP-001` requires strict rejection. | hard-fail | REF-SYSTEM-INFILE-CHANINP, SC-INFILE-CHANINP-001#G-CHN-012 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-SYSTEM-036 | WSHED-W11D terminal event-publication invariant: event-level extensive water and sediment outputs are reduced from terminal channel-oriented outlets; every upstream channel consumed along a serial path to another dispatched channel is internal throughflow and remains diagnostic, not an additional public yield. Dependency traversal includes intervening impoundments: in `channel -> impoundment -> channel`, only the downstream channel is terminal. A channel feeding an impoundment remains the terminal **channel-oriented proxy** only when that impoundment is itself a topology terminal, pending a separately authoritative impoundment sediment-output surface. Terminal water volume uses the routed daily outlet-volume authority of `SC-ROUTE-001#INV-ROUTE-021`. Terminal sediment yield is mass: each terminal channel's direct-path `qsed` rate is integrated over the same sediment-active duration used by `SC-ROUTE-001#INV-ROUTE-005(e)` — the active inclusive span of hourly `S_h` superposed across its complete **channel-dependency** contributor ancestry when any such timing is present, otherwise event duration. An impoundment dependency is a sediment-authority boundary: current terminal publication neither carries upstream channel sediment ancestry through it nor republishes upstream pre-impoundment sediment as watershed yield. This reconstruction prevents a downstream water-duration re-scaling of an upstream hourly sediment rate on supported channel-only paths; a `kg s^-1` rate must never be published as `kg`. Multiple independent terminal volumes and masses sum; terminal peaks remain per-outlet diagnostics and may not be summed absent separate authority. | hard-fail | REF-SYSTEM-CH1-COMPONENTS, SC-ROUTE-001#INV-ROUTE-005, SC-ROUTE-001#INV-ROUTE-021 | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -191,6 +192,7 @@ Out of scope:
 | `INV-SYSTEM-033` | runtime + publication | Typed routed channel state -> `WatershedPublicationFrame` -> `chanwb` writer | Typed/publication hard error or null output when a channel-balance operand lacks authoritative routed state; no alias fill from inflow/runoff; balance includes storage and remains null until all required operands are present | WSHED-W8 channel-balance publication gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SYSTEM-034` | runtime + watershed intake | HBP parser -> `PassInventory` -> `HillslopeContribution` | Typed hard error (`CLIWAT-E-045`) when latest-day state is missing, malformed, stale, or unsupported; valid no-event state zero-fills only surface runoff/sediment event fields and preserves parsed baseflow/deep-seepage volumes | WSHED-W9 canonical no-event pass semantics gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-SYSTEM-035` | runtime + watershed intake | `chan.inp` parser -> `WatershedNetworkFrame::routing_globals` | Typed hard error when strict missing/open/parse failures occur or when a required defaulted compatibility state lacks normalized options; compatibility absent/open-error branches populate routing globals only from `SC-INFILE-CHANINP-001` typed defaults | WSHED-W10 typed `chan.inp` absent-default gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-SYSTEM-036` | runtime + event publication | Topology-terminal selector -> routed channel state -> event/public summary | Typed publication failure on internal-throughflow double counting, rate-as-mass aliasing, or absent terminal volume authority; terminal extensive quantities alone are summed | WSHED-W11D terminal-publication gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -436,6 +438,7 @@ core and is not sidecar-eligible.
 | `WSHED-W8-CHANNEL-BALANCE-PUBLICATION-ADDENDUM` | `SC-SYSTEM-001.md#ws11-channel-routing-physics-equivalence-integration-addendum` | `active` | `maps-to-existing-INV` | `INV-SYSTEM-033` | `none` | WSHED-W8: `chanwb` channel-balance operands are typed publication outputs from routed channel state, with null-on-unavailable behavior and balance reconstructed as `Inflow - Outflow - Loss - Storage`. |
 | `WSHED-W9-CANONICAL-NOEVENT-PASS-SEMANTICS-ADDENDUM` | `SC-SYSTEM-001.md#ws11-channel-routing-physics-equivalence-integration-addendum` | `active` | `maps-to-existing-INV` | `INV-SYSTEM-034` | `none` | WSHED-W9: watershed pass inventory consumes typed latest-day HBP state, accepts validated no-event/non-runoff state without stale prior-event reuse, and forbids optional-payload zero synthesis. |
 | `WSHED-W10-CHANINP-ABSENT-DEFAULT-ADDENDUM` | `SC-SYSTEM-001.md#ws11-channel-routing-physics-equivalence-integration-addendum` | `active` | `maps-to-existing-INV` | `INV-SYSTEM-035` | `none` | WSHED-W10: watershed runtime consumes typed parser defaults for absent/open-error `chan.inp` compatibility branches and forbids hidden optional-object routing-global synthesis. |
+| `WSHED-W11D-TERMINAL-EVENT-PUBLICATION-ADDENDUM` | `SC-SYSTEM-001.md#ws11-channel-routing-physics-equivalence-integration-addendum` | `active` | `maps-to-existing-INV` | `INV-SYSTEM-036` | `none` | WSHED-W11D: public event water volume and sediment mass reduce terminal channel-oriented outlets after traversing channel/impoundment dependencies; internal throughflow remains diagnostic, direct-path rates are integrated over the authoritative active duration, and impoundments are explicit sediment-authority boundaries. |
 | `MOFE05-WATERSHED-CONTRIBUTOR-METADATA-INTAKE-VALIDATION-ADDENDUM` | `SC-SYSTEM-001.md#mofe05-watershed-contributor-metadata-intake-validation-addendum` | `active` | `undecidable` | `none` | `science-review-follow-on` | SCSTRUCT05 narrower HOLD: contributor metadata intake shape, consistency, and test vectors extend beyond exact `INV-SYSTEM-028/029` exposure. Owner: `SCSTRUCT05-MOFE05-BEI-PROMOTION`. Next gate: promote/map intake validation authority before relocation. |
 | `HPHYS0241-MOFE-HOURLY-CARRY-METADATA-ADDENDUM` | `SC-SYSTEM-001.md#hphys0241-mofe-hourly-carry-metadata-addendum` | `active` | `maps-to-existing-INV` | `INV-SYSTEM-028` | `none` | SCSTRUCT05 map-in-core: active 24-slot MOFE hourly carry metadata and watershed intake rejection posture are exposed by `INV-SYSTEM-028`. |
 | `EROD13-WAVE-1-ACTIVE-BOUNDARY-CARRY-ADDENDUM` | `SC-SYSTEM-001.md#erod13-wave-1-active-boundary-carry-addendum` | `active` | `undecidable` | `none` | `science-review-follow-on` | SCSTRUCT05 narrower HOLD: Wave-1 hydrology-to-erosion boundary-carry authority requires exact RUNOFFPART/WATBAL/SED/SYSTEM exposure. Owner: `SCSTRUCT05-EROD13-BEI-PROMOTION`. Next gate: promote/map before relocation. |
@@ -474,9 +477,10 @@ core and is not sidecar-eligible.
    state/flux values to repair invalid boundary inputs.
 7. WS11 Muskingum-Cunge integration (`ipeak >= 4`) must preserve prior
    wave-state memory continuity when prior channel wave-state symbols are
-   available (`ws10_channel_{id}_qin`, `ws10_channel_{id}_q1`), and must
-   preserve finite signed MC coefficient publication semantics (`c1/c2/c3`)
-   without non-physical non-negative clamp repair.
+   available (`ws10_channel_{id}_qin`, `ws10_channel_{id}_q1`). Calculated
+   signed coefficients remain provenance, but the production recurrence must
+   satisfy `SC-ROUTE-001#INV-ROUTE-022`; inadmissible grids fail typed before
+   routing without clamp, damping, or fallback repair.
 8. WS11 `ipeak = 5` integration must execute variable-parameter
    Muskingum-Cunge dynamic-coefficient refresh semantics for the current
    single-segment lane, rather than reusing static `ipeak = 4` coefficient
@@ -484,7 +488,17 @@ core and is not sidecar-eligible.
 9. `chanwb` channel-balance publication must consume typed routed channel
    operands. `Outflow`, `Storage`, `Baseflow`, and `Loss` are nullable until
    the routed state explicitly owns them; when present, public `Balance` is
-   reconstructed as `Inflow - Outflow - Loss - Storage`.
+   reconstructed as `Inflow - Outflow - Loss - Storage`. On a wave route,
+   `Inflow = volint + sinit` and `Storage = sfnl`, equivalent to the pinned
+   storage-change form without losing carried initial storage.
+10. Event/public summary reduction must select terminal channel-oriented
+    outlets after following dependencies through channels and impoundments.
+    It sums terminal outlet volumes and terminal sediment rates integrated over
+    the superposed hourly-sediment span of each terminal's complete
+    channel-dependency contributor ancestry (event duration only when hourly
+    timing is absent); upstream channel throughflow remains a diagnostic and
+    is not counted again as watershed yield. An impoundment is an explicit
+    sediment-authority boundary until its routed state publishes sediment.
 
 ### WS11 Guard Families
 
@@ -507,9 +521,9 @@ Minimum WS11 integration vectors:
    (`ws10_channel_{id}_{qin,q1}`) produce deterministic branch-response deltas
    versus no-prior-state vectors while preserving finite/non-negative routed
    outputs (`qpo`, `durrof`, `roff`).
-7. `ipeak >= 4` vectors preserve finite MC coefficient-state publication
-   (`c0..c4`) with signed-coefficient continuity for `c1/c2/c3` where branch
-   physics yields negative values.
+7. `ipeak >= 4` vectors preserve calculated finite MC coefficient provenance
+   (`c0..c4`) and prove that negative `c1/c2/c3` beyond the routing tolerance
+   fail with `WKERNEL-WS10-CHANNEL-E-003` before output publication.
 8. `ipeak = 5` vectors demonstrate dynamic MC coefficient refresh continuity
    (dynamic `c0..c4` recomputation) and branch-output divergence from static
    `ipeak = 4` coefficient behavior under matched forcing/prior-state seeds.
@@ -517,6 +531,14 @@ Minimum WS11 integration vectors:
    `Outflow`, `Storage`, `Baseflow`, and `Loss` values through typed routed
    state to `chanwb`, and verifies `Balance = Inflow - Outflow - Loss -
    Storage` with null output when any required balance operand is unavailable.
+10. A serial two-channel W11D vector publishes only terminal outlet water
+    volume and duration-integrated terminal sediment mass while retaining both
+    channel flows in diagnostics; an independent-terminal vector sums only the
+    extensive terminal quantities.
+11. A `channel -> impoundment -> channel` anti-alias vector excludes the
+    pre-impoundment channel from extensive event yield, publishes only the
+    downstream terminal channel, and proves that unsupported pre-impoundment
+    sediment ancestry is neither silently carried nor double-counted.
 
 ## WS12 Impoundment Physics-Equivalence Integration Addendum
 
@@ -1018,6 +1040,8 @@ Minimum WS12 integration vectors:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-07-11` | `90` | `Codex` | WSHED-W11D review correction: terminal channel selection now follows serial dependencies through intervening impoundments, preventing `channel -> impoundment -> channel` double counting. Narrowed sediment ancestry to the implemented channel-dependency domain and made impoundments explicit sediment-authority boundaries rather than claiming unsupported ancestry carry. Added the serial impoundment anti-alias vector and refreshed lifecycle metadata. |
+| `2026-07-11` | `89` | `Codex` | WSHED-W11D contract-first defect closure: added `INV-SYSTEM-036` binding event/public extensive outputs to topology-terminal channel volume and duration-integrated sediment mass, explicitly retaining internal channel throughflow as diagnostic-only. The duration binding reconstructs the superposed hourly-sediment span across complete terminal contributor ancestry so downstream water duration cannot re-scale upstream hourly sediment mass. Updated WS11 MC integration to consume the `SC-ROUTE-001#INV-ROUTE-022` typed stability disposition, clarified the existing four-term `chanwb` wave balance as available volume (`volint+sinit`) minus outlet/final storage/loss, and added terminal-publication system vectors/BEI exposure. |
 | `2026-07-09` | `88` | `Codex` | WSHED-W10 amendment: added `INV-SYSTEM-035` requiring watershed runtime to consume typed `SC-INFILE-CHANINP-001` defaulted compatibility parser states for absent/open-error `chan.inp` branches, with `ichout=0`, `dtchr=60`, `ntchr=1440`, `cbase=0`, `nchnum=0`, empty `ichnum`, and no hidden optional-object fallback. |
 | `2026-07-09` | `87` | `Codex` | WSHED-W9 amendment: added `INV-SYSTEM-034` requiring watershed pass inventory to consume typed latest-day HBP `EventPayload`/validated no-event state, reject malformed/missing/stale optional-payload paths, zero-fill only as typed no-event consequence, and preserve parsed `gwbfv`/`gwdsv` volumes. |
 | `2026-07-09` | `86` | `Codex` | WSHED-W8 amendment: added `INV-SYSTEM-033` and channel-balance publication authority requiring typed routed channel operands for public `chanwb` `Outflow`, `Storage`, `Baseflow`, and `Loss`, preserving null-on-unavailable semantics and defining `Balance = Inflow - Outflow - Loss - Storage`. |

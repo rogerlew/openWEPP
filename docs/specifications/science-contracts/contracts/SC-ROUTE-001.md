@@ -4,7 +4,7 @@ title: Watershed Routing and Channel Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 54
+contract_version: 56
 producer_scope:
   - Channel runon/runoff volume routing and transmission-loss accounting surfaces
   - Channel peak-discharge and duration routing surfaces at inlet/outlet boundaries
@@ -14,7 +14,7 @@ consumer_scope:
   - Impoundment and watershed-node consumers requiring channel flux/state payloads
   - Comparator/replay surfaces using watershed confidence-tier signals
 evidence_level: static
-last_reviewed: 2026-07-10
+last_reviewed: 2026-07-11
 supersedes: []
 superseded_by: []
 ---
@@ -66,6 +66,8 @@ Out of scope:
 | REF-ROUTE-WSHDRV-ORDER | `/workdir/wepp-forest_260430_baseline/src/wshdrv.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Channel execution-order authority for WS11: `wshcqi -> wshirs -> wshrun/wshpek`, plus direct `wshchr` routing path when `ipeak > 2` and local channel runoff is absent. | `[DIRECT][Static]` |
 | REF-ROUTE-WSHPEK-IPEAK | `/workdir/wepp-forest_260430_baseline/src/wshpek.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | `ipeak` method-selection authority (`1` modified Rational, `2` CREAMS, `>=3` wave-routing via `wshchr`) and peak/duration post-processing semantics. | `[DIRECT][Static]` |
 | REF-ROUTE-WSHCHR-WAVE | `/workdir/wepp-forest_260430_baseline/src/wshchr.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Legacy-equivalent channel wave-routing authority (linear kinematic wave and Muskingum-Cunge branch equations, storage closure, routed `peakot`/`runvol`/`rundur` outputs). | `[DIRECT][Static]` |
+| REF-ROUTE-WSHCHR-STORAGE | `/workdir/wepp-forest_260430_baseline/src/wshchr.for:257-308,574-655,708-721` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Wave-route initial/final hydraulic storage (`sinit`, `sfnl`) and daily routed-volume closure (`chvol = volint + sinit - sfnl`); the legacy negative-`chvol` clamp is not imported because openWEPP fail-closes material domain violations. | `[DIRECT][Static] + [INFERENCE][Static]` |
+| REF-ROUTE-HECHMS-MC-STABILITY | `references/copyrighted/HEC_HMS_TechRef_Muskingum_Cunge.html` Eq. 6-15 and `references/copyrighted/source_pdfs/R17_NEH630_Chapter17_Flood_Routing.txt` pp. 17-27..17-32 | Primary/canonical corroboration for MC coefficient equations, volume-conserving recurrence intent, critical space/time-step stability, and explicit rejection of unstable rapidly rising hydrographs. | `[DIRECT][Static]` |
 | REF-ROUTE-CHRQIN-WAVE | `/workdir/wepp-forest_260430_baseline/src/chrqin.for` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Legacy-equivalent channel wave-routing inflow-state assembly authority for `ipeak > 2` (`q1`, `qin`, `qlat`, and segment-coefficient preparation surfaces). | `[DIRECT][Static]` |
 | REF-ROUTE-CH13-DUR | `chap13.pdf` §13.4.3 Eq. [13.4.26] | Effective runoff-duration computation from volume and outlet peak. | `[DIRECT][Static]` |
 | REF-ROUTE-CH13-SVF | `chap13.pdf` §13.5.2 Eq. [13.5.1]-[13.5.5] | Spatially-varied flow and friction-slope relationships used by channel erosion routines. | `[DIRECT][Static]` |
@@ -118,6 +120,7 @@ Out of scope:
 | `mofe_hourly_carry` | manifest metadata | Contributor-level evidence that multi-OFE hourly hillslope pass payloads were produced with explicit 24-slot carry arrays rather than aggregate-only runon substitution. | hillslope runner manifest | watershed routing admission validator |
 | `V_h`, `S_h` | `m^3`, `kg` | Hour-integrated runoff volume and exported sediment mass (minor-1 HBP EVENT surfaces; ADR-0036 D2), consumed on the interval lane as projection sources only. | hillslope HBP producer (`SC-SED-001`/`SC-INFILE-HBP-001`) | interval-projection assembler (INV-ROUTE-015) |
 | `q1(it)`, `ntchr`, `dtchr` | `m^3 s^-1`, count, `s` | Routed interval discharge series, interval count, and interval length on the normalized water grid (`ntchr * dtchr = 86400 s`). | WS11 wave-routing branch | channel-interval sediment lane |
+| `sinit`, `sfnl`, `chvol` | `m^3`, `m^3`, `m^3` | Initial hydraulic reach storage, final hydraulic reach storage, and routed daily outlet volume. Initial storage uses the pinned inlet/outlet-boundary mean on first execution and thereafter carries prior `sfnl`. Terminal `sfnl` is branch-specific: KW uses the mean Manning area across all `nseg + 1` terminal spatial nodes; MC uses the terminal inlet/outlet-boundary mean. In both cases storage is mean area times reach length and `chvol = volint + sinit - sfnl`. | WS11 wave-routing/storage closure | terminal channel state and downstream routing |
 | `qlat(it)` | `m^3 s^-1` | Published wave-routing lateral inflow series — **total reach rate** (`RoutedChannelWaveState::qlat_m3_s` lineage; baseline `chrqin`/`wshchr` assembly, divided by channel length only inside the wave solver). Interval-lane use: the Eq. [13.5.7] slot for the effective-length partition ONLY; never the per-unit-length solve operand. | WS11 wave-routing branch | INV-ROUTE-016 effective-length partition |
 | `qlat_eff(it)` | `ft^3 s^-1 ft^-1` | Interval effective lateral inflow per unit length: `qlat_eff(it) := qe(it) / leff(it)` (Eq. [13.5.11] interval-ized) — the segment solve's lateral operand (`qlat_cfs_per_ft` slot). Derived, never substituted by `qlat(it)` or `qlat(it)/lc`. | INV-ROUTE-016 effective-length step | WSHEDIMPL18-41 segment solve |
 | `W`, `W_i`, `W_f`, `wera`, `werb` | `ft` | Current/anchor/final eroded channel widths and eroded-width state at segment boundaries (CREAMS widening family, lineage realization). | widening-clock evaluator + geometry carrier | subsequent-interval hydraulics and geometry publication |
@@ -152,6 +155,8 @@ Out of scope:
 | INV-ROUTE-018 | Widening-clock invariant (W11A): post-nonerodible-layer channel widening follows the **WEPP-adapted lineage realization** of the CREAMS widening law — the linear widening rate (the `dwdti = excess * 2 * Kch * (tau_b - taucr) / rho_soil` lineage form, with the CREAMS `^1.05` exponent dropped exactly as the lineage detachment path drops the [I-128] `1.35`/`^1.05` factors), the lineage-modified exponential (`wstar = (1 - exp(-1.0176*t_star))/1.0176`), and the fitted shear-distribution `f(x_b)` (`shdist` lineage) — with **pinned `dcap.for` behavior as the binding realization** and the WSHEDIMPL18-41 migrated segment-solve lanes as the implementation target; CREAMS Eq. [I-133]-[I-140] is cited as **structural provenance** for the law's form, not as a literal override of the lineage realization. Two migrated-lane terminals historically diverged from the pinned baseline (GAP-ROUTE-014, **closed by WSHED-W11B**): (1) the capped-widening terminal — baseline caps `dct = maxe`, **reconstructs the capped erosion** `eros = dct * t_norm * wflow / rho_soil`, and derives width/depth from that capped erosion (`dcap.for:238-261`); the pre-W11B lane capped only `dct` and returned uncapped width with unchanged depth; (2) the post-contact subcritical-boundary-shear terminal — when boundary shear cannot widen but erodible depth remains, baseline re-enters the incision terminal with `timsh = timpot` and decrements `depmid` (`dcap.for:210-215, 173-190`); the pre-W11B lane computed class detachment but returned unchanged `depmid`. Both terminals (and their lock-in tests) were corrected to pinned behavior by `20260710-wshedw11b-channel-interval-sediment-implementation-001`, gated by vector 10(b)/(c). Evaluation is per interval with carried state: each active interval computes its own final width `W_f(Q_interval)` and rate basis from that interval's hydraulics, advances the lineage exponential by the interval's widening-time budget with `W_i := W_current`, and holds geometry unchanged when `W_f(Q_interval) <= W_current` (the Chapter-13 "flow is too shallow to cause detachment" branch). Gate operands per lineage: detachment gates on average soil shear (`tau`, the `effsh` lineage); widening gates on boundary shear (`tau_b = tau * f(x_b)`). Within a layer-contact interval the erosion-time budget partitions per the lineage `timpot`/`timex` semantics: incision consumes `timpot = depmid * rho_soil / d_i` (where `d_i` is the maximum-shear mass detachment rate, baseline `di = excess * Kch * (tau - taucr)`, the CREAMS `e_m` realization) and only the residual budget drives widening. Per-interval re-anchoring is the interval-ization of the lineage's own per-event re-anchoring (carried eroded width plus each event's own discharge) — a **labeled refinement** with the same recorded-fallback posture as INV-ROUTE-016; no persistent widening state exists beyond the carried geometry. The event-scalar triangular shear-time surrogate (`tb = 2*rundur`, `timsh = tb*(1 - taucr/tau)` `dcap` lineage) is invalid on the interval lane. Its two legacy operand roles are replaced by **two named interval operands**: the erosion-exposure time `t_exp(it)` (= `dtchr` when the gate shear exceeds `taucr`, else zero; partitioned `timpot`/`timex` within a layer-contact interval) fills every legacy `timsh` slot, and the flux-normalization basis `t_norm(it) := dtchr` fills every legacy `tb` denominator slot (`dct = d_i * t_exp * werod / (t_norm * wflow)`; `dct = eros * rho_soil / (t_norm * wflow)`; the capped-erosion reconstruction `eros = dct * t_norm * wflow / rho_soil`) — the triangular factor `2` retires with the surrogate. Constructive closure: per class per interval, detached mass = detachment flux integrated over `t_norm` = rate * `t_exp` semantics, and interval fluxes handed to the continuity solve are interval masses / `dtchr`. | hard-fail | REF-ROUTE-CREAMS-CH3-WIDEN, REF-ROUTE-GULLY-STATE, REF-ROUTE-CH13-DETDEP | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-ROUTE-019 | Per-interval class mass-closure invariant (W11A): per particle class per interval, inlet ingress + lateral ingress + flow detachment = egress + deposition (TOL-ROUTE-006); per class per day, the interval sums equal the published daily class masses (TOL-ROUTE-007); interval projection is exact — the interval-projected inlet/lateral class masses sum to the source hourly masses (`Σ_intervals = Σ_h S_h` per contribution, TOL-ROUTE-008). No suspended sediment mass pool carries between intervals, events, or days: the quasi-steady interval solve carries no storage term, so each interval closes exactly and no sediment mass is attributable to end-of-grid routed water storage on this lane (INV-ROUTE-020(c)). Boundary-detached mass is **defined constructively** as eroded geometry volume * `rho_soil` (`d_ch = e_m / rho_soil`, Eq. [I-131] lineage; `rho_soil` = in-place soil bulk mass density, baseline `wtdsoi` numeric provenance) — a derivation rule, not a separately checked residual. Per-class time resolution of ingress is the day-level class-fraction blend applied uniformly to projected interval masses; treating that uniform split as enriched timing is invalid (`SC-SED-001#GAP-SED-008` interchange scope — the serialized `S_h` is total-mass). | hard-fail | REF-ROUTE-CH13-CONT, REF-ROUTE-CREAMS-CH3-WIDEN, REF-ROUTE-ADR0036-HOURLY, REF-ROUTE-JIMF2023-CARRY | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-ROUTE-020 | Channel-interval degenerate-state invariant (W11A): (a) zero-flow interval — when the routed interval discharge is at or below the routed-closure constant of INV-ROUTE-007 (the `qpo` floor, `1e-12 m^3 s^-1`, applied here per interval), no detachment/transport solve executes and any interval-projected incoming sediment mass deposits in the reach (zero inlet transport capacity rule); geometry is unchanged; (b) the zero-flow floor is that existing routed-closure constant — introducing a separate sediment-specific flow threshold is invalid; (c) end-of-grid storage disposition — on the quasi-steady interval lane each interval closes without a suspended-storage term, so the sediment mass attributable to end-of-grid routed water storage is **zero by construction** and day closure is unaffected by nonzero water storage; should the recorded unsteady fallback lane (INV-ROUTE-016) ever activate, its grid-end suspended concentration state deposits in the reach at grid end (deposit-at-grid-end; GAP-ROUTE-013 records the labeled decision); carrying a suspended pool across midnight is invalid on both lanes; (d) cross-midnight — the `dtchr` grid covers exactly 86400 s (water-routing normalization lineage; a non-covering grid handed to the sediment lane is a typed hard failure) and the only cross-day channel sediment state is geometry (INV-ROUTE-017). | hard-fail | REF-ROUTE-ARS77-SAMEGRID, REF-ROUTE-JIMF2023-CARRY, REF-ROUTE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-ROUTE-021 | WSHED-W11D wave-recurrence, storage, and daily-volume invariant: for an `ntchr`-interval projected input, the route executes the pinned recurrence exactly `it = 1..ntchr`; the time-zero boundary state is separate from the `ntchr` published interval terminals, and `q1(it)` has exactly one routed terminal for every projected interval. On first execution, time-zero `qin(0)`/`qlat(0)` use the first projected boundary rate and steady `q1(0) = qin(0) + qlat(0)`; on later days they carry the prior terminal boundary state. For `ipeak >= 3`, `q1(it)` is peak/timing and downstream hydrograph authority but `Σ q1(it) * dtchr` is not daily outlet-volume or storage authority. The route must carry `sinit`; compute KW `sfnl` as reach length times the mean terminal Manning area over all `nseg + 1` spatial nodes; compute MC `sfnl` as reach length times the mean terminal inlet/outlet Manning areas; and publish `chvol = volint + sinit - sfnl`. Fresh zero-flow initialization has `sinit = 0`; cross-day execution carries the prior `sfnl`. When every routed `q1(it)` is zero, pinned no-peak disposition requires `chvol = 0` and `sfnl = volint + sinit`, so stored water is retained rather than converted to an outlet event without discharge authority. `sinit`, `sfnl`, and `chvol` must be finite and nonnegative within TOL-ROUTE-009. In the existing four-term `chanwb` projection, available `Inflow := volint + sinit` and final `Storage := sfnl`, preserving the same equation without hiding initial storage. A materially negative `chvol` or storage on a positive-peak route is a typed domain failure; it must not be clamped, replaced by the unrestricted flux residual, or hidden at publication. | hard-fail | REF-ROUTE-WSHCHR-STORAGE, REF-ROUTE-WSHCHR-WAVE, REF-ROUTE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-ROUTE-022 | WSHED-W11D Muskingum-Cunge numerical-admissibility invariant: before an `ipeak >= 4` segment update executes on the production hourly lane, the pinned `K`, `X`, and `c1..c3` recurrence must be finite, sum to one within TOL-ROUTE-010, and be monotone (`c1,c2,c3 >= -TOL-ROUTE-010`). The computed passive-route update, including its explicit lateral source, must not exceed `max(I_t, I_{t-1}, O_{t-1}) + qL*dx` beyond TOL-ROUTE-010. A configured `dtchr`/`dx` or dynamic refresh that violates this stability/maximum-principle envelope is rejected with `WKERNEL-WS10-CHANNEL-E-003`; signed coefficients may remain diagnostic provenance but may not drive production routing. No coefficient clamp, peak clip, empirical damping, or static/dynamic fallback is authorized. | hard-fail | REF-ROUTE-WSHCHR-WAVE, REF-ROUTE-HECHMS-MC-STABILITY, REF-ROUTE-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Invariant Guard Map
 
@@ -177,6 +182,8 @@ Out of scope:
 | `INV-ROUTE-018` | runtime | Widening-clock evaluator (`WKERNEL-WS10-CHANNEL-E-001..003` family) | Typed hard error on triangular shear-time surrogate use on the interval lane, widening-state advance under `W_f(Q) <= W_current`, or budget double-count at layer contact | Tier-B investigation gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-ROUTE-019` | runtime | Per-interval class mass-closure checker (`WKERNEL-WS10-CHANNEL-E-001..003` family) | Typed hard error on interval/day closure residual beyond TOL-ROUTE-006/007, projection inexactness beyond TOL-ROUTE-008, or suspended-pool carry | Tier-B investigation gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-ROUTE-020` | runtime | Channel-interval degenerate-state handler (`WKERNEL-WS10-CHANNEL-E-001..003` family) | Typed hard error on zero-flow-interval detachment, sediment-specific flow thresholds, cross-midnight suspended carry, or non-covering grids | Tier-B investigation gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-ROUTE-021` | runtime | Wave-route grid-end hydraulic storage and daily-volume closer (`WKERNEL-WS10-CHANNEL-E-001..003` family) | Typed hard error on non-finite/negative storage or negative available terminal volume; no clamp or flux-residual substitution | WSHED-W11D water-closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-ROUTE-022` | runtime | Static/dynamic MC coefficient validator plus segment maximum-principle guard (`WKERNEL-WS10-CHANNEL-E-003`) | Typed domain rejection before publication when the configured recurrence is non-monotone or amplifies a passive update | WSHED-W11D MC-stability gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Binding Exposure Index
 
@@ -188,6 +195,7 @@ Out of scope:
 | `BEI-ROUTE-004` | Channel sediment continuity, shear, detachment, deposition, and transport capacity. | `active` | `maps-to-existing-INV` | `INV-ROUTE-008, INV-ROUTE-009, INV-ROUTE-010` | `runtime-guard` | Segment sediment process bindings are exposed through existing channel sediment guards. |
 | `BEI-ROUTE-005` | Comparator confidence and Chapter-13 applicability declarations. | `active` | `maps-to-existing-INV` | `INV-ROUTE-012, INV-ROUTE-013` | `governance-runtime-guard` | Runtime admission and Tier-B promotion posture are both binding surfaces. |
 | `BEI-ROUTE-006` | MOFE hourly carry routing-continuity metadata. | `active` | `maps-to-existing-INV` | `INV-ROUTE-014` | `runtime-guard` | Admission remains fail-closed before HBP routing dispatch. |
+| `BEI-ROUTE-008` | WSHED-W11D wave storage/volume and MC numerical admissibility. | `active` | `maps-to-existing-INV` | `INV-ROUTE-021, INV-ROUTE-022` | `runtime-guard` | Pinned storage closure and contract-authorized MC stability reject generated volume and amplified passive recurrence without repair clamps. |
 | `BEI-ROUTE-007` | W11A channel-interval sediment sequencing addendum (quantum, solve form, geometry carry, widening clock, closure, degenerate states). | `active` | `maps-to-existing-INV` | `INV-ROUTE-015, INV-ROUTE-016, INV-ROUTE-017, INV-ROUTE-018, INV-ROUTE-019, INV-ROUTE-020` | `runtime-guard` | Addendum narrative binds only through these invariant rows; INV-ROUTE-015 defines the biconditional activation predicate and INV-ROUTE-005(e) states which authority governs each side of it. |
 
 ## Symbol Alias Map
@@ -263,6 +271,15 @@ channel erosion internals.
 - Channel geometry state reset at interval/event/day boundaries, applied out of time order, narrowed, or refilled outside the run-start and primary-tillage reseeds. `[DIRECT][Static]`
 - Suspended channel sediment mass carried between intervals, events, or days; end-of-grid storage sediment left unclosed. `[DIRECT][Static] + [INFERENCE][Static]`
 - Triangular shear-time surrogate (`tb = 2*rundur` lineage) used to derive erosion time on the interval-resolved lane. `[DIRECT][Static]`
+- Wave recurrence that aliases the time-zero state to the first published
+  interval terminal, executes fewer than `ntchr` updates, or drops the final
+  projected interval. `[DIRECT][Static]`
+- Wave-route publication derived from unrestricted `Σ(qin + qlat - q1) * dtchr`
+  instead of carried initial/final hydraulic storage; KW terminal storage
+  reconstructed from inlet/outlet boundaries instead of all terminal spatial
+  nodes; material negative `sfnl`/`chvol`; or a zero-peak route that drains
+  stored water into a positive outlet volume. `[DIRECT][Static] + [INFERENCE][Static]`
+- Production MC update with non-monotone `c1..c3`, coefficient-sum failure, or passive-route output above the declared source-aware maximum principle. `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Producer Obligations
 
@@ -270,6 +287,11 @@ channel erosion internals.
 - OBL-ROUTE-P-002: Emit peak-routing terms (`qpo`, `tc`, selected method context, and `durrof`) with explicit method-selection metadata and unit-consistent inputs. `[DIRECT][Static] + [INFERENCE][Static]`
 - OBL-ROUTE-P-003: Emit sediment-routing terms (`qsed*`, `Tc`, detachment/deposition branch outcomes) with particle-class continuity semantics preserved. `[DIRECT][Static] + [INFERENCE][Static]`
 - OBL-ROUTE-P-004: Enforce invariant failures as typed errors; no silent branch-defaulting or numeric clamping on invalid routing states. `[INFERENCE][Static]`
+- OBL-ROUTE-P-005: Wave routes execute and publish all `ntchr` interval
+  terminals, retain the separate time-zero boundary state, publish
+  branch-specific hydraulic `sinit`/`sfnl`, and storage-close `chvol`; the
+  interval discharge integral remains a diagnostic and may not replace daily
+  volume authority. `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
 
@@ -305,6 +327,8 @@ bit-for-bit parity). Contract-specific tolerances:
 | TOL-ROUTE-006 | Per-interval per-class mass-closure residual (interval lane) | `<= 1e-9 kg` | INV-ROUTE-019 interval closure: ingress + detachment vs egress + deposition per class per `dtchr` interval. | `[INFERENCE][Static]` |
 | TOL-ROUTE-007 | Daily class-mass sum residual (interval lane) | `<= 1e-9 kg` | Published daily class masses vs interval sums; structural f64 summation, tolerance covers rounding only. | `[INFERENCE][Static]` |
 | TOL-ROUTE-008 | Hourly-to-interval projection exactness (interval lane) | `<= 1e-12` relative per contribution; contributions with `Σ_h S_h = 0` require exactly zero projected mass (absolute) | `Σ_intervals` of projected masses vs `Σ_h S_h`; exact interval-overlap projection, tolerance covers f64 rounding only. | `[INFERENCE][Static]` |
+| TOL-ROUTE-009 | Wave storage/available-volume roundoff | `1e-9 m^3` absolute or `1e-12` relative to the largest finite volume operand, whichever is larger | Values within the negative roundoff band may be represented as exact zero only at the typed publication boundary; material negatives hard-fail and are never clamped. | `[INFERENCE][Static]` |
+| TOL-ROUTE-010 | MC coefficient sum/nonnegative and passive maximum-principle roundoff | `1e-12` absolute for coefficients; `1e-12 * max(1, source_bound)` for discharge | Numerical admissibility tolerance only; it does not authorize damping, clipping, or coefficient repair. | `[INFERENCE][Static]` |
 
 ## WB16 Hillslope Peak-Flow Intake Addendum
 
@@ -408,20 +432,39 @@ Minimum WS11 routing conformance vectors:
    outputs and method-identity traceability.
 3. `ipeak = 3` route path executes linear kinematic-wave routing and preserves
    routed closure (`roff = qpo * durrof` within tolerance).
-4. `ipeak >= 4` route path executes Muskingum-Cunge routing (including the
-   `ipeak = 5` variable-parameter branch when configured) and preserves routed
-   closure with finite/non-negative outputs.
+4. `ipeak >= 4` route path executes Muskingum-Cunge routing only when the
+   configured recurrence satisfies INV-ROUTE-022; admissible static and
+   variable vectors preserve routed closure with finite/non-negative outputs,
+   while inadmissible grids fail with `WKERNEL-WS10-CHANNEL-E-003`.
 5. Missing/non-finite/domain-dependency violations fail with preserved guard
    family codes `WKERNEL-WS10-CHANNEL-E-001..003`.
 6. `ipeak >= 4` Muskingum-Cunge state publication preserves finite coefficient
-   surfaces without non-physical coefficient clamping (`c1/c2/c3` are allowed
-   to be signed), and branch output responds to prior wave-state memory
-   (`ws10_channel_{id}_q1`, `ws10_channel_{id}_qin`) when provided.
+   surfaces without coefficient clamping; coefficients below the
+   TOL-ROUTE-010 roundoff band are diagnostic-only and typed-rejected before
+   they drive production routing. Admissible branch output responds to prior
+   wave-state memory (`ws10_channel_{id}_q1`, `ws10_channel_{id}_qin`).
 7. `ipeak = 5` vectors execute variable-parameter Muskingum-Cunge
    dynamic-coefficient refresh semantics for the single-segment WS10 lane by
    recomputing `c0..c4` from dynamic reference-flow lineage each execution step
    (`qref = (qin + qin_previous + q1_previous) / 3` in the reduced lane),
    preserving routed closure and finite coefficient publication continuity.
+8. Fresh KW early-pulse and late-pulse vectors independently reconstruct
+   `sinit`, `sfnl`, and `chvol`; early drained flow publishes exactly the
+   available external volume, while late flow retains finite nonnegative
+   hydraulic storage and no generated volume.
+9. The W11C static/variable MC 3600 s and 600 s grids expose a negative carry
+   coefficient far beyond TOL-ROUTE-010 and fail with
+   `WKERNEL-WS10-CHANNEL-E-003` before any peak/volume publication.
+10. An admissible finer-grid MC vector proves coefficient sum, monotonicity,
+    passive maximum principle, and static/dynamic branch identity without
+    clamps or damping.
+11. A first-slot pulse and a last-slot pulse each alter their corresponding
+    published routed terminal, proving exactly `ntchr` recurrence updates and
+    distinguishing the separate time-zero state from interval terminal one.
+12. A multi-segment KW terminal independently reconstructs `sfnl` from all
+    terminal spatial-node Manning areas and anti-aliases the MC boundary-mean
+    formula; a zero-peak next-day vector retains all available carried storage
+    with zero `chvol`.
 
 ## ARCH22 Typed Production-Surface Addendum
 
@@ -552,9 +595,11 @@ Minimum WS11 routing conformance vectors:
    `c4 = 2 * qlat * dtchr * c0` for the current single-segment WS10 routing
    lane (`wshchr.for` `c4 = 2*qlavg*dxchr*dtchr*c0`, reduced with
    `dxchr == chnl1` and `qlavg = qlat/chnl1` in the single-segment reduction).
-4. WS11 Muskingum-Cunge coefficient surfaces (`c1`, `c2`, `c3`) are finite
-   real coefficients and must not be forced non-negative by publication-time
-   clamps; invalidity is non-finite or undefined denominator, not sign alone.
+4. WS11 Muskingum-Cunge coefficient surfaces (`c1`, `c2`, `c3`) retain their
+   signed calculated values for provenance and must not be repaired by
+   publication-time clamps. On the production hourly lane, a coefficient below
+   the INV-ROUTE-022/TOL-ROUTE-010 admissibility band is a typed domain failure
+   before the recurrence executes.
 5. WS11 Muskingum-Cunge publication still requires non-negative finite routed
    outflow (`q1`) and routed closure publication (`qpo`, `roff`, `durrof`)
    under `INV-ROUTE-006/007`.
@@ -809,6 +854,8 @@ acceptance gates.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-07-11` | `56` | `Codex` | WSHED-W11D review correction: made the pinned `it=1..ntchr` recurrence count and separate time-zero state explicit; corrected KW terminal storage to average all `nseg+1` terminal spatial areas while retaining the MC boundary mean; bound the pinned zero-peak storage-retention disposition; and added anti-alias recurrence, spatial-storage, and dry-carry vectors. |
+| `2026-07-11` | `55` | `Codex` | WSHED-W11D contract-first defect closure: added pinned `sinit/sfnl/chvol` wave storage and daily-volume authority (`INV-ROUTE-021`), made the unrestricted interval flux integral diagnostic-only, and added contract-authorized MC numerical admissibility/maximum-principle rejection (`INV-ROUTE-022`) backed by local HEC-HMS/NEH authority. Updated guards, tolerances, invalid states, obligations, vectors, Binding Exposure Index, and the prior signed-coefficient language; no clamp, damping, or peak clipping is authorized. |
 | `2026-07-10` | `54` | `Claude Code` | GAP-ROUTE-014 closure disposition after WSHED-W11B (`c915ec48`): both migrated-lane detachment terminals corrected to pinned `dcap.for` behavior with vector 10(b)/(c) gates passing per the W11B gate record; INV-ROUTE-018's divergence clause converted to a historical record; gap promotability `open` → `closed`. Contract-lifecycle amendment only — no process-physics authority changed (the W11B implementation record is the evidence; this row integrates it into canonical authority per the no-package-local-authority rule). |
 | `2026-07-10` | `53` | `Claude Code` | Codex re-confirmation closure (`WSHED-W11A-RECONFIRM-001`, H1 residual): the total-vs-per-unit-length lateral conflation resolved with distinct canonical symbols — `qlat(it)` (published wave-routing **total**, `m^3 s^-1`, `RoutedChannelWaveState::qlat_m3_s` lineage) fills the Eq. [13.5.7] slot for the effective-length partition ONLY; the segment solve's lateral operand is the derived per-unit-length `qlat_eff(it) := qe(it)/leff(it)` (Eq. [13.5.11], the baseline `chnrt.for:233-242` local-`qlat`/migrated-`qlat_cfs_per_ft` quantity); raw-total or total/`lc` substitution declared invalid; storage expression corrected to all-total form (`qt + qlat - q1`); pre-existing grouped Variables row split so `qlat_eff` carries `ft^3 s^-1 ft^-1`; new `qlat(it)`/`qlat_eff(it)` Variables rows; vector 1 and vector 11 re-pinned (anti-alias now distinguishes raw-total and total/`lc` aliases with a length chosen so `qlat/lc != qe/leff`); unit-bridge note extended with the derived-normalization statement. |
 | `2026-07-10` | `52` | `Claude Code` | Codex post-hoc review closure (`WSHED-W11A-POSTHOC-001`, REOPEN → amendments): H1 — unique hydraulic-profile operand map bound in `INV-ROUTE-016` (`qe(it) := q1(it)`, `qt(it) := qin(it)`, `qlat(it) :=` wave-routing lateral series; event-peak fractions invalid; outlet-anchored steadiness with storage deliberately unreconciled, legacy-posture-labeled) + anti-alias vector 11; H2 — pinned `dcap.for` bound as the widening realization with the two divergent migrated-lane terminals named for mandatory correction (`GAP-ROUTE-014`, vector 10(b)/(c) extensions); M1 — the surrogate's two operand roles split into named `t_exp(it)`/`t_norm(it)` with the constructive closure equation (triangular factor 2 retires wholesale); M2 — `d_i` defined (baseline `di`, the CREAMS `e_m` realization) and `rho_soil` re-pinned as in-place bulk **mass** density (lbm convention; `wtdsoi` name is a legacy misnomer); M3 — REF-ROUTE-HECRAS-QUS narrowed to state-carry (cross-section refresh is threshold-gated, manual p.178; geometry-update authority is Ch-13/lineage), REF-ROUTE-ARS77-SAMEGRID narrowed to the boundary-condition claim with the dry-interval rule marked inference, REF-ROUTE-CREAMS-CH3-QS mixed-graded for its interpretive characterization. |

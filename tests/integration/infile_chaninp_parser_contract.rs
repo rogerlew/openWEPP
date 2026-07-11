@@ -3,7 +3,7 @@ use std::path::PathBuf;
 
 use openwepp_input_contract::parsers::chaninp::{
     ChaninpFile, ChaninpParseError, ChaninpParseOptions, ChaninpParseOutcome, ChaninpWarningCode,
-    ParseMode, parse_chaninp_from_path,
+    ParseMode, parse_chaninp_from_path, parse_chaninp_from_str,
 };
 
 fn fixture_path(name: &str) -> PathBuf {
@@ -58,6 +58,62 @@ fn strict_mode_parses_canonical_payload() {
     assert_eq!(options.ichnum_input, vec![4, 5]);
     assert_eq!(options.ichnum_norm, vec![4, 5]);
     assert!(options.chan_output_enabled);
+}
+
+#[test]
+fn wshedw11d_strict_zero_count_closes_after_three_records_and_retains_dtchr() {
+    let parsed = parse_chaninp_from_str(
+        "3 600\n0.0\n0\n",
+        ChaninpParseOptions::strict(4, 2),
+        &valid_ids(),
+    )
+    .expect("canonical nchnum=0 payload should close after record 3");
+
+    assert_eq!(parsed.parse_outcome, ChaninpParseOutcome::ParsedBranch);
+    assert!(parsed.line_count_closed);
+    assert!(parsed.warnings.is_empty());
+    let options = parsed.options.expect("wave branch should expose options");
+    assert!((options.dtchr_input_s - 600.0).abs() < 1.0e-9);
+    assert_eq!(options.dtchr_norm_s, 600);
+    assert_eq!(options.ntchr, 144);
+    assert_eq!(options.nchnum_input, 0);
+    assert_eq!(options.nchnum_norm, 0);
+    assert!(options.ichnum_input.is_empty());
+    assert!(options.ichnum_norm.is_empty());
+    assert!(!options.chan_output_enabled);
+}
+
+#[test]
+fn wshedw11d_compat_zero_count_is_parsed_without_default_aliasing() {
+    let parsed = parse_chaninp_from_str(
+        "3 3600\n0.0\n0\n",
+        ChaninpParseOptions::compatibility(5, 2),
+        &valid_ids(),
+    )
+    .expect("canonical compatibility input should remain a parsed branch");
+
+    assert_eq!(parsed.parse_outcome, ChaninpParseOutcome::ParsedBranch);
+    assert!(parsed.warnings.is_empty());
+    let options = parsed.options.expect("wave branch should expose options");
+    assert!((options.dtchr_input_s - 3600.0).abs() < 1.0e-9);
+    assert_eq!(options.dtchr_norm_s, 3600);
+    assert_eq!(options.ntchr, 24);
+    assert_eq!(options.nchnum_norm, 0);
+    assert!(options.ichnum_norm.is_empty());
+    assert!(!options.chan_output_enabled);
+}
+
+#[test]
+fn wshedw11d_strict_zero_count_rejects_extra_nonempty_record() {
+    let error = parse_chaninp_from_str(
+        "3 600\n0.0\n0\n4\n",
+        ChaninpParseOptions::strict(4, 2),
+        &valid_ids(),
+    )
+    .expect_err("nchnum=0 closes after record 3");
+
+    assert!(matches!(error, ChaninpParseError::ChnE002 { .. }));
+    assert_eq!(error.contract_error_id(), "CHN-E-002");
 }
 
 #[test]

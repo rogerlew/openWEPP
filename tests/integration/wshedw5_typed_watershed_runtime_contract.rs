@@ -278,6 +278,9 @@ fn build_two_hillslope_channel_frame() -> WatershedNetworkFrame {
         24.0,
     )
     .expect("two-hillslope channel frame should build");
+    // These MT3 vectors exercise hourly superposition/consumer behavior, not
+    // the W11D inadmissible-MC rejection vector.
+    frame.routing_globals.ipeak = 3;
     bind_test_channel_crfrac(&mut frame);
     frame
 }
@@ -631,6 +634,7 @@ fn mt3_hourly_contributor_with_dependency_node_fails_closed() {
     hourly_sediment[10] = 100.0;
 
     let mut frame = build_typed_frame();
+    frame.routing_globals.ipeak = 3;
     frame.add_hillslope_contribution(contribution_with_hourly_pair(
         1,
         hourly_runoff,

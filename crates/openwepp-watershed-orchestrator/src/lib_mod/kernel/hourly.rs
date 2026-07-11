@@ -88,25 +88,47 @@ impl Ws10ChannelImpoundmentKernel {
         let ntchr = Self::ws11_ntchr(input)?;
         Self::ws11_validate_interval_grid(context.dtchr, ntchr)?;
         Self::ws11_validate_active_lane_operand_mode(true)?;
-        let (water_state, representative_wave) =
+        let (mut water_state, representative_wave) =
             Self::ws11_route_interval_water(input, context, ntchr)?;
+        let peak_discharge_m3_s = water_state.q1_m3_s.iter().copied().fold(0.0_f64, f64::max);
+        let physical_inflow_m3 =
+            Self::ws11_daily_physical_inflow_m3(input, &water_state, context.dtchr)?;
+        if peak_discharge_m3_s <= WS10_ZERO_THRESHOLD {
+            // Pinned `wshchr.for:653-654`: without a routed discharge event,
+            // no daily outlet volume exists. Retain every available cubic
+            // metre as final reach storage rather than draining state through
+            // a zero-peak publication.
+            water_state.final_storage_m3 = Self::require_non_negative_computed(
+                Ws10NodeClass::Channel,
+                BoundarySymbol::from("ws11_zero_peak_final_storage"),
+                physical_inflow_m3 + water_state.initial_storage_m3,
+            )?;
+        }
         let sediment_state = Self::ws11_route_interval_sediment(
             input,
             context,
             &water_state,
             ntchr,
         )?;
-
-        let peak_discharge_m3_s = water_state.q1_m3_s.iter().copied().fold(0.0_f64, f64::max);
-        let channel_outflow_m3 = water_state.q1_m3_s.iter().sum::<f64>() * context.dtchr;
-        let channel_inflow_m3 = water_state
-            .qin_m3_s
-            .iter()
-            .zip(&water_state.qlat_total_m3_s)
-            .map(|(qin, qlat)| (qin + qlat) * context.dtchr)
-            .sum::<f64>();
-        let channel_storage_m3 = channel_inflow_m3 - channel_outflow_m3;
-        let duration_seconds = Self::ws11_interval_active_span_s(&water_state.q1_m3_s, context.dtchr);
+        let channel_outflow_m3 = Self::ws11_close_daily_outlet_volume(
+            physical_inflow_m3,
+            water_state.initial_storage_m3,
+            water_state.final_storage_m3,
+        )?;
+        // The typed balance `Inflow - Outflow - Loss - Storage` consumes all
+        // water available today, including explicitly carried initial storage.
+        let channel_inflow_m3 = physical_inflow_m3 + water_state.initial_storage_m3;
+        let channel_storage_m3 = water_state.final_storage_m3;
+        let duration_seconds = if peak_discharge_m3_s <= WS10_ZERO_THRESHOLD {
+            0.0
+        } else {
+            channel_outflow_m3 / peak_discharge_m3_s
+        };
+        let duration_seconds = Self::require_non_negative_computed(
+            Ws10NodeClass::Channel,
+            BoundarySymbol::from("ws11_daily_outlet_duration"),
+            duration_seconds,
+        )?;
         let daily_egress_total_kg = sediment_state.daily_egress_kg.iter().sum::<f64>();
         let particle_flow_fraction = Self::ws11_daily_particle_fractions(
             &sediment_state.daily_egress_kg,
@@ -159,6 +181,38 @@ impl Ws10ChannelImpoundmentKernel {
             },
             interval_sediment_state: Some(sediment_state),
         })))
+    }
+
+    fn ws11_daily_physical_inflow_m3(
+        input: &DirectWatershedKernelInput<'_>,
+        water_state: &RoutedChannelIntervalWaterState,
+        dtchr_seconds: f64,
+    ) -> Result<f64, Ws10GuardError> {
+        // `volint` is the extensive local inflow plus the routed daily volume
+        // of dependency channels. Integrating the dependency q1 hydrograph is
+        // deliberately diagnostic-only under INV-ROUTE-021.
+        let mut physical_inflow_m3 =
+            water_state.qlat_total_m3_s.iter().sum::<f64>() * dtchr_seconds;
+        for dependency in input
+            .step
+            .dependency_nodes
+            .iter()
+            .filter(|dependency| dependency.kind == TopologyNodeKind::Channel)
+        {
+            let state = input.frame.routed_channels.get(&dependency.id).ok_or_else(|| {
+                Self::missing_required(Ws10NodeClass::Channel, "dependency_channel")
+            })?;
+            physical_inflow_m3 += Self::require_non_negative_computed(
+                Ws10NodeClass::Channel,
+                BoundarySymbol::from("ws11_dependency_daily_outflow"),
+                state.channel_outflow_m3,
+            )?;
+        }
+        Self::require_non_negative_computed(
+            Ws10NodeClass::Channel,
+            BoundarySymbol::from("ws11_daily_physical_inflow"),
+            physical_inflow_m3,
+        )
     }
 
     #[allow(clippy::too_many_lines)]
@@ -255,24 +309,40 @@ impl Ws10ChannelImpoundmentKernel {
                     BoundarySymbol::from("ws11_prior_day_qlat"),
                     state.qlat_total_m3_s[ntchr - 1],
                 )?;
-                Ok(Ws11WaveRoutingState {
-                    q1,
-                    qin,
-                    qlat,
-                    c0: 0.0,
-                    c1: 0.0,
-                    c2: 0.0,
-                    c3: 0.0,
-                    c4: 0.0,
-                })
+                let final_storage_m3 = Self::ws11_grid_end_disposition(
+                    state.final_storage_m3,
+                )?
+                .water_storage_m3;
+                Ok((
+                    Ws11WaveRoutingState {
+                        q1,
+                        qin,
+                        qlat,
+                        c0: 0.0,
+                        c1: 0.0,
+                        c2: 0.0,
+                        c3: 0.0,
+                        c4: 0.0,
+                    },
+                    final_storage_m3,
+                ))
             })
             .transpose()?;
-        let routed = Self::ws11_route_baseline_wave_series(
+        let (routed, final_storage_m3) = Self::ws11_route_baseline_wave_series(
             context,
             &qin_m3_s,
             &qlat_total_m3_s,
-            previous,
+            previous.map(|(wave, _)| wave),
         )?;
+        let initial_storage_m3 = if let Some((_, storage_m3)) = previous {
+            storage_m3
+        } else {
+            Self::ws11_hydraulic_reach_storage_m3(
+                context,
+                qin_m3_s[0],
+                qin_m3_s[0] + qlat_total_m3_s[0],
+            )?
+        };
 
         Ok((
             RoutedChannelIntervalWaterState {
@@ -281,6 +351,8 @@ impl Ws10ChannelImpoundmentKernel {
                 qlat_total_m3_s,
                 q1_m3_s: routed.q1_m3_s,
                 storage_change_m3: routed.storage_change_m3,
+                initial_storage_m3,
+                final_storage_m3,
             },
             routed.representative,
         ))
@@ -292,7 +364,7 @@ impl Ws10ChannelImpoundmentKernel {
         qin_m3_s: &[f64],
         qlat_total_m3_s: &[f64],
         prior: Option<Ws11WaveRoutingState>,
-    ) -> Result<Ws11BaselineWaveSeries, Ws10GuardError> {
+    ) -> Result<(Ws11BaselineWaveSeries, f64), Ws10GuardError> {
         if matches!(
             context.ipeak_branch,
             Ws11IpeakBranch::Rational | Ws11IpeakBranch::Creams
@@ -322,7 +394,36 @@ impl Ws10ChannelImpoundmentKernel {
         } else {
             context.ishape
         };
-        let initial_q1 = prior.map_or(qin_m3_s[0] + qlat_total_m3_s[0], |state| state.q1);
+        // The `ntchr` public slots are the pinned `it=1..ntchr` terminals.
+        // Keep the time-zero boundary state separate so slot zero is routed,
+        // not silently consumed as an initial condition. On a fresh channel,
+        // pinned `wshchr.for:259` uses the first projected boundary rate as
+        // the steady initialization; later days carry yesterday's terminal.
+        let initial = prior.unwrap_or(Ws11WaveRoutingState {
+            q1: qin_m3_s[0] + qlat_total_m3_s[0],
+            qin: qin_m3_s[0],
+            qlat: qlat_total_m3_s[0],
+            c0: 0.0,
+            c1: 0.0,
+            c2: 0.0,
+            c3: 0.0,
+            c4: 0.0,
+        });
+        let initial_q1 = Self::require_non_negative_computed(
+            Ws10NodeClass::Channel,
+            BoundarySymbol::from("ws11_initial_q1"),
+            initial.q1,
+        )?;
+        let initial_qin = Self::require_non_negative_computed(
+            Ws10NodeClass::Channel,
+            BoundarySymbol::from("ws11_initial_qin"),
+            initial.qin,
+        )?;
+        let initial_qlat = Self::require_non_negative_computed(
+            Ws10NodeClass::Channel,
+            BoundarySymbol::from("ws11_initial_qlat"),
+            initial.qlat,
+        )?;
         let qtmax = qin_m3_s
             .iter()
             .zip(qlat_total_m3_s)
@@ -331,11 +432,14 @@ impl Ws10ChannelImpoundmentKernel {
         let qref = Self::ws11_wave_reference_flow(context.ipeak_branch, qtmax)?;
 
         if qref <= WS10_ZERO_THRESHOLD {
-            return Ok(Ws11BaselineWaveSeries {
-                q1_m3_s: vec![0.0; qin_m3_s.len()],
-                storage_change_m3: vec![0.0; qin_m3_s.len()],
-                representative: None,
-            });
+            return Ok((
+                Ws11BaselineWaveSeries {
+                    q1_m3_s: vec![0.0; qin_m3_s.len()],
+                    storage_change_m3: vec![0.0; qin_m3_s.len()],
+                    representative: None,
+                },
+                0.0,
+            ));
         }
 
         let (ckref, _) = Self::ws11_wave_celerity_and_top_width(
@@ -370,38 +474,26 @@ impl Ws10ChannelImpoundmentKernel {
             let segment_f64 =
                 Self::ws11_small_count_as_f64(segment, "ws11_wave_segment_index")?;
             previous_spatial.push(
-                qin_m3_s[0] + ((initial_q1 - qin_m3_s[0]) * segment_f64 / nseg_f64),
+                initial_qin + ((initial_q1 - initial_qin) * segment_f64 / nseg_f64),
             );
         }
         let mut q1_m3_s = Vec::with_capacity(qin_m3_s.len());
-        q1_m3_s.push(Self::require_non_negative_computed(
-            Ws10NodeClass::Channel,
-            BoundarySymbol::from("ws11_initial_q1"),
-            initial_q1,
-        )?);
-        let mut representative = Some(Ws11WaveRoutingState {
-            q1: initial_q1,
-            qin: qin_m3_s[0],
-            qlat: qlat_total_m3_s[0],
-            c0: 0.0,
-            c1: 0.0,
-            c2: 0.0,
-            c3: 0.0,
-            c4: 0.0,
-        });
+        let mut representative: Option<Ws11WaveRoutingState> = None;
+        let mut previous_qin = initial_qin;
+        let mut previous_qlat = initial_qlat;
 
-        for interval in 1..qin_m3_s.len() {
+        for interval in 0..qin_m3_s.len() {
             // `wshinp.for:465` fixes `mofapp = 1` for wave routing, and
             // `wshchr.for:398-402,513-517` therefore routes the adjacent-state
             // average of the total lateral series after its reach-length
             // normalization.
             let qlat_per_m = 0.5
-                * (qlat_total_m3_s[interval - 1] + qlat_total_m3_s[interval])
+                * (previous_qlat + qlat_total_m3_s[interval])
                 / context.channel_length;
             let mut current_spatial = vec![0.0; nseg + 1];
             current_spatial[0] = qin_m3_s[interval];
-            let mc_update_active = qin_m3_s[interval - 1] > 0.0
-                || q1_m3_s[interval - 1] > 0.0
+            let mc_update_active = previous_qin > 0.0
+                || previous_spatial[nseg] > 0.0
                 || qin_m3_s[interval] > 0.0
                 || qlat_per_m > 0.0;
             if matches!(
@@ -413,6 +505,8 @@ impl Ws10ChannelImpoundmentKernel {
                 // state untouched when `qmaxi == 0` and `qlavg == 0`.
                 q1_m3_s.push(0.0);
                 previous_spatial = current_spatial;
+                previous_qin = qin_m3_s[interval];
+                previous_qlat = qlat_total_m3_s[interval];
                 continue;
             }
             let mut outlet_coefficients = [0.0; 5];
@@ -505,6 +599,8 @@ impl Ws10ChannelImpoundmentKernel {
             }
             q1_m3_s.push(q1);
             previous_spatial = current_spatial;
+            previous_qin = qin_m3_s[interval];
+            previous_qlat = qlat_total_m3_s[interval];
         }
 
         let storage_change_m3 = qin_m3_s
@@ -513,11 +609,33 @@ impl Ws10ChannelImpoundmentKernel {
             .zip(&q1_m3_s)
             .map(|((qin, qlat), q1)| (qin + qlat - q1) * context.dtchr)
             .collect();
-        Ok(Ws11BaselineWaveSeries {
-            q1_m3_s,
-            storage_change_m3,
-            representative,
-        })
+        let final_storage_m3 = match context.ipeak_branch {
+            Ws11IpeakBranch::KinematicWave => {
+                Self::ws11_kinematic_terminal_storage_m3(context, &previous_spatial)?
+            }
+            Ws11IpeakBranch::MuskingumCunge | Ws11IpeakBranch::MuskingumCungeVariable => {
+                Self::ws11_hydraulic_reach_storage_m3(
+                    context,
+                    qin_m3_s[qin_m3_s.len() - 1],
+                    q1_m3_s[q1_m3_s.len() - 1],
+                )?
+            }
+            Ws11IpeakBranch::Rational | Ws11IpeakBranch::Creams => {
+                return Err(Self::domain_violation(
+                    Ws10NodeClass::Channel,
+                    BoundarySymbol::from("ws11_interval_nonwave_branch"),
+                    0.0,
+                ));
+            }
+        };
+        Ok((
+            Ws11BaselineWaveSeries {
+                q1_m3_s,
+                storage_change_m3,
+                representative,
+            },
+            final_storage_m3,
+        ))
     }
 
     fn ws11_small_count_as_f64(
@@ -651,6 +769,161 @@ impl Ws10ChannelImpoundmentKernel {
         Ok((celerity, top_width))
     }
 
+    fn ws11_kinematic_terminal_storage_m3(
+        context: &Ws11DirectChannelContext<'_>,
+        terminal_spatial_m3_s: &[f64],
+    ) -> Result<f64, Ws10GuardError> {
+        if terminal_spatial_m3_s.is_empty() {
+            return Err(Self::domain_violation(
+                Ws10NodeClass::Channel,
+                BoundarySymbol::from("ws11_kw_terminal_spatial_count"),
+                0.0,
+            ));
+        }
+        let first = context.control.segment_points.first().ok_or_else(|| {
+            Self::missing_required(Ws10NodeClass::Channel, "ws11_channel_profile")
+        })?;
+        let channel_width_m = first.width_a_ft / WS15_DEPTH_FROM_METERS_TO_FEET;
+        let ishape = if context.control.chnz < 1.0e-8 {
+            2
+        } else {
+            context.ishape
+        };
+        let mut area_sum_m2 = 0.0;
+        for discharge_m3_s in terminal_spatial_m3_s {
+            area_sum_m2 += Self::ws11_manning_area_for_discharge(
+                ishape,
+                channel_width_m,
+                context.control.chnz,
+                context.roughness,
+                first.slope,
+                *discharge_m3_s,
+            )?;
+        }
+        let spatial_count = Self::ws11_small_count_as_f64(
+            terminal_spatial_m3_s.len(),
+            "ws11_kw_terminal_spatial_count",
+        )?;
+        Self::require_non_negative_computed(
+            Ws10NodeClass::Channel,
+            BoundarySymbol::from("ws11_kw_terminal_storage"),
+            area_sum_m2 / spatial_count * context.channel_length,
+        )
+    }
+
+    fn ws11_hydraulic_reach_storage_m3(
+        context: &Ws11DirectChannelContext<'_>,
+        inlet_discharge_m3_s: f64,
+        outlet_discharge_m3_s: f64,
+    ) -> Result<f64, Ws10GuardError> {
+        let first = context.control.segment_points.first().ok_or_else(|| {
+            Self::missing_required(Ws10NodeClass::Channel, "ws11_channel_profile")
+        })?;
+        let channel_width_m = first.width_a_ft / WS15_DEPTH_FROM_METERS_TO_FEET;
+        let ishape = if context.control.chnz < 1.0e-8 {
+            2
+        } else {
+            context.ishape
+        };
+        let inlet_area_m2 = Self::ws11_manning_area_for_discharge(
+            ishape,
+            channel_width_m,
+            context.control.chnz,
+            context.roughness,
+            first.slope,
+            inlet_discharge_m3_s,
+        )?;
+        let outlet_area_m2 = Self::ws11_manning_area_for_discharge(
+            ishape,
+            channel_width_m,
+            context.control.chnz,
+            context.roughness,
+            first.slope,
+            outlet_discharge_m3_s,
+        )?;
+        Self::require_non_negative_computed(
+            Ws10NodeClass::Channel,
+            BoundarySymbol::from("ws11_hydraulic_reach_storage"),
+            0.5 * (inlet_area_m2 + outlet_area_m2) * context.channel_length,
+        )
+    }
+
+    fn ws11_manning_area_for_discharge(
+        ishape: u32,
+        channel_width_m: f64,
+        channel_shape: f64,
+        roughness: f64,
+        slope: f64,
+        discharge_m3_s: f64,
+    ) -> Result<f64, Ws10GuardError> {
+        let discharge_m3_s = Self::require_non_negative_computed(
+            Ws10NodeClass::Channel,
+            BoundarySymbol::from("ws11_storage_boundary_discharge"),
+            discharge_m3_s,
+        )?;
+        if discharge_m3_s <= 0.0 {
+            return Ok(0.0);
+        }
+        let depth_m = Self::ws11_solve_depth_for_discharge(
+            Ws10NodeClass::Channel,
+            ishape,
+            channel_width_m,
+            channel_shape,
+            roughness,
+            slope,
+            discharge_m3_s,
+        )?;
+        let (_, area_m2, _, _) = Self::ws11_muskingum_geometry_from_depth(
+            Ws10NodeClass::Channel,
+            ishape,
+            channel_width_m,
+            channel_shape,
+            depth_m,
+        )?;
+        Self::require_non_negative_computed(
+            Ws10NodeClass::Channel,
+            BoundarySymbol::from("ws11_storage_boundary_area"),
+            area_m2,
+        )
+    }
+
+    fn ws11_close_daily_outlet_volume(
+        physical_inflow_m3: f64,
+        initial_storage_m3: f64,
+        final_storage_m3: f64,
+    ) -> Result<f64, Ws10GuardError> {
+        let physical_inflow_m3 = Self::require_non_negative_computed(
+            Ws10NodeClass::Channel,
+            BoundarySymbol::from("ws11_daily_physical_inflow"),
+            physical_inflow_m3,
+        )?;
+        let initial_storage_m3 = Self::ws11_grid_end_disposition(initial_storage_m3)?
+            .water_storage_m3;
+        let final_storage_m3 =
+            Self::ws11_grid_end_disposition(final_storage_m3)?.water_storage_m3;
+        let available_m3 = physical_inflow_m3 + initial_storage_m3;
+        let outlet_m3 = available_m3 - final_storage_m3;
+        let tolerance_m3 = 1.0e-9_f64.max(
+            1.0e-12 * physical_inflow_m3.max(initial_storage_m3).max(final_storage_m3),
+        );
+        if !outlet_m3.is_finite() {
+            return Err(Self::non_finite(
+                Ws10NodeClass::Channel,
+                BoundarySymbol::from("ws11_daily_outlet_volume"),
+                outlet_m3,
+            ));
+        }
+        if outlet_m3 < -tolerance_m3 {
+            return Err(Self::domain_violation(
+                Ws10NodeClass::Channel,
+                BoundarySymbol::from("ws11_daily_outlet_volume"),
+                outlet_m3,
+            ));
+        }
+        // TOL-ROUTE-009 authorizes exact zero only inside its roundoff band.
+        Ok(if outlet_m3 < 0.0 { 0.0 } else { outlet_m3 })
+    }
+
     #[allow(clippy::too_many_arguments)]
     fn ws11_route_kinematic_segment(
         context: &Ws11DirectChannelContext<'_>,
@@ -697,7 +970,7 @@ impl Ws10ChannelImpoundmentKernel {
         Ok((q1, [c0, c1, c2, c3, c4]))
     }
 
-    #[allow(clippy::too_many_arguments)]
+    #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
     fn ws11_route_muskingum_segment(
         context: &Ws11DirectChannelContext<'_>,
         celerity_m_s: f64,
@@ -710,6 +983,7 @@ impl Ws10ChannelImpoundmentKernel {
         upstream_previous_m3_s: f64,
         local_previous_m3_s: f64,
     ) -> Result<(f64, [f64; 5]), Ws10GuardError> {
+        const MC_COEFFICIENT_TOLERANCE: f64 = 1.0e-12;
         let translation_s = dx_m / celerity_m_s;
         let weighting_denominator = top_width_m * celerity_m_s * channel_slope * dx_m;
         if !weighting_denominator.is_finite()
@@ -721,6 +995,9 @@ impl Ws10ChannelImpoundmentKernel {
                 weighting_denominator,
             ));
         }
+        // Pinned `wshchr.for:110,493,554` defines `cxmin=-10`. This retained
+        // model-parameter bound precedes coefficient calculation; W11D does
+        // not repair any resulting inadmissible coefficient or routed peak.
         let weighting = (0.5 * (1.0 - (reference_flow_m3_s / weighting_denominator))).max(-10.0);
         let denominator = (2.0 * translation_s * (1.0 - weighting)) + context.dtchr;
         if !denominator.is_finite() || denominator.abs() <= WS10_ZERO_THRESHOLD {
@@ -735,18 +1012,77 @@ impl Ws10ChannelImpoundmentKernel {
         let c2 = (context.dtchr + (2.0 * translation_s * weighting)) * c0;
         let c3 = 1.0 - c1 - c2;
         let c4 = 2.0 * qlat_m2_s * dx_m * context.dtchr * c0;
-        for (symbol, value) in [("ws11_mc_c1", c1), ("ws11_mc_c2", c2), ("ws11_mc_c3", c3)] {
+        for (symbol, value) in [
+            ("ws11_mc_c0", c0),
+            ("ws11_mc_c1", c1),
+            ("ws11_mc_c2", c2),
+            ("ws11_mc_c3", c3),
+            ("ws11_mc_c4", c4),
+        ] {
             Self::require_finite_computed(
                 Ws10NodeClass::Channel,
                 BoundarySymbol::from(symbol),
                 value,
             )?;
         }
+        let coefficient_sum = c1 + c2 + c3;
+        if (coefficient_sum - 1.0).abs() > MC_COEFFICIENT_TOLERANCE {
+            return Err(Self::domain_violation(
+                Ws10NodeClass::Channel,
+                BoundarySymbol::from("ws11_mc_coefficient_sum"),
+                coefficient_sum,
+            ));
+        }
+        let minimum_coefficient = c1.min(c2).min(c3);
+        if minimum_coefficient < -MC_COEFFICIENT_TOLERANCE {
+            return Err(Self::domain_violation(
+                Ws10NodeClass::Channel,
+                BoundarySymbol::from("ws11_mc_coefficient_monotonicity"),
+                minimum_coefficient,
+            ));
+        }
+        let upstream_current_m3_s = Self::require_non_negative_computed(
+            Ws10NodeClass::Channel,
+            BoundarySymbol::from("ws11_mc_upstream_current"),
+            upstream_current_m3_s,
+        )?;
+        let upstream_previous_m3_s = Self::require_non_negative_computed(
+            Ws10NodeClass::Channel,
+            BoundarySymbol::from("ws11_mc_upstream_previous"),
+            upstream_previous_m3_s,
+        )?;
+        let local_previous_m3_s = Self::require_non_negative_computed(
+            Ws10NodeClass::Channel,
+            BoundarySymbol::from("ws11_mc_local_previous"),
+            local_previous_m3_s,
+        )?;
+        let lateral_source_m3_s = Self::require_non_negative_computed(
+            Ws10NodeClass::Channel,
+            BoundarySymbol::from("ws11_mc_lateral_source"),
+            qlat_m2_s * dx_m,
+        )?;
         let q1 = (c1 * upstream_current_m3_s)
             + (c2 * upstream_previous_m3_s)
             + (c3 * local_previous_m3_s)
             + c4;
         let q1 = Self::require_finite_computed(
+            Ws10NodeClass::Channel,
+            BoundarySymbol::from("ws11_mc_q1"),
+            q1,
+        )?;
+        let passive_bound_m3_s = upstream_current_m3_s
+            .max(upstream_previous_m3_s)
+            .max(local_previous_m3_s)
+            + lateral_source_m3_s;
+        let passive_tolerance_m3_s = 1.0e-12 * passive_bound_m3_s.max(1.0);
+        if q1 > passive_bound_m3_s + passive_tolerance_m3_s {
+            return Err(Self::domain_violation(
+                Ws10NodeClass::Channel,
+                BoundarySymbol::from("ws11_mc_passive_maximum"),
+                q1,
+            ));
+        }
+        let q1 = Self::require_non_negative_computed(
             Ws10NodeClass::Channel,
             BoundarySymbol::from("ws11_mc_q1"),
             q1,
@@ -802,19 +1138,6 @@ impl Ws10ChannelImpoundmentKernel {
             volume_m3,
             deep_seepage_m3: generated.deep_seepage_m3,
         })
-    }
-
-    fn ws11_interval_active_span_s(series: &[f64], dtchr_s: f64) -> f64 {
-        let first = series.iter().position(|value| *value > WS10_ZERO_THRESHOLD);
-        let last = series.iter().rposition(|value| *value > WS10_ZERO_THRESHOLD);
-        match (first, last) {
-            (Some(first), Some(last)) => {
-                #[allow(clippy::cast_precision_loss)]
-                let count = (last - first + 1) as f64;
-                count * dtchr_s
-            }
-            _ => 0.0,
-        }
     }
 
     fn ws11_daily_particle_fractions(daily_egress_kg: &[f64]) -> Vec<f64> {
@@ -1023,9 +1346,7 @@ impl Ws10ChannelImpoundmentKernel {
             &internal_ledgers,
             &sources.projected_lateral_daily_kg,
         )?;
-        let _ = Self::ws11_grid_end_disposition(
-            water.storage_change_m3.iter().sum::<f64>(),
-        )?;
+        let _ = Self::ws11_grid_end_disposition(water.final_storage_m3)?;
         Self::ws11_validate_no_suspended_carry(&[])?;
 
         Ok(RoutedChannelIntervalSedimentState {
@@ -1634,8 +1955,17 @@ impl Ws10ChannelImpoundmentKernel {
                 water_storage_m3,
             ));
         }
+        if water_storage_m3 < -1.0e-9 {
+            return Err(Self::domain_violation(
+                Ws10NodeClass::Channel,
+                BoundarySymbol::from("ws11_grid_end_water_storage"),
+                water_storage_m3,
+            ));
+        }
+        // TOL-ROUTE-009 permits canonical zero only for negative roundoff in
+        // `[-1e-9, 0)`; material negative storage has already failed above.
         Ok(Ws11GridEndDisposition {
-            water_storage_m3,
+            water_storage_m3: water_storage_m3.max(0.0),
             suspended_sediment_storage_kg: 0.0,
         })
     }

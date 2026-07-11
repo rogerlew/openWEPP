@@ -13,6 +13,12 @@ Status: committed WSHED-W7R sediment-active watershed fixture.
 - The wrapper does not edit HBP/pass sediment values. `openwepp-cli-watershed`
   launches `openwepp-cli-hill`, which generates `H1.hbp` and `H1.pass.parquet`
   from the committed p102 source inputs.
+- WSHED-W11D changed the wrapper-only channel routing selector from static
+  Muskingum-Cunge (`ipeak=4`) to kinematic wave (`ipeak=3`) on 2026-07-11.
+  The historical 600-second MC recurrence is numerically inadmissible under
+  `SC-ROUTE-001#INV-ROUTE-022`; KW preserves this fixture's intended hourly
+  HBP sediment/publication and `--jobs` identity coverage without weakening
+  the production MC guard. Hillslope source inputs and HBP values are unchanged.
 - Source p102 climate remains the 10-year truncated CLIGEN series documented by
   `tests/fixtures/erosion_multi_ofe_p102/README.md`.
 

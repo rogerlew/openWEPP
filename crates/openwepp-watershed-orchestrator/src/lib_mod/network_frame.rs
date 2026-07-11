@@ -46,6 +46,11 @@ pub enum WatershedNetworkFrameError {
         field: &'static str,
         value: f64,
     },
+    InvalidTerminalPublication {
+        node_id: u32,
+        field: &'static str,
+        value: f64,
+    },
 }
 
 impl fmt::Display for WatershedNetworkFrameError {
@@ -92,6 +97,14 @@ impl fmt::Display for WatershedNetworkFrameError {
                 formatter,
                 "WSHEDFRAME-E-009 invalid groundwater authority field {field}={value}"
             ),
+            Self::InvalidTerminalPublication {
+                node_id,
+                field,
+                value,
+            } => write!(
+                formatter,
+                "WSHEDFRAME-E-010 invalid terminal publication for channel {node_id}: {field}={value}"
+            ),
         }
     }
 }
@@ -107,7 +120,8 @@ impl Error for WatershedNetworkFrameError {
             | Self::MissingSlopeProfile { .. }
             | Self::MissingRoutedChannelState { .. }
             | Self::MissingRoutedImpoundmentState { .. }
-            | Self::InvalidGroundwaterAuthority { .. } => None,
+            | Self::InvalidGroundwaterAuthority { .. }
+            | Self::InvalidTerminalPublication { .. } => None,
         }
     }
 }
@@ -282,7 +296,11 @@ pub struct RoutedChannelIntervalWaterState {
     pub qin_m3_s: Vec<f64>,
     pub qlat_total_m3_s: Vec<f64>,
     pub q1_m3_s: Vec<f64>,
+    /// Diagnostic unrestricted interval flux residual. This is not the
+    /// `SC-ROUTE-001#INV-ROUTE-021` hydraulic storage authority.
     pub storage_change_m3: Vec<f64>,
+    pub initial_storage_m3: f64,
+    pub final_storage_m3: f64,
 }
 
 /// Carried channel geometry for the active interval sediment lane.
@@ -636,16 +654,10 @@ impl WatershedNetworkFrame {
             }
         }
 
-        let active_interval_publication = dispatch_ids
-            .channel_ids
-            .iter()
-            .filter_map(|node_id| self.routed_channels.get(node_id))
-            .any(|state| state.interval_water_state.is_some());
-        let publication_channel_ids = if active_interval_publication {
-            &dispatch_ids.outlet_channel_ids
-        } else {
-            &dispatch_ids.channel_ids
-        };
+        // INV-SYSTEM-036: public event yield is an outlet reduction on every
+        // routing lane. Upstream dispatched channels remain diagnostics and
+        // must not be counted again as watershed yield.
+        let publication_channel_ids = &dispatch_ids.outlet_channel_ids;
         let runoff_volume_m3 = publication_channel_ids
             .iter()
             .filter_map(|node_id| self.routed_channels.get(node_id))
@@ -693,6 +705,14 @@ impl WatershedNetworkFrame {
             .filter_map(|hillslope_id| self.hillslope_contributions.get(hillslope_id))
             .map(|contribution| contribution.total_deposition_kg)
             .sum::<f64>();
+        let sediment_yield_kg = terminal_sediment_yield_kg(
+            &self.routed_channels,
+            &self.routed_impoundments,
+            &self.hillslope_contributions,
+            &report.dispatch_report.steps,
+            publication_channel_ids,
+            self.routing_globals.dtchr_seconds,
+        )?;
 
         Ok(WatershedPublicationFrame {
             sim_day_index: i32::try_from(report.dispatch_report.steps.len().max(1))
@@ -701,11 +721,7 @@ impl WatershedNetworkFrame {
             channel_id: first_i32_or_default(publication_channel_ids, 1),
             runoff_volume_m3,
             peak_discharge_m3_s: first_channel_peak(&self.routed_channels, publication_channel_ids),
-            sediment_yield_kg: publication_channel_ids
-                .iter()
-                .filter_map(|node_id| self.routed_channels.get(node_id))
-                .map(|state| state.sediment_yield_kg)
-                .sum::<f64>(),
+            sediment_yield_kg,
             channel_inflow_m3: Some(channel_inflow_m3),
             channel_outflow_m3: Some(channel_outflow_m3),
             channel_storage_m3: Some(channel_storage_m3),
@@ -718,6 +734,267 @@ impl WatershedNetworkFrame {
             ..WatershedPublicationFrame::default()
         })
     }
+}
+
+fn terminal_sediment_yield_kg(
+    routed_channels: &BTreeMap<u32, RoutedChannelState>,
+    routed_impoundments: &BTreeMap<u32, RoutedImpoundmentState>,
+    contributions: &BTreeMap<u32, HillslopeContribution>,
+    steps: &[DispatchStep],
+    terminal_channel_ids: &BTreeSet<u32>,
+    dtchr_seconds: f64,
+) -> Result<f64, WatershedNetworkFrameError> {
+    let channel_contributors = channel_contributor_ancestry(steps)?;
+    let mut terminal_mass_kg = 0.0_f64;
+    for node_id in terminal_channel_ids {
+        let state = routed_channels
+            .get(node_id)
+            .ok_or(WatershedNetworkFrameError::MissingRoutedChannelState { node_id: *node_id })?;
+        let mass_kg = if state.interval_sediment_state.is_some() {
+            state.sediment_yield_kg
+        } else {
+            let step = steps
+                .iter()
+                .find(|step| {
+                    step.node.kind == TopologyNodeKind::Channel && step.node.id == *node_id
+                })
+                .ok_or(WatershedNetworkFrameError::InvalidTerminalPublication {
+                    node_id: *node_id,
+                    field: "dispatch_step",
+                    value: 0.0,
+                })?;
+            let contributor_ids = channel_contributors.get(node_id).ok_or(
+                WatershedNetworkFrameError::InvalidTerminalPublication {
+                    node_id: *node_id,
+                    field: "channel_contributor_ancestry",
+                    value: 0.0,
+                },
+            )?;
+            let duration_s = direct_terminal_sediment_duration_s(
+                *node_id,
+                step,
+                contributor_ids,
+                contributions,
+                routed_channels,
+                routed_impoundments,
+                dtchr_seconds,
+            )?;
+            state.sediment_state.qsed_kg_s * duration_s
+        };
+        if !mass_kg.is_finite() || mass_kg < 0.0 {
+            return Err(WatershedNetworkFrameError::InvalidTerminalPublication {
+                node_id: *node_id,
+                field: "sediment_mass_kg",
+                value: mass_kg,
+            });
+        }
+        terminal_mass_kg += mass_kg;
+    }
+    if !terminal_mass_kg.is_finite() || terminal_mass_kg < 0.0 {
+        return Err(WatershedNetworkFrameError::InvalidTerminalPublication {
+            node_id: 0,
+            field: "terminal_sediment_mass_sum_kg",
+            value: terminal_mass_kg,
+        });
+    }
+    Ok(terminal_mass_kg)
+}
+
+fn channel_contributor_ancestry(
+    steps: &[DispatchStep],
+) -> Result<BTreeMap<u32, BTreeSet<u32>>, WatershedNetworkFrameError> {
+    let mut channel_contributors = BTreeMap::<u32, BTreeSet<u32>>::new();
+    for step in steps {
+        if step.node.kind != TopologyNodeKind::Channel {
+            continue;
+        }
+        let mut contributors = step
+            .contributor_hillslopes
+            .iter()
+            .copied()
+            .collect::<BTreeSet<_>>();
+        for dependency in step
+            .dependency_nodes
+            .iter()
+            .filter(|dependency| dependency.kind == TopologyNodeKind::Channel)
+        {
+            let inherited = channel_contributors.get(&dependency.id).ok_or(
+                WatershedNetworkFrameError::InvalidTerminalPublication {
+                    node_id: step.node.id,
+                    field: "dependency_contributor_ancestry",
+                    value: f64::from(dependency.id),
+                },
+            )?;
+            contributors.extend(inherited.iter().copied());
+        }
+        channel_contributors.insert(step.node.id, contributors);
+    }
+    Ok(channel_contributors)
+}
+
+fn direct_terminal_sediment_duration_s(
+    node_id: u32,
+    step: &DispatchStep,
+    contributor_ids: &BTreeSet<u32>,
+    contributions: &BTreeMap<u32, HillslopeContribution>,
+    routed_channels: &BTreeMap<u32, RoutedChannelState>,
+    routed_impoundments: &BTreeMap<u32, RoutedImpoundmentState>,
+    dtchr_seconds: f64,
+) -> Result<f64, WatershedNetworkFrameError> {
+    let event_duration_s = direct_terminal_event_duration_s(
+        node_id,
+        step,
+        contributions,
+        routed_channels,
+        routed_impoundments,
+        dtchr_seconds,
+    )?;
+    if !event_duration_s.is_finite() || event_duration_s < 0.0 {
+        return Err(WatershedNetworkFrameError::InvalidTerminalPublication {
+            node_id,
+            field: "event_duration_s",
+            value: event_duration_s,
+        });
+    }
+
+    let mut summed_hourly_sediment_kg = [0.0_f64; 24];
+    let mut hourly_resolved = false;
+    for hillslope_id in contributor_ids {
+        let contribution = contributions.get(hillslope_id).ok_or(
+            WatershedNetworkFrameError::InvalidTerminalPublication {
+                node_id,
+                field: "hillslope_contribution",
+                value: f64::from(*hillslope_id),
+            },
+        )?;
+        match (
+            contribution.hourly_runoff_volume_m3.len(),
+            contribution.hourly_sediment_mass_kg.len(),
+        ) {
+            (24, 24) => hourly_resolved = true,
+            (0, 0) => continue,
+            (runoff_count, sediment_count) => {
+                let observed_count = runoff_count.max(sediment_count);
+                return Err(WatershedNetworkFrameError::InvalidTerminalPublication {
+                    node_id,
+                    field: "hourly_pair_cardinality",
+                    value: f64::from(u32::try_from(observed_count).unwrap_or(u32::MAX)),
+                });
+            }
+        }
+        for (sum, value) in summed_hourly_sediment_kg
+            .iter_mut()
+            .zip(&contribution.hourly_sediment_mass_kg)
+        {
+            if !value.is_finite() || *value < 0.0 {
+                return Err(WatershedNetworkFrameError::InvalidTerminalPublication {
+                    node_id,
+                    field: "hourly_sediment_mass_kg",
+                    value: *value,
+                });
+            }
+            *sum += *value;
+        }
+    }
+    if !hourly_resolved {
+        return Ok(event_duration_s);
+    }
+
+    let first = summed_hourly_sediment_kg
+        .iter()
+        .position(|value| *value > 0.0);
+    let last = summed_hourly_sediment_kg
+        .iter()
+        .rposition(|value| *value > 0.0);
+    let (Some(first), Some(last)) = (first, last) else {
+        return Ok(event_duration_s);
+    };
+    let slot_count = u32::try_from(last - first + 1).map_err(|_| {
+        WatershedNetworkFrameError::InvalidTerminalPublication {
+            node_id,
+            field: "hourly_sediment_active_slot_count",
+            value: 24.0,
+        }
+    })?;
+    Ok(f64::from(slot_count) * 3_600.0)
+}
+
+fn direct_terminal_event_duration_s(
+    node_id: u32,
+    step: &DispatchStep,
+    contributions: &BTreeMap<u32, HillslopeContribution>,
+    routed_channels: &BTreeMap<u32, RoutedChannelState>,
+    routed_impoundments: &BTreeMap<u32, RoutedImpoundmentState>,
+    dtchr_seconds: f64,
+) -> Result<f64, WatershedNetworkFrameError> {
+    if !dtchr_seconds.is_finite() || dtchr_seconds <= 0.0 {
+        return Err(WatershedNetworkFrameError::InvalidTerminalPublication {
+            node_id,
+            field: "dtchr_seconds",
+            value: dtchr_seconds,
+        });
+    }
+    let mut event_duration_s = dtchr_seconds;
+    for hillslope_id in &step.contributor_hillslopes {
+        let contribution = contributions.get(hillslope_id).ok_or(
+            WatershedNetworkFrameError::InvalidTerminalPublication {
+                node_id,
+                field: "hillslope_contribution",
+                value: f64::from(*hillslope_id),
+            },
+        )?;
+        if !contribution.duration_seconds.is_finite() || contribution.duration_seconds < 0.0 {
+            return Err(WatershedNetworkFrameError::InvalidTerminalPublication {
+                node_id,
+                field: "hillslope_duration_seconds",
+                value: contribution.duration_seconds,
+            });
+        }
+        event_duration_s = event_duration_s.max(contribution.duration_seconds);
+    }
+    for dependency in &step.dependency_nodes {
+        let duration_s = match dependency.kind {
+            TopologyNodeKind::Channel => {
+                routed_channels
+                    .get(&dependency.id)
+                    .ok_or(WatershedNetworkFrameError::MissingRoutedChannelState {
+                        node_id: dependency.id,
+                    })?
+                    .duration_seconds
+            }
+            TopologyNodeKind::Impoundment => {
+                routed_impoundments
+                    .get(&dependency.id)
+                    .ok_or(WatershedNetworkFrameError::MissingRoutedImpoundmentState {
+                        node_id: dependency.id,
+                    })?
+                    .duration_seconds
+            }
+            TopologyNodeKind::Hillslope => {
+                return Err(WatershedNetworkFrameError::InvalidTerminalPublication {
+                    node_id,
+                    field: "dependency_kind",
+                    value: -1.0,
+                });
+            }
+        };
+        if !duration_s.is_finite() || duration_s < 0.0 {
+            return Err(WatershedNetworkFrameError::InvalidTerminalPublication {
+                node_id,
+                field: "dependency_duration_seconds",
+                value: duration_s,
+            });
+        }
+        event_duration_s = event_duration_s.max(duration_s);
+    }
+    if !event_duration_s.is_finite() || event_duration_s <= 0.0 {
+        return Err(WatershedNetworkFrameError::InvalidTerminalPublication {
+            node_id,
+            field: "direct_event_duration_s",
+            value: event_duration_s,
+        });
+    }
+    Ok(event_duration_s)
 }
 
 fn sum_contributing_area_m2(
@@ -750,24 +1027,42 @@ fn collect_dispatch_ids_from_steps(steps: &[DispatchStep]) -> TypedDispatchIds {
     let mut dependency_channel_ids = BTreeSet::new();
     let mut impoundment_ids = BTreeSet::new();
     let mut contributor_hillslopes = BTreeSet::new();
+    let consumed_impoundment_ids = steps
+        .iter()
+        .flat_map(|step| &step.dependency_nodes)
+        .filter(|dependency| dependency.kind == TopologyNodeKind::Impoundment)
+        .map(|dependency| dependency.id)
+        .collect::<BTreeSet<_>>();
 
     for step in steps {
         match step.node.kind {
             TopologyNodeKind::Channel => {
                 channel_ids.insert(step.node.id);
+                dependency_channel_ids.extend(
+                    step.dependency_nodes
+                        .iter()
+                        .filter(|dependency| dependency.kind == TopologyNodeKind::Channel)
+                        .map(|dependency| dependency.id),
+                );
             }
             TopologyNodeKind::Impoundment => {
                 impoundment_ids.insert(step.node.id);
+                if consumed_impoundment_ids.contains(&step.node.id) {
+                    // INV-SYSTEM-036: a channel above an impoundment is
+                    // internal when routing continues beyond that
+                    // impoundment. Retain the channel-oriented proxy only
+                    // when the impoundment itself is a topology terminal.
+                    dependency_channel_ids.extend(
+                        step.dependency_nodes
+                            .iter()
+                            .filter(|dependency| dependency.kind == TopologyNodeKind::Channel)
+                            .map(|dependency| dependency.id),
+                    );
+                }
             }
             TopologyNodeKind::Hillslope => {}
         }
         contributor_hillslopes.extend(step.contributor_hillslopes.iter().copied());
-        dependency_channel_ids.extend(
-            step.dependency_nodes
-                .iter()
-                .filter(|dependency| dependency.kind == TopologyNodeKind::Channel)
-                .map(|dependency| dependency.id),
-        );
     }
 
     let outlet_channel_ids = channel_ids
@@ -984,4 +1279,179 @@ fn build_impoundment_controls(
     }
 
     Ok(controls)
+}
+
+#[cfg(test)]
+mod network_frame_tests {
+    use openwepp_sim_contract::status::{SimulationPhase, SimulationStatus};
+    use openwepp_topology::TopologyNodeKey;
+
+    use super::*;
+
+    fn ok_status() -> SimulationStatus {
+        SimulationStatus::ok(SimulationPhase::WatershedKernel, "WSHED-W11D-TEST-OK")
+            .expect("test status should build")
+    }
+
+    fn channel_step(
+        node_id: u32,
+        dependency_nodes: Vec<TopologyNodeKey>,
+        contributor_hillslopes: Vec<u32>,
+    ) -> DispatchStep {
+        DispatchStep {
+            sequence_index: usize::try_from(node_id).expect("test node id fits usize"),
+            node: TopologyNodeKey::new(TopologyNodeKind::Channel, node_id),
+            dependency_nodes,
+            contributor_hillslopes,
+            status: ok_status(),
+        }
+    }
+
+    fn direct_channel_state(node_id: u32, qsed_kg_s: f64) -> RoutedChannelState {
+        RoutedChannelState {
+            node_id,
+            runoff_volume_m3: 0.0,
+            channel_inflow_m3: 0.0,
+            channel_outflow_m3: 0.0,
+            channel_storage_m3: 0.0,
+            peak_discharge_m3_s: 0.0,
+            duration_seconds: 600.0,
+            channel_baseflow_m3: 0.0,
+            channel_loss_m3: 0.0,
+            groundwater_deep_seepage_m3: 0.0,
+            sediment_yield_kg: qsed_kg_s,
+            wave_state: None,
+            interval_water_state: None,
+            sediment_state: RoutedChannelSedimentState {
+                qsed_kg_s,
+                ..RoutedChannelSedimentState::default()
+            },
+            interval_sediment_state: None,
+        }
+    }
+
+    fn hourly_contribution(
+        hillslope_id: u32,
+        hourly_sediment_mass_kg: Vec<f64>,
+    ) -> HillslopeContribution {
+        HillslopeContribution {
+            hillslope_id,
+            area_m2: Some(1.0),
+            peak_runoff_m3_s: 0.0,
+            duration_seconds: 0.0,
+            generated_baseflow_m3: 0.0,
+            groundwater_deep_seepage_m3: 0.0,
+            total_detachment_kg: hourly_sediment_mass_kg.iter().sum(),
+            total_deposition_kg: 0.0,
+            sediment_concentration_kg_m3: vec![0.0],
+            particle_diameter_m: vec![0.001],
+            particle_flow_fraction: vec![1.0],
+            hourly_runoff_volume_m3: vec![0.0; 24],
+            hourly_sediment_mass_kg,
+        }
+    }
+
+    #[test]
+    fn wshedw11d_terminal_selector_and_extensive_sediment_sum_exclude_internal_channel() {
+        let steps = vec![
+            channel_step(1, Vec::new(), vec![1]),
+            channel_step(
+                2,
+                vec![TopologyNodeKey::new(TopologyNodeKind::Channel, 1)],
+                Vec::new(),
+            ),
+            channel_step(3, Vec::new(), vec![3]),
+            DispatchStep {
+                sequence_index: 4,
+                node: TopologyNodeKey::new(TopologyNodeKind::Impoundment, 1),
+                dependency_nodes: vec![TopologyNodeKey::new(TopologyNodeKind::Channel, 3)],
+                contributor_hillslopes: Vec::new(),
+                status: ok_status(),
+            },
+        ];
+        let dispatch_ids = collect_dispatch_ids_from_steps(&steps);
+        assert_eq!(dispatch_ids.channel_ids, BTreeSet::from([1, 2, 3]));
+        assert_eq!(dispatch_ids.outlet_channel_ids, BTreeSet::from([2, 3]));
+
+        let mut first_hourly = vec![0.0; 24];
+        first_hourly[10] = 240.0;
+        let mut third_hourly = vec![0.0; 24];
+        third_hourly[8] = 60.0;
+        third_hourly[9] = 60.0;
+        let contributions = BTreeMap::from([
+            (1, hourly_contribution(1, first_hourly)),
+            (3, hourly_contribution(3, third_hourly)),
+        ]);
+        let routed_channels = BTreeMap::from([
+            (1, direct_channel_state(1, 240.0 / 3_600.0)),
+            (2, direct_channel_state(2, 240.0 / 3_600.0)),
+            (3, direct_channel_state(3, 120.0 / 7_200.0)),
+        ]);
+        let mass_kg = terminal_sediment_yield_kg(
+            &routed_channels,
+            &BTreeMap::new(),
+            &contributions,
+            &steps,
+            &dispatch_ids.outlet_channel_ids,
+            600.0,
+        )
+        .expect("terminal extensive sediment reduction should close");
+        assert!((mass_kg - 360.0).abs() <= 1.0e-12);
+    }
+
+    #[test]
+    fn wshedw11d_terminal_selector_follows_serial_impoundment_path() {
+        let steps = vec![
+            channel_step(1, Vec::new(), vec![1]),
+            DispatchStep {
+                sequence_index: 1,
+                node: TopologyNodeKey::new(TopologyNodeKind::Impoundment, 9),
+                dependency_nodes: vec![TopologyNodeKey::new(TopologyNodeKind::Channel, 1)],
+                contributor_hillslopes: Vec::new(),
+                status: ok_status(),
+            },
+            channel_step(
+                2,
+                vec![TopologyNodeKey::new(TopologyNodeKind::Impoundment, 9)],
+                vec![2],
+            ),
+        ];
+        let dispatch_ids = collect_dispatch_ids_from_steps(&steps);
+        assert_eq!(dispatch_ids.channel_ids, BTreeSet::from([1, 2]));
+        assert_eq!(dispatch_ids.outlet_channel_ids, BTreeSet::from([2]));
+
+        let mut upstream_hourly = vec![0.0; 24];
+        upstream_hourly[4] = 240.0;
+        let mut downstream_hourly = vec![0.0; 24];
+        downstream_hourly[10] = 60.0;
+        downstream_hourly[11] = 60.0;
+        let contributions = BTreeMap::from([
+            (1, hourly_contribution(1, upstream_hourly)),
+            (2, hourly_contribution(2, downstream_hourly)),
+        ]);
+        let routed_channels = BTreeMap::from([
+            (1, direct_channel_state(1, 240.0 / 3_600.0)),
+            (2, direct_channel_state(2, 120.0 / 7_200.0)),
+        ]);
+        let routed_impoundments = BTreeMap::from([(
+            9,
+            RoutedImpoundmentState {
+                node_id: 9,
+                outflow_volume_m3: 10.0,
+                outflow_rate_m3_s: 0.1,
+                duration_seconds: 100.0,
+                hnext_m: 0.2,
+            },
+        )]);
+        let mass_kg = terminal_sediment_yield_kg(
+            &routed_channels,
+            &routed_impoundments,
+            &contributions,
+            &steps,
+            &dispatch_ids.outlet_channel_ids,
+            600.0,
+        )
+        .expect("post-impoundment terminal mass should publish without upstream aliasing");
+        assert!((mass_kg - 120.0).abs() <= 1.0e-12);
+    }
 }

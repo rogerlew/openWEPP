@@ -28,20 +28,23 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-07-10`:
+State as of `2026-07-11 UTC`:
 - `20260710-wshedw11d-hourly-routing-numerical-defect-closure-001/` -
-  QUEUED hold-lift successor to WSHED-W11C. Owns negative hourly channel
-  storage/generated terminal volume, MC peak/timestep anomalies, non-terminal
-  legacy serial-network publication, and `chan.inp nchnum=0` timestep aliasing
-  under one contract-first routing/CLI authority envelope. Package:
+  EXECUTED-COMPLETE (2026-07-11 UTC): amended `SC-ROUTE-001` v56,
+  `SC-SYSTEM-001` v90, and `SC-INFILE-CHANINP-001` v0.1.4; closed negative
+  hourly storage/generated terminal volume, MC admissibility/peak behavior,
+  non-terminal serial publication, and zero-count timestep aliasing on the
+  real release consumer. Dual verification and the final 7/7 release,
+  1,693/1,693 full-workspace, p102, anti-evasion, clippy, deny, and formatting
+  gates passed. Package:
   `20260710-wshedw11d-hourly-routing-numerical-defect-closure-001/package.md`.
 - `20260710-wshedw11c-hourly-routing-sanity-001/` -
-  EXECUTED-HOLD-SANITY-FAIL (2026-07-10): the corrected real release-CLI matrix
-  executes CREAMS, kinematic-wave, static Muskingum-Cunge, and variable
-  Muskingum-Cunge routing, but reproduces material negative storage/generated
-  volume, MC peak/timestep anomalies, non-terminal legacy publication, and the
-  prior `nchnum=0` timestep alias. Both verifications ratified the hold; W11D
-  owns contract-first defect closure.
+  EXECUTED-HOLD-SANITY-FAIL (2026-07-10), historical hold closed by W11D
+  (2026-07-11 UTC): W11C's real release-CLI matrix remains the characterization
+  record for material negative storage/generated volume, MC peak/timestep
+  anomalies, non-terminal legacy publication, and the prior `nchnum=0`
+  timestep alias. W11D completed the contract-first corrections and closed
+  `W11C-F001..F004`; no W11C corrective handoff remains.
   Package: `20260710-wshedw11c-hourly-routing-sanity-001/package.md`.
 - `20260710-wshedw11a-channel-hourly-sediment-authority-001/` -
   EXECUTED-COMPLETE-AUTHORITY (2026-07-10, Claude Code operator-directed

@@ -1,6 +1,6 @@
 # WSHED-W11D Hourly Routing Numerical Defect Closure
 
-Status: `QUEUED`
+Status: `EXECUTED-COMPLETE`
 
 Package ID: `20260710-wshedw11d-hourly-routing-numerical-defect-closure-001`
 
@@ -65,6 +65,10 @@ WSHED-W11C produced the following real release-CLI observations:
 - `crates/openwepp-input-contract/src/parsers/chaninp.rs` and parser tests.
 - `crates/openwepp-runner/tests/mt3_hbp_hourly_consumer_contract.rs` and
   watershed CLI behavior tests.
+- The protected `tests/fixtures/watershed/p102-sediment-active/` wrapper's
+  channel-routing selector, README provenance, and checksum manifest only, to
+  replace its incidental now-inadmissible MC grid without changing the p102
+  hillslope/HBP substrate or fixture acceptance purpose.
 - This package, catalog, roadmap, and predecessor W11C handoff.
 
 ### Allowed correction classes
@@ -170,8 +174,8 @@ typed validation, and no shell interpolation or external connectivity.
 ## Progress
 
 - [x] Scaffolded from W11C defect evidence.
-- [ ] Required reading and source map complete.
-- [ ] Contract-first authority adjudicated.
-- [ ] Contract-derived tests fail before correction.
-- [ ] Production corrections landed.
-- [ ] Release/full gates and dual review/verification complete.
+- [x] Required reading and source map complete.
+- [x] Contract-first authority adjudicated.
+- [x] Contract-derived tests fail before correction.
+- [x] Production corrections landed.
+- [x] Release/full gates and dual review/verification complete.

@@ -1,23 +1,27 @@
 # Worker Handoff
 
-Status: `EXECUTED-HOLD-SANITY-FAIL`
+Status: `EXECUTED-HANDOFF-CLOSED-BY-W11D`
 
 Evidence mode: `Static + Ran`
 
-Do not treat the current hourly watershed routing path as physically
-sanity-approved for production use. The real CLI executes all tested branches,
-but W11C-F001 through F004 remain open production defects.
+If any historical symptom reappears, close the corresponding W11D defect
+against the amended contracts and retained regression matrix; do not reopen
+W11C as a diagnostic relay.
 
-Resume with queued package
-`20260710-wshedw11d-hourly-routing-numerical-defect-closure-001`. Its bounded
-contract-first scope owns:
+W11C remains the historical characterization/hold record. Successor package
+`20260710-wshedw11d-hourly-routing-numerical-defect-closure-001` completed the
+bounded contract-first correction and closed `W11C-F001..F004`:
 
-1. KW/static-MC negative storage and generated terminal volume;
-2. static/variable-MC peak amplification and timestep sensitivity;
-3. legacy CREAMS terminal-outlet volume/sediment publication; and
-4. canonical `chan.inp nchnum=0` parsing without timestep aliasing.
+1. complete KW/MC recurrence, branch-specific hydraulic storage, dry carry,
+   and daily outlet-volume closure remove generated water/negative storage;
+2. admitted MC is convex/passive, while the inadmissible W11C 3,600/600-second
+   active grids fail with typed `WKERNEL-WS10-CHANNEL-E-003`;
+3. legacy CREAMS serial publication selects channel 2 and publishes 7,200 m3
+   and 240 kg rather than summing internal throughflows; and
+4. canonical three-record `nchnum=0` retains `dtchr=600` through the real CLI
+   without compatibility-default aliasing.
 
-Use W11C corrected debug run `f695f3db-0627-4c28-8d97-8e5c5d023158` and exact
-release run `29024159-9f78-4506-9918-09c7f007af0d` as the starting regression
-matrix. Preserve W11D's prohibition on clamps, peak clipping, surrogate
-physics, silent defaults, and publication-only masking.
+The original W11C debug run `f695f3db-0627-4c28-8d97-8e5c5d023158` and release
+run `29024159-9f78-4506-9918-09c7f007af0d` remain diagnostic provenance. W11D's
+final 7/7 release matrix and 1,693/1,693 full-workspace gate supersede the hold
+for current disposition. No open W11C handoff remains.
