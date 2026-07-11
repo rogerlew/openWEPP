@@ -3,7 +3,7 @@
 Status: **active**
 Dispatch surface: **main** unless the operator explicitly authorizes a branch.
 Owner: maintainers.
-Last updated: 2026-07-09.
+Last updated: 2026-07-11.
 
 This ExecPlan defines the operator shorthand:
 
@@ -60,27 +60,58 @@ The initial live CRAP/LCOV measurement is a heavy batch run. Delegate it to
 `comparator_suite_runner` when available. If the subagent is unavailable, record
 the spawn/tool-policy failure before running the measurement locally.
 
-Eligible targets are production Rust modules under `crates/`. Exclude:
+Candidate files are production Rust modules under `crates/**/src/`, excluding
+test-only modules. Preserve the raw CRAP table, then classify every unique row
+above 30 with the ADR-0021/module-test-enhancement §3 symbol-level taxonomy.
+Do not infer eligibility from a filename such as `bin`, `error`, `parser`,
+`adapter`, or `writer`.
 
-- test files, fixtures, generated coverage output, `target/`, and docs-only paths;
-- files already modified by unrelated user or active-package work;
-- files owned by an active science/feature package unless the operator explicitly
-  authorizes overlap;
-- functions that are already below CRAP `30` unless they are part of a selected
-  module's required characterization or helper extraction;
-- generated or formatting-only functions that should receive an ADR-0021-style
-  disposition instead of forced tests.
+Before ranking, produce a raw-to-actionable ledger with: exact file/function/
+line, source SHA-256, CRAP/coverage/CC, classification, aggregate/floor/CRAP
+treatment, evidence, and proposed reviewer disposition. Apply these rules:
 
-Group CRAP rows by module path. Rank modules by:
+- `E-SCIENCE` and `E-PRODUCTION` rows are actionable.
+- `R-OBSERVABILITY` and `R-IRREDUCIBLE-CRAP` do not leave the actionable set
+  until independent review accepts the exact disposition.
+- `R-INFRASTRUCTURE` can waive only the 75% coverage floor; a CRAP row above 30
+  remains actionable and must be decomposed or reclassified under another
+  accepted category.
+- `X-GENERATED`, `X-NONDEFAULT-CFG`, `X-DELEGATING-MAIN`, and `X-IMPOSSIBLE`
+  require the exact closed-list proof; never exclude a whole module or glob.
+- parser grammar/cardinality, guards, error precedence, state/order/key logic,
+  numerical boundaries, serialization/publication, and consumer handoffs are
+  always eligible when hand-authored.
+- prior dispositions are evidence only; revalidate them when source identity,
+  semantic role, complexity, or public behavior changed.
+- files modified by unrelated work or owned by an active package are selection
+  conflicts, not eligibility exclusions; record them separately and stop or
+  skip according to the package-overlap rule.
+
+Publish both raw and actionable module counts. Group accepted actionable rows by
+module path and rank modules by:
 
 1. total excess CRAP: `sum(max(crap - 30, 0))`;
 2. number of unique production functions above `30`;
 3. maximum CRAP in the module;
-4. review judgement about output-risk and available characterization coverage.
+4. review judgment about output-risk and available characterization coverage.
 
-Select the requested `N` modules after exclusions. Record the ranked table and
-every exclusion in the first selected package's `artifacts/target-selection.md`
-and repeat the selected target row in each module package.
+Before finalizing the selected `N`, obtain two independent read-only reviews of
+the proposed ledger: Review A checks semantic/consumer eligibility and closed-
+list fit; Review B checks source identity, metric deduplication, and evidence.
+Only jointly accepted `R-OBSERVABILITY`, `R-IRREDUCIBLE-CRAP`, or `X-*` rows
+leave the actionable set. Any disagreement defaults to `E-PRODUCTION`.
+Preserve both reviews with the first selected package as
+`artifacts/target-selection-review-a.md` and
+`artifacts/target-selection-review-b.md`.
+
+Continue down the raw ranking until the requested `N` actionable modules are
+selected. A module containing only accepted `R-OBSERVABILITY`,
+`R-IRREDUCIBLE-CRAP`, or `X-*` rows is `DISPOSITIONED-NO-ACTION`, not one of the
+`N`; record it and continue scanning.
+Record the raw ranking, actionable ranking, classification ledger, conflicts,
+and every accepted disposition in the first selected package's
+`artifacts/target-selection.md`; repeat the selected target row and relevant
+symbol ledger in each module package.
 
 ## Per-Module Package Shape
 
@@ -218,6 +249,10 @@ For a global hold:
 Each per-module package records:
 
 - `artifacts/target-selection.md`
+- `artifacts/eligibility-classification.md` with raw/actionable counts and the
+  exact symbol-level ledger
+- `artifacts/target-selection-review-a.md`
+- `artifacts/target-selection-review-b.md`
 - `artifacts/crap-before.md`
 - `artifacts/coverage-before.md`
 - `artifacts/coverage-closure.md` when characterization tests are added or

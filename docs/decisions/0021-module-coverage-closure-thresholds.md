@@ -5,6 +5,8 @@
 **Deciders:** Roger Lew, Codex
 **Author of draft:** Claude Code (drafted and ratified at decider Roger Lew's direction, 2026-06-14)
 **Amendment:** Per-function CRAP ≤ 30 complexity-risk bound (Decision 6) added 2026-06-14, same day, at decider Roger Lew's direction.
+**Amendment:** Eligible-surface classification tightened 2026-07-11 at decider
+Roger Lew's direction; thresholds are unchanged.
 **Builds on:** [ADR-0011](0011-architecture-first-top-down-science-contracts.md)
 **Authoring authority:** [docs/standards/module-test-enhancement-authoring-guide.md](../standards/module-test-enhancement-authoring-guide.md), [docs/standards/rust-scientific-coding-standard.md](../standards/rust-scientific-coding-standard.md) §7.5–7.8
 
@@ -51,8 +53,9 @@ complement to the coverage floor.
      **≥ 90% region AND ≥ 90% line.**
    - **Glue tier** (parser / orchestration-runner / IO-adapter / output):
      **≥ 85% region AND ≥ 85% line.**
-   - **Per-function floor:** no eligible function below **75% region** without a
-     documented `// COVERAGE-EXCLUDE` justification.
+   - **Per-function floor:** no eligible function below **75% region** without
+     an accepted `R-OBSERVABILITY` or `R-INFRASTRUCTURE` disposition under
+     Decision 3. `// COVERAGE-EXCLUDE` is reserved for `X-IMPOSSIBLE` arms.
 
    Region is the binding metric; line is reported and gated alongside it.
 
@@ -62,10 +65,36 @@ complement to the coverage floor.
    map. A percentage pass does not substitute for the obligation binding, and an
    obligation pass does not substitute for the percentage.
 
-3. **Eligible-surface exclusions are a closed list and are reviewed, never
-   self-asserted** (guide §3): binary entrypoints, `#[derive]` output,
-   observability-only formatting arms, non-default `#[cfg(feature)]` paths, and
-   type-impossible arms annotated `// COVERAGE-EXCLUDE`. Shrinking the
+3. **Eligibility is classified at symbol or arm granularity, defaults to
+   eligible, and is reviewed, never self-asserted** (guide §3). A file or module
+   is not excluded merely because it is a binary, parser, error module, adapter,
+   or formatter host.
+
+   | Class | Treatment | Closed-list meaning |
+   | --- | --- | --- |
+   | `E-SCIENCE` | aggregate + 75% floor + CRAP | process math, contract invariants, conservation, numerical guards |
+   | `E-PRODUCTION` | aggregate + 75% floor + CRAP | accepted-input decisions, state/control flow, ordering, error precedence, serialization, consumer/publication behavior |
+   | `R-OBSERVABILITY` | aggregate retained; reviewed per-function floor/CRAP exception allowed | pure `Display`/`Debug` text with no machine-read code, state change, validation, or control effect |
+   | `R-INFRASTRUCTURE` | aggregate retained; reviewed 75% floor exception allowed, CRAP remains binding | low-complexity dependency-origin failure arms not deterministically selectable through the public boundary after normal/error mapping is covered |
+   | `X-GENERATED` | denominator excluded | compiler/derive/generated code with no hand-authored source branch |
+   | `X-NONDEFAULT-CFG` | denominator excluded only from the measured profile | code not compiled in that profile; becomes eligible whenever that feature/configuration is in package scope or a shipping gate |
+   | `X-DELEGATING-MAIN` | denominator excluded | literal branch-free `main` that only delegates to a covered/tested runner; argument parsing and command behavior remain eligible |
+   | `X-IMPOSSIBLE` | denominator excluded | type-impossible arm proven unreachable by construction and annotated `// COVERAGE-EXCLUDE` |
+   | `R-IRREDUCIBLE-CRAP` | aggregate + coverage floor retained; reviewed CRAP exception only | minimum-decomposed domain branching whose further split would obscure the authoritative decision table |
+
+   The following are always eligible when hand-authored: parser grammar and
+   cardinality decisions; validation and fail-closed guards; typed error codes
+   or messages consumed by machines; state transitions; key/domain/order
+   selection; numerical boundary handling; output schema/value mapping; and
+   real consumer handoffs. Mixed-purpose functions are wholly eligible; extract
+   a pure shell before requesting an exception.
+
+   Every non-eligible or retained-exception row records the exact symbol/arm,
+   class, source lines, denominator treatment, semantic-impact analysis,
+   exercised public behavior, and two independent reviewer dispositions.
+   Wildcard, module-wide, name-pattern-only, inherited, or “hard to test”
+   exclusions are non-conforming. An old disposition must be revalidated when
+   its source hash, role, complexity, or public behavior changes. Shrinking the
    denominator to reach a number is non-conforming.
 
 4. **Tier assignment.** A module is science-tier if it carries kernel math, a
@@ -113,6 +142,12 @@ complement to the coverage floor.
 - This does **not** retroactively fail existing modules or block unrelated PRs.
   It governs test-enhancement packages and test-affecting changes going forward;
   it is not a new CI line-coverage threshold on every commit.
+- Raw CRAP rankings are discovery evidence, not the actionable queue. Nightly
+  selection classifies every row above 30 before ranking, removes only accepted
+  exceptions from actionable excess, publishes both raw and actionable counts,
+  and continues down the ranking until the requested number of eligible modules
+  is selected. A module with only accepted exception rows is `NO-ACTION`, not a
+  forced coverage package.
 - **Enforcement wiring.** Until the §7.6 machine guard (binding ordinary `SC-*`
   obligations to tests, modeled on `auth11_required_suite_obligation_guards`)
   ships, the thresholds and the obligation binding are enforced as a package

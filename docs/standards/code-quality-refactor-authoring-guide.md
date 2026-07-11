@@ -1,7 +1,7 @@
 # Code-Quality Refactor Work-Package Authoring Guide
 
 - **Status:** Active
-- **Last updated:** 2026-06-14
+- **Last updated:** 2026-07-11
 - **Applies to:** work packages whose goal is **metric-driven, behavior-preserving**
   cleanup of a Rust module — complexity decomposition, dead-code removal,
   duplication consolidation, magic-number symbolization, and lint-debt burndown.
@@ -50,6 +50,13 @@ package targets **one module and one quality dimension** (§2.2).
 3. **Behavior-preserving = numerically identical (§4).** If a change can alter
    computed results, it is not a code-quality refactor — route it to a
    contract/kernel package with contract-first governance.
+4. **Classify before ranking or suppressing.** Apply the symbol-level taxonomy
+   in module-test-enhancement §3 to every row above the metric threshold. Raw
+   tool output is discovery evidence; `E-*` and CRAP-above-30
+   `R-INFRASTRUCTURE` rows contribute to actionable CQR ranking.
+   `R-OBSERVABILITY`/`R-IRREDUCIBLE-CRAP` rows require the recorded independent
+   disposition, and `X-*` rows require exact denominator evidence. A module
+   name or broad glob never grants an exception.
 
 ## 3) In-scope dimensions and their closure metric
 
@@ -110,11 +117,13 @@ The mechanical guide's split patterns move whole functions between files and
 Delegates the gate ladder and artifact mechanics to the mechanical guide; adds
 the metric loop.
 
-1. **Authorize and scope.** One module, one dimension; tier per ADR-0021; name
+1. **Authorize and scope.** One module, one dimension; tier and symbol-level
+   eligibility per ADR-0021; name
    `YYYYMMDD-cqr<NN>-<module-slug>-001`; register in `docs/work-packages/README.md`.
 2. **Precondition check.** Confirm coverage closure is present or co-delivered (§2.1).
 3. **Baseline metric.** Run the dimension's tool; record `*_before` evidence
-   (`crap_before.md`, a clippy count, an allow census, …).
+   (`crap_before.md`, a clippy count, an allow census, …). Preserve the raw
+   rows, then publish the classification ledger and actionable rows separately.
 4. **Refactor.** Apply §5 (decomposition) or the relevant mechanical pattern, one
    edit at a time, numeric equivalence preserved (§4).
 5. **Re-measure.** Record `*_after`; the dimension target (§3) is met.
@@ -131,6 +140,8 @@ the metric loop.
   governance, dual review/verification, disposition, handoff).
 - `*_before` / `*_after` for the dimension metric (e.g. `crap_before.md` /
   `crap_after.md`, or the clippy/allow census).
+- Raw-to-actionable eligibility ledger: exact row, classification, source hash,
+  gate treatment, evidence, and dual-review disposition.
 - **Numeric-equivalence statement** — how output identity was preserved and which
   characterization tests evidence it.
 
@@ -165,6 +176,8 @@ The same pattern applies to any other lint promotion (e.g. burning down the 202
 - Deleting "dead" code that is actually **not-yet-wired** (e.g. a gated wave-2
   lane) — verify before deletion.
 - Adding a `#[allow(clippy::…)]` to pass the gate instead of fixing the cause.
+- Treating an entire binary, parser, error module, adapter, or formatter host as
+  ineligible because of its filename or dominant role.
 - Promoting a clippy lint to `warn`/`deny` workspace-wide with outstanding
   violations — bricks the gate; use the per-module ratchet.
 

@@ -1,6 +1,7 @@
 # Module Test-Enhancement Work-Package Authoring Guide
 
 Status: Active
+Last updated: 2026-07-11
 
 Scope: how to scope and execute a work package that raises a particular Rust
 module to closure-grade test coverage. Companion to
@@ -52,7 +53,8 @@ hold:
    - **Glue tier** — parser, orchestration/runner, IO-adapter, output modules:
      **≥ 85% region AND ≥ 85% line.**
 3. **Per-function coverage floor.** No eligible function below **75% region**
-   without a written `// COVERAGE-EXCLUDE` justification. (Prevents a green
+   without an accepted `R-OBSERVABILITY` or `R-INFRASTRUCTURE` disposition from
+   §3. A source comment alone does not grant an exception. (Prevents a green
    aggregate from hiding a wholly untested function.)
 4. **Per-function complexity-risk bound (CRAP ≤ 30).** Every eligible function in
    the module scores **CRAP ≤ 30** under `cargo-crap` (LCOV from the same
@@ -91,24 +93,53 @@ These thresholds are **binding policy**, ratified by
 percentage may be changed only by a superseding ADR; the obligation binding
 (§2.1) is not tunable.
 
-## 3) Documented exclusions
+## 3) Eligibility classification
 
-Lines removed from the eligible denominator. Each exclusion is justified in the
-package evidence and reviewed — exclusions are granted, not self-asserted.
+Classify each hand-authored source symbol or arm before subtracting anything
+from a denominator or actionable CRAP ranking. Eligibility defaults to
+`E-PRODUCTION`; classification is granted by review, not asserted by the
+implementer. A module path, filename, trait, or naming pattern is never enough.
 
-1. Binary entrypoints (`src/bin/*.rs` `main`, argument-parse shells) — exercised
-   by CLI/process integration tests, not unit coverage.
-2. `#[derive(...)]`-generated code.
-3. Observability-only `Display`/`Debug`/formatting arms with no branching logic.
-4. `#[cfg(feature = ...)]` paths not built in the default test profile (note
-   them; cover under the feature if/when it ships in the default gate).
-5. Arms annotated `// COVERAGE-EXCLUDE: unreachable by construction — <reason>`.
-   Must be rare and reviewer-signed. A type-impossible `else`/`unreachable!`
-   qualifies; "we did not get to it" does not.
-6. CRAP suppressions (`cargo-crap --allow <glob>`) for a function whose
-   complexity is irreducible domain branching already at minimum decomposition —
-   rare, reviewer-signed, with the justification recorded next to the score. Not
-   a substitute for decomposing a function that merely grew.
+| Class | Aggregate denominator | 75% function floor | CRAP ≤30 | Required proof |
+| --- | --- | --- | --- | --- |
+| `E-SCIENCE` | included | required | required | science/contract/closure obligation map |
+| `E-PRODUCTION` | included | required | required | public behavior and applicable A–H map |
+| `R-OBSERVABILITY` | included | reviewed exception | reviewed exception | pure human-facing formatting; no machine consumer, branching side effect, state, validation, or control use |
+| `R-INFRASTRUCTURE` | included | reviewed exception | required | public success/error mapping covered; only nondeterministic dependency-origin failure arms remain; low complexity |
+| `X-GENERATED` | excluded | not applicable | not applicable | no hand-authored executable branch |
+| `X-NONDEFAULT-CFG` | excluded from this profile | not applicable in this profile | not applicable in this profile | exact cfg absent from measured profile; feature becomes eligible when scoped/shipped |
+| `X-DELEGATING-MAIN` | excluded | not applicable | not applicable | literal branch-free delegation; runner/CLI process behavior covered elsewhere |
+| `X-IMPOSSIBLE` | excluded | not applicable | not applicable | construction proof, exact arm, reviewer signature, `// COVERAGE-EXCLUDE` annotation |
+| `R-IRREDUCIBLE-CRAP` | included | required | reviewed exception | minimum-decomposition proof and authoritative decision-table rationale |
+
+Always classify these as eligible when hand-authored:
+
+- parser grammar, record cardinality, alias priority, and normalization;
+- validation, domain rejection, null/non-finite handling, and fail-closed paths;
+- typed error codes/messages read by machines and error-precedence selection;
+- state transitions, key construction, ordering, deduplication, and domain
+  selection;
+- numerical boundary handling, accumulation, normalization, and units;
+- schema/value serialization, publication, and real-consumer handoffs.
+
+If one function mixes an observability/delegation shell with eligible behavior,
+the whole function is eligible. Extract the pure shell behavior-preserving
+before requesting a narrower exception.
+
+Every `R-*` or `X-*` entry in `coverage-closure.md` must record:
+
+1. stable classification ID and exact symbol/arm plus source lines;
+2. source SHA-256 and measured profile;
+3. aggregate, function-floor, and CRAP treatment;
+4. why the code cannot affect science, accepted input, state/control, machine
+   errors, serialization, publication, or consumer behavior;
+5. tests exercising the reachable public behavior;
+6. independent Review A and Review B dispositions.
+
+No wildcard or module-wide exclusions are allowed. “Hard to test,” “owned by a
+dependency,” low current coverage, and prior acceptance are not sufficient.
+Revalidate an old disposition whenever the source hash, semantic role,
+complexity, or public behavior changes.
 
 ## 4) Procedure
 
@@ -134,7 +165,8 @@ package evidence and reviewed — exclusions are granted, not self-asserted.
      module are held no-regression, not re-litigated here.
 3. **Gap classification.** For each uncovered region, assign exactly one bucket:
    missing case family (→ author per §7.5/§7.8), unbound obligation (→ §7.6),
-   or legitimate exclusion (→ §3 with justification).
+   eligible production gap, retained reviewed exception, or denominator
+   exclusion (→ §3 with exact classification evidence).
 4. **Author tests.** Codex authors. One row/test per case family; property tests
    for range-invariants (§7.7). Assert typed status/error codes and the
    conservation identity — not parity numbers. If an eligible function exceeds
@@ -164,8 +196,9 @@ package evidence and reviewed — exclusions are granted, not self-asserted.
 - `lcov.info` — LCOV used for CRAP.
 - `crap_before.md` / `crap_after.md` — `cargo-crap` report (markdown) with the
   module's eligible functions and their CRAP scores before/after.
-- `coverage-closure.md` — per-file before/after table, eligible-surface
-  denominator, exclusion list with justifications, tier + thresholds, pass/fail.
+- `coverage-closure.md` — raw and eligible-adjusted before/after tables,
+  classification ledger with exact symbols/lines/hashes and reviewer
+  dispositions, tier + thresholds, pass/fail.
 - `obligation-to-test-map.md` — family/obligation → test fn → status; 100%
   bound.
 - `gate-logs/` — per the gate loop (§4.7).
@@ -189,8 +222,9 @@ package evidence and reviewed — exclusions are granted, not self-asserted.
 - **Substring weakening.** Broadening a failing assertion to a vague substring to
   make it pass (a `tests/AGENTS.md` pitfall); move the assertion to the canonical
   authority instead.
-- **Exclusion abuse.** Marking a guard arm `COVERAGE-EXCLUDE` to dodge writing
-  its reject test. Exclusions are for type-impossible arms, not unwritten cases.
+- **Exclusion abuse.** Marking a guard, parser, error-precedence, state,
+  serialization, or publication arm excluded to dodge its test. An annotation
+  is valid only for `X-IMPOSSIBLE`; it does not exempt ordinary defensive code.
 - **Denominator gaming.** Counting an excluded binary `main` as covered, or
   shrinking the eligible surface to hit the number rather than testing the code.
 - **CRAP-by-coverage.** Trying to push a high-CC function under CRAP 30 with

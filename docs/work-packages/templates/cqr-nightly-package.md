@@ -25,6 +25,11 @@ above `30` to `<= 30`, or record an ADR-0021-style disposition when a row is not
 safely reducible as behavior-preserving CQR. Preserve runtime behavior and output
 identity for all existing valid inputs.
 
+Eligibility is symbol-level and defaults to eligible. The package must preserve
+raw CRAP rows and separately record the exact `E-*`, `R-*`, or `X-*`
+classification for every target row above 30; filenames and module-wide globs
+cannot grant exclusions.
+
 ## Required Reading
 
 - `AGENTS.md`
@@ -93,8 +98,8 @@ unrelated work, stop before implementation and record a global/process hold.
 
 Before any production/test implementation edit, commit the scaffold for this
 package. The scaffold commit includes this `package.md`, prompt directories,
-artifact placeholders, target-selection evidence, baseline command provenance,
-and this gate list.
+artifact placeholders including `artifacts/eligibility-classification.md`,
+target-selection evidence, baseline command provenance, and this gate list.
 
 If the scaffold commit cannot be created because commits are not authorized, stop
 and report the blocked commit boundary.
@@ -104,14 +109,21 @@ and report the blocked commit boundary.
 ### Phase A - Baseline
 
 1. Record `git status --short --branch`.
-2. Record the target-selection row and exclusions in
+2. Record the target-selection row, raw/actionable counts, and reviewed
+   classifications in
    `artifacts/target-selection.md`.
-3. Populate `artifacts/required-reading-map.md` with path, tier, rationale,
+3. Populate `artifacts/eligibility-classification.md` with each raw row's exact
+   file/function/line, source SHA-256, CRAP/CC/coverage, ADR-0021 class,
+   aggregate/floor/CRAP treatment, evidence, and proposed reviewer disposition.
+   Hand-authored parser, guard, error-precedence, state/order/key, numerical,
+   serialization/publication, and consumer behavior remains eligible.
+4. Populate `artifacts/required-reading-map.md` with path, tier, rationale,
    applicability trigger, and read status for all kickoff required reading.
-4. Run or copy from the batch measurement:
+5. Run or copy from the batch measurement:
    - `cargo llvm-cov --workspace --ignore-run-fail --lcov --output-path {{lcov_before_path}}`
    - `cargo crap --workspace --lcov {{lcov_before_path}} --min 0 --format json --output {{crap_before_path}}`
-5. Summarize target rows in `artifacts/crap-before.md` and
+6. Summarize raw and actionable target rows separately in
+   `artifacts/crap-before.md` and
    `artifacts/coverage-before.md`.
 
 ### Phase B - Characterization
@@ -161,14 +173,18 @@ and report the blocked commit boundary.
 ### Phase E - Review, Verification, Disposition
 
 1. Complete dual review with findings ordered by severity.
-2. Disposition every finding as `accepted`, `rejected`, `deferred`, or
+2. Require both reviewers to accept every `R-OBSERVABILITY`,
+   `R-IRREDUCIBLE-CRAP`, or `X-*` disposition before it can leave the actionable
+   set; an unaccepted row remains eligible and blocks closure or requires
+   implementation. `R-INFRASTRUCTURE` cannot waive CRAP above 30.
+3. Disposition every finding as `accepted`, `rejected`, `deferred`, or
    `follow-up`.
-3. Complete dual verification against this package and the nightly ExecPlan.
-4. Update `artifacts/review_agent_a.md`, `artifacts/review_agent_b.md`,
+4. Complete dual verification against this package and the nightly ExecPlan.
+5. Update `artifacts/review_agent_a.md`, `artifacts/review_agent_b.md`,
    `artifacts/verification_agent_a.md`, `artifacts/verification_agent_b.md`,
    `artifacts/disposition.md`, `artifacts/final-disposition.md`, and
    `artifacts/worker-handoff.md`.
-5. Commit completion or hold evidence before starting the next nightly CQR
+6. Commit completion or hold evidence before starting the next nightly CQR
    package.
 
 ## Hold Rules
@@ -194,7 +210,11 @@ Complete only when:
 - scaffold commit exists before implementation edits;
 - active kickoff prompt exists and includes `Execution mode`, `Autonomy`, tiered
   required reading, required-reading budget/map, and required subagent wording;
-- every target production function is `<= 30` CRAP or dispositioned;
+- every raw row above 30 has an exact eligibility classification and both raw
+  and actionable counts are recorded;
+- every `E-*` and `R-INFRASTRUCTURE` target function is `<= 30` CRAP; every
+  removed `R-OBSERVABILITY`, `R-IRREDUCIBLE-CRAP`, or `X-*` row has dual-review
+  acceptance and exact evidence;
 - ADR-0021 coverage closure is recorded when characterization tests are added or
   materially changed;
 - behavior identity is proven by focused tests and appropriate output/API

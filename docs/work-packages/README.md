@@ -16,8 +16,9 @@
   `tools/agents/find-agents --for <declared-write-set>` and record the applicable
   chain in package intake evidence.
 - `cqr-nightly-burndown-execplan.md` defines the operator shorthand
-  `execute cqr nightly for <N> modules`: measure live workspace CRAP/LCOV, select
-  the top eligible production modules, scaffold one ordinary CQR work package per
+  `execute cqr nightly for <N> modules`: measure live workspace CRAP/LCOV,
+  classify raw rows with the dual-reviewed ADR-0021 symbol taxonomy, select the
+  top actionable production modules, scaffold one ordinary CQR work package per
   target, commit the scaffold, execute, and commit completion or hold evidence.
 - `cqr-nightly-followup-burndown-execplan.md` completed the serialized
   independent tracks created from nightly batch 01's local holds: three

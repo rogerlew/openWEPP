@@ -197,6 +197,11 @@
 - When characterization tests are added or materially changed, record ADR-0021
   coverage closure: tier assignment, line/region threshold status,
   per-function region-floor disposition, and obligation-to-test binding.
+- Before selecting or suppressing a CRAP row, apply ADR-0021's symbol-level
+  eligibility taxonomy. Preserve raw and actionable counts separately; default
+  hand-authored behavior to eligible; require exact evidence and dual-review
+  acceptance for every retained exception or denominator exclusion. Filename,
+  module role, wildcard, prior disposition, and “hard to test” are insufficient.
 - Commit discipline is part of the process: create a scaffold commit before
   implementation edits for each selected module, then create either a completion
   commit or a hold-evidence commit before moving to the next selected module.

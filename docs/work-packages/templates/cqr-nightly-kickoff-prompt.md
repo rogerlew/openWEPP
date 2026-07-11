@@ -58,6 +58,16 @@ Reduce every eligible production function above CRAP `30` to `<= 30`, or record
 an ADR-0021-style disposition and hold when behavior-preserving CQR cannot close
 the target safely.
 
+Eligibility gate: before implementation, preserve the raw CRAP rows and write
+`artifacts/eligibility-classification.md`. Classify each row at exact
+file/function/line granularity as `E-SCIENCE`, `E-PRODUCTION`, an `R-*`
+retained exception, or an `X-*` denominator exclusion under ADR-0021. Default
+to eligible. Do not use module names, file roles, wildcards, prior disposition,
+or “hard to test” as exclusion authority. Both reviewers must accept each
+`R-OBSERVABILITY`, `R-IRREDUCIBLE-CRAP`, or `X-*` row before it leaves the
+actionable set. `R-INFRASTRUCTURE` may waive only the 75% floor, not CRAP above
+30.
+
 Constraints:
 
 - Behavior-preserving CQR only.
@@ -66,6 +76,9 @@ Constraints:
 - Preserve floating-point statement order, expression grouping, accumulation
   order, and short-circuit behavior.
 - No opportunistic cleanup outside the declared target.
+- Parser grammar/cardinality, guards, error precedence, state/order/key logic,
+  numerical boundaries, serialization/publication, and consumer handoffs are
+  always eligible when hand-authored.
 - Do not edit unrelated dirty files or active-package work.
 - Package-required validation overrides ambient test-skip guidance.
 
