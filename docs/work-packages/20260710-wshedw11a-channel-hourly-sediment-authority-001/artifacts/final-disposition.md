@@ -1,8 +1,8 @@
 # Final Disposition
 
-Status: `EXECUTED-COMPLETE-AUTHORITY` (v52 post-hoc amendments applied
-2026-07-10; **Codex re-confirmation pending** — see the reopen-cycle record
-at the end)
+Status: `EXECUTED-COMPLETE-AUTHORITY` (v52 + v53 post-hoc amendments
+applied 2026-07-10; **Codex cycle-2 re-confirmation pending** — see the two
+reopen-cycle records at the end)
 
 Evidence mode: `Static` + `Ran`, per-artifact labels throughout the package.
 
@@ -18,9 +18,9 @@ Claude-executed contract authoring with Codex review to follow.
 | Temporal sediment quantum and state-carry order | `INV-ROUTE-015` (dtchr grid, biconditional mandatory activation), `INV-ROUTE-017` (monotonic geometry carry, tillage-only reseed), sequencing steps in the W11A addendum |
 | Per-class ingress/egress and detachment/deposition/storage closure | `INV-ROUTE-016` (per-interval quasi-steady sequence on the WSHEDIMPL18-41 lanes), `INV-ROUTE-018` (lineage-realization widening clock with `timpot`/`timex` budget partition), `INV-ROUTE-019` (per-interval/day class mass closure, projection exactness, constructive geometry-mass derivation) |
 | Typed failure behavior and tolerances | Guard-map rows 015-020 (`WKERNEL-WS10-CHANNEL-E-001..003` family), `TOL-ROUTE-006..008` with the zero-mass carve-out, invalid-state rows |
-| Contract-derived test vectors | Ten vector obligations in the W11A addendum (equivalence, closure, carry, widening clock, zero-flow, storage, cross-day, tillage reseed, fail-closed family, layer contact) |
+| Contract-derived test vectors | Eleven vector obligations in the W11A addendum as of v52/v53 (equivalence with pinned operands, closure, carry, widening clock, zero-flow, storage, cross-day, tillage reseed, fail-closed family, layer contact + divergent terminals, hydraulic-profile anti-alias) |
 | Explicit W11 resume instructions | `artifacts/w11-handoff.md` + updated W11 package `worker-handoff.md` |
-| Dual review and verification, no undispositioned findings | 21 findings dispositioned (20 accepted+fixed, 1 rejected with validated rationale); both verifiers PASS-WITH-NOTES with all notes addressed in-cycle; see `gate-results.md` |
+| Dual review and verification, no undispositioned findings | 21 findings dispositioned (20 accepted+fixed, 1 rejected with validated rationale); both verifiers PASS-WITH-NOTES with all in-scope notes addressed in-cycle (verification-B note 4, a pre-existing v47 lettering artifact, explicitly deferred — see Residual items); see `gate-results.md` |
 
 ## Authority summary
 
@@ -47,7 +47,8 @@ required no amendment (rationale in `contract-disposition.md`).
 4. Rejected findings carry authority-backed rationale — YES (verification B
    validated A-8's rejection with corpus-wide evidence).
 5. Both verifiers PASS or PASS-WITH-NOTES — YES (both PASS-WITH-NOTES; all
-   notes cosmetic and addressed in-cycle).
+   in-scope notes cosmetic and addressed in-cycle; note 4 deferred as a
+   pre-existing artifact).
 6. Remaining open items gap-registered — YES (GAP-ROUTE-012/013 closed with
    retained-limitation labels; per-class-hourly interchange remains
    `SC-SED-001#GAP-SED-008`, open, cross-referenced).
@@ -98,3 +99,20 @@ the v52 operand maps; and `GAP-ROUTE-014` is an open, W11-assigned
 correction obligation (a code-parity defect flag, not missing authority).
 Final closure of this cycle awaits Codex re-confirmation
 (`prompts/active/20260710_wshedw11a_codex_reconfirmation_prompt.md`).
+
+## Codex re-confirmation cycle (2026-07-10, second pass)
+
+`codex_reconfirmation.md` returned `REOPEN` (`WSHED-W11A-RECONFIRM-001`):
+M1/M2/H2/M3 verified closed; H1 residual — v52 still aliased the
+wave-routing **total** lateral series (`m^3 s^-1`) and the Chapter-13
+per-unit-length erosion operand (`ft^3 s^-1 ft^-1`) under one `qlat(it)`
+symbol (the v52 storage expression's `qlat*lc` betrayed the conflation) —
+plus L1 record residuals. Both accepted and closed in `SC-ROUTE-001` v53:
+distinct `qlat(it)` (wave total, partition-only) and derived
+`qlat_eff(it) := qe(it)/leff(it)` (the solve operand) with unit-distinct
+Variables rows, invalid-substitution rules, corrected all-total storage
+expression, re-pinned vectors 1/11, and the unit-bridge
+derived-normalization note; record reconciliations applied
+(`codex-review-disposition.md` re-confirmation section). Post-fix BEI
+lint: PASS. Final closure awaits cycle-2 re-confirmation
+(`prompts/active/20260710_wshedw11a_codex_reconfirmation2_prompt.md`).

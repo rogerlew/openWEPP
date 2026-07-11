@@ -36,3 +36,16 @@ All five required closure amendments from the review's final section are
 applied in v52. Re-confirmation is requested from Codex via
 `prompts/active/20260710_wshedw11a_codex_reconfirmation_prompt.md`; the
 package status notes the pending re-confirmation.
+
+## Re-confirmation cycle disposition (2026-07-10, `codex_reconfirmation.md`)
+
+Codex re-confirmation verdict: `REOPEN` (`WSHED-W11A-RECONFIRM-001`) —
+M1/M2/H2/M3 closed; H1 residual + L1 residuals.
+
+| finding | decision | action_taken | rationale |
+|---|---|---|---|
+| H1 residual (total vs per-unit-length `qlat` conflation) | accepted | `SC-ROUTE-001` v53: distinct canonical symbols — `qlat(it)` = published wave-routing **total** (`m^3 s^-1`, `RoutedChannelWaveState::qlat_m3_s`), partition-only into `leff(it)`; the solve's lateral operand is the derived per-unit-length `qlat_eff(it) := qe(it)/leff(it)` (Eq. [13.5.11]; the baseline `chnrt.for:233-242` local-`qlat`/migrated `qlat_cfs_per_ft` quantity); raw-total and total/`lc` substitution declared invalid; storage expression corrected to all-total form; the pre-existing grouped Variables row split (`qlat_eff` now `ft^3 s^-1 ft^-1`); two new Variables rows; vectors 1/11 re-pinned (anti-alias distinguishes both wrong-unit aliases with `qlat/lc != qe/leff` by construction); unit-bridge derived-normalization note. Verified the three cut-points before binding (`Ran`: `chnrt.for:230-242` "effective lateral inflow (ft^3/sec/ft)" comment; `network_frame.rs:269` `qlat_m3_s`; `02_ws20_segment_routing.rs:89` `qlat_cfs_per_ft = (q_cfs - qu_top_cfs)/leff_ft`). | Codex is right: v52's own storage expression (`qlat*lc`) betrayed the conflation. Symbol continuity kept by reusing the Ch-13 canonical `qlat_eff` name rather than inventing a new one. |
+| L1 residuals (record inconsistencies) | accepted | `final-disposition.md` exit-criteria vector count → eleven; verification-notes wording aligned to the note-4 deferral in both the exit table and promotion-gate item 5; `w11-handoff.md` header re-pinned to v53 with the two Codex cycles named. | Record truthfulness. |
+
+Post-fix `Ran`: binding-exposure lint PASS (7 rows). Second
+re-confirmation prompt: `prompts/active/20260710_wshedw11a_codex_reconfirmation2_prompt.md`.

@@ -2,12 +2,14 @@
 
 Status: `EXECUTED`
 
-Evidence mode: `Static` (this handoff names contract authority; all cited
-rows exist in SC-ROUTE-001 v51 as verified by the package's dual
-verification).
+Evidence mode: `Static` (this handoff names contract authority; the cited
+rows exist in SC-ROUTE-001 **v53** — v51 as verified by the package's dual
+verification, plus the v52/v53 amendments from the two Codex post-hoc
+cycles).
 
-`WSHED-W11-HOLD-001` is lifted. Canonical authority for time-resolved
-channel sediment routing now exists in `SC-ROUTE-001` v51. W11 resumes at
+`WSHED-W11-HOLD-001` is lifted (pending the final Codex re-confirmation of
+v53). Canonical authority for time-resolved channel sediment routing now
+exists in `SC-ROUTE-001` v53. W11 resumes at
 its contract-first phase (Phase B) with **no executor science choices
 remaining** — every item below is a contract citation, not a decision.
 
@@ -27,7 +29,7 @@ already established by W11 Phase A and is unchanged.
 | Network dependency authority | `INV-ROUTE-005(a)` dependency-authority definition (active-interval-lane channel egress is the only non-hourly form) |
 | Solve per interval | `INV-ROUTE-016`: the WSHEDIMPL18-41 migrated segment-solve lanes (WS20/WS21 runtime families) invoked per `dtchr` interval at interval operands; event-scalar operand substitution is a typed hard failure |
 | Interval operands | W11A addendum operand table + projection formula (00:00-anchored exact interval overlap; day-level class-fraction blend per `SC-SED-001#GAP-SED-008` — do not treat the uniform split as enriched timing) |
-| Hydraulic profile (v52) | `INV-ROUTE-016` unique operand map: `qe(it) := q1(it)`, `qt(it) := qin(it)`, `qlat(it) :=` the wave-routing lateral series; event-peak fractions/event-duration rates invalid; storage deliberately unreconciled (outlet-anchored steadiness); vector 11 is the anti-alias gate |
+| Hydraulic profile (v52/v53) | `INV-ROUTE-016` unique operand map: `qe(it) := q1(it)`, `qt(it) := qin(it)`; the published wave total `qlat(it)` (`m^3/s`) builds `leff(it)` ONLY; the solve's lateral operand is the derived per-unit-length `qlat_eff(it) := qe(it)/leff(it)` (never the raw total, never total/`lc`); event-peak fractions/event-duration rates invalid; storage deliberately unreconciled (`qt + qlat - q1`, totals); vector 11 is the anti-alias gate |
 | Erosion clock/normalization (v52) | `t_exp(it)` fills every legacy `timsh` slot; `t_norm(it) := dtchr` fills every legacy `tb` denominator slot (the factor 2 retires); `d_i` = baseline `di` (`dcap.for:166`); `rho_soil` = in-place bulk mass density (`wtdsoi` provenance, lbm) |
 | Unit handling | Addendum unit-bridge declaration: SI operands cross at the migrated `chnrt` conversion lineage sites; TOL closures evaluated on the SI side; **no new conversion constants** |
 | Geometry state | `INV-ROUTE-017`: monotonic carry, in-time-order application, run-start + primary-tillage-only reseeds, non-narrowing/non-refilling |

@@ -31,25 +31,28 @@
 State as of `2026-07-10`:
 - `20260710-wshedw11a-channel-hourly-sediment-authority-001/` -
   EXECUTED-COMPLETE-AUTHORITY (2026-07-10, Claude Code operator-directed
-  end-to-end; Codex post-hoc review returned REOPEN and all five closure
-  amendments were applied same day in `SC-ROUTE-001` v52 — Codex
-  re-confirmation pending via
-  `prompts/active/20260710_wshedw11a_codex_reconfirmation_prompt.md`):
+  end-to-end; two Codex post-hoc REOPEN cycles dispositioned same day —
+  cycle-2 re-confirmation pending via
+  `prompts/active/20260710_wshedw11a_codex_reconfirmation2_prompt.md`):
   ratified per-`dtchr`-interval quasi-steady channel sediment sequencing in
-  `SC-ROUTE-001` v51/v52 (`INV-ROUTE-015..020`: biconditional lane
+  `SC-ROUTE-001` v51-v53 (`INV-ROUTE-015..020`: biconditional lane
   activation, water-grid quantum, the unique hydraulic-profile operand map
-  `qe/qt/qlat := q1(it)/qin(it)/qlat(it)`, monotonic geometry carry with
-  tillage-only reseed, pinned-`dcap.for` widening realization with
+  — `qe(it) := q1(it)`, `qt(it) := qin(it)`, the published wave total
+  `qlat(it)` partition-only, and the derived per-unit-length
+  `qlat_eff(it) := qe/leff` as the solve operand — monotonic geometry carry
+  with tillage-only reseed, pinned-`dcap.for` widening realization with
   `t_exp`/`t_norm` operand split and `timpot`/`timex` budget partition,
   per-interval/day class mass closure, degenerate states, eleven
   contract-derived vectors) on convergent WEPP Ch. 13/14 + CREAMS Ch. 3 +
   KINEROS ARS-77 + HEC-RAS quasi-unsteady authority (all vendored). Dual
   review (21 findings: 20 accepted+fixed, 1 rejected with validated
-  rationale), dual verification (both PASS-WITH-NOTES), and the Codex
-  reopen cycle (6 findings, all accepted+fixed; `GAP-ROUTE-014` records the
-  two migrated-lane detachment terminals W11 must correct before interval
-  reuse) are dispositioned. `WSHED-W11-HOLD-001` lifted; W11 resumes at
-  Phase B per `artifacts/w11-handoff.md`.
+  rationale), dual verification (both PASS-WITH-NOTES), the Codex reopen
+  cycle (6 findings accepted+fixed in v52; `GAP-ROUTE-014` records the two
+  migrated-lane detachment terminals W11 must correct before interval
+  reuse), and the re-confirmation residuals (v53 total-vs-per-length
+  lateral fix) are dispositioned. `WSHED-W11-HOLD-001` lifted pending
+  cycle-2 re-confirmation; W11 resumes at Phase B per
+  `artifacts/w11-handoff.md`.
 - `20260710-wshedw11-channel-network-hourly-water-sediment-routing-001/` -
   EXECUTED-HOLD-MISSING-CHANNEL-HOURLY-SEDIMENT-SEQUENCING-AUTHORITY
   (2026-07-10; **hold lifted same day by WSHED-W11A**): Phase A established
