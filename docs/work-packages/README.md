@@ -33,9 +33,13 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-11 UTC`:
-- `20260711-dc-chaninp-raw-cardinality-001/` - ACTIVE: FQ-02 contract-first
-  closure of CHAN.INP raw record cardinality versus normalized topology,
-  including network-frame consumer proof and science-tier/CRAP gates.
+- `20260711-dc-chaninp-raw-cardinality-001/` - EXECUTED-COMPLETE (2026-07-11):
+  FQ-02 closes CHAN.INP raw record cardinality before normalization. Terminal
+  parser coverage is 92.713% lines / 96.723% regions, the function floor is
+  80%, maximum CRAP is 16.352, focused suites pass 36/36 and 19/19, and the
+  workspace passes 1,747 tests with 3 configured skips. Dual verification
+  passes. Consumer proof is limited to normalized count; the normalized ID
+  list remains a parser projection.
 - `20260711-dc-fdir-finite-value-guard-001/` - EXECUTED-COMPLETE (2026-07-11):
   FQ-01 closes non-finite fixed-date irrigation input for all eight typed real
   fields in both modes through `FDIR-E-005`. Final public tests pass 27/27;

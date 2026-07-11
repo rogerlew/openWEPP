@@ -1,6 +1,6 @@
 # DC CHAN.INP raw cardinality closure
 
-Status: active
+Status: executed-complete
 Evidence mode: Static and Ran as labeled
 Queue item: `FQ-02`
 Defect: `CHANINP-RAW-NCHNUM-CARDINALITY`
@@ -9,7 +9,7 @@ Defect: `CHANINP-RAW-NCHNUM-CARDINALITY`
 
 Close the CHAN.INP compatibility defect end-to-end: preserve raw `nchnum`
 source ownership and validate record-4 cardinality against that raw value before
-topology normalization, while keeping the downstream network frame on
+topology normalization, while keeping the downstream network-frame count on
 `nchnum_norm`. Complete science-tier A-H coverage and eligible CRAP closure in
 the same package.
 
@@ -41,8 +41,8 @@ The original compatibility fixture with raw `nchnum=99` and two IDs is invalid
 and must fail exact `CHN-E-002`; normalization must not create validity. A
 distinct valid compatibility fixture must contain 99 IDs, retain
 `nchnum_input=99`, and expose the contract-ratified `nchnum_norm`. The network
-frame must consume normalized topology while raw observability retains source
-input.
+frame must consume normalized count while raw count/list observability and the
+normalized ID projection remain at the parser boundary.
 
 Execute contracts, failing contract tests, independent pre-implementation PASS,
 production correction, consumer validation, characterization, and only then
@@ -56,8 +56,9 @@ does not justify stopping.
 - Raw cardinality and raw-vs-normalized ownership are canonical and tested.
 - Invalid `99+2` fails `CHN-E-002`; valid raw-count closure retains 99 and
   normalizes only after validation.
-- Network-frame consumer uses normalized fields; raw source value remains
-  observable and no unrelated runtime-readiness claim is made.
+- Network-frame consumer uses normalized count; raw source count/list and the
+  normalized ID projection remain observable at the parser boundary. No
+  downstream ID-list-consumer or unrelated runtime-readiness claim is made.
 - Science tier reaches at least 90% lines/regions, every function at least 75%
   regions or reviewed exclusion, A-H fully bound, eligible CRAP at most 30.
 - Focused parser and WSHED-W5 tests, formatting, workspace clippy, full-profile

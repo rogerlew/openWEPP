@@ -6,8 +6,8 @@
 - `title`: `WEPP Channel Routing Options Sidecar (chan.inp)`
 - `status`: `in_review`
 - `owner`: `openWEPP`
-- `spec_version`: `0.1.1`
-- `last_updated_utc`: `2026-07-09T00:00:00Z`
+- `spec_version`: `0.1.2`
+- `last_updated_utc`: `2026-07-11T00:00:00Z`
 - `evidence_mode`: `Static`
 
 ## Evidence anchors
@@ -84,7 +84,18 @@ Evidence: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersu
 3. `read(24,*) nchnum`
 4. `read(24,*) (ichnum(ichan), ichan=1,nchnum)`
 5. clamp/normalize output controls and routing timestep.
-Evidence: `/workdir/wepp-forest_260430_baseline/src/wshinp.for:473-514`.
+Evidence: `/workdir/wepp-forest_260430_baseline/src/wshinp.for:467-475`.
+
+`[DIRECT]` The implied-DO in step 4 uses the raw line-3 count and precedes the
+legacy clamp. `[INFERENCE]` Therefore source-record
+cardinality closes before step 5: record 4 must contain exactly raw `nchnum`
+IDs in strict and compatibility modes. Compatibility then retains raw
+`nchnum_input`/`ichnum_input`, clamps `nchnum_norm` to `[0,nchan]`, and exposes
+the first `nchnum_norm` raw IDs as `ichnum_norm`, matching the pinned legacy
+prefix-selection rule. No openWEPP downstream ID-list consumer is currently
+proved. The exact-arity/fail-closed policy is an
+openWEPP inference: a conditional raw record-4 mismatch is `CHN-E-002`, not a
+default. Negative counts remain the existing domain/normalization branch.
 
 [DIRECT] Legacy timestep normalization:
 - lower bound: `dtchr >= dtlowl (60 s)`
@@ -100,8 +111,8 @@ Evidence: `/workdir/wepp-forest_260430_baseline/src/wshinp.for:488-496`, `/workd
 | `ichout` | 1a | unitless enum | int | 1/file | conditional (required when `ipeak>2`) | channel-flow output selector (`0` none, `1` peak, `2` daily avg, `3` timestep) | `channel_output_mode` |
 | `dtchr` | 1b | s | real/int | 1/file | conditional (required when `ipeak>2`) | routing/output timestep | `channel_routing_timestep_s` |
 | `cbase` | 2 | m^3/s/m^2 | real | 1/file | conditional (required when `ipeak>2`) | unit-area baseflow coefficient | `unit_area_baseflow_coefficient` |
-| `nchnum` | 3 | count | int | 1/file | conditional (required when `ipeak>2`) | number of channels selected for routing output | `channel_output_count` |
-| `ichnum(i)` | 4 | element ID | int | `nchnum`/file | conditional (required when `nchnum>0`) | selected channel identifiers from watershed structure element IDs | `channel_output_element_ids` |
+| `nchnum` | 3 | count | int | 1/file | conditional (required when `ipeak>2`) | raw number of IDs read from record 4; retained before topology normalization | `nchnum_input`; normalized alias `channel_output_count` |
+| `ichnum(i)` | 4 | element ID | int | raw `nchnum`/file | conditional (required when raw `nchnum>0`) | raw selected IDs; normalized parser projection is the first `nchnum_norm` entries | `ichnum_input`; normalized alias `channel_output_element_ids` |
 
 [DIRECT] Variable definitions and enumerations are described in usersum and legacy include comments.
 Evidence: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:9548-9555`, `/workdir/wepp-forest_260430_baseline/src/cchrt.inc:21-40`.
@@ -153,7 +164,8 @@ Evidence: `/workdir/wepp-forest_260430_baseline/src/wshinp.for:469-514`.
 ### 8.1a WSHED-W10 compatibility default branch
 
 WSHED-W10 ratifies the deterministic openWEPP compatibility state used when
-`chan.inp` is absent, unreadable, or collapsed after a parse/count failure in
+`chan.inp` is absent, unreadable, or collapsed after an ordinary token,
+line1..3 structural, or non-cardinality parse failure in
 compatibility mode. The legacy open/read-error labels directly support
 `ichout=0`, `nchnum=0`, an empty selected-channel list, no channel output, and
 `cbase=0`. The legacy branch can reach timestep normalization without a freshly
@@ -178,6 +190,9 @@ compatibility warning. Watershed runtime may consume that typed state directly;
 it must not synthesize a separate hidden set of routing globals from an absent
 optional `chan.inp` object.
 
+`INV-CHN-013` raw conditional record-4 cardinality is explicitly excluded from
+this default branch and returns `CHN-E-002` in both modes.
+
 ### 8.2 OpenWEPP strict-vs-compat typed expectations (draft)
 
 | Condition | strict mode | compat mode |
@@ -185,7 +200,8 @@ optional `chan.inp` object.
 | `ipeak <= 2` (surface not applicable) | `SurfaceNotApplicable(surface_id=infile-channel-contrast, reason=ipeak_le_2)` trace event only. | same as strict. |
 | `ipeak > 2` and `chan.inp` missing | `MissingRequiredSurfaceError(surface_id=infile-channel-contrast)` | WSHED-W10 branch with `CompatibilityDefaultApplied(ichout=0, dtchr=60, ntchr=1440, nchnum=0, cbase=0)`. |
 | `ipeak > 2` and open fails (non-ENOENT I/O) | `InputOpenError(surface_id=infile-channel-contrast, cause=...)` | legacy-default branch plus `CompatibilityWarning(open_error_collapsed_with_default=true)`. |
-| Required lines truncated | `UnexpectedEof(surface_id=infile-channel-contrast, line_no=...)` | legacy-default branch plus `CompatibilityWarning(truncated_payload_defaulted=true)`. |
+| Required line1..3 truncated, or ordinary non-cardinality parse failure | `UnexpectedEof(surface_id=infile-channel-contrast, line_no=...)` | legacy-default branch plus `CompatibilityWarning(truncated_payload_defaulted=true)`. |
+| Record 4 token count differs from raw `nchnum_input` | `CHN-E-002` | same exact `CHN-E-002`; structural cardinality is not defaultable |
 | Numeric parse failure on required tokens | `ParseNumber(surface_id=infile-channel-contrast, line_no=..., token=...)` | legacy-default branch plus `CompatibilityWarning(parse_failure_defaulted=true)`. |
 | `ichout` outside canonical domain (`0..3`) | `FieldRangeError(field=ichout, expected="0..3")` | clamp to legacy default branch (`ichout=0`) with trace event. |
 | `nchnum` outside topology bounds (`0..nchan`) | `ChannelOutputCountInvalid(nchnum=..., nchan=...)` | clamp to `[0, nchan]` with `CompatibilityWarning(nchnum_clamped=true)`. |
@@ -262,4 +278,5 @@ Legacy path clamps to lower bound; strict openWEPP mode should raise `RoutingTim
 
 | Date | Version | Change |
 | --- | --- | --- |
+| 2026-07-11 | 0.1.2 | Ratified raw record-4 cardinality before compatibility normalization, raw-field retention, first-`nchnum_norm` normalized IDs, and non-collapsible `CHN-E-002`. |
 | 2026-07-09 | 0.1.1 | WSHED-W10 ratified typed compatibility defaults for absent/unreadable/malformed `chan.inp` and pinned legacy evidence paths to `/workdir/wepp-forest_260430_baseline`. |

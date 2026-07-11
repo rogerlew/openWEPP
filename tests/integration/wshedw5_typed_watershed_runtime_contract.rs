@@ -340,6 +340,25 @@ fn wshedw10_defaulted_chaninp_states_are_runtime_ready() {
 }
 
 #[test]
+fn chaninp_raw_cardinality_is_observable_while_frame_consumes_normalized_count() {
+    let valid_channel_element_ids = BTreeSet::from([4_i32, 5_i32]);
+    let chaninp = parse_chaninp_from_path(
+        Path::new("tests/fixtures/infile/chaninp/compat_nchnum_raw_closed.chaninp"),
+        ChaninpParseOptions::compatibility(4, 2),
+        &valid_channel_element_ids,
+    )
+    .expect("raw-count-closed compatibility fixture should parse");
+    let options = chaninp.options.as_ref().expect("options should exist");
+    assert_eq!(options.nchnum_input, 99);
+    assert_eq!(options.ichnum_input.len(), 99);
+    assert_eq!(options.nchnum_norm, 2);
+    assert_eq!(options.ichnum_norm, vec![4, 5]);
+
+    let frame = build_typed_frame_with_chaninp(chaninp);
+    assert!((frame.routing_globals.nchnum - 2.0).abs() <= f64::EPSILON);
+}
+
+#[test]
 fn wshedw10_not_applicable_chaninp_cannot_mask_required_channel_sidecar() {
     let valid_channel_element_ids = BTreeSet::from([4_i32, 5_i32]);
     let not_applicable = parse_chaninp_from_str(

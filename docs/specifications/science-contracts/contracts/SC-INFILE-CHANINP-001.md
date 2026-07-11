@@ -4,7 +4,7 @@ title: Channel Routing Options Input Parser Contract (chan.inp)
 status: in_review
 maturity: draft
 owner: openWEPP
-contract_version: 0.1.4
+contract_version: 0.1.5
 evidence_mode: Static
 last_updated_utc: 2026-07-11T00:00:00Z
 ---
@@ -69,15 +69,29 @@ when parsed `nchnum > 0`, exactly `nchnum` element IDs are required on record
 `ichnum=[]`. An additional nonempty record is trailing input and fails strict
 record closure. Blank physical lines are not records.
 
+`[DIRECT][E-WF-CHN-01]` `nchnum` in the pinned read order is the raw source
+token and the implied-DO read precedes count clamping. `[INFERENCE]` Record closure is evaluated
+against raw `nchnum` before compatibility topology normalization. Only after
+raw closure may compatibility derive `nchnum_norm = clamp(nchnum_input,
+0,nchan)` and `ichnum_norm = ichnum_input[0..nchnum_norm]`. This ordering is
+directly aligned with pinned `wshinp.for`: the implied-DO reads raw-count IDs,
+then clamps `nchnum`; downstream `chnrt.for` consumes the first normalized-count
+entries. The exact-arity and fail-closed policy are openWEPP contract
+inferences: a raw conditional record-4 count/list mismatch is `CHN-E-002` and
+is not a compatibility-default branch.
+
 ### 2.2 Two-Layer Model Contract
 
 - Source model preserves raw parsed fields and line-level tokenization provenance.
 - Simulation model normalizes:
   - applicability/branch state (`chaninp_required`, `parse_outcome`),
   - canonical routing fields,
-  - normalized/clamped runtime fields (`dtchr_norm_s`, `ntchr`, `nchnum_norm`, `ichnum_norm`),
+  - normalized/clamped fields (`dtchr_norm_s`, `ntchr`, `nchnum_norm`) and the
+    parser-level normalized ID projection (`ichnum_norm`),
   - downstream output-selection closure (`chan_output_enabled`).
-- Parser does not execute channel routing; downstream modules consume normalized fields.
+- Parser does not execute channel routing. The network-frame boundary consumes
+  `nchnum_norm`; `ichnum_norm` remains an explicit parser projection until a
+  separately proven output-selection consumer is implemented.
 
 ## 3. Field Specification Table
 
@@ -87,16 +101,16 @@ record closure. Blank physical lines are not records.
 | `ichout` | `line1.ichout` | `chaninp.options.ichout` | mode enum | int | 0..1 | conditional (`ipeak>2`) | all | default `0` only in compat default branch | `channel_output_mode` |
 | `dtchr` | `line1.dtchr` | `chaninp.options.dtchr_input_s` | s | real | 0..1 | conditional (`ipeak>2`) | all | default `60` only in compat default branch | `channel_routing_timestep_input_s` |
 | `cbase` | `line2.cbase` | `chaninp.options.cbase_m3_s_m2` | m^3/s/m^2 | real | 0..1 | conditional (`ipeak>2`) | all | legacy default `0.0` only in compat default branch | `unit_area_baseflow_coefficient` |
-| `nchnum` | `line3.nchnum` | `chaninp.options.nchnum_input` | count | int | 0..1 | conditional (`ipeak>2`) | all | default `0` only in compat default branch | `channel_output_count_input` |
-| `ichnum(i)` | `line4.ichnum[i]` | `chaninp.options.ichnum_input[i]` | element id | int array | `nchnum` | conditional (`ipeak>2`, `nchnum>0`) | all | empty for every canonical `nchnum=0` payload, including parsed strict/compat input | `channel_output_element_ids_input` |
+| `nchnum` | `line3.nchnum` | `chaninp.options.nchnum_input` | count | int | 0..1 | conditional (`ipeak>2`) | all | raw source value retained; default `0` only in compat default branch | `channel_output_count_input` |
+| `ichnum(i)` | `line4.ichnum[i]` | `chaninp.options.ichnum_input[i]` | element id | int array | raw `nchnum_input` | conditional (`ipeak>2`, raw `nchnum>0`) | all | raw source list retained; empty for canonical raw `nchnum=0` | `channel_output_element_ids_input` |
 | derived `nchan` | external watershed topology context | `chaninp.context.nchan` | count | int | 1 | yes | all | sourced from watershed/channel topology inputs | `topology.channel_count` |
 | derived `valid_channel_element_ids` | external watershed topology ID namespace | `chaninp.context.valid_channel_element_ids` | element id set | set<int> | 1 | yes | all | sourced from watershed structure/channel topology surfaces | `topology.valid_channel_ids` |
 | derived `chaninp_required` | applicability branch | `chaninp.context.chaninp_required` | flag | bool | 1 | yes | all | `true` when `ipeak>2`; else `false` | `chaninp_required` |
 | derived `parse_outcome` | parser branch outcome | `chaninp.context.parse_outcome` | enum | string | 1 | yes | all | `not_applicable`, `parsed_branch`, `defaulted_compat`, `open_error_collapsed_compat` | `parse_outcome` |
 | derived `dtchr_norm_s` | normalized timestep | `chaninp.options.dtchr_norm_s` | s | int | 0..1 | conditional (`ipeak>2`) | all | bounded/renormalized from `dtchr` and `ntchr` closure rules | `channel_routing_timestep_s` |
 | derived `ntchr` | routing steps per day | `chaninp.options.ntchr` | count/day | int | 0..1 | conditional (`ipeak>2`) | all | `min(mxtchr, floor(86400/dtchr_bound + 0.99))` | `channel_routing_steps_per_day` |
-| derived `nchnum_norm` | normalized count | `chaninp.options.nchnum_norm` | count | int | 0..1 | conditional (`ipeak>2`) | all | strict exact value or compat clamped to `[0,nchan]` | `channel_output_count` |
-| derived `ichnum_norm(i)` | normalized element IDs | `chaninp.options.ichnum_norm[i]` | element id | int array | `nchnum_norm` | conditional (`ipeak>2`, `nchnum_norm>0`) | all | strict validated against topology; compat retains with warning on unknown IDs | `channel_output_element_ids` |
+| derived `nchnum_norm` | normalized count | `chaninp.options.nchnum_norm` | count | int | 0..1 | conditional (`ipeak>2`) | all | derived only after raw closure; strict exact value or compat clamped to `[0,nchan]` | `channel_output_count` |
+| derived `ichnum_norm(i)` | normalized element IDs | `chaninp.options.ichnum_norm[i]` | element id | int array | `nchnum_norm` | conditional (`ipeak>2`, `nchnum_norm>0`) | all | first `nchnum_norm` raw IDs; strict topology validation, compat warning on unknown retained IDs | `channel_output_element_ids` |
 | derived `line_count_closed` | record-count closure | `chaninp.context.line_count_closed` | flag | bool | 1 | yes | all | `true` when required line-set is complete | `line_count_closed` |
 | derived `trailing_token_lines` | tokenization provenance | `chaninp.context.trailing_token_lines` | line-index set | list<int> | 0..4 | conditional | all | line-level provenance for canonical numeric-leading records | `trailing_token_lines` |
 | derived `chan_output_enabled` | output gate closure | `chaninp.options.chan_output_enabled` | flag | bool | 1 | yes | all | `true` when `ichout>0 && nchnum_norm>0` | `channel_output_enabled` |
@@ -119,7 +133,7 @@ record closure. Blank physical lines are not records.
 | derived `dtchr_norm_s` | `derived.dtchr_norm_s` | `chaninp.options.dtchr_norm_s` | `input::sidecar::chaninp` | init,watershed,event | immutable | runtime channel routing step size | `G-CHN-005` |
 | derived `ntchr` | `derived.ntchr` | `chaninp.options.ntchr` | `input::sidecar::chaninp` | init,watershed,event | immutable | daily/event routing loop scheduling | `G-CHN-005` |
 | derived `nchnum_norm` | `derived.nchnum_norm` | `chaninp.options.nchnum_norm` | `input::sidecar::chaninp` | init,watershed | immutable | output list cardinality closure | `G-CHN-007` |
-| derived `ichnum_norm(i)` | `derived.ichnum_norm[i]` | `chaninp.options.ichnum_norm[i]` | `input::sidecar::chaninp` | init,watershed,event | immutable | runtime channel-ID output matching | `G-CHN-008` |
+| derived `ichnum_norm(i)` | `derived.ichnum_norm[i]` | `chaninp.options.ichnum_norm[i]` | `input::sidecar::chaninp` | init | immutable | parser projection and diagnostics; no downstream consumer currently proved | `G-CHN-008` |
 | derived `line_count_closed` | `derived.line_count_closed` | `chaninp.context.line_count_closed` | `input::sidecar::chaninp` | init | immutable | parse closure diagnostics | `G-CHN-003` |
 | derived `trailing_token_lines` | `derived.trailing_token_lines` | `chaninp.context.trailing_token_lines` | `input::sidecar::chaninp` | init | immutable | tokenization diagnostics | `G-CHN-009` |
 | derived `unknown_ichnum_retained_warning_emitted` | `derived.unknown_ichnum_retained_warning_emitted` | `chaninp.context.unknown_ichnum_retained_warning_emitted` | `input::sidecar::chaninp` | init | immutable | compatibility warning observability for unknown-ID retention branch | `G-CHN-008`, `G-CHN-010` |
@@ -138,7 +152,7 @@ record closure. Blank physical lines are not records.
 | --- | --- | --- | --- |
 | `D-CHN-001` | Derive applicability/branch surfaces (`chaninp_required`, `parse_outcome`) from `ipeak` and strict/compat branch outcomes. | parse preamble/finalize | `C-CHN-001` |
 | `D-CHN-002` | Derive timestep normalization (`dtchr_norm_s`, `ntchr`) from legacy-bound normalization algorithm. | parse finalize | `C-CHN-002` |
-| `D-CHN-003` | Derive normalized channel-count/list surfaces (`nchnum_norm`, `ichnum_norm`) from topology and policy gates. | parse/cross-file finalize | `C-CHN-003` |
+| `D-CHN-003` | For non-negative raw counts, derive normalized count/list only after `INV-CHN-013` equality closure. A negative raw count follows the separate domain branch: strict fails; compatibility retains the raw value, normalizes count/list to zero on the three-record form, and emits `CHN-W-004`. | parse/cross-file finalize | `C-CHN-003` |
 | `D-CHN-004` | Derive line/tokenization closure surfaces (`line_count_closed`, `trailing_token_lines`). | parse finalize | `C-CHN-004` |
 | `D-CHN-005` | Derive channel-output enable closure (`chan_output_enabled`). | parse/runtime finalize | `C-CHN-005` |
 | `D-CHN-006` | Derive the WSHED-W10 compatibility default branch from pinned legacy open/read error behavior: `ichout=0`, `nchnum=0`, `ichnum=[]`, `cbase=0`, `dtchr_input_s=60`, `ntchr=1440`, `dtchr_norm_s=60`, `chan_output_enabled=false`. | compat default finalize | `C-CHN-006` |
@@ -151,6 +165,18 @@ Closure hooks:
 - `C-CHN-005`: output-enable gate must close against normalized mode/count fields.
 - `C-CHN-006`: defaulted compatibility output must be explicit and runtime-ready; watershed runtime must not replace it with an untyped `None` branch.
 
+### 6.1 Raw cardinality invariant
+
+`[INFERENCE]` `INV-CHN-013`: for non-negative raw `nchnum_input`, conditional
+record-4 closure is evaluated before topology normalization. Raw zero requires
+no nonempty record 4; raw positive `N` requires exactly `N` IDs. A violation
+returns `CHN-E-002` in both modes and produces no typed/defaulted output. After
+closure, source fields retain the raw count/list, while compatibility derives
+`nchnum_norm` and the first `nchnum_norm` raw IDs. Authority: the direct pinned
+read-then-clamp order in `[DIRECT][E-WF-CHN-01]` plus the repository fail-closed
+structural-input rule. Negative raw counts remain a domain/normalization branch,
+not a record-cardinality obligation.
+
 ## 7. Validation and Error Taxonomy
 
 | Error ID | Class | Trigger |
@@ -158,7 +184,7 @@ Closure hooks:
 | `CHN-E-000` | io | open failure in strict mode when `chan.inp` is required (`ipeak>2`) |
 | `CHN-E-009` | io | missing required `chan.inp` surface in strict mode when `ipeak>2` |
 | `CHN-E-001` | syntax | numeric parse failure on required fields |
-| `CHN-E-002` | syntax | required record/cardinality mismatch (record 4 missing or wrong-arity when `nchnum>0`, or a nonempty record 4/trailing record when `nchnum=0`) |
+| `CHN-E-002` | syntax | record/arity mismatch; the `INV-CHN-013` conditional record-4 class (missing/wrong arity against non-negative raw `nchnum_input`) is never collapsed by compatibility mode; other line/file structural failures retain the ratified compatibility-default policy |
 | `CHN-E-003` | semantic | non-finite numeric values |
 | `CHN-E-004` | semantic | invalid field range/domain (`ichout` domain, timestep domain, negative counts) |
 | `CHN-E-005` | cross-file | topology consistency failure (`nchnum`/`ichnum` vs `nchan`/valid structure IDs) |
@@ -167,7 +193,7 @@ Closure hooks:
 | `CHN-E-008` | syntax | unsupported prefixed/datver-style variant |
 | `CHN-W-001` | compat-warning | required-surface missing/default branch applied in compatibility mode |
 | `CHN-W-002` | compat-warning | open-error branch collapsed with default branch |
-| `CHN-W-003` | compat-warning | parse/count failure collapsed to default branch |
+| `CHN-W-003` | compat-warning | ordinary token, line1..3 structural, or non-cardinality parse failure collapsed to default branch; excludes `INV-CHN-013` record-4 failure |
 | `CHN-W-004` | compat-warning | clamping/normalization applied for out-of-range fields |
 | `CHN-W-005` | compat-warning | unknown `ichnum` IDs retained in compatibility mode with explicit topology-warning emission |
 
@@ -213,7 +239,8 @@ substitute separate hardcoded routing globals from an absent optional
 | Canonical symbol(s) | Internal runtime field | Boundary surface | Boundary field mapping | Notes |
 | --- | --- | --- | --- | --- |
 | `ichout,dtchr,cbase,nchnum,ichnum(i)` | `chaninp.options.{ichout,dtchr_input_s,cbase_m3_s_m2,nchnum_input,ichnum_input}` | `openwepp.boundary.parser.chaninp.v1.records` | canonical names + writer-facing aliases | raw parse export |
-| `dtchr_norm_s,ntchr,nchnum_norm,ichnum_norm(i)` | `chaninp.options.*` | `openwepp.boundary.parser.chaninp.v1.normalized` | normalized/clamped fields + closure flags | runtime-facing normalized export |
+| `dtchr_norm_s,ntchr,nchnum_norm` | `chaninp.options.*` | `openwepp.boundary.parser.chaninp.v1.normalized` | normalized/clamped fields + closure flags | runtime-facing normalized export; network frame currently consumes `nchnum_norm` |
+| `ichnum_norm(i)` | `chaninp.options.ichnum_norm` | `openwepp.boundary.parser.chaninp.v1.normalized_ids` | first normalized-count raw IDs | parser-level projection; no downstream consumer currently proved |
 | `chaninp_required,parse_outcome,line_count_closed,trailing_token_lines,unknown_ichnum_retained_warning_emitted` | `chaninp.context.*` | `openwepp.boundary.observability.parser_warnings.v1` | explicit branch/closure/topology-warning diagnostics | strict/compat observability |
 | `nchan,valid_channel_element_ids` | `chaninp.context.{nchan,valid_channel_element_ids}` | `openwepp.boundary.crossfile.chaninp_topology.v1` | explicit topology dependency surfaces | executable closure support for `G-CHN-007`/`G-CHN-008` |
 | `chan_output_enabled` | `chaninp.options.chan_output_enabled` | `openwepp.boundary.outputs.channel_gate.v1` | output-enable closure field | output subsystem contract gate |
@@ -229,7 +256,10 @@ substitute separate hardcoded routing globals from an absent optional
   - preserves legacy-default/clamp behavior for missing/open/parse failures with explicit warnings;
   - preserves explicit missing-vs-open-failure warning distinction (`CHN-W-001` vs `CHN-W-002`);
   - allows legacy normalization/clamping outcomes with explicit closure surfaces;
+  - validates conditional record 4 against non-negative raw `nchnum_input` before normalization and never defaults that record-4 cardinality class;
+  - retains raw `nchnum_input`/`ichnum_input`, then clamps `nchnum_norm` and selects the first `nchnum_norm` IDs for `ichnum_norm`;
   - allows unknown `ichnum` retention with explicit warning/provenance (`CHN-W-005`);
+  - emits `CHN-W-005` for any unknown retained raw ID, including IDs in the discarded tail beyond `nchnum_norm`; only the first normalized-count IDs enter the normalized parser projection;
   - preserves canonical numeric-leading line handling with trailing-text provenance capture.
 
 ## 11. Guard Map and Invariant Linkage
@@ -238,11 +268,11 @@ substitute separate hardcoded routing globals from an absent optional
 | --- | --- | --- | --- |
 | `G-CHN-001` | deterministic applicability/requiredness branch from `ipeak` | parse preamble | strict missing surface: `CHN-E-009`; strict open failure: `CHN-E-000`; strict unsupported format: `CHN-E-008`; compat: `CHN-W-001`/`CHN-W-002` |
 | `G-CHN-002` | required numeric parse for line1..line3 fields | parse lines 1..3 | `CHN-E-001`/`CHN-E-003` |
-| `G-CHN-003` | cardinality-conditional record closure: record 4 has exactly `nchnum` IDs when `nchnum>0`; canonical `nchnum=0` closes after record 3 with `ichnum=[]` | parse record 3, conditional record 4, and finalize | `CHN-E-002` |
+| `G-CHN-003` | `INV-CHN-013`: conditional record 4 has exactly non-negative raw `nchnum_input` IDs before normalization; raw zero has no nonempty record 4 | parse record 3, conditional record 4, before normalize | this `CHN-E-002` class passes through both modes; other structural failures retain existing policy |
 | `G-CHN-004` | `ichout` domain and output-gate semantic closure | parse/runtime validator | `CHN-E-004`/`CHN-E-007` |
 | `G-CHN-005` | timestep normalization bounds/closure (`dtchr_norm_s`, `ntchr`) | parse normalize validator | `CHN-E-004`/`CHN-E-006` |
 | `G-CHN-006` | `cbase` finite/domain semantics | parse finalize | `CHN-E-003`/`CHN-E-004` |
-| `G-CHN-007` | `nchnum` bounds against topology size (`nchan`) | cross-file validator | `CHN-E-004`/`CHN-E-005` |
+| `G-CHN-007` | after `INV-CHN-013`, normalize `nchnum_norm` against `nchan` while retaining raw `nchnum_input`; `ichnum_norm` is the first normalized-count raw IDs | cross-file validator | strict: `CHN-E-004`/`CHN-E-005`; compat: `CHN-W-004` |
 | `G-CHN-008` | `ichnum(i)` topology-ID closure | cross-file validator | strict: `CHN-E-005`; compat retain branch: `CHN-W-005` |
 | `G-CHN-009` | canonical numeric-leading tokenization policy | parse finalize/policy gate | `CHN-E-001` |
 | `G-CHN-010` | strict/compat default-branch observability closure | parse finalize | `CHN-E-007`/`CHN-W-001`/`CHN-W-003`/`CHN-W-004` |
@@ -256,7 +286,27 @@ Canonical symbols remain authoritative and unchanged:
 
 openWEPP boundary names are aliases only (Section 3).
 
-## 13. HOLD Gap Register
+## 13. Test-Vector Obligations
+
+| Family | Obligation | Observable result |
+| --- | --- | --- |
+| A nominal | canonical strict positive/zero-count and compatibility raw-count-closed payloads | exact raw and normalized typed structures |
+| B boundary | zero count, count equal to `nchan`, and raw count above `nchan` with complete raw list | three-record closure or ordered post-closure normalization |
+| C branch | applicability, strict/compat IO/default, clamp, topology warning, and output-enable branches | exact outcome/warning and consumer globals |
+| D domain-reject | invalid enum/count/timestep/baseflow/topology domains | exact typed error |
+| E missing-symbol | line1..3 truncation/ordinary structure; separately, conditional record-4 missing/wrong arity against non-negative raw count | ordinary: strict `CHN-E-002`, compat typed default + `CHN-W-003`; record-4 class: exact non-collapsible `CHN-E-002` in both modes |
+| F non-finite | `NaN`/infinities for every real token | exact `CHN-E-003` |
+| G conservation / continuity | Not applicable: parser/runtime projection carries no conserved quantity. | reviewed `N/A`; no denominator exclusion |
+| H fail-closed | B-F violations cannot silently clamp/default across disallowed paths; especially raw cardinality | exact error and no typed partial result |
+
+Additional parser obligations: raw source observability remains immutable,
+network-frame routing globals consume `nchnum_norm`, and raw 99/99 normalizes to
+the first two parser-projection IDs when `nchan=2`. A topology-unknown ID in the
+discarded raw tail still emits `CHN-W-005` while remaining absent from
+`ichnum_norm`. This contract does not claim a downstream consumer of that ID
+list.
+
+## 14. HOLD Gap Register
 
 | Gap ID | Statement | Evidence | Disposition |
 | --- | --- | --- | --- |
@@ -265,10 +315,11 @@ openWEPP boundary names are aliases only (Section 3).
 | `CHANINP-GAP-003` | `wepppy` `ichout` override domain (`{1,3}`) diverges from usersum/legacy domain (`0..3`) and requires governance closure. | `[DIRECT][E-SPEC-CHN-01]`, `[DIRECT][E-WP-CHN-01]` | `RATIFIED-W4DR-004 (2026-05-22)` |
 | `CHANINP-GAP-004` | Program-level ownership for chaninp parsing vs interchange-only crates requires explicit ratification. | `[DIRECT][E-SPEC-CHN-01]`, `[DIRECT][E-SURVEY-CHN-01]` | `RATIFIED-W4DR-003 (2026-05-22)` |
 
-## 14. Revision History
+## 15. Revision History
 
 | Date UTC | Version | Change |
 | --- | --- | --- |
+| `2026-07-11` | `0.1.5` | Added `INV-CHN-013`: raw record-4 cardinality closes before compatibility topology normalization; raw fields remain observable, normalized IDs use the first normalized-count raw entries, conditional raw record-4 mismatch is non-collapsible `CHN-E-002`, and A-H obligations are explicit. |
 | `2026-07-11` | `0.1.4` | WSHED-W11D review correction: split the applicability matrix into positive-count four-record and zero-count three-record canonical forms and refreshed lifecycle metadata; grammar/runtime authority is unchanged from 0.1.3. |
 | `2026-07-11` | `0.1.3` | WSHED-W11D contract-first defect closure: made record 4 cardinality-conditional under pinned implied-DO semantics. Canonical `nchnum=0` input is a three-record payload with an empty ID list; strict extra nonempty records fail closure. |
 | `2026-07-09` | `0.1.2` | WSHED-W10 amendment: ratified explicit compatibility default values for absent/open-error/malformed `chan.inp`, required runtime consumption of typed defaulted parser state, and added `D-CHN-006` / `G-CHN-012`. |

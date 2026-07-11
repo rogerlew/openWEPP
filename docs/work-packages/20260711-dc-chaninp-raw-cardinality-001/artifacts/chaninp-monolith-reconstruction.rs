@@ -392,20 +392,11 @@ pub fn parse_chaninp_from_str(
     }
 }
 
-struct RawRequiredRecords {
-    line1_no: usize,
-    line2_no: usize,
-    line3_no: usize,
-    ichout: i32,
-    dtchr_input_s: f64,
-    cbase: f64,
-    nchnum_input: i32,
-    trailing_token_lines: Vec<usize>,
-}
-
-fn parse_raw_required_records(
+fn parse_required_branch(
     lines: &[(usize, &str)],
-) -> Result<RawRequiredRecords, ChaninpParseError> {
+    options: ChaninpParseOptions,
+    valid_channel_element_ids: &BTreeSet<i32>,
+) -> Result<ChaninpFile, ChaninpParseError> {
     if lines.len() < 3 {
         return Err(ChaninpParseError::ChnE002 {
             line: lines.last().map_or(1, |entry| entry.0),
@@ -458,24 +449,18 @@ fn parse_raw_required_records(
         trailing_token_lines.push(line3_no);
     }
 
-    Ok(RawRequiredRecords {
-        line1_no,
-        line2_no,
-        line3_no,
-        ichout: parse_i32(line1_tokens[0], line1_no, "ichout")?,
-        dtchr_input_s: parse_f64(line1_tokens[1], line1_no, "dtchr")?,
-        cbase: parse_f64(line2_tokens[0], line2_no, "cbase")?,
-        nchnum_input: parse_i32(line3_tokens[0], line3_no, "nchnum")?,
-        trailing_token_lines,
-    })
-}
+    let ichout_raw = parse_i32(line1_tokens[0], line1_no, "ichout")?;
+    let dtchr_input_s_raw = parse_f64(line1_tokens[1], line1_no, "dtchr")?;
+    let cbase_raw = parse_f64(line2_tokens[0], line2_no, "cbase")?;
+    let nchnum_input_raw = parse_i32(line3_tokens[0], line3_no, "nchnum")?;
 
-fn parse_conditional_ichnum(
-    lines: &[(usize, &str)],
-    nchnum_input: i32,
-    line3_no: usize,
-) -> Result<(usize, Vec<i32>), ChaninpParseError> {
-    let raw_nonnegative_count = usize::try_from(nchnum_input).ok();
+    let mut warnings = Vec::new();
+    let ichout = normalize_ichout(ichout_raw, options.mode, line1_no, &mut warnings)?;
+    let cbase = normalize_cbase(cbase_raw, options.mode, line2_no, &mut warnings)?;
+    let (dtchr_input_s, dtchr_norm_s, ntchr) =
+        normalize_dtchr(dtchr_input_s_raw, options, line1_no, &mut warnings)?;
+
+    let raw_nonnegative_count = usize::try_from(nchnum_input_raw).ok();
     let expected_record_count = match raw_nonnegative_count {
         Some(0) | None => 3,
         Some(_) => 4,
@@ -537,22 +522,19 @@ fn parse_conditional_ichnum(
             });
         }
     }
-    Ok((line4_no, ichnum_input))
-}
 
-fn normalize_ichnum_ids(
-    ichnum_input: &[i32],
-    normalized_count: usize,
-    line4_no: usize,
-    mode: ParseMode,
-    valid_channel_element_ids: &BTreeSet<i32>,
-    warnings: &mut Vec<ChaninpWarning>,
-) -> Result<(Vec<i32>, bool), ChaninpParseError> {
-    let mut unknown_warning_emitted = false;
+    let (nchnum_input, nchnum_norm) =
+        normalize_nchnum(nchnum_input_raw, options, line3_no, &mut warnings)?;
+    let normalized_count =
+        usize::try_from(nchnum_norm).map_err(|_| ChaninpParseError::ChnE007 {
+            context: "nchnum_norm must convert to a non-negative list cardinality",
+        })?;
+
+    let mut unknown_ichnum_retained_warning_emitted = false;
     let mut ichnum_norm = Vec::new();
     for (index, id) in ichnum_input.iter().enumerate() {
         if !valid_channel_element_ids.contains(id) {
-            match mode {
+            match options.mode {
                 ParseMode::Strict => {
                     return Err(ChaninpParseError::ChnE005 {
                         line: line4_no,
@@ -562,7 +544,7 @@ fn normalize_ichnum_ids(
                     });
                 }
                 ParseMode::Compatibility => {
-                    unknown_warning_emitted = true;
+                    unknown_ichnum_retained_warning_emitted = true;
                     if !warnings
                         .iter()
                         .any(|warning| warning.code == ChaninpWarningCode::ChnW005)
@@ -580,41 +562,6 @@ fn normalize_ichnum_ids(
             ichnum_norm.push(*id);
         }
     }
-    Ok((ichnum_norm, unknown_warning_emitted))
-}
-
-fn parse_required_branch(
-    lines: &[(usize, &str)],
-    options: ChaninpParseOptions,
-    valid_channel_element_ids: &BTreeSet<i32>,
-) -> Result<ChaninpFile, ChaninpParseError> {
-    let raw = parse_raw_required_records(lines)?;
-
-    let mut warnings = Vec::new();
-
-    let ichout = normalize_ichout(raw.ichout, options.mode, raw.line1_no, &mut warnings)?;
-    let cbase = normalize_cbase(raw.cbase, options.mode, raw.line2_no, &mut warnings)?;
-
-    let (dtchr_input_s, dtchr_norm_s, ntchr) =
-        normalize_dtchr(raw.dtchr_input_s, options, raw.line1_no, &mut warnings)?;
-
-    let (line4_no, ichnum_input) = parse_conditional_ichnum(lines, raw.nchnum_input, raw.line3_no)?;
-
-    let (nchnum_input, nchnum_norm) =
-        normalize_nchnum(raw.nchnum_input, options, raw.line3_no, &mut warnings)?;
-    let normalized_count =
-        usize::try_from(nchnum_norm).map_err(|_| ChaninpParseError::ChnE007 {
-            context: "nchnum_norm must convert to a non-negative list cardinality",
-        })?;
-
-    let (ichnum_norm, unknown_ichnum_retained_warning_emitted) = normalize_ichnum_ids(
-        &ichnum_input,
-        normalized_count,
-        line4_no,
-        options.mode,
-        valid_channel_element_ids,
-        &mut warnings,
-    )?;
 
     let chan_output_enabled = ichout > 0 && nchnum_norm > 0;
     if chan_output_enabled != (ichout > 0 && !ichnum_norm.is_empty()) {
@@ -643,7 +590,7 @@ fn parse_required_branch(
         ipeak: options.ipeak,
         nchan: options.nchan,
         line_count_closed: true,
-        trailing_token_lines: raw.trailing_token_lines,
+        trailing_token_lines,
         unknown_ichnum_retained_warning_emitted,
         warnings,
         options: Some(ChaninpOptions {
