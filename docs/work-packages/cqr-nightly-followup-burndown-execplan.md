@@ -155,7 +155,7 @@ must repeat this authorization and requirement.
 
 | Queue ID | Required track | Package shape | Initial state |
 |---|---|---|---|
-| `FQ-01` | Close `FDIR-FINITE-VALUE-GUARD-001` | One contract-first DC package through science-tier coverage, obligations, and CRAP closure | `QUEUED` |
+| `FQ-01` | Close `FDIR-FINITE-VALUE-GUARD-001` | One contract-first DC package through science-tier coverage, obligations, and CRAP closure | `ACTIVE` — package `20260711-dc-fdir-finite-value-guard-001`, 2026-07-11 UTC |
 | `FQ-02` | Close `CHANINP-RAW-NCHNUM-CARDINALITY` | One contract-first DC package through science-tier coverage, obligations, and CRAP closure | `WAITING-SEQUENCE` |
 | `FQ-03` | Close `CHN-E006-EXTRA-RATING-ROW` | One contract-first DC package through science-tier coverage, obligations, and CRAP closure | `WAITING-SEQUENCE` |
 | `FQ-04` | Close `totalwatsed3.rs` coverage and CRAP debt | One science-tier cover-then-decompose CQR package | `WAITING-SEQUENCE` |

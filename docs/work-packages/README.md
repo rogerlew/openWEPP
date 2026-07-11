@@ -33,6 +33,9 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-11 UTC`:
+- `20260711-dc-fdir-finite-value-guard-001/` - ACTIVE: FQ-01 contract-first
+  closure of non-finite fixed-date irrigation values, including science-tier
+  coverage, A-H obligations, CRAP closure, and full independent gates.
 - `20260710-laned-router-h2637-34yr-negativeoutletbin-defect-closure-001/` -
   EXECUTED-COMPLETE (2026-07-11 UTC): closed `LANED-NOB-001` with
   `SC-OFEROUTE-001` rev 51 and exact-zero one-way predictor outlet-face
