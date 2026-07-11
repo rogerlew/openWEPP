@@ -1,8 +1,10 @@
 # Final Disposition
 
-Status: `EXECUTED-COMPLETE-AUTHORITY` (v52 + v53 post-hoc amendments
-applied 2026-07-10; **Codex cycle-2 re-confirmation pending** — see the two
-reopen-cycle records at the end)
+Status: `EXECUTED-COMPLETE-AUTHORITY` — **final**. Codex cycle-2
+re-confirmation `RATIFIED` (2026-07-10, `codex_reconfirmation2.md`): both
+residuals closed; `WSHED-W11-HOLD-001` stands lifted; W11 may resume at
+Phase B under `SC-ROUTE-001` v53. (The two reopen-cycle records below are
+the audit trail.)
 
 Evidence mode: `Static` + `Ran`, per-artifact labels throughout the package.
 

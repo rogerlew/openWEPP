@@ -7,9 +7,9 @@ rows exist in SC-ROUTE-001 **v53** — v51 as verified by the package's dual
 verification, plus the v52/v53 amendments from the two Codex post-hoc
 cycles).
 
-`WSHED-W11-HOLD-001` is lifted (pending the final Codex re-confirmation of
-v53). Canonical authority for time-resolved channel sediment routing now
-exists in `SC-ROUTE-001` v53. W11 resumes at
+`WSHED-W11-HOLD-001` stands lifted (Codex `RATIFIED`, cycle-2
+re-confirmation, 2026-07-10). Canonical authority for time-resolved
+channel sediment routing now exists in `SC-ROUTE-001` v53. W11 resumes at
 its contract-first phase (Phase B) with **no executor science choices
 remaining** — every item below is a contract citation, not a decision.
 
