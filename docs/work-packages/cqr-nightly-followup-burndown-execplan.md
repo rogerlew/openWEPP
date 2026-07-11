@@ -1,6 +1,6 @@
 # CQR Nightly Follow-Up Queue Burndown ExecPlan
 
-Status: **active-burndown**
+Status: **completed**
 Dispatch surface: **main** unless the operator explicitly authorizes a branch.
 Owner: maintainers.
 Created: 2026-07-11 UTC.
@@ -41,7 +41,7 @@ scaffolded, reviewed, verified, and committed.
 - [x] (2026-07-11 UTC) Execute queue item `FQ-02` through its terminal package commit.
 - [x] (2026-07-11 UTC) Execute queue item `FQ-03` through its terminal package commit.
 - [x] (2026-07-11 UTC) Execute queue item `FQ-04` through its terminal package commit.
-- [ ] Run the final fresh workspace LCOV/CRAP rerank and record the outcome.
+- [x] (2026-07-11 UTC) Run the final fresh workspace LCOV/CRAP rerank and record the outcome.
 
 ## Surprises & Discoveries
 
@@ -125,7 +125,34 @@ tests pass 17/17 with independent two-day all-field water/storage/sediment
 reconstruction and accepted real-cohort binding. Coverage is 97.328% lines /
 93.011% regions, maximum CRAP is 23.0, full workspace is 1,776/1,776 with 3
 configured skips, and dual review/verification are GO/PASS. The final fresh
-workspace rerank remains the only unchecked queue step.
+workspace rerank subsequently closed as recorded below.
+
+Final rerank outcome: GO — the follow-up queue is complete. Fresh measurement
+ran from clean commit `14dcb022a86aa2e8921ab1154a6b8335e9ef0c26`; the worktree
+remained clean. LCOV took 2,118.66 seconds, JSON took 2,079.91 seconds, and CRAP
+took 2.08 seconds; every command exited zero. Raw artifacts are:
+
+| Artifact | Bytes | SHA-256 |
+| --- | ---: | --- |
+| `/tmp/openwepp-cqr-followup-final.lcov` | 4,376,909 | `a8ef30b6c6b748cdee3e5239bf74cabcab281fa9fa166e51dbc96bec979943b1` |
+| `/tmp/openwepp-cqr-followup-final.json` | 19,110,180 | `53e7740029043b290f4e3d26bbf60e204d3df8ccd2cca78fc2b9ea2a4aa759e0` |
+| `/tmp/openwepp-cqr-followup-final-crap.json` | 2,869,984 | `bb67da1bf31bdfabcbba156c0f176a8365a2c3be4ec2f1a801644d71a6862c56` |
+
+Both `--ignore-run-fail` coverage passes generated complete reports and found
+only the unrelated `openwepp --test laned_shadow_h2637` target unstable under
+parallel instrumentation. LCOV observed four failing cases and JSON three;
+one case changed result between repeats. The exact-current full-profile gate
+passed 1,776/1,776, so this variation is attributed to the known shared
+environment interference, not the queue. No other test target failed.
+
+All four queue targets retain science-tier coverage and zero CRAP rows above
+30: FQ-01 97.397% lines / 98.065% regions / max 17; FQ-02 92.713% /
+96.723% / max 16.352; FQ-03 99.699% / 99.499% / max 21; FQ-04 97.328% /
+93.011% / max 23. The raw next ranking is watershed CLI, PMETPARA formatter,
+runner CLI, erosion continuity, snow, TCR, GWCOEFF, landuse migrate, watershed
+network frame, and phosphorus. PMETPARA remains reviewed no-action. Another
+nightly batch is technically available but requires a new operator dispatch;
+this plan does not start it automatically.
 
 ## Context And Orientation
 
@@ -590,3 +617,8 @@ coverage, and CRAP closure with dual PASS verification. FQ-04 is the next row.
 independent conservation/publication reconstruction, behavior-preserving WAT
 reader decomposition, CRAP closure, full gates, dual review, and dual PASS
 verification. Only the final fresh workspace rerank remains.
+
+2026-07-11: final clean-commit workspace LCOV/JSON/CRAP rerank completed. All
+four queue targets retain science-tier coverage and zero rows above CRAP 30.
+The plan and queue are complete with a GO recommendation; a new nightly batch
+requires separate operator dispatch.

@@ -19,10 +19,10 @@
   `execute cqr nightly for <N> modules`: measure live workspace CRAP/LCOV, select
   the top eligible production modules, scaffold one ordinary CQR work package per
   target, commit the scaffold, execute, and commit completion or hold evidence.
-- `cqr-nightly-followup-burndown-execplan.md` owns the serialized independent
-  tracks created from a completed nightly batch's local holds: single
+- `cqr-nightly-followup-burndown-execplan.md` completed the serialized
+  independent tracks created from nightly batch 01's local holds: three
   non-deferring defect packages, one totalwatsed3 CQR package, and the final
-  rerank.
+  clean-commit rerank.
 - `templates/cqr-nightly-package.md` is the package-local template for each
   selected CQR nightly target.
 - `templates/cqr-nightly-kickoff-prompt.md` is the active kickoff prompt template
