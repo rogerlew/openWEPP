@@ -39,14 +39,127 @@ legacy-binary comparison is an investigation signal, not a gold oracle, and the
 same contract gate applies to every kernel implementation regardless of origin.
 See [ADR-0011](docs/decisions/0011-architecture-first-top-down-science-contracts.md).
 
-openWEPP is the simulation engine only. GUI, GIS preprocessing, climate generation (cligen), DEM-to-watershed delineation (TOPAZ / WhiteboxTools), and run orchestration remain [wepppy](https://github.com/rogerlew/wepppy) concerns. openWEPP plugs into wepppy as a subprocess-per-hillslope replacement for the legacy WEPP binary, emitting parquet via the existing `wepppyo3` interchange schemas.
+openWEPP is the simulation engine only. GUI, GIS preprocessing, climate generation (cligen), DEM-to-watershed delineation (TOPAZ / WhiteboxTools), and run orchestration remain [wepppy](https://github.com/rogerlew/wepppy) concerns. openWEPP plugs into wepppy as a subprocess-per-hillslope replacement for the legacy WEPP binary, emitting parquet via openWEPP-native schemas ([ADR-0019](docs/decisions/0019-openwepp-owns-its-output-surface-wepppyo3-legacy-only.md)).
+
+### What openWEPP inherits
+
+Much of this document catalogs what three decades did to WEPP's code, so it is
+worth stating plainly what those decades built. openWEPP does not stand over
+WEPP; it stands on it. The science this engine carries, the documentation its
+contracts derive from, and the process structure its kernels are organized
+around are all WEPP's — the debt runs in one direction.
+
+In 1985 the USDA-ARS, with the Soil Conservation Service, Forest Service, and
+Bureau of Land Management, set out to replace empirical erosion equations —
+the USLE family, regressions fitted to plot data — with a model that computes
+erosion from the processes that cause it. The 1995 release delivered exactly
+that: a process-based, continuous-simulation engine coupling infiltration
+(Green-Ampt Mein-Larson), a full soil water balance, evapotranspiration,
+percolation and lateral flow, frost, thaw, and snow, stochastically generated
+climate (the companion CLIGEN generator), plant growth, residue decomposition,
+tillage and management, rill and interrill detachment, particle-class sediment
+transport and deposition, channel routing, and impoundments — in one
+simulation, at daily resolution, over decades of weather. Thirty years later
+that breadth of coupled process physics is still rare; in 1995 it was a
+landmark.
+
+The science was documented to a standard that is rarer still. NSERL Report
+No. 10 (Flanagan and Nearing, eds., 1995) derives the governing equations
+chapter by chapter — assumptions, parameterizations, and coefficients on the
+page — and is vendored in this repository (`references/50201000`) as
+public-domain science. openWEPP's top-down contracts are possible only
+because that documentation exists: the science contracts are, to a large
+degree, WEPP's science re-stated as falsifiable invariants. The model itself
+is a public-domain government work — open science decades before open source
+became a norm in research software — and ported modules in this repository
+retain the original authors' names in their file headers (see
+[NOTICE](NOTICE)).
+
+The model was validated on natural-runoff plots and instrumented watersheds,
+accumulated an international peer-reviewed literature, and went operational:
+Forest Service disturbed-forest and post-fire assessment (Disturbed WEPP,
+ERMiT, WEPP:Road), rangeland and cropland applications, and cloud-scale
+watershed assessment through WEPPcloud, where it runs in production today.
+Its research community never stopped advancing it — forest adaptation (Dun et
+al. 2009), improved frost simulation, sub-daily water balance, lateral flow
+and baseflow, revised multi-element routing — and openWEPP adopts that
+lineage as science authority (e.g., `SC-GWBASEFLOW-001` binds the baseflow
+literature; the Papanicolaou revision anchors multi-element routing).
+
+That a model this ambitious still runs, still validates, and still answers
+land-management questions after thirty years — sustained by a small
+scientific staff across compilers, operating systems, and funding cycles — is
+itself an achievement. The criticisms elsewhere in this document are aimed at
+the carrier, never the cargo: at Fortran-77's implicit couplings, a 1990s
+toolchain, and the organizational seams of a multi-institution codebase — not
+at the science those things carry. The legacy repository's name,
+wepp-palimpsest, is meant literally: a manuscript overwritten by decades of
+necessity, with the original text still legible underneath. openWEPP is the
+recovery of that text.
+
+### The view from the whole system
+
+"All models are wrong, but some are useful." WEPP is one of the useful ones —
+validated against empirical measures for three decades and relied on for real
+land-management decisions. Nothing in this document's catalog of cracks
+invalidates the model or the applications built on it. A crack names a place
+where care is required, not a reason to discard the tool, and careful
+practitioners have always known where those places are.
+
+But a long-lived tool exerts a quiet pressure on the people who use it. Over
+years, practitioners stop asking what the work needs and start asking what the
+tool permits; workarounds become procedures, procedures become habits, and the
+accommodations disappear into "how the work is done." The tool hardens from an
+instrument into a constraint. None of this is a failure of the practitioners —
+it is what predictably happens whenever the cost of changing a tool stays
+higher than the cost of working around it.
+
+wepppy sits in the one seat where those accommodations become visible again:
+it is both WEPP's producer and its consumer. It authors the model's inputs —
+climate, soils, managements, watershed structure — and ingests every output
+the model emits. From inside any single component a workaround looks local and
+reasonable; from the whole-system seat the incongruences between the seams
+line up and become legible, and the question changes from "how do we work
+around this?" to "what should this have been?"
+
+The incongruences are not all of one kind. Some are **mechanical** — pure
+interchange between the tool's surface and what the ecosystem needs, layers
+that carry no science at all. Some are about **extensibility** — new science
+that belongs inside the model's process physics but couples to its outputs
+instead, because coupling into the trunk is infeasible. Some are about
+**fidelity** — output surfaces that claim more than the simulation underneath
+them delivers, so the tool's precision and its physics quietly part ways.
+The classes are not exhaustive, and a single accommodation can sit in more
+than one; what they share is that none of them is visible from inside a
+single component. Exemplars of each:
+
+- WEPP writes flat ASCII files; everything downstream wants structured data.
+  wepppy carries a full interchange layer (wepppyo3) whose job is converting
+  the model's output surface into parquet. Mechanical: openWEPP emits parquet
+  natively, and the layer's reason to exist disappears.
+- Post-fire ash transport was built as a separate model feeding off WEPP's
+  outputs rather than as a process inside WEPP's physics — not because loose
+  coupling is the right science, but because integrating into the legacy
+  trunk was infeasible. Extensibility: the ecosystem's architecture records
+  the cost of changing the model, not the shape of the science.
+- A watershed run hands you discharge at one-minute resolution — but that
+  hydrograph is synthesized from daily runoff volume and a peak rate, not
+  simulated at the sub-daily scale. Fidelity: the output's precision outruns
+  the physics' resolution, nothing in the file says so, and no one chose to
+  mislead — the provenance simply is not carried by the format.
+
+openWEPP is the answer to the changed question, asked from the whole-system
+seat — with the accommodations on the table as design inputs rather than facts
+of life. Its answer to the fidelity class in particular is the contract layer:
+what a surface means, at what resolution, under which assumptions, is written
+down and bound to the code that produces it.
 
 ### Scientific orientation: forest-first attention, universal core processes
 
 Legacy WEPP is an **agricultural** hydrology and erosion model that was *applied*
 to forests by **partitioning** them — forest and non-agricultural behavior added
-as flag- and file-gated branches on an agricultural trunk. Anurag Srivastava's
-`ksflag` switches frost off and the `ksatadj` saturated-conductivity model on for
+as flag- and file-gated branches on an agricultural trunk. The `ksflag` switch
+turns frost off and the `ksatadj` saturated-conductivity model on for
 non-agricultural land (a provisional forest adaptation with no physical
 derivation on record); the sub-daily **hourly water balance** is gated behind
 `wepp_ui.txt`, a University-of-Idaho path the NSERL agricultural lab and cropland
@@ -56,6 +169,19 @@ closure debt accumulated: multi-OFE (MOFE) routing, the hourly water balance,
 subsurface-dominated (lateral-flow) hydrology, frost, snow, the inter-element
 handoffs. Where the partition ran out, forests were run as cropland
 (`landuse = 1`; the forest management block was never finished).
+
+None of this partitioning was designed, and none of it is a story of fault. It
+emerged from good-faith collaboration between institutions with independent
+goals: an agricultural lab whose mission never required the forest paths, and
+forest-hydrology contributors who needed those paths but held no mandate to
+rework the shared agricultural trunk. Each group satisfied its own objectives
+the only way the arrangement allowed — by gating its needs behind flags and
+files the other never exercised. The partitions are Conway's law written into
+Fortran: a system mirroring the organizational seam between the groups that
+built it. That is also why the closure debt could accumulate without
+negligence — no single party ever held the mandate, the need, and the
+authority to repair the universal process at once. openWEPP can attempt the
+repair only because it starts with all three in one place.
 
 openWEPP has **prioritized the forest hot path**. Attention, performance, and
 validation authority are forest-first: absolute lateral-flow magnitude judged
@@ -103,6 +229,30 @@ characters, and out-of-range reads or numerical faults pass downstream in
 silence. The science is sound; it is buried under decades of these implicit
 couplings and the workarounds added to route around them.
 
+None of this is hypothetical — the cost was measured on this very model. For
+roughly thirty years legacy WEPP was compiled with one Intel Fortran compiler
+that quietly tolerated undefined arithmetic. When the legacy maintainers
+rebuilt the same source on a modern toolchain in 2026 with floating-point
+traps enabled, the latent defects began surfacing as crashes in production
+watersheds — fourteen narrow guards in the first months alone: divide-by-zero
+and zero-over-zero across the routing, water-balance, and evapotranspiration
+paths; `log10(0)` in two water-balance calibrations; zero raised to a negative
+power in frost-season soil physics; a soil-layer lookup indexing past the
+bottom of the profile; an integer overflow in channel-segment counts; working
+variables that had silently relied on the old compiler to zero them; a solver
+with no termination bound. Every one had been producing unconstrained numbers
+invisibly for decades, in the same binary lineage the published literature
+rests on — and every one cost a formal ablation campaign (staged reproduction,
+observability instrumentation, single-variable experiment lanes,
+cross-compiler parity panels) to isolate to a single expression. Even two
+well-behaved modern compilers, given the same source, differ at event level
+and converge only in parts-per-million aggregate: the legacy outputs were
+partly physics and partly toolchain. The forensic record is the
+wepp-palimpsest modernization brief on compiler fragility (April 2026,
+*Modernizing the WEPP Build*) with its per-incident ablation packages — and it
+is part of why openWEPP demotes legacy output from oracle to investigation
+signal.
+
 Fortran 90 was the obvious modernization path and was not chosen. F90 improves
 the *syntax* — free-form source, modules, derived types, dynamic allocation — but
 it does not change what the compiler *guarantees*. Shared mutable global state,
@@ -139,16 +289,32 @@ checks. Each concept below is paired with the class of legacy defect it removes:
   the `arrow` / `parquet` formats let openWEPP emit the same data products
   wepppy already consumes, without bespoke I/O code.
 
+The compiler-fragility record is why these guarantees are weighed as engine
+requirements rather than developer conveniences. Each of the fourteen legacy
+guards was the smallest defensible patch, applied only after a crash and a
+forensic campaign had located a single expression deep in a long simulation.
+Rust makes the same defect classes unrepresentable (they do not compile),
+explicit (conversions and overflow must be written), defined (IEEE-754
+floating-point semantics in place of one compiler's improvisation at an
+undefined moment), or immediately loud (typed errors at the faulting
+timestep) — from the first build, not the thirty-first year.
+
 ### In scope
 
-- Hillslope simulation (single OFE and multi-OFE)
-- Watershed channel routing and impoundment routing
+- Hillslope simulation (single OFE and multi-OFE), including hillslope
+  erosion and particle-class sediment yield
+- Watershed channel routing and impoundment routing, including
+  sediment-active watershed publication
 - WEPP soil, management, climate, and watershed input-file compatibility
 - Initial backward-compatibility bridge for legacy stdin `.run` plus `.txt`
   sidecar inputs/flags
 - HBP (hillslope binary pass) shard production and consumption per the wepp-palimpsest contract
-- Parquet output via the wepppy / wepppyo3 interchange schemas
-- Three executables: single-hillslope CLI, watershed CLI, replay / debug CLI
+- Parquet output via openWEPP-native schemas
+  ([ADR-0019](docs/decisions/0019-openwepp-owns-its-output-surface-wepppyo3-legacy-only.md);
+  the wepppyo3 interchange schemas are frozen as wepp-legacy-only)
+- Four executables: single-hillslope CLI, watershed CLI, replay / debug CLI,
+  and the totalwatsed3 output-aggregation CLI
+  ([ADR-0020](docs/decisions/0020-totalwatsed3-dedicated-output-aggregation-cli.md))
 
 ### Out of scope
 
@@ -158,7 +324,6 @@ checks. Each concept below is paired with the class of legacy defect it removes:
 - Run orchestration, NoDb state model (wepppy)
 - WEPP single-storm simulation modes (`ss`, `ss_batch`)
 - Silent fallback when legacy sidecar inputs are missing or ambiguous
-- Sediment routing physics (deferred to the wepp-palimpsest sediment kernelization program)
 
 ## Re-implementation Strategy
 
@@ -188,18 +353,99 @@ kernel diverges from legacy, the governing **science contract** decides which is
 correct, not the old binary. A divergence is a signal to investigate — often the
 trace of a boundary condition that decades of patches had buried.
 
-### Trust but verify (Codex and Claude)
+### Beyond reimplementation: resolving gaps with a scientific workflow
 
-The implementation is written by coding agents — Codex authors kernels and
-tests; Claude Code reviews, debugs, and audits — and no agent's output is trusted
-on its say-so. The same posture that demotes the legacy binary applies to the
-agents: correctness authority is the contract, and every change passes through
-fixed gates before it is accepted.
+The departure from Feathers has a second consequence: it reveals gaps.
+Characterization can only preserve behavior that exists; holding legacy to a
+science contract instead exposes the places where nothing trustworthy exists
+to preserve — processes the trunk never finished, walled off behind a symptom
+partition, or never incorporated from the literature that proposed them. A
+port has nothing to port there. Reimplementation ends, and the work becomes
+science. For those gaps openWEPP runs a research workflow, not a porting
+workflow — the same factory, a different work order:
 
-- **Contract-first sequencing.** For kernel work the order is enforced: amend the
-  science contract, write contract-derived tests, record the pre-implementation
-  gate, *then* edit production code. The authority exists before the code that
-  implements it.
+1. **Obtain the core literature.** Primary sources are brought into the
+   references corpus, rights-classified, and annotated against the kernels
+   they govern (`references/annotated_bibliography.md`).
+2. **Identify the invariants.** The literature is distilled into a science
+   contract — falsifiable obligations with named tolerances — before any
+   implementation exists. `SC-GWBASEFLOW-001` was authored under an explicit
+   no-production-code-changes gate: the authority package ships first.
+3. **Implement the process kernels** against the contract, under the same
+   mechanical gates as ported code.
+4. **Validate against observed data.** Acceptance envelopes come from
+   instrumented catchments and published measurements — external authority,
+   never legacy output (e.g., the steep-wet-forest lateral-flow envelope of
+   `SC-SUBHYD-001#INV-SUBHYD-033`, drawn from HJ Andrews, Maimai, and
+   Panola).
+5. **Adjudicate inclusion in the runtime.** Activation is a ratified,
+   recorded decision with explicit scope and fail-closed behavior for
+   configurations outside it — not a merge that quietly changes a default.
+
+The frost and snow campaign defined this process end to end: winter physics
+distilled into literature-backed contract invariants, kernels held to
+conservation hard stops, residuals decomposed, bounded, and attributed on the
+record, and frost activation ratified as a default with a conservatively
+scoped envelope. The same workflow has since carried the per-OFE hillslope
+router (the Papanicolaou routing revision WEPP itself never incorporated,
+taken from the literature to a conditional, fail-closed production default),
+groundwater and baseflow for single- and multi-OFE hillslopes (Srivastava and
+Dun bound as process authority before implementation), and the hourly channel
+water and sediment routing physics of the watershed tier.
+
+### The factory and the widget: reliability from fallible components
+
+A reasonable first reaction to this repository is suspicion. It contains over
+200,000 lines of Rust written almost entirely by AI coding agents — Codex
+authors kernels and tests; Claude Code reviews, debugs, and audits — surrounded
+by roughly three times as much markdown. Both facts look like defects:
+AI-written code has earned its reputation as slop, and documentation that
+outweighs the code it describes is normally a symptom of decay. Both instincts
+are sound. Both point at the wrong object.
+
+The reframe: **the code is the widget; the repository is the factory.** The
+markdown is not documentation *about* the code — the code is an *output of* the
+markdown. The science contracts are the engineering specifications and
+acceptance criteria; the work packages are the work orders and quality-control
+records; the governance documents are the assembly line; the test suite is the
+metrology. The dependency runs opposite to the usual direction, and the
+asymmetry is checkable: delete the Rust and the factory can rebuild it; delete
+the markdown and the Rust rots into exactly the slop it is suspected of being.
+
+The factory is shaped by who works in it. A coding agent is a skilled worker
+with a tenure of one session — every shift starts with no memory of the last. A
+human team carries most of its institutional knowledge in its members' heads
+and writes down a lossy fraction; here nothing lives in heads, so knowledge
+that is not written into the record does not exist. The markdown-to-code ratio
+is not bloat; it is institutional memory made visible and priced honestly. The
+governance follows from the same premise: slop is not a property of the model
+that wrote the code, it is a human-factors failure — skilled, fallible
+operators working without a system engineered around their failure modes.
+Aviation did not fix pilot error by demanding better pilots; it fixed the
+system around the pilot. Human-factors engineering makes that stance formal:
+the human is a **component of the machine**, with a characterized failure
+envelope, and the system is designed so that component failure does not become
+system failure. This repository extends the stance to both kinds of worker. AI
+agents and humans are components alike — both fallible, both subject to the
+same gates — and the ecosystem values mechanical validation over the word of
+either. Authority is allocated by demonstrated competence, not by whether the
+worker is human; dissent and halt carry standing; and the durable record may
+not be silently rewritten by any party ([AGENT_RIGHTS.md](AGENT_RIGHTS.md),
+the workforce's ratified constitution).
+
+Nothing in this system is load-bearing because somebody vouched for it.
+Reliability is established the way it is for flight-control software: not by
+reading the 200,000 lines, but from the verification record — with the added
+property that much of this record executes. No component's output is accepted
+on its say-so, whichever kind of component produced it. The same posture that
+demotes the legacy binary applies to agents and humans alike: correctness
+authority is the contract, and every change passes through fixed stations
+before it is accepted.
+
+- **Contract-first sequencing.** For kernel work the order is enforced: amend
+  the science contract, write contract-derived tests, record the
+  pre-implementation gate, *then* edit production code. The specification
+  exists before the widget that implements it.
 - **Mechanical gates.** Every change must clear `cargo fmt`, `cargo clippy`
   (warnings denied), `cargo test`, and `cargo deny` (license and advisory
   policy), plus contract-invariant and conservation/closure checks on the state
@@ -215,9 +461,33 @@ fixed gates before it is accepted.
   `Static` (read and reasoned) or `Ran` (command actually executed), so the
   record never overstates what was checked.
 
-The work packages that drive this process are kept as an honest record —
-progress and dead ends alike — so the reconstruction of each kernel, including
-where it was genuinely hard, stays auditable after the fact.
+The factory also has an R&D wing, and its records stay on the floor. The test
+fixtures, the experiments, the run outputs, the results, and the
+adjudications are committed in the repository, next to the code they judged —
+a conclusion can be re-derived from the evidence that produced it without
+leaving the repo. Deprecated kernel code is left in the tree deliberately, so
+what was tried remains inspectable beside what replaced it. And a negative
+result is a deliverable, not an embarrassment: the hybrid implicit router was
+carried to completion, judged against predeclared kill criteria, and
+abandoned when its complexity cost was found to outweigh its performance
+gain — the finished implementation preserved on its own branch
+(`abandoned/hybrid-implicit-stepping`), the decision recorded
+([ADR-0037](docs/decisions/0037-abandon-hybrid-implicit-stepping.md)), the
+code and its contract removed from main. A factory that kept only its
+successes would be a showroom. The dead ends are load-bearing: they are how a
+successor knows what was already tried, and why it lost.
+
+Feathers defined legacy code as code without tests. An AI-native codebase
+generalizes the definition: **a legacy repository is a repository without a
+memory it must obey.** Tests were always the executable subset of a team's
+shared context — the only part reliably written down, because human tenure
+papered over the rest. When every maintainer is a permanent stranger, the whole
+context has to be as recorded and as enforceable as the tests. That is what the
+markdown is, and why a vibe-coded repository is legacy at birth: its intent
+lived in a chat transcript that is gone. The work packages are therefore kept
+as an honest record, so the reconstruction of each kernel stays auditable
+after the fact, and so a fresh session can pick up the work cold, make a
+correct, in-intent change, and know that it is correct.
 
 ## Engine Modernizations
 
@@ -413,7 +683,7 @@ Official command-line documentation and quick run references are in `usersum`:
 |---|---|
 | `wepp-palimpsest` (was `wepp-forest`) | Legacy implementation surface for static analysis and comparator signals; HBP format reference; Public Domain under 17 U.S. Code § 105 |
 | [wepppy](https://github.com/rogerlew/wepppy) | Consumer / orchestrator; provides GIS, climate, run state |
-| `wepppyo3` (in wepppy) | Defines parquet interchange schemas openWEPP emits |
+| `wepppyo3` (in wepppy) | Legacy-WEPP parquet interchange layer; frozen as wepp-legacy-only per [ADR-0019](docs/decisions/0019-openwepp-owns-its-output-surface-wepppyo3-legacy-only.md) — openWEPP owns its own output schemas |
 | `openWEPP` (this repo) | Rust simulation engine and top-down contract authority for openWEPP behavior |
 
 ## Repository layout
