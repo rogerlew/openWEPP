@@ -29,6 +29,15 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-11 UTC`:
+- `20260711-wshedw11e-hourly-routing-sanity-rerun-001/` -
+  EXECUTED-COMPLETE-SANITY-PASS-WITH-FINDING (2026-07-11 UTC): fresh debug and
+  exact release consumers pass 7/7; corrected KW/CREAMS, canonical typed MC
+  admission/rejection, zero-count parsing, and terminal publication remain
+  closed. Erosion 319/319, full 1,693/1,693, clippy, deny, formatting, dual
+  review, and dual verification pass. `W11E-F001` retains material KW
+  3,600/600-second spike-peak and late-storage sensitivity as a bounded
+  non-defect finding before any physical timestep-convergence claim. Package:
+  `20260711-wshedw11e-hourly-routing-sanity-rerun-001/package.md`.
 - `20260710-wshedw11d-hourly-routing-numerical-defect-closure-001/` -
   EXECUTED-COMPLETE (2026-07-11 UTC): amended `SC-ROUTE-001` v56,
   `SC-SYSTEM-001` v90, and `SC-INFILE-CHANINP-001` v0.1.4; closed negative
