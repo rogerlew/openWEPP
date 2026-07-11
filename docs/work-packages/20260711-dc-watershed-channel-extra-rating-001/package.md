@@ -1,6 +1,6 @@
 # DC watershed-channel extra rating-row closure
 
-Status: active
+Status: executed-complete
 Evidence mode: Static and Ran as labeled
 Queue item: `FQ-03`
 Defect: `CHN-E006-EXTRA-RATING-ROW`

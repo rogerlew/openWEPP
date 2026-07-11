@@ -39,7 +39,7 @@ scaffolded, reviewed, verified, and committed.
 - [x] (2026-07-11 UTC) Change this plan to `ready-queued` after both reviews permit dispatch.
 - [x] (2026-07-11 UTC) Execute queue item `FQ-01` through its terminal package commit.
 - [x] (2026-07-11 UTC) Execute queue item `FQ-02` through its terminal package commit.
-- [ ] Execute queue item `FQ-03` through its terminal package commit.
+- [x] (2026-07-11 UTC) Execute queue item `FQ-03` through its terminal package commit.
 - [ ] Execute queue item `FQ-04` through its terminal package commit.
 - [ ] Run the final fresh workspace LCOV/CRAP rerank and record the outcome.
 
@@ -174,8 +174,8 @@ must repeat this authorization and requirement.
 |---|---|---|---|
 | `FQ-01` | Close `FDIR-FINITE-VALUE-GUARD-001` | One contract-first DC package through science-tier coverage, obligations, and CRAP closure | `COMPLETE` — package `20260711-dc-fdir-finite-value-guard-001`, terminal transition commit |
 | `FQ-02` | Close `CHANINP-RAW-NCHNUM-CARDINALITY` | One contract-first DC package through science-tier coverage, obligations, and CRAP closure | `COMPLETE` — package `20260711-dc-chaninp-raw-cardinality-001`, terminal transition commit |
-| `FQ-03` | Close `CHN-E006-EXTRA-RATING-ROW` | One contract-first DC package through science-tier coverage, obligations, and CRAP closure | `ACTIVE` — package `20260711-dc-watershed-channel-extra-rating-001`, 2026-07-11 UTC |
-| `FQ-04` | Close `totalwatsed3.rs` coverage and CRAP debt | One science-tier cover-then-decompose CQR package | `WAITING-SEQUENCE` |
+| `FQ-03` | Close `CHN-E006-EXTRA-RATING-ROW` | One contract-first DC package through science-tier coverage, obligations, and CRAP closure | `COMPLETE` — package `20260711-dc-watershed-channel-extra-rating-001`, terminal transition commit |
+| `FQ-04` | Close `totalwatsed3.rs` coverage and CRAP debt | One science-tier cover-then-decompose CQR package | `READY-NEXT` |
 | `FQ-05` | PMETPARA formatter disposition | No package; preserve originating hold history | `DISPOSITIONED-NO-ACTION / NOT-QUEUED` |
 
 Package IDs use the scaffold date and these stable slugs:
@@ -563,3 +563,7 @@ next serialized row.
 closure, exact diagnostic priority, normalized-count consumer proof,
 science-tier coverage, and CRAP decomposition with dual PASS verification.
 FQ-03 is the next serialized row.
+
+2026-07-11: FQ-03 completed structural extra-rating recognition without lexical
+heuristics, exact error precedence, real frame projection proof, science-tier
+coverage, and CRAP closure with dual PASS verification. FQ-04 is the next row.

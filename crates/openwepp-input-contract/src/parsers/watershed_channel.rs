@@ -6,6 +6,7 @@
     clippy::too_many_lines
 )]
 
+use std::collections::HashMap;
 use std::fmt;
 use std::fs;
 use std::io;
@@ -355,194 +356,24 @@ pub fn parse_watershed_channel_from_str(
     }
 
     let mut channels = Vec::with_capacity(nchan);
+    let mut suffix_memo = HashMap::new();
     for channel_idx in 0..nchan {
         let channel_id = channel_idx + 1;
-        let comment_1 = read_comment_line(&lines, &mut cursor, "comment_1")?
-            .1
-            .to_string();
-        let comment_2 = read_comment_line(&lines, &mut cursor, "comment_2")?
-            .1
-            .to_string();
-        let comment_3 = read_comment_line(&lines, &mut cursor, "comment_3")?
-            .1
-            .to_string();
+        let parsed = parse_channel_block(&lines, &mut cursor, channel_id, options)?;
+        let icntrl = parsed.definition.icntrl;
+        warnings.extend(parsed.warnings);
+        channels.push(parsed.definition);
 
-        let (ishape_line, mut ishape) = parse_single_i32(&lines, &mut cursor, "ishape")?;
-        match options.mode {
-            WatershedChannelParseMode::Strict => {
-                if !matches!(ishape, 1..=3) {
-                    return Err(WatershedChannelParseError::EnumDomain {
-                        line: ishape_line,
-                        field: "ishape",
-                        value: ishape,
-                    });
-                }
-            }
-            WatershedChannelParseMode::Compatibility => {
-                if ishape < 1 {
-                    return Err(WatershedChannelParseError::EnumDomain {
-                        line: ishape_line,
-                        field: "ishape",
-                        value: ishape,
-                    });
-                }
-                if ishape > 3 {
-                    ishape = 3;
-                    warnings.push(ChannelWarning::new(
-                        ChannelWarningCode::ChnW003,
-                        Some(ishape_line),
-                        "compatibility normalized legacy ishape value to naturally eroded class (3)",
-                    ));
-                }
-            }
+        if icntrl != 4 {
+            recognize_prohibited_rating_record(
+                &lines,
+                cursor,
+                channel_id,
+                nchan,
+                options,
+                &mut suffix_memo,
+            )?;
         }
-
-        let (icntrl_line, icntrl) = parse_single_i32(&lines, &mut cursor, "icntrl")?;
-        if !(0..=4).contains(&icntrl) {
-            return Err(WatershedChannelParseError::EnumDomain {
-                line: icntrl_line,
-                field: "icntrl",
-                value: icntrl,
-            });
-        }
-
-        let (ienslp_line, ienslp) = parse_single_i32(&lines, &mut cursor, "ienslp")?;
-        if !(1..=2).contains(&ienslp) {
-            return Err(WatershedChannelParseError::EnumDomain {
-                line: ienslp_line,
-                field: "ienslp",
-                value: ienslp,
-            });
-        }
-
-        let (flgout_line, flgout) = parse_single_i32(&lines, &mut cursor, "flgout")?;
-        if !(0..=1).contains(&flgout) {
-            return Err(WatershedChannelParseError::EnumDomain {
-                line: flgout_line,
-                field: "flgout",
-                value: flgout,
-            });
-        }
-
-        let (geom_line, geom) = parse_fixed_f64_tuple::<2>(&lines, &mut cursor, "geom_line")?;
-        let chnz = geom[0];
-        let chnnbr = geom[1];
-        ensure_positive(chnz, geom_line, "chnz")?;
-        ensure_positive(chnnbr, geom_line, "chnnbr")?;
-
-        let (erod_line, erod) = parse_fixed_f64_tuple::<5>(&lines, &mut cursor, "erod_line")?;
-        let chnn = erod[0];
-        let chnk = erod[1];
-        let chntcr = erod[2];
-        let chnedm = erod[3];
-        let chneds = erod[4];
-        ensure_positive(chnn, erod_line, "chnn")?;
-        ensure_non_negative(chnk, erod_line, "chnk")?;
-        ensure_non_negative(chntcr, erod_line, "chntcr")?;
-        ensure_non_negative(chnedm, erod_line, "chnedm")?;
-        ensure_non_negative(chneds, erod_line, "chneds")?;
-
-        if chnn + FLOAT_TOLERANCE < chnnbr {
-            return Err(WatershedChannelParseError::FieldRange {
-                line: erod_line,
-                field: "chnn",
-                value: chnn,
-                rule: ">= chnnbr",
-            });
-        }
-
-        let (control_line, control) =
-            parse_fixed_f64_tuple::<3>(&lines, &mut cursor, "control_line")?;
-        let ctlslp_input = control[0];
-        let ctlz_input = control[1];
-        let ctln_input = control[2];
-        ensure_non_negative(ctlslp_input, control_line, "ctlslp")?;
-        ensure_positive(ctlz_input, control_line, "ctlz")?;
-        ensure_positive(ctln_input, control_line, "ctln")?;
-
-        let rating_curve = if icntrl == 4 {
-            let (rating_line, rating_line_text) =
-                next_line(&lines, &mut cursor, "rating_curve_line").map_err(|_| {
-                    WatershedChannelParseError::RatingCurveClosure {
-                        line: cursor,
-                        channel_id,
-                        reason: "icntrl==4 requires rating_curve_line",
-                    }
-                })?;
-            let rating_tokens: Vec<&str> = rating_line_text.split_whitespace().collect();
-            if rating_tokens.len() != 3 {
-                return Err(WatershedChannelParseError::RatingCurveClosure {
-                    line: rating_line,
-                    channel_id,
-                    reason: "rating_curve_line must contain exactly 3 tokens",
-                });
-            }
-
-            let rccoef = parse_f64_token(rating_line, "rccoef", rating_tokens[0])?;
-            let rcexp = parse_f64_token(rating_line, "rcexp", rating_tokens[1])?;
-            let rcoset = parse_f64_token(rating_line, "rcoset", rating_tokens[2])?;
-            ensure_positive(rccoef, rating_line, "rccoef")?;
-            ensure_positive(rcexp, rating_line, "rcexp")?;
-            ensure_non_negative(rcoset, rating_line, "rcoset")?;
-            Some(ChannelRatingCurve {
-                rccoef,
-                rcexp,
-                rcoset,
-            })
-        } else {
-            None
-        };
-
-        let control_override_applied = icntrl == 0;
-        let (ctlslp_effective, ctlz_effective, ctln_effective) = if control_override_applied {
-            if options.mode == WatershedChannelParseMode::Strict
-                && options.slplst_override.is_none()
-            {
-                return Err(WatershedChannelParseError::InvariantViolation {
-                    line: control_line,
-                    context: "icntrl==0 requires slplst_override for strict closure",
-                });
-            }
-
-            let effective_slope = options.slplst_override.unwrap_or(ctlslp_input);
-            if options.mode == WatershedChannelParseMode::Compatibility {
-                warnings.push(ChannelWarning::new(
-                    ChannelWarningCode::ChnW004,
-                    Some(control_line),
-                    "compatibility applied icntrl=0 control override precedence",
-                ));
-            }
-            (effective_slope, chnz, chnn)
-        } else {
-            (ctlslp_input, ctlz_input, ctln_input)
-        };
-
-        channels.push(ChannelDefinition {
-            channel_id,
-            comment_1,
-            comment_2,
-            comment_3,
-            ishape,
-            icntrl,
-            ienslp,
-            flgout,
-            chnz,
-            chnnbr,
-            chnn,
-            chnk,
-            chntcr,
-            chnedm,
-            chneds,
-            ctlslp_input,
-            ctlz_input,
-            ctln_input,
-            ctlslp_effective,
-            ctlz_effective,
-            ctln_effective,
-            has_rating_curve: icntrl == 4,
-            rating_curve,
-            control_override_applied,
-        });
     }
 
     if cursor < lines.len() {
@@ -577,6 +408,365 @@ pub fn parse_watershed_channel_from_str(
         channels,
         warnings,
     })
+}
+
+struct ParsedChannelBlock {
+    definition: ChannelDefinition,
+    warnings: Vec<ChannelWarning>,
+}
+
+struct ChannelEnums {
+    ishape: i32,
+    icntrl: i32,
+    ienslp: i32,
+    flgout: i32,
+}
+
+struct ChannelParameters {
+    control_line: usize,
+    chnz: f64,
+    chnnbr: f64,
+    chnn: f64,
+    chnk: f64,
+    chntcr: f64,
+    chnedm: f64,
+    chneds: f64,
+    ctlslp_input: f64,
+    ctlz_input: f64,
+    ctln_input: f64,
+}
+
+struct EffectiveControl {
+    ctlslp: f64,
+    ctlz: f64,
+    ctln: f64,
+    override_applied: bool,
+}
+
+fn parse_channel_block(
+    lines: &[&str],
+    cursor: &mut usize,
+    channel_id: usize,
+    options: WatershedChannelParseOptions,
+) -> Result<ParsedChannelBlock, WatershedChannelParseError> {
+    let comment_1 = read_comment_line(lines, cursor, "comment_1")?.1.to_string();
+    let comment_2 = read_comment_line(lines, cursor, "comment_2")?.1.to_string();
+    let comment_3 = read_comment_line(lines, cursor, "comment_3")?.1.to_string();
+    let mut warnings = Vec::new();
+    let enums = parse_channel_enums(lines, cursor, options.mode, &mut warnings)?;
+    let parameters = parse_channel_parameters(lines, cursor)?;
+    let rating_curve = if enums.icntrl == 4 {
+        Some(parse_rating_curve_line(lines, cursor, channel_id)?)
+    } else {
+        None
+    };
+    let effective_control =
+        derive_effective_control(enums.icntrl, &parameters, options, &mut warnings)?;
+
+    Ok(ParsedChannelBlock {
+        definition: ChannelDefinition {
+            channel_id,
+            comment_1,
+            comment_2,
+            comment_3,
+            ishape: enums.ishape,
+            icntrl: enums.icntrl,
+            ienslp: enums.ienslp,
+            flgout: enums.flgout,
+            chnz: parameters.chnz,
+            chnnbr: parameters.chnnbr,
+            chnn: parameters.chnn,
+            chnk: parameters.chnk,
+            chntcr: parameters.chntcr,
+            chnedm: parameters.chnedm,
+            chneds: parameters.chneds,
+            ctlslp_input: parameters.ctlslp_input,
+            ctlz_input: parameters.ctlz_input,
+            ctln_input: parameters.ctln_input,
+            ctlslp_effective: effective_control.ctlslp,
+            ctlz_effective: effective_control.ctlz,
+            ctln_effective: effective_control.ctln,
+            has_rating_curve: enums.icntrl == 4,
+            rating_curve,
+            control_override_applied: effective_control.override_applied,
+        },
+        warnings,
+    })
+}
+
+fn parse_channel_enums(
+    lines: &[&str],
+    cursor: &mut usize,
+    mode: WatershedChannelParseMode,
+    warnings: &mut Vec<ChannelWarning>,
+) -> Result<ChannelEnums, WatershedChannelParseError> {
+    let (ishape_line, mut ishape) = parse_single_i32(lines, cursor, "ishape")?;
+    match mode {
+        WatershedChannelParseMode::Strict => {
+            if !matches!(ishape, 1..=3) {
+                return Err(WatershedChannelParseError::EnumDomain {
+                    line: ishape_line,
+                    field: "ishape",
+                    value: ishape,
+                });
+            }
+        }
+        WatershedChannelParseMode::Compatibility => {
+            if ishape < 1 {
+                return Err(WatershedChannelParseError::EnumDomain {
+                    line: ishape_line,
+                    field: "ishape",
+                    value: ishape,
+                });
+            }
+            if ishape > 3 {
+                ishape = 3;
+                warnings.push(ChannelWarning::new(
+                    ChannelWarningCode::ChnW003,
+                    Some(ishape_line),
+                    "compatibility normalized legacy ishape value to naturally eroded class (3)",
+                ));
+            }
+        }
+    }
+
+    let (icntrl_line, icntrl) = parse_single_i32(lines, cursor, "icntrl")?;
+    if !(0..=4).contains(&icntrl) {
+        return Err(WatershedChannelParseError::EnumDomain {
+            line: icntrl_line,
+            field: "icntrl",
+            value: icntrl,
+        });
+    }
+
+    let (ienslp_line, ienslp) = parse_single_i32(lines, cursor, "ienslp")?;
+    if !(1..=2).contains(&ienslp) {
+        return Err(WatershedChannelParseError::EnumDomain {
+            line: ienslp_line,
+            field: "ienslp",
+            value: ienslp,
+        });
+    }
+
+    let (flgout_line, flgout) = parse_single_i32(lines, cursor, "flgout")?;
+    if !(0..=1).contains(&flgout) {
+        return Err(WatershedChannelParseError::EnumDomain {
+            line: flgout_line,
+            field: "flgout",
+            value: flgout,
+        });
+    }
+
+    Ok(ChannelEnums {
+        ishape,
+        icntrl,
+        ienslp,
+        flgout,
+    })
+}
+
+fn parse_channel_parameters(
+    lines: &[&str],
+    cursor: &mut usize,
+) -> Result<ChannelParameters, WatershedChannelParseError> {
+    let (geom_line, geom) = parse_fixed_f64_tuple::<2>(lines, cursor, "geom_line")?;
+    let chnz = geom[0];
+    let chnnbr = geom[1];
+    ensure_positive(chnz, geom_line, "chnz")?;
+    ensure_positive(chnnbr, geom_line, "chnnbr")?;
+
+    let (erod_line, erod) = parse_fixed_f64_tuple::<5>(lines, cursor, "erod_line")?;
+    let chnn = erod[0];
+    let chnk = erod[1];
+    let chntcr = erod[2];
+    let chnedm = erod[3];
+    let chneds = erod[4];
+    ensure_positive(chnn, erod_line, "chnn")?;
+    ensure_non_negative(chnk, erod_line, "chnk")?;
+    ensure_non_negative(chntcr, erod_line, "chntcr")?;
+    ensure_non_negative(chnedm, erod_line, "chnedm")?;
+    ensure_non_negative(chneds, erod_line, "chneds")?;
+
+    if chnn + FLOAT_TOLERANCE < chnnbr {
+        return Err(WatershedChannelParseError::FieldRange {
+            line: erod_line,
+            field: "chnn",
+            value: chnn,
+            rule: ">= chnnbr",
+        });
+    }
+
+    let (control_line, control) = parse_fixed_f64_tuple::<3>(lines, cursor, "control_line")?;
+    let ctlslp_input = control[0];
+    let ctlz_input = control[1];
+    let ctln_input = control[2];
+    ensure_non_negative(ctlslp_input, control_line, "ctlslp")?;
+    ensure_positive(ctlz_input, control_line, "ctlz")?;
+    ensure_positive(ctln_input, control_line, "ctln")?;
+
+    Ok(ChannelParameters {
+        control_line,
+        chnz,
+        chnnbr,
+        chnn,
+        chnk,
+        chntcr,
+        chnedm,
+        chneds,
+        ctlslp_input,
+        ctlz_input,
+        ctln_input,
+    })
+}
+
+fn derive_effective_control(
+    icntrl: i32,
+    parameters: &ChannelParameters,
+    options: WatershedChannelParseOptions,
+    warnings: &mut Vec<ChannelWarning>,
+) -> Result<EffectiveControl, WatershedChannelParseError> {
+    if icntrl != 0 {
+        return Ok(EffectiveControl {
+            ctlslp: parameters.ctlslp_input,
+            ctlz: parameters.ctlz_input,
+            ctln: parameters.ctln_input,
+            override_applied: false,
+        });
+    }
+
+    if options.mode == WatershedChannelParseMode::Strict && options.slplst_override.is_none() {
+        return Err(WatershedChannelParseError::InvariantViolation {
+            line: parameters.control_line,
+            context: "icntrl==0 requires slplst_override for strict closure",
+        });
+    }
+
+    let ctlslp = options.slplst_override.unwrap_or(parameters.ctlslp_input);
+    if options.mode == WatershedChannelParseMode::Compatibility {
+        warnings.push(ChannelWarning::new(
+            ChannelWarningCode::ChnW004,
+            Some(parameters.control_line),
+            "compatibility applied icntrl=0 control override precedence",
+        ));
+    }
+
+    Ok(EffectiveControl {
+        ctlslp,
+        ctlz: parameters.chnz,
+        ctln: parameters.chnn,
+        override_applied: true,
+    })
+}
+
+fn parse_rating_curve_line(
+    lines: &[&str],
+    cursor: &mut usize,
+    channel_id: usize,
+) -> Result<ChannelRatingCurve, WatershedChannelParseError> {
+    let (rating_line, rating_line_text) =
+        next_line(lines, cursor, "rating_curve_line").map_err(|_| {
+            WatershedChannelParseError::RatingCurveClosure {
+                line: *cursor,
+                channel_id,
+                reason: "icntrl==4 requires rating_curve_line",
+            }
+        })?;
+    let rating_tokens: Vec<&str> = rating_line_text.split_whitespace().collect();
+    if rating_tokens.len() != 3 {
+        return Err(WatershedChannelParseError::RatingCurveClosure {
+            line: rating_line,
+            channel_id,
+            reason: "rating_curve_line must contain exactly 3 tokens",
+        });
+    }
+
+    let rccoef = parse_f64_token(rating_line, "rccoef", rating_tokens[0])?;
+    let rcexp = parse_f64_token(rating_line, "rcexp", rating_tokens[1])?;
+    let rcoset = parse_f64_token(rating_line, "rcoset", rating_tokens[2])?;
+    ensure_positive(rccoef, rating_line, "rccoef")?;
+    ensure_positive(rcexp, rating_line, "rcexp")?;
+    ensure_non_negative(rcoset, rating_line, "rcoset")?;
+
+    Ok(ChannelRatingCurve {
+        rccoef,
+        rcexp,
+        rcoset,
+    })
+}
+
+fn recognize_prohibited_rating_record(
+    lines: &[&str],
+    cursor: usize,
+    channel_id: usize,
+    nchan: usize,
+    options: WatershedChannelParseOptions,
+    suffix_memo: &mut HashMap<(usize, usize), bool>,
+) -> Result<(), WatershedChannelParseError> {
+    let next_channel_id = channel_id + 1;
+    if canonical_suffix_closes(lines, cursor, next_channel_id, nchan, options, suffix_memo) {
+        return Ok(());
+    }
+
+    let mut deleted_cursor = cursor;
+    if parse_rating_curve_line(lines, &mut deleted_cursor, channel_id).is_err() {
+        return Ok(());
+    }
+
+    if canonical_suffix_closes(
+        lines,
+        deleted_cursor,
+        next_channel_id,
+        nchan,
+        options,
+        suffix_memo,
+    ) {
+        return Err(WatershedChannelParseError::RatingCurveClosure {
+            line: cursor + 1,
+            channel_id,
+            reason: "icntrl!=4 prohibits structurally recognized rating_curve_line",
+        });
+    }
+
+    Ok(())
+}
+
+fn canonical_suffix_closes(
+    lines: &[&str],
+    start_cursor: usize,
+    start_channel_id: usize,
+    nchan: usize,
+    options: WatershedChannelParseOptions,
+    suffix_memo: &mut HashMap<(usize, usize), bool>,
+) -> bool {
+    let start_key = (start_cursor, start_channel_id);
+    if let Some(result) = suffix_memo.get(&start_key) {
+        return *result;
+    }
+
+    let mut cursor = start_cursor;
+    let mut channel_id = start_channel_id;
+    let mut visited = Vec::new();
+    let closes = loop {
+        let key = (cursor, channel_id);
+        if let Some(result) = suffix_memo.get(&key) {
+            break *result;
+        }
+        visited.push(key);
+
+        if channel_id > nchan {
+            break lines[cursor..].iter().all(|line| line.trim().is_empty());
+        }
+
+        if parse_channel_block(lines, &mut cursor, channel_id, options).is_err() {
+            break false;
+        }
+        channel_id += 1;
+    };
+
+    for key in visited {
+        suffix_memo.insert(key, closes);
+    }
+    closes
 }
 
 fn read_comment_line<'a>(

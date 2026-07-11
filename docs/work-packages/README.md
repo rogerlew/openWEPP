@@ -33,9 +33,12 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-11 UTC`:
-- `20260711-dc-watershed-channel-extra-rating-001/` - ACTIVE: FQ-03
-  contract-first closure of structurally recognized prohibited rating rows,
-  including one-/multi-channel ambiguity vectors and science-tier/CRAP gates.
+- `20260711-dc-watershed-channel-extra-rating-001/` - EXECUTED-COMPLETE
+  (2026-07-11): FQ-03 closes structurally recognized prohibited rating rows
+  without lexical heuristics or accepted-grammar change. Coverage is 99.549%
+  lines / 99.373% regions, the function floor is 96.970%, maximum CRAP is
+  21.0005, focused suites pass 38/38 and 20/20, and the workspace passes 1,765
+  tests with 3 configured skips. Dual review/verification pass.
 - `20260711-dc-chaninp-raw-cardinality-001/` - EXECUTED-COMPLETE (2026-07-11):
   FQ-02 closes CHAN.INP raw record cardinality before normalization. Terminal
   parser coverage is 92.713% lines / 96.723% regions, the function floor is

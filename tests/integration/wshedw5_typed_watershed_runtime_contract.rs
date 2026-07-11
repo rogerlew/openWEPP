@@ -42,6 +42,8 @@ const STRICT_VALID_SLOPE: &str =
     include_str!("../fixtures/infile/slope/strict_valid_canonical.slp");
 const STRICT_VALID_WATERSHED_CHANNEL: &str =
     include_str!("../fixtures/infile/watershed_channel/strict_sidecar_required.chn");
+const STRICT_RATING_WATERSHED_CHANNEL: &str =
+    include_str!("../fixtures/infile/watershed_channel/strict_valid_single_channel.chn");
 const STRICT_VALID_WATERSHED_IMPOUNDMENT: &str =
     include_str!("../fixtures/infile/watershed_impoundment/strict_valid_minimal.imp");
 const DROP_SPILLWAY_IMPOUNDMENT: &str = r"
@@ -245,6 +247,43 @@ fn build_typed_frame_with_impoundment(
     frame
 }
 
+fn build_typed_frame_with_watershed_channel(channel_fixture: &str) -> WatershedNetworkFrame {
+    let graph = parse_topology_fixture_str(TYPED_TOPOLOGY).expect("typed topology should parse");
+    let slope = parse_slope_str(STRICT_VALID_SLOPE, SlopeParserOptions::strict())
+        .expect("strict slope fixture should parse");
+    let channel =
+        parse_watershed_channel_from_str(channel_fixture, WatershedChannelParseOptions::default())
+            .expect("strict watershed channel fixture should parse");
+    let chaninp = if channel.sidecar_required {
+        Some(
+            parse_chaninp_from_str(
+                STRICT_VALID_CHANINP,
+                ChaninpParseOptions::strict(channel.ipeak, 2),
+                &BTreeSet::from([4_i32, 5_i32]),
+            )
+            .expect("strict chan.inp fixture should parse when required"),
+        )
+    } else {
+        None
+    };
+    let impoundment = parse_watershed_impoundment_from_str(
+        STRICT_VALID_WATERSHED_IMPOUNDMENT,
+        WatershedImpoundmentParseOptions::strict(),
+    )
+    .expect("strict watershed impoundment fixture should parse");
+
+    WatershedNetworkFrame::from_parsed_inputs(
+        graph,
+        chaninp,
+        channel,
+        slope,
+        impoundment,
+        3600.0,
+        24.0,
+    )
+    .expect("typed watershed frame should build from channel fixture")
+}
+
 fn build_two_hillslope_channel_frame() -> WatershedNetworkFrame {
     let graph = parse_topology_fixture_str(TWO_HILLSLOPE_CHANNEL_TOPOLOGY)
         .expect("two-hillslope channel topology should parse");
@@ -356,6 +395,31 @@ fn chaninp_raw_cardinality_is_observable_while_frame_consumes_normalized_count()
 
     let frame = build_typed_frame_with_chaninp(chaninp);
     assert!((frame.routing_globals.nchnum - 2.0).abs() <= f64::EPSILON);
+}
+
+#[test]
+fn watershed_channel_rating_projection_preserves_optional_fields() {
+    let rating_frame = build_typed_frame_with_watershed_channel(STRICT_RATING_WATERSHED_CHANNEL);
+    let rating_control = rating_frame
+        .channel_controls
+        .get(&1)
+        .expect("rating fixture should project channel control 1");
+    assert_eq!(rating_control.icntrl, 4);
+    let rating = rating_control
+        .rating_curve
+        .as_ref()
+        .expect("enabled rating record must reach the real frame consumer");
+    assert!((rating.rccoef - 1.25).abs() <= f64::EPSILON);
+    assert!((rating.rcexp - 1.50).abs() <= f64::EPSILON);
+    assert!((rating.rcoset - 0.10).abs() <= f64::EPSILON);
+
+    let no_rating_frame = build_typed_frame_with_watershed_channel(STRICT_VALID_WATERSHED_CHANNEL);
+    let no_rating_control = no_rating_frame
+        .channel_controls
+        .get(&1)
+        .expect("non-rating fixture should project channel control 1");
+    assert_eq!(no_rating_control.icntrl, 1);
+    assert!(no_rating_control.rating_curve.is_none());
 }
 
 #[test]

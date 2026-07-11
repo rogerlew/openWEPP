@@ -4,9 +4,9 @@ title: Watershed Channel Input Parser Contract (.chn)
 status: in_review
 maturity: draft
 owner: openWEPP
-contract_version: 0.1.1
+contract_version: 0.1.2
 evidence_mode: Static
-last_updated_utc: 2026-05-21T00:00:00Z
+last_updated_utc: 2026-07-11T00:00:00Z
 ---
 
 # SC-INFILE-WATERSHED-CHANNEL-001 Watershed Channel Input Parser Contract
@@ -19,7 +19,7 @@ Evidence mode: `Static`
 
 - `[DIRECT][E-SPEC-CHN-01]` `/home/workdir/openWEPP/docs/specifications/wepp-input-files/specs/watershed-channel-file.spec.md` (canonical `.chn` grammar, symbols, policy decisions, and unresolved gaps).
 - `[DIRECT][E-SURVEY-CHN-01]` `/home/workdir/openWEPP/docs/planning/wepp-input-file-parser-survey.md` (`.chn` parser surface provenance).
-- `[DIRECT][E-WF-CHN-01]` `/workdir/wepp-forest/src/infile.for`, `/workdir/wepp-forest/src/wshinp.for`, `/workdir/wepp-forest/src/inidat.for`, `/workdir/wepp-forest/src/verchk.for` (legacy version gate, branch behavior, defaults, and sidecar coupling captured by spec).
+- `[DIRECT][E-WF-CHN-01]` pinned baseline commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70`: `/workdir/wepp-forest_260430_baseline/src/infile.for`, `/workdir/wepp-forest_260430_baseline/src/wshinp.for`, `/workdir/wepp-forest_260430_baseline/src/inidat.for`, and `/workdir/wepp-forest_260430_baseline/src/verchk.for` (legacy version gate, branch behavior, conditional rating-record read, defaults, and sidecar coupling captured by spec).
 - `[DIRECT][E-WP-CHN-01]` `/workdir/wepppy/wepppy/nodb/core/wepp.py` and `/workdir/wepppy/wepppy/wepp/management/data/channels.defs` (current generated `.chn` patterns reflected in spec).
 - `[INFERENCE][E-PHYS-CHN-01]` Physical/common-sense invariants: positive channel dimensions/roughness domains, declared channel count closure, and complete conditional rating-curve payload when enabled.
 
@@ -54,6 +54,51 @@ rating_curve_line = rccoef rcexp rcoset ;
 ```
 
 `rating_curve_line` is required iff `icntrl == 4`.
+
+`[DIRECT][E-WF-CHN-01]` Pinned `wshinp.for:370-433` reads three arbitrary
+comment records, the fixed numeric records, and a rating record only under
+`icntrl == 4`. `[INFERENCE]` `INV-CHN-016` defines diagnostic recognition for
+a prohibited rating record after `icntrl != 4` without changing that grammar.
+At the immediate post-control boundary for channel `i`, a candidate is a
+structurally recognized prohibited rating record only when all conditions hold:
+
+1. the candidate satisfies the full canonical rating-record arity, numeric,
+   finite, and domain rules;
+2. removing exactly that candidate permits the remaining declared channel
+   blocks to parse canonically and close at EOF (ignoring trailing blank
+   physical lines); and
+3. retaining the candidate does not permit that same canonical suffix closure.
+
+The parser returns `CHN-E-006` for that uniquely recoverable structural case in
+both modes. If retaining the candidate yields a valid suffix, it is ordinary
+comment text and must not be reclassified, even when it contains three numeric
+tokens. If neither or both layouts close, ordinary parser/error precedence
+applies and no extra-rating classification is inferred. For the final channel,
+the suffix contains zero channel blocks, so a sole valid rating record before
+EOF is recognized; two-token, four-token, invalid-domain, or otherwise generic
+extra records remain `CHN-E-002`.
+
+Canonical suffix closure uses the same record arity, numeric/finite/domain,
+mode, and option-dependent validation as the ordinary parser and requires all
+remaining declared blocks plus EOF closure. Probing is side-effect free: it
+cannot emit warnings, mutate output, or canonicalize-and-proceed. Canonical
+retained-layout success is checked first; at most the single candidate at each
+post-control boundary is considered, preventing unbounded repair search.
+`INV-CHN-016` does not govern a duplicate record after an already consumed
+`icntrl==4` rating record; that residual remains generic `CHN-E-002`.
+
+Under the fixed channel-block arities, simultaneous retained and deleted
+suffix closure is unreachable: before any optional rating position, the
+one-record offset necessarily presents a two-token geometry record to a
+single-token enum slot. This static arity proof binds the nominal “both” case;
+tests bind retained-only, deleted-only, and neither. When neither closes, the
+ordinary retained-layout parser result is returned unchanged, including its
+original line, field/context, and error ID.
+
+The prohibited-extra diagnostic is exactly
+`RatingCurveClosure { line: candidate physical line, channel_id: i, reason:
+"icntrl!=4 prohibits structurally recognized rating_curve_line" }`. No typed
+partial output is returned.
 
 ### 2.2 Two-Layer Model Contract
 
@@ -146,11 +191,14 @@ rating_curve_line = rccoef rcexp rcoset ;
 | `D-CHN-001` | Derive `has_rating_curve` from `icntrl == 4`. | per-channel parse | `C-CHN-001` |
 | `D-CHN-002` | Apply control-parameter precedence marker for `icntrl == 0` (`ctln <- chnn`, `ctlz <- chnz`, `ctlslp <- slplst`) in compatibility semantics metadata. | per-channel finalize | `C-CHN-002` |
 | `D-CHN-003` | Derive sidecar requirement flag when `ipeak > 2` (`chan.inp` coupling). | file finalize | `C-CHN-003` |
+| `D-CHN-004` | At every post-control boundary with `icntrl != 4`, apply `INV-CHN-016` unique suffix-closure recognition before generic continuation/EOF handling. | block boundary | `C-CHN-004` |
 
 Closure hooks:
 - `C-CHN-001`: if `icntrl == 4`, rating-curve triple must exist.
 - `C-CHN-002`: control-override semantics are explicit and observable in strict/compat policy.
 - `C-CHN-003`: `ipeak > 2` sidecar policy enforced without silent fallbacks in strict mode.
+- `C-CHN-004`: extra-rating classification is structural and unique; a valid
+  ordinary suffix, including numeric comment text, always takes precedence.
 
 ## 7. Validation and Error Taxonomy
 
@@ -158,11 +206,11 @@ Closure hooks:
 | --- | --- | --- |
 | `CHN-E-000` | io | missing/unopenable `.chn` file |
 | `CHN-E-001` | syntax | numeric parse failure in required fields |
-| `CHN-E-002` | syntax | missing record/EOF before declared `nchan` block completes |
+| `CHN-E-002` | syntax | missing/generic extra record or EOF before declared `nchan` block completes; includes residual two-/four-token or invalid-domain records not recognized by `INV-CHN-016` |
 | `CHN-E-003` | semantic | unsupported datver |
 | `CHN-E-004` | semantic | enum-domain failure (`ipeak`,`ishape`,`icntrl`,`ienslp`,`flgout`) |
 | `CHN-E-005` | semantic | invalid physical/range domain for geometry/roughness/erodibility fields |
-| `CHN-E-006` | semantic | missing/extra rating-curve record relative to `icntrl` |
+| `CHN-E-006` | semantic | missing required rating record for `icntrl==4`, wrong required rating arity, or uniquely structurally recognized prohibited rating record for `icntrl!=4` under `INV-CHN-016` |
 | `CHN-E-007` | cross-file | channel count mismatch with `.str` and management channel topology |
 | `CHN-E-008` | cross-file | missing/invalid `chan.inp` sidecar under strict policy when `ipeak>2` |
 | `CHN-E-009` | runtime-guard | post-parse closure failure for override/compat policy invariants |
@@ -224,7 +272,7 @@ No silent parser-side normalization is allowed in strict mode.
 | `G-CHN-010` | cross-file channel-count closure | cross-surface validator | `CHN-E-007` |
 | `G-CHN-011` | `ipeak>2` sidecar policy gate (`chan.inp`) | cross-surface validator | `CHN-E-008` |
 | `G-CHN-012` | control-slope override observability for `icntrl==0` | closure hook | `CHN-E-009` |
-| `G-CHN-013` | rating-curve conditional arity closure | block parse/finalize | `CHN-E-006` |
+| `G-CHN-013` | rating-curve conditional closure: required record for `icntrl==4`; unique suffix-closure recognition under `INV-CHN-016` for prohibited extra records; valid suffix/comment layout takes precedence | block parse/finalize | recognized rating mismatch: `CHN-E-006`; otherwise ordinary typed error |
 | `G-CHN-014` | `tcr.txt` overlay must remain non-mutating and separately owned | adjustment overlay gate | `CHN-E-009` |
 | `G-CHN-015` | compatibility acceptance/normalization warnings are emitted on every compat branch | policy gate | `CHN-W-001`/`CHN-W-002`/`CHN-W-003`/`CHN-W-004`/`CHN-W-005` |
 
@@ -237,7 +285,26 @@ Canonical symbols remain authoritative and unchanged:
 
 openWEPP runtime names are aliases only (Section 3).
 
-## 13. HOLD Gap Register
+## 13. Test-Vector Obligations
+
+| Family | Obligation | Observable result |
+| --- | --- | --- |
+| A nominal | canonical one-/multi-channel files with and without enabled rating records | exact typed channel structures and unchanged frame projection |
+| B boundary | final no-rating channel plus two-, three-, and four-token residual records | only the sole valid rating record is `CHN-E-006`; generic residuals are `CHN-E-002` |
+| C branch | unique deleted-candidate suffix, valid retained-candidate suffix, neither layout, static both-layout impossibility, strict/compat, and enabled-rating branches | exact `INV-CHN-016` precedence and mode identity |
+| D domain-reject | enum, geometry, erodibility, control, and rating domains | exact typed domain error without reclassification |
+| E missing-symbol | truncated headers/blocks and missing/wrong required rating record | exact syntax or `CHN-E-006` required-rating closure |
+| F non-finite | every real-valued header/channel/rating token family | exact typed rejection |
+| G conservation/continuity | Not applicable: parser and frame projection compute no conserved quantity. | reviewed `N/A`; no denominator exclusion |
+| H fail-closed | malformed/generic candidates cannot become `CHN-E-006`; prohibited rating record cannot become valid/comment input | exact typed failure and no partial output |
+
+Required ambiguity vectors include a multi-channel prohibited rating record
+whose removal yields a valid suffix, an exact three-number `comment_1` whose
+retention yields a valid suffix, numeric-leading comment text, and valid next-
+channel records. A lexical “three floats means rating” implementation does not
+satisfy these obligations.
+
+## 14. HOLD Gap Register
 
 | Gap ID | Statement | Evidence | Disposition |
 | --- | --- | --- | --- |
@@ -245,9 +312,10 @@ openWEPP runtime names are aliases only (Section 3).
 | `CHN-GAP-002` | Full compatibility posture for pre-99.1 datver variants remains pending migrated sub-spec/fixtures. | `[DIRECT][E-SPEC-CHN-01]` | `HOLD` |
 | `CHN-GAP-003` | `ctlslp` provenance for `icntrl==0` via `slplst` coupling needs explicit runtime boundary documentation in architecture docs. | `[DIRECT][E-SPEC-CHN-01]`, `[INFERENCE][E-WF-CHN-01]` | `HOLD` |
 
-## 14. Revision History
+## 15. Revision History
 
 | Date UTC | Version | Change |
 | --- | --- | --- |
+| `2026-07-11` | `0.1.2` | Added `INV-CHN-016` unique suffix-closure recognition for prohibited extra rating records, exact `CHN-E-006`/`CHN-E-002` precedence, pinned baseline anchors, and A-H ambiguity obligations. |
 | `2026-05-21` | `0.1.1` | Added symbol-level propagation coverage, explicit derived-field exports (`sidecar_required`, `tcr_overlay_present`), and typed compatibility warning outcomes. |
 | `2026-05-21` | `0.1.0` | Initial parser-contract draft authored for INFILE06. |

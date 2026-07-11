@@ -6,26 +6,30 @@
 - `title`: `WEPP Watershed Channel File (.chn)`
 - `status`: `draft-hold`
 - `owner`: `openWEPP`
-- `spec_version`: `0.1.0`
-- `last_updated_utc`: `2026-05-21T00:00:00Z`
+- `spec_version`: `0.1.1`
+- `last_updated_utc`: `2026-07-11T00:00:00Z`
 - `evidence_mode`: `Static`
 
 [DIRECT] This specification targets the watershed channel input file described as the “Watershed channel file” and “Table 25. Channel file description” in `usersum2024`.
 Evidence: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:7227-7277`.
 
+All `/workdir/wepp-forest_260430_baseline` legacy citations in this
+specification are pinned to commit
+`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`.
+
 ## 2. Surface scope and applicability
 - File extension/surface: `.chn` (`infile-watershed-channel-chn`). [DIRECT] Evidence: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:7227-7232`.
-- Applicability: watershed/channel routing runs (`ivers=3` lineage in legacy WEPP flow). [DIRECT] Evidence: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:6790-6799`, `/workdir/wepp-forest/src/infile.for:402-427`.
-- Not applicable: hillslope-only runs. [INFERENCE] Evidence: `/workdir/wepp-forest/src/infile.for:402-427`.
+- Applicability: watershed/channel routing runs (`ivers=3` lineage in legacy WEPP flow). [DIRECT] Evidence: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:6790-6799`, `/workdir/wepp-forest_260430_baseline/src/infile.for:402-427`.
+- Not applicable: hillslope-only runs. [INFERENCE] Evidence: `/workdir/wepp-forest_260430_baseline/src/infile.for:402-427`.
 
 [DIRECT] The watershed channel file contains routing method choice, channel shape/hydraulic parameters, and control structure parameters for each channel in increasing channel ID order.
 Evidence: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:7228-7232`.
 
 [DIRECT] Legacy read path opens unit 18 as watershed channel data and then validates/loads it via `infile.for` and `wshinp.for`.
-Evidence: `/workdir/wepp-forest/src/infile.for:402-427`, `/workdir/wepp-forest/src/wshinp.for:351-404`.
+Evidence: `/workdir/wepp-forest_260430_baseline/src/infile.for:402-427`, `/workdir/wepp-forest_260430_baseline/src/wshinp.for:351-404`.
 
 [INFERENCE] Hillslope-only run assemblies do not consume `.chn` because this surface is only invoked through watershed structure/channel loading paths.
-Evidence: `/workdir/wepp-forest/src/infile.for:402-427`.
+Evidence: `/workdir/wepp-forest_260430_baseline/src/infile.for:402-427`.
 
 ## 3. Version/datver applicability matrix
 
@@ -39,7 +43,7 @@ Evidence: `/workdir/wepp-forest/src/infile.for:402-427`.
 Evidence: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:7233-7243`.
 
 [DIRECT] Legacy initializes `chnchk = 94.301` and calls `verchk` against the channel file datver.
-Evidence: `/workdir/wepp-forest/src/inidat.for:1160-1163`, `/workdir/wepp-forest/src/infile.for:411-421`, `/workdir/wepp-forest/src/verchk.for:19-31`.
+Evidence: `/workdir/wepp-forest_260430_baseline/src/inidat.for:1159`, `/workdir/wepp-forest_260430_baseline/src/infile.for:411-421`, `/workdir/wepp-forest_260430_baseline/src/verchk.for:19-31`.
 
 [INFERENCE] For openWEPP canonical authoring, emit/expect `99.1` for forward compatibility; treat pre-99.1 forms as migration scope until format deltas are explicitly dispositioned.
 
@@ -73,7 +77,7 @@ Evidence: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersu
 ### 4.2 Legacy loader sequence alignment
 
 [DIRECT] Legacy read order matches the canonical line block sequence after initial `eatcom`+datver handling, including unconditional read of three comment lines and conditional read of line 15 when `icntrl==4`.
-Evidence: `/workdir/wepp-forest/src/wshinp.for:353-439`.
+Evidence: pinned baseline commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70`, `/workdir/wepp-forest_260430_baseline/src/wshinp.for:347-433`.
 
 ## 5. Field dictionary and alias mapping
 
@@ -110,7 +114,7 @@ Evidence: `/workdir/wepp-forest/src/wshinp.for:353-439`.
 Evidence: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:7233-7310`.
 
 [DIRECT] Legacy variable names in channel common blocks and read statements align with the symbol set above (`ipeak`, `ishape`, `icntrl`, `ienslp`, `flgout`, `chnz`, `chnnbr`, `chnn`, `chnk`, `chntcr`, `chnedm`, `chneds`, `ctlslp`, `ctlz`, `ctln`, `rccoef`, `rcexp`, `rcoset`).
-Evidence: `/workdir/wepp-forest/src/wshinp.for:369-439`, `/workdir/wepp-forest/src/cchtrl.inc:7-29`, `/workdir/wepp-forest/src/cchpar.inc:7-30`, `/workdir/wepp-forest/src/cchvar.inc:7-26`.
+Evidence: `/workdir/wepp-forest_260430_baseline/src/wshinp.for:370-433`, `/workdir/wepp-forest_260430_baseline/src/cchtrl.inc:7-29`, `/workdir/wepp-forest_260430_baseline/src/cchpar.inc:7-30`, `/workdir/wepp-forest_260430_baseline/src/cchvar.inc:7-26`.
 
 ### 5.2 Enum dictionary
 
@@ -149,13 +153,35 @@ Evidence: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersu
 - Branch C: For `icntrl == 0`, legacy overwrites control parameters from channel/slope context.
 - Branch D: For `ipeak > 2`, legacy attempts to read sidecar `chan.inp` for routing output/step control.
 
+### 6.1 Prohibited extra rating-record recognition
+
+`[INFERENCE]` A line after a channel with `icntrl != 4` is not classified from
+its three-token appearance alone. It is a prohibited extra rating record only
+when it is a valid canonical rating triple, removing exactly that record makes
+the remaining declared channel blocks close canonically at EOF, and retaining
+it does not. The result is `CHN-E-006` in both modes. A retained layout that
+parses canonically takes precedence, so a three-number `comment_1` remains
+comment text. If neither or both layouts close, ordinary parser precedence
+applies. At final-channel EOF, a sole valid rating record satisfies the rule;
+two-/four-token or invalid rating-like residuals remain generic `CHN-E-002`.
+
+This unique suffix-closure rule derives from the direct conditional read order
+at pinned `wshinp.for:370-433` plus openWEPP fail-closed diagnostic policy. It
+does not change accepted grammar or rating physics.
+
+Suffix closure uses the ordinary parser's structural, numeric, finite, domain,
+mode, and option-dependent rules and must reach exact EOF after the remaining
+declared blocks. Probes emit no warnings or output. A duplicate residual after
+an enabled `icntrl==4` rating record is outside this prohibited-disabled-branch
+recognition rule and remains generic `CHN-E-002`.
+
 [DIRECT] Usersum states line 15 conditionality and line 14 mandatory presence even when overridden.
 Evidence: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:7288-7335`.
 
 [DIRECT] Legacy behavior for branch C and D:
 - `icntrl == 0`: `ctln <- chnn`, `ctlz <- chnz`, `ctlslp <- slplst`.
 - `ipeak > 2`: reads `chan.inp` with fallbacks when absent/error.
-Evidence: `/workdir/wepp-forest/src/wshinp.for:428-487`.
+Evidence: `/workdir/wepp-forest_260430_baseline/src/wshinp.for:422-425`, `/workdir/wepp-forest_260430_baseline/src/wshinp.for:469-487`.
 
 ## 7. Cross-file consistency constraints and coupling dependencies
 
@@ -176,11 +202,11 @@ Evidence: `/workdir/wepp-forest/src/wshinp.for:428-487`.
 - Legacy clamps `chnn` upward when `chnn < chnnbr`.
 
 [DIRECT] Constraint evidence:
-- count closure: `/workdir/wepp-forest/src/wshinp.for:361-367`
-- width/length coupling: `/workdir/wepp-forest/src/wshinp.for:397-402`
-- control-slope override: `/workdir/wepp-forest/src/wshinp.for:428-431`, `/workdir/wepp-forest/src/cchtrl.inc:28`
-- sidecar coupling: `/workdir/wepp-forest/src/wshinp.for:183-194`, `/workdir/wepp-forest/src/wshinp.for:469-487`
-- roughness clamp: `/workdir/wepp-forest/src/wshinp.for:415-417`
+- count closure: `/workdir/wepp-forest_260430_baseline/src/wshinp.for:361-367`
+- width/length coupling: `/workdir/wepp-forest_260430_baseline/src/wshinp.for:397-402`
+- control-slope override: `/workdir/wepp-forest_260430_baseline/src/wshinp.for:422-425`, `/workdir/wepp-forest_260430_baseline/src/cchtrl.inc:28`
+- sidecar coupling: `/workdir/wepp-forest_260430_baseline/src/wshinp.for:183-194`, `/workdir/wepp-forest_260430_baseline/src/wshinp.for:469-487`
+- roughness clamp: `/workdir/wepp-forest_260430_baseline/src/wshinp.for:409-411`
 
 [DIRECT] WEPPpy generates `pw0.chn` with datver `99.1` and writes `ipeak` (`4` for Muskingum-Cunge default, else `2`) plus one channel block per channel template.
 Evidence: `/workdir/wepppy/wepppy/nodb/core/wepp.py:2482-2506`, `/workdir/wepppy/wepppy/wepp/management/data/channels.defs:85-95`.
@@ -205,7 +231,7 @@ Evidence: `/workdir/wepppyo3/wepp_interchange/src/loss.rs:294-298`, `/workdir/we
 - `flgout` line value may be overridden by global output mode (`watsum`).
 - If `chan.inp` is unavailable under `ipeak > 2`, legacy defaults to zeroed/disabled routing-output controls.
 
-[DIRECT] Legacy default/override evidence: `/workdir/wepp-forest/src/wshinp.for:394-397`, `/workdir/wepp-forest/src/wshinp.for:472-485`.
+[DIRECT] Legacy default/override evidence: `/workdir/wepp-forest_260430_baseline/src/wshinp.for:388-390`, `/workdir/wepp-forest_260430_baseline/src/wshinp.for:472-485`.
 
 [INFERENCE] openWEPP must disposition whether to preserve these overrides exactly or treat them as explicit warnings/errors in strict mode.
 
@@ -217,17 +243,17 @@ Evidence: `/workdir/wepppyo3/wepp_interchange/src/loss.rs:294-298`, `/workdir/we
   - Missing/unreadable `chan.inp` -> permit legacy fallback (`ichplt=0`, `it=null`, `iwind=0`) and emit `ChannelSidecarCompatibilityFallbackWarning`.
   - Parse failure -> apply same fallback and emit warning; never silently swallow the event.
 - [DIRECT] Legacy fallback behavior and zeroed routing controls are observed in `wshinp.for`.
-Evidence: `/workdir/wepp-forest/src/wshinp.for:469-485`.
+Evidence: `/workdir/wepp-forest_260430_baseline/src/wshinp.for:469-485`.
 
 ### 8.4 Resolved high-severity policy decisions
 - `CHN-POL-001` (`ishape` domain reconciliation):
   - strict mode accepts authoring-domain values `{1,2}` only (`1` triangular, `2` naturally eroded); any other token is `InputDomainError { field: ishape, allowed: [1,2] }`.
   - compatibility mode accepts legacy-expanded values and normalizes to legacy runtime class behavior observed in `wshinp.for` (`ishape >= 2` coerced to naturally eroded runtime class code path under default channel-output mode) with `ChannelShapeCompatibilityNormalizationWarning`.
-  - [DIRECT] Evidence: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:7275-7277`, `/workdir/wepp-forest/src/wshinp.for:386-390`, `/workdir/wepp-forest/src/chnpar.for:83-85`.
+  - [DIRECT] Evidence: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:7275-7277`, `/workdir/wepp-forest_260430_baseline/src/wshinp.for:380-384`, `/workdir/wepp-forest_260430_baseline/src/chnpar.for:83-85`.
 - `CHN-POL-002` (control-section roughness precedence reconciliation):
   - canonical runtime rule is legacy precedence: when `icntrl == 0`, override control roughness with `ctln <- chnn` after legacy roughness guard (`chnn >= chnnbr`) is applied.
   - line 14c remains syntactically required but semantically ignored in this branch; compat mode emits `ControlSectionOverrideAppliedWarning` for observability.
-  - [DIRECT] Evidence: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:7316-7340`, `/workdir/wepp-forest/src/wshinp.for:415-417`, `/workdir/wepp-forest/src/wshinp.for:428-431`.
+  - [DIRECT] Evidence: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:7316-7340`, `/workdir/wepp-forest_260430_baseline/src/wshinp.for:409-411`, `/workdir/wepp-forest_260430_baseline/src/wshinp.for:422-425`.
 
 ## 9. Example snippets
 
@@ -314,11 +340,11 @@ Expected: `ChannelCountMismatch` when compared with `.str`/management channel co
 | `CHN-GAP-005` | medium | `slplst` is scalar in common block and used for `ctlslp` override when `icntrl=0`; per-channel semantics are not fully explicit in docs. | [DIRECT] | `legacy-code`, `literature` | Resolve and codify intended per-channel vs shared behavior for openWEPP contract. |
 
 Evidence:
-- `CHN-GAP-001`: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:7275-7277`, `/workdir/wepp-forest/src/chnpar.for:83-85`, `/workdir/wepp-forest/src/wshinp.for:386-390`
-- `CHN-GAP-002`: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:7316-7340`, `/workdir/wepp-forest/src/wshinp.for:428-431`
-- `CHN-GAP-003`: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:7295-7301`, `/workdir/wepp-forest/src/wshinp.for:394-397`
-- `CHN-GAP-004`: `/workdir/wepp-forest/src/inidat.for:1162`, `/workdir/wepp-forest/src/verchk.for:25-31`
-- `CHN-GAP-005`: `/workdir/wepp-forest/src/cchtrl.inc:7-14`, `/workdir/wepp-forest/src/input.for:414-416`, `/workdir/wepp-forest/src/wshinp.for:431`
+- `CHN-GAP-001`: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:7275-7277`, `/workdir/wepp-forest_260430_baseline/src/chnpar.for:83-85`, `/workdir/wepp-forest_260430_baseline/src/wshinp.for:380-384`
+- `CHN-GAP-002`: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:7316-7340`, `/workdir/wepp-forest_260430_baseline/src/wshinp.for:422-425`
+- `CHN-GAP-003`: `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:7295-7301`, `/workdir/wepp-forest_260430_baseline/src/wshinp.for:388-390`
+- `CHN-GAP-004`: `/workdir/wepp-forest_260430_baseline/src/inidat.for:1159`, `/workdir/wepp-forest_260430_baseline/src/verchk.for:25-31`
+- `CHN-GAP-005`: `/workdir/wepp-forest_260430_baseline/src/cchtrl.inc:7-14`, `/workdir/wepp-forest_260430_baseline/src/input.for:414-416`, `/workdir/wepp-forest_260430_baseline/src/wshinp.for:425`
 
 ## 11. Parser-contract handoff map (`SC-INFILE-WATERSHED-CHANNEL-001`)
 
@@ -342,13 +368,13 @@ Handoff linkage:
   - `/home/workdir/openWEPP/references/vendorable/usersum2024.pdf`
   - `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt`
 - Legacy static behavior:
-  - `/workdir/wepp-forest/src/infile.for`
-  - `/workdir/wepp-forest/src/wshinp.for`
-  - `/workdir/wepp-forest/src/input.for`
-  - `/workdir/wepp-forest/src/chnpar.for`
-  - `/workdir/wepp-forest/src/inidat.for`
-  - `/workdir/wepp-forest/src/verchk.for`
-  - `/workdir/wepp-forest/src/cchtrl.inc`
+  - `/workdir/wepp-forest_260430_baseline/src/infile.for`
+  - `/workdir/wepp-forest_260430_baseline/src/wshinp.for`
+  - `/workdir/wepp-forest_260430_baseline/src/input.for`
+  - `/workdir/wepp-forest_260430_baseline/src/chnpar.for`
+  - `/workdir/wepp-forest_260430_baseline/src/inidat.for`
+  - `/workdir/wepp-forest_260430_baseline/src/verchk.for`
+  - `/workdir/wepp-forest_260430_baseline/src/cchtrl.inc`
 - Modern implementation references:
   - `/workdir/wepppy/wepppy/nodb/core/wepp.py`
   - `/workdir/wepppy/wepppy/wepp/management/channels.py`
