@@ -314,51 +314,7 @@ pub fn parse_fixeddate_str(
     }
 
     let mut warnings = Vec::new();
-    let mut idx = 0usize;
-    let first_tokens = split_tokens(&lines[0]);
-
-    let (datver, datver_source) = match mode {
-        ParseMode::Strict => {
-            if first_tokens.len() != 1 {
-                return Err(FixedDateParseError::LegacyNoDatverDisallowed {
-                    line: lines[0].line_no,
-                });
-            }
-            let datver = parse_f64(&first_tokens[0], lines[0].line_no, "datver")?;
-            idx += 1;
-            (datver, DatverSource::ExplicitHeader)
-        }
-        ParseMode::Compatibility => {
-            if first_tokens.len() == 1 {
-                if let Ok(value) = first_tokens[0].parse::<f64>() {
-                    if value > 2.0 {
-                        idx += 1;
-                        (value, DatverSource::ExplicitHeader)
-                    } else {
-                        warnings.push(FixedDateWarning {
-                            code: FixedDateWarningCode::FdirW001,
-                            line: lines[0].line_no,
-                            message: "legacy no-datver branch accepted".to_string(),
-                        });
-                        (DATVER_CANONICAL, DatverSource::LegacyCompatNoDatver)
-                    }
-                } else {
-                    return Err(FixedDateParseError::TokenParseError {
-                        line: lines[0].line_no,
-                        field: "datver_or_header",
-                        value: first_tokens[0].to_string(),
-                    });
-                }
-            } else {
-                warnings.push(FixedDateWarning {
-                    code: FixedDateWarningCode::FdirW001,
-                    line: lines[0].line_no,
-                    message: "legacy no-datver branch accepted".to_string(),
-                });
-                (DATVER_CANONICAL, DatverSource::LegacyCompatNoDatver)
-            }
-        }
-    };
+    let (datver, datver_source, mut idx) = parse_preamble(&lines, mode, &mut warnings)?;
 
     let header = lines.get(idx).ok_or(FixedDateParseError::MissingRecord {
         line: lines.last().map_or(1, |line| line.line_no + 1),
@@ -434,6 +390,92 @@ pub fn parse_fixeddate_str(
         idx += 1;
     }
 
+    let events = parse_events(
+        &lines,
+        idx,
+        itemp,
+        jtemp,
+        mode,
+        header.line_no,
+        &mut warnings,
+    )?;
+
+    Ok(FixedDateIrrigationFile {
+        datver,
+        datver_source,
+        itemp,
+        jtemp,
+        ktemp,
+        initial_records,
+        events,
+        initial_dates_complete: true,
+        event_stream_complete: true,
+        iryr_interpretation_mode: IryrInterpretationMode::UnresolvedRequiresRuntimePolicy,
+        warnings,
+    })
+}
+
+fn parse_preamble(
+    lines: &[NormalizedLine],
+    mode: ParseMode,
+    warnings: &mut Vec<FixedDateWarning>,
+) -> Result<(f64, DatverSource, usize), FixedDateParseError> {
+    let first_tokens = split_tokens(&lines[0]);
+    match mode {
+        ParseMode::Strict => {
+            if first_tokens.len() != 1 {
+                return Err(FixedDateParseError::LegacyNoDatverDisallowed {
+                    line: lines[0].line_no,
+                });
+            }
+            let datver = parse_f64(&first_tokens[0], lines[0].line_no, "datver")?;
+            Ok((datver, DatverSource::ExplicitHeader, 1))
+        }
+        ParseMode::Compatibility => {
+            if first_tokens.len() == 1 {
+                match first_tokens[0].parse::<f64>() {
+                    Ok(value) if !value.is_finite() => Err(FixedDateParseError::FieldRangeError {
+                        line: lines[0].line_no,
+                        field: "datver",
+                        value,
+                        expected: "finite",
+                    }),
+                    Ok(value) if value > 2.0 => Ok((value, DatverSource::ExplicitHeader, 1)),
+                    Ok(_) => {
+                        warnings.push(FixedDateWarning {
+                            code: FixedDateWarningCode::FdirW001,
+                            line: lines[0].line_no,
+                            message: "legacy no-datver branch accepted".to_string(),
+                        });
+                        Ok((DATVER_CANONICAL, DatverSource::LegacyCompatNoDatver, 0))
+                    }
+                    Err(_) => Err(FixedDateParseError::TokenParseError {
+                        line: lines[0].line_no,
+                        field: "datver_or_header",
+                        value: first_tokens[0].to_string(),
+                    }),
+                }
+            } else {
+                warnings.push(FixedDateWarning {
+                    code: FixedDateWarningCode::FdirW001,
+                    line: lines[0].line_no,
+                    message: "legacy no-datver branch accepted".to_string(),
+                });
+                Ok((DATVER_CANONICAL, DatverSource::LegacyCompatNoDatver, 0))
+            }
+        }
+    }
+}
+
+fn parse_events(
+    lines: &[NormalizedLine],
+    mut idx: usize,
+    itemp: usize,
+    jtemp: usize,
+    mode: ParseMode,
+    header_line: usize,
+    warnings: &mut Vec<FixedDateWarning>,
+) -> Result<Vec<FixedDateEvent>, FixedDateParseError> {
     let mut events = Vec::new();
     let mut expected_event_ofe = 1usize;
     while idx < lines.len() {
@@ -459,7 +501,7 @@ pub fn parse_fixeddate_str(
                     itemp,
                     expected_event_ofe,
                     mode,
-                    &mut warnings,
+                    warnings,
                 )?;
                 events.push(FixedDateEvent::Sprinkler(event));
                 idx += 2;
@@ -491,7 +533,7 @@ pub fn parse_fixeddate_str(
                             context: "furrow line5",
                         },
                     )?;
-                    rows.push(parse_furrow_row(row_line, mode, &mut warnings)?);
+                    rows.push(parse_furrow_row(row_line, mode, warnings)?);
                 }
 
                 let next_record = parse_line3_record(
@@ -500,7 +542,7 @@ pub fn parse_fixeddate_str(
                     expected_event_ofe,
                     "event",
                     mode,
-                    &mut warnings,
+                    warnings,
                 )?;
 
                 events.push(FixedDateEvent::Furrow(FurrowEvent {
@@ -512,7 +554,7 @@ pub fn parse_fixeddate_str(
             }
             _ => {
                 return Err(FixedDateParseError::HeaderDomainError {
-                    line: header.line_no,
+                    line: header_line,
                     field: "jtemp",
                     value: jtemp as i64,
                     expected: "{1,2}",
@@ -525,20 +567,7 @@ pub fn parse_fixeddate_str(
             expected_event_ofe = 1;
         }
     }
-
-    Ok(FixedDateIrrigationFile {
-        datver,
-        datver_source,
-        itemp,
-        jtemp,
-        ktemp,
-        initial_records,
-        events,
-        initial_dates_complete: true,
-        event_stream_complete: true,
-        iryr_interpretation_mode: IryrInterpretationMode::UnresolvedRequiresRuntimePolicy,
-        warnings,
-    })
+    Ok(events)
 }
 
 fn validate_datver_policy(
@@ -882,13 +911,22 @@ fn parse_i64(token: &str, line: usize, field: &'static str) -> Result<i64, Fixed
 }
 
 fn parse_f64(token: &str, line: usize, field: &'static str) -> Result<f64, FixedDateParseError> {
-    token
+    let value = token
         .parse::<f64>()
         .map_err(|_| FixedDateParseError::TokenParseError {
             line,
             field,
             value: token.to_string(),
-        })
+        })?;
+    if !value.is_finite() {
+        return Err(FixedDateParseError::FieldRangeError {
+            line,
+            field,
+            value,
+            expected: "finite",
+        });
+    }
+    Ok(value)
 }
 
 fn approx_eq(left: f64, right: f64) -> bool {

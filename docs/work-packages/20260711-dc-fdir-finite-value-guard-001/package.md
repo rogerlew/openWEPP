@@ -1,6 +1,6 @@
 # DC FDIR finite-value guard closure
 
-Status: active
+Status: EXECUTED-COMPLETE
 Evidence mode: Static and Ran as labeled in artifacts
 Queue item: `FQ-01`
 Defect: `FDIR-FINITE-VALUE-GUARD-001`
@@ -90,4 +90,3 @@ write only their named package artifact and ordinary untracked build outputs.
 Use `artifacts/required-reading-map.md` for the tiered reading set and budget.
 Truthfulness labels are mandatory: `Static:` for inspection and `Ran:` for
 executed commands. Required artifacts are pre-created as queued placeholders.
-

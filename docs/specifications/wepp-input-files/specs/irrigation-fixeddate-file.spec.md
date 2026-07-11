@@ -5,25 +5,28 @@
 - `surface_id`: `infile-irrigation-fixeddate`
 - `status`: `draft-HOLD`
 - `owner`: `openWEPP`
-- `spec_version`: `0.1.0`
-- `last_updated_utc`: `2026-05-20T00:00:00Z`
+- `spec_version`: `0.1.1`
+- `last_updated_utc`: `2026-07-11T00:00:00Z`
 - `evidence_mode`: `Static`
 
 ## Evidence Anchors
 - `[DIRECT][E-US-01]` `/home/workdir/openWEPP/references/vendorable/usersum2024.pdf` (Table 19, pp. 63-64: fixed-date irrigation file format).
 - `[DIRECT][E-US-02]` `/home/workdir/openWEPP/references/copyrighted/source_pdfs/WEPP_usersum2024.txt:6707-6781` (Table 19 line definitions; ordering and sentinel guidance).
-- `[DIRECT][E-WF-01]` `/workdir/wepp-forest/src/infile.for:2133-2204` (unit 14 open/read path; `itemp/jtemp/ktemp` validation for fixed-date file header).
-- `[DIRECT][E-WF-02]` `/workdir/wepp-forest/src/irinpt.for:108-120` and `/workdir/wepp-forest/src/irinpt.for:169-181` (initial fixed-date read of `line 3` for each OFE).
-- `[DIRECT][E-WF-03]` `/workdir/wepp-forest/src/irrig.for:263-283` and `/workdir/wepp-forest/src/irrig.for:294-338` (event-time reads of sprinkler/furrow event blocks and next-event line 3).
-- `[DIRECT][E-WF-04]` `/workdir/wepp-forest/src/irrig.for:161-163` and `/workdir/wepp-forest/src/irrig.for:283` and `/workdir/wepp-forest/src/irrig.for:338` (legacy warning path for incorrect ordering via format `2010`).
-- `[DIRECT][E-WF-05]` `/workdir/wepp-forest/src/inidat.for:1167-1172` and `/workdir/wepp-forest/src/cdat.inc:26-37` (fixed-date version constants and storage variables `irfsch/irffch`, `ifsver/iffver`).
-- `[DIRECT][E-WF-06]` `/workdir/wepp-forest/src/infile.for:2150-2167` (fixed-date `verchk` logic commented out in current legacy source; compatibility stop not enforced there).
-- `[DIRECT][E-WF-07]` `/workdir/wepp-forest/src/infile.for:2156-2161` and `/workdir/wepp-forest/src/irrig.for:275-281` (pre-94.21 sprinkler compatibility behavior: warning path and `nozzle=1.0` default).
-- `[DIRECT][E-WF-08]` `/workdir/wepp-forest/src/pmxsrg.inc:6-12` and `/workdir/wepp-forest/src/cirfur2.inc:69-73` (furrow surge count bound and `surges` meaning).
-- `[DIRECT][E-WF-09]` `/workdir/wepp-forest/src/irrig.for:301` (legacy furrow line-5 read consumes `qspply,tstart,tend` only).
-- `[DIRECT][E-WF-10]` `/workdir/wepp-forest/src/cirfixd.inc:17-20` (legacy inline definition of `irday/iryr`; `iryr` described as simulation-relative year).
-- `[DIRECT][E-WF-11]` `/workdir/wepp-forest/src/infile.for:2003-2039` (run-option mapping to fixed-date-capable schedules/options 1,3,4,6).
-- `[DIRECT][E-WF-12]` `/workdir/wepp-forest/src/irinpt.for:127-140` (furrow irrigation is disabled for contour rows and non-crop vegetation).
+- `[DIRECT][E-WF-01]` `/workdir/wepp-forest_260430_baseline/src/infile.for:2133-2204` (unit 14 open/read path; `itemp/jtemp/ktemp` validation for fixed-date file header).
+- `[DIRECT][E-WF-02]` `/workdir/wepp-forest_260430_baseline/src/irinpt.for:108-120` and `/workdir/wepp-forest_260430_baseline/src/irinpt.for:169-181` (initial fixed-date read of `line 3` for each OFE).
+- `[DIRECT][E-WF-03]` `/workdir/wepp-forest_260430_baseline/src/irrig.for:263-283` and `/workdir/wepp-forest_260430_baseline/src/irrig.for:294-338` (event-time reads of sprinkler/furrow event blocks and next-event line 3).
+- `[DIRECT][E-WF-04]` `/workdir/wepp-forest_260430_baseline/src/irrig.for:161-163` and `/workdir/wepp-forest_260430_baseline/src/irrig.for:283` and `/workdir/wepp-forest_260430_baseline/src/irrig.for:338` (legacy warning path for incorrect ordering via format `2010`).
+- `[DIRECT][E-WF-05]` `/workdir/wepp-forest_260430_baseline/src/inidat.for:1167-1172` and `/workdir/wepp-forest_260430_baseline/src/cdat.inc:26-37` (fixed-date version constants and storage variables `irfsch/irffch`, `ifsver/iffver`).
+- `[DIRECT][E-WF-06]` `/workdir/wepp-forest_260430_baseline/src/infile.for:2150-2167` (fixed-date `verchk` logic commented out in current legacy source; compatibility stop not enforced there).
+- `[DIRECT][E-WF-07]` `/workdir/wepp-forest_260430_baseline/src/infile.for:2156-2161` and `/workdir/wepp-forest_260430_baseline/src/irrig.for:275-281` (pre-94.21 sprinkler compatibility behavior: warning path and `nozzle=1.0` default).
+- `[DIRECT][E-WF-08]` `/workdir/wepp-forest_260430_baseline/src/pmxsrg.inc:6-12` and `/workdir/wepp-forest_260430_baseline/src/cirfur2.inc:69-73` (furrow surge count bound and `surges` meaning).
+- `[DIRECT][E-WF-09]` `/workdir/wepp-forest_260430_baseline/src/irrig.for:301` (legacy furrow line-5 read consumes `qspply,tstart,tend` only).
+- `[DIRECT][E-WF-10]` `/workdir/wepp-forest_260430_baseline/src/cirfixd.inc:17-20` (legacy inline definition of `irday/iryr`; `iryr` described as simulation-relative year).
+- `[DIRECT][E-WF-11]` `/workdir/wepp-forest_260430_baseline/src/infile.for:2003-2039` (run-option mapping to fixed-date-capable schedules/options 1,3,4,6).
+- `[DIRECT][E-WF-12]` `/workdir/wepp-forest_260430_baseline/src/irinpt.for:127-140` (furrow irrigation is disabled for contour rows and non-crop vegetation).
+
+All `E-WF-*` anchors above use pinned commit
+`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`.
 - `[DIRECT][E-WP-01]` `/workdir/wepppy/wepppy/weppcloud/routes/usersum/weppcloud/wepp-usersum-2024.md:485-520` (modern WEPPpy-hosted Table 19 restatement used for traceability).
 - `[DIRECT][E-WP3-01]` `/workdir/wepppyo3/README.md:66-77` and `/workdir/wepppyo3/README.md:128-146` (`wepppyo3` module scope emphasizes output/interchange; no fixed-date irrigation input parser surface documented there).
 
@@ -86,7 +89,7 @@ furrow_line5_legacy_compat = qspply tstart tend ;  (* compatibility mode only *)
 
 | Canonical symbol | Meaning | Units | Type | Cardinality | Required | Constraints | openWEPP alias |
 |---|---|---|---|---|---|---|---|
-| `datver` | fixed-date irrigation file version | none | real | 0..1 per file | yes in canonical mode; optional in compatibility mode | canonical source value `95.7`; compatibility no-version path exists | `fixeddate_irrigation.datver` |
+| `datver` | fixed-date irrigation file version | none | real | 0..1 per file | yes in canonical mode; optional in compatibility mode | finite; canonical source value `95.7`; compatibility no-version path exists | `fixeddate_irrigation.datver` |
 | `itemp` | number of OFEs in file | count | integer | 1 per file | yes | must equal hillslope OFE count (`jstruc`) | `fixeddate_irrigation.ofe_count` |
 | `jtemp` | irrigation system type | enum int | integer | 1 per file | yes | `1` sprinkler, `2` furrow; must match run-selected `irsyst` | `fixeddate_irrigation.system_flag` |
 | `ktemp` | scheduling type flag | enum int | integer | 1 per file | yes | must equal `2` for fixed-date file | `fixeddate_irrigation.schedule_flag` |
@@ -95,12 +98,12 @@ furrow_line5_legacy_compat = qspply tstart tend ;  (* compatibility mode only *)
 | `iryr` | irrigation event year | year | integer | many | yes | semantics conflict (calendar vs simulation-relative); see gap register | `event.year` |
 | `irint` | sprinkler application rate | m/s | real | per sprinkler event | conditional | finite; `> 0` when event active | `sprinkler_event.application_rate_mps` |
 | `irdept` | sprinkler depth | m | real | per sprinkler event | conditional | finite; `>= 0` | `sprinkler_event.depth_m` |
-| `nozzle` | sprinkler nozzle factor | none | real | per sprinkler event | conditional | pre-94.21 compatibility may imply `1.0` | `sprinkler_event.nozzle_factor` |
+| `nozzle` | sprinkler nozzle factor | none | real | per sprinkler event | conditional | finite; `> 0`; pre-94.21 compatibility may imply `1.0` | `sprinkler_event.nozzle_factor` |
 | `surges` | number of furrow surge rows | count | integer | per furrow event | conditional | `1..20` | `furrow_event.surge_count` |
 | `qspply` | furrow supply rate | m^3/s | real | per surge row | conditional | finite; non-negative | `furrow_event.surges[i].supply_rate_m3ps` |
 | `tstart` | surge start time from midnight | s | real | per surge row | conditional | finite; non-negative | `furrow_event.surges[i].start_s` |
 | `tend` | surge end time from midnight | s | real | per surge row | conditional | finite; `>= tstart` | `furrow_event.surges[i].end_s` |
-| `tdepl` | depletion-phase duration | s | real | per surge row | optional | documented in usersum; not consumed by current legacy read path | `furrow_event.surges[i].depletion_duration_s` |
+| `tdepl` | depletion-phase duration | s | real | per surge row | optional | when present, finite and non-negative; documented in usersum; not consumed by current legacy read path | `furrow_event.surges[i].depletion_duration_s` |
 
 ### 5.1 Alias mapping policy
 - Canonical symbols remain legacy WEPP/wepp-forest names (`datver`, `itemp`, `jtemp`, `ktemp`, `ofeflg`, `irday`, `iryr`, etc.). `[DIRECT][E-US-02]`
@@ -130,6 +133,7 @@ Draft openWEPP parser outcomes:
 | Missing file | `InputFileMissing(surface_id=infile-irrigation-fixeddate)` |
 | Omitted `datver` header while compatibility mode is disabled | `InputLegacyNoDatverDisallowed(surface_id=infile-irrigation-fixeddate)` |
 | Non-numeric or malformed header tokens | `TokenParseError` |
+| Non-finite real token (`NaN`, positive or negative infinity) in any real field | `FieldRangeError(field=<canonical symbol>)`, contract error `FDIR-E-005`; no typed parser output |
 | `jtemp` not in `{1,2}` | `EnumDomainError(field=jtemp)` |
 | `ktemp != 2` | `EnumDomainError(field=ktemp)` |
 | `itemp` mismatch with hillslope OFE count | `CrossFileMismatch(field=itemp)` |
@@ -160,8 +164,8 @@ Draft openWEPP parser outcomes:
 1 2 2
 1 120 1
 2
-0.00030 0.0 1800.0
-0.00015 1800.0 3600.0
+0.00030 0.0 1800.0 300.0
+0.00015 1800.0 3600.0 300.0
 1 0 0
 ```
 

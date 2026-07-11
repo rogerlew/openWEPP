@@ -1,6 +1,6 @@
 # CQR Nightly Follow-Up Queue Burndown ExecPlan
 
-Status: **ready-queued**
+Status: **active-burndown**
 Dispatch surface: **main** unless the operator explicitly authorizes a branch.
 Owner: maintainers.
 Created: 2026-07-11 UTC.
@@ -37,7 +37,7 @@ scaffolded, reviewed, verified, and committed.
 - [x] (2026-07-11 UTC) Accept and edit all governance/technical findings.
 - [x] (2026-07-11 UTC) Complete independent re-review: Review A `GO`, Review B `GO`.
 - [x] (2026-07-11 UTC) Change this plan to `ready-queued` after both reviews permit dispatch.
-- [ ] Execute queue item `FQ-01` through its terminal package commit.
+- [x] (2026-07-11 UTC) Execute queue item `FQ-01` through its terminal package commit.
 - [ ] Execute queue item `FQ-02` through its terminal package commit.
 - [ ] Execute queue item `FQ-03` through its terminal package commit.
 - [ ] Execute queue item `FQ-04` through its terminal package commit.
@@ -56,6 +56,10 @@ scaffolded, reviewed, verified, and committed.
   semantic defect correction is not hidden inside a mechanical CQR diff. The
   queue therefore separates semantic and behavior-preserving mechanical phases
   as review checkpoints inside each non-deferring parser DC package.
+- Observation: FQ-01's public characterization closed the fixed-date parser at
+  97.397% lines / 98.065% regions, but full coverage could not lower CC 39 below
+  CRAP 30; extracting whole preamble and event blocks reduced maximum CRAP to
+  17 without changing finite-input behavior.
 
 ## Decision Log
 
@@ -82,6 +86,12 @@ scaffolded, reviewed, verified, and committed.
   decomposition would violate Gate Evidence Non-Deferral. Semantic and
   mechanical phases remain separate review checkpoints inside one DC envelope.
   Date/Author: 2026-07-11 / Codex.
+- Decision: retain structurally impossible defensive parser arms in the counted
+  coverage denominator rather than annotating exclusions.
+  Rationale: the module clears science-tier and per-function gates without
+  denominator reduction, so retaining defensive fail-closed code is clearer
+  than exclusion or deletion.
+  Date/Author: 2026-07-11 / Codex.
 
 ## Outcomes & Retrospective
 
@@ -91,6 +101,13 @@ plan commit. During execution, update this section after every queue item with
 package IDs, scaffold/terminal commit SHAs, defect disposition, coverage/CRAP
 before and after, and any legitimate boundary. At queue completion, record the
 final rerank and whether another fresh nightly batch is warranted.
+
+FQ-01 outcome: package `20260711-dc-fdir-finite-value-guard-001` completed.
+`INV-FDIR-015` now rejects `NaN`/infinities for all eight typed real fields with
+`FDIR-E-005` in strict and compatibility modes. Final focused tests are 27/27,
+coverage is 97.397% lines / 98.065% regions, minimum function coverage is
+85.366%, maximum CRAP is 17, full workspace is 1,730/1,730 with 3 configured
+skips, and dual review/verification are GO/PASS. Closure is parser-boundary only.
 
 ## Context And Orientation
 
@@ -155,8 +172,8 @@ must repeat this authorization and requirement.
 
 | Queue ID | Required track | Package shape | Initial state |
 |---|---|---|---|
-| `FQ-01` | Close `FDIR-FINITE-VALUE-GUARD-001` | One contract-first DC package through science-tier coverage, obligations, and CRAP closure | `ACTIVE` — package `20260711-dc-fdir-finite-value-guard-001`, 2026-07-11 UTC |
-| `FQ-02` | Close `CHANINP-RAW-NCHNUM-CARDINALITY` | One contract-first DC package through science-tier coverage, obligations, and CRAP closure | `WAITING-SEQUENCE` |
+| `FQ-01` | Close `FDIR-FINITE-VALUE-GUARD-001` | One contract-first DC package through science-tier coverage, obligations, and CRAP closure | `COMPLETE` — package `20260711-dc-fdir-finite-value-guard-001`, terminal transition commit |
+| `FQ-02` | Close `CHANINP-RAW-NCHNUM-CARDINALITY` | One contract-first DC package through science-tier coverage, obligations, and CRAP closure | `READY-NEXT` |
 | `FQ-03` | Close `CHN-E006-EXTRA-RATING-ROW` | One contract-first DC package through science-tier coverage, obligations, and CRAP closure | `WAITING-SEQUENCE` |
 | `FQ-04` | Close `totalwatsed3.rs` coverage and CRAP debt | One science-tier cover-then-decompose CQR package | `WAITING-SEQUENCE` |
 | `FQ-05` | PMETPARA formatter disposition | No package; preserve originating hold history | `DISPOSITIONED-NO-ACTION / NOT-QUEUED` |
@@ -537,3 +554,7 @@ made explicit. Status remains HOLD until independent re-review passes.
 
 2026-07-11: independent re-review A/B returned `GO`. Plan status changed to
 `ready-queued`; no authoring finding is deferred or left undispositioned.
+
+2026-07-11: FQ-01 completed parser-boundary finite-value defect, science-tier
+coverage/A-H binding, and CRAP closure with dual PASS verification. FQ-02 is the
+next serialized row.

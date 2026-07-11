@@ -4,9 +4,9 @@ title: Fixed-Date Irrigation Input Parser Contract (legacy unit 14)
 status: in_review
 maturity: draft
 owner: openWEPP
-contract_version: 0.1.1
+contract_version: 0.1.2
 evidence_mode: Static
-last_updated_utc: 2026-05-21T00:00:00Z
+last_updated_utc: 2026-07-11T00:00:00Z
 ---
 
 # SC-INFILE-IRRIGATION-FIXEDDATE-001 Fixed-Date Irrigation Input Parser Contract
@@ -19,7 +19,7 @@ Evidence mode: `Static`
 
 - `[DIRECT][E-SPEC-FDIR-01]` `/home/workdir/openWEPP/docs/specifications/wepp-input-files/specs/irrigation-fixeddate-file.spec.md` (canonical fixed-date sidecar grammar, symbols, and open gaps).
 - `[DIRECT][E-SURVEY-FDIR-01]` `/home/workdir/openWEPP/docs/planning/wepp-input-file-parser-survey.md` (surface provenance and parser ownership notes).
-- `[DIRECT][E-WF-FDIR-01]` `/workdir/wepp-forest/src/infile.for`, `/workdir/wepp-forest/src/irinpt.for`, `/workdir/wepp-forest/src/irrig.for`, `/workdir/wepp-forest/src/inidat.for`, `/workdir/wepp-forest/src/cdat.inc`, `/workdir/wepp-forest/src/cirfixd.inc` (legacy parse/event-consumption branches and compatibility constants).
+- `[DIRECT][E-WF-FDIR-01]` `/workdir/wepp-forest_260430_baseline/src/infile.for`, `/workdir/wepp-forest_260430_baseline/src/irinpt.for`, `/workdir/wepp-forest_260430_baseline/src/irrig.for`, `/workdir/wepp-forest_260430_baseline/src/inidat.for`, `/workdir/wepp-forest_260430_baseline/src/cdat.inc`, `/workdir/wepp-forest_260430_baseline/src/cirfixd.inc` at commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` (legacy parse/event-consumption branches and compatibility constants).
 - `[INFERENCE][E-PHYS-FDIR-01]` Process/common-sense invariants: event dates must be valid and deterministic, OFE references must remain in-domain, and surge windows must be non-negative and ordered.
 
 ## 1. Scope and Version Applicability
@@ -74,21 +74,21 @@ furrow_line5_legacy_compat = qspply tstart tend ;
 
 | Canonical symbol | Source-model field | Simulation-model field | Units | Type | Cardinality | Required | Datver applicability | Default/derivation | openWEPP alias |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `datver` | `header.datver` | `irrigation.fixeddate.version.datver` | none | real | 0..1 | conditional | see Section 1 | none | `fixeddate_irrigation.datver` |
+| `datver` | `header.datver` | `irrigation.fixeddate.version.datver` | none | finite real | 0..1 | conditional | see Section 1 | none | `fixeddate_irrigation.datver` |
 | `itemp` | `header.itemp` | `irrigation.fixeddate.ofe_count` | count | int | 1 | yes | all | none | `fixeddate_irrigation.ofe_count` |
 | `jtemp` | `header.jtemp` | `irrigation.fixeddate.system_flag` | enum | int | 1 | yes | all | none | `fixeddate_irrigation.system_flag` |
 | `ktemp` | `header.ktemp` | `irrigation.fixeddate.schedule_flag` | enum | int | 1 | yes | all | none | `fixeddate_irrigation.schedule_flag` |
 | `ofeflg` | `line3.ofeflg` | `irrigation.fixeddate.records[*].ofe_id` | id | int | n_records | yes | all | none | `event.ofe_id` |
 | `irday` | `line3.irday` | `irrigation.fixeddate.records[*].event_doy` | day-of-year | int | n_records | yes | all | none | `event.day_of_year` |
 | `iryr` | `line3.iryr` | `irrigation.fixeddate.records[*].event_year` | year | int | n_records | yes | all | none | `event.year` |
-| `irint` | `sprinkler_line4.irint` | `irrigation.fixeddate.events[*].sprinkler.rate_m_per_s` | m/s | real | subset(records, `jtemp=1`) | conditional | sprinkler | none | `sprinkler_event.application_rate_mps` |
-| `irdept` | `sprinkler_line4.irdept` | `irrigation.fixeddate.events[*].sprinkler.depth_m` | m | real | subset(records, `jtemp=1`) | conditional | sprinkler | none | `sprinkler_event.depth_m` |
-| `nozzle` | `sprinkler_line4.nozzle` | `irrigation.fixeddate.events[*].sprinkler.nozzle_factor` | none | real | subset(records, `jtemp=1`) | conditional | sprinkler | compat fallback `1.0` when legacy two-field row accepted | `sprinkler_event.nozzle_factor` |
+| `irint` | `sprinkler_line4.irint` | `irrigation.fixeddate.events[*].sprinkler.rate_m_per_s` | m/s | finite real | subset(records, `jtemp=1`) | conditional | sprinkler | none | `sprinkler_event.application_rate_mps` |
+| `irdept` | `sprinkler_line4.irdept` | `irrigation.fixeddate.events[*].sprinkler.depth_m` | m | finite real | subset(records, `jtemp=1`) | conditional | sprinkler | none | `sprinkler_event.depth_m` |
+| `nozzle` | `sprinkler_line4.nozzle` | `irrigation.fixeddate.events[*].sprinkler.nozzle_factor` | none | finite real | subset(records, `jtemp=1`) | conditional | sprinkler | compat fallback `1.0` when legacy two-field row accepted | `sprinkler_event.nozzle_factor` |
 | `surges` | `furrow_line4.surges` | `irrigation.fixeddate.events[*].furrow.surge_count` | count | int | subset(records, `jtemp=2`) | conditional | furrow | none | `furrow_event.surge_count` |
-| `qspply` | `furrow_line5.qspply` | `irrigation.fixeddate.events[*].furrow.surges[*].supply_rate_m3_per_s` | m^3/s | real | subset(surges, `jtemp=2`) | conditional | furrow | none | `furrow_event.surges[i].supply_rate_m3ps` |
-| `tstart` | `furrow_line5.tstart` | `irrigation.fixeddate.events[*].furrow.surges[*].start_s` | s | real | subset(surges, `jtemp=2`) | conditional | furrow | none | `furrow_event.surges[i].start_s` |
-| `tend` | `furrow_line5.tend` | `irrigation.fixeddate.events[*].furrow.surges[*].end_s` | s | real | subset(surges, `jtemp=2`) | conditional | furrow | none | `furrow_event.surges[i].end_s` |
-| `tdepl` | `furrow_line5.tdepl` | `irrigation.fixeddate.events[*].furrow.surges[*].depletion_duration_s` | s | real | subset(surges, `jtemp=2`) | conditional | furrow | compat branch may preserve as omitted/null when three-field legacy row accepted | `furrow_event.surges[i].depletion_duration_s` |
+| `qspply` | `furrow_line5.qspply` | `irrigation.fixeddate.events[*].furrow.surges[*].supply_rate_m3_per_s` | m^3/s | finite real | subset(surges, `jtemp=2`) | conditional | furrow | none | `furrow_event.surges[i].supply_rate_m3ps` |
+| `tstart` | `furrow_line5.tstart` | `irrigation.fixeddate.events[*].furrow.surges[*].start_s` | s | finite real | subset(surges, `jtemp=2`) | conditional | furrow | none | `furrow_event.surges[i].start_s` |
+| `tend` | `furrow_line5.tend` | `irrigation.fixeddate.events[*].furrow.surges[*].end_s` | s | finite real | subset(surges, `jtemp=2`) | conditional | furrow | none | `furrow_event.surges[i].end_s` |
+| `tdepl` | `furrow_line5.tdepl` | `irrigation.fixeddate.events[*].furrow.surges[*].depletion_duration_s` | s | finite real | subset(surges, `jtemp=2`) | conditional | furrow | compat branch may preserve as omitted/null when three-field legacy row accepted | `furrow_event.surges[i].depletion_duration_s` |
 | derived `initial_dates_complete` | first `itemp` line3 records | `irrigation.fixeddate.initial_dates_complete` | flag | bool | 1 | yes | all | derived from initialization record closure | `initial_dates_complete` |
 | derived `event_stream_complete` | event payload + successor line3 stream | `irrigation.fixeddate.event_stream_complete` | flag | bool | 1 | yes | all | derived by branch-consistent record closure | `event_stream_complete` |
 | derived `legacy_nozzle_default_applied` | missing sprinkler `nozzle` compat branch | `irrigation.fixeddate.events[*].sprinkler.legacy_nozzle_default_applied` | flag | bool | subset(records, `jtemp=1`) | conditional | sprinkler | derived in compatibility mode | `legacy_nozzle_default_applied` |
@@ -159,7 +159,7 @@ Closure hooks:
 | `FDIR-E-002` | syntax | line arity mismatch for selected branch |
 | `FDIR-E-003` | semantic | unsupported datver policy result |
 | `FDIR-E-004` | semantic | invalid header domain (`itemp<=0`, `jtemp` not in `{1,2}`, `ktemp!=2`) |
-| `FDIR-E-005` | semantic | invalid field ranges/domains (`surges`, time/rate/date domains) |
+| `FDIR-E-005` | semantic | invalid field ranges/domains, including any non-finite parsed real (`datver`, `irint`, `irdept`, `nozzle`, `qspply`, `tstart`, `tend`, `tdepl`) |
 | `FDIR-E-006` | cross-file | run-level coupling mismatch (`itemp`, `jtemp`, `ktemp` vs run context) |
 | `FDIR-E-007` | cross-file | OFE identifier/order mismatch in initialization/event stream |
 | `FDIR-E-008` | runtime-guard | event-stream closure failure post-parse |
@@ -173,6 +173,22 @@ Closure hooks:
 | `FDIR-W-006` | compat-warning | legacy warning-only OFE ordering anomaly accepted in compatibility mode |
 
 No silent fallback/default masking is permitted in strict mode.
+
+### 7.1 Finite-value invariant
+
+`[INFERENCE]` `INV-FDIR-015`: every real token that reaches `FixedDateIrrigationFile` or an
+event payload must be finite. The parser rejects `NaN`, positive infinity, and
+negative infinity at token conversion, before version/range/order comparisons,
+with `FieldRangeError` / `FDIR-E-005` naming the canonical field. This applies
+equally in strict and compatibility modes; compatibility defaults are finite
+contract constants and do not authorize non-finite input.
+Authority for the inference is the directly observed finite-field requirements
+in `[DIRECT][E-SPEC-FDIR-01]` plus the repository fail-closed domain rule.
+
+Invariant-to-guard binding: `INV-FDIR-015` is enforced by `G-FDIR-001` for
+`datver`, `G-FDIR-006` for `irint`/`irdept`/`nozzle`, and `G-FDIR-008` for
+`qspply`/`tstart`/`tend`/`tdepl`. All three guards fail with `FDIR-E-005`
+before constructing typed parser output.
 
 ## 8. Cross-File Consistency Constraints
 
@@ -226,14 +242,14 @@ No silent fallback/default masking is permitted in strict mode.
 
 | Guard ID | Invariant / rule | Enforcement path | Failure behavior |
 | --- | --- | --- | --- |
-| `G-FDIR-001` | datver policy gate | preamble parse | `FDIR-E-003` |
+| `G-FDIR-001` | `INV-FDIR-015`: finite `datver`, then datver policy gate | preamble parse | non-finite: `FDIR-E-005`; unsupported finite value: `FDIR-E-003` |
 | `G-FDIR-002` | header domain (`itemp>0`, `jtemp in {1,2}`, `ktemp==2`) | header parse | `FDIR-E-004` |
 | `G-FDIR-003` | initialization line3 closure (`itemp` rows, OFE ordering) with strict/compat ordering branch | parse finalize | strict: `FDIR-E-007`/`FDIR-E-010`; compat: `FDIR-W-006` |
 | `G-FDIR-004` | event stream branch closure | event-stream parse/finalize | `FDIR-E-002`/`FDIR-E-008` |
 | `G-FDIR-005` | date/year domain validity | record parse | `FDIR-E-005` |
-| `G-FDIR-006` | sprinkler row field domain/arity | sprinkler event parse | `FDIR-E-002`/`FDIR-E-005` |
+| `G-FDIR-006` | `INV-FDIR-015`: finite sprinkler row fields, plus value domain/arity | sprinkler event parse | `FDIR-E-002`/`FDIR-E-005` |
 | `G-FDIR-007` | furrow `surges` range (`1..20`) | furrow line4 parse | `FDIR-E-005` |
-| `G-FDIR-008` | furrow line5 field domain/arity | furrow line5 parse | `FDIR-E-002`/`FDIR-E-005` |
+| `G-FDIR-008` | `INV-FDIR-015`: finite furrow line5 fields, plus value domain/arity | furrow line5 parse | `FDIR-E-002`/`FDIR-E-005` |
 | `G-FDIR-009` | cross-file OFE-count closure | cross-surface validator | `FDIR-E-006` |
 | `G-FDIR-010` | run-option/system/schedule coupling closure | cross-surface validator | `FDIR-E-006` |
 | `G-FDIR-011` | `irday==0` schedule termination observability | parse finalize | `FDIR-E-008` |
@@ -258,9 +274,30 @@ openWEPP boundary names are aliases only (Section 3).
 | `FDIR-GAP-003` | Legacy ordering warning-only branches exist; strict reject + compat warning policy requires fixture-backed migration evidence. | `[DIRECT][E-SPEC-FDIR-01]`, `[DIRECT][E-WF-FDIR-01]` | `HOLD` |
 | `FDIR-GAP-004` | Datver-floor authority conflict remains unresolved because fixed-date `verchk` enforcement is commented in legacy source while constants remain declared. | `[DIRECT][E-SPEC-FDIR-01]`, `[DIRECT][E-WF-FDIR-01]` | `HOLD` |
 
-## 14. Revision History
+## 14. Test-Vector Obligations
+
+| Family | Obligation | Observable result |
+| --- | --- | --- |
+| A nominal | canonical strict sprinkler and furrow records | typed fields, event counts, and closure flags match source |
+| B boundary | `irday` sentinel/bounds; zero-valued `irdept`, `qspply`, ordered `tstart`/`tend`, and `tdepl`; positive-only `irint`/`nozzle`; and surge limits | accepted boundary or exact `FDIR-E-005` |
+| C branch | strict and compatibility datver, nozzle, furrow arity, and ordering paths | documented warning/provenance or typed rejection |
+| D domain reject | invalid header, date, OFE, surge, rate, depth, and time domains | canonical typed error ID and field |
+| E missing-symbol | each required record/token absent, including empty input, truncation, and arity underflow | `FDIR-E-002` or `FDIR-E-008` at the owning surface |
+| F non-finite | `NaN`, `+inf`, and `-inf` for each real symbol in `INV-FDIR-015` | `FieldRangeError` / `FDIR-E-005`; no typed output |
+| G conservation / continuity | Not applicable: this parser constructs immutable typed records and does not compute or publish a conserved quantity. | reviewed `N/A`; no denominator exclusion |
+| H fail-closed | every B-F violation returns its exact typed error without a partial file, silent clamp/default, or compatibility pass-through | exact error and no typed output |
+
+Package evidence must bind every family to named tests. This parser-contract
+package is science tier under ADR-0021 because it enforces contract invariants.
+Compatibility provenance branches are bound under family C. Whitespace/comment
+normalization, repeated parses, and event-OFE cycling are additional parser
+determinism obligations under the non-kernel case-family extension in the Rust
+scientific coding standard Section 7.8.
+
+## 15. Revision History
 
 | Date UTC | Version | Change |
 | --- | --- | --- |
 | `2026-05-21` | `0.1.0` | Initial parser-contract draft authored for INFILE09. |
 | `2026-05-21` | `0.1.1` | Codified validation-surface ownership split: parser-local guards stay in file parser; `G-FDIR-009/010/013` assigned to downstream cross-validation surface. |
+| `2026-07-11` | `0.1.2` | Pinned legacy provenance; added `INV-FDIR-015`, finite-token `FDIR-E-005` guard mapping for every real field, and A-H test-vector obligations. |

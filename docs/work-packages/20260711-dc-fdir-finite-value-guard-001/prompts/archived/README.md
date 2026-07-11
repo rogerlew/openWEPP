@@ -1,4 +1,3 @@
 # Archived prompts
 
-Status: queued
-
+Status: package kickoff archived at terminal disposition

@@ -1,4 +1,3 @@
 # Active prompts
 
-Status: active
-
+Status: no active prompts; package complete
