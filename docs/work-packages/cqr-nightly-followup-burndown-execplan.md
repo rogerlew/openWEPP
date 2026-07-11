@@ -174,7 +174,7 @@ must repeat this authorization and requirement.
 |---|---|---|---|
 | `FQ-01` | Close `FDIR-FINITE-VALUE-GUARD-001` | One contract-first DC package through science-tier coverage, obligations, and CRAP closure | `COMPLETE` — package `20260711-dc-fdir-finite-value-guard-001`, terminal transition commit |
 | `FQ-02` | Close `CHANINP-RAW-NCHNUM-CARDINALITY` | One contract-first DC package through science-tier coverage, obligations, and CRAP closure | `COMPLETE` — package `20260711-dc-chaninp-raw-cardinality-001`, terminal transition commit |
-| `FQ-03` | Close `CHN-E006-EXTRA-RATING-ROW` | One contract-first DC package through science-tier coverage, obligations, and CRAP closure | `READY-NEXT` |
+| `FQ-03` | Close `CHN-E006-EXTRA-RATING-ROW` | One contract-first DC package through science-tier coverage, obligations, and CRAP closure | `ACTIVE` — package `20260711-dc-watershed-channel-extra-rating-001`, 2026-07-11 UTC |
 | `FQ-04` | Close `totalwatsed3.rs` coverage and CRAP debt | One science-tier cover-then-decompose CQR package | `WAITING-SEQUENCE` |
 | `FQ-05` | PMETPARA formatter disposition | No package; preserve originating hold history | `DISPOSITIONED-NO-ACTION / NOT-QUEUED` |
 
