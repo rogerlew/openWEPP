@@ -100,6 +100,55 @@ physics for the first time in the program's history. The evidence trail is
 [the sub-5× assessment](../backlog/20260701-hillslope-sub5x-performance-assessment.md)
 and the two `20260701-hillperf-*` work packages.
 
+The cost picture then gained a genuinely new term. Lane D — hourly
+kinematic-wave routing along the OFE cascade — moved from shadow to
+conditional **production default**
+([rev-46 activation](../work-packages/20260708-laned-router-conditional-default-activation-001/),
+2026-07-08): real added physics the daily numbers above never contained.
+Its endpoint is a **different fixture** — the H2637 19-OFE geometry under a
+2-year climate (`tests/fixtures/laned_shadow_h2637`), not the 34-year daily
+run — so its times are not comparable to the 32.8 s above. On that fixture
+the freshly active router cost **~37.5 s user**, dominated by the explicit
+kinematic-wave solve. The buy-back was local numerics, not representation
+work ([Tier-1, `SC-OFEROUTE-001` rev 47](../work-packages/20260708-laned-router-tier1-local-numerics-001/)):
+closed-form rating evaluation on the selected friction branch, a bounded
+log-Newton α/q solve, and `h·√h` replacing `h.powf(1.5)` in the hot
+kinematic-wave step brought the endpoint to **11.90 s median (3.15×)** —
+accepted by the Iwagaki oracle ladder and conservation gates rather than
+output identity (rev 47 deliberately claims no bit identity; the recorded
+hydrograph proxies landed bit-identical anyway). A
+[post-Tier-1 hot-path sweep](../work-packages/20260708-laned-router-post-tier1-hotpath-sweep-001/)
+settled it at **11.72 s median user, max RSS ~21 MiB** on this fixture. The
+one recorded performance hold is the unratified Hirsch `Re^0.45`
+approximation envelope.
+
+One ratified caveat binds all H2637 numbers going forward:
+[ADR-0037](../decisions/0037-abandon-hybrid-implicit-stepping.md) demoted
+H2637 to a **synthetic stress case** — 19 uniform ~26 m OFEs is a
+constructed stress configuration, not a fleet topology — and future
+performance or promotion claims must not rest on H2637-only evidence. The same ADR is
+the newest entry in the negative-results canon: a hybrid implicit-explicit
+stepper was engineered to full working order — every named defect resolved,
+all gates green — and abandoned anyway, because its only demonstrated win
+was on the synthetic fixture while every real cohort member declined or
+lost. A subsystem can be finished and still be net-negative carry.
+
+An executional recheck on 2026-07-10
+([audit](../audits/20260710_h2637_34yr_laned_active_endpoint_audit.md))
+put both paths on the canonical 34-year endpoint for the first time since
+Lane D activated. The daily path measured **39.2 s user / ~67 MiB** against
+an interleaved same-core legacy anchor of **9.2 s** → **4.3×**, still
+inside the ≤5× budget but ≈ +19% over the 2026-07-01 number with the
+legacy control unchanged — real accumulated cost of the physics landed
+since (erosion port, residue coupling, native intake, …), unattributed.
+The active router **did not complete the run**: it fail-closed
+deterministically at day 2621 (lane 8, `NegativeOutletBin`, a
+zero-precipitation hard-freeze day on the recession tail of a ~46 mm
+three-day rain spell — a span the 2-year fixture never reaches). The first
+canonical-endpoint soak of the production default was a defect discovery,
+not a timing datapoint; until it closes, the 2-year numbers above are the
+only completed active measurements.
+
 On the watershed tier the same playbook is repeating deliberately: measure
 first (WSHEDPERF01 showed routing is ~0.08 s and hillslope fan-out is
 everything), specify a ground-up target
@@ -117,5 +166,9 @@ rewrite wholesale, delete the old runtime at the end.
   day-frame lifecycle (assumed dominant, measured marginal) are both recorded
   cases where the obvious suspect was innocent.
 - Respect the negative results. If your idea resembles PERFMIG/PERFDEEP
-  rungs, read those packages first — the failure modes are documented in
-  detail, and "this time it's different" needs to say *why*.
+  rungs or the hybrid stepper (ADR-0037), read those records first — the
+  failure modes are documented in detail, and "this time it's different"
+  needs to say *why*.
+- Wins must generalize past the fixture that produced them. The hybrid
+  stepper's one win was synthetic; performance claims are made on real
+  cohort members, not H2637 alone (ADR-0037).
