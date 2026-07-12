@@ -60,11 +60,13 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-12 UTC`:
-- `20260712-dc-cqr-preint-hb01-strict-positive-threshold-001/` - ACTIVE:
-  HB-01 characterization proved that Erod13 accepts zero for contract-required
-  positive duration/denominator inputs because the shared tolerance cancels
-  the intended floor. The bounded correction is Erod13-local; generic
-  validator semantics and erosion physics remain excluded.
+- `20260712-dc-cqr-preint-hb01-strict-positive-threshold-001/` -
+  EXECUTED-COMPLETE (2026-07-12):
+  Erod13 now rejects zero/non-finite values for
+  all 15 strict-positive inputs; exact-zero authoritative runoff suppresses
+  only the pointwise solve while positive-upstream continuity remains active.
+  Expanded-slice coverage is 95.673% lines / 94.649% regions, maximum CRAP is
+  15.136, and the 344-test erosion profile passes.
 - `20260711-cqr-followup-totalwatsed3-001/` - EXECUTED-COMPLETE (2026-07-11):
   FQ-04 closes the totalwatsed3 science-tier prerequisite at 97.328% lines /
   93.011% regions and maximum CRAP 23.0. The focused all-operand suite passes

@@ -1,6 +1,6 @@
 # DC CQR HB-01 — Erod13 Strict-Positive Threshold
 
-Status: `ACTIVE`
+Status: `TERMINAL-PASS`
 
 ## Objective
 
@@ -50,11 +50,11 @@ and may not close as HOLD for implementation effort.
 
 - [x] Reproduce zero-duration acceptance before production correction.
 - [x] Confirm canonical strict-positive authority and local mechanism.
-- [ ] Land the Erod13-local strict-positive correction.
-- [ ] Close the exact-zero-runoff pointwise invocation seam without changing
+- [x] Land the Erod13-local strict-positive correction.
+- [x] Close the exact-zero-runoff pointwise invocation seam without changing
   hourly/inter-OFE continuity.
-- [ ] Resume mechanical HB-01 decomposition and focused measurement.
-- [ ] Complete focused validation and dual review/verification disposition.
+- [x] Resume mechanical HB-01 decomposition and focused measurement.
+- [x] Complete focused validation and dual review/verification disposition.
 
 ## Review And Delegation
 
@@ -65,4 +65,12 @@ focused metrics, finding dispositions, verification, and terminal disposition.
 
 ## Outcomes
 
-Pending execution.
+The Erod13 boundary now rejects zero/non-finite values for all 15 canonical
+strict-positive inputs while preserving validation order and exact errors. R7D6
+treats only exact authoritative zero local runoff as pointwise inactive;
+malformed runoff still fails and positive-upstream continuity still routes and
+closes mass. The original CRAP row is eliminated, the expanded slice passes
+95.673% lines / 94.649% regions with every function above 75%, and maximum
+CRAP is 15.136. Focused tests, the 344-test erosion profile, Clippy, format, and
+diff pass. Dual review/verification pass with every accepted finding closed.
+Disposition: `TERMINAL-PASS`; defect `DC-CQR-HB01-001` is closed.

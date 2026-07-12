@@ -616,7 +616,7 @@ impl DirectDayFrame {
         }
         let erosion_inputs = self.r7d8_erosion_inputs_with_runoff_authority()?;
 
-        let wave1 = if erosion_inputs.wave1_enabled {
+        let wave1 = if erosion_inputs.wave1_enabled && erosion_inputs.wave1.q_runoff_m != 0.0 {
             Some(compute_direct_erod13(&erosion_inputs.wave1)?)
         } else {
             None
@@ -1018,75 +1018,64 @@ fn compute_direct_erod13(
 }
 
 fn validate_erod13_inputs(inputs: &DirectErod13Inputs) -> Result<(), DirectRuntimeError> {
+    validate_erod13_hydrology_and_shear(inputs)?;
+    validate_erod13_sediment_forcing(inputs)?;
+    validate_erod13_normalization_and_transport(inputs)?;
+    validate_erod13_runoff_duration_closure(inputs)
+}
+
+fn validate_erod13_hydrology_and_shear(
+    inputs: &DirectErod13Inputs,
+) -> Result<(), DirectRuntimeError> {
     validate_nonnegative_direct_m("erosion.erod13.ie_m_s", inputs.ie_m_s)?;
-    validate_min("erosion.erod13.te_s", inputs.te_s, WB11_ZERO_THRESHOLD)?;
+    validate_erod13_strict_positive("erosion.erod13.te_s", inputs.te_s)?;
     validate_nonnegative_direct_m("erosion.erod13.fs", inputs.fs)?;
-    validate_min("erosion.erod13.ft", inputs.ft, WB11_ZERO_THRESHOLD)?;
+    validate_erod13_strict_positive("erosion.erod13.ft", inputs.ft)?;
     validate_max("erosion.erod13.fs", inputs.fs, inputs.ft)?;
     validate_nonnegative_direct_m("erosion.erod13.taufe_pa", inputs.taufe_pa)?;
     validate_nonnegative_direct_m("erosion.erod13.q_m2_s", inputs.q_m2_s)?;
+    Ok(())
+}
+
+fn validate_erod13_sediment_forcing(inputs: &DirectErod13Inputs) -> Result<(), DirectRuntimeError> {
     validate_nonnegative_direct_m("erosion.erod13.g_kg_s_m", inputs.g_kg_s_m)?;
     validate_nonnegative_direct_m("erosion.erod13.di_kg_s_m2", inputs.di_kg_s_m2)?;
     validate_nonnegative_direct_m("erosion.erod13.beta", inputs.beta)?;
     validate_nonnegative_direct_m("erosion.erod13.vf_m_s", inputs.vf_m_s)?;
     validate_finite("erosion.erod13.dgdx_kg_s_m2", inputs.dgdx_kg_s_m2)?;
-    validate_min(
-        "erosion.erod13.cntlen_m",
-        inputs.cntlen_m,
-        WB11_ZERO_THRESHOLD,
-    )?;
-    validate_min("erosion.erod13.kr_s_m", inputs.kr_s_m, WB11_ZERO_THRESHOLD)?;
-    validate_min("erosion.erod13.kradjf", inputs.kradjf, WB11_ZERO_THRESHOLD)?;
+    Ok(())
+}
+
+fn validate_erod13_normalization_and_transport(
+    inputs: &DirectErod13Inputs,
+) -> Result<(), DirectRuntimeError> {
+    validate_erod13_strict_positive("erosion.erod13.cntlen_m", inputs.cntlen_m)?;
+    validate_erod13_strict_positive("erosion.erod13.kr_s_m", inputs.kr_s_m)?;
+    validate_erod13_strict_positive("erosion.erod13.kradjf", inputs.kradjf)?;
     validate_min(
         "erosion.erod13.tcadjf",
         inputs.tcadjf,
         DIRECT_EROD13_MIN_TCADJF,
     )?;
-    validate_min(
-        "erosion.erod13.shrsol_pa",
-        inputs.shrsol_pa,
-        WB11_ZERO_THRESHOLD,
-    )?;
-    validate_min(
-        "erosion.erod13.tcend_kg_s_m",
-        inputs.tcend_kg_s_m,
-        WB11_ZERO_THRESHOLD,
-    )?;
+    validate_erod13_strict_positive("erosion.erod13.shrsol_pa", inputs.shrsol_pa)?;
+    validate_erod13_strict_positive("erosion.erod13.tcend_kg_s_m", inputs.tcend_kg_s_m)?;
     validate_nonnegative_direct_m("erosion.erod13.shcrit_pa", inputs.shcrit_pa)?;
     validate_nonnegative_direct_m("erosion.erod13.detinr_kg_s_m2", inputs.detinr_kg_s_m2)?;
-    validate_min(
-        "erosion.erod13.effdrr_m",
-        inputs.effdrr_m,
-        WB11_ZERO_THRESHOLD,
-    )?;
-    validate_min(
-        "erosion.erod13.effdrn_m",
-        inputs.effdrn_m,
-        WB11_ZERO_THRESHOLD,
-    )?;
+    validate_erod13_strict_positive("erosion.erod13.effdrr_m", inputs.effdrr_m)?;
+    validate_erod13_strict_positive("erosion.erod13.effdrn_m", inputs.effdrn_m)?;
     validate_nonnegative_direct_m("erosion.erod13.veleff_m_s", inputs.veleff_m_s)?;
-    validate_min(
-        "erosion.erod13.pkro_m3_s",
-        inputs.pkro_m3_s,
-        WB11_ZERO_THRESHOLD,
-    )?;
-    validate_min("erosion.erod13.tc_k", inputs.tc_k, WB11_ZERO_THRESHOLD)?;
-    validate_min("erosion.erod13.tc_m", inputs.tc_m, WB11_ZERO_THRESHOLD)?;
-    validate_min(
-        "erosion.erod13.q_runoff_m",
-        inputs.q_runoff_m,
-        WB11_ZERO_THRESHOLD,
-    )?;
-    validate_min(
-        "erosion.erod13.peakro_m3_s",
-        inputs.peakro_m3_s,
-        WB11_ZERO_THRESHOLD,
-    )?;
-    validate_min(
-        "erosion.erod13.watdur_s",
-        inputs.watdur_s,
-        WB11_ZERO_THRESHOLD,
-    )?;
+    validate_erod13_strict_positive("erosion.erod13.pkro_m3_s", inputs.pkro_m3_s)?;
+    validate_erod13_strict_positive("erosion.erod13.tc_k", inputs.tc_k)?;
+    validate_erod13_strict_positive("erosion.erod13.tc_m", inputs.tc_m)?;
+    Ok(())
+}
+
+fn validate_erod13_runoff_duration_closure(
+    inputs: &DirectErod13Inputs,
+) -> Result<(), DirectRuntimeError> {
+    validate_erod13_strict_positive("erosion.erod13.q_runoff_m", inputs.q_runoff_m)?;
+    validate_erod13_strict_positive("erosion.erod13.peakro_m3_s", inputs.peakro_m3_s)?;
+    validate_erod13_strict_positive("erosion.erod13.watdur_s", inputs.watdur_s)?;
 
     let expected_watdur_s = inputs.q_runoff_m / inputs.peakro_m3_s;
     if (inputs.watdur_s - expected_watdur_s).abs()
@@ -1095,6 +1084,17 @@ fn validate_erod13_inputs(inputs: &DirectErod13Inputs) -> Result<(), DirectRunti
         return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
             field: "erosion.erod13.watdur_s",
         });
+    }
+    Ok(())
+}
+
+fn validate_erod13_strict_positive(
+    field: &'static str,
+    value: f64,
+) -> Result<(), DirectRuntimeError> {
+    validate_finite(field, value)?;
+    if value <= 0.0 {
+        return Err(DirectRuntimeError::DirectDomainViolation { field });
     }
     Ok(())
 }

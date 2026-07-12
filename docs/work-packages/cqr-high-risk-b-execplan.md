@@ -39,7 +39,8 @@ classification records. It does not permit a multi-module implementation diff.
   the clean predecessor transition commit.
 - [x] (2026-07-12 UTC) Refresh `hb/start` workspace metrics and dual-review all
   21 live rows: 21 actionable, zero retained exception/exclusion.
-- [ ] Execute or disposition HB-01 through its terminal record.
+- [x] (2026-07-12 UTC) Close `DC-CQR-HB01-001` and execute HB-01 through
+  reviewed `MODULE-PASS` checkpoint.
 - [ ] Execute or disposition HB-02 through its terminal record.
 - [ ] Execute or disposition HB-03 through its terminal record.
 - [ ] Execute or disposition HB-04 through its terminal record.

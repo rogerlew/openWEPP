@@ -1,5 +1,14 @@
+#![allow(clippy::float_cmp)]
+
 use super::*;
-use crate::{DirectPeakRunoffShadowProjection, DirectRunIdentity};
+use crate::{
+    DirectErosionInflowIntake, DirectPeakRunoffShadowProjection, DirectRunIdentity,
+    DirectSubsurfaceLayerState, DirectWave1OperandSeed, DirectWave1SlopeSegment,
+    ErosionConsolidationBaselines, ErosionParticleClass,
+};
+
+type InputMutation = fn(&mut DirectErod13Inputs);
+type ScalarInputMutation = fn(&mut DirectErod13Inputs, f64);
 
 fn nominal_inputs() -> DirectErod13Inputs {
     DirectErod13Inputs {
@@ -71,16 +80,21 @@ fn hb01_b_c_threshold_and_deposition_branches_are_exact() {
 }
 
 #[test]
-fn hb01_b_d_h_threshold_domain_guards_fail_closed_with_exact_fields() {
-    let cases: [(&str, fn(&mut DirectErod13Inputs)); 10] = [
+fn hb01_b_d_h_every_strict_positive_input_rejects_zero_with_exact_field() {
+    let cases: [(&str, InputMutation); 15] = [
         ("erosion.erod13.te_s", |v| v.te_s = 0.0),
         ("erosion.erod13.ft", |v| v.ft = 0.0),
-        ("erosion.erod13.fs", |v| v.fs = v.ft + 1.0),
-        ("erosion.erod13.tcadjf", |v| v.tcadjf = 0.29),
+        ("erosion.erod13.cntlen_m", |v| v.cntlen_m = 0.0),
+        ("erosion.erod13.kr_s_m", |v| v.kr_s_m = 0.0),
+        ("erosion.erod13.kradjf", |v| v.kradjf = 0.0),
         ("erosion.erod13.shrsol_pa", |v| v.shrsol_pa = 0.0),
         ("erosion.erod13.tcend_kg_s_m", |v| v.tcend_kg_s_m = 0.0),
+        ("erosion.erod13.effdrr_m", |v| v.effdrr_m = 0.0),
         ("erosion.erod13.effdrn_m", |v| v.effdrn_m = 0.0),
         ("erosion.erod13.pkro_m3_s", |v| v.pkro_m3_s = 0.0),
+        ("erosion.erod13.tc_k", |v| v.tc_k = 0.0),
+        ("erosion.erod13.tc_m", |v| v.tc_m = 0.0),
+        ("erosion.erod13.q_runoff_m", |v| v.q_runoff_m = 0.0),
         ("erosion.erod13.peakro_m3_s", |v| v.peakro_m3_s = 0.0),
         ("erosion.erod13.watdur_s", |v| v.watdur_s = 0.0),
     ];
@@ -95,8 +109,24 @@ fn hb01_b_d_h_threshold_domain_guards_fail_closed_with_exact_fields() {
 }
 
 #[test]
+fn hb01_b_d_h_partition_and_tcadjf_domains_fail_closed() {
+    let cases: [(&str, InputMutation); 2] = [
+        ("erosion.erod13.fs", |v| v.fs = v.ft + 1.0),
+        ("erosion.erod13.tcadjf", |v| v.tcadjf = 0.29),
+    ];
+    for (field, mutate) in cases {
+        let mut inputs = nominal_inputs();
+        mutate(&mut inputs);
+        assert_eq!(
+            compute_direct_erod13(&inputs),
+            Err(DirectRuntimeError::DirectDomainViolation { field })
+        );
+    }
+}
+
+#[test]
 fn hb01_f_h_every_required_scalar_rejects_all_nonfinite_values() {
-    let fields: [(&str, fn(&mut DirectErod13Inputs, f64)); 28] = [
+    let fields: [(&str, ScalarInputMutation); 28] = [
         ("erosion.erod13.ie_m_s", |v, x| v.ie_m_s = x),
         ("erosion.erod13.te_s", |v, x| v.te_s = x),
         ("erosion.erod13.fs", |v, x| v.fs = x),
@@ -202,4 +232,167 @@ fn hb01_a_real_r7d6_consumer_publishes_wave1_state_and_operands() {
     );
     assert!(report.erosion_shadow_projection.wave1_active);
     assert_eq!(report.compatibility_edge_invocation_count, 0);
+}
+
+fn r7d6_day_with_authoritative_runoff(q_runoff_m: f64) -> DirectDayFrame {
+    let identity = DirectRunIdentity::new(1, 1, 1, 1).expect("valid identity");
+    let mut day = DirectDayFrame::seed(identity, 0, 0).expect("valid day frame");
+    day.erosion_inputs.wave1_enabled = true;
+    day.erosion_inputs.wave1 = nominal_inputs();
+    day.peak_runoff_shadow_projection = Some(DirectPeakRunoffShadowProjection {
+        lane_index: 0,
+        day_index: 0,
+        q_runoff_m,
+        peak_runoff_m3_s: 0.001,
+        runoff_duration_s: 10.0,
+        method_branch: 1.0,
+        tstar: 0.0,
+        qpstar: 0.0,
+        vstar: 0.0,
+    });
+    day
+}
+
+fn hb01_continuity_seed() -> DirectWave1OperandSeed {
+    let diameters = [2.0e-6, 1.0e-5, 3.0e-5, 3.0e-4, 2.0e-4];
+    let fractions = [0.05, 0.35, 0.25, 0.20, 0.15];
+    let classes: [ErosionParticleClass; 5] = core::array::from_fn(|index| ErosionParticleClass {
+        dia_m: diameters[index],
+        spg: [2.60, 2.65, 1.80, 1.60, 2.65][index],
+        frac: fractions[index],
+        fall_m_s: [1.0e-6, 5.0e-5, 4.0e-4, 2.0e-2, 2.5e-2][index],
+        frcly: [1.0, 0.0, 0.4, 0.2, 0.0][index],
+        frslt: [0.0, 1.0, 0.6, 0.4, 0.0][index],
+        frsnd: [0.0, 0.0, 0.0, 0.4, 1.0][index],
+        frorg: [0.02, 0.0, 0.008, 0.004, 0.0][index],
+    });
+    DirectWave1OperandSeed {
+        enabled: true,
+        is_cropland: false,
+        segments: vec![DirectWave1SlopeSegment {
+            xu: 0.0,
+            xl: 1.0,
+            a: 0.0,
+            b: 1.0,
+        }],
+        slplen_m: 100.0,
+        efflen_m: 100.0,
+        cntlen_m: 100.0,
+        rspace_m: 1.0,
+        field_width_m: 30.0,
+        avg_slope: 0.30,
+        slpend: 0.30,
+        sand: 0.25,
+        ssasol: 6.0,
+        classes,
+        veleff_m_s: 0.005,
+        baselines: ErosionConsolidationBaselines {
+            kicrat: 1.0,
+            krcrat: 1.0,
+            tccrat: 1.0,
+            bconsd: 0.02,
+        },
+        kr_s_m: 5.0e-4,
+        ki: 1.0e6,
+        shcrit_pa: 1.0,
+        hmax_m: 0.0,
+        flivmx: 0.0,
+        random_roughness_m: 0.01,
+        initial_daydis: 100.0,
+    }
+}
+
+#[test]
+fn hb01_b_exact_zero_authoritative_runoff_suppresses_only_pointwise_wave1() {
+    let mut day = r7d6_day_with_authoritative_runoff(0.0);
+    let report = day
+        .run_r7d6_erosion_span()
+        .expect("exact-zero runoff must make the pointwise solve inactive");
+    assert_eq!(day.erosion.wave1, None);
+    assert_eq!(day.erosion.wave1_continuity, None);
+    assert!(!report.erosion_shadow_projection.wave1_active);
+    assert_eq!(report.phase_count, DIRECT_R7D6_EROSION_PHASE_SPAN_COUNT);
+}
+
+#[test]
+fn hb01_d_f_h_malformed_authoritative_runoff_is_not_suppressed() {
+    for (q_runoff_m, expected) in [
+        (
+            -1.0,
+            DirectRuntimeError::DirectDomainViolation {
+                field: "erosion.erod13.q_runoff_m",
+            },
+        ),
+        (
+            f64::NAN,
+            DirectRuntimeError::NonFiniteDirectValue {
+                field: "erosion.erod13.q_runoff_m",
+            },
+        ),
+        (
+            f64::INFINITY,
+            DirectRuntimeError::NonFiniteDirectValue {
+                field: "erosion.erod13.q_runoff_m",
+            },
+        ),
+        (
+            f64::NEG_INFINITY,
+            DirectRuntimeError::NonFiniteDirectValue {
+                field: "erosion.erod13.q_runoff_m",
+            },
+        ),
+    ] {
+        let mut day = r7d6_day_with_authoritative_runoff(q_runoff_m);
+        assert_eq!(day.run_r7d6_erosion_span(), Err(expected));
+    }
+}
+
+#[test]
+fn hb01_a_c_g_zero_local_runoff_still_routes_positive_upstream_sediment() {
+    let mut day = r7d6_day_with_authoritative_runoff(0.0);
+    *day.erosion_inputs.wave1_operand_seed = hb01_continuity_seed();
+    day.subsurface_compute.layer_state_after = vec![DirectSubsurfaceLayerState {
+        depth_m: 0.2,
+        theta_m: 0.04,
+        field_capacity_theta: 0.25,
+        ..DirectSubsurfaceLayerState::neutral()
+    }];
+    let mut hourly_qout_m2_s = [0.0; 24];
+    let mut hourly_qsout_kg_m_s = [0.0; 24];
+    hourly_qout_m2_s[3] = 2.0e-4;
+    hourly_qsout_kg_m_s[3] = 1.0e-4;
+    day.erosion_inflow_intake = Some(Box::new(DirectErosionInflowIntake {
+        hourly_qout_m2_s,
+        hourly_qsout_kg_m_s,
+        prior_slpend: 0.30,
+        prior_cnslp: 0.25,
+        prior_end_shear: (0.5, 0.5, 0.0),
+        prior_end_transport: (0.5, 0.5, 0.0),
+        exit_fractions: [0.30, 0.30, 0.20, 0.10, 0.10],
+    }));
+
+    let report = day
+        .run_r7d6_erosion_span()
+        .expect("upstream sediment must route when local runoff is exactly zero");
+    assert_eq!(day.erosion.wave1, None, "pointwise solve stays inactive");
+    let continuity = day
+        .erosion
+        .wave1_continuity
+        .as_deref()
+        .expect("positive hourly qin must keep continuity active");
+    assert!(continuity.active);
+    assert!(continuity.inflow_sediment_kg_m > 0.0);
+    assert!(continuity.total_deposition_kg > 0.0);
+    assert!(continuity.exported_sediment_kg_m <= continuity.inflow_sediment_kg_m);
+    assert!(continuity.publication_closure_residual_kg_m.abs() <= 1.0e-9);
+    assert!(report.erosion_shadow_projection.wave1_active);
+    assert_eq!(
+        day.erosion
+            .publication
+            .hourly_sediment_mass_kg
+            .expect("hourly sediment publication must exist")
+            .iter()
+            .sum::<f64>(),
+        continuity.exported_sediment_kg_m * 30.0
+    );
 }
