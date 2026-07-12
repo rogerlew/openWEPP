@@ -34,6 +34,11 @@ binding.
 - `crates/openwepp-runner/src/hillslope/02_output_and_climate_helpers.rs`: use
   that seam in `build_hillslope_wat_row_from_direct_publication` and populate
   the 25 canonical WAT fields from the validated row.
+- `crates/openwepp-hillslope-orchestrator/src/direct_runtime/01_publication.rs`
+  and its focused tests: reject a deliberately corrupted publication frame
+  whose independently stored `soil_water_total_m` differs from
+  `total_soil_m`. Normal projection already assigns the canonical alias
+  identity in `projection.rs`; this is a boundary guard, not new physics.
 - Focused tests in the nearest existing accumulator and runner test modules.
 - This package's evidence and the HB-06 campaign record.
 
@@ -69,3 +74,15 @@ runner paths.
 
 Record exact commands, counts, source hashes, metrics, lineage, reviewer
 findings, and any deviations under `artifacts/` before terminal disposition.
+
+## Discovery Amendment
+
+Strict runner adoption exposed that the direct publication constructor accepted
+manually corrupted frames with distinct storage aliases; an existing unit test
+even required `21 mm != 19 mm`. This contradicts `SC-WATBAL-001`, which defines
+both fields as the same unfrozen `watcon` publication within `1e-6 mm`.
+Canonical runtime projection already performs
+`soil_water_total_m = total_soil_m`, so the bounded correction is an admission
+guard at `direct_publication_storage_operands` plus replacement of obsolete
+acceptance fixtures. A validation policy that permits distinct aliases is
+explicitly prohibited.

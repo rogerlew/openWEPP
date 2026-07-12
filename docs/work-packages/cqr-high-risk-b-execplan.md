@@ -74,6 +74,11 @@ classification records. It does not permit a multi-module implementation diff.
 - HB-06's public output-surface test consumes the accumulator API, but the
   production runner maps `DirectPublicationDayRow` straight to
   `HillslopeWatRow`. That test cannot close the binding real-consumer gate.
+- Strict HB-06 runner adoption exposed an obsolete direct-publication test and
+  admission gap that accepted `SoilWaterTotal != Total-Soil`. Canonical runtime
+  projection already creates equal aliases, so the package expands only to a
+  producer-boundary guard and replacement of corrupted fixtures; no process
+  physics changes.
 
 ## Decision Log
 
