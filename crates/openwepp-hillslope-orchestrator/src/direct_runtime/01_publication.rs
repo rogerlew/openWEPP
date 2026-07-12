@@ -303,6 +303,37 @@ fn direct_publication_own_surface_hourly_weights(
     )
 }
 
+struct DirectPublicationPrecomputedOperands {
+    runoff: DirectPublicationRunoffOperands,
+    subsurface_lateral_m: f64,
+    interception_m: f64,
+    storage: DirectPublicationStorageOperands,
+    water_temperature: DirectPublicationWaterTemperatureOperands,
+    erosion: DirectPublicationErosionOperands,
+}
+
+fn direct_publication_precomputed_operands(
+    day_frame: &DirectDayFrame,
+    day_input: &DirectPublicationDayInput,
+    lane: &DirectLaneFrame,
+) -> Result<DirectPublicationPrecomputedOperands, DirectRuntimeError> {
+    let runoff = direct_publication_runoff_operands(day_frame, lane)?;
+    let subsurface_lateral_m = day_frame.hydrology_projection.lateral_flow_m;
+    let interception_m = day_frame.interception_m;
+    validate_nonnegative_direct_m("publication.interception_m", interception_m)?;
+    let storage = direct_publication_storage_operands(day_frame)?;
+    let water_temperature = direct_publication_water_temperature_operands(day_frame)?;
+    let erosion = direct_publication_erosion_operands(day_frame, day_input)?;
+    Ok(DirectPublicationPrecomputedOperands {
+        runoff,
+        subsurface_lateral_m,
+        interception_m,
+        storage,
+        water_temperature,
+        erosion,
+    })
+}
+
 impl DirectPublicationDayRow {
     fn from_day_frame(
         day_frame: &DirectDayFrame,
@@ -315,18 +346,9 @@ impl DirectPublicationDayRow {
                 field: "publication.sim_day_index",
             }
         })?;
-        let runoff = direct_publication_runoff_operands(day_frame, lane)?;
-        let subsurface_lateral_m = day_frame.hydrology_projection.lateral_flow_m;
-        let interception_m = day_frame.interception_m;
-        validate_nonnegative_direct_m("publication.interception_m", interception_m)?;
-        let storage = direct_publication_storage_operands(day_frame)?;
-        let water_temperature = direct_publication_water_temperature_operands(day_frame)?;
-        let erosion = direct_publication_erosion_operands(day_frame, day_input)?;
-        let terminal_groundwater_output = if lane.downstream_lane_id == 0 {
-            day_frame.groundwater_output
-        } else {
-            DirectGroundwaterDayOutput::zero()
-        };
+        let precomputed = direct_publication_precomputed_operands(day_frame, day_input, lane)?;
+        let terminal_groundwater_output =
+            direct_publication_terminal_groundwater_output(day_frame, lane);
         let groundwater_baseflow_mm = publication_volume_m3_to_mm(
             "publication.subsurface.groundwater_baseflow_mm",
             terminal_groundwater_output.baseflow_m3,
@@ -341,9 +363,7 @@ impl DirectPublicationDayRow {
         Ok(Self {
             run_id: day_frame.identity.run_id,
             hillslope_id: day_frame.identity.hillslope_id,
-            dc01_surface_hourly_weights: direct_publication_own_surface_hourly_weights(
-                day_frame,
-            )?,
+            dc01_surface_hourly_weights: direct_publication_own_surface_hourly_weights(day_frame)?,
             lane_id: lane.lane_id,
             ofe_id: lane.lane_id,
             lane_index: day_frame.lane_index,
@@ -355,10 +375,10 @@ impl DirectPublicationDayRow {
                 precipitation_mm: m_to_mm(day_frame.normalization.precipitation_m)?,
             },
             liquid_input: DirectPublicationLiquidInputOperands {
-                rm_mm: m_to_mm(day_frame.liquid_input.liquid_input_m + interception_m)?,
+                rm_mm: m_to_mm(day_frame.liquid_input.liquid_input_m + precomputed.interception_m)?,
                 irrigation_mm: 0.0,
             },
-            runoff,
+            runoff: precomputed.runoff,
             evaporation: DirectPublicationEvaporationOperands {
                 ep_mm: m_to_mm(day_frame.hydrology_projection.plant_transpiration_m)?,
                 es_mm: m_to_mm(day_frame.hydrology_projection.soil_evaporation_m)?,
@@ -369,11 +389,11 @@ impl DirectPublicationDayRow {
             },
             subsurface: DirectPublicationSubsurfaceOperands {
                 dp_mm: m_to_mm(day_frame.hydrology_projection.deep_percolation_m)?,
-                latqcc_mm: m_to_mm(subsurface_lateral_m)?,
+                latqcc_mm: m_to_mm(precomputed.subsurface_lateral_m)?,
                 tile_mm: m_to_mm(day_frame.hydrology_projection.tile_drainage_m)?,
                 sbrunv_m3: publication_mm_to_volume_m3(
                     "publication.subsurface.sbrunv_m3",
-                    m_to_mm(subsurface_lateral_m)?,
+                    m_to_mm(precomputed.subsurface_lateral_m)?,
                     lane.area_m2,
                 )?,
                 groundwater_baseflow_mm,
@@ -385,8 +405,8 @@ impl DirectPublicationDayRow {
                 upstream_surface_mm: m_to_mm(day_frame.normalization.surface_transfer_m)?,
                 upstream_lateral_mm: m_to_mm(day_frame.normalization.lateral_transfer_m)?,
             },
-            storage,
-            water_temperature,
+            storage: precomputed.storage,
+            water_temperature: precomputed.water_temperature,
             profile: DirectPublicationProfileOperands {
                 depth_mm: option_m_to_mm(day_frame.hydrology_projection.profile_depth_m)?,
                 porosity_cap_mm: option_m_to_mm(
@@ -400,11 +420,22 @@ impl DirectPublicationDayRow {
                 )?,
             },
             interception: DirectPublicationInterceptionOperands {
-                interception_mm: m_to_mm(interception_m)?,
+                interception_mm: m_to_mm(precomputed.interception_m)?,
                 interception_storage_mm: None,
             },
-            erosion,
+            erosion: precomputed.erosion,
         })
+    }
+}
+
+fn direct_publication_terminal_groundwater_output(
+    day_frame: &DirectDayFrame,
+    lane: &DirectLaneFrame,
+) -> DirectGroundwaterDayOutput {
+    if lane.downstream_lane_id == 0 {
+        day_frame.groundwater_output
+    } else {
+        DirectGroundwaterDayOutput::zero()
     }
 }
 
@@ -422,10 +453,9 @@ fn direct_publication_runoff_operands(
     day_frame: &DirectDayFrame,
     lane: &DirectLaneFrame,
 ) -> Result<DirectPublicationRunoffOperands, DirectRuntimeError> {
-    let q_publication_mm = day_frame.hydrology_projection.q_runoff_m
-        * 1_000.0
-        * lane.runoff_publication_efflen_m
-        / lane.runoff_publication_cumulative_length_m;
+    let q_publication_mm =
+        day_frame.hydrology_projection.q_runoff_m * 1_000.0 * lane.runoff_publication_efflen_m
+            / lane.runoff_publication_cumulative_length_m;
     let q_publication_m = q_publication_mm / 1_000.0;
     validate_finite("publication.runoff.q_publication_m", q_publication_m)?;
     validate_nonnegative_direct_m("publication.runoff.q_publication_m", q_publication_m)?;
@@ -436,10 +466,9 @@ fn direct_publication_runoff_operands(
     // byte-invariant (the wepp_260516 fix's preserved property). On single-OFE
     // lanes cumulative_length == ofe_length so QOFE already equalled Q and this
     // is a no-op (single-OFE byte-identity).
-    let runvol_basis_mm = day_frame.hydrology_projection.q_ofe_m
-        * 1_000.0
-        * lane.runoff_publication_efflen_m
-        / lane.runoff_publication_ofe_length_m;
+    let runvol_basis_mm =
+        day_frame.hydrology_projection.q_ofe_m * 1_000.0 * lane.runoff_publication_efflen_m
+            / lane.runoff_publication_ofe_length_m;
     let runvol_basis_m = runvol_basis_mm / 1_000.0;
     validate_finite("publication.runoff.runvol_basis_m", runvol_basis_m)?;
     validate_nonnegative_direct_m("publication.runoff.runvol_basis_m", runvol_basis_m)?;
@@ -687,5 +716,381 @@ impl DirectPublicationErosionOperands {
             hourly_sediment_mass_kg: None,
             enrichment_ratio: None,
         }
+    }
+}
+
+#[cfg(test)]
+mod cqr_publication_tests {
+    use super::*;
+
+    fn identity(lane_count: usize, day_count: usize) -> DirectRunIdentity {
+        DirectRunIdentity::new(101, 501, lane_count, day_count)
+            .expect("valid publication characterization identity")
+    }
+
+    fn calendar() -> DirectPublicationCalendarDay {
+        DirectPublicationCalendarDay {
+            year: 2026,
+            julian_day: 1,
+            month: 1,
+            day_of_month: 1,
+            water_year: 2026,
+        }
+    }
+
+    #[test]
+    fn cqr_publication_input_and_frame_accessors_cover_empty_and_complete_states() {
+        let input = DirectPublicationDayInput::calendar_only(calendar());
+        assert_eq!(input.precipitation_m.to_bits(), 0.0_f64.to_bits());
+        assert!(input.initial_soil_water_m.is_none());
+        assert!(input.frost_runtime_carry.is_none());
+        assert_eq!(
+            DirectPublicationFrame::empty().runoff_m.to_bits(),
+            0.0_f64.to_bits()
+        );
+
+        let metadata = DirectPublicationRunMetadata {
+            run_name: "cqr_publication".to_string(),
+            runtime_selection: "direct".to_string(),
+            output_policy: "test".to_string(),
+        };
+        let empty = DirectRunPublicationFrame::new(identity(1, 1), metadata.clone(), 1);
+        assert!(matches!(
+            empty.validate_complete(),
+            Err(DirectRuntimeError::PublicationRowCountMismatch {
+                expected_row_count: 1,
+                actual_row_count: 0
+            })
+        ));
+        assert!(empty.rows().is_empty());
+        assert!(empty.first_day().is_none());
+        assert!(empty.last_day().is_none());
+
+        assert_eq!(empty.metadata, metadata);
+    }
+
+    #[test]
+    fn cqr_frost_projection_covers_absent_valid_and_invalid_domains() {
+        let mut layers = vec![DirectSubsurfaceLayerState::neutral()];
+        apply_direct_frost_carry_projection(&mut layers, None).expect("absent projection");
+        let original_theta = layers[0].theta_m;
+        let valid = DirectFrostLayerCarryProjection {
+            layer_index: 1,
+            fine_layer_count: 1,
+            fine_layer_thickness_m: layers[0].depth_m,
+        };
+        apply_direct_frost_carry_projection(&mut layers, Some(&[valid]))
+            .expect("unfrozen valid projection");
+        assert_eq!(layers[0].theta_m.to_bits(), original_theta.to_bits());
+
+        layers[0].frozen_depth_m = layers[0].depth_m / 2.0;
+        layers[0].theta_m = 0.1;
+        apply_direct_frost_carry_projection(&mut layers, Some(&[valid]))
+            .expect("partially frozen valid projection");
+        assert!(layers[0].theta_m >= 0.0);
+
+        layers[0].frozen_depth_m = layers[0].depth_m;
+        layers[0].theta_m = 0.1;
+        apply_direct_frost_carry_projection(&mut layers, Some(&[valid]))
+            .expect("fully frozen projection uses residual theta branch");
+        assert!(layers[0].theta_m.abs() < f64::EPSILON);
+
+        let mut two_layers = vec![DirectSubsurfaceLayerState::neutral(); 2];
+        assert!(matches!(
+            apply_direct_frost_carry_projection(&mut two_layers, Some(&[valid])),
+            Err(DirectRuntimeError::DirectDomainViolation {
+                field: "frost_layer_carry_projection.layer_count"
+            })
+        ));
+        assert!(matches!(
+            apply_direct_frost_carry_projection(
+                &mut two_layers,
+                Some(&[
+                    valid,
+                    DirectFrostLayerCarryProjection {
+                        layer_index: 3,
+                        ..valid
+                    },
+                ])
+            ),
+            Err(DirectRuntimeError::DirectDomainViolation {
+                field: "frost_layer_carry_projection.layer_index"
+            })
+        ));
+        assert!(
+            DirectFrostLayerCarryProjection {
+                fine_layer_count: 0,
+                ..valid
+            }
+            .validate_for_layer(1, &DirectSubsurfaceLayerState::neutral())
+            .is_err()
+        );
+    }
+
+    #[test]
+    fn cqr_publication_helpers_cover_guards_and_optional_authority_branches() {
+        let run_identity = identity(1, 1);
+        let mut frame = DirectRunFrame::skeleton(run_identity).expect("publication frame");
+        frame.lanes[0].area_m2 = 100.0;
+        let lane = &frame.lanes[0];
+        validate_direct_publication_lane(lane).expect("valid publication lane");
+        let mut invalid_lane = lane.clone();
+        invalid_lane.area_m2 = 0.0;
+        assert!(matches!(
+            validate_direct_publication_lane(&invalid_lane),
+            Err(DirectRuntimeError::InvalidPublicationArea { .. })
+        ));
+
+        assert_eq!(
+            nonnegative_publication_storage_m("test", -WB11_ZERO_THRESHOLD / 2.0)
+                .expect("roundoff storage")
+                .to_bits(),
+            0.0_f64.to_bits()
+        );
+        assert!(nonnegative_publication_storage_m("test", -1.0).is_err());
+        assert!(nonnegative_publication_storage_m("test", f64::NAN).is_err());
+
+        let mut day = DirectDayFrame::seed(run_identity, 0, 0).expect("publication day");
+        let input = DirectPublicationDayInput::calendar_only(calendar());
+        let zero_erosion =
+            direct_publication_erosion_operands(&day, &input).expect("optional erosion authority");
+        assert_eq!(
+            zero_erosion,
+            DirectPublicationErosionOperands::zero_authority()
+        );
+        let mut required = input.clone();
+        required.erosion_producer_required = true;
+        assert!(matches!(
+            direct_publication_erosion_operands(&day, &required),
+            Err(DirectRuntimeError::MissingDirectUpstream {
+                upstream: "R7D5 direct Wave-1 sediment producer"
+            })
+        ));
+        day.erosion_shadow_projection = Some(DirectErosionShadowProjection {
+            lane_index: 0,
+            day_index: 0,
+            wave1_active: false,
+            publication_authority: true,
+            publication: DirectPublicationErosionOperands::absent_authority(),
+        });
+        assert_eq!(
+            direct_publication_erosion_operands(&day, &required)
+                .expect("authoritative erosion projection"),
+            DirectPublicationErosionOperands::absent_authority()
+        );
+
+        assert_eq!(
+            direct_publication_peak_runoff_operands(&day, 0.0).expect("dry peak"),
+            (Some(WB16_PEAKRO_FLOOR), Some(0.0))
+        );
+        assert_eq!(
+            direct_publication_peak_runoff_operands(&day, 0.01).expect("missing wet peak"),
+            (None, None)
+        );
+        assert!(direct_publication_peak_runoff_operands(&day, f64::NAN).is_err());
+
+        direct_publication_storage_operands(&day).expect("zero storage operands");
+        direct_publication_water_temperature_operands(&day).expect("absent melt temperature");
+        assert!(matches!(
+            direct_publication_own_surface_hourly_weights(&day),
+            Err(DirectRuntimeError::MissingDirectUpstream { .. })
+        ));
+
+        day.groundwater_output = DirectGroundwaterDayOutput {
+            enabled: true,
+            recharge_m3: 1.0,
+            storage_before_m3: 4.0,
+            storage_after_m3: 4.0,
+            storage_delta_m3: 0.0,
+            baseflow_m3: 2.0,
+            deep_seepage_m3: 3.0,
+            baseflow_threshold_area_ha: None,
+        };
+        assert!(
+            (direct_publication_terminal_groundwater_output(&day, lane).baseflow_m3 - 2.0).abs()
+                < f64::EPSILON
+        );
+        let mut upstream_lane = lane.clone();
+        upstream_lane.downstream_lane_id = 2;
+        assert!(
+            direct_publication_terminal_groundwater_output(&day, &upstream_lane)
+                .baseflow_m3
+                .abs()
+                < f64::EPSILON
+        );
+    }
+
+    fn snow_projection_with_temperature(value_c: f64) -> DirectSnowCouplingShadowProjection {
+        let mut diagnostics = DirectSnowStage3Diagnostics::disabled();
+        diagnostics.meltwater_temperature_c = Some(
+            openwepp_unit_boundary::TemperatureCelsius::try_new(value_c)
+                .expect("finite snow temperature"),
+        );
+        DirectSnowCouplingShadowProjection {
+            lane_index: 0,
+            day_index: 0,
+            snow_coupling_m: 0.0,
+            active_snow_coupling: true,
+            raw_melt_m: 0.0,
+            redistributed_melt_m: 0.0,
+            routed_melt_m: 0.0,
+            snowpack_swe_loss_m: 0.0,
+            sublimation_m: 0.0,
+            post_winter_rain_m: 0.0,
+            runtime_swe_after_m: 0.0,
+            runtime_depth_after_m: 0.0,
+            runtime_density_after_kg_m3: 0.0,
+            runtime_settle_day_count_after: 0.0,
+            coe_boundary_depth_after_m: 0.0,
+            coe_boundary_density_after_kg_m3: 0.0,
+            coe_boundary_settle_day_count_after: 0.0,
+            snow_albedo_state_after: None,
+            stage3_diagnostics: Some(Box::new(diagnostics)),
+        }
+    }
+
+    #[test]
+    fn cqr_water_temperature_accepts_nonpositive_and_rejects_positive_meltwater() {
+        let run_identity = identity(1, 1);
+        let mut day = DirectDayFrame::seed(run_identity, 0, 0).expect("temperature day");
+        day.snow_coupling_shadow_projection = Some(snow_projection_with_temperature(-0.25));
+        let operands = direct_publication_water_temperature_operands(&day)
+            .expect("nonpositive meltwater temperature");
+        assert_eq!(operands.meltwater_temperature_c, Some(-0.25));
+
+        day.snow_coupling_shadow_projection = Some(snow_projection_with_temperature(0.25));
+        assert!(matches!(
+            direct_publication_water_temperature_operands(&day),
+            Err(DirectRuntimeError::DirectDomainViolation {
+                field: "publication.water_temperature.meltwater_temperature_c"
+            })
+        ));
+    }
+
+    #[test]
+    fn cqr_storage_operands_fail_closed_in_operand_order() {
+        let run_identity = identity(1, 1);
+        let mut day = DirectDayFrame::seed(run_identity, 0, 0).expect("storage day");
+
+        day.hydrology_projection.total_soil_m = -1.0;
+        day.hydrology_projection.soil_water_total_m = -2.0;
+        day.winter_column.snow.runtime_depth_m = -3.0;
+        assert!(matches!(
+            direct_publication_storage_operands(&day),
+            Err(DirectRuntimeError::DirectDomainViolation {
+                field: "publication.storage.total_soil_publication_m"
+            })
+        ));
+
+        day.hydrology_projection.total_soil_m = 0.1;
+        assert!(matches!(
+            direct_publication_storage_operands(&day),
+            Err(DirectRuntimeError::DirectDomainViolation {
+                field: "publication.storage.soil_water_total_publication_m"
+            })
+        ));
+
+        day.hydrology_projection.soil_water_total_m = 0.1;
+        assert!(matches!(
+            direct_publication_storage_operands(&day),
+            Err(DirectRuntimeError::DirectDomainViolation {
+                field: "publication.storage.snow_depth_publication_m"
+            })
+        ));
+
+        day.winter_column.snow.runtime_depth_m = 0.0;
+        day.hydrology_projection.frozen_soil_water_m = -0.1;
+        assert!(matches!(
+            direct_publication_storage_operands(&day),
+            Err(DirectRuntimeError::NegativeDirectValue {
+                field: "publication.depth_m"
+            })
+        ));
+
+        day.hydrology_projection.frozen_soil_water_m = 0.0;
+        direct_publication_storage_operands(&day).expect("valid storage operands after guards");
+    }
+
+    #[test]
+    fn cqr_day_row_reconstructs_distinct_operands_without_aliases() {
+        let run_identity = identity(1, 1);
+        let mut frame = DirectRunFrame::skeleton(run_identity).expect("row reconstruction frame");
+        frame.lanes[0].area_m2 = 200.0;
+        frame.lanes[0].runoff_publication_efflen_m = 2.0;
+        frame.lanes[0].runoff_publication_cumulative_length_m = 4.0;
+        frame.lanes[0].runoff_publication_ofe_length_m = 1.0;
+        let lane = frame.lanes[0].clone();
+        let input = DirectPublicationDayInput::calendar_only(calendar());
+        let mut reconstructed = None;
+        DirectFrameExecutor::new(DirectExecutorMode::ShadowOnly)
+            .run_publication_stream_with_interleaved_day_inputs_and_day_frames(
+                &mut frame,
+                DirectPublicationRunMetadata {
+                    run_name: "cqr_row_reconstruction".to_string(),
+                    runtime_selection: "direct".to_string(),
+                    output_policy: "test".to_string(),
+                },
+                |_, _, _| Ok(input.clone()),
+                |_, produced_day| {
+                    let mut day = produced_day.clone();
+                    day.normalization.precipitation_m = 0.011;
+                    day.normalization.surface_transfer_m = 0.009;
+                    day.normalization.lateral_transfer_m = 0.010;
+                    day.liquid_input.liquid_input_m = 0.013;
+                    day.interception_m = 0.002;
+                    day.hydrology_projection.q_runoff_m = 0.004;
+                    day.hydrology_projection.q_ofe_m = 0.006;
+                    day.hydrology_projection.plant_transpiration_m = 0.003;
+                    day.hydrology_projection.soil_evaporation_m = 0.005;
+                    day.hydrology_projection.residue_evaporation_m = 0.007;
+                    day.hydrology_projection.evapotranspiration_m = 0.015;
+                    day.hydrology_projection.deep_percolation_m = 0.008;
+                    day.hydrology_projection.lateral_flow_m = 0.007;
+                    day.hydrology_projection.tile_drainage_m = 0.006;
+                    day.hydrology_projection.total_soil_m = 0.021;
+                    day.hydrology_projection.soil_water_total_m = 0.019;
+                    day.hydrology_projection.frozen_soil_water_m = 0.001;
+                    day.hydrology_projection.frost_depth_m = 0.012;
+                    day.hydrology_projection.snow_water_m = 0.014;
+                    day.winter_column.snow.runtime_depth_m = 0.016;
+                    day.groundwater_output = DirectGroundwaterDayOutput {
+                        enabled: true,
+                        recharge_m3: 1.0,
+                        storage_before_m3: 10.0,
+                        storage_after_m3: 8.0,
+                        storage_delta_m3: -2.0,
+                        baseflow_m3: 3.0,
+                        deep_seepage_m3: 5.0,
+                        baseflow_threshold_area_ha: Some(0.01),
+                    };
+                    day.runoff_shadow_projection
+                        .as_mut()
+                        .expect("runoff producer")
+                        .q_runoff_m = 0.004;
+                    reconstructed = Some(
+                        DirectPublicationDayRow::from_day_frame(&day, &input, &lane)
+                            .expect("distinct accepted row"),
+                    );
+                    Ok(())
+                },
+            )
+            .expect("producer stream for row reconstruction");
+        let row = reconstructed.expect("reconstructed row");
+        assert!((row.climate.precipitation_mm - 11.0).abs() < f64::EPSILON);
+        assert!((row.liquid_input.rm_mm - 15.0).abs() < f64::EPSILON);
+        assert!((row.runoff.q_mm - 2.0).abs() < f64::EPSILON);
+        assert!((row.runoff.qofe_mm - 2.0).abs() < f64::EPSILON);
+        assert!((row.runoff.runvol_m3 - 2.4).abs() < 1.0e-12);
+        assert!((row.subsurface.latqcc_mm - 7.0).abs() < f64::EPSILON);
+        assert!((row.subsurface.sbrunv_m3 - 1.4).abs() < 1.0e-12);
+        assert!((row.subsurface.groundwater_baseflow_mm - 15.0).abs() < f64::EPSILON);
+        assert!((row.subsurface.groundwater_deep_seepage_mm - 25.0).abs() < f64::EPSILON);
+        assert!((row.storage.total_soil_mm - 21.0).abs() < f64::EPSILON);
+        assert!((row.storage.soil_water_total_mm - 19.0).abs() < f64::EPSILON);
+        assert!((row.storage.snow_depth_mm - 16.0).abs() < f64::EPSILON);
+        let rejected_q_volume_m3 = row.runoff.q_mm * 0.001 * row.area_m2;
+        assert!((row.runoff.runvol_m3 - rejected_q_volume_m3).abs() > 1.0);
+        assert!((row.subsurface.groundwater_baseflow_m3 - row.subsurface.sbrunv_m3).abs() > 1.0);
+        assert!((row.storage.total_soil_mm - row.storage.soil_water_total_mm).abs() > 1.0);
     }
 }
