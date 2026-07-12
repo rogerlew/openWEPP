@@ -27,3 +27,23 @@ the generic tolerance helper or any formula. The seven DC conversion criteria
 impact) all pass.
 
 Disposition: `PASS` to production correction inside the declared envelope.
+
+## In-Execution Envelope Amendment
+
+The strict-positive correction passed all eight HB-01 tests but made the shared
+profile expose `r7g_zero_upstream_lane_publishes_no_erosion_inflow_intake`:
+R7D6 invoked pointwise Erod13 with authoritative `q_runoff_m = 0`, producing the
+new correct strict-positive error instead of the contract-authorized inactive
+event. `SC-SED-001` expressly allows no-runoff erosion inactivity and requires
+positive drivers only when erosion computation is invoked.
+
+Two independent reviewers accept a same-file envelope amendment. Both require
+an exact equality gate, never `<=`, tolerance, or passby logic; malformed runoff
+must still reach validation, and hourly/inter-OFE continuity must not be gated.
+One reviewer proposed gating any zero pointwise hydrology scalar, while the
+other limited approval to the reproduced `q_runoff_m == 0.0` mechanism and
+flagged duration policy as separate authority. The binding disagreement default
+selects the narrower runoff-only gate. No formula, generic helper, or continuity
+activation changes.
+
+Disposition: `PASS` to the amended bounded correction.
