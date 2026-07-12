@@ -28,7 +28,7 @@ classification records. It never authorizes one ten-module implementation diff.
 - [x] (2026-07-11 UTC) Complete dual target-selection/eligibility review for all ten modules.
 - [x] (2026-07-11 UTC) Execute HA-01 through reviewed `MODULE-PASS` checkpoint.
 - [x] (2026-07-11 UTC) Execute HA-02 through reviewed `MODULE-PASS` checkpoint.
-- [ ] Execute or disposition HA-03 through its terminal record.
+- [x] (2026-07-11 UTC) Execute HA-03 through reviewed `MODULE-PASS` checkpoint.
 - [ ] Execute or disposition HA-04 through its terminal record.
 - [ ] Execute or disposition HA-05 through its terminal record.
 - [ ] Execute or disposition HA-06 through its terminal record.
@@ -124,9 +124,11 @@ verification language retained below for provenance. For HA-02 through HA-10,
 write one compact record under
 `cqr-pre-integration-campaign-evidence/ha/modules/`, run focused tests and
 focused module/crate coverage/CRAP, obtain one independent review, and commit
-the checkpoint before editing the next module. HA-01's already-created scaffold
-is retained as its module record; it does not require further workspace metric
-reruns or verification agents before checkpointing.
+the checkpoint before editing the next module. Focused coverage executes the
+instrumented suite once and emits LCOV plus JSON from that shared profile as
+specified by the binding contract. HA-01's already-created scaffold is retained
+as its module record; it does not require further workspace metric reruns or
+verification agents before checkpointing.
 
 After every third checkpoint, run the workspace quick profile. Run exact
 workspace LCOV/JSON/CRAP, the non-target ratchet, formatting, workspace Clippy,

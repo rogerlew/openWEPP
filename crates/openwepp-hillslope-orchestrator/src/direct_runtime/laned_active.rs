@@ -802,6 +802,53 @@ fn laned_active_step_trace_from_solver(
     }
 }
 
+struct LanedActiveDynamicOperands {
+    leaf_area_index: f64,
+    canopy_height_m: f64,
+}
+
+fn laned_active_dynamic_operands(
+    day_frame: &DirectDayFrame,
+) -> Result<LanedActiveDynamicOperands, DirectRuntimeError> {
+    let leaf_area_index = day_frame.evapotranspiration_compute_inputs.leaf_area_index;
+    validate_finite("laned_active.leaf_area_index", leaf_area_index)?;
+    validate_nonnegative_direct_m("laned_active.leaf_area_index", leaf_area_index)?;
+    let canopy_height_m = day_frame.evapotranspiration_compute_inputs.canopy_height_m;
+    validate_finite("laned_active.canopy_height_m", canopy_height_m)?;
+    validate_nonnegative_direct_m("laned_active.canopy_height_m", canopy_height_m)?;
+    let canopy_height_m = match canopy_height_m {
+        value if value > 0.0 => value,
+        _ if leaf_area_index > 0.0 => {
+            return Err(DirectRuntimeError::DirectKernelGuardFailure {
+                phase: "laned_active_rev21_operands",
+                detail: format!(
+                    "lane {} day {} has LAI {leaf_area_index} > 0 with missing/non-positive post-growth canhgt (rev-21/rev-36 fail-closed)",
+                    day_frame.lane_index + 1,
+                    day_frame.day_index + 1
+                ),
+            });
+        }
+        value => value,
+    };
+    for (hour, rainfall_m) in day_frame.wb14_hourly_rainfall_m.iter().enumerate() {
+        if !rainfall_m.is_finite() || *rainfall_m < 0.0 {
+            return Err(DirectRuntimeError::DirectKernelGuardFailure {
+                phase: "laned_active_rev21_operands",
+                detail: format!(
+                    "lane {} day {} hourly rainfall slot {} invalid ({rainfall_m})",
+                    day_frame.lane_index + 1,
+                    day_frame.day_index + 1,
+                    hour + 1
+                ),
+            });
+        }
+    }
+    Ok(LanedActiveDynamicOperands {
+        leaf_area_index,
+        canopy_height_m,
+    })
+}
+
 /// Route one active lane-day: rev-21 operand validation, the shared
 /// single-OFE cascade routine, the D13 erosion producer flip, the day-frame
 /// evidence record, and the day-books fold. Returns the conservative
@@ -839,39 +886,7 @@ pub(crate) fn laned_active_route_lane(
 
     // Rev-21/36 dynamic operands from the live post-growth day frame (same
     // guards as the shadow builder, typed).
-    let leaf_area_index = day_frame.evapotranspiration_compute_inputs.leaf_area_index;
-    validate_finite("laned_active.leaf_area_index", leaf_area_index)?;
-    validate_nonnegative_direct_m("laned_active.leaf_area_index", leaf_area_index)?;
-    let canopy_height_m = day_frame.evapotranspiration_compute_inputs.canopy_height_m;
-    validate_finite("laned_active.canopy_height_m", canopy_height_m)?;
-    validate_nonnegative_direct_m("laned_active.canopy_height_m", canopy_height_m)?;
-    let canopy_height_m = match canopy_height_m {
-        value if value > 0.0 => value,
-        _ if leaf_area_index > 0.0 => {
-            return Err(DirectRuntimeError::DirectKernelGuardFailure {
-                phase: "laned_active_rev21_operands",
-                detail: format!(
-                    "lane {} day {} has LAI {leaf_area_index} > 0 with missing/non-positive post-growth canhgt (rev-21/rev-36 fail-closed)",
-                    day_frame.lane_index + 1,
-                    day_frame.day_index + 1
-                ),
-            });
-        }
-        value => value,
-    };
-    for (hour, rainfall_m) in day_frame.wb14_hourly_rainfall_m.iter().enumerate() {
-        if !rainfall_m.is_finite() || *rainfall_m < 0.0 {
-            return Err(DirectRuntimeError::DirectKernelGuardFailure {
-                phase: "laned_active_rev21_operands",
-                detail: format!(
-                    "lane {} day {} hourly rainfall slot {} invalid ({rainfall_m})",
-                    day_frame.lane_index + 1,
-                    day_frame.day_index + 1,
-                    hour + 1
-                ),
-            });
-        }
-    }
+    let dynamic_operands = laned_active_dynamic_operands(day_frame)?;
 
     // Mesh: rev-20 static friction operands + rev-21 dynamic canopy state.
     let mut cell = CellParameters::bare(
@@ -882,8 +897,8 @@ pub(crate) fn laned_active_route_lane(
     cell.element_tip_height_m = lane_config.roughness_element_height_m;
     cell.roughness_concentration = lane_config.roughness_concentration;
     cell.vegetation_drag_coefficient = lane_config.vegetation_drag_coefficient;
-    cell.leaf_area_index = leaf_area_index;
-    cell.canopy_height_m = canopy_height_m;
+    cell.leaf_area_index = dynamic_operands.leaf_area_index;
+    cell.canopy_height_m = dynamic_operands.canopy_height_m;
     let active_cells = mesh_policy.cell_count_for_length_m(lane_config.slplen_m)?;
     let segment = CascadeSegment {
         mesh: KinematicWaveMesh::uniform(lane_config.slplen_m, active_cells, cell),
@@ -1264,6 +1279,40 @@ mod tests {
         }
     }
 
+    fn day_with_lane_source(q_runoff_m: f64) -> DirectDayFrame {
+        let mut day = vegetated_day_with_post_growth_canhgt(0.2);
+        day.runoff_shadow_projection = Some(super::super::DirectRunoffShadowProjection {
+            lane_index: 0,
+            day_index: 0,
+            liquid_input_m: q_runoff_m,
+            runon_input_m: 0.0,
+            cumulative_infiltration_m: 0.0,
+            depression_storage_delta_m: 0.0,
+            surface_saturation_runoff_m: 0.0,
+            partition_runoff_m: q_runoff_m,
+            q_runoff_m,
+            closure_residual_m: 0.0,
+        });
+        day.subsurface_compute_shadow_projection =
+            Some(super::super::DirectSubsurfaceComputeShadowProjection {
+                lane_index: 0,
+                day_index: 0,
+                soil_water_before_m: 0.0,
+                soil_water_after_m: 0.0,
+                lateral_flow_m: 0.0,
+                tile_drainage_m: 0.0,
+                subsurface_loss_m: 0.0,
+                lateral_target_m: 0.0,
+                drainage_target_m: 0.0,
+                lateral_capacity_m: 0.0,
+                hourly_lateral_carry_m: [0.0; SEAM_HOUR_BINS],
+                hourly_saturation_carry_m: [0.0; SEAM_HOUR_BINS],
+                layer_state_after: Vec::new(),
+                lateral_layer_withdrawal_m: Vec::new(),
+            });
+        day
+    }
+
     fn routing_result_with_bins(bins_m2: Vec<f64>, bin_dt_s: f64) -> RoutingResult {
         let spans = vec![bin_dt_s; bins_m2.len()];
         RoutingResult {
@@ -1278,6 +1327,422 @@ mod tests {
             outlet_bin_spans_s: spans,
             step_trace: None,
         }
+    }
+
+    fn active_config() -> DirectLanedActiveConfig {
+        DirectLanedActiveConfig {
+            lanes: vec![lane_config_with_static_canhgt(Some(0.2))],
+            mesh_policy: DirectLanedActiveMeshPolicy::production_default(),
+            max_dt_s: LANED_ACTIVE_MAX_DT_S,
+            trace_enabled: false,
+            trace_detail_filter: None,
+            step_trace_enabled: false,
+        }
+    }
+
+    #[test]
+    fn lane_source_binds_upstreams_numeric_guards_and_weighted_depths() {
+        let day = vegetated_day_with_post_growth_canhgt(0.2);
+        assert!(matches!(
+            laned_active_lane_source(&day),
+            Err(DirectRuntimeError::MissingDirectUpstream {
+                upstream: "laned_active R4A runoff partition producer"
+            })
+        ));
+
+        let mut day = day_with_lane_source(f64::NAN);
+        assert!(matches!(
+            laned_active_lane_source(&day),
+            Err(DirectRuntimeError::NonFiniteDirectValue {
+                field: "laned_active.q_runoff_m"
+            })
+        ));
+        day.runoff_shadow_projection
+            .as_mut()
+            .expect("runoff projection")
+            .q_runoff_m = -1.0e-3;
+        assert!(matches!(
+            laned_active_lane_source(&day),
+            Err(DirectRuntimeError::NegativeDirectValue {
+                field: "laned_active.q_runoff_m"
+            })
+        ));
+
+        let mut day = day_with_lane_source(0.024);
+        day.wb14_hourly_excess_m[3] = 0.024;
+        let source = laned_active_lane_source(&day).expect("weighted source");
+        assert_eq!(source.depths_m[3].to_bits(), 0.024_f64.to_bits());
+        assert!(!source.uniform_shape);
+        assert_eq!(
+            source.supply_reconstruction_rel.to_bits(),
+            0.0_f64.to_bits()
+        );
+
+        let uniform =
+            laned_active_lane_source(&day_with_lane_source(0.024)).expect("uniform residual class");
+        assert!(uniform.uniform_shape);
+        assert!(
+            uniform
+                .depths_m
+                .iter()
+                .all(|depth| depth.to_bits() == (0.024_f64 / 24.0).to_bits())
+        );
+    }
+
+    #[test]
+    fn groundwater_summary_books_enabled_day_and_all_fluxes() {
+        let mut summary = DirectLanedActiveRunSummary::default();
+        laned_active_record_groundwater(
+            &mut summary,
+            super::super::DirectGroundwaterDayOutput {
+                enabled: true,
+                recharge_m3: 1.0,
+                storage_before_m3: 2.0,
+                storage_after_m3: 3.0,
+                storage_delta_m3: 1.0,
+                baseflow_m3: 4.0,
+                deep_seepage_m3: 5.0,
+                baseflow_threshold_area_ha: Some(6.0),
+            },
+        );
+        assert_eq!(summary.groundwater_enabled_days, 1);
+        assert_eq!(
+            summary.total_groundwater_recharge_m3.to_bits(),
+            1.0_f64.to_bits()
+        );
+        assert_eq!(
+            summary.total_groundwater_baseflow_m3.to_bits(),
+            4.0_f64.to_bits()
+        );
+        assert_eq!(
+            summary.total_groundwater_deep_seepage_m3.to_bits(),
+            5.0_f64.to_bits()
+        );
+    }
+
+    #[test]
+    fn mesh_policy_defaults_summaries_and_rejects_invalid_variants() {
+        assert_eq!(
+            DirectLanedActiveMeshPolicy::default(),
+            DirectLanedActiveMeshPolicy::production_default()
+        );
+        assert_eq!(
+            DirectLanedActiveMeshPolicySummary::default(),
+            DirectLanedActiveMeshPolicy::production_default().summary()
+        );
+        assert_eq!(
+            DirectLanedActiveMeshPolicy::FixedCells { cells: 10 }.summary(),
+            DirectLanedActiveMeshPolicySummary {
+                mode: "fixed_cells",
+                fixed_cells: Some(10),
+                target_dx_m: None,
+                min_cells: LANED_ACTIVE_MESH_MIN_CELLS,
+                max_cells: LANED_ACTIVE_MESH_MAX_CELLS,
+            }
+        );
+
+        for cells in [0, LANED_ACTIVE_MESH_MAX_CELLS + 1] {
+            assert!(
+                DirectLanedActiveMeshPolicy::FixedCells { cells }
+                    .validate()
+                    .is_err()
+            );
+        }
+        for policy in [
+            DirectLanedActiveMeshPolicy::TargetDx {
+                target_dx_m: f64::NAN,
+                min_cells: LANED_ACTIVE_MESH_MIN_CELLS,
+                max_cells: LANED_ACTIVE_MESH_MAX_CELLS,
+            },
+            DirectLanedActiveMeshPolicy::TargetDx {
+                target_dx_m: 5.0,
+                min_cells: LANED_ACTIVE_MESH_MIN_CELLS - 1,
+                max_cells: LANED_ACTIVE_MESH_MAX_CELLS,
+            },
+        ] {
+            assert!(policy.validate().is_err());
+        }
+        assert!(
+            DirectLanedActiveMeshPolicy::production_default()
+                .cell_count_for_length_m(0.0)
+                .is_err()
+        );
+        assert_eq!(
+            DirectLanedActiveMeshPolicy::FixedCells { cells: 11 }
+                .cell_count_for_length_m(30.0)
+                .expect("fixed cell count"),
+            11
+        );
+    }
+
+    #[test]
+    fn active_config_validation_preserves_guard_priority_and_trace_dependencies() {
+        let mut config = active_config();
+        assert!(matches!(
+            config.validate(2),
+            Err(DirectRuntimeError::FrameLaneCountMismatch { .. })
+        ));
+        config.lanes[0].slplen_m = 0.0;
+        assert!(matches!(
+            config.validate(1),
+            Err(DirectRuntimeError::DirectDomainViolation {
+                field: "laned_active.config.geometry"
+            })
+        ));
+
+        config = active_config();
+        config.max_dt_s = LANED_ACTIVE_MAX_DT_S + 1.0;
+        assert!(matches!(
+            config.validate(1),
+            Err(DirectRuntimeError::DirectDomainViolation {
+                field: "laned_active.max_dt_s"
+            })
+        ));
+        config = active_config();
+        config.trace_detail_filter = Some(DirectLanedActiveTraceDetailFilter {
+            day_index: 2,
+            lane_index: 3,
+        });
+        assert!(matches!(
+            config.validate(1),
+            Err(DirectRuntimeError::DirectDomainViolation {
+                field: "laned_active.trace_detail_filter"
+            })
+        ));
+        config.trace_enabled = true;
+        config.step_trace_enabled = true;
+        config.validate(1).expect("valid detailed step trace");
+        config.trace_detail_filter = None;
+        assert!(matches!(
+            config.validate(1),
+            Err(DirectRuntimeError::DirectDomainViolation {
+                field: "laned_active.step_trace_enabled"
+            })
+        ));
+    }
+
+    #[test]
+    fn trace_filter_and_solver_trace_conversions_preserve_indices_and_width_basis() {
+        let filter = DirectLanedActiveTraceDetailFilter {
+            day_index: 2,
+            lane_index: 3,
+        };
+        assert!(filter.matches(2, 3));
+        assert!(!filter.matches(3, 2));
+
+        let limiter = KinematicWaveStageLimiterTrace {
+            reductions: 4,
+            max_reduction_m2_s: 1.5,
+            face_index: 6,
+            face_x_m: 7.5,
+        };
+        let tvd = KinematicWaveTvdTrace {
+            scale: 0.5,
+            max_abs_delta_m: 0.25,
+            cell_index: 8,
+            cell_center_x_m: 9.5,
+            signed_delta_m: -0.125,
+        };
+        let converted_limiter = laned_active_stage_trace_from_solver(limiter, 2.0);
+        assert_eq!(
+            converted_limiter.max_reduction_m3_s.to_bits(),
+            3.0_f64.to_bits()
+        );
+        assert_eq!(converted_limiter.face_index, 6);
+        assert_eq!(
+            laned_active_tvd_trace_from_solver(tvd)
+                .signed_delta_m
+                .to_bits(),
+            (-0.125_f64).to_bits()
+        );
+
+        let record = KinematicWaveStepTraceRecord {
+            step_index: 1,
+            t_start_s: 2.0,
+            t_end_s: 5.0,
+            dt_s: 3.0,
+            max_courant: 0.4,
+            max_courant_cell_index: 2,
+            max_courant_cell_center_x_m: 2.5,
+            q_up_m2_s: 1.0,
+            source_m2: 2.0,
+            upstream_inflow_m2: 3.0,
+            outflow_m2: 4.0,
+            storage_before_m2: 5.0,
+            storage_after_m2: 6.0,
+            clamp_injected_m2: 7.0,
+            pred_out_face_m2_s: 8.0,
+            corr_out_face_m2_s: 9.0,
+            outlet_depth_m: 10.0,
+            outlet_unit_discharge_m2_s: 11.0,
+            predictor_limiter: limiter,
+            corrector_limiter: limiter,
+            tvd,
+        };
+        let converted = laned_active_step_trace_from_solver(&record, 2.0);
+        assert_eq!(converted.source_m3.to_bits(), 4.0_f64.to_bits());
+        assert_eq!(converted.outflow_m3.to_bits(), 8.0_f64.to_bits());
+        assert_eq!(
+            converted.outlet_discharge_m3_s.to_bits(),
+            22.0_f64.to_bits()
+        );
+        assert_eq!(
+            converted.predictor_limiter.max_reduction_m3_s.to_bits(),
+            3.0_f64.to_bits()
+        );
+        assert_eq!(converted.tvd.cell_index, 8);
+    }
+
+    #[test]
+    fn no_dc01_guard_and_route_guard_priority_fail_closed() {
+        let mut day = vegetated_day_with_post_growth_canhgt(0.2);
+        day.runon_carry_downstream_operands.runon_input_m = 1.0e-3;
+        assert!(matches!(
+            laned_active_assert_no_dc01_surface_feed(&day),
+            Err(DirectRuntimeError::DirectKernelGuardFailure {
+                phase: "laned_active_dc01_double_feed_guard",
+                ..
+            })
+        ));
+
+        let mut books = DirectLanedActiveDayBooks::default();
+        assert!(matches!(
+            laned_active_route_lane(
+                &mut day,
+                &lane_config_with_static_canhgt(Some(0.2)),
+                &DirectLanedActiveMeshPolicy::production_default(),
+                0.0,
+                None,
+                3600.0,
+                &mut books,
+                &dry_lane_source(),
+                0.0,
+                false,
+                false,
+            ),
+            Err(DirectRuntimeError::DirectDomainViolation {
+                field: "laned_active.area_m2"
+            })
+        ));
+        assert_eq!(
+            books.max_supply_reconstruction_rel.to_bits(),
+            0.0_f64.to_bits()
+        );
+
+        assert!(matches!(
+            laned_active_route_lane(
+                &mut day,
+                &lane_config_with_static_canhgt(Some(0.2)),
+                &DirectLanedActiveMeshPolicy::production_default(),
+                1.0,
+                None,
+                3600.0,
+                &mut books,
+                &dry_lane_source(),
+                0.0,
+                false,
+                false,
+            ),
+            Err(DirectRuntimeError::DirectDomainViolation {
+                field: "laned_active.max_dt_s"
+            })
+        ));
+    }
+
+    #[test]
+    fn active_route_validates_dynamic_operands_in_order() {
+        let route = |day: &mut DirectDayFrame| {
+            laned_active_route_lane(
+                day,
+                &lane_config_with_static_canhgt(Some(0.2)),
+                &DirectLanedActiveMeshPolicy::production_default(),
+                1.0,
+                None,
+                3600.0,
+                &mut DirectLanedActiveDayBooks::default(),
+                &dry_lane_source(),
+                LANED_ACTIVE_MAX_DT_S,
+                false,
+                false,
+            )
+        };
+        let mut day = vegetated_day_with_post_growth_canhgt(f64::NAN);
+        day.evapotranspiration_compute_inputs.leaf_area_index = -1.0;
+        assert!(matches!(
+            route(&mut day),
+            Err(DirectRuntimeError::NegativeDirectValue {
+                field: "laned_active.leaf_area_index"
+            })
+        ));
+
+        let mut day = vegetated_day_with_post_growth_canhgt(0.2);
+        day.evapotranspiration_compute_inputs.leaf_area_index = f64::NAN;
+        assert!(matches!(
+            route(&mut day),
+            Err(DirectRuntimeError::NonFiniteDirectValue {
+                field: "laned_active.leaf_area_index"
+            })
+        ));
+
+        let mut day = vegetated_day_with_post_growth_canhgt(f64::NAN);
+        assert!(matches!(
+            route(&mut day),
+            Err(DirectRuntimeError::NonFiniteDirectValue {
+                field: "laned_active.canopy_height_m"
+            })
+        ));
+
+        let mut day = vegetated_day_with_post_growth_canhgt(-0.2);
+        assert!(matches!(
+            route(&mut day),
+            Err(DirectRuntimeError::NegativeDirectValue {
+                field: "laned_active.canopy_height_m"
+            })
+        ));
+
+        let mut day = vegetated_day_with_post_growth_canhgt(0.2);
+        day.wb14_hourly_rainfall_m[3] = -1.0e-3;
+        day.wb14_hourly_rainfall_m[4] = f64::NAN;
+        assert!(matches!(
+            route(&mut day),
+            Err(DirectRuntimeError::DirectKernelGuardFailure {
+                phase: "laned_active_rev21_operands",
+                detail,
+            })
+            if detail.contains("slot 4 invalid (-0.001)")
+        ));
+    }
+
+    #[test]
+    fn active_route_emits_trace_detail_and_step_trace_together() {
+        let mut day = vegetated_day_with_post_growth_canhgt(0.2);
+        let mut books = DirectLanedActiveDayBooks::default();
+        laned_active_route_lane(
+            &mut day,
+            &lane_config_with_static_canhgt(Some(0.2)),
+            &DirectLanedActiveMeshPolicy::production_default(),
+            1.0,
+            None,
+            1.0,
+            &mut books,
+            &dry_lane_source(),
+            1.0,
+            true,
+            true,
+        )
+        .expect("trace-enabled dry route");
+        let detail = day
+            .laned_active_routing
+            .as_ref()
+            .and_then(|routing| routing.trace_detail.as_ref())
+            .expect("trace detail");
+        assert_eq!(detail.mesh_cell_count, LANED_ACTIVE_MESH_MIN_CELLS);
+        assert!(
+            detail
+                .step_trace
+                .as_ref()
+                .is_some_and(|steps| !steps.is_empty())
+        );
     }
 
     #[test]

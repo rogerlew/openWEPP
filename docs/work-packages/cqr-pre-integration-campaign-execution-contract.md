@@ -30,9 +30,11 @@ For each tranche:
    tranche start and once at tranche final.
 2. For each module, run only focused tests plus focused crate/module coverage
    and CRAP sufficient to prove its tier, function floors, obligations, and
-   target rows. One LCOV and one JSON capture are allowed when both formats are
-   required; never repeat a workspace capture merely to make unrelated flaky
-   coverage identical.
+   target rows. Execute the instrumented focused suite once with
+   `cargo llvm-cov ... --no-report`, then emit LCOV and JSON with two
+   `cargo llvm-cov report` commands from that same profile. Do not rerun the
+   suite merely to obtain the second format, and never repeat a workspace
+   capture merely to make unrelated flaky coverage identical.
 3. Run `cargo fmt --check`, workspace Clippy, full-profile nextest, and deny once
    at tranche final. During module work use focused tests and, after every three
    module checkpoints, `cargo nextest run --workspace --profile quick`.
@@ -65,6 +67,19 @@ checkpoint before editing the next target. `MODULE-PASS` means the focused
 increment is eligible to enter tranche-final validation; it is not terminal
 campaign or merge readiness. `MODULE-HOLD` requires a named authority or scope
 boundary and blocks the tranche transition.
+
+The default focused measurement shape is:
+
+    cargo llvm-cov clean -p <package>
+    cargo llvm-cov -p <package> --lib --no-report
+    cargo llvm-cov report -p <package> --lcov --output-path <module>.lcov
+    cargo llvm-cov report -p <package> --json --output-path <module>.json
+    cargo crap --workspace --lcov <module>.lcov --min 0 \
+      --format json --output <module>-crap.json
+
+The LCOV and JSON hashes must therefore describe the same test execution and
+source state. A package that cannot reuse one profile records the concrete tool
+limitation before using a second instrumented execution.
 
 ### Final Ratchet And Flaky Coverage
 
