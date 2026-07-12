@@ -370,11 +370,12 @@ impl DirectFrameExecutor {
                         })?;
                 let row = DirectPublicationDayRow::from_day_frame(&day_frame, &day_input, lane)?;
                 consume_row(&row, &day_frame)?;
-                row_count = row_count.checked_add(1).ok_or(
-                    DirectRuntimeError::DirectDomainViolation {
-                        field: "publication.row_count",
-                    },
-                )?;
+                row_count =
+                    row_count
+                        .checked_add(1)
+                        .ok_or(DirectRuntimeError::DirectDomainViolation {
+                            field: "publication.row_count",
+                        })?;
                 if Self::publish_dynamic_transfer_to_downstream(frame, &day_frame)? {
                     counters.record_dynamic_transfer_publication();
                 }
@@ -423,6 +424,266 @@ impl DirectFrameExecutor {
     /// lane in cascade order, flips the D13 erosion authority to the routed
     /// shape, runs the erosion/ledger tail, publishes rows, and enforces the
     /// day-closure hard-fails.
+    fn validate_laned_active_topology(frame: &DirectRunFrame) -> Result<(), DirectRuntimeError> {
+        for (lane_index, lane) in frame.lanes.iter().enumerate() {
+            let expected_downstream = if lane_index + 1 < frame.lanes.len() {
+                u32::try_from(lane_index + 2)
+                    .map_err(|_| DirectRuntimeError::LaneIdOverflow { lane_index })?
+            } else {
+                0
+            };
+            if lane.downstream_lane_id != expected_downstream {
+                return Err(DirectRuntimeError::InvalidLaneTopology {
+                    lane_index,
+                    lane_id: lane.lane_id,
+                    upstream_lane_id: lane.upstream_lane_id,
+                    downstream_lane_id: lane.downstream_lane_id,
+                });
+            }
+        }
+        Ok(())
+    }
+
+    fn run_laned_active_hydrology_day<F>(
+        frame: &mut DirectRunFrame,
+        day_index: usize,
+        lane_count: usize,
+        counters: &mut DirectExecutionCounters,
+        build_day_input: &mut F,
+    ) -> Result<
+        (
+            Vec<DirectDayFrame>,
+            Vec<DirectPublicationDayInput>,
+            DirectGroundwaterDayOutput,
+        ),
+        DirectRuntimeError,
+    >
+    where
+        F: FnMut(
+            &DirectRunFrame,
+            usize,
+            usize,
+        ) -> Result<DirectPublicationDayInput, DirectRuntimeError>,
+    {
+        let mut day_frames: Vec<DirectDayFrame> = Vec::with_capacity(lane_count);
+        let mut day_inputs: Vec<DirectPublicationDayInput> = Vec::with_capacity(lane_count);
+        for lane_index in 0..lane_count {
+            let day_input = build_day_input(frame, day_index, lane_index)?;
+            let mut day_frame = frame.seed_day_frame(lane_index, day_index)?;
+            Self::apply_publication_day_input(&mut day_frame, &day_input)?;
+            Self::run_day_spans_hydrology(
+                &mut day_frame,
+                counters,
+                day_input.winter_frost_compute_inputs.as_ref(),
+            )
+            .map_err(|source| {
+                Self::day_execution_failure(&day_frame, lane_index, day_index, &source)
+            })?;
+            if Self::publish_dynamic_transfer_to_downstream_with_ownership(frame, &day_frame, true)?
+            {
+                counters.record_dynamic_transfer_publication();
+            }
+            day_inputs.push(day_input);
+            day_frames.push(day_frame);
+        }
+
+        let groundwater_output = frame
+            .run_groundwater_day_from_lane_frames(day_index, &mut day_frames)
+            .map_err(|source| {
+                let day_frame = &day_frames[0];
+                Self::day_execution_failure(day_frame, 0, day_index, &source)
+            })?;
+        Ok((day_frames, day_inputs, groundwater_output))
+    }
+
+    fn laned_active_lane_sources(
+        day_frames: &[DirectDayFrame],
+        day_index: usize,
+    ) -> Result<(Vec<laned_active::LanedActiveLaneSource>, Option<f64>), DirectRuntimeError> {
+        let mut last_active_hour: Option<usize> = None;
+        let mut lane_sources = Vec::with_capacity(day_frames.len());
+        for (lane_index, day_frame) in day_frames.iter().enumerate() {
+            let source =
+                laned_active::laned_active_lane_source(day_frame).map_err(|source_error| {
+                    Self::day_execution_failure(day_frame, lane_index, day_index, &source_error)
+                })?;
+            for (hour, depth) in source.depths_m.iter().enumerate() {
+                if *depth > 0.0 {
+                    last_active_hour =
+                        Some(last_active_hour.map_or(hour, |current| current.max(hour)));
+                }
+            }
+            lane_sources.push(source);
+        }
+        Ok((
+            lane_sources,
+            last_active_hour.map(laned_active::laned_active_window_s),
+        ))
+    }
+
+    fn mark_laned_active_zero_source_lane(
+        day_frame: &mut DirectDayFrame,
+        lane_index: usize,
+        day_index: usize,
+        lane_count: usize,
+        area_m2: f64,
+        trace_enabled: bool,
+        books: &mut laned_active::DirectLanedActiveDayBooks,
+    ) -> Result<(), DirectRuntimeError> {
+        laned_active::laned_active_assert_no_dc01_surface_feed(day_frame).map_err(|source| {
+            Self::day_execution_failure(day_frame, lane_index, day_index, &source)
+        })?;
+        day_frame.erosion_inputs.hydrograph_shape_authority =
+            DirectErosionHydrographShapeAuthority::RoutedHydrograph;
+        day_frame.erosion_inputs.routed_hydrograph_runoff_fraction = Some(Box::new([0.0; 24]));
+        if trace_enabled {
+            day_frame.laned_active_routing =
+                Some(Box::new(laned_active::DirectLanedActiveDayRouting {
+                    source_m3: 0.0,
+                    outlet_m3: 0.0,
+                    mesh_end_storage_m3: 0.0,
+                    clamp_m3: 0.0,
+                    tail_fold_m3: 0.0,
+                    routed_weights: [0.0; 24],
+                    uniform_shape: false,
+                    erosion_source_shape_degenerate: false,
+                    trace_detail: None,
+                }));
+        }
+        if lane_index + 1 == lane_count {
+            books.latqcc_outlet_m3 = day_frame
+                .subsurface_compute_shadow_projection
+                .as_ref()
+                .map_or(0.0, |subsurface| subsurface.lateral_flow_m * area_m2);
+        }
+        Ok(())
+    }
+
+    fn route_laned_active_day(
+        frame: &DirectRunFrame,
+        config: &laned_active::DirectLanedActiveConfig,
+        day_frames: &mut [DirectDayFrame],
+        lane_sources: &[laned_active::LanedActiveLaneSource],
+        day_index: usize,
+        window_s: Option<f64>,
+    ) -> Result<laned_active::DirectLanedActiveDayBooks, DirectRuntimeError> {
+        let lane_count = frame.identity.lane_count;
+        let mut books = laned_active::DirectLanedActiveDayBooks::default();
+        let mut upstream: Option<crate::ofe_routing::cascade::UpstreamHandoff> = None;
+        for lane_index in 0..lane_count {
+            let area_m2 = frame
+                .lanes
+                .get(lane_index)
+                .ok_or(DirectRuntimeError::LaneIndexOutOfRange {
+                    lane_index,
+                    lane_count: frame.lanes.len(),
+                })?
+                .area_m2;
+            let day_frame = &mut day_frames[lane_index];
+            if let Some(window_s) = window_s {
+                let trace_detail = config
+                    .trace_detail_filter
+                    .is_some_and(|filter| filter.matches(day_index, lane_index));
+                let trace_steps = trace_detail && config.step_trace_enabled;
+                let handoff = laned_active::laned_active_route_lane(
+                    day_frame,
+                    &config.lanes[lane_index],
+                    &config.mesh_policy,
+                    area_m2,
+                    upstream.as_ref(),
+                    window_s,
+                    &mut books,
+                    &lane_sources[lane_index],
+                    config.max_dt_s,
+                    trace_detail,
+                    trace_steps,
+                )
+                .map_err(|source| {
+                    Self::day_execution_failure(day_frame, lane_index, day_index, &source)
+                })?;
+                upstream = Some(handoff);
+            } else {
+                Self::mark_laned_active_zero_source_lane(
+                    day_frame,
+                    lane_index,
+                    day_index,
+                    lane_count,
+                    area_m2,
+                    config.trace_enabled,
+                    &mut books,
+                )?;
+            }
+        }
+        Ok(books)
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn publish_laned_active_day<S>(
+        frame: &mut DirectRunFrame,
+        day_frames: &mut [DirectDayFrame],
+        day_inputs: &[DirectPublicationDayInput],
+        books: &laned_active::DirectLanedActiveDayBooks,
+        summary: &mut laned_active::DirectLanedActiveRunSummary,
+        phase_plan: [DirectPhaseKind; DIRECT_PHASE_COUNT],
+        phase_view_count: &mut u64,
+        counters: &mut DirectExecutionCounters,
+        row_count: &mut usize,
+        consume_row: &mut S,
+    ) -> Result<(), DirectRuntimeError>
+    where
+        S: FnMut(&DirectPublicationDayRow, &DirectDayFrame) -> Result<(), DirectRuntimeError>,
+    {
+        let lane_count = frame.identity.lane_count;
+        let day_index = day_frames[0].day_index;
+        for lane_index in 0..lane_count {
+            let day_frame = &mut day_frames[lane_index];
+            day_frame
+                .erosion_inflow_intake
+                .clone_from(&frame.lanes[lane_index].erosion_inflow_intake);
+            Self::run_day_spans_erosion_and_ledger(day_frame, counters).map_err(|source| {
+                Self::day_execution_failure(day_frame, lane_index, day_index, &source)
+            })?;
+            laned_active::laned_active_record_trace(
+                summary,
+                day_frame,
+                lane_index + 1 == lane_count,
+                books.terminal_outlet_m3,
+            )
+            .map_err(|source| {
+                Self::day_execution_failure(day_frame, lane_index, day_index, &source)
+            })?;
+            for phase in phase_plan {
+                let view = day_frame.phase_view(phase);
+                let _phase = view.phase();
+                *phase_view_count += 1;
+                counters.record_phase_status(phase, Self::phase_lifecycle_status(phase));
+            }
+            let lane =
+                frame
+                    .lanes
+                    .get(lane_index)
+                    .ok_or(DirectRuntimeError::LaneIndexOutOfRange {
+                        lane_index,
+                        lane_count: frame.lanes.len(),
+                    })?;
+            let row =
+                DirectPublicationDayRow::from_day_frame(day_frame, &day_inputs[lane_index], lane)?;
+            consume_row(&row, day_frame)?;
+            *row_count =
+                row_count
+                    .checked_add(1)
+                    .ok_or(DirectRuntimeError::DirectDomainViolation {
+                        field: "publication.row_count",
+                    })?;
+            if Self::publish_erosion_inflow_to_downstream(frame, &day_frames[lane_index])? {
+                counters.record_dynamic_transfer_publication();
+            }
+            frame.commit_day_frame(&day_frames[lane_index])?;
+            counters.record_day_frame_commit();
+        }
+        Ok(())
+    }
+
     #[allow(clippy::too_many_lines)]
     fn run_laned_active_publication_stream<F, S>(
         &self,
@@ -440,32 +701,17 @@ impl DirectFrameExecutor {
         S: FnMut(&DirectPublicationDayRow, &DirectDayFrame) -> Result<(), DirectRuntimeError>,
     {
         DIRECT_AUDIT.record_publication_capture_run();
-        let config = frame
-            .laned_active
-            .clone()
-            .ok_or(DirectRuntimeError::MissingDirectUpstream {
-                upstream: "laned_active configuration",
-            })?;
+        let config =
+            frame
+                .laned_active
+                .clone()
+                .ok_or(DirectRuntimeError::MissingDirectUpstream {
+                    upstream: "laned_active configuration",
+                })?;
         config.validate(frame.identity.lane_count)?;
         // Active routing requires the linear MOFE chain in lane-index order
         // (the cascade handoff and the closure books assume it).
-        for (lane_index, lane) in frame.lanes.iter().enumerate() {
-            let expected_downstream = if lane_index + 1 < frame.lanes.len() {
-                u32::try_from(lane_index + 2).map_err(|_| {
-                    DirectRuntimeError::LaneIdOverflow { lane_index }
-                })?
-            } else {
-                0
-            };
-            if lane.downstream_lane_id != expected_downstream {
-                return Err(DirectRuntimeError::InvalidLaneTopology {
-                    lane_index,
-                    lane_id: lane.lane_id,
-                    upstream_lane_id: lane.upstream_lane_id,
-                    downstream_lane_id: lane.downstream_lane_id,
-                });
-            }
-        }
+        Self::validate_laned_active_topology(frame)?;
         let expected_row_count = frame
             .identity
             .lane_count
@@ -499,137 +745,31 @@ impl DirectFrameExecutor {
             // Phase 1: hydrology for every lane, in lane order, with the
             // SURFACE transfer suppressed (router ownership) and the LATERAL
             // transfer published unchanged.
-            let mut day_frames: Vec<DirectDayFrame> = Vec::with_capacity(lane_count);
-            let mut day_inputs: Vec<DirectPublicationDayInput> = Vec::with_capacity(lane_count);
-            for lane_index in 0..lane_count {
-                let day_input = build_day_input(frame, day_index, lane_index)?;
-                let mut day_frame = frame.seed_day_frame(lane_index, day_index)?;
-                Self::apply_publication_day_input(&mut day_frame, &day_input)?;
-                Self::run_day_spans_hydrology(
-                    &mut day_frame,
+            let (mut day_frames, day_inputs, groundwater_output) =
+                Self::run_laned_active_hydrology_day(
+                    frame,
+                    day_index,
+                    lane_count,
                     &mut counters,
-                    day_input.winter_frost_compute_inputs.as_ref(),
-                )
-                .map_err(|source| {
-                    Self::day_execution_failure(&day_frame, lane_index, day_index, &source)
-                })?;
-                if Self::publish_dynamic_transfer_to_downstream_with_ownership(
-                    frame, &day_frame, true,
-                )? {
-                    counters.record_dynamic_transfer_publication();
-                }
-                day_inputs.push(day_input);
-                day_frames.push(day_frame);
-            }
-
-            let groundwater_output = frame
-                .run_groundwater_day_from_lane_frames(day_index, &mut day_frames)
-                .map_err(|source| {
-                    let day_frame = &day_frames[0];
-                    Self::day_execution_failure(day_frame, 0, day_index, &source)
-                })?;
+                    &mut build_day_input,
+                )?;
 
             // The shared day window (rev-27 window row): last active source
             // hour over ALL lanes + the drain tail; `None` = zero-source day.
-            let mut last_active_hour: Option<usize> = None;
-            let mut lane_sources = Vec::with_capacity(lane_count);
-            for (lane_index, day_frame) in day_frames.iter().enumerate() {
-                let source =
-                    laned_active::laned_active_lane_source(day_frame).map_err(|source_error| {
-                        Self::day_execution_failure(
-                            day_frame,
-                            lane_index,
-                            day_index,
-                            &source_error,
-                        )
-                    })?;
-                for (hour, depth) in source.depths_m.iter().enumerate() {
-                    if *depth > 0.0 {
-                        last_active_hour =
-                            Some(last_active_hour.map_or(hour, |current| current.max(hour)));
-                    }
-                }
-                lane_sources.push(source);
-            }
-            let window_s = last_active_hour.map(laned_active::laned_active_window_s);
+            let (lane_sources, window_s) = Self::laned_active_lane_sources(&day_frames, day_index)?;
 
             // Phase 2a: route every lane into local day frames/books before
             // any row consumer or committed frame can observe active-routed
             // outputs. Rev 40's clamp-source guard lives in the closure below,
             // so publishing before this point would not be fail-closed.
-            let mut books = laned_active::DirectLanedActiveDayBooks::default();
-            let mut upstream: Option<crate::ofe_routing::cascade::UpstreamHandoff> = None;
-            for lane_index in 0..lane_count {
-                let area_m2 = frame
-                    .lanes
-                    .get(lane_index)
-                    .ok_or(DirectRuntimeError::LaneIndexOutOfRange {
-                        lane_index,
-                        lane_count: frame.lanes.len(),
-                    })?
-                    .area_m2;
-                let day_frame = &mut day_frames[lane_index];
-                if let Some(window_s) = window_s {
-                    let trace_detail = config.trace_detail_filter.is_some_and(|filter| {
-                        filter.matches(day_index, lane_index)
-                    });
-                    let trace_steps = trace_detail && config.step_trace_enabled;
-                    let handoff = laned_active::laned_active_route_lane(
-                        day_frame,
-                        &config.lanes[lane_index],
-                        &config.mesh_policy,
-                        area_m2,
-                        upstream.as_ref(),
-                        window_s,
-                        &mut books,
-                        &lane_sources[lane_index],
-                        config.max_dt_s,
-                        trace_detail,
-                        trace_steps,
-                    )
-                    .map_err(|source| {
-                        Self::day_execution_failure(day_frame, lane_index, day_index, &source)
-                    })?;
-                    upstream = Some(handoff);
-                } else {
-                    // Zero-source day: nothing to route, but the erosion
-                    // authority still owns the (all-zero) shape so no DC01
-                    // shape is consumed on an active lane, and the
-                    // double-feed guard still runs.
-                    laned_active::laned_active_assert_no_dc01_surface_feed(day_frame).map_err(
-                        |source| {
-                            Self::day_execution_failure(day_frame, lane_index, day_index, &source)
-                        },
-                    )?;
-                    day_frame.erosion_inputs.hydrograph_shape_authority =
-                        DirectErosionHydrographShapeAuthority::RoutedHydrograph;
-                    day_frame.erosion_inputs.routed_hydrograph_runoff_fraction =
-                        Some(Box::new([0.0; 24]));
-                    if config.trace_enabled {
-                        day_frame.laned_active_routing =
-                            Some(Box::new(laned_active::DirectLanedActiveDayRouting {
-                                source_m3: 0.0,
-                                outlet_m3: 0.0,
-                                mesh_end_storage_m3: 0.0,
-                                clamp_m3: 0.0,
-                                tail_fold_m3: 0.0,
-                                routed_weights: [0.0; 24],
-                                uniform_shape: false,
-                                erosion_source_shape_degenerate: false,
-                                trace_detail: None,
-                            }));
-                    }
-                    // CR-L1: the INV-OFEROUTE-012 latqcc bypass exists on
-                    // zero-source days too; record the terminal lane's
-                    // lateral export so the manifest total covers ALL days.
-                    if lane_index + 1 == lane_count {
-                        books.latqcc_outlet_m3 = day_frame
-                            .subsurface_compute_shadow_projection
-                            .as_ref()
-                            .map_or(0.0, |subsurface| subsurface.lateral_flow_m * area_m2);
-                    }
-                }
-            }
+            let books = Self::route_laned_active_day(
+                frame,
+                &config,
+                &mut day_frames,
+                &lane_sources,
+                day_index,
+                window_s,
+            )?;
 
             laned_active::laned_active_enforce_day_closure(day_index, &books, &mut summary)?;
             laned_active::laned_active_record_groundwater(&mut summary, groundwater_output);
@@ -638,54 +778,18 @@ impl DirectFrameExecutor {
             // guards, run erosion/ledger, build rows, publish dynamic transfer
             // operands, and commit in lane order. The erosion-inflow refresh
             // remains here so lane N+1 sees lane N's same-day erosion output.
-            for lane_index in 0..lane_count {
-                let day_frame = &mut day_frames[lane_index];
-                day_frame
-                    .erosion_inflow_intake
-                    .clone_from(&frame.lanes[lane_index].erosion_inflow_intake);
-                Self::run_day_spans_erosion_and_ledger(day_frame, &mut counters).map_err(
-                    |source| {
-                        Self::day_execution_failure(day_frame, lane_index, day_index, &source)
-                    },
-                )?;
-                laned_active::laned_active_record_trace(
-                    &mut summary,
-                    day_frame,
-                    lane_index + 1 == lane_count,
-                    books.terminal_outlet_m3,
-                )
-                .map_err(|source| {
-                    Self::day_execution_failure(day_frame, lane_index, day_index, &source)
-                })?;
-                for phase in phase_plan {
-                    let view = day_frame.phase_view(phase);
-                    let _phase = view.phase();
-                    phase_view_count += 1;
-                    counters.record_phase_status(phase, Self::phase_lifecycle_status(phase));
-                }
-                let lane =
-                    frame
-                        .lanes
-                        .get(lane_index)
-                        .ok_or(DirectRuntimeError::LaneIndexOutOfRange {
-                            lane_index,
-                            lane_count: frame.lanes.len(),
-                        })?;
-                let row =
-                    DirectPublicationDayRow::from_day_frame(day_frame, &day_inputs[lane_index], lane)?;
-                consume_row(&row, day_frame)?;
-                row_count =
-                    row_count
-                        .checked_add(1)
-                        .ok_or(DirectRuntimeError::DirectDomainViolation {
-                            field: "publication.row_count",
-                        })?;
-                if Self::publish_erosion_inflow_to_downstream(frame, &day_frames[lane_index])? {
-                    counters.record_dynamic_transfer_publication();
-                }
-                frame.commit_day_frame(&day_frames[lane_index])?;
-                counters.record_day_frame_commit();
-            }
+            Self::publish_laned_active_day(
+                frame,
+                &mut day_frames,
+                &day_inputs,
+                &books,
+                &mut summary,
+                phase_plan,
+                &mut phase_view_count,
+                &mut counters,
+                &mut row_count,
+                &mut consume_row,
+            )?;
         }
         if row_count != expected_row_count {
             return Err(DirectRuntimeError::PublicationRowCountMismatch {
@@ -915,14 +1019,12 @@ impl DirectFrameExecutor {
             return Ok(false);
         }
         let (_, _, downstream_lane_id) = {
-            let lane =
-                frame
-                    .lanes
-                    .get(day_frame.lane_index)
-                    .ok_or(DirectRuntimeError::LaneIndexOutOfRange {
-                        lane_index: day_frame.lane_index,
-                        lane_count: frame.lanes.len(),
-                    })?;
+            let lane = frame.lanes.get(day_frame.lane_index).ok_or(
+                DirectRuntimeError::LaneIndexOutOfRange {
+                    lane_index: day_frame.lane_index,
+                    lane_count: frame.lanes.len(),
+                },
+            )?;
             (lane.lane_id, lane.upstream_lane_id, lane.downstream_lane_id)
         };
         if downstream_lane_id == 0 {
@@ -962,8 +1064,7 @@ impl DirectFrameExecutor {
         for hour in 0..24 {
             hourly_qout_m2_s[hour] =
                 peak.q_runoff_m * day_frame.wave1_hourly_weights[hour] / 3600.0 * seed.efflen_m;
-            hourly_qsout_kg_m_s[hour] =
-                hourly_sediment_kg[hour] / seed.field_width_m / 3600.0;
+            hourly_qsout_kg_m_s[hour] = hourly_sediment_kg[hour] / seed.field_width_m / 3600.0;
         }
         let sedcon = publication.sediment_concentration_kg_m3.unwrap_or([0.0; 5]);
         let sedcon_total: f64 = sedcon.iter().sum();
@@ -984,14 +1085,12 @@ impl DirectFrameExecutor {
             exit_fractions,
         };
         let downstream_lane_count = frame.lanes.len();
-        let downstream_lane =
-            frame
-                .lanes
-                .get_mut(downstream_index)
-                .ok_or(DirectRuntimeError::LaneIndexOutOfRange {
-                    lane_index: downstream_index,
-                    lane_count: downstream_lane_count,
-                })?;
+        let downstream_lane = frame.lanes.get_mut(downstream_index).ok_or(
+            DirectRuntimeError::LaneIndexOutOfRange {
+                lane_index: downstream_index,
+                lane_count: downstream_lane_count,
+            },
+        )?;
         downstream_lane.erosion_inflow_intake = Some(Box::new(intake));
         Ok(true)
     }
@@ -1016,14 +1115,12 @@ impl DirectFrameExecutor {
         router_owns_surface: bool,
     ) -> Result<bool, DirectRuntimeError> {
         let (lane_id, upstream_lane_id, downstream_lane_id) = {
-            let lane =
-                frame
-                    .lanes
-                    .get(day_frame.lane_index)
-                    .ok_or(DirectRuntimeError::LaneIndexOutOfRange {
-                        lane_index: day_frame.lane_index,
-                        lane_count: frame.lanes.len(),
-                    })?;
+            let lane = frame.lanes.get(day_frame.lane_index).ok_or(
+                DirectRuntimeError::LaneIndexOutOfRange {
+                    lane_index: day_frame.lane_index,
+                    lane_count: frame.lanes.len(),
+                },
+            )?;
             (lane.lane_id, lane.upstream_lane_id, lane.downstream_lane_id)
         };
         if downstream_lane_id == 0 {
@@ -1035,14 +1132,12 @@ impl DirectFrameExecutor {
             }
         })?;
         let downstream_lane_count = frame.lanes.len();
-        let downstream_lane =
-            frame
-                .lanes
-                .get_mut(downstream_index)
-                .ok_or(DirectRuntimeError::LaneIndexOutOfRange {
-                    lane_index: downstream_index,
-                    lane_count: downstream_lane_count,
-                })?;
+        let downstream_lane = frame.lanes.get_mut(downstream_index).ok_or(
+            DirectRuntimeError::LaneIndexOutOfRange {
+                lane_index: downstream_index,
+                lane_count: downstream_lane_count,
+            },
+        )?;
         if downstream_lane.upstream_lane_id != lane_id {
             return Err(DirectRuntimeError::InvalidLaneTopology {
                 lane_index: day_frame.lane_index,
@@ -1055,11 +1150,12 @@ impl DirectFrameExecutor {
             "dynamic_transfer.upstream_area_ratio",
             downstream_lane.upstream_area_ratio,
         )?;
-        let subsurface = day_frame.subsurface_compute_shadow_projection.as_ref().ok_or(
-            DirectRuntimeError::MissingDirectUpstream {
+        let subsurface = day_frame
+            .subsurface_compute_shadow_projection
+            .as_ref()
+            .ok_or(DirectRuntimeError::MissingDirectUpstream {
                 upstream: "R4O subsurface compute producer",
-            },
-        )?;
+            })?;
         let runoff = day_frame.runoff_shadow_projection.as_ref().ok_or(
             DirectRuntimeError::MissingDirectUpstream {
                 upstream: "R4A runoff partition producer",
@@ -1093,10 +1189,7 @@ impl DirectFrameExecutor {
             .iter_mut()
             .zip(subsurface.hourly_lateral_carry_m.iter())
         {
-            validate_nonnegative_direct_m(
-                "dynamic_transfer.lateral_carry_m",
-                *source,
-            )?;
+            validate_nonnegative_direct_m("dynamic_transfer.lateral_carry_m", *source)?;
             *target = *source;
         }
         downstream_lane.transfer.surface_carry_m = surface_carry_m;
@@ -1140,7 +1233,9 @@ impl DirectFrameExecutor {
                         "{detail}; aggregate_storage_from_layers_m={aggregate_storage_from_layers_m}; storage_reconciled_m={}; aggregate_storage_delta_m={aggregate_storage_delta_m}; frozen_layer_storage_m={frozen_layer_storage_m}; projected_frozen_soil_water_m={}; tolerance_m={}; storage_initial_m={}; precip_input_m={}; q_runoff_m={}; evapotranspiration_m={}; deep_seepage_m={}; subsurface_loss_m={}; frost_liquid_delta_m={}; liquid_input_m={}; cumulative_infiltration_m={}; depression_storage_delta_m={}; surface_saturation_runoff_m={}",
                         storage.storage_reconciled_m,
                         day_frame.hydrology_projection_inputs.frozen_soil_water_m,
-                        day_frame.hydrology_projection_inputs.aggregate_storage_tolerance_m,
+                        day_frame
+                            .hydrology_projection_inputs
+                            .aggregate_storage_tolerance_m,
                         storage.storage_initial_m,
                         storage.precip_input_m,
                         storage.q_runoff_m,
@@ -1150,9 +1245,7 @@ impl DirectFrameExecutor {
                         storage.frost_liquid_delta_m,
                         day_frame.liquid_input.liquid_input_m,
                         day_frame.infiltration_depression.cumulative_infiltration_m,
-                        day_frame
-                            .infiltration_depression
-                            .depression_storage_delta_m,
+                        day_frame.infiltration_depression.depression_storage_delta_m,
                         day_frame.saturation_addback.surface_saturation_runoff_m
                     );
                 }
@@ -1168,9 +1261,7 @@ impl DirectFrameExecutor {
                 day_frame.runoff_partition_inputs.liquid_input_m,
                 day_frame.runoff_partition_inputs.runon_input_m,
                 day_frame.runoff_partition_inputs.cumulative_infiltration_m,
-                day_frame
-                    .runoff_partition_inputs
-                    .depression_storage_delta_m,
+                day_frame.runoff_partition_inputs.depression_storage_delta_m,
                 day_frame
                     .runoff_partition_inputs
                     .surface_saturation_runoff_m,
@@ -1241,17 +1332,14 @@ impl DirectFrameExecutor {
         record_direct_span_report!(counters, day_frame.run_r4k_infiltration_depression_span());
         record_direct_span_report!(counters, day_frame.run_r4m_percolation_span());
         record_direct_span_report!(counters, day_frame.run_r4n_surface_et_span());
-        day_frame
-            .project_r4x_winter_local_liquid_before_saturation(winter_frost_compute_inputs)?;
+        day_frame.project_r4x_winter_local_liquid_before_saturation(winter_frost_compute_inputs)?;
         record_direct_span_report!(counters, day_frame.run_r4o_subsurface_compute_span());
         record_direct_span_report!(counters, day_frame.run_r4n_root_uptake_span());
         record_direct_span_report!(counters, day_frame.run_r4g_snow_coupling_span());
         record_direct_span_report!(counters, day_frame.run_r4l_saturation_addback_span());
         record_direct_span_report!(
             counters,
-            day_frame.run_r4a_runoff_partition_span_with_winter_frost(
-                winter_frost_compute_inputs
-            )
+            day_frame.run_r4a_runoff_partition_span_with_winter_frost(winter_frost_compute_inputs)
         );
         record_direct_span_report!(counters, day_frame.run_r7d6_peak_runoff_span());
         record_direct_span_report!(counters, day_frame.run_r4b_storage_reconciliation_span());
@@ -1270,5 +1358,412 @@ impl DirectFrameExecutor {
         record_direct_span_report!(counters, day_frame.run_r3b_water_ledger_span());
 
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod cqr_executor_tests {
+    use super::*;
+
+    fn day_frame(day_index: usize, day_count: usize) -> DirectDayFrame {
+        let identity = DirectRunIdentity::new(91, 501, 2, day_count)
+            .expect("valid executor characterization identity");
+        DirectDayFrame::seed(identity, 0, day_index).expect("valid executor day frame")
+    }
+
+    fn calendar_input() -> DirectPublicationDayInput {
+        DirectPublicationDayInput::calendar_only(DirectPublicationCalendarDay {
+            year: 2026,
+            julian_day: 1,
+            month: 1,
+            day_of_month: 1,
+            water_year: 2026,
+        })
+    }
+
+    #[test]
+    fn cqr_apply_publication_input_covers_optional_payloads_and_guard_priority() {
+        let mut day = day_frame(0, 1);
+        let mut input = calendar_input();
+        input.precipitation_m = 0.01;
+        input.effective_temperature_c = 2.0;
+        input.interception_m = 0.001;
+        input.canopy_cover_fraction = Some(0.5);
+        input.initial_soil_water_m = Some(0.2);
+        input.storage_input_inputs = Some(day.storage_input_inputs);
+        input.liquid_input_inputs = Some(day.liquid_input_inputs);
+        input.percolation_inputs = Some(DirectPercolationInputs::neutral());
+        input.infiltration_depression_inputs = Some(day.infiltration_depression_inputs.clone());
+        input.peak_runoff_inputs = Some(day.peak_runoff_inputs.clone());
+        input.subsurface_compute_inputs = Some(DirectSubsurfaceComputeInputs::neutral());
+        input.decomposition_inputs = Some(day.decomposition_inputs);
+        input.residue_partition_inputs = Some(day.residue_partition_inputs);
+        input.annual_growth_inputs = Some(day.annual_growth_inputs);
+        input.perennial_growth_inputs = Some(day.perennial_growth_inputs);
+        let mut et = day.evapotranspiration_compute_inputs.clone();
+        et.stage_state = None;
+        input.evapotranspiration_compute_inputs = Some(et);
+        input.snow_coupling_inputs = Some(day.snow_coupling_inputs.clone());
+        input.hydrology_projection_inputs = Some(day.hydrology_projection_inputs);
+        input.erosion_inputs = Some(day.erosion_inputs.clone());
+        input.frost_storage_liquid_delta_m = Some(-0.001);
+        input.frost_layer_carry_projection = Some(Vec::new());
+        DirectFrameExecutor::apply_publication_day_input(&mut day, &input)
+            .expect("complete optional publication payload");
+        assert!((day.forcing.precipitation_m - 0.01).abs() < f64::EPSILON);
+        assert!((day.water.soil_water_m - 0.2).abs() < f64::EPSILON);
+        assert_eq!(day.frost_storage_liquid_delta_m, Some(-0.001));
+
+        let mut fallback = calendar_input();
+        fallback.precipitation_m = 0.02;
+        DirectFrameExecutor::apply_publication_day_input(&mut day, &fallback)
+            .expect("precipitation fallback liquid handoff");
+        assert!(
+            (day.liquid_input_inputs.liquid_input_handoff_m - 0.02).abs() < f64::EPSILON
+        );
+
+        let mut invalid = calendar_input();
+        invalid.precipitation_m = -1.0;
+        invalid.effective_temperature_c = f64::NAN;
+        assert!(matches!(
+            DirectFrameExecutor::apply_publication_day_input(&mut day, &invalid),
+            Err(DirectRuntimeError::NegativeDirectValue {
+                field: "publication_input.precipitation_m"
+            })
+        ));
+        invalid.precipitation_m = 0.0;
+        assert!(matches!(
+            DirectFrameExecutor::apply_publication_day_input(&mut day, &invalid),
+            Err(DirectRuntimeError::NonFiniteDirectValue {
+                field: "publication_input.effective_temperature_c"
+            })
+        ));
+        invalid.effective_temperature_c = 0.0;
+        invalid.canopy_cover_fraction = Some(1.1);
+        assert!(matches!(
+            DirectFrameExecutor::apply_publication_day_input(&mut day, &invalid),
+            Err(DirectRuntimeError::DirectDomainViolation {
+                field: "publication_input.canopy_cover_fraction"
+            })
+        ));
+        invalid.canopy_cover_fraction = Some(f64::NAN);
+        assert!(matches!(
+            DirectFrameExecutor::apply_publication_day_input(&mut day, &invalid),
+            Err(DirectRuntimeError::NonFiniteDirectValue {
+                field: "publication_input.canopy_cover_fraction"
+            })
+        ));
+        invalid.canopy_cover_fraction = None;
+        invalid.initial_soil_water_m = Some(-0.1);
+        assert!(matches!(
+            DirectFrameExecutor::apply_publication_day_input(&mut day, &invalid),
+            Err(DirectRuntimeError::NegativeDirectValue {
+                field: "publication_input.initial_soil_water_m"
+            })
+        ));
+        invalid.initial_soil_water_m = None;
+        invalid.frost_storage_liquid_delta_m = Some(f64::NAN);
+        assert!(matches!(
+            DirectFrameExecutor::apply_publication_day_input(&mut day, &invalid),
+            Err(DirectRuntimeError::NonFiniteDirectValue {
+                field: "publication_input.frost_storage_liquid_delta_m"
+            })
+        ));
+    }
+
+    #[test]
+    fn cqr_executor_mode_and_phase_status_cover_both_lifecycle_arms() {
+        let executor = DirectFrameExecutor::new(DirectExecutorMode::ProductionDirect);
+        assert_eq!(executor.mode(), DirectExecutorMode::ProductionDirect);
+
+        let mut counters = DirectExecutionCounters::default();
+        counters.record_phase_status(
+            DirectPhaseKind::Normalization,
+            DirectPhaseLifecycleStatus::Executed,
+        );
+        counters.record_phase_status(
+            DirectPhaseKind::StorageBounds,
+            DirectPhaseLifecycleStatus::Hold,
+        );
+        let counts = counters.phase_status_counts();
+        assert!(counts.iter().any(|count| {
+            count.phase == DirectPhaseKind::Normalization
+                && count.status == DirectPhaseLifecycleStatus::Executed
+                && count.count == 1
+        }));
+        assert!(counts.iter().any(|count| {
+            count.phase == DirectPhaseKind::StorageBounds
+                && count.status == DirectPhaseLifecycleStatus::Hold
+                && count.count == 1
+        }));
+    }
+
+    #[test]
+    fn cqr_active_selector_and_first_day_empty_layer_payloads_take_guarded_branches() {
+        let identity = DirectRunIdentity::new(94, 501, 1, 1)
+            .expect("valid selector characterization identity");
+        let mut frame = DirectRunFrame::skeleton(identity).expect("selector frame");
+        frame.laned_active = Some(Box::new(laned_active::DirectLanedActiveConfig {
+            lanes: vec![laned_active::DirectLanedActiveLaneConfig {
+                slplen_m: 10.0,
+                width_m: 10.0,
+                mean_gradient: 0.01,
+                skin_friction_coefficient_ko: 500.0,
+                form_drag_coefficient: 0.0,
+                roughness_element_height_m: 0.0,
+                roughness_concentration: 0.0,
+                vegetation_drag_coefficient: 0.0,
+                canopy_height_m: None,
+            }],
+            mesh_policy: laned_active::DirectLanedActiveMeshPolicy::FixedCells { cells: 10 },
+            max_dt_s: 300.0,
+            trace_enabled: false,
+            trace_detail_filter: None,
+            step_trace_enabled: false,
+        }));
+        assert!(matches!(
+            DirectFrameExecutor::new(DirectExecutorMode::ShadowOnly).run_skeleton(&mut frame),
+            Err(DirectRuntimeError::DirectKernelGuardFailure {
+                phase: "laned_active_selector",
+                ..
+            })
+        ));
+
+        let mut day = day_frame(0, 1);
+        day.percolation_inputs = DirectPercolationInputs::neutral();
+        day.subsurface_compute_inputs = DirectSubsurfaceComputeInputs::neutral();
+        let mut input = calendar_input();
+        let mut percolation = DirectPercolationInputs::neutral();
+        percolation.layers.clear();
+        input.percolation_inputs = Some(percolation);
+        let mut subsurface = DirectSubsurfaceComputeInputs::neutral();
+        subsurface.layers.clear();
+        input.subsurface_compute_inputs = Some(subsurface);
+        DirectFrameExecutor::apply_publication_day_input(&mut day, &input)
+            .expect("first-day empty layers inherit seeded layers");
+        assert_eq!(day.percolation_inputs.layers.len(), 1);
+        assert_eq!(day.subsurface_compute_inputs.layers.len(), 1);
+    }
+
+    #[test]
+    fn cqr_publication_layer_inputs_cover_carry_forward_and_cardinality_guards() {
+        let mut day = day_frame(1, 2);
+        day.percolation_inputs = DirectPercolationInputs::neutral();
+        day.subsurface_compute_inputs = DirectSubsurfaceComputeInputs::neutral();
+        day.water.soil_water_m = 0.25;
+
+        let mut input = calendar_input();
+        let mut percolation = DirectPercolationInputs::neutral();
+        percolation.layers.clear();
+        input.percolation_inputs = Some(percolation);
+        let mut subsurface = DirectSubsurfaceComputeInputs::neutral();
+        subsurface.layers.clear();
+        input.subsurface_compute_inputs = Some(subsurface);
+        DirectFrameExecutor::apply_publication_day_input(&mut day, &input)
+            .expect("empty later-day layer payloads carry forward");
+        assert_eq!(day.percolation_inputs.layers.len(), 1);
+        assert!((day.percolation_inputs.soil_water_initial_m - 0.25).abs() < f64::EPSILON);
+        assert_eq!(day.subsurface_compute_inputs.layers.len(), 1);
+
+        let mut bad_percolation = DirectPercolationInputs::neutral();
+        bad_percolation
+            .layers
+            .push(DirectSubsurfaceLayerState::neutral());
+        input.percolation_inputs = Some(bad_percolation);
+        assert!(matches!(
+            DirectFrameExecutor::apply_publication_percolation_input(&mut day, &input),
+            Err(DirectRuntimeError::DirectDomainViolation {
+                field: "publication_input.percolation_layers"
+            })
+        ));
+
+        let mut bad_subsurface = DirectSubsurfaceComputeInputs::neutral();
+        bad_subsurface
+            .layers
+            .push(DirectSubsurfaceLayerInputs::neutral());
+        input.subsurface_compute_inputs = Some(bad_subsurface);
+        assert!(matches!(
+            DirectFrameExecutor::apply_publication_subsurface_input(&mut day, &input),
+            Err(DirectRuntimeError::DirectDomainViolation {
+                field: "publication_input.subsurface_layers"
+            })
+        ));
+    }
+
+    fn erosion_publisher_fixture() -> (DirectRunFrame, DirectDayFrame) {
+        let identity =
+            DirectRunIdentity::new(92, 501, 2, 1).expect("valid erosion publisher identity");
+        let frame = DirectRunFrame::skeleton(identity).expect("erosion publisher frame");
+        let mut day = DirectDayFrame::seed(identity, 0, 0).expect("erosion publisher day");
+        day.erosion_inputs.wave1_operand_seed.enabled = true;
+        day.erosion_inputs.wave1_operand_seed.efflen_m = 2.0;
+        day.erosion_inputs.wave1_operand_seed.field_width_m = 4.0;
+        day.wave1_hourly_plan
+            .push((0, DirectWave1ContinuityInputs::zero()));
+        (frame, day)
+    }
+
+    #[test]
+    fn cqr_erosion_inflow_publisher_covers_errors_and_downstream_publication() {
+        let (mut frame, mut day) = erosion_publisher_fixture();
+        let mut inactive = day.clone();
+        inactive.erosion_inputs.wave1_operand_seed.enabled = false;
+        assert!(
+            !DirectFrameExecutor::publish_erosion_inflow_to_downstream(&mut frame, &inactive)
+                .expect("inactive erosion lane")
+        );
+        let downstream_lane_id = frame.lanes[0].downstream_lane_id;
+        frame.lanes[0].downstream_lane_id = 0;
+        assert!(
+            !DirectFrameExecutor::publish_erosion_inflow_to_downstream(&mut frame, &day)
+                .expect("terminal erosion lane")
+        );
+        frame.lanes[0].downstream_lane_id = downstream_lane_id;
+        assert!(matches!(
+            DirectFrameExecutor::publish_erosion_inflow_to_downstream(&mut frame, &day),
+            Err(DirectRuntimeError::MissingDirectUpstream {
+                upstream: "E.3 erosion inflow publisher peak-runoff producer"
+            })
+        ));
+        day.peak_runoff_shadow_projection = Some(DirectPeakRunoffShadowProjection {
+            lane_index: 0,
+            day_index: 0,
+            q_runoff_m: 0.024,
+            peak_runoff_m3_s: 1.0,
+            runoff_duration_s: 3600.0,
+            method_branch: 1.0,
+            tstar: 0.0,
+            qpstar: 0.0,
+            vstar: 0.0,
+        });
+        assert!(matches!(
+            DirectFrameExecutor::publish_erosion_inflow_to_downstream(&mut frame, &day),
+            Err(DirectRuntimeError::MissingDirectUpstream {
+                upstream: "E.3 erosion inflow publisher continuity state"
+            })
+        ));
+        day.erosion.wave1_continuity = Some(Box::new(DirectWave1ContinuityState::inactive()));
+        assert!(matches!(
+            DirectFrameExecutor::publish_erosion_inflow_to_downstream(&mut frame, &day),
+            Err(DirectRuntimeError::MissingDirectUpstream {
+                upstream: "E.3 erosion inflow publisher hourly sediment surface"
+            })
+        ));
+        day.erosion_downstream_operands
+            .publication
+            .hourly_sediment_mass_kg = Some([3.6; 24]);
+        day.wave1_hourly_weights = [1.0 / 24.0; 24];
+        assert!(
+            DirectFrameExecutor::publish_erosion_inflow_to_downstream(&mut frame, &day)
+                .expect("erosion inflow publication")
+        );
+        let intake = frame.lanes[1]
+            .erosion_inflow_intake
+            .as_ref()
+            .expect("downstream erosion intake");
+        assert!((intake.hourly_qsout_kg_m_s[0] - 0.00025).abs() < f64::EPSILON);
+        assert!(intake.exit_fractions.iter().all(|value| value.abs() < f64::EPSILON));
+
+        day.erosion_downstream_operands
+            .publication
+            .sediment_concentration_kg_m3 = Some([1.0, 1.0, 2.0, 0.0, 0.0]);
+        DirectFrameExecutor::publish_erosion_inflow_to_downstream(&mut frame, &day)
+            .expect("positive concentration publication");
+        let expected = [0.25, 0.25, 0.5, 0.0, 0.0];
+        let actual = frame.lanes[1]
+            .erosion_inflow_intake
+            .as_ref()
+            .expect("updated intake")
+            .exit_fractions;
+        assert!(
+            actual
+                .iter()
+                .zip(expected)
+                .all(|(actual, expected)| (actual - expected).abs() < f64::EPSILON)
+        );
+
+        day.erosion_inputs.wave1_operand_seed.field_width_m = 0.0;
+        assert!(matches!(
+            DirectFrameExecutor::publish_erosion_inflow_to_downstream(&mut frame, &day),
+            Err(DirectRuntimeError::DirectDomainViolation {
+                field: "erosion.inflow_publisher.geometry"
+            })
+        ));
+    }
+
+    #[test]
+    fn cqr_day_execution_failure_preserves_context_and_runoff_diagnostics() {
+        let mut day = day_frame(0, 1);
+        let ordinary = DirectFrameExecutor::day_execution_failure(
+            &day,
+            1,
+            2,
+            &DirectRuntimeError::DirectDomainViolation { field: "ordinary" },
+        );
+        assert!(matches!(
+            ordinary,
+            DirectRuntimeError::DirectDayExecutionFailure {
+                lane_index: 1,
+                day_index: 2,
+                ..
+            }
+        ));
+
+        day.runoff_partition_inputs.liquid_input_m = 0.1;
+        day.runoff_partition_inputs.runon_input_m = 0.2;
+        day.storage_reconciliation_inputs.precip_input_m = 0.3;
+        let detailed = DirectFrameExecutor::day_execution_failure(
+            &day,
+            0,
+            0,
+            &DirectRuntimeError::NegativeDirectValue {
+                field: "runoff_partition.partition_runoff_m",
+            },
+        );
+        let DirectRuntimeError::DirectDayExecutionFailure { detail, .. } = detailed else {
+            panic!("expected wrapped day failure")
+        };
+        assert!(detail.contains("liquid_input_m=0.1"));
+        assert!(detail.contains("runon_input_m=0.2"));
+        assert!(detail.contains("storage_precip_input_m=0.3"));
+    }
+
+    #[test]
+    fn cqr_day_execution_failure_enriches_aggregate_storage_context() {
+        let identity =
+            DirectRunIdentity::new(93, 501, 1, 1).expect("valid aggregate diagnostic identity");
+        let mut frame = DirectRunFrame::skeleton(identity).expect("aggregate diagnostic frame");
+        frame.lanes[0].area_m2 = 100.0;
+        let input = calendar_input();
+        let mut enriched = false;
+        DirectFrameExecutor::new(DirectExecutorMode::ShadowOnly)
+            .run_publication_stream_with_interleaved_day_inputs_and_day_frames(
+                &mut frame,
+                DirectPublicationRunMetadata {
+                    run_name: "cqr_aggregate_diagnostic".to_string(),
+                    runtime_selection: "direct".to_string(),
+                    output_policy: "test".to_string(),
+                },
+                |_, _, _| Ok(input.clone()),
+                |_, day_frame| {
+                    let wrapped = DirectFrameExecutor::day_execution_failure(
+                        day_frame,
+                        0,
+                        0,
+                        &DirectRuntimeError::DirectClosureToleranceExceeded {
+                            field: "hydrology_projection.aggregate_storage_delta_m",
+                        },
+                    );
+                    let DirectRuntimeError::DirectDayExecutionFailure { detail, .. } = wrapped
+                    else {
+                        panic!("expected wrapped aggregate diagnostic")
+                    };
+                    enriched = detail.contains("aggregate_storage_from_layers_m=")
+                        && detail.contains("frozen_layer_storage_m=");
+                    Ok(())
+                },
+            )
+            .expect("aggregate diagnostic publication stream");
+        assert!(enriched);
     }
 }

@@ -1,5 +1,6 @@
 use std::sync::{Mutex, OnceLock};
 
+mod cqr_laned_active_executor;
 mod direct_runtime;
 mod direct_runtime_dc01;
 mod direct_runtime_erosion_adjustments;
