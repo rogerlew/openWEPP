@@ -1,6 +1,6 @@
 # High-Risk CQR Tranche A: Active Hillslope And Runner Paths
 
-Status: `ACTIVE`
+Status: `TERMINAL-PASS`
 Roadmap ID: `CQR-PREINT-20260711-HA`
 Campaign ledger: `docs/work-packages/cqr-pre-integration-campaign-assessment.md`
 Binding execution contract: `docs/work-packages/cqr-pre-integration-campaign-execution-contract.md`
@@ -39,7 +39,8 @@ classification records. It never authorizes one ten-module implementation diff.
 - [x] (2026-07-12 UTC) Execute HA-09 through reviewed `MODULE-PASS` checkpoint.
 - [x] (2026-07-12 UTC) Pass the HA-07..HA-09 workspace quick-profile checkpoint (1,750/1,750).
 - [x] (2026-07-12 UTC) Execute HA-10 through reviewed `MODULE-PASS` checkpoint.
-- [ ] Run the tranche-final fresh rerank, dual verification, and transition to High B.
+- [x] (2026-07-12 UTC) Run the tranche-final fresh rerank and full gates;
+  receive dual terminal review/verification PASS and transition to High B.
 
 ## Surprises & Discoveries
 
@@ -87,9 +88,18 @@ classification records. It never authorizes one ten-module implementation diff.
 
 ## Outcomes & Retrospective
 
-Queued. At completion record package IDs/commits, before/after coverage and
-CRAP, accepted exclusions, defect escalations, full-gate counts, and the exact
-High B transition commit.
+High A closed all ten fixed modules in serialized reviewed checkpoints. The 13
+fixed rows above 30 fell to zero; the workspace production census moved from 67
+rows/45 modules to 54 rows/35 modules with zero new identity and zero touched-
+module row above 30. HA-07 and HA-08 each discovered and closed one typed
+semantic defect before resuming CQR. Focused module evidence retained exact
+target slices and real consumers; no accepted disposition waived nominal,
+numeric, conservation, publication, serialization, or CLI behavior.
+
+The terminal gates passed formatting, workspace/all-target Clippy, full
+nextest `1,831/1,831`, deny, and exact documentation lint. Both independent
+terminal reviews/verifications passed. High B activates in the same clean
+transition commit that records these outcomes.
 
 ## Milestones
 

@@ -1,6 +1,6 @@
 # High-Risk CQR Tranche B: Erosion, Watershed, And Publication
 
-Status: `WAITING-SEQUENCE`
+Status: `ACTIVE`
 Roadmap ID: `CQR-PREINT-20260711-HB`
 Campaign ledger: `docs/work-packages/cqr-pre-integration-campaign-assessment.md`
 Binding execution contract: `docs/work-packages/cqr-pre-integration-campaign-execution-contract.md`
@@ -35,7 +35,8 @@ classification records. It does not permit a multi-module implementation diff.
 
 ## Progress
 
-- [ ] Verify High A terminal PASS and clean transition commit.
+- [x] (2026-07-12 UTC) Verify High A `TERMINAL-PASS` and activate High B in
+  the clean predecessor transition commit.
 - [ ] Refresh workspace metrics and dual-review all HB eligibility rows.
 - [ ] Execute or disposition HB-01 through its terminal record.
 - [ ] Execute or disposition HB-02 through its terminal record.

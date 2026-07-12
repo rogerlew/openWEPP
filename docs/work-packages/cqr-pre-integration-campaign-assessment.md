@@ -1,6 +1,6 @@
 # Pre-Integration CQR Campaign Assessment
 
-Status: `AUTHORING-REVIEW-PASS`
+Status: `ACTIVE-HIGH-B`
 Owner: maintainers
 Baseline date: 2026-07-11 UTC
 Roadmap ID: `CQR-PREINT-20260711`
@@ -16,9 +16,9 @@ the revised strategy aggregates expensive closure at the tranche boundary.
 This document is the campaign ledger and living risk assessment. Four child
 ExecPlans perform the work:
 
-1. `cqr-high-risk-a-execplan.md` — active hillslope routing, projection,
+1. `cqr-high-risk-a-execplan.md` — terminal-pass hillslope routing, projection,
    publication, and primary runner paths (10 modules).
-2. `cqr-high-risk-b-execplan.md` — erosion, watershed routing, conservation,
+2. `cqr-high-risk-b-execplan.md` — active erosion, watershed routing, conservation,
    and final output publication (10 modules).
 3. `cqr-medium-risk-execplan.md` — contract boundaries, authoritative tooling,
    configuration, and validation references (13 modules).
@@ -146,7 +146,9 @@ validation while a high/medium blocker remains.
 - [x] (2026-07-11 UTC) Complete remediation, two verification rounds, and all
   finding dispositions; unanimous `GO — AUTHORING READY` recorded in
   `cqr-pre-integration-campaign-authoring-review.md`.
-- [ ] Execute High A through terminal plan commit.
+- [x] (2026-07-12 UTC) Execute High A through `TERMINAL-PASS`: all 13 fixed
+  rows removed, zero new identity, zero touched-module row above 30, full gates
+  and dual terminal verification PASS.
 - [ ] Execute High B through terminal plan commit.
 - [ ] Execute Medium through terminal plan commit.
 - [ ] Execute Low/Assessment and publish the final recommendation.
