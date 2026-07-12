@@ -1,0 +1,47 @@
+   Compiling openwepp-watershed-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-watershed-orchestrator)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.36s
+────────────
+ Nextest run ID 44b33d9e-7865-4c22-b450-f269e48c3be7 with nextest profile: default
+    Starting 1 test across 1 binary (125 tests skipped)
+        FAIL [   0.007s] (1/1) openwepp-watershed-orchestrator lib_mod::kernel::kernel_core::direct_tests::dc_cqr_hb07_rejects_dynamic_cx_below_legacy_admission_bound
+  stdout ───
+
+    running 1 test
+    test lib_mod::kernel::kernel_core::direct_tests::dc_cqr_hb07_rejects_dynamic_cx_below_legacy_admission_bound ... FAILED
+
+    failures:
+
+    failures:
+        lib_mod::kernel::kernel_core::direct_tests::dc_cqr_hb07_rejects_dynamic_cx_below_legacy_admission_bound
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 125 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'lib_mod::kernel::kernel_core::direct_tests::dc_cqr_hb07_rejects_dynamic_cx_below_legacy_admission_bound' (1795187) panicked at crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct_tests.rs:705:10:
+    cx below -10 must fail instead of being clamped: Ws11WaveRoutingState { q1: 1.0, qin: 1.0, qlat: 0.0, c0: 0.0002064060395340492, c1: 0.9102167602156402, c2: -0.8854480354715544, c3: 0.9752312752559141, c4: 0.0 }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.009s] 1 test run: 0 passed, 1 failed, 125 skipped
+        FAIL [   0.007s] (1/1) openwepp-watershed-orchestrator lib_mod::kernel::kernel_core::direct_tests::dc_cqr_hb07_rejects_dynamic_cx_below_legacy_admission_bound
+  stdout ───
+
+    running 1 test
+    test lib_mod::kernel::kernel_core::direct_tests::dc_cqr_hb07_rejects_dynamic_cx_below_legacy_admission_bound ... FAILED
+
+    failures:
+
+    failures:
+        lib_mod::kernel::kernel_core::direct_tests::dc_cqr_hb07_rejects_dynamic_cx_below_legacy_admission_bound
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 125 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'lib_mod::kernel::kernel_core::direct_tests::dc_cqr_hb07_rejects_dynamic_cx_below_legacy_admission_bound' (1795187) panicked at crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct_tests.rs:705:10:
+    cx below -10 must fail instead of being clamped: Ws11WaveRoutingState { q1: 1.0, qin: 1.0, qlat: 0.0, c0: 0.0002064060395340492, c1: 0.9102167602156402, c2: -0.8854480354715544, c3: 0.9752312752559141, c4: 0.0 }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+error: test run failed

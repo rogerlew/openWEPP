@@ -591,6 +591,352 @@ NODE IMPOUNDMENT 1 H 2 0 0 C 1 0 0 I 0 0 0
     }
 
     #[test]
+    fn hb07_muskingum_geometry_characterizes_shapes_and_guard_priority() {
+        let channel = Ws10NodeClass::Channel;
+        let triangular = Ws10ChannelImpoundmentKernel::ws11_muskingum_geometry_from_depth(
+            channel, 1, 5.0, 2.0, 3.0,
+        )
+        .expect("triangular geometry");
+        assert_close(triangular.0, 12.0);
+        assert_close(triangular.1, 18.0);
+        assert_close(triangular.2, 6.0 * 5.0_f64.sqrt());
+        assert_close(triangular.3, 2.0);
+
+        let rectangular = Ws10ChannelImpoundmentKernel::ws11_muskingum_geometry_from_depth(
+            channel, 2, 5.0, -1.0, 3.0,
+        )
+        .expect("rectangular geometry does not consume channel shape");
+        assert_close(rectangular.0, 5.0);
+        assert_close(rectangular.1, 15.0);
+        assert_close(rectangular.2, 11.0);
+        assert_close(rectangular.3, 5.0);
+
+        let natural = Ws10ChannelImpoundmentKernel::ws11_muskingum_geometry_from_depth(
+            channel, 3, 8.0, 4.0, 2.0,
+        )
+        .expect("naturally eroded geometry");
+        assert!(natural.0 > 0.0 && natural.1 > 0.0 && natural.2 > 0.0);
+        assert_close(natural.3, 4.0);
+
+        let trapezoid = Ws10ChannelImpoundmentKernel::ws11_muskingum_geometry_from_depth(
+            channel, 4, 5.0, 2.0, 3.0,
+        )
+        .expect("trapezoidal compatibility geometry");
+        assert_close(trapezoid.0, 17.0);
+        assert_close(trapezoid.1, 33.0);
+
+        for (ishape, width, shape, depth, symbol) in [
+            (1, 5.0, 2.0, f64::NAN, "ws11_muskingum_depth"),
+            (1, f64::INFINITY, 2.0, 3.0, "ws11_muskingum_channel_width"),
+            (1, 5.0, f64::NEG_INFINITY, 3.0, "ws11_muskingum_channel_shape"),
+            (0, 5.0, 2.0, 3.0, "ws11_muskingum_ishape"),
+            (3, 0.0, 2.0, 3.0, "ws11_muskingum_channel_width"),
+        ] {
+            let error = Ws10ChannelImpoundmentKernel::ws11_muskingum_geometry_from_depth(
+                channel, ishape, width, shape, depth,
+            )
+            .expect_err("invalid geometry must fail closed");
+            assert_eq!(error.symbol.as_str(), symbol);
+            assert_eq!(error.message_id(), "WKERNEL-WS10-CHANNEL-E-003");
+        }
+    }
+
+    #[test]
+    #[allow(clippy::too_many_lines)]
+    fn hb07_variable_muskingum_state_characterizes_memory_and_domain_guards() {
+        let compute = |available_peak, prior_qin, prior_q1, channel_length| {
+            Ws10ChannelImpoundmentKernel::compute_variable_muskingum_cunge_state(
+                Ws10NodeClass::Channel,
+                0.04,
+                0.01,
+                5.0,
+                1.0,
+                2,
+                channel_length,
+                available_peak,
+                0.0,
+                60.0,
+                86_400.0,
+                prior_qin,
+                prior_q1,
+            )
+        };
+        let fresh = compute(1.0, None, None, 100.0).expect("fresh dynamic MC state");
+        let carried = compute(1.0, Some(0.25), Some(0.5), 100.0)
+            .expect("carried dynamic MC state");
+        assert!(fresh.q1.is_finite() && fresh.q1 >= 0.0);
+        assert!(carried.q1.is_finite() && carried.q1 >= 0.0);
+        assert!(
+            (fresh.c1 - carried.c1).abs()
+                + (fresh.c2 - carried.c2).abs()
+                + (fresh.c3 - carried.c3).abs()
+                > 1.0e-12,
+            "prior state must affect dynamic coefficients"
+        );
+        let explicit_fresh = compute(1.0, Some(1.0), Some(1.0), 100.0)
+            .expect("explicit fresh-state aliases");
+        for (missing, explicit) in [
+            (fresh.qin, explicit_fresh.qin),
+            (fresh.q1, explicit_fresh.q1),
+            (fresh.c0, explicit_fresh.c0),
+            (fresh.c1, explicit_fresh.c1),
+            (fresh.c2, explicit_fresh.c2),
+            (fresh.c3, explicit_fresh.c3),
+            (fresh.c4, explicit_fresh.c4),
+        ] {
+            assert_eq!(missing.to_bits(), explicit.to_bits());
+        }
+
+        let reconstruct = |qin_previous: f64, q1_previous: f64, state: Ws11WaveRoutingState| {
+            let qin = 1.0;
+            let qlat = 0.0;
+            let qref = (qin + qin_previous + q1_previous) / 3.0;
+            let depth = Ws10ChannelImpoundmentKernel::ws11_solve_depth_for_discharge(
+                Ws10NodeClass::Channel,
+                2,
+                5.0,
+                1.0,
+                0.04,
+                0.01,
+                qref,
+            )
+            .expect("independent reconstruction depth");
+            let (bt, _, ap, chnz0) =
+                Ws10ChannelImpoundmentKernel::ws11_muskingum_geometry_from_depth(
+                    Ws10NodeClass::Channel,
+                    2,
+                    5.0,
+                    1.0,
+                    depth,
+                )
+                .expect("independent reconstruction geometry");
+            let ckref = Ws10ChannelImpoundmentKernel::ws11_dynamic_muskingum_celerity(
+                Ws10NodeClass::Channel,
+                2,
+                qref,
+                depth,
+                5.0,
+                bt,
+                ap,
+                chnz0,
+            )
+            .expect("independent reconstruction celerity");
+            let tk = 100.0 / ckref;
+            let dencx = bt * ckref * 0.01 * 100.0;
+            let cx = 0.5 * (1.0 - (qref / dencx));
+            let denominator = (2.0 * tk * (1.0 - cx)) + 60.0;
+            let c0 = 1.0 / denominator;
+            let c1 = (60.0 - (2.0 * tk * cx)) * c0;
+            let c2 = (60.0 + (2.0 * tk * cx)) * c0;
+            let c3 = 1.0 - c1 - c2;
+            let c4 = 2.0 * qlat * 60.0 * c0;
+            let q1 = (c1 * qin) + (c2 * qin_previous) + (c3 * q1_previous) + c4;
+            for (observed, expected) in [
+                (state.qin, qin),
+                (state.qlat, qlat),
+                (state.c0, c0),
+                (state.c1, c1),
+                (state.c2, c2),
+                (state.c3, c3),
+                (state.c4, c4),
+                (state.q1, q1),
+            ] {
+                assert_eq!(observed.to_bits(), expected.to_bits());
+            }
+        };
+        reconstruct(1.0, 1.0, fresh);
+        reconstruct(0.25, 0.5, carried);
+
+        for (available_peak, prior_qin, prior_q1, length, symbol) in [
+            (f64::NAN, None, None, 100.0, "qin"),
+            (1.0, Some(-1.0), None, 100.0, "qin_previous"),
+            (1.0, None, Some(f64::INFINITY), 100.0, "q1_previous"),
+            (1.0, None, None, 0.0, "channel_length"),
+        ] {
+            let error = compute(available_peak, prior_qin, prior_q1, length)
+                .expect_err("invalid dynamic MC operand must fail closed");
+            assert_eq!(error.symbol.as_str(), symbol);
+        }
+        let priority = Ws10ChannelImpoundmentKernel::compute_variable_muskingum_cunge_state(
+            Ws10NodeClass::Channel,
+            f64::NAN,
+            f64::NAN,
+            f64::NAN,
+            f64::NAN,
+            0,
+            -1.0,
+            f64::NAN,
+            f64::NAN,
+            f64::NAN,
+            f64::NAN,
+            Some(f64::NAN),
+            Some(f64::NAN),
+        )
+        .expect_err("first invalid operand must win");
+        assert_eq!(priority.symbol.as_str(), "qin");
+    }
+
+    #[test]
+    fn dc_cqr_hb07_rejects_dynamic_cx_below_legacy_admission_bound() {
+        let error = Ws10ChannelImpoundmentKernel::compute_variable_muskingum_cunge_state(
+            Ws10NodeClass::Channel,
+            0.04,
+            1.0e-8,
+            5.0,
+            1.0,
+            2,
+            1.0,
+            1.0,
+            0.0,
+            60.0,
+            86_400.0,
+            Some(1.0),
+            Some(1.0),
+        )
+        .expect_err("cx below -10 must fail instead of being clamped");
+        assert_eq!(error.message_id(), "WKERNEL-WS10-CHANNEL-E-003");
+        assert_eq!(error.symbol.as_str(), "cx");
+    }
+
+    #[test]
+    fn hb07_transitive_manning_and_dynamic_celerity_helpers_close_floors() {
+        for (ishape, width, shape) in [(1, 5.0, 2.0), (2, 5.0, 1.0), (3, 8.0, 4.0)] {
+            let discharge = Ws10ChannelImpoundmentKernel::ws11_manning_discharge_for_depth(
+                Ws10NodeClass::Channel,
+                ishape,
+                width,
+                shape,
+                0.04,
+                0.01,
+                2.0,
+            )
+            .expect("valid Manning geometry should discharge");
+            assert!(discharge.is_finite() && discharge > 0.0);
+        }
+        for (roughness, slope, symbol) in [
+            (f64::NAN, 0.01, "ws11_manning_roughness"),
+            (0.04, f64::NEG_INFINITY, "ws11_manning_slope"),
+        ] {
+            let error = Ws10ChannelImpoundmentKernel::ws11_manning_discharge_for_depth(
+                Ws10NodeClass::Channel,
+                2,
+                5.0,
+                1.0,
+                roughness,
+                slope,
+                2.0,
+            )
+            .expect_err("invalid Manning scalar must fail closed");
+            assert_eq!(error.symbol.as_str(), symbol);
+        }
+        for (width, depth, symbol) in [
+            (5.0, f64::NAN, "ws11_muskingum_depth"),
+            (f64::MAX, f64::MAX, "ws11_manning_area"),
+        ] {
+            let error = Ws10ChannelImpoundmentKernel::ws11_manning_discharge_for_depth(
+                Ws10NodeClass::Channel,
+                2,
+                width,
+                1.0,
+                0.04,
+                0.01,
+                depth,
+            )
+            .expect_err("invalid Manning geometry must fail closed");
+            assert_eq!(error.symbol.as_str(), symbol);
+        }
+
+        for (ishape, width, bt, ap, chnz0) in [
+            (1, 5.0, 6.0, 18.0, 2.0),
+            (2, 5.0, 5.0, 11.0, 5.0),
+            (3, 8.0, 8.0, 12.0, 4.0),
+        ] {
+            let celerity = Ws10ChannelImpoundmentKernel::ws11_dynamic_muskingum_celerity(
+                Ws10NodeClass::Channel,
+                ishape,
+                1.0,
+                2.0,
+                width,
+                bt,
+                ap,
+                chnz0,
+            )
+            .expect("valid dynamic celerity branch");
+            let expected = match ishape {
+                1 => 4.0 / (3.0 * chnz0 * 2.0 * 2.0),
+                2 => {
+                    (1.0 / (width * 2.0))
+                        * (1.0 + (2.0 * width / (3.0 * (width + (2.0 * 2.0)))))
+                }
+                3 => {
+                    let dqdy = 2.5 / 2.0 - (4.0 / (3.0 * ap) * (1.0 + (bt / 2.0)).sqrt());
+                    dqdy / bt
+                }
+                _ => unreachable!(),
+            };
+            assert_eq!(celerity.to_bits(), expected.to_bits());
+        }
+        for (ishape, qref, symbol) in [
+            (4, 1.0, "ws11_muskingum_ishape"),
+            (2, 0.0, "ckref"),
+        ] {
+            let error = Ws10ChannelImpoundmentKernel::ws11_dynamic_muskingum_celerity(
+                Ws10NodeClass::Channel,
+                ishape,
+                qref,
+                2.0,
+                5.0,
+                5.0,
+                11.0,
+                5.0,
+            )
+            .expect_err("invalid dynamic celerity must fail closed");
+            assert_eq!(error.symbol.as_str(), symbol);
+        }
+    }
+
+    #[test]
+    fn hb07_static_muskingum_helper_closes_floor() {
+        let state = Ws10ChannelImpoundmentKernel::compute_muskingum_cunge_state(
+            Ws10NodeClass::Channel,
+            0.04,
+            0.01,
+            0.001,
+            1.0,
+            1.0,
+            0.0,
+            60.0,
+            86_400.0,
+            Some(0.5),
+            Some(0.25),
+        )
+        .expect("valid static MC state");
+        assert!(state.q1.is_finite() && state.q1 >= 0.0);
+
+        for (available, prior_qin, prior_q1, symbol) in [
+            (f64::NAN, None, None, "qin"),
+            (1.0, Some(-1.0), None, "qin_previous"),
+            (1.0, None, Some(f64::INFINITY), "q1_previous"),
+        ] {
+            let error = Ws10ChannelImpoundmentKernel::compute_muskingum_cunge_state(
+                Ws10NodeClass::Channel,
+                0.04,
+                0.01,
+                0.001,
+                1.0,
+                available,
+                0.0,
+                60.0,
+                86_400.0,
+                prior_qin,
+                prior_q1,
+            )
+            .expect_err("invalid static MC state must fail closed");
+            assert_eq!(error.symbol.as_str(), symbol);
+        }
+    }
+
+    #[test]
     fn direct_channel_runoff_helpers_cover_branch_cases() {
         let control = test_channel_control();
         let rational_context = test_channel_context(&control, Ws11IpeakBranch::Rational);

@@ -1,6 +1,6 @@
 # DC-CQR-HB07-001 — Muskingum-Cunge `cx` Clamp
 
-Status: `ACTIVE`
+Status: `TERMINAL-PASS`
 Parent: `docs/work-packages/20260712-cqr-preint-hb07-channel-routing-diagnostics-001/package.md`
 
 ## Defect
@@ -32,3 +32,11 @@ Terminal PASS requires archived red/green evidence, exact typed error identity,
 zero eligible diagnostics function below 75%, both fixed rows at CRAP at most
 30, focused/full orchestrator tests, W11C consumer, scoped Clippy, formatting,
 two independent final reviews, and durable A–H/lineage/metric artifacts.
+
+## Outcome
+
+The archived red proves the old clamp admitted `cx < -10`. Production now
+returns `WKERNEL-WS10-CHANNEL-E-003` on exact symbol `cx`; no replacement
+threshold, clamp, damping or fallback was added. Exact fresh/carried
+reconstruction and every HB07 terminal gate pass. Disposition:
+`TERMINAL-PASS`.

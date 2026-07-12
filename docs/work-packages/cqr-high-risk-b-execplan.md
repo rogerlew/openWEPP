@@ -58,7 +58,9 @@ classification records. It does not permit a multi-module implementation diff.
 - [x] (2026-07-12 UTC) Execute HB-06 through reviewed `MODULE-PASS`: typed
   runner adoption, producer alias admission guard, final metric floors, and
   SIMIMPL04 production streaming-Parquet readback pass.
-- [ ] Execute or disposition HB-07 through its terminal record.
+- [x] (2026-07-12 UTC) Close `DC-CQR-HB07-001` and execute HB-07 through
+  reviewed `MODULE-PASS`: both rows and all function floors pass, the `cx`
+  clamp is fail-closed, and W11C consumes the production route.
 - [ ] Execute or disposition HB-08 through its terminal record.
 - [ ] Execute or disposition HB-09 through its terminal record.
 - [ ] Execute or disposition HB-10 through its terminal record.
@@ -87,6 +89,9 @@ classification records. It does not permit a multi-module implementation diff.
 - HB-06's executable proof confirms the SIMIMPL04 integration uses the
   production streaming sink; no private-sink duplicate is needed to establish
   the downstream Parquet consumer.
+- HB-07 cover-first work exposed an unauthorized variable MC `cx < -10`
+  clamp. The committed DC authority required exact channel E-003 rejection;
+  no routing coefficient repair or fallback remains.
 
 ## Decision Log
 

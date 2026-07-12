@@ -427,6 +427,55 @@ impl Ws10ChannelImpoundmentKernel {
         })
     }
 
+    #[allow(clippy::too_many_arguments)]
+    fn ws11_dynamic_muskingum_celerity(
+        node_class: Ws10NodeClass,
+        ishape: u32,
+        qref: f64,
+        depth: f64,
+        channel_width: f64,
+        bt: f64,
+        ap: f64,
+        chnz0: f64,
+    ) -> Result<f64, Ws10GuardError> {
+        let ckref = match ishape {
+            1 => Self::require_non_negative_computed(
+                node_class,
+                BoundarySymbol::from("ckref"),
+                4.0 * qref / (3.0 * chnz0 * depth * depth),
+            )?,
+            2 => Self::require_non_negative_computed(
+                node_class,
+                BoundarySymbol::from("ckref"),
+                (qref / (channel_width * depth))
+                    * (1.0 + (2.0 * channel_width / (3.0 * (channel_width + (2.0 * depth))))),
+            )?,
+            3 => {
+                let dqdy = (2.5 / depth - (4.0 / (3.0 * ap) * (1.0 + (bt / depth)).sqrt())) * qref;
+                Self::require_non_negative_computed(
+                    node_class,
+                    BoundarySymbol::from("ckref"),
+                    dqdy / bt,
+                )?
+            }
+            _ => {
+                return Err(Self::domain_violation(
+                    node_class,
+                    BoundarySymbol::from("ws11_muskingum_ishape"),
+                    f64::from(ishape),
+                ));
+            }
+        };
+        if ckref <= WS10_ZERO_THRESHOLD {
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("ckref"),
+                ckref,
+            ));
+        }
+        Ok(ckref)
+    }
+
     #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
     fn compute_variable_muskingum_cunge_state(
         node_class: Ws10NodeClass,
@@ -502,41 +551,16 @@ impl Ws10ChannelImpoundmentKernel {
             depth,
         )?;
 
-        let ckref = match ishape {
-            1 => Self::require_non_negative_computed(
-                node_class,
-                BoundarySymbol::from("ckref"),
-                4.0 * qref / (3.0 * chnz0 * depth * depth),
-            )?,
-            2 => Self::require_non_negative_computed(
-                node_class,
-                BoundarySymbol::from("ckref"),
-                (qref / (channel_width * depth))
-                    * (1.0 + (2.0 * channel_width / (3.0 * (channel_width + (2.0 * depth))))),
-            )?,
-            3 => {
-                let dqdy = (2.5 / depth - (4.0 / (3.0 * ap) * (1.0 + (bt / depth)).sqrt())) * qref;
-                Self::require_non_negative_computed(
-                    node_class,
-                    BoundarySymbol::from("ckref"),
-                    dqdy / bt,
-                )?
-            }
-            _ => {
-                return Err(Self::domain_violation(
-                    node_class,
-                    BoundarySymbol::from("ws11_muskingum_ishape"),
-                    f64::from(ishape),
-                ));
-            }
-        };
-        if ckref <= WS10_ZERO_THRESHOLD {
-            return Err(Self::domain_violation(
-                node_class,
-                BoundarySymbol::from("ckref"),
-                ckref,
-            ));
-        }
+        let ckref = Self::ws11_dynamic_muskingum_celerity(
+            node_class,
+            ishape,
+            qref,
+            depth,
+            channel_width,
+            bt,
+            ap,
+            chnz0,
+        )?;
 
         let tk = Self::require_non_negative_computed(
             node_class,
@@ -556,13 +580,17 @@ impl Ws10ChannelImpoundmentKernel {
             ));
         }
 
-        let mut cx = Self::require_finite_computed(
+        let cx = Self::require_finite_computed(
             node_class,
             BoundarySymbol::from("cx"),
             0.5 * (1.0 - (qref / dencx)),
         )?;
         if cx < -10.0 {
-            cx = -10.0;
+            return Err(Self::domain_violation(
+                node_class,
+                BoundarySymbol::from("cx"),
+                cx,
+            ));
         }
 
         let denominator = Self::require_finite_computed(

@@ -1,6 +1,6 @@
 # HB-07 Channel-Routing Diagnostics
 
-Status: `ACTIVE`
+Status: `MODULE-PASS`
 Parent: `docs/work-packages/cqr-high-risk-b-execplan.md`
 
 ## Objective
@@ -108,3 +108,11 @@ Acceptance requires both fixed rows at CRAP at most 30, zero eligible function
 below 75%, preserved numeric/publication behavior, exact typed guards, the real
 W11C consumer passing, and two independent final reviews/verifications under
 the High-B delegation authorization.
+
+## Terminal Outcome
+
+Cover-first characterization closed all A–H/floor gaps. The only decomposition
+extracted shape-specific celerity without changing formulas or order.
+DC-CQR-HB07-001 removed the unauthorized `cx < -10` clamp and established
+exact channel E-003 failure. Both fixed rows, all transitive functions, the
+full orchestrator and W11C consumer pass. Disposition: `MODULE-PASS`.
