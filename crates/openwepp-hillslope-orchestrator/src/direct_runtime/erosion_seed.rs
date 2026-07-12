@@ -13,9 +13,10 @@
 
 use super::{
     DirectErosionConsolidationCarry, DirectRuntimeError, DirectWave1ContinuityInputs,
-    DirectWave1SlopeSegment, ErosionAdjustmentInputs, ErosionConsolidationBaselines,
-    ErosionExcessInterval, ErosionFrostRegime, ErosionIfrostCarry, ErosionParticleClass,
-    ErosionRillCoverInputs, ErosionShearSlopes, erosion_adjustment_factors, erosion_detinr,
+    DirectWave1SlopeSegment, ErosionAdjustmentFactors, ErosionAdjustmentInputs,
+    ErosionConsolidationBaselines, ErosionEffectiveIntensity, ErosionExcessInterval,
+    ErosionFrostRegime, ErosionIfrostCarry, ErosionParticleClass, ErosionRillCoverInputs,
+    ErosionRillHydraulics, ErosionShearSlopes, erosion_adjustment_factors, erosion_detinr,
     erosion_effective_intensity, erosion_interrill_delivery_ratio, erosion_rill_hydraulics,
     erosion_transport_coefficients, erosion_trcoef, validate_finite,
     wave1_quantum_is_hydraulically_active,
@@ -313,23 +314,7 @@ pub fn assemble_wave1_continuity_inputs_quantum(
 ) -> Result<DirectWave1ContinuityInputs, DirectRuntimeError> {
     validate_finite("erosion.assemble.peakro", daily.peakro_m_s)?;
     validate_finite("erosion.assemble.runoff_depth", daily.runoff_depth_m)?;
-    // E.3: the handoff supplies `qin`; the standalone field remains for
-    // crafted quanta. Both present and disagreeing is a wiring defect.
-    let qin_m2_s = if let Some(inflow) = &daily.inflow {
-        validate_finite("erosion.assemble.inflow_qin", inflow.qin_m2_s)?;
-        // A nonzero standalone qin alongside a handoff is a wiring defect
-        // (two authorities); exact-zero is the untouched default.
-        #[allow(clippy::float_cmp)]
-        if daily.qin_m2_s != 0.0 {
-            return Err(DirectRuntimeError::DirectDomainViolation {
-                field: "erosion.assemble.qin_conflict",
-            });
-        }
-        inflow.qin_m2_s
-    } else {
-        validate_finite("erosion.assemble.qin", daily.qin_m2_s)?;
-        daily.qin_m2_s
-    };
+    let qin_m2_s = resolve_wave1_qin_authority(daily)?;
 
     // Gate BEFORE computing routed operands (legacy gate-before-`param`).
     // Non-routed quanta return the inert payload; the solver gates
@@ -411,29 +396,15 @@ pub fn assemble_wave1_continuity_inputs_quantum(
     // full-reinfiltration `qout = 0` case) carries no interrill supply:
     // `param.for:540` zeroes theta there, so `detinr` is inert-zero and
     // the producer (whose operands would be 0/0) is not invoked.
-    let intdr = erosion_interrill_delivery_ratio(
-        seed.is_cropland,
-        daily.random_roughness_m,
-        &seed.classes,
+    let detinr = assemble_wave1_interrill_detachment(
+        seed,
+        daily,
+        qout_m2_s,
+        qin_m2_s,
+        effective,
+        adjustments,
+        hydraulics,
     )?;
-    let interrill_active = qout_m2_s > qin_m2_s
-        && !daily.theta_suppressed
-        && effective.effdrr_s > 0.0
-        && daily.runoff_depth_m > 0.0;
-    let detinr = if interrill_active {
-        erosion_detinr(
-            seed.ki,
-            adjustments.kiadjf,
-            effective.effint_m_s,
-            daily.runoff_depth_m,
-            effective.effdrr_s,
-            intdr,
-            seed.rspace_m,
-            hydraulics.width_m,
-        )?
-    } else {
-        0.0
-    };
 
     // `param.for:396`: surface frozen to the top zeros rill erodibility
     // via the solver's `surface_frozen` flag.
@@ -541,6 +512,71 @@ pub fn assemble_wave1_continuity_inputs_quantum(
         surface_frozen,
         theta_suppressed: daily.theta_suppressed,
     })
+}
+
+#[allow(clippy::too_many_arguments)]
+fn assemble_wave1_interrill_detachment(
+    seed: &DirectWave1OperandSeed,
+    daily: &DirectWave1DailyState,
+    qout_m2_s: f64,
+    qin_m2_s: f64,
+    effective: ErosionEffectiveIntensity,
+    adjustments: ErosionAdjustmentFactors,
+    hydraulics: ErosionRillHydraulics,
+) -> Result<f64, DirectRuntimeError> {
+    let intdr = erosion_interrill_delivery_ratio(
+        seed.is_cropland,
+        daily.random_roughness_m,
+        &seed.classes,
+    )?;
+    let interrill_active = qout_m2_s > qin_m2_s
+        && !daily.theta_suppressed
+        && effective.effdrr_s > 0.0
+        && daily.runoff_depth_m > 0.0;
+    if interrill_active {
+        erosion_detinr(
+            seed.ki,
+            adjustments.kiadjf,
+            effective.effint_m_s,
+            daily.runoff_depth_m,
+            effective.effdrr_s,
+            intdr,
+            seed.rspace_m,
+            hydraulics.width_m,
+        )
+    } else {
+        Ok(0.0)
+    }
+}
+
+/// E.3 qin authority selection: the typed erosion handoff supersedes the
+/// standalone crafted-quantum field, and dual nonzero authorities fail closed.
+fn resolve_wave1_qin_authority(daily: &DirectWave1DailyState) -> Result<f64, DirectRuntimeError> {
+    if let Some(inflow) = &daily.inflow {
+        validate_finite("erosion.assemble.inflow_qin", inflow.qin_m2_s)?;
+        // A nonzero standalone qin alongside a handoff is a wiring defect
+        // (two authorities); exact-zero is the untouched default.
+        #[allow(clippy::float_cmp)]
+        if daily.qin_m2_s != 0.0 {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "erosion.assemble.qin_conflict",
+            });
+        }
+        if inflow.qin_m2_s < 0.0 {
+            return Err(DirectRuntimeError::NegativeDirectValue {
+                field: "erosion.assemble.inflow_qin",
+            });
+        }
+        Ok(inflow.qin_m2_s)
+    } else {
+        validate_finite("erosion.assemble.qin", daily.qin_m2_s)?;
+        if daily.qin_m2_s < 0.0 {
+            return Err(DirectRuntimeError::NegativeDirectValue {
+                field: "erosion.assemble.qin",
+            });
+        }
+        Ok(daily.qin_m2_s)
+    }
 }
 
 /// The inert-day continuity payload: static geometry + the activation

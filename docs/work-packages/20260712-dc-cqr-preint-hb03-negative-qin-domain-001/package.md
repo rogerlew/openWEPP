@@ -1,6 +1,6 @@
 # DC CQR HB-03 — Negative Erosion Qin Domain
 
-Status: `ACTIVE`
+Status: `TERMINAL-PASS`
 
 ## Objective
 
@@ -35,9 +35,9 @@ authorized, safe, and directly testable, so correction is mandatory.
 
 - [x] Reproduce standalone negative-qin acceptance.
 - [x] Confirm authority, mechanism, and bounded write set.
-- [ ] Correct standalone and handoff admission with exact priority.
-- [ ] Resume HB-03 decomposition and focused measurement.
-- [ ] Complete dual review/verification and terminal disposition.
+- [x] Correct standalone and handoff admission with exact priority.
+- [x] Resume HB-03 decomposition and focused measurement.
+- [x] Complete dual review/verification and terminal disposition.
 
 ## Review And Delegation
 
@@ -47,4 +47,9 @@ declared source, tests, and evidence.
 
 ## Outcomes
 
-Pending execution.
+The qin boundary now rejects negative standalone/handoff erosion discharge while
+retaining exact authority/conflict order and positive full-reinfiltration
+continuity. The target falls from CRAP 34.808 to 26.278; slice coverage is
+94.118% lines / 93.617% regions and every function clears 75%. Focused tests,
+Clippy, format, and diff pass. Dual review/verification pass with every finding
+closed. Disposition: `TERMINAL-PASS`; `DC-CQR-HB03-001` is closed.

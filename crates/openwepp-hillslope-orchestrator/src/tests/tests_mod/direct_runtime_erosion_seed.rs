@@ -375,6 +375,23 @@ fn hb03_d_f_h_qin_authority_rejects_conflict_nonfinite_and_negative_values() {
                 field: "erosion.assemble.qin"
             })
         ));
+
+        let mut malformed_handoff = storm_daily_state();
+        malformed_handoff.inflow = Some(Wave1InflowOperands {
+            qin_m2_s,
+            qsout_kg_m_s: 1.0e-3,
+            prior_slpend: 0.30,
+            prior_cnslp: 0.25,
+            prior_end_shear: (0.5, 0.5, 0.0),
+            prior_end_transport: (0.5, 0.5, 0.0),
+            exit_fractions: [0.3, 0.3, 0.2, 0.1, 0.1],
+        });
+        assert!(matches!(
+            assemble_wave1_continuity_inputs_quantum(&seed, &malformed_handoff, true),
+            Err(DirectRuntimeError::NonFiniteDirectValue {
+                field: "erosion.assemble.inflow_qin"
+            })
+        ));
     }
 
     let negative = DirectWave1DailyState {
@@ -387,4 +404,129 @@ fn hb03_d_f_h_qin_authority_rejects_conflict_nonfinite_and_negative_values() {
             field: "erosion.assemble.qin"
         })
     );
+
+    let mut negative_handoff = storm_daily_state();
+    negative_handoff.inflow = Some(Wave1InflowOperands {
+        qin_m2_s: -1.0e-4,
+        qsout_kg_m_s: 1.0e-3,
+        prior_slpend: 0.30,
+        prior_cnslp: 0.25,
+        prior_end_shear: (0.5, 0.5, 0.0),
+        prior_end_transport: (0.5, 0.5, 0.0),
+        exit_fractions: [0.3, 0.3, 0.2, 0.1, 0.1],
+    });
+    assert_eq!(
+        assemble_wave1_continuity_inputs_quantum(&seed, &negative_handoff, true),
+        Err(DirectRuntimeError::NegativeDirectValue {
+            field: "erosion.assemble.inflow_qin"
+        })
+    );
+
+    negative_handoff.qin_m2_s = 1.0e-4;
+    assert_eq!(
+        assemble_wave1_continuity_inputs_quantum(&seed, &negative_handoff, true),
+        Err(DirectRuntimeError::DirectDomainViolation {
+            field: "erosion.assemble.qin_conflict"
+        }),
+        "dual-authority conflict must retain priority over handoff negativity"
+    );
+}
+
+#[test]
+fn hb03_a_b_c_g_passby_exempt_reinfiltration_routes_only_upstream_authority() {
+    let mut seed = clay_loam_seed();
+    seed.avg_slope = 0.30;
+    seed.slpend = 0.30;
+    seed.segments = vec![DirectWave1SlopeSegment {
+        xu: 0.0,
+        xl: 1.0,
+        a: 0.0,
+        b: 1.0,
+    }];
+    let mut daily = DirectWave1DailyState {
+        peakro_m_s: 0.0,
+        runoff_depth_m: 0.0,
+        effdrn_s: 3600.0,
+        excess_intervals: Vec::new(),
+        theta_suppressed: true,
+        ..storm_daily_state()
+    };
+    daily.inflow = Some(Wave1InflowOperands {
+        qin_m2_s: 2.0e-4,
+        qsout_kg_m_s: 1.0e-6,
+        prior_slpend: 0.30,
+        prior_cnslp: 0.25,
+        prior_end_shear: (0.5, 0.5, 0.0),
+        prior_end_transport: (0.5, 0.5, 0.0),
+        exit_fractions: [0.3, 0.3, 0.2, 0.1, 0.1],
+    });
+    let inputs = assemble_wave1_continuity_inputs_quantum(&seed, &daily, true)
+        .expect("positive erosion handoff must activate a reinfiltration quantum");
+    assert_eq!(inputs.peakro_m_s, 0.0);
+    assert_eq!(inputs.runoff_depth_m, 0.0);
+    assert_eq!(inputs.qin_m2_s, 2.0e-4);
+    assert_eq!(inputs.detinr_kg_s_m2, 0.0);
+    assert!(inputs.strldn > 0.0);
+    assert!(inputs.inter_ofe.is_some());
+    assert_eq!(
+        inputs
+            .enrichment
+            .as_deref()
+            .and_then(|enrichment| enrichment.inflow_fractions),
+        Some([0.3, 0.3, 0.2, 0.1, 0.1])
+    );
+
+    let assembled_strldn = inputs.strldn;
+    let assembled_inter_ofe = inputs.inter_ofe.expect("inter-OFE lineage");
+    let state = compute_direct_wave1_continuity(&inputs)
+        .expect("real continuity consumer must route the reinfiltrating load");
+    assert!(state.active);
+    assert!(state.inflow_sediment_kg_m > 0.0);
+    assert_eq!(inputs.detinr_kg_s_m2, 0.0, "no local interrill supply");
+    assert!(state.total_deposition_kg > 0.0);
+    assert!(
+        state.exported_sediment_kg_m
+            <= state.inflow_sediment_kg_m + state.total_detachment_kg / seed.field_width_m
+    );
+    assert!(assembled_strldn > 0.0);
+    assert_eq!(state.qout_m2_s, 0.0);
+    assert_eq!(
+        inputs.inter_ofe.expect("inter-OFE inputs").prior_shear_last,
+        assembled_inter_ofe.prior_shear_last
+    );
+    assert!(state.exit_class_fractions.is_some());
+    let closure = (state.exported_sediment_kg_m - state.inflow_sediment_kg_m)
+        - (state.total_detachment_kg - state.total_deposition_kg) / seed.field_width_m;
+    assert!(closure.abs() <= 1.0e-9 * state.inflow_sediment_kg_m.max(1.0e-9));
+}
+
+#[test]
+fn hb03_a_c_positive_standalone_qin_is_preserved_without_handoff() {
+    let mut seed = clay_loam_seed();
+    seed.avg_slope = 0.30;
+    seed.slpend = 0.30;
+    seed.segments = vec![DirectWave1SlopeSegment {
+        xu: 0.0,
+        xl: 1.0,
+        a: 0.0,
+        b: 1.0,
+    }];
+    let daily = DirectWave1DailyState {
+        peakro_m_s: 0.0,
+        runoff_depth_m: 0.0,
+        effdrn_s: 3600.0,
+        qin_m2_s: 2.0e-4,
+        strldn: 1.5,
+        excess_intervals: Vec::new(),
+        theta_suppressed: true,
+        ..storm_daily_state()
+    };
+    let inputs = assemble_wave1_continuity_inputs_quantum(&seed, &daily, true)
+        .expect("standalone qin must remain a valid crafted-quantum authority");
+    assert_eq!(inputs.qin_m2_s, daily.qin_m2_s);
+    assert_eq!(inputs.strldn, daily.strldn);
+    assert!(inputs.inter_ofe.is_none());
+    assert_eq!(inputs.detinr_kg_s_m2, 0.0);
+    // This crafted standalone payload is preserved for diagnostic callers;
+    // the handoff vector above supplies the canonically valid real solve.
 }

@@ -60,10 +60,11 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-12 UTC`:
-- `20260712-dc-cqr-preint-hb03-negative-qin-domain-001/` - ACTIVE: HB-03
-  characterization proved negative upstream erosion discharge is admitted in
-  operand assembly. The bounded fix adds nonnegative standalone/handoff qin
-  admission without changing positive-inflow continuity or water authority.
+- `20260712-dc-cqr-preint-hb03-negative-qin-domain-001/` -
+  EXECUTED-COMPLETE (2026-07-12): standalone/handoff qin now rejects negative
+  erosion discharge without changing authority priority or positive-inflow
+  continuity. The real reinfiltration consumer closes mass; slice coverage is
+  94.118% lines / 93.617% regions and target CRAP is 26.278.
 - `20260712-dc-cqr-preint-hb02-texture-mass-fraction-domain-001/` -
   EXECUTED-COMPLETE (2026-07-12): individual texture fractions now enforce
   finite `[0,1]` admission without an invented sum rule; the mechanically
