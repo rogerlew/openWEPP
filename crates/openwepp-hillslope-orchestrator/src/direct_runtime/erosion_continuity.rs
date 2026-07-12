@@ -533,62 +533,11 @@ pub fn wave1_xcrit(
     let taue = wave1_classifier_shear(a, b, c, xe);
 
     if a == 0.0 {
-        // Uniform-slope segment.
-        let xc1 = if b != 0.0 {
-            tauchk / b
-        } else {
-            WAVE1_XCRIT_UNIFORM_SENTINEL
-        };
-        let regime = if taue > taub {
-            if xc1 <= xb {
-                Wave1ShearRegime::AboveCritical
-            } else if xc1 >= xe {
-                Wave1ShearRegime::BelowCritical
-            } else {
-                Wave1ShearRegime::RisingCross
-            }
-        } else if xc1 >= xe {
-            Wave1ShearRegime::AboveCritical
-        } else if xc1 <= xb {
-            Wave1ShearRegime::BelowCritical
-        } else {
-            Wave1ShearRegime::FallingCross
-        };
-        return Ok(Wave1ShearClassification {
-            regime,
-            xc1,
-            xc2: xe,
-        });
+        return Ok(wave1_xcrit_uniform(b, tauchk, taub, taue, xb, xe));
     }
 
     if a > 0.0 && taue > taub {
-        // Convex segment with shear increasing downslope.
-        if taub >= tauc {
-            return Ok(Wave1ShearClassification {
-                regime: Wave1ShearRegime::AboveCritical,
-                xc1: xb,
-                xc2: xe,
-            });
-        }
-        if taue <= tauc {
-            return Ok(Wave1ShearClassification {
-                regime: Wave1ShearRegime::BelowCritical,
-                xc1: xb,
-                xc2: xe,
-            });
-        }
-        let (x1, x2) = wave1_root(a, b, tauchk)?;
-        let mut xc1 = xb;
-        if x1 >= xb && x1 <= xe {
-            xc1 = x1;
-        } else if x2 >= xb && x2 <= xe {
-            xc1 = x2;
-        }
-        return Ok(Wave1ShearClassification {
-            regime: Wave1ShearRegime::RisingCross,
-            xc1,
-            xc2: xe,
-        });
+        return wave1_xcrit_convex_increasing(a, b, tauchk, taub, taue, tauc, xb, xe);
     }
 
     // Any other segment shape.
@@ -641,6 +590,81 @@ pub fn wave1_xcrit(
         xc1: xb,
         xc2: xe,
     })
+}
+
+#[allow(clippy::too_many_arguments, clippy::similar_names)]
+fn wave1_xcrit_convex_increasing(
+    a: f64,
+    b: f64,
+    tauchk: f64,
+    taub: f64,
+    taue: f64,
+    tauc: f64,
+    xb: f64,
+    xe: f64,
+) -> Result<Wave1ShearClassification, DirectRuntimeError> {
+    if taub >= tauc {
+        return Ok(Wave1ShearClassification {
+            regime: Wave1ShearRegime::AboveCritical,
+            xc1: xb,
+            xc2: xe,
+        });
+    }
+    if taue <= tauc {
+        return Ok(Wave1ShearClassification {
+            regime: Wave1ShearRegime::BelowCritical,
+            xc1: xb,
+            xc2: xe,
+        });
+    }
+    let (x1, x2) = wave1_root(a, b, tauchk)?;
+    let mut xc1 = xb;
+    if x1 >= xb && x1 <= xe {
+        xc1 = x1;
+    } else if x2 >= xb && x2 <= xe {
+        xc1 = x2;
+    }
+    Ok(Wave1ShearClassification {
+        regime: Wave1ShearRegime::RisingCross,
+        xc1,
+        xc2: xe,
+    })
+}
+
+#[allow(clippy::float_cmp, clippy::similar_names, clippy::if_not_else)]
+fn wave1_xcrit_uniform(
+    b: f64,
+    tauchk: f64,
+    taub: f64,
+    taue: f64,
+    xb: f64,
+    xe: f64,
+) -> Wave1ShearClassification {
+    let xc1 = if b != 0.0 {
+        tauchk / b
+    } else {
+        WAVE1_XCRIT_UNIFORM_SENTINEL
+    };
+    let regime = if taue > taub {
+        if xc1 <= xb {
+            Wave1ShearRegime::AboveCritical
+        } else if xc1 >= xe {
+            Wave1ShearRegime::BelowCritical
+        } else {
+            Wave1ShearRegime::RisingCross
+        }
+    } else if xc1 >= xe {
+        Wave1ShearRegime::AboveCritical
+    } else if xc1 <= xb {
+        Wave1ShearRegime::BelowCritical
+    } else {
+        Wave1ShearRegime::FallingCross
+    };
+    Wave1ShearClassification {
+        regime,
+        xc1,
+        xc2: xe,
+    }
 }
 
 /// Continuity right-hand side `dG/dx = Dc*(1 - G/Tc) + theta` when
@@ -1014,6 +1038,128 @@ struct Wave1ErodOutcome {
     xdbeg: f64,
 }
 
+struct Wave1ErodMarchOutcome {
+    currpt: usize,
+    kflag: u8,
+    ldrat: f64,
+    ldrat2: f64,
+    outcome: Wave1ErodOutcome,
+}
+
+struct Wave1ErodBracket {
+    kflag: u8,
+    xlast: f64,
+    detlst: f64,
+    xfrt: f64,
+    detfrt: f64,
+    ldlast: f64,
+}
+
+enum Wave1ErodPreparation {
+    Complete(Wave1ErodOutcome),
+    Onset(Wave1ErodOutcome, Wave1ErodBracket),
+}
+
+#[allow(clippy::too_many_arguments)]
+fn wave1_erod_march(
+    grid: &mut Wave1RouteGrid,
+    seg: &Wave1SegmentCoefficients,
+    eata: f64,
+    drivers: &Wave1Drivers,
+    xb: f64,
+    xe: f64,
+    ibeg: usize,
+    ldlast: f64,
+) -> Wave1ErodMarchOutcome {
+    let mut outcome = Wave1ErodOutcome {
+        ndep: false,
+        xdbeg: 0.0,
+    };
+    let mut kflag = 0_u8;
+    let mut ldrat = 0.0;
+    let mut ldrat2 = 0.0;
+    let mut i = grid.ilast;
+    let currpt = loop {
+        i += 1;
+        if i >= DIRECT_WAVE1_GRID_POINTS {
+            break DIRECT_WAVE1_GRID_POINTS - 1;
+        }
+        let x = wave1_grid_x(i);
+        if x > xe {
+            break i;
+        }
+        let (dx, x_from, ld_from) = if i <= ibeg {
+            (x - xb, xb, ldlast)
+        } else {
+            (WAVE1_GRID_DX, wave1_grid_x(i - 1), grid.load[i - 1])
+        };
+        let shr = wave1_march_shear(seg.a * x * x + seg.b * x + seg.c);
+        let dcap = wave1_detachment_capacity(eata, drivers.taucn, shr);
+        let tcap = wave1_transport_capacity(seg.atc, seg.btc, seg.ctc, drivers.ktrato, x);
+        grid.tcap[i] = tcap;
+        let mut loopfg = false;
+        if drivers.qostar > -1.0 && drivers.qostar < 0.0 && x > -drivers.qostar {
+            grid.load[i] = 0.0;
+            grid.region[i] = Wave1PointRegion::FlowEnd;
+            kflag = 4;
+            outcome.ndep = false;
+        } else {
+            let (ldnew, floored) = wave1_runge_step_traced(
+                seg.a,
+                seg.b,
+                seg.c,
+                seg.atc,
+                seg.btc,
+                seg.ctc,
+                eata,
+                drivers.taucn,
+                drivers.theta,
+                drivers.ktrato,
+                dx,
+                x_from,
+                ld_from,
+            );
+            grid.load[i] = ldnew;
+            grid.clamped[i] = floored;
+            grid.region[i] = Wave1PointRegion::Detachment;
+            if tcap > 0.0 {
+                ldrat = 1.0 - grid.load[i] / tcap;
+                kflag = 1;
+                grid.detach[i] = dcap * ldrat;
+                if grid.load[i] > 0.0 {
+                    ldrat2 = tcap / grid.load[i] - 1.0;
+                    kflag = 2;
+                }
+            } else if grid.load[i] > 0.0 {
+                ldrat2 = tcap / grid.load[i] - 1.0;
+                kflag = 2;
+            } else {
+                grid.load[i] = 0.0;
+                kflag = 3;
+            }
+        }
+        if (kflag == 2 && ldrat2 < 0.0) || (kflag == 1 && ldrat < 0.0) {
+            outcome.ndep = true;
+            loopfg = true;
+        } else {
+            grid.ilast = i;
+        }
+        if x >= 1.0 {
+            loopfg = true;
+        }
+        if loopfg {
+            break i;
+        }
+    };
+    Wave1ErodMarchOutcome {
+        currpt,
+        kflag,
+        ldrat,
+        ldrat2,
+        outcome,
+    }
+}
+
 /// `erod.for`: RK4 detachment march over the grid points in `[xb, xe]`,
 /// including the case-4 flow-end handling and the deposition-onset secant
 /// solve (`cross.for`).
@@ -1037,15 +1183,7 @@ fn wave1_erod(
     dl: &mut f64,
     ldlast: &mut f64,
 ) -> Wave1ErodOutcome {
-    let tauc = drivers.taucn;
-    let theta = drivers.theta;
-    let phi = drivers.phi;
-    let ktrato = drivers.ktrato;
-    let qostar = drivers.qostar;
-    let (a, b, c) = (seg.a, seg.b, seg.c);
-    let (atc, btc, ctc) = (seg.atc, seg.btc, seg.ctc);
-
-    let mut outcome = Wave1ErodOutcome {
+    let outcome = Wave1ErodOutcome {
         ndep: false,
         xdbeg: 0.0,
     };
@@ -1057,224 +1195,76 @@ fn wave1_erod(
         return outcome;
     }
 
-    let mut kflag = 0_u8;
-    let mut ldrat = 0.0;
-    let mut ldrat2 = 0.0;
-
-    // *** L2 loop: march the grid points inside [xb, xe]. ***
-    let mut i = grid.ilast;
-    let currpt = loop {
-        i += 1;
-        if i >= DIRECT_WAVE1_GRID_POINTS {
-            break DIRECT_WAVE1_GRID_POINTS - 1;
-        }
-        let x = wave1_grid_x(i);
-        if x > xe {
-            break i;
-        }
-
-        let (dx, x_from, ld_from) = if i <= ibeg {
-            (x - xb, xb, *ldlast)
-        } else {
-            (WAVE1_GRID_DX, wave1_grid_x(i - 1), grid.load[i - 1])
-        };
-
-        let shr = wave1_march_shear(a * x * x + b * x + c);
-        let dcap = wave1_detachment_capacity(eata, tauc, shr);
-        let tcap = wave1_transport_capacity(atc, btc, ctc, ktrato, x);
-        grid.tcap[i] = tcap;
-
-        let mut loopfg = false;
-        if qostar > -1.0 && qostar < 0.0 && x > -qostar {
-            // Case-4 plane past where runoff ends (`erod.for:208`).
-            grid.load[i] = 0.0;
-            grid.region[i] = Wave1PointRegion::FlowEnd;
-            kflag = 4;
-            outcome.ndep = false;
-        } else {
-            let (ldnew, floored) = wave1_runge_step_traced(
-                a, b, c, atc, btc, ctc, eata, tauc, theta, ktrato, dx, x_from, ld_from,
-            );
-            grid.load[i] = ldnew;
-            grid.clamped[i] = floored;
-            grid.region[i] = Wave1PointRegion::Detachment;
-            if tcap > 0.0 {
-                ldrat = 1.0 - grid.load[i] / tcap;
-                kflag = 1;
-                grid.detach[i] = dcap * ldrat;
-                if grid.load[i] > 0.0 {
-                    ldrat2 = tcap / grid.load[i] - 1.0;
-                    kflag = 2;
-                }
-            } else if grid.load[i] > 0.0 {
-                ldrat2 = tcap / grid.load[i] - 1.0;
-                kflag = 2;
-            } else {
-                grid.load[i] = 0.0;
-                kflag = 3;
-            }
-        }
-
-        if (kflag == 2 && ldrat2 < 0.0) || (kflag == 1 && ldrat < 0.0) {
-            outcome.ndep = true;
-            loopfg = true;
-        } else {
-            grid.ilast = i;
-        }
-        if x >= 1.0 {
-            loopfg = true;
-        }
-        if loopfg {
-            break i;
-        }
+    let march = wave1_erod_march(grid, seg, eata, drivers, xb, xe, ibeg, *ldlast);
+    let preparation = wave1_erod_prepare(grid, seg, eata, drivers, xb, xe, ibeg, march, dl, ldlast);
+    let (mut outcome, bracket) = match preparation {
+        Wave1ErodPreparation::Complete(outcome) => return outcome,
+        Wave1ErodPreparation::Onset(outcome, bracket) => (outcome, bracket),
     };
-
-    let ldlast_local;
-    let mut xlast;
-    let xfrt;
-    let mut detfrt;
-    let mut detlst = 0.0;
-
-    if !outcome.ndep {
-        // *** M2 IF (`erod.for:282`): no deposition inside the march —
-        // integrate the sub-grid tail to xe. ***
-        if kflag == 4 {
-            *ldlast = 0.0;
-            *dl = 0.0;
-            return outcome;
-        }
-        let x_ilast = wave1_grid_x(grid.ilast);
-        if xe == x_ilast {
-            ldlast_local = grid.load[grid.ilast];
-            xlast = x_ilast;
-        } else {
-            let dx = xe - x_ilast;
-            ldlast_local = wave1_runge_step(
-                a,
-                b,
-                c,
-                atc,
-                btc,
-                ctc,
-                eata,
-                tauc,
-                theta,
-                ktrato,
-                dx,
-                x_ilast,
-                grid.load[grid.ilast],
-            );
-            xlast = xe;
-        }
-
-        let shr = wave1_march_shear(a * xlast * xlast + b * xlast + c);
-        let dcap = wave1_detachment_capacity(eata, tauc, shr);
-        let tcap = wave1_transport_capacity(atc, btc, ctc, ktrato, xlast);
-
-        if tcap > 0.0 {
-            ldrat = 1.0 - ldlast_local / tcap;
-            *dl = dcap * ldrat;
-            // Legacy sets kflag = 1 here (`erod.for:344`); the store is
-            // dead because every continuing path below re-flags kflag = 2
-            // before the onset iteration.
-            if ldrat >= 0.0 {
-                *ldlast = ldlast_local;
-                return outcome;
-            }
-        } else if ldlast_local <= 0.0 {
-            *ldlast = 0.0;
-            *dl = 0.0;
-            return outcome;
-        }
-
-        // Deposition begins at the segment end (`erod.for:363`).
-        ldrat2 = tcap / ldlast_local - 1.0;
-        kflag = 2;
-        detfrt = ldrat2;
-        if grid.load[grid.ilast] > 0.0 {
-            detlst = grid.tcap[grid.ilast] / grid.load[grid.ilast] - 1.0;
-        }
-        outcome.ndep = true;
-        xfrt = xlast;
-
-        if wave1_grid_x(grid.ilast) == xfrt {
-            let prev = grid.ilast.saturating_sub(1);
-            xlast = wave1_grid_x(prev);
-            if detfrt == ldrat2 {
-                if grid.load[prev] > 0.0 {
-                    detlst = grid.tcap[prev] / grid.load[prev] - 1.0;
-                }
-            } else if grid.tcap[prev] > 0.0 {
-                detlst = 1.0 - grid.load[prev] / grid.tcap[prev];
-            }
-        } else {
-            xlast = wave1_grid_x(grid.ilast);
-        }
-        // Legacy keeps `ldlast` (the load computed at xe) paired with the
-        // rewound `xlast` for the first onset iteration; reproduced as-is.
-    } else {
-        // *** M2 ELSE (`erod.for:390`): deposition inside the march —
-        // reconstruct the (xlast, ldlast, tclast) bracket of the last
-        // committed point (or the segment entry when none committed). ***
-        xfrt = wave1_grid_x(currpt);
-        let tclast_local;
-        if grid.ilast + 1 == ibeg {
-            xlast = xb;
-            ldlast_local = *ldlast;
-            let xtrmtc0 = atc * xb * xb + btc * xb + ctc;
-            tclast_local = (xtrmtc0 * ktrato).max(0.0);
-        } else {
-            xlast = wave1_grid_x(grid.ilast);
-            ldlast_local = grid.load[grid.ilast];
-            tclast_local = grid.tcap[grid.ilast];
-        }
-        detfrt = 0.0;
-        if xlast <= 0.0 && tclast_local <= 0.0 && ldlast_local <= 0.0 {
-            kflag = 5;
-            detlst = *dl;
-            detfrt =
-                (phi / (phi + 1.0)) * (ktrato * (atc * xfrt * xfrt + btc * xfrt + ctc) - theta);
-        }
-        if kflag == 1 {
-            detfrt = ldrat;
-            detlst = if tclast_local > 0.0 {
-                1.0 - ldlast_local / tclast_local
-            } else {
-                0.0
-            };
-        } else if kflag == 2 {
-            detfrt = ldrat2;
-            detlst = if ldlast_local > 0.0 {
-                tclast_local / ldlast_local - 1.0
-            } else {
-                0.0
-            };
-        }
-
-        // `erod.for:419`: top-of-OFE degenerate bracket.
-        if detfrt <= 0.0 && detlst <= 0.0 && xlast <= 0.0 {
-            outcome.xdbeg = 0.0;
-            *ldlast = ldlast_local;
-            return outcome;
-        }
-        if detlst < 0.0 {
-            detlst = 0.0;
-        }
-    }
 
     // *** N2 loop (`erod.for:434`): cross/secant iteration for the
     // deposition onset xdbeg. ***
-    let mut xtry = xfrt;
-    let mut ldtry = ldlast_local;
-    let mut xlast_iter = xlast;
-    let mut detlst_iter = detlst;
-    let mut detfrt_iter = detfrt;
-    let mut xfrt_iter = xfrt;
-    let mut ldlast_iter = ldlast_local;
-    for _ in 0..WAVE1_ONSET_MAX_ITERS {
-        xtry = wave1_cross(xlast_iter, detlst_iter, xfrt_iter, detfrt_iter);
-        let dx = xtry - xlast_iter;
-        ldtry = wave1_runge_step(
+    let (xtry, ldtry) = wave1_erod_onset(
+        seg,
+        eata,
+        drivers,
+        bracket.kflag,
+        bracket.xlast,
+        bracket.detlst,
+        bracket.xfrt,
+        bracket.detfrt,
+        bracket.ldlast,
+    );
+
+    outcome.xdbeg = xtry;
+    *dl = 0.0;
+    *ldlast = ldtry;
+    outcome
+}
+
+#[allow(
+    clippy::too_many_arguments,
+    clippy::too_many_lines,
+    clippy::float_cmp,
+    clippy::if_not_else
+)]
+fn wave1_erod_prepare(
+    grid: &Wave1RouteGrid,
+    seg: &Wave1SegmentCoefficients,
+    eata: f64,
+    drivers: &Wave1Drivers,
+    xb: f64,
+    xe: f64,
+    ibeg: usize,
+    march: Wave1ErodMarchOutcome,
+    dl: &mut f64,
+    ldlast: &mut f64,
+) -> Wave1ErodPreparation {
+    if march.outcome.ndep {
+        return wave1_erod_prepare_deposition(grid, seg, drivers, xb, ibeg, march, dl, ldlast);
+    }
+    let mut outcome = march.outcome;
+    let mut kflag = march.kflag;
+    let (a, b, c) = (seg.a, seg.b, seg.c);
+    let (atc, btc, ctc) = (seg.atc, seg.btc, seg.ctc);
+    let ldlast_local;
+    let mut xlast;
+    let mut detlst = 0.0;
+
+    // *** M2 IF (`erod.for:282`): no deposition inside the march —
+    // integrate the sub-grid tail to xe. ***
+    if kflag == 4 {
+        *ldlast = 0.0;
+        *dl = 0.0;
+        return Wave1ErodPreparation::Complete(outcome);
+    }
+    let x_ilast = wave1_grid_x(grid.ilast);
+    if xe == x_ilast {
+        ldlast_local = grid.load[grid.ilast];
+        xlast = x_ilast;
+    } else {
+        let dx = xe - x_ilast;
+        ldlast_local = wave1_runge_step(
             a,
             b,
             c,
@@ -1282,18 +1272,184 @@ fn wave1_erod(
             btc,
             ctc,
             eata,
-            tauc,
-            theta,
-            ktrato,
+            drivers.taucn,
+            drivers.theta,
+            drivers.ktrato,
             dx,
-            xlast_iter,
-            ldlast_iter,
+            x_ilast,
+            grid.load[grid.ilast],
         );
-        let mut tcap = (atc * xtry * xtry + btc * xtry + ctc) * ktrato;
+        xlast = xe;
+    }
+
+    let shr = wave1_march_shear(a * xlast * xlast + b * xlast + c);
+    let dcap = wave1_detachment_capacity(eata, drivers.taucn, shr);
+    let tcap = wave1_transport_capacity(atc, btc, ctc, drivers.ktrato, xlast);
+
+    if tcap > 0.0 {
+        let ldrat = 1.0 - ldlast_local / tcap;
+        *dl = dcap * ldrat;
+        // Legacy sets kflag = 1 here (`erod.for:344`); the store is
+        // dead because every continuing path below re-flags kflag = 2
+        // before the onset iteration.
+        if ldrat >= 0.0 {
+            *ldlast = ldlast_local;
+            return Wave1ErodPreparation::Complete(outcome);
+        }
+    } else if ldlast_local <= 0.0 {
+        *ldlast = 0.0;
+        *dl = 0.0;
+        return Wave1ErodPreparation::Complete(outcome);
+    }
+
+    // Deposition begins at the segment end (`erod.for:363`).
+    let ldrat2 = tcap / ldlast_local - 1.0;
+    kflag = 2;
+    let detfrt = ldrat2;
+    if grid.load[grid.ilast] > 0.0 {
+        detlst = grid.tcap[grid.ilast] / grid.load[grid.ilast] - 1.0;
+    }
+    outcome.ndep = true;
+    let xfrt = xlast;
+
+    if wave1_grid_x(grid.ilast) == xfrt {
+        let prev = grid.ilast.saturating_sub(1);
+        xlast = wave1_grid_x(prev);
+        if detfrt == ldrat2 {
+            if grid.load[prev] > 0.0 {
+                detlst = grid.tcap[prev] / grid.load[prev] - 1.0;
+            }
+        } else if grid.tcap[prev] > 0.0 {
+            detlst = 1.0 - grid.load[prev] / grid.tcap[prev];
+        }
+    } else {
+        xlast = wave1_grid_x(grid.ilast);
+    }
+    // Legacy keeps `ldlast` (the load computed at xe) paired with the
+    // rewound `xlast` for the first onset iteration; reproduced as-is.
+
+    Wave1ErodPreparation::Onset(
+        outcome,
+        Wave1ErodBracket {
+            kflag,
+            xlast,
+            detlst,
+            xfrt,
+            detfrt,
+            ldlast: ldlast_local,
+        },
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn wave1_erod_prepare_deposition(
+    grid: &Wave1RouteGrid,
+    seg: &Wave1SegmentCoefficients,
+    drivers: &Wave1Drivers,
+    xb: f64,
+    ibeg: usize,
+    march: Wave1ErodMarchOutcome,
+    dl: &mut f64,
+    ldlast: &mut f64,
+) -> Wave1ErodPreparation {
+    // *** M2 ELSE (`erod.for:390`): deposition inside the march —
+    // reconstruct the (xlast, ldlast, tclast) bracket of the last
+    // committed point (or the segment entry when none committed). ***
+    let mut outcome = march.outcome;
+    let mut kflag = march.kflag;
+    let mut detlst = 0.0;
+    let xfrt = wave1_grid_x(march.currpt);
+    let (xlast, ldlast_local, tclast_local) = if grid.ilast + 1 == ibeg {
+        let xtrmtc0 = seg.atc * xb * xb + seg.btc * xb + seg.ctc;
+        (xb, *ldlast, (xtrmtc0 * drivers.ktrato).max(0.0))
+    } else {
+        (
+            wave1_grid_x(grid.ilast),
+            grid.load[grid.ilast],
+            grid.tcap[grid.ilast],
+        )
+    };
+    let mut detfrt = 0.0;
+    if xlast <= 0.0 && tclast_local <= 0.0 && ldlast_local <= 0.0 {
+        kflag = 5;
+        detlst = *dl;
+        detfrt = (drivers.phi / (drivers.phi + 1.0))
+            * (drivers.ktrato * (seg.atc * xfrt * xfrt + seg.btc * xfrt + seg.ctc) - drivers.theta);
+    }
+    if kflag == 1 {
+        detfrt = march.ldrat;
+        detlst = if tclast_local > 0.0 {
+            1.0 - ldlast_local / tclast_local
+        } else {
+            0.0
+        };
+    } else if kflag == 2 {
+        detfrt = march.ldrat2;
+        detlst = if ldlast_local > 0.0 {
+            tclast_local / ldlast_local - 1.0
+        } else {
+            0.0
+        };
+    }
+
+    // `erod.for:419`: top-of-OFE degenerate bracket.
+    if detfrt <= 0.0 && detlst <= 0.0 && xlast <= 0.0 {
+        outcome.xdbeg = 0.0;
+        *ldlast = ldlast_local;
+        return Wave1ErodPreparation::Complete(outcome);
+    }
+    if detlst < 0.0 {
+        detlst = 0.0;
+    }
+    Wave1ErodPreparation::Onset(
+        outcome,
+        Wave1ErodBracket {
+            kflag,
+            xlast,
+            detlst,
+            xfrt,
+            detfrt,
+            ldlast: ldlast_local,
+        },
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn wave1_erod_onset(
+    seg: &Wave1SegmentCoefficients,
+    eata: f64,
+    drivers: &Wave1Drivers,
+    kflag: u8,
+    mut xlast: f64,
+    mut detlst: f64,
+    mut xfrt: f64,
+    mut detfrt: f64,
+    mut ldlast: f64,
+) -> (f64, f64) {
+    let mut xtry = xfrt;
+    let mut ldtry = ldlast;
+    for _ in 0..WAVE1_ONSET_MAX_ITERS {
+        xtry = wave1_cross(xlast, detlst, xfrt, detfrt);
+        let dx = xtry - xlast;
+        ldtry = wave1_runge_step(
+            seg.a,
+            seg.b,
+            seg.c,
+            seg.atc,
+            seg.btc,
+            seg.ctc,
+            eata,
+            drivers.taucn,
+            drivers.theta,
+            drivers.ktrato,
+            dx,
+            xlast,
+            ldlast,
+        );
+        let mut tcap = (seg.atc * xtry * xtry + seg.btc * xtry + seg.ctc) * drivers.ktrato;
         if tcap < 0.0 {
             tcap = 0.0;
         }
-
         let mut converged = false;
         let mut dettry = 0.0;
         if kflag == 2 {
@@ -1315,26 +1471,21 @@ fn wave1_erod(
                 dettry = 1.0 - ldtry / tcap;
             }
         } else if kflag == 5 {
-            dettry = (phi / (phi + 1.0)) * (tcap - theta);
+            dettry = (drivers.phi / (drivers.phi + 1.0)) * (tcap - drivers.theta);
         }
-
         if converged {
             break;
         }
         if dettry <= 0.0 {
-            detfrt_iter = dettry;
-            xfrt_iter = xtry;
+            detfrt = dettry;
+            xfrt = xtry;
         } else {
-            xlast_iter = xtry;
-            detlst_iter = dettry;
-            ldlast_iter = ldtry;
+            xlast = xtry;
+            detlst = dettry;
+            ldlast = ldtry;
         }
     }
-
-    outcome.xdbeg = xtry;
-    *dl = 0.0;
-    *ldlast = ldtry;
-    outcome
+    (xtry, ldtry)
 }
 
 /// `route.for` mshear dispatch: pass rill erodibility `eata` only on
@@ -1570,64 +1721,87 @@ fn wave1_route(
             xdbeg = outcome.xdbeg;
         }
 
-        // Deposition tail after a detachment section reached transport
-        // capacity (`route.for:436`).
-        if ndep {
-            dl = 0.0;
-            let cdep = wave1_depc(
-                xdbeg,
-                seg.atc,
-                seg.btc,
-                drivers.phi,
-                drivers.theta,
-                0.0,
-                drivers.ktrato,
-                drivers.qostar,
-            );
-            // `route.for:443`: the entering load is floored at `lddend`.
-            let loadup = match enrichment.as_ref() {
-                Some((_, state)) => ldlast.max(state.lddend),
-                None => ldlast,
-            };
-            wave1_depos(
-                &mut grid,
-                xdbeg,
-                seg.xl,
-                cdep,
-                seg,
-                drivers,
-                &mut dl,
-                &mut ldlast,
-            );
-            // `route.for:448-451`.
-            if let Some((enrichment_inputs, state)) = enrichment.as_mut() {
-                if ldlast > 0.0 && drivers.qout_m2_s > 0.0 {
-                    state.deposition_region(
-                        enrichment_inputs,
-                        &wave1_enrichment_region_operands(seg, drivers),
-                        xdbeg,
-                        seg.xl,
-                        loadup,
-                        ldlast,
-                    )?;
-                    state.lddend = ldlast;
-                    state.xdetst = seg.xl;
-                }
-            }
-        }
+        wave1_route_deposition_tail(
+            &mut grid,
+            seg,
+            drivers,
+            ndep,
+            xdbeg,
+            &mut dl,
+            &mut ldlast,
+            &mut enrichment,
+        )?;
     }
 
-    // Fail-closed: the toe must have been computed by the march or the
-    // deposition writer for an active (runoff) day.
+    wave1_finalize_route(&grid, drivers, ldlast, &mut enrichment)?;
+    Ok(grid)
+}
+
+#[allow(clippy::too_many_arguments)]
+fn wave1_route_deposition_tail(
+    grid: &mut Wave1RouteGrid,
+    seg: &Wave1SegmentCoefficients,
+    drivers: &Wave1Drivers,
+    ndep: bool,
+    xdbeg: f64,
+    dl: &mut f64,
+    ldlast: &mut f64,
+    enrichment: &mut Option<(
+        &super::Wave1EnrichmentInputs,
+        &mut super::Wave1EnrichmentState,
+    )>,
+) -> Result<(), DirectRuntimeError> {
+    if !ndep {
+        return Ok(());
+    }
+    *dl = 0.0;
+    let cdep = wave1_depc(
+        xdbeg,
+        seg.atc,
+        seg.btc,
+        drivers.phi,
+        drivers.theta,
+        0.0,
+        drivers.ktrato,
+        drivers.qostar,
+    );
+    let loadup = match enrichment.as_ref() {
+        Some((_, state)) => ldlast.max(state.lddend),
+        None => *ldlast,
+    };
+    wave1_depos(grid, xdbeg, seg.xl, cdep, seg, drivers, dl, ldlast);
+    if let Some((enrichment_inputs, state)) = enrichment.as_mut() {
+        if *ldlast > 0.0 && drivers.qout_m2_s > 0.0 {
+            state.deposition_region(
+                enrichment_inputs,
+                &wave1_enrichment_region_operands(seg, drivers),
+                xdbeg,
+                seg.xl,
+                loadup,
+                *ldlast,
+            )?;
+            state.lddend = *ldlast;
+            state.xdetst = seg.xl;
+        }
+    }
+    Ok(())
+}
+
+fn wave1_finalize_route(
+    grid: &Wave1RouteGrid,
+    drivers: &Wave1Drivers,
+    ldlast: f64,
+    enrichment: &mut Option<(
+        &super::Wave1EnrichmentInputs,
+        &mut super::Wave1EnrichmentState,
+    )>,
+) -> Result<(), DirectRuntimeError> {
     let toe = DIRECT_WAVE1_GRID_POINTS - 1;
     if grid.region[toe] == Wave1PointRegion::Untouched {
         return Err(DirectRuntimeError::DirectDomainViolation {
             field: "erosion.wave1.route_toe_uncomputed",
         });
     }
-
-    // Terminal enrichment call (`route.for:473`, `iendfg = 1`): the
-    // OFE-end blend + the SSA enrichment ratio.
     if let Some((enrichment_inputs, state)) = enrichment.as_mut() {
         state.terminal(
             enrichment_inputs,
@@ -1636,7 +1810,7 @@ fn wave1_route(
             drivers.qout_m2_s > 0.0,
         )?;
     }
-    Ok(grid)
+    Ok(())
 }
 
 /// The per-region operand bundle at an enrichment call point.
@@ -1663,13 +1837,18 @@ fn wave1_enrichment_region_operands(
 /// gates: on non-routed days the sediment operands are legitimately
 /// zeroed and never inspected (legacy `contin.for` ordering).
 fn validate_wave1_inputs(inputs: &DirectWave1ContinuityInputs) -> Result<(), DirectRuntimeError> {
-    if inputs.segments.is_empty() {
+    validate_wave1_segments(&inputs.segments)?;
+    validate_wave1_scalar_inputs(inputs)
+}
+
+fn validate_wave1_segments(segments: &[DirectWave1SlopeSegment]) -> Result<(), DirectRuntimeError> {
+    if segments.is_empty() {
         return Err(DirectRuntimeError::DirectDomainViolation {
             field: "erosion.wave1.segments",
         });
     }
     let mut previous_xl = 0.0;
-    for segment in &inputs.segments {
+    for segment in segments {
         validate_finite("erosion.wave1.segment_a", segment.a)?;
         validate_finite("erosion.wave1.segment_b", segment.b)?;
         validate_nonnegative_direct_m("erosion.wave1.segment_xu", segment.xu)?;
@@ -1686,9 +1865,45 @@ fn validate_wave1_inputs(inputs: &DirectWave1ContinuityInputs) -> Result<(), Dir
             field: "erosion.wave1.segment_toe",
         });
     }
+    Ok(())
+}
+
+fn validate_wave1_scalar_inputs(
+    inputs: &DirectWave1ContinuityInputs,
+) -> Result<(), DirectRuntimeError> {
+    validate_wave1_hydraulic_scalars(inputs)?;
+    validate_wave1_geometry_scalars(inputs)?;
+    validate_wave1_sediment_scalars(inputs)
+}
+
+fn validate_wave1_hydraulic_scalars(
+    inputs: &DirectWave1ContinuityInputs,
+) -> Result<(), DirectRuntimeError> {
     wave1_validate_min("erosion.wave1.peakro_m_s", inputs.peakro_m_s, 0.0)?;
     wave1_validate_min("erosion.wave1.runoff_depth_m", inputs.runoff_depth_m, 0.0)?;
     wave1_validate_min("erosion.wave1.qin_m2_s", inputs.qin_m2_s, 0.0)?;
+    wave1_validate_min(
+        "erosion.wave1.effdrn_s",
+        inputs.effdrn_s,
+        WB11_ZERO_THRESHOLD,
+    )?;
+    let theta_suppressed_quantum =
+        inputs.theta_suppressed || inputs.peakro_m_s * inputs.efflen_m <= inputs.qin_m2_s;
+    if theta_suppressed_quantum {
+        wave1_validate_min("erosion.wave1.effdrr_s", inputs.effdrr_s, 0.0)?;
+    } else {
+        wave1_validate_min(
+            "erosion.wave1.effdrr_s",
+            inputs.effdrr_s,
+            WB11_ZERO_THRESHOLD,
+        )?;
+    }
+    Ok(())
+}
+
+fn validate_wave1_geometry_scalars(
+    inputs: &DirectWave1ContinuityInputs,
+) -> Result<(), DirectRuntimeError> {
     wave1_validate_min(
         "erosion.wave1.efflen_m",
         inputs.efflen_m,
@@ -1715,27 +1930,12 @@ fn validate_wave1_inputs(inputs: &DirectWave1ContinuityInputs) -> Result<(), Dir
         inputs.field_width_m,
         WB11_ZERO_THRESHOLD,
     )?;
-    wave1_validate_min(
-        "erosion.wave1.effdrn_s",
-        inputs.effdrn_s,
-        WB11_ZERO_THRESHOLD,
-    )?;
-    // Interrill-supply operands: strict-positive on interrill-active
-    // quanta, but a theta-suppressed quantum (`qout <= qin`, the
-    // decreasing-flow / full-reinfiltration case where `param.for:540`
-    // zeroes theta) legitimately carries zero rainfall-excess operands —
-    // there `effdrr` may be 0 (still finite/non-negative, fail-closed).
-    let theta_suppressed_quantum =
-        inputs.theta_suppressed || inputs.peakro_m_s * inputs.efflen_m <= inputs.qin_m2_s;
-    if theta_suppressed_quantum {
-        wave1_validate_min("erosion.wave1.effdrr_s", inputs.effdrr_s, 0.0)?;
-    } else {
-        wave1_validate_min(
-            "erosion.wave1.effdrr_s",
-            inputs.effdrr_s,
-            WB11_ZERO_THRESHOLD,
-        )?;
-    }
+    Ok(())
+}
+
+fn validate_wave1_sediment_scalars(
+    inputs: &DirectWave1ContinuityInputs,
+) -> Result<(), DirectRuntimeError> {
     wave1_validate_min("erosion.wave1.kr_s_m", inputs.kr_s_m, WB11_ZERO_THRESHOLD)?;
     wave1_validate_min("erosion.wave1.kradjf", inputs.kradjf, WB11_ZERO_THRESHOLD)?;
     wave1_validate_min("erosion.wave1.shcrit_pa", inputs.shcrit_pa, 0.0)?;
@@ -2068,6 +2268,10 @@ pub fn wave1_day_routes_sediment(runoff_depth_m: f64, peakro_m_s: f64) -> bool {
     !(runoff_depth_m <= WAVE1_PASSBY_RUNOFF_M && peakro_m_s <= WAVE1_PASSBY_PEAKRO_M_S)
 }
 
+#[cfg(test)]
+#[path = "tests/erosion_hb04.rs"]
+mod hb04_internal_characterization;
+
 /// ADR-0036 D1 / `INV-SED-013`: whether a solve quantum is hydraulically
 /// active — local outflow routes sediment OR upstream inflow is positive.
 /// The `qin > 0` limb covers the full-reinfiltration case (`qout <= 0`
@@ -2281,8 +2485,15 @@ fn wave1_apply_inter_ofe_continuity(
         (qostar, qostar)
     };
 
-    // Coefficient rewrite (`param.for:322-390`), per segment, with the
-    // overflow cap and denominator floors.
+    wave1_rewrite_inter_ofe_coefficients(coefficients, inputs, shrati, tcrati)
+}
+
+fn wave1_rewrite_inter_ofe_coefficients(
+    coefficients: &mut [Wave1SegmentCoefficients],
+    inputs: &DirectWave1ContinuityInputs,
+    shrati: f64,
+    tcrati: f64,
+) -> Result<(), DirectRuntimeError> {
     let shrati = if shrati > 1.0e12 { 1.0e12 } else { shrati };
     for (segment, coefficient) in inputs.segments.iter().zip(coefficients.iter_mut()) {
         let raw_a = segment.a;

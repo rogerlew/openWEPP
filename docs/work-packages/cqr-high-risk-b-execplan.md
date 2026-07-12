@@ -47,7 +47,9 @@ classification records. It does not permit a multi-module implementation diff.
   reviewed `MODULE-PASS` checkpoint.
 - [x] (2026-07-12 UTC) Pass the HB-01..HB-03 workspace quick-profile checkpoint
   (`1,772/1,772`, 28 skipped, three slow).
-- [ ] Execute or disposition HB-04 through its terminal record.
+- [x] (2026-07-12 UTC) Execute HB-04 through reviewed `MODULE-PASS`: all five
+  rows close, whole-file science coverage/floors pass, and the P102 executable
+  proves the HBP-to-watershed publication consumer.
 - [ ] Execute or disposition HB-05 through its terminal record.
 - [ ] Execute or disposition HB-06 through its terminal record.
 - [ ] Execute or disposition HB-07 through its terminal record.

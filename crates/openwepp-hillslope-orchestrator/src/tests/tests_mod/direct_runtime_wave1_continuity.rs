@@ -228,6 +228,65 @@ fn wave1_rk4_interrill_floor_engages_when_rk_undershoots() {
 }
 
 #[test]
+fn wave1_xcrit_covers_convex_and_degenerate_classifier_boundaries() {
+    let cases = [
+        // Convex-increasing: above, below, and an interior rising crossing.
+        (1.0, 0.0, 1.0, 0.1, Wave1ShearRegime::AboveCritical),
+        (1.0, 0.0, 0.0, 2.0, Wave1ShearRegime::BelowCritical),
+        (1.0, 0.0, 0.0, 0.5, Wave1ShearRegime::RisingCross),
+        // Uniform zero-gradient sentinel and both monotone directions.
+        (0.0, 0.0, 0.0, 0.5, Wave1ShearRegime::AboveCritical),
+        (0.0, 1.0, 0.0, 2.0, Wave1ShearRegime::BelowCritical),
+        (0.0, -1.0, 2.0, 0.5, Wave1ShearRegime::AboveCritical),
+        // Concave profiles exercise the non-convex all-above/all-below paths.
+        (-1.0, 1.0, 2.0, 0.5, Wave1ShearRegime::AboveCritical),
+        (-1.0, 1.0, 0.0, 2.0, Wave1ShearRegime::BelowCritical),
+    ];
+    for (a, b, c, tauc, expected) in cases {
+        let actual =
+            wave1_xcrit(a, b, c, tauc, 0.0, 1.0).expect("finite classifier case must resolve");
+        assert_eq!(actual.regime, expected, "case ({a}, {b}, {c}, {tauc})");
+        assert!(actual.xc1.is_finite() && actual.xc2.is_finite());
+    }
+}
+
+#[test]
+fn wave1_route_characterization_matrix_preserves_closure_and_toe_publication() {
+    // These profiles deliberately span increasing, uniform, concave, and
+    // decreasing-flow routing. Together they characterize the route/erod
+    // decision clusters while retaining the real continuity consumer.
+    let profiles = [
+        (0.0, 1.0, 0.0, 1.0e-5, 0.0, 0.0),
+        (0.0, 1.0, 0.0, 2.0e-5, 0.0, 2.0e-4),
+        (1.0, 0.1, 0.0, 1.0e-5, 0.0, 0.0),
+        (-2.0, 2.0, 0.0, 1.0e-5, 0.0, 2.0e-3),
+        (-0.5, 1.5, 2.0e-4, 1.0e-5, 5.0e-4, 5.0e-3),
+    ];
+    for (a, b, qin, peakro, strldn, shcrit) in profiles {
+        let mut inputs = crafted_wave1_inputs();
+        inputs.segments[0].a = a;
+        inputs.segments[0].b = b;
+        inputs.qin_m2_s = qin;
+        inputs.peakro_m_s = peakro;
+        inputs.strldn = strldn;
+        inputs.shcrit_pa = shcrit;
+        if qin >= peakro * inputs.efflen_m {
+            inputs.theta_suppressed = true;
+            inputs.effdrr_s = 0.0;
+            inputs.detinr_kg_s_m2 = 0.0;
+        }
+        let state = compute_direct_wave1_continuity_quantum(&inputs, true)
+            .expect("characterized routing profile must solve or fail at its typed domain gate");
+        assert!(state.active);
+        assert!(state.exported_sediment_kg_m.is_finite());
+        assert!(
+            state.publication_closure_residual_kg_m.abs()
+                <= 1.0e-9 * state.exported_sediment_kg_m.abs().max(1.0)
+        );
+    }
+}
+
+#[test]
 fn wave1_xcrit_classifies_all_five_regimes() {
     // Rising cross on a uniform segment: xc1 = tauchk / b.
     let rising = wave1_xcrit(0.0, 1.0, 0.0, 0.5, 0.0, 1.0).expect("rising xcrit");
