@@ -32,11 +32,11 @@ use openwepp_runner::{
 };
 use openwepp_topology::{
     ContributorTriplet, TopologyContributors, TopologyGraph, TopologyNode, TopologyNodeKey,
-    TopologyNodeKind, validate_pre_execution_topology,
+    TopologyNodeKind, TopologyValidationReport, validate_pre_execution_topology,
 };
 use openwepp_watershed_orchestrator::{
-    HillslopeContribution, WatershedGroundwaterRoutingAuthority, WatershedNetworkFrame,
-    execute_watershed_dispatch_with_frame,
+    HillslopeContribution, WatershedChannelControlRecord, WatershedGroundwaterRoutingAuthority,
+    WatershedNetworkFrame, execute_watershed_dispatch_with_frame,
 };
 use openwepp_watershed_output::contracts::{WatershedOutputConfig, validate_output_contract};
 use openwepp_watershed_output::writers::write_typed_publication_parquet_outputs;
@@ -73,6 +73,80 @@ fn main() {
 // fixture/driver package first, then retry the CQR target.
 #[allow(clippy::too_many_lines, clippy::similar_names)]
 fn run() -> Result<(), String> {
+    let args: Vec<String> = std::env::args().collect();
+    let Some(options) = parse_cli_options(&args)? else {
+        return Ok(());
+    };
+    let CliOptions {
+        run_dir,
+        run_file,
+        output_dir,
+        sidecar_policy,
+        legacy_sidecar_discovery,
+        jobs,
+        hillslope_binary,
+    } = options;
+
+    let output_dir = resolve_cli_output_dir(&output_dir)?;
+
+    if !run_dir.is_dir() {
+        return Err(format!(
+            "CLIWAT-E-002 run directory does not exist: {}",
+            run_dir.display()
+        ));
+    }
+    fs::create_dir_all(&output_dir).map_err(|error| {
+        format!(
+            "CLIWAT-E-003 failed creating output directory {}: {error}",
+            output_dir.display()
+        )
+    })?;
+    let supervisor_started = Instant::now();
+
+    let run_file_path = resolve_run_file(&run_dir, &run_file);
+    if !run_file_path.is_file() {
+        return Err(format!(
+            "CLIWAT-E-004 run file does not exist: {}",
+            run_file_path.display()
+        ));
+    }
+
+    let runfile = parse_watershed_runfile(
+        &run_file_path,
+        sidecar_policy,
+        legacy_sidecar_discovery,
+        &run_dir,
+        &output_dir,
+    )?;
+    let hillslope_binary = match hillslope_binary {
+        Some(path) => path,
+        None => default_hillslope_binary()?,
+    };
+    let run_plan =
+        build_watershed_run_plan(runfile.run_name.as_str(), jobs, hillslope_binary, &runfile)?;
+
+    run_watershed_plan(
+        &run_dir,
+        &output_dir,
+        sidecar_policy,
+        legacy_sidecar_discovery,
+        runfile,
+        &run_plan,
+        supervisor_started,
+    )
+}
+
+struct CliOptions {
+    run_dir: PathBuf,
+    run_file: PathBuf,
+    output_dir: PathBuf,
+    sidecar_policy: SidecarPolicy,
+    legacy_sidecar_discovery: bool,
+    jobs: usize,
+    hillslope_binary: Option<PathBuf>,
+}
+
+fn parse_cli_options(args: &[String]) -> Result<Option<CliOptions>, String> {
     let mut run_dir: Option<PathBuf> = None;
     let mut run_file: Option<PathBuf> = None;
     let mut output_dir: Option<PathBuf> = None;
@@ -81,7 +155,6 @@ fn run() -> Result<(), String> {
     let mut jobs = 1usize;
     let mut hillslope_binary: Option<PathBuf> = None;
 
-    let args: Vec<String> = std::env::args().collect();
     let mut cursor = 1usize;
     while cursor < args.len() {
         match args[cursor].as_str() {
@@ -134,7 +207,7 @@ fn run() -> Result<(), String> {
             }
             "--help" | "-h" => {
                 print_help();
-                return Ok(());
+                return Ok(None);
             }
             flag => {
                 return Err(format!("CLIWAT-E-001 unrecognized argument {flag}"));
@@ -152,44 +225,27 @@ fn run() -> Result<(), String> {
     let Some(output_dir) = output_dir else {
         return Err("CLIWAT-E-001 missing --output-dir".to_string());
     };
-    let output_dir = resolve_cli_output_dir(&output_dir)?;
-
-    if !run_dir.is_dir() {
-        return Err(format!(
-            "CLIWAT-E-002 run directory does not exist: {}",
-            run_dir.display()
-        ));
-    }
-    fs::create_dir_all(&output_dir).map_err(|error| {
-        format!(
-            "CLIWAT-E-003 failed creating output directory {}: {error}",
-            output_dir.display()
-        )
-    })?;
-    let supervisor_started = Instant::now();
-
-    let run_file_path = resolve_run_file(&run_dir, &run_file);
-    if !run_file_path.is_file() {
-        return Err(format!(
-            "CLIWAT-E-004 run file does not exist: {}",
-            run_file_path.display()
-        ));
-    }
-
-    let runfile = parse_watershed_runfile(
-        &run_file_path,
+    Ok(Some(CliOptions {
+        run_dir,
+        run_file,
+        output_dir,
         sidecar_policy,
         legacy_sidecar_discovery,
-        &run_dir,
-        &output_dir,
-    )?;
-    let hillslope_binary = match hillslope_binary {
-        Some(path) => path,
-        None => default_hillslope_binary()?,
-    };
-    let run_plan =
-        build_watershed_run_plan(runfile.run_name.as_str(), jobs, hillslope_binary, &runfile)?;
+        jobs,
+        hillslope_binary,
+    }))
+}
 
+#[allow(clippy::too_many_lines, clippy::similar_names)]
+fn run_watershed_plan(
+    run_dir: &Path,
+    output_dir: &Path,
+    sidecar_policy: SidecarPolicy,
+    legacy_sidecar_discovery: bool,
+    mut runfile: WatershedRunfileResolved,
+    run_plan: &WatershedRunPlan,
+    supervisor_started: Instant,
+) -> Result<(), String> {
     let structure_line_count = logical_watershed_structure_line_count(
         &runfile.watershed_structure_path,
     )
@@ -281,7 +337,7 @@ fn run() -> Result<(), String> {
         )
     })?;
 
-    let mut sidecar_warnings = runfile.runfile_warnings;
+    let mut sidecar_warnings = std::mem::take(&mut runfile.runfile_warnings);
 
     let valid_channel_element_ids = structure
         .rows
@@ -343,6 +399,36 @@ fn run() -> Result<(), String> {
         }
     }
 
+    finish_watershed_plan(
+        output_dir,
+        sidecar_policy,
+        legacy_sidecar_discovery,
+        runfile,
+        run_plan,
+        supervisor_started,
+        topology_validation,
+        network_frame,
+        sidecar_warnings,
+    )
+}
+
+#[allow(
+    clippy::needless_pass_by_value,
+    clippy::too_many_arguments,
+    clippy::too_many_lines,
+    clippy::similar_names
+)]
+fn finish_watershed_plan(
+    output_dir: &Path,
+    sidecar_policy: SidecarPolicy,
+    legacy_sidecar_discovery: bool,
+    runfile: WatershedRunfileResolved,
+    run_plan: &WatershedRunPlan,
+    supervisor_started: Instant,
+    topology_validation: TopologyValidationReport,
+    mut network_frame: WatershedNetworkFrame,
+    sidecar_warnings: Vec<String>,
+) -> Result<(), String> {
     let worker_report =
         run_plan.execute_hillslope_jobs(sidecar_policy, legacy_sidecar_discovery)?;
     let pass_inventory_started = Instant::now();
@@ -504,7 +590,7 @@ fn run() -> Result<(), String> {
         .map_err(|error| format!("CLIWAT-E-034 watershed output writer failure: {error}"))?;
     let output_publication_elapsed_ms = output_publication_started.elapsed().as_millis();
     write_watershed_supervisor_timing(
-        &output_dir,
+        output_dir,
         runfile.run_name.as_str(),
         sidecar_policy,
         legacy_sidecar_discovery,
@@ -539,36 +625,16 @@ fn project_channel_crfrac_from_watershed_soil(
     routed_particle_class_count: usize,
     sidecar_policy: SidecarPolicy,
 ) -> Result<(), String> {
-    if routed_particle_class_count > 5 {
-        return Err(format!(
-            "CLIWAT-E-018 watershed channel particle class count {routed_particle_class_count} exceeds the five-class prtcmp authority"
-        ));
-    }
-    let soil_payload = fs::read_to_string(soil_path).map_err(|error| {
-        format!(
-            "CLIWAT-E-018 failed reading watershed soil authority {}: {error}",
-            soil_path.display()
-        )
-    })?;
-    let soil = parse_soil(
-        &soil_payload,
-        SoilParserOptions {
-            mode: sidecar_policy.as_soil_parser_mode(),
-            allow_legacy_aliases: true,
-            expected_topology_count: None,
-            topology_scope: None,
-        },
-    )
-    .map_err(|error| {
-        format!(
-            "CLIWAT-E-018 failed parsing watershed soil authority {}: {error}",
-            soil_path.display()
-        )
-    })?;
+    validate_routed_particle_class_count(routed_particle_class_count)?;
+    let soil = parse_watershed_crfrac_soil(soil_path, sidecar_policy)?;
+    project_channel_crfrac_from_soil_profile(&mut frame.channel_controls, &soil)
+}
 
-    for (channel_offset, (channel_id, control)) in frame.channel_controls.iter_mut().enumerate() {
-        // Pinned `convrt.for:84-88` maps channel-indexed `frac(k,ichan)`
-        // (the `prtcmp` surface) directly to `crfrac(k,ich(ichan))`.
+fn project_channel_crfrac_from_soil_profile(
+    channel_controls: &mut BTreeMap<u32, WatershedChannelControlRecord>,
+    soil: &openwepp_input_contract::parsers::soil::SoilProfile,
+) -> Result<(), String> {
+    for (channel_offset, (channel_id, control)) in channel_controls.iter_mut().enumerate() {
         let ofe = soil.ofes.get(channel_offset).ok_or_else(|| {
             format!(
                 "CLIWAT-E-018 watershed soil authority has {} OFEs but channel {channel_id} requires channel index {}",
@@ -599,6 +665,42 @@ fn project_channel_crfrac_from_watershed_soil(
         control.crfrac = classes.iter().map(|class| class.frac).collect();
     }
     Ok(())
+}
+
+fn validate_routed_particle_class_count(routed_particle_class_count: usize) -> Result<(), String> {
+    if routed_particle_class_count > 5 {
+        return Err(format!(
+            "CLIWAT-E-018 watershed channel particle class count {routed_particle_class_count} exceeds the five-class prtcmp authority"
+        ));
+    }
+    Ok(())
+}
+
+fn parse_watershed_crfrac_soil(
+    soil_path: &Path,
+    sidecar_policy: SidecarPolicy,
+) -> Result<openwepp_input_contract::parsers::soil::SoilProfile, String> {
+    let soil_payload = fs::read_to_string(soil_path).map_err(|error| {
+        format!(
+            "CLIWAT-E-018 failed reading watershed soil authority {}: {error}",
+            soil_path.display()
+        )
+    })?;
+    parse_soil(
+        &soil_payload,
+        SoilParserOptions {
+            mode: sidecar_policy.as_soil_parser_mode(),
+            allow_legacy_aliases: true,
+            expected_topology_count: None,
+            topology_scope: None,
+        },
+    )
+    .map_err(|error| {
+        format!(
+            "CLIWAT-E-018 failed parsing watershed soil authority {}: {error}",
+            soil_path.display()
+        )
+    })
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -772,6 +874,25 @@ fn hillslope_area_m2_from_source_runfile(source_runfile: &Path) -> Result<f64, S
             source_runfile.display()
         )
     })?;
+    let (unit_system, slope_path) = hillslope_source_area_inputs(source_runfile, &document)?;
+    let slope = parse_slope_file(&slope_path, SlopeParserOptions::compatibility()).map_err(|error| {
+        format!(
+            "CLIWAT-E-035 failed parsing hillslope source slope {} for area publication: {error}",
+            slope_path.display()
+        )
+    })?;
+    let area_native = slope
+        .ofes
+        .iter()
+        .map(|ofe| ofe.fwidth * ofe.slplen)
+        .sum::<f64>();
+    hillslope_area_m2_from_native(source_runfile, unit_system, area_native)
+}
+
+fn hillslope_source_area_inputs<'a>(
+    source_runfile: &Path,
+    document: &'a toml::Value,
+) -> Result<(&'a str, PathBuf), String> {
     let unit_system = document
         .get("unit_system")
         .and_then(toml::Value::as_str)
@@ -793,17 +914,14 @@ fn hillslope_area_m2_from_source_runfile(source_runfile: &Path) -> Result<f64, S
             )
         })
         .map(|slope| resolve_runfile_relative_path(source_runfile, slope))?;
-    let slope = parse_slope_file(&slope_path, SlopeParserOptions::compatibility()).map_err(|error| {
-        format!(
-            "CLIWAT-E-035 failed parsing hillslope source slope {} for area publication: {error}",
-            slope_path.display()
-        )
-    })?;
-    let area_native = slope
-        .ofes
-        .iter()
-        .map(|ofe| ofe.fwidth * ofe.slplen)
-        .sum::<f64>();
+    Ok((unit_system, slope_path))
+}
+
+fn hillslope_area_m2_from_native(
+    source_runfile: &Path,
+    unit_system: &str,
+    area_native: f64,
+) -> Result<f64, String> {
     let area_m2 = match unit_system.trim().to_ascii_lowercase().as_str() {
         "metric" | "m" => area_native,
         "english" | "e" => area_native * SQUARE_FEET_TO_SQUARE_METERS,
@@ -1010,31 +1128,7 @@ fn parse_watershed_runfile(
         )
     })?;
 
-    if runfile.schema != WATERSHED_RUNFILE_SCHEMA_ID {
-        return Err(format!(
-            "CLIWAT-E-024 unsupported schema '{}' (expected '{}')",
-            runfile.schema, WATERSHED_RUNFILE_SCHEMA_ID
-        ));
-    }
-
-    if runfile.run_name.trim().is_empty() {
-        return Err("CLIWAT-E-024 missing required non-empty run_name".to_string());
-    }
-
-    if runfile.unit_system.trim() != "metric" {
-        return Err(format!(
-            "CLIWAT-E-024 unsupported unit_system '{}' (expected 'metric')",
-            runfile.unit_system
-        ));
-    }
-
-    if runfile.inputs.hillslopes_block.is_empty() {
-        return Err(
-            "CLIWAT-E-024 inputs.hillslopes_block must contain at least one hillslope entry"
-                .to_string(),
-        );
-    }
-    validate_watershed_runfile_applicability(&runfile.inputs.applicability)?;
+    validate_watershed_runfile_document(&runfile)?;
 
     let watershed_structure_path =
         resolve_required_runfile_path(run_file_path, &runfile.inputs.pw0_str, "inputs.pw0_str")?;
@@ -1068,6 +1162,43 @@ fn parse_watershed_runfile(
         }
     }
 
+    parse_watershed_runfile_hillslopes(
+        run_file_path,
+        sidecar_policy,
+        legacy_sidecar_discovery,
+        run_dir,
+        output_dir,
+        runfile,
+        watershed_structure_path,
+        watershed_channel_path,
+        watershed_impoundment_path,
+        management_path,
+        slope_path,
+        climate_path,
+        soil_path,
+    )
+}
+
+#[allow(
+    clippy::needless_pass_by_value,
+    clippy::too_many_arguments,
+    clippy::too_many_lines
+)]
+fn parse_watershed_runfile_hillslopes(
+    run_file_path: &Path,
+    sidecar_policy: SidecarPolicy,
+    legacy_sidecar_discovery: bool,
+    run_dir: &Path,
+    output_dir: &Path,
+    runfile: WatershedRunfileDocument,
+    watershed_structure_path: PathBuf,
+    watershed_channel_path: PathBuf,
+    watershed_impoundment_path: PathBuf,
+    management_path: PathBuf,
+    slope_path: PathBuf,
+    climate_path: PathBuf,
+    soil_path: PathBuf,
+) -> Result<WatershedRunfileResolved, String> {
     let mut hillslope_blocks_by_id = BTreeMap::new();
     for block in &runfile.inputs.hillslopes_block {
         if let Some(unit_system) = block.unit_system.as_deref() {
@@ -1179,6 +1310,45 @@ fn parse_watershed_runfile(
         }
     }
 
+    parse_watershed_runfile_sidecars_and_outputs(
+        run_file_path,
+        sidecar_policy,
+        legacy_sidecar_discovery,
+        run_dir,
+        output_dir,
+        runfile,
+        watershed_structure_path,
+        watershed_channel_path,
+        watershed_impoundment_path,
+        management_path,
+        slope_path,
+        climate_path,
+        soil_path,
+        hillslope_blocks_by_id,
+    )
+}
+
+#[allow(
+    clippy::needless_pass_by_value,
+    clippy::too_many_arguments,
+    clippy::too_many_lines
+)]
+fn parse_watershed_runfile_sidecars_and_outputs(
+    run_file_path: &Path,
+    sidecar_policy: SidecarPolicy,
+    legacy_sidecar_discovery: bool,
+    run_dir: &Path,
+    output_dir: &Path,
+    runfile: WatershedRunfileDocument,
+    watershed_structure_path: PathBuf,
+    watershed_channel_path: PathBuf,
+    watershed_impoundment_path: PathBuf,
+    management_path: PathBuf,
+    slope_path: PathBuf,
+    climate_path: PathBuf,
+    soil_path: PathBuf,
+    hillslope_blocks_by_id: BTreeMap<u32, WatershedHillslopeBlockResolved>,
+) -> Result<WatershedRunfileResolved, String> {
     let mut runfile_warnings = Vec::new();
     let (chaninp_path, gwcoeff_path, tcr_overlay_present) = if legacy_sidecar_discovery {
         if runfile.inputs.chaninp.is_some() {
@@ -1255,54 +1425,40 @@ fn parse_watershed_runfile(
         };
         (chaninp_path, gwcoeff_path, tcr_path.is_file())
     } else {
-        let configured_chaninp = resolve_optional_runfile_path(
-            run_file_path,
-            runfile.inputs.chaninp.as_deref(),
-            "inputs.chaninp",
-        )?;
-        if let Some(path) = configured_chaninp.as_ref()
-            && !path.is_file()
-        {
-            return Err(format!(
-                "CLIWAT-E-029 configured inputs.chaninp path '{}' is not a readable file",
-                path.display()
-            ));
-        }
-
-        let configured_gwcoeff = resolve_optional_runfile_path(
-            run_file_path,
-            runfile.inputs.gwcoeff.as_deref(),
-            "inputs.gwcoeff",
-        )?;
-        if let Some(path) = configured_gwcoeff.as_ref()
-            && !path.is_file()
-        {
-            return Err(format!(
-                "CLIWAT-E-029 configured inputs.gwcoeff path '{}' is not a readable file",
-                path.display()
-            ));
-        }
-        let default_gwcoeff = run_dir.join("gwcoeff.txt");
-        let gwcoeff_path =
-            configured_gwcoeff.or_else(|| default_gwcoeff.is_file().then_some(default_gwcoeff));
-
-        let configured_tcr = resolve_optional_runfile_path(
-            run_file_path,
-            runfile.inputs.tcr.as_deref(),
-            "inputs.tcr",
-        )?;
-        if let Some(path) = configured_tcr.as_ref()
-            && !path.is_file()
-        {
-            return Err(format!(
-                "CLIWAT-E-029 configured inputs.tcr path '{}' is not a readable file",
-                path.display()
-            ));
-        }
-
-        (configured_chaninp, gwcoeff_path, configured_tcr.is_some())
+        resolve_configured_watershed_sidecars(run_file_path, run_dir, &runfile.inputs)?
     };
 
+    finish_watershed_runfile_outputs(
+        output_dir,
+        runfile,
+        watershed_structure_path,
+        watershed_channel_path,
+        watershed_impoundment_path,
+        slope_path,
+        soil_path,
+        chaninp_path,
+        gwcoeff_path,
+        tcr_overlay_present,
+        hillslope_blocks_by_id,
+        runfile_warnings,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn finish_watershed_runfile_outputs(
+    output_dir: &Path,
+    runfile: WatershedRunfileDocument,
+    watershed_structure_path: PathBuf,
+    watershed_channel_path: PathBuf,
+    watershed_impoundment_path: PathBuf,
+    slope_path: PathBuf,
+    soil_path: PathBuf,
+    chaninp_path: Option<PathBuf>,
+    gwcoeff_path: Option<PathBuf>,
+    tcr_overlay_present: bool,
+    hillslope_blocks_by_id: BTreeMap<u32, WatershedHillslopeBlockResolved>,
+    runfile_warnings: Vec<String>,
+) -> Result<WatershedRunfileResolved, String> {
     let outputs = WatershedOutputsResolved {
         ebe_pw0: resolve_required_output_path(
             output_dir,
@@ -1390,6 +1546,72 @@ fn parse_watershed_runfile(
     })
 }
 
+fn resolve_configured_watershed_sidecars(
+    run_file_path: &Path,
+    run_dir: &Path,
+    inputs: &WatershedRunfileInputs,
+) -> Result<(Option<PathBuf>, Option<PathBuf>, bool), String> {
+    let configured_chaninp =
+        resolve_optional_runfile_path(run_file_path, inputs.chaninp.as_deref(), "inputs.chaninp")?;
+    if let Some(path) = configured_chaninp.as_ref()
+        && !path.is_file()
+    {
+        return Err(format!(
+            "CLIWAT-E-029 configured inputs.chaninp path '{}' is not a readable file",
+            path.display()
+        ));
+    }
+    let configured_gwcoeff =
+        resolve_optional_runfile_path(run_file_path, inputs.gwcoeff.as_deref(), "inputs.gwcoeff")?;
+    if let Some(path) = configured_gwcoeff.as_ref()
+        && !path.is_file()
+    {
+        return Err(format!(
+            "CLIWAT-E-029 configured inputs.gwcoeff path '{}' is not a readable file",
+            path.display()
+        ));
+    }
+    let default_gwcoeff = run_dir.join("gwcoeff.txt");
+    let gwcoeff_path =
+        configured_gwcoeff.or_else(|| default_gwcoeff.is_file().then_some(default_gwcoeff));
+    let configured_tcr =
+        resolve_optional_runfile_path(run_file_path, inputs.tcr.as_deref(), "inputs.tcr")?;
+    if let Some(path) = configured_tcr.as_ref()
+        && !path.is_file()
+    {
+        return Err(format!(
+            "CLIWAT-E-029 configured inputs.tcr path '{}' is not a readable file",
+            path.display()
+        ));
+    }
+    Ok((configured_chaninp, gwcoeff_path, configured_tcr.is_some()))
+}
+
+fn validate_watershed_runfile_document(runfile: &WatershedRunfileDocument) -> Result<(), String> {
+    if runfile.schema != WATERSHED_RUNFILE_SCHEMA_ID {
+        return Err(format!(
+            "CLIWAT-E-024 unsupported schema '{}' (expected '{}')",
+            runfile.schema, WATERSHED_RUNFILE_SCHEMA_ID
+        ));
+    }
+    if runfile.run_name.trim().is_empty() {
+        return Err("CLIWAT-E-024 missing required non-empty run_name".to_string());
+    }
+    if runfile.unit_system.trim() != "metric" {
+        return Err(format!(
+            "CLIWAT-E-024 unsupported unit_system '{}' (expected 'metric')",
+            runfile.unit_system
+        ));
+    }
+    if runfile.inputs.hillslopes_block.is_empty() {
+        return Err(
+            "CLIWAT-E-024 inputs.hillslopes_block must contain at least one hillslope entry"
+                .to_string(),
+        );
+    }
+    validate_watershed_runfile_applicability(&runfile.inputs.applicability)
+}
+
 fn watershed_groundwater_authority_from_gwcoeff(
     gwcoeff_path: Option<&Path>,
     sidecar_policy: SidecarPolicy,
@@ -1404,10 +1626,18 @@ fn watershed_groundwater_authority_from_gwcoeff(
                 gwcoeff_path.display()
             )
         })?;
-    match gwcoeff.lr_bf {
+    groundwater_authority_from_values(gwcoeff_path, gwcoeff.lr_bf, gwcoeff.bftharea)
+}
+
+fn groundwater_authority_from_values(
+    gwcoeff_path: &Path,
+    lr_bf: i32,
+    bftharea: Option<f64>,
+) -> Result<WatershedGroundwaterRoutingAuthority, String> {
+    match lr_bf {
         0 => Ok(WatershedGroundwaterRoutingAuthority::disabled()),
         1 => {
-            let bftharea = gwcoeff.bftharea.ok_or_else(|| {
+            let bftharea = bftharea.ok_or_else(|| {
                 format!(
                     "CLIWAT-E-048 parsed gwcoeff {} lr_bf=1 missing bftharea",
                     gwcoeff_path.display()
@@ -1654,7 +1884,6 @@ fn validate_contributor_mofe_metadata(
     Ok(None)
 }
 
-#[allow(clippy::too_many_lines)]
 fn validate_manifest_publication_metadata(
     hillslope_id: u32,
     contributor_nofe: u16,
@@ -1673,6 +1902,40 @@ fn validate_manifest_publication_metadata(
         )
     })?;
 
+    validate_manifest_schema(hillslope_id, manifest_file_path, &manifest)?;
+    let publication_policy =
+        validate_manifest_publication_policy(hillslope_id, manifest_file_path, &manifest)?;
+    let contributor_ofe_count = validate_manifest_contributor_count(
+        hillslope_id,
+        contributor_nofe,
+        manifest_file_path,
+        &manifest,
+    )?;
+    let publication_area_m2 =
+        validate_manifest_publication_area(hillslope_id, manifest_file_path, &manifest)?;
+
+    if publication_policy == MF_PUBLICATION_OFE_POLICY {
+        validate_manifest_per_ofe_wb13_publication_metadata(
+            hillslope_id,
+            contributor_ofe_count,
+            manifest_file_path,
+            &manifest,
+        )?;
+    }
+    validate_manifest_mofe_hourly_carry_metadata(
+        hillslope_id,
+        contributor_nofe,
+        manifest_file_path,
+        &manifest,
+    )?;
+    Ok(publication_area_m2)
+}
+
+fn validate_manifest_schema(
+    hillslope_id: u32,
+    manifest_file_path: &Path,
+    manifest: &Value,
+) -> Result<(), String> {
     let schema = manifest
         .pointer("/schema")
         .and_then(Value::as_str)
@@ -1691,6 +1954,14 @@ fn validate_manifest_publication_metadata(
         ));
     }
 
+    Ok(())
+}
+
+fn validate_manifest_publication_policy<'a>(
+    hillslope_id: u32,
+    manifest_file_path: &Path,
+    manifest: &'a Value,
+) -> Result<&'a str, String> {
     let publication_policy = manifest
         .pointer("/wb13_publication/publication_ofe_policy")
         .and_then(Value::as_str)
@@ -1713,8 +1984,16 @@ fn validate_manifest_publication_metadata(
         ));
     }
 
-    let contributor_ofe_count =
-        manifest
+    Ok(publication_policy)
+}
+
+fn validate_manifest_contributor_count(
+    hillslope_id: u32,
+    contributor_nofe: u16,
+    manifest_file_path: &Path,
+    manifest: &Value,
+) -> Result<u64, String> {
+    let contributor_ofe_count = manifest
             .pointer("/wb13_publication/contributor_ofe_count")
             .and_then(Value::as_u64)
             .ok_or_else(|| {
@@ -1735,6 +2014,14 @@ fn validate_manifest_publication_metadata(
         ));
     }
 
+    Ok(contributor_ofe_count)
+}
+
+fn validate_manifest_publication_area(
+    hillslope_id: u32,
+    manifest_file_path: &Path,
+    manifest: &Value,
+) -> Result<f64, String> {
     let area_policy = manifest
         .pointer("/wb13_publication/area_policy")
         .and_then(Value::as_str)
@@ -1769,22 +2056,6 @@ fn validate_manifest_publication_metadata(
             publication_area_m2
         ));
     }
-
-    if publication_policy == MF_PUBLICATION_OFE_POLICY {
-        validate_manifest_per_ofe_wb13_publication_metadata(
-            hillslope_id,
-            contributor_ofe_count,
-            manifest_file_path,
-            &manifest,
-        )?;
-    }
-
-    validate_manifest_mofe_hourly_carry_metadata(
-        hillslope_id,
-        contributor_nofe,
-        manifest_file_path,
-        &manifest,
-    )?;
 
     Ok(publication_area_m2)
 }
@@ -1855,6 +2126,15 @@ fn validate_manifest_per_ofe_wb13_publication_policies(
         ));
     }
 
+    validate_manifest_per_ofe_identity_statuses(hillslope_id, manifest_file_path, manifest)?;
+    validate_manifest_hillslope_total_residual(hillslope_id, manifest_file_path, manifest)
+}
+
+fn validate_manifest_per_ofe_identity_statuses(
+    hillslope_id: u32,
+    manifest_file_path: &Path,
+    manifest: &Value,
+) -> Result<(), String> {
     for pointer in [
         "/wb13_publication/transfer_identity_status",
         "/wb13_publication/per_element_identity_status",
@@ -1875,7 +2155,14 @@ fn validate_manifest_per_ofe_wb13_publication_policies(
             ));
         }
     }
+    Ok(())
+}
 
+fn validate_manifest_hillslope_total_residual(
+    hillslope_id: u32,
+    manifest_file_path: &Path,
+    manifest: &Value,
+) -> Result<(), String> {
     let hillslope_total_residual = manifest
         .pointer("/wb13_publication/hillslope_total_identity_max_abs_mm")
         .and_then(Value::as_f64)
@@ -2026,6 +2313,50 @@ fn validate_manifest_mofe_hourly_carry_metadata(
     manifest_file_path: &Path,
     manifest: &Value,
 ) -> Result<(), String> {
+    let Some((carry_metadata, active, substep_count)) = manifest_mofe_hourly_carry_header(
+        hillslope_id,
+        contributor_nofe,
+        manifest_file_path,
+        manifest,
+    )?
+    else {
+        return Ok(());
+    };
+    if contributor_nofe == 1 && !active && substep_count == 0 {
+        validate_manifest_mofe_hourly_carry_inactive_single_ofe(
+            hillslope_id,
+            manifest_file_path,
+            carry_metadata,
+        )?;
+        validate_manifest_mofe_hourly_carry_totals(
+            hillslope_id,
+            manifest_file_path,
+            carry_metadata,
+        )?;
+        return Ok(());
+    }
+    if substep_count != MOFE_HOURLY_CARRY_ARRAY_COUNT {
+        return Err(format!(
+            "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' has mofe_hourly_carry substep_count={} (expected {})",
+            manifest_file_path.display(),
+            substep_count,
+            MOFE_HOURLY_CARRY_ARRAY_COUNT
+        ));
+    }
+    validate_manifest_mofe_hourly_carry_required_arrays(
+        hillslope_id,
+        manifest_file_path,
+        carry_metadata,
+    )?;
+    validate_manifest_mofe_hourly_carry_totals(hillslope_id, manifest_file_path, carry_metadata)
+}
+
+fn manifest_mofe_hourly_carry_header<'a>(
+    hillslope_id: u32,
+    contributor_nofe: u16,
+    manifest_file_path: &Path,
+    manifest: &'a Value,
+) -> Result<Option<(&'a Value, bool, u64)>, String> {
     let Some(carry_metadata) = manifest.pointer("/mofe_hourly_carry") else {
         if contributor_nofe > 1 {
             return Err(format!(
@@ -2033,7 +2364,7 @@ fn validate_manifest_mofe_hourly_carry_metadata(
                 manifest_file_path.display()
             ));
         }
-        return Ok(());
+        return Ok(None);
     };
     if !carry_metadata.is_object() {
         return Err(format!(
@@ -2085,36 +2416,7 @@ fn validate_manifest_mofe_hourly_carry_metadata(
                 manifest_file_path.display()
             )
         })?;
-    if contributor_nofe == 1 && !active && substep_count == 0 {
-        validate_manifest_mofe_hourly_carry_inactive_single_ofe(
-            hillslope_id,
-            manifest_file_path,
-            carry_metadata,
-        )?;
-        validate_manifest_mofe_hourly_carry_totals(
-            hillslope_id,
-            manifest_file_path,
-            carry_metadata,
-        )?;
-        return Ok(());
-    }
-    if substep_count != MOFE_HOURLY_CARRY_ARRAY_COUNT {
-        return Err(format!(
-            "CLIWAT-E-037 hillslope {hillslope_id} manifest_file '{}' has mofe_hourly_carry substep_count={} (expected {})",
-            manifest_file_path.display(),
-            substep_count,
-            MOFE_HOURLY_CARRY_ARRAY_COUNT
-        ));
-    }
-
-    validate_manifest_mofe_hourly_carry_required_arrays(
-        hillslope_id,
-        manifest_file_path,
-        carry_metadata,
-    )?;
-    validate_manifest_mofe_hourly_carry_totals(hillslope_id, manifest_file_path, carry_metadata)?;
-
-    Ok(())
+    Ok(Some((carry_metadata, active, substep_count)))
 }
 
 fn validate_manifest_mofe_hourly_carry_inactive_single_ofe(
@@ -2348,3 +2650,7 @@ fn print_help() {
         "openwepp-cli-watershed --run-dir <path> --run-file <path> --output-dir <path> [--policy compat] [--legacy-sidecar-discovery] [--jobs N] [--hillslope-binary <path>]"
     );
 }
+
+#[cfg(test)]
+#[path = "openwepp-cli-watershed/hb10_tests.rs"]
+mod hb10_tests;

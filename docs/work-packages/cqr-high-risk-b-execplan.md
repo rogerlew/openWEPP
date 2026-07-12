@@ -68,7 +68,9 @@ classification records. It does not permit a multi-module implementation diff.
 - [x] (2026-07-12 UTC) Execute HB-09 through reviewed `MODULE-PASS`: both
   writer rows and all same-source floors pass, and the sediment-active
   watershed CLI consumes the production Parquet path.
-- [ ] Execute or disposition HB-10 through its terminal record.
+- [x] (2026-07-12 UTC) Execute HB-10 through reviewed `MODULE-PASS`: six fixed
+  rows close, strict numeric/authority floors pass, retained floors receive
+  dual disposition, and the real watershed CLI consumes publication.
 - [ ] Run tranche-final rerank, dual verification, and transition to Medium.
 
 ## Surprises & Discoveries
