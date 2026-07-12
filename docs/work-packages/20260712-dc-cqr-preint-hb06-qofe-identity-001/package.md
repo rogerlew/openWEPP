@@ -1,6 +1,6 @@
 # DC CQR HB-06 — Canonical QOFE Identity
 
-Status: `ACTIVE`
+Status: `TERMINAL-PASS` (bounded DC); runner consumer adoption remains `HOLD`
 
 ## Objective
 
@@ -31,10 +31,10 @@ safe/testable, so the correction is mandatory.
 ## Progress
 
 - [x] Resolve reviewer disagreement from canonical contract text.
-- [ ] Record a red per-OFE mismatch regression.
-- [ ] Land the canonical identity correction.
-- [ ] Close all eligible module function floors and regenerate metrics.
-- [ ] Complete dual review/verification and terminal disposition.
+- [x] Record a red per-OFE mismatch regression.
+- [x] Land the canonical identity correction.
+- [x] Close all eligible module function floors and regenerate metrics.
+- [x] Record terminal DC disposition and the separate consumer-adoption hold.
 
 ## Review And Delegation
 
@@ -44,4 +44,8 @@ declared source, tests, and evidence.
 
 ## Outcomes
 
-Pending execution.
+Public WB13 `QOFE == Q` is now enforced under aggregate and per-OFE policy
+markers with the existing tolerance and `QOFE`-first typed error. The bounded
+DC and summary/output-surface tests pass. This does **not** prove that the
+production runner has adopted this summary-accumulator constructor; that
+consumer-adoption claim remains pending and is explicitly held.

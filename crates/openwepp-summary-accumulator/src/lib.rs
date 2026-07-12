@@ -137,10 +137,18 @@ impl SummaryScalarSurface {
         I: IntoIterator<Item = (S, f64)>,
         S: Into<String>,
     {
+        Self::from_owned_pairs(
+            pairs
+                .into_iter()
+                .map(|(symbol, value)| (symbol.into(), value))
+                .collect(),
+        )
+    }
+
+    fn from_owned_pairs(pairs: Vec<(String, f64)>) -> Result<Self, SummaryAccumulatorError> {
         let mut scalars = BTreeMap::new();
 
         for (symbol, value) in pairs {
-            let symbol = symbol.into();
             validate_symbol(symbol.as_str())?;
             validate_finite(symbol.as_str(), value)?;
 
@@ -275,44 +283,15 @@ impl Wb13DailyWaterBalanceRow {
         let profile_fc_store = require_output_symbol(surface, "ProfileFCStore", Some(0.0), None)?;
         let profile_wp_store = require_output_symbol(surface, "ProfileWPStore", Some(0.0), None)?;
 
-        let per_ofe_publication_policy = surface
-            .value(WB13_PER_OFE_PUBLICATION_POLICY_SYMBOL)
-            .is_some_and(|value| value >= 0.5);
-        if !per_ofe_publication_policy && (qofe - q).abs() > 1.0e-9 {
-            return Err(SummaryAccumulatorError::OutputSymbolOutOfRange {
-                symbol: "QOFE".to_string(),
-                value: qofe,
-                minimum: Some(q),
-                maximum: Some(q),
-            });
-        }
-
-        let expected_soil_water_total = total_soil;
-        if (soil_water_total - expected_soil_water_total).abs() > 1.0e-6 {
-            return Err(SummaryAccumulatorError::OutputSymbolOutOfRange {
-                symbol: "SoilWaterTotal".to_string(),
-                value: soil_water_total,
-                minimum: Some(expected_soil_water_total),
-                maximum: Some(expected_soil_water_total),
-            });
-        }
-
-        if profile_porosity_cap + 1.0e-9 < profile_fc_store {
-            return Err(SummaryAccumulatorError::OutputSymbolOutOfRange {
-                symbol: "ProfileFCStore".to_string(),
-                value: profile_fc_store,
-                minimum: None,
-                maximum: Some(profile_porosity_cap),
-            });
-        }
-        if profile_fc_store + 1.0e-9 < profile_wp_store {
-            return Err(SummaryAccumulatorError::OutputSymbolOutOfRange {
-                symbol: "ProfileWPStore".to_string(),
-                value: profile_wp_store,
-                minimum: None,
-                maximum: Some(profile_fc_store),
-            });
-        }
+        validate_wb13_relationships(
+            q,
+            qofe,
+            total_soil,
+            soil_water_total,
+            profile_porosity_cap,
+            profile_fc_store,
+            profile_wp_store,
+        )?;
 
         Ok(Self {
             ofe,
@@ -351,7 +330,58 @@ impl Wb13DailyWaterBalanceRow {
             ofe: self.ofe,
         }
     }
+}
 
+#[allow(clippy::too_many_arguments)]
+fn validate_wb13_relationships(
+    q: f64,
+    qofe: f64,
+    total_soil: f64,
+    soil_water_total: f64,
+    profile_porosity_cap: f64,
+    profile_fc_store: f64,
+    profile_wp_store: f64,
+) -> Result<(), SummaryAccumulatorError> {
+    if (qofe - q).abs() > 1.0e-9 {
+        return Err(SummaryAccumulatorError::OutputSymbolOutOfRange {
+            symbol: "QOFE".to_string(),
+            value: qofe,
+            minimum: Some(q),
+            maximum: Some(q),
+        });
+    }
+
+    let expected_soil_water_total = total_soil;
+    if (soil_water_total - expected_soil_water_total).abs() > 1.0e-6 {
+        return Err(SummaryAccumulatorError::OutputSymbolOutOfRange {
+            symbol: "SoilWaterTotal".to_string(),
+            value: soil_water_total,
+            minimum: Some(expected_soil_water_total),
+            maximum: Some(expected_soil_water_total),
+        });
+    }
+
+    if profile_porosity_cap + 1.0e-9 < profile_fc_store {
+        return Err(SummaryAccumulatorError::OutputSymbolOutOfRange {
+            symbol: "ProfileFCStore".to_string(),
+            value: profile_fc_store,
+            minimum: None,
+            maximum: Some(profile_porosity_cap),
+        });
+    }
+    if profile_fc_store + 1.0e-9 < profile_wp_store {
+        return Err(SummaryAccumulatorError::OutputSymbolOutOfRange {
+            symbol: "ProfileWPStore".to_string(),
+            value: profile_wp_store,
+            minimum: None,
+            maximum: Some(profile_fc_store),
+        });
+    }
+
+    Ok(())
+}
+
+impl Wb13DailyWaterBalanceRow {
     #[must_use]
     pub fn to_data_row_line(&self) -> String {
         [
@@ -999,6 +1029,190 @@ mod tests {
             error,
             SummaryAccumulatorError::OutputSymbolOutOfRange { .. }
         ));
+    }
+
+    fn distinct_wb13_surface(q: f64, qofe: f64, per_ofe: bool) -> SummaryScalarSurface {
+        surface(&[
+            ("P", 1.0),
+            ("RM", 2.0),
+            ("Q", q),
+            ("Ep", 4.0),
+            ("Es", 5.0),
+            ("Er", 6.0),
+            ("Dp", 7.0),
+            ("UpStrmQ", 8.0),
+            ("SubRIn", 9.0),
+            ("latqcc", 10.0),
+            ("Total-Soil", 11.0),
+            ("frozwt", 12.0),
+            ("Snow-Water", 13.0),
+            ("QOFE", qofe),
+            ("Tile", 15.0),
+            ("Irr", 16.0),
+            ("Area", 17.0),
+            ("SoilWaterTotal", 11.0),
+            ("ProfileDepth", 19.0),
+            ("ProfilePorosityCap", 22.0),
+            ("ProfileFCStore", 21.0),
+            ("ProfileWPStore", 20.0),
+            (
+                WB13_PER_OFE_PUBLICATION_POLICY_SYMBOL,
+                if per_ofe { 1.0 } else { 0.0 },
+            ),
+        ])
+    }
+
+    #[test]
+    fn wb13_distinct_operands_map_without_aliasing_and_reach_writer() {
+        let row = Wb13DailyWaterBalanceRow::from_surface(
+            2,
+            123,
+            2026,
+            &distinct_wb13_surface(3.0, 3.0, true),
+        )
+        .expect("per-OFE policy permits distinct Q/QOFE");
+        assert_eq!(
+            (row.p, row.rm, row.q, row.ep, row.es, row.er),
+            (1.0, 2.0, 3.0, 4.0, 5.0, 6.0)
+        );
+        assert_eq!(
+            (row.dp, row.upstrmq, row.subrin, row.latqcc),
+            (7.0, 8.0, 9.0, 10.0)
+        );
+        assert_eq!(
+            (row.total_soil, row.frozwt, row.snow_water, row.qofe),
+            (11.0, 12.0, 13.0, 3.0)
+        );
+        assert_eq!((row.tile, row.irr, row.area), (15.0, 16.0, 17.0));
+        assert_eq!(
+            (
+                row.soil_water_total,
+                row.profile_depth,
+                row.profile_porosity_cap,
+                row.profile_fc_store,
+                row.profile_wp_store
+            ),
+            (11.0, 19.0, 22.0, 21.0, 20.0)
+        );
+        let mut output = Wb13DailyWaterBalanceSurface::new();
+        output.append_row(row).expect("ordered row");
+        let rendered = output.render_h5_wat_dat();
+        assert!(rendered.contains("2 123 2026 1.00 2.00 3.0000000E0"));
+        assert!(rendered.matches("3.0000000E0").count() >= 2);
+    }
+
+    #[test]
+    fn wb13_relationship_guards_preserve_priority_and_exact_symbols() {
+        let q_error = Wb13DailyWaterBalanceRow::from_surface(
+            1,
+            1,
+            2026,
+            &distinct_wb13_surface(3.0, 14.0, false),
+        )
+        .unwrap_err();
+        assert!(
+            matches!(q_error, SummaryAccumulatorError::OutputSymbolOutOfRange { ref symbol, .. } if symbol == "QOFE")
+        );
+
+        for (symbol, value) in [
+            ("SoilWaterTotal", 10.0),
+            ("ProfileFCStore", 23.0),
+            ("ProfileWPStore", 22.0),
+        ] {
+            let mut map = distinct_wb13_surface(3.0, 3.0, false).as_map().clone();
+            map.insert(symbol.to_string(), value);
+            let error = Wb13DailyWaterBalanceRow::from_surface(
+                1,
+                1,
+                2026,
+                &SummaryScalarSurface::from_map(map).unwrap(),
+            )
+            .unwrap_err();
+            assert!(
+                matches!(error, SummaryAccumulatorError::OutputSymbolOutOfRange { symbol: actual, .. } if actual == symbol)
+            );
+        }
+        let mut missing = distinct_wb13_surface(3.0, 3.0, false).as_map().clone();
+        missing.remove("Snow-Water");
+        assert!(matches!(
+            Wb13DailyWaterBalanceRow::from_surface(1, 1, 2026, &SummaryScalarSurface::from_map(missing).unwrap()),
+            Err(SummaryAccumulatorError::MissingRequiredOutputSymbol { symbol }) if symbol == "Snow-Water"
+        ));
+    }
+
+    #[test]
+    fn wb13_per_ofe_marker_does_not_bypass_public_qofe_identity() {
+        let error = Wb13DailyWaterBalanceRow::from_surface(
+            1,
+            1,
+            2026,
+            &distinct_wb13_surface(3.0, 14.0, true),
+        )
+        .expect_err("public QOFE must equal Q under every publication policy");
+        assert!(matches!(
+            error,
+            SummaryAccumulatorError::OutputSymbolOutOfRange {
+                ref symbol,
+                value: 14.0,
+                minimum: Some(3.0),
+                maximum: Some(3.0),
+            } if symbol == "QOFE"
+        ));
+    }
+
+    #[test]
+    fn cqr_hb06_public_accessors_and_error_conversions_are_characterized() {
+        assert_eq!(SummaryWindow::Daily.as_str(), "daily");
+        assert_eq!(SummaryWindow::Monthly.as_str(), "monthly");
+        assert_eq!(SummaryWindow::Yearly.as_str(), "yearly");
+        assert_eq!(SummaryWindow::EndOfSimulation.as_str(), "end_of_simulation");
+        assert_eq!(CalendarDay::new(2026, 7, 12).unwrap().day(), 12);
+        assert_eq!(
+            Wb13DailyWaterBalanceSurface::column_headers(),
+            &WB13_H5_WAT_COLUMNS
+        );
+        let accumulator = accumulator();
+        let metadata = accumulator.routing_metadata();
+        assert_eq!(accumulator.routing_metadata(), metadata);
+
+        let status: SummaryAccumulatorError = StatusError::MessageIdEmpty.into();
+        assert!(matches!(
+            status,
+            SummaryAccumulatorError::Status(StatusError::MessageIdEmpty)
+        ));
+        let comparator: SummaryAccumulatorError =
+            ComparatorTierRoutingError::MissingRequiredMetadata {
+                field: "contributor_ofe_count",
+                message_id: "TEST-COMPMETA-MISSING",
+            }
+            .into();
+        assert!(matches!(
+            comparator,
+            SummaryAccumulatorError::ComparatorMetadata(_)
+        ));
+    }
+
+    #[test]
+    fn cqr_hb06_generic_surface_and_calendar_branches_are_characterized() {
+        let pairs = vec![("a".to_string(), 1.0), ("b".to_string(), 2.0)];
+        assert_eq!(
+            SummaryScalarSurface::from_pairs(pairs).unwrap().value("b"),
+            Some(2.0)
+        );
+        for pairs in [
+            vec![("".to_string(), 1.0)],
+            vec![("a".to_string(), f64::NAN)],
+            vec![("a".to_string(), 1.0), ("a".to_string(), 2.0)],
+        ] {
+            assert!(SummaryScalarSurface::from_pairs(pairs).is_err());
+        }
+        assert!(SummaryScalarSurface::from_pairs(Vec::<(String, f64)>::new()).is_err());
+
+        for (year, month, maximum) in [(2026, 1, 31), (2026, 4, 30), (2026, 2, 28), (2024, 2, 29)] {
+            assert!(CalendarDay::new(year, month, maximum).is_ok());
+            assert!(CalendarDay::new(year, month, maximum + 1).is_err());
+        }
+        assert!(CalendarDay::new(2026, 13, 1).is_err());
     }
 
     #[test]

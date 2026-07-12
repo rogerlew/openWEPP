@@ -1,0 +1,47 @@
+   Compiling openwepp-summary-accumulator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-summary-accumulator)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.46s
+────────────
+ Nextest run ID acd28f98-cd7a-4a0c-a128-ad76e80cdaf8 with nextest profile: quick
+    Starting 1 test across 1 binary (15 tests skipped)
+        FAIL [   0.007s] (1/1) openwepp-summary-accumulator tests::wb13_per_ofe_marker_does_not_bypass_public_qofe_identity
+  stdout ───
+
+    running 1 test
+    test tests::wb13_per_ofe_marker_does_not_bypass_public_qofe_identity ... FAILED
+
+    failures:
+
+    failures:
+        tests::wb13_per_ofe_marker_does_not_bypass_public_qofe_identity
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 15 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'tests::wb13_per_ofe_marker_does_not_bypass_public_qofe_identity' (1517460) panicked at crates/openwepp-summary-accumulator/src/lib.rs:1148:10:
+    public QOFE must equal Q under every publication policy: Wb13DailyWaterBalanceRow { ofe: 1, julian_day: 1, year: 2026, p: 1.0, rm: 2.0, q: 3.0, ep: 4.0, es: 5.0, er: 6.0, dp: 7.0, upstrmq: 8.0, subrin: 9.0, latqcc: 10.0, total_soil: 11.0, frozwt: 12.0, snow_water: 13.0, qofe: 14.0, tile: 15.0, irr: 16.0, area: 17.0, soil_water_total: 11.0, profile_depth: 19.0, profile_porosity_cap: 22.0, profile_fc_store: 21.0, profile_wp_store: 20.0 }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.008s] 1 test run: 0 passed, 1 failed, 15 skipped
+        FAIL [   0.007s] (1/1) openwepp-summary-accumulator tests::wb13_per_ofe_marker_does_not_bypass_public_qofe_identity
+  stdout ───
+
+    running 1 test
+    test tests::wb13_per_ofe_marker_does_not_bypass_public_qofe_identity ... FAILED
+
+    failures:
+
+    failures:
+        tests::wb13_per_ofe_marker_does_not_bypass_public_qofe_identity
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 15 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'tests::wb13_per_ofe_marker_does_not_bypass_public_qofe_identity' (1517460) panicked at crates/openwepp-summary-accumulator/src/lib.rs:1148:10:
+    public QOFE must equal Q under every publication policy: Wb13DailyWaterBalanceRow { ofe: 1, julian_day: 1, year: 2026, p: 1.0, rm: 2.0, q: 3.0, ep: 4.0, es: 5.0, er: 6.0, dp: 7.0, upstrmq: 8.0, subrin: 9.0, latqcc: 10.0, total_soil: 11.0, frozwt: 12.0, snow_water: 13.0, qofe: 14.0, tile: 15.0, irr: 16.0, area: 17.0, soil_water_total: 11.0, profile_depth: 19.0, profile_porosity_cap: 22.0, profile_fc_store: 21.0, profile_wp_store: 20.0 }
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+error: test run failed
