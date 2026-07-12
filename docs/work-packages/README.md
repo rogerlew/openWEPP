@@ -4142,3 +4142,9 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
   failures worsened `498 -> 500`, and downstream mass terms changed despite
   local SWE-depth-density identity closure. No default activation, density cap,
   fixture/schema, user-surface, rollback, or frost-attribution change was made.
+
+## Recent CQR Defect Closures
+
+- `20260712-dc-cqr-preint-ha-07-growth-nonfinite-001/` — terminal PASS;
+  required direct-production growth scalars now reject NaN/infinity through the
+  existing typed boundary error under `SC-PLANT-001#INV-PLANT-021`.

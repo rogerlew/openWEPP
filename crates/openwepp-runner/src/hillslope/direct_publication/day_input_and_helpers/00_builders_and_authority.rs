@@ -2009,9 +2009,16 @@ fn direct_growth_projection_required_scalar(
     projection: &openwepp_hillslope_orchestrator::runtime_inputs::HillslopePlRuntimeSurfaces,
     symbol: &str,
 ) -> Result<f64, HillslopeCliError> {
-    direct_production_pl_projection_optional_scalar(projection, symbol).ok_or_else(|| {
-        direct_growth_failure(format!("missing required direct growth symbol {symbol}"))
-    })
+    let value = direct_production_pl_projection_optional_scalar(projection, symbol)
+        .ok_or_else(|| {
+            direct_growth_failure(format!("missing required direct growth symbol {symbol}"))
+        })?;
+    if !value.is_finite() {
+        return Err(direct_growth_failure(format!(
+            "required direct growth symbol {symbol} must be finite, observed {value}"
+        )));
+    }
+    Ok(value)
 }
 
 fn direct_growth_projection_required_integral_usize(

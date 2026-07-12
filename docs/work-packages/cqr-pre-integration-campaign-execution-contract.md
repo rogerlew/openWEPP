@@ -97,6 +97,26 @@ does not force repeated 35-minute captures. Prove the implicated source is
 unchanged and run the failed test focused when practical. Never rerun workspace
 coverage solely to obtain a preferred flaky failure set.
 
+### Large Multi-Responsibility Host Coverage
+
+For a fixed target in a production file already at or above 2,000 lines whose
+unrelated sibling authorities make whole-file focused coverage depend on broad
+runner/workspace scenarios, module acceptance uses a target slice instead of
+forcing unrelated characterization into the checkpoint. The target slice is
+the actionable function, every helper extracted from it, and the transitive
+private-helper closure whose branches implement an applicable A–H or named
+obligation. It must meet the tier line/region threshold, every eligible slice
+function must meet the 75% region floor, and no slice CRAP row may exceed 30.
+
+This is not a tranche-closure denominator exclusion. Record whole-file focused
+metrics and all live rows for visibility; do not disposition or waive untouched
+siblings. The tranche-final exact workspace capture remains authoritative for
+fixed-cohort closure, new rows, touched-module regressions, and real-consumer
+regressions. Any production edit outside the declared slice expands the slice
+to that function and its obligations. Reviewers must verify the source-line and
+function boundary and reject a slice that omits a branch moved or edited by the
+package.
+
 ### Heavy-Run Delegation
 
 `comparator_suite_runner` is required for tranche-start/final workspace
@@ -229,9 +249,11 @@ Before decomposition, every actionable module must prove its ADR-0021 tier,
 100% applicable A–H/named obligation binding, science coverage of at least 90%
 line and region or glue coverage of at least 85% line and region, and no
 eligible function below the 75% region floor without an accepted disposition.
-This is unconditional. If current tests do not meet it, characterization tests
-land and pass before production decomposition. The final campaign assessment
-audits these gates for every executed module.
+For a qualifying 2,000+ line multi-responsibility host, apply these thresholds
+to the exact target slice defined above and retain whole-file metrics as
+visibility evidence. Otherwise this is unconditional. If current tests do not
+meet it, characterization tests land and pass before production decomposition.
+The final campaign assessment audits these gates for every executed module.
 
 Classification is exact symbol/line/source-hash evidence. One reviewer checks
 semantic/consumer eligibility and source/metric identity. A second reviewer is

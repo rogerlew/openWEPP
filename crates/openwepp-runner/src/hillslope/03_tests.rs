@@ -36,6 +36,9 @@ mod tests {
     mod simimpl {
         include!("tests03/simimpl.rs");
     }
+    mod cqr_growth_authority {
+        include!("tests03/cqr_growth_authority.rs");
+    }
     include!("tests03/direct_publication_source_guards.rs");
 
 
