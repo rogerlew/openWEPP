@@ -81,6 +81,9 @@ classification records. It does not permit a multi-module implementation diff.
   projection already creates equal aliases, so the package expands only to a
   producer-boundary guard and replacement of corrupted fixtures; no process
   physics changes.
+- HB-07 review exposed a retained variable Muskingum-Cunge `cx < -10` clamp.
+  Current `INV-ROUTE-022` prohibits coefficient repair and requires unstable
+  states to fail closed, so `DC-CQR-HB07-001` interrupts module closure.
 - HB-06's executable proof confirms the SIMIMPL04 integration uses the
   production streaming sink; no private-sink duplicate is needed to establish
   the downstream Parquet consumer.
