@@ -1,6 +1,6 @@
 # High-Risk CQR Tranche A: Active Hillslope And Runner Paths
 
-Status: `QUEUED-READY`
+Status: `ACTIVE`
 Roadmap ID: `CQR-PREINT-20260711-HA`
 Campaign ledger: `docs/work-packages/cqr-pre-integration-campaign-assessment.md`
 Binding execution contract: `docs/work-packages/cqr-pre-integration-campaign-execution-contract.md`
@@ -24,8 +24,8 @@ classification records. It never authorizes one ten-module implementation diff.
 
 ## Progress
 
-- [ ] Refresh workspace LCOV/CRAP and source identity from the current clean commit.
-- [ ] Complete dual target-selection/eligibility review for all ten modules.
+- [x] (2026-07-11 UTC) Refresh workspace LCOV/CRAP and source identity from the current clean commit.
+- [x] (2026-07-11 UTC) Complete dual target-selection/eligibility review for all ten modules.
 - [ ] Execute or disposition HA-01 through its terminal record.
 - [ ] Execute or disposition HA-02 through its terminal record.
 - [ ] Execute or disposition HA-03 through its terminal record.
@@ -40,8 +40,14 @@ classification records. It never authorizes one ten-module implementation diff.
 
 ## Surprises & Discoveries
 
-- None yet. Record source drift, newly discovered defects, eligibility changes,
-  numerical sensitivity, and gate timing here with direct evidence.
+- The fixed ledger contains 13 deduplicated rows, not the 14-row narrative count
+  used during initial review arithmetic. Both independent reviews accepted the
+  correction; all ten modules and every listed row remain actionable.
+- Both start coverage formats reproduced only the known parallel-environment
+  interference in `laned_shadow_h2637`; target and failure-test sources are
+  byte-identical to the prior measurement source.
+- Start timing was 34:28.70 for LCOV and 34:19.14 for JSON. Preserve delegated
+  execution for later full-workspace coverage passes.
 
 ## Decision Log
 
@@ -54,6 +60,11 @@ classification records. It never authorizes one ten-module implementation diff.
   does not override ADR-0021 symbol eligibility.
   Rationale: a fresh, dual-reviewed classification is required before any raw
   row is suppressed or dispositioned no-action.
+  Date/Author: 2026-07-11 / Codex.
+- Decision: classify all 13 refreshed rows as actionable; accept no eligibility
+  exception or no-action module.
+  Rationale: dual review found every row controls science, accepted-input,
+  publication, serialization, consumer, or CLI behavior under ADR-0021.
   Date/Author: 2026-07-11 / Codex.
 
 ## Outcomes & Retrospective
