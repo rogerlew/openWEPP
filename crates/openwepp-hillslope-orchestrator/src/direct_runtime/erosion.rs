@@ -1245,3 +1245,7 @@ fn validate_max(field: &'static str, value: f64, maximum: f64) -> Result<(), Dir
     }
     Ok(())
 }
+
+#[cfg(test)]
+#[path = "tests/erosion_hb01.rs"]
+mod hb01_tests;
