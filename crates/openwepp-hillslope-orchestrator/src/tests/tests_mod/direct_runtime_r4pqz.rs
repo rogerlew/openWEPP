@@ -1,11 +1,11 @@
 use super::direct_runtime_test_lock;
 use crate::{
     DIRECT_R4PQZ_HYDROLOGY_PROJECTION_SPAN, DIRECT_R4PQZ_PHASE_SPAN_COUNT, DirectDayFrame,
-    DirectEvapotranspirationComputeShadowProjection, DirectHydrologyProjectionInputs,
-    DirectHydrologyProjectionShadowProjection, DirectHydrologyProjectionState,
-    DirectPercolationShadowProjection, DirectPhaseKind, DirectRunIdentity,
-    DirectRunoffShadowProjection, DirectRunonCarryShadowProjection, DirectRuntimeError,
-    DirectSnowCouplingShadowProjection, DirectStorageShadowProjection,
+    DirectEvapotranspirationComputeShadowProjection, DirectHydrologyProjectionDownstreamOperands,
+    DirectHydrologyProjectionInputs, DirectHydrologyProjectionShadowProjection,
+    DirectHydrologyProjectionState, DirectPercolationShadowProjection, DirectPhaseKind,
+    DirectRunIdentity, DirectRunoffShadowProjection, DirectRunonCarryShadowProjection,
+    DirectRuntimeError, DirectSnowCouplingShadowProjection, DirectStorageShadowProjection,
     DirectSubsurfaceComputeShadowProjection, DirectSubsurfaceLayerInputs,
     DirectSubsurfaceLayerState, reset_direct_runtime_audit_counters,
 };
@@ -250,6 +250,121 @@ fn r4pqz_projection_rejects_invalid_projection_domains() {
             .expect_err("nonfinite final layer storage should fail"),
         DirectRuntimeError::NonFiniteDirectValue {
             field: "hydrology_projection.layer.theta_m"
+        }
+    );
+}
+
+#[test]
+fn r4pqz_projection_binds_missing_upstream_priority_after_storage() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let mut cases = Vec::new();
+    let mut day = projectable_day();
+    day.evapotranspiration_compute_shadow_projection = None;
+    cases.push((day, "R4N evapotranspiration/root-uptake producer"));
+    let mut day = projectable_day();
+    day.runoff_shadow_projection = None;
+    cases.push((day, "R4A runoff partition"));
+    let mut day = projectable_day();
+    day.percolation_shadow_projection = None;
+    cases.push((day, "R4M percolation producer"));
+    let mut day = projectable_day();
+    day.subsurface_compute_shadow_projection = None;
+    cases.push((day, "R4O subsurface compute producer"));
+    let mut day = projectable_day();
+    day.snow_coupling_shadow_projection = None;
+    cases.push((day, "R4G snow-coupling producer"));
+    let mut day = projectable_day();
+    day.runon_carry_shadow_projection = None;
+    cases.push((day, "R4J runon/carry producer"));
+
+    for (mut day, upstream) in cases {
+        assert_eq!(
+            day.run_r4pqz_hydrology_projection_span()
+                .expect_err("missing projection seam should fail closed"),
+            DirectRuntimeError::MissingDirectUpstream { upstream }
+        );
+        assert_eq!(
+            day.hydrology_projection,
+            DirectHydrologyProjectionState::zero(),
+            "failure must not publish a partial projection"
+        );
+        assert_eq!(
+            day.hydrology_projection_downstream_operands,
+            DirectHydrologyProjectionDownstreamOperands::zero(),
+            "failure must not publish partial downstream operands"
+        );
+        assert_eq!(
+            day.hydrology_projection_shadow_projection, None,
+            "failure must not publish a partial shadow"
+        );
+    }
+    let audit = crate::direct_runtime_audit_snapshot();
+    assert_eq!(audit.direct_state_mutations, 0);
+    assert_eq!(audit.downstream_operand_productions, 0);
+    assert_eq!(audit.shadow_projections, 0);
+}
+
+#[test]
+fn r4pqz_projection_uses_active_snow_and_rejects_numeric_surface_order() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let mut active_snow = projectable_day();
+    active_snow.snow_coupling.snow_state_projected = true;
+    active_snow
+        .snow_coupling_shadow_projection
+        .as_mut()
+        .expect("snow projection")
+        .runtime_swe_after_m = 0.046_875;
+    active_snow
+        .run_r4pqz_hydrology_projection_span()
+        .expect("active snow projection should execute");
+    assert_eq!(
+        active_snow.hydrology_projection.snow_water_m.to_bits(),
+        0.046_875_f64.to_bits()
+    );
+
+    let mut bad_tolerance = projectable_day();
+    bad_tolerance
+        .hydrology_projection_inputs
+        .aggregate_storage_tolerance_m = f64::NAN;
+    assert_eq!(
+        bad_tolerance
+            .run_r4pqz_hydrology_projection_span()
+            .expect_err("non-finite tolerance should fail first"),
+        DirectRuntimeError::NonFiniteDirectValue {
+            field: "hydrology_projection.aggregate_storage_tolerance_m"
+        }
+    );
+
+    let mut bad_publication = projectable_day();
+    bad_publication.publication.runoff_m = -0.25;
+    bad_publication.publication.evapotranspiration_m = f64::NAN;
+    assert_eq!(
+        bad_publication
+            .run_r4pqz_hydrology_projection_span()
+            .expect_err("publication runoff should precede later publication fields"),
+        DirectRuntimeError::NegativeDirectValue {
+            field: "hydrology_projection.publication_runoff_m"
+        }
+    );
+
+    let mut frozen_mismatch = projectable_day();
+    frozen_mismatch
+        .hydrology_projection_inputs
+        .frozen_soil_water_m = 0.0;
+    assert_eq!(
+        frozen_mismatch
+            .run_r4pqz_hydrology_projection_span()
+            .expect_err("frozen layer storage must reconcile"),
+        DirectRuntimeError::DirectClosureToleranceExceeded {
+            field: "hydrology_projection.frozen_layer_storage_m"
         }
     );
 }
