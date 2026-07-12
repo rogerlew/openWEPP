@@ -60,10 +60,11 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-12 UTC`:
-- `20260712-dc-cqr-preint-hb05-nonfinite-datver-001/` - ACTIVE: HB-05 review
-  proved non-finite watershed structure versions are accepted or misclassified.
-  The bounded correction maps them to existing `STR-E-003` policy without
-  adding a finite upper-version limit.
+- `20260712-dc-cqr-preint-hb05-nonfinite-datver-001/` - EXECUTED-COMPLETE
+  (2026-07-12): non-finite structure versions now fail as existing `STR-E-003`
+  before discrimination without a finite upper bound. Parser coverage is
+  97.698% lines / 98.590% regions, target CRAP 15.018, and the current-source
+  topology/zero-impoundment CLI consumer passes.
 - `20260712-dc-cqr-preint-hb03-negative-qin-domain-001/` -
   EXECUTED-COMPLETE (2026-07-12): standalone/handoff qin now rejects negative
   erosion discharge without changing authority priority or positive-inflow

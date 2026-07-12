@@ -370,48 +370,8 @@ pub fn parse_watershed_structure_from_str(
         });
     }
 
-    let first = &lines[0];
-    let first_token =
-        first
-            .tokens
-            .first()
-            .ok_or(WatershedStructureParseError::InvariantViolation {
-                context: "non-empty logical line must have at least one token",
-            })?;
-    let first_numeric = parse_f64(first.line, "datver_or_elmt", first_token)?;
-
-    let (datver, datver_source, start_row_index, no_datver_warning_line) = if first_numeric > 10.0 {
-        if first.tokens.len() != 1 {
-            return Err(WatershedStructureParseError::RecordArityError {
-                line: first.line,
-                expected: 1,
-                found: first.tokens.len(),
-            });
-        }
-        if first_numeric + STR_DATVER_EPS < STR_DATVER_MIN {
-            return Err(WatershedStructureParseError::UnsupportedDatver {
-                line: first.line,
-                datver: first_numeric,
-                min_supported: STR_DATVER_MIN,
-            });
-        }
-        (first_numeric, DatverSource::ExplicitHeader, 1usize, None)
-    } else {
-        match options.mode {
-            ParseMode::Strict => {
-                return Err(WatershedStructureParseError::LegacyNoDatverDisallowed {
-                    line: first.line,
-                    token: first_token.clone(),
-                });
-            }
-            ParseMode::Compatibility => (
-                STR_DATVER_MIN,
-                DatverSource::LegacyCompatNoDatver,
-                0usize,
-                Some(first.line),
-            ),
-        }
-    };
+    let (datver, datver_source, start_row_index, no_datver_warning_line) =
+        parse_structure_preamble(&lines, options.mode)?;
 
     let observed_rows = lines.len().saturating_sub(start_row_index);
     if observed_rows != expected_rows {
@@ -446,82 +406,11 @@ pub fn parse_watershed_structure_from_str(
     let mut impoundment_local_index = 0usize;
 
     for (offset, logical) in lines[start_row_index..].iter().enumerate() {
-        if logical.tokens.len() != 10 {
-            return Err(WatershedStructureParseError::RecordArityError {
-                line: logical.line,
-                expected: 10,
-                found: logical.tokens.len(),
-            });
-        }
-
         let record_index = offset + 1;
         let element_id = (options.nhill + record_index) as i32;
+        let mut row = parse_structure_row(logical, options.nhill, record_index, element_id)?;
 
-        let elmt = parse_i32(logical.line, "elmt", &logical.tokens[0])?;
-        let nhleft = parse_i32(logical.line, "nhleft", &logical.tokens[1])?;
-        let nhrght = parse_i32(logical.line, "nhrght", &logical.tokens[2])?;
-        let nhtop = parse_i32(logical.line, "nhtop", &logical.tokens[3])?;
-        let ncleft = parse_i32(logical.line, "ncleft", &logical.tokens[4])?;
-        let ncrght = parse_i32(logical.line, "ncrght", &logical.tokens[5])?;
-        let nctop = parse_i32(logical.line, "nctop", &logical.tokens[6])?;
-        let nileft = parse_i32(logical.line, "nileft", &logical.tokens[7])?;
-        let nirght = parse_i32(logical.line, "nirght", &logical.tokens[8])?;
-        let nitop = parse_i32(logical.line, "nitop", &logical.tokens[9])?;
-
-        if elmt != 2 && elmt != 3 {
-            return Err(WatershedStructureParseError::ElementTypeDomainError {
-                line: logical.line,
-                value: elmt,
-            });
-        }
-
-        validate_hillslope_contributor(logical.line, "nhleft", nhleft, options.nhill)?;
-        validate_hillslope_contributor(logical.line, "nhrght", nhrght, options.nhill)?;
-        validate_hillslope_contributor(logical.line, "nhtop", nhtop, options.nhill)?;
-
-        let min_element_ref = (options.nhill + 1) as i32;
-        validate_structure_contributor(
-            logical.line,
-            "ncleft",
-            ncleft,
-            min_element_ref,
-            element_id,
-        )?;
-        validate_structure_contributor(
-            logical.line,
-            "ncrght",
-            ncrght,
-            min_element_ref,
-            element_id,
-        )?;
-        validate_structure_contributor(logical.line, "nctop", nctop, min_element_ref, element_id)?;
-        validate_structure_contributor(
-            logical.line,
-            "nileft",
-            nileft,
-            min_element_ref,
-            element_id,
-        )?;
-        validate_structure_contributor(
-            logical.line,
-            "nirght",
-            nirght,
-            min_element_ref,
-            element_id,
-        )?;
-        validate_structure_contributor(logical.line, "nitop", nitop, min_element_ref, element_id)?;
-
-        let contributors = [
-            nhleft, nhrght, nhtop, ncleft, ncrght, nctop, nileft, nirght, nitop,
-        ];
-        if contributors.iter().all(|value| *value == 0) {
-            return Err(WatershedStructureParseError::DisconnectedElementError {
-                line: logical.line,
-                record_index,
-            });
-        }
-
-        let max_hillslope_in_row = [nhleft, nhrght, nhtop]
+        let max_hillslope_in_row = [row.nhleft, row.nhrght, row.nhtop]
             .into_iter()
             .max()
             .unwrap_or(0)
@@ -529,7 +418,7 @@ pub fn parse_watershed_structure_from_str(
         parsed.summary.max_hillslope_ref =
             parsed.summary.max_hillslope_ref.max(max_hillslope_in_row);
 
-        let element_local_index = if elmt == 2 {
+        row.element_local_index = if row.element_type_code == 2 {
             channel_local_index += 1;
             parsed.summary.channel_count += 1;
             channel_local_index
@@ -539,21 +428,7 @@ pub fn parse_watershed_structure_from_str(
             impoundment_local_index
         };
 
-        parsed.rows.push(WatershedStructureRow {
-            record_index,
-            element_id,
-            element_type_code: elmt,
-            element_local_index,
-            nhleft,
-            nhrght,
-            nhtop,
-            ncleft,
-            ncrght,
-            nctop,
-            nileft,
-            nirght,
-            nitop,
-        });
+        parsed.rows.push(row);
     }
 
     if parsed.summary.max_hillslope_ref != options.nhill {
@@ -588,6 +463,138 @@ pub fn parse_watershed_structure_from_str(
 struct LogicalLine {
     line: usize,
     tokens: Vec<String>,
+}
+
+fn parse_structure_preamble(
+    lines: &[LogicalLine],
+    mode: ParseMode,
+) -> Result<(f64, DatverSource, usize, Option<usize>), WatershedStructureParseError> {
+    let first = &lines[0];
+    let first_token =
+        first
+            .tokens
+            .first()
+            .ok_or(WatershedStructureParseError::InvariantViolation {
+                context: "non-empty logical line must have at least one token",
+            })?;
+    let first_numeric = parse_f64(first.line, "datver_or_elmt", first_token)?;
+    if !first_numeric.is_finite() {
+        return Err(WatershedStructureParseError::UnsupportedDatver {
+            line: first.line,
+            datver: first_numeric,
+            min_supported: STR_DATVER_MIN,
+        });
+    }
+    if first_numeric > 10.0 {
+        if first.tokens.len() != 1 {
+            return Err(WatershedStructureParseError::RecordArityError {
+                line: first.line,
+                expected: 1,
+                found: first.tokens.len(),
+            });
+        }
+        if first_numeric + STR_DATVER_EPS < STR_DATVER_MIN {
+            return Err(WatershedStructureParseError::UnsupportedDatver {
+                line: first.line,
+                datver: first_numeric,
+                min_supported: STR_DATVER_MIN,
+            });
+        }
+        return Ok((first_numeric, DatverSource::ExplicitHeader, 1, None));
+    }
+    match mode {
+        ParseMode::Strict => Err(WatershedStructureParseError::LegacyNoDatverDisallowed {
+            line: first.line,
+            token: first_token.clone(),
+        }),
+        ParseMode::Compatibility => Ok((
+            STR_DATVER_MIN,
+            DatverSource::LegacyCompatNoDatver,
+            0,
+            Some(first.line),
+        )),
+    }
+}
+
+fn parse_structure_row(
+    logical: &LogicalLine,
+    nhill: usize,
+    record_index: usize,
+    element_id: i32,
+) -> Result<WatershedStructureRow, WatershedStructureParseError> {
+    if logical.tokens.len() != 10 {
+        return Err(WatershedStructureParseError::RecordArityError {
+            line: logical.line,
+            expected: 10,
+            found: logical.tokens.len(),
+        });
+    }
+    let fields = [
+        "elmt", "nhleft", "nhrght", "nhtop", "ncleft", "ncrght", "nctop", "nileft", "nirght",
+        "nitop",
+    ];
+    let mut values = [0_i32; 10];
+    for (index, field) in fields.into_iter().enumerate() {
+        values[index] = parse_i32(logical.line, field, &logical.tokens[index])?;
+    }
+    let [
+        elmt,
+        nhleft,
+        nhrght,
+        nhtop,
+        ncleft,
+        ncrght,
+        nctop,
+        nileft,
+        nirght,
+        nitop,
+    ] = values;
+    if elmt != 2 && elmt != 3 {
+        return Err(WatershedStructureParseError::ElementTypeDomainError {
+            line: logical.line,
+            value: elmt,
+        });
+    }
+    for (field, value) in [("nhleft", nhleft), ("nhrght", nhrght), ("nhtop", nhtop)] {
+        validate_hillslope_contributor(logical.line, field, value, nhill)?;
+    }
+    let min_element_ref = (nhill + 1) as i32;
+    for (field, value) in [
+        ("ncleft", ncleft),
+        ("ncrght", ncrght),
+        ("nctop", nctop),
+        ("nileft", nileft),
+        ("nirght", nirght),
+        ("nitop", nitop),
+    ] {
+        validate_structure_contributor(logical.line, field, value, min_element_ref, element_id)?;
+    }
+    if [
+        nhleft, nhrght, nhtop, ncleft, ncrght, nctop, nileft, nirght, nitop,
+    ]
+    .iter()
+    .all(|value| *value == 0)
+    {
+        return Err(WatershedStructureParseError::DisconnectedElementError {
+            line: logical.line,
+            record_index,
+        });
+    }
+    Ok(WatershedStructureRow {
+        record_index,
+        element_id,
+        element_type_code: elmt,
+        element_local_index: 0,
+        nhleft,
+        nhrght,
+        nhtop,
+        ncleft,
+        ncrght,
+        nctop,
+        nileft,
+        nirght,
+        nitop,
+    })
 }
 
 fn materialize_lines(input: &str) -> Vec<LogicalLine> {
@@ -708,5 +715,282 @@ mod tests {
         assert_eq!(parsed.len(), 1);
         assert_eq!(parsed[0].line, 3);
         assert_eq!(parsed[0].tokens[0], "2");
+    }
+
+    fn valid_input() -> &'static str {
+        "# structure\n94.301\n2 1 0 0 0 0 0 0 0 0\n3 2 0 0 3 0 0 0 0 0\n"
+    }
+
+    #[test]
+    fn parses_ordered_typed_structure_and_cross_file_counts() {
+        let mut options = WatershedStructureParseOptions::strict(2, 2);
+        options.expected_channel_count = Some(1);
+        options.expected_impoundment_count = Some(1);
+        let parsed = parse_watershed_structure_from_str(valid_input(), options).unwrap();
+        assert_eq!(parsed.datver_source, DatverSource::ExplicitHeader);
+        assert_eq!(parsed.summary.channel_count, 1);
+        assert_eq!(parsed.summary.impoundment_count, 1);
+        assert_eq!(parsed.summary.max_hillslope_ref, 2);
+        assert_eq!(parsed.rows[0].element_id, 3);
+        assert_eq!(parsed.rows[1].element_id, 4);
+        assert_eq!(parsed.rows[1].ncleft, 3);
+        assert_eq!(parsed.rows[0].element_local_index, 1);
+        assert_eq!(parsed.rows[1].element_local_index, 1);
+    }
+
+    #[test]
+    fn compatibility_no_header_is_observable() {
+        let input = "2 1 0 0 0 0 0 0 0 0\n3 2 0 0 3 0 0 0 0 0\n";
+        let parsed = parse_watershed_structure_from_str(
+            input,
+            WatershedStructureParseOptions::compatibility(2, 2),
+        )
+        .unwrap();
+        assert_eq!(parsed.datver_source, DatverSource::LegacyCompatNoDatver);
+        assert_eq!(
+            parsed.warnings[0].code,
+            WatershedStructureWarningCode::StrW001
+        );
+    }
+
+    #[test]
+    fn malformed_inputs_preserve_typed_error_priority() {
+        let cases = [
+            (
+                "",
+                WatershedStructureParseOptions::strict(2, 2),
+                "STR-E-011",
+            ),
+            (
+                "bad\n",
+                WatershedStructureParseOptions::strict(2, 0),
+                "STR-E-001",
+            ),
+            (
+                "94.301 1\n",
+                WatershedStructureParseOptions::strict(2, 0),
+                "STR-E-002",
+            ),
+            (
+                "94.0\n",
+                WatershedStructureParseOptions::strict(2, 0),
+                "STR-E-003",
+            ),
+            (
+                "2 1 0 0 0 0 0 0 0 0\n",
+                WatershedStructureParseOptions::strict(2, 1),
+                "STR-E-003",
+            ),
+            (
+                "94.301\n4 1 0 0 0 0 0 0 0 0\n",
+                WatershedStructureParseOptions::strict(2, 1),
+                "STR-E-004",
+            ),
+            (
+                "94.301\n2 0 0 0 0 0 0 0 0 0\n",
+                WatershedStructureParseOptions::strict(2, 1),
+                "STR-E-005",
+            ),
+            (
+                "94.301\n2 -1 0 0 0 0 0 0 0 0\n",
+                WatershedStructureParseOptions::strict(2, 1),
+                "STR-E-006",
+            ),
+            (
+                "94.301\n2 3 0 0 0 0 0 0 0 0\n",
+                WatershedStructureParseOptions::strict(2, 1),
+                "STR-E-006",
+            ),
+            (
+                "94.301\n2 1 0 0 3 0 0 0 0 0\n",
+                WatershedStructureParseOptions::strict(2, 1),
+                "STR-E-006",
+            ),
+        ];
+        for (input, options, expected) in cases {
+            let error = parse_watershed_structure_from_str(input, options).unwrap_err();
+            assert_eq!(error.contract_error_id(), expected, "{input:?}");
+        }
+    }
+
+    #[test]
+    fn context_and_count_closures_fail_closed() {
+        let mut missing_rows = WatershedStructureParseOptions::strict(2, 2);
+        missing_rows.expected_rows = None;
+        assert_eq!(
+            parse_watershed_structure_from_str(valid_input(), missing_rows)
+                .unwrap_err()
+                .contract_error_id(),
+            "STR-E-010"
+        );
+        assert_eq!(
+            parse_watershed_structure_from_str(
+                valid_input(),
+                WatershedStructureParseOptions::strict(0, 2)
+            )
+            .unwrap_err()
+            .contract_error_id(),
+            "STR-E-009"
+        );
+        for (channel, pond, expected) in [
+            (Some(2), Some(1), "STR-E-007"),
+            (Some(1), Some(2), "STR-E-008"),
+        ] {
+            let mut options = WatershedStructureParseOptions::strict(2, 2);
+            options.expected_channel_count = channel;
+            options.expected_impoundment_count = pond;
+            assert_eq!(
+                parse_watershed_structure_from_str(valid_input(), options)
+                    .unwrap_err()
+                    .contract_error_id(),
+                expected
+            );
+        }
+        let uncovered = "94.301\n2 1 0 0 0 0 0 0 0 0\n";
+        assert_eq!(
+            parse_watershed_structure_from_str(
+                uncovered,
+                WatershedStructureParseOptions::strict(2, 1)
+            )
+            .unwrap_err()
+            .contract_error_id(),
+            "STR-E-009"
+        );
+    }
+
+    #[test]
+    fn public_error_strings_codes_and_sources_cover_every_variant() {
+        let io = WatershedStructureParseError::InputOpenError {
+            path: PathBuf::from("missing.str"),
+            source: std::io::Error::new(std::io::ErrorKind::NotFound, "missing"),
+        };
+        assert!(Error::source(&io).is_some());
+        let errors = vec![
+            io,
+            WatershedStructureParseError::TokenParseError {
+                line: 1,
+                field: "elmt",
+                token: "x".into(),
+            },
+            WatershedStructureParseError::RecordArityError {
+                line: 1,
+                expected: 10,
+                found: 9,
+            },
+            WatershedStructureParseError::LegacyNoDatverDisallowed {
+                line: 1,
+                token: "2".into(),
+            },
+            WatershedStructureParseError::UnsupportedDatver {
+                line: 1,
+                datver: 94.0,
+                min_supported: STR_DATVER_MIN,
+            },
+            WatershedStructureParseError::ElementTypeDomainError { line: 2, value: 4 },
+            WatershedStructureParseError::DisconnectedElementError {
+                line: 2,
+                record_index: 1,
+            },
+            WatershedStructureParseError::ContributorDomainError {
+                line: 2,
+                field: "nhleft",
+                value: -1,
+                expected: ">= 0",
+            },
+            WatershedStructureParseError::ChannelCountMismatch {
+                expected: 2,
+                observed: 1,
+            },
+            WatershedStructureParseError::ImpoundmentCountMismatch {
+                expected: 2,
+                observed: 1,
+            },
+            WatershedStructureParseError::HillslopeCoverageMismatch {
+                expected_nhill: 2,
+                observed_nhmax: 1,
+            },
+            WatershedStructureParseError::NhillContextError { nhill: 0 },
+            WatershedStructureParseError::RecordCountMismatch {
+                expected: 2,
+                observed: 1,
+            },
+            WatershedStructureParseError::InvariantViolation { context: "context" },
+        ];
+        for error in errors {
+            let rendered = error.to_string();
+            assert!(rendered.starts_with(error.contract_error_id()));
+        }
+        assert!(
+            Error::source(&WatershedStructureParseError::InvariantViolation { context: "x" })
+                .is_none()
+        );
+        assert_eq!(
+            WatershedStructureWarningCode::StrW001.to_string(),
+            "STR-W-001"
+        );
+    }
+
+    #[test]
+    fn path_wrapper_reads_real_file_and_preserves_open_error() {
+        let path = std::env::temp_dir().join(format!("openwepp-hb05-{}.str", std::process::id()));
+        fs::write(&path, valid_input()).unwrap();
+        let parsed = parse_watershed_structure_from_path(
+            &path,
+            WatershedStructureParseOptions::strict(2, 2),
+        )
+        .unwrap();
+        assert_eq!(parsed.rows.len(), 2);
+        fs::remove_file(&path).unwrap();
+        let error = parse_watershed_structure_from_path(
+            &path,
+            WatershedStructureParseOptions::strict(2, 2),
+        )
+        .unwrap_err();
+        assert_eq!(error.contract_error_id(), "STR-E-000");
+    }
+
+    #[test]
+    fn malformed_required_integer_is_str_e_001() {
+        let error = parse_watershed_structure_from_str(
+            "94.301\n2 x 0 0 0 0 0 0 0 0\n",
+            WatershedStructureParseOptions::strict(2, 1),
+        )
+        .unwrap_err();
+        assert!(matches!(
+            error,
+            WatershedStructureParseError::TokenParseError {
+                field: "nhleft",
+                ..
+            }
+        ));
+    }
+
+    #[test]
+    fn nonfinite_datver_is_str_e_003_in_strict_and_compatibility_modes() {
+        for mode in [ParseMode::Strict, ParseMode::Compatibility] {
+            for token in ["NaN", "+inf", "-inf"] {
+                let options = WatershedStructureParseOptions {
+                    mode,
+                    nhill: 2,
+                    expected_rows: Some(0),
+                    expected_channel_count: None,
+                    expected_impoundment_count: None,
+                };
+                let error = parse_watershed_structure_from_str(&format!("{token}\n"), options)
+                    .expect_err("non-finite datver must fail before header discrimination");
+                match error {
+                    WatershedStructureParseError::UnsupportedDatver {
+                        line,
+                        datver,
+                        min_supported,
+                    } => {
+                        assert_eq!(line, 1);
+                        assert!(!datver.is_finite());
+                        assert!((min_supported - STR_DATVER_MIN).abs() <= f64::EPSILON);
+                    }
+                    other => panic!("{mode:?} {token}: expected UnsupportedDatver, got {other}"),
+                }
+            }
+        }
     }
 }

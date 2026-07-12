@@ -1,6 +1,6 @@
 # DC CQR HB-05 — Non-Finite Watershed Datver
 
-Status: `ACTIVE`
+Status: `TERMINAL-PASS`
 
 ## Objective
 
@@ -31,10 +31,10 @@ safe, and directly testable; correction is mandatory before HB-05 closure.
 ## Progress
 
 - [x] Reproduce mechanism statically during independent review.
-- [ ] Add red strict/compat non-finite contract tests.
-- [ ] Land the bounded preamble correction.
-- [ ] Regenerate HB-05 same-source evidence and consumer proof.
-- [ ] Complete dual review/verification and terminal disposition.
+- [x] Add red strict/compat non-finite contract tests.
+- [x] Land the bounded preamble correction.
+- [x] Regenerate HB-05 same-source evidence and consumer proof.
+- [x] Complete dual review/verification and terminal disposition.
 
 ## Review And Delegation
 
@@ -44,4 +44,8 @@ declared source, tests, and evidence.
 
 ## Outcomes
 
-Pending execution.
+All non-finite version tokens now fail as existing `UnsupportedDatver` before
+header discrimination in strict and compatibility modes; finite future versions
+remain accepted. Final parser metrics/gates and the current-source CLI consumer
+pass. Dual review/verification pass with all findings closed. Disposition:
+`TERMINAL-PASS`; `DC-CQR-HB05-001` is closed.
