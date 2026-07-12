@@ -52,6 +52,9 @@ classification records. It does not permit a multi-module implementation diff.
   proves the HBP-to-watershed publication consumer.
 - [x] (2026-07-12 UTC) Close `DC-CQR-HB05-001` and execute HB-05 through
   reviewed `MODULE-PASS` checkpoint.
+- [x] (2026-07-12 UTC) Close `DC-CQR-HB06-001`; record HB-06
+  `CONSUMER-ADOPTION-HOLD` after proving the production runner bypasses the
+  accumulator WB13 row path.
 - [ ] Execute or disposition HB-06 through its terminal record.
 - [ ] Execute or disposition HB-07 through its terminal record.
 - [ ] Execute or disposition HB-08 through its terminal record.
@@ -68,6 +71,9 @@ classification records. It does not permit a multi-module implementation diff.
   eligible parser/area symbols. The binding disagreement rule records both as
   `E-PRODUCTION`; actionability and science-tier module treatment were never in
   dispute.
+- HB-06's public output-surface test consumes the accumulator API, but the
+  production runner maps `DirectPublicationDayRow` straight to
+  `HillslopeWatRow`. That test cannot close the binding real-consumer gate.
 
 ## Decision Log
 
@@ -81,6 +87,14 @@ classification records. It does not permit a multi-module implementation diff.
   Rationale: coverage and self-consistency cannot prove that a real downstream
   consumer reads the correct authoritative field.
   Date/Author: 2026-07-11 / Codex.
+- Decision: amend HB-06 with one bounded production-consumer adoption package
+  spanning the accumulator's typed WB13 constructor and the runner's common
+  WAT projection adapter.
+  Rationale: two independent scope reviews found this is the smallest seam
+  that makes every production WAT row consume accumulator validation without
+  changing the Parquet writer, schema, buffering, row order, or numeric
+  representation. The typed seam avoids a per-row string-keyed map.
+  Date/Author: 2026-07-12 / Codex.
 
 ## Outcomes & Retrospective
 
@@ -138,6 +152,13 @@ binding execution contract. Commit before implementation/test edits. A fully
 reviewed no-action module records classification evidence instead. Limit the
 write set to one target module, focused tests/fixtures, package artifacts, and
 catalog/plan transition docs. Only one module package may be active.
+
+HB-06 exception: after `DC-CQR-HB06-001` closes, the reviewed consumer-adoption
+package may edit both `crates/openwepp-summary-accumulator/src/lib.rs` and
+`crates/openwepp-runner/src/hillslope/02_output_and_climate_helpers.rs`, plus
+their focused tests and package evidence. This explicit two-module write set is
+limited to the typed WB13 validation seam and the already-common production WAT
+projection. It must not edit the Parquet schema/writer or publication ordering.
 
 Each package must:
 
