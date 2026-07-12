@@ -65,7 +65,9 @@ classification records. It does not permit a multi-module implementation diff.
   clamp is fail-closed, and W11C consumes the production route.
 - [x] (2026-07-12 UTC) Execute HB-08 through reviewed `MODULE-PASS`: hourly
   wave routing and all eligible floors pass; W11C consumes the production path.
-- [ ] Execute or disposition HB-09 through its terminal record.
+- [x] (2026-07-12 UTC) Execute HB-09 through reviewed `MODULE-PASS`: both
+  writer rows and all same-source floors pass, and the sediment-active
+  watershed CLI consumes the production Parquet path.
 - [ ] Execute or disposition HB-10 through its terminal record.
 - [ ] Run tranche-final rerank, dual verification, and transition to Medium.
 

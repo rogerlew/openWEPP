@@ -1,6 +1,6 @@
 # HB-09 Watershed Output Writers
 
-Status: `ACTIVE`
+Status: `MODULE-PASS`
 Parent: `docs/work-packages/cqr-high-risk-b-execplan.md`
 
 ## Objective
@@ -115,3 +115,11 @@ Minimum gates:
 Acceptance requires both fixed rows at CRAP at most 30, zero eligible function
 below 75%, exact schema/value/error preservation, a real CLI Parquet consumer
 PASS, and two final reviews/verifications under the High-B plan.
+
+## Terminal Outcome
+
+Cover-first characterization closes writer errors and all same-source floors.
+Mechanical extraction reduces the fixed rows from CC `29`/`69` and CRAP
+`32.142`/`69.000` to CC `15`/`7` and CRAP `15.841`/`7.000`. The selected
+sediment-active watershed CLI consumer reads the real Parquet path and passes.
+Disposition: `MODULE-PASS`.

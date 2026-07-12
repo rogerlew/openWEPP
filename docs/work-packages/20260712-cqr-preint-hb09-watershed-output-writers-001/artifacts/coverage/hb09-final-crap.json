@@ -1,0 +1,1286 @@
+{
+  "$schema": "https://raw.githubusercontent.com/minikin/cargo-crap/main/schemas/report-v1.json",
+  "version": "0.2.2",
+  "entries": [
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "float64_hydrology_storage_value",
+      "line": 2324,
+      "cyclomatic": 20.0,
+      "coverage": 100.0,
+      "crap": 20.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "float64_runoff_sediment_value",
+      "line": 2238,
+      "cyclomatic": 18.0,
+      "coverage": 100.0,
+      "crap": 18.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "write_output_record_parquet_outputs",
+      "line": 725,
+      "cyclomatic": 15.0,
+      "coverage": 84.48275862068965,
+      "crap": 15.840670999220961
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "float64_hydrology_flux_value",
+      "line": 2294,
+      "cyclomatic": 14.0,
+      "coverage": 100.0,
+      "crap": 14.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "float64_storage_channel_value",
+      "line": 2352,
+      "cyclomatic": 14.0,
+      "coverage": 100.0,
+      "crap": 14.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/contracts.rs",
+      "function": "OutputContractError::fmt",
+      "line": 45,
+      "cyclomatic": 3.0,
+      "coverage": 0.0,
+      "crap": 12.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "float64_hydrology_volume_value",
+      "line": 2271,
+      "cyclomatic": 11.0,
+      "coverage": 100.0,
+      "crap": 11.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "write_single_output",
+      "line": 2073,
+      "cyclomatic": 9.0,
+      "coverage": 77.77777777777779,
+      "crap": 9.888888888888888
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "build_row_batch",
+      "line": 2128,
+      "cyclomatic": 8.0,
+      "coverage": 86.95652173913044,
+      "crap": 8.142023506205309
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "int16_value",
+      "line": 2194,
+      "cyclomatic": 7.0,
+      "coverage": 88.88888888888889,
+      "crap": 7.06721536351166
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "float64_value",
+      "line": 2219,
+      "cyclomatic": 7.0,
+      "coverage": 100.0,
+      "crap": 7.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "int8_value",
+      "line": 2185,
+      "cyclomatic": 5.0,
+      "coverage": 85.71428571428571,
+      "crap": 5.072886297376093
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "int32_value",
+      "line": 2205,
+      "cyclomatic": 5.0,
+      "coverage": 85.71428571428571,
+      "crap": 5.072886297376093
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "utf8_value",
+      "line": 2400,
+      "cyclomatic": 5.0,
+      "coverage": 85.71428571428571,
+      "crap": 5.072886297376093
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedWriterError::fmt",
+      "line": 57,
+      "cyclomatic": 5.0,
+      "coverage": 100.0,
+      "crap": 5.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "option_balance",
+      "line": 2391,
+      "cyclomatic": 5.0,
+      "coverage": 100.0,
+      "crap": 5.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedWriterError::code",
+      "line": 47,
+      "cyclomatic": 4.0,
+      "coverage": 100.0,
+      "crap": 4.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "field_with_meta",
+      "line": 844,
+      "cyclomatic": 4.0,
+      "coverage": 100.0,
+      "crap": 4.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "option_sum3",
+      "line": 2383,
+      "cyclomatic": 4.0,
+      "coverage": 100.0,
+      "crap": 4.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedWriterError::source",
+      "line": 89,
+      "cyclomatic": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "align_output_schema_units",
+      "line": 909,
+      "cyclomatic": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "option_sum2",
+      "line": 2379,
+      "cyclomatic": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "option_product2",
+      "line": 2387,
+      "cyclomatic": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/contracts.rs",
+      "function": "OutputContractError::code",
+      "line": 36,
+      "cyclomatic": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/contracts.rs",
+      "function": "validate_output_contract",
+      "line": 69,
+      "cyclomatic": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "write_schema_output",
+      "line": 785,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "write_totalwatsed3_parquet",
+      "line": 793,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "schema_with_interchange_version",
+      "line": 878,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/contracts.rs",
+      "function": "validate_required_path",
+      "line": 99,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/contracts.rs",
+      "function": "validate_extension",
+      "line": 110,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::default",
+      "line": 156,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::year",
+      "line": 271,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::simulation_year",
+      "line": 275,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::sim_day_index",
+      "line": 279,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::julian",
+      "line": 283,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::month",
+      "line": 287,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::day_of_month",
+      "line": 291,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::water_year",
+      "line": 295,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::element_id",
+      "line": 299,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::channel_id",
+      "line": 303,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::runoff_volume_m3",
+      "line": 307,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::peak_discharge_m3_s",
+      "line": 311,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::sediment_yield_kg",
+      "line": 315,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::soluble_pollutant_kg",
+      "line": 319,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::particulate_pollutant_kg",
+      "line": 323,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::channel_inflow_m3",
+      "line": 327,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::channel_outflow_m3",
+      "line": 331,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::channel_storage_m3",
+      "line": 335,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::channel_baseflow_m3",
+      "line": 339,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::channel_loss_m3",
+      "line": 343,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::area_m2",
+      "line": 347,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::precipitation_mm",
+      "line": 351,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::rain_melt_mm",
+      "line": 355,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::runoff_mm",
+      "line": 359,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::deep_percolation_mm",
+      "line": 363,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::lateral_flow_mm",
+      "line": 367,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::qofe_mm",
+      "line": 371,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::transpiration_mm",
+      "line": 375,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::evaporation_soil_mm",
+      "line": 379,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::evaporation_residue_mm",
+      "line": 383,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::upstream_q_mm",
+      "line": 387,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::subsurface_runon_mm",
+      "line": 391,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::total_soil_water_mm",
+      "line": 395,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::soil_water_total_mm",
+      "line": 399,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::profile_depth_mm",
+      "line": 403,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::profile_porosity_cap_mm",
+      "line": 407,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::profile_fc_store_mm",
+      "line": 411,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::profile_wp_store_mm",
+      "line": 415,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::interception_mm",
+      "line": 419,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::interception_storage_mm",
+      "line": 423,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::frozen_water_mm",
+      "line": 427,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::snow_water_mm",
+      "line": 431,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::tile_mm",
+      "line": 435,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::irrigation_mm",
+      "line": 439,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::baseflow_mm",
+      "line": 443,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::q_diagnostic_mm",
+      "line": 447,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::subsurface_runoff_volume_m3",
+      "line": 451,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::total_detachment_kg",
+      "line": 455,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::total_deposition_kg",
+      "line": 459,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::sediment_class_deposition_kg",
+      "line": 463,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::sediment_volume_concentration_m3_m3",
+      "line": 472,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::tsmf_fraction",
+      "line": 476,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::qrain_mm",
+      "line": 480,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedInterchangeRowSeed::qsnow_mm",
+      "line": 484,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::year",
+      "line": 490,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::simulation_year",
+      "line": 494,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::sim_day_index",
+      "line": 498,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::julian",
+      "line": 502,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::month",
+      "line": 506,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::day_of_month",
+      "line": 510,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::water_year",
+      "line": 514,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::element_id",
+      "line": 518,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::channel_id",
+      "line": 522,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::runoff_volume_m3",
+      "line": 526,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::peak_discharge_m3_s",
+      "line": 530,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::sediment_yield_kg",
+      "line": 534,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::soluble_pollutant_kg",
+      "line": 538,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::particulate_pollutant_kg",
+      "line": 542,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::channel_inflow_m3",
+      "line": 546,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::channel_outflow_m3",
+      "line": 550,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::channel_storage_m3",
+      "line": 554,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::channel_baseflow_m3",
+      "line": 558,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::channel_loss_m3",
+      "line": 562,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::area_m2",
+      "line": 566,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::precipitation_mm",
+      "line": 570,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::rain_melt_mm",
+      "line": 574,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::runoff_mm",
+      "line": 578,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::deep_percolation_mm",
+      "line": 582,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::lateral_flow_mm",
+      "line": 586,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::qofe_mm",
+      "line": 590,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::transpiration_mm",
+      "line": 594,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::evaporation_soil_mm",
+      "line": 598,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::evaporation_residue_mm",
+      "line": 602,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::upstream_q_mm",
+      "line": 606,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::subsurface_runon_mm",
+      "line": 610,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::total_soil_water_mm",
+      "line": 614,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::soil_water_total_mm",
+      "line": 618,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::profile_depth_mm",
+      "line": 622,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::profile_porosity_cap_mm",
+      "line": 626,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::profile_fc_store_mm",
+      "line": 630,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::profile_wp_store_mm",
+      "line": 634,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::interception_mm",
+      "line": 638,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::interception_storage_mm",
+      "line": 642,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::frozen_water_mm",
+      "line": 646,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::snow_water_mm",
+      "line": 650,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::tile_mm",
+      "line": 654,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::irrigation_mm",
+      "line": 658,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::baseflow_mm",
+      "line": 662,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::q_diagnostic_mm",
+      "line": 666,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::subsurface_runoff_volume_m3",
+      "line": 670,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::total_detachment_kg",
+      "line": 674,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::total_deposition_kg",
+      "line": 678,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::sediment_class_deposition_kg",
+      "line": 682,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::sediment_volume_concentration_m3_m3",
+      "line": 687,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::tsmf_fraction",
+      "line": 691,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::qrain_mm",
+      "line": 695,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "WatershedPublicationFrame::qsnow_mm",
+      "line": 699,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "write_interchange_parquet_outputs",
+      "line": 704,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "write_interchange_parquet_outputs_from_rows",
+      "line": 711,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "write_typed_publication_parquet_outputs",
+      "line": 718,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "watershed_interchange_schemas",
+      "line": 800,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "field",
+      "line": 864,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "dynamic_unit_value_field",
+      "line": 868,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "output_registry_error",
+      "line": 903,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "watershed_ebe_schema",
+      "line": 931,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "watershed_chan_peak_schema",
+      "line": 1019,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "watershed_chanwb_schema",
+      "line": 1082,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "watershed_chnwb_schema",
+      "line": 1170,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "watershed_soil_schema",
+      "line": 1327,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "watershed_totalwatsed3_schema",
+      "line": 1412,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "watershed_loss_all_years_hill_schema",
+      "line": 1872,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "watershed_loss_average_hill_schema",
+      "line": 1898,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "watershed_loss_all_years_chn_schema",
+      "line": 1924,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "watershed_loss_average_chn_schema",
+      "line": 1955,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "watershed_loss_all_years_out_schema",
+      "line": 1986,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "watershed_loss_average_out_schema",
+      "line": 2004,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "watershed_loss_all_years_class_schema",
+      "line": 2021,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "watershed_loss_average_class_schema",
+      "line": 2044,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/writers.rs",
+      "function": "loss_table_metadata",
+      "line": 2066,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-output/src/contracts.rs",
+      "function": "required_output_paths",
+      "line": 77,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    }
+  ]
+}

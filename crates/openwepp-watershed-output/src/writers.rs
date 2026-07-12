@@ -729,57 +729,65 @@ fn write_output_record_parquet_outputs<T>(
 where
     T: WatershedOutputRecord,
 {
-    write_single_output(&outputs.ebe_pw0, watershed_ebe_schema()?, records)?;
-    write_single_output(&outputs.chan_out, watershed_chan_peak_schema()?, records)?;
-    write_single_output(&outputs.chanwb, watershed_chanwb_schema()?, records)?;
-    write_single_output(&outputs.chnwb, watershed_chnwb_schema()?, records)?;
-    write_single_output(&outputs.soil_pw0, watershed_soil_schema()?, records)?;
-    write_single_output(
+    write_schema_output(&outputs.ebe_pw0, watershed_ebe_schema(), records)?;
+    write_schema_output(&outputs.chan_out, watershed_chan_peak_schema(), records)?;
+    write_schema_output(&outputs.chanwb, watershed_chanwb_schema(), records)?;
+    write_schema_output(&outputs.chnwb, watershed_chnwb_schema(), records)?;
+    write_schema_output(&outputs.soil_pw0, watershed_soil_schema(), records)?;
+    write_schema_output(
         &outputs.totalwatsed3,
-        watershed_totalwatsed3_schema()?,
+        watershed_totalwatsed3_schema(),
         records,
     )?;
-    write_single_output(
+    write_schema_output(
         &outputs.loss_hill,
-        watershed_loss_average_hill_schema()?,
+        watershed_loss_average_hill_schema(),
         records,
     )?;
-    write_single_output(
+    write_schema_output(
         &outputs.loss_chn,
-        watershed_loss_average_chn_schema()?,
+        watershed_loss_average_chn_schema(),
         records,
     )?;
-    write_single_output(
+    write_schema_output(
         &outputs.loss_out,
-        watershed_loss_average_out_schema()?,
+        watershed_loss_average_out_schema(),
         records,
     )?;
-    write_single_output(
+    write_schema_output(
         &outputs.loss_class_data,
-        watershed_loss_average_class_schema()?,
+        watershed_loss_average_class_schema(),
         records,
     )?;
-    write_single_output(
+    write_schema_output(
         &outputs.loss_all_years_hill,
-        watershed_loss_all_years_hill_schema()?,
+        watershed_loss_all_years_hill_schema(),
         records,
     )?;
-    write_single_output(
+    write_schema_output(
         &outputs.loss_all_years_chn,
-        watershed_loss_all_years_chn_schema()?,
+        watershed_loss_all_years_chn_schema(),
         records,
     )?;
-    write_single_output(
+    write_schema_output(
         &outputs.loss_all_years_out,
-        watershed_loss_all_years_out_schema()?,
+        watershed_loss_all_years_out_schema(),
         records,
     )?;
-    write_single_output(
+    write_schema_output(
         &outputs.loss_all_years_class_data,
-        watershed_loss_all_years_class_schema()?,
+        watershed_loss_all_years_class_schema(),
         records,
     )?;
     Ok(())
+}
+
+fn write_schema_output(
+    path: &Path,
+    schema: Result<Schema, WatershedWriterError>,
+    records: &[impl WatershedOutputRecord],
+) -> Result<(), WatershedWriterError> {
+    write_single_output(path, schema?, records)
 }
 
 pub fn write_totalwatsed3_parquet(
@@ -2203,18 +2211,40 @@ fn int32_value(field_name: &str, record: &impl WatershedOutputRecord) -> i32 {
     }
 }
 
+enum Float64FieldMatch {
+    Unmatched,
+    Matched(Option<f64>),
+}
+
 fn float64_value(field_name: &str, record: &impl WatershedOutputRecord) -> Option<f64> {
+    if let Float64FieldMatch::Matched(value) = float64_runoff_sediment_value(field_name, record) {
+        return value;
+    }
+    if let Float64FieldMatch::Matched(value) = float64_hydrology_volume_value(field_name, record) {
+        return value;
+    }
+    if let Float64FieldMatch::Matched(value) = float64_hydrology_flux_value(field_name, record) {
+        return value;
+    }
+    if let Float64FieldMatch::Matched(value) = float64_hydrology_storage_value(field_name, record) {
+        return value;
+    }
+    match float64_storage_channel_value(field_name, record) {
+        Float64FieldMatch::Matched(value) => value,
+        Float64FieldMatch::Unmatched => None,
+    }
+}
+
+fn float64_runoff_sediment_value(
+    field_name: &str,
+    record: &impl WatershedOutputRecord,
+) -> Float64FieldMatch {
     let total_pollutant = option_sum2(
         record.soluble_pollutant_kg(),
         record.particulate_pollutant_kg(),
     );
     let sediment_yield_tonnes = record.sediment_yield_kg().map(|value| value / 1_000.0);
-    let volume_from_depth = |depth_mm: Option<f64>| {
-        option_product2(depth_mm, record.area_m2()).map(|depth_area| depth_area / 1_000.0)
-    };
-    let q_diagnostic_mm = record.q_diagnostic_mm().or_else(|| record.runoff_mm());
-
-    match field_name {
+    let value = match field_name {
         "runoff_volume" | "runvol" | "Runoff Volume" | "Discharge Volume" => {
             record.runoff_volume_m3()
         }
@@ -2233,6 +2263,20 @@ fn float64_value(field_name: &str, record: &impl WatershedOutputRecord) -> Optio
         "soluble_pollutant" | "Solub. React. Pollutant" => record.soluble_pollutant_kg(),
         "particulate_pollutant" | "Particulate Pollutant" => record.particulate_pollutant_kg(),
         "total_pollutant" | "Total Pollutant" => total_pollutant,
+        _ => return Float64FieldMatch::Unmatched,
+    };
+    Float64FieldMatch::Matched(value)
+}
+
+fn float64_hydrology_volume_value(
+    field_name: &str,
+    record: &impl WatershedOutputRecord,
+) -> Float64FieldMatch {
+    let volume_from_depth = |depth_mm: Option<f64>| {
+        option_product2(depth_mm, record.area_m2()).map(|depth_area| depth_area / 1_000.0)
+    };
+    let q_diagnostic_mm = record.q_diagnostic_mm().or_else(|| record.runoff_mm());
+    let value = match field_name {
         "P" => volume_from_depth(record.precipitation_mm()),
         "RM" => volume_from_depth(record.rain_melt_mm()),
         "Q" => volume_from_depth(q_diagnostic_mm),
@@ -2242,6 +2286,17 @@ fn float64_value(field_name: &str, record: &impl WatershedOutputRecord) -> Optio
         "Ep" => volume_from_depth(record.transpiration_mm()),
         "Es" => volume_from_depth(record.evaporation_soil_mm()),
         "Er" => volume_from_depth(record.evaporation_residue_mm()),
+        _ => return Float64FieldMatch::Unmatched,
+    };
+    Float64FieldMatch::Matched(value)
+}
+
+fn float64_hydrology_flux_value(
+    field_name: &str,
+    record: &impl WatershedOutputRecord,
+) -> Float64FieldMatch {
+    let q_diagnostic_mm = record.q_diagnostic_mm().or_else(|| record.runoff_mm());
+    let value = match field_name {
         "P (mm)" | "Precipitation" | "precip" => record.precipitation_mm(),
         "RM (mm)" | "Rain+Melt" => record.rain_melt_mm(),
         "Q (mm)" => q_diagnostic_mm,
@@ -2261,6 +2316,16 @@ fn float64_value(field_name: &str, record: &impl WatershedOutputRecord) -> Optio
             record.evaporation_soil_mm(),
             record.evaporation_residue_mm(),
         ),
+        _ => return Float64FieldMatch::Unmatched,
+    };
+    Float64FieldMatch::Matched(value)
+}
+
+fn float64_hydrology_storage_value(
+    field_name: &str,
+    record: &impl WatershedOutputRecord,
+) -> Float64FieldMatch {
+    let value = match field_name {
         "UpStrmQ" | "UpStrmQ (mm)" => record.upstream_q_mm(),
         "SubRIn" | "SubRIn (mm)" => record.subsurface_runon_mm(),
         "Total-Soil Water" | "Total Soil Water (mm)" | "TSW" => record.total_soil_water_mm(),
@@ -2279,6 +2344,16 @@ fn float64_value(field_name: &str, record: &impl WatershedOutputRecord) -> Optio
         "Tile" | "Tile (mm)" => record.tile_mm(),
         "Irr" | "Irr (mm)" => record.irrigation_mm(),
         "Baseflow" | "Base (mm)" => record.baseflow_mm(),
+        _ => return Float64FieldMatch::Unmatched,
+    };
+    Float64FieldMatch::Matched(value)
+}
+
+fn float64_storage_channel_value(
+    field_name: &str,
+    record: &impl WatershedOutputRecord,
+) -> Float64FieldMatch {
+    let value = match field_name {
         "Inflow (m^3)" => record.channel_inflow_m3(),
         "value" => record.runoff_volume_m3(),
         "Outflow (m^3)" => record.channel_outflow_m3(),
@@ -2296,8 +2371,9 @@ fn float64_value(field_name: &str, record: &impl WatershedOutputRecord) -> Optio
         "Area" | "Area (m^2)" => record.area_m2(),
         "Hillslope Area" | "Contributing Area" => record.area_m2().map(|area| area / 10_000.0),
         "Diameter" => Some(0.25),
-        _ => None,
-    }
+        _ => return Float64FieldMatch::Unmatched,
+    };
+    Float64FieldMatch::Matched(value)
 }
 
 fn option_sum2(left: Option<f64>, right: Option<f64>) -> Option<f64> {
@@ -2702,5 +2778,88 @@ mod tests {
         if base.exists() {
             fs::remove_dir_all(base).expect("temp directory cleanup should succeed");
         }
+    }
+
+    #[test]
+    fn hb09_writer_public_helpers_and_error_taxonomy_are_characterized() {
+        let errors = [
+            WatershedWriterError::Io {
+                code: "OWSOUT-E-001",
+                path: PathBuf::from("missing/output.parquet"),
+                source: io::Error::new(io::ErrorKind::NotFound, "missing"),
+            },
+            WatershedWriterError::Parquet {
+                code: "OWSOUT-E-005",
+                path: PathBuf::from("bad.parquet"),
+                detail: "bad footer".to_string(),
+            },
+            WatershedWriterError::UnitMetadata {
+                detail: "missing unit".to_string(),
+            },
+            WatershedWriterError::UnsupportedFieldType {
+                field_name: "unsupported".to_string(),
+                data_type: "Binary".to_string(),
+            },
+        ];
+        for error in &errors {
+            assert!(!error.to_string().is_empty());
+            assert!(!error.code().is_empty());
+        }
+        assert!(std::error::Error::source(&errors[0]).is_some());
+        assert!(std::error::Error::source(&errors[1]).is_none());
+        assert!(std::error::Error::source(&errors[2]).is_none());
+        assert!(std::error::Error::source(&errors[3]).is_none());
+
+        let (base, _) = temp_config("hb09_public_helpers");
+        fs::create_dir_all(&base).expect("temp directory");
+        let total = base.join("totalwatsed3.parquet");
+        write_totalwatsed3_parquet(&total, &[WatershedInterchangeRowSeed::default()])
+            .expect("public totalwatsed3 helper writes");
+        assert!(total.exists());
+        let schemas = watershed_interchange_schemas().expect("schema inventory");
+        assert_eq!(schemas.len(), 14);
+
+        let blocked_parent = base.join("blocked");
+        File::create(&blocked_parent).expect("blocking parent file");
+        let missing_parent = blocked_parent.join("ebe.parquet");
+        let error = write_single_output(
+            &missing_parent,
+            watershed_ebe_schema().expect("EBE schema"),
+            &[WatershedInterchangeRowSeed::default()],
+        )
+        .expect_err("missing parent must preserve IO failure");
+        assert_eq!(error.code(), "OWSOUT-E-003");
+        assert!(std::error::Error::source(&error).is_some());
+
+        let unsupported = write_single_output(
+            &base.join("unsupported.parquet"),
+            Schema::new(vec![field("unsupported", DataType::Binary)]),
+            &[WatershedInterchangeRowSeed::default()],
+        )
+        .expect_err("unsupported Arrow types must fail before publication");
+        assert_eq!(unsupported.code(), "OWSOUT-E-006");
+
+        let output_directory = base.join("output-directory");
+        fs::create_dir(&output_directory).expect("output directory");
+        let create_error = write_single_output(
+            &output_directory,
+            watershed_ebe_schema().expect("EBE schema"),
+            &[WatershedInterchangeRowSeed::default()],
+        )
+        .expect_err("a directory cannot be replaced by a parquet file");
+        assert_eq!(create_error.code(), "OWSOUT-E-003");
+
+        let registry_error = output_registry_error(&OutputUnitRegistryError::RegistryEmpty);
+        assert_eq!(registry_error.code(), "OWOUT-UNIT-E-001");
+        assert!(registry_error.to_string().contains("must contain entries"));
+
+        let empty_error = write_single_output(
+            &base.join("empty.parquet"),
+            watershed_ebe_schema().expect("EBE schema"),
+            &[] as &[WatershedInterchangeRowSeed],
+        )
+        .expect_err("empty watershed publication must be rejected");
+        assert_eq!(empty_error.code(), "OWSOUT-E-004");
+        fs::remove_dir_all(base).expect("temp cleanup");
     }
 }
