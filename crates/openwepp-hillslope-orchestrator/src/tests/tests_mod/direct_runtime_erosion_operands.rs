@@ -117,22 +117,102 @@ fn hb02_d_f_h_texture_mass_fractions_fail_closed() {
         );
     }
 
-    for texture in [
-        ErosionTextureInputs {
-            silt: 1.1,
-            ..clay_loam_texture()
-        },
-        ErosionTextureInputs {
-            orgmat: -0.1,
-            ..clay_loam_texture()
-        },
-        ErosionTextureInputs {
-            orgmat: 1.1,
-            ..clay_loam_texture()
-        },
-    ] {
-        assert!(erosion_particle_composition(&texture).is_err());
+    for field in ["sand", "clay", "silt", "orgmat"] {
+        for value in [-0.1, 1.1] {
+            let mut texture = clay_loam_texture();
+            match field {
+                "sand" => texture.sand = value,
+                "clay" => texture.clay = value,
+                "silt" => texture.silt = value,
+                "orgmat" => texture.orgmat = value,
+                _ => unreachable!(),
+            }
+            assert_eq!(
+                erosion_particle_composition(&texture),
+                Err(DirectRuntimeError::DirectDomainViolation {
+                    field: "erosion.prtcmp.texture"
+                })
+            );
+        }
     }
+}
+
+#[test]
+fn hb02_b_texture_individual_zero_and_one_boundaries_are_admitted() {
+    for field in ["sand", "clay", "silt", "orgmat"] {
+        for value in [0.0, 1.0] {
+            let mut texture = clay_loam_texture();
+            match field {
+                "sand" => texture.sand = value,
+                "clay" => texture.clay = value,
+                "silt" => texture.silt = value,
+                "orgmat" => texture.orgmat = value,
+                _ => unreachable!(),
+            }
+            let classes = erosion_particle_composition(&texture)
+                .unwrap_or_else(|error| panic!("{field}={value} boundary failed: {error}"));
+            assert!(classes.iter().all(|class| class.frac.is_finite()));
+        }
+    }
+}
+
+#[test]
+fn hb02_b_c_clay_band_boundaries_preserve_legacy_diameters_and_class_order() {
+    let cases = [
+        (0.0, 0.030e-3, 0.300e-3),
+        (0.15, 0.030e-3, 0.300e-3),
+        (0.150_000_001, 0.030e-3, 0.300_000_002e-3),
+        (0.25, 0.030e-3, 0.500e-3),
+        (
+            0.250_000_001,
+            (0.20 * 0.000_000_001 + 0.030) / 1000.0,
+            0.500_000_002e-3,
+        ),
+        (0.50, 0.080e-3, 1.000e-3),
+        (0.60, 0.100e-3, 1.200e-3),
+        (1.0, 0.180e-3, 2.000e-3),
+    ];
+    for (clay, expected_small_aggregate_dia, expected_large_aggregate_dia) in cases {
+        let classes = erosion_particle_composition(&ErosionTextureInputs {
+            clay,
+            ..clay_loam_texture()
+        })
+        .expect("clay-band boundary must resolve");
+        assert!((classes[2].dia_m - expected_small_aggregate_dia).abs() <= 1.0e-15);
+        assert!((classes[3].dia_m - expected_large_aggregate_dia).abs() <= 1.0e-15);
+        assert_eq!(
+            classes.map(|class| class.spg),
+            [2.60, 2.65, 1.80, 1.60, 2.65]
+        );
+    }
+}
+
+#[test]
+fn hb02_a_g_independent_mass_mineralogy_fall_and_ssa_reconstruction() {
+    let texture = clay_loam_texture();
+    let classes = erosion_particle_composition(&texture).expect("composition must resolve");
+    let fraction_sum: f64 = classes.iter().map(|class| class.frac).sum();
+    let clay_mass: f64 = classes.iter().map(|class| class.frac * class.frcly).sum();
+    let silt_mass: f64 = classes.iter().map(|class| class.frac * class.frslt).sum();
+    let sand_mass: f64 = classes.iter().map(|class| class.frac * class.frsnd).sum();
+    assert!((fraction_sum - 1.0).abs() <= 1.0e-12);
+    assert!((clay_mass - texture.clay).abs() <= 1.0e-12);
+    assert!((silt_mass - texture.silt).abs() <= 1.0e-12);
+    assert!((sand_mass - texture.sand).abs() <= 1.0e-12);
+    for class in classes {
+        assert!(class.dia_m > 0.0 && class.fall_m_s > 0.0);
+        assert!((class.fall_m_s - erosion_falvel(class.spg, class.dia_m)).abs() <= 1.0e-15);
+    }
+    let soil_ssa: f64 = classes
+        .iter()
+        .map(|class| class.frac * 6.0 / (class.spg * class.dia_m))
+        .sum();
+    assert!(soil_ssa.is_finite() && soil_ssa > 0.0);
+
+    let (transport, shares) =
+        erosion_yalin_with_class_shares(2.0, &classes, texture.sand).expect("transport consumer");
+    assert!(transport > 0.0);
+    assert!((shares.iter().sum::<f64>() - 1.0).abs() <= 1.0e-12);
 }
 
 #[test]

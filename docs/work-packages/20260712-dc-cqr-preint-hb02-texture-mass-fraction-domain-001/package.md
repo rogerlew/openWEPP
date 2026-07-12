@@ -1,6 +1,6 @@
 # DC CQR HB-02 — Texture Mass-Fraction Domain
 
-Status: `ACTIVE`
+Status: `TERMINAL-PASS`
 
 ## Objective
 
@@ -37,9 +37,9 @@ safe, and directly testable, so the package must land the correction.
 
 - [x] Reproduce out-of-range silt acceptance.
 - [x] Confirm individual mass-fraction authority and sum-threshold boundary.
-- [ ] Land the bounded correction and contract-derived regressions.
-- [ ] Resume HB-02 cover-first decomposition and measurement.
-- [ ] Complete dual review/verification and terminal disposition.
+- [x] Land the bounded correction and contract-derived regressions.
+- [x] Resume HB-02 cover-first decomposition and measurement.
+- [x] Complete dual review/verification and terminal disposition.
 
 ## Review And Delegation
 
@@ -50,4 +50,9 @@ focused metrics, review dispositions, verification, and terminal record.
 
 ## Outcomes
 
-Pending execution.
+All four individual texture mass fractions now fail closed outside finite
+`[0,1]`; no sum rule or particle formula changed. The five-class producer is
+mechanically decomposed, its real Wave-1/Yalin consumers and independent
+lineage reconstructions pass, slice coverage is 98.020% lines / 97.318%
+regions, and maximum CRAP is 14.042. Dual review/verification pass with no
+unresolved finding. Disposition: `TERMINAL-PASS`; `DC-CQR-HB02-001` is closed.

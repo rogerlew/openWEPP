@@ -203,30 +203,49 @@ pub fn erosion_falvel(spg: f64, dia_m: f64) -> f64 {
 /// re-entry (`jflag`) and the mm→m diameter conversion at `:333`.
 // Legacy naming continuity (`frac`/`fracs`/`frclyt`) and the single
 // straight-line port of the `prtcmp.for` fraction block.
-#[allow(clippy::similar_names, clippy::too_many_lines)]
+#[allow(clippy::similar_names)]
 pub fn erosion_particle_composition(
     texture: &ErosionTextureInputs,
 ) -> Result<[ErosionParticleClass; EROSION_PARTICLE_CLASS_COUNT], DirectRuntimeError> {
+    validate_particle_texture(texture)?;
     let sand = texture.sand;
     let clay = texture.clay;
     let silt = texture.silt;
-    validate_finite("erosion.prtcmp.sand", sand)?;
-    validate_finite("erosion.prtcmp.clay", clay)?;
-    validate_finite("erosion.prtcmp.silt", silt)?;
-    if !(0.0..=1.0).contains(&sand) || !(0.0..=1.0).contains(&clay) || silt < 0.0 {
-        return Err(DirectRuntimeError::DirectDomainViolation {
-            field: "erosion.prtcmp.texture",
-        });
-    }
+    let (dia_mm, spg, frac1, frac3, frac5, frcly3) =
+        particle_primary_fractions_and_diameters(sand, clay, silt);
+    let fracs = converge_particle_fractions(clay, silt, frac1, frac3, frac5, frcly3);
+    let mineralogy = particle_mineralogy(texture, &fracs, frcly3)?;
+    assemble_particle_classes(&dia_mm, &spg, &fracs, &mineralogy)
+}
 
-    // Diameters (mm) and specific gravities (`prtcmp.for:114-126`).
+fn validate_particle_texture(texture: &ErosionTextureInputs) -> Result<(), DirectRuntimeError> {
+    for (field, value) in [
+        ("erosion.prtcmp.sand", texture.sand),
+        ("erosion.prtcmp.clay", texture.clay),
+        ("erosion.prtcmp.silt", texture.silt),
+        ("erosion.prtcmp.orgmat", texture.orgmat),
+    ] {
+        validate_finite(field, value)?;
+        if !(0.0..=1.0).contains(&value) {
+            return Err(DirectRuntimeError::DirectDomainViolation {
+                field: "erosion.prtcmp.texture",
+            });
+        }
+    }
+    Ok(())
+}
+
+#[allow(clippy::similar_names)]
+fn particle_primary_fractions_and_diameters(
+    sand: f64,
+    clay: f64,
+    silt: f64,
+) -> ([f64; 5], [f64; 5], f64, f64, f64, f64) {
     let mut dia_mm = [0.002_f64, 0.010, 0.030, 0.300, 0.200];
     let spg = [2.60_f64, 2.65, 1.80, 1.60, 2.65];
     if clay > 0.15 {
         dia_mm[3] = 2.0 * clay;
     }
-
-    // Class 1 (primary clay) and class 5 (primary sand).
     let frac1 = if clay > 0.0 && clay < 1.0 {
         0.26 * clay
     } else if clay <= 0.0 {
@@ -238,9 +257,6 @@ pub fn erosion_particle_composition(
     if frac5 <= 0.0 {
         frac5 = 0.0001;
     }
-
-    // Class 3 (small aggregate) diameter/fraction by clay band
-    // (`prtcmp.for:146-177`).
     let mut frac3;
     if clay >= 1.0 {
         dia_mm[2] = 0.180;
@@ -262,16 +278,23 @@ pub fn erosion_particle_composition(
         dia_mm[2] = 0.1;
         frac3 = 0.6 * clay;
     }
-
     let frcly3 = if clay > 0.0 && silt > 0.0 {
         clay / (clay + silt)
     } else {
         0.0
     };
+    (dia_mm, spg, frac1, frac3, frac5, frcly3)
+}
 
-    // Label-20 fraction block with the single legacy `jflag` re-entry
-    // (`prtcmp.for:172-300`).
-    let mut fracs = [0.0_f64; EROSION_PARTICLE_CLASS_COUNT];
+fn converge_particle_fractions(
+    clay: f64,
+    silt: f64,
+    frac1: f64,
+    mut frac3: f64,
+    frac5: f64,
+    frcly3: f64,
+) -> [f64; EROSION_PARTICLE_CLASS_COUNT] {
+    let mut fractions = [0.0_f64; EROSION_PARTICLE_CLASS_COUNT];
     for pass in 0..2 {
         let mut frac2 = silt - frac3;
         let mut frac3_local = frac3;
@@ -283,14 +306,14 @@ pub fn erosion_particle_composition(
             }
         }
         let mut frac4 = 1.0 - frac1 - frac2 - frac3_local - frac5;
-        fracs = [frac1, frac2, frac3_local, frac4, frac5];
+        fractions = [frac1, frac2, frac3_local, frac4, frac5];
         if frac4 <= 0.0 {
             let crct = 1.0 / (1.0 + frac4.abs() + 0.0001);
-            fracs[3] = 0.0001;
-            for value in &mut fracs {
+            fractions[3] = 0.0001;
+            for value in &mut fractions {
                 *value *= crct;
             }
-            frac4 = fracs[3];
+            frac4 = fractions[3];
         }
 
         if pass == 1 {
@@ -298,7 +321,7 @@ pub fn erosion_particle_composition(
         }
         // Large-aggregate clay-content correction (`prtcmp.for:288-300`).
         let frcly4 = if frac4 > 0.0001 {
-            let value = (clay - fracs[0] - frcly3 * fracs[2]) / frac4;
+            let value = (clay - fractions[0] - frcly3 * fractions[2]) / frac4;
             if (0.0..=1.0).contains(&value) {
                 value
             } else {
@@ -307,11 +330,12 @@ pub fn erosion_particle_composition(
         } else {
             0.0
         };
-        let frclyt = 0.5 * clay;
-        let frcly1 = 0.95 * frclyt;
-        if clay < 1.0 && frcly4 < frcly1 && (frcly3 - frclyt).abs() > 0.0 {
-            let f1f2f5 = fracs[0] + fracs[1] + fracs[4];
-            frac3 = (clay - frclyt - fracs[0] + frclyt * f1f2f5) / (frcly3 - frclyt);
+        let target_clay_fraction = 0.5 * clay;
+        let frcly1 = 0.95 * target_clay_fraction;
+        if clay < 1.0 && frcly4 < frcly1 && (frcly3 - target_clay_fraction).abs() > 0.0 {
+            let f1f2f5 = fractions[0] + fractions[1] + fractions[4];
+            frac3 = (clay - target_clay_fraction - fractions[0] + target_clay_fraction * f1f2f5)
+                / (frcly3 - target_clay_fraction);
             if frac3 <= 0.0 {
                 frac3 = 0.0001;
             }
@@ -319,12 +343,17 @@ pub fn erosion_particle_composition(
         }
         break;
     }
+    fractions
+}
 
-    // Per-class mineralogy (`prtcmp.for:100-106` ratiom guard chain +
-    // `:208-286` class assignments, evaluated on the CONVERGED fractions
-    // — matching the legacy flow where the final pass's fractions feed
-    // the assignments). E.4: drives the SSA enrichment ratio
-    // (`enrich.for` iendfg arm).
+fn particle_mineralogy(
+    texture: &ErosionTextureInputs,
+    fracs: &[f64; EROSION_PARTICLE_CLASS_COUNT],
+    frcly3: f64,
+) -> Result<[(f64, f64, f64, f64); EROSION_PARTICLE_CLASS_COUNT], DirectRuntimeError> {
+    let sand = texture.sand;
+    let clay = texture.clay;
+    let silt = texture.silt;
     let ratiom = if clay > 0.0 {
         texture.orgmat / clay
     } else if silt > 0.0 {
@@ -358,7 +387,7 @@ pub fn erosion_particle_composition(
     } else {
         (0.0, 0.0, 0.0)
     };
-    let mineralogy: [(f64, f64, f64, f64); EROSION_PARTICLE_CLASS_COUNT] = [
+    Ok([
         // class 1 — primary clay
         (1.0, 0.0, 0.0, if clay > 0.0 { ratiom } else { 0.0 }),
         // class 2 — primary silt
@@ -398,8 +427,15 @@ pub fn erosion_particle_composition(
                 ratiom
             },
         ),
-    ];
+    ])
+}
 
+fn assemble_particle_classes(
+    dia_mm: &[f64; EROSION_PARTICLE_CLASS_COUNT],
+    spg: &[f64; EROSION_PARTICLE_CLASS_COUNT],
+    fracs: &[f64; EROSION_PARTICLE_CLASS_COUNT],
+    mineralogy: &[(f64, f64, f64, f64); EROSION_PARTICLE_CLASS_COUNT],
+) -> Result<[ErosionParticleClass; EROSION_PARTICLE_CLASS_COUNT], DirectRuntimeError> {
     let mut classes = [ErosionParticleClass {
         dia_m: 0.0,
         spg: 0.0,
