@@ -365,23 +365,7 @@ impl Ws10ChannelImpoundmentKernel {
         qlat_total_m3_s: &[f64],
         prior: Option<Ws11WaveRoutingState>,
     ) -> Result<(Ws11BaselineWaveSeries, f64), Ws10GuardError> {
-        if matches!(
-            context.ipeak_branch,
-            Ws11IpeakBranch::Rational | Ws11IpeakBranch::Creams
-        ) {
-            return Err(Self::domain_violation(
-                Ws10NodeClass::Channel,
-                BoundarySymbol::from("ws11_interval_nonwave_branch"),
-                0.0,
-            ));
-        }
-        if qin_m3_s.is_empty() || qin_m3_s.len() != qlat_total_m3_s.len() {
-            return Err(Self::domain_violation(
-                Ws10NodeClass::Channel,
-                BoundarySymbol::from("ws11_interval_wave_grid"),
-                Self::ws11_small_count_as_f64(qin_m3_s.len(), "ws11_interval_wave_grid")?,
-            ));
-        }
+        Self::ws11_validate_wave_series_grid(context, qin_m3_s, qlat_total_m3_s)?;
 
         let first = context.control.segment_points.first().ok_or_else(|| {
             Self::missing_required(Ws10NodeClass::Channel, "ws11_channel_profile")
@@ -399,37 +383,12 @@ impl Ws10ChannelImpoundmentKernel {
         // not silently consumed as an initial condition. On a fresh channel,
         // pinned `wshchr.for:259` uses the first projected boundary rate as
         // the steady initialization; later days carry yesterday's terminal.
-        let initial = prior.unwrap_or(Ws11WaveRoutingState {
-            q1: qin_m3_s[0] + qlat_total_m3_s[0],
-            qin: qin_m3_s[0],
-            qlat: qlat_total_m3_s[0],
-            c0: 0.0,
-            c1: 0.0,
-            c2: 0.0,
-            c3: 0.0,
-            c4: 0.0,
-        });
-        let initial_q1 = Self::require_non_negative_computed(
-            Ws10NodeClass::Channel,
-            BoundarySymbol::from("ws11_initial_q1"),
-            initial.q1,
+        let (initial_q1, initial_qin, initial_qlat, qref) = Self::ws11_wave_initial_state(
+            context,
+            qin_m3_s,
+            qlat_total_m3_s,
+            prior,
         )?;
-        let initial_qin = Self::require_non_negative_computed(
-            Ws10NodeClass::Channel,
-            BoundarySymbol::from("ws11_initial_qin"),
-            initial.qin,
-        )?;
-        let initial_qlat = Self::require_non_negative_computed(
-            Ws10NodeClass::Channel,
-            BoundarySymbol::from("ws11_initial_qlat"),
-            initial.qlat,
-        )?;
-        let qtmax = qin_m3_s
-            .iter()
-            .zip(qlat_total_m3_s)
-            .map(|(qin, qlat)| qin + (0.5 * qlat))
-            .fold(initial_q1, f64::max);
-        let qref = Self::ws11_wave_reference_flow(context.ipeak_branch, qtmax)?;
 
         if qref <= WS10_ZERO_THRESHOLD {
             return Ok((
@@ -450,33 +409,8 @@ impl Ws10ChannelImpoundmentKernel {
             channel_slope,
             qref,
         )?;
-        let target_dx = context.dtchr * ckref;
-        let raw_segments = context.channel_length / target_dx;
-        let nseg = if !raw_segments.is_finite() || raw_segments <= 1.0 {
-            1
-        } else if raw_segments >= 101.0 {
-            101
-        } else {
-            format!("{:.0}", raw_segments.floor())
-                .parse::<usize>()
-                .map_err(|_| {
-                    Self::domain_violation(
-                        Ws10NodeClass::Channel,
-                        BoundarySymbol::from("ws11_wave_segment_count"),
-                        raw_segments,
-                    )
-                })?
-        };
-        let nseg_f64 = Self::ws11_small_count_as_f64(nseg, "ws11_wave_segment_count")?;
-        let dx = context.channel_length / nseg_f64;
-        let mut previous_spatial = Vec::with_capacity(nseg + 1);
-        for segment in 0..=nseg {
-            let segment_f64 =
-                Self::ws11_small_count_as_f64(segment, "ws11_wave_segment_index")?;
-            previous_spatial.push(
-                initial_qin + ((initial_q1 - initial_qin) * segment_f64 / nseg_f64),
-            );
-        }
+        let (nseg, dx, mut previous_spatial) =
+            Self::ws11_wave_spatial_grid(context, ckref, initial_qin, initial_q1)?;
         let mut q1_m3_s = Vec::with_capacity(qin_m3_s.len());
         let mut representative: Option<Ws11WaveRoutingState> = None;
         let mut previous_qin = initial_qin;
@@ -609,25 +543,12 @@ impl Ws10ChannelImpoundmentKernel {
             .zip(&q1_m3_s)
             .map(|((qin, qlat), q1)| (qin + qlat - q1) * context.dtchr)
             .collect();
-        let final_storage_m3 = match context.ipeak_branch {
-            Ws11IpeakBranch::KinematicWave => {
-                Self::ws11_kinematic_terminal_storage_m3(context, &previous_spatial)?
-            }
-            Ws11IpeakBranch::MuskingumCunge | Ws11IpeakBranch::MuskingumCungeVariable => {
-                Self::ws11_hydraulic_reach_storage_m3(
-                    context,
-                    qin_m3_s[qin_m3_s.len() - 1],
-                    q1_m3_s[q1_m3_s.len() - 1],
-                )?
-            }
-            Ws11IpeakBranch::Rational | Ws11IpeakBranch::Creams => {
-                return Err(Self::domain_violation(
-                    Ws10NodeClass::Channel,
-                    BoundarySymbol::from("ws11_interval_nonwave_branch"),
-                    0.0,
-                ));
-            }
-        };
+        let final_storage_m3 = Self::ws11_wave_final_storage_m3(
+            context,
+            qin_m3_s[qin_m3_s.len() - 1],
+            q1_m3_s[q1_m3_s.len() - 1],
+            &previous_spatial,
+        )?;
         Ok((
             Ws11BaselineWaveSeries {
                 q1_m3_s,
@@ -636,6 +557,132 @@ impl Ws10ChannelImpoundmentKernel {
             },
             final_storage_m3,
         ))
+    }
+
+    fn ws11_validate_wave_series_grid(
+        context: &Ws11DirectChannelContext<'_>,
+        qin_m3_s: &[f64],
+        qlat_total_m3_s: &[f64],
+    ) -> Result<(), Ws10GuardError> {
+        if matches!(
+            context.ipeak_branch,
+            Ws11IpeakBranch::Rational | Ws11IpeakBranch::Creams
+        ) {
+            return Err(Self::domain_violation(
+                Ws10NodeClass::Channel,
+                BoundarySymbol::from("ws11_interval_nonwave_branch"),
+                0.0,
+            ));
+        }
+        if qin_m3_s.is_empty() || qin_m3_s.len() != qlat_total_m3_s.len() {
+            return Err(Self::domain_violation(
+                Ws10NodeClass::Channel,
+                BoundarySymbol::from("ws11_interval_wave_grid"),
+                Self::ws11_small_count_as_f64(qin_m3_s.len(), "ws11_interval_wave_grid")?,
+            ));
+        }
+        Ok(())
+    }
+
+    fn ws11_wave_initial_state(
+        context: &Ws11DirectChannelContext<'_>,
+        qin_m3_s: &[f64],
+        qlat_total_m3_s: &[f64],
+        prior: Option<Ws11WaveRoutingState>,
+    ) -> Result<(f64, f64, f64, f64), Ws10GuardError> {
+        let initial = prior.unwrap_or(Ws11WaveRoutingState {
+            q1: qin_m3_s[0] + qlat_total_m3_s[0],
+            qin: qin_m3_s[0],
+            qlat: qlat_total_m3_s[0],
+            c0: 0.0,
+            c1: 0.0,
+            c2: 0.0,
+            c3: 0.0,
+            c4: 0.0,
+        });
+        let initial_q1 = Self::require_non_negative_computed(
+            Ws10NodeClass::Channel,
+            BoundarySymbol::from("ws11_initial_q1"),
+            initial.q1,
+        )?;
+        let initial_qin = Self::require_non_negative_computed(
+            Ws10NodeClass::Channel,
+            BoundarySymbol::from("ws11_initial_qin"),
+            initial.qin,
+        )?;
+        let initial_qlat = Self::require_non_negative_computed(
+            Ws10NodeClass::Channel,
+            BoundarySymbol::from("ws11_initial_qlat"),
+            initial.qlat,
+        )?;
+        let qtmax = qin_m3_s
+            .iter()
+            .zip(qlat_total_m3_s)
+            .map(|(qin, qlat)| qin + (0.5 * qlat))
+            .fold(initial_q1, f64::max);
+        let qref = Self::ws11_wave_reference_flow(context.ipeak_branch, qtmax)?;
+        Ok((initial_q1, initial_qin, initial_qlat, qref))
+    }
+
+    fn ws11_wave_spatial_grid(
+        context: &Ws11DirectChannelContext<'_>,
+        ckref: f64,
+        initial_qin: f64,
+        initial_q1: f64,
+    ) -> Result<(usize, f64, Vec<f64>), Ws10GuardError> {
+        let target_dx = context.dtchr * ckref;
+        let raw_segments = context.channel_length / target_dx;
+        let nseg = if !raw_segments.is_finite() || raw_segments <= 1.0 {
+            1
+        } else if raw_segments >= 101.0 {
+            101
+        } else {
+            format!("{:.0}", raw_segments.floor())
+                .parse::<usize>()
+                .map_err(|_| {
+                    Self::domain_violation(
+                        Ws10NodeClass::Channel,
+                        BoundarySymbol::from("ws11_wave_segment_count"),
+                        raw_segments,
+                    )
+                })?
+        };
+        let nseg_f64 = Self::ws11_small_count_as_f64(nseg, "ws11_wave_segment_count")?;
+        let dx = context.channel_length / nseg_f64;
+        let mut previous_spatial = Vec::with_capacity(nseg + 1);
+        for segment in 0..=nseg {
+            let segment_f64 =
+                Self::ws11_small_count_as_f64(segment, "ws11_wave_segment_index")?;
+            previous_spatial.push(
+                initial_qin + ((initial_q1 - initial_qin) * segment_f64 / nseg_f64),
+            );
+        }
+        Ok((nseg, dx, previous_spatial))
+    }
+
+    fn ws11_wave_final_storage_m3(
+        context: &Ws11DirectChannelContext<'_>,
+        terminal_qin_m3_s: f64,
+        terminal_q1_m3_s: f64,
+        terminal_spatial_m3_s: &[f64],
+    ) -> Result<f64, Ws10GuardError> {
+        match context.ipeak_branch {
+            Ws11IpeakBranch::KinematicWave => {
+                Self::ws11_kinematic_terminal_storage_m3(context, terminal_spatial_m3_s)
+            }
+            Ws11IpeakBranch::MuskingumCunge | Ws11IpeakBranch::MuskingumCungeVariable => {
+                Self::ws11_hydraulic_reach_storage_m3(
+                    context,
+                    terminal_qin_m3_s,
+                    terminal_q1_m3_s,
+                )
+            }
+            Ws11IpeakBranch::Rational | Ws11IpeakBranch::Creams => Err(Self::domain_violation(
+                Ws10NodeClass::Channel,
+                BoundarySymbol::from("ws11_interval_nonwave_branch"),
+                0.0,
+            )),
+        }
     }
 
     fn ws11_small_count_as_f64(

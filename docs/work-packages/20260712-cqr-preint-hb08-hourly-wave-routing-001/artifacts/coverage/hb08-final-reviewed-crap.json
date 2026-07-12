@@ -1,0 +1,2318 @@
+{
+  "$schema": "https://raw.githubusercontent.com/minikin/cargo-crap/main/schemas/report-v1.json",
+  "version": "0.2.2",
+  "entries": [
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::assemble_direct_incoming_sediment_load_and_capacity",
+      "line": 2090,
+      "cyclomatic": 14.0,
+      "coverage": 0.0,
+      "crap": 210.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::compute_direct_channel_peak",
+      "line": 389,
+      "cyclomatic": 13.0,
+      "coverage": 0.0,
+      "crap": 182.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/network_frame.rs",
+      "function": "WatershedNetworkFrameError::fmt",
+      "line": 57,
+      "cyclomatic": 11.0,
+      "coverage": 13.157894736842104,
+      "crap": 90.24582665111532
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/dispatch.rs",
+      "function": "execute_watershed_dispatch_with_frame",
+      "line": 156,
+      "cyclomatic": 9.0,
+      "coverage": 0.0,
+      "crap": 90.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::accumulate_direct_hillslope_runon",
+      "line": 999,
+      "cyclomatic": 9.0,
+      "coverage": 0.0,
+      "crap": 90.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::assemble_direct_channel_hydrology",
+      "line": 265,
+      "cyclomatic": 8.0,
+      "coverage": 0.0,
+      "crap": 72.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::read_direct_impoundment_context",
+      "line": 683,
+      "cyclomatic": 7.0,
+      "coverage": 0.0,
+      "crap": 56.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::run_direct_watershed_node",
+      "line": 138,
+      "cyclomatic": 6.0,
+      "coverage": 0.0,
+      "crap": 42.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::run_direct_impoundment_node",
+      "line": 663,
+      "cyclomatic": 6.0,
+      "coverage": 0.0,
+      "crap": 42.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::run_direct_channel_node",
+      "line": 174,
+      "cyclomatic": 8.0,
+      "coverage": 24.137931034482758,
+      "crap": 35.94177703062856
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/02_ws20_segment_routing.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws20_case3_xdbeg_value",
+      "line": 625,
+      "cyclomatic": 5.0,
+      "coverage": 0.0,
+      "crap": 30.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::assemble_direct_incoming_peak_partition",
+      "line": 953,
+      "cyclomatic": 5.0,
+      "coverage": 0.0,
+      "crap": 30.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::accumulate_direct_hillslope_sediment",
+      "line": 1718,
+      "cyclomatic": 5.0,
+      "coverage": 0.0,
+      "crap": 30.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_route_baseline_wave_series",
+      "line": 362,
+      "cyclomatic": 28.0,
+      "coverage": 92.39766081871345,
+      "crap": 28.344475063152334
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/diagnostics.rs",
+      "function": "Ws10ChannelImpoundmentKernel::compute_variable_muskingum_cunge_state",
+      "line": 480,
+      "cyclomatic": 25.0,
+      "coverage": 83.75,
+      "crap": 27.681884765625
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/00_ws15_ws18_scaffold_and_hydraulics.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws18_trncap_terminal_result",
+      "line": 422,
+      "cyclomatic": 16.0,
+      "coverage": 65.21739130434783,
+      "crap": 26.772745952165693
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_interval_sediment_sources",
+      "line": 1427,
+      "cyclomatic": 23.0,
+      "coverage": 84.15841584158416,
+      "crap": 25.103059203087255
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/02_ws20_segment_routing.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws20_case12_class_update",
+      "line": 893,
+      "cyclomatic": 17.0,
+      "coverage": 71.05263157894737,
+      "crap": 24.010114448170288
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::compute_direct_channel_runon",
+      "line": 316,
+      "cyclomatic": 23.0,
+      "coverage": 94.91525423728814,
+      "crap": 23.069544598035826
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/02_ws20_segment_routing.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws20_flow_partition",
+      "line": 60,
+      "cyclomatic": 10.0,
+      "coverage": 51.162790697674424,
+      "crap": 21.648030990981923
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::assemble_direct_channel_baseflow",
+      "line": 1165,
+      "cyclomatic": 15.0,
+      "coverage": 69.81132075471697,
+      "crap": 21.190345049940557
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/runtime_inputs_mod/chaninp.rs",
+      "function": "sample_riser_unsubmerged_curve",
+      "line": 578,
+      "cyclomatic": 17.0,
+      "coverage": 76.36363636363637,
+      "crap": 20.816276483846725
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_route_interval_sediment",
+      "line": 1208,
+      "cyclomatic": 20.0,
+      "coverage": 90.9090909090909,
+      "crap": 20.30052592036063
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/diagnostics.rs",
+      "function": "Ws10ChannelImpoundmentKernel::compute_muskingum_cunge_state",
+      "line": 317,
+      "cyclomatic": 17.0,
+      "coverage": 77.57009345794393,
+      "crap": 20.261221034690212
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/types.rs",
+      "function": "DispatchDiagnosticCode::as_str",
+      "line": 26,
+      "cyclomatic": 4.0,
+      "coverage": 0.0,
+      "crap": 20.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/02_ws20_segment_routing.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws20_case3_next_fluxes",
+      "line": 544,
+      "cyclomatic": 4.0,
+      "coverage": 0.0,
+      "crap": 20.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/02_ws20_segment_routing.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws20_case3_dl_lbs_s_ft2",
+      "line": 679,
+      "cyclomatic": 4.0,
+      "coverage": 0.0,
+      "crap": 20.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::direct_hourly_resolved_runon",
+      "line": 975,
+      "cyclomatic": 4.0,
+      "coverage": 0.0,
+      "crap": 20.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::accumulate_direct_dependency_runon",
+      "line": 1081,
+      "cyclomatic": 4.0,
+      "coverage": 0.0,
+      "crap": 20.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_route_muskingum_segment",
+      "line": 1021,
+      "cyclomatic": 16.0,
+      "coverage": 75.67567567567568,
+      "crap": 19.68436222928553
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/02_ws20_segment_routing.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws20_route_case12_segment_family_core",
+      "line": 1118,
+      "cyclomatic": 19.0,
+      "coverage": 90.13157894736842,
+      "crap": 19.34693667763158
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/runtime_inputs_mod/chaninp.rs",
+      "function": "derive_power_law_curve_coefficients",
+      "line": 1431,
+      "cyclomatic": 18.0,
+      "coverage": 84.44444444444444,
+      "crap": 19.219555555555555
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/helpers.rs",
+      "function": "Ws10ChannelImpoundmentKernel::integrate_impoundment_stage_with_adaptive_retry",
+      "line": 414,
+      "cyclomatic": 16.0,
+      "coverage": 78.21782178217822,
+      "crap": 18.64572003715419
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/00_ws15_ws18_scaffold_and_hydraulics.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws18_hydchn",
+      "line": 122,
+      "cyclomatic": 11.0,
+      "coverage": 62.0253164556962,
+      "crap": 17.626250661712362
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/runtime_inputs_mod/chaninp.rs",
+      "function": "rockfill_discharge_at_stage",
+      "line": 1125,
+      "cyclomatic": 17.0,
+      "coverage": 87.71929824561403,
+      "crap": 17.53526321189246
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_interval_lane_active",
+      "line": 2,
+      "cyclomatic": 16.0,
+      "coverage": 82.0,
+      "crap": 17.492992
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/02_ws20_segment_routing.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws20_segment_hydraulics",
+      "line": 172,
+      "cyclomatic": 14.0,
+      "coverage": 74.19354838709677,
+      "crap": 17.36853412104327
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/network_frame.rs",
+      "function": "direct_terminal_event_duration_s",
+      "line": 922,
+      "cyclomatic": 17.0,
+      "coverage": 92.42424242424242,
+      "crap": 17.125653922141527
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::read_direct_hillslope_sediment_payload",
+      "line": 1424,
+      "cyclomatic": 17.0,
+      "coverage": 98.7012987012987,
+      "crap": 17.00063303200426
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/01_ws22_ws23_ws26_detachment.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws23_detach_case4_iterative_closure",
+      "line": 476,
+      "cyclomatic": 16.0,
+      "coverage": 91.95402298850574,
+      "crap": 16.133344874662683
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/runtime_inputs_mod/chaninp.rs",
+      "function": "derive_culvert_like_active_projection",
+      "line": 866,
+      "cyclomatic": 14.0,
+      "coverage": 78.43137254901961,
+      "crap": 15.966634250778355
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/network_frame.rs",
+      "function": "direct_terminal_sediment_duration_s",
+      "line": 835,
+      "cyclomatic": 14.0,
+      "coverage": 80.76923076923077,
+      "crap": 15.393946290395995
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_route_interval_water",
+      "line": 219,
+      "cyclomatic": 15.0,
+      "coverage": 88.54961832061069,
+      "crap": 15.337786593158373
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/diagnostics.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_solve_depth_for_discharge",
+      "line": 163,
+      "cyclomatic": 13.0,
+      "coverage": 76.38888888888889,
+      "crap": 15.224518282750346
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/diagnostics.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_muskingum_geometry_from_depth",
+      "line": 29,
+      "cyclomatic": 15.0,
+      "coverage": 92.3076923076923,
+      "crap": 15.10241238051889
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::route_direct_impoundment_outflow",
+      "line": 746,
+      "cyclomatic": 11.0,
+      "coverage": 69.38775510204081,
+      "crap": 14.471130226351265
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_interval_hydraulic_operands",
+      "line": 1727,
+      "cyclomatic": 12.0,
+      "coverage": 75.0,
+      "crap": 14.25
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::read_direct_channel_context",
+      "line": 205,
+      "cyclomatic": 14.0,
+      "coverage": 98.14814814814815,
+      "crap": 14.00124472895392
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/01_ws22_ws23_ws26_detachment.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws27_case4_enddet_bracket_closure",
+      "line": 887,
+      "cyclomatic": 14.0,
+      "coverage": 100.0,
+      "crap": 14.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_advance_interval_geometry",
+      "line": 1883,
+      "cyclomatic": 12.0,
+      "coverage": 76.92307692307693,
+      "crap": 13.769685935366406
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/network_frame.rs",
+      "function": "terminal_sediment_yield_kg",
+      "line": 739,
+      "cyclomatic": 12.0,
+      "coverage": 78.33333333333333,
+      "crap": 13.464666666666666
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::run_direct_interval_channel_node",
+      "line": 84,
+      "cyclomatic": 13.0,
+      "coverage": 94.3820224719101,
+      "crap": 13.02996585665469
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/runtime_inputs_mod/chaninp.rs",
+      "function": "derive_ws12_impoundment_coefficients",
+      "line": 61,
+      "cyclomatic": 13.0,
+      "coverage": 96.72131147540983,
+      "crap": 13.005956445693693
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::direct_ws12_impoundment_coefficients",
+      "line": 2253,
+      "cyclomatic": 13.0,
+      "coverage": 100.0,
+      "crap": 13.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/runtime_inputs_mod/chaninp.rs",
+      "function": "derive_riser_apr_coefficients_from_points",
+      "line": 521,
+      "cyclomatic": 13.0,
+      "coverage": 100.0,
+      "crap": 13.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/01_ws22_ws23_ws26_detachment.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws26_dcap_expanding_width_outcome",
+      "line": 385,
+      "cyclomatic": 12.0,
+      "coverage": 81.25,
+      "crap": 12.94921875
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/diagnostics.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_manning_discharge_for_depth",
+      "line": 105,
+      "cyclomatic": 12.0,
+      "coverage": 81.81818181818183,
+      "crap": 12.865514650638616
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/runtime_inputs_mod/chaninp.rs",
+      "function": "perforated_riser_reference_discharge",
+      "line": 1361,
+      "cyclomatic": 12.0,
+      "coverage": 86.36363636363636,
+      "crap": 12.365138993238167
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/types.rs",
+      "function": "WatershedDispatchError::fmt",
+      "line": 108,
+      "cyclomatic": 3.0,
+      "coverage": 0.0,
+      "crap": 12.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/types.rs",
+      "function": "WatershedDispatchError::source",
+      "line": 122,
+      "cyclomatic": 3.0,
+      "coverage": 0.0,
+      "crap": 12.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/02_ws20_segment_routing.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws20_case3_xdbeg_points",
+      "line": 601,
+      "cyclomatic": 3.0,
+      "coverage": 0.0,
+      "crap": 12.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/02_ws20_segment_routing.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws20_case3_gsl_lbs_s_ft",
+      "line": 698,
+      "cyclomatic": 3.0,
+      "coverage": 0.0,
+      "crap": 12.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::read_direct_hillslope_peak_payload",
+      "line": 1412,
+      "cyclomatic": 3.0,
+      "coverage": 0.0,
+      "crap": 12.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::runtime_input_guard_error",
+      "line": 2306,
+      "cyclomatic": 3.0,
+      "coverage": 0.0,
+      "crap": 12.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/diagnostics.rs",
+      "function": "Ws10ChannelImpoundmentKernel::compute_kinematic_wave_state",
+      "line": 243,
+      "cyclomatic": 11.0,
+      "coverage": 82.6086956521739,
+      "crap": 11.636475712994166
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::direct_hillslope_hourly_authority",
+      "line": 1340,
+      "cyclomatic": 8.0,
+      "coverage": 61.76470588235294,
+      "crap": 11.577447588031752
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/runtime_inputs_mod/chaninp.rs",
+      "function": "emergency_discharge_at_stage",
+      "line": 1214,
+      "cyclomatic": 11.0,
+      "coverage": 85.1063829787234,
+      "crap": 11.39974764743843
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/types.rs",
+      "function": "Ws10GuardError::message_id",
+      "line": 271,
+      "cyclomatic": 7.0,
+      "coverage": 55.55555555555556,
+      "crap": 11.301783264746227
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/02_ws20_segment_routing.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws20_route_case4_segment",
+      "line": 712,
+      "cyclomatic": 9.0,
+      "coverage": 69.72477064220183,
+      "crap": 11.247746575559313
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/runtime_inputs_mod/chaninp.rs",
+      "function": "fit_quartic_least_squares",
+      "line": 698,
+      "cyclomatic": 11.0,
+      "coverage": 97.82608695652173,
+      "crap": 11.001243116626942
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::direct_sediment_transport_capacity",
+      "line": 1935,
+      "cyclomatic": 11.0,
+      "coverage": 98.0392156862745,
+      "crap": 11.000912168019841
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/helpers.rs",
+      "function": "Ws10ChannelImpoundmentKernel::impoundment_culvert_family_outflows",
+      "line": 115,
+      "cyclomatic": 11.0,
+      "coverage": 100.0,
+      "crap": 11.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::require_direct_ws17_channel_segment_scaffold",
+      "line": 888,
+      "cyclomatic": 11.0,
+      "coverage": 100.0,
+      "crap": 11.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::read_direct_channel_sediment_payload",
+      "line": 1577,
+      "cyclomatic": 11.0,
+      "coverage": 100.0,
+      "crap": 11.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/runtime_inputs_mod/chaninp.rs",
+      "function": "project_drop_spillway_function_families",
+      "line": 148,
+      "cyclomatic": 11.0,
+      "coverage": 100.0,
+      "crap": 11.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/runtime_inputs_mod/chaninp.rs",
+      "function": "solve_linear_system_5x5",
+      "line": 759,
+      "cyclomatic": 11.0,
+      "coverage": 100.0,
+      "crap": 11.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_wave_celerity_and_top_width",
+      "line": 744,
+      "cyclomatic": 10.0,
+      "coverage": 81.81818181818183,
+      "crap": 10.601051840721261
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::route_direct_ws20_sediment_if_enabled",
+      "line": 1820,
+      "cyclomatic": 10.0,
+      "coverage": 94.23076923076923,
+      "crap": 10.019202321347292
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/dispatch.rs",
+      "function": "schedule_watershed_dispatch",
+      "line": 28,
+      "cyclomatic": 10.0,
+      "coverage": 94.44444444444444,
+      "crap": 10.017146776406035
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::direct_terminal_sediment_hydraulics",
+      "line": 1993,
+      "cyclomatic": 10.0,
+      "coverage": 98.38709677419355,
+      "crap": 10.000419589809002
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/02_ws20_segment_routing.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws20_try_case12_transition",
+      "line": 996,
+      "cyclomatic": 10.0,
+      "coverage": 98.66666666666667,
+      "crap": 10.000237037037037
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::read_direct_dependency_peak_payload",
+      "line": 1521,
+      "cyclomatic": 10.0,
+      "coverage": 100.0,
+      "crap": 10.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/runtime_inputs_mod/chaninp.rs",
+      "function": "project_culvert_function_families",
+      "line": 259,
+      "cyclomatic": 10.0,
+      "coverage": 100.0,
+      "crap": 10.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/runtime_inputs_mod/chaninp.rs",
+      "function": "project_emergency_function",
+      "line": 374,
+      "cyclomatic": 10.0,
+      "coverage": 100.0,
+      "crap": 10.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/runtime_inputs_mod/chaninp.rs",
+      "function": "collect_culvert_like_stage_thresholds",
+      "line": 924,
+      "cyclomatic": 10.0,
+      "coverage": 100.0,
+      "crap": 10.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/helpers.rs",
+      "function": "Ws10ChannelImpoundmentKernel::route_impoundment_stage_over_duration",
+      "line": 527,
+      "cyclomatic": 9.0,
+      "coverage": 83.05084745762711,
+      "crap": 9.39439280549618
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_interval_start_profile",
+      "line": 1562,
+      "cyclomatic": 9.0,
+      "coverage": 83.33333333333334,
+      "crap": 9.374999999999998
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_project_hourly_totals",
+      "line": 1681,
+      "cyclomatic": 9.0,
+      "coverage": 86.48648648648648,
+      "crap": 9.199889443863148
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/00_ws15_ws18_scaffold_and_hydraulics.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws18_trncap_redistribute",
+      "line": 479,
+      "cyclomatic": 9.0,
+      "coverage": 90.0,
+      "crap": 9.081
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/dispatch.rs",
+      "function": "build_dispatch_steps",
+      "line": 237,
+      "cyclomatic": 9.0,
+      "coverage": 92.3076923076923,
+      "crap": 9.0368684569868
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/diagnostics.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_dynamic_muskingum_celerity",
+      "line": 431,
+      "cyclomatic": 9.0,
+      "coverage": 92.85714285714286,
+      "crap": 9.029518950437318
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/network_frame.rs",
+      "function": "build_routing_globals",
+      "line": 1101,
+      "cyclomatic": 9.0,
+      "coverage": 94.20289855072464,
+      "crap": 9.015780389578367
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/runtime_inputs_mod/chaninp.rs",
+      "function": "project_riser_functions",
+      "line": 459,
+      "cyclomatic": 9.0,
+      "coverage": 97.5,
+      "crap": 9.001265625
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/runtime_inputs_mod/chaninp.rs",
+      "function": "compute_riser_qs",
+      "line": 644,
+      "cyclomatic": 9.0,
+      "coverage": 100.0,
+      "crap": 9.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/runtime_inputs_mod/chaninp.rs",
+      "function": "derive_ws12_active_structure_projection",
+      "line": 803,
+      "cyclomatic": 9.0,
+      "coverage": 100.0,
+      "crap": 9.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/runtime_inputs_mod/chaninp.rs",
+      "function": "culvert_pipe_discharge_at_stage",
+      "line": 1073,
+      "cyclomatic": 9.0,
+      "coverage": 100.0,
+      "crap": 9.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_wave_spatial_grid",
+      "line": 627,
+      "cyclomatic": 8.0,
+      "coverage": 83.33333333333334,
+      "crap": 8.296296296296296
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/02_ws20_segment_routing.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws20_route_case12_segment",
+      "line": 830,
+      "cyclomatic": 8.0,
+      "coverage": 83.92857142857143,
+      "crap": 8.26567055393586
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/helpers.rs",
+      "function": "Ws10ChannelImpoundmentKernel::impoundment_rk4_step",
+      "line": 340,
+      "cyclomatic": 8.0,
+      "coverage": 84.90566037735849,
+      "crap": 8.22010115733122
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/02_ws20_segment_routing.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws20_route_case34_segment",
+      "line": 410,
+      "cyclomatic": 8.0,
+      "coverage": 90.625,
+      "crap": 8.052734375
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/02_ws20_segment_routing.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws20_prepare_class_transport",
+      "line": 110,
+      "cyclomatic": 7.0,
+      "coverage": 72.22222222222221,
+      "crap": 8.050240054869686
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/runtime_inputs_mod/chaninp.rs",
+      "function": "derive_drop_spillway_projection",
+      "line": 1003,
+      "cyclomatic": 8.0,
+      "coverage": 90.9090909090909,
+      "crap": 8.0480841472577
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/00_ws15_ws18_scaffold_and_hydraulics.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws18_inverse_interpolate",
+      "line": 53,
+      "cyclomatic": 8.0,
+      "coverage": 92.3076923076923,
+      "crap": 8.029130632680928
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::add_direct_sediment_payload_to_accumulator",
+      "line": 1668,
+      "cyclomatic": 8.0,
+      "coverage": 97.67441860465115,
+      "crap": 8.000804960569509
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/00_ws15_ws18_scaffold_and_hydraulics.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws18_trncap_initial_state",
+      "line": 360,
+      "cyclomatic": 8.0,
+      "coverage": 98.07692307692307,
+      "crap": 8.00045516613564
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/network_frame.rs",
+      "function": "sum_contributing_area_m2",
+      "line": 1000,
+      "cyclomatic": 8.0,
+      "coverage": 100.0,
+      "crap": 8.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/helpers.rs",
+      "function": "Ws10ChannelImpoundmentKernel::impoundment_continuity_rate",
+      "line": 296,
+      "cyclomatic": 8.0,
+      "coverage": 100.0,
+      "crap": 8.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/01_ws22_ws23_ws26_detachment.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws22_table_column2_to_column1",
+      "line": 69,
+      "cyclomatic": 8.0,
+      "coverage": 100.0,
+      "crap": 8.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/01_ws22_ws23_ws26_detachment.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws23_validate_detach_input",
+      "line": 577,
+      "cyclomatic": 8.0,
+      "coverage": 100.0,
+      "crap": 8.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_validate_interval_clock",
+      "line": 1795,
+      "cyclomatic": 8.0,
+      "coverage": 100.0,
+      "crap": 8.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_validate_interval_mass_closure",
+      "line": 1817,
+      "cyclomatic": 8.0,
+      "coverage": 100.0,
+      "crap": 8.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::compute_direct_channel_runoff",
+      "line": 580,
+      "cyclomatic": 8.0,
+      "coverage": 100.0,
+      "crap": 8.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::direct_ws20_channel_profile",
+      "line": 2177,
+      "cyclomatic": 8.0,
+      "coverage": 100.0,
+      "crap": 8.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/runtime_inputs_mod/chaninp.rs",
+      "function": "Ws12OutflowFunctionFamilies::coefficient_at",
+      "line": 47,
+      "cyclomatic": 8.0,
+      "coverage": 100.0,
+      "crap": 8.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/runtime_inputs_mod/chaninp.rs",
+      "function": "derive_ws12_outflow_function_families",
+      "line": 131,
+      "cyclomatic": 8.0,
+      "coverage": 100.0,
+      "crap": 8.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/runtime_inputs_mod/chaninp.rs",
+      "function": "interpolate_rating_curve_discharge",
+      "line": 1266,
+      "cyclomatic": 8.0,
+      "coverage": 100.0,
+      "crap": 8.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/00_ws15_ws18_scaffold_and_hydraulics.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws18_shield_parameter",
+      "line": 85,
+      "cyclomatic": 7.0,
+      "coverage": 76.66666666666667,
+      "crap": 7.622481481481481
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_local_channel_baseflow",
+      "line": 1140,
+      "cyclomatic": 7.0,
+      "coverage": 82.5,
+      "crap": 7.262609375
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_close_daily_outlet_volume",
+      "line": 937,
+      "cyclomatic": 7.0,
+      "coverage": 84.84848484848484,
+      "crap": 7.170437153908229
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_kinematic_terminal_storage_m3",
+      "line": 819,
+      "cyclomatic": 7.0,
+      "coverage": 86.11111111111111,
+      "crap": 7.13128000685871
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/runtime_inputs_mod/chaninp.rs",
+      "function": "project_rockfill_function",
+      "line": 330,
+      "cyclomatic": 7.0,
+      "coverage": 87.5,
+      "crap": 7.095703125
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/helpers.rs",
+      "function": "Ws10ChannelImpoundmentKernel::impoundment_perforated_riser_outflows",
+      "line": 228,
+      "cyclomatic": 7.0,
+      "coverage": 96.42857142857143,
+      "crap": 7.002232142857143
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::accumulate_direct_hillslope_hourly_runon",
+      "line": 1046,
+      "cyclomatic": 7.0,
+      "coverage": 96.66666666666667,
+      "crap": 7.001814814814815
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/02_ws20_segment_routing.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws20_transport_snapshot",
+      "line": 274,
+      "cyclomatic": 7.0,
+      "coverage": 100.0,
+      "crap": 7.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/01_ws22_ws23_ws26_detachment.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws26_dcap_midlayer_step",
+      "line": 275,
+      "cyclomatic": 7.0,
+      "coverage": 100.0,
+      "crap": 7.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::direct_ipeak_branch",
+      "line": 837,
+      "cyclomatic": 7.0,
+      "coverage": 100.0,
+      "crap": 7.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::direct_sediment_publication_particles",
+      "line": 1900,
+      "cyclomatic": 7.0,
+      "coverage": 100.0,
+      "crap": 7.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/runtime_inputs_mod/chaninp.rs",
+      "function": "filter_barrier_discharge_at_stage",
+      "line": 1318,
+      "cyclomatic": 7.0,
+      "coverage": 100.0,
+      "crap": 7.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_partition_contact_budget",
+      "line": 2069,
+      "cyclomatic": 6.0,
+      "coverage": 75.0,
+      "crap": 6.5625
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/dispatch.rs",
+      "function": "collect_dependency_maps",
+      "line": 287,
+      "cyclomatic": 6.0,
+      "coverage": 96.875,
+      "crap": 6.0010986328125
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/network_frame.rs",
+      "function": "collect_dispatch_ids_from_steps",
+      "line": 1025,
+      "cyclomatic": 6.0,
+      "coverage": 97.5,
+      "crap": 6.0005625
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/network_frame.rs",
+      "function": "WatershedNetworkFrame::build_typed_publication_frame",
+      "line": 637,
+      "cyclomatic": 6.0,
+      "coverage": 98.9247311827957,
+      "crap": 6.000044756246294
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/dispatch.rs",
+      "function": "schedule_watershed_dispatch_with_gate",
+      "line": 139,
+      "cyclomatic": 2.0,
+      "coverage": 0.0,
+      "crap": 6.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/helpers.rs",
+      "function": "Ws10ChannelImpoundmentKernel::impoundment_drop_spillway_outflows",
+      "line": 91,
+      "cyclomatic": 6.0,
+      "coverage": 100.0,
+      "crap": 6.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/02_ws20_segment_routing.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws20_case3_all_detaching",
+      "line": 582,
+      "cyclomatic": 2.0,
+      "coverage": 0.0,
+      "crap": 6.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/02_ws20_segment_routing.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws20_case3_next_flux",
+      "line": 650,
+      "cyclomatic": 2.0,
+      "coverage": 0.0,
+      "crap": 6.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/02_ws20_segment_routing.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws20_case3_xrat",
+      "line": 671,
+      "cyclomatic": 2.0,
+      "coverage": 0.0,
+      "crap": 6.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/01_ws22_ws23_ws26_detachment.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws26_dcap_with_input_clock",
+      "line": 214,
+      "cyclomatic": 6.0,
+      "coverage": 100.0,
+      "crap": 6.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/00_ws15_ws18_scaffold_and_hydraulics.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws18_hydchn_triangular_geometry",
+      "line": 220,
+      "cyclomatic": 2.0,
+      "coverage": 0.0,
+      "crap": 6.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::compute_direct_channel_creams_peak",
+      "line": 448,
+      "cyclomatic": 6.0,
+      "coverage": 100.0,
+      "crap": 6.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::direct_impoundment_integration_horizon",
+      "line": 716,
+      "cyclomatic": 6.0,
+      "coverage": 100.0,
+      "crap": 6.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::direct_require_range",
+      "line": 814,
+      "cyclomatic": 6.0,
+      "coverage": 100.0,
+      "crap": 6.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::assemble_direct_incoming_peak_and_duration",
+      "line": 1152,
+      "cyclomatic": 2.0,
+      "coverage": 0.0,
+      "crap": 6.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::superposed_hourly_limb",
+      "line": 1385,
+      "cyclomatic": 6.0,
+      "coverage": 100.0,
+      "crap": 6.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::direct_active_sediment_classes",
+      "line": 1769,
+      "cyclomatic": 6.0,
+      "coverage": 100.0,
+      "crap": 6.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::direct_ws20_crfrac",
+      "line": 2225,
+      "cyclomatic": 6.0,
+      "coverage": 100.0,
+      "crap": 6.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/00_ws15_ws18_scaffold_and_hydraulics.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws18_hydchn_natural_geometry",
+      "line": 290,
+      "cyclomatic": 5.0,
+      "coverage": 70.83333333333334,
+      "crap": 5.6202980324074066
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_validate_interval_grid",
+      "line": 1658,
+      "cyclomatic": 5.0,
+      "coverage": 76.19047619047619,
+      "crap": 5.337436561926358
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_validate_daily_mass_closure",
+      "line": 1859,
+      "cyclomatic": 5.0,
+      "coverage": 76.19047619047619,
+      "crap": 5.337436561926358
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_hydraulic_reach_storage_m3",
+      "line": 861,
+      "cyclomatic": 5.0,
+      "coverage": 84.84848484848484,
+      "crap": 5.086957731585831
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_manning_area_for_discharge",
+      "line": 898,
+      "cyclomatic": 5.0,
+      "coverage": 91.8918918918919,
+      "crap": 5.01332596292421
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_route_kinematic_segment",
+      "line": 975,
+      "cyclomatic": 5.0,
+      "coverage": 93.18181818181817,
+      "crap": 5.007924023290759
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::validate_direct_incoming_runon_totals",
+      "line": 1118,
+      "cyclomatic": 5.0,
+      "coverage": 93.93939393939394,
+      "crap": 5.005565294821493
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_wave_initial_state",
+      "line": 587,
+      "cyclomatic": 5.0,
+      "coverage": 94.87179487179486,
+      "crap": 5.003371601004737
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/02_ws20_segment_routing.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws20_route_one_segment",
+      "line": 345,
+      "cyclomatic": 5.0,
+      "coverage": 95.55555555555556,
+      "crap": 5.002194787379972
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::accumulate_direct_dependency_sediment",
+      "line": 1740,
+      "cyclomatic": 5.0,
+      "coverage": 96.15384615384616,
+      "crap": 5.001422394173874
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/network_frame.rs",
+      "function": "channel_contributor_ancestry",
+      "line": 803,
+      "cyclomatic": 5.0,
+      "coverage": 96.42857142857143,
+      "crap": 5.001138848396502
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/helpers.rs",
+      "function": "Ws10ChannelImpoundmentKernel::impoundment_outflow_at_stage",
+      "line": 50,
+      "cyclomatic": 5.0,
+      "coverage": 97.36842105263158,
+      "crap": 5.000455605773436
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/helpers.rs",
+      "function": "Ws10ChannelImpoundmentKernel::impoundment_rockfill_outflow",
+      "line": 170,
+      "cyclomatic": 5.0,
+      "coverage": 100.0,
+      "crap": 5.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/01_ws22_ws23_ws26_detachment.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws20_fall_velocity_ft_s",
+      "line": 2,
+      "cyclomatic": 5.0,
+      "coverage": 100.0,
+      "crap": 5.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/01_ws22_ws23_ws26_detachment.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws30_shape_flag_from_ishape",
+      "line": 30,
+      "cyclomatic": 5.0,
+      "coverage": 100.0,
+      "crap": 5.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/01_ws22_ws23_ws26_detachment.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws26_dcap_incision_outcome",
+      "line": 318,
+      "cyclomatic": 5.0,
+      "coverage": 100.0,
+      "crap": 5.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/01_ws22_ws23_ws26_detachment.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws23_initial_detach_working",
+      "line": 604,
+      "cyclomatic": 5.0,
+      "coverage": 100.0,
+      "crap": 5.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/00_ws15_ws18_scaffold_and_hydraulics.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws18_trncap",
+      "line": 344,
+      "cyclomatic": 5.0,
+      "coverage": 100.0,
+      "crap": 5.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_validate_wave_series_grid",
+      "line": 562,
+      "cyclomatic": 5.0,
+      "coverage": 100.0,
+      "crap": 5.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::generated_groundwater_from_step",
+      "line": 1230,
+      "cyclomatic": 5.0,
+      "coverage": 100.0,
+      "crap": 5.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/runtime_inputs_mod/chaninp.rs",
+      "function": "rockfill_arf",
+      "line": 1190,
+      "cyclomatic": 5.0,
+      "coverage": 100.0,
+      "crap": 5.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/02_ws20_segment_routing.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws20_validate_class_cardinality",
+      "line": 19,
+      "cyclomatic": 4.0,
+      "coverage": 72.22222222222221,
+      "crap": 4.342935528120714
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/00_ws15_ws18_scaffold_and_hydraulics.rs",
+      "function": "Ws10ChannelImpoundmentKernel::derive_ws15_channel_sediment_scaffold",
+      "line": 3,
+      "cyclomatic": 4.0,
+      "coverage": 72.22222222222221,
+      "crap": 4.342935528120714
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/02_ws20_segment_routing.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws20_outgoing_class_masses",
+      "line": 1090,
+      "cyclomatic": 4.0,
+      "coverage": 73.68421052631578,
+      "crap": 4.291587694999271
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/01_ws22_ws23_ws26_detachment.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws26_dcap_width_step",
+      "line": 340,
+      "cyclomatic": 4.0,
+      "coverage": 75.0,
+      "crap": 4.25
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_merge_particle_diameters",
+      "line": 1539,
+      "cyclomatic": 4.0,
+      "coverage": 76.19047619047619,
+      "crap": 4.215959399632869
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/runtime_inputs_mod/types.rs",
+      "function": "WatershedRuntimeInputError::fmt",
+      "line": 29,
+      "cyclomatic": 3.0,
+      "coverage": 50.0,
+      "crap": 4.125
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/dispatch.rs",
+      "function": "node_kind_message_token",
+      "line": 408,
+      "cyclomatic": 4.0,
+      "coverage": 83.33333333333334,
+      "crap": 4.0740740740740735
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_daily_physical_inflow_m3",
+      "line": 186,
+      "cyclomatic": 4.0,
+      "coverage": 88.0,
+      "crap": 4.027648
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/runtime_inputs_mod/chaninp.rs",
+      "function": "derive_riser_active_projection",
+      "line": 952,
+      "cyclomatic": 4.0,
+      "coverage": 93.33333333333333,
+      "crap": 4.004740740740741
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/00_ws15_ws18_scaffold_and_hydraulics.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws18_hydchn_low_hxb_xb",
+      "line": 272,
+      "cyclomatic": 4.0,
+      "coverage": 93.75,
+      "crap": 4.00390625
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::compute_direct_channel_kinematic_peak",
+      "line": 484,
+      "cyclomatic": 4.0,
+      "coverage": 96.42857142857143,
+      "crap": 4.0007288629737605
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::compute_direct_channel_muskingum_peak",
+      "line": 514,
+      "cyclomatic": 4.0,
+      "coverage": 96.66666666666667,
+      "crap": 4.000592592592593
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::compute_direct_channel_variable_muskingum_peak",
+      "line": 546,
+      "cyclomatic": 4.0,
+      "coverage": 96.875,
+      "crap": 4.00048828125
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/network_frame.rs",
+      "function": "WatershedNetworkFrame::from_parsed_inputs",
+      "line": 553,
+      "cyclomatic": 4.0,
+      "coverage": 96.96969696969697,
+      "crap": 4.00044522358572
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/dispatch.rs",
+      "function": "record_contributor",
+      "line": 324,
+      "cyclomatic": 4.0,
+      "coverage": 100.0,
+      "crap": 4.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/helpers.rs",
+      "function": "Ws10ChannelImpoundmentKernel::impoundment_emergency_spillway_outflow",
+      "line": 195,
+      "cyclomatic": 4.0,
+      "coverage": 100.0,
+      "crap": 4.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/helpers.rs",
+      "function": "Ws10ChannelImpoundmentKernel::crosses_threshold",
+      "line": 396,
+      "cyclomatic": 4.0,
+      "coverage": 100.0,
+      "crap": 4.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/01_ws22_ws23_ws26_detachment.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws23_validate_detach_sums",
+      "line": 761,
+      "cyclomatic": 4.0,
+      "coverage": 100.0,
+      "crap": 4.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/01_ws22_ws23_ws26_detachment.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws23_final_detach_outcome",
+      "line": 795,
+      "cyclomatic": 4.0,
+      "coverage": 100.0,
+      "crap": 4.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/types.rs",
+      "function": "Ws10GuardError::boundary_class",
+      "line": 291,
+      "cyclomatic": 4.0,
+      "coverage": 100.0,
+      "crap": 4.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_ntchr",
+      "line": 66,
+      "cyclomatic": 4.0,
+      "coverage": 100.0,
+      "crap": 4.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_wave_final_storage_m3",
+      "line": 663,
+      "cyclomatic": 4.0,
+      "coverage": 100.0,
+      "crap": 4.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_wave_reference_flow",
+      "line": 701,
+      "cyclomatic": 4.0,
+      "coverage": 100.0,
+      "crap": 4.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::contributor_area_ha",
+      "line": 1266,
+      "cyclomatic": 4.0,
+      "coverage": 100.0,
+      "crap": 4.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::validate_direct_sediment_routing_inputs",
+      "line": 1645,
+      "cyclomatic": 4.0,
+      "coverage": 100.0,
+      "crap": 4.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_geometry_detachment_mass",
+      "line": 2092,
+      "cyclomatic": 3.0,
+      "coverage": 73.68421052631578,
+      "crap": 3.16401807843709
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::direct_ok_status",
+      "line": 163,
+      "cyclomatic": 3.0,
+      "coverage": 75.0,
+      "crap": 3.140625
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_grid_end_disposition",
+      "line": 1995,
+      "cyclomatic": 3.0,
+      "coverage": 77.27272727272727,
+      "crap": 3.1056536438767846
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/00_ws15_ws18_scaffold_and_hydraulics.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws18_hydchn_geometry",
+      "line": 209,
+      "cyclomatic": 3.0,
+      "coverage": 80.0,
+      "crap": 3.072
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws19SedimentIngress::fraction_sum_label",
+      "line": 85,
+      "cyclomatic": 3.0,
+      "coverage": 80.0,
+      "crap": 3.072
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/runtime_inputs_mod/types.rs",
+      "function": "WatershedRuntimeInputError::code",
+      "line": 20,
+      "cyclomatic": 3.0,
+      "coverage": 80.0,
+      "crap": 3.072
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/network_frame.rs",
+      "function": "build_channel_controls",
+      "line": 1178,
+      "cyclomatic": 3.0,
+      "coverage": 81.15942028985508,
+      "crap": 3.0601901317772113
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/network_frame.rs",
+      "function": "build_impoundment_controls",
+      "line": 1257,
+      "cyclomatic": 3.0,
+      "coverage": 81.81818181818183,
+      "crap": 3.0540946656649135
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::direct_checked_runon_volume",
+      "line": 1102,
+      "cyclomatic": 3.0,
+      "coverage": 86.66666666666667,
+      "crap": 3.021333333333333
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_wave_outlet_discharge",
+      "line": 728,
+      "cyclomatic": 3.0,
+      "coverage": 90.0,
+      "crap": 3.009
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::direct_sediment_rate_duration_s",
+      "line": 1878,
+      "cyclomatic": 3.0,
+      "coverage": 91.66666666666666,
+      "crap": 3.0052083333333335
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::direct_ws11_channel_length",
+      "line": 932,
+      "cyclomatic": 3.0,
+      "coverage": 94.44444444444444,
+      "crap": 3.001543209876543
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/00_ws15_ws18_scaffold_and_hydraulics.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws18_hydchn_flag2_geometry",
+      "line": 241,
+      "cyclomatic": 3.0,
+      "coverage": 96.0,
+      "crap": 3.000576
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/dispatch.rs",
+      "function": "build_indegree_and_dependents",
+      "line": 352,
+      "cyclomatic": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/network_frame.rs",
+      "function": "WatershedNetworkFrameError::source",
+      "line": 113,
+      "cyclomatic": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/network_frame.rs",
+      "function": "WatershedGroundwaterRoutingAuthority::linear_reservoir",
+      "line": 163,
+      "cyclomatic": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/helpers.rs",
+      "function": "Ws10ChannelImpoundmentKernel::impoundment_filter_fence_outflow",
+      "line": 213,
+      "cyclomatic": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/helpers.rs",
+      "function": "Ws10ChannelImpoundmentKernel::impoundment_validate_total_outflow",
+      "line": 257,
+      "cyclomatic": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/helpers.rs",
+      "function": "Ws10ChannelImpoundmentKernel::impoundment_area_at_stage",
+      "line": 280,
+      "cyclomatic": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/helpers.rs",
+      "function": "Ws10ChannelImpoundmentKernel::impoundment_crosses_regime_transition",
+      "line": 400,
+      "cyclomatic": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/02_ws20_segment_routing.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws20_record_case12_diagnostics",
+      "line": 1076,
+      "cyclomatic": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/01_ws22_ws23_ws26_detachment.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws30_apply_erodible_rectangular_fallback",
+      "line": 61,
+      "cyclomatic": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_sum_interval_field",
+      "line": 1412,
+      "cyclomatic": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_apply_tillage_reseed",
+      "line": 2029,
+      "cyclomatic": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/diagnostics.rs",
+      "function": "Ws10ChannelImpoundmentKernel::require_non_negative_computed",
+      "line": 2,
+      "cyclomatic": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::read_direct_ws15_channel_sediment_controls",
+      "line": 859,
+      "cyclomatic": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::dependency_channel_baseflow_m3",
+      "line": 1292,
+      "cyclomatic": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::dependency_channel_deep_seepage_m3",
+      "line": 1308,
+      "cyclomatic": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/runtime_inputs_mod/chaninp.rs",
+      "function": "project_filter_function",
+      "line": 428,
+      "cyclomatic": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/runtime_inputs_mod/chaninp.rs",
+      "function": "derive_riser_coefficient_from_reference",
+      "line": 971,
+      "cyclomatic": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/runtime_inputs_mod/chaninp.rs",
+      "function": "validate_active_projected_positive",
+      "line": 1415,
+      "cyclomatic": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/02_ws20_segment_routing.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws20_effective_length",
+      "line": 39,
+      "cyclomatic": 2.0,
+      "coverage": 47.368421052631575,
+      "crap": 2.5831753899985426
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/02_ws20_segment_routing.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws20_segment_crfrac",
+      "line": 394,
+      "cyclomatic": 2.0,
+      "coverage": 50.0,
+      "crap": 2.5
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/02_ws20_segment_routing.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws20_interval_or_event_dcap",
+      "line": 481,
+      "cyclomatic": 2.0,
+      "coverage": 63.63636363636363,
+      "crap": 2.1923365890308038
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/00_ws15_ws18_scaffold_and_hydraulics.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws18_linear_interpolate",
+      "line": 44,
+      "cyclomatic": 2.0,
+      "coverage": 83.33333333333334,
+      "crap": 2.0185185185185186
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/diagnostics.rs",
+      "function": "Ws10ChannelImpoundmentKernel::require_finite_computed",
+      "line": 17,
+      "cyclomatic": 2.0,
+      "coverage": 90.9090909090909,
+      "crap": 2.0030052592036065
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/01_ws22_ws23_ws26_detachment.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws26_dcap_erodible_width",
+      "line": 256,
+      "cyclomatic": 2.0,
+      "coverage": 94.11764705882352,
+      "crap": 2.0008141664970487
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/types.rs",
+      "function": "WatershedDispatchReport::is_success",
+      "line": 79,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/types.rs",
+      "function": "WatershedDispatchError::from",
+      "line": 131,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/types.rs",
+      "function": "WatershedDispatchError::from",
+      "line": 137,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/dispatch.rs",
+      "function": "build_dispatch_step",
+      "line": 375,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/network_frame.rs",
+      "function": "WatershedNetworkFrame::publish_typed_routing_report",
+      "line": 627,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/02_ws20_segment_routing.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws20_empty_segment_result",
+      "line": 2,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/01_ws22_ws23_ws26_detachment.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws22_shdist",
+      "line": 101,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/01_ws22_ws23_ws26_detachment.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws26_dcap",
+      "line": 116,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/01_ws22_ws23_ws26_detachment.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws26_dcap_interval",
+      "line": 167,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/01_ws22_ws23_ws26_detachment.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws26_apply_dct_to_classes",
+      "line": 250,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/01_ws22_ws23_ws26_detachment.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws26_dcap_low_width_shear_outcome",
+      "line": 374,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/01_ws22_ws23_ws26_detachment.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws23_detach_iteration_working",
+      "line": 641,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/01_ws22_ws23_ws26_detachment.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws23_run_dcap",
+      "line": 656,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/01_ws22_ws23_ws26_detachment.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws23_build_detach_working",
+      "line": 710,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/01_ws22_ws23_ws26_detachment.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws23_detach_transport_sums",
+      "line": 736,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/01_ws22_ws23_ws26_detachment.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws23_potential_load_outcome",
+      "line": 777,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/01_ws22_ws23_ws26_detachment.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws24_case12_detach_transition_closure",
+      "line": 820,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_daily_particle_fractions",
+      "line": 1190,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_zero_flow_interval",
+      "line": 1976,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_validate_no_suspended_carry",
+      "line": 2042,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_validate_active_lane_operand_mode",
+      "line": 2055,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::compute_direct_channel_rational_peak",
+      "line": 434,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::direct_channel_output",
+      "line": 614,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::hourly_pair_carried_by_all",
+      "line": 1327,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::direct_sediment_publication",
+      "line": 2062,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/validation.rs",
+      "function": "Ws10ChannelImpoundmentKernel::status_from_guard_error",
+      "line": 2,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/runtime_inputs_mod/chaninp.rs",
+      "function": "derive_riser_apr_coefficients",
+      "line": 513,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/runtime_inputs_mod/chaninp.rs",
+      "function": "derive_active_projection_reference_stage",
+      "line": 989,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/runtime_inputs_mod/chaninp.rs",
+      "function": "culvert_stage_threshold",
+      "line": 1055,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/helpers.rs",
+      "function": "assert_close",
+      "line": 597,
+      "cyclomatic": 1.0,
+      "coverage": 80.0,
+      "crap": 1.008
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/types.rs",
+      "function": "DispatchDiagnostic::new",
+      "line": 45,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/dispatch.rs",
+      "function": "format_node_key",
+      "line": 416,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/network_frame.rs",
+      "function": "WatershedNetworkFrameError::from",
+      "line": 130,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/network_frame.rs",
+      "function": "WatershedGroundwaterRoutingAuthority::disabled",
+      "line": 155,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/network_frame.rs",
+      "function": "WatershedGroundwaterRoutingAuthority::is_enabled",
+      "line": 178,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/network_frame.rs",
+      "function": "WatershedChannelRatingCurveControl::from",
+      "line": 192,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/network_frame.rs",
+      "function": "HillslopeContribution::particle_class_count",
+      "line": 273,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/network_frame.rs",
+      "function": "WatershedPublicationFrame::default",
+      "line": 467,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/network_frame.rs",
+      "function": "WatershedNetworkFrame::topology",
+      "line": 589,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/network_frame.rs",
+      "function": "WatershedNetworkFrame::add_hillslope_contribution",
+      "line": 593,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/network_frame.rs",
+      "function": "WatershedNetworkFrame::configure_groundwater_baseflow_routing",
+      "line": 598,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/network_frame.rs",
+      "function": "WatershedNetworkFrame::set_channel_tillage_day_state",
+      "line": 605,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/network_frame.rs",
+      "function": "WatershedNetworkFrame::record_routed_channel_state",
+      "line": 613,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/network_frame.rs",
+      "function": "WatershedNetworkFrame::record_routed_impoundment_state",
+      "line": 617,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/network_frame.rs",
+      "function": "first_i32_or_default",
+      "line": 1081,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/network_frame.rs",
+      "function": "first_channel_peak",
+      "line": 1090,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/helpers.rs",
+      "function": "Ws10ChannelImpoundmentKernel::missing_required",
+      "line": 9,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/helpers.rs",
+      "function": "Ws10ChannelImpoundmentKernel::non_finite",
+      "line": 22,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/helpers.rs",
+      "function": "Ws10ChannelImpoundmentKernel::domain_violation",
+      "line": 36,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/helpers.rs",
+      "function": "test_impoundment_coefficients",
+      "line": 605,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/helpers.rs",
+      "function": "full_outflow_coefficients",
+      "line": 620,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/routing/01_ws22_ws23_ws26_detachment.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws26_dcap_outcome",
+      "line": 238,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_small_count_as_f64",
+      "line": 688,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_sum_interval_diagnostics",
+      "line": 1198,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_geometry_from_profile",
+      "line": 1621,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_apply_geometry_to_profile",
+      "line": 1632,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_public_geometry",
+      "line": 1648,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/hourly.rs",
+      "function": "Ws10ChannelImpoundmentKernel::ws11_cross_day_state",
+      "line": 2021,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/kernel/direct.rs",
+      "function": "Ws10ChannelImpoundmentKernel::direct_impoundment_output",
+      "line": 801,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-watershed-orchestrator/src/runtime_inputs_mod/chaninp.rs",
+      "function": "Ws12OutflowFunctionFamilies::inactive_default",
+      "line": 36,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    }
+  ]
+}

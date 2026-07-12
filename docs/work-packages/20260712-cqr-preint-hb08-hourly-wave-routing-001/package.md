@@ -1,6 +1,6 @@
 # HB-08 Hourly Baseline Wave Routing
 
-Status: `ACTIVE`
+Status: `MODULE-PASS`
 Parent: `docs/work-packages/cqr-high-risk-b-execplan.md`
 
 ## Objective
@@ -117,3 +117,10 @@ Minimum gates:
 Acceptance requires the fixed row at CRAP at most 30, zero eligible same-source
 function below 75%, exact behavioral/typed-error preservation, W11C consumer
 PASS, and two independent final reviews/verifications under the High-B plan.
+
+## Terminal Outcome
+
+Cover-first tests close eligible same-source floors. Mechanical extraction
+reduces CC 44/CRAP 50.396 to CC 28/CRAP 28.344 while preserving recurrence
+arithmetic and errors. Full orchestrator and W11C gates pass. Disposition:
+`MODULE-PASS`.

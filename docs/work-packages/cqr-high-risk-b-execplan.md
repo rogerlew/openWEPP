@@ -63,7 +63,8 @@ classification records. It does not permit a multi-module implementation diff.
 - [x] (2026-07-12 UTC) Close `DC-CQR-HB07-001` and execute HB-07 through
   reviewed `MODULE-PASS`: both rows and all function floors pass, the `cx`
   clamp is fail-closed, and W11C consumes the production route.
-- [ ] Execute or disposition HB-08 through its terminal record.
+- [x] (2026-07-12 UTC) Execute HB-08 through reviewed `MODULE-PASS`: hourly
+  wave routing and all eligible floors pass; W11C consumes the production path.
 - [ ] Execute or disposition HB-09 through its terminal record.
 - [ ] Execute or disposition HB-10 through its terminal record.
 - [ ] Run tranche-final rerank, dual verification, and transition to Medium.

@@ -586,6 +586,338 @@ mod hourly_tests {
     }
 
     #[test]
+    fn hb08_wave_series_characterizes_grid_initialization_and_error_priority() {
+        let context_for = |ipeak| {
+            let mut frame = test_network_frame();
+            frame.routing_globals.ipeak = ipeak;
+            frame.routing_globals.dtchr_seconds = 60.0;
+            frame.routing_globals.ntchr = 1_440.0;
+            let mut control = test_channel_control();
+            control.node_id = 7;
+            control.segment_points[1].x_m = 100.0;
+            frame.channel_controls.insert(7, control);
+            let step = DispatchStep {
+                sequence_index: 0,
+                node: TopologyNodeKey::new(TopologyNodeKind::Channel, 7),
+                dependency_nodes: Vec::new(),
+                contributor_hillslopes: Vec::new(),
+                status: Ws10ChannelImpoundmentKernel::direct_ok_status(
+                    TopologyNodeKind::Channel,
+                ),
+            };
+            let input = DirectWatershedKernelInput {
+                step: Box::leak(Box::new(step)),
+                frame: Box::leak(Box::new(frame)),
+            };
+            Ws10ChannelImpoundmentKernel::read_direct_channel_context(&input)
+                .expect("synthetic wave context")
+        };
+
+        let kw = context_for(3);
+        for (qin, qlat, symbol) in [
+            (&[][..], &[][..], "ws11_interval_wave_grid"),
+            (&[1.0][..], &[0.0, 0.0][..], "ws11_interval_wave_grid"),
+        ] {
+            let error = Ws10ChannelImpoundmentKernel::ws11_route_baseline_wave_series(
+                &kw, qin, qlat, None,
+            )
+            .expect_err("invalid wave grid must fail closed");
+            assert_eq!(error.symbol.as_str(), symbol);
+        }
+        let zero = Ws10ChannelImpoundmentKernel::ws11_route_baseline_wave_series(
+            &kw,
+            &[0.0, 0.0],
+            &[0.0, 0.0],
+            None,
+        )
+        .expect("zero reference flow returns exact zero series");
+        assert_eq!(zero.0.q1_m3_s, vec![0.0, 0.0]);
+        assert_eq!(zero.0.storage_change_m3, vec![0.0, 0.0]);
+        assert_close(zero.1, 0.0);
+
+        let invalid_prior = Ws11WaveRoutingState {
+            q1: f64::NAN,
+            qin: f64::NAN,
+            qlat: f64::NAN,
+            c0: 0.0,
+            c1: 0.0,
+            c2: 0.0,
+            c3: 0.0,
+            c4: 0.0,
+        };
+        let error = Ws10ChannelImpoundmentKernel::ws11_route_baseline_wave_series(
+            &kw,
+            &[1.0],
+            &[0.0],
+            Some(invalid_prior),
+        )
+        .expect_err("initial q1 owns invalid-prior priority");
+        assert_eq!(error.symbol.as_str(), "ws11_initial_q1");
+
+        for ipeak in [1, 2] {
+            let nonwave = context_for(ipeak);
+            let error = Ws10ChannelImpoundmentKernel::ws11_route_baseline_wave_series(
+                &nonwave,
+                &[1.0],
+                &[0.0],
+                None,
+            )
+            .expect_err("non-wave branch must fail before grid use");
+            assert_eq!(error.symbol.as_str(), "ws11_interval_nonwave_branch");
+        }
+
+        let (one, one_dx, one_grid) =
+            Ws10ChannelImpoundmentKernel::ws11_wave_spatial_grid(&kw, 1.0e9, 1.0, 2.0)
+                .expect("large celerity selects one segment");
+        assert_eq!(one, 1);
+        assert_close(one_dx, kw.channel_length);
+        assert_eq!(one_grid, vec![1.0, 2.0]);
+        let (capped, _, capped_grid) =
+            Ws10ChannelImpoundmentKernel::ws11_wave_spatial_grid(&kw, 1.0e-12, 1.0, 2.0)
+                .expect("small celerity selects segment cap");
+        assert_eq!(capped, 101);
+        assert_eq!(capped_grid.len(), 102);
+        assert_close(capped_grid[0], 1.0);
+        assert_close(capped_grid[101], 2.0);
+
+        let kw_storage = Ws10ChannelImpoundmentKernel::ws11_wave_final_storage_m3(
+            &kw,
+            1.0,
+            1.0,
+            &[0.0, 1.0],
+        )
+        .expect("KW final storage consumes spatial state");
+        assert!(kw_storage.is_finite() && kw_storage > 0.0);
+        let mc = context_for(4);
+        let mc_storage = Ws10ChannelImpoundmentKernel::ws11_wave_final_storage_m3(
+            &mc,
+            1.0,
+            0.5,
+            &[],
+        )
+        .expect("MC final storage consumes boundary mean");
+        assert!(mc_storage.is_finite() && mc_storage > 0.0);
+        let nonwave = context_for(1);
+        let error = Ws10ChannelImpoundmentKernel::ws11_wave_final_storage_m3(
+            &nonwave,
+            1.0,
+            1.0,
+            &[1.0],
+        )
+        .expect_err("non-wave final storage fails closed");
+        assert_eq!(error.symbol.as_str(), "ws11_interval_nonwave_branch");
+        let error = Ws10ChannelImpoundmentKernel::ws11_kinematic_terminal_storage_m3(&kw, &[])
+            .expect_err("empty KW spatial state fails closed");
+        assert_eq!(error.symbol.as_str(), "ws11_kw_terminal_spatial_count");
+    }
+
+    #[test]
+    fn hb08_same_source_boundary_helpers_close_production_floors() {
+        for ishape in 1..=4 {
+            let (celerity, top_width) =
+                Ws10ChannelImpoundmentKernel::ws11_wave_celerity_and_top_width(
+                    ishape, 5.0, 1.0, 0.04, 0.01, 1.0,
+                )
+                .expect("valid shape celerity");
+            assert!(celerity.is_finite() && celerity > 0.0);
+            assert!(top_width.is_finite() && top_width > 0.0);
+        }
+        let error = Ws10ChannelImpoundmentKernel::ws11_wave_celerity_and_top_width(
+            0, 5.0, 1.0, 0.04, 0.01, 1.0,
+        )
+        .expect_err("shape zero fails closed");
+        assert_eq!(error.symbol.as_str(), "ws11_muskingum_ishape");
+        for (branch, qref, symbol) in [
+            (Ws11IpeakBranch::Rational, 1.0, "ws11_interval_nonwave_branch"),
+            (
+                Ws11IpeakBranch::KinematicWave,
+                f64::NAN,
+                "ws11_wave_reference_flow",
+            ),
+        ] {
+            let error = Ws10ChannelImpoundmentKernel::ws11_wave_reference_flow(branch, qref)
+                .expect_err("invalid reference-flow input fails closed");
+            assert_eq!(error.symbol.as_str(), symbol);
+        }
+
+        assert_close(
+            Ws10ChannelImpoundmentKernel::ws11_close_daily_outlet_volume(10.0, 2.0, 3.0)
+                .expect("positive daily closure"),
+            9.0,
+        );
+        assert_close(
+            Ws10ChannelImpoundmentKernel::ws11_close_daily_outlet_volume(0.0, 0.0, 5.0e-10)
+                .expect("roundoff negative outlet canonicalizes"),
+            0.0,
+        );
+        for (physical, initial, final_storage, symbol) in [
+            (f64::NAN, 0.0, 0.0, "ws11_daily_physical_inflow"),
+            (0.0, 0.0, 1.0, "ws11_daily_outlet_volume"),
+        ] {
+            let error = Ws10ChannelImpoundmentKernel::ws11_close_daily_outlet_volume(
+                physical,
+                initial,
+                final_storage,
+            )
+            .expect_err("invalid daily closure fails closed");
+            assert_eq!(error.symbol.as_str(), symbol);
+        }
+
+        assert_close(
+            Ws10ChannelImpoundmentKernel::ws11_small_count_as_f64(7, "hb08_count")
+                .expect("small count"),
+            7.0,
+        );
+        if usize::BITS > 32 {
+            let error = Ws10ChannelImpoundmentKernel::ws11_small_count_as_f64(
+                usize::try_from(u64::from(u32::MAX) + 1).expect("64-bit usize"),
+                "hb08_count",
+            )
+            .expect_err("large count fails checked conversion");
+            assert_eq!(error.symbol.as_str(), "hb08_count");
+        }
+
+        let mut invalid_hourly = [0.0; 24];
+        invalid_hourly[3] = f64::INFINITY;
+        let error = Ws10ChannelImpoundmentKernel::ws11_project_hourly_totals(
+            &invalid_hourly,
+            3_600.0,
+            24,
+        )
+        .expect_err("non-finite hourly source fails closed");
+        assert_eq!(error.symbol.as_str(), "ws11_hourly_projection_source");
+
+        for ledger in [
+            Ws11IntervalMassLedger {
+                inlet_kg: vec![1.0],
+                lateral_kg: vec![],
+                detached_kg: vec![0.0],
+                egress_kg: vec![1.0],
+                deposited_kg: vec![0.0],
+            },
+            Ws11IntervalMassLedger {
+                inlet_kg: vec![f64::NAN],
+                lateral_kg: vec![0.0],
+                detached_kg: vec![0.0],
+                egress_kg: vec![0.0],
+                deposited_kg: vec![0.0],
+            },
+            Ws11IntervalMassLedger {
+                inlet_kg: vec![1.0],
+                lateral_kg: vec![0.0],
+                detached_kg: vec![0.0],
+                egress_kg: vec![0.0],
+                deposited_kg: vec![0.0],
+            },
+        ] {
+            Ws10ChannelImpoundmentKernel::ws11_validate_interval_mass_closure(&ledger)
+                .expect_err("invalid interval ledger fails closed");
+        }
+
+        let valid_zero = Ws10ChannelImpoundmentKernel::ws11_zero_flow_interval(
+            &[1.0, 2.0],
+            &geometry(0.5, 2.0),
+        )
+        .expect("zero flow deposits all incoming mass");
+        assert_eq!(valid_zero.deposited_kg, vec![1.0, 2.0]);
+        let error = Ws10ChannelImpoundmentKernel::ws11_zero_flow_interval(
+            &[f64::NAN],
+            &geometry(0.5, 2.0),
+        )
+        .expect_err("invalid zero-flow mass fails closed");
+        assert_eq!(error.symbol.as_str(), "ws11_zero_flow_incoming_mass");
+
+        let mut frame = test_network_frame();
+        frame.routing_globals.ntchr = f64::NAN;
+        let step = DispatchStep {
+            sequence_index: 0,
+            node: TopologyNodeKey::new(TopologyNodeKind::Channel, 7),
+            dependency_nodes: Vec::new(),
+            contributor_hillslopes: Vec::new(),
+            status: Ws10ChannelImpoundmentKernel::direct_ok_status(TopologyNodeKind::Channel),
+        };
+        let input = DirectWatershedKernelInput {
+            step: &step,
+            frame: &frame,
+        };
+        let error = Ws10ChannelImpoundmentKernel::ws11_ntchr(&input)
+            .expect_err("non-finite interval count fails closed");
+        assert_eq!(error.symbol.as_str(), "ws11_ntchr");
+        assert!(
+            !Ws10ChannelImpoundmentKernel::ws11_interval_lane_active(
+                &input,
+                Ws11IpeakBranch::Rational,
+            )
+            .expect("non-wave branch is inactive")
+        );
+
+        frame.routing_globals.ntchr = 24.0;
+        assert_eq!(
+            Ws10ChannelImpoundmentKernel::ws11_ntchr(&DirectWatershedKernelInput {
+                step: &step,
+                frame: &frame,
+            })
+            .expect("integer interval count"),
+            24
+        );
+        for invalid in [-1.0, 1.5, 1.0e30] {
+            frame.routing_globals.ntchr = invalid;
+            let error = Ws10ChannelImpoundmentKernel::ws11_ntchr(
+                &DirectWatershedKernelInput {
+                    step: &step,
+                    frame: &frame,
+                },
+            )
+            .expect_err("invalid interval count fails closed");
+            assert_eq!(error.symbol.as_str(), "ws11_ntchr");
+        }
+
+        frame.routing_globals.ntchr = 24.0;
+        assert!(
+            !Ws10ChannelImpoundmentKernel::ws11_interval_lane_active(
+                &DirectWatershedKernelInput {
+                    step: &step,
+                    frame: &frame,
+                },
+                Ws11IpeakBranch::KinematicWave,
+            )
+            .expect("empty wave lane is inactive")
+        );
+        for dependency in [
+            TopologyNodeKey::new(TopologyNodeKind::Impoundment, 9),
+            TopologyNodeKey::new(TopologyNodeKind::Channel, 9),
+        ] {
+            let dependency_step = DispatchStep {
+                dependency_nodes: vec![dependency],
+                ..step.clone()
+            };
+            assert!(
+                !Ws10ChannelImpoundmentKernel::ws11_interval_lane_active(
+                    &DirectWatershedKernelInput {
+                        step: &dependency_step,
+                        frame: &frame,
+                    },
+                    Ws11IpeakBranch::KinematicWave,
+                )
+                .expect("inactive dependency does not activate interval lane")
+            );
+        }
+        let hillslope_step = DispatchStep {
+            dependency_nodes: vec![TopologyNodeKey::new(TopologyNodeKind::Hillslope, 9)],
+            ..step.clone()
+        };
+        let error = Ws10ChannelImpoundmentKernel::ws11_interval_lane_active(
+            &DirectWatershedKernelInput {
+                step: &hillslope_step,
+                frame: &frame,
+            },
+            Ws11IpeakBranch::KinematicWave,
+        )
+        .expect_err("hillslope dependency kind fails closed");
+        assert_eq!(error.symbol.as_str(), "ws11_interval_dependency_kind");
+    }
+
+    #[test]
     fn wshedw11d_fresh_storage_and_daily_volume_reconstruct_independently() {
         let mut frame = test_network_frame();
         frame.routing_globals.ipeak = 3;
