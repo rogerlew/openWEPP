@@ -37,7 +37,8 @@ classification records. It does not permit a multi-module implementation diff.
 
 - [x] (2026-07-12 UTC) Verify High A `TERMINAL-PASS` and activate High B in
   the clean predecessor transition commit.
-- [ ] Refresh workspace metrics and dual-review all HB eligibility rows.
+- [x] (2026-07-12 UTC) Refresh `hb/start` workspace metrics and dual-review all
+  21 live rows: 21 actionable, zero retained exception/exclusion.
 - [ ] Execute or disposition HB-01 through its terminal record.
 - [ ] Execute or disposition HB-02 through its terminal record.
 - [ ] Execute or disposition HB-03 through its terminal record.
@@ -52,8 +53,13 @@ classification records. It does not permit a multi-module implementation diff.
 
 ## Surprises & Discoveries
 
-- None yet. Record conservation, authority, comparator, consumer-path, and
-  source-drift findings here with exact evidence.
+- Fresh start measurement reproduces 54 production rows across 35 modules and
+  all 21 fixed High-B rows across ten files. All 21 are actionable; no
+  exclusion or no-action module is accepted.
+- The two selection reviewers differed only on the taxonomy label for two
+  eligible parser/area symbols. The binding disagreement rule records both as
+  `E-PRODUCTION`; actionability and science-tier module treatment were never in
+  dispute.
 
 ## Decision Log
 
