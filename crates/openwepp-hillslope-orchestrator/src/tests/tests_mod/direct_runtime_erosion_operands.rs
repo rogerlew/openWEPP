@@ -88,6 +88,54 @@ fn particle_composition_fails_closed_on_invalid_texture() {
 }
 
 #[test]
+fn hb02_d_f_h_texture_mass_fractions_fail_closed() {
+    for (field, value) in [
+        ("sand", f64::NAN),
+        ("sand", f64::INFINITY),
+        ("sand", f64::NEG_INFINITY),
+        ("clay", f64::NAN),
+        ("clay", f64::INFINITY),
+        ("clay", f64::NEG_INFINITY),
+        ("silt", f64::NAN),
+        ("silt", f64::INFINITY),
+        ("silt", f64::NEG_INFINITY),
+        ("orgmat", f64::NAN),
+        ("orgmat", f64::INFINITY),
+        ("orgmat", f64::NEG_INFINITY),
+    ] {
+        let mut texture = clay_loam_texture();
+        match field {
+            "sand" => texture.sand = value,
+            "clay" => texture.clay = value,
+            "silt" => texture.silt = value,
+            "orgmat" => texture.orgmat = value,
+            _ => unreachable!(),
+        }
+        assert!(
+            erosion_particle_composition(&texture).is_err(),
+            "{field}={value} must fail closed"
+        );
+    }
+
+    for texture in [
+        ErosionTextureInputs {
+            silt: 1.1,
+            ..clay_loam_texture()
+        },
+        ErosionTextureInputs {
+            orgmat: -0.1,
+            ..clay_loam_texture()
+        },
+        ErosionTextureInputs {
+            orgmat: 1.1,
+            ..clay_loam_texture()
+        },
+    ] {
+        assert!(erosion_particle_composition(&texture).is_err());
+    }
+}
+
+#[test]
 fn effective_particle_is_the_three_class_log_mean() {
     let classes =
         erosion_particle_composition(&clay_loam_texture()).expect("composition must resolve");

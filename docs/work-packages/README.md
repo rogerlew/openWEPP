@@ -60,6 +60,10 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-12 UTC`:
+- `20260712-dc-cqr-preint-hb02-texture-mass-fraction-domain-001/` - ACTIVE:
+  HB-02 characterization proved out-of-range silt is admitted to particle-
+  composition physics. The bounded correction enforces individual finite
+  `[0,1]` texture fractions without inventing a texture-sum tolerance.
 - `20260712-dc-cqr-preint-hb01-strict-positive-threshold-001/` -
   EXECUTED-COMPLETE (2026-07-12):
   Erod13 now rejects zero/non-finite values for
