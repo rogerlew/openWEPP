@@ -91,6 +91,9 @@ classification records. It does not permit a multi-module implementation diff.
 - HB-07 review exposed a retained variable Muskingum-Cunge `cx < -10` clamp.
   Current `INV-ROUTE-022` prohibits coefficient repair and requires unstable
   states to fail closed, so `DC-CQR-HB07-001` interrupts module closure.
+- HB-10 private floor fixtures cannot remain inline without exceeding the
+  3,000-line blocker. Its package therefore permits one test-only companion
+  module; all production branches remain in the audited CLI binary.
 - HB-06's executable proof confirms the SIMIMPL04 integration uses the
   production streaming sink; no private-sink duplicate is needed to establish
   the downstream Parquet consumer.

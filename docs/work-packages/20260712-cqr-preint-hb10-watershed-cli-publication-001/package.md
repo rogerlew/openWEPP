@@ -49,6 +49,11 @@ help rendering may be excluded only with explicit glue classification.
   tests or coherent private extraction for the six rows and transitive floors.
 - `crates/openwepp-runner/tests/watershed_cli_behavior_contract.rs`: only
   missing real-CLI characterization and independent readback assertions.
+- A `#[cfg(test)]` companion beneath
+  `crates/openwepp-runner/src/bin/openwepp-cli-watershed/` may own HB-10 private
+  fixture builders and direct helper characterization. The production binary
+  may add only the test-module declaration; no production function, parser
+  stage, or branch may move into the companion.
 - Package evidence and HB-10/High-B terminal records.
 
 No grammar, selector, manifest policy, units, path, error text/code/order,
@@ -103,6 +108,17 @@ Acceptance requires all six fixed rows at CRAP at most 30, zero eligible
 same-source function below 75%, exact grammar/error/publication preservation,
 real executable consumer PASS and the 2,000-line WARN/3,000-line blocker
 disposition.
+
+## Line-Governance Amendment
+
+After five fixed rows and the parser decomposition closed, the production
+binary reached 2,706 lines. Closing the remaining function floors requires at
+least 172 lines of reusable CLI/runfile/manifest fixtures before topology,
+groundwater, soil, invocations, and assertions; keeping those test-only
+fixtures inline would exceed the 3,000-line blocker. The authorized companion
+test module resolves that conflict without changing the production write set
+or moving behavior out of the audited binary. The remaining sidecar/output
+production split stays in the target file and must keep that file below 3,000.
 
 Subagent authorization: this package explicitly authorizes spawning/delegating
 to review and verification subagents for read-only final metric, behavior,
