@@ -19,6 +19,16 @@ assessment. Low priority means lower integration risk, not exemption. The plan
 ends with an exact `GO-INTEGRATED-VALIDATION` or `HOLD-CQR-FOLLOWUP`
 recommendation backed by raw/actionable rankings and full validation evidence.
 
+## Revised Execution Cadence
+
+The 2026-07-11 revised campaign execution model is binding and supersedes this
+plan's retained per-module scaffold, full-gate, dual-review, and dual-
+verification language. Low/Assessment uses compact serialized module records,
+focused module tests/coverage/CRAP, one review by default, quick-profile
+checkpoints after every three implementation modules, and one campaign-final
+workspace metric/full-gate/dual-review/dual-verification closure. Second module
+review is conditional on the triggers named in the binding contract.
+
 ## Progress
 
 - [ ] Confirm High A, High B, and Medium have terminal PASS transitions.

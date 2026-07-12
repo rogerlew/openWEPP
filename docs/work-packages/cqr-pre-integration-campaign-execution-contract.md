@@ -7,6 +7,88 @@ This contract is incorporated by the campaign assessment and all four child
 ExecPlans. A child or module package may add stricter gates but may not weaken
 this contract.
 
+## Revised Campaign Execution Model (Superseding, 2026-07-11)
+
+The **tranche**, not each module, is the closure unit for workspace-wide
+coverage, non-target ratchets, full gates, dual review, and dual verification.
+This section supersedes later language in this contract and incorporated child
+plans that requires those operations per module. Older sections remain useful
+for command shapes and evidence fields, but their workspace-heavy cadence is
+tranche-boundary-only.
+
+This is an explicit campaign-specific aggregation authorization under
+`docs/work-packages/AGENTS.md`: individual module checkpoints are staged
+increments inside one active tranche and do not claim branch-head, merge, or
+terminal readiness. The tranche-final record supplies the required full Rust
+closure loop and independent terminal review/verification.
+
+### Cost And Evidence Budget
+
+For each tranche:
+
+1. Run the exact workspace LCOV, JSON, CRAP, and filtered ranking once at
+   tranche start and once at tranche final.
+2. For each module, run only focused tests plus focused crate/module coverage
+   and CRAP sufficient to prove its tier, function floors, obligations, and
+   target rows. One LCOV and one JSON capture are allowed when both formats are
+   required; never repeat a workspace capture merely to make unrelated flaky
+   coverage identical.
+3. Run `cargo fmt --check`, workspace Clippy, full-profile nextest, and deny once
+   at tranche final. During module work use focused tests and, after every three
+   module checkpoints, `cargo nextest run --workspace --profile quick`.
+4. Require one independent module review. Require a second module review only
+   when the module proposes an `R-*`/`X-*` disposition, changes production
+   control flow or public/serialization/conservation behavior, or discovers a
+   semantic defect. Dual review and dual verification remain mandatory once at
+   tranche final.
+5. Do not require module-level verification agents. The parent records focused
+   command evidence and checkpoint legitimacy; tranche-final verifiers audit
+   every module record and the aggregate source state.
+
+### Module Checkpoint Shape
+
+Each actionable module receives a compact record under
+`cqr-pre-integration-campaign-evidence/<slug>/modules/<target-id>.md`. Existing
+scaffolded module packages may be retained, but new module scaffolds, placeholder
+artifact sets, scaffold commits, and package-local full-gate loops are not
+required. A module record contains:
+
+- source hash, tier, raw/actionable rows, and exact classification;
+- before/after focused coverage, function floors, CRAP, and commands;
+- applicable A-H/named obligation map;
+- behavior/numeric/consumer evidence proportional to the edit;
+- one review verdict and finding disposition;
+- line-count result and checkpoint commit.
+
+Exactly one target module remains active at a time. Commit one reviewed module
+checkpoint before editing the next target. `MODULE-PASS` means the focused
+increment is eligible to enter tranche-final validation; it is not terminal
+campaign or merge readiness. `MODULE-HOLD` requires a named authority or scope
+boundary and blocks the tranche transition.
+
+### Final Ratchet And Flaky Coverage
+
+The tranche-final exact workspace run is authoritative for target closure and
+newly surfaced rows. Reject:
+
+- any fixed-cohort eligible row still above 30;
+- any new production row above 30;
+- any increased row in a source-touched module; or
+- an attributable regression in a real downstream consumer.
+
+For unchanged non-target backlog, coverage-only numeric variation caused by a
+source-unchanged, independently attributed flaky test is recorded as noise and
+does not force repeated 35-minute captures. Prove the implicated source is
+unchanged and run the failed test focused when practical. Never rerun workspace
+coverage solely to obtain a preferred flaky failure set.
+
+### Heavy-Run Delegation
+
+`comparator_suite_runner` is required for tranche-start/final workspace
+LCOV/JSON/CRAP, tranche-final Clippy/full-nextest/deny, and explicit comparator,
+release, or cohort runs. It is not required for focused module tests, focused
+crate coverage, formatting, Markdown, diff checks, or ordinary source analysis.
+
 ## Status And Transition Tokens
 
 Use only these child-plan status tokens:
@@ -82,10 +164,12 @@ blocking.
 
 Apply the production filter and exact deduplication key from
 `cqr-pre-integration-campaign-baseline.md`. Preserve the full raw ranking and
-the separately reviewed actionable ranking. For the active target, the final
-JSON must contain no actionable row above 30; also compare all non-target rows
-against the child-start baseline and reject regressions. The final CRAP JSON,
-not the LLVM coverage JSON, is the authority for CRAP rows.
+the separately reviewed actionable ranking. At tranche final, the fixed cohort
+must contain no actionable row above 30. Compare the workspace ranking to the
+child-start baseline using the revised ratchet: reject new rows, touched-module
+regressions, and attributable consumer regressions; record source-unchanged
+flaky-coverage variation in untouched backlog without retrying for a preferred
+failure set. The final CRAP JSON, not LLVM coverage JSON, is CRAP authority.
 
 Materialize the mechanically filtered rows with this exact shape, replacing the
 literal slug and phase:
@@ -134,70 +218,61 @@ This is unconditional. If current tests do not meet it, characterization tests
 land and pass before production decomposition. The final campaign assessment
 audits these gates for every executed module.
 
-Classification is exact symbol/line/source-hash evidence. Review A checks
-semantic and consumer eligibility; Review B checks source identity, metric
-deduplication, and closed-list proof. Each finding is dispositioned
+Classification is exact symbol/line/source-hash evidence. One reviewer checks
+semantic/consumer eligibility and source/metric identity. A second reviewer is
+required for every proposed retained exception or denominator exclusion. Each finding is dispositioned
 `accepted`, `rejected`, `deferred`, or `follow-up` with rationale. Accepted
 findings are fixed and verified; any undispositioned finding blocks closure.
 
 A fixed module whose current raw rows all receive jointly accepted
 `R-OBSERVABILITY`, `R-IRREDUCIBLE-CRAP`, or `X-*` dispositions is
 `DISPOSITIONED-NO-ACTION`. Do not create a fake implementation package. Commit
-its source-bound classification, both reviews, public-behavior tests, and exact
-disposition in the child evidence. Each fixed module therefore closes through
-exactly one terminal implementation package or one committed no-action record.
+its source-bound classification, both required exception reviews, public-
+behavior tests, and exact disposition in the child evidence. Each fixed module
+therefore reaches exactly one reviewed implementation checkpoint or one
+committed no-action record.
 
-## Required Module-Package Scaffold
+## Compact Module Record
 
-For a module with actionable work, create the directory named by its child
-ExecPlan and copy both:
+For a module with actionable work, create
+`cqr-pre-integration-campaign-evidence/<slug>/modules/<target-id>.md`. Do not
+create a package scaffold, kickoff prompt, placeholder artifact set, or scaffold
+commit. Record:
 
-- `docs/work-packages/templates/cqr-nightly-package.md` to `package.md`;
-- `docs/work-packages/templates/cqr-nightly-kickoff-prompt.md` to
-  `prompts/active/<date>-codex-<target-id>-prompt.md`.
+- source hash, tier, classification, and raw/actionable metrics;
+- required reading and focused write set;
+- before/after coverage, floors, CRAP, and exact focused commands;
+- A-H/named obligation bindings and proportional consumer/numeric evidence;
+- review findings/disposition, line count, and checkpoint status.
 
-Create `prompts/archived/`, `artifacts/`, and
-`artifacts/required-reading-map.md`. Before the scaffold commit, replace every
-template placeholder and nightly-batch assumption. In particular, replace the
-owning ExecPlan with the active campaign child, set campaign/target IDs and
-write set, make a local module hold block that child rather than continue a
-nightly batch, and fill the kickoff prompt's package-end-to-end mode, tiered
-Core/Conditional/On-demand reading, byte budget/map, autonomy, exact gates,
-and mandatory subagent wording. Run a placeholder audit:
-
-    rg -n '<[^>]+>|cqr-nightly-burndown-execplan|EXECUTED-HOLD-CQR-NIGHTLY' \
-      docs/work-packages/<active-package>
-
-The result must be empty unless an exact reviewed campaign-specific occurrence
-is documented. Commit the scaffold before Rust or test edits.
+Existing scaffolds created before the execution-model revision may remain as
+the module record. Commit the reviewed module source/tests and record together
+before editing the next target.
 
 ## Gate Evidence Non-Deferral And Line Counts
 
-Every package binds the Gate Evidence Non-Deferral Rule in
-`docs/work-packages/AGENTS.md`. Its gate table classifies every required gate as
-`PASS`, `FAIL`, `BLOCKED`, or `NOT RUN`. Any `FAIL`, `BLOCKED`, or unjustified
-`NOT RUN` forces a package hold. Both independent reviews and both independent
-verifications audit current-scope evidence legitimacy, not merely artifact
-presence.
+Every module checkpoint binds the Gate Evidence Non-Deferral Rule for its
+focused acceptance: coverage/floors, obligations, target CRAP, focused tests,
+review, and line count must pass. Workspace metrics, non-target ratchet, full
+gates, dual review, and dual verification are explicitly tranche-final scope;
+their absence does not hold an intermediate module checkpoint. Tranche-final
+reviewers and verifiers audit every module record and the aggregate gates.
 
 Run `wc -l` on every touched `.rs` file before and after work. A file at or
 above 2,000 lines is `WARN` and requires decomposition rationale plus named
 follow-up split intent. A 3,000-line-or-larger non-generated/non-fixture file
-blocks closure unless an explicit exception names owner and sunset plan. Both
-reviews and verifications disposition the thresholds.
+blocks checkpointing unless an explicit exception names owner and sunset plan.
+The module reviewer and tranche-final verifiers disposition the thresholds.
 
 ## Heavy-Run Subagent Requirement
 
-Subagent requirement: **REQUIRED**. Spawn `comparator_suite_runner` for every
-workspace LCOV/JSON/CRAP run, full nextest, full Clippy, deny, comparator,
-release, or cohort run. The parent must not run these heavy commands while that
-subagent is available. Expected output is compact metrics, exit codes, timings,
-artifact/log paths, hashes, and failure attribution; write access is read-only
-except for explicitly named package evidence. If spawning is genuinely
-unavailable, record the tool-policy/spawn failure with command-level evidence
-before local substitution. Module implementers and independent review or
-verification agents remain explicitly authorized with the bounded write sets
-stated by the child plan and package prompt.
+Subagent requirement: **REQUIRED at tranche boundaries**. Spawn
+`comparator_suite_runner` for tranche-start/final workspace LCOV/JSON/CRAP,
+tranche-final nextest/Clippy/deny, comparator, release, or cohort runs. Focused
+module tests/coverage do not require the heavy runner. Expected output is
+compact metrics, exits, timings, paths, hashes, and failure attribution. If
+spawning is unavailable, record the tool-policy failure before local
+substitution.
 
 ## Semantic-Defect Transition
 

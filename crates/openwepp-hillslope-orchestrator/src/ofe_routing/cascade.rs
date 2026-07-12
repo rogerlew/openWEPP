@@ -171,6 +171,16 @@ pub struct UpstreamHandoff {
     pub width_m: f64,
 }
 
+fn sample_upstream_point(upstream: Option<&UpstreamHandoff>, time_s: f64, width_ratio: f64) -> f64 {
+    match upstream {
+        Some(handoff) => {
+            profile::count_upstream_interpolation_calls(1);
+            interpolate_unit_discharge(&handoff.samples, time_s) * width_ratio
+        }
+        None => 0.0,
+    }
+}
+
 /// Route ONE OFE with the D4 solver under the cascade's exact handoff
 /// semantics (rev 24 conservative bin-series injection; rev-27 extraction so
 /// the `run_cascade` shadow path and the D15A active production path share
@@ -226,15 +236,7 @@ pub fn route_single_ofe_with_step_trace(
         Some(handoff) => handoff.width_m / segment.width_m,
         None => 0.0,
     };
-    let upstream_point = |t: f64| -> f64 {
-        match upstream {
-            Some(h) => {
-                profile::count_upstream_interpolation_calls(1);
-                interpolate_unit_discharge(&h.samples, t) * width_ratio
-            }
-            None => 0.0,
-        }
-    };
+    let upstream_point = |t: f64| sample_upstream_point(upstream, t, width_ratio);
     let upstream_integral = |t0: f64, t1: f64| -> f64 {
         match upstream {
             Some(h) => {
@@ -388,6 +390,65 @@ mod tests {
             mesh: KinematicWaveMesh::uniform(length, cells, CellParameters::bare(slope, ko)),
             width_m: width,
         }
+    }
+
+    fn hydrograph_sample(time_s: f64, outlet_unit_discharge_m2_s: f64) -> HydrographSample {
+        HydrographSample {
+            time_s,
+            outlet_unit_discharge_m2_s,
+            outlet_depth_m: 0.0,
+        }
+    }
+
+    #[test]
+    fn interpolate_unit_discharge_characterizes_search_endpoints_and_clamp() {
+        let assert_discharge = |hydrograph: &[HydrographSample], time_s: f64, expected: f64| {
+            let actual = interpolate_unit_discharge(hydrograph, time_s);
+            assert!(
+                (actual - expected).abs() <= 1.0e-12,
+                "time {time_s}: actual {actual}, expected {expected}"
+            );
+        };
+
+        assert_discharge(&[], 1.0, 0.0);
+
+        let singleton = [hydrograph_sample(2.0, 5.0)];
+        assert_discharge(&singleton, 1.0, 5.0);
+        assert_discharge(&singleton, 2.0, 5.0);
+        assert_discharge(&singleton, 3.0, 5.0);
+        assert_discharge(&singleton, f64::NAN, 5.0);
+
+        let hydrograph = [
+            hydrograph_sample(0.0, 1.0),
+            hydrograph_sample(1.0, 3.0),
+            hydrograph_sample(2.0, 7.0),
+            hydrograph_sample(3.0, 15.0),
+            hydrograph_sample(4.0, 31.0),
+        ];
+        assert_discharge(&hydrograph, 0.0, 1.0);
+        assert_discharge(&hydrograph, 4.0, 31.0);
+        assert_discharge(&hydrograph, 0.5, 2.0);
+        assert_discharge(&hydrograph, 3.5, 23.0);
+        assert_discharge(&hydrograph, 1.25, 4.0);
+
+        let negative = [hydrograph_sample(0.0, -2.0), hydrograph_sample(2.0, -4.0)];
+        assert_discharge(&negative, -1.0, 0.0);
+        assert_discharge(&negative, 1.0, 0.0);
+
+        let handoff = UpstreamHandoff {
+            samples: hydrograph.to_vec(),
+            bins_m2: Vec::new(),
+            bin_spans_s: Vec::new(),
+            bin_dt_s: 1.0,
+            width_m: 1.0,
+        };
+        let no_upstream = sample_upstream_point(None, 1.25, 2.0);
+        assert!(no_upstream.abs() <= 1.0e-12);
+        let scaled_upstream = sample_upstream_point(Some(&handoff), 1.25, 2.0);
+        assert!(
+            (scaled_upstream - 8.0).abs() <= 1.0e-12,
+            "scaled point fallback {scaled_upstream}"
+        );
     }
 
     // Two-OFE bare cascade: total rainfall excess must equal the terminal
@@ -618,10 +679,31 @@ mod tests {
             run_cascade(&[], &forcing, 100.0, 10.0, 2.0),
             Err(RoutingError::DegenerateConfiguration)
         ));
-        let bad_width = vec![bare_segment(10.0, 10, 0.05, 100.0, 0.0)];
-        assert!(matches!(
-            run_cascade(&bad_width, &forcing, 100.0, 10.0, 2.0),
-            Err(RoutingError::DegenerateConfiguration)
-        ));
+        for width_m in [0.0, -1.0, f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
+            let bad_segment = bare_segment(10.0, 10, 0.05, 100.0, width_m);
+            assert!(matches!(
+                run_cascade(
+                    std::slice::from_ref(&bad_segment),
+                    &forcing,
+                    100.0,
+                    10.0,
+                    2.0
+                ),
+                Err(RoutingError::DegenerateConfiguration)
+            ));
+            assert!(matches!(
+                route_single_ofe(
+                    &bad_segment,
+                    &|_cell, _time| 0.0,
+                    &|_time| 0.0,
+                    None,
+                    &[],
+                    100.0,
+                    10.0,
+                    2.0
+                ),
+                Err(RoutingError::DegenerateConfiguration)
+            ));
+        }
     }
 }

@@ -31,15 +31,20 @@
 - `cqr-pre-integration-campaign-baseline.md` durably records the exact source,
   commands, artifact integrity, production filter/deduplication rule, and all 67
   original raw rows. `cqr-pre-integration-campaign-execution-contract.md`
-  binds status transitions, evidence paths, scaffolds, unconditional cover-first
-  gates, no-action treatment, heavy-run delegation, non-deferral, line counts,
-  and defect transitions across all four child plans.
+  binds status transitions, evidence paths, compact module checkpoints,
+  unconditional cover-first gates, no-action treatment, tranche-boundary heavy
+  closure, non-deferral, line counts, and defect transitions across all four
+  child plans. Its 2026-07-11 execution revision makes each tranche—not each
+  module—the workspace metric/full-gate/dual-verification closure unit.
 - `cqr-pre-integration-campaign-authoring-review.md` records three independent
   initial HOLD reviews, accepted remediation, two verification rounds, and the
   unanimous `GO — AUTHORING READY` recommendation.
 - `cqr-high-risk-a-execplan.md` and `cqr-high-risk-b-execplan.md` divide the 20
   high-risk modules into two serialized ten-module campaigns covering active
   hillslope/runner paths, then erosion/watershed/publication paths.
+- `20260711-cqr-preint-ha-01-cascade-001/` is the retained first High-A scaffold,
+  now dispositioned as the reviewed HA-01 `MODULE-PASS` checkpoint under the
+  revised tranche-level closure strategy.
 - `cqr-medium-risk-execplan.md` sequences 13 contract, parser, configuration,
   validation, oracle, and migration modules after both high-risk tranches.
 - `cqr-low-priority-assessment-execplan.md` classifies the remaining 12

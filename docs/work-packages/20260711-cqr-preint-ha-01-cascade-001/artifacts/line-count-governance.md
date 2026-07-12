@@ -2,5 +2,6 @@
 
 Evidence class: **Ran — baseline**
 
-`cascade.rs` is 627 lines before work, below the 2,000-line warning threshold.
-Record final count and disposition after edits.
+`cascade.rs` was 627 lines before work and is 709 lines after characterization
+and the private point-sampler extraction. Both are below 2,000 lines;
+no split rationale or exception is required.

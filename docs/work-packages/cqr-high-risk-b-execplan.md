@@ -19,6 +19,16 @@ stabilized the active hillslope path. These ten modules are hard blockers for a
 broader integrated validation campaign because they own conservation operands,
 network behavior, or final public outputs.
 
+## Revised Execution Cadence
+
+The 2026-07-11 revised campaign execution model is binding and supersedes this
+plan's retained per-module scaffold, full-gate, dual-review, and dual-
+verification language. High B uses compact serialized module records, focused
+module tests/coverage/CRAP, one review by default, quick-profile checkpoints
+after every three modules, and one tranche-final workspace metric/full-gate/
+dual-review/dual-verification closure. Second module review is conditional on
+the triggers named in the binding contract.
+
 This plan coordinates ten serialized fixed-module terminal records. Actionable
 modules receive packages; reviewed no-action modules receive committed
 classification records. It does not permit a multi-module implementation diff.

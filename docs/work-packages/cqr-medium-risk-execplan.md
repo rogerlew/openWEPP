@@ -20,6 +20,16 @@ but they can admit invalid state, alter authority selection, or make diagnostic
 and migration behavior unreliable. Completion leaves each fixed module with a
 reviewed symbol classification and no unresolved eligible row above 30.
 
+## Revised Execution Cadence
+
+The 2026-07-11 revised campaign execution model is binding and supersedes this
+plan's retained per-module scaffold, full-gate, dual-review, and dual-
+verification language. Medium uses compact serialized module records, focused
+module tests/coverage/CRAP, one review by default, quick-profile checkpoints
+after every three modules, and one tranche-final workspace metric/full-gate/
+dual-review/dual-verification closure. Second module review is conditional on
+the triggers named in the binding contract.
+
 This plan coordinates thirteen fixed-module terminal records. Actionable
 modules receive independent packages; reviewed no-action modules receive
 committed classification records. It does not authorize a combined

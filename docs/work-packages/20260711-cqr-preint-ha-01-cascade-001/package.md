@@ -1,13 +1,22 @@
 # CQR Pre-Integration High A, HA-01 — Cascade Interpolation
 
 Package: `20260711-cqr-preint-ha-01-cascade-001`
-Status: `QUEUED`
+Status: `MODULE-PASS`
 ExecPlan: `docs/work-packages/cqr-high-risk-a-execplan.md`
 Campaign: `CQR-PREINT-20260711`
 Target: `HA-01`
 Target module:
 `crates/openwepp-hillslope-orchestrator/src/ofe_routing/cascade.rs`
 Quality dimension: `CRAP/cyclomatic-complexity`
+
+## Revised Campaign Disposition
+
+The 2026-07-11 campaign execution-model revision reclassifies this existing
+scaffold as the HA-01 compact module record. `MODULE-PASS` means focused module
+acceptance and checkpoint readiness; aggregate workspace metrics, full gates,
+dual review, and dual verification are supplied once at High-A tranche final.
+The extra workspace runs already completed here are retained as supplemental
+evidence but are not precedent for later module cadence.
 
 ## Objective
 
@@ -34,9 +43,8 @@ outputs are package-local review/verification artifacts, compact metrics,
 commands, timings, hashes, and log paths. Write access is read-only except for
 an explicitly assigned bounded edit to the target or package artifacts.
 
-Subagent requirement: REQUIRED. Spawn `comparator_suite_runner` for every
-full-workspace coverage/CRAP, Clippy, full-nextest, deny, comparator, release,
-or cohort run. The parent does not substitute while that runner is available.
+Subagent requirement: tranche-boundary heavy runs only under the revised
+campaign contract. Focused module tests/coverage do not require delegation.
 
 ## Scope And Write Set
 

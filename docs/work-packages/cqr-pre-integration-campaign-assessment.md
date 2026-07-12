@@ -8,10 +8,10 @@ Roadmap ID: `CQR-PREINT-20260711`
 ## Objective
 
 Burn down medium-or-greater complexity risk before opening a broader integrated
-testing and validation campaign. Preserve the required focused, conservation,
-consumer-path, comparator, and full-workspace gates inside each work package;
-"before integrated testing" does not waive evidence needed to make a refactor
-safe or to close its own claims.
+testing and validation campaign. Preserve focused, conservation, and consumer-
+path evidence at each module checkpoint, then run comparator and full-workspace
+closure once per tranche. "Before integrated testing" does not waive evidence;
+the revised strategy aggregates expensive closure at the tranche boundary.
 
 This document is the campaign ledger and living risk assessment. Four child
 ExecPlans perform the work:
@@ -84,9 +84,9 @@ granularity.
 
 ## Campaign Rules
 
-Each fixed module receives exactly one terminal implementation package or one
-committed, source-bound, dual-reviewed `DISPOSITIONED-NO-ACTION` record under
-the binding execution contract. An actionable module package is cover-first and
+Each fixed module receives exactly one reviewed implementation checkpoint or
+one committed, source-bound `DISPOSITIONED-NO-ACTION` record under the binding
+execution contract. An actionable checkpoint is cover-first and
 behavior-preserving: prove the applicable ADR-0021 tier, line/region threshold,
 75% per-function region floor, and complete applicable A–H/named obligation map
 before decomposition. If existing tests do not close those gates,
@@ -104,6 +104,12 @@ not hide it inside mechanical work. Follow the execution contract's explicitly
 authorized defect-closure transition, then remeasure the module. A defect holds
 the child plan only at a documented authority/write-set boundary that passes a
 hold-legitimacy audit.
+
+The 2026-07-11 execution-model revision makes each child tranche the expensive
+closure unit. Modules use compact focused records and one review by default;
+workspace coverage, the non-target ratchet, full Rust gates, dual review, and
+dual verification run once at tranche final. Exceptions and production control-
+flow/publication changes still receive a second module review.
 
 ## Final Assessment And Follow-Up
 

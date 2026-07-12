@@ -26,7 +26,7 @@ classification records. It never authorizes one ten-module implementation diff.
 
 - [x] (2026-07-11 UTC) Refresh workspace LCOV/CRAP and source identity from the current clean commit.
 - [x] (2026-07-11 UTC) Complete dual target-selection/eligibility review for all ten modules.
-- [ ] Execute or disposition HA-01 through its terminal record.
+- [x] (2026-07-11 UTC) Execute HA-01 through reviewed `MODULE-PASS` checkpoint.
 - [ ] Execute or disposition HA-02 through its terminal record.
 - [ ] Execute or disposition HA-03 through its terminal record.
 - [ ] Execute or disposition HA-04 through its terminal record.
@@ -66,6 +66,13 @@ classification records. It never authorizes one ten-module implementation diff.
   Rationale: dual review found every row controls science, accepted-input,
   publication, serialization, consumer, or CLI behavior under ADR-0021.
   Date/Author: 2026-07-11 / Codex.
+- Decision: make High A the expensive closure unit and module records focused
+  checkpoints.
+  Rationale: HA-01 spent more than three hours repeating workspace coverage,
+  full gates, reviews, and verification for a 709-line, one-module diff. The
+  duplicated cadence produced flaky-evidence retries rather than additional
+  correctness assurance.
+  Date/Author: 2026-07-11 / maintainers + Codex.
 
 ## Outcomes & Retrospective
 
@@ -109,8 +116,26 @@ eligible production behavior. Record the exact tier per package.
 
 ## Execution Protocol
 
+### Revised Cadence (Superseding, 2026-07-11)
+
+High A is one closure unit with ten serialized module checkpoints. The revised
+campaign execution contract supersedes the per-module scaffold/full-gate/dual-
+verification language retained below for provenance. For HA-02 through HA-10,
+write one compact record under
+`cqr-pre-integration-campaign-evidence/ha/modules/`, run focused tests and
+focused module/crate coverage/CRAP, obtain one independent review, and commit
+the checkpoint before editing the next module. HA-01's already-created scaffold
+is retained as its module record; it does not require further workspace metric
+reruns or verification agents before checkpointing.
+
+After every third checkpoint, run the workspace quick profile. Run exact
+workspace LCOV/JSON/CRAP, the non-target ratchet, formatting, workspace Clippy,
+full nextest, deny, dual review, and dual verification once after HA-10. A
+second module review remains required for an exception, semantic defect,
+production control-flow change, or public/serialization/conservation change.
+
 Work from `/home/workdir/openWEPP` on the current branch. Require a clean
-worktree before the tranche and before each package scaffold. Run the binding
+worktree before the tranche and before each module checkpoint. Run the binding
 contract's exact measurement protocol with slug `ha` and phase `start`; commit
 the named `ha/` start evidence. Reconcile the fixed ledger against live source.
 Source drift changes current metrics but does not silently add/remove a target.
@@ -121,15 +146,12 @@ reviewers must accept every proposed `R-OBSERVABILITY`,
 `R-IRREDUCIBLE-CRAP`, or `X-*` disposition. Disagreement defaults to
 `E-PRODUCTION`; `R-INFRASTRUCTURE` never waives CRAP above 30.
 
-For each actionable ID, scaffold
-`docs/work-packages/YYYYMMDD-cqr-preint-ha-<NN>-<slug>-001/` from the nightly
-CQR package and kickoff templates exactly as required by the binding execution
-contract, including placeholder audit, filled prompt, reading budget/map, and
-campaign-specific hold semantics. Commit the scaffold before production/test
-edits. A fully reviewed no-action module records classification evidence instead
-of a fake package. The package write set is the one target module, focused
-tests/fixtures, package artifacts, and catalog/plan transition docs. Only one
-package is active.
+For each actionable ID, create or update its compact module record under the
+campaign evidence directory. Do not create a new package scaffold or scaffold
+commit. The checkpoint write set is the one target module, focused
+tests/fixtures, the module record, and plan transition docs. A fully reviewed
+no-action module records classification evidence instead of a fake package.
+Only one module is active.
 
 Each package executes cover-first:
 
@@ -144,9 +166,10 @@ Each package executes cover-first:
    preserving float grouping, accumulation, row/order, error priority, and
    schema/API identity.
 5. Re-run focused coverage/CRAP until every actionable row is at most 30.
-6. Complete two independent reviews, disposition every finding as `accepted`,
-   `rejected`, `deferred`, or `follow-up`, complete two independent
-   verifications, and create a terminal completion or legitimate hold commit.
+6. Complete one independent module review and disposition every finding as
+   `accepted`, `rejected`, `deferred`, or `follow-up`. Add a second review only
+   for the triggers in the revised cadence. Create a reviewed checkpoint commit;
+   verification is tranche-final.
 
 If tests expose a semantic defect, stop mechanical edits and follow the binding
 execution contract's explicitly authorized defect-closure transition. Remeasure
@@ -166,34 +189,35 @@ Use domain profiles where applicable:
     cargo nextest run --workspace --profile quick
     cargo nextest run --workspace --profile erosion
 
-Every Rust-changing package closes with:
+The High-A tranche closes once, after HA-10, with:
 
     cargo fmt --check
     cargo clippy --workspace --all-targets -- -D warnings
     cargo nextest run --workspace --profile full
     cargo deny check
 
-Also require focused LCOV/CRAP from the same source state, the binding contract's
+Each module requires focused LCOV/CRAP from the same source state, the binding contract's
 exact Markdown/diff commands, output/numeric identity, and consumer-path
 evidence. Gate tables use `PASS`, `FAIL`, `BLOCKED`, or `NOT RUN`; both reviews
 and verifications audit non-deferral. Run before/after `wc -l`: 2,000+ is WARN
 with rationale/follow-up split intent, while an unexcepted 3,000+ production
 file blocks closure and any exception names owner and sunset.
 
-The tranche completes only when all ten fixed modules have either terminal
-implementation commits or committed no-action records, zero eligible CRAP rows
+The tranche completes only when all ten fixed modules have either reviewed
+checkpoint commits or committed no-action records, zero eligible CRAP rows
 above 30, no unresolved review finding or defect, and fresh `ha/final` evidence
 with dual PASS verification. Then update the campaign assessment and activate
 High B in the clean `TERMINAL-PASS` transition commit.
 
 ## Delegation Authorization
 
-Subagent requirement: **REQUIRED**. Spawn `comparator_suite_runner` for every
-workspace LCOV/JSON/CRAP, full nextest, Clippy, deny, comparator, release, or
-cohort run; the parent may substitute only after recording command-level
-spawn/tool-policy unavailability. Expected output is compact metrics, timings,
-exit codes, log/artifact paths, hashes, and failure attribution; heavy-run write
-access is read-only except named evidence. This ExecPlan explicitly authorizes subagent
+Subagent requirement: **REQUIRED at tranche boundaries**. Spawn
+`comparator_suite_runner` for tranche-start/final workspace LCOV/JSON/CRAP,
+tranche-final nextest/Clippy/deny, comparator, release, or cohort runs. Focused
+module tests/coverage do not require delegation. Expected output is compact
+metrics, timings, exit codes, log/artifact paths, hashes, and failure
+attribution; heavy-run write access is read-only except named evidence. This
+ExecPlan explicitly authorizes subagent
 spawning/delegation to target-selection reviewers, bounded module implementers,
 coverage/comparator runners, independent reviewers, and verification agents.
 Expected outputs are package-local classification, review, verification,
@@ -215,3 +239,7 @@ tightened ADR-0021 eligibility taxonomy.
 2026-07-11: authoring-review remediation bound durable evidence, unconditional
 coverage closure, exact scaffolding, non-deferral, line counts, no-action, and
 mandatory heavy-run delegation.
+2026-07-11: execution review found per-module workspace metrics, full gates,
+dual review, dual verification, scaffold artifacts, and retry-on-flaky-ratchet
+made the campaign operationally untenable. Revised High A to compact serialized
+module checkpoints with focused evidence and tranche-boundary heavy closure.
