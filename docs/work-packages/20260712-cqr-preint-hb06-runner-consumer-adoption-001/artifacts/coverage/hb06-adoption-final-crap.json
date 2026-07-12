@@ -1,0 +1,374 @@
+{
+  "$schema": "https://raw.githubusercontent.com/minikin/cargo-crap/main/schemas/report-v1.json",
+  "version": "0.2.2",
+  "entries": [
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "Wb13DailyWaterBalanceRow::from_surface",
+      "line": 337,
+      "cyclomatic": 28.0,
+      "coverage": 100.0,
+      "crap": 28.0
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "SummaryAccumulatorError::write_display",
+      "line": 865,
+      "cyclomatic": 15.0,
+      "coverage": 100.0,
+      "crap": 15.0
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "SummaryAccumulator::accumulate_day",
+      "line": 636,
+      "cyclomatic": 14.0,
+      "coverage": 96.07843137254902,
+      "crap": 14.011820491364558
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "Wb13DailyWaterBalanceRow::from_input",
+      "line": 268,
+      "cyclomatic": 7.0,
+      "coverage": 100.0,
+      "crap": 7.0
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "days_in_month",
+      "line": 1022,
+      "cyclomatic": 6.0,
+      "coverage": 87.5,
+      "crap": 6.0703125
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "SummaryScalarSurface::from_owned_pairs",
+      "line": 148,
+      "cyclomatic": 6.0,
+      "coverage": 100.0,
+      "crap": 6.0
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "validate_range",
+      "line": 975,
+      "cyclomatic": 5.0,
+      "coverage": 76.92307692307693,
+      "crap": 5.3072371415566675
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "validate_scalar_map",
+      "line": 943,
+      "cyclomatic": 5.0,
+      "coverage": 88.88888888888889,
+      "crap": 5.034293552812072
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "SummaryWindow::as_str",
+      "line": 69,
+      "cyclomatic": 5.0,
+      "coverage": 100.0,
+      "crap": 5.0
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "validate_wb13_relationships",
+      "line": 427,
+      "cyclomatic": 5.0,
+      "coverage": 100.0,
+      "crap": 5.0
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "SummaryAccumulator::finalize",
+      "line": 698,
+      "cyclomatic": 5.0,
+      "coverage": 100.0,
+      "crap": 5.0
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "CalendarDay::new",
+      "line": 89,
+      "cyclomatic": 4.0,
+      "coverage": 100.0,
+      "crap": 4.0
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "SummaryAccumulatorError::source",
+      "line": 922,
+      "cyclomatic": 4.0,
+      "coverage": 100.0,
+      "crap": 4.0
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "require_output_symbol",
+      "line": 1006,
+      "cyclomatic": 4.0,
+      "coverage": 100.0,
+      "crap": 4.0
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "Wb13DailyWaterBalanceSurface::append_row",
+      "line": 528,
+      "cyclomatic": 3.0,
+      "coverage": 84.61538461538461,
+      "crap": 3.0327719617660445
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "build_rollup",
+      "line": 790,
+      "cyclomatic": 3.0,
+      "coverage": 95.0,
+      "crap": 3.001125
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "is_leap_year",
+      "line": 1032,
+      "cyclomatic": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "SummaryScalarSurface::from_map",
+      "line": 168,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "SummaryScalarSurface::add_assign",
+      "line": 188,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "Wb13DailyWaterBalanceSurface::render_h5_wat_dat",
+      "line": 545,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "SummaryAccumulator::new",
+      "line": 599,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "validate_symbol",
+      "line": 956,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "validate_finite",
+      "line": 964,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "CalendarDay::year",
+      "line": 103,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "CalendarDay::month",
+      "line": 108,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "CalendarDay::day",
+      "line": 113,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "SummaryScalarSurface::from_pairs",
+      "line": 135,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "SummaryScalarSurface::as_map",
+      "line": 174,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "SummaryScalarSurface::value",
+      "line": 179,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "SummaryScalarSurface::is_empty",
+      "line": 184,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "Wb13DailyWaterBalanceRow::row_key",
+      "line": 417,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "Wb13DailyWaterBalanceRow::to_data_row_line",
+      "line": 477,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "Wb13DailyWaterBalanceSurface::new",
+      "line": 518,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "Wb13DailyWaterBalanceSurface::column_headers",
+      "line": 523,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "SummaryAccumulatorStepOutcome::is_empty",
+      "line": 578,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "SummaryAccumulator::sample_count",
+      "line": 617,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "SummaryAccumulator::current_day",
+      "line": 622,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "SummaryAccumulator::routing_metadata",
+      "line": 627,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "SummaryAccumulator::take_daily_rollup",
+      "line": 731,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "SummaryAccumulator::take_monthly_rollup",
+      "line": 744,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "SummaryAccumulator::take_yearly_rollup",
+      "line": 758,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "SummaryAccumulator::take_eos_rollup",
+      "line": 768,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "SummaryAccumulator::reset_state",
+      "line": 778,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "SummaryAccumulatorError::fmt",
+      "line": 859,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "SummaryAccumulatorError::from",
+      "line": 932,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-summary-accumulator/src/lib.rs",
+      "function": "SummaryAccumulatorError::from",
+      "line": 938,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    }
+  ]
+}

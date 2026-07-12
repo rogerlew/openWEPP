@@ -979,6 +979,36 @@ mod tests {
     }
 
     #[test]
+    fn hb06_wat_projection_consumes_typed_wb13_guard_and_preserves_optional_profile() {
+        let mut mismatch = r6a_direct_projection_fixture_frame();
+        mismatch.rows[0].runoff.qofe_mm += 1.0;
+        let error = build_hillslope_wat_rows_from_direct_publication(&mismatch)
+            .expect_err("typed WB13 QOFE identity must guard runner WAT projection");
+        assert!(error.to_string().contains("QOFE"));
+
+        let mut storage_mismatch = r6a_direct_projection_fixture_frame();
+        storage_mismatch.rows[0].storage.soil_water_total_mm -= 1.0;
+        let error = build_hillslope_wat_rows_from_direct_publication(&storage_mismatch)
+            .expect_err("typed WB13 storage-alias identity must guard runner WAT projection");
+        assert!(error.to_string().contains("SoilWaterTotal"));
+
+        let mut optional = r6a_direct_projection_fixture_frame();
+        optional.rows[0].profile.depth_mm = None;
+        optional.rows[0].profile.porosity_cap_mm = None;
+        optional.rows[0].profile.fc_store_mm = None;
+        optional.rows[0].profile.wp_store_mm = None;
+        let error = build_hillslope_wat_rows_from_direct_publication(&optional)
+            .expect_err("missing canonical WB13 profile fields must fail typed projection");
+        assert!(error.to_string().contains("ProfileDepth"));
+
+        let mut partial = r6a_direct_projection_fixture_frame();
+        partial.rows[0].profile.fc_store_mm = None;
+        let error = build_hillslope_wat_rows_from_direct_publication(&partial)
+            .expect_err("partial canonical WB13 profile fields must fail typed projection");
+        assert!(error.to_string().contains("ProfileFCStore"));
+    }
+
+    #[test]
     fn r6a_direct_hbp_writer_serializes_groundwater_payload_operands() {
         let frame = r6a_direct_projection_fixture_frame();
         let hbp_path = Path::new("H2637.hbp");
@@ -1063,7 +1093,7 @@ mod tests {
             },
             storage: DirectPublicationStorageOperands {
                 total_soil_mm: 110.0,
-                soil_water_total_mm: 105.0,
+                soil_water_total_mm: 110.0,
                 frozwt_mm: 1.0,
                 frdp_mm: Some(2.0),
                 snow_water_mm: 3.0,
@@ -1213,7 +1243,7 @@ mod tests {
             },
             storage: DirectPublicationStorageOperands {
                 total_soil_mm: 110.0 + offset,
-                soil_water_total_mm: 105.0 + offset,
+                soil_water_total_mm: 110.0 + offset,
                 frozwt_mm: 1.0 + offset,
                 frdp_mm: Some(2.0 + offset),
                 snow_water_mm: 3.0 + offset,

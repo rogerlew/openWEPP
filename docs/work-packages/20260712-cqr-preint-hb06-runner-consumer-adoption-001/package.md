@@ -1,6 +1,6 @@
 # HB-06 Runner WB13 Consumer Adoption
 
-Status: `ACTIVE`
+Status: `MODULE-PASS`
 Parent: `docs/work-packages/cqr-high-risk-b-execplan.md`
 Hold record: `docs/work-packages/cqr-pre-integration-campaign-evidence/hb/modules/HB-06.md`
 
@@ -86,3 +86,18 @@ Canonical runtime projection already performs
 guard at `direct_publication_storage_operands` plus replacement of obsolete
 acceptance fixtures. A validation policy that permits distinct aliases is
 explicitly prohibited.
+
+## Terminal Outcome
+
+The production common WAT projection now consumes the accumulator's typed WB13
+row guard. It requires complete canonical profile operands, validates emitted
+simulation-year keys and all canonical scalars, proves bit identity, and
+reconstructs the canonical WAT fields from the validated row. The producer
+boundary rejects corrupt storage aliases while normal projection remains
+unchanged.
+
+The SIMIMPL04 executable production path emitted and reread Parquet with exact
+schema/order/nullability and representative value identity. Focused tests,
+coverage, the 75% function floor, CRAP at most 30, format, Clippy, and diff
+checks pass. Evidence is recorded under `artifacts/`; disposition is
+`MODULE-PASS`.

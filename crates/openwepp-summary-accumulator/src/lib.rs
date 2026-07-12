@@ -231,7 +231,108 @@ pub struct Wb13DailyWaterBalanceRow {
     pub profile_wp_store: f64,
 }
 
+/// Efficient typed input for constructing one validated WB13 row without a
+/// symbol-map allocation at a production publication seam.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Wb13DailyWaterBalanceInput {
+    pub ofe: u16,
+    pub julian_day: u16,
+    pub year: i32,
+    pub p: f64,
+    pub rm: f64,
+    pub q: f64,
+    pub ep: f64,
+    pub es: f64,
+    pub er: f64,
+    pub dp: f64,
+    pub upstrmq: f64,
+    pub subrin: f64,
+    pub latqcc: f64,
+    pub total_soil: f64,
+    pub frozwt: f64,
+    pub snow_water: f64,
+    pub qofe: f64,
+    pub tile: f64,
+    pub irr: f64,
+    pub area: f64,
+    pub soil_water_total: f64,
+    pub profile_depth: f64,
+    pub profile_porosity_cap: f64,
+    pub profile_fc_store: f64,
+    pub profile_wp_store: f64,
+}
+
 impl Wb13DailyWaterBalanceRow {
+    /// Construct from typed production operands while preserving WB13 guard
+    /// order and exact depth-unit identities.
+    pub fn from_input(input: Wb13DailyWaterBalanceInput) -> Result<Self, SummaryAccumulatorError> {
+        validate_range("OFE", f64::from(input.ofe), Some(1.0), None)?;
+        validate_range("J", f64::from(input.julian_day), Some(1.0), Some(366.0))?;
+        for (symbol, value) in [
+            ("P", input.p),
+            ("RM", input.rm),
+            ("Q", input.q),
+            ("Ep", input.ep),
+            ("Es", input.es),
+            ("Er", input.er),
+            ("Dp", input.dp),
+            ("UpStrmQ", input.upstrmq),
+            ("SubRIn", input.subrin),
+            ("latqcc", input.latqcc),
+            ("Total-Soil", input.total_soil),
+            ("frozwt", input.frozwt),
+            ("Snow-Water", input.snow_water),
+            ("QOFE", input.qofe),
+            ("Tile", input.tile),
+            ("Irr", input.irr),
+            ("Area", input.area),
+            ("SoilWaterTotal", input.soil_water_total),
+            ("ProfileDepth", input.profile_depth),
+            ("ProfilePorosityCap", input.profile_porosity_cap),
+            ("ProfileFCStore", input.profile_fc_store),
+            ("ProfileWPStore", input.profile_wp_store),
+        ] {
+            validate_finite(symbol, value)?;
+            validate_range(symbol, value, Some(0.0), None)?;
+        }
+        validate_wb13_relationships(
+            input.q,
+            input.qofe,
+            input.total_soil,
+            input.soil_water_total,
+            input.profile_porosity_cap,
+            input.profile_fc_store,
+            input.profile_wp_store,
+        )?;
+        Ok(Self {
+            ofe: input.ofe,
+            julian_day: input.julian_day,
+            year: input.year,
+            p: input.p,
+            rm: input.rm,
+            q: input.q,
+            ep: input.ep,
+            es: input.es,
+            er: input.er,
+            dp: input.dp,
+            upstrmq: input.upstrmq,
+            subrin: input.subrin,
+            latqcc: input.latqcc,
+            total_soil: input.total_soil,
+            frozwt: input.frozwt,
+            snow_water: input.snow_water,
+            qofe: input.qofe,
+            tile: input.tile,
+            irr: input.irr,
+            area: input.area,
+            soil_water_total: input.soil_water_total,
+            profile_depth: input.profile_depth,
+            profile_porosity_cap: input.profile_porosity_cap,
+            profile_fc_store: input.profile_fc_store,
+            profile_wp_store: input.profile_wp_store,
+        })
+    }
+
     /// Build one WB13 row from a validated summary scalar surface.
     pub fn from_surface(
         ofe: u16,
@@ -283,17 +384,7 @@ impl Wb13DailyWaterBalanceRow {
         let profile_fc_store = require_output_symbol(surface, "ProfileFCStore", Some(0.0), None)?;
         let profile_wp_store = require_output_symbol(surface, "ProfileWPStore", Some(0.0), None)?;
 
-        validate_wb13_relationships(
-            q,
-            qofe,
-            total_soil,
-            soil_water_total,
-            profile_porosity_cap,
-            profile_fc_store,
-            profile_wp_store,
-        )?;
-
-        Ok(Self {
+        Self::from_input(Wb13DailyWaterBalanceInput {
             ofe,
             julian_day,
             year,
@@ -1060,6 +1151,95 @@ mod tests {
                 if per_ofe { 1.0 } else { 0.0 },
             ),
         ])
+    }
+
+    fn distinct_wb13_input() -> Wb13DailyWaterBalanceInput {
+        Wb13DailyWaterBalanceInput {
+            ofe: 2,
+            julian_day: 123,
+            year: 2026,
+            p: 1.0,
+            rm: 2.0,
+            q: 3.0,
+            ep: 4.0,
+            es: 5.0,
+            er: 6.0,
+            dp: 7.0,
+            upstrmq: 8.0,
+            subrin: 9.0,
+            latqcc: 10.0,
+            total_soil: 11.0,
+            frozwt: 12.0,
+            snow_water: 13.0,
+            qofe: 3.0,
+            tile: 15.0,
+            irr: 16.0,
+            area: 17.0,
+            soil_water_total: 11.0,
+            profile_depth: 19.0,
+            profile_porosity_cap: 22.0,
+            profile_fc_store: 21.0,
+            profile_wp_store: 20.0,
+        }
+    }
+
+    #[test]
+    fn wb13_typed_input_preserves_operands_and_relationship_guards() {
+        let input = distinct_wb13_input();
+        let row = Wb13DailyWaterBalanceRow::from_input(input)
+            .expect("typed WB13 input should construct the canonical row");
+        assert_eq!(
+            row,
+            Wb13DailyWaterBalanceRow::from_surface(
+                input.ofe,
+                input.julian_day,
+                input.year,
+                &distinct_wb13_surface(input.q, input.qofe, false),
+            )
+            .expect("surface constructor should delegate to the same canonical row")
+        );
+
+        let error = Wb13DailyWaterBalanceRow::from_input(Wb13DailyWaterBalanceInput {
+            qofe: 14.0,
+            ..input
+        })
+        .expect_err("typed input must enforce the public QOFE identity");
+        assert!(
+            matches!(error, SummaryAccumulatorError::OutputSymbolOutOfRange { ref symbol, .. } if symbol == "QOFE")
+        );
+    }
+
+    #[test]
+    fn wb13_typed_input_rejects_nonfinite_scalars_before_range_checks() {
+        for (symbol, input) in [
+            (
+                "P",
+                Wb13DailyWaterBalanceInput {
+                    p: f64::NAN,
+                    ..distinct_wb13_input()
+                },
+            ),
+            (
+                "RM",
+                Wb13DailyWaterBalanceInput {
+                    rm: f64::INFINITY,
+                    ..distinct_wb13_input()
+                },
+            ),
+            (
+                "Q",
+                Wb13DailyWaterBalanceInput {
+                    q: f64::NEG_INFINITY,
+                    ..distinct_wb13_input()
+                },
+            ),
+        ] {
+            assert!(matches!(
+                Wb13DailyWaterBalanceRow::from_input(input),
+                Err(SummaryAccumulatorError::NonFiniteInput { symbol: actual, .. })
+                    if actual == symbol
+            ));
+        }
     }
 
     #[test]

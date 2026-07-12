@@ -1,12 +1,15 @@
-use std::fs;
+use std::fs::{self, File};
 use std::path::{Path, PathBuf};
 use std::sync::{Mutex, OnceLock};
 
+use arrow_array::{Float64Array, Int16Array, Int32Array};
+use openwepp_hillslope_output::hillslope_wat::{InterchangeVersion, hillslope_wat_schema};
 use openwepp_runner::{
     HillslopeDefaultRuntimeActivation, HillslopeRunReport, HillslopeRunRequest,
     HillslopeRuntimeSelection, HillslopeRuntimeSelectionPolicy, SidecarPolicy,
     execute_hillslope_run_with_runtime_policy,
 };
+use parquet::arrow::arrow_reader::ParquetRecordBatchReaderBuilder;
 
 #[test]
 fn simimpl04_contract_requires_simulation_owned_wb13_publication_provenance() {
@@ -54,6 +57,101 @@ plot = "output/H5.plot.parquet"
         "/wb13_publication/replay_candidate_surfaces",
         0,
     );
+
+    assert_production_wat_readback(&report);
+}
+
+fn assert_production_wat_readback(report: &HillslopeRunReport) {
+    let wat_path = report
+        .optional_outputs
+        .iter()
+        .find(|path| {
+            path.file_name()
+                .is_some_and(|name| name == "H5.wat.parquet")
+        })
+        .expect("production report should retain the streaming WAT parquet path");
+    let mut reader = ParquetRecordBatchReaderBuilder::try_new(
+        File::open(wat_path).expect("production WAT parquet should open"),
+    )
+    .expect("production WAT parquet metadata should parse")
+    .build()
+    .expect("production WAT parquet reader should build");
+    let batch = reader
+        .next()
+        .expect("production WAT parquet should contain a batch")
+        .expect("production WAT parquet batch should read");
+    assert!(reader.next().is_none(), "fixture should emit one row group");
+    assert_eq!(batch.num_rows(), 2);
+    let expected_schema = hillslope_wat_schema(InterchangeVersion::default())
+        .expect("canonical WAT schema should build");
+    let observed_fields = batch
+        .schema()
+        .fields()
+        .iter()
+        .map(|field| {
+            (
+                field.name().clone(),
+                field.data_type().clone(),
+                field.is_nullable(),
+            )
+        })
+        .collect::<Vec<_>>();
+    let expected_fields = expected_schema
+        .fields()
+        .iter()
+        .map(|field| {
+            (
+                field.name().clone(),
+                field.data_type().clone(),
+                field.is_nullable(),
+            )
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(observed_fields, expected_fields);
+
+    let int32 = |name: &str| {
+        batch
+            .column_by_name(name)
+            .unwrap_or_else(|| panic!("missing {name}"))
+            .as_any()
+            .downcast_ref::<Int32Array>()
+            .unwrap_or_else(|| panic!("{name} should be Int32"))
+    };
+    let int16 = |name: &str| {
+        batch
+            .column_by_name(name)
+            .unwrap_or_else(|| panic!("missing {name}"))
+            .as_any()
+            .downcast_ref::<Int16Array>()
+            .unwrap_or_else(|| panic!("{name} should be Int16"))
+    };
+    let float64 = |name: &str| {
+        batch
+            .column_by_name(name)
+            .unwrap_or_else(|| panic!("missing {name}"))
+            .as_any()
+            .downcast_ref::<Float64Array>()
+            .unwrap_or_else(|| panic!("{name} should be Float64"))
+    };
+    assert_eq!(
+        (
+            int32("sim_day_index").value(0),
+            int32("sim_day_index").value(1)
+        ),
+        (1, 2)
+    );
+    assert_eq!((int16("julian").value(0), int16("julian").value(1)), (1, 2));
+    assert_eq!((int16("year").value(0), int16("year").value(1)), (1, 1));
+    for row in 0..batch.num_rows() {
+        assert_eq!(
+            float64("Q").value(row).to_bits(),
+            float64("QOFE").value(row).to_bits()
+        );
+        assert_eq!(
+            float64("Total-Soil").value(row).to_bits(),
+            float64("SoilWaterTotal").value(row).to_bits()
+        );
+    }
 }
 
 #[test]

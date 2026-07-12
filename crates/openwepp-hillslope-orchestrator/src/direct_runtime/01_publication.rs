@@ -488,6 +488,8 @@ fn direct_publication_runoff_operands(
     })
 }
 
+const WB13_STORAGE_ALIAS_TOLERANCE_M: f64 = 1.0e-9;
+
 fn direct_publication_storage_operands(
     day_frame: &DirectDayFrame,
 ) -> Result<DirectPublicationStorageOperands, DirectRuntimeError> {
@@ -499,6 +501,13 @@ fn direct_publication_storage_operands(
         "publication.storage.soil_water_total_publication_m",
         day_frame.hydrology_projection.soil_water_total_m,
     )?;
+    if (soil_water_total_publication_m - total_soil_publication_m).abs()
+        > WB13_STORAGE_ALIAS_TOLERANCE_M
+    {
+        return Err(DirectRuntimeError::DirectClosureToleranceExceeded {
+            field: "publication.storage.soil_water_total_alias",
+        });
+    }
     let snow_depth_publication_m = nonnegative_publication_storage_m(
         "publication.storage.snow_depth_publication_m",
         day_frame.winter_column.snow.runtime_depth_m,
@@ -1012,7 +1021,7 @@ mod cqr_publication_tests {
     }
 
     #[test]
-    fn cqr_day_row_reconstructs_distinct_operands_without_aliases() {
+    fn cqr_day_row_reconstructs_distinct_operands_and_rejects_storage_alias_mismatch() {
         let run_identity = identity(1, 1);
         let mut frame = DirectRunFrame::skeleton(run_identity).expect("row reconstruction frame");
         frame.lanes[0].area_m2 = 200.0;
@@ -1067,9 +1076,19 @@ mod cqr_publication_tests {
                         .as_mut()
                         .expect("runoff producer")
                         .q_runoff_m = 0.004;
+                    let error = DirectPublicationDayRow::from_day_frame(&day, &input, &lane)
+                        .expect_err("distinct WB13 storage aliases must be rejected");
+                    assert!(matches!(
+                        error,
+                        DirectRuntimeError::DirectClosureToleranceExceeded {
+                            field: "publication.storage.soil_water_total_alias"
+                        }
+                    ));
+                    day.hydrology_projection.soil_water_total_m =
+                        day.hydrology_projection.total_soil_m;
                     reconstructed = Some(
                         DirectPublicationDayRow::from_day_frame(&day, &input, &lane)
-                            .expect("distinct accepted row"),
+                            .expect("canonical equal storage aliases should be accepted"),
                     );
                     Ok(())
                 },
@@ -1086,11 +1105,14 @@ mod cqr_publication_tests {
         assert!((row.subsurface.groundwater_baseflow_mm - 15.0).abs() < f64::EPSILON);
         assert!((row.subsurface.groundwater_deep_seepage_mm - 25.0).abs() < f64::EPSILON);
         assert!((row.storage.total_soil_mm - 21.0).abs() < f64::EPSILON);
-        assert!((row.storage.soil_water_total_mm - 19.0).abs() < f64::EPSILON);
+        assert!((row.storage.soil_water_total_mm - 21.0).abs() < f64::EPSILON);
         assert!((row.storage.snow_depth_mm - 16.0).abs() < f64::EPSILON);
         let rejected_q_volume_m3 = row.runoff.q_mm * 0.001 * row.area_m2;
         assert!((row.runoff.runvol_m3 - rejected_q_volume_m3).abs() > 1.0);
         assert!((row.subsurface.groundwater_baseflow_m3 - row.subsurface.sbrunv_m3).abs() > 1.0);
-        assert!((row.storage.total_soil_mm - row.storage.soil_water_total_mm).abs() > 1.0);
+        assert_eq!(
+            row.storage.total_soil_mm.to_bits(),
+            row.storage.soil_water_total_mm.to_bits()
+        );
     }
 }

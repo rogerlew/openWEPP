@@ -757,13 +757,14 @@ fn build_hillslope_wat_row_from_direct_publication(
     simulation_start_year: i32,
 ) -> Result<HillslopeWatRow, HillslopeCliError> {
     let ofe = direct_publication_u32_to_i16("ofe", row.ofe_id)?;
-    Ok(HillslopeWatRow {
+    let year = direct_publication_i32_to_i16(
+        "year",
+        simulation_year_from_calendar_year(row.calendar.year, simulation_start_year)?,
+    )?;
+    let original = HillslopeWatRow {
         wepp_id: DIRECT_WAT_WEPP_ID,
         ofe_id: ofe,
-        year: direct_publication_i32_to_i16(
-            "year",
-            simulation_year_from_calendar_year(row.calendar.year, simulation_start_year)?,
-        )?,
+        year,
         sim_day_index: row.sim_day_index,
         julian: direct_publication_u16_to_i16("julian", row.calendar.julian_day)?,
         month: row.calendar.month,
@@ -798,7 +799,109 @@ fn build_hillslope_wat_row_from_direct_publication(
         profile_wp_store: row.profile.wp_store_mm,
         interception: Some(row.interception.interception_mm),
         interception_storage: row.interception.interception_storage_mm,
-    })
+    };
+    let required_profile = |symbol, value: Option<f64>| {
+        value.ok_or_else(|| wb13_simout_failure(format!("missing canonical WB13 {symbol}")))
+    };
+    let input = openwepp_summary_accumulator::Wb13DailyWaterBalanceInput {
+        ofe: u16::try_from(row.ofe_id).map_err(|_| {
+            wb13_simout_failure(format!("WB13 OFE id exceeds u16: {}", row.ofe_id))
+        })?,
+        julian_day: row.calendar.julian_day,
+        year: i32::from(year),
+        p: row.climate.precipitation_mm,
+        rm: row.liquid_input.rm_mm,
+        q: row.runoff.q_mm,
+        ep: row.evaporation.ep_mm,
+        es: row.evaporation.es_mm,
+        er: row.evaporation.er_mm,
+        dp: row.subsurface.dp_mm,
+        upstrmq: row.transfer.upstream_surface_mm,
+        subrin: row.transfer.upstream_lateral_mm,
+        latqcc: row.subsurface.latqcc_mm,
+        total_soil: row.storage.total_soil_mm,
+        frozwt: row.storage.frozwt_mm,
+        snow_water: row.storage.snow_water_mm,
+        qofe: row.runoff.qofe_mm,
+        tile: row.subsurface.tile_mm,
+        irr: row.liquid_input.irrigation_mm,
+        area: row.area_m2,
+        soil_water_total: row.storage.soil_water_total_mm,
+        profile_depth: required_profile("ProfileDepth", row.profile.depth_mm)?,
+        profile_porosity_cap: required_profile(
+            "ProfilePorosityCap",
+            row.profile.porosity_cap_mm,
+        )?,
+        profile_fc_store: required_profile("ProfileFCStore", row.profile.fc_store_mm)?,
+        profile_wp_store: required_profile("ProfileWPStore", row.profile.wp_store_mm)?,
+    };
+    let wb13 = openwepp_summary_accumulator::Wb13DailyWaterBalanceRow::from_input(input)
+        .map_err(|error| wb13_simout_failure(format!("validated WB13 row rejected: {error}")))?;
+    validate_wb13_typed_identity(input, &wb13)?;
+    hillslope_wat_row_from_validated_wb13(original, &wb13)
+}
+
+fn hillslope_wat_row_from_validated_wb13(
+    mut row: HillslopeWatRow,
+    wb13: &openwepp_summary_accumulator::Wb13DailyWaterBalanceRow,
+) -> Result<HillslopeWatRow, HillslopeCliError> {
+    let ofe = direct_publication_u16_to_i16("ofe", wb13.ofe)?;
+    row.ofe_id = ofe;
+    row.ofe = ofe;
+    row.julian = direct_publication_u16_to_i16("julian", wb13.julian_day)?;
+    row.year = direct_publication_i32_to_i16("year", wb13.year)?;
+    row.p = wb13.p;
+    row.rm = wb13.rm;
+    row.q = wb13.q;
+    row.ep = wb13.ep;
+    row.es = wb13.es;
+    row.er = wb13.er;
+    row.dp = wb13.dp;
+    row.up_strm_q = wb13.upstrmq;
+    row.sub_r_in = wb13.subrin;
+    row.latqcc = wb13.latqcc;
+    row.total_soil_water = wb13.total_soil;
+    row.frozwt = wb13.frozwt;
+    row.snow_water = wb13.snow_water;
+    row.qofe = wb13.qofe;
+    row.tile = wb13.tile;
+    row.irr = wb13.irr;
+    row.area = wb13.area;
+    row.soil_water_total = Some(wb13.soil_water_total);
+    row.profile_depth = Some(wb13.profile_depth);
+    row.profile_porosity_cap = Some(wb13.profile_porosity_cap);
+    row.profile_fc_store = Some(wb13.profile_fc_store);
+    row.profile_wp_store = Some(wb13.profile_wp_store);
+    Ok(row)
+}
+
+fn validate_wb13_typed_identity(
+    input: openwepp_summary_accumulator::Wb13DailyWaterBalanceInput,
+    wb13: &openwepp_summary_accumulator::Wb13DailyWaterBalanceRow,
+) -> Result<(), HillslopeCliError> {
+    if (wb13.ofe, wb13.julian_day, wb13.year) != (input.ofe, input.julian_day, input.year)
+        || [
+            wb13.p, wb13.rm, wb13.q, wb13.ep, wb13.es, wb13.er, wb13.dp, wb13.upstrmq,
+            wb13.subrin, wb13.latqcc, wb13.total_soil, wb13.frozwt, wb13.snow_water,
+            wb13.qofe, wb13.tile, wb13.irr, wb13.area, wb13.soil_water_total,
+            wb13.profile_depth, wb13.profile_porosity_cap, wb13.profile_fc_store,
+            wb13.profile_wp_store,
+        ]
+        .iter()
+        .zip([
+            input.p, input.rm, input.q, input.ep, input.es, input.er, input.dp, input.upstrmq,
+            input.subrin, input.latqcc, input.total_soil, input.frozwt, input.snow_water,
+            input.qofe, input.tile, input.irr, input.area, input.soil_water_total,
+            input.profile_depth, input.profile_porosity_cap, input.profile_fc_store,
+            input.profile_wp_store,
+        ])
+        .any(|(validated, emitted)| validated.to_bits() != emitted.to_bits())
+    {
+        return Err(wb13_simout_failure(
+            "validated WB13 row changed a canonical key or scalar",
+        ));
+    }
+    Ok(())
 }
 
 #[cfg(test)]

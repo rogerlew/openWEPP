@@ -55,7 +55,9 @@ classification records. It does not permit a multi-module implementation diff.
 - [x] (2026-07-12 UTC) Close `DC-CQR-HB06-001`; record HB-06
   `CONSUMER-ADOPTION-HOLD` after proving the production runner bypasses the
   accumulator WB13 row path.
-- [ ] Execute or disposition HB-06 through its terminal record.
+- [x] (2026-07-12 UTC) Execute HB-06 through reviewed `MODULE-PASS`: typed
+  runner adoption, producer alias admission guard, final metric floors, and
+  SIMIMPL04 production streaming-Parquet readback pass.
 - [ ] Execute or disposition HB-07 through its terminal record.
 - [ ] Execute or disposition HB-08 through its terminal record.
 - [ ] Execute or disposition HB-09 through its terminal record.
@@ -79,6 +81,9 @@ classification records. It does not permit a multi-module implementation diff.
   projection already creates equal aliases, so the package expands only to a
   producer-boundary guard and replacement of corrupted fixtures; no process
   physics changes.
+- HB-06's executable proof confirms the SIMIMPL04 integration uses the
+  production streaming sink; no private-sink duplicate is needed to establish
+  the downstream Parquet consumer.
 
 ## Decision Log
 
