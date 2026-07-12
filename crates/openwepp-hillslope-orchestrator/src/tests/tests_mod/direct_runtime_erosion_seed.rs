@@ -8,7 +8,8 @@
 use crate::{
     DirectRuntimeError, DirectWave1DailyState, DirectWave1OperandSeed, DirectWave1SlopeSegment,
     ErosionConsolidationInputs, ErosionExcessInterval, ErosionFrostRegime, ErosionTextureInputs,
-    Wave1InflowOperands, assemble_wave1_continuity_inputs, compute_direct_wave1_continuity,
+    Wave1InflowOperands, assemble_wave1_continuity_inputs,
+    assemble_wave1_continuity_inputs_quantum, compute_direct_wave1_continuity,
     erosion_consolidation_baselines, erosion_effective_particle, erosion_falvel,
     erosion_particle_composition,
 };
@@ -339,5 +340,51 @@ fn assembled_inflow_derivations_use_the_receiver_basis() {
          ({} vs {})",
         steeper_inter_ofe.shrspv_pa,
         inter_ofe.shrspv_pa
+    );
+}
+
+#[test]
+fn hb03_d_f_h_qin_authority_rejects_conflict_nonfinite_and_negative_values() {
+    let seed = clay_loam_seed();
+    let mut conflict = storm_daily_state();
+    conflict.qin_m2_s = 1.0e-4;
+    conflict.inflow = Some(Wave1InflowOperands {
+        qin_m2_s: 2.0e-4,
+        qsout_kg_m_s: 1.0e-3,
+        prior_slpend: 0.30,
+        prior_cnslp: 0.25,
+        prior_end_shear: (0.5, 0.5, 0.0),
+        prior_end_transport: (0.5, 0.5, 0.0),
+        exit_fractions: [0.3, 0.3, 0.2, 0.1, 0.1],
+    });
+    assert_eq!(
+        assemble_wave1_continuity_inputs_quantum(&seed, &conflict, true),
+        Err(DirectRuntimeError::DirectDomainViolation {
+            field: "erosion.assemble.qin_conflict"
+        })
+    );
+
+    for qin_m2_s in [f64::NAN, f64::INFINITY, f64::NEG_INFINITY] {
+        let malformed = DirectWave1DailyState {
+            qin_m2_s,
+            ..storm_daily_state()
+        };
+        assert!(matches!(
+            assemble_wave1_continuity_inputs_quantum(&seed, &malformed, true),
+            Err(DirectRuntimeError::NonFiniteDirectValue {
+                field: "erosion.assemble.qin"
+            })
+        ));
+    }
+
+    let negative = DirectWave1DailyState {
+        qin_m2_s: -1.0e-4,
+        ..storm_daily_state()
+    };
+    assert_eq!(
+        assemble_wave1_continuity_inputs_quantum(&seed, &negative, true),
+        Err(DirectRuntimeError::NegativeDirectValue {
+            field: "erosion.assemble.qin"
+        })
     );
 }
