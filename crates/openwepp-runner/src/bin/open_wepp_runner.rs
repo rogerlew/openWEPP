@@ -37,117 +37,153 @@ fn run() -> Result<(), RunnerError> {
     }
 }
 
-#[allow(clippy::too_many_lines)]
 fn run_hillslope_command(args: &[String]) -> Result<(), RunnerError> {
-    let mut hillslope_binary: Option<PathBuf> = None;
-    let mut run_dir: Option<PathBuf> = None;
-    let mut run_file: Option<PathBuf> = None;
-    let mut output_dir: Option<PathBuf> = None;
-    let mut sidecar_policy = SidecarPolicy::Compat;
-    let mut legacy_sidecar_discovery = false;
-    let mut manifest_path: Option<PathBuf> = None;
+    launch_hillslope_options(parse_hillslope_args(args)?)
+}
 
+#[derive(Debug)]
+struct HillslopeCommandOptions {
+    hillslope_binary: PathBuf,
+    run_dir: PathBuf,
+    run_file: PathBuf,
+    output_dir: PathBuf,
+    sidecar_policy: SidecarPolicy,
+    legacy_sidecar_discovery: bool,
+    manifest_path: Option<PathBuf>,
+}
+
+struct HillslopeParseState {
+    hillslope_binary: Option<PathBuf>,
+    run_dir: Option<PathBuf>,
+    run_file: Option<PathBuf>,
+    output_dir: Option<PathBuf>,
+    sidecar_policy: SidecarPolicy,
+    legacy_sidecar_discovery: bool,
+    manifest_path: Option<PathBuf>,
+}
+
+impl Default for HillslopeParseState {
+    fn default() -> Self {
+        Self {
+            hillslope_binary: None,
+            run_dir: None,
+            run_file: None,
+            output_dir: None,
+            sidecar_policy: SidecarPolicy::Compat,
+            legacy_sidecar_discovery: false,
+            manifest_path: None,
+        }
+    }
+}
+
+fn parse_hillslope_args(args: &[String]) -> Result<HillslopeCommandOptions, RunnerError> {
+    let mut state = HillslopeParseState::default();
     let mut cursor = 0usize;
     while cursor < args.len() {
         match args[cursor].as_str() {
             "--hillslope-binary" => {
-                cursor += 1;
-                let Some(value) = args.get(cursor) else {
-                    return Err(RunnerError::MissingArgument {
-                        argument: "--hillslope-binary <path>".to_string(),
-                    });
-                };
-                hillslope_binary = Some(PathBuf::from(value));
+                state.hillslope_binary = Some(PathBuf::from(next_hillslope_value(
+                    args,
+                    &mut cursor,
+                    "--hillslope-binary <path>",
+                )?));
             }
             "--run-dir" => {
-                cursor += 1;
-                let Some(value) = args.get(cursor) else {
-                    return Err(RunnerError::MissingArgument {
-                        argument: "--run-dir <path>".to_string(),
-                    });
-                };
-                run_dir = Some(PathBuf::from(value));
+                state.run_dir = Some(PathBuf::from(next_hillslope_value(
+                    args,
+                    &mut cursor,
+                    "--run-dir <path>",
+                )?));
             }
             "--run-file" => {
-                cursor += 1;
-                let Some(value) = args.get(cursor) else {
-                    return Err(RunnerError::MissingArgument {
-                        argument: "--run-file <path>".to_string(),
-                    });
-                };
-                run_file = Some(PathBuf::from(value));
+                state.run_file = Some(PathBuf::from(next_hillslope_value(
+                    args,
+                    &mut cursor,
+                    "--run-file <path>",
+                )?));
             }
             "--output-dir" => {
-                cursor += 1;
-                let Some(value) = args.get(cursor) else {
-                    return Err(RunnerError::MissingArgument {
-                        argument: "--output-dir <path>".to_string(),
-                    });
-                };
-                output_dir = Some(PathBuf::from(value));
+                state.output_dir = Some(PathBuf::from(next_hillslope_value(
+                    args,
+                    &mut cursor,
+                    "--output-dir <path>",
+                )?));
             }
             "--policy" => {
-                cursor += 1;
-                let Some(value) = args.get(cursor) else {
-                    return Err(RunnerError::MissingArgument {
-                        argument: "--policy <compat>".to_string(),
-                    });
-                };
-                sidecar_policy = value.parse().map_err(|_| RunnerError::MissingArgument {
-                    argument: "--policy <compat>".to_string(),
-                })?;
+                state.sidecar_policy =
+                    next_hillslope_value(args, &mut cursor, "--policy <compat>")?
+                        .parse()
+                        .map_err(|_| missing_hillslope_argument("--policy <compat>"))?;
             }
             "--manifest-path" => {
-                cursor += 1;
-                let Some(value) = args.get(cursor) else {
-                    return Err(RunnerError::MissingArgument {
-                        argument: "--manifest-path <path>".to_string(),
-                    });
-                };
-                manifest_path = Some(PathBuf::from(value));
+                state.manifest_path = Some(PathBuf::from(next_hillslope_value(
+                    args,
+                    &mut cursor,
+                    "--manifest-path <path>",
+                )?));
             }
-            "--legacy-sidecar-discovery" => {
-                legacy_sidecar_discovery = true;
-            }
+            "--legacy-sidecar-discovery" => state.legacy_sidecar_discovery = true,
             flag => {
-                return Err(RunnerError::MissingArgument {
-                    argument: format!("unrecognized argument {flag}"),
-                });
+                return Err(missing_hillslope_argument(&format!(
+                    "unrecognized argument {flag}"
+                )));
             }
         }
 
         cursor += 1;
     }
 
-    let Some(hillslope_binary) = hillslope_binary else {
-        return Err(RunnerError::MissingArgument {
-            argument: "--hillslope-binary".to_string(),
-        });
-    };
-    let Some(run_dir) = run_dir else {
-        return Err(RunnerError::MissingArgument {
-            argument: "--run-dir".to_string(),
-        });
-    };
-    let Some(run_file) = run_file else {
-        return Err(RunnerError::MissingArgument {
-            argument: "--run-file".to_string(),
-        });
-    };
-    let Some(output_dir) = output_dir else {
-        return Err(RunnerError::MissingArgument {
-            argument: "--output-dir".to_string(),
-        });
-    };
+    finalize_hillslope_options(state)
+}
 
+fn missing_hillslope_argument(argument: &str) -> RunnerError {
+    RunnerError::MissingArgument {
+        argument: argument.to_string(),
+    }
+}
+
+fn next_hillslope_value<'a>(
+    args: &'a [String],
+    cursor: &mut usize,
+    argument: &str,
+) -> Result<&'a str, RunnerError> {
+    *cursor += 1;
+    args.get(*cursor)
+        .map(String::as_str)
+        .ok_or_else(|| missing_hillslope_argument(argument))
+}
+
+fn finalize_hillslope_options(
+    state: HillslopeParseState,
+) -> Result<HillslopeCommandOptions, RunnerError> {
+    Ok(HillslopeCommandOptions {
+        hillslope_binary: state
+            .hillslope_binary
+            .ok_or_else(|| missing_hillslope_argument("--hillslope-binary"))?,
+        run_dir: state
+            .run_dir
+            .ok_or_else(|| missing_hillslope_argument("--run-dir"))?,
+        run_file: state
+            .run_file
+            .ok_or_else(|| missing_hillslope_argument("--run-file"))?,
+        output_dir: state
+            .output_dir
+            .ok_or_else(|| missing_hillslope_argument("--output-dir"))?,
+        sidecar_policy: state.sidecar_policy,
+        legacy_sidecar_discovery: state.legacy_sidecar_discovery,
+        manifest_path: state.manifest_path,
+    })
+}
+
+fn launch_hillslope_options(options: HillslopeCommandOptions) -> Result<(), RunnerError> {
     launch_hillslope(&RunnerLaunchRequest {
-        hillslope_binary,
-        run_dir,
-        run_file,
-        output_dir,
-        sidecar_policy,
-        legacy_sidecar_discovery,
-        manifest_path,
+        hillslope_binary: options.hillslope_binary,
+        run_dir: options.run_dir,
+        run_file: options.run_file,
+        output_dir: options.output_dir,
+        sidecar_policy: options.sidecar_policy,
+        legacy_sidecar_discovery: options.legacy_sidecar_discovery,
+        manifest_path: options.manifest_path,
     })
 }
 
@@ -282,6 +318,10 @@ mod tests {
     use std::fs;
     use std::time::{SystemTime, UNIX_EPOCH};
 
+    fn args(values: &[&str]) -> Vec<String> {
+        values.iter().map(|value| (*value).to_string()).collect()
+    }
+
     fn unique_temp_dir(prefix: &str) -> PathBuf {
         let token = SystemTime::now()
             .duration_since(UNIX_EPOCH)
@@ -341,5 +381,156 @@ mod tests {
         );
 
         fs::remove_dir_all(dir).expect("temp directory cleanup should succeed");
+    }
+
+    #[test]
+    fn hillslope_parse_preserves_complete_request() {
+        let options = parse_hillslope_args(&args(&[
+            "--hillslope-binary",
+            "/tmp/hill",
+            "--run-dir",
+            "/tmp/run",
+            "--run-file",
+            "case.run",
+            "--output-dir",
+            "/tmp/out",
+            "--policy",
+            "compat",
+            "--legacy-sidecar-discovery",
+            "--manifest-path",
+            "/tmp/out/manifest.json",
+        ]))
+        .expect("complete hillslope request");
+        assert_eq!(options.hillslope_binary, PathBuf::from("/tmp/hill"));
+        assert_eq!(options.run_dir, PathBuf::from("/tmp/run"));
+        assert_eq!(options.run_file, PathBuf::from("case.run"));
+        assert_eq!(options.output_dir, PathBuf::from("/tmp/out"));
+        assert_eq!(options.sidecar_policy, SidecarPolicy::Compat);
+        assert!(options.legacy_sidecar_discovery);
+        assert_eq!(
+            options.manifest_path,
+            Some(PathBuf::from("/tmp/out/manifest.json"))
+        );
+    }
+
+    #[test]
+    fn hillslope_parse_preserves_value_and_required_guard_priority() {
+        for (flag, descriptor) in [
+            ("--hillslope-binary", "--hillslope-binary <path>"),
+            ("--run-dir", "--run-dir <path>"),
+            ("--run-file", "--run-file <path>"),
+            ("--output-dir", "--output-dir <path>"),
+            ("--policy", "--policy <compat>"),
+            ("--manifest-path", "--manifest-path <path>"),
+        ] {
+            let error = parse_hillslope_args(&args(&[flag])).expect_err("missing flag value");
+            assert_eq!(
+                error.to_string(),
+                format!("RUNNER-E-001 missing required argument {descriptor}")
+            );
+        }
+        assert_eq!(
+            parse_hillslope_args(&args(&["--policy", "invalid"]))
+                .expect_err("invalid policy")
+                .to_string(),
+            "RUNNER-E-001 missing required argument --policy <compat>"
+        );
+        assert_eq!(
+            parse_hillslope_args(&args(&["--unknown"]))
+                .expect_err("unknown flag")
+                .to_string(),
+            "RUNNER-E-001 missing required argument unrecognized argument --unknown"
+        );
+        for (argv, missing) in [
+            (Vec::new(), "--hillslope-binary"),
+            (args(&["--hillslope-binary", "/tmp/hill"]), "--run-dir"),
+            (
+                args(&["--hillslope-binary", "/tmp/hill", "--run-dir", "/tmp/run"]),
+                "--run-file",
+            ),
+            (
+                args(&[
+                    "--hillslope-binary",
+                    "/tmp/hill",
+                    "--run-dir",
+                    "/tmp/run",
+                    "--run-file",
+                    "case.run",
+                ]),
+                "--output-dir",
+            ),
+        ] {
+            assert_eq!(
+                parse_hillslope_args(&argv)
+                    .expect_err("required option")
+                    .to_string(),
+                format!("RUNNER-E-001 missing required argument {missing}")
+            );
+        }
+    }
+
+    #[test]
+    fn hillslope_command_propagates_parse_failure() {
+        assert_eq!(
+            run_hillslope_command(&[])
+                .expect_err("command boundary must propagate parse failure")
+                .to_string(),
+            "RUNNER-E-001 missing required argument --hillslope-binary"
+        );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn hillslope_command_launches_real_consumer_with_exact_argv() {
+        use std::os::unix::fs::PermissionsExt;
+
+        let dir = unique_temp_dir("runner_hillslope_launch_consumer");
+        let capture = dir.join("argv.txt");
+        let binary = dir.join("capture-hill.sh");
+        fs::write(
+            &binary,
+            format!("#!/bin/sh\nprintf '%s\\n' \"$@\" > {}\n", capture.display()),
+        )
+        .expect("capture binary");
+        let mut permissions = fs::metadata(&binary)
+            .expect("capture metadata")
+            .permissions();
+        permissions.set_mode(0o755);
+        fs::set_permissions(&binary, permissions).expect("capture executable permissions");
+
+        run_hillslope_command(&args(&[
+            "--hillslope-binary",
+            binary.to_str().expect("UTF-8 binary"),
+            "--run-dir",
+            "/tmp/run",
+            "--run-file",
+            "case.run",
+            "--output-dir",
+            "/tmp/out",
+            "--policy",
+            "compat",
+            "--legacy-sidecar-discovery",
+            "--manifest-path",
+            "/tmp/out/manifest.json",
+        ]))
+        .expect("launch consumer");
+        let captured = fs::read_to_string(capture).expect("captured argv");
+        assert_eq!(
+            captured.lines().collect::<Vec<_>>(),
+            vec![
+                "--run-dir",
+                "/tmp/run",
+                "--run-file",
+                "case.run",
+                "--output-dir",
+                "/tmp/out",
+                "--policy",
+                "compat",
+                "--legacy-sidecar-discovery",
+                "--manifest-path",
+                "/tmp/out/manifest.json",
+            ]
+        );
+        fs::remove_dir_all(dir).expect("temp directory cleanup");
     }
 }
