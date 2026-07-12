@@ -109,7 +109,17 @@ neither required nor sufficient. The target slice is
 the actionable function, every helper extracted from it, and the transitive
 private-helper closure whose branches implement an applicable A–H or named
 obligation. It must meet the tier line/region threshold, every eligible slice
-function must meet the 75% region floor, and no slice CRAP row may exceed 30.
+function must meet the 75% region floor or an ADR-0021 retained-exception
+disposition, and no slice CRAP row may exceed 30.
+
+For preclassified `E-PRODUCTION` CLI/parser/validation/error/glue only,
+ADR-0021 `R-LOW-COMPLEXITY-PRODUCTION` may disposition the function floor when
+all target and expanded-slice rows are at CRAP at most 30, A–H and error
+priority map to named executed tests, a real subprocess consumer verifies
+external behavior, same-source coverage does not regress, the complete raw
+floor census stays in the denominator/debt ledger, and two reviewers accept
+each row. It never applies to `E-SCIENCE`, conservation/numerical work,
+publication scalar/schema/order arithmetic, or ambiguous mixed helpers.
 
 For an orchestration/serialization slice whose remaining uncovered lines are
 exclusively mutually exclusive diagnostic modes, the slice may close on at

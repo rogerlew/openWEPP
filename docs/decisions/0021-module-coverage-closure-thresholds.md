@@ -54,8 +54,8 @@ complement to the coverage floor.
    - **Glue tier** (parser / orchestration-runner / IO-adapter / output):
      **≥ 85% region AND ≥ 85% line.**
    - **Per-function floor:** no eligible function below **75% region** without
-     an accepted `R-OBSERVABILITY` or `R-INFRASTRUCTURE` disposition under
-     Decision 3. `// COVERAGE-EXCLUDE` is reserved for `X-IMPOSSIBLE` arms.
+     an accepted retained-exception disposition under Decision 3.
+     `// COVERAGE-EXCLUDE` is reserved for `X-IMPOSSIBLE` arms.
 
    Region is the binding metric; line is reported and gated alongside it.
 
@@ -76,6 +76,7 @@ complement to the coverage floor.
    | `E-PRODUCTION` | aggregate + 75% floor + CRAP | accepted-input decisions, state/control flow, ordering, error precedence, serialization, consumer/publication behavior |
    | `R-OBSERVABILITY` | aggregate retained; reviewed per-function floor/CRAP exception allowed | pure `Display`/`Debug` text with no machine-read code, state change, validation, or control effect |
    | `R-INFRASTRUCTURE` | aggregate retained; reviewed 75% floor exception allowed, CRAP remains binding | low-complexity dependency-origin failure arms not deterministically selectable through the public boundary after normal/error mapping is covered |
+   | `R-LOW-COMPLEXITY-PRODUCTION` | aggregate retained; reviewed 75% floor exception allowed, CRAP remains binding | preclassified low-complexity CLI/parser/validation/error/glue function with CRAP at most 30, complete A–H/error-priority mapping, and a real subprocess consumer; never science, conservation, numerical, schema/value/publication arithmetic, or accepted-input state/output behavior lacking direct evidence |
    | `X-GENERATED` | denominator excluded | compiler/derive/generated code with no hand-authored source branch |
    | `X-NONDEFAULT-CFG` | denominator excluded only from the measured profile | code not compiled in that profile; becomes eligible whenever that feature/configuration is in package scope or a shipping gate |
    | `X-DELEGATING-MAIN` | denominator excluded | literal branch-free `main` that only delegates to a covered/tested runner; argument parsing and command behavior remain eligible |
@@ -93,7 +94,17 @@ complement to the coverage floor.
    class, source lines, denominator treatment, semantic-impact analysis,
    exercised public behavior, and two independent reviewer dispositions.
    Wildcard, module-wide, name-pattern-only, inherited, or “hard to test”
-   exclusions are non-conforming. An old disposition must be revalidated when
+   exclusions are non-conforming.
+
+   `R-LOW-COMPLEXITY-PRODUCTION` additionally requires
+   pre-measurement `E-PRODUCTION` classification, exact region numerator and
+   denominator, CC/CRAP, uncovered-branch description, named error-priority
+   tests, real-consumer test IDs, a same-source non-regression comparison, and
+   two independent reviewers. Every target and extracted/transitive helper
+   must remain at CRAP at most 30. Ambiguous or mixed science/conservation/
+   publication-arithmetic functions retain the 75% floor. The exception is a
+   denominator-retained debt disposition, never permission to delete tests.
+   An old disposition must be revalidated when
    its source hash, role, complexity, or public behavior changes. Shrinking the
    denominator to reach a number is non-conforming.
 

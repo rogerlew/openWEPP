@@ -106,6 +106,7 @@ implementer. A module path, filename, trait, or naming pattern is never enough.
 | `E-PRODUCTION` | included | required | required | public behavior and applicable A–H map |
 | `R-OBSERVABILITY` | included | reviewed exception | reviewed exception | pure human-facing formatting; no machine consumer, branching side effect, state, validation, or control use |
 | `R-INFRASTRUCTURE` | included | reviewed exception | required | public success/error mapping covered; only nondeterministic dependency-origin failure arms remain; low complexity |
+| `R-LOW-COMPLEXITY-PRODUCTION` | included | reviewed exception | required | preclassified CLI/parser/validation/error/glue; CRAP ≤30; named A–H/error-priority and subprocess-consumer evidence; exact debt row; dual review |
 | `X-GENERATED` | excluded | not applicable | not applicable | no hand-authored executable branch |
 | `X-NONDEFAULT-CFG` | excluded from this profile | not applicable in this profile | not applicable in this profile | exact cfg absent from measured profile; feature becomes eligible when scoped/shipped |
 | `X-DELEGATING-MAIN` | excluded | not applicable | not applicable | literal branch-free delegation; runner/CLI process behavior covered elsewhere |
@@ -121,6 +122,16 @@ Always classify these as eligible when hand-authored:
   selection;
 - numerical boundary handling, accumulation, normalization, and units;
 - schema/value serialization, publication, and real-consumer handoffs.
+
+Eligibility does not forbid the narrow
+`R-LOW-COMPLEXITY-PRODUCTION` floor disposition. It may be applied only to an
+individually reviewed low-complexity `E-PRODUCTION` function after its raw row
+remains in the aggregate denominator and debt ledger. It never applies to
+science or conservation math, numerical guards, schema/value/publication
+arithmetic, or a mixed function whose uncovered branch can alter accepted-input
+state or output without named direct evidence. Record exact region counts,
+CC/CRAP, uncovered branches, error-priority tests, subprocess consumer IDs,
+same-source non-regression, and two reviewer dispositions.
 
 If one function mixes an observability/delegation shell with eligible behavior,
 the whole function is eligible. Extract the pure shell behavior-preserving

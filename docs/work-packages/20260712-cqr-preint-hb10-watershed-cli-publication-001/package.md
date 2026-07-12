@@ -104,10 +104,13 @@ Minimum gates:
     cargo clippy -p openwepp-runner --all-targets -- -D warnings
     git diff --check
 
-Acceptance requires all six fixed rows at CRAP at most 30, zero eligible
-same-source function below 75%, exact grammar/error/publication preservation,
-real executable consumer PASS and the 2,000-line WARN/3,000-line blocker
-disposition.
+Acceptance requires all six fixed rows and every expanded-slice helper at CRAP
+at most 30. A function below 75% requires an individually reviewed ADR-0021
+`R-LOW-COMPLEXITY-PRODUCTION` debt row with exact regions, uncovered branches,
+named A–H/error-priority tests, and subprocess-consumer mapping. Exact grammar/
+error/publication preservation, real executable consumer PASS, denominator
+retention, non-regression, and the 2,000-line WARN/3,000-line blocker
+disposition remain binding.
 
 ## Line-Governance Amendment
 
