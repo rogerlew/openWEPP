@@ -33,6 +33,7 @@ classification records. It never authorizes one ten-module implementation diff.
 - [x] (2026-07-11 UTC) Execute HA-04 through reviewed `MODULE-PASS` checkpoint.
 - [x] (2026-07-12 UTC) Execute HA-05 through reviewed `MODULE-PASS` checkpoint.
 - [x] (2026-07-12 UTC) Execute HA-06 through reviewed `MODULE-PASS` checkpoint.
+- [x] (2026-07-12 UTC) Pass the HA-04..HA-06 workspace quick-profile checkpoint (1,729/1,729).
 - [ ] Execute or disposition HA-07 through its terminal record.
 - [ ] Execute or disposition HA-08 through its terminal record.
 - [ ] Execute or disposition HA-09 through its terminal record.
