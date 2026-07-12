@@ -60,6 +60,10 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-12 UTC`:
+- `20260712-dc-cqr-preint-hb06-qofe-identity-001/` - ACTIVE: HB-06 review
+  found the accumulator admits unequal public Q/QOFE under per-OFE policy.
+  Current canonical authority requires equality; anti-clone genuineness remains
+  a separate lineage gate.
 - `20260712-dc-cqr-preint-hb05-nonfinite-datver-001/` - EXECUTED-COMPLETE
   (2026-07-12): non-finite structure versions now fail as existing `STR-E-003`
   before discrimination without a finite upper bound. Parser coverage is
