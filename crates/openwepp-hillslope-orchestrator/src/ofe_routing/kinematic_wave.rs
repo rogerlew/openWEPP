@@ -423,7 +423,62 @@ impl CellParameters {
         {
             return local;
         }
+        self.additive_hydraulics(flow_depth_m, h_pow, unit_discharge_m2_s, skin_rain_term)
+    }
+
+    fn additive_hydraulics(
+        &self,
+        flow_depth_m: f64,
+        h_pow: f64,
+        unit_discharge_m2_s: f64,
+        skin_rain_term: f64,
+    ) -> Result<LocalHydraulics, RoutingError> {
         let slope_sqrt = self.slope.sqrt();
+        let Some(q_est) = self.solve_additive_discharge(
+            flow_depth_m,
+            h_pow,
+            unit_discharge_m2_s,
+            skin_rain_term,
+            slope_sqrt,
+        )?
+        else {
+            return Ok(LocalHydraulics::zero());
+        };
+        let friction = self.equivalent_friction_local(flow_depth_m, q_est, skin_rain_term)?;
+        if friction.f_eq <= 0.0 {
+            return Ok(LocalHydraulics::zero());
+        }
+        let alpha = chezy_from_friction(friction.f_eq, GRAVITY_M_S2) * slope_sqrt;
+        let q = alpha * h_pow;
+        if !alpha.is_finite() || !q.is_finite() || q < 0.0 {
+            return Err(RoutingError::NonFiniteState);
+        }
+        let rel_residual = (q_est - q).abs() / q.max(1.0e-12);
+        let abs_residual = (q_est - q).abs();
+        if rel_residual > ALPHA_NEWTON_REL_TOL && abs_residual > ALPHA_NEWTON_ABS_TOL_M2_S {
+            return Err(RoutingError::NonFiniteState);
+        }
+        let frozen = DEPTH_DISCHARGE_EXPONENT * alpha * flow_depth_m.sqrt();
+        let denom = 1.0 + 0.5 * q * friction.df_dq / friction.f_eq;
+        let numer = DEPTH_DISCHARGE_EXPONENT / flow_depth_m - 0.5 * friction.df_dh / friction.f_eq;
+        if !denom.is_finite() || !numer.is_finite() || denom <= 0.0 {
+            return Err(RoutingError::NonFiniteState);
+        }
+        let celerity = (q * numer / denom).max(frozen);
+        if !celerity.is_finite() || celerity < 0.0 {
+            return Err(RoutingError::NonFiniteState);
+        }
+        Ok(LocalHydraulics { alpha, q, celerity })
+    }
+
+    fn solve_additive_discharge(
+        &self,
+        flow_depth_m: f64,
+        h_pow: f64,
+        unit_discharge_m2_s: f64,
+        skin_rain_term: f64,
+        slope_sqrt: f64,
+    ) -> Result<Option<f64>, RoutingError> {
         let mut q_est = if unit_discharge_m2_s > 0.0 {
             unit_discharge_m2_s
         } else {
@@ -435,7 +490,7 @@ impl CellParameters {
         for _ in 0..ALPHA_NEWTON_MAX_ITERS {
             let friction = self.equivalent_friction_local(flow_depth_m, q_est, skin_rain_term)?;
             if friction.f_eq <= 0.0 {
-                return Ok(LocalHydraulics::zero());
+                return Ok(None);
             }
             let alpha = chezy_from_friction(friction.f_eq, GRAVITY_M_S2) * slope_sqrt;
             let q_model = alpha * h_pow;
@@ -466,31 +521,7 @@ impl CellParameters {
                 break;
             }
         }
-        let friction = self.equivalent_friction_local(flow_depth_m, q_est, skin_rain_term)?;
-        if friction.f_eq <= 0.0 {
-            return Ok(LocalHydraulics::zero());
-        }
-        let alpha = chezy_from_friction(friction.f_eq, GRAVITY_M_S2) * slope_sqrt;
-        let q = alpha * h_pow;
-        if !alpha.is_finite() || !q.is_finite() || q < 0.0 {
-            return Err(RoutingError::NonFiniteState);
-        }
-        let rel_residual = (q_est - q).abs() / q.max(1.0e-12);
-        let abs_residual = (q_est - q).abs();
-        if rel_residual > ALPHA_NEWTON_REL_TOL && abs_residual > ALPHA_NEWTON_ABS_TOL_M2_S {
-            return Err(RoutingError::NonFiniteState);
-        }
-        let frozen = DEPTH_DISCHARGE_EXPONENT * alpha * flow_depth_m.sqrt();
-        let denom = 1.0 + 0.5 * q * friction.df_dq / friction.f_eq;
-        let numer = DEPTH_DISCHARGE_EXPONENT / flow_depth_m - 0.5 * friction.df_dh / friction.f_eq;
-        if !denom.is_finite() || !numer.is_finite() || denom <= 0.0 {
-            return Err(RoutingError::NonFiniteState);
-        }
-        let celerity = (q * numer / denom).max(frozen);
-        if !celerity.is_finite() || celerity < 0.0 {
-            return Err(RoutingError::NonFiniteState);
-        }
-        Ok(LocalHydraulics { alpha, q, celerity })
+        Ok(Some(q_est))
     }
 }
 
@@ -672,6 +703,14 @@ pub struct KinematicWaveStageLimiterTrace {
     pub max_reduction_m2_s: f64,
     pub face_index: usize,
     pub face_x_m: f64,
+}
+
+struct PredictorCorrectorStages {
+    clamp_injected_m2: f64,
+    pred_out_face: f64,
+    corr_out_face: f64,
+    predictor_limiter: KinematicWaveStageLimiterTrace,
+    corrector_limiter: KinematicWaveStageLimiterTrace,
 }
 
 #[derive(Debug, Clone, Copy, Default)]
@@ -1081,38 +1120,17 @@ impl KinematicWaveSolver {
         Ok(scale)
     }
 
-    /// Advance one TVD-MacCormack step of size `dt` (eqs. 8-14). Returns the
-    /// outlet sample, or a `RoutingError` on a fail-closed condition.
-    ///
-    /// Preconditions owned by the run loop (D14 OPT-1): `scratch.alpha`
-    /// holds the pre-step per-cell alpha values and the rainfall intensity
-    /// was validated before they were computed.
-    #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
-    fn step(
+    fn predictor_corrector_stages(
         &mut self,
-        step_index: u64,
         time_s: f64,
         dt: f64,
-        step_max_courant: f64,
-        step_max_courant_cell_index: usize,
         q_up: f64,
         forcing: &Forcing<'_>,
-        mass: &mut MassBalance,
         trace_enabled: bool,
-    ) -> Result<(f64, f64, f64, Option<KinematicWaveStepTraceRecord>), RoutingError> {
+    ) -> Result<PredictorCorrectorStages, RoutingError> {
         let n = self.mesh.cell_count();
         let dx = self.mesh.cell_length_m;
         let mut clamp_injected_m2 = 0.0_f64;
-        let storage_before_m2 = if trace_enabled {
-            self.total_storage_m2()
-        } else {
-            0.0
-        };
-
-        // Rainfall excess for this step (per-cell alpha is already in the
-        // step scratch). Rainfall excess is physically non-negative; a
-        // non-finite OR negative value is invalid input and fails closed.
-        // Intensity and q_up are validated by the run loop.
         for i in 0..n {
             let v_raw = (forcing.rainfall_excess_m_s)(i, time_s);
             if !is_valid_forcing(v_raw) {
@@ -1121,22 +1139,6 @@ impl KinematicWaveSolver {
             self.scratch.v[i] = v_raw;
         }
 
-        // Predictor (eqs. 8-9, rev-24 boundary closure): forward flux
-        // difference in the interior; the TOP face carries the prescribed
-        // inflow flux `q_up` in BOTH sweeps so the discrete injection
-        // equals the physical BC exactly; the LAST cell is a pure DONOR
-        // cell (true upwind backward difference `q_{n-1} - q_{n-2}`, its
-        // outflow face flux = its own kinematic flux). The upwind outflow
-        // closure is steady-exact (the backward difference reproduces
-        // `dq/dx = v` at discrete steady state) and, unlike the pre-rev-24
-        // linear-extrapolation ghost, has no feedback gain — the ghost
-        // both over-discharged (unbooked, the S0 ledger's dominant term)
-        // and sustained a period-2 boundary limit cycle.
-        // Rev 41: express the same closure as stage faces, then cap those
-        // faces by per-cell available water before depths are formed. Rev 51
-        // retains `2q[n-1] - q[n-2]` on its physically admissible non-negative
-        // branch and applies the one-way outlet's exact-zero lower bound before
-        // the rev-41 available-water upper cap.
         self.scratch.face_flux[0] = q_up;
         for face in 1..n {
             self.scratch.face_flux[face] = self.discharge_m2_s[face];
@@ -1149,13 +1151,6 @@ impl KinematicWaveSolver {
         if !raw_predictor_outlet_m2_s.is_finite() {
             return Err(RoutingError::NonFiniteState);
         }
-        // SC-OFEROUTE-001 rev 51 / LANED-NOB-001: the downstream boundary is
-        // one-way outflow. A dry-front/recession gradient can make the raw
-        // donor extrapolation negative even though all committed discharges
-        // and forcing are non-negative. Enforce the exact physical lower
-        // bound inside face construction, before the rev-41 available-water
-        // upper cap, so the state update and ledger book the same admissible
-        // flux without a post-update clamp or future-bin borrowing.
         self.scratch.face_flux[n] = raw_predictor_outlet_m2_s.max(0.0);
         let predictor_limiter = Self::limit_stage_face_fluxes(
             &self.depth_m,
@@ -1183,8 +1178,6 @@ impl KinematicWaveSolver {
         }
         let pred_out_face = self.scratch.face_flux[n];
 
-        // Corrector (eq. 10): backward flux difference; upstream ghost flux =
-        // q_up entering cell 0.
         self.scratch.face_flux[0] = q_up;
         for face in 1..=n {
             self.scratch.face_flux[face] = self.scratch.q_pred[face - 1];
@@ -1213,32 +1206,25 @@ impl KinematicWaveSolver {
             self.scratch.h_corr[i] = h_new.max(0.0);
         }
         let corr_out_face = self.scratch.face_flux[n];
-
-        // Average (eq. 13 first half).
         for i in 0..n {
             self.scratch.averaged[i] = 0.5 * (self.scratch.h_pred[i] + self.scratch.h_corr[i]);
         }
+        Ok(PredictorCorrectorStages {
+            clamp_injected_m2,
+            pred_out_face,
+            corr_out_face,
+            predictor_limiter,
+            corrector_limiter,
+        })
+    }
 
-        // TVD dissipation, rev-24 FACE-BASED two-sided form (Mingham
-        // eqs. 28b/31a/31g; Davis eqs. 3.17-3.18): for each interior face
-        // f (between cells f and f+1),
-        //   D_f = [G(Cr_f, r+_f) + G(Cr_{f+1}, r-_{f+1})] (h_{f+1} - h_f)
-        // with r+_f = dh_{f-1/2}/dh_{f+1/2} and
-        // r-_{f+1} = dh_{f+3/2}/dh_{f+1/2}; a ratio whose stencil leaves
-        // the domain contributes no dissipation from that side. Cell i
-        // receives D_i - D_{i-1} with ZERO flux at the domain-boundary
-        // faces, so the term telescopes exactly (INV-OFEROUTE-006 rev 24).
-        // Face coefficients are stored in scratch.gr[f] for f in 0..n-1.
-        // Material-interface faces (cell PARAMETERS differ across the face
-        // — the section/slope breaks) carry a PHYSICAL equilibrium depth
-        // jump; the uniform-coefficient Davis/Mingham analysis does not
-        // apply there and h-based dissipation would diffuse a legitimate
-        // discontinuity. Such faces carry zero dissipative flux
-        // (conservative), and ratio stencils reaching across them
-        // contribute no dissipation from that side. NOTE: the detector
-        // compares MATERIAL parameters, not the state-dependent alpha
-        // (alpha varies per cell under depth-dependent friction even on
-        // uniform material).
+    fn apply_tvd_stage(
+        &mut self,
+        dt: f64,
+        trace_enabled: bool,
+    ) -> Result<(f64, f64, KinematicWaveTvdTrace), RoutingError> {
+        let n = self.mesh.cell_count();
+        let dx = self.mesh.cell_length_m;
         let is_break = |f: usize| -> bool { self.material_breaks[f] };
         for f in 0..n.saturating_sub(1) {
             let dh_face = self.depth_m[f + 1] - self.depth_m[f];
@@ -1259,12 +1245,6 @@ impl KinematicWaveSolver {
             } else {
                 None
             };
-            // Boundary-adjacent faces: a side whose smoothness-monitor
-            // stencil leaves the domain (or crosses a material break)
-            // mirrors the AVAILABLE side's ratio, so boundary-adjacent
-            // oscillations are still detected and damped (limiter-stencil
-            // ghost extension); a face with neither monitor carries no
-            // dissipation.
             let g_plus = match (r_plus, r_minus) {
                 (Some(r), _) | (None, Some(r)) => Self::g_coeff(courant_at(f), r),
                 (None, None) => 0.0,
@@ -1275,7 +1255,6 @@ impl KinematicWaveSolver {
             };
             self.scratch.gr[f] = (g_plus + g_minus) * dh_face;
         }
-        // Literal telescoping check value (diagnostic; ~0 by construction).
         let mut tvd_leak_m2 = 0.0_f64;
         for i in 0..n {
             let d_hi = if i + 1 < n { self.scratch.gr[i] } else { 0.0 };
@@ -1283,12 +1262,9 @@ impl KinematicWaveSolver {
             tvd_leak_m2 += (d_hi - d_lo) * dx;
         }
         for i in 0..n {
-            let tvd = {
-                let d_hi = if i + 1 < n { self.scratch.gr[i] } else { 0.0 };
-                let d_lo = if i >= 1 { self.scratch.gr[i - 1] } else { 0.0 };
-                d_hi - d_lo
-            };
-            self.scratch.h_next[i] = tvd;
+            let d_hi = if i + 1 < n { self.scratch.gr[i] } else { 0.0 };
+            let d_lo = if i >= 1 { self.scratch.gr[i - 1] } else { 0.0 };
+            self.scratch.h_next[i] = d_hi - d_lo;
         }
         let mut tvd_trace = KinematicWaveTvdTrace {
             scale: 1.0,
@@ -1314,6 +1290,7 @@ impl KinematicWaveSolver {
         if trace_enabled {
             tvd_trace.scale = tvd_scale;
         }
+        let mut clamp_injected_m2 = 0.0_f64;
         for i in 0..n {
             let h_new = self.scratch.averaged[i] + tvd_scale * self.scratch.h_next[i];
             if !h_new.is_finite() {
@@ -1323,11 +1300,65 @@ impl KinematicWaveSolver {
                 return Err(RoutingError::NegativeDepth);
             }
             if h_new < 0.0 {
-                // small negative excursion clamped to dry: record injected mass
                 clamp_injected_m2 += (-h_new) * dx;
             }
             self.scratch.h_next[i] = h_new.max(0.0);
         }
+        Ok((tvd_leak_m2, clamp_injected_m2, tvd_trace))
+    }
+
+    /// Advance one TVD-MacCormack step of size `dt` (eqs. 8-14). Returns the
+    /// outlet sample, or a `RoutingError` on a fail-closed condition.
+    ///
+    /// Preconditions owned by the run loop (D14 OPT-1): `scratch.alpha`
+    /// holds the pre-step per-cell alpha values and the rainfall intensity
+    /// was validated before they were computed.
+    #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+    fn step(
+        &mut self,
+        step_index: u64,
+        time_s: f64,
+        dt: f64,
+        step_max_courant: f64,
+        step_max_courant_cell_index: usize,
+        q_up: f64,
+        forcing: &Forcing<'_>,
+        mass: &mut MassBalance,
+        trace_enabled: bool,
+    ) -> Result<(f64, f64, f64, Option<KinematicWaveStepTraceRecord>), RoutingError> {
+        let n = self.mesh.cell_count();
+        let dx = self.mesh.cell_length_m;
+        let storage_before_m2 = if trace_enabled {
+            self.total_storage_m2()
+        } else {
+            0.0
+        };
+        let stages = self.predictor_corrector_stages(time_s, dt, q_up, forcing, trace_enabled)?;
+        let mut clamp_injected_m2 = stages.clamp_injected_m2;
+
+        // TVD dissipation, rev-24 FACE-BASED two-sided form (Mingham
+        // eqs. 28b/31a/31g; Davis eqs. 3.17-3.18): for each interior face
+        // f (between cells f and f+1),
+        //   D_f = [G(Cr_f, r+_f) + G(Cr_{f+1}, r-_{f+1})] (h_{f+1} - h_f)
+        // with r+_f = dh_{f-1/2}/dh_{f+1/2} and
+        // r-_{f+1} = dh_{f+3/2}/dh_{f+1/2}; a ratio whose stencil leaves
+        // the domain contributes no dissipation from that side. Cell i
+        // receives D_i - D_{i-1} with ZERO flux at the domain-boundary
+        // faces, so the term telescopes exactly (INV-OFEROUTE-006 rev 24).
+        // Face coefficients are stored in scratch.gr[f] for f in 0..n-1.
+        // Material-interface faces (cell PARAMETERS differ across the face
+        // — the section/slope breaks) carry a PHYSICAL equilibrium depth
+        // jump; the uniform-coefficient Davis/Mingham analysis does not
+        // apply there and h-based dissipation would diffuse a legitimate
+        // discontinuity. Such faces carry zero dissipative flux
+        // (conservative), and ratio stencils reaching across them
+        // contribute no dissipation from that side. NOTE: the detector
+        // compares MATERIAL parameters, not the state-dependent alpha
+        // (alpha varies per cell under depth-dependent friction even on
+        // uniform material).
+        let (tvd_leak_m2, tvd_clamp_injected_m2, tvd_trace) =
+            self.apply_tvd_stage(dt, trace_enabled)?;
+        clamp_injected_m2 += tvd_clamp_injected_m2;
 
         // Commit state and recompute discharge (eq. 14).
         for i in 0..n {
@@ -1389,7 +1420,7 @@ impl KinematicWaveSolver {
         // Outflow: predictor and corrector stage boundary faces after any
         // rev-41 conservative positivity limiting; the committed average
         // discharges their mean.
-        let outflow_actual_m2 = 0.5 * (pred_out_face + corr_out_face) * dt;
+        let outflow_actual_m2 = 0.5 * (stages.pred_out_face + stages.corr_out_face) * dt;
         mass.inflow_m2 += q_up * dt;
         mass.rainfall_excess_m2 += self.scratch.v.iter().sum::<f64>() * dx * dt;
         mass.outflow_m2 += outflow_actual_m2;
@@ -1421,12 +1452,12 @@ impl KinematicWaveSolver {
             storage_before_m2,
             storage_after_m2: self.total_storage_m2(),
             clamp_injected_m2,
-            pred_out_face_m2_s: pred_out_face,
-            corr_out_face_m2_s: corr_out_face,
+            pred_out_face_m2_s: stages.pred_out_face,
+            corr_out_face_m2_s: stages.corr_out_face,
             outlet_depth_m: self.depth_m[n - 1],
             outlet_unit_discharge_m2_s: self.discharge_m2_s[n - 1],
-            predictor_limiter,
-            corrector_limiter,
+            predictor_limiter: stages.predictor_limiter,
+            corrector_limiter: stages.corrector_limiter,
             tvd: tvd_trace,
         });
 
@@ -1506,19 +1537,12 @@ impl KinematicWaveSolver {
         )
     }
 
-    /// Diagnostic variant of `run_with_options` that can retain a per-step
-    /// trace for one externally selected active lane-day.
-    #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
-    pub fn run_with_options_and_step_trace(
-        &mut self,
-        forcing: &Forcing<'_>,
-        upstream_integral_m2: Option<&dyn Fn(f64, f64) -> f64>,
-        forcing_breakpoints_s: &[f64],
+    fn validate_run_configuration(
+        &self,
         end_time_s: f64,
         sample_dt_s: f64,
         max_dt_s: f64,
-        trace_steps: bool,
-    ) -> Result<RoutingResult, RoutingError> {
+    ) -> Result<(), RoutingError> {
         if self.mesh.cell_count() == 0
             || !self.mesh.cell_length_m.is_finite()
             || self.mesh.cell_length_m <= 0.0
@@ -1534,6 +1558,45 @@ impl KinematicWaveSolver {
         for cell in &self.mesh.cells {
             cell.validate()?;
         }
+        Ok(())
+    }
+
+    fn upstream_flux_for_step(
+        forcing: &Forcing<'_>,
+        upstream_integral_m2: Option<&dyn Fn(f64, f64) -> f64>,
+        t: f64,
+        dt: f64,
+    ) -> Result<f64, RoutingError> {
+        let q_up = match upstream_integral_m2 {
+            Some(integral) => {
+                let injected = integral(t, t + dt);
+                if !is_valid_forcing(injected) {
+                    return Err(RoutingError::InvalidForcing);
+                }
+                injected / dt
+            }
+            None => (forcing.upstream_inflow_m2_s)(t),
+        };
+        if !is_valid_forcing(q_up) {
+            return Err(RoutingError::InvalidForcing);
+        }
+        Ok(q_up)
+    }
+
+    /// Diagnostic variant of `run_with_options` that can retain a per-step
+    /// trace for one externally selected active lane-day.
+    #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+    pub fn run_with_options_and_step_trace(
+        &mut self,
+        forcing: &Forcing<'_>,
+        upstream_integral_m2: Option<&dyn Fn(f64, f64) -> f64>,
+        forcing_breakpoints_s: &[f64],
+        end_time_s: f64,
+        sample_dt_s: f64,
+        max_dt_s: f64,
+        trace_steps: bool,
+    ) -> Result<RoutingResult, RoutingError> {
+        self.validate_run_configuration(end_time_s, sample_dt_s, max_dt_s)?;
         let dx = self.mesh.cell_length_m;
         let storage_initial = self.total_storage_m2();
         self.max_tv_increase_m = 0.0;
@@ -1618,19 +1681,7 @@ impl KinematicWaveSolver {
             // Upstream boundary flux for this step: exact interval mean
             // when the integral closure is provided (rev 24), else the
             // point sample. Physically non-negative; fails closed.
-            let q_up = match upstream_integral_m2 {
-                Some(integral) => {
-                    let injected = integral(t, t + dt);
-                    if !is_valid_forcing(injected) {
-                        return Err(RoutingError::InvalidForcing);
-                    }
-                    injected / dt
-                }
-                None => (forcing.upstream_inflow_m2_s)(t),
-            };
-            if !is_valid_forcing(q_up) {
-                return Err(RoutingError::InvalidForcing);
-            }
+            let q_up = Self::upstream_flux_for_step(forcing, upstream_integral_m2, t, dt)?;
 
             let t_before = t;
             let step_span = profile::span_start();
@@ -1882,6 +1933,83 @@ mod tests {
             frozen_floor,
             local.q
         );
+    }
+
+    #[test]
+    fn public_equivalent_friction_covers_manning_and_component_menu() {
+        let h = 0.02_f64;
+        let q = 4.0e-4_f64;
+        let rain = 2.0e-5_f64;
+        let manning = CellParameters::manning(0.05, 0.009);
+        let expected = 8.0 * GRAVITY_M_S2 * 0.009_f64 * 0.009_f64 / h.cbrt();
+        assert_eq!(
+            manning.equivalent_friction(h, q, rain).to_bits(),
+            expected.to_bits()
+        );
+
+        let mut components = CellParameters::bare(0.05, 120.0);
+        components.drag_coefficient = 1.2;
+        components.element_tip_height_m = 0.03;
+        components.roughness_concentration = 0.15;
+        components.leaf_area_index = 2.0;
+        components.canopy_height_m = 0.4;
+        components.vegetation_drag_coefficient = 0.8;
+        let rain_term = skin_rain_term(rain);
+        assert_eq!(
+            components.equivalent_friction(h, q, rain).to_bits(),
+            components
+                .equivalent_friction_with_rain_term(h, q, rain_term)
+                .to_bits()
+        );
+        assert!(components.equivalent_friction(h, q, rain) > 0.0);
+
+        let submerged = components.equivalent_friction(0.04, q, rain);
+        assert!(submerged.is_finite() && submerged > 0.0);
+    }
+
+    #[test]
+    fn conservation_residual_books_positivity_clamp_after_raw_residual() {
+        let mass = MassBalance {
+            inflow_m2: 2.0,
+            rainfall_excess_m2: 3.0,
+            outflow_m2: 1.25,
+            storage_change_m2: 3.5,
+            positivity_clamp_m2: 0.25,
+            ..MassBalance::default()
+        };
+        assert_eq!(mass.residual_m2().to_bits(), 0.25_f64.to_bits());
+        assert_eq!(mass.conservation_residual_m2().to_bits(), 0.5_f64.to_bits());
+    }
+
+    #[test]
+    fn stage_face_limiter_records_largest_reduction_and_rejects_nonfinite_availability() {
+        let depth = [0.10, 0.05];
+        let source = [0.0, 0.0];
+        let mut faces = [0.0, 0.30, 0.20];
+        let trace = KinematicWaveSolver::limit_stage_face_fluxes(
+            &depth, &source, 1.0, 1.0, &mut faces, true,
+        )
+        .expect("finite stage");
+        assert_eq!(faces[0].to_bits(), 0.0_f64.to_bits());
+        assert_eq!(faces[1].to_bits(), 0.10_f64.to_bits());
+        assert!((faces[2] - 0.15).abs() <= f64::EPSILON);
+        assert_eq!(trace.reductions, 2);
+        assert_eq!(trace.face_index, 1);
+        assert_eq!(trace.face_x_m.to_bits(), 1.0_f64.to_bits());
+        assert!((trace.max_reduction_m2_s - 0.20).abs() <= f64::EPSILON);
+
+        let mut nonfinite_faces = [f64::INFINITY, 0.0];
+        assert!(matches!(
+            KinematicWaveSolver::limit_stage_face_fluxes(
+                &[0.0],
+                &[0.0],
+                1.0,
+                1.0,
+                &mut nonfinite_faces,
+                false,
+            ),
+            Err(RoutingError::NonFiniteState)
+        ));
     }
 
     #[test]
