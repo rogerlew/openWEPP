@@ -45,6 +45,8 @@ classification records. It does not permit a multi-module implementation diff.
   reviewed `MODULE-PASS` checkpoint.
 - [x] (2026-07-12 UTC) Close `DC-CQR-HB03-001` and execute HB-03 through
   reviewed `MODULE-PASS` checkpoint.
+- [x] (2026-07-12 UTC) Pass the HB-01..HB-03 workspace quick-profile checkpoint
+  (`1,772/1,772`, 28 skipped, three slow).
 - [ ] Execute or disposition HB-04 through its terminal record.
 - [ ] Execute or disposition HB-05 through its terminal record.
 - [ ] Execute or disposition HB-06 through its terminal record.
