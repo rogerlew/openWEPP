@@ -84,11 +84,11 @@ fn execute_hillslope_direct_production_days(
     })
 }
 
-fn resolve_laned_active_enabled(
-    day_input_builder: &DirectProductionDayInputBuilder<'_>,
+fn resolve_laned_active_decision(
+    explicit_laned_active_enabled: bool,
+    explicit_laned_active_disabled: bool,
+    default_eligibility: DirectLanedActiveDefaultEligibility,
 ) -> Result<bool, HillslopeCliError> {
-    let explicit_laned_active_enabled = crate::hillslope::laned_active::env_enabled();
-    let explicit_laned_active_disabled = crate::hillslope::laned_active::disable_enabled();
     if explicit_laned_active_enabled && explicit_laned_active_disabled {
         return Err(HillslopeCliError::RuntimeSurfaceFailure {
             surface: "laned_active_selector",
@@ -101,7 +101,7 @@ fn resolve_laned_active_enabled(
     if explicit_laned_active_disabled {
         return Ok(false);
     }
-    match day_input_builder.laned_active_default_eligibility() {
+    match default_eligibility {
         DirectLanedActiveDefaultEligibility::Complete => Ok(true),
         DirectLanedActiveDefaultEligibility::Absent => Ok(false),
         DirectLanedActiveDefaultEligibility::Mixed { present, absent } => {
@@ -113,6 +113,80 @@ fn resolve_laned_active_enabled(
             })
         }
     }
+}
+
+fn resolve_laned_active_enabled(
+    day_input_builder: &DirectProductionDayInputBuilder<'_>,
+) -> Result<bool, HillslopeCliError> {
+    resolve_laned_active_decision(
+        crate::hillslope::laned_active::env_enabled(),
+        crate::hillslope::laned_active::disable_enabled(),
+        day_input_builder.laned_active_default_eligibility(),
+    )
+}
+
+fn resolve_laned_active_configuration(
+    laned_active_enabled: bool,
+    laned_shadow_enabled: bool,
+    laned_active_profile_requested: bool,
+) -> Result<(bool, bool), HillslopeCliError> {
+    if laned_active_enabled && laned_shadow_enabled {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "laned_active_selector",
+            detail: "Lane D active ownership and OPENWEPP_LANED_SHADOW=1 are mutually exclusive: the shadow reconstructs DC01-shaped published rows and is undefined over an active routed run".to_string(),
+        });
+    }
+    Ok((
+        laned_active_enabled,
+        laned_active_enabled && laned_active_profile_requested,
+    ))
+}
+
+fn apply_laned_active_configuration(
+    frame: &mut DirectRunFrame,
+    config: Option<openwepp_hillslope_orchestrator::DirectLanedActiveConfig>,
+    laned_active_profile_enabled: bool,
+) {
+    if let Some(config) = config {
+        frame.laned_active = Some(Box::new(config));
+        if laned_active_profile_enabled {
+            openwepp_hillslope_orchestrator::ofe_routing::profile::set_enabled(true);
+            let _ = openwepp_hillslope_orchestrator::ofe_routing::profile::snapshot_and_reset();
+        }
+    }
+}
+
+fn validate_laned_active_summary(
+    laned_active_enabled: bool,
+    laned_active: Option<openwepp_hillslope_orchestrator::DirectLanedActiveRunSummary>,
+) -> Result<Option<openwepp_hillslope_orchestrator::DirectLanedActiveRunSummary>, HillslopeCliError> {
+    if laned_active_enabled && laned_active.is_none() {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "laned_active_summary",
+            detail: "Lane D active ownership was selected but the executor produced no active summary (active loop not engaged)".to_string(),
+        });
+    }
+    Ok(laned_active)
+}
+
+fn configure_laned_active_execution(
+    frame: &mut DirectRunFrame,
+    day_input_builder: &DirectProductionDayInputBuilder<'_>,
+) -> Result<(bool, bool), HillslopeCliError> {
+    let laned_active_enabled = resolve_laned_active_enabled(day_input_builder)?;
+    let (laned_active_enabled, laned_active_profile_enabled) =
+        resolve_laned_active_configuration(
+            laned_active_enabled,
+            crate::hillslope::laned_shadow::LanedShadowCollector::env_enabled(),
+            std::env::var("OPENWEPP_LANED_SHADOW_PROFILE").is_ok_and(|value| value == "1"),
+        )?;
+    let config = if laned_active_enabled {
+        Some(day_input_builder.laned_active_config()?)
+    } else {
+        None
+    };
+    apply_laned_active_configuration(frame, config, laned_active_profile_enabled);
+    Ok((laned_active_enabled, laned_active_profile_enabled))
 }
 
 fn execute_direct_publication_stream(
@@ -127,24 +201,8 @@ fn execute_direct_publication_stream(
     // or conditional default activation when every scheduled lane carries
     // native routing-coefficient authority. A no-coefficient run remains
     // legacy/off; mixed authority fails closed before streaming.
-    let laned_active_enabled = resolve_laned_active_enabled(day_input_builder)?;
-    if laned_active_enabled
-        && crate::hillslope::laned_shadow::LanedShadowCollector::env_enabled()
-    {
-        return Err(HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "laned_active_selector",
-            detail: "Lane D active ownership and OPENWEPP_LANED_SHADOW=1 are mutually exclusive: the shadow reconstructs DC01-shaped published rows and is undefined over an active routed run".to_string(),
-        });
-    }
-    let laned_active_profile_enabled = laned_active_enabled
-        && std::env::var("OPENWEPP_LANED_SHADOW_PROFILE").is_ok_and(|value| value == "1");
-    if laned_active_enabled {
-        frame.laned_active = Some(Box::new(day_input_builder.laned_active_config()?));
-        if laned_active_profile_enabled {
-            openwepp_hillslope_orchestrator::ofe_routing::profile::set_enabled(true);
-            let _ = openwepp_hillslope_orchestrator::ofe_routing::profile::snapshot_and_reset();
-        }
-    }
+    let (laned_active_enabled, laned_active_profile_enabled) =
+        configure_laned_active_execution(frame, day_input_builder)?;
     // Lane D seam shadow (INV-OFEROUTE-012 activation increment):
     // opt-in, diagnostics-only; geometry from the Wave-1 operand seeds.
     let mut laned_shadow = if crate::hillslope::laned_shadow::LanedShadowCollector::env_enabled()
@@ -217,12 +275,7 @@ fn execute_direct_publication_stream(
             routing.solver_sample_ns,
         );
     }
-    if laned_active_enabled && laned_active.is_none() {
-        return Err(HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "laned_active_summary",
-            detail: "Lane D active ownership was selected but the executor produced no active summary (active loop not engaged)".to_string(),
-        });
-    }
+    let laned_active = validate_laned_active_summary(laned_active_enabled, laned_active)?;
     Ok(RetainedDirectPublication {
         execution,
         stream,
@@ -985,14 +1038,9 @@ fn write_generic_optional_outputs(
     Ok(())
 }
 
-#[allow(clippy::too_many_lines)]
-fn write_laned_active_trace_output(
-    targets: &HillslopeOutputTargets,
+fn validated_laned_active_trace_records(
     execution: &HillslopeClimateExecution,
-) -> Result<(), HillslopeCliError> {
-    let Some(trace_path) = &targets.laned_active_trace else {
-        return Ok(());
-    };
+) -> Result<&[openwepp_hillslope_orchestrator::DirectLanedActiveTraceRecord], HillslopeCliError> {
     let summary = execution
         .laned_active
         .as_ref()
@@ -1037,15 +1085,234 @@ fn write_laned_active_trace_output(
             ),
         });
     }
-    let mut payload = String::new();
-    for record in records {
-        let weight_sum: f64 = record.routed_weights.iter().sum();
-        let trace_detail = record.trace_detail.as_ref().map(|detail| {
-            let step_trace = detail.step_trace.as_ref().map(|records| {
-                records
-                    .iter()
-                    .map(|step| {
-                        serde_json::json!({
+    Ok(records)
+}
+
+const LANED_ACTIVE_TRACE_WEIGHT_SUM_TOLERANCE: f64 = 1.0e-9;
+
+fn invalid_laned_active_trace_numeric(
+    field: &str,
+    requirement: &str,
+    value: f64,
+) -> HillslopeCliError {
+    HillslopeCliError::RuntimeSurfaceFailure {
+        surface: "laned_active_trace_numeric",
+        detail: format!("field {field} must be {requirement}, observed {value}"),
+    }
+}
+
+fn validate_laned_active_trace_finite(field: &str, value: f64) -> Result<(), HillslopeCliError> {
+    if !value.is_finite() {
+        return Err(invalid_laned_active_trace_numeric(field, "finite", value));
+    }
+    Ok(())
+}
+
+fn validate_laned_active_trace_nonnegative(
+    field: &str,
+    value: f64,
+) -> Result<(), HillslopeCliError> {
+    if !value.is_finite() || value < 0.0 {
+        return Err(invalid_laned_active_trace_numeric(
+            field,
+            "finite and non-negative",
+            value,
+        ));
+    }
+    Ok(())
+}
+
+fn validate_laned_active_trace_positive(
+    field: &str,
+    value: f64,
+) -> Result<(), HillslopeCliError> {
+    if !value.is_finite() || value <= 0.0 {
+        return Err(invalid_laned_active_trace_numeric(
+            field,
+            "finite and positive",
+            value,
+        ));
+    }
+    Ok(())
+}
+
+fn validate_laned_active_trace_limiter(
+    prefix: &str,
+    limiter: &openwepp_hillslope_orchestrator::DirectLanedActiveStageLimiterTrace,
+) -> Result<(), HillslopeCliError> {
+    validate_laned_active_trace_nonnegative(
+        &format!("{prefix}.max_reduction_m3_s"),
+        limiter.max_reduction_m3_s,
+    )?;
+    validate_laned_active_trace_nonnegative(&format!("{prefix}.face_x_m"), limiter.face_x_m)
+}
+
+fn validate_laned_active_trace_step(
+    prefix: &str,
+    step: &openwepp_hillslope_orchestrator::DirectLanedActiveStepTraceRecord,
+) -> Result<(), HillslopeCliError> {
+    for (field, value) in [
+        ("t_start_s", step.t_start_s),
+        ("t_end_s", step.t_end_s),
+        ("max_courant", step.max_courant),
+        (
+            "max_courant_cell_center_x_m",
+            step.max_courant_cell_center_x_m,
+        ),
+        ("q_up_m3_s", step.q_up_m3_s),
+        ("source_m3", step.source_m3),
+        ("upstream_inflow_m3", step.upstream_inflow_m3),
+        ("outflow_m3", step.outflow_m3),
+        ("storage_before_m3", step.storage_before_m3),
+        ("storage_after_m3", step.storage_after_m3),
+        ("clamp_injected_m3", step.clamp_injected_m3),
+        ("pred_out_face_m3_s", step.pred_out_face_m3_s),
+        ("corr_out_face_m3_s", step.corr_out_face_m3_s),
+        ("outlet_depth_m", step.outlet_depth_m),
+        ("outlet_discharge_m3_s", step.outlet_discharge_m3_s),
+    ] {
+        validate_laned_active_trace_nonnegative(&format!("{prefix}.{field}"), value)?;
+    }
+    validate_laned_active_trace_positive(&format!("{prefix}.dt_s"), step.dt_s)?;
+    validate_laned_active_trace_limiter(
+        &format!("{prefix}.predictor_limiter"),
+        &step.predictor_limiter,
+    )?;
+    validate_laned_active_trace_limiter(
+        &format!("{prefix}.corrector_limiter"),
+        &step.corrector_limiter,
+    )?;
+    for (field, value) in [
+        ("scale", step.tvd.scale),
+        ("max_abs_delta_m", step.tvd.max_abs_delta_m),
+        ("cell_center_x_m", step.tvd.cell_center_x_m),
+    ] {
+        validate_laned_active_trace_nonnegative(&format!("{prefix}.tvd.{field}"), value)?;
+    }
+    validate_laned_active_trace_finite(
+        &format!("{prefix}.tvd.signed_delta_m"),
+        step.tvd.signed_delta_m,
+    )
+}
+
+fn validate_laned_active_trace_detail(
+    prefix: &str,
+    detail: &openwepp_hillslope_orchestrator::DirectLanedActiveTraceDetail,
+) -> Result<(), HillslopeCliError> {
+    if detail.mesh_cell_count == 0 {
+        return Err(HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "laned_active_trace_numeric",
+            detail: format!("field {prefix}.mesh_cell_count must be positive, observed 0"),
+        });
+    }
+    validate_laned_active_trace_positive(&format!("{prefix}.mesh_dx_m"), detail.mesh_dx_m)?;
+    validate_laned_active_trace_positive(&format!("{prefix}.max_dt_s"), detail.max_dt_s)?;
+    for (field, values, positive) in [
+        ("outlet_bin_m3", &detail.outlet_bin_m3, false),
+        ("outlet_bin_spans_s", &detail.outlet_bin_spans_s, true),
+        ("hydrograph_time_s", &detail.hydrograph_time_s, false),
+        (
+            "hydrograph_outlet_m3_s",
+            &detail.hydrograph_outlet_m3_s,
+            false,
+        ),
+        (
+            "hydrograph_outlet_depth_m",
+            &detail.hydrograph_outlet_depth_m,
+            false,
+        ),
+    ] {
+        for (index, value) in values.iter().copied().enumerate() {
+            let field = format!("{prefix}.{field}[{index}]");
+            if positive {
+                validate_laned_active_trace_positive(&field, value)?;
+            } else {
+                validate_laned_active_trace_nonnegative(&field, value)?;
+            }
+        }
+    }
+    if let Some(steps) = &detail.step_trace {
+        for (index, step) in steps.iter().enumerate() {
+            validate_laned_active_trace_step(&format!("{prefix}.step_trace[{index}]"), step)?;
+        }
+    }
+    Ok(())
+}
+
+fn validate_laned_active_trace_record(
+    record: &openwepp_hillslope_orchestrator::DirectLanedActiveTraceRecord,
+) -> Result<(), HillslopeCliError> {
+    let prefix = format!(
+        "laned_active_trace[day_index={},lane_index={}]",
+        record.day_index, record.lane_index
+    );
+    for (field, value) in [
+        ("sim_day_index", record.day_index),
+        ("lane_index", record.lane_index),
+    ] {
+        if value.checked_add(1).is_none() {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "laned_active_trace_numeric",
+                detail: format!("field {prefix}.{field} one-based conversion overflow"),
+            });
+        }
+    }
+    for (field, value) in [
+        ("source_m3", record.source_m3),
+        ("outlet_m3", record.outlet_m3),
+        ("clamp_m3", record.clamp_m3),
+        ("tail_fold_m3", record.tail_fold_m3),
+    ] {
+        validate_laned_active_trace_nonnegative(&format!("{prefix}.{field}"), value)?;
+    }
+    validate_laned_active_trace_finite(
+        &format!("{prefix}.mesh_end_storage_m3"),
+        record.mesh_end_storage_m3,
+    )?;
+    validate_laned_active_trace_positive(&format!("{prefix}.max_dt_s"), record.max_dt_s)?;
+    if let Some(value) = record.terminal_day_outlet_m3 {
+        validate_laned_active_trace_nonnegative(
+            &format!("{prefix}.terminal_day_outlet_m3"),
+            value,
+        )?;
+    }
+    let mut weight_sum = 0.0_f64;
+    for (index, weight) in record.routed_weights.iter().copied().enumerate() {
+        validate_laned_active_trace_nonnegative(
+            &format!("{prefix}.routed_hourly_weights[{index}]"),
+            weight,
+        )?;
+        weight_sum += weight;
+    }
+    validate_laned_active_trace_finite(
+        &format!("{prefix}.routed_hourly_weight_sum"),
+        weight_sum,
+    )?;
+    if record.source_m3 == 0.0 {
+        if record.routed_weights.iter().any(|weight| *weight != 0.0) {
+            return Err(invalid_laned_active_trace_numeric(
+                &format!("{prefix}.routed_hourly_weights"),
+                "all zero when source_m3 is zero",
+                weight_sum,
+            ));
+        }
+    } else if (weight_sum - 1.0).abs() > LANED_ACTIVE_TRACE_WEIGHT_SUM_TOLERANCE {
+        return Err(invalid_laned_active_trace_numeric(
+            &format!("{prefix}.routed_hourly_weight_sum"),
+            "within 1e-9 of 1.0 when source_m3 is positive",
+            weight_sum,
+        ));
+    }
+    if let Some(detail) = record.trace_detail.as_deref() {
+        validate_laned_active_trace_detail(&format!("{prefix}.trace_detail"), detail)?;
+    }
+    Ok(())
+}
+
+fn laned_active_step_trace_json(
+    step: &openwepp_hillslope_orchestrator::DirectLanedActiveStepTraceRecord,
+) -> serde_json::Value {
+    serde_json::json!({
                             "step_index": step.step_index,
                             "t_start_s": step.t_start_s,
                             "t_end_s": step.t_end_s,
@@ -1084,10 +1351,18 @@ fn write_laned_active_trace_output(
                                 "signed_delta_m": step.tvd.signed_delta_m,
                             }
                         })
-                    })
-                    .collect::<Vec<_>>()
-            });
-            serde_json::json!({
+}
+
+fn laned_active_trace_detail_json(
+    detail: &openwepp_hillslope_orchestrator::DirectLanedActiveTraceDetail,
+) -> serde_json::Value {
+    let step_trace = detail.step_trace.as_ref().map(|records| {
+        records
+            .iter()
+            .map(laned_active_step_trace_json)
+            .collect::<Vec<_>>()
+    });
+    serde_json::json!({
                 "schema": "openwepp-laned-active-trace-detail-v1",
                 "mesh_cell_count": detail.mesh_cell_count,
                 "mesh_dx_m": detail.mesh_dx_m,
@@ -1099,8 +1374,17 @@ fn write_laned_active_trace_output(
                 "hydrograph_outlet_depth_m": &detail.hydrograph_outlet_depth_m,
                 "step_trace": step_trace,
             })
-        });
-        let line = serde_json::to_string(&serde_json::json!({
+}
+
+fn serialize_laned_active_trace_record(
+    record: &openwepp_hillslope_orchestrator::DirectLanedActiveTraceRecord,
+) -> Result<String, HillslopeCliError> {
+    let weight_sum: f64 = record.routed_weights.iter().sum();
+    let trace_detail = record
+        .trace_detail
+        .as_deref()
+        .map(laned_active_trace_detail_json);
+    serde_json::to_string(&serde_json::json!({
             "schema": "openwepp-laned-active-trace-row-v1",
             "day_index_zero_based": record.day_index,
             "sim_day_index": record.day_index + 1,
@@ -1120,7 +1404,21 @@ fn write_laned_active_trace_output(
             "erosion_source_shape_degenerate": record.erosion_source_shape_degenerate,
             "trace_detail": trace_detail,
         }))
-        .map_err(|source| HillslopeCliError::ManifestSerialize { source })?;
+    .map_err(|source| HillslopeCliError::ManifestSerialize { source })
+}
+
+fn write_laned_active_trace_output(
+    targets: &HillslopeOutputTargets,
+    execution: &HillslopeClimateExecution,
+) -> Result<(), HillslopeCliError> {
+    let Some(trace_path) = &targets.laned_active_trace else {
+        return Ok(());
+    };
+    let records = validated_laned_active_trace_records(execution)?;
+    let mut payload = String::new();
+    for record in records {
+        validate_laned_active_trace_record(record)?;
+        let line = serialize_laned_active_trace_record(record)?;
         payload.push_str(&line);
         payload.push('\n');
     }

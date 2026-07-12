@@ -4148,3 +4148,6 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 - `20260712-dc-cqr-preint-ha-07-growth-nonfinite-001/` — terminal PASS;
   required direct-production growth scalars now reject NaN/infinity through the
   existing typed boundary error under `SC-PLANT-001#INV-PLANT-021`.
+- `20260712-dc-cqr-preint-ha-08-trace-validation-001/` — terminal PASS; active
+  trace publication now rejects malformed numeric state and nonclosing routed
+  weights before file creation while preserving signed delta-storage.

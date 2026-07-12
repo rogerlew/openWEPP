@@ -39,6 +39,9 @@ mod tests {
     mod cqr_growth_authority {
         include!("tests03/cqr_growth_authority.rs");
     }
+    mod cqr_laned_active_outputs {
+        include!("tests03/cqr_laned_active_outputs.rs");
+    }
     include!("tests03/direct_publication_source_guards.rs");
 
 

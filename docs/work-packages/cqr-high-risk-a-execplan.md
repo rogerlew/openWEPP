@@ -35,7 +35,7 @@ classification records. It never authorizes one ten-module implementation diff.
 - [x] (2026-07-12 UTC) Execute HA-06 through reviewed `MODULE-PASS` checkpoint.
 - [x] (2026-07-12 UTC) Pass the HA-04..HA-06 workspace quick-profile checkpoint (1,729/1,729).
 - [x] (2026-07-12 UTC) Close `DC-CQR-HA07-001` and execute HA-07 through reviewed `MODULE-PASS` checkpoint.
-- [ ] Execute or disposition HA-08 through its terminal record.
+- [x] (2026-07-12 UTC) Close `DC-CQR-HA08-001` and execute HA-08 through reviewed `MODULE-PASS` checkpoint.
 - [ ] Execute or disposition HA-09 through its terminal record.
 - [ ] Execute or disposition HA-10 through its terminal record.
 - [ ] Run the tranche-final fresh rerank, dual verification, and transition to High B.
@@ -75,7 +75,7 @@ classification records. It never authorizes one ten-module implementation diff.
   duplicated cadence produced flaky-evidence retries rather than additional
   correctness assurance.
   Date/Author: 2026-07-11 / maintainers + Codex.
-- Decision: a 2,000+ line multi-responsibility host uses exact target-slice
+- Decision: a proven multi-responsibility host uses exact target-slice
   focused coverage; untouched sibling authorities remain visible and are
   governed by the tranche-final workspace ratchet.
   Rationale: HA-07 reached 100% target coverage and CRAP 27 while unrelated

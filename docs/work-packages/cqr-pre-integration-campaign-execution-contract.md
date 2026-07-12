@@ -97,16 +97,29 @@ does not force repeated 35-minute captures. Prove the implicated source is
 unchanged and run the failed test focused when practical. Never rerun workspace
 coverage solely to obtain a preferred flaky failure set.
 
-### Large Multi-Responsibility Host Coverage
+### Multi-Responsibility Host Coverage
 
-For a fixed target in a production file already at or above 2,000 lines whose
-unrelated sibling authorities make whole-file focused coverage depend on broad
-runner/workspace scenarios, module acceptance uses a target slice instead of
-forcing unrelated characterization into the checkpoint. The target slice is
+For a fixed target in a production file whose unrelated sibling authorities
+make whole-file focused coverage depend on broad runner/workspace scenarios,
+module acceptance uses a target slice instead of forcing unrelated
+characterization into the checkpoint. This applies only when the record names
+the distinct sibling authority families and the focused profile proves the
+whole-host gap is outside the target's obligation closure; file length alone is
+neither required nor sufficient. The target slice is
 the actionable function, every helper extracted from it, and the transitive
 private-helper closure whose branches implement an applicable A–H or named
 obligation. It must meet the tier line/region threshold, every eligible slice
 function must meet the 75% region floor, and no slice CRAP row may exceed 30.
+
+For an orchestration/serialization slice whose remaining uncovered lines are
+exclusively mutually exclusive diagnostic modes, the slice may close on at
+least 90% production base-function region coverage plus the 75% per-function
+floor while retaining line coverage as visibility evidence. This requires: an
+exact uncovered-mode map; focused guard/selector coverage; a completed real
+nominal consumer; one bounded real-mode attempt when an authoritative fixture
+exists; recorded timeout/failure attribution; and dual review. It does not
+apply to physics, arithmetic, conservation operands, schemas, or the nominal
+consumer path, and it does not weaken the tranche-final workspace ratchet.
 
 This is not a tranche-closure denominator exclusion. Record whole-file focused
 metrics and all live rows for visibility; do not disposition or waive untouched
@@ -249,7 +262,7 @@ Before decomposition, every actionable module must prove its ADR-0021 tier,
 100% applicable A–H/named obligation binding, science coverage of at least 90%
 line and region or glue coverage of at least 85% line and region, and no
 eligible function below the 75% region floor without an accepted disposition.
-For a qualifying 2,000+ line multi-responsibility host, apply these thresholds
+For a qualifying multi-responsibility host, apply these thresholds
 to the exact target slice defined above and retain whole-file metrics as
 visibility evidence. Otherwise this is unconditional. If current tests do not
 meet it, characterization tests land and pass before production decomposition.
