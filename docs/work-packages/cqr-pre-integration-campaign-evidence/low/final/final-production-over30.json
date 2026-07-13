@@ -1,0 +1,18 @@
+[
+  {
+    "file": "crates/openwepp-meteorology/src/error.rs",
+    "function": "MeteorologyError::fmt",
+    "line": 35,
+    "cyclomatic": 7.0,
+    "coverage": 0.0,
+    "crap": 56.0
+  },
+  {
+    "file": "crates/openwepp-sim-contract/src/symbols.rs",
+    "function": "SymbolAliasRegistryError::fmt",
+    "line": 67,
+    "cyclomatic": 9.0,
+    "coverage": 0.0,
+    "crap": 90.0
+  }
+]

@@ -1,6 +1,6 @@
 # Pre-Integration CQR Campaign Assessment
 
-Status: `ACTIVE-LOW-ASSESSMENT`
+Status: `TERMINAL-GO-INTEGRATED-VALIDATION`
 Owner: maintainers
 Baseline date: 2026-07-11 UTC
 Roadmap ID: `CQR-PREINT-20260711`
@@ -22,8 +22,8 @@ ExecPlans perform the work:
    and final output publication (10 modules).
 3. `cqr-medium-risk-execplan.md` — contract boundaries, authoritative tooling,
    configuration, and validation references (13 modules), terminal-pass.
-4. `cqr-low-priority-assessment-execplan.md` — active 12-module low-priority
-   modules, classification/disposition, eligible cleanup, and final rerank.
+4. `cqr-low-priority-assessment-execplan.md` — terminal-pass 12-module
+   low-priority classification/disposition, eligible cleanup, and final rerank.
 
 Only one child ExecPlan and one module package may be active at a time.
 
@@ -153,7 +153,24 @@ validation while a high/medium blocker remains.
 - [x] (2026-07-13 UTC) Execute Medium through `TERMINAL-PASS`: all 19 fixed
   rows removed, zero new identity, final census 13 rows/12 modules, full gates
   and both terminal reviews/verifications PASS.
-- [ ] Execute Low/Assessment and publish the final recommendation.
+- [x] (2026-07-13 UTC) Execute Low/Assessment through `TERMINAL-PASS`: remove
+  all 11 eligible identities, retain two exact dual-reviewed observability
+  rows, add zero identities, pass all final gates, and publish
+  `GO-INTEGRATED-VALIDATION`.
+
+## Closing Assessment
+
+The campaign removes 65 of the fixed 67 raw identities. The two remaining raw
+rows are source-bound `R-OBSERVABILITY` formatters in meteorology and the
+symbol-alias registry; both remain visible in the denominator and neither is
+actionable. The final actionable ranking is empty, no new production identity
+surfaced, and all 45 original modules have a reviewed terminal disposition.
+
+The closing workspace state passes formatting, all-target Clippy, 1,944/1,944
+full-profile tests, deny, Markdown, and diff gates. Complete metrics, original
+45-module accounting, package ledger, and exit-condition analysis are recorded
+in `cqr-pre-integration-campaign-evidence/low/campaign-final-assessment.md`.
+The exact terminal recommendation is `GO-INTEGRATED-VALIDATION`.
 
 ## Revision Note
 

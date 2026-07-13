@@ -1,0 +1,7 @@
+   Compiling openwepp-runner v0.1.0 (/home/workdir/openWEPP/crates/openwepp-runner)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.35s
+────────────
+ Nextest run ID b7b7a122-70cd-4798-b04f-e989f1dccb5c with nextest profile: default
+    Starting 213 tests across 14 binaries
+────────────
+     Summary [ 103.027s] 213 tests run: 213 passed, 0 skipped

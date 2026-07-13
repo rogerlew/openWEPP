@@ -1,0 +1,7 @@
+   Compiling openwepp-input-contract v0.1.0 (/home/workdir/openWEPP/crates/openwepp-input-contract)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.40s
+────────────
+ Nextest run ID 133b753e-0890-4799-a3ae-d8a8a32acf96 with nextest profile: default
+    Starting 33 tests across 1 binary
+────────────
+     Summary [   0.023s] 33 tests run: 33 passed, 0 skipped

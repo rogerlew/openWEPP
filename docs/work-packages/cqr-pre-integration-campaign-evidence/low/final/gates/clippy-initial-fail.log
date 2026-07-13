@@ -1,0 +1,55 @@
+    Checking openwepp-legacy-bridge v0.1.0 (/home/workdir/openWEPP/crates/openwepp-legacy-bridge)
+    Checking openwepp-watershed-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-watershed-orchestrator)
+    Checking openwepp-runner v0.1.0 (/home/workdir/openWEPP/crates/openwepp-runner)
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-runner/src/hillslope/snowbench_coe_melt.rs:1035:9
+     |
+1035 |         assert_eq!(rows["2020-01-01"], 0.0);
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#float_cmp
+     = note: `-D clippy::float-cmp` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::float_cmp)]`
+     = note: this error originates in the macro `assert_eq` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-runner/src/hillslope/snowbench_coe_melt.rs:1036:9
+     |
+1036 |         assert_eq!(rows["2020-01-02"], 1.0);
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#float_cmp
+     = note: this error originates in the macro `assert_eq` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-runner/src/hillslope/snowbench_coe_melt.rs:1118:9
+     |
+1118 |         assert_eq!(row.air_temperature_c, -5.0);
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#float_cmp
+     = note: this error originates in the macro `assert_eq` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: strict comparison of `f32` or `f64`
+    --> crates/openwepp-runner/src/hillslope/snowbench_coe_melt.rs:1121:9
+     |
+1121 |         assert_eq!(row.wind_m_s, 2.0);
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#float_cmp
+     = note: this error originates in the macro `assert_eq` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+    Checking openwepp v0.1.0 (/home/workdir/openWEPP)
+error: this function has too many lines (108/100)
+  --> tests/integration/infile_pmetpara_parser_contract.rs:12:1
+   |
+12 | fn pmetpara_error_display_preserves_all_contract_identities() {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#too_many_lines
+   = note: `-D clippy::too-many-lines` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::too_many_lines)]`
+
+error: could not compile `openwepp` (test "infile_pmetpara_parser_contract") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `openwepp-runner` (lib test) due to 4 previous errors

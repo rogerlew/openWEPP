@@ -1,6 +1,6 @@
 # Low-Priority CQR Disposition And Campaign Assessment
 
-Status: `ACTIVE`
+Status: `TERMINAL-PASS`
 Roadmap ID: `CQR-PREINT-20260711-L`
 Campaign ledger: `docs/work-packages/cqr-pre-integration-campaign-assessment.md`
 Binding execution contract: `docs/work-packages/cqr-pre-integration-campaign-execution-contract.md`
@@ -40,10 +40,16 @@ review is conditional on the triggers named in the binding contract.
 - [x] (2026-07-13 UTC) Complete dual classification of every raw row: 11 rows
   across 10 modules are eligible; L-08 and L-11 receive exact dual-accepted,
   denominator-retained `R-OBSERVABILITY` no-action dispositions.
-- [ ] Execute one module package for each module with eligible work.
-- [ ] Commit exact dual-reviewed no-action evidence for modules with no eligible work.
-- [ ] Run the campaign-final workspace rerank and full validation gates.
-- [ ] Update the campaign ledger and `docs/ROADMAP.md` with the exact GO/HOLD recommendation.
+- [x] (2026-07-13 UTC) Execute L-01 through L-07, L-09, L-10, and L-12
+  through reviewed `MODULE-PASS` checkpoints; pass quick checkpoints after
+  each implementation group.
+- [x] (2026-07-13 UTC) Commit current-source dual-reviewed
+  `DISPOSITIONED-NO-ACTION` records for L-08 and L-11.
+- [x] (2026-07-13 UTC) Run the campaign-final workspace rerank and full
+  validation gates: 11 eligible identities removed, zero added, zero
+  actionable identities retained, and 1,944/1,944 full-profile tests passed.
+- [x] (2026-07-13 UTC) Publish the campaign assessment, update the campaign
+  ledger and roadmap, and issue `GO-INTEGRATED-VALIDATION`.
 
 ## Surprises & Discoveries
 
@@ -55,6 +61,12 @@ review is conditional on the triggers named in the binding contract.
   default again emitted an empty/zero-total report; explicit report-only
   expansion of the 18 metadata packages reused the same 311 profiles without
   rerunning tests or clearing the workspace profile.
+- Final coverage reproduces the same four known parallel-instrumentation-only
+  failures; the ordinary full profile passes all 1,944 tests.
+- The initial final Clippy run found five test-only lint issues. Four float
+  assertions and one exhaustive-test length allowance were corrected in
+  `8e0f7367`; production source remained byte-identical to the measurement
+  commit and the complete ordinary gate set then passed.
 
 ## Decision Log
 
@@ -75,13 +87,22 @@ review is conditional on the triggers named in the binding contract.
   binding rule retains eligibility; both independently found no machine or
   public-text consumer for the two pure display implementations.
   Date/Author: 2026-07-13 / Codex.
+- Decision: issue `GO-INTEGRATED-VALIDATION` with two denominator-visible raw
+  rows and an empty actionable ranking.
+  Rationale: both retained rows are exact current-source, dual-reviewed
+  observability dispositions; all 11 eligible Low rows and all preceding
+  tranche rows are absent, no new identity exists, and all final gates pass.
+  Date/Author: 2026-07-13 / Codex.
 
 ## Outcomes & Retrospective
 
-Activated from the terminal Medium transition. At completion record exact
-module dispositions, package IDs/commits, before/after raw and actionable
-rankings, new-row assessment, full-gate evidence, and one exact GO/HOLD
-recommendation.
+Low closes `TERMINAL-PASS`. Ten actionable modules remove all 11 eligible
+identities through reviewed checkpoints. L-08 and L-11 retain their two raw
+formatter identities under exact dual-reviewed `R-OBSERVABILITY`
+dispositions, leaving zero actionable row. Final coverage rises to 88.301904%,
+all focused and workspace gates pass, and no new row, unresolved finding,
+defect, evidence gap, or dirty overlap remains. The campaign closes with the
+exact recommendation `GO-INTEGRATED-VALIDATION`.
 
 ## Milestones
 
