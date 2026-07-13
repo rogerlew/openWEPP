@@ -64,7 +64,11 @@ implementation diff.
 - [x] (2026-07-13 UTC) Execute tests-only M-06 unit-registry admission through
   `MODULE-PASS`: the science target reaches 100% regions and CRAP 19, merged
   file coverage exceeds 91%, and output-schema consumers pass.
-- [ ] Execute or disposition M-07 through its terminal record.
+- [x] (2026-07-13 UTC) Execute tests-only M-07 runner configuration through
+  `MODULE-PASS`: strict missing-PMET and staged error-priority consumers lift
+  the target to 90% regions and CRAP 25.625.
+- [x] (2026-07-13 UTC) Record the second quick checkpoint: PASS, 1,833/1,833
+  tests, 28 skipped, 3 slow, 2:46.71 elapsed, peak RSS 796,380 KiB.
 - [ ] Execute or disposition M-08 through its terminal record.
 - [ ] Execute or disposition M-09 through its terminal record.
 - [ ] Execute or disposition M-10 through its terminal record.

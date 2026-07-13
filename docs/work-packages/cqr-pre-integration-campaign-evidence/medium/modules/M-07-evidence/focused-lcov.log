@@ -1,0 +1,68 @@
+info: cargo-llvm-cov currently setting cfg(coverage); you can opt-out it by passing --no-cfg-coverage
+   Compiling openwepp-sim-contract v0.1.0 (/home/workdir/openWEPP/crates/openwepp-sim-contract)
+   Compiling openwepp-unit-boundary v0.1.0 (/home/workdir/openWEPP/crates/openwepp-unit-boundary)
+   Compiling openwepp-comparator-metadata v0.1.0 (/home/workdir/openWEPP/crates/openwepp-comparator-metadata)
+   Compiling openwepp-legacy-bridge v0.1.0 (/home/workdir/openWEPP/crates/openwepp-legacy-bridge)
+   Compiling openwepp-management-schema v0.1.0 (/home/workdir/openWEPP/crates/openwepp-management-schema)
+   Compiling openwepp-meteorology v0.1.0 (/home/workdir/openWEPP/crates/openwepp-meteorology)
+   Compiling openwepp-topology v0.1.0 (/home/workdir/openWEPP/crates/openwepp-topology)
+   Compiling openwepp-kernel-contract v0.1.0 (/home/workdir/openWEPP/crates/openwepp-kernel-contract)
+   Compiling openwepp-hillslope-output v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-output)
+   Compiling openwepp-summary-accumulator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-summary-accumulator)
+   Compiling openwepp-input-contract v0.1.0 (/home/workdir/openWEPP/crates/openwepp-input-contract)
+   Compiling openwepp-climate-runtime-adapter v0.1.0 (/home/workdir/openWEPP/crates/openwepp-climate-runtime-adapter)
+   Compiling openwepp-landuse-migrate v0.1.0 (/home/workdir/openWEPP/crates/openwepp-landuse-migrate)
+   Compiling openwepp-watershed-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-watershed-orchestrator)
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+   Compiling openwepp-watershed-output v0.1.0 (/home/workdir/openWEPP/crates/openwepp-watershed-output)
+   Compiling openwepp-runner v0.1.0 (/home/workdir/openWEPP/crates/openwepp-runner)
+   Compiling openwepp v0.1.0 (/home/workdir/openWEPP)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 20.54s
+     Running tests/integration/cli03_runner_contract_derived_tests.rs (target/llvm-cov-target/debug/deps/cli03_runner_contract_derived_tests-140512138d519edd)
+
+running 25 tests
+test cli03_contract_surface_declares_output_crate_layout ... ok
+test cli03_contract_surface_declares_metric_runfile_and_required_outputs ... ok
+test cli03_runner_crate_declares_hillslope_and_watershed_binary_targets ... ok
+test cli03_watershed_contract_surface_declares_pw0_inputs_and_hillslope_block ... ok
+test cli03_runner_crate_wires_output_surface_dependency ... ok
+test cli03_hphys0241_watershed_validator_requires_mofe_hourly_carry_metadata ... ok
+test cli03_watershed_cli_surface_uses_runfile_pattern_with_legacy_discovery_flag ... ok
+test cli03_fixture_run_publishes_wb16_ealpha_runtime_seed_provenance ... ok
+test cli03_fixture_run_emits_required_and_configured_optional_outputs_with_manifest_checksums ... ok
+test cli03_legacy_sidecar_discovery_mode_uses_legacy_sidecars_and_ignores_runfile_overrides ... ok
+test cli03_mf_multiofe_publication_emits_public_per_ofe_wat_rows has been running for over 60 seconds
+test cli03_mofe02_enables_hillslope_soil_topology_scope_guard_when_slope_and_management_align has been running for over 60 seconds
+test cli03_mofe02_rejects_full_triad_topology_mismatch has been running for over 60 seconds
+test cli03_mofe02_rejects_management_soil_mismatch has been running for over 60 seconds
+test cli03_mofe02_rejects_slope_management_and_slope_soil_mismatch has been running for over 60 seconds
+test cli03_mofe03_no_till_multiofe_runfile_executes_wave1_chain has been running for over 60 seconds
+test cli03_mofe03_single_ofe_policy_disables_wave2_by_default has been running for over 60 seconds
+test cli03_mofe03_tilled_multiofe_run_does_not_claim_the_wave1_chain has been running for over 60 seconds
+test cli03_mofe04_single_ofe_publication_reports_single_contributor_policy has been running for over 60 seconds
+test cli03_runfile_validation_rejects_non_metric_unit_system has been running for over 60 seconds
+test cli03_runfile_validation_rejects_schema_mismatch has been running for over 60 seconds
+test cli03_runfile_validation_rejects_unresolved_required_input_paths has been running for over 60 seconds
+test cli03_runtime_accepts_finite_daily_temperature_inversion_records has been running for over 60 seconds
+test m07_runfile_error_branch_matrix_preserves_exact_priority has been running for over 60 seconds
+test m07_strict_runfile_rejects_missing_pmetpara_override has been running for over 60 seconds
+test cli03_mofe02_rejects_full_triad_topology_mismatch ... ok
+test cli03_mf_multiofe_publication_emits_public_per_ofe_wat_rows ... ok
+test cli03_mofe02_enables_hillslope_soil_topology_scope_guard_when_slope_and_management_align ... ok
+test cli03_mofe02_rejects_management_soil_mismatch ... ok
+test cli03_mofe02_rejects_slope_management_and_slope_soil_mismatch ... ok
+test cli03_mofe03_no_till_multiofe_runfile_executes_wave1_chain ... ok
+test cli03_mofe03_single_ofe_policy_disables_wave2_by_default ... ok
+test cli03_mofe03_tilled_multiofe_run_does_not_claim_the_wave1_chain ... ok
+test cli03_mofe04_single_ofe_publication_reports_single_contributor_policy ... ok
+test cli03_runfile_validation_rejects_non_metric_unit_system ... ok
+test cli03_runfile_validation_rejects_schema_mismatch ... ok
+test cli03_runfile_validation_rejects_unresolved_required_input_paths ... ok
+test cli03_runtime_accepts_finite_daily_temperature_inversion_records ... ok
+test m07_runfile_error_branch_matrix_preserves_exact_priority ... ok
+test m07_strict_runfile_rejects_missing_pmetpara_override ... ok
+
+test result: ok. 25 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 121.71s
+
+
+    Finished report saved to docs/work-packages/cqr-pre-integration-campaign-evidence/medium/modules/M-07-evidence/focused.lcov

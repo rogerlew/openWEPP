@@ -244,6 +244,153 @@ loss = "output/H1.loss.json"
 }
 
 #[test]
+fn m07_strict_runfile_rejects_missing_pmetpara_override() {
+    let runfile = r#"
+schema = "openwepp-hillslope-runfile-v1"
+run_name = "cli03-missing-pmetpara"
+unit_system = "metric"
+
+[inputs]
+soil = "case.sol"
+management = "case.man"
+slope = "case.slp"
+climate = "case.cli"
+wepp_ui = false
+pmetpara = "missing-pmetpara.txt"
+
+[outputs]
+pass = "output/H1.hbp"
+loss = "output/H1.loss.json"
+"#;
+
+    let error = execute_fixture_with_runfile(runfile, "cli03_missing_pmetpara")
+        .expect_err("strict runfile mode must reject a missing pmetpara override");
+
+    assert_eq!(error.code(), "CLIHILL-E-010");
+    let message = error.to_string();
+    assert!(message.contains("optional inputs.pmetpara path"));
+    assert!(message.contains("missing-pmetpara.txt"));
+    assert!(message.contains("not a readable file"));
+}
+
+#[test]
+fn m07_runfile_error_branch_matrix_preserves_exact_priority() {
+    let cases = [
+        ("not valid TOML = [", "invalid TOML"),
+        (
+            r#"
+schema = "openwepp-hillslope-runfile-v0"
+run_name = " "
+unit_system = "english"
+[inputs]
+soil = "missing.sol"
+management = "case.man"
+slope = "case.slp"
+climate = "case.cli"
+[outputs]
+pass = "output/H1.hbp"
+loss = "output/H1.loss.json"
+"#,
+            "unsupported schema",
+        ),
+        (
+            r#"
+schema = "openwepp-hillslope-runfile-v1"
+run_name = " "
+unit_system = "english"
+[inputs]
+soil = "missing.sol"
+management = "case.man"
+slope = "case.slp"
+climate = "case.cli"
+[outputs]
+pass = "output/H1.hbp"
+loss = "output/H1.loss.json"
+"#,
+            "missing required non-empty run_name",
+        ),
+        (
+            r#"
+schema = "openwepp-hillslope-runfile-v1"
+run_name = "run"
+unit_system = "english"
+[inputs]
+soil = "missing.sol"
+management = "case.man"
+slope = "case.slp"
+climate = "case.cli"
+[outputs]
+pass = "output/H1.hbp"
+loss = "output/H1.loss.json"
+wat = " "
+"#,
+            "unsupported unit_system",
+        ),
+        (
+            r#"
+schema = "openwepp-hillslope-runfile-v1"
+run_name = "run"
+unit_system = "metric"
+[inputs]
+soil = " "
+management = "case.man"
+slope = "case.slp"
+climate = "case.cli"
+[outputs]
+pass = "output/H1.hbp"
+loss = "output/H1.loss.json"
+wat = " "
+"#,
+            "missing required non-empty inputs.soil",
+        ),
+        (
+            r#"
+schema = "openwepp-hillslope-runfile-v1"
+run_name = "run"
+unit_system = "metric"
+[inputs]
+soil = "missing.sol"
+management = "case.man"
+slope = "case.slp"
+climate = "case.cli"
+[outputs]
+pass = "output/H1.hbp"
+loss = "output/H1.loss.json"
+wat = " "
+"#,
+            "required inputs.soil path",
+        ),
+        (
+            r#"
+schema = "openwepp-hillslope-runfile-v1"
+run_name = "run"
+unit_system = "metric"
+[inputs]
+soil = "case.sol"
+management = "case.man"
+slope = "case.slp"
+climate = "case.cli"
+[outputs]
+pass = "output/H1.hbp"
+loss = "output/H1.loss.json"
+wat = " "
+"#,
+            "outputs.wat cannot be an empty string",
+        ),
+    ];
+
+    for (index, (runfile, expected)) in cases.into_iter().enumerate() {
+        let error = execute_fixture_with_runfile(runfile, &format!("m07_branch_{index}"))
+            .expect_err("branch fixture must fail closed");
+        assert_eq!(error.code(), "CLIHILL-E-010");
+        assert!(
+            error.to_string().contains(expected),
+            "expected '{expected}', observed: {error}"
+        );
+    }
+}
+
+#[test]
 fn cli03_fixture_run_emits_required_and_configured_optional_outputs_with_manifest_checksums() {
     let runfile = r#"
 schema = "openwepp-hillslope-runfile-v1"
