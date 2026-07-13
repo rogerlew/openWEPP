@@ -1,0 +1,159 @@
+INFO: running workspace release gates
+    Checking openwepp v0.1.0 (/home/workdir/openWEPP)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.57s
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.20s
+────────────
+ Nextest run ID e9afd8ae-9e5d-43e8-ba5f-3937d5c9a789 with nextest profile: full
+    Starting 1946 tests across 175 binaries (3 tests skipped)
+        SLOW [> 90.000s] (─────────) openwepp-hillslope-orchestrator ofe_routing::d10b_reconciliation_tests::case4_manning_solver_converges_to_iwagaki_oracle
+        SLOW [> 90.000s] (─────────) openwepp-hillslope-orchestrator ofe_routing::iwagaki_oracle::tests::characteristics_fan_cross_validates_upwind_reference
+        SLOW [> 90.000s] (─────────) openwepp-hillslope-orchestrator ofe_routing::iwagaki_oracle::tests::upwind_case4_self_convergence
+        SLOW [> 90.000s] (─────────) openwepp::snowdensity05e_melt_adjudication coe_melt_snowbench_runs_both_models_as_diagnostic_only
+────────────
+     Summary [ 577.903s] 1946 tests run: 1946 passed (4 slow), 3 skipped
+advisories ok, bans ok, licenses ok, sources ok
+INFO: evaluating authority-suite lanes
+INFO: verifying authority fixture hash locks and provenance
+INFO: running authority lane 'required' (hard-fail) via cargo test --test auth05_level4_constitutive_authority_hardening_contract
+error: no test target named `auth05_level4_constitutive_authority_hardening_contract` in default-run packages
+help: available test targets:
+    adr0017_comparator_distrust_ratification_contract
+    arch22_typed_state_surface_contract
+    auth04_release_gate_authority_stack_contract
+    auth06_fixture_provenance_hash_enforcement_contract
+    auth07_fc_authority_cohort_contract
+    auth11_required_suite_obligation_guards_contract
+    cancov_stratified_observations
+    cli01_runner_contract_derived_tests
+    cli01_runner_hillslope_integration
+    cli03_runner_contract_derived_tests
+    cli04_runner_wat_parquet_contract_derived_tests
+    comparator_tier_routing_metadata
+    dff_ws1_native_forest_cli
+    dff_ws2_ksatadj_direct_runtime
+    dff_ws3_directional_burn_validation
+    erod11_alias_boundary_ownership_contract
+    erod12_cross_domain_contract_closure_contract
+    erod13_contract_authority_closure_contract
+    erod14_contract_authority_closure_contract
+    erod15_wave3_contract_authority_closure_contract
+    erod16_wave1_continuity_fixture_conservation
+    erosion_multi_ofe_p102_chain
+    erosion_single_ofe_p61_sediment
+    hparity01_hillslope_wat_lineage_contract
+    hphys0208_fc_threshold_coupled_residual_contract
+    hphys0209_profilewp_adjudication_contract
+    hphys0276_raw_unit_conversion_guard_contract
+    hphys0279_sc_unit_compliance_lint_contract
+    hphys0296_snow_rm_acceptance_authority_contract
+    hphys0297_snow_rm_defect_ledger_contract
+    hphys0298_paired_lineage_partition_contract
+    hphys0300_raw_hourly_melt_post_raw_routing_contract
+    hphys0301_h39_forcing_melt_term_producer_contract
+    hphys0302_comparator_surface_audit_contract
+    hphys0303_adr0016_comparator_ratification_contract
+    hphys0304_fixed_comparator_semantic_rerun_contract
+    hphys0306_baseline_melt_observe_semantics_contract
+    hphys0307_melt_call_branch_activation_contract
+    hphys0308_snowd_branch_state_ordering_contract
+    hphys0309_snow_carry_depletion_lineage_contract
+    hphys0310_prior_day_snow_carry_divergence_contract
+    hphys0311_snow_carry_source_line_parity_contract
+    hphys0312_prior_year_terminal_snowpack_lineage_contract
+    hphys0313_snowpack_settling_carry_recursion_contract
+    hphys0314_adr0017_snow_rm_reclassification_contract
+    hphys0315_hourly_snowfall_input_lineage_contract
+    hphys0316_2013_terminal_carry_recursion_contract
+    hphys0317_hourly_snowfall_input_surface_parity_contract
+    hphys0319_fixed_baseline_stmtim_observe_contract
+    hphys0320_stmtim_start_time_source_line_contract
+    infile_chaninp_parser_contract
+    infile_climate_parser_contract
+    infile_frost_parser_contract
+    infile_gwcoeff_parser_contract
+    infile_hbp_parser_contract
+    infile_irrigation_depletion_parser_contract
+    infile_irrigation_fixeddate_parser_contract
+    infile_lcwb_parser_contract
+    infile_management_parser_contract
+    infile_management_yaml_contract
+    infile_phosphorus_parser_contract
+    infile_pmetpara_parser_contract
+    infile_slope_parser_contract
+    infile_snow_parser_contract
+    infile_soil_parser_contract
+    infile_tc_parser_contract
+    infile_tcr_parser_contract
+    infile_watershed_channel_parser_contract
+    infile_watershed_impoundment_parser_contract
+    infile_watershed_structure_parser_contract
+    infile_weppui_parser_contract
+    landuse_migration_cli_contract
+    laned_shadow_h2637
+    mofe01_inter_ofe_route_contract
+    mofe04_publication_contract_authority_closure_contract
+    mofe05_watershed_contributor_metadata_contract_authority_closure_contract
+    owcmp_agent_config_contract
+    owcmp_cli_contract
+    paradigm2_multilayer_promotion
+    paradigm2_stage0_surface_energy_balance_contract
+    paradigm2_stage1_layered_snow_density
+    paradigm2_stage2_snow_frost_insulation_profile
+    paradigm2_stage3_decouple_water_temperature
+    paradigm2_stage3_liquid_routing_meltwater_temperature
+    pl14_tier_a_candidate_replay_contract
+    pl14r_tier_a_replay_rerun_contract
+    pl14s_tier_a_candidate_emission_and_replay_contract
+    pl15_tier_a_delta_closeout_contract
+    pl15r_tier_a_delta_recloseout_contract
+    sim_contract_boundary_unit_registry
+    sim_contract_closure_checks
+    sim_contract_status_taxonomy
+    sim_contract_symbol_alias_registry
+    snowdensity02_contract_adr_guard
+    snowdensity03_physics_bulk_offline_contract
+    snowdensity05a_melt_contract_guard
+    snowdensity05b_shortwave_source_contract
+    snowdensity05c_albedo_state_core
+    snowdensity05d_opt_in_coe_melt
+    snowdensity05e_melt_adjudication
+    snowdensity05f_melt_closure_handoff
+    snowdensity05g_harness_fidelity_rerun
+    snowdensity06_density_compaction
+    snowdensity06b_coe_bound_density_replay
+    snowdensity07_runtime_opt_in
+    snowdensity08_gate_rerun
+    snowdensity09_coupled_wat_rerun
+    snowdensity10_3_10_spring_pack_depletion_compaction
+    snowdensity10_3_11_spring_compaction_densification
+    snowdensity10_3_12_bundle_activation_adjudication
+    snowdensity10_3_13_residual_policy_b_diagnostic
+    snowdensity10_3_14_policy_b_no_regression_cap_authority
+    snowdensity10_3_15_default_activation_active_cap
+    snowdensity10_3_16_open_surface_ablation_stage_a
+    snowdensity10_3_17_shallow_pack_compaction_guard
+    snowdensity10_3_18_cross_snotel_mechanism_rubric
+    snowdensity10_3_19_harder_pomeroy_default_activation
+    snowdensity10_3_1a_per_day_cancov
+    snowdensity10_3_20_sublimation_stage_b_unlock
+    snowdensity10_3_21_post_partition_residual_decomposition
+    snowdensity10_3_22_climate_class_density_specialization
+    snowdensity10_3_3_gradient_melt_adjudication
+    snowdensity10_3_4_maritime_overaccumulation_diagnosis
+    snowdensity10_3_5a_meteorology_crate_contract
+    snowdensity10_3_5b_hourly_partition_jennings_contract
+    snowdensity10_3_5c_phase_partition_snowdepth_impact
+    snowdensity10_3_6_winter_thaw_melt_response
+    snowdensity10_3_7_winter_thaw_melt_response_correction
+    snowdensity10_3_8_liquid_holding_capacity
+    snowdensity10_3_9_march_april_residual_attribution
+    snowfreeze_observed_frost_depth_contract
+    snowfrost_fidelity_c_diagnostics_contract
+    snowfrost_fidelity_g0_pysnobal_bridge_contract
+    soilauth02_soil_producer_reconciliation_contract
+    soilauth03_soil_producer_contract_drift_guards_contract
+    topology_graph_validation_gate
+    wb13_daily_water_balance_output_surface_contract
+    workspace_integration_ownership_acceptance
+    wshedw5_typed_watershed_runtime_contract
+ERROR: required hard-fail authority suite lane 'required' failed for test target auth05_level4_constitutive_authority_hardening_contract

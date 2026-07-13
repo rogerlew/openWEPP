@@ -1,0 +1,37 @@
+INFO: running workspace release gates
+Diff in /home/workdir/openWEPP/tests/integration/auth06_fixture_provenance_hash_enforcement_contract.rs:353:
+         .find(|(_, path)| path == FIXTURE)
+         .expect("WB19 fixture lock entry must exist");
+     let fixture_digest = sha256_file(&fixture_path);
+[31m-    assert_eq!(fixture_digest, *lock_digest, "fixture bytes must match lock");
+[m[32m+    assert_eq!(
+[m[32m+        fixture_digest, *lock_digest,
+[m[32m+        "fixture bytes must match lock"
+[m[32m+    );
+[m     assert!(
+         provenance
+             .lines()
+Diff in /home/workdir/openWEPP/tests/integration/auth06_fixture_provenance_hash_enforcement_contract.rs:369:
+         .output()
+         .expect("git cat-file must run");
+     assert!(object_type.status.success(), "source commit must exist");
+[31m-    assert_eq!(object_type.stdout, b"commit\n", "source object must be a commit");
+[m[32m+    assert_eq!(
+[m[32m+        object_type.stdout, b"commit\n",
+[m[32m+        "source object must be a commit"
+[m[32m+    );
+[m
+     let source_path = format!("{FIXTURE_ROOT}/{FIXTURE}");
+     let source_object = Command::new("git")
+Diff in /home/workdir/openWEPP/tests/integration/auth06_fixture_provenance_hash_enforcement_contract.rs:376:
+         .args(["show", &format!("{SOURCE_COMMIT}:{source_path}")])
+         .output()
+         .expect("git show must run");
+[31m-    assert!(source_object.status.success(), "source fixture must exist at commit");
+[m[32m+    assert!(
+[m[32m+        source_object.status.success(),
+[m[32m+        "source fixture must exist at commit"
+[m[32m+    );
+[m     let temp_path = std::env::temp_dir().join(format!(
+         "openwepp-intval-auth-prov001-{}.json",
+         std::process::id()

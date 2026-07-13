@@ -1,7 +1,6 @@
+schema_version: 1
 suite_id: cas_l4_subhyd_watyld_fcwp_consistency_001
 generated_utc: 2026-06-02T00:00:00Z
-source_repo: /workdir/openWEPP
-source_commit: working-tree-hphys0256
 notes: |
   Repository-authored constitutive fixtures for WB19 FC/WP + COCA water-yield
   coupling authority. HPHYS0256 makes the fixture lane explicit as hourly
@@ -10,6 +9,8 @@ notes: |
 fixtures:
   - path: wb19_fcwp_coca_watyld_cases.json
     sha256: a1c50a82cd1e497875cb034481c4b2ef710c319907480b0f584fde30f48fae5e
+    source_repo: /workdir/openWEPP
+    source_commit: 9aa4c3d61549ab30da665a4dc109bab811522fe9
     source_path: tests/fixtures/constitutive/cas_l4_subhyd_watyld_fcwp_consistency_001/wb19_fcwp_coca_watyld_cases.json
     source_sha256: a1c50a82cd1e497875cb034481c4b2ef710c319907480b0f584fde30f48fae5e
     transform_note: "Repository-authored constitutive fixture for WB19 avfca/watyld branch authority with explicit HPHYS0247 hourly iterative fffx q authority after HPHYS0256 lane split."

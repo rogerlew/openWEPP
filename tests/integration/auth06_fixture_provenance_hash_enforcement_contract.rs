@@ -68,6 +68,24 @@ fn assert_sha256_lock_passes(fixture_root: &Path) {
     );
 }
 
+fn sha256_file(path: &Path) -> String {
+    let output = Command::new("sha256sum")
+        .arg(path)
+        .output()
+        .unwrap_or_else(|error| panic!("failed to hash {}: {error}", path.display()));
+    assert!(
+        output.status.success(),
+        "sha256sum failed for {}",
+        path.display()
+    );
+    String::from_utf8(output.stdout)
+        .expect("sha256sum output must be UTF-8")
+        .split_whitespace()
+        .next()
+        .expect("sha256sum output must contain a digest")
+        .to_string()
+}
+
 #[test]
 fn auth06_schema_requires_fixture_hash_and_source_provenance_fields() {
     let schema = repo_file("docs/specifications/external-authority/suite-schema.md");
@@ -288,5 +306,137 @@ fn auth06_release_gate_script_enforces_fixture_integrity_before_lane_execution()
             "Before lane execution, release-gate automation must verify fixture integrity"
         ),
         "release runbook must capture fixture integrity gate policy"
+    );
+}
+
+#[test]
+fn intval_auth_prov001_wb19_fixture_provenance_is_git_verifiable() {
+    const FIXTURE_ROOT: &str =
+        "tests/fixtures/constitutive/cas_l4_subhyd_watyld_fcwp_consistency_001";
+    const FIXTURE: &str = "wb19_fcwp_coca_watyld_cases.json";
+    const SOURCE_REPO: &str = "/workdir/openWEPP";
+    const SOURCE_COMMIT: &str = "9aa4c3d61549ab30da665a4dc109bab811522fe9";
+
+    let provenance = repo_file(&format!("{FIXTURE_ROOT}/fixtures.provenance.yaml"));
+    assert!(
+        provenance.lines().any(|line| line == "schema_version: 1"),
+        "INTVAL-AUTH-PROV-001: provenance must declare schema_version 1"
+    );
+    assert!(
+        !provenance
+            .lines()
+            .any(|line| line.starts_with("source_repo:") || line.starts_with("source_commit:")),
+        "INTVAL-AUTH-PROV-001: legacy top-level source claims must be removed"
+    );
+
+    let lines = provenance.lines().collect::<Vec<_>>();
+    let item_starts = lines
+        .iter()
+        .enumerate()
+        .filter_map(|(index, line)| line.starts_with("  - path: ").then_some(index))
+        .collect::<Vec<_>>();
+    let matching_starts = item_starts
+        .iter()
+        .copied()
+        .filter(|index| lines[*index] == format!("  - path: {FIXTURE}"))
+        .collect::<Vec<_>>();
+    assert_eq!(
+        matching_starts.len(),
+        1,
+        "INTVAL-AUTH-PROV-001: provenance must contain exactly one target fixture item"
+    );
+    let item_start = matching_starts[0];
+    let item_end = item_starts
+        .iter()
+        .copied()
+        .find(|index| *index > item_start)
+        .unwrap_or(lines.len());
+    let item = &lines[item_start..item_end];
+    let item_value = |key: &str| {
+        let prefix = format!("    {key}: ");
+        let values = item
+            .iter()
+            .filter_map(|line| line.strip_prefix(&prefix))
+            .collect::<Vec<_>>();
+        assert_eq!(
+            values.len(),
+            1,
+            "INTVAL-AUTH-PROV-001: target fixture item must contain exactly one {key}"
+        );
+        values[0]
+    };
+    let source_repo = item_value("source_repo");
+    let source_commit = item_value("source_commit");
+    let source_path = item_value("source_path");
+    let item_digest = item_value("sha256");
+    let source_digest = item_value("source_sha256");
+
+    assert_eq!(
+        source_repo, SOURCE_REPO,
+        "INTVAL-AUTH-PROV-001: fixture item must name the canonical source repository"
+    );
+    assert!(
+        source_commit == SOURCE_COMMIT
+            && source_commit.len() == 40
+            && source_commit
+                .chars()
+                .all(|character| character.is_ascii_hexdigit() && !character.is_ascii_uppercase()),
+        "INTVAL-AUTH-PROV-001: fixture item must name the exact lowercase Git commit"
+    );
+    assert_eq!(
+        source_path,
+        format!("{FIXTURE_ROOT}/{FIXTURE}"),
+        "INTVAL-AUTH-PROV-001: source path must identify the target fixture"
+    );
+
+    let fixture_root = repo_path(FIXTURE_ROOT);
+    let fixture_path = fixture_root.join(FIXTURE);
+    let lock_entries = parse_lock_entries(&fixture_root.join("fixtures.sha256"));
+    let (lock_digest, _) = lock_entries
+        .iter()
+        .find(|(_, path)| path == FIXTURE)
+        .expect("WB19 fixture lock entry must exist");
+    let fixture_digest = sha256_file(&fixture_path);
+    assert_eq!(
+        fixture_digest, *lock_digest,
+        "fixture bytes must match lock"
+    );
+    assert_eq!(
+        item_digest, lock_digest,
+        "item hash must match fixture lock"
+    );
+    assert_eq!(
+        source_digest, lock_digest,
+        "source hash must match fixture lock"
+    );
+
+    let object_type = Command::new("git")
+        .args(["cat-file", "-t", SOURCE_COMMIT])
+        .output()
+        .expect("git cat-file must run");
+    assert!(object_type.status.success(), "source commit must exist");
+    assert_eq!(
+        object_type.stdout, b"commit\n",
+        "source object must be a commit"
+    );
+
+    let source_object = Command::new("git")
+        .args(["show", &format!("{SOURCE_COMMIT}:{source_path}")])
+        .output()
+        .expect("git show must run");
+    assert!(
+        source_object.status.success(),
+        "source fixture must exist at commit"
+    );
+    let temp_path = std::env::temp_dir().join(format!(
+        "openwepp-intval-auth-prov001-{}.json",
+        std::process::id()
+    ));
+    fs::write(&temp_path, source_object.stdout).expect("temporary source fixture must be writable");
+    let git_source_digest = sha256_file(&temp_path);
+    let _ = fs::remove_file(&temp_path);
+    assert_eq!(
+        git_source_digest, *lock_digest,
+        "Git source bytes must match fixture, lock, and provenance hashes"
     );
 }

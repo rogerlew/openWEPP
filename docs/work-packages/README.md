@@ -23,11 +23,16 @@
   HOLD correction for `INTVAL-REL-001`. Its source guard and canonical full
   nextest correction passed 1,945/1,945 workspace tests, then required fixture
   integrity exposed `INTVAL-AUTH-PROV-001` before remaining release lanes.
-- `20260713-dc-intval-authority-provenance-001/package.md` is the queued bounded
-  provenance-only closure for `INTVAL-AUTH-PROV-001`. It must bind the existing
-  locked fixture bytes to verified Git history, pass authority and exact
-  release/stability gates, and then trigger a full integrated-validation
-  restart.
+- `20260713-dc-intval-authority-provenance-001/package.md` is the executed-HOLD
+  metadata-only correction for `INTVAL-AUTH-PROV-001`. Exact release accepted
+  its Git-verifiable provenance after 1,946/1,946 workspace tests, then exposed
+  `INTVAL-AUTH-BIND-001` in the protected required-authority lane.
+- `20260713-dc-intval-finalization-001/package.md` is the queued terminal
+  iterative DC campaign. It begins with seven active required suites bound to
+  five targets deleted by `a381702b`, then owns every correctable release,
+  authority, stability, and restarted integrated-validation blocker through
+  verified `PASS-INTEGRATED-VALIDATION`; it does not create piecemeal successor
+  packages for intermediate gate failures.
 
 - `../agent-guidance-map.md` and `../../tools/agents/find-agents` provide fast
   discovery for applicable `AGENTS.md` files. Before package edits, run
