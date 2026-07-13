@@ -924,3 +924,200 @@ fn snowbench_io(path: impl Into<PathBuf>, source: io::Error) -> SnowbenchError {
         source,
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::fmt::Debug;
+    use std::sync::atomic::{AtomicUsize, Ordering};
+
+    use super::*;
+
+    static TEMP_SEQUENCE: AtomicUsize = AtomicUsize::new(0);
+
+    fn temp_path(label: &str) -> PathBuf {
+        let sequence = TEMP_SEQUENCE.fetch_add(1, Ordering::Relaxed);
+        std::env::temp_dir().join(format!(
+            "openwepp-coe-melt-{label}-{}-{sequence}.csv",
+            std::process::id()
+        ))
+    }
+
+    fn invalid_forcing_detail<T: Debug>(result: Result<T, SnowbenchError>) -> String {
+        match result {
+            Err(SnowbenchError::InvalidForcing { detail }) => detail,
+            other => panic!("expected invalid-forcing error, observed {other:?}"),
+        }
+    }
+
+    fn canopy_result(contents: &str) -> Result<BTreeMap<String, f64>, SnowbenchError> {
+        let path = temp_path("canopy");
+        fs::write(&path, contents).expect("temporary canopy fixture must be writable");
+        let result = read_canopy_series(&path);
+        fs::remove_file(path).expect("temporary canopy fixture must be removable");
+        result
+    }
+
+    fn forcing_line(timestamp: &str, replacements: &[(usize, &str)]) -> String {
+        let mut columns = vec![
+            timestamp, "100", "250", "-5", "-2", "500", "2", "1", "0", "0.5", "100",
+        ];
+        for (index, value) in replacements {
+            columns[*index] = value;
+        }
+        columns.join(",")
+    }
+
+    #[test]
+    fn canopy_series_rejects_io_header_shape_sequence_and_domain_failures() {
+        let missing = temp_path("missing");
+        assert!(matches!(
+            read_canopy_series(&missing),
+            Err(SnowbenchError::Io { .. })
+        ));
+
+        let cases = [
+            ("", "missing header"),
+            ("wrong,header\n", "unexpected canopy header"),
+            (
+                "date,day_index,canopy_cover_fraction,source\n2020-01-01,1,0.5\n",
+                "3 canopy columns, expected 4",
+            ),
+            (
+                "date,day_index,canopy_cover_fraction,source\n2020-01-01,bad,0.5,growth\n",
+                "day_index is not numeric",
+            ),
+            (
+                "date,day_index,canopy_cover_fraction,source\n2020-01-01,2,0.5,growth\n",
+                "day_index 2, expected 1",
+            ),
+            (
+                "date,day_index,canopy_cover_fraction,source\n2020-01-01,1,bad,growth\n",
+                "canopy_cover_fraction is not numeric",
+            ),
+            (
+                "date,day_index,canopy_cover_fraction,source\n2020-01-01,1,NaN,growth\n",
+                "canopy_cover_fraction is non-finite",
+            ),
+            (
+                "date,day_index,canopy_cover_fraction,source\n2020-01-01,1,1.1,growth\n",
+                "must be in [0,1]",
+            ),
+            (
+                "date,day_index,canopy_cover_fraction,source\n2020-01-01,1,0.4,growth\n2020-01-01,2,0.5,growth\n",
+                "duplicates canopy date",
+            ),
+            (
+                "date,day_index,canopy_cover_fraction,source\n",
+                "contained no canopy rows",
+            ),
+        ];
+
+        for (contents, expected_detail) in cases {
+            let detail = invalid_forcing_detail(canopy_result(contents));
+            assert!(
+                detail.contains(expected_detail),
+                "detail '{detail}' must contain '{expected_detail}'"
+            );
+        }
+    }
+
+    #[test]
+    fn canopy_series_accepts_ordered_finite_unit_interval_rows() {
+        let rows = canopy_result(
+            "date,day_index,canopy_cover_fraction,source\n\
+             2020-01-01,1,0,growth\n\
+             \n\
+             2020-01-02,2,1,growth\n",
+        )
+        .expect("valid canopy series must parse");
+
+        assert_eq!(rows.len(), 2);
+        assert_eq!(rows["2020-01-01"], 0.0);
+        assert_eq!(rows["2020-01-02"], 1.0);
+    }
+
+    #[test]
+    fn forcing_line_rejects_column_and_timestamp_failures() {
+        let path = Path::new("forcing.csv");
+        let cases = [
+            (
+                "2020-01-01T00:00:00,1".to_string(),
+                "has 2 columns, expected 11",
+            ),
+            (forcing_line("short", &[]), "timestamp is too short"),
+            (forcing_line("2020-01-01", &[]), "timestamp lacks hour"),
+            (
+                forcing_line("2020-01-01Txx:00:00", &[]),
+                "timestamp hour is not numeric",
+            ),
+            (
+                forcing_line("2020-01-01T24:00:00", &[]),
+                "timestamp hour out of range: 24",
+            ),
+        ];
+
+        for (line, expected_detail) in cases {
+            let detail = invalid_forcing_detail(parse_forcing_line(path, 2, &line));
+            assert!(detail.contains(expected_detail));
+        }
+    }
+
+    #[test]
+    fn forcing_line_rejects_numeric_and_physical_domain_failures() {
+        let path = Path::new("forcing.csv");
+        let cases = [
+            (vec![(1, "bad")], "net_solar_Wm-2 is not numeric"),
+            (vec![(1, "NaN")], "net_solar_Wm-2 is non-finite"),
+            (vec![(9, "1.1")], "snow_precip_fraction must be in [0,1]"),
+            (
+                vec![(1, "-1")],
+                "has negative radiation, wind, or precipitation",
+            ),
+            (
+                vec![(6, "-1")],
+                "has negative radiation, wind, or precipitation",
+            ),
+            (
+                vec![(7, "-1")],
+                "has negative radiation, wind, or precipitation",
+            ),
+            (vec![(10, "0")], "snow density must be positive"),
+            (
+                vec![(3, "-273.15")],
+                "temperature is physically invalid for longwave inversion",
+            ),
+            (
+                vec![(3, "1e100")],
+                "longwave inversion denominator is invalid",
+            ),
+            (vec![(5, "0")], "vapor pressure must be positive"),
+        ];
+
+        for (replacements, expected_detail) in cases {
+            let line = forcing_line("2020-01-01T00:00:00", &replacements);
+            let detail = invalid_forcing_detail(parse_forcing_line(path, 2, &line));
+            assert!(
+                detail.contains(expected_detail),
+                "detail '{detail}' must contain '{expected_detail}'"
+            );
+        }
+    }
+
+    #[test]
+    fn forcing_line_accepts_and_converts_complete_physical_row() {
+        let line = forcing_line("2020-01-01T00:00:00", &[]);
+        let row = parse_forcing_line(Path::new("forcing.csv"), 2, &line)
+            .expect("valid forcing row must parse");
+
+        assert_eq!(row.date, "2020-01-01");
+        assert_eq!(row.hour_index, 0);
+        assert!((row.rain_m - 0.000_5).abs() < 1e-12);
+        assert!((row.snow_water_m - 0.000_5).abs() < 1e-12);
+        assert!((row.snowfall_depth_m - 0.005).abs() < 1e-12);
+        assert!((row.radiation_mj_m2 - 0.45).abs() < 1e-12);
+        assert_eq!(row.air_temperature_c, -5.0);
+        assert!((0.0..=1.0).contains(&row.cloud_fraction));
+        assert!(row.dewpoint_c.is_finite());
+        assert_eq!(row.wind_m_s, 2.0);
+    }
+}
