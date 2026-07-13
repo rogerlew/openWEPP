@@ -1,0 +1,750 @@
+{
+  "$schema": "https://raw.githubusercontent.com/minikin/cargo-crap/main/schemas/report-v1.json",
+  "version": "0.2.2",
+  "entries": [
+    {
+      "file": "crates/openwepp-sim-contract/src/symbols.rs",
+      "function": "boundary_alias_matches_template",
+      "line": 635,
+      "cyclomatic": 17.0,
+      "coverage": 0.0,
+      "crap": 306.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/status.rs",
+      "function": "BoundaryClass::definition",
+      "line": 88,
+      "cyclomatic": 13.0,
+      "coverage": 0.0,
+      "crap": 182.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/symbols.rs",
+      "function": "SymbolAliasRegistry::new",
+      "line": 162,
+      "cyclomatic": 13.0,
+      "coverage": 0.0,
+      "crap": 182.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/symbols.rs",
+      "function": "SymbolAliasRegistryError::fmt",
+      "line": 67,
+      "cyclomatic": 9.0,
+      "coverage": 0.0,
+      "crap": 90.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/status.rs",
+      "function": "SimulationStatus::classification",
+      "line": 366,
+      "cyclomatic": 8.0,
+      "coverage": 0.0,
+      "crap": 72.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/symbols.rs",
+      "function": "SymbolAliasRegistry::canonical_for_boundary_alias",
+      "line": 537,
+      "cyclomatic": 7.0,
+      "coverage": 0.0,
+      "crap": 56.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/status.rs",
+      "function": "SimulationPhase::as_str",
+      "line": 16,
+      "cyclomatic": 6.0,
+      "coverage": 0.0,
+      "crap": 42.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/status.rs",
+      "function": "ClampClass::as_str",
+      "line": 154,
+      "cyclomatic": 6.0,
+      "coverage": 0.0,
+      "crap": 42.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/symbols.rs",
+      "function": "validate_boundary_alias_template",
+      "line": 594,
+      "cyclomatic": 5.0,
+      "coverage": 0.0,
+      "crap": 30.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/status.rs",
+      "function": "StatusClassification::severity",
+      "line": 45,
+      "cyclomatic": 4.0,
+      "coverage": 0.0,
+      "crap": 20.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/registries.rs",
+      "function": "BoundaryUnitRegistry::new",
+      "line": 502,
+      "cyclomatic": 17.0,
+      "coverage": 80.68181818181817,
+      "crap": 19.08351480324944
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/registries.rs",
+      "function": "validate_entry",
+      "line": 783,
+      "cyclomatic": 19.0,
+      "coverage": 100.0,
+      "crap": 19.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/registries.rs",
+      "function": "OutputUnitRegistryError::fmt",
+      "line": 71,
+      "cyclomatic": 13.0,
+      "coverage": 100.0,
+      "crap": 13.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/registries.rs",
+      "function": "validate_output_unit_entry",
+      "line": 879,
+      "cyclomatic": 11.0,
+      "coverage": 76.5625,
+      "crap": 12.55782699584961
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/status.rs",
+      "function": "StatusError::fmt",
+      "line": 190,
+      "cyclomatic": 3.0,
+      "coverage": 0.0,
+      "crap": 12.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/closure.rs",
+      "function": "check_range",
+      "line": 169,
+      "cyclomatic": 3.0,
+      "coverage": 0.0,
+      "crap": 12.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/closure.rs",
+      "function": "check_balance_residual",
+      "line": 233,
+      "cyclomatic": 3.0,
+      "coverage": 0.0,
+      "crap": 12.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/symbols.rs",
+      "function": "SymbolAliasRegistry::entries",
+      "line": 574,
+      "cyclomatic": 3.0,
+      "coverage": 0.0,
+      "crap": 12.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/registries.rs",
+      "function": "format_boundary_required_field_error",
+      "line": 302,
+      "cyclomatic": 11.0,
+      "coverage": 97.95918367346938,
+      "crap": 11.00102848303003
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/registries.rs",
+      "function": "template_matches_alias_from",
+      "line": 993,
+      "cyclomatic": 8.0,
+      "coverage": 100.0,
+      "crap": 8.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/registries.rs",
+      "function": "validate_boundary_alias_template",
+      "line": 951,
+      "cyclomatic": 6.0,
+      "coverage": 63.888888888888886,
+      "crap": 7.695216049382717
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/registries.rs",
+      "function": "OutputUnitRegistry::new",
+      "line": 711,
+      "cyclomatic": 6.0,
+      "coverage": 67.85714285714286,
+      "crap": 7.19551749271137
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/registries.rs",
+      "function": "format_boundary_alias_conflict_error",
+      "line": 370,
+      "cyclomatic": 7.0,
+      "coverage": 96.7741935483871,
+      "crap": 7.001644792051291
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/registries.rs",
+      "function": "BoundaryUnitRegistry::entry_for_boundary_alias",
+      "line": 644,
+      "cyclomatic": 7.0,
+      "coverage": 100.0,
+      "crap": 7.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/status.rs",
+      "function": "SimulationStatus::new",
+      "line": 212,
+      "cyclomatic": 2.0,
+      "coverage": 0.0,
+      "crap": 6.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/status.rs",
+      "function": "SimulationStatus::advisory",
+      "line": 261,
+      "cyclomatic": 2.0,
+      "coverage": 0.0,
+      "crap": 6.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/closure.rs",
+      "function": "check_finite",
+      "line": 91,
+      "cyclomatic": 2.0,
+      "coverage": 0.0,
+      "crap": 6.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/closure.rs",
+      "function": "check_min",
+      "line": 116,
+      "cyclomatic": 2.0,
+      "coverage": 0.0,
+      "crap": 6.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/closure.rs",
+      "function": "check_max",
+      "line": 142,
+      "cyclomatic": 2.0,
+      "coverage": 0.0,
+      "crap": 6.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/closure.rs",
+      "function": "check_equal_count",
+      "line": 285,
+      "cyclomatic": 2.0,
+      "coverage": 0.0,
+      "crap": 6.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/symbols.rs",
+      "function": "alias_uses_template",
+      "line": 590,
+      "cyclomatic": 2.0,
+      "coverage": 0.0,
+      "crap": 6.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/registries.rs",
+      "function": "BoundaryUnitRegistryError::fmt",
+      "line": 271,
+      "cyclomatic": 6.0,
+      "coverage": 100.0,
+      "crap": 6.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/registries.rs",
+      "function": "format_boundary_lookup_error",
+      "line": 445,
+      "cyclomatic": 5.0,
+      "coverage": 93.33333333333333,
+      "crap": 5.007407407407407
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/registries.rs",
+      "function": "format_boundary_unit_shape_error",
+      "line": 412,
+      "cyclomatic": 5.0,
+      "coverage": 96.0,
+      "crap": 5.0016
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/registries.rs",
+      "function": "validate_output_schema_unit",
+      "line": 163,
+      "cyclomatic": 4.0,
+      "coverage": 66.66666666666666,
+      "crap": 4.5925925925925934
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/registries.rs",
+      "function": "BoundaryUnitRegistry::require_boundary_aliases",
+      "line": 682,
+      "cyclomatic": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/status.rs",
+      "function": "BoundaryClass::as_str",
+      "line": 79,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/status.rs",
+      "function": "BoundaryClass::classification",
+      "line": 84,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/status.rs",
+      "function": "ClampClass::is_clamped",
+      "line": 165,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/status.rs",
+      "function": "SimulationStatus::ok",
+      "line": 242,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/status.rs",
+      "function": "SimulationStatus::failure",
+      "line": 287,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/status.rs",
+      "function": "SimulationStatus::non_finite_failure",
+      "line": 310,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/status.rs",
+      "function": "SimulationStatus::domain_failure",
+      "line": 322,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/status.rs",
+      "function": "SimulationStatus::phase",
+      "line": 331,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/status.rs",
+      "function": "SimulationStatus::ok_flag",
+      "line": 336,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/status.rs",
+      "function": "SimulationStatus::finite_ok",
+      "line": 341,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/status.rs",
+      "function": "SimulationStatus::domain_ok",
+      "line": 346,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/status.rs",
+      "function": "SimulationStatus::boundary_class",
+      "line": 351,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/status.rs",
+      "function": "SimulationStatus::clamp_class",
+      "line": 356,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/status.rs",
+      "function": "SimulationStatus::message_id",
+      "line": 361,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/status.rs",
+      "function": "SimulationStatus::severity",
+      "line": 385,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/closure.rs",
+      "function": "ClosureViolation::new",
+      "line": 64,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/closure.rs",
+      "function": "check_unit_interval",
+      "line": 215,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/symbols.rs",
+      "function": "SymbolAliasEntry::new",
+      "line": 14,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/symbols.rs",
+      "function": "SymbolAliasEntry::canonical_symbol",
+      "line": 22,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/symbols.rs",
+      "function": "SymbolAliasEntry::boundary_alias",
+      "line": 27,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/symbols.rs",
+      "function": "SymbolAliasTemplateEntry::new",
+      "line": 131,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/symbols.rs",
+      "function": "SymbolAliasRegistry::canonical_wepp_registry",
+      "line": 256,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/symbols.rs",
+      "function": "SymbolAliasRegistry::canonical_symbols",
+      "line": 506,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/symbols.rs",
+      "function": "SymbolAliasRegistry::aliases_for_canonical",
+      "line": 519,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/registries.rs",
+      "function": "BoundaryUnitRegistry::entries",
+      "line": 619,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/registries.rs",
+      "function": "alias_uses_template",
+      "line": 871,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/registries.rs",
+      "function": "BoundaryUnitRegistry::entry_for_canonical",
+      "line": 628,
+      "cyclomatic": 1.0,
+      "coverage": 80.0,
+      "crap": 1.008
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/registries.rs",
+      "function": "BoundaryUnitTemplateEntry::new",
+      "line": 475,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/registries.rs",
+      "function": "BoundaryUnitRegistry::canonical_registry",
+      "line": 613,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/registries.rs",
+      "function": "OutputUnitRegistry::canonical_registry",
+      "line": 751,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/registries.rs",
+      "function": "OutputUnitRegistry::entries",
+      "line": 757,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/registries.rs",
+      "function": "OutputUnitRegistry::entry_for_output_column",
+      "line": 766,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/registries.rs",
+      "function": "boxed_str",
+      "line": 875,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/registries.rs",
+      "function": "template_matches_alias",
+      "line": 989,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/types.rs",
+      "function": "DimensionClass::is_dimensionless",
+      "line": 23,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/types.rs",
+      "function": "BoundaryUnitEntry::new",
+      "line": 69,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/types.rs",
+      "function": "BoundaryUnitEntry::canonical_symbol",
+      "line": 100,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/types.rs",
+      "function": "BoundaryUnitEntry::boundary_aliases",
+      "line": 105,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/types.rs",
+      "function": "BoundaryUnitEntry::unit_label",
+      "line": 110,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/types.rs",
+      "function": "BoundaryUnitEntry::dimension_class",
+      "line": 115,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/types.rs",
+      "function": "BoundaryUnitEntry::domain_class",
+      "line": 120,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/types.rs",
+      "function": "BoundaryUnitEntry::producer_scope",
+      "line": 125,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/types.rs",
+      "function": "BoundaryUnitEntry::consumer_scope",
+      "line": 130,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/types.rs",
+      "function": "BoundaryUnitEntry::contract_id",
+      "line": 135,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/types.rs",
+      "function": "BoundaryUnitEntry::invariant_id",
+      "line": 140,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/types.rs",
+      "function": "BoundaryUnitEntry::typed_boundary",
+      "line": 145,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/types.rs",
+      "function": "BoundaryUnitEntry::scalar_exception",
+      "line": 150,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/types.rs",
+      "function": "BoundaryUnitEntry::publication_aliases",
+      "line": 155,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/types.rs",
+      "function": "OutputUnitEntry::boundary_registry",
+      "line": 184,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/types.rs",
+      "function": "OutputUnitEntry::publication_only",
+      "line": 199,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/types.rs",
+      "function": "OutputUnitEntry::schema_id",
+      "line": 220,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/types.rs",
+      "function": "OutputUnitEntry::column_name",
+      "line": 225,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/types.rs",
+      "function": "OutputUnitEntry::unit_label",
+      "line": 230,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/types.rs",
+      "function": "OutputUnitEntry::authority",
+      "line": 235,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/boundary_catalog.rs",
+      "function": "hphys0274_required_boundary_aliases",
+      "line": 5,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/boundary_catalog.rs",
+      "function": "canonical_boundary_unit_entries",
+      "line": 154,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-sim-contract/src/units_mod/output_catalog.rs",
+      "function": "canonical_output_unit_entries",
+      "line": 5,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    }
+  ]
+}

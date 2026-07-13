@@ -1011,3 +1011,589 @@ fn template_matches_alias_from(template: &[u8], alias: &[u8]) -> bool {
     }
     false
 }
+
+#[cfg(test)]
+mod m06_tests {
+    use super::super::types::{DimensionClass, DomainClass};
+    use super::*;
+
+    #[allow(clippy::too_many_arguments)]
+    const fn entry(
+        canonical: &'static str,
+        aliases: &'static [&'static str],
+        unit: &'static str,
+        dimension: DimensionClass,
+        producer: &'static str,
+        consumer: &'static str,
+        contract: &'static str,
+        invariant: &'static str,
+        typed: TypedBoundaryRequirement,
+        scalar: Option<&'static str>,
+        publications: &'static [&'static str],
+    ) -> BoundaryUnitEntry {
+        BoundaryUnitEntry::new(
+            canonical,
+            aliases,
+            unit,
+            dimension,
+            DomainClass::NonNegativeFinite,
+            producer,
+            consumer,
+            contract,
+            invariant,
+            typed,
+            scalar,
+            publications,
+        )
+    }
+
+    const fn valid_entry() -> BoundaryUnitEntry {
+        entry(
+            "runoff_depth",
+            &["runoff.depth"],
+            "m",
+            DimensionClass::Depth,
+            "producer",
+            "consumer",
+            "SC-HYDROLOGY-001",
+            "SC-HYDROLOGY-001#INV-001",
+            TypedBoundaryRequirement::TypedRequired,
+            None,
+            &["Runoff"],
+        )
+    }
+
+    #[test]
+    #[allow(clippy::too_many_lines)]
+    fn validate_entry_guards_are_ordered_and_exact() {
+        let cases = [
+            (
+                entry(
+                    "",
+                    &[],
+                    "",
+                    DimensionClass::Depth,
+                    "",
+                    "",
+                    "",
+                    "",
+                    TypedBoundaryRequirement::ScalarException,
+                    None,
+                    &[""],
+                ),
+                BoundaryUnitRegistryError::EmptyCanonicalSymbol { row: 7 },
+            ),
+            (
+                entry(
+                    "symbol",
+                    &[],
+                    "m",
+                    DimensionClass::Depth,
+                    "p",
+                    "c",
+                    "contract",
+                    "invariant",
+                    TypedBoundaryRequirement::TypedRequired,
+                    None,
+                    &[],
+                ),
+                BoundaryUnitRegistryError::EmptyBoundaryAlias {
+                    row: 7,
+                    canonical_symbol: "symbol".to_string(),
+                },
+            ),
+            (
+                entry(
+                    "symbol",
+                    &[""],
+                    "m",
+                    DimensionClass::Depth,
+                    "p",
+                    "c",
+                    "contract",
+                    "invariant",
+                    TypedBoundaryRequirement::TypedRequired,
+                    None,
+                    &[],
+                ),
+                BoundaryUnitRegistryError::EmptyBoundaryAlias {
+                    row: 7,
+                    canonical_symbol: "symbol".to_string(),
+                },
+            ),
+            (
+                entry(
+                    "symbol",
+                    &["alias"],
+                    "m",
+                    DimensionClass::Depth,
+                    "p",
+                    "c",
+                    "contract",
+                    "invariant",
+                    TypedBoundaryRequirement::TypedRequired,
+                    None,
+                    &[""],
+                ),
+                BoundaryUnitRegistryError::EmptyPublicationAlias {
+                    row: 7,
+                    canonical_symbol: "symbol".to_string(),
+                },
+            ),
+            (
+                entry(
+                    "symbol",
+                    &["alias"],
+                    "",
+                    DimensionClass::Depth,
+                    "p",
+                    "c",
+                    "contract",
+                    "invariant",
+                    TypedBoundaryRequirement::TypedRequired,
+                    None,
+                    &[],
+                ),
+                BoundaryUnitRegistryError::EmptyUnitLabel {
+                    row: 7,
+                    canonical_symbol: "symbol".to_string(),
+                },
+            ),
+            (
+                entry(
+                    "symbol",
+                    &["alias"],
+                    "m",
+                    DimensionClass::Depth,
+                    "",
+                    "c",
+                    "contract",
+                    "invariant",
+                    TypedBoundaryRequirement::TypedRequired,
+                    None,
+                    &[],
+                ),
+                BoundaryUnitRegistryError::EmptyProducerScope {
+                    row: 7,
+                    canonical_symbol: "symbol".to_string(),
+                },
+            ),
+            (
+                entry(
+                    "symbol",
+                    &["alias"],
+                    "m",
+                    DimensionClass::Depth,
+                    "p",
+                    "",
+                    "contract",
+                    "invariant",
+                    TypedBoundaryRequirement::TypedRequired,
+                    None,
+                    &[],
+                ),
+                BoundaryUnitRegistryError::EmptyConsumerScope {
+                    row: 7,
+                    canonical_symbol: "symbol".to_string(),
+                },
+            ),
+            (
+                entry(
+                    "symbol",
+                    &["alias"],
+                    "m",
+                    DimensionClass::Depth,
+                    "p",
+                    "c",
+                    "",
+                    "invariant",
+                    TypedBoundaryRequirement::TypedRequired,
+                    None,
+                    &[],
+                ),
+                BoundaryUnitRegistryError::EmptyContractId {
+                    row: 7,
+                    canonical_symbol: "symbol".to_string(),
+                },
+            ),
+            (
+                entry(
+                    "symbol",
+                    &["alias"],
+                    "m",
+                    DimensionClass::Depth,
+                    "p",
+                    "c",
+                    "contract",
+                    "",
+                    TypedBoundaryRequirement::TypedRequired,
+                    None,
+                    &[],
+                ),
+                BoundaryUnitRegistryError::EmptyInvariantId {
+                    row: 7,
+                    canonical_symbol: "symbol".to_string(),
+                },
+            ),
+            (
+                entry(
+                    "symbol",
+                    &["alias"],
+                    "dimensionless",
+                    DimensionClass::Depth,
+                    "p",
+                    "c",
+                    "contract",
+                    "invariant",
+                    TypedBoundaryRequirement::TypedRequired,
+                    None,
+                    &[],
+                ),
+                BoundaryUnitRegistryError::DimensionalSymbolMissingUnit {
+                    row: 7,
+                    canonical_symbol: "symbol".to_string(),
+                },
+            ),
+            (
+                entry(
+                    "symbol",
+                    &["alias"],
+                    "m",
+                    DimensionClass::Unitless,
+                    "p",
+                    "c",
+                    "contract",
+                    "invariant",
+                    TypedBoundaryRequirement::TypedRequired,
+                    None,
+                    &[],
+                ),
+                BoundaryUnitRegistryError::DimensionlessSymbolHasDimensionalUnit {
+                    row: 7,
+                    canonical_symbol: "symbol".to_string(),
+                    unit_label: "m".to_string(),
+                },
+            ),
+            (
+                entry(
+                    "symbol",
+                    &["alias"],
+                    "m",
+                    DimensionClass::Depth,
+                    "p",
+                    "c",
+                    "contract",
+                    "invariant",
+                    TypedBoundaryRequirement::ScalarException,
+                    None,
+                    &[],
+                ),
+                BoundaryUnitRegistryError::EmptyScalarException {
+                    row: 7,
+                    canonical_symbol: "symbol".to_string(),
+                },
+            ),
+            (
+                entry(
+                    "symbol",
+                    &["alias"],
+                    "m",
+                    DimensionClass::Depth,
+                    "p",
+                    "c",
+                    "contract",
+                    "invariant",
+                    TypedBoundaryRequirement::ScalarException,
+                    Some(" "),
+                    &[],
+                ),
+                BoundaryUnitRegistryError::EmptyScalarException {
+                    row: 7,
+                    canonical_symbol: "symbol".to_string(),
+                },
+            ),
+        ];
+        for (row, expected) in cases {
+            assert_eq!(validate_entry(7, &row), Err(expected));
+        }
+        assert!(validate_entry(7, &valid_entry()).is_ok());
+    }
+
+    #[test]
+    fn registry_reports_one_based_row_after_a_valid_predecessor() {
+        let invalid = entry(
+            "second",
+            &["second.alias"],
+            "",
+            DimensionClass::Depth,
+            "producer",
+            "consumer",
+            "contract",
+            "invariant",
+            TypedBoundaryRequirement::TypedRequired,
+            None,
+            &[],
+        );
+        assert_eq!(
+            BoundaryUnitRegistry::new([valid_entry(), invalid]),
+            Err(BoundaryUnitRegistryError::EmptyUnitLabel {
+                row: 2,
+                canonical_symbol: "second".to_string(),
+            })
+        );
+    }
+
+    #[test]
+    #[allow(clippy::too_many_lines)]
+    fn staged_invalid_entries_bind_trim_and_guard_priority() {
+        let staged = [
+            (
+                entry(
+                    " ",
+                    &[],
+                    " ",
+                    DimensionClass::Depth,
+                    " ",
+                    " ",
+                    " ",
+                    " ",
+                    TypedBoundaryRequirement::ScalarException,
+                    None,
+                    &[" "],
+                ),
+                BoundaryUnitRegistryError::EmptyCanonicalSymbol { row: 3 },
+            ),
+            (
+                entry(
+                    "symbol",
+                    &[],
+                    " ",
+                    DimensionClass::Depth,
+                    " ",
+                    " ",
+                    " ",
+                    " ",
+                    TypedBoundaryRequirement::ScalarException,
+                    None,
+                    &[" "],
+                ),
+                BoundaryUnitRegistryError::EmptyBoundaryAlias {
+                    row: 3,
+                    canonical_symbol: "symbol".to_string(),
+                },
+            ),
+            (
+                entry(
+                    "symbol",
+                    &["valid", " "],
+                    " ",
+                    DimensionClass::Depth,
+                    " ",
+                    " ",
+                    " ",
+                    " ",
+                    TypedBoundaryRequirement::ScalarException,
+                    None,
+                    &[" "],
+                ),
+                BoundaryUnitRegistryError::EmptyBoundaryAlias {
+                    row: 3,
+                    canonical_symbol: "symbol".to_string(),
+                },
+            ),
+            (
+                entry(
+                    "symbol",
+                    &["valid"],
+                    " ",
+                    DimensionClass::Depth,
+                    " ",
+                    " ",
+                    " ",
+                    " ",
+                    TypedBoundaryRequirement::ScalarException,
+                    None,
+                    &[" "],
+                ),
+                BoundaryUnitRegistryError::EmptyPublicationAlias {
+                    row: 3,
+                    canonical_symbol: "symbol".to_string(),
+                },
+            ),
+            (
+                entry(
+                    "symbol",
+                    &["valid"],
+                    " ",
+                    DimensionClass::Depth,
+                    " ",
+                    " ",
+                    " ",
+                    " ",
+                    TypedBoundaryRequirement::ScalarException,
+                    None,
+                    &[],
+                ),
+                BoundaryUnitRegistryError::EmptyUnitLabel {
+                    row: 3,
+                    canonical_symbol: "symbol".to_string(),
+                },
+            ),
+            (
+                entry(
+                    "symbol",
+                    &["valid"],
+                    "m",
+                    DimensionClass::Depth,
+                    " ",
+                    " ",
+                    " ",
+                    " ",
+                    TypedBoundaryRequirement::ScalarException,
+                    None,
+                    &[],
+                ),
+                BoundaryUnitRegistryError::EmptyProducerScope {
+                    row: 3,
+                    canonical_symbol: "symbol".to_string(),
+                },
+            ),
+            (
+                entry(
+                    "symbol",
+                    &["valid"],
+                    "m",
+                    DimensionClass::Depth,
+                    "p",
+                    " ",
+                    " ",
+                    " ",
+                    TypedBoundaryRequirement::ScalarException,
+                    None,
+                    &[],
+                ),
+                BoundaryUnitRegistryError::EmptyConsumerScope {
+                    row: 3,
+                    canonical_symbol: "symbol".to_string(),
+                },
+            ),
+            (
+                entry(
+                    "symbol",
+                    &["valid"],
+                    "m",
+                    DimensionClass::Depth,
+                    "p",
+                    "c",
+                    " ",
+                    " ",
+                    TypedBoundaryRequirement::ScalarException,
+                    None,
+                    &[],
+                ),
+                BoundaryUnitRegistryError::EmptyContractId {
+                    row: 3,
+                    canonical_symbol: "symbol".to_string(),
+                },
+            ),
+            (
+                entry(
+                    "symbol",
+                    &["valid"],
+                    "m",
+                    DimensionClass::Depth,
+                    "p",
+                    "c",
+                    "contract",
+                    " ",
+                    TypedBoundaryRequirement::ScalarException,
+                    None,
+                    &[],
+                ),
+                BoundaryUnitRegistryError::EmptyInvariantId {
+                    row: 3,
+                    canonical_symbol: "symbol".to_string(),
+                },
+            ),
+            (
+                entry(
+                    "symbol",
+                    &["valid"],
+                    "dimensionless",
+                    DimensionClass::Depth,
+                    "p",
+                    "c",
+                    "contract",
+                    "invariant",
+                    TypedBoundaryRequirement::ScalarException,
+                    None,
+                    &[],
+                ),
+                BoundaryUnitRegistryError::DimensionalSymbolMissingUnit {
+                    row: 3,
+                    canonical_symbol: "symbol".to_string(),
+                },
+            ),
+            (
+                entry(
+                    "symbol",
+                    &["valid"],
+                    "m",
+                    DimensionClass::Unitless,
+                    "p",
+                    "c",
+                    "contract",
+                    "invariant",
+                    TypedBoundaryRequirement::ScalarException,
+                    None,
+                    &[],
+                ),
+                BoundaryUnitRegistryError::DimensionlessSymbolHasDimensionalUnit {
+                    row: 3,
+                    canonical_symbol: "symbol".to_string(),
+                    unit_label: "m".to_string(),
+                },
+            ),
+            (
+                entry(
+                    "symbol",
+                    &["valid"],
+                    "m",
+                    DimensionClass::Depth,
+                    "p",
+                    "c",
+                    "contract",
+                    "invariant",
+                    TypedBoundaryRequirement::ScalarException,
+                    Some(" "),
+                    &[],
+                ),
+                BoundaryUnitRegistryError::EmptyScalarException {
+                    row: 3,
+                    canonical_symbol: "symbol".to_string(),
+                },
+            ),
+        ];
+        for (candidate, expected) in staged {
+            assert_eq!(validate_entry(3, &candidate), Err(expected));
+        }
+
+        let malformed_duplicate = entry(
+            "runoff_depth",
+            &["runoff.depth"],
+            " ",
+            DimensionClass::Depth,
+            "producer",
+            "consumer",
+            "contract",
+            "invariant",
+            TypedBoundaryRequirement::TypedRequired,
+            None,
+            &[],
+        );
+        assert!(matches!(
+            BoundaryUnitRegistry::new([valid_entry(), malformed_duplicate]),
+            Err(BoundaryUnitRegistryError::EmptyUnitLabel { row: 2, .. })
+        ));
+    }
+}

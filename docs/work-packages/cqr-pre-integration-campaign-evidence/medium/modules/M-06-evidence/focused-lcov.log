@@ -1,0 +1,14 @@
+info: cargo-llvm-cov currently setting cfg(coverage); you can opt-out it by passing --no-cfg-coverage
+   Compiling openwepp-sim-contract v0.1.0 (/home/workdir/openWEPP/crates/openwepp-sim-contract)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.11s
+     Running unittests src/lib.rs (target/llvm-cov-target/debug/deps/openwepp_sim_contract-223879c1f7ff1d33)
+
+running 3 tests
+test units_mod::registries::m06_tests::registry_reports_one_based_row_after_a_valid_predecessor ... ok
+test units_mod::registries::m06_tests::staged_invalid_entries_bind_trim_and_guard_priority ... ok
+test units_mod::registries::m06_tests::validate_entry_guards_are_ordered_and_exact ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+    Finished report saved to docs/work-packages/cqr-pre-integration-campaign-evidence/medium/modules/M-06-evidence/focused.lcov

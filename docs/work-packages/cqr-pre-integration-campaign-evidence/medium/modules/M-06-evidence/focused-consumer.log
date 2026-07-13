@@ -1,0 +1,47 @@
+info: cargo-llvm-cov currently setting cfg(coverage); you can opt-out it by passing --no-cfg-coverage
+   Compiling openwepp-sim-contract v0.1.0 (/home/workdir/openWEPP/crates/openwepp-sim-contract)
+   Compiling openwepp-unit-boundary v0.1.0 (/home/workdir/openWEPP/crates/openwepp-unit-boundary)
+   Compiling openwepp-comparator-metadata v0.1.0 (/home/workdir/openWEPP/crates/openwepp-comparator-metadata)
+   Compiling openwepp-legacy-bridge v0.1.0 (/home/workdir/openWEPP/crates/openwepp-legacy-bridge)
+   Compiling openwepp-management-schema v0.1.0 (/home/workdir/openWEPP/crates/openwepp-management-schema)
+   Compiling openwepp-meteorology v0.1.0 (/home/workdir/openWEPP/crates/openwepp-meteorology)
+   Compiling openwepp-kernel-contract v0.1.0 (/home/workdir/openWEPP/crates/openwepp-kernel-contract)
+   Compiling openwepp-topology v0.1.0 (/home/workdir/openWEPP/crates/openwepp-topology)
+   Compiling openwepp-hillslope-output v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-output)
+   Compiling openwepp-summary-accumulator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-summary-accumulator)
+   Compiling openwepp-input-contract v0.1.0 (/home/workdir/openWEPP/crates/openwepp-input-contract)
+   Compiling openwepp-climate-runtime-adapter v0.1.0 (/home/workdir/openWEPP/crates/openwepp-climate-runtime-adapter)
+   Compiling openwepp-landuse-migrate v0.1.0 (/home/workdir/openWEPP/crates/openwepp-landuse-migrate)
+   Compiling openwepp-watershed-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-watershed-orchestrator)
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+   Compiling openwepp-watershed-output v0.1.0 (/home/workdir/openWEPP/crates/openwepp-watershed-output)
+   Compiling openwepp-runner v0.1.0 (/home/workdir/openWEPP/crates/openwepp-runner)
+   Compiling openwepp v0.1.0 (/home/workdir/openWEPP)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 20.30s
+     Running tests/integration/sim_contract_boundary_unit_registry.rs (target/llvm-cov-target/debug/deps/sim_contract_boundary_unit_registry-d77818d166380605)
+
+running 21 tests
+test cqr16_boundary_registry_authority_field_display_messages_are_stable ... ok
+test cqr16_boundary_registry_conflict_display_messages_are_stable ... ok
+test cqr16_boundary_registry_required_field_display_messages_are_stable ... ok
+test cqr16_boundary_registry_shape_and_lookup_display_messages_are_stable ... ok
+test cqr16_output_registry_authority_display_messages_are_stable ... ok
+test cqr16_output_registry_display_messages_are_stable ... ok
+test registry_rejects_bad_templates_and_ambiguous_template_matches ... ok
+test registry_rejects_missing_dimensional_units_and_missing_scalar_exception_reasons ... ok
+test registry_rejects_duplicate_and_ambiguous_aliases ... ok
+test registry_rejects_duplicate_publication_aliases ... ok
+test canonical_registry_contains_hydrology_et_percolation_publication_units ... ok
+test canonical_registry_keeps_prcp_meters_distinct_from_p_publication_mm ... ok
+test hphys0290_registry_declares_post_winter_rain_flux_metadata ... ok
+test wshed01_totalwatsed3_runoff_unit_lineage_is_pass_volume_publication ... ok
+test hphys0278_output_registry_rejects_stale_boundary_units_and_unexplained_publication_units ... ok
+test canonical_registry_gate_rejects_missing_required_aliases ... ok
+test canonical_registry_resolves_climate_soil_and_snow_runtime_aliases ... ok
+test hphys0275_registry_marks_only_migrated_aliases_typed_required ... ok
+test registry_units_cover_hillslope_wat_schema_metadata ... ok
+test hphys0278_dynamic_row_level_output_units_are_registry_governed ... ok
+test hphys0278_output_unit_registry_covers_output_schema_unit_metadata ... ok
+
+test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.51s
+
