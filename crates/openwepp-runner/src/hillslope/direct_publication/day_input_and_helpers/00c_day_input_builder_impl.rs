@@ -1216,6 +1216,7 @@ mod laned_shadow_dynamic_operand_tests {
     }
 
     #[test]
+    #[allow(clippy::too_many_lines)]
     fn m08_dynamic_operand_guards_preserve_index_and_priority() {
         let mut invalid_rain = [0.0; 24];
         invalid_rain[4] = f64::NAN;
