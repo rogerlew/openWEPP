@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{io, path::PathBuf};
 
 use openwepp_input_contract::parsers::wepp_ui::{
     WeppUiOpenResult, WeppUiParseError, WeppUiParserMode, WeppUiParserOptions,
@@ -7,6 +7,62 @@ use openwepp_input_contract::parsers::wepp_ui::{
 
 fn fixture_path(name: &str) -> PathBuf {
     PathBuf::from("tests/fixtures/infile/weppui").join(name)
+}
+
+#[test]
+fn wepp_ui_error_display_preserves_all_contract_identities() {
+    let cases = [
+        (
+            WeppUiParseError::InputOpenError {
+                path: PathBuf::from("inputs/wepp_ui.txt"),
+                source: io::Error::new(io::ErrorKind::PermissionDenied, "permission denied"),
+            },
+            "WUI-E-000",
+            "WUI-E-000: could not open inputs/wepp_ui.txt (permission denied)",
+            true,
+        ),
+        (
+            WeppUiParseError::SentinelPayloadNotEmpty {
+                path: PathBuf::from("inputs/wepp_ui.txt"),
+                payload_bytes: 17,
+            },
+            "WUI-E-001",
+            "WUI-E-001: strict mode requires empty sentinel but inputs/wepp_ui.txt has 17 byte(s)",
+            false,
+        ),
+        (
+            WeppUiParseError::SoilCompatibilityStrict {
+                solwpv_reduced_min: 7777.0,
+            },
+            "WUI-E-002",
+            "WUI-E-002: strict hourly mode requires soil version >= 7778; observed reduced min 7777",
+            false,
+        ),
+        (
+            WeppUiParseError::ModeClosureMismatch {
+                ui_run_requested: 1,
+                ui_run: 0,
+                open_result: WeppUiOpenResult::Missing,
+            },
+            "WUI-E-003",
+            "WUI-E-003: requested ui_run=1 but effective ui_run=0 for open_result=Missing",
+            false,
+        ),
+        (
+            WeppUiParseError::MissingSoilVersionSurface {
+                reason: "hourly mode requires at least one finite soil version",
+            },
+            "WUI-E-004",
+            "WUI-E-004: missing/invalid soil version surface (hourly mode requires at least one finite soil version)",
+            false,
+        ),
+    ];
+
+    for (error, expected_id, expected_display, has_source) in cases {
+        assert_eq!(error.contract_error_id(), expected_id);
+        assert_eq!(error.to_string(), expected_display);
+        assert_eq!(std::error::Error::source(&error).is_some(), has_source);
+    }
 }
 
 #[test]
