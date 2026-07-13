@@ -1,0 +1,10 @@
+Detached worktree commit: d8069ee7
+CLI source SHA-256: 2e5584e8ff63f2efd8db0521148ef8625184256f89f7721955c792976cda86c2
+Patched integration-test SHA-256: 8fb1f950efb240fb69921eabd3c1e438c22482d4f5503010dec9b7a8a583038e
+Preparation: git worktree add --detach /tmp/openwepp-m13-before d8069ee7
+Preparation: git diff d8069ee7 -- crates/openwepp-landuse-migrate/tests/cli.rs | git -C /tmp/openwepp-m13-before apply
+Command from detached worktree: cargo nextest run -p openwepp-landuse-migrate -E 'test(/^m13_/)'
+Selected surface: seven external real-binary integration tests; inline
+post-decomposition unit tests are excluded by the anchored filter.
+Result: PASS; 7/7 tests; 18 skipped; run ID
+d51e1513-3dff-4232-9fed-c78aa4e87167.

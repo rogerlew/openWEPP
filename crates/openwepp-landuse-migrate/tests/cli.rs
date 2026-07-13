@@ -3,6 +3,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::time::{SystemTime, UNIX_EPOCH};
 
+use openwepp_landuse_migrate::cli::help_text;
 use openwepp_management_schema as management_yaml;
 
 const LEGACY_CROPLAND_98_4: &str = r"98.4
@@ -506,6 +507,212 @@ fn native_yaml_latest_passthrough_preserves_coefficients() {
     };
     assert_close(routing.k_o, 480.0);
     assert_eq!(routing.authority.disturbed_class, "agriculture crops");
+}
+
+#[test]
+fn m13_empty_and_help_flags_print_the_exact_help_contract() {
+    for args in [vec![], vec!["--help"], vec!["-h"]] {
+        let output = bin().args(args).output().expect("CLI help should execute");
+        assert!(output.status.success());
+        assert_eq!(
+            String::from_utf8(output.stdout).expect("help should be UTF-8"),
+            help_text(),
+        );
+        assert!(output.stderr.is_empty());
+    }
+}
+
+#[test]
+fn m13_every_value_option_fails_at_the_missing_value() {
+    for flag in [
+        "--args-for-migration-to",
+        "--to",
+        "--output",
+        "--disturbed-class",
+        "--disturbed-class-map",
+        "--args-file",
+        "--report",
+        "--report-format",
+        "--format",
+    ] {
+        let output = bin()
+            .arg("input.man")
+            .arg(flag)
+            .output()
+            .expect("missing-value CLI should execute");
+        assert!(!output.status.success(), "{flag} should fail");
+        assert_eq!(
+            String::from_utf8(output.stderr).expect("error should be UTF-8"),
+            format!("LANDUSE-MIGRATE-E-016: missing value for {flag}\n"),
+        );
+        assert!(output.stdout.is_empty());
+    }
+}
+
+#[test]
+fn m13_discovery_rejects_each_incompatible_mode_before_source_work() {
+    let dir = temp_dir("m13-discovery-conflicts");
+    let input = write_legacy_fixture(&dir, "field.man");
+    let cases: Vec<Vec<String>> = vec![
+        vec!["--validate".to_string()],
+        vec!["--to".to_string(), "latest".to_string()],
+        vec![
+            "--output".to_string(),
+            dir.join("out.yaml").display().to_string(),
+        ],
+    ];
+    for incompatible in cases {
+        let output = bin()
+            .arg(&input)
+            .args(["--args-for-migration-to", "latest"])
+            .args(&incompatible)
+            .output()
+            .expect("discovery-conflict CLI should execute");
+        assert!(!output.status.success());
+        assert_eq!(
+            String::from_utf8(output.stderr).expect("error should be UTF-8"),
+            "LANDUSE-MIGRATE-E-016: --args-for-migration-to cannot be combined with --validate, --to, or --output\n",
+        );
+    }
+}
+
+#[test]
+fn m13_args_file_target_inheritance_runs_real_dry_migration() {
+    let dir = temp_dir("m13-target-inheritance");
+    let input = write_legacy_fixture(&dir, "field.man");
+    let args_path = dir.join("args.json");
+    fs::write(
+        &args_path,
+        r#"{"target":"latest","disturbed_class":"agriculture crops"}"#,
+    )
+    .expect("args file should write");
+    let output = bin()
+        .arg(&input)
+        .args(["--args-file", args_path.to_str().unwrap(), "--dry-run"])
+        .args(["--format", "json"])
+        .output()
+        .expect("inherited-target CLI should execute");
+
+    assert!(
+        output.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let report: serde_json::Value =
+        serde_json::from_slice(&output.stdout).expect("stdout should be a JSON report");
+    assert_eq!(report["target_datver"], "ow-lanuse-1");
+    assert_eq!(report["dry_run"], true);
+    assert!(!dir.join("field.man.yaml").exists());
+}
+
+#[test]
+fn m13_validation_writes_requested_report_and_formats_stdout_independently() {
+    let dir = temp_dir("m13-validation-report");
+    let input = write_legacy_fixture(&dir, "field.man");
+    let report_path = dir.join("validation.json");
+    let output = bin()
+        .arg(&input)
+        .args([
+            "--validate",
+            "--to",
+            "latest",
+            "--disturbed-class",
+            "agriculture crops",
+            "--report",
+            report_path.to_str().unwrap(),
+            "--report-format",
+            "json",
+            "--format",
+            "toml",
+        ])
+        .output()
+        .expect("validation CLI should execute");
+
+    assert!(
+        output.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let stdout = String::from_utf8(output.stdout).expect("stdout should be UTF-8");
+    assert!(stdout.contains("valid = true"));
+    assert!(stdout.contains("target_datver = \"ow-lanuse-1\""));
+    let report: serde_json::Value = serde_json::from_str(
+        &fs::read_to_string(&report_path).expect("validation report should exist"),
+    )
+    .expect("validation report should be JSON");
+    assert_eq!(report["valid"], true);
+    assert_eq!(report["target_datver"], "ow-lanuse-1");
+}
+
+#[test]
+fn m13_validation_target_defaults_only_for_yaml_and_migration_requires_target() {
+    let yaml_input = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(
+        "../../tests/fixtures/infile/management/canonical_forest_nonzero_ow_lanuse_1.man.yaml",
+    );
+    let yaml_output = bin()
+        .arg(&yaml_input)
+        .args(["--validate", "--format", "json"])
+        .output()
+        .expect("native-YAML validation should execute");
+    assert!(
+        yaml_output.status.success(),
+        "stderr: {}",
+        String::from_utf8_lossy(&yaml_output.stderr)
+    );
+    let yaml_report: serde_json::Value =
+        serde_json::from_slice(&yaml_output.stdout).expect("validation should emit JSON");
+    assert_eq!(yaml_report["target_datver"], "ow-lanuse-1");
+
+    let dir = temp_dir("m13-missing-target");
+    let input = write_legacy_fixture(&dir, "field.man");
+    let flat_validation = bin()
+        .arg(&input)
+        .arg("--validate")
+        .output()
+        .expect("flat validation should execute");
+    assert_eq!(
+        String::from_utf8(flat_validation.stderr).expect("error should be UTF-8"),
+        "LANDUSE-MIGRATE-E-016: flat-source --validate requires --to <target>\n",
+    );
+
+    let migration = bin()
+        .arg(&input)
+        .output()
+        .expect("missing-target migration should execute");
+    assert_eq!(
+        String::from_utf8(migration.stderr).expect("error should be UTF-8"),
+        "LANDUSE-MIGRATE-E-016: missing --to <target>; use --validate for validation-only mode\n",
+    );
+}
+
+#[test]
+fn m13_parser_preserves_unknown_multiple_and_missing_input_priority() {
+    let unknown = bin()
+        .args(["input.man", "--unknown", "--help"])
+        .output()
+        .expect("unknown-option CLI should execute");
+    assert_eq!(
+        String::from_utf8(unknown.stderr).expect("error should be UTF-8"),
+        "LANDUSE-MIGRATE-E-016: unrecognized argument --unknown\n",
+    );
+
+    let multiple = bin()
+        .args(["first.man", "second.man"])
+        .output()
+        .expect("multiple-input CLI should execute");
+    assert_eq!(
+        String::from_utf8(multiple.stderr).expect("error should be UTF-8"),
+        "LANDUSE-MIGRATE-E-016: multiple input paths supplied; unexpected second.man\n",
+    );
+
+    let missing = bin()
+        .arg("--dry-run")
+        .output()
+        .expect("missing-input CLI should execute");
+    assert_eq!(
+        String::from_utf8(missing.stderr).expect("error should be UTF-8"),
+        "LANDUSE-MIGRATE-E-016: missing input path\n",
+    );
 }
 
 fn native_flat_fixture() -> String {

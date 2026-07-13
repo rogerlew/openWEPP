@@ -87,7 +87,9 @@ implementation diff.
 - [x] (2026-07-13 UTC) Execute tests-only M-12 yearly-extension conversion
   through `MODULE-PASS`: all five variants reach 100% coverage and CRAP 6,
   with exact schema order and public management-YAML roundtrip identity.
-- [ ] Execute or disposition M-13 through its terminal record.
+- [x] (2026-07-13 UTC) Execute M-13 landuse CLI through `MODULE-PASS`:
+  detached pre-decomposition characterization passes 7/7, all helpers meet
+  floors and CRAP <=30, and the final 11-binary-plus-unit cohort passes 12/12.
 - [ ] Run the tranche-final fresh rerank, dual verification, and transition Low/Assessment.
 
 ## Surprises & Discoveries
