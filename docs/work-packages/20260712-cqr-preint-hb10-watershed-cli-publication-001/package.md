@@ -132,6 +132,6 @@ verification artifacts; write access is read-only.
 
 Cover-first characterization plus coherent CLI, execution, runfile, sidecar,
 output, numeric and authority stages close all six fixed rows below CRAP 30.
-Seven strict numeric/authority floors exceed 75%; dual review accepts the 18
+Seven strict numeric/authority floors exceed 75%; dual review accepts the nine
 remaining low-complexity production floors recorded in the retained-floor
 ledger. Full runner and executable CLI gates pass. Disposition: `MODULE-PASS`.

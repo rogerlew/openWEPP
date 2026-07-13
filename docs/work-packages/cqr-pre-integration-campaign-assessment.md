@@ -18,7 +18,7 @@ ExecPlans perform the work:
 
 1. `cqr-high-risk-a-execplan.md` — terminal-pass hillslope routing, projection,
    publication, and primary runner paths (10 modules).
-2. `cqr-high-risk-b-execplan.md` — active erosion, watershed routing, conservation,
+2. `cqr-high-risk-b-execplan.md` — terminal-pass erosion, watershed routing, conservation,
    and final output publication (10 modules).
 3. `cqr-medium-risk-execplan.md` — contract boundaries, authoritative tooling,
    configuration, and validation references (13 modules).
@@ -149,7 +149,7 @@ validation while a high/medium blocker remains.
 - [x] (2026-07-12 UTC) Execute High A through `TERMINAL-PASS`: all 13 fixed
   rows removed, zero new identity, zero touched-module row above 30, full gates
   and dual terminal verification PASS.
-- [ ] Execute High B through terminal plan commit.
+- [x] Execute High B through terminal plan transition; commit pending.
 - [ ] Execute Medium through terminal plan commit.
 - [ ] Execute Low/Assessment and publish the final recommendation.
 

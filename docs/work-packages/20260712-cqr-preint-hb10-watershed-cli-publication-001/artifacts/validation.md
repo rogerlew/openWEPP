@@ -9,7 +9,7 @@ Evidence class: **Ran + Static**
 | Private companion | PASS | `5/5` |
 | Six fixed rows | PASS | All CRAP at most 30. |
 | Strict floors | PASS | Area, publication area/residual/carry totals, CRFRAC and groundwater all exceed 75%. |
-| Retained floors | PASS | 18 rows accepted independently by reviewers A/B in `retained-floor-ledger.md`. |
+| Retained floors | PASS | Nine rows accepted independently by reviewers A/B in `retained-floor-ledger.md`; nine prior candidates clear the authoritative region floor. |
 | Format/Clippy/diff | PASS | Workspace format; runner all-target `-D warnings`; clean diff check. |
 
 Fixed rows (CC/coverage/CRAP): `run` 11/75.472%/12.786;

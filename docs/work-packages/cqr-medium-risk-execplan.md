@@ -1,6 +1,6 @@
 # Medium-Risk CQR Tranche: Contracts, Configuration, And Authoritative Tools
 
-Status: `WAITING-SEQUENCE`
+Status: `ACTIVE`
 Roadmap ID: `CQR-PREINT-20260711-M`
 Campaign ledger: `docs/work-packages/cqr-pre-integration-campaign-assessment.md`
 Binding execution contract: `docs/work-packages/cqr-pre-integration-campaign-execution-contract.md`
@@ -37,7 +37,8 @@ implementation diff.
 
 ## Progress
 
-- [ ] Confirm both high-risk plans have terminal PASS transitions.
+- [x] (2026-07-12 UTC) Confirm High A and High B terminal PASS transitions;
+  activate Medium from the authoritative 32-row/25-module residual census.
 - [ ] Refresh workspace LCOV/CRAP and reconcile all thirteen fixed modules.
 - [ ] Complete dual target-selection/eligibility review.
 - [ ] Execute or disposition M-01 through its terminal record.
@@ -57,7 +58,9 @@ implementation diff.
 
 ## Surprises & Discoveries
 
-- None yet. Record source drift, parser/validation authority discoveries,
+- High-B final rerank supplies 32 production-over-30 rows across 25 modules;
+  Medium start measurement must reconcile its thirteen fixed modules against
+  that authority. Record source drift, parser/validation authority discoveries,
   numerical sensitivity, defects, and gate timing here with direct evidence.
 
 ## Decision Log

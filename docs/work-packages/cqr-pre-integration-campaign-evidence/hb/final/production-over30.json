@@ -1,0 +1,258 @@
+[
+  {
+    "file": "crates/openwepp-hillslope-orchestrator/src/ofe_routing/iwagaki_oracle.rs",
+    "function": "run_oracle",
+    "line": 177,
+    "cyclomatic": 30.0,
+    "coverage": 95.3125,
+    "crap": 30.092697143554688
+  },
+  {
+    "file": "crates/openwepp-input-contract/src/parsers/climate.rs",
+    "function": "parse_climate_from_str",
+    "line": 354,
+    "cyclomatic": 41.0,
+    "coverage": 74.07407407407408,
+    "crap": 70.29345120154446
+  },
+  {
+    "file": "crates/openwepp-input-contract/src/parsers/climate.rs",
+    "function": "parse_no_breakpoint_day",
+    "line": 574,
+    "cyclomatic": 21.0,
+    "coverage": 69.23076923076923,
+    "crap": 33.84660901228949
+  },
+  {
+    "file": "crates/openwepp-input-contract/src/parsers/climate.rs",
+    "function": "parse_breakpoint_day",
+    "line": 644,
+    "cyclomatic": 31.0,
+    "coverage": 81.37254901960785,
+    "crap": 37.21131672584451
+  },
+  {
+    "file": "crates/openwepp-input-contract/src/parsers/frost.rs",
+    "function": "FrostParseError::fmt",
+    "line": 160,
+    "cyclomatic": 7.0,
+    "coverage": 0.0,
+    "crap": 56.0
+  },
+  {
+    "file": "crates/openwepp-input-contract/src/parsers/gwcoeff.rs",
+    "function": "enforce_result_invariants",
+    "line": 432,
+    "cyclomatic": 16.0,
+    "coverage": 53.333333333333336,
+    "crap": 42.017185185185184
+  },
+  {
+    "file": "crates/openwepp-input-contract/src/parsers/hbp/error.rs",
+    "function": "HbpFormatErrorCode::as_str",
+    "line": 25,
+    "cyclomatic": 15.0,
+    "coverage": 35.294117647058826,
+    "crap": 75.95562792591082
+  },
+  {
+    "file": "crates/openwepp-input-contract/src/parsers/phosphorus.rs",
+    "function": "PhosphorusParseError::fmt",
+    "line": 145,
+    "cyclomatic": 9.0,
+    "coverage": 0.0,
+    "crap": 90.0
+  },
+  {
+    "file": "crates/openwepp-input-contract/src/parsers/pmetpara.rs",
+    "function": "PmetparaParseError::fmt",
+    "line": 231,
+    "cyclomatic": 12.0,
+    "coverage": 0.0,
+    "crap": 156.0
+  },
+  {
+    "file": "crates/openwepp-input-contract/src/parsers/snow.rs",
+    "function": "SnowParseError::fmt",
+    "line": 156,
+    "cyclomatic": 10.0,
+    "coverage": 0.0,
+    "crap": 110.0
+  },
+  {
+    "file": "crates/openwepp-input-contract/src/parsers/snow.rs",
+    "function": "enforce_invariants",
+    "line": 445,
+    "cyclomatic": 10.0,
+    "coverage": 39.39393939393939,
+    "crap": 32.26117928597267
+  },
+  {
+    "file": "crates/openwepp-input-contract/src/parsers/tcr.rs",
+    "function": "TcrParseError::fmt",
+    "line": 180,
+    "cyclomatic": 10.0,
+    "coverage": 0.0,
+    "crap": 110.0
+  },
+  {
+    "file": "crates/openwepp-input-contract/src/parsers/wepp_ui.rs",
+    "function": "WeppUiParseError::fmt",
+    "line": 135,
+    "cyclomatic": 6.0,
+    "coverage": 0.0,
+    "crap": 42.0
+  },
+  {
+    "file": "crates/openwepp-landuse-migrate/src/cli.rs",
+    "function": "run_cli_args",
+    "line": 15,
+    "cyclomatic": 54.0,
+    "coverage": 78.1456953642384,
+    "crap": 84.43676543755633
+  },
+  {
+    "file": "crates/openwepp-landuse-migrate/src/convert.rs",
+    "function": "yearly_extension_to_yaml",
+    "line": 500,
+    "cyclomatic": 6.0,
+    "coverage": 0.0,
+    "crap": 42.0
+  },
+  {
+    "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+    "function": "LanduseMigrationError::fmt",
+    "line": 520,
+    "cyclomatic": 17.0,
+    "coverage": 44.776119402985074,
+    "crap": 65.6719343802263
+  },
+  {
+    "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+    "function": "authority_from_files",
+    "line": 703,
+    "cyclomatic": 7.0,
+    "coverage": 0.0,
+    "crap": 56.0
+  },
+  {
+    "file": "crates/openwepp-legacy-bridge/src/hbp.rs",
+    "function": "HbpAdapterError::fmt",
+    "line": 116,
+    "cyclomatic": 7.0,
+    "coverage": 0.0,
+    "crap": 56.0
+  },
+  {
+    "file": "crates/openwepp-legacy-bridge/src/sidecar.rs",
+    "function": "SidecarAdapterError::fmt",
+    "line": 204,
+    "cyclomatic": 9.0,
+    "coverage": 25.0,
+    "crap": 43.171875
+  },
+  {
+    "file": "crates/openwepp-management-schema/src/lib.rs",
+    "function": "ManagementYamlError::fmt",
+    "line": 415,
+    "cyclomatic": 9.0,
+    "coverage": 23.076923076923077,
+    "crap": 45.86845698680018
+  },
+  {
+    "file": "crates/openwepp-management-schema/src/lib.rs",
+    "function": "validate_management_yaml_document",
+    "line": 498,
+    "cyclomatic": 24.0,
+    "coverage": 73.33333333333333,
+    "crap": 34.92266666666667
+  },
+  {
+    "file": "crates/openwepp-management-schema/src/lib.rs",
+    "function": "validate_schedule",
+    "line": 788,
+    "cyclomatic": 20.0,
+    "coverage": 70.0,
+    "crap": 30.800000000000004
+  },
+  {
+    "file": "crates/openwepp-meteorology/src/error.rs",
+    "function": "MeteorologyError::fmt",
+    "line": 35,
+    "cyclomatic": 7.0,
+    "coverage": 0.0,
+    "crap": 56.0
+  },
+  {
+    "file": "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00c_day_input_builder_impl.rs",
+    "function": "build_laned_shadow_lane_day_operands",
+    "line": 1054,
+    "cyclomatic": 16.0,
+    "coverage": 56.32183908045977,
+    "crap": 37.33206986148886
+  },
+  {
+    "file": "crates/openwepp-runner/src/hillslope/intake_lane_setup/runfile_helpers.rs",
+    "function": "parse_runfile_execution_config",
+    "line": 11,
+    "cyclomatic": 25.0,
+    "coverage": 78.33333333333333,
+    "crap": 31.357060185185187
+  },
+  {
+    "file": "crates/openwepp-runner/src/hillslope/snowbench.rs",
+    "function": "SnowbenchError::fmt",
+    "line": 138,
+    "cyclomatic": 8.0,
+    "coverage": 27.27272727272727,
+    "crap": 32.6190833959429
+  },
+  {
+    "file": "crates/openwepp-runner/src/hillslope/snowbench_coe_melt.rs",
+    "function": "read_canopy_series",
+    "line": 315,
+    "cyclomatic": 13.0,
+    "coverage": 45.0,
+    "crap": 41.11737500000001
+  },
+  {
+    "file": "crates/openwepp-runner/src/hillslope/snowbench_coe_melt.rs",
+    "function": "parse_forcing_line",
+    "line": 400,
+    "cyclomatic": 21.0,
+    "coverage": 59.34065934065934,
+    "crap": 50.64282463099032
+  },
+  {
+    "file": "crates/openwepp-runner/src/release.rs",
+    "function": "validate_release_sidecar_unlocked",
+    "line": 343,
+    "cyclomatic": 19.0,
+    "coverage": 67.44186046511628,
+    "crap": 31.459079074798446
+  },
+  {
+    "file": "crates/openwepp-sim-contract/src/symbols.rs",
+    "function": "SymbolAliasRegistryError::fmt",
+    "line": 67,
+    "cyclomatic": 9.0,
+    "coverage": 0.0,
+    "crap": 90.0
+  },
+  {
+    "file": "crates/openwepp-sim-contract/src/units_mod/registries.rs",
+    "function": "validate_entry",
+    "line": 783,
+    "cyclomatic": 19.0,
+    "coverage": 50.617283950617285,
+    "crap": 62.4742520806637
+  },
+  {
+    "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/network_frame.rs",
+    "function": "WatershedNetworkFrameError::fmt",
+    "line": 57,
+    "cyclomatic": 11.0,
+    "coverage": 21.052631578947366,
+    "crap": 70.53856247266366
+  }
+]

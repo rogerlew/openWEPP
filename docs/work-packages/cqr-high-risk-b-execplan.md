@@ -1,6 +1,6 @@
 # High-Risk CQR Tranche B: Erosion, Watershed, And Publication
 
-Status: `ACTIVE`
+Status: `TERMINAL-PASS`
 Roadmap ID: `CQR-PREINT-20260711-HB`
 Campaign ledger: `docs/work-packages/cqr-pre-integration-campaign-assessment.md`
 Binding execution contract: `docs/work-packages/cqr-pre-integration-campaign-execution-contract.md`
@@ -71,7 +71,9 @@ classification records. It does not permit a multi-module implementation diff.
 - [x] (2026-07-12 UTC) Execute HB-10 through reviewed `MODULE-PASS`: six fixed
   rows close, strict numeric/authority floors pass, retained floors receive
   dual disposition, and the real watershed CLI consumes publication.
-- [ ] Run tranche-final rerank, dual verification, and transition to Medium.
+- [x] (2026-07-12 UTC) Run tranche-final rerank and gates, pass dual terminal
+  verification, and transition the authoritative 32-row/25-module census to
+  Medium.
 
 ## Surprises & Discoveries
 
@@ -125,6 +127,14 @@ classification records. It does not permit a multi-module implementation diff.
   Date/Author: 2026-07-12 / Codex.
 
 ## Outcomes & Retrospective
+
+High B closes `TERMINAL-PASS`: all 21 fixed rows are removed from the over-30
+filter, with zero new identity or common-row regression. Cover-first work
+exposed and closed real consumer, coefficient-repair, metadata and publication
+risks while compact module checkpoints avoided repeated workspace gates. The
+final quick/full/tool gates and dual verification pass. Residual work is the
+32-row/25-module authoritative Medium input; integrated-validation GO remains
+out of scope.
 
 Queued. At completion record package commits, before/after metrics, operand and
 consumer proof, defect escalations, full gates, and the Medium transition.
