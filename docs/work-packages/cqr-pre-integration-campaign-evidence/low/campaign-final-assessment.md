@@ -9,7 +9,9 @@ Recommendation: `GO-INTEGRATED-VALIDATION`
 ## Campaign Result
 
 The fixed baseline contained 67 raw CRAP-above-30 identities across 45
-production modules. High A removed 13, High B removed 21, Medium removed 19,
+production modules. High A removed 13 fixed identities. High B removed 21
+fixed identities plus the baseline `GwcoeffParseError::fmt` identity as an
+explicitly documented non-target removal. Medium removed 19 live identities,
 and Low removed its 11 eligible identities. Final raw debt is two exact
 formatter identities with current dual-reviewed `R-OBSERVABILITY`
 dispositions; final actionable debt is zero. No tranche added a new identity.
@@ -17,7 +19,7 @@ dispositions; final actionable debt is zero. No tranche added a new identity.
 | Tranche | Start rows/modules | Removed | Final rows/modules | Terminal result |
 | --- | ---: | ---: | ---: | --- |
 | High A | 67 / 45 | 13 | 54 / 35 | `TERMINAL-PASS` |
-| High B | 54 / 35 | 21 | 32 / 25 | `TERMINAL-PASS` |
+| High B | 54 / 35 | 22 census (21 fixed + 1 non-target baseline) | 32 / 25 | `TERMINAL-PASS` |
 | Medium | 32 / 25 | 19 | 13 / 12 | `TERMINAL-PASS` |
 | Low/Assessment | 13 / 12 | 11 eligible | 2 raw / 2; 0 actionable | `TERMINAL-PASS` |
 
@@ -91,7 +93,9 @@ sum to two.
 | L-11 | dual-reviewed no-action record at `fa50c0be` |
 | L-12 and lint closure | `9145d288`, `8e0f7367` |
 
-High A, High B, and Medium package/commit ledgers remain in their terminal
+The High-B cohort/census distinction reconciles the total exactly:
+`13 + 21 + 1 + 19 + 11 = 65` removed and two retained. High A, High B, and
+Medium package/commit ledgers remain in their terminal
 ExecPlans and evidence trees; their transition commits are ancestors of the
 Low measurement commit. The final assessment does not rewrite those ledgers.
 
@@ -104,6 +108,7 @@ map, and consumers; no accepted finding is deferred. Workspace formatting,
 all-target Clippy, full nextest, deny, Markdown, and diff gates pass. The final
 coverage/CRAP artifacts are source-bound and show no new row or regression.
 
-There is no CQR follow-up queue because no actionable identity, unresolved
+Both independent terminal reviews/verifications return `PASS`. There is no CQR
+follow-up queue because no actionable identity, unresolved
 defect, evidence gap, or dirty overlap remains. The exact campaign disposition
 is `GO-INTEGRATED-VALIDATION`.

@@ -5,7 +5,8 @@ Evidence class: **Ran + Static**
 Low/Assessment is `TERMINAL-PASS`. All 11 eligible Low rows are removed, the
 two retained raw rows have current dual-reviewed `R-OBSERVABILITY`
 dispositions, the actionable ranking is empty, and no new identity surfaced.
-All focused and workspace gates pass.
+All focused and workspace gates pass, and both independent terminal
+reviews/verifications return `PASS`.
 
 Across the fixed campaign baseline, 65 of 67 raw identities are removed. The
 two retained identities are denominator-visible, source-bound observability

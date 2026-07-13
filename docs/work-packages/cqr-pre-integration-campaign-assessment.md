@@ -170,7 +170,8 @@ The closing workspace state passes formatting, all-target Clippy, 1,944/1,944
 full-profile tests, deny, Markdown, and diff gates. Complete metrics, original
 45-module accounting, package ledger, and exit-condition analysis are recorded
 in `cqr-pre-integration-campaign-evidence/low/campaign-final-assessment.md`.
-The exact terminal recommendation is `GO-INTEGRATED-VALIDATION`.
+Both independent terminal reviews/verifications pass with no unresolved
+finding. The exact terminal recommendation is `GO-INTEGRATED-VALIDATION`.
 
 ## Revision Note
 
