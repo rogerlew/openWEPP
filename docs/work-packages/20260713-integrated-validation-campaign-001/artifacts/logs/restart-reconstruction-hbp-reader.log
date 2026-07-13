@@ -1,0 +1,16 @@
+reader=independent Python struct decoder of SC-INFILE-HBP-001 schema 1.1; no production parser/helper invoked
+
+ {'path': '/tmp/laned_shadow_h2637_active_on_2119230/output/H2637.hbp', 'sha256': '378a8c1d80a22c9452fb256cf9a95eab09035f3a6cd387c6d626ab26c426c453', 'major': 1, 'minor': 1, 'hillslope_id': 2637, 'nyear': 1, 'npart': 5, 'nofe': 19}
+record_count 1 kind_counts {0: 0, 1: 0, 2: 1}
+baseflow_sum_m3 5.032033091000001 deep_seepage_sum_m3 0.0
+latest_event_key 1 355 tdet_kg 7.3689615250000005 tdep_kg 0.0 hourly_runoff_sum_m3 560.5000915656966 hourly_sediment_sum_kg 0.0 class_fraction_sum 0.0 class_fraction_min 0.0 baseflow_m3 5.032033091000001 deep_seepage_m3 0.0
+
+ {'path': '/tmp/erosion_p61_2137383/output/H61.hbp', 'sha256': 'edcba9b5463a994d0ec77a02e0b0c091d6a625beaf595618754f152be3eb4524', 'major': 1, 'minor': 1, 'hillslope_id': 61, 'nyear': 1, 'npart': 5, 'nofe': 1}
+record_count 1 kind_counts {0: 0, 1: 0, 2: 1}
+baseflow_sum_m3 0.0 deep_seepage_sum_m3 0.0
+latest_event_key 1 234 tdet_kg 2822.7663195220002 tdep_kg 0.0 hourly_runoff_sum_m3 794.0473179451559 hourly_sediment_sum_kg 2822.766319521547 class_fraction_sum 1.0 class_fraction_min 0.026647828384138175 baseflow_m3 0.0 deep_seepage_m3 0.0
+
+ {'path': '/tmp/wshedw7r_p102_jobs1_1783977102826839508/hillslope-jobs/H1/H1.hbp', 'sha256': '42b4fc68ec749150e8360579295bebf77f373fd65c882e939c4792638a5181d4', 'major': 1, 'minor': 1, 'hillslope_id': 1, 'nyear': 1, 'npart': 5, 'nofe': 2}
+record_count 1 kind_counts {0: 0, 1: 0, 2: 1}
+baseflow_sum_m3 0.0 deep_seepage_sum_m3 0.0
+latest_event_key 1 337 tdet_kg 584.2332653870001 tdep_kg 282.14618621700004 hourly_runoff_sum_m3 393.8589837616709 hourly_sediment_sum_kg 302.08707916989255 class_fraction_sum 1.0 class_fraction_min 0.03380000000000001 baseflow_m3 0.0 deep_seepage_m3 0.0

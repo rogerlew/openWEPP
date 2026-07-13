@@ -1,0 +1,14 @@
+chan.out.parquet field_names_types_nullability_equal= True semantic_schema_metadata_equal= True field_metadata_equal= True full_semantic_schema_equal= True
+chanwb.parquet field_names_types_nullability_equal= True semantic_schema_metadata_equal= True field_metadata_equal= True full_semantic_schema_equal= True
+chnwb.parquet field_names_types_nullability_equal= True semantic_schema_metadata_equal= True field_metadata_equal= True full_semantic_schema_equal= True
+ebe_pw0.parquet field_names_types_nullability_equal= True semantic_schema_metadata_equal= True field_metadata_equal= True full_semantic_schema_equal= True
+loss_pw0.all_years.chn.parquet field_names_types_nullability_equal= True semantic_schema_metadata_equal= True field_metadata_equal= True full_semantic_schema_equal= True
+loss_pw0.all_years.class_data.parquet field_names_types_nullability_equal= True semantic_schema_metadata_equal= True field_metadata_equal= True full_semantic_schema_equal= True
+loss_pw0.all_years.hill.parquet field_names_types_nullability_equal= True semantic_schema_metadata_equal= True field_metadata_equal= True full_semantic_schema_equal= True
+loss_pw0.all_years.out.parquet field_names_types_nullability_equal= True semantic_schema_metadata_equal= True field_metadata_equal= True full_semantic_schema_equal= True
+loss_pw0.chn.parquet field_names_types_nullability_equal= True semantic_schema_metadata_equal= True field_metadata_equal= True full_semantic_schema_equal= True
+loss_pw0.class_data.parquet field_names_types_nullability_equal= True semantic_schema_metadata_equal= True field_metadata_equal= True full_semantic_schema_equal= True
+loss_pw0.hill.parquet field_names_types_nullability_equal= True semantic_schema_metadata_equal= True field_metadata_equal= True full_semantic_schema_equal= True
+loss_pw0.out.parquet field_names_types_nullability_equal= True semantic_schema_metadata_equal= True field_metadata_equal= True full_semantic_schema_equal= True
+soil_pw0.parquet field_names_types_nullability_equal= True semantic_schema_metadata_equal= True field_metadata_equal= True full_semantic_schema_equal= True
+totalwatsed3.parquet field_names_types_nullability_equal= True semantic_schema_metadata_equal= True field_metadata_equal= True full_semantic_schema_equal= True

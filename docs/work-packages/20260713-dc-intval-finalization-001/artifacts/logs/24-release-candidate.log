@@ -1,0 +1,15 @@
+INFO: running workspace release gates
+    Checking openwepp-runner v0.1.0 (/home/workdir/openWEPP/crates/openwepp-runner)
+    Checking openwepp v0.1.0 (/home/workdir/openWEPP)
+error: this function has too many lines (107/100)
+   --> tests/integration/laned_shadow_h2637.rs:575:1
+    |
+575 | fn h2637_native_active_owner_routes_and_closes() {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#too_many_lines
+    = note: `-D clippy::too-many-lines` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::too_many_lines)]`
+
+error: could not compile `openwepp` (test "laned_shadow_h2637") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...

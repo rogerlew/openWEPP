@@ -1,0 +1,56 @@
+   Compiling openwepp v0.1.0 (/home/workdir/openWEPP)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.26s
+────────────
+ Nextest run ID fd1de8f7-1066-4a4b-ad3a-5d72bf2624c2 with nextest profile: default
+    Starting 1 test across 1 binary (9 tests skipped)
+        SLOW [> 60.000s] (───) openwepp::laned_shadow_h2637 h2637_native_active_owner_routes_and_closes
+        SLOW [>120.000s] (───) openwepp::laned_shadow_h2637 h2637_native_active_owner_routes_and_closes
+        SLOW [>180.000s] (───) openwepp::laned_shadow_h2637 h2637_native_active_owner_routes_and_closes
+        SLOW [>240.000s] (───) openwepp::laned_shadow_h2637 h2637_native_active_owner_routes_and_closes
+        SLOW [>300.000s] (───) openwepp::laned_shadow_h2637 h2637_native_active_owner_routes_and_closes
+        SLOW [>360.000s] (───) openwepp::laned_shadow_h2637 h2637_native_active_owner_routes_and_closes
+        SLOW [>420.000s] (───) openwepp::laned_shadow_h2637 h2637_native_active_owner_routes_and_closes
+        FAIL [ 456.822s] (1/1) openwepp::laned_shadow_h2637 h2637_native_active_owner_routes_and_closes
+  stdout ───
+
+    running 1 test
+    test h2637_native_active_owner_routes_and_closes has been running for over 60 seconds
+    test h2637_native_active_owner_routes_and_closes ... FAILED
+
+    failures:
+
+    failures:
+        h2637_native_active_owner_routes_and_closes
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 9 filtered out; finished in 456.81s
+
+  stderr ───
+
+    thread 'h2637_native_active_owner_routes_and_closes' (2393860) panicked at tests/integration/laned_shadow_h2637.rs:635:14:
+    enabled run must publish initial groundwater storage
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [ 456.824s] 1 test run: 0 passed, 1 failed, 9 skipped
+        FAIL [ 456.822s] (1/1) openwepp::laned_shadow_h2637 h2637_native_active_owner_routes_and_closes
+  stdout ───
+
+    running 1 test
+    test h2637_native_active_owner_routes_and_closes has been running for over 60 seconds
+    test h2637_native_active_owner_routes_and_closes ... FAILED
+
+    failures:
+
+    failures:
+        h2637_native_active_owner_routes_and_closes
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 9 filtered out; finished in 456.81s
+
+  stderr ───
+
+    thread 'h2637_native_active_owner_routes_and_closes' (2393860) panicked at tests/integration/laned_shadow_h2637.rs:635:14:
+    enabled run must publish initial groundwater storage
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+error: test run failed

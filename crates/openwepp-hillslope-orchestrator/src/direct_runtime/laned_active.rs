@@ -430,6 +430,10 @@ pub struct DirectLanedActiveRunSummary {
     pub total_groundwater_recharge_m3: f64,
     pub total_groundwater_baseflow_m3: f64,
     pub total_groundwater_deep_seepage_m3: f64,
+    pub initial_groundwater_storage_m3: Option<f64>,
+    pub terminal_groundwater_storage_m3: Option<f64>,
+    pub terminal_groundwater_baseflow_m3: Option<f64>,
+    pub terminal_groundwater_deep_seepage_m3: Option<f64>,
     pub max_supply_reconstruction_rel: f64,
     pub max_day_cascade_residual_rel: f64,
     pub max_day_seam_residual_rel: f64,
@@ -481,6 +485,10 @@ impl Default for DirectLanedActiveRunSummary {
             total_groundwater_recharge_m3: 0.0,
             total_groundwater_baseflow_m3: 0.0,
             total_groundwater_deep_seepage_m3: 0.0,
+            initial_groundwater_storage_m3: None,
+            terminal_groundwater_storage_m3: None,
+            terminal_groundwater_baseflow_m3: None,
+            terminal_groundwater_deep_seepage_m3: None,
             max_supply_reconstruction_rel: 0.0,
             max_day_cascade_residual_rel: 0.0,
             max_day_seam_residual_rel: 0.0,
@@ -514,6 +522,12 @@ pub(crate) fn laned_active_record_groundwater(
 ) {
     if output.enabled {
         summary.groundwater_enabled_days += 1;
+        summary
+            .initial_groundwater_storage_m3
+            .get_or_insert(output.storage_before_m3);
+        summary.terminal_groundwater_storage_m3 = Some(output.storage_after_m3);
+        summary.terminal_groundwater_baseflow_m3 = Some(output.baseflow_m3);
+        summary.terminal_groundwater_deep_seepage_m3 = Some(output.deep_seepage_m3);
     }
     summary.total_groundwater_recharge_m3 += output.recharge_m3;
     summary.total_groundwater_baseflow_m3 += output.baseflow_m3;
@@ -1406,6 +1420,10 @@ mod tests {
             },
         );
         assert_eq!(summary.groundwater_enabled_days, 1);
+        assert_eq!(summary.initial_groundwater_storage_m3, Some(2.0));
+        assert_eq!(summary.terminal_groundwater_storage_m3, Some(3.0));
+        assert_eq!(summary.terminal_groundwater_baseflow_m3, Some(4.0));
+        assert_eq!(summary.terminal_groundwater_deep_seepage_m3, Some(5.0));
         assert_eq!(
             summary.total_groundwater_recharge_m3.to_bits(),
             1.0_f64.to_bits()
@@ -1418,6 +1436,13 @@ mod tests {
             summary.total_groundwater_deep_seepage_m3.to_bits(),
             5.0_f64.to_bits()
         );
+
+        laned_active_record_groundwater(
+            &mut summary,
+            super::super::DirectGroundwaterDayOutput::zero(),
+        );
+        assert_eq!(summary.initial_groundwater_storage_m3, Some(2.0));
+        assert_eq!(summary.terminal_groundwater_storage_m3, Some(3.0));
     }
 
     #[test]

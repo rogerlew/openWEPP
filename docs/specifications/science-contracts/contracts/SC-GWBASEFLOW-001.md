@@ -4,7 +4,7 @@ title: Groundwater Reservoir Baseflow Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 0.1.0
+contract_version: 0.1.2
 producer_scope:
   - groundwater linear-reservoir storage update
   - hillslope groundwater baseflow and deep-seepage export
@@ -12,7 +12,7 @@ consumer_scope:
   - hillslope pass and watershed/channel baseflow consumers
   - Lane D active-router water-balance export boundary
 evidence_level: static
-last_reviewed: 2026-07-08
+last_reviewed: 2026-07-13
 supersedes: []
 superseded_by: []
 ---
@@ -22,7 +22,7 @@ superseded_by: []
 Status: `in_review`
 Maturity: `draft`
 Evidence mode: `Static`
-Contract version: `0.1.0`
+Contract version: `0.1.2`
 
 ## Purpose
 
@@ -103,7 +103,7 @@ Out of scope:
 | Daily groundwater recurrence | day/hillslope deep-percolation recharge `D_i`, prior storage `S_{i-1}`, prior `Qb_{i-1}`, prior `Qs_{i-1}` | `S_i`, `Qb_i`, `Qs_i` | groundwater storage carry |
 | Hillslope pass / HBP handoff | `Qb_i`, `Qs_i`, `lr_bf` | pass fields or explicit absent/disabled state | pass inventory only |
 | Watershed/channel consumption | `tmpgwbfv`, topology side/top hillslope mapping, `bftharea`, `lr_bf` | channel inflow contribution, `qBase`, diagnostics | channel baseflow carry arrays |
-| Publication | generated baseflow/deep seepage, runtime branch state | water-balance rows with no duplication | publication only |
+| Publication | generated baseflow/deep seepage, runtime branch state | water-balance rows with no duplication; run-level initial storage, terminal `S_N`, and terminal `Qb_N`/`Qs_N` recurrence operands | publication only |
 
 ## Algorithm Specification
 
@@ -166,6 +166,24 @@ channel-routing behavior and is not a groundwater-reservoir default.
    is zero under `lr_bf=1` because generated groundwater baseflow is carried in
    runoff/streamflow surfaces.
 
+### Run-Level Recurrence Publication
+
+When `lr_bf=1`, run execution provenance MUST publish the authoritative first
+day `storage_before_m3` (`S_0`), final day `storage_after_m3` (`S_N`), final
+day `baseflow_m3` (`Qb_N`), and final day `deep_seepage_m3` (`Qs_N`) alongside
+the cumulative recharge and export totals. These are existing recurrence
+operands, not a second groundwater state or a post-export surrogate. They make
+both exact timing identities independently reconstructable:
+
+`S_N = S_0 + sum(D_i) - (sum(Qb_i) - Qb_N) - (sum(Qs_i) - Qs_N)`
+
+`S_N - Qb_N - Qs_N = S_0 + sum(D_i) - sum(Qb_i) - sum(Qs_i)`
+
+When the reservoir branch is disabled, these run-level storage/terminal-export
+operands MUST remain explicitly absent rather than zero-filled. Daily HBP/pass
+schema and downstream flow consumption are unchanged by this observability
+surface.
+
 ### Lane D MOFE Boundary
 
 Lane D active surface routing does not consume groundwater reservoir baseflow as
@@ -208,7 +226,7 @@ following:
 | `INV-GWBASEFLOW-005` | Generated baseflow and deep seepage must be exported to pass/watershed consumers when `lr_bf=1`; producer-only evidence is not enough for watershed/baseflow closure. | `REF-GWBASEFLOW-LEGACY-PASS`, `REF-GWBASEFLOW-LEGACY-CHANNEL` | `[DIRECT][Static]` | pass/HBP and watershed consumer proof | package `HOLD` until real consumer reads generated fields |
 | `INV-GWBASEFLOW-006` | `bftharea` is evaluated as hectares of watershed contributing area and controls the legacy ephemeral/perennial baseflow branch. | `REF-GWBASEFLOW-LEGACY-CHANNEL`, `REF-GWBASEFLOW-INFILE-GWCOEFF` | `[DIRECT][Static]` | topology-area threshold fixture | typed hard fail or `HOLD` if area lineage is missing |
 | `INV-GWBASEFLOW-007` | Lane D active routing must conserve and export non-exfiltrated groundwater/baseflow/deep-seepage terms without feeding them as surface-router source terms or double counting them against `latqcc`. | `REF-GWBASEFLOW-OFEROUTE`, `REF-GWBASEFLOW-LEGACY-CONTIN`, `SC-SUBHYD-001` | `[DIRECT][Static] + [INFERENCE][Static]` | active-mode ledger vector and mixed-authority guard | production activation `HOLD` until fixture-proven |
-| `INV-GWBASEFLOW-008` | Publication surfaces must label generated groundwater baseflow and deep seepage so consumers can distinguish true zero, disabled process, and generated-but-carried-in-runoff legacy water-balance behavior. | `REF-GWBASEFLOW-LEGACY-WATBAL`, `REF-GWBASEFLOW-LEGACY-PASS` | `[DIRECT][Static] + [INFERENCE][Static]` | output metadata / publication lineage gate | typed hard fail or publication `HOLD` on ambiguous zero-fill |
+| `INV-GWBASEFLOW-008` | Publication surfaces must label generated groundwater baseflow and deep seepage so consumers can distinguish true zero, disabled process, and generated-but-carried-in-runoff legacy water-balance behavior. For an enabled run, execution provenance must additionally expose `S_0`, `S_N`, `Qb_N`, and `Qs_N` with cumulative recharge/exports so both recurrence timing identities can be independently reconstructed; disabled runs leave these operands absent, never zero-filled. | `REF-GWBASEFLOW-LEGACY-WATBAL`, `REF-GWBASEFLOW-LEGACY-PASS`, `INV-GWBASEFLOW-004` | `[DIRECT][Static] + [INFERENCE][Static]` | output metadata / publication lineage gate and real H2637 run-level reconstruction | typed hard fail or publication `HOLD` on ambiguous zero-fill or missing recurrence operands |
 
 ## Producer And Consumer Obligations
 
@@ -220,7 +238,7 @@ following:
 | `OBL-GWBASEFLOW-P-004` | pass/HBP export | publish `gwbfv`/`gwdsv` or explicit disabled/null authority to the downstream consumer path | producer + real consumer proof |
 | `OBL-GWBASEFLOW-C-001` | watershed/channel | consume generated `tmpgwbfv` when `lr_bf=1`; consume `cbase` only in its own branch | watershed fixture with branch separation |
 | `OBL-GWBASEFLOW-C-002` | active router | keep groundwater/baseflow export off the Lane D surface source series and inside the water-balance/export ledger | active ledger closure vector |
-| `OBL-GWBASEFLOW-C-003` | publication | reject zero-fill aliases and expose generated/disabled/legacy-carried states distinctly | publication metadata and reconstruction gate |
+| `OBL-GWBASEFLOW-C-003` | publication | reject zero-fill aliases; expose generated/disabled/legacy-carried states distinctly; publish enabled-run `S_0`, `S_N`, `Qb_N`, and `Qs_N` recurrence operands in execution provenance | publication metadata and independent run-level reconstruction gate |
 
 ## Symbol Alias Map
 
@@ -290,7 +308,7 @@ following:
 | `TV-GWBASEFLOW-005` | threshold branch | fixture separates below-`bftharea` and above-`bftharea` channel behavior |
 | `TV-GWBASEFLOW-006` | namespace separation | fixture distinguishes generated `Qb_i`, lateral `latqcc`, and `cbase`; wrong aliases must fail |
 | `TV-GWBASEFLOW-007` | Lane D active MOFE ledger | active-router source excludes groundwater baseflow; ledger exports groundwater/baseflow/deep seepage and closes water balance |
-| `TV-GWBASEFLOW-008` | publication anti-alias | public outputs distinguish generated zero, disabled branch, missing authority, and legacy-carried baseflow |
+| `TV-GWBASEFLOW-008` | publication anti-alias and run closure | public outputs distinguish generated zero, disabled branch, missing authority, and legacy-carried baseflow; a real H2637 run reconstructs both run-level recurrence timing identities from published `S_0`, `S_N`, `Qb_N`, `Qs_N`, and cumulative totals |
 
 ## Binding Exposure Index
 
@@ -311,5 +329,6 @@ following:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-07-13` | `0.1.2` | Codex | INTVAL run-level recurrence observability: `INV-GWBASEFLOW-008` and publication obligations now require enabled-run execution provenance to expose authoritative `S_0`, `S_N`, `Qb_N`, and `Qs_N` with cumulative totals, while disabled runs retain absent rather than zero-filled operands. This closes independent H2637 recurrence reconstruction without changing recurrence timing or HBP/pass schemas. |
 | `2026-07-09` | `0.1.1` | Codex | M-T2 closure amendment: generated `gwbfv`/`gwdsv` HBP payload fields are consumed as fixed-position scaled volumes under `SC-INFILE-HBP-001` v0.2.2; watershed/channel routing must use generated HBP baseflow under `lr_bf=1`, keep `cbase` exclusive to `lr_bf=0`, and evaluate `bftharea` against contributing area hectares before adding generated baseflow to the channel branch. |
 | `2026-07-08` | `0.1.0` | Codex | Initial groundwater/baseflow process authority for M-T2A, binding Srivastava linear-reservoir equations, pinned baseline code maps, parser handoff, Lane D boundary obligations, and M-T2B test-vector handoff. |

@@ -157,7 +157,7 @@ revision authorizes:
 - `docs/specifications/science-contracts/contracts/SC-SED-001.md` — bind the
   enrichment label-50 reproportion to nonnegative class masses when the
   absolute legacy `1e-15` per-class floor would exceed the routed total.
-- `crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/direct_runtime_wave1_continuity.rs`
+- `crates/openwepp-hillslope-orchestrator/src/direct_runtime/tests/erosion_hb04.rs`
   — add the contract-derived sub-floor total-load reproportion vector.
 - `crates/openwepp-hillslope-orchestrator/src/direct_runtime/erosion_enrichment.rs`
   — correct only the per-class floor/reproportion degeneracy after contract and
@@ -169,3 +169,34 @@ analytic enrichment equations, class availability caps, the bounded label-50
 loop, TOL-SED-005/006, and the publication nonnegative hard guard. Do not clamp
 negative published fractions, loosen a tolerance, change fixtures, or replace
 the enrichment physics with a heuristic composition.
+
+## Revision 7: INTVAL-GROUNDWATER-TERMINAL-STORAGE-001
+
+Evidence class: **Ran + Static**.
+
+The frozen-candidate campaign restart independently closed every required
+consumer/conservation surface except the complete H2637 groundwater recurrence.
+The run manifest exposes cumulative recharge, baseflow, and deep seepage but
+not the initial and terminal reservoir state needed to reconstruct the run
+recurrence without inference. Before contract, regression, or production
+edits, this revision authorizes:
+
+- `docs/specifications/science-contracts/contracts/SC-GWBASEFLOW-001.md` — bind
+  run-level publication of the authoritative initial storage, terminal runtime
+  carry, and terminal pending exports needed to reconstruct the exact daily
+  recurrence without redefining its timing;
+- `crates/openwepp-hillslope-orchestrator/src/direct_runtime/laned_active.rs` —
+  retain those already-produced day-output operands in the run summary;
+- `crates/openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs` and
+  `05_runner_execution_and_outputs.rs` — serialize the summary operands in the
+  active execution-provenance manifest;
+- `tests/integration/laned_shadow_h2637.rs` and the existing summary unit tests
+  — add contract-derived red/green recurrence reconstruction and disabled-state
+  posture; and
+- this package and integrated-campaign artifact trees for defect, restart,
+  consumer, reconstruction, review, and verification evidence.
+
+Protected boundaries: do not change the daily recurrence, timing, HBP/pass
+schema, coefficients, groundwater exports, surface routing, fixture values, or
+tolerances. Publication must expose the authoritative existing state and
+pending terminal exports, not synthesize a surrogate post-export state.

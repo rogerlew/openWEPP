@@ -1,0 +1,28 @@
+# Authority Suite Gate Results
+
+- generated_utc: 2026-07-13T22:00:44Z
+- registry: /home/workdir/openWEPP/docs/specifications/external-authority/registry.yaml
+- fixture_integrity_enforced: true
+- required_lane_enabled: 1
+- periodic_lane_enabled: 0
+- manual_lane_enabled: 0
+- fixture_integrity suite=cas_l4_soil_fc_minus33_001 fixture_root=tests/fixtures/constitutive/cas_l4_soil_fc_minus33_001 status=pass
+- fixture_integrity suite=cas_l4_soil_wp_minus1500_001 fixture_root=tests/fixtures/constitutive/cas_l4_soil_wp_minus1500_001 status=pass
+- fixture_integrity suite=cas_l4_watbal_relax_to_fc_001 fixture_root=tests/fixtures/constitutive/cas_l4_watbal_relax_to_fc_001 status=pass
+- fixture_integrity suite=cas_l3_subhyd_solwpv_fcdep_branch_001 fixture_root=tests/fixtures/constitutive/cas_l3_subhyd_solwpv_fcdep_branch_001 status=pass
+- fixture_integrity suite=cas_l4_subhyd_withdrawal_soilwater_cap_001 fixture_root=tests/fixtures/constitutive/cas_l4_subhyd_withdrawal_soilwater_cap_001 status=pass
+- fixture_integrity suite=cas_l4_subhyd_layer_pool_withdrawal_cap_001 fixture_root=tests/fixtures/constitutive/cas_l4_subhyd_layer_pool_withdrawal_cap_001 status=pass
+- fixture_integrity suite=cas_l4_subhyd_lateral_saturated_thickness_response_001 fixture_root=tests/fixtures/constitutive/cas_l4_subhyd_lateral_saturated_thickness_response_001 status=pass
+- fixture_integrity suite=cas_l4_subhyd_watyld_fcwp_consistency_001 fixture_root=tests/fixtures/constitutive/cas_l4_subhyd_watyld_fcwp_consistency_001 status=pass
+- fixture_integrity suite=cas_l4_soil_fc_direct_theta_minus33_cohort_001 fixture_root=tests/fixtures/constitutive/cas_l4_soil_fc_direct_theta_minus33_cohort_001 status=pass
+- fixture_integrity suite=cas_l4_infile_soil_producer_contract_001 fixture_root=tests/fixtures/infile/soil status=pass
+- lane=required failure_class=hard-fail blocking=true test=auth05_level4_constitutive_authority_hardening_contract suites=cas_l4_soil_fc_minus33_001,cas_l4_soil_wp_minus1500_001,cas_l4_watbal_relax_to_fc_001 status=pass
+- lane=required failure_class=hard-fail blocking=true test=hphys0224_wb19_withdrawal_soilwater_cap_contract suites=cas_l4_subhyd_withdrawal_soilwater_cap_001 status=pass
+- lane=required failure_class=hard-fail blocking=true test=hphys0225_wb19_layer_pool_withdrawal_cap_contract suites=cas_l4_subhyd_layer_pool_withdrawal_cap_001 status=pass
+- lane=required failure_class=hard-fail blocking=true test=hphys0226_wb19_lateral_saturated_thickness_response_contract suites=cas_l4_subhyd_lateral_saturated_thickness_response_001 status=pass
+- lane=required failure_class=hard-fail blocking=true test=hphys0227_wb19_fcwp_coca_watyld_authority_contract suites=cas_l4_subhyd_watyld_fcwp_consistency_001 status=pass
+- lane=required failure_class=hard-fail blocking=true test=auth07_fc_authority_cohort_contract suites=cas_l4_soil_fc_direct_theta_minus33_cohort_001 status=pass
+- lane=required failure_class=hard-fail blocking=true test=soilauth03_soil_producer_contract_drift_guards_contract suites=cas_l4_infile_soil_producer_contract_001 status=pass
+- lane=required failure_class=investigation suites=0 tests=0 status=not-configured
+- lane=periodic status=skipped(reason=flag-disabled)
+- lane=manual status=skipped(reason=flag-disabled)

@@ -597,6 +597,11 @@ fn build_hillslope_execution_provenance(
             total_groundwater_recharge_m3: summary.total_groundwater_recharge_m3,
             total_groundwater_baseflow_m3: summary.total_groundwater_baseflow_m3,
             total_groundwater_deep_seepage_m3: summary.total_groundwater_deep_seepage_m3,
+            initial_groundwater_storage_m3: summary.initial_groundwater_storage_m3,
+            terminal_groundwater_storage_m3: summary.terminal_groundwater_storage_m3,
+            terminal_groundwater_baseflow_m3: summary.terminal_groundwater_baseflow_m3,
+            terminal_groundwater_deep_seepage_m3: summary
+                .terminal_groundwater_deep_seepage_m3,
             max_supply_reconstruction_rel: summary.max_supply_reconstruction_rel,
             max_day_cascade_residual_rel: summary.max_day_cascade_residual_rel,
             max_day_seam_residual_rel: summary.max_day_seam_residual_rel,

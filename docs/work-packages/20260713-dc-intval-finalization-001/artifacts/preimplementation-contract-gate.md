@@ -86,3 +86,28 @@ Status: `PASS`
   nonnegative vector to `ldbot` before caps. No publication clamp, tolerance,
   fixture, total-load equation, or ordinary no-floor path may change.
 - Production implementation was not edited before these gates passed.
+
+## INTVAL-GROUNDWATER-TERMINAL-STORAGE-001
+
+Status: `PASS`
+
+- `SC-GWBASEFLOW-001` revision 0.1.2 now requires enabled-run execution
+  provenance to publish authoritative `S_0`, `S_N`, `Qb_N`, and `Qs_N`
+  alongside cumulative recharge and exports. Disabled runs retain absent,
+  rather than zero-filled, recurrence operands.
+- The amendment preserves the canonical daily timing
+  `S_i = S_(i-1) + D_i - Qb_(i-1) - Qs_(i-1)` and requires both its terminal
+  identity and the post-current-export full-run ledger to reconstruct.
+- The restarted frozen-candidate H2637 output independently exposed the gap:
+  cumulative recharge is `3668.610172576748 m3`, baseflow is
+  `3547.636225849919 m3`, seepage is zero, and the unobservable inferred
+  post-export terminal storage is `120.97394672682913 m3`.
+- The contract-derived real H2637 regression was added before production
+  edits and failed exactly at the missing initial-storage manifest operand
+  after three production legs (`logs/22-groundwater-terminal-storage-red.log`,
+  exit 100).
+- The implementation boundary is observability only: retain existing day
+  outputs in the run summary and serialize them in execution provenance. No
+  recurrence, coefficient, HBP/pass schema, fixture, tolerance, export, or
+  routing change is authorized.
+- Production implementation was not edited before these gates passed.

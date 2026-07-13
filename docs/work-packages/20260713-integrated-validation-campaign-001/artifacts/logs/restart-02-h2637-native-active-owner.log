@@ -1,0 +1,13 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.12s
+────────────
+ Nextest run ID f05d358b-d7ed-4396-8081-c9a6ffd8bad1 with nextest profile: default
+    Starting 1 test across 1 binary (9 tests skipped)
+        SLOW [> 60.000s] (───) openwepp::laned_shadow_h2637 h2637_native_active_owner_routes_and_closes
+        SLOW [>120.000s] (───) openwepp::laned_shadow_h2637 h2637_native_active_owner_routes_and_closes
+        SLOW [>180.000s] (───) openwepp::laned_shadow_h2637 h2637_native_active_owner_routes_and_closes
+        SLOW [>240.000s] (───) openwepp::laned_shadow_h2637 h2637_native_active_owner_routes_and_closes
+        SLOW [>300.000s] (───) openwepp::laned_shadow_h2637 h2637_native_active_owner_routes_and_closes
+        SLOW [>360.000s] (───) openwepp::laned_shadow_h2637 h2637_native_active_owner_routes_and_closes
+        SLOW [>420.000s] (───) openwepp::laned_shadow_h2637 h2637_native_active_owner_routes_and_closes
+────────────
+     Summary [ 472.955s] 1 test run: 1 passed (1 slow), 9 skipped

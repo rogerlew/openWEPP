@@ -1,0 +1,11 @@
+run_dir /tmp/simimpl18_partition_1783977583969244527
+source_commit 40db90ae57d99d70877c4cf616de614b3fb242eb
+wat_sha256 f8569f2bacc747e6954b8291da109e71d3448afebdc42f3c9979457e97bc61c6
+hbp_sha256 cbe53a3ee5ac216782fc5db87dacb1dc40ff50f51dc2d5d0cf24171da4371760
+manifest_sha256 5d09bcd1bac058f7983a3ea79e1c0c4d6c9c5b0b552fc4abe87ca276074f7b30
+runtime_selected direct-production-executor
+compatibility_edge_invocations 0
+row 0 P_mm 4.4 RM_mm 8.662176878559968e-10 Snow-Water_mm 4.399999999133782 Snow-Depth_mm 40.630422948035005 frozwt_mm 0.0 Total-Soil_mm 105.34953048242201 SoilWaterTotal_mm 105.34953048242201
+row 1 P_mm 0.0 RM_mm 4.399999999133782 Snow-Water_mm 0.0 Snow-Depth_mm 0.0 frozwt_mm 0.0 Total-Soil_mm 108.73051798565571 SoilWaterTotal_mm 108.73051798565571
+snow_ledger_row 0 prior_swe_mm 0.0 input_precip_mm 4.4 rain_plus_melt_mm 8.662176878559968e-10 terminal_swe_mm 4.399999999133782 residual_mm 8.881784197001252e-16
+snow_ledger_row 1 prior_swe_mm 4.399999999133782 input_precip_mm 0.0 rain_plus_melt_mm 4.399999999133782 terminal_swe_mm 0.0 residual_mm 0.0

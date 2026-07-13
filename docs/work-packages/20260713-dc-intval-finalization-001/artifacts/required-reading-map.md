@@ -104,3 +104,20 @@ here before any later production or contract expansion.
   — existing enrichment direction, zero-deposition, and inflow tests.
 - candidate-5 OR-H0081/H0204 workdirs and GDB operand captures — runtime
   mechanism evidence, not scientific authority.
+
+## INTVAL-GROUNDWATER-TERMINAL-STORAGE-001 mechanism expansion
+
+- `docs/specifications/science-contracts/contracts/SC-GWBASEFLOW-001.md`,
+  especially the daily recurrence, `INV-GWBASEFLOW-004`, publication
+  obligations, and storage/export timing — proximate scientific authority.
+- pinned `contin.for:1088-1120` and `cchrt1.inc` at the canonical baseline —
+  recurrence timing and symbol provenance.
+- `crates/openwepp-hillslope-orchestrator/src/direct_runtime/groundwater.rs`
+  and `laned_active.rs` — existing authoritative day output and run-summary
+  producer surfaces.
+- `crates/openwepp-runner/src/hillslope/00_runner_intake_and_lane_setup.rs` and
+  `05_runner_execution_and_outputs.rs` — manifest schema and projection.
+- `tests/integration/laned_shadow_h2637.rs` — real H2637 production consumer
+  and independent recurrence reconstruction surface.
+- restarted integrated campaign conservation evidence — runtime reproduction
+  and closure-gap proof, not scientific authority.

@@ -572,6 +572,7 @@ fn h2637_default_malformed_routing_coefficients_fails_closed() {
 
 #[test]
 #[ignore = "D16 H2637 active-owner evidence: runs the full H2637 fixture three times"]
+#[allow(clippy::too_many_lines)]
 fn h2637_native_active_owner_routes_and_closes() {
     // Explicit disable on the SAME native-patched fixture: no active keys. This
     // test asserts only presence/absence; the INV-OFEROUTE-010 BYTE
@@ -629,6 +630,47 @@ fn h2637_native_active_owner_routes_and_closes() {
         .and_then(serde_json::Value::as_f64)
         .expect("total_routed_outlet_m3");
     assert!(total_source_m3 > 0.0 && total_routed_outlet_m3 > 0.0);
+    let initial_groundwater_storage_m3 = find_key(active, "initial_groundwater_storage_m3")
+        .and_then(serde_json::Value::as_f64)
+        .expect("enabled run must publish initial groundwater storage");
+    let terminal_groundwater_storage_m3 = find_key(active, "terminal_groundwater_storage_m3")
+        .and_then(serde_json::Value::as_f64)
+        .expect("enabled run must publish terminal groundwater storage");
+    let terminal_groundwater_baseflow_m3 = find_key(active, "terminal_groundwater_baseflow_m3")
+        .and_then(serde_json::Value::as_f64)
+        .expect("enabled run must publish terminal groundwater baseflow");
+    let terminal_groundwater_deep_seepage_m3 =
+        find_key(active, "terminal_groundwater_deep_seepage_m3")
+            .and_then(serde_json::Value::as_f64)
+            .expect("enabled run must publish terminal groundwater deep seepage");
+    let total_groundwater_recharge_m3 = find_key(active, "total_groundwater_recharge_m3")
+        .and_then(serde_json::Value::as_f64)
+        .expect("total_groundwater_recharge_m3");
+    let total_groundwater_baseflow_m3 = find_key(active, "total_groundwater_baseflow_m3")
+        .and_then(serde_json::Value::as_f64)
+        .expect("total_groundwater_baseflow_m3");
+    let total_groundwater_deep_seepage_m3 = find_key(active, "total_groundwater_deep_seepage_m3")
+        .and_then(serde_json::Value::as_f64)
+        .expect("total_groundwater_deep_seepage_m3");
+    let recurrence_terminal_m3 = initial_groundwater_storage_m3 + total_groundwater_recharge_m3
+        - (total_groundwater_baseflow_m3 - terminal_groundwater_baseflow_m3)
+        - (total_groundwater_deep_seepage_m3 - terminal_groundwater_deep_seepage_m3);
+    assert!(
+        (terminal_groundwater_storage_m3 - recurrence_terminal_m3).abs()
+            <= 1.0e-9 * terminal_groundwater_storage_m3.max(1.0),
+        "published terminal storage must reconstruct with recurrence timing"
+    );
+    let post_export_storage_m3 = terminal_groundwater_storage_m3
+        - terminal_groundwater_baseflow_m3
+        - terminal_groundwater_deep_seepage_m3;
+    let full_run_ledger_storage_m3 = initial_groundwater_storage_m3 + total_groundwater_recharge_m3
+        - total_groundwater_baseflow_m3
+        - total_groundwater_deep_seepage_m3;
+    assert!(
+        (post_export_storage_m3 - full_run_ledger_storage_m3).abs()
+            <= 1.0e-9 * post_export_storage_m3.abs().max(1.0),
+        "published groundwater operands must close the full run ledger"
+    );
     let max_supply = find_key(active, "max_supply_reconstruction_rel")
         .and_then(serde_json::Value::as_f64)
         .expect("max_supply_reconstruction_rel");
