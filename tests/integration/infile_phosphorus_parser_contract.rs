@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{io, path::PathBuf};
 
 use openwepp_input_contract::parsers::phosphorus::{
     ParseMode, PhosphorusParseError, PhosphorusParseOptions, PhosphorusWarningCode,
@@ -245,4 +245,85 @@ fn w4dr_009_non_negative_only_policy_accepts_large_positive_values() {
     assert_opt_close(parsed.srp_mg_l, 1_000_000.0);
     assert_opt_close(parsed.scp_mg_kg, 1_000_000_000.0);
     assert_vec_close(&parsed.tmpscp_mg_kg, &[1_000_000_000.0, 1_000_000_000.0]);
+}
+
+#[test]
+fn phosphorus_error_display_preserves_all_contract_identities() {
+    let cases = [
+        (
+            PhosphorusParseError::InputOpenError {
+                path: PathBuf::from("bad/phosphorus.txt"),
+                source: io::Error::new(io::ErrorKind::PermissionDenied, "denied"),
+            },
+            "PHOS-E-000 failed to read phosphorus sidecar 'bad/phosphorus.txt': denied",
+            true,
+        ),
+        (
+            PhosphorusParseError::TokenParseError {
+                line: 2,
+                field: "srp",
+                token: "bad".to_string(),
+            },
+            "PHOS-E-001 line 2: failed to parse field 'srp' from token 'bad'",
+            false,
+        ),
+        (
+            PhosphorusParseError::RecordCountError {
+                expected: 4,
+                found: 3,
+            },
+            "PHOS-E-002 record-count mismatch: expected=4, found=3",
+            false,
+        ),
+        (
+            PhosphorusParseError::FieldFiniteError {
+                line: 3,
+                field: "scp",
+                value: f64::NAN,
+            },
+            "PHOS-E-003 line 3: field 'scp' must be finite, got NaN",
+            false,
+        ),
+        (
+            PhosphorusParseError::FieldRangeError {
+                line: 4,
+                field: "bfp",
+                value: -1.0,
+                expected: ">= 0",
+            },
+            "PHOS-E-004 line 4: field 'bfp' value -1 violates domain >= 0",
+            false,
+        ),
+        (
+            PhosphorusParseError::FanoutMismatch {
+                field: "tmpsrp",
+                expected_count: 2,
+                observed_count: 1,
+            },
+            "PHOS-E-005 fanout mismatch for 'tmpsrp': expected 2, observed 1",
+            false,
+        ),
+        (
+            PhosphorusParseError::InvariantViolation {
+                context: "fanout closure",
+            },
+            "PHOS-E-006 invariant violation: fanout closure",
+            false,
+        ),
+        (
+            PhosphorusParseError::HeaderLiteralMismatch {
+                line: 1,
+                expected: "PHOSPHORUS",
+                observed: "OTHER".to_string(),
+            },
+            "PHOS-E-007 line 1: header mismatch; expected 'PHOSPHORUS', observed 'OTHER'",
+            false,
+        ),
+    ];
+
+    for (error, expected_display, has_source) in cases {
+        assert!(expected_display.starts_with(error.contract_error_id()));
+        assert_eq!(error.to_string(), expected_display);
+        assert_eq!(std::error::Error::source(&error).is_some(), has_source);
+    }
 }
