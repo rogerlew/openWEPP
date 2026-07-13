@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{io, path::PathBuf};
 
 use openwepp_input_contract::parsers::tcr::{
     TcrChannelContext, TcrOpenResult, TcrParseError, TcrParseMode, TcrParseOptions,
@@ -7,6 +7,106 @@ use openwepp_input_contract::parsers::tcr::{
 
 fn fixture_path(name: &str) -> PathBuf {
     PathBuf::from("tests/fixtures/infile/tcr").join(name)
+}
+
+#[test]
+fn tcr_error_display_preserves_all_contract_identities() {
+    let cases = [
+        (
+            TcrParseError::InputOpenError {
+                path: PathBuf::from("inputs/channel.tcr"),
+                source: io::Error::new(io::ErrorKind::PermissionDenied, "permission denied"),
+            },
+            "TCR-E-000",
+            "TCR-E-000: could not open/read 'inputs/channel.tcr': permission denied",
+            true,
+        ),
+        (
+            TcrParseError::TokenParseError {
+                line: 2,
+                field: "taumax",
+                token: "bad".to_string(),
+            },
+            "TCR-E-001",
+            "TCR-E-001: line 2 token parse error for taumax from 'bad'",
+            false,
+        ),
+        (
+            TcrParseError::RecordCountError {
+                expected: 4,
+                found: 3,
+            },
+            "TCR-E-002",
+            "TCR-E-002: expected 4 records, found 3",
+            false,
+        ),
+        (
+            TcrParseError::NonFiniteError {
+                line: 3,
+                field: "kch",
+                value: f64::NAN,
+            },
+            "TCR-E-003",
+            "TCR-E-003: line 3 non-finite value for kch (NaN)",
+            false,
+        ),
+        (
+            TcrParseError::DomainError {
+                line: 4,
+                field: "nch",
+                value: -1.0,
+                allowed: "> 0",
+            },
+            "TCR-E-004",
+            "TCR-E-004: line 4 domain violation for nch (-1); expected > 0",
+            false,
+        ),
+        (
+            TcrParseError::CrossFileDependencyError {
+                field: "channel_context",
+                message: "missing channel context".to_string(),
+            },
+            "TCR-E-005",
+            "TCR-E-005: cross-file dependency error for channel_context: missing channel context",
+            false,
+        ),
+        (
+            TcrParseError::UnsupportedPrefixedVariant {
+                line: 1,
+                token: "datver".to_string(),
+            },
+            "TCR-E-007",
+            "TCR-E-007: line 1 unsupported prefixed/datver-like variant token 'datver'",
+            false,
+        ),
+        (
+            TcrParseError::CurveDomainError {
+                index: 1,
+                channel_id: 12,
+                slope: 0.2,
+                denominator: 0.0,
+                message: "denominator must be positive",
+            },
+            "TCR-E-008",
+            "TCR-E-008: channel index 1 id 12 slope 0.2 denominator 0 invalid (denominator must be positive)",
+            false,
+        ),
+        (
+            TcrParseError::RelationalInvariantError {
+                taumin: 70.0,
+                taumax: 35.0,
+            },
+            "TCR-E-009",
+            "TCR-E-009: relational invariant violated (taumin <= taumax) for taumin=70, taumax=35",
+            false,
+        ),
+    ];
+
+    for (error, expected_id, expected_display, has_source) in cases {
+        assert_eq!(error.contract_error_id(), expected_id);
+        assert_eq!(error.to_string(), expected_display);
+        assert_eq!(std::error::Error::source(&error).is_some(), has_source);
+    }
 }
 
 fn strict_options_with_context() -> TcrParseOptions {
