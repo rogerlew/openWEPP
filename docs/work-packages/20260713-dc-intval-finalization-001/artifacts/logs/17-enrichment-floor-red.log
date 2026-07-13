@@ -1,0 +1,47 @@
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.61s
+────────────
+ Nextest run ID 4f30fdf4-7f78-493a-812c-5c6c520b4067 with nextest profile: quick
+    Starting 1 test across 1 binary (404 tests skipped)
+        FAIL [   0.007s] (1/1) openwepp-hillslope-orchestrator direct_runtime::erosion_continuity::hb04_internal_characterization::enrichment_trace_load_floor_preserves_nonnegative_unit_composition
+  stdout ───
+
+    running 1 test
+    test direct_runtime::erosion_continuity::hb04_internal_characterization::enrichment_trace_load_floor_preserves_nonnegative_unit_composition ... FAILED
+
+    failures:
+
+    failures:
+        direct_runtime::erosion_continuity::hb04_internal_characterization::enrichment_trace_load_floor_preserves_nonnegative_unit_composition
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 404 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'direct_runtime::erosion_continuity::hb04_internal_characterization::enrichment_trace_load_floor_preserves_nonnegative_unit_composition' (1781119) panicked at crates/openwepp-hillslope-orchestrator/src/direct_runtime/tests/erosion_hb04.rs:120:5:
+    class fractions must remain nonnegative: [3143.1533960953975, -785.5383490238494, -785.5383490238494, -785.5383490238494, -785.5383490238494]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.010s] 1 test run: 0 passed, 1 failed, 404 skipped
+        FAIL [   0.007s] (1/1) openwepp-hillslope-orchestrator direct_runtime::erosion_continuity::hb04_internal_characterization::enrichment_trace_load_floor_preserves_nonnegative_unit_composition
+  stdout ───
+
+    running 1 test
+    test direct_runtime::erosion_continuity::hb04_internal_characterization::enrichment_trace_load_floor_preserves_nonnegative_unit_composition ... FAILED
+
+    failures:
+
+    failures:
+        direct_runtime::erosion_continuity::hb04_internal_characterization::enrichment_trace_load_floor_preserves_nonnegative_unit_composition
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 404 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'direct_runtime::erosion_continuity::hb04_internal_characterization::enrichment_trace_load_floor_preserves_nonnegative_unit_composition' (1781119) panicked at crates/openwepp-hillslope-orchestrator/src/direct_runtime/tests/erosion_hb04.rs:120:5:
+    class fractions must remain nonnegative: [3143.1533960953975, -785.5383490238494, -785.5383490238494, -785.5383490238494, -785.5383490238494]
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+error: test run failed

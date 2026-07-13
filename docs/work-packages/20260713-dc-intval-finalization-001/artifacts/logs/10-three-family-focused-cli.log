@@ -1,0 +1,10 @@
+sidecar-warning: GW-W-001 compatibility optional-absence branch taken (lr_bf=0)
+WB05C-CO-H0259	0
+sidecar-warning: GW-W-001 compatibility optional-absence branch taken (lr_bf=0)
+WB05C-CO-H0327	0
+sidecar-warning: GW-W-001 compatibility optional-absence branch taken (lr_bf=0)
+WB05C-MO-H0001	0
+sidecar-warning: GW-W-001 compatibility optional-absence branch taken (lr_bf=0)
+WB05C-OR-H0080	0
+CLIHILL-E-011 runtime surface failure for r7c_direct_production_executor: HS-SIMPIPE-E-001 direct publication day-input builder failed: CLIHILL-E-011 runtime surface failure for r7c_direct_production_executor: HS-SIMPIPE-E-001 direct production lane 1 no-final-frost clear cannot debit storage delta -0.0013032487641802763
+p13	1

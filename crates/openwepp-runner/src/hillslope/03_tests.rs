@@ -1927,6 +1927,41 @@ mod tests {
     }
 
     #[test]
+    fn intval_material_thaw_preserves_layer_basis_until_frwatc_projection() {
+        let frozen_depth_m = 0.026_064_975_283_605_526;
+        let residual_theta = 0.05;
+        let depth_m = 0.4;
+        let pre_frost_liquid_m = residual_theta * (depth_m - frozen_depth_m);
+        let thaw_credit_m = residual_theta * frozen_depth_m;
+        let mut layer = stale_frost_layer();
+        layer.theta_m = 0.0;
+        layer.depth_m = depth_m;
+        layer.residual_theta = residual_theta;
+        layer.frozen_depth_m = frozen_depth_m;
+        layer.frozen_water_m = thaw_credit_m;
+        let layers = vec![layer];
+        let mut outcome = zero_winter_frost_outcome();
+        outcome.active_frost_coupling = true;
+        outcome.soil_water_after_frwatc_m = Some(pre_frost_liquid_m + thaw_credit_m);
+        outcome.frwatc_soil_water_before_m = pre_frost_liquid_m;
+        outcome.frwatc_soil_water_after_m = pre_frost_liquid_m + thaw_credit_m;
+        outcome.frwatc_frozen_water_before_m = thaw_credit_m;
+        outcome.frwatc_thaw_credit_m = thaw_credit_m;
+        outcome.frwatc_net_liquid_delta_m = thaw_credit_m;
+
+        let unchanged = direct_production_same_day_frost_hydrology_layers(
+            0,
+            &layers,
+            &outcome,
+            pre_frost_liquid_m,
+            true,
+        )
+        .expect("material thaw outcome must retain its layer basis until R4W ingress");
+
+        assert_eq!(unchanged, layers);
+    }
+
+    #[test]
     fn same_day_frost_hydrology_layers_keep_stale_projection_when_frost_is_final() {
         let layers = vec![stale_frost_layer()];
         let mut outcome = zero_winter_frost_outcome();

@@ -86,6 +86,47 @@ fn drivers(qostar: f64, qout_m2_s: f64) -> Wave1Drivers {
 }
 
 #[test]
+fn enrichment_trace_load_floor_preserves_nonnegative_unit_composition() {
+    let ldtop = 3.807_345_127_696_808e-12;
+    let ldbot = 1.590_759_142_146_721_6e-19;
+    let mut inputs = enrichment_inputs();
+    inputs.tcf1 = [0.0; 5];
+    inputs.fidel = [0.2; 5];
+    inputs.inflow_fractions = Some([
+        0.000_131_325_105_350_369_68,
+        0.249_967_168_723_662_4,
+        0.249_967_168_723_662_4,
+        0.249_967_168_723_662_4,
+        0.249_967_168_723_662_4,
+    ]);
+    let mut state = super::super::Wave1EnrichmentState::initialize(&inputs, true, true, ldtop);
+    let operands = super::super::Wave1EnrichmentRegionOperands {
+        atc: 0.0,
+        btc: 0.0,
+        ctc: 0.0,
+        ktrato: 1.0,
+        qostar: 1.0,
+        theta: 0.0,
+        beta: 0.5,
+        pkro: 1.0e-4,
+        qout_m2_s: 1.0e-5,
+    };
+
+    state
+        .deposition_region(&inputs, &operands, 0.0, 1.0, ldtop, ldbot)
+        .expect("trace deposition must retain a physical class composition");
+
+    assert!(state.frcflw.iter().all(|fraction| fraction.is_finite()));
+    assert!(
+        state.frcflw.iter().all(|fraction| *fraction >= 0.0),
+        "class fractions must remain nonnegative: {:?}",
+        state.frcflw
+    );
+    let sum: f64 = state.frcflw.iter().sum();
+    assert!((sum - 1.0).abs() <= 1.0e-12, "fraction sum was {sum}");
+}
+
+#[test]
 fn erod_onset_characterizes_all_legacy_flags_and_bracket_updates() {
     let seg = segment(0.0, 0.0, 1.0, 0.0, 0.0, 1.0);
     let drv = drivers(0.0, 1.0e-3);

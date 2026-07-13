@@ -1,0 +1,26 @@
+INFO: running workspace release gates
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+    Checking openwepp-runner v0.1.0 (/home/workdir/openWEPP/crates/openwepp-runner)
+    Checking openwepp v0.1.0 (/home/workdir/openWEPP)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 10.53s
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+   Compiling openwepp-runner v0.1.0 (/home/workdir/openWEPP/crates/openwepp-runner)
+   Compiling openwepp v0.1.0 (/home/workdir/openWEPP)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 15.19s
+────────────
+ Nextest run ID 0f50f4b8-4313-4505-9ea2-7ea4036a1cde with nextest profile: full
+    Starting 1955 tests across 180 binaries (3 tests skipped)
+  Cancelling due to interrupt: 9 tests still running
+      SIGINT [  53.932s] (1853/1955) openwepp-hillslope-orchestrator ofe_routing::d10b_reconciliation_tests::case4_manning_solver_converges_to_iwagaki_oracle
+      SIGINT [  53.719s] (1854/1955) openwepp-hillslope-orchestrator ofe_routing::iwagaki_oracle::tests::upwind_case4_self_convergence
+      SIGINT [  53.735s] (1855/1955) openwepp-hillslope-orchestrator ofe_routing::iwagaki_oracle::tests::characteristics_fan_cross_validates_upwind_reference
+      SIGINT [  53.874s] (1856/1955) openwepp::snowdensity03_physics_bulk_offline_contract physics_bulk_snowbench_runs_offline_for_snotel_fixture
+      SIGINT [  11.701s] (1857/1955) openwepp-runner hillslope::tests::simimpl::simimpl14_contract_gate_continuous_wb13_span_and_keys
+      SIGINT [  54.829s] (1858/1955) openwepp::erosion_multi_ofe_p102_chain erosion_multi_ofe_p102_wave1_chain_routes_sediment
+      SIGINT [   2.022s] (1859/1955) openwepp::cli03_runner_contract_derived_tests cli03_legacy_sidecar_discovery_mode_uses_legacy_sidecars_and_ignores_runfile_overrides
+      SIGINT [  25.211s] (1860/1955) openwepp::cli03_runner_contract_derived_tests cli03_fixture_run_publishes_wb16_ealpha_runtime_seed_provenance
+      SIGINT [   6.114s] (1861/1955) openwepp-runner hillslope::tests::simimpl::simimpl14_contract_gate_loss_output_is_run_span_truthful
+────────────
+     Summary [  54.861s] 1861/1955 tests run: 1852 passed, 9 failed, 3 skipped
+warning: 94/1955 tests were not run due to interrupt
+error: test run failed

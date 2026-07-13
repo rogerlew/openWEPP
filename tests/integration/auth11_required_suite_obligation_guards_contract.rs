@@ -112,6 +112,81 @@ fn parse_registry_suite_fields(
     }
 }
 
+fn parse_registry_suites(registry_yaml: &str) -> Vec<BTreeMap<String, String>> {
+    let mut suites = Vec::new();
+    let mut current = BTreeMap::new();
+    for line in registry_yaml.lines() {
+        let stripped = line.trim();
+        if let Some(suite_id) = stripped.strip_prefix("- suite_id:") {
+            if !current.is_empty() {
+                suites.push(current);
+                current = BTreeMap::new();
+            }
+            current.insert("suite_id".to_string(), suite_id.trim().to_string());
+            continue;
+        }
+        if current.is_empty() {
+            continue;
+        }
+        if let Some((key, value)) = stripped.split_once(':') {
+            current.insert(key.trim().to_string(), value.trim().to_string());
+        }
+    }
+    if !current.is_empty() {
+        suites.push(current);
+    }
+    suites
+}
+
+#[test]
+fn auth11_all_active_required_suite_targets_exist_and_are_registered() {
+    let registry = read_repo_file("docs/specifications/external-authority/registry.yaml");
+    let cargo_manifest = read_repo_file("Cargo.toml");
+    let mut checked_suite_count = 0_usize;
+
+    for suite in parse_registry_suites(&registry) {
+        if suite.get("status").map(String::as_str) != Some("active")
+            || suite.get("gate_lane").map(String::as_str) != Some("required")
+            || suite.get("failure_class").map(String::as_str) != Some("hard-fail")
+        {
+            continue;
+        }
+        checked_suite_count += 1;
+        let suite_id = suite.get("suite_id").map_or("<unknown>", String::as_str);
+        let integration_test = suite.get("integration_test").unwrap_or_else(|| {
+            panic!("active required suite {suite_id} must name integration_test")
+        });
+        assert!(
+            integration_test.starts_with("tests/integration/")
+                && Path::new(integration_test)
+                    .extension()
+                    .is_some_and(|extension| extension.eq_ignore_ascii_case("rs")),
+            "active required suite {suite_id} integration_test must be a Rust integration target: {integration_test}"
+        );
+        assert!(
+            exists(integration_test),
+            "active required suite {suite_id} integration target must exist: {integration_test}"
+        );
+        let target = Path::new(integration_test)
+            .file_stem()
+            .and_then(|stem| stem.to_str())
+            .unwrap_or_else(|| {
+                panic!("invalid integration_test path for {suite_id}: {integration_test}")
+            });
+        assert!(
+            cargo_manifest.contains(&format!(
+                "[[test]]\nname = \"{target}\"\npath = \"{integration_test}\""
+            )),
+            "active required suite {suite_id} target must be explicitly registered in Cargo.toml: {target}"
+        );
+    }
+
+    assert!(
+        checked_suite_count > 0,
+        "registry must expose at least one active required hard-fail suite"
+    );
+}
+
 #[allow(clippy::too_many_lines)]
 #[test]
 fn auth11_obligations_schema_and_anchor_bindings_are_enforced() {

@@ -1,0 +1,47 @@
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.85s
+────────────
+ Nextest run ID 477febc1-50a8-409b-80e1-b17a2172cc08 with nextest profile: default
+    Starting 1 test across 1 binary (400 tests skipped)
+        FAIL [   0.007s] (1/1) openwepp-hillslope-orchestrator tests::tests_mod::direct_runtime_wave1_continuity::wave1_profil_segment_fit_matches_legacy_normalization
+  stdout ───
+
+    running 1 test
+    test tests::tests_mod::direct_runtime_wave1_continuity::wave1_profil_segment_fit_matches_legacy_normalization ... FAILED
+
+    failures:
+
+    failures:
+        tests::tests_mod::direct_runtime_wave1_continuity::wave1_profil_segment_fit_matches_legacy_normalization
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 400 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'tests::tests_mod::direct_runtime_wave1_continuity::wave1_profil_segment_fit_matches_legacy_normalization' (793235) panicked at crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/direct_runtime_wave1_continuity.rs:613:5:
+    assertion failed: (compatibility_segments[0].xl - 50.0 / 99.97).abs() < 1.0e-12
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+  Cancelling due to test failure: 
+────────────
+     Summary [   0.010s] 1 test run: 0 passed, 1 failed, 400 skipped
+        FAIL [   0.007s] (1/1) openwepp-hillslope-orchestrator tests::tests_mod::direct_runtime_wave1_continuity::wave1_profil_segment_fit_matches_legacy_normalization
+  stdout ───
+
+    running 1 test
+    test tests::tests_mod::direct_runtime_wave1_continuity::wave1_profil_segment_fit_matches_legacy_normalization ... FAILED
+
+    failures:
+
+    failures:
+        tests::tests_mod::direct_runtime_wave1_continuity::wave1_profil_segment_fit_matches_legacy_normalization
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 400 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'tests::tests_mod::direct_runtime_wave1_continuity::wave1_profil_segment_fit_matches_legacy_normalization' (793235) panicked at crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/direct_runtime_wave1_continuity.rs:613:5:
+    assertion failed: (compatibility_segments[0].xl - 50.0 / 99.97).abs() < 1.0e-12
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+error: test run failed

@@ -1,0 +1,1235 @@
+INFO: running workspace release gates
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+    Checking openwepp-runner v0.1.0 (/home/workdir/openWEPP/crates/openwepp-runner)
+    Checking openwepp v0.1.0 (/home/workdir/openWEPP)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 9.89s
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+   Compiling openwepp-runner v0.1.0 (/home/workdir/openWEPP/crates/openwepp-runner)
+   Compiling openwepp v0.1.0 (/home/workdir/openWEPP)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 15.30s
+────────────
+ Nextest run ID 6a26dfde-c3d4-438c-8de7-50861dfe0594 with nextest profile: full
+    Starting 1959 tests across 180 binaries (3 tests skipped)
+        FAIL [   0.026s] ( 697/1959) openwepp::paradigm2_multilayer_promotion promotion_contract_and_package_ratify_supported_opt_in_capability
+  stdout ───
+
+    running 1 test
+    test promotion_contract_and_package_ratify_supported_opt_in_capability ... FAILED
+
+    failures:
+
+    failures:
+        promotion_contract_and_package_ratify_supported_opt_in_capability
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'promotion_contract_and_package_ratify_supported_opt_in_capability' (1240980) panicked at tests/integration/paradigm2_multilayer_promotion.rs:133:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.026s] ( 909/1959) openwepp::paradigm2_stage1_layered_snow_density stage1_contract_and_selector_are_package_bound
+  stdout ───
+
+    running 1 test
+    test stage1_contract_and_selector_are_package_bound ... FAILED
+
+    failures:
+
+    failures:
+        stage1_contract_and_selector_are_package_bound
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'stage1_contract_and_selector_are_package_bound' (1241651) panicked at tests/integration/paradigm2_stage1_layered_snow_density.rs:287:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.027s] ( 919/1959) openwepp::paradigm2_stage2_snow_frost_insulation_profile stage2_contract_package_and_trace_are_bound
+  stdout ───
+
+    running 1 test
+    test stage2_contract_package_and_trace_are_bound ... FAILED
+
+    failures:
+
+    failures:
+        stage2_contract_package_and_trace_are_bound
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'stage2_contract_package_and_trace_are_bound' (1241666) panicked at tests/integration/paradigm2_stage2_snow_frost_insulation_profile.rs:107:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.023s] ( 937/1959) openwepp::paradigm2_stage3_decouple_water_temperature stage3_decouple_contract_package_and_selector_are_bound
+  stdout ───
+
+    running 1 test
+    test stage3_decouple_contract_package_and_selector_are_bound ... FAILED
+
+    failures:
+
+    failures:
+        stage3_decouple_contract_package_and_selector_are_bound
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'stage3_decouple_contract_package_and_selector_are_bound' (1241704) panicked at tests/integration/paradigm2_stage3_decouple_water_temperature.rs:204:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.022s] ( 962/1959) openwepp::paradigm2_stage3_liquid_routing_meltwater_temperature stage3_contract_package_and_selector_are_bound
+  stdout ───
+
+    running 1 test
+    test stage3_contract_package_and_selector_are_bound ... FAILED
+
+    failures:
+
+    failures:
+        stage3_contract_package_and_selector_are_bound
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'stage3_contract_package_and_selector_are_bound' (1241749) panicked at tests/integration/paradigm2_stage3_liquid_routing_meltwater_temperature.rs:253:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.023s] (1013/1959) openwepp::snowdensity02_contract_adr_guard snowdensity02_contract_ratifies_opt_in_physics_bulk_envelope
+  stdout ───
+
+    running 1 test
+    test snowdensity02_contract_ratifies_opt_in_physics_bulk_envelope ... FAILED
+
+    failures:
+
+    failures:
+        snowdensity02_contract_ratifies_opt_in_physics_bulk_envelope
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'snowdensity02_contract_ratifies_opt_in_physics_bulk_envelope' (1241845) panicked at tests/integration/snowdensity02_contract_adr_guard.rs:84:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.024s] (1032/1959) openwepp::snowdensity05a_melt_contract_guard snowdensity05a_contract_ratifies_melt_modernization_envelope
+  stdout ───
+
+    running 1 test
+    test snowdensity05a_contract_ratifies_melt_modernization_envelope ... FAILED
+
+    failures:
+
+    failures:
+        snowdensity05a_contract_ratifies_melt_modernization_envelope
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'snowdensity05a_contract_ratifies_melt_modernization_envelope' (1241887) panicked at tests/integration/snowdensity05a_melt_contract_guard.rs:81:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.024s] (1063/1959) openwepp::snowdensity05b_shortwave_source_contract snowdensity05b_contract_binds_shortwave_source_authority
+  stdout ───
+
+    running 1 test
+    test snowdensity05b_contract_binds_shortwave_source_authority ... FAILED
+
+    failures:
+
+    failures:
+        snowdensity05b_contract_binds_shortwave_source_authority
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'snowdensity05b_contract_binds_shortwave_source_authority' (1241944) panicked at tests/integration/snowdensity05b_shortwave_source_contract.rs:102:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.022s] (1111/1959) openwepp::snowdensity05c_albedo_state_core snowdensity05c_contract_ratifies_albedo_state_core
+  stdout ───
+
+    running 1 test
+    test snowdensity05c_contract_ratifies_albedo_state_core ... FAILED
+
+    failures:
+
+    failures:
+        snowdensity05c_contract_ratifies_albedo_state_core
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'snowdensity05c_contract_ratifies_albedo_state_core' (1242034) panicked at tests/integration/snowdensity05c_albedo_state_core.rs:160:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.026s] (1163/1959) openwepp::snowdensity05d_opt_in_coe_melt snowdensity05d_contract_markers_bind_opt_in_melt_wiring
+  stdout ───
+
+    running 1 test
+    test snowdensity05d_contract_markers_bind_opt_in_melt_wiring ... FAILED
+
+    failures:
+
+    failures:
+        snowdensity05d_contract_markers_bind_opt_in_melt_wiring
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'snowdensity05d_contract_markers_bind_opt_in_melt_wiring' (1242133) panicked at tests/integration/snowdensity05d_opt_in_coe_melt.rs:35:9:
+    missing contract marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.023s] (1193/1959) openwepp::snowdensity05f_melt_closure_handoff snowdensity05f_contract_closes_melt_without_default_activation
+  stdout ───
+
+    running 1 test
+    test snowdensity05f_contract_closes_melt_without_default_activation ... FAILED
+
+    failures:
+
+    failures:
+        snowdensity05f_contract_closes_melt_without_default_activation
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'snowdensity05f_contract_closes_melt_without_default_activation' (1242213) panicked at tests/integration/snowdensity05f_melt_closure_handoff.rs:108:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.019s] (1223/1959) openwepp::snowdensity07_runtime_opt_in snowdensity07_contract_and_package_bind_runtime_opt_in_authority
+  stdout ───
+
+    running 1 test
+    test snowdensity07_contract_and_package_bind_runtime_opt_in_authority ... FAILED
+
+    failures:
+
+    failures:
+        snowdensity07_contract_and_package_bind_runtime_opt_in_authority
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'snowdensity07_contract_and_package_bind_runtime_opt_in_authority' (1242269) panicked at tests/integration/snowdensity07_runtime_opt_in.rs:39:9:
+    missing contract marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.025s] (1279/1959) openwepp::snowdensity08_gate_rerun snowdensity08_contract_and_package_bind_gate_rerun_authority
+  stdout ───
+
+    running 1 test
+    test snowdensity08_contract_and_package_bind_gate_rerun_authority ... FAILED
+
+    failures:
+
+    failures:
+        snowdensity08_contract_and_package_bind_gate_rerun_authority
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'snowdensity08_contract_and_package_bind_gate_rerun_authority' (1242364) panicked at tests/integration/snowdensity08_gate_rerun.rs:113:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.025s] (1328/1959) openwepp::snowdensity09_coupled_wat_rerun snowdensity09_contract_and_package_authorize_diagnostic_coupled_wat
+  stdout ───
+
+    running 1 test
+    test snowdensity09_contract_and_package_authorize_diagnostic_coupled_wat ... FAILED
+
+    failures:
+
+    failures:
+        snowdensity09_contract_and_package_authorize_diagnostic_coupled_wat
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'snowdensity09_contract_and_package_authorize_diagnostic_coupled_wat' (1242492) panicked at tests/integration/snowdensity09_coupled_wat_rerun.rs:152:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.027s] (1410/1959) openwepp::snowdensity10_3_11_spring_compaction_densification contract_and_package_bind_spring_densification_candidate
+  stdout ───
+
+    running 1 test
+    test contract_and_package_bind_spring_densification_candidate ... FAILED
+
+    failures:
+
+    failures:
+        contract_and_package_bind_spring_densification_candidate
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'contract_and_package_bind_spring_densification_candidate' (1242675) panicked at tests/integration/snowdensity10_3_11_spring_compaction_densification.rs:199:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.026s] (1444/1959) openwepp::snowdensity10_3_12_bundle_activation_adjudication contract_and_package_bind_bundle_activation_boundary
+  stdout ───
+
+    running 1 test
+    test contract_and_package_bind_bundle_activation_boundary ... FAILED
+
+    failures:
+
+    failures:
+        contract_and_package_bind_bundle_activation_boundary
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'contract_and_package_bind_bundle_activation_boundary' (1242781) panicked at tests/integration/snowdensity10_3_12_bundle_activation_adjudication.rs:131:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.026s] (1448/1959) openwepp::snowdensity10_3_13_residual_policy_b_diagnostic contract_and_package_bind_residual_policy_b_diagnostic
+  stdout ───
+
+    running 1 test
+    test contract_and_package_bind_residual_policy_b_diagnostic ... FAILED
+
+    failures:
+
+    failures:
+        contract_and_package_bind_residual_policy_b_diagnostic
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'contract_and_package_bind_residual_policy_b_diagnostic' (1242822) panicked at tests/integration/snowdensity10_3_13_residual_policy_b_diagnostic.rs:110:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.027s] (1451/1959) openwepp::snowdensity10_3_14_policy_b_no_regression_cap_authority contract_and_package_bind_policy_b_cap_authority
+  stdout ───
+
+    running 1 test
+    test contract_and_package_bind_policy_b_cap_authority ... FAILED
+
+    failures:
+
+    failures:
+        contract_and_package_bind_policy_b_cap_authority
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'contract_and_package_bind_policy_b_cap_authority' (1242830) panicked at tests/integration/snowdensity10_3_14_policy_b_no_regression_cap_authority.rs:118:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.027s] (1455/1959) openwepp::snowdensity10_3_15_default_activation_active_cap contract_and_package_bind_default_activation_authority
+  stdout ───
+
+    running 1 test
+    test contract_and_package_bind_default_activation_authority ... FAILED
+
+    failures:
+
+    failures:
+        contract_and_package_bind_default_activation_authority
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'contract_and_package_bind_default_activation_authority' (1242836) panicked at tests/integration/snowdensity10_3_15_default_activation_active_cap.rs:182:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.017s] (1459/1959) openwepp::snowdensity10_3_16_open_surface_ablation_stage_a contract_and_package_bind_stage_a_without_activation
+  stdout ───
+
+    running 1 test
+    test contract_and_package_bind_stage_a_without_activation ... FAILED
+
+    failures:
+
+    failures:
+        contract_and_package_bind_stage_a_without_activation
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'contract_and_package_bind_stage_a_without_activation' (1242844) panicked at tests/integration/snowdensity10_3_16_open_surface_ablation_stage_a.rs:29:5:
+    docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md missing required marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.018s] (1462/1959) openwepp::snowdensity10_3_17_shallow_pack_compaction_guard contract_and_package_bind_shallow_guard_candidate
+  stdout ───
+
+    running 1 test
+    test contract_and_package_bind_shallow_guard_candidate ... FAILED
+
+    failures:
+
+    failures:
+        contract_and_package_bind_shallow_guard_candidate
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'contract_and_package_bind_shallow_guard_candidate' (1242850) panicked at tests/integration/snowdensity10_3_17_shallow_pack_compaction_guard.rs:212:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.024s] (1468/1959) openwepp::snowdensity10_3_19_harder_pomeroy_default_activation contract_and_package_bind_harder_pomeroy_default_activation
+  stdout ───
+
+    running 1 test
+    test contract_and_package_bind_harder_pomeroy_default_activation ... FAILED
+
+    failures:
+
+    failures:
+        contract_and_package_bind_harder_pomeroy_default_activation
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'contract_and_package_bind_harder_pomeroy_default_activation' (1242862) panicked at tests/integration/snowdensity10_3_19_harder_pomeroy_default_activation.rs:187:5:
+    docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md missing required marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.019s] (1472/1959) openwepp::snowdensity10_3_20_sublimation_stage_b_unlock contract_and_package_bind_stage_b_unlock_authority
+  stdout ───
+
+    running 1 test
+    test contract_and_package_bind_stage_b_unlock_authority ... FAILED
+
+    failures:
+
+    failures:
+        contract_and_package_bind_stage_b_unlock_authority
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'contract_and_package_bind_stage_b_unlock_authority' (1242871) panicked at tests/integration/snowdensity10_3_20_sublimation_stage_b_unlock.rs:209:5:
+    docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md missing required marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.024s] (1482/1959) openwepp::snowdensity10_3_22_climate_class_density_specialization contract_and_package_bind_source_verified_climate_class_candidate
+  stdout ───
+
+    running 1 test
+    test contract_and_package_bind_source_verified_climate_class_candidate ... FAILED
+
+    failures:
+
+    failures:
+        contract_and_package_bind_source_verified_climate_class_candidate
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'contract_and_package_bind_source_verified_climate_class_candidate' (1242904) panicked at tests/integration/snowdensity10_3_22_climate_class_density_specialization.rs:303:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.024s] (1493/1959) openwepp::snowdensity10_3_5a_meteorology_crate_contract contract_declares_candidate_meteorology_scope_without_rst_cutover
+  stdout ───
+
+    running 1 test
+    test contract_declares_candidate_meteorology_scope_without_rst_cutover ... FAILED
+
+    failures:
+
+    failures:
+        contract_declares_candidate_meteorology_scope_without_rst_cutover
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'contract_declares_candidate_meteorology_scope_without_rst_cutover' (1242946) panicked at tests/integration/snowdensity10_3_5a_meteorology_crate_contract.rs:44:9:
+    SC-SNOWFREEZE-001 missing 10.3.5a marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.024s] (1496/1959) openwepp::snowdensity10_3_5b_hourly_partition_jennings_contract contract_authorizes_only_opt_in_hourly_partition_with_rollback
+  stdout ───
+
+    running 1 test
+    test contract_authorizes_only_opt_in_hourly_partition_with_rollback ... FAILED
+
+    failures:
+
+    failures:
+        contract_authorizes_only_opt_in_hourly_partition_with_rollback
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'contract_authorizes_only_opt_in_hourly_partition_with_rollback' (1242951) panicked at tests/integration/snowdensity10_3_5b_hourly_partition_jennings_contract.rs:18:5:
+    docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md missing required marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.025s] (1508/1959) openwepp::snowdensity10_3_7_winter_thaw_melt_response_correction contract_and_package_bind_thaw_state_loss_candidate
+  stdout ───
+
+    running 1 test
+    test contract_and_package_bind_thaw_state_loss_candidate ... FAILED
+
+    failures:
+
+    failures:
+        contract_and_package_bind_thaw_state_loss_candidate
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 7 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'contract_and_package_bind_thaw_state_loss_candidate' (1242976) panicked at tests/integration/snowdensity10_3_7_winter_thaw_melt_response_correction.rs:34:5:
+    docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md missing required marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.025s] (1518/1959) openwepp::snowdensity10_3_8_liquid_holding_capacity contract_and_package_bind_liquid_holding_capacity_candidate
+  stdout ───
+
+    running 1 test
+    test contract_and_package_bind_liquid_holding_capacity_candidate ... FAILED
+
+    failures:
+
+    failures:
+        contract_and_package_bind_liquid_holding_capacity_candidate
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'contract_and_package_bind_liquid_holding_capacity_candidate' (1243002) panicked at tests/integration/snowdensity10_3_8_liquid_holding_capacity.rs:31:5:
+    docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md missing required marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        SLOW [> 90.000s] (─────────) openwepp-hillslope-orchestrator ofe_routing::d10b_reconciliation_tests::case4_manning_solver_converges_to_iwagaki_oracle
+        SLOW [> 90.000s] (─────────) openwepp-hillslope-orchestrator ofe_routing::iwagaki_oracle::tests::characteristics_fan_cross_validates_upwind_reference
+        SLOW [> 90.000s] (─────────) openwepp-hillslope-orchestrator ofe_routing::iwagaki_oracle::tests::upwind_case4_self_convergence
+        SLOW [> 90.000s] (─────────) openwepp::snowdensity05e_melt_adjudication coe_melt_snowbench_runs_both_models_as_diagnostic_only
+        FAIL [   0.021s] (1924/1959) openwepp::snowdensity05g_harness_fidelity_rerun snowdensity05g_contract_records_harness_fidelity_gate
+  stdout ───
+
+    running 1 test
+    test snowdensity05g_contract_records_harness_fidelity_gate ... FAILED
+
+    failures:
+
+    failures:
+        snowdensity05g_contract_records_harness_fidelity_gate
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'snowdensity05g_contract_records_harness_fidelity_gate' (1300795) panicked at tests/integration/snowdensity05g_harness_fidelity_rerun.rs:117:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.019s] (1928/1959) openwepp::snowdensity06_density_compaction snowdensity06_contract_records_density_only_gate
+  stdout ───
+
+    running 1 test
+    test snowdensity06_contract_records_density_only_gate ... FAILED
+
+    failures:
+
+    failures:
+        snowdensity06_contract_records_density_only_gate
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'snowdensity06_contract_records_density_only_gate' (1319441) panicked at tests/integration/snowdensity06_density_compaction.rs:113:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.019s] (1931/1959) openwepp::snowdensity06b_coe_bound_density_replay snowdensity06b_contract_records_coe_bound_density_gate
+  stdout ───
+
+    running 1 test
+    test snowdensity06b_contract_records_coe_bound_density_gate ... FAILED
+
+    failures:
+
+    failures:
+        snowdensity06b_contract_records_coe_bound_density_gate
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'snowdensity06b_contract_records_coe_bound_density_gate' (1338833) panicked at tests/integration/snowdensity06b_coe_bound_density_replay.rs:166:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.021s] (1934/1959) openwepp::snowdensity10_3_1a_per_day_cancov snowdensity10_3_1a_contract_and_package_bind_daily_cancov
+  stdout ───
+
+    running 1 test
+    test snowdensity10_3_1a_contract_and_package_bind_daily_cancov ... FAILED
+
+    failures:
+
+    failures:
+        snowdensity10_3_1a_contract_and_package_bind_daily_cancov
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'snowdensity10_3_1a_contract_and_package_bind_daily_cancov' (1356782) panicked at tests/integration/snowdensity10_3_1a_per_day_cancov.rs:121:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [ 609.724s] 1959 tests run: 1927 passed (4 slow), 32 failed, 3 skipped
+        FAIL [   0.026s] ( 697/1959) openwepp::paradigm2_multilayer_promotion promotion_contract_and_package_ratify_supported_opt_in_capability
+  stdout ───
+
+    running 1 test
+    test promotion_contract_and_package_ratify_supported_opt_in_capability ... FAILED
+
+    failures:
+
+    failures:
+        promotion_contract_and_package_ratify_supported_opt_in_capability
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'promotion_contract_and_package_ratify_supported_opt_in_capability' (1240980) panicked at tests/integration/paradigm2_multilayer_promotion.rs:133:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.026s] ( 909/1959) openwepp::paradigm2_stage1_layered_snow_density stage1_contract_and_selector_are_package_bound
+  stdout ───
+
+    running 1 test
+    test stage1_contract_and_selector_are_package_bound ... FAILED
+
+    failures:
+
+    failures:
+        stage1_contract_and_selector_are_package_bound
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'stage1_contract_and_selector_are_package_bound' (1241651) panicked at tests/integration/paradigm2_stage1_layered_snow_density.rs:287:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.027s] ( 919/1959) openwepp::paradigm2_stage2_snow_frost_insulation_profile stage2_contract_package_and_trace_are_bound
+  stdout ───
+
+    running 1 test
+    test stage2_contract_package_and_trace_are_bound ... FAILED
+
+    failures:
+
+    failures:
+        stage2_contract_package_and_trace_are_bound
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'stage2_contract_package_and_trace_are_bound' (1241666) panicked at tests/integration/paradigm2_stage2_snow_frost_insulation_profile.rs:107:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.023s] ( 937/1959) openwepp::paradigm2_stage3_decouple_water_temperature stage3_decouple_contract_package_and_selector_are_bound
+  stdout ───
+
+    running 1 test
+    test stage3_decouple_contract_package_and_selector_are_bound ... FAILED
+
+    failures:
+
+    failures:
+        stage3_decouple_contract_package_and_selector_are_bound
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'stage3_decouple_contract_package_and_selector_are_bound' (1241704) panicked at tests/integration/paradigm2_stage3_decouple_water_temperature.rs:204:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.022s] ( 962/1959) openwepp::paradigm2_stage3_liquid_routing_meltwater_temperature stage3_contract_package_and_selector_are_bound
+  stdout ───
+
+    running 1 test
+    test stage3_contract_package_and_selector_are_bound ... FAILED
+
+    failures:
+
+    failures:
+        stage3_contract_package_and_selector_are_bound
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'stage3_contract_package_and_selector_are_bound' (1241749) panicked at tests/integration/paradigm2_stage3_liquid_routing_meltwater_temperature.rs:253:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.023s] (1013/1959) openwepp::snowdensity02_contract_adr_guard snowdensity02_contract_ratifies_opt_in_physics_bulk_envelope
+  stdout ───
+
+    running 1 test
+    test snowdensity02_contract_ratifies_opt_in_physics_bulk_envelope ... FAILED
+
+    failures:
+
+    failures:
+        snowdensity02_contract_ratifies_opt_in_physics_bulk_envelope
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'snowdensity02_contract_ratifies_opt_in_physics_bulk_envelope' (1241845) panicked at tests/integration/snowdensity02_contract_adr_guard.rs:84:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.024s] (1032/1959) openwepp::snowdensity05a_melt_contract_guard snowdensity05a_contract_ratifies_melt_modernization_envelope
+  stdout ───
+
+    running 1 test
+    test snowdensity05a_contract_ratifies_melt_modernization_envelope ... FAILED
+
+    failures:
+
+    failures:
+        snowdensity05a_contract_ratifies_melt_modernization_envelope
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'snowdensity05a_contract_ratifies_melt_modernization_envelope' (1241887) panicked at tests/integration/snowdensity05a_melt_contract_guard.rs:81:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.024s] (1063/1959) openwepp::snowdensity05b_shortwave_source_contract snowdensity05b_contract_binds_shortwave_source_authority
+  stdout ───
+
+    running 1 test
+    test snowdensity05b_contract_binds_shortwave_source_authority ... FAILED
+
+    failures:
+
+    failures:
+        snowdensity05b_contract_binds_shortwave_source_authority
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'snowdensity05b_contract_binds_shortwave_source_authority' (1241944) panicked at tests/integration/snowdensity05b_shortwave_source_contract.rs:102:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.022s] (1111/1959) openwepp::snowdensity05c_albedo_state_core snowdensity05c_contract_ratifies_albedo_state_core
+  stdout ───
+
+    running 1 test
+    test snowdensity05c_contract_ratifies_albedo_state_core ... FAILED
+
+    failures:
+
+    failures:
+        snowdensity05c_contract_ratifies_albedo_state_core
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'snowdensity05c_contract_ratifies_albedo_state_core' (1242034) panicked at tests/integration/snowdensity05c_albedo_state_core.rs:160:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.026s] (1163/1959) openwepp::snowdensity05d_opt_in_coe_melt snowdensity05d_contract_markers_bind_opt_in_melt_wiring
+  stdout ───
+
+    running 1 test
+    test snowdensity05d_contract_markers_bind_opt_in_melt_wiring ... FAILED
+
+    failures:
+
+    failures:
+        snowdensity05d_contract_markers_bind_opt_in_melt_wiring
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'snowdensity05d_contract_markers_bind_opt_in_melt_wiring' (1242133) panicked at tests/integration/snowdensity05d_opt_in_coe_melt.rs:35:9:
+    missing contract marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.023s] (1193/1959) openwepp::snowdensity05f_melt_closure_handoff snowdensity05f_contract_closes_melt_without_default_activation
+  stdout ───
+
+    running 1 test
+    test snowdensity05f_contract_closes_melt_without_default_activation ... FAILED
+
+    failures:
+
+    failures:
+        snowdensity05f_contract_closes_melt_without_default_activation
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'snowdensity05f_contract_closes_melt_without_default_activation' (1242213) panicked at tests/integration/snowdensity05f_melt_closure_handoff.rs:108:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.019s] (1223/1959) openwepp::snowdensity07_runtime_opt_in snowdensity07_contract_and_package_bind_runtime_opt_in_authority
+  stdout ───
+
+    running 1 test
+    test snowdensity07_contract_and_package_bind_runtime_opt_in_authority ... FAILED
+
+    failures:
+
+    failures:
+        snowdensity07_contract_and_package_bind_runtime_opt_in_authority
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'snowdensity07_contract_and_package_bind_runtime_opt_in_authority' (1242269) panicked at tests/integration/snowdensity07_runtime_opt_in.rs:39:9:
+    missing contract marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.025s] (1279/1959) openwepp::snowdensity08_gate_rerun snowdensity08_contract_and_package_bind_gate_rerun_authority
+  stdout ───
+
+    running 1 test
+    test snowdensity08_contract_and_package_bind_gate_rerun_authority ... FAILED
+
+    failures:
+
+    failures:
+        snowdensity08_contract_and_package_bind_gate_rerun_authority
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'snowdensity08_contract_and_package_bind_gate_rerun_authority' (1242364) panicked at tests/integration/snowdensity08_gate_rerun.rs:113:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.025s] (1328/1959) openwepp::snowdensity09_coupled_wat_rerun snowdensity09_contract_and_package_authorize_diagnostic_coupled_wat
+  stdout ───
+
+    running 1 test
+    test snowdensity09_contract_and_package_authorize_diagnostic_coupled_wat ... FAILED
+
+    failures:
+
+    failures:
+        snowdensity09_contract_and_package_authorize_diagnostic_coupled_wat
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'snowdensity09_contract_and_package_authorize_diagnostic_coupled_wat' (1242492) panicked at tests/integration/snowdensity09_coupled_wat_rerun.rs:152:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.027s] (1410/1959) openwepp::snowdensity10_3_11_spring_compaction_densification contract_and_package_bind_spring_densification_candidate
+  stdout ───
+
+    running 1 test
+    test contract_and_package_bind_spring_densification_candidate ... FAILED
+
+    failures:
+
+    failures:
+        contract_and_package_bind_spring_densification_candidate
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'contract_and_package_bind_spring_densification_candidate' (1242675) panicked at tests/integration/snowdensity10_3_11_spring_compaction_densification.rs:199:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.026s] (1444/1959) openwepp::snowdensity10_3_12_bundle_activation_adjudication contract_and_package_bind_bundle_activation_boundary
+  stdout ───
+
+    running 1 test
+    test contract_and_package_bind_bundle_activation_boundary ... FAILED
+
+    failures:
+
+    failures:
+        contract_and_package_bind_bundle_activation_boundary
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'contract_and_package_bind_bundle_activation_boundary' (1242781) panicked at tests/integration/snowdensity10_3_12_bundle_activation_adjudication.rs:131:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.026s] (1448/1959) openwepp::snowdensity10_3_13_residual_policy_b_diagnostic contract_and_package_bind_residual_policy_b_diagnostic
+  stdout ───
+
+    running 1 test
+    test contract_and_package_bind_residual_policy_b_diagnostic ... FAILED
+
+    failures:
+
+    failures:
+        contract_and_package_bind_residual_policy_b_diagnostic
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'contract_and_package_bind_residual_policy_b_diagnostic' (1242822) panicked at tests/integration/snowdensity10_3_13_residual_policy_b_diagnostic.rs:110:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.027s] (1451/1959) openwepp::snowdensity10_3_14_policy_b_no_regression_cap_authority contract_and_package_bind_policy_b_cap_authority
+  stdout ───
+
+    running 1 test
+    test contract_and_package_bind_policy_b_cap_authority ... FAILED
+
+    failures:
+
+    failures:
+        contract_and_package_bind_policy_b_cap_authority
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'contract_and_package_bind_policy_b_cap_authority' (1242830) panicked at tests/integration/snowdensity10_3_14_policy_b_no_regression_cap_authority.rs:118:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.027s] (1455/1959) openwepp::snowdensity10_3_15_default_activation_active_cap contract_and_package_bind_default_activation_authority
+  stdout ───
+
+    running 1 test
+    test contract_and_package_bind_default_activation_authority ... FAILED
+
+    failures:
+
+    failures:
+        contract_and_package_bind_default_activation_authority
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'contract_and_package_bind_default_activation_authority' (1242836) panicked at tests/integration/snowdensity10_3_15_default_activation_active_cap.rs:182:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.017s] (1459/1959) openwepp::snowdensity10_3_16_open_surface_ablation_stage_a contract_and_package_bind_stage_a_without_activation
+  stdout ───
+
+    running 1 test
+    test contract_and_package_bind_stage_a_without_activation ... FAILED
+
+    failures:
+
+    failures:
+        contract_and_package_bind_stage_a_without_activation
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'contract_and_package_bind_stage_a_without_activation' (1242844) panicked at tests/integration/snowdensity10_3_16_open_surface_ablation_stage_a.rs:29:5:
+    docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md missing required marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.018s] (1462/1959) openwepp::snowdensity10_3_17_shallow_pack_compaction_guard contract_and_package_bind_shallow_guard_candidate
+  stdout ───
+
+    running 1 test
+    test contract_and_package_bind_shallow_guard_candidate ... FAILED
+
+    failures:
+
+    failures:
+        contract_and_package_bind_shallow_guard_candidate
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'contract_and_package_bind_shallow_guard_candidate' (1242850) panicked at tests/integration/snowdensity10_3_17_shallow_pack_compaction_guard.rs:212:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.024s] (1468/1959) openwepp::snowdensity10_3_19_harder_pomeroy_default_activation contract_and_package_bind_harder_pomeroy_default_activation
+  stdout ───
+
+    running 1 test
+    test contract_and_package_bind_harder_pomeroy_default_activation ... FAILED
+
+    failures:
+
+    failures:
+        contract_and_package_bind_harder_pomeroy_default_activation
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'contract_and_package_bind_harder_pomeroy_default_activation' (1242862) panicked at tests/integration/snowdensity10_3_19_harder_pomeroy_default_activation.rs:187:5:
+    docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md missing required marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.019s] (1472/1959) openwepp::snowdensity10_3_20_sublimation_stage_b_unlock contract_and_package_bind_stage_b_unlock_authority
+  stdout ───
+
+    running 1 test
+    test contract_and_package_bind_stage_b_unlock_authority ... FAILED
+
+    failures:
+
+    failures:
+        contract_and_package_bind_stage_b_unlock_authority
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'contract_and_package_bind_stage_b_unlock_authority' (1242871) panicked at tests/integration/snowdensity10_3_20_sublimation_stage_b_unlock.rs:209:5:
+    docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md missing required marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.024s] (1482/1959) openwepp::snowdensity10_3_22_climate_class_density_specialization contract_and_package_bind_source_verified_climate_class_candidate
+  stdout ───
+
+    running 1 test
+    test contract_and_package_bind_source_verified_climate_class_candidate ... FAILED
+
+    failures:
+
+    failures:
+        contract_and_package_bind_source_verified_climate_class_candidate
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'contract_and_package_bind_source_verified_climate_class_candidate' (1242904) panicked at tests/integration/snowdensity10_3_22_climate_class_density_specialization.rs:303:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.024s] (1493/1959) openwepp::snowdensity10_3_5a_meteorology_crate_contract contract_declares_candidate_meteorology_scope_without_rst_cutover
+  stdout ───
+
+    running 1 test
+    test contract_declares_candidate_meteorology_scope_without_rst_cutover ... FAILED
+
+    failures:
+
+    failures:
+        contract_declares_candidate_meteorology_scope_without_rst_cutover
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'contract_declares_candidate_meteorology_scope_without_rst_cutover' (1242946) panicked at tests/integration/snowdensity10_3_5a_meteorology_crate_contract.rs:44:9:
+    SC-SNOWFREEZE-001 missing 10.3.5a marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.024s] (1496/1959) openwepp::snowdensity10_3_5b_hourly_partition_jennings_contract contract_authorizes_only_opt_in_hourly_partition_with_rollback
+  stdout ───
+
+    running 1 test
+    test contract_authorizes_only_opt_in_hourly_partition_with_rollback ... FAILED
+
+    failures:
+
+    failures:
+        contract_authorizes_only_opt_in_hourly_partition_with_rollback
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'contract_authorizes_only_opt_in_hourly_partition_with_rollback' (1242951) panicked at tests/integration/snowdensity10_3_5b_hourly_partition_jennings_contract.rs:18:5:
+    docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md missing required marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.025s] (1508/1959) openwepp::snowdensity10_3_7_winter_thaw_melt_response_correction contract_and_package_bind_thaw_state_loss_candidate
+  stdout ───
+
+    running 1 test
+    test contract_and_package_bind_thaw_state_loss_candidate ... FAILED
+
+    failures:
+
+    failures:
+        contract_and_package_bind_thaw_state_loss_candidate
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 7 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'contract_and_package_bind_thaw_state_loss_candidate' (1242976) panicked at tests/integration/snowdensity10_3_7_winter_thaw_melt_response_correction.rs:34:5:
+    docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md missing required marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.025s] (1518/1959) openwepp::snowdensity10_3_8_liquid_holding_capacity contract_and_package_bind_liquid_holding_capacity_candidate
+  stdout ───
+
+    running 1 test
+    test contract_and_package_bind_liquid_holding_capacity_candidate ... FAILED
+
+    failures:
+
+    failures:
+        contract_and_package_bind_liquid_holding_capacity_candidate
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.02s
+
+  stderr ───
+
+    thread 'contract_and_package_bind_liquid_holding_capacity_candidate' (1243002) panicked at tests/integration/snowdensity10_3_8_liquid_holding_capacity.rs:31:5:
+    docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md missing required marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.021s] (1924/1959) openwepp::snowdensity05g_harness_fidelity_rerun snowdensity05g_contract_records_harness_fidelity_gate
+  stdout ───
+
+    running 1 test
+    test snowdensity05g_contract_records_harness_fidelity_gate ... FAILED
+
+    failures:
+
+    failures:
+        snowdensity05g_contract_records_harness_fidelity_gate
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'snowdensity05g_contract_records_harness_fidelity_gate' (1300795) panicked at tests/integration/snowdensity05g_harness_fidelity_rerun.rs:117:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.019s] (1928/1959) openwepp::snowdensity06_density_compaction snowdensity06_contract_records_density_only_gate
+  stdout ───
+
+    running 1 test
+    test snowdensity06_contract_records_density_only_gate ... FAILED
+
+    failures:
+
+    failures:
+        snowdensity06_contract_records_density_only_gate
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'snowdensity06_contract_records_density_only_gate' (1319441) panicked at tests/integration/snowdensity06_density_compaction.rs:113:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.019s] (1931/1959) openwepp::snowdensity06b_coe_bound_density_replay snowdensity06b_contract_records_coe_bound_density_gate
+  stdout ───
+
+    running 1 test
+    test snowdensity06b_contract_records_coe_bound_density_gate ... FAILED
+
+    failures:
+
+    failures:
+        snowdensity06b_contract_records_coe_bound_density_gate
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'snowdensity06b_contract_records_coe_bound_density_gate' (1338833) panicked at tests/integration/snowdensity06b_coe_bound_density_replay.rs:166:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.021s] (1934/1959) openwepp::snowdensity10_3_1a_per_day_cancov snowdensity10_3_1a_contract_and_package_bind_daily_cancov
+  stdout ───
+
+    running 1 test
+    test snowdensity10_3_1a_contract_and_package_bind_daily_cancov ... FAILED
+
+    failures:
+
+    failures:
+        snowdensity10_3_1a_contract_and_package_bind_daily_cancov
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.01s
+
+  stderr ───
+
+    thread 'snowdensity10_3_1a_contract_and_package_bind_daily_cancov' (1356782) panicked at tests/integration/snowdensity10_3_1a_per_day_cancov.rs:121:5:
+    expected docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md to contain marker: contract_version: 115
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+error: test run failed

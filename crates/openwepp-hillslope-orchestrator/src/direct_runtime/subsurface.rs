@@ -1093,7 +1093,7 @@ fn validate_percolation_inputs(inputs: &DirectPercolationInputs) -> Result<(), D
         });
     }
     if inputs.restrictive_layer_enabled {
-        validate_positive(
+        validate_nonnegative_direct_m(
             "percolation.restrictive_layer_conductivity_m_s",
             inputs.restrictive_layer_conductivity_m_s,
         )?;
@@ -1211,7 +1211,7 @@ fn apply_same_pass_infiltration(
     tillage_depth_m: f64,
 ) -> Result<(), DirectRuntimeError> {
     validate_nonnegative_direct_m("percolation.same_pass_infiltration_m", infiltration_m)?;
-    if infiltration_m <= WB11_ZERO_THRESHOLD {
+    if infiltration_m <= 0.0 {
         return Ok(());
     }
     let first_depth = layers
@@ -1233,7 +1233,7 @@ fn apply_same_pass_infiltration(
     let mut remaining_infiltration_m = infiltration_m;
     let mut cumulative_depth_m = 0.0;
     for layer in layers.iter_mut() {
-        if remaining_infiltration_m <= WB11_ZERO_THRESHOLD {
+        if remaining_infiltration_m <= 0.0 {
             break;
         }
         cumulative_depth_m += layer.depth_m;
@@ -1248,7 +1248,7 @@ fn apply_same_pass_infiltration(
         remaining_infiltration_m -= add_to_layer;
     }
 
-    if remaining_infiltration_m > WB11_ZERO_THRESHOLD {
+    if remaining_infiltration_m > 0.0 {
         let last = layers
             .last_mut()
             .ok_or(DirectRuntimeError::DirectDomainViolation {
@@ -1397,6 +1397,9 @@ fn effective_percolation_conductivity(
     let layer_conductivity_m_s = layers[layer_index].conductivity_m_s;
     if !(inputs.restrictive_layer_enabled && is_bottom_layer) {
         return Ok(layer_conductivity_m_s);
+    }
+    if inputs.restrictive_layer_conductivity_m_s == 0.0 {
+        return Ok(0.0);
     }
     if inputs.lane_substeps == 1 {
         let denominator = layer_conductivity_m_s + inputs.restrictive_layer_conductivity_m_s;

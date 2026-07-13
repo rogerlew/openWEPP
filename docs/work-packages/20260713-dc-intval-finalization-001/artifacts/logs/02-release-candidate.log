@@ -1,0 +1,44 @@
+INFO: running workspace release gates
+    Checking openwepp-sim-contract v0.1.0 (/home/workdir/openWEPP/crates/openwepp-sim-contract)
+    Checking openwepp-unit-boundary v0.1.0 (/home/workdir/openWEPP/crates/openwepp-unit-boundary)
+    Checking openwepp-legacy-bridge v0.1.0 (/home/workdir/openWEPP/crates/openwepp-legacy-bridge)
+    Checking openwepp-comparator-metadata v0.1.0 (/home/workdir/openWEPP/crates/openwepp-comparator-metadata)
+    Checking openwepp-management-schema v0.1.0 (/home/workdir/openWEPP/crates/openwepp-management-schema)
+    Checking openwepp-meteorology v0.1.0 (/home/workdir/openWEPP/crates/openwepp-meteorology)
+    Checking openwepp-topology v0.1.0 (/home/workdir/openWEPP/crates/openwepp-topology)
+    Checking openwepp-kernel-contract v0.1.0 (/home/workdir/openWEPP/crates/openwepp-kernel-contract)
+    Checking openwepp-hillslope-output v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-output)
+    Checking openwepp-summary-accumulator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-summary-accumulator)
+    Checking openwepp-input-contract v0.1.0 (/home/workdir/openWEPP/crates/openwepp-input-contract)
+    Checking openwepp-climate-runtime-adapter v0.1.0 (/home/workdir/openWEPP/crates/openwepp-climate-runtime-adapter)
+    Checking openwepp-landuse-migrate v0.1.0 (/home/workdir/openWEPP/crates/openwepp-landuse-migrate)
+    Checking openwepp-hillslope-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+    Checking openwepp-watershed-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-watershed-orchestrator)
+    Checking openwepp-watershed-output v0.1.0 (/home/workdir/openWEPP/crates/openwepp-watershed-output)
+    Checking openwepp-runner v0.1.0 (/home/workdir/openWEPP/crates/openwepp-runner)
+    Checking openwepp v0.1.0 (/home/workdir/openWEPP)
+error: strict comparison of `f32` or `f64`
+  --> tests/integration/hphys0224_wb19_withdrawal_soilwater_cap_contract.rs:55:9
+   |
+55 |         assert_eq!(day.subsurface_compute.soil_water_after_m, 10.5 - withdrawal);
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#float_cmp
+   = note: `-D clippy::float-cmp` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::float_cmp)]`
+   = note: this error originates in the macro `assert_eq` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: could not compile `openwepp` (test "hphys0224_wb19_withdrawal_soilwater_cap_contract") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: strict comparison of `f32` or `f64`
+  --> tests/integration/hphys0225_wb19_layer_pool_withdrawal_cap_contract.rs:60:9
+   |
+60 |         assert_eq!(low.1, 10.5 - low.0);
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.92.0/index.html#float_cmp
+   = note: `-D clippy::float-cmp` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::float_cmp)]`
+   = note: this error originates in the macro `assert_eq` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: could not compile `openwepp` (test "hphys0225_wb19_layer_pool_withdrawal_cap_contract") due to 1 previous error

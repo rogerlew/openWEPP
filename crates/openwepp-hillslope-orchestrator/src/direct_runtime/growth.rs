@@ -576,13 +576,9 @@ impl DirectGrowthInputs {
 
     fn validate_root_growth_inputs(
         self,
-        management_class: DirectGrowthManagementClass,
+        _management_class: DirectGrowthManagementClass,
     ) -> Result<(), DirectRuntimeError> {
-        if management_class == DirectGrowthManagementClass::Perennial {
-            validate_positive("growth.rtmmax", self.rtmmax)?;
-        } else {
-            validate_nonnegative_direct_m("growth.rtmmax", self.rtmmax)?;
-        }
+        validate_nonnegative_direct_m("growth.rtmmax", self.rtmmax)?;
         validate_positive("growth.rdmax", self.rdmax)
     }
 
@@ -764,14 +760,6 @@ impl DirectGrowthInputs {
         };
         validate_nonnegative_direct_m("growth.leaf_area_index", lai_next)?;
 
-        let rtmass_unclamped = self.state_before.root_mass_kg_m2
-            + (vdmt_next - self.state_before.live_biomass_kg_m2) * self.rsr;
-        let rtmass_next = if management_class == DirectGrowthManagementClass::Perennial {
-            rtmass_unclamped.clamp(0.0, self.rtmmax)
-        } else {
-            rtmass_unclamped.max(0.0)
-        };
-
         let rtd_floor = self.rdmax
             * 0.5
             * (1.0
@@ -779,12 +767,27 @@ impl DirectGrowthInputs {
                     .sin());
         let rtd_upper = self.rdmax.min(self.soil_depth_m);
         validate_positive("growth.root_depth_upper_bound_m", rtd_upper)?;
-        let rtd_candidate = if management_class == DirectGrowthManagementClass::Perennial {
-            let growth_increment =
-                ((rtmass_next - self.state_before.root_mass_kg_m2) / self.rtmmax) * self.rdmax;
-            (self.state_before.root_depth_m + growth_increment).max(rtd_floor)
+        let perennial_cap_reached = management_class == DirectGrowthManagementClass::Perennial
+            && self.state_before.root_mass_kg_m2 >= self.rtmmax;
+        let (rtmass_next, rtd_candidate) = if perennial_cap_reached {
+            (self.rtmmax, rtd_upper)
         } else {
-            rtd_floor
+            let rtmass_unclamped = self.state_before.root_mass_kg_m2
+                + (vdmt_next - self.state_before.live_biomass_kg_m2) * self.rsr;
+            let rtmass_next = if management_class == DirectGrowthManagementClass::Perennial {
+                rtmass_unclamped.clamp(0.0, self.rtmmax)
+            } else {
+                rtmass_unclamped.max(0.0)
+            };
+            let rtd_candidate = if management_class == DirectGrowthManagementClass::Perennial {
+                // The pre-increment cap branch above proves `rtmmax > 0` here.
+                let growth_increment =
+                    ((rtmass_next - self.state_before.root_mass_kg_m2) / self.rtmmax) * self.rdmax;
+                (self.state_before.root_depth_m + growth_increment).max(rtd_floor)
+            } else {
+                rtd_floor
+            };
+            (rtmass_next, rtd_candidate)
         };
         validate_nonnegative_direct_m("growth.root_depth_candidate_m", rtd_candidate)?;
         let rtd_next = rtd_candidate.min(rtd_upper);
@@ -1586,14 +1589,12 @@ mod cqr_row6_growth_tests {
             .validate_equation_inputs(DirectGrowthManagementClass::AnnualOrFallow),
             "growth.rtmmax",
         );
-        assert_direct_domain(
-            DirectGrowthInputs {
-                rtmmax: 0.0,
-                ..perennial_inputs()
-            }
-            .validate_equation_inputs(DirectGrowthManagementClass::Perennial),
-            "growth.rtmmax",
-        );
+        DirectGrowthInputs {
+            rtmmax: 0.0,
+            ..perennial_inputs()
+        }
+        .validate_equation_inputs(DirectGrowthManagementClass::Perennial)
+        .expect("SC-PLANT-001 zero perennial root cap is valid");
         assert_direct_domain(
             DirectGrowthInputs {
                 rdmax: 0.0,
@@ -1627,5 +1628,26 @@ mod cqr_row6_growth_tests {
             .validate_equation_inputs(DirectGrowthManagementClass::AnnualOrFallow),
             "growth.plant_tolerance",
         );
+    }
+
+    #[test]
+    fn intval_zero_perennial_root_cap_uses_saturated_branch_before_division() {
+        let mut inputs = perennial_inputs();
+        inputs.rtmmax = 0.0;
+        inputs.rdmax = 1.30;
+        inputs.soil_depth_m = 0.90;
+        inputs.state_before.root_mass_kg_m2 = 0.0;
+        inputs.state_before.root_depth_m = 0.30;
+
+        let state = inputs
+            .compute_perennial()
+            .expect("zero-cap perennial must bypass incremental root-depth division");
+
+        assert_eq!(
+            state.state_after.root_mass_kg_m2.to_bits(),
+            0.0_f64.to_bits()
+        );
+        assert_eq!(state.state_after.root_depth_m.to_bits(), 0.90_f64.to_bits());
+        assert!(state.state_after.root_depth_m.is_finite());
     }
 }

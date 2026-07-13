@@ -13,7 +13,7 @@ const TOOL: &str = "tools/snowfreeze_observed/paradigm2_stage2_insulation_profil
 fn stage2_contract_package_and_trace_are_bound() {
     let contract = read(CONTRACT);
     for marker in [
-        "contract_version: 115",
+        "contract_version: 117",
         "REF-SNOWFREEZE-PARADIGM2-STAGE2",
         "INV-SNOWFREEZE-079",
         "OBL-SNOWFREEZE-P-054",

@@ -186,9 +186,26 @@ impl Wave1EnrichmentState {
             // Normalize to the routed total (`enrich.for` do-40): the
             // TOTAL load stays authority; the class solve only shapes it.
             let mut sedmax = [0.0_f64; CLASS_COUNT];
+            let mut floor_applied = false;
             for index in 0..CLASS_COUNT {
-                gend[index] = (gend[index] * ldbot / sumg).max(ENRICH_GEND_FLOOR);
+                gend[index] *= ldbot / sumg;
+                if gend[index] < ENRICH_GEND_FLOOR {
+                    gend[index] = ENRICH_GEND_FLOOR;
+                    floor_applied = true;
+                }
                 sedmax[index] = gu[index] + ftheta[index] * (xbot - xtop);
+            }
+            // The pinned absolute floor can inflate a trace-load class
+            // vector above `ldbot`. Restore the routed total before the
+            // label-50 caps so its remaining-mass redistribution cannot
+            // manufacture negative class mass. Keep the ordinary no-floor
+            // path bitwise unchanged.
+            if floor_applied {
+                let floored_total: f64 = gend.iter().sum();
+                let mass_scale = ldbot / floored_total;
+                for class_load in &mut gend {
+                    *class_load *= mass_scale;
+                }
             }
             // Label-50 reproportion: cap classes at their maximum
             // available mass; redistribute the shortfall over the

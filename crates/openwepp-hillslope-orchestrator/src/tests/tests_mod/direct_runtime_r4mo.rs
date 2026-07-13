@@ -78,6 +78,51 @@ fn r4mo_percolation_hourly_restrictive_branch_matches_wb18_kernel_authority() {
 }
 
 #[test]
+fn intval_percolation_consumes_every_positive_hourly_same_pass_increment() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    let mut day = seeded_day();
+    let infiltration_m = 2.000_238_586_959_482_4e-11;
+    day.percolation_inputs = daily_percolation_inputs(0.343, 24, false);
+    day.percolation_inputs.same_pass_infiltration_m = infiltration_m;
+    day.percolation_inputs.same_pass_infiltration_lineage = true;
+
+    day.run_r4m_percolation_span()
+        .expect("strictly positive hourly xfin must enter layer storage");
+
+    assert!(day.percolation.layer_state_after[0].theta_m > 0.10);
+    assert_eq!(day.percolation.deep_seepage_m.to_bits(), 0.0_f64.to_bits());
+    assert!((day.percolation.soil_water_after_m - (0.343 + infiltration_m)).abs() < 1.0e-14);
+}
+
+#[test]
+fn intval_percolation_zero_restrictive_conductivity_is_impermeable_daily_and_hourly() {
+    let _audit_guard = direct_runtime_test_lock()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    reset_direct_runtime_audit_counters();
+
+    for lane_substeps in [1, 24] {
+        let mut day = seeded_day();
+        day.percolation_inputs = daily_percolation_inputs(0.463, lane_substeps, true);
+        day.percolation_inputs.restrictive_layer_conductivity_m_s = 0.0;
+        day.percolation_inputs.layers[1].theta_m = 0.32;
+
+        day.run_r4m_percolation_span()
+            .expect("zero-conductivity active restriction must execute");
+
+        assert_eq!(day.percolation.deep_seepage_m.to_bits(), 0.0_f64.to_bits());
+        assert_eq!(
+            day.percolation.layer_state_after[1].theta_m.to_bits(),
+            0.32_f64.to_bits()
+        );
+    }
+}
+
+#[test]
 fn r4mo_percolation_hourly_saturated_lower_boundary_uses_frozen_inclusive_storage() {
     let _audit_guard = direct_runtime_test_lock()
         .lock()

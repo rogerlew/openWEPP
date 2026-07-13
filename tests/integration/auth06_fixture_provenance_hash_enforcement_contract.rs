@@ -309,6 +309,7 @@ fn auth06_release_gate_script_enforces_fixture_integrity_before_lane_execution()
     );
 }
 
+#[allow(clippy::too_many_lines)]
 #[test]
 fn intval_auth_prov001_wb19_fixture_provenance_is_git_verifiable() {
     const FIXTURE_ROOT: &str =

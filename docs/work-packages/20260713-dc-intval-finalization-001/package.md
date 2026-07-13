@@ -1,6 +1,6 @@
 # Finalize Integrated Validation Through Iterative Defect Closure
 
-Status: `QUEUED`
+Status: `IN_PROGRESS`
 
 Package ID: `20260713-dc-intval-finalization-001`
 
@@ -32,8 +32,13 @@ continuous closure loop.
 
 - [x] (2026-07-13 UTC) Scaffold the terminal iterative DC campaign from the
   accepted provenance correction and complete missing-binding inventory.
-- [ ] Restore the seven required-suite bindings as one coherent first batch.
-- [ ] Iterate exact release candidates until authority, binaries, lint, and
+- [x] (2026-07-13 UTC) Confirm nine active required/hard-fail suites, with
+  seven suite rows resolving to the five missing targets named by
+  `INTVAL-AUTH-BIND-001`; record the initial reading map and write set.
+- [x] (2026-07-13 UTC) Restore the seven required-suite bindings as one
+  coherent first batch.
+- [x] (2026-07-13 UTC) Iterate six exact release candidates until authority,
+  binaries, lint, and
   both stability suites pass without skips.
 - [ ] Freeze the passing candidate and restart every integrated-validation
   phase; return to the correction loop for any in-repository blocker.

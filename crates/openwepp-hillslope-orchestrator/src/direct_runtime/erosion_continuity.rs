@@ -2523,8 +2523,10 @@ fn wave1_rewrite_inter_ofe_coefficients(
 
 /// `profil.for`: derive the normalized slope-segment fit from the slope
 /// profile points `(x_m, slope)` (dimensional distance in meters, slope as
-/// tangent). Production seed derivation for the Wave-1 payload; also used
-/// by contract tests.
+/// tangent). As in `profil.for`, the terminal input station is the `xstar`
+/// normalization denominator; `slplen_m` remains the declared dimensional
+/// hillslope length. Production seed derivation for the Wave-1 payload; also
+/// used by contract tests.
 pub fn derive_wave1_slope_segments(
     points: &[(f64, f64)],
     slplen_m: f64,
@@ -2540,6 +2542,12 @@ pub fn derive_wave1_slope_segments(
             field: "erosion.wave1.slope_geometry",
         });
     }
+    let terminal_station_m = points[points.len() - 1].0;
+    if !terminal_station_m.is_finite() || terminal_station_m <= 0.0 {
+        return Err(DirectRuntimeError::DirectDomainViolation {
+            field: "erosion.wave1.slope_geometry",
+        });
+    }
     let mut segments = Vec::with_capacity(points.len() - 1);
     for window in points.windows(2) {
         let (x0_m, s0) = window[0];
@@ -2548,8 +2556,8 @@ pub fn derive_wave1_slope_segments(
         validate_finite("erosion.wave1.slope_point_x", x1_m)?;
         validate_finite("erosion.wave1.slope_point_s", s0)?;
         validate_finite("erosion.wave1.slope_point_s", s1)?;
-        let xu = x0_m / slplen_m;
-        let xl = x1_m / slplen_m;
+        let xu = x0_m / terminal_station_m;
+        let xl = x1_m / terminal_station_m;
         if xl <= xu {
             return Err(DirectRuntimeError::DirectDomainViolation {
                 field: "erosion.wave1.slope_point_order",

@@ -4,7 +4,7 @@ title: Plant Growth Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 19
+contract_version: 20
 producer_scope:
   - Plant state evolution for cropland and rangeland growth submodels
   - Plant to water-balance coupling surfaces (LAI, root depth, plant biomass/residue descriptors)
@@ -16,7 +16,7 @@ consumer_scope:
   - Residue decomposition and management surfaces consuming plant-to-residue transfers
   - Scheduler and PL kernel boundaries consuming projected management transition controls
 evidence_level: static
-last_reviewed: 2026-07-07
+last_reviewed: 2026-07-13
 supersedes: []
 superseded_by: []
 ---
@@ -73,7 +73,7 @@ Out of scope:
 | REF-PLANT-LEGACY-CUTGRZ | `/workdir/wepp-forest_260430_baseline/src/cutgrz.for:18-41` | Perennial harvest-date progression semantics through cut and grazing cycles. | `[DIRECT][Static]` |
 | REF-PLANT-LEGACY-PTGRP | `/workdir/wepp-forest_260430_baseline/src/ptgrp.for:351-375` | Grazing day-window and `ncycle`-bounded cycle progression semantics. | `[DIRECT][Static]` |
 | REF-PLANT-LEGACY-PTGRA | `/workdir/wepp-forest_260430_baseline/src/ptgra.for:188-291` | Annual event-day trigger precedence and event-day reset behavior for growth state. | `[DIRECT][Static]` |
-| REF-PLANT-LEGACY-GROW | `/workdir/wepp-forest_260430_baseline/src/grow.for:280-930` | Canonical equation authority for daily GDD accumulation, stress-regulated biomass, canopy/LAI development, root growth/depth, and senescence decline dynamics. | `[DIRECT][Static]` |
+| REF-PLANT-LEGACY-GROW | `/workdir/wepp-forest_260430_baseline/src/grow.for:280-930` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Canonical equation authority for daily GDD accumulation, stress-regulated biomass, canopy/LAI development, root growth/depth, and senescence decline dynamics; lines 529-601 check the perennial root-mass cap before incremental mass/depth calculation. | `[DIRECT][Static]` |
 | REF-PLANT-LEGACY-INIT1 | `/workdir/wepp-forest_260430_baseline/src/init1.for:147-244,334-356` | Initial-condition assimilation authority for established perennial (`jdplt=0`) live canopy, root-depth/root-mass initialization, and `initgr`-derived `vdmt`/`lai`/`sumgdd` state. | `[DIRECT][Static]` |
 | REF-PLANT-LEGACY-INITGR | `/workdir/wepp-forest_260430_baseline/src/initgr.for:63-105` | Initial live biomass, canopy-height, LAI, and cumulative-GDD derivation from initial canopy cover and crop parameters. | `[DIRECT][Static]` |
 | REF-PLANT-LEGACY-DECOMP | `/workdir/wepp-forest_260430_baseline/src/decomp.for:666-714` | Residue/decomposition event handling for annual extension controls (`jdburn`, `jdcut`, `jdmove`). | `[DIRECT][Static]` |
@@ -297,9 +297,17 @@ algorithm.
     `CANCOV_MAX=0.999` before evaluating `vdmt = log(1-cancov)/-bb`; this is an
     openWEPP finite-domain guard because baseline `initgr.for` does not guard
     the `cancov=1.0` logarithm singularity.
-12. Update roots:
-    `rtmass_next = clamp(rtmass_prev + (vdmt_next - vdmt_prev) * rsr, 0, rtmmax)`,
-    with non-decreasing active-growth behavior unless explicit reset occurs.
+12. Update roots with baseline branch ordering:
+    - perennial cap branch first: when `rtmass_prev >= rtmmax`, set
+      `rtmass_next = rtmmax` and `rtd_next = min(rdmax, solthk)` without
+      evaluating an incremental root-depth ratio; finite `rtmmax = 0` is valid
+      and necessarily selects this branch for non-negative root state;
+    - otherwise compute
+      `rtmass_next = clamp(rtmass_prev + (vdmt_next - vdmt_prev) * rsr, 0, rtmmax)`
+      for perennials; this branch implies `rtmmax > 0` before the later
+      root-depth division;
+    - annual/fallow root mass remains non-negative and is not capped by the
+      perennial `rtmmax` branch.
 13. Update root depth:
     - annual uses Eq. 8.2.12 heat-unit shape with `rdmax`;
     - perennial uses incremental root-mass-driven depth growth with minimum
@@ -357,6 +365,7 @@ algorithm.
 | INV-PLANT-024 | Legacy `gddmax` sentinel closure: projected `gddmax<=0` must resolve through `yldopt/gdmax`-authoritative monthly-climate integration (`obmaxt`, `obmint`, `btemp`, management day controls) to a finite strictly positive `gddmax_eff` before phenology equations execute. | hard-fail | REF-PLANT-LEGACY-YLDOPT, REF-PLANT-LEGACY-GDMAX, REF-PLANT-LEGACY-GROW | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PLANT-025 | Initial live-canopy assimilation: cropland initial-condition `cancov` must initialize primary live plant state before daily growth/ET. For established perennial crops (`imngmt=2`, `jdplt=0`), projection must seed `rtd` from the `rdmax` envelope, `rtmass=rtmmax`, and `vdmt`/`lai` through legacy `initgr` equations when `cancov>0`; `sumgdd` must be initialized through `initgr` when `gddmax` is already resolved or at the first growth update after `gddmax_eff` sentinel resolution. It must not leave live-canopy state at unconditional zero when initial canopy cover is present. | hard-fail | REF-PLANT-LEGACY-INIT1, REF-PLANT-LEGACY-INITGR, REF-PLANT-LEGACY-INFILE, REF-PLANT-LEGACY-WATBAL | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PLANT-026 | Annual PL activation persistence invariant: when an annual/fallow crop is outside its active `jdplt..jdharv` window, scheduler suppression may be day-local only. Management-derived PL schedule/runtime sentinel surfaces must be preserved for the next daily activation decision so the same annual crop can enter PL16 growth after `jdplt`; deleting the activation sentinel from carried runtime state and thereby suppressing all later annual growth is invalid. | hard-fail | REF-PLANT-LEGACY-PTGRA, REF-PLANT-LEGACY-INFILE, INV-PLANT-018, SC-EVAP-001#INV-EVAP-016 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-PLANT-027 | Perennial root-cap ordering invariant: validate `rtmmax` as finite non-negative, and test `rtmass_prev >= rtmmax` before incremental root mass or root-depth division. The saturated branch publishes `rtmass=rtmmax` and `rtd=min(rdmax,solthk)`; exact-zero `rtmmax` is valid and must not reach a division by zero. | hard-fail | REF-PLANT-LEGACY-GROW, REF-PLANT-LEGACY-INIT1, REF-PLANT-LEGACY-INFILE | `[DIRECT][Static]` |
 
 ## Allowed Degenerate States
 
@@ -368,6 +377,7 @@ algorithm.
 | Full water stress day | `WS = 0` and `REG = 0` | Growth can halt under severe water stress without violating physics. |
 | Evergreen floor behavior | `gi` lower-bounded by `RGCMIN` for evergreen communities | Chapter 8 rangeland formulation permits non-zero baseline live biomass. |
 | Inactive annual extension controls | Non-selected annual event controls represented as explicit `0` sentinel fields | Legacy branch assignment writes non-selected annual controls to zero. |
+| Zero-cap perennial roots | `rtmmax = 0`, `rtmass = 0`, and `rtd = min(rdmax, solthk)` after the saturated-cap branch | Baseline accepts zero input and gives the perennial a root-depth envelope without root mass or division. |
 
 ## Invalid States
 
@@ -383,7 +393,7 @@ algorithm.
 - Transition-control projection domain violations handled through silent default or clamp. `[INFERENCE][Static]`
 - `gddmax<=0` branch without valid monthly climate vectors (`obmaxt`, `obmint`) or with non-positive resolved `gddmax_eff`. `[DIRECT][Static] + [INFERENCE][Static]`
 - Negative decomposition-rate constants (`oratea`, `orater`) in projected transition payloads. `[DIRECT][Static] + [INFERENCE][Static]`
-- Established perennial initial condition (`imngmt=2`, `jdplt=0`) with positive `cancov` but zero/absent initialized `vdmt`, `canhgt`, `lai`, `rtmass`, or `rtd`. `[DIRECT][Static] + [INFERENCE][Static]`
+- Established perennial initial condition (`imngmt=2`, `jdplt=0`) with positive `cancov` but absent initialized `vdmt`, `canhgt`, `lai`, or `rtd`; zero `rtmass` is valid only when the declared `rtmmax` cap is zero. `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Producer Obligations
 
@@ -452,6 +462,7 @@ algorithm.
 | `INV-PLANT-024` | runtime | Legacy `gddmax` sentinel resolver (`yldopt/gdmax` branch) | Typed hard error on missing/non-finite monthly climate vectors or non-positive resolved `gddmax_eff` | Tier-A gate for PL16 growth physics closure | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-PLANT-025` | runtime | Initial-condition projection for primary live plant state (`cancov`, `vdmt`, `canhgt`, `lai`, `sumgdd`, `rtmass`, `rtd`) | Typed hard error on missing/non-finite/out-of-domain assimilation inputs; zero live-state publication is invalid when established perennial initial cover is present | Tier-A gate for WB17 Ep lineage closure | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-PLANT-026` | runtime | Runner PL activation lifecycle across inactive-to-active annual windows | Preserve schedule/runtime sentinel surfaces across day boundaries while allowing day-local PL phase skip before `jdplt`; hard error or explicit defect hold when a valid annual crop cannot re-activate after planting | FQ3-DC Corn ET engagement closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-PLANT-027` | runtime | Perennial root update branch selector before incremental mass/depth evaluation | Typed hard error on negative/non-finite cap or state; saturated cap, including exact zero, bypasses the incremental division | INTVAL stability gate | `[DIRECT][Static]` |
 
 ## Symbol Alias Map
 
@@ -612,7 +623,13 @@ Minimum required scenario families for contract conformance:
    - pre-plant day (`day < jdplt`) may skip PL growth for that day without
      mutating carried management schedule sentinels;
    - later in-window day (`jdplt < day < jdharv`) must re-activate the same
-     annual crop slot and execute the PL16 equation path from carried state.
+   annual crop slot and execute the PL16 equation path from carried state.
+16. Perennial root-cap vectors:
+   - exact-zero `rtmmax` with non-negative zero prior root mass selects the
+     saturated branch, preserves zero root mass, and publishes
+     `rtd=min(rdmax,solthk)` without non-finite arithmetic;
+   - positive already-saturated root mass selects the same branch;
+   - negative or non-finite `rtmmax` remains a typed hard failure.
 
 ## WB15 Plant-to-Interception Coupling Addendum
 
@@ -700,6 +717,7 @@ Minimum required scenario families for contract conformance:
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-07-13` | `20` | `Codex` | INTVAL perennial root-cap amendment: restored pinned `grow.for` cap-before-increment ordering, made finite zero `rtmmax` valid, required saturated zero-cap state to bypass division and retain the `rdmax`/soil root-depth envelope, and added `INV-PLANT-027`. |
 | `2026-05-20` | `0` | `Codex` | Initial canonical stub created by SCI-02 package prep. |
 | `2026-05-20` | `1` | `Codex` | Full draft authored with invariant set, boundary obligations, and citation anchors per SCI-02 kickoff prompt. |
 | `2026-05-20` | `2` | `Codex` | Post-review amendment pass: scoped cropland/rangeland invariants, added missing symbols/anchors, added claim-level evidence tags, and labeled gap promotability. |

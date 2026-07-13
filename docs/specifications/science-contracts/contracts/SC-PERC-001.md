@@ -4,7 +4,7 @@ title: Percolation Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 29
+contract_version: 30
 producer_scope:
   - Layer-by-layer percolation flux surfaces from root-zone water storage states
   - Below-root-zone percolation-loss accounting surfaces used by daily closure
@@ -14,7 +14,7 @@ consumer_scope:
   - Subsurface/drainage consumers that ingest percolation recharge terms
   - Comparator/replay surfaces using Tier-A daily closure confidence signals
 evidence_level: Static
-last_reviewed: 2026-06-04
+last_reviewed: 2026-07-13
 supersedes: []
 superseded_by: []
 ---
@@ -61,7 +61,7 @@ Out of scope:
 | REF-PERC-CH7-PARAM | `references/50201000/chap7.pdf` §7.8 Eq. [7.8.3]-[7.8.5] | Coarse-fragment and entrapped-air adjustments alter effective porosity/soil-water state surfaces that propagate into Chapter-5 routing terms. | `[DIRECT][Static] + [INFERENCE][Static]` |
 | REF-PERC-CH7-FROZEN | `chap7.pdf` §7.9.7 Eq. [7.9.20]-[7.9.22] | Frozen-soil conductivity adjustment modifies conductivity used by infiltration/percolation calculations. | `[DIRECT][Static]` |
 | REF-PERC-LEGACY-SOILW | `/workdir/wepp-forest_260430_baseline/src/watbal.for:960-966`, `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:1018-1025`, commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` | Baseline-authoritative aggregate soil-water recomputation after percolation/lateral/drainage uses `soilw(i) = st(i) + thetdr(i)*(dg(i)-frozen(i))` and `watcon = Σsoilw(i)`. | `[DIRECT][Static]` |
-| REF-PERC-LEGACY-HOURLY-BOTK | `/workdir/wepp-forest_260430_baseline/src/perc.for:163-178,186-214`, `/workdir/wepp-forest_260430_baseline/src/purk.for:167-188`, `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:540-545`, commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` | Baseline-authoritative hourly bottom-layer restrictive seepage lineage: hourly bottom layer sets `meblfc=1` and forces `fx=1`, `perc` assigns bottom restrictive conductivity via `kslast`, computes thickness-weighted `sscz = (dg(i)+ui_bdrkth)/(dg(i)/ssc(i)+ui_bdrkth/ssc(i+1))`, `purk` mutates `st` and remembers bottom seepage as `sep/ui_LFtstp`, and `watbal_hourly` accumulates `deepSeep += sep`. | `[DIRECT][Static]` |
+| REF-PERC-LEGACY-HOURLY-BOTK | `/workdir/wepp-forest_260430_baseline/src/perc.for:163-178,186-214`, `/workdir/wepp-forest_260430_baseline/src/purk.for:167-188`, `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:540-545`, commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` | Baseline-authoritative hourly bottom-layer restrictive seepage lineage: hourly bottom layer sets `meblfc=1` and forces `fx=1`; `perc` maps either non-positive conductivity to exact `sscz=0`, otherwise computes thickness-weighted `sscz = (dg(i)+ui_bdrkth)/(dg(i)/ssc(i)+ui_bdrkth/ssc(i+1))`; `purk` mutates `st` and remembers bottom seepage as `sep/ui_LFtstp`, and `watbal_hourly` accumulates `deepSeep += sep`. | `[DIRECT][Static]` |
 | REF-PERC-LEGACY-LOWER-SAT-CLAMP | `/workdir/wepp-forest_260430_baseline/src/perc.for:143-158,186-188`, `/workdir/wepp-forest_260430_baseline/src/purk.for:167-188`, commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` | Baseline-authoritative lower-layer saturation attenuation: non-bottom `stu = (st(i+1)+frzw(i+1))/ul(i+1)` is capped to `0.95` before `cr = sqrt(1-stu)` and before `sep = min(vv, 86400*fx*sscz*cr)`, so over-UL lower storage throttles percolation by `sqrt(0.05)` instead of causing a hard failure. | `[DIRECT][Static]` |
 | REF-PERC-LEGACY-HOURLY-FIN | `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:342-345,471-479,494-516,520-524`, commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` | Baseline-authoritative same-pass liquid input lineage: `fin = rain - interception + wmelt + irrigation`, hourly `xfin = fin/24 + carry`, one-layer ingress into `st(1)`, and multi-layer top-down distribution where `tmpvr1 = xfin * dg(i) / tillay(2)` before `st(i) = st(i) + tmpvr1` until remaining `xfin` is exhausted. | `[DIRECT][Static]` |
 | REF-PERC-LEGACY-HOURLY-POSTET-UL | `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:564-590`, commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` | Baseline-authoritative post-ET layer retention seam: after final-hour ET and before drainage/lateral routing, lower layers with `st(i)` above the active cap move excess to `st(i-1)`; with outside water (`fin > 1.0e-6`) the cap is `max(ul(i)-frzw(i),0)`, otherwise the cap is `ul(i)`. | `[DIRECT][Static]` |
@@ -169,12 +169,15 @@ WB18 mutates percolation boundary surfaces deterministically:
      - default `Ksi_eff = Ksi`,
      - for daily lane (`wb18_perc_lane_substeps = 1`), bottom layer
        (`i = nsl`), and restrictive layer enabled (`slflag=1`), set
-       `Ksi_eff = 2*Ksi*Ksbot/(Ksi+Ksbot)` using `Ksbot = kslast`,
+       `Ksi_eff = 0` when `Ksbot = kslast = 0`; otherwise set
+       `Ksi_eff = 2*Ksi*Ksbot/(Ksi+Ksbot)`,
      - for hourly lane (`wb18_perc_lane_substeps = 24`), bottom layer
        (`i = nsl`), set `fx = 1` per baseline `meblfc` branch, and when
        restrictive layer is enabled (`slflag=1`), set
+       `Ksi_eff = 0` when `Ksbot = kslast = 0`; otherwise set
        `Ksi_eff = (dg_i+Bbot)/(dg_i/Ksi + Bbot/Ksbot)` using
-       `Bbot = ui_bdrkth` and `Ksbot = kslast`.
+       `Bbot = ui_bdrkth`. Exact zero represents an impermeable active
+       restrictive boundary; it does not disable `slflag`.
    - travel-capacity-limited layer flux
      `pei_pre = min(Θi - FCi, Δt * Ksi_eff * fx)`
    - lower-layer restriction for non-bottom layers computes
@@ -233,7 +236,7 @@ WB18 mutates percolation boundary surfaces deterministically:
 | INV-PERC-011 | WB18 percolation guard invariant: missing/non-finite/out-of-range per-layer percolation domains must surface typed hard failures (`HKERNEL-WB11-PERC-E-001..003`) and cannot be silently clamped/defaulted; explicit legacy-degenerate `Bi=0` branch for non-positive `FC/UL` is authoritative behavior, not silent fallback. | hard-fail | REF-PERC-PHYS-BOUNDS + legacy baseline `/workdir/wepp-forest_260430_baseline/src/watbal.for` | `[INFERENCE][Static] + [DIRECT][Static]` |
 | INV-PERC-012 | HPHYS0242 hourly percolation cadence invariant: in hourly-lane closure, WB18 must complete the 24-substep accumulated `D`/`Pe` and mutated `wb18_perc_theta_####` lineage before final-hour ET and the WB19 drainage/lateral tail execute; downstream WB12 storage reconciliation must consume the same-pass `D`. Stale, missing, non-finite, or aggregate-only percolation lineage cannot satisfy hourly WB14/WB12 closure. | hard-fail | REF-PERC-CH5-PERC, REF-PERC-CH5-BAL, legacy `/workdir/wepp-forest_260430_baseline/src/purk.for`, legacy `/workdir/wepp-forest_260430_baseline/src/watbal_hourly.for:541-560`, SC-WATBAL-001#INV-WATBAL-034, SC-EVAP-001#INV-EVAP-014 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PERC-013 | HPHYS0246 WB18 aggregate soil-water invariant: after WB18 percolation mutates `st(i)`/`wb18_perc_theta_####`, aggregate `wb11_soil_water` must be recomputed as baseline `watcon = Σ soilw(i)` rather than `Σst(i)`, preserving required `thetdr_i*dg_i` residual/dead-water storage in unfrozen conditions and subtracting declared frozen depth when explicitly present. | hard-fail | REF-PERC-LEGACY-SOILW, SC-WATBAL-001#INV-WATBAL-029 | `[DIRECT][Static] + [INFERENCE][Static]` |
-| INV-PERC-014 | HPHYS0248 hourly bottom restrictive-layer invariant: when hourly WB18 executes at the bottom layer, baseline `perc.for` sets `meblfc=1` and forces `fx=1`; when `slflag=1`, effective conductivity must then follow thickness-weighted restrictive-layer lineage `Ksi_eff = (dg_i+ui_bdrkth)/(dg_i/Ksi + ui_bdrkth/kslast)` before `sep = min(vv, 86400*Ksi_eff)` and `purk`'s `sep/ui_LFtstp` mutation/`deepSeep` accumulation. Reusing unrestricted bottom `Ksi`, omitting `ui_bdrkth`, applying unsaturated `fx` damping to hourly bottom seepage, or using daily-only harmonic conductivity for hourly closure is invalid evidence. | hard-fail | REF-PERC-LEGACY-HOURLY-BOTK, REF-PERC-CH5-PERC, SC-WATBAL-001#INV-WATBAL-036 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-PERC-014 | HPHYS0248 hourly bottom restrictive-layer invariant: when hourly WB18 executes at the bottom layer, baseline `perc.for` sets `meblfc=1` and forces `fx=1`; when `slflag=1`, exact-zero `kslast` is an impermeable boundary with `Ksi_eff=0`, while positive `kslast` follows thickness-weighted restrictive-layer lineage `Ksi_eff = (dg_i+ui_bdrkth)/(dg_i/Ksi + ui_bdrkth/kslast)` before `sep = min(vv, 86400*Ksi_eff)` and `purk`'s `sep/ui_LFtstp` mutation/`deepSeep` accumulation. Reusing unrestricted bottom `Ksi`, disabling `slflag` for zero, omitting `ui_bdrkth`, applying unsaturated `fx` damping to hourly bottom seepage, or using daily-only harmonic conductivity for hourly closure is invalid evidence. | hard-fail | REF-PERC-LEGACY-HOURLY-BOTK, REF-PERC-CH5-PERC, SC-WATBAL-001#INV-WATBAL-036 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PERC-015 | HPHYS0260 WB18 trace-localization invariant: residual ownership claims for H1/H7/H39 `Dp`, `Total-Soil`, or `SoilWaterTotal` must consume trace-grade post-WB18 and final-storage evidence for `D`, `Pe`, `wb18_perc_pei_####`, `wb18_perc_theta_####`, `wb19_thetdr_####`, `wb19_dg_####`, optional `wb18_perc_frozen_depth_####`, and aggregate `wb11_soil_water`. Trace classification must preserve the baseline aggregate relation `watcon = Σ(st(i) + thetdr(i)*(dg(i)-frozen(i)))` and the WB18 publication relation `D = Pe` for bottom-layer loss, without collapsing `D` to `Σpei_####`. | hard-fail | REF-PERC-LEGACY-SOILW, REF-PERC-LEGACY-HOURLY-BOTK, REF-PERC-CH5-BAL, INV-PERC-013, INV-PERC-014, SC-WATBAL-001#INV-WATBAL-046 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PERC-016 | HPHYS0283 active-snowmelt infiltration-to-layer invariant: when routed snowmelt (`wmelt`) is present, WB18 percolation must consume the same-pass WB14/WB12 infiltration lineage as top-down `fin/xfin` ingress to `st(i)`/`wb18_perc_theta_i` before percolation routing and aggregate `watcon` recomputation. Evidence that publishes `wb12_infiltration` or reduces `Q` without increasing layer/aggregate storage remains a hard storage-collapse defect for active snowmelt events. Full direct-rain `fin/xfin` ingress remains baseline authority but is outside the HPHYS0283 snowmelt-specific closure claim unless separately promoted by a follow-on package. | hard-fail | REF-PERC-LEGACY-HOURLY-FIN, REF-PERC-LEGACY-SOILW, SC-SNOWFREEZE-001#INV-SNOWFREEZE-018, SC-RUNOFFPART-001#INV-RUNOFFPART-015, SC-WATBAL-001#INV-WATBAL-058 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PERC-017 | HPHYS0285 local-liquid same-pass infiltration-to-layer invariant: WB18 percolation must consume the same-pass WB14/WB12 infiltration lineage from positive local `fin/xfin` liquid supply before percolation routing and aggregate `watcon` recomputation, regardless of whether the local supply originated as direct rain, routed snowmelt, or irrigation. Active-snow state may alter the local liquid supply calculation, but it cannot gate whether positive same-pass infiltration mutates `st(i)`/`wb18_perc_theta_i`; inactive stale snow state also cannot hard-fail non-snow liquid ingress before the active-snow predicate is satisfied. In hourly lanes, the storage-ingress increment follows baseline `xfin = fin/ui_LFtstpF` cadence and is applied per substep before that substep's percolation, not as a single daily pulse before the 24-substep loop. Evidence that publishes non-zero local `wb12_infiltration` while leaving layer/aggregate storage unchanged is a hard spring soil-retention defect. MOFE carry/runon infiltration remains governed by existing carry-array invariants and requires separate closure evidence before promotion under HPHYS0285. Active snowpack domain failures remain owned by `SC-SNOWFREEZE-001`. | hard-fail | REF-PERC-LEGACY-HOURLY-FIN, REF-PERC-LEGACY-SOILW, SC-RUNOFFPART-001#INV-RUNOFFPART-016, SC-WATBAL-001#INV-WATBAL-060 | `[DIRECT][Static] + [INFERENCE][Static]` |
@@ -303,6 +306,7 @@ explicit runtime aliases for per-layer percolation state/flux surfaces.
 | Non-positive `FC/UL` ratio in active branch | `stz < 0.95` and `FCi/ULi <= 0`, with explicit authoritative mapping `Bi = 0` before `fx = max(stz^Bi, 0.002)`. | Baseline WEPP `watbal.for` sets `hk=0` for non-positive ratio and continues percolation execution. `[DIRECT][Static]` |
 | Frozen/restrictive attenuation regime | Effective conductivity is strongly reduced by frozen/restrictive conditions but remains in valid domain. | Chapter-5 and Chapter-7 conductivity-adjustment semantics. `[DIRECT][Static] + [INFERENCE][Static]` |
 | Hourly bottom restrictive layer | `slflag=1`, `wb18_perc_lane_substeps=24`, bottom-layer `Ksi>0`, `kslast>0`, and `ui_bdrkth>0`, producing `Ksi_eff` near `kslast` when the restrictive layer is much thicker than the soil layer. | Baseline `perc.for` thickness-weighted `sscz` branch. `[DIRECT][Static]` |
+| Impermeable restrictive layer | `slflag=1`, finite `kslast=0`, and `Ksi_eff=0` in daily and hourly bottom-layer branches. | Baseline `input.for` accepts zero and `perc.for` explicitly maps it to zero conductivity. `[DIRECT][Static]` |
 | No below-root export day | Per-layer routing occurs within root zone but aggregate below-root `D` is zero for the step. | Valid daily state when no percolation crosses the root-zone boundary. `[INFERENCE][Static]` |
 
 ## Invalid States
@@ -314,7 +318,7 @@ explicit runtime aliases for per-layer percolation state/flux surfaces.
 - Missing/malformed `Pe` payload for subsurface continuity consumers. `[DIRECT][Static] + [INFERENCE][Static]`
 - Silent omission of percolation-layer updates in coupled daily infiltration/ET/water-balance bookkeeping path. `[DIRECT][Static] + [INFERENCE][Static]`
 - Hourly bottom-layer restrictive execution with `slflag=1` but missing,
-  non-finite, or non-positive `ui_bdrkth`/`kslast`, or with unrestricted
+  non-finite, or non-positive `ui_bdrkth`, negative/non-finite `kslast`, or with unrestricted
   bottom-layer `Ksi` used as `Ksi_eff`. `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Producer Obligations
@@ -417,7 +421,11 @@ Minimum WB18 percolation production-kernel conformance vectors:
 7. Daily restrictive-layer vectors must exercise:
    - `slflag=1` and finite positive `kslast` branch reducing bottom-layer
      percolation via harmonic effective conductivity,
-   - typed hard-fail on non-finite or non-positive `kslast` when `slflag=1`.
+   - `slflag=1` and exact-zero `kslast` producing zero bottom-layer
+     conductivity and zero deep seepage without disabling the restriction,
+   - typed hard-fail on non-finite or negative `kslast` when `slflag=1`.
+8. Hourly restrictive-layer vectors must cover both the positive
+   thickness-weighted branch and exact-zero impermeable branch.
 8. HPHYS0246 aggregate storage vector: with valid `wb19_thetdr_####` and
    `wb19_dg_####`
    and no frozen-depth symbols, WB18 must publish `wb11_soil_water =
@@ -530,8 +538,11 @@ Minimum WB18 percolation production-kernel conformance vectors:
    (`i=nsl`) with restrictive layer enabled (`slflag=1`), WB18 must apply
    baseline-authoritative effective conductivity branch:
    - `Ksbot = kslast`,
-   - `Ksi_eff = 2*Ksi*Ksbot/(Ksi+Ksbot)`.
-2. `kslast` domain is strict when `slflag=1`: finite and `> 0`.
+   - when `Ksbot=0`, `Ksi_eff=0` exactly,
+   - otherwise `Ksi_eff = 2*Ksi*Ksbot/(Ksi+Ksbot)`.
+2. `kslast` domain is strict when `slflag=1`: finite and `>= 0`; exact zero is
+   the impermeable-boundary branch and must not be reinterpreted as
+   `slflag=0`.
 3. WB13 deep-percolation publication (`Dp`) must be sourced from
    flux-authoritative percolation closure surface `D` and must not be shadowed
    by stale state-surface `D`.
@@ -655,6 +666,7 @@ authority closure is completed.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-07-13` | `30` | `Codex` | INTVAL restrictive-boundary amendment: reconciled daily/hourly `kslast=0` with pinned `input.for`/`perc.for` authority as an active impermeable boundary, preserved positive formulas and negative/non-finite hard failures, and added exact-zero vectors. |
 | `2026-06-06` | `29` | `Codex` | WBVAL05 amendment: clarified WB18 same-pass ingress consumption order so an already-published finite non-negative `wb12_infiltration` surface is authoritative for percolation layer ingress and WB18 does not re-run WB14 snow/liquid partition validation solely because `tillay(2)` exists. |
 | `2026-06-05` | `28` | `Codex` | HPHYS0294 amendment: added post-ingress storage/percolation/lateral retention classifier requiring WB18 aggregate identity, `D=Pe`/`pei`, WB19 lateral lineage, and snow-excluded residual masks before WB18/WB19 ownership claims or production edits. |
 | `2026-06-04` | `27` | `Codex` | HPHYS0286 amendment: added baseline-authoritative post-ET lower-layer upper-limit redistribution (`watbal_hourly.for:564-590`) with `fin > 1e-6` frozen-water cap semantics before WB19 drainage/lateral consumers. |

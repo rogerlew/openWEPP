@@ -600,6 +600,17 @@ fn wave1_profil_segment_fit_matches_legacy_normalization() {
     let expected_a = (sstar_l - sstar_u) / 0.5;
     assert!((segments[1].a - expected_a).abs() < 1.0e-12);
     assert!((segments[1].b - (sstar_u - expected_a * 0.5)).abs() < 1.0e-12);
+
+    // SC-SED-001#EROD16 / `profil.for:37,54`: compatibility parsing accepts
+    // a terminal station within 1e-3 of the declared normalized endpoint.
+    // Legacy PROFIL makes that actual terminal station `slen`, so the route
+    // geometry still ends exactly at xstar=1.0; declared physical hillslope
+    // length is not the normalization denominator.
+    let compatibility_points = [(0.0, 0.4), (50.0, 0.4), (99.97, 0.2)];
+    let compatibility_segments = derive_wave1_slope_segments(&compatibility_points, 100.0, avgslp)
+        .expect("parser-compatible near-terminal profile must fit");
+    assert!((compatibility_segments[0].xl - 50.0 / 99.97).abs() < 1.0e-12);
+    assert!((compatibility_segments.last().expect("segments exist").xl - 1.0).abs() < 1.0e-12);
 }
 
 #[test]

@@ -441,6 +441,10 @@ name = "auth04_release_gate_authority_stack_contract"
 path = "tests/integration/auth04_release_gate_authority_stack_contract.rs"
 
 [[test]]
+name = "auth05_level4_constitutive_authority_hardening_contract"
+path = "tests/integration/auth05_level4_constitutive_authority_hardening_contract.rs"
+
+[[test]]
 name = "auth06_fixture_provenance_hash_enforcement_contract"
 path = "tests/integration/auth06_fixture_provenance_hash_enforcement_contract.rs"
 
@@ -451,6 +455,22 @@ path = "tests/integration/auth07_fc_authority_cohort_contract.rs"
 [[test]]
 name = "auth11_required_suite_obligation_guards_contract"
 path = "tests/integration/auth11_required_suite_obligation_guards_contract.rs"
+
+[[test]]
+name = "hphys0224_wb19_withdrawal_soilwater_cap_contract"
+path = "tests/integration/hphys0224_wb19_withdrawal_soilwater_cap_contract.rs"
+
+[[test]]
+name = "hphys0225_wb19_layer_pool_withdrawal_cap_contract"
+path = "tests/integration/hphys0225_wb19_layer_pool_withdrawal_cap_contract.rs"
+
+[[test]]
+name = "hphys0226_wb19_lateral_saturated_thickness_response_contract"
+path = "tests/integration/hphys0226_wb19_lateral_saturated_thickness_response_contract.rs"
+
+[[test]]
+name = "hphys0227_wb19_fcwp_coca_watyld_authority_contract"
+path = "tests/integration/hphys0227_wb19_fcwp_coca_watyld_authority_contract.rs"
 
 [[test]]
 name = "snowfreeze_observed_frost_depth_contract"

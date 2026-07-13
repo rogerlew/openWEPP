@@ -222,6 +222,7 @@ fn direct_production_same_day_frost_hydrology_layers(
     let mut hydrology_layers = layers.to_vec();
     if !clear_no_final_hydrology_layers
         || direct_production_frost_outcome_has_final_frozen_projection(frost_outcome)
+        || frost_outcome.soil_water_after_frwatc_m.is_some()
     {
         return Ok(hydrology_layers);
     }

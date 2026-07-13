@@ -1,0 +1,107 @@
+INFO: running workspace release gates
+    Checking openwepp v0.1.0 (/home/workdir/openWEPP)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.44s
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.20s
+────────────
+ Nextest run ID 357db813-6c06-44c1-ba21-e8d10a6fc9f9 with nextest profile: full
+    Starting 1955 tests across 180 binaries (3 tests skipped)
+        SLOW [> 90.000s] (─────────) openwepp-hillslope-orchestrator ofe_routing::d10b_reconciliation_tests::case4_manning_solver_converges_to_iwagaki_oracle
+        SLOW [> 90.000s] (─────────) openwepp-hillslope-orchestrator ofe_routing::iwagaki_oracle::tests::characteristics_fan_cross_validates_upwind_reference
+        SLOW [> 90.000s] (─────────) openwepp-hillslope-orchestrator ofe_routing::iwagaki_oracle::tests::upwind_case4_self_convergence
+        SLOW [> 90.000s] (─────────) openwepp::snowdensity05e_melt_adjudication coe_melt_snowbench_runs_both_models_as_diagnostic_only
+────────────
+     Summary [ 590.327s] 1955 tests run: 1955 passed (4 slow), 3 skipped
+advisories ok, bans ok, licenses ok, sources ok
+INFO: evaluating authority-suite lanes
+INFO: verifying authority fixture hash locks and provenance
+INFO: running authority lane 'required' (hard-fail) via cargo test --test auth05_level4_constitutive_authority_hardening_contract
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.12s
+     Running tests/integration/auth05_level4_constitutive_authority_hardening_contract.rs (target/debug/deps/auth05_level4_constitutive_authority_hardening_contract-d426fc4f9f12eac0)
+
+running 3 tests
+test auth05_invalid_fc_wp_and_missing_theta_are_fail_closed ... ok
+test auth05_direct_percolation_obeys_fc_cutoff_and_positive_above_fc_response ... ok
+test auth05_fc_wp_fixtures_and_typed_runtime_preserve_constitutive_authority ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+INFO: running authority lane 'required' (hard-fail) via cargo test --test hphys0224_wb19_withdrawal_soilwater_cap_contract
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.10s
+     Running tests/integration/hphys0224_wb19_withdrawal_soilwater_cap_contract.rs (target/debug/deps/hphys0224_wb19_withdrawal_soilwater_cap_contract-07f595e0414b4291)
+
+running 2 tests
+test hphys0224_overwithdrawal_is_a_typed_domain_failure ... ok
+test hphys0224_realized_withdrawals_subtract_exactly_from_soil_water ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+INFO: running authority lane 'required' (hard-fail) via cargo test --test hphys0225_wb19_layer_pool_withdrawal_cap_contract
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.11s
+     Running tests/integration/hphys0225_wb19_layer_pool_withdrawal_cap_contract.rs (target/debug/deps/hphys0225_wb19_layer_pool_withdrawal_cap_contract-d07abc4447c207a8)
+
+running 1 test
+test hphys0225_deleted_legacy_scalar_cannot_expand_typed_layer_pool ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+INFO: running authority lane 'required' (hard-fail) via cargo test --test hphys0226_wb19_lateral_saturated_thickness_response_contract
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.11s
+     Running tests/integration/hphys0226_wb19_lateral_saturated_thickness_response_contract.rs (target/debug/deps/hphys0226_wb19_lateral_saturated_thickness_response_contract-7c81d8e040093e07)
+
+running 1 test
+test hphys0226_lateral_flow_increases_with_available_saturated_storage ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+INFO: running authority lane 'required' (hard-fail) via cargo test --test hphys0227_wb19_fcwp_coca_watyld_authority_contract
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.11s
+     Running tests/integration/hphys0227_wb19_fcwp_coca_watyld_authority_contract.rs (target/debug/deps/hphys0227_wb19_fcwp_coca_watyld_authority_contract-91cd925c82179f90)
+
+running 1 test
+test hphys0227_fcwp_theta_lineage_controls_watyld_and_legacy_depth_response ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+INFO: running authority lane 'required' (hard-fail) via cargo test --test auth07_fc_authority_cohort_contract
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.11s
+     Running tests/integration/auth07_fc_authority_cohort_contract.rs (target/debug/deps/auth07_fc_authority_cohort_contract-23e304ef44db8bb2)
+
+running 2 tests
+test auth07_package_and_suite_authority_sections_exist ... ok
+test auth07_profile_fc_authority_cohort_threshold_and_rock_bucket_classification ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+INFO: running authority lane 'required' (hard-fail) via cargo test --test soilauth03_soil_producer_contract_drift_guards_contract
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.11s
+     Running tests/integration/soilauth03_soil_producer_contract_drift_guards_contract.rs (target/debug/deps/soilauth03_soil_producer_contract_drift_guards_contract-0db78ebbb1c5c3ae)
+
+running 2 tests
+compat_quoted_header_9002_policy_first.sol: FAILED
+compat_quoted_header_7778_per_ofe_restrictive.sol: OK
+canonical_9002_double_quoted_policy.sol: OK
+soilauth03_guard_cases.json: OK
+sha256sum: WARNING: 1 computed checksum did NOT match
+test soilauth03_injected_drift_vectors_fail_guards ... ok
+compat_quoted_header_9002_policy_first.sol: OK
+compat_quoted_header_7778_per_ofe_restrictive.sol: OK
+canonical_9002_double_quoted_policy.sol: OK
+soilauth03_guard_cases.json: OK
+test soilauth03_required_suite_obligations_and_contract_guards_hold ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+INFO: authority_results=/tmp/openwepp_release_260713ci_9L6GiC/authority_suite_results.md
+INFO: building release binaries
+   Compiling openwepp-runner v0.1.0 (/home/workdir/openWEPP/crates/openwepp-runner)
+    Finished `release` profile [optimized] target(s) in 40.59s
+INFO: emitting sidecars
+INFO: linting release directory
+INFO: running stability gate
+INFO: running hillstab harness
+/tmp/openwepp_release_260713ci_9L6GiC/hillstab_results.json
+INFO: asserting hillstab harness results
+FAIL: suite 'release_gate_watchlist' reports failed=8 (passed=11, total=19)
+FAIL: suite 'wb05b_1166' reports failed=225 (passed=941, total=1166)
+FAIL: suite 'wb05b_1166' pass/fail mismatch for expected full pass (expected passed=1166, failed=0; observed passed=941, failed=225)
+FAIL: suite 'release_gate_watchlist' pass/fail mismatch for expected full pass (expected passed=19, failed=0; observed passed=11, failed=8)

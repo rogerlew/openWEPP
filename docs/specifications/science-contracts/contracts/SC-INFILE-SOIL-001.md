@@ -4,9 +4,9 @@ title: Soil Input Parser Contract (.sol)
 status: in_review
 maturity: draft
 owner: openWEPP
-contract_version: 0.1.11
+contract_version: 0.1.12
 evidence_mode: Static
-last_updated_utc: 2026-06-18T00:00:00Z
+last_updated_utc: 2026-07-13T00:00:00Z
 ---
 
 # SC-INFILE-SOIL-001 Soil Input Parser Contract
@@ -22,6 +22,7 @@ Evidence mode: `Static`
 - `[DIRECT][E-WF-SOL-01]` `/home/workdir/wepp-forest/src/infile.for` and `/home/workdir/wepp-forest/src/input.for` (legacy soil parse branches cited by survey).
 - `[DIRECT][E-WF-SOL-02]` `/workdir/wepp-forest_260430_baseline/src/input.for:475-482` (legacy parser branch for `solwpv >= 7777` reads 8 OFE-header fields through `shcrit`, omitting `avke`).
 - `[DIRECT][E-WF-SOL-03]` `/workdir/wepp-forest_260430_baseline/src/input.for:752-761,836-844,926-928`, commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` (legacy source-intent runtime conductivity projection: vertical `ssc1` accumulates inverse conductivity and hourly horizontal `ui_ssh1` accumulates thickness-weighted `ssc2*ui_anisrt`).
+- `[DIRECT][E-WF-SOL-04]` `/workdir/wepp-forest_260430_baseline/src/input.for:668-675` and `/workdir/wepp-forest_260430_baseline/src/perc.for:186-213`, commit `dac3c950d8b16cc73774bf5ce2e7e11f80baac70` (restrictive `kslast` is read without a positive-only rule; exact zero is retained and consumed as an impermeable lower boundary).
 - `[DIRECT][E-WP-SOL-01]` `/workdir/wepppy/wepp/soils/utils/wepp_soil_util.py` (`_parse_sol` parser surface cited by survey).
 - `[DIRECT][E-OW-SOIL-SEAM-01]` `/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator/src/runtime_inputs.rs` (soil parser-to-runtime projection seam for canonical `thetdr`/`thetfc` symbols).
 - `[DIRECT][E-AUTH-SOL-01]` `/home/workdir/openWEPP/docs/specifications/external-authority/required-suite-obligations.json` (`cas_l4_infile_soil_producer_contract_001` machine obligations for required symbol/order/arity and fixture-integrity guards).
@@ -118,7 +119,7 @@ per_ofe_restrictive_line = slflag ui_bdrkth kslast ;  (* accepted when rows are 
 | `lkeff` | `ofe[i].disturbed_hdr.lkeff` | `soil.ofe[i].disturbed_policy.ksat_lower_mm_h` | mm/h | real | 0..ntemp | conditional | 9003+ | none | `ksat_lower_mm_h` |
 | `texid_enum` | `ofe[i].reveg_hdr.texid_enum` | `soil.ofe[i].reveg_policy.texture_enum` | enum | int | 0..ntemp | conditional | 9005 | none | `texture_enum` |
 | `uksat` | `ofe[i].reveg_hdr.uksat` | `soil.ofe[i].reveg_policy.ksat_upper_mm_h` | mm/h | real | 0..ntemp | conditional | 9005 | none | `ksat_upper_mm_h` |
-| `slflag,ui_bdrkth,kslast` | `footer.restrictive` | `soil.restrictive_layer` | mixed | record | 0..1 | conditional | 2006.2,7777,7778,9002,9003,9005 | per-OFE restrictive rows are accepted for `7778/9002/9003/9005` when all per-OFE rows are identical and normalize to one profile row | `restrictive_layer` |
+| `slflag,ui_bdrkth,kslast` | `footer.restrictive` | `soil.restrictive_layer` | flag, mm, mm/h | record | 0..1 | conditional | 2006.2,7777,7778,9002,9003,9005 | when `slflag=1`, `ui_bdrkth>0` and finite `kslast>=0`; exact-zero `kslast` is an active impermeable boundary. Per-OFE rows are accepted for `7778/9002/9003/9005` when all rows are identical and normalize to one profile row | `restrictive_layer` |
 
 ## 4. Propagation Map Table
 
@@ -148,7 +149,7 @@ per_ofe_restrictive_line = slflag ui_bdrkth kslast ;  (* accepted when rows are 
 | --- | --- | --- | --- |
 | `D-SOL-001` | Derive cumulative layer bottoms and verify strictly increasing `solthk` per OFE. | parse finalize | `C-SOL-001` |
 | `D-SOL-002` | Normalize optional disturbed/reveg control blocks into one policy enum surface by datver. | per OFE parse finalize | `C-SOL-002` |
-| `D-SOL-003` | Derive restrictive-layer effective presence from `slflag` and validate dependent fields. | footer parse finalize | `C-SOL-003` |
+| `D-SOL-003` | Derive restrictive-layer effective presence from `slflag`; when active require positive finite thickness and finite non-negative `kslast`. Exact-zero conductivity preserves active presence and means an impermeable lower boundary. | footer parse finalize | `C-SOL-003` |
 | `D-SOL-004` | Runtime export precedence for canonical hydrology theta symbols is datver-compatible and fail-closed: `thetdr := theta_r_rosetta` when present, else `wp_measured`; `thetfc := fc_rosetta` when present, else `fc_measured`; if neither source exists for a required layer, projection fails with typed runtime error. | parser-to-runtime seam projection | `C-SOL-004` |
 | `D-SOL-005` | Runtime export of disturbed-land conductivity-adjustment regime metadata is deterministic and fail-closed: `solwpv := datver_raw`; per-OFE policy aliases (`ofe{i}_ksatadj`, `ofe{i}_ksatfac`, `ofe{i}_ksatrec`, `ofe{i}_lkeff`) are projected when datver policy fields exist; primary OFE aliases (`ksatadj`, `ksatfac`, `ksatrec`, `lkeff`) mirror OFE1; when policy is absent, `ksatadj := 0` and regime-only fields remain omitted. | parser-to-runtime seam projection | `C-SOL-005` |
 | `D-SOL-006` | Runtime conductivity export across 200 mm normalized layers preserves the baseline split between vertical and hourly-horizontal conductivity: for normalized layers with bottom depth `<= 0.2 m`, the source `ksat` used for each overlapped source segment is the top source-layer `ksat`; below that top interval, vertical percolation `ssc` / `wb18_perc_ssc_####` is the layer thickness divided by `Σ(thickness_source / ksat_source)`, while hourly horizontal `ui_ssh` / `wb19_lateral_ssh_####` is the thickness-weighted arithmetic mean of `ksat_source * anisotropy_source`. The two surfaces may be equal for homogeneous layers but must not be aliased. | parser-to-runtime seam projection | `C-SOL-006` |
@@ -239,7 +240,7 @@ Unsupported forms must fail with typed errors from Section 7.
 | `G-SOL-006` | layer record arity by datver | layer parse | `SOL-E-006` |
 | `G-SOL-007` | monotone positive `solthk`, bounded fractions | layer closure | `SOL-E-005`/`SOL-E-009` |
 | `G-SOL-008` | disturbed/reveg policy row validity, including compatibility quote-tokenization for whitespace-bearing `luse`/`stext` policy-row fields | policy parse | `SOL-E-006`/`SOL-E-005` |
-| `G-SOL-009` | restrictive-layer closure | footer parse | `SOL-E-009` |
+| `G-SOL-009` | restrictive-layer closure: active rows require positive finite `ui_bdrkth` and finite non-negative `kslast`; zero conductivity remains active/impermeable | footer parse | `SOL-E-009` |
 | `G-SOL-010` | quoted header parse (`7778/9002/9003/9005`) must unquote to exactly two identifier fields (`slid`,`texid`) and preserve numeric arity/order for remaining fields with either 9-token form (includes `avke`) or 8-token form (omits `avke`, normalized to `0.0`); single/double quotes are both accepted | OFE header parse | `SOL-E-006` |
 | `G-SOL-011` | per-OFE restrictive-layer rows (`7778/9002/9003/9005`) must either be absent or pairwise identical before profile-level normalization | OFE/footer parse | `SOL-E-006` |
 | `G-SOL-012` | runtime theta export closure requires at least one valid source per required layer for each canonical symbol (`thetdr`: `theta_r_rosetta` or `wp_measured`; `thetfc`: `fc_rosetta` or `fc_measured`) with no silent defaulting | parser-to-runtime seam projection | typed runtime seam failure (`HS-RUNTIME-E-*`) |
@@ -265,6 +266,7 @@ openWEPP runtime names are aliases only (Section 3).
 
 | Date UTC | Version | Change |
 | --- | --- | --- |
+| `2026-07-13` | `0.1.12` | INTVAL restrictive-boundary amendment: explicitly locked the parser/runtime domain already accepted by the typed parser and pinned baseline—active `kslast` is finite non-negative, with exact zero preserved as an impermeable lower boundary. |
 | `2026-06-18` | `0.1.11` | BASECOND01 amendment: made 200 mm runtime conductivity projection explicit: top normalized interval applies the baseline top source-layer `ksat` rule, vertical `ssc` / `wb18_perc_ssc_####` below that interval uses inverse-conductivity normalization, while modern hourly `ui_ssh` / `wb19_lateral_ssh_####` remains arithmetic from `ksat*anisotropy`; added closure hook `C-SOL-006` and guard `G-SOL-015`. |
 | `2026-06-01` | `0.1.10` | SOILAUTH03 amendment: added required producer-contract anti-drift authority linkage (`G-SOL-014`) to `cas_l4_infile_soil_producer_contract_001` machine obligations in `required-suite-obligations.json` with release-gated hard-fail fixture-integrity posture. |
 | `2026-06-01` | `0.1.9` | SOILAUTH02 amendment: reconciled canonical producer envelopes into strict+compat parser authority by accepting `9002/9003/9005` policy-first ordering, quoted header parsing with optional missing `avke` normalization, per-OFE restrictive-row normalization for `7778/9002/9003/9005`, and single/double quote tokenization where parsing is lossless. |

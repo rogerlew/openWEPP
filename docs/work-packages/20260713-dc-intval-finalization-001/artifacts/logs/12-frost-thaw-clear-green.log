@@ -1,0 +1,7 @@
+   Compiling openwepp-runner v0.1.0 (/home/workdir/openWEPP/crates/openwepp-runner)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.62s
+────────────
+ Nextest run ID c8ef60fe-c9df-4ae0-bbe3-9866aea59053 with nextest profile: quick
+    Starting 3 tests across 11 binaries (206 tests and 3 binaries skipped, including 3 binaries via profile.quick.default-filter)
+────────────
+     Summary [   0.010s] 3 tests run: 3 passed, 206 skipped

@@ -1,0 +1,4 @@
+Candidate 3 launch invalidated by a fixed-source change after delegation.
+The run was terminated with exit 100 and is not acceptance evidence.
+Its partial stdout/stderr and timing are preserved in the adjacent `.invalidated.log`
+and `.invalidated.time` files.
