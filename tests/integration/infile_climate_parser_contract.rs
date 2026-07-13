@@ -39,7 +39,7 @@ fn strict_source_with_line(line_number: usize, replacement: &str) -> String {
         .lines()
         .map(str::to_owned)
         .collect::<Vec<_>>();
-    lines[line_number - 1] = replacement.to_owned();
+    replacement.clone_into(&mut lines[line_number - 1]);
     lines.join("\n")
 }
 

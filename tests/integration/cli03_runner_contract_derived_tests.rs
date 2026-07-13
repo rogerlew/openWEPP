@@ -274,6 +274,7 @@ loss = "output/H1.loss.json"
 }
 
 #[test]
+#[allow(clippy::too_many_lines)]
 fn m07_runfile_error_branch_matrix_preserves_exact_priority() {
     let cases = [
         ("not valid TOML = [", "invalid TOML"),
