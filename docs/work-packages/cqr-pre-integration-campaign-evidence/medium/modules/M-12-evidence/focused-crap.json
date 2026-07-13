@@ -1,0 +1,742 @@
+{
+  "$schema": "https://raw.githubusercontent.com/minikin/cargo-crap/main/schemas/report-v1.json",
+  "version": "0.2.2",
+  "entries": [
+    {
+      "file": "crates/openwepp-landuse-migrate/src/cli.rs",
+      "function": "run_cli_args",
+      "line": 15,
+      "cyclomatic": 54.0,
+      "coverage": 78.1456953642384,
+      "crap": 84.43676543755633
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "required_args_for_source",
+      "line": 740,
+      "cyclomatic": 14.0,
+      "coverage": 57.534246575342465,
+      "crap": 29.009719369590535
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/disturbed.rs",
+      "function": "validate_route_row",
+      "line": 173,
+      "cyclomatic": 9.0,
+      "coverage": 48.717948717948715,
+      "crap": 19.923987255348198
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "resolve_legacy_classes",
+      "line": 956,
+      "cyclomatic": 16.0,
+      "coverage": 75.38461538461539,
+      "crap": 19.818210286754667
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/convert.rs",
+      "function": "plant_to_yaml",
+      "line": 261,
+      "cyclomatic": 7.0,
+      "coverage": 37.80487804878049,
+      "crap": 18.788676528198952
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "LanduseMigrationError::fmt",
+      "line": 520,
+      "cyclomatic": 17.0,
+      "coverage": 100.0,
+      "crap": 17.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "ClassMap::merge_checked",
+      "line": 221,
+      "cyclomatic": 9.0,
+      "coverage": 56.25,
+      "crap": 15.782958984375
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "MigrationTarget::as_cli_value",
+      "line": 63,
+      "cyclomatic": 3.0,
+      "coverage": 0.0,
+      "crap": 12.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "MigrationArgSpec::to_text",
+      "line": 288,
+      "cyclomatic": 3.0,
+      "coverage": 0.0,
+      "crap": 12.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "migrate_source",
+      "line": 845,
+      "cyclomatic": 11.0,
+      "coverage": 88.67924528301887,
+      "crap": 11.175554316650658
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "read_structured_file",
+      "line": 1191,
+      "cyclomatic": 6.0,
+      "coverage": 57.57575757575758,
+      "crap": 8.748810418231905
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/disturbed.rs",
+      "function": "normalize_disturbed_class",
+      "line": 81,
+      "cyclomatic": 7.0,
+      "coverage": 73.07692307692307,
+      "crap": 7.956247155211654
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "candidate_classes_for_plant",
+      "line": 1062,
+      "cyclomatic": 7.0,
+      "coverage": 75.0,
+      "crap": 7.765625
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "ReportFormat::from_str",
+      "line": 103,
+      "cyclomatic": 5.0,
+      "coverage": 55.55555555555556,
+      "crap": 7.194787379972565
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "authority_from_files",
+      "line": 703,
+      "cyclomatic": 7.0,
+      "coverage": 100.0,
+      "crap": 7.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "candidate_classes_for_site",
+      "line": 1032,
+      "cyclomatic": 6.0,
+      "coverage": 77.77777777777779,
+      "crap": 6.395061728395061
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/convert.rs",
+      "function": "source_to_yaml_document",
+      "line": 14,
+      "cyclomatic": 6.0,
+      "coverage": 90.625,
+      "crap": 6.0296630859375
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "ValidationReport::to_text",
+      "line": 382,
+      "cyclomatic": 2.0,
+      "coverage": 0.0,
+      "crap": 6.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "MigrationReport::to_text",
+      "line": 425,
+      "cyclomatic": 2.0,
+      "coverage": 0.0,
+      "crap": 6.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/convert.rs",
+      "function": "yearly_extension_to_yaml",
+      "line": 500,
+      "cyclomatic": 6.0,
+      "coverage": 100.0,
+      "crap": 6.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/convert.rs",
+      "function": "validate_legacy_source_landuses",
+      "line": 563,
+      "cyclomatic": 4.0,
+      "coverage": 50.0,
+      "crap": 6.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/convert.rs",
+      "function": "yearly_branch_to_yaml",
+      "line": 466,
+      "cyclomatic": 3.0,
+      "coverage": 36.666666666666664,
+      "crap": 5.286333333333333
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "scheduled_crop_sites",
+      "line": 919,
+      "cyclomatic": 5.0,
+      "coverage": 84.84848484848484,
+      "crap": 5.086957731585831
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/convert.rs",
+      "function": "legacy_flat_to_yaml",
+      "line": 52,
+      "cyclomatic": 5.0,
+      "coverage": 88.40579710144928,
+      "crap": 5.038963924884858
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "merge_optional_disturbed_class",
+      "line": 1088,
+      "cyclomatic": 5.0,
+      "coverage": 100.0,
+      "crap": 5.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "merge_assignment",
+      "line": 1111,
+      "cyclomatic": 5.0,
+      "coverage": 100.0,
+      "crap": 5.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "MigrationTarget::from_str",
+      "line": 80,
+      "cyclomatic": 4.0,
+      "coverage": 62.5,
+      "crap": 4.84375
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "validate_source_for_target",
+      "line": 827,
+      "cyclomatic": 3.0,
+      "coverage": 41.17647058823529,
+      "crap": 4.831874618359455
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/disturbed.rs",
+      "function": "row_for_disturbed_class",
+      "line": 112,
+      "cyclomatic": 4.0,
+      "coverage": 66.66666666666666,
+      "crap": 4.5925925925925934
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "format_serializable",
+      "line": 1230,
+      "cyclomatic": 4.0,
+      "coverage": 72.72727272727273,
+      "crap": 4.324567993989482
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/cli.rs",
+      "function": "validate_target_for_input",
+      "line": 191,
+      "cyclomatic": 3.0,
+      "coverage": 50.0,
+      "crap": 4.125
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/convert.rs",
+      "function": "initial_to_yaml",
+      "line": 367,
+      "cyclomatic": 3.0,
+      "coverage": 51.61290322580645,
+      "crap": 4.019603235876607
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "SourceManagement::parse_path",
+      "line": 128,
+      "cyclomatic": 4.0,
+      "coverage": 100.0,
+      "crap": 4.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "ClassMap::is_empty",
+      "line": 214,
+      "cyclomatic": 4.0,
+      "coverage": 100.0,
+      "crap": 4.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/main.rs",
+      "function": "main",
+      "line": 1,
+      "cyclomatic": 4.0,
+      "coverage": 100.0,
+      "crap": 4.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "detected_landuses",
+      "line": 1160,
+      "cyclomatic": 3.0,
+      "coverage": 53.57142857142857,
+      "crap": 3.900737973760933
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/convert.rs",
+      "function": "yearly_to_yaml",
+      "line": 442,
+      "cyclomatic": 3.0,
+      "coverage": 59.09090909090909,
+      "crap": 3.616172051089406
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/convert.rs",
+      "function": "native_flat_to_yaml",
+      "line": 123,
+      "cyclomatic": 3.0,
+      "coverage": 92.1875,
+      "crap": 3.004291534423828
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "SourceManagement::source_format",
+      "line": 152,
+      "cyclomatic": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "SourceManagement::source_datver",
+      "line": 160,
+      "cyclomatic": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "MigrationAuthority::merge_from_args_file",
+      "line": 185,
+      "cyclomatic": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "LanduseMigrationError::source",
+      "line": 613,
+      "cyclomatic": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/tests/cli.rs",
+      "function": "temp_dir",
+      "line": 158,
+      "cyclomatic": 1.0,
+      "coverage": null,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/tests/cli.rs",
+      "function": "write_legacy_fixture",
+      "line": 171,
+      "cyclomatic": 1.0,
+      "coverage": null,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/tests/cli.rs",
+      "function": "bin",
+      "line": 177,
+      "cyclomatic": 1.0,
+      "coverage": null,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/tests/cli.rs",
+      "function": "native_flat_fixture",
+      "line": 511,
+      "cyclomatic": 1.0,
+      "coverage": null,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/tests/cli.rs",
+      "function": "assert_close",
+      "line": 523,
+      "cyclomatic": 1.0,
+      "coverage": null,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "MigrationTarget::resolved_datver",
+      "line": 56,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "MigrationTarget::fmt",
+      "line": 72,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "SourceManagement::path",
+      "line": 168,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "OpenWeppLanduseMigrator::new",
+      "line": 635,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "OpenWeppLanduseMigrator::source_versions",
+      "line": 641,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "OpenWeppLanduseMigrator::target_version",
+      "line": 645,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "OpenWeppLanduseMigrator::required_args",
+      "line": 649,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "OpenWeppLanduseMigrator::validate",
+      "line": 656,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "OpenWeppLanduseMigrator::migrate",
+      "line": 664,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "required_args_for_path",
+      "line": 673,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "validate_path",
+      "line": 681,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "migrate_path",
+      "line": 688,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "format_validation_report",
+      "line": 726,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "validate_producer_output_path",
+      "line": 909,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/disturbed.rs",
+      "function": "row",
+      "line": 58,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/disturbed.rs",
+      "function": "all_disturbed_classes",
+      "line": 77,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/disturbed.rs",
+      "function": "disturbed_route_table_checksum",
+      "line": 126,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/disturbed.rs",
+      "function": "canonical_table_text",
+      "line": 143,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/cli.rs",
+      "function": "help_text",
+      "line": 223,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/convert.rs",
+      "function": "flat_to_yaml_document",
+      "line": 189,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/convert.rs",
+      "function": "operation_to_yaml",
+      "line": 351,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/convert.rs",
+      "function": "contour_to_yaml",
+      "line": 419,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/convert.rs",
+      "function": "drain_to_yaml",
+      "line": 431,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/convert.rs",
+      "function": "stratum_to_yaml",
+      "line": 550,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/convert.rs",
+      "function": "checksum_for_native_flat_routing",
+      "line": 581,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "legacy_blocking_landuses",
+      "line": 1139,
+      "cyclomatic": 1.0,
+      "coverage": 66.66666666666666,
+      "crap": 1.0370370370370372
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/cli.rs",
+      "function": "value_at",
+      "line": 210,
+      "cyclomatic": 1.0,
+      "coverage": 81.81818181818183,
+      "crap": 1.0060105184072126
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "ScheduledCropSite::schedule_slot_key",
+      "line": 339,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "ScheduledCropSite::label",
+      "line": 347,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "LanduseMigrationError::from",
+      "line": 622,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "load_args_file",
+      "line": 695,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "load_class_map",
+      "line": 699,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "format_arg_spec",
+      "line": 719,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "format_migration_report",
+      "line": 733,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "is_legacy_datver",
+      "line": 1135,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "legacy_class_map",
+      "line": 1257,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/lib.rs",
+      "function": "is_legacy_source_datver",
+      "line": 1264,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/disturbed.rs",
+      "function": "push_hex_byte",
+      "line": 137,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/disturbed.rs",
+      "function": "row_by_exact_class",
+      "line": 166,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/cli.rs",
+      "function": "run_from_env",
+      "line": 9,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/cli.rs",
+      "function": "parse_target",
+      "line": 206,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/convert.rs",
+      "function": "surface_to_yaml",
+      "line": 401,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/convert.rs",
+      "function": "schedule_to_yaml",
+      "line": 532,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/convert.rs",
+      "function": "description_vec",
+      "line": 559,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-landuse-migrate/src/convert.rs",
+      "function": "push_hex_byte",
+      "line": 599,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    }
+  ]
+}

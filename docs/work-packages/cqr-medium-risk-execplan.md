@@ -84,7 +84,9 @@ implementation diff.
 - [x] (2026-07-13 UTC) Execute tests-only M-11 landuse migration through
   `MODULE-PASS`: all 16 stable error surfaces and public file-authority order
   reach 100% coverage and CRAP 17/7, with real CLI agreement consumers.
-- [ ] Execute or disposition M-12 through its terminal record.
+- [x] (2026-07-13 UTC) Execute tests-only M-12 yearly-extension conversion
+  through `MODULE-PASS`: all five variants reach 100% coverage and CRAP 6,
+  with exact schema order and public management-YAML roundtrip identity.
 - [ ] Execute or disposition M-13 through its terminal record.
 - [ ] Run the tranche-final fresh rerank, dual verification, and transition Low/Assessment.
 

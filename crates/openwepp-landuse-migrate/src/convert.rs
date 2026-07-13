@@ -601,3 +601,154 @@ fn push_hex_byte(output: &mut String, byte: u8) {
     output.push(HEX[usize::from(byte >> 4)] as char);
     output.push(HEX[usize::from(byte & 0x0f)] as char);
 }
+
+#[cfg(test)]
+mod m12_tests {
+    use super::*;
+
+    fn converted_extensions() -> Vec<yaml::YearlyAnnualExtension> {
+        [
+            flat::YearlyAnnualExtension::Herbicide { jdherb: 101 },
+            flat::YearlyAnnualExtension::Burn {
+                jdburn: 202,
+                fbmag: 0.125,
+                fbrnog: 0.375,
+            },
+            flat::YearlyAnnualExtension::Silage { jdslge: 303 },
+            flat::YearlyAnnualExtension::Cut {
+                jdcut: 404,
+                frcut: 0.625,
+            },
+            flat::YearlyAnnualExtension::Remove {
+                jdmove: 505,
+                frmove: 0.875,
+            },
+        ]
+        .iter()
+        .map(yearly_extension_to_yaml)
+        .collect()
+    }
+
+    fn assert_markers_in_order(text: &str, markers: &[&str]) {
+        let mut cursor = 0;
+        for marker in markers {
+            let relative = text[cursor..]
+                .find(marker)
+                .unwrap_or_else(|| panic!("missing ordered marker {marker:?} in:\n{text}"));
+            cursor += relative + marker.len();
+        }
+    }
+
+    #[test]
+    fn m12_all_yearly_extensions_preserve_distinct_fields_and_bits() {
+        let extensions = converted_extensions();
+        assert_eq!(extensions.len(), 5);
+
+        assert!(matches!(
+            extensions[0],
+            yaml::YearlyAnnualExtension::Herbicide { jdherb: 101 }
+        ));
+        let yaml::YearlyAnnualExtension::Burn {
+            jdburn,
+            fbmag,
+            fbrnog,
+        } = extensions[1]
+        else {
+            panic!("second extension must remain burn");
+        };
+        assert_eq!(jdburn, 202);
+        assert_eq!(fbmag.to_bits(), 0.125_f64.to_bits());
+        assert_eq!(fbrnog.to_bits(), 0.375_f64.to_bits());
+        assert_ne!(fbmag.to_bits(), fbrnog.to_bits());
+        assert!(matches!(
+            extensions[2],
+            yaml::YearlyAnnualExtension::Silage { jdslge: 303 }
+        ));
+        let yaml::YearlyAnnualExtension::Cut { jdcut, frcut } = extensions[3] else {
+            panic!("fourth extension must remain cut");
+        };
+        assert_eq!(jdcut, 404);
+        assert_eq!(frcut.to_bits(), 0.625_f64.to_bits());
+        let yaml::YearlyAnnualExtension::Remove { jdmove, frmove } = extensions[4] else {
+            panic!("fifth extension must remain remove");
+        };
+        assert_eq!(jdmove, 505);
+        assert_eq!(frmove.to_bits(), 0.875_f64.to_bits());
+        assert_ne!(frcut.to_bits(), frmove.to_bits());
+    }
+
+    #[test]
+    fn m12_all_converted_extensions_roundtrip_through_public_management_yaml() {
+        let extensions = converted_extensions();
+        let mut document = yaml::parse_management_yaml_from_str(include_str!(
+            "../../../tests/fixtures/infile/management/canonical_forest_nonzero_ow_lanuse_1.man.yaml"
+        ))
+        .expect("canonical management YAML fixture should parse");
+        document.yearly_scenarios = extensions
+            .iter()
+            .enumerate()
+            .map(|(index, extension)| yaml::YearlyScenario::NativeCropland {
+                name: format!("M12-{}", index + 1),
+                description: vec!["one".to_string(), "two".to_string(), "three".to_string()],
+                itype: 1,
+                tilseq: 0,
+                conset: 0,
+                drset: 0,
+                imngmt: 1,
+                branch: yaml::YearlyCroplandBranch::AnnualOrFallow {
+                    jdharv: 200 + index,
+                    jdplt: 100 + index,
+                    rw: 0.5,
+                    resmgt: 10 + index,
+                    extension: Some(extension.clone()),
+                },
+            })
+            .collect();
+        document.schedule.slots[0].yearly_refs = vec![1, 2, 3, 4, 5];
+
+        let serialized = yaml::to_management_yaml_string(&document)
+            .expect("converted extension document should serialize");
+        assert_markers_in_order(
+            &serialized,
+            &[
+                "type: herbicide",
+                "jdherb: 101",
+                "type: burn",
+                "jdburn: 202",
+                "fbmag: 0.125",
+                "fbrnog: 0.375",
+                "type: silage",
+                "jdslge: 303",
+                "type: cut",
+                "jdcut: 404",
+                "frcut: 0.625",
+                "type: remove",
+                "jdmove: 505",
+                "frmove: 0.875",
+            ],
+        );
+
+        let reparsed = yaml::parse_management_yaml_from_str(&serialized)
+            .expect("public parser should accept migrated YAML");
+        let roundtripped: Vec<yaml::YearlyAnnualExtension> = reparsed
+            .yearly_scenarios
+            .iter()
+            .map(|yearly| {
+                let yaml::YearlyScenario::NativeCropland {
+                    branch:
+                        yaml::YearlyCroplandBranch::AnnualOrFallow {
+                            extension: Some(extension),
+                            ..
+                        },
+                    ..
+                } = yearly
+                else {
+                    panic!("every M-12 yearly must retain its extension");
+                };
+                extension.clone()
+            })
+            .collect();
+
+        assert_eq!(roundtripped, extensions);
+    }
+}
