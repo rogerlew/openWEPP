@@ -1,0 +1,175 @@
+info: cargo-llvm-cov currently setting cfg(coverage); you can opt-out it by passing --no-cfg-coverage
+   Compiling openwepp-sim-contract v0.1.0 (/home/workdir/openWEPP/crates/openwepp-sim-contract)
+   Compiling openwepp-unit-boundary v0.1.0 (/home/workdir/openWEPP/crates/openwepp-unit-boundary)
+   Compiling openwepp-comparator-metadata v0.1.0 (/home/workdir/openWEPP/crates/openwepp-comparator-metadata)
+   Compiling openwepp-legacy-bridge v0.1.0 (/home/workdir/openWEPP/crates/openwepp-legacy-bridge)
+   Compiling openwepp-management-schema v0.1.0 (/home/workdir/openWEPP/crates/openwepp-management-schema)
+   Compiling openwepp-meteorology v0.1.0 (/home/workdir/openWEPP/crates/openwepp-meteorology)
+   Compiling openwepp-kernel-contract v0.1.0 (/home/workdir/openWEPP/crates/openwepp-kernel-contract)
+   Compiling openwepp-topology v0.1.0 (/home/workdir/openWEPP/crates/openwepp-topology)
+   Compiling openwepp-hillslope-output v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-output)
+   Compiling openwepp-summary-accumulator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-summary-accumulator)
+   Compiling openwepp-input-contract v0.1.0 (/home/workdir/openWEPP/crates/openwepp-input-contract)
+   Compiling openwepp-climate-runtime-adapter v0.1.0 (/home/workdir/openWEPP/crates/openwepp-climate-runtime-adapter)
+   Compiling openwepp-watershed-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-watershed-orchestrator)
+   Compiling openwepp-hillslope-orchestrator v0.1.0 (/home/workdir/openWEPP/crates/openwepp-hillslope-orchestrator)
+   Compiling openwepp-watershed-output v0.1.0 (/home/workdir/openWEPP/crates/openwepp-watershed-output)
+   Compiling openwepp-runner v0.1.0 (/home/workdir/openWEPP/crates/openwepp-runner)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 21.49s
+     Running unittests src/lib.rs (target/llvm-cov-target/debug/deps/openwepp_runner-95f47b562cc66979)
+
+running 122 tests
+test hillslope::direct_production_ksatadj_tests::active_ksatadj_final_wb14_conductivity_remains_frost_limited ... ok
+test hillslope::direct_production_ksatadj_tests::active_ksatadj_supplies_wb14_effective_conductivity_before_base_fallback ... ok
+test hillslope::direct_seed_projections::cqr_row7_seed_projection_tests::cqr_row7_wb16_equivalent_plane_alpha_covers_single_multi_and_error_paths ... ok
+test hillslope::direct_seed_projections::cqr_row7_seed_projection_tests::cqr_row7_wb11_frozen_depth_refresh_covers_fine_scalar_and_guard_paths ... ok
+test hillslope::erosion_tillage_scope_tests::no_tillage_scope_disables_wave1_for_tilled_cropland_only ... ok
+test hillslope::laned_active::tests::diagnostic_max_dt_selector_requires_active_trace ... ok
+test hillslope::laned_active::tests::max_dt_parser_defaults_parses_and_rejects_invalid_caps ... ok
+test hillslope::laned_active::tests::mesh_policy_parser_defaults_parses_and_rejects_invalid_target_dx ... ok
+test hillslope::intake_lane_setup::runtime_surface_helpers::forest_pmet_fail_closed_tests::cropland_pmet_miss_keeps_compatibility_first_row_fallback ... ok
+test hillslope::intake_lane_setup::runtime_surface_helpers::forest_pmet_fail_closed_tests::mixed_cropland_forest_schedule_is_rejected_by_single_pmet_surface ... ok
+test hillslope::intake_lane_setup::runtime_surface_helpers::forest_pmet_fail_closed_tests::native_forest_pmet_miss_fails_closed_no_first_row_fallback ... ok
+test hillslope::laned_active::tests::step_trace_selector_requires_explicit_one ... ok
+test hillslope::laned_active::tests::trace_detail_filter_parses_one_based_day_lane ... ok
+test hillslope::laned_active::tests::trace_selector_requires_explicit_one ... ok
+test hillslope::laned_shadow::tests::day_change_commits_zero_source_day_and_finalize_commits_tail_day ... ok
+test hillslope::laned_shadow::tests::diagnostic_profile_helpers_cover_opt_in_surfaces_without_public_outputs ... ok
+test hillslope::laned_shadow::tests::dynamic_canopy_operands_reach_cell_parameters ... ok
+test hillslope::laned_shadow::tests::missing_buffered_operands_fail_closed_before_cascade ... ok
+test hillslope::laned_shadow::tests::observe_row_rejects_invalid_lane_area_and_runoff_domains ... ok
+test hillslope::laned_shadow::tests::routing_window_keeps_drain_tail_for_hour_24_source ... ok
+test hillslope::laned_shadow::tests::validate_lane_day_operands_rejects_invalid_dynamic_inputs ... ok
+test hillslope::laned_shadow_dynamic_operand_tests::laned_shadow_dynamic_operands_reject_missing_canhgt_when_lai_positive ... ok
+test hillslope::laned_shadow_dynamic_operand_tests::laned_shadow_dynamic_operands_preserve_hourly_rainfall_when_valid ... ok
+test hillslope::laned_shadow_dynamic_operand_tests::laned_shadow_dynamic_operands_reject_zero_canhgt_when_lai_positive ... ok
+test hillslope::snowbench::tests::date_continuity_accepts_leap_day_sequence ... ok
+test hillslope::laned_shadow_dynamic_operand_tests::m08_dynamic_operand_guards_preserve_index_and_priority ... ok
+test hillslope::snowbench::tests::date_continuity_rejects_invalid_calendar_day ... ok
+test hillslope::snowbench::tests::date_continuity_rejects_non_uniform_daily_step ... ok
+test hillslope::snowbench::tests::openwepp_snow_projection_uses_climate_date_for_sim_day_index ... ok
+test hillslope::snowbench_physics_bulk::tests::dry_compaction_increases_density_without_mass_drift ... ok
+test hillslope::snowbench_physics_bulk::tests::excess_liquid_release_ignores_bare_ground_rain ... ok
+test hillslope::snowbench_physics_bulk::tests::fresh_snow_density_is_bounded_and_warmer_snow_is_denser ... ok
+test hillslope::snowbench_physics_bulk::tests::named_variants_are_global_and_distinct_from_candidate_v1 ... ok
+test hillslope::erosion_tillage_scope_tests::tillage_detector_is_schedule_scoped_not_registry_scoped ... ok
+test hillslope::snowbench_physics_bulk::tests::sample_sequence_closes_mass_and_emits_daily_rows ... ok
+test hillslope::snowbench_physics_bulk::tests::wet_compaction_releases_excess_liquid_and_preserves_mass_balance ... ok
+test hillslope::snowbench_physics_bulk::tests::subfreezing_pack_refreezes_retained_liquid_using_cold_content ... ok
+test hillslope::erosion_tillage_scope_tests::lanuse_resolution_is_schedule_scoped_and_fails_closed_without_authority ... ok
+test hillslope::tests::cqr_growth_authority::cqr_growth_crop_authority_rejects_infinite_integral_date ... ok
+test hillslope::tests::cqr_laned_active_outputs::cqr_laned_active_apply_configuration_covers_inactive_active_and_profile_reset ... ok
+test hillslope::tests::cqr_laned_active_outputs::cqr_laned_active_configure_subprocess_probe ... ok
+test hillslope::tests::cqr_growth_authority::cqr_growth_crop_authority_preserves_schedule_precedence_and_integral_guards ... ok
+test hillslope::tests::cqr_growth_authority::cqr_growth_crop_authority_rejects_nan_required_scalar ... ok
+test hillslope::tests::cqr_laned_active_outputs::cqr_laned_active_summary_validation_covers_required_and_optional_states ... ok
+test hillslope::tests::cqr_laned_active_outputs::cqr_laned_active_pure_selector_decisions_cover_priority_and_configuration ... ok
+test hillslope::tests::cqr_laned_active_outputs::cqr_selector_subprocess_probe ... ok
+test hillslope::tests::cqr_laned_active_outputs::cqr_laned_active_trace_serialization_preserves_absent_detail_as_null ... ok
+test hillslope::tests::cqr_row7_no_final_frost_rebalance_covers_credit_debit_and_guards ... ok
+test hillslope::tests::cqr_row7_retained_publication_frame_validator_covers_count_and_identity_guards ... ok
+test hillslope::tests::cqr_row7_growth_crop_and_surface_litter_projection_cover_schedule_paths ... ok
+test hillslope::tests::cqr_laned_active_outputs::cqr_laned_active_trace_serialization_preserves_schema_indices_and_nested_detail ... ok
+test hillslope::tests::cqr_growth_authority::cqr_growth_crop_authority_binds_every_required_scalar_error_arm ... ok
+test hillslope::tests::cqr_row7_priestley_taylor_demand_covers_canopy_and_guard_paths ... ok
+test hillslope::tests::cqr_row7_snow_frost_insulation_helpers_cover_layered_and_sturm_paths ... ok
+test hillslope::tests::cqr_row7_sturm1995_climate_normals_cover_nominal_and_guard_paths ... ok
+test hillslope::tests::cqr_row7_snow_selector_parsers_cover_defaults_variants_and_rejections ... ok
+test hillslope::tests::hb06_wat_projection_consumes_typed_wb13_guard_and_preserves_optional_profile ... ok
+test hillslope::tests::r6b_absent_operand_detector_suppresses_marker_for_nonzero_direct_operands ... ok
+test hillslope::tests::r6a_direct_projection_consumers_read_publication_frame_operands ... ok
+test hillslope::tests::r6g_wat_hold_marker_is_reserved_for_exact_pmet_day_state_carry_fields ... ok
+test hillslope::tests::r6f_wat_hold_marker_is_reserved_for_exact_producer_gap_fields ... ok
+test hillslope::tests::r6h_wat_hold_marker_is_reserved_for_exact_pmet_layer_ulp_gap ... ok
+test hillslope::tests::r6j_direct_manifest_provenance_accepts_multiofe_direct_rows ... ok
+test hillslope::tests::r7e_runtime_selection_policy_resolves_only_direct_modes ... ok
+test hillslope::tests::r7c_direct_production_source_excludes_compatibility_entrypoints ... ok
+test hillslope::tests::cqr_laned_active_outputs::cqr_laned_active_trace_writer_rejects_invalid_numeric_values_before_output ... 
+running 1 test
+
+running 1 test
+ok
+test hillslope::tests::r7f_production_direct_uses_typed_day_input_builder ... ok
+test hillslope::tests::cqr_laned_active_outputs::cqr_laned_active_trace_writer_covers_validation_and_real_file_output ... ok
+test hillslope::tests::r6a_direct_hbp_writer_serializes_groundwater_payload_operands ... ok
+test hillslope::tests::r7h_growth_authority_selects_current_ofe_slot_not_primary_ofe ... ok
+test hillslope::tests::simimpl::simimpl09_lane_context_matches_mode_selection_tuple ... ok
+test hillslope::tests::simimpl::simimpl09_timestep_policy_scaffolds_subhourly_without_physics_enablement ... ok
+test hillslope::tests::r7g_runfile_mode_uses_sibling_snow_and_frost_sidecars ... ok
+test hillslope::tests::simimpl::simimpl11_area_derives_from_aggregate_ofe_geometry ... ok
+test hillslope::tests::same_day_frost_hydrology_layers_clear_stale_projection_and_preserve_target ... ok
+test hillslope::tests::same_day_frost_hydrology_layers_keep_stale_projection_when_frost_is_final ... ok
+test hillslope::tests::r7h_growth_authority_accepts_unambiguous_lane_local_slot ... ok
+test launch::tests::launch_argv_contains_required_explicit_args ... ok
+test hillslope::tests::typed_seed_authority_direct_setup_skips_symbol_map_seed_surface ... ok
+test release::tests::release_name_validator_rejects_invalid_patterns ... ok
+test release::tests::lint_release_directory_reports_invalid_binary_name_before_sidecar_read ... ok
+test watershed_wat::tests::aggregate_file_rows_uses_outlet_lateral_and_preserves_optional_wat_fields ... ok
+test release::tests::lint_release_directory_reports_missing_sidecar_for_candidate ... ok
+test release::tests::release_name_validator_accepts_expected_patterns ... ok
+test release::tests::lint_release_directory_reports_no_release_candidates_after_filtering ... ok
+test watershed_wat::tests::display_formats_every_watershed_wat_error_variant ... ok
+test watershed_wat::tests::optional_f64_value_treats_all_null_column_as_absent_but_rejects_mixed_nulls ... ok
+test watershed_wat::tests::column_and_scalar_guards_cover_type_null_and_nonfinite_errors ... ok
+test hillslope::tests::runner_management_intake_dispatches_canonical_yaml_path ... ok
+test watershed_wat::tests::read_batch_into_rejects_invalid_area_with_absolute_row_index ... ok
+test watershed_wat::tests::read_batch_into_reads_aliases_optional_defaults_and_row_values ... ok
+test hillslope::tests::r7g_direct_production_frost_uses_prior_snowpack_not_same_day_projection ... ok
+test hillslope::tests::snowdensity1035b_direct_snow_consumer_receives_phase_selector ... ok
+test hillslope::tests::r7f_typed_day_input_hot_loop_excludes_runtime_surface_reads ... ok
+test hillslope::tests::r7h_direct_production_winter_hourly_forcing_uses_shared_context_geometry ... ok
+test hillslope::tests::laned_shadow_consumes_live_dynamic_friction_operands ... ok
+test watershed_wat::tests::build_handles_absent_and_partial_wat_sibling_inventories ... ok
+test hillslope::tests::r7g_direct_production_hands_active_frost_context_to_r4a_without_material_gate ... ok
+test watershed_wat::tests::build_reads_wat_parquet_and_publishes_daily_rows ... ok
+test watershed_wat::tests::read_wat_file_reports_open_read_and_schema_failures ... ok
+test watershed_wat::tests::build_rejects_non_finite_aggregated_area ... ok
+test release::tests::lint_release_directory_reports_sidecar_binary_name_mismatch ... ok
+test release::tests::write_release_sidecar_reuses_fresh_sidecar_without_rewrite ... ok
+test release::tests::lint_release_directory_accepts_valid_candidates_and_ignores_non_candidates ... ok
+test release::tests::lint_release_directory_reports_hbp_pair_mismatch_after_candidate_scan ... ok
+test release::tests::write_release_sidecar_rewrites_when_binary_is_newer ... ok
+test hillslope::tests::r7g_direct_production_reads_winter_column_snow_not_runtime_carry ... ok
+test hillslope::laned_shadow::tests::runner_profile_slots_accumulate_for_routed_day ... ok
+test hillslope::tests::r7g_direct_production_reads_winter_column_frost_and_deletes_bridge ... ok
+test hillslope::laned_shadow::tests::dynamic_rainfall_intensity_changes_routed_cascade_result ... ok
+test hillslope::tests::compatibility_runtime_deletion_removes_obsolete_transition_modes ... ok
+test hillslope::laned_shadow::tests::positive_uniform_shape_day_without_routed_melt_classifies_lump_only_source ... ok
+test hillslope::laned_shadow::tests::positive_uniform_shape_day_routes_and_classifies_routed_melt_source ... ok
+test hillslope::tests::cqr_laned_active_outputs::cqr_selector_subprocess_probe ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 121 filtered out; finished in 0.08s
+
+
+running 1 test
+test hillslope::tests::cqr_laned_active_outputs::cqr_laned_active_configure_subprocess_probe ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 121 filtered out; finished in 0.23s
+
+test hillslope::tests::cqr_laned_active_outputs::cqr_laned_active_configure_wrapper_builds_authoritative_active_config_without_routing ... ok
+test hillslope::tests::cqr_laned_active_outputs::cqr_selector_subprocess_probe ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 121 filtered out; finished in 22.95s
+
+
+running 1 test
+test hillslope::tests::cqr_laned_active_outputs::cqr_selector_subprocess_probe ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 121 filtered out; finished in 0.07s
+
+test hillslope::tests::cqr_laned_active_outputs::cqr_laned_active_selectors_cover_disable_conflict_shadow_and_profile_paths ... ok
+test hillslope::tests::cqr_laned_active_outputs::cqr_execute_direct_publication_stream_runs_real_fixture_consumer ... ok
+test hillslope::tests::r7c_direct_production_executor_reports_no_day_input_compatibility_edges ... ok
+test hillslope::tests::r7e_default_candidate_activation_selects_direct_runtime_manifest ... ok
+test hillslope::tests::r7e_default_candidate_legacy_sidecar_discovery_uses_direct_manifest ... ok
+test hillslope::tests::r7e_default_candidate_uses_direct_production_manifest has been running for over 60 seconds
+test hillslope::tests::simimpl::simimpl14_contract_gate_continuous_wb13_span_and_keys has been running for over 60 seconds
+test hillslope::tests::simimpl::simimpl14_contract_gate_loss_output_is_run_span_truthful has been running for over 60 seconds
+test hillslope::tests::r7e_default_candidate_uses_direct_production_manifest ... ok
+test hillslope::tests::simimpl::simimpl14_contract_gate_loss_output_is_run_span_truthful ... ok
+test hillslope::tests::simimpl::simimpl14_contract_gate_continuous_wb13_span_and_keys ... ok
+
+test result: ok. 122 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 94.21s
+
+
+    Finished report saved to docs/work-packages/cqr-pre-integration-campaign-evidence/medium/modules/M-08-evidence/focused.lcov

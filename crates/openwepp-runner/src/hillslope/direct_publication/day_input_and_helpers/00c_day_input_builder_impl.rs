@@ -1214,4 +1214,126 @@ mod laned_shadow_dynamic_operand_tests {
         assert_eq!(operands.leaf_area_index.to_bits(), 0.0_f64.to_bits());
         assert_eq!(operands.canopy_height_m.to_bits(), 0.0_f64.to_bits());
     }
+
+    #[test]
+    fn m08_dynamic_operand_guards_preserve_index_and_priority() {
+        let mut invalid_rain = [0.0; 24];
+        invalid_rain[4] = f64::NAN;
+        let mut invalid_melt = [0.0; 24];
+        invalid_melt[6] = -0.25;
+
+        let detail = dynamic_operand_error_detail(build_laned_shadow_lane_day_operands(
+            1,
+            2,
+            invalid_rain,
+            invalid_melt,
+            -0.5,
+            Some(f64::NAN),
+        ));
+        assert_eq!(
+            detail,
+            format!(
+                "{SIMOUT_GUARD_ID} Lane D shadow requires finite nonnegative post-growth LAI for lane 2 day 3, observed -0.5"
+            )
+        );
+
+        let detail = dynamic_operand_error_detail(build_laned_shadow_lane_day_operands(
+            1,
+            2,
+            invalid_rain,
+            invalid_melt,
+            0.0,
+            None,
+        ));
+        assert_eq!(
+            detail,
+            format!(
+                "{SIMOUT_GUARD_ID} Lane D shadow requires finite nonnegative WB14 hourly rainfall for lane 2 day 3 hour 5, observed NaN"
+            )
+        );
+
+        for invalid_lai in [f64::NAN, -0.25, f64::INFINITY, f64::NEG_INFINITY] {
+            let detail = dynamic_operand_error_detail(build_laned_shadow_lane_day_operands(
+                1,
+                2,
+                [0.0; 24],
+                [0.0; 24],
+                invalid_lai,
+                Some(1.0),
+            ));
+            assert_eq!(
+                detail,
+                format!(
+                    "{SIMOUT_GUARD_ID} Lane D shadow requires finite nonnegative post-growth LAI for lane 2 day 3, observed {invalid_lai}"
+                )
+            );
+        }
+
+        for invalid_rainfall in [f64::NAN, -0.25, f64::INFINITY, f64::NEG_INFINITY] {
+            let mut rainfall = [0.0; 24];
+            rainfall[4] = invalid_rainfall;
+            let detail = dynamic_operand_error_detail(build_laned_shadow_lane_day_operands(
+                1,
+                2,
+                rainfall,
+                [0.0; 24],
+                0.0,
+                None,
+            ));
+            assert_eq!(
+                detail,
+                format!(
+                    "{SIMOUT_GUARD_ID} Lane D shadow requires finite nonnegative WB14 hourly rainfall for lane 2 day 3 hour 5, observed {invalid_rainfall}"
+                )
+            );
+        }
+
+        for invalid_routed_melt in [f64::NAN, -0.25, f64::INFINITY, f64::NEG_INFINITY] {
+            let mut routed_melt = [0.0; 24];
+            routed_melt[6] = invalid_routed_melt;
+            let detail = dynamic_operand_error_detail(build_laned_shadow_lane_day_operands(
+                1,
+                2,
+                [0.0; 24],
+                routed_melt,
+                0.0,
+                Some(f64::NAN),
+            ));
+            assert_eq!(
+                detail,
+                format!(
+                    "{SIMOUT_GUARD_ID} Lane D shadow requires finite nonnegative hourly routed melt for lane 2 day 3 hour 7, observed {invalid_routed_melt}"
+                )
+            );
+        }
+
+        for invalid_height in [f64::NAN, -0.25, f64::INFINITY, f64::NEG_INFINITY] {
+            let detail = dynamic_operand_error_detail(build_laned_shadow_lane_day_operands(
+                1,
+                2,
+                [0.0; 24],
+                [0.0; 24],
+                1.0,
+                Some(invalid_height),
+            ));
+            assert_eq!(
+                detail,
+                format!(
+                    "{SIMOUT_GUARD_ID} Lane D shadow post-growth canhgt must be finite and nonnegative for lane 2, observed {invalid_height}"
+                )
+            );
+        }
+
+        let operands = build_laned_shadow_lane_day_operands(
+            1,
+            2,
+            [0.0; 24],
+            [0.0; 24],
+            1.25,
+            Some(0.75),
+        )
+        .expect("finite positive vegetation operands must pass");
+        assert_eq!(operands.leaf_area_index.to_bits(), 1.25_f64.to_bits());
+        assert_eq!(operands.canopy_height_m.to_bits(), 0.75_f64.to_bits());
+    }
 }

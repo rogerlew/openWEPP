@@ -69,7 +69,9 @@ implementation diff.
   the target to 90% regions and CRAP 25.625.
 - [x] (2026-07-13 UTC) Record the second quick checkpoint: PASS, 1,833/1,833
   tests, 28 skipped, 3 slow, 2:46.71 elapsed, peak RSS 796,380 KiB.
-- [ ] Execute or disposition M-08 through its terminal record.
+- [x] (2026-07-13 UTC) Execute tests-only M-08 dynamic operands through
+  `MODULE-PASS`: exhaustive finite/nonnegative priority reaches 100% target
+  regions and CRAP 16, with real routing/canopy/melt and anti-alias consumers.
 - [ ] Execute or disposition M-09 through its terminal record.
 - [ ] Execute or disposition M-10 through its terminal record.
 - [ ] Execute or disposition M-11 through its terminal record.

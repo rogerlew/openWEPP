@@ -1,0 +1,17 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.10s
+────────────
+ Nextest run ID 39200f7f-3f7d-4679-be9f-6102f3fd3d8d with nextest profile: default
+    Starting 9 tests across 1 binary (113 tests skipped)
+────────────
+     Summary [   0.072s] 9 tests run: 9 passed, 113 skipped
+Command: cargo nextest run -p openwepp-runner --lib -E 'test(/m08_dynamic_operand|laned_shadow_dynamic_operands_|dynamic_rainfall_intensity_changes_routed_cascade_result|dynamic_canopy_operands_reach_cell_parameters|positive_uniform_shape_day_(routes_and_classifies_routed_melt_source|without_routed_melt_classifies_lump_only_source)|laned_shadow_consumes_live_dynamic_friction_operands/)'
+Selected tests:
+- hillslope::laned_shadow::tests::dynamic_canopy_operands_reach_cell_parameters
+- hillslope::laned_shadow::tests::dynamic_rainfall_intensity_changes_routed_cascade_result
+- hillslope::laned_shadow::tests::positive_uniform_shape_day_routes_and_classifies_routed_melt_source
+- hillslope::laned_shadow::tests::positive_uniform_shape_day_without_routed_melt_classifies_lump_only_source
+- hillslope::laned_shadow_dynamic_operand_tests::laned_shadow_dynamic_operands_preserve_hourly_rainfall_when_valid
+- hillslope::laned_shadow_dynamic_operand_tests::laned_shadow_dynamic_operands_reject_missing_canhgt_when_lai_positive
+- hillslope::laned_shadow_dynamic_operand_tests::laned_shadow_dynamic_operands_reject_zero_canhgt_when_lai_positive
+- hillslope::laned_shadow_dynamic_operand_tests::m08_dynamic_operand_guards_preserve_index_and_priority
+- hillslope::tests::laned_shadow_consumes_live_dynamic_friction_operands

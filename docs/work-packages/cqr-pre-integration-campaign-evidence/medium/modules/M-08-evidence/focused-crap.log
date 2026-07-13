@@ -1,0 +1,13 @@
+warning: 12 source files had no matching entry in the LCOV report — verify your --lcov path or coverage tool configuration:
+  crates/openwepp-runner/src/bin/open_wepp_runner.rs
+  crates/openwepp-runner/src/bin/openwepp-cli-hill.rs
+  crates/openwepp-runner/src/bin/openwepp-cli-totalwatsed3.rs
+  crates/openwepp-runner/src/bin/openwepp-cli-watershed.rs
+  crates/openwepp-runner/src/bin/openwepp-snowbench.rs
+  crates/openwepp-runner/tests/mt3_hbp_hourly_consumer_contract.rs
+  crates/openwepp-runner/tests/simimpl04_runner_kernel_execution_contract.rs
+  crates/openwepp-runner/tests/simimpl04_wb13_publication_contract.rs
+  crates/openwepp-runner/tests/simimpl04_wepp_ui_mode_closure_contract.rs
+  crates/openwepp-runner/tests/totalwatsed3_cli_contract.rs
+  crates/openwepp-runner/tests/watershed_cli_behavior_contract.rs
+  crates/openwepp-runner/tests/wshedw10_chaninp_absent_default_contract.rs
