@@ -1032,8 +1032,8 @@ mod tests {
         .expect("valid canopy series must parse");
 
         assert_eq!(rows.len(), 2);
-        assert_eq!(rows["2020-01-01"], 0.0);
-        assert_eq!(rows["2020-01-02"], 1.0);
+        assert!(rows["2020-01-01"].abs() <= f64::EPSILON);
+        assert!((rows["2020-01-02"] - 1.0).abs() <= f64::EPSILON);
     }
 
     #[test]
@@ -1115,9 +1115,9 @@ mod tests {
         assert!((row.snow_water_m - 0.000_5).abs() < 1e-12);
         assert!((row.snowfall_depth_m - 0.005).abs() < 1e-12);
         assert!((row.radiation_mj_m2 - 0.45).abs() < 1e-12);
-        assert_eq!(row.air_temperature_c, -5.0);
+        assert!((row.air_temperature_c + 5.0).abs() <= f64::EPSILON);
         assert!((0.0..=1.0).contains(&row.cloud_fraction));
         assert!(row.dewpoint_c.is_finite());
-        assert_eq!(row.wind_m_s, 2.0);
+        assert!((row.wind_m_s - 2.0).abs() <= f64::EPSILON);
     }
 }

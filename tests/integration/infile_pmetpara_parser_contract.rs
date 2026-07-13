@@ -9,6 +9,7 @@ fn fixture_path(name: &str) -> PathBuf {
 }
 
 #[test]
+#[allow(clippy::too_many_lines)]
 fn pmetpara_error_display_preserves_all_contract_identities() {
     let cases = [
         (
