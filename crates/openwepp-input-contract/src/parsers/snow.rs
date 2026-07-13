@@ -476,3 +476,240 @@ fn enforce_invariants(output: &SnowParseOutput, mode: ParseMode) -> Result<(), S
 
     Ok(())
 }
+
+#[cfg(test)]
+mod m03_tests {
+    use super::*;
+
+    fn present_output() -> SnowParseOutput {
+        SnowParseOutput {
+            sidecar_present: true,
+            defaults_applied: false,
+            rst: DEFAULT_RST,
+            newsnw: DEFAULT_NEWSNW,
+            ssd: DEFAULT_SSD,
+            surplus_record_count: 0,
+            trailing_token_lines: Vec::new(),
+            prefix_variant_detected: false,
+            warnings: Vec::new(),
+        }
+    }
+
+    #[test]
+    fn error_display_ids_and_sources_are_exact() {
+        let errors = [
+            SnowParseError::Io {
+                path: PathBuf::from("snow.txt"),
+                source: std::io::Error::new(std::io::ErrorKind::PermissionDenied, "denied"),
+            },
+            SnowParseError::TokenParseError {
+                line: 2,
+                field: "newsnw",
+                token: "bad".to_string(),
+            },
+            SnowParseError::MissingRecordError {
+                expected: 3,
+                found: 2,
+            },
+            SnowParseError::NonFiniteError {
+                line: 1,
+                field: "rst",
+            },
+            SnowParseError::FieldRangeError {
+                line: 3,
+                field: "ssd",
+                value: 0.0,
+            },
+            SnowParseError::InvariantViolation {
+                line: 0,
+                context: "context",
+            },
+            SnowParseError::StrictSurplusRecordError { surplus: 2 },
+            SnowParseError::StrictTrailingTokenError {
+                line: 1,
+                field: "rst",
+            },
+            SnowParseError::UnsupportedPrefixVariantError {
+                line: 1,
+                token: "v1".to_string(),
+            },
+        ];
+        let expected = [
+            "SNOW-E-000 failed to read snow sidecar 'snow.txt': denied",
+            "SNOW-E-001 line 2: failed to parse 'newsnw' from token 'bad'",
+            "SNOW-E-002 missing record closure: expected 3, found 2",
+            "SNOW-E-003 line 1: non-finite value in field 'rst'",
+            "SNOW-E-004 line 3: value '0' violates domain for 'ssd'",
+            "SNOW-E-005 line 0: invariant violation: context",
+            "SNOW-E-006 strict-mode surplus record count '2'",
+            "SNOW-E-007 line 1: strict-mode trailing token in 'rst'",
+            "SNOW-E-008 line 1: unsupported prefix/version-like leading token 'v1'",
+        ];
+
+        for (error, expected) in errors.iter().zip(expected) {
+            assert_eq!(error.to_string(), expected);
+        }
+        assert!(errors[0].source().is_some());
+        for error in &errors[1..] {
+            assert!(error.source().is_none());
+        }
+    }
+
+    #[test]
+    fn warning_codes_and_messages_are_exact() {
+        for (code, expected) in [
+            (SnowWarningCode::SnowW001, "SNOW-W-001"),
+            (SnowWarningCode::SnowW002, "SNOW-W-002"),
+            (SnowWarningCode::SnowW003, "SNOW-W-003"),
+        ] {
+            assert_eq!(code.as_str(), expected);
+            assert_eq!(code.to_string(), expected);
+        }
+
+        let missing = default_output(ParseMode::Compatibility);
+        assert_eq!(
+            missing.warnings[0].message,
+            "missing snow sidecar default branch applied"
+        );
+        let compatible = parse_snow_from_str(
+            "0 1\n100\n250\n999\n",
+            SnowParseOptions {
+                mode: ParseMode::Compatibility,
+            },
+        )
+        .unwrap();
+        assert_eq!(
+            compatible.warnings[0].message,
+            "trailing tokens accepted in compatibility mode"
+        );
+        assert_eq!(
+            compatible.warnings[1].message,
+            "surplus snow records ignored in compatibility mode"
+        );
+    }
+
+    #[test]
+    fn invariant_branches_and_combined_invalid_priority_are_exact() {
+        type InvariantCase = (fn(&mut SnowParseOutput), ParseMode, &'static str);
+
+        let valid = present_output();
+        assert!(enforce_invariants(&valid, ParseMode::Strict).is_ok());
+        let cases: [InvariantCase; 5] = [
+            (
+                |row| {
+                    row.sidecar_present = false;
+                    row.defaults_applied = false;
+                    row.prefix_variant_detected = true;
+                },
+                ParseMode::Strict,
+                "missing-file branch must set defaults_applied=true",
+            ),
+            (
+                |row| row.defaults_applied = true,
+                ParseMode::Strict,
+                "present-file branch must set defaults_applied=false",
+            ),
+            (
+                |row| row.surplus_record_count = 1,
+                ParseMode::Strict,
+                "strict mode cannot export surplus_record_count>0",
+            ),
+            (
+                |row| row.trailing_token_lines.push(1),
+                ParseMode::Strict,
+                "strict mode cannot export trailing_token_lines",
+            ),
+            (
+                |row| row.prefix_variant_detected = true,
+                ParseMode::Compatibility,
+                "prefix_variant_detected=true must reject parse path",
+            ),
+        ];
+        for (mutate, mode, expected) in cases {
+            let mut row = valid.clone();
+            mutate(&mut row);
+            assert!(matches!(
+                enforce_invariants(&row, mode),
+                Err(SnowParseError::InvariantViolation { line: 0, context }) if context == expected
+            ));
+        }
+    }
+
+    #[test]
+    fn finite_and_range_error_order_is_exact() {
+        for (input, expected_line, expected_field) in [
+            ("NaN\nNaN\nNaN\n", 1, "rst"),
+            ("0\nNaN\nNaN\n", 2, "newsnw"),
+            ("0\n100\nNaN\n", 3, "ssd"),
+        ] {
+            assert!(matches!(
+                parse_snow_from_str(input, SnowParseOptions::default()),
+                Err(SnowParseError::NonFiniteError { line, field })
+                    if line == expected_line && field == expected_field
+            ));
+        }
+        for (input, expected_line, expected_field) in
+            [("0\n0\n0\n", 2, "newsnw"), ("0\n100\n0\n", 3, "ssd")]
+        {
+            assert!(matches!(
+                parse_snow_from_str(input, SnowParseOptions::default()),
+                Err(SnowParseError::FieldRangeError { line, field, .. })
+                    if line == expected_line && field == expected_field
+            ));
+        }
+    }
+
+    #[test]
+    fn private_token_and_prefix_boundaries_are_characterized() {
+        let line = |number, text| LocatedLine { number, text };
+        assert!(!detect_prefix_variant(&[
+            line(1, "header"),
+            line(2, "1"),
+            line(3, "2"),
+        ]));
+        assert!(!detect_prefix_variant(&[
+            line(1, "0"),
+            line(2, "1"),
+            line(3, "2"),
+            line(4, "3"),
+        ]));
+        assert!(detect_prefix_variant(&[
+            line(1, "version"),
+            line(2, "1"),
+            line(3, "2"),
+            line(4, "3"),
+        ]));
+        assert!(!detect_prefix_variant(&[
+            line(1, "version"),
+            line(2, "bad"),
+            line(3, "2"),
+            line(4, "3"),
+        ]));
+
+        assert_eq!(parse_first_token_f64("1 trailing"), Some(1.0));
+        assert_eq!(parse_first_token_f64("bad"), None);
+        assert_eq!(parse_first_token_f64(""), None);
+
+        let mut output = present_output();
+        assert!(matches!(
+            parse_canonical_scalar(
+                &line(7, "1 trailing"),
+                "rst",
+                ParseMode::Strict,
+                &mut output,
+            ),
+            Err(SnowParseError::StrictTrailingTokenError {
+                line: 7,
+                field: "rst"
+            })
+        ));
+        assert!(matches!(
+            parse_canonical_scalar(&line(8, "bad"), "rst", ParseMode::Strict, &mut output,),
+            Err(SnowParseError::TokenParseError {
+                line: 8,
+                field: "rst",
+                ..
+            })
+        ));
+    }
+}

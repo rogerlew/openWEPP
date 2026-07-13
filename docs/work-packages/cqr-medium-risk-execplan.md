@@ -50,7 +50,9 @@ implementation diff.
 - [x] (2026-07-13 UTC) Execute M-02 groundwater-coefficient invariants through
   `MODULE-PASS`: combined-invalid cases bind exact guard priority and
   target/helper CRAP is 3/7/8 at 100% region coverage.
-- [ ] Execute or disposition M-03 through its terminal record.
+- [x] (2026-07-13 UTC) Execute tests-only M-03 snow-parser closure through
+  `MODULE-PASS`: both live targets reach 100% region coverage and CRAP 10,
+  focused file coverage exceeds 91%, and durable metrics plus consumers pass.
 - [ ] Execute or disposition M-04 through its terminal record.
 - [ ] Execute or disposition M-05 through its terminal record.
 - [ ] Execute or disposition M-06 through its terminal record.
