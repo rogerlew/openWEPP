@@ -1264,3 +1264,302 @@ pub(crate) fn legacy_class_map(
 pub(crate) fn is_legacy_source_datver(datver: &str) -> bool {
     is_legacy_datver(datver)
 }
+
+#[cfg(test)]
+mod m11_tests {
+    use std::error::Error as _;
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    use super::*;
+
+    fn temp_dir(label: &str) -> PathBuf {
+        let nanos = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("system time must be after epoch")
+            .as_nanos();
+        let path = std::env::temp_dir().join(format!(
+            "openwepp-landuse-migrate-m11-{label}-{}-{nanos}",
+            std::process::id()
+        ));
+        fs::create_dir_all(&path).expect("M-11 temp directory should be created");
+        path
+    }
+
+    fn assignment(disturbed_class: &str) -> DisturbedClassAssignment {
+        DisturbedClassAssignment {
+            disturbed_class: disturbed_class.to_string(),
+        }
+    }
+
+    #[test]
+    fn m11_all_error_displays_sources_and_yaml_conversion_are_stable() {
+        let displays = vec![
+            (
+                LanduseMigrationError::InputParse {
+                    path: PathBuf::from("input.man"),
+                    detail: "bad token".to_string(),
+                },
+                "LANDUSE-MIGRATE-E-001: unable to parse input.man: bad token",
+                false,
+            ),
+            (
+                LanduseMigrationError::ManagementYaml {
+                    detail: "bad yaml".to_string(),
+                },
+                "LANDUSE-MIGRATE-E-002: invalid management YAML: bad yaml",
+                false,
+            ),
+            (
+                LanduseMigrationError::UnsupportedTarget {
+                    target: "future".to_string(),
+                },
+                "LANDUSE-MIGRATE-E-003: unsupported target future; supported targets are ow-lanuse-1 and latest",
+                false,
+            ),
+            (
+                LanduseMigrationError::UnsupportedSourceDatver {
+                    datver: "old".to_string(),
+                },
+                "LANDUSE-MIGRATE-E-004: unsupported source datver old for this migration",
+                false,
+            ),
+            (
+                LanduseMigrationError::UnsupportedSourceLanduse {
+                    detail: "range".to_string(),
+                },
+                "LANDUSE-MIGRATE-E-005: unsupported source landuse: range",
+                false,
+            ),
+            (
+                LanduseMigrationError::MissingMigrationAuthority {
+                    site: "plant_index=1".to_string(),
+                },
+                "LANDUSE-MIGRATE-E-006: missing disturbed-class authority for plant_index=1; run --args-for-migration-to ow-lanuse-1",
+                false,
+            ),
+            (
+                LanduseMigrationError::UnknownDisturbedClass {
+                    disturbed_class: "unknown".to_string(),
+                },
+                "LANDUSE-MIGRATE-E-007: unknown disturbed class \"unknown\"",
+                false,
+            ),
+            (
+                LanduseMigrationError::InvalidRouteCoefficientRow {
+                    disturbed_class: "bare".to_string(),
+                    detail: "negative k".to_string(),
+                },
+                "LANDUSE-MIGRATE-E-008: invalid route coefficient row for \"bare\": negative k",
+                false,
+            ),
+            (
+                LanduseMigrationError::ClassMapConflict {
+                    site: "plant_index=1".to_string(),
+                    classes: vec!["bare".to_string(), "forest".to_string()],
+                },
+                "LANDUSE-MIGRATE-E-009: conflicting disturbed classes for plant_index=1: bare, forest",
+                false,
+            ),
+            (
+                LanduseMigrationError::PartialClassMap {
+                    missing_sites: vec!["plant=1".to_string(), "plant=2".to_string()],
+                },
+                "LANDUSE-MIGRATE-E-010: partial class map; missing disturbed classes for plant=1; plant=2",
+                false,
+            ),
+            (
+                LanduseMigrationError::NativeMissingRoutingCoefficients {
+                    plant_index: 2,
+                    plant_name: "Pine".to_string(),
+                },
+                "LANDUSE-MIGRATE-E-011: native source plant 2 (Pine) is missing routing_coefficients",
+                false,
+            ),
+            (
+                LanduseMigrationError::InvalidStructuredFile {
+                    path: PathBuf::from("args.json"),
+                    detail: "bad json".to_string(),
+                },
+                "LANDUSE-MIGRATE-E-012: invalid structured file args.json: bad json",
+                false,
+            ),
+            (
+                LanduseMigrationError::InvalidOutputExtension {
+                    path: PathBuf::from("output.yml"),
+                },
+                "LANDUSE-MIGRATE-E-013: producer output path must end in lowercase .yaml: output.yml",
+                false,
+            ),
+            (
+                LanduseMigrationError::OutputExists {
+                    path: PathBuf::from("output.yaml"),
+                },
+                "LANDUSE-MIGRATE-E-014: output path already exists and --force is not supported: output.yaml",
+                false,
+            ),
+            (
+                LanduseMigrationError::Io {
+                    action: "read",
+                    path: PathBuf::from("args.json"),
+                    source: io::Error::new(io::ErrorKind::PermissionDenied, "denied"),
+                },
+                "LANDUSE-MIGRATE-E-015: failed to read args.json: denied",
+                true,
+            ),
+            (
+                LanduseMigrationError::InvalidCommand {
+                    detail: "bad flag".to_string(),
+                },
+                "LANDUSE-MIGRATE-E-016: bad flag",
+                false,
+            ),
+        ];
+
+        assert_eq!(displays.len(), 16);
+        for (error, expected, has_source) in displays {
+            assert_eq!(error.to_string(), expected);
+            assert_eq!(error.source().is_some(), has_source, "{expected}");
+        }
+
+        let converted =
+            LanduseMigrationError::from(management_yaml::ManagementYamlError::MissingField {
+                path: "plants[0].routing_coefficients".to_string(),
+            });
+        assert_eq!(
+            converted.to_string(),
+            "LANDUSE-MIGRATE-E-002: invalid management YAML: MAN-YAML-E-008: missing plants[0].routing_coefficients",
+        );
+        assert!(converted.source().is_none());
+    }
+
+    #[test]
+    fn m11_authority_from_files_merges_in_declared_order() {
+        let dir = temp_dir("authority-success");
+        let args_path = dir.join("args.json");
+        fs::write(
+            &args_path,
+            r#"{"target":"latest","disturbed_class":"agriculture crops","disturbed_class_map":{"plant_index":{"1":{"disturbed_class":"bare"}}}}"#,
+        )
+        .expect("args file should write");
+        let map_path = dir.join("map.json");
+        fs::write(
+            &map_path,
+            r#"{"plant_index":{"1":{"disturbed_class":"bare"}},"ofe_index":{"2":{"disturbed_class":"forest"}}}"#,
+        )
+        .expect("class map should write");
+
+        let initial = MigrationAuthority {
+            disturbed_class: Some("agriculture crops".to_string()),
+            disturbed_class_map: ClassMap::default(),
+        };
+        assert_eq!(
+            authority_from_files(initial.clone(), None, None).unwrap(),
+            initial
+        );
+
+        let merged = authority_from_files(initial, Some(&args_path), Some(&map_path))
+            .expect("agreeing authority files should merge");
+        assert_eq!(merged.disturbed_class.as_deref(), Some("agriculture crops"));
+        assert_eq!(
+            merged.disturbed_class_map.plant_index.get(&1),
+            Some(&assignment("bare")),
+        );
+        assert_eq!(
+            merged.disturbed_class_map.ofe_index.get(&2),
+            Some(&assignment("forest")),
+        );
+    }
+
+    #[test]
+    fn m11_authority_from_files_conflicts_preserve_precedence() {
+        let dir = temp_dir("authority-conflict");
+        let args_path = dir.join("args.json");
+        fs::write(
+            &args_path,
+            r#"{"disturbed_class":"agriculture crops","disturbed_class_map":{"plant_index":{"1":{"disturbed_class":"bare"}}}}"#,
+        )
+        .expect("args file should write");
+        let map_path = dir.join("map.json");
+        fs::write(
+            &map_path,
+            r#"{"plant_index":{"1":{"disturbed_class":"forest"}}}"#,
+        )
+        .expect("class map should write");
+
+        let global_conflict = authority_from_files(
+            MigrationAuthority {
+                disturbed_class: Some("bare".to_string()),
+                disturbed_class_map: ClassMap::default(),
+            },
+            Some(&args_path),
+            Some(&map_path),
+        )
+        .unwrap_err();
+        assert!(matches!(
+            global_conflict,
+            LanduseMigrationError::ClassMapConflict { ref site, ref classes }
+                if site == "disturbed_class"
+                    && classes == &["bare".to_string(), "agriculture crops".to_string()]
+        ));
+
+        let file_conflict = authority_from_files(
+            MigrationAuthority::default(),
+            Some(&args_path),
+            Some(&map_path),
+        )
+        .unwrap_err();
+        assert!(matches!(
+            file_conflict,
+            LanduseMigrationError::ClassMapConflict { ref site, ref classes }
+                if site == "plant_index=1"
+                    && classes == &["bare".to_string(), "forest".to_string()]
+        ));
+    }
+
+    #[test]
+    fn m11_authority_from_files_reports_the_first_malformed_stage() {
+        let dir = temp_dir("authority-malformed");
+        let missing_args = dir.join("missing-args.json");
+        let malformed_args = dir.join("malformed-args.json");
+        fs::write(&malformed_args, "{").expect("malformed args should write");
+        let valid_args = dir.join("valid-args.json");
+        fs::write(&valid_args, r#"{"disturbed_class":"bare"}"#).expect("valid args should write");
+        let malformed_map = dir.join("malformed-map.json");
+        fs::write(&malformed_map, "{").expect("malformed map should write");
+
+        let missing = authority_from_files(
+            MigrationAuthority::default(),
+            Some(&missing_args),
+            Some(&malformed_map),
+        )
+        .unwrap_err();
+        assert!(matches!(
+            missing,
+            LanduseMigrationError::Io { ref path, .. } if path == &missing_args
+        ));
+
+        let malformed_first = authority_from_files(
+            MigrationAuthority::default(),
+            Some(&malformed_args),
+            Some(&malformed_map),
+        )
+        .unwrap_err();
+        assert!(matches!(
+            malformed_first,
+            LanduseMigrationError::InvalidStructuredFile { ref path, .. }
+                if path == &malformed_args
+        ));
+
+        let malformed_second = authority_from_files(
+            MigrationAuthority::default(),
+            Some(&valid_args),
+            Some(&malformed_map),
+        )
+        .unwrap_err();
+        assert!(matches!(
+            malformed_second,
+            LanduseMigrationError::InvalidStructuredFile { ref path, .. }
+                if path == &malformed_map
+        ));
+    }
+}

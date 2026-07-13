@@ -81,7 +81,9 @@ implementation diff.
   helper at CRAP 4 with 100% coverage; named science consumers pass 17/17.
 - [x] (2026-07-13 UTC) Record the third quick checkpoint: PASS, 1,835/1,835
   tests, 28 skipped, 3 slow, 2:39.63 elapsed, peak RSS 797,984 KiB.
-- [ ] Execute or disposition M-11 through its terminal record.
+- [x] (2026-07-13 UTC) Execute tests-only M-11 landuse migration through
+  `MODULE-PASS`: all 16 stable error surfaces and public file-authority order
+  reach 100% coverage and CRAP 17/7, with real CLI agreement consumers.
 - [ ] Execute or disposition M-12 through its terminal record.
 - [ ] Execute or disposition M-13 through its terminal record.
 - [ ] Run the tranche-final fresh rerank, dual verification, and transition Low/Assessment.
