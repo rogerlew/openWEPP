@@ -47,7 +47,9 @@ implementation diff.
 - [x] (2026-07-13 UTC) Execute M-01 climate parser through `MODULE-PASS`:
   31 focused consumer/parser tests pass, file line coverage is 95.659%, and
   all target/extracted helpers are above the floor with CRAP at most 21.000.
-- [ ] Execute or disposition M-02 through its terminal record.
+- [x] (2026-07-13 UTC) Execute M-02 groundwater-coefficient invariants through
+  `MODULE-PASS`: combined-invalid cases bind exact guard priority and
+  target/helper CRAP is 3/7/8 at 100% region coverage.
 - [ ] Execute or disposition M-03 through its terminal record.
 - [ ] Execute or disposition M-04 through its terminal record.
 - [ ] Execute or disposition M-05 through its terminal record.

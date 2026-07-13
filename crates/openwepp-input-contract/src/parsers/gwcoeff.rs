@@ -431,55 +431,59 @@ fn enforce_namespace_guard(context: GwcoeffCrossFileContext) -> Result<(), Gwcoe
 
 fn enforce_result_invariants(result: &GwcoeffFile) -> Result<(), GwcoeffParseError> {
     match result.parse_outcome {
-        GwcoeffParseOutcome::MissingBranch => {
-            if result.lr_bf != 0 {
-                return Err(GwcoeffParseError::InvariantViolation {
-                    detail: "missing_branch requires lr_bf=0",
-                });
-            }
-            if result.gwcoeff_file_present {
-                return Err(GwcoeffParseError::InvariantViolation {
-                    detail: "missing_branch requires gwcoeff_file_present=false",
-                });
-            }
-            if result.igwstrd.is_some()
-                || result.bfcoeff.is_some()
-                || result.dscoeff.is_some()
-                || result.bftharea.is_some()
-            {
-                return Err(GwcoeffParseError::InvariantViolation {
-                    detail: "missing_branch forbids implicit coefficient defaults",
-                });
-            }
-        }
-        GwcoeffParseOutcome::ParsedBranch => {
-            if result.lr_bf != 1 {
-                return Err(GwcoeffParseError::InvariantViolation {
-                    detail: "parsed_branch requires lr_bf=1",
-                });
-            }
-            if !result.gwcoeff_file_present {
-                return Err(GwcoeffParseError::InvariantViolation {
-                    detail: "parsed_branch requires gwcoeff_file_present=true",
-                });
-            }
-            if result.igwstrd.is_none()
-                || result.bfcoeff.is_none()
-                || result.dscoeff.is_none()
-                || result.bftharea.is_none()
-            {
-                return Err(GwcoeffParseError::InvariantViolation {
-                    detail: "parsed_branch requires all 4 coefficient fields",
-                });
-            }
-            if !result.line_count_closed {
-                return Err(GwcoeffParseError::InvariantViolation {
-                    detail: "parsed_branch requires line_count_closed=true",
-                });
-            }
-        }
+        GwcoeffParseOutcome::MissingBranch => validate_missing_branch(result),
+        GwcoeffParseOutcome::ParsedBranch => validate_parsed_branch(result),
     }
+}
 
+fn validate_missing_branch(result: &GwcoeffFile) -> Result<(), GwcoeffParseError> {
+    if result.lr_bf != 0 {
+        return Err(GwcoeffParseError::InvariantViolation {
+            detail: "missing_branch requires lr_bf=0",
+        });
+    }
+    if result.gwcoeff_file_present {
+        return Err(GwcoeffParseError::InvariantViolation {
+            detail: "missing_branch requires gwcoeff_file_present=false",
+        });
+    }
+    if result.igwstrd.is_some()
+        || result.bfcoeff.is_some()
+        || result.dscoeff.is_some()
+        || result.bftharea.is_some()
+    {
+        return Err(GwcoeffParseError::InvariantViolation {
+            detail: "missing_branch forbids implicit coefficient defaults",
+        });
+    }
+    Ok(())
+}
+
+fn validate_parsed_branch(result: &GwcoeffFile) -> Result<(), GwcoeffParseError> {
+    if result.lr_bf != 1 {
+        return Err(GwcoeffParseError::InvariantViolation {
+            detail: "parsed_branch requires lr_bf=1",
+        });
+    }
+    if !result.gwcoeff_file_present {
+        return Err(GwcoeffParseError::InvariantViolation {
+            detail: "parsed_branch requires gwcoeff_file_present=true",
+        });
+    }
+    if result.igwstrd.is_none()
+        || result.bfcoeff.is_none()
+        || result.dscoeff.is_none()
+        || result.bftharea.is_none()
+    {
+        return Err(GwcoeffParseError::InvariantViolation {
+            detail: "parsed_branch requires all 4 coefficient fields",
+        });
+    }
+    if !result.line_count_closed {
+        return Err(GwcoeffParseError::InvariantViolation {
+            detail: "parsed_branch requires line_count_closed=true",
+        });
+    }
     Ok(())
 }
 
@@ -514,4 +518,105 @@ fn prefixed_variant_detected(lines: &[(usize, &str)]) -> bool {
             .next()
             .is_some_and(|token| token.parse::<f64>().is_ok())
     })
+}
+
+#[cfg(test)]
+mod m02_tests {
+    use super::*;
+
+    #[test]
+    fn invariant_error_priority_is_characterized() {
+        let missing = build_missing_branch(GwcoeffOpenResult::Missing);
+        assert!(enforce_result_invariants(&missing).is_ok());
+        for (mutate, expected_detail) in [
+            (
+                (|row: &mut GwcoeffFile| row.lr_bf = 1) as fn(&mut GwcoeffFile),
+                "missing_branch requires lr_bf=0",
+            ),
+            (
+                |row: &mut GwcoeffFile| row.gwcoeff_file_present = true,
+                "missing_branch requires gwcoeff_file_present=false",
+            ),
+            (
+                |row: &mut GwcoeffFile| row.bfcoeff = Some(0.1),
+                "missing_branch forbids implicit coefficient defaults",
+            ),
+        ] {
+            let mut row = missing.clone();
+            mutate(&mut row);
+            assert!(matches!(
+                enforce_result_invariants(&row),
+                Err(GwcoeffParseError::InvariantViolation { detail }) if detail == expected_detail
+            ));
+        }
+
+        let mut missing_priority = missing.clone();
+        missing_priority.lr_bf = 1;
+        missing_priority.gwcoeff_file_present = true;
+        missing_priority.bfcoeff = Some(0.1);
+        assert_invariant_detail(&missing_priority, "missing_branch requires lr_bf=0");
+        missing_priority.lr_bf = 0;
+        assert_invariant_detail(
+            &missing_priority,
+            "missing_branch requires gwcoeff_file_present=false",
+        );
+
+        let parsed =
+            parse_present_content("200\n0.04\n0\n1\n", GwcoeffParseOptions::strict()).unwrap();
+        assert!(enforce_result_invariants(&parsed).is_ok());
+        for (mutate, expected_detail) in [
+            (
+                (|row: &mut GwcoeffFile| row.lr_bf = 0) as fn(&mut GwcoeffFile),
+                "parsed_branch requires lr_bf=1",
+            ),
+            (
+                |row: &mut GwcoeffFile| row.gwcoeff_file_present = false,
+                "parsed_branch requires gwcoeff_file_present=true",
+            ),
+            (
+                |row: &mut GwcoeffFile| row.bftharea = None,
+                "parsed_branch requires all 4 coefficient fields",
+            ),
+            (
+                |row: &mut GwcoeffFile| row.line_count_closed = false,
+                "parsed_branch requires line_count_closed=true",
+            ),
+        ] {
+            let mut row = parsed.clone();
+            mutate(&mut row);
+            assert!(matches!(
+                enforce_result_invariants(&row),
+                Err(GwcoeffParseError::InvariantViolation { detail }) if detail == expected_detail
+            ));
+        }
+
+        let mut parsed_priority = parsed.clone();
+        parsed_priority.lr_bf = 0;
+        parsed_priority.gwcoeff_file_present = false;
+        parsed_priority.bftharea = None;
+        parsed_priority.line_count_closed = false;
+        assert_invariant_detail(&parsed_priority, "parsed_branch requires lr_bf=1");
+        parsed_priority.lr_bf = 1;
+        assert_invariant_detail(
+            &parsed_priority,
+            "parsed_branch requires gwcoeff_file_present=true",
+        );
+        parsed_priority.gwcoeff_file_present = true;
+        assert_invariant_detail(
+            &parsed_priority,
+            "parsed_branch requires all 4 coefficient fields",
+        );
+        parsed_priority.bftharea = Some(1.0);
+        assert_invariant_detail(
+            &parsed_priority,
+            "parsed_branch requires line_count_closed=true",
+        );
+    }
+
+    fn assert_invariant_detail(row: &GwcoeffFile, expected: &'static str) {
+        assert!(matches!(
+            enforce_result_invariants(row),
+            Err(GwcoeffParseError::InvariantViolation { detail }) if detail == expected
+        ));
+    }
 }
