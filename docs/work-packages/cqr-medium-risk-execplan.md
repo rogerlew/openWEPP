@@ -1,6 +1,6 @@
 # Medium-Risk CQR Tranche: Contracts, Configuration, And Authoritative Tools
 
-Status: `ACTIVE`
+Status: `TERMINAL-PASS`
 Roadmap ID: `CQR-PREINT-20260711-M`
 Campaign ledger: `docs/work-packages/cqr-pre-integration-campaign-assessment.md`
 Binding execution contract: `docs/work-packages/cqr-pre-integration-campaign-execution-contract.md`
@@ -90,7 +90,10 @@ implementation diff.
 - [x] (2026-07-13 UTC) Execute M-13 landuse CLI through `MODULE-PASS`:
   detached pre-decomposition characterization passes 7/7, all helpers meet
   floors and CRAP <=30, and the final 11-binary-plus-unit cohort passes 12/12.
-- [ ] Run the tranche-final fresh rerank, dual verification, and transition Low/Assessment.
+- [x] (2026-07-13 UTC) Complete the tranche-final rerank and transition:
+  all 19 Medium identities are removed, zero identities are added, the
+  residual is the exact 13-row/12-module Low cohort, all ordinary gates pass,
+  and both terminal reviews/verifications return PASS.
 
 ## Surprises & Discoveries
 
@@ -102,6 +105,14 @@ implementation diff.
   byte. A stale two-run command cleared the profile before JSON reporting; the
   start-recovery rule avoids a redundant 35-minute rerun while retaining fresh
   LCOV and CRAP authority. Medium final must use one `--no-report` run.
+- Medium final reused one retained workspace profile for corrected explicit-
+  package LCOV and JSON reports after the virtual-workspace report default
+  emitted empty output. The final run began with documentation-only checkpoint
+  reconciliation edits present; both reviewers accepted the disclosed
+  deviation because no instrumented Rust/test input differed.
+- The first final all-target Clippy run found two test-only lint findings.
+  Semantically neutral corrections landed in `553647f0`, the affected cohort
+  passed 56/56, and the clean-source ordinary gate rerun passed in full.
 
 ## Decision Log
 
@@ -122,9 +133,16 @@ implementation diff.
 
 ## Outcomes & Retrospective
 
-Queued behind High B. At completion record package IDs/commits, before/after
-raw and actionable CRAP, exact accepted dispositions, defect escalations,
-full-gate evidence, and the Low/Assessment transition commit.
+Medium is complete. M-01 through M-13 closed in serialized checkpoints from
+`3a4f7f45` through `69822725`, followed by checkpoint reconciliation
+`7d366395`, test-only lint closure `553647f0`, and final evidence
+`3475d41d`. The production-over-30 census falls from 32 rows/25 modules to 13
+rows/12 modules: all 19 Medium identities are removed, with zero additions and
+no common-function CRAP regression in touched modules. Quick passes
+1,851/1,851, full passes 1,930/1,930, and format, all-target Clippy, deny,
+Markdown, and diff gates pass. Both independent terminal reviews and
+verifications pass with no deferred finding. Low/Assessment is activated; the
+campaign-level GO/HOLD recommendation remains reserved for that final tranche.
 
 ## Milestones
 

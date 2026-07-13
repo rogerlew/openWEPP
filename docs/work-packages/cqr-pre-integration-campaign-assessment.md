@@ -1,6 +1,6 @@
 # Pre-Integration CQR Campaign Assessment
 
-Status: `ACTIVE-HIGH-B`
+Status: `ACTIVE-LOW-ASSESSMENT`
 Owner: maintainers
 Baseline date: 2026-07-11 UTC
 Roadmap ID: `CQR-PREINT-20260711`
@@ -21,8 +21,8 @@ ExecPlans perform the work:
 2. `cqr-high-risk-b-execplan.md` — terminal-pass erosion, watershed routing, conservation,
    and final output publication (10 modules).
 3. `cqr-medium-risk-execplan.md` — contract boundaries, authoritative tooling,
-   configuration, and validation references (13 modules).
-4. `cqr-low-priority-assessment-execplan.md` — 12 provisional low-priority
+   configuration, and validation references (13 modules), terminal-pass.
+4. `cqr-low-priority-assessment-execplan.md` — active 12-module low-priority
    modules, classification/disposition, eligible cleanup, and final rerank.
 
 Only one child ExecPlan and one module package may be active at a time.
@@ -149,8 +149,10 @@ validation while a high/medium blocker remains.
 - [x] (2026-07-12 UTC) Execute High A through `TERMINAL-PASS`: all 13 fixed
   rows removed, zero new identity, zero touched-module row above 30, full gates
   and dual terminal verification PASS.
-- [x] Execute High B through terminal plan transition; commit pending.
-- [ ] Execute Medium through terminal plan commit.
+- [x] (2026-07-12 UTC) Execute High B through its terminal PASS transition.
+- [x] (2026-07-13 UTC) Execute Medium through `TERMINAL-PASS`: all 19 fixed
+  rows removed, zero new identity, final census 13 rows/12 modules, full gates
+  and both terminal reviews/verifications PASS.
 - [ ] Execute Low/Assessment and publish the final recommendation.
 
 ## Revision Note

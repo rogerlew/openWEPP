@@ -1,6 +1,6 @@
 # Low-Priority CQR Disposition And Campaign Assessment
 
-Status: `WAITING-SEQUENCE`
+Status: `ACTIVE`
 Roadmap ID: `CQR-PREINT-20260711-L`
 Campaign ledger: `docs/work-packages/cqr-pre-integration-campaign-assessment.md`
 Binding execution contract: `docs/work-packages/cqr-pre-integration-campaign-execution-contract.md`
@@ -31,7 +31,9 @@ review is conditional on the triggers named in the binding contract.
 
 ## Progress
 
-- [ ] Confirm High A, High B, and Medium have terminal PASS transitions.
+- [x] (2026-07-13 UTC) Confirm High A, High B, and Medium terminal PASS
+  transitions; activate Low/Assessment from the exact 13-row/12-module Medium
+  residual census.
 - [ ] Refresh workspace LCOV/CRAP and reconcile the twelve fixed modules.
 - [ ] Complete dual classification of every raw row.
 - [ ] Execute one module package for each module with eligible work.
@@ -41,7 +43,9 @@ review is conditional on the triggers named in the binding contract.
 
 ## Surprises & Discoveries
 
-- None yet. Record source drift, mixed diagnostic/production roles, newly
+- Medium final leaves exactly the thirteen fixed Low rows across all twelve
+  planned modules, with no added identity. Record source drift, mixed
+  diagnostic/production roles, newly
   eligible rows, defects, and final-gate findings here with direct evidence.
 
 ## Decision Log
@@ -60,9 +64,10 @@ review is conditional on the triggers named in the binding contract.
 
 ## Outcomes & Retrospective
 
-Queued behind Medium. At completion record exact module dispositions, package
-IDs/commits, before/after raw and actionable rankings, new-row assessment,
-full-gate evidence, and one exact GO/HOLD recommendation.
+Activated from the terminal Medium transition. At completion record exact
+module dispositions, package IDs/commits, before/after raw and actionable
+rankings, new-row assessment, full-gate evidence, and one exact GO/HOLD
+recommendation.
 
 ## Milestones
 
