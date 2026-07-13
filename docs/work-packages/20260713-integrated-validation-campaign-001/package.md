@@ -1,6 +1,6 @@
 # Integrated Production Validation Campaign
 
-Status: `QUEUED-AUTHORING-COMPLETE`
+Status: `HOLD-INTEGRATED-VALIDATION`
 
 Package ID: `20260713-integrated-validation-campaign-001`
 
@@ -32,20 +32,31 @@ The result is exactly `PASS-INTEGRATED-VALIDATION` or
 
 - [x] (2026-07-13 UTC) Author the autonomous campaign package, kickoff prompt,
   required-reading map, artifact scaffold, roadmap entry, and catalog entry.
-- [ ] Freeze a clean source commit and publish the executable scenario matrix.
-- [ ] Execute hillslope hydrology, erosion/MOFE, and snow/frost lanes.
-- [ ] Execute watershed routing/publication and fail-closed lanes.
-- [ ] Execute release, required-authority, and full-workspace gates.
-- [ ] Publish independent reconstruction, comparator-delta, and regression
-  assessment artifacts.
-- [ ] Complete dual review, finding disposition, and dual verification.
-- [ ] Commit the exact PASS/HOLD disposition and update roadmap/catalog state.
+- [x] (2026-07-13 UTC) Freeze clean source `f80a1151`, verify fixture trees and
+  local release prerequisites, and publish the executable scenario matrix.
+- [x] (2026-07-13 UTC) Pass hillslope, erosion/MOFE, snow/frost, watershed
+  routing/publication, and package fail-closed lanes at frozen source.
+- [ ] Execute release, required-authority, and full-workspace gates (blocked:
+  default release workspace libtest violates H2637 process isolation).
+- [x] (2026-07-13 UTC) Publish reconstruction, consumer, publication,
+  fail-closed, comparator, and regression assessment evidence.
+- [x] (2026-07-13 UTC) Complete dual independent review and fix every accepted
+  documentation/successor finding.
+- [x] (2026-07-13 UTC) Complete dual independent verification; both verifiers
+  passed the corrected HOLD record and full-restart rule.
+- [x] (2026-07-13 UTC) Commit-ready exact HOLD disposition and updated
+  roadmap/catalog state; terminal evidence is scoped and clean.
 
 ## Surprises & Discoveries
 
 - The roadmap contained the CQR authorization but no separately governed
   integrated-validation ExecPlan. This package fills that boundary; authoring
   it does not claim validation execution.
+- The default release script still uses threaded `cargo test --workspace` even
+  though repository governance and the H2637 source require process-isolated
+  nextest. The missing-coefficients guard passes alone; it and two
+  source-related mutual-exclusion guards fail together in the release lane
+  through shared environment collision.
 
 ## Decision Log
 
@@ -67,10 +78,10 @@ The result is exactly `PASS-INTEGRATED-VALIDATION` or
 
 ## Outcomes & Retrospective
 
-Authoring is complete; execution has not started. At terminal disposition,
-record scenario counts, exact source and fixture hashes, conservation and
-publication results, comparator flags, gate results, defect transitions, and
-the exact PASS/HOLD recommendation.
+Execution reached `HOLD-INTEGRATED-VALIDATION`. All domain and focused consumer
+lanes passed, but the mandatory default release lane failed before authority,
+stability, and final gates. `INTVAL-REL-001` is scaffolded as the bounded
+release-harness correction; the complete campaign must restart after it closes.
 
 ## Context And Orientation
 
@@ -166,7 +177,7 @@ Run the anti-evasion intake gates:
 
 Run H2637 production closure and authority failures:
 
-    cargo nextest run --test laned_shadow_h2637 h2637_native_active_owner_routes_and_closes
+    cargo nextest run --test laned_shadow_h2637 --run-ignored ignored-only -E 'test(=h2637_native_active_owner_routes_and_closes)'
     cargo nextest run --test laned_shadow_h2637 h2637_active_fails_closed_without_routing_coefficients
     cargo nextest run --test laned_shadow_h2637 h2637_default_mixed_routing_coefficients_fails_closed
     cargo nextest run --test laned_shadow_h2637 h2637_default_malformed_routing_coefficients_fails_closed
@@ -303,3 +314,7 @@ sensitive behavior change is outside scope and requires a separate package.
 `GO-INTEGRATED-VALIDATION`, with fixed-source validation, explicit defect
 transition, real-consumer/independent-closure evidence, delegated heavy runs,
 and exact terminal outcomes.
+
+2026-07-13 execution intake: corrected the H2637 active-owner command to run
+its deliberately ignored heavyweight test explicitly; a zero-test selection
+cannot satisfy the lane.

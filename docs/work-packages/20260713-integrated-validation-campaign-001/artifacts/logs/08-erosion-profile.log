@@ -1,0 +1,9 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.20s
+────────────
+ Nextest run ID 56831fe0-f746-4c25-9b33-91ed75089ea4 with nextest profile: erosion
+    Starting 367 tests across 175 binaries (1580 tests skipped, including 1577 tests via profile.erosion.default-filter)
+        SLOW [> 90.000s] (───────) openwepp-hillslope-orchestrator ofe_routing::d10b_reconciliation_tests::case4_manning_solver_converges_to_iwagaki_oracle
+        SLOW [> 90.000s] (───────) openwepp-hillslope-orchestrator ofe_routing::iwagaki_oracle::tests::characteristics_fan_cross_validates_upwind_reference
+        SLOW [> 90.000s] (───────) openwepp-hillslope-orchestrator ofe_routing::iwagaki_oracle::tests::upwind_case4_self_convergence
+────────────
+     Summary [ 146.948s] 367 tests run: 367 passed (3 slow), 1580 skipped

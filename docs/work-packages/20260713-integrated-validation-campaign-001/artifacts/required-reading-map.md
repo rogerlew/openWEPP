@@ -38,3 +38,4 @@ most 400,000 bytes.
 | UTC | Agent | Change |
 | --- | --- | --- |
 | 2026-07-13 | Codex | Initialized for integrated validation. |
+| 2026-07-13 | Codex | Recomputed 89,108-byte core budget and completed intake readings. |

@@ -11,7 +11,7 @@
 
 ## Reusable Execution Plans And Templates
 
-- `20260713-integrated-validation-campaign-001/package.md` is the queued
+- `20260713-integrated-validation-campaign-001/package.md` is the executed-HOLD
   fixed-source production validation campaign authorized by the completed CQR
   `GO-INTEGRATED-VALIDATION` decision. It covers hillslope hydrology,
   erosion/MOFE, snow/frost, watershed hourly routing/publication, fail-closed
@@ -19,6 +19,12 @@
   review/verification. Execution ends exactly `PASS-INTEGRATED-VALIDATION` or
   `HOLD-INTEGRATED-VALIDATION`; semantic corrections route to a separate
   DC-ExecPlan.
+- `20260713-dc-intval-release-nextest-isolation-001/package.md` is the queued
+  hold-lift for `INTVAL-REL-001`: the default release script uses threaded
+  workspace libtest despite the H2637 nextest-only isolation contract. It must
+  install a source guard, use canonical full nextest without weakening release
+  lanes, pass the package's exact pinned-input release command, and trigger a
+  full integrated-validation restart.
 
 - `../agent-guidance-map.md` and `../../tools/agents/find-agents` provide fast
   discovery for applicable `AGENTS.md` files. Before package edits, run
