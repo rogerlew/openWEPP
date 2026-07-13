@@ -1,0 +1,23 @@
+Command: cargo llvm-cov nextest -p openwepp-hillslope-orchestrator --lib --lcov --output-path /tmp/m10-final.lcov -E 'test(/iwagaki_oracle::tests::/) | test(/d10b_reconciliation_tests::/)'
+Selected tests:
+- ofe_routing::d10b_reconciliation_tests::bin_loops_progress_on_non_dyadic_sample_dt
+- ofe_routing::d10b_reconciliation_tests::case4_manning_solver_converges_to_iwagaki_oracle
+- ofe_routing::d10b_reconciliation_tests::case4_manning_tvd_dissipation_is_mass_neutral_and_tv_transient_bounded
+- ofe_routing::d10b_reconciliation_tests::case4_solver_and_oracle_source_histories_agree_exactly
+- ofe_routing::d10b_reconciliation_tests::handoff_injection_is_flux_integral_conservative
+- ofe_routing::d10b_reconciliation_tests::nineteen_ofe_conservation_is_resolution_convergent
+- ofe_routing::d10b_reconciliation_tests::partial_final_bin_handoff_is_exact
+- ofe_routing::d10b_reconciliation_tests::runon_only_ofe_handoff_is_nonnegative_and_conservative
+- ofe_routing::d10b_reconciliation_tests::single_ofe_outlet_bins_stay_nonnegative_under_front_arrival
+- ofe_routing::d10b_reconciliation_tests::solver_ledger_books_scheme_actual_boundary_fluxes
+- ofe_routing::d10b_reconciliation_tests::unsatisfiable_cfl_fails_closed_not_partial_ok
+- ofe_routing::iwagaki_oracle::tests::characteristics_fan_cross_validates_upwind_reference
+- ofe_routing::iwagaki_oracle::tests::m10_characterizes_oracle_result_bitwise
+- ofe_routing::iwagaki_oracle::tests::m10_final_storage_preserves_particle_and_shock_geometry
+- ofe_routing::iwagaki_oracle::tests::upwind_case4_conserves_and_peaks_after_cutoff
+- ofe_routing::iwagaki_oracle::tests::upwind_case4_self_convergence
+- ofe_routing::iwagaki_oracle::tests::upwind_single_reach_matches_closed_form
+Result: PASS, 17/17; 384 skipped; three slow.
+Provenance: the Iwagaki tests directly exercise `run_oracle`; upwind tests are
+independent numerical references; D10B tests are solver/reconciliation
+consumers and do not all call `run_oracle` directly.

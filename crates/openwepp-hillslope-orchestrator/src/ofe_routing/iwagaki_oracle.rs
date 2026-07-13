@@ -170,6 +170,28 @@ fn continue_depth(q: f64, alpha_new: f64) -> f64 {
     }
 }
 
+fn final_storage_m2(nodes: &[Node], domain_end: f64) -> f64 {
+    // Trapezoid over particle positions; shocks contribute their mean state
+    // at a point measure 0.
+    let mut storage_m2 = 0.0_f64;
+    let mut prev_x = 0.0_f64;
+    let mut prev_h = nodes.first().map_or(0.0, |n| match n {
+        Node::Particle { h, .. } => *h,
+        Node::Shock { h_left, .. } => *h_left,
+    });
+    for node in nodes {
+        let (x, h) = match node {
+            Node::Particle { x, h } => (*x, *h),
+            Node::Shock { x, h_left, h_right } => (*x, 0.5 * (h_left + h_right)),
+        };
+        storage_m2 += 0.5 * (prev_h + h) * (x - prev_x).max(0.0);
+        prev_x = x;
+        prev_h = h;
+    }
+    storage_m2 += prev_h * (domain_end - prev_x).max(0.0);
+    storage_m2
+}
+
 /// Run the characteristics oracle. Returns the outlet hydrograph as the
 /// ordered series of particle/shock crossings of the domain outlet.
 #[must_use]
@@ -383,24 +405,7 @@ pub fn run_oracle(config: &OracleConfig) -> OracleResult {
         }
     }
 
-    // Final storage from the surviving fan (trapezoid over particle
-    // positions; shocks contribute their mean state at a point measure 0).
-    let mut storage_m2 = 0.0_f64;
-    let mut prev_x = 0.0_f64;
-    let mut prev_h = nodes.first().map_or(0.0, |n| match n {
-        Node::Particle { h, .. } => *h,
-        Node::Shock { h_left, .. } => *h_left,
-    });
-    for node in &nodes {
-        let (x, h) = match node {
-            Node::Particle { x, h } => (*x, *h),
-            Node::Shock { x, h_left, h_right } => (*x, 0.5 * (h_left + h_right)),
-        };
-        storage_m2 += 0.5 * (prev_h + h) * (x - prev_x).max(0.0);
-        prev_x = x;
-        prev_h = h;
-    }
-    storage_m2 += prev_h * (domain_end - prev_x).max(0.0);
+    let storage_m2 = final_storage_m2(&nodes, domain_end);
 
     let supplied_m2: f64 = config
         .reaches
@@ -703,6 +708,70 @@ mod tests {
             "fan vs upwind t_peak disagreement {dt_peak}s (fan {}, fv {})",
             moc.time_to_peak_s,
             fv.time_to_peak_s
+        );
+    }
+
+    #[test]
+    fn m10_characterizes_oracle_result_bitwise() {
+        let result = run_oracle(&OracleConfig::iwagaki_case4());
+        let hydrograph_fingerprint =
+            result
+                .hydrograph
+                .iter()
+                .fold(0xcbf2_9ce4_8422_2325_u64, |fingerprint, sample| {
+                    [sample.time_s.to_bits(), sample.q_m2_s.to_bits()]
+                        .into_iter()
+                        .fold(fingerprint, |hash, bits| {
+                            (hash ^ bits).wrapping_mul(0x0000_0100_0000_01b3)
+                        })
+                });
+        let signature = (
+            result.hydrograph.len(),
+            hydrograph_fingerprint,
+            result.peak_m2_s.to_bits(),
+            result.time_to_peak_s.to_bits(),
+            result.rise_10_90_s.map(f64::to_bits),
+            result.mass_residual_rel.to_bits(),
+            result.shocks_tracked,
+        );
+
+        assert_eq!(
+            signature,
+            (
+                1031,
+                2_273_141_013_813_331_758,
+                4_575_933_481_581_572_714,
+                4_627_596_110_010_980_260,
+                Some(4_626_227_002_420_352_667),
+                13_782_961_209_799_527_883,
+                1,
+            ),
+            "the oracle result and every hydrograph sample must remain bitwise identical",
+        );
+    }
+
+    #[test]
+    fn m10_final_storage_preserves_particle_and_shock_geometry() {
+        assert_eq!(final_storage_m2(&[], 2.0).to_bits(), 0.0_f64.to_bits());
+
+        let mixed = [
+            Node::Particle { x: 1.0, h: 2.0 },
+            Node::Shock {
+                x: 2.0,
+                h_left: 4.0,
+                h_right: 6.0,
+            },
+        ];
+        assert_eq!(final_storage_m2(&mixed, 3.0).to_bits(), 10.5_f64.to_bits());
+
+        let shock_first = [Node::Shock {
+            x: 1.0,
+            h_left: 4.0,
+            h_right: 8.0,
+        }];
+        assert_eq!(
+            final_storage_m2(&shock_first, 2.0).to_bits(),
+            11.0_f64.to_bits(),
         );
     }
 }

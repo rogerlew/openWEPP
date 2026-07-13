@@ -75,7 +75,12 @@ implementation diff.
 - [x] (2026-07-13 UTC) Execute tests-only M-09 release-sidecar validation
   through `MODULE-PASS`: target CRAP is 19 at 100%, file coverage exceeds 88%,
   and sidecar, lint, and real manifest-publication consumers pass.
-- [ ] Execute or disposition M-10 through its terminal record.
+- [x] (2026-07-13 UTC) Execute M-10 Iwagaki oracle through `MODULE-PASS`:
+  verbatim final-storage extraction preserves the pre-change result and full
+  hydrograph bit signature, lowers target CRAP to 27.044, and leaves the new
+  helper at CRAP 4 with 100% coverage; named science consumers pass 17/17.
+- [x] (2026-07-13 UTC) Record the third quick checkpoint: PASS, 1,835/1,835
+  tests, 28 skipped, 3 slow, 2:39.63 elapsed, peak RSS 797,984 KiB.
 - [ ] Execute or disposition M-11 through its terminal record.
 - [ ] Execute or disposition M-12 through its terminal record.
 - [ ] Execute or disposition M-13 through its terminal record.

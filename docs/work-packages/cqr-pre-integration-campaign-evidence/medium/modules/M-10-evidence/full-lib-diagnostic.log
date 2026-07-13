@@ -1,0 +1,16 @@
+Command: cargo llvm-cov clean --workspace
+Command: cargo llvm-cov -p openwepp-hillslope-orchestrator --lib --lcov --output-path /tmp/m10-final.lcov
+Result: exit 101; 399 passed; 2 failed; 401 total; 295.96 s.
+Failure 1: tests::tests_mod::direct_runtime::direct_runtime_r3c_r4b::r3c_lane_transfer_span_projects_multilane_topology
+Assertion: crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/direct_runtime_r3c_r4b.rs:780:5
+Observed left: 10
+Expected right: 1
+Failure 2: tests::tests_mod::direct_runtime::direct_runtime_r3c_r4b::r4b_storage_reconciliation_consumes_r4a_q_and_shadow_projects
+Assertion: crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/direct_runtime_r3c_r4b.rs:35:5
+Observed left: 3
+Expected right: 1
+Attribution: both are direct-runtime lane-count expectation assertions in an
+unchanged test file. Neither calls `run_oracle` nor `final_storage_m2`. The
+ordinary Medium quick checkpoint on the same source passed 1,835/1,835, while
+the required focused instrumented oracle/upwind/D10B cohort passed 17/17.
+These are coverage-profile-only unrelated failures, not M-10 regressions.
