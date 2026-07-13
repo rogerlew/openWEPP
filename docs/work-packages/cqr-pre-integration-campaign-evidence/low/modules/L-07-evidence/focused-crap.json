@@ -1,0 +1,190 @@
+{
+  "$schema": "https://raw.githubusercontent.com/minikin/cargo-crap/main/schemas/report-v1.json",
+  "version": "0.2.2",
+  "entries": [
+    {
+      "file": "crates/openwepp-legacy-bridge/src/sidecar.rs",
+      "function": "prepare_contracts",
+      "line": 295,
+      "cyclomatic": 9.0,
+      "coverage": 0.0,
+      "crap": 90.0
+    },
+    {
+      "file": "crates/openwepp-legacy-bridge/src/hbp.rs",
+      "function": "HbpAdapterError::code",
+      "line": 103,
+      "cyclomatic": 7.0,
+      "coverage": null,
+      "crap": 56.0
+    },
+    {
+      "file": "crates/openwepp-legacy-bridge/src/hbp.rs",
+      "function": "HbpAdapterError::fmt",
+      "line": 116,
+      "cyclomatic": 7.0,
+      "coverage": null,
+      "crap": 56.0
+    },
+    {
+      "file": "crates/openwepp-legacy-bridge/src/hbp.rs",
+      "function": "adapt_hbp_header",
+      "line": 182,
+      "cyclomatic": 6.0,
+      "coverage": null,
+      "crap": 42.0
+    },
+    {
+      "file": "crates/openwepp-legacy-bridge/src/sidecar.rs",
+      "function": "resolve_bindings_for_contracts",
+      "line": 361,
+      "cyclomatic": 6.0,
+      "coverage": 0.0,
+      "crap": 42.0
+    },
+    {
+      "file": "crates/openwepp-legacy-bridge/src/hbp.rs",
+      "function": "validate_contract",
+      "line": 238,
+      "cyclomatic": 5.0,
+      "coverage": null,
+      "crap": 30.0
+    },
+    {
+      "file": "crates/openwepp-legacy-bridge/src/sidecar.rs",
+      "function": "adapt_sidecar_bindings",
+      "line": 274,
+      "cyclomatic": 4.0,
+      "coverage": 0.0,
+      "crap": 20.0
+    },
+    {
+      "file": "crates/openwepp-legacy-bridge/src/sidecar.rs",
+      "function": "map_discovered_sidecars",
+      "line": 343,
+      "cyclomatic": 4.0,
+      "coverage": 0.0,
+      "crap": 20.0
+    },
+    {
+      "file": "crates/openwepp-legacy-bridge/src/sidecar.rs",
+      "function": "normalize_file_name",
+      "line": 457,
+      "cyclomatic": 4.0,
+      "coverage": 0.0,
+      "crap": 20.0
+    },
+    {
+      "file": "crates/openwepp-legacy-bridge/src/sidecar.rs",
+      "function": "SidecarWarningCode::message_id",
+      "line": 130,
+      "cyclomatic": 3.0,
+      "coverage": 0.0,
+      "crap": 12.0
+    },
+    {
+      "file": "crates/openwepp-legacy-bridge/src/sidecar.rs",
+      "function": "append_unknown_discovery_warnings",
+      "line": 428,
+      "cyclomatic": 3.0,
+      "coverage": 0.0,
+      "crap": 12.0
+    },
+    {
+      "file": "crates/openwepp-legacy-bridge/src/sidecar.rs",
+      "function": "SidecarAdapterError::code",
+      "line": 189,
+      "cyclomatic": 9.0,
+      "coverage": 100.0,
+      "crap": 9.0
+    },
+    {
+      "file": "crates/openwepp-legacy-bridge/src/sidecar.rs",
+      "function": "SidecarAdapterError::fmt",
+      "line": 204,
+      "cyclomatic": 9.0,
+      "coverage": 100.0,
+      "crap": 9.0
+    },
+    {
+      "file": "crates/openwepp-legacy-bridge/src/hbp.rs",
+      "function": "HbpWarningCode::message_id",
+      "line": 53,
+      "cyclomatic": 2.0,
+      "coverage": null,
+      "crap": 6.0
+    },
+    {
+      "file": "crates/openwepp-legacy-bridge/src/sidecar.rs",
+      "function": "SidecarId::new",
+      "line": 19,
+      "cyclomatic": 3.0,
+      "coverage": 91.66666666666666,
+      "crap": 3.0052083333333335
+    },
+    {
+      "file": "crates/openwepp-legacy-bridge/tests/sidecar_error_contract.rs",
+      "function": "sidecar_id",
+      "line": 3,
+      "cyclomatic": 1.0,
+      "coverage": null,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-legacy-bridge/src/policy.rs",
+      "function": "CompatibilityPolicy::allows_legacy",
+      "line": 13,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-legacy-bridge/src/hbp.rs",
+      "function": "HbpHeaderContract::new",
+      "line": 17,
+      "cyclomatic": 1.0,
+      "coverage": null,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-legacy-bridge/src/hbp.rs",
+      "function": "format_magic",
+      "line": 258,
+      "cyclomatic": 1.0,
+      "coverage": null,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-legacy-bridge/src/sidecar.rs",
+      "function": "SidecarRequirement::is_required",
+      "line": 49,
+      "cyclomatic": 1.0,
+      "coverage": 0.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-legacy-bridge/src/sidecar.rs",
+      "function": "SidecarId::as_str",
+      "line": 35,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-legacy-bridge/src/sidecar.rs",
+      "function": "SidecarContract::new",
+      "line": 65,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-legacy-bridge/src/sidecar.rs",
+      "function": "SidecarDiscovery::new",
+      "line": 89,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    }
+  ]
+}
