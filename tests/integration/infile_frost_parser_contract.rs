@@ -165,3 +165,74 @@ fn missing_file_returns_defaults_with_mode_specific_warning_behavior() {
     let codes: Vec<_> = compat.warnings.iter().map(|warning| warning.code).collect();
     assert!(codes.contains(&FrostWarningCode::FrostW001));
 }
+
+#[test]
+fn frost_error_display_preserves_all_runner_visible_details() {
+    let cases = [
+        (
+            FrostParseError::FrostE000 {
+                path: PathBuf::from("bad/frost.txt"),
+                message: "permission denied".to_string(),
+            },
+            "FROST-E-000",
+            "failed to open/read frost file 'bad/frost.txt': permission denied",
+        ),
+        (
+            FrostParseError::FrostE001 {
+                line: 2,
+                field: "wintRed",
+                message: "missing token".to_string(),
+            },
+            "FROST-E-001",
+            "line 2 parse error for wintRed: missing token",
+        ),
+        (
+            FrostParseError::FrostE002 {
+                line: 3,
+                field: "fineTop",
+                message: "bad arity".to_string(),
+            },
+            "FROST-E-002",
+            "line 3 parse error for fineTop: bad arity",
+        ),
+        (
+            FrostParseError::FrostE003 {
+                line: 4,
+                field: "ksnowf",
+                value: "NaN".to_string(),
+            },
+            "FROST-E-003",
+            "line 4: non-finite value 'NaN' for field ksnowf",
+        ),
+        (
+            FrostParseError::FrostE004 {
+                line: 5,
+                field: "kfactor1",
+                value: -1.0,
+                allowed: "[0,1]",
+            },
+            "FROST-E-004",
+            "line 5: value -1 for field kfactor1 is out of range ([0,1])",
+        ),
+        (
+            FrostParseError::FrostE005 {
+                message: "line closure".to_string(),
+            },
+            "FROST-E-005",
+            "closure invariant failure: line closure",
+        ),
+        (
+            FrostParseError::FrostE006 {
+                line: 1,
+                token: "datver=1".to_string(),
+            },
+            "FROST-E-006",
+            "line 1: unsupported prefixed/version-like leading token 'datver=1'",
+        ),
+    ];
+
+    for (error, expected_id, expected_display) in cases {
+        assert_eq!(error.contract_error_id(), expected_id);
+        assert_eq!(error.to_string(), expected_display);
+    }
+}
