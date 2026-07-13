@@ -72,7 +72,9 @@ implementation diff.
 - [x] (2026-07-13 UTC) Execute tests-only M-08 dynamic operands through
   `MODULE-PASS`: exhaustive finite/nonnegative priority reaches 100% target
   regions and CRAP 16, with real routing/canopy/melt and anti-alias consumers.
-- [ ] Execute or disposition M-09 through its terminal record.
+- [x] (2026-07-13 UTC) Execute tests-only M-09 release-sidecar validation
+  through `MODULE-PASS`: target CRAP is 19 at 100%, file coverage exceeds 88%,
+  and sidecar, lint, and real manifest-publication consumers pass.
 - [ ] Execute or disposition M-10 through its terminal record.
 - [ ] Execute or disposition M-11 through its terminal record.
 - [ ] Execute or disposition M-12 through its terminal record.

@@ -578,6 +578,63 @@ mod tests {
     }
 
     #[test]
+    fn m09_public_sidecar_validation_preserves_fail_closed_priority() {
+        let dir = unique_temp_dir("m09_sidecar_priority");
+        let missing = dir.join("missing.json");
+        assert!(matches!(
+            validate_release_sidecar(&missing),
+            Err(ReleaseMetadataError::Io { path, .. }) if path == missing
+        ));
+
+        let sidecar = dir.join("release.json");
+        fs::write(&sidecar, "{not json").expect("malformed fixture must be writable");
+        assert!(matches!(
+            validate_release_sidecar(&sidecar),
+            Err(ReleaseMetadataError::JsonParse { path, .. }) if path == sidecar
+        ));
+
+        fs::write(&sidecar, r#"{"binary_role":"not-a-role"}"#)
+            .expect("missing-schema fixture must be writable");
+        assert!(matches!(
+            validate_release_sidecar(&sidecar),
+            Err(ReleaseMetadataError::MissingField { field: "schema" })
+        ));
+
+        fs::write(&sidecar, r#"{"schema":"wrong","binary_role":"not-a-role"}"#)
+            .expect("schema-priority fixture must be writable");
+        assert!(matches!(
+            validate_release_sidecar(&sidecar),
+            Err(ReleaseMetadataError::InvalidField { field: "schema", detail })
+                if detail.ends_with("observed wrong")
+        ));
+
+        fs::write(
+            &sidecar,
+            format!(r#"{{"schema":"{BINARY_RELEASE_SCHEMA_ID}","binary_role":"not-a-role"}}"#),
+        )
+        .expect("role-priority fixture must be writable");
+        assert!(matches!(
+            validate_release_sidecar(&sidecar),
+            Err(ReleaseMetadataError::InvalidField { field: "binary_role", detail })
+                if detail == "unsupported role not-a-role"
+        ));
+
+        fs::write(
+            &sidecar,
+            format!(r#"{{"schema":"{BINARY_RELEASE_SCHEMA_ID}","binary_role":"watershed"}}"#),
+        )
+        .expect("missing-field fixture must be writable");
+        assert!(matches!(
+            validate_release_sidecar(&sidecar),
+            Err(ReleaseMetadataError::MissingField {
+                field: "binary_name"
+            })
+        ));
+
+        fs::remove_dir_all(dir).ok();
+    }
+
+    #[test]
     fn release_name_validator_accepts_expected_patterns() {
         assert!(release_binary_name_is_valid(
             "openwepp_260511",
