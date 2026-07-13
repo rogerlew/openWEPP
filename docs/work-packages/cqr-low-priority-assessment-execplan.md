@@ -34,8 +34,12 @@ review is conditional on the triggers named in the binding contract.
 - [x] (2026-07-13 UTC) Confirm High A, High B, and Medium terminal PASS
   transitions; activate Low/Assessment from the exact 13-row/12-module Medium
   residual census.
-- [ ] Refresh workspace LCOV/CRAP and reconcile the twelve fixed modules.
-- [ ] Complete dual classification of every raw row.
+- [x] (2026-07-13 UTC) Refresh workspace LCOV/CRAP and reconcile the twelve
+  fixed modules: the 13-row/12-module filter is byte-identical to Medium final,
+  with no new, removed, or source-drifted identity.
+- [x] (2026-07-13 UTC) Complete dual classification of every raw row: 11 rows
+  across 10 modules are eligible; L-08 and L-11 receive exact dual-accepted,
+  denominator-retained `R-OBSERVABILITY` no-action dispositions.
 - [ ] Execute one module package for each module with eligible work.
 - [ ] Commit exact dual-reviewed no-action evidence for modules with no eligible work.
 - [ ] Run the campaign-final workspace rerank and full validation gates.
@@ -47,6 +51,10 @@ review is conditional on the triggers named in the binding contract.
   planned modules, with no added identity. Record source drift, mixed
   diagnostic/production roles, newly
   eligible rows, defects, and final-gate findings here with direct evidence.
+- Low start reproduces Medium final byte for byte. The virtual-workspace report
+  default again emitted an empty/zero-total report; explicit report-only
+  expansion of the 18 metadata packages reused the same 311 profiles without
+  rerunning tests or clearing the workspace profile.
 
 ## Decision Log
 
@@ -61,6 +69,12 @@ review is conditional on the triggers named in the binding contract.
   and can detect newly surfaced or regressed rows without expanding them
   silently into prior plans.
   Date/Author: 2026-07-11 / Codex.
+- Decision: L-01 defaults to `E-PRODUCTION`, while L-08 and L-11 close as exact
+  `R-OBSERVABILITY` no-action rows.
+  Rationale: reviewers disagreed on the runner-visible Frost detail, so the
+  binding rule retains eligibility; both independently found no machine or
+  public-text consumer for the two pure display implementations.
+  Date/Author: 2026-07-13 / Codex.
 
 ## Outcomes & Retrospective
 

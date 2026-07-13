@@ -1,0 +1,106 @@
+[
+  {
+    "file": "crates/openwepp-input-contract/src/parsers/frost.rs",
+    "function": "FrostParseError::fmt",
+    "line": 160,
+    "cyclomatic": 7.0,
+    "coverage": 0.0,
+    "crap": 56.0
+  },
+  {
+    "file": "crates/openwepp-input-contract/src/parsers/phosphorus.rs",
+    "function": "PhosphorusParseError::fmt",
+    "line": 145,
+    "cyclomatic": 9.0,
+    "coverage": 0.0,
+    "crap": 90.0
+  },
+  {
+    "file": "crates/openwepp-input-contract/src/parsers/pmetpara.rs",
+    "function": "PmetparaParseError::fmt",
+    "line": 231,
+    "cyclomatic": 12.0,
+    "coverage": 0.0,
+    "crap": 156.0
+  },
+  {
+    "file": "crates/openwepp-input-contract/src/parsers/tcr.rs",
+    "function": "TcrParseError::fmt",
+    "line": 180,
+    "cyclomatic": 10.0,
+    "coverage": 0.0,
+    "crap": 110.0
+  },
+  {
+    "file": "crates/openwepp-input-contract/src/parsers/wepp_ui.rs",
+    "function": "WeppUiParseError::fmt",
+    "line": 135,
+    "cyclomatic": 6.0,
+    "coverage": 0.0,
+    "crap": 42.0
+  },
+  {
+    "file": "crates/openwepp-legacy-bridge/src/hbp.rs",
+    "function": "HbpAdapterError::fmt",
+    "line": 116,
+    "cyclomatic": 7.0,
+    "coverage": 0.0,
+    "crap": 56.0
+  },
+  {
+    "file": "crates/openwepp-legacy-bridge/src/sidecar.rs",
+    "function": "SidecarAdapterError::fmt",
+    "line": 204,
+    "cyclomatic": 9.0,
+    "coverage": 25.0,
+    "crap": 43.171875
+  },
+  {
+    "file": "crates/openwepp-meteorology/src/error.rs",
+    "function": "MeteorologyError::fmt",
+    "line": 35,
+    "cyclomatic": 7.0,
+    "coverage": 0.0,
+    "crap": 56.0
+  },
+  {
+    "file": "crates/openwepp-runner/src/hillslope/snowbench.rs",
+    "function": "SnowbenchError::fmt",
+    "line": 138,
+    "cyclomatic": 8.0,
+    "coverage": 27.27272727272727,
+    "crap": 32.6190833959429
+  },
+  {
+    "file": "crates/openwepp-runner/src/hillslope/snowbench_coe_melt.rs",
+    "function": "read_canopy_series",
+    "line": 315,
+    "cyclomatic": 13.0,
+    "coverage": 45.0,
+    "crap": 41.11737500000001
+  },
+  {
+    "file": "crates/openwepp-runner/src/hillslope/snowbench_coe_melt.rs",
+    "function": "parse_forcing_line",
+    "line": 400,
+    "cyclomatic": 21.0,
+    "coverage": 59.34065934065934,
+    "crap": 50.64282463099032
+  },
+  {
+    "file": "crates/openwepp-sim-contract/src/symbols.rs",
+    "function": "SymbolAliasRegistryError::fmt",
+    "line": 67,
+    "cyclomatic": 9.0,
+    "coverage": 0.0,
+    "crap": 90.0
+  },
+  {
+    "file": "crates/openwepp-watershed-orchestrator/src/lib_mod/network_frame.rs",
+    "function": "WatershedNetworkFrameError::fmt",
+    "line": 57,
+    "cyclomatic": 11.0,
+    "coverage": 21.052631578947366,
+    "crap": 70.53856247266366
+  }
+]
