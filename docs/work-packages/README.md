@@ -11,6 +11,15 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260713-integrated-validation-campaign-001/package.md` is the queued
+  fixed-source production validation campaign authorized by the completed CQR
+  `GO-INTEGRATED-VALIDATION` decision. It covers hillslope hydrology,
+  erosion/MOFE, snow/frost, watershed hourly routing/publication, fail-closed
+  and release lanes, independent conservation reconstruction, and dual
+  review/verification. Execution ends exactly `PASS-INTEGRATED-VALIDATION` or
+  `HOLD-INTEGRATED-VALIDATION`; semantic corrections route to a separate
+  DC-ExecPlan.
+
 - `../agent-guidance-map.md` and `../../tools/agents/find-agents` provide fast
   discovery for applicable `AGENTS.md` files. Before package edits, run
   `tools/agents/find-agents --for <declared-write-set>` and record the applicable
