@@ -28,6 +28,12 @@ For each tranche:
 
 1. Run the exact workspace LCOV, JSON, CRAP, and filtered ranking once at
    tranche start and once at tranche final.
+   At tranche start only, a predecessor JSON from the identical source commit
+   may substitute for a lost report profile when the fresh LCOV and CRAP run
+   completes, the mechanically filtered production census is byte-identical
+   to the predecessor census, and the failed report plus exact hashes are
+   archived. CRAP JSON remains CRAP authority and fresh LCOV remains coverage
+   authority. This recovery is not available at tranche final.
 2. For each module, run only focused tests plus focused crate/module coverage
    and CRAP sufficient to prove its tier, function floors, obligations, and
    target rows. Execute the instrumented focused suite once with
@@ -194,12 +200,15 @@ slug and `<phase>` with `start` or `final`; record the literal expanded commands
 in evidence. The `comparator_suite_runner` subagent runs these heavy commands:
 
     cargo llvm-cov clean --workspace
+    /usr/bin/time -v -o /tmp/openwepp-cqr-preint-<slug>-<phase>-run.time \
+      cargo llvm-cov --workspace --ignore-run-fail --no-report \
+      > /tmp/openwepp-cqr-preint-<slug>-<phase>-run.log 2>&1
     /usr/bin/time -v -o /tmp/openwepp-cqr-preint-<slug>-<phase>-lcov.time \
-      cargo llvm-cov --workspace --ignore-run-fail --lcov \
+      cargo llvm-cov report --lcov \
       --output-path /tmp/openwepp-cqr-preint-<slug>-<phase>.lcov \
       > /tmp/openwepp-cqr-preint-<slug>-<phase>-lcov.log 2>&1
     /usr/bin/time -v -o /tmp/openwepp-cqr-preint-<slug>-<phase>-json.time \
-      cargo llvm-cov --workspace --ignore-run-fail --json \
+      cargo llvm-cov report --json \
       --output-path /tmp/openwepp-cqr-preint-<slug>-<phase>.json \
       > /tmp/openwepp-cqr-preint-<slug>-<phase>-json.log 2>&1
     /usr/bin/time -v -o /tmp/openwepp-cqr-preint-<slug>-<phase>-crap.time \

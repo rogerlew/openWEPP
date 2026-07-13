@@ -39,8 +39,11 @@ implementation diff.
 
 - [x] (2026-07-12 UTC) Confirm High A and High B terminal PASS transitions;
   activate Medium from the authoritative 32-row/25-module residual census.
-- [ ] Refresh workspace LCOV/CRAP and reconcile all thirteen fixed modules.
-- [ ] Complete dual target-selection/eligibility review.
+- [x] (2026-07-13 UTC) Refresh workspace LCOV/CRAP and reconcile all thirteen
+  fixed modules: 19 live rows, with the stale M-02 formatter row removed.
+- [x] (2026-07-13 UTC) Complete dual target-selection/eligibility review;
+  reviewer disagreement on three formatter rows defaults them to
+  `E-PRODUCTION`, leaving 19 actionable rows and no no-action module.
 - [ ] Execute or disposition M-01 through its terminal record.
 - [ ] Execute or disposition M-02 through its terminal record.
 - [ ] Execute or disposition M-03 through its terminal record.
@@ -62,6 +65,10 @@ implementation diff.
   Medium start measurement must reconcile its thirteen fixed modules against
   that authority. Record source drift, parser/validation authority discoveries,
   numerical sensitivity, defects, and gate timing here with direct evidence.
+- Medium start reproduced the same 32-row/25-module filtered census byte for
+  byte. A stale two-run command cleared the profile before JSON reporting; the
+  start-recovery rule avoids a redundant 35-minute rerun while retaining fresh
+  LCOV and CRAP authority. Medium final must use one `--no-report` run.
 
 ## Decision Log
 
@@ -74,6 +81,11 @@ implementation diff.
   Rationale: several modules contain both observation-only formatting and
   eligible invariant or authority logic; classification is symbol-specific.
   Date/Author: 2026-07-11 / Codex.
+- Decision: resolve the two selection reviewers' formatter disagreement to
+  `E-PRODUCTION` for Snow, management YAML, and landuse migration error text.
+  Rationale: the binding contract defaults disagreement to eligibility, and
+  stable CLI/error text is externally observable behavior.
+  Date/Author: 2026-07-13 / Codex.
 
 ## Outcomes & Retrospective
 

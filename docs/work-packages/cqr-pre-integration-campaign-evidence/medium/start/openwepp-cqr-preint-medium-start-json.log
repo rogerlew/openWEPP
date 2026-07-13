@@ -1,0 +1,1 @@
+error: failed to merge profile data: not found *.profraw files in /home/workdir/openWEPP/target/llvm-cov-target; this may occur if target directory is accidentally cleared, or running report subcommand without running any tests or binaries
