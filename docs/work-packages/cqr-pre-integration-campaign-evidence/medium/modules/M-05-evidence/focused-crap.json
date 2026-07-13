@@ -1,0 +1,222 @@
+{
+  "$schema": "https://raw.githubusercontent.com/minikin/cargo-crap/main/schemas/report-v1.json",
+  "version": "0.2.2",
+  "entries": [
+    {
+      "file": "crates/openwepp-management-schema/src/lib.rs",
+      "function": "validate_management_yaml_document",
+      "line": 498,
+      "cyclomatic": 24.0,
+      "coverage": 84.44444444444444,
+      "crap": 26.1680987654321
+    },
+    {
+      "file": "crates/openwepp-management-schema/src/lib.rs",
+      "function": "validate_schedule",
+      "line": 788,
+      "cyclomatic": 20.0,
+      "coverage": 92.5,
+      "crap": 20.16875
+    },
+    {
+      "file": "crates/openwepp-management-schema/src/lib.rs",
+      "function": "validate_route_coefficients",
+      "line": 597,
+      "cyclomatic": 12.0,
+      "coverage": 78.94736842105263,
+      "crap": 13.34363609855664
+    },
+    {
+      "file": "crates/openwepp-management-schema/src/lib.rs",
+      "function": "ManagementYamlError::fmt",
+      "line": 415,
+      "cyclomatic": 9.0,
+      "coverage": 100.0,
+      "crap": 9.0
+    },
+    {
+      "file": "crates/openwepp-management-schema/src/lib.rs",
+      "function": "validate_initial",
+      "line": 657,
+      "cyclomatic": 8.0,
+      "coverage": 88.57142857142857,
+      "crap": 8.095533527696793
+    },
+    {
+      "file": "crates/openwepp-management-schema/src/lib.rs",
+      "function": "validate_yearly",
+      "line": 733,
+      "cyclomatic": 8.0,
+      "coverage": 88.63636363636364,
+      "crap": 8.093914350112698
+    },
+    {
+      "file": "crates/openwepp-management-schema/src/lib.rs",
+      "function": "PlantScenario::name",
+      "line": 100,
+      "cyclomatic": 2.0,
+      "coverage": 0.0,
+      "crap": 6.0
+    },
+    {
+      "file": "crates/openwepp-management-schema/src/lib.rs",
+      "function": "validate_surface",
+      "line": 702,
+      "cyclomatic": 5.0,
+      "coverage": 92.5925925925926,
+      "crap": 5.010161052685058
+    },
+    {
+      "file": "crates/openwepp-management-schema/src/lib.rs",
+      "function": "validate_non_negative_finite",
+      "line": 940,
+      "cyclomatic": 3.0,
+      "coverage": 46.666666666666664,
+      "crap": 4.365333333333334
+    },
+    {
+      "file": "crates/openwepp-management-schema/src/lib.rs",
+      "function": "validate_plant",
+      "line": 576,
+      "cyclomatic": 3.0,
+      "coverage": 81.81818181818183,
+      "crap": 3.0540946656649135
+    },
+    {
+      "file": "crates/openwepp-management-schema/src/lib.rs",
+      "function": "ManagementYamlError::source",
+      "line": 453,
+      "cyclomatic": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "file": "crates/openwepp-management-schema/src/lib.rs",
+      "function": "parse_management_yaml_from_path",
+      "line": 461,
+      "cyclomatic": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "file": "crates/openwepp-management-schema/src/lib.rs",
+      "function": "parse_management_yaml_from_str",
+      "line": 477,
+      "cyclomatic": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "file": "crates/openwepp-management-schema/src/lib.rs",
+      "function": "validate_operation",
+      "line": 638,
+      "cyclomatic": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "file": "crates/openwepp-management-schema/src/lib.rs",
+      "function": "validate_reference",
+      "line": 915,
+      "cyclomatic": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "file": "crates/openwepp-management-schema/src/lib.rs",
+      "function": "validate_positive_finite",
+      "line": 956,
+      "cyclomatic": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "file": "crates/openwepp-management-schema/src/lib.rs",
+      "function": "validate_unit_interval",
+      "line": 967,
+      "cyclomatic": 3.0,
+      "coverage": 100.0,
+      "crap": 3.0
+    },
+    {
+      "file": "crates/openwepp-management-schema/src/lib.rs",
+      "function": "validate_non_empty",
+      "line": 885,
+      "cyclomatic": 2.0,
+      "coverage": 55.55555555555556,
+      "crap": 2.3511659807956105
+    },
+    {
+      "file": "crates/openwepp-management-schema/src/lib.rs",
+      "function": "to_management_yaml_string",
+      "line": 489,
+      "cyclomatic": 2.0,
+      "coverage": 75.0,
+      "crap": 2.0625
+    },
+    {
+      "file": "crates/openwepp-management-schema/src/lib.rs",
+      "function": "validate_zero_or_reference",
+      "line": 929,
+      "cyclomatic": 2.0,
+      "coverage": 90.0,
+      "crap": 2.004
+    },
+    {
+      "file": "crates/openwepp-management-schema/src/lib.rs",
+      "function": "validate_description",
+      "line": 875,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-management-schema/src/lib.rs",
+      "function": "validate_positive",
+      "line": 895,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-management-schema/src/lib.rs",
+      "function": "validate_positive_count",
+      "line": 905,
+      "cyclomatic": 2.0,
+      "coverage": 100.0,
+      "crap": 2.0
+    },
+    {
+      "file": "crates/openwepp-management-schema/src/lib.rs",
+      "function": "consumer_accepts_management_yaml_extension",
+      "line": 553,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-management-schema/src/lib.rs",
+      "function": "producer_accepts_management_yaml_extension",
+      "line": 558,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-management-schema/src/lib.rs",
+      "function": "default_migrated_management_yaml_path",
+      "line": 563,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    },
+    {
+      "file": "crates/openwepp-management-schema/src/lib.rs",
+      "function": "terminal_extension_is_one_of",
+      "line": 570,
+      "cyclomatic": 1.0,
+      "coverage": 100.0,
+      "crap": 1.0
+    }
+  ]
+}

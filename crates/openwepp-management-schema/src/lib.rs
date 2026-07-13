@@ -977,7 +977,334 @@ fn validate_unit_interval(path: &str, value: f64) -> Result<(), ManagementYamlEr
 
 #[cfg(test)]
 mod tests {
+    use std::error::Error;
+
     use super::*;
+
+    fn valid_document() -> ManagementYamlDocument {
+        parse_management_yaml_from_str(VALID_ROUTING_YAML).expect("fixture must remain valid")
+    }
+
+    fn assert_invalid_field(
+        result: Result<(), ManagementYamlError>,
+        expected_path: &str,
+        expected_detail: &str,
+    ) {
+        assert!(matches!(
+            result,
+            Err(ManagementYamlError::InvalidField { path, detail })
+                if path == expected_path && detail == expected_detail
+        ));
+    }
+
+    #[test]
+    fn management_yaml_error_display_and_sources_are_exact() {
+        let errors = [
+            ManagementYamlError::InputOpen {
+                path: PathBuf::from("management.yaml"),
+                source: io::Error::new(io::ErrorKind::PermissionDenied, "denied"),
+            },
+            ManagementYamlError::UnsupportedExtension {
+                path: PathBuf::from("management.man"),
+            },
+            ManagementYamlError::YamlParse {
+                detail: "bad yaml".to_string(),
+            },
+            ManagementYamlError::InvalidIdentity {
+                field: "format",
+                expected: MANAGEMENT_YAML_FORMAT,
+                observed: "other".to_string(),
+            },
+            ManagementYamlError::UnsupportedSchemaVersion { observed: 2 },
+            ManagementYamlError::UnsupportedDatver {
+                observed: "legacy".to_string(),
+            },
+            ManagementYamlError::InvalidField {
+                path: "topology.nofes".to_string(),
+                detail: "must be positive".to_string(),
+            },
+            ManagementYamlError::MissingField {
+                path: "plants[0].routing_coefficients".to_string(),
+            },
+        ];
+        let expected = [
+            "MAN-YAML-E-001: unable to read 'management.yaml': denied",
+            "MAN-YAML-E-002: unsupported management YAML extension for 'management.man'",
+            "MAN-YAML-E-003: invalid YAML: bad yaml",
+            "MAN-YAML-E-004: invalid format: expected openwepp-management-yaml, observed other",
+            "MAN-YAML-E-005: unsupported schema_version 2",
+            "MAN-YAML-E-006: unsupported datver legacy",
+            "MAN-YAML-E-007: invalid topology.nofes: must be positive",
+            "MAN-YAML-E-008: missing plants[0].routing_coefficients",
+        ];
+        for (error, expected) in errors.iter().zip(expected) {
+            assert_eq!(error.to_string(), expected);
+        }
+        assert!(errors[0].source().is_some());
+        for error in &errors[1..] {
+            assert!(error.source().is_none());
+        }
+    }
+
+    #[test]
+    fn document_identity_and_required_field_priority_is_exact() {
+        let mut document = valid_document();
+        document.format = "other".to_string();
+        document.schema_version = 2;
+        document.datver = "legacy".to_string();
+        document.topology.nofes = 0;
+        assert!(matches!(
+            validate_management_yaml_document(&document),
+            Err(ManagementYamlError::InvalidIdentity {
+                field: "format",
+                ..
+            })
+        ));
+
+        document.format = MANAGEMENT_YAML_FORMAT.to_string();
+        assert!(matches!(
+            validate_management_yaml_document(&document),
+            Err(ManagementYamlError::UnsupportedSchemaVersion { observed: 2 })
+        ));
+        document.schema_version = MANAGEMENT_YAML_SCHEMA_VERSION;
+        assert!(matches!(
+            validate_management_yaml_document(&document),
+            Err(ManagementYamlError::UnsupportedDatver { ref observed }) if observed == "legacy"
+        ));
+        document.datver = OW_LANUSE_1_DATVER.to_string();
+        assert_invalid_field(
+            validate_management_yaml_document(&document),
+            "topology.nofes",
+            "must be positive",
+        );
+
+        document.topology.nofes = 1;
+        document.topology.total_years = 0;
+        assert_invalid_field(
+            validate_management_yaml_document(&document),
+            "topology.total_years",
+            "must be positive",
+        );
+        document.topology.total_years = 1;
+        document.metadata.description.pop();
+        assert_invalid_field(
+            validate_management_yaml_document(&document),
+            "metadata.description",
+            "must contain exactly three lines",
+        );
+    }
+
+    #[test]
+    fn schedule_validation_branch_order_and_payloads_are_exact() {
+        let base = valid_document();
+
+        let mut row = base.clone();
+        row.schedule.ofe_initial_refs.clear();
+        assert_invalid_field(
+            validate_schedule(&row),
+            "schedule.ofe_initial_refs",
+            "must contain 1 entries",
+        );
+
+        let mut row = base.clone();
+        row.schedule.ofe_initial_refs[0] = 0;
+        assert_invalid_field(
+            validate_schedule(&row),
+            "schedule.ofe_initial_refs[0]",
+            "must be in 1..=1",
+        );
+
+        let mut row = base.clone();
+        row.schedule.rotation_repeats = 0;
+        assert_invalid_field(
+            validate_schedule(&row),
+            "schedule.rotation_repeats",
+            "must be positive",
+        );
+
+        let mut row = base.clone();
+        row.schedule.rotation_years = 0;
+        assert_invalid_field(
+            validate_schedule(&row),
+            "schedule.rotation_years",
+            "must be positive",
+        );
+
+        let mut row = base.clone();
+        row.topology.total_years = 2;
+        assert_invalid_field(
+            validate_schedule(&row),
+            "topology.total_years",
+            "must equal schedule duration 1",
+        );
+
+        let mut row = base.clone();
+        row.schedule.slots.clear();
+        assert_invalid_field(
+            validate_schedule(&row),
+            "schedule.slots",
+            "must contain 1 slots",
+        );
+
+        for (mutate, path) in [
+            (
+                (|row: &mut ManagementYamlDocument| {
+                    row.schedule.slots[0].rotation_index = 0;
+                }) as fn(&mut ManagementYamlDocument),
+                "schedule.slots[0].rotation_index",
+            ),
+            (
+                |row: &mut ManagementYamlDocument| {
+                    row.schedule.slots[0].year_in_rotation = 0;
+                },
+                "schedule.slots[0].year_in_rotation",
+            ),
+            (
+                |row: &mut ManagementYamlDocument| row.schedule.slots[0].ofe_index = 0,
+                "schedule.slots[0].ofe_index",
+            ),
+        ] {
+            let mut row = base.clone();
+            mutate(&mut row);
+            assert_invalid_field(validate_schedule(&row), path, "must be in 1..=1");
+        }
+
+        let mut row = base.clone();
+        row.schedule.slots[0].yearly_refs.clear();
+        assert_invalid_field(
+            validate_schedule(&row),
+            "schedule.slots[0].yearly_refs",
+            "must contain at least one entry",
+        );
+
+        let mut row = base.clone();
+        row.schedule.slots[0].yearly_refs[0] = 0;
+        assert_invalid_field(
+            validate_schedule(&row),
+            "schedule.slots[0].yearly_refs[0]",
+            "must be in 1..=1",
+        );
+    }
+
+    #[test]
+    fn public_path_parse_and_serialization_error_surfaces_are_bound() {
+        assert!(matches!(
+            parse_management_yaml_from_path("management.man"),
+            Err(ManagementYamlError::UnsupportedExtension { .. })
+        ));
+        let missing = std::env::temp_dir().join(format!(
+            "openwepp-management-schema-missing-{}.yaml",
+            std::process::id()
+        ));
+        assert!(matches!(
+            parse_management_yaml_from_path(missing),
+            Err(ManagementYamlError::InputOpen { .. })
+        ));
+        assert!(matches!(
+            parse_management_yaml_from_str("not: [valid"),
+            Err(ManagementYamlError::YamlParse { .. })
+        ));
+        let serialized = to_management_yaml_string(&valid_document()).unwrap();
+        assert!(serialized.contains("format: openwepp-management-yaml"));
+    }
+
+    #[test]
+    fn cropland_validator_branches_and_priorities_are_bound() {
+        let description = vec!["d1".to_string(), "d2".to_string(), "d3".to_string()];
+        let operation = OperationScenario::NativeCropland {
+            name: "operation".to_string(),
+            description: description.clone(),
+            mfo1: 0.0,
+            mfo2: 0.0,
+            numof: 1,
+            pcode: 1,
+            cltpos: None,
+            effect_line: vec![1.0],
+            extension_lines: Vec::new(),
+        };
+        assert!(validate_operation(0, &operation).is_ok());
+        let mut empty_operation = operation.clone();
+        let OperationScenario::NativeCropland { effect_line, .. } = &mut empty_operation;
+        effect_line.clear();
+        assert_invalid_field(
+            validate_operation(0, &empty_operation),
+            "operations[0].effect_line",
+            "must contain at least one value",
+        );
+
+        let initial = InitialConditionScenario::NativeCropland {
+            name: "initial".to_string(),
+            description: description.clone(),
+            base_line: [0.0; 6],
+            iresd: 1,
+            imngmt: 1,
+            residue_line: [0.0; 5],
+            rtyp: 1,
+            thaw_line: [0.0; 5],
+            terminal_line: [0.0; 2],
+            understory_line: None,
+        };
+        assert!(validate_initial(0, &initial, 1).is_ok());
+
+        let surface = SurfaceEffectScenario::NativeCropland {
+            name: "surface".to_string(),
+            description: description.clone(),
+            ntill: 1,
+            operations: vec![SurfaceOperation {
+                mdate: 1,
+                op_ref: 1,
+                tildep: 0.0,
+                typtil: 1,
+            }],
+        };
+        assert!(validate_surface(0, &surface, 1).is_ok());
+        let mut bad_surface = surface.clone();
+        let SurfaceEffectScenario::NativeCropland { ntill, .. } = &mut bad_surface;
+        *ntill = 0;
+        assert_invalid_field(
+            validate_surface(0, &bad_surface, 1),
+            "surface_effects[0].ntill",
+            "must match operations length 1",
+        );
+
+        let mut document = valid_document();
+        document.operations.push(operation);
+        document.surface_effects.push(surface);
+        document.contours.push(ContourScenario {
+            name: "contour".to_string(),
+            description: description.clone(),
+            cntslp: 0.0,
+            rdghgt: 0.0,
+            rowlen: 0.0,
+            rowspc: 0.0,
+            contours_perm: None,
+        });
+        document.drains.push(DrainScenario {
+            name: "drain".to_string(),
+            description: description.clone(),
+            ddrain: 0.0,
+            drainc: 0.0,
+            drdiam: 0.0,
+            sdrain: 0.0,
+        });
+        let yearly = YearlyScenario::NativeCropland {
+            name: "yearly".to_string(),
+            description,
+            itype: 1,
+            tilseq: 1,
+            conset: 1,
+            drset: 1,
+            imngmt: 1,
+            branch: YearlyCroplandBranch::AnnualOrFallow {
+                jdharv: 1,
+                jdplt: 1,
+                rw: 1.0,
+                resmgt: 1,
+                extension: None,
+            },
+        };
+        assert!(validate_yearly(0, &yearly, &document).is_ok());
+    }
 
     #[test]
     fn extension_policy_accepts_consumer_aliases_but_producer_only_yaml() {

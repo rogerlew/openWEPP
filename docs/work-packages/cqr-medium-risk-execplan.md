@@ -56,7 +56,11 @@ implementation diff.
 - [x] (2026-07-13 UTC) Execute tests-only M-04 HBP error identity through
   `MODULE-PASS`: all 14 mappings and parse-error surfaces reach 100% coverage,
   CRAP is at most 15, and the real parser consumer plus durable evidence pass.
-- [ ] Execute or disposition M-05 through its terminal record.
+- [x] (2026-07-13 UTC) Execute tests-only M-05 management-schema closure
+  through `MODULE-PASS`: all three live rows fall below CRAP 30, file coverage
+  exceeds 91%, and the real landuse consumer passes.
+- [x] (2026-07-13 UTC) Record the three-module quick checkpoint: PASS,
+  1,825/1,825 tests, 28 skipped, 3 slow, 2:52.69 elapsed, peak RSS 800,364 KiB.
 - [ ] Execute or disposition M-06 through its terminal record.
 - [ ] Execute or disposition M-07 through its terminal record.
 - [ ] Execute or disposition M-08 through its terminal record.
