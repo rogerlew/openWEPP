@@ -1,0 +1,24 @@
+Command exited with non-zero status 1
+	Command being timed: "bash tools/release/run_release_candidate_gates.sh --cohort-seeds-csv /workdir/wepp-forest/docs/work-packages/20260503-wb05b-forest-hillslope-closure-sweep/artifacts/audits/_meta/defect_seeds.csv --watchlist-csv /workdir/wepp-forest/docs/ablation/hillslope_watchlist.csv --expect-suite wb05b_1166=1166 --expect-suite release_gate_watchlist=19"
+	User time (seconds): 1695.00
+	System time (seconds): 332.03
+	Percent of CPU this job got: 347%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 9:43.01
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 209716
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 151
+	Minor (reclaiming a frame) page faults: 8654757
+	Voluntary context switches: 60685
+	Involuntary context switches: 32909
+	Swaps: 0
+	File system inputs: 16
+	File system outputs: 3553632
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 1

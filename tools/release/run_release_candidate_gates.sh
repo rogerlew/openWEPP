@@ -481,7 +481,7 @@ cd "${ROOT_DIR}"
 echo "INFO: running workspace release gates"
 cargo fmt --check
 cargo clippy --workspace --all-targets -- -D warnings
-cargo test --workspace
+cargo nextest run --workspace --profile full
 cargo deny check
 
 {

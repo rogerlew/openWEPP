@@ -1,0 +1,4 @@
+HEAD 375ccc296ed1ea491f599ff1b1a25b415d494a2a
+cohort 42b7d827d842ecbe75843175a80ab4f67a097784156658df8fb849161eb98958  /workdir/wepp-forest/docs/work-packages/20260503-wb05b-forest-hillslope-closure-sweep/artifacts/audits/_meta/defect_seeds.csv
+watchlist 42214345a228d27a0536b771dd73068dc897d369f54cb8a197457dea675e26ab  /workdir/wepp-forest/docs/ablation/hillslope_watchlist.csv
+PASS pinned inputs verified

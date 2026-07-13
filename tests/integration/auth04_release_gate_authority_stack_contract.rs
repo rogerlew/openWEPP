@@ -65,6 +65,20 @@ fn auth04_release_gate_script_enforces_lane_and_failure_class_semantics() {
 }
 
 #[test]
+fn intval_rel001_release_workspace_gate_uses_nextest_process_isolation() {
+    let script = repo_file("tools/release/run_release_candidate_gates.sh");
+
+    assert!(
+        script.contains("cargo nextest run --workspace --profile full"),
+        "INTVAL-REL-001: canonical workspace closure must use the full nextest profile"
+    );
+    assert!(
+        !script.contains("\ncargo test --workspace\n"),
+        "INTVAL-REL-001: threaded workspace libtest violates H2637 process isolation"
+    );
+}
+
+#[test]
 fn auth04_workflow_exposes_periodic_and_manual_authority_lane_triggers() {
     let workflow = repo_file(".github/workflows/release-gates.yml");
 

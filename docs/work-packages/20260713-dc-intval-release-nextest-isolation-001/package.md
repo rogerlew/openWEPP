@@ -1,6 +1,6 @@
 # Close INTVAL Release Harness Process-Isolation Defect
 
-Status: `QUEUED`
+Status: `HOLD-INTVAL-REL-001`
 
 Package ID: `20260713-dc-intval-release-nextest-isolation-001`
 
@@ -24,19 +24,32 @@ lanes without weakening or skipping any gate.
 
 - [x] (2026-07-13 UTC) Reproduce `INTVAL-REL-001` in the frozen integrated-
   validation release run and bind the mechanism to libtest shared environment.
-- [ ] Add a source-level regression that rejects release use of threaded
+- [x] (2026-07-13 UTC) Verify clean intake at `1a6a0349`, applicable guidance,
+  pinned stability source commit, input hashes, and expected row counts.
+- [x] (2026-07-13 UTC) Add a source-level regression that rejects release use of threaded
   `cargo test --workspace` for the canonical Rust closure lane.
-- [ ] Correct the release script to use the canonical full nextest profile.
-- [ ] Run the exact no-skip release candidate command with the pinned stability
-  inputs through all lanes.
-- [ ] Complete focused/full gates, dual review, dual verification, and terminal
-  disposition.
+- [x] (2026-07-13 UTC) Statically prove the guard's pre/post discrimination,
+  correct the release script to canonical full nextest, and obtain supporting
+  interactive focused passes; terminal run authority is the archived release.
+- [x] (2026-07-13 UTC) Run the exact no-skip release candidate command: the
+  corrected full nextest lane passed 1,945/1,945 and deny passed, then required
+  fixture-integrity authority failed closed on `INTVAL-AUTH-PROV-001`.
+- [x] (2026-07-13 UTC) Complete dual independent review and fix every accepted
+  evidence/successor finding.
+- [x] (2026-07-13 UTC) Complete dual independent verification; both verifiers
+  passed the corrected HOLD evidence, successor envelope, and restart rule.
+- [x] (2026-07-13 UTC) Prepare the exact terminal HOLD, roadmap/catalog update,
+  and bounded successor for commit.
 
 ## Surprises & Discoveries
 
 - The H2637 source header already states the tests are nextest-only, but the
-  release script still invokes `cargo test --workspace`. Three selector tests
-  pass independently and fail together when process environment is shared.
+  release script still invokes `cargo test --workspace`. The missing-
+  coefficients guard passes alone under nextest; it and two source-related
+  mutual-exclusion guards fail together when process environment is shared.
+- After the isolation correction passed the complete workspace lane, required
+  authority fixture integrity exposed an independent provenance-schema defect
+  in a protected fixture record before binary, lint, or stability lanes.
 
 ## Decision Log
 
@@ -45,11 +58,22 @@ lanes without weakening or skipping any gate.
   Rationale: nextest is repository-canonical and supplies the required
   process-per-test isolation; the production fail-closed assertions are valid.
   Date/Author: 2026-07-13 / Codex.
+- Decision: preserve the new authority failure and transition it to
+  `INTVAL-AUTH-PROV-001` rather than expanding this release-harness envelope.
+  Rationale: the fixture and authority records are explicitly protected here;
+  the release script correctly failed closed on their invalid metadata.
+  Date/Author: 2026-07-13 / Codex.
 
 ## Outcomes & Retrospective
 
-Queued from integrated-validation HOLD. Record final correction and resume
-commit here after execution.
+Static comparison proves the source guard rejects the pre-fix command and
+accepts the one-line release-lane replacement. Unarchived interactive focused
+runs were supporting only. The archived exact release command is terminal run
+authority: full nextest passed 1,945/1,945 and dependency policy passed. It then
+failed closed on protected required-authority provenance before binary, lint,
+and stability lanes. Terminal result is `HOLD-INTVAL-REL-001` on
+`INTVAL-AUTH-PROV-001`; no partial release or integrated-validation PASS is
+claimed.
 
 ## Correction Authority Envelope
 

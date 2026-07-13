@@ -1,0 +1,18 @@
+INFO: running workspace release gates
+    Checking openwepp v0.1.0 (/home/workdir/openWEPP)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.40s
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.21s
+────────────
+ Nextest run ID cd47db48-4b44-4fb9-8285-b4d693ae8654 with nextest profile: full
+    Starting 1945 tests across 175 binaries (3 tests skipped)
+        SLOW [> 90.000s] (─────────) openwepp-hillslope-orchestrator ofe_routing::d10b_reconciliation_tests::case4_manning_solver_converges_to_iwagaki_oracle
+        SLOW [> 90.000s] (─────────) openwepp-hillslope-orchestrator ofe_routing::iwagaki_oracle::tests::characteristics_fan_cross_validates_upwind_reference
+        SLOW [> 90.000s] (─────────) openwepp-hillslope-orchestrator ofe_routing::iwagaki_oracle::tests::upwind_case4_self_convergence
+        SLOW [> 90.000s] (─────────) openwepp::snowdensity05e_melt_adjudication coe_melt_snowbench_runs_both_models_as_diagnostic_only
+────────────
+     Summary [ 576.113s] 1945 tests run: 1945 passed (4 slow), 3 skipped
+advisories ok, bans ok, licenses ok, sources ok
+INFO: evaluating authority-suite lanes
+INFO: verifying authority fixture hash locks and provenance
+ERROR: suite cas_l4_subhyd_watyld_fcwp_consistency_001 fixture wb19_fcwp_coca_watyld_cases.json missing required provenance keys in /home/workdir/openWEPP/tests/fixtures/constitutive/cas_l4_subhyd_watyld_fcwp_consistency_001/fixtures.provenance.yaml
+ERROR: fixture provenance file missing schema_version: /home/workdir/openWEPP/tests/fixtures/constitutive/cas_l4_subhyd_watyld_fcwp_consistency_001/fixtures.provenance.yaml

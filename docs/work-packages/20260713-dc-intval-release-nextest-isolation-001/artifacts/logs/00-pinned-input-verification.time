@@ -1,0 +1,39 @@
+	Command being timed: "bash -c"
+set -euo pipefail
+repo=/workdir/wepp-forest
+expected_head=375ccc296ed1ea491f599ff1b1a25b415d494a2a
+cohort="$repo/docs/work-packages/20260503-wb05b-forest-hillslope-closure-sweep/artifacts/audits/_meta/defect_seeds.csv"
+watchlist="$repo/docs/ablation/hillslope_watchlist.csv"
+actual_head=$(git -C "$repo" rev-parse HEAD)
+printf "HEAD %s\n" "$actual_head"
+test "$actual_head" = "$expected_head"
+printf "cohort "
+sha256sum "$cohort"
+printf "watchlist "
+sha256sum "$watchlist"
+test "$(sha256sum "$cohort" | cut -d" " -f1)" = 42b7d827d842ecbe75843175a80ab4f67a097784156658df8fb849161eb98958
+test "$(sha256sum "$watchlist" | cut -d" " -f1)" = 42214345a228d27a0536b771dd73068dc897d369f54cb8a197457dea675e26ab
+printf "PASS pinned inputs verified\n"
+"
+	User time (seconds): 0.00
+	System time (seconds): 0.01
+	Percent of CPU this job got: 123%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.02
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 3840
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 1968
+	Voluntary context switches: 21
+	Involuntary context switches: 0
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 8
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

@@ -19,12 +19,15 @@
   review/verification. Execution ends exactly `PASS-INTEGRATED-VALIDATION` or
   `HOLD-INTEGRATED-VALIDATION`; semantic corrections route to a separate
   DC-ExecPlan.
-- `20260713-dc-intval-release-nextest-isolation-001/package.md` is the queued
-  hold-lift for `INTVAL-REL-001`: the default release script uses threaded
-  workspace libtest despite the H2637 nextest-only isolation contract. It must
-  install a source guard, use canonical full nextest without weakening release
-  lanes, pass the package's exact pinned-input release command, and trigger a
-  full integrated-validation restart.
+- `20260713-dc-intval-release-nextest-isolation-001/package.md` is the executed-
+  HOLD correction for `INTVAL-REL-001`. Its source guard and canonical full
+  nextest correction passed 1,945/1,945 workspace tests, then required fixture
+  integrity exposed `INTVAL-AUTH-PROV-001` before remaining release lanes.
+- `20260713-dc-intval-authority-provenance-001/package.md` is the queued bounded
+  provenance-only closure for `INTVAL-AUTH-PROV-001`. It must bind the existing
+  locked fixture bytes to verified Git history, pass authority and exact
+  release/stability gates, and then trigger a full integrated-validation
+  restart.
 
 - `../agent-guidance-map.md` and `../../tools/agents/find-agents` provide fast
   discovery for applicable `AGENTS.md` files. Before package edits, run

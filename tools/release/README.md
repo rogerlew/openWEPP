@@ -7,9 +7,10 @@ Required authority lane runs by default.
 ## Scripts
 
 - `run_release_candidate_gates.sh`
-  - Runs workspace gates (`fmt`, `clippy`, `test`, `deny`), builds release
-    binaries, stages release artifacts, emits sidecars, and runs
-    `open_wepp_runner release lint`.
+  - Runs workspace gates (`fmt`, `clippy`, full-profile `nextest`, `deny`),
+    builds release binaries, stages release artifacts, emits sidecars, and runs
+    `open_wepp_runner release lint`. Full-profile nextest supplies the required
+    process-per-test isolation for environment-mutating integration tests.
   - Evaluates external-authority suite lanes from
     `docs/specifications/external-authority/registry.yaml`:
     - verifies fixture integrity for all active suites before lane execution:

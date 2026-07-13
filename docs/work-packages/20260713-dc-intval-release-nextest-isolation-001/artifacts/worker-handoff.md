@@ -1,6 +1,6 @@
 # Worker Handoff
 
-First actionable item: close defect `INTVAL-REL-001` by replacing the stale
-threaded workspace libtest release lane with canonical full nextest isolation,
-then rerun the package's exact pinned-input release gate and the entire integrated-validation
-campaign.
+First actionable item: close defect `INTVAL-AUTH-PROV-001` by repairing the
+protected required-authority fixture provenance through its bounded successor.
+Then rerun the exact pinned-input release gate; after all release lanes pass,
+restart the entire integrated-validation campaign.
