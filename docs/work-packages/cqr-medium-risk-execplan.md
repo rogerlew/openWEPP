@@ -53,7 +53,9 @@ implementation diff.
 - [x] (2026-07-13 UTC) Execute tests-only M-03 snow-parser closure through
   `MODULE-PASS`: both live targets reach 100% region coverage and CRAP 10,
   focused file coverage exceeds 91%, and durable metrics plus consumers pass.
-- [ ] Execute or disposition M-04 through its terminal record.
+- [x] (2026-07-13 UTC) Execute tests-only M-04 HBP error identity through
+  `MODULE-PASS`: all 14 mappings and parse-error surfaces reach 100% coverage,
+  CRAP is at most 15, and the real parser consumer plus durable evidence pass.
 - [ ] Execute or disposition M-05 through its terminal record.
 - [ ] Execute or disposition M-06 through its terminal record.
 - [ ] Execute or disposition M-07 through its terminal record.

@@ -1,0 +1,65 @@
+info: cargo-llvm-cov currently setting cfg(coverage); you can opt-out it by passing --no-cfg-coverage
+   Compiling proc-macro2 v1.0.106
+   Compiling quote v1.0.45
+   Compiling unicode-ident v1.0.24
+   Compiling serde_core v1.0.228
+   Compiling serde v1.0.228
+   Compiling hashbrown v0.17.1
+   Compiling crc32fast v1.5.0
+   Compiling equivalent v1.0.2
+   Compiling itoa v1.0.18
+   Compiling ryu v1.0.23
+   Compiling cfg-if v1.0.4
+   Compiling simd-adler32 v0.3.9
+   Compiling unsafe-libyaml v0.2.11
+   Compiling adler2 v2.0.1
+   Compiling miniz_oxide v0.8.9
+   Compiling flate2 v1.1.9
+   Compiling indexmap v2.14.0
+   Compiling syn v2.0.117
+   Compiling serde_derive v1.0.228
+   Compiling serde_yaml v0.9.34+deprecated
+   Compiling openwepp-management-schema v0.1.0 (/home/workdir/openWEPP/crates/openwepp-management-schema)
+   Compiling openwepp-input-contract v0.1.0 (/home/workdir/openWEPP/crates/openwepp-input-contract)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 16.71s
+     Running unittests src/lib.rs (target/llvm-cov-target/debug/deps/openwepp_input_contract-8e46d9687f1cccc2)
+
+running 33 tests
+test parsers::gwcoeff::m02_tests::invariant_error_priority_is_characterized ... ok
+test parsers::hbp::error::m04_tests::all_format_error_code_mappings_are_exact_and_unique ... ok
+test parsers::hbp::error::m04_tests::parse_error_ids_display_and_sources_are_exact ... ok
+test parsers::slope::tests::tokenizer_skips_blank_and_comment_lines ... ok
+test parsers::slope::tests::tokenizer_splits_comma_delimited_pairs ... ok
+test parsers::snow::m03_tests::error_display_ids_and_sources_are_exact ... ok
+test parsers::snow::m03_tests::finite_and_range_error_order_is_exact ... ok
+test parsers::snow::m03_tests::invariant_branches_and_combined_invalid_priority_are_exact ... ok
+test parsers::snow::m03_tests::warning_codes_and_messages_are_exact ... ok
+test parsers::snow::m03_tests::private_token_and_prefix_boundaries_are_characterized ... ok
+test parsers::soil::tests::cqr22_parse_policy_row_characterizes_error_branches ... ok
+test parsers::soil::tests::cqr22_parse_policy_row_characterizes_success_variants ... ok
+test parsers::soil::tests::cqr23_datver_numeric_and_raw_alias_contracts_are_exact ... ok
+test parsers::soil::tests::cqr23_layer_depth_missing_and_restrictive_footer_paths_are_stable ... ok
+test parsers::soil::tests::cqr23_line_cursor_strict_and_compatibility_record_selection_is_exact ... ok
+test parsers::soil::tests::cqr23_ofe_collection_preserves_restrictive_identity_closure ... ok
+test parsers::soil::tests::cqr23_ofe_header_policy_order_and_header_validation_are_stable ... ok
+test parsers::soil::tests::cqr23_parse_soil_characterizes_base_and_extended_datver_families ... ok
+test parsers::soil::tests::cqr23_parser_error_display_and_token_helpers_preserve_exact_contracts ... ok
+test parsers::soil::tests::cqr23_preamble_success_alias_and_failure_paths_are_stable ... ok
+test parsers::soil::tests::cqr23_parse_soil_characterizes_disturbed_datver_families ... ok
+test parsers::soil::tests::cqr23_primitive_parsers_validators_and_tokenizers_preserve_fail_closed_errors ... ok
+test parsers::soil::tests::cqr23_restrictive_row_detection_and_file_tail_rejection_are_stable ... ok
+test parsers::soil::tests::cqr23_soil_error_codes_preserve_every_public_label ... ok
+test parsers::watershed_structure::tests::compatibility_no_header_is_observable ... ok
+test parsers::watershed_structure::tests::context_and_count_closures_fail_closed ... ok
+test parsers::watershed_structure::tests::malformed_inputs_preserve_typed_error_priority ... ok
+test parsers::watershed_structure::tests::malformed_required_integer_is_str_e_001 ... ok
+test parsers::watershed_structure::tests::materialize_lines_skips_comment_and_blank_lines ... ok
+test parsers::watershed_structure::tests::nonfinite_datver_is_str_e_003_in_strict_and_compatibility_modes ... ok
+test parsers::watershed_structure::tests::parses_ordered_typed_structure_and_cross_file_counts ... ok
+test parsers::watershed_structure::tests::public_error_strings_codes_and_sources_cover_every_variant ... ok
+test parsers::watershed_structure::tests::path_wrapper_reads_real_file_and_preserves_open_error ... ok
+
+test result: ok. 33 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+    Finished report saved to docs/work-packages/cqr-pre-integration-campaign-evidence/medium/modules/M-04-evidence/focused.lcov

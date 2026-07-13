@@ -115,3 +115,76 @@ impl std::error::Error for HbpParseError {
         }
     }
 }
+
+#[cfg(test)]
+mod m04_tests {
+    use std::collections::HashSet;
+    use std::error::Error;
+
+    use super::*;
+
+    #[test]
+    fn all_format_error_code_mappings_are_exact_and_unique() {
+        let cases = [
+            (HbpFormatErrorCode::HbpE002, "HBP-E-002"),
+            (HbpFormatErrorCode::HbpE003, "HBP-E-003"),
+            (HbpFormatErrorCode::HbpE004, "HBP-E-004"),
+            (HbpFormatErrorCode::HbpE005, "HBP-E-005"),
+            (HbpFormatErrorCode::HbpE006, "HBP-E-006"),
+            (HbpFormatErrorCode::HbpE007, "HBP-E-007"),
+            (HbpFormatErrorCode::HbpE008, "HBP-E-008"),
+            (HbpFormatErrorCode::HbpE009, "HBP-E-009"),
+            (HbpFormatErrorCode::HbpE010, "HBP-E-010"),
+            (HbpFormatErrorCode::HbpE011, "HBP-E-011"),
+            (HbpFormatErrorCode::HbpE012, "HBP-E-012"),
+            (HbpFormatErrorCode::HbpE013, "HBP-E-013"),
+            (HbpFormatErrorCode::HbpE014, "HBP-E-014"),
+            (HbpFormatErrorCode::HbpE015, "HBP-E-015"),
+        ];
+        let mut unique = HashSet::new();
+        for (code, expected) in cases {
+            assert_eq!(code.as_str(), expected);
+            assert!(unique.insert(code.as_str()));
+        }
+        assert_eq!(unique.len(), 14);
+    }
+
+    #[test]
+    fn parse_error_ids_display_and_sources_are_exact() {
+        let errors = [
+            HbpParseError::InputOpenError {
+                path: PathBuf::from("H1.hbp"),
+                source: io::Error::new(io::ErrorKind::PermissionDenied, "denied"),
+            },
+            HbpParseError::InvalidProcessHbpName {
+                input_path: PathBuf::from("H1.pass.hbp"),
+                reason: "reserved suffix".to_string(),
+            },
+            HbpParseError::HillslopeIdMismatch {
+                expected: 7,
+                found: 8,
+            },
+            HbpParseError::FormatViolation {
+                code: HbpFormatErrorCode::HbpE015,
+                detail: "latest event payload mismatch".to_string(),
+            },
+        ];
+        let expected_ids = ["HBP-E-000", "HBP-E-001", "HBP-E-014", "HBP-E-015"];
+        let expected_display = [
+            "HBP-E-000: failed to open/read HBP shard 'H1.hbp': denied",
+            "HBP-E-001: invalid process HBP name 'H1.pass.hbp': reserved suffix",
+            "HBP-E-014: hillslope id mismatch (expected 7, found 8)",
+            "HBP-E-015: latest event payload mismatch",
+        ];
+        for ((error, expected_id), expected_display) in
+            errors.iter().zip(expected_ids).zip(expected_display)
+        {
+            assert_eq!(error.contract_error_id(), expected_id);
+            assert_eq!(error.to_string(), expected_display);
+        }
+        assert!(errors[0].source().is_some());
+        for error in &errors[1..] {
+            assert!(error.source().is_none());
+        }
+    }
+}
