@@ -357,8 +357,34 @@ pub fn parse_climate_from_str(
 ) -> Result<ClimateFile, ClimateParseError> {
     let lines = collect_non_empty_lines(input);
     let mut cursor = 0usize;
+    let datver = parse_datver(&lines, &mut cursor)?;
+    let mode_flags = parse_mode_flags(&lines, &mut cursor, mode)?;
+    let station_line = require_line(&lines, &mut cursor, "station line")?;
+    let station_id = station_line.text.to_string();
 
-    let datver_line = require_line(&lines, &mut cursor, "datver line")?;
+    require_line(&lines, &mut cursor, "line-4 variable headers")?;
+    let metadata = parse_metadata(&lines, &mut cursor)?;
+    let monthly = parse_monthly_stats(&lines, &mut cursor)?;
+
+    require_line(&lines, &mut cursor, "daily variable names header")?;
+    require_line(&lines, &mut cursor, "daily variable units header")?;
+    let daily_records = parse_daily_records(&lines, &mut cursor, &mode_flags, mode)?;
+
+    validate_daily_sequence(&daily_records)?;
+    validate_year_coverage(&daily_records, &metadata)?;
+
+    Ok(ClimateFile {
+        datver,
+        mode: mode_flags,
+        station_id,
+        metadata,
+        monthly,
+        daily_records,
+    })
+}
+
+fn parse_datver(lines: &[LocatedLine<'_>], cursor: &mut usize) -> Result<f64, ClimateParseError> {
+    let datver_line = require_line(lines, cursor, "datver line")?;
     let datver_tokens = tokenize(datver_line.text);
     expect_arity_exact(&datver_tokens, datver_line.number, "datver line", 1)?;
     let datver_raw = parse_f64(datver_tokens[0], datver_line.number, "datver")?;
@@ -369,7 +395,15 @@ pub fn parse_climate_from_str(
         });
     };
 
-    let flags_line = require_line(&lines, &mut cursor, "flags line")?;
+    Ok(datver)
+}
+
+fn parse_mode_flags(
+    lines: &[LocatedLine<'_>],
+    cursor: &mut usize,
+    mode: ParserMode,
+) -> Result<ClimateModeFlags, ClimateParseError> {
+    let flags_line = require_line(lines, cursor, "flags line")?;
     let flags_tokens = tokenize(flags_line.text);
     expect_arity_exact(&flags_tokens, flags_line.number, "flags line", 3)?;
     let itemp = parse_i32(flags_tokens[0], flags_line.number, "itemp")?;
@@ -403,12 +437,18 @@ pub fn parse_climate_from_str(
         });
     }
 
-    let station_line = require_line(&lines, &mut cursor, "station line")?;
-    let station_id = station_line.text.to_string();
+    Ok(ClimateModeFlags {
+        itemp,
+        breakpoint_enabled: ibrkpt == 1,
+        iwind,
+    })
+}
 
-    require_line(&lines, &mut cursor, "line-4 variable headers")?;
-
-    let metadata_line = require_line(&lines, &mut cursor, "metadata line")?;
+fn parse_metadata(
+    lines: &[LocatedLine<'_>],
+    cursor: &mut usize,
+) -> Result<ClimateMetadata, ClimateParseError> {
+    let metadata_line = require_line(lines, cursor, "metadata line")?;
     let metadata_tokens = tokenize(metadata_line.text);
     if metadata_tokens.len() < 6 {
         return Err(ClimateParseError::RecordArity {
@@ -432,7 +472,7 @@ pub fn parse_climate_from_str(
         });
     }
     let generator_cmd = (metadata_tokens.len() > 6).then(|| metadata_tokens[6..].join(" "));
-    let metadata = ClimateMetadata {
+    Ok(ClimateMetadata {
         deglat,
         deglon,
         elev,
@@ -440,48 +480,58 @@ pub fn parse_climate_from_str(
         ibyear,
         numyr,
         generator_cmd,
-    };
+    })
+}
 
+fn parse_monthly_stats(
+    lines: &[LocatedLine<'_>],
+    cursor: &mut usize,
+) -> Result<ClimateMonthlyStats, ClimateParseError> {
     let obmaxt = parse_monthly_vector(
-        &lines,
-        &mut cursor,
+        lines,
+        cursor,
         "monthly max temperature header",
         "monthly max temperature vector",
     )?;
     let obmint = parse_monthly_vector(
-        &lines,
-        &mut cursor,
+        lines,
+        cursor,
         "monthly min temperature header",
         "monthly min temperature vector",
     )?;
     let radave = parse_monthly_vector(
-        &lines,
-        &mut cursor,
+        lines,
+        cursor,
         "monthly radiation header",
         "monthly radiation vector",
     )?;
     let obrain = parse_monthly_vector(
-        &lines,
-        &mut cursor,
+        lines,
+        cursor,
         "monthly precipitation header",
         "monthly precipitation vector",
     )?;
 
-    require_line(&lines, &mut cursor, "daily variable names header")?;
-    require_line(&lines, &mut cursor, "daily variable units header")?;
+    Ok(ClimateMonthlyStats {
+        obmaxt,
+        obmint,
+        radave,
+        obrain,
+    })
+}
 
-    let mode_flags = ClimateModeFlags {
-        itemp,
-        breakpoint_enabled: ibrkpt == 1,
-        iwind,
-    };
-
+fn parse_daily_records(
+    lines: &[LocatedLine<'_>],
+    cursor: &mut usize,
+    mode_flags: &ClimateModeFlags,
+    mode: ParserMode,
+) -> Result<Vec<ClimateDailyRecord>, ClimateParseError> {
     let mut daily_records = Vec::new();
-    while cursor < lines.len() {
+    while *cursor < lines.len() {
         let day_record = if mode_flags.breakpoint_enabled {
-            parse_breakpoint_day(&lines, &mut cursor, mode)?
+            parse_breakpoint_day(lines, cursor, mode)?
         } else {
-            parse_no_breakpoint_day(&lines, &mut cursor)?
+            parse_no_breakpoint_day(lines, cursor)?
         };
         daily_records.push(day_record);
     }
@@ -494,22 +544,7 @@ pub fn parse_climate_from_str(
         });
     }
 
-    validate_daily_sequence(&daily_records)?;
-    validate_year_coverage(&daily_records, &metadata)?;
-
-    Ok(ClimateFile {
-        datver,
-        mode: mode_flags,
-        station_id,
-        metadata,
-        monthly: ClimateMonthlyStats {
-            obmaxt,
-            obmint,
-            radave,
-            obrain,
-        },
-        daily_records,
-    })
+    Ok(daily_records)
 }
 
 fn canonicalize_datver(datver_raw: f64) -> Option<f64> {
@@ -683,6 +718,29 @@ fn parse_breakpoint_day(
     let wind = parse_f64(tokens[8], line.number, "wind")?;
     let tdpt = parse_f64(tokens[9], line.number, "tdpt")?;
 
+    let breakpoints = parse_breakpoint_points(lines, cursor, nbrkpt, mode)?;
+
+    Ok(ClimateDailyRecord::Breakpoint(BreakpointDay {
+        day,
+        mon,
+        year,
+        nbrkpt,
+        tmax,
+        tmin,
+        rad,
+        vwind,
+        wind,
+        tdpt,
+        breakpoints,
+    }))
+}
+
+fn parse_breakpoint_points(
+    lines: &[LocatedLine<'_>],
+    cursor: &mut usize,
+    nbrkpt: usize,
+    mode: ParserMode,
+) -> Result<Vec<BreakpointPoint>, ClimateParseError> {
     let mut breakpoints = Vec::with_capacity(nbrkpt);
     let mut previous_timem: Option<f64> = None;
     let mut previous_pptcum = 0.0;
@@ -740,19 +798,7 @@ fn parse_breakpoint_day(
         breakpoints.push(BreakpointPoint { timem, pptcum });
     }
 
-    Ok(ClimateDailyRecord::Breakpoint(BreakpointDay {
-        day,
-        mon,
-        year,
-        nbrkpt,
-        tmax,
-        tmin,
-        rad,
-        vwind,
-        wind,
-        tdpt,
-        breakpoints,
-    }))
+    Ok(breakpoints)
 }
 
 fn validate_date(day: i32, month: i32, year: i32, line: usize) -> Result<(), ClimateParseError> {

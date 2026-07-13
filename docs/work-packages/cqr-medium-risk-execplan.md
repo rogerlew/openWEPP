@@ -44,7 +44,9 @@ implementation diff.
 - [x] (2026-07-13 UTC) Complete dual target-selection/eligibility review;
   reviewer disagreement on three formatter rows defaults them to
   `E-PRODUCTION`, leaving 19 actionable rows and no no-action module.
-- [ ] Execute or disposition M-01 through its terminal record.
+- [x] (2026-07-13 UTC) Execute M-01 climate parser through `MODULE-PASS`:
+  31 focused consumer/parser tests pass, file line coverage is 95.659%, and
+  all target/extracted helpers are above the floor with CRAP at most 21.000.
 - [ ] Execute or disposition M-02 through its terminal record.
 - [ ] Execute or disposition M-03 through its terminal record.
 - [ ] Execute or disposition M-04 through its terminal record.

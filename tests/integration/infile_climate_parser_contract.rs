@@ -34,6 +34,15 @@ fn build_breakpoint_fixture(nbrkpt: usize) -> String {
     climate
 }
 
+fn strict_source_with_line(line_number: usize, replacement: &str) -> String {
+    let mut lines = include_str!("../fixtures/infile/climate/strict_valid.cli")
+        .lines()
+        .map(str::to_owned)
+        .collect::<Vec<_>>();
+    lines[line_number - 1] = replacement.to_owned();
+    lines.join("\n")
+}
+
 fn assert_close(observed: f64, expected: f64, tolerance: f64, label: &str) {
     assert!(
         (observed - expected).abs() <= tolerance,
@@ -606,6 +615,138 @@ fn strict_mode_rejects_daily_record_arity_mismatch() {
     .unwrap_err();
 
     assert!(matches!(err, ClimateParseError::RecordArity { .. }));
+}
+
+#[test]
+fn strict_mode_rejects_each_flag_domain_in_priority_order() {
+    for (flags, field) in [("0 0 0", "itemp"), ("1 2 0", "ibrkpt"), ("1 0 2", "iwind")] {
+        let error = parse_climate_from_str(&strict_source_with_line(2, flags), ParserMode::Strict)
+            .expect_err("out-of-domain climate flag must fail");
+        assert!(matches!(
+            error,
+            ClimateParseError::EnumDomain {
+                field: observed,
+                ..
+            } if observed == field
+        ));
+    }
+
+    let error = parse_climate_from_str(&strict_source_with_line(2, "0 2 2"), ParserMode::Strict)
+        .expect_err("first invalid flag must win");
+    assert!(matches!(
+        error,
+        ClimateParseError::EnumDomain { field: "itemp", .. }
+    ));
+}
+
+#[test]
+fn strict_mode_rejects_metadata_shape_numyr_and_missing_daily_records() {
+    let short_metadata = strict_source_with_line(5, "45 -120 1000 30 2000");
+    assert!(matches!(
+        parse_climate_from_str(&short_metadata, ParserMode::Strict).unwrap_err(),
+        ClimateParseError::RecordArity {
+            context: "metadata line",
+            ..
+        }
+    ));
+
+    let zero_years = strict_source_with_line(5, "45 -120 1000 30 2000 0");
+    assert!(matches!(
+        parse_climate_from_str(&zero_years, ParserMode::Strict).unwrap_err(),
+        ClimateParseError::FieldRange { field: "numyr", .. }
+    ));
+
+    let headers_only = include_str!("../fixtures/infile/climate/strict_valid.cli")
+        .lines()
+        .take(15)
+        .collect::<Vec<_>>()
+        .join("\n");
+    assert!(matches!(
+        parse_climate_from_str(&headers_only, ParserMode::Strict).unwrap_err(),
+        ClimateParseError::RecordCount {
+            context: "daily records",
+            ..
+        }
+    ));
+}
+
+#[test]
+fn strict_mode_rejects_no_breakpoint_ranges_without_reordering() {
+    for (record, field) in [
+        ("1 1 2000 -1 2 .25 3 12 2 200 3 180 -1", "prcp"),
+        ("1 1 2000 10 -1 .25 3 12 2 200 3 180 -1", "stmdur"),
+        ("1 1 2000 10 2 1.1 3 12 2 200 3 180 -1", "timep"),
+        ("1 1 2000 10 2 .25 -1 12 2 200 3 180 -1", "ip"),
+    ] {
+        let error =
+            parse_climate_from_str(&strict_source_with_line(16, record), ParserMode::Strict)
+                .expect_err("invalid daily range must fail");
+        assert!(matches!(
+            error,
+            ClimateParseError::FieldRange {
+                field: observed,
+                ..
+            } if observed == field
+        ));
+    }
+}
+
+#[test]
+fn strict_mode_rejects_date_sequence_and_year_span_invariants() {
+    let invalid_date = strict_source_with_line(16, "31 2 2000 10 2 .25 3 12 2 200 3 180 -1");
+    assert!(matches!(
+        parse_climate_from_str(&invalid_date, ParserMode::Strict).unwrap_err(),
+        ClimateParseError::DateDomain { .. }
+    ));
+
+    let duplicate_date = strict_source_with_line(17, "1 1 2000 0 0 0 0 10 1 190 2.5 170 -2");
+    assert!(matches!(
+        parse_climate_from_str(&duplicate_date, ParserMode::Strict).unwrap_err(),
+        ClimateParseError::InvariantViolation { .. }
+    ));
+
+    let outside_year = strict_source_with_line(17, "2 1 2001 0 0 0 0 10 1 190 2.5 170 -2");
+    assert!(matches!(
+        parse_climate_from_str(&outside_year, ParserMode::Strict).unwrap_err(),
+        ClimateParseError::RecordCount {
+            context: "daily year span must fit [ibyear, ibyear+numyr-1]",
+            ..
+        }
+    ));
+}
+
+#[test]
+fn strict_mode_rejects_breakpoint_value_domains_and_missing_pairs() {
+    let negative_count = build_breakpoint_fixture(0).replacen("1 1 2000 0", "1 1 2000 -1", 1);
+    assert!(matches!(
+        parse_climate_from_str(&negative_count, ParserMode::Strict).unwrap_err(),
+        ClimateParseError::FieldRange {
+            field: "nbrkpt",
+            ..
+        }
+    ));
+
+    for (pair, field) in [("25 0", "timem"), ("1 -1", "pptcum")] {
+        let source = build_breakpoint_fixture(1).replace("0.0000 0.000", pair);
+        assert!(matches!(
+            parse_climate_from_str(&source, ParserMode::Strict).unwrap_err(),
+            ClimateParseError::FieldRange { field: observed, .. } if observed == field
+        ));
+    }
+
+    let mut missing_pair = build_breakpoint_fixture(2);
+    missing_pair.truncate(
+        missing_pair
+            .trim_end()
+            .rfind('\n')
+            .expect("two pair fixture"),
+    );
+    assert!(matches!(
+        parse_climate_from_str(&missing_pair, ParserMode::Strict).unwrap_err(),
+        ClimateParseError::UnexpectedEof {
+            context: "breakpoint pair record"
+        }
+    ));
 }
 
 #[test]
