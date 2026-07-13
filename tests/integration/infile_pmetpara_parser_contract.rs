@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{io, path::PathBuf};
 
 use openwepp_input_contract::parsers::pmetpara::{
     ParseMode, PmetWarningCode, PmetparaParseError, PmetparaParseOptions, parse_pmetpara_file,
@@ -6,6 +6,119 @@ use openwepp_input_contract::parsers::pmetpara::{
 
 fn fixture_path(name: &str) -> PathBuf {
     PathBuf::from("tests/fixtures/infile/pmetpara").join(name)
+}
+
+#[test]
+fn pmetpara_error_display_preserves_all_contract_identities() {
+    let cases = [
+        (
+            PmetparaParseError::Io {
+                path: PathBuf::from("inputs/pmetpara.txt"),
+                source: io::Error::new(io::ErrorKind::PermissionDenied, "permission denied"),
+            },
+            "PMET-E-000",
+            "PMET-E-000 failed to read pmetpara sidecar 'inputs/pmetpara.txt': permission denied",
+            true,
+        ),
+        (
+            PmetparaParseError::RequiredSidecarMissingError {
+                path: PathBuf::from("inputs/missing.txt"),
+            },
+            "PMET-E-007",
+            "PMET-E-007 required pmetpara sidecar is missing: 'inputs/missing.txt'",
+            false,
+        ),
+        (
+            PmetparaParseError::TokenParseError {
+                line: 2,
+                field: "kcb",
+                token: "bad".to_string(),
+            },
+            "PMET-E-001",
+            "PMET-E-001 line 2: failed to parse field 'kcb' from token 'bad'",
+            false,
+        ),
+        (
+            PmetparaParseError::RecordArityError {
+                line: 3,
+                expected: 5,
+                found: 4,
+            },
+            "PMET-E-001",
+            "PMET-E-001 line 3: expected 5 row token(s), found 4",
+            false,
+        ),
+        (
+            PmetparaParseError::RecordCountError {
+                declared: 2,
+                parsed: 1,
+            },
+            "PMET-E-002",
+            "PMET-E-002 row-count mismatch: declared=2, parsed=1",
+            false,
+        ),
+        (
+            PmetparaParseError::FieldRangeError {
+                line: 4,
+                field: "rawp",
+                value: "-1".to_string(),
+            },
+            "PMET-E-003",
+            "PMET-E-003 line 4: value '-1' violates domain for 'rawp'",
+            false,
+        ),
+        (
+            PmetparaParseError::DuplicateCropKeyError {
+                line: 5,
+                normalized_crop_key: "CORN".to_string(),
+            },
+            "PMET-E-003",
+            "PMET-E-003 line 5: duplicate normalized crop key 'CORN'",
+            false,
+        ),
+        (
+            PmetparaParseError::UnsupportedHeaderVariant {
+                line: 1,
+                token: "datver".to_string(),
+            },
+            "PMET-E-004",
+            "PMET-E-004 line 1: unsupported pmetpara header variant token 'datver'",
+            false,
+        ),
+        (
+            PmetparaParseError::CropNameMissingError {
+                crop_name: "ALFALFA".to_string(),
+                normalized_crop_key: "ALFALFA".to_string(),
+            },
+            "PMET-E-005",
+            "PMET-E-005 no PMET record found for crop 'ALFALFA' (normalized 'ALFALFA')",
+            false,
+        ),
+        (
+            PmetparaParseError::ActlnamTokenizationError {
+                line: 6,
+                value: "two words".to_string(),
+            },
+            "PMET-E-008",
+            "PMET-E-008 line 6: unsupported strict actlnam tokenization 'two words'",
+            false,
+        ),
+        (
+            PmetparaParseError::InvariantViolation {
+                line: 0,
+                context: "lookup without records",
+            },
+            "PMET-E-006",
+            "PMET-E-006 line 0: invariant violation: lookup without records",
+            false,
+        ),
+    ];
+
+    for (error, expected_id, expected_display, has_source) in cases {
+        assert_eq!(error.contract_error_id(), expected_id);
+        assert_eq!(error.to_string(), expected_display);
+        assert_eq!(std::error::Error::source(&error).is_some(), has_source);
+    }
 }
 
 #[test]
