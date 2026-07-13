@@ -1,0 +1,39 @@
+{
+  "removed": [
+    "crates/openwepp-hillslope-orchestrator/src/ofe_routing/iwagaki_oracle.rs\u0000run_oracle",
+    "crates/openwepp-input-contract/src/parsers/climate.rs\u0000parse_climate_from_str",
+    "crates/openwepp-input-contract/src/parsers/climate.rs\u0000parse_no_breakpoint_day",
+    "crates/openwepp-input-contract/src/parsers/climate.rs\u0000parse_breakpoint_day",
+    "crates/openwepp-input-contract/src/parsers/gwcoeff.rs\u0000enforce_result_invariants",
+    "crates/openwepp-input-contract/src/parsers/hbp/error.rs\u0000HbpFormatErrorCode::as_str",
+    "crates/openwepp-input-contract/src/parsers/snow.rs\u0000SnowParseError::fmt",
+    "crates/openwepp-input-contract/src/parsers/snow.rs\u0000enforce_invariants",
+    "crates/openwepp-landuse-migrate/src/cli.rs\u0000run_cli_args",
+    "crates/openwepp-landuse-migrate/src/convert.rs\u0000yearly_extension_to_yaml",
+    "crates/openwepp-landuse-migrate/src/lib.rs\u0000LanduseMigrationError::fmt",
+    "crates/openwepp-landuse-migrate/src/lib.rs\u0000authority_from_files",
+    "crates/openwepp-management-schema/src/lib.rs\u0000ManagementYamlError::fmt",
+    "crates/openwepp-management-schema/src/lib.rs\u0000validate_management_yaml_document",
+    "crates/openwepp-management-schema/src/lib.rs\u0000validate_schedule",
+    "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00c_day_input_builder_impl.rs\u0000build_laned_shadow_lane_day_operands",
+    "crates/openwepp-runner/src/hillslope/intake_lane_setup/runfile_helpers.rs\u0000parse_runfile_execution_config",
+    "crates/openwepp-runner/src/release.rs\u0000validate_release_sidecar_unlocked",
+    "crates/openwepp-sim-contract/src/units_mod/registries.rs\u0000validate_entry"
+  ],
+  "added": [],
+  "retained": [
+    "crates/openwepp-input-contract/src/parsers/frost.rs\u0000FrostParseError::fmt",
+    "crates/openwepp-input-contract/src/parsers/phosphorus.rs\u0000PhosphorusParseError::fmt",
+    "crates/openwepp-input-contract/src/parsers/pmetpara.rs\u0000PmetparaParseError::fmt",
+    "crates/openwepp-input-contract/src/parsers/tcr.rs\u0000TcrParseError::fmt",
+    "crates/openwepp-input-contract/src/parsers/wepp_ui.rs\u0000WeppUiParseError::fmt",
+    "crates/openwepp-legacy-bridge/src/hbp.rs\u0000HbpAdapterError::fmt",
+    "crates/openwepp-legacy-bridge/src/sidecar.rs\u0000SidecarAdapterError::fmt",
+    "crates/openwepp-meteorology/src/error.rs\u0000MeteorologyError::fmt",
+    "crates/openwepp-runner/src/hillslope/snowbench.rs\u0000SnowbenchError::fmt",
+    "crates/openwepp-runner/src/hillslope/snowbench_coe_melt.rs\u0000read_canopy_series",
+    "crates/openwepp-runner/src/hillslope/snowbench_coe_melt.rs\u0000parse_forcing_line",
+    "crates/openwepp-sim-contract/src/symbols.rs\u0000SymbolAliasRegistryError::fmt",
+    "crates/openwepp-watershed-orchestrator/src/lib_mod/network_frame.rs\u0000WatershedNetworkFrameError::fmt"
+  ]
+}
