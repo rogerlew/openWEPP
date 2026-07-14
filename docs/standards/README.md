@@ -13,6 +13,7 @@ implementation work.
 | [code-quality-refactor-authoring-guide.md](code-quality-refactor-authoring-guide.md) | Metric-driven behavior-preserving refactors (CRAP/complexity decomposition, dead code, duplication, lint debt); numeric-equivalence guard; lint ratchet | Active |
 | [local-ci-gate-selection.md](local-ci-gate-selection.md) | Local agent/maintainer gate tiering, timing diagnostics, and empirical nextest scheduling changes | Active |
 | [usersum-authoring-style-guide.md](usersum-authoring-style-guide.md) | End-user documentation under `usersum/`: document shapes, audience/register, narrative structure, style rules, claims/evidence register, vendoring mechanics, pre-landing checklist | Active |
+| [scientific-assurance-dossier.md](scientific-assurance-dossier.md) | Human-first public evidence dossiers: separate verification and corroboration statuses, application-context worksheet, limitations, reproducibility, and review | Active |
 
 ## Change control
 

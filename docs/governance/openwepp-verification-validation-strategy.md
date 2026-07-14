@@ -2,14 +2,18 @@
 
 Status: `active-strategy`
 
-Document type: governance philosophy and target-state requirements
+Document type: asymmetric scientific assurance philosophy and adoption strategy
 
-Implementation maturity: `planned`
+Delivery maturity: public dossier standard active; dossier portfolio planned
 
-Last reviewed: `2026-07-13`
+Last reviewed: `2026-07-14`
+
+Primary audiences: hydrologists, soil scientists, researchers, practitioners,
+developers, reviewers, and release decision makers
 
 Related authority:
 
+- [scientific assurance dossier standard](../standards/scientific-assurance-dossier.md);
 - [correctness authority model](../specifications/correctness-authority-model.md);
 - [science-contract index](../specifications/science-contracts/index.md);
 - [ADR-0017 comparator posture](../decisions/0017-re-pin-operational-distrust-comparator-is-flag-not-target.md);
@@ -18,655 +22,428 @@ Related authority:
 
 ## Executive Position
 
-openWEPP will treat verification and validation (V&V) as a first-class
-scientific assurance subsystem. The subsystem will connect requirements,
-science contracts, source and binary identities, test and observational data,
-executed evidence, uncertainty, review, and release decisions in one traceable
-evidence graph.
+openWEPP treats verification and validation (V&V) as an **asymmetric scientific
+assurance program**. Some questions can close against declared requirements;
+others remain conditional on observations, place, scale, purpose, and future
+evidence. The program therefore keeps three decisions and their owners
+separate:
 
-The unit of V&V is a **bounded claim**, not "the model." A claim states that a
-named openWEPP version and configuration is sufficiently credible for a named
-use, quantity of interest, scale, and application domain. Evidence outside that
-envelope may inform a new claim, but it does not silently extend the old one.
+1. **Software verification acceptance** asks whether an exact implementation,
+   solution, interface, and publication path meet declared requirements and
+   tolerances. Each required obligation resolves fail-closed for release;
+   openWEPP maintainers and the named release authority own the decision.
+2. **Empirical corroboration** asks how a verified calculation compares with
+   defensible real-world referents over a bounded tested domain. The scientific
+   program publishes graded, dated, revisable evidence, challenged by
+   independent domain reviewers, rather than a terminal validity verdict.
+3. **Application fitness** asks whether the available evidence is adequate for
+   a particular watershed, decision, consequence, and uncertainty tolerance.
+   The hydrologist, practitioner, agency, or other named decision owner owns
+   this judgment; an openWEPP release does not issue that authorization.
 
-Verification and validation answer different questions:
+The primary public product is a **scientific assurance dossier** for a bounded
+quantity and assessment domain. It shows the tests, performance, applicability,
+failures, gaps, and reproduction path, then helps a decision owner compare an
+application with the tested domain. Generalized evidence infrastructure may
+help later, but it is not a prerequisite for publishing current evidence.
 
-- **Verification:** Does the implementation and each computed solution satisfy
-  its specified mathematical, software, numerical, interface, and publication
-  requirements?
-- **Validation:** Does the conceptual and computational model represent the
-  relevant real-world system adequately for the claim's intended use?
-- **Use qualification:** Is the combined evidence, uncertainty, applicability,
-  and known limitation profile sufficient to permit that particular use?
+Both verification and empirical corroboration are needed to interpret a
+predictive result. A correctly implemented inadequate model is precisely wrong.
+Agreement with observations is unreliable when the code path, numerical
+solution, inputs, units, data partition, or output lineage are defective.
+Verification makes empirical evidence interpretable; corroboration shows how
+the verified model has behaved against reality so far. Neither decides whether
+the model is fit for every application.
 
-Both are required for predictive claims about reality, with depth graded to the
-claim and its consequences. A correctly implemented inadequate model is
-precisely wrong.
-A model that agrees with selected observations despite implementation defects,
-data leakage, numerical error, or compensating biases is not predictive.
+This strategy does not assert that openWEPP as a whole is validated, that every
+current test has been reclassified, or that the planned public dossier portfolio
+already exists.
 
-This strategy is active governance for future V&V work. It does not assert that
-the target subsystem is implemented, that every current test has been
-reclassified, or that openWEPP as a whole is validated for release.
+## Transparency Outcome
 
-## Purpose and Scope
+A scientific user should be able to determine, without reading source code or
+internal work-package logs:
 
-This strategy establishes:
+1. which result, practical use, version, configuration, and scale were assessed;
+2. which named observations or exact referents were used and which regimes they
+   cover;
+3. whether evaluation data were used for calibration or model selection;
+4. how predictions compare with observations, including uncertainty,
+   variability, biases, extremes, and failed regimes;
+5. what remains untested and where use would be extrapolation;
+6. which decisions openWEPP has made, which decision remains with the user, and
+   which application facts must be considered; and
+7. how the analysis and its verification basis can be reproduced and challenged.
 
-1. the language openWEPP uses for V&V claims;
-2. the evidence classes that may support those claims;
-3. minimum governance requirements for planning, executing, reviewing, and
-   preserving V&V evidence;
-4. the target code and artifact architecture for machine-auditable evidence and
-   human-readable reports;
-5. the path from current contract and integration evidence to process,
-   subsystem, integrated, and application-level V&V; and
-6. the V&V basis eventually required for a public release.
+Transparency includes publishing `NOT_EVALUATED`, `INSUFFICIENT_EVIDENCE`,
+`MIXED_EVIDENCE`, and `CONTRADICTED_WITHIN_TESTED_DOMAIN` characterizations. A
+visible gap or contradiction is more credible and useful than a green badge
+whose scientific meaning is unclear.
 
-The strategy applies to process kernels, coupled hillslope and watershed
-systems, input and output transformations, numerical solvers, runner behavior,
-and scientific results. It also applies to the data, tools, and reports used to
-judge those surfaces.
-
-This strategy does not:
-
-- adopt nuclear licensing rules or claim nuclear-grade qualification;
-- replace canonical `SC-*` science authority;
-- make a legacy binary a correctness oracle;
-- prescribe universal goodness-of-fit thresholds;
-- equate ordinary input checking with scientific model validation; or
-- authorize production code changes without the normal contract-first and
-  work-package governance.
+Information is layered: a concise evidence summary for practitioners, a
+scientific evidence body for researchers and reviewers, and a reproducibility
+and verification annex for auditors, developers, and agents. An optional
+application assessment is authored by its named decision owner, not inferred
+from an openWEPP evidence status. The
+[dossier standard](../standards/scientific-assurance-dossier.md) defines that
+structure. All layers must report the same evidence.
 
 ## Governing Philosophy
+
+### The decisions are asymmetric
+
+The useful lesson from nuclear V&V is not that all evidence becomes binary.
+Measurements, numerical errors, uncertainty analyses, and model comparisons
+remain quantitative and contestable there too. The binary element is an
+acceptance or authorization decision made by an identified authority against
+declared requirements for a defined installation and operating envelope.
+
+openWEPP adopts that discipline where the proposition is closable: exact
+software requirements, numerical tolerances, conservation obligations,
+interfaces, consumer paths, and release identity are hard-gated. It does not
+import the licensing conclusion into an open natural system. Nuclear
+authorization concerns an engineered installation, declared licensing basis,
+and controlled operating envelope while explicitly managing residual
+uncertainty. A watershed provides no comparable controlled site context, and
+openWEPP is not the regulator or decision owner for each application.
 
 ### Claims are use-specific
 
 No release, executable, crate, or process receives an unqualified "validated"
-label. Each claim must identify at least:
+label. An empirical statement names the quantity, units, scale, processes,
+exact software and configuration, tested regimes, evaluation design,
+uncertainty treatment, and explicit exclusions or extrapolations. It describes
+evidence within that envelope; it does not silently authorize a use outside it.
 
-- the decision or use being supported;
-- source, binary, configuration, and schema identities;
-- modeled processes and couplings;
-- quantities of interest and their units;
-- spatial and temporal scales;
-- forcing, soil, climate, topography, management, land-use, and topology
-  regimes where relevant;
-- required accuracy, uncertainty, and failure behavior; and
-- explicit exclusions and extrapolations.
+Evidence for annual hillslope soil loss does not establish event timing,
+watershed sediment delivery, snow-dominated hydrology, or performance under an
+untested management regime.
 
-The claim envelope is the intersection of these dimensions. Passing evidence
-for annual hillslope soil loss does not validate event timing, watershed
-sediment delivery, snow-dominated hydrology, or an untested management regime.
+### Corroboration accumulates evidence, not truth
 
-### V&V accumulates evidence, not truth
+Models of open natural systems are purposeful simplifications of incompletely
+known systems. Repeated agreement can corroborate behavior over tested
+conditions; it cannot prove that the model is true or establish fitness for all
+future applications. New observations may strengthen, narrow, or overturn an
+assessment. Negative and superseded evidence remains discoverable rather than
+being erased by a later favorable run.
 
-Models are purposeful simplifications. Validation can establish that results
-are sufficiently consistent with reality for a specified use; it cannot prove
-that the model is true. New data may strengthen, narrow, or overturn an earlier
-assessment. Negative evidence must remain visible.
+The asymmetry also runs the other way: a well-founded contradiction can reject
+or narrow a bounded representational claim, identify a nonuse domain, or block
+a release purpose that depends on the claim. Successful comparisons remain
+partial; known contrary evidence is not averaged into a general pass.
 
-Evidence records are therefore immutable. Later runs or assessments supersede
-earlier ones through explicit relationships; they do not rewrite history.
+### Verification makes empirical evidence interpretable
 
-### Verification precedes reliance on validation results
+Empirical investigation and verification may proceed iteratively, but a
+corroboration status cannot be published as claim-bearing evidence until the
+relevant algorithm, numerical solution, inputs, units, production consumer, and
+output lineage are verified. The burden is proportional to the result being
+interpreted, not every unrelated part of the repository.
 
-Empirical agreement is interpretable only after the code path, numerical
-solution, inputs, units, consumer path, and output lineage have been verified.
-Verification and validation may iterate during development, but a validation
-claim cannot close on an unverified result surface.
+Verification evidence is not inherently Boolean. Convergence rates, closure
+residuals, numerical uncertainty, and comparator deltas are quantitative. A
+verification obligation becomes a binary release gate only after its
+requirement, metric, tolerance, applicable realization, and failure consequence
+have been declared. An undeclared or unexecuted obligation is not a pass.
 
-### Scientific consistency is necessary but not empirical validation
+Dimensional consistency, conservation, boundedness, monotonic response, and
+contract conformance can disprove an implementation or model. Alone, they do
+not show that openWEPP predicts field behavior adequately.
 
-Dimensional consistency, conservation, monotonic response, boundedness, and
-contract conformance are powerful correctness evidence. They can invalidate a
-model or implementation, and are hard gates where applicable. Alone, they do
-not show that openWEPP predicts field behavior with adequate accuracy.
+### Capability and assessability are different
+
+Greater model sophistication may improve process representation while making
+the model harder to identify, observe, and test. Sparse field observations,
+input uncertainty, natural variability, scale mismatch, and nonunique parameter
+combinations can limit what can be inferred even from an advanced model. A
+smaller corroboration envelope therefore does not by itself imply weak model
+capability, and greater capability does not justify a broader evidence claim.
 
 ### Comparator agreement is a flag, not a target
 
-ADR-0017 remains controlling. Agreement with the pinned WEPP baseline is
-regression or equivalence evidence. A difference is an investigation trigger.
-Neither agreement nor disagreement determines physical validity without
-independent authority and like-for-like lineage.
+ADR-0017 remains controlling. Agreement with pinned legacy WEPP is regression
+or equivalence evidence. A difference is an investigation trigger. Neither
+state establishes physical validity without independent authority and
+like-for-like quantity lineage.
 
-### Uncertainty is part of the result
+### Uncertainty and applicability are part of the result
 
-A result without its material uncertainty, applicability, and caveats is an
-incomplete result. V&V must distinguish, where relevant:
-
-- measurement and sampling uncertainty;
-- natural or aleatory variability;
-- input and forcing uncertainty;
-- parameter uncertainty;
-- conceptual and model-form uncertainty;
-- numerical and finite-precision uncertainty; and
-- uncertainty introduced by transformations, aggregation, or publication.
-
-Unknown uncertainty is recorded as unknown; it is not encoded as zero.
-
-### Rigor is graded by risk of misuse
-
-The required depth of evidence depends on the consequence of a wrong result,
-the influence of openWEPP on the decision, novelty of the application, and
-distance from existing evidence. Tailoring may reduce irrelevant work, but it
-may not waive a required evidence class without recording the resulting claim
-limitation or hold.
+Material measurement, sampling, natural, forcing, parameter, model-form,
+numerical, and transformation uncertainty is reported where relevant. Unknown
+uncertainty is recorded as unknown, not zero. Evidence applies only over its
+represented regimes and scales; extrapolation and application fitness are
+separate judgments owned by the application decision owner.
 
 ### Evidence is designed for challenge
 
-Reproduction, independent review, defect traceability, and explicit gaps are
-features of the subsystem. The objective is not to produce a persuasive report;
-it is to make the strongest defensible claim and make that claim easy to audit,
-dispute, reproduce, and revise.
-
-## Terminology and Evidence Classification
-
-The following classifications are normative for new V&V work. Historical
-artifacts retain their names, but must be mapped to these classes when they are
-used in a new claim.
-
-| Class | Question | Typical openWEPP evidence |
-| --- | --- | --- |
-| Requirements verification | Are requirements complete, consistent, traceable, and testable? | `SC-*` reviews, obligation maps, schema and invariant linkage |
-| Code verification | Is the specified algorithm implemented correctly? | analytical solutions, manufactured solutions, hand calculations, property tests, independent implementations |
-| Solution verification | Is this computed solution numerically adequate? | refinement studies, convergence, timestep sensitivity, iterative residuals, roundoff and determinism studies |
-| Integration verification | Are couplings, ordering, units, lineage, and real consumers correct? | direct-path tests, independent closure, serial/parallel equivalence, fail-closed publication tests |
-| Conceptual validation | Does the process abstraction adequately represent the real system for the intended use? | literature synthesis, competing hypotheses, process-importance review, expert scientific review |
-| Empirical validation | Do predictions agree adequately with independent observations or an accepted real-world referent? | laboratory, plot, hillslope, watershed, and operational observations with uncertainty |
-| Uncertainty and sensitivity | What drives the result, and how uncertain is it? | sensitivity analysis, ensembles, uncertainty propagation, regime and structural alternatives |
-| Comparative evidence | How does openWEPP differ from another implementation? | pinned legacy comparison, independent solver comparison, alternative-model ensemble |
-| Use qualification | Is the evidence profile sufficient for the declared use? | claim assessment, limitations, independent review, release disposition |
-
-The referent determines the meaning of a comparison. Comparison with an exact
-solution is verification. Comparison with measured reality is validation.
-Comparison with a legacy binary is comparative evidence unless that binary's
-result has separate authority for the exact claim.
-
-Calibration is parameter or model adjustment using data. Calibration can be a
-legitimate development activity, but fit to calibration data is not independent
-validation evidence. Ordinary parser or domain "validation" remains input
-validation and must not be counted as model validation.
-
-## Claim-Centered V&V Model
-
-V&V will be represented as a traceable chain:
-
-```text
-intended use -> claim -> evidence obligations -> executed evidence
-             -> claim assessment -> use/release disposition
-```
-
-Defects, limitations, uncertainty, and supersession relationships attach to
-that chain. Reports are views of it, not independent narratives.
-
-### Claim requirements
-
-| ID | Requirement |
-| --- | --- |
-| `VV-CLAIM-001` | Every acceptance statement must reference a stable claim ID and version. |
-| `VV-CLAIM-002` | A claim must define its intended use, quantities of interest, application envelope, acceptance criteria, and exclusions before verdict-bearing evidence is run. |
-| `VV-CLAIM-003` | A claim must bind exact contract invariants, interfaces, configurations, and output lineage relevant to the result. |
-| `VV-CLAIM-004` | A claim must state the consequence of error, model influence on the decision, novelty or extrapolation, and resulting rigor class. |
-| `VV-CLAIM-005` | Each required evidence class must be marked `PASS`, `FAIL`, `BLOCKED`, or `NOT_RUN`; absence of evidence is never a pass. |
-| `VV-CLAIM-006` | Claim assessment outcomes are `SUPPORTED`, `SUPPORTED_WITH_LIMITATIONS`, `NOT_SUPPORTED`, or `INSUFFICIENT_EVIDENCE`; the unqualified outcome `VALIDATED` is prohibited. |
-| `VV-CLAIM-007` | Expanding a claim envelope requires a new claim version and evidence for the newly covered domain. |
-| `VV-CLAIM-008` | A claim must expose known counter-evidence, unresolved defects, and material evidence gaps. |
-
-### Rigor classes
-
-The detailed scoring rubric belongs in the future subsystem specification. The
-minimum strategy-level classes are:
-
-| Class | Intended role | Minimum posture |
-| --- | --- | --- |
-| `R0-exploratory` | diagnosis, development, or hypothesis generation | reproducible identity and explicit non-release status |
-| `R1-component` | process or component development claims | requirements and code verification plus relevant process evidence |
-| `R2-production` | production-path and user-facing scientific results | end-to-end verification, uncertainty treatment, representative validation, and independent review |
-| `R3-release` | release-defining use claims or material extrapolation | complete claim profile, application-domain evidence, independent review and verification, release snapshot, and explicit residual-risk decision |
-
-No numeric average of evidence dimensions determines sufficiency. A missing
-required factor remains visible and governs the disposition. Maturity profiles
-may guide investment, but they are not acceptance oracles.
-
-## Hierarchical Strategy
-
-Complex systems require both bottom-up and top-down evidence. Component evidence
-localizes errors; integrated evidence exposes coupling, ordering, scale, and
-emergent behavior. Neither substitutes for the other.
-
-### Verification ladder
-
-1. **Requirements and design:** contracts, equations, units, algorithms,
-   guards, interfaces, and publication semantics are coherent and traceable.
-2. **Code:** implementations reproduce exact, analytical, manufactured,
-   independently reconstructed, or otherwise authoritative solutions.
-3. **Solution:** each relevant calculation demonstrates adequate numerical
-   error, convergence, timestep or resolution behavior, finite-precision
-   posture, and determinism where promised.
-4. **Coupled execution:** kernels, phase scheduling, hillslope and watershed
-   coupling, real consumers, aggregation, parallel execution, and output
-   publication preserve the required meaning.
-5. **Release realization:** the exact built binaries, runtime dependencies,
-   schemas, inputs, and evidence bundle are the verified configuration.
-
-### Validation ladder
-
-1. **Conceptual/process:** the selected process abstraction and governing
-   responses are defensible for the intended use.
-2. **Separate-effects/component:** individual hydrology, plant, snow/frost,
-   hydraulics, erosion, and routing responses are compared with focused
-   observations where confounding is controlled.
-3. **Integral-effects/subsystem:** coupled hillslope or watershed subsystems are
-   compared with experiments or observations that exercise important
-   interactions.
-4. **Application/field:** end-to-end quantities of interest are evaluated across
-   representative soils, climates, topographies, managements, scales, and
-   event magnitudes.
-5. **Post-audit:** predictions are compared with observations acquired after the
-   assessment or release, and the claim is revised when warranted.
-
-Higher-level success cannot erase a failed important process. Lower-level
-success cannot establish coupled or application performance.
-
-### Process importance and coverage
-
-Each `R2-production` or `R3-release` claim must include a process and response
-importance assessment analogous in purpose to the nuclear Phenomena
-Identification and Ranking Table. For openWEPP it must:
-
-- begin with the intended use and quantities of interest;
-- identify relevant processes, state transitions, couplings, regimes, and
-  scales;
-- rank importance and knowledge/evidence gaps separately;
-- map each important item to verification, validation, and uncertainty
-  obligations; and
-- record the scientific basis and review for each ranking.
-
-This assessment prioritizes evidence. It does not convert expert ranking into
-correctness authority and does not permit low-ranked mechanisms to violate
-conservation or fail-closed requirements.
-
-## openWEPP-Specific Validation Design
-
-### Separate forcing from model response
-
-Validation against field observations must distinguish at least two lanes:
-
-1. **Reconstruction lane:** use measured or quality-controlled forcing to test
-   process and response fidelity while minimizing climate-generation error.
-2. **Operational lane:** use the forcing products and workflow expected in
-   practice to evaluate total predictive performance.
-
-Forcing-robust signatures and forcing-limited magnitudes must remain separate,
-consistent with ADR-0028. If forcing uncertainty prevents an absolute-magnitude
-verdict, the result is reported but cannot close that magnitude claim.
-
-### Keep calibration and evaluation independent
-
-Dataset roles must be declared before model adjustment:
-
-- development and debugging;
-- calibration or parameter estimation;
-- validation or held-out evaluation; and
-- post-audit or future observations.
-
-Splits must prevent leakage across sites, plots, watersheds, climates,
-management histories, or repeated measurements when those dependencies would
-inflate apparent generalization. Random row splitting is insufficient when
-rows share the same physical system or event history.
-
-### Respect environmental variability
-
-Runoff and erosion observations contain measurement error, sampling effects,
-natural variability, and scale mismatch. Replicate-plot variability or another
-defensible observation-error model should be used where available. Exact match
-to one noisy observation is not the objective, and poor agreement cannot be
-excused merely by saying that field data are variable.
-
-### Use quantity- and regime-specific metrics
-
-Acceptance criteria must be selected for the claim, not inherited as universal
-thresholds. Evidence should normally include more than one of:
-
-- bias and signed residuals;
-- absolute and relative error with declared behavior near zero;
-- event magnitude and timing;
-- distributional or exceedance behavior;
-- seasonal and annual aggregation;
-- spatial deposition and erosion patterns;
-- rank or management-treatment discrimination;
-- conservation and closure; and
-- uncertainty coverage and calibration.
-
-One aggregate efficiency statistic cannot hide failed extremes, timing,
-regimes, or conservation. Results must be stratified over relevant event size,
-climate, soil, management, slope, scale, and topology regimes.
-
-### Address scale and extrapolation explicitly
-
-Plot, hillslope, multi-OFE, channel, and watershed observations do not transfer
-automatically. Each validation claim must identify:
-
-- the scale of the referent and simulation;
-- aggregation and normalization bases;
-- geometry and boundary-condition differences;
-- missing or distorted processes;
-- support of the data relative to the proposed application domain; and
-- whether the conclusion is interpolation, guarded extrapolation, or outside
-  the evidence domain.
-
-## Evidence Artifact Requirements
-
-The V&V subsystem will use a machine-readable source of record and generate
-human reports from it. The conceptual provenance model should remain compatible
-with the W3C PROV ideas of entities, activities, agents, generation, use, and
-derivation. A future export may use RO-Crate, but neither standard is imposed as
-the initial internal wire format.
-
-### Required artifact types
-
-| Artifact | Purpose |
-| --- | --- |
-| Claim definition | Versioned statement of intended use, envelope, criteria, and obligations |
-| Evidence plan | Scenario matrix, process-importance map, data partition, metrics, and required runs |
-| Dataset record | Origin, rights, collection method, uncertainty, transformations, partition role, and hashes |
-| Execution manifest | Exact software, binary, environment, command, inputs, outputs, metrics, logs, and status |
-| Assessment | Evidence-to-claim reasoning, applicability, uncertainty, limitations, findings, and disposition |
-| Review record | Reviewer identity or role, independence, scope, findings, and finding disposition |
-| Release snapshot | Immutable set of current claims, evidence, limitations, binaries, schemas, and hashes |
-| Human report | Generated summary of supported uses, gaps, uncertainty, defects, and reproduction pointers |
-
-### Evidence record requirements
-
-| ID | Requirement |
-| --- | --- |
-| `VV-EVID-001` | Every execution record must bind claim and obligation IDs, source commit, dirty-state status, binary hashes where applicable, tool and schema versions, and host/runtime context. |
-| `VV-EVID-002` | Inputs, fixtures, observational datasets, transformation code, outputs, and retained logs must be content-identified or explicitly marked unavailable. |
-| `VV-EVID-003` | Metrics must carry units, quantity lineage, scale, aggregation basis, uncertainty, acceptance-criterion ID, and exact evaluation status. |
-| `VV-EVID-004` | Dataset provenance must cover collection, quality control, transformations, calibration/evaluation role, rights, and known limitations. |
-| `VV-EVID-005` | Evidence must identify the real production consumer for direct-path or publication claims and independently reconstruct conservation-sensitive outputs. |
-| `VV-EVID-006` | Failed, blocked, invalidated, and superseded evidence must remain discoverable and must not contribute to a current pass. |
-| `VV-EVID-007` | A rerun cannot silently replace a failure; the new record must link to the prior record and state why the earlier result is not current. |
-| `VV-EVID-008` | Large or restricted payloads may remain external, but the tracked manifest must preserve stable location, access classification, content hash, and transformation provenance. |
-| `VV-EVID-009` | Producer-derived expected values are insufficient where an independent reconstruction, analytical solution, measurement, or alternative implementation is practicable. |
-| `VV-EVID-010` | Machine and human outputs must be rendered from the same assessment and evidence records; manually maintained duplicate verdict tables are prohibited. |
-
-### Evidence freshness and invalidation
-
-Evidence is current only for its recorded dependency set. Claim definitions must
-identify relevant source modules, contracts, schemas, fixtures, metric code,
-and runtime/build configuration. A change-impact tool should classify evidence
-as:
-
-- `current`: no material dependency changed;
-- `review-required`: a dependency changed but automated impact is uncertain;
-- `stale`: a material dependency changed; or
-- `superseded`: a newer accepted assessment replaced it.
-
-Passing historical evidence may inform planning but cannot close a release gate
-when stale. Conversely, unrelated documentation edits should not force an
-expensive scientific rerun merely because the commit SHA changed; the dependency
-and review record must explain reuse.
-
-## Governance Requirements
-
-| ID | Requirement |
-| --- | --- |
-| `VV-GOV-001` | Canonical `SC-*` contracts remain the authority for intended openWEPP physics; V&V artifacts provide evidence and use qualification, not replacement authority. |
-| `VV-GOV-002` | Every V&V campaign must be authorized by a work package with a fixed claim set, source/configuration freeze policy, intended write set, evidence plan, and exact exit states. |
-| `VV-GOV-003` | Acceptance criteria and dataset roles must be frozen before verdict-bearing execution; later changes require a new plan version and bias review. |
-| `VV-GOV-004` | Verification, validation, comparative evidence, uncertainty, and software QA must be reported as distinct dimensions. |
-| `VV-GOV-005` | Important negative results, extrapolations, missing process evidence, and known defects must be visible in machine and human reports. |
-| `VV-GOV-006` | Review independence and scientific expertise must scale with rigor class; `R3-release` requires independent scientific review and independent evidence verification. |
-| `VV-GOV-007` | No weighted score or pass-count majority may override a failed mandatory obligation. |
-| `VV-GOV-008` | A comparator delta verdict must preserve ADR-0017's like-for-like and independent-authority burden of proof. |
-| `VV-GOV-009` | Calibration against evaluation data, post hoc threshold changes, selective case removal, fixture editing, and tolerance relaxation are closure-blocking unless the claim is reset and independently reassessed. |
-| `VV-GOV-010` | V&V defects must link into the existing defect-closure workflow and remain associated with every affected claim until fixed, bounded, or retired. |
-| `VV-GOV-011` | External-authority level, test coverage, and V&V maturity are separate concepts and must not be substituted for one another. |
-| `VV-GOV-012` | Public language must match evidence: use "verified," "supported for," "corroborated over," or "not assessed" with the named envelope; avoid whole-model validity claims. |
-
-## Target Code and Tooling Architecture
-
-The V&V subsystem must be integrated with openWEPP without placing filesystem,
-reporting, or acceptance-policy concerns inside process kernels.
-
-### Target boundaries
-
-| Boundary | Responsibility |
-| --- | --- |
-| `docs/specifications/subsystems/verification-validation/` | Canonical subsystem contract, schemas, status vocabulary, and claim/evidence rules |
-| `crates/openwepp-vv` | Typed IDs, manifests, criteria results, provenance relationships, validation of records, and deterministic report inputs |
-| `tools/vv/` or a dedicated CLI | Campaign planning, execution adapters, evidence collection, impact analysis, linting, assessment assembly, and report rendering |
-| Domain test adapters | Analytical, manufactured-solution, property, refinement, comparator, observational, and production-consumer harnesses |
-| Work-package and release artifacts | Immutable execution manifests, reviews, assessments, reports, and release snapshots |
-
-Exact names may change during subsystem specification. The ownership boundaries
-are the strategy requirement.
-
-### Code integration requirements
-
-| ID | Requirement |
-| --- | --- |
-| `VV-CODE-001` | Process kernels must not depend on evidence storage, report rendering, network access, or release policy. |
-| `VV-CODE-002` | Production surfaces needed for V&V must expose typed, unit-bearing state or outputs through normal consumers or explicitly diagnostic interfaces; no hidden cwd sentinels. |
-| `VV-CODE-003` | Evidence collection must observe the production path and must not change physics, solver choices, ordering, or tolerances unless the claim explicitly assesses that alternative. |
-| `VV-CODE-004` | Schema parsing and status transitions must fail closed on unknown versions, missing required provenance, invalid units, malformed criteria, or contradictory verdicts. |
-| `VV-CODE-005` | Mechanical criteria may be evaluated automatically; qualitative scientific adequacy and use qualification require an explicit assessment and review record. |
-| `VV-CODE-006` | The toolchain must support a dry planning mode, an execution mode, an assessment mode, and deterministic machine/human report generation. |
-| `VV-CODE-007` | The subsystem must query evidence by claim, contract invariant, process, quantity, dataset, source path, release, status, regime, and freshness. |
-| `VV-CODE-008` | Report generation must be reproducible from retained manifests without rerunning the scientific simulation. |
-| `VV-CODE-009` | Current external-authority registries and work-package evidence must be migrated or referenced; the subsystem must not create a second conflicting authority ladder. |
-| `VV-CODE-010` | The subsystem itself requires schema tests, migration tests, round-trip tests, anti-evasion tests, and evidence-lineage verification. |
-
-The first implementation should prefer a small, versioned JSON or YAML schema
-and typed Rust model over a database service. A database or RO-Crate export can
-be added after the object model and audit requirements prove stable.
-
-## Human and Agent Reports
-
-The same evidence graph serves two views.
-
-An agent-facing report must provide stable IDs, exact statuses, unmet
-obligations, dependency paths, reproduction commands, hashes, machine-readable
-metrics, and permitted next actions. It should allow an agent to answer: "What
-claim is affected by this change, what evidence is stale, and what exact work
-would restore support?"
-
-A human-facing report must lead with:
-
-1. the intended uses that are supported and not supported;
-2. source/binary/configuration identity;
-3. the application envelope and data coverage;
-4. the verification, validation, uncertainty, and review profile;
-5. material biases, failures, defects, and extrapolations;
-6. the meaning and consequence of residual uncertainty; and
-7. links to reproducible evidence rather than raw log dumps.
-
-Reports must show the profile by evidence dimension. A single badge, maturity
-score, or aggregate pass rate may be a navigation aid, but cannot replace the
-profile or hide the weakest required dimension.
-
-## Relationship to Current openWEPP Governance
-
-This strategy extends rather than replaces the repository's strongest current
-controls:
-
-- `SC-*` contracts already provide traceable requirements and science
-  authority.
-- ADR-0017 correctly prevents comparator agreement from becoming validation.
-- ADR-0028 already separates observed-data admission, forcing-robust evidence,
-  calibration avoidance, and conservation.
-- external-authority suites already preserve citations, fixture hashes,
-  provenance, lane posture, and anti-evasion obligations.
-- work packages already require frozen scope, direct evidence, independent
-  reconstruction, consumer-path proof, review, and verification.
-- the integrated validation campaign demonstrates fixed-source end-to-end
-  production, conservation, publication, fail-closed, and release evidence.
-
-Under the new taxonomy, much of the current integrated campaign is strong
-**integration and release verification** plus selected science-authority
-evidence. It is not by itself broad empirical validation of openWEPP predictions
-across application regimes. Historical status names need not be rewritten, but
-future release claims must not infer that broader meaning from them.
-
-The principal gaps this subsystem must close are:
-
-- no canonical claim and application-envelope registry;
-- inconsistent use of the word "validation" across input checking, contract
-  conformance, comparative testing, and empirical evaluation;
-- no unified code/solution/integration/conceptual/empirical evidence profile;
-- limited systematic numerical solution verification;
-- fragmented machine provenance and hand-maintained human summaries;
-- no dependency-aware evidence freshness model; and
-- insufficient cross-regime, held-out empirical validation for several public
-  quantities of interest.
-
-## Adoption Strategy
-
-### Phase 1: Canonicalize claims and language
-
-- Author the V&V subsystem specification and a short ratifying ADR.
-- Define claim, obligation, dataset, execution, assessment, and release-snapshot
-  schemas with stable IDs and status vocabularies.
-- Inventory current evidence without relabeling it more strongly than its
-  referent permits.
-- Select one representative pilot claim spanning a process, a production
-  consumer, and an observed quantity.
-
-Exit condition: the pilot has a reviewed claim envelope and evidence plan, and
-existing evidence can be classified without ambiguity.
-
-### Phase 2: Implement the evidence spine
-
-- Add typed schema support, linting, evidence ingestion, supersession, and
-  report generation.
-- Connect current contract tests, external-authority suites, release gates, and
-  work-package artifacts through adapters rather than rewrites.
-- Generate the pilot's machine manifest and human report from one source.
-- Implement dependency-aware freshness and fail-closed schema validation.
-
-Exit condition: a source change can identify affected pilot obligations, run or
-reuse evidence with review, and generate non-divergent machine and human views.
-
-### Phase 3: Deepen verification and process validation
-
-- Build analytical, manufactured-solution, property, refinement, and numerical
-  uncertainty coverage for important kernels and solvers.
-- Build the process-importance and hierarchical validation matrix for major
-  domains.
-- Admit observational datasets through explicit QA, uncertainty, rights,
-  partition, and transformation records.
-- Run separate-effects and subsystem pilots before expanding to integrated
-  claims.
-
-Exit condition: each release-relevant process has an explicit evidence profile
-or a visible, owned gap; component and coupled claims no longer rely primarily
-on legacy agreement.
-
-### Phase 4: Integrated application and release qualification
-
-- Execute fixed-source hillslope and watershed campaigns across representative
-  regimes and scales.
-- Quantify sensitivity, uncertainty, and guarded extrapolation for public
-  quantities of interest.
-- Generate an immutable release V&V snapshot and independent assessment.
-- Establish a post-audit process for new field and operational observations.
-
-Exit condition: every proposed release use is `SUPPORTED` or
-`SUPPORTED_WITH_LIMITATIONS` at `R3-release`, or is explicitly excluded from
-the release claim. No high-importance failed or insufficient obligation is
-hidden by an aggregate result.
-
-## Eventual Release Basis
-
-An openWEPP release may be technically buildable before it has a sufficient V&V
-basis. Release qualification requires more than green CI.
-
-At minimum, the release V&V snapshot must provide:
-
-- exact source, binary, dependency, schema, and runtime identities;
-- supported intended uses and explicit exclusions;
-- claim-by-claim verification, validation, uncertainty, applicability, and
-  review profiles;
-- process-importance coverage and owned gaps;
-- current code, solution, integration, and release-realization verification;
-- representative empirical evidence for public scientific quantities of
-  interest, including extremes and important regimes;
-- calibration/evaluation separation and dataset pedigree;
-- uncertainty and sensitivity treatment proportional to the claim;
-- unresolved-defect and limitation registers;
-- independent scientific review and evidence verification; and
-- reproducible machine artifacts and a generated human report.
-
-The release statement should say what openWEPP is supported for, over what
-domain, with what uncertainty and limitations. It should not claim that the
-entire model has been proven valid.
-
-## Prohibited Shortcuts
-
-The following cannot close a V&V claim:
-
-- test count, line coverage, or lint success standing in for scientific
-  evidence;
-- exact agreement with a value calculated by the same producer and operands;
+The objective is not to persuade readers that openWEPP is generally correct or
+to preempt their decision. It is to make the strongest defensible bounded
+evidence statement easy to inspect, reproduce, dispute, revise, and apply with
+appropriate caution. Failed cases, exclusions, and reviewer disagreements are
+evidence, not presentation defects.
+
+## Evidence And Public Language
+
+Every dossier keeps the dimensions separate; a pass count, maturity score, or
+aggregate badge cannot recombine them into a developer-issued use verdict. The
+[dossier standard](../standards/scientific-assurance-dossier.md) defines the
+statuses and their full meanings:
+
+- required verification obligations use `PASS`, `FAIL`, `BLOCKED`, or
+  `NOT_RUN`; only `PASS` closes an obligation for the exact realization;
+- empirical assessments use `CORROBORATED_WITHIN_TESTED_DOMAIN`,
+  `MIXED_EVIDENCE`, `CONTRADICTED_WITHIN_TESTED_DOMAIN`,
+  `INSUFFICIENT_EVIDENCE`, or `NOT_EVALUATED`; and
+- an optional application assessment belongs to its named decision owner and
+  context, not to openWEPP's scientific status.
+
+Use "verified against requirements" for software and "corroborated within the
+tested domain" for empirical evidence, always with the named envelope and as-of
+date. Do not use whole-model validity language or translate corroboration into
+application fitness.
+
+The minimum audit basis is exact software and configuration identity; dataset,
+transformation, and calibration/evaluation provenance; metric definitions and
+units; retained commands and results; visible failed evidence and limitations;
+and independent review with finding disposition. A lightweight tracked manifest
+content-identifies every claim-bearing input, transformation, output, figure,
+log, review, and material failed or superseded artifact, and binds those assets
+to the dossier version and its as-of evidence characterizations. Markdown plus
+a manually authored manifest is sufficient initially; a schema, service, or
+dedicated crate is not required.
+
+## Scientific Program
+
+### Empirical evaluation plans contain the science
+
+Before conclusion-bearing execution, an empirical evaluation plan names the
+decisions the evidence may inform; quantities and regimes; named datasets and
+their uncertainty; calibration and held-out partitions; verification
+obligations; metrics, stratifications, and interpretation criteria; and required
+review. A schema or claim identifier cannot substitute for these specifics.
+
+Field evaluation separates a **reconstruction lane**, using measured or
+quality-controlled forcing to examine process response, from an **operational
+lane**, using the forcing products and workflow expected in practice to examine
+total predictive performance. Forcing-robust signatures and forcing-limited
+absolute magnitudes remain distinct, consistent with ADR-0028.
+
+Calibration and evaluation roles are declared before adjustment. Splits prevent
+leakage across physical systems, event histories, climates, and managements;
+random row splitting is not independent when rows share those structures.
+Metrics and visuals are quantity-specific, stratified across the assessment
+domain, and expose relevant bias, residuals, timing, extremes, conservation,
+and uncertainty. An aggregate result cannot hide failed regimes.
+
+Observation error, replicate and natural variability, and scale mismatch are
+part of interpretation, not excuses for poor agreement. Evidence does not
+transfer automatically between plot, hillslope, channel, and watershed scales;
+interpolation and extrapolation are explicit.
+
+### Verification is hierarchical
+
+Verification progresses through requirements and design, code, numerical
+solution, coupled production execution, and release realization. Evidence may
+include analytical or manufactured solutions, independent calculations,
+property tests, refinement and timestep studies, closure reconstruction,
+consumer-path tests, and exact release identities.
+
+Component evidence localizes errors; integrated evidence exposes coupling,
+ordering, scale, and emergent behavior. Neither substitutes for the other. The
+dossier summarizes the relevant profile and links to detailed contract, test,
+closure, comparator, and release evidence. Passing that profile permits the
+empirical results to be interpreted; it does not predetermine their
+corroboration status.
+
+## Governance Minimum
+
+- Canonical `SC-*` contracts remain the authority for intended openWEPP physics;
+  dossiers report evidence rather than replacing them or authorizing a use.
+- Intended decision context, evaluation roles, metrics, and interpretation
+  criteria are frozen before conclusion-bearing execution. Material post hoc
+  changes reset the assessment and receive bias review.
+- Failed cases, known defects, missing evidence, extrapolations, and limitations
+  remain visible and linked to affected evidence statements.
+- A failed mandatory verification obligation blocks verification acceptance. A
+  material empirical contradiction on a verified result surface narrows or
+  rejects the affected representational claim. Neither can be outweighed by
+  favorable evidence in another dimension.
+- Review independence and expertise scale with the consequence of misuse.
+  Release verification requires independent evidence verification; published
+  empirical characterizations require independent scientific review.
+- Calibration against evaluation data, selective case removal, post hoc
+  threshold changes, and tolerance relaxation block a favorable corroboration
+  characterization unless the plan and assessment are reset and independently
+  reassessed.
+- Existing contract, authority-suite, work-package, defect, and release records
+  are linked rather than copied into a conflicting authority ladder.
+- Tooling is proportional. Absence of a generalized evidence platform cannot
+  justify withholding an otherwise auditable dossier.
+
+## Current openWEPP Baseline
+
+openWEPP already has strong contract, integration, consumer-path, conservation,
+fail-closed, release, and comparator controls. The completed integrated
+validation campaign is principally **integration and release verification**
+plus selected science-authority evidence. Its historical name does not make it
+broad empirical corroboration across application regimes.
+
+ADR-0028 records one concrete observed-data instance: a cross-climate SNOTEL
+corpus of snow water equivalent, snow depth, and density across five climates,
+used with a forcing-robust, decomposed rubric. It is a suitable starting point
+for a public snow-process dossier after a current evidence and reproducibility
+audit. It does not establish runoff, erosion, plant growth, routing, or
+watershed-scale corroboration or application fitness.
+
+The principal gaps are the absence of public dossiers for priority quantities,
+insufficient named held-out cross-regime evidence for several public quantities,
+limited systematic solution verification for some solvers, and fragmented
+reproduction details. The immediate response is to publish this honest baseline
+rather than wait for every gap or automation feature to close.
+
+## Adoption Roadmap
+
+### Phase 1: Publish the honest baseline
+
+- Inventory priority public quantities and the decisions they may inform.
+- Publish dossiers that separate verification status from corroborated, mixed,
+  contradicted, insufficient, and unevaluated empirical states without
+  strengthening existing evidence.
+- Pilot the format with the existing SNOTEL snow evidence and one core
+  hydrology or erosion quantity selected through dataset and applicability
+  review.
+
+Exit: a scientific user can find the current evidence, coverage, limitations,
+practical meaning, and reproduction pointers without reading internal logs.
+
+### Phase 2: Execute claim-driven scientific plans
+
+- Author plans with named datasets, quantities, regimes, metrics, partitions,
+  uncertainty treatment, criteria, and review.
+- Strengthen analytical, manufactured-solution, refinement, and numerical
+  evidence where the claims require it.
+- Execute separate-effects, subsystem, and application campaigns in an order
+  driven by process importance and public use.
+- Publish figures, failures, reviewer findings, and updated evidence
+  characterizations as campaigns close.
+
+Exit: pilot characterizations rest on explicit scientific evidence rather than
+legacy agreement or governance classification alone, without claiming to
+decide application fitness.
+
+### Phase 3: Standardize demonstrated recurring needs
+
+- Standardize a versioned manifest format only after fields recur across real
+  dossiers; earlier dossiers may use manually authored content-identity tables.
+- Link existing tests, authority suites, release gates, and work packages rather
+  than rewriting them.
+- Automate report elements and freshness decisions where manual handling creates
+  a demonstrated consistency or audit risk.
+
+Exit: human and any machine views derive evidence statuses from one assessment
+record, while a dossier remains reproducible without a service or database.
+
+### Phase 4: Establish standing evidence stewardship
+
+- Expand evidence across representative climates, soils, topographies,
+  managements, scales, and extremes.
+- Quantify sensitivity, uncertainty, and guarded extrapolation.
+- Add portfolio-scale query, impact analysis, provenance export, and immutable
+  release snapshots only when operating experience justifies them.
+- Establish post-audit comparison with new field and operational observations.
+
+Steady-state condition: each software release passes its declared verification
+gates and carries an immutable, dated snapshot of current empirical
+corroboration, contradiction, gaps, and exclusions. New evidence can supersede
+the scientific snapshot without rewriting release history. No release event
+turns the model into a terminally validated artifact.
+
+A generalized tool is justified only when multiple real campaigns demonstrate
+the same need, manual handling creates material audit risk, and the tool improves
+the public evidence product without duplicating authority. A dedicated crate,
+database, W3C PROV export, or RO-Crate export is a possible later choice, not a
+strategy requirement.
+
+## Release Basis, Evidence Snapshot, And Prohibited Shortcuts
+
+A software release is an exact realization accepted against declared
+verification obligations. Green CI is necessary but is not the whole
+verification basis. Every required obligation must be `PASS`; `FAIL`, `BLOCKED`,
+or `NOT_RUN` is closure-blocking. The release record preserves requirements,
+tolerances, exact source and executable identity, results, unresolved defects,
+independent evidence verification, and reproduction instructions.
+
+The same release carries an immutable **as-of corroboration snapshot** for
+priority public quantities. The snapshot preserves tested domains, empirical
+characterizations, data pedigree, calibration separation, uncertainty,
+applicability, comparative evidence, limitations, review, and public dossier
+identity. `NOT_EVALUATED` and `INSUFFICIENT_EVIDENCE` remain visible and do not
+become verification failures or silent scientific passes. A known contradiction
+on a verified result surface blocks or narrows the affected scientific claim and
+may block a release whose declared purpose depends on that claim.
+
+Release means fit to execute under the software contract. It does not mean fit
+for an unnamed watershed or environmental decision. That latter assessment is
+made separately by the named application decision owner.
+
+The following cannot close a verification obligation, establish empirical
+corroboration, or decide application fitness:
+
+- test count, coverage, complexity, lint, or a release badge standing in for
+  scientific evidence;
+- producer-derived expected values standing in for independent verification;
 - legacy parity standing in for physical validity;
-- conservation standing in for empirical performance;
-- empirical fit standing in for code or solution verification;
+- conservation standing in for empirical performance, or empirical fit standing
+  in for code and solution verification;
 - calibration and evaluation on the same effective data;
-- one favorable aggregate metric hiding failed regimes or quantities;
-- a report without source, binary, input, and transformation provenance;
-- rerunning until green without preserving and explaining failures;
-- carrying evidence to a changed model, schema, or application without an
-  impact assessment; or
-- labeling missing evidence as not applicable merely because it is expensive.
+- a favorable aggregate metric or plot hiding failed regimes or quantities;
+- rerunning until green without retaining and explaining material failures;
+- carrying evidence to a changed model, output, or use without impact review;
+  or
+- calling missing evidence not applicable merely because it is expensive.
 
 ## Research Basis
 
-This strategy adapts, rather than adopts wholesale, practices from high-
-consequence and environmental modeling:
+This strategy adapts practices from high-consequence and environmental modeling
+without adopting a nuclear licensing framework or claiming that one level of
+scrutiny can remove open-system uncertainty:
 
 - [NRC Regulatory Guide 1.203](https://www.nrc.gov/docs/ML0535/ML053500170.pdf)
-  provides the intended-use-first evaluation-model process: determine required
-  capability and important phenomena, establish an assessment base, assess
-  separate and integrated behavior, address scaling and uncertainty, use
-  configuration control and independent review, and document the whole model.
-- [NASA-STD-7009B](https://standards.nasa.gov/standard/NASA/NASA-STD-7009)
-  separates code and solution verification, conceptual and empirical
-  validation, permissible use, data pedigree, uncertainty, results assessment,
-  defects, and reporting over the model life cycle.
-- [EPA environmental-model guidance](https://www.epa.gov/sites/production/files/2015-04/documents/cred_guidance_0309.pdf)
-  emphasizes that model quality is meaningful only for an application,
-  evaluation is continuous, corroboration is not proof of truth, observational
-  uncertainty matters, and independent data are needed to judge robustness.
-- [ASME V&V 20](https://www.asme.org/codes-standards/find-codes-standards/standard-for-verification-and-validation-in-computational-fluid-dynamics-and-heat-transfer)
-  anchors comparison at specified validation variables and points, with
-  uncertainty in both simulation and experiment, and treats interpolation or
-  extrapolation beyond those points as an additional engineering judgment.
-- [Sandia's V&V and predictive-capability report](https://doi.org/10.2172/809603)
-  motivates PIRT-like prioritization, code and solution verification,
-  hierarchical validation, numerical error estimation, statistical validation
-  metrics, and coordination between simulation and experiment.
-- [Sandia's Predictive Capability Maturity Model](https://doi.org/10.2172/976951)
-  separates representation, physics fidelity, code verification, solution
-  verification, validation, and uncertainty while warning that maturity does
-  not itself establish application acceptance.
-- [The VERA-CS V&V plan](https://www.ornl.gov/publication/vera-cs-verification-validation-plan-0)
-  demonstrates hierarchical multiphysics practice: establish acceptable
-  evidence for single-physics components before relying on coupled-system V&V,
-  while automating standardized result tables and figures.
-- [Nearing's erosion-model evaluation method](https://doi.org/10.1002/1096-9837%28200008%2925%3A9%3C1035%3A%3AAID-ESP121%3E3.0.CO%3B2-B)
-  shows why model-observation differences must be interpreted relative to
-  variability in measured erosion data.
-- [Wang et al.'s multi-regime WEPP evaluation](https://doi.org/10.1016/j.iswcr.2022.10.004)
-  illustrates the value of large cross-climate, soil, topography, and management
-  datasets, separate calibrated and uncalibrated results, multiple temporal
-  scales, and explicit failure at event extremes.
-- [W3C PROV-O](https://www.w3.org/TR/prov-o/) and the
-  [RO-Crate specification](https://www.researchobject.org/ro-crate/specification.html)
-  provide useful provenance and research-object concepts for connecting
-  entities, activities, agents, workflows, software, data, and human-readable
-  views without making prose the only audit surface.
+  provides a precedent for declared assessment requirements, graded rigor,
+  configuration identity, applicability, uncertainty, and review. openWEPP uses
+  that discipline for closable verification obligations; it does not treat a
+  developer's empirical evidence characterization as the equivalent of a
+  regulator's authorization for a defined facility and operating envelope.
+- [NASA-STD-7009B](https://standards.nasa.gov/standard/NASA/NASA-STD-7009) and
+  [ASME V&V
+  20](https://www.asme.org/codes-standards/find-codes-standards/standard-for-verification-and-validation-in-computational-fluid-dynamics-and-heat-transfer)
+  support distinct code and solution verification, quantity-specific empirical
+  comparisons, uncertainty, data pedigree, permissible-use boundaries, and
+  decision reporting.
+- [Oreskes, Shrader-Frechette, and Belitz
+  (1994)](https://doi.org/10.1126/science.263.5147.641) distinguish verification
+  of closed mathematical components from the necessarily partial confirmation
+  of models of open natural systems. This strategy uses **corroboration** for
+  the latter so successful comparisons are not mistaken for proof or terminal
+  application fitness.
+- [EPA environmental-model
+  guidance](https://www.epa.gov/sites/production/files/2015-04/documents/cred_guidance_0309.pdf)
+  supports contextual model application, transparent evaluation, calibration
+  independence, uncertainty analysis, peer review, and continuing post-audit.
+- [Sandia's V&V and predictive-capability
+  report](https://doi.org/10.2172/809603) supports hierarchical evidence,
+  process-importance ranking, and numerical-error assessment.
+- [Nearing's erosion-model evaluation
+  method](https://doi.org/10.1002/1096-9837%28200008%2925%3A9%3C1035%3A%3AAID-ESP121%3E3.0.CO%3B2-B)
+  interprets error relative to observed erosion variability.
+- [Wang et al.'s multi-regime WEPP
+  evaluation](https://doi.org/10.1016/j.iswcr.2022.10.004) demonstrates
+  cross-regime datasets, calibrated and uncalibrated results, multiple temporal
+  scales, and explicit limitations at event extremes.
+- [W3C PROV-O](https://www.w3.org/TR/prov-o/) and the [RO-Crate
+  specification](https://www.researchobject.org/ro-crate/specification.html)
+  remain optional future provenance references.
 
-Repository bibliography entries `R-114` through `R-124` record these sources,
+Repository bibliography entries `R-114` through `R-125` record these sources,
 their roles, and their rights posture.

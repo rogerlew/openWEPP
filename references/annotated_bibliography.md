@@ -1316,7 +1316,7 @@ openWEPP note (2026-05-11):
 **Local path**: `not-acquired`; official source: https://www.nrc.gov/docs/ML0535/ML053500170.pdf
 **Reference quality**: `verified-primary-government-guidance`
 **Topic**: Evaluation Model Development and Assessment Process (EMDAP), important-phenomena ranking, assessment bases, scaling, applicability, uncertainty, quality assurance, and documentation.
-**openWEPP V&V role**: Primary nuclear-engineering precedent for intended-use-first, hierarchical, graded, and independently reviewable V&V planning.
+**openWEPP V&V role**: Nuclear-engineering precedent for declared requirements, hierarchical and graded assessment, applicability, uncertainty, configuration control, and independent review. openWEPP applies these disciplines to closable software-verification obligations; this source is not authority for treating developer-characterized environmental evidence as a site-specific licensing or fitness decision.
 **Rights / distribution**: U.S. Government publication; remote link only in this intake.
 
 ## R-115: NASA-STD-7009B - standard for models and simulations
@@ -1334,7 +1334,7 @@ openWEPP note (2026-05-11):
 **Local path**: `not-acquired`; official source: https://www.epa.gov/sites/production/files/2015-04/documents/cred_guidance_0309.pdf
 **Reference quality**: `verified-primary-government-guidance`
 **Topic**: Fit-for-use environmental-model evaluation, conceptual models, quality planning, corroboration, calibration independence, sensitivity, uncertainty, peer review, transparency, and post-audit.
-**openWEPP V&V role**: Primary environmental-model authority for avoiding whole-model validity claims and treating observation quality and application context as part of the assessment.
+**openWEPP V&V role**: Primary environmental-model authority for avoiding whole-model validity claims, treating observation quality and application context as part of the assessment, and maintaining evaluation as a continuing development, application, and post-audit responsibility.
 **Rights / distribution**: U.S. Government publication; remote link only in this intake.
 
 ## R-117: ASME V&V 20 - computational fluid dynamics and heat transfer
@@ -1397,7 +1397,7 @@ openWEPP note (2026-05-11):
 **Local path**: `not-acquired`; canonical web specification at the cited URL.
 **Reference quality**: `verified-primary-open-standard`
 **Topic**: Machine-readable provenance through entities, activities, agents, generation, use, derivation, attribution, and bundles.
-**openWEPP V&V role**: Conceptual model for linking claims, data, executions, software agents, evidence, and supersession without prescribing the first internal wire format.
+**openWEPP V&V role**: Optional future export vocabulary for linking evidence statements, data, executions, software agents, and supersession; not a prerequisite for the human dossier or its first tracked manifest.
 **Rights / distribution**: W3C Recommendation under W3C document terms; remote link only in this intake.
 
 ## R-124: RO-Crate research-object packaging specification
@@ -1406,5 +1406,14 @@ openWEPP note (2026-05-11):
 **Local path**: `not-acquired`; canonical web specification at the cited URL.
 **Reference quality**: `verified-primary-open-specification`
 **Topic**: JSON-LD packaging of research data, software, workflows, provenance, contextual entities, and human-readable previews.
-**openWEPP V&V role**: Candidate future export format for portable V&V evidence bundles generated from the internal evidence graph.
+**openWEPP V&V role**: Candidate future export format for portable dossier evidence bundles after recurring campaigns demonstrate a need; no internal evidence graph is presumed.
 **Rights / distribution**: Apache-2.0 specification and documentation; remote link only in this intake.
+
+## R-125: Oreskes, Shrader-Frechette, and Belitz (1994) on open-system model confirmation
+
+**Citation**: Oreskes, N., K. Shrader-Frechette, and K. Belitz (1994). "Verification, validation, and confirmation of numerical models in the earth sciences." *Science*, 263(5147), 641-646. https://doi.org/10.1126/science.263.5147.641
+**Local path**: `not-acquired`; bibliographic record and abstract: https://pubmed.ncbi.nlm.nih.gov/17747657/
+**Reference quality**: `verified-primary-peer-reviewed`
+**Topic**: The limits of strict verification and validation claims for models of open, incompletely known natural systems; nonuniqueness; and the partial evidentiary role of model confirmation.
+**openWEPP V&V role**: Epistemic basis for separating hard verification of specified mathematical and software propositions from nonterminal empirical corroboration and from decision-owner application fitness. Agreement can add bounded evidence without proving the model true; contradiction can still reject or narrow a bounded claim.
+**Rights / distribution**: `restricted`; publisher article was not acquired or vendored.

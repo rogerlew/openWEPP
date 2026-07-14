@@ -11,6 +11,16 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260714-vv-asymmetric-assurance-reframe-001/` is the completed follow-on that
+  separates hard software-verification acceptance, nonterminal empirical
+  corroboration, and decision-owner application fitness throughout the V&V
+  strategy and dossier standard. It adds a usable application-context worksheet
+  and closes three accepted findings through dual independent verification.
+- `20260714-vv-strategy-scientist-facing-inversion-001/` is the completed
+  scientist-facing inversion of the active V&V strategy. It adds a human-first,
+  content-bound dossier standard, requires review of baseline claims, and
+  defers generalized evidence infrastructure until real campaigns demonstrate
+  recurring needs. Both independent reviews and activation verifications pass.
 - `20260713-adjudicated-crap-closure-gate-001/` is the completed implementation
   that ratchets the CQR campaign's empty actionable CRAP set into a touched-file
   and workspace-wide release/closure gate. Its final fresh census passed at
