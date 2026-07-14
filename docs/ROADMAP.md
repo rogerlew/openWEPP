@@ -1,7 +1,7 @@
 # openWEPP Engine Roadmap
 
 Status: living — **canonical**, **forward-only planning queue**
-Last updated: 2026-07-13
+Last updated: 2026-07-14
 Audience: all contributors
 Owner: maintainers (Claude Code maintains this document)
 
@@ -247,6 +247,18 @@ parity, stabilized PASS Parquet metadata, and proved fresh same-binary H2637
 default/direct byte identity for HBP/WAT/PASS/loss/plot with
 `compatibility_edge_invocations=0`.
 (Completed-rung detail and commits: [work-packages execution log](work-packages/README.md).)
+
+## Scientific Assurance Queue
+
+The assurance program publishes bounded evidence that scientific users can
+inspect and apply; it does not issue a whole-model or site-specific fitness
+verdict. Software verification remains hard-gated, empirical corroboration
+remains dated and revisable, and the application decision remains with its
+named owner.
+
+| # | Item | Mechanism | Acceptance target | State |
+| --- | --- | --- | --- | --- |
+| **ASSURE-01** | **Dossier lifecycle, ownership, and SNOTEL vertical slice** | Define who owns the public model narrative, evaluation method, dossier evidence, independent review, release snapshot, wepppy discovery, and application decision. Implement only the deterministic source/template/build/check surface needed to prove those boundaries with one real dossier. | Canonical lifecycle/ownership/build contract; material-change trigger matrix; typed content-hashed one/all build; immutable snapshot and review-lock behavior; scientist-facing why/how/what/application links; honest SNOTEL evidence inventory and status; release drift gate; openWEPP-owned wepppy export/handoff; dual independent review and verification. | **queued 2026-07-14** — package: [work-packages/20260714-assurance-dossier-lifecycle-foundation-001/package.md](work-packages/20260714-assurance-dossier-lifecycle-foundation-001/package.md). General evidence databases, workflow engines, portfolio query/caching, and wepppy mutation remain out of scope. |
 
 ---
 
