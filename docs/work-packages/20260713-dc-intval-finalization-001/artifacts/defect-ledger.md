@@ -1,6 +1,6 @@
 # Defect Ledger
 
-Status: `CORRECTION-CANDIDATE-PASS`
+Status: `PASS-INTEGRATED-VALIDATION`
 
 | Defect | Reproduction | Mechanism | Authority/owner | Regression | Disposition |
 | --- | --- | --- | --- | --- | --- |
@@ -14,7 +14,7 @@ Status: `CORRECTION-CANDIDATE-PASS`
 | `INTVAL-FROST-THAW-CLEAR-001` | all eight zero-restrictive watchlist replays progress to `no-final-frost clear cannot debit` at 1.29-1.31 mm | runner clears prior frozen depth and restores residual water before R4W, then incorrectly rebalances to the pre-`frwatc` scalar | `SC-SNOWFREEZE-001` rev 117, pinned `frostn.for:686`/`frwatc.for:80-137`, `SC-WATBAL-001#INV-WATBAL-095` | exact 1.303248764 mm thaw-complete vector red/green; all eight real CLI replays green | `CORRECTED-RELEASE-GREEN` |
 | `INTVAL-CONTRACT-VERSION-BIND-001` | candidate 4 full workspace: 32 failures requiring missing `contract_version: 115` | snow/paradigm integration marker guards lag the contract header, whose history already contains revision 116 and whose current amendment is 117 | test-only marker bindings to canonical `SC-SNOWFREEZE-001` header | candidate 4 family red; all 32 target binaries 120/120 green after exact marker update | `CORRECTED-RELEASE-GREEN` |
 | `INTVAL-EROSION-CLASS-FRACTION-001` | candidate 5: OR-H0081 and OR-H0204 fail `erosion.wave1.publication.class_fraction must be nonnegative` | pinned do-40 raises every class to an absolute `1e-15`; at trace `ldbot` the floored sum exceeds total and label 50 redistributes a negative shortfall | `SC-SED-001#INV-SED-017` rev 55; pinned `enrich.for:341-377` with deliberate correction of its degenerate trace-load behavior | direct trace-load negative-fraction vector red/green; exact OR-H0081 and OR-H0204 real CLI green | `CORRECTED-RELEASE-GREEN` |
-| `INTVAL-GROUNDWATER-TERMINAL-STORAGE-001` | restarted campaign independent H2637 reconstruction cannot observe terminal reservoir delta; real manifest regression exits 100 at missing initial storage | run summary drops existing day-output `storage_before/after` and terminal exports while publishing only cumulative recharge/baseflow/seepage | `SC-GWBASEFLOW-001#INV-GWBASEFLOW-004/008` rev 0.1.2 | real H2637 manifest reconstruction red/green; focused summary/Clippy green; exact release and campaign restart required | `CORRECTED-RELEASE-GREEN` |
+| `INTVAL-GROUNDWATER-TERMINAL-STORAGE-001` | restarted campaign independent H2637 reconstruction cannot observe terminal reservoir delta; real manifest regression exits 100 at missing initial storage | run summary drops existing day-output `storage_before/after` and terminal exports while publishing only cumulative recharge/baseflow/seepage | `SC-GWBASEFLOW-001#INV-GWBASEFLOW-004/008` rev 0.1.2 | real H2637 manifest reconstruction red/green; focused summary/Clippy green; final exact release and full campaign restart pass | `CORRECTED-INTEGRATED-GREEN` |
 | `INTVAL-TEST-LINT-003` | candidate 7 exits 101 in Clippy before tests | contract-derived recurrence assertions extend the intentionally single-run H2637 end-to-end test to 107 lines | test-only lint posture; assertions and production behavior unchanged | function-scoped `too_many_lines` annotation and candidate restart | `CORRECTED-RELEASE-GREEN` |
 
 ## INTVAL-AUTH-BIND-001 Seven-Gate Record
@@ -123,7 +123,7 @@ Evidence class: **Ran + Static**.
    `3143.153396...` and four `-785.538349...`, then passed after correction.
 7. Validation: all ten HB04 characterizations and crate Clippy pass; rebuilt
    release CLI replays of exact OR-H0081 and OR-H0204 both exit zero. Candidate
-6 is the full family and next-ordered-defect gate.
+   6 is the full family and next-ordered-defect gate.
 
 ## INTVAL-GROUNDWATER-TERMINAL-STORAGE-001 Seven-Gate Record
 

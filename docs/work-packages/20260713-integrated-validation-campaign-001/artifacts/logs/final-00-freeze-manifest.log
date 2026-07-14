@@ -1,0 +1,12 @@
+de520f1ff867ca5c65b1f82dfe32a19c213ae18c
+rustc 1.92.0 (ded5c06cf 2025-12-08)
+cargo 1.92.0 (344c4567c 2025-10-21)
+cargo-nextest 0.9.138 (fc97e97bb 2026-06-21)
+release: 0.9.138
+commit-hash: fc97e97bbe0a3927482a694247da00c099f4269e
+commit-date: 2026-06-21
+host: x86_64-unknown-linux-gnu
+Linux forest 6.8.0-111-generic #111-Ubuntu SMP PREEMPT_DYNAMIC Sat Apr 11 23:16:02 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+375ccc296ed1ea491f599ff1b1a25b415d494a2a
+42b7d827d842ecbe75843175a80ab4f67a097784156658df8fb849161eb98958  /workdir/wepp-forest/docs/work-packages/20260503-wb05b-forest-hillslope-closure-sweep/artifacts/audits/_meta/defect_seeds.csv
+42214345a228d27a0536b771dd73068dc897d369f54cb8a197457dea675e26ab  /workdir/wepp-forest/docs/ablation/hillslope_watchlist.csv

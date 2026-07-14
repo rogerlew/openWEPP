@@ -1,17 +1,17 @@
 # Disposition
 
-Status: `HOLD-INTEGRATED-VALIDATION`
+Status: `PASS-INTEGRATED-VALIDATION`
 
-Evidence class: **Ran + Static**
+Evidence class: **Ran + Static**.
 
-The frozen-source domain lanes pass, but the required default release candidate
-command exits 101. Its threaded `cargo test --workspace` runs three explicitly
-nextest-only H2637 selector tests in one process; shared environment makes all
-three accept runs that must fail closed. The missing-coefficients case passed
-alone under nextest at the same commit; the two mutual-exclusion attributions
-are source-supported and were not separately rerun.
+The complete campaign restart at
+`de520f1ff867ca5c65b1f82dfe32a19c213ae18c` passes every domain,
+real-consumer, independent-reconstruction, fail-closed, authority, release,
+and stability obligation. The exact release finishes main stability
+1,166/1,166 and watchlist 19/19 after full workspace 1,960/1,960.
 
-Defect `INTVAL-REL-001` is owned by
-`20260713-dc-intval-release-nextest-isolation-001`. Integrated validation must
-restart in full after that package lands and the default release gate passes.
-No partial PASS is claimed.
+No unresolved in-scope defect, contract gap, regression, evidence gap, or
+accepted-but-unfixed review/verification finding remains. The earlier
+`HOLD-INTEGRATED-VALIDATION`
+and first restart are superseded by this required full fixed-source restart;
+their evidence is not reused for terminal acceptance.

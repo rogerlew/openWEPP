@@ -1,6 +1,6 @@
 # Integrated Production Validation Campaign
 
-Status: `HOLD-INTEGRATED-VALIDATION`
+Status: `PASS-INTEGRATED-VALIDATION`
 
 Package ID: `20260713-integrated-validation-campaign-001`
 
@@ -32,20 +32,22 @@ The result is exactly `PASS-INTEGRATED-VALIDATION` or
 
 - [x] (2026-07-13 UTC) Author the autonomous campaign package, kickoff prompt,
   required-reading map, artifact scaffold, roadmap entry, and catalog entry.
-- [x] (2026-07-13 UTC) Freeze clean source `f80a1151`, verify fixture trees and
-  local release prerequisites, and publish the executable scenario matrix.
+- [x] (2026-07-13 UTC) Freeze the terminal corrected source `de520f1f`, verify
+  fixture trees and local release prerequisites, and publish the executable
+  scenario matrix.
 - [x] (2026-07-13 UTC) Pass hillslope, erosion/MOFE, snow/frost, watershed
   routing/publication, and package fail-closed lanes at frozen source.
-- [ ] Execute release, required-authority, and full-workspace gates (blocked:
-  default release workspace libtest violates H2637 process isolation).
-- [x] (2026-07-13 UTC) Publish reconstruction, consumer, publication,
-  fail-closed, comparator, and regression assessment evidence.
-- [x] (2026-07-13 UTC) Complete dual independent review and fix every accepted
-  documentation/successor finding.
-- [x] (2026-07-13 UTC) Complete dual independent verification; both verifiers
-  passed the corrected HOLD record and full-restart rule.
-- [x] (2026-07-13 UTC) Commit-ready exact HOLD disposition and updated
-  roadmap/catalog state; terminal evidence is scoped and clean.
+- [x] (2026-07-13 UTC) Execute the exact no-skip-flags release, required-authority,
+  and full-workspace gates: 1,960/1,960 full tests, main stability 1,166/1,166,
+  and watchlist 19/19.
+- [x] (2026-07-13 UTC) Publish fresh post-correction reconstruction, consumer,
+  publication, fail-closed, comparator, and regression assessment evidence.
+- [x] (2026-07-13 UTC) Complete terminal dual independent review and fix every
+  accepted finding; both final reviews pass with no unresolved item.
+- [x] (2026-07-13 UTC) Complete terminal dual independent verification; both
+  verifiers return PASS with no unresolved blocker.
+- [x] (2026-07-13 UTC) Prepare the exact PASS disposition and updated
+  roadmap/catalog state for the terminal clean-worktree commit.
 
 ## Surprises & Discoveries
 
@@ -57,6 +59,10 @@ The result is exactly `PASS-INTEGRATED-VALIDATION` or
   nextest. The missing-coefficients guard passes alone; it and two
   source-related mutual-exclusion guards fail together in the release lane
   through shared environment collision.
+- The first corrected restart exposed a real evidence defect not found by the
+  passing release gate: terminal groundwater reservoir state was not observable
+  to an independent consumer. Contract-first publication of existing `S0`,
+  `SN`, `QbN`, and `QsN` operands forced one more complete restart.
 
 ## Decision Log
 
@@ -78,10 +84,10 @@ The result is exactly `PASS-INTEGRATED-VALIDATION` or
 
 ## Outcomes & Retrospective
 
-Execution reached `HOLD-INTEGRATED-VALIDATION`. All domain and focused consumer
-lanes passed, but the mandatory default release lane failed before authority,
-stability, and final gates. `INTVAL-REL-001` is scaffolded as the bounded
-release-harness correction; the complete campaign must restart after it closes.
+Execution reached `PASS-INTEGRATED-VALIDATION` at frozen source `de520f1f`.
+Every domain, fail-closed, consumer, reconstruction, authority, release, and
+stability lane passes at that source. Earlier HOLD and invalidated restart
+evidence is retained for provenance but does not carry terminal acceptance.
 
 ## Context And Orientation
 

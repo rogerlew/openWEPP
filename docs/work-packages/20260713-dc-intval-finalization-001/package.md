@@ -1,6 +1,6 @@
 # Finalize Integrated Validation Through Iterative Defect Closure
 
-Status: `IN_PROGRESS`
+Status: `PASS-INTEGRATED-VALIDATION`
 
 Package ID: `20260713-dc-intval-finalization-001`
 
@@ -37,13 +37,19 @@ continuous closure loop.
   `INTVAL-AUTH-BIND-001`; record the initial reading map and write set.
 - [x] (2026-07-13 UTC) Restore the seven required-suite bindings as one
   coherent first batch.
-- [x] (2026-07-13 UTC) Iterate six exact release candidates until authority,
-  binaries, lint, and
-  both stability suites pass without skips.
-- [ ] Freeze the passing candidate and restart every integrated-validation
-  phase; return to the correction loop for any in-repository blocker.
-- [ ] Complete final gates, dual review/disposition, dual verification, final
-  assessment, roadmap/catalog closure, and commit.
+- [x] (2026-07-13 UTC) Iterate eight exact release candidates until authority,
+  binaries, lint, full workspace, and both stability suites pass without skip
+  flags.
+- [x] (2026-07-13 UTC) Freeze `de520f1f` and restart every integrated-validation
+  phase after correcting the first restart's groundwater-observability defect.
+- [x] (2026-07-13 UTC) Pass the final exact release: 1,960/1,960 full tests,
+  main stability 1,166/1,166, and watchlist 19/19.
+- [x] (2026-07-13 UTC) Complete dual independent review and disposition; both
+  reviews pass after correcting two accepted evidence-exactness findings.
+- [x] (2026-07-13 UTC) Complete dual independent verification; both verifiers
+  return PASS after one accepted skip-terminology correction.
+- [x] (2026-07-13 UTC) Finalize assessment, roadmap/catalog closure, and the
+  terminal evidence set for the clean-worktree commit.
 
 ## Surprises And Discoveries
 
@@ -51,6 +57,10 @@ continuous closure loop.
   incomplete authority provenance, then seven active suites bound to five
   deleted targets. This package replaces one-layer successor churn with one
   bounded iterative closure campaign.
+- A passing release candidate was insufficient evidence for terminal closure:
+  independent H2637 reconstruction found terminal groundwater state missing
+  from the public run manifest. Publishing existing timing-qualified state and
+  rerunning the entire campaign closed that evidence boundary.
 
 ## Decision Log
 
@@ -66,9 +76,13 @@ continuous closure loop.
 
 ## Outcomes And Retrospective
 
-Queued. At terminal disposition record every correction candidate, exact
-release and integrated scenario result, consumer/conservation evidence, review
-findings, and the exact PASS or legitimate external/authority HOLD boundary.
+The iterative campaign corrected nine semantic/authority defect families plus
+three test-lint findings, froze `de520f1f`, and completed a full integrated
+restart.
+Fresh real-consumer reconstruction closes all requested water, groundwater,
+sediment, snow/frost, publication, and W11B claims. Exact release and every
+scenario row pass. Dual review and dual verification pass with every accepted
+finding corrected; no administrative or technical blocker remains.
 
 ## Known Starting Inventory
 
@@ -145,8 +159,8 @@ reading map before edits.
 ## Required Gates
 
 Each candidate runs applicable focused tests, anti-evasion, AUTH11, and the
-exact no-skip release command with the pinned cohort/watchlist inputs and suite
-counts recorded by `INTVAL-REL-001`:
+exact no-skip-flags release command with the pinned cohort/watchlist inputs and
+suite counts recorded by `INTVAL-REL-001`:
 
     bash tools/release/run_release_candidate_gates.sh \
       --cohort-seeds-csv /workdir/wepp-forest/docs/work-packages/20260503-wb05b-forest-hillslope-closure-sweep/artifacts/audits/_meta/defect_seeds.csv \

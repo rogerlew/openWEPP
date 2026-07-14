@@ -1,16 +1,19 @@
 # Comparator Delta Review
 
-Status: `BLOCKED-PRE-FIX`
+Status: `PASS`
 
-Evidence class: **Static** posture audit; release/stability results blocked.
+Evidence class: **Ran + Static**.
 
-The campaign introduces no production or physics delta to compare. Legacy
-values used by p61/H2637 tests are broad regression-order flags only; their
-acceptance is independently controlled by conservation, typed authority, real
-consumer, and contract-derived bounds. The release stability lane may surface
-current legacy deltas. Each must be recorded with units, time quantum, area
-basis, lineage stage, and confidence; no mismatch is labeled an openWEPP defect
-without independent authority, and no match substitutes for closure. Command
-16 failed before stability, so no release comparator-delta disposition exists
-for this frozen source. The post-fix campaign must produce it from a full
-restart.
+The terminal exact stability harness passes all 1,166 main cases and all 19
+watchlist cases at frozen source
+`de520f1ff867ca5c65b1f82dfe32a19c213ae18c`. No new blocking comparator flag
+remains. The stability JSON SHA-256 is
+`6e855d94a5d1035c58db2942dbf2668e315d861a1bf1dd6de9a4d4daf5dee6ea`.
+
+Comparator agreement remains a diagnostic flag, not the implementation
+target. Terminal acceptance instead rests on current science contracts,
+contract-derived red/green vectors, exact real-case replays, independent
+conservation arithmetic, and real downstream consumers. The class-fraction
+correction deliberately rejects invalid negative legacy trace-load behavior;
+its authority and bounded activation are recorded in `SC-SED-001` revision 55
+and the DC defect ledger.

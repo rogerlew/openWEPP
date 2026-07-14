@@ -11,14 +11,12 @@
 
 ## Reusable Execution Plans And Templates
 
-- `20260713-integrated-validation-campaign-001/package.md` is the executed-HOLD
-  fixed-source production validation campaign authorized by the completed CQR
-  `GO-INTEGRATED-VALIDATION` decision. It covers hillslope hydrology,
-  erosion/MOFE, snow/frost, watershed hourly routing/publication, fail-closed
-  and release lanes, independent conservation reconstruction, and dual
-  review/verification. Execution ends exactly `PASS-INTEGRATED-VALIDATION` or
-  `HOLD-INTEGRATED-VALIDATION`; semantic corrections route to a separate
-  DC-ExecPlan.
+- `20260713-integrated-validation-campaign-001/package.md` is the completed
+  `PASS-INTEGRATED-VALIDATION` fixed-source production campaign authorized by
+  CQR `GO-INTEGRATED-VALIDATION`. After its initial HOLD and correction chain,
+  the full restart at `de520f1f` passed every hydrology/groundwater,
+  erosion/MOFE, snow/frost, watershed publication/routing, fail-closed,
+  real-consumer, reconstruction, authority, release, and stability obligation.
 - `20260713-dc-intval-release-nextest-isolation-001/package.md` is the executed-
   HOLD correction for `INTVAL-REL-001`. Its source guard and canonical full
   nextest correction passed 1,945/1,945 workspace tests, then required fixture
@@ -27,12 +25,13 @@
   metadata-only correction for `INTVAL-AUTH-PROV-001`. Exact release accepted
   its Git-verifiable provenance after 1,946/1,946 workspace tests, then exposed
   `INTVAL-AUTH-BIND-001` in the protected required-authority lane.
-- `20260713-dc-intval-finalization-001/package.md` is the queued terminal
-  iterative DC campaign. It begins with seven active required suites bound to
-  five targets deleted by `a381702b`, then owns every correctable release,
-  authority, stability, and restarted integrated-validation blocker through
-  verified `PASS-INTEGRATED-VALIDATION`; it does not create piecemeal successor
-  packages for intermediate gate failures.
+- `20260713-dc-intval-finalization-001/package.md` is the completed terminal
+  iterative DC campaign. It restored seven active required-suite bindings,
+  corrected every subsequently exposed in-repository defect under the
+  seven-gate/contract-first bar, froze `de520f1f`, and produced the final exact
+  release result: full workspace 1,960/1,960, main stability 1,166/1,166, and
+  watchlist 19/19, followed by a complete integrated restart and independent
+  reconstruction.
 
 - `../agent-guidance-map.md` and `../../tools/agents/find-agents` provide fast
   discovery for applicable `AGENTS.md` files. Before package edits, run

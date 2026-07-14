@@ -1,10 +1,10 @@
 # Integrated Validation Artifacts
 
-Status: `QUEUED`
+Status: `PASS-INTEGRATED-VALIDATION`
 
-During execution populate intake, intended-write-set, scenario-matrix,
+The terminal record contains intake, intended-write-set, scenario-matrix,
 operand-lineage, consumer-path, conservation-reconstruction,
 publication-identity, fail-closed, comparator-delta, gate, assessment, dual
 review/disposition, dual verification, disposition, and worker-handoff records.
-Logs belong under `artifacts/logs/`. Commit compact evidence, not binaries or
-unbounded run directories.
+Logs are under `artifacts/logs/`. Earlier HOLD and invalidated-restart records
+are retained as provenance; `final-*` evidence owns terminal acceptance.

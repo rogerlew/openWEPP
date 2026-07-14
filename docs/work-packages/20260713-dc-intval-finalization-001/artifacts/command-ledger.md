@@ -1,6 +1,6 @@
 # Command Ledger
 
-Status: `RELEASE-CANDIDATE-PASS`
+Status: `PASS-INTEGRATED-VALIDATION`
 
 Evidence class: **Ran** unless marked otherwise.
 
@@ -41,6 +41,9 @@ Evidence class: **Ran** unless marked otherwise.
 | focused groundwater summary, runner/orchestrator Clippy, and real H2637 recurrence after producer correction | PASS; summary 1/1, all-target Clippy, H2637 1/1 after 459.08 s; timing and post-export residuals both about `-4.25e-11 m3` | `logs/23-groundwater-terminal-storage-green.log`, `.time`, `.exit`; manifest SHA-256 `ad939c97cfaaf4f2313827b48f99a346ed582f25f2ede03d12f1fe8c07e22eee` |
 | exact release candidate 7 | FAIL, exit 101 at workspace Clippy before tests; H2637 real-consumer test is 107 lines after recurrence assertions | `logs/24-release-candidate.log`, `.time`, `.exit` |
 | exact fixed-source release candidate 8 | PASS, exit 0 after 51:15.13; fmt/Clippy, full nextest 1,960/1,960, deny, fixture provenance, all required authority, release binaries/sidecars/lint, main stability 1,166/1,166, and watchlist 19/19 all pass | `logs/25-release-candidate.log`, `.time`, `.exit`, `-authority-results.md`, `-hillstab-results.json` (SHA-256 `7538b1ef17958b84dd5b0f4e998d9cdefa9c5aa026e25132aa5e1bdc89750f96`) |
+| final frozen-source integrated domain restart | PASS; H2637 positive/three fail-closed selections, p61/p102, erosion 368/368, frost 320/320, watershed consumers, runner 214/214, watershed 129/129 | integrated campaign `final-00-*` through `final-15-*` logs |
+| final independent reconstruction and real-consumer replay | PASS; complete H2637 surface/groundwater, p61/p102, snow/frost, 14-product semantic identity, and W11B same-grid/baseflow-once evidence | integrated campaign `final-conservation-and-consumer-evidence.md` and `final-reconstruction-*` logs |
+| final frozen-source exact release | PASS, exit 0 after 50:29.56; full 1,960/1,960, deny, provenance, required authority, release artifacts/lint, main 1,166/1,166, watchlist 19/19 | integrated campaign `logs/final-16-release-candidate.*`; stability SHA-256 `6e855d94a5d1035c58db2942dbf2668e315d861a1bf1dd6de9a4d4daf5dee6ea` |
 
 ## External release inputs
 

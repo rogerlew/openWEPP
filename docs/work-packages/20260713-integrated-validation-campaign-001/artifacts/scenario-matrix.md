@@ -1,37 +1,23 @@
 # Scenario Matrix
 
-Status: `HOLD-INTEGRATED-VALIDATION`
+Status: `PASS-INTEGRATED-VALIDATION`
 
-Frozen source: `f80a115148e75a08269eb14a8c1b0e7791ca891a`.
+Frozen source: `de520f1ff867ca5c65b1f82dfe32a19c213ae18c`.
 
-| Lane | Command group | Fixture/output and real consumer | Required evidence | Result | Status |
-| --- | --- | --- | --- | --- | --- |
-| Intake | anti-evasion script + AUTH11 nextest | authority registry/required-suite guards | no evasion or binding failure | anti-evasion exit 0; AUTH11 2/2 in 1.37 s | PASS |
-| H2637 | four named `laned_shadow_h2637` selections | H2637 WAT/HBP through production hillslope runner | active-owner publication and three routing-authority failures; numeric groundwater reconstruction incomplete | corrected ignored positive 1/1 in 7:21.69; three negative selections 1/1 each | PASS |
-| Erosion | p61, p102, erosion profile | production direct erosion and downstream OFE/HBP | nonzero signal and class/total continuity | p61 1/1; p102 1/1; profile 367/367 in 2:28.08 | PASS |
-| Snow/frost | frost profile | production runner/direct winter state | SWE/liquid/frozen carry and failures | profile 320/320 in 9:17.45 | PASS |
-| Watershed | W7R, MT3, totalwatsed3, hourly tests | watershed CLI and dependency-ordered channels | jobs identity, same-grid consumer, closure, and command 13 external-baseflow-once assertion | W7R 1/1; MT3 7/7; totalwatsed3 17/17; hourly 30/30 | PASS |
-| Fail-closed | runner + watershed packages | public HBP/WAT/manifest/channel inputs | typed rejection and no partial publication | runner 213/213; watershed 129/129 | PASS |
-| Release | release candidate script, default lanes | release binaries, lint, authority, stability | all required lanes PASS | exit 101 after 8:50.55; three H2637 shared-environment tests failed in broad parallel execution | FAIL |
-| Closure | fmt, Clippy, full nextest, deny, docs, diff | frozen source plus package evidence | all final gates PASS | stopped after the real nonzero release gate | BLOCKED |
+| Lane | Exact command/selection | Fixture/output | Producer -> real consumer | Required evidence | Result | Log |
+| --- | --- | --- | --- | --- | --- | --- |
+| Intake | `bash tools/release/check_authority_suite_antievasion.sh`; `cargo nextest run --test auth11_required_suite_obligation_guards_contract` | authority registry, suite specs, registered test targets | registry/suite declarations -> anti-evasion and generic binding guards | frozen source, active required targets, no evasion | PASS; AUTH11 3/3 | `logs/final-00-*`, `logs/final-01-auth11.log` |
+| H2637 positive | `cargo nextest run --test laned_shadow_h2637 --run-ignored ignored-only -E 'test(=h2637_native_active_owner_routes_and_closes)'` | H2637 run manifest, HBP, pass, WAT | direct day frames -> production hillslope runner/manifest and watershed HBP intake | active owner; surface closure; complete `S0`/`SN`/`QbN`/`QsN` groundwater recurrences; hashes | PASS, 1/1 | `logs/final-02-*`, `logs/final-reconstruction-arithmetic.log` |
+| H2637 negative | three exact `laned_shadow_h2637` selections: `h2637_active_fails_closed_without_routing_coefficients`, `h2637_default_mixed_routing_coefficients_fails_closed`, `h2637_default_malformed_routing_coefficients_fails_closed` | isolated H2637 output roots | parsed routing authority -> production runner admission | missing, mixed, and malformed coefficients reject before publication | PASS, 1/1 each | `logs/final-03-*` through `final-05-*` |
+| Erosion/MOFE | `cargo nextest run --test erosion_single_ofe_p61_sediment`; `cargo nextest run --test erosion_multi_ofe_p102_chain`; `cargo nextest run --workspace --profile erosion` | p61/p102 pass Parquet and HBP; erosion suite fixtures | Wave-1 direct erosion -> strict pass/HBP readers and chained OFE consumer | nonzero total/class signal; runoff/sediment/class closure; OFE continuity | PASS, 1/1, 1/1, 368/368 | `logs/final-06-*` through `final-08-*`; `logs/final-reconstruction-arithmetic.log` |
+| Snow/frost | `cargo nextest run --workspace --profile frost`; target `pl14s_tier_a_candidate_emission_and_replay_contract`, selection `simimpl18_contract_requires_cold_day_partition_zero_rm_and_runtime_snow_storage`; target `dff_ws2_ksatadj_direct_runtime`, selection `dff_ws2_forest_high_severity_loam_runs_with_live_direct_ksatadj_effect` | production WAT and next-day winter carry | winter column/frost lane -> runner WAT/carry consumer | SWE/liquid/frozen storage closure; physical-depth alias rejection; fail-closed carry | PASS, profile 320/320 and focused 2/2 | `logs/final-09-*`, `logs/final-reconstruction-snow-*`, `logs/final-reconstruction-frost-*` |
+| Watershed publication | exact W7R p102 selection; `cargo nextest run -p openwepp-runner --test mt3_hbp_hourly_consumer_contract`; `cargo nextest run -p openwepp-runner --test totalwatsed3_cli_contract` | p102 HBP/pass plus 14 serial/parallel Parquet products | hillslope HBP -> `HillslopeContribution` -> watershed frame -> totalwatsed3/EBE | nonzero routed sediment; raw-export alias rejection; jobs 1/4 semantic identity | PASS, 1/1, 7/7, 17/17 | `logs/final-10-*` through `final-12-*`; `logs/final-reconstruction-arithmetic.log` |
+| W11B hourly routing | `cargo nextest run -p openwepp-watershed-orchestrator hourly_tests`; runner target `mt3_hbp_hourly_consumer_contract`, selection `wshedw11b_two_channel_cli_consumes_same_grid_sediment_egress`; watershed-orchestrator selections `wshedw11b_two_channel_direct_consumer_reads_same_grid_class_egress` and `wshedw11b_production_baseflow_is_external_once_across_two_channels` | two-channel hourly HBP, EBE, channel water balance | upstream/local HBP arrays -> typed interval state -> downstream channel/EBE | water/sediment/storage closure; timing shape; same-index class ingress; baseflow exactly once | PASS, 30/30 plus focused 3/3 | `logs/final-13-*`, `logs/final-reconstruction-w11b-*` |
+| Package fail-closed | `cargo nextest run -p openwepp-runner`; `cargo nextest run -p openwepp-watershed-orchestrator` | public HBP/WAT/manifest/channel inputs | strict parsers/orchestrators -> public outputs | invalid inputs fail before accepted or stale publication | PASS, 214/214 and 129/129 | `logs/final-14-*`, `logs/final-15-*` |
+| Exact release | `bash tools/release/run_release_candidate_gates.sh --cohort-seeds-csv /workdir/wepp-forest/docs/work-packages/20260503-wb05b-forest-hillslope-closure-sweep/artifacts/audits/_meta/defect_seeds.csv --watchlist-csv /workdir/wepp-forest/docs/ablation/hillslope_watchlist.csv --expect-suite wb05b_1166=1166 --expect-suite release_gate_watchlist=19` | pinned external cohort/watchlist; release binaries/sidecars; authority and stability results | source/tests/contracts -> release artifact consumers and real stability CLI | fmt, Clippy, full nextest, deny, provenance, required authority, release lint, both expected suite counts; no skip flags | PASS; full 1,960/1,960, main 1,166/1,166, watchlist 19/19 | `logs/final-16-release-candidate.*`, `final-release-artifact-hashes.md` |
 
-## Executed Commands And Logs
-
-Evidence class: **Ran** at frozen production source
-`f80a115148e75a08269eb14a8c1b0e7791ca891a`.
-
-Every executed command has a stable `.log` and `/usr/bin/time -v` `.time`
-record under `artifacts/logs/`; the complete command-level ledger is in
-`gate-results.md`. The positive H2637 test is source-marked `#[ignore]`, so its
-plan selection was corrected to:
-
-```text
-cargo nextest run --test laned_shadow_h2637 --run-ignored ignored-only -E 'test(=h2637_native_active_owner_routes_and_closes)'
-```
-
-It selected and passed exactly one test; no zero-test result or libtest timeout
-fallback was used. All other commands retained the literal package command.
-
-Execution stopped at the default, no-skip release candidate command after its
-real exit 101. Phase 6 closure commands are `BLOCKED`, not silently deferred or
-reported as passing.
+Every row was rerun after the terminal groundwater-observability correction at
+the same frozen source. Invalidated `restart-*` and earlier HOLD evidence are
+retained for provenance but do not carry terminal acceptance. Exact arithmetic,
+units, timing bases, hashes, and rejected aliases are recorded in
+`final-conservation-and-consumer-evidence.md`.

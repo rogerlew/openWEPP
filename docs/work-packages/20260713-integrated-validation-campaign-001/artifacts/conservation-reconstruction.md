@@ -1,26 +1,21 @@
 # Conservation Reconstruction
 
-Status: `PARTIAL-PRE-FIX-BINDING`
+Status: `PASS`
 
-Evidence class: **Ran + Static** arithmetic test binding; incomplete campaign
-closure.
+Evidence class: **Ran + Static** at frozen source
+`de520f1ff867ca5c65b1f82dfe32a19c213ae18c`.
 
-Independent readers in the named tests reconstruct:
+The fresh restart reconstruction is recorded in
+`final-conservation-and-consumer-evidence.md`. Independent output readers close:
 
-- p61: pass-Parquet `sedcon_1..5 * runvol` against `tdet`, and HBP hourly
-  runoff/sediment sums against pass `runvol` and `tdet-tdep`;
-- p102: HBP `sum(S_h)` against chain detachment minus deposition, `sum(V_h)`
-  against outlet `runvol`, and changed OFE-2 texture against exit composition;
-- W7R: HBP hourly sediment against export, public `tdet/tdep` against HBP, and
-  routed public `sed_del` against EBE while rejecting the raw-export alias;
-- W11B: serialized external runoff against terminal EBE volume plus residual
-  channel storage, zero published channel balance, and terminal sediment yield
-  against external hourly sediment for two distinct timing shapes;
-- snow forcing: row-wise forcing precipitation and snow fraction against audit
-  totals, with separate WAT extraction of SWE and physical snow depth.
+- H2637 surface routing to `3.33e-9 m3` and both timing-qualified groundwater
+  recurrences to less than `4.26e-11 m3`;
+- p61 and p102 runoff, total sediment, and five-class sediment ledgers;
+- selected production snow and frost liquid/frozen storage ledgers;
+- routed p102 public sediment and water against EBE consumers; and
+- W11B two-channel water, sediment, timing-shape, same-grid, and baseflow-once
+  identities.
 
-Commands 06, 07, 10, 11, and 13 passed the listed p61, p102, W7R, and W11B
-identities; command 09 passed the broad frost profile. The run did not archive
-complete independent H2637 groundwater or selected snow/frost numeric operand
-tables and output hashes. This is therefore partial pre-fix evidence, not a
-terminal conservation claim, and must not carry into the required restart.
+The evidence records exact operands, units, time/area bases, rejected aliases,
+hashes, and residuals. It uses fresh post-correction outputs and does not reuse
+the invalidated pre-correction groundwater conclusion.

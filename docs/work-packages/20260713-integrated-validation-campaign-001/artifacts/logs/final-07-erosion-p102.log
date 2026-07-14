@@ -1,0 +1,6 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.12s
+────────────
+ Nextest run ID ef7f8002-efee-420c-b1dd-aff88722694e with nextest profile: default
+    Starting 1 test across 1 binary
+────────────
+     Summary [  34.662s] 1 test run: 1 passed, 0 skipped

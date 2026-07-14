@@ -1,19 +1,21 @@
 # Consumer Path Evidence
 
-Status: `PARTIAL-PRE-FIX-BINDING`
+Status: `PASS`
 
-Evidence class: **Ran + Static** test binding; not terminal closure evidence.
+Evidence class: **Ran + Static** at frozen source
+`de520f1ff867ca5c65b1f82dfe32a19c213ae18c`.
 
-| Lane | Producer and typed handoff | Real consumer/output | Negative old-path proof |
-| --- | --- | --- | --- |
-| H2637 | direct production day frames and active lane manifest | `execute_hillslope_run` -> HBP/pass Parquet/WAT | active manifest excludes `laned_shadow`; default and explicit active HBP/Parquet bytes agree |
-| p61/p102 | Wave-1 direct erosion -> pass rows and HBP minor-1 arrays | strict HBP parser plus pass-Parquet readers | p102 manifests coupled Wave-1 policy; changed OFE-2 texture changes exit fractions |
-| Snow/frost | production day input -> winter column/frost lane -> publication row | production runner WAT, next-day carry, and frost-profile tests | diagnostic PySnobal/snowbench output is not used as production acceptance by itself |
-| Watershed p102 | generated hillslope HBP -> `HillslopeContribution` -> `WatershedNetworkFrame` | watershed CLI -> `WatershedPublicationFrame` -> Parquet | public `sed_del` differs from raw `tdet-tdep`; serial and parallel decoded rows agree |
-| W11B | HBP hourly arrays -> exact-overlap grid -> typed interval state | downstream channel reads upstream same-index `q1`/class egress -> EBE/chanwb | activated interval call returns before scalar/event route; scalar fields cannot carry claim |
+`final-conservation-and-consumer-evidence.md` binds every closure claim to its
+real downstream reader:
 
-Commands 02, 06, 07, and 09 through 13 passed the named production-path test
-bindings. The strongest real-consumer evidence is in p61/p102, W7R, and W11B;
-the frost profile is broad suite evidence and does not archive a selected
-snow/frost numeric reconstruction. Producer-only tests remain supporting
-evidence. This pre-fix map cannot satisfy the required post-fix restart.
+| Lane | Real consumer | Rejected alias/old path |
+| --- | --- | --- |
+| H2637 | runner manifest plus watershed strict HBP intake | inferred storage, latest-event baseflow, shadow/compatibility counters |
+| p61/p102 | strict HBP and pass-Parquet readers | unit-width or producer-only aggregation |
+| Snow/frost | production WAT and next-day carry | physical depth as SWE; diagnostic snowbench output |
+| Watershed p102 | totalwatsed3 and EBE Parquet | raw hillslope export as routed `sed_del` |
+| W11B | watershed CLI, typed interval state, EBE and channel balance | scalar peak/duration replay; downstream baseflow re-addition |
+
+Fresh focused executions prove the selected snow/frost and W11B consumers;
+the complete final H2637 run proves the newly published terminal groundwater
+operands are readable outside the producer.

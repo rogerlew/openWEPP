@@ -1,14 +1,16 @@
 # Publication Identity
 
-Status: `PARTIAL-PRE-FIX-PASS`
+Status: `PASS`
 
-Evidence class: **Ran + Static** test binding; release closure blocked.
+Evidence class: **Ran** at frozen source
+`de520f1ff867ca5c65b1f82dfe32a19c213ae18c`.
 
-The W7R production CLI test runs the same committed p102 watershed with
-`--jobs 1` and `--jobs 4`. Its `assert_watershed_outputs_row_equivalent`
-comparison reads every required Parquet output and compares decoded schema and
-rows, including value/null posture independent of file container bytes. It also
-checks nonzero HBP sediment and public `totalwatsed3`/EBE consumption. Command
-10 passed this binding at the frozen source. Command 16 then failed before
-release closure, so this result is partial pre-fix evidence and cannot be
-reused by the required campaign restart.
+The final W7R production CLI test ran the committed p102 watershed with
+`--jobs 1` and `--jobs 4`. All 14 Parquet products have identical decoded row
+counts, ordered values, null posture, field types/nullability, field metadata,
+and schema metadata. HBP and pass files are byte-identical.
+
+Parquet container hashes differ because metadata serialization order is not
+byte-canonical; the campaign records that fact and does not substitute a false
+byte-identity requirement for semantic publication identity. Per-product
+hashes and equality checks are in `logs/final-reconstruction-arithmetic.log`.

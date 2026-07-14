@@ -1,26 +1,21 @@
 # Integrated Validation Assessment
 
-Status: `HOLD-INTEGRATED-VALIDATION`
+Status: `PASS-INTEGRATED-VALIDATION`
 
-Evidence class: **Ran + Static**
+Evidence class: **Ran + Static** at frozen source
+`de520f1ff867ca5c65b1f82dfe32a19c213ae18c`.
 
-Frozen source: `f80a115148e75a08269eb14a8c1b0e7791ca891a`.
+Every scenario-matrix row passes at one post-correction source. The exact
+release passes full workspace, deny, fixture provenance, required authority,
+release artifact/lint, and both stability suites. Fresh independent readers
+close the surface, groundwater, water, sediment, snow/frost, publication, and
+two-channel consumer claims with units, timing, rejected aliases, and hashes.
 
-Passed evidence includes anti-evasion and AUTH11; H2637 active production and
-three authority failures; p61/p102 erosion and 367-test erosion profile;
-320-test frost profile; W7R serial/parallel p102 publication; MT3 hourly,
-totalwatsed3, and watershed hourly suites; and full runner/watershed package
-suites. These provide partial pre-fix test bindings for the independent
-reconstruction and real-consumer maps. They do not supply complete H2637
-groundwater or snow numeric operands/output hashes and cannot be reused as
-terminal evidence after the required restart.
+The terminal corrections are contract-first where kernel/runtime semantics are
+affected. No comparator match substitutes for conservation or consumer proof;
+no skip flag, fixture edit, tolerance relaxation, old path, fallback, or authority
+deactivation carries acceptance. Earlier HOLD and invalidated restart results
+remain provenance only.
 
-The default release lane fails before completing required authority, stability,
-and final closure. It exposes `INTVAL-REL-001`: stale threaded libtest release
-orchestration violates an explicit nextest-only H2637 isolation contract. The
-failure is infrastructure, not a comparator or production-physics verdict.
-
-Recommendation: `HOLD-INTEGRATED-VALIDATION`. Close `INTVAL-REL-001`, freeze
-the correction commit, and restart every lane; do not reuse these pre-fix
-results as terminal evidence. Two independent reviews and two independent
-verifications passed this corrected HOLD boundary and restart rule.
+Recommendation: `PASS-INTEGRATED-VALIDATION`. Package-mandated dual independent
+review and verification both pass with every accepted finding corrected.
