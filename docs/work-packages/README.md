@@ -11,6 +11,15 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260713-adjudicated-crap-closure-gate-001/` is the completed implementation
+  that ratchets the CQR campaign's empty actionable CRAP set into a touched-file
+  and workspace-wide release/closure gate. Its final fresh census passed at
+  `2/2/0` with a `17/17` crate census and dual independent verification.
+- `20260713-cqr-growth-state-crap-regression-001/` is the completed bounded CQR
+  follow-on opened when that gate's fresh measurement found
+  `DirectGrowthInputs::compute_equation_growth_state` at CRAP `31.0162`. It
+  closed through behavior-preserving root-update decomposition at CRAP
+  `27.015625`, with full Rust gates and dual independent verification passing.
 - `20260713-integrated-validation-campaign-001/package.md` is the completed
   `PASS-INTEGRATED-VALIDATION` fixed-source production campaign authorized by
   CQR `GO-INTEGRATED-VALIDATION`. After its initial HOLD and correction chain,

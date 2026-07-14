@@ -33,7 +33,12 @@ cargo fmt --check
 cargo clippy --workspace --all-targets   # warnings denied
 cargo nextest run --workspace --profile full
 cargo deny check                         # licenses + advisories (no copyleft)
+bash tools/release/run_adjudicated_crap_gate.sh --base-ref <frozen-base>
 ```
+
+The CRAP command reports touched production Rust files and also enforces the
+workspace-wide adjudicated ratchet. Raw rows above 30 remain visible; closure
+requires zero actionable rows after exact current adjudications are applied.
 
 plus, depending on the surface touched:
 

@@ -2,15 +2,17 @@
 #
 # Pins the CRAP (Change Risk Anti-Patterns) threshold ratified by ADR-0021
 # (docs/decisions/0021-module-coverage-closure-thresholds.md). A function scoring
-# CRAP > 30 is non-conforming for module test-enhancement closure.
+# CRAP > 30 is raw debt. Implementation closure requires an empty adjudicated
+# actionable set under ADR-0021 and tools/release/run_adjudicated_crap_gate.sh.
 #
 # CRAP = CC^2 * (1 - cov)^3 + CC, so at full coverage CRAP equals cyclomatic
 # complexity: a function above the bound is reduced by decomposition, not by
 # adding tests. See docs/standards/module-test-enhancement-authoring-guide.md §2.4.
 #
-# Usage (LCOV from the same llvm-cov run; see the guide §4):
-#   cargo llvm-cov --workspace --ignore-run-fail --lcov --output-path lcov.info
-#   cargo crap --workspace --lcov lcov.info --fail-above
+# Closure usage (LCOV and CRAP collection plus adjudication):
+#   bash tools/release/run_adjudicated_crap_gate.sh --base-ref <frozen-base>
+# A raw `cargo crap --fail-above` is not the closure gate because it cannot
+# represent the two exact, reviewed, denominator-retained adjudications.
 
 threshold = 30
 

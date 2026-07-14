@@ -128,9 +128,9 @@ the metric loop.
    edit at a time, numeric equivalence preserved (§4).
 5. **Re-measure.** Record `*_after`; the dimension target (§3) is met.
 6. **Gate loop.** Mechanical guide §6 (`fmt`, `clippy --workspace --all-targets
-   -- -D warnings`, `test --workspace`, `deny`), **plus** `cargo crap
-   --workspace --lcov … --fail-above`, **plus** the module's coverage gate
-   (no regression vs the precondition).
+   -- -D warnings`, full-profile `nextest`, `deny`), **plus**
+   `bash tools/release/run_adjudicated_crap_gate.sh --base-ref <frozen-base>`,
+   **plus** the module's coverage gate (no regression vs the precondition).
 7. **Evidence and disposition.** Before/after metric, the numeric-equivalence
    statement, any exclusions.
 
@@ -161,9 +161,12 @@ workspace-wide without bricking the gate. Adoption is a ratchet:
   a module-level `#![warn(clippy::cognitive_complexity)]` (→ deny under the gate)
   as that module reaches closure, then clears it. The lint is promoted to a
   workspace `warn` only once the backlog is clear.
-- **`cargo-crap`** (with its baseline) is the **active repo-wide complexity
-  ratchet** in the meantime — clippy's complexity lints are local signal until
-  promoted.
+- **The adjudicated `cargo-crap` gate** is the active repo-wide complexity
+  ratchet. The completed CQR campaign left no actionable production row above
+  30. The gate retains raw rows for visibility, accepts only exact current
+  adjudications from `tools/release/adjudicated_crap_exceptions.json`, and fails
+  on any new actionable row. Clippy's complexity lints remain local signal
+  until promoted.
 
 The same pattern applies to any other lint promotion (e.g. burning down the 202
 `#[allow(clippy::…)]`): enable per-module, clear, then promote workspace-wide.
@@ -178,6 +181,8 @@ The same pattern applies to any other lint promotion (e.g. burning down the 202
 - Adding a `#[allow(clippy::…)]` to pass the gate instead of fixing the cause.
 - Treating an entire binary, parser, error module, adapter, or formatter host as
   ineligible because of its filename or dominant role.
+- Adding an inline CRAP allow, wildcard, or package-local exception instead of
+  using the independently reviewed adjudication registry.
 - Promoting a clippy lint to `warn`/`deny` workspace-wide with outstanding
   violations — bricks the gate; use the per-module ratchet.
 

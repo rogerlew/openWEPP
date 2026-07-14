@@ -13,6 +13,7 @@ Usage:
     [--run-authority-manual] \
     [--authority-registry <path>] \
     [--authority-report <path>] \
+    [--crap-base-ref <git-ref>] \
     [--cohort-seeds-csv <path>] \
     [--watchlist-csv <path>] \
     [--wepp-forest-root <path>] \
@@ -48,6 +49,7 @@ RUN_AUTHORITY_MANUAL=0
 AUTHORITY_REGISTRY="${ROOT_DIR}/docs/specifications/external-authority/registry.yaml"
 AUTHORITY_REPORT=""
 AUTHORITY_INVESTIGATION_FAILURES=0
+CRAP_BASE_REF=""
 
 COHORT_SEEDS_CSV=""
 WATCHLIST_CSV=""
@@ -94,6 +96,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --authority-report)
       AUTHORITY_REPORT="${2:-}"
+      shift 2
+      ;;
+    --crap-base-ref)
+      CRAP_BASE_REF="${2:-}"
       shift 2
       ;;
     --cohort-seeds-csv)
@@ -479,10 +485,18 @@ run_authority_lane() {
 cd "${ROOT_DIR}"
 
 echo "INFO: running workspace release gates"
+cargo nextest --version > "${RELEASE_DIR}/cargo-nextest-version.txt"
 cargo fmt --check
 cargo clippy --workspace --all-targets -- -D warnings
 cargo nextest run --workspace --profile full
 cargo deny check
+.venv/bin/python -m unittest -v tests.python.test_adjudicated_crap_gate
+
+CRAP_GATE_ARGS=(--output-dir "${RELEASE_DIR}/adjudicated-crap")
+if [[ -n "${CRAP_BASE_REF}" ]]; then
+  CRAP_GATE_ARGS+=(--base-ref "${CRAP_BASE_REF}")
+fi
+bash tools/release/run_adjudicated_crap_gate.sh "${CRAP_GATE_ARGS[@]}"
 
 {
   echo "# Authority Suite Gate Results"

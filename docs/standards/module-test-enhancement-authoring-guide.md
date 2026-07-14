@@ -58,7 +58,9 @@ hold:
    aggregate from hiding a wholly untested function.)
 4. **Per-function complexity-risk bound (CRAP ≤ 30).** Every eligible function in
    the module scores **CRAP ≤ 30** under `cargo-crap` (LCOV from the same
-   llvm-cov run; `--threshold 30 --fail-above`, the ratified default). CRAP is
+   llvm-cov run; threshold 30). Repository closure uses the adjudicated gate,
+   not raw `--fail-above`, because reviewed retained rows remain visible in the
+   denominator. CRAP is
    `CC² · (1 − cov)³ + CC`, so at full coverage it collapses to cyclomatic
    complexity: a function above the bound is reduced by **decomposition, not by
    adding tests**. Decomposition is behavior-preserving and lands **test-first**
@@ -164,7 +166,7 @@ complexity, or public behavior changes.
    - Use the **one-shot** form above. The standalone `cargo llvm-cov report`
      subcommand cannot reconstruct the object-file list and reports all zeros;
      do not use it for these packages. `--ignore-run-fail` tolerates known
-     pre-existing red tests so they do not abort the coverage merge — attribute
+     preexisting red tests so they do not abort the coverage merge — attribute
      any such failure in evidence (it must not be one this package introduced).
    - Filter the JSON to the module's files; record per-file region/line/function
      and the eligible-surface denominator after §3 exclusions.
@@ -188,13 +190,15 @@ complexity, or public behavior changes.
 5. **Build the obligation→test map.** Table: family/obligation → test fn(s) →
    status. 100% of applicable families bound.
 6. **Re-measure.** Emit `coverage_after.json`; confirm §2 thresholds on the
-   eligible surface and no per-function floor breach. Re-run
-   `cargo crap --workspace --lcov <artifacts>/lcov.info --threshold 30 --fail-above`
-   → `crap_after.md`; confirm every eligible function ≤ 30 and no repo-wide
-   regression against the baseline.
+   eligible surface and no per-function floor breach. Run
+   `bash tools/release/run_adjudicated_crap_gate.sh --base-ref <frozen-base>
+   --output-dir <artifacts>/adjudicated-crap`; confirm every eligible function
+   is at most 30 or has an exact current adjudication, and that the workspace
+   actionable set remains empty.
 7. **Gate loop.** `cargo fmt --check`;
    `cargo clippy --workspace --all-targets -- -D warnings`;
-   `cargo test --workspace`; `cargo deny check`; plus the obligation guard
+   `cargo nextest run --workspace --profile full`; `cargo deny check`; plus the
+   obligation guard
    (`auth11_required_suite_obligation_guards_contract`) where the module carries
    external-authority suite bindings.
 8. **Evidence and disposition.** Disposition states before→after coverage, the
@@ -223,7 +227,7 @@ complexity, or public behavior changes.
   failure.
 - Obligation binding (§2.1) at 100%.
 - All exclusions justified and reviewed.
-- Gate loop green, or any pre-existing failure attributed and shown not to be
+- Gate loop green, or any preexisting failure attributed and shown not to be
   introduced by this package.
 
 ## 7) Anti-patterns

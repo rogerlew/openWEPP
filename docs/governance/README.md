@@ -9,6 +9,9 @@ but are not model-physics contracts.
   sequence; documentation-only in this change, no execution.
 - `openwepp-release-procedure-draft.md` — canonical draft release runbook for
   candidate assembly, release linting, and evidence expectations.
+- `openwepp-verification-validation-strategy.md` — active V&V philosophy and
+  target-state requirements for bounded claims, evidence artifacts, code
+  integration, reports, and eventual release qualification.
 - `legacy-source-attribution-and-contributors-policy.md` — required attribution
   and contributor-governance metadata for Rust files that port legacy WEPP
   source units.

@@ -7,6 +7,8 @@
 **Amendment:** Per-function CRAP ≤ 30 complexity-risk bound (Decision 6) added 2026-06-14, same day, at decider Roger Lew's direction.
 **Amendment:** Eligible-surface classification tightened 2026-07-11 at decider
 Roger Lew's direction; thresholds are unchanged.
+**Amendment:** Post-burndown adjudicated CRAP closure ratchet added 2026-07-13
+at decider Roger Lew's direction; the threshold and taxonomy are unchanged.
 **Builds on:** [ADR-0011](0011-architecture-first-top-down-science-contracts.md)
 **Authoring authority:** [docs/standards/module-test-enhancement-authoring-guide.md](../standards/module-test-enhancement-authoring-guide.md), [docs/standards/rust-scientific-coding-standard.md](../standards/rust-scientific-coding-standard.md) §7.5–7.8
 
@@ -128,14 +130,38 @@ complement to the coverage floor.
    reduced by **behavior-preserving decomposition, landed test-first** (the
    coverage gate is the safety net) — never by adding tests alone. That
    decomposition is implementation work (Codex; the mechanical-refactor guide),
-   sequenced after characterization coverage. Repo-wide adoption uses a
-   `cargo-crap` **baseline**: functions outside a module under active enhancement
-   are held no-regression and burned down by future packages, so the gate is
-   adoptable against the current high-complexity backlog without blocking
-   unrelated work.
+   sequenced after characterization coverage. Initial repo-wide adoption used a
+   `cargo-crap` baseline while the high-complexity backlog was burned down.
 7. **Tuning authority.** A coverage tier percentage or the CRAP threshold may be
    changed only by a superseding ADR. The obligation binding (Decision 2) is not
    tunable.
+8. **Post-burndown adjudicated closure ratchet.** The 2026-07-13 CQR
+   pre-integration campaign established an empty actionable production set and
+   retained exactly two independently reviewed, source-hash-bound
+   `R-OBSERVABILITY` rows. Every implementation package now closes against that
+   adjudicated state using
+   `tools/release/run_adjudicated_crap_gate.sh --base-ref <frozen-base>`.
+   The terminal report must:
+   - apply the campaign's exact production filter and deduplication tuple;
+   - preserve raw rows separately from actionable rows;
+   - identify production Rust files touched since the frozen base;
+   - accept a raw row only through an exact current entry in
+     `tools/release/adjudicated_crap_exceptions.json`; and
+   - contain zero actionable rows across the whole workspace, including rows in
+     source-untouched files whose coverage regressed.
+
+   An adjudication is not a wildcard waiver. Its symbol, classification,
+   cyclomatic complexity, whole-file SHA-256, and dual-review evidence are
+   binding. The canonical registry additionally binds the adjudicated commit,
+   source-at-commit hash, and content hashes/tokens of the acceptance evidence.
+   Source, role, complexity, behavior, or consumer-posture change invalidates
+   it. Fresh closure cannot substitute another registry and must preserve one
+   manifest of production sources, Rust/Cargo/gate measurement inputs, the Rust
+   toolchain selector, HEAD, and the Git index throughout measurement and
+   publication. New or changed adjudications require an authorized package and
+   two independent reviews under Decision 3; an implementation package may not
+   invent an inline exception to close itself. Documentation-only packages are
+   exempt from running the metric gate.
 
 ## Consequences
 
@@ -150,15 +176,21 @@ complement to the coverage floor.
   test-enhancement packages into a cover-then-decompose arc — or splits them
   into a coverage package and a follow-on mechanical-refactor package — rather
   than letting a fully-covered monster function pass as closed.
-- This does **not** retroactively fail existing modules or block unrelated PRs.
-  It governs test-enhancement packages and test-affecting changes going forward;
-  it is not a new CI line-coverage threshold on every commit.
+- The module coverage percentages still do **not** retroactively fail existing
+  modules or become a global per-PR coverage threshold. The now-clean
+  adjudicated CRAP surface is different: every implementation package must
+  preserve its empty actionable set, including regressions caused by test
+  changes outside a source-touched file.
 - Raw CRAP rankings are discovery evidence, not the actionable queue. Nightly
   selection classifies every row above 30 before ranking, removes only accepted
   exceptions from actionable excess, publishes both raw and actionable counts,
   and continues down the ranking until the requested number of eligible modules
   is selected. A module with only accepted exception rows is `NO-ACTION`, not a
   forced coverage package.
+- The executable post-burndown gate fails closed on malformed or incomplete
+  reports, stale source hashes, missing review evidence, wildcard entries, and
+  any new unmatched row. A raw `cargo crap --fail-above` invocation is not the
+  repository closure gate because it cannot represent reviewed retained rows.
 - **Enforcement wiring.** Until the §7.6 machine guard (binding ordinary `SC-*`
   obligations to tests, modeled on `auth11_required_suite_obligation_guards`)
   ships, the thresholds and the obligation binding are enforced as a package
@@ -186,3 +218,7 @@ complement to the coverage floor.
   `execute_hillslope_run`, `run_runoff_reconciliation` — above any CRAP
   threshold at full coverage; reducible only by decomposition.
 - `.cargo-crap.toml` pins the ratified threshold (30).
+- `docs/work-packages/cqr-pre-integration-campaign-evidence/low/campaign-final-assessment.md`
+  records the terminal two-raw/zero-actionable state.
+- `tools/release/adjudicated_crap_exceptions.json` is the machine-readable
+  registry for current exact adjudications.

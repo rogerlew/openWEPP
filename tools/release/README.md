@@ -4,10 +4,44 @@ This directory hosts repository-local automation for openWEPP release gates.
 
 Required authority lane runs by default.
 
+The adjudicated CRAP gate requires repo-local `.venv/bin/python`,
+`cargo-llvm-cov 0.8.7`, and `cargo-crap 0.2.2`. The metric-helper versions and
+report schema are pinned; the active `cargo` and `rustc` versions are recorded
+in the sealed acquisition provenance.
+
 ## Scripts
 
+- `run_adjudicated_crap_gate.sh`
+  - Collects fresh full-workspace LCOV and `cargo-crap` JSON, or assesses an
+    explicitly supplied retained CRAP artifact.
+  - Applies the exact production filter and deduplication tuple established by
+    the completed CQR pre-integration campaign.
+  - Fresh closure snapshots every production Rust source, Rust/Cargo/gate
+    measurement input (including `rust-toolchain.toml`), HEAD, and the Git index
+    before, after, and immediately after report generation; any drift fails the
+    run. The canonical adjudication registry cannot be overridden in this mode.
+  - Preserves raw rows above 30, matches only exact current adjudications from
+    `adjudicated_crap_exceptions.json`, and fails unless the actionable
+    workspace set is empty.
+  - With `--base-ref`, reports every touched production Rust file while still
+    blocking actionable regressions in source-untouched files. Status records
+    distinguish additions, modifications, deletions, and both rename paths.
+  - `--crap-json` is retained assessment mode. It requires a repository-local
+    provenance artifact, cannot report current touched files, and emits
+    `ASSESSMENT-PASS` rather than a closure `PASS`.
+  - Every non-help invocation clears known generated outputs before semantic or
+    prerequisite checks. Its exit trap writes a fresh PASS/FAIL run envelope
+    and checksum manifest, so a reused directory cannot retain an apparent
+    prior success after a failed run.
+- `check_adjudicated_crap.py`
+  - Fail-closed evaluator used by the shell driver. It validates registry
+    schema, current and historical whole-file hashes, exact symbols,
+    classifications, evidence hashes/content bindings, production-crate census,
+    source manifest, and path containment before generating JSON and Markdown
+    reports.
 - `run_release_candidate_gates.sh`
-  - Runs workspace gates (`fmt`, `clippy`, full-profile `nextest`, `deny`),
+  - Runs workspace gates (`fmt`, `clippy`, full-profile `nextest`, `deny`, the
+    adjudicated-CRAP unit tests, and a fresh adjudicated CRAP measurement),
     builds release binaries, stages release artifacts, emits sidecars, and runs
     `open_wepp_runner release lint`. Full-profile nextest supplies the required
     process-per-test isolation for environment-mutating integration tests.
@@ -53,6 +87,27 @@ Required authority lane runs by default.
   - Fails on documentation drift without writing repository files.
 
 ## Typical Usage
+
+For implementation-package closure from its frozen base:
+
+```bash
+bash tools/release/run_adjudicated_crap_gate.sh \
+  --base-ref <frozen-base> \
+  --output-dir <package-artifacts>/adjudicated-crap
+```
+
+To reproduce the completed CQR adjudication against its retained immutable
+CRAP JSON without claiming current-source closure:
+
+```bash
+bash tools/release/run_adjudicated_crap_gate.sh \
+  --crap-json docs/work-packages/cqr-pre-integration-campaign-evidence/low/final/final-crap.json \
+  --retained-provenance docs/work-packages/cqr-pre-integration-campaign-evidence/low/campaign-final-assessment.md \
+  --output-dir /tmp/openwepp-adjudicated-crap-reproduction
+```
+
+That command returns success when the retained debt assessment passes, but its
+machine status is `ASSESSMENT-PASS` and `closure_eligible` is `false`.
 
 ```bash
 bash tools/release/run_release_candidate_gates.sh --skip-stability

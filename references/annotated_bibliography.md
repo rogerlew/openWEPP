@@ -1309,3 +1309,102 @@ openWEPP note (2026-05-11):
 **Topic**: Source of the β = 1.56 energy coefficient in the spatially-varied flow equations (WEPP Ch. 13 Eq. [13.5.4]).
 **WSHED-W11A role**: constant provenance; restated in held R-105 ("β = energy coefficient [1.56 used from McCool and others (23)]").
 **OAR-6 compliance status**: Companion-only.
+
+## R-114: NRC Regulatory Guide 1.203 - transient and accident analysis methods
+
+**Citation**: U.S. Nuclear Regulatory Commission (2005). *Regulatory Guide 1.203: Transient and Accident Analysis Methods*. ADAMS Accession No. ML053500170.
+**Local path**: `not-acquired`; official source: https://www.nrc.gov/docs/ML0535/ML053500170.pdf
+**Reference quality**: `verified-primary-government-guidance`
+**Topic**: Evaluation Model Development and Assessment Process (EMDAP), important-phenomena ranking, assessment bases, scaling, applicability, uncertainty, quality assurance, and documentation.
+**openWEPP V&V role**: Primary nuclear-engineering precedent for intended-use-first, hierarchical, graded, and independently reviewable V&V planning.
+**Rights / distribution**: U.S. Government publication; remote link only in this intake.
+
+## R-115: NASA-STD-7009B - standard for models and simulations
+
+**Citation**: National Aeronautics and Space Administration (2024). *NASA-STD-7009B: Standard for Models and Simulations*.
+**Local path**: `not-acquired`; official source: https://standards.nasa.gov/standard/NASA/NASA-STD-7009
+**Reference quality**: `verified-primary-government-standard`
+**Topic**: Model life-cycle requirements for intended and permissible use, code and solution verification, conceptual and empirical validation, data pedigree, uncertainty, defects, assessments, and reporting.
+**openWEPP V&V role**: Primary source for claim-bounded credibility profiles and separate machine evidence, use assessment, and decision reporting.
+**Rights / distribution**: Publicly accessible U.S. Government standard; remote link only in this intake.
+
+## R-116: EPA guidance on environmental-model development, evaluation, and application
+
+**Citation**: U.S. Environmental Protection Agency, Council for Regulatory Environmental Modeling (2009). *Guidance on the Development, Evaluation, and Application of Environmental Models*. EPA/100/K-09/003.
+**Local path**: `not-acquired`; official source: https://www.epa.gov/sites/production/files/2015-04/documents/cred_guidance_0309.pdf
+**Reference quality**: `verified-primary-government-guidance`
+**Topic**: Fit-for-use environmental-model evaluation, conceptual models, quality planning, corroboration, calibration independence, sensitivity, uncertainty, peer review, transparency, and post-audit.
+**openWEPP V&V role**: Primary environmental-model authority for avoiding whole-model validity claims and treating observation quality and application context as part of the assessment.
+**Rights / distribution**: U.S. Government publication; remote link only in this intake.
+
+## R-117: ASME V&V 20 - computational fluid dynamics and heat transfer
+
+**Citation**: American Society of Mechanical Engineers (2009, reaffirmed 2021). *ASME V&V 20: Standard for Verification and Validation in Computational Fluid Dynamics and Heat Transfer*.
+**Local path**: `not-acquired`; official description: https://www.asme.org/codes-standards/find-codes-standards/standard-for-verification-and-validation-in-computational-fluid-dynamics-and-heat-transfer
+**Reference quality**: `verified-consensus-standard-metadata`
+**Topic**: Code and solution verification, validation comparison error, experimental and simulation uncertainty, specified validation variables, and validation points.
+**openWEPP V&V role**: Consensus-standard basis for quantity-specific validation comparisons and explicit limits on inference away from validation points.
+**Rights / distribution**: `restricted`; the full standard is copyrighted and was not acquired or vendored.
+
+## R-118: Sandia verification, validation, and predictive-capability framework
+
+**Citation**: Oberkampf, W. L., T. G. Trucano, and C. Hirsch (2003). *Verification, Validation, and Predictive Capability in Computational Engineering and Physics*. SAND2002-3769. https://doi.org/10.2172/809603
+**Local path**: `not-acquired`; public record: https://www.osti.gov/biblio/809603
+**Reference quality**: `verified-primary-government-technical-report`
+**Topic**: PIRT prioritization, code and solution verification, manufactured solutions, numerical-error estimation, hierarchical validation experiments, statistical metrics, and predictive capability.
+**openWEPP V&V role**: Computational-science basis for separate verification and validation ladders and process-importance-driven evidence planning.
+**Rights / distribution**: Public U.S. Department of Energy technical report; remote link only in this intake.
+
+## R-119: Sandia Predictive Capability Maturity Model
+
+**Citation**: Oberkampf, W. L., T. G. Trucano, and M. Pilch (2007). *Predictive Capability Maturity Model for Computational Modeling and Simulation*. SAND2007-5948. https://doi.org/10.2172/976951
+**Local path**: `not-acquired`; public record: https://www.osti.gov/biblio/976951
+**Reference quality**: `verified-primary-government-technical-report`
+**Topic**: Separate maturity dimensions for representation, physics fidelity, code verification, solution verification, model validation, uncertainty, and sensitivity.
+**openWEPP V&V role**: Basis for a visible evidence profile while preserving the report's warning that maturity assessment does not decide application acceptance.
+**Rights / distribution**: Public U.S. Department of Energy technical report; remote link only in this intake.
+
+## R-120: VERA-CS verification and validation plan
+
+**Citation**: Downar, T., S. Palmtag, K. Clarno, and K. Kim (2017). *VERA-CS Verification and Validation Plan*. CASL-U-2017-1287-000, Oak Ridge National Laboratory.
+**Local path**: `not-acquired`; official record: https://www.ornl.gov/publication/vera-cs-verification-validation-plan-0
+**Reference quality**: `verified-primary-government-technical-report`
+**Topic**: Hierarchical V&V of a multiphysics reactor code suite, single-physics readiness before coupled-system reliance, standardized outputs, and automated report generation.
+**openWEPP V&V role**: Direct software-program precedent for subsystem-first V&V and generated human tables and figures.
+**Rights / distribution**: Public U.S. Department of Energy laboratory report; remote link only in this intake.
+
+## R-121: Nearing (2000) erosion-model evaluation under observation variability
+
+**Citation**: Nearing, M. A. (2000). "Evaluating soil erosion models using measured plot data: accounting for variability in the data." *Earth Surface Processes and Landforms*, 25(9), 1035-1043. https://doi.org/10.1002/1096-9837(200008)25:9%3C1035::AID-ESP121%3E3.0.CO;2-B
+**Local path**: `not-acquired`.
+**Reference quality**: `verified-primary-peer-reviewed`
+**Topic**: Interpretation of prediction error relative to the variability of replicated natural-rainfall plot measurements.
+**openWEPP V&V role**: WEPP-domain basis for including observation and natural variability in validation metrics rather than treating measurements as exact truth.
+**Rights / distribution**: `restricted`; publisher article was not acquired or vendored.
+
+## R-122: Wang et al. (2023) multi-regime WEPP hillslope evaluation
+
+**Citation**: Wang, S., R. P. McGehee, T. Guo, D. C. Flanagan, and B. A. Engel (2023). "Calibration, validation, and evaluation of the Water Erosion Prediction Project (WEPP) model for hillslopes with natural runoff plot data." *International Soil and Water Conservation Research*, 11(4), 669-687. https://doi.org/10.1016/j.iswcr.2022.10.004
+**Local path**: `not-acquired`; open article landing page at the DOI.
+**Reference quality**: `verified-primary-peer-reviewed-open-access`
+**Topic**: Evaluation across 1,159 plot-years, multiple climates, soils, topographies, crops, event and aggregate scales, calibrated and uncalibrated modes, and event extremes.
+**openWEPP V&V role**: Current WEPP-specific evidence for cross-regime stratification, transparent calibration effects, multi-scale metrics, and explicit tail-performance limitations.
+**Rights / distribution**: Open-access article; exact Creative Commons redistribution terms were not verified, so no local copy was added.
+
+## R-123: W3C PROV-O provenance ontology
+
+**Citation**: World Wide Web Consortium (2013). *PROV-O: The PROV Ontology*. W3C Recommendation. https://www.w3.org/TR/prov-o/
+**Local path**: `not-acquired`; canonical web specification at the cited URL.
+**Reference quality**: `verified-primary-open-standard`
+**Topic**: Machine-readable provenance through entities, activities, agents, generation, use, derivation, attribution, and bundles.
+**openWEPP V&V role**: Conceptual model for linking claims, data, executions, software agents, evidence, and supersession without prescribing the first internal wire format.
+**Rights / distribution**: W3C Recommendation under W3C document terms; remote link only in this intake.
+
+## R-124: RO-Crate research-object packaging specification
+
+**Citation**: RO-Crate Community (n.d.; accessed 2026-07-13). *RO-Crate Metadata Specification*, current long-term release 1.3. https://www.researchobject.org/ro-crate/specification.html
+**Local path**: `not-acquired`; canonical web specification at the cited URL.
+**Reference quality**: `verified-primary-open-specification`
+**Topic**: JSON-LD packaging of research data, software, workflows, provenance, contextual entities, and human-readable previews.
+**openWEPP V&V role**: Candidate future export format for portable V&V evidence bundles generated from the internal evidence graph.
+**Rights / distribution**: Apache-2.0 specification and documentation; remote link only in this intake.

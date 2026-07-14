@@ -136,8 +136,9 @@ Use the command ladder in order:
 
 1. `cargo fmt --check`
 2. `cargo clippy --workspace --all-targets -- -D warnings`
-3. `cargo test --workspace`
+3. `cargo nextest run --workspace --profile full`
 4. `cargo deny check`
+5. `bash tools/release/run_adjudicated_crap_gate.sh --base-ref <frozen-base>`
 
 If a package touches only a narrow area, run focused tests first for fast
 feedback, then run full workspace gates before disposition.
@@ -189,12 +190,13 @@ Before package disposition, run and record:
 
 1. `cargo fmt --check`
 2. `cargo clippy --workspace --all-targets -- -D warnings`
-3. `cargo test --workspace`
+3. `cargo nextest run --workspace --profile full`
 4. `cargo deny check`
+5. `bash tools/release/run_adjudicated_crap_gate.sh --base-ref <frozen-base>`
 
 Mandatory execution rule:
 
-1. All four commands above must be executed in-shell for the current package
+1. All five commands above must be executed in-shell for the current package
    run; citing prior runs or inferred outcomes is insufficient.
 2. Each command must be recorded with observed result and exit status.
 3. If any required command is not executed, the package remains in-progress
@@ -205,7 +207,7 @@ Mandatory execution rule:
 5. Treat the exact ambient instruction in Section 1.2 as a precedence conflict,
    not as a blocker.
 6. Omitted required gates without a declared hard blocker are protocol
-   non-compliance and must keep the package in-progress.
+   noncompliance and must keep the package in-progress.
 
 Completion rule:
 

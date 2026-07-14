@@ -45,11 +45,12 @@ all = { level = "warn", priority = -1 }
 pedantic = { level = "warn", priority = -1 }
 # Complexity ratchet target (ADR-0021; code-quality-refactor-authoring-guide.md §8).
 # `cognitive_complexity` is a nursery lint (off by default). It is held at `allow`
-# workspace-wide because the current high-complexity backlog would fail the
-# `-D warnings` gate. Code-quality refactor packages opt a module in via a
+# workspace-wide because it has not completed its own lint burndown. Code-quality
+# refactor packages opt a module in via a
 # module-level `#![warn(clippy::cognitive_complexity)]` as it reaches closure, and
 # this is promoted to `warn` workspace-wide once the backlog clears. Threshold is
-# in clippy.toml; cargo-crap is the active repo-wide complexity ratchet.
+# in clippy.toml; the adjudicated cargo-crap gate is the active repo-wide
+# complexity ratchet.
 # (`too_many_lines` is already on via `pedantic`; its baseline is the existing
 # `#[allow(clippy::too_many_lines)]` attributes, burned down as functions shrink.)
 cognitive_complexity = "allow"

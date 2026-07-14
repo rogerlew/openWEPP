@@ -140,7 +140,7 @@
   explicitly characterization-only.
 - Encode explicit subagent authorization when package-required work depends on delegated reviewers, verifiers, comparator runners, or other role agents.
 - Require dual reviews with finding disposition: `accepted`, `rejected`, `deferred`, or `follow-up`.
-- Require `.rs` line-count governance: 2000+ lines is `WARN`; 3000+ non-exempt files require refactor before closure.
+- Require `.rs` line-count governance: 2000+ lines is `WARN`; 3000+ nonexempt files require refactor before closure.
 
 ## DC-ExecPlan Requirements
 - Use a Defect-Closure ExecPlan when closing an observed invariant violation, fail-closed event on valid input, or conservation residual.
@@ -172,6 +172,32 @@
 - Fall back to `cargo test --workspace` only for libtest-specific behavior or explicitly required legacy harness checks, and label that as a compatibility run rather than the default closure path.
 - Package-required validation overrides generic ambient instructions to skip tests.
 - Reconcile tests mechanically only; do not hide semantic changes inside refactor diffs.
+
+## Adjudicated CRAP Closure Gate
+
+- Every implementation package must run
+  `bash tools/release/run_adjudicated_crap_gate.sh --base-ref <frozen-base>` on
+  terminal source. Documentation-only packages are exempt.
+- The gate must use fresh full-workspace LCOV/CRAP evidence unless the package
+  is explicitly assessing an immutable retained CRAP artifact. Supplying an old
+  artifact cannot close current implementation work; retained mode must report
+  `ASSESSMENT-PASS`/`ASSESSMENT-FAIL` with `closure_eligible=false` and cited
+  repository provenance.
+- Closure requires an empty actionable workspace set. The report must also list
+  production Rust files touched since the package base; checking only those
+  files is insufficient because test changes can regress coverage and CRAP in
+  source-untouched functions.
+- Raw rows above 30 remain visible. A raw row is non-actionable only when it
+  matches an exact, current entry in
+  `tools/release/adjudicated_crap_exceptions.json`. Wildcards, filename-based
+  exclusions, inline package waivers, and unreviewed additions are forbidden.
+- Changing an adjudicated function's host-file hash, semantic role, complexity,
+  public behavior, or consumer posture invalidates its prior disposition.
+  Registry changes require an authorized package and two independent reviews
+  applying ADR-0021's symbol-level taxonomy.
+- Fresh closure is canonical-registry-only and source-snapshot-bound. The
+  before/after/final source manifests must match; a source or Git-index change
+  during metric collection invalidates the run.
 
 ## CQR Nightly Burndowns
 - Operator phrasing such as `execute cqr nightly for 8 modules` means: read
@@ -214,6 +240,8 @@
 - Gate evidence non-deferral: each required current-scope gate has current
   direct evidence, or the package/phase is held with a named blocker.
 - Required Rust closure loop when implementation or mechanical refactor scope requires it.
+- Adjudicated CRAP closure with frozen-base touched-file reporting for every
+  implementation package.
 - Conservation/publication acceptance rule when output magnitude or closure
   evidence is in scope.
 - Doc-path integrity checks when moving documentation or required-reading lists.

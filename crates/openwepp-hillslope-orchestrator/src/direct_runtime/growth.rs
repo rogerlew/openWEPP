@@ -655,6 +655,37 @@ impl DirectGrowthInputs {
         Ok(state)
     }
 
+    fn compute_root_mass_and_depth_candidates(
+        self,
+        management_class: DirectGrowthManagementClass,
+        vdmt_next: f64,
+        rtd_floor: f64,
+        rtd_upper: f64,
+    ) -> (f64, f64) {
+        let perennial_cap_reached = management_class == DirectGrowthManagementClass::Perennial
+            && self.state_before.root_mass_kg_m2 >= self.rtmmax;
+        if perennial_cap_reached {
+            (self.rtmmax, rtd_upper)
+        } else {
+            let rtmass_unclamped = self.state_before.root_mass_kg_m2
+                + (vdmt_next - self.state_before.live_biomass_kg_m2) * self.rsr;
+            let rtmass_next = if management_class == DirectGrowthManagementClass::Perennial {
+                rtmass_unclamped.clamp(0.0, self.rtmmax)
+            } else {
+                rtmass_unclamped.max(0.0)
+            };
+            let rtd_candidate = if management_class == DirectGrowthManagementClass::Perennial {
+                // The pre-increment cap branch above proves `rtmmax > 0` here.
+                let growth_increment =
+                    ((rtmass_next - self.state_before.root_mass_kg_m2) / self.rtmmax) * self.rdmax;
+                (self.state_before.root_depth_m + growth_increment).max(rtd_floor)
+            } else {
+                rtd_floor
+            };
+            (rtmass_next, rtd_candidate)
+        }
+    }
+
     #[allow(clippy::too_many_lines)]
     fn compute_equation_growth_state(
         self,
@@ -767,28 +798,12 @@ impl DirectGrowthInputs {
                     .sin());
         let rtd_upper = self.rdmax.min(self.soil_depth_m);
         validate_positive("growth.root_depth_upper_bound_m", rtd_upper)?;
-        let perennial_cap_reached = management_class == DirectGrowthManagementClass::Perennial
-            && self.state_before.root_mass_kg_m2 >= self.rtmmax;
-        let (rtmass_next, rtd_candidate) = if perennial_cap_reached {
-            (self.rtmmax, rtd_upper)
-        } else {
-            let rtmass_unclamped = self.state_before.root_mass_kg_m2
-                + (vdmt_next - self.state_before.live_biomass_kg_m2) * self.rsr;
-            let rtmass_next = if management_class == DirectGrowthManagementClass::Perennial {
-                rtmass_unclamped.clamp(0.0, self.rtmmax)
-            } else {
-                rtmass_unclamped.max(0.0)
-            };
-            let rtd_candidate = if management_class == DirectGrowthManagementClass::Perennial {
-                // The pre-increment cap branch above proves `rtmmax > 0` here.
-                let growth_increment =
-                    ((rtmass_next - self.state_before.root_mass_kg_m2) / self.rtmmax) * self.rdmax;
-                (self.state_before.root_depth_m + growth_increment).max(rtd_floor)
-            } else {
-                rtd_floor
-            };
-            (rtmass_next, rtd_candidate)
-        };
+        let (rtmass_next, rtd_candidate) = self.compute_root_mass_and_depth_candidates(
+            management_class,
+            vdmt_next,
+            rtd_floor,
+            rtd_upper,
+        );
         validate_nonnegative_direct_m("growth.root_depth_candidate_m", rtd_candidate)?;
         let rtd_next = rtd_candidate.min(rtd_upper);
 

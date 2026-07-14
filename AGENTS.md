@@ -73,6 +73,8 @@ Before declaring Rust kernel implementation complete, run and record:
 6. Legacy comparator delta review using confidence tiers.
 7. For conservation-sensitive outputs, independent operand reconstruction and
    real closure evidence per `docs/standards/kernel-work-package-preparation.md`.
+8. For implementation packages, the adjudicated CRAP closure gate:
+   `bash tools/release/run_adjudicated_crap_gate.sh --base-ref <frozen-base>`.
 - Use `cargo nextest run --workspace --profile quick` for fast local loops and
   domain profiles such as `cargo nextest run --workspace --profile frost` or
   `cargo nextest run --workspace --profile erosion` for focused local CI.
@@ -96,6 +98,7 @@ Before declaring Rust kernel implementation complete, run and record:
 - Science contracts: `docs/specifications/science-contracts/AGENTS.md`, `docs/specifications/science-contract-authoring-procedure.md`, `docs/specifications/science-contracts/kernel-process-contract-profile.md`, `docs/specifications/science-contracts/index.md`.
 - Standards and prompt wording: `docs/standards/AGENTS.md`, `docs/standards/kernel-work-package-preparation.md`, `docs/standards/prompt-wording-guidance.md`, `docs/standards/mechanical-refactor-authoring-guide.md`, `docs/standards/local-ci-gate-selection.md`.
 - Local CI timing tooling: `tools/local_ci/README.md`.
+- Adjudicated CRAP gate: `tools/release/README.md`.
 - Rust crates: `crates/AGENTS.md`.
 - Tests: `tests/AGENTS.md`.
 - Numerics: `docs/numerics/README.md`.

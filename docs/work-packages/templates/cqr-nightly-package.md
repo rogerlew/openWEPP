@@ -166,6 +166,7 @@ and report the blocked commit boundary.
    - `cargo clippy --workspace --all-targets -- -D warnings`
    - `cargo nextest run --workspace --profile full`
    - `cargo deny check`
+   - `bash tools/release/run_adjudicated_crap_gate.sh --base-ref <frozen-base>`
 6. Use `comparator_suite_runner` for heavy full-workspace/batch gates when
    available. If unavailable, record the spawn/tool-policy failure before
    running locally.

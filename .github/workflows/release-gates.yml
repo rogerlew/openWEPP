@@ -74,27 +74,53 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
 
-      - name: Install cargo-deny
-        run: cargo install cargo-deny --locked
+      - name: Install gate tools
+        run: |
+          cargo install cargo-deny --locked
+          cargo install cargo-nextest --locked --version 0.9.138
+          cargo install cargo-llvm-cov --locked --version 0.8.7
+          cargo install cargo-crap --locked --version 0.2.2
+          python -m venv .venv
 
       - name: Run workspace + release lint gates
         id: release_gates
         run: |
           release_tag="$(date -u +%y%m%d)ci${GITHUB_RUN_NUMBER}"
           release_dir="${RUNNER_TEMP}/openwepp_release_${release_tag}"
+          mkdir -p "${release_dir}"
+          echo "release_dir=${release_dir}" >> "${GITHUB_OUTPUT}"
           gate_cmd=(
             bash tools/release/run_release_candidate_gates.sh
             --release-tag "${release_tag}"
             --release-dir "${release_dir}"
             --skip-stability
           )
+          crap_base_ref=""
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            crap_base_ref="${{ github.event.pull_request.base.sha }}"
+          elif [[ "${{ github.event_name }}" == "push" ]]; then
+            before_sha="${{ github.event.before }}"
+            if [[ ! "${before_sha}" =~ ^0+$ ]]; then
+              crap_base_ref="${before_sha}"
+            fi
+          fi
+          if [[ -n "${crap_base_ref}" ]]; then
+            gate_cmd+=(--crap-base-ref "${crap_base_ref}")
+          fi
           if [[ "${{ github.event_name }}" == "schedule" ]]; then
             gate_cmd+=(--run-authority-periodic)
           fi
@@ -104,10 +130,15 @@ jobs:
           if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.run_authority_manual }}" == "true" ]]; then
             gate_cmd+=(--run-authority-manual)
           fi
-          "${gate_cmd[@]}"
-          echo "release_dir=${release_dir}" >> "${GITHUB_OUTPUT}"
+          set +e
+          "${gate_cmd[@]}" 2>&1 | tee "${release_dir}/release-gates.log"
+          gate_status=${PIPESTATUS[0]}
+          set -e
+          printf '%s\n' "${gate_status}" > "${release_dir}/release-gates-exit-status.txt"
+          exit "${gate_status}"
 
       - name: Upload staged release artifacts
+        if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
           name: openwepp-release-candidate-${{ github.run_id }}
