@@ -13,11 +13,15 @@ implementation work.
 | [code-quality-refactor-authoring-guide.md](code-quality-refactor-authoring-guide.md) | Metric-driven behavior-preserving refactors (CRAP/complexity decomposition, dead code, duplication, lint debt); numeric-equivalence guard; lint ratchet | Active |
 | [local-ci-gate-selection.md](local-ci-gate-selection.md) | Local agent/maintainer gate tiering, timing diagnostics, and empirical nextest scheduling changes | Active |
 | [usersum-authoring-style-guide.md](usersum-authoring-style-guide.md) | End-user documentation under `usersum/`: document shapes, audience/register, narrative structure, style rules, claims/evidence register, vendoring mechanics, pre-landing checklist | Active |
-| [scientific-assurance-dossier.md](scientific-assurance-dossier.md) | Human-first public evidence dossiers: separate verification and corroboration statuses, application-context worksheet, limitations, reproducibility, and review | Active |
+| [scientific-model-evaluation-report.md](scientific-model-evaluation-report.md) | Manuscript-first public model-evaluation reports: scientific question, methods, quantitative results, discussion, limitations, reproduction, and review | Proposed v2; ASSURE-02 acceptance gate |
+| [scientific-assurance-dossier.md](scientific-assurance-dossier.md) | V1 dossier proposed-retirement notice and stable pointer to the v2 report standard | Frozen; no new public v1 authoring pending ASSURE-02 acceptance |
 
-The dossier content standard is implemented under the ownership and build
-contract in
-[`../governance/scientific-assurance-dossier-lifecycle.md`](../governance/scientific-assurance-dossier-lifecycle.md).
+The v2 report standard is governed by the
+[architecture](../governance/scientific-assurance-v2-architecture.md),
+[lifecycle contract](../governance/scientific-assurance-dossier-lifecycle.md),
+and [source/build contract](../governance/scientific-assurance-v2-source-build-contract.md).
+ADR-0038 acceptance, v2 activation, and final v1 retirement are one atomic
+human-acceptance transition; none is implied while ASSURE-02 is held.
 
 ## Change control
 

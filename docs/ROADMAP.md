@@ -31,7 +31,7 @@ state was reached. Execution history lives in the
 
 | Priority | Owning queue | State | Advancement gate |
 | --- | --- | --- | --- |
-| `ASSURE-02` manuscript-first documentation architecture | Scientific assurance | `next` / documentation-only | User or named scientific-steward acceptance after the required documentation, real-evidence manuscript prototype, and two independent reviews agree. No v2 assurance code is authorized before acceptance. |
+| `ASSURE-02` manuscript-first documentation architecture | Scientific assurance | `held` / documentation-only | User or named scientific-steward acceptance after the completed documentation, real-evidence manuscript prototype, reconciled reviews, and dual verification. No v2 assurance code is authorized before acceptance. |
 
 ## Scientific Assurance Queue
 
@@ -57,6 +57,8 @@ The v2 records remain distinct:
 
 - a conventional public scientific model-evaluation report;
 - a subordinate public technical assurance supplement;
+- a version-bound public research-object surface for safe claim-bearing data,
+  procedures, and reproduction material;
 - an internal machine assurance bundle for traceability and reproducibility;
 - canonical model-science narratives and science contracts; and
 - an application assessment owned by the named user or institution.
@@ -84,6 +86,9 @@ The v2 records remain distinct:
   subordinate to the scientific argument.
 - Accessibility, reproduction, scientific review, publication review,
   supersession, and exact release transfer are publication requirements.
+- Report leads and data/method stewards own public research objects;
+  independent reproduction/publication review and the build gate prove every
+  required safe object is available.
 
 ### `ASSURE-02` Closure Contract
 
@@ -119,8 +124,8 @@ peer review.
 
 | ID | Prospective outcome | Advancement gate | State |
 | --- | --- | --- | --- |
-| `ASSURE-02` | Freeze the manuscript-first v2 documentation architecture and real-evidence nonpublic prototype described above. | Both reviews reconciled and user or named scientific-steward acceptance recorded. | `next`; no production or generated-content edits. |
-| `ASSURE-03` | Retire the v1 SNOTEL candidate from the active catalog, generated public tree, and dormant export; preserve exact provenance, repair links, and publish a neutral zero-report interim surface. | Accepted `ASSURE-02` migration contract; no public/export path presents the v1 candidate; underlying science/evidence remains intact; deterministic build and reference checks pass. | `queued`; blocked by `ASSURE-02`. |
+| `ASSURE-02` | Freeze the manuscript-first v2 documentation architecture and real-evidence nonpublic prototype described above. | User or named scientific-steward accepts the reviewed and independently verified direction. | `held`; agent-executable documentation gates pass; no production or generated-content edits. |
+| `ASSURE-03` | First close `ASSURE03-REL-001` by separating nonrelease CI from fail-closed release assembly; then retire the v1 SNOTEL candidate from active/public/export surfaces, preserve exact provenance, repair links, and publish a neutral zero-report interim surface. | Accepted `ASSURE-02` migration contract; PR/push creates no release snapshot; release mode rejects the transition/candidate state; no public/export path presents v1; underlying science/evidence remains intact; deterministic build and reference checks pass. | `queued`; blocked by `ASSURE-02`; openWEPP release assembly remains prohibited. |
 | `ASSURE-04` | Implement only the minimal v2 compiler demonstrated by the accepted prototype: typed traceability, staging/publication separation, deterministic manuscript assembly, result/figure substitution, dependency planning, drift checks, review locks, and snapshots. | One/all validation, planning, build, and check paths; content-hashed dependencies; stale/missing/unused identity failures; no ordinary-build network, shell, or agent execution; focused/full gates and touched-code CRAP closure. | `queued`; blocked by `ASSURE-02` and `ASSURE-03`. |
 | `ASSURE-05` | Convert the accepted bounded non-snow prototype into the first complete v2 report using the production kernel, real consumer, retained evidence, figures/tables, and technical supplement. | Domain-reader outcome met; every quantitative statement resolves to evidence; limitations and contrary results remain visible; independent scientific/publication review and reproduction pass before public inclusion. | `queued`; blocked by `ASSURE-04`. |
 | `ASSURE-06` | Author the snow/frost flagship synthesis from the existing precipitation-phase, SWE/depth/density, frost-depth/soil-temperature, conservation, negative-mechanism, and production evidence; split reports where claims or scales materially differ. | Complete quantitative methods/results, datasets, sample counts, figures, forcing interpretation, limitations, prior-knowledge comparison, claim-specific conclusions, release transfer, and independent review. | `queued`; blocked by a successful `ASSURE-05` pilot. |
@@ -158,8 +163,13 @@ It is a dormant compatibility record, not authority to vendor.
 ## Governing Authority
 
 - [V&V strategy](governance/openwepp-verification-validation-strategy.md)
-- [Scientific assurance dossier standard](standards/scientific-assurance-dossier.md)
-- [Assurance lifecycle and build contract](governance/scientific-assurance-dossier-lifecycle.md)
+- [Scientific assurance v2 architecture](governance/scientific-assurance-v2-architecture.md)
+- [Scientific model-evaluation report standard](standards/scientific-model-evaluation-report.md)
+- [Assurance report lifecycle contract](governance/scientific-assurance-dossier-lifecycle.md)
+- [Assurance source/build contract](governance/scientific-assurance-v2-source-build-contract.md)
+- [V2 migration plan](planning/scientific-assurance-v2-migration-plan.md)
+- [V2 implementation roadmap](planning/scientific-assurance-v2-implementation-roadmap.md)
+- [ADR-0038: manuscript-first publication](decisions/0038-manuscript-first-scientific-assurance-publication.md)
 - [ADR-0011: architecture-first, top-down science contracts](decisions/0011-architecture-first-top-down-science-contracts.md)
 - [ADR-0017: comparator is a flag, not a target](decisions/0017-re-pin-operational-distrust-comparator-is-flag-not-target.md)
 - [ADR-0018: defect-closure ExecPlan conversion](decisions/0018-defect-closure-execplans-conversion-rule.md)

@@ -1,311 +1,232 @@
-# Scientific Assurance Dossier Lifecycle And Build Contract
+# Scientific Assurance Report Lifecycle And Ownership Contract
 
-Status: Active
+Status: proposed v2 contract — ASSURE-02 acceptance gate
 
-Contract version: 1
+Filename note: the legacy `dossier` filename is retained as a stable governance
+link. In v2, the public product is a scientific model-evaluation **report**; the
+complete internal report/supplement/machine package may be called an assurance
+bundle or dossier.
 
-Effective date: 2026-07-14
+## Purpose
 
-Owner: openWEPP maintainers
+This contract defines who owns scientific assurance records, how they move from
+working source to public report, how dependencies trigger rebuild or rereview,
+and how an approved report is bound to an openWEPP release. It implements the
+[v2 architecture](scientific-assurance-v2-architecture.md) and
+[report standard](../standards/scientific-model-evaluation-report.md).
 
-## Purpose And Boundary
+## Ownership Contract
 
-This contract governs the records that let a hydrologist, soil scientist,
-researcher, or practitioner inspect openWEPP evidence without learning the
-repository's internal process. It connects four questions while preserving the
-different authority behind each answer:
-
-| Question | Public record | Accountable owner |
+| Record or decision | Accountable owner | Obligation |
 | --- | --- | --- |
-| Why does the model behave this way? | Model-science narrative | Domain science steward |
-| How was it evaluated? | Versioned evaluation method | Evaluation method owner |
-| What does the evidence show? | Scientific assurance dossier | Dossier steward and scientific assessment owner |
-| What does that mean for this application? | Application-context worksheet and decision record | Named user or institutional decision owner |
+| Model-science narrative | Process science owner | Keep formulation, rationale, process interactions, and report cross-links current. |
+| Scientific report and conclusion | Report lead / scientific assessment owner | Define the question, method, interpretation, and claim envelope; respond to review. |
+| Technical supplement | Report lead with method/data steward | Preserve sufficient method, data, and reproduction detail. |
+| Dataset admission and processing | Data steward | Record provenance, quality, representativeness, partitioning, restrictions, and transformations. |
+| Analysis and figure procedure | Method steward | Make claim-bearing results independently reproducible or reconstructable. |
+| Public research objects | Report lead with data/method steward | Publish every safe project-owned claim-bearing object and record restrictions for protected evidence. |
+| Machine bundle and build | Assurance build maintainer | Validate identities, dependencies, deterministic outputs, locks, drift, and snapshots without scientific adjudication. |
+| Scientific approval | Independent scientific reviewer plus assurance steward | Evaluate the science; bind approval to exact source and evidence identities. |
+| Reproduction/publication approval | Independent reproduction/publication reviewer | Reproduce material results and review audience fit, accessibility, and availability. |
+| Release transfer | Release owner and assurance steward | Prove the approved report applies to the exact release realization and snapshot it. |
+| Application assessment | Named user or institution | Judge adequacy for a named site, decision, accuracy need, and consequence of error. |
 
-The build system proves that declared inputs and generated pages agree. It
-does not decide whether evidence is scientifically current, whether a reviewer
-has appropriate expertise, or whether openWEPP is fit for a particular use.
-Software verification acceptance, empirical characterization, and application
-fitness remain separate decisions.
+Roles may be combined only when independence is preserved. A report lead or
+material claim/data/method/result/figure producer cannot be the sole scientific
+approver. A report lead, material data/method/result producer, or build
+maintainer cannot be the sole reproduction approver. None may be the sole
+authority waiving rereview after a material change. If an independent reviewer
+is unavailable, the report remains in review. Agent review is internal review.
 
-## Ownership And Separation
+## Lifecycle States
 
-One person may hold more than one role when that is disclosed, except that a
-conclusion-bearing author may not independently approve their own work.
-
-| Record or decision | Accountable owner | Required separation |
+| State | Meaning | Allowed output |
 | --- | --- | --- |
-| Model-science narrative | Domain science steward | Explains intended science; does not assign an evidence status. |
-| Evaluation method | Evaluation method owner | Freezes prospective choices before execution; labels retrospective choices. |
-| Evidence manifest and dossier source | Dossier steward | Preserves absent, restricted, failed, and contrary evidence. |
-| Empirical characterization | Scientific assessment owner | Requires independent scientific review at the declared consequence level. |
-| Templates, compiler, and generated pages | Assurance tooling maintainer | Reports structural validity and drift only. |
-| Release snapshot inclusion | Release authority | Accepts exact software and evidence identities, not site fitness. |
-| wepppy vendoring and discovery | wepppy documentation owner | Owns downstream sync, manifest merge, roles, navigation, rendering, and search. |
-| Application-fitness decision | Named decision owner | Applies only to the named application, purpose, and conditions. |
+| `DRAFT` | Scientific question, manuscript, method, or evidence is being developed. | Source and local staging only |
+| `IN_REVIEW` | A frozen source root is undergoing scientific and reproduction/publication review. | Review staging only |
+| `APPROVED` | Required findings are dispositioned and named human approval binds the exact root. | Approved staging; eligible for release transfer |
+| `PUBLISHED` | An approved root has passed public build, catalog, accessibility, and release-snapshot gates. | Public `usersum` and immutable release snapshot |
+| `SUPERSEDED` | A named newer report version replaces the scientific record. | Historical snapshot with prominent successor link; not current catalog entry |
+| `WITHDRAWN` | A material defect prevents continued reliance. | Historical notice and reason; claim-bearing content removed from current navigation |
 
-Package reviewers and coding agents are not described as external scientific
-reviewers. Agent-assisted analysis is an authored input subject to the same
-review and lock rules as human-authored analysis.
+There is no publicly inspectable `CANDIDATE` state. Drafts and reviews never
+enter the public `usersum` tree, release snapshot, export manifest, or WEPPcloud
+vendor surface. A repository browser may see canonical source, but generated
+public navigation and release materials must not present it as a report.
 
-## Canonical Records And Stable Identity
+## Versioning
 
-The tracked assurance source root is `assurance/`. It contains the catalog,
-compiler-bound versioned schemas, templates, methods, dossier sources,
-interpretation, limitations, evidence manifests, agent-assisted authoring
-records, review histories, and the generated wepppy export fragment. The
-public generated root is `usersum/assurance/`. A declared model-science
-narrative remains hand-authored under `usersum/`, but it is a typed catalog
-input, a review-root input, a dependency-graph node, and a snapshot file.
+A report has one stable ID and an immutable semantic version shared by its
+manuscript and supplement. Any change to published bytes creates a new version;
+snapshots are never edited in place.
 
-Stable dossier and method IDs are lowercase ASCII kebab-case. They are never
-derived from titles or paths and are never reused. Versions use three numeric
-components. A material conclusion change creates a new version; a title edit
-alone does not change identity. A published version is never silently rewritten.
+- Major: changes the scientific question, claim envelope, domain, formulation,
+  or method enough that prior conclusions cannot be read as the same study.
+- Minor: adds or materially updates evidence, results, limitations, or release
+  coverage while retaining the study identity.
+- Patch: corrects presentation or metadata without changing a scientific claim.
 
-Source files are edited by their accountable owners. Generated Markdown and
-the export fragment carry a source banner and must not be hand-edited. The
-catalog assigns exactly one producer to each generated output. Existing science
-contracts, tests, observed-data admission decisions, and work packages remain
-authority or evidence; a dossier links and content-identifies them rather than
-copying their authority.
+Even a patch receives the required impact review and a new reviewed root. A
+release snapshot names the exact report version it transfers.
 
-Every public dossier links to its narrative, method, limitations, application
-worksheet, and catalog. The narrative links back to the method and dossier.
-Public pages link only within the vendored `usersum/` tree. Audit paths that are
-meaningful only in a source checkout are printed as text, not rendered as
-public hyperlinks.
-
-## Lifecycle
-
-| State | Meaning | Permitted transition |
-| --- | --- | --- |
-| `DRAFT` | Authoring is incomplete; no publication or release snapshot. | `CANDIDATE`, `WITHDRAWN` |
-| `CANDIDATE` | Structurally valid and publicly inspectable, but review or publication approval remains open. | `DRAFT`, `PUBLISHED`, `WITHDRAWN` |
-| `PUBLISHED` | Independent scientific and publication approvals match their separate roots. | `SUPERSEDED`, `WITHDRAWN` |
-| `SUPERSEDED` | Preserved historical record replaced by a named newer dossier version. | none |
-| `WITHDRAWN` | Preserved record whose rationale and affected conclusions remain visible. | none |
-
-`PUBLISHED` requires two current, independently authored approval records. The
-scientific approval binds the conclusion-bearing source root: dossier, method,
-evidence manifest, interpretation, limitations, narrative, and agent-assisted
-authoring record. The publication approval binds that material plus templates,
-schemas, compiler sources, Cargo manifests, and the lockfile. Each approval
-also binds its reviewer roles, expertise, independence basis, findings,
-dispositions, and residual disagreements through a noncircular, ordered-history
-payload digest. Every approved entry binds the complete semantic history prefix
-through that entry. A terminal publication approval must be the last history
-entry, so later review activity requires renewed publication review. Malformed
-or altered history fails validation; a valid history whose current roots no
-longer match produces `REVIEW_REQUIRED`. `DRAFT` dossiers cannot enter release
-snapshots; structurally valid `CANDIDATE` dossiers may be snapshotted with
-their pending review state visible. The tool never changes a lifecycle or
-evidence status automatically.
-
-When a dossier declares agent-assisted authoring, its packet must itself carry
-an independent approval bound to the accepted-output root before `PUBLISHED`.
-That packet approval does not replace either dossier-level approval.
-
-Four dates or identities must not be collapsed:
-
-- the evidence as-of date says what evidence was considered;
-- the review lock says which conclusion-bearing bytes were approved;
-- the generated digest says which public bytes match those sources; and
-- the release snapshot says which immutable dossier set accompanied a release.
-
-None of these proves scientific currency. Currency is an explicit steward and
-reviewer judgment after checking new science, observations, software changes,
-and intended uses.
-
-## Material-Change Trigger Matrix
-
-`R` means mechanical rebuild, `I` evidence-impact assessment, `X` independent
-rereview, `V` new dossier version or supersession, and `S` new release snapshot.
-An empty entry means no scientific effect, although ordinary editorial review
-may still apply.
-
-| Change | R | I | X | V | S | Required treatment |
-| --- | :---: | :---: | :---: | :---: | :---: | --- |
-| Model code affecting the assessed result path | yes | yes | yes | usually | yes | Recheck verification and empirical transferability. |
-| Declared model configuration | yes | yes | yes | usually | yes | Treat changed defaults and parameters as a new assessed realization. |
-| Dataset bytes or admission posture | yes | yes | yes | yes | yes | Preserve the prior evidence set. |
-| Transformation code or transformed bytes | yes | yes | yes | yes | yes | Reproduce and reassess affected results. |
-| Metric definition, units, or aggregation | yes | yes | yes | yes | yes | Do not compare old and new scores as identical measures. |
-| Interpretation criterion or tolerance | yes | yes | yes | yes | yes | Label post hoc changes and bias review. |
-| Calibration/evaluation partition | yes | yes | yes | yes | yes | Reassess leakage and independence. |
-| Template or renderer with no semantic change | yes |  |  |  | yes | Review rendered diff; source characterization is unchanged. |
-| Interpretation or evidence-summary prose | yes | yes | yes | if material | yes | Any conclusion-bearing edit invalidates the review lock. |
-| Limitation, exclusion, or nonuse domain | yes | yes | yes | if material | yes | Narrowing information is never suppressed for convenience. |
-| Reviewer identity, approval, or unresolved finding | yes | yes | yes | if conclusion changes | yes | A new lock and independent record are required. |
-| Narrative rationale only | yes | impact check | if claim changes | if claim changes | yes | Keep why and what consistent without duplicating results. |
-| Public title, navigation key, or audience metadata | yes |  |  |  | yes | wepppy owns final downstream placement and access. |
-| New release with unchanged current dossier bytes |  | currency check | only if currency changed |  | yes | Record a new immutable release snapshot. |
-
-The dossier steward records the impact decision. When uncertain whether a
-change alters an empirical conclusion, treat it as conclusion-bearing and
-require rereview.
-
-## Frozen Command Contract
-
-Run from the repository root:
+## Lifecycle Transitions
 
 ```text
-cargo run -p openwepp-assurance -- validate (--dossier <stable-id> | --all)
-cargo run -p openwepp-assurance -- plan (--dossier <stable-id> | --all)
-cargo run -p openwepp-assurance -- build (--dossier <stable-id> | --all)
-    [--output-root <path>]
-    [--snapshot <path-safe-id> --snapshot-root <path>]
-cargo run -p openwepp-assurance -- check (--dossier <stable-id> | --all)
+DRAFT --> IN_REVIEW --> APPROVED --> PUBLISHED --> SUPERSEDED
+   ^          |             |             |
+   |          v             v             v
+   +-------- DRAFT       DRAFT         WITHDRAWN
 ```
 
-Exactly one selector is required. `--snapshot` and `--snapshot-root` are a
-pair and are accepted only by `build --all`. `--output-root` redirects generated
-public and export paths beneath a test or staging root without changing their
-repository-relative names. Normal commands are offline and invoke no shell,
-network client, plugin, or agent.
+- Enter `IN_REVIEW` only after the manuscript, supplement, dependencies,
+  result-bearing assets, and review charge form a content-identified root.
+- Any accepted finding that changes a bound object creates a new review root.
+- `APPROVED` requires scientific review, independent reproduction or
+  reconstruction, publication/accessibility review, complete disposition, and
+  named human approval.
+- `PUBLISHED` additionally requires deterministic public rendering, catalog and
+  cross-reference checks, complete public-safe research objects, and exact
+  release transfer or a clearly identified standalone publication snapshot.
+- Supersession preserves old snapshots and gives readers the replacement and
+  reason. Withdrawal preserves audit history without leaving defective claims
+  in current navigation.
 
-`validate` checks compiler-bound schemas and strict typed deserialization, IDs,
-paths, content identities, complete rendered public documents, links, graph
-integrity, lifecycle fields, and review locks. `plan` performs the same
-read-only source and rendered-document validation, then prints the ordered
-transitive inputs, SHA-256 identities, output set, scientific and publication
-root digests, approval-history-payload digests, and review implications without
-promoting lifecycle state. `build`
-renders only the selected dossier plus affected shared
-catalog/export outputs. `check` builds in a fresh temporary directory and
-compares every selected committed generated file without modifying tracked
-content; it also requires the two generated roots to contain exactly the full
-catalog-declared output inventory, with no orphan, missing, symlink, or special
-entry.
+## Source, Staging, And Public Surfaces
 
-## Typed Dependency And Fingerprint Contract
+| Surface | Purpose | Authority |
+| --- | --- | --- |
+| `assurance/v2/` | Future canonical manuscript, supplement, dependency, method, result, figure, review, and publication source | Human-authored scientific source plus typed identities |
+| Build staging outside `usersum` | Draft, review, and approved preview | Disposable output; never public authority |
+| `usersum/assurance/reports/` | Future approved report and supplement output | Generated from an approved locked root only |
+| Public research-object surface | Safe data, table/figure sources, procedures, software/configuration identities, and reproduction material | Version-bound to an approved report; completeness is a publication gate |
+| Release assurance snapshot | Immutable source, safe evidence, output, review, and release binding | Release-specific audit record |
+| WEPPcloud vendor tree | Downstream copy during beta release gate | Never authority; exact snapshot transfer required |
 
-The catalog and strict Rust types define the only allowed node kinds: catalog,
-schema, compiler tool, method, dossier, evidence manifest, evidence asset,
-narrative, interpretation, limitations, agent-assisted authoring record,
-tracked authoring input, accepted authoring output, review, template, public
-output, and export. Unknown fields or enum values fail. The format has no
-command, environment, URL-fetch, plugin, or agent node.
+ASSURE-04 may refine the source and staging paths but must preserve their
+separation. It may not build drafts directly into a tracked public tree and then
+rely on a label to prevent readers from treating them as publications.
 
-Every generated node has one producer and a complete ordered dependency set.
-Duplicate IDs, missing dependencies, cycles, output collisions, absolute paths,
-`..` traversal, unsafe symlink escape, undeclared outputs, and paths outside the
-approved source or generated roots fail closed. External evidence may be named
-with an access posture and stable identity, but is never fetched.
+## Relationship To `usersum`
 
-A node fingerprint is SHA-256 over length-framed domain, contract version,
-schema version, node kind, stable ID, and repository-relative node path;
-ordered dependencies contribute their stable IDs and fingerprints. A source
-node then contributes its byte length and raw bytes through a bounded-memory
-stream. The scientific root and larger publication root are reported separately
-as described above. Schema documents have exact
-compiler-bound path, byte digest, dialect, identifier, and version identities;
-arbitrary JSON with a plausible `$id` is not accepted. The evidence manifest
-in turn records the exact software,
-configuration, dataset, retained output, and review-evidence identities used by
-the assessment. Filesystem modification times are never identities.
+The `usersum` catalog is the public discovery owner. Only `PUBLISHED` reports
+appear in its assurance list, navigation, search, or generated export. Each
+entry states the report title, scientific question, assessed process/quantity,
+assessed realization, publication date, and related model narrative in ordinary
+language.
 
-Opening the repository discovers the complete local input set, captures every
-content identity, reparses under that frozen set, and verifies that neither an
-input nor the path set changed. Every validate, plan, build, check, and snapshot
-path checks those identities before and after its read phase. A caller must
-reopen after any input edit; stale in-memory state cannot be rendered or
-snapshotted.
+Every relevant model narrative links to its published reports. Each report
+links back to the narrative and applicable science contracts. When no reports
+are published, the catalog shows a neutral zero-report state and routes readers
+to model documentation; it does not publish draft grades or imply that the
+underlying science has not been studied.
 
-Identical frozen inputs and tool version produce byte-identical output. Shared
-catalog and export entries sort by stable ID. Targeted operations report the
-complete transitive input set and may update only the selected dossier's outputs
-and declared shared outputs.
+## Review Contract
 
-## Review Lock And Optional Agent Assistance
+### Scientific review
 
-A review history names conclusion authors and retains separate scientific and
-publication approval entries. Every approval records scope, reviewer names,
-roles, expertise, independence basis, date, structured findings, dispositions,
-resolution state, residual disagreements, and the applicable root digest. A
-second digest binds the complete ordered semantic history prefix while
-excluding the derived digest fields. Editing, removing, or reordering an
-earlier entry therefore invalidates every affected later approval. Self-approval
-and approval with an unresolved closure-blocking finding fail. A `CANDIDATE`
-may retain pending entries. `PUBLISHED` requires
-matching current scientific and publication approvals; `SUPERSEDED` and
-`WITHDRAWN` retain the approvals that applied to the historical version.
+The review charge covers:
 
-When an agent helps inventory, compare, summarize, or draft conclusion-bearing
-content, retain a review packet with:
+- importance and clarity of the question;
+- formulation and prior-knowledge accuracy;
+- dataset or referent appropriateness;
+- calibration/evaluation independence;
+- method and metric suitability;
+- uncertainty, sensitivity, and contrary evidence;
+- whether results support each conclusion;
+- limitations and transfer language; and
+- usefulness to the named audiences.
 
-- the bounded question and procedure version;
-- complete task instruction;
-- repository-relative input paths and SHA-256 digests;
-- available agent, model, and tool identity;
-- date and available nondeterministic settings;
-- retained output path and digest;
-- accepted edits or extraction decisions; and
-- reviewer findings, disposition, identity, and approved candidate-root digest.
+### Reproduction and publication review
 
-The canonical packet is cataloged beside the dossier, validated on every
-build, and included in both review roots and the dependency graph. It binds the
-complete content-identified input list, every accepted output and digest, an
-accepted-output root, and an independent review disposition. A package-local
-artifact may summarize or point to that canonical record but is not a shadow
-substitute. The record supports traceability and procedural repetition, not
-byte-identical agent output. Private reasoning is neither required nor treated
-as evidence. Changed tracked input or accepted output invalidates the packet;
-normal builds never rerun the agent.
+The second review independently runs or reconstructs material results, checks
+identities and units, and evaluates manuscript structure, plain language,
+tables/figures, accessibility, cross-references, and open-research availability.
 
-## Immutable Release Snapshots
+### Approval record
 
-A snapshot is created only by explicit `build --all --snapshot ...`. Its
-manifest records the snapshot ID, catalog digest, tool version and source
-digest, contract version, selected dossier versions and lifecycle states,
-scientific and publication root digests, and every public file digest. The
-public file set includes generated pages, the export fragment, and each
-declared hand-authored narrative; changing a narrative therefore conflicts
-with reuse of the same snapshot ID. Snapshot IDs accept only lowercase ASCII
-letters, digits, period, underscore, and hyphen and may not begin with a period.
+Approvals bind the report, supplement, claims, methods, datasets, software,
+results, figures, public research-object manifest, references, disclosed agent
+packet, and science-authority versions. Reviewer identity, competence,
+independence, charge, findings, disposition, date, and exact reviewed root are
+retained.
 
-The snapshot directory is immutable by ID. Rebuilding byte-identical content
-under the same ID confirms it; different content under that ID fails. Snapshot
-roots and existing layouts are inspected without following symlinks. New
-snapshots use exclusively created retry staging directories and never delete a
-preexisting collision owned by another process. A release
-candidate first validates committed output, then creates the named snapshot in
-its evidence directory and records the manifest digest. Rollback selects a
-previous software release and its recorded snapshot; it does not mutate a newer
-snapshot or claim that the older evidence is scientifically current.
+## Dependency Impact And Currency
 
-## Cross-Repository Boundary
+Every material change receives one recorded disposition:
 
-openWEPP owns the assurance source, generated usersum pages, stable document
-IDs, titles, source-relative paths, minimum roles, categories, audience tags,
-statuses, and navigation keys in its export fragment. wepppy owns vendor
-registration, synchronization policy, final manifest merge, authorization,
-navigation placement, rendering, and search indexing. An openWEPP build proves
-the handoff artifact exists and is internally consistent; it does not prove
-that wepppy has consumed or deployed it.
+| Change class | Minimum response |
+| --- | --- |
+| Editorial prose with no claim, method, data, result, figure, realization, or authority impact | New root; independent publication reviewer and assurance steward record the bounded disposition |
+| Result value, table, figure, or analysis code | New root; affected independent scientific and reproduction reviewers plus assurance steward approve a bounded impact disposition or repeat full review |
+| Dataset, partition, quality control, forcing, parameter, or method | New evidence root; scientific and reproduction rereview plus assurance-steward approval |
+| Science contract or model formulation | New root; process-owner assessment, independent scientific/reproduction review, and new report version or supersession as indicated |
+| Software realization | New root; static impact check, fresh reproduction when material, affected independent review, and new release transfer |
+| Builder/schema/template | New root; determinism and semantic-diff check plus independent publication/reproduction approval; scientific review if meaning changes |
+| Review or approval record | New lock; never silently backdated |
+| Application context | New application assessment owned by the decision owner; does not mutate the generic report |
 
-Generating a handoff does not authorize or imply readiness for vendoring.
-Downstream vendoring requires a separately authorized wepppy package at a
-declared release gate. The current gate is deferred until the openWEPP beta
-release campaign in WEPPcloud: do not begin vendoring while the WEPPcloud
-documentation surface or dossier set is still being developed, but complete
-and verify vendoring before that beta release is issued.
+The build planner detects changed dependencies but does not decide scientific
+impact. File timestamps are never currency authority.
 
-The export uses only downstream-supported `status` values: `draft` for
-`DRAFT`, `active` for `CANDIDATE` and `PUBLISHED`, and `deprecated` for
-`SUPERSEDED` and `WITHDRAWN`. The exact assurance lifecycle is retained in the
-separate `assurance_lifecycle` field; downstream code may ignore that extension
-until its own contract adopts it.
+Every impact decision binds old and new roots, changed identities, change
+class, rationale, reviewer roles and independence attestations, required reruns,
+and resulting lock. Unclear or mixed changes require full scientific,
+reproduction, and publication rereview. A producer or build maintainer cannot
+unilaterally declare no impact.
 
-## Prohibited Interpretations
+## Release Transfer
 
-- Matching hashes prove congruence, not scientific adequacy.
-- A `PUBLISHED` dossier is reviewed evidence as of a date, not a permanent
-  certificate or an application authorization.
-- Nextest executes compiler tests; it is not the evidence graph or scheduler.
-- Green CI, conservation, legacy agreement, test count, and code coverage do
-  not establish empirical corroboration.
-- `INSUFFICIENT_EVIDENCE`, `NOT_EVALUATED`, mixed evidence, contradiction, and
-  unavailable evidence are valid public outcomes.
-- No release event turns openWEPP into a terminally validated model of an open
-  natural system.
+A report is not automatically current for every openWEPP release. Transfer to a
+release records:
+
+- exact release commit and configuration;
+- science-contract and input-schema versions;
+- report, supplement, dependency, evidence, and builder identities;
+- static impact analysis since the assessed realization;
+- required fresh reruns or independent reconstructions;
+- accepted semantic differences;
+- public output and catalog hashes; and
+- the immutable snapshot identity.
+
+If transfer is incomplete, the report stays out of that release's assurance
+snapshot or is clearly identified as historical—not published with an internal
+`BLOCKED` cell as though the release review were a scientific result.
+
+## Supersession And Withdrawal
+
+Published evidence is never silently rewritten. Material scientific changes
+produce a new report version or a successor report. The previous snapshot
+retains its exact bytes, dates, release scope, and successor link.
+
+A withdrawal notice states the affected claims, reason, discovery date,
+decision owner, and corrective path. Public catalogs remove the withdrawn report
+from current recommendations but retain an audit link where appropriate.
+
+## Agent Assistance
+
+Agent-assisted research, drafting, analysis, or review follows the
+[source/build contract](scientific-assurance-v2-source-build-contract.md).
+The report discloses material assistance in its methods or contribution record.
+Agent output cannot approve science, satisfy reviewer independence by itself, or
+run during an ordinary build.
+
+## V1 Transition
+
+The v1 SNOTEL candidate and compiler remain historical until ASSURE-03. They are
+not governed into legitimacy by this contract. ASSURE-03 must:
+
+- remove v1 candidate navigation and generated public pages;
+- preserve exact v1 source, generated bytes, reviews, and build provenance in a
+  nonpublic historical record;
+- repair model-narrative and catalog links to a neutral zero-report state;
+- prevent release snapshot, export, or vendoring of the v1 candidate; and
+- leave the underlying snow/frost science and evidence intact for later v2
+  synthesis.
+
+## Mechanical Gates
+
+The future builder enforces structure, identity, dependency completeness,
+review locks, lifecycle permissions, staging/public separation, deterministic
+rendering, drift, catalog consumption, accessibility metadata, and snapshots.
+These gates are necessary but cannot establish that the scientific method,
+interpretation, or conclusion is sound.

@@ -3,7 +3,7 @@
 Status: Active
 Scope: all end-user documentation under `usersum/`
 Owner: maintainers (Claude Code maintains this guide)
-Last updated: 2026-07-14
+Last updated: 2026-07-15
 
 `usersum/` is openWEPP's end-user documentation, vendored into wepppy's
 in-app documentation engine (manifest-driven, role-gated, rendered in a
@@ -33,13 +33,21 @@ and terse lists are the right form. The skeleton is the existing convention:
 `Purpose` → `CLI interface` (a fenced invocation) → `Required inputs` →
 `Output` → `Practical notes`. Do not narrate a reference page.
 
-**Narratives** (model descriptions, validation reports, methodology — e.g.
-`snow-frost-modeling-and-validation.md`) are arguments, and must not be
+**Narratives** (model descriptions and scientific model-evaluation reports —
+e.g. `snow-frost-modeling-and-validation.md`) are arguments, and must not be
 inventories. A narrative answers a question a reader arrived with, and every
 section advances that answer. Structure one as a scientific paper in
 miniature: the problem that frames everything first, then the material
 organized by intellectual outcome, then consolidated results, then what the
 reader may and may not conclude. Do not structure one as a feature list.
+
+An assurance report is the full scientific-paper case: title, key findings,
+plain-language summary, abstract, introduction, formulation, data and methods,
+results, discussion, limitations, conclusions, open research, and references.
+Its lifecycle metadata is visible near the end, not used as the headline.
+It links a version-bound public research-object surface containing every safe
+project-owned claim-bearing dataset, table/figure source, procedure, software
+identity, and reproduction object required to inspect its results.
 
 **Index / routing pages** (`README.md`, `documentation-agent.md`) are maps:
 one line per destination, no content of their own.
@@ -122,14 +130,20 @@ The repository's truthfulness discipline extends to end-user docs in
 reader-facing form:
 
 - Keep software verification, empirical evidence, and application fitness
-  separate. Verification obligations use `PASS`, `FAIL`, `BLOCKED`, or
-  `NOT_RUN`. Empirical evidence uses the scientific-assurance vocabulary:
-  corroborated, mixed, contradicted, insufficient, or not evaluated, always
-  within a named tested domain and as-of date. Do not call a model, release,
-  process, or result simply "validated."
+  separate. Verification may pass or fail against a named requirement;
+  empirical evidence is described through the study's quantitative results,
+  domain, uncertainty, and conclusion. Do not turn either into a page-level
+  aggregate grade or call a model, release, process, or result simply
+  "validated."
 - A usersum narrative explains why the model behaves as it does. Claim-bearing
-  evaluation method and results belong in the linked assurance method and
-  dossier pages; do not duplicate a numeric results table across those records.
+  evaluation method and results belong in an approved scientific report and its
+  technical supplement; do not duplicate a numeric results table across those
+  records. The narrative and report cross-link so readers can move from “why and
+  how” to “what this evaluation showed.”
+- Assurance drafts and review candidates stay outside public `usersum`. The
+  public catalog lists only independently reviewed, approved reports and may
+  truthfully contain zero reports. An absent study belongs in a gap record or
+  narrative, not a status-first public report.
 - Application fitness belongs to the named user or institution. Public text may
   explain applicability and limitations but must not issue an unnamed site's
   fitness verdict.
@@ -208,8 +222,9 @@ Before landing a usersum document (human or agent):
 - [ ] Verification, empirical characterization, and application fitness are
       separate; no unqualified "validated" label; capability vs default
       behavior labeled (§5).
-- [ ] Claim-bearing evaluation results have one canonical home in an assurance
-      dossier, with narrative cross-links instead of duplication (§5).
+- [ ] Claim-bearing evaluation results have one canonical home in an approved
+      scientific report, with narrative cross-links instead of duplication
+      (§5).
 - [ ] CLI examples verified against the current release binary (§5).
 - [ ] No links outside `usersum/` (§6).
 - [ ] Narrative docs: version line under the title matches the newest

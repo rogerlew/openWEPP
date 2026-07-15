@@ -102,6 +102,15 @@
 
 State as of `2026-07-15 UTC`:
 
+- `20260714-assure02-manuscript-first-assurance-architecture-001/` -
+  EXECUTED-HOLD-USER-ACCEPTANCE (2026-07-15; documentation-only): the
+  manuscript-first architecture, report standard, ownership/build contracts,
+  evidence-led groundwater prototype, migration plan, and implementation
+  roadmap are drafted. Both internal coding-agent reviews initially held; all
+  findings were accepted and remediated, and dual independent verification
+  passes. No v2 code or public assurance content changed. Explicit user or
+  named scientific-steward acceptance remains the terminal direction gate;
+  ASSURE-03 and release assembly remain blocked.
 - `20260714-roadmap-prospective-cleanup-001/` - EXECUTED-COMPLETE
   (2026-07-15): rewrote `docs/ROADMAP.md` as a prospective-only queue, reducing
   it from 1,124 lines / 125,845 bytes to 166 lines / 12,664 bytes. The retained

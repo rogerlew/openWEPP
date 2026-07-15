@@ -16,14 +16,17 @@
 | [contracts/README.md](contracts/README.md) | All | Interface contracts: `.run`, HBP, parquet schemas, CLI ABI |
 | [decisions/README.md](decisions/README.md) | All | Architecture decision records (ADRs) |
 | [governance/README.md](governance/README.md) | Maintainers | Governance policies, transition plans, lifecycle controls |
-| [governance/openwepp-verification-validation-strategy.md](governance/openwepp-verification-validation-strategy.md) | Scientific users and maintainers | Active V&V philosophy: hard software verification, nonterminal empirical corroboration, decision-owner application fitness, and public evidence dossiers |
-| [governance/scientific-assurance-dossier-lifecycle.md](governance/scientific-assurance-dossier-lifecycle.md) | Maintainers and scientific reviewers | Dossier ownership, lifecycle, deterministic build, review-lock, release-snapshot, and wepppy handoff contract |
-| [governance/openwepp-release-procedure-draft.md](governance/openwepp-release-procedure-draft.md) | Maintainers | Draft end-to-end release runbook for candidate assembly, gate execution, sidecar validation, and stability evidence |
+| [governance/openwepp-verification-validation-strategy.md](governance/openwepp-verification-validation-strategy.md) | Scientific users and maintainers | V&V philosophy: hard software verification, claim-specific empirical corroboration, decision-owner application fitness, and manuscript-first public reports |
+| [governance/scientific-assurance-v2-architecture.md](governance/scientific-assurance-v2-architecture.md) | Scientific users, reviewers, and maintainers | Public report, technical supplement and research objects, internal machine bundle, model narrative, and application-assessment boundaries |
+| [governance/scientific-assurance-v2-source-build-contract.md](governance/scientific-assurance-v2-source-build-contract.md) | Maintainers and reproducibility reviewers | Canonical source, identities, dependencies, deterministic builds, review locks, and snapshots |
+| [governance/scientific-assurance-dossier-lifecycle.md](governance/scientific-assurance-dossier-lifecycle.md) | Maintainers and scientific reviewers | Report ownership, staging, approval, publication, supersession, release-transfer, and zero-report lifecycle |
+| [governance/openwepp-release-procedure-draft.md](governance/openwepp-release-procedure-draft.md) | Maintainers | Draft release runbook and current `ASSURE03-REL-001` automation conflict; candidate assembly remains prohibited |
 | [numerics/README.md](numerics/README.md) | All | Floating-point, RNG, summation policy |
 | [backlog/README.md](backlog/README.md) | Maintainers | Concept-stage ideas and promotion criteria before work-package activation |
 | [../references/README.md](../references/README.md) | Maintainers | Reference corpus policy, bibliography, and vendoring layout |
 | [standards/README.md](standards/README.md) | Maintainers | Rust coding, comments, and QA standards |
-| [standards/scientific-assurance-dossier.md](standards/scientific-assurance-dossier.md) | Scientific authors and reviewers | Human-first evidence dossiers with separate verification and corroboration statuses, an application-context worksheet, reproducibility, and review |
+| [standards/scientific-model-evaluation-report.md](standards/scientific-model-evaluation-report.md) | Scientific authors and reviewers | Conventional model-evaluation manuscript structure, quantitative evidence, limitations, reproduction, and review |
+| [standards/scientific-assurance-dossier.md](standards/scientific-assurance-dossier.md) | Scientific authors and reviewers | Proposed v1 dossier retirement, interim authoring moratorium, and v2 routing pointer |
 | [work-packages/README.md](work-packages/README.md) | All | Dated initiative tracking convention |
 | [codex_exec_plans.md](codex_exec_plans.md) | All contributors | ExecPlan authoring requirements (self-contained, living, milestone-driven autonomous specs) |
 | [defect_closure_execplans.md](defect_closure_execplans.md) | All contributors | Authoring Defect-Closure ExecPlans: the diagnose-and-correct package shape and the rationale for why it replaces diagnostic-only relay packages |

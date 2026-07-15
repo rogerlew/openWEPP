@@ -2,12 +2,20 @@
 
 Status: `planned`  
 Document type: `draft-runbook`  
-Last reviewed: `2026-07-14`
+Last reviewed: `2026-07-15`
 
 Execution note:
 - This runbook is a draft release procedure synthesized from in-repo
   contracts, ADRs, and code surfaces. It does not assert that a production
   release has been performed.
+- **Scientific-assurance transition conflict (`ASSURE03-REL-001`):** the v1
+  SNOTEL candidate is not an approved scientific report and may not enter a
+  release snapshot. The current release script still creates that snapshot,
+  and ordinary PR/push CI still invokes the script and uploads a release-
+  candidate-named artifact. This is an executable conflict, not an enforced
+  hold. Do not invoke the aggregate release script or treat its CI artifact as
+  release evidence until ASSURE-03 installs a fail-closed transition guard and
+  then proves the neutral zero-report path.
 
 ## Purpose
 
@@ -99,6 +107,12 @@ Failure-class handling:
 
 ## Automation Entry Points
 
+**Transition warning:** every aggregate command in this section currently
+reaches the prohibited v1 snapshot step. The commands are retained to document
+the interface ASSURE-03 must correct; none is an authorized release or ordinary
+validation entry point while `ASSURE03-REL-001` is open. Run individual
+nonrelease validation commands instead.
+
 Workspace + release-lint automation (no stability cohort):
 
 ```bash
@@ -137,8 +151,9 @@ bash tools/release/run_release_candidate_gates.sh \
 
 CI workflow surface:
 - `.github/workflows/release-gates.yml`
-  - `push` / `pull_request`: workspace + release lint + required authority
-    lane.
+  - Current defect: `push` / `pull_request` invokes aggregate release assembly
+    and uploads a release-candidate-named artifact. ASSURE-03 must replace this
+    with validation-only execution that cannot snapshot.
   - `schedule`: workspace + release lint + required + periodic authority
     lanes.
   - `workflow_dispatch` + `run_stability=true`: self-hosted stability cohort
@@ -149,9 +164,17 @@ CI workflow surface:
 
 ## Candidate Build and Assembly
 
-The automation entrypoint is authoritative for sequencing. In particular, it
-checks committed assurance pages before the heavy gates and then creates an
-immutable content-bound snapshot in the release evidence directory:
+The current automation entrypoint is **not release-authoritative** while
+`ASSURE03-REL-001` is open. It checks committed assurance pages and then creates
+the prohibited v1 candidate snapshot. ASSURE-03 must first make release mode
+fail closed and ordinary validation omit snapshot creation; it may make the
+entrypoint authoritative again only after the zero-report route and its
+negative tests pass.
+
+**Do not execute the snapshot command during the ASSURE-02/ASSURE-03
+transition.** The current v1 compiler would snapshot a candidate that ADR-0038
+proposes to retire. ASSURE-03 must replace this block with the reviewed zero-
+report release path before candidate assembly resumes.
 
 ```bash
 cargo run --quiet -p openwepp-assurance -- build --all \
@@ -161,12 +184,14 @@ sha256sum \
   "${OPENWEPP_RELEASE_DIR}/assurance-snapshots/${OPENWEPP_RELEASE_TAG}/manifest.json"
 ```
 
-An identical rerun may confirm the existing snapshot. Different content under
-the same snapshot ID is a blocking conflict. The manifest records the catalog,
-tool, contract, dossier version, lifecycle, empirical status, reviewed source
-roots, and public-file identities, including declared hand-authored narratives.
-It is an as-of evidence record, not an
-application-fitness determination.
+Historically, an identical v1 rerun could confirm the existing snapshot and
+different content under one snapshot ID was a blocking conflict. The v1
+manifest recorded the catalog, tool, contract, dossier version, lifecycle,
+empirical status, reviewed source roots, and public-file identities. That
+behavior remains engineering evidence but is not v2 publication authority. The
+future v2 snapshot will record approved report, supplement, dependency, review,
+release, and public-file identities and will remain an as-of evidence record
+rather than an application-fitness determination.
 
 ### 1) Build runner and CLI binaries
 

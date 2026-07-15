@@ -7,15 +7,22 @@ but are not model-physics contracts.
 
 - `repository-transition-plan-2026-05-11.md` — planned repository transition
   sequence; documentation-only in this change, no execution.
-- `openwepp-release-procedure-draft.md` — canonical draft release runbook for
-  candidate assembly, release linting, and evidence expectations.
-- `openwepp-verification-validation-strategy.md` — active scientist-facing V&V
+- `openwepp-release-procedure-draft.md` — draft release runbook and explicit
+  `ASSURE03-REL-001` automation conflict; candidate assembly is prohibited until
+  executable guards and the zero-report route pass.
+- `openwepp-verification-validation-strategy.md` — proposed v2 scientist-facing V&V
   philosophy and adoption strategy for hard software verification, nonterminal
-  empirical corroboration, decision-owner application fitness, and public
-  assurance dossiers.
-- `scientific-assurance-dossier-lifecycle.md` — canonical ownership,
-  lifecycle, deterministic build, review-lock, release-snapshot, and wepppy
-  handoff contract for scientific assurance dossiers.
+  empirical corroboration, decision-owner application fitness, and manuscript-
+  first scientific model-evaluation reports.
+- `scientific-assurance-v2-architecture.md` — public report, technical
+  supplement, public research objects, internal machine bundle, model
+  narrative, and application-assessment boundaries.
+- `scientific-assurance-v2-source-build-contract.md` — canonical source,
+  stable identity, dependency, deterministic build, agent-assistance, review-
+  lock, and snapshot contract.
+- `scientific-assurance-dossier-lifecycle.md` — v2 report ownership,
+  staging-only draft/review lifecycle, approval, publication, supersession, and
+  release-transfer contract; legacy filename retained as a stable link.
 - `legacy-source-attribution-and-contributors-policy.md` — required attribution
   and contributor-governance metadata for Rust files that port legacy WEPP
   source units.
