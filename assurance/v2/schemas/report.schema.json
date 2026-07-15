@@ -1,0 +1,439 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "openwepp:assurance:v2:report:1",
+  "title": "openWEPP assurance v2 report source",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "contract_version",
+    "id",
+    "version",
+    "title",
+    "owner",
+    "lifecycle",
+    "fixture_only",
+    "authorship",
+    "agent_assistance",
+    "manuscript",
+    "supplement",
+    "dependencies",
+    "units",
+    "claims",
+    "methods",
+    "results",
+    "figures",
+    "references",
+    "research_objects",
+    "review",
+    "publication"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "contract_version": { "const": 1 },
+    "id": { "$ref": "#/$defs/id" },
+    "version": { "$ref": "#/$defs/version" },
+    "title": { "$ref": "#/$defs/text" },
+    "owner": { "$ref": "#/$defs/text" },
+    "lifecycle": { "const": "DRAFT" },
+    "fixture_only": { "const": true },
+    "authorship": { "$ref": "#/$defs/authorship" },
+    "agent_assistance": { "$ref": "#/$defs/agentAssistance" },
+    "manuscript": { "$ref": "#/$defs/contentSource" },
+    "supplement": { "$ref": "#/$defs/contentSource" },
+    "dependencies": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/dependency" } },
+    "units": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/unit" } },
+    "claims": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/claim" } },
+    "methods": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/method" } },
+    "results": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/result" } },
+    "figures": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/figure" } },
+    "references": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/reference" } },
+    "research_objects": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/researchObject" } },
+    "review": { "$ref": "#/$defs/review" },
+    "publication": { "$ref": "#/$defs/publication" }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$" },
+    "text": { "type": "string", "pattern": "\\S" },
+    "version": { "type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$" },
+    "path": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[^/]",
+      "not": { "pattern": "(^|/)\\.{1,2}(/|$)" }
+    },
+    "digest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "idList": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/id" },
+      "uniqueItems": true
+    },
+    "nonEmptyIdList": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/id" },
+      "uniqueItems": true
+    },
+    "nullableText": {
+      "anyOf": [
+        { "$ref": "#/$defs/text" },
+        { "type": "null" }
+      ]
+    },
+    "nullablePath": {
+      "anyOf": [
+        { "$ref": "#/$defs/path" },
+        { "type": "null" }
+      ]
+    },
+    "nullableDigest": {
+      "anyOf": [
+        { "$ref": "#/$defs/digest" },
+        { "type": "null" }
+      ]
+    },
+    "authorship": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "title", "owner", "draft_authors", "human_report_lead",
+        "scientific_approver", "accountability_state",
+        "external_peer_review_claimed"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "title": { "$ref": "#/$defs/text" },
+        "owner": { "$ref": "#/$defs/text" },
+        "draft_authors": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/text" } },
+        "human_report_lead": { "type": "null" },
+        "scientific_approver": { "type": "null" },
+        "accountability_state": { "const": "unassigned_blocks_review" },
+        "external_peer_review_claimed": { "const": false }
+      }
+    },
+    "agentAssistance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "title", "owner", "procedure_version", "objective",
+        "tool_model_identity", "input_dependency_ids",
+        "exact_output_dependency_id", "human_disposition",
+        "known_nondeterminism", "limitations", "independent_review",
+        "provenance_complete", "review_entry_authorized"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "title": { "$ref": "#/$defs/text" },
+        "owner": { "$ref": "#/$defs/text" },
+        "procedure_version": { "$ref": "#/$defs/id" },
+        "objective": { "$ref": "#/$defs/text" },
+        "tool_model_identity": { "$ref": "#/$defs/text" },
+        "input_dependency_ids": { "$ref": "#/$defs/nonEmptyIdList" },
+        "exact_output_dependency_id": { "$ref": "#/$defs/id" },
+        "human_disposition": { "$ref": "#/$defs/text" },
+        "known_nondeterminism": { "$ref": "#/$defs/text" },
+        "limitations": { "$ref": "#/$defs/text" },
+        "independent_review": { "$ref": "#/$defs/text" },
+        "provenance_complete": { "const": false },
+        "review_entry_authorized": { "const": false }
+      }
+    },
+    "contentSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "title", "owner", "path", "sha256", "media_type",
+        "provenance", "creation_procedure", "claim_ids", "method_ids",
+        "result_ids", "figure_ids", "reference_ids", "research_object_ids"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "title": { "$ref": "#/$defs/text" },
+        "owner": { "$ref": "#/$defs/text" },
+        "path": { "$ref": "#/$defs/path" },
+        "sha256": { "$ref": "#/$defs/digest" },
+        "media_type": { "const": "text/markdown" },
+        "provenance": { "$ref": "#/$defs/text" },
+        "creation_procedure": { "$ref": "#/$defs/text" },
+        "claim_ids": { "$ref": "#/$defs/nonEmptyIdList" },
+        "method_ids": { "$ref": "#/$defs/nonEmptyIdList" },
+        "result_ids": { "$ref": "#/$defs/nonEmptyIdList" },
+        "figure_ids": { "$ref": "#/$defs/nonEmptyIdList" },
+        "reference_ids": { "$ref": "#/$defs/nonEmptyIdList" },
+        "research_object_ids": { "$ref": "#/$defs/nonEmptyIdList" }
+      }
+    },
+    "dependency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "title", "owner", "kind", "provenance", "creation_procedure",
+        "access", "license", "path", "sha256", "immutable_identity",
+        "restriction_reason", "review_role"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "title": { "$ref": "#/$defs/text" },
+        "owner": { "$ref": "#/$defs/text" },
+        "kind": { "enum": ["local_content", "external_immutable", "restricted"] },
+        "provenance": { "$ref": "#/$defs/text" },
+        "creation_procedure": { "$ref": "#/$defs/text" },
+        "access": { "$ref": "#/$defs/text" },
+        "license": { "$ref": "#/$defs/text" },
+        "path": { "$ref": "#/$defs/nullablePath" },
+        "sha256": { "$ref": "#/$defs/nullableDigest" },
+        "immutable_identity": { "$ref": "#/$defs/nullableText" },
+        "restriction_reason": { "$ref": "#/$defs/nullableText" },
+        "review_role": { "$ref": "#/$defs/nullableText" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "kind": { "const": "local_content" } }, "required": ["kind"] },
+          "then": {
+            "properties": {
+              "path": { "$ref": "#/$defs/path" },
+              "sha256": { "$ref": "#/$defs/digest" },
+              "immutable_identity": { "type": "null" },
+              "restriction_reason": { "type": "null" },
+              "review_role": { "type": "null" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "kind": { "const": "external_immutable" } }, "required": ["kind"] },
+          "then": {
+            "properties": {
+              "path": { "type": "null" },
+              "sha256": { "type": "null" },
+              "immutable_identity": { "$ref": "#/$defs/text" },
+              "restriction_reason": { "type": "null" },
+              "review_role": { "type": "null" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "kind": { "const": "restricted" } }, "required": ["kind"] },
+          "then": {
+            "properties": {
+              "access": { "const": "restricted" },
+              "path": { "type": "null" },
+              "sha256": { "type": "null" },
+              "immutable_identity": { "$ref": "#/$defs/text" },
+              "restriction_reason": { "$ref": "#/$defs/text" },
+              "review_role": { "$ref": "#/$defs/text" }
+            }
+          }
+        }
+      ]
+    },
+    "unit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "symbol", "quantity", "definition"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "symbol": { "$ref": "#/$defs/text" },
+        "quantity": { "$ref": "#/$defs/text" },
+        "definition": { "$ref": "#/$defs/text" }
+      }
+    },
+    "claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "title", "owner", "statement", "claim_type", "scope_limit",
+        "method_ids", "result_ids", "dependency_ids", "unit_ids", "reference_ids"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "title": { "$ref": "#/$defs/text" },
+        "owner": { "$ref": "#/$defs/text" },
+        "statement": { "$ref": "#/$defs/text" },
+        "claim_type": { "$ref": "#/$defs/text" },
+        "scope_limit": { "$ref": "#/$defs/text" },
+        "method_ids": { "$ref": "#/$defs/nonEmptyIdList" },
+        "result_ids": { "$ref": "#/$defs/idList" },
+        "dependency_ids": { "$ref": "#/$defs/nonEmptyIdList" },
+        "unit_ids": { "$ref": "#/$defs/idList" },
+        "reference_ids": { "$ref": "#/$defs/nonEmptyIdList" }
+      }
+    },
+    "method": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "title", "owner", "description", "procedure",
+        "dependency_ids", "unit_ids"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "title": { "$ref": "#/$defs/text" },
+        "owner": { "$ref": "#/$defs/text" },
+        "description": { "$ref": "#/$defs/text" },
+        "procedure": { "$ref": "#/$defs/text" },
+        "dependency_ids": { "$ref": "#/$defs/nonEmptyIdList" },
+        "unit_ids": { "$ref": "#/$defs/idList" }
+      }
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "title", "owner", "path", "sha256", "media_type",
+        "method_id", "dependency_ids", "unit_ids", "quantity_semantics",
+        "precision_policy", "software_realization", "provenance",
+        "creation_procedure"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "title": { "$ref": "#/$defs/text" },
+        "owner": { "$ref": "#/$defs/text" },
+        "path": { "$ref": "#/$defs/path" },
+        "sha256": { "$ref": "#/$defs/digest" },
+        "media_type": { "const": "application/json" },
+        "method_id": { "$ref": "#/$defs/id" },
+        "dependency_ids": { "$ref": "#/$defs/nonEmptyIdList" },
+        "unit_ids": { "$ref": "#/$defs/nonEmptyIdList" },
+        "quantity_semantics": { "$ref": "#/$defs/text" },
+        "precision_policy": { "$ref": "#/$defs/text" },
+        "software_realization": { "$ref": "#/$defs/id" },
+        "provenance": { "$ref": "#/$defs/text" },
+        "creation_procedure": { "$ref": "#/$defs/text" }
+      }
+    },
+    "figure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "title", "owner", "kind", "result_ids",
+        "generation_procedure", "alternative_text", "caption"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "title": { "$ref": "#/$defs/text" },
+        "owner": { "$ref": "#/$defs/text" },
+        "kind": { "enum": ["result_bearing", "conceptual"] },
+        "result_ids": { "$ref": "#/$defs/idList" },
+        "generation_procedure": { "$ref": "#/$defs/text" },
+        "alternative_text": { "$ref": "#/$defs/text" },
+        "caption": { "$ref": "#/$defs/text" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "kind": { "const": "result_bearing" } }, "required": ["kind"] },
+          "then": { "properties": { "result_ids": { "$ref": "#/$defs/nonEmptyIdList" } } }
+        },
+        {
+          "if": { "properties": { "kind": { "const": "conceptual" } }, "required": ["kind"] },
+          "then": { "properties": { "result_ids": { "type": "array", "maxItems": 0 } } }
+        }
+      ]
+    },
+    "reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "title", "owner", "citation", "immutable_identity",
+        "access", "license", "dependency_id"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "title": { "$ref": "#/$defs/text" },
+        "owner": { "$ref": "#/$defs/text" },
+        "citation": { "$ref": "#/$defs/text" },
+        "immutable_identity": { "$ref": "#/$defs/text" },
+        "access": { "$ref": "#/$defs/text" },
+        "license": { "$ref": "#/$defs/text" },
+        "dependency_id": { "$ref": "#/$defs/id" }
+      }
+    },
+    "researchObject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "title", "owner", "access", "license", "path", "sha256",
+        "restriction_reason", "review_role", "result_ids", "method_ids",
+        "dependency_ids", "reproduction_instructions"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "title": { "$ref": "#/$defs/text" },
+        "owner": { "$ref": "#/$defs/text" },
+        "access": { "enum": ["public_safe", "restricted"] },
+        "license": { "$ref": "#/$defs/text" },
+        "path": { "$ref": "#/$defs/nullablePath" },
+        "sha256": { "$ref": "#/$defs/nullableDigest" },
+        "restriction_reason": { "$ref": "#/$defs/nullableText" },
+        "review_role": { "$ref": "#/$defs/nullableText" },
+        "result_ids": { "$ref": "#/$defs/nonEmptyIdList" },
+        "method_ids": { "$ref": "#/$defs/nonEmptyIdList" },
+        "dependency_ids": { "$ref": "#/$defs/nonEmptyIdList" },
+        "reproduction_instructions": { "$ref": "#/$defs/text" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "access": { "const": "public_safe" } }, "required": ["access"] },
+          "then": {
+            "properties": {
+              "path": { "$ref": "#/$defs/path" },
+              "sha256": { "$ref": "#/$defs/digest" },
+              "restriction_reason": { "type": "null" },
+              "review_role": { "type": "null" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "access": { "const": "restricted" } }, "required": ["access"] },
+          "then": {
+            "properties": {
+              "path": { "type": "null" },
+              "sha256": { "type": "null" },
+              "restriction_reason": { "$ref": "#/$defs/text" },
+              "review_role": { "$ref": "#/$defs/text" }
+            }
+          }
+        }
+      ]
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "title", "owner", "state", "decision", "reviewed_root",
+        "approvers", "independence_assessment"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "title": { "$ref": "#/$defs/text" },
+        "owner": { "$ref": "#/$defs/text" },
+        "state": { "const": "DRAFT" },
+        "decision": { "const": "not_started" },
+        "reviewed_root": { "type": "null" },
+        "approvers": { "type": "array", "maxItems": 0 },
+        "independence_assessment": { "const": "not_assessed" }
+      }
+    },
+    "publication": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "title", "owner", "state", "public_path", "snapshot_id",
+        "release_id", "export_authorized", "vendoring_authorized",
+        "supersedes", "withdrawn"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "title": { "$ref": "#/$defs/text" },
+        "owner": { "$ref": "#/$defs/text" },
+        "state": { "const": "DRAFT" },
+        "public_path": { "type": "null" },
+        "snapshot_id": { "type": "null" },
+        "release_id": { "type": "null" },
+        "export_authorized": { "const": false },
+        "vendoring_authorized": { "const": false },
+        "supersedes": { "type": "null" },
+        "withdrawn": { "const": false }
+      }
+    }
+  }
+}

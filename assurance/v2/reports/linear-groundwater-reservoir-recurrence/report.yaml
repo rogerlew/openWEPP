@@ -1,0 +1,463 @@
+schema_version: 1
+contract_version: 1
+id: linear-groundwater-reservoir-recurrence
+version: 0.1.0
+title: Verification of openWEPP's Daily Linear Groundwater-Reservoir Recurrence
+owner: openWEPP scientific assurance maintainers
+lifecycle: DRAFT
+fixture_only: true
+authorship:
+  id: GW-AUTHORSHIP
+  title: Architecture-fixture authorship and accountability
+  owner: openWEPP assurance steward
+  draft_authors: [Codex (AI coding agent)]
+  human_report_lead: null
+  scientific_approver: null
+  accountability_state: unassigned_blocks_review
+  external_peer_review_claimed: false
+agent_assistance:
+  id: GW-AGENT-ASSISTANCE
+  title: ASSURE-02 and ASSURE-04A agent-assistance provenance
+  owner: openWEPP assurance steward
+  procedure_version: assure02-manuscript-prototype-v1
+  objective: Draft and refine a manuscript-first architecture fixture from retained groundwater verification evidence.
+  tool_model_identity: Codex; exact ASSURE-02 model and material configuration were not retained.
+  input_dependency_ids: [GW-DEP-SCIENCE-CONTRACT, GW-DEP-CURRENT-CONFIRMATION, GW-DEP-H2637-EVIDENCE, GW-DEP-H2637-ARITHMETIC, GW-DEP-CONSUMER-PROOF, GW-DEP-ROUTER-EXCLUSION-PROOF]
+  exact_output_dependency_id: GW-DEP-ASSURE02-PROTOTYPE
+  human_disposition: Accepted by the maintainer as architecture evidence and revised in ASSURE-04A; no human scientific approval is claimed.
+  known_nondeterminism: Original agent sampling and material configuration were not retained by ASSURE-02.
+  limitations: Incomplete historical model/configuration provenance prevents review entry and requires accountable redrafting for ASSURE-05.
+  independent_review: Internal coding-agent architecture review only; external scientific peer review is not claimed.
+  provenance_complete: false
+  review_entry_authorized: false
+manuscript:
+  id: GW-MANUSCRIPT
+  title: Daily linear groundwater-reservoir recurrence manuscript
+  owner: openWEPP scientific assurance maintainers
+  path: assurance/v2/reports/linear-groundwater-reservoir-recurrence/manuscript.md
+  sha256: 18a270516f1c5e221e1d9721e37bbb83d8aca69431952cf71336e7f35d30db13
+  media_type: text/markdown
+  provenance: Hand-authored from the accepted ASSURE-02 architecture prototype.
+  creation_procedure: Revise scientific prose directly; never generate conclusions from structured status fields.
+  claim_ids: [GW-P01, GW-P02, GW-P03, GW-P04, GW-P05, GW-P06, GW-P07, GW-P08, GW-P09]
+  method_ids: [GW-METHOD-AUTHORITY, GW-METHOD-ANALYTICAL, GW-METHOD-DOMAIN, GW-METHOD-LEDGER, GW-METHOD-CONSUMER, GW-METHOD-CURRENCY, GW-METHOD-CURRENT-TESTS]
+  result_ids: [GW-RESULT-TWO-DAY, GW-RESULT-H2637]
+  figure_ids: [GW-FIGURE-TWO-DAY, GW-FIGURE-H2637]
+  reference_ids: [GW-REF-SCIENCE-CONTRACT, GW-REF-SRIVASTAVA-2013]
+  research_object_ids: [GW-OBJECT-TWO-DAY, GW-OBJECT-H2637]
+supplement:
+  id: GW-SUPPLEMENT
+  title: Daily linear groundwater-reservoir recurrence supplement
+  owner: openWEPP scientific assurance maintainers
+  path: assurance/v2/reports/linear-groundwater-reservoir-recurrence/supplement.md
+  sha256: 77a3c8b804a1f6f01c1b1ae9f2ea9cc341f91efa95d827530c14e7f29f92d8fe
+  media_type: text/markdown
+  provenance: Hand-authored evidence map derived from the accepted ASSURE-02 claim matrix.
+  creation_procedure: Maintain claim limits and evidence identities beside the manuscript.
+  claim_ids: [GW-P01, GW-P02, GW-P03, GW-P04, GW-P05, GW-P06, GW-P07, GW-P08, GW-P09]
+  method_ids: [GW-METHOD-AUTHORITY, GW-METHOD-ANALYTICAL, GW-METHOD-DOMAIN, GW-METHOD-LEDGER, GW-METHOD-CONSUMER, GW-METHOD-CURRENCY, GW-METHOD-CURRENT-TESTS]
+  result_ids: [GW-RESULT-TWO-DAY, GW-RESULT-H2637]
+  figure_ids: [GW-FIGURE-TWO-DAY, GW-FIGURE-H2637]
+  reference_ids: [GW-REF-SCIENCE-CONTRACT, GW-REF-SRIVASTAVA-2013]
+  research_object_ids: [GW-OBJECT-TWO-DAY, GW-OBJECT-H2637]
+dependencies:
+  - id: GW-DEP-SCIENCE-CONTRACT
+    title: Daily groundwater-reservoir science contract
+    owner: openWEPP science-contract maintainers
+    kind: local_content
+    provenance: Canonical openWEPP process authority.
+    creation_procedure: Science-contract authoring and adjudication procedure.
+    access: public_repository
+    license: repository_license
+    path: docs/specifications/science-contracts/contracts/SC-GWBASEFLOW-001.md
+    sha256: 97ee00e87df4a87221aa34fc1f44c77176f43922bcfac96c69d4b6de8e230d60
+    immutable_identity: null
+    restriction_reason: null
+    review_role: null
+  - id: GW-DEP-IMPLEMENTATION
+    title: Direct-runtime groundwater recurrence implementation
+    owner: openWEPP groundwater process owner
+    kind: local_content
+    provenance: Assessed Rust implementation path.
+    creation_procedure: Baseline-authoritative physics migration under SC-GWBASEFLOW-001.
+    access: public_repository
+    license: repository_license
+    path: crates/openwepp-hillslope-orchestrator/src/direct_runtime/groundwater.rs
+    sha256: 92674b52f7edd4ec67acd07a9069be9de4cfec6512f7c47e19d03f228746cb14
+    immutable_identity: null
+    restriction_reason: null
+    review_role: null
+  - id: GW-DEP-CURRENT-CONFIRMATION
+    title: ASSURE-02 current-tree confirmation
+    owner: ASSURE-02 package owner
+    kind: local_content
+    provenance: Focused executable confirmation and independent two-day arithmetic.
+    creation_procedure: ASSURE-02 evidence procedure.
+    access: public_repository
+    license: repository_license
+    path: docs/work-packages/20260714-assure02-manuscript-first-assurance-architecture-001/artifacts/groundwater-current-tree-confirmation.md
+    sha256: 2e202908260751f1983ff7129623e485f05aa6510880266a596db22d532dacab
+    immutable_identity: null
+    restriction_reason: null
+    review_role: null
+  - id: GW-DEP-ASSURE02-PROTOTYPE
+    title: Accepted ASSURE-02 manuscript-first architecture prototype
+    owner: ASSURE-02 package owner
+    kind: local_content
+    provenance: Exact agent-assisted predecessor for this ASSURE-04A fixture.
+    creation_procedure: Maintainer-directed ASSURE-02 drafting with internal coding-agent review.
+    access: public_repository
+    license: repository_license
+    path: docs/work-packages/20260714-assure02-manuscript-first-assurance-architecture-001/artifacts/prototype-linear-groundwater-reservoir-evaluation.md
+    sha256: 32314063d3a925f33df12bf03fcb031352a8adda61f9ca1377657548377eb9f0
+    immutable_identity: null
+    restriction_reason: null
+    review_role: null
+  - id: GW-DEP-H2637-EVIDENCE
+    title: H2637 conservation and consumer evidence
+    owner: integrated-validation campaign owner
+    kind: local_content
+    provenance: Retained integrated production evidence.
+    creation_procedure: Integrated validation campaign reconstruction and adjudication.
+    access: public_repository
+    license: repository_license
+    path: docs/work-packages/20260713-integrated-validation-campaign-001/artifacts/final-conservation-and-consumer-evidence.md
+    sha256: 306b96a1d45fca85d5604b16fe8ce4b814df48d2fc15ecb910e198085ee81f18
+    immutable_identity: null
+    restriction_reason: null
+    review_role: null
+  - id: GW-DEP-H2637-ARITHMETIC
+    title: H2637 independent reconstruction arithmetic
+    owner: integrated-validation campaign owner
+    kind: local_content
+    provenance: Retained arithmetic log for terminal ledger identities.
+    creation_procedure: Independent operand reconstruction from retained run manifest.
+    access: public_repository
+    license: repository_license
+    path: docs/work-packages/20260713-integrated-validation-campaign-001/artifacts/logs/final-reconstruction-arithmetic.log
+    sha256: 4f2675a0fe57f4153f002a7051ae99971811af84c430ead68395d4205c52468e
+    immutable_identity: null
+    restriction_reason: null
+    review_role: null
+  - id: GW-DEP-CONSUMER-PROOF
+    title: Generated-groundwater production consumer-path proof
+    owner: LANED active baseflow export closure package owner
+    kind: local_content
+    provenance: Accepted ASSURE-02 evidence for direct publication, HBP transfer, watershed consumption, and cbase separation.
+    creation_procedure: Retained real-consumer proof under the LANED active baseflow export closure package.
+    access: public_repository
+    license: repository_license
+    path: docs/work-packages/20260709-laned-active-baseflow-export-closure-001/artifacts/consumer-path-proof.md
+    sha256: 708a5d6fba629a3ba6945781b6aa625eaf89ab9b0583517fbfc37622b503a3fa
+    immutable_identity: null
+    restriction_reason: null
+    review_role: null
+  - id: GW-DEP-ROUTER-EXCLUSION-PROOF
+    title: Active surface-router groundwater-exclusion proof
+    owner: LANED groundwater baseflow implementation package owner
+    kind: local_content
+    provenance: Accepted ASSURE-02 negative-path evidence that generated groundwater does not reenter the active surface router.
+    creation_procedure: Retained active-router source and consumer proof under the LANED groundwater baseflow implementation package.
+    access: public_repository
+    license: repository_license
+    path: docs/work-packages/20260708-groundwater-baseflow-laned-single-ofe-mofe-implementation-001/artifacts/consumer-path-proof.md
+    sha256: fed22fa4c031ef102c214a99fbbda9efbfcaaaa6e2b482f2883be4aa082764b4
+    immutable_identity: null
+    restriction_reason: null
+    review_role: null
+  - id: GW-DEP-SOFTWARE
+    title: Assessed openWEPP software realization
+    owner: openWEPP maintainers
+    kind: external_immutable
+    provenance: Frozen realization named by the retained integrated evidence.
+    creation_procedure: Git content-addressed repository commit.
+    access: public_repository
+    license: repository_license
+    path: null
+    sha256: null
+    immutable_identity: git:de520f1ff867ca5c65b1f82dfe32a19c213ae18c
+    restriction_reason: null
+    review_role: null
+  - id: GW-DEP-PRIEST-RIVER-STUDY
+    title: Priest River coupled WEPP groundwater study
+    owner: Srivastava, Dobre, Wu, Elliot, Bruner, Dun, Brooks, and Miller
+    kind: external_immutable
+    provenance: Published formulation and coupled-model evaluation.
+    creation_procedure: Peer-reviewed journal publication.
+    access: publisher_record
+    license: citation_only
+    path: null
+    sha256: null
+    immutable_identity: doi:10.13031/2013.42691
+    restriction_reason: null
+    review_role: null
+units:
+  - id: m3
+    symbol: m3
+    quantity: water volume
+    definition: cubic metre
+  - id: d_inv
+    symbol: d^-1
+    quantity: daily reservoir release coefficient
+    definition: inverse day
+claims:
+  - id: GW-P01
+    title: Authorized daily groundwater-reservoir formulation
+    owner: openWEPP groundwater process owner
+    statement: The authorized daily recurrence adds current recharge, debits prior-day exports, then computes current baseflow and deep seepage as proportional releases over a fixed one-day interval.
+    claim_type: formulation_authority
+    scope_limit: Linear daily routine only; later nonlinear groundwater formulations are excluded.
+    method_ids: [GW-METHOD-AUTHORITY]
+    result_ids: []
+    dependency_ids: [GW-DEP-SCIENCE-CONTRACT, GW-DEP-PRIEST-RIVER-STUDY]
+    unit_ids: [m3, d_inv]
+    reference_ids: [GW-REF-SCIENCE-CONTRACT, GW-REF-SRIVASTAVA-2013]
+  - id: GW-P02
+    title: Prior-day export timing
+    owner: openWEPP groundwater process owner
+    statement: The assessed implementation applies prior-day baseflow and deep-seepage exports before calculating current-day exports.
+    claim_type: implementation_verification
+    scope_limit: Exact tested recurrence and admitted coefficient domain.
+    method_ids: [GW-METHOD-ANALYTICAL]
+    result_ids: [GW-RESULT-TWO-DAY]
+    dependency_ids: [GW-DEP-IMPLEMENTATION, GW-DEP-CURRENT-CONFIRMATION, GW-DEP-SOFTWARE]
+    unit_ids: [m3, d_inv]
+    reference_ids: [GW-REF-SCIENCE-CONTRACT]
+  - id: GW-P03
+    title: Two-day recurrence realization
+    owner: openWEPP groundwater process owner
+    statement: The two-day vector yields storage of 12.0 and 14.2 m3, baseflow of 1.2 and 1.42 m3, and deep seepage of 0.6 and 0.71 m3, with a maximum absolute residual of 1.7763568394002505e-15 m3 against the 1.0e-12 m3 allowance.
+    claim_type: implementation_verification
+    scope_limit: Synthetic 1,000 m2 daily case; not field performance or numerical-convergence evidence.
+    method_ids: [GW-METHOD-ANALYTICAL]
+    result_ids: [GW-RESULT-TWO-DAY]
+    dependency_ids: [GW-DEP-SCIENCE-CONTRACT, GW-DEP-IMPLEMENTATION, GW-DEP-CURRENT-CONFIRMATION, GW-DEP-SOFTWARE]
+    unit_ids: [m3, d_inv]
+    reference_ids: [GW-REF-SCIENCE-CONTRACT]
+  - id: GW-P04
+    title: Coefficient domain and over-export guard
+    owner: openWEPP groundwater process owner
+    statement: Current authority admits finite nonnegative baseflow and deep-seepage coefficients and rejects a combined daily export that exceeds accepted storage; negative deep-seepage coefficients are outside authority.
+    claim_type: domain_guard_verification
+    scope_limit: No independent scientific upper bound is assigned to either coefficient; admissibility is recurrence- and timestep-specific.
+    method_ids: [GW-METHOD-DOMAIN]
+    result_ids: []
+    dependency_ids: [GW-DEP-SCIENCE-CONTRACT, GW-DEP-IMPLEMENTATION, GW-DEP-CURRENT-CONFIRMATION]
+    unit_ids: [m3, d_inv]
+    reference_ids: [GW-REF-SCIENCE-CONTRACT]
+  - id: GW-P05
+    title: Production groundwater-ledger reconstruction
+    owner: openWEPP integrated-validation owner
+    statement: The retained H2637 production case closes both terminal-storage identities within their storage-scaled allowances.
+    claim_type: integrated_verification
+    scope_limit: One 731-day, 19-OFE case; ledger closure is not observational accuracy or convergence evidence.
+    method_ids: [GW-METHOD-LEDGER]
+    result_ids: [GW-RESULT-H2637]
+    dependency_ids: [GW-DEP-H2637-EVIDENCE, GW-DEP-H2637-ARITHMETIC, GW-DEP-SOFTWARE]
+    unit_ids: [m3]
+    reference_ids: [GW-REF-SCIENCE-CONTRACT]
+  - id: GW-P06
+    title: Production consumer continuity
+    owner: openWEPP watershed integration owner
+    statement: Generated baseflow and deep seepage traverse direct publication, hillslope-pass serialization and parsing, watershed contribution, and the generated-baseflow channel branch; cbase is not substituted when the linear reservoir is enabled.
+    claim_type: consumer_path_verification
+    scope_limit: Named tested publication and watershed branches only.
+    method_ids: [GW-METHOD-CONSUMER]
+    result_ids: []
+    dependency_ids: [GW-DEP-CURRENT-CONFIRMATION, GW-DEP-H2637-EVIDENCE, GW-DEP-CONSUMER-PROOF, GW-DEP-SOFTWARE]
+    unit_ids: [m3]
+    reference_ids: [GW-REF-SCIENCE-CONTRACT]
+  - id: GW-P07
+    title: Active surface-router exclusion
+    owner: openWEPP watershed integration owner
+    statement: Generated groundwater is excluded from the active surface-runoff source builder and therefore does not reenter the tested surface router.
+    claim_type: negative_consumer_path_verification
+    scope_limit: Static source exclusion for the named active source builder; not a universal proof for future routers.
+    method_ids: [GW-METHOD-CONSUMER]
+    result_ids: []
+    dependency_ids: [GW-DEP-ROUTER-EXCLUSION-PROOF, GW-DEP-SOFTWARE]
+    unit_ids: [m3]
+    reference_ids: [GW-REF-SCIENCE-CONTRACT]
+  - id: GW-P08
+    title: Frozen-to-intake path currency
+    owner: ASSURE-02 package owner
+    statement: Twelve declared groundwater implementation, publication, consumer, and test paths were unchanged between the frozen assessed commit and ASSURE-02 intake.
+    claim_type: static_currency_check
+    scope_limit: Twelve named paths only; this does not substitute for fresh integrated release transfer.
+    method_ids: [GW-METHOD-CURRENCY]
+    result_ids: []
+    dependency_ids: [GW-DEP-CURRENT-CONFIRMATION, GW-DEP-SOFTWARE]
+    unit_ids: []
+    reference_ids: [GW-REF-SCIENCE-CONTRACT]
+  - id: GW-P09
+    title: Focused current-tree executable confirmation
+    owner: ASSURE-02 package owner
+    statement: Focused current-tree recurrence, guard, threshold, authority, and hillslope-pass consumer tests pass.
+    claim_type: focused_executable_confirmation
+    scope_limit: Seven focused tests; not a full workspace run or fresh H2637 execution.
+    method_ids: [GW-METHOD-CURRENT-TESTS]
+    result_ids: []
+    dependency_ids: [GW-DEP-CURRENT-CONFIRMATION, GW-DEP-IMPLEMENTATION, GW-DEP-SOFTWARE]
+    unit_ids: []
+    reference_ids: [GW-REF-SCIENCE-CONTRACT]
+methods:
+  - id: GW-METHOD-AUTHORITY
+    title: Formulation and authority traceability
+    owner: openWEPP groundwater process owner
+    description: Trace recurrence equations, interval, coefficient domain, and publication meanings to the canonical science contract and published formulation.
+    procedure: Compare the manuscript formulation with SC-GWBASEFLOW-001 and the retained Srivastava et al. publication identity without treating coupled calibration statistics as current openWEPP results.
+    dependency_ids: [GW-DEP-SCIENCE-CONTRACT, GW-DEP-PRIEST-RIVER-STUDY]
+    unit_ids: [m3, d_inv]
+  - id: GW-METHOD-ANALYTICAL
+    title: Independent two-day recurrence calculation
+    owner: openWEPP groundwater process owner
+    description: Apply the published daily recurrence to a predeclared two-day vector and compare every storage and export value.
+    procedure: Compute expected values independently, execute the focused recurrence test, and compare absolute binary64 residuals with the coded 1.0e-12 m3 allowance.
+    dependency_ids: [GW-DEP-SCIENCE-CONTRACT, GW-DEP-IMPLEMENTATION, GW-DEP-CURRENT-CONFIRMATION]
+    unit_ids: [m3, d_inv]
+  - id: GW-METHOD-DOMAIN
+    title: Coefficient-domain and over-export guard test
+    owner: openWEPP groundwater process owner
+    description: Check admitted nonnegative coefficients and fail-closed rejection when combined daily exports exceed accepted storage.
+    procedure: Trace the science-contract domain and execute the retained over-export negative vector under the current-tree focused confirmation.
+    dependency_ids: [GW-DEP-SCIENCE-CONTRACT, GW-DEP-IMPLEMENTATION, GW-DEP-CURRENT-CONFIRMATION]
+    unit_ids: [m3, d_inv]
+  - id: GW-METHOD-LEDGER
+    title: Independent terminal groundwater-ledger reconstruction
+    owner: openWEPP integrated-validation owner
+    description: Reconstruct pre-export and post-export terminal identities from retained H2637 operands.
+    procedure: Use terminal-day rather than latest-event exports and compare both independently calculated residuals with stored storage-scaled allowances.
+    dependency_ids: [GW-DEP-H2637-EVIDENCE, GW-DEP-H2637-ARITHMETIC]
+    unit_ids: [m3]
+  - id: GW-METHOD-CONSUMER
+    title: Groundwater publication and consumer-path inspection
+    owner: openWEPP watershed integration owner
+    description: Exercise and inspect the production chain from direct runtime through hillslope-pass publication to the generated-baseflow watershed branch.
+    procedure: Run focused consumer tests, check enabling authority and area threshold behavior, and prove generated groundwater is excluded from the surface-runoff source.
+    dependency_ids: [GW-DEP-CURRENT-CONFIRMATION, GW-DEP-H2637-EVIDENCE, GW-DEP-CONSUMER-PROOF, GW-DEP-ROUTER-EXCLUSION-PROOF]
+    unit_ids: [m3]
+  - id: GW-METHOD-CURRENCY
+    title: Frozen-to-intake path comparison
+    owner: ASSURE-02 package owner
+    description: Compare exactly twelve declared implementation, publication, consumer, and test paths between the assessed commit and ASSURE-02 intake.
+    procedure: Run the retained git diff path selection and require empty standard output with successful exit status.
+    dependency_ids: [GW-DEP-CURRENT-CONFIRMATION, GW-DEP-SOFTWARE]
+    unit_ids: []
+  - id: GW-METHOD-CURRENT-TESTS
+    title: Focused current-tree groundwater confirmation
+    owner: ASSURE-02 package owner
+    description: Execute the seven named recurrence, guard, threshold, authority, and hillslope-pass consumer tests selected by ASSURE-02.
+    procedure: Run the retained nextest quick expression and preserve the run ID, selected test names, pass count, skipped count, and scope limitation.
+    dependency_ids: [GW-DEP-CURRENT-CONFIRMATION, GW-DEP-IMPLEMENTATION]
+    unit_ids: []
+results:
+  - id: GW-RESULT-TWO-DAY
+    title: Two-day recurrence values and residual
+    owner: openWEPP groundwater process owner
+    path: assurance/v2/reports/linear-groundwater-reservoir-recurrence/results/two-day-recurrence.json
+    sha256: 41ada54b6ce96cc897bc7125ba737bab8194835488672903f717c2f350c6e483
+    media_type: application/json
+    method_id: GW-METHOD-ANALYTICAL
+    dependency_ids: [GW-DEP-CURRENT-CONFIRMATION, GW-DEP-SOFTWARE]
+    unit_ids: [m3]
+    quantity_semantics: Daily accepted storage and same-day generated export volumes, plus maximum absolute implementation residual.
+    precision_policy: Preserve binary64 residual; report state and flux values only to meaningful analytical-vector precision.
+    software_realization: GW-DEP-SOFTWARE
+    provenance: ASSURE-02 independent reconstruction and focused recurrence execution.
+    creation_procedure: Transcribe retained operands once into a strict result object and bind its content digest.
+  - id: GW-RESULT-H2637
+    title: H2637 terminal groundwater-ledger operands and residuals
+    owner: openWEPP integrated-validation owner
+    path: assurance/v2/reports/linear-groundwater-reservoir-recurrence/results/h2637-ledger.json
+    sha256: 5fc3aa1834a41f277bd750373bd50c4223a5cf8503e25f3f16c13e509faed82d
+    media_type: application/json
+    method_id: GW-METHOD-LEDGER
+    dependency_ids: [GW-DEP-H2637-EVIDENCE, GW-DEP-H2637-ARITHMETIC, GW-DEP-SOFTWARE]
+    unit_ids: [m3]
+    quantity_semantics: Cumulative and terminal daily groundwater volumes used in the two terminal-storage identities.
+    precision_policy: Preserve retained binary64 operands and residuals; do not imply hydrologic measurement precision.
+    software_realization: GW-DEP-SOFTWARE
+    provenance: Integrated validation campaign final conservation record and independent arithmetic log.
+    creation_procedure: Transcribe retained adjudicated operands once into a strict result object and bind its content digest.
+figures:
+  - id: GW-FIGURE-TWO-DAY
+    title: Two-day analytical recurrence comparison
+    owner: future ASSURE-04C report assembler
+    kind: result_bearing
+    result_ids: [GW-RESULT-TWO-DAY]
+    generation_procedure: ASSURE-04C must render directly from GW-RESULT-TWO-DAY without retyping values.
+    alternative_text: Tabular values show exact agreement within the binary64 allowance for both simulated days.
+    caption: Independent analytical and openWEPP daily storage and export values for the two-day recurrence vector.
+  - id: GW-FIGURE-H2637
+    title: H2637 groundwater-ledger residuals and allowances
+    owner: future ASSURE-04C report assembler
+    kind: result_bearing
+    result_ids: [GW-RESULT-H2637]
+    generation_procedure: ASSURE-04C must render residual magnitudes and allowances directly from GW-RESULT-H2637.
+    alternative_text: Both terminal-ledger residual magnitudes are about 4.25e-11 m3 and are below allowances above 1.20e-7 m3.
+    caption: Independently reconstructed terminal groundwater-ledger residuals compared with coded storage-scaled allowances.
+references:
+  - id: GW-REF-SCIENCE-CONTRACT
+    title: SC-GWBASEFLOW-001
+    owner: openWEPP science-contract maintainers
+    citation: openWEPP daily groundwater reservoir and baseflow/deep-seepage publication science contract.
+    immutable_identity: sha256:97ee00e87df4a87221aa34fc1f44c77176f43922bcfac96c69d4b6de8e230d60
+    access: public_repository
+    license: repository_license
+    dependency_id: GW-DEP-SCIENCE-CONTRACT
+  - id: GW-REF-SRIVASTAVA-2013
+    title: Priest River coupled WEPP groundwater study
+    owner: Srivastava, Dobre, Wu, Elliot, Bruner, Dun, Brooks, and Miller
+    citation: Srivastava, A., Dobre, M., Wu, J. Q., Elliot, W. J., Bruner, E. A., Dun, S., Brooks, E. S., and Miller, I. S. 2013. Modifying WEPP to improve streamflow simulation in a Pacific Northwest watershed. Transactions of the ASABE 56(2), 603-611.
+    immutable_identity: doi:10.13031/2013.42691
+    access: publisher_record
+    license: citation_only
+    dependency_id: GW-DEP-PRIEST-RIVER-STUDY
+research_objects:
+  - id: GW-OBJECT-TWO-DAY
+    title: Public-safe two-day recurrence result source
+    owner: openWEPP scientific assurance maintainers
+    access: public_safe
+    license: repository_license
+    path: assurance/v2/reports/linear-groundwater-reservoir-recurrence/results/two-day-recurrence.json
+    sha256: 41ada54b6ce96cc897bc7125ba737bab8194835488672903f717c2f350c6e483
+    restriction_reason: null
+    review_role: null
+    result_ids: [GW-RESULT-TWO-DAY]
+    method_ids: [GW-METHOD-ANALYTICAL]
+    dependency_ids: [GW-DEP-SCIENCE-CONTRACT, GW-DEP-CURRENT-CONFIRMATION, GW-DEP-SOFTWARE]
+    reproduction_instructions: Reapply the daily recurrence to the documented input vector and compare the strict JSON values; no network access is required.
+  - id: GW-OBJECT-H2637
+    title: Public-safe H2637 ledger result source
+    owner: openWEPP scientific assurance maintainers
+    access: public_safe
+    license: repository_license
+    path: assurance/v2/reports/linear-groundwater-reservoir-recurrence/results/h2637-ledger.json
+    sha256: 5fc3aa1834a41f277bd750373bd50c4223a5cf8503e25f3f16c13e509faed82d
+    restriction_reason: null
+    review_role: null
+    result_ids: [GW-RESULT-H2637]
+    method_ids: [GW-METHOD-LEDGER]
+    dependency_ids: [GW-DEP-H2637-EVIDENCE, GW-DEP-H2637-ARITHMETIC, GW-DEP-SOFTWARE]
+    reproduction_instructions: Reconstruct both terminal identities from the strict JSON operands and compare residual magnitudes with their stored allowances.
+review:
+  id: GW-REVIEW
+  title: Scientific and publication review state
+  owner: openWEPP assurance steward
+  state: DRAFT
+  decision: not_started
+  reviewed_root: null
+  approvers: []
+  independence_assessment: not_assessed
+publication:
+  id: GW-PUBLICATION
+  title: Publication authorization state
+  owner: openWEPP assurance steward
+  state: DRAFT
+  public_path: null
+  snapshot_id: null
+  release_id: null
+  export_authorized: false
+  vendoring_authorized: false
+  supersedes: null
+  withdrawn: false

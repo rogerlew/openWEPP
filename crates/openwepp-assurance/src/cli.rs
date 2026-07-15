@@ -3,11 +3,11 @@ use std::ffi::OsString;
 use std::fmt::Write as _;
 use std::path::PathBuf;
 
-use crate::{Assurance, AssuranceError, BuildOptions, Result};
+use crate::{Assurance, AssuranceError, BuildOptions, Result, V2Repository};
 
-const USAGE: &str = "Usage:\n  openwepp-assurance validate --all\n  openwepp-assurance plan --all\n  openwepp-assurance build --all [--output-root <path>] [--snapshot <id> --snapshot-root <path>]\n  openwepp-assurance check --all\n";
+const USAGE: &str = "Usage:\n  openwepp-assurance validate (--all | --report <id>)\n  openwepp-assurance plan --all\n  openwepp-assurance build --all [--output-root <path>] [--snapshot <id> --snapshot-root <path>]\n  openwepp-assurance check --all\n";
 
-/// Parses process arguments and executes one zero-report operation.
+/// Parses process arguments and executes one assurance operation.
 ///
 /// # Errors
 ///
@@ -35,7 +35,8 @@ where
     }
     let options = parse_options(args)?;
     let root = env::current_dir().map_err(|error| AssuranceError::io(".", error))?;
-    execute(&Assurance::open(root)?, &command, &options)
+    let assurance = Assurance::open(&root)?;
+    execute(&root, &assurance, &command, &options)
 }
 
 fn utf8(value: Option<OsString>, name: &str) -> Result<String> {
@@ -57,21 +58,37 @@ where
     Ok(())
 }
 
-fn execute(assurance: &Assurance, command: &str, options: &Options) -> Result<String> {
+fn execute(
+    root: &std::path::Path,
+    assurance: &Assurance,
+    command: &str,
+    options: &Options,
+) -> Result<String> {
     match command {
         "validate" => {
             reject_build_options(options)?;
             assurance.validate()?;
-            Ok("validation: PASS\nreports: 0\n".to_owned())
+            let repository = V2Repository::open(root)?;
+            match &options.selection {
+                Selection::All => repository.validate_all().map(|summary| summary.render()),
+                Selection::Report(report_id) => repository
+                    .validate_report(report_id)
+                    .map(|summary| summary.render()),
+            }
         }
         "plan" => {
+            reject_report_selection(options, "ASSURE-04B owns report-specific planning")?;
             reject_build_options(options)?;
             assurance.plan().map(|plan| plan.render())
         }
-        "build" => assurance
-            .build(&options.build)
-            .map(|result| render_result("build", &result)),
+        "build" => {
+            reject_report_selection(options, "ASSURE-04C owns report-specific assembly")?;
+            assurance
+                .build(&options.build)
+                .map(|result| render_result("build", &result))
+        }
         "check" => {
+            reject_report_selection(options, "ASSURE-04C owns report-specific assembly checks")?;
             reject_build_options(options)?;
             assurance
                 .check()
@@ -87,14 +104,17 @@ fn parse_options<I>(mut args: I) -> Result<Options>
 where
     I: Iterator<Item = OsString>,
 {
-    let mut all = false;
+    let mut selection = None;
     let mut build = BuildOptions::default();
     while let Some(argument) = args.next() {
         let argument = argument
             .into_string()
             .map_err(|_| AssuranceError::Usage("arguments must be UTF-8".to_owned()))?;
         match argument.as_str() {
-            "--all" if !all => all = true,
+            "--all" if selection.is_none() => selection = Some(Selection::All),
+            "--report" if selection.is_none() => {
+                selection = Some(Selection::Report(next_string(&mut args, "--report")?));
+            }
             "--output-root" => build.output_root = Some(next_path(&mut args, "--output-root")?),
             "--snapshot" => build.snapshot = Some(next_string(&mut args, "--snapshot")?),
             "--snapshot-root" => {
@@ -113,12 +133,12 @@ where
             }
         }
     }
-    if !all {
+    let Some(selection) = selection else {
         return Err(AssuranceError::Usage(format!(
-            "--all is required; v1 dossier selection is retired\n{USAGE}"
+            "exactly one of --all or --report is required\n{USAGE}"
         )));
-    }
-    Ok(Options { build })
+    };
+    Ok(Options { selection, build })
 }
 
 fn next_string<I>(args: &mut I, option: &str) -> Result<String>
@@ -144,6 +164,15 @@ fn reject_build_options(options: &Options) -> Result<()> {
     ))
 }
 
+fn reject_report_selection(options: &Options, owner: &str) -> Result<()> {
+    if matches!(options.selection, Selection::All) {
+        return Ok(());
+    }
+    Err(AssuranceError::Usage(format!(
+        "{owner}; ASSURE-04A supports --report only for validate"
+    )))
+}
+
 fn render_result(label: &str, result: &crate::BuildResult) -> String {
     let mut output = format!("{label}: PASS\nreports: 0\noutputs:\n");
     for (path, digest) in &result.outputs {
@@ -167,7 +196,13 @@ fn render_result(label: &str, result: &crate::BuildResult) -> String {
 }
 
 struct Options {
+    selection: Selection,
     build: BuildOptions,
+}
+
+enum Selection {
+    All,
+    Report(String),
 }
 
 #[cfg(test)]
@@ -175,10 +210,12 @@ mod tests {
     use super::parse_options;
 
     #[test]
-    fn only_all_selection_is_admitted() {
+    fn exactly_one_selection_is_admitted() {
         assert!(parse_options(Vec::<std::ffi::OsString>::new().into_iter()).is_err());
         assert!(parse_options(["--dossier", "x"].map(Into::into).into_iter()).is_err());
         assert!(parse_options(["--all"].map(Into::into).into_iter()).is_ok());
+        assert!(parse_options(["--report", "x"].map(Into::into).into_iter()).is_ok());
         assert!(parse_options(["--all", "--all"].map(Into::into).into_iter()).is_err());
+        assert!(parse_options(["--all", "--report", "x"].map(Into::into).into_iter()).is_err());
     }
 }

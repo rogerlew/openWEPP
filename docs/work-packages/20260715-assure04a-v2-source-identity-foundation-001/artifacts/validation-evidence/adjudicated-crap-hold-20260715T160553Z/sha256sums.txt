@@ -1,0 +1,16 @@
+10b19679e382ebacd6b2d20ee02144c461e01b1ac958731d07dd6585acb7d67f  docs/work-packages/20260715-assure04a-v2-source-identity-foundation-001/artifacts/validation-evidence/adjudicated-crap/adjudication-registry.json
+03c7ec557ff56607a9c2957b1e5b1cf198c850df2620ed8693f24825e1935a46  docs/work-packages/20260715-assure04a-v2-source-identity-foundation-001/artifacts/validation-evidence/adjudicated-crap/adjudicated-crap-report.json
+97ba2e8e8de6830e3428be3626090b81c4be96e022c5c5742e669fda3175df93  docs/work-packages/20260715-assure04a-v2-source-identity-foundation-001/artifacts/validation-evidence/adjudicated-crap/adjudicated-crap-report.md
+faf93773c4f1319d248c431f7ef1d7a7cd3bd556cfd4990b83989c1591e3490f  docs/work-packages/20260715-assure04a-v2-source-identity-foundation-001/artifacts/validation-evidence/adjudicated-crap/cargo-version.txt
+613daf2b27209d9be123ababd5ebd0bbc27ce14c9f63463552454b7cea0e7f86  docs/work-packages/20260715-assure04a-v2-source-identity-foundation-001/artifacts/validation-evidence/adjudicated-crap/cargo-crap-version.txt
+d19f3c9b9ea9780e4dfe40429d34f9aa5727aebefa5a3b9173216081ca6347fe  docs/work-packages/20260715-assure04a-v2-source-identity-foundation-001/artifacts/validation-evidence/adjudicated-crap/cargo-crap.log
+35c027b707427b0becc406096c32bd507961068f5d869735d7997da10bf44fd7  docs/work-packages/20260715-assure04a-v2-source-identity-foundation-001/artifacts/validation-evidence/adjudicated-crap/cargo-llvm-cov-version.txt
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  docs/work-packages/20260715-assure04a-v2-source-identity-foundation-001/artifacts/validation-evidence/adjudicated-crap/llvm-cov-clean.log
+21831f6a8de9f7becff2d43208ed44479b5384c14256c22f4e3c77a80786cc6d  docs/work-packages/20260715-assure04a-v2-source-identity-foundation-001/artifacts/validation-evidence/adjudicated-crap/llvm-cov.log
+d0f8d8eb59940aba6195e201dd9b6be74014b7c2eb231bd8d57f7207bffdb8bd  docs/work-packages/20260715-assure04a-v2-source-identity-foundation-001/artifacts/validation-evidence/adjudicated-crap/run-status.json
+8f97c91e920ce0d02680e3d01eb87afa0c77290dcd5d19eb901ae194d4700d90  docs/work-packages/20260715-assure04a-v2-source-identity-foundation-001/artifacts/validation-evidence/adjudicated-crap/rustc-version.txt
+c3b47dcc792c749707ddb8ef5434579e56d556012361d7963247039ee165cc4e  docs/work-packages/20260715-assure04a-v2-source-identity-foundation-001/artifacts/validation-evidence/adjudicated-crap/source-manifest-after.json
+c3b47dcc792c749707ddb8ef5434579e56d556012361d7963247039ee165cc4e  docs/work-packages/20260715-assure04a-v2-source-identity-foundation-001/artifacts/validation-evidence/adjudicated-crap/source-manifest-before.json
+c3b47dcc792c749707ddb8ef5434579e56d556012361d7963247039ee165cc4e  docs/work-packages/20260715-assure04a-v2-source-identity-foundation-001/artifacts/validation-evidence/adjudicated-crap/source-manifest-final.json
+1b6e23ac57be052b84442c083189d08bdc95dd8f03906c0befddb99b5d29a897  docs/work-packages/20260715-assure04a-v2-source-identity-foundation-001/artifacts/validation-evidence/adjudicated-crap/workspace-crap.json
+ec12316f0484d0ebf26d19758e640ff4e3bd270165d002c31bda95d26d777b5c  docs/work-packages/20260715-assure04a-v2-source-identity-foundation-001/artifacts/validation-evidence/adjudicated-crap/workspace.lcov

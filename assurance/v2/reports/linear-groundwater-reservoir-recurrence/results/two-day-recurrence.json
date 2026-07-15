@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "result_id": "GW-RESULT-TWO-DAY",
+  "values": [
+    { "id": "day_1_storage", "value": 12.0, "unit_id": "m3", "precision": "reported to 0.1 m3" },
+    { "id": "day_1_baseflow", "value": 1.2, "unit_id": "m3", "precision": "reported to 0.01 m3" },
+    { "id": "day_1_deep_seepage", "value": 0.6, "unit_id": "m3", "precision": "reported to 0.01 m3" },
+    { "id": "day_2_storage", "value": 14.2, "unit_id": "m3", "precision": "reported to 0.1 m3" },
+    { "id": "day_2_baseflow", "value": 1.42, "unit_id": "m3", "precision": "reported to 0.01 m3" },
+    { "id": "day_2_deep_seepage", "value": 0.71, "unit_id": "m3", "precision": "reported to 0.01 m3" },
+    { "id": "maximum_absolute_residual", "value": 1.7763568394002505e-15, "unit_id": "m3", "precision": "binary64 reconstruction" },
+    { "id": "acceptance_allowance", "value": 1e-12, "unit_id": "m3", "precision": "coded absolute allowance" }
+  ]
+}

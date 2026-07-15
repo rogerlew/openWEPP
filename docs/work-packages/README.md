@@ -102,6 +102,19 @@
 
 State as of `2026-07-15 UTC`:
 
+- `20260715-assure04a-v2-source-identity-foundation-001/` -
+  EXECUTED-COMPLETE (2026-07-15): added the smallest typed v2 source and
+  identity foundation demonstrated by the accepted groundwater prototype. Real
+  one/all CLI admission, 24 focused tests, 1,985 full-profile tests, dependency
+  policy, fresh CRAP with zero actionable rows, and protected zero-report
+  bytes. Verification B found a blocking required-nullable schema/admission
+  parity defect; presence-aware admission and five-family omission vectors now
+  pass 25/25 focused tests. The fresh amended heavy sequence passed
+  1,986/1,986 selected tests and zero actionable CRAP rows, and renewed dual
+  verification passed. The sole fixture is
+  internal `DRAFT` architecture evidence, not scientific approval. Planning,
+  rendering, publication, release transfer, and WEPPcloud vendoring remain
+  outside ASSURE-04A; ASSURE-04B is next and awaits explicit authorization.
 - `20260714-assure02-manuscript-first-assurance-architecture-001/` -
   EXECUTED-COMPLETE (2026-07-15; documentation-only): the
   manuscript-first architecture, report standard, ownership/build contracts,

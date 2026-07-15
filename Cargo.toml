@@ -78,6 +78,7 @@ openwepp-runner = { path = "crates/openwepp-runner", version = "0.1.0" }
 
 [dev-dependencies]
 flate2 = "1.1.0"
+jsonschema = { version = "0.42.0", default-features = false }
 arrow-array = "54.2.1"
 arrow-schema = "54.2.1"
 parquet = "54.2.1"
@@ -668,6 +669,10 @@ path = "tests/integration/snowdensity10_3_22_climate_class_density_specializatio
 [[test]]
 name = "assurance_dossier_build_contract"
 path = "tests/integration/assurance_dossier_build_contract.rs"
+
+[[test]]
+name = "assurance_v2_source_contract"
+path = "tests/integration/assurance_v2_source_contract.rs"
 
 [profile.release]
 lto = "thin"

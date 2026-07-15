@@ -1,7 +1,7 @@
 # Scientific Assurance V2 Implementation Roadmap
 
-Status: active prospective decomposition — ASSURE-04A is next and requires a
-new operator instruction
+Status: active prospective decomposition — ASSURE-04B is next and awaits
+explicit authorization
 
 ## Sequencing Principle
 
@@ -36,12 +36,15 @@ then may the package install and prove the positive zero-report release path.
 Rollback: Git recovery of historical bytes for audit only. Public restoration
 is prohibited without a new decision.
 
-## ASSURE-04A — V2 Source And Identity Foundation
+## ASSURE-04A — Completed Source And Identity Foundation
 
-Outcome: add the smallest v2 source layout and schemas for a human-authored
+Foundation status: completed by
+`20260715-assure04a-v2-source-identity-foundation-001`.
+
+Outcome: added the smallest v2 source layout and schemas for an authored
 manuscript, supplement, dependency declarations, claims, result objects,
 figures, references, review, and publication record. The accepted groundwater
-prototype is the only positive fixture; the empty catalog remains valid.
+prototype is the only positive fixture; the public catalog remains empty.
 
 Primary consumer: `openwepp-assurance validate` and the subsequent dependency
 planner. Prove the real CLI reads every admitted field; schema-only fixtures do
@@ -75,7 +78,7 @@ publication is enabled.
 
 ## ASSURE-04C — Deterministic Manuscript Assembly
 
-Outcome: build staging-only report and supplement pages from human-authored
+Outcome: build staging-only report and supplement pages from canonical authored
 sources while mechanically resolving claim-bearing values, tables, figures,
 citations, and cross-references. Interpretation remains authored prose.
 

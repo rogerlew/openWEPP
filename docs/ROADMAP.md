@@ -31,7 +31,7 @@ state was reached. Execution history lives in the
 
 | Priority | Owning queue | State | Advancement gate |
 | --- | --- | --- | --- |
-| `ASSURE-04A` v2 source and identity foundation | Scientific assurance | `next` | Scaffold on operator instruction; preserve the zero-report public state and implement only the bounded source/identity foundation. |
+| `ASSURE-04B` dependency planner and one/all builds | Scientific assurance | `next` | Await explicit authorization; then scaffold a bounded planner package that consumes the completed v2 source/identity foundation without rendering or publication work. |
 
 ## Scientific Assurance Queue
 
@@ -95,9 +95,8 @@ The v2 records remain distinct:
 
 | ID | Prospective outcome | Advancement gate | State |
 | --- | --- | --- | --- |
-| `ASSURE-04A` | Add the smallest v2 manuscript/supplement, identity, claim, result, figure, reference, review, and publication source contracts demonstrated by the groundwater prototype. | Real CLI admits every field; unknown/missing/unused identity, units, path, restriction, and version guards pass; tracked public catalog stays at zero reports. | `next`; scaffold from the implementation roadmap. |
-| `ASSURE-04B` | Implement deterministic transitive dependency planning for one report and all reports. | Cycle, missing/unused edge, transitive impact, stable order, one/all equivalence, and real CLI consumer gates pass. | `queued`; blocked by `ASSURE-04A`. |
-| `ASSURE-04C` | Assemble human-authored manuscripts and supplements to staging while resolving retained values, tables, figures, citations, and portable links. | Deterministic semantic output, stale/mismatched value, accessibility, sandbox, and real rendered-link gates pass; no public promotion. | `queued`; blocked by `ASSURE-04B`. |
+| `ASSURE-04B` | Implement deterministic transitive dependency planning for one report and all reports. | Cycle, missing/unused edge, transitive impact, stable order, one/all equivalence, and real CLI consumer gates pass. | `next`; foundation complete, awaiting explicit authorization. |
+| `ASSURE-04C` | Assemble canonical authored manuscripts and supplements to staging while resolving retained values, tables, figures, citations, and portable links. | Deterministic semantic output, stale/mismatched value, accessibility, sandbox, and real rendered-link gates pass; no public promotion. | `queued`; blocked by `ASSURE-04B`. |
 | `ASSURE-04D` | Add review locks, approved-only promotion, public catalog integration, drift checks, and immutable release snapshots. | Draft/review negative publication, changed-root invalidation, named approval, exact transfer, confined fixture, and tracked-zero-catalog gates pass. | `queued`; blocked by `ASSURE-04C`. |
 | `ASSURE-05` | Convert the accepted bounded non-snow prototype into the first complete v2 report using the production kernel, real consumer, retained evidence, figures/tables, and technical supplement. | Domain-reader outcome met; every quantitative statement resolves to evidence; limitations and contrary results remain visible; independent scientific/publication review and reproduction pass before public inclusion. | `queued`; blocked by `ASSURE-04D`. |
 | `ASSURE-06` | Author the snow/frost flagship synthesis from the existing precipitation-phase, SWE/depth/density, frost-depth/soil-temperature, conservation, negative-mechanism, and production evidence; split reports where claims or scales materially differ. | Complete quantitative methods/results, datasets, sample counts, figures, forcing interpretation, limitations, prior-knowledge comparison, claim-specific conclusions, release transfer, and independent review. | `queued`; blocked by a successful `ASSURE-05` pilot. |
@@ -118,7 +117,7 @@ It is a dormant compatibility record, not authority to vendor.
 
 | ID | Owning queue and outcome | Advancement trigger | State |
 | --- | --- | --- | --- |
-| `CANOPY-PHENOLOGY` | Plant/snow-frost science: replace fixed-date deciduous/mixed-canopy behavior with hemisphere-robust leaf-off and leaf-on, then re-anchor the retained litter-drop window to the physical phenology signal. | An operator schedules the next increment by changing the current priority and authorizing a contract-first package. Before physics code, reconcile the landed native-management/YAML surface with the original first-class forest-input foundation and ratify the growth-canopy contract; then sequence leaf-off and leaf-on as separate closable increments. | `queued`; promoted, but not active while `ASSURE-04A` is the current priority. [Program record](backlog/20260626-frost-daylength-canopy-decline-hemisphere-robust.md). |
+| `CANOPY-PHENOLOGY` | Plant/snow-frost science: replace fixed-date deciduous/mixed-canopy behavior with hemisphere-robust leaf-off and leaf-on, then re-anchor the retained litter-drop window to the physical phenology signal. | An operator schedules the next increment by changing the current priority and authorizing a contract-first package. Before physics code, reconcile the landed native-management/YAML surface with the original first-class forest-input foundation and ratify the growth-canopy contract; then sequence leaf-off and leaf-on as separate closable increments. | `queued`; promoted, but not active while `ASSURE-04B` is the current priority. [Program record](backlog/20260626-frost-daylength-canopy-decline-hemisphere-robust.md). |
 
 ## Promotion And History Routing
 

@@ -10,7 +10,7 @@ const BASE_COMMIT: &str = "3352388465f8b288aed4636e8f9752ca6c1cceb9";
 const PACKAGE_ROOT: &str = "docs/work-packages/20260714-assure03-v1-retirement-zero-report-001";
 
 #[test]
-fn real_cli_exposes_only_the_deterministic_zero_report_state() {
+fn public_builder_stays_zero_report_while_validation_admits_internal_v2() {
     let root = repository_root();
     let assurance = Assurance::open(&root).expect("load zero-report source");
     assurance.validate().expect("validate zero-report source");
@@ -34,11 +34,11 @@ fn real_cli_exposes_only_the_deterministic_zero_report_state() {
         .check()
         .expect("tracked zero-report outputs current");
 
-    assert_eq!(
-        openwepp_assurance::cli::run(["openwepp-assurance", "validate", "--all"])
-            .expect("run public validate CLI"),
-        "validation: PASS\nreports: 0\n"
-    );
+    let validation = openwepp_assurance::cli::run(["openwepp-assurance", "validate", "--all"])
+        .expect("run public and internal-source validate CLI");
+    assert!(validation.contains("validation: PASS"));
+    assert!(validation.contains("public_reports: 0"));
+    assert!(validation.contains("v2_reports_total: 1"));
     let rendered_plan = openwepp_assurance::cli::run(["openwepp-assurance", "plan", "--all"])
         .expect("run public plan CLI");
     assert!(rendered_plan.contains("publication_state: v1_retired_zero_reports"));

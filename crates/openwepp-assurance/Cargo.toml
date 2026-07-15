@@ -6,7 +6,7 @@ license.workspace = true
 rust-version.workspace = true
 repository.workspace = true
 publish = false
-description = "Fail-closed zero-report transition tool for openWEPP scientific assurance"
+description = "Fail-closed source validation and zero-public-report tooling for openWEPP scientific assurance"
 
 [lints]
 workspace = true
