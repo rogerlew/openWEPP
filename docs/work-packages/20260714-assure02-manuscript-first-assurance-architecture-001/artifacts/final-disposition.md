@@ -1,6 +1,6 @@
 # ASSURE-02 Final Disposition
 
-Status: `EXECUTED-HOLD-USER-ACCEPTANCE`
+Status: `EXECUTED-COMPLETE`
 
 Evidence class: Static + Ran
 
@@ -29,18 +29,19 @@ defect. Terminal Verification A and B both pass with no open ASSURE-02 finding.
 These reviews are internal coding-agent review, not external scientific peer
 review.
 
-## Holds
+## Acceptance
 
-The package cannot self-issue the required scientific-direction decision.
-ADR-0038 and all v2 authority remain proposed until the user or a named
-scientific steward explicitly accepts them. ASSURE-03 and v2 code remain
-blocked.
+The user issued the required scientific-direction decision by explicitly
+instructing execution of ASSURE-03. ADR-0038, the v2 architecture and report
+standard, and final v1 retirement became active atomically. This acceptance
+does not approve a report, reassess snow/frost science, authorize vendoring, or
+declare a release ready.
 
-Separately, `ASSURE03-REL-001` records that current release automation still
+At acceptance, `ASSURE03-REL-001` recorded that release automation still
 snapshots and uploads the prohibited v1 candidate. ASSURE-02 withdrew any claim
 that prose enforces release safety. OpenWEPP release-candidate assembly is
-prohibited until an accepted ASSURE-03 package installs and tests the executable
-guard and zero-report path.
+prohibited until ASSURE-03 installs and tests the executable guard and zero-
+report path.
 
 ## Change Boundary
 

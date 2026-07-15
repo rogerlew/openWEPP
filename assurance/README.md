@@ -1,28 +1,28 @@
-# Scientific Assurance Sources
+# Scientific Assurance Transition Source
 
-This directory is the canonical source for public scientific assurance pages.
-The ownership, lifecycle, and command contract is
-`docs/governance/scientific-assurance-dossier-lifecycle.md`.
+Status: v1 retired; zero public reports
 
-- `catalog.yaml` declares stable dossiers, sources, and generated outputs.
-- `schemas/` contains compiler-bound strict version-1 source contracts.
-- `templates/` controls generated Markdown shape.
-- `methods/` owns evaluation design (how).
-- `dossiers/` owns evidence characterization (what), limitations,
-  agent-assisted authoring records, and structured review histories.
-- `generated/wepppy-usersum.yaml` is a generated downstream handoff.
+The v1 status-first dossier publisher and SNOTEL candidate were removed by
+ASSURE-03 after exact source, generated, review, and compiler provenance was
+bound to Git commit `3352388465f8b288aed4636e8f9752ca6c1cceb9` and the package
+content manifest. The retirement concerns publication architecture, not the
+quality or extent of openWEPP snow/frost science.
 
-The generated handoff is dormant compatibility data, not a vendoring-readiness
-claim. Do not vendor the dossier set now. Refresh and execute the handoff under
-a dedicated wepppy package before the openWEPP beta release in WEPPcloud.
+This directory now contains only the neutral transition catalog, its static
+public template, and a dormant export with zero documents. The retained CLI is
+deliberately fail-closed: it rejects any nonempty legacy dossier catalog. V2
+manuscript sources and tooling belong to ASSURE-04 and are not present here.
 
-Do not edit `assurance/generated/` or `usersum/assurance/` by hand. Run:
+From the repository root:
 
 ```bash
-cargo run -p openwepp-assurance -- build --all
-cargo run -p openwepp-assurance -- check --all
+cargo run --quiet -p openwepp-assurance -- validate --all
+cargo run --quiet -p openwepp-assurance -- plan --all
+cargo run --quiet -p openwepp-assurance -- build --all
+cargo run --quiet -p openwepp-assurance -- check --all
 ```
 
-Normal builds are deterministic, local, offline, and agent-free. Scientific
-review and application decisions remain human-owned activities outside the
-build.
+An explicit release operation may add `--snapshot <id> --snapshot-root <path>`
+only after the release transition preflight passes. Ordinary CI never invokes
+snapshot mode. Historical recovery is audit-only and does not authorize v1
+publication, export, snapshotting, or vendoring.

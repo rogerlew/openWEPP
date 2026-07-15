@@ -1,6 +1,6 @@
 # Snow and Frost in openWEPP
 
-*Version 0.4 — 2026-07-14*
+*Version 0.5 — 2026-07-14*
 
 *Audience: hydrologists and scientific reviewers evaluating openWEPP's snowpack
 and soil-frost behavior, and how it differs from legacy WEPP.*
@@ -18,10 +18,13 @@ and rejected; these are outcomes of the method, and knowing what failed is as
 useful to a reviewer as knowing what shipped.
 
 This narrative owns the scientific rationale: why the model has its current
-form. The [SNOTEL evaluation method](assurance/methods/snow-snotel-evaluation-v1.md)
-owns how the five-climate snow comparison was performed, and the
-[SNOTEL assurance dossier](assurance/dossiers/snow-snotel-swe-depth-density.md)
-owns what that retained evidence currently supports and what is missing.
+form, how the processes interact, and which evaluations shaped the production
+defaults. The retained five-climate SNOTEL campaign, observation fixtures,
+machine-readable comparisons, activation traces, and conservation checks remain
+in the repository. A future manuscript-first report will synthesize that work
+with full methods, quantitative tables and figures, uncertainty, limitations,
+and independent review. This narrative is the durable model explanation, not a
+substitute for that bounded evaluation report.
 
 Two constraints frame everything below. Mass and energy conservation is
 enforced unconditionally — composite snow-state closure residuals run at
@@ -60,8 +63,8 @@ bias-sign consistency, and conservation. This distinction is the backbone of
 the rubric in Section 4, and it recurs in the interpretation guidance of
 Section 5. This classification says which discrepancies are more attributable
 to the modeled process; it does not itself establish that timing or density is
-accurate. Consult the linked dossier before transferring the evidence to an
-application.
+accurate. Transfer to an application still requires the user to compare the
+study domain and forcing with the watershed and decision at hand.
 
 ---
 
@@ -120,8 +123,8 @@ and is not active.
 
 Densification is the one winter process where openWEPP and the pinned legacy
 build were found to behave similarly in the retained five-site diagnostic.
-The current evidence characterization, identities, and limitations belong to
-the linked assurance dossier rather than this model-rationale narrative.
+The retained site fixtures and comparison artifacts preserve the evidence
+behind that finding for the future manuscript synthesis.
 
 A snow-climate-class density model after Sturm et al. (1995, 2010) — the
 six-class classifier with class-specific density parameters for the five
@@ -143,9 +146,10 @@ ice-bulb temperature so that humidity influences phase near 0 °C, where a dry
 atmosphere favors snow at air temperatures a fixed threshold would call rain.
 The implementation was checked against the Jennings et al. (2018) Northern
 Hemisphere rain–snow phase dataset and is the default phase model. The retained
-five-site diagnostic favored it under a retrospective rubric; the assurance
-dossier explains why that does not yet support a favorable empirical
-characterization.
+five-site diagnostic favored it under a retrospective rubric. That is useful
+evidence for the bounded mechanism-selection decision; because model variants
+and thresholds were examined retrospectively, it is not presented as an
+independent held-out estimate of predictive accuracy.
 
 ### 2.5 Multilayer snowpack
 
@@ -247,13 +251,11 @@ physical snow depth (most also soil temperature), chosen to span maritime to
 continental snow climates: Paradise, WA (Cascades, maritime); Snowbird, UT
 (Wasatch, intermountain); Central Sierra Snow Lab, CA (Sierra Nevada,
 maritime); Mica Creek, ID (Northern Rockies); and Niwot, CO (Front Range,
-continental).
-
-The [evaluation method](assurance/methods/snow-snotel-evaluation-v1.md) records
-the dataset roles, quantities, retrospective criteria, uncertainty, and
-reproduction posture. The
-[assurance dossier](assurance/dossiers/snow-snotel-swe-depth-density.md) is the
-canonical home for the current snow evidence characterization.
+continental). The retained manifest covers 70,999 daily station rows and
+13,590 paired SWE-depth rows from records beginning between water years 2002
+and 2006 and extending through 2024. The fixtures use DAYMET, GRIDMET, CLIGEN,
+or PRISM forcing according to site; that mixed forcing is part of both the
+study's breadth and its attribution limit.
 
 Frost is evaluated at five sites using three measurement types. Frost tubes —
 liquid-filled tubes read directly for the frozen segment, serving as the
@@ -273,19 +275,29 @@ partition conservation for activation.
 
 Those choices were retrospective. They were useful for selecting among model
 variants, but their thresholds, partitions, and incomplete portable provenance
-cannot be recast as a prospectively tested public accuracy claim. The method
-page preserves the design; the dossier exposes the resulting evidence gap.
+cannot be recast as a prospectively specified held-out accuracy experiment.
+The normalized observations, site manifest, comparison procedure, machine-
+readable diagnostic, and activation procedure remain content-identified in the
+repository for reconstruction and future independent review.
 
 ### 4.3 Results
 
-For snow, the retained diagnostic informed activation of the current phase
-default and preserved conservation and selector-trace evidence. The current
-public characterization is nevertheless `INSUFFICIENT_EVIDENCE`: raw
-acquisition replay, a portable locked execution path, prospective held-out
-criteria, uncertainty propagation, and external scientific review are not all
-present. The [dossier](assurance/dossiers/snow-snotel-swe-depth-density.md)
-shows that conclusion and the content-identified audit record without turning a
-historical ordinal score into an accuracy grade.
+For snow, the retained comparison favored the current Harder-Pomeroy phase
+treatment under the study's retrospective ordinal rubric. The activation trace
+then verified that all 159,986 selected-model rows used the intended default;
+an explicit legacy selector remained available in the same number of rollback
+trace rows. Across 53,711 precipitation rows, rain plus snow reconstructed
+active precipitation with a maximum absolute residual of
+5.55 × 10⁻¹⁷ m. Together these results support the bounded default-selection,
+implementation, and conservation conclusions.
+
+They do not by themselves estimate predictive accuracy for arbitrary sites.
+The observation processing has normalized-file identities, but some original
+acquisition paths are not yet portable; forcing uncertainty was not propagated
+into claim-level intervals; model variants and thresholds were examined
+retrospectively; and the study has not received external hydrologist review.
+The future manuscript will present the quantitative site results and these
+limitations together rather than reducing them to an aggregate grade.
 
 Frost, against the observation network:
 
@@ -311,9 +323,8 @@ magnitude, but they are not application guarantees.** Melt-out dates,
 accumulation onset, densification trajectories, and depth–SWE slopes are
 forcing-robust quantities in the retained method. Peak SWE or depth at a
 specific point may differ substantially because the forcing cannot localize
-magnitude to a point. The dossier's `INSUFFICIENT_EVIDENCE` characterization
-means a user must not translate the relative attribution advantage into an
-unnamed site's accuracy claim.
+magnitude to a point. A user must not translate that relative attribution
+advantage into an unnamed site's accuracy claim.
 
 **Snow-affected downstream outputs changed when the new defaults were
 adopted.** Runoff, erosion, and watershed outputs can differ because the snow
@@ -339,10 +350,10 @@ adoption. The per-layer meltwater temperature is available as an opt-in and
 does not alter snow behavior.
 
 The snow method was retrospective, and external hydrologist review remains
-outstanding. Use the
-[application-context worksheet](assurance/application-context-worksheet.md) to
-compare the evidence envelope with a named use; the application decision
-belongs to the responsible user or institution.
+outstanding. Compare its five-site, mixed-forcing evidence envelope with the
+climate, forcing, canopy, topography, scale, quantity, accuracy need, and
+consequence of error for a named use. The application decision belongs to the
+responsible user or institution.
 
 The posture throughout is the one stated at the top: hold the model to the
 signatures the observations can actually resolve, report the rest, and name
@@ -404,3 +415,4 @@ Water and Climate Center.
 | 0.2 | 2026-07-01 | Rewritten as a scientific narrative: framing problem first, results consolidated, internal vocabulary translated. Same claims, numbers, and references. |
 | 0.3 | 2026-07-09 | Adopted the version header and revision log convention; no content changes. |
 | 0.4 | 2026-07-14 | Reframed as the model-rationale narrative, moved the five-site method and evidence characterization to linked assurance pages, and removed unqualified validation and duplicated snow scores. |
+| 0.5 | 2026-07-14 | Retired the failed v1 status-first pages, restored the retained SNOTEL design and positive selector/conservation findings to ordinary scientific prose, and preserved limitations without an aggregate grade. |

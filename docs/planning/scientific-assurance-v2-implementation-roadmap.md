@@ -1,7 +1,7 @@
 # Scientific Assurance V2 Implementation Roadmap
 
-Status: prospective decomposition — no package below is authorized until
-ASSURE-02 acceptance and ASSURE-03 sequencing gates are met
+Status: active prospective decomposition — ASSURE-04A is next and requires a
+new operator instruction
 
 ## Sequencing Principle
 
@@ -11,6 +11,11 @@ coherent state. No package may use renderer output or a passing schema as a
 substitute for scientific review.
 
 ## ASSURE-03 — Retire V1 And Establish Zero Reports
+
+Foundation status: completed by
+`20260714-assure03-v1-retirement-zero-report-001`. The exact recovery record,
+zero-report state, and release/validation split are binding starting conditions
+for the prospective packages below.
 
 Outcome: execute the
 [migration plan](scientific-assurance-v2-migration-plan.md).

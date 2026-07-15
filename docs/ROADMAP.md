@@ -31,7 +31,7 @@ state was reached. Execution history lives in the
 
 | Priority | Owning queue | State | Advancement gate |
 | --- | --- | --- | --- |
-| `ASSURE-02` manuscript-first documentation architecture | Scientific assurance | `held` / documentation-only | User or named scientific-steward acceptance after the completed documentation, real-evidence manuscript prototype, reconciled reviews, and dual verification. No v2 assurance code is authorized before acceptance. |
+| `ASSURE-04A` v2 source and identity foundation | Scientific assurance | `next` | Scaffold on operator instruction; preserve the zero-report public state and implement only the bounded source/identity foundation. |
 
 ## Scientific Assurance Queue
 
@@ -45,9 +45,10 @@ be reproduced or challenged, and which application judgment remains theirs.
 Scientific findings lead; internal lifecycle labels, hashes, test counts, and
 agent records do not.
 
-The v1 SNOTEL candidate is not an accepted scientific assessment of openWEPP
-snow/frost and must not be promoted, cited as such, or vendored. That concerns
-the publication architecture, not the underlying snow/frost equations,
+The v1 SNOTEL candidate is retired and cannot be restored, promoted, cited as
+an openWEPP scientific assessment, or vendored. Its exact bytes remain
+recoverable for audit from the ASSURE-03 frozen Git/hash record. Retirement
+concerns publication architecture, not the underlying snow/frost equations,
 contracts, datasets, campaigns, results, or
 [scientific narrative](../usersum/snow-frost-modeling-and-validation.md).
 Snow/frost remains the flagship v2 synthesis after a smaller non-snow pilot
@@ -90,44 +91,15 @@ The v2 records remain distinct:
   independent reproduction/publication review and the build gate prove every
   required safe object is available.
 
-### `ASSURE-02` Closure Contract
-
-`ASSURE-02` is documentation-only. It must produce one coherent reviewed
-architecture containing:
-
-- an architecture decision and revised V&V strategy defining the manuscript-
-  first public product and the report/supplement/machine/application boundary;
-- a v2 scientific-report standard and lifecycle, ownership, review,
-  source/generated, staging/publication, versioning, supersession, and release-
-  transfer contract;
-- a source/build/dependency contract for manuscripts, citations, claims,
-  results, figures, evidence, methods, reproduction, review, and snapshots;
-- an evidence-led pilot inventory and selection record for one bounded,
-  scientifically credible, low-confounding, production-relevant non-snow
-  kernel with a defensible referent and retained or reproducible evidence;
-- a hand-authored, nonpublic manuscript prototype populated with real evidence,
-  quantitative results, figures/tables, limitations, and discussion;
-- a v1 retirement/migration plan that preserves evidence provenance while
-  removing its public candidate and supporting zero published reports; and
-- independently closable implementation packages with explicit consumers,
-  review gates, tests, migration boundaries, and rollback behavior.
-
-The linear groundwater-reservoir recurrence is the preferred pilot candidate,
-not a predetermined choice. Select it only if the inventory supports a credible
-scientific manuscript; otherwise record why and select the next qualifying
-kernel. One review evaluates scientific communication for the named audiences;
-the other evaluates architecture, reproducibility, dependency, build, and
-migration integrity. Coding-agent review is not represented as external domain
-peer review.
-
 ### Ordered Work
 
 | ID | Prospective outcome | Advancement gate | State |
 | --- | --- | --- | --- |
-| `ASSURE-02` | Freeze the manuscript-first v2 documentation architecture and real-evidence nonpublic prototype described above. | User or named scientific-steward accepts the reviewed and independently verified direction. | `held`; agent-executable documentation gates pass; no production or generated-content edits. |
-| `ASSURE-03` | First close `ASSURE03-REL-001` by separating nonrelease CI from fail-closed release assembly; then retire the v1 SNOTEL candidate from active/public/export surfaces, preserve exact provenance, repair links, and publish a neutral zero-report interim surface. | Accepted `ASSURE-02` migration contract; PR/push creates no release snapshot; release mode rejects the transition/candidate state; no public/export path presents v1; underlying science/evidence remains intact; deterministic build and reference checks pass. | `queued`; blocked by `ASSURE-02`; openWEPP release assembly remains prohibited. |
-| `ASSURE-04` | Implement only the minimal v2 compiler demonstrated by the accepted prototype: typed traceability, staging/publication separation, deterministic manuscript assembly, result/figure substitution, dependency planning, drift checks, review locks, and snapshots. | One/all validation, planning, build, and check paths; content-hashed dependencies; stale/missing/unused identity failures; no ordinary-build network, shell, or agent execution; focused/full gates and touched-code CRAP closure. | `queued`; blocked by `ASSURE-02` and `ASSURE-03`. |
-| `ASSURE-05` | Convert the accepted bounded non-snow prototype into the first complete v2 report using the production kernel, real consumer, retained evidence, figures/tables, and technical supplement. | Domain-reader outcome met; every quantitative statement resolves to evidence; limitations and contrary results remain visible; independent scientific/publication review and reproduction pass before public inclusion. | `queued`; blocked by `ASSURE-04`. |
+| `ASSURE-04A` | Add the smallest v2 manuscript/supplement, identity, claim, result, figure, reference, review, and publication source contracts demonstrated by the groundwater prototype. | Real CLI admits every field; unknown/missing/unused identity, units, path, restriction, and version guards pass; tracked public catalog stays at zero reports. | `next`; scaffold from the implementation roadmap. |
+| `ASSURE-04B` | Implement deterministic transitive dependency planning for one report and all reports. | Cycle, missing/unused edge, transitive impact, stable order, one/all equivalence, and real CLI consumer gates pass. | `queued`; blocked by `ASSURE-04A`. |
+| `ASSURE-04C` | Assemble human-authored manuscripts and supplements to staging while resolving retained values, tables, figures, citations, and portable links. | Deterministic semantic output, stale/mismatched value, accessibility, sandbox, and real rendered-link gates pass; no public promotion. | `queued`; blocked by `ASSURE-04B`. |
+| `ASSURE-04D` | Add review locks, approved-only promotion, public catalog integration, drift checks, and immutable release snapshots. | Draft/review negative publication, changed-root invalidation, named approval, exact transfer, confined fixture, and tracked-zero-catalog gates pass. | `queued`; blocked by `ASSURE-04C`. |
+| `ASSURE-05` | Convert the accepted bounded non-snow prototype into the first complete v2 report using the production kernel, real consumer, retained evidence, figures/tables, and technical supplement. | Domain-reader outcome met; every quantitative statement resolves to evidence; limitations and contrary results remain visible; independent scientific/publication review and reproduction pass before public inclusion. | `queued`; blocked by `ASSURE-04D`. |
 | `ASSURE-06` | Author the snow/frost flagship synthesis from the existing precipitation-phase, SWE/depth/density, frost-depth/soil-temperature, conservation, negative-mechanism, and production evidence; split reports where claims or scales materially differ. | Complete quantitative methods/results, datasets, sample counts, figures, forcing interpretation, limitations, prior-knowledge comparison, claim-specific conclusions, release transfer, and independent review. | `queued`; blocked by a successful `ASSURE-05` pilot. |
 | `ASSURE-07` | Build a priority portfolio of additional hydrology, erosion, sediment, plant, channel, and watershed reports and bind reviewed reports plus explicit gaps to release snapshots. | Selection by user importance and evidence readiness; ownership, currency, transfer, supersession, snapshots, and documented gaps remain explicit without implying site fitness. | `queued` after `ASSURE-05`; may proceed incrementally without blocking `ASSURE-06`. |
 | `ASSURE-08` | Vendor the approved v2 report set into WEPPcloud during the openWEPP beta release campaign. | Refresh the handoff against current wepppy contracts; prove vendor sync, manifest/navigation/roles, rendering, link rewriting, accessibility, search, and the real downstream consumer; bind vendored content to the beta candidate. | `deferred`; mandatory immediately before openWEPP beta release in WEPPcloud. Do not start while WEPPcloud or the reports remain immature. |
@@ -146,7 +118,7 @@ It is a dormant compatibility record, not authority to vendor.
 
 | ID | Owning queue and outcome | Advancement trigger | State |
 | --- | --- | --- | --- |
-| `CANOPY-PHENOLOGY` | Plant/snow-frost science: replace fixed-date deciduous/mixed-canopy behavior with hemisphere-robust leaf-off and leaf-on, then re-anchor the retained litter-drop window to the physical phenology signal. | An operator schedules the next increment by changing the current priority and authorizing a contract-first package. Before physics code, reconcile the landed native-management/YAML surface with the original first-class forest-input foundation and ratify the growth-canopy contract; then sequence leaf-off and leaf-on as separate closable increments. | `queued`; promoted, but not active while `ASSURE-02` is the current priority. [Program record](backlog/20260626-frost-daylength-canopy-decline-hemisphere-robust.md). |
+| `CANOPY-PHENOLOGY` | Plant/snow-frost science: replace fixed-date deciduous/mixed-canopy behavior with hemisphere-robust leaf-off and leaf-on, then re-anchor the retained litter-drop window to the physical phenology signal. | An operator schedules the next increment by changing the current priority and authorizing a contract-first package. Before physics code, reconcile the landed native-management/YAML surface with the original first-class forest-input foundation and ratify the growth-canopy contract; then sequence leaf-off and leaf-on as separate closable increments. | `queued`; promoted, but not active while `ASSURE-04A` is the current priority. [Program record](backlog/20260626-frost-daylength-canopy-decline-hemisphere-robust.md). |
 
 ## Promotion And History Routing
 

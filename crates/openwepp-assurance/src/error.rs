@@ -10,7 +10,6 @@ pub enum AssuranceError {
     Io { path: PathBuf, source: io::Error },
     Parse { path: PathBuf, message: String },
     Invalid(String),
-    ReviewRequired(String),
     Drift(String),
     SnapshotConflict(String),
 }
@@ -20,7 +19,6 @@ impl AssuranceError {
     pub const fn exit_code(&self) -> i32 {
         match self {
             Self::Usage(_) => 2,
-            Self::ReviewRequired(_) => 3,
             Self::Drift(_) | Self::SnapshotConflict(_) => 4,
             Self::Io { .. } | Self::Parse { .. } | Self::Invalid(_) => 1,
         }
@@ -32,24 +30,6 @@ impl AssuranceError {
             source,
         }
     }
-
-    fn fmt_status(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::ReviewRequired(message) => write!(formatter, "REVIEW_REQUIRED: {message}"),
-            Self::SnapshotConflict(message) => {
-                write!(formatter, "snapshot conflict: {message}")
-            }
-            _ => formatter.write_str("invalid assurance status error"),
-        }
-    }
-
-    fn fmt_path(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Io { path, source } => write!(formatter, "{}: {source}", path.display()),
-            Self::Parse { path, message } => write!(formatter, "{}: {message}", path.display()),
-            _ => formatter.write_str("invalid assurance path error"),
-        }
-    }
 }
 
 impl fmt::Display for AssuranceError {
@@ -58,8 +38,9 @@ impl fmt::Display for AssuranceError {
             Self::Usage(message) | Self::Invalid(message) | Self::Drift(message) => {
                 formatter.write_str(message)
             }
-            Self::ReviewRequired(_) | Self::SnapshotConflict(_) => self.fmt_status(formatter),
-            Self::Io { .. } | Self::Parse { .. } => self.fmt_path(formatter),
+            Self::SnapshotConflict(message) => write!(formatter, "snapshot conflict: {message}"),
+            Self::Io { path, source } => write!(formatter, "{}: {source}", path.display()),
+            Self::Parse { path, message } => write!(formatter, "{}: {message}", path.display()),
         }
     }
 }

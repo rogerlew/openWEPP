@@ -1,10 +1,11 @@
 # ASSURE-02 Handoff
 
-Status: held for user or named scientific-steward acceptance
+Status: accepted and handed to ASSURE-03
 
-## Decision Requested
+## Decision Recorded
 
-Review the proposed scientific communication direction, especially:
+The user accepted the proposed scientific communication direction by
+instructing execution of ASSURE-03. The accepted scope includes:
 
 - ADR-0038 and the four-record/public-research-object boundary;
 - the report standard and groundwater manuscript prototype;
@@ -12,12 +13,12 @@ Review the proposed scientific communication direction, especially:
 - the exact v1 migration and `ASSURE03-REL-001` release conflict; and
 - the independently closable ASSURE-03 through ASSURE-05 sequence.
 
-Acceptance must be explicit. It atomically accepts ADR-0038, activates the v2
-report standard, and finalizes v1 format retirement. It authorizes scaffolding
-ASSURE-03 but does not declare release safe, approve the groundwater prototype
-for publication, reassess snow/frost, or authorize WEPPcloud vendoring.
+The decision atomically accepts ADR-0038, activates the v2 report standard, and
+finalizes v1 format retirement. It authorizes ASSURE-03 but does not declare
+release safe, approve the groundwater prototype for publication, reassess
+snow/frost, or authorize WEPPcloud vendoring.
 
-## If Accepted
+## Executed Handoff
 
 Scaffold ASSURE-03 from
 `docs/planning/scientific-assurance-v2-migration-plan.md`. Its first technical
@@ -26,8 +27,5 @@ make release mode fail closed during transition, and add negative tests. Then
 retire the v1 public candidate into the exact Git/hash recovery record and prove
 the neutral zero-report surface.
 
-## If Revisions Are Requested
-
-Keep ASSURE-02 held, amend the proposed documents and prototype, and repeat the
-affected independent reviews and verifications before requesting acceptance
-again.
+The active package is
+`docs/work-packages/20260714-assure03-v1-retirement-zero-report-001/`.

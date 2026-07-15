@@ -1,26 +1,8 @@
 schema_version: 1
-contract_version: 1
+contract_version: 2
+publication_state: v1_retired_zero_reports
 generated_root: usersum/assurance
 export_output: assurance/generated/wepppy-usersum.yaml
-templates:
-  index: assurance/templates/catalog.md
-  method: assurance/templates/method.md
-  dossier: assurance/templates/dossier.md
-  worksheet: assurance/templates/application-context-worksheet.md
-dossiers:
-  - dossier_id: snow-snotel-swe-depth-density
-    dossier_version: 1.0.0
-    lifecycle: candidate
-    source: assurance/dossiers/snow-snotel-swe-depth-density/dossier.yaml
-    method: assurance/methods/snow-snotel-evaluation-v1.yaml
-    evidence: assurance/dossiers/snow-snotel-swe-depth-density/evidence.yaml
-    interpretation: assurance/dossiers/snow-snotel-swe-depth-density/interpretation.md
-    limitations: assurance/dossiers/snow-snotel-swe-depth-density/limitations.md
-    authoring: assurance/dossiers/snow-snotel-swe-depth-density/authoring.yaml
-    review: assurance/dossiers/snow-snotel-swe-depth-density/review.yaml
-    outputs:
-      dossier: usersum/assurance/dossiers/snow-snotel-swe-depth-density.md
-      method: usersum/assurance/methods/snow-snotel-evaluation-v1.md
-shared_outputs:
-  index: usersum/assurance/README.md
-  worksheet: usersum/assurance/application-context-worksheet.md
+template: assurance/templates/catalog.md
+dossiers: []
+shared_output: usersum/assurance/README.md

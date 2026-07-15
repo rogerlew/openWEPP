@@ -8,14 +8,11 @@ Execution note:
 - This runbook is a draft release procedure synthesized from in-repo
   contracts, ADRs, and code surfaces. It does not assert that a production
   release has been performed.
-- **Scientific-assurance transition conflict (`ASSURE03-REL-001`):** the v1
-  SNOTEL candidate is not an approved scientific report and may not enter a
-  release snapshot. The current release script still creates that snapshot,
-  and ordinary PR/push CI still invokes the script and uploads a release-
-  candidate-named artifact. This is an executable conflict, not an enforced
-  hold. Do not invoke the aggregate release script or treat its CI artifact as
-  release evidence until ASSURE-03 installs a fail-closed transition guard and
-  then proves the neutral zero-report path.
+- `ASSURE03-REL-001` is closed in the ASSURE-03 terminal source: ordinary CI
+  explicitly selects validation mode and uploads validation evidence only;
+  explicit release mode runs a fail-closed assurance transition preflight and
+  snapshots the neutral zero-report state. This runbook still does not claim
+  that a production release has been performed.
 
 ## Purpose
 
@@ -107,30 +104,30 @@ Failure-class handling:
 
 ## Automation Entry Points
 
-**Transition warning:** every aggregate command in this section currently
-reaches the prohibited v1 snapshot step. The commands are retained to document
-the interface ASSURE-03 must correct; none is an authorized release or ordinary
-validation entry point while `ASSURE03-REL-001` is open. Run individual
-nonrelease validation commands instead.
-
-Workspace + release-lint automation (no stability cohort):
-
-```bash
-bash tools/release/run_release_candidate_gates.sh --skip-stability
-```
-
-Run workspace/release gates plus required + periodic authority lanes:
+Workspace validation automation (no snapshot, binary staging, sidecars, release
+lint, or release-candidate artifact):
 
 ```bash
 bash tools/release/run_release_candidate_gates.sh \
+  --mode validate \
+  --skip-stability
+```
+
+Run validation plus required + periodic authority lanes:
+
+```bash
+bash tools/release/run_release_candidate_gates.sh \
+  --mode validate \
   --skip-stability \
   --run-authority-periodic
 ```
 
-Run full automation including manual lane and stability cohort:
+Explicitly assemble a release candidate with manual/periodic lanes and the
+stability cohort:
 
 ```bash
 bash tools/release/run_release_candidate_gates.sh \
+  --mode release \
   --run-authority-periodic \
   --run-authority-manual \
   --cohort-seeds-csv /workdir/wepp-forest/docs/work-packages/20260503-wb05b-forest-hillslope-closure-sweep/artifacts/audits/_meta/defect_seeds.csv \
@@ -143,6 +140,7 @@ Full gate automation (includes stability cohort and expected suite counts):
 
 ```bash
 bash tools/release/run_release_candidate_gates.sh \
+  --mode release \
   --cohort-seeds-csv /workdir/wepp-forest/docs/work-packages/20260503-wb05b-forest-hillslope-closure-sweep/artifacts/audits/_meta/defect_seeds.csv \
   --watchlist-csv /workdir/wepp-forest/docs/ablation/hillslope_watchlist.csv \
   --expect-suite wb05b_1166=1166 \
@@ -151,30 +149,33 @@ bash tools/release/run_release_candidate_gates.sh \
 
 CI workflow surface:
 - `.github/workflows/release-gates.yml`
-  - Current defect: `push` / `pull_request` invokes aggregate release assembly
-    and uploads a release-candidate-named artifact. ASSURE-03 must replace this
-    with validation-only execution that cannot snapshot.
-  - `schedule`: workspace + release lint + required + periodic authority
-    lanes.
+  - `push`, `pull_request`, and `schedule` invoke validation mode and upload
+    `openwepp-validation-evidence-*`; they cannot snapshot or assemble.
+  - `schedule`: validation plus required + periodic authority lanes.
   - `workflow_dispatch` + `run_stability=true`: self-hosted stability cohort
     lane with suite assertions.
+  - `workflow_dispatch` + both `assemble_release=true` and
+    `run_stability=true`: explicit release mode and
+    `openwepp-release-candidate-*` upload only after validation, the separately
+    bound stability job, transition preflight, and assembly all succeed.
+    Preflight or assembly failure uploads only
+    `openwepp-release-failure-evidence-*`; it never uploads a candidate-named
+    artifact.
   - `workflow_dispatch` inputs:
     - `run_authority_periodic=true` enables periodic authority lane.
     - `run_authority_manual=true` enables manual authority lane.
 
 ## Candidate Build and Assembly
 
-The current automation entrypoint is **not release-authoritative** while
-`ASSURE03-REL-001` is open. It checks committed assurance pages and then creates
-the prohibited v1 candidate snapshot. ASSURE-03 must first make release mode
-fail closed and ordinary validation omit snapshot creation; it may make the
-entrypoint authoritative again only after the zero-report route and its
-negative tests pass.
-
-**Do not execute the snapshot command during the ASSURE-02/ASSURE-03
-transition.** The current v1 compiler would snapshot a candidate that ADR-0038
-proposes to retire. ASSURE-03 must replace this block with the reviewed zero-
-report release path before candidate assembly resumes.
+Candidate assembly is explicit. The aggregate script requires `--mode release`
+and runs `check_assurance_release_transition.sh` before creating the release
+directory. The preflight rejects a transition marker, a nonempty or ambiguous
+legacy catalog, any byte-level departure from the exact typed zero-report
+transition catalog, any active retired v1 source/public route, and symlink or
+special-file evasions of those controls. A retired root may exist only as a
+real, non-symlink, completely empty directory. The workflow runs the same
+preflight before it creates its candidate directory. The retained transition
+compiler then snapshots exactly zero reports and two neutral outputs.
 
 ```bash
 cargo run --quiet -p openwepp-assurance -- build --all \
@@ -184,14 +185,13 @@ sha256sum \
   "${OPENWEPP_RELEASE_DIR}/assurance-snapshots/${OPENWEPP_RELEASE_TAG}/manifest.json"
 ```
 
-Historically, an identical v1 rerun could confirm the existing snapshot and
-different content under one snapshot ID was a blocking conflict. The v1
-manifest recorded the catalog, tool, contract, dossier version, lifecycle,
-empirical status, reviewed source roots, and public-file identities. That
-behavior remains engineering evidence but is not v2 publication authority. The
-future v2 snapshot will record approved report, supplement, dependency, review,
-release, and public-file identities and will remain an as-of evidence record
-rather than an application-fitness determination.
+An identical zero-report rerun confirms the existing immutable snapshot;
+different content under one snapshot ID is a blocking conflict. The manifest
+records zero reports, the two source identities, and the two generated-output
+identities. This transition snapshot is release evidence that v1 is absent; it
+is not a scientific report or v2 publication authority. Future v2 snapshots
+will record approved report, supplement, dependency, review, release, and
+public-file identities.
 
 ### 1) Build runner and CLI binaries
 
@@ -281,7 +281,7 @@ A release candidate must archive:
 4. hillslope stability JSON report and a delta summary against the latest
    baseline package (currently HILLSTAB06),
 5. commit SHA and selected release tag,
-6. assurance snapshot manifest, copied generated pages and narratives,
+6. zero-report assurance snapshot manifest and two copied transition outputs,
    `assurance-snapshot-build.txt`, and `assurance-snapshot.sha256`, and
 7. authority lane report (`authority_suite_results.md`) with explicit lane and
    failure-class outcomes, including fixture-integrity results for active

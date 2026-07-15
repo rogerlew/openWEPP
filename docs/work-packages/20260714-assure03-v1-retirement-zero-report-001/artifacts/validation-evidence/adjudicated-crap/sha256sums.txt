@@ -1,0 +1,16 @@
+10b19679e382ebacd6b2d20ee02144c461e01b1ac958731d07dd6585acb7d67f  docs/work-packages/20260714-assure03-v1-retirement-zero-report-001/artifacts/validation-evidence/adjudicated-crap/adjudication-registry.json
+01dd7f1f9d9d54f6a10f6b2844aaddd9b89bb5a6e42fe266aa362bcdc6f4b291  docs/work-packages/20260714-assure03-v1-retirement-zero-report-001/artifacts/validation-evidence/adjudicated-crap/adjudicated-crap-report.json
+1e88e47c5a022fad0b163a384019b9697e376da7e462596a218ecdc31b6937a2  docs/work-packages/20260714-assure03-v1-retirement-zero-report-001/artifacts/validation-evidence/adjudicated-crap/adjudicated-crap-report.md
+faf93773c4f1319d248c431f7ef1d7a7cd3bd556cfd4990b83989c1591e3490f  docs/work-packages/20260714-assure03-v1-retirement-zero-report-001/artifacts/validation-evidence/adjudicated-crap/cargo-version.txt
+613daf2b27209d9be123ababd5ebd0bbc27ce14c9f63463552454b7cea0e7f86  docs/work-packages/20260714-assure03-v1-retirement-zero-report-001/artifacts/validation-evidence/adjudicated-crap/cargo-crap-version.txt
+0d1ce678129e5fc600305f57ecb4e7a7bf40a8785874e03f3d60d33402984703  docs/work-packages/20260714-assure03-v1-retirement-zero-report-001/artifacts/validation-evidence/adjudicated-crap/cargo-crap.log
+35c027b707427b0becc406096c32bd507961068f5d869735d7997da10bf44fd7  docs/work-packages/20260714-assure03-v1-retirement-zero-report-001/artifacts/validation-evidence/adjudicated-crap/cargo-llvm-cov-version.txt
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  docs/work-packages/20260714-assure03-v1-retirement-zero-report-001/artifacts/validation-evidence/adjudicated-crap/llvm-cov-clean.log
+a4674fa6fec6389cc040855cc581a89505b472b049001efd7b1a5802b4db69d5  docs/work-packages/20260714-assure03-v1-retirement-zero-report-001/artifacts/validation-evidence/adjudicated-crap/llvm-cov.log
+8930517bf400ed347b54f18171081f85fa6ef51173dce55c7ce6548bcee52842  docs/work-packages/20260714-assure03-v1-retirement-zero-report-001/artifacts/validation-evidence/adjudicated-crap/run-status.json
+8f97c91e920ce0d02680e3d01eb87afa0c77290dcd5d19eb901ae194d4700d90  docs/work-packages/20260714-assure03-v1-retirement-zero-report-001/artifacts/validation-evidence/adjudicated-crap/rustc-version.txt
+3a28ecde0c65f38b55b10cb58b5e0967ac82a88a013b0ee082cba08b4280a0e2  docs/work-packages/20260714-assure03-v1-retirement-zero-report-001/artifacts/validation-evidence/adjudicated-crap/source-manifest-after.json
+3a28ecde0c65f38b55b10cb58b5e0967ac82a88a013b0ee082cba08b4280a0e2  docs/work-packages/20260714-assure03-v1-retirement-zero-report-001/artifacts/validation-evidence/adjudicated-crap/source-manifest-before.json
+3a28ecde0c65f38b55b10cb58b5e0967ac82a88a013b0ee082cba08b4280a0e2  docs/work-packages/20260714-assure03-v1-retirement-zero-report-001/artifacts/validation-evidence/adjudicated-crap/source-manifest-final.json
+f093a86c129415309fefd99d41d25998a372ac620df185833a80174b29da3fe5  docs/work-packages/20260714-assure03-v1-retirement-zero-report-001/artifacts/validation-evidence/adjudicated-crap/workspace-crap.json
+4a4dad862b50d3de3bfa6dd748ff5818696ced7898b23f4cc71f1cb8aa6b18a1  docs/work-packages/20260714-assure03-v1-retirement-zero-report-001/artifacts/validation-evidence/adjudicated-crap/workspace.lcov

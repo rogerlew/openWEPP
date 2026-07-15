@@ -40,15 +40,22 @@ in the sealed acquisition provenance.
     source manifest, and path containment before generating JSON and Markdown
     reports.
 - `run_release_candidate_gates.sh`
-  - Runs workspace gates (`fmt`, `clippy`, full-profile `nextest`, `deny`, the
+  - Requires `--mode validate` or `--mode release`; ambiguous invocation fails.
+  - Validation mode runs workspace gates (`fmt`, `clippy`, full-profile `nextest`, `deny`, the
     adjudicated-CRAP unit tests, and a fresh adjudicated CRAP measurement),
-    builds release binaries, stages release artifacts, emits sidecars, and runs
+    but exits before assurance snapshotting, binary staging, sidecar emission,
+    and release lint. Ordinary CI uses only this mode and names its upload
+    validation evidence.
+  - Release mode first passes the fail-closed assurance transition preflight,
+    then runs the same closure gates, creates an immutable zero-report assurance
+    snapshot, builds/stages release binaries, emits sidecars, and runs
     `open_wepp_runner release lint`. Full-profile nextest supplies the required
     process-per-test isolation for environment-mutating integration tests.
-  - Fails on assurance source/generated drift, creates an explicitly named
-    immutable assurance snapshot under the release evidence directory, and
-    records its manifest SHA-256. The snapshot binds generated pages and each
-    cataloged hand-authored narrative.
+  - The transition preflight admits only the exact typed zero-report catalog
+    bytes. A retired v1 path must be absent or a real, non-symlink, completely
+    empty directory; duplicate catalog keys, files, symlinks, sockets, FIFOs,
+    nested directories, and other special entries fail before candidate-
+    directory creation.
   - Evaluates external-authority suite lanes from
     `docs/specifications/external-authority/registry.yaml`:
     - verifies fixture integrity for all active suites before lane execution:
@@ -61,7 +68,10 @@ in the sealed acquisition provenance.
     - `periodic` lane runs when `--run-authority-periodic` is set.
     - `manual` lane runs when `--run-authority-manual` is set.
     - `investigation` failures are recorded and surfaced as non-blocking.
-  - Optionally runs stability cohort gate unless `--skip-stability` is passed.
+  - Runs the stability cohort unless `--skip-stability` is passed. That flag is
+    valid for bounded transition-route verification or when a separately bound
+    stability job has already passed; an invocation using it is not, by itself,
+    a conformant release candidate.
 - `run_hillstab_gate.sh`
   - Executes the HILLSTAB01 cohort harness and applies pass/fail assertions.
 - `assert_hillstab_success.py`
@@ -90,9 +100,13 @@ in the sealed acquisition provenance.
     `docs/architecture/generated/`.
   - Fails on documentation drift without writing repository files.
 - `check_assurance_dossier_exports.sh`
-  - Validates the typed assurance catalog and review posture, rebuilds all
-    generated usersum pages and the wepppy handoff in a temporary root, and
-    fails on missing or stale committed output without editing tracked files.
+  - Validates/checks the typed zero-report catalog, requires exactly one tracked
+    public assurance page, requires an empty dormant export with vendoring
+    prohibited, and runs the release transition preflight.
+- `check_assurance_release_transition.sh`
+  - Separates non-assembly validation from release authorization.
+  - Release mode fails on the transition marker, nonempty/ambiguous legacy
+    catalog, or any retired v1 source/public route.
 
 ## Typical Usage
 
@@ -117,8 +131,12 @@ bash tools/release/run_adjudicated_crap_gate.sh \
 That command returns success when the retained debt assessment passes, but its
 machine status is `ASSESSMENT-PASS` and `closure_eligible` is `false`.
 
+Ordinary validation (never assembles a candidate):
+
 ```bash
-bash tools/release/run_release_candidate_gates.sh --skip-stability
+bash tools/release/run_release_candidate_gates.sh \
+  --mode validate \
+  --skip-stability
 ```
 
 ```bash
@@ -139,6 +157,7 @@ bash tools/release/check_assurance_dossier_exports.sh
 
 ```bash
 bash tools/release/run_release_candidate_gates.sh \
+  --mode release \
   --run-authority-periodic \
   --cohort-seeds-csv /workdir/wepp-forest/docs/work-packages/20260503-wb05b-forest-hillslope-closure-sweep/artifacts/audits/_meta/defect_seeds.csv \
   --watchlist-csv /workdir/wepp-forest/docs/ablation/hillslope_watchlist.csv \

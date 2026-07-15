@@ -1,6 +1,6 @@
 # Scientific Assurance V2 Source, Build, And Dependency Contract
 
-Status: proposed — no implementation authorized by this document
+Status: active v2 contract — implementation staged through ASSURE-04
 
 ## Design Principle
 

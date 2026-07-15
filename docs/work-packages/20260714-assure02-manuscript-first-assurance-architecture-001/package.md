@@ -2,7 +2,7 @@
 
 Package ID: `20260714-assure02-manuscript-first-assurance-architecture-001`
 
-Status: `EXECUTED-HOLD-USER-ACCEPTANCE`
+Status: `EXECUTED-COMPLETE`
 
 Execution date: 2026-07-14
 
@@ -202,7 +202,7 @@ Without that acceptance, the strongest truthful disposition is
 authorized.
 
 Agent-executable documentation, evidence, review, remediation, and verification
-work passed on 2026-07-15 UTC. The package remains open only for explicit user
-or named scientific-steward acceptance. Separately, openWEPP release assembly
-remains prohibited on the named executable `ASSURE03-REL-001` conflict that an
-accepted ASSURE-03 package must correct first.
+work passed on 2026-07-15 UTC. The user then satisfied the explicit acceptance
+gate by instructing execution of ASSURE-03. That acceptance completes this
+documentation package and authorizes—not pre-completes—the separately gated
+ASSURE-03 migration.

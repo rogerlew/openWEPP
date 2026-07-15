@@ -28,14 +28,15 @@ Pre-alpha. Content will be authored as engine capability lands.
 
 - [Hillslope hydrology and sediment physics](hillslope-hydrology-and-sediment-physics.md) — how openWEPP represents overland flow routing, erosion, and baseflow, and how that relates to legacy WEPP.
 - [Snow and frost in openWEPP](snow-frost-modeling-and-validation.md) — winter
-  physics and scientific rationale, linked to its evaluation method and
-  assurance dossier.
+  physics, scientific rationale, retained field-evaluation design and findings,
+  and the limits on transferring those findings to a named use.
 
 ## Scientific assurance
 
-- [Scientific assurance catalog](assurance/README.md) — what was evaluated,
-  what the evidence currently supports, where it applies, what remains
-  unknown, and a worksheet for application decisions.
+- [Scientific assurance reports](assurance/README.md) — the neutral interim
+  catalog for independently reviewed manuscript-first evaluation reports. It
+  currently lists zero reports and routes readers to the model-science
+  documentation without grading unpublished work.
 
 ## openWEPP CLI reference
 

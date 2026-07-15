@@ -9,6 +9,16 @@ on:
     - cron: "0 9 * * 1"
   workflow_dispatch:
     inputs:
+      assemble_release:
+        description: "Explicitly assemble a release candidate after validation"
+        required: true
+        default: false
+        type: boolean
+      release_tag:
+        description: "Release tag (blank derives yymmdd + GitHub run number)"
+        required: false
+        default: ""
+        type: string
       run_stability:
         description: "Run stability cohort gate (requires self-hosted data roots)"
         required: true
@@ -69,7 +79,7 @@ permissions:
   contents: read
 
 jobs:
-  workspace-and-release-lint:
+  workspace-validation:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -96,17 +106,16 @@ jobs:
           cargo install cargo-crap --locked --version 0.2.2
           python -m venv .venv
 
-      - name: Run workspace + release lint gates
-        id: release_gates
+      - name: Run workspace validation gates
+        id: validation_gates
         run: |
-          release_tag="$(date -u +%y%m%d)ci${GITHUB_RUN_NUMBER}"
-          release_dir="${RUNNER_TEMP}/openwepp_release_${release_tag}"
-          mkdir -p "${release_dir}"
-          echo "release_dir=${release_dir}" >> "${GITHUB_OUTPUT}"
+          validation_dir="${RUNNER_TEMP}/openwepp_validation_${GITHUB_RUN_ID}"
+          mkdir -p "${validation_dir}"
+          echo "validation_dir=${validation_dir}" >> "${GITHUB_OUTPUT}"
           gate_cmd=(
             bash tools/release/run_release_candidate_gates.sh
-            --release-tag "${release_tag}"
-            --release-dir "${release_dir}"
+            --mode validate
+            --release-dir "${validation_dir}"
             --skip-stability
           )
           crap_base_ref=""
@@ -131,23 +140,99 @@ jobs:
             gate_cmd+=(--run-authority-manual)
           fi
           set +e
-          "${gate_cmd[@]}" 2>&1 | tee "${release_dir}/release-gates.log"
+          "${gate_cmd[@]}" 2>&1 | tee "${validation_dir}/validation-gates.log"
           gate_status=${PIPESTATUS[0]}
           set -e
-          printf '%s\n' "${gate_status}" > "${release_dir}/release-gates-exit-status.txt"
+          printf '%s\n' "${gate_status}" > "${validation_dir}/validation-gates-exit-status.txt"
           exit "${gate_status}"
 
-      - name: Upload staged release artifacts
+      - name: Upload validation evidence
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
-          name: openwepp-release-candidate-${{ github.run_id }}
-          path: ${{ steps.release_gates.outputs.release_dir }}
+          name: openwepp-validation-evidence-${{ github.run_id }}
+          path: ${{ steps.validation_gates.outputs.validation_dir }}
           if-no-files-found: error
+
+  release-assembly:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.assemble_release && inputs.run_stability && needs.workspace-validation.result == 'success' && needs.stability-cohort.result == 'success' }}
+    needs:
+      - workspace-validation
+      - stability-cohort
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install release gate tools
+        run: |
+          cargo install cargo-deny --locked
+          cargo install cargo-nextest --locked --version 0.9.138
+          cargo install cargo-llvm-cov --locked --version 0.8.7
+          cargo install cargo-crap --locked --version 0.2.2
+          python -m venv .venv
+
+      - name: Release assurance transition preflight
+        id: release_preflight
+        run: |
+          evidence_dir="${RUNNER_TEMP}/openwepp_release_transition_${GITHUB_RUN_ID}"
+          mkdir -p "${evidence_dir}"
+          echo "evidence_dir=${evidence_dir}" >> "${GITHUB_OUTPUT}"
+          bash tools/release/check_assurance_release_transition.sh \
+            --mode release \
+            2>&1 | tee "${evidence_dir}/assurance-transition-preflight.log"
+
+      - name: Explicitly assemble release candidate
+        id: release_assembly
+        run: |
+          release_tag="${{ inputs.release_tag }}"
+          if [[ -z "${release_tag}" ]]; then
+            release_tag="$(date -u +%y%m%d)rc${GITHUB_RUN_NUMBER}"
+          fi
+          release_dir="${RUNNER_TEMP}/openwepp_release_${release_tag}"
+          mkdir -p "${release_dir}"
+          echo "release_dir=${release_dir}" >> "${GITHUB_OUTPUT}"
+          bash tools/release/run_release_candidate_gates.sh \
+            --mode release \
+            --release-tag "${release_tag}" \
+            --release-dir "${release_dir}" \
+            --skip-stability \
+            2>&1 | tee "${release_dir}/release-gates.log"
+
+      - name: Upload explicit release candidate
+        if: ${{ success() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: openwepp-release-candidate-${{ github.run_id }}
+          path: ${{ steps.release_assembly.outputs.release_dir }}
+          if-no-files-found: error
+
+      - name: Upload failed release evidence
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: openwepp-release-failure-evidence-${{ github.run_id }}
+          path: |
+            ${{ steps.release_preflight.outputs.evidence_dir }}
+            ${{ steps.release_assembly.outputs.release_dir }}
+          if-no-files-found: warn
 
   stability-cohort:
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_stability }}
-    needs: workspace-and-release-lint
+    needs: workspace-validation
     runs-on: self-hosted
     steps:
       - name: Checkout

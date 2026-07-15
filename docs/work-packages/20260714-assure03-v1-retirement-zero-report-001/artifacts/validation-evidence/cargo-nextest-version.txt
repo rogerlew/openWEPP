@@ -1,0 +1,5 @@
+cargo-nextest 0.9.138 (fc97e97bb 2026-06-21)
+release: 0.9.138
+commit-hash: fc97e97bbe0a3927482a694247da00c099f4269e
+commit-date: 2026-06-21
+host: x86_64-unknown-linux-gnu

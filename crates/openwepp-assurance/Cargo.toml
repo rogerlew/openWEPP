@@ -6,7 +6,7 @@ license.workspace = true
 rust-version.workspace = true
 repository.workspace = true
 publish = false
-description = "Deterministic compiler for openWEPP scientific assurance dossiers"
+description = "Fail-closed zero-report transition tool for openWEPP scientific assurance"
 
 [lints]
 workspace = true

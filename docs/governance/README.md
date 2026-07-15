@@ -7,10 +7,10 @@ but are not model-physics contracts.
 
 - `repository-transition-plan-2026-05-11.md` — planned repository transition
   sequence; documentation-only in this change, no execution.
-- `openwepp-release-procedure-draft.md` — draft release runbook and explicit
-  `ASSURE03-REL-001` automation conflict; candidate assembly is prohibited until
-  executable guards and the zero-report route pass.
-- `openwepp-verification-validation-strategy.md` — proposed v2 scientist-facing V&V
+- `openwepp-release-procedure-draft.md` — draft release runbook with separate
+  validation and explicit release-assembly routes plus zero-report assurance
+  preflight.
+- `openwepp-verification-validation-strategy.md` — active scientist-facing V&V
   philosophy and adoption strategy for hard software verification, nonterminal
   empirical corroboration, decision-owner application fitness, and manuscript-
   first scientific model-evaluation reports.

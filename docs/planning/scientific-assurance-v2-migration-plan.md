@@ -1,6 +1,6 @@
 # Scientific Assurance V2 Migration Plan
 
-Status: prospective — blocked until ASSURE-02 human acceptance
+Status: completed by `20260714-assure03-v1-retirement-zero-report-001`
 
 Owner: scientific-assurance steward and release maintainer
 

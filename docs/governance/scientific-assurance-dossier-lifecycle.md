@@ -1,6 +1,6 @@
 # Scientific Assurance Report Lifecycle And Ownership Contract
 
-Status: proposed v2 contract — ASSURE-02 acceptance gate
+Status: active v2 lifecycle contract
 
 Filename note: the legacy `dossier` filename is retained as a stable governance
 link. In v2, the public product is a scientific model-evaluation **report**; the

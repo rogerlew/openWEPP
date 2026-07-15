@@ -1,6 +1,6 @@
 # Scientific Model-Evaluation Report Standard
 
-Status: proposed v2 standard — ASSURE-02 acceptance gate
+Status: active v2 standard
 
 Audience: scientific authors, reviewers, maintainers, and publication builders
 

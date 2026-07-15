@@ -41,7 +41,7 @@ Each ADR documents a decision that constrains future work. Format follows the li
 | [0035](0035-hillslope-erosion-sediment-continuity-port.md) | Hillslope erosion sediment-continuity direct-runtime port | Accepted |
 | [0036](0036-hydrograph-resolved-sediment-transport-and-routing.md) | Hydrograph-resolved sediment transport and channel routing | Accepted |
 | [0037](0037-abandon-hybrid-implicit-stepping.md) | Abandon hybrid implicit-explicit kinematic-wave stepping | Accepted |
-| [0038](0038-manuscript-first-scientific-assurance-publication.md) | Manuscript-first scientific assurance publication | Proposed pending ASSURE-02 acceptance |
+| [0038](0038-manuscript-first-scientific-assurance-publication.md) | Manuscript-first scientific assurance publication | Accepted 2026-07-14 |
 
 ADR-0025 was ratified 2026-06-18 and is the accepted hot-path runtime authority. ADR-0023's dense-authority
 principle is retained; its incremental symbol/phase migration application is superseded — no further
@@ -108,12 +108,11 @@ already specifies the full model, this is a contract-exists/implement port
 shadow-state + conservation-gated per increment; Claude Code executes as an
 operator-authorized exception to the Codex-authors-code default. Unblocks the
 held WS-3 sediment ordering law.
-ADR-0038 proposes replacing the v1 status-first public dossier with a
+ADR-0038 replaces the v1 status-first public dossier with a
 conventional scientific model-evaluation report, subordinate technical
 supplement, and internal machine assurance bundle. Drafts remain in staging,
-application fitness stays with the named decision owner, and the proposal does
-not become accepted until ASSURE-02 records explicit user or named scientific-
-steward acceptance.
+application fitness stays with the named decision owner. The user accepted the
+direction by explicitly instructing execution of ASSURE-03.
 
 ## ADR template
 

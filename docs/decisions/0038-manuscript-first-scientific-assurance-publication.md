@@ -1,10 +1,13 @@
 # ADR-0038: Manuscript-First Scientific Assurance Publication
 
-Status: **Proposed pending user or named scientific-steward acceptance**
+Status: **Accepted**
 
 Date: 2026-07-14 UTC
 
-Deciders: openWEPP maintainer; named scientific steward when delegated
+Deciders: openWEPP maintainer/user
+
+Accepted: 2026-07-14 through the explicit instruction to scaffold and execute
+ASSURE-03
 
 ## Context
 
@@ -64,7 +67,7 @@ universal fitness verdict.
 ## Consequences
 
 - The v1 SNOTEL candidate cannot be promoted, cited as openWEPP's snow/frost
-  assessment, snapshotted for release, or vendored. ASSURE-03 will remove it from
+  assessment, snapshotted for release, or vendored. ASSURE-03 removes it from
   active/public surfaces while preserving exact historical provenance.
 - The public assurance catalog may truthfully contain zero reports until the
   first report completes scientific, reproduction, publication, and approval
@@ -76,5 +79,6 @@ universal fitness verdict.
   outputs, and snapshots approved reports.
 - `cargo nextest` may test compiler and reproduction behavior, but it is not the
   report dependency engine or scientific adjudicator.
-- This ADR becomes Accepted only after the terminal ASSURE-02 human acceptance
-  gate. Until then ASSURE-03 and all v2 implementation remain blocked.
+- The user satisfied the terminal ASSURE-02 acceptance gate by explicitly
+  directing ASSURE-03 execution. Acceptance does not approve a report,
+  reassess snow/frost science, authorize vendoring, or declare a release ready.

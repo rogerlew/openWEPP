@@ -5,6 +5,7 @@ usage() {
   cat <<'USAGE'
 Usage:
   run_release_candidate_gates.sh \
+    --mode <validate|release> \
     [--release-tag <yymmddsuffix>] \
     [--release-dir <path>] \
     [--skip-stability] \
@@ -27,8 +28,10 @@ Usage:
     [--keep-passing-workdirs] \
     [--expect-suite <suite=count> ...]
 
-Default behavior executes workspace/release gates and stability gate.
-Use --skip-stability to run only workspace/release gates.
+Mode is required. Validation mode executes non-assembly workspace gates and
+cannot create assurance snapshots, release binaries, sidecars, or release-
+candidate artifacts. Release mode explicitly enables assembly after assurance
+transition preflight. Use --skip-stability to omit the release stability gate.
 Required authority lane runs by default; periodic/manual lanes are opt-in.
 USAGE
 }
@@ -41,6 +44,7 @@ STABILITY_SCRIPT="${ROOT_DIR}/tools/release/run_hillstab_gate.sh"
 
 RELEASE_TAG="$(date -u +%y%m%d)ci"
 RELEASE_DIR=""
+MODE=""
 SKIP_STABILITY=0
 SKIP_AUTHORITY_REQUIRED=0
 RUN_AUTHORITY_PERIODIC=0
@@ -66,6 +70,10 @@ EXPECT_SUITE_ARGS=()
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    --mode)
+      MODE="${2:-}"
+      shift 2
+      ;;
     --release-tag)
       RELEASE_TAG="${2:-}"
       shift 2
@@ -162,18 +170,33 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+if [[ "${MODE}" != "validate" && "${MODE}" != "release" ]]; then
+  echo "ERROR: --mode must be exactly 'validate' or 'release'." >&2
+  exit 2
+fi
+
+# This preflight runs before creating an evidence/release directory. In release
+# mode it is the fail-closed ASSURE03-REL-001 assembly boundary.
+bash "${ROOT_DIR}/tools/release/check_assurance_release_transition.sh" \
+  --mode "${MODE}" \
+  --root "${ROOT_DIR}"
+
 if [[ ! -f "${AUTHORITY_REGISTRY}" ]]; then
   echo "ERROR: authority registry not found: ${AUTHORITY_REGISTRY}" >&2
   exit 2
 fi
 
-if [[ ! "${RELEASE_TAG}" =~ ^[0-9]{6}[a-z0-9_-]*$ ]]; then
+if [[ "${MODE}" == "release" && ! "${RELEASE_TAG}" =~ ^[0-9]{6}[a-z0-9_-]*$ ]]; then
   echo "ERROR: release tag must match ^[0-9]{6}[a-z0-9_-]*$ (observed '${RELEASE_TAG}')" >&2
   exit 2
 fi
 
 if [[ -z "${RELEASE_DIR}" ]]; then
-  RELEASE_DIR="$(mktemp -d "/tmp/openwepp_release_${RELEASE_TAG}_XXXXXX")"
+  if [[ "${MODE}" == "release" ]]; then
+    RELEASE_DIR="$(mktemp -d "/tmp/openwepp_release_${RELEASE_TAG}_XXXXXX")"
+  else
+    RELEASE_DIR="$(mktemp -d "/tmp/openwepp_validation_XXXXXX")"
+  fi
 fi
 mkdir -p "${RELEASE_DIR}"
 
@@ -484,7 +507,7 @@ run_authority_lane() {
 
 cd "${ROOT_DIR}"
 
-echo "INFO: checking scientific assurance dossier exports"
+echo "INFO: checking scientific assurance zero-report exports"
 bash tools/release/check_assurance_dossier_exports.sh
 
 echo "INFO: running workspace release gates"
@@ -501,15 +524,18 @@ if [[ -n "${CRAP_BASE_REF}" ]]; then
 fi
 bash tools/release/run_adjudicated_crap_gate.sh "${CRAP_GATE_ARGS[@]}"
 
-ASSURANCE_SNAPSHOT_ROOT="${RELEASE_DIR}/assurance-snapshots"
-ASSURANCE_SNAPSHOT_MANIFEST="${ASSURANCE_SNAPSHOT_ROOT}/${RELEASE_TAG}/manifest.json"
-echo "INFO: creating scientific assurance snapshot '${RELEASE_TAG}'"
-cargo run --quiet -p openwepp-assurance -- build --all \
-  --snapshot "${RELEASE_TAG}" \
-  --snapshot-root "${ASSURANCE_SNAPSHOT_ROOT}" \
-  > "${RELEASE_DIR}/assurance-snapshot-build.txt"
-sha256sum "${ASSURANCE_SNAPSHOT_MANIFEST}" \
-  > "${RELEASE_DIR}/assurance-snapshot.sha256"
+ASSURANCE_SNAPSHOT_MANIFEST=""
+if [[ "${MODE}" == "release" ]]; then
+  ASSURANCE_SNAPSHOT_ROOT="${RELEASE_DIR}/assurance-snapshots"
+  ASSURANCE_SNAPSHOT_MANIFEST="${ASSURANCE_SNAPSHOT_ROOT}/${RELEASE_TAG}/manifest.json"
+  echo "INFO: creating zero-report scientific assurance snapshot '${RELEASE_TAG}'"
+  cargo run --quiet -p openwepp-assurance -- build --all \
+    --snapshot "${RELEASE_TAG}" \
+    --snapshot-root "${ASSURANCE_SNAPSHOT_ROOT}" \
+    > "${RELEASE_DIR}/assurance-snapshot-build.txt"
+  sha256sum "${ASSURANCE_SNAPSHOT_MANIFEST}" \
+    > "${RELEASE_DIR}/assurance-snapshot.sha256"
+fi
 
 {
   echo "# Authority Suite Gate Results"
@@ -550,6 +576,12 @@ if [[ "${AUTHORITY_INVESTIGATION_FAILURES}" -eq 1 ]]; then
   echo "WARN: one or more authority suites with failure_class=investigation failed (non-blocking)."
 fi
 echo "INFO: authority_results=${AUTHORITY_REPORT}"
+
+if [[ "${MODE}" == "validate" ]]; then
+  echo "INFO: validation gate automation passed"
+  echo "INFO: validation_evidence_dir=${RELEASE_DIR}"
+  exit 0
+fi
 
 echo "INFO: building release binaries"
 cargo build --release -p openwepp-runner --bin open_wepp_runner --bin openwepp-cli-hill --bin openwepp-cli-watershed

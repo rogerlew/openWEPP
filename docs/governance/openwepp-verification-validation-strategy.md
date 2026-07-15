@@ -1,6 +1,6 @@
 # openWEPP Verification And Validation Strategy
 
-Status: proposed v2 reframe — ASSURE-02 acceptance gate
+Status: active — manuscript-first v2 direction accepted 2026-07-14
 
 Owner: openWEPP maintainers and designated scientific reviewers
 

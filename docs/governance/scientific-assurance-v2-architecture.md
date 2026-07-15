@@ -1,6 +1,6 @@
 # Scientific Assurance V2 Architecture
 
-Status: proposed — ASSURE-02 acceptance gate
+Status: accepted — active v2 architecture
 
 Owner: openWEPP maintainers and the designated scientific-assurance steward
 
@@ -174,13 +174,10 @@ dependencies.
 
 ## Acceptance Boundary
 
-This architecture is not active until ASSURE-02 records both independent
-reviews, their disposition, dual verification, and explicit user or named
-scientific-steward acceptance. Later packages implement migration and tooling;
-they do not reopen the scientific communication direction silently.
-
-Acceptance is one atomic documentation transition: ADR-0038 becomes accepted,
-the v2 report standard becomes active, and the v1 dossier standard becomes
-finally retired. Until that disposition is recorded, v2 remains proposed, v1
-is frozen under a no-new-public-authoring moratorium, and no assurance report
-may enter the public tree.
+ASSURE-02 recorded both independent reviews, disposition, dual verification,
+and explicit user acceptance through the instruction to execute ASSURE-03.
+ADR-0038 and this architecture are active, the v2 report standard is active,
+and the v1 public dossier format is retired. Later packages implement migration
+and tooling; they do not reopen the scientific communication direction
+silently. No report may enter the public tree before the active review,
+approval, publication, and release-transfer gates pass.

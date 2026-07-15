@@ -103,14 +103,21 @@
 State as of `2026-07-15 UTC`:
 
 - `20260714-assure02-manuscript-first-assurance-architecture-001/` -
-  EXECUTED-HOLD-USER-ACCEPTANCE (2026-07-15; documentation-only): the
+  EXECUTED-COMPLETE (2026-07-15; documentation-only): the
   manuscript-first architecture, report standard, ownership/build contracts,
   evidence-led groundwater prototype, migration plan, and implementation
   roadmap are drafted. Both internal coding-agent reviews initially held; all
   findings were accepted and remediated, and dual independent verification
-  passes. No v2 code or public assurance content changed. Explicit user or
-  named scientific-steward acceptance remains the terminal direction gate;
-  ASSURE-03 and release assembly remain blocked.
+  passes. No v2 code or public assurance content changed in ASSURE-02. The user
+  subsequently accepted the direction by instructing ASSURE-03 execution.
+- `20260714-assure03-v1-retirement-zero-report-001/` - EXECUTED-COMPLETE
+  (2026-07-15): recorded ASSURE-02 acceptance, closed `ASSURE03-REL-001`,
+  preserved exact v1 recovery provenance, removed the status-first SNOTEL
+  candidate from active/public/export/release paths, and established the
+  deterministic neutral zero-report state. Both renewed full aggregates passed
+  1,974 tests and fresh CRAP at threshold 30 with zero actionable rows; all
+  internal review and verification findings closed. Stability, v2 report work,
+  release qualification, and WEPPcloud vendoring were excluded.
 - `20260714-roadmap-prospective-cleanup-001/` - EXECUTED-COMPLETE
   (2026-07-15): rewrote `docs/ROADMAP.md` as a prospective-only queue, reducing
   it from 1,124 lines / 125,845 bytes to 166 lines / 12,664 bytes. The retained
