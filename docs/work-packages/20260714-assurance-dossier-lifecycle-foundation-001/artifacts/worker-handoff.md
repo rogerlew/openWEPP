@@ -79,16 +79,25 @@ the publication root is
 - No runoff, erosion, frost, channel, watershed, regulatory, or application
   fitness claim is made.
 
-## Next Authorized Work
+## Deferred And Next Work
 
-The first operational follow-on should be a separate wepppy work package that
-vendors these five public documents, merges the export into its manifest and
-navigation, validates link rewriting/search/role visibility, and proves the
-real rendered consumer. The exact ownership boundary and suggested commands
-are in `wepppy-handoff.md`.
+Vendoring is not the next operational package. Do not open the wepppy package
+while WEPPcloud and the dossier set remain immature. Preserve
+`wepppy-handoff.md` as a dormant technical contract and refresh it when the
+openWEPP beta release campaign in WEPPcloud is authorized.
 
-The first scientific follow-on should remain separate: prospectively define a
-claim, evaluation partition, uncertainty treatment, and independent review for
-one quantity/regime before collecting new corroboration. Do not expand this
-foundation into a generic evidence platform until repeated dossier work shows
+Vendoring is nevertheless a mandatory pre-beta release gate. Before that beta
+release is issued, a separate wepppy package must select the approved dossier
+set, refresh all source and downstream identities, vendor the documents, merge
+the export into its manifest and navigation, validate link rewriting, search,
+and role visibility, and prove the real rendered consumer.
+
+The binding next follow-on is documentation-only `ASSURE-02` in
+`docs/ROADMAP.md`. It must establish and review the manuscript-first v2
+architecture, scientific-report standard, public/machine separation,
+pilot-selection inventory, real nonpublic process-kernel manuscript prototype,
+v1 retirement plan, and implementation decomposition. Do not modify the
+compiler, schemas, templates, catalog, generated pages, scientific results, or
+downstream repository before that gate is accepted. Do not expand the
+foundation into a generic evidence platform until repeated v2 report work shows
 which caching or portfolio-query features are actually needed.

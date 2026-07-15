@@ -2,6 +2,11 @@
 
 This directory holds end-user-facing documentation, organized following the wepppy `usersum` convention so it can be vendored into wepppy's in-app documentation engine.
 
+Current release posture: these openWEPP assurance documents are not ready or
+authorized for WEPPcloud vendoring. Vendoring is deferred until a dedicated
+pre-release package and must be completed before the openWEPP beta release is
+issued in WEPPcloud.
+
 See wepppy's usersum specification at `wepppy/wepppy/weppcloud/routes/usersum/specification.md` for the vendor workflow and document-manifest conventions.
 
 Authoring conventions for documents in this directory are normative in the

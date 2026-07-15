@@ -12,6 +12,10 @@ The ownership, lifecycle, and command contract is
   agent-assisted authoring records, and structured review histories.
 - `generated/wepppy-usersum.yaml` is a generated downstream handoff.
 
+The generated handoff is dormant compatibility data, not a vendoring-readiness
+claim. Do not vendor the dossier set now. Refresh and execute the handoff under
+a dedicated wepppy package before the openWEPP beta release in WEPPcloud.
+
 Do not edit `assurance/generated/` or `usersum/assurance/` by hand. Run:
 
 ```bash

@@ -60,6 +60,31 @@ is
 Both reviewers receive this bounded delta for final reconciliation; it does not
 supersede the heavy runner's implementation-freeze evidence.
 
+## Post-Closure Vendoring Deferral And Documentation-First Reset
+
+Static: on `2026-07-15 UTC`, the user directed that downstream vendoring be
+deferred because neither WEPPcloud nor the dossier set is ready. Vendoring is
+now a dormant handoff and a mandatory gate before the openWEPP beta release in
+WEPPcloud, not the next operational package.
+
+Static: subsequent scientific-audience review rejected the v1 SNOTEL public
+output as a valid characterization of the snow/frost model or its evidence and
+made the manuscript-first `ASSURE-02` documentation gate the next binding work.
+This correction preserves the package's engineering closure and historical
+bytes while preventing the generated labels from being promoted as a
+scientific conclusion.
+
+Ran: this documentation-only sequencing and roadmap amendment changes six
+non-artifact records: the lifecycle contract, roadmap, package decision log,
+package index, `assurance/README.md`, and `usersum/README.md`. It also updates
+the package disposition, worker handoff, wepppy handoff, and this manifest
+record. No Rust, schema, template, dossier source, generated public page,
+release script, test, fixture, or exception registry changed. The resulting
+ordered 58-file non-artifact manifest is
+`00f3034dc4a23045d4bb0c599492e0c4b4e22007e18f764927ec22bcf6832230`.
+The earlier implementation and administrative manifests remain retained as
+historical closure identities.
+
 Static: no exclusion was amended, no adjudicated CRAP exception was added, and
 no branch was created or switched. No kernel, science-contract, fixture, or
 external-authority source is in the write set.

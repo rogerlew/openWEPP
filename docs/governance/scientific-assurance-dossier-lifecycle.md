@@ -284,6 +284,13 @@ navigation placement, rendering, and search indexing. An openWEPP build proves
 the handoff artifact exists and is internally consistent; it does not prove
 that wepppy has consumed or deployed it.
 
+Generating a handoff does not authorize or imply readiness for vendoring.
+Downstream vendoring requires a separately authorized wepppy package at a
+declared release gate. The current gate is deferred until the openWEPP beta
+release campaign in WEPPcloud: do not begin vendoring while the WEPPcloud
+documentation surface or dossier set is still being developed, but complete
+and verify vendoring before that beta release is issued.
+
 The export uses only downstream-supported `status` values: `draft` for
 `DRAFT`, `active` for `CANDIDATE` and `PUBLISHED`, and `deprecated` for
 `SUPERSEDED` and `WITHDRAWN`. The exact assurance lifecycle is retained in the

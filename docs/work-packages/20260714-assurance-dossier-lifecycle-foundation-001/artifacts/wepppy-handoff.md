@@ -1,6 +1,7 @@
 # wepppy Usersum Handoff
 
-Status: `ready for a separately authorized wepppy package`; not deployed.
+Status: `deferred`; dormant handoff, mandatory pre-beta release gate, and not
+currently authorized for vendoring or deployment.
 
 Static: openWEPP owns the source content and emits
 `assurance/generated/wepppy-usersum.yaml`. Current SHA-256:
@@ -8,12 +9,30 @@ Static: openWEPP owns the source content and emits
 The fragment contains five stable document records and the current candidate
 assurance lifecycle. It is source-relative and sorted by `doc_id`.
 
+This proves an export shape, not content or integration readiness. WEPPcloud
+and the dossier set are still under development. Do not execute the downstream
+steps in this record now.
+
 The downstream `status` field uses the current wepppy vocabulary: `draft` for
 an openWEPP `DRAFT`, `active` for `CANDIDATE` or `PUBLISHED`, and `deprecated`
 for `SUPERSEDED` or `WITHDRAWN`. The exact source lifecycle is preserved in the
 additional `assurance_lifecycle` field. A future wepppy package may retain that
 extension as metadata or explicitly adopt it; it must not reinterpret
 `status: active` as scientific corroboration or application fitness.
+
+## Activation Gate
+
+Vendoring is deferred until the openWEPP beta release campaign in WEPPcloud.
+Activate this handoff only when the release authority explicitly determines
+that the WEPPcloud documentation surface and the selected dossier set are ready
+for integration and authorizes a dedicated package in the wepppy repository.
+
+That downstream package is a mandatory pre-release gate: it must complete and
+prove the real rendered consumer before the openWEPP beta release is issued in
+WEPPcloud. At activation, refresh every source digest, selected document,
+review state, wepppy contract, parser assumption, navigation target, and test
+command. The identities and read-only parser proof below are historical
+foundation evidence and cannot be reused as beta-release acceptance.
 
 ## openWEPP-Owned Inputs
 
@@ -32,7 +51,7 @@ cargo run -p openwepp-assurance -- build --all
 cargo run -p openwepp-assurance -- check --all
 ```
 
-## Future wepppy-Owned Work
+## Deferred Pre-Beta wepppy-Owned Work
 
 A separate package in `/home/workdir/wepppy` must:
 

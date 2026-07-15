@@ -250,15 +250,262 @@ default/direct byte identity for HBP/WAT/PASS/loss/plot with
 
 ## Scientific Assurance Queue
 
-The assurance program publishes bounded evidence that scientific users can
-inspect and apply; it does not issue a whole-model or site-specific fitness
-verdict. Software verification remains hard-gated, empirical corroboration
-remains dated and revisable, and the application decision remains with its
-named owner.
+### Documentation-First Reset
+
+This queue is the binding order for the scientific-assurance reset. The next
+deliverable is the documentation architecture, not another schema, renderer,
+status calculation, generated dossier, or vendoring change. No v2 production
+implementation may begin until `ASSURE-02` is accepted.
+
+`ASSURE-01` produced useful deterministic publication plumbing, including
+stable identities, source/generated separation, content hashing, targeted and
+all-dossier builds, review locks, and immutable snapshots. Its public SNOTEL
+vertical slice nevertheless failed the program's primary communication
+objective. It reduced a large, technically mature body of snow and frost work
+to lifecycle and aggregate evidence labels, led with internal governance
+vocabulary, and omitted most of the scientific method, results, figures,
+comparison, and discussion a domain reader needs.
+
+The v1 aggregate empirical label is therefore not accepted as an adjudication
+of the openWEPP snow/frost model or its evidence base. It is a failed
+representation produced by an inadequate publication architecture. The
+underlying equations, contracts, observational datasets, validation campaigns,
+results, negative findings, and
+[snow/frost scientific narrative](../usersum/snow-frost-modeling-and-validation.md)
+remain in force according to their own authority and evidence. Snow/frost will
+become a flagship v2 scientific synthesis after the architecture is proven; it
+must not be reused as the tooling pilot.
+
+The current v1 candidate must not be vendored, cited as openWEPP's scientific
+assessment of snow/frost, promoted, or used to infer model fitness. Its removal
+from the active catalog and public generated tree is queued behind the
+documentation gate so the retirement and replacement boundaries are specified
+before code or generated content changes again.
+
+### Required Reader Outcome
+
+The public product must let a hydrologist, soil scientist, researcher, or
+practitioner answer the following without reading repository governance,
+work-package logs, source code, or machine manifests:
+
+1. What process, quantity, version, configuration, scale, and domain were
+   assessed?
+2. Why is the formulation scientifically credible, and what equations,
+   assumptions, parameters, and prior work does it use?
+3. What observational data, analytical referents, or other independent evidence
+   were used, and what are their roles, coverage, and limitations?
+4. How was the assessment performed, including calibration or model-selection
+   separation, metrics, uncertainty treatment, exclusions, and reproduction
+   procedure?
+5. What do the results show quantitatively, including central behavior, bias,
+   variability, extremes, failed regimes, and negative findings?
+6. Which claim-specific conclusions are supported within the tested domain,
+   which are not supported, and where would application be extrapolation?
+7. Which judgment remains with the application decision owner, and how can the
+   evidence and analysis be reproduced or challenged?
+
+A first-page abstract or executive scientific summary must answer the central
+assessment question, identify the principal evidence, report the most important
+quantitative results, and state the principal limitations in domain language.
+Internal lifecycle, verification aggregates, hashes, agent records, and review
+workflow must not displace those findings or appear as the report's headline.
+
+### V2 Product And Ownership Model
+
+The internal assurance dossier and the public scientific report are related but
+are not the same document.
+
+| Record | Primary audience and purpose | Required content | Visibility |
+| --- | --- | --- | --- |
+| Scientific model-evaluation report | Domain scientists and practitioners evaluating the evidence | Abstract, background, formulation, assessment questions, data, methods, verification relevant to interpretation, results, figures, discussion, claim-specific conclusions, limitations, application considerations, and data/code availability | Public only after independent scientific and publication review |
+| Technical assurance supplement | Reproducers, reviewers, maintainers, and auditors | Detailed verification profile, result and figure lineage, uncertainty details, exclusions, failed runs, exact commands, configuration, software identity, and reproduction instructions | Public and linked, but subordinate to the scientific report |
+| Machine assurance bundle | Build tooling and agents | Stable IDs, typed metadata, dependency edges, content identities, result records, evidence manifest, review locks, lifecycle, supersession, and release-snapshot bindings | Repository source; rendered selectively into the supplement |
+| Model-science narrative and science contracts | Domain stewards and implementers explaining intended behavior | Process rationale, equations, assumptions, parameter authority, invariants, and implementation boundaries | Public narrative plus canonical repository authority |
+| Application assessment | Named user or institution deciding a particular use | Application facts, required accuracy, consequence of error, comparison with the tested domain, mitigation, and decision rationale | Owned and approved by the named decision owner |
+
+"Dossier" may remain the internal name for the complete source, evidence, review,
+and publication bundle. The public title and navigation label must use familiar
+scientific language such as "Evaluation of ... in openWEPP" rather than require
+readers to understand internal assurance terminology.
+
+### Non-Negotiable V2 Design Rules
+
+1. **Paper prototype before schema.** `ASSURE-02` must first produce a
+   standalone, hand-authored manuscript prototype from a bounded process kernel
+   with real existing evidence. Schema fields and renderer behavior are derived
+   from that reviewed prototype, not invented in advance.
+2. **Documentation before implementation.** The philosophy, public report
+   standard, lifecycle, ownership, source layout, review boundary, build
+   contract, migration plan, and implementation decomposition must be reviewed
+   together before v2 code begins.
+3. **No public candidates.** Draft and candidate material may build only to an
+   explicit staging output. Only independently reviewed and approved reports
+   may enter the public `usersum` catalog or a release snapshot.
+4. **Scientific findings lead.** Public reports begin with an abstract and
+   evidence, not lifecycle badges, aggregate status enums, claim IDs, test
+   counts, hashes, or agent provenance.
+5. **Conclusions are claim-specific.** A report may contain multiple findings
+   when the data and method support them, but each conclusion names its process,
+   quantity, scale, tested domain, software realization, evidence, uncertainty,
+   and limitations. V2 must not collapse a complex subsystem into one empirical
+   headline status.
+6. **Assurance dimensions remain separate.** Code and solution verification,
+   empirical evidence, comparative evidence, current-release transfer, and
+   application fitness must remain distinguishable. A missing current-release
+   binding means that transfer to that release has not been shown; it does not
+   erase or relabel otherwise sound historical empirical evidence.
+7. **Verification is materiality-scoped.** A verification gap blocks only the
+   conclusions for which that obligation is materially required. The report
+   explains the affected result surface and consequence instead of applying a
+   repository-wide aggregate penalty.
+8. **Why, how, and what form one scientific argument.** Model rationale may
+   retain its own canonical narrative and contracts, but the public assessment
+   must include enough formulation and method to stand alone. A thin method
+   page and a governance-heavy result page are not acceptable substitutes.
+9. **Results are inspectable.** Claim-bearing empirical reports include the
+   smallest sufficient set of tables and figures to expose magnitude,
+   residuals, variability, timing or extremes where relevant, regime-specific
+   behavior, and material failures. Every visual states quantity, units, sample
+   basis, aggregation, data role, and uncertainty or variability treatment.
+10. **Quantitative publication is mechanical.** Published numerical values,
+    tables, figures, captions, units, sample counts, and uncertainty summaries
+    resolve from stable result or figure IDs tied to retained artifacts. The
+    build fails on missing, stale, duplicated, or unreferenced claim-bearing
+    identities. Authors interpret results; they do not manually synchronize
+    duplicated numbers across documents.
+11. **The build never adjudicates science.** Tooling validates structure,
+    dependency completeness, content identity, cross-references, review locks,
+    deterministic rendering, drift, and snapshots. It does not choose metrics,
+    decide whether evidence is favorable, write conclusions, call an agent, or
+    issue an application-fitness verdict.
+12. **Agent assistance is reproducible and subordinate.** Agent-supported
+    inventory, extraction, comparison, or drafting uses a declared procedure,
+    fixed content-identified inputs, retained outputs, and independent review.
+    Agent records belong in the machine bundle or supplement, never ahead of
+    the science. Private reasoning is not required or treated as evidence.
+13. **Negative evidence remains scientific content.** Failed cases,
+    contradictions, rejected mechanisms, unavailable assets, and untested
+    domains appear where they affect the methods, results, discussion, or
+    conclusions; they are not hidden in an audit appendix or converted into a
+    whole-model verdict.
+14. **Accessibility is part of publication.** Tables remain machine-readable;
+    figures have useful text alternatives and do not depend on color alone;
+    links and headings support both standalone reading and WEPPcloud rendering.
+15. **V1 is a frozen prototype.** No new scientific report may target the v1
+    bullet-list schemas or status-first templates. Reusable plumbing may be
+    retained only after the v2 architecture identifies it explicitly.
+
+### ASSURE-02 Documentation Gate
+
+`ASSURE-02` is documentation-only. It must not edit the Rust compiler, v1
+schemas or templates, active catalog, generated public pages, scientific result
+artifacts, or downstream repository. It must deliver one coherent reviewed
+surface containing:
+
+- an architecture decision recording the manuscript-first public product and
+  the separation between scientific report, technical supplement, machine
+  bundle, and application decision;
+- a revised V&V strategy that retracts the SNOTEL pilot disposition without
+  weakening the underlying snow/frost evidence and removes status-first public
+  language;
+- a v2 assurance architecture defining records, owners, source/generated
+  boundaries, claim and result traceability, staging/publication behavior,
+  versioning, supersession, and release transfer;
+- a v2 scientific report standard based on a conventional scientific manuscript
+  and specifying the required abstract, formulation, methods, results, figures,
+  discussion, conclusions, limitations, and reproducibility content;
+- a revised lifecycle and build contract that keeps draft/candidate output out
+  of public `usersum`, permits one-report and all-report builds, and separates
+  scientific review from mechanical publication approval;
+- an explicit source-layout and dependency contract for manuscripts, metadata,
+  results, figures, evidence, citations, review, reproduction, generated public
+  output, and release snapshots;
+- a hand-authored, nonpublic manuscript prototype for one bounded non-snow
+  process kernel, populated with real evidence rather than placeholders;
+- a pilot-selection evidence inventory and decision record applying the
+  criteria below;
+- a v1 retirement and v2 migration plan that preserves Git and evidence
+  provenance while removing the rejected public candidate and repairing every
+  cross-reference; and
+- an implementation roadmap decomposed into independently closable packages
+  with declared write sets, consumer proofs, review gates, tests, and rollback
+  boundaries.
+
+The documentation gate closes only when two independent reviews are reconciled:
+one reviews the prototype and standards from the perspective of the named
+scientific audiences, and one reviews architecture, reproducibility, build,
+dependency, and migration integrity. Coding agents may perform these reviews
+but must not be represented as external domain peer reviewers. The user or a
+named scientific steward must accept the scientific communication direction
+before `ASSURE-03` or later work starts.
+
+### Source And Build Contract To Resolve In Documentation
+
+The architecture must specify these responsibilities before choosing concrete
+schemas or APIs:
+
+| Concern | Required v2 decision |
+| --- | --- |
+| Manuscript source | How authors write normal Markdown scientific prose while referencing stable results, figures, tables, citations, and traceability annotations without exposing template syntax to readers |
+| Quantitative results | Typed representation of value, units, sample basis, aggregation, uncertainty, strata, data role, producing command or analysis, source artifact, and evidence identity |
+| Figures and tables | Deterministic generation or admission, source-data and script identity, caption and accessibility metadata, output identity, and stale-output detection |
+| Claims and conclusions | Stable internal IDs, exact supporting and contrary evidence, tested envelope, limitations, reviewer disposition, and natural-language public rendering without a report-wide grade |
+| Methods and reproduction | Dataset roles, transformations, configuration, commands, environment, exclusions, metric definitions, retained outputs, and independently repeatable procedure |
+| Dependency planning | Explicit content-hashed graph supporting `validate`, `plan`, `build`, `check`, and `snapshot` for one report or all reports; no network access, shell execution, or agent invocation during ordinary publication builds |
+| Freshness | Material-change rules for code, configuration, data, transformations, metrics, results, prose, review, and release transfer; content identity rather than filesystem time |
+| Staging and publication | Separate output roots and fail-closed rules proving drafts/candidates cannot enter public `usersum`, exports, or release snapshots |
+| Review and ownership | Accountable owners for formulation, method, analysis, interpretation, review, tooling, release inclusion, vendoring, and application decisions; no self-approval of conclusion-bearing work |
+| Agent procedures | Versioned procedure, fixed inputs, retained accepted output, disclosed model/tool identity where available, independent review, and no claim that nondeterministic prose is byte-reproducible |
+| Release transfer | How a historical scientific result is mapped to an exact release without rewriting its evidence conclusion, and how unsupported transfer remains explicit |
+| Downstream discovery | Stable public document IDs, links, titles, navigation, roles, and handoff metadata, with real WEPPcloud consumer proof deferred to the beta vendoring gate |
+
+`cargo nextest` may exercise compiler and workflow tests, including dependency
+selection and drift cases. It is not the dossier dependency engine, scientific
+scheduler, or source of freshness. The v2 builder owns the explicit dependency
+graph and content identities.
+
+### Pilot Selection Gate
+
+The tooling pilot must be small enough that reviewers can judge both the
+science and the publication architecture end to end. Selection is evidence-led,
+not chosen merely because a kernel is easy to serialize.
+
+| Criterion | Required evidence before selection |
+| --- | --- |
+| Bounded process | Equations, state, inputs, outputs, units, and assessment envelope can be stated without importing an entire coupled subsystem |
+| Scientific confidence | Canonical process authority and relevant peer-reviewed or independent physical support already exist |
+| Assessable referent | Analytical solution, independently reconstructed recurrence, laboratory or field observations, or another defensible referent can test the intended claim |
+| Low confounding | Forcing, parameter, scale, and upstream-process uncertainty can be separated or bounded well enough to interpret the result |
+| Production relevance | The implemented production path and real downstream consumer can be identified and verified; a toy-only kernel is insufficient |
+| Existing evidence | Claim-bearing inputs and outputs are retained or can be reproduced without a new multi-subsystem campaign |
+| Communicable result | The prototype can contain meaningful quantitative results, figures or tables, limitations, and discussion rather than another governance inventory |
+| Rights and reproducibility | Required data and references can be cited and made available, or access restrictions can be stated without preventing review of the central result |
+
+The linear groundwater-reservoir recurrence is the preferred first candidate
+because it is bounded, has explicit equations and conservation identities,
+peer-reviewed authority, an implemented consumer path, and independently
+reconstructable behavior. `ASSURE-02` must still inventory its scientific and
+empirical basis before confirming it. If it cannot support a credible manuscript
+prototype, the selection record must reject it and choose the next candidate;
+the architecture must not be weakened to force the preferred candidate through.
+
+### Ordered Assurance Work
 
 | # | Item | Mechanism | Acceptance target | State |
 | --- | --- | --- | --- | --- |
-| **ASSURE-01** | **Dossier lifecycle, ownership, and SNOTEL vertical slice** | Define who owns the public model narrative, evaluation method, dossier evidence, independent review, release snapshot, wepppy discovery, and application decision. Implement only the deterministic source/template/build/check surface needed to prove those boundaries with one real dossier. | Canonical lifecycle/ownership/build contract; material-change trigger matrix; typed content-hashed one/all build; immutable snapshot and review-lock behavior; scientist-facing why/how/what/application links; honest SNOTEL evidence inventory and status; release drift gate; openWEPP-owned wepppy export/handoff; dual independent review and verification. | **complete 2026-07-15** — all exit criteria and dual verification pass; package: [work-packages/20260714-assurance-dossier-lifecycle-foundation-001/package.md](work-packages/20260714-assurance-dossier-lifecycle-foundation-001/package.md). The pilot remains `CANDIDATE / INSUFFICIENT_EVIDENCE` with aggregate verification `BLOCKED`; general evidence platforms and wepppy mutation remain out of scope. |
+| **ASSURE-01** | **V1 lifecycle foundation and SNOTEL vertical slice** | Historical implementation of deterministic source validation, rendering, dependency hashing, review locks, snapshots, and a SNOTEL candidate. | Preserve the useful plumbing and complete evidence trail while recording that the public scientific product and pilot disposition failed the named audience requirement. | **implementation complete; scientific communication disposition rejected after review.** Package: [work-packages/20260714-assurance-dossier-lifecycle-foundation-001/package.md](work-packages/20260714-assurance-dossier-lifecycle-foundation-001/package.md). The v1 candidate is not an accepted snow/frost assessment and must not be promoted or vendored. |
+| **ASSURE-02** | **V2 manuscript-first documentation architecture** | Execute the documentation gate above: research scientific reporting conventions, author the architecture decision and canonical v2 documents, inventory/select a bounded non-snow kernel, write a real nonpublic manuscript prototype, specify migration, and decompose implementation. No production or generated-content edits. | Every documentation deliverable above exists and agrees; the prototype passes scientific-audience review; machine and public layers are unambiguous; claim-specific evidence, verification materiality, release transfer, agent procedure, staging, build, and migration rules are testable; two independent reviews are reconciled; user or scientific-steward acceptance is recorded. | **next / documentation-only. No v2 code is authorized before acceptance.** |
+| **ASSURE-03** | **V1 candidate retirement and neutral interim surface** | Apply the accepted migration plan. Remove the rejected SNOTEL dossier and thin method page from the active catalog, generated public tree, and dormant export; preserve exact Git/evidence provenance; repair snow-narrative and catalog links; support zero published reports without manufacturing a replacement status. | No public or export path presents the v1 candidate; no underlying snow/frost science or evidence is deleted or weakened; an internal retirement record identifies the rejected presentation and source identities; the neutral catalog states that v2 reports are in development; deterministic build/check and doc-reference gates pass. | **queued; blocked by `ASSURE-02` acceptance.** |
+| **ASSURE-04** | **Minimal v2 assurance compiler** | Implement only the source types, traceability, staging/publication separation, deterministic manuscript assembly, result/figure substitution, dependency planning, drift checking, review locks, and snapshots demonstrated by the accepted prototype. Retain v1 plumbing only where the architecture explicitly accepts it. | One/all `validate`, `plan`, `build`, and `check`; content-hashed dependencies; stale/missing/unused result and figure failures; no public candidates; no ordinary-build network, shell, or agent execution; accessible generated Markdown; focused and full repository gates; adjudicated CRAP closure for touched production Rust. | **queued; blocked by `ASSURE-02` and `ASSURE-03`.** |
+| **ASSURE-05** | **Bounded non-snow process-kernel pilot** | Convert the accepted prototype into the first complete v2 report using the production kernel, real consumer, retained evidence, figures/tables, technical supplement, independent scientific review, and mechanical publication review. | A domain reader can answer all required reader-outcome questions; every quantitative statement resolves to retained evidence; verification and release-transfer claims are correctly scoped; limitations and contrary evidence are visible; independent reviews and reproduction pass; only then may the report enter public `usersum`. | **queued; blocked by `ASSURE-04`.** |
+| **ASSURE-06** | **Snow/frost flagship scientific synthesis** | Inventory and synthesize the existing precipitation-phase, SWE/depth/density, frost-depth/soil-temperature, conservation, negative-mechanism, and integrated production evidence in scientific-manuscript form. Split reports or supplements where quantities, forcing lanes, scales, or conclusions materially differ; do not force one aggregate grade. | Existing work is represented quantitatively and traceably; methods, datasets, sample counts, figures, results, forcing-robust versus forcing-limited interpretation, limitations, and comparison with prior knowledge are complete; claim-specific conclusions and current-release transfer receive independent review. | **queued; blocked by a successful `ASSURE-05` architecture pilot. Snow/frost is the flagship, not the tooling pilot.** |
+| **ASSURE-07** | **Priority report portfolio and release evidence snapshot** | Select additional hydrology, erosion, sediment, plant, channel, and watershed quantities by user importance and evidence readiness; author reports with the accepted v2 process; bind reviewed reports and explicit gaps to release snapshots without implying site fitness. | Prioritized portfolio, report ownership, currency review, exact release-transfer records, immutable snapshots, supersession behavior, and honest documented gaps. No report is added merely to create coverage. | **queued after `ASSURE-05`; may proceed incrementally without blocking `ASSURE-06`.** |
+| **ASSURE-08** | **WEPPcloud beta assurance vendoring gate** | When the openWEPP beta release campaign is authorized and the selected v2 report set is approved, refresh the handoff against current wepppy contracts and execute a dedicated downstream package. | Revalidated source/export identities; explicitly approved report set; wepppy vendor registration and sync; manifest/navigation/role integration; rendered scientific report and supplement behavior; link rewriting, accessibility, search, and real rendered-consumer proof; release evidence binding vendored content to the beta candidate. Historical parser compatibility or the v1 handoff cannot close the gate. | **deferred; mandatory before openWEPP beta release in WEPPcloud.** Do not start while WEPPcloud or the v2 reports remain immature. Current boundary record: [wepppy handoff](work-packages/20260714-assurance-dossier-lifecycle-foundation-001/artifacts/wepppy-handoff.md). |
+
+Any package that attempts to skip an earlier blocking row, publish a candidate,
+restore a report-wide empirical grade, or design the schema before the reviewed
+prototype must hold. Schedule pressure, available automation, or a desire to
+reuse v1 code is not authority to bypass the documentation gate.
 
 ---
 

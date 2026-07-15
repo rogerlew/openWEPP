@@ -100,15 +100,22 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-07-14 UTC`:
+State as of `2026-07-15 UTC`:
 
 - `20260714-assurance-dossier-lifecycle-foundation-001/` - EXECUTED-COMPLETE
   (2026-07-15): the dossier lifecycle/ownership/build contract, bounded SNOTEL
   vertical slice, deterministic compiler, release drift/snapshot boundary, and
   openWEPP-owned wepppy handoff pass all exit criteria and dual verification.
-  The pilot honestly remains `CANDIDATE / INSUFFICIENT_EVIDENCE` with aggregate
-  verification `BLOCKED`; no general evidence platform, automatic scientific
-  adjudication, or cross-repository mutation was introduced.
+  The generated v1 candidate retained lifecycle, empirical, and verification
+  labels at engineering closure, but subsequent scientific-audience review
+  rejected those aggregate labels as an assessment of the snow/frost model or
+  its evidence. The implementation closure and retained bytes remain historical
+  evidence of the v1 tooling experiment; the public candidate must not be
+  promoted, cited as openWEPP's snow/frost assessment, or vendored. The binding
+  next step is the documentation-only `ASSURE-02` gate in the
+  [scientific-assurance roadmap](../ROADMAP.md#scientific-assurance-queue).
+  Vendoring remains deferred to a dedicated mandatory gate immediately before
+  the openWEPP beta release in WEPPcloud.
 - `20260712-dc-cqr-preint-hb06-qofe-identity-001/` - ACTIVE: HB-06 review
   found the accumulator admits unequal public Q/QOFE under per-OFE policy.
   Current canonical authority requires equality; anti-clone genuineness remains
