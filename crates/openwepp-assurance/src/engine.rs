@@ -388,17 +388,7 @@ fn collect_files(root: &Path, directory: &Path, files: &mut BTreeSet<PathBuf>) -
 
 fn read_confined(root: &Path, relative: &Path) -> Result<Vec<u8>> {
     validate_relative(relative)?;
-    let path = root.join(relative);
-    let canonical = path
-        .canonicalize()
-        .map_err(|error| AssuranceError::io(&path, error))?;
-    if !canonical.starts_with(root) {
-        return Err(AssuranceError::Invalid(format!(
-            "path escapes repository root: {}",
-            relative.display()
-        )));
-    }
-    fs::read(&canonical).map_err(|error| AssuranceError::io(&canonical, error))
+    crate::v2::read_regular_confined(root, relative)
 }
 
 fn validate_relative(path: &Path) -> Result<()> {

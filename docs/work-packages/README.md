@@ -102,6 +102,17 @@
 
 State as of `2026-07-15 UTC`:
 
+- `20260715-assure04b-v2-dependency-planner-001/` - EXECUTED-COMPLETE
+  (2026-07-15): implemented deterministic content-identity dependency planning
+  for one named v2 report and all reports, with stable typed human/JSON CLI
+  consumers and current/stale/blocked/selected impact explanations. Review
+  corrected blocked-state precedence and installed descriptor-relative
+  no-follow reads; heavy closure exposed and closed a Clippy defect and a CLI
+  CRAP row without waivers. Terminal full Nextest passed 2,001/2,001 with three
+  skipped; fresh CRAP is 2 raw / 2 adjudicated / 0 actionable with touched
+  maxima at or below 26; dual terminal verification passed. Rendering,
+  scientific adjudication, publication, release transfer, and vendoring remain
+  excluded. ASSURE-04C is next and awaits explicit authorization.
 - `20260715-assure04a-v2-source-identity-foundation-001/` -
   EXECUTED-COMPLETE (2026-07-15): added the smallest typed v2 source and
   identity foundation demonstrated by the accepted groundwater prototype. Real
@@ -114,7 +125,7 @@ State as of `2026-07-15 UTC`:
   verification passed. The sole fixture is
   internal `DRAFT` architecture evidence, not scientific approval. Planning,
   rendering, publication, release transfer, and WEPPcloud vendoring remain
-  outside ASSURE-04A; ASSURE-04B is next and awaits explicit authorization.
+  outside ASSURE-04A; its ASSURE-04B handoff was subsequently completed.
 - `20260714-assure02-manuscript-first-assurance-architecture-001/` -
   EXECUTED-COMPLETE (2026-07-15; documentation-only): the
   manuscript-first architecture, report standard, ownership/build contracts,

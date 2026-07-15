@@ -1,11 +1,18 @@
 use std::collections::{BTreeMap, BTreeSet};
-use std::fs;
-use std::path::{Component, Path, PathBuf};
+use std::path::{Path, PathBuf};
 
 use serde::Deserialize;
 
 use crate::error::{AssuranceError, Result};
 use crate::hash::sha256_bytes;
+
+mod confined;
+mod planner;
+
+pub use planner::{V2Plan, V2PlanNode, V2PlanState, V2ReportPlan};
+
+pub(crate) use confined::read_regular_confined;
+use confined::validate_relative;
 
 const V2_CATALOG_PATH: &str = "assurance/v2/catalog.yaml";
 const SCHEMA_VERSION: u32 = 1;
@@ -347,6 +354,32 @@ impl V2Repository {
             AssuranceError::Invalid(format!("unknown v2 report ID '{report_id}'"))
         })?;
         self.validate_sources(std::iter::once(source))
+    }
+
+    /// Plans every admitted v2 report in stable report-ID order.
+    ///
+    /// # Errors
+    ///
+    /// Returns a typed error for an invalid graph or source contract. Missing
+    /// declared local content is represented as a blocked plan node.
+    pub fn plan_all(&self) -> Result<V2Plan> {
+        self.verify_inputs()?;
+        let sources = self.sources.values().collect::<Vec<_>>();
+        planner::plan_sources(&self.root, &self.inputs, self.sources.len(), &sources)
+    }
+
+    /// Plans one named v2 report without traversing unselected reports.
+    ///
+    /// # Errors
+    ///
+    /// Returns a typed error for an unknown report or invalid selected graph.
+    /// Missing declared local content is represented as a blocked plan node.
+    pub fn plan_report(&self, report_id: &str) -> Result<V2Plan> {
+        self.verify_inputs()?;
+        let source = self.sources.get(report_id).ok_or_else(|| {
+            AssuranceError::Invalid(format!("unknown v2 report ID '{report_id}'"))
+        })?;
+        planner::plan_sources(&self.root, &self.inputs, self.sources.len(), &[source])
     }
 
     fn verify_inputs(&self) -> Result<()> {
@@ -1053,15 +1086,30 @@ fn validate_report(
     report: &Report,
     inputs: &mut BTreeMap<PathBuf, String>,
 ) -> Result<()> {
-    validate_report_header(report)?;
-    let ids = collect_report_ids(report)?;
-
-    validate_authorship(&report.authorship)?;
-    validate_agent_assistance(&report.agent_assistance, &ids)?;
+    let ids = validate_report_structure(report)?;
     validate_content(root, &report.manuscript, &ids, inputs)?;
     validate_content(root, &report.supplement, &ids, inputs)?;
     for dependency in &report.dependencies {
         validate_dependency(root, dependency, inputs)?;
+    }
+    for source in &report.results {
+        validate_result(root, source, &ids, inputs)?;
+    }
+    for object in &report.research_objects {
+        validate_research_object(root, object, &ids, inputs)?;
+    }
+    Ok(())
+}
+
+fn validate_report_structure(report: &Report) -> Result<ReportIds> {
+    validate_report_header(report)?;
+    let ids = collect_report_ids(report)?;
+    validate_authorship(&report.authorship)?;
+    validate_agent_assistance(&report.agent_assistance, &ids)?;
+    validate_content_contract(&report.manuscript, &ids)?;
+    validate_content_contract(&report.supplement, &ids)?;
+    for dependency in &report.dependencies {
+        validate_dependency_shape(dependency)?;
     }
     for unit in &report.units {
         validate_unit(unit)?;
@@ -1073,7 +1121,7 @@ fn validate_report(
         validate_method(method, &ids)?;
     }
     for source in &report.results {
-        validate_result(root, source, &ids, inputs)?;
+        validate_result_source(source, &ids)?;
     }
     for figure in &report.figures {
         validate_figure(figure, &ids)?;
@@ -1082,12 +1130,12 @@ fn validate_report(
         validate_reference(reference, &ids)?;
     }
     for object in &report.research_objects {
-        validate_research_object(root, object, &ids, inputs)?;
+        validate_research_object_contract(object, &ids)?;
     }
     validate_review(&report.review)?;
     validate_publication(&report.publication)?;
     validate_no_unused(report)?;
-    Ok(())
+    Ok(ids)
 }
 
 fn validate_report_header(report: &Report) -> Result<()> {
@@ -1323,15 +1371,22 @@ fn validate_content(
     ids: &ReportIds,
     inputs: &mut BTreeMap<PathBuf, String>,
 ) -> Result<()> {
+    validate_content_contract(content, ids)?;
+    read_identified(root, &content.path, Some(&content.sha256), inputs)?;
+    Ok(())
+}
+
+fn validate_content_contract(content: &ContentSource, ids: &ReportIds) -> Result<()> {
     if content.media_type != "text/markdown" {
         return Err(AssuranceError::Invalid(format!(
             "content '{}' media_type must be text/markdown",
             content.id
         )));
     }
+    validate_relative(&content.path)?;
+    validate_digest(&content.sha256, "content source")?;
     require_nonempty(&content.provenance, "content provenance")?;
     require_nonempty(&content.creation_procedure, "content creation_procedure")?;
-    read_identified(root, &content.path, Some(&content.sha256), inputs)?;
     for (kind, references, known) in [
         ("claim", &content.claim_ids, &ids.claims),
         ("method", &content.method_ids, &ids.methods),
@@ -1354,9 +1409,19 @@ fn validate_dependency(
     dependency: &Dependency,
     inputs: &mut BTreeMap<PathBuf, String>,
 ) -> Result<()> {
+    validate_dependency_shape(dependency)?;
+    if let DependencyKind::LocalContent = dependency.kind {
+        let path = required_path(dependency.path.as_deref(), "local dependency path")?;
+        let digest = required_text(dependency.sha256.as_deref(), "local dependency sha256")?;
+        read_identified(root, path, Some(digest), inputs)?;
+    }
+    Ok(())
+}
+
+fn validate_dependency_shape(dependency: &Dependency) -> Result<()> {
     validate_dependency_metadata(dependency)?;
     match dependency.kind {
-        DependencyKind::LocalContent => validate_local_dependency(root, dependency, inputs),
+        DependencyKind::LocalContent => validate_local_dependency_shape(dependency),
         DependencyKind::ExternalImmutable => validate_external_dependency(dependency),
         DependencyKind::Restricted => validate_restricted_dependency(dependency),
     }
@@ -1372,11 +1437,7 @@ fn validate_dependency_metadata(dependency: &Dependency) -> Result<()> {
     require_nonempty(&dependency.license, "dependency license")
 }
 
-fn validate_local_dependency(
-    root: &Path,
-    dependency: &Dependency,
-    inputs: &mut BTreeMap<PathBuf, String>,
-) -> Result<()> {
+fn validate_local_dependency_shape(dependency: &Dependency) -> Result<()> {
     require_absent(
         &dependency.immutable_identity,
         "local dependency immutable_identity",
@@ -1387,9 +1448,9 @@ fn validate_local_dependency(
     )?;
     require_absent(&dependency.review_role, "local dependency review_role")?;
     let path = required_path(dependency.path.as_deref(), "local dependency path")?;
+    validate_relative(path)?;
     let digest = required_text(dependency.sha256.as_deref(), "local dependency sha256")?;
-    read_identified(root, path, Some(digest), inputs)?;
-    Ok(())
+    validate_digest(digest, "local dependency")
 }
 
 fn validate_external_dependency(dependency: &Dependency) -> Result<()> {
@@ -1471,6 +1532,8 @@ fn validate_result_source(source: &ResultSource, ids: &ReportIds) -> Result<()> 
             source.id
         )));
     }
+    validate_relative(&source.path)?;
+    validate_digest(&source.sha256, "result source")?;
     require_nonempty(&source.quantity_semantics, "result quantity_semantics")?;
     require_nonempty(&source.precision_policy, "result precision_policy")?;
     require_nonempty(&source.provenance, "result provenance")?;
@@ -1581,9 +1644,22 @@ fn validate_research_object(
     ids: &ReportIds,
     inputs: &mut BTreeMap<PathBuf, String>,
 ) -> Result<()> {
+    validate_research_object_contract(object, ids)?;
+    if object.access == "public_safe" {
+        let path = required_path(object.path.as_deref(), "public-safe research-object path")?;
+        let digest = required_text(
+            object.sha256.as_deref(),
+            "public-safe research-object sha256",
+        )?;
+        read_identified(root, path, Some(digest), inputs)?;
+    }
+    Ok(())
+}
+
+fn validate_research_object_contract(object: &ResearchObject, ids: &ReportIds) -> Result<()> {
     validate_research_object_metadata(object)?;
     match object.access.as_str() {
-        "public_safe" => validate_public_research_object(root, object, inputs)?,
+        "public_safe" => validate_public_research_object_shape(object)?,
         "restricted" => validate_restricted_research_object(object)?,
         _ => {
             return Err(AssuranceError::Invalid(format!(
@@ -1604,11 +1680,7 @@ fn validate_research_object_metadata(object: &ResearchObject) -> Result<()> {
     )
 }
 
-fn validate_public_research_object(
-    root: &Path,
-    object: &ResearchObject,
-    inputs: &mut BTreeMap<PathBuf, String>,
-) -> Result<()> {
+fn validate_public_research_object_shape(object: &ResearchObject) -> Result<()> {
     require_absent(
         &object.restriction_reason,
         "public-safe research-object restriction_reason",
@@ -1618,12 +1690,12 @@ fn validate_public_research_object(
         "public-safe research-object review_role",
     )?;
     let path = required_path(object.path.as_deref(), "public-safe research-object path")?;
+    validate_relative(path)?;
     let digest = required_text(
         object.sha256.as_deref(),
         "public-safe research-object sha256",
     )?;
-    read_identified(root, path, Some(digest), inputs)?;
-    Ok(())
+    validate_digest(digest, "public-safe research object")
 }
 
 fn validate_restricted_research_object(object: &ResearchObject) -> Result<()> {
@@ -1964,56 +2036,6 @@ fn read_identified(
         ))),
         _ => Ok(bytes),
     }
-}
-
-fn read_regular_confined(root: &Path, relative: &Path) -> Result<Vec<u8>> {
-    validate_relative(relative)?;
-    let components = relative.components().collect::<Vec<_>>();
-    let mut current = root.to_path_buf();
-    for (index, component) in components.iter().enumerate() {
-        let Component::Normal(name) = component else {
-            return Err(AssuranceError::Invalid(
-                "source path must be a confined relative path".to_owned(),
-            ));
-        };
-        current.push(name);
-        let metadata =
-            fs::symlink_metadata(&current).map_err(|error| AssuranceError::io(relative, error))?;
-        if metadata.file_type().is_symlink() {
-            return Err(AssuranceError::Invalid(format!(
-                "identified source cannot traverse a symlink: {}",
-                relative.display()
-            )));
-        }
-        let is_last = index + 1 == components.len();
-        if !is_last && !metadata.is_dir() {
-            return Err(AssuranceError::Invalid(format!(
-                "identified source parent is not a directory: {}",
-                relative.display()
-            )));
-        }
-        if is_last && !metadata.is_file() {
-            return Err(AssuranceError::Invalid(format!(
-                "identified source must be a regular file: {}",
-                relative.display()
-            )));
-        }
-    }
-    fs::read(&current).map_err(|error| AssuranceError::io(relative, error))
-}
-
-fn validate_relative(path: &Path) -> Result<()> {
-    if path.as_os_str().is_empty()
-        || path.is_absolute()
-        || path
-            .components()
-            .any(|component| !matches!(component, Component::Normal(_)))
-    {
-        return Err(AssuranceError::Invalid(
-            "source path must be a confined relative path".to_owned(),
-        ));
-    }
-    Ok(())
 }
 
 fn parse_yaml<T: for<'de> Deserialize<'de>>(path: impl Into<PathBuf>, bytes: &[u8]) -> Result<T> {

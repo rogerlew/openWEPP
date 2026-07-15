@@ -1,6 +1,6 @@
 # Scientific Assurance V2 Internal Sources
 
-Status: ASSURE-04A source admission; nonpublic
+Status: ASSURE-04B source admission and dependency planning complete; nonpublic
 
 This tree holds canonical scientific-assurance source, not generated reader
 documentation. The manuscript and supplement carry the scientific argument in
@@ -54,7 +54,32 @@ versions, content identities, logical-reference closure, units, unused
 declarations, restrictions, and draft lifecycle consistency. It does not plan,
 render, approve, publish, or scientifically reevaluate a report.
 
-ASSURE-04B owns dependency planning, ASSURE-04C owns deterministic staging and
-assembly, and ASSURE-04D owns review locks and promotion. Public scientific
-communication remains under `usersum/` and continues to contain zero assurance
-reports until an approved report is promoted.
+## Plan
+
+From the repository root:
+
+```bash
+cargo run --quiet -p openwepp-assurance -- plan --all
+cargo run --quiet -p openwepp-assurance -- plan \
+  --report linear-groundwater-reservoir-recurrence
+cargo run --quiet -p openwepp-assurance -- plan --all --format json
+```
+
+Planning is deterministic, offline, and read-only. It emits the same typed
+graph as human-readable text or JSON. Each node is `current` when its declared
+identity and prerequisites are current, `stale` when observed bytes differ from
+the declared SHA-256, `blocked` when required local content is unavailable, or
+`selected` when a changed prerequisite transitively affects it. These words
+describe build impact, not scientific merit or fitness for an application.
+
+The planner orders dependencies before consumers, rejects cycles and missing
+or unused logical records, ignores file modification time, and plans a named
+report without traversing unrelated reports. It does not write files, update
+hashes, render prose, decide whether scientific rereview is necessary, or
+approve a report.
+
+ASSURE-04C owns deterministic staging and manuscript assembly. ASSURE-04D owns
+review locks, promotion, public catalogs, snapshots, and release transfer.
+Public scientific communication remains under `usersum/` and continues to
+contain zero assurance reports until an approved report is promoted. Vendoring
+remains deferred until the openWEPP beta release campaign.

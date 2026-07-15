@@ -1,0 +1,236 @@
+{
+  "acquisition_mode": "fresh",
+  "acquisition_provenance": {
+    "cargo_crap_version": "cargo-crap 0.2.2",
+    "cargo_version": "cargo 1.92.0 (344c4567c 2025-10-21)\nrelease: 1.92.0\ncommit-hash: 344c4567c634a25837e3c3476aac08af84cf9203\ncommit-date: 2025-10-21\nhost: x86_64-unknown-linux-gnu\nlibgit2: 1.9.1 (sys:0.20.2 vendored)\nlibcurl: 8.15.0-DEV (sys:0.4.83+curl-8.15.0 vendored ssl:OpenSSL/3.5.4)\nssl: OpenSSL 3.5.4 30 Sep 2025\nos: Ubuntu 24.4.0 (noble) [64-bit]",
+    "llvm_cov_version": "cargo-llvm-cov 0.8.7",
+    "measurement_input_count": 432,
+    "rustc_version": "rustc 1.92.0 (ded5c06cf 2025-12-08)\nbinary: rustc\ncommit-hash: ded5c06cf21d2b93bffd5d884aa6e96934ee4234\ncommit-date: 2025-12-08\nhost: x86_64-unknown-linux-gnu\nrelease: 1.92.0\nLLVM version: 21.1.3",
+    "source_count": 225,
+    "source_manifest": "docs/work-packages/20260715-assure04b-v2-dependency-planner-001/artifacts/validation-evidence/adjudicated-crap/source-manifest-before.json"
+  },
+  "actionable": [
+    {
+      "coverage": 75.51020408163265,
+      "crap": 37.70737532830709,
+      "crate": "openwepp-assurance",
+      "cyclomatic": 27.0,
+      "file": "crates/openwepp-assurance/src/cli.rs",
+      "function": "execute",
+      "line": 61
+    }
+  ],
+  "actionable_count": 1,
+  "adjudicated": [
+    {
+      "adjudication_id": "CQR-LOW-L08",
+      "coverage": 0.0,
+      "crap": 56.0,
+      "crate": "openwepp-meteorology",
+      "cyclomatic": 7.0,
+      "file": "crates/openwepp-meteorology/src/error.rs",
+      "function": "MeteorologyError::fmt",
+      "line": 35
+    },
+    {
+      "adjudication_id": "CQR-LOW-L11",
+      "coverage": 0.0,
+      "crap": 90.0,
+      "crate": "openwepp-sim-contract",
+      "cyclomatic": 9.0,
+      "file": "crates/openwepp-sim-contract/src/symbols.rs",
+      "function": "SymbolAliasRegistryError::fmt",
+      "line": 67
+    }
+  ],
+  "adjudicated_count": 2,
+  "adjudication_registry_sha256": "10b19679e382ebacd6b2d20ee02144c461e01b1ac958731d07dd6585acb7d67f",
+  "closure_eligible": true,
+  "crap_json_sha256": "e55b563823915742b1df42137eba39747568bd67bd7c7ade6e906714cd1c17fe",
+  "debt_status": "FAIL",
+  "deduplication_key": [
+    "file",
+    "function",
+    "line",
+    "cyclomatic",
+    "coverage",
+    "crap"
+  ],
+  "expected_production_crates": [
+    "openwepp-assurance",
+    "openwepp-climate-runtime-adapter",
+    "openwepp-comparator-metadata",
+    "openwepp-hillslope-orchestrator",
+    "openwepp-hillslope-output",
+    "openwepp-input-contract",
+    "openwepp-kernel-contract",
+    "openwepp-landuse-migrate",
+    "openwepp-legacy-bridge",
+    "openwepp-management-schema",
+    "openwepp-meteorology",
+    "openwepp-runner",
+    "openwepp-sim-contract",
+    "openwepp-summary-accumulator",
+    "openwepp-topology",
+    "openwepp-unit-boundary",
+    "openwepp-watershed-orchestrator",
+    "openwepp-watershed-output"
+  ],
+  "invalid_adjudications": [],
+  "lcov_sha256": "05093316aedf4e63fb979fb63ac44243ba1a5072faf41d70a4af468c6b3bd956",
+  "production_entry_count": 8686,
+  "production_filter": {
+    "excluded_component": "/src/tests/",
+    "path_prefix": "crates/",
+    "required_component": "/src/",
+    "threshold_relation": ">"
+  },
+  "raw_over_threshold": [
+    {
+      "coverage": 75.51020408163265,
+      "crap": 37.70737532830709,
+      "crate": "openwepp-assurance",
+      "cyclomatic": 27.0,
+      "file": "crates/openwepp-assurance/src/cli.rs",
+      "function": "execute",
+      "line": 61
+    },
+    {
+      "coverage": 0.0,
+      "crap": 56.0,
+      "crate": "openwepp-meteorology",
+      "cyclomatic": 7.0,
+      "file": "crates/openwepp-meteorology/src/error.rs",
+      "function": "MeteorologyError::fmt",
+      "line": 35
+    },
+    {
+      "coverage": 0.0,
+      "crap": 90.0,
+      "crate": "openwepp-sim-contract",
+      "cyclomatic": 9.0,
+      "file": "crates/openwepp-sim-contract/src/symbols.rs",
+      "function": "SymbolAliasRegistryError::fmt",
+      "line": 67
+    }
+  ],
+  "raw_over_threshold_count": 3,
+  "reported_production_crates": [
+    "openwepp-assurance",
+    "openwepp-climate-runtime-adapter",
+    "openwepp-comparator-metadata",
+    "openwepp-hillslope-orchestrator",
+    "openwepp-hillslope-output",
+    "openwepp-input-contract",
+    "openwepp-kernel-contract",
+    "openwepp-landuse-migrate",
+    "openwepp-legacy-bridge",
+    "openwepp-management-schema",
+    "openwepp-meteorology",
+    "openwepp-runner",
+    "openwepp-sim-contract",
+    "openwepp-summary-accumulator",
+    "openwepp-topology",
+    "openwepp-unit-boundary",
+    "openwepp-watershed-orchestrator",
+    "openwepp-watershed-output"
+  ],
+  "repository": {
+    "base_commit": "22fb7dfbafdb9e82a42afe0a5356b4c923a45232",
+    "base_ref": "22fb7dfbafdb9e82a42afe0a5356b4c923a45232",
+    "comparison_head": "WORKTREE",
+    "dirty_paths": [
+      "M Cargo.lock",
+      " M Cargo.toml",
+      " M assurance/v2/README.md",
+      " M crates/openwepp-assurance/Cargo.toml",
+      " M crates/openwepp-assurance/src/cli.rs",
+      " M crates/openwepp-assurance/src/engine.rs",
+      " M crates/openwepp-assurance/src/lib.rs",
+      " M crates/openwepp-assurance/src/v2.rs",
+      " M docs/ROADMAP.md",
+      " M docs/planning/scientific-assurance-v2-implementation-roadmap.md",
+      " M docs/work-packages/README.md",
+      " M tests/integration/assurance_v2_source_contract.rs",
+      "?? crates/openwepp-assurance/src/v2/confined.rs",
+      "?? crates/openwepp-assurance/src/v2/planner.rs",
+      "?? docs/work-packages/20260715-assure04b-v2-dependency-planner-001/artifacts/README.md",
+      "?? docs/work-packages/20260715-assure04b-v2-dependency-planner-001/artifacts/focused-gate-results.md",
+      "?? docs/work-packages/20260715-assure04b-v2-dependency-planner-001/artifacts/heavy-gate-remediation.md",
+      "?? docs/work-packages/20260715-assure04b-v2-dependency-planner-001/artifacts/heavy-gate-runner.md",
+      "?? docs/work-packages/20260715-assure04b-v2-dependency-planner-001/artifacts/implementation-evidence.md",
+      "?? docs/work-packages/20260715-assure04b-v2-dependency-planner-001/artifacts/line-count-governance.md",
+      "?? docs/work-packages/20260715-assure04b-v2-dependency-planner-001/artifacts/planner-contract.md",
+      "?? docs/work-packages/20260715-assure04b-v2-dependency-planner-001/artifacts/protected-surface-freeze.md",
+      "?? docs/work-packages/20260715-assure04b-v2-dependency-planner-001/artifacts/protected-surface-proof.md",
+      "?? docs/work-packages/20260715-assure04b-v2-dependency-planner-001/artifacts/remediation-verification-a.md",
+      "?? docs/work-packages/20260715-assure04b-v2-dependency-planner-001/artifacts/remediation-verification-b.md",
+      "?? docs/work-packages/20260715-assure04b-v2-dependency-planner-001/artifacts/required-reading-map.md",
+      "?? docs/work-packages/20260715-assure04b-v2-dependency-planner-001/artifacts/review-agent-a.md",
+      "?? docs/work-packages/20260715-assure04b-v2-dependency-planner-001/artifacts/review-agent-b.md",
+      "?? docs/work-packages/20260715-assure04b-v2-dependency-planner-001/artifacts/review-disposition.md",
+      "?? docs/work-packages/20260715-assure04b-v2-dependency-planner-001/artifacts/validation-evidence/adjudicated-crap/adjudication-registry.json",
+      "?? docs/work-packages/20260715-assure04b-v2-dependency-planner-001/artifacts/validation-evidence/adjudicated-crap/cargo-crap-version.txt",
+      "?? docs/work-packages/20260715-assure04b-v2-dependency-planner-001/artifacts/validation-evidence/adjudicated-crap/cargo-crap.log",
+      "?? docs/work-packages/20260715-assure04b-v2-dependency-planner-001/artifacts/validation-evidence/adjudicated-crap/cargo-llvm-cov-version.txt",
+      "?? docs/work-packages/20260715-assure04b-v2-dependency-planner-001/artifacts/validation-evidence/adjudicated-crap/cargo-version.txt",
+      "?? docs/work-packages/20260715-assure04b-v2-dependency-planner-001/artifacts/validation-evidence/adjudicated-crap/llvm-cov-clean.log",
+      "?? docs/work-packages/20260715-assure04b-v2-dependency-planner-001/artifacts/validation-evidence/adjudicated-crap/llvm-cov.log",
+      "?? docs/work-packages/20260715-assure04b-v2-dependency-planner-001/artifacts/validation-evidence/adjudicated-crap/rustc-version.txt",
+      "?? docs/work-packages/20260715-assure04b-v2-dependency-planner-001/artifacts/validation-evidence/adjudicated-crap/source-manifest-after.json",
+      "?? docs/work-packages/20260715-assure04b-v2-dependency-planner-001/artifacts/validation-evidence/adjudicated-crap/source-manifest-before.json",
+      "?? docs/work-packages/20260715-assure04b-v2-dependency-planner-001/artifacts/validation-evidence/adjudicated-crap/workspace-crap.json",
+      "?? docs/work-packages/20260715-assure04b-v2-dependency-planner-001/artifacts/validation-evidence/adjudicated-crap/workspace.lcov",
+      "?? docs/work-packages/20260715-assure04b-v2-dependency-planner-001/package.md",
+      "?? docs/work-packages/20260715-assure04b-v2-dependency-planner-001/prompts/README.md",
+      "?? docs/work-packages/20260715-assure04b-v2-dependency-planner-001/prompts/active/20260715-codex-execute-assure04b_prompt.md",
+      "?? docs/work-packages/20260715-assure04b-v2-dependency-planner-001/prompts/active/README.md",
+      "?? docs/work-packages/20260715-assure04b-v2-dependency-planner-001/prompts/archived/README.md",
+      "?? tests/integration/assurance_v2_planner_contract.rs"
+    ],
+    "head_commit": "22fb7dfbafdb9e82a42afe0a5356b4c923a45232",
+    "head_ref": null,
+    "worktree_dirty": true
+  },
+  "schema_version": "openwepp-adjudicated-crap-report-v1",
+  "source_manifest_sha256": "ff4fb8cfb375dd478aa7158d3408e90d574e0aeb26ec93d2e63071660fe18ecb",
+  "status": "FAIL",
+  "threshold": 30.0,
+  "touched_actionable_count": 1,
+  "touched_production_files": [
+    "crates/openwepp-assurance/src/cli.rs",
+    "crates/openwepp-assurance/src/engine.rs",
+    "crates/openwepp-assurance/src/lib.rs",
+    "crates/openwepp-assurance/src/v2.rs",
+    "crates/openwepp-assurance/src/v2/confined.rs",
+    "crates/openwepp-assurance/src/v2/planner.rs"
+  ],
+  "touched_production_records": [
+    {
+      "path": "crates/openwepp-assurance/src/cli.rs",
+      "status": "M"
+    },
+    {
+      "path": "crates/openwepp-assurance/src/engine.rs",
+      "status": "M"
+    },
+    {
+      "path": "crates/openwepp-assurance/src/lib.rs",
+      "status": "M"
+    },
+    {
+      "path": "crates/openwepp-assurance/src/v2.rs",
+      "status": "M"
+    },
+    {
+      "path": "crates/openwepp-assurance/src/v2/confined.rs",
+      "status": "U"
+    },
+    {
+      "path": "crates/openwepp-assurance/src/v2/planner.rs",
+      "status": "U"
+    }
+  ],
+  "touched_scope_requested": true,
+  "untouched_actionable_count": 0
+}

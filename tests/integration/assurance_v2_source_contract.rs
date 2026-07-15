@@ -118,21 +118,21 @@ fn executable_schemas_reject_practical_identity_and_lifecycle_defects() {
 }
 
 #[test]
-fn report_specific_nonvalidation_commands_remain_future_package_work() {
-    for command in ["plan", "build", "check"] {
+fn report_specific_assembly_commands_remain_future_package_work() {
+    for command in ["build", "check"] {
         let error =
             openwepp_assurance::cli::run(["openwepp-assurance", command, "--report", REPORT_ID])
                 .expect_err("report-specific command must fail closed");
         assert!(matches!(error, AssuranceError::Usage(_)));
-        assert!(
-            error.to_string().contains("ASSURE-04B") || error.to_string().contains("ASSURE-04C"),
-            "missing future owner in {error}"
-        );
+        assert!(error.to_string().contains("ASSURE-04C"));
     }
+    let named = openwepp_assurance::cli::run(["openwepp-assurance", "plan", "--report", REPORT_ID])
+        .expect("ASSURE-04B enables named planning");
+    assert!(named.contains(&format!("id={REPORT_ID}")));
     let plan = openwepp_assurance::cli::run(["openwepp-assurance", "plan", "--all"])
-        .expect("zero-public all plan remains available");
+        .expect("v2 all plan retains zero-public boundary");
     assert!(plan.contains("publication_state: v1_retired_zero_reports"));
-    assert!(plan.contains("reports: 0"));
+    assert!(plan.contains("public_reports: 0"));
 }
 
 #[test]

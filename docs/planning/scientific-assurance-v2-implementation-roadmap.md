@@ -1,7 +1,7 @@
 # Scientific Assurance V2 Implementation Roadmap
 
-Status: active prospective decomposition — ASSURE-04B is next and awaits
-explicit authorization
+Status: prospective decomposition — ASSURE-04C is next and awaits explicit
+authorization
 
 ## Sequencing Principle
 
@@ -58,15 +58,20 @@ CRAP closure; workspace gates; dual review and verification.
 Rollback: remove v2 source admission while retaining the zero-report v1-retired
 state.
 
-## ASSURE-04B — Dependency Planner And One/All Builds
+## ASSURE-04B — Completed Dependency Planner And One/All Plans
 
-Outcome: implement deterministic transitive planning for one report and all
+Foundation status: completed by
+`20260715-assure04b-v2-dependency-planner-001`.
+
+Outcome: implemented deterministic transitive planning for one report and all
 reports. The planner explains current, stale, blocked, and selected targets from
 content identities rather than modification time.
 
-Primary consumer: build/check commands and a report whose changed method,
-result, figure, review, narrative, contract, or software dependency causes the
-expected plan.
+Primary consumer: the real `openwepp-assurance plan` command in human and JSON
+forms, plus a report whose changed method, result, figure, review, narrative,
+contract, or software dependency causes the expected plan. The typed planner
+API is the required input to the report-specific build/check assembly that
+ASSURE-04C implements; 04B does not render or check generated manuscripts.
 
 Required gates: cycle detection; missing and unused edge failures; transitive
 impact; one/all equivalence; no unrelated output changes; stable ordering;
