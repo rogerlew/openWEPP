@@ -102,6 +102,13 @@
 
 State as of `2026-07-15 UTC`:
 
+- `20260714-roadmap-prospective-cleanup-001/` - EXECUTED-COMPLETE
+  (2026-07-15): rewrote `docs/ROADMAP.md` as a prospective-only queue, reducing
+  it from 1,124 lines / 125,845 bytes to 166 lines / 12,664 bytes. The retained
+  queue preserves `ASSURE-02..08`, recurring CQR, and the promoted canopy-
+  phenology obligation; completed program ledgers route to canonical history.
+  Four traceability findings were accepted and fixed, and dual verification
+  passed. The next priority is the documentation-only `ASSURE-02` gate.
 - `20260714-assurance-dossier-lifecycle-foundation-001/` - EXECUTED-COMPLETE
   (2026-07-15): the dossier lifecycle/ownership/build contract, bounded SNOTEL
   vertical slice, deterministic compiler, release drift/snapshot boundary, and
@@ -116,10 +123,13 @@ State as of `2026-07-15 UTC`:
   [scientific-assurance roadmap](../ROADMAP.md#scientific-assurance-queue).
   Vendoring remains deferred to a dedicated mandatory gate immediately before
   the openWEPP beta release in WEPPcloud.
-- `20260712-dc-cqr-preint-hb06-qofe-identity-001/` - ACTIVE: HB-06 review
-  found the accumulator admits unequal public Q/QOFE under per-OFE policy.
-  Current canonical authority requires equality; anti-clone genuineness remains
-  a separate lineage gate.
+- `20260712-dc-cqr-preint-hb06-qofe-identity-001/` - EXECUTED-COMPLETE
+  (2026-07-12): the bounded DC enforces canonical public `QOFE == Q` under
+  aggregate and per-OFE policy markers. The dedicated
+  `20260712-cqr-preint-hb06-runner-consumer-adoption-001/` successor then moved
+  the production WAT projection through the typed accumulator guard, proved the
+  executable Parquet consumer, and closed HB-06 as reviewed `MODULE-PASS` in
+  the terminal High-B tranche.
 - `20260712-dc-cqr-preint-hb05-nonfinite-datver-001/` - EXECUTED-COMPLETE
   (2026-07-12): non-finite structure versions now fail as existing `STR-E-003`
   before discrimination without a finite upper bound. Parser coverage is

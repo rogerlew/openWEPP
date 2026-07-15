@@ -1,9 +1,13 @@
 # Modeled Hourly Flow Through the Erosion → HBP → Routing Stack (Hydrograph-Resolved Sediment)
 
 ## Status
-- `state`: **hillslope side EXECUTED (E.2–E.4 merged 2026-07-04/05)**;
-  what remains in this entry is the CHANNEL-side consumption — see
-  "Remaining scope" below. Originally: backlog → **ADR-0036 RATIFIED**:
+- `state`: **staged; core path implemented, one additive interchange gap
+  remains**. Hillslope hourly erosion (E.2–E.4), paired HBP hourly water and
+  total-sediment surfaces, and W11 channel-hourly routing are implemented and
+  contract-authorized. Current remaining scope is only
+  `SC-SED-001#GAP-SED-008`: a consumer-pulled per-class-hourly interchange
+  channel. See *Current remaining scope* below. Originally: backlog →
+  **ADR-0036 RATIFIED**:
   [ADR-0036](../decisions/0036-hydrograph-resolved-sediment-transport-and-routing.md)
   (Accepted 2026-07-04 after a two-round Codex design review) resolves the
   open decisions below: per-hour quasi-steady form on hydraulically-active
@@ -12,12 +16,19 @@
   — hourly water alone would force an implicit sediment-timing rule in the
   channel — designed once with the per-class + peak-units items; conditional
   `INV-ROUTE-005`; integral closures `Σ V_h = runvol` / `Σ S_h = event mass`;
-  Investigation-tier comparator. Next: the three contract amendments
-  (SC-SED-001, SC-INFILE-HBP-001 + hbp spec, SC-ROUTE-001) before code.
-- `maturity`: concept / architecture direction (operator-directed 2026-07-04)
-- `default_path`: not eligible until the ADR-0036 contract amendments land (contract sequencing before code)
-- `evidence_mode`: Static (read SC-SED-001, SC-ROUTE-001, the HBP format, and the
-  direct-runtime hourly surfaces; no execution)
+  Investigation-tier comparator.
+- `maturity`: staged residual concept (operator-directed 2026-07-04; reconciled
+  to current contracts and W11 completion 2026-07-15)
+- `current authority`: `SC-SED-001#INV-SED-013..014` and
+  `SC-ROUTE-001#INV-ROUTE-015..020`; `GAP-SED-008` owns the remaining
+  per-class-hourly interchange limitation.
+- `WB16 posture`: the trace-event `peakro` difference is a bounded water-side
+  Investigation flag in closed `GAP-SED-009`; it is not an open erosion defect
+  or an unfinished part of this program.
+
+The design narrative below is retained as historical rationale and uses
+then-current tense. It is not the current execution plan; the status above and
+the final *Current remaining scope* section control backlog promotion.
 
 ## The core awkwardness — stated structurally
 
@@ -169,27 +180,22 @@ Concretely:
 - [ADR-0011](../decisions/0011-architecture-first-top-down-science-contracts.md) (contract-first),
   [ADR-0017](../decisions/0017-re-pin-operational-distrust-comparator-is-flag-not-target.md) (comparator-as-flag).
 
-## Remaining scope (updated 2026-07-05 — the channel-side remainder)
+## Current remaining scope (updated 2026-07-15)
 
-The hillslope half of this entry is DONE: per-hour Wave-1 (E.2), the
-paired `V_h`/`S_h` HBP surfaces, hour-resolved inlet superposition, the
-multi-OFE chain on the hourly substrate (E.3), and per-quantum enriched
-compositions (E.4). What remains, pulled together as ONE future unit
-(designed once, per the original "designed once with the per-class +
-peak-units items" note):
+The hydrograph-resolved hillslope, HBP hourly water/total-sediment interchange,
+and channel-hourly routing path are implemented. W11A ratified channel-hourly
+authority and W11B closed its production consumer and conservation path. They
+are execution history, not backlog scope.
 
-1. **Channel-hourly routing:** replace the `SC-ROUTE-001#INV-ROUTE-005`
-   (d) labeled single-rate reduction with true hour-resolved channel
-   sediment routing. The per-hour inlet sediment array
-   (`hourly_sediment_inlet_kg`) is ALREADY carried on the inlet
-   partition — the consumer is the missing half.
-2. **Per-class-hourly interchange channel** (the E.4 `GAP-SED-008`
-   remainder): the additive HBP extension carrying hour-resolved class
-   composition. Explicitly CONSUMER-PULLED — build it with (1), never
-   before: the solver already has per-quantum enriched compositions,
-   so the producer side is a serialization once a channel consumer
-   exists.
+Only the E.4 `SC-SED-001#GAP-SED-008` remainder stays open: an additive HBP
+surface carrying hour-resolved particle-class composition. The solver already
+has per-quantum enriched composition; current interchange serializes hourly
+total sediment mass and event-level class mass. A future consumer must not
+infer enriched hourly class timing from the event-level blend.
 
-Promotion trigger: watershed channel-routing fidelity work (the
-triangular-reconstruction retirement) or a downstream consumer needing
-sub-daily class composition.
+Promotion trigger: a named downstream consumer requires sub-daily particle-
+class composition. Promotion is contract-first and must define the additive
+interchange, real consumer, per-class/hour closure, versioning, and protected
+current total-mass behavior. WB16 peak fidelity is not bundled into that work:
+`GAP-SED-009` records the trace-event difference as a bounded, closed
+Investigation flag.
