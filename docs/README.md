@@ -17,6 +17,7 @@
 | [decisions/README.md](decisions/README.md) | All | Architecture decision records (ADRs) |
 | [governance/README.md](governance/README.md) | Maintainers | Governance policies, transition plans, lifecycle controls |
 | [governance/openwepp-verification-validation-strategy.md](governance/openwepp-verification-validation-strategy.md) | Scientific users and maintainers | Active V&V philosophy: hard software verification, nonterminal empirical corroboration, decision-owner application fitness, and public evidence dossiers |
+| [governance/scientific-assurance-dossier-lifecycle.md](governance/scientific-assurance-dossier-lifecycle.md) | Maintainers and scientific reviewers | Dossier ownership, lifecycle, deterministic build, review-lock, release-snapshot, and wepppy handoff contract |
 | [governance/openwepp-release-procedure-draft.md](governance/openwepp-release-procedure-draft.md) | Maintainers | Draft end-to-end release runbook for candidate assembly, gate execution, sidecar validation, and stability evidence |
 | [numerics/README.md](numerics/README.md) | All | Floating-point, RNG, summation policy |
 | [backlog/README.md](backlog/README.md) | Maintainers | Concept-stage ideas and promotion criteria before work-package activation |

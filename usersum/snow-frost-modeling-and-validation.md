@@ -1,6 +1,6 @@
-# Snow and Frost in openWEPP — Modeling and Validation
+# Snow and Frost in openWEPP
 
-*Version 0.3 — 2026-07-09*
+*Version 0.4 — 2026-07-14*
 
 *Audience: hydrologists and scientific reviewers evaluating openWEPP's snowpack
 and soil-frost behavior, and how it differs from legacy WEPP.*
@@ -16,6 +16,12 @@ tested and deliberately not adopted, and what the observations can and cannot
 support. Several sections report modernizations that were built, evaluated,
 and rejected; these are outcomes of the method, and knowing what failed is as
 useful to a reviewer as knowing what shipped.
+
+This narrative owns the scientific rationale: why the model has its current
+form. The [SNOTEL evaluation method](assurance/methods/snow-snotel-evaluation-v1.md)
+owns how the five-climate snow comparison was performed, and the
+[SNOTEL assurance dossier](assurance/dossiers/snow-snotel-swe-depth-density.md)
+owns what that retained evidence currently supports and what is missing.
 
 Two constraints frame everything below. Mass and energy conservation is
 enforced unconditionally — composite snow-state closure residuals run at
@@ -52,8 +58,10 @@ seasonal timing, snow density and the shape of the densification trajectory,
 the depth–SWE relationship, the ordering of behavior across climate regimes,
 bias-sign consistency, and conservation. This distinction is the backbone of
 the rubric in Section 4, and it recurs in the interpretation guidance of
-Section 5: when reading openWEPP output, trust the timing and the density;
-treat the magnitude as approximate.
+Section 5. This classification says which discrepancies are more attributable
+to the modeled process; it does not itself establish that timing or density is
+accurate. Consult the linked dossier before transferring the evidence to an
+application.
 
 ---
 
@@ -111,11 +119,9 @@ formulation exists in the parameter set but is evaluated only as a projection
 and is not active.
 
 Densification is the one winter process where openWEPP and the pinned legacy
-build turn out to be effectively the same as-built model: mean signed density
-residuals differ by only 0.4–4.4 kg m⁻³ across the five snow-pillow sites.
-The practical difference lies elsewhere — legacy WEPP carries a cold-season
-bulk-density bias of −55.6 kg m⁻³ (median) against the pillow records, which
-openWEPP's configuration removes (Section 4.3).
+build were found to behave similarly in the retained five-site diagnostic.
+The current evidence characterization, identities, and limitations belong to
+the linked assurance dossier rather than this model-rationale narrative.
 
 A snow-climate-class density model after Sturm et al. (1995, 2010) — the
 six-class classifier with class-specific density parameters for the five
@@ -135,10 +141,11 @@ hourly precipitation phase with a clean-room implementation of the Harder and
 Pomeroy (2013) psychrometric method, solving for the falling hydrometeor's
 ice-bulb temperature so that humidity influences phase near 0 °C, where a dry
 atmosphere favors snow at air temperatures a fixed threshold would call rain.
-The implementation is validated against the Jennings et al. (2018) Northern
-Hemisphere rain–snow phase dataset and is the default phase model. On the
-five-site rubric it is the strongest single contributor to openWEPP's snow
-result (Section 4.3).
+The implementation was checked against the Jennings et al. (2018) Northern
+Hemisphere rain–snow phase dataset and is the default phase model. The retained
+five-site diagnostic favored it under a retrospective rubric; the assurance
+dossier explains why that does not yet support a favorable empirical
+characterization.
 
 ### 2.5 Multilayer snowpack
 
@@ -157,9 +164,8 @@ Legacy WEPP uses the empirical snow-settlement relation of WEPP Chapter 3,
 which carries a documented, unresolved discrepancy between the published
 settling equation and the code; its snow-redistribution (drifting) equations
 are documented but inactive in the production lineage. openWEPP reproduces
-the same as-built densification behavior while replacing the
-meltwater-release rule and the phase threshold with the observation-validated
-formulations above.
+similar as-built densification behavior while replacing the meltwater-release
+rule and the phase threshold with the evaluated formulations above.
 
 ---
 
@@ -236,12 +242,18 @@ one with proper literature authority is a deferred item (Section 5).
 
 ### 4.1 Observation networks
 
-Snow is evaluated at five snow-pillow (SNOTEL) sites reporting paired SWE and
+Snow was evaluated at five snow-pillow (SNOTEL) sites reporting paired SWE and
 physical snow depth (most also soil temperature), chosen to span maritime to
 continental snow climates: Paradise, WA (Cascades, maritime); Snowbird, UT
 (Wasatch, intermountain); Central Sierra Snow Lab, CA (Sierra Nevada,
 maritime); Mica Creek, ID (Northern Rockies); and Niwot, CO (Front Range,
 continental).
+
+The [evaluation method](assurance/methods/snow-snotel-evaluation-v1.md) records
+the dataset roles, quantities, retrospective criteria, uncertainty, and
+reproduction posture. The
+[assurance dossier](assurance/dossiers/snow-snotel-swe-depth-density.md) is the
+canonical home for the current snow evidence characterization.
 
 Frost is evaluated at five sites using three measurement types. Frost tubes —
 liquid-filled tubes read directly for the frozen segment, serving as the
@@ -251,71 +263,29 @@ soil-temperature 0 °C isotherm at the SCAN Mandan, ND site provides a timing
 reference and an upper bound on depth. Reynolds Creek, ID (shrub) contributes
 a modeled soil-temperature record.
 
-### 4.2 The rubric
+### 4.2 Evaluation design
 
-Snow and frost fidelity are scored on a multi-site rubric matrix rather than
-a single aggregate number. Every cell is classed forcing-robust (R — carries
-a pass/fail verdict) or forcing-limited (L — reported, never a standalone
-failure), per Section 1:
+The retained snow study used a multi-site matrix rather than one aggregate
+score. It separated forcing-robust signatures from forcing-limited absolute
+magnitude, compared historical variants on the same cells, treated legacy
+WEPP and PySnobal as diagnostic flags rather than targets, and required phase
+partition conservation for activation.
 
-| Time scale | Signature | Class |
-|---|---|---|
-| Long-term | peak SWE / peak depth bias | L |
-| Long-term | cold-season bulk-density bias | R |
-| Long-term | snow-cover duration; interannual variability | R |
-| Seasonal | accumulation onset date; build-up rate | R |
-| Seasonal | peak magnitude / date of peak | L (magnitude) / R (date) |
-| Seasonal | densification trajectory ρ(t) | R |
-| Seasonal | depth–SWE seasonal slope | R |
-| Seasonal | melt-out date; ablation rate | R |
-| Event | new-snow density (per storm) | R |
-| Event | rain-on-snow response | R |
-| Cross-cutting | regime ordering across the five climates | R |
-| Cross-cutting | bias-sign consistency | R |
-| Cross-cutting | mass/energy conservation | R (hard) |
-
-Time-series cells are scored with the Kling–Gupta efficiency (Gupta et al.,
-2009); magnitude cells by median signed bias and interquartile range; timing
-cells by date offset. Pass levels: KGE ≥ 0.6 (marginal 0.3–0.6), timing
-within ±14 days. Additional tolerances: frost-depth magnitude at frost tubes
-within the greater of 0.10 m or 25 % of observed seasonal maximum;
-frost-onset/thaw timing and frozen duration within ±14 days; snow-pillow SWE
-within the greater of 0.05 m water-equivalent or 25 %, density within the
-greater of 60 kg m⁻³ or 25 %. Attributing a frost residual to the frost model
-requires the snow-insulation control first: paired modeled–observed snow
-depth within the greater of 0.10 m or 30 %, since a site failing that control
-cannot separate frost error from snow error. These tolerances are
-provisional, pending external hydrology review.
-
-Legacy WEPP and the SNOBAL reference model are scored on the exact same
-rubric — as diagnostic profiles, never as targets. The output is a per-model,
-per-site, per-cell heatmap, so a model is judged on where it is robustly
-right or wrong rather than on one number.
-
-A new formulation becomes the production default only if it is strictly
-better than the current default on the observed surfaces eligible for
-comparison, shows no regression across the full model surface, and conserves
-mass and energy. Driving paired failures to zero is deliberately not
-required — a zero-failure demand would tune the model to forcing-limited
-targets the inputs cannot resolve.
+Those choices were retrospective. They were useful for selecting among model
+variants, but their thresholds, partitions, and incomplete portable provenance
+cannot be recast as a prospectively tested public accuracy claim. The method
+page preserves the design; the dossier exposes the resulting evidence gap.
 
 ### 4.3 Results
 
-Snow, five sites, forcing-robust cells (each configuration is scored over the
-cells scoreable for it, hence the differing totals):
-
-| Measure | Legacy WEPP | openWEPP default |
-|---|---|---|
-| Failing forcing-robust cells | 16 / 176 | 15 / 179 |
-| Cold-season density bias (median) | −55.6 kg m⁻³ | ≈ 0 |
-| As-built densification agreement | — | within 0.4–4.4 kg m⁻³ of legacy |
-| Coupled water-balance snow-control failures | — | 1147 → 498 across the adopted changes |
-
-The prior openWEPP configuration failed 17 of 172 cells; the psychrometric
-phase partition is the decisive contributor to the current 15/179. The two
-headline movements are the removal of the legacy cold-season density bias and
-the halving-plus of coupled water-balance failures (1147 → 761 from liquid
-retention alone, → 498 with the full adopted set).
+For snow, the retained diagnostic informed activation of the current phase
+default and preserved conservation and selector-trace evidence. The current
+public characterization is nevertheless `INSUFFICIENT_EVIDENCE`: raw
+acquisition replay, a portable locked execution path, prospective held-out
+criteria, uncertainty propagation, and external scientific review are not all
+present. The [dossier](assurance/dossiers/snow-snotel-swe-depth-density.md)
+shows that conclusion and the content-identified audit record without turning a
+historical ordinal score into an accuracy grade.
 
 Frost, against the observation network:
 
@@ -331,25 +301,28 @@ in Section 5 — notably, not to the frost solver.
 
 ---
 
-## 5. Interpreting model output: validated, bounded, and open
+## 5. Interpreting Winter Output And Evidence Limits
 
 For a user reading openWEPP winter output, the practical guidance follows
 directly from the forcing analysis of Section 1 and the results above.
 
-**Rely on timing, density, and trajectory shape; treat magnitude as
-approximate.** Melt-out dates, accumulation onset, densification
-trajectories, and depth–SWE slopes are validated forcing-robust quantities.
-Peak SWE or depth at a specific point may differ from a gauge by tens of
-percent while the model is behaving correctly, because the forcing cannot
-localize magnitude to a point.
+**Timing, density, and trajectory shape are more attributable than absolute
+magnitude, but they are not application guarantees.** Melt-out dates,
+accumulation onset, densification trajectories, and depth–SWE slopes are
+forcing-robust quantities in the retained method. Peak SWE or depth at a
+specific point may differ substantially because the forcing cannot localize
+magnitude to a point. The dossier's `INSUFFICIENT_EVIDENCE` characterization
+means a user must not translate the relative attribution advantage into an
+unnamed site's accuracy claim.
 
 **Snow-affected downstream outputs changed when the new defaults were
-adopted.** Runoff, erosion, and watershed outputs differ from the previous
-default because the snow inputs feeding them improved; total water remains
-conserved. Absolute values are not directly comparable across the default
-change.
+adopted.** Runoff, erosion, and watershed outputs can differ because the snow
+state and timing supplied to downstream processes changed. The retained
+activation evidence establishes phase-partition conservation, not improved
+downstream accuracy. Absolute values are not directly comparable across the
+default change.
 
-**The frost evaluation is open but attributed and bounded.** The residual
+**The frost residuals are attributed but remain incomplete evidence.** The residual
 frost misses were traced, and the frost solver was not found to be in error.
 The dominant drivers were input parameterization — the static residue depth
 of Section 3.4, since corrected — and forcing-limited snow magnitude, where
@@ -365,8 +338,11 @@ and were evaluated; none is a default, because the evidence did not support
 adoption. The per-layer meltwater temperature is available as an opt-in and
 does not alter snow behavior.
 
-**Tolerances are provisional** pending review by an external hydrologist; the
-rubric verdicts should be read with that status in mind.
+The snow method was retrospective, and external hydrologist review remains
+outstanding. Use the
+[application-context worksheet](assurance/application-context-worksheet.md) to
+compare the evidence envelope with a named use; the application decision
+belongs to the responsible user or institution.
 
 The posture throughout is the one stated at the top: hold the model to the
 signatures the observations can actually resolve, report the rest, and name
@@ -427,3 +403,4 @@ Water and Climate Center.
 | 0.1 | 2026-06-29 | Initial document, authored at the close of the frost validation arc. |
 | 0.2 | 2026-07-01 | Rewritten as a scientific narrative: framing problem first, results consolidated, internal vocabulary translated. Same claims, numbers, and references. |
 | 0.3 | 2026-07-09 | Adopted the version header and revision log convention; no content changes. |
+| 0.4 | 2026-07-14 | Reframed as the model-rationale narrative, moved the five-site method and evidence characterization to linked assurance pages, and removed unqualified validation and duplicated snow scores. |

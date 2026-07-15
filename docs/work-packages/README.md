@@ -102,12 +102,13 @@
 
 State as of `2026-07-14 UTC`:
 
-- `20260714-assurance-dossier-lifecycle-foundation-001/` - QUEUED: define the
-  dossier lifecycle/ownership/build contract and prove it with one bounded
-  SNOTEL snow-evidence vertical slice, deterministic local builder, release
-  drift/snapshot boundary, and openWEPP-owned wepppy usersum handoff. The
-  package explicitly excludes a general evidence platform, automatic
-  scientific adjudication, and cross-repository mutation.
+- `20260714-assurance-dossier-lifecycle-foundation-001/` - EXECUTED-COMPLETE
+  (2026-07-15): the dossier lifecycle/ownership/build contract, bounded SNOTEL
+  vertical slice, deterministic compiler, release drift/snapshot boundary, and
+  openWEPP-owned wepppy handoff pass all exit criteria and dual verification.
+  The pilot honestly remains `CANDIDATE / INSUFFICIENT_EVIDENCE` with aggregate
+  verification `BLOCKED`; no general evidence platform, automatic scientific
+  adjudication, or cross-repository mutation was introduced.
 - `20260712-dc-cqr-preint-hb06-qofe-identity-001/` - ACTIVE: HB-06 review
   found the accumulator admits unequal public Q/QOFE under per-OFE policy.
   Current canonical authority requires equality; anti-clone genuineness remains

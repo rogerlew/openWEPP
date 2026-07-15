@@ -15,6 +15,10 @@ implementation work.
 | [usersum-authoring-style-guide.md](usersum-authoring-style-guide.md) | End-user documentation under `usersum/`: document shapes, audience/register, narrative structure, style rules, claims/evidence register, vendoring mechanics, pre-landing checklist | Active |
 | [scientific-assurance-dossier.md](scientific-assurance-dossier.md) | Human-first public evidence dossiers: separate verification and corroboration statuses, application-context worksheet, limitations, reproducibility, and review | Active |
 
+The dossier content standard is implemented under the ownership and build
+contract in
+[`../governance/scientific-assurance-dossier-lifecycle.md`](../governance/scientific-assurance-dossier-lifecycle.md).
+
 ## Change control
 
 - Standards in this directory are normative unless superseded by an accepted ADR.

@@ -45,6 +45,10 @@ in the sealed acquisition provenance.
     builds release binaries, stages release artifacts, emits sidecars, and runs
     `open_wepp_runner release lint`. Full-profile nextest supplies the required
     process-per-test isolation for environment-mutating integration tests.
+  - Fails on assurance source/generated drift, creates an explicitly named
+    immutable assurance snapshot under the release evidence directory, and
+    records its manifest SHA-256. The snapshot binds generated pages and each
+    cataloged hand-authored narrative.
   - Evaluates external-authority suite lanes from
     `docs/specifications/external-authority/registry.yaml`:
     - verifies fixture integrity for all active suites before lane execution:
@@ -85,6 +89,10 @@ in the sealed acquisition provenance.
     them against the committed Mermaid, JSON, and DOT artifacts under
     `docs/architecture/generated/`.
   - Fails on documentation drift without writing repository files.
+- `check_assurance_dossier_exports.sh`
+  - Validates the typed assurance catalog and review posture, rebuilds all
+    generated usersum pages and the wepppy handoff in a temporary root, and
+    fails on missing or stale committed output without editing tracked files.
 
 ## Typical Usage
 
@@ -123,6 +131,10 @@ bash tools/release/check_sc_unit_compliance.sh
 
 ```bash
 bash tools/release/check_hillslope_schedule_export.sh
+```
+
+```bash
+bash tools/release/check_assurance_dossier_exports.sh
 ```
 
 ```bash

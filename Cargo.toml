@@ -10,6 +10,7 @@ publish = false
 [workspace]
 resolver = "2"
 members = [
+    "crates/openwepp-assurance",
     "crates/openwepp-climate-runtime-adapter",
     "crates/openwepp-hillslope-output",
     "crates/openwepp-watershed-output",
@@ -82,8 +83,11 @@ arrow-schema = "54.2.1"
 parquet = "54.2.1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+serde_yaml = "0.9"
+sha2 = "0.10"
 openwepp-hillslope-output = { path = "crates/openwepp-hillslope-output", version = "0.1.0" }
 openwepp-landuse-migrate = { path = "crates/openwepp-landuse-migrate", version = "0.1.0" }
+openwepp-assurance = { path = "crates/openwepp-assurance", version = "0.1.0" }
 
 [[test]]
 name = "infile_slope_parser_contract"
@@ -660,6 +664,10 @@ path = "tests/integration/snowdensity10_3_21_post_partition_residual_decompositi
 [[test]]
 name = "snowdensity10_3_22_climate_class_density_specialization"
 path = "tests/integration/snowdensity10_3_22_climate_class_density_specialization.rs"
+
+[[test]]
+name = "assurance_dossier_build_contract"
+path = "tests/integration/assurance_dossier_build_contract.rs"
 
 [profile.release]
 lto = "thin"

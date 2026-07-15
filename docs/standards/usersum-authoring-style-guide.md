@@ -3,7 +3,7 @@
 Status: Active
 Scope: all end-user documentation under `usersum/`
 Owner: maintainers (Claude Code maintains this guide)
-Last updated: 2026-07-09
+Last updated: 2026-07-14
 
 `usersum/` is openWEPP's end-user documentation, vendored into wepppy's
 in-app documentation engine (manifest-driven, role-gated, rendered in a
@@ -121,9 +121,18 @@ Each rule names the failure it prevents.
 The repository's truthfulness discipline extends to end-user docs in
 reader-facing form:
 
-- Distinguish *validated* (scored against observations, passed tolerance),
-  *bounded* (residual measured and attributed, not driven to zero), and
-  *open* (named, deferred) — and use those words consistently.
+- Keep software verification, empirical evidence, and application fitness
+  separate. Verification obligations use `PASS`, `FAIL`, `BLOCKED`, or
+  `NOT_RUN`. Empirical evidence uses the scientific-assurance vocabulary:
+  corroborated, mixed, contradicted, insufficient, or not evaluated, always
+  within a named tested domain and as-of date. Do not call a model, release,
+  process, or result simply "validated."
+- A usersum narrative explains why the model behaves as it does. Claim-bearing
+  evaluation method and results belong in the linked assurance method and
+  dossier pages; do not duplicate a numeric results table across those records.
+- Application fitness belongs to the named user or institution. Public text may
+  explain applicability and limitations but must not issue an unnamed site's
+  fitness verdict.
 - Never present capability as behavior. "Implemented but not a default" is a
   distinct state and must be labeled every time it appears; a reader
   configuring a run needs to know what the binary *does*, not what the
@@ -196,8 +205,11 @@ Before landing a usersum document (human or agent):
 - [ ] No virtue announcements; bold count is a handful; bullets only where
       content is enumerable (§4).
 - [ ] Every number has units and denominator; staged changes chained once (§4).
-- [ ] Validated / bounded / open used accurately; capability vs default
+- [ ] Verification, empirical characterization, and application fitness are
+      separate; no unqualified "validated" label; capability vs default
       behavior labeled (§5).
+- [ ] Claim-bearing evaluation results have one canonical home in an assurance
+      dossier, with narrative cross-links instead of duplication (§5).
 - [ ] CLI examples verified against the current release binary (§5).
 - [ ] No links outside `usersum/` (§6).
 - [ ] Narrative docs: version line under the title matches the newest

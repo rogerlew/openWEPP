@@ -695,6 +695,7 @@ dependencies = [
  "arrow-array",
  "arrow-schema",
  "flate2",
+ "openwepp-assurance",
  "openwepp-climate-runtime-adapter",
  "openwepp-comparator-metadata",
  "openwepp-hillslope-orchestrator",
@@ -714,6 +715,18 @@ dependencies = [
  "parquet",
  "serde",
  "serde_json",
+ "serde_yaml",
+ "sha2",
+]
+
+[[package]]
+name = "openwepp-assurance"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "serde_yaml",
+ "sha2",
 ]
 
 [[package]]

@@ -1,0 +1,119 @@
+schema_version: 1
+dossier_id: snow-snotel-swe-depth-density
+version: 1.0.0
+title: SNOTEL Snow Evidence Across Five Climates
+lifecycle: candidate
+evidence_as_of: 2026-07-14
+assessment_owner: openWEPP scientific assurance steward
+method_id: snow-snotel-evaluation-v1
+narrative:
+  path: snow-frost-modeling-and-validation.md
+  doc_id: vendor.openwepp.snow_frost_modeling
+  title: Snow and Frost in openWEPP
+  nav_key: assurance.narrative.snow_frost
+question: >-
+  How much support does retained SNOTEL evidence provide for openWEPP daily snow
+  water equivalent, station-derived depth, derived bulk density, and seasonal
+  response across the five tested climates?
+quantities:
+  - Daily snow water equivalent (meters water equivalent).
+  - Daily station-derived snow depth (meters).
+  - Paired bulk density (kilograms per cubic meter).
+  - Seasonal timing and depth-SWE response signatures.
+tested_domain:
+  - Five point-station SNOTEL climates in Idaho, Washington, California, Utah, and Colorado.
+  - The retained manifest contains 70,999 daily rows and 13,590 paired SWE-depth rows.
+  - Retained forcing configurations using DAYMET, GRIDMET, CLIGEN, or PRISM.
+  - Historical retrospective diagnostic and the currently activated Harder-Pomeroy phase default.
+verification: blocked
+verification_obligations:
+  - obligation_id: default-phase-selector
+    title: Production default phase selector
+    mandatory: true
+    status: pass
+    realization: Harder-Pomeroy activation commit b83339e551eca1be847a0ae6e8bd2175e7c89505.
+    executed_on: 2026-06-28
+    requirement: Every retained activation trace selects harder_pomeroy_hourly without an override.
+    tolerance: Zero unexpected selector counts across all retained trace rows.
+    result: All 159,986 rows selected harder_pomeroy_hourly; unexpected selector counts were empty.
+    evidence_ids:
+      - harder-pomeroy-activation-report
+  - obligation_id: phase-partition-closure
+    title: Rain and snow phase-partition closure
+    mandatory: true
+    status: pass
+    realization: Harder-Pomeroy activation commit b83339e551eca1be847a0ae6e8bd2175e7c89505.
+    executed_on: 2026-06-28
+    requirement: Retained rain-plus-snow partitions reconstruct active precipitation.
+    tolerance: Maximum absolute partition residual no greater than 1e-10 meters.
+    result: Maximum residual was 5.551115123125783e-17 meters across 53,711 precipitation rows.
+    evidence_ids:
+      - harder-pomeroy-activation-report
+  - obligation_id: legacy-selector-rollback
+    title: Explicit legacy selector rollback path
+    mandatory: true
+    status: pass
+    realization: Harder-Pomeroy activation commit b83339e551eca1be847a0ae6e8bd2175e7c89505.
+    executed_on: 2026-06-28
+    requirement: The explicit legacy_rst selector remains observable as a bounded rollback and test path.
+    tolerance: Zero unexpected selector counts across the retained rollback traces.
+    result: All 159,986 rollback rows selected legacy_rst; unexpected selector counts were empty.
+    evidence_ids:
+      - harder-pomeroy-activation-report
+  - obligation_id: current-release-result-lineage
+    title: Current-release result-path lineage
+    mandatory: true
+    status: blocked
+    realization: Current openWEPP release candidate; no exact release snapshot exists yet.
+    executed_on: null
+    requirement: Bind the verified selector and closure path to the exact software and dossier snapshot shipped by a release.
+    tolerance: Exact release commit and immutable assurance snapshot identities are required.
+    result: Historical activation evidence is retained, but current-release lineage has not been assembled.
+    evidence_ids: []
+  - obligation_id: numerical-solution-verification
+    title: Numerical solution verification for reported snow quantities
+    mandatory: true
+    status: not_run
+    realization: No declared numerical refinement campaign for this dossier version.
+    executed_on: null
+    requirement: Quantify discretization or solver error for the reported daily snow quantities where applicable.
+    tolerance: No tolerance has been prospectively specified.
+    result: Not run; conservation closure does not substitute for numerical solution verification.
+    evidence_ids: []
+  - obligation_id: independent-release-reproduction
+    title: Independent release-realization reproduction
+    mandatory: true
+    status: not_run
+    realization: No independently reproduced current-release realization for this dossier version.
+    executed_on: null
+    requirement: Independently reproduce the declared release realization and compare retained outputs.
+    tolerance: No acceptance tolerance has been prospectively specified.
+    result: Not run; the retained historical activation report is not a current independent reproduction.
+    evidence_ids: []
+empirical: insufficient_evidence
+summary: >-
+  The retained comparison is useful diagnostic evidence and supported selection
+  of a production snow-phase default under its retrospective rubric. It does
+  not yet provide a portable, prospectively specified, independently reviewed
+  basis for a favorable empirical claim. The baseline characterization is
+  therefore INSUFFICIENT_EVIDENCE. Three narrow historical implementation and
+  conservation obligations pass, while the aggregate current-release
+  verification profile remains BLOCKED by unassembled lineage and unrun work.
+applies_to:
+  - Auditing the evidence that informed the current snow-phase default.
+  - Identifying observed regimes and response signatures for a future prospective campaign.
+  - Understanding which absolute quantities are forcing-limited in the retained comparison.
+unknowns:
+  - Performance for climates, elevations, forest canopies, disturbances, and extremes outside the five station fixtures.
+  - Accuracy under the forcing and parameter sources used by a particular application.
+  - Whether retrospective rubric results reproduce from raw acquisition in a portable locked environment.
+  - Application-specific adequacy for runoff, erosion, operations, design, or regulatory decisions.
+application_boundary: >-
+  A user must compare their climate, forcing, topography, canopy, scale,
+  quantity, required accuracy, and consequence of error with this tested
+  domain. This dossier neither authorizes nor rejects an application.
+source_identity: >-
+  SNOTEL fixture admission commit fe0267dda10c8bfb108f2a7101f9a4a7ed08c496,
+  diagnostic commit 838b5f916c92006519614eebb291cde44a605e21, and
+  activation commit b83339e551eca1be847a0ae6e8bd2175e7c89505; an exact
+  current-release identity is supplied only by a release snapshot.

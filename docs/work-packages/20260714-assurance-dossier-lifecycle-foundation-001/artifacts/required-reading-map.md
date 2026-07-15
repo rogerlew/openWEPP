@@ -1,12 +1,13 @@
 # Required Reading Map
 
-Status: `scaffolded`; execution intake must revalidate paths, bytes, and
-applicable instruction chains before edits.
+Status: `complete` for execution intake on 2026-07-14.
+
+`FROZEN_BASE`: `00d985b1c0de77f1ea664df23a6f4999c4dad0cc`.
 
 ## Instruction Discovery
 
-Static: `tools/agents/find-agents --for` was run on the complete intended write
-set during scaffolding.
+Ran: `tools/agents/find-agents --for` was rerun on the complete intended write
+set before implementation. The scaffolded instruction chain remained current.
 
 | Write area | Applicable instructions |
 | --- | --- |
@@ -50,6 +51,10 @@ Threshold: `OK`. The execution threshold is `OK` at no more than 400000
 bytes, `WARN` above 400000 through 650000 bytes, and
 `REQUIRES-JUSTIFICATION` above 650000 bytes.
 
+Ran: core byte counts were recomputed. Core total remained `222716`; the two
+read-only wepppy conditional files add `17073` bytes, for `239789` loaded
+bytes, still `OK`.
+
 ## Conditional Reading
 
 | Trigger | Paths |
@@ -70,11 +75,39 @@ Record paths and byte counts as the inventory resolves them.
 - read-only wepppy manifest/navigation/loader examples needed to validate the
   export fragment
 
+## Resolved Conditional Reading
+
+Static: the wepppy specification and vendor registry were read before freezing
+the handoff. The contract requires stable `doc_id`, `source`, `rel_path`,
+`title`, `min_role`, `category`, `audience_tags`, `status`, and `nav_key`;
+wepppy owns the vendor record, synchronization, final merge, roles, navigation,
+rendering, and search. No openWEPP vendor currently exists there.
+
+Static: pilot status assignment used the following retained sources:
+
+| Path | Bytes | Role |
+| --- | ---: | --- |
+| `tests/fixtures/snotel_observed/README.md` | `5833` | Five-site fixture scope and forcing limitations |
+| `tests/fixtures/snotel_observed/observations/manifest.json` | `11417` | Observation identities and known absolute-path/null-hash gaps |
+| `tests/fixtures/snotel_observed/observations/ssd_characterization.json` | `24633` | Retained station-depth characterization |
+| `tests/integration/snowdensity10_3_18_cross_snotel_mechanism_rubric.rs` | `1870` | Diagnostic-only policy guard |
+| `tests/integration/snowdensity10_3_19_harder_pomeroy_default_activation.rs` | `6698` | Default activation and retained report guard |
+| `docs/work-packages/20260627-snowdensity-10-3-18-cross-snotel-mechanism-rubric-001/artifacts/cross-snotel-mechanism-rubric.md` | `6922` | Human diagnostic summary |
+| `docs/work-packages/20260627-snowdensity-10-3-18-cross-snotel-mechanism-rubric-001/artifacts/cross-snotel-mechanism-rubric.json` | `5121983` | Claim-bearing retained diagnostic output; content-identified, not loaded in bulk |
+| `docs/work-packages/20260627-snowdensity-10-3-18-cross-snotel-mechanism-rubric-001/artifacts/disposition.md` | `1478` | No-promotion disposition |
+| `docs/work-packages/20260628-snowdensity-10-3-19-harder-pomeroy-default-activation-001/artifacts/harder-pomeroy-default-activation.json` | `1756449` | Later activation evidence |
+
+No nextest profile was added, so the local-CI conditional guide was not
+triggered. No kernel or science-contract semantic edit was proposed.
+
 ## Intake Checklist
 
-- [ ] Record `FROZEN_BASE` after the scaffold is committed.
-- [ ] Re-run `tools/agents/find-agents --for` on the final write set.
-- [ ] Recompute core bytes and threshold.
-- [ ] Resolve all core paths.
-- [ ] Record conditional SNOTEL sources before status assignment.
-- [ ] Confirm no external-repository write is present.
+- [x] Record `FROZEN_BASE` after the scaffold is committed.
+- [x] Re-run `tools/agents/find-agents --for` on the final write set.
+- [x] Recompute core bytes and threshold.
+- [x] Resolve all core paths.
+- [x] Record conditional SNOTEL sources before status assignment.
+- [x] Confirm no external-repository write is present.
+
+Ran: `/home/workdir/wepppy` was read only. Its preexisting tracked changes were
+recorded at intake in `owned-file-manifest.md`; no write there is authorized.

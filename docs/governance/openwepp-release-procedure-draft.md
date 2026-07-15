@@ -2,7 +2,7 @@
 
 Status: `planned`  
 Document type: `draft-runbook`  
-Last reviewed: `2026-05-31`
+Last reviewed: `2026-07-14`
 
 Execution note:
 - This runbook is a draft release procedure synthesized from in-repo
@@ -20,6 +20,7 @@ and post-HILLSTAB06 stability gate expectations.
 - `docs/contracts/openwepp-binary-release-contract.md`
 - `docs/contracts/openwepp-runner-contract.md`
 - `docs/decisions/0007-openwepp-runner-and-release-governance.md`
+- `docs/governance/scientific-assurance-dossier-lifecycle.md`
 - `docs/work-packages/20260529-hillstab06-wb16-peak-closure-and-p24-climate-triage-001/artifacts/worker-handoff.md`
 - `crates/openwepp-runner/src/bin/open_wepp_runner.rs`
 - `crates/openwepp-runner/src/release.rs`
@@ -56,8 +57,9 @@ Run from `/home/workdir/openWEPP`:
 ```bash
 cargo fmt --check
 cargo clippy --workspace --all-targets -- -D warnings
-cargo test --workspace
+cargo nextest run --workspace --profile full
 cargo deny check
+bash tools/release/check_assurance_dossier_exports.sh
 ```
 
 If any command fails, candidate assembly stops.
@@ -147,6 +149,25 @@ CI workflow surface:
 
 ## Candidate Build and Assembly
 
+The automation entrypoint is authoritative for sequencing. In particular, it
+checks committed assurance pages before the heavy gates and then creates an
+immutable content-bound snapshot in the release evidence directory:
+
+```bash
+cargo run --quiet -p openwepp-assurance -- build --all \
+  --snapshot "${OPENWEPP_RELEASE_TAG}" \
+  --snapshot-root "${OPENWEPP_RELEASE_DIR}/assurance-snapshots"
+sha256sum \
+  "${OPENWEPP_RELEASE_DIR}/assurance-snapshots/${OPENWEPP_RELEASE_TAG}/manifest.json"
+```
+
+An identical rerun may confirm the existing snapshot. Different content under
+the same snapshot ID is a blocking conflict. The manifest records the catalog,
+tool, contract, dossier version, lifecycle, empirical status, reviewed source
+roots, and public-file identities, including declared hand-authored narratives.
+It is an as-of evidence record, not an
+application-fitness determination.
+
 ### 1) Build runner and CLI binaries
 
 ```bash
@@ -229,13 +250,15 @@ Minimum expectation for pass:
 
 A release candidate must archive:
 
-1. workspace gate logs (`fmt`, `clippy`, `test`, `deny`),
+1. workspace gate logs (`fmt`, `clippy`, full-profile `nextest`, `deny`),
 2. staged release directory listing with sidecars,
 3. successful `open_wepp_runner release lint` output,
 4. hillslope stability JSON report and a delta summary against the latest
    baseline package (currently HILLSTAB06),
-5. commit SHA and selected release tag.
-6. authority lane report (`authority_suite_results.md`) with explicit lane and
+5. commit SHA and selected release tag,
+6. assurance snapshot manifest, copied generated pages and narratives,
+   `assurance-snapshot-build.txt`, and `assurance-snapshot.sha256`, and
+7. authority lane report (`authority_suite_results.md`) with explicit lane and
    failure-class outcomes, including fixture-integrity results for active
    suites.
 

@@ -13,6 +13,9 @@ but are not model-physics contracts.
   philosophy and adoption strategy for hard software verification, nonterminal
   empirical corroboration, decision-owner application fitness, and public
   assurance dossiers.
+- `scientific-assurance-dossier-lifecycle.md` — canonical ownership,
+  lifecycle, deterministic build, review-lock, release-snapshot, and wepppy
+  handoff contract for scientific assurance dossiers.
 - `legacy-source-attribution-and-contributors-policy.md` — required attribution
   and contributor-governance metadata for Rust files that port legacy WEPP
   source units.

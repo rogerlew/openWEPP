@@ -1,8 +1,10 @@
 # Scientific Assurance Dossier Lifecycle Foundation
 
-Status: `queued`
+Status: `complete`
 
 Date opened: `2026-07-14`
+
+Date closed: `2026-07-15 UTC`
 
 Execution mode: `package-end-to-end`
 
@@ -579,8 +581,9 @@ wepppy documentation.
 - [x] (2026-07-14) User authorized scaffolding the lifecycle/ownership package.
 - [x] (2026-07-14) Applicable instruction chains and current assurance,
   usersum, release, nextest, and wepppy handoff surfaces were inspected.
-- [ ] Freeze scaffold commit and final reading map at execution intake.
-- [ ] Execute Phases 1 through 5.
+- [x] (2026-07-14) Froze scaffold commit and final reading map at execution
+  intake.
+- [x] (2026-07-15) Executed Phases 1 through 5; all exit criteria passed.
 
 ## Decision Log
 
@@ -608,4 +611,23 @@ wepppy documentation.
 
 ## Outcomes And Retrospective
 
-Queued. Populate only during execution; do not infer results from the scaffold.
+Complete. The package established the lifecycle/ownership contract, bounded
+compiler, public SNOTEL route, immutable snapshot and review-lock behavior,
+release drift boundary, and wepppy handoff without expanding into a general
+evidence platform or changing scientific status.
+
+The dual reviews materially improved the implementation: they forced typed and
+historical split-scope review locks, explicit verification obligations,
+complete authoring provenance, stronger filesystem containment, complete DAG
+and narrative binding, compiler-bound schemas, public-output injection and
+secret scanning, lifecycle-safe snapshots, and downstream-compatible status
+mapping. The first heavy run then exposed five touched functions above the
+adjudicated CRAP ceiling. They were decomposed without a waiver; both reviewers
+verified behavioral equivalence, and the renewed fresh gate reported zero
+actionable rows.
+
+The most important scientific outcome is honest incompleteness. The pilot is
+still `CANDIDATE / INSUFFICIENT_EVIDENCE`, its aggregate verification remains
+`BLOCKED`, and application fitness remains with the named decision owner. The
+foundation improves transparency and repeatability without manufacturing a
+nuclear-style terminal validation verdict for an open natural system.

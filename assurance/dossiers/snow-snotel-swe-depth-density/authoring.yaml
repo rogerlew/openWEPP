@@ -1,0 +1,158 @@
+schema_version: 1
+dossier_id: snow-snotel-swe-depth-density
+dossier_version: 1.0.0
+procedure_version: openwepp-assurance-agent-authoring-v1
+task: >-
+  User instruction: Execute
+  docs/work-packages/20260714-assurance-dossier-lifecycle-foundation-001/.
+  Bounded authoring task: inventory the retained five-climate SNOTEL evidence,
+  determine the strongest supportable non-fitness characterization, and draft
+  the method, dossier, evidence, interpretation, limitations, and linked
+  narrative edits required by that content-identified package.
+agent_identity: OpenAI Codex GPT-5 family; exact serving build unavailable.
+tool_version: Codex API execution surface on 2026-07-14.
+execution_date: 2026-07-14
+nondeterministic_settings: Sampling and serving parameters were not exposed.
+input_revision: openWEPP 00d985b1c0de77f1ea664df23a6f4999c4dad0cc; wepppy b2b6d62c3472c324263c55597c7ee5ccc9545942.
+inputs:
+  - repository: openwepp
+    revision: 00d985b1c0de77f1ea664df23a6f4999c4dad0cc
+    path: docs/work-packages/20260714-assurance-dossier-lifecycle-foundation-001/package.md
+    sha256: 4cf2bfd0bf90d0bca87902943ade1ea82db070c10fa91d4c1fa0cd3c8f5be08d
+    availability: historical
+    role: Complete bounded execution specification and acceptance contract.
+  - repository: openwepp
+    revision: 00d985b1c0de77f1ea664df23a6f4999c4dad0cc
+    path: docs/governance/openwepp-verification-validation-strategy.md
+    sha256: b371f4787e1e95d77755b850d3aba673c6e292bf6a57e77f5d1af31cfdc06841
+    availability: historical
+    role: Assurance philosophy and verification-validation separation.
+  - repository: openwepp
+    revision: 00d985b1c0de77f1ea664df23a6f4999c4dad0cc
+    path: docs/standards/scientific-assurance-dossier.md
+    sha256: 143d0c15acb494d8a1fdbb74ff23bcfd4d5f759b12460941dfb186f48339cb16
+    availability: historical
+    role: Scientific status and dossier content standard.
+  - repository: openwepp
+    revision: 00d985b1c0de77f1ea664df23a6f4999c4dad0cc
+    path: docs/standards/usersum-authoring-style-guide.md
+    sha256: 137dfd6f9fb351d7aa27ef55e2a039d405b08160b72eef420dbb38d0d0cd1f2a
+    availability: historical
+    role: Public narrative and cross-reference style authority.
+  - repository: openwepp
+    revision: 00d985b1c0de77f1ea664df23a6f4999c4dad0cc
+    path: docs/decisions/0028-observed-data-admission-authority.md
+    sha256: 7b5b774708720405a187f27f755d0c9e230c1dca402bced54019d5c09aa09453
+    availability: historical
+    role: Observation admission and forcing-robust interpretation authority.
+  - repository: openwepp
+    revision: 00d985b1c0de77f1ea664df23a6f4999c4dad0cc
+    path: usersum/snow-frost-modeling-and-validation.md
+    sha256: cef2ab3d8b304d398c002aa69c2eb4c799f39d8e6a05dfef83b343d386e195f0
+    availability: historical
+    role: Prior model-science narrative requiring evidence separation.
+  - repository: openwepp
+    revision: current-candidate
+    path: tests/fixtures/snotel_observed/README.md
+    sha256: b702b96e85c39241e8ccad3b3e43334f8264945eb3bd62b5bc300073469651a5
+    availability: tracked
+    role: Five-site fixture scope and forcing limitations.
+  - repository: openwepp
+    revision: current-candidate
+    path: tests/fixtures/snotel_observed/observations/manifest.json
+    sha256: d673b2e69ed739149e50ad095a81f1aea88ae5b4dd344463790dfc1aa9a133f3
+    availability: tracked
+    role: Observation identities, counts, acquisition URLs, and provenance gaps.
+  - repository: openwepp
+    revision: current-candidate
+    path: tests/fixtures/snotel_observed/observations/ssd_characterization.json
+    sha256: 820162adaeccd74e09daec0a6f8e7549228423a0ba985d48f052f7549466c020
+    availability: tracked
+    role: Retained paired station observation characterization.
+  - repository: openwepp
+    revision: current-candidate
+    path: tests/integration/snowdensity10_3_18_cross_snotel_mechanism_rubric.rs
+    sha256: 6b3b1796049843cb5c712c4193c743660f255eb80b55dead33997f8598a32d17
+    availability: tracked
+    role: Integration guard preserving the diagnostic-only comparator policy.
+  - repository: openwepp
+    revision: current-candidate
+    path: tests/integration/snowdensity10_3_19_harder_pomeroy_default_activation.rs
+    sha256: 471f8dbe3efabf822eeff24ed5f801910d944c187a5a142db71c8652e60382df
+    availability: tracked
+    role: Integration guard binding the retained default-activation report to release testing.
+  - repository: openwepp
+    revision: current-candidate
+    path: docs/work-packages/20260627-snowdensity-10-3-18-cross-snotel-mechanism-rubric-001/artifacts/cross-snotel-mechanism-rubric.md
+    sha256: 3b6c8018e0f9daca6a8c10d2856180e40d58dc5434c82ca689d86d56829ea24a
+    availability: tracked
+    role: Human-readable summary of the retained retrospective model comparison.
+  - repository: openwepp
+    revision: current-candidate
+    path: docs/work-packages/20260627-snowdensity-10-3-18-cross-snotel-mechanism-rubric-001/artifacts/cross-snotel-mechanism-rubric.json
+    sha256: fc5657fef4576964ded1853401cc944a43b0436c39843645f5b0155609f13f01
+    availability: tracked
+    role: Claim-bearing retrospective comparative report.
+  - repository: openwepp
+    revision: current-candidate
+    path: docs/work-packages/20260627-snowdensity-10-3-18-cross-snotel-mechanism-rubric-001/artifacts/disposition.md
+    sha256: baa52ec955396b5975e5ff8209d3aae8265464b96f990fec06d8263f02f0c0e6
+    availability: tracked
+    role: Historical no-promotion disposition for the comparative report.
+  - repository: openwepp
+    revision: current-candidate
+    path: docs/work-packages/20260628-snowdensity-10-3-19-harder-pomeroy-default-activation-001/artifacts/harder-pomeroy-default-activation.json
+    sha256: f511c11d73b2a0b03cb7ef8f573ddc9309ffd336f2790cd1218514a74565747a
+    availability: tracked
+    role: Selector trace, activation comparison, and partition-closure report.
+  - repository: wepppy
+    revision: b2b6d62c3472c324263c55597c7ee5ccc9545942
+    path: wepppy/weppcloud/routes/usersum/specification.md
+    sha256: 4670bd80013168195cdee848a1ee5f3f99a96a2532ebfceeb17c6e75da0dd7d5
+    availability: external
+    role: Downstream usersum document contract read for export compatibility.
+  - repository: wepppy
+    revision: b2b6d62c3472c324263c55597c7ee5ccc9545942
+    path: wepppy/weppcloud/routes/usersum/vendors.yaml
+    sha256: 512f918434640b6bff5834b9a1703d077241bd8743937fed29540d8b3e1219bd
+    availability: external
+    role: Downstream vendor registry read to confirm the ownership boundary.
+accepted_outputs:
+  - path: assurance/methods/snow-snotel-evaluation-v1.yaml
+    sha256: 35deb87c2b492d6b3b7b88f8bb0b4d4d523955fb202a9cd8b6de91be72bb354b
+    role: Accepted evaluation method source.
+  - path: assurance/dossiers/snow-snotel-swe-depth-density/dossier.yaml
+    sha256: 7a1903a94d17f8aa50f855b89bad594b21e5c08860bd75830d89147415a049f7
+    role: Accepted bounded dossier source.
+  - path: assurance/dossiers/snow-snotel-swe-depth-density/evidence.yaml
+    sha256: 0a665c504eae673dd25513e20e4e0295f01419c636754a62ecbd2782b31a18bc
+    role: Accepted evidence manifest.
+  - path: assurance/dossiers/snow-snotel-swe-depth-density/interpretation.md
+    sha256: aba0513c99ed14f31a5dc56b6366d4c95d8037958839e87440cf4551f029ece7
+    role: Accepted conclusion-bearing interpretation.
+  - path: assurance/dossiers/snow-snotel-swe-depth-density/limitations.md
+    sha256: 2d892e7cfda67c73c847dc01eedacea46424900ed00cd0ee3c52371e0b4cb2dc
+    role: Accepted limitations and evidence gaps.
+  - path: usersum/snow-frost-modeling-and-validation.md
+    sha256: 2c35e4101afbe2e36592f9416e17d1cfe8d08c98a4092d6ec28afe99a589cc39
+    role: Accepted model-science narrative edits.
+accepted_decisions:
+  - Use CANDIDATE and INSUFFICIENT_EVIDENCE; do not assign a favorable empirical status.
+  - Report three narrow historical selector and partition-closure passes separately from the aggregate BLOCKED verification profile.
+  - Keep claim-bearing method and evidence conclusions in the dossier route rather than duplicating scores in the model-rationale narrative.
+  - Expose unavailable raw replay and external domain review instead of reconstructing them from memory or current prose.
+  - Keep application fitness with the named user or institutional decision owner.
+  - Limit ordinary automation to typed validation, planning, rendering, drift detection, review locks, and immutable snapshots.
+accepted_output_root_sha256: 01aa0936d0dce5c859440f56a9bd0eca87976462a524696307840103a9fae9ed
+review:
+  state: approved
+  reviewer:
+    name: Codex Reviewer A
+    role: Independent procedural agent-synthesis reviewer
+    expertise: Scientific-assurance governance, provenance auditing, hydrology-facing documentation, and evidence-status separation.
+    independent_of_authors: true
+    independence_basis: Delegated read-only reviewer who did not author the canonical packet or its six accepted outputs and reviewed it independently of the authoring agent.
+  review_date: 2026-07-14
+  findings: []
+  disposition: The content-identified inputs, accepted outputs, accepted decisions, and accepted-output root are internally consistent; this approval is procedural and does not constitute scientific approval, empirical corroboration, or application-fitness authorization.
+  approved_output_root_sha256: 01aa0936d0dce5c859440f56a9bd0eca87976462a524696307840103a9fae9ed

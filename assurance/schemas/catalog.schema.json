@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openwepp.org/assurance/schema/catalog-v1",
+  "title": "openWEPP assurance catalog version 1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "contract_version", "generated_root", "export_output", "templates", "dossiers", "shared_outputs"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "contract_version": {"const": 1},
+    "generated_root": {"const": "usersum/assurance"},
+    "export_output": {"type": "string"},
+    "templates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["index", "method", "dossier", "worksheet"],
+      "properties": {
+        "index": {"type": "string"},
+        "method": {"type": "string"},
+        "dossier": {"type": "string"},
+        "worksheet": {"type": "string"}
+      }
+    },
+    "dossiers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["dossier_id", "dossier_version", "lifecycle", "source", "method", "evidence", "interpretation", "limitations", "authoring", "review", "outputs"],
+        "properties": {
+          "dossier_id": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
+          "dossier_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+          "lifecycle": {"enum": ["draft", "candidate", "published", "superseded", "withdrawn"]},
+          "source": {"type": "string"},
+          "method": {"type": "string"},
+          "evidence": {"type": "string"},
+          "interpretation": {"type": "string"},
+          "limitations": {"type": "string"},
+          "authoring": {"type": "string"},
+          "review": {"type": "string"},
+          "outputs": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["dossier", "method"],
+            "properties": {
+              "dossier": {"type": "string"},
+              "method": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "shared_outputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["index", "worksheet"],
+      "properties": {
+        "index": {"type": "string"},
+        "worksheet": {"type": "string"}
+      }
+    }
+  }
+}

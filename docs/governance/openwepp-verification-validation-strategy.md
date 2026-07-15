@@ -4,7 +4,8 @@ Status: `active-strategy`
 
 Document type: asymmetric scientific assurance philosophy and adoption strategy
 
-Delivery maturity: public dossier standard active; dossier portfolio planned
+Delivery maturity: public dossier standard and bounded lifecycle compiler
+active; dossier portfolio planned
 
 Last reviewed: `2026-07-14`
 
@@ -14,6 +15,7 @@ developers, reviewers, and release decision makers
 Related authority:
 
 - [scientific assurance dossier standard](../standards/scientific-assurance-dossier.md);
+- [dossier lifecycle and build contract](scientific-assurance-dossier-lifecycle.md);
 - [correctness authority model](../specifications/correctness-authority-model.md);
 - [science-contract index](../specifications/science-contracts/index.md);
 - [ADR-0017 comparator posture](../decisions/0017-re-pin-operational-distrust-comparator-is-flag-not-target.md);
@@ -209,9 +211,12 @@ units; retained commands and results; visible failed evidence and limitations;
 and independent review with finding disposition. A lightweight tracked manifest
 content-identifies every claim-bearing input, transformation, output, figure,
 log, review, and material failed or superseded artifact, and binds those assets
-to the dossier version and its as-of evidence characterizations. Markdown plus
-a manually authored manifest is sufficient initially; a schema, service, or
-dedicated crate is not required.
+to the dossier version and its as-of evidence characterizations. The first
+public vertical slice uses Markdown sources, strict schemas, and a bounded
+deterministic compiler to remove recurring drift among the catalog, public
+pages, review lock, release snapshot, and wepppy handoff. This compiler is
+publication plumbing, not a generalized evidence platform or scientific
+adjudicator.
 
 ## Scientific Program
 
@@ -313,6 +318,9 @@ rather than wait for every gap or automation feature to close.
 - Pilot the format with the existing SNOTEL snow evidence and one core
   hydrology or erosion quantity selected through dataset and applicability
   review.
+- Establish mechanical lifecycle, ownership, cross-reference, build, and
+  release-snapshot rules with the SNOTEL pilot; publish insufficient evidence
+  when that is what the retained record supports.
 
 Exit: a scientific user can find the current evidence, coverage, limitations,
 practical meaning, and reproduction pointers without reading internal logs.
@@ -334,8 +342,8 @@ decide application fitness.
 
 ### Phase 3: Standardize demonstrated recurring needs
 
-- Standardize a versioned manifest format only after fields recur across real
-  dossiers; earlier dossiers may use manually authored content-identity tables.
+- Evolve the versioned manifest only from fields demonstrated by real dossiers;
+  do not turn the bounded baseline schema into an abstract portfolio ontology.
 - Link existing tests, authority suites, release gates, and work packages rather
   than rewriting them.
 - Automate report elements and freshness decisions where manual handling creates
@@ -349,8 +357,9 @@ record, while a dossier remains reproducible without a service or database.
 - Expand evidence across representative climates, soils, topographies,
   managements, scales, and extremes.
 - Quantify sensitivity, uncertainty, and guarded extrapolation.
-- Add portfolio-scale query, impact analysis, provenance export, and immutable
-  release snapshots only when operating experience justifies them.
+- Add portfolio-scale query, generalized impact analysis, or provenance export
+  only when operating experience justifies them. Continue recording bounded
+  immutable release snapshots under the lifecycle contract.
 - Establish post-audit comparison with new field and operational observations.
 
 Steady-state condition: each software release passes its declared verification
@@ -361,9 +370,11 @@ turns the model into a terminally validated artifact.
 
 A generalized tool is justified only when multiple real campaigns demonstrate
 the same need, manual handling creates material audit risk, and the tool improves
-the public evidence product without duplicating authority. A dedicated crate,
-database, W3C PROV export, or RO-Crate export is a possible later choice, not a
-strategy requirement.
+the public evidence product without duplicating authority. The existing
+`openwepp-assurance` crate remains intentionally limited to validation,
+planning, rendering, drift detection, review locks, and snapshots. A database,
+service, workflow engine, W3C PROV export, or RO-Crate export is a possible
+later choice, not a strategy requirement.
 
 ## Release Basis, Evidence Snapshot, And Prohibited Shortcuts
 

@@ -484,6 +484,9 @@ run_authority_lane() {
 
 cd "${ROOT_DIR}"
 
+echo "INFO: checking scientific assurance dossier exports"
+bash tools/release/check_assurance_dossier_exports.sh
+
 echo "INFO: running workspace release gates"
 cargo nextest --version > "${RELEASE_DIR}/cargo-nextest-version.txt"
 cargo fmt --check
@@ -497,6 +500,16 @@ if [[ -n "${CRAP_BASE_REF}" ]]; then
   CRAP_GATE_ARGS+=(--base-ref "${CRAP_BASE_REF}")
 fi
 bash tools/release/run_adjudicated_crap_gate.sh "${CRAP_GATE_ARGS[@]}"
+
+ASSURANCE_SNAPSHOT_ROOT="${RELEASE_DIR}/assurance-snapshots"
+ASSURANCE_SNAPSHOT_MANIFEST="${ASSURANCE_SNAPSHOT_ROOT}/${RELEASE_TAG}/manifest.json"
+echo "INFO: creating scientific assurance snapshot '${RELEASE_TAG}'"
+cargo run --quiet -p openwepp-assurance -- build --all \
+  --snapshot "${RELEASE_TAG}" \
+  --snapshot-root "${ASSURANCE_SNAPSHOT_ROOT}" \
+  > "${RELEASE_DIR}/assurance-snapshot-build.txt"
+sha256sum "${ASSURANCE_SNAPSHOT_MANIFEST}" \
+  > "${RELEASE_DIR}/assurance-snapshot.sha256"
 
 {
   echo "# Authority Suite Gate Results"
@@ -594,6 +607,7 @@ fi
 echo "INFO: release gate automation passed"
 echo "INFO: release_dir=${RELEASE_DIR}"
 echo "INFO: authority_results=${AUTHORITY_REPORT}"
+echo "INFO: assurance_snapshot=${ASSURANCE_SNAPSHOT_MANIFEST}"
 if [[ "${SKIP_STABILITY}" -eq 0 ]]; then
   echo "INFO: stability_results_json=${HILLSTAB_OUTPUT_JSON}"
 fi

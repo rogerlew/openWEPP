@@ -11,6 +11,10 @@ scientists, researchers, practitioners, and other named decision owners
 Governing strategy:
 [openWEPP verification and validation](../governance/openwepp-verification-validation-strategy.md)
 
+Lifecycle, ownership, source/generated boundaries, review locks, and release
+snapshots:
+[dossier lifecycle and build contract](../governance/scientific-assurance-dossier-lifecycle.md)
+
 ## Core Rule
 
 A scientific assurance dossier answers a bounded **evidence question**. It is
@@ -47,6 +51,15 @@ Report required software-verification obligations with these statuses:
 Only `PASS` closes a mandatory verification obligation. Quantitative evidence
 such as a residual, convergence rate, or numerical-error estimate remains
 visible behind the status.
+
+The dossier also reports one mechanical aggregate over its mandatory
+obligations. It is `FAIL` if any mandatory obligation fails, otherwise
+`BLOCKED` if any is blocked, otherwise `NOT_RUN` if any is unrun, and only
+`PASS` when every mandatory obligation passes. This aggregate is a concise
+closure signal, not a whole-model grade. Every row still names the exact
+software realization, execution date, requirement, tolerance, result, and
+evidence identity; a selector or conservation check cannot stand in for
+solution verification, release-result lineage, or independent reproduction.
 
 Report empirical evidence with one of these separate characterizations:
 
@@ -162,8 +175,10 @@ remains an explicit evidence limitation and cannot silently support a favorable
 characterization.
 
 The manifest may be a manually authored Markdown table, JSON file, or YAML file.
-No general schema, database, provenance export, report generator, or dedicated
-crate is required before publishing an auditable dossier.
+The active public vertical slice uses the bounded `openwepp-assurance` compiler
+to validate and render the canonical YAML form. This does not require or justify
+a database, service, generalized provenance export, workflow engine, or
+automated scientific adjudicator.
 
 ## Figures And Tables
 

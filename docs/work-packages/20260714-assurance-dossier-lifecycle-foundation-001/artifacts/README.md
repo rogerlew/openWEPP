@@ -1,19 +1,20 @@
 # Package Artifacts
 
-Status: `queued`
+Status: `complete`
 
-These placeholders define the required evidence surface. Execution updates
-them in phase order and labels inspected/reasoned evidence `Static:` and command
-evidence `Ran:`.
+These records are the completed package evidence surface. Inspected or
+reasoned evidence is labeled `Static:` and command evidence is labeled `Ran:`.
 
 - `required-reading-map.md`
 - `owned-file-manifest.md`
 - `ownership-lifecycle-matrix.md`
 - `pilot-evidence-inventory.md`
+- `agent-assisted-analysis.md`
 - `dependency-build-proof.md`
 - `wepppy-handoff.md`
 - `implementation-evidence.md`
 - `gate-results.md`
+- `heavy-gate-runner.md`
 - `review-a.md`
 - `review-b.md`
 - `finding-disposition.md`

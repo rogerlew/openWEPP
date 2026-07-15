@@ -1,0 +1,16 @@
+10b19679e382ebacd6b2d20ee02144c461e01b1ac958731d07dd6585acb7d67f  docs/work-packages/20260714-assurance-dossier-lifecycle-foundation-001/artifacts/adjudicated-crap/adjudication-registry.json
+da699d2e4dd78ac32a7e043383c27efdaf9267a652755493d2bd2c584b95711c  docs/work-packages/20260714-assurance-dossier-lifecycle-foundation-001/artifacts/adjudicated-crap/adjudicated-crap-report.json
+70cf7bd8300526cfaa02c819ab544a540abfc97255ead3cd3fc86d9d1872e3f2  docs/work-packages/20260714-assurance-dossier-lifecycle-foundation-001/artifacts/adjudicated-crap/adjudicated-crap-report.md
+faf93773c4f1319d248c431f7ef1d7a7cd3bd556cfd4990b83989c1591e3490f  docs/work-packages/20260714-assurance-dossier-lifecycle-foundation-001/artifacts/adjudicated-crap/cargo-version.txt
+613daf2b27209d9be123ababd5ebd0bbc27ce14c9f63463552454b7cea0e7f86  docs/work-packages/20260714-assurance-dossier-lifecycle-foundation-001/artifacts/adjudicated-crap/cargo-crap-version.txt
+0d1ce678129e5fc600305f57ecb4e7a7bf40a8785874e03f3d60d33402984703  docs/work-packages/20260714-assurance-dossier-lifecycle-foundation-001/artifacts/adjudicated-crap/cargo-crap.log
+35c027b707427b0becc406096c32bd507961068f5d869735d7997da10bf44fd7  docs/work-packages/20260714-assurance-dossier-lifecycle-foundation-001/artifacts/adjudicated-crap/cargo-llvm-cov-version.txt
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  docs/work-packages/20260714-assurance-dossier-lifecycle-foundation-001/artifacts/adjudicated-crap/llvm-cov-clean.log
+24c1ebaa58d03f84f1b0cd4ceeed3ef4c3afdcb3b9a820a11f25477439f55c1f  docs/work-packages/20260714-assurance-dossier-lifecycle-foundation-001/artifacts/adjudicated-crap/llvm-cov.log
+425ce061a3b79b613146c9818632b5c3753588dae216000be674d44bf6349a37  docs/work-packages/20260714-assurance-dossier-lifecycle-foundation-001/artifacts/adjudicated-crap/run-status.json
+8f97c91e920ce0d02680e3d01eb87afa0c77290dcd5d19eb901ae194d4700d90  docs/work-packages/20260714-assurance-dossier-lifecycle-foundation-001/artifacts/adjudicated-crap/rustc-version.txt
+e5906851a8a962f4f5e89648fc592fee1602602b4950ac4c1160821abf3bfbfc  docs/work-packages/20260714-assurance-dossier-lifecycle-foundation-001/artifacts/adjudicated-crap/source-manifest-after.json
+e5906851a8a962f4f5e89648fc592fee1602602b4950ac4c1160821abf3bfbfc  docs/work-packages/20260714-assurance-dossier-lifecycle-foundation-001/artifacts/adjudicated-crap/source-manifest-before.json
+e5906851a8a962f4f5e89648fc592fee1602602b4950ac4c1160821abf3bfbfc  docs/work-packages/20260714-assurance-dossier-lifecycle-foundation-001/artifacts/adjudicated-crap/source-manifest-final.json
+ebfc0cbe5f8bbb711e0b80220667e6f7593205ba8ccffc1081932412d2501146  docs/work-packages/20260714-assurance-dossier-lifecycle-foundation-001/artifacts/adjudicated-crap/workspace-crap.json
+d687b96473afe5f4e759f087acad1a09ea9b4a3b29154614a2a73cb402955026  docs/work-packages/20260714-assurance-dossier-lifecycle-foundation-001/artifacts/adjudicated-crap/workspace.lcov
