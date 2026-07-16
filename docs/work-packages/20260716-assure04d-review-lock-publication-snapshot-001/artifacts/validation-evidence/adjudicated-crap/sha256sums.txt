@@ -1,0 +1,16 @@
+10b19679e382ebacd6b2d20ee02144c461e01b1ac958731d07dd6585acb7d67f  docs/work-packages/20260716-assure04d-review-lock-publication-snapshot-001/artifacts/validation-evidence/adjudicated-crap/adjudication-registry.json
+6d5547ed29f9f0ce35251faa8cc7010178597c3424d06adf394b90c84da23d04  docs/work-packages/20260716-assure04d-review-lock-publication-snapshot-001/artifacts/validation-evidence/adjudicated-crap/adjudicated-crap-report.json
+e5128a259ee24e0fecc982c20c9da6600b0e8451e134ce3ac904b50e36014ecd  docs/work-packages/20260716-assure04d-review-lock-publication-snapshot-001/artifacts/validation-evidence/adjudicated-crap/adjudicated-crap-report.md
+faf93773c4f1319d248c431f7ef1d7a7cd3bd556cfd4990b83989c1591e3490f  docs/work-packages/20260716-assure04d-review-lock-publication-snapshot-001/artifacts/validation-evidence/adjudicated-crap/cargo-version.txt
+613daf2b27209d9be123ababd5ebd0bbc27ce14c9f63463552454b7cea0e7f86  docs/work-packages/20260716-assure04d-review-lock-publication-snapshot-001/artifacts/validation-evidence/adjudicated-crap/cargo-crap-version.txt
+8c95220d25ba21afc6e3f2cc894ee52726164ea61775c67bae39570cc5deda64  docs/work-packages/20260716-assure04d-review-lock-publication-snapshot-001/artifacts/validation-evidence/adjudicated-crap/cargo-crap.log
+35c027b707427b0becc406096c32bd507961068f5d869735d7997da10bf44fd7  docs/work-packages/20260716-assure04d-review-lock-publication-snapshot-001/artifacts/validation-evidence/adjudicated-crap/cargo-llvm-cov-version.txt
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  docs/work-packages/20260716-assure04d-review-lock-publication-snapshot-001/artifacts/validation-evidence/adjudicated-crap/llvm-cov-clean.log
+06b6a80a14fe0be0bb8dc2f2d633e9df8aa1e67579139752de9691bd727cef58  docs/work-packages/20260716-assure04d-review-lock-publication-snapshot-001/artifacts/validation-evidence/adjudicated-crap/llvm-cov.log
+20a0af04c82a18ee8b197dc9c40f62ff5f16c023d92fd62d62f16a3d88e5f078  docs/work-packages/20260716-assure04d-review-lock-publication-snapshot-001/artifacts/validation-evidence/adjudicated-crap/run-status.json
+8f97c91e920ce0d02680e3d01eb87afa0c77290dcd5d19eb901ae194d4700d90  docs/work-packages/20260716-assure04d-review-lock-publication-snapshot-001/artifacts/validation-evidence/adjudicated-crap/rustc-version.txt
+16e5bcb05297d5ca73ff1617242d019ee54063bf29a4dfa12b3f4c34fe30cf02  docs/work-packages/20260716-assure04d-review-lock-publication-snapshot-001/artifacts/validation-evidence/adjudicated-crap/source-manifest-after.json
+16e5bcb05297d5ca73ff1617242d019ee54063bf29a4dfa12b3f4c34fe30cf02  docs/work-packages/20260716-assure04d-review-lock-publication-snapshot-001/artifacts/validation-evidence/adjudicated-crap/source-manifest-before.json
+16e5bcb05297d5ca73ff1617242d019ee54063bf29a4dfa12b3f4c34fe30cf02  docs/work-packages/20260716-assure04d-review-lock-publication-snapshot-001/artifacts/validation-evidence/adjudicated-crap/source-manifest-final.json
+2b5b9bf05db3413c804ba6826a94aac926b52b397b831495653da1516d8fe5e8  docs/work-packages/20260716-assure04d-review-lock-publication-snapshot-001/artifacts/validation-evidence/adjudicated-crap/workspace-crap.json
+1cdaeb00115e6a4773a57abe4fc34b54f8cf5dd2731761aa8917a86862aa0656  docs/work-packages/20260716-assure04d-review-lock-publication-snapshot-001/artifacts/validation-evidence/adjudicated-crap/workspace.lcov

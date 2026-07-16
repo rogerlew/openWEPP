@@ -21,7 +21,7 @@ pub(super) fn validate_relative(path: &Path) -> Result<()> {
 /// An opened directory capability used for race-safe staging operations.
 pub(super) struct ConfinedDirectory {
     #[cfg(unix)]
-    directory: std::fs::File,
+    pub(super) directory: std::fs::File,
 }
 
 impl ConfinedDirectory {
@@ -56,6 +56,11 @@ impl ConfinedDirectory {
         remove_directory_if_exists_platform(self, relative)
     }
 
+    pub(super) fn remove_regular_if_exists(&self, relative: &Path) -> Result<bool> {
+        validate_relative(relative)?;
+        remove_regular_if_exists_platform(self, relative)
+    }
+
     pub(super) fn write_new(&self, relative: &Path, bytes: &[u8]) -> Result<()> {
         validate_relative(relative)?;
         write_new_platform(self, relative, bytes)
@@ -72,9 +77,48 @@ impl ConfinedDirectory {
         rename_platform(self, source, target)
     }
 
+    pub(super) fn rename_noreplace(&self, source: &Path, target: &Path) -> Result<()> {
+        validate_relative(source)?;
+        validate_relative(target)?;
+        rename_noreplace_platform(self, source, target)
+    }
+
+    pub(super) fn exchange(&self, left: &Path, right: &Path) -> Result<()> {
+        validate_relative(left)?;
+        validate_relative(right)?;
+        exchange_platform(self, left, right)
+    }
+
+    pub(super) fn lock_exclusive(&self, display: &Path) -> Result<()> {
+        lock_exclusive_platform(self, display)
+    }
+
     pub(super) fn collect_regular_files(&self, relative: &Path) -> Result<BTreeSet<PathBuf>> {
         validate_relative(relative)?;
         collect_regular_files_platform(self, relative)
+    }
+
+    pub(super) fn collect_all_regular_files(&self) -> Result<BTreeSet<PathBuf>> {
+        collect_all_regular_files_platform(self)
+    }
+
+    pub(super) fn collect_directories(&self, relative: &Path) -> Result<BTreeSet<PathBuf>> {
+        validate_relative(relative)?;
+        collect_directories_platform(self, relative)
+    }
+
+    pub(super) fn sync_tree(&self, relative: &Path) -> Result<()> {
+        validate_relative(relative)?;
+        sync_tree_platform(self, relative)
+    }
+
+    /// Returns whether this held directory is the same directory as, or
+    /// contains, another held directory. The traversal follows directory
+    /// mount points through opened descriptors, so bind-mounted aliases do
+    /// not evade the relationship check merely by using an unrelated ambient
+    /// pathname.
+    pub(super) fn contains_directory(&self, other: &Self) -> Result<bool> {
+        contains_directory_platform(self, other)
     }
 
     /// Confirms that an ambient pathname still identifies this held directory
@@ -111,6 +155,73 @@ fn verify_same_directory_platform(
     }
 }
 
+#[cfg(unix)]
+fn contains_directory_platform(
+    root: &ConfinedDirectory,
+    other: &ConfinedDirectory,
+) -> Result<bool> {
+    use std::os::unix::fs::MetadataExt as _;
+
+    let target = other
+        .directory
+        .metadata()
+        .map_err(|error| AssuranceError::io(Path::new("held-directory"), error))?;
+    let target = (target.dev(), target.ino());
+    let mut visited = BTreeSet::new();
+    contains_directory_identity(&root.directory, target, &mut visited, Path::new("."))
+}
+
+#[cfg(unix)]
+fn contains_directory_identity(
+    directory: &std::fs::File,
+    target: (u64, u64),
+    visited: &mut BTreeSet<(u64, u64)>,
+    display: &Path,
+) -> Result<bool> {
+    use std::os::unix::fs::MetadataExt as _;
+
+    let metadata = directory
+        .metadata()
+        .map_err(|error| AssuranceError::io(display, error))?;
+    let identity = (metadata.dev(), metadata.ino());
+    if identity == target {
+        return Ok(true);
+    }
+    if !visited.insert(identity) {
+        return Ok(false);
+    }
+    for name in directory_entries(directory, display)? {
+        let path = display.join(&name);
+        let stat = stat_at(directory, &name)
+            .map_err(|error| AssuranceError::io(&path, error))?
+            .ok_or_else(|| {
+                AssuranceError::Drift(format!(
+                    "directory entry disappeared during root ancestry check: {}",
+                    path.display()
+                ))
+            })?;
+        if file_kind(stat.st_mode) != libc::S_IFDIR {
+            continue;
+        }
+        let child = open_directory_at_io(directory, &name)
+            .map_err(|error| component_error(error, &path, false))?;
+        if contains_directory_identity(&child, target, visited, &path)? {
+            return Ok(true);
+        }
+    }
+    Ok(false)
+}
+
+#[cfg(not(unix))]
+fn contains_directory_platform(
+    _root: &ConfinedDirectory,
+    _other: &ConfinedDirectory,
+) -> Result<bool> {
+    Err(AssuranceError::Invalid(
+        "descriptor-relative confined staging requires Unix openat support".to_owned(),
+    ))
+}
+
 #[cfg(not(unix))]
 fn verify_same_directory_platform(
     _expected: &ConfinedDirectory,
@@ -124,22 +235,57 @@ fn verify_same_directory_platform(
 
 #[cfg(unix)]
 fn open_ambient_platform(path: &Path, create: bool) -> Result<ConfinedDirectory> {
+    if !path.is_absolute() {
+        return Err(AssuranceError::Invalid(format!(
+            "confined ambient path must be absolute: {}",
+            path.display()
+        )));
+    }
     let mut directory = open_root(Path::new("/"))?;
     for component in path.components() {
-        let Component::Normal(name) = component else {
+        let Some(name) = ambient_component_name(component, path)? else {
             continue;
         };
-        match open_directory_at_io(&directory, name) {
-            Ok(next) => directory = next,
-            Err(error) if create && error.kind() == std::io::ErrorKind::NotFound => {
-                mkdir_at(&directory, name).map_err(|source| AssuranceError::io(path, source))?;
-                directory = open_directory_at_io(&directory, name)
-                    .map_err(|source| AssuranceError::io(path, source))?;
-            }
-            Err(error) => return Err(component_error(error, path, false)),
-        }
+        directory = open_or_create_ambient_child(&directory, name, path, create)?;
     }
     Ok(ConfinedDirectory { directory })
+}
+
+#[cfg(unix)]
+fn ambient_component_name<'a>(
+    component: Component<'a>,
+    path: &Path,
+) -> Result<Option<&'a std::ffi::OsStr>> {
+    match component {
+        Component::RootDir => Ok(None),
+        Component::Normal(name) => Ok(Some(name)),
+        Component::CurDir | Component::ParentDir | Component::Prefix(_) => {
+            Err(AssuranceError::Invalid(format!(
+                "confined ambient path must be normalized: {}",
+                path.display()
+            )))
+        }
+    }
+}
+
+#[cfg(unix)]
+fn open_or_create_ambient_child(
+    parent: &std::fs::File,
+    name: &std::ffi::OsStr,
+    path: &Path,
+    create: bool,
+) -> Result<std::fs::File> {
+    match open_directory_at_io(parent, name) {
+        Ok(next) => Ok(next),
+        Err(error) if create && error.kind() == std::io::ErrorKind::NotFound => {
+            mkdir_at(parent, name).map_err(|source| AssuranceError::io(path, source))?;
+            parent
+                .sync_all()
+                .map_err(|source| AssuranceError::io(path, source))?;
+            open_directory_at_io(parent, name).map_err(|source| AssuranceError::io(path, source))
+        }
+        Err(error) => Err(component_error(error, path, false)),
+    }
 }
 
 #[cfg(not(unix))]
@@ -268,6 +414,30 @@ fn remove_directory_if_exists_platform(
 }
 
 #[cfg(unix)]
+fn remove_regular_if_exists_platform(root: &ConfinedDirectory, relative: &Path) -> Result<bool> {
+    let (parent, name) = open_parent(root, relative)?;
+    let Some(stat) = stat_at(&parent, name).map_err(|error| AssuranceError::io(relative, error))?
+    else {
+        return Ok(false);
+    };
+    if file_kind(stat.st_mode) != libc::S_IFREG {
+        return Err(AssuranceError::Invalid(format!(
+            "staging removal target is not a regular file: {}",
+            relative.display()
+        )));
+    }
+    unlink_at(&parent, name, 0).map_err(|error| AssuranceError::io(relative, error))?;
+    Ok(true)
+}
+
+#[cfg(not(unix))]
+fn remove_regular_if_exists_platform(_root: &ConfinedDirectory, _relative: &Path) -> Result<bool> {
+    Err(AssuranceError::Invalid(
+        "descriptor-relative confined staging requires Unix openat support".to_owned(),
+    ))
+}
+
+#[cfg(unix)]
 fn write_new_platform(root: &ConfinedDirectory, relative: &Path, bytes: &[u8]) -> Result<()> {
     use std::io::Write as _;
 
@@ -302,6 +472,8 @@ fn write_new_platform(root: &ConfinedDirectory, relative: &Path, bytes: &[u8]) -
         )));
     }
     file.write_all(bytes)
+        .map_err(|error| AssuranceError::io(relative, error))?;
+    file.sync_all()
         .map_err(|error| AssuranceError::io(relative, error))
 }
 
@@ -347,6 +519,99 @@ fn rename_platform(_root: &ConfinedDirectory, _source: &Path, _target: &Path) ->
     ))
 }
 
+#[cfg(target_os = "linux")]
+fn rename_noreplace_platform(root: &ConfinedDirectory, source: &Path, target: &Path) -> Result<()> {
+    renameat2_platform(root, source, target, libc::RENAME_NOREPLACE)
+}
+
+#[cfg(not(target_os = "linux"))]
+fn rename_noreplace_platform(
+    _root: &ConfinedDirectory,
+    _source: &Path,
+    _target: &Path,
+) -> Result<()> {
+    Err(AssuranceError::Invalid(
+        "assurance publication requires Linux renameat2 no-replace support".to_owned(),
+    ))
+}
+
+#[cfg(target_os = "linux")]
+fn exchange_platform(root: &ConfinedDirectory, left: &Path, right: &Path) -> Result<()> {
+    renameat2_platform(root, left, right, libc::RENAME_EXCHANGE)
+}
+
+#[cfg(not(target_os = "linux"))]
+fn exchange_platform(_root: &ConfinedDirectory, _left: &Path, _right: &Path) -> Result<()> {
+    Err(AssuranceError::Invalid(
+        "assurance publication requires Linux renameat2 exchange support".to_owned(),
+    ))
+}
+
+#[cfg(target_os = "linux")]
+fn renameat2_platform(
+    root: &ConfinedDirectory,
+    source: &Path,
+    target: &Path,
+    flags: libc::c_uint,
+) -> Result<()> {
+    use std::os::fd::AsRawFd as _;
+    use std::os::unix::ffi::OsStrExt as _;
+
+    if source.parent() != target.parent() {
+        return Err(AssuranceError::Invalid(
+            "publication rename must remain within one parent directory".to_owned(),
+        ));
+    }
+    let (parent, source_name) = open_parent(root, source)?;
+    let target_name = target
+        .file_name()
+        .ok_or_else(|| AssuranceError::Invalid("publication target has no name".to_owned()))?;
+    let source = std::ffi::CString::new(source_name.as_bytes())
+        .map_err(|_| AssuranceError::Invalid("publication source contains NUL".to_owned()))?;
+    let target = std::ffi::CString::new(target_name.as_bytes())
+        .map_err(|_| AssuranceError::Invalid("publication target contains NUL".to_owned()))?;
+    // SAFETY: both names are confined single components, the retained parent
+    // descriptor is live, and `flags` is one supported renameat2 operation.
+    let result = unsafe {
+        libc::renameat2(
+            parent.as_raw_fd(),
+            source.as_ptr(),
+            parent.as_raw_fd(),
+            target.as_ptr(),
+            flags,
+        )
+    };
+    if result == 0 {
+        Ok(())
+    } else {
+        Err(AssuranceError::io(
+            Path::new(source_name),
+            std::io::Error::last_os_error(),
+        ))
+    }
+}
+
+#[cfg(unix)]
+fn lock_exclusive_platform(root: &ConfinedDirectory, display: &Path) -> Result<()> {
+    use std::os::fd::AsRawFd as _;
+
+    // SAFETY: the directory descriptor is live for the duration of the held
+    // `ConfinedDirectory`; `flock` changes only its advisory lock state.
+    let result = unsafe { libc::flock(root.directory.as_raw_fd(), libc::LOCK_EX) };
+    if result == 0 {
+        Ok(())
+    } else {
+        Err(AssuranceError::io(display, std::io::Error::last_os_error()))
+    }
+}
+
+#[cfg(not(unix))]
+fn lock_exclusive_platform(_root: &ConfinedDirectory, _display: &Path) -> Result<()> {
+    Err(AssuranceError::Invalid(
+        "assurance publication requires Unix advisory locks".to_owned(),
+    ))
+}
+
 #[cfg(unix)]
 fn collect_regular_files_platform(
     root: &ConfinedDirectory,
@@ -356,6 +621,54 @@ fn collect_regular_files_platform(
     let mut files = BTreeSet::new();
     collect_directory_files(&directory, Path::new(""), relative, &mut files)?;
     Ok(files)
+}
+
+#[cfg(unix)]
+fn collect_all_regular_files_platform(root: &ConfinedDirectory) -> Result<BTreeSet<PathBuf>> {
+    let mut files = BTreeSet::new();
+    collect_directory_files(&root.directory, Path::new(""), Path::new("."), &mut files)?;
+    Ok(files)
+}
+
+#[cfg(unix)]
+fn collect_directories_platform(
+    root: &ConfinedDirectory,
+    relative: &Path,
+) -> Result<BTreeSet<PathBuf>> {
+    let directory = open_directory_path_platform(root, relative)?;
+    let mut directories = BTreeSet::new();
+    collect_directory_paths(&directory, Path::new(""), relative, &mut directories)?;
+    Ok(directories)
+}
+
+#[cfg(not(unix))]
+fn collect_directories_platform(
+    _root: &ConfinedDirectory,
+    _relative: &Path,
+) -> Result<BTreeSet<PathBuf>> {
+    Err(AssuranceError::Invalid(
+        "descriptor-relative confined staging requires Unix openat support".to_owned(),
+    ))
+}
+
+#[cfg(unix)]
+fn sync_tree_platform(root: &ConfinedDirectory, relative: &Path) -> Result<()> {
+    let directory = open_directory_path_platform(root, relative)?;
+    sync_directory_tree(&directory, relative)
+}
+
+#[cfg(not(unix))]
+fn sync_tree_platform(_root: &ConfinedDirectory, _relative: &Path) -> Result<()> {
+    Err(AssuranceError::Invalid(
+        "descriptor-relative confined staging requires Unix openat support".to_owned(),
+    ))
+}
+
+#[cfg(not(unix))]
+fn collect_all_regular_files_platform(_root: &ConfinedDirectory) -> Result<BTreeSet<PathBuf>> {
+    Err(AssuranceError::Invalid(
+        "descriptor-relative confined staging requires Unix openat support".to_owned(),
+    ))
 }
 
 #[cfg(not(unix))]
@@ -437,6 +750,12 @@ fn collect_directory_files(
             })?;
         match file_kind(stat.st_mode) {
             libc::S_IFREG => {
+                if stat.st_nlink != 1 {
+                    return Err(AssuranceError::Invalid(format!(
+                        "staging tree contains a multiply linked regular file: {}",
+                        path.display()
+                    )));
+                }
                 files.insert(relative_path);
             }
             libc::S_IFDIR => {
@@ -453,6 +772,60 @@ fn collect_directory_files(
         }
     }
     Ok(())
+}
+
+#[cfg(unix)]
+fn collect_directory_paths(
+    directory: &std::fs::File,
+    relative: &Path,
+    display: &Path,
+    directories: &mut BTreeSet<PathBuf>,
+) -> Result<()> {
+    for name in directory_entries(directory, display)? {
+        let path = display.join(&name);
+        let relative_path = relative.join(&name);
+        let stat = stat_at(directory, &name)
+            .map_err(|error| AssuranceError::io(&path, error))?
+            .ok_or_else(|| {
+                AssuranceError::Drift(format!("staging entry disappeared: {}", path.display()))
+            })?;
+        match file_kind(stat.st_mode) {
+            libc::S_IFREG => {}
+            libc::S_IFDIR => {
+                directories.insert(relative_path.clone());
+                let child = open_directory_at_io(directory, &name)
+                    .map_err(|error| component_error(error, &path, false))?;
+                collect_directory_paths(&child, &relative_path, &path, directories)?;
+            }
+            _ => {
+                return Err(AssuranceError::Invalid(format!(
+                    "staging tree contains a symlink or special file: {}",
+                    path.display()
+                )));
+            }
+        }
+    }
+    Ok(())
+}
+
+#[cfg(unix)]
+fn sync_directory_tree(directory: &std::fs::File, display: &Path) -> Result<()> {
+    for name in directory_entries(directory, display)? {
+        let path = display.join(&name);
+        let stat = stat_at(directory, &name)
+            .map_err(|error| AssuranceError::io(&path, error))?
+            .ok_or_else(|| {
+                AssuranceError::Drift(format!("staging entry disappeared: {}", path.display()))
+            })?;
+        if file_kind(stat.st_mode) == libc::S_IFDIR {
+            let child = open_directory_at_io(directory, &name)
+                .map_err(|error| component_error(error, &path, false))?;
+            sync_directory_tree(&child, &path)?;
+        }
+    }
+    directory
+        .sync_all()
+        .map_err(|error| AssuranceError::io(display, error))
 }
 
 #[cfg(unix)]
@@ -747,6 +1120,7 @@ fn component_error(
 #[cfg(unix)]
 fn read_opened_regular(mut file: std::fs::File, relative: &Path) -> Result<Vec<u8>> {
     use std::io::Read as _;
+    use std::os::unix::fs::MetadataExt as _;
 
     let metadata = file
         .metadata()
@@ -754,6 +1128,12 @@ fn read_opened_regular(mut file: std::fs::File, relative: &Path) -> Result<Vec<u
     if !metadata.is_file() {
         return Err(AssuranceError::Invalid(format!(
             "identified source must be a regular file: {}",
+            relative.display()
+        )));
+    }
+    if metadata.nlink() != 1 {
+        return Err(AssuranceError::Invalid(format!(
+            "identified source must not be multiply linked: {}",
             relative.display()
         )));
     }
@@ -857,6 +1237,30 @@ mod tests {
         fs::rename(&staging, &held).expect("rename staging pathname");
         symlink(&outside, &staging).expect("replace staging path with symlink");
         assert!(directory.verify_ambient_identity(&staging).is_err());
+    }
+
+    #[test]
+    fn ambient_open_creates_missing_components_and_rejects_unconfined_paths() {
+        let scratch = Scratch::new("ambient-create");
+        let created = scratch.path.join("one/two");
+        ConfinedDirectory::open_ambient(&created, true).expect("create held ambient path");
+        assert!(created.is_dir());
+        assert!(ConfinedDirectory::open_ambient(Path::new("relative"), false).is_err());
+        assert!(
+            ConfinedDirectory::open_ambient(&scratch.path.join("one/../escape"), false).is_err()
+        );
+    }
+
+    #[test]
+    fn held_relationship_walks_descriptor_subtrees() {
+        let scratch = Scratch::new("held-ancestry");
+        let root_path = scratch.path.join("root");
+        let child_path = root_path.join("nested/child");
+        fs::create_dir_all(&child_path).expect("create nested directory");
+        let root = ConfinedDirectory::open_ambient(&root_path, false).expect("open root");
+        let child = ConfinedDirectory::open_ambient(&child_path, false).expect("open child");
+        assert!(root.contains_directory(&child).expect("walk root"));
+        assert!(!child.contains_directory(&root).expect("walk child"));
     }
 
     struct Scratch {

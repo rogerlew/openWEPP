@@ -1,9 +1,10 @@
 //! Fail-closed scientific-assurance source and transition tooling.
 //!
-//! The public builder remains fixed at zero reports. ASSURE-04C adds
-//! deterministic assembly and checking for internal manuscript-first v2
-//! sources, but only under an explicit disposable staging root. It does not
-//! grant approval, export, or publication authority.
+//! The tracked public builder remains fixed at zero reports. ASSURE-04D adds
+//! fail-closed review-root, external-publication, immutable-snapshot, receipt,
+//! and release-verification mechanics for manuscript-first v2 sources. The
+//! mechanics validate declared authority; they do not create scientific
+//! approval or authorize tracked publication, export, or vendoring.
 
 mod engine;
 mod error;
@@ -16,6 +17,8 @@ pub use engine::{Assurance, BuildOptions, BuildResult, Plan};
 pub use error::{AssuranceError, Result};
 pub use hash::{sha256_bytes, sha256_file};
 pub use v2::{
-    V2AssemblyResult, V2AssemblySummary, V2Plan, V2PlanNode, V2PlanState, V2ReportPlan,
-    V2ReportSummary, V2Repository, V2ValidationSummary,
+    V2AssemblyResult, V2AssemblySummary, V2Plan, V2PlanNode, V2PlanState, V2PublicationFault,
+    V2PublicationOptions, V2PublicationResult, V2ReleaseIdentity, V2ReleaseVerification,
+    V2ReportPlan, V2ReportSummary, V2Repository, V2ReviewRoots, V2TrustDomain, V2ValidationSummary,
+    verify_v2_release_snapshot,
 };

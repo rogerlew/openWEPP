@@ -1,7 +1,6 @@
 # Scientific Assurance V2 Implementation Roadmap
 
-Status: prospective decomposition — ASSURE-04D is next eligible and requires a
-separately authorized work package
+Status: prospective decomposition — ASSURE-05 is next but not authorized
 
 ## Sequencing Principle
 
@@ -103,9 +102,12 @@ workspace closure.
 Rollback: remove generated staging output and return to the hand-authored
 prototype; zero public reports remain.
 
-## ASSURE-04D — Review Locks, Publication, And Snapshots
+## ASSURE-04D — Completed Review Locks, Publication, And Snapshots
 
-Outcome: implement scientific and reproduction/publication review locks,
+Foundation status: completed by
+`20260716-assure04d-review-lock-publication-snapshot-001`.
+
+Outcome: implemented scientific and reproduction/publication review locks,
 staging-to-public promotion for approved roots only, catalog integration, drift
 checks, and immutable release snapshots.
 

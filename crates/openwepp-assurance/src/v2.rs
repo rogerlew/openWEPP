@@ -8,26 +8,39 @@ use crate::hash::sha256_bytes;
 
 mod assembly;
 mod confined;
+mod lifecycle;
 mod planner;
+mod publication;
 
 pub use assembly::{V2AssemblyResult, V2AssemblySummary};
 pub use planner::{V2Plan, V2PlanNode, V2PlanState, V2ReportPlan};
+pub use publication::{
+    V2PublicationFault, V2PublicationOptions, V2PublicationResult, V2ReleaseIdentity,
+    V2ReleaseVerification, V2ReviewRoots, V2TrustDomain, verify_v2_release_snapshot,
+};
 
 pub(crate) use confined::read_regular_confined;
 use confined::validate_relative;
+use lifecycle::{
+    Principal, PrincipalKind, PrincipalRegistry, ReaderMetadata, digest_input_set, validate_date,
+    validate_principal_registry, validate_reader_metadata, validate_review,
+};
 
 const V2_CATALOG_PATH: &str = "assurance/v2/catalog.yaml";
-const CATALOG_SCHEMA_VERSION: u32 = 2;
-const REPORT_SCHEMA_VERSION: u32 = 2;
+const CATALOG_SCHEMA_VERSION: u32 = 3;
+const REPORT_SCHEMA_VERSION: u32 = 3;
 const RESULT_SCHEMA_VERSION: u32 = 1;
-const CONTRACT_VERSION: u32 = 2;
-const SOURCE_STATE: &str = "internal_draft_sources";
+const PRINCIPAL_SCHEMA_VERSION: u32 = 1;
+const CONTRACT_VERSION: u32 = 3;
+const SOURCE_STATE: &str = "internal_assurance_sources";
 const DRAFT: &str = "DRAFT";
 
 const CATALOG_FIELDS: &[&str] = &[
     "schema_version",
     "contract_version",
     "source_state",
+    "trust_domain",
+    "principal_registry",
     "schemas",
     "reports",
 ];
@@ -39,7 +52,9 @@ const REPORT_FIELDS: &[&str] = &[
     "title",
     "owner",
     "lifecycle",
+    "trust_domain",
     "fixture_only",
+    "reader_metadata",
     "authorship",
     "agent_assistance",
     "manuscript",
@@ -64,9 +79,19 @@ const CATALOG_REPORT_SOURCE_FIELDS: &[&str] = &[
     "version",
     "title",
     "owner",
+    "trust_domain",
     "fixture_only",
     "manifest_path",
     "manifest_sha256",
+];
+const CONTENT_IDENTITY_FIELDS: &[&str] = &["path", "sha256"];
+const READER_METADATA_FIELDS: &[&str] = &[
+    "scientific_question",
+    "assessed_process",
+    "assessed_quantity",
+    "realization",
+    "related_model_narrative",
+    "manuscript_date",
 ];
 const CONTENT_SOURCE_FIELDS: &[&str] = &[
     "id",
@@ -205,22 +230,66 @@ const REVIEW_FIELDS: &[&str] = &[
     "owner",
     "state",
     "decision",
-    "reviewed_root",
-    "approvers",
+    "subject_root",
+    "review_charge",
+    "build_maintainer_id",
+    "material_producer_ids",
+    "findings",
+    "finding_ledger_root",
+    "approvals",
+    "approval_lock_root",
     "independence_assessment",
+];
+const FINDING_FIELDS: &[&str] = &[
+    "id",
+    "summary",
+    "severity",
+    "disposition",
+    "rationale",
+    "resolution",
+    "verification",
+    "verifier_id",
+];
+const APPROVAL_FIELDS: &[&str] = &[
+    "role",
+    "principal_id",
+    "finding_ledger_root",
+    "decision",
+    "competence_basis",
+    "independence_attestation",
+    "approved_on",
 ];
 const PUBLICATION_FIELDS: &[&str] = &[
     "id",
     "title",
     "owner",
     "state",
+    "approval_lock_root",
+    "target_release_commit",
+    "target_release_configuration",
+    "prior_realization",
+    "candidate_realization",
+    "impact_assessment",
+    "reproduction_disposition",
+    "semantic_differences",
+    "release_owner_id",
+    "assurance_steward_id",
+    "publication_date",
     "public_path",
-    "snapshot_id",
-    "release_id",
+    "release_transfer_root",
     "export_authorized",
     "vendoring_authorized",
     "supersedes",
     "withdrawn",
+];
+const PRINCIPAL_REGISTRY_FIELDS: &[&str] = &["schema_version", "trust_domain", "principals"];
+const PRINCIPAL_FIELDS: &[&str] = &[
+    "id",
+    "display_name",
+    "kind",
+    "identity_authority",
+    "identity_reference",
+    "roles",
 ];
 const RESULT_VALUE_FIELDS: &[&str] = &["id", "value", "unit_id", "precision"];
 const AUTHORSHIP_FIELDS: &[&str] = &[
@@ -250,10 +319,12 @@ const AGENT_ASSISTANCE_FIELDS: &[&str] = &[
     "review_entry_authorized",
 ];
 const CATALOG_SCHEMA_DEFINITIONS: &[(&str, &[&str])] = &[
+    ("contentIdentity", CONTENT_IDENTITY_FIELDS),
     ("schemaSource", CATALOG_SCHEMA_SOURCE_FIELDS),
     ("reportSource", CATALOG_REPORT_SOURCE_FIELDS),
 ];
 const REPORT_SCHEMA_DEFINITIONS: &[(&str, &[&str])] = &[
+    ("readerMetadata", READER_METADATA_FIELDS),
     ("authorship", AUTHORSHIP_FIELDS),
     ("agentAssistance", AGENT_ASSISTANCE_FIELDS),
     ("contentSource", CONTENT_SOURCE_FIELDS),
@@ -270,8 +341,11 @@ const REPORT_SCHEMA_DEFINITIONS: &[(&str, &[&str])] = &[
     ("reference", REFERENCE_FIELDS),
     ("researchObject", RESEARCH_OBJECT_FIELDS),
     ("review", REVIEW_FIELDS),
+    ("finding", FINDING_FIELDS),
+    ("approval", APPROVAL_FIELDS),
     ("publication", PUBLICATION_FIELDS),
 ];
+const PRINCIPAL_SCHEMA_DEFINITIONS: &[(&str, &[&str])] = &[("principal", PRINCIPAL_FIELDS)];
 
 /// Deterministic validation result for one or all admitted v2 sources.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -326,6 +400,8 @@ pub struct V2Repository {
     root: PathBuf,
     inputs: BTreeMap<PathBuf, String>,
     sources: BTreeMap<String, ReportSource>,
+    trust_domain: V2TrustDomain,
+    principals: PrincipalRegistry,
 }
 
 impl V2Repository {
@@ -345,12 +421,29 @@ impl V2Repository {
         let catalog: V2Catalog = parse_yaml(V2_CATALOG_PATH, &catalog_bytes)?;
         validate_catalog_header(&catalog)?;
         validate_schemas(&root, &catalog.schemas, &mut inputs)?;
+        validate_relative(&catalog.principal_registry.path)?;
+        validate_digest(&catalog.principal_registry.sha256, "principal registry")?;
+        let principal_bytes = read_identified(
+            &root,
+            &catalog.principal_registry.path,
+            Some(&catalog.principal_registry.sha256),
+            &mut inputs,
+        )?;
+        let principals: PrincipalRegistry =
+            parse_yaml(&catalog.principal_registry.path, &principal_bytes)?;
+        validate_principal_registry(&principals, catalog.trust_domain)?;
 
         let mut sources = BTreeMap::new();
         let mut catalog_ids = BTreeSet::new();
         let mut manifest_paths = BTreeSet::new();
         for source in &catalog.reports {
             validate_report_source(source)?;
+            if source.trust_domain != catalog.trust_domain {
+                return Err(AssuranceError::Invalid(format!(
+                    "catalog report '{}' trust domain does not match the catalog",
+                    source.id
+                )));
+            }
             require_unique(&mut catalog_ids, &source.id, "catalog report")?;
             require_unique_path(
                 &mut manifest_paths,
@@ -368,6 +461,8 @@ impl V2Repository {
             root,
             inputs,
             sources,
+            trust_domain: catalog.trust_domain,
+            principals,
         })
     }
 
@@ -460,6 +555,68 @@ impl V2Repository {
         staging_root: impl AsRef<Path>,
     ) -> Result<V2AssemblyResult> {
         self.assemble_report(report_id, staging_root.as_ref(), assembly::Operation::Check)
+    }
+
+    /// Calculates the deterministic layered review roots for one staged report.
+    ///
+    /// # Errors
+    ///
+    /// Returns a typed source, staging, schema, or drift error.
+    pub fn review_roots(
+        &self,
+        report_id: &str,
+        staging_root: impl AsRef<Path>,
+    ) -> Result<V2ReviewRoots> {
+        publication::review_roots(self, report_id, staging_root.as_ref())
+    }
+
+    /// Publishes one production-domain approved report.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error unless every review, transfer, staging, confinement,
+    /// snapshot, and public-generation gate passes.
+    pub fn publish_report(
+        &self,
+        report_id: &str,
+        options: &V2PublicationOptions,
+    ) -> Result<V2PublicationResult> {
+        publication::publish(self, Some(report_id), options, V2TrustDomain::Production)
+    }
+
+    /// Publishes every production-domain approved report.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error unless every selected report and exact-set gate passes.
+    pub fn publish_all(&self, options: &V2PublicationOptions) -> Result<V2PublicationResult> {
+        publication::publish(self, None, options, V2TrustDomain::Production)
+    }
+
+    /// Exercises one synthetic approved fixture in the isolated test domain.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error unless the explicitly test-only fixture and all
+    /// publication mechanics pass.
+    pub fn publish_test_fixture_report(
+        &self,
+        report_id: &str,
+        options: &V2PublicationOptions,
+    ) -> Result<V2PublicationResult> {
+        publication::publish(self, Some(report_id), options, V2TrustDomain::TestOnly)
+    }
+
+    /// Exercises every synthetic approved fixture in the isolated test domain.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error unless the complete test-only set and mechanics pass.
+    pub fn publish_all_test_fixtures(
+        &self,
+        options: &V2PublicationOptions,
+    ) -> Result<V2PublicationResult> {
+        publication::publish(self, None, options, V2TrustDomain::TestOnly)
     }
 
     fn assemble_all(
@@ -557,8 +714,17 @@ struct V2Catalog {
     schema_version: u32,
     contract_version: u32,
     source_state: String,
+    trust_domain: V2TrustDomain,
+    principal_registry: ContentIdentity,
     schemas: Vec<SchemaSource>,
     reports: Vec<ReportSource>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ContentIdentity {
+    path: PathBuf,
+    sha256: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -576,6 +742,7 @@ struct ReportSource {
     version: String,
     title: String,
     owner: String,
+    trust_domain: V2TrustDomain,
     fixture_only: bool,
     manifest_path: PathBuf,
     manifest_sha256: String,
@@ -586,7 +753,7 @@ fn validate_catalog_header(catalog: &V2Catalog) -> Result<()> {
         || catalog.contract_version != CONTRACT_VERSION
     {
         return Err(AssuranceError::Invalid(
-            "v2 catalog requires schema_version 2 and contract_version 2".to_owned(),
+            "v2 catalog requires schema_version 3 and contract_version 3".to_owned(),
         ));
     }
     if catalog.source_state != SOURCE_STATE {
@@ -602,9 +769,14 @@ fn validate_report_source(source: &ReportSource) -> Result<()> {
     validate_version(&source.version, "catalog report")?;
     validate_digest(&source.manifest_sha256, "report manifest")?;
     validate_relative(&source.manifest_path)?;
-    if !source.fixture_only {
+    if source.trust_domain == V2TrustDomain::TestOnly && !source.fixture_only {
         return Err(AssuranceError::Invalid(
-            "ASSURE-04A catalog admits only fixture_only sources".to_owned(),
+            "test-only catalog reports must be fixture_only".to_owned(),
+        ));
+    }
+    if source.trust_domain == V2TrustDomain::Production && source.fixture_only {
+        return Err(AssuranceError::Invalid(
+            "production catalog reports cannot be fixture_only".to_owned(),
         ));
     }
     Ok(())
@@ -615,6 +787,7 @@ fn validate_catalog_binding(source: &ReportSource, report: &Report) -> Result<()
         || source.version != report.version
         || source.title != report.title
         || source.owner != report.owner
+        || source.trust_domain != report.trust_domain
         || source.fixture_only != report.fixture_only
     {
         return Err(AssuranceError::Invalid(format!(
@@ -649,13 +822,18 @@ fn validate_schemas(
     inputs: &mut BTreeMap<PathBuf, String>,
 ) -> Result<()> {
     let expected = BTreeMap::from([
-        ("openwepp:assurance:v2:catalog:2", CATALOG_FIELDS),
-        ("openwepp:assurance:v2:report:2", REPORT_FIELDS),
+        ("openwepp:assurance:v2:catalog:3", CATALOG_FIELDS),
+        ("openwepp:assurance:v2:report:3", REPORT_FIELDS),
         ("openwepp:assurance:v2:result:1", RESULT_FIELDS),
+        (
+            "openwepp:assurance:v2:principals:1",
+            PRINCIPAL_REGISTRY_FIELDS,
+        ),
     ]);
     if sources.len() != expected.len() {
         return Err(AssuranceError::Invalid(
-            "v2 catalog must bind exactly the catalog, report, and result schemas".to_owned(),
+            "v2 catalog must bind exactly the catalog, report, result, and principal schemas"
+                .to_owned(),
         ));
     }
     let mut observed = BTreeSet::new();
@@ -732,9 +910,10 @@ fn expected_schema_definitions(
     source_id: &str,
 ) -> Result<&'static [(&'static str, &'static [&'static str])]> {
     let definitions = match source_id {
-        "openwepp:assurance:v2:catalog:2" => CATALOG_SCHEMA_DEFINITIONS,
-        "openwepp:assurance:v2:report:2" => REPORT_SCHEMA_DEFINITIONS,
+        "openwepp:assurance:v2:catalog:3" => CATALOG_SCHEMA_DEFINITIONS,
+        "openwepp:assurance:v2:report:3" => REPORT_SCHEMA_DEFINITIONS,
         "openwepp:assurance:v2:result:1" => &[],
+        "openwepp:assurance:v2:principals:1" => PRINCIPAL_SCHEMA_DEFINITIONS,
         _ => {
             return Err(AssuranceError::Invalid(format!(
                 "schema '{source_id}' has no executable definition contract"
@@ -782,19 +961,23 @@ fn validate_schema_definitions(
 
 fn validate_schema_constants(source: &SchemaSource, document: &SchemaDocument) -> Result<()> {
     let expected = match source.id.as_str() {
-        "openwepp:assurance:v2:catalog:2" => vec![
+        "openwepp:assurance:v2:catalog:3" => vec![
             ("schema_version", serde_json::json!(CATALOG_SCHEMA_VERSION)),
             ("contract_version", serde_json::json!(CONTRACT_VERSION)),
             ("source_state", serde_json::json!(SOURCE_STATE)),
         ],
-        "openwepp:assurance:v2:report:2" => vec![
+        "openwepp:assurance:v2:report:3" => vec![
             ("schema_version", serde_json::json!(REPORT_SCHEMA_VERSION)),
             ("contract_version", serde_json::json!(CONTRACT_VERSION)),
-            ("lifecycle", serde_json::json!(DRAFT)),
-            ("fixture_only", serde_json::json!(true)),
         ],
         "openwepp:assurance:v2:result:1" => {
             vec![("schema_version", serde_json::json!(RESULT_SCHEMA_VERSION))]
+        }
+        "openwepp:assurance:v2:principals:1" => {
+            vec![(
+                "schema_version",
+                serde_json::json!(PRINCIPAL_SCHEMA_VERSION),
+            )]
         }
         _ => Vec::new(),
     };
@@ -894,7 +1077,9 @@ struct Report {
     title: String,
     owner: String,
     lifecycle: String,
+    trust_domain: V2TrustDomain,
     fixture_only: bool,
+    reader_metadata: ReaderMetadata,
     authorship: Authorship,
     agent_assistance: AgentAssistance,
     manuscript: ContentSource,
@@ -1213,9 +1398,49 @@ struct Review {
     state: String,
     decision: String,
     #[serde(default)]
-    reviewed_root: RequiredNullable<String>,
-    approvers: Vec<String>,
+    subject_root: RequiredNullable<String>,
+    #[serde(default)]
+    #[serde(rename = "review_charge")]
+    charge: RequiredNullable<String>,
+    #[serde(default)]
+    build_maintainer_id: RequiredNullable<String>,
+    material_producer_ids: Vec<String>,
+    findings: Vec<Finding>,
+    #[serde(default)]
+    finding_ledger_root: RequiredNullable<String>,
+    approvals: Vec<Approval>,
+    #[serde(default)]
+    approval_lock_root: RequiredNullable<String>,
     independence_assessment: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Finding {
+    id: String,
+    summary: String,
+    severity: String,
+    disposition: String,
+    #[serde(default)]
+    rationale: RequiredNullable<String>,
+    #[serde(default)]
+    resolution: RequiredNullable<String>,
+    #[serde(default)]
+    verification: RequiredNullable<String>,
+    #[serde(default)]
+    verifier_id: RequiredNullable<String>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Approval {
+    role: String,
+    principal_id: String,
+    finding_ledger_root: String,
+    decision: String,
+    competence_basis: String,
+    independence_attestation: String,
+    approved_on: String,
 }
 
 #[derive(Debug, Deserialize)]
@@ -1226,11 +1451,31 @@ struct Publication {
     owner: String,
     state: String,
     #[serde(default)]
+    approval_lock_root: RequiredNullable<String>,
+    #[serde(default)]
+    target_release_commit: RequiredNullable<String>,
+    #[serde(default)]
+    target_release_configuration: RequiredNullable<String>,
+    #[serde(default)]
+    prior_realization: RequiredNullable<String>,
+    #[serde(default)]
+    candidate_realization: RequiredNullable<String>,
+    #[serde(default)]
+    impact_assessment: RequiredNullable<String>,
+    #[serde(default)]
+    reproduction_disposition: RequiredNullable<String>,
+    semantic_differences: Vec<String>,
+    #[serde(default)]
+    release_owner_id: RequiredNullable<String>,
+    #[serde(default)]
+    assurance_steward_id: RequiredNullable<String>,
+    #[serde(default)]
+    #[serde(rename = "publication_date")]
+    date: RequiredNullable<String>,
+    #[serde(default)]
     public_path: RequiredNullable<PathBuf>,
     #[serde(default)]
-    snapshot_id: RequiredNullable<String>,
-    #[serde(default)]
-    release_id: RequiredNullable<String>,
+    release_transfer_root: RequiredNullable<String>,
     export_authorized: bool,
     vendoring_authorized: bool,
     #[serde(default)]
@@ -1268,16 +1513,40 @@ fn validate_report(
     for object in &report.research_objects {
         validate_research_object(root, object, &ids, inputs)?;
     }
+    read_identified(
+        root,
+        &Path::new("usersum").join(&report.reader_metadata.related_model_narrative),
+        None,
+        inputs,
+    )?;
     Ok(())
 }
 
 fn validate_report_structure(report: &Report) -> Result<ReportIds> {
     validate_report_header(report)?;
     let ids = collect_report_ids(report)?;
-    validate_authorship(&report.authorship)?;
-    validate_agent_assistance(&report.agent_assistance, &ids)?;
-    validate_content_contract(&report.manuscript, &ids)?;
-    validate_content_contract(&report.supplement, &ids)?;
+    validate_authorship(&report.authorship, &report.lifecycle)?;
+    validate_agent_assistance(&report.agent_assistance, &ids, &report.lifecycle)?;
+    validate_report_sections(report, &ids)?;
+    validate_review(&report.review)?;
+    validate_publication(&report.publication)?;
+    let expected_publication = if report.lifecycle == "APPROVED" {
+        "APPROVED"
+    } else {
+        DRAFT
+    };
+    if report.review.state != report.lifecycle || report.publication.state != expected_publication {
+        return Err(AssuranceError::Invalid(
+            "report lifecycle, review state, and publication-transfer state disagree".to_owned(),
+        ));
+    }
+    validate_no_unused(report)?;
+    Ok(ids)
+}
+
+fn validate_report_sections(report: &Report, ids: &ReportIds) -> Result<()> {
+    validate_content_contract(&report.manuscript, ids)?;
+    validate_content_contract(&report.supplement, ids)?;
     for dependency in &report.dependencies {
         validate_dependency_shape(dependency)?;
     }
@@ -1285,49 +1554,52 @@ fn validate_report_structure(report: &Report) -> Result<ReportIds> {
         validate_unit(unit)?;
     }
     for claim in &report.claims {
-        validate_claim(claim, &ids)?;
+        validate_claim(claim, ids)?;
     }
     for method in &report.methods {
-        validate_method(method, &ids)?;
+        validate_method(method, ids)?;
     }
     for source in &report.results {
-        validate_result_source(source, &ids)?;
+        validate_result_source(source, ids)?;
     }
     for binding in &report.value_bindings {
-        validate_value_binding(binding, &ids)?;
+        validate_value_binding(binding, ids)?;
     }
     for table in &report.tables {
-        validate_table(table, &ids)?;
+        validate_table(table, ids)?;
     }
     for figure in &report.figures {
-        validate_figure(figure, &ids)?;
+        validate_figure(figure, ids)?;
     }
     for reference in &report.references {
-        validate_reference(reference, &ids)?;
+        validate_reference(reference, ids)?;
     }
     for object in &report.research_objects {
-        validate_research_object_contract(object, &ids)?;
+        validate_research_object_contract(object, ids)?;
     }
-    validate_review(&report.review)?;
-    validate_publication(&report.publication)?;
-    validate_no_unused(report)?;
-    Ok(ids)
+    Ok(())
 }
 
 fn validate_report_header(report: &Report) -> Result<()> {
     if report.schema_version != REPORT_SCHEMA_VERSION || report.contract_version != CONTRACT_VERSION
     {
         return Err(AssuranceError::Invalid(
-            "v2 report requires schema_version 2 and contract_version 2".to_owned(),
+            "v2 report requires schema_version 3 and contract_version 3".to_owned(),
         ));
     }
     validate_identity(&report.id, &report.title, &report.owner, "report")?;
     validate_version(&report.version, "report")?;
-    if report.lifecycle != DRAFT || !report.fixture_only {
+    if !matches!(report.lifecycle.as_str(), DRAFT | "IN_REVIEW" | "APPROVED") {
         return Err(AssuranceError::Invalid(
-            "ASSURE-04A report must be DRAFT and fixture_only".to_owned(),
+            "v2 report lifecycle must be DRAFT, IN_REVIEW, or APPROVED".to_owned(),
         ));
     }
+    if (report.trust_domain == V2TrustDomain::TestOnly) != report.fixture_only {
+        return Err(AssuranceError::Invalid(
+            "test_only reports must be fixture_only and production reports must not be".to_owned(),
+        ));
+    }
+    validate_reader_metadata(&report.reader_metadata)?;
     for (name, count) in [
         ("dependency", report.dependencies.len()),
         ("unit", report.units.len()),
@@ -1492,7 +1764,7 @@ fn insert_identity(
     require_unique(ids, id, "logical ID")
 }
 
-fn validate_authorship(authorship: &Authorship) -> Result<()> {
+fn validate_authorship(authorship: &Authorship, lifecycle: &str) -> Result<()> {
     if authorship.draft_authors.is_empty()
         || authorship
             .draft_authors
@@ -1503,26 +1775,42 @@ fn validate_authorship(authorship: &Authorship) -> Result<()> {
             "draft authorship requires at least one named author".to_owned(),
         ));
     }
-    require_absent(
-        &authorship.human_report_lead,
-        "authorship human_report_lead",
-    )?;
-    require_absent(
-        &authorship.scientific_approver,
-        "authorship scientific_approver",
-    )?;
-    if authorship.accountability_state != "unassigned_blocks_review"
-        || authorship.external_peer_review_claimed
-    {
-        return Err(AssuranceError::Invalid(
-            "ASSURE-04A fixture authorship must disclose unassigned human accountability and cannot claim external peer review"
-                .to_owned(),
-        ));
+    if lifecycle == DRAFT {
+        require_absent(
+            &authorship.human_report_lead,
+            "authorship human_report_lead",
+        )?;
+        require_absent(
+            &authorship.scientific_approver,
+            "authorship scientific_approver",
+        )?;
+        if authorship.accountability_state != "unassigned_blocks_review"
+            || authorship.external_peer_review_claimed
+        {
+            return Err(AssuranceError::Invalid(
+                "draft authorship must disclose unassigned human accountability and cannot claim external peer review"
+                    .to_owned(),
+            ));
+        }
+    } else {
+        require_present_nonempty(
+            authorship.human_report_lead.as_deref(),
+            "authorship human_report_lead",
+        )?;
+        if authorship.accountability_state != "assigned" {
+            return Err(AssuranceError::Invalid(
+                "review-entry authorship requires assigned human accountability".to_owned(),
+            ));
+        }
     }
     Ok(())
 }
 
-fn validate_agent_assistance(assistance: &AgentAssistance, ids: &ReportIds) -> Result<()> {
+fn validate_agent_assistance(
+    assistance: &AgentAssistance,
+    ids: &ReportIds,
+    lifecycle: &str,
+) -> Result<()> {
     for (value, name) in [
         (&assistance.procedure_version, "agent procedure_version"),
         (&assistance.objective, "agent objective"),
@@ -1548,9 +1836,15 @@ fn validate_agent_assistance(assistance: &AgentAssistance, ids: &ReportIds) -> R
         &ids.dependencies,
         "agent exact-output dependency",
     )?;
-    if assistance.provenance_complete || assistance.review_entry_authorized {
+    if assistance.review_entry_authorized && !assistance.provenance_complete {
         return Err(AssuranceError::Invalid(
-            "incomplete ASSURE-02 agent provenance must block review entry".to_owned(),
+            "agent review-entry authorization requires complete provenance".to_owned(),
+        ));
+    }
+    if lifecycle != DRAFT && !assistance.review_entry_authorized {
+        return Err(AssuranceError::Invalid(
+            "IN_REVIEW and APPROVED reports require authorized agent-assistance disposition"
+                .to_owned(),
         ));
     }
     Ok(())
@@ -2016,34 +2310,129 @@ fn validate_research_object_relations(object: &ResearchObject, ids: &ReportIds) 
     )
 }
 
-fn validate_review(review: &Review) -> Result<()> {
-    require_absent(&review.reviewed_root, "review reviewed_root")?;
-    if review.state != DRAFT
-        || review.decision != "not_started"
-        || !review.approvers.is_empty()
-        || review.independence_assessment != "not_assessed"
-    {
+fn validate_publication(publication: &Publication) -> Result<()> {
+    if publication.export_authorized || publication.vendoring_authorized || publication.withdrawn {
         return Err(AssuranceError::Invalid(
-            "draft review cannot claim a decision, root, approver, or independence assessment"
-                .to_owned(),
+            "ASSURE-04D does not authorize export, vendoring, or withdrawn publication".to_owned(),
+        ));
+    }
+    require_absent(&publication.supersedes, "publication supersedes")?;
+    match publication.state.as_str() {
+        DRAFT => validate_draft_publication(publication),
+        "APPROVED" => validate_approved_publication(publication),
+        _ => Err(AssuranceError::Invalid(
+            "publication state must be DRAFT or APPROVED".to_owned(),
+        )),
+    }
+}
+
+fn validate_draft_publication(publication: &Publication) -> Result<()> {
+    for (value, label) in [
+        (&publication.approval_lock_root, "publication approval lock"),
+        (
+            &publication.target_release_commit,
+            "publication release commit",
+        ),
+        (
+            &publication.target_release_configuration,
+            "publication release configuration",
+        ),
+        (
+            &publication.prior_realization,
+            "publication prior realization",
+        ),
+        (
+            &publication.candidate_realization,
+            "publication candidate realization",
+        ),
+        (
+            &publication.impact_assessment,
+            "publication impact assessment",
+        ),
+        (
+            &publication.reproduction_disposition,
+            "publication reproduction disposition",
+        ),
+        (&publication.release_owner_id, "publication release owner"),
+        (
+            &publication.assurance_steward_id,
+            "publication assurance steward",
+        ),
+        (&publication.date, "publication date"),
+        (
+            &publication.release_transfer_root,
+            "publication transfer root",
+        ),
+    ] {
+        require_absent(value, label)?;
+    }
+    require_absent(&publication.public_path, "publication public_path")?;
+    if !publication.semantic_differences.is_empty() {
+        return Err(AssuranceError::Invalid(
+            "draft publication cannot claim semantic differences".to_owned(),
         ));
     }
     Ok(())
 }
 
-fn validate_publication(publication: &Publication) -> Result<()> {
-    require_absent(&publication.public_path, "publication public_path")?;
-    require_absent(&publication.snapshot_id, "publication snapshot_id")?;
-    require_absent(&publication.release_id, "publication release_id")?;
-    require_absent(&publication.supersedes, "publication supersedes")?;
-    if publication.state != DRAFT
-        || publication.export_authorized
-        || publication.vendoring_authorized
-        || publication.withdrawn
+fn validate_approved_publication(publication: &Publication) -> Result<()> {
+    validate_digest_present(&publication.approval_lock_root, "publication approval lock")?;
+    validate_digest_present(
+        &publication.release_transfer_root,
+        "publication release transfer root",
+    )?;
+    for (value, label) in [
+        (
+            publication.target_release_commit.as_deref(),
+            "publication release commit",
+        ),
+        (
+            publication.target_release_configuration.as_deref(),
+            "publication release configuration",
+        ),
+        (
+            publication.prior_realization.as_deref(),
+            "publication prior realization",
+        ),
+        (
+            publication.candidate_realization.as_deref(),
+            "publication candidate realization",
+        ),
+        (
+            publication.impact_assessment.as_deref(),
+            "publication impact assessment",
+        ),
+        (
+            publication.reproduction_disposition.as_deref(),
+            "publication reproduction disposition",
+        ),
+        (
+            publication.release_owner_id.as_deref(),
+            "publication release owner",
+        ),
+        (
+            publication.assurance_steward_id.as_deref(),
+            "publication assurance steward",
+        ),
+    ] {
+        require_present_nonempty(value, label)?;
+    }
+    let date = publication.date.as_deref().ok_or_else(|| {
+        AssuranceError::Invalid("approved publication requires publication date".to_owned())
+    })?;
+    validate_date(date, "publication date")?;
+    let path = publication.public_path.as_deref().ok_or_else(|| {
+        AssuranceError::Invalid("approved publication requires public path".to_owned())
+    })?;
+    validate_relative(path)?;
+    if publication.semantic_differences.is_empty()
+        || publication
+            .semantic_differences
+            .iter()
+            .any(|value| value.trim().is_empty())
     {
         return Err(AssuranceError::Invalid(
-            "draft publication cannot claim a public path, snapshot, release, export, vendoring, supersession, or withdrawal"
-                .to_owned(),
+            "approved publication requires explicit semantic-difference disposition".to_owned(),
         ));
     }
     Ok(())
@@ -2328,6 +2717,13 @@ fn validate_digest(digest: &str, kind: &str) -> Result<()> {
     Ok(())
 }
 
+fn validate_digest_present(value: &RequiredNullable<String>, kind: &str) -> Result<()> {
+    let digest = value
+        .as_deref()
+        .ok_or_else(|| AssuranceError::Invalid(format!("{kind} is required")))?;
+    validate_digest(digest, kind)
+}
+
 fn require_nonempty(value: &str, name: &str) -> Result<()> {
     if value.trim().is_empty() {
         return Err(AssuranceError::Invalid(format!("{name} cannot be empty")));
@@ -2422,15 +2818,4 @@ fn parse_json<T: for<'de> Deserialize<'de>>(path: &Path, bytes: &[u8]) -> Result
         path: path.to_path_buf(),
         message: error.to_string(),
     })
-}
-
-fn digest_input_set(domain: &str, inputs: &BTreeMap<PathBuf, String>) -> String {
-    let mut material = format!("openwepp-assurance-v2:{domain}\n");
-    for (path, digest) in inputs {
-        material.push_str(&path.to_string_lossy());
-        material.push(' ');
-        material.push_str(digest);
-        material.push('\n');
-    }
-    sha256_bytes(material.as_bytes())
 }

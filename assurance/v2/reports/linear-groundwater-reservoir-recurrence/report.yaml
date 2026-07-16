@@ -1,11 +1,19 @@
-schema_version: 2
-contract_version: 2
+schema_version: 3
+contract_version: 3
 id: linear-groundwater-reservoir-recurrence
 version: 0.1.0
 title: Verification of openWEPP's Daily Linear Groundwater-Reservoir Recurrence
 owner: openWEPP scientific assurance maintainers
 lifecycle: DRAFT
+trust_domain: test_only
 fixture_only: true
+reader_metadata:
+  scientific_question: Does openWEPP correctly implement and transfer the authorized daily linear groundwater-reservoir recurrence?
+  assessed_process: Delayed groundwater storage, baseflow, and deep seepage
+  assessed_quantity: Daily groundwater storage and discharge volumes
+  realization: openWEPP direct-runtime groundwater recurrence and watershed transfer path
+  related_model_narrative: hillslope-hydrology-and-sediment-physics.md
+  manuscript_date: 2026-07-15
 authorship:
   id: GW-AUTHORSHIP
   title: Architecture-fixture authorship and accountability
@@ -896,17 +904,33 @@ review:
   owner: openWEPP assurance steward
   state: DRAFT
   decision: not_started
-  reviewed_root: null
-  approvers: []
+  subject_root: null
+  review_charge: null
+  build_maintainer_id: null
+  material_producer_ids: []
+  findings: []
+  finding_ledger_root: null
+  approvals: []
+  approval_lock_root: null
   independence_assessment: not_assessed
 publication:
   id: GW-PUBLICATION
   title: Publication authorization state
   owner: openWEPP assurance steward
   state: DRAFT
+  approval_lock_root: null
+  target_release_commit: null
+  target_release_configuration: null
+  prior_realization: null
+  candidate_realization: null
+  impact_assessment: null
+  reproduction_disposition: null
+  semantic_differences: []
+  release_owner_id: null
+  assurance_steward_id: null
+  publication_date: null
   public_path: null
-  snapshot_id: null
-  release_id: null
+  release_transfer_root: null
   export_authorized: false
   vendoring_authorized: false
   supersedes: null

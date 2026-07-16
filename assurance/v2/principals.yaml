@@ -1,0 +1,9 @@
+schema_version: 1
+trust_domain: test_only
+principals:
+  - id: codex-agent
+    display_name: Codex (AI coding agent)
+    kind: agent
+    identity_authority: OpenAI Codex execution environment
+    identity_reference: historical ASSURE-02/04A architecture-fixture author; exact model configuration not retained
+    roles: [draft_author]

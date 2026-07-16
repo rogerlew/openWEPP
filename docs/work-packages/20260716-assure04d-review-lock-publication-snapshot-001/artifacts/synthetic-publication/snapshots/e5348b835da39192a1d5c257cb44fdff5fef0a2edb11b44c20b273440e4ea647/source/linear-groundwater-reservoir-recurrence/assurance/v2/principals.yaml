@@ -1,0 +1,51 @@
+schema_version: 1
+trust_domain: test_only
+principals:
+  - id: test-report-lead
+    display_name: Test Report Lead
+    kind: human
+    identity_authority: ASSURE-04D synthetic fixture
+    identity_reference: test-only/report-lead
+    roles: [report_lead]
+  - id: test-scientist
+    display_name: Test Scientific Reviewer
+    kind: human
+    identity_authority: ASSURE-04D synthetic fixture
+    identity_reference: test-only/scientific-reviewer
+    roles: [scientific_reviewer]
+  - id: test-reproducer
+    display_name: Test Reproduction Reviewer
+    kind: human
+    identity_authority: ASSURE-04D synthetic fixture
+    identity_reference: test-only/reproduction-reviewer
+    roles: [reproduction_publication_reviewer]
+  - id: test-steward
+    display_name: Test Assurance Steward
+    kind: human
+    identity_authority: ASSURE-04D synthetic fixture
+    identity_reference: test-only/assurance-steward
+    roles: [assurance_steward]
+  - id: test-release-owner
+    display_name: Test Release Owner
+    kind: human
+    identity_authority: ASSURE-04D synthetic fixture
+    identity_reference: test-only/release-owner
+    roles: [release_owner]
+  - id: test-builder
+    display_name: Test Build Maintainer
+    kind: agent
+    identity_authority: ASSURE-04D synthetic fixture
+    identity_reference: test-only/build-maintainer
+    roles: [build_maintainer]
+  - id: test-producer
+    display_name: Test Material Producer
+    kind: agent
+    identity_authority: ASSURE-04D synthetic fixture
+    identity_reference: test-only/material-producer
+    roles: [material_producer]
+  - id: test-verifier
+    display_name: Test Finding Verifier
+    kind: agent
+    identity_authority: ASSURE-04D synthetic fixture
+    identity_reference: test-only/finding-verifier
+    roles: [finding_verifier]

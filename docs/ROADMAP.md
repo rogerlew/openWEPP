@@ -2,7 +2,7 @@
 
 Status: living — canonical prospective planning queue
 
-Last updated: 2026-07-15
+Last updated: 2026-07-16
 
 This file answers one question: **what work is openWEPP intentionally doing
 next, later, or at a named future gate?** It does not record how the current
@@ -31,7 +31,7 @@ state was reached. Execution history lives in the
 
 | Priority | Owning queue | State | Advancement gate |
 | --- | --- | --- | --- |
-| `ASSURE-04D` review locks, publication, and snapshots | Scientific assurance | `next` | Scaffold a separately authorized package from the completed ASSURE-04C handoff; keep tracked `usersum` zero-report and all synthetic approval evidence confined. |
+| `ASSURE-05` first production v2 report | Scientific assurance | `next` | Authorize and scaffold a separate package for a genuinely reviewed groundwater report; ASSURE-04D mechanics are complete, but no scientific or publication approval is implied. |
 
 ## Scientific Assurance Queue
 
@@ -95,8 +95,7 @@ The v2 records remain distinct:
 
 | ID | Prospective outcome | Advancement gate | State |
 | --- | --- | --- | --- |
-| `ASSURE-04D` | Add review locks, approved-only promotion, public catalog integration, drift checks, and immutable release snapshots. | Draft/review negative publication, changed-root invalidation, named approval, exact transfer, confined fixture, and tracked-zero-catalog gates pass. | `next`; awaits separate package authorization. |
-| `ASSURE-05` | Convert the accepted bounded non-snow prototype into the first complete v2 report using the production kernel, real consumer, retained evidence, figures/tables, and technical supplement. | Domain-reader outcome met; every quantitative statement resolves to evidence; limitations and contrary results remain visible; independent scientific/publication review and reproduction pass before public inclusion. | `queued`; blocked by `ASSURE-04D`. |
+| `ASSURE-05` | Convert the accepted bounded non-snow prototype into the first complete v2 report using the production kernel, real consumer, retained evidence, figures/tables, and technical supplement. | Domain-reader outcome met; every quantitative statement resolves to evidence; limitations and contrary results remain visible; independent scientific/publication review and reproduction pass before public inclusion. | `next`; requires separate authorization and package scaffold. |
 | `ASSURE-06` | Author the snow/frost flagship synthesis from the existing precipitation-phase, SWE/depth/density, frost-depth/soil-temperature, conservation, negative-mechanism, and production evidence; split reports where claims or scales materially differ. | Complete quantitative methods/results, datasets, sample counts, figures, forcing interpretation, limitations, prior-knowledge comparison, claim-specific conclusions, release transfer, and independent review. | `queued`; blocked by a successful `ASSURE-05` pilot. |
 | `ASSURE-07` | Build a priority portfolio of additional hydrology, erosion, sediment, plant, channel, and watershed reports and bind reviewed reports plus explicit gaps to release snapshots. | Selection by user importance and evidence readiness; ownership, currency, transfer, supersession, snapshots, and documented gaps remain explicit without implying site fitness. | `queued` after `ASSURE-05`; may proceed incrementally without blocking `ASSURE-06`. |
 | `ASSURE-08` | Vendor the approved v2 report set into WEPPcloud during the openWEPP beta release campaign. | Refresh the handoff against current wepppy contracts; prove vendor sync, manifest/navigation/roles, rendering, link rewriting, accessibility, search, and the real downstream consumer; bind vendored content to the beta candidate. | `deferred`; mandatory immediately before openWEPP beta release in WEPPcloud. Do not start while WEPPcloud or the reports remain immature. |
@@ -115,7 +114,7 @@ It is a dormant compatibility record, not authority to vendor.
 
 | ID | Owning queue and outcome | Advancement trigger | State |
 | --- | --- | --- | --- |
-| `CANOPY-PHENOLOGY` | Plant/snow-frost science: replace fixed-date deciduous/mixed-canopy behavior with hemisphere-robust leaf-off and leaf-on, then re-anchor the retained litter-drop window to the physical phenology signal. | An operator schedules the next increment by changing the current priority and authorizing a contract-first package. Before physics code, reconcile the landed native-management/YAML surface with the original first-class forest-input foundation and ratify the growth-canopy contract; then sequence leaf-off and leaf-on as separate closable increments. | `queued`; promoted, but not active while `ASSURE-04D` is the current priority. [Program record](backlog/20260626-frost-daylength-canopy-decline-hemisphere-robust.md). |
+| `CANOPY-PHENOLOGY` | Plant/snow-frost science: replace fixed-date deciduous/mixed-canopy behavior with hemisphere-robust leaf-off and leaf-on, then re-anchor the retained litter-drop window to the physical phenology signal. | An operator schedules the next increment by changing the current priority and authorizing a contract-first package. Before physics code, reconcile the landed native-management/YAML surface with the original first-class forest-input foundation and ratify the growth-canopy contract; then sequence leaf-off and leaf-on as separate closable increments. | `queued`; promoted, but not active while `ASSURE-05` is the current priority. [Program record](backlog/20260626-frost-daylength-canopy-decline-hemisphere-robust.md). |
 
 ## Promotion And History Routing
 

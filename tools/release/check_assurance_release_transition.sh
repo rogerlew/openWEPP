@@ -3,17 +3,26 @@ set -euo pipefail
 
 usage() {
   cat <<'USAGE'
-Usage: check_assurance_release_transition.sh --mode <validate|release> [--root <path>]
+Usage: check_assurance_release_transition.sh --mode <validate|release> [--root <path>] \
+  [--v2-snapshot <path> --v2-receipt <path> \
+   --release-commit <sha> --release-configuration <id>]
 
 Validation mode confirms only that the caller selected the non-assembly route.
 Release mode fails closed if an ASSURE-03 transition marker, any catalog other
 than the exact typed zero-report transition catalog, or any active/malformed
 retired v1 source/public route is present.
+When all four v2 arguments are supplied in release mode, the production
+snapshot verifier must pass before release assembly. Partial sets and every v2
+argument in validation mode fail closed.
 USAGE
 }
 
 MODE=""
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+V2_SNAPSHOT=""
+V2_RECEIPT=""
+RELEASE_COMMIT=""
+RELEASE_CONFIGURATION=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -23,6 +32,22 @@ while [[ $# -gt 0 ]]; do
       ;;
     --root)
       ROOT_DIR="${2:-}"
+      shift 2
+      ;;
+    --v2-snapshot)
+      V2_SNAPSHOT="${2:-}"
+      shift 2
+      ;;
+    --v2-receipt)
+      V2_RECEIPT="${2:-}"
+      shift 2
+      ;;
+    --release-commit)
+      RELEASE_COMMIT="${2:-}"
+      shift 2
+      ;;
+    --release-configuration)
+      RELEASE_CONFIGURATION="${2:-}"
       shift 2
       ;;
     -h|--help)
@@ -48,7 +73,22 @@ if [[ ! -d "${ROOT_DIR}" ]]; then
 fi
 ROOT_DIR="$(cd "${ROOT_DIR}" && pwd -P)"
 
+v2_argument_count=0
+for value in "${V2_SNAPSHOT}" "${V2_RECEIPT}" "${RELEASE_COMMIT}" "${RELEASE_CONFIGURATION}"; do
+  if [[ -n "${value}" ]]; then
+    v2_argument_count=$((v2_argument_count + 1))
+  fi
+done
+if [[ "${v2_argument_count}" -ne 0 && "${v2_argument_count}" -ne 4 ]]; then
+  echo "ERROR: v2 release verification requires snapshot, receipt, commit, and configuration as one complete set." >&2
+  exit 2
+fi
+
 if [[ "${MODE}" == "validate" ]]; then
+  if [[ "${v2_argument_count}" -ne 0 ]]; then
+    echo "ERROR: validation mode cannot consume publication snapshots or receipts." >&2
+    exit 2
+  fi
   echo "assurance transition preflight: PASS mode=validate assembly_authorized=false"
   exit 0
 fi
@@ -98,5 +138,29 @@ for relative in "${retired_paths[@]}"; do
     fi
   fi
 done
+
+if [[ "${v2_argument_count}" -eq 4 ]]; then
+  CURRENT_COMMIT="$(git -C "${ROOT_DIR}" rev-parse --verify HEAD)"
+  if [[ "${RELEASE_COMMIT}" != "${CURRENT_COMMIT}" ]]; then
+    echo "ERROR: v2 release commit must equal the selected openWEPP checkout HEAD (${CURRENT_COMMIT})." >&2
+    exit 1
+  fi
+  if [[ "${RELEASE_CONFIGURATION}" != "openwepp-release-default-v1" ]]; then
+    echo "ERROR: v2 release configuration must equal the release driver's actual build configuration 'openwepp-release-default-v1'." >&2
+    exit 1
+  fi
+  (
+    cd "${ROOT_DIR}"
+    cargo run --quiet -p openwepp-assurance -- \
+      verify-release \
+      --all \
+      --snapshot-dir "${V2_SNAPSHOT}" \
+      --receipt "${V2_RECEIPT}" \
+      --release-commit "${RELEASE_COMMIT}" \
+      --release-configuration "${RELEASE_CONFIGURATION}"
+  )
+  echo "assurance transition preflight: PASS mode=release publication_state=v2_receipt_verified"
+  exit 0
+fi
 
 echo "assurance transition preflight: PASS mode=release publication_state=v1_retired_zero_reports reports=0"

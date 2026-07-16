@@ -405,7 +405,7 @@ fn add_second_report(root: &Path) {
     let mut catalog = fs::read_to_string(&catalog_path).expect("read catalog");
     write!(
         catalog,
-        "  - id: {SECOND_REPORT_ID}\n    version: 0.1.0\n    title: Verification of openWEPP's Daily Linear Groundwater-Reservoir Recurrence\n    owner: openWEPP scientific assurance maintainers\n    fixture_only: true\n    manifest_path: {second_rel}/report.yaml\n    manifest_sha256: {manifest_digest}\n"
+        "  - id: {SECOND_REPORT_ID}\n    version: 0.1.0\n    title: Verification of openWEPP's Daily Linear Groundwater-Reservoir Recurrence\n    owner: openWEPP scientific assurance maintainers\n    trust_domain: test_only\n    fixture_only: true\n    manifest_path: {second_rel}/report.yaml\n    manifest_sha256: {manifest_digest}\n"
     )
     .expect("append second catalog entry");
     fs::write(catalog_path, catalog).expect("write two-report catalog");
@@ -456,6 +456,7 @@ fn fixture(label: &str) -> Scratch {
         "assurance/templates/catalog.md",
         "assurance/generated/wepppy-usersum.yaml",
         "usersum/assurance/README.md",
+        "usersum/hillslope-hydrology-and-sediment-physics.md",
         CONTRACT_PATH,
         "crates/openwepp-hillslope-orchestrator/src/direct_runtime/groundwater.rs",
         "docs/work-packages/20260714-assure02-manuscript-first-assurance-architecture-001/artifacts/groundwater-current-tree-confirmation.md",

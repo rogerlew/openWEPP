@@ -8,6 +8,10 @@ Usage:
     --mode <validate|release> \
     [--release-tag <yymmddsuffix>] \
     [--release-dir <path>] \
+    [--v2-assurance-snapshot <path>] \
+    [--v2-assurance-receipt <path>] \
+    [--v2-assurance-release-commit <sha>] \
+    [--v2-assurance-release-configuration <id>] \
     [--skip-stability] \
     [--skip-authority-required] \
     [--run-authority-periodic] \
@@ -49,6 +53,10 @@ SKIP_STABILITY=0
 SKIP_AUTHORITY_REQUIRED=0
 RUN_AUTHORITY_PERIODIC=0
 RUN_AUTHORITY_MANUAL=0
+V2_ASSURANCE_SNAPSHOT=""
+V2_ASSURANCE_RECEIPT=""
+V2_ASSURANCE_RELEASE_COMMIT=""
+V2_ASSURANCE_RELEASE_CONFIGURATION=""
 
 AUTHORITY_REGISTRY="${ROOT_DIR}/docs/specifications/external-authority/registry.yaml"
 AUTHORITY_REPORT=""
@@ -80,6 +88,22 @@ while [[ $# -gt 0 ]]; do
       ;;
     --release-dir)
       RELEASE_DIR="${2:-}"
+      shift 2
+      ;;
+    --v2-assurance-snapshot)
+      V2_ASSURANCE_SNAPSHOT="${2:-}"
+      shift 2
+      ;;
+    --v2-assurance-receipt)
+      V2_ASSURANCE_RECEIPT="${2:-}"
+      shift 2
+      ;;
+    --v2-assurance-release-commit)
+      V2_ASSURANCE_RELEASE_COMMIT="${2:-}"
+      shift 2
+      ;;
+    --v2-assurance-release-configuration)
+      V2_ASSURANCE_RELEASE_CONFIGURATION="${2:-}"
       shift 2
       ;;
     --skip-stability)
@@ -176,10 +200,21 @@ if [[ "${MODE}" != "validate" && "${MODE}" != "release" ]]; then
 fi
 
 # This preflight runs before creating an evidence/release directory. In release
-# mode it is the fail-closed ASSURE03-REL-001 assembly boundary.
-bash "${ROOT_DIR}/tools/release/check_assurance_release_transition.sh" \
-  --mode "${MODE}" \
+# mode it is the fail-closed ASSURE03-REL-001/ASSURE-04D assembly boundary.
+assurance_preflight_args=(
+  --mode "${MODE}"
   --root "${ROOT_DIR}"
+)
+if [[ -n "${V2_ASSURANCE_SNAPSHOT}" || -n "${V2_ASSURANCE_RECEIPT}" || -n "${V2_ASSURANCE_RELEASE_COMMIT}" || -n "${V2_ASSURANCE_RELEASE_CONFIGURATION}" ]]; then
+  assurance_preflight_args+=(
+    --v2-snapshot "${V2_ASSURANCE_SNAPSHOT}"
+    --v2-receipt "${V2_ASSURANCE_RECEIPT}"
+    --release-commit "${V2_ASSURANCE_RELEASE_COMMIT}"
+    --release-configuration "${V2_ASSURANCE_RELEASE_CONFIGURATION}"
+  )
+fi
+bash "${ROOT_DIR}/tools/release/check_assurance_release_transition.sh" \
+  "${assurance_preflight_args[@]}"
 
 if [[ ! -f "${AUTHORITY_REGISTRY}" ]]; then
   echo "ERROR: authority registry not found: ${AUTHORITY_REGISTRY}" >&2
@@ -199,6 +234,16 @@ if [[ -z "${RELEASE_DIR}" ]]; then
   fi
 fi
 mkdir -p "${RELEASE_DIR}"
+
+if [[ "${MODE}" == "release" && -n "${V2_ASSURANCE_SNAPSHOT}" ]]; then
+  bash "${ROOT_DIR}/tools/release/materialize_assurance_v2_release.sh" \
+    "${ROOT_DIR}" \
+    "${RELEASE_DIR}" \
+    "${V2_ASSURANCE_SNAPSHOT}" \
+    "${V2_ASSURANCE_RECEIPT}" \
+    "${V2_ASSURANCE_RELEASE_COMMIT}" \
+    "${V2_ASSURANCE_RELEASE_CONFIGURATION}"
+fi
 
 if [[ -z "${HILLSTAB_OUTPUT_JSON}" ]]; then
   HILLSTAB_OUTPUT_JSON="${RELEASE_DIR}/hillstab_results.json"

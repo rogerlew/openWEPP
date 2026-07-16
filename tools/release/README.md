@@ -51,6 +51,19 @@ in the sealed acquisition provenance.
     snapshot, builds/stages release binaries, emits sidecars, and runs
     `open_wepp_runner release lint`. Full-profile nextest supplies the required
     process-per-test isolation for environment-mutating integration tests.
+  - An approved v2 assurance realization is supplied only as the complete set
+    `--v2-assurance-snapshot`, `--v2-assurance-receipt`,
+    `--v2-assurance-release-commit`, and
+    `--v2-assurance-release-configuration`. The production verifier
+    reconstructs the content-addressed snapshot, receipt, public tree, all
+    source-derived authorization roots, and independently supplied release
+    identity before any release directory is created. The supplied commit must
+    equal checkout `HEAD`; configuration must equal the driver's actual build
+    configuration. Validation mode, partial sets, and `test_only` artifacts
+    fail. Release mode then calls `materialize_assurance_v2_release.sh` to copy
+    and reverify the artifacts under
+    `RELEASE_DIR/assurance-v2/`, emits an
+    `assurance-v2-publication.json` discovery sidecar, and records checksums.
   - The transition preflight admits only the exact typed zero-report catalog
     bytes. A retired v1 path must be absent or a real, non-symlink, completely
     empty directory; duplicate catalog keys, files, symlinks, sockets, FIFOs,
@@ -107,6 +120,17 @@ in the sealed acquisition provenance.
   - Separates non-assembly validation from release authorization.
   - Release mode fails on the transition marker, nonempty/ambiguous legacy
     catalog, or any retired v1 source/public route.
+  - With a complete optional v2 snapshot/receipt/commit/configuration set,
+    binds commit/configuration to the selected checkout/build and invokes the
+    reconstructing `openwepp-assurance verify-release`; otherwise preserves the
+    exact established zero-report release path.
+- `materialize_assurance_v2_release.sh`
+  - Performs the bounded release-path copy after preflight, verifies source and
+    copied production authority, emits the discovery sidecar, and writes and
+    checks content-addressed manifest/receipt checksums.
+  - Is called by the release runner and directly exercised by the ASSURE-04D
+    integration contract; it is not a substitute for the transition preflight
+    or the remaining release gates.
 
 ## Typical Usage
 

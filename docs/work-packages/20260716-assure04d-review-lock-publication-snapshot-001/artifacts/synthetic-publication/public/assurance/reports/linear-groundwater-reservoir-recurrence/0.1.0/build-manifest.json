@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "report_id": "linear-groundwater-reservoir-recurrence",
+  "report_version": "0.1.0",
+  "source_root_sha256": "1246656a07b9bf349481fefe51954f39ee15aae4c16c5e56c9b003731a6f24ad",
+  "assembly_tool": "openwepp-assurance-assembly:1",
+  "files": [
+    {
+      "path": "figures/GW-FIGURE-H2637.svg",
+      "sha256": "62791c01265f4580020a32f0ce91b749802ae339f9b2e113e34a0298a62e5201"
+    },
+    {
+      "path": "figures/GW-FIGURE-TWO-DAY.svg",
+      "sha256": "b86fee20e98362afd615a4e706e6db7c77ea9e876ba03a8664e853ebe3bcc5e8"
+    },
+    {
+      "path": "index.md",
+      "sha256": "08b3205bb9d568e20f7528aec1beb539688ccacdd7fd4fce26150ada06477ce9"
+    },
+    {
+      "path": "research-objects/SC-GWBASEFLOW-001.md",
+      "sha256": "97ee00e87df4a87221aa34fc1f44c77176f43922bcfac96c69d4b6de8e230d60"
+    },
+    {
+      "path": "research-objects/assure02-focused-tests.json",
+      "sha256": "acf4700a5f3495ecd1a4f92b2de7a80e068a352d8d52d7e03749054823621bc7"
+    },
+    {
+      "path": "research-objects/assure02-path-currency.json",
+      "sha256": "0a2b9963e93a725d4c2428bef81705a2b59fb704409a9314e4f48c1a44545c7d"
+    },
+    {
+      "path": "research-objects/h2637-ledger.json",
+      "sha256": "03aeac87669e959c72f9913ecba32cbc39afbc1284072f114bb263d7f0a7f229"
+    },
+    {
+      "path": "research-objects/two-day-recurrence.json",
+      "sha256": "e51dbd62c1316685b87007c665a24cd4af2bbe05237f33418e088e445bc67372"
+    },
+    {
+      "path": "supplement.md",
+      "sha256": "3a48ad0a88cc19ad0726f13d6042252cabcfc8a248d5107b137663c496255266"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 # Scientific Assurance Transition Source
 
-Status: v1 retired; zero public reports; internal v2 staging assembly active
+Status: v1 retired; zero public reports; v2 review/publication mechanics active
 
 The v1 status-first dossier publisher and SNOTEL candidate were removed by
 ASSURE-03 after exact source, generated, review, and compiler provenance was
@@ -13,11 +13,13 @@ exactly zero public reports. The retained public builder is deliberately fail-
 closed and rejects any nonempty legacy dossier catalog.
 
 ASSURE-04A added a separate internal source tree at `assurance/v2/`; ASSURE-04B
-added typed dependency planning; ASSURE-04C adds deterministic assembly only
-into an explicit disposable staging root. These capabilities are not approval
-or publication: v2 sources cannot enter tracked `usersum`, export, snapshot,
-release, or vendor surfaces. See `assurance/v2/README.md` for the source,
-planning, and staging contracts.
+added typed dependency planning; ASSURE-04C added deterministic assembly into
+an explicit disposable staging root. ASSURE-04D adds layered review roots,
+approval and release-transfer checks, external publication, immutable
+snapshots, receipts, and release verification. These mechanisms validate
+declared authority; they do not create scientific judgment or approval. The
+canonical groundwater architecture fixture remains `DRAFT`, `test_only`, and
+nonpublic. See `assurance/v2/README.md` for the complete boundary.
 
 From the repository root:
 
@@ -44,5 +46,10 @@ only after the release transition preflight passes. Ordinary CI never invokes
 snapshot mode. Historical recovery is audit-only and does not authorize v1
 publication, export, snapshotting, or vendoring.
 
-Report-specific validation, planning, and disposable assembly are available.
-Review locks and publication belong to ASSURE-04D and remain unavailable.
+Report-specific validation, planning, disposable assembly, review-root
+inspection through the Rust API, and fail-closed external publication are
+available. Publication always names external staging, usersum-shaped, and
+snapshot roots plus an independently supplied release identity. Production and
+synthetic-fixture publication use distinct API and CLI entry points. The
+tracked `usersum`, export, release, vendor, and WEPPcloud surfaces remain
+outside ordinary v2 operations.

@@ -14,7 +14,7 @@ use crate::{AssuranceError, Result, sha256_bytes};
 
 use super::confined::ConfinedDirectory;
 
-const ASSEMBLY_TOOL_ID: &str = "openwepp-assurance-assembly:1";
+pub(super) const ASSEMBLY_TOOL_ID: &str = "openwepp-assurance-assembly:1";
 const OUTPUT_PREFIX: &str = "usersum/assurance/reports";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -1696,6 +1696,21 @@ fn resolve_staged_link(parent: &Path, destination: &Path) -> Result<PathBuf> {
         }
     }
     Ok(components.into_iter().collect())
+}
+
+pub(super) fn has_canonical_markdown_link(markdown: &str, target: &str) -> bool {
+    use pulldown_cmark::{Event, Options, Parser, Tag};
+
+    let options = Options::ENABLE_TABLES
+        | Options::ENABLE_FOOTNOTES
+        | Options::ENABLE_STRIKETHROUGH
+        | Options::ENABLE_TASKLISTS;
+    Parser::new_ext(markdown, options).any(|event| {
+        matches!(
+            event,
+            Event::Start(Tag::Link { dest_url, .. }) if dest_url.as_ref() == target
+        )
+    })
 }
 
 fn markdown_destinations(text: &str) -> Result<Vec<&str>> {

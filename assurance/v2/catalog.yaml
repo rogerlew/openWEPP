@@ -1,21 +1,29 @@
-schema_version: 2
-contract_version: 2
-source_state: internal_draft_sources
+schema_version: 3
+contract_version: 3
+source_state: internal_assurance_sources
+trust_domain: test_only
+principal_registry:
+  path: assurance/v2/principals.yaml
+  sha256: 9fc866d3015c9b51c27bb3a57160d70692e1250258e6b98c9b8bef605627b59c
 schemas:
-  - id: openwepp:assurance:v2:catalog:2
+  - id: openwepp:assurance:v2:catalog:3
     path: assurance/v2/schemas/catalog.schema.json
-    sha256: 6db4343d92aac08083d1ff93053ef5f64daf8320247f9449341eb4cd882b0119
-  - id: openwepp:assurance:v2:report:2
+    sha256: 4581f7e581903e0200fcdeb5dba67603c99023fd066cc26baf7e3adee3e35dea
+  - id: openwepp:assurance:v2:report:3
     path: assurance/v2/schemas/report.schema.json
-    sha256: 386eb54167a1c5579faa38c278e0336b25aa1078d0e223cf7cd14604ae15b896
+    sha256: 44e029cb41e096188d4028dbcc3d79155a4f04c6fbd500c8cfabbac6977dd703
   - id: openwepp:assurance:v2:result:1
     path: assurance/v2/schemas/result.schema.json
     sha256: 417efb4dbf2d9209cff3c41f52eca2637325c667dccc7c3588d14a0e8dc673a4
+  - id: openwepp:assurance:v2:principals:1
+    path: assurance/v2/schemas/principals.schema.json
+    sha256: 945fb5e0edddf58ac2a28bf248da73c20776ff007423004c7d70951aec8374f7
 reports:
   - id: linear-groundwater-reservoir-recurrence
     version: 0.1.0
     title: Verification of openWEPP's Daily Linear Groundwater-Reservoir Recurrence
     owner: openWEPP scientific assurance maintainers
+    trust_domain: test_only
     fixture_only: true
     manifest_path: assurance/v2/reports/linear-groundwater-reservoir-recurrence/report.yaml
-    manifest_sha256: 767d22d85c25364d9db539071f4234ec74c0eb07a703812631a6457735da2587
+    manifest_sha256: d054331ac2563549e483ac31e6280f2163b291df4a2aee6ed25d69ae0933cee8

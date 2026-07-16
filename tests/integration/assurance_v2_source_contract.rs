@@ -14,6 +14,8 @@ const TWO_DAY_PATH: &str =
 const CATALOG_SCHEMA_PATH: &str = "assurance/v2/schemas/catalog.schema.json";
 const REPORT_SCHEMA_PATH: &str = "assurance/v2/schemas/report.schema.json";
 const RESULT_SCHEMA_PATH: &str = "assurance/v2/schemas/result.schema.json";
+const PRINCIPAL_SCHEMA_PATH: &str = "assurance/v2/schemas/principals.schema.json";
+const PRINCIPAL_PATH: &str = "assurance/v2/principals.yaml";
 
 #[test]
 fn real_source_and_cli_validate_named_and_all_deterministically() {
@@ -60,11 +62,17 @@ fn real_sources_satisfy_the_declared_draft_2020_12_schemas() {
     let catalog_schema = json_value(&root.join(CATALOG_SCHEMA_PATH));
     let report_schema = json_value(&root.join(REPORT_SCHEMA_PATH));
     let result_schema = json_value(&root.join(RESULT_SCHEMA_PATH));
+    let principal_schema = json_value(&root.join(PRINCIPAL_SCHEMA_PATH));
 
     assert_schema_accepts(
         &catalog_schema,
         &yaml_value(&root.join(CATALOG_PATH)),
         "catalog",
+    );
+    assert_schema_accepts(
+        &principal_schema,
+        &yaml_value(&root.join(PRINCIPAL_PATH)),
+        "principal registry",
     );
     assert_schema_accepts(
         &report_schema,
@@ -149,7 +157,7 @@ fn named_validation_isolated_from_an_unselected_broken_report() {
     let mut text = fs::read_to_string(&catalog).expect("read catalog");
     write!(
         text,
-        "  - id: broken-report\n    version: 0.1.0\n    title: Broken unselected source\n    owner: test fixture\n    fixture_only: true\n    manifest_path: {broken_path}\n    manifest_sha256: {digest}\n"
+        "  - id: broken-report\n    version: 0.1.0\n    title: Broken unselected source\n    owner: test fixture\n    trust_domain: test_only\n    fixture_only: true\n    manifest_path: {broken_path}\n    manifest_sha256: {digest}\n"
     )
     .expect("extend catalog text");
     fs::write(catalog, text).expect("extend catalog");
@@ -168,8 +176,8 @@ fn unknown_missing_duplicate_unresolved_and_unused_fields_fail_closed() {
     let unknown = fixture("assure04a-unknown-field");
     mutate_report(
         &unknown.path,
-        "schema_version: 2\n",
-        "schema_version: 2\nunexpected_field: true\n",
+        "schema_version: 3\n",
+        "schema_version: 3\nunexpected_field: true\n",
     );
     assert_rejected(&unknown.path, "unknown field");
 
@@ -241,7 +249,7 @@ fn schema_required_nullable_fields_cannot_be_omitted() {
             "    sha256: e51dbd62c1316685b87007c665a24cd4af2bbe05237f33418e088e445bc67372\n    review_role: null\n",
             "restriction_reason",
         ),
-        ("review", "  reviewed_root: null\n", "", "reviewed_root"),
+        ("review", "  subject_root: null\n", "", "subject_root"),
         ("publication", "  public_path: null\n", "", "public_path"),
     ];
 
@@ -266,18 +274,18 @@ fn content_schema_contract_and_report_versions_are_enforced() {
     let catalog_version = fixture("assure04a-catalog-version");
     replace_in(
         &catalog_version.path.join(CATALOG_PATH),
-        "schema_version: 2",
+        "schema_version: 3",
         "schema_version: 1",
     );
-    assert_rejected(&catalog_version.path, "catalog requires schema_version 2");
+    assert_rejected(&catalog_version.path, "catalog requires schema_version 3");
 
     let report_version = fixture("assure04a-report-version");
     mutate_report(
         &report_version.path,
-        "contract_version: 2",
+        "contract_version: 3",
         "contract_version: 1",
     );
-    assert_rejected(&report_version.path, "report requires schema_version 2");
+    assert_rejected(&report_version.path, "report requires schema_version 3");
 
     let semantic_version = fixture("assure04a-semantic-version");
     replace_in(
@@ -345,7 +353,7 @@ fn content_schema_contract_and_report_versions_are_enforced() {
     let schema_constant_drift = fixture("assure04a-schema-constant-drift");
     replace_in(
         &schema_constant_drift.path.join(report_schema_path),
-        "\"contract_version\": { \"const\": 2 }",
+        "\"contract_version\": { \"const\": 3 }",
         "\"contract_version\": { \"const\": 1 }",
     );
     refresh_catalog_hash(&schema_constant_drift.path, report_schema_path);
@@ -419,12 +427,12 @@ fn restricted_evidence_and_draft_lifecycle_contradictions_fail_closed() {
     let agent_provenance = fixture("assure04a-agent-provenance-contradiction");
     mutate_report(
         &agent_provenance.path,
-        "  provenance_complete: false",
-        "  provenance_complete: true",
+        "  review_entry_authorized: false",
+        "  review_entry_authorized: true",
     );
     assert_rejected(
         &agent_provenance.path,
-        "agent provenance must block review entry",
+        "review-entry authorization requires complete provenance",
     );
 
     let review = fixture("assure04a-review-contradiction");
@@ -441,7 +449,7 @@ fn restricted_evidence_and_draft_lifecycle_contradictions_fail_closed() {
         "  export_authorized: false",
         "  export_authorized: true",
     );
-    assert_rejected(&publication.path, "draft publication");
+    assert_rejected(&publication.path, "does not authorize export");
 }
 
 #[test]
@@ -629,6 +637,7 @@ fn fixture(label: &str) -> Scratch {
         "assurance/templates/catalog.md",
         "assurance/generated/wepppy-usersum.yaml",
         "usersum/assurance/README.md",
+        "usersum/hillslope-hydrology-and-sediment-physics.md",
         "docs/specifications/science-contracts/contracts/SC-GWBASEFLOW-001.md",
         "crates/openwepp-hillslope-orchestrator/src/direct_runtime/groundwater.rs",
         "docs/work-packages/20260714-assure02-manuscript-first-assurance-architecture-001/artifacts/groundwater-current-tree-confirmation.md",

@@ -102,6 +102,18 @@
 
 State as of `2026-07-16 UTC`:
 
+- `20260716-assure04d-review-lock-publication-snapshot-001/` -
+  EXECUTED-COMPLETE (2026-07-16): implemented review-subject roots, exact-root
+  named approval
+  locks, checked-staging promotion, reader-facing public catalogs, immutable
+  release snapshots, and release rejection of synthetic `TEST_ONLY` evidence.
+  Positive publication mechanics remain confined to disposable external roots;
+  the real groundwater fixture and tracked `usersum` stay `DRAFT`/zero-report.
+  Two review HOLD cycles and two heavy HOLD cycles were preserved and
+  remediated without waivers. Terminal full Nextest passed 2,046/2,046; fresh
+  CRAP is 2 raw / 2 adjudicated / 0 actionable, with all seven touched-file
+  maxima at or below 30; dual terminal verification passed. ASSURE-05 is next
+  eligible but remains separately unauthorized.
 - `20260715-assure04c-deterministic-manuscript-assembly-001/` -
   EXECUTED-COMPLETE (2026-07-16): implemented deterministic staging-only
   named/all manuscript assembly through the 04B typed plan. The real CLI
@@ -113,7 +125,7 @@ State as of `2026-07-16 UTC`:
   adjudicated / 0 actionable with all seven touched files at or below 30; dual
   terminal verification passed. The fixture remains internal `DRAFT`; tracked
   public, export, snapshot, release, and vendor surfaces are unchanged.
-  ASSURE-04D is next eligible and awaits separate authorization.
+  Its ASSURE-04D successor is recorded above.
 - `20260715-assure04b-v2-dependency-planner-001/` - EXECUTED-COMPLETE
   (2026-07-15): implemented deterministic content-identity dependency planning
   for one named v2 report and all reports, with stable typed human/JSON CLI
