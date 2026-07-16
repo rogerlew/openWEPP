@@ -118,13 +118,13 @@ fn executable_schemas_reject_practical_identity_and_lifecycle_defects() {
 }
 
 #[test]
-fn report_specific_assembly_commands_remain_future_package_work() {
+fn report_specific_assembly_requires_an_explicit_staging_root() {
     for command in ["build", "check"] {
         let error =
             openwepp_assurance::cli::run(["openwepp-assurance", command, "--report", REPORT_ID])
                 .expect_err("report-specific command must fail closed");
         assert!(matches!(error, AssuranceError::Usage(_)));
-        assert!(error.to_string().contains("ASSURE-04C"));
+        assert!(error.to_string().contains("--staging-root"));
     }
     let named = openwepp_assurance::cli::run(["openwepp-assurance", "plan", "--report", REPORT_ID])
         .expect("ASSURE-04B enables named planning");
@@ -168,8 +168,8 @@ fn unknown_missing_duplicate_unresolved_and_unused_fields_fail_closed() {
     let unknown = fixture("assure04a-unknown-field");
     mutate_report(
         &unknown.path,
-        "schema_version: 1\n",
-        "schema_version: 1\nunexpected_field: true\n",
+        "schema_version: 2\n",
+        "schema_version: 2\nunexpected_field: true\n",
     );
     assert_rejected(&unknown.path, "unknown field");
 
@@ -237,8 +237,8 @@ fn schema_required_nullable_fields_cannot_be_omitted() {
         ),
         (
             "research-object",
-            "    sha256: 41ada54b6ce96cc897bc7125ba737bab8194835488672903f717c2f350c6e483\n    restriction_reason: null\n    review_role: null\n",
-            "    sha256: 41ada54b6ce96cc897bc7125ba737bab8194835488672903f717c2f350c6e483\n    review_role: null\n",
+            "    sha256: e51dbd62c1316685b87007c665a24cd4af2bbe05237f33418e088e445bc67372\n    restriction_reason: null\n    review_role: null\n",
+            "    sha256: e51dbd62c1316685b87007c665a24cd4af2bbe05237f33418e088e445bc67372\n    review_role: null\n",
             "restriction_reason",
         ),
         ("review", "  reviewed_root: null\n", "", "reviewed_root"),
@@ -266,18 +266,18 @@ fn content_schema_contract_and_report_versions_are_enforced() {
     let catalog_version = fixture("assure04a-catalog-version");
     replace_in(
         &catalog_version.path.join(CATALOG_PATH),
-        "schema_version: 1",
         "schema_version: 2",
+        "schema_version: 1",
     );
-    assert_rejected(&catalog_version.path, "catalog requires schema_version 1");
+    assert_rejected(&catalog_version.path, "catalog requires schema_version 2");
 
     let report_version = fixture("assure04a-report-version");
     mutate_report(
         &report_version.path,
-        "contract_version: 1",
         "contract_version: 2",
+        "contract_version: 1",
     );
-    assert_rejected(&report_version.path, "report requires schema_version 1");
+    assert_rejected(&report_version.path, "report requires schema_version 2");
 
     let semantic_version = fixture("assure04a-semantic-version");
     replace_in(
@@ -345,8 +345,8 @@ fn content_schema_contract_and_report_versions_are_enforced() {
     let schema_constant_drift = fixture("assure04a-schema-constant-drift");
     replace_in(
         &schema_constant_drift.path.join(report_schema_path),
-        "\"contract_version\": { \"const\": 1 }",
         "\"contract_version\": { \"const\": 2 }",
+        "\"contract_version\": { \"const\": 1 }",
     );
     refresh_catalog_hash(&schema_constant_drift.path, report_schema_path);
     assert_rejected(
@@ -482,6 +482,18 @@ fn every_record_family_has_executable_field_consumption() {
             "    precision_policy: Preserve binary64 residual",
             "    precision_policy: '' # Preserve binary64 residual",
             "precision_policy",
+        ),
+        (
+            "value-binding",
+            "    transform: identity\n    display: integer",
+            "    transform: unsupported\n    display: integer",
+            "transform",
+        ),
+        (
+            "table",
+            "    row_header: Day",
+            "    row_header: '' # Day",
+            "row_header",
         ),
         (
             "figure",

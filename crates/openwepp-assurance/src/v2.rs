@@ -6,17 +6,21 @@ use serde::Deserialize;
 use crate::error::{AssuranceError, Result};
 use crate::hash::sha256_bytes;
 
+mod assembly;
 mod confined;
 mod planner;
 
+pub use assembly::{V2AssemblyResult, V2AssemblySummary};
 pub use planner::{V2Plan, V2PlanNode, V2PlanState, V2ReportPlan};
 
 pub(crate) use confined::read_regular_confined;
 use confined::validate_relative;
 
 const V2_CATALOG_PATH: &str = "assurance/v2/catalog.yaml";
-const SCHEMA_VERSION: u32 = 1;
-const CONTRACT_VERSION: u32 = 1;
+const CATALOG_SCHEMA_VERSION: u32 = 2;
+const REPORT_SCHEMA_VERSION: u32 = 2;
+const RESULT_SCHEMA_VERSION: u32 = 1;
+const CONTRACT_VERSION: u32 = 2;
 const SOURCE_STATE: &str = "internal_draft_sources";
 const DRAFT: &str = "DRAFT";
 
@@ -45,6 +49,8 @@ const REPORT_FIELDS: &[&str] = &[
     "claims",
     "methods",
     "results",
+    "value_bindings",
+    "tables",
     "figures",
     "references",
     "research_objects",
@@ -74,6 +80,8 @@ const CONTENT_SOURCE_FIELDS: &[&str] = &[
     "claim_ids",
     "method_ids",
     "result_ids",
+    "value_binding_ids",
+    "table_ids",
     "figure_ids",
     "reference_ids",
     "research_object_ids",
@@ -138,10 +146,34 @@ const FIGURE_FIELDS: &[&str] = &[
     "owner",
     "kind",
     "result_ids",
+    "value_binding_ids",
+    "visualization",
     "generation_procedure",
     "alternative_text",
     "caption",
 ];
+const VALUE_BINDING_FIELDS: &[&str] = &[
+    "id",
+    "title",
+    "owner",
+    "result_id",
+    "value_id",
+    "unit_id",
+    "transform",
+    "display",
+];
+const TABLE_FIELDS: &[&str] = &[
+    "id",
+    "title",
+    "owner",
+    "caption",
+    "alternative_text",
+    "row_header",
+    "columns",
+    "rows",
+];
+const TABLE_COLUMN_FIELDS: &[&str] = &["label", "unit_id"];
+const TABLE_ROW_FIELDS: &[&str] = &["label", "value_binding_ids"];
 const REFERENCE_FIELDS: &[&str] = &[
     "id",
     "title",
@@ -230,6 +262,10 @@ const REPORT_SCHEMA_DEFINITIONS: &[(&str, &[&str])] = &[
     ("claim", CLAIM_FIELDS),
     ("method", METHOD_FIELDS),
     ("result", RESULT_SOURCE_FIELDS),
+    ("valueBinding", VALUE_BINDING_FIELDS),
+    ("table", TABLE_FIELDS),
+    ("tableColumn", TABLE_COLUMN_FIELDS),
+    ("tableRow", TABLE_ROW_FIELDS),
     ("figure", FIGURE_FIELDS),
     ("reference", REFERENCE_FIELDS),
     ("researchObject", RESEARCH_OBJECT_FIELDS),
@@ -382,6 +418,89 @@ impl V2Repository {
         planner::plan_sources(&self.root, &self.inputs, self.sources.len(), &[source])
     }
 
+    /// Builds every admitted report into an explicit disposable staging root.
+    ///
+    /// # Errors
+    ///
+    /// Returns a typed source, plan, assembly, confinement, or I/O error.
+    pub fn build_all(&self, staging_root: impl AsRef<Path>) -> Result<V2AssemblyResult> {
+        self.assemble_all(staging_root.as_ref(), assembly::Operation::Build)
+    }
+
+    /// Builds one admitted report without touching unrelated staging subtrees.
+    ///
+    /// # Errors
+    ///
+    /// Returns a typed source, plan, assembly, confinement, or I/O error.
+    pub fn build_report(
+        &self,
+        report_id: &str,
+        staging_root: impl AsRef<Path>,
+    ) -> Result<V2AssemblyResult> {
+        self.assemble_report(report_id, staging_root.as_ref(), assembly::Operation::Build)
+    }
+
+    /// Checks every admitted staged report against a deterministic rebuild.
+    ///
+    /// # Errors
+    ///
+    /// Returns drift for any extra, missing, or changed staged byte.
+    pub fn check_all(&self, staging_root: impl AsRef<Path>) -> Result<V2AssemblyResult> {
+        self.assemble_all(staging_root.as_ref(), assembly::Operation::Check)
+    }
+
+    /// Checks one staged report without traversing unrelated report sources.
+    ///
+    /// # Errors
+    ///
+    /// Returns drift for any extra, missing, or changed selected-report byte.
+    pub fn check_report(
+        &self,
+        report_id: &str,
+        staging_root: impl AsRef<Path>,
+    ) -> Result<V2AssemblyResult> {
+        self.assemble_report(report_id, staging_root.as_ref(), assembly::Operation::Check)
+    }
+
+    fn assemble_all(
+        &self,
+        staging_root: &Path,
+        operation: assembly::Operation,
+    ) -> Result<V2AssemblyResult> {
+        self.verify_inputs()?;
+        let plan = self.plan_all()?;
+        let sources = self.sources.values().collect::<Vec<_>>();
+        assembly::execute(
+            &self.root,
+            staging_root,
+            &self.inputs,
+            &sources,
+            &plan,
+            operation,
+        )
+    }
+
+    fn assemble_report(
+        &self,
+        report_id: &str,
+        staging_root: &Path,
+        operation: assembly::Operation,
+    ) -> Result<V2AssemblyResult> {
+        self.verify_inputs()?;
+        let source = self.sources.get(report_id).ok_or_else(|| {
+            AssuranceError::Invalid(format!("unknown v2 report ID '{report_id}'"))
+        })?;
+        let plan = self.plan_report(report_id)?;
+        assembly::execute(
+            &self.root,
+            staging_root,
+            &self.inputs,
+            &[source],
+            &plan,
+            operation,
+        )
+    }
+
     fn verify_inputs(&self) -> Result<()> {
         for (path, expected) in &self.inputs {
             let observed = sha256_bytes(&read_regular_confined(&self.root, path)?);
@@ -463,9 +582,11 @@ struct ReportSource {
 }
 
 fn validate_catalog_header(catalog: &V2Catalog) -> Result<()> {
-    if catalog.schema_version != SCHEMA_VERSION || catalog.contract_version != CONTRACT_VERSION {
+    if catalog.schema_version != CATALOG_SCHEMA_VERSION
+        || catalog.contract_version != CONTRACT_VERSION
+    {
         return Err(AssuranceError::Invalid(
-            "v2 catalog requires schema_version 1 and contract_version 1".to_owned(),
+            "v2 catalog requires schema_version 2 and contract_version 2".to_owned(),
         ));
     }
     if catalog.source_state != SOURCE_STATE {
@@ -528,8 +649,8 @@ fn validate_schemas(
     inputs: &mut BTreeMap<PathBuf, String>,
 ) -> Result<()> {
     let expected = BTreeMap::from([
-        ("openwepp:assurance:v2:catalog:1", CATALOG_FIELDS),
-        ("openwepp:assurance:v2:report:1", REPORT_FIELDS),
+        ("openwepp:assurance:v2:catalog:2", CATALOG_FIELDS),
+        ("openwepp:assurance:v2:report:2", REPORT_FIELDS),
         ("openwepp:assurance:v2:result:1", RESULT_FIELDS),
     ]);
     if sources.len() != expected.len() {
@@ -611,8 +732,8 @@ fn expected_schema_definitions(
     source_id: &str,
 ) -> Result<&'static [(&'static str, &'static [&'static str])]> {
     let definitions = match source_id {
-        "openwepp:assurance:v2:catalog:1" => CATALOG_SCHEMA_DEFINITIONS,
-        "openwepp:assurance:v2:report:1" => REPORT_SCHEMA_DEFINITIONS,
+        "openwepp:assurance:v2:catalog:2" => CATALOG_SCHEMA_DEFINITIONS,
+        "openwepp:assurance:v2:report:2" => REPORT_SCHEMA_DEFINITIONS,
         "openwepp:assurance:v2:result:1" => &[],
         _ => {
             return Err(AssuranceError::Invalid(format!(
@@ -661,19 +782,19 @@ fn validate_schema_definitions(
 
 fn validate_schema_constants(source: &SchemaSource, document: &SchemaDocument) -> Result<()> {
     let expected = match source.id.as_str() {
-        "openwepp:assurance:v2:catalog:1" => vec![
-            ("schema_version", serde_json::json!(SCHEMA_VERSION)),
+        "openwepp:assurance:v2:catalog:2" => vec![
+            ("schema_version", serde_json::json!(CATALOG_SCHEMA_VERSION)),
             ("contract_version", serde_json::json!(CONTRACT_VERSION)),
             ("source_state", serde_json::json!(SOURCE_STATE)),
         ],
-        "openwepp:assurance:v2:report:1" => vec![
-            ("schema_version", serde_json::json!(SCHEMA_VERSION)),
+        "openwepp:assurance:v2:report:2" => vec![
+            ("schema_version", serde_json::json!(REPORT_SCHEMA_VERSION)),
             ("contract_version", serde_json::json!(CONTRACT_VERSION)),
             ("lifecycle", serde_json::json!(DRAFT)),
             ("fixture_only", serde_json::json!(true)),
         ],
         "openwepp:assurance:v2:result:1" => {
-            vec![("schema_version", serde_json::json!(SCHEMA_VERSION))]
+            vec![("schema_version", serde_json::json!(RESULT_SCHEMA_VERSION))]
         }
         _ => Vec::new(),
     };
@@ -783,6 +904,8 @@ struct Report {
     claims: Vec<Claim>,
     methods: Vec<Method>,
     results: Vec<ResultSource>,
+    value_bindings: Vec<ValueBinding>,
+    tables: Vec<Table>,
     figures: Vec<Figure>,
     references: Vec<Reference>,
     research_objects: Vec<ResearchObject>,
@@ -878,6 +1001,8 @@ struct ContentSource {
     claim_ids: Vec<String>,
     method_ids: Vec<String>,
     result_ids: Vec<String>,
+    value_binding_ids: Vec<String>,
+    table_ids: Vec<String>,
     figure_ids: Vec<String>,
     reference_ids: Vec<String>,
     research_object_ids: Vec<String>,
@@ -990,12 +1115,55 @@ struct ResultValue {
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
+struct ValueBinding {
+    id: String,
+    title: String,
+    owner: String,
+    result_id: String,
+    value_id: String,
+    unit_id: String,
+    transform: String,
+    display: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Table {
+    id: String,
+    title: String,
+    owner: String,
+    caption: String,
+    alternative_text: String,
+    row_header: String,
+    columns: Vec<TableColumn>,
+    rows: Vec<TableRow>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct TableColumn {
+    label: String,
+    #[serde(default)]
+    unit_id: RequiredNullable<String>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct TableRow {
+    label: String,
+    value_binding_ids: Vec<String>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct Figure {
     id: String,
     title: String,
     owner: String,
     kind: String,
     result_ids: Vec<String>,
+    value_binding_ids: Vec<String>,
+    visualization: String,
     generation_procedure: String,
     alternative_text: String,
     caption: String,
@@ -1076,6 +1244,8 @@ struct ReportIds {
     claims: BTreeSet<String>,
     methods: BTreeSet<String>,
     results: BTreeSet<String>,
+    value_bindings: BTreeSet<String>,
+    tables: BTreeSet<String>,
     figures: BTreeSet<String>,
     references: BTreeSet<String>,
     research_objects: BTreeSet<String>,
@@ -1123,6 +1293,12 @@ fn validate_report_structure(report: &Report) -> Result<ReportIds> {
     for source in &report.results {
         validate_result_source(source, &ids)?;
     }
+    for binding in &report.value_bindings {
+        validate_value_binding(binding, &ids)?;
+    }
+    for table in &report.tables {
+        validate_table(table, &ids)?;
+    }
     for figure in &report.figures {
         validate_figure(figure, &ids)?;
     }
@@ -1139,9 +1315,10 @@ fn validate_report_structure(report: &Report) -> Result<ReportIds> {
 }
 
 fn validate_report_header(report: &Report) -> Result<()> {
-    if report.schema_version != SCHEMA_VERSION || report.contract_version != CONTRACT_VERSION {
+    if report.schema_version != REPORT_SCHEMA_VERSION || report.contract_version != CONTRACT_VERSION
+    {
         return Err(AssuranceError::Invalid(
-            "v2 report requires schema_version 1 and contract_version 1".to_owned(),
+            "v2 report requires schema_version 2 and contract_version 2".to_owned(),
         ));
     }
     validate_identity(&report.id, &report.title, &report.owner, "report")?;
@@ -1157,6 +1334,8 @@ fn validate_report_header(report: &Report) -> Result<()> {
         ("claim", report.claims.len()),
         ("method", report.methods.len()),
         ("result", report.results.len()),
+        ("value binding", report.value_bindings.len()),
+        ("table", report.tables.len()),
         ("figure", report.figures.len()),
         ("reference", report.references.len()),
         ("research object", report.research_objects.len()),
@@ -1192,6 +1371,12 @@ fn collect_report_ids(report: &Report) -> Result<ReportIds> {
             .iter()
             .map(|value| value.id.clone())
             .collect(),
+        value_bindings: report
+            .value_bindings
+            .iter()
+            .map(|value| value.id.clone())
+            .collect(),
+        tables: report.tables.iter().map(|value| value.id.clone()).collect(),
         figures: report
             .figures
             .iter()
@@ -1271,6 +1456,12 @@ fn validate_record_ids(report: &Report, all: &mut BTreeSet<String>) -> Result<()
     }
     for value in &report.results {
         insert_identity(all, &value.id, &value.title, &value.owner, "result")?;
+    }
+    for value in &report.value_bindings {
+        insert_identity(all, &value.id, &value.title, &value.owner, "value binding")?;
+    }
+    for value in &report.tables {
+        insert_identity(all, &value.id, &value.title, &value.owner, "table")?;
     }
     for value in &report.figures {
         insert_identity(all, &value.id, &value.title, &value.owner, "figure")?;
@@ -1387,19 +1578,27 @@ fn validate_content_contract(content: &ContentSource, ids: &ReportIds) -> Result
     validate_digest(&content.sha256, "content source")?;
     require_nonempty(&content.provenance, "content provenance")?;
     require_nonempty(&content.creation_procedure, "content creation_procedure")?;
-    for (kind, references, known) in [
-        ("claim", &content.claim_ids, &ids.claims),
-        ("method", &content.method_ids, &ids.methods),
-        ("result", &content.result_ids, &ids.results),
-        ("figure", &content.figure_ids, &ids.figures),
-        ("reference", &content.reference_ids, &ids.references),
+    for (kind, references, known, required) in [
+        ("claim", &content.claim_ids, &ids.claims, true),
+        ("method", &content.method_ids, &ids.methods, true),
+        ("result", &content.result_ids, &ids.results, true),
+        (
+            "value binding",
+            &content.value_binding_ids,
+            &ids.value_bindings,
+            true,
+        ),
+        ("table", &content.table_ids, &ids.tables, false),
+        ("figure", &content.figure_ids, &ids.figures, true),
+        ("reference", &content.reference_ids, &ids.references, true),
         (
             "research object",
             &content.research_object_ids,
             &ids.research_objects,
+            true,
         ),
     ] {
-        validate_reference_list(references, known, kind, true)?;
+        validate_reference_list(references, known, kind, required)?;
     }
     Ok(())
 }
@@ -1559,7 +1758,7 @@ fn validate_result_object(
     result: &ResultObject,
     ids: &ReportIds,
 ) -> Result<()> {
-    if result.schema_version != SCHEMA_VERSION {
+    if result.schema_version != RESULT_SCHEMA_VERSION {
         return Err(AssuranceError::Invalid(
             "result schema_version must be 1".to_owned(),
         ));
@@ -1602,26 +1801,121 @@ fn validate_result_values(
     Ok(())
 }
 
+fn validate_value_binding(binding: &ValueBinding, ids: &ReportIds) -> Result<()> {
+    require_known(&binding.result_id, &ids.results, "result")?;
+    validate_id(&binding.value_id, "result value")?;
+    require_known(&binding.unit_id, &ids.units, "unit")?;
+    if binding.transform != "identity" && binding.transform != "absolute" {
+        return Err(AssuranceError::Invalid(format!(
+            "value binding '{}' has unsupported transform",
+            binding.id
+        )));
+    }
+    validate_display(&binding.display).map(|_| ())
+}
+
+fn validate_display(display: &str) -> Result<(&str, Option<usize>)> {
+    if display == "integer" {
+        return Ok(("integer", None));
+    }
+    let (kind, precision) = display.split_once(':').ok_or_else(|| {
+        AssuranceError::Invalid(format!("unsupported display precision '{display}'"))
+    })?;
+    if kind != "fixed" && kind != "scientific" {
+        return Err(AssuranceError::Invalid(format!(
+            "unsupported display precision '{display}'"
+        )));
+    }
+    let precision = precision.parse::<usize>().map_err(|_| {
+        AssuranceError::Invalid(format!("unsupported display precision '{display}'"))
+    })?;
+    if precision > 15
+        || precision.to_string() != display.split_once(':').map_or("", |(_, value)| value)
+    {
+        return Err(AssuranceError::Invalid(format!(
+            "unsupported display precision '{display}'"
+        )));
+    }
+    Ok((kind, Some(precision)))
+}
+
+fn validate_table(table: &Table, ids: &ReportIds) -> Result<()> {
+    require_nonempty(&table.caption, "table caption")?;
+    require_nonempty(&table.alternative_text, "table alternative_text")?;
+    require_nonempty(&table.row_header, "table row_header")?;
+    if table.columns.is_empty() || table.rows.is_empty() {
+        return Err(AssuranceError::Invalid(format!(
+            "table '{}' requires columns and rows",
+            table.id
+        )));
+    }
+    validate_table_columns(table, ids)?;
+    validate_table_rows(table, ids)
+}
+
+fn validate_table_columns(table: &Table, ids: &ReportIds) -> Result<()> {
+    for column in &table.columns {
+        require_nonempty(&column.label, "table column label")?;
+        match &column.unit_id {
+            RequiredNullable::Missing => {
+                return Err(AssuranceError::Invalid(
+                    "required nullable field 'table column unit_id' is missing".to_owned(),
+                ));
+            }
+            RequiredNullable::Null => {}
+            RequiredNullable::Value(unit_id) => require_known(unit_id, &ids.units, "unit")?,
+        }
+    }
+    Ok(())
+}
+
+fn validate_table_rows(table: &Table, ids: &ReportIds) -> Result<()> {
+    let mut row_labels = BTreeSet::new();
+    for row in &table.rows {
+        require_nonempty(&row.label, "table row label")?;
+        require_unique(&mut row_labels, &row.label, "table row label")?;
+        if row.value_binding_ids.len() != table.columns.len() {
+            return Err(AssuranceError::Invalid(format!(
+                "table '{}' row '{}' must contain one value binding per column",
+                table.id, row.label
+            )));
+        }
+        validate_reference_list(
+            &row.value_binding_ids,
+            &ids.value_bindings,
+            "value binding",
+            true,
+        )?;
+    }
+    Ok(())
+}
+
 fn validate_figure(figure: &Figure, ids: &ReportIds) -> Result<()> {
-    if figure.kind != "result_bearing" && figure.kind != "conceptual" {
+    if figure.kind != "result_bearing" {
         return Err(AssuranceError::Invalid(format!(
             "figure '{}' has unsupported kind",
             figure.id
         )));
     }
-    if figure.kind == "result_bearing" && figure.result_ids.is_empty() {
+    if figure.result_ids.is_empty() || figure.value_binding_ids.is_empty() {
         return Err(AssuranceError::Invalid(format!(
-            "result-bearing figure '{}' requires a result",
+            "result-bearing figure '{}' requires result and value bindings",
             figure.id
         )));
     }
-    if figure.kind == "conceptual" && !figure.result_ids.is_empty() {
+    if figure.visualization != "linear_magnitude_bars" {
         return Err(AssuranceError::Invalid(format!(
-            "conceptual figure '{}' cannot carry result identities",
+            "figure '{}' has unsupported visualization",
             figure.id
         )));
     }
     validate_reference_list(&figure.result_ids, &ids.results, "result", false)?;
+    validate_reference_list(
+        &figure.value_binding_ids,
+        &ids.value_bindings,
+        "value binding",
+        true,
+    )?;
     require_nonempty(&figure.generation_procedure, "figure generation_procedure")?;
     require_nonempty(&figure.alternative_text, "figure alternative_text")?;
     require_nonempty(&figure.caption, "figure caption")
@@ -1712,7 +2006,7 @@ fn validate_restricted_research_object(object: &ResearchObject) -> Result<()> {
 }
 
 fn validate_research_object_relations(object: &ResearchObject, ids: &ReportIds) -> Result<()> {
-    validate_reference_list(&object.result_ids, &ids.results, "result", true)?;
+    validate_reference_list(&object.result_ids, &ids.results, "result", false)?;
     validate_reference_list(&object.method_ids, &ids.methods, "method", true)?;
     validate_reference_list(
         &object.dependency_ids,
@@ -1755,10 +2049,23 @@ fn validate_publication(publication: &Publication) -> Result<()> {
     Ok(())
 }
 
-fn validate_no_unused(report: &Report) -> Result<()> {
+struct UsedReportRecords {
+    claims: BTreeSet<String>,
+    methods: BTreeSet<String>,
+    results: BTreeSet<String>,
+    value_bindings: BTreeSet<String>,
+    tables: BTreeSet<String>,
+    figures: BTreeSet<String>,
+    references: BTreeSet<String>,
+    research_objects: BTreeSet<String>,
+    dependencies: BTreeSet<String>,
+    units: BTreeSet<String>,
+}
+
+fn collect_used_records(report: &Report) -> UsedReportRecords {
     let contents = [&report.manuscript, &report.supplement];
-    let used_claims = union_lists(contents.iter().map(|content| &content.claim_ids));
-    let used_methods = union_lists(
+    let claims = union_lists(contents.iter().map(|content| &content.claim_ids));
+    let methods = union_lists(
         contents
             .iter()
             .map(|content| &content.method_ids)
@@ -1770,7 +2077,7 @@ fn validate_no_unused(report: &Report) -> Result<()> {
                     .map(|object| &object.method_ids),
             ),
     );
-    let used_results = union_lists(
+    let mut results = union_lists(
         contents
             .iter()
             .map(|content| &content.result_ids)
@@ -1783,16 +2090,41 @@ fn validate_no_unused(report: &Report) -> Result<()> {
                     .map(|object| &object.result_ids),
             ),
     );
-    let used_figures = union_lists(contents.iter().map(|content| &content.figure_ids));
-    let used_references = union_lists(
+    results.extend(
+        report
+            .value_bindings
+            .iter()
+            .map(|binding| binding.result_id.clone()),
+    );
+    let value_bindings = union_lists(
+        contents
+            .iter()
+            .map(|content| &content.value_binding_ids)
+            .chain(
+                report
+                    .tables
+                    .iter()
+                    .flat_map(|table| table.rows.iter())
+                    .map(|row| &row.value_binding_ids),
+            )
+            .chain(
+                report
+                    .figures
+                    .iter()
+                    .map(|figure| &figure.value_binding_ids),
+            ),
+    );
+    let tables = union_lists(contents.iter().map(|content| &content.table_ids));
+    let figures = union_lists(contents.iter().map(|content| &content.figure_ids));
+    let references = union_lists(
         contents
             .iter()
             .map(|content| &content.reference_ids)
             .chain(report.claims.iter().map(|claim| &claim.reference_ids)),
     );
-    let used_objects = union_lists(contents.iter().map(|content| &content.research_object_ids));
-    let used_dependencies = used_dependencies(report);
-    let used_units = union_lists(
+    let research_objects = union_lists(contents.iter().map(|content| &content.research_object_ids));
+    let dependencies = used_dependencies(report);
+    let mut units = union_lists(
         report
             .claims
             .iter()
@@ -1800,46 +2132,86 @@ fn validate_no_unused(report: &Report) -> Result<()> {
             .chain(report.methods.iter().map(|method| &method.unit_ids))
             .chain(report.results.iter().map(|result| &result.unit_ids)),
     );
+    units.extend(
+        report
+            .value_bindings
+            .iter()
+            .map(|binding| binding.unit_id.clone()),
+    );
+    units.extend(report.tables.iter().flat_map(|table| {
+        table
+            .columns
+            .iter()
+            .filter_map(|column| match &column.unit_id {
+                RequiredNullable::Value(unit_id) => Some(unit_id.clone()),
+                RequiredNullable::Missing | RequiredNullable::Null => None,
+            })
+    }));
+    UsedReportRecords {
+        claims,
+        methods,
+        results,
+        value_bindings,
+        tables,
+        figures,
+        references,
+        research_objects,
+        dependencies,
+        units,
+    }
+}
 
+fn validate_no_unused(report: &Report) -> Result<()> {
+    let used = collect_used_records(report);
     require_all_used(
         "claim",
         report.claims.iter().map(|value| &value.id),
-        &used_claims,
+        &used.claims,
     )?;
     require_all_used(
         "method",
         report.methods.iter().map(|value| &value.id),
-        &used_methods,
+        &used.methods,
     )?;
     require_all_used(
         "result",
         report.results.iter().map(|value| &value.id),
-        &used_results,
+        &used.results,
+    )?;
+    require_all_used(
+        "value binding",
+        report.value_bindings.iter().map(|value| &value.id),
+        &used.value_bindings,
+    )?;
+    require_all_used(
+        "table",
+        report.tables.iter().map(|value| &value.id),
+        &used.tables,
     )?;
     require_all_used(
         "figure",
         report.figures.iter().map(|value| &value.id),
-        &used_figures,
+        &used.figures,
     )?;
     require_all_used(
         "reference",
         report.references.iter().map(|value| &value.id),
-        &used_references,
+        &used.references,
     )?;
     require_all_used(
         "research object",
         report.research_objects.iter().map(|value| &value.id),
-        &used_objects,
+        &used.research_objects,
     )?;
     require_all_used(
         "dependency",
         report.dependencies.iter().map(|value| &value.id),
-        &used_dependencies,
+        &used.dependencies,
     )?;
     require_all_used(
         "unit",
         report.units.iter().map(|value| &value.id),
-        &used_units,
+        &used.units,
     )
 }
 

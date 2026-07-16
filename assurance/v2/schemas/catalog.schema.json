@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "openwepp:assurance:v2:catalog:1",
+  "$id": "openwepp:assurance:v2:catalog:2",
   "title": "openWEPP assurance v2 source catalog",
   "type": "object",
   "additionalProperties": false,
@@ -12,8 +12,8 @@
     "reports"
   ],
   "properties": {
-    "schema_version": { "const": 1 },
-    "contract_version": { "const": 1 },
+    "schema_version": { "const": 2 },
+    "contract_version": { "const": 2 },
     "source_state": { "const": "internal_draft_sources" },
     "schemas": {
       "type": "array",
@@ -47,8 +47,8 @@
       "properties": {
         "id": {
           "enum": [
-            "openwepp:assurance:v2:catalog:1",
-            "openwepp:assurance:v2:report:1",
+            "openwepp:assurance:v2:catalog:2",
+            "openwepp:assurance:v2:report:2",
             "openwepp:assurance:v2:result:1"
           ]
         },

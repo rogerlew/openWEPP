@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "openwepp:assurance:v2:report:1",
+  "$id": "openwepp:assurance:v2:report:2",
   "title": "openWEPP assurance v2 report source",
   "type": "object",
   "additionalProperties": false,
@@ -22,6 +22,8 @@
     "claims",
     "methods",
     "results",
+    "value_bindings",
+    "tables",
     "figures",
     "references",
     "research_objects",
@@ -29,8 +31,8 @@
     "publication"
   ],
   "properties": {
-    "schema_version": { "const": 1 },
-    "contract_version": { "const": 1 },
+    "schema_version": { "const": 2 },
+    "contract_version": { "const": 2 },
     "id": { "$ref": "#/$defs/id" },
     "version": { "$ref": "#/$defs/version" },
     "title": { "$ref": "#/$defs/text" },
@@ -46,6 +48,8 @@
     "claims": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/claim" } },
     "methods": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/method" } },
     "results": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/result" } },
+    "value_bindings": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/valueBinding" } },
+    "tables": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/table" } },
     "figures": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/figure" } },
     "references": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/reference" } },
     "research_objects": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/researchObject" } },
@@ -144,7 +148,8 @@
       "required": [
         "id", "title", "owner", "path", "sha256", "media_type",
         "provenance", "creation_procedure", "claim_ids", "method_ids",
-        "result_ids", "figure_ids", "reference_ids", "research_object_ids"
+        "result_ids", "value_binding_ids", "table_ids", "figure_ids",
+        "reference_ids", "research_object_ids"
       ],
       "properties": {
         "id": { "$ref": "#/$defs/id" },
@@ -158,6 +163,8 @@
         "claim_ids": { "$ref": "#/$defs/nonEmptyIdList" },
         "method_ids": { "$ref": "#/$defs/nonEmptyIdList" },
         "result_ids": { "$ref": "#/$defs/nonEmptyIdList" },
+        "value_binding_ids": { "$ref": "#/$defs/nonEmptyIdList" },
+        "table_ids": { "$ref": "#/$defs/idList" },
         "figure_ids": { "$ref": "#/$defs/nonEmptyIdList" },
         "reference_ids": { "$ref": "#/$defs/nonEmptyIdList" },
         "research_object_ids": { "$ref": "#/$defs/nonEmptyIdList" }
@@ -301,33 +308,90 @@
         "creation_procedure": { "$ref": "#/$defs/text" }
       }
     },
+    "valueBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "title", "owner", "result_id", "value_id", "unit_id",
+        "transform", "display"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "title": { "$ref": "#/$defs/text" },
+        "owner": { "$ref": "#/$defs/text" },
+        "result_id": { "$ref": "#/$defs/id" },
+        "value_id": { "$ref": "#/$defs/id" },
+        "unit_id": { "$ref": "#/$defs/id" },
+        "transform": { "enum": ["identity", "absolute"] },
+        "display": {
+          "anyOf": [
+            { "const": "integer" },
+            { "type": "string", "pattern": "^(fixed|scientific):(0|[1-9]|1[0-5])$" }
+          ]
+        }
+      }
+    },
+    "tableColumn": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "unit_id"],
+      "properties": {
+        "label": { "$ref": "#/$defs/text" },
+        "unit_id": {
+          "anyOf": [
+            { "$ref": "#/$defs/id" },
+            { "type": "null" }
+          ]
+        }
+      }
+    },
+    "tableRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "value_binding_ids"],
+      "properties": {
+        "label": { "$ref": "#/$defs/text" },
+        "value_binding_ids": { "$ref": "#/$defs/nonEmptyIdList" }
+      }
+    },
+    "table": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id", "title", "owner", "caption", "alternative_text",
+        "row_header", "columns", "rows"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "title": { "$ref": "#/$defs/text" },
+        "owner": { "$ref": "#/$defs/text" },
+        "caption": { "$ref": "#/$defs/text" },
+        "alternative_text": { "$ref": "#/$defs/text" },
+        "row_header": { "$ref": "#/$defs/text" },
+        "columns": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/tableColumn" } },
+        "rows": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/tableRow" } }
+      }
+    },
     "figure": {
       "type": "object",
       "additionalProperties": false,
       "required": [
         "id", "title", "owner", "kind", "result_ids",
+        "value_binding_ids", "visualization",
         "generation_procedure", "alternative_text", "caption"
       ],
       "properties": {
         "id": { "$ref": "#/$defs/id" },
         "title": { "$ref": "#/$defs/text" },
         "owner": { "$ref": "#/$defs/text" },
-        "kind": { "enum": ["result_bearing", "conceptual"] },
-        "result_ids": { "$ref": "#/$defs/idList" },
+        "kind": { "const": "result_bearing" },
+        "result_ids": { "$ref": "#/$defs/nonEmptyIdList" },
+        "value_binding_ids": { "$ref": "#/$defs/nonEmptyIdList" },
+        "visualization": { "const": "linear_magnitude_bars" },
         "generation_procedure": { "$ref": "#/$defs/text" },
         "alternative_text": { "$ref": "#/$defs/text" },
         "caption": { "$ref": "#/$defs/text" }
-      },
-      "allOf": [
-        {
-          "if": { "properties": { "kind": { "const": "result_bearing" } }, "required": ["kind"] },
-          "then": { "properties": { "result_ids": { "$ref": "#/$defs/nonEmptyIdList" } } }
-        },
-        {
-          "if": { "properties": { "kind": { "const": "conceptual" } }, "required": ["kind"] },
-          "then": { "properties": { "result_ids": { "type": "array", "maxItems": 0 } } }
-        }
-      ]
+      }
     },
     "reference": {
       "type": "object",
@@ -365,7 +429,7 @@
         "sha256": { "$ref": "#/$defs/nullableDigest" },
         "restriction_reason": { "$ref": "#/$defs/nullableText" },
         "review_role": { "$ref": "#/$defs/nullableText" },
-        "result_ids": { "$ref": "#/$defs/nonEmptyIdList" },
+        "result_ids": { "$ref": "#/$defs/idList" },
         "method_ids": { "$ref": "#/$defs/nonEmptyIdList" },
         "dependency_ids": { "$ref": "#/$defs/nonEmptyIdList" },
         "reproduction_instructions": { "$ref": "#/$defs/text" }

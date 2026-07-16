@@ -319,6 +319,20 @@ fn add_report_nodes(
         &expected_manifest,
     )?;
     add_result_nodes(root, graph, report, ids, manifest_id)?;
+    add_value_binding_nodes(
+        graph,
+        report,
+        manifest_id,
+        manifest_digest,
+        &expected_manifest,
+    )?;
+    add_table_nodes(
+        graph,
+        report,
+        manifest_id,
+        manifest_digest,
+        &expected_manifest,
+    )?;
     add_figure_nodes(
         graph,
         report,
@@ -572,9 +586,61 @@ fn add_figure_nodes(
     for figure in &report.figures {
         let mut dependencies = BTreeSet::from([manifest_id.to_owned()]);
         dependencies.extend(figure.result_ids.iter().cloned());
+        dependencies.extend(figure.value_binding_ids.iter().cloned());
         graph.add(embedded_node(
             &figure.id,
             "figure",
+            observed_manifest,
+            expected_manifest,
+            dependencies,
+        ))?;
+    }
+    Ok(())
+}
+
+fn add_value_binding_nodes(
+    graph: &mut Graph,
+    report: &Report,
+    manifest_id: &str,
+    observed_manifest: &str,
+    expected_manifest: &str,
+) -> Result<()> {
+    for binding in &report.value_bindings {
+        graph.add(embedded_node(
+            &binding.id,
+            "value_binding",
+            observed_manifest,
+            expected_manifest,
+            BTreeSet::from([
+                manifest_id.to_owned(),
+                binding.result_id.clone(),
+                binding.unit_id.clone(),
+            ]),
+        ))?;
+    }
+    Ok(())
+}
+
+fn add_table_nodes(
+    graph: &mut Graph,
+    report: &Report,
+    manifest_id: &str,
+    observed_manifest: &str,
+    expected_manifest: &str,
+) -> Result<()> {
+    for table in &report.tables {
+        let mut dependencies = BTreeSet::from([manifest_id.to_owned()]);
+        for row in &table.rows {
+            dependencies.extend(row.value_binding_ids.iter().cloned());
+        }
+        for column in &table.columns {
+            if let super::RequiredNullable::Value(unit_id) = &column.unit_id {
+                dependencies.insert(unit_id.clone());
+            }
+        }
+        graph.add(embedded_node(
+            &table.id,
+            "table",
             observed_manifest,
             expected_manifest,
             dependencies,
@@ -670,6 +736,8 @@ fn add_content_node(
     dependencies.extend(content.claim_ids.iter().cloned());
     dependencies.extend(content.method_ids.iter().cloned());
     dependencies.extend(content.result_ids.iter().cloned());
+    dependencies.extend(content.value_binding_ids.iter().cloned());
+    dependencies.extend(content.table_ids.iter().cloned());
     dependencies.extend(content.figure_ids.iter().cloned());
     dependencies.extend(content.reference_ids.iter().cloned());
     dependencies.extend(content.research_object_ids.iter().cloned());

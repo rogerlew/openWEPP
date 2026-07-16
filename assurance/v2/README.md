@@ -1,13 +1,13 @@
 # Scientific Assurance V2 Internal Sources
 
-Status: ASSURE-04B source admission and dependency planning complete; nonpublic
+Status: ASSURE-04C deterministic staging assembly implemented; nonpublic
 
 This tree holds canonical scientific-assurance source, not generated reader
 documentation. The manuscript and supplement carry the scientific argument in
-reader-first prose. Strict YAML records identify
-authorship, accountable review roles, agent assistance, claims, methods,
-dependencies, results, figures, references, research objects, review state,
-and publication state; they do not generate conclusions or substitute
+reader-first prose. Strict YAML records identify authorship, accountable review
+roles, agent assistance, claims, methods, dependencies, results, value
+bindings, tables, result-bearing figures, references, research objects, review
+state, and publication state. They do not generate conclusions or substitute
 lifecycle labels for evidence. The current architecture fixture discloses its
 agent author and blocks review while its human report lead and scientific
 approver are unassigned.
@@ -78,8 +78,37 @@ report without traversing unrelated reports. It does not write files, update
 hashes, render prose, decide whether scientific rereview is necessary, or
 approve a report.
 
-ASSURE-04C owns deterministic staging and manuscript assembly. ASSURE-04D owns
-review locks, promotion, public catalogs, snapshots, and release transfer.
+## Assemble And Check A Disposable Consumer
+
+Assembly always requires a caller-selected disposable staging root. These
+commands build the internal fixture into a future
+`usersum/assurance/reports/` shape and then verify every expected byte and local
+link without writing during the check:
+
+```bash
+stage="$(mktemp -d)"
+mkdir -p "$stage/usersum"
+cp usersum/hillslope-hydrology-and-sediment-physics.md "$stage/usersum/"
+cargo run --quiet -p openwepp-assurance -- build --all \
+  --staging-root "$stage"
+cargo run --quiet -p openwepp-assurance -- check --all \
+  --staging-root "$stage"
+```
+
+`build --report <id>` and `check --report <id>` use the same per-report
+assembler as `--all`. The assembler copies authored literal prose, resolves
+only the small typed directive vocabulary, renders declared values/tables/SVG
+figures from identified result objects, copies public-safe research objects,
+and emits portable links. Unit disagreement, unsupported display precision,
+unused content, noncurrent inputs, unresolved links, output drift, unsafe
+staging paths, or symlink traversal fail closed.
+
+The staging result is architecture evidence, not a reviewed or published
+scientific report. It grants no review lock, public route, snapshot, export,
+release, or vendoring authority.
+
+ASSURE-04D owns review locks, promotion, public catalogs, snapshots, and release
+transfer.
 Public scientific communication remains under `usersum/` and continues to
 contain zero assurance reports until an approved report is promoted. Vendoring
 remains deferred until the openWEPP beta release campaign.

@@ -233,7 +233,7 @@ fn named_selection_isolated_and_all_plan_does_not_select_unrelated_report() {
 }
 
 #[test]
-fn plan_format_is_plan_only_and_build_check_remain_deferred() {
+fn plan_format_is_plan_only_and_assembly_requires_staging() {
     for command in ["validate", "build", "check"] {
         let error = openwepp_assurance::cli::run([
             "openwepp-assurance",
@@ -248,8 +248,8 @@ fn plan_format_is_plan_only_and_build_check_remain_deferred() {
     for command in ["build", "check"] {
         let error =
             openwepp_assurance::cli::run(["openwepp-assurance", command, "--report", REPORT_ID])
-                .expect_err("report assembly remains deferred");
-        assert!(error.to_string().contains("ASSURE-04C"));
+                .expect_err("report assembly requires explicit staging");
+        assert!(error.to_string().contains("--staging-root"));
     }
 
     let build_root = Scratch::new("assure04b-cli-build");
@@ -384,7 +384,12 @@ fn add_second_report(root: &Path) {
     manifest = manifest
         .replace(REPORT_ID, SECOND_REPORT_ID)
         .replace("GW-", "SECOND-");
-    for result in ["two-day-recurrence.json", "h2637-ledger.json"] {
+    for result in [
+        "two-day-recurrence.json",
+        "h2637-ledger.json",
+        "assure02-path-currency.json",
+        "assure02-focused-tests.json",
+    ] {
         let path = second.join("results").join(result);
         let before = fs::read(&path).expect("read copied result");
         let old_digest = sha256_bytes(&before);

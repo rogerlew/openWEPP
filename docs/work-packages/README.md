@@ -100,8 +100,20 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-07-15 UTC`:
+State as of `2026-07-16 UTC`:
 
+- `20260715-assure04c-deterministic-manuscript-assembly-001/` -
+  EXECUTED-COMPLETE (2026-07-16): implemented deterministic staging-only
+  named/all manuscript assembly through the 04B typed plan. The real CLI
+  resolves typed quantities, tables, accessible figures, citations, research
+  objects, and portable links; exact checks and transactional descriptor-
+  confined writes preserve unrelated and prior bytes. Review closed source-
+  drift, rollback, typed-lineage, autolink, accessibility, and real-consumer
+  gaps. Terminal full Nextest passed 2,011/2,011; fresh CRAP is 2 raw / 2
+  adjudicated / 0 actionable with all seven touched files at or below 30; dual
+  terminal verification passed. The fixture remains internal `DRAFT`; tracked
+  public, export, snapshot, release, and vendor surfaces are unchanged.
+  ASSURE-04D is next eligible and awaits separate authorization.
 - `20260715-assure04b-v2-dependency-planner-001/` - EXECUTED-COMPLETE
   (2026-07-15): implemented deterministic content-identity dependency planning
   for one named v2 report and all reports, with stable typed human/JSON CLI
@@ -112,7 +124,7 @@ State as of `2026-07-15 UTC`:
   skipped; fresh CRAP is 2 raw / 2 adjudicated / 0 actionable with touched
   maxima at or below 26; dual terminal verification passed. Rendering,
   scientific adjudication, publication, release transfer, and vendoring remain
-  excluded. ASSURE-04C is next and awaits explicit authorization.
+  excluded. Its ASSURE-04C successor is recorded above.
 - `20260715-assure04a-v2-source-identity-foundation-001/` -
   EXECUTED-COMPLETE (2026-07-15): added the smallest typed v2 source and
   identity foundation demonstrated by the accepted groundwater prototype. Real

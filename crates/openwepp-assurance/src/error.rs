@@ -7,11 +7,21 @@ pub type Result<T> = std::result::Result<T, AssuranceError>;
 #[derive(Debug)]
 pub enum AssuranceError {
     Usage(String),
-    Io { path: PathBuf, source: io::Error },
-    Parse { path: PathBuf, message: String },
+    Io {
+        path: PathBuf,
+        source: io::Error,
+    },
+    Parse {
+        path: PathBuf,
+        message: String,
+    },
     Invalid(String),
     Drift(String),
     SnapshotConflict(String),
+    Recovery {
+        primary: Box<Self>,
+        recovery: Box<Self>,
+    },
 }
 
 impl AssuranceError {
@@ -20,7 +30,7 @@ impl AssuranceError {
         match self {
             Self::Usage(_) => 2,
             Self::Drift(_) | Self::SnapshotConflict(_) => 4,
-            Self::Io { .. } | Self::Parse { .. } | Self::Invalid(_) => 1,
+            Self::Io { .. } | Self::Parse { .. } | Self::Invalid(_) | Self::Recovery { .. } => 1,
         }
     }
 
@@ -39,6 +49,12 @@ impl fmt::Display for AssuranceError {
                 formatter.write_str(message)
             }
             Self::SnapshotConflict(message) => write!(formatter, "snapshot conflict: {message}"),
+            Self::Recovery { primary, recovery } => {
+                write!(
+                    formatter,
+                    "{primary}; staging transaction recovery also failed: {recovery}"
+                )
+            }
             Self::Io { path, source } => write!(formatter, "{}: {source}", path.display()),
             Self::Parse { path, message } => write!(formatter, "{}: {message}", path.display()),
         }
@@ -49,6 +65,7 @@ impl std::error::Error for AssuranceError {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         match self {
             Self::Io { source, .. } => Some(source),
+            Self::Recovery { primary, .. } => Some(primary.as_ref()),
             _ => None,
         }
     }

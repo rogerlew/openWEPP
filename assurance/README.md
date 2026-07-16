@@ -1,6 +1,6 @@
 # Scientific Assurance Transition Source
 
-Status: v1 retired; zero public reports; internal v2 source admission active
+Status: v1 retired; zero public reports; internal v2 staging assembly active
 
 The v1 status-first dossier publisher and SNOTEL candidate were removed by
 ASSURE-03 after exact source, generated, review, and compiler provenance was
@@ -12,11 +12,12 @@ The root catalog, static public template, and dormant export still describe
 exactly zero public reports. The retained public builder is deliberately fail-
 closed and rejects any nonempty legacy dossier catalog.
 
-ASSURE-04A adds a separate internal source tree at `assurance/v2/`. It admits a
-strictly content-identified, manuscript-first `DRAFT` fixture for architecture
-testing. Admission is not approval or publication: v2 sources cannot render,
-export, snapshot, vendor, or enter `usersum` through this package. See
-`assurance/v2/README.md` for the source contract and package boundaries.
+ASSURE-04A added a separate internal source tree at `assurance/v2/`; ASSURE-04B
+added typed dependency planning; ASSURE-04C adds deterministic assembly only
+into an explicit disposable staging root. These capabilities are not approval
+or publication: v2 sources cannot enter tracked `usersum`, export, snapshot,
+release, or vendor surfaces. See `assurance/v2/README.md` for the source,
+planning, and staging contracts.
 
 From the repository root:
 
@@ -29,11 +30,19 @@ cargo run --quiet -p openwepp-assurance -- build --all
 cargo run --quiet -p openwepp-assurance -- check --all
 ```
 
+The final two commands above deliberately exercise the protected zero-public
+builder and checker. Internal v2 assembly is visibly separate and always names
+a disposable root:
+
+```bash
+cargo run --quiet -p openwepp-assurance -- build --all \
+  --staging-root /tmp/openwepp-assurance-stage
+```
+
 An explicit release operation may add `--snapshot <id> --snapshot-root <path>`
 only after the release transition preflight passes. Ordinary CI never invokes
 snapshot mode. Historical recovery is audit-only and does not authorize v1
 publication, export, snapshotting, or vendoring.
 
-Report-specific planning belongs to ASSURE-04B, assembly to ASSURE-04C, and
-review locks and publication to ASSURE-04D. Until those packages close, only
-v2 source validation is available.
+Report-specific validation, planning, and disposable assembly are available.
+Review locks and publication belong to ASSURE-04D and remain unavailable.

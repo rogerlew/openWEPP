@@ -1,7 +1,7 @@
 # Scientific Assurance V2 Implementation Roadmap
 
-Status: prospective decomposition — ASSURE-04C is next and awaits explicit
-authorization
+Status: prospective decomposition — ASSURE-04D is next eligible and requires a
+separately authorized work package
 
 ## Sequencing Principle
 
@@ -81,9 +81,12 @@ workspace closure.
 Rollback: validation continues without incremental planning; no public
 publication is enabled.
 
-## ASSURE-04C — Deterministic Manuscript Assembly
+## ASSURE-04C — Completed Deterministic Manuscript Assembly
 
-Outcome: build staging-only report and supplement pages from canonical authored
+Foundation status: completed by
+`20260715-assure04c-deterministic-manuscript-assembly-001`.
+
+Outcome: built staging-only report and supplement pages from canonical authored
 sources while mechanically resolving claim-bearing values, tables, figures,
 citations, and cross-references. Interpretation remains authored prose.
 

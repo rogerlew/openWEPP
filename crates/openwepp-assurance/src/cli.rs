@@ -3,9 +3,9 @@ use std::ffi::OsString;
 use std::fmt::Write as _;
 use std::path::PathBuf;
 
-use crate::{Assurance, AssuranceError, BuildOptions, Result, V2Repository};
+use crate::{Assurance, AssuranceError, BuildOptions, Result, V2AssemblyResult, V2Repository};
 
-const USAGE: &str = "Usage:\n  openwepp-assurance validate (--all | --report <id>)\n  openwepp-assurance plan (--all | --report <id>) [--format human|json]\n  openwepp-assurance build --all [--output-root <path>] [--snapshot <id> --snapshot-root <path>]\n  openwepp-assurance check --all\n";
+const USAGE: &str = "Usage:\n  openwepp-assurance validate (--all | --report <id>)\n  openwepp-assurance plan (--all | --report <id>) [--format human|json]\n  openwepp-assurance build --all [--output-root <path>] [--snapshot <id> --snapshot-root <path>]\n  openwepp-assurance check --all\n  openwepp-assurance build (--all | --report <id>) --staging-root <path>\n  openwepp-assurance check (--all | --report <id>) --staging-root <path>\n";
 
 /// Parses process arguments and executes one assurance operation.
 ///
@@ -67,8 +67,8 @@ fn execute(
     match command {
         "validate" => execute_validate(root, assurance, options),
         "plan" => execute_plan(root, assurance, options),
-        "build" => execute_build(assurance, options),
-        "check" => execute_check(assurance, options),
+        "build" => execute_build(root, assurance, options),
+        "check" => execute_check(root, assurance, options),
         _ => Err(AssuranceError::Usage(format!(
             "unknown command '{command}'\n{USAGE}"
         ))),
@@ -81,6 +81,7 @@ fn execute_validate(
     options: &Options,
 ) -> Result<String> {
     reject_build_options(options)?;
+    reject_staging_root(options)?;
     reject_plan_format(options)?;
     assurance.validate()?;
     let repository = V2Repository::open(root)?;
@@ -98,6 +99,7 @@ fn execute_plan(
     options: &Options,
 ) -> Result<String> {
     reject_build_options(options)?;
+    reject_staging_root(options)?;
     let public_plan = assurance.plan()?;
     let repository = V2Repository::open(root)?;
     let plan = match &options.selection {
@@ -115,18 +117,47 @@ fn execute_plan(
     }
 }
 
-fn execute_build(assurance: &Assurance, options: &Options) -> Result<String> {
-    reject_report_selection(options, "ASSURE-04C owns report-specific assembly")?;
+fn execute_build(
+    root: &std::path::Path,
+    assurance: &Assurance,
+    options: &Options,
+) -> Result<String> {
     reject_plan_format(options)?;
+    if let Some(staging_root) = &options.staging_root {
+        reject_public_build_options(options)?;
+        let repository = V2Repository::open(root)?;
+        let result = match &options.selection {
+            Selection::All => repository.build_all(staging_root)?,
+            Selection::Report(report_id) => repository.build_report(report_id, staging_root)?,
+        };
+        return Ok(render_assembly_result("build", &result));
+    }
+    reject_report_selection(options, "report-specific assembly requires --staging-root")?;
     assurance
         .build(&options.build)
         .map(|result| render_result("build", &result))
 }
 
-fn execute_check(assurance: &Assurance, options: &Options) -> Result<String> {
-    reject_report_selection(options, "ASSURE-04C owns report-specific assembly checks")?;
-    reject_build_options(options)?;
+fn execute_check(
+    root: &std::path::Path,
+    assurance: &Assurance,
+    options: &Options,
+) -> Result<String> {
     reject_plan_format(options)?;
+    if let Some(staging_root) = &options.staging_root {
+        reject_public_build_options(options)?;
+        let repository = V2Repository::open(root)?;
+        let result = match &options.selection {
+            Selection::All => repository.check_all(staging_root)?,
+            Selection::Report(report_id) => repository.check_report(report_id, staging_root)?,
+        };
+        return Ok(render_assembly_result("check", &result));
+    }
+    reject_report_selection(
+        options,
+        "report-specific assembly checks require --staging-root",
+    )?;
+    reject_build_options(options)?;
     assurance
         .check()
         .map(|result| render_result("check", &result))
@@ -139,6 +170,7 @@ where
     let mut selection = None;
     let mut build = BuildOptions::default();
     let mut format = None;
+    let mut staging_root = None;
     while let Some(argument) = args.next() {
         let argument = argument
             .into_string()
@@ -152,6 +184,9 @@ where
             "--snapshot" => build.snapshot = Some(next_string(&mut args, "--snapshot")?),
             "--snapshot-root" => {
                 build.snapshot_root = Some(next_path(&mut args, "--snapshot-root")?);
+            }
+            "--staging-root" if staging_root.is_none() => {
+                staging_root = Some(next_path(&mut args, "--staging-root")?);
             }
             "--format" if format.is_none() => {
                 format = Some(parse_format(&next_string(&mut args, "--format")?)?);
@@ -178,6 +213,7 @@ where
         selection,
         build,
         format,
+        staging_root,
     })
 }
 
@@ -211,6 +247,25 @@ fn reject_build_options(options: &Options) -> Result<()> {
     }
     Err(AssuranceError::Usage(
         "--output-root, --snapshot, and --snapshot-root are build-only".to_owned(),
+    ))
+}
+
+fn reject_public_build_options(options: &Options) -> Result<()> {
+    if options.build == BuildOptions::default() {
+        return Ok(());
+    }
+    Err(AssuranceError::Usage(
+        "--staging-root cannot be combined with --output-root, --snapshot, or --snapshot-root"
+            .to_owned(),
+    ))
+}
+
+fn reject_staging_root(options: &Options) -> Result<()> {
+    if options.staging_root.is_none() {
+        return Ok(());
+    }
+    Err(AssuranceError::Usage(
+        "--staging-root is build/check-only".to_owned(),
     ))
 }
 
@@ -252,10 +307,22 @@ fn render_result(label: &str, result: &crate::BuildResult) -> String {
     output
 }
 
+fn render_assembly_result(label: &str, result: &V2AssemblyResult) -> String {
+    let mut output = format!(
+        "{label}: PASS\nreports: {}\noutputs:\n",
+        result.reports.len()
+    );
+    for (path, digest) in &result.outputs {
+        let _ = writeln!(output, "  - {} sha256={digest}", path.display());
+    }
+    output
+}
+
 struct Options {
     selection: Selection,
     build: BuildOptions,
     format: Option<OutputFormat>,
+    staging_root: Option<PathBuf>,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
