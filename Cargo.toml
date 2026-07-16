@@ -686,6 +686,10 @@ path = "tests/integration/assurance_v2_assembly_contract.rs"
 name = "assurance_v2_publication_contract"
 path = "tests/integration/assurance_v2_publication_contract.rs"
 
+[[test]]
+name = "assurance_v2_groundwater_report_contract"
+path = "tests/integration/assurance_v2_groundwater_report_contract.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

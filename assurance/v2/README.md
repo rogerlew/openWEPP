@@ -8,15 +8,17 @@ reader-first prose. Strict YAML records identify authorship, accountable review
 roles, agent assistance, claims, methods, dependencies, results, value
 bindings, tables, result-bearing figures, references, research objects, review
 state, and publication state. They do not generate conclusions or substitute
-lifecycle labels for evidence. The current architecture fixture discloses its
-agent author and blocks review while its human report lead and scientific
+lifecycle labels for evidence. The current production-domain draft discloses
+its agent author and blocks review while its human report lead and scientific
 approver are unassigned.
 
-The current groundwater report is a positive architecture fixture derived from
-the accepted ASSURE-02 manuscript prototype. Its `DRAFT` and `fixture_only`
-fields are governance controls, not a reader-facing assessment of the science.
-It has no public route, review lock, export permission, release snapshot, or
-vendoring authority.
+The current groundwater report is the first production-domain v2 source. It is
+a manuscript-first software-verification study with preregistered methods,
+fresh execution evidence, reproducible arithmetic, and explicit scientific
+claim limits. `DRAFT` records its lifecycle, not a negative assessment of the
+groundwater process. It has no public route, review lock, export permission,
+release snapshot, or vendoring authority until accountable humans review and
+approve the exact source.
 
 ## Layout
 
@@ -33,6 +35,9 @@ assurance/v2/
     report.yaml
     manuscript.md
     supplement.md
+    inputs/*.json
+    procedures/*.py
+    evidence/*.json
     results/*.json
 ```
 
@@ -83,7 +88,7 @@ approve a report.
 ## Assemble And Check A Disposable Consumer
 
 Assembly always requires a caller-selected disposable staging root. These
-commands build the internal fixture into a future
+commands build the internal source into a future
 `usersum/assurance/reports/` shape and then verify every expected byte and local
 link without writing during the check:
 
@@ -105,7 +110,7 @@ and emits portable links. Unit disagreement, unsupported display precision,
 unused content, noncurrent inputs, unresolved links, output drift, unsafe
 staging paths, or symlink traversal fail closed.
 
-The staging result is architecture evidence, not a reviewed or published
+The staging result is build evidence, not a reviewed or published
 scientific report. It grants no review lock, public route, snapshot, export,
 release, or vendoring authority.
 
@@ -122,9 +127,9 @@ only authority for the derived public state.
 The registry in `principals.yaml` gives stable identities, kinds, authorities,
 and eligible roles. The software checks structure, declared roles, distinct
 principals, and specified conflicts. It cannot authenticate a person, assess
-competence, perform scientific review, or generate approval. The current
-fixture is intentionally `DRAFT` and `test_only`; its missing human
-accountability blocks publication.
+competence, perform scientific review, or generate approval. The current report
+is intentionally `DRAFT` in the production trust domain; its missing human
+accountability blocks review entry and publication.
 
 ## Publish To Explicit External Roots
 

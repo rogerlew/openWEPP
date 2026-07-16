@@ -1,7 +1,0 @@
-{
-  "schema_version": 1,
-  "result_id": "GW-RESULT-FOCUSED-TESTS",
-  "values": [
-    { "id": "focused_test_count", "value": 7.0, "unit_id": "test_count", "precision": "exact selected passing-test count" }
-  ]
-}

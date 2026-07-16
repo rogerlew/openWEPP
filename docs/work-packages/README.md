@@ -102,6 +102,18 @@
 
 State as of `2026-07-16 UTC`:
 
+- `20260716-assure05-first-production-v2-report-001/` -
+  HOLD-HUMAN-APPROVAL (2026-07-16): produced the first review-ready production-
+  domain v2 groundwater report with fresh analytical, guard, interface, and
+  clean-build H2637 evidence; durable raw inputs; independent reconstruction;
+  a manuscript, supplement, figures, and research objects; and deterministic
+  staging. Internal domain and reproduction/publication findings were accepted
+  and closed. Terminal full Nextest passed 2,049/2,049; fresh CRAP is 2 raw / 2
+  adjudicated / 0 actionable; both failed closure attempts remain recorded.
+  Publication is correctly held because no named human report lead, scientific
+  reviewer, reproduction/publication reviewer, assurance steward, or release
+  owner approved the exact root. Public zero-report, snapshot, export, and
+  vendoring surfaces remain unchanged.
 - `20260716-assure04d-review-lock-publication-snapshot-001/` -
   EXECUTED-COMPLETE (2026-07-16): implemented review-subject roots, exact-root
   named approval

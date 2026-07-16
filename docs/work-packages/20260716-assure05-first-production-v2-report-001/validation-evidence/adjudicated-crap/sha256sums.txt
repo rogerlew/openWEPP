@@ -1,0 +1,16 @@
+10b19679e382ebacd6b2d20ee02144c461e01b1ac958731d07dd6585acb7d67f  docs/work-packages/20260716-assure05-first-production-v2-report-001/validation-evidence/adjudicated-crap/adjudication-registry.json
+c909ce14fee609b84d77b2903f59bc2cfc3d0cdb80c8de87624c6fd6b7d1dac8  docs/work-packages/20260716-assure05-first-production-v2-report-001/validation-evidence/adjudicated-crap/adjudicated-crap-report.json
+b4b421f78a2a91461a3f44e87e678dfd0faa2cd6ef297d6ed4cf8c512593134e  docs/work-packages/20260716-assure05-first-production-v2-report-001/validation-evidence/adjudicated-crap/adjudicated-crap-report.md
+faf93773c4f1319d248c431f7ef1d7a7cd3bd556cfd4990b83989c1591e3490f  docs/work-packages/20260716-assure05-first-production-v2-report-001/validation-evidence/adjudicated-crap/cargo-version.txt
+613daf2b27209d9be123ababd5ebd0bbc27ce14c9f63463552454b7cea0e7f86  docs/work-packages/20260716-assure05-first-production-v2-report-001/validation-evidence/adjudicated-crap/cargo-crap-version.txt
+3b5165efb413bed20668042ad4d25edc939968e16cd33315631cb2e8c39779f3  docs/work-packages/20260716-assure05-first-production-v2-report-001/validation-evidence/adjudicated-crap/cargo-crap.log
+35c027b707427b0becc406096c32bd507961068f5d869735d7997da10bf44fd7  docs/work-packages/20260716-assure05-first-production-v2-report-001/validation-evidence/adjudicated-crap/cargo-llvm-cov-version.txt
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  docs/work-packages/20260716-assure05-first-production-v2-report-001/validation-evidence/adjudicated-crap/llvm-cov-clean.log
+14a9472362862fc899c22401d696b8efedda8034708f266a3770fa5e8349ce2e  docs/work-packages/20260716-assure05-first-production-v2-report-001/validation-evidence/adjudicated-crap/llvm-cov.log
+fbc4c2138014af600772bcbb47ec7f1977944281fc10cfd220ffb3e01a66e3ef  docs/work-packages/20260716-assure05-first-production-v2-report-001/validation-evidence/adjudicated-crap/run-status.json
+8f97c91e920ce0d02680e3d01eb87afa0c77290dcd5d19eb901ae194d4700d90  docs/work-packages/20260716-assure05-first-production-v2-report-001/validation-evidence/adjudicated-crap/rustc-version.txt
+5f0446b67c84ecc1606a8adc6527adf75734ab82bda0df7ee62265635f593fcd  docs/work-packages/20260716-assure05-first-production-v2-report-001/validation-evidence/adjudicated-crap/source-manifest-after.json
+5f0446b67c84ecc1606a8adc6527adf75734ab82bda0df7ee62265635f593fcd  docs/work-packages/20260716-assure05-first-production-v2-report-001/validation-evidence/adjudicated-crap/source-manifest-before.json
+5f0446b67c84ecc1606a8adc6527adf75734ab82bda0df7ee62265635f593fcd  docs/work-packages/20260716-assure05-first-production-v2-report-001/validation-evidence/adjudicated-crap/source-manifest-final.json
+413bc7035a416db70298bb341f1330891b43a82d5b10bccd0aa479369740ff3e  docs/work-packages/20260716-assure05-first-production-v2-report-001/validation-evidence/adjudicated-crap/workspace-crap.json
+d116cab75263f0163e64a42b8506096569cc31fdda6ac3fe6f0fc2977816d399  docs/work-packages/20260716-assure05-first-production-v2-report-001/validation-evidence/adjudicated-crap/workspace.lcov

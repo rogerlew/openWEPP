@@ -1,6 +1,6 @@
 # Scientific Assurance V2 Implementation Roadmap
 
-Status: prospective decomposition — ASSURE-05 is next but not authorized
+Status: prospective decomposition — ASSURE-05 review-ready and held for human authority
 
 ## Sequencing Principle
 
@@ -130,6 +130,19 @@ test-only snapshot evidence. No synthetic fixture is promoted, withdrawn from,
 or ever written into the tracked public tree or a release snapshot.
 
 ## ASSURE-05 — First Production V2 Report
+
+Execution package:
+`docs/work-packages/20260716-assure05-first-production-v2-report-001/package.md`.
+Coding-agent preparation and review cannot substitute for the named human
+scientific, reproduction/publication, steward, and release authority required
+for public inclusion; absent authority yields a review-ready hold, not a
+synthetic approval.
+
+Current gate: the report source, retained evidence, independent reproduction,
+deterministic staging, internal finding closure, workspace gates, and fresh
+CRAP closure are technically complete. The report remains a production-domain
+`DRAFT`; advancement requires accountable humans to review and approve the
+exact source root before release transfer or public publication.
 
 Outcome: convert the accepted groundwater prototype into the first complete v2
 scientific report and supplement.

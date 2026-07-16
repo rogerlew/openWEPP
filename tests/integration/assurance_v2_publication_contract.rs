@@ -41,10 +41,7 @@ fn publication_api_has_separate_production_and_test_trust_domains() {
     assert_eq!(V2TrustDomain::TestOnly.to_string(), "test_only");
 
     let repository = V2Repository::open(repository_root()).expect("open v2 source");
-    assert!(matches!(
-        repository.publish_report(REPORT_ID, &options),
-        Err(AssuranceError::Invalid(message)) if message.contains("test_only trust-domain")
-    ));
+    assert!(repository.publish_report(REPORT_ID, &options).is_err());
     assert!(
         repository
             .publish_test_fixture_report(REPORT_ID, &options)
@@ -282,31 +279,30 @@ fn enter_synthetic_review(root: &Path, domain: V2TrustDomain) {
     refresh_catalog_identity(root, "assurance/v2/principals.yaml");
 
     if domain == V2TrustDomain::TestOnly {
+        replace_all_in(
+            &root.join(CATALOG_PATH),
+            "trust_domain: production",
+            "trust_domain: test_only",
+        );
+        replace_all_in(
+            &root.join(CATALOG_PATH),
+            "fixture_only: false",
+            "fixture_only: true",
+        );
         prepend_test_banner(&root.join(MANUSCRIPT_PATH));
         prepend_test_banner(&root.join(SUPPLEMENT_PATH));
         refresh_local_hash(root, MANUSCRIPT_PATH);
         refresh_local_hash(root, SUPPLEMENT_PATH);
-    } else {
-        replace_all_in(
-            &root.join(CATALOG_PATH),
-            "trust_domain: test_only",
-            "trust_domain: production",
-        );
-        replace_all_in(
-            &root.join(CATALOG_PATH),
-            "fixture_only: true",
-            "fixture_only: false",
-        );
     }
 
     let report = root.join(REPORT_PATH);
-    if domain == V2TrustDomain::Production {
+    if domain == V2TrustDomain::TestOnly {
         replace_in(
             &report,
-            "trust_domain: test_only",
             "trust_domain: production",
+            "trust_domain: test_only",
         );
-        replace_in(&report, "fixture_only: true", "fixture_only: false");
+        replace_in(&report, "fixture_only: false", "fixture_only: true");
     }
     replace_in(&report, "lifecycle: DRAFT", "lifecycle: IN_REVIEW");
     replace_in(
@@ -467,7 +463,7 @@ fn approve_synthetic_review(
   public_path: null
   release_transfer_root: null";
     let new = format!(
-        "  state: APPROVED\n  approval_lock_root: {zero}\n  target_release_commit: {}\n  target_release_configuration: {}\n  prior_realization: ASSURE-04C deterministic staging realization\n  candidate_realization: ASSURE-04D synthetic publication realization\n  impact_assessment: Publication mechanics only; no scientific conclusion changes are claimed.\n  reproduction_disposition: Synthetic reproduction approval is present solely to exercise the fail-closed contract.\n  semantic_differences: [No scientific semantic difference; TEST ONLY banner added.]\n  release_owner_id: test-release-owner\n  assurance_steward_id: test-steward\n  publication_date: 2026-07-16\n  public_path: assurance/reports/{REPORT_ID}/0.1.0/index.md\n  release_transfer_root: {zero}",
+        "  state: APPROVED\n  approval_lock_root: {zero}\n  target_release_commit: {}\n  target_release_configuration: {}\n  prior_realization: ASSURE-04C deterministic staging realization\n  candidate_realization: ASSURE-04D synthetic publication realization\n  impact_assessment: Publication mechanics only; no scientific conclusion changes are claimed.\n  reproduction_disposition: Synthetic reproduction approval is present solely to exercise the fail-closed contract.\n  semantic_differences: [No scientific semantic difference; TEST ONLY banner added.]\n  release_owner_id: test-release-owner\n  assurance_steward_id: test-steward\n  publication_date: 2026-07-16\n  public_path: assurance/reports/{REPORT_ID}/1.0.0/index.md\n  release_transfer_root: {zero}",
         release.commit(),
         release.configuration()
     );
@@ -531,7 +527,7 @@ fn draft_subject_root_is_stable_but_cannot_publish() {
         .unwrap(),
     );
     assert!(matches!(
-        repository.publish_test_fixture_report(REPORT_ID, &options),
+        repository.publish_report(REPORT_ID, &options),
         Err(AssuranceError::Invalid(message)) if message.contains("DRAFT")
     ));
     assert!(!usersum.path.join("assurance/catalog.json").exists());
@@ -567,9 +563,9 @@ fn synthetic_approved_fixture_publishes_idempotently_and_release_rejects_it() {
     let public_report = fixture
         .usersum
         .path
-        .join(format!("assurance/reports/{REPORT_ID}/0.1.0/index.md"));
+        .join(format!("assurance/reports/{REPORT_ID}/1.0.0/index.md"));
     let staged_report = fixture.stage.path.join(format!(
-        "usersum/assurance/reports/{REPORT_ID}/0.1.0/index.md"
+        "usersum/assurance/reports/{REPORT_ID}/1.0.0/index.md"
     ));
     assert_eq!(
         fs::read(&public_report).unwrap(),
@@ -981,7 +977,7 @@ fn concurrent_reader_observes_only_complete_old_or_new_report_bytes() {
     let report_path = fixture
         .usersum
         .path
-        .join(format!("assurance/reports/{REPORT_ID}/0.1.0/index.md"));
+        .join(format!("assurance/reports/{REPORT_ID}/1.0.0/index.md"));
     let old_bytes = fs::read(&report_path).unwrap();
     let old_roots = V2Repository::open(&fixture.source.path)
         .unwrap()
@@ -994,7 +990,7 @@ fn concurrent_reader_observes_only_complete_old_or_new_report_bytes() {
     refresh_local_hash(&fixture.source.path, MANUSCRIPT_PATH);
     rebind_after_approved_change(&fixture, &old_roots);
     let staged_path = fixture.stage.path.join(format!(
-        "usersum/assurance/reports/{REPORT_ID}/0.1.0/index.md"
+        "usersum/assurance/reports/{REPORT_ID}/1.0.0/index.md"
     ));
     let new_bytes = fs::read(&staged_path).unwrap();
     assert_ne!(old_bytes, new_bytes);
@@ -1009,7 +1005,7 @@ fn concurrent_reader_observes_only_complete_old_or_new_report_bytes() {
     let reader_old = old_bytes.clone();
     let reader_new = new_bytes.clone();
     let reader = thread::spawn(move || {
-        let report_path = usersum.join(format!("assurance/reports/{REPORT_ID}/0.1.0/index.md"));
+        let report_path = usersum.join(format!("assurance/reports/{REPORT_ID}/1.0.0/index.md"));
         let mut reads = 0_u64;
         while !reader_stop.load(Ordering::Acquire) {
             let observed = fs::read(&report_path).unwrap();
@@ -1133,7 +1129,7 @@ fn named_publication_preserves_receipted_peer_and_all_mode_converges() {
     let first_path = fixture
         .usersum
         .path
-        .join(format!("assurance/reports/{REPORT_ID}/0.1.0/index.md"));
+        .join(format!("assurance/reports/{REPORT_ID}/1.0.0/index.md"));
     let first_bytes = fs::read(&first_path).unwrap();
     let combined = repository
         .publish_test_fixture_report(SECOND_REPORT_ID, &fixture.options())
@@ -1161,7 +1157,7 @@ fn multiply_linked_staging_bytes_fail_before_publication() {
     let report_directory = fixture
         .stage
         .path
-        .join(format!("usersum/assurance/reports/{REPORT_ID}/0.1.0"));
+        .join(format!("usersum/assurance/reports/{REPORT_ID}/1.0.0"));
     fs::hard_link(
         report_directory.join("index.md"),
         report_directory.join("hard-linked-alias.md"),
@@ -1310,7 +1306,7 @@ fn bootstrap_narrative_empty_directory_and_symlink_drift_fail_closed() {
         symlink(
             "/etc/passwd",
             staging.stage.path.join(format!(
-                "usersum/assurance/reports/{REPORT_ID}/0.1.0/unknown-link"
+                "usersum/assurance/reports/{REPORT_ID}/1.0.0/unknown-link"
             )),
         )
         .unwrap();
@@ -1342,7 +1338,7 @@ fn bootstrap_narrative_empty_directory_and_symlink_drift_fail_closed() {
 
         let fifo = approved_fixture("assure04d-staging-fifo");
         let fifo_path = fifo.stage.path.join(format!(
-            "usersum/assurance/reports/{REPORT_ID}/0.1.0/unknown-fifo"
+            "usersum/assurance/reports/{REPORT_ID}/1.0.0/unknown-fifo"
         ));
         assert!(
             Command::new("mkfifo")
@@ -1370,8 +1366,8 @@ fn canonical_public_path_and_real_markdown_narrative_link_are_mandatory() {
         .unwrap();
     replace_in(
         &path_fixture.source.path.join(REPORT_PATH),
-        &format!("  public_path: assurance/reports/{REPORT_ID}/0.1.0/index.md"),
-        &format!("  public_path: assurance/reports/{REPORT_ID}/0.1.0/elsewhere.md"),
+        &format!("  public_path: assurance/reports/{REPORT_ID}/1.0.0/index.md"),
+        &format!("  public_path: assurance/reports/{REPORT_ID}/1.0.0/elsewhere.md"),
     );
     rebind_after_approved_change(&path_fixture, &old_roots);
     assert!(matches!(
@@ -1679,7 +1675,7 @@ fn authority_bound_byte_negative_matrix_is_fail_closed() {
 
     let generated = approved_fixture("assure04d-changed-generated-output");
     append_byte(&generated.stage.path.join(format!(
-        "usersum/assurance/reports/{REPORT_ID}/0.1.0/index.md"
+        "usersum/assurance/reports/{REPORT_ID}/1.0.0/index.md"
     )));
     assert_unpublished(&generated, "changed generated output bytes");
 }
@@ -1769,6 +1765,9 @@ fn source_fixture(label: &str) -> Scratch {
         "docs/work-packages/20260714-assure02-manuscript-first-assurance-architecture-001/artifacts/prototype-linear-groundwater-reservoir-evaluation.md",
         "docs/work-packages/20260709-laned-active-baseflow-export-closure-001/artifacts/consumer-path-proof.md",
         "docs/work-packages/20260708-groundwater-baseflow-laned-single-ofe-mofe-implementation-001/artifacts/consumer-path-proof.md",
+        "docs/work-packages/20260716-assure05-first-production-v2-report-001/artifacts/realization-freeze.md",
+        "docs/work-packages/20260716-assure05-first-production-v2-report-001/artifacts/study-protocol.md",
+        "docs/work-packages/20260716-assure05-first-production-v2-report-001/prompts/archived/20260716-codex-execute-assure05_prompt.md",
         "docs/work-packages/20260713-integrated-validation-campaign-001/artifacts/final-conservation-and-consumer-evidence.md",
         "docs/work-packages/20260713-integrated-validation-campaign-001/artifacts/logs/final-reconstruction-arithmetic.log",
     ] {
@@ -1916,7 +1915,7 @@ fn append_catalog_report(root: &Path, report_id: &str, report_path: &Path, domai
     let fixture_only = domain == V2TrustDomain::TestOnly;
     write!(
         text,
-        "  - id: {report_id}\n    version: 0.1.0\n    title: Verification of openWEPP's Daily Linear Groundwater-Reservoir Recurrence\n    owner: openWEPP scientific assurance maintainers\n    trust_domain: {domain}\n    fixture_only: {fixture_only}\n    manifest_path: {relative}\n    manifest_sha256: {digest}\n"
+        "  - id: {report_id}\n    version: 1.0.0\n    title: Verification of openWEPP's Daily Linear Groundwater Reservoir\n    owner: openWEPP scientific assurance maintainers\n    trust_domain: {domain}\n    fixture_only: {fixture_only}\n    manifest_path: {relative}\n    manifest_sha256: {digest}\n"
     )
     .expect("write catalog report entry");
     fs::write(catalog, text).unwrap();

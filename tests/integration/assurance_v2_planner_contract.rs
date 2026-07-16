@@ -99,8 +99,8 @@ fn manifest_method_figure_review_and_software_changes_select_the_report() {
         ),
         (
             "figure",
-            "caption: Independent analytical and openWEPP daily storage",
-            "caption: Rechecked analytical and openWEPP daily storage",
+            "caption: Independent binary64 daily storage",
+            "caption: Rechecked independent binary64 daily storage",
         ),
         (
             "review",
@@ -109,7 +109,7 @@ fn manifest_method_figure_review_and_software_changes_select_the_report() {
         ),
         (
             "software",
-            "git:de520f1ff867ca5c65b1f82dfe32a19c213ae18c",
+            "git:01ed70550a4e371e99afe35c4bdd4d9b667e812c",
             "git:0000000000000000000000000000000000000000",
         ),
     ] {
@@ -387,8 +387,8 @@ fn add_second_report(root: &Path) {
     for result in [
         "two-day-recurrence.json",
         "h2637-ledger.json",
-        "assure02-path-currency.json",
-        "assure02-focused-tests.json",
+        "assure05-path-currency.json",
+        "assure05-focused-tests.json",
     ] {
         let path = second.join("results").join(result);
         let before = fs::read(&path).expect("read copied result");
@@ -405,7 +405,7 @@ fn add_second_report(root: &Path) {
     let mut catalog = fs::read_to_string(&catalog_path).expect("read catalog");
     write!(
         catalog,
-        "  - id: {SECOND_REPORT_ID}\n    version: 0.1.0\n    title: Verification of openWEPP's Daily Linear Groundwater-Reservoir Recurrence\n    owner: openWEPP scientific assurance maintainers\n    trust_domain: test_only\n    fixture_only: true\n    manifest_path: {second_rel}/report.yaml\n    manifest_sha256: {manifest_digest}\n"
+        "  - id: {SECOND_REPORT_ID}\n    version: 1.0.0\n    title: Verification of openWEPP's Daily Linear Groundwater Reservoir\n    owner: openWEPP scientific assurance maintainers\n    trust_domain: production\n    fixture_only: false\n    manifest_path: {second_rel}/report.yaml\n    manifest_sha256: {manifest_digest}\n"
     )
     .expect("append second catalog entry");
     fs::write(catalog_path, catalog).expect("write two-report catalog");
@@ -459,12 +459,11 @@ fn fixture(label: &str) -> Scratch {
         "usersum/hillslope-hydrology-and-sediment-physics.md",
         CONTRACT_PATH,
         "crates/openwepp-hillslope-orchestrator/src/direct_runtime/groundwater.rs",
-        "docs/work-packages/20260714-assure02-manuscript-first-assurance-architecture-001/artifacts/groundwater-current-tree-confirmation.md",
-        "docs/work-packages/20260714-assure02-manuscript-first-assurance-architecture-001/artifacts/prototype-linear-groundwater-reservoir-evaluation.md",
+        "docs/work-packages/20260716-assure05-first-production-v2-report-001/artifacts/study-protocol.md",
+        "docs/work-packages/20260716-assure05-first-production-v2-report-001/artifacts/realization-freeze.md",
+        "docs/work-packages/20260716-assure05-first-production-v2-report-001/prompts/archived/20260716-codex-execute-assure05_prompt.md",
         "docs/work-packages/20260709-laned-active-baseflow-export-closure-001/artifacts/consumer-path-proof.md",
         "docs/work-packages/20260708-groundwater-baseflow-laned-single-ofe-mofe-implementation-001/artifacts/consumer-path-proof.md",
-        "docs/work-packages/20260713-integrated-validation-campaign-001/artifacts/final-conservation-and-consumer-evidence.md",
-        "docs/work-packages/20260713-integrated-validation-campaign-001/artifacts/logs/final-reconstruction-arithmetic.log",
     ] {
         copy_file(&source, &target.path, relative);
     }

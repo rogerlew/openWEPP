@@ -1,7 +1,0 @@
-{
-  "schema_version": 1,
-  "result_id": "GW-RESULT-PATH-CURRENCY",
-  "values": [
-    { "id": "assessed_path_count", "value": 12.0, "unit_id": "path_count", "precision": "exact declared path count" }
-  ]
-}

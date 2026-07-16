@@ -33,9 +33,9 @@ fn real_source_and_cli_validate_named_and_all_deterministically() {
     assert_eq!(all.total_report_count, 1);
     assert_eq!(all.public_report_count, 0);
     assert_eq!(all.reports[0].id, REPORT_ID);
-    assert_eq!(all.reports[0].version, "0.1.0");
+    assert_eq!(all.reports[0].version, "1.0.0");
     assert_eq!(all.reports[0].lifecycle, "DRAFT");
-    assert!(all.reports[0].fixture_only);
+    assert!(!all.reports[0].fixture_only);
 
     let rendered = all.render();
     assert!(rendered.contains("validation: PASS"));
@@ -79,7 +79,12 @@ fn real_sources_satisfy_the_declared_draft_2020_12_schemas() {
         &yaml_value(&root.join(REPORT_PATH)),
         "report",
     );
-    for path in [TWO_DAY_PATH, h2637_path()] {
+    for path in [
+        TWO_DAY_PATH,
+        h2637_path(),
+        "assurance/v2/reports/linear-groundwater-reservoir-recurrence/results/assure05-path-currency.json",
+        "assurance/v2/reports/linear-groundwater-reservoir-recurrence/results/assure05-focused-tests.json",
+    ] {
         assert_schema_accepts(&result_schema, &json_value(&root.join(path)), path);
     }
 }
@@ -94,7 +99,7 @@ fn executable_schemas_reject_practical_identity_and_lifecycle_defects() {
     let mut catalog = yaml_value(&root.join(CATALOG_PATH));
     catalog["reports"][0]["version"] = serde_json::json!("01.0");
     assert_schema_rejects(&catalog_schema, &catalog, "non-semantic version");
-    catalog["reports"][0]["version"] = serde_json::json!("0.1.0");
+    catalog["reports"][0]["version"] = serde_json::json!("1.0.0");
     catalog["reports"][0]["manifest_path"] = serde_json::json!("/tmp/report.yaml");
     assert_schema_rejects(&catalog_schema, &catalog, "absolute catalog path");
 
@@ -157,7 +162,7 @@ fn named_validation_isolated_from_an_unselected_broken_report() {
     let mut text = fs::read_to_string(&catalog).expect("read catalog");
     write!(
         text,
-        "  - id: broken-report\n    version: 0.1.0\n    title: Broken unselected source\n    owner: test fixture\n    trust_domain: test_only\n    fixture_only: true\n    manifest_path: {broken_path}\n    manifest_sha256: {digest}\n"
+        "  - id: broken-report\n    version: 1.0.0\n    title: Broken unselected source\n    owner: test fixture\n    trust_domain: production\n    fixture_only: false\n    manifest_path: {broken_path}\n    manifest_sha256: {digest}\n"
     )
     .expect("extend catalog text");
     fs::write(catalog, text).expect("extend catalog");
@@ -245,8 +250,8 @@ fn schema_required_nullable_fields_cannot_be_omitted() {
         ),
         (
             "research-object",
-            "    sha256: e51dbd62c1316685b87007c665a24cd4af2bbe05237f33418e088e445bc67372\n    restriction_reason: null\n    review_role: null\n",
-            "    sha256: e51dbd62c1316685b87007c665a24cd4af2bbe05237f33418e088e445bc67372\n    review_role: null\n",
+            "    sha256: 8d6659d9e60de5c9dace531cbe2d3f74df3e7a5dd9f1b64be4430449cfc4c9d8\n    restriction_reason: null\n    review_role: null\n",
+            "    sha256: 8d6659d9e60de5c9dace531cbe2d3f74df3e7a5dd9f1b64be4430449cfc4c9d8\n    review_role: null\n",
             "restriction_reason",
         ),
         ("review", "  subject_root: null\n", "", "subject_root"),
@@ -290,13 +295,13 @@ fn content_schema_contract_and_report_versions_are_enforced() {
     let semantic_version = fixture("assure04a-semantic-version");
     replace_in(
         &semantic_version.path.join(REPORT_PATH),
-        "version: 0.1.0",
-        "version: 00.1.0",
+        "version: 1.0.0",
+        "version: 01.0.0",
     );
     replace_in(
         &semantic_version.path.join(CATALOG_PATH),
-        "version: 0.1.0",
-        "version: 00.1.0",
+        "version: 1.0.0",
+        "version: 01.0.0",
     );
     refresh_report_hash(&semantic_version.path);
     assert_rejected(&semantic_version.path, "without leading zeros");
@@ -469,7 +474,7 @@ fn every_record_family_has_executable_field_consumption() {
         ),
         (
             "unit",
-            "    definition: cubic metre",
+            "    definition: cubic meter",
             "    definition: ''",
             "definition",
         ),
@@ -481,14 +486,14 @@ fn every_record_family_has_executable_field_consumption() {
         ),
         (
             "method",
-            "    procedure: Compute expected values independently",
-            "    procedure: '' # Compute expected values independently",
+            "    procedure: Preserve the independent arithmetic residual",
+            "    procedure: '' # Preserve the independent arithmetic residual",
             "procedure",
         ),
         (
             "result",
-            "    precision_policy: Preserve binary64 residual",
-            "    precision_policy: '' # Preserve binary64 residual",
+            "    precision_policy: Preserve the independent arithmetic residual",
+            "    precision_policy: '' # Preserve the independent arithmetic residual",
             "precision_policy",
         ),
         (
@@ -505,8 +510,8 @@ fn every_record_family_has_executable_field_consumption() {
         ),
         (
             "figure",
-            "    alternative_text: Tabular values",
-            "    alternative_text: '' # Tabular values",
+            "    alternative_text: Independent binary64 arithmetic",
+            "    alternative_text: '' # Independent binary64 arithmetic",
             "alternative_text",
         ),
         (
@@ -517,8 +522,8 @@ fn every_record_family_has_executable_field_consumption() {
         ),
         (
             "research-object",
-            "    reproduction_instructions: Reapply",
-            "    reproduction_instructions: '' # Reapply",
+            "    reproduction_instructions: Run GW-OBJECT-REPRODUCTION-PROCEDURE",
+            "    reproduction_instructions: '' # Run GW-OBJECT-REPRODUCTION-PROCEDURE",
             "reproduction_instructions",
         ),
     ];
@@ -640,12 +645,11 @@ fn fixture(label: &str) -> Scratch {
         "usersum/hillslope-hydrology-and-sediment-physics.md",
         "docs/specifications/science-contracts/contracts/SC-GWBASEFLOW-001.md",
         "crates/openwepp-hillslope-orchestrator/src/direct_runtime/groundwater.rs",
-        "docs/work-packages/20260714-assure02-manuscript-first-assurance-architecture-001/artifacts/groundwater-current-tree-confirmation.md",
-        "docs/work-packages/20260714-assure02-manuscript-first-assurance-architecture-001/artifacts/prototype-linear-groundwater-reservoir-evaluation.md",
+        "docs/work-packages/20260716-assure05-first-production-v2-report-001/artifacts/study-protocol.md",
+        "docs/work-packages/20260716-assure05-first-production-v2-report-001/artifacts/realization-freeze.md",
+        "docs/work-packages/20260716-assure05-first-production-v2-report-001/prompts/archived/20260716-codex-execute-assure05_prompt.md",
         "docs/work-packages/20260709-laned-active-baseflow-export-closure-001/artifacts/consumer-path-proof.md",
         "docs/work-packages/20260708-groundwater-baseflow-laned-single-ofe-mofe-implementation-001/artifacts/consumer-path-proof.md",
-        "docs/work-packages/20260713-integrated-validation-campaign-001/artifacts/final-conservation-and-consumer-evidence.md",
-        "docs/work-packages/20260713-integrated-validation-campaign-001/artifacts/logs/final-reconstruction-arithmetic.log",
     ] {
         copy_file(&source, &target.path, relative);
     }

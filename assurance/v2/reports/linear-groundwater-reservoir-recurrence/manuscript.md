@@ -1,262 +1,372 @@
-# Verification of openWEPP's Daily Linear Groundwater-Reservoir Recurrence
+# Verification of openWEPP's Daily Linear Groundwater Reservoir
 
-*Version 0.1 — 2026-07-15*
+*Version 1.0 draft — 2026-07-16*
 
-*Audience: hydrologists, soil scientists, environmental-model researchers, and
-practitioners assessing the implementation basis of openWEPP groundwater
-outputs.*
-
-Internal architecture-fixture author: Codex (AI coding agent). Accountable human
-report lead: unassigned. Scientific approver: unassigned.
+Prepared with disclosed Codex assistance for openWEPP scientific-assurance
+maintainers. An accountable human report lead and independent human reviewers
+must accept the exact source before publication; this draft is available for
+that review but is not public authority.
 
 ## Key Findings
 
-- openWEPP reproduced the authorized two-day linear-reservoir recurrence with
-  a maximum absolute residual of
-  `{{quantity:GW-VALUE-MAX-RESIDUAL-SUMMARY}}`, below the
-  `{{quantity:GW-VALUE-TWO-DAY-ALLOWANCE}}` implementation-test allowance,
-  including the one-day timing of storage debits.
-- An independently reconstructed production case spanning
-  {{quantity:GW-VALUE-H2637-DURATION}} closed both terminal-storage identities
-  within `{{quantity:GW-VALUE-H2637-POST-RESIDUAL-FIGURE}}`, against allowances
-  of about `{{quantity:GW-VALUE-H2637-POST-ALLOWANCE-FIGURE}}`.
-- Generated baseflow and deep seepage reached the watershed consumer through
-  the production hillslope-pass boundary; the enabled branch did not
-  substitute the separate channel baseflow coefficient (`cbase`) or return
-  groundwater to surface routing.
-
-### Authorship and review disclosure
-
-This manuscript is the internal, nonpublic ASSURE-04A source-contract fixture
-derived from the ASSURE-02 architecture prototype. Codex drafted both versions
-under maintainer direction. The exact model/configuration used for the
-ASSURE-02 draft was not retained; this incomplete agent provenance is disclosed
-in the structured source and blocks review entry. ASSURE-02 received internal
-coding-agent architecture review, not external scientific peer review. No human
-report lead or scientific approver has accepted this manuscript. It demonstrates
-how evidence is presented and identified; it is not approved for publication
-and does not replace accountable human authorship or scientific review of a
-future production report.
+- The focused Rust recurrence test passed its preregistered
+  `{{quantity:GW-VALUE-TWO-DAY-ALLOWANCE}}` assertion allowance for the
+  two-day case. Separately, an independent binary64 recurrence differed from
+  decimal arithmetic by at most
+  `{{quantity:GW-VALUE-MAX-RESIDUAL-SUMMARY}}`.
+- In the {{quantity:GW-VALUE-H2637-DURATION}},
+  {{quantity:GW-VALUE-H2637-OFE-COUNT}} H2637 production case, independent
+  reconstruction of the terminal groundwater ledger differed from the
+  published storage by at most
+  `{{quantity:GW-VALUE-H2637-POST-RESIDUAL-FIGURE}}`, compared with a
+  storage-scaled allowance of
+  `{{quantity:GW-VALUE-H2637-POST-ALLOWANCE-FIGURE}}`.
+- Separate tests verified the production HBP writer/parser contract and the
+  watershed consumer's handling of a generated-groundwater payload. They
+  separated groundwater from lateral subsurface flow, channel `cbase`, and
+  active surface-routing water. A single fresh nonzero-groundwater execution
+  across the complete CLI adapter chain remains to be demonstrated.
 
 ## Plain-Language Summary
 
-openWEPP represents delayed groundwater discharge with a reservoir that
-receives deep drainage from the soil and releases fixed daily fractions as
-baseflow and deep seepage. We checked whether the software follows the
-authorized equations, keeps the day-to-day accounting in the correct order,
-rejects physically inconsistent coefficient combinations, and delivers the
-calculated baseflow to the watershed model. A two-day calculation matched
-independently computed values. A production run spanning
-{{quantity:GW-VALUE-H2637-DURATION}} balanced groundwater
-recharge, storage, and discharge to much less than a billionth of a cubic
-meter. These results show that the assessed software realization correctly
-carries out and transfers this specific recurrence. They do not show how
-accurately baseflow will be predicted for an untested watershed; that requires
-observations and site-appropriate parameters in a separate empirical study.
+openWEPP represents delayed groundwater discharge as a reservoir. Deep drainage
+from the soil enters storage; fixed fractions of that storage leave each day as
+baseflow and deep seepage. We asked whether the software performs that daily
+calculation in the specified order, rejects inconsistent inputs, reports enough
+information to audit the water ledger, serializes the calculated groundwater
+volumes, and consumes those fields correctly when supplied to the watershed
+model.
+
+The focused two-day Rust test passed its numerical assertion, and independent
+arithmetic reconstructed both the analytical case and the 731-day production
+ledger within floating-point allowances many orders of magnitude smaller than
+the simulated volumes. Separate interface tests showed that generated fields
+are serialized and that the watershed consumer uses them when supplied without
+substituting a different baseflow term or returning them to surface routing.
+
+This is a strong, bounded software-verification result. It does not show how
+accurately openWEPP will predict groundwater or streamflow at an untested site.
+That judgment requires observations, site-appropriate parameters, forcing and
+measurement uncertainty, and a separate empirical evaluation.
 
 ## Abstract
 
-Groundwater baseflow can sustain streamflow after rapid surface and lateral
-responses decline. The WEPP linear-reservoir extension represents this process
-with daily storage forced by deep percolation and proportional releases to
-baseflow and deep seepage. We evaluated whether the assessed openWEPP
-implementation realizes the authorized recurrence, enforces its domain, and
-preserves generated groundwater fluxes through the watershed consumer. The
-method combined formulation traceability, an independently calculable two-day
-vector, negative domain tests, production consumer tests, and reconstruction
-of a run spanning {{quantity:GW-VALUE-H2637-DURATION}} with
-{{quantity:GW-VALUE-H2637-OFE-COUNT}}. The two-day vector produced storage of
-`{{quantity:GW-VALUE-DAY1-STORAGE}}` and
-`{{quantity:GW-VALUE-DAY2-STORAGE}}`, baseflow of
-`{{quantity:GW-VALUE-DAY1-BASEFLOW}}` and
-`{{quantity:GW-VALUE-DAY2-BASEFLOW}}`, and deep seepage of
-`{{quantity:GW-VALUE-DAY1-DEEP-SEEPAGE}}` and
-`{{quantity:GW-VALUE-DAY2-DEEP-SEEPAGE}}`, matching the analytical recurrence.
-In the production case, the terminal-storage identities closed within
-`{{quantity:GW-VALUE-H2637-POST-RESIDUAL-FIGURE}}`. Generated baseflow and deep seepage also traversed the
-hillslope-pass boundary. We conclude that the assessed realization is verified
-for this bounded daily recurrence and tested consumer path. Field performance,
-coefficient transferability, uncertainty in deep-percolation forcing, and
-fitness for a particular watershed were not evaluated.
+Groundwater baseflow can sustain streamflow after rapid surface and shallow
+subsurface responses decline. The WEPP groundwater extension represents this
+delayed response with a daily linear reservoir forced by deep percolation. We
+evaluated whether the assessed openWEPP realization implements the authorized
+storage recurrence, enforces its coefficient and storage domain, exposes
+auditable run-level operands, and transfers generated groundwater volumes
+at its production-writer, strict-parser, and watershed-consumer interfaces. The study combined
+formulation traceability, an independently calculated two-day vector, negative
+domain tests, typed serialization and consumer tests, and independent
+reconstruction of a {{quantity:GW-VALUE-H2637-DURATION}},
+{{quantity:GW-VALUE-H2637-OFE-COUNT}} production run. The Rust analytical test
+passed its `{{quantity:GW-VALUE-TWO-DAY-ALLOWANCE}}` assertion; independent
+binary64 arithmetic differed from decimal arithmetic by at most
+`{{quantity:GW-VALUE-MAX-RESIDUAL-SUMMARY}}`. The production recurrence and
+complete post-export identities each closed within
+`{{quantity:GW-VALUE-H2637-POST-RESIDUAL-FIGURE}}`, against allowances near
+`{{quantity:GW-VALUE-H2637-POST-ALLOWANCE-FIGURE}}`. Separate production-writer,
+strict-parser, and watershed-consumer tests preserved the generated fields and
+their meanings; missing authority, threshold conditions, and over-export cases
+failed closed. The assessed realization is therefore verified for the daily
+recurrence and those named interfaces. A single fresh nonzero-groundwater run
+through the complete CLI-to-watershed chain, predictive accuracy, parameter
+transferability, subdaily behavior, and fitness for a particular watershed
+were not evaluated.
 
 ## 1. Introduction
 
-Streamflow in forest watersheds can contain surface runoff, lateral subsurface
-flow, and delayed groundwater baseflow. Srivastava et al. (2013) coupled WEPP
-deep percolation to a linear groundwater reservoir. In a calibrated evaluation
-at Priest River Experimental Forest, the authors reported improved streamflow
-performance when the baseflow routine was included.
+Forest-streamflow hydrographs can include rapid surface runoff, lateral
+subsurface flow, and delayed groundwater baseflow. The delayed component matters
+most when streamflow persists after rainfall or snowmelt inputs have declined.
+A model that omits or mishandles this storage-and-release behavior can reproduce
+short peaks while missing recession and low-flow periods.
 
-Those calibration-conditioned statistics describe a complete coupled-model
-application, including its forcing, parameters, and interacting processes.
-They motivate the formulation but do not establish that a new software
-realization implements the recurrence correctly. This study therefore asks a
-bounded prior question: does openWEPP perform the accepted calculation and
-move its outputs through the production model without loss, substitution, or
-double counting?
+Srivastava et al. (2013) coupled WEPP deep percolation to a linear groundwater
+reservoir and evaluated the combined formulation at Priest River Experimental
+Forest. They calibrated on 2005-2006 data and evaluated 2007-2009. Across the
+complete 2005-2009 study period, the authors reported an
+overall Nash-Sutcliffe efficiency of 0.67 and runoff-volume deviation of 7%
+with baseflow, compared with 0.57 and 47% without it. They fitted baseflow and
+deep-seepage daily coefficients of 0.0156 and 0.00026. Those results show why the
+formulation is scientifically relevant, but they belong to that coupled model,
+site, period, forcing, and calibration. They are not performance statistics for
+the openWEPP realization assessed here.
+
+Before empirical evaluation can be interpreted, the software calculation and
+its interfaces must be correct. This study therefore asks: does openWEPP
+realize the authorized daily recurrence, preserve its timing and units, reject
+inadmissible states, publish the operands needed for independent audit, and do
+the separately tested writer/parser and watershed consumer honor the generated
+groundwater fields?
 
 ## 2. Model Formulation
 
-For day `i`, recharge `D_i` is the hillslope volume of WEPP deep percolation.
-Storage is updated by adding current recharge and removing the preceding day's
-baseflow and deep seepage:
+For day `i`, `D_i` is the hillslope volume of WEPP deep percolation entering the
+groundwater reservoir. `S_i` is accepted storage before current-day exports;
+`Qb_i` and `Qs_i` are the baseflow and deep-seepage volumes generated from that
+storage. The one-day recurrence is:
 
-`S_i = S_(i-1) + D_i - Qb_(i-1) - Qs_(i-1)`.
+```text
+S_i  = S_(i-1) + D_i - Qb_(i-1) - Qs_(i-1)
+Qb_i = kb S_i
+Qs_i = ks S_i
+```
 
-Current-day baseflow and deep seepage are proportional to accepted storage:
+Storage is in cubic meters. `D`, `Qb`, and `Qs` are daily-integrated cubic-meter
+volumes, while `kb` and `ks` have units of inverse days. The contract's
+`Q = kS` form includes the fixed one-day interval; no subdaily integration is
+implied. Initial storage depth is converted to volume from hillslope area
+before the first recurrence.
 
-`Qb_i = kb S_i Δt`, and `Qs_i = ks S_i Δt`,
-
-where `S`, `D`, `Qb`, and `Qs` are daily volumes in cubic meters, `kb` and `ks`
-have units of inverse days, and `Δt = {{quantity:GW-VALUE-INTERVAL}}`. The
-contract and code use the equivalent shorthand `Q = kS` because the interval is
-fixed at one day.
-
-Current openWEPP authority admits finite nonnegative coefficients. For positive
-accepted storage, combined daily exports may not exceed storage. Negative
-`ks`, which could represent upward exchange in broader modeling lineages, is
-outside current authority.
+The current authority admits finite, nonnegative initial storage and
+coefficients. The implementation rejects non-finite or negative states and a
+coefficient combination that would export more than accepted storage in one
+day. A missing optional groundwater-coefficient sidecar disables the reservoir;
+it does not authorize inferred defaults. Generated groundwater baseflow is
+distinct from lateral subsurface flow and from the channel unit-area coefficient
+named `cbase`.
 
 ## 3. Materials and Methods
 
-### 3.1 Assessed realization and authority
+### 3.1 Assessed realization and preregistration
 
-The integrated evidence was generated at Git commit
-`de520f1ff867ca5c65b1f82dfe32a19c213ae18c`. ASSURE-02 confirmed that the
-declared implementation and test paths were unchanged at its documentation
-intake. The recurrence and coefficient domain are identified by
-`SC-GWBASEFLOW-001`; exact source and evidence identities are retained in the
-supplement and structured source manifest.
+The assessed repository realization was frozen before result execution at Git
+commit `01ed70550a4e371e99afe35c4bdd4d9b667e812c`. The 12 declared groundwater
+producer, publication, serialization, test, and watershed-consumer paths were
+byte-identical to the earlier integrated realization. The H2637 runner binary
+was rebuilt for the frozen commit before accepted production evidence was run.
 
-### 3.2 Analytical recurrence test
+`SC-GWBASEFLOW-001` supplied the equations, units, branch authority, consumer
+obligations, and test vectors. The study protocol fixed the equations,
+operation order, two-sided tolerances, operand lineage, and rejected aliases
+before fresh execution. A change to any bound implementation, fixture, method,
+or result object requires new evidence and review.
 
-The two-day vector uses `{{quantity:GW-VALUE-AREA}}` of area,
+### 3.2 Independent two-day calculation
+
+The analytical case used a {{quantity:GW-VALUE-AREA}} hillslope,
 `{{quantity:GW-VALUE-INITIAL-STORAGE-DEPTH}}` initial storage depth,
-`kb = {{quantity:GW-VALUE-KB}}`, `ks = {{quantity:GW-VALUE-KS}}`, and recharge
-of `{{quantity:GW-VALUE-DAY1-RECHARGE}}` then
-`{{quantity:GW-VALUE-DAY2-RECHARGE}}`.
-Expected values were computed directly from the equations. The absolute
-acceptance allowance is `{{quantity:GW-VALUE-TWO-DAY-ALLOWANCE}}` for each
-storage or export value.
-This is a floating-point implementation-test tolerance, not a hydrologic
-accuracy threshold.
+`kb = {{quantity:GW-VALUE-KB}}`, `ks = {{quantity:GW-VALUE-KS}}`, and daily
+recharge of `{{quantity:GW-VALUE-DAY1-RECHARGE}}` then
+`{{quantity:GW-VALUE-DAY2-RECHARGE}}`. A standard-library Python procedure,
+which neither imports nor calls openWEPP, evaluated the recurrence with decimal
+and binary64 arithmetic. The absolute allowance for each calculated state or
+flux was `{{quantity:GW-VALUE-TWO-DAY-ALLOWANCE}}`. This allowance measures
+floating-point implementation agreement, not hydrologic error.
 
-### 3.3 Domain and integration tests
+### 3.3 Domain and transfer checks
 
-Negative tests reject coefficient combinations whose combined exports exceed
-accepted storage. Consumer tests follow generated volumes through direct
-runtime publication, hillslope binary serialization and parsing, watershed
-contribution construction, and channel routing. Separate assertions distinguish
-generated groundwater baseflow from the channel `cbase` contribution and from
-surface-runoff routing.
+A focused nextest selection executed the recurrence, over-export guard,
+multi-OFE recharge aggregation, contributing-area threshold, missing-authority
+failure, hillslope-pass serialization, and watershed consumption. The transfer
+contract assessed across separate tests was:
 
-### 3.4 Production recurrence reconstruction
+```text
+daily groundwater producer
+  -> direct publication state
+  -> hillslope binary pass (HBP)
+  -> strict typed HBP parser
+  -> watershed hillslope contribution
+  -> channel/baseflow consumer
+```
 
-The retained H2637 case spans {{quantity:GW-VALUE-H2637-DURATION}} and
-{{quantity:GW-VALUE-H2637-OFE-COUNT}}. We independently
-reconstructed the terminal pre-export identity
+The writer/strict-parser test and the hand-constructed `HillslopeContribution`
+consumer test verify adjacent interfaces; they are not one end-to-end execution
+of a nonzero groundwater payload through the actual CLI adapter. Separate
+assertions rejected lateral subsurface flow, `cbase`, active-router surface
+source, and producer-only state as substitutes for generated groundwater.
 
-`SN = S0 + sum(D) - [sum(Qb) - QbN] - [sum(Qs) - QsN]`
+### 3.4 H2637 production reconstruction
 
-and the complete post-export ledger
+H2637 used the production hillslope runner for
+{{quantity:GW-VALUE-H2637-DURATION}} and
+{{quantity:GW-VALUE-H2637-OFE-COUNT}}. Its
+groundwater inputs were zero initial storage, a daily `kb` of 0.04, zero `ks`,
+and a 1 ha groundwater-contributing-area threshold. The test ran the same
+native-management fixture with the active owner disabled, active by default,
+and explicitly active. Default and explicit-active HBP and pass-Parquet bytes
+were required to match.
 
-`SN - QbN - QsN = S0 + sum(D) - sum(Qb) - sum(Qs)`.
+The independent procedure read the produced explicit-active manifest and
+reconstructed two timing-qualified identities:
 
-Storage-scaled acceptance allowances accommodate floating-point accumulation;
-they are not measurement uncertainty, convergence criteria, or calibrated
-error targets.
+```text
+S_N = S_0 + sum(D) - [sum(Qb) - Qb_N] - [sum(Qs) - Qs_N]
+S_N - Qb_N - Qs_N = S_0 + sum(D) - sum(Qb) - sum(Qs)
+```
+
+The first compares terminal pre-export storage. The second compares terminal
+post-export storage. Each two-sided allowance was `1e-9` times the magnitude of
+the corresponding storage, with a one-cubic-meter minimum scale. The procedure also
+checked produced HBP and Parquet hashes against the manifest before using its
+operands.
+
+### 3.5 Evidence classification
+
+The two-day case combines a Rust assertion test with independent arithmetic
+reconstruction. H2637 is deterministic production recurrence and conservation
+evidence. The separate writer/parser and consumer tests are interface-contract
+evidence, not a continuous-path execution. Negative tests are domain and
+fail-closed evidence. The Priest River study is external prior empirical
+evidence for a related coupled formulation. No observation is used as an
+empirical referent in the present study.
 
 ## 4. Results
 
-### 4.1 Two-day analytical vector
+### 4.1 Daily recurrence
 
 {{table:GW-TABLE-TWO-DAY}}
 
 {{figure:GW-FIGURE-TWO-DAY}}
 
-The maximum absolute residual was
-`{{quantity:GW-VALUE-MAX-RESIDUAL-EXACT}}`, below the
-`{{quantity:GW-VALUE-TWO-DAY-ALLOWANCE}}` allowance. Second-day storage equals
-`{{quantity:GW-VALUE-DAY1-STORAGE}} + {{quantity:GW-VALUE-DAY2-RECHARGE}} -
-{{quantity:GW-VALUE-DAY1-BASEFLOW}} -
-{{quantity:GW-VALUE-DAY1-DEEP-SEEPAGE}} =
-{{quantity:GW-VALUE-DAY2-STORAGE}}`, confirming the prior-day debit timing.
+Day 1 accepted storage was `{{quantity:GW-VALUE-DAY1-STORAGE}}`, producing
+`{{quantity:GW-VALUE-DAY1-BASEFLOW}}` of baseflow and
+`{{quantity:GW-VALUE-DAY1-DEEP-SEEPAGE}}` of deep seepage. Day 2 storage was
+`{{quantity:GW-VALUE-DAY2-STORAGE}}`, which equals the preceding storage plus
+`{{quantity:GW-VALUE-DAY2-RECHARGE}}` recharge minus the preceding day's two
+exports. The maximum binary64-versus-decimal residual was
+`{{quantity:GW-VALUE-MAX-RESIDUAL-EXACT}}`, below the preregistered allowance.
 
-### 4.2 Production ledger reconstruction
+The over-export case (`kb = {{quantity:GW-VALUE-GUARD-KB}}`,
+`ks = {{quantity:GW-VALUE-GUARD-KS}}`) was rejected before an inconsistent
+state was accepted.
+
+### 4.2 Production groundwater ledger
 
 {{table:GW-TABLE-H2637}}
 
 {{figure:GW-FIGURE-H2637}}
 
-Both identities passed their storage-scaled allowances, which were about
-`{{quantity:GW-VALUE-H2637-POST-ALLOWANCE-FIGURE}}`. The residuals characterize
-ledger consistency, not agreement with observed baseflow.
+Across the production run, cumulative recharge was
+`{{quantity:GW-VALUE-H2637-CUM-RECHARGE}}` and cumulative baseflow was
+`{{quantity:GW-VALUE-H2637-CUM-BASEFLOW}}`. Terminal pre-export storage was
+`{{quantity:GW-VALUE-H2637-TERMINAL-STORAGE}}`; the independently reconstructed
+value was `{{quantity:GW-VALUE-H2637-RECURRENCE-RECONSTRUCTED}}`. Their signed
+difference was `{{quantity:GW-VALUE-H2637-RECURRENCE-RESIDUAL-EXACT}}`.
 
-### 4.3 Guards and downstream consumption
+After the terminal export, storage was
+`{{quantity:GW-VALUE-H2637-POST-EXPORT-STORAGE}}`; reconstruction from the
+full-run recharge and export totals gave
+`{{quantity:GW-VALUE-H2637-FULL-RUN-STORAGE}}`. The signed difference was
+`{{quantity:GW-VALUE-H2637-POST-RESIDUAL-EXACT}}`. Both residual magnitudes
+were less than four ten-thousandths of their respective allowances.
 
-The over-export vector (`kb = {{quantity:GW-VALUE-GUARD-KB}}`,
-`ks = {{quantity:GW-VALUE-GUARD-KS}}`) failed before an inconsistent state was
-accepted. Separate tests showed nonzero generated
-groundwater fields in the hillslope-pass payload, consumption by the watershed
-linear-reservoir branch, suppression below the declared contributing-area
-threshold, and rejection when enabling coefficient authority was absent.
+The active surface-routing ledger also closed independently. Its residual was
+`{{quantity:GW-VALUE-H2637-SURFACE-RESIDUAL}}`, or
+`{{quantity:GW-VALUE-H2637-SURFACE-RELATIVE}}` of routed source water, below
+the preregistered `{{quantity:GW-VALUE-H2637-SURFACE-ALLOWANCE}}` allowance.
+
+### 4.3 Transfer, threshold, and authority behavior
+
+The focused checks showed that the production writer serializes the generated
+HBP fields and the strict parser preserves them. A separate consumer test
+constructed a `HillslopeContribution` with those fields and exercised the
+watershed linear-reservoir branch. Below-threshold contributing area suppressed
+the applicable channel contribution. A generated-groundwater payload without
+`gwcoeff` authority failed closed. Tests also distinguished the generated
+contribution from `cbase`, which is a separate channel parameter. These results
+verify both interface contracts but do not establish a single fresh execution
+across the adapter between them.
+
+The latest runoff-event HBP baseflow was not used as `Qb_N`: the final runoff
+event need not be the final simulated day. The timing-qualified manifest value
+was required for terminal reconstruction. This negative alias check materially
+changed how the ledger could be audited.
 
 ## 5. Discussion
 
-The evidence supports a bounded positive conclusion: the assessed realization
-implements the authorized daily recurrence, handles its tested domain boundary,
-publishes operands needed for reconstruction, and connects generated fluxes to
-a real watershed consumer. Showing equations, timing, units, operands,
-residuals, and consumer behavior makes that conclusion independently auditable.
+The analytical and production results answer the recurrence question
+positively for the named realization. The software applies the one-day storage
+debit in the specified order, generates proportional exports, rejects the
+tested invalid domain, and publishes complete terminal operands. The writer,
+parser, and watershed consumer separately honor the generated-groundwater
+contract; complete adapter traversal is an open integration claim. The verified
+results are inspectable because the equations, units, timing, source paths,
+produced operands, tolerances, and reconstruction procedure are retained
+together.
 
-The latest runoff-event record differed from the terminal-day baseflow because
-the final runoff event need not occur on the final simulation day. Publishing
-timing-qualified operands prevented that plausible but incorrect alias from
-entering the reconstruction.
+The residuals are numerical bookkeeping quantities. Their small size shows
+that independent arithmetic agrees with produced state and totals; it does not
+measure error against nature. Likewise, a real production path is stronger than
+a producer-only unit test for integration assurance, but it is not an observed
+watershed evaluation.
 
-The Priest River study is observational evidence for the coupled formulation,
-not empirical validation of this openWEPP realization. A current empirical
-study must rerun a frozen realization against admitted observations, document
-calibration/evaluation separation, characterize forcing and measurement
-uncertainty, and report performance over a declared domain.
+The Priest River study supports the scientific usefulness of a linear
+groundwater reservoir when groundwater contributes materially to streamflow.
+It also illustrates why empirical performance is conditional: the reported
+coefficients were fitted for that study, and the performance statistics reflect
+the coupled model, forcing, site, years, and observations. H2637 instead used
+a daily `kb` of 0.04 and zero `ks` as a deterministic software fixture. Agreement
+of its ledger cannot transfer Priest River's predictive statistics to
+openWEPP.
 
-## 6. Limitations and Intended Use
+The fail-closed cases are relevant scientific-assurance evidence. They show
+that absent parameter authority is not silently replaced and that an excessive
+daily export is not accepted merely because the algebra produces a number.
+They do not establish that all nonnegative coefficients are plausible for all
+watersheds; parameter plausibility remains an application and empirical-study
+question.
 
-This evidence applies to the daily linear-reservoir recurrence, admitted
-coefficient domain, named implementation realization, and tested publication
-and consumer paths. It does not establish parameter transferability,
-observational accuracy, timing at subdaily scales, uncertainty bounds,
-numerical convergence, or suitability for a specific watershed decision.
+## 6. Limitations
 
-The appropriate use is software and formulation assurance preceding empirical
-evaluation. Users should not treat this bounded verification as a claim that
-baseflow predictions are accurate everywhere or that a watershed application
-is fit for purpose.
+- No streamflow, groundwater-level, lysimeter, tracer, or other environmental
+  observation was compared with openWEPP output.
+- H2637 is a deterministic integration fixture, not an empirical watershed
+  sample. Its result does not quantify model-form, forcing, parameter, or
+  measurement uncertainty.
+- H2637 used `ks = 0`; nonzero deep seepage was exercised by the analytical
+  vector and serialization/domain checks, not by the production recurrence.
+- The fixed one-day recurrence was assessed. No subdaily solution, timestep
+  convergence, or alternate nonlinear groundwater formulation was evaluated.
+- The evidence applies to the frozen implementation and named consumer path.
+  A change to the producer, serialization, consumer, science authority, or
+  result method requires impact review and, where material, rerun.
+- The production writer/parser and watershed consumer were verified in
+  separate tests. A single fresh nonzero-groundwater execution through the
+  actual CLI adapter into the watershed model was not performed.
+- The current authority excludes negative `ks` and therefore does not represent
+  upward exchange from a deeper aquifer.
+- Verification of implementation and transfer cannot establish parameter
+  transferability or predictive accuracy for another climate, soil,
+  topography, management, or watershed.
 
 ## 7. Conclusions
 
-For the equations, vectors, production case, and consumer branches examined,
-the assessed openWEPP realization follows the authorized daily groundwater-
-reservoir recurrence and preserves generated fluxes through the tested
-watershed handoff. That is a positive, bounded software-verification result.
-The next distinct evidence step is empirical corroboration of a frozen release
-realization against independently admitted watershed observations. A
-practitioner should not treat this result as a site-specific baseflow-prediction
-warranty.
+For the specified daily linear reservoir, analytical vector, and H2637
+production case, the assessed openWEPP realization performs the authorized
+recurrence. The terminal storage and complete run ledgers reconstruct within
+preregistered floating-point allowances, and tested invalid or unauthorized
+conditions fail closed. The production writer/parser and watershed consumer
+also preserve the generated-groundwater fields in separate interface tests;
+one fresh execution across their actual adapter remains open.
 
-## 8. Reproducibility
+This conclusion is deliberately bounded to software and integration
+verification. It does not claim that openWEPP baseflow predictions are accurate
+for a particular watershed. A decision owner should combine this evidence with
+an independently designed empirical evaluation, site inputs and parameter
+provenance, uncertainty, and the consequences of error.
 
-The {{link:supplement|technical supplement}} maps every finding to stable claim,
-method, dependency, result, and reference identities. Machine-readable
-{{link:research-object:GW-OBJECT-TWO-DAY|two-day result}} and
-{{link:research-object:GW-OBJECT-H2637|H2637 ledger}} objects retain the exact
-claim-bearing operands. The
-{{link:research-object:GW-OBJECT-SCIENCE-CONTRACT|portable science contract}}
-retains the formulation authority. The broader
+## 8. Open Research and Reproduction
+
+The {{link:supplement|technical supplement}} gives the claim-to-evidence map,
+exact commands, realization and binary identities, output hashes, and review
+boundary. Public-safe research objects include the
+{{link:research-object:GW-OBJECT-TWO-DAY-INPUT|analytical inputs}},
+{{link:research-object:GW-OBJECT-TWO-DAY|analytical result}},
+{{link:research-object:GW-OBJECT-H2637|production result}}, and
+{{link:research-object:GW-OBJECT-REPRODUCTION-PROCEDURE|independent analysis procedure}}.
+The {{link:research-object:GW-OBJECT-SCIENCE-CONTRACT|portable science contract}}
+provides the process authority. The
 {{link:usersum:hillslope-hydrology-and-sediment-physics.md|model-science narrative}}
-explains how groundwater interacts with the rest of the hillslope and watershed
-formulation. ASSURE-04C validates these sources offline and verifies their
-content hashes; later packages own review locks and publication.
+explains how groundwater fits within broader hillslope and watershed hydrology.
+
+The complete study can be challenged by rebuilding the frozen runner, rerunning
+the named nextest cases, and applying the retained independent procedure to the
+new manifest and outputs. Expected hashes are currency checks; changed hashes
+require semantic comparison rather than automatic rejection.
 
 ## References
 
@@ -264,24 +374,26 @@ content hashes; later packages own review locks and publication.
 
 {{reference:GW-REF-SCIENCE-CONTRACT}}
 
-## About This Report Source
+## About This Report
 
-- Report identity: `linear-groundwater-reservoir-recurrence`, source version
-  `0.1.0`.
-- Assessed realization: `de520f1ff867ca5c65b1f82dfe32a19c213ae18c`.
-- Source role: nonpublic ASSURE-04A architecture fixture; not scientifically
-  approved, release-transferred, exported, or vendored.
-- Accountable human report lead and scientific approver: unassigned; review
-  entry is blocked.
-- Agent assistance: disclosed in the source manifest; the exact ASSURE-02
-  model/configuration was not retained, so provenance is incomplete.
-- Review: internal coding-agent architecture review only; external scientific
-  peer review is not claimed.
-- Supersession: a revised and approved ASSURE-05 report replaces this fixture
-  rather than promoting it unchanged.
+- Report identity: `linear-groundwater-reservoir-recurrence`, version `1.0.0`.
+- Assessed realization: `01ed70550a4e371e99afe35c4bdd4d9b667e812c` plus the
+  exact rebuilt runner identity in the supplement.
+- Study type: formulation, code-verification, integration/consumer, and
+  realization-transfer evaluation; no current empirical evaluation.
+- Agent assistance: Codex drafted and mechanically analyzed the report under
+  the retained ASSURE-05 prompt, protocol, inputs, and evidence. Ordinary
+  reproduction and builds do not invoke an agent.
+- Human accountability: report lead and independent scientific,
+  reproduction/publication, assurance-steward, and release approvals remain to
+  be supplied for the exact reviewed root. Internal coding-agent review is not
+  external peer review or publication approval.
+- Publication, approval, and supersession metadata are populated only after the
+  lifecycle gates pass.
 
 ## Revision Log
 
 | Version | Date | Changes |
 | --- | --- | --- |
-| 0.1 | 2026-07-15 | Established the internal manuscript fixture and deterministic result-bound assembly source for scientific review preparation. |
+| 0.1 | 2026-07-15 | Established the architecture fixture and deterministic assembly source. |
+| 1.0 draft | 2026-07-16 | Reframed the source as a genuine scientific study, preregistered the method, required fresh evidence and independent reconstruction, quantified prior Priest River evidence without attributing it to openWEPP, and made the approval boundary explicit. |

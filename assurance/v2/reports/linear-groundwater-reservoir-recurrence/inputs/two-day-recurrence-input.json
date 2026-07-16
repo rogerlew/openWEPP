@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "case_id": "GW-CASE-TWO-DAY",
+  "area_m2": 1000.0,
+  "initial_storage_depth_m": 0.01,
+  "interval_days": 1.0,
+  "baseflow_coefficient_per_day": 0.1,
+  "deep_seepage_coefficient_per_day": 0.05,
+  "daily_recharge_m3": [2.0, 4.0],
+  "guard_baseflow_coefficient_per_day": 0.8,
+  "guard_deep_seepage_coefficient_per_day": 0.3,
+  "absolute_allowance_m3": 1e-12
+}

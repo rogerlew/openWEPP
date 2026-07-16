@@ -10,7 +10,9 @@ const REPORT_PATH: &str =
 const CATALOG_PATH: &str = "assurance/v2/catalog.yaml";
 const RESULT_PATH: &str =
     "assurance/v2/reports/linear-groundwater-reservoir-recurrence/results/two-day-recurrence.json";
-const OUTPUT_BASE: &str = "usersum/assurance/reports/linear-groundwater-reservoir-recurrence/0.1.0";
+const IMPLEMENTATION_PATH: &str =
+    "crates/openwepp-hillslope-orchestrator/src/direct_runtime/groundwater.rs";
+const OUTPUT_BASE: &str = "usersum/assurance/reports/linear-groundwater-reservoir-recurrence/1.0.0";
 
 #[test]
 fn real_named_and_all_builds_are_deterministic_equivalent_and_checkable() {
@@ -56,8 +58,8 @@ fn real_named_and_all_builds_are_deterministic_equivalent_and_checkable() {
     let report = read_text(&named_stage.path.join(OUTPUT_BASE).join("index.md"));
     let supplement = read_text(&named_stage.path.join(OUTPUT_BASE).join("supplement.md"));
     assert!(report.starts_with("# Verification of openWEPP"));
-    assert!(report.contains("*Version 0.1 — 2026-07-15*"));
-    assert!(report.contains("*Audience: hydrologists"));
+    assert!(report.contains("*Version 1.0 draft — 2026-07-16*"));
+    assert!(report.contains("## Plain-Language Summary"));
     assert!(report.contains("1.78e-15"));
     assert!(report.contains("1.78e-15 m3"));
     assert!(report.contains("## Revision Log"));
@@ -119,11 +121,36 @@ fn rendered_tables_figures_references_objects_and_links_are_real_consumers() {
         assert!(!svg.contains(root.to_string_lossy().as_ref()));
     }
 
-    for object in [
-        "two-day-recurrence.json",
-        "h2637-ledger.json",
-        "assure02-path-currency.json",
-        "assure02-focused-tests.json",
+    for (object, source_relative) in [
+        ("two-day-recurrence.json", "results/two-day-recurrence.json"),
+        ("h2637-ledger.json", "results/h2637-ledger.json"),
+        (
+            "assure05-path-currency.json",
+            "results/assure05-path-currency.json",
+        ),
+        (
+            "assure05-focused-tests.json",
+            "results/assure05-focused-tests.json",
+        ),
+        (
+            "two-day-recurrence-input.json",
+            "inputs/two-day-recurrence-input.json",
+        ),
+        (
+            "reproduce_groundwater_report.py",
+            "procedures/reproduce_groundwater_report.py",
+        ),
+        (
+            "assure05-production-evidence.json",
+            "evidence/assure05-production-evidence.json",
+        ),
+        (
+            "agent-assistance-packet.json",
+            "evidence/agent-assistance-packet.json",
+        ),
+        ("manifest.json", "evidence/h2637/manifest.json"),
+        ("H2637.hbp", "evidence/h2637/H2637.hbp"),
+        ("H2637.pass.parquet", "evidence/h2637/H2637.pass.parquet"),
     ] {
         let staged = stage
             .path
@@ -131,8 +158,8 @@ fn rendered_tables_figures_references_objects_and_links_are_real_consumers() {
             .join("research-objects")
             .join(object);
         let source = root
-            .join("assurance/v2/reports/linear-groundwater-reservoir-recurrence/results")
-            .join(object);
+            .join("assurance/v2/reports/linear-groundwater-reservoir-recurrence")
+            .join(source_relative);
         assert_eq!(fs::read(staged).unwrap(), fs::read(source).unwrap());
     }
     assert_eq!(
@@ -144,6 +171,17 @@ fn rendered_tables_figures_references_objects_and_links_are_real_consumers() {
         )
         .unwrap(),
         fs::read(root.join("docs/specifications/science-contracts/contracts/SC-GWBASEFLOW-001.md"))
+            .unwrap()
+    );
+    assert_eq!(
+        fs::read(
+            stage
+                .path
+                .join(OUTPUT_BASE)
+                .join("research-objects/20260716-codex-execute-assure05_prompt.md")
+        )
+        .unwrap(),
+        fs::read(root.join("docs/work-packages/20260716-assure05-first-production-v2-report-001/prompts/archived/20260716-codex-execute-assure05_prompt.md"))
             .unwrap()
     );
     assert_local_links_resolve(&stage.path, &report_path);
@@ -178,11 +216,14 @@ fn stale_missing_unit_precision_orphan_and_figure_drift_fail_closed() {
     let manuscript = orphan
         .path
         .join("assurance/v2/reports/linear-groundwater-reservoir-recurrence/manuscript.md");
-    replace_in(
+    let manuscript_text = fs::read_to_string(&manuscript).expect("read orphan manuscript");
+    let orphan_binding = "{{quantity:GW-VALUE-MAX-RESIDUAL-SUMMARY}}";
+    assert_eq!(manuscript_text.matches(orphan_binding).count(), 2);
+    fs::write(
         &manuscript,
-        "{{quantity:GW-VALUE-MAX-RESIDUAL-SUMMARY}}",
-        "1.78e-15",
-    );
+        manuscript_text.replace(orphan_binding, "1.78e-15"),
+    )
+    .expect("write orphan manuscript");
     refresh_local_hash(&orphan.path, manuscript.strip_prefix(&orphan.path).unwrap());
     refresh_report_hash(&orphan.path);
     assert_build_rejected(&orphan.path, "unused value binding");
@@ -253,16 +294,16 @@ fn malformed_duplicate_unsafe_link_and_inaccessible_figure_fail_closed() {
     let bare_link = fixture("assure04c-bare-link");
     mutate_manuscript(
         &bare_link.path,
-        "The next distinct evidence step is empirical corroboration",
-        "See https://attacker.invalid. The next distinct evidence step is empirical corroboration",
+        "Expected hashes are currency checks",
+        "See https://attacker.invalid. Expected hashes are currency checks",
     );
     assert_build_rejected(&bare_link.path, "autolinks must use typed link directives");
 
     let raw_quantity = fixture("assure04c-raw-quantity");
     mutate_manuscript(
         &raw_quantity.path,
-        "The next distinct evidence step is empirical corroboration",
-        "An unbound claim says 999.0 m3. The next distinct evidence step is empirical corroboration",
+        "Expected hashes are currency checks",
+        "An unbound claim says 999.0 m3. Expected hashes are currency checks",
     );
     assert_build_rejected(&raw_quantity.path, "must use a typed quantity directive");
 
@@ -285,7 +326,7 @@ fn malformed_duplicate_unsafe_link_and_inaccessible_figure_fail_closed() {
     let changed_digest = sha256_bytes(&fs::read(&result).unwrap());
     replace_in(
         &zero_figure.path.join(REPORT_PATH),
-        "e51dbd62c1316685b87007c665a24cd4af2bbe05237f33418e088e445bc67372",
+        "8d6659d9e60de5c9dace531cbe2d3f74df3e7a5dd9f1b64be4430449cfc4c9d8",
         &changed_digest,
     );
     refresh_report_hash(&zero_figure.path);
@@ -297,7 +338,7 @@ fn manifest_markdown_metadata_is_escaped_without_creating_external_links() {
     let markdown_fixture = fixture("assure04c-markdown-injection");
     mutate_report(
         &markdown_fixture.path,
-        "Maximum implementation residual compared with the coded allowance for the two-day analytical vector.",
+        "Maximum binary64-versus-decimal arithmetic residual compared with the separate Rust assertion allowance for the two-day analytical vector.",
         "Evidence [external] <script>",
     );
     let stage = prepared_stage("assure04c-markdown-injection-stage");
@@ -313,7 +354,7 @@ fn manifest_markdown_metadata_is_escaped_without_creating_external_links() {
     let external = fixture("assure04c-metadata-external-link");
     mutate_report(
         &external.path,
-        "Maximum implementation residual compared with the coded allowance for the two-day analytical vector.",
+        "Maximum binary64-versus-decimal arithmetic residual compared with the separate Rust assertion allowance for the two-day analytical vector.",
         "Evidence https://attacker.invalid",
     );
     assert_build_rejected(&external.path, "cannot introduce an external link");
@@ -326,6 +367,14 @@ fn source_drift_after_install_rolls_back_prior_selected_bytes() {
     use std::time::{Duration, Instant};
 
     let source = fixture("assure04c-post-install-source-drift");
+    // Keep the installed-backup interval long enough for the mutator to
+    // observe deterministically while post-install source hashes are checked.
+    append_bytes(
+        &source.path.join(IMPLEMENTATION_PATH),
+        &vec![b'\n'; 8 * 1024 * 1024],
+    );
+    refresh_local_hash(&source.path, Path::new(IMPLEMENTATION_PATH));
+    refresh_report_hash(&source.path);
     let stage = prepared_stage("assure04c-post-install-source-drift-stage");
     let repository = V2Repository::open(&source.path).expect("open source fixture");
     repository
@@ -337,13 +386,13 @@ fn source_drift_after_install_rolls_back_prior_selected_bytes() {
         .join(format!("usersum/assurance/reports/.{REPORT_ID}.previous"));
     let result = source.path.join(RESULT_PATH);
     let mutator = thread::spawn(move || {
-        let deadline = Instant::now() + Duration::from_secs(5);
+        let deadline = Instant::now() + Duration::from_secs(60);
         while !backup.exists() {
             assert!(
                 Instant::now() < deadline,
                 "installation marker did not appear"
             );
-            thread::yield_now();
+            std::hint::spin_loop();
         }
         let mut file = fs::OpenOptions::new()
             .append(true)
@@ -669,12 +718,11 @@ fn fixture(label: &str) -> Scratch {
         "usersum/hillslope-hydrology-and-sediment-physics.md",
         "docs/specifications/science-contracts/contracts/SC-GWBASEFLOW-001.md",
         "crates/openwepp-hillslope-orchestrator/src/direct_runtime/groundwater.rs",
-        "docs/work-packages/20260714-assure02-manuscript-first-assurance-architecture-001/artifacts/groundwater-current-tree-confirmation.md",
-        "docs/work-packages/20260714-assure02-manuscript-first-assurance-architecture-001/artifacts/prototype-linear-groundwater-reservoir-evaluation.md",
+        "docs/work-packages/20260716-assure05-first-production-v2-report-001/artifacts/study-protocol.md",
+        "docs/work-packages/20260716-assure05-first-production-v2-report-001/artifacts/realization-freeze.md",
+        "docs/work-packages/20260716-assure05-first-production-v2-report-001/prompts/archived/20260716-codex-execute-assure05_prompt.md",
         "docs/work-packages/20260709-laned-active-baseflow-export-closure-001/artifacts/consumer-path-proof.md",
         "docs/work-packages/20260708-groundwater-baseflow-laned-single-ofe-mofe-implementation-001/artifacts/consumer-path-proof.md",
-        "docs/work-packages/20260713-integrated-validation-campaign-001/artifacts/final-conservation-and-consumer-evidence.md",
-        "docs/work-packages/20260713-integrated-validation-campaign-001/artifacts/logs/final-reconstruction-arithmetic.log",
     ] {
         copy_file(&source, &target.path, relative);
     }

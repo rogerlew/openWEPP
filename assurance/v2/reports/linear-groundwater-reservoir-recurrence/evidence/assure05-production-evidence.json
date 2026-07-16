@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "evidence_id": "GW-EVIDENCE-ASSURE05-PRODUCTION",
+  "assessed_realization": "01ed70550a4e371e99afe35c4bdd4d9b667e812c",
+  "focused_confirmation": {
+    "command": "cargo nextest run --workspace --profile quick -E 'test(/gwbaseflow|r6a_direct_hbp_writer_serializes_groundwater_payload_operands/)'",
+    "nextest_run_id": "60f43595-861c-471b-bda7-1ca6860bf6ad",
+    "passed": 7,
+    "failed": 0,
+    "skipped": 1988,
+    "tests": [
+      "tests::tests_mod::direct_runtime::gwbaseflow_mofe_recharge_aggregates_lane_deep_percolation",
+      "tests::tests_mod::direct_runtime::gwbaseflow_linear_reservoir_recurrence_uses_prior_day_exports",
+      "tests::tests_mod::direct_runtime::gwbaseflow_exports_over_accepted_storage_fail_closed",
+      "gwbaseflow_generated_hbp_payload_without_gwcoeff_authority_fails_closed",
+      "gwbaseflow_bftharea_suppresses_below_threshold_side_baseflow",
+      "gwbaseflow_lr_bf1_channel_branch_consumes_generated_hbp_not_cbase",
+      "hillslope::tests::r6a_direct_hbp_writer_serializes_groundwater_payload_operands"
+    ]
+  },
+  "h2637_confirmation": {
+    "build_command": "CARGO_TARGET_DIR=<isolated-clean-target> cargo build --release -p openwepp-runner --bins",
+    "command": "CARGO_TARGET_DIR=<isolated-clean-target> cargo nextest run --test laned_shadow_h2637 --run-ignored ignored-only -E 'test(=h2637_native_active_owner_routes_and_closes)'",
+    "nextest_run_id": "01415f5a-1a16-48c2-a845-04a33a602f53",
+    "passed": 1,
+    "failed": 0,
+    "skipped": 9,
+    "default_and_explicit_active_outputs_byte_identical": true,
+    "release_runner": {
+      "filename": "openwepp-cli-hill",
+      "bytes": 10732704,
+      "sha256": "7ed022035a38cc9e74b544e0e9e3033f24beded009ec48f6a7c384608382468b"
+    },
+    "test_executable": {
+      "filename": "laned_shadow_h2637-c98d41b5af02c9fd",
+      "bytes": 174739496,
+      "sha256": "32285cf8fae111dbddb19606afe6fbf8ac2d14eef552171ecdbe0d302fa5993e",
+      "sidecar_sha256": "b0ceb401587f0106052059bafd01f5705b93e2357a2841cd6dfa8768751fada6",
+      "sidecar_source_commit": "01ed70550a4e371e99afe35c4bdd4d9b667e812c",
+      "sidecar_binary_hash_matches": true
+    },
+    "produced_objects": [
+      {
+        "filename": "manifest.json",
+        "bytes": 9470,
+        "sha256": "756e324e5b4f055ea45c33b0d5f679ab2fc9f4b958e853dc0b70f17aeb592208"
+      },
+      {
+        "filename": "H2637.hbp",
+        "bytes": 5742,
+        "sha256": "378a8c1d80a22c9452fb256cf9a95eab09035f3a6cd387c6d626ab26c426c453"
+      },
+      {
+        "filename": "H2637.pass.parquet",
+        "bytes": 26920,
+        "sha256": "915f3b99c2ff20e3e0632b4e90a6ceb1cb8e7fee58f0d3e29b41de10c540f550"
+      }
+    ],
+    "manifest_source_commit": "01ed70550a4e371e99afe35c4bdd4d9b667e812c",
+    "retained_source_paths": {
+      "manifest": "assurance/v2/reports/linear-groundwater-reservoir-recurrence/evidence/h2637/manifest.json",
+      "hbp": "assurance/v2/reports/linear-groundwater-reservoir-recurrence/evidence/h2637/H2637.hbp",
+      "pass_parquet": "assurance/v2/reports/linear-groundwater-reservoir-recurrence/evidence/h2637/H2637.pass.parquet"
+    },
+    "manifest_operands": {
+      "days_seen": 731,
+      "days_routed": 610,
+      "contributor_ofe_count": 19,
+      "initial_groundwater_storage_m3": 0.0,
+      "total_groundwater_recharge_m3": 3668.610172576748,
+      "total_groundwater_baseflow_m3": 3547.636225849919,
+      "total_groundwater_deep_seepage_m3": 0.0,
+      "terminal_groundwater_storage_m3": 126.01452784040274,
+      "terminal_groundwater_baseflow_m3": 5.04058111361611,
+      "terminal_groundwater_deep_seepage_m3": 0.0,
+      "total_source_m3": 374420.2511558311,
+      "total_routed_outlet_m3": 371254.38460113516,
+      "total_end_window_storage_m3": 3165.866554692616,
+      "total_clamp_m3": 4.9829504321846435e-14
+    }
+  },
+  "rejected_acquisition": {
+    "nextest_run_id": "61137899-246a-44f3-9a19-9fc503b57037",
+    "accepted_for_claims": false,
+    "reason": "The reused debug test sidecar identified source commit ec396c458a5015c504011a75814ff13e274544a1 rather than the frozen realization; the regular release sidecar also reported an unknown commit and a nonmatching executable hash."
+  },
+  "retention": {
+    "raw_binary_outputs_committed": true,
+    "policy": "The exact explicit-active manifest, HBP, and pass-Parquet inputs required by the public reproduction procedure are retained as report research objects. Transient absolute run paths and full logs remain in the ASSURE-05 package execution record."
+  }
+}
