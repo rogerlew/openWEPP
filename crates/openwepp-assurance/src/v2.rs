@@ -9,10 +9,14 @@ use crate::hash::sha256_bytes;
 mod assembly;
 mod confined;
 mod lifecycle;
+mod normalization;
 mod planner;
 mod publication;
 
 pub use assembly::{V2AssemblyResult, V2AssemblySummary};
+pub use normalization::{
+    V2NormalizationChange, V2NormalizationMode, V2NormalizationOptions, V2NormalizationReceipt,
+};
 pub use planner::{V2Plan, V2PlanNode, V2PlanState, V2ReportPlan};
 pub use publication::{
     V2PublicationFault, V2PublicationOptions, V2PublicationResult, V2ReleaseIdentity,
@@ -485,6 +489,22 @@ impl V2Repository {
             AssuranceError::Invalid(format!("unknown v2 report ID '{report_id}'"))
         })?;
         self.validate_sources(std::iter::once(source))
+    }
+
+    /// Checks or applies canonical American-English normalization to one DRAFT
+    /// report and mechanically rebinds its dependent identities.
+    ///
+    /// # Errors
+    ///
+    /// Returns a typed error for source drift, a non-DRAFT lifecycle, an
+    /// unavailable converter, a required lexical change in check mode, or a
+    /// failed source transaction.
+    pub fn normalize_report(
+        &self,
+        report_id: &str,
+        options: &V2NormalizationOptions,
+    ) -> Result<V2NormalizationReceipt> {
+        normalization::normalize_report(self, report_id, options)
     }
 
     /// Plans every admitted v2 report in stable report-ID order.

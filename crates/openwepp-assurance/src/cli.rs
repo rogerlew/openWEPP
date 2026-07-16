@@ -4,12 +4,12 @@ use std::fmt::Write as _;
 use std::path::PathBuf;
 
 use crate::{
-    Assurance, AssuranceError, BuildOptions, Result, V2AssemblyResult, V2PublicationOptions,
-    V2PublicationResult, V2ReleaseIdentity, V2ReleaseVerification, V2Repository,
-    verify_v2_release_snapshot,
+    Assurance, AssuranceError, BuildOptions, Result, V2AssemblyResult, V2NormalizationMode,
+    V2NormalizationOptions, V2PublicationOptions, V2PublicationResult, V2ReleaseIdentity,
+    V2ReleaseVerification, V2Repository, verify_v2_release_snapshot,
 };
 
-const USAGE: &str = "Usage:\n  openwepp-assurance validate (--all | --report <id>)\n  openwepp-assurance plan (--all | --report <id>) [--format human|json]\n  openwepp-assurance build --all [--output-root <path>] [--snapshot <id> --snapshot-root <path>]\n  openwepp-assurance check --all\n  openwepp-assurance build (--all | --report <id>) --staging-root <path>\n  openwepp-assurance check (--all | --report <id>) --staging-root <path>\n  openwepp-assurance publish (--all | --report <id>) --staging-root <path> --usersum-root <path> --publication-snapshot-root <path> --release-commit <sha> --release-configuration <id>\n  openwepp-assurance publish-test-fixture (--all | --report <id>) --staging-root <path> --usersum-root <path> --publication-snapshot-root <path> --release-commit <sha> --release-configuration <id>\n  openwepp-assurance verify-release --all --snapshot-dir <path> --receipt <path> --release-commit <sha> --release-configuration <id>\n";
+const USAGE: &str = "Usage:\n  openwepp-assurance validate (--all | --report <id>)\n  openwepp-assurance normalize --report <id> --language en-US (--check | --apply)\n  openwepp-assurance plan (--all | --report <id>) [--format human|json]\n  openwepp-assurance build --all [--output-root <path>] [--snapshot <id> --snapshot-root <path>]\n  openwepp-assurance check --all\n  openwepp-assurance build (--all | --report <id>) --staging-root <path>\n  openwepp-assurance check (--all | --report <id>) --staging-root <path>\n  openwepp-assurance publish (--all | --report <id>) --staging-root <path> --usersum-root <path> --publication-snapshot-root <path> --release-commit <sha> --release-configuration <id>\n  openwepp-assurance publish-test-fixture (--all | --report <id>) --staging-root <path> --usersum-root <path> --publication-snapshot-root <path> --release-commit <sha> --release-configuration <id>\n  openwepp-assurance verify-release --all --snapshot-dir <path> --receipt <path> --release-commit <sha> --release-configuration <id>\n";
 
 /// Parses process arguments and executes one assurance operation.
 ///
@@ -70,6 +70,7 @@ fn execute(
 ) -> Result<String> {
     match command {
         "validate" => execute_validate(root, assurance, options),
+        "normalize" => execute_normalize(root, options),
         "plan" => execute_plan(root, assurance, options),
         "build" => execute_build(root, assurance, options),
         "check" => execute_check(root, assurance, options),
@@ -87,6 +88,7 @@ fn execute_validate(
     assurance: &Assurance,
     options: &Options,
 ) -> Result<String> {
+    reject_normalization_options(options)?;
     reject_publication_options(options)?;
     reject_build_options(options)?;
     reject_staging_root(options)?;
@@ -101,11 +103,37 @@ fn execute_validate(
     }
 }
 
+fn execute_normalize(root: &std::path::Path, options: &Options) -> Result<String> {
+    reject_publication_options(options)?;
+    reject_build_options(options)?;
+    reject_staging_root(options)?;
+    reject_plan_format(options)?;
+    let report_id = match &options.selection {
+        Selection::Report(report_id) => report_id,
+        Selection::All => {
+            return Err(AssuranceError::Usage(
+                "normalize requires --report; all-report mutation is intentionally unsupported"
+                    .to_owned(),
+            ));
+        }
+    };
+    let language = required_option(options.language.as_ref(), "--language")?;
+    let mode = required_option(options.normalization_mode.as_ref(), "--check or --apply")?;
+    let repository = V2Repository::open(root)?;
+    repository
+        .normalize_report(
+            report_id,
+            &V2NormalizationOptions::new(language.clone(), *mode),
+        )?
+        .render_json()
+}
+
 fn execute_plan(
     root: &std::path::Path,
     assurance: &Assurance,
     options: &Options,
 ) -> Result<String> {
+    reject_normalization_options(options)?;
     reject_publication_options(options)?;
     reject_build_options(options)?;
     reject_staging_root(options)?;
@@ -131,6 +159,7 @@ fn execute_build(
     assurance: &Assurance,
     options: &Options,
 ) -> Result<String> {
+    reject_normalization_options(options)?;
     reject_publication_options(options)?;
     reject_plan_format(options)?;
     if let Some(staging_root) = &options.staging_root {
@@ -153,6 +182,7 @@ fn execute_check(
     assurance: &Assurance,
     options: &Options,
 ) -> Result<String> {
+    reject_normalization_options(options)?;
     reject_publication_options(options)?;
     reject_plan_format(options)?;
     if let Some(staging_root) = &options.staging_root {
@@ -175,6 +205,7 @@ fn execute_check(
 }
 
 fn execute_publish(root: &std::path::Path, options: &Options, test_only: bool) -> Result<String> {
+    reject_normalization_options(options)?;
     reject_plan_format(options)?;
     reject_public_build_options(options)?;
     let publication = publication_options(options)?;
@@ -217,6 +248,7 @@ fn publish_selected(
 }
 
 fn execute_verify_release(options: &Options) -> Result<String> {
+    reject_normalization_options(options)?;
     reject_plan_format(options)?;
     reject_build_options(options)?;
     reject_staging_root(options)?;
@@ -253,9 +285,40 @@ where
         if parse_verification_argument(&argument, &mut args, &mut options)? {
             continue;
         }
+        if parse_normalization_argument(&argument, &mut args, &mut options)? {
+            continue;
+        }
         parse_remaining_argument(&argument, &mut args, &mut options)?;
     }
     options.finish()
+}
+
+fn parse_normalization_argument<I>(
+    argument: &str,
+    args: &mut I,
+    options: &mut OptionAccumulator,
+) -> Result<bool>
+where
+    I: Iterator<Item = OsString>,
+{
+    match argument {
+        "--language" if options.language.is_none() => {
+            options.language = Some(next_string(args, "--language")?);
+        }
+        "--check" if options.normalization_mode.is_none() => {
+            options.normalization_mode = Some(V2NormalizationMode::Check);
+        }
+        "--apply" if options.normalization_mode.is_none() => {
+            options.normalization_mode = Some(V2NormalizationMode::Apply);
+        }
+        "--language" | "--check" | "--apply" => {
+            return Err(AssuranceError::Usage(format!(
+                "unknown or duplicate argument '{argument}'\n{USAGE}"
+            )));
+        }
+        _ => return Ok(false),
+    }
+    Ok(true)
 }
 
 fn require_selection(selection: Option<Selection>) -> Result<Selection> {
@@ -487,6 +550,16 @@ fn reject_verify_inputs(options: &Options) -> Result<()> {
     }
 }
 
+fn reject_normalization_options(options: &Options) -> Result<()> {
+    if options.language.is_none() && options.normalization_mode.is_none() {
+        Ok(())
+    } else {
+        Err(AssuranceError::Usage(
+            "--language, --check, and --apply are normalize-only".to_owned(),
+        ))
+    }
+}
+
 fn required_option<'a, T>(value: Option<&'a T>, name: &str) -> Result<&'a T> {
     value.ok_or_else(|| AssuranceError::Usage(format!("{name} is required\n{USAGE}")))
 }
@@ -568,6 +641,8 @@ struct Options {
     release_configuration: Option<String>,
     snapshot_dir: Option<PathBuf>,
     receipt: Option<PathBuf>,
+    language: Option<String>,
+    normalization_mode: Option<V2NormalizationMode>,
 }
 
 #[derive(Default)]
@@ -582,6 +657,8 @@ struct OptionAccumulator {
     release_configuration: Option<String>,
     snapshot_dir: Option<PathBuf>,
     receipt: Option<PathBuf>,
+    language: Option<String>,
+    normalization_mode: Option<V2NormalizationMode>,
 }
 
 impl OptionAccumulator {
@@ -597,6 +674,8 @@ impl OptionAccumulator {
             release_configuration: self.release_configuration,
             snapshot_dir: self.snapshot_dir,
             receipt: self.receipt,
+            language: self.language,
+            normalization_mode: self.normalization_mode,
         })
     }
 }
@@ -614,7 +693,7 @@ enum Selection {
 
 #[cfg(test)]
 mod tests {
-    use super::{parse_options, publication_options};
+    use super::{V2NormalizationMode, execute_normalize, parse_options, publication_options};
 
     #[test]
     fn exactly_one_selection_is_admitted() {
@@ -657,5 +736,63 @@ mod tests {
             publication.release().configuration(),
             "openwepp-release-default-v1"
         );
+    }
+
+    #[test]
+    fn normalization_requires_one_explicit_mode() {
+        let check = parse_options(
+            ["--report", "report-id", "--language", "en-US", "--check"]
+                .map(Into::into)
+                .into_iter(),
+        )
+        .expect("parse normalization check");
+        assert_eq!(check.normalization_mode, Some(V2NormalizationMode::Check));
+        assert!(
+            parse_options(
+                [
+                    "--report",
+                    "report-id",
+                    "--language",
+                    "en-US",
+                    "--check",
+                    "--apply",
+                ]
+                .map(Into::into)
+                .into_iter(),
+            )
+            .is_err()
+        );
+
+        let missing_mode = parse_options(
+            ["--report", "report-id", "--language", "en-US"]
+                .map(Into::into)
+                .into_iter(),
+        )
+        .expect("parse incomplete normalization for execution rejection");
+        assert!(execute_normalize(std::path::Path::new("/not-opened"), &missing_mode).is_err());
+
+        let all = parse_options(
+            ["--all", "--language", "en-US", "--check"]
+                .map(Into::into)
+                .into_iter(),
+        )
+        .expect("parse all-report selection for execution rejection");
+        assert!(execute_normalize(std::path::Path::new("/not-opened"), &all).is_err());
+
+        let foreign = parse_options(
+            [
+                "--report",
+                "report-id",
+                "--language",
+                "en-US",
+                "--check",
+                "--staging-root",
+                "/tmp/stage",
+            ]
+            .map(Into::into)
+            .into_iter(),
+        )
+        .expect("parse foreign option for execution rejection");
+        assert!(execute_normalize(std::path::Path::new("/not-opened"), &foreign).is_err());
     }
 }

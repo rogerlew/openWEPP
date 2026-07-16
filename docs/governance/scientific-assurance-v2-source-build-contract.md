@@ -128,6 +128,26 @@ hostname, absolute-workspace-path, or agent dependency. Reproduction procedures
 that run scientific software are separate explicit operations with retained
 logs and outputs; they do not run as a side effect of rendering.
 
+American-English normalization is an explicit author-maintenance operation,
+not an ordinary build operation. For a pre-review `DRAFT`, the maintenance
+tool may invoke the canonical `uk2us` executable without a shell, accept only
+its exact idempotent output for the manuscript and supplement, and
+mechanically propagate the resulting content identities through the disclosed
+agent packet, report descriptor, and catalog. It must check the current source
+before mutation, replace the complete v2 source generation transactionally,
+reopen and validate the new generation, restore the old generation on any
+pre-commit or validation failure, and emit a deterministic receipt outside the
+content graph. The transaction preserves source permission modes and syncs
+directory entries around generation exchange and cleanup. Once the new
+generation has validated, a cleanup failure does not roll back to a possibly
+partially removed old generation: it reports a distinct committed-cleanup error
+with the committed receipt and retains any recoverable old-generation directory
+for explicit disposition. Retained recovery state blocks later normalization,
+including no-op checks, until that disposition occurs.
+It cannot normalize
+an `IN_REVIEW` or `APPROVED` source, authorize review, classify arbitrary prose
+edits, waive a new root, or decide that scientific meaning is unchanged.
+
 ## Incremental Rebuilds
 
 One-report builds traverse the selected report's complete transitive dependency

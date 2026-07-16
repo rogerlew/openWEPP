@@ -1,0 +1,81 @@
+{
+  "schema_version": "openwepp-adjudicated-crap-v1",
+  "threshold": 30,
+  "production_filter": {
+    "path_prefix": "crates/",
+    "required_component": "/src/",
+    "excluded_component": "/src/tests/",
+    "threshold_relation": ">"
+  },
+  "deduplication_key": [
+    "file",
+    "function",
+    "line",
+    "cyclomatic",
+    "coverage",
+    "crap"
+  ],
+  "authority": {
+    "decision": "docs/decisions/0021-module-coverage-closure-thresholds.md",
+    "campaign": "docs/work-packages/cqr-pre-integration-campaign-evidence/low/campaign-final-assessment.md",
+    "ledger": "docs/work-packages/cqr-pre-integration-campaign-evidence/low/raw-to-actionable-ledger.md"
+  },
+  "adjudications": [
+    {
+      "id": "CQR-LOW-L08",
+      "status": "accepted",
+      "classification": "R-OBSERVABILITY",
+      "file": "crates/openwepp-meteorology/src/error.rs",
+      "function": "MeteorologyError::fmt",
+      "cyclomatic": 7,
+      "file_sha256": "216b42dd308bd50c55a84091d0e629be275c3aaf06e7ca49a1d63d6a5eaf5c06",
+      "adjudicated_at_commit": "fa50c0becf6ea63fd9697b4cfe9add66ae036207",
+      "evidence_key": "L-08",
+      "adjudication_evidence": {
+        "path": "docs/work-packages/cqr-pre-integration-campaign-evidence/low/modules/L-08.md",
+        "sha256": "78cf4ec7e3465cd89b532d1b922ba7176c5323e2d9ec432da47609adc4d06aeb",
+        "acceptance_token": "DISPOSITIONED-NO-ACTION"
+      },
+      "review_evidence": [
+        {
+          "path": "docs/work-packages/cqr-pre-integration-campaign-evidence/low/target-selection-review-a.md",
+          "sha256": "c95592730eccb5ac773afd31c80439d71a72ed2b8f517e205d3c419c2a07aea8",
+          "acceptance_token": "accepted-pending-review-b"
+        },
+        {
+          "path": "docs/work-packages/cqr-pre-integration-campaign-evidence/low/target-selection-review-b.md",
+          "sha256": "886d91d419a087ccae00238e5a2c25a953e6549e6133a801c99d78342b6f663c",
+          "acceptance_token": "accept L-01, L-08, and L-11"
+        }
+      ]
+    },
+    {
+      "id": "CQR-LOW-L11",
+      "status": "accepted",
+      "classification": "R-OBSERVABILITY",
+      "file": "crates/openwepp-sim-contract/src/symbols.rs",
+      "function": "SymbolAliasRegistryError::fmt",
+      "cyclomatic": 9,
+      "file_sha256": "13a475dc0c7376072b91a48f9eaded2f36925022533def98fe296dc98e8fc9cd",
+      "adjudicated_at_commit": "fa50c0becf6ea63fd9697b4cfe9add66ae036207",
+      "evidence_key": "L-11",
+      "adjudication_evidence": {
+        "path": "docs/work-packages/cqr-pre-integration-campaign-evidence/low/modules/L-11.md",
+        "sha256": "32f3681cccc241b6e86e914966d79ee421a61b90fa5b12536ad79b72ade675e8",
+        "acceptance_token": "DISPOSITIONED-NO-ACTION"
+      },
+      "review_evidence": [
+        {
+          "path": "docs/work-packages/cqr-pre-integration-campaign-evidence/low/target-selection-review-a.md",
+          "sha256": "c95592730eccb5ac773afd31c80439d71a72ed2b8f517e205d3c419c2a07aea8",
+          "acceptance_token": "accepted-pending-review-b"
+        },
+        {
+          "path": "docs/work-packages/cqr-pre-integration-campaign-evidence/low/target-selection-review-b.md",
+          "sha256": "886d91d419a087ccae00238e5a2c25a953e6549e6133a801c99d78342b6f663c",
+          "acceptance_token": "accept L-01, L-08, and L-11"
+        }
+      ]
+    }
+  ]
+}

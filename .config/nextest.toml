@@ -49,6 +49,26 @@ report-name = "openwepp-nextest-quick"
 store-success-output = false
 store-failure-output = true
 
+# Scientific-assurance editorial loop. This retains the complete assurance
+# crate plus the source, planner, assembly, normalization, and report-facing
+# integration boundaries while excluding unrelated kernel and publication suites.
+# Use `cargo nextest run --workspace --profile assurance-editorial` only for an
+# exact converter-produced DRAFT prose normalization.
+[profile.assurance-editorial]
+inherits = "default"
+default-filter = '''
+package(openwepp-assurance)
+| binary(/^assurance_v2_(source|planner|assembly|normalization)_contract$/)
+| binary(/^assurance_v2_.*_report_contract$/)
+'''
+fail-fast = false
+
+[profile.assurance-editorial.junit]
+path = "junit.xml"
+report-name = "openwepp-nextest-assurance-editorial"
+store-success-output = false
+store-failure-output = true
+
 # Handoff gate: full workspace, but with slow fixture families scheduled through
 # the groups below instead of unconstrained parallel execution.
 # Use `cargo nextest run --workspace --profile full`.

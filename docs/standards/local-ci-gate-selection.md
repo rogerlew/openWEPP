@@ -21,6 +21,7 @@ candidate gates.
 | Focused | Editing a narrow crate, module, fixture, contract test, or review finding | `cargo nextest run -p <crate> <filter>` or `cargo nextest run --test <integration_test>` |
 | Fast workspace | Routine implementation loop where broad regressions matter but slow fixtures are unrelated | `cargo nextest run --workspace --profile quick` |
 | Domain profile | The change touches a known expensive domain | `cargo nextest run --workspace --profile frost` or `cargo nextest run --workspace --profile erosion` |
+| Assurance editorial | The assurance normalizer produced the complete diff for pre-review DRAFT prose | `cargo nextest run --workspace --profile assurance-editorial` |
 | Full branch-head | Merge readiness for Rust implementation/mechanical refactor packages, cutovers, publication changes, or package-required closure | `cargo nextest run --workspace --profile full` |
 | Release/manual | Release candidates, observed cohorts, legacy comparators, stability lanes, or manual authority lanes | `tools/release/*` and explicitly named comparator/cohort commands |
 
@@ -39,6 +40,16 @@ their owning domain or package acceptance criteria name them:
 Domain-specific acceptance fixtures remain required for their domain. For
 example, erosion packages should continue to run their p61/p102/DFF-WS3 gates
 when those surfaces are in scope.
+
+The `assurance-editorial` profile is proportional only when
+`openwepp-assurance normalize --apply` produced the entire change and its
+receipt identifies only manuscript/supplement prose plus mechanically rebound
+packet, descriptor, and catalog digests. It retains the assurance crate and the
+source, planner, assembly, normalization, and report integration boundaries.
+Publication integration is excluded because this operation is confined to a
+pre-review DRAFT. It is not an impact classifier. Any hand edit, mixed change,
+lifecycle or authority transition, schema/builder change, or unclear diff uses
+the applicable full package gates.
 
 ## Timing Diagnostics
 

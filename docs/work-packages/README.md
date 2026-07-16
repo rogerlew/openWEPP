@@ -102,6 +102,17 @@
 
 State as of `2026-07-16 UTC`:
 
+- `20260716-assurance-editorial-fast-path-001/` -
+  EXECUTED-COMPLETE (2026-07-16): replaced manual American-English spelling
+  edits and digest propagation with a locked, transactional DRAFT normalizer;
+  added a proportional 65-test `assurance-editorial` profile; and replaced a
+  timing/polling rollback test with deterministic fault contracts. Two review
+  HOLD cycles and the first heavy CRAP failure were corrected without waiver.
+  Terminal full Nextest passed 2,063/2,063; fresh CRAP is 2 raw / 2
+  adjudicated / 0 actionable, with maximum touched CRAP exactly 30.0 and
+  maximum normalization CRAP 15.101256515775034. Exact converter-produced DRAFT
+  prose normalization now uses the focused path; mixed, scientific, lifecycle,
+  builder, authority, or publication changes retain ordinary full gates.
 - `20260716-assure05-first-production-v2-report-001/` -
   HOLD-HUMAN-APPROVAL (2026-07-16): produced the first review-ready production-
   domain v2 groundwater report with fresh analytical, guard, interface, and

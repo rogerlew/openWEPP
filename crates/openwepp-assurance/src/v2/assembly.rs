@@ -44,6 +44,26 @@ pub(super) fn execute(
     plan: &V2Plan,
     operation: Operation,
 ) -> Result<V2AssemblyResult> {
+    execute_with_post_install(
+        repository_root,
+        requested_staging_root,
+        shared_inputs,
+        sources,
+        plan,
+        operation,
+        &mut || Ok(()),
+    )
+}
+
+fn execute_with_post_install(
+    repository_root: &Path,
+    requested_staging_root: &Path,
+    shared_inputs: &BTreeMap<PathBuf, String>,
+    sources: &[&ReportSource],
+    plan: &V2Plan,
+    operation: Operation,
+    post_install: &mut dyn FnMut() -> Result<()>,
+) -> Result<V2AssemblyResult> {
     let staging = prepare_staging_root(repository_root, requested_staging_root, operation)?;
     require_current_plan(plan, sources)?;
     let mut rendered = Vec::new();
@@ -72,6 +92,7 @@ pub(super) fn execute(
                 sources,
                 plan,
                 &rendered,
+                post_install,
             )?;
         }
         Operation::Check => {
@@ -1366,6 +1387,7 @@ fn build_reports_transactionally(
     sources: &[&ReportSource],
     plan: &V2Plan,
     reports: &[RenderedReport],
+    post_install: &mut dyn FnMut() -> Result<()>,
 ) -> Result<()> {
     staging.directory.create_dir_all(Path::new(OUTPUT_PREFIX))?;
     let mut commits = Vec::new();
@@ -1397,6 +1419,10 @@ fn build_reports_transactionally(
                 cleanup,
             ));
         }
+    }
+    if let Err(error) = post_install() {
+        let restoration = restore_commits(staging, &commits);
+        return Err(combine_restoration_error(error, restoration));
     }
     if let Err(error) = verify_assembly_inputs(repository_root, shared_inputs, sources, plan) {
         let restoration = restore_commits(staging, &commits);
@@ -1744,4 +1770,179 @@ fn verify_shared_inputs(root: &Path, inputs: &BTreeMap<PathBuf, String>) -> Resu
     }
     let _ = digest_input_set("assembly-shared-inputs:1", inputs);
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use std::fs;
+    use std::io::Write as _;
+    use std::path::{Path, PathBuf};
+    use std::sync::atomic::{AtomicU64, Ordering};
+
+    use super::{Operation, execute_with_post_install};
+    use crate::v2::V2Repository;
+
+    const REPORT_ID: &str = "linear-groundwater-reservoir-recurrence";
+    const RESULT_PATH: &str = "assurance/v2/reports/linear-groundwater-reservoir-recurrence/results/two-day-recurrence.json";
+    const OUTPUT_BASE: &str =
+        "usersum/assurance/reports/linear-groundwater-reservoir-recurrence/1.0.0";
+
+    #[test]
+    fn post_install_source_drift_restores_prior_bytes_without_timing() {
+        let source = fixture("assurance-assembly-post-install-drift");
+        let stage = prepared_stage("assurance-assembly-post-install-stage");
+        let repository = V2Repository::open(&source.path).expect("open source fixture");
+        repository
+            .build_report(REPORT_ID, &stage.path)
+            .expect("build prior selected bytes");
+        let prior = collect_files(&stage.path.join(OUTPUT_BASE));
+        let plan = repository
+            .plan_report(REPORT_ID)
+            .expect("plan current source");
+        let report_source = repository.sources.get(REPORT_ID).expect("selected source");
+        let result = source.path.join(RESULT_PATH);
+        let mut mutate_source = || {
+            fs::OpenOptions::new()
+                .append(true)
+                .open(&result)
+                .and_then(|mut file| file.write_all(b"\n"))
+                .map_err(|error| crate::AssuranceError::io(&result, error))
+        };
+        let error = execute_with_post_install(
+            &source.path,
+            &stage.path,
+            &repository.inputs,
+            &[report_source],
+            &plan,
+            Operation::Build,
+            &mut mutate_source,
+        )
+        .expect_err("post-install source drift must fail");
+        assert!(error.to_string().contains("changed during assembly"));
+        assert_eq!(prior, collect_files(&stage.path.join(OUTPUT_BASE)));
+        for suffix in ["next", "previous", "restore"] {
+            assert!(
+                !stage
+                    .path
+                    .join(format!("usersum/assurance/reports/.{REPORT_ID}.{suffix}"))
+                    .exists()
+            );
+        }
+    }
+
+    fn prepared_stage(label: &str) -> Scratch {
+        let stage = Scratch::new(label);
+        copy_file(
+            &repository_root(),
+            &stage.path,
+            "usersum/hillslope-hydrology-and-sediment-physics.md",
+        );
+        stage
+    }
+
+    fn fixture(label: &str) -> Scratch {
+        let source = repository_root();
+        let target = Scratch::new(label);
+        copy_tree(
+            &source.join("assurance/v2"),
+            &target.path.join("assurance/v2"),
+        );
+        for relative in [
+            "assurance/catalog.yaml",
+            "assurance/templates/catalog.md",
+            "assurance/generated/wepppy-usersum.yaml",
+            "usersum/assurance/README.md",
+            "usersum/hillslope-hydrology-and-sediment-physics.md",
+            "docs/specifications/science-contracts/contracts/SC-GWBASEFLOW-001.md",
+            "crates/openwepp-hillslope-orchestrator/src/direct_runtime/groundwater.rs",
+            "docs/work-packages/20260716-assure05-first-production-v2-report-001/artifacts/study-protocol.md",
+            "docs/work-packages/20260716-assure05-first-production-v2-report-001/artifacts/realization-freeze.md",
+            "docs/work-packages/20260716-assure05-first-production-v2-report-001/prompts/archived/20260716-codex-execute-assure05_prompt.md",
+            "docs/work-packages/20260709-laned-active-baseflow-export-closure-001/artifacts/consumer-path-proof.md",
+            "docs/work-packages/20260708-groundwater-baseflow-laned-single-ofe-mofe-implementation-001/artifacts/consumer-path-proof.md",
+        ] {
+            copy_file(&source, &target.path, relative);
+        }
+        target
+    }
+
+    fn copy_tree(source: &Path, target: &Path) {
+        fs::create_dir_all(target).expect("create fixture tree");
+        for entry in fs::read_dir(source).expect("read fixture source") {
+            let entry = entry.expect("read fixture entry");
+            let destination = target.join(entry.file_name());
+            if entry.file_type().expect("fixture type").is_dir() {
+                copy_tree(&entry.path(), &destination);
+            } else {
+                fs::copy(entry.path(), destination).expect("copy fixture file");
+            }
+        }
+    }
+
+    fn copy_file(source_root: &Path, target_root: &Path, relative: &str) {
+        let target = target_root.join(relative);
+        fs::create_dir_all(target.parent().expect("target parent")).expect("create parent");
+        fs::copy(source_root.join(relative), target).expect("copy file");
+    }
+
+    fn collect_files(root: &Path) -> std::collections::BTreeMap<PathBuf, Vec<u8>> {
+        let mut files = std::collections::BTreeMap::new();
+        collect_files_into(root, root, &mut files);
+        files
+    }
+
+    fn collect_files_into(
+        root: &Path,
+        directory: &Path,
+        files: &mut std::collections::BTreeMap<PathBuf, Vec<u8>>,
+    ) {
+        for entry in fs::read_dir(directory).expect("read collected tree") {
+            let entry = entry.expect("read collected entry");
+            if entry.file_type().expect("collected type").is_dir() {
+                collect_files_into(root, &entry.path(), files);
+            } else {
+                files.insert(
+                    entry
+                        .path()
+                        .strip_prefix(root)
+                        .expect("relative collected path")
+                        .to_path_buf(),
+                    fs::read(entry.path()).expect("read collected file"),
+                );
+            }
+        }
+    }
+
+    fn repository_root() -> PathBuf {
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("../..")
+            .canonicalize()
+            .expect("canonical repository root")
+    }
+
+    struct Scratch {
+        path: PathBuf,
+    }
+
+    impl Scratch {
+        fn new(label: &str) -> Self {
+            static COUNTER: AtomicU64 = AtomicU64::new(0);
+            let counter = COUNTER.fetch_add(1, Ordering::Relaxed);
+            let path = std::env::temp_dir()
+                .join(format!("openwepp-{label}-{}-{counter}", std::process::id()));
+            if path.exists() {
+                fs::remove_dir_all(&path).expect("remove stale scratch");
+            }
+            fs::create_dir_all(&path).expect("create scratch");
+            Self { path }
+        }
+    }
+
+    impl Drop for Scratch {
+        fn drop(&mut self) {
+            if self.path.exists() {
+                fs::remove_dir_all(&self.path).expect("remove scratch");
+            }
+        }
+    }
 }

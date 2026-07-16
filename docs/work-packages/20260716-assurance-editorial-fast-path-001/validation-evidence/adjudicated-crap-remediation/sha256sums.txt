@@ -1,0 +1,16 @@
+10b19679e382ebacd6b2d20ee02144c461e01b1ac958731d07dd6585acb7d67f  docs/work-packages/20260716-assurance-editorial-fast-path-001/validation-evidence/adjudicated-crap-remediation/adjudication-registry.json
+424cacb233eb96be86172ce1c61cf584d7be8ec1e6e1b9a907daadcb3dbd040f  docs/work-packages/20260716-assurance-editorial-fast-path-001/validation-evidence/adjudicated-crap-remediation/adjudicated-crap-report.json
+db3a91d4b4c5474ed5918d35c28256968ab9ff36393b30a68a6afc655b8b5658  docs/work-packages/20260716-assurance-editorial-fast-path-001/validation-evidence/adjudicated-crap-remediation/adjudicated-crap-report.md
+faf93773c4f1319d248c431f7ef1d7a7cd3bd556cfd4990b83989c1591e3490f  docs/work-packages/20260716-assurance-editorial-fast-path-001/validation-evidence/adjudicated-crap-remediation/cargo-version.txt
+613daf2b27209d9be123ababd5ebd0bbc27ce14c9f63463552454b7cea0e7f86  docs/work-packages/20260716-assurance-editorial-fast-path-001/validation-evidence/adjudicated-crap-remediation/cargo-crap-version.txt
+5d868c461fbc737ca66d7db2b4b106ae4bb5f54d4c9be436b5eb907f57c7996a  docs/work-packages/20260716-assurance-editorial-fast-path-001/validation-evidence/adjudicated-crap-remediation/cargo-crap.log
+35c027b707427b0becc406096c32bd507961068f5d869735d7997da10bf44fd7  docs/work-packages/20260716-assurance-editorial-fast-path-001/validation-evidence/adjudicated-crap-remediation/cargo-llvm-cov-version.txt
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  docs/work-packages/20260716-assurance-editorial-fast-path-001/validation-evidence/adjudicated-crap-remediation/llvm-cov-clean.log
+250320a50384265d225c367c475172e3f575744cf3003003ae6333523f359ab6  docs/work-packages/20260716-assurance-editorial-fast-path-001/validation-evidence/adjudicated-crap-remediation/llvm-cov.log
+2427cf5603066ee476c0d8667802148fe88b6b56ebcdc2d6ec39a8ae86365bd5  docs/work-packages/20260716-assurance-editorial-fast-path-001/validation-evidence/adjudicated-crap-remediation/run-status.json
+8f97c91e920ce0d02680e3d01eb87afa0c77290dcd5d19eb901ae194d4700d90  docs/work-packages/20260716-assurance-editorial-fast-path-001/validation-evidence/adjudicated-crap-remediation/rustc-version.txt
+72d2fa3d449fc492a05818daa680b548d2aa6bb14b6c0428ab8af6b0e16873ae  docs/work-packages/20260716-assurance-editorial-fast-path-001/validation-evidence/adjudicated-crap-remediation/source-manifest-after.json
+72d2fa3d449fc492a05818daa680b548d2aa6bb14b6c0428ab8af6b0e16873ae  docs/work-packages/20260716-assurance-editorial-fast-path-001/validation-evidence/adjudicated-crap-remediation/source-manifest-before.json
+72d2fa3d449fc492a05818daa680b548d2aa6bb14b6c0428ab8af6b0e16873ae  docs/work-packages/20260716-assurance-editorial-fast-path-001/validation-evidence/adjudicated-crap-remediation/source-manifest-final.json
+5780a6f5c6b788f8342a6918648e3ed32b055679a53df85b85bc86d43bc8327a  docs/work-packages/20260716-assurance-editorial-fast-path-001/validation-evidence/adjudicated-crap-remediation/workspace-crap.json
+99da70468234dcb4638d0582687fa068f68088500ad100b50839a035f2427f53  docs/work-packages/20260716-assurance-editorial-fast-path-001/validation-evidence/adjudicated-crap-remediation/workspace.lcov

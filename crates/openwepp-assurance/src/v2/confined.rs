@@ -71,6 +71,16 @@ impl ConfinedDirectory {
         read_regular_platform(self, relative)
     }
 
+    pub(super) fn mode(&self, relative: &Path) -> Result<u32> {
+        validate_relative(relative)?;
+        mode_platform(self, relative)
+    }
+
+    pub(super) fn set_mode(&self, relative: &Path, mode: u32) -> Result<()> {
+        validate_relative(relative)?;
+        set_mode_platform(self, relative, mode)
+    }
+
     pub(super) fn rename(&self, source: &Path, target: &Path) -> Result<()> {
         validate_relative(source)?;
         validate_relative(target)?;
@@ -110,6 +120,10 @@ impl ConfinedDirectory {
     pub(super) fn sync_tree(&self, relative: &Path) -> Result<()> {
         validate_relative(relative)?;
         sync_tree_platform(self, relative)
+    }
+
+    pub(super) fn sync_parent(&self) -> Result<()> {
+        sync_parent_platform(self)
     }
 
     /// Returns whether this held directory is the same directory as, or
@@ -499,6 +513,65 @@ fn read_regular_platform(_root: &ConfinedDirectory, _relative: &Path) -> Result<
 }
 
 #[cfg(unix)]
+fn mode_platform(root: &ConfinedDirectory, relative: &Path) -> Result<u32> {
+    let (parent, name) = open_parent(root, relative)?;
+    let stat = stat_at(&parent, name)
+        .map_err(|error| AssuranceError::io(relative, error))?
+        .ok_or_else(|| {
+            AssuranceError::Drift(format!("source path disappeared: {}", relative.display()))
+        })?;
+    Ok(stat.st_mode & 0o7777)
+}
+
+#[cfg(not(unix))]
+fn mode_platform(_root: &ConfinedDirectory, _relative: &Path) -> Result<u32> {
+    Err(AssuranceError::Invalid(
+        "descriptor-relative confined staging requires Unix openat support".to_owned(),
+    ))
+}
+
+#[cfg(unix)]
+fn set_mode_platform(root: &ConfinedDirectory, relative: &Path, mode: u32) -> Result<()> {
+    use std::os::fd::AsRawFd as _;
+
+    let (parent, name) = open_parent(root, relative)?;
+    let stat = stat_at(&parent, name)
+        .map_err(|error| AssuranceError::io(relative, error))?
+        .ok_or_else(|| {
+            AssuranceError::Drift(format!("source path disappeared: {}", relative.display()))
+        })?;
+    let file = match file_kind(stat.st_mode) {
+        libc::S_IFREG => open_regular_at(&parent, name, relative)?,
+        libc::S_IFDIR => open_directory_at_io(&parent, name)
+            .map_err(|error| component_error(error, relative, false))?,
+        _ => {
+            return Err(AssuranceError::Invalid(format!(
+                "mode target is not a regular file or directory: {}",
+                relative.display()
+            )));
+        }
+    };
+    // SAFETY: `file` owns a live descriptor and permission bits are bounded.
+    let result = unsafe { libc::fchmod(file.as_raw_fd(), mode as libc::mode_t) };
+    if result == 0 {
+        file.sync_all()
+            .map_err(|error| AssuranceError::io(relative, error))
+    } else {
+        Err(AssuranceError::io(
+            relative,
+            std::io::Error::last_os_error(),
+        ))
+    }
+}
+
+#[cfg(not(unix))]
+fn set_mode_platform(_root: &ConfinedDirectory, _relative: &Path, _mode: u32) -> Result<()> {
+    Err(AssuranceError::Invalid(
+        "descriptor-relative confined staging requires Unix openat support".to_owned(),
+    ))
+}
+
+#[cfg(unix)]
 fn rename_platform(root: &ConfinedDirectory, source: &Path, target: &Path) -> Result<()> {
     if source.parent() != target.parent() {
         return Err(AssuranceError::Invalid(
@@ -659,6 +732,20 @@ fn sync_tree_platform(root: &ConfinedDirectory, relative: &Path) -> Result<()> {
 
 #[cfg(not(unix))]
 fn sync_tree_platform(_root: &ConfinedDirectory, _relative: &Path) -> Result<()> {
+    Err(AssuranceError::Invalid(
+        "descriptor-relative confined staging requires Unix openat support".to_owned(),
+    ))
+}
+
+#[cfg(unix)]
+fn sync_parent_platform(root: &ConfinedDirectory) -> Result<()> {
+    root.directory
+        .sync_all()
+        .map_err(|error| AssuranceError::io(Path::new("."), error))
+}
+
+#[cfg(not(unix))]
+fn sync_parent_platform(_root: &ConfinedDirectory) -> Result<()> {
     Err(AssuranceError::Invalid(
         "descriptor-relative confined staging requires Unix openat support".to_owned(),
     ))

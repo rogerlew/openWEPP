@@ -10,8 +10,6 @@ const REPORT_PATH: &str =
 const CATALOG_PATH: &str = "assurance/v2/catalog.yaml";
 const RESULT_PATH: &str =
     "assurance/v2/reports/linear-groundwater-reservoir-recurrence/results/two-day-recurrence.json";
-const IMPLEMENTATION_PATH: &str =
-    "crates/openwepp-hillslope-orchestrator/src/direct_runtime/groundwater.rs";
 const OUTPUT_BASE: &str = "usersum/assurance/reports/linear-groundwater-reservoir-recurrence/1.0.0";
 
 #[test]
@@ -358,54 +356,6 @@ fn manifest_markdown_metadata_is_escaped_without_creating_external_links() {
         "Evidence https://attacker.invalid",
     );
     assert_build_rejected(&external.path, "cannot introduce an external link");
-}
-
-#[test]
-fn source_drift_after_install_rolls_back_prior_selected_bytes() {
-    use std::io::Write as _;
-    use std::thread;
-    use std::time::{Duration, Instant};
-
-    let source = fixture("assure04c-post-install-source-drift");
-    // Keep the installed-backup interval long enough for the mutator to
-    // observe deterministically while post-install source hashes are checked.
-    append_bytes(
-        &source.path.join(IMPLEMENTATION_PATH),
-        &vec![b'\n'; 8 * 1024 * 1024],
-    );
-    refresh_local_hash(&source.path, Path::new(IMPLEMENTATION_PATH));
-    refresh_report_hash(&source.path);
-    let stage = prepared_stage("assure04c-post-install-source-drift-stage");
-    let repository = V2Repository::open(&source.path).expect("open source fixture");
-    repository
-        .build_report(REPORT_ID, &stage.path)
-        .expect("build prior selected bytes");
-    let prior = collect_files(&stage.path.join(OUTPUT_BASE));
-    let backup = stage
-        .path
-        .join(format!("usersum/assurance/reports/.{REPORT_ID}.previous"));
-    let result = source.path.join(RESULT_PATH);
-    let mutator = thread::spawn(move || {
-        let deadline = Instant::now() + Duration::from_secs(60);
-        while !backup.exists() {
-            assert!(
-                Instant::now() < deadline,
-                "installation marker did not appear"
-            );
-            std::hint::spin_loop();
-        }
-        let mut file = fs::OpenOptions::new()
-            .append(true)
-            .open(result)
-            .expect("open identified result after installation");
-        file.write_all(b"\n").expect("change identified result");
-    });
-    let error = repository
-        .build_report(REPORT_ID, &stage.path)
-        .expect_err("post-install source drift must fail");
-    mutator.join().expect("join source mutator");
-    assert!(error.to_string().contains("changed during assembly"));
-    assert_eq!(prior, collect_files(&stage.path.join(OUTPUT_BASE)));
 }
 
 #[test]

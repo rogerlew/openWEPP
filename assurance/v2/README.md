@@ -61,6 +61,69 @@ versions, content identities, logical-reference closure, units, unused
 declarations, restrictions, and draft lifecycle consistency. It does not plan,
 render, approve, publish, or scientifically reevaluate a report.
 
+## Normalize Draft Prose
+
+American English is the report language. Before a DRAFT enters review, check
+its authored manuscript and supplement with the canonical converter:
+
+```bash
+cargo run --quiet -p openwepp-assurance -- normalize \
+  --report linear-groundwater-reservoir-recurrence \
+  --language en-US --check
+```
+
+When the check reports drift, apply the exact converter output and mechanically
+rebind its content identities:
+
+```bash
+cargo run --quiet -p openwepp-assurance -- normalize \
+  --report linear-groundwater-reservoir-recurrence \
+  --language en-US --apply
+```
+
+The explicit maintenance command invokes the installed `uk2us` executable
+without a shell. It changes only converter-produced manuscript or supplement
+bytes, then updates the disclosed agent packet, report descriptor, and catalog
+digests in one locked `assurance/v2` tree transaction while preserving source
+permission modes. It emits a deterministic JSON receipt to standard output. It
+refuses `IN_REVIEW` or `APPROVED` sources, review-entry-authorized drafts,
+unsupported languages, stale inputs, ambiguous identity edges, non-idempotent
+converter output, and incomplete recovery. Pre-commit and post-install
+validation failures restore the old generation. If cleanup fails after the new
+generation has validated, the command instead reports a distinct committed-
+cleanup error containing the committed receipt and leaves the valid new
+generation active. Any retained `.v2.normalize.next` directory requires
+explicit operator disposition and blocks every later check or apply operation.
+
+For an exact normalization produced by this command, use the proportional
+editorial gate:
+
+```bash
+cargo nextest run --workspace --profile assurance-editorial
+cargo run --quiet -p openwepp-assurance -- validate \
+  --report linear-groundwater-reservoir-recurrence
+```
+
+The fast path does not classify arbitrary edits as editorial. Mixed prose,
+claim, method, result, figure, lifecycle, authority, schema, or builder changes
+use the ordinary package, impact-review, and full-gate process. A new content
+root remains a new content root even when the scientific-impact disposition is
+editorial-only. Publication integration is intentionally outside the fast
+profile because the operation accepts only a pre-review DRAFT; lifecycle,
+approval, builder, or publication changes must run the ordinary full gates.
+
+The complete authoring order is:
+
+1. Draft the manuscript and supplement while the report remains `DRAFT`.
+2. Run `normalize --check`, then `normalize --apply` only when drift is reported.
+3. Run `validate --report <id>` against the normalized source.
+4. Run `build --report <id>` and `check --report <id>` in a disposable staging
+   root using the commands below.
+5. Freeze the exact source and staged-output roots for review entry.
+
+Normalization is preparation for validation and review, not evidence that
+either has occurred.
+
 ## Plan
 
 From the repository root:

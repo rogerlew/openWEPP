@@ -22,6 +22,11 @@ pub enum AssuranceError {
         primary: Box<Self>,
         recovery: Box<Self>,
     },
+    CommittedCleanup {
+        path: PathBuf,
+        receipt_json: String,
+        source: Box<Self>,
+    },
 }
 
 impl AssuranceError {
@@ -30,7 +35,11 @@ impl AssuranceError {
         match self {
             Self::Usage(_) => 2,
             Self::Drift(_) | Self::SnapshotConflict(_) => 4,
-            Self::Io { .. } | Self::Parse { .. } | Self::Invalid(_) | Self::Recovery { .. } => 1,
+            Self::Io { .. }
+            | Self::Parse { .. }
+            | Self::Invalid(_)
+            | Self::Recovery { .. }
+            | Self::CommittedCleanup { .. } => 1,
         }
     }
 
@@ -52,9 +61,18 @@ impl fmt::Display for AssuranceError {
             Self::Recovery { primary, recovery } => {
                 write!(
                     formatter,
-                    "{primary}; staging transaction recovery also failed: {recovery}"
+                    "{primary}; transaction recovery also failed: {recovery}"
                 )
             }
+            Self::CommittedCleanup {
+                path,
+                receipt_json,
+                source,
+            } => write!(
+                formatter,
+                "normalization committed and validated, but old-generation cleanup failed at {}: {source}; committed receipt:\n{receipt_json}",
+                path.display(),
+            ),
             Self::Io { path, source } => write!(formatter, "{}: {source}", path.display()),
             Self::Parse { path, message } => write!(formatter, "{}: {message}", path.display()),
         }
@@ -66,6 +84,7 @@ impl std::error::Error for AssuranceError {
         match self {
             Self::Io { source, .. } => Some(source),
             Self::Recovery { primary, .. } => Some(primary.as_ref()),
+            Self::CommittedCleanup { source, .. } => Some(source.as_ref()),
             _ => None,
         }
     }
