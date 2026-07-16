@@ -1,6 +1,6 @@
 # Scientific Assurance V2 Internal Sources
 
-Status: ASSURE-04D review and external publication mechanics implemented; zero public reports
+Status: production draft sources present; zero public reports
 
 This tree holds canonical scientific-assurance source, not generated reader
 documentation. The manuscript and supplement carry the scientific argument in
@@ -8,17 +8,24 @@ reader-first prose. Strict YAML records identify authorship, accountable review
 roles, agent assistance, claims, methods, dependencies, results, value
 bindings, tables, result-bearing figures, references, research objects, review
 state, and publication state. They do not generate conclusions or substitute
-lifecycle labels for evidence. The current production-domain draft discloses
-its agent author and blocks review while its human report lead and scientific
-approver are unassigned.
+lifecycle labels for evidence.
 
-The current groundwater report is the first production-domain v2 source. It is
-a manuscript-first software-verification study with preregistered methods,
-fresh execution evidence, reproducible arithmetic, and explicit scientific
-claim limits. `DRAFT` records its lifecycle, not a negative assessment of the
-groundwater process. It has no public route, review lock, export permission,
-release snapshot, or vendoring authority until accountable humans review and
-approve the exact source.
+Two production-domain sources are currently held as internal drafts:
+
+- `linear-groundwater-reservoir-recurrence` is a manuscript-first
+  software-verification study with preregistered methods, fresh execution
+  evidence, reproducible arithmetic, and explicit claim limits.
+- `snow-and-frozen-soil-process-evaluation` is a retrospective scientific
+  synthesis of identified precipitation-phase, seasonal snowpack,
+  frozen-soil, production-path, and conservation evidence. Its manuscript
+  keeps the four claim envelopes separate and does not turn the diagnostic snow
+  profile into a universal accuracy grade.
+
+`DRAFT` and `IN_REVIEW` record lifecycle, not scientific merit. Both sources
+disclose agent assistance and have no public route, review lock, export
+permission, release snapshot, or vendoring authority. The snow/frost source has
+an accountable human report lead and is in independent review; the groundwater
+source remains a draft with human accountability unassigned.
 
 ## Layout
 
@@ -53,7 +60,7 @@ From the repository root:
 ```bash
 cargo run --quiet -p openwepp-assurance -- validate --all
 cargo run --quiet -p openwepp-assurance -- validate \
-  --report linear-groundwater-reservoir-recurrence
+  --report <report-id>
 ```
 
 Validation is deterministic and offline. It checks schema and contract
@@ -68,7 +75,7 @@ its authored manuscript and supplement with the canonical converter:
 
 ```bash
 cargo run --quiet -p openwepp-assurance -- normalize \
-  --report linear-groundwater-reservoir-recurrence \
+  --report <report-id> \
   --language en-US --check
 ```
 
@@ -77,7 +84,7 @@ rebind its content identities:
 
 ```bash
 cargo run --quiet -p openwepp-assurance -- normalize \
-  --report linear-groundwater-reservoir-recurrence \
+  --report <report-id> \
   --language en-US --apply
 ```
 
@@ -101,7 +108,7 @@ editorial gate:
 ```bash
 cargo nextest run --workspace --profile assurance-editorial
 cargo run --quiet -p openwepp-assurance -- validate \
-  --report linear-groundwater-reservoir-recurrence
+  --report <report-id>
 ```
 
 The fast path does not classify arbitrary edits as editorial. Mixed prose,
@@ -131,7 +138,7 @@ From the repository root:
 ```bash
 cargo run --quiet -p openwepp-assurance -- plan --all
 cargo run --quiet -p openwepp-assurance -- plan \
-  --report linear-groundwater-reservoir-recurrence
+  --report <report-id>
 cargo run --quiet -p openwepp-assurance -- plan --all --format json
 ```
 
@@ -190,9 +197,11 @@ only authority for the derived public state.
 The registry in `principals.yaml` gives stable identities, kinds, authorities,
 and eligible roles. The software checks structure, declared roles, distinct
 principals, and specified conflicts. It cannot authenticate a person, assess
-competence, perform scientific review, or generate approval. The current report
-is intentionally `DRAFT` in the production trust domain; its missing human
-accountability blocks review entry and publication.
+competence, perform scientific review, or generate approval. A `DRAFT` with
+missing human accountability cannot enter review. An `IN_REVIEW` source may
+have an accountable report lead but remains blocked from approval and
+publication until the required independent humans approve its exact locked
+root.
 
 ## Publish To Explicit External Roots
 

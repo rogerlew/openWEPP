@@ -102,6 +102,29 @@
 
 State as of `2026-07-16 UTC`:
 
+- `20260716-assure06-human-review-entry-001/` -
+  HOLD-INDEPENDENT-HUMAN-REVIEW (2026-07-16): Roger Lew reviewed the snow/frost report, accepted the
+  accountable report-lead role, and disclosed that he led the underlying
+  openWEPP snow/frost development campaign. The package therefore records him
+  as both report lead and material producer and excludes him from independent
+  scientific and reproduction/publication approval roles. Dual coding-agent
+  review and terminal verification passed. The exact source is `IN_REVIEW`;
+  publication, export, release transfer, and vendoring remain prohibited while
+  independent human review is pending.
+- `20260716-assure06-snow-frost-flagship-synthesis-001/` -
+  HOLD-HUMAN-APPROVAL (2026-07-16): produced the manuscript-first snow/frost
+  flagship from retained precipitation-phase, SWE/depth/density, frozen-soil,
+  conservation, and production evidence. The deterministic result retains 188
+  values; the rendered report leads with site-resolved science through seven
+  tables and two figures and stages 16 public-safe research objects. Dual
+  internal reviews closed phase-method disclosure, correlated snow-rubric
+  framing, frost-site heterogeneity, conservation-operand reconstruction,
+  citations, agent disclosure, and dataset provenance without waiver. Focused
+  gates and dual terminal verification passed with no actionable findings. That
+  package closed its intake source as `DRAFT`; the successor human-review-entry
+  package now owns the current `IN_REVIEW` transition. Public report count
+  remains zero, and exact-ledger independent approval plus release transfer are
+  still required. ASSURE-05 remains separately held.
 - `20260716-assurance-editorial-fast-path-001/` -
   EXECUTED-COMPLETE (2026-07-16): replaced manual American-English spelling
   edits and digest propagation with a locked, transactional DRAFT normalizer;

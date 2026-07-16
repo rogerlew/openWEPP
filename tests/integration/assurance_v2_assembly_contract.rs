@@ -5,6 +5,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use openwepp_assurance::{AssuranceError, V2Repository, sha256_bytes};
 
 const REPORT_ID: &str = "linear-groundwater-reservoir-recurrence";
+const SNOW_REPORT_ID: &str = "snow-and-frozen-soil-process-evaluation";
 const REPORT_PATH: &str =
     "assurance/v2/reports/linear-groundwater-reservoir-recurrence/report.yaml";
 const CATALOG_PATH: &str = "assurance/v2/catalog.yaml";
@@ -35,7 +36,10 @@ fn real_named_and_all_builds_are_deterministic_equivalent_and_checkable() {
     let all = repository
         .build_all(&all_stage.path)
         .expect("build all reports");
-    assert_eq!(named.outputs, all.outputs);
+    assert!(all.outputs.len() > named.outputs.len());
+    for (path, digest) in &named.outputs {
+        assert_eq!(all.outputs.get(path), Some(digest));
+    }
     assert_eq!(
         first_bytes,
         collect_files(&all_stage.path.join(OUTPUT_BASE))
@@ -467,12 +471,33 @@ fn real_cli_selects_v2_staging_without_weakening_zero_public_operations() {
     let check = openwepp_assurance::cli::run(vec![
         std::ffi::OsString::from("openwepp-assurance"),
         std::ffi::OsString::from("check"),
-        std::ffi::OsString::from("--all"),
+        std::ffi::OsString::from("--report"),
+        std::ffi::OsString::from(REPORT_ID),
         std::ffi::OsString::from("--staging-root"),
         stage.path.as_os_str().to_owned(),
     ])
-    .expect("check all through real CLI");
+    .expect("check named report through real CLI");
     assert_eq!(build, check.replacen("check:", "build:", 1));
+
+    let all_stage = prepared_stage("assure04c-cli-all");
+    let all_build = openwepp_assurance::cli::run(vec![
+        std::ffi::OsString::from("openwepp-assurance"),
+        std::ffi::OsString::from("build"),
+        std::ffi::OsString::from("--all"),
+        std::ffi::OsString::from("--staging-root"),
+        all_stage.path.as_os_str().to_owned(),
+    ])
+    .expect("build all reports through real CLI");
+    assert!(all_build.starts_with("build: PASS\nreports: 2\n"));
+    let all_check = openwepp_assurance::cli::run(vec![
+        std::ffi::OsString::from("openwepp-assurance"),
+        std::ffi::OsString::from("check"),
+        std::ffi::OsString::from("--all"),
+        std::ffi::OsString::from("--staging-root"),
+        all_stage.path.as_os_str().to_owned(),
+    ])
+    .expect("check all reports through real CLI");
+    assert_eq!(all_build, all_check.replacen("check:", "build:", 1));
 
     let zero = openwepp_assurance::cli::run(["openwepp-assurance", "check", "--all"])
         .expect("zero-public check remains available");
@@ -660,6 +685,7 @@ fn fixture(label: &str) -> Scratch {
         &source.join("assurance/v2"),
         &target.path.join("assurance/v2"),
     );
+    retain_groundwater_fixture(&target.path);
     for relative in [
         "assurance/catalog.yaml",
         "assurance/templates/catalog.md",
@@ -677,6 +703,19 @@ fn fixture(label: &str) -> Scratch {
         copy_file(&source, &target.path, relative);
     }
     target
+}
+
+fn retain_groundwater_fixture(root: &Path) {
+    let catalog_path = root.join(CATALOG_PATH);
+    let catalog = fs::read_to_string(&catalog_path).expect("read fixture catalog");
+    let marker = format!("\n  - id: {SNOW_REPORT_ID}\n");
+    let split = catalog
+        .find(&marker)
+        .expect("snow/frost catalog entry follows groundwater fixture entry");
+    fs::write(&catalog_path, format!("{}\n", &catalog[..split]))
+        .expect("retain one-report fixture catalog");
+    fs::remove_dir_all(root.join("assurance/v2/reports").join(SNOW_REPORT_ID))
+        .expect("remove unselected snow/frost fixture source");
 }
 
 fn copy_tree(source: &Path, target: &Path) {

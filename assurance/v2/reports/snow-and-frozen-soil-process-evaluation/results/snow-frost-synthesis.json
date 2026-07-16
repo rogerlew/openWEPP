@@ -1,0 +1,1134 @@
+{
+  "result_id": "SF-RESULT-SYNTHESIS",
+  "schema_version": 1,
+  "values": [
+    {
+      "id": "phase_rows_read",
+      "precision": "exact retained integer",
+      "unit_id": "row_count",
+      "value": 17810805
+    },
+    {
+      "id": "phase_rows_scored",
+      "precision": "reconstructed confusion-matrix total",
+      "unit_id": "row_count",
+      "value": 11711058
+    },
+    {
+      "id": "phase_rows_skipped",
+      "precision": "exact retained integer",
+      "unit_id": "row_count",
+      "value": 6099747
+    },
+    {
+      "id": "phase_rows_skipped_percent",
+      "precision": "reconstructed from read and skipped rows",
+      "unit_id": "percent",
+      "value": 34.24745259970001
+    },
+    {
+      "id": "phase_stations",
+      "precision": "exact retained integer",
+      "unit_id": "station_count",
+      "value": 6883
+    },
+    {
+      "id": "hp_accuracy_percent",
+      "precision": "scaled reconstructed accuracy",
+      "unit_id": "percent",
+      "value": 90.3140775154559
+    },
+    {
+      "id": "legacy_accuracy_percent",
+      "precision": "scaled reconstructed accuracy",
+      "unit_id": "percent",
+      "value": 85.83309893948096
+    },
+    {
+      "id": "accuracy_difference_points",
+      "precision": "difference of scaled reconstructed accuracies",
+      "unit_id": "percentage_point",
+      "value": 4.480978575974948
+    },
+    {
+      "id": "hp_rain_as_rain",
+      "precision": "exact retained integer",
+      "unit_id": "row_count",
+      "value": 3396066
+    },
+    {
+      "id": "hp_rain_as_snow",
+      "precision": "exact retained integer",
+      "unit_id": "row_count",
+      "value": 498328
+    },
+    {
+      "id": "hp_snow_as_rain",
+      "precision": "exact retained integer",
+      "unit_id": "row_count",
+      "value": 635996
+    },
+    {
+      "id": "hp_snow_as_snow",
+      "precision": "exact retained integer",
+      "unit_id": "row_count",
+      "value": 7180668
+    },
+    {
+      "id": "legacy_rain_as_rain",
+      "precision": "exact retained integer",
+      "unit_id": "row_count",
+      "value": 3574653
+    },
+    {
+      "id": "legacy_rain_as_snow",
+      "precision": "exact retained integer",
+      "unit_id": "row_count",
+      "value": 319741
+    },
+    {
+      "id": "legacy_snow_as_rain",
+      "precision": "exact retained integer",
+      "unit_id": "row_count",
+      "value": 1339353
+    },
+    {
+      "id": "legacy_snow_as_snow",
+      "precision": "exact retained integer",
+      "unit_id": "row_count",
+      "value": 6477311
+    },
+    {
+      "id": "phase_threshold_bias",
+      "precision": "retained station aggregate",
+      "unit_id": "degC",
+      "value": 0.5544667657501591
+    },
+    {
+      "id": "phase_threshold_mae",
+      "precision": "retained station aggregate",
+      "unit_id": "degC",
+      "value": 0.9442641952971071
+    },
+    {
+      "id": "observed_humidity_contrast",
+      "precision": "retained high-minus-low aggregate",
+      "unit_id": "degC",
+      "value": -0.8831049799247636
+    },
+    {
+      "id": "predicted_humidity_contrast",
+      "precision": "retained high-minus-low aggregate",
+      "unit_id": "degC",
+      "value": -0.7700581395348847
+    },
+    {
+      "id": "humidity_group_station_count",
+      "precision": "exact retained group size",
+      "unit_id": "station_count",
+      "value": 688
+    },
+    {
+      "id": "snow_surface_count",
+      "precision": "counted retained site summaries",
+      "unit_id": "site_count",
+      "value": 10
+    },
+    {
+      "id": "snotel_paired_rows",
+      "precision": "sum of five retained SNOTEL site counts",
+      "unit_id": "row_count",
+      "value": 13590
+    },
+    {
+      "id": "canopy_paired_rows",
+      "precision": "sum of five retained canopy-site counts",
+      "unit_id": "row_count",
+      "value": 1229
+    },
+    {
+      "id": "snow_robust_available",
+      "precision": "sum of available forcing-robust labels",
+      "unit_id": "cell_count",
+      "value": 90
+    },
+    {
+      "id": "snow_robust_fail",
+      "precision": "exact retained label count",
+      "unit_id": "cell_count",
+      "value": 15
+    },
+    {
+      "id": "snow_robust_marginal",
+      "precision": "exact retained label count",
+      "unit_id": "cell_count",
+      "value": 14
+    },
+    {
+      "id": "snow_robust_pass",
+      "precision": "exact retained label count",
+      "unit_id": "cell_count",
+      "value": 18
+    },
+    {
+      "id": "snow_robust_strong",
+      "precision": "exact retained label count",
+      "unit_id": "cell_count",
+      "value": 43
+    },
+    {
+      "id": "snow_pass_strong_percent",
+      "precision": "reconstructed from label counts",
+      "unit_id": "percent",
+      "value": 67.77777777777777
+    },
+    {
+      "id": "snow_density_residual_cells",
+      "precision": "retained residual classification",
+      "unit_id": "cell_count",
+      "value": 9
+    },
+    {
+      "id": "snow_geometry_residual_cells",
+      "precision": "retained residual classification",
+      "unit_id": "cell_count",
+      "value": 2
+    },
+    {
+      "id": "snow_timing_residual_cells",
+      "precision": "retained residual classification",
+      "unit_id": "cell_count",
+      "value": 4
+    },
+    {
+      "id": "frost_tube_site_count",
+      "precision": "counted method-specific sites",
+      "unit_id": "site_count",
+      "value": 3
+    },
+    {
+      "id": "frost_tube_matches",
+      "precision": "sum of site frost-depth residual counts",
+      "unit_id": "row_count",
+      "value": 675
+    },
+    {
+      "id": "frost_tube_max_abs_residual",
+      "precision": "maximum retained site residual",
+      "unit_id": "m",
+      "value": 0.990389751515789
+    },
+    {
+      "id": "frost_snow_control_rows",
+      "precision": "sum of paired snow-control rows",
+      "unit_id": "row_count",
+      "value": 660
+    },
+    {
+      "id": "frost_snow_control_failures",
+      "precision": "sum of failed paired snow controls",
+      "unit_id": "row_count",
+      "value": 493
+    },
+    {
+      "id": "frost_snow_control_failure_percent",
+      "precision": "reconstructed from paired snow-control counts",
+      "unit_id": "percent",
+      "value": 74.6969696969697
+    },
+    {
+      "id": "isotherm_site_count",
+      "precision": "counted method-specific sites",
+      "unit_id": "site_count",
+      "value": 2
+    },
+    {
+      "id": "isotherm_bound_rows",
+      "precision": "sum of evaluated upper-bound rows",
+      "unit_id": "row_count",
+      "value": 14939
+    },
+    {
+      "id": "isotherm_exceedances",
+      "precision": "sum of site upper-bound exceedances",
+      "unit_id": "row_count",
+      "value": 3556
+    },
+    {
+      "id": "isotherm_exceedance_percent",
+      "precision": "reconstructed from bound counts",
+      "unit_id": "percent",
+      "value": 23.803467434232545
+    },
+    {
+      "id": "partition_trace_rows",
+      "precision": "exact production trace count",
+      "unit_id": "row_count",
+      "value": 159986
+    },
+    {
+      "id": "partition_precip_rows",
+      "precision": "exact active-precipitation trace count",
+      "unit_id": "row_count",
+      "value": 53711
+    },
+    {
+      "id": "partition_max_abs_residual",
+      "precision": "maximum reconstructed production residual",
+      "unit_id": "m",
+      "value": 5.551115123125783e-17
+    },
+    {
+      "id": "partition_tolerance",
+      "precision": "declared production-trace allowance",
+      "unit_id": "m",
+      "value": 1e-10
+    },
+    {
+      "id": "snow_accumulation_residual",
+      "precision": "independent produced-WAT reconstruction",
+      "unit_id": "mm",
+      "value": 8.881784197001252e-16
+    },
+    {
+      "id": "snow_release_residual",
+      "precision": "independent produced-WAT reconstruction",
+      "unit_id": "mm",
+      "value": 0.0
+    },
+    {
+      "id": "frost_max_storage_residual",
+      "precision": "maximum absolute produced-WAT reconstruction residual",
+      "unit_id": "mm",
+      "value": 8.526512829121202e-14
+    },
+    {
+      "id": "snow_mica_paired",
+      "precision": "exact retained site count",
+      "unit_id": "row_count",
+      "value": 2540
+    },
+    {
+      "id": "snow_mica_fail",
+      "precision": "exact retained site label count",
+      "unit_id": "cell_count",
+      "value": 2
+    },
+    {
+      "id": "snow_mica_marginal",
+      "precision": "exact retained site label count",
+      "unit_id": "cell_count",
+      "value": 2
+    },
+    {
+      "id": "snow_mica_pass",
+      "precision": "exact retained site label count",
+      "unit_id": "cell_count",
+      "value": 2
+    },
+    {
+      "id": "snow_mica_strong",
+      "precision": "exact retained site label count",
+      "unit_id": "cell_count",
+      "value": 3
+    },
+    {
+      "id": "snow_mica_density_kge",
+      "precision": "exact retained site diagnostic",
+      "unit_id": "dimensionless",
+      "value": -1.1601908148403997
+    },
+    {
+      "id": "snow_mica_peak_swe_offset_days",
+      "precision": "exact retained median modeled-minus-observed offset",
+      "unit_id": "day",
+      "value": -18
+    },
+    {
+      "id": "snow_mica_meltout_offset_days",
+      "precision": "exact retained median modeled-minus-observed offset",
+      "unit_id": "day",
+      "value": -35
+    },
+    {
+      "id": "snow_mica_geometry_ratio",
+      "precision": "exact retained modeled-to-observed slope ratio",
+      "unit_id": "dimensionless",
+      "value": 0.9434415941341202
+    },
+    {
+      "id": "snow_paradise_paired",
+      "precision": "exact retained site count",
+      "unit_id": "row_count",
+      "value": 3170
+    },
+    {
+      "id": "snow_paradise_fail",
+      "precision": "exact retained site label count",
+      "unit_id": "cell_count",
+      "value": 2
+    },
+    {
+      "id": "snow_paradise_marginal",
+      "precision": "exact retained site label count",
+      "unit_id": "cell_count",
+      "value": 1
+    },
+    {
+      "id": "snow_paradise_pass",
+      "precision": "exact retained site label count",
+      "unit_id": "cell_count",
+      "value": 4
+    },
+    {
+      "id": "snow_paradise_strong",
+      "precision": "exact retained site label count",
+      "unit_id": "cell_count",
+      "value": 2
+    },
+    {
+      "id": "snow_paradise_density_kge",
+      "precision": "exact retained site diagnostic",
+      "unit_id": "dimensionless",
+      "value": -0.4513758134946624
+    },
+    {
+      "id": "snow_paradise_peak_swe_offset_days",
+      "precision": "exact retained median modeled-minus-observed offset",
+      "unit_id": "day",
+      "value": -18
+    },
+    {
+      "id": "snow_paradise_meltout_offset_days",
+      "precision": "exact retained median modeled-minus-observed offset",
+      "unit_id": "day",
+      "value": -37
+    },
+    {
+      "id": "snow_paradise_geometry_ratio",
+      "precision": "exact retained modeled-to-observed slope ratio",
+      "unit_id": "dimensionless",
+      "value": 1.19673543321135
+    },
+    {
+      "id": "snow_css_paired",
+      "precision": "exact retained site count",
+      "unit_id": "row_count",
+      "value": 1744
+    },
+    {
+      "id": "snow_css_fail",
+      "precision": "exact retained site label count",
+      "unit_id": "cell_count",
+      "value": 1
+    },
+    {
+      "id": "snow_css_marginal",
+      "precision": "exact retained site label count",
+      "unit_id": "cell_count",
+      "value": 1
+    },
+    {
+      "id": "snow_css_pass",
+      "precision": "exact retained site label count",
+      "unit_id": "cell_count",
+      "value": 3
+    },
+    {
+      "id": "snow_css_strong",
+      "precision": "exact retained site label count",
+      "unit_id": "cell_count",
+      "value": 4
+    },
+    {
+      "id": "snow_css_density_kge",
+      "precision": "exact retained site diagnostic",
+      "unit_id": "dimensionless",
+      "value": -0.8693132612327308
+    },
+    {
+      "id": "snow_css_peak_swe_offset_days",
+      "precision": "exact retained median modeled-minus-observed offset",
+      "unit_id": "day",
+      "value": -8.0
+    },
+    {
+      "id": "snow_css_meltout_offset_days",
+      "precision": "exact retained median modeled-minus-observed offset",
+      "unit_id": "day",
+      "value": -12.5
+    },
+    {
+      "id": "snow_css_geometry_ratio",
+      "precision": "exact retained modeled-to-observed slope ratio",
+      "unit_id": "dimensionless",
+      "value": 1.1160553565964266
+    },
+    {
+      "id": "snow_snowbird_paired",
+      "precision": "exact retained site count",
+      "unit_id": "row_count",
+      "value": 2754
+    },
+    {
+      "id": "snow_snowbird_fail",
+      "precision": "exact retained site label count",
+      "unit_id": "cell_count",
+      "value": 2
+    },
+    {
+      "id": "snow_snowbird_marginal",
+      "precision": "exact retained site label count",
+      "unit_id": "cell_count",
+      "value": 2
+    },
+    {
+      "id": "snow_snowbird_pass",
+      "precision": "exact retained site label count",
+      "unit_id": "cell_count",
+      "value": 2
+    },
+    {
+      "id": "snow_snowbird_strong",
+      "precision": "exact retained site label count",
+      "unit_id": "cell_count",
+      "value": 3
+    },
+    {
+      "id": "snow_snowbird_density_kge",
+      "precision": "exact retained site diagnostic",
+      "unit_id": "dimensionless",
+      "value": -0.5575843149148034
+    },
+    {
+      "id": "snow_snowbird_peak_swe_offset_days",
+      "precision": "exact retained median modeled-minus-observed offset",
+      "unit_id": "day",
+      "value": -45.0
+    },
+    {
+      "id": "snow_snowbird_meltout_offset_days",
+      "precision": "exact retained median modeled-minus-observed offset",
+      "unit_id": "day",
+      "value": -20.0
+    },
+    {
+      "id": "snow_snowbird_geometry_ratio",
+      "precision": "exact retained modeled-to-observed slope ratio",
+      "unit_id": "dimensionless",
+      "value": 1.2271166536599247
+    },
+    {
+      "id": "snow_niwot_paired",
+      "precision": "exact retained site count",
+      "unit_id": "row_count",
+      "value": 3382
+    },
+    {
+      "id": "snow_niwot_fail",
+      "precision": "exact retained site label count",
+      "unit_id": "cell_count",
+      "value": 2
+    },
+    {
+      "id": "snow_niwot_marginal",
+      "precision": "exact retained site label count",
+      "unit_id": "cell_count",
+      "value": 3
+    },
+    {
+      "id": "snow_niwot_pass",
+      "precision": "exact retained site label count",
+      "unit_id": "cell_count",
+      "value": 0
+    },
+    {
+      "id": "snow_niwot_strong",
+      "precision": "exact retained site label count",
+      "unit_id": "cell_count",
+      "value": 4
+    },
+    {
+      "id": "snow_niwot_density_kge",
+      "precision": "exact retained site diagnostic",
+      "unit_id": "dimensionless",
+      "value": -0.9612137822012601
+    },
+    {
+      "id": "snow_niwot_peak_swe_offset_days",
+      "precision": "exact retained median modeled-minus-observed offset",
+      "unit_id": "day",
+      "value": -31.0
+    },
+    {
+      "id": "snow_niwot_meltout_offset_days",
+      "precision": "exact retained median modeled-minus-observed offset",
+      "unit_id": "day",
+      "value": -19.0
+    },
+    {
+      "id": "snow_niwot_geometry_ratio",
+      "precision": "exact retained modeled-to-observed slope ratio",
+      "unit_id": "dimensionless",
+      "value": 1.0295275740912682
+    },
+    {
+      "id": "snow_harvard_open_paired",
+      "precision": "exact retained site count",
+      "unit_id": "row_count",
+      "value": 352
+    },
+    {
+      "id": "snow_harvard_open_fail",
+      "precision": "exact retained site label count",
+      "unit_id": "cell_count",
+      "value": 1
+    },
+    {
+      "id": "snow_harvard_open_marginal",
+      "precision": "exact retained site label count",
+      "unit_id": "cell_count",
+      "value": 2
+    },
+    {
+      "id": "snow_harvard_open_pass",
+      "precision": "exact retained site label count",
+      "unit_id": "cell_count",
+      "value": 0
+    },
+    {
+      "id": "snow_harvard_open_strong",
+      "precision": "exact retained site label count",
+      "unit_id": "cell_count",
+      "value": 6
+    },
+    {
+      "id": "snow_harvard_open_density_kge",
+      "precision": "exact retained site diagnostic",
+      "unit_id": "dimensionless",
+      "value": 0.5527681251052722
+    },
+    {
+      "id": "snow_harvard_open_peak_swe_offset_days",
+      "precision": "exact retained median modeled-minus-observed offset",
+      "unit_id": "day",
+      "value": 0
+    },
+    {
+      "id": "snow_harvard_open_meltout_offset_days",
+      "precision": "exact retained median modeled-minus-observed offset",
+      "unit_id": "day",
+      "value": 1
+    },
+    {
+      "id": "snow_harvard_open_geometry_ratio",
+      "precision": "exact retained modeled-to-observed slope ratio",
+      "unit_id": "dimensionless",
+      "value": 9.615155171722606
+    },
+    {
+      "id": "snow_harvard_hardwood_paired",
+      "precision": "exact retained site count",
+      "unit_id": "row_count",
+      "value": 442
+    },
+    {
+      "id": "snow_harvard_hardwood_fail",
+      "precision": "exact retained site label count",
+      "unit_id": "cell_count",
+      "value": 2
+    },
+    {
+      "id": "snow_harvard_hardwood_marginal",
+      "precision": "exact retained site label count",
+      "unit_id": "cell_count",
+      "value": 0
+    },
+    {
+      "id": "snow_harvard_hardwood_pass",
+      "precision": "exact retained site label count",
+      "unit_id": "cell_count",
+      "value": 0
+    },
+    {
+      "id": "snow_harvard_hardwood_strong",
+      "precision": "exact retained site label count",
+      "unit_id": "cell_count",
+      "value": 7
+    },
+    {
+      "id": "snow_harvard_hardwood_density_kge",
+      "precision": "exact retained site diagnostic",
+      "unit_id": "dimensionless",
+      "value": -0.16439129158346222
+    },
+    {
+      "id": "snow_harvard_hardwood_peak_swe_offset_days",
+      "precision": "exact retained median modeled-minus-observed offset",
+      "unit_id": "day",
+      "value": 1
+    },
+    {
+      "id": "snow_harvard_hardwood_meltout_offset_days",
+      "precision": "exact retained median modeled-minus-observed offset",
+      "unit_id": "day",
+      "value": -2
+    },
+    {
+      "id": "snow_harvard_hardwood_geometry_ratio",
+      "precision": "exact retained modeled-to-observed slope ratio",
+      "unit_id": "dimensionless",
+      "value": 10.686127922875853
+    },
+    {
+      "id": "snow_marcell_conifer_paired",
+      "precision": "exact retained site count",
+      "unit_id": "row_count",
+      "value": 146
+    },
+    {
+      "id": "snow_marcell_conifer_fail",
+      "precision": "exact retained site label count",
+      "unit_id": "cell_count",
+      "value": 1
+    },
+    {
+      "id": "snow_marcell_conifer_marginal",
+      "precision": "exact retained site label count",
+      "unit_id": "cell_count",
+      "value": 1
+    },
+    {
+      "id": "snow_marcell_conifer_pass",
+      "precision": "exact retained site label count",
+      "unit_id": "cell_count",
+      "value": 3
+    },
+    {
+      "id": "snow_marcell_conifer_strong",
+      "precision": "exact retained site label count",
+      "unit_id": "cell_count",
+      "value": 4
+    },
+    {
+      "id": "snow_marcell_conifer_density_kge",
+      "precision": "exact retained site diagnostic",
+      "unit_id": "dimensionless",
+      "value": -0.62312632257153
+    },
+    {
+      "id": "snow_marcell_conifer_peak_swe_offset_days",
+      "precision": "exact retained median modeled-minus-observed offset",
+      "unit_id": "day",
+      "value": 0
+    },
+    {
+      "id": "snow_marcell_conifer_meltout_offset_days",
+      "precision": "exact retained median modeled-minus-observed offset",
+      "unit_id": "day",
+      "value": -13.0
+    },
+    {
+      "id": "snow_marcell_conifer_geometry_ratio",
+      "precision": "exact retained modeled-to-observed slope ratio",
+      "unit_id": "dimensionless",
+      "value": 0.7506309722369406
+    },
+    {
+      "id": "snow_marcell_deciduous_paired",
+      "precision": "exact retained site count",
+      "unit_id": "row_count",
+      "value": 145
+    },
+    {
+      "id": "snow_marcell_deciduous_fail",
+      "precision": "exact retained site label count",
+      "unit_id": "cell_count",
+      "value": 1
+    },
+    {
+      "id": "snow_marcell_deciduous_marginal",
+      "precision": "exact retained site label count",
+      "unit_id": "cell_count",
+      "value": 1
+    },
+    {
+      "id": "snow_marcell_deciduous_pass",
+      "precision": "exact retained site label count",
+      "unit_id": "cell_count",
+      "value": 3
+    },
+    {
+      "id": "snow_marcell_deciduous_strong",
+      "precision": "exact retained site label count",
+      "unit_id": "cell_count",
+      "value": 4
+    },
+    {
+      "id": "snow_marcell_deciduous_density_kge",
+      "precision": "exact retained site diagnostic",
+      "unit_id": "dimensionless",
+      "value": -1.0884182242306135
+    },
+    {
+      "id": "snow_marcell_deciduous_peak_swe_offset_days",
+      "precision": "exact retained median modeled-minus-observed offset",
+      "unit_id": "day",
+      "value": 0
+    },
+    {
+      "id": "snow_marcell_deciduous_meltout_offset_days",
+      "precision": "exact retained median modeled-minus-observed offset",
+      "unit_id": "day",
+      "value": -14.0
+    },
+    {
+      "id": "snow_marcell_deciduous_geometry_ratio",
+      "precision": "exact retained modeled-to-observed slope ratio",
+      "unit_id": "dimensionless",
+      "value": 0.7711665132420319
+    },
+    {
+      "id": "snow_marcell_open_paired",
+      "precision": "exact retained site count",
+      "unit_id": "row_count",
+      "value": 144
+    },
+    {
+      "id": "snow_marcell_open_fail",
+      "precision": "exact retained site label count",
+      "unit_id": "cell_count",
+      "value": 1
+    },
+    {
+      "id": "snow_marcell_open_marginal",
+      "precision": "exact retained site label count",
+      "unit_id": "cell_count",
+      "value": 1
+    },
+    {
+      "id": "snow_marcell_open_pass",
+      "precision": "exact retained site label count",
+      "unit_id": "cell_count",
+      "value": 1
+    },
+    {
+      "id": "snow_marcell_open_strong",
+      "precision": "exact retained site label count",
+      "unit_id": "cell_count",
+      "value": 6
+    },
+    {
+      "id": "snow_marcell_open_density_kge",
+      "precision": "exact retained site diagnostic",
+      "unit_id": "dimensionless",
+      "value": -0.46793260491726296
+    },
+    {
+      "id": "snow_marcell_open_peak_swe_offset_days",
+      "precision": "exact retained median modeled-minus-observed offset",
+      "unit_id": "day",
+      "value": 0
+    },
+    {
+      "id": "snow_marcell_open_meltout_offset_days",
+      "precision": "exact retained median modeled-minus-observed offset",
+      "unit_id": "day",
+      "value": 0.0
+    },
+    {
+      "id": "snow_marcell_open_geometry_ratio",
+      "precision": "exact retained modeled-to-observed slope ratio",
+      "unit_id": "dimensionless",
+      "value": 0.7721399294248055
+    },
+    {
+      "id": "frost_sleepers_south_matches",
+      "precision": "exact retained site count",
+      "unit_id": "row_count",
+      "value": 392
+    },
+    {
+      "id": "frost_sleepers_south_max_abs_residual",
+      "precision": "exact retained site maximum",
+      "unit_id": "m",
+      "value": 0.2641958258624707
+    },
+    {
+      "id": "frost_sleepers_south_snow_rows",
+      "precision": "exact retained site count",
+      "unit_id": "row_count",
+      "value": 384
+    },
+    {
+      "id": "frost_sleepers_south_snow_failures",
+      "precision": "exact retained site count",
+      "unit_id": "row_count",
+      "value": 322
+    },
+    {
+      "id": "frost_sleepers_w9_matches",
+      "precision": "exact retained site count",
+      "unit_id": "row_count",
+      "value": 200
+    },
+    {
+      "id": "frost_sleepers_w9_max_abs_residual",
+      "precision": "exact retained site maximum",
+      "unit_id": "m",
+      "value": 0.3838127878666539
+    },
+    {
+      "id": "frost_sleepers_w9_snow_rows",
+      "precision": "exact retained site count",
+      "unit_id": "row_count",
+      "value": 193
+    },
+    {
+      "id": "frost_sleepers_w9_snow_failures",
+      "precision": "exact retained site count",
+      "unit_id": "row_count",
+      "value": 143
+    },
+    {
+      "id": "frost_morris_matches",
+      "precision": "exact retained site count",
+      "unit_id": "row_count",
+      "value": 83
+    },
+    {
+      "id": "frost_morris_max_abs_residual",
+      "precision": "exact retained site maximum",
+      "unit_id": "m",
+      "value": 0.990389751515789
+    },
+    {
+      "id": "frost_morris_snow_rows",
+      "precision": "exact retained site count",
+      "unit_id": "row_count",
+      "value": 83
+    },
+    {
+      "id": "frost_morris_snow_failures",
+      "precision": "exact retained site count",
+      "unit_id": "row_count",
+      "value": 28
+    },
+    {
+      "id": "frost_mandan_bounds",
+      "precision": "exact retained site count",
+      "unit_id": "row_count",
+      "value": 10583
+    },
+    {
+      "id": "frost_mandan_exceedances",
+      "precision": "exact retained site count",
+      "unit_id": "row_count",
+      "value": 3452
+    },
+    {
+      "id": "frost_mandan_exceedance_percent",
+      "precision": "reconstructed site rate",
+      "unit_id": "percent",
+      "value": 32.61835018425777
+    },
+    {
+      "id": "frost_mandan_max_margin",
+      "precision": "exact retained site maximum",
+      "unit_id": "m",
+      "value": 0.9108984039618734
+    },
+    {
+      "id": "frost_reynolds_bounds",
+      "precision": "exact retained site count",
+      "unit_id": "row_count",
+      "value": 4356
+    },
+    {
+      "id": "frost_reynolds_exceedances",
+      "precision": "exact retained site count",
+      "unit_id": "row_count",
+      "value": 104
+    },
+    {
+      "id": "frost_reynolds_exceedance_percent",
+      "precision": "reconstructed site rate",
+      "unit_id": "percent",
+      "value": 2.3875114784205693
+    },
+    {
+      "id": "frost_reynolds_max_margin",
+      "precision": "exact retained site maximum",
+      "unit_id": "m",
+      "value": 0.04947822834385348
+    },
+    {
+      "id": "conservation_snow_accumulation_prior",
+      "precision": "retained selected-row operand",
+      "unit_id": "mm",
+      "value": 0.0
+    },
+    {
+      "id": "conservation_snow_accumulation_input",
+      "precision": "retained selected-row operand",
+      "unit_id": "mm",
+      "value": 4.4
+    },
+    {
+      "id": "conservation_snow_accumulation_sink",
+      "precision": "retained selected-row operand",
+      "unit_id": "mm",
+      "value": 8.662176878559968e-10
+    },
+    {
+      "id": "conservation_snow_accumulation_current",
+      "precision": "retained selected-row operand",
+      "unit_id": "mm",
+      "value": 4.399999999133782
+    },
+    {
+      "id": "conservation_snow_accumulation_residual",
+      "precision": "reconstructed selected-row residual",
+      "unit_id": "mm",
+      "value": 8.881784197001252e-16
+    },
+    {
+      "id": "conservation_snow_release_prior",
+      "precision": "retained selected-row operand",
+      "unit_id": "mm",
+      "value": 4.399999999133782
+    },
+    {
+      "id": "conservation_snow_release_input",
+      "precision": "retained selected-row operand",
+      "unit_id": "mm",
+      "value": 0.0
+    },
+    {
+      "id": "conservation_snow_release_sink",
+      "precision": "retained selected-row operand",
+      "unit_id": "mm",
+      "value": 4.399999999133782
+    },
+    {
+      "id": "conservation_snow_release_current",
+      "precision": "retained selected-row operand",
+      "unit_id": "mm",
+      "value": 0.0
+    },
+    {
+      "id": "conservation_snow_release_residual",
+      "precision": "reconstructed selected-row residual",
+      "unit_id": "mm",
+      "value": 0.0
+    },
+    {
+      "id": "conservation_frost_freeze_growth_prior",
+      "precision": "retained selected-row operand",
+      "unit_id": "mm",
+      "value": 305.36842571478184
+    },
+    {
+      "id": "conservation_frost_freeze_growth_input",
+      "precision": "retained selected-row operand",
+      "unit_id": "mm",
+      "value": 0.0
+    },
+    {
+      "id": "conservation_frost_freeze_growth_sink",
+      "precision": "retained selected-row operand",
+      "unit_id": "mm",
+      "value": 1.8089041559005539
+    },
+    {
+      "id": "conservation_frost_freeze_growth_current",
+      "precision": "retained selected-row operand",
+      "unit_id": "mm",
+      "value": 303.5595215588812
+    },
+    {
+      "id": "conservation_frost_freeze_growth_residual",
+      "precision": "reconstructed selected-row residual",
+      "unit_id": "mm",
+      "value": 8.526512829121202e-14
+    },
+    {
+      "id": "conservation_frost_freeze_growth_prior_liquid",
+      "precision": "retained selected-row operand",
+      "unit_id": "mm",
+      "value": 274.64201305468185
+    },
+    {
+      "id": "conservation_frost_freeze_growth_prior_frozen",
+      "precision": "retained selected-row operand",
+      "unit_id": "mm",
+      "value": 30.726412660099992
+    },
+    {
+      "id": "conservation_frost_freeze_growth_current_liquid",
+      "precision": "retained selected-row operand",
+      "unit_id": "mm",
+      "value": 272.12912467275817
+    },
+    {
+      "id": "conservation_frost_freeze_growth_current_frozen",
+      "precision": "retained selected-row operand",
+      "unit_id": "mm",
+      "value": 31.43039688612302
+    },
+    {
+      "id": "conservation_frost_material_thaw_prior",
+      "precision": "retained selected-row operand",
+      "unit_id": "mm",
+      "value": 314.0913377658397
+    },
+    {
+      "id": "conservation_frost_material_thaw_input",
+      "precision": "retained selected-row operand",
+      "unit_id": "mm",
+      "value": 0.0
+    },
+    {
+      "id": "conservation_frost_material_thaw_sink",
+      "precision": "retained selected-row operand",
+      "unit_id": "mm",
+      "value": 1.1523782330132049
+    },
+    {
+      "id": "conservation_frost_material_thaw_current",
+      "precision": "retained selected-row operand",
+      "unit_id": "mm",
+      "value": 312.93895953282646
+    },
+    {
+      "id": "conservation_frost_material_thaw_residual",
+      "precision": "reconstructed selected-row residual",
+      "unit_id": "mm",
+      "value": -2.6326163471424024e-14
+    },
+    {
+      "id": "conservation_frost_material_thaw_prior_liquid",
+      "precision": "retained selected-row operand",
+      "unit_id": "mm",
+      "value": 311.84477731657813
+    },
+    {
+      "id": "conservation_frost_material_thaw_prior_frozen",
+      "precision": "retained selected-row operand",
+      "unit_id": "mm",
+      "value": 2.2465604492615676
+    },
+    {
+      "id": "conservation_frost_material_thaw_current_liquid",
+      "precision": "retained selected-row operand",
+      "unit_id": "mm",
+      "value": 312.91336100094156
+    },
+    {
+      "id": "conservation_frost_material_thaw_current_frozen",
+      "precision": "retained selected-row operand",
+      "unit_id": "mm",
+      "value": 0.02559853188492202
+    }
+  ]
+}

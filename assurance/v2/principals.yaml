@@ -6,4 +6,10 @@ principals:
     kind: agent
     identity_authority: OpenAI Codex execution environment
     identity_reference: ASSURE-05 package prompt and disclosed agent-assistance record; not a human approver
-    roles: [draft_author]
+    roles: [draft_author, build_maintainer, material_producer]
+  - id: roger-lew
+    display_name: Roger Lew
+    kind: human
+    identity_authority: Direct operator attestation in the OpenAI Codex session
+    identity_reference: docs/work-packages/20260716-assure06-human-review-entry-001/artifacts/operator-attestation.md
+    roles: [report_lead, material_producer]

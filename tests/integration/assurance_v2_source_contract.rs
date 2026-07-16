@@ -8,6 +8,10 @@ use openwepp_assurance::{AssuranceError, V2Repository, sha256_bytes};
 const REPORT_ID: &str = "linear-groundwater-reservoir-recurrence";
 const REPORT_PATH: &str =
     "assurance/v2/reports/linear-groundwater-reservoir-recurrence/report.yaml";
+const SNOW_REPORT_ID: &str = "snow-and-frozen-soil-process-evaluation";
+const SNOW_REPORT_PATH: &str =
+    "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/report.yaml";
+const SNOW_RESULT_PATH: &str = "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/results/snow-frost-synthesis.json";
 const CATALOG_PATH: &str = "assurance/v2/catalog.yaml";
 const TWO_DAY_PATH: &str =
     "assurance/v2/reports/linear-groundwater-reservoir-recurrence/results/two-day-recurrence.json";
@@ -25,21 +29,25 @@ fn real_source_and_cli_validate_named_and_all_deterministically() {
         .validate_report(REPORT_ID)
         .expect("validate named source");
     let all = repository.validate_all().expect("validate all sources");
-    assert_eq!(
-        named, all,
-        "the one-report fixture must share validation logic"
-    );
-    assert_eq!(all.selected_report_count, 1);
-    assert_eq!(all.total_report_count, 1);
+    assert_eq!(named.selected_report_count, 1);
+    assert_eq!(named.total_report_count, 2);
+    assert_eq!(named.reports, vec![all.reports[0].clone()]);
+    assert_eq!(all.selected_report_count, 2);
+    assert_eq!(all.total_report_count, 2);
     assert_eq!(all.public_report_count, 0);
     assert_eq!(all.reports[0].id, REPORT_ID);
     assert_eq!(all.reports[0].version, "1.0.0");
     assert_eq!(all.reports[0].lifecycle, "DRAFT");
     assert!(!all.reports[0].fixture_only);
+    assert_eq!(all.reports[1].id, SNOW_REPORT_ID);
+    assert_eq!(all.reports[1].version, "1.0.0");
+    assert_eq!(all.reports[1].lifecycle, "IN_REVIEW");
+    assert!(!all.reports[1].fixture_only);
 
     let rendered = all.render();
     assert!(rendered.contains("validation: PASS"));
-    assert!(rendered.contains("v2_reports_selected: 1"));
+    assert!(rendered.contains("v2_reports_selected: 2"));
+    assert!(named.render().contains("v2_reports_selected: 1"));
     assert!(rendered.contains("public_reports: 0"));
     assert!(rendered.contains("source_root_sha256:"));
     assert_eq!(
@@ -52,12 +60,12 @@ fn real_source_and_cli_validate_named_and_all_deterministically() {
     let cli_named =
         openwepp_assurance::cli::run(["openwepp-assurance", "validate", "--report", REPORT_ID])
             .expect("validate named source through real CLI");
-    assert_eq!(cli_all, cli_named);
     assert_eq!(cli_all, rendered);
+    assert_eq!(cli_named, named.render());
 }
 
 #[test]
-fn real_sources_satisfy_the_declared_draft_2020_12_schemas() {
+fn real_sources_satisfy_the_declared_v2_2020_12_schemas() {
     let root = repository_root();
     let catalog_schema = json_value(&root.join(CATALOG_SCHEMA_PATH));
     let report_schema = json_value(&root.join(REPORT_SCHEMA_PATH));
@@ -79,11 +87,17 @@ fn real_sources_satisfy_the_declared_draft_2020_12_schemas() {
         &yaml_value(&root.join(REPORT_PATH)),
         "report",
     );
+    assert_schema_accepts(
+        &report_schema,
+        &yaml_value(&root.join(SNOW_REPORT_PATH)),
+        "snow/frost report",
+    );
     for path in [
         TWO_DAY_PATH,
         h2637_path(),
         "assurance/v2/reports/linear-groundwater-reservoir-recurrence/results/assure05-path-currency.json",
         "assurance/v2/reports/linear-groundwater-reservoir-recurrence/results/assure05-focused-tests.json",
+        SNOW_RESULT_PATH,
     ] {
         assert_schema_accepts(&result_schema, &json_value(&root.join(path)), path);
     }
@@ -637,6 +651,7 @@ fn fixture(label: &str) -> Scratch {
         &source.join("assurance/v2"),
         &target.path.join("assurance/v2"),
     );
+    retain_groundwater_fixture(&target.path);
     for relative in [
         "assurance/catalog.yaml",
         "assurance/templates/catalog.md",
@@ -654,6 +669,19 @@ fn fixture(label: &str) -> Scratch {
         copy_file(&source, &target.path, relative);
     }
     target
+}
+
+fn retain_groundwater_fixture(root: &Path) {
+    let catalog_path = root.join(CATALOG_PATH);
+    let catalog = fs::read_to_string(&catalog_path).expect("read fixture catalog");
+    let marker = format!("\n  - id: {SNOW_REPORT_ID}\n");
+    let split = catalog
+        .find(&marker)
+        .expect("snow/frost catalog entry follows groundwater fixture entry");
+    fs::write(&catalog_path, format!("{}\n", &catalog[..split]))
+        .expect("retain one-report fixture catalog");
+    fs::remove_dir_all(root.join("assurance/v2/reports").join(SNOW_REPORT_ID))
+        .expect("remove unselected snow/frost fixture source");
 }
 
 fn h2637_path() -> &'static str {

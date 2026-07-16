@@ -13,6 +13,7 @@ use openwepp_assurance::{
 };
 
 const REPORT_ID: &str = "linear-groundwater-reservoir-recurrence";
+const REAL_SNOW_REPORT_ID: &str = "snow-and-frozen-soil-process-evaluation";
 const SECOND_REPORT_ID: &str = "linear-groundwater-reservoir-recurrence-secondary";
 const REPORT_PATH: &str =
     "assurance/v2/reports/linear-groundwater-reservoir-recurrence/report.yaml";
@@ -1757,6 +1758,7 @@ fn source_fixture(label: &str) -> Scratch {
         &source.join("assurance/v2"),
         &target.path.join("assurance/v2"),
     );
+    retain_groundwater_fixture(&target.path);
     for relative in [
         "usersum/hillslope-hydrology-and-sediment-physics.md",
         "docs/specifications/science-contracts/contracts/SC-GWBASEFLOW-001.md",
@@ -1774,6 +1776,19 @@ fn source_fixture(label: &str) -> Scratch {
         copy_file(source, &target.path, relative);
     }
     target
+}
+
+fn retain_groundwater_fixture(root: &Path) {
+    let catalog_path = root.join(CATALOG_PATH);
+    let catalog = fs::read_to_string(&catalog_path).expect("read fixture catalog");
+    let marker = format!("\n  - id: {REAL_SNOW_REPORT_ID}\n");
+    let split = catalog
+        .find(&marker)
+        .expect("snow/frost catalog entry follows groundwater fixture entry");
+    fs::write(&catalog_path, format!("{}\n", &catalog[..split]))
+        .expect("retain one-report fixture catalog");
+    fs::remove_dir_all(root.join("assurance/v2/reports").join(REAL_SNOW_REPORT_ID))
+        .expect("remove unselected snow/frost fixture source");
 }
 
 fn prepend_test_banner(path: &Path) {

@@ -1,0 +1,42 @@
+{
+  "log_sha256": "4f2675a0fe57f4153f002a7051ae99971811af84c430ead68395d4205c52468e",
+  "selected_rows": [
+    {
+      "current_storage_mm": 4.399999999133782,
+      "input_mm": 4.4,
+      "prior_storage_mm": 0.0,
+      "residual_mm": 8.881784197001252e-16,
+      "row_id": "snow_accumulation",
+      "sink_mm": 8.662176878559968e-10
+    },
+    {
+      "current_storage_mm": 0.0,
+      "input_mm": 0.0,
+      "prior_storage_mm": 4.399999999133782,
+      "residual_mm": 0.0,
+      "row_id": "snow_release",
+      "sink_mm": 4.399999999133782
+    },
+    {
+      "current_frozen_mm": 31.43039688612302,
+      "current_liquid_mm": 272.12912467275817,
+      "input_mm": 0.0,
+      "prior_frozen_mm": 30.726412660099992,
+      "prior_liquid_mm": 274.64201305468185,
+      "residual_mm": 8.526512829121202e-14,
+      "row_id": "frost_freeze_growth",
+      "sink_mm": 1.8089041559005539
+    },
+    {
+      "current_frozen_mm": 0.025598531884922018,
+      "current_liquid_mm": 312.91336100094156,
+      "input_mm": 0.0,
+      "prior_frozen_mm": 2.2465604492615676,
+      "prior_liquid_mm": 311.84477731657813,
+      "residual_mm": -2.632616347142402e-14,
+      "row_id": "frost_material_thaw",
+      "sink_mm": 1.1523782330132049
+    }
+  ],
+  "source_sha256": "306b96a1d45fca85d5604b16fe8ce4b814df48d2fc15ecb910e198085ee81f18"
+}

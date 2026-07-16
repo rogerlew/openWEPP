@@ -7,6 +7,7 @@ use std::time::{Duration, SystemTime};
 use openwepp_assurance::{V2PlanState, V2Repository, sha256_bytes};
 
 const REPORT_ID: &str = "linear-groundwater-reservoir-recurrence";
+const SNOW_REPORT_ID: &str = "snow-and-frozen-soil-process-evaluation";
 const SECOND_REPORT_ID: &str = "second-groundwater-report";
 const REPORT_DIR: &str = "assurance/v2/reports/linear-groundwater-reservoir-recurrence";
 const REPORT_PATH: &str =
@@ -27,19 +28,29 @@ fn current_one_and_all_plans_are_equivalent_stable_and_cli_consumed() {
         .expect("plan named report");
     let all = repository.plan_all().expect("plan all reports");
 
-    assert_eq!(named.reports, all.reports);
+    assert_eq!(named.reports, vec![report(&all, REPORT_ID).clone()]);
     assert_eq!(named.selected_report_count, 1);
-    assert_eq!(all.total_report_count, 1);
+    assert_eq!(named.total_report_count, 2);
+    assert_eq!(all.selected_report_count, 2);
+    assert_eq!(all.total_report_count, 2);
     assert_eq!(all.public_report_count, 0);
-    let report = report(&all, REPORT_ID);
-    assert_eq!(report.state, V2PlanState::Current);
+    let groundwater = report(&all, REPORT_ID);
+    assert_eq!(groundwater.state, V2PlanState::Current);
     assert!(
-        report
+        groundwater
             .nodes
             .iter()
             .all(|node| node.state == V2PlanState::Current)
     );
-    assert_dependency_first(report);
+    assert_dependency_first(groundwater);
+    let snow = report(&all, SNOW_REPORT_ID);
+    assert_eq!(snow.state, V2PlanState::Current);
+    assert!(
+        snow.nodes
+            .iter()
+            .all(|node| node.state == V2PlanState::Current)
+    );
+    assert_dependency_first(snow);
 
     let human = all.render();
     let json = all.render_json().expect("render JSON plan");
@@ -55,6 +66,7 @@ fn current_one_and_all_plans_are_equivalent_stable_and_cli_consumed() {
     let decoded: serde_json::Value = serde_json::from_str(&json).expect("parse plan JSON");
     assert_eq!(decoded["publication_state"], "v1_retired_zero_reports");
     assert_eq!(decoded["reports"][0]["state"], "current");
+    assert_eq!(decoded["reports"][1]["state"], "current");
 
     let cli_human =
         openwepp_assurance::cli::run(["openwepp-assurance", "plan", "--report", REPORT_ID])
@@ -451,6 +463,7 @@ fn fixture(label: &str) -> Scratch {
         &source.join("assurance/v2"),
         &target.path.join("assurance/v2"),
     );
+    retain_groundwater_fixture(&target.path);
     for relative in [
         "assurance/catalog.yaml",
         "assurance/templates/catalog.md",
@@ -468,6 +481,19 @@ fn fixture(label: &str) -> Scratch {
         copy_file(&source, &target.path, relative);
     }
     target
+}
+
+fn retain_groundwater_fixture(root: &Path) {
+    let catalog_path = root.join("assurance/v2/catalog.yaml");
+    let catalog = fs::read_to_string(&catalog_path).expect("read fixture catalog");
+    let marker = format!("\n  - id: {SNOW_REPORT_ID}\n");
+    let split = catalog
+        .find(&marker)
+        .expect("snow/frost catalog entry follows groundwater fixture entry");
+    fs::write(&catalog_path, format!("{}\n", &catalog[..split]))
+        .expect("retain one-report fixture catalog");
+    fs::remove_dir_all(root.join("assurance/v2/reports").join(SNOW_REPORT_ID))
+        .expect("remove unselected snow/frost fixture source");
 }
 
 fn copy_tree(source: &Path, target: &Path) {
