@@ -168,6 +168,15 @@ Every material change receives one recorded disposition:
 The build planner detects changed dependencies but does not decide scientific
 impact. File timestamps are never currency authority.
 
+The accepted prospective
+[amendment and generated-identity workflow](../specifications/assurance-amendment-and-identity-workflow.md)
+mechanizes bounded attribution, role, lifecycle, and deterministic normalization
+changes. Its focused receipt is sufficient only when the typed operation proves
+the declared root boundary and the lifecycle matrix supplies the required human
+decision. It does not classify arbitrary prose or carry an approval to a changed
+bound root. Until `ASSURE-MAINT-01` completes, the current monolithic roots and
+impact table in this contract remain the implemented lifecycle surface.
+
 Every impact decision binds old and new roots, changed identities, change
 class, rationale, reviewer roles and independence attestations, required reruns,
 and resulting lock. Unclear or mixed changes require full scientific,

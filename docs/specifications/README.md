@@ -53,6 +53,9 @@ Canonical unit-governance specification location:
 - Boundary-symbol registry:
   `docs/specifications/units/boundary-symbol-unit-registry.md`
 
+Canonical scientific-assurance maintenance specification:
+- [assurance amendment and generated-identity workflow](assurance-amendment-and-identity-workflow.md)
+
 Current chapter-to-contract scaffold:
 - `docs/work-packages/20260520-sci01-50201000-process-contract-mapping/artifacts/50201000-chapter-process-contract-map.md`
 

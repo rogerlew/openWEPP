@@ -102,6 +102,16 @@
 
 State as of `2026-07-16 UTC`:
 
+- `20260716-assure-maint01-mechanical-amendment-workflow-001/` -
+  QUEUED (2026-07-16): implements the accepted `openwepp-assurance amend`
+  specification after repeated 30–42 minute spelling and attribution changes
+  exposed manual identity propagation and disproportionate gates. The package
+  moves derived hashes into generated locks, introduces an acyclic review-event
+  and identity graph, adds typed amendment/lifecycle/recovery transactions and
+  receipt-driven no-package/no-agent gates, measures end-to-end fast-lane
+  timing, and audits other agent work for mechanical ownership. It is required
+  before another review freeze, in-review role change, or embedded-hash report
+  admission; scientific drafting and existing human review may continue.
 - `20260716-assure06-human-review-entry-001/` -
   HOLD-INDEPENDENT-HUMAN-REVIEW (2026-07-16): Roger Lew reviewed the snow/frost report, accepted the
   accountable report-lead role, and disclosed that he led the underlying

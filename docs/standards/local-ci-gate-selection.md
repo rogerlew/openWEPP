@@ -22,6 +22,7 @@ candidate gates.
 | Fast workspace | Routine implementation loop where broad regressions matter but slow fixtures are unrelated | `cargo nextest run --workspace --profile quick` |
 | Domain profile | The change touches a known expensive domain | `cargo nextest run --workspace --profile frost` or `cargo nextest run --workspace --profile erosion` |
 | Assurance editorial | The assurance normalizer produced the complete diff for pre-review DRAFT prose | `cargo nextest run --workspace --profile assurance-editorial` |
+| Assurance amendment | A report-data-only transaction produced a current valid `metadata-fast`, `editorial-fast`, or `governance-focused` receipt | `.venv/bin/python tools/local_ci/run_assurance_amendment.py --receipt <path>` |
 | Full branch-head | Merge readiness for Rust implementation/mechanical refactor packages, cutovers, publication changes, or package-required closure | `cargo nextest run --workspace --profile full` |
 | Release/manual | Release candidates, observed cohorts, legacy comparators, stability lanes, or manual authority lanes | `tools/release/*` and explicitly named comparator/cohort commands |
 
@@ -50,6 +51,22 @@ Publication integration is excluded because this operation is confined to a
 pre-review DRAFT. It is not an impact classifier. Any hand edit, mixed change,
 lifecycle or authority transition, schema/builder change, or unclear diff uses
 the applicable full package gates.
+
+After `ASSURE-MAINT-01` implements the accepted
+[amendment specification](../specifications/assurance-amendment-and-identity-workflow.md),
+a current focused amendment receipt supersedes the legacy paragraph above for
+the exact transaction it identifies. Before that implementation exists, no such
+receipt can be claimed.
+
+For a report-data-only change, a valid `metadata-fast`, `editorial-fast`, or
+`governance-focused` receipt plus a passing receipt-runner evidence record is
+the complete local gate contract. Do not scaffold a work package, dispatch
+coding-agent review or terminal verification, run `quick` or `full`, run CRAP,
+repeat staging, or reproduce unchanged science. Escalate only when the
+amendment tool refuses the focused class, assurance implementation/schema/
+builder code changed, or publication/release work is requested. The one-time
+implementation of the amendment machinery remains an implementation package
+and must pass its full closure and CRAP gates.
 
 ## Timing Diagnostics
 

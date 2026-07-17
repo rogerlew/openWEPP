@@ -148,6 +148,14 @@ It cannot normalize
 an `IN_REVIEW` or `APPROVED` source, authorize review, classify arbitrary prose
 edits, waive a new root, or decide that scientific meaning is unchanged.
 
+The accepted prospective replacement for manual hash propagation and this
+normalization-only maintenance surface is the
+[assurance amendment and generated-identity specification](../specifications/assurance-amendment-and-identity-workflow.md).
+Until `ASSURE-MAINT-01` completes, the embedded-hash source and DRAFT-only
+normalizer described above remain the implemented contract. The migration must
+preserve fail-closed review and publication behavior while separating generated
+identity data from authored scientific and administrative declarations.
+
 ## Incremental Rebuilds
 
 One-report builds traverse the selected report's complete transitive dependency
