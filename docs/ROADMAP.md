@@ -31,10 +31,57 @@ state was reached. Execution history lives in the
 
 | Priority | Owning queue | State | Advancement gate |
 | --- | --- | --- | --- |
-| `CANOPY-PHENOLOGY-02` native canopy integration | Plant/snow-frost science | `next` | Ratify and implement the mapping from the verified GSI signal to native deciduous/mixed canopy, foliar/structural biomass, litter transfer, annual no-drift closure, native YAML operands, and real snow/ET/erosion consumers. |
+| `TESTGATE-ALIGN-01` governance alignment and schemas | Test/gate architecture | `next` | Scaffold and execute the authority-alignment package; land versioned plan, receipt, campaign-ledger, impact-map, and assurance-impact schemas before enforcement code. |
+| `TESTGATE-PLAN-01` mechanical planner and receipt verifier | Test/gate architecture | `queued` | Start after `TESTGATE-ALIGN-01`; prove deterministic affected-set selection, risk escalation, execution inventory, receipt identity/reuse, and retained-campaign replay in shadow mode. |
+| `TESTGATE-CI-01` executor, coverage/CRAP, and CI lanes | Test/gate architecture | `queued` | Start after planner shadow outputs are stable; implement affected execution, benchmark combined coverage, split lifecycle lanes, and satisfy the fixed cutover scorecard before any gate reduction. |
+| `TESTGATE-ASSURE-01` campaign-head assurance currency | Test/gate architecture | `queued` | Start after campaign and receipt identities stabilize; integrate registry-wide mechanical impact planning and exact-head currency without mutating reports or historical evidence. |
+| `CANOPY-PHENOLOGY-02` native canopy integration | Plant/snow-frost science | `queued` | Resume after `TESTGATE-ALIGN-01` lands; use the campaign as an early shadow-mode planner trial while ratifying and implementing native canopy, biomass, litter, closure, YAML, and real-consumer integration. |
 | `SNOW-SURFACE-EB` sublimation and longwave | Snow/frost science | `queued` | Start after `CANOPY-PHENOLOGY-02` closes and a contract-first package reconciles the multilayer surface-energy, vapor-mass, and longwave backlog with the current meteorology and snow-column implementation. |
 | `ASSURE-06` snow/frost flagship synthesis | Scientific assurance | `held` | Roger Lew remains the accountable report lead and a material snow/frost producer. Resume independent review only after canopy phenology and the selected sublimation/longwave work land, the scientific manuscript is refreshed against those changes, and a new exact review root is issued. |
 | `ASSURE-05` first production v2 report | Scientific assurance | `held` | Technical review handoff is complete; formal review has not started. Advancement requires assignment of accountable human reviewers, exact-subject review and approval, assurance-steward approval, release-owner transfer, and exact-root publication gates. |
+
+## Test And Gate Architecture Queue
+
+### Direction
+
+Implement [ADR-0039](decisions/0039-campaign-scoped-risk-based-testing-and-assurance-gates.md)
+and the [testing and gate strategy](standards/testing-and-gate-strategy.md) so
+increments receive fast affected-surface feedback while campaigns and releases
+retain comprehensive exact-boundary qualification. Selection, escalation,
+dependency tracking, evidence identity, reuse, and staleness must be
+mechanical and explainable. Agent judgment may challenge or explain a plan; it
+may not silently narrow one.
+
+The detailed implementation scope, transition inventory, acceptance fixtures,
+and staged-adoption contract live in the
+[implementation handoff](work-packages/20260717-test-gate-authority-001/artifacts/implementation-handoff.md).
+Each row below requires its own authorized work package.
+
+### Ordered Work
+
+| ID | Prospective outcome | Advancement gate | State |
+| --- | --- | --- | --- |
+| `TESTGATE-ALIGN-01` | Reconcile repository instructions and ADR-0021 with the new authority; define versioned impact, plan, DAG, receipt/envelope, campaign-ledger, and assurance-impact schemas; add source-level consistency guards. | Governance and schemas are reviewed, fixture-backed, and landed before any new selector can block work. | `next` |
+| `TESTGATE-PLAN-01` | Build the repository-owned planner and receipt verifier using canonical Git change sets, Cargo reverse dependencies, explicit non-Cargo edges, deterministic risk rules, complete execution inventory, transitive roots, and authenticated reuse classes. | Retained packages and campaigns replay in shadow mode; selection misses, empty inventories, identity drift, and unsafe reuse fail closed. | `queued` after `TESTGATE-ALIGN-01` |
+| `TESTGATE-CI-01` | Add the executor, affected coverage and CRAP measurement, evidence publication, and distinct presubmit, backstop, campaign, and release lanes; benchmark whether one instrumented Nextest run can replace duplicate full/coverage execution. | Shadow and observation lanes meet the standard's fixed scorecard; protected evidence publication and stable aggregate contexts are proven; rollback to the conservative full runner remains available. | `queued` after `TESTGATE-PLAN-01` |
+| `TESTGATE-ASSURE-01` | Extend assurance planning with exact path and semantic dependencies, campaign-impact entries, assessed-realization integrity, campaign-head transfer, release transfer, and registry-wide discovery. | Add/rename/delete/unknown impacts and multi-impact folding are deterministic; report prose, historical results, lifecycle state, and public surfaces remain unchanged until an authorized refresh or release transition. | `queued` after planner identity stabilizes |
+
+### Adoption Contract
+
+- Existing conservative gates remain authoritative until the new path passes
+  shadow execution, retained-campaign replay, nonblocking observation, and the
+  fixed cutover scorecard.
+- Unknown production impact escalates to critical/full execution; there is no
+  generic operator or agent downgrade.
+- Campaign and release certificates bind exact clean commits, complete gate
+  inventories, current transitive inputs, and authenticated evidence.
+- Protected evidence publication, provider-side rulesets, issuer authority,
+  revocation, crash recovery, and fresh-clone verification are implementation
+  work, not assumed infrastructure.
+- Active campaigns enter through the governed bootstrap path. Prior evidence
+  remains `LEGACY_UNVERIFIED` unless independently reconstructed and verified.
+- `CANOPY-PHENOLOGY-02` may proceed after alignment and serve as a shadow-mode
+  campaign; it does not wait for blocking cutover of every implementation row.
 
 ## Scientific Assurance Queue
 

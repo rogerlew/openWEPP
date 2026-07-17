@@ -11,6 +11,17 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260717-test-gate-authority-001/` completed two dual-review rounds and
+  renewed terminal verification for the documentation-only authority
+  foundation for campaign-scoped, risk-based testing. ADR-0039 and the canonical
+  testing/gate standard define deterministic two-stage impact planning, typed
+  gate DAGs, exact evidence roots and reuse, non-deferrable affected A1/A3
+  obligations, targeted increment CRAP, campaign backstops, four-axis assurance
+  currency, full campaign certification, and release-only qualification.
+  Fourteen first-round and 17 adversarial second-round findings were accepted
+  and remediated; renewed dual terminal verification passed after all terminal
+  findings were dispositioned. Repository
+  alignment remains a separately scoped implementation follow-up.
 - `20260716-assure-maint01-mechanical-amendment-workflow-001/` completed the
   mechanical `openwepp-assurance amend` foundation. Typed confined
   transactions now own bounded attribution, role, lifecycle, normalization,
