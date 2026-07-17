@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "operation": "migrate_assure_maint01_final_contract",
+  "impact_class": "governance-focused",
+  "changed": true,
+  "old_generation_id": "70374c8835542451046e8b341fe35e78ffee5aff77323e32ebfac972bdd416d0",
+  "new_generation_id": "526360f4e95c172e80ab1836bd775e24a464516483c15591dcbdf7f54fe0a53f",
+  "affected_reports": [
+    "linear-groundwater-reservoir-recurrence",
+    "snow-and-frozen-soil-process-evaluation"
+  ],
+  "affected_paths": [
+    "assurance/v2/README.md",
+    "assurance/v2/identity.lock.json",
+    "assurance/v2/reports/linear-groundwater-reservoir-recurrence/review.lock.json",
+    "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review-events/57c395cf9cdfb90dbb17323dc97d2c8b1c337544abd67592d050d77b64dcdf09.json",
+    "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review.lock.json",
+    "assurance/v2/schemas/identity-lock.schema.json",
+    "assurance/v2/schemas/report.schema.json",
+    "assurance/v2/schemas/review-event.schema.json",
+    "assurance/v2/schemas/review-lock.schema.json",
+    "assurance/v2/schemas/transaction-receipt.schema.json"
+  ],
+  "invalidated_authority": [
+    "initial_layer_projection_algorithm",
+    "pre-final pending review-entry binding"
+  ],
+  "gate_ids": [
+    "assurance-amendment-v1"
+  ],
+  "gate_argv": [
+    [
+      ".venv/bin/python",
+      "tools/local_ci/run_assurance_amendment.py",
+      "--receipt",
+      "<receipt-path>"
+    ]
+  ]
+}

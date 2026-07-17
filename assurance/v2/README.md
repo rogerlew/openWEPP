@@ -22,7 +22,7 @@ Two production-domain sources are currently held as internal drafts:
   profile into a universal accuracy grade.
 
 `DRAFT` and `IN_REVIEW` record lifecycle, not scientific merit. Both sources
-disclose agent assistance and have no public route, review lock, export
+disclose agent assistance and have no public route, approval lock, export
 permission, release snapshot, or vendoring authority. The snow/frost source has
 an accountable human report lead and is in independent review; the groundwater
 source remains a draft with human accountability unassigned.
@@ -32,12 +32,17 @@ source remains a draft with human accountability unassigned.
 ```text
 assurance/v2/
   catalog.yaml
+  identity.lock.json                 # generated active generation
   principals.yaml
   schemas/
     catalog.schema.json
     principals.schema.json
     report.schema.json
     result.schema.json
+    identity-lock.schema.json
+    review-lock.schema.json
+    review-event.schema.json
+    transaction-receipt.schema.json
   reports/<report-id>/
     report.yaml
     manuscript.md
@@ -46,12 +51,22 @@ assurance/v2/
     procedures/*.py
     evidence/*.json
     results/*.json
+    review-events/<event-id>.json    # immutable human-authority inputs
+    review.lock.json                 # generated current layer roots
+  transactions/<receipt-id>.json    # generated transition receipts
 ```
 
-Every local claim-bearing file is a confined, regular, non-symlink repository
-path bound by SHA-256. External evidence uses immutable identities. Restricted
-evidence must disclose its restriction and review role without exposing a local
-protected path or content digest.
+Authored YAML declares logical paths and semantic values, never derived file
+digests or calculated roots. `identity.lock.json` binds every admitted source,
+review event, and generated review lock. Each report lock separates science,
+communication, attribution, governance, finding-ledger, approval, realization,
+and release-transfer identities. Receipts chain the retained migration genesis
+to the active generation. Hashes prove byte consistency; Git review and named
+human authority establish provenance and decisions.
+
+Every admitted file is a confined, regular, non-symlink path. External evidence
+uses immutable identities. Restricted evidence discloses its restriction and
+review role without exposing a protected local path or content digest.
 
 ## Validate
 
@@ -68,13 +83,40 @@ versions, content identities, logical-reference closure, units, unused
 declarations, restrictions, and draft lifecycle consistency. It does not plan,
 render, approve, publish, or scientifically reevaluate a report.
 
+## Inspect And Amend
+
+Inspect the current layered identity before deciding what kind of change is
+needed:
+
+```bash
+target/release/openwepp-assurance inspect --report <report-id> --format human
+```
+
+Bounded attribution, principal-version, report-role, lifecycle, and American-
+English normalization changes use typed `amend` or `lifecycle` commands with
+exactly one of `--check` and `--apply`. The command parses structured input,
+calculates complete consumers and invalidation, validates an isolated candidate,
+atomically exchanges the generation, and writes one deterministic receipt. No
+operator or agent edits hashes or copies roots.
+
+After an applied report-data-only transaction, run its receipt-authorized gate:
+
+```bash
+.venv/bin/python tools/local_ci/run_assurance_amendment.py \
+  --receipt assurance/v2/transactions/<receipt-id>.json
+```
+
+A current focused receipt is the complete local proof for that exact bounded
+change. It does not authorize scientific prose changes, schema/builder changes,
+approval, publication, release, export, or vendoring.
+
 ## Normalize Draft Prose
 
 American English is the report language. Before a DRAFT enters review, check
 its authored manuscript and supplement with the canonical converter:
 
 ```bash
-cargo run --quiet -p openwepp-assurance -- normalize \
+target/release/openwepp-assurance amend normalize \
   --report <report-id> \
   --language en-US --check
 ```
@@ -83,33 +125,27 @@ When the check reports drift, apply the exact converter output and mechanically
 rebind its content identities:
 
 ```bash
-cargo run --quiet -p openwepp-assurance -- normalize \
+target/release/openwepp-assurance amend normalize \
   --report <report-id> \
   --language en-US --apply
 ```
 
 The explicit maintenance command invokes the installed `uk2us` executable
 without a shell. It changes only converter-produced manuscript or supplement
-bytes, then updates the disclosed agent packet, report descriptor, and catalog
-digests in one locked `assurance/v2` tree transaction while preserving source
-permission modes. It emits a deterministic JSON receipt to standard output. It
+bytes, regenerates dependent reader blocks and locks, and commits one confined
+transaction while preserving source permission modes. It emits a deterministic
+receipt. It
 refuses `IN_REVIEW` or `APPROVED` sources, review-entry-authorized drafts,
 unsupported languages, stale inputs, ambiguous identity edges, non-idempotent
 converter output, and incomplete recovery. Pre-commit and post-install
 validation failures restore the old generation. If cleanup fails after the new
-generation has validated, the command instead reports a distinct committed-
-cleanup error containing the committed receipt and leaves the valid new
-generation active. Any retained `.v2.normalize.next` directory requires
-explicit operator disposition and blocks every later check or apply operation.
+generation has validated, the command returns the committed receipt, leaves the
+valid new generation active, and retains the old generation for explicit typed
+recovery. Any retained recovery directory blocks every later check or apply
+operation.
 
-For an exact normalization produced by this command, use the proportional
-editorial gate:
-
-```bash
-cargo nextest run --workspace --profile assurance-editorial
-cargo run --quiet -p openwepp-assurance -- validate \
-  --report <report-id>
-```
+For an exact normalization produced by this command, use the receipt runner
+shown above. `normalize` remains a one-cycle compatibility alias.
 
 The fast path does not classify arbitrary edits as editorial. Mixed prose,
 claim, method, result, figure, lifecycle, authority, schema, or builder changes
@@ -143,9 +179,9 @@ cargo run --quiet -p openwepp-assurance -- plan --all --format json
 ```
 
 Planning is deterministic, offline, and read-only. It emits the same typed
-graph as human-readable text or JSON. Each node is `current` when its declared
+graph as human-readable text or JSON. Each node is `current` when its generated
 identity and prerequisites are current, `stale` when observed bytes differ from
-the declared SHA-256, `blocked` when required local content is unavailable, or
+the active lock, `blocked` when required local content is unavailable, or
 `selected` when a changed prerequisite transitively affects it. These words
 describe build impact, not scientific merit or fitness for an application.
 
@@ -187,12 +223,12 @@ release, or vendoring authority.
 ## Review And Approval Boundary
 
 The authored lifecycle is `DRAFT` → `IN_REVIEW` → `APPROVED`. There is no
-authored `PUBLISHED` state. A domain-separated subject root binds the scientific
-source and exact staged output; a finding-ledger root then binds review
-findings; an approval-lock root binds three exact-ledger approval declarations;
-and a release-transfer root binds the approved lock to an independently
-supplied commit and release configuration. A verified immutable receipt is the
-only authority for the derived public state.
+authored `PUBLISHED` state. Immutable events record supplied review entry,
+findings, dispositions, approvals, withdrawal, supersession, and release
+transfer. Generated locks bind those events to the applicable science,
+communication, governance, attribution, finding-ledger, realization, and exact
+predecessor identities. Regeneration can invalidate authority; it cannot create
+or carry a human decision to different reviewed bytes.
 
 The registry in `principals.yaml` gives stable identities, kinds, authorities,
 and eligible roles. The software checks structure, declared roles, distinct

@@ -1,37 +1,30 @@
-schema_version: 3
-contract_version: 3
+schema_version: 4
+contract_version: 4
 source_state: internal_assurance_sources
 trust_domain: production
 principal_registry:
   path: assurance/v2/principals.yaml
-  sha256: c2b2f2499b58651152f2e9415a61cacb51f4fa1397006cd9ce43b2f4436b96f0
 schemas:
-  - id: openwepp:assurance:v2:catalog:3
-    path: assurance/v2/schemas/catalog.schema.json
-    sha256: 4581f7e581903e0200fcdeb5dba67603c99023fd066cc26baf7e3adee3e35dea
-  - id: openwepp:assurance:v2:report:3
-    path: assurance/v2/schemas/report.schema.json
-    sha256: 44e029cb41e096188d4028dbcc3d79155a4f04c6fbd500c8cfabbac6977dd703
-  - id: openwepp:assurance:v2:result:1
-    path: assurance/v2/schemas/result.schema.json
-    sha256: 417efb4dbf2d9209cff3c41f52eca2637325c667dccc7c3588d14a0e8dc673a4
-  - id: openwepp:assurance:v2:principals:1
-    path: assurance/v2/schemas/principals.schema.json
-    sha256: 945fb5e0edddf58ac2a28bf248da73c20776ff007423004c7d70951aec8374f7
+- id: openwepp:assurance:v2:catalog:4
+  path: assurance/v2/schemas/catalog.schema.json
+- id: openwepp:assurance:v2:report:4
+  path: assurance/v2/schemas/report.schema.json
+- id: openwepp:assurance:v2:result:1
+  path: assurance/v2/schemas/result.schema.json
+- id: openwepp:assurance:v2:principals:2
+  path: assurance/v2/schemas/principals.schema.json
 reports:
-  - id: linear-groundwater-reservoir-recurrence
-    version: 1.0.0
-    title: Verification of openWEPP's Daily Linear Groundwater Reservoir
-    owner: openWEPP scientific assurance maintainers
-    trust_domain: production
-    fixture_only: false
-    manifest_path: assurance/v2/reports/linear-groundwater-reservoir-recurrence/report.yaml
-    manifest_sha256: 64fbfa6756a86bc98a9656235e1c0df5cf06a414806d7291c7ee37fea69cf5d8
-  - id: snow-and-frozen-soil-process-evaluation
-    version: 1.0.0
-    title: Observational Evaluation of openWEPP Snow and Frozen-Soil Processes
-    owner: openWEPP scientific assurance maintainers
-    trust_domain: production
-    fixture_only: false
-    manifest_path: assurance/v2/reports/snow-and-frozen-soil-process-evaluation/report.yaml
-    manifest_sha256: 82d5b386055d03458b9357564dba36cb6062b96237db9f14dd4b21e34ec1e537
+- id: linear-groundwater-reservoir-recurrence
+  version: 1.0.0
+  title: Verification of openWEPP's Daily Linear Groundwater Reservoir
+  owner: openWEPP scientific assurance maintainers
+  trust_domain: production
+  fixture_only: false
+  manifest_path: assurance/v2/reports/linear-groundwater-reservoir-recurrence/report.yaml
+- id: snow-and-frozen-soil-process-evaluation
+  version: 1.0.0
+  title: Observational Evaluation of openWEPP Snow and Frozen-Soil Processes
+  owner: openWEPP scientific assurance maintainers
+  trust_domain: production
+  fixture_only: false
+  manifest_path: assurance/v2/reports/snow-and-frozen-soil-process-evaluation/report.yaml

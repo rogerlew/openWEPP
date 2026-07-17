@@ -6,14 +6,30 @@ use serde::Deserialize;
 use crate::error::{AssuranceError, Result};
 use crate::hash::sha256_bytes;
 
+mod amendment;
+mod amendment_support;
 mod assembly;
 mod confined;
+mod fixture;
+mod identity;
 mod lifecycle;
 mod normalization;
 mod planner;
 mod publication;
+mod transaction;
 
+pub use amendment::{
+    V2AmendMode, V2AmendmentReceipt, V2Inspection, V2RecoveryAction, amend_attribution,
+    amend_attribution_at_generation, amend_lifecycle, amend_lifecycle_at_generation,
+    amend_normalize, amend_normalize_at_generation, amend_principal, amend_principal_at_generation,
+    amend_role, amend_role_at_generation, inspect_report, rebind_implementation, recover_amendment,
+    verify_generation,
+};
 pub use assembly::{V2AssemblyResult, V2AssemblySummary};
+pub use fixture::{
+    copy_v2_test_fixture, rebind_invalid_v2_test_fixture, rebind_v2_test_fixture,
+    retain_v2_test_report,
+};
 pub use normalization::{
     V2NormalizationChange, V2NormalizationMode, V2NormalizationOptions, V2NormalizationReceipt,
 };
@@ -25,17 +41,18 @@ pub use publication::{
 
 pub(crate) use confined::read_regular_confined;
 use confined::validate_relative;
+use identity::{IDENTITY_LOCK_PATH, IdentityLock};
 use lifecycle::{
     Principal, PrincipalKind, PrincipalRegistry, ReaderMetadata, digest_input_set, validate_date,
     validate_principal_registry, validate_reader_metadata, validate_review,
 };
 
 const V2_CATALOG_PATH: &str = "assurance/v2/catalog.yaml";
-const CATALOG_SCHEMA_VERSION: u32 = 3;
-const REPORT_SCHEMA_VERSION: u32 = 3;
+const CATALOG_SCHEMA_VERSION: u32 = 4;
+const REPORT_SCHEMA_VERSION: u32 = 4;
 const RESULT_SCHEMA_VERSION: u32 = 1;
-const PRINCIPAL_SCHEMA_VERSION: u32 = 1;
-const CONTRACT_VERSION: u32 = 3;
+const PRINCIPAL_SCHEMA_VERSION: u32 = 2;
+const CONTRACT_VERSION: u32 = 4;
 const SOURCE_STATE: &str = "internal_assurance_sources";
 const DRAFT: &str = "DRAFT";
 
@@ -48,7 +65,7 @@ const CATALOG_FIELDS: &[&str] = &[
     "schemas",
     "reports",
 ];
-const REPORT_FIELDS: &[&str] = &[
+pub(super) const REPORT_FIELDS: &[&str] = &[
     "schema_version",
     "contract_version",
     "id",
@@ -77,7 +94,7 @@ const REPORT_FIELDS: &[&str] = &[
     "publication",
 ];
 const RESULT_FIELDS: &[&str] = &["schema_version", "result_id", "values"];
-const CATALOG_SCHEMA_SOURCE_FIELDS: &[&str] = &["id", "path", "sha256"];
+const CATALOG_SCHEMA_SOURCE_FIELDS: &[&str] = &["id", "path"];
 const CATALOG_REPORT_SOURCE_FIELDS: &[&str] = &[
     "id",
     "version",
@@ -86,9 +103,8 @@ const CATALOG_REPORT_SOURCE_FIELDS: &[&str] = &[
     "trust_domain",
     "fixture_only",
     "manifest_path",
-    "manifest_sha256",
 ];
-const CONTENT_IDENTITY_FIELDS: &[&str] = &["path", "sha256"];
+const CONTENT_IDENTITY_FIELDS: &[&str] = &["path"];
 const READER_METADATA_FIELDS: &[&str] = &[
     "scientific_question",
     "assessed_process",
@@ -102,7 +118,6 @@ const CONTENT_SOURCE_FIELDS: &[&str] = &[
     "title",
     "owner",
     "path",
-    "sha256",
     "media_type",
     "provenance",
     "creation_procedure",
@@ -125,7 +140,6 @@ const DEPENDENCY_FIELDS: &[&str] = &[
     "access",
     "license",
     "path",
-    "sha256",
     "immutable_identity",
     "restriction_reason",
     "review_role",
@@ -158,7 +172,6 @@ const RESULT_SOURCE_FIELDS: &[&str] = &[
     "title",
     "owner",
     "path",
-    "sha256",
     "media_type",
     "method_id",
     "dependency_ids",
@@ -220,7 +233,6 @@ const RESEARCH_OBJECT_FIELDS: &[&str] = &[
     "access",
     "license",
     "path",
-    "sha256",
     "restriction_reason",
     "review_role",
     "result_ids",
@@ -234,14 +246,9 @@ const REVIEW_FIELDS: &[&str] = &[
     "owner",
     "state",
     "decision",
-    "subject_root",
     "review_charge",
     "build_maintainer_id",
     "material_producer_ids",
-    "findings",
-    "finding_ledger_root",
-    "approvals",
-    "approval_lock_root",
     "independence_assessment",
 ];
 const FINDING_FIELDS: &[&str] = &[
@@ -268,7 +275,6 @@ const PUBLICATION_FIELDS: &[&str] = &[
     "title",
     "owner",
     "state",
-    "approval_lock_root",
     "target_release_commit",
     "target_release_configuration",
     "prior_realization",
@@ -280,7 +286,6 @@ const PUBLICATION_FIELDS: &[&str] = &[
     "assurance_steward_id",
     "publication_date",
     "public_path",
-    "release_transfer_root",
     "export_authorized",
     "vendoring_authorized",
     "supersedes",
@@ -289,7 +294,10 @@ const PUBLICATION_FIELDS: &[&str] = &[
 const PRINCIPAL_REGISTRY_FIELDS: &[&str] = &["schema_version", "trust_domain", "principals"];
 const PRINCIPAL_FIELDS: &[&str] = &[
     "id",
+    "record_version",
+    "supersedes",
     "display_name",
+    "affiliations",
     "kind",
     "identity_authority",
     "identity_reference",
@@ -406,6 +414,7 @@ pub struct V2Repository {
     sources: BTreeMap<String, ReportSource>,
     trust_domain: V2TrustDomain,
     principals: PrincipalRegistry,
+    identity: IdentityLock,
 }
 
 impl V2Repository {
@@ -421,8 +430,20 @@ impl V2Repository {
             .canonicalize()
             .map_err(|error| AssuranceError::io(".", error))?;
         let mut inputs = BTreeMap::new();
-        let catalog_bytes = read_identified(&root, Path::new(V2_CATALOG_PATH), None, &mut inputs)?;
-        let catalog: V2Catalog = parse_yaml(V2_CATALOG_PATH, &catalog_bytes)?;
+        let identity = IdentityLock::load(&root)?;
+        let identity_bytes = read_regular_confined(&root, Path::new(IDENTITY_LOCK_PATH))?;
+        inputs.insert(
+            PathBuf::from(IDENTITY_LOCK_PATH),
+            sha256_bytes(&identity_bytes),
+        );
+        let catalog_path = Path::new(V2_CATALOG_PATH);
+        let catalog_bytes = read_identified(
+            &root,
+            catalog_path,
+            Some(identity.digest_for(catalog_path)?),
+            &mut inputs,
+        )?;
+        let catalog: V2Catalog = parse_hydrated_yaml(V2_CATALOG_PATH, &catalog_bytes, &identity)?;
         validate_catalog_header(&catalog)?;
         validate_schemas(&root, &catalog.schemas, &mut inputs)?;
         validate_relative(&catalog.principal_registry.path)?;
@@ -467,6 +488,7 @@ impl V2Repository {
             sources,
             trust_domain: catalog.trust_domain,
             principals,
+            identity,
         })
     }
 
@@ -516,7 +538,13 @@ impl V2Repository {
     pub fn plan_all(&self) -> Result<V2Plan> {
         self.verify_inputs()?;
         let sources = self.sources.values().collect::<Vec<_>>();
-        planner::plan_sources(&self.root, &self.inputs, self.sources.len(), &sources)
+        planner::plan_sources(
+            &self.root,
+            &self.inputs,
+            &self.identity,
+            self.sources.len(),
+            &sources,
+        )
     }
 
     /// Plans one named v2 report without traversing unselected reports.
@@ -530,7 +558,13 @@ impl V2Repository {
         let source = self.sources.get(report_id).ok_or_else(|| {
             AssuranceError::Invalid(format!("unknown v2 report ID '{report_id}'"))
         })?;
-        planner::plan_sources(&self.root, &self.inputs, self.sources.len(), &[source])
+        planner::plan_sources(
+            &self.root,
+            &self.inputs,
+            &self.identity,
+            self.sources.len(),
+            &[source],
+        )
     }
 
     /// Builds every admitted report into an explicit disposable staging root.
@@ -651,6 +685,8 @@ impl V2Repository {
             &self.root,
             staging_root,
             &self.inputs,
+            &self.identity,
+            &self.principals,
             &sources,
             &plan,
             operation,
@@ -672,6 +708,8 @@ impl V2Repository {
             &self.root,
             staging_root,
             &self.inputs,
+            &self.identity,
+            &self.principals,
             &[source],
             &plan,
             operation,
@@ -696,6 +734,11 @@ impl V2Repository {
         sources: impl IntoIterator<Item = &'a ReportSource>,
     ) -> Result<V2ValidationSummary> {
         self.verify_inputs()?;
+        let principals_path = Path::new("assurance/v2/principals.yaml");
+        let principals_value: serde_yaml::Value = parse_yaml(
+            principals_path,
+            &read_regular_confined(&self.root, principals_path)?,
+        )?;
         let mut inputs = self.inputs.clone();
         let mut reports = Vec::new();
         for source in sources {
@@ -706,9 +749,19 @@ impl V2Repository {
                 Some(&source.manifest_sha256),
                 &mut report_inputs,
             )?;
-            let report: Report = parse_yaml(&source.manifest_path, &manifest_bytes)?;
+            let report: Report =
+                parse_hydrated_yaml(&source.manifest_path, &manifest_bytes, &self.identity)?;
             validate_catalog_binding(source, &report)?;
             validate_report(&self.root, &report, &mut report_inputs)?;
+            let report_value: serde_yaml::Value =
+                parse_yaml(&source.manifest_path, &manifest_bytes)?;
+            identity::verify_review_lock_current(
+                &self.root,
+                &self.identity,
+                &source.id,
+                &report_value,
+                &principals_value,
+            )?;
             inputs.extend(report_inputs.clone());
             reports.push(V2ReportSummary {
                 id: report.id,
@@ -773,7 +826,7 @@ fn validate_catalog_header(catalog: &V2Catalog) -> Result<()> {
         || catalog.contract_version != CONTRACT_VERSION
     {
         return Err(AssuranceError::Invalid(
-            "v2 catalog requires schema_version 3 and contract_version 3".to_owned(),
+            "v2 catalog requires schema_version 4 and contract_version 4".to_owned(),
         ));
     }
     if catalog.source_state != SOURCE_STATE {
@@ -842,11 +895,11 @@ fn validate_schemas(
     inputs: &mut BTreeMap<PathBuf, String>,
 ) -> Result<()> {
     let expected = BTreeMap::from([
-        ("openwepp:assurance:v2:catalog:3", CATALOG_FIELDS),
-        ("openwepp:assurance:v2:report:3", REPORT_FIELDS),
+        ("openwepp:assurance:v2:catalog:4", CATALOG_FIELDS),
+        ("openwepp:assurance:v2:report:4", REPORT_FIELDS),
         ("openwepp:assurance:v2:result:1", RESULT_FIELDS),
         (
-            "openwepp:assurance:v2:principals:1",
+            "openwepp:assurance:v2:principals:2",
             PRINCIPAL_REGISTRY_FIELDS,
         ),
     ]);
@@ -930,10 +983,10 @@ fn expected_schema_definitions(
     source_id: &str,
 ) -> Result<&'static [(&'static str, &'static [&'static str])]> {
     let definitions = match source_id {
-        "openwepp:assurance:v2:catalog:3" => CATALOG_SCHEMA_DEFINITIONS,
-        "openwepp:assurance:v2:report:3" => REPORT_SCHEMA_DEFINITIONS,
+        "openwepp:assurance:v2:catalog:4" => CATALOG_SCHEMA_DEFINITIONS,
+        "openwepp:assurance:v2:report:4" => REPORT_SCHEMA_DEFINITIONS,
         "openwepp:assurance:v2:result:1" => &[],
-        "openwepp:assurance:v2:principals:1" => PRINCIPAL_SCHEMA_DEFINITIONS,
+        "openwepp:assurance:v2:principals:2" => PRINCIPAL_SCHEMA_DEFINITIONS,
         _ => {
             return Err(AssuranceError::Invalid(format!(
                 "schema '{source_id}' has no executable definition contract"
@@ -981,19 +1034,19 @@ fn validate_schema_definitions(
 
 fn validate_schema_constants(source: &SchemaSource, document: &SchemaDocument) -> Result<()> {
     let expected = match source.id.as_str() {
-        "openwepp:assurance:v2:catalog:3" => vec![
+        "openwepp:assurance:v2:catalog:4" => vec![
             ("schema_version", serde_json::json!(CATALOG_SCHEMA_VERSION)),
             ("contract_version", serde_json::json!(CONTRACT_VERSION)),
             ("source_state", serde_json::json!(SOURCE_STATE)),
         ],
-        "openwepp:assurance:v2:report:3" => vec![
+        "openwepp:assurance:v2:report:4" => vec![
             ("schema_version", serde_json::json!(REPORT_SCHEMA_VERSION)),
             ("contract_version", serde_json::json!(CONTRACT_VERSION)),
         ],
         "openwepp:assurance:v2:result:1" => {
             vec![("schema_version", serde_json::json!(RESULT_SCHEMA_VERSION))]
         }
-        "openwepp:assurance:v2:principals:1" => {
+        "openwepp:assurance:v2:principals:2" => {
             vec![(
                 "schema_version",
                 serde_json::json!(PRINCIPAL_SCHEMA_VERSION),
@@ -1425,10 +1478,16 @@ struct Review {
     #[serde(default)]
     build_maintainer_id: RequiredNullable<String>,
     material_producer_ids: Vec<String>,
+    #[serde(default)]
     findings: Vec<Finding>,
     #[serde(default)]
     finding_ledger_root: RequiredNullable<String>,
+    #[cfg(test)]
+    #[serde(default)]
     approvals: Vec<Approval>,
+    #[cfg(not(test))]
+    #[serde(default)]
+    approvals: Vec<serde_json::Value>,
     #[serde(default)]
     approval_lock_root: RequiredNullable<String>,
     independence_assessment: String,
@@ -1453,6 +1512,7 @@ struct Finding {
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
+#[cfg(test)]
 struct Approval {
     role: String,
     principal_id: String,
@@ -1549,13 +1609,13 @@ fn validate_report_structure(report: &Report) -> Result<ReportIds> {
     validate_agent_assistance(&report.agent_assistance, &ids, &report.lifecycle)?;
     validate_report_sections(report, &ids)?;
     validate_review(&report.review)?;
-    validate_publication(&report.publication)?;
-    let expected_publication = if report.lifecycle == "APPROVED" {
-        "APPROVED"
+    validate_publication(&report.publication, &report.lifecycle)?;
+    let publication_matches = if report.lifecycle == "APPROVED" {
+        matches!(report.publication.state.as_str(), DRAFT | "APPROVED")
     } else {
-        DRAFT
+        report.publication.state == DRAFT
     };
-    if report.review.state != report.lifecycle || report.publication.state != expected_publication {
+    if report.review.state != report.lifecycle || !publication_matches {
         return Err(AssuranceError::Invalid(
             "report lifecycle, review state, and publication-transfer state disagree".to_owned(),
         ));
@@ -1604,14 +1664,18 @@ fn validate_report_header(report: &Report) -> Result<()> {
     if report.schema_version != REPORT_SCHEMA_VERSION || report.contract_version != CONTRACT_VERSION
     {
         return Err(AssuranceError::Invalid(
-            "v2 report requires schema_version 3 and contract_version 3".to_owned(),
+            "v2 report requires schema_version 4 and contract_version 4".to_owned(),
         ));
     }
     validate_identity(&report.id, &report.title, &report.owner, "report")?;
     validate_version(&report.version, "report")?;
-    if !matches!(report.lifecycle.as_str(), DRAFT | "IN_REVIEW" | "APPROVED") {
+    if !matches!(
+        report.lifecycle.as_str(),
+        DRAFT | "IN_REVIEW" | "APPROVED" | "WITHDRAWN" | "SUPERSEDED"
+    ) {
         return Err(AssuranceError::Invalid(
-            "v2 report lifecycle must be DRAFT, IN_REVIEW, or APPROVED".to_owned(),
+            "v2 report lifecycle must be DRAFT, IN_REVIEW, APPROVED, WITHDRAWN, or SUPERSEDED"
+                .to_owned(),
         ));
     }
     if (report.trust_domain == V2TrustDomain::TestOnly) != report.fixture_only {
@@ -1795,20 +1859,23 @@ fn validate_authorship(authorship: &Authorship, lifecycle: &str) -> Result<()> {
             "draft authorship requires at least one named author".to_owned(),
         ));
     }
+    if matches!(authorship.human_report_lead, RequiredNullable::Missing) {
+        return Err(AssuranceError::Invalid(
+            "required nullable field 'authorship human_report_lead' is missing".to_owned(),
+        ));
+    }
     if lifecycle == DRAFT {
-        require_absent(
-            &authorship.human_report_lead,
-            "authorship human_report_lead",
-        )?;
         require_absent(
             &authorship.scientific_approver,
             "authorship scientific_approver",
         )?;
-        if authorship.accountability_state != "unassigned_blocks_review"
-            || authorship.external_peer_review_claimed
-        {
+        let accountability_is_valid = match authorship.human_report_lead.as_deref() {
+            None => authorship.accountability_state == "unassigned_blocks_review",
+            Some(lead) => !lead.trim().is_empty() && authorship.accountability_state == "assigned",
+        };
+        if !accountability_is_valid || authorship.external_peer_review_claimed {
             return Err(AssuranceError::Invalid(
-                "draft authorship must disclose unassigned human accountability and cannot claim external peer review"
+                "draft authorship must disclose assigned or explicitly unassigned human accountability and cannot claim external peer review"
                     .to_owned(),
             ));
         }
@@ -1968,7 +2035,7 @@ fn validate_local_dependency_shape(dependency: &Dependency) -> Result<()> {
 
 fn validate_external_dependency(dependency: &Dependency) -> Result<()> {
     require_absent(&dependency.path, "external dependency path")?;
-    require_absent(&dependency.sha256, "external dependency sha256")?;
+    require_unbound(&dependency.sha256, "external dependency sha256")?;
     require_present_nonempty(
         dependency.immutable_identity.as_deref(),
         "external dependency immutable_identity",
@@ -1982,7 +2049,7 @@ fn validate_external_dependency(dependency: &Dependency) -> Result<()> {
 
 fn validate_restricted_dependency(dependency: &Dependency) -> Result<()> {
     require_absent(&dependency.path, "restricted dependency path")?;
-    require_absent(&dependency.sha256, "restricted dependency sha256")?;
+    require_unbound(&dependency.sha256, "restricted dependency sha256")?;
     require_present_nonempty(
         dependency.immutable_identity.as_deref(),
         "restricted dependency immutable_identity",
@@ -2308,7 +2375,7 @@ fn validate_public_research_object_shape(object: &ResearchObject) -> Result<()> 
 
 fn validate_restricted_research_object(object: &ResearchObject) -> Result<()> {
     require_absent(&object.path, "restricted research-object path")?;
-    require_absent(&object.sha256, "restricted research-object sha256")?;
+    require_unbound(&object.sha256, "restricted research-object sha256")?;
     require_present_nonempty(
         object.restriction_reason.as_deref(),
         "restricted research-object restriction_reason",
@@ -2330,13 +2397,33 @@ fn validate_research_object_relations(object: &ResearchObject, ids: &ReportIds) 
     )
 }
 
-fn validate_publication(publication: &Publication) -> Result<()> {
-    if publication.export_authorized || publication.vendoring_authorized || publication.withdrawn {
+fn validate_publication(publication: &Publication, lifecycle: &str) -> Result<()> {
+    if publication.export_authorized || publication.vendoring_authorized {
         return Err(AssuranceError::Invalid(
-            "ASSURE-04D does not authorize export, vendoring, or withdrawn publication".to_owned(),
+            "ASSURE-04D does not authorize export or vendoring".to_owned(),
         ));
     }
-    require_absent(&publication.supersedes, "publication supersedes")?;
+    match lifecycle {
+        "WITHDRAWN" if !publication.withdrawn || publication.supersedes.as_deref().is_some() => {
+            return Err(AssuranceError::Invalid(
+                "WITHDRAWN publication must set only the withdrawn terminal marker".to_owned(),
+            ));
+        }
+        "SUPERSEDED" if publication.withdrawn || publication.supersedes.as_deref().is_none() => {
+            return Err(AssuranceError::Invalid(
+                "SUPERSEDED publication requires its superseding report identity".to_owned(),
+            ));
+        }
+        "WITHDRAWN" | "SUPERSEDED" => {}
+        _ => {
+            if publication.withdrawn {
+                return Err(AssuranceError::Invalid(
+                    "nonterminal publication cannot be withdrawn".to_owned(),
+                ));
+            }
+            require_absent(&publication.supersedes, "publication supersedes")?;
+        }
+    }
     match publication.state.as_str() {
         DRAFT => validate_draft_publication(publication),
         "APPROVED" => validate_approved_publication(publication),
@@ -2347,8 +2434,12 @@ fn validate_publication(publication: &Publication) -> Result<()> {
 }
 
 fn validate_draft_publication(publication: &Publication) -> Result<()> {
+    require_generated_absent(&publication.approval_lock_root, "publication approval lock")?;
+    require_generated_absent(
+        &publication.release_transfer_root,
+        "publication transfer root",
+    )?;
     for (value, label) in [
-        (&publication.approval_lock_root, "publication approval lock"),
         (
             &publication.target_release_commit,
             "publication release commit",
@@ -2379,10 +2470,6 @@ fn validate_draft_publication(publication: &Publication) -> Result<()> {
             "publication assurance steward",
         ),
         (&publication.date, "publication date"),
-        (
-            &publication.release_transfer_root,
-            "publication transfer root",
-        ),
     ] {
         require_absent(value, label)?;
     }
@@ -2395,11 +2482,20 @@ fn validate_draft_publication(publication: &Publication) -> Result<()> {
     Ok(())
 }
 
+fn require_generated_absent<T>(value: &RequiredNullable<T>, name: &str) -> Result<()> {
+    match value {
+        RequiredNullable::Missing | RequiredNullable::Null => Ok(()),
+        RequiredNullable::Value(_) => Err(AssuranceError::Invalid(format!(
+            "generated field '{name}' cannot be stored in authored report source"
+        ))),
+    }
+}
+
 fn validate_approved_publication(publication: &Publication) -> Result<()> {
-    validate_digest_present(&publication.approval_lock_root, "publication approval lock")?;
-    validate_digest_present(
+    require_generated_absent(&publication.approval_lock_root, "publication approval lock")?;
+    require_generated_absent(
         &publication.release_transfer_root,
-        "publication release transfer root",
+        "publication transfer root",
     )?;
     for (value, label) in [
         (
@@ -2737,13 +2833,6 @@ fn validate_digest(digest: &str, kind: &str) -> Result<()> {
     Ok(())
 }
 
-fn validate_digest_present(value: &RequiredNullable<String>, kind: &str) -> Result<()> {
-    let digest = value
-        .as_deref()
-        .ok_or_else(|| AssuranceError::Invalid(format!("{kind} is required")))?;
-    validate_digest(digest, kind)
-}
-
 fn require_nonempty(value: &str, name: &str) -> Result<()> {
     if value.trim().is_empty() {
         return Err(AssuranceError::Invalid(format!("{name} cannot be empty")));
@@ -2800,6 +2889,15 @@ fn require_absent<T>(value: &RequiredNullable<T>, name: &str) -> Result<()> {
     }
 }
 
+fn require_unbound<T>(value: &RequiredNullable<T>, name: &str) -> Result<()> {
+    match value {
+        RequiredNullable::Missing | RequiredNullable::Null => Ok(()),
+        RequiredNullable::Value(_) => {
+            Err(AssuranceError::Invalid(format!("{name} must be absent")))
+        }
+    }
+}
+
 fn read_identified(
     root: &Path,
     path: &Path,
@@ -2829,6 +2927,24 @@ fn read_identified(
 fn parse_yaml<T: for<'de> Deserialize<'de>>(path: impl Into<PathBuf>, bytes: &[u8]) -> Result<T> {
     serde_yaml::from_slice(bytes).map_err(|error| AssuranceError::Parse {
         path: path.into(),
+        message: error.to_string(),
+    })
+}
+
+fn parse_hydrated_yaml<T: for<'de> Deserialize<'de>>(
+    path: impl Into<PathBuf>,
+    bytes: &[u8],
+    identity: &IdentityLock,
+) -> Result<T> {
+    let path = path.into();
+    let mut value: serde_yaml::Value =
+        serde_yaml::from_slice(bytes).map_err(|error| AssuranceError::Parse {
+            path: path.clone(),
+            message: error.to_string(),
+        })?;
+    identity.hydrate_yaml(&mut value)?;
+    serde_yaml::from_value(value).map_err(|error| AssuranceError::Parse {
+        path,
         message: error.to_string(),
     })
 }

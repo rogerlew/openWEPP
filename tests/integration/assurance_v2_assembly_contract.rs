@@ -2,13 +2,11 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 
-use openwepp_assurance::{AssuranceError, V2Repository, sha256_bytes};
+use openwepp_assurance::{AssuranceError, V2Repository};
 
 const REPORT_ID: &str = "linear-groundwater-reservoir-recurrence";
-const SNOW_REPORT_ID: &str = "snow-and-frozen-soil-process-evaluation";
 const REPORT_PATH: &str =
     "assurance/v2/reports/linear-groundwater-reservoir-recurrence/report.yaml";
-const CATALOG_PATH: &str = "assurance/v2/catalog.yaml";
 const RESULT_PATH: &str =
     "assurance/v2/reports/linear-groundwater-reservoir-recurrence/results/two-day-recurrence.json";
 const OUTPUT_BASE: &str = "usersum/assurance/reports/linear-groundwater-reservoir-recurrence/1.0.0";
@@ -154,15 +152,7 @@ fn rendered_tables_figures_references_objects_and_links_are_real_consumers() {
         ("H2637.hbp", "evidence/h2637/H2637.hbp"),
         ("H2637.pass.parquet", "evidence/h2637/H2637.pass.parquet"),
     ] {
-        let staged = stage
-            .path
-            .join(OUTPUT_BASE)
-            .join("research-objects")
-            .join(object);
-        let source = root
-            .join("assurance/v2/reports/linear-groundwater-reservoir-recurrence")
-            .join(source_relative);
-        assert_eq!(fs::read(staged).unwrap(), fs::read(source).unwrap());
+        assert_staged_research_object(&root, &stage.path, object, source_relative);
     }
     assert_eq!(
         fs::read(
@@ -189,6 +179,33 @@ fn rendered_tables_figures_references_objects_and_links_are_real_consumers() {
     assert_local_links_resolve(&stage.path, &report_path);
 }
 
+fn assert_staged_research_object(root: &Path, stage: &Path, object: &str, source_relative: &str) {
+    let staged = stage
+        .join(OUTPUT_BASE)
+        .join("research-objects")
+        .join(object);
+    let source = root
+        .join("assurance/v2/reports/linear-groundwater-reservoir-recurrence")
+        .join(source_relative);
+    if object == "agent-assistance-packet.json" {
+        let mut staged_packet: serde_json::Value =
+            serde_json::from_slice(&fs::read(staged).unwrap()).unwrap();
+        let governance = staged_packet
+            .as_object_mut()
+            .unwrap()
+            .remove("current_governance")
+            .expect("generated current governance");
+        let source_packet: serde_json::Value =
+            serde_json::from_slice(&fs::read(source).unwrap()).unwrap();
+        assert_eq!(staged_packet, source_packet);
+        assert_eq!(governance["generated"], true);
+        assert_eq!(governance["lifecycle"], "DRAFT");
+        assert_eq!(governance["scientific_approval_complete"], false);
+    } else {
+        assert_eq!(fs::read(staged).unwrap(), fs::read(source).unwrap());
+    }
+}
+
 #[test]
 fn stale_missing_unit_precision_orphan_and_figure_drift_fail_closed() {
     let stale = fixture("assure04c-stale");
@@ -209,8 +226,8 @@ fn stale_missing_unit_precision_orphan_and_figure_drift_fail_closed() {
     let unit = fixture("assure04c-unit");
     mutate_report(
         &unit.path,
-        "    unit_id: m3\n    transform: identity\n    display: fixed:1",
-        "    unit_id: d_inv\n    transform: identity\n    display: fixed:1",
+        "  unit_id: m3\n  transform: identity\n  display: fixed:1",
+        "  unit_id: d_inv\n  transform: identity\n  display: fixed:1",
     );
     assert_build_rejected(&unit.path, "unit");
 
@@ -238,8 +255,8 @@ fn stale_missing_unit_precision_orphan_and_figure_drift_fail_closed() {
         .expect("build precision baseline");
     mutate_report(
         &precision.path,
-        "    display: scientific:2",
-        "    display: scientific:3",
+        "  display: scientific:2",
+        "  display: scientific:3",
     );
     let error = V2Repository::open(&precision.path)
         .unwrap()
@@ -325,13 +342,6 @@ fn malformed_duplicate_unsafe_link_and_inaccessible_figure_fail_closed() {
         "\"value\": 0.0",
     );
     refresh_local_hash(&zero_figure.path, Path::new(RESULT_PATH));
-    let changed_digest = sha256_bytes(&fs::read(&result).unwrap());
-    replace_in(
-        &zero_figure.path.join(REPORT_PATH),
-        "8d6659d9e60de5c9dace531cbe2d3f74df3e7a5dd9f1b64be4430449cfc4c9d8",
-        &changed_digest,
-    );
-    refresh_report_hash(&zero_figure.path);
     assert_build_rejected(&zero_figure.path, "positive absolute value bindings");
 }
 
@@ -642,28 +652,11 @@ fn assert_literal_segments_preserved(source: &str, rendered: &str) {
 }
 
 fn refresh_report_hash(root: &Path) {
-    let digest = sha256_bytes(&fs::read(root.join(REPORT_PATH)).unwrap());
-    replace_prefixed_value(&root.join(CATALOG_PATH), "    manifest_sha256: ", &digest);
+    openwepp_assurance::rebind_v2_test_fixture(root).expect("rebind fixture identity");
 }
 
-fn refresh_local_hash(root: &Path, relative: &Path) {
-    let digest = sha256_bytes(&fs::read(root.join(relative)).unwrap());
-    let report = root.join(REPORT_PATH);
-    let mut text = fs::read_to_string(&report).unwrap();
-    let path_line = format!("  path: {}\n", relative.display());
-    let path_start = text.find(&path_line).expect("find content path") + path_line.len();
-    let hash_start = text[path_start..].find("  sha256: ").unwrap() + path_start;
-    let hash_end = text[hash_start..].find('\n').unwrap() + hash_start;
-    text.replace_range(hash_start..hash_end, &format!("  sha256: {digest}"));
-    fs::write(report, text).unwrap();
-}
-
-fn replace_prefixed_value(path: &Path, prefix: &str, replacement: &str) {
-    let mut text = fs::read_to_string(path).unwrap();
-    let start = text.find(prefix).unwrap() + prefix.len();
-    let end = text[start..].find('\n').unwrap() + start;
-    text.replace_range(start..end, replacement);
-    fs::write(path, text).unwrap();
+fn refresh_local_hash(root: &Path, _relative: &Path) {
+    openwepp_assurance::rebind_v2_test_fixture(root).expect("rebind fixture identity");
 }
 
 fn replace_in(path: &Path, old: &str, new: &str) {
@@ -681,11 +674,8 @@ fn append_bytes(path: &Path, suffix: &[u8]) {
 fn fixture(label: &str) -> Scratch {
     let source = repository_root();
     let target = Scratch::new(label);
-    copy_tree(
-        &source.join("assurance/v2"),
-        &target.path.join("assurance/v2"),
-    );
-    retain_groundwater_fixture(&target.path);
+    openwepp_assurance::copy_v2_test_fixture(&source, &target.path).unwrap();
+    openwepp_assurance::retain_v2_test_report(&target.path, REPORT_ID).unwrap();
     for relative in [
         "assurance/catalog.yaml",
         "assurance/templates/catalog.md",
@@ -703,32 +693,6 @@ fn fixture(label: &str) -> Scratch {
         copy_file(&source, &target.path, relative);
     }
     target
-}
-
-fn retain_groundwater_fixture(root: &Path) {
-    let catalog_path = root.join(CATALOG_PATH);
-    let catalog = fs::read_to_string(&catalog_path).expect("read fixture catalog");
-    let marker = format!("\n  - id: {SNOW_REPORT_ID}\n");
-    let split = catalog
-        .find(&marker)
-        .expect("snow/frost catalog entry follows groundwater fixture entry");
-    fs::write(&catalog_path, format!("{}\n", &catalog[..split]))
-        .expect("retain one-report fixture catalog");
-    fs::remove_dir_all(root.join("assurance/v2/reports").join(SNOW_REPORT_ID))
-        .expect("remove unselected snow/frost fixture source");
-}
-
-fn copy_tree(source: &Path, target: &Path) {
-    fs::create_dir_all(target).unwrap();
-    for entry in fs::read_dir(source).unwrap() {
-        let entry = entry.unwrap();
-        let destination = target.join(entry.file_name());
-        if entry.file_type().unwrap().is_dir() {
-            copy_tree(&entry.path(), &destination);
-        } else {
-            fs::copy(entry.path(), destination).unwrap();
-        }
-    }
 }
 
 fn copy_file(source_root: &Path, target_root: &Path, relative: &str) {

@@ -1,15 +1,12 @@
 {
-  "schema_version": 1,
-  "packet_id": "GW-AGENT-PACKET-ASSURE05-DRAFT",
-  "tool": "OpenAI Codex",
-  "model_disclosure": "Codex based on GPT-5; hidden runtime and sampling configuration are unavailable to the repository",
-  "role": "draft author and mechanical analysis implementer; not a human scientific or publication approver",
-  "procedure_version": "assure05-groundwater-report-drafting-v1",
-  "prompt": {
-    "path": "docs/work-packages/20260716-assure05-first-production-v2-report-001/prompts/archived/20260716-codex-execute-assure05_prompt.md",
-    "sha256": "5a740e7f3fa2d4415cc4a82c1f42771a0aa3df6c7f10af09b534e2940fdcf9d8",
-    "portable_research_object": "GW-OBJECT-EXECUTION-PROMPT"
-  },
+  "draft_outputs": [
+    {
+      "path": "assurance/v2/reports/linear-groundwater-reservoir-recurrence/manuscript.md"
+    },
+    {
+      "path": "assurance/v2/reports/linear-groundwater-reservoir-recurrence/supplement.md"
+    }
+  ],
   "material_inputs": [
     {
       "path": "docs/work-packages/20260716-assure05-first-production-v2-report-001/artifacts/study-protocol.md",
@@ -28,15 +25,16 @@
       "sha256": "4618a1491ecaf3e473564f7efc8f4df2250cb1068969b4984f80a6f297996e14"
     }
   ],
-  "draft_outputs": [
-    {
-      "path": "assurance/v2/reports/linear-groundwater-reservoir-recurrence/manuscript.md",
-      "sha256": "cd23e31bf0e4c9ce121b18e5da8d072f16cb70c0a5cbf22911043c83091e6c90"
-    },
-    {
-      "path": "assurance/v2/reports/linear-groundwater-reservoir-recurrence/supplement.md",
-      "sha256": "47d1e86a990f636d2f9534fb3153f7c0bb470c0100dd9d0753cb4e20784ecd24"
-    }
-  ],
-  "repeatability_boundary": "The retained prompt, inputs, and exact outputs permit source audit and human disposition. Hidden model/runtime configuration prevents a claim that independently sampled prose will be byte-identical. Quantitative result regeneration does not depend on the agent and is separately executable."
+  "model_disclosure": "Codex based on GPT-5; hidden runtime and sampling configuration are unavailable to the repository",
+  "packet_id": "GW-AGENT-PACKET-ASSURE05-DRAFT",
+  "procedure_version": "assure05-groundwater-report-drafting-v1",
+  "prompt": {
+    "path": "docs/work-packages/20260716-assure05-first-production-v2-report-001/prompts/archived/20260716-codex-execute-assure05_prompt.md",
+    "portable_research_object": "GW-OBJECT-EXECUTION-PROMPT",
+    "sha256": "5a740e7f3fa2d4415cc4a82c1f42771a0aa3df6c7f10af09b534e2940fdcf9d8"
+  },
+  "repeatability_boundary": "The retained prompt, inputs, and exact outputs permit source audit and human disposition. Hidden model/runtime configuration prevents a claim that independently sampled prose will be byte-identical. Quantitative result regeneration does not depend on the agent and is separately executable.",
+  "role": "draft author and mechanical analysis implementer; not a human scientific or publication approver",
+  "schema_version": 1,
+  "tool": "OpenAI Codex"
 }

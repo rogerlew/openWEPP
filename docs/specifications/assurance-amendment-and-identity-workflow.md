@@ -1,6 +1,6 @@
 # Assurance Amendment And Generated-Identity Specification
 
-Status: accepted design; implementation pending `ASSURE-MAINT-01`
+Status: implemented and closed by `ASSURE-MAINT-01`
 
 Owner: openWEPP scientific assurance maintainers
 
@@ -126,7 +126,8 @@ science_root ────────────────┐
 communication_root ──────────┼─> content_review_subject_root
 review_governance_root ──────┘              │
                                             ├─> finding_ledger_root
-review-projected staged outputs + builder ─> preapproval_realization_root
+complete projected inputs + embedded implementation digest
+    ─> preapproval_realization_root
                                             │
 finding ledger + applicable roots + preapproval realization
     ─> scientific/reproduction approval events
@@ -163,12 +164,13 @@ approval_lock_root + realization_root + target release + transfer event
   findings, or approvals.
 - `finding_ledger_root` binds the content review subject and ordered
   finding/disposition events. It contains no approvals.
-- `preapproval_realization_root` binds the exact review projection of every
-  staged output, builder identity, `science_root`, `communication_root`,
-  `review_governance_root`, and the current content review subject, but no
-  attribution, approval, or release event. The review projection replaces only
-  the same exact generated attribution and lifecycle regions with canonical
-  sentinels; all other staged bytes remain bound.
+- `preapproval_realization_root` binds the complete deterministic inputs to the
+  review projection, the exact embedded implementation digest for identity,
+  assembly, lifecycle, planning, and publication code, builder identity,
+  `science_root`, `communication_root`, `review_governance_root`, and the
+  current content review subject. This derivation-complete identity is
+  available before staging and contains no attribution, approval, or release
+  event.
 - Each scientific or reproduction/publication approval event binds the exact
   current roots and predecessor events required by the normative role matrix
   below. It never binds a root containing itself.
@@ -178,8 +180,9 @@ approval_lock_root + realization_root + target release + transfer event
   subject and realization root.
 - `approval_lock_root` binds `pre_steward_approval_root`, the exact steward
   event ID, and the complete ordered set of predecessor approval event IDs.
-- `realization_root` binds `preapproval_realization_root`, exact staged output
-  digests, `attribution_root`, and `approval_lock_root`.
+- `realization_root` binds `preapproval_realization_root`, the same embedded
+  implementation digest, `attribution_root`, and `approval_lock_root`. It is an
+  approval realization, not a substitute for observing built files.
 - A release-transfer event binds `approval_lock_root`, `realization_root`, the
   exact target release identity, release owner, steward, decision, and date.
   `release_transfer_root` binds that immutable event ID plus those same roots
@@ -190,6 +193,13 @@ Staged files that display a calculated root are canonicalized by replacing that
 field with null before hashing the realization. The identity algorithm version
 defines the complete normalization. No root may directly or indirectly contain
 itself.
+
+The build/check and publication contracts independently hash and compare the
+exact observed staged files. Publication and release receipts bind those exact
+observed digests. A change in deterministic implementation invalidates the
+preapproval identity; a nondeterministic or externally altered output fails the
+observed-stage comparison. This two-part rule avoids a circular identity while
+still requiring both derivation completeness and exact-byte observation.
 
 ### Approval-role binding matrix
 
@@ -282,6 +292,24 @@ requiring the existing impact-review process.
 The old `normalize` command remains a one-cycle compatibility alias for
 `amend normalize`.
 
+### Implementation Rebinding
+
+`amend rebind-implementation --all` recalculates generated review locks after
+the assurance identity, assembly, lifecycle, planner, or publication
+implementation changes. It cannot alter report sources or authority events.
+It is a no-op when every generated lock already binds the current embedded
+implementation identity, and it fails closed when an existing approval cannot
+bind the recalculated realization. This operation replaces one-off migration
+parsers as the ordinary post-implementation-change path. The operation may
+adopt drift only for its finite implementation-contract surface: the v2 README
+and the enumerated v2 schemas. Report descriptors, manuscripts, supplements,
+evidence, principal records, catalog data, and events remain strict and require
+their own typed operation. A changed rebind receipt is `scientific-full`, names
+the implementation-package gate, and carries no focused gate argv; it therefore
+cannot authorize the proportional receipt runner. Rebinding generated identity
+does not reduce the full closure required for the implementation change that
+made the locks stale.
+
 ## Lifecycle State Matrix
 
 The initial implementation is deliberately narrow:
@@ -292,6 +320,7 @@ The initial implementation is deliberately narrow:
 | attribution correction | allow | allow; preserve the content review subject, ledger, and scientific/reproduction approvals; invalidate steward approval and every downstream lock, realization, or transfer that binds `attribution_root` | reject; require typed reentry or new version | reject mutation; require new patch version and supersession workflow |
 | role assignment | allow | allow only through governance event; create a new content review subject and invalidate downstream review authority | reject; require typed reentry | reject mutation; require new version |
 | normalization | allow | allow; preserve `science_root`, create a new communication/content-review subject and ledger, and invalidate every approval that binds `communication_root`, including scientific, reproduction/publication, and steward approval | reject; require typed reentry or new version | reject mutation; require new patch version |
+| implementation rebind | allow when generated locks are stale | allow when current events remain valid; recalculate generated locks only | allow only when every existing approval remains valid against the current implementation identity; otherwise reject | reject mutation; require new version or explicit lifecycle workflow |
 | enter review | allow transition to `IN_REVIEW` | no-op only when subject is identical | reject | reject |
 | finding or disposition | reject | allow | reject | reject |
 | approval | reject | allow only for current ledger and eligible independent principal | no-op only for identical event | reject |
@@ -321,7 +350,7 @@ openwepp-assurance amend attribution --report <id> <typed flags> (--check|--appl
 openwepp-assurance amend principal --request <yaml> (--check|--apply)
 openwepp-assurance amend role --report <id> --request <yaml> (--check|--apply)
 openwepp-assurance amend normalize --report <id> --language en-US (--check|--apply)
-openwepp-assurance amend migrate-identities --all --base-ref <commit> (--check|--apply)
+openwepp-assurance amend rebind-implementation --all (--check|--apply)
 openwepp-assurance amend recover (--inspect|--finish-cleanup|--restore-old)
 openwepp-assurance lifecycle --report <id> --request <yaml> (--check|--apply)
 openwepp-assurance verify-generation --base-ref <commit>
@@ -339,9 +368,10 @@ automation compare-and-swap; humans never copy a generation hash into a request.
 
 `--check` calculates and validates the complete candidate without writing.
 `--apply` is required for mutation. Global principal operations report and
-update the complete induced report set. All other amendments select exactly one
-report. Interactive prompting and implicit lifecycle transitions are
-prohibited.
+update the complete induced report set. Implementation rebinding is the only
+ordinary all-report generated-lock recalculation. All other amendments select
+exactly one report. Interactive prompting and implicit lifecycle transitions
+are prohibited.
 
 Successful human output is short: operation, changed/no-op, impact class,
 affected reports and paths, old/new root abbreviations, invalidated authority,
@@ -459,7 +489,8 @@ maximum, host, corpus size, report count, binary identity, and selected focused
 test manifest.
 
 - inspect and no-op check p95: at most 2 seconds;
-- amendment transaction p95: at most 5 seconds;
+- amendment transaction p95: at most 5 seconds on the current corpus and at
+  most 10 seconds on the scaled fixture;
 - named ephemeral build/check p95: at most 10 seconds;
 - complete focused receipt runner p95: at most 60 seconds;
 - end-to-end apply through evidence receipt p95: at most 60 seconds and maximum
@@ -524,10 +555,11 @@ records a new review-entry event under the layered root and leaves the report
 `IN_REVIEW` with independent human review still pending. It does not claim that
 calculated equivalence preserved human review authority.
 
-`migrate-identities` is the only all-report initialization operation and refuses
-an already migrated tree. The old embedded-hash parser is deleted after one
-atomic migration; there is no indefinite dual parser. The existing `normalize`
-alias remains for one deprecation cycle.
+`migrate-identities` was the one-time all-report initialization operation and
+refused an already migrated tree. It and the old embedded-hash parser were
+deleted after the atomic migration; there is no dual parser in the completed
+implementation. The existing `normalize` alias remains for one deprecation
+cycle.
 
 ## Acceptance Requirements
 

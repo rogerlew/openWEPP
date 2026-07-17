@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "openwepp:assurance:v2:catalog:3",
+  "$id": "openwepp:assurance:v2:catalog:4",
   "title": "openWEPP assurance v2 source catalog",
   "type": "object",
   "additionalProperties": false,
@@ -14,8 +14,8 @@
     "reports"
   ],
   "properties": {
-    "schema_version": { "const": 3 },
-    "contract_version": { "const": 3 },
+    "schema_version": { "const": 4 },
+    "contract_version": { "const": 4 },
     "source_state": { "const": "internal_assurance_sources" },
     "trust_domain": { "$ref": "#/$defs/trustDomain" },
     "principal_registry": { "$ref": "#/$defs/contentIdentity" },
@@ -46,27 +46,25 @@
     "contentIdentity": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["path", "sha256"],
+      "required": ["path"],
       "properties": {
-        "path": { "$ref": "#/$defs/path" },
-        "sha256": { "$ref": "#/$defs/digest" }
+        "path": { "$ref": "#/$defs/path" }
       }
     },
     "schemaSource": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "path", "sha256"],
+      "required": ["id", "path"],
       "properties": {
         "id": {
           "enum": [
-            "openwepp:assurance:v2:catalog:3",
-            "openwepp:assurance:v2:report:3",
+            "openwepp:assurance:v2:catalog:4",
+            "openwepp:assurance:v2:report:4",
             "openwepp:assurance:v2:result:1",
-            "openwepp:assurance:v2:principals:1"
+            "openwepp:assurance:v2:principals:2"
           ]
         },
-        "path": { "$ref": "#/$defs/path" },
-        "sha256": { "$ref": "#/$defs/digest" }
+        "path": { "$ref": "#/$defs/path" }
       }
     },
     "reportSource": {
@@ -79,8 +77,7 @@
         "owner",
         "trust_domain",
         "fixture_only",
-        "manifest_path",
-        "manifest_sha256"
+        "manifest_path"
       ],
       "properties": {
         "id": { "$ref": "#/$defs/id" },
@@ -89,8 +86,7 @@
         "owner": { "$ref": "#/$defs/text" },
         "trust_domain": { "$ref": "#/$defs/trustDomain" },
         "fixture_only": { "type": "boolean" },
-        "manifest_path": { "$ref": "#/$defs/path" },
-        "manifest_sha256": { "$ref": "#/$defs/digest" }
+        "manifest_path": { "$ref": "#/$defs/path" }
       }
     }
   }

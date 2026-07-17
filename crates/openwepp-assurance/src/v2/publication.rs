@@ -6,22 +6,25 @@ use std::path::{Path, PathBuf};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use super::assembly::{ASSEMBLY_TOOL_ID, has_canonical_markdown_link};
+use super::assembly::has_canonical_markdown_link;
 use super::confined::ConfinedDirectory;
+use super::identity::{ReviewEvent, ReviewLock, load_review_state, verify_review_lock_current};
+#[cfg(test)]
+use super::{Approval, Finding, Publication, Review};
 use super::{
-    Approval, Finding, Principal, PrincipalKind, Publication, Report, ReportSource, Review,
-    V2Repository, parse_yaml, read_identified, read_regular_confined, validate_catalog_binding,
-    validate_report,
+    Principal, PrincipalKind, Report, ReportSource, V2Repository, parse_hydrated_yaml,
+    read_identified, read_regular_confined, validate_catalog_binding, validate_report,
 };
 use crate::{AssuranceError, Result, sha256_bytes};
 
-const SUBJECT_DOMAIN: &str = "openwepp-assurance-subject-v1";
+#[cfg(test)]
 const FINDING_DOMAIN: &str = "openwepp-assurance-findings-v1";
+#[cfg(test)]
 const APPROVAL_DOMAIN: &str = "openwepp-assurance-approvals-v1";
+#[cfg(test)]
 const TRANSFER_DOMAIN: &str = "openwepp-assurance-transfer-v1";
 const SNAPSHOT_DOMAIN: &str = "openwepp-assurance-snapshot-v1";
 const RECEIPT_DOMAIN: &str = "openwepp-assurance-receipt-v1";
-const PLANNER_TOOL_ID: &str = "openwepp-assurance-planner:1";
 const PUBLIC_FORMAT: &str = "openwepp-assurance-public:1";
 const SNAPSHOT_FORMAT: &str = "openwepp-assurance-snapshot:1";
 const RECEIPT_FORMAT: &str = "openwepp-assurance-receipt:1";
@@ -30,22 +33,18 @@ const PUBLICATION_BUILDER_ID: &str =
     "openwepp-assurance-planner:1+openwepp-assurance-assembly:1+publication:1";
 const ZERO_REPORT_README_SHA256: &str =
     "65115fe549cbee3107a120f2719b45c00ca2e63b49ebc5c6fc2d7ea350a3cb70";
+#[cfg(test)]
 const REVIEW_TRANSITION_FIELDS: &[&str] = &[
     "state",
     "decision",
-    "subject_root",
     "review_charge",
     "build_maintainer_id",
     "material_producer_ids",
-    "findings",
-    "finding_ledger_root",
-    "approvals",
-    "approval_lock_root",
     "independence_assessment",
 ];
+#[cfg(test)]
 const PUBLICATION_TRANSITION_FIELDS: &[&str] = &[
     "state",
-    "approval_lock_root",
     "target_release_commit",
     "target_release_configuration",
     "prior_realization",
@@ -57,7 +56,6 @@ const PUBLICATION_TRANSITION_FIELDS: &[&str] = &[
     "assurance_steward_id",
     "publication_date",
     "public_path",
-    "release_transfer_root",
     "export_authorized",
     "vendoring_authorized",
     "supersedes",
@@ -216,6 +214,8 @@ struct ReportContext {
     input_bytes: BTreeMap<PathBuf, Vec<u8>>,
     staged_bytes: BTreeMap<PathBuf, Vec<u8>>,
     roots: V2ReviewRoots,
+    review_lock: ReviewLock,
+    review_events: Vec<ReviewEvent>,
     capabilities: Option<ContextCapabilities>,
 }
 
@@ -456,149 +456,74 @@ fn context_from_staged(
         Some(&source.manifest_sha256),
         &mut inputs,
     )?;
-    let report: Report = parse_yaml(&source.manifest_path, &manifest_bytes)?;
+    let report: Report =
+        parse_hydrated_yaml(&source.manifest_path, &manifest_bytes, &repository.identity)?;
     validate_catalog_binding(source, &report)?;
     validate_report(&repository.root, &report, &mut inputs)?;
     let report_value = yaml_json(&source.manifest_path, &manifest_bytes)?;
+    let report_yaml: serde_yaml::Value =
+        serde_yaml::from_slice(&manifest_bytes).map_err(|error| AssuranceError::Parse {
+            path: source.manifest_path.clone(),
+            message: error.to_string(),
+        })?;
     let mut input_bytes = BTreeMap::new();
     for path in inputs.keys() {
         input_bytes.insert(path.clone(), read_regular_confined(&repository.root, path)?);
     }
-    let roots = calculate_roots(
-        repository,
-        source,
-        &report,
-        &report_value,
-        &inputs,
-        &staged_bytes,
+    let principal_path = Path::new("assurance/v2/principals.yaml");
+    let principal_bytes = read_regular_confined(&repository.root, principal_path)?;
+    let principal_value: serde_yaml::Value =
+        serde_yaml::from_slice(&principal_bytes).map_err(|error| AssuranceError::Parse {
+            path: principal_path.to_path_buf(),
+            message: error.to_string(),
+        })?;
+    verify_review_lock_current(
+        &repository.root,
+        &repository.identity,
+        &source.id,
+        &report_yaml,
+        &principal_value,
     )?;
+    let (review_lock, review_events) =
+        load_review_state(&repository.root, &repository.identity, &source.id)?;
+    let review_lock_path = PathBuf::from(format!(
+        "assurance/v2/reports/{}/review.lock.json",
+        source.id
+    ));
+    input_bytes.insert(
+        review_lock_path.clone(),
+        read_regular_confined(&repository.root, &review_lock_path)?,
+    );
+    for event in &review_events {
+        let path = PathBuf::from(format!(
+            "assurance/v2/reports/{}/review-events/{}.json",
+            source.id, event.event_id
+        ));
+        input_bytes.insert(
+            path.clone(),
+            read_regular_confined(&repository.root, &path)?,
+        );
+    }
+    let roots = V2ReviewRoots {
+        report_id: source.id.clone(),
+        subject_root: review_lock.content_review_subject_root.clone(),
+        finding_ledger_root: review_lock.finding_ledger_root.clone(),
+        approval_lock_root: review_lock.approval_lock_root.clone(),
+        release_transfer_root: review_lock.release_transfer_root.clone(),
+    };
     Ok(ReportContext {
         report,
         report_value,
         input_bytes,
         staged_bytes,
         roots,
+        review_lock,
+        review_events,
         capabilities,
     })
 }
 
-fn calculate_roots(
-    repository: &V2Repository,
-    source: &ReportSource,
-    report: &Report,
-    report_value: &Value,
-    inputs: &BTreeMap<PathBuf, String>,
-    staged_bytes: &BTreeMap<PathBuf, Vec<u8>>,
-) -> Result<V2ReviewRoots> {
-    let normalized_report = normalized_subject_report(report_value)?;
-    let catalog_bytes = read_regular_confined(&repository.root, Path::new(super::V2_CATALOG_PATH))?;
-    let normalized_catalog = normalized_catalog(&catalog_bytes, &source.id)?;
-    let catalog_source_bytes_sha256 = catalog_subject_bytes_digest(&catalog_bytes, repository)?;
-    let stable_inputs = inputs
-        .iter()
-        .filter(|(path, _)| {
-            path.as_path() != source.manifest_path.as_path()
-                && path.as_path() != Path::new(super::V2_CATALOG_PATH)
-        })
-        .map(|(path, digest)| path_string(path).map(|path| (path, Value::String(digest.clone()))))
-        .collect::<Result<serde_json::Map<_, _>>>()?;
-    let staged = staged_bytes
-        .iter()
-        .map(|(path, bytes)| {
-            staged_subject_digest(path, bytes)
-                .and_then(|digest| path_string(path).map(|path| (path, Value::String(digest))))
-        })
-        .collect::<Result<serde_json::Map<_, _>>>()?;
-    let subject = serde_json::json!({
-        "algorithm": "sha256-canonical-json-v1",
-        "domain": SUBJECT_DOMAIN,
-        "report": normalized_report,
-        "catalog": normalized_catalog,
-        "catalog_source_bytes_sha256": catalog_source_bytes_sha256,
-        "inputs": stable_inputs,
-        "staged_outputs": staged,
-        "planner_tool": PLANNER_TOOL_ID,
-        "assembly_tool": ASSEMBLY_TOOL_ID,
-    });
-    let subject_root = digest_value(&subject)?;
-    let finding_ledger_root = if report.review.state == "DRAFT" {
-        None
-    } else {
-        Some(finding_root(&subject_root, &report.review)?)
-    };
-    let approval_lock_root = if report.review.state == "APPROVED" {
-        Some(approval_root(
-            finding_ledger_root.as_deref().ok_or_else(|| {
-                AssuranceError::Invalid("approved review has no finding ledger".to_owned())
-            })?,
-            &report.review,
-        )?)
-    } else {
-        None
-    };
-    let release_transfer_root = if report.publication.state == "APPROVED" {
-        Some(transfer_root(
-            approval_lock_root.as_deref().ok_or_else(|| {
-                AssuranceError::Invalid("approved publication has no approval lock".to_owned())
-            })?,
-            &report.lifecycle,
-            &report.publication,
-        )?)
-    } else {
-        None
-    };
-    Ok(V2ReviewRoots {
-        report_id: report.id.clone(),
-        subject_root,
-        finding_ledger_root,
-        approval_lock_root,
-        release_transfer_root,
-    })
-}
-
-fn catalog_subject_bytes_digest(bytes: &[u8], repository: &V2Repository) -> Result<String> {
-    let mut normalized = bytes.to_vec();
-    for source in repository.sources.values() {
-        let needle = source.manifest_sha256.as_bytes();
-        let matches = normalized
-            .windows(needle.len())
-            .enumerate()
-            .filter_map(|(index, candidate)| (candidate == needle).then_some(index))
-            .collect::<Vec<_>>();
-        let [start] = matches.as_slice() else {
-            return Err(AssuranceError::Invalid(format!(
-                "source catalog must contain report manifest identity exactly once: {}",
-                source.id
-            )));
-        };
-        normalized[*start..*start + needle.len()].fill(b'0');
-    }
-    Ok(sha256_bytes(&normalized))
-}
-
-fn staged_subject_digest(path: &Path, bytes: &[u8]) -> Result<String> {
-    if path.file_name().and_then(|name| name.to_str()) != Some("build-manifest.json") {
-        return Ok(sha256_bytes(bytes));
-    }
-    let mut manifest: Value =
-        serde_json::from_slice(bytes).map_err(|error| AssuranceError::Parse {
-            path: path.to_path_buf(),
-            message: error.to_string(),
-        })?;
-    let object = manifest.as_object_mut().ok_or_else(|| {
-        AssuranceError::Invalid("assembly build manifest must be an object".to_owned())
-    })?;
-    if object
-        .insert("source_root_sha256".to_owned(), Value::Null)
-        .is_none()
-    {
-        return Err(AssuranceError::Invalid(
-            "assembly build manifest lacks source_root_sha256".to_owned(),
-        ));
-    }
-    canonical_bytes(&manifest).map(|bytes| sha256_bytes(&bytes))
-}
-
+#[cfg(test)]
 fn finding_root(subject_root: &str, review: &Review) -> Result<String> {
     let mut findings = review
         .findings
@@ -617,6 +542,7 @@ fn finding_root(subject_root: &str, review: &Review) -> Result<String> {
     }))
 }
 
+#[cfg(test)]
 fn approval_root(finding_root: &str, review: &Review) -> Result<String> {
     let mut approvals = review
         .approvals
@@ -635,6 +561,7 @@ fn approval_root(finding_root: &str, review: &Review) -> Result<String> {
     }))
 }
 
+#[cfg(test)]
 fn transfer_root(
     approval_root: &str,
     lifecycle: &str,
@@ -664,6 +591,7 @@ fn transfer_root(
     }))
 }
 
+#[cfg(test)]
 fn finding_value(finding: &Finding) -> Value {
     serde_json::json!({
         "id": finding.id,
@@ -677,6 +605,7 @@ fn finding_value(finding: &Finding) -> Value {
     })
 }
 
+#[cfg(test)]
 fn approval_value(approval: &Approval) -> Value {
     serde_json::json!({
         "role": approval.role,
@@ -925,49 +854,16 @@ fn validate_publishable(
             report.id
         )));
     }
-    require_declared_root(
-        report.review.subject_root.as_deref(),
-        &context.roots.subject_root,
-        "review subject",
-    )?;
-    require_declared_root(
-        report.review.finding_ledger_root.as_deref(),
-        context
-            .roots
-            .finding_ledger_root
-            .as_deref()
-            .ok_or_else(|| {
-                AssuranceError::Invalid("approved report has no calculated finding root".to_owned())
-            })?,
-        "finding ledger",
-    )?;
-    require_declared_root(
-        report.review.approval_lock_root.as_deref(),
-        context.roots.approval_lock_root.as_deref().ok_or_else(|| {
-            AssuranceError::Invalid("approved report has no calculated approval root".to_owned())
-        })?,
-        "approval lock",
-    )?;
-    require_declared_root(
-        report.publication.release_transfer_root.as_deref(),
-        context
-            .roots
-            .release_transfer_root
-            .as_deref()
-            .ok_or_else(|| {
-                AssuranceError::Invalid(
-                    "approved report has no calculated transfer root".to_owned(),
-                )
-            })?,
-        "release transfer",
-    )?;
-    require_declared_root(
-        report.publication.approval_lock_root.as_deref(),
-        context.roots.approval_lock_root.as_deref().ok_or_else(|| {
-            AssuranceError::Invalid("approved publication has no approval root".to_owned())
-        })?,
-        "publication approval lock",
-    )?;
+    if context.review_lock.lifecycle != "APPROVED"
+        || context.review_lock.approval_lock_root.is_none()
+        || context.review_lock.realization_root.is_none()
+        || context.review_lock.release_transfer_root.is_none()
+    {
+        return Err(AssuranceError::Invalid(
+            "publication requires a current generated approval and release-transfer lock"
+                .to_owned(),
+        ));
+    }
     if report.publication.target_release_commit.as_deref() != Some(release.commit())
         || report.publication.target_release_configuration.as_deref()
             != Some(release.configuration())
@@ -977,20 +873,11 @@ fn validate_publishable(
             report.id
         )));
     }
-    validate_principal_roles(repository, report)
+    validate_principal_roles(repository, context)
 }
 
-fn require_declared_root(declared: Option<&str>, calculated: &str, label: &str) -> Result<()> {
-    if declared == Some(calculated) {
-        Ok(())
-    } else {
-        Err(AssuranceError::Drift(format!(
-            "declared {label} root does not match calculated root"
-        )))
-    }
-}
-
-fn validate_principal_roles(repository: &V2Repository, report: &Report) -> Result<()> {
+fn validate_principal_roles(repository: &V2Repository, context: &ReportContext) -> Result<()> {
+    let report = &context.report;
     let principals = repository
         .principals
         .principals
@@ -1008,23 +895,24 @@ fn validate_principal_roles(repository: &V2Repository, report: &Report) -> Resul
         require_principal(&principals, Some(producer), "material_producer", None)?;
         producers.insert(producer.as_str());
     }
-    for finding in &report.review.findings {
-        if let Some(verifier) = finding.verifier_id.as_deref() {
-            require_principal(&principals, Some(verifier), "finding_verifier", None)?;
-            if finding.disposition == "resolved_and_verified" && producers.contains(verifier) {
-                return Err(AssuranceError::Invalid(format!(
-                    "finding '{}' verifier conflicts with a material producer",
-                    finding.id
-                )));
-            }
+    for event in &context.review_events {
+        if matches!(event.event_type.as_str(), "finding" | "disposition") {
+            require_principal(&principals, Some(&event.principal_id), "reviewer", None)?;
         }
     }
-    validate_approval_principals(&principals, report, &maintainer.id, &producers)
+    validate_approval_principals(
+        &principals,
+        report,
+        &context.review_events,
+        &maintainer.id,
+        &producers,
+    )
 }
 
 fn validate_approval_principals(
     principals: &BTreeMap<&str, &Principal>,
     report: &Report,
+    events: &[ReviewEvent],
     maintainer_id: &str,
     producers: &BTreeSet<&str>,
 ) -> Result<()> {
@@ -1041,18 +929,27 @@ fn validate_approval_principals(
         "report_lead",
         Some(PrincipalKind::Human),
     )?;
+    let approvals = events
+        .iter()
+        .filter(|event| {
+            matches!(
+                event.event_type.as_str(),
+                "scientific_approval" | "reproduction_approval" | "steward_approval"
+            )
+        })
+        .collect::<Vec<_>>();
+    if approvals.len() != 3 {
+        return Err(AssuranceError::Invalid(
+            "publication requires exactly three active approval events".to_owned(),
+        ));
+    }
     let mut approval_ids = BTreeSet::new();
-    for approval in &report.review.approvals {
-        let role = match approval.role.as_str() {
-            "scientific" => "scientific_reviewer",
-            "reproduction_publication" => "reproduction_publication_reviewer",
-            "assurance_steward" => "assurance_steward",
-            _ => {
-                return Err(AssuranceError::Invalid(format!(
-                    "unknown approval role '{}'",
-                    approval.role
-                )));
-            }
+    for approval in &approvals {
+        let role = match approval.event_type.as_str() {
+            "scientific_approval" => "scientific_approver",
+            "reproduction_approval" => "reproduction_approver",
+            "steward_approval" => "assurance_steward",
+            _ => unreachable!(),
         };
         require_principal(
             principals,
@@ -1062,17 +959,18 @@ fn validate_approval_principals(
         )?;
         approval_ids.insert(approval.principal_id.as_str());
         if matches!(
-            approval.role.as_str(),
-            "scientific" | "reproduction_publication"
+            approval.event_type.as_str(),
+            "scientific_approval" | "reproduction_approval"
         ) && (approval.principal_id == lead
             || producers.contains(approval.principal_id.as_str()))
         {
             return Err(AssuranceError::Invalid(format!(
                 "{} approver conflicts with report lead or material producer",
-                approval.role
+                approval.event_type
             )));
         }
-        if approval.role == "reproduction_publication" && approval.principal_id == maintainer_id {
+        if approval.event_type == "reproduction_approval" && approval.principal_id == maintainer_id
+        {
             return Err(AssuranceError::Invalid(
                 "reproduction/publication approver conflicts with build maintainer".to_owned(),
             ));
@@ -1083,11 +981,9 @@ fn validate_approval_principals(
             "approval principals must be distinct".to_owned(),
         ));
     }
-    let scientific = report
-        .review
-        .approvals
+    let scientific = approvals
         .iter()
-        .find(|approval| approval.role == "scientific")
+        .find(|approval| approval.event_type == "scientific_approval")
         .map(|approval| approval.principal_id.as_str());
     if report.authorship.scientific_approver.as_deref() != scientific {
         return Err(AssuranceError::Invalid(
@@ -1106,6 +1002,15 @@ fn validate_approval_principals(
         "assurance_steward",
         Some(PrincipalKind::Human),
     )?;
+    let release = events
+        .iter()
+        .find(|event| event.event_type == "release_transfer")
+        .ok_or_else(|| AssuranceError::Invalid("release-transfer event is missing".to_owned()))?;
+    if report.publication.release_owner_id.as_deref() != Some(&release.principal_id) {
+        return Err(AssuranceError::Invalid(
+            "publication release owner does not match release-transfer authority".to_owned(),
+        ));
+    }
     Ok(())
 }
 
@@ -2111,6 +2016,7 @@ fn revalidate_context(
     Ok(())
 }
 
+#[cfg(test)]
 fn normalized_subject_report(value: &Value) -> Result<Value> {
     let mut report = value.as_object().cloned().ok_or_else(|| {
         AssuranceError::Invalid("report source must normalize from an object".to_owned())
@@ -2135,28 +2041,6 @@ fn normalized_subject_report(value: &Value) -> Result<Value> {
         report.insert(field.to_owned(), Value::Object(object));
     }
     Ok(Value::Object(report))
-}
-
-fn normalized_catalog(bytes: &[u8], selected_report: &str) -> Result<Value> {
-    let mut value = yaml_json(Path::new(super::V2_CATALOG_PATH), bytes)?;
-    let reports = value
-        .get_mut("reports")
-        .and_then(Value::as_array_mut)
-        .ok_or_else(|| AssuranceError::Invalid("catalog reports must be an array".to_owned()))?;
-    let mut selected = false;
-    for report in reports {
-        let object = report.as_object_mut().ok_or_else(|| {
-            AssuranceError::Invalid("catalog report must be an object".to_owned())
-        })?;
-        selected |= object.get("id").and_then(Value::as_str) == Some(selected_report);
-        object.remove("manifest_sha256");
-    }
-    if !selected {
-        return Err(AssuranceError::Invalid(format!(
-            "normalized catalog omitted selected report '{selected_report}'"
-        )));
-    }
-    Ok(value)
 }
 
 fn yaml_json(path: &Path, bytes: &[u8]) -> Result<Value> {
@@ -2203,6 +2087,7 @@ fn canonical_value(value: Value) -> Result<Value> {
     }
 }
 
+#[cfg(test)]
 fn digest_value(value: &Value) -> Result<String> {
     canonical_bytes(value).map(|bytes| sha256_bytes(&bytes))
 }

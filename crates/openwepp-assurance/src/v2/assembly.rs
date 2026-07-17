@@ -5,14 +5,15 @@ use std::path::{Component, Path, PathBuf};
 use serde::Serialize;
 
 use super::{
-    ContentSource, Report, ReportSource, RequiredNullable, ResearchObject, ResultObject,
-    ResultValue, Table, V2Plan, V2PlanState, V2ReportPlan, ValueBinding, digest_input_set,
-    parse_json, parse_yaml, read_regular_confined, validate_catalog_binding, validate_display,
-    validate_report, validate_report_structure,
+    ContentSource, PrincipalRegistry, Report, ReportSource, RequiredNullable, ResearchObject,
+    ResultObject, ResultValue, Table, V2Plan, V2PlanState, V2ReportPlan, ValueBinding,
+    digest_input_set, parse_hydrated_yaml, parse_json, read_regular_confined,
+    validate_catalog_binding, validate_display, validate_report, validate_report_structure,
 };
 use crate::{AssuranceError, Result, sha256_bytes};
 
 use super::confined::ConfinedDirectory;
+use super::identity::{IdentityLock, ReviewLock};
 
 pub(super) const ASSEMBLY_TOOL_ID: &str = "openwepp-assurance-assembly:1";
 const OUTPUT_PREFIX: &str = "usersum/assurance/reports";
@@ -36,10 +37,13 @@ pub(super) enum Operation {
     Check,
 }
 
+#[allow(clippy::too_many_arguments)]
 pub(super) fn execute(
     repository_root: &Path,
     requested_staging_root: &Path,
     shared_inputs: &BTreeMap<PathBuf, String>,
+    identity: &IdentityLock,
+    principals: &PrincipalRegistry,
     sources: &[&ReportSource],
     plan: &V2Plan,
     operation: Operation,
@@ -48,6 +52,8 @@ pub(super) fn execute(
         repository_root,
         requested_staging_root,
         shared_inputs,
+        identity,
+        principals,
         sources,
         plan,
         operation,
@@ -55,10 +61,13 @@ pub(super) fn execute(
     )
 }
 
+#[allow(clippy::too_many_arguments)]
 fn execute_with_post_install(
     repository_root: &Path,
     requested_staging_root: &Path,
     shared_inputs: &BTreeMap<PathBuf, String>,
+    identity: &IdentityLock,
+    principals: &PrincipalRegistry,
     sources: &[&ReportSource],
     plan: &V2Plan,
     operation: Operation,
@@ -78,17 +87,24 @@ fn execute_with_post_install(
                     source.id
                 ))
             })?;
-        rendered.push(render_report(repository_root, source, report_plan)?);
+        rendered.push(render_report(
+            repository_root,
+            identity,
+            principals,
+            source,
+            report_plan,
+        )?);
     }
     rendered.sort_by(|left, right| left.summary.id.cmp(&right.summary.id));
 
-    verify_assembly_inputs(repository_root, shared_inputs, sources, plan)?;
+    verify_assembly_inputs(repository_root, shared_inputs, identity, sources, plan)?;
     match operation {
         Operation::Build => {
             build_reports_transactionally(
                 repository_root,
                 &staging,
                 shared_inputs,
+                identity,
                 sources,
                 plan,
                 &rendered,
@@ -99,7 +115,7 @@ fn execute_with_post_install(
             for report in &rendered {
                 check_rendered_report(&staging, report, true)?;
             }
-            verify_assembly_inputs(repository_root, shared_inputs, sources, plan)?;
+            verify_assembly_inputs(repository_root, shared_inputs, identity, sources, plan)?;
             staging.verify_identity()?;
         }
     }
@@ -121,6 +137,7 @@ fn execute_with_post_install(
 fn verify_assembly_inputs(
     repository_root: &Path,
     shared_inputs: &BTreeMap<PathBuf, String>,
+    identity: &IdentityLock,
     sources: &[&ReportSource],
     plan: &V2Plan,
 ) -> Result<()> {
@@ -128,6 +145,7 @@ fn verify_assembly_inputs(
     let repeated = super::planner::plan_sources(
         repository_root,
         shared_inputs,
+        identity,
         plan.total_report_count,
         sources,
     )?;
@@ -177,14 +195,22 @@ struct RenderedReport {
 
 fn render_report(
     root: &Path,
+    identity: &IdentityLock,
+    principals: &PrincipalRegistry,
     source: &ReportSource,
     plan: &V2ReportPlan,
 ) -> Result<RenderedReport> {
     let manifest_bytes = identified_bytes(root, &source.manifest_path, &source.manifest_sha256)?;
-    let report: Report = parse_yaml(&source.manifest_path, &manifest_bytes)?;
+    let report: Report = parse_hydrated_yaml(&source.manifest_path, &manifest_bytes, identity)?;
     validate_catalog_binding(source, &report)?;
     let mut report_inputs = BTreeMap::new();
     validate_report(root, &report, &mut report_inputs)?;
+    let review_path = PathBuf::from(format!(
+        "assurance/v2/reports/{}/review.lock.json",
+        report.id
+    ));
+    let review_bytes = identified_bytes(root, &review_path, identity.digest_for(&review_path)?)?;
+    let review_lock = ReviewLock::parse(&review_path, &review_bytes)?;
     let bindings = resolve_bindings(root, &report)?;
     let mut usage = Usage::default();
     let mut figures = BTreeMap::new();
@@ -192,6 +218,8 @@ fn render_report(
         root,
         &report,
         &report.manuscript,
+        principals,
+        &review_lock,
         &bindings,
         &mut usage,
         &mut figures,
@@ -200,6 +228,8 @@ fn render_report(
         root,
         &report,
         &report.supplement,
+        principals,
+        &review_lock,
         &bindings,
         &mut usage,
         &mut figures,
@@ -218,7 +248,15 @@ fn render_report(
             bytes,
         )?;
     }
-    stage_research_objects(root, &report, &usage, &version_root, &mut files)?;
+    stage_research_objects(
+        root,
+        &report,
+        principals,
+        &review_lock,
+        &usage,
+        &version_root,
+        &mut files,
+    )?;
 
     let source_root_sha256 = plan.source_root_sha256.clone().ok_or_else(|| {
         AssuranceError::Invalid(format!("report '{}' lacks a source root", report.id))
@@ -521,10 +559,13 @@ struct Usage {
     research_objects: BTreeSet<String>,
 }
 
+#[allow(clippy::too_many_arguments)]
 fn render_content(
     root: &Path,
     report: &Report,
     content: &ContentSource,
+    principals: &PrincipalRegistry,
+    review_lock: &ReviewLock,
     bindings: &BTreeMap<String, ResolvedValue>,
     usage: &mut Usage,
     figure_outputs: &mut BTreeMap<String, Vec<u8>>,
@@ -560,6 +601,8 @@ fn render_content(
             root,
             report,
             content,
+            principals,
+            review_lock,
             bindings,
             usage,
             figure_outputs,
@@ -654,11 +697,16 @@ enum Directive<'a> {
     SupplementLink(&'a str),
     ResearchObjectLink { id: &'a str, label: &'a str },
     UsersumLink { path: &'a str, label: &'a str },
+    Attribution,
+    Lifecycle,
 }
 
 impl Directive<'_> {
     const fn is_block(&self) -> bool {
-        matches!(self, Self::Table(_) | Self::Figure(_))
+        matches!(
+            self,
+            Self::Table(_) | Self::Figure(_) | Self::Attribution | Self::Lifecycle
+        )
     }
 }
 
@@ -706,6 +754,12 @@ fn parse_directive(body: &str) -> Result<Directive<'_>> {
         validate_usersum_path(Path::new(path))?;
         validate_label(label)?;
         return Ok(Directive::UsersumLink { path, label });
+    }
+    if body == "assurance:attribution" {
+        return Ok(Directive::Attribution);
+    }
+    if body == "assurance:lifecycle" {
+        return Ok(Directive::Lifecycle);
     }
     Err(AssuranceError::Invalid(format!(
         "unknown assembly directive '{{{{{body}}}}}'"
@@ -768,6 +822,8 @@ fn render_directive(
     root: &Path,
     report: &Report,
     content: &ContentSource,
+    principals: &PrincipalRegistry,
+    review_lock: &ReviewLock,
     bindings: &BTreeMap<String, ResolvedValue>,
     usage: &mut Usage,
     figure_outputs: &mut BTreeMap<String, Vec<u8>>,
@@ -833,6 +889,8 @@ fn render_directive(
             validate_usersum_source(root, relative)?;
             let _ = write!(output, "[{label}](../../../../{path})");
         }
+        Directive::Attribution => output.push_str(&render_attribution(report, principals)?),
+        Directive::Lifecycle => output.push_str(&render_lifecycle(review_lock)),
     }
     Ok(())
 }
@@ -845,6 +903,58 @@ fn require_declared(id: &str, declared: &[String], kind: &str) -> Result<()> {
             "{kind} '{id}' is not declared for this authored content"
         )))
     }
+}
+
+fn render_attribution(report: &Report, principals: &PrincipalRegistry) -> Result<String> {
+    let lead = match report.authorship.human_report_lead.as_deref() {
+        Some(id) => principal_label(principals, id)?,
+        None => "Not yet assigned".to_owned(),
+    };
+    let producers = report
+        .review
+        .material_producer_ids
+        .iter()
+        .map(|id| principal_label(principals, id))
+        .collect::<Result<Vec<_>>>()?;
+    let producers = if producers.is_empty() {
+        "None recorded".to_owned()
+    } else {
+        producers.join(", ")
+    };
+    Ok(format!(
+        "**Authorship and accountability.** Draft authors: {}. Accountable report lead: {lead}. Material producers: {producers}.\n",
+        report.authorship.draft_authors.join(", ")
+    ))
+}
+
+fn principal_label(principals: &PrincipalRegistry, id: &str) -> Result<String> {
+    let principal = principals
+        .principals
+        .iter()
+        .filter(|principal| principal.id == id)
+        .max_by_key(|principal| principal.record_version)
+        .ok_or_else(|| AssuranceError::Invalid(format!("unknown principal '{id}'")))?;
+    if principal.affiliations.is_empty() {
+        Ok(principal.display_name.clone())
+    } else {
+        Ok(format!(
+            "{} ({})",
+            principal.display_name,
+            principal.affiliations.join("; ")
+        ))
+    }
+}
+
+fn render_lifecycle(lock: &ReviewLock) -> String {
+    let scientific = if lock.approval_lock_root.is_some() {
+        "The ordered scientific, reproduction/publication, and assurance-steward approval chain is complete for this exact realization."
+    } else {
+        "Independent scientific, reproduction/publication, and assurance-steward approval remain pending; no approval lock exists."
+    };
+    format!(
+        "**Assurance status.** This report is `{}`. {scientific} It does not authorize public export, vendoring, or an application-fitness determination.\n",
+        lock.lifecycle
+    )
 }
 
 fn find_table<'a>(report: &'a Report, id: &str) -> Result<&'a Table> {
@@ -1199,6 +1309,8 @@ fn require_exact_usage(
 fn stage_research_objects(
     root: &Path,
     report: &Report,
+    principals: &PrincipalRegistry,
+    review_lock: &ReviewLock,
     usage: &Usage,
     version_root: &Path,
     files: &mut BTreeMap<PathBuf, Vec<u8>>,
@@ -1218,7 +1330,10 @@ fn stage_research_objects(
         let digest = object.sha256.as_deref().ok_or_else(|| {
             AssuranceError::Invalid(format!("research object '{id}' has no digest"))
         })?;
-        let bytes = identified_bytes(root, path, digest)?;
+        let mut bytes = identified_bytes(root, path, digest)?;
+        if path.file_name().and_then(|name| name.to_str()) == Some("agent-assistance-packet.json") {
+            bytes = render_agent_packet_governance(&bytes, report, principals, review_lock, path)?;
+        }
         insert_output(
             files,
             version_root.join("research-objects").join(basename),
@@ -1226,6 +1341,45 @@ fn stage_research_objects(
         )?;
     }
     Ok(())
+}
+
+fn render_agent_packet_governance(
+    bytes: &[u8],
+    report: &Report,
+    principals: &PrincipalRegistry,
+    review_lock: &ReviewLock,
+    path: &Path,
+) -> Result<Vec<u8>> {
+    let mut packet: serde_json::Value =
+        serde_json::from_slice(bytes).map_err(|error| AssuranceError::Parse {
+            path: path.to_path_buf(),
+            message: error.to_string(),
+        })?;
+    let object = packet.as_object_mut().ok_or_else(|| {
+        AssuranceError::Invalid("agent-assistance packet is not an object".to_owned())
+    })?;
+    let lead = match report.authorship.human_report_lead.as_deref() {
+        Some(id) => Some(principal_label(principals, id)?),
+        None => None,
+    };
+    object.insert(
+        "current_governance".to_owned(),
+        serde_json::json!({
+            "generated": true,
+            "lifecycle": review_lock.lifecycle,
+            "accountable_report_lead": lead,
+            "material_producers": report.review.material_producer_ids,
+            "scientific_approval_complete": review_lock.approval_lock_root.is_some(),
+            "public_export_authorized": false,
+        }),
+    );
+    let mut rendered = serde_json::to_vec_pretty(&packet).map_err(|error| {
+        AssuranceError::Invalid(format!(
+            "agent packet governance serialization failed: {error}"
+        ))
+    })?;
+    rendered.push(b'\n');
+    Ok(rendered)
 }
 
 fn insert_output(
@@ -1380,10 +1534,12 @@ struct StagedCommit {
     prior: Option<BTreeMap<PathBuf, Vec<u8>>>,
 }
 
+#[allow(clippy::too_many_arguments)]
 fn build_reports_transactionally(
     repository_root: &Path,
     staging: &StagingRoot,
     shared_inputs: &BTreeMap<PathBuf, String>,
+    identity: &IdentityLock,
     sources: &[&ReportSource],
     plan: &V2Plan,
     reports: &[RenderedReport],
@@ -1404,7 +1560,9 @@ fn build_reports_transactionally(
             }
         }
     }
-    if let Err(error) = verify_assembly_inputs(repository_root, shared_inputs, sources, plan) {
+    if let Err(error) =
+        verify_assembly_inputs(repository_root, shared_inputs, identity, sources, plan)
+    {
         return Err(combine_restoration_error(
             error,
             cleanup_uncommitted(staging, &commits),
@@ -1424,7 +1582,9 @@ fn build_reports_transactionally(
         let restoration = restore_commits(staging, &commits);
         return Err(combine_restoration_error(error, restoration));
     }
-    if let Err(error) = verify_assembly_inputs(repository_root, shared_inputs, sources, plan) {
+    if let Err(error) =
+        verify_assembly_inputs(repository_root, shared_inputs, identity, sources, plan)
+    {
         let restoration = restore_commits(staging, &commits);
         return Err(combine_restoration_error(error, restoration));
     }
@@ -1440,8 +1600,9 @@ fn build_reports_transactionally(
             return Err(combine_restoration_error(error, restoration));
         }
     }
-    if let Err(error) = verify_assembly_inputs(repository_root, shared_inputs, sources, plan)
-        .and_then(|()| staging.verify_identity())
+    if let Err(error) =
+        verify_assembly_inputs(repository_root, shared_inputs, identity, sources, plan)
+            .and_then(|()| staging.verify_identity())
     {
         let restoration = restore_commits(staging, &commits);
         return Err(combine_restoration_error(error, restoration));
@@ -1812,6 +1973,8 @@ mod tests {
             &source.path,
             &stage.path,
             &repository.inputs,
+            &repository.identity,
+            &repository.principals,
             &[report_source],
             &plan,
             Operation::Build,
@@ -1843,40 +2006,17 @@ mod tests {
     fn fixture(label: &str) -> Scratch {
         let source = repository_root();
         let target = Scratch::new(label);
-        copy_tree(
-            &source.join("assurance/v2"),
-            &target.path.join("assurance/v2"),
-        );
+        crate::copy_v2_test_fixture(&source, &target.path).expect("copy exact v2 fixture");
         for relative in [
             "assurance/catalog.yaml",
             "assurance/templates/catalog.md",
             "assurance/generated/wepppy-usersum.yaml",
             "usersum/assurance/README.md",
             "usersum/hillslope-hydrology-and-sediment-physics.md",
-            "docs/specifications/science-contracts/contracts/SC-GWBASEFLOW-001.md",
-            "crates/openwepp-hillslope-orchestrator/src/direct_runtime/groundwater.rs",
-            "docs/work-packages/20260716-assure05-first-production-v2-report-001/artifacts/study-protocol.md",
-            "docs/work-packages/20260716-assure05-first-production-v2-report-001/artifacts/realization-freeze.md",
-            "docs/work-packages/20260716-assure05-first-production-v2-report-001/prompts/archived/20260716-codex-execute-assure05_prompt.md",
-            "docs/work-packages/20260709-laned-active-baseflow-export-closure-001/artifacts/consumer-path-proof.md",
-            "docs/work-packages/20260708-groundwater-baseflow-laned-single-ofe-mofe-implementation-001/artifacts/consumer-path-proof.md",
         ] {
             copy_file(&source, &target.path, relative);
         }
         target
-    }
-
-    fn copy_tree(source: &Path, target: &Path) {
-        fs::create_dir_all(target).expect("create fixture tree");
-        for entry in fs::read_dir(source).expect("read fixture source") {
-            let entry = entry.expect("read fixture entry");
-            let destination = target.join(entry.file_name());
-            if entry.file_type().expect("fixture type").is_dir() {
-                copy_tree(&entry.path(), &destination);
-            } else {
-                fs::copy(entry.path(), destination).expect("copy fixture file");
-            }
-        }
     }
 
     fn copy_file(source_root: &Path, target_root: &Path, relative: &str) {

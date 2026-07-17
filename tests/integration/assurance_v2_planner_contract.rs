@@ -1,4 +1,3 @@
-use std::fmt::Write as _;
 use std::fs::{self, FileTimes};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -281,47 +280,44 @@ fn plan_format_is_plan_only_and_assembly_requires_staging() {
 }
 
 #[test]
-fn malformed_authority_is_not_reduced_to_a_plan_state() {
+fn malformed_authority_remains_an_explicit_blocker() {
     let unsafe_path = fixture("assure04b-unsafe-path");
     replace_in(
         &unsafe_path.path.join(REPORT_PATH),
         "path: docs/specifications/science-contracts/contracts/SC-GWBASEFLOW-001.md",
         "path: ../outside.md",
     );
+    openwepp_assurance::rebind_invalid_v2_test_fixture(&unsafe_path.path)
+        .expect("rebind deliberately invalid authority fixture");
+    let plan = V2Repository::open(&unsafe_path.path)
+        .expect("open unsafe-path catalog")
+        .plan_report(REPORT_ID)
+        .expect("planner must expose malformed authority as blocked");
+    let report = report(&plan, REPORT_ID);
+    assert_eq!(report.state, V2PlanState::Blocked);
     assert!(
-        V2Repository::open(&unsafe_path.path)
-            .expect("open unsafe-path catalog")
-            .plan_report(REPORT_ID)
-            .unwrap_err()
-            .to_string()
+        node(report, &format!("source:manifest:{REPORT_ID}"))
+            .reason
             .contains("confined relative path")
     );
 
     let malformed_digest = fixture("assure04b-malformed-digest");
-    replace_in(
-        &malformed_digest.path.join(REPORT_PATH),
-        "sha256: 97ee00e87df4a87221aa34fc1f44c77176f43922bcfac96c69d4b6de8e230d60",
-        "sha256: not-a-digest",
+    append_bytes(
+        &malformed_digest
+            .path
+            .join("assurance/v2/identity.lock.json"),
+        b"\n",
     );
     assert!(
         V2Repository::open(&malformed_digest.path)
-            .expect("open malformed-digest catalog")
-            .plan_report(REPORT_ID)
             .unwrap_err()
             .to_string()
-            .contains("SHA-256")
+            .contains("canonical JSON")
     );
 
     let invalid_result = fixture("assure04b-invalid-current-result");
     let result_path = invalid_result.path.join(RESULT_PATH);
-    let old_digest = sha256_bytes(&fs::read(&result_path).expect("read valid result"));
     fs::write(&result_path, b"{").expect("write invalid result");
-    let new_digest = sha256_bytes(b"{");
-    replace_in(
-        &invalid_result.path.join(REPORT_PATH),
-        &old_digest,
-        &new_digest,
-    );
     rebind_catalog_manifest(&invalid_result.path);
     assert!(
         V2Repository::open(&invalid_result.path)
@@ -412,36 +408,26 @@ fn add_second_report(root: &Path) {
         manifest = manifest.replace(&old_digest, &sha256_bytes(updated.as_bytes()));
     }
     fs::write(second.join("report.yaml"), manifest.as_bytes()).expect("write second manifest");
-    let manifest_digest = sha256_bytes(&fs::read(second.join("report.yaml")).unwrap());
     let catalog_path = root.join("assurance/v2/catalog.yaml");
-    let mut catalog = fs::read_to_string(&catalog_path).expect("read catalog");
-    write!(
-        catalog,
-        "  - id: {SECOND_REPORT_ID}\n    version: 1.0.0\n    title: Verification of openWEPP's Daily Linear Groundwater Reservoir\n    owner: openWEPP scientific assurance maintainers\n    trust_domain: production\n    fixture_only: false\n    manifest_path: {second_rel}/report.yaml\n    manifest_sha256: {manifest_digest}\n"
+    let mut catalog: serde_yaml::Value =
+        serde_yaml::from_slice(&fs::read(&catalog_path).expect("read catalog"))
+            .expect("parse catalog");
+    catalog["reports"]
+        .as_sequence_mut()
+        .expect("catalog reports")
+        .push(serde_yaml::from_str(&format!(
+            "id: {SECOND_REPORT_ID}\nversion: 1.0.0\ntitle: Verification of openWEPP's Daily Linear Groundwater Reservoir\nowner: openWEPP scientific assurance maintainers\ntrust_domain: production\nfixture_only: false\nmanifest_path: {second_rel}/report.yaml\n"
+        )).expect("second catalog entry"));
+    fs::write(
+        catalog_path,
+        serde_yaml::to_string(&catalog).expect("render catalog"),
     )
-    .expect("append second catalog entry");
-    fs::write(catalog_path, catalog).expect("write two-report catalog");
+    .expect("write two-report catalog");
+    openwepp_assurance::rebind_v2_test_fixture(root).expect("rebind two-report fixture");
 }
 
 fn rebind_catalog_manifest(root: &Path) {
-    let manifest_digest = sha256_bytes(&fs::read(root.join(REPORT_PATH)).expect("read manifest"));
-    let catalog_path = root.join("assurance/v2/catalog.yaml");
-    let catalog = fs::read_to_string(&catalog_path).expect("read catalog for rebind");
-    let mut replaced = false;
-    let updated = catalog
-        .lines()
-        .map(|line| {
-            if !replaced && line.trim_start().starts_with("manifest_sha256:") {
-                replaced = true;
-                format!("    manifest_sha256: {manifest_digest}")
-            } else {
-                line.to_owned()
-            }
-        })
-        .collect::<Vec<_>>()
-        .join("\n");
-    assert!(replaced, "catalog manifest identity not found");
-    fs::write(catalog_path, format!("{updated}\n")).expect("rebind catalog manifest");
+    openwepp_assurance::rebind_v2_test_fixture(root).expect("rebind fixture identity");
 }
 
 fn append_bytes(path: &Path, suffix: &[u8]) {
@@ -459,11 +445,8 @@ fn replace_in(path: &Path, old: &str, new: &str) {
 fn fixture(label: &str) -> Scratch {
     let source = repository_root();
     let target = Scratch::new(label);
-    copy_tree(
-        &source.join("assurance/v2"),
-        &target.path.join("assurance/v2"),
-    );
-    retain_groundwater_fixture(&target.path);
+    openwepp_assurance::copy_v2_test_fixture(&source, &target.path).unwrap();
+    openwepp_assurance::retain_v2_test_report(&target.path, REPORT_ID).unwrap();
     for relative in [
         "assurance/catalog.yaml",
         "assurance/templates/catalog.md",
@@ -481,19 +464,6 @@ fn fixture(label: &str) -> Scratch {
         copy_file(&source, &target.path, relative);
     }
     target
-}
-
-fn retain_groundwater_fixture(root: &Path) {
-    let catalog_path = root.join("assurance/v2/catalog.yaml");
-    let catalog = fs::read_to_string(&catalog_path).expect("read fixture catalog");
-    let marker = format!("\n  - id: {SNOW_REPORT_ID}\n");
-    let split = catalog
-        .find(&marker)
-        .expect("snow/frost catalog entry follows groundwater fixture entry");
-    fs::write(&catalog_path, format!("{}\n", &catalog[..split]))
-        .expect("retain one-report fixture catalog");
-    fs::remove_dir_all(root.join("assurance/v2/reports").join(SNOW_REPORT_ID))
-        .expect("remove unselected snow/frost fixture source");
 }
 
 fn copy_tree(source: &Path, target: &Path) {

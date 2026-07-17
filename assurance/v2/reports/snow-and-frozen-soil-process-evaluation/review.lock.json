@@ -1,0 +1,33 @@
+{
+  "machine_owned": true,
+  "format_version": 1,
+  "identity_algorithm_version": "openwepp-assurance-generated-identity-v2",
+  "report_id": "snow-and-frozen-soil-process-evaluation",
+  "lifecycle": "IN_REVIEW",
+  "legacy_subject_root": "11a473da9b26a31d017d1581e194136082e3bc8f79edefb95051546406e5aa4e",
+  "science_root": "a0d51673a934943f63c6ebbadc16450127aa460cec30709a95d70c53269de1ee",
+  "communication_root": "38c7f973abd0bed7f5b4b4a1a642cfea6f4defbc6e7b168e4961be0526b18963",
+  "attribution_root": "abc680d4ca8a25f5a0f16b0e4691e87cfc17fc1a83621257c1b95ddac8339403",
+  "review_governance_root": "89098608f3a94cfb85b8662bb7b4f9b00ea819dc9f0230af88a6ee90605a10bf",
+  "content_review_subject_root": "054d4e97a9bab020e3a58040214e43763b217fec18d7b45b213e367dd5634724",
+  "finding_ledger_root": "f20524ae3be35139acef2a896b4027ca0a954caf05c6f1d26b7e135b20c4a82a",
+  "preapproval_realization_root": "cb28555406bb3a2b273fea7afaebfe7194f6b0252c66077087194b971aac8703",
+  "pre_steward_approval_root": null,
+  "approval_lock_root": null,
+  "realization_root": null,
+  "release_transfer_root": null,
+  "event_ids": [
+    "280abe0783b37e691aa96f060b8b53b47152031c6fa8f4410727816a7f783e7d"
+  ],
+  "invalidated_event_ids": [
+    "276e8109b84c04c321d945131e82eed6a8a126e923a71d156aace17ae2eb919d",
+    "54496bee31fb1120e7e7fbf93e6f878718333a6df2b0e9b7086f0af95d665ef8",
+    "57c395cf9cdfb90dbb17323dc97d2c8b1c337544abd67592d050d77b64dcdf09",
+    "721e38ad215b1ff748c7f2b837d104769ecae845f3560285638eb039d1d19eb6",
+    "abfccb371574165fee289a551520a562cbb70123eb2ef3d2a83a0be84a8a5e9a",
+    "cb3aaf08a4d55c975897cace5cf9a02893e31ed9b10b11d1c5d885b44836bcff",
+    "d9f97e92ce13481bfc2190ddf2e370d8c84e0abec1b7717305615a15017c55c2",
+    "e62c4ff396367a530dec5bf24a5d07dd48928d6e7bbde1f2de94e1b46b93a6f4",
+    "f857b6f266838d72f6059278e3d9591dd1c07e40871b9c57f2ffa3b03cae8116"
+  ]
+}

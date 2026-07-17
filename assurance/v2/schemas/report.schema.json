@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "openwepp:assurance:v2:report:3",
+  "$id": "openwepp:assurance:v2:report:4",
   "title": "openWEPP assurance v2 report source",
   "type": "object",
   "additionalProperties": false,
@@ -33,13 +33,13 @@
     "publication"
   ],
   "properties": {
-    "schema_version": { "const": 3 },
-    "contract_version": { "const": 3 },
+    "schema_version": { "const": 4 },
+    "contract_version": { "const": 4 },
     "id": { "$ref": "#/$defs/id" },
     "version": { "$ref": "#/$defs/version" },
     "title": { "$ref": "#/$defs/text" },
     "owner": { "$ref": "#/$defs/text" },
-    "lifecycle": { "enum": ["DRAFT", "IN_REVIEW", "APPROVED"] },
+    "lifecycle": { "enum": ["DRAFT", "IN_REVIEW", "APPROVED", "WITHDRAWN", "SUPERSEDED"] },
     "trust_domain": { "enum": ["production", "test_only"] },
     "fixture_only": { "type": "boolean" },
     "reader_metadata": { "$ref": "#/$defs/readerMetadata" },
@@ -166,7 +166,7 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "id", "title", "owner", "path", "sha256", "media_type",
+        "id", "title", "owner", "path", "media_type",
         "provenance", "creation_procedure", "claim_ids", "method_ids",
         "result_ids", "value_binding_ids", "table_ids", "figure_ids",
         "reference_ids", "research_object_ids"
@@ -176,7 +176,6 @@
         "title": { "$ref": "#/$defs/text" },
         "owner": { "$ref": "#/$defs/text" },
         "path": { "$ref": "#/$defs/path" },
-        "sha256": { "$ref": "#/$defs/digest" },
         "media_type": { "const": "text/markdown" },
         "provenance": { "$ref": "#/$defs/text" },
         "creation_procedure": { "$ref": "#/$defs/text" },
@@ -195,7 +194,7 @@
       "additionalProperties": false,
       "required": [
         "id", "title", "owner", "kind", "provenance", "creation_procedure",
-        "access", "license", "path", "sha256", "immutable_identity",
+        "access", "license", "path", "immutable_identity",
         "restriction_reason", "review_role"
       ],
       "properties": {
@@ -208,7 +207,6 @@
         "access": { "$ref": "#/$defs/text" },
         "license": { "$ref": "#/$defs/text" },
         "path": { "$ref": "#/$defs/nullablePath" },
-        "sha256": { "$ref": "#/$defs/nullableDigest" },
         "immutable_identity": { "$ref": "#/$defs/nullableText" },
         "restriction_reason": { "$ref": "#/$defs/nullableText" },
         "review_role": { "$ref": "#/$defs/nullableText" }
@@ -219,7 +217,6 @@
           "then": {
             "properties": {
               "path": { "$ref": "#/$defs/path" },
-              "sha256": { "$ref": "#/$defs/digest" },
               "immutable_identity": { "type": "null" },
               "restriction_reason": { "type": "null" },
               "review_role": { "type": "null" }
@@ -231,7 +228,6 @@
           "then": {
             "properties": {
               "path": { "type": "null" },
-              "sha256": { "type": "null" },
               "immutable_identity": { "$ref": "#/$defs/text" },
               "restriction_reason": { "type": "null" },
               "review_role": { "type": "null" }
@@ -244,7 +240,6 @@
             "properties": {
               "access": { "const": "restricted" },
               "path": { "type": "null" },
-              "sha256": { "type": "null" },
               "immutable_identity": { "$ref": "#/$defs/text" },
               "restriction_reason": { "$ref": "#/$defs/text" },
               "review_role": { "$ref": "#/$defs/text" }
@@ -306,7 +301,7 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "id", "title", "owner", "path", "sha256", "media_type",
+        "id", "title", "owner", "path", "media_type",
         "method_id", "dependency_ids", "unit_ids", "quantity_semantics",
         "precision_policy", "software_realization", "provenance",
         "creation_procedure"
@@ -316,7 +311,6 @@
         "title": { "$ref": "#/$defs/text" },
         "owner": { "$ref": "#/$defs/text" },
         "path": { "$ref": "#/$defs/path" },
-        "sha256": { "$ref": "#/$defs/digest" },
         "media_type": { "const": "application/json" },
         "method_id": { "$ref": "#/$defs/id" },
         "dependency_ids": { "$ref": "#/$defs/nonEmptyIdList" },
@@ -435,7 +429,7 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "id", "title", "owner", "access", "license", "path", "sha256",
+        "id", "title", "owner", "access", "license", "path",
         "restriction_reason", "review_role", "result_ids", "method_ids",
         "dependency_ids", "reproduction_instructions"
       ],
@@ -446,7 +440,6 @@
         "access": { "enum": ["public_safe", "restricted"] },
         "license": { "$ref": "#/$defs/text" },
         "path": { "$ref": "#/$defs/nullablePath" },
-        "sha256": { "$ref": "#/$defs/nullableDigest" },
         "restriction_reason": { "$ref": "#/$defs/nullableText" },
         "review_role": { "$ref": "#/$defs/nullableText" },
         "result_ids": { "$ref": "#/$defs/idList" },
@@ -460,7 +453,6 @@
           "then": {
             "properties": {
               "path": { "$ref": "#/$defs/path" },
-              "sha256": { "$ref": "#/$defs/digest" },
               "restriction_reason": { "type": "null" },
               "review_role": { "type": "null" }
             }
@@ -471,7 +463,6 @@
           "then": {
             "properties": {
               "path": { "type": "null" },
-              "sha256": { "type": "null" },
               "restriction_reason": { "$ref": "#/$defs/text" },
               "review_role": { "$ref": "#/$defs/text" }
             }
@@ -483,25 +474,19 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "id", "title", "owner", "state", "decision", "subject_root",
+        "id", "title", "owner", "state", "decision",
         "review_charge", "build_maintainer_id", "material_producer_ids",
-        "findings", "finding_ledger_root", "approvals",
-        "approval_lock_root", "independence_assessment"
+        "independence_assessment"
       ],
       "properties": {
         "id": { "$ref": "#/$defs/id" },
         "title": { "$ref": "#/$defs/text" },
         "owner": { "$ref": "#/$defs/text" },
-        "state": { "enum": ["DRAFT", "IN_REVIEW", "APPROVED"] },
+        "state": { "enum": ["DRAFT", "IN_REVIEW", "APPROVED", "WITHDRAWN", "SUPERSEDED"] },
         "decision": { "enum": ["not_started", "pending", "approved"] },
-        "subject_root": { "$ref": "#/$defs/nullableDigest" },
         "review_charge": { "$ref": "#/$defs/nullableText" },
         "build_maintainer_id": { "$ref": "#/$defs/nullableText" },
         "material_producer_ids": { "$ref": "#/$defs/idList" },
-        "findings": { "type": "array", "items": { "$ref": "#/$defs/finding" } },
-        "finding_ledger_root": { "$ref": "#/$defs/nullableDigest" },
-        "approvals": { "type": "array", "items": { "$ref": "#/$defs/approval" } },
-        "approval_lock_root": { "$ref": "#/$defs/nullableDigest" },
         "independence_assessment": { "$ref": "#/$defs/text" }
       }
     },
@@ -544,12 +529,12 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "id", "title", "owner", "state", "approval_lock_root",
+        "id", "title", "owner", "state",
         "target_release_commit", "target_release_configuration",
         "prior_realization", "candidate_realization", "impact_assessment",
         "reproduction_disposition", "semantic_differences",
         "release_owner_id", "assurance_steward_id", "publication_date",
-        "public_path", "release_transfer_root", "export_authorized",
+        "public_path", "export_authorized",
         "vendoring_authorized", "supersedes", "withdrawn"
       ],
       "properties": {
@@ -557,7 +542,6 @@
         "title": { "$ref": "#/$defs/text" },
         "owner": { "$ref": "#/$defs/text" },
         "state": { "enum": ["DRAFT", "APPROVED"] },
-        "approval_lock_root": { "$ref": "#/$defs/nullableDigest" },
         "target_release_commit": { "$ref": "#/$defs/nullableText" },
         "target_release_configuration": { "$ref": "#/$defs/nullableText" },
         "prior_realization": { "$ref": "#/$defs/nullableText" },
@@ -569,7 +553,6 @@
         "assurance_steward_id": { "$ref": "#/$defs/nullableText" },
         "publication_date": { "$ref": "#/$defs/nullableText" },
         "public_path": { "$ref": "#/$defs/nullablePath" },
-        "release_transfer_root": { "$ref": "#/$defs/nullableDigest" },
         "export_authorized": { "const": false },
         "vendoring_authorized": { "const": false },
         "supersedes": { "$ref": "#/$defs/nullableText" },

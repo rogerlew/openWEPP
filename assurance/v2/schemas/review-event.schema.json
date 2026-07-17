@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "openwepp:assurance:v2:review-event:1",
+  "title": "openWEPP assurance immutable review event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "schema_version",
+    "event_type",
+    "report_id",
+    "principal_id",
+    "decision",
+    "rationale",
+    "recorded_on",
+    "bound_roots",
+    "predecessor_event_ids",
+    "authority_source"
+  ],
+  "properties": {
+    "event_id": { "$ref": "#/$defs/digest" },
+    "schema_version": { "const": 1 },
+    "event_type": {
+      "enum": [
+        "review_entry",
+        "role_assignment",
+        "principal_version",
+        "finding",
+        "disposition",
+        "scientific_approval",
+        "reproduction_approval",
+        "steward_approval",
+        "withdrawal",
+        "supersession",
+        "release_transfer"
+      ]
+    },
+    "report_id": { "$ref": "#/$defs/id" },
+    "principal_id": { "$ref": "#/$defs/id" },
+    "decision": { "$ref": "#/$defs/text" },
+    "rationale": { "$ref": "#/$defs/text" },
+    "recorded_on": { "type": "string", "format": "date" },
+    "bound_roots": { "$ref": "#/$defs/digestMap" },
+    "predecessor_event_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/digest" }
+    },
+    "authority_source": { "$ref": "#/$defs/text" },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/text" }
+    }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$" },
+    "text": { "type": "string", "pattern": "\\S" },
+    "digest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "digestMap": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/digest" }
+    }
+  }
+}

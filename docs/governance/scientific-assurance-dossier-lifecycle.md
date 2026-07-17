@@ -156,7 +156,8 @@ Every material change receives one recorded disposition:
 
 | Change class | Minimum response |
 | --- | --- |
-| Editorial prose with no claim, method, data, result, figure, realization, or authority impact | New root; independent publication reviewer and assurance steward record the bounded disposition |
+| Bibliographic attribution only | Attribution root changes; scientific and reproduction approvals survive only when every root they bind is unchanged; steward, realization, and transfer authority are recalculated or invalidated |
+| Deterministic DRAFT normalization with no protected-region change | Communication root changes before review; no approval exists to carry forward; the focused receipt proves only the bounded transformation |
 | Result value, table, figure, or analysis code | New root; affected independent scientific and reproduction reviewers plus assurance steward approve a bounded impact disposition or repeat full review |
 | Dataset, partition, quality control, forcing, parameter, or method | New evidence root; scientific and reproduction rereview plus assurance-steward approval |
 | Science contract or model formulation | New root; process-owner assessment, independent scientific/reproduction review, and new report version or supersession as indicated |
@@ -168,14 +169,14 @@ Every material change receives one recorded disposition:
 The build planner detects changed dependencies but does not decide scientific
 impact. File timestamps are never currency authority.
 
-The accepted prospective
+The implemented
 [amendment and generated-identity workflow](../specifications/assurance-amendment-and-identity-workflow.md)
 mechanizes bounded attribution, role, lifecycle, and deterministic normalization
 changes. Its focused receipt is sufficient only when the typed operation proves
 the declared root boundary and the lifecycle matrix supplies the required human
 decision. It does not classify arbitrary prose or carry an approval to a changed
-bound root. Until `ASSURE-MAINT-01` completes, the current monolithic roots and
-impact table in this contract remain the implemented lifecycle surface.
+bound root. Layered roots and immutable events are now the implemented lifecycle
+surface; the former monolithic roots remain migration history only.
 
 Every impact decision binds old and new roots, changed identities, change
 class, rationale, reviewer roles and independence attestations, required reruns,

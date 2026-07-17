@@ -140,21 +140,31 @@ pre-commit or validation failure, and emit a deterministic receipt outside the
 content graph. The transaction preserves source permission modes and syncs
 directory entries around generation exchange and cleanup. Once the new
 generation has validated, a cleanup failure does not roll back to a possibly
-partially removed old generation: it reports a distinct committed-cleanup error
-with the committed receipt and retains any recoverable old-generation directory
-for explicit disposition. Retained recovery state blocks later normalization,
-including no-op checks, until that disposition occurs.
+partially removed old generation: it returns the committed receipt and retains
+any recoverable old-generation directory for explicit disposition. Retained
+recovery state blocks later normalization, including no-op checks, until that
+disposition occurs.
 It cannot normalize
 an `IN_REVIEW` or `APPROVED` source, authorize review, classify arbitrary prose
 edits, waive a new root, or decide that scientific meaning is unchanged.
 
-The accepted prospective replacement for manual hash propagation and this
+The implemented replacement for manual hash propagation and the former
 normalization-only maintenance surface is the
 [assurance amendment and generated-identity specification](../specifications/assurance-amendment-and-identity-workflow.md).
-Until `ASSURE-MAINT-01` completes, the embedded-hash source and DRAFT-only
-normalizer described above remain the implemented contract. The migration must
-preserve fail-closed review and publication behavior while separating generated
-identity data from authored scientific and administrative declarations.
+Authored sources now contain logical paths and semantic inputs without derived
+digests or calculated roots. Generated identity and review locks, immutable
+authority events, and transaction receipts preserve fail-closed review and
+publication behavior. `normalize` remains a compatibility alias for the typed
+amendment transaction during one transition cycle.
+
+After reviewed assurance implementation code changes, the typed
+`amend rebind-implementation --all` operation recalculates generated review
+locks without changing authored sources or immutable authority events. A
+repeat is a mechanical no-op. Existing approval bindings remain authoritative
+and cause the operation to fail closed when they do not admit the current
+implementation identity. Only the enumerated v2 README and schema files are
+admissible implementation-contract drift; report, evidence, principal,
+catalog, and event drift remains rejected.
 
 ## Incremental Rebuilds
 
@@ -169,7 +179,10 @@ rendered bytes unchanged can still require scientific impact review.
 
 ## Review Locks
 
-Scientific and publication/reproduction approvals bind:
+Generated review locks separate science, communication, attribution, review
+governance, findings, approval, realization, and release transfer. Immutable
+approval events bind the exact applicable roots and predecessor event IDs.
+Scientific and reproduction/publication approvals bind:
 
 - report and supplement source roots;
 - claim, method, result, table, figure, and reference identities;
@@ -177,11 +190,13 @@ Scientific and publication/reproduction approvals bind:
 - disclosed agent-assistance packet, if any; and
 - the software realization assessed.
 
-Any bound change invalidates the lock. Renewal follows this matrix:
+Any bound change invalidates the dependent event or lock mechanically. Renewal
+follows this matrix:
 
 | Change | Minimum decision and approval |
 | --- | --- |
-| Editorial-only presentation that changes no claim, method, data, result, figure, software realization, or authority | New root; independent publication reviewer plus assurance steward may record no scientific/reproduction impact |
+| Bibliographic attribution only | Attribution changes without changing the content-review subject; scientific and reproduction approvals survive only when their complete bound input set remains current; steward and later authority are recalculated |
+| Deterministic DRAFT normalization | Communication and content-review roots change before review; the receipt proves the protected transformation, not scientific equivalence |
 | Claim, method, dataset, result, table, figure, software realization, or science authority | New root; affected independent scientific and reproduction reviewers plus assurance steward approve a bounded impact disposition or repeat full review |
 | Builder, schema, or template | New root; independent publication/reproduction reviewer plus assurance steward approve semantic equivalence; any scientific meaning change follows the material row above |
 | Unclear or mixed impact | Full scientific, reproduction, and publication rereview |

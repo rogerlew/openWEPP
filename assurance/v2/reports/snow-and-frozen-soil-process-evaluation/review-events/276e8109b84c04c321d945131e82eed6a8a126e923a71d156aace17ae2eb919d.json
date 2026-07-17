@@ -1,0 +1,16 @@
+{
+  "event_id": "276e8109b84c04c321d945131e82eed6a8a126e923a71d156aace17ae2eb919d",
+  "schema_version": 1,
+  "event_type": "review_entry",
+  "report_id": "snow-and-frozen-soil-process-evaluation",
+  "principal_id": "roger-lew",
+  "decision": "entered_pending_review",
+  "rationale": "Migration reentry preserves the existing authorized pending-review posture without carrying the legacy monolithic root as approval authority.",
+  "recorded_on": "2026-07-16",
+  "bound_roots": {
+    "content_review_subject_root": "fece583d61090f9e307479cc41a55796fe0b83b7f772fb3b4ba6997705f317a9",
+    "finding_ledger_root": "494b295f8bcb1710deac8c442506dc239d0ff8d480ece97fb47808783c8ab0a3"
+  },
+  "predecessor_event_ids": [],
+  "authority_source": "existing report-lead and review-entry records at the frozen migration base; mechanically re-entered by ASSURE-MAINT-01 projection migration; mechanically re-entered by ASSURE-MAINT-01 projection migration; mechanically re-entered by ASSURE-MAINT-01 projection migration"
+}

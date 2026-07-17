@@ -1,6 +1,6 @@
 # ASSURE-MAINT-01 — Mechanical Amendment And Identity Workflow
 
-Status: queued; user-authorized scaffold
+Status: complete
 
 Package ID: `20260716-assure-maint01-mechanical-amendment-workflow-001`
 
@@ -34,12 +34,15 @@ WEPPcloud change.
 - [x] (2026-07-16) Completed three independent specification reviews, accepted
   every finding, and revised identity acyclicity, lifecycle authority,
   proportional gate authority, operability, and scope.
-- [x] Obtain final independent re-verification of the revised specification and
-  package after closing the role-binding and release-transfer findings.
-- [ ] Execute the migration and implementation milestones end to end.
-- [ ] Run focused, performance, full closure, and adjudicated CRAP gates.
-- [ ] Complete dual implementation review, finding disposition, heavy-gate
-  delegation, and dual terminal verification.
+- [x] (2026-07-16) Obtained final independent re-verification of the revised
+  specification and package after closing role-binding and release-transfer
+  findings.
+- [x] (2026-07-16) Executed the migration and implementation milestones end to
+  end without changing report science, human authority, or public state.
+- [x] (2026-07-16) Passed the final 45-test focused profile, final-binary
+  performance campaign, full workspace closure, and fresh adjudicated CRAP.
+- [x] (2026-07-16) Completed dual implementation review, finding disposition,
+  same-runner heavy-gate closure, and dual terminal verification.
 
 ## Surprises And Discoveries
 
@@ -60,6 +63,17 @@ WEPPcloud change.
   Evidence: `calculate_roots` in
   `crates/openwepp-assurance/src/v2/publication.rs` constructs one subject from
   normalized report, catalog, stable inputs, and all staged outputs.
+- Observation: the initial generalized extraction retained atomic exchange and
+  rollback but omitted the old normalizer's held-tree and isolated-candidate
+  checks.
+  Evidence: focused migration testing showed that `apply_candidate` validated
+  only after exchange and did not compare complete pre-exchange snapshots.
+- Observation: embedding assurance implementation identity correctly made
+  generated review locks stale after reviewed identity-code changes, but the
+  initial command surface had no ordinary post-change rebinding operation.
+  Evidence: the focused profile failed closed on stale production locks after
+  identity decomposition; `amend rebind-implementation --all` now applies one
+  generated-lock-only transaction and repeats as a no-op.
 
 ## Decision Log
 
@@ -92,6 +106,39 @@ WEPPcloud change.
   Rationale: without a binding execution rule, ordinary CI policy would route
   an `IN_REVIEW` attribution change back to the 30–56 minute full-gate path.
   Date/Author: 2026-07-16 / independent review/Codex.
+- Decision: place the restored reusable exchange engine in `v2/transaction.rs`.
+  Rationale: the package requires transaction extraction, while adding the
+  engine to `amendment.rs` would cross the 3,000-line closure ceiling.
+  Date/Author: 2026-07-16 / Codex.
+- Decision: separate repository-free fixture mutation into `v2/fixture.rs`.
+  Rationale: production fixture APIs replace repeated manual digest helpers
+  without pushing the amendment transaction module to the 3,000-line closure
+  limit.
+  Date/Author: 2026-07-16 / Codex.
+- Decision: bind approval realization to complete deterministic inputs and the
+  exact embedded implementation digest, then require build/check and
+  publication to bind observed staged bytes.
+  Rationale: direct staged-output hashes are unavailable before staging and
+  create a circular approval identity; derivation completeness plus independent
+  exact-byte observation closes both implementation drift and output drift.
+  Date/Author: 2026-07-16 / implementation review/Codex.
+- Decision: set the scaled 100-report/32-MiB transaction p95 limit to 10
+  seconds while retaining 5 seconds for the current corpus.
+  Rationale: the measured filesystem rejects reflink cloning and requires a
+  fail-closed full-generation copy; the measured transaction remains far below
+  the unchanged 60-second end-to-end limit.
+  Date/Author: 2026-07-16 / implementation review/Codex.
+- Decision: retire every one-time migration command and the old-algorithm
+  loader after the production generation reaches the final identity format.
+  Rationale: the package prohibits a permanent dual parser; retained canonical
+  receipts and the anchored generation chain preserve migration evidence.
+  Date/Author: 2026-07-16 / Codex.
+- Decision: retain `amend rebind-implementation --all` as the typed ordinary
+  mechanism for reviewed assurance implementation changes.
+  Rationale: generated locks must bind the current implementation without
+  requiring a compatibility parser or manual digest edits; incompatible
+  immutable approvals must still fail closed.
+  Date/Author: 2026-07-16 / Codex.
 
 ## Context And Orientation
 
@@ -189,7 +236,7 @@ build outputs but must not edit production source.
 ## Declared Write Set
 
 - `crates/openwepp-assurance/src/{cli,error,lib,v2}.rs`
-- `crates/openwepp-assurance/src/v2/{amendment,identity,normalization,planner,assembly,confined,lifecycle,publication}.rs`
+- `crates/openwepp-assurance/src/v2/{amendment,amendment_support,fixture,identity,transaction,normalization,planner,assembly,confined,lifecycle,publication}.rs`
 - `tests/integration/assurance_v2_{amendment,source,planner,assembly,normalization,publication}_contract.rs`
 - `tools/local_ci/run_assurance_amendment.py`
 - `tools/local_ci/README.md`
@@ -363,8 +410,10 @@ local proof.
 Measure cold compilation separately. Use the prebuilt release binary and at
 least ten isolated trials. Record p50, p95, maximum, host, binary identity,
 report count, corpus bytes, focused test manifest, and end-to-end apply-through-
-evidence timing. Require p95 at most 60 seconds, maximum at most 120 seconds,
-and hard failure above 300 seconds on both current and scaled fixtures.
+evidence timing. Require transaction p95 at most 5 seconds for the current
+corpus and at most 10 seconds for the scaled corpus. Require end-to-end p95 at
+most 60 seconds, maximum at most 120 seconds, and hard failure above 300
+seconds on both current and scaled fixtures.
 
 ## Idempotence And Recovery
 
@@ -403,10 +452,34 @@ authoritative. Failure before validated exchange restores or leaves the old
 
 ## Outcomes And Retrospective
 
-Pending execution. Closure must compare measured amendment latency and manual
-touch count with the 30-minute spelling and 42-minute attribution incidents,
-state which agent-maintained steps were eliminated, and name any deterministic
-work still awaiting a mechanical owner.
+The package replaces the 30-minute spelling and 42-minute attribution incidents
+with one typed transaction and one focused receipt runner. On the final binary,
+the current two-report corpus applied in 1.574 seconds p95 and completed
+apply-through-evidence in 48.766 seconds p95. The 100-report/32-MiB corpus
+applied in 9.515 seconds p95 and completed in 57.551 seconds p95; its retained
+60.197-second maximum remains below the 120-second ceiling.
+
+Ordinary bounded attribution, role, lifecycle, and approved normalization
+requests no longer require an agent, a work package, manual hash edits,
+duplicate staging, full workspace tests, or CRAP. Production code calculates
+the complete consumer closure, generated identities, invalidations, receipt,
+and focused gate. Implementation/schema work remains deliberately full-gated;
+the terminal correction made implementation rebind receipts `scientific-full`
+and unable to enter the focused runner.
+
+The migration moved calculated local-file identities and review roots out of
+authored sources, retained an anchored 17-transition generation chain, and
+retired the one-time migration commands and old parser. Groundwater remains
+`DRAFT`; snow/frost remains `IN_REVIEW`; neither report gained approval,
+release-transfer, publication, export, vendoring, or WEPPcloud authority.
+Protected `usersum` is unchanged from the frozen base.
+
+Final closure passed formatting, workspace Clippy, 2,072 full-profile tests,
+dependency policy, and fresh CRAP at 2 raw / 2 adjudicated / 0 actionable. Two
+implementation reviews and two post-heavy terminal verifiers dispositioned all
+findings without waiver. Remaining deterministic assurance work is ordered in
+`artifacts/mechanical-work-queue.md`; it is follow-up opportunity, not deferred
+current-scope acceptance.
 
 Revision note (2026-07-16): initial user-authorized scaffold created to replace
 manual assurance identity propagation and disproportionate small-edit gates.

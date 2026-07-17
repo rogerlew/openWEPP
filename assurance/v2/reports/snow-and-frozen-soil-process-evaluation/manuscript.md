@@ -3,10 +3,11 @@
 *Version 1.0 — 2026-07-16*
 
 Prepared with disclosed Codex assistance for openWEPP scientific-assurance
-maintainers. Roger Lew is the accountable report lead and a material snow/frost
-producer. Independent scientific and reproduction/publication review remain
-pending. The findings below are a bounded synthesis of identified evidence,
-not a published application-fitness determination.
+maintainers. The findings below are a bounded synthesis of identified evidence.
+
+{{assurance:attribution}}
+
+{{assurance:lifecycle}}
 
 ## Key Findings
 
@@ -552,11 +553,10 @@ temperature records are identified in the dataset-provenance research object.
 This report is production-domain V2 source version 1.0.0. It synthesizes named
 historical evidence at the source identities listed in its supplement and was
 assembled at openWEPP Git `47c2cf9eae6eef95f0f670d157d2d31df4cbf9cc`.
-Codex drafted the report and deterministic reconstruction procedure. Roger Lew,
-who led the openWEPP snow and frost development campaign, reviewed this report
-and accepted accountability as its report lead. His development and report-lead
-roles make him a material producer, so his acceptance is not represented as
-independent scientific or reproduction/publication approval. Those independent
-reviewers, the assurance steward, and the release owner remain unassigned. The
-report is in formal review, no approval lock exists, and no public report is
-authorized by this source.
+Codex drafted the report and deterministic reconstruction procedure. The
+current attribution and governance status below are generated from the
+principal registry, report descriptor, and review lock.
+
+{{assurance:attribution}}
+
+{{assurance:lifecycle}}

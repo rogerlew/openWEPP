@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "openwepp:assurance:v2:principals:1",
+  "$id": "openwepp:assurance:v2:principals:2",
   "title": "openWEPP assurance principal registry",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "trust_domain", "principals"],
   "properties": {
-    "schema_version": { "const": 1 },
+    "schema_version": { "const": 2 },
     "trust_domain": { "enum": ["production", "test_only"] },
     "principals": {
       "type": "array",
@@ -21,12 +21,25 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "id", "display_name", "kind", "identity_authority",
+        "id", "record_version", "supersedes", "display_name",
+        "affiliations", "kind", "identity_authority",
         "identity_reference", "roles"
       ],
       "properties": {
         "id": { "$ref": "#/$defs/id" },
+        "record_version": { "type": "integer", "minimum": 1 },
+        "supersedes": {
+          "oneOf": [
+            { "$ref": "#/$defs/id" },
+            { "type": "null" }
+          ]
+        },
         "display_name": { "$ref": "#/$defs/text" },
+        "affiliations": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/text" }
+        },
         "kind": { "enum": ["human", "organization", "agent", "software"] },
         "identity_authority": { "$ref": "#/$defs/text" },
         "identity_reference": { "$ref": "#/$defs/text" },

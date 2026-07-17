@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "operation": "retain_migration_genesis",
+  "impact_class": "governance-focused",
+  "changed": true,
+  "old_generation_id": "17a264d97d7d2ee38009074794f792ece1fa955d2a02dae7c96260f9f022cdd4",
+  "new_generation_id": "205f4469509cea8c83e0d89015dc3f3593bc6f45e54d333d3f5da4fb4ec7fc0c",
+  "affected_reports": [
+    "linear-groundwater-reservoir-recurrence",
+    "snow-and-frozen-soil-process-evaluation"
+  ],
+  "affected_paths": [
+    "assurance/v2/identity.lock.json"
+  ],
+  "invalidated_authority": [],
+  "gate_ids": [
+    "assurance-amendment-v1"
+  ],
+  "gate_argv": [
+    [
+      ".venv/bin/python",
+      "tools/local_ci/run_assurance_amendment.py",
+      "--receipt",
+      "<receipt-path>"
+    ]
+  ]
+}

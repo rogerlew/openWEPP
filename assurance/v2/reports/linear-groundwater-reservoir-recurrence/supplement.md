@@ -226,10 +226,12 @@ model/runtime configuration is unavailable, so the packet supports review and
 repeatability assessment rather than bitwise regeneration of prose.
 
 Coding-agent review can find defects but cannot supply accountable scientific,
-reproduction, publication-steward, or release approval. Until named human
-principals approve the exact locked source, the report remains `DRAFT`, export
-and vendoring remain unauthorized, and the protected public `usersum` surface
-must remain unchanged.
+reproduction, publication-steward, or release approval. The current structured
+attribution and lifecycle projections are:
+
+{{assurance:attribution}}
+
+{{assurance:lifecycle}}
 
 ## Revision Log
 

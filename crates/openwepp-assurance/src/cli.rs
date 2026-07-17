@@ -4,12 +4,15 @@ use std::fmt::Write as _;
 use std::path::PathBuf;
 
 use crate::{
-    Assurance, AssuranceError, BuildOptions, Result, V2AssemblyResult, V2NormalizationMode,
-    V2NormalizationOptions, V2PublicationOptions, V2PublicationResult, V2ReleaseIdentity,
-    V2ReleaseVerification, V2Repository, verify_v2_release_snapshot,
+    Assurance, AssuranceError, BuildOptions, Result, V2AmendMode, V2AssemblyResult,
+    V2NormalizationMode, V2PublicationOptions, V2PublicationResult, V2RecoveryAction,
+    V2ReleaseIdentity, V2ReleaseVerification, V2Repository, amend_attribution_at_generation,
+    amend_lifecycle_at_generation, amend_normalize, amend_normalize_at_generation,
+    amend_principal_at_generation, amend_role_at_generation, inspect_report, rebind_implementation,
+    recover_amendment, verify_generation, verify_v2_release_snapshot,
 };
 
-const USAGE: &str = "Usage:\n  openwepp-assurance validate (--all | --report <id>)\n  openwepp-assurance normalize --report <id> --language en-US (--check | --apply)\n  openwepp-assurance plan (--all | --report <id>) [--format human|json]\n  openwepp-assurance build --all [--output-root <path>] [--snapshot <id> --snapshot-root <path>]\n  openwepp-assurance check --all\n  openwepp-assurance build (--all | --report <id>) --staging-root <path>\n  openwepp-assurance check (--all | --report <id>) --staging-root <path>\n  openwepp-assurance publish (--all | --report <id>) --staging-root <path> --usersum-root <path> --publication-snapshot-root <path> --release-commit <sha> --release-configuration <id>\n  openwepp-assurance publish-test-fixture (--all | --report <id>) --staging-root <path> --usersum-root <path> --publication-snapshot-root <path> --release-commit <sha> --release-configuration <id>\n  openwepp-assurance verify-release --all --snapshot-dir <path> --receipt <path> --release-commit <sha> --release-configuration <id>\n";
+const USAGE: &str = "Usage:\n  openwepp-assurance validate (--all | --report <id>)\n  openwepp-assurance inspect --report <id> [--format human|json]\n  openwepp-assurance amend attribution --principal <id> [--display-name <name>] [--affiliation <text>]... [--if-generation <id>] (--check | --apply)\n  openwepp-assurance amend principal --request <yaml> [--if-generation <id>] (--check | --apply)\n  openwepp-assurance amend role --report <id> --request <yaml> [--if-generation <id>] (--check | --apply)\n  openwepp-assurance amend normalize --report <id> --language en-US [--if-generation <id>] (--check | --apply)\n  openwepp-assurance amend recover (--inspect | --finish-cleanup | --restore-old)\n  openwepp-assurance amend rebind-implementation --all (--check | --apply)\n  openwepp-assurance lifecycle --report <id> --request <yaml> [--if-generation <id>] (--check | --apply)\n  openwepp-assurance verify-generation --base-ref <commit>\n  openwepp-assurance normalize --report <id> --language en-US (--check | --apply)\n  openwepp-assurance plan (--all | --report <id>) [--format human|json]\n  openwepp-assurance build (--all | --report <id>) --staging-root <path>\n  openwepp-assurance check (--all | --report <id>) --staging-root <path>\n  openwepp-assurance publish (--all | --report <id>) --staging-root <path> --usersum-root <path> --publication-snapshot-root <path> --release-commit <sha> --release-configuration <id>\n  openwepp-assurance publish-test-fixture (--all | --report <id>) --staging-root <path> --usersum-root <path> --publication-snapshot-root <path> --release-commit <sha> --release-configuration <id>\n  openwepp-assurance verify-release --all --snapshot-dir <path> --receipt <path> --release-commit <sha> --release-configuration <id>\n";
 
 /// Parses process arguments and executes one assurance operation.
 ///
@@ -37,10 +40,364 @@ where
         ensure_no_arguments(args)?;
         return Ok(USAGE.to_owned());
     }
+    if command == "amend" {
+        let root = env::current_dir().map_err(|error| AssuranceError::io(".", error))?;
+        return execute_amend(&root, args);
+    }
+    if command == "inspect" {
+        let root = env::current_dir().map_err(|error| AssuranceError::io(".", error))?;
+        return execute_inspect(&root, args);
+    }
+    if command == "lifecycle" {
+        let root = env::current_dir().map_err(|error| AssuranceError::io(".", error))?;
+        return execute_lifecycle(&root, args);
+    }
+    if command == "verify-generation" {
+        let root = env::current_dir().map_err(|error| AssuranceError::io(".", error))?;
+        return execute_verify_generation(&root, args);
+    }
     let options = parse_options(args)?;
     let root = env::current_dir().map_err(|error| AssuranceError::io(".", error))?;
     let assurance = Assurance::open(&root)?;
     execute(&root, &assurance, &command, &options)
+}
+
+fn execute_amend<I>(root: &std::path::Path, mut args: I) -> Result<String>
+where
+    I: Iterator<Item = OsString>,
+{
+    let operation = utf8(args.next(), "amend operation")?;
+    match operation.as_str() {
+        "attribution" => execute_amend_attribution(root, args),
+        "principal" => execute_amend_principal(root, args),
+        "role" => execute_amend_role(root, args),
+        "normalize" => execute_amend_normalize(root, args),
+        "recover" => execute_amend_recover(root, args),
+        "rebind-implementation" => execute_rebind_implementation(root, args),
+        _ => Err(AssuranceError::Usage(format!(
+            "unknown amend operation '{operation}'\n{USAGE}"
+        ))),
+    }
+}
+
+fn execute_rebind_implementation<I>(root: &std::path::Path, args: I) -> Result<String>
+where
+    I: Iterator<Item = OsString>,
+{
+    let mut all = false;
+    let mut mode = None;
+    for argument in args {
+        match utf8(Some(argument), "rebind-implementation argument")?.as_str() {
+            "--all" if !all => all = true,
+            "--check" if mode.is_none() => mode = Some(V2AmendMode::Check),
+            "--apply" if mode.is_none() => mode = Some(V2AmendMode::Apply),
+            value => {
+                return Err(AssuranceError::Usage(format!(
+                    "unknown rebind-implementation argument '{value}'\n{USAGE}"
+                )));
+            }
+        }
+    }
+    if !all {
+        return Err(AssuranceError::Usage(
+            "rebind-implementation requires --all".to_owned(),
+        ));
+    }
+    rebind_implementation(root, *required_option(mode.as_ref(), "--check or --apply")?)?
+        .render_json()
+}
+
+fn execute_amend_recover<I>(root: &std::path::Path, args: I) -> Result<String>
+where
+    I: Iterator<Item = OsString>,
+{
+    let mut action = None;
+    for argument in args {
+        let argument = argument
+            .into_string()
+            .map_err(|_| AssuranceError::Usage("recovery argument must be UTF-8".to_owned()))?;
+        let selected = match argument.as_str() {
+            "--inspect" => V2RecoveryAction::Inspect,
+            "--finish-cleanup" => V2RecoveryAction::FinishCleanup,
+            "--restore-old" => V2RecoveryAction::RestoreOld,
+            _ => {
+                return Err(AssuranceError::Usage(format!(
+                    "unknown recovery argument '{argument}'\n{USAGE}"
+                )));
+            }
+        };
+        if action.replace(selected).is_some() {
+            return Err(AssuranceError::Usage(
+                "amend recover accepts exactly one action".to_owned(),
+            ));
+        }
+    }
+    recover_amendment(
+        root,
+        action
+            .ok_or_else(|| AssuranceError::Usage("amend recover requires one action".to_owned()))?,
+    )
+}
+
+fn execute_verify_generation<I>(root: &std::path::Path, mut args: I) -> Result<String>
+where
+    I: Iterator<Item = OsString>,
+{
+    let first = utf8(args.next(), "verify-generation argument")?;
+    if first != "--base-ref" {
+        return Err(AssuranceError::Usage(
+            "verify-generation requires --base-ref <commit>".to_owned(),
+        ));
+    }
+    let base_ref = next_string(&mut args, "--base-ref")?;
+    ensure_no_arguments(args)?;
+    verify_generation(root, &base_ref)
+}
+
+fn execute_amend_attribution<I>(root: &std::path::Path, mut args: I) -> Result<String>
+where
+    I: Iterator<Item = OsString>,
+{
+    let mut principal = None;
+    let mut display_name = None;
+    let mut affiliations = Vec::new();
+    let mut if_generation = None;
+    let mut mode = None;
+    while let Some(argument) = args.next() {
+        let argument = argument
+            .into_string()
+            .map_err(|_| AssuranceError::Usage("amend argument must be UTF-8".to_owned()))?;
+        match argument.as_str() {
+            "--principal" if principal.is_none() => {
+                principal = Some(next_string(&mut args, "--principal")?);
+            }
+            "--display-name" if display_name.is_none() => {
+                display_name = Some(next_string(&mut args, "--display-name")?);
+            }
+            "--affiliation" => affiliations.push(next_string(&mut args, "--affiliation")?),
+            "--if-generation" if if_generation.is_none() => {
+                if_generation = Some(next_string(&mut args, "--if-generation")?);
+            }
+            "--check" if mode.is_none() => mode = Some(V2AmendMode::Check),
+            "--apply" if mode.is_none() => mode = Some(V2AmendMode::Apply),
+            _ => {
+                return Err(AssuranceError::Usage(format!(
+                    "unknown or duplicate attribution argument '{argument}'\n{USAGE}"
+                )));
+            }
+        }
+    }
+    let affiliations = (!affiliations.is_empty()).then_some(affiliations);
+    amend_attribution_at_generation(
+        root,
+        required_option(principal.as_ref(), "--principal")?,
+        display_name.as_deref(),
+        affiliations,
+        *required_option(mode.as_ref(), "--check or --apply")?,
+        if_generation.as_deref(),
+    )?
+    .render_json()
+}
+
+fn execute_amend_principal<I>(root: &std::path::Path, mut args: I) -> Result<String>
+where
+    I: Iterator<Item = OsString>,
+{
+    let mut request = None;
+    let mut if_generation = None;
+    let mut mode = None;
+    while let Some(argument) = args.next() {
+        let argument = argument
+            .into_string()
+            .map_err(|_| AssuranceError::Usage("amend argument must be UTF-8".to_owned()))?;
+        match argument.as_str() {
+            "--request" if request.is_none() => {
+                request = Some(PathBuf::from(next_string(&mut args, "--request")?));
+            }
+            "--if-generation" if if_generation.is_none() => {
+                if_generation = Some(next_string(&mut args, "--if-generation")?);
+            }
+            "--check" if mode.is_none() => mode = Some(V2AmendMode::Check),
+            "--apply" if mode.is_none() => mode = Some(V2AmendMode::Apply),
+            _ => {
+                return Err(AssuranceError::Usage(format!(
+                    "unknown or duplicate principal argument '{argument}'\n{USAGE}"
+                )));
+            }
+        }
+    }
+    let request = required_option(request.as_ref(), "--request")?;
+    let bytes = std::fs::read(request).map_err(|error| AssuranceError::io(request, error))?;
+    amend_principal_at_generation(
+        root,
+        &bytes,
+        *required_option(mode.as_ref(), "--check or --apply")?,
+        if_generation.as_deref(),
+    )?
+    .render_json()
+}
+
+fn execute_amend_role<I>(root: &std::path::Path, mut args: I) -> Result<String>
+where
+    I: Iterator<Item = OsString>,
+{
+    let mut report = None;
+    let mut request = None;
+    let mut if_generation = None;
+    let mut mode = None;
+    while let Some(argument) = args.next() {
+        let argument = argument
+            .into_string()
+            .map_err(|_| AssuranceError::Usage("amend argument must be UTF-8".to_owned()))?;
+        match argument.as_str() {
+            "--report" if report.is_none() => report = Some(next_string(&mut args, "--report")?),
+            "--request" if request.is_none() => {
+                request = Some(PathBuf::from(next_string(&mut args, "--request")?));
+            }
+            "--if-generation" if if_generation.is_none() => {
+                if_generation = Some(next_string(&mut args, "--if-generation")?);
+            }
+            "--check" if mode.is_none() => mode = Some(V2AmendMode::Check),
+            "--apply" if mode.is_none() => mode = Some(V2AmendMode::Apply),
+            _ => {
+                return Err(AssuranceError::Usage(format!(
+                    "unknown or duplicate role argument '{argument}'\n{USAGE}"
+                )));
+            }
+        }
+    }
+    let request = required_option(request.as_ref(), "--request")?;
+    let bytes = std::fs::read(request).map_err(|error| AssuranceError::io(request, error))?;
+    amend_role_at_generation(
+        root,
+        required_option(report.as_ref(), "--report")?,
+        &bytes,
+        *required_option(mode.as_ref(), "--check or --apply")?,
+        if_generation.as_deref(),
+    )?
+    .render_json()
+}
+
+fn execute_amend_normalize<I>(root: &std::path::Path, mut args: I) -> Result<String>
+where
+    I: Iterator<Item = OsString>,
+{
+    let mut report = None;
+    let mut language = None;
+    let mut if_generation = None;
+    let mut mode = None;
+    while let Some(argument) = args.next() {
+        let argument = argument
+            .into_string()
+            .map_err(|_| AssuranceError::Usage("amend argument must be UTF-8".to_owned()))?;
+        match argument.as_str() {
+            "--report" if report.is_none() => {
+                report = Some(next_string(&mut args, "--report")?);
+            }
+            "--language" if language.is_none() => {
+                language = Some(next_string(&mut args, "--language")?);
+            }
+            "--if-generation" if if_generation.is_none() => {
+                if_generation = Some(next_string(&mut args, "--if-generation")?);
+            }
+            "--check" if mode.is_none() => mode = Some(V2AmendMode::Check),
+            "--apply" if mode.is_none() => mode = Some(V2AmendMode::Apply),
+            _ => {
+                return Err(AssuranceError::Usage(format!(
+                    "unknown or duplicate normalize argument '{argument}'\n{USAGE}"
+                )));
+            }
+        }
+    }
+    amend_normalize_at_generation(
+        root,
+        required_option(report.as_ref(), "--report")?,
+        required_option(language.as_ref(), "--language")?,
+        *required_option(mode.as_ref(), "--check or --apply")?,
+        if_generation.as_deref(),
+    )?
+    .render_json()
+}
+
+fn execute_inspect<I>(root: &std::path::Path, mut args: I) -> Result<String>
+where
+    I: Iterator<Item = OsString>,
+{
+    let mut report = None;
+    let mut format = OutputFormat::Human;
+    while let Some(argument) = args.next() {
+        let argument = argument
+            .into_string()
+            .map_err(|_| AssuranceError::Usage("inspect argument must be UTF-8".to_owned()))?;
+        match argument.as_str() {
+            "--report" if report.is_none() => report = Some(next_string(&mut args, "--report")?),
+            "--format" => {
+                let value = next_string(&mut args, "--format")?;
+                format = match value.as_str() {
+                    "human" => OutputFormat::Human,
+                    "json" => OutputFormat::Json,
+                    _ => {
+                        return Err(AssuranceError::Usage(
+                            "--format must be human or json".to_owned(),
+                        ));
+                    }
+                };
+            }
+            _ => {
+                return Err(AssuranceError::Usage(format!(
+                    "unknown or duplicate inspect argument '{argument}'\n{USAGE}"
+                )));
+            }
+        }
+    }
+    let inspection = inspect_report(root, required_option(report.as_ref(), "--report")?)?;
+    match format {
+        OutputFormat::Human => Ok(inspection.render_human()),
+        OutputFormat::Json => inspection.render_json(),
+    }
+}
+
+fn execute_lifecycle<I>(root: &std::path::Path, mut args: I) -> Result<String>
+where
+    I: Iterator<Item = OsString>,
+{
+    let mut report = None;
+    let mut request = None;
+    let mut if_generation = None;
+    let mut mode = None;
+    while let Some(argument) = args.next() {
+        let argument = argument
+            .into_string()
+            .map_err(|_| AssuranceError::Usage("lifecycle argument must be UTF-8".to_owned()))?;
+        match argument.as_str() {
+            "--report" if report.is_none() => {
+                report = Some(next_string(&mut args, "--report")?);
+            }
+            "--request" if request.is_none() => {
+                request = Some(PathBuf::from(next_string(&mut args, "--request")?));
+            }
+            "--if-generation" if if_generation.is_none() => {
+                if_generation = Some(next_string(&mut args, "--if-generation")?);
+            }
+            "--check" if mode.is_none() => mode = Some(V2AmendMode::Check),
+            "--apply" if mode.is_none() => mode = Some(V2AmendMode::Apply),
+            _ => {
+                return Err(AssuranceError::Usage(format!(
+                    "unknown or duplicate lifecycle argument '{argument}'\n{USAGE}"
+                )));
+            }
+        }
+    }
+    let request = required_option(request.as_ref(), "--request")?;
+    let bytes = std::fs::read(request).map_err(|error| AssuranceError::io(request, error))?;
+    amend_lifecycle_at_generation(
+        root,
+        required_option(report.as_ref(), "--report")?,
+        &bytes,
+        *required_option(mode.as_ref(), "--check or --apply")?,
+        if_generation.as_deref(),
+    )?
+    .render_json()
 }
 
 fn utf8(value: Option<OsString>, name: &str) -> Result<String> {
@@ -119,13 +476,11 @@ fn execute_normalize(root: &std::path::Path, options: &Options) -> Result<String
     };
     let language = required_option(options.language.as_ref(), "--language")?;
     let mode = required_option(options.normalization_mode.as_ref(), "--check or --apply")?;
-    let repository = V2Repository::open(root)?;
-    repository
-        .normalize_report(
-            report_id,
-            &V2NormalizationOptions::new(language.clone(), *mode),
-        )?
-        .render_json()
+    let amend_mode = match mode {
+        V2NormalizationMode::Check => V2AmendMode::Check,
+        V2NormalizationMode::Apply => V2AmendMode::Apply,
+    };
+    amend_normalize(root, report_id, language, amend_mode)?.render_json()
 }
 
 fn execute_plan(
@@ -693,7 +1048,34 @@ enum Selection {
 
 #[cfg(test)]
 mod tests {
-    use super::{V2NormalizationMode, execute_normalize, parse_options, publication_options};
+    use std::ffi::OsString;
+    use std::fs;
+    use std::path::{Path, PathBuf};
+    use std::sync::atomic::{AtomicU64, Ordering};
+
+    use super::{
+        V2NormalizationMode, execute_amend, execute_inspect, execute_lifecycle, execute_normalize,
+        parse_options, publication_options,
+    };
+
+    fn repository_root() -> PathBuf {
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
+    }
+
+    fn amend(root: &Path, arguments: &[&str]) -> crate::Result<String> {
+        execute_amend(root, arguments.iter().map(OsString::from))
+    }
+
+    fn request_file(label: &str, contents: &str) -> PathBuf {
+        static SERIAL: AtomicU64 = AtomicU64::new(0);
+        let serial = SERIAL.fetch_add(1, Ordering::Relaxed);
+        let path = std::env::temp_dir().join(format!(
+            "openwepp-assurance-cli-{label}-{}-{serial}.yaml",
+            std::process::id()
+        ));
+        fs::write(&path, contents).expect("write CLI request fixture");
+        path
+    }
 
     #[test]
     fn exactly_one_selection_is_admitted() {
@@ -794,5 +1176,148 @@ mod tests {
         )
         .expect("parse foreign option for execution rejection");
         assert!(execute_normalize(std::path::Path::new("/not-opened"), &foreign).is_err());
+    }
+
+    #[test]
+    fn amendment_recovery_command_reaches_typed_backend() {
+        let root = repository_root();
+        assert!(
+            amend(&root, &["rebind-implementation", "--all", "--check"])
+                .expect("calculate implementation rebind")
+                .contains("\"changed\": false")
+        );
+        assert!(
+            amend(&root, &["recover", "--inspect"])
+                .unwrap()
+                .contains("recovery")
+        );
+        assert!(amend(&root, &["unknown-operation"]).is_err());
+    }
+
+    #[test]
+    fn amendment_data_commands_parse_complete_requests_before_backend_entry() {
+        let missing = Path::new("/not-opened");
+        assert!(
+            amend(
+                missing,
+                &[
+                    "attribution",
+                    "--principal",
+                    "roger-lew",
+                    "--display-name",
+                    "Roger Lew",
+                    "--affiliation",
+                    "University of Idaho",
+                    "--if-generation",
+                    "generation",
+                    "--check",
+                ],
+            )
+            .is_err()
+        );
+        let principal = request_file("principal", "schema_version: 1\n");
+        let role = request_file("role", "schema_version: 1\n");
+        assert!(
+            amend(
+                missing,
+                &[
+                    "principal",
+                    "--request",
+                    principal.to_str().unwrap(),
+                    "--if-generation",
+                    "generation",
+                    "--apply",
+                ],
+            )
+            .is_err()
+        );
+        assert!(
+            amend(
+                missing,
+                &[
+                    "role",
+                    "--report",
+                    "report",
+                    "--request",
+                    role.to_str().unwrap(),
+                    "--if-generation",
+                    "generation",
+                    "--check",
+                ],
+            )
+            .is_err()
+        );
+        assert!(
+            amend(
+                missing,
+                &[
+                    "normalize",
+                    "--report",
+                    "report",
+                    "--language",
+                    "en-US",
+                    "--if-generation",
+                    "generation",
+                    "--check",
+                ],
+            )
+            .is_err()
+        );
+        fs::remove_file(principal).unwrap();
+        fs::remove_file(role).unwrap();
+    }
+
+    #[test]
+    fn inspect_and_lifecycle_commands_cover_human_json_and_request_paths() {
+        let root = repository_root();
+        let report = "snow-and-frozen-soil-process-evaluation";
+        assert!(
+            execute_inspect(
+                &root,
+                ["--report", report, "--format", "human"]
+                    .map(OsString::from)
+                    .into_iter(),
+            )
+            .unwrap()
+            .contains(report)
+        );
+        assert!(
+            execute_inspect(
+                &root,
+                ["--report", report, "--format", "json"]
+                    .map(OsString::from)
+                    .into_iter(),
+            )
+            .unwrap()
+            .contains(report)
+        );
+        assert!(
+            execute_inspect(
+                &root,
+                ["--report", report, "--format", "xml"]
+                    .map(OsString::from)
+                    .into_iter(),
+            )
+            .is_err()
+        );
+        let request = request_file("lifecycle", "schema_version: 1\n");
+        assert!(
+            execute_lifecycle(
+                Path::new("/not-opened"),
+                [
+                    "--report",
+                    report,
+                    "--request",
+                    request.to_str().unwrap(),
+                    "--if-generation",
+                    "generation",
+                    "--check",
+                ]
+                .map(OsString::from)
+                .into_iter(),
+            )
+            .is_err()
+        );
+        fs::remove_file(request).unwrap();
     }
 }

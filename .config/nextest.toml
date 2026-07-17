@@ -69,6 +69,28 @@ report-name = "openwepp-nextest-assurance-editorial"
 store-success-output = false
 store-failure-output = true
 
+# Receipt-authorized assurance data amendment. Keep this manifest narrow and
+# explicit: it is the complete proportional proof for typed report-data-only
+# transactions, never an implementation, publication, or release gate.
+[profile.assurance-amendment]
+inherits = "default"
+default-filter = '''
+(package(openwepp-assurance) & test(/^(cli::tests::amendment_data_commands_parse_complete_requests_before_backend_entry|cli::tests::amendment_recovery_command_reaches_typed_backend|cli::tests::exactly_one_selection_is_admitted|cli::tests::inspect_and_lifecycle_commands_cover_human_json_and_request_paths|cli::tests::normalization_requires_one_explicit_mode|cli::tests::publication_options_bind_all_explicit_cli_inputs|v2::assembly::tests::post_install_source_drift_restores_prior_bytes_without_timing|v2::confined::tests::ambient_identity_detects_path_replacement|v2::confined::tests::ambient_open_creates_missing_components_and_rejects_unconfined_paths|v2::confined::tests::held_relationship_walks_descriptor_subtrees|v2::confined::tests::opened_directory_descriptor_survives_path_replacement|v2::confined::tests::opened_file_descriptor_survives_final_path_replacement|v2::lifecycle::tests::finding_disposition_contract_covers_every_state|v2::planner::tests::blocked_prerequisite_takes_precedence_over_intrinsic_staleness|v2::planner::tests::graph_propagates_stale_and_blocked_with_stable_order|v2::planner::tests::graph_rejects_missing_edge_cycle_and_unused_node|v2::publication::tests::canonical_link_recognizer_rejects_nonrendered_examples|v2::publication::tests::every_approval_leaf_changes_the_approval_layer|v2::publication::tests::every_finding_leaf_changes_the_finding_layer|v2::publication::tests::every_transfer_leaf_changes_the_transfer_layer|v2::publication::tests::transition_classification_exactly_covers_current_nonidentity_leaves|v2::publication::tests::unclassified_future_transition_subtree_leaves_default_to_subject_bound|v2::transaction::tests::committed_cleanup_fault_leaves_new_generation_and_typed_recovery_state|v2::transaction::tests::every_precommit_fault_preserves_the_active_generation|v2::transaction::tests::recovery_tree_verifier_checks_the_selected_generation_members)$/))
+| binary(assurance_v2_amendment_contract)
+| (binary(assurance_v2_source_contract) & test(/(real_sources_satisfy|protected_public_surface)/))
+| (binary(assurance_v2_planner_contract) & test(/(current_one_and_all_plans|malformed_authority)/))
+| (binary(assurance_v2_assembly_contract) & test(real_named_and_all_builds))
+| (binary(assurance_v2_normalization_contract) & test(/(current_report_is_american|apply_rebinds_complete|lifecycle_review_and_packet)/))
+| (binary(assurance_v2_publication_contract) & test(stale_roots_open_findings))
+'''
+fail-fast = false
+
+[profile.assurance-amendment.junit]
+path = "junit.xml"
+report-name = "openwepp-nextest-assurance-amendment"
+store-success-output = false
+store-failure-output = true
+
 # Handoff gate: full workspace, but with slow fixture families scheduled through
 # the groups below instead of unconstrained parallel execution.
 # Use `cargo nextest run --workspace --profile full`.

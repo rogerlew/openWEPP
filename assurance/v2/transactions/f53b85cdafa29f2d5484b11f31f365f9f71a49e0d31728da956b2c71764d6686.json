@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "operation": "rebind-implementation",
+  "impact_class": "governance-focused",
+  "changed": true,
+  "old_generation_id": "bde1fb65367218f9d78517bcaace7d647cb73ed9e150a35a2f215112a288d260",
+  "new_generation_id": "1b3c92574e68c675010548f339ca9ebf52f0ff039a6f9d1595a9223c8478d3f5",
+  "affected_reports": [
+    "linear-groundwater-reservoir-recurrence",
+    "snow-and-frozen-soil-process-evaluation"
+  ],
+  "affected_paths": [
+    "assurance/v2/README.md",
+    "assurance/v2/identity.lock.json",
+    "assurance/v2/reports/linear-groundwater-reservoir-recurrence/review.lock.json",
+    "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review.lock.json",
+    "assurance/v2/schemas/catalog.schema.json",
+    "assurance/v2/schemas/identity-lock.schema.json",
+    "assurance/v2/schemas/principals.schema.json",
+    "assurance/v2/schemas/report.schema.json",
+    "assurance/v2/schemas/review-event.schema.json",
+    "assurance/v2/schemas/review-lock.schema.json",
+    "assurance/v2/schemas/transaction-receipt.schema.json"
+  ],
+  "invalidated_authority": [],
+  "gate_ids": [
+    "assurance-amendment-governance-v1"
+  ],
+  "gate_argv": [
+    [
+      "cargo",
+      "nextest",
+      "run",
+      "--workspace",
+      "--profile",
+      "assurance-amendment"
+    ]
+  ]
+}

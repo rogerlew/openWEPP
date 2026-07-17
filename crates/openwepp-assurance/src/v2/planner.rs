@@ -5,9 +5,10 @@ use std::path::{Path, PathBuf};
 
 use serde::Serialize;
 
+use super::identity::IdentityLock;
 use super::{
     ContentSource, Dependency, DependencyKind, Report, ReportIds, ReportSource, ResearchObject,
-    ResultObject, digest_input_set, parse_json, parse_yaml, read_regular_confined,
+    ResultObject, digest_input_set, parse_hydrated_yaml, parse_json, read_regular_confined,
     validate_catalog_binding, validate_report_structure, validate_result_object,
 };
 use crate::{AssuranceError, Result, sha256_bytes};
@@ -130,12 +131,13 @@ impl V2Plan {
 pub(super) fn plan_sources(
     root: &Path,
     shared_inputs: &BTreeMap<PathBuf, String>,
+    identity: &IdentityLock,
     total_report_count: usize,
     sources: &[&ReportSource],
 ) -> Result<V2Plan> {
     let mut reports = sources
         .iter()
-        .map(|source| plan_report_source(root, shared_inputs, source))
+        .map(|source| plan_report_source(root, shared_inputs, identity, source))
         .collect::<Result<Vec<_>>>()?;
     reports.sort_by(|left, right| left.id.cmp(&right.id));
     Ok(V2Plan {
@@ -150,6 +152,7 @@ pub(super) fn plan_sources(
 fn plan_report_source(
     root: &Path,
     shared_inputs: &BTreeMap<PathBuf, String>,
+    identity: &IdentityLock,
     source: &ReportSource,
 ) -> Result<V2ReportPlan> {
     let manifest_id = format!("source:manifest:{}", source.id);
@@ -165,7 +168,7 @@ fn plan_report_source(
     let Some(bytes) = bytes else {
         return blocked_manifest_plan(source, shared_inputs, manifest, &target_id);
     };
-    let report: Report = match parse_yaml(&source.manifest_path, &bytes) {
+    let report: Report = match parse_hydrated_yaml(&source.manifest_path, &bytes, identity) {
         Ok(report) => report,
         Err(error) => {
             manifest.intrinsic = V2PlanState::Blocked;

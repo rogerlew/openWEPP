@@ -675,6 +675,10 @@ name = "assurance_v2_source_contract"
 path = "tests/integration/assurance_v2_source_contract.rs"
 
 [[test]]
+name = "assurance_v2_amendment_contract"
+path = "tests/integration/assurance_v2_amendment_contract.rs"
+
+[[test]]
 name = "assurance_v2_planner_contract"
 path = "tests/integration/assurance_v2_planner_contract.rs"
 

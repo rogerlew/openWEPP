@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "openwepp:assurance:v2:transaction-receipt:1",
+  "title": "openWEPP assurance amendment transaction receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "operation",
+    "impact_class",
+    "changed",
+    "old_generation_id",
+    "new_generation_id",
+    "affected_reports",
+    "affected_paths",
+    "invalidated_authority",
+    "gate_ids",
+    "gate_argv"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "operation": { "$ref": "#/$defs/text" },
+    "impact_class": {
+      "enum": ["metadata-fast", "editorial-fast", "governance-focused", "scientific-full", "release-full"]
+    },
+    "changed": { "type": "boolean" },
+    "old_generation_id": {
+      "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/digest" }]
+    },
+    "new_generation_id": { "$ref": "#/$defs/digest" },
+    "affected_reports": { "$ref": "#/$defs/idList" },
+    "affected_paths": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/path" }
+    },
+    "invalidated_authority": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/text" }
+    },
+    "gate_ids": { "$ref": "#/$defs/idList" },
+    "gate_argv": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "minItems": 1,
+        "items": { "$ref": "#/$defs/text" }
+      }
+    }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$" },
+    "text": { "type": "string", "pattern": "\\S" },
+    "digest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "path": {
+      "type": "string",
+      "pattern": "^[^/]",
+      "not": { "pattern": "(^|/)\\.{1,2}(/|$)" }
+    },
+    "idList": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/id" }
+    }
+  }
+}

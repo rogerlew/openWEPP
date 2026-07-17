@@ -66,6 +66,17 @@ impl ConfinedDirectory {
         write_new_platform(self, relative, bytes)
     }
 
+    pub(super) fn clone_regular_to(
+        &self,
+        source: &Path,
+        target_root: &Self,
+        target: &Path,
+    ) -> Result<()> {
+        validate_relative(source)?;
+        validate_relative(target)?;
+        clone_regular_to_platform(self, source, target_root, target)
+    }
+
     pub(super) fn read_regular(&self, relative: &Path) -> Result<Vec<u8>> {
         validate_relative(relative)?;
         read_regular_platform(self, relative)
@@ -120,6 +131,10 @@ impl ConfinedDirectory {
     pub(super) fn sync_tree(&self, relative: &Path) -> Result<()> {
         validate_relative(relative)?;
         sync_tree_platform(self, relative)
+    }
+
+    pub(super) fn sync_filesystem(&self) -> Result<()> {
+        sync_filesystem_platform(self)
     }
 
     pub(super) fn sync_parent(&self) -> Result<()> {
@@ -499,6 +514,75 @@ fn write_new_platform(_root: &ConfinedDirectory, _relative: &Path, _bytes: &[u8]
 }
 
 #[cfg(unix)]
+fn clone_regular_to_platform(
+    source_root: &ConfinedDirectory,
+    source: &Path,
+    target_root: &ConfinedDirectory,
+    target: &Path,
+) -> Result<()> {
+    const FICLONE: libc::c_ulong = 0x4004_9409;
+
+    use std::io::{Read as _, Write as _};
+    use std::os::fd::AsRawFd as _;
+
+    let (source_parent, source_name) = open_parent(source_root, source)?;
+    let mut source_file = open_regular_at(&source_parent, source_name, source)?;
+    let target_parent_path = target
+        .parent()
+        .ok_or_else(|| AssuranceError::Invalid("clone target has no parent".to_owned()))?;
+    let target_parent = if target_parent_path.as_os_str().is_empty() {
+        target_root
+            .directory
+            .try_clone()
+            .map_err(|error| AssuranceError::io(target, error))?
+    } else {
+        create_dir_all_platform(target_root, target_parent_path)?
+    };
+    let target_name = target
+        .file_name()
+        .ok_or_else(|| AssuranceError::Invalid("clone target has no name".to_owned()))?;
+    let flags = libc::O_RDWR
+        | libc::O_CREAT
+        | libc::O_EXCL
+        | libc::O_CLOEXEC
+        | libc::O_NOFOLLOW
+        | libc::O_NONBLOCK;
+    let mut target_file = open_at_with_mode(&target_parent, target_name, flags, 0o644)
+        .map_err(|error| component_error(error, target, true))?;
+    // SAFETY: both descriptors refer to opened regular files and FICLONE does
+    // not retain either descriptor after the call.
+    let cloned =
+        unsafe { libc::ioctl(target_file.as_raw_fd(), FICLONE, source_file.as_raw_fd()) } == 0;
+    if !cloned {
+        let mut buffer = vec![0_u8; 64 * 1024].into_boxed_slice();
+        loop {
+            let count = source_file
+                .read(&mut buffer)
+                .map_err(|error| AssuranceError::io(source, error))?;
+            if count == 0 {
+                break;
+            }
+            target_file
+                .write_all(&buffer[..count])
+                .map_err(|error| AssuranceError::io(target, error))?;
+        }
+    }
+    Ok(())
+}
+
+#[cfg(not(unix))]
+fn clone_regular_to_platform(
+    _source_root: &ConfinedDirectory,
+    _source: &Path,
+    _target_root: &ConfinedDirectory,
+    _target: &Path,
+) -> Result<()> {
+    Err(AssuranceError::Invalid(
+        "descriptor-relative confined staging requires Unix openat support".to_owned(),
+    ))
+}
+
+#[cfg(unix)]
 fn read_regular_platform(root: &ConfinedDirectory, relative: &Path) -> Result<Vec<u8>> {
     let (parent, name) = open_parent(root, relative)?;
     let file = open_regular_at(&parent, name, relative)?;
@@ -742,6 +826,30 @@ fn sync_parent_platform(root: &ConfinedDirectory) -> Result<()> {
     root.directory
         .sync_all()
         .map_err(|error| AssuranceError::io(Path::new("."), error))
+}
+
+#[cfg(unix)]
+fn sync_filesystem_platform(root: &ConfinedDirectory) -> Result<()> {
+    use std::os::fd::AsRawFd as _;
+
+    // SAFETY: the descriptor is held open for this directory capability and
+    // syncfs neither retains nor mutates the descriptor.
+    let result = unsafe { libc::syncfs(root.directory.as_raw_fd()) };
+    if result == 0 {
+        Ok(())
+    } else {
+        Err(AssuranceError::io(
+            Path::new("filesystem-sync"),
+            std::io::Error::last_os_error(),
+        ))
+    }
+}
+
+#[cfg(not(unix))]
+fn sync_filesystem_platform(_root: &ConfinedDirectory) -> Result<()> {
+    Err(AssuranceError::Invalid(
+        "descriptor-relative confined staging requires Unix openat support".to_owned(),
+    ))
 }
 
 #[cfg(not(unix))]

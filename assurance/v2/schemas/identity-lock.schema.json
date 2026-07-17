@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "openwepp:assurance:v2:identity-lock:1",
+  "title": "openWEPP assurance generated identity lock",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "machine_owned",
+    "format_version",
+    "identity_algorithm_version",
+    "tool_identity",
+    "genesis",
+    "previous_generation_id",
+    "sources",
+    "review_locks",
+    "generation_id"
+  ],
+  "properties": {
+    "machine_owned": { "const": true },
+    "format_version": { "const": 1 },
+    "identity_algorithm_version": { "const": "openwepp-assurance-generated-identity-v2" },
+    "tool_identity": { "type": "string", "pattern": "\\S" },
+    "genesis": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["base_ref", "legacy_catalog_sha256"],
+          "properties": {
+            "base_ref": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+            "legacy_catalog_sha256": { "$ref": "#/$defs/digest" }
+          }
+        }
+      ]
+    },
+    "previous_generation_id": {
+      "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/digest" }]
+    },
+    "sources": { "$ref": "#/$defs/digestMap" },
+    "review_locks": { "$ref": "#/$defs/digestMap" },
+    "generation_id": { "$ref": "#/$defs/digest" }
+  },
+  "$defs": {
+    "digest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "digestMap": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[^/]",
+        "not": { "pattern": "(^|/)\\.{1,2}(/|$)" }
+      },
+      "additionalProperties": { "$ref": "#/$defs/digest" }
+    }
+  }
+}

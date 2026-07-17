@@ -259,12 +259,11 @@ provenance supports audit and review rather than bitwise prose regeneration.
 Internal coding-agent reviewers may identify defects and reproduce arithmetic.
 They cannot supply accountable human report leadership, scientific approval,
 external peer review, assurance stewardship, release ownership, or application
-fitness. Roger Lew reviewed the report and accepted the report-lead role. He
-also led the underlying snow/frost development campaign and is therefore a
-material producer, not an independent reviewer for this report. The source is
-`IN_REVIEW`; independent scientific and reproduction/publication approvals,
-assurance-steward approval, and an approval lock remain absent. Public export
-remains unauthorized.
+fitness. The current structured attribution and lifecycle projections are:
+
+{{assurance:attribution}}
+
+{{assurance:lifecycle}}
 
 ## Revision Log
 

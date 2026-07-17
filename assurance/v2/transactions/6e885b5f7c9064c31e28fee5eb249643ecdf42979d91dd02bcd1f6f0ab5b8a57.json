@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "operation": "migrate_assure_maint01_final_contract",
+  "impact_class": "governance-focused",
+  "changed": true,
+  "old_generation_id": "526360f4e95c172e80ab1836bd775e24a464516483c15591dcbdf7f54fe0a53f",
+  "new_generation_id": "a27fa9d5ae6e6a2bcd9dbd9ace4bd8ea129a76896b2026124a4be198b7ebc745",
+  "affected_reports": [
+    "linear-groundwater-reservoir-recurrence",
+    "snow-and-frozen-soil-process-evaluation"
+  ],
+  "affected_paths": [
+    "assurance/v2/README.md",
+    "assurance/v2/identity.lock.json",
+    "assurance/v2/reports/linear-groundwater-reservoir-recurrence/review.lock.json",
+    "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review-events/54496bee31fb1120e7e7fbf93e6f878718333a6df2b0e9b7086f0af95d665ef8.json",
+    "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review.lock.json",
+    "assurance/v2/schemas/identity-lock.schema.json",
+    "assurance/v2/schemas/report.schema.json",
+    "assurance/v2/schemas/review-event.schema.json",
+    "assurance/v2/schemas/review-lock.schema.json",
+    "assurance/v2/schemas/transaction-receipt.schema.json"
+  ],
+  "invalidated_authority": [
+    "initial_layer_projection_algorithm",
+    "pre-final pending review-entry binding"
+  ],
+  "gate_ids": [
+    "assurance-amendment-v1"
+  ],
+  "gate_argv": [
+    [
+      "cargo",
+      "nextest",
+      "run",
+      "--workspace",
+      "--profile",
+      "assurance-amendment"
+    ]
+  ]
+}

@@ -3,9 +3,11 @@
 *Version 1.0 draft — 2026-07-16*
 
 Prepared with disclosed Codex assistance for openWEPP scientific-assurance
-maintainers. An accountable human report lead and independent human reviewers
-must accept the exact source before publication; this draft is available for
-that review but is not public authority.
+maintainers and available for accountable human review.
+
+{{assurance:attribution}}
+
+{{assurance:lifecycle}}
 
 ## Key Findings
 

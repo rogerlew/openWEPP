@@ -171,15 +171,15 @@ fn named_validation_isolated_from_an_unselected_broken_report() {
     fs::create_dir_all(path.parent().expect("broken report parent"))
         .expect("create broken report parent");
     fs::write(&path, broken_bytes).expect("write broken report");
-    let digest = sha256_bytes(broken_bytes);
     let catalog = source.path.join(CATALOG_PATH);
     let mut text = fs::read_to_string(&catalog).expect("read catalog");
     write!(
         text,
-        "  - id: broken-report\n    version: 1.0.0\n    title: Broken unselected source\n    owner: test fixture\n    trust_domain: production\n    fixture_only: false\n    manifest_path: {broken_path}\n    manifest_sha256: {digest}\n"
+        "- id: broken-report\n  version: 1.0.0\n  title: Broken unselected source\n  owner: test fixture\n  trust_domain: production\n  fixture_only: false\n  manifest_path: {broken_path}\n"
     )
     .expect("extend catalog text");
     fs::write(catalog, text).expect("extend catalog");
+    openwepp_assurance::rebind_v2_test_fixture(&source.path).expect("bind broken fixture bytes");
 
     let repository = V2Repository::open(&source.path).expect("load two-report catalog");
     let named = repository
@@ -195,8 +195,8 @@ fn unknown_missing_duplicate_unresolved_and_unused_fields_fail_closed() {
     let unknown = fixture("assure04a-unknown-field");
     mutate_report(
         &unknown.path,
-        "schema_version: 3\n",
-        "schema_version: 3\nunexpected_field: true\n",
+        "schema_version: 4\n",
+        "schema_version: 4\nunexpected_field: true\n",
     );
     assert_rejected(&unknown.path, "unknown field");
 
@@ -209,14 +209,14 @@ fn unknown_missing_duplicate_unresolved_and_unused_fields_fail_closed() {
     assert_rejected(&missing.path, "missing field");
 
     let duplicate = fixture("assure04a-duplicate-id");
-    mutate_report(&duplicate.path, "  - id: GW-P05\n", "  - id: GW-P03\n");
+    mutate_report(&duplicate.path, "- id: GW-P05\n", "- id: GW-P03\n");
     assert_rejected(&duplicate.path, "duplicate logical ID");
 
     let unresolved = fixture("assure04a-unresolved-id");
     mutate_report(
         &unresolved.path,
-        "  claim_ids: [GW-P01, GW-P02, GW-P03, GW-P04, GW-P05, GW-P06, GW-P07, GW-P08, GW-P09]\n",
-        "  claim_ids: [GW-P01, GW-P02, GW-P03, GW-P04, GW-P05, GW-P06, GW-P07, GW-P08, GW-MISSING]\n",
+        "  - GW-P09\n  method_ids:\n",
+        "  - GW-MISSING\n  method_ids:\n",
     );
     assert_rejected(&unresolved.path, "unknown claim ID");
 
@@ -224,7 +224,7 @@ fn unknown_missing_duplicate_unresolved_and_unused_fields_fail_closed() {
     mutate_report(
         &unused.path,
         "claims:\n",
-        "  - id: unused_unit\n    symbol: unused\n    quantity: unused quantity\n    definition: deliberately unreachable\nclaims:\n",
+        "- id: unused_unit\n  symbol: unused\n  quantity: unused quantity\n  definition: deliberately unreachable\nclaims:\n",
     );
     assert_rejected(&unused.path, "unused unit ID");
 
@@ -241,8 +241,8 @@ fn unknown_missing_duplicate_unresolved_and_unused_fields_fail_closed() {
     let wrong_family = fixture("assure04a-wrong-reference-family");
     mutate_report(
         &wrong_family.path,
-        "    method_ids: [GW-METHOD-ANALYTICAL]\n",
-        "    method_ids: [GW-DEP-SCIENCE-CONTRACT]\n",
+        "  method_ids:\n  - GW-METHOD-ANALYTICAL\n",
+        "  method_ids:\n  - GW-DEP-SCIENCE-CONTRACT\n",
     );
     assert_rejected(&wrong_family.path, "unknown method ID");
 }
@@ -258,18 +258,23 @@ fn schema_required_nullable_fields_cannot_be_omitted() {
         ),
         (
             "dependency",
-            "    immutable_identity: null\n    restriction_reason: null\n",
-            "    restriction_reason: null\n",
+            "  immutable_identity: null\n  restriction_reason: null\n",
+            "  restriction_reason: null\n",
             "immutable_identity",
         ),
         (
             "research-object",
-            "    sha256: 8d6659d9e60de5c9dace531cbe2d3f74df3e7a5dd9f1b64be4430449cfc4c9d8\n    restriction_reason: null\n    review_role: null\n",
-            "    sha256: 8d6659d9e60de5c9dace531cbe2d3f74df3e7a5dd9f1b64be4430449cfc4c9d8\n    review_role: null\n",
+            "  restriction_reason: null\n  review_role: null\n",
+            "  review_role: null\n",
             "restriction_reason",
         ),
-        ("review", "  subject_root: null\n", "", "subject_root"),
-        ("publication", "  public_path: null\n", "", "public_path"),
+        ("review", "  review_charge: null\n", "", "review charge"),
+        (
+            "publication",
+            "  public_path: null\n",
+            "",
+            "publication public_path",
+        ),
     ];
 
     for (family, old, new, missing_field) in cases {
@@ -293,18 +298,19 @@ fn content_schema_contract_and_report_versions_are_enforced() {
     let catalog_version = fixture("assure04a-catalog-version");
     replace_in(
         &catalog_version.path.join(CATALOG_PATH),
-        "schema_version: 3",
+        "schema_version: 4",
         "schema_version: 1",
     );
-    assert_rejected(&catalog_version.path, "catalog requires schema_version 3");
+    refresh_catalog_hash(&catalog_version.path, CATALOG_PATH);
+    assert_rejected(&catalog_version.path, "catalog requires schema_version 4");
 
     let report_version = fixture("assure04a-report-version");
     mutate_report(
         &report_version.path,
-        "contract_version: 3",
+        "contract_version: 4",
         "contract_version: 1",
     );
-    assert_rejected(&report_version.path, "report requires schema_version 3");
+    assert_rejected(&report_version.path, "report requires schema_version 4");
 
     let semantic_version = fixture("assure04a-semantic-version");
     replace_in(
@@ -372,7 +378,7 @@ fn content_schema_contract_and_report_versions_are_enforced() {
     let schema_constant_drift = fixture("assure04a-schema-constant-drift");
     replace_in(
         &schema_constant_drift.path.join(report_schema_path),
-        "\"contract_version\": { \"const\": 3 }",
+        "\"contract_version\": { \"const\": 4 }",
         "\"contract_version\": { \"const\": 1 }",
     );
     refresh_catalog_hash(&schema_constant_drift.path, report_schema_path);
@@ -415,12 +421,12 @@ fn paths_symlinks_and_special_entries_fail_closed() {
         let special = fixture("assure04a-result-special");
         mutate_report(
             &special.path,
-            &format!("    path: {TWO_DAY_PATH}\n"),
-            "    path: special.sock\n",
+            &format!("  path: {TWO_DAY_PATH}\n"),
+            "  path: special.sock\n",
         );
         let result = special.path.join("special.sock");
         let listener = UnixListener::bind(&result).expect("bind result socket");
-        assert_rejected(&special.path, "regular file");
+        assert_rejected(&special.path, "omits identified source");
         drop(listener);
     }
 }
@@ -430,8 +436,8 @@ fn restricted_evidence_and_draft_lifecycle_contradictions_fail_closed() {
     let restricted = fixture("assure04a-restricted-leak");
     mutate_report(
         &restricted.path,
-        "    kind: local_content\n    provenance: Assessed Rust implementation path.",
-        "    kind: restricted\n    provenance: Assessed Rust implementation path.",
+        "  kind: local_content\n  provenance: Assessed Rust implementation path.",
+        "  kind: restricted\n  provenance: Assessed Rust implementation path.",
     );
     assert_rejected(&restricted.path, "restricted dependency");
 
@@ -441,7 +447,7 @@ fn restricted_evidence_and_draft_lifecycle_contradictions_fail_closed() {
         "  human_report_lead: null",
         "  human_report_lead: Unapproved Person",
     );
-    assert_rejected(&accountability.path, "human_report_lead must be null");
+    assert_rejected(&accountability.path, "draft authorship");
 
     let agent_provenance = fixture("assure04a-agent-provenance-contradiction");
     mutate_report(
@@ -482,62 +488,62 @@ fn every_record_family_has_executable_field_consumption() {
         ),
         (
             "dependency",
-            "    license: repository_license\n    path: docs/specifications",
-            "    license: ''\n    path: docs/specifications",
+            "  license: repository_license\n  path: docs/specifications",
+            "  license: ''\n  path: docs/specifications",
             "license",
         ),
         (
             "unit",
-            "    definition: cubic meter",
-            "    definition: ''",
+            "  definition: cubic meter",
+            "  definition: ''",
             "definition",
         ),
         (
             "claim",
-            "    statement: The assessed implementation",
-            "    statement: '' # The assessed implementation",
+            "  statement: The assessed implementation",
+            "  statement: '' # The assessed implementation",
             "statement",
         ),
         (
             "method",
-            "    procedure: Preserve the independent arithmetic residual",
-            "    procedure: '' # Preserve the independent arithmetic residual",
+            "  procedure: Preserve the independent arithmetic residual",
+            "  procedure: '' # Preserve the independent arithmetic residual",
             "procedure",
         ),
         (
             "result",
-            "    precision_policy: Preserve the independent arithmetic residual",
-            "    precision_policy: '' # Preserve the independent arithmetic residual",
+            "  precision_policy: Preserve the independent arithmetic residual",
+            "  precision_policy: '' # Preserve the independent arithmetic residual",
             "precision_policy",
         ),
         (
             "value-binding",
-            "    transform: identity\n    display: integer",
-            "    transform: unsupported\n    display: integer",
+            "  transform: identity\n  display: integer",
+            "  transform: unsupported\n  display: integer",
             "transform",
         ),
         (
             "table",
-            "    row_header: Day",
-            "    row_header: '' # Day",
+            "  row_header: Day",
+            "  row_header: '' # Day",
             "row_header",
         ),
         (
             "figure",
-            "    alternative_text: Independent binary64 arithmetic",
-            "    alternative_text: '' # Independent binary64 arithmetic",
+            "  alternative_text: Independent binary64 arithmetic",
+            "  alternative_text: '' # Independent binary64 arithmetic",
             "alternative_text",
         ),
         (
             "reference",
-            "    immutable_identity: sha256:97ee",
-            "    immutable_identity: '' # sha256:97ee",
+            "  immutable_identity: sha256:97ee",
+            "  immutable_identity: '' # sha256:97ee",
             "immutable_identity",
         ),
         (
             "research-object",
-            "    reproduction_instructions: Run GW-OBJECT-REPRODUCTION-PROCEDURE",
-            "    reproduction_instructions: '' # Run GW-OBJECT-REPRODUCTION-PROCEDURE",
+            "  reproduction_instructions: Run GW-OBJECT-REPRODUCTION-PROCEDURE",
+            "  reproduction_instructions: '' # Run GW-OBJECT-REPRODUCTION-PROCEDURE",
             "reproduction_instructions",
         ),
     ];
@@ -597,45 +603,15 @@ fn mutate_report(root: &Path, old: &str, new: &str) {
 }
 
 fn refresh_report_hash(root: &Path) {
-    let digest = sha256_bytes(&fs::read(root.join(REPORT_PATH)).expect("read report"));
-    replace_prefixed_value(&root.join(CATALOG_PATH), "    manifest_sha256: ", &digest);
+    openwepp_assurance::rebind_invalid_v2_test_fixture(root).expect("rebind invalid fixture");
 }
 
-fn refresh_local_hash(root: &Path, relative: &str) {
-    let digest = sha256_bytes(&fs::read(root.join(relative)).expect("read local source"));
-    let report = root.join(REPORT_PATH);
-    let text = fs::read_to_string(&report).expect("read report manifest");
-    let path_line = format!("    path: {relative}\n");
-    let start = text.find(&path_line).expect("find source path") + path_line.len();
-    let tail = &text[start..];
-    let hash_start = tail.find("    sha256: ").expect("find source hash") + start;
-    let hash_end = text[hash_start..].find('\n').expect("hash line end") + hash_start;
-    let mut updated = text;
-    updated.replace_range(hash_start..hash_end, &format!("    sha256: {digest}"));
-    fs::write(report, updated).expect("write refreshed source hash");
+fn refresh_local_hash(root: &Path, _relative: &str) {
+    openwepp_assurance::rebind_invalid_v2_test_fixture(root).expect("rebind invalid fixture");
 }
 
-fn refresh_catalog_hash(root: &Path, relative: &str) {
-    let digest = sha256_bytes(&fs::read(root.join(relative)).expect("read schema"));
-    let catalog = root.join(CATALOG_PATH);
-    let text = fs::read_to_string(&catalog).expect("read catalog");
-    let path_line = format!("    path: {relative}\n");
-    let start = text.find(&path_line).expect("find schema path") + path_line.len();
-    let tail = &text[start..];
-    let hash_start = tail.find("    sha256: ").expect("find schema hash") + start;
-    let hash_end = text[hash_start..].find('\n').expect("hash line end") + hash_start;
-    let mut updated = text;
-    updated.replace_range(hash_start..hash_end, &format!("    sha256: {digest}"));
-    fs::write(catalog, updated).expect("write refreshed schema hash");
-}
-
-fn replace_prefixed_value(path: &Path, prefix: &str, replacement: &str) {
-    let text = fs::read_to_string(path).expect("read replacement target");
-    let start = text.find(prefix).expect("find prefixed value") + prefix.len();
-    let end = text[start..].find('\n').expect("value line end") + start;
-    let mut updated = text;
-    updated.replace_range(start..end, replacement);
-    fs::write(path, updated).expect("write replacement target");
+fn refresh_catalog_hash(root: &Path, _relative: &str) {
+    openwepp_assurance::rebind_invalid_v2_test_fixture(root).expect("rebind invalid fixture");
 }
 
 fn replace_in(path: &Path, old: &str, new: &str) {
@@ -647,11 +623,8 @@ fn replace_in(path: &Path, old: &str, new: &str) {
 fn fixture(label: &str) -> Scratch {
     let source = repository_root();
     let target = Scratch::new(label);
-    copy_tree(
-        &source.join("assurance/v2"),
-        &target.path.join("assurance/v2"),
-    );
-    retain_groundwater_fixture(&target.path);
+    openwepp_assurance::copy_v2_test_fixture(&source, &target.path).unwrap();
+    openwepp_assurance::retain_v2_test_report(&target.path, REPORT_ID).unwrap();
     for relative in [
         "assurance/catalog.yaml",
         "assurance/templates/catalog.md",
@@ -669,19 +642,6 @@ fn fixture(label: &str) -> Scratch {
         copy_file(&source, &target.path, relative);
     }
     target
-}
-
-fn retain_groundwater_fixture(root: &Path) {
-    let catalog_path = root.join(CATALOG_PATH);
-    let catalog = fs::read_to_string(&catalog_path).expect("read fixture catalog");
-    let marker = format!("\n  - id: {SNOW_REPORT_ID}\n");
-    let split = catalog
-        .find(&marker)
-        .expect("snow/frost catalog entry follows groundwater fixture entry");
-    fs::write(&catalog_path, format!("{}\n", &catalog[..split]))
-        .expect("retain one-report fixture catalog");
-    fs::remove_dir_all(root.join("assurance/v2/reports").join(SNOW_REPORT_ID))
-        .expect("remove unselected snow/frost fixture source");
 }
 
 fn h2637_path() -> &'static str {
@@ -710,19 +670,6 @@ fn assert_schema_accepts(schema: &serde_json::Value, instance: &serde_json::Valu
 fn assert_schema_rejects(schema: &serde_json::Value, instance: &serde_json::Value, label: &str) {
     let validator = jsonschema::draft202012::new(schema).expect("compile Draft 2020-12 schema");
     assert!(!validator.is_valid(instance), "schema accepted {label}");
-}
-
-fn copy_tree(source: &Path, target: &Path) {
-    fs::create_dir_all(target).expect("create fixture tree");
-    for entry in fs::read_dir(source).expect("read fixture source tree") {
-        let entry = entry.expect("read fixture entry");
-        let destination = target.join(entry.file_name());
-        if entry.file_type().expect("fixture file type").is_dir() {
-            copy_tree(&entry.path(), &destination);
-        } else {
-            fs::copy(entry.path(), destination).expect("copy fixture entry");
-        }
-    }
 }
 
 fn copy_file(source_root: &Path, target_root: &Path, relative: &str) {

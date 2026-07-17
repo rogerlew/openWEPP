@@ -4,9 +4,9 @@ use std::path::PathBuf;
 use serde::Deserialize;
 
 use super::{
-    DRAFT, Finding, PRINCIPAL_SCHEMA_VERSION, Review, V2TrustDomain, require_absent,
-    require_nonempty, require_present_nonempty, require_unique, validate_digest,
-    validate_digest_present, validate_id, validate_relative,
+    DRAFT, Finding, PRINCIPAL_SCHEMA_VERSION, RequiredNullable, Review, V2TrustDomain,
+    require_absent, require_nonempty, require_present_nonempty, require_unique, validate_id,
+    validate_relative,
 };
 use crate::{AssuranceError, Result, sha256_bytes};
 
@@ -44,7 +44,11 @@ pub(super) struct PrincipalRegistry {
 #[serde(deny_unknown_fields)]
 pub(super) struct Principal {
     pub(super) id: String,
-    display_name: String,
+    pub(super) record_version: u32,
+    #[serde(default)]
+    supersedes: RequiredNullable<String>,
+    pub(super) display_name: String,
+    pub(super) affiliations: Vec<String>,
     pub(super) kind: PrincipalKind,
     identity_authority: String,
     identity_reference: String,
@@ -72,10 +76,27 @@ pub(super) fn validate_principal_registry(
             "principal registry version, trust domain, or cardinality is invalid".to_owned(),
         ));
     }
-    let mut ids = BTreeSet::new();
+    let mut records = BTreeSet::new();
+    let mut latest_versions = BTreeMap::new();
     for principal in &registry.principals {
         validate_id(&principal.id, "principal")?;
-        require_unique(&mut ids, &principal.id, "principal")?;
+        if principal.record_version == 0 {
+            return Err(AssuranceError::Invalid(format!(
+                "principal '{}' record_version must be positive",
+                principal.id
+            )));
+        }
+        let record_id = format!("{}@{}", principal.id, principal.record_version);
+        require_unique(&mut records, &record_id, "principal record")?;
+        let previous = latest_versions
+            .insert(principal.id.clone(), principal.record_version)
+            .unwrap_or(0);
+        if previous >= principal.record_version {
+            return Err(AssuranceError::Invalid(format!(
+                "principal '{}' versions must be strictly increasing",
+                principal.id
+            )));
+        }
         for (value, label) in [
             (&principal.display_name, "principal display name"),
             (
@@ -94,6 +115,19 @@ pub(super) fn validate_principal_registry(
                 "principal '{}' requires at least one role",
                 principal.id
             )));
+        }
+        if principal
+            .affiliations
+            .iter()
+            .any(|affiliation| affiliation.trim().is_empty())
+        {
+            return Err(AssuranceError::Invalid(format!(
+                "principal '{}' has an empty affiliation",
+                principal.id
+            )));
+        }
+        if let Some(supersedes) = principal.supersedes.as_deref() {
+            require_nonempty(supersedes, "principal supersedes")?;
         }
         let mut roles = BTreeSet::new();
         for role in &principal.roles {
@@ -167,22 +201,20 @@ fn validate_review_state(review: &Review) -> Result<()> {
         DRAFT => validate_draft_review(review),
         "IN_REVIEW" => validate_in_review(review),
         "APPROVED" => validate_approved_review(review),
+        "WITHDRAWN" => validate_terminal_review(review, "withdrawn"),
+        "SUPERSEDED" => validate_terminal_review(review, "superseded"),
         _ => Err(AssuranceError::Invalid(
-            "review state must be DRAFT, IN_REVIEW, or APPROVED".to_owned(),
+            "review state must be DRAFT, IN_REVIEW, APPROVED, WITHDRAWN, or SUPERSEDED".to_owned(),
         )),
     }
 }
 
 fn validate_draft_review(review: &Review) -> Result<()> {
-    for (value, label) in [
-        (&review.subject_root, "review subject_root"),
-        (&review.charge, "review charge"),
-        (&review.build_maintainer_id, "review build maintainer"),
-        (&review.finding_ledger_root, "review finding_ledger_root"),
-        (&review.approval_lock_root, "review approval_lock_root"),
-    ] {
-        require_absent(value, label)?;
-    }
+    require_generated_absent(&review.subject_root, "review subject_root")?;
+    require_absent(&review.charge, "review charge")?;
+    require_absent(&review.build_maintainer_id, "review build maintainer")?;
+    require_generated_absent(&review.finding_ledger_root, "review finding_ledger_root")?;
+    require_generated_absent(&review.approval_lock_root, "review approval_lock_root")?;
     if review.decision != "not_started"
         || !review.material_producer_ids.is_empty()
         || !review.findings.is_empty()
@@ -198,14 +230,14 @@ fn validate_draft_review(review: &Review) -> Result<()> {
 }
 
 fn validate_in_review(review: &Review) -> Result<()> {
-    validate_digest_present(&review.subject_root, "review subject_root")?;
+    require_generated_absent(&review.subject_root, "review subject_root")?;
     require_present_nonempty(review.charge.as_deref(), "review charge")?;
     require_present_nonempty(
         review.build_maintainer_id.as_deref(),
         "review build maintainer",
     )?;
-    validate_digest_present(&review.finding_ledger_root, "review finding_ledger_root")?;
-    require_absent(&review.approval_lock_root, "review approval_lock_root")?;
+    require_generated_absent(&review.finding_ledger_root, "review finding_ledger_root")?;
+    require_generated_absent(&review.approval_lock_root, "review approval_lock_root")?;
     if review.decision != "pending" || !review.approvals.is_empty() {
         return Err(AssuranceError::Invalid(
             "in-review record must remain pending without approvals".to_owned(),
@@ -218,73 +250,54 @@ fn validate_in_review(review: &Review) -> Result<()> {
 }
 
 fn validate_approved_review(review: &Review) -> Result<()> {
-    validate_in_review_roots(review)?;
-    if review.decision != "approved"
-        || review.approvals.len() != 3
-        || review
-            .findings
-            .iter()
-            .any(|finding| finding.disposition == "open")
-    {
-        return Err(AssuranceError::Invalid(
-            "approved review requires terminal findings and exactly three approvals".to_owned(),
-        ));
-    }
-    validate_digest_present(&review.approval_lock_root, "review approval_lock_root")?;
-    let mut roles = BTreeSet::new();
-    let mut principals = BTreeSet::new();
-    for approval in &review.approvals {
-        if approval.decision != "approved" {
-            return Err(AssuranceError::Invalid(
-                "review approval decision must be approved".to_owned(),
-            ));
-        }
-        require_unique(&mut roles, &approval.role, "approval role")?;
-        require_unique(
-            &mut principals,
-            &approval.principal_id,
-            "approval principal",
-        )?;
-        validate_digest(&approval.finding_ledger_root, "approval finding ledger")?;
-        if review.finding_ledger_root.as_deref() != Some(&approval.finding_ledger_root) {
-            return Err(AssuranceError::Invalid(format!(
-                "{} approval does not bind the declared finding ledger root",
-                approval.role
-            )));
-        }
-        require_nonempty(&approval.competence_basis, "approval competence basis")?;
-        require_nonempty(
-            &approval.independence_attestation,
-            "approval independence attestation",
-        )?;
-        validate_date(&approval.approved_on, "approval date")?;
-    }
-    let expected = BTreeSet::from([
-        "scientific".to_owned(),
-        "reproduction_publication".to_owned(),
-        "assurance_steward".to_owned(),
-    ]);
-    if roles != expected {
-        return Err(AssuranceError::Invalid(
-            "approved review requires scientific, reproduction_publication, and assurance_steward roles"
-                .to_owned(),
-        ));
-    }
-    Ok(())
-}
-
-fn validate_in_review_roots(review: &Review) -> Result<()> {
-    validate_digest_present(&review.subject_root, "review subject_root")?;
+    require_generated_absent(&review.subject_root, "review subject_root")?;
     require_present_nonempty(review.charge.as_deref(), "review charge")?;
     require_present_nonempty(
         review.build_maintainer_id.as_deref(),
         "review build maintainer",
     )?;
-    validate_digest_present(&review.finding_ledger_root, "review finding_ledger_root")?;
+    require_generated_absent(&review.finding_ledger_root, "review finding_ledger_root")?;
+    require_generated_absent(&review.approval_lock_root, "review approval_lock_root")?;
+    if review.decision != "approved" || !review.findings.is_empty() || !review.approvals.is_empty()
+    {
+        return Err(AssuranceError::Invalid(
+            "approved authored review state requires immutable event authority, not embedded findings or approvals"
+                .to_owned(),
+        ));
+    }
     require_nonempty(
         &review.independence_assessment,
         "review independence assessment",
     )
+}
+
+fn validate_terminal_review(review: &Review, decision: &str) -> Result<()> {
+    require_generated_absent(&review.subject_root, "review subject_root")?;
+    require_present_nonempty(review.charge.as_deref(), "review charge")?;
+    require_present_nonempty(
+        review.build_maintainer_id.as_deref(),
+        "review build maintainer",
+    )?;
+    require_generated_absent(&review.finding_ledger_root, "review finding_ledger_root")?;
+    require_generated_absent(&review.approval_lock_root, "review approval_lock_root")?;
+    if review.decision != decision || !review.approvals.is_empty() {
+        return Err(AssuranceError::Invalid(format!(
+            "terminal review must record decision '{decision}' without embedded approvals"
+        )));
+    }
+    require_nonempty(
+        &review.independence_assessment,
+        "review independence assessment",
+    )
+}
+
+fn require_generated_absent<T>(value: &RequiredNullable<T>, name: &str) -> Result<()> {
+    match value {
+        RequiredNullable::Missing | RequiredNullable::Null => Ok(()),
+        RequiredNullable::Value(_) => Err(AssuranceError::Invalid(format!(
+            "generated field '{name}' cannot be stored in authored report source"
+        ))),
+    }
 }
 
 pub(super) fn validate_date(value: &str, kind: &str) -> Result<()> {

@@ -7,13 +7,12 @@ use std::sync::{Arc, Barrier};
 use std::thread;
 
 use openwepp_assurance::{
-    AssuranceError, V2PublicationFault, V2PublicationOptions, V2PublicationResult,
-    V2ReleaseIdentity, V2Repository, V2ReviewRoots, V2TrustDomain, sha256_bytes,
+    AssuranceError, V2AmendMode, V2PublicationFault, V2PublicationOptions, V2PublicationResult,
+    V2ReleaseIdentity, V2Repository, V2ReviewRoots, V2TrustDomain, amend_lifecycle, sha256_bytes,
     verify_v2_release_snapshot,
 };
 
 const REPORT_ID: &str = "linear-groundwater-reservoir-recurrence";
-const REAL_SNOW_REPORT_ID: &str = "snow-and-frozen-soil-process-evaluation";
 const SECOND_REPORT_ID: &str = "linear-groundwater-reservoir-recurrence-secondary";
 const REPORT_PATH: &str =
     "assurance/v2/reports/linear-groundwater-reservoir-recurrence/report.yaml";
@@ -115,12 +114,27 @@ fn approved_fixture(label: &str) -> ApprovedFixture {
 }
 
 fn approved_fixture_in_domain(label: &str, domain: V2TrustDomain) -> ApprovedFixture {
+    approved_fixture_with_suffix(label, domain, None)
+}
+
+fn approved_fixture_with_suffix(
+    label: &str,
+    domain: V2TrustDomain,
+    manuscript_suffix: Option<&str>,
+) -> ApprovedFixture {
     let source = source_fixture(&format!("{label}-source"));
     let stage = prepared_stage(&format!("{label}-stage"));
     let usersum = prepared_usersum(&format!("{label}-usersum"));
     let snapshots = Scratch::new(&format!("{label}-snapshots"));
     let release = V2ReleaseIdentity::new(current_checkout_commit(), "openwepp-release-default-v1")
         .expect("release identity");
+    if let Some(suffix) = manuscript_suffix {
+        let manuscript = source.path.join(MANUSCRIPT_PATH);
+        let mut bytes = fs::read(&manuscript).unwrap();
+        bytes.extend_from_slice(suffix.as_bytes());
+        fs::write(manuscript, bytes).unwrap();
+        openwepp_assurance::rebind_v2_test_fixture(&source.path).unwrap();
+    }
     enter_synthetic_review(&source.path, domain);
     let repository = V2Repository::open(&source.path).expect("open in-review source");
     repository
@@ -190,10 +204,6 @@ fn approved_two_report_fixture(label: &str) -> ApprovedFixture {
 
 fn approved_two_report_fixture_in_domain(label: &str, domain: V2TrustDomain) -> ApprovedFixture {
     let fixture = approved_fixture_in_domain(label, domain);
-    let first_roots = V2Repository::open(&fixture.source.path)
-        .unwrap()
-        .review_roots(REPORT_ID, &fixture.stage.path)
-        .unwrap();
     let first_directory = fixture
         .source
         .path
@@ -206,68 +216,51 @@ fn approved_two_report_fixture_in_domain(label: &str, domain: V2TrustDomain) -> 
         .join(SECOND_REPORT_ID);
     copy_tree(&first_directory, &second_directory);
     let second_report = second_directory.join("report.yaml");
+    fs::copy(repository_root().join(REPORT_PATH), &second_report).unwrap();
     replace_all_in(&second_report, REPORT_ID, SECOND_REPORT_ID);
-    reset_declared_roots(&fixture.source.path.join(REPORT_PATH), &first_roots);
-    reset_declared_roots(&second_report, &first_roots);
+    if domain == V2TrustDomain::TestOnly {
+        replace_in(
+            &second_report,
+            "trust_domain: production",
+            "trust_domain: test_only",
+        );
+        replace_in(&second_report, "fixture_only: false", "fixture_only: true");
+    }
+    let second_lock = second_directory.join("review.lock.json");
+    let production_draft_lock = repository_root()
+        .join("assurance/v2/reports")
+        .join(REPORT_ID)
+        .join("review.lock.json");
+    fs::copy(production_draft_lock, &second_lock).unwrap();
+    replace_all_in(&second_lock, REPORT_ID, SECOND_REPORT_ID);
+    let second_events = second_directory.join("review-events");
+    if second_events.exists() {
+        fs::remove_dir_all(second_events).unwrap();
+    }
     append_catalog_report(
         &fixture.source.path,
         SECOND_REPORT_ID,
         &second_report,
         fixture.domain,
     );
-    refresh_report_hash_for(&fixture.source.path, REPORT_PATH);
-    refresh_report_hash_for(
-        &fixture.source.path,
-        &format!("assurance/v2/reports/{SECOND_REPORT_ID}/report.yaml"),
-    );
-
+    openwepp_assurance::rebind_v2_test_fixture(&fixture.source.path).unwrap();
+    enter_synthetic_review_for(&fixture.source.path, SECOND_REPORT_ID);
     let repository = V2Repository::open(&fixture.source.path).unwrap();
     repository
-        .build_report(REPORT_ID, &fixture.stage.path)
-        .unwrap();
-    repository
         .build_report(SECOND_REPORT_ID, &fixture.stage.path)
-        .unwrap();
-    let first = repository
-        .review_roots(REPORT_ID, &fixture.stage.path)
         .unwrap();
     let second = repository
         .review_roots(SECOND_REPORT_ID, &fixture.stage.path)
         .unwrap();
-    bind_subject_and_finding(&fixture.source.path.join(REPORT_PATH), &first);
-    bind_subject_and_finding(&second_report, &second);
-    refresh_report_hash_for(&fixture.source.path, REPORT_PATH);
-    refresh_report_hash_for(
-        &fixture.source.path,
-        &format!("assurance/v2/reports/{SECOND_REPORT_ID}/report.yaml"),
-    );
+    approve_synthetic_review_for(&fixture.source.path, SECOND_REPORT_ID, &fixture.release);
     let repository = V2Repository::open(&fixture.source.path).unwrap();
-    repository
-        .build_report(REPORT_ID, &fixture.stage.path)
-        .unwrap();
     repository
         .build_report(SECOND_REPORT_ID, &fixture.stage.path)
         .unwrap();
-    let first = repository
-        .review_roots(REPORT_ID, &fixture.stage.path)
-        .unwrap();
-    let second = repository
+    let approved = repository
         .review_roots(SECOND_REPORT_ID, &fixture.stage.path)
         .unwrap();
-    bind_all_roots(&fixture.source.path.join(REPORT_PATH), &first);
-    bind_all_roots(&second_report, &second);
-    refresh_report_hash_for(&fixture.source.path, REPORT_PATH);
-    refresh_report_hash_for(
-        &fixture.source.path,
-        &format!("assurance/v2/reports/{SECOND_REPORT_ID}/report.yaml"),
-    );
-    let repository = V2Repository::open(&fixture.source.path).unwrap();
-    repository
-        .build_report(REPORT_ID, &fixture.stage.path)
-        .unwrap();
-    repository
-        .build_report(SECOND_REPORT_ID, &fixture.stage.path)
-        .unwrap();
+    assert_eq!(second.subject_root, approved.subject_root);
     fixture
 }
 
@@ -305,196 +298,214 @@ fn enter_synthetic_review(root: &Path, domain: V2TrustDomain) {
         );
         replace_in(&report, "fixture_only: false", "fixture_only: true");
     }
-    replace_in(&report, "lifecycle: DRAFT", "lifecycle: IN_REVIEW");
-    replace_in(
-        &report,
-        "  human_report_lead: null",
-        "  human_report_lead: test-report-lead",
-    );
-    replace_in(
-        &report,
-        "  scientific_approver: null",
-        "  scientific_approver: test-scientist",
-    );
-    replace_in(
-        &report,
-        "  accountability_state: unassigned_blocks_review",
-        "  accountability_state: assigned",
-    );
-    replace_in(
-        &report,
-        "  provenance_complete: false",
-        "  provenance_complete: true",
-    );
-    replace_in(
-        &report,
-        "  review_entry_authorized: false",
-        "  review_entry_authorized: true",
-    );
-    let old = r"  state: DRAFT
-  decision: not_started
-  subject_root: null
-  review_charge: null
-  build_maintainer_id: null
-  material_producer_ids: []
-  findings: []
-  finding_ledger_root: null
-  approvals: []
-  approval_lock_root: null
-  independence_assessment: not_assessed";
-    let zero = "0".repeat(64);
-    let new = format!(
-        "  state: IN_REVIEW\n  decision: pending\n  subject_root: {zero}\n  review_charge: Independently assess scientific claims, reproducibility, reader communication, and publication mechanics.\n  build_maintainer_id: test-builder\n  material_producer_ids: [test-producer]\n  findings:\n    - id: TEST-FINDING-001\n      summary: Synthetic review finding used to prove terminal disposition binding.\n      severity: blocking\n      disposition: resolved_and_verified\n      rationale: null\n      resolution: Synthetic source was updated for the test contract.\n      verification: Independent synthetic verifier confirmed the exact changed root.\n      verifier_id: test-verifier\n  finding_ledger_root: {zero}\n  approvals: []\n  approval_lock_root: null\n  independence_assessment: Test principals are distinct and marked test-only; no real independence is claimed."
-    );
-    replace_in(&report, old, &new);
     refresh_report_hash(root);
+    enter_synthetic_review_for(root, REPORT_ID);
+}
+
+fn enter_synthetic_review_for(root: &Path, report_id: &str) {
+    apply_lifecycle_for(
+        root,
+        report_id,
+        r"schema_version: 1
+event_type: review_entry
+principal_id: test-report-lead
+decision: entered_pending_review
+rationale: Synthetic test-only review entry.
+recorded_on: 2026-07-16
+authority_source: ASSURE-04D synthetic fixture
+predecessor_event_ids: []
+review_charge: Independently assess scientific claims, reproducibility, reader communication, and publication mechanics.
+build_maintainer_id: test-builder
+material_producer_ids: [test-producer]
+independence_assessment: Test principals are distinct and marked test-only; no real independence is claimed.
+scientific_approver_id: test-scientist
+",
+    );
 }
 
 fn synthetic_principals(domain: V2TrustDomain) -> String {
     format!(
-        r"schema_version: 1
+        r"schema_version: 2
 trust_domain: {domain}
 principals:
   - id: test-report-lead
+    record_version: 1
+    supersedes: null
     display_name: Test Report Lead
+    affiliations: []
     kind: human
     identity_authority: ASSURE-04D synthetic fixture
     identity_reference: test-only/report-lead
     roles: [report_lead]
   - id: test-scientist
+    record_version: 1
+    supersedes: null
     display_name: Test Scientific Reviewer
+    affiliations: []
     kind: human
     identity_authority: ASSURE-04D synthetic fixture
     identity_reference: test-only/scientific-reviewer
-    roles: [scientific_reviewer]
+    roles: [scientific_approver]
   - id: test-reproducer
+    record_version: 1
+    supersedes: null
     display_name: Test Reproduction Reviewer
+    affiliations: []
     kind: human
     identity_authority: ASSURE-04D synthetic fixture
     identity_reference: test-only/reproduction-reviewer
-    roles: [reproduction_publication_reviewer]
+    roles: [reproduction_approver]
   - id: test-steward
+    record_version: 1
+    supersedes: null
     display_name: Test Assurance Steward
+    affiliations: []
     kind: human
     identity_authority: ASSURE-04D synthetic fixture
     identity_reference: test-only/assurance-steward
     roles: [assurance_steward]
   - id: test-release-owner
+    record_version: 1
+    supersedes: null
     display_name: Test Release Owner
+    affiliations: []
     kind: human
     identity_authority: ASSURE-04D synthetic fixture
     identity_reference: test-only/release-owner
     roles: [release_owner]
   - id: test-builder
+    record_version: 1
+    supersedes: null
     display_name: Test Build Maintainer
+    affiliations: []
     kind: agent
     identity_authority: ASSURE-04D synthetic fixture
     identity_reference: test-only/build-maintainer
     roles: [build_maintainer]
   - id: test-producer
+    record_version: 1
+    supersedes: null
     display_name: Test Material Producer
+    affiliations: []
     kind: agent
     identity_authority: ASSURE-04D synthetic fixture
     identity_reference: test-only/material-producer
     roles: [material_producer]
   - id: test-verifier
+    record_version: 1
+    supersedes: null
     display_name: Test Finding Verifier
+    affiliations: []
     kind: agent
     identity_authority: ASSURE-04D synthetic fixture
     identity_reference: test-only/finding-verifier
-    roles: [finding_verifier]
+    roles: [reviewer]
 "
     )
 }
 
-fn bind_review_roots(root: &Path, roots: &V2ReviewRoots) {
-    let report = root.join(REPORT_PATH);
-    let zero = "0".repeat(64);
-    replace_in(
-        &report,
-        &format!("  subject_root: {zero}"),
-        &format!("  subject_root: {}", roots.subject_root),
-    );
-    replace_in(
-        &report,
-        &format!("  finding_ledger_root: {zero}"),
-        &format!(
-            "  finding_ledger_root: {}",
-            roots.finding_ledger_root.as_deref().unwrap()
-        ),
-    );
-    refresh_report_hash(root);
-}
+fn bind_review_roots(_root: &Path, _roots: &V2ReviewRoots) {}
 
 fn approve_synthetic_review(
     root: &Path,
-    review_roots: &V2ReviewRoots,
+    _review_roots: &V2ReviewRoots,
     release: &V2ReleaseIdentity,
 ) {
-    let report = root.join(REPORT_PATH);
-    replace_in(&report, "lifecycle: IN_REVIEW", "lifecycle: APPROVED");
-    replace_in(&report, "  state: IN_REVIEW", "  state: APPROVED");
-    replace_in(&report, "  decision: pending", "  decision: approved");
-    let ledger = review_roots.finding_ledger_root.as_deref().unwrap();
-    replace_in(
-        &report,
-        "  approvals: []",
-        &format!(
-            "  approvals:\n    - role: scientific\n      principal_id: test-scientist\n      finding_ledger_root: {ledger}\n      decision: approved\n      competence_basis: Synthetic domain-science competence declaration for mechanics testing only.\n      independence_attestation: Synthetic reviewer is distinct from lead and producers.\n      approved_on: 2026-07-16\n    - role: reproduction_publication\n      principal_id: test-reproducer\n      finding_ledger_root: {ledger}\n      decision: approved\n      competence_basis: Synthetic reproduction and publication declaration for mechanics testing only.\n      independence_attestation: Synthetic reviewer is distinct from lead, producers, and build maintainer.\n      approved_on: 2026-07-16\n    - role: assurance_steward\n      principal_id: test-steward\n      finding_ledger_root: {ledger}\n      decision: approved\n      competence_basis: Synthetic assurance-governance declaration for mechanics testing only.\n      independence_attestation: Synthetic steward is distinct from the other approvers.\n      approved_on: 2026-07-16"
-        ),
-    );
-    let zero = "0".repeat(64);
-    replace_in(
-        &report,
-        "  approval_lock_root: null",
-        &format!("  approval_lock_root: {zero}"),
-    );
-    let old = r"  state: DRAFT
-  approval_lock_root: null
-  target_release_commit: null
-  target_release_configuration: null
-  prior_realization: null
-  candidate_realization: null
-  impact_assessment: null
-  reproduction_disposition: null
-  semantic_differences: []
-  release_owner_id: null
-  assurance_steward_id: null
-  publication_date: null
-  public_path: null
-  release_transfer_root: null";
-    let new = format!(
-        "  state: APPROVED\n  approval_lock_root: {zero}\n  target_release_commit: {}\n  target_release_configuration: {}\n  prior_realization: ASSURE-04C deterministic staging realization\n  candidate_realization: ASSURE-04D synthetic publication realization\n  impact_assessment: Publication mechanics only; no scientific conclusion changes are claimed.\n  reproduction_disposition: Synthetic reproduction approval is present solely to exercise the fail-closed contract.\n  semantic_differences: [No scientific semantic difference; TEST ONLY banner added.]\n  release_owner_id: test-release-owner\n  assurance_steward_id: test-steward\n  publication_date: 2026-07-16\n  public_path: assurance/reports/{REPORT_ID}/1.0.0/index.md\n  release_transfer_root: {zero}",
-        release.commit(),
-        release.configuration()
-    );
-    replace_in(&report, old, &new);
-    refresh_report_hash(root);
+    approve_synthetic_review_for(root, REPORT_ID, release);
 }
 
-fn bind_approval_roots(root: &Path, roots: &V2ReviewRoots) {
-    let report = root.join(REPORT_PATH);
-    let zero = "0".repeat(64);
-    let approval = roots.approval_lock_root.as_deref().unwrap();
-    replace_in(
-        &report,
-        &format!("  approval_lock_root: {zero}"),
-        &format!("  approval_lock_root: {approval}"),
+fn approve_synthetic_review_for(root: &Path, report_id: &str, release: &V2ReleaseIdentity) {
+    apply_lifecycle_for(
+        root,
+        report_id,
+        r"schema_version: 1
+event_type: scientific_approval
+principal_id: test-scientist
+decision: approved
+rationale: Synthetic scientific approval for publication mechanics testing only.
+recorded_on: 2026-07-16
+authority_source: ASSURE-04D synthetic fixture
+predecessor_event_ids: []
+competence_basis: Synthetic domain-science competence declaration for mechanics testing only.
+independence_attestation: Synthetic reviewer is distinct from lead and producers.
+",
     );
-    replace_in(
-        &report,
-        &format!("  approval_lock_root: {zero}"),
-        &format!("  approval_lock_root: {approval}"),
-    );
-    replace_in(
-        &report,
-        &format!("  release_transfer_root: {zero}"),
+    let scientific = event_id_for(root, report_id, "scientific_approval");
+    apply_lifecycle_for(
+        root,
+        report_id,
         &format!(
-            "  release_transfer_root: {}",
-            roots.release_transfer_root.as_deref().unwrap()
+            "schema_version: 1\nevent_type: reproduction_approval\nprincipal_id: test-reproducer\ndecision: approved\nrationale: Synthetic reproduction approval for mechanics testing only.\nrecorded_on: 2026-07-16\nauthority_source: ASSURE-04D synthetic fixture\npredecessor_event_ids: [{scientific}]\ncompetence_basis: Synthetic reproduction competence declaration.\nindependence_attestation: Synthetic reproducer is distinct from lead, producers, and builder.\n"
         ),
     );
-    refresh_report_hash(root);
+    let reproduction = event_id_for(root, report_id, "reproduction_approval");
+    apply_lifecycle_for(
+        root,
+        report_id,
+        &format!(
+            "schema_version: 1\nevent_type: steward_approval\nprincipal_id: test-steward\ndecision: approved\nrationale: Synthetic steward approval for mechanics testing only.\nrecorded_on: 2026-07-16\nauthority_source: ASSURE-04D synthetic fixture\npredecessor_event_ids: [{scientific}, {reproduction}]\ncompetence_basis: Synthetic assurance-governance competence declaration.\nindependence_attestation: Synthetic steward is distinct from all predecessor approvers.\n"
+        ),
+    );
+    let steward = event_id_for(root, report_id, "steward_approval");
+    apply_lifecycle_for(
+        root,
+        report_id,
+        &format!(
+            "schema_version: 1\nevent_type: release_transfer\nprincipal_id: test-release-owner\ndecision: approved\nrationale: Synthetic release transfer for mechanics testing only.\nrecorded_on: 2026-07-16\nauthority_source: ASSURE-04D synthetic fixture\npredecessor_event_ids: [{steward}]\ntarget_release_commit: {}\ntarget_release_configuration: {}\nprior_realization: ASSURE-04C deterministic staging realization\ncandidate_realization: ASSURE-04D synthetic publication realization\nimpact_assessment: Publication mechanics only; no scientific conclusion changes are claimed.\nreproduction_disposition: Synthetic reproduction approval is present solely to exercise the fail-closed contract.\nsemantic_differences: [No scientific semantic difference; TEST ONLY banner added.]\nassurance_steward_id: test-steward\npublication_date: 2026-07-16\npublic_path: assurance/reports/{}/1.0.0/index.md\n",
+            release.commit(),
+            release.configuration(),
+            report_id
+        ),
+    );
+}
+
+fn bind_approval_roots(_root: &Path, _roots: &V2ReviewRoots) {}
+
+fn apply_lifecycle(root: &Path, request: &str) {
+    apply_lifecycle_for(root, REPORT_ID, request);
+}
+
+fn apply_lifecycle_for(root: &Path, report_id: &str, request: &str) {
+    amend_lifecycle(root, report_id, request.as_bytes(), V2AmendMode::Apply)
+        .expect("apply synthetic immutable lifecycle event");
+}
+
+fn event_id(root: &Path, event_type: &str) -> String {
+    event_id_for(root, REPORT_ID, event_type)
+}
+
+fn event_id_for(root: &Path, report_id: &str, event_type: &str) -> String {
+    let lock: serde_json::Value = serde_json::from_slice(
+        &fs::read(root.join(format!("assurance/v2/reports/{report_id}/review.lock.json"))).unwrap(),
+    )
+    .unwrap();
+    lock["event_ids"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find_map(|id| {
+            let id = id.as_str()?;
+            let event: serde_json::Value = serde_json::from_slice(
+                &fs::read(root.join(format!(
+                    "assurance/v2/reports/{report_id}/review-events/{id}.json"
+                )))
+                .ok()?,
+            )
+            .ok()?;
+            (event["event_type"] == event_type).then(|| id.to_owned())
+        })
+        .unwrap_or_else(|| panic!("missing event type {event_type}"))
+}
+
+fn mutate_review_event(root: &Path, event_type: &str, mutate: impl FnOnce(&mut serde_json::Value)) {
+    let id = event_id(root, event_type);
+    let path = root.join(format!(
+        "assurance/v2/reports/{REPORT_ID}/review-events/{id}.json"
+    ));
+    let mut event: serde_json::Value = serde_json::from_slice(&fs::read(&path).unwrap()).unwrap();
+    mutate(&mut event);
+    fs::write(path, canonical_json_bytes(&event)).unwrap();
+    openwepp_assurance::rebind_invalid_v2_test_fixture(root).unwrap();
 }
 
 #[test]
@@ -980,17 +991,12 @@ fn concurrent_reader_observes_only_complete_old_or_new_report_bytes() {
         .path
         .join(format!("assurance/reports/{REPORT_ID}/1.0.0/index.md"));
     let old_bytes = fs::read(&report_path).unwrap();
-    let old_roots = V2Repository::open(&fixture.source.path)
-        .unwrap()
-        .review_roots(REPORT_ID, &fixture.stage.path)
-        .unwrap();
-    let manuscript = fixture.source.path.join(MANUSCRIPT_PATH);
-    let mut manuscript_bytes = fs::read(&manuscript).unwrap();
-    manuscript_bytes.extend_from_slice(b"\nDistinct second approved realization.\n");
-    fs::write(&manuscript, manuscript_bytes).unwrap();
-    refresh_local_hash(&fixture.source.path, MANUSCRIPT_PATH);
-    rebind_after_approved_change(&fixture, &old_roots);
-    let staged_path = fixture.stage.path.join(format!(
+    let second_fixture = approved_fixture_with_suffix(
+        "assure04d-reader-second",
+        V2TrustDomain::TestOnly,
+        Some("\nDistinct second approved realization.\n"),
+    );
+    let staged_path = second_fixture.stage.path.join(format!(
         "usersum/assurance/reports/{REPORT_ID}/1.0.0/index.md"
     ));
     let new_bytes = fs::read(&staged_path).unwrap();
@@ -1028,9 +1034,15 @@ fn concurrent_reader_observes_only_complete_old_or_new_report_bytes() {
         thread::yield_now();
     }
     assert!(saw_old.load(Ordering::Acquire));
-    let second = V2Repository::open(&fixture.source.path)
+    let second_options = V2PublicationOptions::new(
+        second_fixture.stage.path.clone(),
+        fixture.usersum.path.clone(),
+        fixture.snapshots.path.clone(),
+        fixture.release.clone(),
+    );
+    let second = V2Repository::open(&second_fixture.source.path)
         .unwrap()
-        .publish_test_fixture_report(REPORT_ID, &fixture.options())
+        .publish_test_fixture_report(REPORT_ID, &second_options)
         .unwrap();
     assert_ne!(first.snapshot_id, second.snapshot_id);
     for _ in 0..1_000_000 {
@@ -1361,126 +1373,75 @@ fn bootstrap_narrative_empty_directory_and_symlink_drift_fail_closed() {
 #[test]
 fn canonical_public_path_and_real_markdown_narrative_link_are_mandatory() {
     let path_fixture = approved_fixture("assure04d-wrong-public-path");
-    let repository = V2Repository::open(&path_fixture.source.path).unwrap();
-    let old_roots = repository
-        .review_roots(REPORT_ID, &path_fixture.stage.path)
-        .unwrap();
     replace_in(
         &path_fixture.source.path.join(REPORT_PATH),
         &format!("  public_path: assurance/reports/{REPORT_ID}/1.0.0/index.md"),
         &format!("  public_path: assurance/reports/{REPORT_ID}/1.0.0/elsewhere.md"),
     );
-    rebind_after_approved_change(&path_fixture, &old_roots);
-    assert!(matches!(
-        V2Repository::open(&path_fixture.source.path)
-            .unwrap()
-            .publish_test_fixture_report(REPORT_ID, &path_fixture.options()),
-        Err(AssuranceError::Invalid(message)) if message.contains("publication path")
-    ));
+    openwepp_assurance::rebind_invalid_v2_test_fixture(&path_fixture.source.path).unwrap();
+    assert_unpublished(&path_fixture, "wrong public path");
 
     let link_fixture = approved_fixture("assure04d-missing-narrative-link");
-    let repository = V2Repository::open(&link_fixture.source.path).unwrap();
-    let old_roots = repository
-        .review_roots(REPORT_ID, &link_fixture.stage.path)
-        .unwrap();
+    let staged_manuscript = link_fixture.stage.path.join(format!(
+        "usersum/assurance/reports/{REPORT_ID}/1.0.0/index.md"
+    ));
     replace_in(
-        &link_fixture.source.path.join(MANUSCRIPT_PATH),
-        "{{link:usersum:hillslope-hydrology-and-sediment-physics.md|model-science narrative}}",
+        &staged_manuscript,
+        "[model-science narrative](../../../../hillslope-hydrology-and-sediment-physics.md)",
         "model-science narrative",
     );
-    refresh_local_hash(&link_fixture.source.path, MANUSCRIPT_PATH);
-    rebind_after_approved_change(&link_fixture, &old_roots);
-    assert!(matches!(
-        V2Repository::open(&link_fixture.source.path)
-            .unwrap()
-            .publish_test_fixture_report(REPORT_ID, &link_fixture.options()),
-        Err(AssuranceError::Invalid(message)) if message.contains("Markdown link")
-    ));
+    assert_unpublished(&link_fixture, "missing narrative link");
 
     let fake_link = approved_fixture("assure04d-fake-narrative-link");
-    let repository = V2Repository::open(&fake_link.source.path).unwrap();
-    let old_roots = repository
-        .review_roots(REPORT_ID, &fake_link.stage.path)
-        .unwrap();
-    replace_in(
-        &fake_link.source.path.join(MANUSCRIPT_PATH),
-        "{{link:usersum:hillslope-hydrology-and-sediment-physics.md|model-science narrative}}",
-        "<div>\n{{link:usersum:hillslope-hydrology-and-sediment-physics.md|not a rendered link}}\n</div>",
-    );
-    refresh_local_hash(&fake_link.source.path, MANUSCRIPT_PATH);
-    rebind_after_approved_change(&fake_link, &old_roots);
-    assert!(matches!(
-        V2Repository::open(&fake_link.source.path)
-            .unwrap()
-            .publish_test_fixture_report(REPORT_ID, &fake_link.options()),
-        Err(AssuranceError::Invalid(message)) if message.contains("Markdown link")
+    let staged_manuscript = fake_link.stage.path.join(format!(
+        "usersum/assurance/reports/{REPORT_ID}/1.0.0/index.md"
     ));
+    replace_in(
+        &staged_manuscript,
+        "[model-science narrative](../../../../hillslope-hydrology-and-sediment-physics.md)",
+        "<div>not a rendered link</div>",
+    );
+    assert_unpublished(&fake_link, "fake narrative link");
 }
 
 #[test]
 fn stale_roots_open_findings_conflicts_and_release_mismatch_fail_before_publication() {
     let stale = approved_fixture("assure04d-stale-root");
-    fs::write(
-        stale.source.path.join("assurance/v2/principals.yaml"),
-        format!(
-            "{}\n",
-            fs::read_to_string(stale.source.path.join("assurance/v2/principals.yaml")).unwrap()
-        ),
-    )
-    .unwrap();
-    refresh_catalog_identity(&stale.source.path, "assurance/v2/principals.yaml");
-    V2Repository::open(&stale.source.path)
-        .unwrap()
-        .build_report(REPORT_ID, &stale.stage.path)
-        .expect("rebuild changed subject staging");
+    replace_in(
+        &stale.source.path.join("assurance/v2/principals.yaml"),
+        "display_name: Test Scientific Reviewer",
+        "display_name: Changed Scientific Reviewer",
+    );
+    openwepp_assurance::rebind_invalid_v2_test_fixture(&stale.source.path).unwrap();
     let repository = V2Repository::open(&stale.source.path).unwrap();
-    assert!(matches!(
-        repository.publish_test_fixture_report(REPORT_ID, &stale.options()),
-        Err(AssuranceError::Drift(message)) if message.contains("subject")
-    ));
-    assert!(!stale.usersum.path.join("assurance/catalog.json").exists());
-
-    let open = approved_fixture("assure04d-open-finding");
-    let report = open.source.path.join(REPORT_PATH);
-    replace_in(
-        &report,
-        "      disposition: resolved_and_verified",
-        "      disposition: open",
-    );
-    replace_in(
-        &report,
-        "      resolution: Synthetic source was updated for the test contract.",
-        "      resolution: null",
-    );
-    replace_in(
-        &report,
-        "      verification: Independent synthetic verifier confirmed the exact changed root.",
-        "      verification: null",
-    );
-    replace_in(
-        &report,
-        "      verifier_id: test-verifier",
-        "      verifier_id: null",
-    );
-    refresh_report_hash(&open.source.path);
     assert!(
-        V2Repository::open(&open.source.path)
-            .unwrap()
-            .publish_test_fixture_report(REPORT_ID, &open.options())
+        repository
+            .publish_test_fixture_report(REPORT_ID, &stale.options())
             .is_err()
     );
-    assert!(!open.usersum.path.join("assurance/catalog.json").exists());
+    assert!(!stale.usersum.path.join("assurance/catalog.json").exists());
+
+    let open = in_review_fixture("assure04d-open-finding");
+    apply_lifecycle(
+        &open.source.path,
+        "schema_version: 1\nevent_type: finding\nprincipal_id: test-verifier\ndecision: open\nrationale: Synthetic open finding.\nrecorded_on: 2026-07-16\nauthority_source: test\npredecessor_event_ids: []\n",
+    );
+    let error = amend_lifecycle(
+        &open.source.path,
+        REPORT_ID,
+        b"schema_version: 1\nevent_type: scientific_approval\nprincipal_id: test-scientist\ndecision: approved\nrationale: Must reject open finding.\nrecorded_on: 2026-07-16\nauthority_source: test\npredecessor_event_ids: []\ncompetence_basis: test\nindependence_attestation: test\n",
+        V2AmendMode::Check,
+    )
+    .unwrap_err();
+    assert!(error.to_string().contains("finding"));
 }
 
 #[test]
 fn approval_conflicts_and_release_mismatch_fail_before_publication() {
     let duplicate = approved_fixture("assure04d-duplicate-approver");
-    replace_in(
-        &duplicate.source.path.join(REPORT_PATH),
-        "      principal_id: test-reproducer",
-        "      principal_id: test-scientist",
-    );
-    refresh_report_hash(&duplicate.source.path);
+    mutate_review_event(&duplicate.source.path, "reproduction_approval", |event| {
+        event["principal_id"] = serde_json::Value::String("test-scientist".to_owned());
+    });
     assert!(
         V2Repository::open(&duplicate.source.path)
             .unwrap()
@@ -1521,17 +1482,9 @@ fn approval_conflicts_and_release_mismatch_fail_before_publication() {
     );
 
     let wrong_ledger = approved_fixture("assure04d-wrong-approval-ledger");
-    let roots = V2Repository::open(&wrong_ledger.source.path)
-        .unwrap()
-        .review_roots(REPORT_ID, &wrong_ledger.stage.path)
-        .unwrap();
-    let ledger = roots.finding_ledger_root.unwrap();
-    replace_in(
-        &wrong_ledger.source.path.join(REPORT_PATH),
-        &format!("      finding_ledger_root: {ledger}"),
-        &format!("      finding_ledger_root: {}", "2".repeat(64)),
-    );
-    refresh_report_hash(&wrong_ledger.source.path);
+    mutate_review_event(&wrong_ledger.source.path, "scientific_approval", |event| {
+        event["bound_roots"]["finding_ledger_root"] = serde_json::Value::String("2".repeat(64));
+    });
     assert!(
         V2Repository::open(&wrong_ledger.source.path)
             .unwrap()
@@ -1550,25 +1503,21 @@ fn approval_conflicts_and_release_mismatch_fail_before_publication() {
 #[test]
 fn authority_lifecycle_and_bound_byte_negative_matrix_is_fail_closed() {
     let wrong_kind = approved_fixture("assure04d-wrong-principal-kind");
-    let roots = current_roots(&wrong_kind);
     replace_in(
         &wrong_kind.source.path.join("assurance/v2/principals.yaml"),
-        "  - id: test-scientist\n    display_name: Test Scientific Reviewer\n    kind: human",
-        "  - id: test-scientist\n    display_name: Test Scientific Reviewer\n    kind: agent",
+        "identity_reference: test-only/scientific-reviewer\n    roles: [scientific_approver]",
+        "identity_reference: test-only/scientific-reviewer\n    roles: [draft_author]",
     );
-    refresh_catalog_identity(&wrong_kind.source.path, "assurance/v2/principals.yaml");
-    rebind_after_approved_change(&wrong_kind, &roots);
+    openwepp_assurance::rebind_invalid_v2_test_fixture(&wrong_kind.source.path).unwrap();
     assert_unpublished(&wrong_kind, "wrong principal kind");
 
     let wrong_role = approved_fixture("assure04d-wrong-principal-role");
-    let roots = current_roots(&wrong_role);
     replace_in(
         &wrong_role.source.path.join("assurance/v2/principals.yaml"),
-        "    roles: [scientific_reviewer]",
+        "    roles: [scientific_approver]",
         "    roles: [draft_author]",
     );
-    refresh_catalog_identity(&wrong_role.source.path, "assurance/v2/principals.yaml");
-    rebind_after_approved_change(&wrong_role, &roots);
+    openwepp_assurance::rebind_invalid_v2_test_fixture(&wrong_role.source.path).unwrap();
     assert_unpublished(&wrong_role, "wrong principal role");
 
     let wrong_domain = approved_fixture("assure04d-wrong-principal-domain");
@@ -1580,30 +1529,28 @@ fn authority_lifecycle_and_bound_byte_negative_matrix_is_fail_closed() {
         "trust_domain: test_only",
         "trust_domain: production",
     );
-    refresh_catalog_identity(&wrong_domain.source.path, "assurance/v2/principals.yaml");
+    openwepp_assurance::rebind_invalid_v2_test_fixture(&wrong_domain.source.path).unwrap();
     assert_unpublished(&wrong_domain, "wrong principal trust domain");
 
-    let competence = approved_fixture("assure04d-missing-competence");
-    replace_in(
-        &competence.source.path.join(REPORT_PATH),
-        "      competence_basis: Synthetic domain-science competence declaration for mechanics testing only.",
-        "      competence_basis: ''",
-    );
-    refresh_report_hash(&competence.source.path);
-    assert_unpublished_with_message(&competence, "missing competence basis", "competence");
+    let competence = in_review_fixture("assure04d-missing-competence");
+    let error = amend_lifecycle(
+        &competence.source.path,
+        REPORT_ID,
+        b"schema_version: 1\nevent_type: scientific_approval\nprincipal_id: test-scientist\ndecision: approved\nrationale: Missing competence negative.\nrecorded_on: 2026-07-16\nauthority_source: test\npredecessor_event_ids: []\ncompetence_basis: ''\nindependence_attestation: present\n",
+        V2AmendMode::Check,
+    )
+    .unwrap_err();
+    assert!(error.to_string().contains("competence"));
 
-    let independence = approved_fixture("assure04d-missing-independence");
-    replace_in(
-        &independence.source.path.join(REPORT_PATH),
-        "      independence_attestation: Synthetic reviewer is distinct from lead and producers.",
-        "      independence_attestation: ''",
-    );
-    refresh_report_hash(&independence.source.path);
-    assert_unpublished_with_message(
-        &independence,
-        "missing independence attestation",
-        "independence",
-    );
+    let independence = in_review_fixture("assure04d-missing-independence");
+    let error = amend_lifecycle(
+        &independence.source.path,
+        REPORT_ID,
+        b"schema_version: 1\nevent_type: scientific_approval\nprincipal_id: test-scientist\ndecision: approved\nrationale: Missing independence negative.\nrecorded_on: 2026-07-16\nauthority_source: test\npredecessor_event_ids: []\ncompetence_basis: present\nindependence_attestation: ''\n",
+        V2AmendMode::Check,
+    )
+    .unwrap_err();
+    assert!(error.to_string().contains("independence"));
 
     let withdrawn = approved_fixture("assure04d-withdrawn");
     replace_in(
@@ -1611,7 +1558,7 @@ fn authority_lifecycle_and_bound_byte_negative_matrix_is_fail_closed() {
         "  withdrawn: false",
         "  withdrawn: true",
     );
-    refresh_report_hash(&withdrawn.source.path);
+    openwepp_assurance::rebind_invalid_v2_test_fixture(&withdrawn.source.path).unwrap();
     assert_unpublished_with_message(&withdrawn, "withdrawn publication", "withdrawn");
 
     let superseded = approved_fixture("assure04d-superseded");
@@ -1620,24 +1567,17 @@ fn authority_lifecycle_and_bound_byte_negative_matrix_is_fail_closed() {
         "  supersedes: null",
         "  supersedes: prior-assurance-realization",
     );
-    refresh_report_hash(&superseded.source.path);
+    openwepp_assurance::rebind_invalid_v2_test_fixture(&superseded.source.path).unwrap();
     assert_unpublished_with_message(&superseded, "superseded publication", "supersedes");
 
     let missing_transfer = approved_fixture("assure04d-missing-release-transfer");
-    let transfer = current_roots(&missing_transfer)
-        .release_transfer_root
-        .unwrap();
-    replace_in(
-        &missing_transfer.source.path.join(REPORT_PATH),
-        &format!("  release_transfer_root: {transfer}"),
-        "  release_transfer_root: null",
-    );
-    refresh_report_hash(&missing_transfer.source.path);
-    assert_unpublished_with_message(
-        &missing_transfer,
-        "missing release transfer",
-        "release transfer root",
-    );
+    let transfer = event_id(&missing_transfer.source.path, "release_transfer");
+    fs::remove_file(missing_transfer.source.path.join(format!(
+        "assurance/v2/reports/{REPORT_ID}/review-events/{transfer}.json"
+    )))
+    .unwrap();
+    openwepp_assurance::rebind_invalid_v2_test_fixture(&missing_transfer.source.path).unwrap();
+    assert_unpublished(&missing_transfer, "missing release transfer");
 }
 
 #[test]
@@ -1754,11 +1694,8 @@ fn prepared_usersum(label: &str) -> Scratch {
 fn source_fixture(label: &str) -> Scratch {
     let source = repository_root();
     let target = Scratch::new(label);
-    copy_tree(
-        &source.join("assurance/v2"),
-        &target.path.join("assurance/v2"),
-    );
-    retain_groundwater_fixture(&target.path);
+    openwepp_assurance::copy_v2_test_fixture(source, &target.path).unwrap();
+    openwepp_assurance::retain_v2_test_report(&target.path, REPORT_ID).unwrap();
     for relative in [
         "usersum/hillslope-hydrology-and-sediment-physics.md",
         "docs/specifications/science-contracts/contracts/SC-GWBASEFLOW-001.md",
@@ -1778,19 +1715,6 @@ fn source_fixture(label: &str) -> Scratch {
     target
 }
 
-fn retain_groundwater_fixture(root: &Path) {
-    let catalog_path = root.join(CATALOG_PATH);
-    let catalog = fs::read_to_string(&catalog_path).expect("read fixture catalog");
-    let marker = format!("\n  - id: {REAL_SNOW_REPORT_ID}\n");
-    let split = catalog
-        .find(&marker)
-        .expect("snow/frost catalog entry follows groundwater fixture entry");
-    fs::write(&catalog_path, format!("{}\n", &catalog[..split]))
-        .expect("retain one-report fixture catalog");
-    fs::remove_dir_all(root.join("assurance/v2/reports").join(REAL_SNOW_REPORT_ID))
-        .expect("remove unselected snow/frost fixture source");
-}
-
 fn prepend_test_banner(path: &Path) {
     let text = fs::read_to_string(path).expect("read authored source");
     let end = text.find('\n').expect("markdown heading line");
@@ -1802,173 +1726,30 @@ fn prepend_test_banner(path: &Path) {
     fs::write(path, updated).expect("write test-only banner");
 }
 
-fn refresh_local_hash(root: &Path, relative: &str) {
-    let digest = sha256_bytes(&fs::read(root.join(relative)).expect("read local source"));
-    let report = root.join(REPORT_PATH);
-    let text = fs::read_to_string(&report).expect("read report");
-    let marker = format!("  path: {relative}\n");
-    let start = text.find(&marker).expect("find local source path") + marker.len();
-    let hash_start = text[start..].find("  sha256: ").expect("find local hash") + start;
-    let hash_end = text[hash_start..].find('\n').unwrap() + hash_start;
-    let mut updated = text;
-    updated.replace_range(hash_start..hash_end, &format!("  sha256: {digest}"));
-    fs::write(report, updated).expect("update local source identity");
+fn refresh_local_hash(root: &Path, _relative: &str) {
+    openwepp_assurance::rebind_v2_test_fixture(root).expect("rebind fixture identity");
 }
 
-fn refresh_catalog_identity(root: &Path, relative: &str) {
-    let digest = sha256_bytes(&fs::read(root.join(relative)).expect("read catalog input"));
-    let catalog = root.join(CATALOG_PATH);
-    let text = fs::read_to_string(&catalog).expect("read catalog");
-    let marker = format!("  path: {relative}\n");
-    let start = text.find(&marker).expect("find catalog input path") + marker.len();
-    let hash_start = text[start..]
-        .find("  sha256: ")
-        .expect("find catalog input hash")
-        + start;
-    let hash_end = text[hash_start..].find('\n').unwrap() + hash_start;
-    let mut updated = text;
-    updated.replace_range(hash_start..hash_end, &format!("  sha256: {digest}"));
-    fs::write(catalog, updated).expect("update catalog input identity");
+fn refresh_catalog_identity(root: &Path, _relative: &str) {
+    openwepp_assurance::rebind_v2_test_fixture(root).expect("rebind fixture identity");
 }
 
 fn refresh_report_hash(root: &Path) {
-    let digest = sha256_bytes(&fs::read(root.join(REPORT_PATH)).expect("read report"));
-    let catalog = root.join(CATALOG_PATH);
-    let text = fs::read_to_string(&catalog).expect("read catalog");
-    let marker = "    manifest_sha256: ";
-    let start = text.find(marker).expect("find manifest hash") + marker.len();
-    let end = text[start..].find('\n').unwrap() + start;
-    let mut updated = text;
-    updated.replace_range(start..end, &digest);
-    fs::write(catalog, updated).expect("update manifest identity");
-}
-
-fn refresh_report_hash_for(root: &Path, relative: &str) {
-    let digest = sha256_bytes(&fs::read(root.join(relative)).expect("read report"));
-    let catalog = root.join(CATALOG_PATH);
-    let text = fs::read_to_string(&catalog).expect("read catalog");
-    let marker = format!("    manifest_path: {relative}\n    manifest_sha256: ");
-    let start = text.find(&marker).expect("find report manifest") + marker.len();
-    let end = text[start..].find('\n').unwrap() + start;
-    let mut updated = text;
-    updated.replace_range(start..end, &digest);
-    fs::write(catalog, updated).expect("update report manifest identity");
-}
-
-fn reset_declared_roots(path: &Path, roots: &V2ReviewRoots) {
-    let zero = "0".repeat(64);
-    let mut text = fs::read_to_string(path).unwrap();
-    for root in [
-        Some(roots.subject_root.as_str()),
-        roots.finding_ledger_root.as_deref(),
-        roots.approval_lock_root.as_deref(),
-        roots.release_transfer_root.as_deref(),
-    ]
-    .into_iter()
-    .flatten()
-    {
-        text = text.replace(root, &zero);
-    }
-    fs::write(path, text).unwrap();
-}
-
-fn bind_all_roots(path: &Path, roots: &V2ReviewRoots) {
-    let zero = "0".repeat(64);
-    let mut text = fs::read_to_string(path).unwrap();
-    text = text.replace(
-        &format!("  subject_root: {zero}"),
-        &format!("  subject_root: {}", roots.subject_root),
-    );
-    let finding = roots.finding_ledger_root.as_deref().unwrap();
-    text = text.replace(
-        &format!("  finding_ledger_root: {zero}"),
-        &format!("  finding_ledger_root: {finding}"),
-    );
-    text = text.replace(
-        &format!("      finding_ledger_root: {zero}"),
-        &format!("      finding_ledger_root: {finding}"),
-    );
-    let approval = roots.approval_lock_root.as_deref().unwrap();
-    text = text.replace(
-        &format!("  approval_lock_root: {zero}"),
-        &format!("  approval_lock_root: {approval}"),
-    );
-    text = text.replace(
-        &format!("  release_transfer_root: {zero}"),
-        &format!(
-            "  release_transfer_root: {}",
-            roots.release_transfer_root.as_deref().unwrap()
-        ),
-    );
-    fs::write(path, text).unwrap();
-}
-
-fn bind_subject_and_finding(path: &Path, roots: &V2ReviewRoots) {
-    let zero = "0".repeat(64);
-    let finding = roots.finding_ledger_root.as_deref().unwrap();
-    let mut text = fs::read_to_string(path).unwrap();
-    text = text.replace(
-        &format!("  subject_root: {zero}"),
-        &format!("  subject_root: {}", roots.subject_root),
-    );
-    text = text.replace(
-        &format!("  finding_ledger_root: {zero}"),
-        &format!("  finding_ledger_root: {finding}"),
-    );
-    text = text.replace(
-        &format!("      finding_ledger_root: {zero}"),
-        &format!("      finding_ledger_root: {finding}"),
-    );
-    fs::write(path, text).unwrap();
+    openwepp_assurance::rebind_v2_test_fixture(root).expect("rebind fixture identity");
 }
 
 fn append_catalog_report(root: &Path, report_id: &str, report_path: &Path, domain: V2TrustDomain) {
     let relative = format!("assurance/v2/reports/{report_id}/report.yaml");
-    let digest = sha256_bytes(&fs::read(report_path).unwrap());
+    assert!(report_path.is_file());
     let catalog = root.join(CATALOG_PATH);
     let mut text = fs::read_to_string(&catalog).unwrap();
     let fixture_only = domain == V2TrustDomain::TestOnly;
     write!(
         text,
-        "  - id: {report_id}\n    version: 1.0.0\n    title: Verification of openWEPP's Daily Linear Groundwater Reservoir\n    owner: openWEPP scientific assurance maintainers\n    trust_domain: {domain}\n    fixture_only: {fixture_only}\n    manifest_path: {relative}\n    manifest_sha256: {digest}\n"
+        "- id: {report_id}\n  version: 1.0.0\n  title: Verification of openWEPP's Daily Linear Groundwater Reservoir\n  owner: openWEPP scientific assurance maintainers\n  trust_domain: {domain}\n  fixture_only: {fixture_only}\n  manifest_path: {relative}\n"
     )
     .expect("write catalog report entry");
     fs::write(catalog, text).unwrap();
-}
-
-fn rebind_after_approved_change(fixture: &ApprovedFixture, old_roots: &V2ReviewRoots) {
-    let report = fixture.source.path.join(REPORT_PATH);
-    reset_declared_roots(&report, old_roots);
-    refresh_report_hash_for(&fixture.source.path, REPORT_PATH);
-    let repository = V2Repository::open(&fixture.source.path).unwrap();
-    repository
-        .build_report(REPORT_ID, &fixture.stage.path)
-        .unwrap();
-    let roots = repository
-        .review_roots(REPORT_ID, &fixture.stage.path)
-        .unwrap();
-    bind_subject_and_finding(&report, &roots);
-    refresh_report_hash_for(&fixture.source.path, REPORT_PATH);
-    let repository = V2Repository::open(&fixture.source.path).unwrap();
-    repository
-        .build_report(REPORT_ID, &fixture.stage.path)
-        .unwrap();
-    let roots = repository
-        .review_roots(REPORT_ID, &fixture.stage.path)
-        .unwrap();
-    bind_all_roots(&report, &roots);
-    refresh_report_hash_for(&fixture.source.path, REPORT_PATH);
-    V2Repository::open(&fixture.source.path)
-        .unwrap()
-        .build_report(REPORT_ID, &fixture.stage.path)
-        .unwrap();
-}
-
-fn current_roots(fixture: &ApprovedFixture) -> V2ReviewRoots {
-    V2Repository::open(&fixture.source.path)
-        .unwrap()
-        .review_roots(REPORT_ID, &fixture.stage.path)
-        .unwrap()
 }
 
 fn assert_unpublished(fixture: &ApprovedFixture, case: &str) {
@@ -2017,24 +1798,25 @@ fn replace_all_in(path: &Path, old: &str, new: &str) {
 }
 
 fn canonical_json_bytes(value: &serde_json::Value) -> Vec<u8> {
-    fn normalize(value: serde_json::Value) -> serde_json::Value {
-        match value {
-            serde_json::Value::Object(values) => {
-                let ordered = values
-                    .into_iter()
-                    .map(|(key, value)| (key, normalize(value)))
-                    .collect::<std::collections::BTreeMap<_, _>>();
-                serde_json::to_value(ordered).unwrap()
-            }
-            serde_json::Value::Array(values) => {
-                serde_json::Value::Array(values.into_iter().map(normalize).collect())
-            }
-            value => value,
-        }
-    }
-    let mut bytes = serde_json::to_vec(&normalize(value.clone())).unwrap();
+    let mut bytes = serde_json::to_vec(&normalized_json(value.clone())).unwrap();
     bytes.push(b'\n');
     bytes
+}
+
+fn normalized_json(value: serde_json::Value) -> serde_json::Value {
+    match value {
+        serde_json::Value::Object(values) => {
+            let ordered = values
+                .into_iter()
+                .map(|(key, value)| (key, normalized_json(value)))
+                .collect::<std::collections::BTreeMap<_, _>>();
+            serde_json::to_value(ordered).unwrap()
+        }
+        serde_json::Value::Array(values) => {
+            serde_json::Value::Array(values.into_iter().map(normalized_json).collect())
+        }
+        value => value,
+    }
 }
 
 fn run_release_preflight(

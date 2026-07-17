@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use openwepp_assurance::{
-    AssuranceError, V2NormalizationMode, V2NormalizationOptions, V2Repository, sha256_bytes,
+    AssuranceError, V2NormalizationMode, V2NormalizationOptions, V2Repository,
 };
 
 const REPORT_ID: &str = "linear-groundwater-reservoir-recurrence";
@@ -61,7 +61,7 @@ fn apply_rebinds_complete_graph_builds_and_is_idempotent() {
         )
         .expect("apply normalization transaction");
     assert!(receipt.changed);
-    assert_eq!(receipt.changes.len(), 4);
+    assert_eq!(receipt.changes.len(), 3);
     assert_eq!(
         fs::read(fixture.path.join(MANUSCRIPT_PATH)).unwrap(),
         fs::read(reference.join(MANUSCRIPT_PATH)).unwrap()
@@ -78,10 +78,14 @@ fn apply_rebinds_complete_graph_builds_and_is_idempotent() {
         fs::read(fixture.path.join(CATALOG_PATH)).unwrap(),
         fs::read(reference.join(CATALOG_PATH)).unwrap()
     );
-    assert_eq!(
-        modes_before,
-        collect_modes(&fixture.path.join("assurance/v2"))
-    );
+    let modes_after = collect_modes(&fixture.path.join("assurance/v2"));
+    for (path, mode) in modes_before {
+        assert_eq!(
+            modes_after.get(&path),
+            Some(&mode),
+            "mode changed: {path:?}"
+        );
+    }
 
     let repository = V2Repository::open(&fixture.path).expect("reopen normalized source");
     repository
@@ -174,20 +178,9 @@ fn lifecycle_review_and_packet_boundaries_fail_before_writing() {
     );
 
     let stale_packet = fixture("assurance-normalize-stale-packet");
-    let old_packet = sha256_bytes(&fs::read(stale_packet.path.join(PACKET_PATH)).unwrap());
-    let manuscript = sha256_bytes(&fs::read(stale_packet.path.join(MANUSCRIPT_PATH)).unwrap());
-    replace_all_digest(
-        &stale_packet.path.join(PACKET_PATH),
-        &manuscript,
-        &"0".repeat(64),
-    );
-    let new_packet = sha256_bytes(&fs::read(stale_packet.path.join(PACKET_PATH)).unwrap());
-    replace_all_digest(
-        &stale_packet.path.join(REPORT_PATH),
-        &old_packet,
-        &new_packet,
-    );
-    refresh_report_hash(&stale_packet.path);
+    let mut packet = fs::read(stale_packet.path.join(PACKET_PATH)).unwrap();
+    packet.extend_from_slice(b"\n");
+    fs::write(stale_packet.path.join(PACKET_PATH), packet).unwrap();
     let packet_before = collect_files(&stale_packet.path.join("assurance/v2"));
     V2Repository::open(&stale_packet.path)
         .unwrap()
@@ -215,17 +208,7 @@ fn replace_in_report(root: &Path, old: &str, new: &str) {
 }
 
 fn refresh_report_hash(root: &Path) {
-    let reference = repository_root();
-    let old = sha256_bytes(&fs::read(reference.join(REPORT_PATH)).unwrap());
-    let new = sha256_bytes(&fs::read(root.join(REPORT_PATH)).unwrap());
-    let catalog = root.join(CATALOG_PATH);
-    let text = fs::read_to_string(&catalog).unwrap();
-    let current = text
-        .lines()
-        .find_map(|line| line.trim().strip_prefix("manifest_sha256: "))
-        .expect("catalog report digest");
-    assert!(current == old || current.len() == 64);
-    fs::write(catalog, text.replacen(current, &new, 1)).unwrap();
+    openwepp_assurance::rebind_v2_test_fixture(root).unwrap();
 }
 
 fn british_fixture(label: &str) -> Scratch {
@@ -243,36 +226,12 @@ fn british_fixture(label: &str) -> Scratch {
     )
     .unwrap();
 
-    let reference = repository_root();
-    let old_manuscript = sha256_bytes(&fs::read(reference.join(MANUSCRIPT_PATH)).unwrap());
-    let new_manuscript = sha256_bytes(&fs::read(&manuscript).unwrap());
-    replace_all_digest(
-        &target.path.join(PACKET_PATH),
-        &old_manuscript,
-        &new_manuscript,
-    );
-    let old_packet = sha256_bytes(&fs::read(reference.join(PACKET_PATH)).unwrap());
-    let new_packet = sha256_bytes(&fs::read(target.path.join(PACKET_PATH)).unwrap());
-    replace_all_digest(
-        &target.path.join(REPORT_PATH),
-        &old_manuscript,
-        &new_manuscript,
-    );
-    replace_all_digest(&target.path.join(REPORT_PATH), &old_packet, &new_packet);
-    let old_report = sha256_bytes(&fs::read(reference.join(REPORT_PATH)).unwrap());
-    let new_report = sha256_bytes(&fs::read(target.path.join(REPORT_PATH)).unwrap());
-    replace_all_digest(&target.path.join(CATALOG_PATH), &old_report, &new_report);
+    openwepp_assurance::rebind_v2_test_fixture(&target.path).unwrap();
     V2Repository::open(&target.path)
         .unwrap()
         .validate_report(REPORT_ID)
         .expect("British-spelling fixture is current before normalization");
     target
-}
-
-fn replace_all_digest(path: &Path, old: &str, new: &str) {
-    let text = fs::read_to_string(path).unwrap();
-    assert!(text.contains(old), "missing digest in {}", path.display());
-    fs::write(path, text.replace(old, new)).unwrap();
 }
 
 fn prepared_stage(label: &str) -> Scratch {
@@ -288,10 +247,7 @@ fn prepared_stage(label: &str) -> Scratch {
 fn fixture(label: &str) -> Scratch {
     let source = repository_root();
     let target = Scratch::new(label);
-    copy_tree(
-        &source.join("assurance/v2"),
-        &target.path.join("assurance/v2"),
-    );
+    openwepp_assurance::copy_v2_test_fixture(&source, &target.path).unwrap();
     for relative in [
         "assurance/catalog.yaml",
         "assurance/templates/catalog.md",
@@ -309,19 +265,6 @@ fn fixture(label: &str) -> Scratch {
         copy_file(&source, &target.path, relative);
     }
     target
-}
-
-fn copy_tree(source: &Path, target: &Path) {
-    fs::create_dir_all(target).unwrap();
-    for entry in fs::read_dir(source).unwrap() {
-        let entry = entry.unwrap();
-        let destination = target.join(entry.file_name());
-        if entry.file_type().unwrap().is_dir() {
-            copy_tree(&entry.path(), &destination);
-        } else {
-            fs::copy(entry.path(), destination).unwrap();
-        }
-    }
 }
 
 fn copy_file(source_root: &Path, target_root: &Path, relative: &str) {

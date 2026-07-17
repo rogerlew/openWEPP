@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "openwepp:assurance:v2:review-lock:1",
+  "title": "openWEPP assurance generated review lock",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "machine_owned",
+    "format_version",
+    "identity_algorithm_version",
+    "report_id",
+    "lifecycle",
+    "legacy_subject_root",
+    "science_root",
+    "communication_root",
+    "attribution_root",
+    "review_governance_root",
+    "content_review_subject_root",
+    "finding_ledger_root",
+    "preapproval_realization_root",
+    "pre_steward_approval_root",
+    "approval_lock_root",
+    "realization_root",
+    "release_transfer_root",
+    "event_ids",
+    "invalidated_event_ids"
+  ],
+  "properties": {
+    "machine_owned": { "const": true },
+    "format_version": { "const": 1 },
+    "identity_algorithm_version": { "const": "openwepp-assurance-generated-identity-v2" },
+    "report_id": { "$ref": "#/$defs/id" },
+    "lifecycle": { "enum": ["DRAFT", "IN_REVIEW", "APPROVED"] },
+    "legacy_subject_root": { "$ref": "#/$defs/nullableDigest" },
+    "science_root": { "$ref": "#/$defs/digest" },
+    "communication_root": { "$ref": "#/$defs/digest" },
+    "attribution_root": { "$ref": "#/$defs/digest" },
+    "review_governance_root": { "$ref": "#/$defs/digest" },
+    "content_review_subject_root": { "$ref": "#/$defs/digest" },
+    "finding_ledger_root": { "$ref": "#/$defs/nullableDigest" },
+    "preapproval_realization_root": { "$ref": "#/$defs/digest" },
+    "pre_steward_approval_root": { "$ref": "#/$defs/nullableDigest" },
+    "approval_lock_root": { "$ref": "#/$defs/nullableDigest" },
+    "realization_root": { "$ref": "#/$defs/nullableDigest" },
+    "release_transfer_root": { "$ref": "#/$defs/nullableDigest" },
+    "event_ids": { "$ref": "#/$defs/digestList" },
+    "invalidated_event_ids": { "$ref": "#/$defs/digestList" }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$" },
+    "digest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "nullableDigest": { "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/digest" }] },
+    "digestList": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/digest" }
+    }
+  }
+}

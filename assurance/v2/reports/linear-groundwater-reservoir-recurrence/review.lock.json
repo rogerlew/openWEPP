@@ -1,0 +1,21 @@
+{
+  "machine_owned": true,
+  "format_version": 1,
+  "identity_algorithm_version": "openwepp-assurance-generated-identity-v2",
+  "report_id": "linear-groundwater-reservoir-recurrence",
+  "lifecycle": "DRAFT",
+  "legacy_subject_root": null,
+  "science_root": "1b2f0d0e3c8de9107d7ea5adca8d79c524840dd7555d6eee79538552b162e43d",
+  "communication_root": "4b5995f2dcd2f0a947061a62c83883d9db619748681fa25f0ec7660098ef128c",
+  "attribution_root": "4461f051ab8e6a4241724e3684ada62b4658448340648f7912af89eecf463d30",
+  "review_governance_root": "463beb19ec57b48462cd09593042beda17cda008612ecfe3f036deb108f958cb",
+  "content_review_subject_root": "3c6ae095861477de6671420bba53ac40d0e4b62d9be3d6118c0c894c2207fb1c",
+  "finding_ledger_root": null,
+  "preapproval_realization_root": "78231571d51e9d3a95868d3f928b84bc9ce5a58d2deb8cc54e70b18b3784f1bb",
+  "pre_steward_approval_root": null,
+  "approval_lock_root": null,
+  "realization_root": null,
+  "release_transfer_root": null,
+  "event_ids": [],
+  "invalidated_event_ids": []
+}

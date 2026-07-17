@@ -11,6 +11,15 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260716-assure-maint01-mechanical-amendment-workflow-001/` completed the
+  mechanical `openwepp-assurance amend` foundation. Typed confined
+  transactions now own bounded attribution, role, lifecycle, normalization,
+  generated identities, immutable review events, recovery, and proportional
+  receipt gates without agent-maintained hashes. Final-binary current/scaled
+  timing passed; full Nextest passed 2,072/2,072; fresh CRAP closed at 2 raw / 2
+  adjudicated / 0 actionable; dual implementation review and dual terminal
+  verification passed without changing report science, human authority, or the
+  zero-public-report boundary.
 - `20260714-vv-asymmetric-assurance-reframe-001/` is the completed follow-on that
   separates hard software-verification acceptance, nonterminal empirical
   corroboration, and decision-owner application fitness throughout the V&V
@@ -102,16 +111,6 @@
 
 State as of `2026-07-16 UTC`:
 
-- `20260716-assure-maint01-mechanical-amendment-workflow-001/` -
-  QUEUED (2026-07-16): implements the accepted `openwepp-assurance amend`
-  specification after repeated 30–42 minute spelling and attribution changes
-  exposed manual identity propagation and disproportionate gates. The package
-  moves derived hashes into generated locks, introduces an acyclic review-event
-  and identity graph, adds typed amendment/lifecycle/recovery transactions and
-  receipt-driven no-package/no-agent gates, measures end-to-end fast-lane
-  timing, and audits other agent work for mechanical ownership. It is required
-  before another review freeze, in-review role change, or embedded-hash report
-  admission; scientific drafting and existing human review may continue.
 - `20260716-assure06-human-review-entry-001/` -
   HOLD-INDEPENDENT-HUMAN-REVIEW (2026-07-16): Roger Lew reviewed the snow/frost report, accepted the
   accountable report-lead role, and disclosed that he led the underlying
