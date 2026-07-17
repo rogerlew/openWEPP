@@ -2,7 +2,7 @@
 
 Status: living — canonical prospective planning queue
 
-Last updated: 2026-07-16
+Last updated: 2026-07-17
 
 This file answers one question: **what work is openWEPP intentionally doing
 next, later, or at a named future gate?** It does not record how the current
@@ -31,7 +31,9 @@ state was reached. Execution history lives in the
 
 | Priority | Owning queue | State | Advancement gate |
 | --- | --- | --- | --- |
-| `ASSURE-06` snow/frost flagship synthesis | Scientific assurance | `in_review` | Roger Lew is the accountable report lead and a material snow/frost producer. Advancement requires distinct independent scientific and reproduction/publication reviewers, complete finding disposition, three-role exact-ledger approval and lock, release transfer, and publication gates. |
+| `CANOPY-PHENOLOGY-02` native canopy integration | Plant/snow-frost science | `next` | Ratify and implement the mapping from the verified GSI signal to native deciduous/mixed canopy, foliar/structural biomass, litter transfer, annual no-drift closure, native YAML operands, and real snow/ET/erosion consumers. |
+| `SNOW-SURFACE-EB` sublimation and longwave | Snow/frost science | `queued` | Start after `CANOPY-PHENOLOGY-02` closes and a contract-first package reconciles the multilayer surface-energy, vapor-mass, and longwave backlog with the current meteorology and snow-column implementation. |
+| `ASSURE-06` snow/frost flagship synthesis | Scientific assurance | `held` | Roger Lew remains the accountable report lead and a material snow/frost producer. Resume independent review only after canopy phenology and the selected sublimation/longwave work land, the scientific manuscript is refreshed against those changes, and a new exact review root is issued. |
 | `ASSURE-05` first production v2 report | Scientific assurance | `held` | Technical review handoff is complete; formal review has not started. Advancement requires assignment of accountable human reviewers, exact-subject review and approval, assurance-steward approval, release-owner transfer, and exact-root publication gates. |
 
 ## Scientific Assurance Queue
@@ -97,7 +99,7 @@ The v2 records remain distinct:
 | ID | Prospective outcome | Advancement gate | State |
 | --- | --- | --- | --- |
 | `ASSURE-05` | Convert the accepted bounded non-snow prototype into the first complete v2 report using the production kernel, real consumer, retained evidence, figures/tables, and technical supplement. | Obtain accountable human review and approval for the exact review-ready source, then prove release transfer and public inclusion without changing the protected zero-report baseline prematurely. | `held`; technical/internal closure passed under `20260716-assure05-first-production-v2-report-001`, but named human authority is absent. |
-| `ASSURE-06` | Carry the snow/frost flagship synthesis through accountable human scientific review, exact-subject approval, release transfer, and publication when authorized. | Complete independent scientific and reproduction/publication review of the exact `IN_REVIEW` root; disposition findings; obtain the distinct three-role approval lock; transfer to an exact release realization; pass publication gates without weakening claim-specific limitations. | `in_review`; Roger Lew accepted report-lead accountability and is recorded as a material producer under `20260716-assure06-human-review-entry-001`. Public report count remains zero. |
+| `ASSURE-06` | Refresh the snow/frost flagship after the selected science work, then carry the new exact manuscript through accountable human scientific review, approval, release transfer, and publication when authorized. | Canopy phenology and the selected sublimation/longwave work land; the report is updated and rebuilt; the obsolete review root is superseded; then independent scientific and reproduction/publication review, finding disposition, three-role approval, release transfer, and publication gates may resume. | `held`; Roger Lew remains report lead and material producer. Do not solicit review against the pre-science-change root. Public report count remains zero. |
 | `ASSURE-07` | Build a priority portfolio of additional hydrology, erosion, sediment, plant, channel, and watershed reports and bind reviewed reports plus explicit gaps to release snapshots. | Selection by user importance and evidence readiness; ownership, currency, transfer, supersession, snapshots, and documented gaps remain explicit without implying site fitness. | `queued` after `ASSURE-05`; may proceed incrementally without blocking `ASSURE-06`. |
 | `ASSURE-08` | Vendor the approved v2 report set into WEPPcloud during the openWEPP beta release campaign. | Refresh the handoff against current wepppy contracts; prove vendor sync, manifest/navigation/roles, rendering, link rewriting, accessibility, search, and the real downstream consumer; bind vendored content to the beta candidate. | `deferred`; mandatory immediately before openWEPP beta release in WEPPcloud. Do not start while WEPPcloud or the reports remain immature. |
 
@@ -110,12 +112,6 @@ It is a dormant compatibility record, not authority to vendor.
 | ID | Owner and purpose | Trigger | State |
 | --- | --- | --- | --- |
 | `CQR-NIGHTLY` | Operator-owned repo-wide complexity/coverage maintenance under the [rolling ExecPlan](work-packages/cqr-nightly-burndown-execplan.md). Each selected module receives a behavior-preserving package, current measurement, gates, review, verification, and disposition. | An operator requests a bounded batch after active feature/science packages release overlapping write sets. | `recurring`; not an automatic blocker for the scientific-assurance queue. |
-
-## Promoted Work Awaiting Scheduling
-
-| ID | Owning queue and outcome | Advancement trigger | State |
-| --- | --- | --- | --- |
-| `CANOPY-PHENOLOGY` | Plant/snow-frost science: replace fixed-date deciduous/mixed-canopy behavior with hemisphere-robust leaf-off and leaf-on, then re-anchor the retained litter-drop window to the physical phenology signal. | An operator schedules the next increment by changing the current priority and authorizing a contract-first package. Before physics code, reconcile the landed native-management/YAML surface with the original first-class forest-input foundation and ratify the growth-canopy contract; then sequence leaf-off and leaf-on as separate closable increments. | `queued`; promoted but not active until the operator selects it. [Program record](backlog/20260626-frost-daylength-canopy-decline-hemisphere-robust.md). |
 
 ## Promotion And History Routing
 

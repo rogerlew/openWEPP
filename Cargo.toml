@@ -24,6 +24,7 @@ members = [
     "crates/openwepp-watershed-orchestrator",
     "crates/openwepp-legacy-bridge",
     "crates/openwepp-meteorology",
+    "crates/openwepp-plant-phenology",
     "crates/openwepp-unit-boundary",
     "crates/openwepp-summary-accumulator",
     "crates/openwepp-comparator-metadata",

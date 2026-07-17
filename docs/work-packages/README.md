@@ -109,7 +109,20 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-07-16 UTC`:
+State as of `2026-07-17 UTC`:
+
+- `20260717-canopy-phenology-gsi-kernel-001/` -
+  COMPLETE-PASS-PROCESS-KERNEL (2026-07-17): implements
+  the published Jolly–Nemani–Running Growing Season Index as the first bounded
+  canopy-phenology process kernel. The package owns signed-latitude
+  photoperiod, minimum-temperature and VPD constraint indicators, exact 21-day
+  state, contract authority, and process tests. It explicitly stops before
+  canopy-cover, biomass, litter, snow/ET/erosion, native-YAML activation, or
+  assurance claims; those require the follow-on integration law. The final
+  focused suite passes 13/13, full workspace Nextest passes 2,085/2,085, fresh
+  adjudicated CRAP has zero actionable rows, and dual final terminal
+  verification passes after preserving two HOLD cycles for incomplete restart
+  evidence.
 
 - `20260716-assure06-human-review-entry-001/` -
   HOLD-INDEPENDENT-HUMAN-REVIEW (2026-07-16): Roger Lew reviewed the snow/frost report, accepted the

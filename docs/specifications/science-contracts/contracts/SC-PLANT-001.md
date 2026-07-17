@@ -4,7 +4,7 @@ title: Plant Growth Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 20
+contract_version: 21
 producer_scope:
   - Plant state evolution for cropland and rangeland growth submodels
   - Plant to water-balance coupling surfaces (LAI, root depth, plant biomass/residue descriptors)
@@ -16,7 +16,7 @@ consumer_scope:
   - Residue decomposition and management surfaces consuming plant-to-residue transfers
   - Scheduler and PL kernel boundaries consuming projected management transition controls
 evidence_level: static
-last_reviewed: 2026-07-13
+last_reviewed: 2026-07-17
 supersedes: []
 superseded_by: []
 ---
@@ -61,6 +61,8 @@ Out of scope:
 | REF-PLANT-CH8-ROOT | `chap8.pdf` §8.2.7, Eq. [8.2.20]-[8.2.25] | Root biomass partitioning and root-depth upper bounds. | `[DIRECT][Static]` |
 | REF-PLANT-CH8-MGMT | `chap8.pdf` §8.3-§8.5 | Management conversion/removal constraints (harvest, grazing, dormancy, burning). | `[DIRECT][Static]` |
 | REF-PLANT-CH8-RANGE | `chap8.pdf` §8.4-§8.5 | Rangeland growth-curve (`gi`) and dormancy/stress transfer semantics. | `[DIRECT][Static]` |
+| REF-PLANT-JOLLY-GSI | Jolly, Nemani, and Running (2005), *Global Change Biology* 11:619-632, doi: `10.1111/j.1365-2486.2005.00930.x`, Eq. 1-4 and Methods | Generalized foliar-phenology constraint indicators, instantaneous GSI, 21-day moving mean, and onset/offset interpretation. | `[DIRECT][Static]` |
+| REF-PLANT-FAO56-DAYLIGHT | FAO Irrigation and Drainage Paper 56, Chapter 3, Eq. 24-25 and 34 | Signed-latitude solar declination, sunset hour angle, and maximum daylight duration. | `[DIRECT][Static]` |
 | REF-PLANT-CH5-COUPLING | `references/50201000/chap5.pdf` §5.5 | ET/water-balance receives daily LAI, root depth, biomass, residue cover; returns plant water-stress factor. | `[DIRECT][Static]` |
 | REF-PLANT-LEGACY-WATBAL | `/workdir/wepp-forest_260430_baseline/src/watbal.for:918-922,958-967` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline ordering/linkage authority for root-uptake dispatch (`swu`) and post-uptake aggregate water recomputation consumed by plant stress coupling surfaces. | `[DIRECT][Static]` |
 | REF-PLANT-LEGACY-SWU | `/workdir/wepp-forest_260430_baseline/src/swu.for:122-191` (`dac3c950d8b16cc73774bf5ce2e7e11f80baac70`) | Baseline layer-uptake and stress lineage authority for `UPi`, `Ui`, root depth (`rtd`), and stress ratio used by plant growth regulation. | `[DIRECT][Static]` |
@@ -366,6 +368,11 @@ algorithm.
 | INV-PLANT-025 | Initial live-canopy assimilation: cropland initial-condition `cancov` must initialize primary live plant state before daily growth/ET. For established perennial crops (`imngmt=2`, `jdplt=0`), projection must seed `rtd` from the `rdmax` envelope, `rtmass=rtmmax`, and `vdmt`/`lai` through legacy `initgr` equations when `cancov>0`; `sumgdd` must be initialized through `initgr` when `gddmax` is already resolved or at the first growth update after `gddmax_eff` sentinel resolution. It must not leave live-canopy state at unconditional zero when initial canopy cover is present. | hard-fail | REF-PLANT-LEGACY-INIT1, REF-PLANT-LEGACY-INITGR, REF-PLANT-LEGACY-INFILE, REF-PLANT-LEGACY-WATBAL | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PLANT-026 | Annual PL activation persistence invariant: when an annual/fallow crop is outside its active `jdplt..jdharv` window, scheduler suppression may be day-local only. Management-derived PL schedule/runtime sentinel surfaces must be preserved for the next daily activation decision so the same annual crop can enter PL16 growth after `jdplt`; deleting the activation sentinel from carried runtime state and thereby suppressing all later annual growth is invalid. | hard-fail | REF-PLANT-LEGACY-PTGRA, REF-PLANT-LEGACY-INFILE, INV-PLANT-018, SC-EVAP-001#INV-EVAP-016 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PLANT-027 | Perennial root-cap ordering invariant: validate `rtmmax` as finite non-negative, and test `rtmass_prev >= rtmmax` before incremental root mass or root-depth division. The saturated branch publishes `rtmass=rtmmax` and `rtd=min(rdmax,solthk)`; exact-zero `rtmmax` is valid and must not reach a division by zero. | hard-fail | REF-PLANT-LEGACY-GROW, REF-PLANT-LEGACY-INIT1, REF-PLANT-LEGACY-INFILE | `[DIRECT][Static]` |
+| INV-PLANT-028 | GSI indicator law: for finite daily forcing, `iTmin`, `iVPD`, and `iPhoto` are the Jolly et al. piecewise-linear constraint indicators and `iGSI=iTmin*iVPD*iPhoto`; every indicator and their product is finite in `[0,1]`. | hard-fail | REF-PLANT-JOLLY-GSI | `[DIRECT][Static]` |
+| INV-PLANT-029 | GSI history law: the published operational GSI is a 21-day trailing arithmetic mean. During an openWEPP cold start with fewer than 21 real forcing days, it is the mean of only those available samples; after 21 samples the oldest sample is evicted before the newest is admitted. Exponential smoothing, calendar bins, synthetic prefill, and fixed Julian triggers are invalid substitutes. | hard-fail | REF-PLANT-JOLLY-GSI | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-PLANT-030 | GSI photoperiod and hemisphere law: photoperiod is computed from finite signed latitude and runtime day using FAO-56 solar declination and sunset-hour-angle geometry, remains in `[0,24]` hours including polar day/night, and preserves opposite seasonal phase at equal-magnitude Northern/Southern latitudes. | hard-fail | REF-PLANT-FAO56-DAYLIGHT, REF-PLANT-JOLLY-GSI | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-PLANT-031 | GSI failure and scope law: invalid latitude/day, non-finite forcing, negative VPD, unordered thresholds, or malformed history hard-fails with a typed error. GSI is a foliar-phenology signal only until a later contract amendment ratifies canopy, LAI, biomass, litter, and downstream-consumer mapping. | hard-fail | REF-PLANT-JOLLY-GSI, REF-PLANT-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-PLANT-032 | GSI chronology and restart law: stateful admission accepts only the calendar day immediately following the newest retained sample, including Gregorian year rollover. Repeated, skipped, reversed, or year-invalid dates hard-fail before state mutation. Exact restart restores both ordered history and its newest calendar date. | hard-fail | REF-PLANT-JOLLY-GSI, REF-PLANT-PHYS-BOUNDS | `[INFERENCE][Static]` |
 
 ## Allowed Degenerate States
 
@@ -463,6 +470,11 @@ algorithm.
 | `INV-PLANT-025` | runtime | Initial-condition projection for primary live plant state (`cancov`, `vdmt`, `canhgt`, `lai`, `sumgdd`, `rtmass`, `rtd`) | Typed hard error on missing/non-finite/out-of-domain assimilation inputs; zero live-state publication is invalid when established perennial initial cover is present | Tier-A gate for WB17 Ep lineage closure | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-PLANT-026` | runtime | Runner PL activation lifecycle across inactive-to-active annual windows | Preserve schedule/runtime sentinel surfaces across day boundaries while allowing day-local PL phase skip before `jdplt`; hard error or explicit defect hold when a valid annual crop cannot re-activate after planting | FQ3-DC Corn ET engagement closure gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-PLANT-027` | runtime | Perennial root update branch selector before incremental mass/depth evaluation | Typed hard error on negative/non-finite cap or state; saturated cap, including exact zero, bypasses the incremental division | INTVAL stability gate | `[DIRECT][Static]` |
+| `INV-PLANT-028` | runtime | `openwepp_plant_phenology::daily_indicators` and typed forcing/parameter validators | Typed hard error before a non-finite or out-of-domain indicator can be published | CP-GSI01 equation gate | `[DIRECT][Static]` |
+| `INV-PLANT-029` | runtime | `openwepp_plant_phenology::GsiState::advance` and `try_from_history` | Exact FIFO admission or typed restoration failure; no synthetic history | CP-GSI01 state gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-PLANT-030` | runtime | `openwepp_plant_phenology::photoperiod_hours` | Typed hard error for invalid geometry input; finite polar boundary result otherwise | CP-GSI01 hemisphere gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-PLANT-031` | runtime + governance | GSI typed API boundary and downstream integration hold | Typed hard error for invalid process input; promotion hold on unratified canopy consumers | CP-GSI01 scope gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-PLANT-032` | runtime | `openwepp_plant_phenology::GsiState::advance` calendar admission and `try_from_history` anchor restoration | Typed hard error before mutation on nonconsecutive forcing or incoherent restart state | CP-GSI01 chronology gate | `[INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -516,6 +528,17 @@ states required deterministic alias mapping for transition-control projections.
 | `ncut` / `cutday[k]` | `..._ncut`, `..._cutday_{event:04}` | perennial cut control surface | count/day -> count/day | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `ncycle` / `gday[k]` / `gend[k]` | `..._ncycle`, `..._gday_{cycle:04}`, `..._gend_{cycle:04}` | perennial grazing control surface | count/day -> count/day | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `animal[k]` / `bodywt[k]` / `area[k]` / `digest[k]` | `..._animal_{cycle:04}`, `..._bodywt_{cycle:04}`, `..._area_{cycle:04}`, `..._digest_{cycle:04}` | perennial grazing payload surface | count/kg/m^2/fraction -> same | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `Tmin` | `GsiDailyForcing::minimum_temperature_c` | daily GSI forcing | `degC` -> `degC` | `[DIRECT][Static]` |
+| `VPD` | `GsiDailyForcing::vapor_pressure_deficit_pa` | daily GSI forcing | `Pa` -> `Pa` | `[DIRECT][Static]` |
+| signed `phi` | `GsiDailyForcing::latitude_degrees` | GSI solar geometry | `degree` -> `degree` before internal radians | `[DIRECT][Static] + [INFERENCE][Static]` |
+| runtime date / `J` | `GsiDailyForcing::date` / `GsiDate::ordinal_day` | chronology / GSI solar geometry | calendar year + day-of-year -> same | `[INFERENCE][Static]` |
+| `Tmin_min`, `Tmin_max` | `GsiParameters::minimum_temperature_inactive_c`, `minimum_temperature_unconstrained_c` | GSI temperature thresholds | `degC` -> `degC` | `[DIRECT][Static]` |
+| `VPD_min`, `VPD_max` | `GsiParameters::vapor_pressure_deficit_unconstrained_pa`, `vapor_pressure_deficit_inactive_pa` | GSI VPD thresholds | `Pa` -> `Pa` | `[DIRECT][Static]` |
+| `Photo_min`, `Photo_max` | `GsiParameters::photoperiod_inactive_hours`, `photoperiod_unconstrained_hours` | GSI photoperiod thresholds | `h` -> `h` | `[DIRECT][Static]` |
+| `iTmin`, `iVPD`, `iPhoto` | `GsiDailyIndicators::minimum_temperature`, `vapor_pressure_deficit`, `photoperiod` | daily GSI indicators | `fraction` -> `fraction` | `[DIRECT][Static]` |
+| `iGSI` | `GsiDailyIndicators::instantaneous_gsi` | daily indicator product | `fraction` -> `fraction` | `[DIRECT][Static]` |
+| `GSI21` | `GsiDailyResult::growing_season_index` | trailing GSI signal | `fraction` -> `fraction` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GSI FIFO / newest date | `GsiState::history` / `GsiState::last_date` | exact warm-up and restart state | ordered fractions / calendar date -> same | `[INFERENCE][Static]` |
 
 ## Constants and Parameters Table
 
@@ -700,6 +723,95 @@ Minimum required scenario families for contract conformance:
 3. Detached-lineage vector: scalar stress substitution without WB11 lineage
    evidence is classified non-promotable and triggers explicit `HOLD`.
 
+## CP-GSI01 Generalized Foliar-Phenology Addendum
+
+### State And Units
+
+| Symbol | Unit | Domain | Meaning |
+|---|---|---|---|
+| `Tmin` | `degC` | finite | Daily minimum air temperature. |
+| `VPD` | `Pa` | finite, `>=0` | Daily atmospheric vapor-pressure deficit. |
+| calendar date | year + day-of-year | valid proleptic Gregorian date | Chronological forcing key and restart anchor. |
+| `Photo` | `h` | finite, `[0,24]` | Maximum possible daylight duration from signed latitude and runtime day. |
+| `iTmin`, `iVPD`, `iPhoto`, `iGSI` | `fraction` | finite, `[0,1]` | Daily constraint indicators and their product. |
+| `GSI21` | `fraction` | finite, `[0,1]` | Arithmetic mean of the available trailing instantaneous-GSI values, at most 21. |
+
+### Default Parameterization
+
+The generalized parameterization used for the paper's tests is:
+
+- `Tmin_min=-2 degC`, `Tmin_max=5 degC`;
+- `VPD_min=900 Pa`, `VPD_max=4100 Pa`;
+- `Photo_min=10 h`, `Photo_max=11 h`; and
+- moving-window capacity `N=21 days`.
+
+Parameters are explicit typed values. Each lower threshold must be strictly
+less than its upper threshold. This package does not authorize site calibration
+or a hidden fallback when parameters are absent.
+
+### Daily Algorithm
+
+For an increasing indicator `I_up(x;x_min,x_max)`:
+
+1. `0` when `x <= x_min`;
+2. `(x-x_min)/(x_max-x_min)` when `x_min < x < x_max`;
+3. `1` when `x >= x_max`.
+
+Then:
+
+- `iTmin = I_up(Tmin; Tmin_min, Tmin_max)`;
+- `iPhoto = I_up(Photo; Photo_min, Photo_max)`;
+- `iVPD = 1-I_up(VPD; VPD_min, VPD_max)`; and
+- `iGSI = iTmin*iVPD*iPhoto`.
+
+For runtime day `J` and signed latitude `phi` in radians, use FAO-56:
+
+- `delta = 0.409*sin((2*pi*J/365)-1.39)`;
+- `omega_s = acos(clamp(-tan(phi)*tan(delta), -1, 1))`; and
+- `Photo = 24*omega_s/pi` hours.
+
+The clamp is part of the polar day/night geometric boundary, not permission to
+normalize invalid latitude or non-finite input. Valid latitude is `[-90,90]`
+degrees and valid runtime day is integer `1..366`.
+
+Admit `iGSI` to an initially empty 21-sample FIFO. If the FIFO is full, remove
+its oldest sample first. `GSI21` is the arithmetic sum of the retained samples
+divided by their actual count. The paper establishes the full 21-day window;
+openWEPP additionally chooses an available-real-sample cold start because a run
+cannot honestly synthesize forcing before its declared start date. The first
+result therefore contains one real sample, not 20 synthetic zeros. Consumers
+must treat the first 20 results as window warm-up when that distinction matters.
+
+Each stateful admission must be the Gregorian day immediately after the newest
+retained sample. The year-aware date is part of state, including across restart:
+an exact checkpoint restores both the ordered FIFO and its newest date. This is
+an openWEPP reproducibility and fail-closed chronology rule, not a claim that
+Jolly et al. specified restart serialization.
+
+### Contract-Test Vectors
+
+1. All six published breakpoints and at least one interior value per indicator.
+2. Multiplicative vector with three nontrivial indicators and independently
+   reconstructed product.
+3. Moving-window vectors for first admission, 20-to-21 fill, and 21-sample
+   eviction with independently reconstructed means.
+4. Equal-magnitude `+45`/`-45` degree seasonal-phase vector near each solstice.
+5. Polar day/night vectors at `+90` and `-90` degrees with finite `[0,24]`
+   results.
+6. Typed failures for non-finite forcing, negative VPD, invalid latitude/day,
+   unordered thresholds, and invalid state restoration.
+7. Repeated, skipped, reversed, common-year rollover, leap-year rollover, and
+   history/date-anchor restoration vectors.
+8. Bit-identical replay of the same parameter/forcing sequence.
+
+### Integration Hold
+
+`GSI21` may be exposed as a process-kernel result, but it must not alter
+`cancov`, `LAI`, `vdmt`, interception biomass, litter/residue, snow, ET, or
+erosion until a later SC-PLANT/SC-RESIDUE amendment defines the native forest
+state and transfer laws and proves the real downstream consumers. The 0.5
+crossing is a diagnostic phenophase marker, not a production canopy switch.
+
 ## Gap Register
 
 | Gap ID | Statement | Impact | Promotability | Evidence |
@@ -712,11 +824,13 @@ Minimum required scenario families for contract conformance:
 | GAP-PLANT-006 | Contract-level typed error taxonomy for projection-domain failures is defined, but full cross-domain consumer harmonization of error labels is still open. | Residual traceability work remains for downstream consumers; runtime projection labels are implemented. | promotable-with-risk | `[INFERENCE][Static] + [Ran]` |
 | GAP-PLANT-007 | Alias continuity for projected PL slot/crop runtime naming required explicit closure (`conset/drset` schedule drift and PL11 projected family template continuity). | Closed by PL13A canonical registry + contract alias-map reconciliation; remaining non-canonical structural scheduler symbols are explicitly exceptioned. | closed | `[DIRECT][Static] + [Ran]` |
 | GAP-PLANT-008 | PL13 growth transition path used reset/plumbing semantics without full equation-driven daily growth updates. | Closed by PL16 equation-path authority and implementation for active annual/perennial growth branches. | closed | `[DIRECT][Static] + [Ran]` |
+| GAP-PLANT-009 | The GSI process law is defined independently of an openWEPP native forest canopy/LAI/biomass/litter mapping. | Process phenology can be verified, but production canopy and snow/ET/erosion effects remain non-promotable until the integration law and real consumers close. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Revision History
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-07-17` | `21` | `Codex` | CP-GSI01 amendment: added Jolly GSI and FAO-56 daylight authority, `INV-PLANT-028..032`, exact indicator/window/hemisphere/chronology laws, contract vectors, explicit cold-start inference, and a hold on canopy/biomass/litter and downstream integration. |
 | `2026-07-13` | `20` | `Codex` | INTVAL perennial root-cap amendment: restored pinned `grow.for` cap-before-increment ordering, made finite zero `rtmmax` valid, required saturated zero-cap state to bypass division and retain the `rdmax`/soil root-depth envelope, and added `INV-PLANT-027`. |
 | `2026-05-20` | `0` | `Codex` | Initial canonical stub created by SCI-02 package prep. |
 | `2026-05-20` | `1` | `Codex` | Full draft authored with invariant set, boundary obligations, and citation anchors per SCI-02 kickoff prompt. |

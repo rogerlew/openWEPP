@@ -2,23 +2,22 @@
 
 ## Status
 
-- `state`: **OPENING — promoted for implementation** (2026-07-02, operator
-  decision to open and move forward). Implementation is **sequenced
-  foundation-first** (see *Implementation Sequencing* below). The key reframe:
-  the first-class management-file `lanuse` mode — previously listed as an unmet
-  *promotion precondition* — becomes **Increment 1**, and it is the shared
-  input-authority foundation that ALSO unblocks the deferred Lane D routing
-  activation gate (`SC-OFEROUTE-001`, currently shadow-first). The canopy
-  phenology limbs (leaf-off, leaf-on) build on it under a growth–canopy
-  contract. Scope covers the **full deciduous/mixed canopy cycle** — autumn
-  leaf-off (frost/daylength decline) **and** spring leaf-on (thermal-time
-  green-up) — since a hemisphere-robust canopy needs both limbs physically
-  driven. The ground-side complement (**seasonal surface residue / litter
-  cover**: autumn leaf-drop → litter → soil thermal insulation → frost, added
-  2026-06-29 from the frost Step-3 diagnosis) is **already implemented** by
-  `docs/work-packages/20260629-frost-residue-cover-implementation-001/`; the
-  remaining scope is the canopy leaf-off/leaf-on cycle on the Increment-1
-  foundation.
+- `state`: **ACTIVE — native integration next** (2026-07-17, operator selected
+  canopy phenology before sublimation/longwave and before resuming ASSURE-06).
+  The first-class native forest/YAML foundation originally described as
+  Increment 1 is complete under
+  `20260702-dff-ws1-native-forest-lanuse-mode-001` and the later canonical-YAML
+  packages. The opening package
+  `20260717-canopy-phenology-gsi-kernel-001` completed with
+  `PASS-PROCESS-KERNEL`: it implements and verifies the published
+  Jolly–Nemani–Running Growing Season Index as a continuous, signed-latitude
+  foliar-phenology signal. Canopy-cover, foliar/structural biomass,
+  litter transfer, and production-default integration remain a distinct next
+  increment because the GSI paper supplies the phenology signal and LAI-scaling
+  rationale, not an openWEPP biomass-allocation law. The ground-side seasonal
+  residue/depth coupling is already implemented by
+  `20260629-frost-residue-cover-implementation-001`; its fixed-date litter
+  publication anchor remains until the integration increment replaces it.
 - `date`: 2026-06-26 (created, Claude Code)
 - `relates`:
   [ADR-0011](../decisions/0011-architecture-first-top-down-science-contracts.md)
@@ -56,14 +55,14 @@ canopy needs both the cold/short-day **leaf-off** and the thermal-time
 **leaf-on** driven by physical forcing, with **no fixed Julian dates** in either
 limb.
 
-## Implementation Sequencing (foundation-first)
+## Implementation Sequencing (current)
 
-Opening this program does **not** mean implementing the whole cycle at once. The
-work decomposes into a shared foundation plus the two physics limbs; the
-foundation is the enabling increment and also advances the deferred Lane D
-routing activation gate.
+The native-input foundation is complete. The remaining work separates the
+published foliar-phenology law from openWEPP-specific canopy/biomass coupling so
+that the first kernel can be verified without inventing an implicit carbon or
+litter-allocation model.
 
-### Increment 1 (foundation, the opening move) — first-class forest `lanuse` mode + management-file authority
+### Increment 1 (complete) — first-class forest `lanuse` mode + management-file authority
 
 A typed `lanuse` block in the management file that carries forest phenology,
 litter, and Papanicolaou routing operands as **first-class** parameters, plus the
@@ -87,28 +86,36 @@ are refused / fail closed).
   ratified bridge contract. Consistent with the D4/D6 kernel fail-closed guards
   and the D8 finding that these operands are load-bearing (Case 2 swung
   `NS_trace` 0.45 → 0.96 on `Ks` alone).
-- **Depends on** the existing management parser/runtime (extends it).
-  **Blocks** Increments 2–3 **and** Lane D routing activation.
+- **Delivered by** `20260702-dff-ws1-native-forest-lanuse-mode-001`, followed by
+  the canonical `openwepp-management-yaml` authorization and implementation
+  packages. It no longer blocks phenology.
 
-### Increment 2 — canopy leaf-off (frost/daylength decline)
+### Increment 2 (complete) — generalized foliar-phenology process kernel
 
-The cold/short-day senescence physics (the `dec`/`fhr`/`frst` abstraction below),
-driven by **signed-latitude** photoperiod + frost, **no fixed Julian dates**,
-under a ratified growth–canopy science contract. **Depends on** Increment 1 (to
-carry the phenology operands) + the growth–canopy contract.
+Implement the Jolly–Nemani–Running Growing Season Index: daily minimum-
+temperature, vapor-pressure-deficit, and signed-latitude photoperiod indicators;
+their bounded product; and the authority-specified 21-day moving average. This
+single continuous signal represents both spring leaf-on and autumn leaf-off and
+has published global and Harvard Forest evaluation. This increment owns the
+equations, typed domains, state/history semantics, hemisphere invariants, and
+process-level tests. It does not claim a canopy-cover or biomass realization.
 
-### Increment 3 — canopy leaf-on (spring thermal-time green-up)
+### Increment 3 (next) — native canopy, biomass, litter, and consumer integration
 
-The complementary limb: spring GDD threshold (+ optional chilling/photoperiod),
-warm-first ordering, signed-latitude. **Depends on** Increment 1 + Increment 2's
-contract.
+Map the verified signal into native deciduous and mixed-forest seasonal canopy
+state. Ratify the winter/summer canopy envelope, foliar versus persistent
+structural/evergreen pools, leaf-on allocation, leaf-off litter transfer, and
+annual no-drift law before changing production. Re-anchor the existing litter
+window and prove real snow, evapotranspiration, and erosion consumers read the
+dynamic canopy. Legacy compatibility inputs remain unchanged unless explicitly
+migrated to the native authority.
 
 ### Already delivered — ground-side litter / residue
 
 The autumn-leaf-drop → litter → frost-insulation complement is implemented
 (`20260629-frost-residue-cover-implementation-001`). Residual frost cells and the
-`jdharv`-anchored fall-drop window remain, to be replaced when Increment 2's
-physical phenology lands.
+`jdharv`-anchored fall-drop window remain, to be replaced when Increment 3's
+integrated canopy and litter-transfer law lands.
 
 ### Cross-cutting rules (Increments 2–3)
 
@@ -117,12 +124,11 @@ physical phenology lands.
 - **SH validation** is deferrable to an NH-only interim if no SH climate source
   is available (see open questions).
 
-### Recommended first step
+### Active package
 
-Spin up the **Increment-1 foundation work-package** (forest `lanuse` mode +
-management authority + the input-authority contract). It is the highest-leverage
-opening move: one foundation unblocks both the canopy limbs here and the Lane D
-routing activation gate the routing program has been deferring since D6.
+`docs/work-packages/20260717-canopy-phenology-gsi-kernel-001/` closed Increment
+2 with process-kernel conformance, not integrated canopy or snow fidelity.
+`CANOPY-PHENOLOGY-02` is the next package boundary for Increment 3.
 
 ## Origin (the structural finding)
 
@@ -350,7 +356,7 @@ If, once wired, a cropland management **can** carry a realistic seasonal
 `residue_depth_m`, the residue dimension is satisfied by the coupling + the existing
 `Dec_*` parameterization. If it **cannot** (crop decay too fast, or no recurring
 perennial leaf-drop), implement a **first-class, landuse-agnostic forest
-residue-cover representation** here — the litter analogue of the landuse-agnostic
+residue-cover representation** here — the litter analog of the landuse-agnostic
 canopy decline this backlog already argues for.
 
 FROST RESIDUE-COVER IMPLEMENTATION
@@ -430,19 +436,20 @@ residue-cover backlog item is implemented.
    reproducible from its sidecars alone: the `.man`/landuse record declares the
    physical mode and the Papanicolaou/canopy/litter operands used by the run.
 
-## Promotion criteria — status at opening (2026-07-02)
+## Increment entry gates — status at activation (2026-07-17)
 
 Re-framed as **increment entry-gates** now that the program is opened. The
 operator opened it foundation-first, so the previously-blocking "first-class
 `lanuse` mode" precondition is now the deliverable of Increment 1, not a gate.
 
-- **Increment 1 (foundation) — READY NOW.** Needs only the existing management
-  parser/runtime to extend; no prerequisite unmet. This is the opening
-  work-package.
-- **Increment 2 (leaf-off) — gated on** Increment 1 + a ratified growth–canopy
-  science contract surface (candidate: the plant-growth canopy contract that
-  governs `06_growth_state.rs` `cancov`).
-- **Increment 3 (leaf-on) — gated on** Increment 1 + Increment 2's contract.
+- **Increment 1 (foundation) — COMPLETE.** Native forest mode, input authority,
+  runtime projection, and canonical YAML are landed.
+- **Increment 2 (GSI process kernel) — COMPLETE.** The cited equations,
+  signed-latitude phase, 21-day state, chronology, and restart behavior pass;
+  no canopy/biomass claim was made.
+- **Increment 3 (integration) — NEXT.** It must first ratify the
+  canopy/biomass/litter state law, then close the fixed-date litter anchor and
+  real-consumer path in the same package or stop on hold.
 - **Snow-program criticality** (SNOWDENSITY mixed-forest fixtures active, canopy
   limiting) sharpens the *priority* of Increments 2–3 but does not gate
   Increment 1, which stands on the routing-activation need alone.
@@ -452,57 +459,41 @@ operator opened it foundation-first, so the previously-blocking "first-class
 Each increment spins up its own dated work-package under `docs/work-packages/`
 and routes the new physics through top-down contract authoring.
 
-## Open questions
+## Resolved design choices
 
-- What currently drives openWEPP's `canopy_decline` in `06_growth_state.rs`, and
-  does adding the frost/daylength decrement compose with it or replace it?
-- **Leaf-on driver:** pure spring-GDD threshold vs GDD + chilling vs GDD +
-  photoperiod (the sequential/parallel/alternating phenology-model families),
-  and base-temperature/threshold defaults for deciduous vs mixed canopies. Is a
-  simple spring-GDD threshold defensible at first pass, or is a chilling term
-  required to suppress mid-winter-thaw budburst in the target climates?
-- **One index or two laws:** drive leaf-on and leaf-off from a single unified
-  continuous index (e.g. GSI from `Tmin` + photoperiod + VPD) vs two explicit
-  limb-specific laws (spring thermal-time, autumn frost/daylength). The unified
-  index is more parsimonious and hemisphere-robust by construction; the two-law
-  form maps more directly onto the legacy `dec` abstraction.
-- **Reuse the growth GDD machinery?** Spring green-up could reuse the existing
-  `gddmax`/`sumgdd`/`fphu` growth phase rather than a dedicated canopy-phenology
-  state — but the WEPPcloud managements set `gddmax=0`, so this interacts with
-  how the deciduous/mixed managements are parameterized.
+- Increment 2 uses one dedicated, continuous Jolly–Nemani–Running GSI signal
+  for both spring and autumn foliar phenology. It does not reuse crop GDD and
+  does not compose with or replace production `canopy_decline` until Increment
+  3 ratifies that integration.
+- Photoperiod uses FAO-56 solar geometry with signed latitude and a year-aware
+  runtime date. The process kernel does not use the legacy frost parameters or
+  a fixed day-of-year trigger.
+- Increment 1 resolved the native management authority, migration posture, and
+  required Papanicolaou operand surfaces. Those are no longer phenology design
+  questions.
+
+## Remaining Increment 3 questions
+
 - **Mixed-forest evergreen floor:** mixed canopy = evergreen component + a
   deciduous overstory fraction; only the deciduous fraction leafs on/off, so
   mixed `cancov` never goes to zero. Define the evergreen floor (and reconcile
   with the bare-canopy branch/stem floor noted below).
-- Source of `daylen`/`daymin` in openWEPP (existing solar/radiation code already
-  computes declination for the energy balance — reuse it; confirm signed-latitude
-  handling).
-- Frost-sensitivity parameters (`x5`,`x6`/`tmpmin`) — carry from the plant block
-  or re-derive defaults for deciduous vs mixed canopies.
+- Define how the dimensionless GSI maps to foliar LAI/canopy cover and biomass,
+  including leaf-on allocation, leaf-off transfer, winter structural area, and
+  year-over-year no-drift closure.
 - SH climate forcing: wepppy's stack (DAYMET/GRIDMET/CLIGEN/PRISM) is CONUS-only,
   so SH validation needs a different climate source — scope this before the SH
   gate is required.
 - Interaction with snow interception: leafless deciduous still retains branch/
   stem area (~0.1–0.3 effective cover) that the live-canopy `cancov` misses
   (noted in wepppy ADR-0009) — decide whether a bare-canopy floor belongs here.
-- Exact native management-file shape: extend legacy `.man` syntax with an
-  openWEPP datver/section, or introduce an openWEPP-native management sidecar
-  that preserves `lanuse` semantics while avoiding legacy parser ambiguity.
-- Migration policy for existing WEPPcloud forest/range inputs that are encoded
-  as cropland: whether to require explicit conversion to the new `lanuse` mode
-  for enhanced routing/phenology, or allow a temporary compatibility adapter
-  that emits a manifest warning and refuses ambiguous Papanicolaou operands.
-- Forest/rangeland Papanicolaou defaults: whether any default `k_o`, hydraulic
-  vegetation height, or form/wave parameters are defensible by landuse class, or
-  whether active routing should fail closed until the management file supplies
-  them explicitly.
 
 ## References
 
 - `grow.for` (wepp-forest): rangeland decline `dec = 0.5·vdmt·(1-fphu)·
   max(fhr,frst)` (~804-850); cropland-perennial branch (`:751`); daylength
   factor `fhr = 0.35 - (1.0 - daylen/(daymin+1))` (~813); the heat-unit growth
-  phase (`fphu = sumgdd/gddmax`) is the spring-limb analogue to extend.
+  phase (`fphu = sumgdd/gddmax`) is the spring-limb analog to extend.
 - wepppy `ADR-0009-deciduous-mixed-forest-managements.md` (Alternative #5) and
   `gdd-senescence-experiment.md` — the negative investigation establishing that
   GDD senescence is the wrong mechanism for autumn leaf-off (it is, however, the
