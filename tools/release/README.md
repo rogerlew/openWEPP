@@ -14,10 +14,12 @@ in the sealed acquisition provenance.
 - `run_adjudicated_crap_gate.sh`
   - Collects fresh full-workspace LCOV and `cargo-crap` JSON by default, or
     assesses an explicitly supplied retained CRAP artifact.
-  - `--scope affected --package <name> --base-ref <ref>` is the shadow
-    increment path. It measures exactly one planner-selected production package
-    and enforces that package's complete actionable set. It is fresh-only and
-    cannot substitute for global critical, campaign, or release closure.
+  - `--scope affected --package <name>... --nextest-profile affected
+    --base-ref <ref>` is the shadow increment path. Repeated packages are the
+    terminal plan's exact affected/reverse-dependent closure. One instrumented
+    Nextest run emits JUnit and LCOV, then CRAP is evaluated for that package
+    set. The mode is fresh-only and cannot substitute for global critical,
+    campaign, or release closure.
   - Applies the exact production filter and deduplication tuple established by
     the completed CQR pre-integration campaign.
   - Fresh closure snapshots every production Rust source, Rust/Cargo/gate
@@ -152,12 +154,15 @@ For planner-selected bounded-package feedback during shadow observation:
 bash tools/release/run_adjudicated_crap_gate.sh \
   --scope affected \
   --package openwepp-gate-planner \
+  --nextest-profile affected \
   --base-ref <frozen-base> \
-  --output-dir target/affected-crap-openwepp-gate-planner
+  --output-dir target/affected-crap
 ```
 
-The terminal plan, not a human shortcut, must select the package. Critical
-changes continue to use the global command above.
+The terminal plan, not a human shortcut, must select every repeated package and
+the exact covering-test inventory. Under executor control, the output and Cargo
+target are relocated beneath the external artifact root. Critical or unknown
+coverage contribution continues to use the global command above.
 
 To reproduce the completed CQR adjudication against its retained immutable
 CRAP JSON without claiming current-source closure:

@@ -61,7 +61,10 @@ The helper invokes typed CLI argument vectors without a shell, writes intent
 and terminal plans, an independently verified unsigned receipt, and
 `observation.json`. The output is always `SHADOW_NONBLOCKING` and explicitly
 records that it is not cutover evidence. Use a fresh external directory for
-every attempt; output collision fails closed.
+every attempt; output collision fails closed. Verified FAIL/BLOCKED receipts
+remain in that directory while the helper exits nonzero, and executor-injected
+Cargo, Nextest, coverage, CRAP, and temporary work paths remain beneath the
+external execution root.
 
 Nextest lifecycle roles are named `affected`, `checkpoint`, `campaign`, and
 `release`. Selection still comes from the terminal plan; a profile name alone

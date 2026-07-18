@@ -25,19 +25,32 @@ const COMMANDS: [(&str, CommandHandler); 6] = [
 ];
 
 fn main() {
-    match run() {
-        Ok(value) => match serde_json::to_string(&value) {
-            Ok(text) => println!("{text}"),
-            Err(error) => {
-                eprintln!("GATE-CLI-SERIALIZE: {error}");
-                std::process::exit(2);
-            }
-        },
+    let status = emit(run());
+    if status != 0 {
+        std::process::exit(status);
+    }
+}
+
+fn emit(result: Result<Value>) -> i32 {
+    match result {
+        Ok(value) => emit_value(&value),
         Err(error) => {
             eprintln!("{error}");
-            std::process::exit(2);
+            2
         }
     }
+}
+
+fn emit_value(value: &Value) -> i32 {
+    let Ok(text) = serde_json::to_string(value) else {
+        eprintln!("GATE-CLI-SERIALIZE: result is not serializable");
+        return 2;
+    };
+    println!("{text}");
+    i32::from(matches!(
+        value["result"].as_str(),
+        Some("FAIL" | "BLOCKED" | "INVALID")
+    ))
 }
 
 fn run() -> Result<Value> {
@@ -104,19 +117,41 @@ fn reject_unknown_options(command: &str, options: &BTreeMap<String, String>) -> 
 }
 
 fn run_command(repo: &Path, options: &BTreeMap<String, String>) -> Result<Value> {
+    let (plan, artifact_root, claims) = execution_inputs(options)?;
+    let (receipt, verdict) = verified_execution(repo, &plan, &artifact_root, &claims)?;
+    let output = persist_plan(repo, options, &receipt)?;
+    Ok(json!({
+        "result": verdict["result"],
+        "receipt_id": verdict["receipt_id"],
+        "trust_class": verdict["trust_class"],
+        "output": output
+    }))
+}
+
+fn execution_inputs(
+    options: &BTreeMap<String, String>,
+) -> Result<(Value, PathBuf, ExecutionClaims)> {
     let plan = read_json(Path::new(required(options, "plan")?))?;
     let artifact_root = PathBuf::from(required(options, "artifact-root")?);
     let claims = execution_claims(options)?;
-    let receipt = execute_plan(repo, &plan, &artifact_root, &claims)?;
-    let artifacts = DirectoryArtifacts::new(artifact_root);
-    let verdict = verify_receipt(repo, &plan, &receipt, &artifacts)?;
-    let output = persist_plan(repo, options, &receipt)?;
-    Ok(json!({
+    Ok((plan, artifact_root, claims))
+}
+
+fn verified_execution(
+    repo: &Path,
+    plan: &Value,
+    artifact_root: &Path,
+    claims: &ExecutionClaims,
+) -> Result<(Value, Value)> {
+    let receipt = execute_plan(repo, plan, artifact_root, claims)?;
+    let artifacts = DirectoryArtifacts::new(artifact_root.to_owned());
+    let verdict = verify_receipt(repo, plan, &receipt, &artifacts)?;
+    let summary = json!({
         "result": verdict.result(),
         "receipt_id": verdict.receipt_id(),
-        "trust_class": verdict.trust_class(),
-        "output": output
-    }))
+        "trust_class": verdict.trust_class()
+    });
+    Ok((receipt, summary))
 }
 
 fn execution_claims(options: &BTreeMap<String, String>) -> Result<ExecutionClaims> {

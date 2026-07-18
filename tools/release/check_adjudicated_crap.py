@@ -884,7 +884,7 @@ def _parse_args() -> argparse.Namespace:
         "--expected-package",
         action="append",
         default=[],
-        help="Restrict a fresh affected measurement to one exact Cargo package",
+        help="Restrict fresh affected measurement to repeated exact Cargo packages",
     )
     parser.add_argument("--retained-provenance")
     parser.add_argument("--report-json", type=Path)
@@ -1039,8 +1039,9 @@ def main() -> int:
         report["acquisition_mode"] = args.acquisition_mode
         report["closure_eligible"] = args.acquisition_mode == "fresh"
         report["measurement_scope"] = (
-            "AFFECTED_PACKAGE" if args.expected_package else "GLOBAL_WORKSPACE"
+            "AFFECTED_PACKAGES" if args.expected_package else "GLOBAL_WORKSPACE"
         )
+        report["measured_packages"] = sorted(set(args.expected_package))
         report["acquisition_provenance"] = acquisition_provenance
         if args.acquisition_mode == "retained":
             report["status"] = (

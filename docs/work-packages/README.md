@@ -11,6 +11,15 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260718-testgate-ci-four-blocker-lift-001/` completed the focused follow-on
+  that closed TESTGATE-CI-01's four accepted blockers: verifier-valid
+  nonpass receipts, executable adversarial coverage, terminal-plan-derived
+  affected production/covering-test closure with global escalation, and
+  external subprocess-output confinement. Dual review, dual terminal
+  verification, 2,141 full-profile tests, cargo-deny, and fresh global
+  adjudicated CRAP passed. The operator accepts the measured
+  48.8% projected savings as a win; the canonical 50% blocking-cutover
+  threshold and conservative release workflow remain unchanged.
 - `20260718-testgate-ci-shadow-executor-001/` executed to `HOLD` for
   TESTGATE-CI-01. Two review rounds closed exact-checkout and fabricated-PASS
   critical findings, but failure receipts/tests, terminal-plan covering-test
@@ -18,8 +27,8 @@
   focused combined benchmark passed 26/26 with exact inventory but achieved
   48.8% rather than the required 50% reduction; planner time was 91.876 seconds
   versus the 30-second threshold. No shadow launch or gate reduction occurred.
-  It remains the active
-  implementation and observation package. It owns the fail-closed typed
+  It remains the underlying implementation and observation package. It owns
+  the fail-closed typed
   executor, affected-quality adapter, nonblocking lifecycle lanes, initial
   combined-path benchmark, scorecard seed, and rollback evidence. The existing
   conservative release runner remains authoritative. The package cannot claim

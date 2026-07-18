@@ -80,16 +80,22 @@ def _dirty_changed_paths(repo: Path, base: str) -> list[str]:
     return sorted(set(paths), key=lambda path: path.encode("utf-8"))
 
 
-def _invoke(arguments: list[str], repo: Path) -> dict[str, Any]:
+def _invoke(
+    arguments: list[str], repo: Path, *, allow_nonpass: bool = False
+) -> dict[str, Any]:
     result = subprocess.run(arguments, cwd=repo, check=False, capture_output=True, text=True)
-    if result.returncode != 0:
-        raise ShadowError(result.stderr.strip() or result.stdout.strip())
     try:
         value = json.loads(result.stdout)
     except json.JSONDecodeError as error:
+        if result.returncode != 0:
+            raise ShadowError(result.stderr.strip() or result.stdout.strip()) from error
         raise ShadowError("gate CLI emitted invalid JSON") from error
     if not isinstance(value, dict):
         raise ShadowError("gate CLI result must be an object")
+    if result.returncode != 0 and not (
+        allow_nonpass and value.get("result") in {"FAIL", "BLOCKED", "INVALID"}
+    ):
+        raise ShadowError(result.stderr.strip() or result.stdout.strip())
     return value
 
 
@@ -184,6 +190,7 @@ def observe(args: argparse.Namespace) -> dict[str, Any]:
                     str(args.attempt),
                 ],
                 repo,
+                allow_nonpass=True,
             )
         except ShadowError as error:
             execution_error = str(error)
@@ -260,7 +267,12 @@ def main() -> int:
         print(f"ERROR: {error}", file=sys.stderr)
         return 2
     print(json.dumps(observation, sort_keys=True))
-    return 0 if observation["execution_error"] is None else 1
+    execution = observation["execution_result"]
+    accepted = not observation["execution_requested"] or (
+        isinstance(execution, dict)
+        and execution.get("result") in {"PASS", "PASS_WITH_RETRY"}
+    )
+    return 0 if observation["execution_error"] is None and accepted else 1
 
 
 if __name__ == "__main__":

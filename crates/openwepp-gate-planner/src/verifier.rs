@@ -15,6 +15,10 @@ pub trait ArtifactProvider {
     ///
     /// Returns an artifact error when bytes cannot be resolved exactly.
     fn read(&self, path: &str) -> Result<Vec<u8>>;
+
+    fn workspace_root(&self) -> Option<&Path> {
+        None
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -41,6 +45,10 @@ impl ArtifactProvider for DirectoryArtifacts {
                 format!("{path}: {error}"),
             )
         })
+    }
+
+    fn workspace_root(&self) -> Option<&Path> {
+        Some(&self.root)
     }
 }
 
@@ -129,7 +137,8 @@ pub fn verify_receipt(
     artifacts: &dyn ArtifactProvider,
 ) -> Result<ReceiptVerdict> {
     verify_receipt_identity(repo, plan, receipt)?;
-    if digest(&crate::planner::reconstruct_plan(repo, plan)?)? != digest(plan)? {
+    let reconstructed = reconstruct_receipt_plan(repo, plan, receipt, artifacts)?;
+    if digest(&reconstructed)? != digest(plan)? {
         return Err(verification_error(
             "GATE-RECEIPT-PLAN-RECONSTRUCTION",
             "observed source, selection, or node contract differs from the supplied plan",
@@ -139,11 +148,11 @@ pub fn verify_receipt(
     verify_tool_environment(repo, plan, receipt)?;
     let plan_nodes = array(plan, "/nodes")?;
     verify_dag(plan_nodes, receipt)?;
-    verify_inventory(plan_nodes, receipt)?;
     let counts = verify_attempts(plan_nodes, receipt)?;
-    verify_receipt_summary(plan, receipt, &counts)?;
-    verify_authority_outcomes(plan_nodes, receipt)?;
     verify_artifacts(plan_nodes, receipt, artifacts)?;
+    verify_inventory(plan_nodes, receipt, artifacts)?;
+    verify_receipt_summary(repo, plan, receipt, &counts)?;
+    verify_authority_outcomes(plan_nodes, receipt)?;
     Ok(ReceiptVerdict {
         receipt_id: string(receipt, "/receipt_id")?.to_owned(),
         receipt_sha256: digest(receipt)?,
@@ -156,6 +165,27 @@ pub fn verify_receipt(
         trust_class: "LOCAL_UNTRUSTED".to_owned(),
         claimed_trust_class: string(receipt, "/claims/trust_class")?.to_owned(),
     })
+}
+
+fn reconstruct_receipt_plan(
+    repo: &Path,
+    plan: &Value,
+    receipt: &Value,
+    artifacts: &dyn ArtifactProvider,
+) -> Result<Value> {
+    let after_source_mutation = receipt["source_mutation_check"]["unchanged"] == false;
+    let root = artifacts.workspace_root().ok_or_else(|| {
+        verification_error(
+            "GATE-RECEIPT-RECONSTRUCTION-ROOT",
+            "artifact provider must supply an external reconstruction root",
+        )
+    })?;
+    crate::planner::reconstruct_plan_in(
+        repo,
+        plan,
+        &root.join(".verification"),
+        after_source_mutation,
+    )
 }
 
 fn verify_tool_environment(repo: &Path, plan: &Value, receipt: &Value) -> Result<()> {
@@ -289,7 +319,11 @@ fn verify_dag(plan_nodes: &[Value], receipt: &Value) -> Result<()> {
     Ok(())
 }
 
-fn verify_inventory(plan_nodes: &[Value], receipt: &Value) -> Result<()> {
+fn verify_inventory(
+    plan_nodes: &[Value],
+    receipt: &Value,
+    artifacts: &dyn ArtifactProvider,
+) -> Result<()> {
     let expected_inventory = plan_nodes
         .iter()
         .flat_map(|node| {
@@ -311,10 +345,10 @@ fn verify_inventory(plan_nodes: &[Value], receipt: &Value) -> Result<()> {
         .filter_map(Value::as_str)
         .map(str::to_owned)
         .collect::<BTreeSet<_>>();
-    if expected_inventory != planned_inventory || planned_inventory != executed_inventory {
+    if expected_inventory != planned_inventory {
         return Err(verification_error(
             "GATE-RECEIPT-INVENTORY",
-            "planned/executed inventory is not exact",
+            "planned inventory differs from the exact gate-node inventory",
         ));
     }
     if !plan_nodes.is_empty() && planned_inventory.is_empty() {
@@ -323,7 +357,137 @@ fn verify_inventory(plan_nodes: &[Value], receipt: &Value) -> Result<()> {
             "nonempty plan has empty inventory",
         ));
     }
+    let attempts = array(receipt, "/attempts")?;
+    let expected_executed = expected_executed_inventory(plan_nodes, attempts, artifacts)?;
+    if executed_inventory != expected_executed {
+        return Err(verification_error(
+            "GATE-RECEIPT-EXECUTED-INVENTORY",
+            "executed inventory differs from nodes with observed process exits",
+        ));
+    }
+    let expected_unavailable = planned_inventory
+        .difference(&executed_inventory)
+        .cloned()
+        .collect::<BTreeSet<_>>();
+    let unavailable = array(receipt, "/unavailable_items")?;
+    let observed_unavailable = unavailable
+        .iter()
+        .map(|item| string(item, "/item_id").map(str::to_owned))
+        .collect::<std::result::Result<BTreeSet<_>, _>>()?;
+    let allowed_reasons = [
+        "PREREQUISITE_NONPASS",
+        "PROCESS_SPAWN_FAILED",
+        "SOURCE_MUTATION_DETECTED",
+        "TEST_NOT_EXECUTED",
+        "TIMEOUT",
+    ];
+    if expected_unavailable != observed_unavailable
+        || unavailable.iter().any(|item| {
+            item["policy_disposition"] != "BLOCK"
+                || item["reason_code"]
+                    .as_str()
+                    .is_none_or(|reason| !allowed_reasons.contains(&reason))
+        })
+    {
+        return Err(verification_error(
+            "GATE-RECEIPT-UNAVAILABLE",
+            "unavailable items do not exactly partition planned and executed inventory",
+        ));
+    }
     Ok(())
+}
+
+fn expected_executed_inventory(
+    plan_nodes: &[Value],
+    attempts: &[Value],
+    artifacts: &dyn ArtifactProvider,
+) -> Result<BTreeSet<String>> {
+    let mut executed = BTreeSet::new();
+    for node in plan_nodes {
+        let attempt = attempts
+            .iter()
+            .rev()
+            .find(|attempt| attempt["node_id"] == node["node_id"])
+            .ok_or_else(|| verification_error("GATE-RECEIPT-ATTEMPT-MISSING", "node"))?;
+        let planned = node["expected_inventory"]["ids"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .filter_map(Value::as_str)
+            .map(str::to_owned)
+            .collect::<BTreeSet<_>>();
+        let observed = if node_has_junit_evidence(node) {
+            receipt_junit_inventory(node, artifacts)?
+        } else if !attempt["exit_code"].is_null() || !attempt["termination_signal"].is_null() {
+            planned.clone()
+        } else {
+            BTreeSet::new()
+        };
+        if !observed.is_subset(&planned) {
+            return Err(verification_error(
+                "GATE-RECEIPT-EXECUTED-INVENTORY",
+                "JUnit inventory is outside the terminal plan",
+            ));
+        }
+        executed.extend(observed);
+    }
+    Ok(executed)
+}
+
+fn node_has_junit_evidence(node: &Value) -> bool {
+    node["artifact_contract"] == "nextest-junit-v1" && node["executor"]["kind"] == "NEXTEST_V1"
+        || node["artifact_contract"] == "adjudicated-crap-v1"
+            && node["gate_definition_id"] == "affected-adjudicated-crap-v1"
+}
+
+fn receipt_junit_inventory(
+    node: &Value,
+    artifacts: &dyn ArtifactProvider,
+) -> Result<BTreeSet<String>> {
+    let path = node["output_paths"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(Value::as_str)
+        .find(|path| {
+            Path::new(path)
+                .extension()
+                .is_some_and(|extension| extension == "xml")
+        })
+        .or_else(|| node["output_paths"].as_array()?.first()?.as_str())
+        .ok_or_else(|| verification_error("GATE-RECEIPT-JUNIT", "missing JUnit output"))?;
+    junit_inventory_bytes(&artifacts.read(path)?)
+}
+
+fn junit_inventory_bytes(bytes: &[u8]) -> Result<BTreeSet<String>> {
+    let text = std::str::from_utf8(bytes)
+        .map_err(|error| verification_error("GATE-RECEIPT-JUNIT", error.to_string()))?;
+    let mut inventory = BTreeSet::new();
+    for line in text
+        .lines()
+        .filter(|line| line.trim_start().starts_with("<testcase "))
+    {
+        let name = junit_attribute(line, "name")?;
+        let class = junit_attribute(line, "classname")?;
+        inventory.insert(sha256_bytes(
+            format!("rust-suites::{class}\0{name}").as_bytes(),
+        ));
+    }
+    Ok(inventory)
+}
+
+fn junit_attribute(line: &str, name: &str) -> Result<String> {
+    let marker = format!(" {name}=\"");
+    let value = line
+        .split_once(&marker)
+        .and_then(|(_, tail)| tail.split_once('"').map(|(value, _)| value))
+        .ok_or_else(|| verification_error("GATE-RECEIPT-JUNIT", name))?;
+    Ok(value
+        .replace("&quot;", "\"")
+        .replace("&apos;", "'")
+        .replace("&lt;", "<")
+        .replace("&gt;", ">")
+        .replace("&amp;", "&"))
 }
 
 #[derive(Debug, Default)]
@@ -362,9 +526,39 @@ fn verify_attempts(plan_nodes: &[Value], receipt: &Value) -> Result<ReceiptCount
         let attempts = attempts_by_node
             .get(node_id)
             .ok_or_else(|| verification_error("GATE-RECEIPT-MISSING-ATTEMPT", *node_id))?;
-        verify_node_attempts(node_id, node, attempts, &mut counts)?;
+        verify_node_attempts(
+            node_id,
+            node,
+            attempts,
+            receipt["source_mutation_check"]["unchanged"] == false,
+            &mut counts,
+        )?;
     }
+    verify_prerequisite_results(plan_nodes, receipt)?;
     Ok(counts)
+}
+
+fn verify_prerequisite_results(plan_nodes: &[Value], receipt: &Value) -> Result<()> {
+    let attempts = array(receipt, "/attempts")?;
+    let nodes = plan_nodes
+        .iter()
+        .map(|node| string(node, "/node_id").map(|id| (id, node)))
+        .collect::<std::result::Result<BTreeMap<_, _>, _>>()?;
+    for node in plan_nodes {
+        let prerequisite_nonpass = array(node, "/prerequisites")?.iter().any(|id| {
+            id.as_str()
+                .and_then(|id| nodes.get(id))
+                .and_then(|prerequisite| final_node_result(prerequisite, attempts).ok())
+                .is_none_or(|result| !matches!(result, "PASS" | "PASS_WITH_RETRY"))
+        });
+        if prerequisite_nonpass && final_node_result(node, attempts)? != "BLOCKED" {
+            return Err(verification_error(
+                "GATE-RECEIPT-PREREQUISITE",
+                string(node, "/node_id")?,
+            ));
+        }
+    }
+    Ok(())
 }
 
 fn index_attempts<'a>(
@@ -386,6 +580,7 @@ fn verify_node_attempts(
     node_id: &str,
     node: &Value,
     attempts: &[&Value],
+    source_mutated: bool,
     counts: &mut ReceiptCounts,
 ) -> Result<()> {
     let maximum = node["retry"]["maximum_attempts"]
@@ -395,7 +590,7 @@ fn verify_node_attempts(
         return Err(verification_error("GATE-RECEIPT-ATTEMPT-COUNT", node_id));
     }
     for (index, attempt) in attempts.iter().enumerate() {
-        verify_attempt(node_id, node, attempt, index)?;
+        verify_attempt(node_id, node, attempt, index, source_mutated)?;
     }
     counts.retried += u64::try_from(attempts.len().saturating_sub(1)).unwrap_or(u64::MAX);
     update_result_counts(
@@ -405,27 +600,41 @@ fn verify_node_attempts(
     )
 }
 
-fn verify_attempt(node_id: &str, node: &Value, attempt: &Value, index: usize) -> Result<()> {
+fn verify_attempt(
+    node_id: &str,
+    node: &Value,
+    attempt: &Value,
+    index: usize,
+    source_mutated: bool,
+) -> Result<()> {
     if attempt["attempt"] != u64::try_from(index + 1).unwrap_or(u64::MAX)
         || attempt["arguments"] != node["arguments"]
     {
         return Err(verification_error("GATE-RECEIPT-ATTEMPT", node_id));
     }
     if index == 0 {
-        return verify_attempt_acceptance(node_id, node, attempt);
+        return verify_attempt_acceptance(node_id, node, attempt, source_mutated);
     }
     let reason = string(attempt, "/retry_reason")?;
     let permitted = node["retry"]["permitted_reasons"]
         .as_array()
         .is_some_and(|reasons| reasons.iter().any(|candidate| candidate == reason));
     if permitted {
-        verify_attempt_acceptance(node_id, node, attempt)
+        verify_attempt_acceptance(node_id, node, attempt, source_mutated)
     } else {
         Err(verification_error("GATE-RECEIPT-RETRY-POLICY", reason))
     }
 }
 
-fn verify_attempt_acceptance(node_id: &str, node: &Value, attempt: &Value) -> Result<()> {
+fn verify_attempt_acceptance(
+    node_id: &str,
+    node: &Value,
+    attempt: &Value,
+    source_mutated: bool,
+) -> Result<()> {
+    if attempt["result"] == "INVALID" && source_mutated {
+        return Ok(());
+    }
     let acceptance = &node["acceptance"];
     if acceptance["kind"] != "EXIT_CODE" || acceptance["operator"] != "EQUALS" {
         return Err(verification_error(
@@ -437,10 +646,15 @@ fn verify_attempt_acceptance(node_id: &str, node: &Value, attempt: &Value) -> Re
         verification_error("GATE-RECEIPT-ACCEPTANCE", "expected exit code is missing")
     })?;
     let actual = attempt["exit_code"].as_i64();
-    let expected_result = match actual {
-        Some(code) if code == expected => "PASS",
-        Some(_) => "FAIL",
-        None => "BLOCKED",
+    let signal = attempt["termination_signal"].as_i64();
+    if actual.is_some() && signal.is_some() {
+        return Err(verification_error("GATE-RECEIPT-ACCEPTANCE", node_id));
+    }
+    let expected_result = match (actual, signal) {
+        (Some(code), None) if code == expected => "PASS",
+        (Some(_), None) | (None, Some(_)) => "FAIL",
+        (None, None) => "BLOCKED",
+        (Some(_), Some(_)) => unreachable!(),
     };
     if attempt["result"] == expected_result {
         Ok(())
@@ -460,7 +674,12 @@ fn update_result_counts(counts: &mut ReceiptCounts, result: &str, node_id: &str)
     Ok(())
 }
 
-fn verify_receipt_summary(plan: &Value, receipt: &Value, counts: &ReceiptCounts) -> Result<()> {
+fn verify_receipt_summary(
+    repo: &Path,
+    plan: &Value,
+    receipt: &Value,
+    counts: &ReceiptCounts,
+) -> Result<()> {
     let expected_result = counts.result();
     if string(receipt, "/result")? != expected_result {
         return Err(verification_error(
@@ -478,22 +697,24 @@ fn verify_receipt_summary(plan: &Value, receipt: &Value, counts: &ReceiptCounts)
             return Err(verification_error("GATE-RECEIPT-COUNTS", field));
         }
     }
-    if receipt["counts"]["skipped"] != 0
-        || !array(receipt, "/unavailable_items")?.is_empty() && expected_result == "PASS"
+    let unavailable_count =
+        u64::try_from(array(receipt, "/unavailable_items")?.len()).unwrap_or(u64::MAX);
+    if receipt["counts"]["skipped"] != unavailable_count
+        || unavailable_count > 0 && expected_result == "PASS"
     {
         return Err(verification_error(
             "GATE-RECEIPT-UNAVAILABLE",
             "passing receipt contains unavailable/skipped work",
         ));
     }
-    let expected_source_snapshot = digest(&json!({
-        "source": plan["source"],
-        "roots": plan["environment_roots"]
-    }))?;
+    let expected_source_snapshot = crate::executor::source_snapshot(plan)?;
+    let observed_source_snapshot = crate::executor::observed_source_snapshot(repo, plan)?;
+    let source_unchanged = expected_source_snapshot == observed_source_snapshot;
     if receipt["source_mutation_check"]["required"] != true
-        || receipt["source_mutation_check"]["unchanged"] != true
+        || receipt["source_mutation_check"]["unchanged"] != source_unchanged
         || receipt["source_mutation_check"]["before_sha256"] != expected_source_snapshot
-        || receipt["source_mutation_check"]["after_sha256"] != expected_source_snapshot
+        || receipt["source_mutation_check"]["after_sha256"] != observed_source_snapshot
+        || !source_unchanged && expected_result != "INVALID"
     {
         return Err(verification_error(
             "GATE-RECEIPT-SOURCE-MUTATION",
@@ -639,7 +860,7 @@ fn verify_artifacts(
                     .is_some_and(|paths| paths.contains(&Value::String(path.to_owned())))
             })
             .ok_or_else(|| verification_error("GATE-RECEIPT-ARTIFACT-CONTRACT", path))?;
-        if artifact["kind"] != expected_artifact_kind(string(node, "/artifact_contract")?) {
+        if artifact["kind"] != expected_artifact_kind(string(node, "/artifact_contract")?, path) {
             return Err(verification_error("GATE-RECEIPT-ARTIFACT-CONTRACT", path));
         }
         if artifact["sha256"] != sha256_bytes(&artifacts.read(path)?) {
@@ -649,11 +870,15 @@ fn verify_artifacts(
     Ok(())
 }
 
-fn expected_artifact_kind(contract: &str) -> &'static str {
-    match contract {
-        "nextest-junit-v1" => "JUNIT",
-        "adjudicated-crap-v1" => "CRAP",
-        "schema-validation-v1" => "SCHEMA",
+fn expected_artifact_kind(contract: &str, path: &str) -> &'static str {
+    match (
+        contract,
+        Path::new(path).extension().and_then(|value| value.to_str()),
+    ) {
+        ("adjudicated-crap-v1", Some("lcov")) => "LCOV",
+        ("adjudicated-crap-v1", Some("xml")) | ("nextest-junit-v1", _) => "JUNIT",
+        ("adjudicated-crap-v1", _) => "CRAP",
+        ("schema-validation-v1", _) => "SCHEMA",
         _ => "LOG",
     }
 }
@@ -1249,14 +1474,18 @@ fn verification_error(code: &'static str, message: impl Into<String>) -> GatePol
 #[cfg(test)]
 mod tests {
     use std::collections::{BTreeMap, BTreeSet};
+    use std::fmt::Write as _;
+    use std::process::Command;
     use std::sync::OnceLock;
+    use std::sync::atomic::{AtomicU64, Ordering};
 
     use serde_json::{Value, json};
 
     use super::{
         ArtifactProvider, AttestationIdentity, AttestationVerifier, EnvelopeVerdict,
-        ReceiptVerdict, ReuseContext, TrustedIssuer, authority_outcome_accepted, verify_envelope,
-        verify_node_reuse, verify_receipt, verify_reuse,
+        ReceiptVerdict, ReuseContext, TrustedIssuer, authority_outcome_accepted,
+        expected_executed_inventory, verify_envelope, verify_node_reuse, verify_receipt,
+        verify_reuse,
     };
     use crate::canonical::{derived_id, digest, sha256_bytes};
     use crate::error::{ErrorClass, GatePolicyError, Result};
@@ -1454,14 +1683,93 @@ mod tests {
         assert!(!authority_outcome_accepted(&node, &outcome));
     }
 
-    struct MemoryArtifacts(BTreeMap<String, Vec<u8>>);
+    static ARTIFACT_SEQUENCE: AtomicU64 = AtomicU64::new(0);
+
+    struct MemoryArtifacts {
+        bytes: BTreeMap<String, Vec<u8>>,
+        workspace: std::path::PathBuf,
+    }
+
+    impl MemoryArtifacts {
+        fn new(bytes: BTreeMap<String, Vec<u8>>) -> Self {
+            let sequence = ARTIFACT_SEQUENCE.fetch_add(1, Ordering::Relaxed);
+            let workspace = std::env::temp_dir().join(format!(
+                "openwepp-verifier-artifacts-{}-{sequence}",
+                std::process::id()
+            ));
+            std::fs::create_dir(&workspace).expect("create verifier artifact workspace");
+            Self { bytes, workspace }
+        }
+    }
+
+    impl Drop for MemoryArtifacts {
+        fn drop(&mut self) {
+            std::fs::remove_dir_all(&self.workspace)
+                .expect("remove precise verifier artifact workspace");
+        }
+    }
 
     impl ArtifactProvider for MemoryArtifacts {
         fn read(&self, path: &str) -> Result<Vec<u8>> {
-            self.0.get(path).cloned().ok_or_else(|| {
+            self.bytes.get(path).cloned().ok_or_else(|| {
                 GatePolicyError::new(ErrorClass::Receipt, "TEST-ARTIFACT-MISSING", path)
             })
         }
+
+        fn workspace_root(&self) -> Option<&std::path::Path> {
+            Some(&self.workspace)
+        }
+    }
+
+    struct RootlessArtifacts;
+
+    impl ArtifactProvider for RootlessArtifacts {
+        fn read(&self, path: &str) -> Result<Vec<u8>> {
+            Err(GatePolicyError::new(
+                ErrorClass::Receipt,
+                "TEST-ARTIFACT-UNUSED",
+                path,
+            ))
+        }
+    }
+
+    #[test]
+    fn verifier_rejects_provider_without_reconstruction_root() {
+        let error = super::reconstruct_receipt_plan(
+            &repo(),
+            &json!({}),
+            &json!({"source_mutation_check": {"unchanged": true}}),
+            &RootlessArtifacts,
+        )
+        .expect_err("rootless artifact provider must fail closed");
+        assert_eq!(error.code, "GATE-RECEIPT-RECONSTRUCTION-ROOT");
+    }
+
+    #[test]
+    fn verifier_derives_partial_failed_inventory_from_junit_bytes() {
+        let observed_id = sha256_bytes(b"rust-suites::fixture\0works");
+        let missing_id = sha256_bytes(b"rust-suites::fixture\0missing");
+        let node = json!({
+            "node_id": "node",
+            "gate_definition_id": "nextest-v1",
+            "executor": {"kind": "NEXTEST_V1"},
+            "artifact_contract": "nextest-junit-v1",
+            "expected_inventory": {"ids": [observed_id.clone(), missing_id]},
+            "output_paths": ["junit.xml"]
+        });
+        let attempt = json!({
+            "node_id": "node",
+            "exit_code": 1,
+            "termination_signal": null
+        });
+        let artifacts = MemoryArtifacts::new(BTreeMap::from([(
+            "junit.xml".to_owned(),
+            b"<testsuite>\n<testcase classname=\"fixture\" name=\"works\"/>\n</testsuite>\n"
+                .to_vec(),
+        )]));
+        let executed = expected_executed_inventory(&[node], &[attempt], &artifacts)
+            .expect("partial executed inventory");
+        assert_eq!(executed, BTreeSet::from([observed_id]));
     }
 
     struct FixedAttestation(AttestationIdentity);
@@ -1474,6 +1782,96 @@ mod tests {
 
     fn repo() -> std::path::PathBuf {
         std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
+    }
+
+    fn collect_junit_cases(value: &Value, prefix: &str, output: &mut Vec<(String, String)>) {
+        match value {
+            Value::Object(object) => {
+                if let Some(testcases) = object.get("testcases").and_then(Value::as_object) {
+                    output.extend(
+                        testcases
+                            .keys()
+                            .map(|name| (prefix.to_owned(), name.to_owned())),
+                    );
+                }
+                for (key, child) in object {
+                    let next = if prefix.is_empty() {
+                        key.clone()
+                    } else {
+                        format!("{prefix}::{key}")
+                    };
+                    collect_junit_cases(child, &next, output);
+                }
+            }
+            Value::Array(array) => {
+                for child in array {
+                    collect_junit_cases(child, prefix, output);
+                }
+            }
+            _ => {}
+        }
+    }
+
+    fn xml_escape(value: &str) -> String {
+        value
+            .replace('&', "&amp;")
+            .replace('"', "&quot;")
+            .replace('<', "&lt;")
+            .replace('>', "&gt;")
+            .replace('\'', "&apos;")
+    }
+
+    fn junit_bytes_for_node(root: &std::path::Path, node: &Value) -> Vec<u8> {
+        let output = Command::new("cargo")
+            .args([
+                "nextest",
+                "list",
+                "--locked",
+                "--offline",
+                "--message-format",
+                "json",
+                "--workspace",
+            ])
+            .current_dir(root)
+            .output()
+            .expect("list test inventory for JUnit fixture");
+        assert!(output.status.success(), "nextest list must succeed");
+        let listing: Value = serde_json::from_slice(&output.stdout).expect("nextest listing JSON");
+        let planned = node["expected_inventory"]["ids"]
+            .as_array()
+            .expect("planned inventory")
+            .iter()
+            .map(|item| item.as_str().expect("inventory ID"))
+            .collect::<BTreeSet<_>>();
+        let mut cases = Vec::new();
+        collect_junit_cases(&listing, "", &mut cases);
+        let retained = cases
+            .into_iter()
+            .filter(|(class, name)| {
+                planned.contains(sha256_bytes(format!("{class}\0{name}").as_bytes()).as_str())
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(retained.len(), planned.len(), "JUnit fixture must be exact");
+        let mut xml = String::from("<testsuite>\n");
+        for (class, name) in retained {
+            let junit_class = class
+                .strip_prefix("rust-suites::")
+                .expect("Nextest inventory class prefix");
+            writeln!(
+                xml,
+                "<testcase classname=\"{}\" name=\"{}\"/>",
+                xml_escape(junit_class),
+                xml_escape(&name)
+            )
+            .expect("write JUnit fixture");
+        }
+        xml.push_str("</testsuite>\n");
+        let parsed = super::junit_inventory_bytes(xml.as_bytes()).expect("parse JUnit fixture");
+        assert_eq!(
+            parsed.iter().map(String::as_str).collect::<BTreeSet<_>>(),
+            planned
+        );
+        xml.into_bytes()
     }
 
     #[allow(
@@ -1557,6 +1955,7 @@ mod tests {
                     attempt["node_id"] = node["node_id"].clone();
                     attempt["arguments"] = node["arguments"].clone();
                     attempt["exit_code"] = node["acceptance"]["expected"].clone();
+                    attempt["termination_signal"] = Value::Null;
                     attempt["result"] = json!("PASS");
                     attempt
                 })
@@ -1606,11 +2005,20 @@ mod tests {
         for (index, node) in nodes.iter().enumerate() {
             for output in node["output_paths"].as_array().expect("outputs") {
                 let path = output.as_str().expect("output").to_owned();
-                let bytes = format!("verified artifact {index}: {path}").into_bytes();
+                let bytes = if super::node_has_junit_evidence(node)
+                    && std::path::Path::new(&path)
+                        .extension()
+                        .is_some_and(|extension| extension == "xml")
+                {
+                    junit_bytes_for_node(&root, node)
+                } else {
+                    format!("verified artifact {index}: {path}").into_bytes()
+                };
                 receipt_artifacts.push(json!({
                     "artifact_id": format!("artifact-{index}"),
                     "kind": super::expected_artifact_kind(
-                        node["artifact_contract"].as_str().expect("contract")
+                        node["artifact_contract"].as_str().expect("contract"),
+                        &path
                     ),
                     "path": path,
                     "sha256": sha256_bytes(&bytes)
@@ -1629,7 +2037,110 @@ mod tests {
             receipt["source_mutation_check"]["before_sha256"].clone();
         receipt["receipt_id"] =
             Value::String(derived_id(&receipt, "receipt_id").expect("receipt ID"));
-        (plan, receipt, MemoryArtifacts(artifact_bytes))
+        (plan, receipt, MemoryArtifacts::new(artifact_bytes))
+    }
+
+    fn set_gate_integrity(receipt: &mut Value, gate_id: &Value, result: &str) {
+        let outcomes = receipt["authority_outcomes"]
+            .as_array_mut()
+            .expect("authority outcomes");
+        let outcome = outcomes
+            .iter_mut()
+            .find(|outcome| outcome["gate_id"] == *gate_id)
+            .expect("gate outcome");
+        outcome["execution_integrity"] = json!(result);
+    }
+
+    fn refresh_receipt_id(receipt: &mut Value) {
+        receipt["receipt_id"] = json!(derived_id(receipt, "receipt_id").expect("receipt identity"));
+    }
+
+    #[test]
+    fn verifier_accepts_truthful_fail_and_blocked_receipts() {
+        let (plan, mut failed, artifacts) = normalized_plan_and_receipt();
+        let mut blocked = failed.clone();
+        let nodes = plan["nodes"].as_array().expect("nodes");
+        let expected = nodes[0]["acceptance"]["expected"]
+            .as_i64()
+            .expect("expected exit");
+        failed["attempts"][0]["exit_code"] = json!(expected + 1);
+        failed["attempts"][0]["result"] = json!("FAIL");
+        failed["counts"]["passed"] = json!(nodes.len() - 1);
+        failed["counts"]["failed"] = json!(1);
+        failed["result"] = json!("FAIL");
+        set_gate_integrity(&mut failed, &nodes[0]["gate_definition_id"], "FAIL");
+        refresh_receipt_id(&mut failed);
+        let verdict =
+            verify_receipt(&repo(), &plan, &failed, &artifacts).expect("truthful FAIL receipt");
+        assert_eq!(verdict.result(), "FAIL");
+
+        let nodes = plan["nodes"].as_array().expect("nodes");
+        let blocked_index = nodes.len() - 1;
+        blocked["attempts"][blocked_index]["exit_code"] = Value::Null;
+        blocked["attempts"][blocked_index]["result"] = json!("BLOCKED");
+        let executed = nodes
+            .iter()
+            .take(blocked_index)
+            .flat_map(|node| {
+                node["expected_inventory"]["ids"]
+                    .as_array()
+                    .expect("inventory")
+            })
+            .map(|item| item.as_str().expect("inventory ID").to_owned())
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .map(Value::String)
+            .collect::<Vec<_>>();
+        let executed_ids = executed
+            .iter()
+            .map(|item| item.as_str().expect("inventory ID"))
+            .collect::<BTreeSet<_>>();
+        let unavailable = blocked["planned_inventory"]
+            .as_array()
+            .expect("planned inventory")
+            .iter()
+            .filter(|item| !executed_ids.contains(item.as_str().expect("planned inventory ID")))
+            .map(|item| {
+                json!({
+                    "item_id": item,
+                    "reason_code": "TIMEOUT",
+                    "policy_disposition": "BLOCK"
+                })
+            })
+            .collect::<Vec<_>>();
+        blocked["executed_inventory"] = Value::Array(executed);
+        blocked["unavailable_items"] = Value::Array(unavailable.clone());
+        blocked["counts"]["passed"] = json!(nodes.len() - 1);
+        blocked["counts"]["blocked"] = json!(1);
+        blocked["counts"]["skipped"] = json!(unavailable.len());
+        blocked["result"] = json!("BLOCKED");
+        set_gate_integrity(
+            &mut blocked,
+            &nodes[blocked_index]["gate_definition_id"],
+            "BLOCKED",
+        );
+        refresh_receipt_id(&mut blocked);
+        let verdict =
+            verify_receipt(&repo(), &plan, &blocked, &artifacts).expect("truthful BLOCKED receipt");
+        assert_eq!(verdict.result(), "BLOCKED");
+    }
+
+    #[test]
+    fn normalized_junit_artifacts_reconstruct_exact_inventory() {
+        let (plan, receipt, artifacts) = normalized_plan_and_receipt();
+        let observed = expected_executed_inventory(
+            plan["nodes"].as_array().expect("nodes"),
+            receipt["attempts"].as_array().expect("attempts"),
+            &artifacts,
+        )
+        .expect("artifact-derived inventory");
+        let claimed = receipt["executed_inventory"]
+            .as_array()
+            .expect("executed inventory")
+            .iter()
+            .map(|item| item.as_str().expect("inventory ID").to_owned())
+            .collect::<BTreeSet<_>>();
+        assert_eq!(observed, claimed);
     }
 
     #[test]

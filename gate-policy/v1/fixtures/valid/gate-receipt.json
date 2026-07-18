@@ -71,6 +71,7 @@
     "started_at": "2026-07-17T12:00:00Z",
     "finished_at": "2026-07-17T12:01:00Z",
     "exit_code": 0,
+    "termination_signal": null,
     "result": "PASS",
     "retry_reason": null
   }],

@@ -1,7 +1,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::io::Write;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
 use serde_json::{Value, json};
@@ -11,7 +11,8 @@ use crate::error::{ErrorClass, GatePolicyError, Result};
 use crate::policy::{GateDefinition, PolicyBundle, RiskClass};
 use crate::repository::{
     CargoGraph, ObservedChange, ObservedSource, Snapshot, host_target_triple,
-    neutral_cargo_command, neutral_git_command, observe_committed, observe_dirty,
+    neutral_cargo_command, neutral_git_command, observe_committed,
+    observe_committed_after_mutation, observe_dirty,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -428,13 +429,44 @@ impl InventoryProvider for NextestInventory {
     }
 }
 
+#[derive(Debug, Clone)]
+struct ConfinedNextestInventory {
+    cargo_target: PathBuf,
+}
+
+impl InventoryProvider for ConfinedNextestInventory {
+    fn inventory(
+        &self,
+        repo: &Path,
+        definition: &GateDefinition,
+        target: &str,
+    ) -> Result<Vec<String>> {
+        match definition.inventory_source.as_str() {
+            "COMMAND" => NextestInventory.inventory(repo, definition, target),
+            "NEXTEST_PACKAGE" | "NEXTEST_WORKSPACE" | "NEXTEST_TEST_TARGET" => {
+                nextest_inventory_at(repo, definition, target, Some(&self.cargo_target))
+            }
+            "DOCTEST_WORKSPACE" => doctest_inventory_at(repo, Some(&self.cargo_target)),
+            value => Err(GatePolicyError::new(
+                ErrorClass::Planning,
+                "GATE-INVENTORY-SOURCE",
+                format!("unsupported inventory source: {value}"),
+            )),
+        }
+    }
+}
+
 /// Recompute the current exact inventory for one already-instantiated plan node.
 ///
 /// # Errors
 ///
 /// Returns a policy or planning error when the definition is missing, the node
 /// is malformed, or the live inventory cannot be acquired exactly.
-pub(crate) fn inventory_for_node(repo: &Path, node: &Value) -> Result<Vec<String>> {
+pub(crate) fn inventory_for_node(
+    repo: &Path,
+    node: &Value,
+    cargo_target: Option<&Path>,
+) -> Result<Vec<String>> {
     let policy = PolicyBundle::load(repo)?;
     let definition_id = node["gate_definition_id"].as_str().ok_or_else(|| {
         GatePolicyError::new(
@@ -449,10 +481,61 @@ pub(crate) fn inventory_for_node(repo: &Path, node: &Value) -> Result<Vec<String
     let target = node["target"]
         .as_str()
         .ok_or_else(|| GatePolicyError::new(ErrorClass::Planning, "GATE-NODE-SHAPE", "target"))?;
-    let mut inventory = NextestInventory.inventory(repo, definition, target)?;
+    let mut inventory = if definition.inventory_source == "NEXTEST_PACKAGES" {
+        let mut package_definition = definition.clone();
+        "NEXTEST_PACKAGE".clone_into(&mut package_definition.inventory_source);
+        let mut inventory = Vec::new();
+        for package in node_argument_values(node, "--package")? {
+            inventory.extend(nextest_inventory_at(
+                repo,
+                &package_definition,
+                &package,
+                cargo_target,
+            )?);
+        }
+        inventory
+    } else {
+        match definition.inventory_source.as_str() {
+            "COMMAND" => NextestInventory.inventory(repo, definition, target)?,
+            "NEXTEST_PACKAGE" | "NEXTEST_WORKSPACE" | "NEXTEST_TEST_TARGET" => {
+                nextest_inventory_at(repo, definition, target, cargo_target)?
+            }
+            "DOCTEST_WORKSPACE" => doctest_inventory_at(repo, cargo_target)?,
+            value => {
+                return Err(GatePolicyError::new(
+                    ErrorClass::Planning,
+                    "GATE-INVENTORY-SOURCE",
+                    format!("unsupported inventory source: {value}"),
+                ));
+            }
+        }
+    };
     inventory.sort_by(|left, right| left.as_bytes().cmp(right.as_bytes()));
     inventory.dedup();
     Ok(inventory)
+}
+
+fn node_argument_values(node: &Value, flag: &str) -> Result<Vec<String>> {
+    let arguments = array_value(node, "/arguments")?;
+    let mut values = Vec::new();
+    let mut index = 0;
+    while index < arguments.len() {
+        if arguments[index].as_str() == Some(flag) {
+            let value = arguments
+                .get(index + 1)
+                .and_then(Value::as_str)
+                .ok_or_else(|| plan_shape("/nodes/arguments"))?;
+            values.push(value.to_owned());
+            index += 2;
+        } else {
+            index += 1;
+        }
+    }
+    if values.is_empty() {
+        Err(plan_shape("/nodes/arguments/packages"))
+    } else {
+        Ok(values)
+    }
 }
 
 pub struct Planner<P> {
@@ -470,12 +553,41 @@ impl<P: InventoryProvider> Planner<P> {
     /// # Errors
     ///
     /// Returns a typed error for invalid policy, repository, graph, inventory, or identity input.
+    #[allow(
+        clippy::too_many_lines,
+        reason = "plan assembly mirrors the versioned gate-plan wire contract"
+    )]
     pub fn build(&self, repo: &Path, request: &PlanRequest) -> Result<Value> {
+        self.build_with_workspace(repo, request, None)
+    }
+
+    #[allow(
+        clippy::too_many_lines,
+        reason = "plan assembly mirrors the versioned gate-plan wire contract"
+    )]
+    fn build_with_workspace(
+        &self,
+        repo: &Path,
+        request: &PlanRequest,
+        workspace: Option<&Path>,
+    ) -> Result<Value> {
         validate_request(request)?;
         let policy = PolicyBundle::load(repo)?;
-        let base_graph = CargoGraph::load_at_commit(repo, &request.source.base_commit)?;
+        let base_graph = match workspace {
+            Some(root) => CargoGraph::load_at_commit_in(
+                repo,
+                &request.source.base_commit,
+                &root.join("graph-snapshots"),
+            )?,
+            None => CargoGraph::load_at_commit(repo, &request.source.base_commit)?,
+        };
         let head_graph = match request.source.head_commit.as_deref() {
-            Some(head) => CargoGraph::load_at_commit(repo, head)?,
+            Some(head) => match workspace {
+                Some(root) => {
+                    CargoGraph::load_at_commit_in(repo, head, &root.join("graph-snapshots"))?
+                }
+                None => CargoGraph::load_at_commit(repo, head)?,
+            },
             None => CargoGraph::load_current(repo)?,
         };
         let graph = base_graph.union(&head_graph);
@@ -484,12 +596,17 @@ impl<P: InventoryProvider> Planner<P> {
         let root_revision = request.source.head_commit.as_deref().unwrap_or("HEAD");
         let roots = manifest_roots(repo, root_revision, request.source.head_commit.is_none())?;
         let context = execution_context(repo, &policy)?;
-        let inventory_snapshot = request
-            .source
-            .head_commit
-            .as_deref()
-            .map(|head| Snapshot::create(repo, head))
-            .transpose()?;
+        let inventory_snapshot = request.source.head_commit.as_deref().map_or_else(
+            || Ok(None),
+            |head| {
+                workspace
+                    .map_or_else(
+                        || Snapshot::create(repo, head),
+                        |root| Snapshot::create_in(repo, head, &root.join("inventory-snapshots")),
+                    )
+                    .map(Some)
+            },
+        )?;
         let inventory_repo = inventory_snapshot.as_ref().map_or(repo, Snapshot::path);
         let nodes = self.build_nodes(
             inventory_repo,
@@ -497,6 +614,7 @@ impl<P: InventoryProvider> Planner<P> {
             &selection,
             &request.source.base_commit,
         )?;
+        let quality_scope = quality_scope(&selection, &nodes);
 
         let changed_objects = request
             .source
@@ -559,6 +677,7 @@ impl<P: InventoryProvider> Planner<P> {
             },
             "execution_context": context,
             "nodes": nodes,
+            "quality_scope": quality_scope,
             "zero_work_disposition": zero_work,
             "environment_roots": roots,
             "deferred_obligations": [],
@@ -574,6 +693,10 @@ impl<P: InventoryProvider> Planner<P> {
         Ok(plan)
     }
 
+    #[allow(
+        clippy::too_many_lines,
+        reason = "node assembly mirrors the versioned terminal-node wire contract"
+    )]
     fn build_nodes(
         &self,
         repo: &Path,
@@ -618,10 +741,28 @@ impl<P: InventoryProvider> Planner<P> {
                     .iter()
                     .filter_map(|dependency| built.get(dependency).cloned())
                     .collect::<Vec<_>>();
-                let arguments =
-                    expand_arguments(&definition.arguments_template, target, base_commit)?;
+                let arguments = expand_node_arguments(
+                    definition,
+                    target,
+                    base_commit,
+                    &selection.affected_packages,
+                )?;
                 let output_paths = expand_arguments(&definition.output_paths, target, base_commit)?;
-                let mut inventory = self.inventory.inventory(repo, definition, target)?;
+                let mut inventory = if definition.inventory_source == "NEXTEST_PACKAGES" {
+                    let mut package_definition = (*definition).clone();
+                    "NEXTEST_PACKAGE".clone_into(&mut package_definition.inventory_source);
+                    let mut inventory = Vec::new();
+                    for package in &selection.affected_packages {
+                        inventory.extend(self.inventory.inventory(
+                            repo,
+                            &package_definition,
+                            package,
+                        )?);
+                    }
+                    inventory
+                } else {
+                    self.inventory.inventory(repo, definition, target)?
+                };
                 inventory.sort_by(|left, right| left.as_bytes().cmp(right.as_bytes()));
                 inventory.dedup();
                 if inventory.len() < usize::try_from(definition.minimum_count).unwrap_or(usize::MAX)
@@ -683,6 +824,80 @@ impl<P: InventoryProvider> Planner<P> {
     }
 }
 
+fn quality_scope(selection: &Selection, nodes: &[Value]) -> Value {
+    if selection.risk == RiskClass::Editorial {
+        return json!({
+            "mode": "NOT_APPLICABLE",
+            "production_packages": [],
+            "covering_node_ids": [],
+            "covering_inventory_ids": [],
+            "completeness": "COMPLETE",
+            "reason_codes": ["NO_PRODUCTION_SURFACE"]
+        });
+    }
+    let affected_mode = matches!(
+        selection.risk,
+        RiskClass::BoundedComponent | RiskClass::IntegratedDomain
+    ) && !selection.affected_packages.is_empty()
+        && selection.unmapped.is_empty();
+    if !affected_mode {
+        return json!({
+            "mode": "GLOBAL",
+            "production_packages": [],
+            "covering_node_ids": [],
+            "covering_inventory_ids": [],
+            "completeness": "ESCALATED_GLOBAL",
+            "reason_codes": ["AFFECTED_CONTRIBUTION_UNBOUNDED"]
+        });
+    }
+
+    let affected_nodes = nodes
+        .iter()
+        .filter(|node| node["gate_definition_id"] == "affected-adjudicated-crap-v1")
+        .collect::<Vec<_>>();
+    if affected_nodes.len() != 1 {
+        return json!({
+            "mode": "GLOBAL",
+            "production_packages": [],
+            "covering_node_ids": [],
+            "covering_inventory_ids": [],
+            "completeness": "ESCALATED_GLOBAL",
+            "reason_codes": ["COVERING_TEST_CONTRIBUTION_UNKNOWN"]
+        });
+    }
+    let affected = affected_nodes[0];
+    let covering_node_ids = affected["node_id"]
+        .as_str()
+        .map(|id| vec![id])
+        .unwrap_or_default();
+    let covering_inventory_ids = affected["expected_inventory"]["ids"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(Value::as_str)
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    if covering_inventory_ids.is_empty() {
+        return json!({
+            "mode": "GLOBAL",
+            "production_packages": [],
+            "covering_node_ids": [],
+            "covering_inventory_ids": [],
+            "completeness": "ESCALATED_GLOBAL",
+            "reason_codes": ["COVERING_TEST_INVENTORY_EMPTY"]
+        });
+    }
+    json!({
+        "mode": "AFFECTED",
+        "production_packages": selection.affected_packages,
+        "covering_node_ids": covering_node_ids,
+        "covering_inventory_ids": covering_inventory_ids,
+        "completeness": "COMPLETE",
+        "reason_codes": ["TERMINAL_PLAN_COVERING_CLOSURE"]
+    })
+}
+
 pub(crate) fn derive_plan_id(plan: &Value) -> Result<String> {
     let mut payload = plan.clone();
     let object = payload.as_object_mut().ok_or_else(|| {
@@ -719,11 +934,108 @@ pub(crate) fn verify_plan_identity(plan: &Value) -> Result<()> {
 }
 
 pub(crate) fn reconstruct_plan(repo: &Path, plan: &Value) -> Result<Value> {
+    reconstruct_plan_with_source(repo, plan, false)
+}
+
+pub(crate) fn reconstruct_plan_in(
+    repo: &Path,
+    plan: &Value,
+    workspace: &Path,
+    after_source_mutation: bool,
+) -> Result<Value> {
+    let request = reconstruction_request(repo, plan, after_source_mutation)?;
+    let workspace = prepare_reconstruction_workspace(workspace)?;
+    Planner::new(ConfinedNextestInventory {
+        cargo_target: workspace.join("cargo-target"),
+    })
+    .build_with_workspace(repo, &request, Some(&workspace))
+}
+
+fn prepare_reconstruction_workspace(workspace: &Path) -> Result<PathBuf> {
+    let parent = workspace
+        .parent()
+        .ok_or_else(|| reconstruction_workspace_error("workspace has no parent"))?;
+    require_plain_directory(parent)?;
+    match fs::symlink_metadata(workspace) {
+        Ok(metadata) if metadata.file_type().is_symlink() || !metadata.is_dir() => {
+            return Err(reconstruction_workspace_error(
+                "workspace exists as a symlink or non-directory",
+            ));
+        }
+        Ok(_) => {}
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+            fs::create_dir(workspace)
+                .map_err(|error| reconstruction_workspace_error(error.to_string()))?;
+        }
+        Err(error) => return Err(reconstruction_workspace_error(error.to_string())),
+    }
+    let canonical_parent = fs::canonicalize(parent)
+        .map_err(|error| reconstruction_workspace_error(error.to_string()))?;
+    let canonical_workspace = fs::canonicalize(workspace)
+        .map_err(|error| reconstruction_workspace_error(error.to_string()))?;
+    if canonical_workspace.parent() != Some(canonical_parent.as_path()) {
+        return Err(reconstruction_workspace_error(
+            "workspace resolves outside its selected parent",
+        ));
+    }
+    for child in ["cargo-target", "graph-snapshots", "inventory-snapshots"] {
+        ensure_plain_child(&canonical_workspace, child)?;
+    }
+    Ok(canonical_workspace)
+}
+
+fn require_plain_directory(path: &Path) -> Result<()> {
+    let metadata = fs::symlink_metadata(path)
+        .map_err(|error| reconstruction_workspace_error(error.to_string()))?;
+    if metadata.file_type().is_symlink() || !metadata.is_dir() {
+        Err(reconstruction_workspace_error(
+            "workspace parent is a symlink or non-directory",
+        ))
+    } else {
+        Ok(())
+    }
+}
+
+fn ensure_plain_child(root: &Path, name: &str) -> Result<()> {
+    let child = root.join(name);
+    match fs::symlink_metadata(&child) {
+        Ok(metadata) if metadata.file_type().is_symlink() || !metadata.is_dir() => Err(
+            reconstruction_workspace_error(format!("{name} is a symlink or non-directory")),
+        ),
+        Ok(_) => Ok(()),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => fs::create_dir(&child)
+            .map_err(|error| reconstruction_workspace_error(error.to_string())),
+        Err(error) => Err(reconstruction_workspace_error(error.to_string())),
+    }
+}
+
+fn reconstruction_workspace_error(message: impl Into<String>) -> GatePolicyError {
+    GatePolicyError::new(ErrorClass::Io, "GATE-RECONSTRUCTION-WORKSPACE", message)
+}
+
+fn reconstruct_plan_with_source(
+    repo: &Path,
+    plan: &Value,
+    after_source_mutation: bool,
+) -> Result<Value> {
+    let request = reconstruction_request(repo, plan, after_source_mutation)?;
+    Planner::new(NextestInventory).build(repo, &request)
+}
+
+fn reconstruction_request(
+    repo: &Path,
+    plan: &Value,
+    after_source_mutation: bool,
+) -> Result<PlanRequest> {
     let base = plan["source"]["base_commit"]
         .as_str()
         .ok_or_else(|| plan_shape("/source/base_commit"))?;
     let source = if let Some(head) = plan["source"]["head_commit"].as_str() {
-        observe_committed(repo, base, head)?
+        if after_source_mutation {
+            observe_committed_after_mutation(repo, base, head)?
+        } else {
+            observe_committed(repo, base, head)?
+        }
     } else {
         observe_dirty(repo, base)?
     };
@@ -735,22 +1047,19 @@ pub(crate) fn reconstruct_plan(repo: &Path, plan: &Value) -> Result<Value> {
     let authorized_paths = string_set(&plan["authorized_paths"], "/authorized_paths")?
         .into_iter()
         .collect();
-    Planner::new(NextestInventory).build(
-        repo,
-        &PlanRequest {
-            stage,
-            predecessor_intent_plan_id: plan["predecessor_intent_plan_id"]
-                .as_str()
-                .map(str::to_owned),
-            boundary: plan["boundary"]
-                .as_str()
-                .ok_or_else(|| plan_shape("/boundary"))?
-                .to_owned(),
-            campaign_id: plan["campaign_id"].as_str().map(str::to_owned),
-            authorized_paths,
-            source,
-        },
-    )
+    Ok(PlanRequest {
+        stage,
+        predecessor_intent_plan_id: plan["predecessor_intent_plan_id"]
+            .as_str()
+            .map(str::to_owned),
+        boundary: plan["boundary"]
+            .as_str()
+            .ok_or_else(|| plan_shape("/boundary"))?
+            .to_owned(),
+        campaign_id: plan["campaign_id"].as_str().map(str::to_owned),
+        authorized_paths,
+        source,
+    })
 }
 
 fn verify_node_graph(nodes: &[Value]) -> Result<()> {
@@ -1040,6 +1349,22 @@ fn expand_arguments(template: &[String], target: &str, base_commit: &str) -> Res
     Ok(arguments)
 }
 
+fn expand_node_arguments(
+    definition: &GateDefinition,
+    target: &str,
+    base_commit: &str,
+    affected_packages: &[String],
+) -> Result<Vec<String>> {
+    let mut arguments = expand_arguments(&definition.arguments_template, target, base_commit)?;
+    if definition.gate_definition_id == "affected-adjudicated-crap-v1" {
+        for package in affected_packages {
+            arguments.push("--package".to_owned());
+            arguments.push(package.clone());
+        }
+    }
+    Ok(arguments)
+}
+
 fn validate_request(request: &PlanRequest) -> Result<()> {
     let predecessor_valid = match request.stage {
         PlanningStage::Intent => request.predecessor_intent_plan_id.is_none(),
@@ -1138,7 +1463,19 @@ fn nextest_inventory(
     definition: &GateDefinition,
     target: &str,
 ) -> Result<Vec<String>> {
+    nextest_inventory_at(repo, definition, target, None)
+}
+
+fn nextest_inventory_at(
+    repo: &Path,
+    definition: &GateDefinition,
+    target: &str,
+    cargo_target: Option<&Path>,
+) -> Result<Vec<String>> {
     let mut command = neutral_cargo_command();
+    if let Some(cargo_target) = cargo_target {
+        command.env("CARGO_TARGET_DIR", cargo_target);
+    }
     command.args([
         "nextest",
         "list",
@@ -1173,7 +1510,15 @@ fn nextest_inventory(
 }
 
 fn doctest_inventory(repo: &Path) -> Result<Vec<String>> {
-    let output = neutral_cargo_command()
+    doctest_inventory_at(repo, None)
+}
+
+fn doctest_inventory_at(repo: &Path, cargo_target: Option<&Path>) -> Result<Vec<String>> {
+    let mut command = neutral_cargo_command();
+    if let Some(cargo_target) = cargo_target {
+        command.env("CARGO_TARGET_DIR", cargo_target);
+    }
+    let output = command
         .args([
             "test",
             "--workspace",
@@ -1985,8 +2330,8 @@ fn load_json(path: &Path) -> Result<Value> {
 #[cfg(test)]
 mod tests {
     use super::{
-        InventoryProvider, PlanRequest, Planner, PlanningStage, reconcile_intent_terminal,
-        reconcile_semantics, select,
+        InventoryProvider, PlanRequest, Planner, PlanningStage, prepare_reconstruction_workspace,
+        reconcile_intent_terminal, reconcile_semantics, select,
     };
     use crate::canonical::canonical_bytes;
     use crate::error::Result;
@@ -2004,6 +2349,38 @@ mod tests {
         ) -> Result<Vec<String>> {
             Ok(vec![format!("{}:{target}", definition.gate_definition_id)])
         }
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn reconstruction_workspace_rejects_symlink_escape() {
+        use std::os::unix::fs::symlink;
+
+        let root = std::env::temp_dir().join(format!(
+            "openwepp-reconstruction-symlink-{}",
+            std::process::id()
+        ));
+        let escape = std::env::temp_dir().join(format!(
+            "openwepp-reconstruction-escape-{}",
+            std::process::id()
+        ));
+        std::fs::create_dir(&root).expect("create selected root");
+        std::fs::create_dir(&escape).expect("create escape root");
+        let workspace = root.join("reconstruction");
+        symlink(&escape, &workspace).expect("create workspace symlink");
+        let error = prepare_reconstruction_workspace(&workspace)
+            .expect_err("workspace symlink must fail closed");
+        assert_eq!(error.code, "GATE-RECONSTRUCTION-WORKSPACE");
+        std::fs::remove_file(&workspace).expect("remove workspace symlink");
+
+        std::fs::create_dir(&workspace).expect("create plain workspace");
+        symlink(&escape, workspace.join("cargo-target")).expect("create child symlink");
+        let error = prepare_reconstruction_workspace(&workspace)
+            .expect_err("child symlink must fail closed");
+        assert_eq!(error.code, "GATE-RECONSTRUCTION-WORKSPACE");
+
+        std::fs::remove_dir_all(&root).expect("remove precise selected root");
+        std::fs::remove_dir_all(&escape).expect("remove precise escape root");
     }
 
     #[test]
@@ -2047,6 +2424,17 @@ mod tests {
             canonical_bytes(&first).expect("second canonicalization")
         );
         assert_eq!(first["risk"]["class"], "CRITICAL");
+        assert_eq!(first["quality_scope"]["mode"], "GLOBAL");
+        assert_eq!(first["quality_scope"]["completeness"], "ESCALATED_GLOBAL");
+        assert_eq!(
+            first["nodes"]
+                .as_array()
+                .expect("nodes")
+                .iter()
+                .filter(|node| node["gate_definition_id"] == "adjudicated-crap-v1")
+                .count(),
+            1
+        );
         assert!(!first["nodes"].as_array().expect("nodes").is_empty());
         let ids = first["nodes"]
             .as_array()
@@ -2163,6 +2551,39 @@ mod tests {
             .map(|path| path.as_str().expect("output path"))
             .collect::<std::collections::BTreeSet<_>>();
         assert_eq!(outputs.len(), package_nodes.len());
+        assert_eq!(
+            plan["quality_scope"]["mode"],
+            "AFFECTED",
+            "scope={} affected={} nextest_targets={}",
+            plan["quality_scope"],
+            plan["affected_packages"],
+            serde_json::Value::Array(
+                plan["nodes"]
+                    .as_array()
+                    .expect("nodes")
+                    .iter()
+                    .filter(|node| node["gate_definition_id"] == "cargo-package-nextest-v1")
+                    .map(|node| node["target"].clone())
+                    .collect()
+            )
+        );
+        assert_eq!(plan["quality_scope"]["completeness"], "COMPLETE");
+        let affected_nodes = plan["nodes"]
+            .as_array()
+            .expect("nodes")
+            .iter()
+            .filter(|node| node["gate_definition_id"] == "affected-adjudicated-crap-v1")
+            .collect::<Vec<_>>();
+        assert_eq!(affected_nodes.len(), 1);
+        let arguments = affected_nodes[0]["arguments"]
+            .as_array()
+            .expect("affected arguments");
+        for package in plan["quality_scope"]["production_packages"]
+            .as_array()
+            .expect("production packages")
+        {
+            assert!(arguments.contains(package));
+        }
     }
 
     #[test]

@@ -79,6 +79,29 @@ pub fn observe_committed(repo: &Path, base: &str, head: &str) -> Result<Observed
     let base_commit = admitted_base(repo, base)?;
     let head_commit = resolve_commit(repo, head)?;
     require_exact_clean_checkout(repo, &head_commit)?;
+    observe_committed_commits(repo, base_commit, head_commit)
+}
+
+/// Observe a committed base/head change set after execution reported a source mutation.
+///
+/// This deliberately reconstructs the immutable commit range without requiring the
+/// checkout to remain clean. The verifier separately validates the reported dirty
+/// post-execution snapshot and INVALID disposition.
+pub(crate) fn observe_committed_after_mutation(
+    repo: &Path,
+    base: &str,
+    head: &str,
+) -> Result<ObservedSource> {
+    let base_commit = admitted_base(repo, base)?;
+    let head_commit = resolve_commit(repo, head)?;
+    observe_committed_commits(repo, base_commit, head_commit)
+}
+
+fn observe_committed_commits(
+    repo: &Path,
+    base_commit: String,
+    head_commit: String,
+) -> Result<ObservedSource> {
     let raw = committed_diff(repo, &base_commit, &head_commit)?;
     let changes = parse_raw_changes(&raw)?;
     Ok(ObservedSource {
@@ -787,6 +810,11 @@ impl CargoGraph {
         metadata(&snapshot.path).and_then(|bytes| Self::from_metadata(&bytes, &snapshot.path))
     }
 
+    pub(crate) fn load_at_commit_in(repo: &Path, commit: &str, parent: &Path) -> Result<Self> {
+        let snapshot = Snapshot::create_in(repo, commit, parent)?;
+        metadata(&snapshot.path).and_then(|bytes| Self::from_metadata(&bytes, &snapshot.path))
+    }
+
     /// Decode the workspace-only package and dependency graph from Cargo JSON.
     ///
     /// # Errors
@@ -965,6 +993,7 @@ pub(crate) fn neutral_cargo_command() -> Command {
         "RUSTC_WORKSPACE_WRAPPER",
         "CARGO_BUILD_TARGET",
         "CARGO_TARGET_DIR",
+        "NEXTEST_PROFILE",
     ] {
         command.env_remove(variable);
     }
@@ -1017,9 +1046,15 @@ pub(crate) struct Snapshot {
 
 impl Snapshot {
     pub(crate) fn create(repo: &Path, commit: &str) -> Result<Self> {
+        Self::create_in(repo, commit, &std::env::temp_dir())
+    }
+
+    pub(crate) fn create_in(repo: &Path, commit: &str, parent: &Path) -> Result<Self> {
+        fs::create_dir_all(parent).map_err(|error| {
+            GatePolicyError::new(ErrorClass::Io, "GATE-SNAPSHOT-CREATE", error.to_string())
+        })?;
         let suffix = SNAPSHOT_SEQUENCE.fetch_add(1, Ordering::Relaxed);
-        let path =
-            std::env::temp_dir().join(format!("openwepp-gate-{}-{suffix}", std::process::id()));
+        let path = parent.join(format!("openwepp-gate-{}-{suffix}", std::process::id()));
         fs::create_dir(&path).map_err(|error| {
             GatePolicyError::new(ErrorClass::Io, "GATE-SNAPSHOT-CREATE", error.to_string())
         })?;

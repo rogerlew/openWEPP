@@ -8,13 +8,16 @@ of `.github/workflows/release-gates.yml`. The latter retains its
 `tools/release/run_release_candidate_gates.sh`; no current command, trigger, or
 artifact upload is removed.
 
-Before provider-side cutover, rollback disables the executor jobs but retains
-the workflow's aggregate as an explicit failing investigation sentinel. No
+Before provider-side cutover, repository rollback may remove or disable the
+entire nonrequired shadow workflow, including its observational aggregate. No
 conservative-runner restoration command is needed because that runner remains
-present and authoritative throughout observation.
+present and authoritative throughout observation. Retaining a failing new
+aggregate is required only after provider-side cutover has made that context
+required; that future rollback also requires authenticated repository-rule
+changes and is outside this package.
 
 Automatic rollback triggers remain those in the canonical strategy: any missed
 required obligation, unsafe reuse, certificate trust failure, ledger lost
 update, or required aggregate context disappearance. The stable
-`testgate-shadow-observation` aggregate remains visible during investigation;
-it is not a protected merge context in this package.
+`testgate-shadow-observation` aggregate is not a protected merge context in
+this package.

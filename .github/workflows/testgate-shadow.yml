@@ -117,6 +117,49 @@ jobs:
           path: ${{ runner.temp }}/testgate-shadow-backstop-${{ github.run_id }}
           if-no-files-found: error
 
+  shadow-dispatch:
+    if: ${{ github.event_name == 'workflow_dispatch' && (inputs.boundary == 'INCREMENT' || inputs.boundary == 'CHECKPOINT') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: Swatinem/rust-cache@v2
+      - name: Install shadow gate tools
+        run: |
+          cargo install cargo-nextest --locked --version 0.9.138
+          cargo install cargo-deny --locked
+          cargo install cargo-llvm-cov --locked --version 0.8.7
+          cargo install cargo-crap --locked --version 0.2.2
+          python -m venv .venv
+      - name: Build planner and executor
+        run: cargo build -p openwepp-gate-planner --bin openwepp-gate-plan
+      - name: Plan and execute requested increment/checkpoint shadow
+        run: |
+          base_ref="${{ inputs.base_ref }}"
+          if [[ -z "${base_ref}" ]]; then
+            base_ref="HEAD^"
+          fi
+          evidence_dir="${RUNNER_TEMP}/testgate-shadow-dispatch-${GITHUB_RUN_ID}"
+          python tools/local_ci/testgate_shadow.py \
+            --binary target/debug/openwepp-gate-plan \
+            --base "${base_ref}" \
+            --boundary "${{ inputs.boundary }}" \
+            --artifact-root "${evidence_dir}" \
+            --job shadow-dispatch \
+            --execute
+      - name: Upload dispatch observation
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: testgate-shadow-dispatch-${{ github.run_id }}
+          path: ${{ runner.temp }}/testgate-shadow-dispatch-${{ github.run_id }}
+          if-no-files-found: error
+
   shadow-campaign:
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.boundary == 'CAMPAIGN' }}
     runs-on: ubuntu-latest
@@ -208,6 +251,7 @@ jobs:
     needs:
       - shadow-presubmit
       - shadow-backstop
+      - shadow-dispatch
       - shadow-campaign
       - shadow-release
     runs-on: ubuntu-latest
@@ -216,12 +260,13 @@ jobs:
         env:
           PRESUBMIT_RESULT: ${{ needs.shadow-presubmit.result }}
           BACKSTOP_RESULT: ${{ needs.shadow-backstop.result }}
+          DISPATCH_RESULT: ${{ needs.shadow-dispatch.result }}
           CAMPAIGN_RESULT: ${{ needs.shadow-campaign.result }}
           RELEASE_RESULT: ${{ needs.shadow-release.result }}
         run: |
           echo "TESTGATE shadow is observational and not a cutover context."
-          echo "presubmit=${PRESUBMIT_RESULT} backstop=${BACKSTOP_RESULT} campaign=${CAMPAIGN_RESULT} release=${RELEASE_RESULT}"
-          for result in "${PRESUBMIT_RESULT}" "${BACKSTOP_RESULT}" "${CAMPAIGN_RESULT}" "${RELEASE_RESULT}"; do
+          echo "presubmit=${PRESUBMIT_RESULT} backstop=${BACKSTOP_RESULT} dispatch=${DISPATCH_RESULT} campaign=${CAMPAIGN_RESULT} release=${RELEASE_RESULT}"
+          for result in "${PRESUBMIT_RESULT}" "${BACKSTOP_RESULT}" "${DISPATCH_RESULT}" "${CAMPAIGN_RESULT}" "${RELEASE_RESULT}"; do
             if [[ "${result}" == "failure" || "${result}" == "cancelled" ]]; then
               exit 1
             fi

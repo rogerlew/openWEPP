@@ -15,9 +15,10 @@ use time::format_description::well_known::Rfc3339;
 use crate::canonical::{derived_id, digest, parse_strict, sha256_bytes, validate_schema};
 use crate::error::{ErrorClass, GatePolicyError, Result};
 use crate::planner::{
-    environment_record, inventory_for_node, manifest_roots, reconstruct_plan, tool_records,
+    environment_record, inventory_for_node, manifest_roots, reconstruct_plan_in, tool_records,
     verify_plan_identity,
 };
+use crate::repository::observe_dirty;
 
 /// Provenance labels for a local, unsigned execution receipt.
 #[derive(Debug, Clone)]
@@ -52,7 +53,22 @@ struct NodeRun {
     attempt: Value,
     result: String,
     log_path: PathBuf,
-    artifact_source: Option<PathBuf>,
+    executed_inventory: BTreeSet<String>,
+    unavailable_reason: Option<String>,
+}
+
+struct ProcessOutcome {
+    exit_code: Option<i32>,
+    termination_signal: Option<i32>,
+    result: String,
+    unavailable_reason: Option<String>,
+}
+
+struct ExecutionRecord {
+    final_results: BTreeMap<String, String>,
+    attempts: Vec<Value>,
+    executed_inventory: BTreeSet<String>,
+    unavailable: BTreeMap<String, String>,
 }
 
 /// Execute a terminal plan and construct an unsigned local receipt.
@@ -81,12 +97,22 @@ pub fn execute_plan(
             "artifact root must be outside the repository",
         ));
     }
-    validate_plan(&repository, plan)?;
+    create_confined_directories(&artifacts, &work_root(&artifacts))?;
+    create_confined_directories(&artifacts, &cargo_target_root(&artifacts))?;
+    create_confined_directories(&artifacts, &work_root(&artifacts).join("tmp"))?;
+    validate_plan(&repository, &artifacts, plan)?;
     verify_execution_checkout(&repository, plan)?;
     preflight(&repository, &artifacts, plan)?;
 
     let started_at = timestamp()?;
     let source_snapshot = source_snapshot(plan)?;
+    let observed_before = observed_source_snapshot(&repository, plan)?;
+    if observed_before != source_snapshot {
+        return Err(execution_error(
+            "GATE-EXEC-SOURCE-DRIFT",
+            "repository state differs from the verified pre-execution snapshot",
+        ));
+    }
     let roots_before = current_roots(&repository, plan)?;
     if roots_before != plan["environment_roots"] {
         return Err(execution_error(
@@ -95,51 +121,143 @@ pub fn execute_plan(
         ));
     }
 
-    let nodes = plan["nodes"]
-        .as_array()
-        .ok_or_else(|| execution_error("GATE-EXEC-PLAN-SHAPE", "nodes must be an array"))?;
-    let mut final_results = BTreeMap::<String, String>::new();
-    let mut attempts = Vec::new();
-    for node in nodes {
-        let run = execute_node(&repository, &artifacts, node, &final_results)?;
-        let node_id = required_string(node, "node_id")?.to_owned();
-        final_results.insert(node_id, run.result.clone());
-        write_node_artifacts(&repository, &artifacts, node, &run)?;
-        attempts.push(run.attempt);
-    }
-    if final_results.values().any(|result| result != "PASS") {
-        return Err(execution_error(
-            "GATE-EXEC-NONPASS",
-            "one or more planned nodes did not pass; no receipt was issued",
-        ));
-    }
+    let mut execution = execute_nodes(
+        &repository,
+        &artifacts,
+        plan,
+        &roots_before,
+        &observed_before,
+    )?;
 
     let roots_after = current_roots(&repository, plan)?;
-    if roots_after != roots_before {
-        return Err(execution_error(
-            "GATE-EXEC-SOURCE-MUTATION",
-            "repository authority changed during execution",
-        ));
+    let observed_after = observed_source_snapshot(&repository, plan)?;
+    let source_unchanged = roots_after == roots_before && observed_after == observed_before;
+    if !source_unchanged
+        && !execution
+            .attempts
+            .iter()
+            .any(|attempt| attempt["result"] == "INVALID")
+    {
+        mark_source_mutation(&mut execution)?;
     }
+    let unavailable_items = unavailable_items(&mut execution);
     let finished_at = timestamp()?;
     build_receipt(
         &repository,
         plan,
         &artifacts,
-        &attempts,
-        &final_results,
+        &execution.attempts,
+        &execution.final_results,
+        &execution.executed_inventory,
+        &unavailable_items,
         &started_at,
         &finished_at,
         &source_snapshot,
+        &observed_after,
+        source_unchanged,
         claims,
     )
 }
 
-fn validate_plan(repo: &Path, plan: &Value) -> Result<()> {
+fn execute_nodes(
+    repo: &Path,
+    artifact_root: &Path,
+    plan: &Value,
+    roots_before: &Value,
+    observed_before: &str,
+) -> Result<ExecutionRecord> {
+    let nodes = plan["nodes"]
+        .as_array()
+        .ok_or_else(|| execution_error("GATE-EXEC-PLAN-SHAPE", "nodes must be an array"))?;
+    let mut record = ExecutionRecord {
+        final_results: BTreeMap::new(),
+        attempts: Vec::new(),
+        executed_inventory: BTreeSet::new(),
+        unavailable: BTreeMap::new(),
+    };
+    let mut source_invalid = false;
+    for node in nodes {
+        let forced_reason = source_invalid.then_some("SOURCE_MUTATION_DETECTED");
+        let mut run = execute_node(
+            repo,
+            artifact_root,
+            node,
+            &record.final_results,
+            forced_reason,
+        )?;
+        if !source_invalid
+            && (current_roots(repo, plan)? != *roots_before
+                || observed_source_snapshot(repo, plan)? != observed_before)
+        {
+            run.attempt["result"] = Value::String("INVALID".to_owned());
+            "INVALID".clone_into(&mut run.result);
+            run.unavailable_reason = Some("SOURCE_MUTATION_DETECTED".to_owned());
+            source_invalid = true;
+        }
+        let node_id = required_string(node, "node_id")?.to_owned();
+        record.final_results.insert(node_id, run.result.clone());
+        write_node_artifacts(artifact_root, node, &run)?;
+        record
+            .executed_inventory
+            .extend(run.executed_inventory.iter().cloned());
+        record_unavailable(node, &run, &mut record.unavailable)?;
+        record.attempts.push(run.attempt);
+    }
+    Ok(record)
+}
+
+fn record_unavailable(
+    node: &Value,
+    run: &NodeRun,
+    unavailable: &mut BTreeMap<String, String>,
+) -> Result<()> {
+    if let Some(reason) = &run.unavailable_reason {
+        for item in string_array(&node["expected_inventory"]["ids"], "inventory")? {
+            unavailable.entry(item).or_insert_with(|| reason.clone());
+        }
+    }
+    Ok(())
+}
+
+fn mark_source_mutation(record: &mut ExecutionRecord) -> Result<()> {
+    let last_attempt = record.attempts.last_mut().ok_or_else(|| {
+        execution_error(
+            "GATE-EXEC-SOURCE-MUTATION",
+            "source changed without an attributable node attempt",
+        )
+    })?;
+    last_attempt["result"] = Value::String("INVALID".to_owned());
+    let node_id = required_string(last_attempt, "node_id")?.to_owned();
+    record.final_results.insert(node_id, "INVALID".to_owned());
+    Ok(())
+}
+
+fn unavailable_items(record: &mut ExecutionRecord) -> Vec<Value> {
+    record
+        .unavailable
+        .retain(|item, _| !record.executed_inventory.contains(item));
+    std::mem::take(&mut record.unavailable)
+        .into_iter()
+        .map(|(item_id, reason_code)| {
+            json!({
+                "item_id": item_id,
+                "reason_code": reason_code,
+                "policy_disposition": "BLOCK"
+            })
+        })
+        .collect()
+}
+
+fn validate_plan(repo: &Path, artifact_root: &Path, plan: &Value) -> Result<()> {
     let schema = read_json(&repo.join("gate-policy/v1/schemas/gate-plan.schema.json"))?;
     validate_schema(&schema, plan, "executor gate plan")?;
     verify_plan_identity(plan)?;
-    let reconstructed = reconstruct_plan(repo, plan)?;
+    let reconstructed = reconstruct_plan_in(
+        repo,
+        plan,
+        &work_root(artifact_root).join("reconstruction"),
+        false,
+    )?;
     if digest(&reconstructed)? != digest(plan)? {
         return Err(execution_error(
             "GATE-EXEC-PLAN-RECONSTRUCTION",
@@ -181,12 +299,14 @@ fn verify_execution_checkout(repo: &Path, plan: &Value) -> Result<()> {
 }
 
 fn preflight(repo: &Path, artifact_root: &Path, plan: &Value) -> Result<()> {
+    validate_quality_scope(plan)?;
     let nodes = plan["nodes"]
         .as_array()
         .ok_or_else(|| execution_error("GATE-EXEC-PLAN-SHAPE", "nodes must be an array"))?;
     let mut outputs = BTreeSet::new();
     for node in nodes {
         supported_executor(node)?;
+        reject_shell_string(node)?;
         if node["retry"]["maximum_attempts"] != 1 {
             return Err(execution_error(
                 "GATE-EXEC-RETRY-UNSUPPORTED",
@@ -195,7 +315,8 @@ fn preflight(repo: &Path, artifact_root: &Path, plan: &Value) -> Result<()> {
         }
         confined_working_directory(repo, node)?;
         allowed_environment(node)?;
-        let current_inventory = inventory_for_node(repo, node)?;
+        let current_inventory =
+            inventory_for_node(repo, node, Some(&cargo_target_root(artifact_root)))?;
         let expected = string_array(&node["expected_inventory"]["ids"], "inventory")?;
         if current_inventory != expected {
             return Err(execution_error(
@@ -214,6 +335,160 @@ fn preflight(repo: &Path, artifact_root: &Path, plan: &Value) -> Result<()> {
         }
     }
     Ok(())
+}
+
+fn reject_shell_string(node: &Value) -> Result<()> {
+    let arguments = string_array(&node["arguments"], "arguments")?;
+    let uses_shell_string = arguments.iter().enumerate().any(|(index, argument)| {
+        !argument.contains('=')
+            && Path::new(argument)
+                .extension()
+                .is_none_or(|extension| extension != "sh")
+            && Path::new(argument)
+                .file_name()
+                .and_then(|name| name.to_str())
+                .is_some_and(|name| {
+                    let name = name.to_ascii_lowercase();
+                    name == "sh" || name.ends_with("sh") || name == "powershell"
+                })
+            && shell_uses_command_string(&arguments[index + 1..])
+    });
+    if uses_shell_string {
+        Err(execution_error(
+            "GATE-EXEC-SHELL-STRING",
+            "plan arguments cannot contain an inline shell program",
+        ))
+    } else {
+        Ok(())
+    }
+}
+
+fn shell_uses_command_string(arguments: &[String]) -> bool {
+    for argument in arguments {
+        let normalized = argument.to_ascii_lowercase();
+        if normalized == "--command"
+            || normalized.starts_with("--command=")
+            || normalized == "-c"
+            || normalized.starts_with('-')
+                && !normalized.starts_with("--")
+                && normalized[1..].contains('c')
+        {
+            return true;
+        }
+        let path = Path::new(argument);
+        if argument.contains('/') || path.extension().is_some_and(|extension| extension == "sh") {
+            return false;
+        }
+    }
+    false
+}
+
+fn validate_quality_scope(plan: &Value) -> Result<()> {
+    let nodes = plan["nodes"]
+        .as_array()
+        .ok_or_else(|| execution_error("GATE-EXEC-PLAN-SHAPE", "nodes must be an array"))?;
+    let affected_nodes = nodes
+        .iter()
+        .filter(|node| node["gate_definition_id"] == "affected-adjudicated-crap-v1")
+        .collect::<Vec<_>>();
+    let global_nodes = nodes
+        .iter()
+        .filter(|node| node["gate_definition_id"] == "adjudicated-crap-v1")
+        .collect::<Vec<_>>();
+    match required_string(&plan["quality_scope"], "mode")? {
+        "NOT_APPLICABLE" if affected_nodes.is_empty() => Ok(()),
+        "GLOBAL" if affected_nodes.is_empty() && global_nodes.len() == 1 => Ok(()),
+        "AFFECTED" if affected_nodes.len() == 1 && global_nodes.is_empty() => {
+            validate_affected_quality_scope(&plan["quality_scope"], affected_nodes[0], nodes)
+        }
+        mode => Err(execution_error(
+            "GATE-EXEC-QUALITY-SCOPE",
+            format!("quality scope {mode} does not match the planned measurement nodes"),
+        )),
+    }
+}
+
+fn validate_affected_quality_scope(scope: &Value, affected: &Value, nodes: &[Value]) -> Result<()> {
+    if scope["completeness"] != "COMPLETE" {
+        return Err(execution_error(
+            "GATE-EXEC-QUALITY-INCOMPLETE",
+            "affected quality requires complete contribution evidence",
+        ));
+    }
+    let planned_packages = string_array(&scope["production_packages"], "production_packages")?
+        .into_iter()
+        .collect::<BTreeSet<_>>();
+    let argument_packages = argument_values(affected, "--package")?
+        .into_iter()
+        .collect::<BTreeSet<_>>();
+    if planned_packages != argument_packages {
+        return Err(execution_error(
+            "GATE-EXEC-QUALITY-PACKAGES",
+            "affected measurement arguments differ from terminal production packages",
+        ));
+    }
+    let covering_ids = string_array(&scope["covering_node_ids"], "covering_node_ids")?
+        .into_iter()
+        .collect::<BTreeSet<_>>();
+    let covering_nodes = nodes
+        .iter()
+        .filter(|node| {
+            node["node_id"]
+                .as_str()
+                .is_some_and(|id| covering_ids.contains(id))
+        })
+        .collect::<Vec<_>>();
+    if covering_nodes.len() != covering_ids.len()
+        || covering_nodes
+            .iter()
+            .any(|node| node["gate_definition_id"] != "affected-adjudicated-crap-v1")
+    {
+        return Err(execution_error(
+            "GATE-EXEC-QUALITY-COVERING-NODES",
+            "covering node identity is not the combined affected measurement",
+        ));
+    }
+    let observed_inventory = covering_nodes
+        .iter()
+        .flat_map(|node| {
+            node["expected_inventory"]["ids"]
+                .as_array()
+                .into_iter()
+                .flatten()
+        })
+        .filter_map(Value::as_str)
+        .map(str::to_owned)
+        .collect::<BTreeSet<_>>();
+    let planned_inventory =
+        string_array(&scope["covering_inventory_ids"], "covering_inventory_ids")?
+            .into_iter()
+            .collect::<BTreeSet<_>>();
+    if observed_inventory == planned_inventory && !planned_inventory.is_empty() {
+        Ok(())
+    } else {
+        Err(execution_error(
+            "GATE-EXEC-QUALITY-INVENTORY",
+            "covering inventory differs from terminal package test closure",
+        ))
+    }
+}
+
+fn argument_values(node: &Value, flag: &str) -> Result<Vec<String>> {
+    let arguments = string_array(&node["arguments"], "arguments")?;
+    let mut values = Vec::new();
+    let mut index = 0;
+    while index < arguments.len() {
+        if arguments[index] == flag {
+            let value = arguments.get(index + 1).ok_or_else(|| {
+                execution_error("GATE-EXEC-QUALITY-ARGUMENT", format!("{flag} has no value"))
+            })?;
+            values.push(value.clone());
+            index += 2;
+        } else {
+            index += 1;
+        }
+    }
+    Ok(values)
 }
 
 fn supported_executor(node: &Value) -> Result<()> {
@@ -252,6 +527,7 @@ fn execute_node(
     artifact_root: &Path,
     node: &Value,
     final_results: &BTreeMap<String, String>,
+    forced_block_reason: Option<&str>,
 ) -> Result<NodeRun> {
     let node_id = required_string(node, "node_id")?;
     let started_at = timestamp()?;
@@ -259,21 +535,35 @@ fn execute_node(
     let prerequisite_failed = string_array(&node["prerequisites"], "prerequisites")?
         .iter()
         .any(|id| final_results.get(id).is_none_or(|result| result != "PASS"));
-    let artifact_source = if prerequisite_failed {
-        None
-    } else {
-        prepare_real_artifact(repo, node)?
-    };
-    let (exit_code, result) = if prerequisite_failed {
+    if forced_block_reason.is_none() && !prerequisite_failed {
+        prepare_real_artifacts(artifact_root, node)?;
+    }
+    let outcome = if let Some(reason) = forced_block_reason {
         File::create(&log_path)
             .map_err(|error| execution_error("GATE-EXEC-LOG-CREATE", error.to_string()))?;
-        (None, "BLOCKED".to_owned())
+        ProcessOutcome {
+            exit_code: None,
+            termination_signal: None,
+            result: "BLOCKED".to_owned(),
+            unavailable_reason: Some(reason.to_owned()),
+        }
+    } else if prerequisite_failed {
+        File::create(&log_path)
+            .map_err(|error| execution_error("GATE-EXEC-LOG-CREATE", error.to_string()))?;
+        ProcessOutcome {
+            exit_code: None,
+            termination_signal: None,
+            result: "BLOCKED".to_owned(),
+            unavailable_reason: Some("PREREQUISITE_NONPASS".to_owned()),
+        }
     } else {
-        run_process(repo, node, &log_path)?
+        run_process(repo, artifact_root, node, &log_path)?
     };
-    if result == "PASS" {
-        validate_success_artifact(node, artifact_source.as_deref())?;
+    if outcome.result == "PASS" {
+        validate_success_artifacts(artifact_root, node)?;
     }
+    let (executed_inventory, unavailable_reason) =
+        observed_inventory(artifact_root, node, &outcome)?;
     let finished_at = timestamp()?;
     Ok(NodeRun {
         attempt: json!({
@@ -282,49 +572,108 @@ fn execute_node(
             "arguments": node["arguments"],
             "started_at": started_at,
             "finished_at": finished_at,
-            "exit_code": exit_code,
-            "result": result,
+            "exit_code": outcome.exit_code,
+            "termination_signal": outcome.termination_signal,
+            "result": outcome.result,
             "retry_reason": null
         }),
-        result,
+        result: outcome.result,
         log_path,
-        artifact_source,
+        executed_inventory,
+        unavailable_reason,
     })
 }
 
-fn validate_success_artifact(node: &Value, source: Option<&Path>) -> Result<()> {
+fn observed_inventory(
+    artifact_root: &Path,
+    node: &Value,
+    outcome: &ProcessOutcome,
+) -> Result<(BTreeSet<String>, Option<String>)> {
+    let planned = string_array(&node["expected_inventory"]["ids"], "inventory")?
+        .into_iter()
+        .collect::<BTreeSet<_>>();
+    let observed = if node_has_junit_evidence(node) {
+        observed_junit_inventory(artifact_root, node, outcome.result.as_str())?
+    } else if outcome.exit_code.is_some() || outcome.termination_signal.is_some() {
+        planned.clone()
+    } else {
+        BTreeSet::new()
+    };
+    if !observed.is_subset(&planned) {
+        return Err(execution_error(
+            "GATE-EXEC-JUNIT-INVENTORY",
+            "observed JUnit contains inventory outside the terminal plan",
+        ));
+    }
+    let reason = if observed == planned {
+        None
+    } else {
+        outcome
+            .unavailable_reason
+            .clone()
+            .or_else(|| Some("TEST_NOT_EXECUTED".to_owned()))
+    };
+    Ok((observed, reason))
+}
+
+fn node_has_junit_evidence(node: &Value) -> bool {
+    node["artifact_contract"] == "nextest-junit-v1" && node["executor"]["kind"] == "NEXTEST_V1"
+        || node["artifact_contract"] == "adjudicated-crap-v1"
+            && node["gate_definition_id"] == "affected-adjudicated-crap-v1"
+}
+
+fn observed_junit_inventory(
+    artifact_root: &Path,
+    node: &Value,
+    result: &str,
+) -> Result<BTreeSet<String>> {
+    let path = nextest_junit_path(artifact_root, node)?;
+    match fs::symlink_metadata(&path) {
+        Ok(_) => junit_inventory(&path),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound && result != "PASS" => {
+            Ok(BTreeSet::new())
+        }
+        Err(error) => Err(execution_error(
+            "GATE-EXEC-JUNIT-READ",
+            format!("{}: {error}", path.display()),
+        )),
+    }
+}
+
+fn validate_success_artifacts(artifact_root: &Path, node: &Value) -> Result<()> {
     match required_string(node, "artifact_contract")? {
-        "nextest-junit-v1" => {
-            let source = source.ok_or_else(|| {
-                execution_error("GATE-EXEC-REAL-ARTIFACT-MISSING", "nextest JUnit")
-            })?;
-            let actual = junit_inventory(source)?;
-            let expected = string_array(&node["expected_inventory"]["ids"], "inventory")?
-                .into_iter()
-                .collect::<BTreeSet<_>>();
-            if actual == expected {
-                Ok(())
-            } else {
-                Err(execution_error(
-                    "GATE-EXEC-JUNIT-INVENTORY",
-                    format!("expected {}, observed {}", expected.len(), actual.len()),
-                ))
-            }
-        }
-        "adjudicated-crap-v1" => {
-            let source = source
-                .ok_or_else(|| execution_error("GATE-EXEC-REAL-ARTIFACT-MISSING", "CRAP report"))?;
-            let report = read_json(source)?;
-            if report["status"] == "PASS" {
-                Ok(())
-            } else {
-                Err(execution_error(
-                    "GATE-EXEC-CRAP-REPORT",
-                    "adapter exited successfully without a PASS report",
-                ))
-            }
-        }
+        "nextest-junit-v1" => validate_junit_artifact(artifact_root, node),
+        "adjudicated-crap-v1" => validate_crap_artifacts(artifact_root, node),
         _ => Ok(()),
+    }
+}
+
+fn validate_crap_artifacts(artifact_root: &Path, node: &Value) -> Result<()> {
+    let report = read_json(&adjudicated_crap_report_path(artifact_root, node)?)?;
+    if report["status"] != "PASS" {
+        return Err(execution_error(
+            "GATE-EXEC-CRAP-REPORT",
+            "adapter exited successfully without a PASS report",
+        ));
+    }
+    if node["gate_definition_id"] == "affected-adjudicated-crap-v1" {
+        validate_junit_artifact(artifact_root, node)?;
+    }
+    Ok(())
+}
+
+fn validate_junit_artifact(artifact_root: &Path, node: &Value) -> Result<()> {
+    let actual = junit_inventory(&nextest_junit_path(artifact_root, node)?)?;
+    let expected = string_array(&node["expected_inventory"]["ids"], "inventory")?
+        .into_iter()
+        .collect::<BTreeSet<_>>();
+    if actual == expected {
+        Ok(())
+    } else {
+        Err(execution_error(
+            "GATE-EXEC-JUNIT-INVENTORY",
+            format!("expected {}, observed {}", expected.len(), actual.len()),
+        ))
     }
 }
 
@@ -342,18 +691,11 @@ fn junit_inventory(path: &Path) -> Result<BTreeSet<String>> {
             format!("rust-suites::{class}\0{name}").as_bytes(),
         ));
     }
-    if inventory.is_empty() {
-        Err(execution_error(
-            "GATE-EXEC-JUNIT-EMPTY",
-            path.display().to_string(),
-        ))
-    } else {
-        Ok(inventory)
-    }
+    Ok(inventory)
 }
 
 fn xml_attribute(line: &str, name: &str) -> Result<String> {
-    let marker = format!("{name}=\"");
+    let marker = format!(" {name}=\"");
     let value = line
         .split_once(&marker)
         .and_then(|(_, tail)| tail.split_once('"').map(|(value, _)| value))
@@ -366,52 +708,76 @@ fn xml_attribute(line: &str, name: &str) -> Result<String> {
         .replace("&amp;", "&"))
 }
 
-fn prepare_real_artifact(repo: &Path, node: &Value) -> Result<Option<PathBuf>> {
-    let source = match required_string(node, "artifact_contract")? {
-        "nextest-junit-v1" => Some(nextest_junit_path(repo, node)?),
-        "adjudicated-crap-v1" => Some(adjudicated_crap_report_path(repo, node)?),
-        _ => None,
-    };
-    if let Some(path) = &source {
-        match fs::symlink_metadata(path) {
-            Ok(metadata) if metadata.file_type().is_symlink() => {
-                return Err(execution_error(
-                    "GATE-EXEC-REAL-ARTIFACT-SYMLINK",
-                    path.display().to_string(),
-                ));
-            }
-            Ok(metadata) if metadata.is_file() => fs::remove_file(path).map_err(|error| {
-                execution_error("GATE-EXEC-REAL-ARTIFACT-RESET", error.to_string())
-            })?,
-            Ok(_) => {
-                return Err(execution_error(
-                    "GATE-EXEC-REAL-ARTIFACT-TYPE",
-                    path.display().to_string(),
-                ));
-            }
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
-            Err(error) => {
-                return Err(execution_error(
-                    "GATE-EXEC-REAL-ARTIFACT-METADATA",
-                    error.to_string(),
-                ));
-            }
-        }
+fn prepare_real_artifacts(artifact_root: &Path, node: &Value) -> Result<()> {
+    for path in real_artifact_sources(artifact_root, node)? {
+        reset_real_artifact(&path)?;
     }
-    Ok(source)
+    Ok(())
 }
 
-fn nextest_junit_path(repo: &Path, node: &Value) -> Result<PathBuf> {
+fn reset_real_artifact(path: &Path) -> Result<()> {
+    match fs::symlink_metadata(path) {
+        Ok(metadata) if metadata.file_type().is_symlink() => Err(execution_error(
+            "GATE-EXEC-REAL-ARTIFACT-SYMLINK",
+            path.display().to_string(),
+        )),
+        Ok(metadata) if metadata.is_file() => fs::remove_file(path)
+            .map_err(|error| execution_error("GATE-EXEC-REAL-ARTIFACT-RESET", error.to_string())),
+        Ok(_) => Err(execution_error(
+            "GATE-EXEC-REAL-ARTIFACT-TYPE",
+            path.display().to_string(),
+        )),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
+        Err(error) => Err(execution_error(
+            "GATE-EXEC-REAL-ARTIFACT-METADATA",
+            error.to_string(),
+        )),
+    }
+}
+
+fn real_artifact_sources(artifact_root: &Path, node: &Value) -> Result<Vec<PathBuf>> {
+    match required_string(node, "artifact_contract")? {
+        "nextest-junit-v1" => Ok(vec![nextest_junit_path(artifact_root, node)?]),
+        "adjudicated-crap-v1" if node["gate_definition_id"] == "affected-adjudicated-crap-v1" => {
+            Ok(vec![
+                adjudicated_crap_report_path(artifact_root, node)?,
+                nextest_junit_path(artifact_root, node)?,
+                affected_lcov_path(artifact_root, node)?,
+            ])
+        }
+        "adjudicated-crap-v1" => Ok(vec![adjudicated_crap_report_path(artifact_root, node)?]),
+        _ => Ok(Vec::new()),
+    }
+}
+
+fn nextest_junit_path(artifact_root: &Path, node: &Value) -> Result<PathBuf> {
     let arguments = string_array(&node["arguments"], "arguments")?;
     let profile = arguments
         .windows(2)
-        .find(|pair| pair[0] == "--profile")
+        .find(|pair| matches!(pair[0].as_str(), "--profile" | "--nextest-profile"))
         .map_or("default", |pair| pair[1].as_str());
     require_identifier(profile, "GATE-EXEC-NEXTEST-PROFILE")?;
-    Ok(repo.join("target/nextest").join(profile).join("junit.xml"))
+    let target = if node["gate_definition_id"] == "affected-adjudicated-crap-v1" {
+        let report = adjudicated_crap_report_path(artifact_root, node)?;
+        report
+            .parent()
+            .ok_or_else(|| execution_error("GATE-EXEC-REAL-ARTIFACT-PATH", "Nextest output"))?
+            .join("nextest")
+    } else {
+        work_root(artifact_root).join("nextest")
+    };
+    Ok(target.join(profile).join("junit.xml"))
 }
 
-fn adjudicated_crap_report_path(repo: &Path, node: &Value) -> Result<PathBuf> {
+fn affected_lcov_path(artifact_root: &Path, node: &Value) -> Result<PathBuf> {
+    let report = adjudicated_crap_report_path(artifact_root, node)?;
+    let directory = report
+        .parent()
+        .ok_or_else(|| execution_error("GATE-EXEC-REAL-ARTIFACT-PATH", "CRAP output"))?;
+    Ok(directory.join("workspace.lcov"))
+}
+
+fn adjudicated_crap_report_path(artifact_root: &Path, node: &Value) -> Result<PathBuf> {
     let arguments = string_array(&node["arguments"], "arguments")?;
     let output = arguments
         .windows(2)
@@ -419,11 +785,18 @@ fn adjudicated_crap_report_path(repo: &Path, node: &Value) -> Result<PathBuf> {
         .map_or("target/adjudicated-crap", |pair| pair[1].as_str());
     let relative = Path::new(output);
     require_relative_path(relative, false)?;
-    Ok(repo.join(relative).join("adjudicated-crap-report.json"))
+    Ok(work_root(artifact_root)
+        .join(relative)
+        .join("adjudicated-crap-report.json"))
 }
 
-fn run_process(repo: &Path, node: &Value, log_path: &Path) -> Result<(Option<i32>, String)> {
-    let arguments = string_array(&node["arguments"], "arguments")?;
+fn run_process(
+    repo: &Path,
+    artifact_root: &Path,
+    node: &Value,
+    log_path: &Path,
+) -> Result<ProcessOutcome> {
+    let arguments = runtime_arguments(repo, artifact_root, node)?;
     let program = arguments
         .first()
         .ok_or_else(|| execution_error("GATE-EXEC-ARGUMENTS", "missing executable"))?;
@@ -432,7 +805,19 @@ fn run_process(repo: &Path, node: &Value, log_path: &Path) -> Result<(Option<i32
     let stderr = log
         .try_clone()
         .map_err(|error| execution_error("GATE-EXEC-LOG-CLONE", error.to_string()))?;
-    let environment = allowed_environment(node)?;
+    let mut environment = allowed_environment(node)?;
+    environment.insert(
+        "CARGO_TARGET_DIR".to_owned(),
+        cargo_target_root(artifact_root).display().to_string(),
+    );
+    environment.insert(
+        "OPENWEPP_GATE_ARTIFACT_ROOT".to_owned(),
+        work_root(artifact_root).display().to_string(),
+    );
+    environment.insert(
+        "TMPDIR".to_owned(),
+        work_root(artifact_root).join("tmp").display().to_string(),
+    );
     let mut command = Command::new(program);
     command
         .args(&arguments[1..])
@@ -453,7 +838,12 @@ fn run_process(repo: &Path, node: &Value, log_path: &Path) -> Result<(Option<i32
             fs::write(log_path, format!("process spawn failed: {error}\n")).map_err(
                 |write_error| execution_error("GATE-EXEC-LOG-WRITE", write_error.to_string()),
             )?;
-            return Ok((None, "BLOCKED".to_owned()));
+            return Ok(ProcessOutcome {
+                exit_code: None,
+                termination_signal: None,
+                result: "BLOCKED".to_owned(),
+                unavailable_reason: Some("PROCESS_SPAWN_FAILED".to_owned()),
+            });
         }
     };
     let timeout = required_u64(node, "timeout_seconds")?;
@@ -461,6 +851,13 @@ fn run_process(repo: &Path, node: &Value, log_path: &Path) -> Result<(Option<i32
     Ok(match status {
         Some(status) => {
             let code = status.code();
+            #[cfg(unix)]
+            let signal = {
+                use std::os::unix::process::ExitStatusExt;
+                status.signal()
+            };
+            #[cfg(not(unix))]
+            let signal = None;
             let expected = node["acceptance"]["expected"]
                 .as_i64()
                 .ok_or_else(|| execution_error("GATE-EXEC-ACCEPTANCE", "expected exit code"))?;
@@ -469,10 +866,60 @@ fn run_process(repo: &Path, node: &Value, log_path: &Path) -> Result<(Option<i32
             } else {
                 "FAIL"
             };
-            (code, result.to_owned())
+            ProcessOutcome {
+                exit_code: code,
+                termination_signal: signal,
+                result: result.to_owned(),
+                unavailable_reason: None,
+            }
         }
-        None => (None, "BLOCKED".to_owned()),
+        None => ProcessOutcome {
+            exit_code: None,
+            termination_signal: None,
+            result: "BLOCKED".to_owned(),
+            unavailable_reason: Some("TIMEOUT".to_owned()),
+        },
     })
+}
+
+fn runtime_arguments(repo: &Path, artifact_root: &Path, node: &Value) -> Result<Vec<String>> {
+    let mut arguments = string_array(&node["arguments"], "arguments")?;
+    if required_string(&node["executor"], "kind")? == "NEXTEST_V1" {
+        let config = external_nextest_config(repo, artifact_root)?;
+        arguments.extend([
+            "--target-dir".to_owned(),
+            cargo_target_root(artifact_root).display().to_string(),
+            "--config-file".to_owned(),
+            config.display().to_string(),
+        ]);
+    }
+    Ok(arguments)
+}
+
+fn external_nextest_config(repo: &Path, artifact_root: &Path) -> Result<PathBuf> {
+    let source = fs::read_to_string(repo.join(".config/nextest.toml"))
+        .map_err(|error| execution_error("GATE-EXEC-NEXTEST-CONFIG", error.to_string()))?;
+    let expected = "dir = \"target/nextest\"";
+    if source.matches(expected).count() != 1 {
+        return Err(execution_error(
+            "GATE-EXEC-NEXTEST-CONFIG",
+            "canonical Nextest store declaration is missing or ambiguous",
+        ));
+    }
+    let store = work_root(artifact_root).join("nextest");
+    let store = store.to_str().ok_or_else(|| {
+        execution_error("GATE-EXEC-NEXTEST-CONFIG", "external store is non-UTF-8")
+    })?;
+    let encoded = serde_json::to_string(store)
+        .map_err(|error| execution_error("GATE-EXEC-NEXTEST-CONFIG", error.to_string()))?;
+    let destination = work_root(artifact_root).join("nextest.toml");
+    write_atomic(
+        &destination,
+        source
+            .replacen(expected, &format!("dir = {encoded}"), 1)
+            .as_bytes(),
+    )?;
+    Ok(destination)
 }
 
 fn wait_with_timeout(
@@ -527,9 +974,13 @@ fn build_receipt(
     artifact_root: &Path,
     attempts: &[Value],
     final_results: &BTreeMap<String, String>,
+    executed_inventory: &BTreeSet<String>,
+    unavailable_items: &[Value],
     started_at: &str,
     finished_at: &str,
     source_snapshot: &str,
+    observed_after: &str,
+    source_unchanged: bool,
     claims: &ExecutionClaims,
 ) -> Result<Value> {
     let nodes = plan["nodes"]
@@ -561,8 +1012,8 @@ fn build_receipt(
         .collect::<Result<Vec<_>>>()?;
     let artifacts = receipt_artifacts(artifact_root, nodes)?;
     let authority_outcomes = authority_outcomes(nodes, final_results)?;
-    let (passed, failed, blocked) = result_counts(final_results);
-    let result = aggregate_result(passed, failed, blocked);
+    let (passed, failed, blocked, invalid) = result_counts(final_results);
+    let result = aggregate_result(failed, blocked, invalid);
     let tools = tool_records(repo)?;
     let target = nodes
         .first()
@@ -589,20 +1040,20 @@ fn build_receipt(
         "zero_work": nodes.is_empty(),
         "attempts": attempts,
         "planned_inventory": planned_inventory,
-        "executed_inventory": planned_inventory,
+        "executed_inventory": executed_inventory,
         "tools": tools,
         "environment": environment,
         "started_at": started_at,
         "finished_at": finished_at,
-        "counts": {"passed": passed, "failed": failed, "skipped": 0, "blocked": blocked, "retried": 0},
+        "counts": {"passed": passed, "failed": failed, "skipped": unavailable_items.len(), "blocked": blocked, "retried": 0},
         "authority_outcomes": authority_outcomes,
         "artifacts": artifacts,
-        "unavailable_items": [],
+        "unavailable_items": unavailable_items,
         "source_mutation_check": {
             "required": true,
             "before_sha256": source_snapshot,
-            "after_sha256": source_snapshot,
-            "unchanged": true
+            "after_sha256": observed_after,
+            "unchanged": source_unchanged
         },
         "result": result,
         "claims": {
@@ -675,14 +1126,13 @@ fn aggregate_node_results(results: &[String]) -> &'static str {
 fn receipt_artifacts(artifact_root: &Path, nodes: &[Value]) -> Result<Vec<Value>> {
     let mut artifacts = Vec::new();
     for node in nodes {
-        let kind = artifact_kind(required_string(node, "artifact_contract")?);
         for path in string_array(&node["output_paths"], "output_paths")? {
             let bytes = fs::read(confined_output_path(artifact_root, &path)?).map_err(|error| {
                 execution_error("GATE-EXEC-ARTIFACT-READ", format!("{path}: {error}"))
             })?;
             artifacts.push(json!({
                 "artifact_id": format!("artifact-{}", artifacts.len() + 1),
-                "kind": kind,
+                "kind": artifact_kind(required_string(node, "artifact_contract")?, &path),
                 "path": path,
                 "sha256": sha256_bytes(&bytes)
             }));
@@ -691,21 +1141,20 @@ fn receipt_artifacts(artifact_root: &Path, nodes: &[Value]) -> Result<Vec<Value>
     Ok(artifacts)
 }
 
-fn artifact_kind(contract: &str) -> &'static str {
-    match contract {
-        "nextest-junit-v1" => "JUNIT",
-        "adjudicated-crap-v1" => "CRAP",
-        "schema-validation-v1" => "SCHEMA",
+fn artifact_kind(contract: &str, path: &str) -> &'static str {
+    match (
+        contract,
+        Path::new(path).extension().and_then(|value| value.to_str()),
+    ) {
+        ("adjudicated-crap-v1", Some("lcov")) => "LCOV",
+        ("adjudicated-crap-v1", Some("xml")) | ("nextest-junit-v1", _) => "JUNIT",
+        ("adjudicated-crap-v1", _) => "CRAP",
+        ("schema-validation-v1", _) => "SCHEMA",
         _ => "LOG",
     }
 }
 
-fn write_node_artifacts(
-    repo: &Path,
-    artifact_root: &Path,
-    node: &Value,
-    run: &NodeRun,
-) -> Result<()> {
+fn write_node_artifacts(artifact_root: &Path, node: &Value, run: &NodeRun) -> Result<()> {
     let log_sha256 = fs::read(&run.log_path)
         .map(|bytes| sha256_bytes(&bytes))
         .map_err(|error| execution_error("GATE-EXEC-LOG-READ", error.to_string()))?;
@@ -715,7 +1164,7 @@ fn write_node_artifacts(
             .parent()
             .ok_or_else(|| execution_error("GATE-EXEC-OUTPUT-PATH", path.clone()))?;
         create_confined_directories(artifact_root, parent)?;
-        let bytes = artifact_bytes(repo, artifact_root, node, run, &log_sha256)?;
+        let bytes = artifact_bytes(artifact_root, node, run, &log_sha256, &path)?;
         write_atomic(&destination, &bytes)?;
     }
     Ok(())
@@ -756,15 +1205,15 @@ fn write_atomic(destination: &Path, bytes: &[u8]) -> Result<()> {
 }
 
 fn artifact_bytes(
-    repo: &Path,
     artifact_root: &Path,
     node: &Value,
     run: &NodeRun,
     log_sha256: &str,
+    output_path: &str,
 ) -> Result<Vec<u8>> {
-    if let Some(source) = &run.artifact_source {
-        match fs::symlink_metadata(source) {
-            Ok(_) => return read_real_artifact(repo, artifact_root, source),
+    if let Some(source) = real_source_for_output(artifact_root, node, output_path)? {
+        match fs::symlink_metadata(&source) {
+            Ok(_) => return read_real_artifact(artifact_root, &source),
             Err(error) if error.kind() == std::io::ErrorKind::NotFound && run.result != "PASS" => {}
             Err(error) => {
                 return Err(execution_error(
@@ -774,13 +1223,16 @@ fn artifact_bytes(
             }
         }
     }
-    if required_string(node, "artifact_contract")? == "nextest-junit-v1" {
+    let kind = artifact_kind(required_string(node, "artifact_contract")?, output_path);
+    if kind == "JUNIT" {
         let failed = usize::from(run.result != "PASS");
         return Ok(format!(
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuite name=\"openwepp-gate\" tests=\"1\" failures=\"{failed}\"><testcase name=\"{}\"/></testsuite>\n",
-            required_string(node, "node_id")?
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuite name=\"openwepp-gate\" tests=\"0\" failures=\"{failed}\"></testsuite>\n"
         )
         .into_bytes());
+    }
+    if kind == "LCOV" {
+        return Ok(b"TN:\n".to_vec());
     }
     serde_json::to_vec(&json!({
         "schema_version": "openwepp-gate-process-artifact-v1",
@@ -792,7 +1244,27 @@ fn artifact_bytes(
     .map_err(|error| execution_error("GATE-EXEC-ARTIFACT-SERIALIZE", error.to_string()))
 }
 
-fn read_real_artifact(repo: &Path, artifact_root: &Path, source: &Path) -> Result<Vec<u8>> {
+fn real_source_for_output(
+    artifact_root: &Path,
+    node: &Value,
+    output_path: &str,
+) -> Result<Option<PathBuf>> {
+    match (
+        required_string(node, "artifact_contract")?,
+        Path::new(output_path)
+            .extension()
+            .and_then(|value| value.to_str()),
+    ) {
+        ("nextest-junit-v1", _) | ("adjudicated-crap-v1", Some("xml")) => {
+            nextest_junit_path(artifact_root, node).map(Some)
+        }
+        ("adjudicated-crap-v1", Some("lcov")) => affected_lcov_path(artifact_root, node).map(Some),
+        ("adjudicated-crap-v1", _) => adjudicated_crap_report_path(artifact_root, node).map(Some),
+        _ => Ok(None),
+    }
+}
+
+fn read_real_artifact(artifact_root: &Path, source: &Path) -> Result<Vec<u8>> {
     let metadata = fs::symlink_metadata(source).map_err(|error| {
         execution_error(
             "GATE-EXEC-REAL-ARTIFACT-MISSING",
@@ -807,9 +1279,9 @@ fn read_real_artifact(repo: &Path, artifact_root: &Path, source: &Path) -> Resul
     }
     let canonical = fs::canonicalize(source)
         .map_err(|error| execution_error("GATE-EXEC-REAL-ARTIFACT-PATH", error.to_string()))?;
-    let target = fs::canonicalize(repo.join("target"))
+    let work = fs::canonicalize(work_root(artifact_root))
         .map_err(|error| execution_error("GATE-EXEC-REAL-ARTIFACT-PATH", error.to_string()))?;
-    if !canonical.starts_with(target) || canonical.starts_with(artifact_root) {
+    if !canonical.starts_with(work) {
         return Err(execution_error(
             "GATE-EXEC-REAL-ARTIFACT-ESCAPE",
             source.display().to_string(),
@@ -891,6 +1363,14 @@ fn canonical_directory(path: &Path, code: &'static str) -> Result<PathBuf> {
     }
 }
 
+fn work_root(artifact_root: &Path) -> PathBuf {
+    artifact_root.join(".work")
+}
+
+fn cargo_target_root(artifact_root: &Path) -> PathBuf {
+    work_root(artifact_root).join("cargo-target")
+}
+
 fn current_roots(repo: &Path, plan: &Value) -> Result<Value> {
     let revision = plan["source"]["head_commit"].as_str().unwrap_or("HEAD");
     manifest_roots(repo, revision, true)
@@ -924,14 +1404,43 @@ fn git_bytes(repo: &Path, arguments: &[&str]) -> Result<Vec<u8>> {
     }
 }
 
-fn source_snapshot(plan: &Value) -> Result<String> {
+pub(crate) fn source_snapshot(plan: &Value) -> Result<String> {
     digest(&json!({
         "source": plan["source"],
         "roots": plan["environment_roots"]
     }))
 }
 
-fn result_counts(results: &BTreeMap<String, String>) -> (u64, u64, u64) {
+pub(crate) fn observed_source_snapshot(repo: &Path, plan: &Value) -> Result<String> {
+    let reference = plan["source"]["head_commit"]
+        .as_str()
+        .or_else(|| plan["source"]["base_commit"].as_str())
+        .ok_or_else(|| execution_error("GATE-EXEC-SOURCE", "missing source revision"))?;
+    let observed = observe_dirty(repo, reference)?;
+    let matches_plan = if plan["source"]["head_commit"].is_string() {
+        observed.changes.is_empty()
+    } else {
+        plan["source"]["dirty_tree_digest"].as_str() == observed.dirty_tree_digest.as_deref()
+            && plan["source"]["index_digest"].as_str() == observed.index_digest.as_deref()
+            && plan["source"]["worktree_digest"].as_str() == observed.worktree_digest.as_deref()
+            && plan["source"]["untracked_digest"].as_str() == observed.untracked_digest.as_deref()
+    };
+    if matches_plan {
+        source_snapshot(plan)
+    } else {
+        digest(&json!({
+            "planned_snapshot": source_snapshot(plan)?,
+            "observed": {
+                "dirty_tree_digest": observed.dirty_tree_digest,
+                "index_digest": observed.index_digest,
+                "worktree_digest": observed.worktree_digest,
+                "untracked_digest": observed.untracked_digest
+            }
+        }))
+    }
+}
+
+fn result_counts(results: &BTreeMap<String, String>) -> (u64, u64, u64, bool) {
     let passed = results
         .values()
         .filter(|result| result.as_str() == "PASS")
@@ -942,13 +1451,16 @@ fn result_counts(results: &BTreeMap<String, String>) -> (u64, u64, u64) {
         .count() as u64;
     let blocked = results
         .values()
-        .filter(|result| matches!(result.as_str(), "BLOCKED" | "INVALID"))
+        .filter(|result| result.as_str() == "BLOCKED")
         .count() as u64;
-    (passed, failed, blocked)
+    let invalid = results.values().any(|result| result == "INVALID");
+    (passed, failed, blocked, invalid)
 }
 
-fn aggregate_result(_passed: u64, failed: u64, blocked: u64) -> &'static str {
-    if failed > 0 {
+fn aggregate_result(failed: u64, blocked: u64, invalid: bool) -> &'static str {
+    if invalid {
+        "INVALID"
+    } else if failed > 0 {
         "FAIL"
     } else if blocked > 0 {
         "BLOCKED"
@@ -1013,11 +1525,326 @@ fn execution_error(code: &'static str, message: impl Into<String>) -> GatePolicy
 
 #[cfg(test)]
 mod tests {
-    use std::path::Path;
+    use std::collections::BTreeSet;
+    use std::fs;
+    use std::path::{Path, PathBuf};
+    use std::process::Command;
+    use std::sync::atomic::{AtomicU64, Ordering};
 
-    use serde_json::json;
+    use serde_json::{Value, json};
 
-    use super::{allowed_environment, require_relative_path, supported_executor};
+    use super::{
+        ExecutionClaims, ProcessOutcome, allowed_environment, create_confined_directories,
+        execute_node, execute_nodes, execute_plan, junit_inventory, nextest_junit_path,
+        observed_inventory, observed_source_snapshot, preflight, prepare_real_artifacts,
+        read_real_artifact, reject_shell_string, require_relative_path, run_process,
+        runtime_arguments, source_snapshot, supported_executor, validate_plan,
+        validate_success_artifacts, work_root,
+    };
+    use crate::canonical::sha256_bytes;
+    use crate::planner::{NextestInventory, PlanRequest, Planner, PlanningStage};
+    use crate::repository::observe_committed;
+    use crate::verifier::{DirectoryArtifacts, verify_receipt};
+
+    static TEMP_SEQUENCE: AtomicU64 = AtomicU64::new(0);
+
+    struct TempDirectory(PathBuf);
+
+    impl TempDirectory {
+        fn new(label: &str) -> Self {
+            let sequence = TEMP_SEQUENCE.fetch_add(1, Ordering::Relaxed);
+            let path = std::env::temp_dir().join(format!(
+                "openwepp-gate-executor-{label}-{}-{sequence}",
+                std::process::id()
+            ));
+            fs::create_dir(&path).expect("create test directory");
+            Self(path)
+        }
+
+        fn path(&self) -> &Path {
+            &self.0
+        }
+    }
+
+    impl Drop for TempDirectory {
+        fn drop(&mut self) {
+            fs::remove_dir_all(&self.0).expect("remove precise test directory");
+        }
+    }
+
+    fn process_node(arguments: &[&str], timeout_seconds: u64) -> serde_json::Value {
+        json!({
+            "node_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "executor": {"kind": "PROCESS_V1"},
+            "arguments": arguments,
+            "working_directory": ".",
+            "environment_allowlist": ["PATH"],
+            "prerequisites": [],
+            "expected_inventory": {"ids": ["bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"]},
+            "acceptance": {"expected": 0},
+            "timeout_seconds": timeout_seconds,
+            "artifact_contract": "process-exit-v1",
+            "output_paths": ["result.json"]
+        })
+    }
+
+    fn prepare_artifacts(label: &str) -> TempDirectory {
+        let artifacts = TempDirectory::new(label);
+        create_confined_directories(artifacts.path(), &work_root(artifacts.path()))
+            .expect("external work root");
+        create_confined_directories(
+            artifacts.path(),
+            &work_root(artifacts.path()).join("cargo-target"),
+        )
+        .expect("external cargo target");
+        create_confined_directories(artifacts.path(), &work_root(artifacts.path()).join("tmp"))
+            .expect("external temporary root");
+        artifacts
+    }
+
+    fn source_repo() -> PathBuf {
+        fs::canonicalize(Path::new(env!("CARGO_MANIFEST_DIR")).join("../.."))
+            .expect("canonical source repository")
+    }
+
+    fn gate_definition(id: &str, arguments: &[&str], prerequisites: &[&str]) -> Value {
+        let inventory_source = if id == "affected-adjudicated-crap-v1" {
+            "NEXTEST_PACKAGES"
+        } else {
+            "COMMAND"
+        };
+        json!({
+            "gate_definition_id": id,
+            "gate_family": "executor-contract",
+            "target_template": "WORKSPACE",
+            "risk_classes": ["EDITORIAL", "BOUNDED_COMPONENT"],
+            "executor": {"kind": "PROCESS_V1", "version": "process-1", "adapter_sha256": null},
+            "arguments_template": arguments,
+            "environment_allowlist": ["PATH"],
+            "authority_class": "NONE",
+            "outcome_policy": "BLOCKING",
+            "failure_classification": "HARD_FAIL",
+            "owner": "openwepp-maintainers",
+            "investigation_owner": "openwepp-maintainers",
+            "boundary": "INCREMENT",
+            "trust_requirement": "REPOSITORY_REVIEWED",
+            "reuse_class": "SAME_EXECUTION",
+            "inventory_mode": "EXACT",
+            "inventory_source": inventory_source,
+            "minimum_count": 1,
+            "acceptance": {"kind": "EXIT_CODE", "operator": "EQUALS", "expected": 0, "children": []},
+            "timeout_seconds": 5,
+            "maximum_attempts": 1,
+            "permitted_retry_reasons": [],
+            "artifact_contract": "process-exit-v1",
+            "output_paths": [format!("target/e2e/{id}.json")],
+            "blocks_transition": "INCREMENT",
+            "identity_breakers": ["rust-toolchain"],
+            "prerequisite_definition_ids": prerequisites
+        })
+    }
+
+    fn write_json(path: &Path, value: &Value) {
+        fs::write(
+            path,
+            serde_json::to_vec_pretty(value).expect("serialize JSON"),
+        )
+        .expect("write JSON");
+    }
+
+    fn copy_schemas(repo: &Path) {
+        let source = source_repo().join("gate-policy/v1/schemas");
+        let destination = repo.join("gate-policy/v1/schemas");
+        fs::create_dir_all(&destination).expect("create schema directory");
+        for entry in fs::read_dir(source).expect("read schemas") {
+            let entry = entry.expect("schema entry");
+            fs::copy(entry.path(), destination.join(entry.file_name())).expect("copy schema");
+        }
+    }
+
+    fn git(repo: &Path, arguments: &[&str]) -> String {
+        let output = Command::new("git")
+            .args(arguments)
+            .current_dir(repo)
+            .output()
+            .expect("run git");
+        assert!(
+            output.status.success(),
+            "git {arguments:?}: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        String::from_utf8(output.stdout)
+            .expect("UTF-8 git output")
+            .trim()
+            .to_owned()
+    }
+
+    fn commit(repo: &Path, message: &str) -> String {
+        git(repo, &["add", "."]);
+        git(
+            repo,
+            &[
+                "-c",
+                "user.name=Codex Test",
+                "-c",
+                "user.email=codex@example.invalid",
+                "commit",
+                "-q",
+                "-m",
+                message,
+            ],
+        );
+        git(repo, &["rev-parse", "HEAD"])
+    }
+
+    #[allow(
+        clippy::too_many_lines,
+        reason = "the isolated repository fixture declares the complete policy wire contract"
+    )]
+    fn execution_fixture(label: &str, definitions: &[Value]) -> (TempDirectory, Value) {
+        let repo = TempDirectory::new(label);
+        fs::create_dir_all(repo.path().join("src")).expect("create source directory");
+        fs::create_dir_all(repo.path().join("docs/standards")).expect("create standards directory");
+        fs::create_dir_all(repo.path().join("gate-policy/v1")).expect("create policy directory");
+        fs::create_dir_all(repo.path().join("tools")).expect("create fixture tools");
+        for (name, body) in [
+            ("pass.sh", "#!/bin/sh\nexit 0\n"),
+            ("fail.sh", "#!/bin/sh\nexit 1\n"),
+            (
+                "mutate.sh",
+                "#!/bin/sh\nmkdir -p .github\nprintf 'name: mutation\\n' > .github/probe.yml\n",
+            ),
+            (
+                "mark.sh",
+                "#!/bin/sh\nprintf 'ran\\n' > independent-marker\n",
+            ),
+        ] {
+            let path = repo.path().join("tools").join(name);
+            fs::write(&path, body).expect("write fixture tool");
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::PermissionsExt;
+                fs::set_permissions(&path, fs::Permissions::from_mode(0o755))
+                    .expect("make fixture tool executable");
+            }
+        }
+        fs::write(
+            repo.path().join("Cargo.toml"),
+            "[package]\nname = \"executor-fixture\"\nversion = \"0.1.0\"\nedition = \"2024\"\n",
+        )
+        .expect("write Cargo manifest");
+        fs::write(
+            repo.path().join("Cargo.lock"),
+            "# This file is automatically @generated by Cargo.\nversion = 4\n\n[[package]]\nname = \"executor-fixture\"\nversion = \"0.1.0\"\n",
+        )
+        .expect("write Cargo lock");
+        fs::write(repo.path().join(".gitignore"), "/target/\n").expect("write ignore rules");
+        fs::write(
+            repo.path().join("src/lib.rs"),
+            "pub fn fixture() {}\n\n#[cfg(test)]\nmod tests {\n    #[test]\n    fn fixture_works() { super::fixture(); }\n}\n",
+        )
+        .expect("write source");
+        let strategy = b"# Testing strategy\n\nExecutor contract fixture.\n";
+        fs::write(
+            repo.path()
+                .join("docs/standards/testing-and-gate-strategy.md"),
+            strategy,
+        )
+        .expect("write strategy");
+        copy_schemas(repo.path());
+        fs::copy(
+            source_repo().join("gate-policy/v1/execution-matrix.json"),
+            repo.path().join("gate-policy/v1/execution-matrix.json"),
+        )
+        .expect("copy execution matrix");
+        let gate_ids = definitions
+            .iter()
+            .map(|definition| definition["gate_definition_id"].clone())
+            .collect::<Vec<_>>();
+        write_json(
+            &repo.path().join("gate-policy/v1/impact-map.json"),
+            &json!({
+                "schema_version": "openwepp-gate-impact-map-v1",
+                "policy_id": "ADR-0039",
+                "policy_sha256": sha256_bytes(strategy),
+                "generation": 1,
+                "enforcement_status": "SHADOW",
+                "unknown_path_action": "ESCALATE_CRITICAL",
+                "entries": [{
+                    "entry_id": "executor-fixture",
+                    "matcher": {"kind": "exact_path", "value": "src/lib.rs"},
+                    "owner": "openwepp-maintainers",
+                    "semantic_surface": "executor-contract",
+                    "risk_floor": "EDITORIAL",
+                    "reason_codes": ["EXECUTOR_FIXTURE_CHANGED"],
+                    "affected_packages": ["executor-fixture"],
+                    "test_targets": [],
+                    "covering_test_targets": [],
+                    "contracts": [],
+                    "authority_suites": [],
+                    "assurance_watches": [],
+                    "gate_definition_ids": gate_ids,
+                    "documentation_paths": []
+                }]
+            }),
+        );
+        write_json(
+            &repo.path().join("gate-policy/v1/gate-definitions.json"),
+            &json!({
+                "schema_version": "openwepp-gate-definitions-v1",
+                "generation": 1,
+                "enforcement_status": "SHADOW",
+                "definitions": definitions
+            }),
+        );
+        git(repo.path(), &["init", "-q"]);
+        let base = commit(repo.path(), "baseline");
+        fs::write(
+            repo.path().join("src/lib.rs"),
+            "pub fn fixture() { let _changed = true; }\n\n#[cfg(test)]\nmod tests {\n    #[test]\n    fn fixture_works() { super::fixture(); }\n}\n",
+        )
+        .expect("change fixture");
+        let head = commit(repo.path(), "change fixture");
+        let source =
+            observe_committed(repo.path(), &base, &head).expect("observe committed source");
+        let plan = Planner::new(NextestInventory)
+            .build(
+                repo.path(),
+                &PlanRequest {
+                    stage: PlanningStage::Terminal,
+                    predecessor_intent_plan_id: Some("11".repeat(32)),
+                    boundary: "INCREMENT".to_owned(),
+                    campaign_id: Some("TESTGATE-CI-01".to_owned()),
+                    authorized_paths: vec!["src/lib.rs".to_owned()],
+                    source,
+                },
+            )
+            .expect("build terminal plan");
+        (repo, plan)
+    }
+
+    fn execute_and_verify(repo: &Path, plan: &Value, artifacts: &Path) -> Value {
+        assert_eq!(
+            observed_source_snapshot(repo, plan).expect("observed pre-execution snapshot"),
+            source_snapshot(plan).expect("planned pre-execution snapshot"),
+            "fixture status: {}",
+            git(repo, &["status", "--short"])
+        );
+        let receipt = execute_plan(repo, plan, artifacts, &ExecutionClaims::default())
+            .expect("execute terminal plan");
+        let verdict = verify_receipt(
+            repo,
+            plan,
+            &receipt,
+            &DirectoryArtifacts::new(artifacts.to_owned()),
+        )
+        .expect("verify execution receipt");
+        assert_eq!(
+            verdict.result(),
+            receipt["result"].as_str().expect("result")
+        );
+        receipt
+    }
 
     #[test]
     fn rejects_path_escape_and_absolute_paths() {
@@ -1035,11 +1862,433 @@ mod tests {
     }
 
     #[test]
+    fn rejects_inline_shell_programs_before_spawn() {
+        for arguments in [
+            json!(["sh", "-c", "exit 0"]),
+            json!(["bash", "-lc", "exit 0"]),
+            json!(["bash", "-o", "pipefail", "-c", "exit 0"]),
+            json!(["bash", "--command", "exit 0"]),
+            json!(["busybox", "sh", "-c", "exit 0"]),
+            json!(["busybox", "ash", "-c", "exit 0"]),
+            json!(["ksh", "-c", "exit 0"]),
+            json!(["bash", "-O", "extglob", "-c", "exit 0"]),
+            json!(["bash", "--init-file", "file", "-c", "exit 0"]),
+            json!(["env", "-i", "bash", "-c", "exit 0"]),
+            json!(["env", "FOO=crash", "/bin/bash", "-c", "exit 0"]),
+            json!(["powershell", "-Command", "exit 0"]),
+        ] {
+            let error = reject_shell_string(&json!({"arguments": arguments}))
+                .expect_err("inline shell must fail closed");
+            assert_eq!(error.code, "GATE-EXEC-SHELL-STRING");
+        }
+        reject_shell_string(&json!({"arguments": ["bash", "adapter.sh", "-c"]}))
+            .expect("script path with its own -c option is not an inline shell string");
+    }
+
+    #[test]
+    fn identity_inventory_and_output_collisions_fail_before_spawn() {
+        let (repo, plan) = execution_fixture(
+            "preflight-repo",
+            &[
+                gate_definition("adjudicated-crap-v1", &["./tools/pass.sh"], &[]),
+                gate_definition("fixture-command-v1", &["./tools/pass.sh"], &[]),
+            ],
+        );
+        let artifacts = prepare_artifacts("preflight-artifacts");
+
+        let mut malformed = plan.clone();
+        malformed["plan_id"] = json!("0".repeat(64));
+        let error = validate_plan(repo.path(), artifacts.path(), &malformed)
+            .expect_err("malformed identity must fail");
+        assert_eq!(error.code, "GATE-PLAN-IDENTITY");
+
+        let mut drifted = plan.clone();
+        drifted["nodes"][0]["expected_inventory"]["ids"] = json!(["0".repeat(64)]);
+        let error = preflight(repo.path(), artifacts.path(), &drifted)
+            .expect_err("inventory drift must fail");
+        assert_eq!(error.code, "GATE-EXEC-INVENTORY-DRIFT");
+
+        let mut colliding = plan;
+        colliding["nodes"][1]["output_paths"] = colliding["nodes"][0]["output_paths"].clone();
+        let error = preflight(repo.path(), artifacts.path(), &colliding)
+            .expect_err("output collision must fail");
+        assert_eq!(error.code, "GATE-EXEC-OUTPUT-COLLISION");
+    }
+
+    #[test]
+    fn zero_work_dispatches_no_process_attempts() {
+        let repo = TempDirectory::new("zero-work-repo");
+        let artifacts = prepare_artifacts("zero-work-artifacts");
+        let record = execute_nodes(
+            repo.path(),
+            artifacts.path(),
+            &json!({"nodes": []}),
+            &json!({}),
+            "unchanged",
+        )
+        .expect("zero-work execution");
+        assert!(record.attempts.is_empty());
+        assert!(record.final_results.is_empty());
+        assert!(record.executed_inventory.is_empty());
+    }
+
+    #[test]
     fn environment_is_exactly_allowlisted() {
         let environment = allowed_environment(&json!({"environment_allowlist": ["PATH"]}))
             .expect("allowlisted environment");
         assert_eq!(environment.len(), 1);
         assert_eq!(environment.get("PATH"), std::env::var("PATH").ok().as_ref());
         assert!(!environment.contains_key("HOME"));
+    }
+
+    #[test]
+    fn process_fail_spawn_block_and_timeout_are_observed() {
+        let repo = fs::canonicalize(Path::new(env!("CARGO_MANIFEST_DIR")).join("../.."))
+            .expect("canonical repository");
+
+        let failed_artifacts = prepare_artifacts("fail");
+        let failed_log = failed_artifacts.path().join("failed.log");
+        let failed = run_process(
+            &repo,
+            failed_artifacts.path(),
+            &process_node(&["false"], 5),
+            &failed_log,
+        )
+        .expect("failing process outcome");
+        assert_eq!(failed.result, "FAIL");
+        assert_eq!(failed.exit_code, Some(1));
+        assert_eq!(failed.termination_signal, None);
+
+        let spawn_artifacts = prepare_artifacts("spawn");
+        let spawn_log = spawn_artifacts.path().join("spawn.log");
+        let blocked = run_process(
+            &repo,
+            spawn_artifacts.path(),
+            &process_node(&["openwepp-command-that-does-not-exist"], 5),
+            &spawn_log,
+        )
+        .expect("spawn failure outcome");
+        assert_eq!(blocked.result, "BLOCKED");
+        assert_eq!(
+            blocked.unavailable_reason.as_deref(),
+            Some("PROCESS_SPAWN_FAILED")
+        );
+
+        let timeout_artifacts = prepare_artifacts("timeout");
+        let timeout_log = timeout_artifacts.path().join("timeout.log");
+        let timed_out = run_process(
+            &repo,
+            timeout_artifacts.path(),
+            &process_node(&["sleep", "2"], 1),
+            &timeout_log,
+        )
+        .expect("timeout outcome");
+        assert_eq!(timed_out.result, "BLOCKED");
+        assert_eq!(timed_out.unavailable_reason.as_deref(), Some("TIMEOUT"));
+
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+
+            let signal_artifacts = prepare_artifacts("signal");
+            let script = signal_artifacts.path().join("terminate.sh");
+            fs::write(&script, "#!/bin/sh\nkill -TERM $$\n").expect("signal script");
+            fs::set_permissions(&script, fs::Permissions::from_mode(0o755))
+                .expect("signal script executable");
+            let script_text = script.to_str().expect("UTF-8 signal script");
+            let signalled = run_process(
+                &repo,
+                signal_artifacts.path(),
+                &process_node(&[script_text], 5),
+                &signal_artifacts.path().join("signal.log"),
+            )
+            .expect("signal outcome");
+            assert_eq!(signalled.result, "FAIL");
+            assert_eq!(signalled.exit_code, None);
+            assert_eq!(signalled.termination_signal, Some(15));
+        }
+    }
+
+    #[test]
+    fn failed_junit_node_reports_only_observed_inventory() {
+        let artifacts = prepare_artifacts("partial-junit");
+        let mut node = process_node(&["false"], 5);
+        node["artifact_contract"] = json!("nextest-junit-v1");
+        node["executor"] = json!({"kind": "NEXTEST_V1"});
+        node["arguments"] = json!(["cargo", "nextest", "run", "--profile", "affected"]);
+        let observed_id = sha256_bytes(b"rust-suites::fixture\0works");
+        let missing_id = sha256_bytes(b"rust-suites::fixture\0missing");
+        node["expected_inventory"]["ids"] = json!([observed_id, missing_id]);
+        let junit = nextest_junit_path(artifacts.path(), &node).expect("JUnit path");
+        fs::create_dir_all(junit.parent().expect("JUnit parent")).expect("JUnit directory");
+        fs::write(
+            &junit,
+            "<testsuite>\n<testcase classname=\"fixture\" name=\"works\"/>\n</testsuite>\n",
+        )
+        .expect("partial JUnit");
+        let outcome = ProcessOutcome {
+            exit_code: Some(1),
+            termination_signal: None,
+            result: "FAIL".to_owned(),
+            unavailable_reason: None,
+        };
+        let (executed, reason) =
+            observed_inventory(artifacts.path(), &node, &outcome).expect("observed inventory");
+        assert_eq!(executed, BTreeSet::from([observed_id]));
+        assert_eq!(reason.as_deref(), Some("TEST_NOT_EXECUTED"));
+    }
+
+    #[test]
+    fn blocked_prerequisite_emits_an_observed_attempt() {
+        let repo = fs::canonicalize(Path::new(env!("CARGO_MANIFEST_DIR")).join("../.."))
+            .expect("canonical repository");
+        let artifacts = prepare_artifacts("prerequisite");
+        let prerequisite = "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc";
+        let mut node = process_node(&["true"], 5);
+        node["prerequisites"] = json!([prerequisite]);
+        let results =
+            std::collections::BTreeMap::from([(prerequisite.to_owned(), "FAIL".to_owned())]);
+        let run = execute_node(&repo, artifacts.path(), &node, &results, None)
+            .expect("blocked dependent attempt");
+        assert_eq!(run.result, "BLOCKED");
+        assert!(run.attempt["exit_code"].is_null());
+        assert_eq!(
+            run.unavailable_reason.as_deref(),
+            Some("PREREQUISITE_NONPASS")
+        );
+    }
+
+    #[test]
+    fn executor_injects_only_external_work_paths() {
+        let repo = TempDirectory::new("external-repo");
+        let artifacts = prepare_artifacts("external-artifacts");
+        let log = artifacts.path().join("environment.log");
+        let outcome = run_process(
+            repo.path(),
+            artifacts.path(),
+            &process_node(&["env"], 5),
+            &log,
+        )
+        .expect("environment process");
+        assert_eq!(outcome.result, "PASS");
+        let environment = fs::read_to_string(log).expect("environment log");
+        assert!(environment.contains(&format!(
+            "CARGO_TARGET_DIR={}",
+            artifacts.path().join(".work/cargo-target").display()
+        )));
+        assert!(environment.contains(&format!(
+            "OPENWEPP_GATE_ARTIFACT_ROOT={}",
+            artifacts.path().join(".work").display()
+        )));
+        assert!(!repo.path().join("target").exists());
+    }
+
+    #[test]
+    fn nextest_runtime_arguments_confine_build_and_report_stores() {
+        let repo = source_repo();
+        let artifacts = prepare_artifacts("nextest-config");
+        let node = json!({
+            "executor": {"kind": "NEXTEST_V1"},
+            "arguments": ["cargo", "nextest", "run", "--workspace"]
+        });
+        let arguments =
+            runtime_arguments(&repo, artifacts.path(), &node).expect("external Nextest arguments");
+        assert!(
+            arguments.contains(
+                &artifacts
+                    .path()
+                    .join(".work/cargo-target")
+                    .display()
+                    .to_string()
+            )
+        );
+        let config = artifacts.path().join(".work/nextest.toml");
+        assert!(arguments.contains(&config.display().to_string()));
+        let contents = fs::read_to_string(config).expect("external Nextest config");
+        assert!(contents.contains(&format!(
+            "dir = \"{}\"",
+            artifacts.path().join(".work/nextest").display()
+        )));
+    }
+
+    #[test]
+    fn combined_quality_artifacts_are_external_resettable_and_inventory_checked() {
+        let artifacts = prepare_artifacts("combined-artifacts");
+        let mut node = json!({
+            "gate_definition_id": "affected-adjudicated-crap-v1",
+            "artifact_contract": "adjudicated-crap-v1",
+            "arguments": [
+                "bash", "adapter.sh", "--nextest-profile", "affected",
+                "--output-dir", "target/affected-crap"
+            ],
+            "expected_inventory": {"ids": ["placeholder"]},
+            "output_paths": ["report.json"]
+        });
+        let output = artifacts.path().join(".work/target/affected-crap");
+        let junit = output.join("nextest/affected/junit.xml");
+        fs::create_dir_all(junit.parent().expect("JUnit parent")).expect("create JUnit parent");
+        fs::write(
+            &junit,
+            "<testsuite>\n<testcase classname=\"fixture\" name=\"works\"/>\n</testsuite>\n",
+        )
+        .expect("write JUnit");
+        fs::write(
+            output.join("adjudicated-crap-report.json"),
+            "{\"status\":\"PASS\"}\n",
+        )
+        .expect("write CRAP report");
+        fs::write(output.join("workspace.lcov"), "TN:\n").expect("write LCOV");
+        let inventory = junit_inventory(&junit).expect("JUnit inventory");
+        assert_eq!(inventory.len(), 1);
+        node["expected_inventory"]["ids"] = json!(inventory);
+        validate_success_artifacts(artifacts.path(), &node).expect("combined artifacts");
+        prepare_real_artifacts(artifacts.path(), &node).expect("reset real artifacts");
+        assert!(!junit.exists());
+        prepare_real_artifacts(artifacts.path(), &node).expect("absent artifacts remain reset");
+        let retained = artifacts.path().join(".work/retained.log");
+        fs::write(&retained, "retained\n").expect("write retained artifact");
+        assert_eq!(
+            read_real_artifact(artifacts.path(), &retained).expect("read confined artifact"),
+            b"retained\n"
+        );
+    }
+
+    #[test]
+    fn terminal_plan_executes_and_independent_verifier_accepts_pass_receipt() {
+        let (repo, plan) = execution_fixture(
+            "e2e-pass-repo",
+            &[gate_definition(
+                "affected-adjudicated-crap-v1",
+                &["./tools/pass.sh"],
+                &[],
+            )],
+        );
+        let artifacts = TempDirectory::new("e2e-pass-artifacts");
+        let receipt = execute_and_verify(repo.path(), &plan, artifacts.path());
+        assert_eq!(receipt["result"], "PASS");
+        assert_eq!(receipt["counts"]["passed"], 1);
+        assert!(!repo.path().join("target").exists());
+        assert!(artifacts.path().join(".work/cargo-target").is_dir());
+    }
+
+    #[test]
+    fn terminal_plan_preserves_fail_and_blocked_attempts_in_verified_receipt() {
+        let (repo, plan) = execution_fixture(
+            "e2e-nonpass-repo",
+            &[
+                gate_definition("affected-adjudicated-crap-v1", &["./tools/fail.sh"], &[]),
+                gate_definition(
+                    "fixture-dependent-v1",
+                    &["true"],
+                    &["affected-adjudicated-crap-v1"],
+                ),
+            ],
+        );
+        let artifacts = TempDirectory::new("e2e-nonpass-artifacts");
+        let receipt = execute_and_verify(repo.path(), &plan, artifacts.path());
+        assert_eq!(receipt["result"], "FAIL");
+        assert_eq!(receipt["counts"]["failed"], 1);
+        assert_eq!(receipt["counts"]["blocked"], 1);
+        assert_eq!(receipt["counts"]["skipped"], 1);
+        let results = receipt["attempts"]
+            .as_array()
+            .expect("attempts")
+            .iter()
+            .map(|attempt| attempt["result"].as_str().expect("attempt result"))
+            .collect::<Vec<_>>();
+        assert_eq!(results, ["FAIL", "BLOCKED"]);
+        assert_eq!(
+            receipt["unavailable_items"][0]["reason_code"],
+            "PREREQUISITE_NONPASS"
+        );
+    }
+
+    #[test]
+    fn terminal_plan_detects_out_of_manifest_source_mutation_and_verifies_invalid_receipt() {
+        let (repo, plan) = execution_fixture(
+            "e2e-mutation-repo",
+            &[
+                gate_definition("affected-adjudicated-crap-v1", &["./tools/mutate.sh"], &[]),
+                gate_definition("fixture-independent-v1", &["./tools/mark.sh"], &[]),
+            ],
+        );
+        let artifacts = TempDirectory::new("e2e-mutation-artifacts");
+        let receipt = execute_and_verify(repo.path(), &plan, artifacts.path());
+        assert_eq!(receipt["result"], "INVALID");
+        assert_eq!(receipt["attempts"][0]["result"], "INVALID");
+        assert_eq!(receipt["attempts"][1]["result"], "BLOCKED");
+        assert_eq!(receipt["source_mutation_check"]["unchanged"], false);
+        assert_ne!(
+            receipt["source_mutation_check"]["before_sha256"],
+            receipt["source_mutation_check"]["after_sha256"]
+        );
+        assert!(repo.path().join(".github/probe.yml").is_file());
+        assert!(!repo.path().join("independent-marker").exists());
+    }
+
+    #[test]
+    fn mutation_snapshot_covers_paths_outside_manifest_filters() {
+        let repo = TempDirectory::new("mutation-repo");
+        Command::new("git")
+            .args(["init", "-q"])
+            .current_dir(repo.path())
+            .status()
+            .expect("git init");
+        fs::write(repo.path().join("README.md"), "baseline\n").expect("baseline file");
+        Command::new("git")
+            .args(["add", "README.md"])
+            .current_dir(repo.path())
+            .status()
+            .expect("git add");
+        Command::new("git")
+            .args([
+                "-c",
+                "user.name=Codex Test",
+                "-c",
+                "user.email=codex@example.invalid",
+                "commit",
+                "-q",
+                "-m",
+                "baseline",
+            ])
+            .current_dir(repo.path())
+            .status()
+            .expect("git commit");
+        let head = Command::new("git")
+            .args(["rev-parse", "HEAD"])
+            .current_dir(repo.path())
+            .output()
+            .expect("git head");
+        let head = String::from_utf8(head.stdout)
+            .expect("UTF-8 head")
+            .trim()
+            .to_owned();
+        let plan = json!({
+            "source": {
+                "base_commit": head,
+                "head_commit": head,
+                "dirty_tree_digest": null,
+                "index_digest": null,
+                "worktree_digest": null,
+                "untracked_digest": null
+            },
+            "environment_roots": {
+                "execution_root": "11".repeat(32),
+                "authority_root": "22".repeat(32),
+                "documentation_root": "33".repeat(32),
+                "assurance_root": null
+            }
+        });
+        assert_eq!(
+            observed_source_snapshot(repo.path(), &plan).expect("clean snapshot"),
+            source_snapshot(&plan).expect("planned snapshot")
+        );
+        fs::create_dir(repo.path().join(".github")).expect("workflow directory");
+        fs::write(repo.path().join(".github/probe.yml"), "name: mutation\n")
+            .expect("untracked workflow mutation");
+        assert_ne!(
+            observed_source_snapshot(repo.path(), &plan).expect("mutated snapshot"),
+            source_snapshot(&plan).expect("planned snapshot")
+        );
     }
 }

@@ -8,7 +8,8 @@ Usage:
     [--base-ref <git-ref>] \
     [--head-ref <git-ref>] \
     [--scope <global|affected>] \
-    [--package <cargo-package>] \
+    [--package <cargo-package>]... \
+    [--nextest-profile <profile>] \
     [--output-dir <path>] \
     [--crap-json <existing-report.json>] \
     [--retained-provenance <repository-evidence.md>] \
@@ -21,8 +22,10 @@ registries are allowed only for retained assessment and can never close current
 source. Fresh closure always uses the canonical registry.
 --base-ref enables touched-production-file reporting; the workspace actionable
 set is always enforced whether or not a base ref is supplied.
-Affected mode is fresh-only, requires one exact package and a base ref, and
-enforces the actionable set for that package. Global mode remains the default
+Affected mode is fresh-only, requires one or more exact packages and a base
+ref, and enforces the actionable set for those packages. Repeating `--package`
+adds the terminal plan's complete affected/reverse-dependent package closure.
+Global mode remains the default
 and is unchanged for critical, campaign, and release closure.
 USAGE
 }
@@ -44,7 +47,8 @@ RETAINED_PROVENANCE=""
 BASE_REF=""
 HEAD_REF=""
 SCOPE="global"
-PACKAGE=""
+PACKAGES=()
+NEXTEST_PROFILE=""
 ADJUDICATIONS_OVERRIDDEN=0
 HELP_REQUESTED=0
 PARSE_ERRORS=()
@@ -84,7 +88,16 @@ while [[ $# -gt 0 ]]; do
         shift
         continue
       fi
-      PACKAGE="${2:-}"
+      PACKAGES+=("${2:-}")
+      shift 2
+      ;;
+    --nextest-profile)
+      if ! require_value "$1" "${2:-}"; then
+        PARSE_ERRORS+=("$1 requires a non-empty value")
+        shift
+        continue
+      fi
+      NEXTEST_PROFILE="${2:-}"
       shift 2
       ;;
     --output-dir)
@@ -146,6 +159,13 @@ if [[ "${HELP_REQUESTED}" -eq 1 && "${#PARSE_ERRORS[@]}" -eq 0 ]]; then
   exit 0
 fi
 
+if [[ -n "${OPENWEPP_GATE_ARTIFACT_ROOT:-}" ]]; then
+  if [[ "${OPENWEPP_GATE_ARTIFACT_ROOT}" != /* || "${OUTPUT_DIR}" == /* || "${OUTPUT_DIR}" == *".."* ]]; then
+    echo "ERROR: executor artifact relocation requires an absolute root and safe relative output path" >&2
+    exit 2
+  fi
+  OUTPUT_DIR="${OPENWEPP_GATE_ARTIFACT_ROOT}/${OUTPUT_DIR}"
+fi
 mkdir -p -- "${OUTPUT_DIR}"
 
 GENERATED_FILES=(
@@ -158,6 +178,7 @@ GENERATED_FILES=(
   cargo-llvm-cov-version.txt
   llvm-cov-clean.log
   llvm-cov.log
+  nextest.toml
   run-status.json
   rustc-version.txt
   sha256sums.txt
@@ -225,17 +246,43 @@ if [[ "${SCOPE}" != "global" && "${SCOPE}" != "affected" ]]; then
   exit 2
 fi
 if [[ "${SCOPE}" == "affected" ]]; then
-  if [[ "${ACQUISITION_MODE}" != "fresh" || -z "${BASE_REF}" || -z "${PACKAGE}" ]]; then
-    echo "ERROR: affected scope requires fresh acquisition, --base-ref, and --package" >&2
+  if [[ "${ACQUISITION_MODE}" != "fresh" || -z "${BASE_REF}" || "${#PACKAGES[@]}" -eq 0 ]]; then
+    echo "ERROR: affected scope requires fresh acquisition, --base-ref, and at least one --package" >&2
     exit 2
   fi
-  if [[ ! "${PACKAGE}" =~ ^[A-Za-z0-9][A-Za-z0-9_-]*$ ]]; then
-    echo "ERROR: --package is not a safe Cargo package name" >&2
+  for package in "${PACKAGES[@]}"; do
+    if [[ ! "${package}" =~ ^[A-Za-z0-9][A-Za-z0-9_-]*$ ]]; then
+      echo "ERROR: --package is not a safe Cargo package name" >&2
+      exit 2
+    fi
+  done
+  if [[ ! "${NEXTEST_PROFILE}" =~ ^[A-Za-z0-9][A-Za-z0-9_-]*$ ]]; then
+    echo "ERROR: affected scope requires a safe --nextest-profile" >&2
     exit 2
   fi
-elif [[ -n "${PACKAGE}" ]]; then
-  echo "ERROR: --package requires --scope affected" >&2
+elif [[ "${#PACKAGES[@]}" -ne 0 || -n "${NEXTEST_PROFILE}" ]]; then
+  echo "ERROR: --package and --nextest-profile require --scope affected" >&2
   exit 2
+fi
+if [[ "${SCOPE}" == "affected" && -z "${CARGO_TARGET_DIR:-}" ]]; then
+  CARGO_TARGET_DIR="${OUTPUT_DIR}/cargo-target"
+  export CARGO_TARGET_DIR
+fi
+if [[ "${SCOPE}" == "affected" ]]; then
+  NEXTEST_CONFIG="${OUTPUT_DIR}/nextest.toml"
+  NEXTEST_STORE="${OUTPUT_DIR}/nextest"
+  "${PYTHON_BIN}" - "${ROOT_DIR}/.config/nextest.toml" "${NEXTEST_CONFIG}" "${NEXTEST_STORE}" <<'PY'
+import json
+import pathlib
+import sys
+
+source = pathlib.Path(sys.argv[1]).read_text(encoding="utf-8")
+expected = 'dir = "target/nextest"'
+if source.count(expected) != 1:
+    raise SystemExit("canonical nextest store declaration is missing or ambiguous")
+replacement = f"dir = {json.dumps(sys.argv[3])}"
+pathlib.Path(sys.argv[2]).write_text(source.replace(expected, replacement), encoding="utf-8")
+PY
 fi
 if [[ "${ACQUISITION_MODE}" == "retained" ]]; then
   if [[ -z "${RETAINED_PROVENANCE}" ]]; then
@@ -285,11 +332,27 @@ if [[ "${ACQUISITION_MODE}" == "fresh" ]]; then
   COVERAGE_SCOPE_ARGS=(--workspace)
   CRAP_SCOPE_ARGS=(--workspace)
   if [[ "${SCOPE}" == "affected" ]]; then
-    COVERAGE_SCOPE_ARGS=(--package "${PACKAGE}")
+    COVERAGE_SCOPE_ARGS=()
+    for package in "${PACKAGES[@]}"; do
+      COVERAGE_SCOPE_ARGS+=(--package "${package}")
+    done
   fi
-  cargo llvm-cov "${COVERAGE_SCOPE_ARGS[@]}" --ignore-run-fail --lcov \
-    --output-path "${OUTPUT_DIR}/workspace.lcov" \
-    > "${OUTPUT_DIR}/llvm-cov.log" 2>&1
+  if [[ "${SCOPE}" == "affected" ]]; then
+    source <(cargo llvm-cov show-env --sh)
+    cargo nextest run "${COVERAGE_SCOPE_ARGS[@]}" \
+      --profile "${NEXTEST_PROFILE}" \
+      --target-dir "${CARGO_LLVM_COV_TARGET_DIR}" \
+      --config-file "${NEXTEST_CONFIG}" \
+      > "${OUTPUT_DIR}/llvm-cov.log" 2>&1
+    cargo llvm-cov report "${COVERAGE_SCOPE_ARGS[@]}" \
+      --lcov \
+      --output-path "${OUTPUT_DIR}/workspace.lcov" \
+      >> "${OUTPUT_DIR}/llvm-cov.log" 2>&1
+  else
+    cargo llvm-cov "${COVERAGE_SCOPE_ARGS[@]}" --ignore-run-fail --lcov \
+      --output-path "${OUTPUT_DIR}/workspace.lcov" \
+      > "${OUTPUT_DIR}/llvm-cov.log" 2>&1
+  fi
   CRAP_JSON="${OUTPUT_DIR}/workspace-crap.json"
   cargo crap "${CRAP_SCOPE_ARGS[@]}" \
     --lcov "${OUTPUT_DIR}/workspace.lcov" \
@@ -344,7 +407,9 @@ if [[ -n "${HEAD_REF}" ]]; then
   CHECK_ARGS+=(--head-ref "${HEAD_REF}")
 fi
 if [[ "${SCOPE}" == "affected" ]]; then
-  CHECK_ARGS+=(--expected-package "${PACKAGE}")
+  for package in "${PACKAGES[@]}"; do
+    CHECK_ARGS+=(--expected-package "${package}")
+  done
 fi
 
 set +e

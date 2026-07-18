@@ -224,8 +224,9 @@ parent must not repeat successful heavy commands.
 Execution uses a caller-selected artifact root outside source authority and
 atomic finalization. Interrupted nodes are failures; completed attempts remain
 inspectable. Reruns create a new receipt and never overwrite accepted evidence.
-Workflow rollback disables only the new nonblocking shadow workflow; the
-conservative runner needs no restoration because it is never removed.
+Pre-cutover rollback may disable the entire new nonblocking shadow workflow;
+the conservative runner needs no restoration because it is never removed.
+Post-cutover failing-sentinel behavior remains a future provider-side contract.
 
 ## Surprises & Discoveries
 
