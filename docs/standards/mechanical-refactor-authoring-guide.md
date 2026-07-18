@@ -132,16 +132,12 @@ For monolith split planning, capture:
 
 ### 4.3 Verification tools
 
-Use the command ladder in order:
-
-1. `cargo fmt --check`
-2. `cargo clippy --workspace --all-targets -- -D warnings`
-3. `cargo nextest run --workspace --profile full`
-4. `cargo deny check`
-5. `bash tools/release/run_adjudicated_crap_gate.sh --base-ref <frozen-base>`
-
-If a package touches only a narrow area, run focused tests first for fast
-feedback, then run full workspace gates before disposition.
+Run focused checks after each move, then execute the exact-diff terminal plan
+under `testing-and-gate-strategy.md`. The terminal plan selects formatting,
+affected Clippy/tests/consumers, coverage/CRAP, and any manifest or specialized
+gates. A critical refactor selects immediate full workspace regression and
+global CRAP. Until planner/executor cutover, use the full command set in
+section 6.2 as the conservative fallback.
 
 ## 5) Mechanical refactor patterns
 
@@ -184,9 +180,11 @@ Use a narrow loop while moving code:
 1. `cargo test -p <touched-crate> <focused-test-filter>`
 2. `cargo check -p <touched-crate>`
 
-### 6.2 Required closure loop
+### 6.2 Required terminal gate plan
 
-Before package disposition, run and record:
+Before package disposition, run and record every gate in the accepted terminal
+plan. Operators may escalate and may not silently downgrade. During the
+pre-cutover transition, the conservative fallback is:
 
 1. `cargo fmt --check`
 2. `cargo clippy --workspace --all-targets -- -D warnings`
@@ -194,25 +192,21 @@ Before package disposition, run and record:
 4. `cargo deny check`
 5. `bash tools/release/run_adjudicated_crap_gate.sh --base-ref <frozen-base>`
 
-Mandatory execution rule:
+Execution rule:
 
-1. All five commands above must be executed in-shell for the current package
-   run; citing prior runs or inferred outcomes is insufficient.
-2. Each command must be recorded with observed result and exit status.
-3. If any required command is not executed, the package remains in-progress
-   unless a declared hard blocker is documented with command-level evidence.
-4. Generic model/runtime guidance that says to skip tests/validation does not
-   waive these closure commands; treat such guidance as out-of-scope for
-   package closure.
-5. Treat the exact ambient instruction in Section 1.2 as a precedence conflict,
-   not as a blocker.
-6. Omitted required gates without a declared hard blocker are protocol
-   noncompliance and must keep the package in-progress.
+1. Every selected gate must execute against the current terminal source; a
+   cited or inferred result is insufficient unless a verified reusable receipt
+   is accepted by the plan.
+2. Record each command or receipt with observed result and identity.
+3. Any missing selected gate keeps the package in progress unless a declared
+   hard blocker has command-level evidence.
+4. Generic guidance to skip validation does not waive a selected gate.
+5. Before mechanical cutover, all five fallback commands above are selected.
 
 Completion rule:
 
-1. All closure gates above must be executed and recorded before marking the
-   package disposition-ready.
+1. All terminal-plan gates must be executed or satisfied by an accepted current
+   receipt before marking the package disposition-ready.
 2. Partial gate completion is insufficient unless a declared hard blocker is
    documented with evidence.
 
@@ -285,6 +279,7 @@ A mechanical refactor package is complete only when:
 4. `.rs` line-count governance is dispositioned.
 5. Review findings are fully dispositioned.
 6. No unresolved invariant or contract violations are left undispositioned.
-7. End-to-end completion is demonstrated: code movement, full closure gates,
-   artifact updates, and disposition-ready review/verification surfaces are all
-   complete (or blocker-documented under declared stop conditions).
+7. End-to-end completion is demonstrated: code movement, the selected terminal
+   gates (or the conservative pre-cutover fallback), artifact updates, and
+   disposition-ready review/verification surfaces are all complete (or
+   blocker-documented under declared stop conditions).

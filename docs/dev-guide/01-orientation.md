@@ -132,9 +132,12 @@ cargo build --release            # rust-toolchain.toml pins the channel
 cargo nextest run --workspace --profile quick  # fast local confidence loop
 ```
 
-Use `cargo nextest run --workspace --profile full` for branch-head closure when
-the package or change class requires the full suite. Local gate tiering and
-timing diagnostics are described in
+Use `cargo nextest run --workspace --profile full` when the accepted terminal
+plan under [testing-and-gate-strategy.md](../standards/testing-and-gate-strategy.md)
+selects it. Critical changes, campaign closure, and release require the full
+suite; implementation packages retain it as the conservative fallback until
+the mechanical planner/executor and receipt path complete shadow acceptance and
+cutover. Local gate tiering and timing diagnostics are described in
 [local-ci-gate-selection.md](../standards/local-ci-gate-selection.md).
 
 A hillslope run needs a run directory of WEPP inputs and a TOML runfile

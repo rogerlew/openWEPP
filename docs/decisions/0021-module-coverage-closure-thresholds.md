@@ -9,6 +9,11 @@
 Roger Lew's direction; thresholds are unchanged.
 **Amendment:** Post-burndown adjudicated CRAP closure ratchet added 2026-07-13
 at decider Roger Lew's direction; the threshold and taxonomy are unchanged.
+**Amendment:** Execution cadence aligned to ADR-0039 on 2026-07-17. Affected
+increment measurement replaces automatic global measurement only after the
+mechanical planner/executor and receipt path complete governed cutover;
+thresholds, taxonomy, adjudication, and the empty actionable-set objective are
+unchanged.
 **Builds on:** [ADR-0011](0011-architecture-first-top-down-science-contracts.md)
 **Authoring authority:** [docs/standards/module-test-enhancement-authoring-guide.md](../standards/module-test-enhancement-authoring-guide.md), [docs/standards/rust-scientific-coding-standard.md](../standards/rust-scientific-coding-standard.md) §7.5–7.8
 
@@ -138,10 +143,13 @@ complement to the coverage floor.
 8. **Post-burndown adjudicated closure ratchet.** The 2026-07-13 CQR
    pre-integration campaign established an empty actionable production set and
    retained exactly two independently reviewed, source-hash-bound
-   `R-OBSERVABILITY` rows. Every implementation package now closes against that
-   adjudicated state using
-   `tools/release/run_adjudicated_crap_gate.sh --base-ref <frozen-base>`.
-   The terminal report must:
+   `R-OBSERVABILITY` rows. Under ADR-0039, a bounded implementation increment
+   closes against its mechanically selected affected eligible surface; a
+   critical change, campaign closure, and release close against the whole
+   workspace. Until affected-surface planning, execution, and receipt
+   verification complete governed cutover, implementation packages retain
+   `tools/release/run_adjudicated_crap_gate.sh --base-ref <frozen-base>` as the
+   conservative global fallback. Every closure-eligible report must:
    - apply the campaign's exact production filter and deduplication tuple;
    - preserve raw rows separately from actionable rows;
    - identify production Rust files touched since the frozen base;
@@ -177,10 +185,12 @@ complement to the coverage floor.
   into a coverage package and a follow-on mechanical-refactor package — rather
   than letting a fully-covered monster function pass as closed.
 - The module coverage percentages still do **not** retroactively fail existing
-  modules or become a global per-PR coverage threshold. The now-clean
-  adjudicated CRAP surface is different: every implementation package must
-  preserve its empty actionable set, including regressions caused by test
-  changes outside a source-touched file.
+  modules or become a global per-PR coverage threshold. Every bounded increment
+  must preserve an empty actionable set over its complete affected eligible
+  surface, including every known covering test; critical, campaign, and release
+  boundaries preserve the empty actionable set across the whole workspace.
+  Test deletion, filtering, proven coverage loss, or unknown contribution
+  escalates to global measurement.
 - Raw CRAP rankings are discovery evidence, not the actionable queue. Nightly
   selection classifies every row above 30 before ranking, removes only accepted
   exceptions from actionable excess, publishes both raw and actionable counts,

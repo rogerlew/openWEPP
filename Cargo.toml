@@ -448,6 +448,10 @@ name = "auth04_release_gate_authority_stack_contract"
 path = "tests/integration/auth04_release_gate_authority_stack_contract.rs"
 
 [[test]]
+name = "testgate_align_authority_contract"
+path = "tests/integration/testgate_align_authority_contract.rs"
+
+[[test]]
 name = "auth05_level4_constitutive_authority_hardening_contract"
 path = "tests/integration/auth05_level4_constitutive_authority_hardening_contract.rs"
 

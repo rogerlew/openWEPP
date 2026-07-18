@@ -102,32 +102,40 @@ correct disposition is `HOLD`, not a manufactured acceptance target.
 
 ## Release/CI Lane Enforcement (Normative)
 
-Authority-suite lane execution for release decisions is wired through:
+Gate timing and lifecycle placement are governed by
+`docs/standards/testing-and-gate-strategy.md`. Authority class and scientific
+outcome remain governed here: affected A0 admission, A1 hard-invariant, and A3
+constitutive suites are non-deferrable; A2/A4/A5/A6 execution integrity and
+investigation outcomes remain separate axes unless prospectively promoted.
+
+The current conservative release implementation is wired through:
 
 - `.github/workflows/release-gates.yml`
 - `tools/release/run_release_candidate_gates.sh`
 
-Lane trigger policy:
+Until `TESTGATE-CI-01` completes shadow acceptance and cutover, its trigger
+layout remains executable transition behavior rather than independent timing
+authority. The target lane policy is:
 
 1. `required` lane:
-   - runs on release-gate `push`/`pull_request`,
-   - runs on `workflow_dispatch`,
+   - affected A0/A1/A3 suites run at increment closure,
+   - complete required suites run at campaign closure and release,
    - blocks on any `hard-fail` suite failure.
 2. `periodic` lane:
-   - runs on scheduled release-gate workflows,
+   - runs at its declared campaign, backstop, or scheduled trigger,
    - may be invoked on demand with `--run-authority-periodic`,
    - blocks only for `hard-fail` suite failures.
 3. `manual` lane:
-   - runs only when explicitly requested (`--run-authority-manual` or workflow
-     dispatch input),
+   - runs only when explicitly requested or selected for release by policy,
    - blocks only for `hard-fail` suite failures.
 
 Failure-class policy:
 
 1. `hard-fail`:
    - gate exits non-zero,
-   - release disposition remains `HOLD` until resolved or explicitly
-     risk-accepted by governance.
+   - disposition remains `HOLD` until resolved; there is no generic risk-
+     acceptance, waiver, downgrade, bless, or accept-current path for affected
+     A0/A1/A3 failures.
 2. `investigation`:
    - gate records failure in authority-lane report output,
    - does not fail the workflow by default,

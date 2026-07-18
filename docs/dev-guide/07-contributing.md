@@ -25,8 +25,13 @@ through a package, gates, and review.
 
 ## 7.2 The mechanical gates
 
-Every change must pass (see `AGENTS.md` → Validation Gates for the exact
-commands):
+Gate timing and lifecycle selection come from
+[`testing-and-gate-strategy.md`](../standards/testing-and-gate-strategy.md).
+Execute the exact accepted terminal plan for the increment. Critical changes,
+campaign closure, and release retain the full workspace/global-CRAP loop below;
+until the mechanical planner, executor, and receipt verifier complete shadow
+acceptance and cutover, implementation packages use it as the conservative
+fallback (see `AGENTS.md` → Validation Gates for exact commands):
 
 ```bash
 cargo fmt --check
@@ -36,9 +41,10 @@ cargo deny check                         # licenses + advisories (no copyleft)
 bash tools/release/run_adjudicated_crap_gate.sh --base-ref <frozen-base>
 ```
 
-The CRAP command reports touched production Rust files and also enforces the
-workspace-wide adjudicated ratchet. Raw rows above 30 remain visible; closure
-requires zero actionable rows after exact current adjudications are applied.
+When selected, the CRAP command reports touched production Rust files and also
+enforces the workspace-wide adjudicated ratchet. Raw rows above 30 remain
+visible; closure requires zero actionable rows after exact current
+adjudications are applied.
 
 plus, depending on the surface touched:
 
@@ -54,8 +60,10 @@ plus, depending on the surface touched:
 
 For local iteration and review-response fixes, use the cheapest gate that
 actually covers the changed surface: focused nextest filters, `quick`, or a
-domain profile such as `frost` or `erosion`. The full suite remains the
-branch-head closure gate for implementation packages. See
+domain profile such as `frost` or `erosion`. Run the terminal gates selected by
+the canonical strategy; the full suite remains mandatory for critical,
+campaign, and release boundaries and as the pre-cutover conservative fallback.
+See
 [local-ci-gate-selection.md](../standards/local-ci-gate-selection.md) and record
 expensive nextest timing with `tools/local_ci/nextest_timing.py`.
 

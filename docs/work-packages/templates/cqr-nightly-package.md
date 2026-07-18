@@ -35,6 +35,7 @@ cannot grant exclusions.
 - `AGENTS.md`
 - `docs/work-packages/AGENTS.md`
 - `docs/work-packages/cqr-nightly-burndown-execplan.md`
+- `docs/standards/testing-and-gate-strategy.md`
 - `docs/standards/mechanical-refactor-authoring-guide.md`
 - `docs/standards/code-quality-refactor-authoring-guide.md`
 - `docs/decisions/0021-module-coverage-closure-thresholds.md`
@@ -58,11 +59,12 @@ unless a subagent is explicitly assigned a bounded implementation fix in
 `{{target_module_path}}` or package-local artifacts.
 
 Subagent requirement: this package requires spawning `comparator_suite_runner`
-for heavy batch/closure/comparator runs, including full-workspace CRAP/coverage
-after implementation, `cargo nextest run --workspace --profile full`, comparator
-suites, and population/fixture batches. Do not run those heavy gates locally on
-the parent model unless the subagent is unavailable; if unavailable, record
-command-level evidence before running locally.
+for heavy gates selected by the terminal plan, critical classification,
+campaign/release boundary, or conservative transition fallback, including
+full-workspace CRAP/coverage, full-profile Nextest, comparator suites, and
+population/fixture batches. Do not run those heavy gates locally on the parent
+model unless the subagent is unavailable; if unavailable, record command-level
+evidence before running locally.
 
 ## Scope
 
@@ -158,7 +160,8 @@ and report the blocked commit boundary.
 3. Record numeric/API/output identity in `artifacts/numeric-equivalence.md`.
 4. Record `.rs` line-count governance in
    `artifacts/line-count-governance.md`.
-5. Run and record:
+5. Reconcile the exact terminal plan and run every selected gate. Until
+   planner/executor cutover, run and record the conservative fallback:
    - `git diff --check`
    - markdown/doc lint for touched docs
    - focused tests for the touched module/crate
@@ -167,7 +170,7 @@ and report the blocked commit boundary.
    - `cargo nextest run --workspace --profile full`
    - `cargo deny check`
    - `bash tools/release/run_adjudicated_crap_gate.sh --base-ref <frozen-base>`
-6. Use `comparator_suite_runner` for heavy full-workspace/batch gates when
+6. Use `comparator_suite_runner` for selected heavy full-workspace/batch gates when
    available. If unavailable, record the spawn/tool-policy failure before
    running locally.
 

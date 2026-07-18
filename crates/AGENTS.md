@@ -41,7 +41,12 @@
 
 ## Validation Checklist
 - Fast iteration when useful: focused `cargo nextest run -p <crate>` or `cargo check -p <crate>`.
-- Required closure before implementation package disposition: `cargo fmt --check`, `cargo clippy --workspace --all-targets -- -D warnings`, `cargo nextest run --workspace --profile full`, `cargo deny check`.
+- Execute the exact increment terminal plan selected under
+  `docs/standards/testing-and-gate-strategy.md`; critical changes, campaign
+  closure, and release retain full-workspace gates and global CRAP.
+- Until the mechanical planner/executor is accepted and cut over, Rust
+  implementation packages retain the conservative full closure loop and fresh
+  global adjudicated CRAP as transition fallback.
 - Use `cargo nextest run --workspace --profile quick` for ordinary local loops and `cargo nextest run --workspace --profile frost` for snow/frost-focused work; fall back to `cargo test` only for libtest-specific behavior or explicitly required legacy harness checks.
 - Contract-derived tests and closure checks for touched state surfaces.
 - Legacy comparator delta review using confidence tiers when migration/parity is in scope.
@@ -55,7 +60,7 @@
 ## Line-Count Governance
 - `.rs` files at or above 2000 lines are `WARN` and need decomposition rationale plus follow-on split intent in review/checklist artifacts.
 - `.rs` files at or above 3000 lines require refactor before closure unless an approved generated/fixture exception documents owner and sunset plan.
-- Package closure is blocked while any 3000+ non-exempt file remains undispositioned.
+- Package closure is blocked while any 3000+ nonexempt file remains undispositioned.
 
 ## Common Pitfalls
 - Do not hide behavior changes inside mechanical refactors.

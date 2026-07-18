@@ -14,6 +14,9 @@
 - `docs/standards/kernel-work-package-preparation.md` — required kernel work-package preparation procedure.
 - `docs/standards/prompt-wording-guidance.md` — required wording standard for kernel/science execution prompts.
 - `docs/standards/mechanical-refactor-authoring-guide.md` — mechanical refactor authoring and closure loop.
+- `docs/standards/testing-and-gate-strategy.md` — canonical gate selection,
+  lifecycle, receipt, campaign, coverage/CRAP cadence, and assurance-impact
+  authority.
 - Root `AGENTS.md` — concise router that should point here rather than duplicate long procedures.
 
 ## Standard Workflow
@@ -21,7 +24,9 @@
 2. Keep normative obligations in one canonical standard; update root or local `AGENTS.md` files with short binding pointers only.
 3. If a standard changes package execution, update `docs/work-packages/AGENTS.md` and relevant templates/prompts in the same change.
 4. If a standard changes contract authority, update `docs/specifications/science-contracts/AGENTS.md` and the canonical procedure/profile docs as needed.
-5. Use concrete path-scoped language and runnable checks; avoid broad inspirational prose.
+5. Delegate gate frequency and lifecycle to the testing/gate strategy. Retain
+   specialized correctness and evidence obligations in their owning standards.
+6. Use concrete path-scoped language and runnable checks; avoid broad inspirational prose.
 
 ## Prompt Wording Maintenance
 - Kernel/science kickoff prompts should start with an explicit local-repository scope sentence.

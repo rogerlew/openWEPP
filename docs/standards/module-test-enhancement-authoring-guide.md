@@ -190,17 +190,18 @@ complexity, or public behavior changes.
 5. **Build the obligation→test map.** Table: family/obligation → test fn(s) →
    status. 100% of applicable families bound.
 6. **Re-measure.** Emit `coverage_after.json`; confirm §2 thresholds on the
-   eligible surface and no per-function floor breach. Run
-   `bash tools/release/run_adjudicated_crap_gate.sh --base-ref <frozen-base>
-   --output-dir <artifacts>/adjudicated-crap`; confirm every eligible function
-   is at most 30 or has an exact current adjudication, and that the workspace
-   actionable set remains empty.
-7. **Gate loop.** `cargo fmt --check`;
-   `cargo clippy --workspace --all-targets -- -D warnings`;
-   `cargo nextest run --workspace --profile full`; `cargo deny check`; plus the
-   obligation guard
+   eligible affected surface and no per-function floor breach. Run the
+   terminal-plan CRAP gate; confirm every affected eligible function is at most
+   30 or has an exact current adjudication. Critical, campaign, and release
+   boundaries also require an empty workspace actionable set. Before affected
+   execution cutover, use the global adjudicated command as fallback.
+7. **Gate loop.** Execute the exact terminal plan under
+   `testing-and-gate-strategy.md`, including formatting, affected
+   warnings-denied Clippy and tests, doctest/inventory checks, and the obligation
+   guard
    (`auth11_required_suite_obligation_guards_contract`) where the module carries
-   external-authority suite bindings.
+   external-authority suite bindings. Use the conservative full workspace,
+   cargo-deny, and global-CRAP loop until planner/executor cutover.
 8. **Evidence and disposition.** Disposition states before→after coverage, the
    eligible-surface definition, the exclusion list, the obligation→test map, and
    the threshold pass.

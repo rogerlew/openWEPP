@@ -11,6 +11,17 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260717-testgate-align-governance-schemas-001/` completed
+  TESTGATE-ALIGN-01. It aligns prospective gate lifecycle guidance to ADR-0039,
+  preserves the conservative pre-cutover fallback and ADR-0021 thresholds, and
+  adds strict v1 impact/plan/receipt/envelope/campaign/assurance schemas,
+  fixtures, and a nine-test fail-closed source guard. Two review/verification
+  HOLD rounds drove all recorded governance and representation defects closed.
+  Focused checks, warnings-denied Clippy, cargo-deny, and final full Nextest
+  (`2,094/2,094`) passed. At the user's direction, a third redundant global
+  CRAP rerun was stopped; two earlier fresh global runs had already passed with
+  zero actionable rows. TESTGATE-PLAN-01 is the next shadow-mode implementation
+  package.
 - `20260717-test-gate-authority-001/` completed two dual-review rounds and
   renewed terminal verification for the documentation-only authority
   foundation for campaign-scoped, risk-based testing. ADR-0039 and the canonical

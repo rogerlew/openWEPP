@@ -64,23 +64,28 @@ openWEPP is the Rust simulation engine. openWEPP owns its architecture and scien
 - Binary pass serialization authority may also reference `/workdir/wepp-forest/docs/contracts/hillslope-binary-pass-format.md` and `/workdir/wepp-forest/docs/contracts/watershed-hillslope-pass-reader-contract.md` with commit SHA provenance.
 
 ## Validation Gates
-Before declaring Rust kernel implementation complete, run and record:
-1. `cargo fmt --check`
-2. `cargo clippy --workspace --all-targets -- -D warnings`
-3. `cargo nextest run --workspace --profile full`
-4. `cargo deny check`
-5. Touched contract invariants and closure checks.
-6. Legacy comparator delta review using confidence tiers.
-7. For conservation-sensitive outputs, independent operand reconstruction and
-   real closure evidence per `docs/standards/kernel-work-package-preparation.md`.
-8. For implementation packages, the adjudicated CRAP closure gate:
-   `bash tools/release/run_adjudicated_crap_gate.sh --base-ref <frozen-base>`.
-- Use `cargo nextest run --workspace --profile quick` for fast local loops and
-  domain profiles such as `cargo nextest run --workspace --profile frost` or
-  `cargo nextest run --workspace --profile erosion` for focused local CI.
-  Follow `docs/standards/local-ci-gate-selection.md` for tier selection and
-  persistent timing diagnostics. Fall back to `cargo test --workspace` only for
-  libtest-specific behavior or an explicitly required legacy harness check.
+- `docs/standards/testing-and-gate-strategy.md` is the canonical authority for
+  gate selection, lifecycle timing, campaign deferral, evidence reuse, and
+  escalation. Every package must declare implementation intent before edits
+  (in `package.md` during transition, then as a machine intent plan after
+  cutover) and reconcile the exact terminal diff before disposition.
+- Until the repository-owned planner/executor completes shadow acceptance and
+  blocking cutover, Rust implementation packages use the existing conservative
+  fallback: `cargo fmt --check`, workspace Clippy with warnings denied, full
+  workspace Nextest, cargo-deny, and fresh global adjudicated CRAP. This is
+  transition behavior, not a competing frequency authority.
+- After cutover, execute every increment gate selected by the authenticated
+  terminal plan. Critical changes still require immediate campaign-strength
+  full regression and global CRAP. Campaign closure and release qualification
+  retain exact-head full-workspace and global-quality obligations.
+- Kernel work always retains touched contract invariants, applicable A0/A1/A3
+  authority gates, typed guards, and closure checks. Legacy comparator deltas
+  use confidence tiers. Conservation-sensitive output work retains independent
+  operand reconstruction and real closure evidence per
+  `docs/standards/kernel-work-package-preparation.md`.
+- Use focused, quick, and domain profiles for edit loops as described in
+  `docs/standards/local-ci-gate-selection.md`. Fall back to `cargo test` only
+  for libtest-specific behavior or an explicitly required legacy harness.
 
 ## Error Handling and Numerics
 - No broad `Result<_, Box<dyn Error>>` swallowing in production paths; use typed error enums per crate.
@@ -97,6 +102,7 @@ Before declaring Rust kernel implementation complete, run and record:
 - Array-native burn-down ExecPlans: R4 hydrology direct paths in `docs/work-packages/r4-burndown-execplan.md`; R5 full OFE-day direct path in `docs/work-packages/r5-burndown-execplan.md`.
 - Science contracts: `docs/specifications/science-contracts/AGENTS.md`, `docs/specifications/science-contract-authoring-procedure.md`, `docs/specifications/science-contracts/kernel-process-contract-profile.md`, `docs/specifications/science-contracts/index.md`.
 - Standards and prompt wording: `docs/standards/AGENTS.md`, `docs/standards/kernel-work-package-preparation.md`, `docs/standards/prompt-wording-guidance.md`, `docs/standards/mechanical-refactor-authoring-guide.md`, `docs/standards/local-ci-gate-selection.md`.
+- Canonical gate lifecycle: `docs/standards/testing-and-gate-strategy.md`.
 - Local CI timing tooling: `tools/local_ci/README.md`.
 - Adjudicated CRAP gate: `tools/release/README.md`.
 - Rust crates: `crates/AGENTS.md`.

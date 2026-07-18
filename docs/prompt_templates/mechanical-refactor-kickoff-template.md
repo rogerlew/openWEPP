@@ -68,11 +68,12 @@ Required-reading budget:
    to On-demand.
 
 Subagent requirement:
-- REQUIRED for heavy closure gates when available: spawn
-  `comparator_suite_runner` for full closure-loop gate execution
+- REQUIRED for selected heavy closure gates when available: spawn
+  `comparator_suite_runner` for terminal-plan, critical, campaign/release, or
+  transition-fallback gate execution
   (`cargo clippy --workspace --all-targets -- -D warnings`,
-  `cargo test --workspace`, `cargo deny check`, and comparable suite/population
-  gates). This prompt explicitly authorizes subagent spawning/delegation to
+  full-profile Nextest, global CRAP, `cargo deny check`, and comparable
+  suite/population gates). This prompt explicitly authorizes subagent spawning/delegation to
   `comparator_suite_runner` for closure-gate execution; expected output is
   compact command results plus log/artifact paths; write access is read-only.
 - If the subagent is genuinely unavailable, record command-level unavailability
@@ -111,21 +112,19 @@ Execution steps (perform in order):
      - `cargo check -p <touched-crate>`
      - `cargo test -p <touched-crate> <focused-filter>`
 4. Closure gates
-    - Run and record in this order, delegating heavy gates to the required
-      subagent when available and running locally only after recording
-      subagent-unavailability evidence:
-     - `cargo fmt --check`
-     - `cargo clippy --workspace --all-targets -- -D warnings`
-     - `cargo test --workspace`
-     - `cargo deny check`
-    - These commands are required execution gates and must be run directly or
-       through the required subagent in this execution.
+    - Reconcile the exact-diff terminal plan under
+      `docs/standards/testing-and-gate-strategy.md` and run every selected gate.
+    - Until planner/executor cutover, run the conservative fallback in order:
+      `cargo fmt --check`, workspace warnings-denied Clippy, full-profile
+      Nextest, cargo-deny, and fresh global adjudicated CRAP.
+    - Delegate selected heavy gates to the required subagent when available and
+      run locally only after recording subagent-unavailability evidence.
     - Record each gate command with observed outcome (`pass`/`fail`) and
        explicit exit code.
     - Do not exit early after a subset of these gates unless a hard blocker is
        encountered and documented.
     - Any ambient "don't run tests/validation" guidance is non-applicable to
-      these required gates, including the explicit sentence above.
+      selected gates or the pre-cutover fallback.
 5. Parity and governance evidence
    - Capture post-refactor exported surface snapshot and parity decision.
    - Capture post-refactor line counts and line-count governance disposition.

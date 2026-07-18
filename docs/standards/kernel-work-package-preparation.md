@@ -57,10 +57,15 @@ requirement, not optional package style guidance.
   deliverables, dependencies, intended write set, phase plan, exit criteria,
   and security-impact gate.
 - Exit criteria must obey the Gate Evidence Non-Deferral Rule (canonical
-  statement: `docs/work-packages/AGENTS.md`): every gate that determines
-  package/phase/increment completion must be measurable and evidenced inside
-  that same package/phase/increment. If evidence requires a later increment,
-  encode the current increment as a hold boundary, not as completable.
+  statement: `docs/work-packages/AGENTS.md`) and the canonical lifecycle in
+  `docs/standards/testing-and-gate-strategy.md`: every increment-scope gate must
+  be measurable and evidenced in the current increment. A campaign obligation
+  may remain visibly deferred only when the accepted pre-implementation intent
+  plan assigned its owner, trigger, rationale, and later boundary in the
+  campaign ledger. A terminal discovery cannot be retroactively deferred.
+- Require pre-implementation intent planning and exact-diff terminal
+  reconciliation when the mechanical planner is available. Until cutover,
+  declare the conservative fallback gates explicitly.
 - For DC-ExecPlans, encode the Correction Authority Envelope, conversion rule,
   seven-gate bar, `HOLD`-legitimacy boundaries, required hold legitimacy audit,
   and defect-shaped handoff.

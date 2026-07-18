@@ -1,0 +1,8 @@
+{
+  "base_fixture": "attestation-envelope.json",
+  "operation": "replace",
+  "instance_pointer": "/issuer/trust_class",
+  "invalid_value": "LOCAL_UNTRUSTED",
+  "expected_instance_path": "/issuer/trust_class",
+  "expected_schema_path_contains": "/properties/trust_class/enum"
+}

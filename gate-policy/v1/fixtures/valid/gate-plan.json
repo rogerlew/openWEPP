@@ -1,0 +1,95 @@
+{
+  "schema_version": "openwepp-gate-plan-v1",
+  "policy": {
+    "policy_id": "ADR-0039",
+    "policy_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "impact_map_generation": 1,
+    "impact_map_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "planning_stage": "TERMINAL",
+  "predecessor_intent_plan_id": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "plan_id": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "execution_key": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+  "boundary": "INCREMENT",
+  "campaign_id": "TESTGATE-ALIGN-01",
+  "source": {
+    "base_commit": "1111111111111111111111111111111111111111111111111111111111111111",
+    "head_commit": null,
+    "dirty_tree_digest": "2222222222222222222222222222222222222222222222222222222222222222",
+    "index_digest": "3333333333333333333333333333333333333333333333333333333333333333",
+    "worktree_digest": "4444444444444444444444444444444444444444444444444444444444444444",
+    "untracked_digest": "5555555555555555555555555555555555555555555555555555555555555555"
+  },
+  "changed_objects": [{
+    "path": "gate-policy/v1/impact-map.json",
+    "change_kind": "ADD",
+    "object_kind": "REGULAR",
+    "old_mode": null,
+    "new_mode": "100644",
+    "owner": "openwepp-maintainers"
+  }],
+  "affected_packages": ["openwepp"],
+  "reverse_dependencies": [],
+  "impact_edges": [{
+    "entry_id": "gate-policy-authority",
+    "changed_path": "gate-policy/v1/impact-map.json",
+    "selected_ids": ["gate-policy-schema-consistency-v1"]
+  }],
+  "risk": {
+    "class": "CRITICAL",
+    "reason_codes": ["GATE_POLICY_CHANGED"],
+    "operator_escalation": false
+  },
+  "planning_controls": {
+    "blocking_promotion_rule": "PROSPECTIVE_POLICY_ONLY",
+    "investigation_owner_rule": "NAMED_OWNER_REQUIRED",
+    "unknown_input_rule": "ESCALATE_CRITICAL"
+  },
+  "execution_context": {
+    "environment_manifest_sha256": "5656565656565656565656565656565656565656565656565656565656565656",
+    "fixture_manifest_sha256": "5757575757575757575757575757575757575757575757575757575757575757",
+    "tool_manifest_sha256": "5858585858585858585858585858585858585858585858585858585858585858",
+    "configuration_sha256": "5959595959595959595959595959595959595959595959595959595959595959"
+  },
+  "nodes": [{
+    "node_id": "6666666666666666666666666666666666666666666666666666666666666666",
+    "gate_definition_id": "gate-policy-schema-consistency-v1",
+    "gate_family": "source-quality",
+    "target": "testgate_align_authority_contract",
+    "features": [],
+    "authority_class": "NONE",
+    "outcome_policy": "BLOCKING",
+    "failure_classification": "HARD_FAIL",
+    "owner": "openwepp-maintainers",
+    "investigation_owner": "openwepp-maintainers",
+    "boundary": "INCREMENT",
+    "trust_requirement": "REPOSITORY_REVIEWED",
+    "reuse_class": "NON_REUSABLE",
+    "executor": { "kind": "NEXTEST_V1", "version": "cargo-nextest-0.9", "adapter_sha256": null },
+    "arguments": ["cargo", "nextest", "run", "--test", "testgate_align_authority_contract"],
+    "working_directory": ".",
+    "environment_allowlist": ["PATH"],
+    "prerequisites": [],
+    "expected_inventory": { "mode": "EXACT", "ids": ["schemas_and_fixtures_are_closed_and_valid"], "minimum_count": 1 },
+    "acceptance": { "kind": "EXIT_CODE", "operator": "EQUALS", "expected": 0, "children": [] },
+    "timeout_seconds": 300,
+    "retry": { "maximum_attempts": 1, "permitted_reasons": [] },
+    "artifact_contract": "nextest-junit-v1",
+    "output_paths": ["target/testgate-align/junit.xml"],
+    "blocks_transition": "INCREMENT",
+    "identity_breakers": ["rust-toolchain", "target-triple"],
+    "matrix": { "target": "x86_64-unknown-linux-gnu" },
+    "shard": { "index": 0, "total": 1 }
+  }],
+  "zero_work_disposition": null,
+  "environment_roots": {
+    "execution_root": "7777777777777777777777777777777777777777777777777777777777777777",
+    "authority_root": "8888888888888888888888888888888888888888888888888888888888888888",
+    "documentation_root": "9999999999999999999999999999999999999999999999999999999999999999",
+    "assurance_root": null
+  },
+  "deferred_obligations": [],
+  "assurance_impacts": [],
+  "unmapped_inputs": [],
+  "output_root": "target/testgate-align"
+}

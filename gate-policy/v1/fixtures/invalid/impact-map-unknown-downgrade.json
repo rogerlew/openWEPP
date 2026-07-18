@@ -1,0 +1,8 @@
+{
+  "base_fixture": "impact-map.json",
+  "operation": "replace",
+  "instance_pointer": "/unknown_path_action",
+  "invalid_value": "IGNORE",
+  "expected_instance_path": "/unknown_path_action",
+  "expected_schema_path_contains": "/properties/unknown_path_action/const"
+}

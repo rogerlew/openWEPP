@@ -1,14 +1,15 @@
 # Local CI Gate Selection
 
-This standard governs local agent and maintainer gate selection. It does not
-weaken package-specific acceptance gates, science-contract gates, or release
-candidate gates.
+This standard governs local edit-loop command selection. Lifecycle timing,
+terminal gate selection, campaign deferral, receipts, and escalation are owned
+by `testing-and-gate-strategy.md`. Local feedback does not weaken or replace an
+accepted intent/terminal plan, science-contract gate, or release gate.
 
 ## Principles
 
 - Match gate cost to change risk.
-- Keep full-suite evidence for branch-head closure, merge readiness, release
-  readiness, and packages that explicitly require it.
+- Keep full-suite evidence for critical changes, campaign closure, release,
+  and the conservative transition fallback before planner/executor cutover.
 - Do not run the full suite as a reflex after every narrow review-response fix.
 - Record timing for expensive local CI runs so future profile decisions are
   empirical.
@@ -23,7 +24,7 @@ candidate gates.
 | Domain profile | The change touches a known expensive domain | `cargo nextest run --workspace --profile frost` or `cargo nextest run --workspace --profile erosion` |
 | Assurance editorial | The assurance normalizer produced the complete diff for pre-review DRAFT prose | `cargo nextest run --workspace --profile assurance-editorial` |
 | Assurance amendment | A report-data-only transaction produced a current valid `metadata-fast`, `editorial-fast`, or `governance-focused` receipt | `.venv/bin/python tools/local_ci/run_assurance_amendment.py --receipt <path>` |
-| Full branch-head | Merge readiness for Rust implementation/mechanical refactor packages, cutovers, publication changes, or package-required closure | `cargo nextest run --workspace --profile full` |
+| Full/critical | Critical changes, campaign closure, release, or the conservative pre-cutover fallback | `cargo nextest run --workspace --profile full` |
 | Release/manual | Release candidates, observed cohorts, legacy comparators, stability lanes, or manual authority lanes | `tools/release/*` and explicitly named comparator/cohort commands |
 
 ## Deferrable Slow Families
@@ -94,7 +95,7 @@ means two matching fixture tests may run at once.
 
 - Report `Ran:` only for commands executed in the current session.
 - Report `Static:` for timing conclusions derived from existing JUnit/history.
-- If a package skips `full`, state why the package scope permits that and name
-  the strongest gate actually run.
-- If `full` is required by the package, do not replace it with `quick` or a
-  domain profile unless the package is explicitly amended before execution.
+- Record the terminal plan or transition-fallback rule that selected each
+  closure gate. A focused pass claims only its affected surface.
+- If `full` is selected, do not replace it with `quick` or a domain profile.
+  Operators and agents may escalate but may not silently downgrade.

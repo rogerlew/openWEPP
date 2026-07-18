@@ -30,8 +30,12 @@
 - Fast local loop: `cargo nextest run --workspace --profile quick`.
 - Snow/frost fidelity loop: `cargo nextest run --workspace --profile frost`.
 - Erosion sediment/routing loop: `cargo nextest run --workspace --profile erosion`.
-- Full handoff gate when package requires it: `cargo nextest run --workspace --profile full`.
-- Full Rust closure loop when package or implementation scope requires it: `cargo fmt --check`, `cargo clippy --workspace --all-targets -- -D warnings`, `cargo nextest run --workspace --profile full`, `cargo deny check`.
+- Execute affected test, doctest, inventory, coverage, and CRAP gates selected by
+  the exact terminal plan under `docs/standards/testing-and-gate-strategy.md`.
+  Test deletion, disabling, filtering, reclassification, or unknown coverage
+  impact escalates to critical/global measurement.
+- Full workspace Nextest remains required for critical changes, campaign
+  closure, release, and the conservative pre-cutover implementation fallback.
 - Fall back to `cargo test --workspace` only when validating libtest-specific behavior or when a package explicitly requires the legacy harness.
 - Expensive fixture families are scheduled in `.config/nextest.toml` groups: `snowbench`, `cli-fixture`, `frost-fixture`, and `runner-fixture`.
 - Use `docs/standards/local-ci-gate-selection.md` for gate-tier selection and
@@ -55,3 +59,4 @@
 - Rust crates: `crates/AGENTS.md`.
 - Science contracts: `docs/specifications/science-contracts/AGENTS.md`.
 - Work packages: `docs/work-packages/AGENTS.md`.
+- Gate lifecycle and selection: `docs/standards/testing-and-gate-strategy.md`.

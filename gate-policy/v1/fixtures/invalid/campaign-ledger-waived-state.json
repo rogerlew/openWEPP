@@ -1,0 +1,8 @@
+{
+  "base_fixture": "campaign-ledger.json",
+  "operation": "replace",
+  "instance_pointer": "/obligations/0/state",
+  "invalid_value": "WAIVED",
+  "expected_instance_path": "/obligations/0/state",
+  "expected_schema_path_contains": "/properties/state/enum"
+}

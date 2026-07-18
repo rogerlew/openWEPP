@@ -34,8 +34,9 @@ Conditional:
 - `docs/specifications/science-contracts/AGENTS.md` and the nearest relevant
   `SC-*` contract only if the target touches contract authority,
   conservation-sensitive outputs, or contract-derived tests.
-- `docs/standards/local-ci-gate-selection.md` if focused iteration gates need to
-  be narrowed before the final closure loop.
+- `docs/standards/testing-and-gate-strategy.md` for intent/terminal planning,
+  lifecycle assignment, and escalation.
+- `docs/standards/local-ci-gate-selection.md` for focused edit-loop feedback.
 
 On-demand:
 
@@ -100,13 +101,14 @@ Global/process holds stop the nightly batch. Do not revert unrelated user
 changes.
 
 Subagent requirement: REQUIRED: spawn `comparator_suite_runner` for all heavy
-batch/closure/comparator runs, including `cargo nextest run --workspace --profile
-full`, full-workspace CRAP/coverage runs after implementation, comparator
-suites, and population/fixture batches. Do NOT run those heavy gates on the
+gates selected by the terminal plan, critical classification,
+campaign/release boundary, or conservative transition fallback, including
+full-profile Nextest, full-workspace CRAP/coverage, comparator suites, and
+population/fixture batches. Do NOT run those heavy gates on the
 parent model unless the subagent is unavailable; if unavailable, record
 command-level evidence before running locally. This prompt explicitly authorizes
 subagent spawning/delegation to comparator/closure-runner, review, and
-verification subagents for CQR metric checks, focused/full gate execution,
+verification subagents for CQR metric checks, selected gate execution,
 behavior-identity verification, review, and verification. Outputs:
 `artifacts/review_agent_a.md`, `artifacts/review_agent_b.md`,
 `artifacts/verification_agent_a.md`, `artifacts/verification_agent_b.md`, compact

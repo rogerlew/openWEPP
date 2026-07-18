@@ -1,0 +1,129 @@
+{
+  "schema_version": "openwepp-gate-receipt-v1",
+  "receipt_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "plan_id": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "plan_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "execution_key": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+  "boundary": "INCREMENT",
+  "campaign_id": "TESTGATE-ALIGN-01",
+  "source": {
+    "base_commit": "1111111111111111111111111111111111111111111111111111111111111111",
+    "head_commit": null,
+    "tree_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+    "dirty_tree_digest": "3333333333333333333333333333333333333333333333333333333333333333"
+  },
+  "roots": {
+    "execution_root": "4444444444444444444444444444444444444444444444444444444444444444",
+    "authority_root": "5555555555555555555555555555555555555555555555555555555555555555",
+    "documentation_root": "6666666666666666666666666666666666666666666666666666666666666666",
+    "assurance_root": null
+  },
+  "dag_sha256": "7777777777777777777777777777777777777777777777777777777777777777",
+  "dag_nodes": [{
+    "node_id": "8888888888888888888888888888888888888888888888888888888888888888",
+    "plan_node_sha256": "8989898989898989898989898989898989898989898989898989898989898989",
+    "gate_definition_id": "gate-policy-schema-consistency-v1",
+    "gate_family": "source-quality",
+    "target": "testgate_align_authority_contract",
+    "features": [],
+    "authority_class": "NONE",
+    "outcome_policy": "BLOCKING",
+    "failure_classification": "HARD_FAIL",
+    "owner": "openwepp-maintainers",
+    "investigation_owner": "openwepp-maintainers",
+    "boundary": "INCREMENT",
+    "executor": {
+      "kind": "NEXTEST_V1",
+      "version": "cargo-nextest-0.9",
+      "adapter_sha256": null
+    },
+    "arguments": ["cargo", "nextest", "run", "--test", "testgate_align_authority_contract"],
+    "working_directory": ".",
+    "environment_allowlist": ["PATH"],
+    "prerequisites": [],
+    "trust_requirement": "REPOSITORY_REVIEWED",
+    "reuse_class": "NON_REUSABLE",
+    "expected_inventory": {
+      "mode": "EXACT",
+      "ids": ["schemas_and_fixtures_are_closed_and_valid"],
+      "minimum_count": 1
+    },
+    "acceptance": {
+      "kind": "EXIT_CODE",
+      "operator": "EQUALS",
+      "expected": 0,
+      "children": []
+    },
+    "timeout_seconds": 300,
+    "retry": { "maximum_attempts": 1, "permitted_reasons": [] },
+    "artifact_contract": "nextest-junit-v1",
+    "output_paths": ["target/testgate-align/junit.xml"],
+    "blocks_transition": "INCREMENT",
+    "identity_breakers": ["rust-toolchain", "target-triple"],
+    "matrix": { "target": "x86_64-unknown-linux-gnu" },
+    "shard": { "index": 0, "total": 1 }
+  }],
+  "zero_work": false,
+  "attempts": [{
+    "node_id": "8888888888888888888888888888888888888888888888888888888888888888",
+    "attempt": 1,
+    "arguments": ["cargo", "nextest", "run", "--test", "testgate_align_authority_contract"],
+    "started_at": "2026-07-17T12:00:00Z",
+    "finished_at": "2026-07-17T12:01:00Z",
+    "exit_code": 0,
+    "result": "PASS",
+    "retry_reason": null
+  }],
+  "planned_inventory": ["schemas_and_fixtures_are_closed_and_valid"],
+  "executed_inventory": ["schemas_and_fixtures_are_closed_and_valid"],
+  "tools": [{
+    "tool_id": "cargo-nextest",
+    "version": "0.9.100",
+    "sha256": "9999999999999999999999999999999999999999999999999999999999999999"
+  }],
+  "environment": {
+    "platform": "linux-x86_64",
+    "target_triple": "x86_64-unknown-linux-gnu",
+    "compiler": "rustc-1.85.0",
+    "features": [],
+    "variables_sha256": "abababababababababababababababababababababababababababababababab",
+    "runner_image_sha256": null
+  },
+  "started_at": "2026-07-17T12:00:00Z",
+  "finished_at": "2026-07-17T12:01:00Z",
+  "counts": { "passed": 1, "failed": 0, "skipped": 0, "blocked": 0, "retried": 0 },
+  "authority_outcomes": [{
+    "gate_id": "gate-policy-schema-consistency-v1",
+    "authority_class": "NONE",
+    "execution_integrity": "PASS",
+    "admission_outcome": null,
+    "scientific_outcome": null,
+    "outcome_policy_generation": 1,
+    "investigation_record_id": null
+  }],
+  "artifacts": [{
+    "artifact_id": "junit",
+    "kind": "JUNIT",
+    "path": "target/testgate-align/junit.xml",
+    "sha256": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd"
+  }],
+  "unavailable_items": [],
+  "source_mutation_check": {
+    "required": true,
+    "before_sha256": "efefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefef",
+    "after_sha256": "efefefefefefefefefefefefefefefefefefefefefefefefefefefefefefefef",
+    "unchanged": true
+  },
+  "result": "PASS",
+  "claims": {
+    "trust_class": "LOCAL_UNTRUSTED",
+    "principal": "developer",
+    "repository": "rogerlew/openWEPP",
+    "source_event": "local",
+    "source_ref": "refs/heads/main",
+    "workflow": "local-shell",
+    "job": "testgate-align",
+    "runner": "local",
+    "attempt": 1
+  }
+}

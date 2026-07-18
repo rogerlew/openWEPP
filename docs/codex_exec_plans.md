@@ -18,14 +18,18 @@ blocked while any review finding is undispositioned.
 
 Every openWEPP work-package ExecPlan must also enforce the **Gate Evidence
 Non-Deferral Rule** (canonical statement: `docs/work-packages/AGENTS.md`).
-A package, phase, or staged increment may be marked complete only
-when every required current-scope exit criterion has direct evidence in the
-current artifact set. If required evidence depends on a later phase/increment,
-the current phase is `HOLD` / `executed-hold` with that dependency named as the
-blocker. Plans may narrow or move a gate only before implementation begins and
-with explicit artifact/review justification; after execution starts, an unmet
-current gate cannot be rebranded as "next increment scope." Reviews and
-verifications must check this rule explicitly.
+Gate lifecycle, selection, campaign deferral, evidence reuse, and escalation
+are governed by `docs/standards/testing-and-gate-strategy.md`.
+A package, phase, or staged increment may be marked complete only when every
+required increment-scope exit criterion has direct evidence in the current
+artifact set. Gate boundary assignment follows the canonical testing/gate
+strategy. A campaign obligation may remain visibly deferred only when an
+accepted pre-implementation intent plan assigned its owner, trigger, rationale,
+and boundary in the campaign ledger; it is never represented as passed. A
+terminal-plan discovery cannot retroactively become deferred. Before the
+mechanical planner and ledger cut over, packages retain their explicitly
+declared conservative gates. Reviews and verifications must check this rule
+explicitly.
 
 When an ExecPlan expects delegated reviewers, verifiers, comparator runners, or
 other role agents, it must explicitly authorize subagent spawning/delegation in
@@ -40,7 +44,7 @@ must carry a decomposition rationale plus follow-on split intent; files at or
 above 3000 lines require refactor before closure unless a generated/fixture
 exception is explicitly approved with owner and sunset plan. Review artifacts
 must record exception disposition, and package closure is blocked if any 3000+
-non-exempt file remains undispositioned.
+nonexempt file remains undispositioned.
 
 Mechanical refactor packages should additionally follow
 `docs/standards/mechanical-refactor-authoring-guide.md` for explicit seam

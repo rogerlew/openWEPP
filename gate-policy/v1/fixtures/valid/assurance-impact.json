@@ -1,0 +1,53 @@
+{
+  "schema_version": "openwepp-assurance-impact-v1",
+  "record_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "report_id": "snow-and-frozen-soil-process-evaluation",
+  "assessed_realization_root": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "source_root": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "watch_generation": 1,
+  "campaign_id": "TESTGATE-ALIGN-01",
+  "campaign_head": "1111111111111111111111111111111111111111111111111111111111111111",
+  "policy_generation": 1,
+  "release_identity": null,
+  "axes": {
+    "assessed_realization_integrity": "CURRENT",
+    "campaign_impact_disposition": "IMPACT_PENDING",
+    "campaign_transfer_request": "REQUESTED",
+    "campaign_transfer_currency": "BLOCKED",
+    "release_transfer_request": "NOT_REQUESTED",
+    "release_transfer_currency": "BLOCKED"
+  },
+  "entries": [{
+    "impact_entry_id": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "event_id": "dededededededededededededededededededededededededededededededede",
+    "predecessor_event_id": null,
+    "event_type": "IMPACT_DISCOVERED",
+    "previous_state": null,
+    "predecessor_ledger_id": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "terminal_plan_id": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    "changed_object": {
+      "path": "crates/openwepp-plant-phenology/src/lib.rs",
+      "change_kind": "MODIFY",
+      "object_sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+    },
+    "matching_watch_ids": ["snow-canopy-process-watch"],
+    "state": "OPEN_ASSESSMENT",
+    "owner_principal_id": "report-lead",
+    "owner_role_id": "assurance-report-lead",
+    "replacement_entry_id": null,
+    "resolved_entry_ids": [],
+    "result_receipt_ids": [],
+    "report_root": "3333333333333333333333333333333333333333333333333333333333333333",
+    "review_event_ids": [],
+    "target_head": "1111111111111111111111111111111111111111111111111111111111111111",
+    "rationale": "A semantic canopy watch matched and awaits scientific disposition."
+  }],
+  "events": [],
+  "aggregate_impact": "IMPACT_PENDING",
+  "resolution_authority": {
+    "principal_id": "report-lead",
+    "role_id": "assurance-report-lead",
+    "role_record_sha256": "4444444444444444444444444444444444444444444444444444444444444444",
+    "revocation_generation": 1
+  }
+}

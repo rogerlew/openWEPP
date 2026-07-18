@@ -36,8 +36,11 @@ bound. Mechanical, behavior-preserving modularization per
 ## Acceptance / exit criteria
 
 - Each target file under the 2000 WARN (or a justified bounded exception).
-- Required Rust closure loop: `cargo fmt --check`, `cargo clippy --workspace
-  --all-targets -- -D warnings`, `cargo test --workspace`, `cargo deny check`.
+- Required intent/terminal plan under
+  `docs/standards/testing-and-gate-strategy.md`. Until planner/executor cutover,
+  use the conservative fallback: `cargo fmt --check`, workspace
+  warnings-denied Clippy, full-profile Nextest, cargo-deny, and fresh global
+  adjudicated CRAP.
 - Bit-identical MOFE cohort + single-OFE anchor outputs (behavior preservation).
 
 ## Dependencies

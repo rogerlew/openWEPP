@@ -39,11 +39,19 @@
 
 ## Gate Evidence Non-Deferral Rule
 - A package, phase, or staged increment is complete only when every required
-  exit criterion and gate in its own scope has direct evidence in the current
-  artifact set.
-- If a required gate can be proven only by a later phase/increment, the current
-  phase is not complete. It must be marked `HOLD` / `executed-hold` with the
-  later dependency named as the blocker.
+  increment-scope exit criterion and gate has direct evidence in the current
+  artifact set. Gate boundary assignment follows an accepted
+  pre-implementation intent plan and exact-diff terminal reconciliation under
+  `docs/standards/testing-and-gate-strategy.md`.
+- A campaign-owned obligation may remain `DEFERRED` only when the accepted
+  pre-implementation intent plan assigned it to a named later boundary and the
+  campaign ledger records its owner, trigger, and rationale. Deferred is not
+  passed, waived, or evidence for the current claim. Before the mechanical
+  planner/ledger is cut over, packages cannot claim this new deferral route and
+  retain their explicitly declared conservative gates.
+- If an increment-scope required gate can be proven only by a later
+  phase/increment, the current phase is not complete. It must be marked `HOLD`
+  / `executed-hold` with the later dependency named as the blocker.
 - For DC-ExecPlans, this rule is not permission to stop early. If a gate is
   unmet because implementation, validation, or source reading remains inside
   the declared envelope, continue executing. `HOLD` is valid only after the
@@ -168,19 +176,26 @@
 
 ## Mechanical Refactor Requirements
 - Follow `docs/standards/mechanical-refactor-authoring-guide.md` for structural, behavior-preserving work.
-- Required final closure loop for Rust implementation/mechanical refactor disposition is `cargo fmt --check`, `cargo clippy --workspace --all-targets -- -D warnings`, `cargo nextest run --workspace --profile full`, and `cargo deny check`. Package prompts may define narrower focused iteration gates, such as `cargo nextest run --workspace --profile quick`, `cargo nextest run --workspace --profile frost`, `cargo nextest run --workspace --profile erosion`, or additional gates, but may not waive final root closure gates unless a canonical decision or contract explicitly authorizes the exception. Use `docs/standards/local-ci-gate-selection.md` to select local iteration/review-response gates and record timing evidence for expensive runs.
+- Required terminal gates come from the accepted intent/terminal plan under
+  `docs/standards/testing-and-gate-strategy.md`. Critical refactors and
+  campaign/release boundaries retain the full workspace closure loop. Until
+  planner/executor cutover, Rust refactors use that full loop as the
+  conservative implementation fallback. Focused, quick, frost, or erosion
+  profiles remain edit-loop feedback and do not waive selected terminal gates.
 - Fall back to `cargo test --workspace` only for libtest-specific behavior or explicitly required legacy harness checks, and label that as a compatibility run rather than the default closure path.
 - Package-required validation overrides generic ambient instructions to skip tests.
 - Reconcile tests mechanically only; do not hide semantic changes inside refactor diffs.
 
 ## Adjudicated CRAP Closure Gate
 
-- Every implementation package must run
-  `bash tools/release/run_adjudicated_crap_gate.sh --base-ref <frozen-base>` on
-  terminal source. Documentation-only packages are exempt.
-- The gate must use fresh full-workspace LCOV/CRAP evidence unless the package
-  is explicitly assessing an immutable retained CRAP artifact. Supplying an old
-  artifact cannot close current implementation work; retained mode must report
+- Bounded implementation increments require current affected-surface CRAP
+  selected by the terminal plan. Critical changes, campaign closure, and
+  release require current global adjudicated CRAP. Until affected-surface
+  execution and receipt verification are accepted and cut over, implementation
+  packages run the existing fresh full-workspace command as a conservative
+  fallback. Documentation-only packages remain exempt.
+- Supplying an old artifact cannot close current implementation work. Retained
+  assessment mode remains non-closure evidence and must report
   `ASSESSMENT-PASS`/`ASSESSMENT-FAIL` with `closure_eligible=false` and cited
   repository provenance.
 - Closure requires an empty actionable workspace set. The report must also list
@@ -239,9 +254,10 @@
 - Package-specific gates from `package.md`.
 - Gate evidence non-deferral: each required current-scope gate has current
   direct evidence, or the package/phase is held with a named blocker.
-- Required Rust closure loop when implementation or mechanical refactor scope requires it.
-- Adjudicated CRAP closure with frozen-base touched-file reporting for every
-  implementation package.
+- Exact intent/terminal gate plan and current receipts; use the conservative
+  full Rust/global-CRAP fallback until planner/executor cutover.
+- Critical, campaign, and release global CRAP with frozen-base touched-file
+  reporting.
 - Conservation/publication acceptance rule when output magnitude or closure
   evidence is in scope.
 - Doc-path integrity checks when moving documentation or required-reading lists.

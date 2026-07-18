@@ -1,0 +1,8 @@
+{
+  "base_fixture": "assurance-impact.json",
+  "operation": "replace",
+  "instance_pointer": "/axes/campaign_transfer_currency",
+  "invalid_value": "CURRENT",
+  "expected_instance_path": "/axes/campaign_transfer_currency",
+  "expected_schema_path_contains": "/properties/campaign_transfer_currency/const"
+}

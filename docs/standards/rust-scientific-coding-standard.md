@@ -337,7 +337,17 @@ would be harder to test externally.
 
 ### 7.2 Required quality gates
 
-Before merge:
+Before disposition, execute the exact terminal plan selected under
+`testing-and-gate-strategy.md`. For affected Rust surfaces the plan includes
+formatting, warnings-denied Clippy, placeholder/stub scanning, affected tests
+and doctests, applicable A0/A1/A3 and specialized gates, and targeted
+coverage/CRAP. Manifest, lock, dependency-policy, or toolchain dependency
+changes select cargo-deny. Critical changes, campaign closure, and release
+select full workspace regression, full doctests, cargo-deny, and global
+adjudicated CRAP.
+
+Until the planner/executor and receipt path complete governed cutover, use the
+existing conservative full command set as the implementation fallback:
 
 1. `cargo fmt --check`
 2. `cargo clippy --workspace --all-targets -- -D warnings -D clippy::todo -D clippy::unimplemented`

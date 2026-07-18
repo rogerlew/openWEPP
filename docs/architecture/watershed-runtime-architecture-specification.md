@@ -542,9 +542,12 @@ gates:
 
 ### 5.4 Implementation Closure Gates
 
-Any W2-W5 package that edits production Rust or deletes runtime/test surfaces
-inherits the root closure loop unless a package-local, pre-authorized hold
-boundary states otherwise:
+W2-W5 gate timing and lifecycle selection follow
+`docs/standards/testing-and-gate-strategy.md`. Execute the accepted terminal
+plan for the increment. Critical changes, campaign closure, and release inherit
+the root full closure loop below; until the mechanical planner/executor and
+receipt path complete shadow acceptance and cutover, W2-W5 implementation
+packages retain it as the conservative fallback:
 
 1. `cargo fmt --check`
 2. `cargo clippy --workspace --all-targets -- -D warnings`
@@ -553,8 +556,11 @@ boundary states otherwise:
 5. package-specific identity, consumer-path, pass-inventory, and deletion-test
    manifest gates.
 
-Fast local loops may use narrower package gates, but final closure must either
-run these gates or close in `EXECUTED-HOLD` with the exact blocker.
+Fast local loops may use narrower package gates. Final closure executes the
+accepted terminal plan; the listed full loop remains mandatory for critical,
+campaign, and release boundaries and is the conservative fallback until
+planner/executor cutover. Any selected gate failure closes in `EXECUTED-HOLD`
+with the exact blocker.
 
 ### 5.5 Fixture Ladder and Auditability
 
@@ -743,7 +749,9 @@ Before this document becomes binding architecture authority:
    claim.
 7. A W5 deletion package removes the old watershed runtime from production or
    records the exact blocker that prevents deletion.
-8. W2-W5 packages run or explicitly hold on the required Rust closure loop.
+8. W2-W5 packages run or explicitly hold on the accepted terminal plan, using
+   the full Rust closure loop at critical/campaign/release boundaries and as the
+   conservative pre-cutover fallback.
 9. Work-package evidence confirms no production source changes were made merely
    to fit the benchmark harness.
 10. `docs/ROADMAP.md` carries the active watershed runtime planning queue until

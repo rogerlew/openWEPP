@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "openwepp:gate-policy:impact-map:1",
+  "title": "openWEPP non-Cargo impact map v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "policy_id", "policy_sha256", "generation", "enforcement_status", "unknown_path_action", "entries"],
+  "properties": {
+    "schema_version": { "const": "openwepp-gate-impact-map-v1" },
+    "policy_id": { "const": "ADR-0039" },
+    "policy_sha256": { "$ref": "#/$defs/digest" },
+    "generation": { "type": "integer", "minimum": 1 },
+    "enforcement_status": { "enum": ["SCHEMA_ONLY_NONBLOCKING", "SHADOW", "BLOCKING"] },
+    "unknown_path_action": { "const": "ESCALATE_CRITICAL" },
+    "entries": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/entry" }
+    }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$" },
+    "digest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "path": { "type": "string", "minLength": 1, "pattern": "^[^/]", "not": { "pattern": "(^|/)\\.{1,2}(/|$)" } },
+    "pathGlob": { "type": "string", "minLength": 1, "pattern": "^[^/\\r\\n]", "not": { "pattern": "(^|/)\\.{1,2}(/|$)" } },
+    "idList": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/id" } },
+    "pathList": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/path" } },
+    "matcher": { "oneOf": [
+      { "type": "object", "additionalProperties": false, "required": ["kind", "value"], "properties": { "kind": { "enum": ["exact_path", "path_prefix"] }, "value": { "$ref": "#/$defs/path" } } },
+      { "type": "object", "additionalProperties": false, "required": ["kind", "value"], "properties": { "kind": { "const": "path_glob" }, "value": { "$ref": "#/$defs/pathGlob" } } },
+      { "type": "object", "additionalProperties": false, "required": ["kind", "value"], "properties": { "kind": { "enum": ["cargo_package", "contract_id", "process_domain_tag", "result_procedure", "builder_schema"] }, "value": { "$ref": "#/$defs/id" } } }
+    ] },
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entry_id", "matcher", "owner", "semantic_surface", "risk_floor", "reason_codes", "affected_packages", "test_targets", "covering_test_targets", "contracts", "authority_suites", "assurance_watches", "gate_definition_ids", "documentation_paths"],
+      "properties": {
+        "entry_id": { "$ref": "#/$defs/id" },
+        "matcher": { "$ref": "#/$defs/matcher" },
+        "owner": { "$ref": "#/$defs/id" },
+        "semantic_surface": { "$ref": "#/$defs/id" },
+        "risk_floor": { "enum": ["EDITORIAL", "BOUNDED_COMPONENT", "INTEGRATED_DOMAIN", "CRITICAL"] },
+        "reason_codes": { "$ref": "#/$defs/idList" },
+        "affected_packages": { "$ref": "#/$defs/idList" },
+        "test_targets": { "$ref": "#/$defs/idList" },
+        "covering_test_targets": { "$ref": "#/$defs/idList" },
+        "contracts": { "$ref": "#/$defs/idList" },
+        "authority_suites": { "$ref": "#/$defs/idList" },
+        "assurance_watches": { "$ref": "#/$defs/idList" },
+        "gate_definition_ids": { "$ref": "#/$defs/idList" },
+        "documentation_paths": { "$ref": "#/$defs/pathList" }
+      }
+    }
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "schema_version": "openwepp-gate-impact-map-v1",
+  "policy_id": "ADR-0039",
+  "policy_sha256": "a0c69780af9f1211b7f779e7f812210e64d75b1373323c52f6a26b13a87850c2",
+  "generation": 1,
+  "enforcement_status": "SCHEMA_ONLY_NONBLOCKING",
+  "unknown_path_action": "ESCALATE_CRITICAL",
+  "entries": [
+    {
+      "entry_id": "gate-policy-authority",
+      "matcher": { "kind": "path_prefix", "value": "gate-policy/" },
+      "owner": "openwepp-maintainers",
+      "semantic_surface": "gate-policy",
+      "risk_floor": "CRITICAL",
+      "reason_codes": ["GATE_POLICY_CHANGED"],
+      "affected_packages": ["openwepp"],
+      "test_targets": ["testgate_align_authority_contract"],
+      "covering_test_targets": ["testgate_align_authority_contract"],
+      "contracts": [],
+      "authority_suites": [],
+      "assurance_watches": [],
+      "gate_definition_ids": ["gate-policy-schema-consistency-v1"],
+      "documentation_paths": ["docs/standards/testing-and-gate-strategy.md"]
+    },
+    {
+      "entry_id": "gate-lifecycle-authority",
+      "matcher": { "kind": "exact_path", "value": "docs/standards/testing-and-gate-strategy.md" },
+      "owner": "openwepp-maintainers",
+      "semantic_surface": "gate-lifecycle-authority",
+      "risk_floor": "CRITICAL",
+      "reason_codes": ["GATE_POLICY_CHANGED"],
+      "affected_packages": ["openwepp"],
+      "test_targets": ["testgate_align_authority_contract"],
+      "covering_test_targets": ["testgate_align_authority_contract"],
+      "contracts": [],
+      "authority_suites": [],
+      "assurance_watches": [],
+      "gate_definition_ids": ["gate-policy-schema-consistency-v1"],
+      "documentation_paths": ["docs/decisions/0039-campaign-scoped-risk-based-testing-and-assurance-gates.md"]
+    }
+  ]
+}

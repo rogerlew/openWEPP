@@ -54,6 +54,10 @@ scope.
   required pre-read and why it cannot move to `On-demand`.
 
 4. Preserve mandatory technical gates in every prompt
+- Bind gate lifecycle, boundary assignment, escalation, and receipt currency to
+  `docs/standards/testing-and-gate-strategy.md`. Require a pre-implementation
+  intent plan and exact-diff terminal reconciliation when the mechanical path
+  is available; before cutover, name the conservative fallback commands.
 - Contract-first sequencing.
 - Canonical `SC-*` authority requirements.
 - Legacy baseline provenance requirement when migration applies.
@@ -97,9 +101,11 @@ scope.
   user/session authorization is absent and tool policy blocks spawning, ask for
   one-time authorization or record the block and run the equivalent gate locally
   only when package governance allows local substitution.
-- **Required, not optional, for heavy batch/closure/comparator work.** When a
-  package runs the full closure loop (`cargo test --workspace`, clippy, deny),
-  comparator/parity suites, release gates, or population/cohort batches, the
+- **Required, not optional, for selected heavy batch/closure/comparator work.**
+  When a terminal plan, critical classification, campaign/release boundary, or
+  transition fallback selects full workspace tests, global coverage/CRAP,
+  Clippy/deny, comparator/parity suites, release gates, or population/cohort
+  batches, the
   prompt MUST *require* — not merely authorize — spawning the
   `comparator_suite_runner` subagent (gpt-5.3-codex-spark) for those runs, with an
   imperative directive (see the `Subagent requirement:` template line).
@@ -107,7 +113,8 @@ scope.
   premium model when the subagent is available. If the subagent is genuinely
   unavailable (tool-policy block or spawn failure), record that with command-level
   evidence as the justification before running locally.
-- If no subagents are required, state `Subagent requirement: none`.
+- If no heavy gate is selected and no other subagents are required, state
+  `Subagent requirement: none`.
 
 5. Required fallback when a false-positive block occurs
 - Retry with a shorter prompt that includes only:

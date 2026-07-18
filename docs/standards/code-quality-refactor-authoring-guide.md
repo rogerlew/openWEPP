@@ -18,6 +18,7 @@ only what the mechanical guide lacks; it **delegates** everything shared.
 | Refactor mechanics: gate ladder, artifact set, anti-drift, low-cost-model playbook, file/module split patterns | [mechanical-refactor-authoring-guide.md](mechanical-refactor-authoring-guide.md) |
 | Test-first precondition / coverage closure of the target module | [module-test-enhancement-authoring-guide.md](module-test-enhancement-authoring-guide.md) |
 | CRAP ≤ 30 bound, cover-then-decompose sequencing, baseline ratchet | [ADR-0021](../decisions/0021-module-coverage-closure-thresholds.md) |
+| Gate selection, lifecycle, escalation, and evidence reuse | [testing-and-gate-strategy.md](testing-and-gate-strategy.md) |
 | Float-comparison rule, symbol glossary, determinism | [rust-scientific-coding-standard.md](rust-scientific-coding-standard.md) §7.7 |
 
 This guide adds: the **quality-metric catalog** (§3), the **numeric-equivalence
@@ -127,10 +128,11 @@ the metric loop.
 4. **Refactor.** Apply §5 (decomposition) or the relevant mechanical pattern, one
    edit at a time, numeric equivalence preserved (§4).
 5. **Re-measure.** Record `*_after`; the dimension target (§3) is met.
-6. **Gate loop.** Mechanical guide §6 (`fmt`, `clippy --workspace --all-targets
-   -- -D warnings`, full-profile `nextest`, `deny`), **plus**
-   `bash tools/release/run_adjudicated_crap_gate.sh --base-ref <frozen-base>`,
-   **plus** the module's coverage gate (no regression vs the precondition).
+6. **Gate loop.** Mechanical guide §6's exact terminal plan, including the
+   module's affected coverage/CRAP and no-regression gate. Critical changes,
+   campaign closure, and release use full workspace/global evidence. Before
+   planner/executor cutover, use the mechanical guide's conservative full
+   fallback.
 7. **Evidence and disposition.** Before/after metric, the numeric-equivalence
    statement, any exclusions.
 

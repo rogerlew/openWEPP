@@ -188,7 +188,9 @@ For each selected module:
 8. Re-run focused tests and target CRAP after meaningful changes.
 9. Stop editing when every owned production function is `<= 30` or explicitly
    dispositioned.
-10. Run final gates and record exact commands, exit codes, and evidence.
+10. Reconcile the exact terminal plan and run every selected gate, recording
+    command/receipt identities, exit codes, and evidence. Before the gate
+    planner/executor cuts over, run the conservative full fallback.
 11. Complete dual review, disposition findings, and dual verification.
 12. Commit completion or hold evidence.
 13. Continue to the next selected target only when the current target is
@@ -231,7 +233,8 @@ A global hold stops the nightly batch. Examples:
 - CRAP/coverage tooling is unavailable or produces unusable output;
 - the selected target overlaps dirty active science or feature work;
 - output identity breaks in a way that might implicate shared behavior;
-- full closure gates fail outside the target package's control;
+- selected terminal gates or the pre-cutover full fallback fail outside the
+  target package's control;
 - the worktree cannot create required scaffold/hold/completion commits.
 
 For a global hold:
@@ -286,11 +289,13 @@ At minimum:
 - target-module `cargo llvm-cov` / `cargo crap` before and after, or a recorded
   reason an after measurement is not possible on hold
 - output identity or API/fixture identity appropriate to the touched surface
-- `.rs` line-count governance
-- `cargo fmt --check`
-- `cargo clippy --workspace --all-targets -- -D warnings`
-- `cargo nextest run --workspace --profile full`
-- `cargo deny check`
+- `.rs` line-count governance;
+- the intent/terminal gate-plan reconciliation required by
+  `docs/standards/testing-and-gate-strategy.md`;
+- every selected affected gate; and
+- until planner/executor cutover, `cargo fmt --check`, workspace
+  warnings-denied Clippy, full-profile Nextest, cargo-deny, and fresh global
+  adjudicated CRAP as the conservative fallback.
 
 If the package touches external-authority suite posture, cohort fixtures, or
 required-case bindings, also run:
