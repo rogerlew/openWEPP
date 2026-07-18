@@ -6,8 +6,7 @@ All accepted static-review findings were remediated and received two final
 independent PASS verdicts. Conservative broad roots and unavailable hermetic
 reuse were accepted as an explicitly fail-closed shadow-v1 limitation.
 
-The terminal CRAP result is an unresolved blocking finding: 12 actionable rows
-remain in touched production files. It is classified `follow-up`, not waived or
-deferred. A bounded successor must choose essential adversarial coverage or
-complexity-reducing decomposition per function, then run only the invalidated
-focused and closure gates. TESTGATE-CI-01 remains blocked.
+The terminal CRAP finding was accepted and resolved by bounded successor
+`20260718-testgate-plan-crap-cleanup-001`; no waiver or denominator exclusion
+was used. Its fresh report contains 2 raw rows, both existing adjudications, and
+0 actionable rows. TESTGATE-CI-01 is unblocked as the next planning item.

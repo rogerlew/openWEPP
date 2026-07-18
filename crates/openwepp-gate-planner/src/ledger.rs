@@ -37,32 +37,36 @@ pub fn verify_campaign_ledger(
 
 fn verify_predecessor(ledger: &Value, predecessor: Option<&Value>) -> Result<()> {
     match predecessor {
-        Some(previous) => {
-            verify_id(previous, "ledger_id", "GATE-LEDGER-PREDECESSOR-ID")?;
-            if previous["campaign"]["campaign_id"] != ledger["campaign"]["campaign_id"] {
-                return Err(ledger_error(
-                    "GATE-LEDGER-PREDECESSOR-CAMPAIGN",
-                    "predecessor campaign differs",
-                ));
-            }
-            if ledger["predecessor_ledger_id"] != previous["ledger_id"]
-                || ledger["expected_predecessor_head"] != previous["current_head"]
-            {
-                return Err(ledger_error(
-                    "GATE-LEDGER-CAS",
-                    "predecessor ledger/head mismatch",
-                ));
-            }
-        }
-        None if !ledger["predecessor_ledger_id"].is_null() => {
-            return Err(ledger_error(
-                "GATE-LEDGER-PREDECESSOR",
-                "predecessor is required",
-            ));
-        }
-        None => {}
+        Some(previous) => verify_previous_ledger(ledger, previous),
+        None if !ledger["predecessor_ledger_id"].is_null() => Err(ledger_error(
+            "GATE-LEDGER-PREDECESSOR",
+            "predecessor is required",
+        )),
+        None => Ok(()),
     }
-    Ok(())
+}
+
+fn verify_previous_ledger(ledger: &Value, previous: &Value) -> Result<()> {
+    verify_id(previous, "ledger_id", "GATE-LEDGER-PREDECESSOR-ID")?;
+    if previous["campaign"]["campaign_id"] != ledger["campaign"]["campaign_id"] {
+        return Err(ledger_error(
+            "GATE-LEDGER-PREDECESSOR-CAMPAIGN",
+            "predecessor campaign differs",
+        ));
+    }
+    require_ledger_cas(ledger["predecessor_ledger_id"] == previous["ledger_id"])?;
+    require_ledger_cas(ledger["expected_predecessor_head"] == previous["current_head"])
+}
+
+fn require_ledger_cas(matches: bool) -> Result<()> {
+    if matches {
+        Ok(())
+    } else {
+        Err(ledger_error(
+            "GATE-LEDGER-CAS",
+            "predecessor ledger/head mismatch",
+        ))
+    }
 }
 
 fn verify_event_chain(ledger: &Value, events: &[Value]) -> Result<()> {
@@ -316,26 +320,44 @@ fn verify_passing_obligations(
 
 fn verify_authorizations(ledger: &Value) -> Result<()> {
     let mut ids = BTreeSet::new();
-    if let Some(authorization) = array(ledger, "/authorization_events")?.first() {
-        verify_id(
-            authorization,
-            "authorization_id",
-            "GATE-LEDGER-AUTHORIZATION-ID",
-        )?;
-        let id = string(authorization, "/authorization_id")?;
-        if !ids.insert(id)
-            || authorization["campaign_id"] != ledger["campaign"]["campaign_id"]
-            || authorization["target_head"] != ledger["current_head"]
-            || authorization["predecessor_ledger_id"] != ledger["predecessor_ledger_id"]
-        {
-            return Err(ledger_error("GATE-LEDGER-AUTHORIZATION", id));
-        }
-        Err(ledger_error(
-            "GATE-LEDGER-AUTHORIZATION-UNAUTHENTICATED",
-            "self-declared authorization cannot establish authority",
-        ))
-    } else {
+    let Some(authorization) = array(ledger, "/authorization_events")?.first() else {
+        return Ok(());
+    };
+    verify_id(
+        authorization,
+        "authorization_id",
+        "GATE-LEDGER-AUTHORIZATION-ID",
+    )?;
+    verify_authorization_binding(ledger, authorization, &mut ids)?;
+    Err(ledger_error(
+        "GATE-LEDGER-AUTHORIZATION-UNAUTHENTICATED",
+        "self-declared authorization cannot establish authority",
+    ))
+}
+
+fn verify_authorization_binding<'a>(
+    ledger: &Value,
+    authorization: &'a Value,
+    ids: &mut BTreeSet<&'a str>,
+) -> Result<()> {
+    let id = string(authorization, "/authorization_id")?;
+    require_authorization_binding(ids.insert(id), id)?;
+    require_authorization_binding(
+        authorization["campaign_id"] == ledger["campaign"]["campaign_id"],
+        id,
+    )?;
+    require_authorization_binding(authorization["target_head"] == ledger["current_head"], id)?;
+    require_authorization_binding(
+        authorization["predecessor_ledger_id"] == ledger["predecessor_ledger_id"],
+        id,
+    )
+}
+
+fn require_authorization_binding(matches: bool, id: &str) -> Result<()> {
+    if matches {
         Ok(())
+    } else {
+        Err(ledger_error("GATE-LEDGER-AUTHORIZATION", id))
     }
 }
 
@@ -376,12 +398,7 @@ fn verify_certification_references(
     let authorization = array(ledger, "/authorization_events")?
         .iter()
         .find(|authorization| authorization["authorization_id"] == authorization_id);
-    if certification["envelope_id"] == reference["envelope_id"]
-        && authorization.is_some_and(|authorization| {
-            authorization["envelope_id"] == certification["envelope_id"]
-                && authorization["target_head"] == certification["certified_head"]
-        })
-    {
+    if certification_binding_matches(certification, reference, authorization) {
         Err(ledger_error(
             "GATE-LEDGER-CERTIFICATION-UNAUTHENTICATED",
             "certification requires verified receipt, envelope, and role capabilities",
@@ -392,6 +409,23 @@ fn verify_certification_references(
             receipt_id,
         ))
     }
+}
+
+fn certification_binding_matches(
+    certification: &serde_json::Map<String, Value>,
+    reference: &Value,
+    authorization: Option<&Value>,
+) -> bool {
+    if certification["envelope_id"] != reference["envelope_id"] {
+        return false;
+    }
+    let Some(authorization) = authorization else {
+        return false;
+    };
+    if authorization["envelope_id"] != certification["envelope_id"] {
+        return false;
+    }
+    authorization["target_head"] == certification["certified_head"]
 }
 
 fn verify_campaign_closure(ledger: &Value, declared: &BTreeMap<&str, &str>) -> Result<()> {
@@ -517,34 +551,83 @@ fn verify_assurance_replacements(entries: &BTreeMap<&str, &Value>) -> Result<()>
         .values()
         .filter(|entry| entry["state"] == "SUPERSEDED")
     {
-        let replacement = string(entry, "/replacement_entry_id")?;
-        let replacement_entry = entries
-            .get(replacement)
-            .ok_or_else(|| ledger_error("GATE-ASSURANCE-REPLACEMENT", replacement))?;
-        if matches!(
-            replacement_entry["state"].as_str(),
-            Some("SUPERSEDED" | "WITHDRAWN")
-        ) || replacement == string(entry, "/impact_entry_id")?
-            || replacement_entry["report_root"] != entry["report_root"]
-            || replacement_entry["target_head"] != entry["target_head"]
-            || replacement_entry["matching_watch_ids"] != entry["matching_watch_ids"]
-            || replacement_entry["changed_object"] != entry["changed_object"]
-        {
-            return Err(ledger_error("GATE-ASSURANCE-REPLACEMENT", replacement));
-        }
+        verify_assurance_replacement(entries, entry)?;
     }
     for id in entries.keys() {
-        let mut seen = BTreeSet::new();
-        let mut current = *id;
-        while let Some(next) = entries
-            .get(current)
-            .and_then(|entry| entry["replacement_entry_id"].as_str())
-        {
-            if !seen.insert(current) {
-                return Err(ledger_error("GATE-ASSURANCE-REPLACEMENT-CYCLE", *id));
-            }
-            current = next;
+        verify_assurance_replacement_chain(entries, id)?;
+    }
+    Ok(())
+}
+
+fn verify_assurance_replacement(entries: &BTreeMap<&str, &Value>, entry: &Value) -> Result<()> {
+    let (replacement, replacement_entry) = assurance_replacement_entry(entries, entry)?;
+    require_assurance_replacement(
+        !matches!(
+            replacement_entry["state"].as_str(),
+            Some("SUPERSEDED" | "WITHDRAWN")
+        ),
+        &replacement,
+    )?;
+    require_assurance_replacement(
+        replacement != string(entry, "/impact_entry_id")?,
+        &replacement,
+    )?;
+    verify_assurance_replacement_bindings(replacement_entry, entry, &replacement)
+}
+
+fn verify_assurance_replacement_bindings(
+    replacement_entry: &Value,
+    entry: &Value,
+    replacement: &str,
+) -> Result<()> {
+    require_assurance_replacement(
+        replacement_entry["report_root"] == entry["report_root"],
+        replacement,
+    )?;
+    require_assurance_replacement(
+        replacement_entry["target_head"] == entry["target_head"],
+        replacement,
+    )?;
+    require_assurance_replacement(
+        replacement_entry["matching_watch_ids"] == entry["matching_watch_ids"],
+        replacement,
+    )?;
+    require_assurance_replacement(
+        replacement_entry["changed_object"] == entry["changed_object"],
+        replacement,
+    )
+}
+
+fn assurance_replacement_entry<'a>(
+    entries: &BTreeMap<&str, &'a Value>,
+    entry: &Value,
+) -> Result<(String, &'a Value)> {
+    let replacement = string(entry, "/replacement_entry_id")?.to_owned();
+    let replacement_entry = entries
+        .get(replacement.as_str())
+        .ok_or_else(|| ledger_error("GATE-ASSURANCE-REPLACEMENT", &replacement))?;
+    Ok((replacement, replacement_entry))
+}
+
+fn require_assurance_replacement(compatible: bool, replacement: &str) -> Result<()> {
+    if compatible {
+        Ok(())
+    } else {
+        Err(ledger_error("GATE-ASSURANCE-REPLACEMENT", replacement))
+    }
+}
+
+fn verify_assurance_replacement_chain(entries: &BTreeMap<&str, &Value>, id: &&str) -> Result<()> {
+    let mut seen = BTreeSet::new();
+    let mut current = *id;
+    while let Some(next) = entries
+        .get(current)
+        .and_then(|entry| entry["replacement_entry_id"].as_str())
+    {
+        if !seen.insert(current) {
+            return Err(ledger_error("GATE-ASSURANCE-REPLACEMENT-CYCLE", *id));
         }
+        current = next;
     }
     Ok(())
 }
@@ -730,9 +813,15 @@ fn ledger_error(code: &'static str, message: impl Into<String>) -> GatePolicyErr
 
 #[cfg(test)]
 mod tests {
+    use std::collections::BTreeMap;
+
     use serde_json::{Value, json};
 
-    use super::{allowed_transition, verify_assurance_impact, verify_campaign_ledger};
+    use super::{
+        allowed_transition, verify_assurance_impact, verify_assurance_replacements,
+        verify_authorizations, verify_campaign_ledger, verify_certification_references,
+        verify_predecessor,
+    };
     use crate::canonical::derived_id;
 
     #[test]
@@ -822,6 +911,99 @@ mod tests {
         unproven_pass["ledger_id"] =
             json!(derived_id(&unproven_pass, "ledger_id").expect("ledger identity"));
         assert!(verify_campaign_ledger(&root, &unproven_pass, None).is_err());
+    }
+
+    #[test]
+    fn ledger_security_bindings_preserve_typed_fail_closed_outcomes() {
+        let mut previous = json!({
+            "ledger_id": "0".repeat(64),
+            "campaign": {"campaign_id": "campaign"},
+            "current_head": "head"
+        });
+        previous["ledger_id"] =
+            json!(derived_id(&previous, "ledger_id").expect("predecessor identity"));
+        let mut ledger = json!({
+            "campaign": {"campaign_id": "campaign"},
+            "predecessor_ledger_id": previous["ledger_id"],
+            "expected_predecessor_head": "head"
+        });
+        verify_predecessor(&ledger, Some(&previous)).expect("exact predecessor binding");
+        ledger["expected_predecessor_head"] = json!("different");
+        let error = verify_predecessor(&ledger, Some(&previous))
+            .expect_err("predecessor CAS drift must fail closed");
+        assert_eq!(error.code, "GATE-LEDGER-CAS");
+
+        let mut authorization = json!({
+            "authorization_id": "0".repeat(64),
+            "campaign_id": "campaign",
+            "target_head": "head",
+            "predecessor_ledger_id": null,
+            "envelope_id": "envelope"
+        });
+        authorization["authorization_id"] =
+            json!(derived_id(&authorization, "authorization_id").expect("authorization identity"));
+        let mut authorized_ledger = json!({
+            "campaign": {"campaign_id": "campaign"},
+            "current_head": "head",
+            "predecessor_ledger_id": null,
+            "authorization_events": [authorization]
+        });
+        let error = verify_authorizations(&authorized_ledger)
+            .expect_err("self-declared authorization remains unauthenticated");
+        assert_eq!(error.code, "GATE-LEDGER-AUTHORIZATION-UNAUTHENTICATED");
+        authorized_ledger["authorization_events"][0]["target_head"] = json!("different");
+        authorized_ledger["authorization_events"][0]["authorization_id"] = json!(
+            derived_id(
+                &authorized_ledger["authorization_events"][0],
+                "authorization_id"
+            )
+            .expect("drifted authorization identity")
+        );
+        let error = verify_authorizations(&authorized_ledger)
+            .expect_err("authorization binding drift must fail closed");
+        assert_eq!(error.code, "GATE-LEDGER-AUTHORIZATION");
+
+        authorized_ledger["authorization_events"][0]["target_head"] = json!("head");
+        authorized_ledger["authorization_events"][0]["authorization_id"] = json!(
+            derived_id(
+                &authorized_ledger["authorization_events"][0],
+                "authorization_id"
+            )
+            .expect("restored authorization identity")
+        );
+        authorized_ledger["certification"] = json!({
+            "receipt_id": "receipt",
+            "envelope_id": "envelope",
+            "authorization_id": authorized_ledger["authorization_events"][0]["authorization_id"],
+            "certified_head": "head"
+        });
+        let receipt_reference = json!({"envelope_id": "envelope"});
+        let receipt_refs = BTreeMap::from([("receipt", &receipt_reference)]);
+        let error = verify_certification_references(&authorized_ledger, &receipt_refs)
+            .expect_err("self-declared certification remains unauthenticated");
+        assert_eq!(error.code, "GATE-LEDGER-CERTIFICATION-UNAUTHENTICATED");
+        authorized_ledger["certification"]["envelope_id"] = json!("different");
+        let error = verify_certification_references(&authorized_ledger, &receipt_refs)
+            .expect_err("certification reference drift must fail closed");
+        assert_eq!(error.code, "GATE-LEDGER-CERTIFICATION-REFERENCE");
+
+        let superseded = json!({
+            "impact_entry_id": "old", "state": "SUPERSEDED",
+            "replacement_entry_id": "new", "report_root": "root",
+            "target_head": "head", "matching_watch_ids": [], "changed_object": {}
+        });
+        let mut replacement = json!({
+            "impact_entry_id": "new", "state": "OPEN_ASSESSMENT",
+            "replacement_entry_id": null, "report_root": "root",
+            "target_head": "head", "matching_watch_ids": [], "changed_object": {}
+        });
+        let entries = BTreeMap::from([("old", &superseded), ("new", &replacement)]);
+        verify_assurance_replacements(&entries).expect("compatible acyclic replacement");
+        replacement["replacement_entry_id"] = json!("old");
+        let entries = BTreeMap::from([("old", &superseded), ("new", &replacement)]);
+        let error = verify_assurance_replacements(&entries)
+            .expect_err("replacement cycles must fail closed");
+        assert_eq!(error.code, "GATE-ASSURANCE-REPLACEMENT-CYCLE");
     }
 
     #[test]

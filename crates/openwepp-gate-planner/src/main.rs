@@ -171,7 +171,23 @@ fn persist_plan(repo: &Path, options: &BTreeMap<String, String>, plan: &Value) -
 
 #[cfg(target_os = "linux")]
 fn write_plan_confined(repo: &Path, output: &Path, bytes: &[u8]) -> Result<()> {
-    use rustix::fs::{AtFlags, Mode, OFlags, ResolveFlags, openat, openat2, renameat, unlinkat};
+    let (parent_fd, output_name) = confined_output_parent(repo, output)?;
+    let (temporary_fd, temporary_name) = reserve_temporary_output(&parent_fd, output)?;
+    persist_reserved_output(
+        parent_fd,
+        &output_name,
+        temporary_fd,
+        &temporary_name,
+        bytes,
+    )
+}
+
+#[cfg(target_os = "linux")]
+fn confined_output_parent(
+    repo: &Path,
+    output: &Path,
+) -> Result<(std::os::fd::OwnedFd, std::ffi::OsString)> {
+    use rustix::fs::{Mode, OFlags, ResolveFlags, openat2};
     use std::os::fd::AsRawFd;
 
     let parent = output
@@ -202,7 +218,6 @@ fn write_plan_confined(repo: &Path, output: &Path, bytes: &[u8]) -> Result<()> {
             "plan output must be outside the observed repository",
         ));
     }
-
     let output_name = output.file_name().ok_or_else(|| {
         GatePolicyError::new(
             ErrorClass::Cli,
@@ -210,31 +225,36 @@ fn write_plan_confined(repo: &Path, output: &Path, bytes: &[u8]) -> Result<()> {
             "missing output file name",
         )
     })?;
+    Ok((parent_fd, output_name.to_owned()))
+}
+
+#[cfg(target_os = "linux")]
+fn reserve_temporary_output(
+    parent_fd: &std::os::fd::OwnedFd,
+    output: &Path,
+) -> Result<(std::os::fd::OwnedFd, String)> {
+    use rustix::fs::{Mode, OFlags, openat};
+
+    let output_name = output
+        .file_name()
+        .and_then(|name| name.to_str())
+        .ok_or_else(|| {
+            GatePolicyError::new(
+                ErrorClass::Cli,
+                "GATE-CLI-OUTPUT",
+                "output path needs a UTF-8 file name",
+            )
+        })?;
     for nonce in 0_u8..16 {
-        let temporary = format!(
-            ".{}.tmp-{}-{nonce}",
-            output
-                .file_name()
-                .and_then(|name| name.to_str())
-                .ok_or_else(|| {
-                    GatePolicyError::new(
-                        ErrorClass::Cli,
-                        "GATE-CLI-OUTPUT",
-                        "output path needs a UTF-8 file name",
-                    )
-                })?,
-            std::process::id()
-        );
-        let temporary_fd = match openat(
-            &parent_fd,
+        let temporary = format!(".{output_name}.tmp-{}-{nonce}", std::process::id());
+        match openat(
+            parent_fd,
             &temporary,
             OFlags::WRONLY | OFlags::CREATE | OFlags::EXCL | OFlags::NOFOLLOW | OFlags::CLOEXEC,
             Mode::RUSR | Mode::WUSR,
         ) {
-            Ok(file) => file,
-            Err(error) if error == rustix::io::Errno::EXIST => {
-                continue;
-            }
+            Ok(file) => return Ok((file, temporary)),
+            Err(error) if error == rustix::io::Errno::EXIST => {}
             Err(error) => {
                 return Err(GatePolicyError::new(
                     ErrorClass::Io,
@@ -242,36 +262,47 @@ fn write_plan_confined(repo: &Path, output: &Path, bytes: &[u8]) -> Result<()> {
                     error.to_string(),
                 ));
             }
-        };
-        let mut file = fs::File::from(temporary_fd);
-        let written = file.write_all(bytes).and_then(|()| file.sync_all());
-        drop(file);
-        if let Err(error) = written {
-            let _cleanup = unlinkat(&parent_fd, &temporary, AtFlags::empty());
-            return Err(GatePolicyError::new(
-                ErrorClass::Io,
-                "GATE-CLI-WRITE",
-                error.to_string(),
-            ));
         }
-        if let Err(error) = renameat(&parent_fd, &temporary, &parent_fd, output_name) {
-            let _cleanup = unlinkat(&parent_fd, &temporary, AtFlags::empty());
-            return Err(GatePolicyError::new(
-                ErrorClass::Io,
-                "GATE-CLI-RENAME",
-                error.to_string(),
-            ));
-        }
-        fs::File::from(parent_fd).sync_all().map_err(|error| {
-            GatePolicyError::new(ErrorClass::Io, "GATE-CLI-DIR-SYNC", error.to_string())
-        })?;
-        return Ok(());
     }
     Err(GatePolicyError::new(
         ErrorClass::Io,
         "GATE-CLI-WRITE",
         "could not reserve a unique temporary output",
     ))
+}
+
+#[cfg(target_os = "linux")]
+fn persist_reserved_output(
+    parent_fd: std::os::fd::OwnedFd,
+    output_name: &std::ffi::OsStr,
+    temporary_fd: std::os::fd::OwnedFd,
+    temporary_name: &str,
+    bytes: &[u8],
+) -> Result<()> {
+    use rustix::fs::{AtFlags, renameat, unlinkat};
+
+    let mut file = fs::File::from(temporary_fd);
+    let written = file.write_all(bytes).and_then(|()| file.sync_all());
+    drop(file);
+    if let Err(error) = written {
+        let _cleanup = unlinkat(&parent_fd, temporary_name, AtFlags::empty());
+        return Err(GatePolicyError::new(
+            ErrorClass::Io,
+            "GATE-CLI-WRITE",
+            error.to_string(),
+        ));
+    }
+    if let Err(error) = renameat(&parent_fd, temporary_name, &parent_fd, output_name) {
+        let _cleanup = unlinkat(&parent_fd, temporary_name, AtFlags::empty());
+        return Err(GatePolicyError::new(
+            ErrorClass::Io,
+            "GATE-CLI-RENAME",
+            error.to_string(),
+        ));
+    }
+    fs::File::from(parent_fd).sync_all().map_err(|error| {
+        GatePolicyError::new(ErrorClass::Io, "GATE-CLI-DIR-SYNC", error.to_string())
+    })
 }
 
 #[cfg(not(target_os = "linux"))]
@@ -379,7 +410,7 @@ fn usage_error() -> GatePolicyError {
 
 #[cfg(test)]
 mod tests {
-    use super::{parse_options, run_arguments};
+    use super::{parse_options, run_arguments, write_plan_confined};
 
     fn arguments(values: &[&str]) -> Vec<String> {
         values.iter().map(|value| (*value).to_owned()).collect()
@@ -417,5 +448,35 @@ mod tests {
             let error = run_arguments(case).expect_err("incomplete command must fail");
             assert_eq!(error.code, "GATE-CLI-USAGE");
         }
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn confined_plan_output_is_atomic_and_outside_the_repository() {
+        let repo = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+        let scratch = std::env::temp_dir().join(format!(
+            "openwepp-gate-plan-confined-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("system clock is after the Unix epoch")
+                .as_nanos()
+        ));
+        std::fs::create_dir(&scratch).expect("create test scratch directory");
+        let output = scratch.join("gate-plan.json");
+
+        write_plan_confined(&repo, &output, b"first").expect("write outside repository");
+        assert_eq!(std::fs::read(&output).expect("read output"), b"first");
+        write_plan_confined(&repo, &output, b"replacement").expect("replace atomically");
+        assert_eq!(
+            std::fs::read(&output).expect("read replacement"),
+            b"replacement"
+        );
+
+        let in_repository = repo.join("target/confined-output-must-not-exist.json");
+        let error = write_plan_confined(&repo, &in_repository, b"forbidden")
+            .expect_err("repository-confined output must fail closed");
+        assert_eq!(error.code, "GATE-CLI-OUTPUT-IN-REPOSITORY");
+        std::fs::remove_dir_all(&scratch).expect("remove test scratch directory");
     }
 }

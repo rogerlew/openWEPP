@@ -72,40 +72,69 @@ pub fn reconcile_intent_terminal(
 }
 
 fn reconcile_semantics(intent: &Value, terminal: &Value) -> Result<Reconciliation> {
-    if intent["planning_stage"] != "INTENT"
-        || terminal["planning_stage"] != "TERMINAL"
-        || terminal["predecessor_intent_plan_id"] != intent["plan_id"]
-    {
-        return Err(GatePolicyError::new(
+    verify_reconciliation_link(intent, terminal)?;
+    let intended = changed_paths(intent)?;
+    let actual = changed_paths(terminal)?;
+    verify_terminal_authorization(intent, terminal, &actual)?;
+    let intent_risk = risk_rank(intent["risk"]["class"].as_str())?;
+    let terminal_risk = risk_rank(terminal["risk"]["class"].as_str())?;
+    let removed_paths = intended.difference(&actual).cloned().collect();
+    verify_monotonic_risk(intent_risk, terminal_risk)?;
+    verify_terminal_superset(intent, terminal)?;
+    verify_no_terminal_deferral(terminal)?;
+    Ok(Reconciliation {
+        added_paths: actual.difference(&intended).cloned().collect(),
+        removed_paths,
+        risk_escalated: terminal_risk > intent_risk,
+    })
+}
+
+fn verify_reconciliation_link(intent: &Value, terminal: &Value) -> Result<()> {
+    require_reconciliation_link(intent["planning_stage"] == "INTENT")?;
+    require_reconciliation_link(terminal["planning_stage"] == "TERMINAL")?;
+    require_reconciliation_link(terminal["predecessor_intent_plan_id"] == intent["plan_id"])
+}
+
+fn require_reconciliation_link(matches: bool) -> Result<()> {
+    if matches {
+        Ok(())
+    } else {
+        Err(GatePolicyError::new(
             ErrorClass::Planning,
             "GATE-PLAN-RECONCILIATION",
             "terminal plan does not name the supplied intent plan",
-        ));
+        ))
     }
-    let paths = |plan: &Value| -> Result<BTreeSet<String>> {
-        plan["changed_objects"]
-            .as_array()
-            .ok_or_else(|| {
+}
+
+fn changed_paths(plan: &Value) -> Result<BTreeSet<String>> {
+    plan["changed_objects"]
+        .as_array()
+        .ok_or_else(|| {
+            GatePolicyError::new(
+                ErrorClass::Planning,
+                "GATE-PLAN-CHANGES",
+                "changed_objects is not an array",
+            )
+        })?
+        .iter()
+        .map(|change| {
+            change["path"].as_str().map(str::to_owned).ok_or_else(|| {
                 GatePolicyError::new(
                     ErrorClass::Planning,
-                    "GATE-PLAN-CHANGES",
-                    "changed_objects is not an array",
+                    "GATE-PLAN-CHANGE-PATH",
+                    "changed path is missing",
                 )
-            })?
-            .iter()
-            .map(|change| {
-                change["path"].as_str().map(str::to_owned).ok_or_else(|| {
-                    GatePolicyError::new(
-                        ErrorClass::Planning,
-                        "GATE-PLAN-CHANGE-PATH",
-                        "changed path is missing",
-                    )
-                })
             })
-            .collect()
-    };
-    let intended = paths(intent)?;
-    let actual = paths(terminal)?;
+        })
+        .collect()
+}
+
+fn verify_terminal_authorization(
+    intent: &Value,
+    terminal: &Value,
+    actual: &BTreeSet<String>,
+) -> Result<()> {
     let authorized = string_set(&intent["authorized_paths"], "/authorized_paths")?;
     let terminal_authorized = string_set(&terminal["authorized_paths"], "/authorized_paths")?;
     if authorized != terminal_authorized || !actual.is_subset(&authorized) {
@@ -115,9 +144,10 @@ fn reconcile_semantics(intent: &Value, terminal: &Value) -> Result<Reconciliatio
             "terminal changes exceed the exact authorized intent surface",
         ));
     }
-    let intent_risk = risk_rank(intent["risk"]["class"].as_str())?;
-    let terminal_risk = risk_rank(terminal["risk"]["class"].as_str())?;
-    let removed_paths = intended.difference(&actual).cloned().collect::<Vec<_>>();
+    Ok(())
+}
+
+fn verify_monotonic_risk(intent_risk: u8, terminal_risk: u8) -> Result<()> {
     if terminal_risk < intent_risk {
         return Err(GatePolicyError::new(
             ErrorClass::Planning,
@@ -125,7 +155,10 @@ fn reconcile_semantics(intent: &Value, terminal: &Value) -> Result<Reconciliatio
             "terminal planning cannot downgrade risk",
         ));
     }
-    verify_terminal_superset(intent, terminal)?;
+    Ok(())
+}
+
+fn verify_no_terminal_deferral(terminal: &Value) -> Result<()> {
     if !terminal["deferred_obligations"]
         .as_array()
         .is_some_and(Vec::is_empty)
@@ -136,11 +169,7 @@ fn reconcile_semantics(intent: &Value, terminal: &Value) -> Result<Reconciliatio
             "terminal plans cannot create deferred obligations",
         ));
     }
-    Ok(Reconciliation {
-        added_paths: actual.difference(&intended).cloned().collect(),
-        removed_paths,
-        risk_escalated: terminal_risk > intent_risk,
-    })
+    Ok(())
 }
 
 fn verify_terminal_superset(intent: &Value, terminal: &Value) -> Result<()> {
@@ -1482,25 +1511,7 @@ fn manifest_object_identity(
 ) -> Result<(&'static str, Option<&'static str>, Option<String>)> {
     let absolute = repo.join(path);
     match fs::symlink_metadata(&absolute) {
-        Ok(metadata) if metadata.file_type().is_symlink() => {
-            let target = fs::read_link(&absolute).map_err(|error| {
-                GatePolicyError::new(ErrorClass::Io, "GATE-MANIFEST-SYMLINK", error.to_string())
-            })?;
-            let target = target.to_str().ok_or_else(|| {
-                GatePolicyError::new(ErrorClass::GitState, "GATE-MANIFEST-SYMLINK-NONUTF8", path)
-            })?;
-            Ok((
-                "SYMLINK",
-                Some("120000"),
-                Some(sha256_bytes(target.as_bytes())),
-            ))
-        }
-        Ok(metadata) if metadata.is_file() => regular_manifest_identity(&absolute, path, &metadata),
-        Ok(_) => Err(GatePolicyError::new(
-            ErrorClass::GitState,
-            "GATE-MANIFEST-OBJECT",
-            path,
-        )),
+        Ok(metadata) => present_manifest_identity(&absolute, path, &metadata),
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(("MISSING", None, None)),
         Err(error) => Err(GatePolicyError::new(
             ErrorClass::Io,
@@ -1508,6 +1519,41 @@ fn manifest_object_identity(
             format!("{path}: {error}"),
         )),
     }
+}
+
+fn present_manifest_identity(
+    absolute: &Path,
+    path: &str,
+    metadata: &fs::Metadata,
+) -> Result<(&'static str, Option<&'static str>, Option<String>)> {
+    if metadata.file_type().is_symlink() {
+        symlink_manifest_identity(absolute, path)
+    } else if metadata.is_file() {
+        regular_manifest_identity(absolute, path, metadata)
+    } else {
+        Err(GatePolicyError::new(
+            ErrorClass::GitState,
+            "GATE-MANIFEST-OBJECT",
+            path,
+        ))
+    }
+}
+
+fn symlink_manifest_identity(
+    absolute: &Path,
+    path: &str,
+) -> Result<(&'static str, Option<&'static str>, Option<String>)> {
+    let target = fs::read_link(absolute).map_err(|error| {
+        GatePolicyError::new(ErrorClass::Io, "GATE-MANIFEST-SYMLINK", error.to_string())
+    })?;
+    let target = target.to_str().ok_or_else(|| {
+        GatePolicyError::new(ErrorClass::GitState, "GATE-MANIFEST-SYMLINK-NONUTF8", path)
+    })?;
+    Ok((
+        "SYMLINK",
+        Some("120000"),
+        Some(sha256_bytes(target.as_bytes())),
+    ))
 }
 
 fn regular_manifest_identity(
@@ -1783,6 +1829,20 @@ fn resolve_tool_executable(repo: &Path, program: &str) -> Result<std::path::Path
 }
 
 fn cargo_configuration_manifest(repo: &Path) -> Result<Value> {
+    let candidates = cargo_configuration_candidates(repo);
+    let repository = fs::canonicalize(repo).map_err(|error| {
+        GatePolicyError::new(ErrorClass::Io, "GATE-CARGO-CONFIG", error.to_string())
+    })?;
+    let mut records = Vec::new();
+    for path in candidates {
+        if let Some(record) = cargo_configuration_record(&repository, &path)? {
+            records.push(record);
+        }
+    }
+    Ok(Value::Array(records))
+}
+
+fn cargo_configuration_candidates(repo: &Path) -> BTreeSet<std::path::PathBuf> {
     let mut candidates = BTreeSet::new();
     for ancestor in repo.ancestors() {
         candidates.insert(ancestor.join(".cargo/config"));
@@ -1797,49 +1857,50 @@ fn cargo_configuration_manifest(repo: &Path) -> Result<Value> {
         candidates.insert(home.join("config"));
         candidates.insert(home.join("config.toml"));
     }
-    let repository = fs::canonicalize(repo).map_err(|error| {
+    candidates
+}
+
+fn cargo_configuration_record(repository: &Path, path: &Path) -> Result<Option<Value>> {
+    match fs::read(path) {
+        Ok(bytes) => active_cargo_configuration_record(repository, path, &bytes).map(Some),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(None),
+        Err(error) => Err(GatePolicyError::new(
+            ErrorClass::Io,
+            "GATE-CARGO-CONFIG",
+            format!("{}: {error}", path.display()),
+        )),
+    }
+}
+
+fn active_cargo_configuration_record(
+    repository: &Path,
+    path: &Path,
+    bytes: &[u8],
+) -> Result<Value> {
+    let canonical = fs::canonicalize(path).map_err(|error| {
         GatePolicyError::new(ErrorClass::Io, "GATE-CARGO-CONFIG", error.to_string())
     })?;
-    let mut records = Vec::new();
-    for path in candidates {
-        match fs::read(&path) {
-            Ok(bytes) => {
-                let canonical = fs::canonicalize(&path).map_err(|error| {
-                    GatePolicyError::new(ErrorClass::Io, "GATE-CARGO-CONFIG", error.to_string())
-                })?;
-                if !canonical.starts_with(&repository) {
-                    return Err(GatePolicyError::new(
-                        ErrorClass::CargoMetadata,
-                        "GATE-CARGO-EXTERNAL-CONFIG",
-                        format!(
-                            "external Cargo configuration is unsupported: {}",
-                            canonical.display()
-                        ),
-                    ));
-                }
-                let path = canonical.to_str().ok_or_else(|| {
-                    GatePolicyError::new(
-                        ErrorClass::Planning,
-                        "GATE-CARGO-CONFIG-NONUTF8",
-                        canonical.display().to_string(),
-                    )
-                })?;
-                records.push(json!({
-                    "path": path,
-                    "sha256": sha256_bytes(&bytes)
-                }));
-            }
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
-            Err(error) => {
-                return Err(GatePolicyError::new(
-                    ErrorClass::Io,
-                    "GATE-CARGO-CONFIG",
-                    format!("{}: {error}", path.display()),
-                ));
-            }
-        }
+    if !canonical.starts_with(repository) {
+        return Err(GatePolicyError::new(
+            ErrorClass::CargoMetadata,
+            "GATE-CARGO-EXTERNAL-CONFIG",
+            format!(
+                "external Cargo configuration is unsupported: {}",
+                canonical.display()
+            ),
+        ));
     }
-    Ok(Value::Array(records))
+    let path = canonical.to_str().ok_or_else(|| {
+        GatePolicyError::new(
+            ErrorClass::Planning,
+            "GATE-CARGO-CONFIG-NONUTF8",
+            canonical.display().to_string(),
+        )
+    })?;
+    Ok(json!({
+        "path": path,
+        "sha256": sha256_bytes(bytes)
+    }))
 }
 
 fn hash_path_manifest(repo: &Path, prefix: &str) -> Result<String> {

@@ -2,13 +2,15 @@
 
 Evidence class: `Ran` and `Static`
 
-Disposition: `EXECUTED-BLOCKED-CRAP`
+Disposition: `COMPLETE`
 
-The shadow implementation and dual static review are complete. Terminal format,
-workspace Clippy, full Nextest, and cargo-deny pass. The required adjudicated
-CRAP gate fails with 12 actionable rows, so the package is not complete and
-cannot authorize executor work, CI cutover, test reduction, evidence
-publication, campaign certification, or assurance mutation.
+The shadow implementation and dual static review are complete. The bounded
+`20260718-testgate-plan-crap-cleanup-001` successor resolved the retained CRAP
+blocker through four essential security contracts and behavior-preserving
+decomposition. Renewed terminal format, workspace Clippy, full Nextest
+(2,118/2,118), cargo-deny, and fresh adjudicated CRAP pass. CRAP reports 2 raw,
+2 existing adjudications, and 0 actionable rows.
 
-No redundant broad rerun or unplanned test expansion was performed after the
-failure.
+TESTGATE-CI-01 may begin. No CI cutover, current-gate reduction, protected
+publication, campaign certification, or assurance mutation is authorized by
+this disposition.

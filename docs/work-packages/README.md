@@ -11,6 +11,17 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260717-testgate-plan-shadow-planner-001/` and its bounded
+  `20260718-testgate-plan-crap-cleanup-001/` successor completed
+  TESTGATE-PLAN-01. The repository-owned shadow planner/verifier now owns
+  deterministic Git/Cargo/non-Cargo selection, identities, roots, receipts,
+  trust/reuse checks, ledger folds, and retained replay without executing gates
+  or changing CI. Cleanup added three essential security tests, strengthened
+  the existing reuse test, and applied behavior-preserving decomposition. Dual
+  review passed; terminal format,
+  workspace Clippy, cargo-deny, and full Nextest (`2,118/2,118`) passed; fresh
+  CRAP closed at 2 raw / 2 adjudicated / 0 actionable. TESTGATE-CI-01 is next;
+  no cutover or current-gate reduction is authorized.
 - `20260717-testgate-align-governance-schemas-001/` completed
   TESTGATE-ALIGN-01. It aligns prospective gate lifecycle guidance to ADR-0039,
   preserves the conservative pre-cutover fallback and ADR-0021 thresholds, and
@@ -131,18 +142,7 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-07-17 UTC`:
-
-- `20260717-testgate-plan-shadow-planner-001/` - EXECUTED-BLOCKED-CRAP:
-  implements the
-  TESTGATE-PLAN-01 deterministic planner and receipt verifier in shadow mode.
-  It owns canonical Git/Cargo/non-Cargo impact selection, identities and roots,
-  receipt/trust/reuse verification, ledger folds, and retained-package replay;
-  it does not execute gates, change CI, reduce current gates, publish evidence,
-  certify campaigns, or mutate assurance records. Dual exact-tree static review
-  passes; terminal format, workspace Clippy, full Nextest (2,115/2,115), and
-  cargo-deny pass. Fresh adjudicated CRAP stops closure with 12 actionable rows
-  in the new crate, so no cutover or gate reduction is authorized.
+State as of `2026-07-18 UTC`:
 
 - `20260717-canopy-phenology-gsi-kernel-001/` -
   COMPLETE-PASS-PROCESS-KERNEL (2026-07-17): implements

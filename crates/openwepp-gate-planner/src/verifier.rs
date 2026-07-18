@@ -559,23 +559,27 @@ fn verify_authority_outcome(plan_nodes: &[Value], receipt: &Value, outcome: &Val
 
 fn authority_outcome_accepted(node: &Value, outcome: &Value) -> bool {
     match node["authority_class"].as_str() {
-        Some("NONE") => {
-            outcome["admission_outcome"].is_null() && outcome["scientific_outcome"].is_null()
-        }
+        Some("NONE") => no_authority_outcome(outcome),
         Some("A0") => outcome["admission_outcome"] == "ADMITTED",
-        Some(_) if node["outcome_policy"] == "BLOCKING" => {
-            outcome["scientific_outcome"] == "CONFORMS"
-        }
-        Some(_) => {
-            matches!(
-                outcome["scientific_outcome"].as_str(),
-                Some("CONFORMS" | "DIVERGES" | "INCONCLUSIVE")
-            ) && (!matches!(
-                outcome["scientific_outcome"].as_str(),
-                Some("DIVERGES" | "INCONCLUSIVE")
-            ) || !outcome["investigation_record_id"].is_null())
-        }
+        Some(_) if node["outcome_policy"] == "BLOCKING" => blocking_outcome_accepted(outcome),
+        Some(_) => advisory_outcome_accepted(outcome),
         None => false,
+    }
+}
+
+fn no_authority_outcome(outcome: &Value) -> bool {
+    outcome["admission_outcome"].is_null() && outcome["scientific_outcome"].is_null()
+}
+
+fn blocking_outcome_accepted(outcome: &Value) -> bool {
+    outcome["scientific_outcome"] == "CONFORMS"
+}
+
+fn advisory_outcome_accepted(outcome: &Value) -> bool {
+    match outcome["scientific_outcome"].as_str() {
+        Some("CONFORMS") => true,
+        Some("DIVERGES" | "INCONCLUSIVE") => !outcome["investigation_record_id"].is_null(),
+        _ => false,
     }
 }
 
@@ -741,6 +745,27 @@ pub fn verify_envelope(
 ) -> Result<EnvelopeVerdict> {
     validate_document(repo, "attestation-envelope", envelope)?;
     verify_derived_id(envelope, "envelope_id", "GATE-ENVELOPE-ID")?;
+    verify_envelope_subject(receipt, envelope)?;
+    verify_envelope_provenance(receipt, envelope)?;
+    verify_envelope_artifacts(receipt, envelope)?;
+    verify_envelope_bundle(envelope, bundle)?;
+    verify_issuer_current(issuer)?;
+    let identity = verifier.verify(string(envelope, "/signature/format")?, bundle)?;
+    verify_attestation_identity(envelope, &identity, issuer)?;
+    verify_issuer_authority(receipt, envelope, issuer)?;
+    verify_attestation_claims(receipt, envelope, &identity)?;
+    Ok(EnvelopeVerdict {
+        envelope_id: string(envelope, "/envelope_id")?.to_owned(),
+        envelope_sha256: digest(envelope)?,
+        receipt_id: string(receipt, "/receipt_id")?.to_owned(),
+        receipt_sha256: digest(receipt)?,
+        trust_class: issuer.trust_class.clone(),
+        policy_generation: issuer.policy_generation,
+        identity,
+    })
+}
+
+fn verify_envelope_subject(receipt: &Value, envelope: &Value) -> Result<()> {
     if envelope["receipt_subject"]
         != json!({
             "kind": "RECEIPT",
@@ -753,6 +778,10 @@ pub fn verify_envelope(
             "receipt subject mismatch",
         ));
     }
+    Ok(())
+}
+
+fn verify_envelope_provenance(receipt: &Value, envelope: &Value) -> Result<()> {
     if envelope["provenance"]["plan_id"] != receipt["plan_id"]
         || envelope["provenance"]["execution_key"] != receipt["execution_key"]
     {
@@ -761,20 +790,34 @@ pub fn verify_envelope(
             "plan or execution identity mismatch",
         ));
     }
-    verify_envelope_artifacts(receipt, envelope)?;
+    Ok(())
+}
+
+fn verify_envelope_bundle(envelope: &Value, bundle: &[u8]) -> Result<()> {
     if envelope["signature"]["bundle_sha256"] != sha256_bytes(bundle) {
         return Err(verification_error(
             "GATE-ENVELOPE-BUNDLE",
             "attestation bundle digest mismatch",
         ));
     }
+    Ok(())
+}
+
+fn verify_issuer_current(issuer: &TrustedIssuer) -> Result<()> {
     if issuer.revoked {
         return Err(verification_error(
             "GATE-ISSUER-REVOKED",
             &issuer.principal_id,
         ));
     }
-    let identity = verifier.verify(string(envelope, "/signature/format")?, bundle)?;
+    Ok(())
+}
+
+fn verify_attestation_identity(
+    envelope: &Value,
+    identity: &AttestationIdentity,
+    issuer: &TrustedIssuer,
+) -> Result<()> {
     for (actual, expected, code) in [
         (
             identity.principal_id.as_str(),
@@ -809,35 +852,61 @@ pub fn verify_envelope(
             ));
         }
     }
-    if envelope["issuer"]["principal_id"] != issuer.principal_id
-        || envelope["issuer"]["trust_root_id"] != issuer.trust_root_id
-        || envelope["issuer"]["trust_class"] != issuer.trust_class
-        || envelope["issuer"]["policy_generation"] != issuer.policy_generation
-        || envelope["issuer"]["revocation_generation"] != issuer.revocation_generation
-        || receipt["claims"]["principal"] != issuer.principal_id
-        || receipt["claims"]["trust_class"] != issuer.trust_class
-        || envelope["provenance"]["repository"] != issuer.repository
-        || envelope["provenance"]["source_ref"] != issuer.source_ref
-        || envelope["provenance"]["workflow"] != issuer.workflow
-        || envelope["provenance"]["workflow_sha256"] != issuer.workflow_sha256
-        || envelope["provenance"]["job"] != issuer.job
-        || envelope["provenance"]["runner_image_sha256"] != issuer.runner_image_sha256
-    {
-        return Err(verification_error(
+    Ok(())
+}
+
+fn require_string_binding(actual: &Value, expected: &str) -> Result<()> {
+    if actual == expected {
+        Ok(())
+    } else {
+        Err(verification_error(
             "GATE-ISSUER-AUTHORITY",
             "issuer registry mismatch",
-        ));
+        ))
     }
-    verify_attestation_claims(receipt, envelope, &identity)?;
-    Ok(EnvelopeVerdict {
-        envelope_id: string(envelope, "/envelope_id")?.to_owned(),
-        envelope_sha256: digest(envelope)?,
-        receipt_id: string(receipt, "/receipt_id")?.to_owned(),
-        receipt_sha256: digest(receipt)?,
-        trust_class: issuer.trust_class.clone(),
-        policy_generation: issuer.policy_generation,
-        identity,
-    })
+}
+
+fn require_generation_binding(actual: &Value, expected: u64) -> Result<()> {
+    if actual == expected {
+        Ok(())
+    } else {
+        Err(verification_error(
+            "GATE-ISSUER-AUTHORITY",
+            "issuer registry mismatch",
+        ))
+    }
+}
+
+fn verify_issuer_authority(
+    receipt: &Value,
+    envelope: &Value,
+    issuer: &TrustedIssuer,
+) -> Result<()> {
+    require_string_binding(&envelope["issuer"]["principal_id"], &issuer.principal_id)?;
+    require_string_binding(&envelope["issuer"]["trust_root_id"], &issuer.trust_root_id)?;
+    require_string_binding(&envelope["issuer"]["trust_class"], &issuer.trust_class)?;
+    require_generation_binding(
+        &envelope["issuer"]["policy_generation"],
+        issuer.policy_generation,
+    )?;
+    require_generation_binding(
+        &envelope["issuer"]["revocation_generation"],
+        issuer.revocation_generation,
+    )?;
+    require_string_binding(&receipt["claims"]["principal"], &issuer.principal_id)?;
+    require_string_binding(&receipt["claims"]["trust_class"], &issuer.trust_class)?;
+    require_string_binding(&envelope["provenance"]["repository"], &issuer.repository)?;
+    require_string_binding(&envelope["provenance"]["source_ref"], &issuer.source_ref)?;
+    require_string_binding(&envelope["provenance"]["workflow"], &issuer.workflow)?;
+    require_string_binding(
+        &envelope["provenance"]["workflow_sha256"],
+        &issuer.workflow_sha256,
+    )?;
+    require_string_binding(&envelope["provenance"]["job"], &issuer.job)?;
+    require_string_binding(
+        &envelope["provenance"]["runner_image_sha256"],
+        &issuer.runner_image_sha256,
+    )
 }
 
 fn verify_envelope_artifacts(receipt: &Value, envelope: &Value) -> Result<()> {
@@ -962,39 +1031,111 @@ pub fn verify_reuse(
     envelope_verdict: &EnvelopeVerdict,
     context: ReuseContext<'_>,
 ) -> Result<()> {
-    if digest(plan)? != receipt_verdict.plan_sha256
-        || digest(receipt)? != receipt_verdict.receipt_sha256
-        || receipt_verdict.plan_id != plan["plan_id"]
-        || receipt_verdict.execution_key != plan["execution_key"]
-        || receipt_verdict.roots_sha256 != digest(&plan["environment_roots"])?
-        || receipt_verdict.boundary != plan["boundary"]
-        || envelope_verdict.receipt_sha256 != receipt_verdict.receipt_sha256
-        || envelope_verdict.identity.receipt_sha256 != receipt_verdict.receipt_sha256
-        || envelope_verdict.identity.plan_id != receipt_verdict.plan_id
-        || envelope_verdict.identity.execution_key != receipt_verdict.execution_key
-        || plan["execution_key"] != receipt["execution_key"]
-        || plan["environment_roots"] != receipt["roots"]
-        || receipt_verdict.receipt_id != receipt["receipt_id"]
-        || envelope_verdict.receipt_id != receipt_verdict.receipt_id
-    {
-        return Err(verification_error(
-            "GATE-REUSE-IDENTITY",
-            "execution identity or roots changed",
-        ));
-    }
-    if !matches!(receipt_verdict.result.as_str(), "PASS" | "PASS_WITH_RETRY")
-        || envelope_verdict.policy_generation != context.target_envelope.policy_generation
-        || plan["boundary"] != context.target_boundary
-    {
-        return Err(verification_error(
-            "GATE-REUSE-CURRENCY",
-            "result, policy generation, or target boundary is not current",
-        ));
-    }
+    verify_reuse_identity(plan, receipt, receipt_verdict, envelope_verdict)?;
+    verify_reuse_currency(plan, receipt_verdict, envelope_verdict, context)?;
     for node in array(plan, "/nodes")? {
         verify_node_reuse(node, envelope_verdict, context.target_envelope)?;
     }
     Ok(())
+}
+
+fn verify_reuse_identity(
+    plan: &Value,
+    receipt: &Value,
+    receipt_verdict: &ReceiptVerdict,
+    envelope_verdict: &EnvelopeVerdict,
+) -> Result<()> {
+    verify_reuse_document_digests(plan, receipt, receipt_verdict)?;
+    verify_reuse_plan_bindings(plan, receipt_verdict)?;
+    verify_reuse_envelope_bindings(plan, receipt, receipt_verdict, envelope_verdict)
+}
+
+fn verify_reuse_document_digests(
+    plan: &Value,
+    receipt: &Value,
+    receipt_verdict: &ReceiptVerdict,
+) -> Result<()> {
+    require_reuse_identity(digest(plan)? == receipt_verdict.plan_sha256)?;
+    require_reuse_identity(digest(receipt)? == receipt_verdict.receipt_sha256)
+}
+
+fn verify_reuse_plan_bindings(plan: &Value, receipt_verdict: &ReceiptVerdict) -> Result<()> {
+    require_reuse_identity(receipt_verdict.plan_id == plan["plan_id"])?;
+    require_reuse_identity(receipt_verdict.execution_key == plan["execution_key"])?;
+    require_reuse_identity(receipt_verdict.roots_sha256 == digest(&plan["environment_roots"])?)?;
+    require_reuse_identity(receipt_verdict.boundary == plan["boundary"])
+}
+
+fn verify_reuse_envelope_bindings(
+    plan: &Value,
+    receipt: &Value,
+    receipt_verdict: &ReceiptVerdict,
+    envelope_verdict: &EnvelopeVerdict,
+) -> Result<()> {
+    verify_reuse_origin_bindings(receipt_verdict, envelope_verdict)?;
+    verify_reuse_receipt_bindings(plan, receipt, receipt_verdict, envelope_verdict)
+}
+
+fn verify_reuse_origin_bindings(
+    receipt_verdict: &ReceiptVerdict,
+    envelope_verdict: &EnvelopeVerdict,
+) -> Result<()> {
+    require_reuse_identity(envelope_verdict.receipt_sha256 == receipt_verdict.receipt_sha256)?;
+    require_reuse_identity(
+        envelope_verdict.identity.receipt_sha256 == receipt_verdict.receipt_sha256,
+    )?;
+    require_reuse_identity(envelope_verdict.identity.plan_id == receipt_verdict.plan_id)?;
+    require_reuse_identity(envelope_verdict.identity.execution_key == receipt_verdict.execution_key)
+}
+
+fn verify_reuse_receipt_bindings(
+    plan: &Value,
+    receipt: &Value,
+    receipt_verdict: &ReceiptVerdict,
+    envelope_verdict: &EnvelopeVerdict,
+) -> Result<()> {
+    require_reuse_identity(plan["execution_key"] == receipt["execution_key"])?;
+    require_reuse_identity(plan["environment_roots"] == receipt["roots"])?;
+    require_reuse_identity(receipt_verdict.receipt_id == receipt["receipt_id"])?;
+    require_reuse_identity(envelope_verdict.receipt_id == receipt_verdict.receipt_id)
+}
+
+fn require_reuse_identity(binding: bool) -> Result<()> {
+    if binding {
+        Ok(())
+    } else {
+        Err(verification_error(
+            "GATE-REUSE-IDENTITY",
+            "execution identity or roots changed",
+        ))
+    }
+}
+
+fn verify_reuse_currency(
+    plan: &Value,
+    receipt_verdict: &ReceiptVerdict,
+    envelope_verdict: &EnvelopeVerdict,
+    context: ReuseContext<'_>,
+) -> Result<()> {
+    require_reuse_currency(matches!(
+        receipt_verdict.result.as_str(),
+        "PASS" | "PASS_WITH_RETRY"
+    ))?;
+    require_reuse_currency(
+        envelope_verdict.policy_generation == context.target_envelope.policy_generation,
+    )?;
+    require_reuse_currency(plan["boundary"] == context.target_boundary)
+}
+
+fn require_reuse_currency(current: bool) -> Result<()> {
+    if current {
+        Ok(())
+    } else {
+        Err(verification_error(
+            "GATE-REUSE-CURRENCY",
+            "result, policy generation, or target boundary is not current",
+        ))
+    }
 }
 
 fn verify_node_reuse(
@@ -1002,32 +1143,41 @@ fn verify_node_reuse(
     envelope: &EnvelopeVerdict,
     target: &EnvelopeVerdict,
 ) -> Result<()> {
-    if trust_rank(&envelope.trust_class)? < trust_rank(string(node, "/trust_requirement")?)? {
-        return Err(verification_error(
-            "GATE-REUSE-TRUST",
-            string(node, "/node_id")?,
-        ));
-    }
+    verify_reuse_trust(node, envelope)?;
     match string(node, "/reuse_class")? {
         "NON_REUSABLE" => Err(verification_error(
             "GATE-REUSE-NONREUSABLE",
             string(node, "/node_id")?,
         )),
-        "SAME_EXECUTION"
-            if envelope.envelope_id == target.envelope_id
-                && envelope.identity == target.identity =>
-        {
-            Ok(())
-        }
-        "SAME_EXECUTION" => Err(verification_error(
-            "GATE-REUSE-EXECUTION",
-            "origin and target verified execution identities differ",
-        )),
+        "SAME_EXECUTION" => verify_same_execution(envelope, target),
         "HERMETIC_CONTENT" => Err(verification_error(
             "GATE-REUSE-HERMETIC",
             "v1 has no verifier-issued confinement capability",
         )),
         value => Err(verification_error("GATE-REUSE-CLASS", value)),
+    }
+}
+
+fn verify_reuse_trust(node: &Value, envelope: &EnvelopeVerdict) -> Result<()> {
+    let available = trust_rank(&envelope.trust_class)?;
+    let required = trust_rank(string(node, "/trust_requirement")?)?;
+    if available < required {
+        return Err(verification_error(
+            "GATE-REUSE-TRUST",
+            string(node, "/node_id")?,
+        ));
+    }
+    Ok(())
+}
+
+fn verify_same_execution(envelope: &EnvelopeVerdict, target: &EnvelopeVerdict) -> Result<()> {
+    if envelope.envelope_id == target.envelope_id && envelope.identity == target.identity {
+        Ok(())
+    } else {
+        Err(verification_error(
+            "GATE-REUSE-EXECUTION",
+            "origin and target verified execution identities differ",
+        ))
     }
 }
 
@@ -1105,7 +1255,8 @@ mod tests {
 
     use super::{
         ArtifactProvider, AttestationIdentity, AttestationVerifier, EnvelopeVerdict,
-        ReceiptVerdict, ReuseContext, TrustedIssuer, verify_envelope, verify_receipt, verify_reuse,
+        ReceiptVerdict, ReuseContext, TrustedIssuer, authority_outcome_accepted, verify_envelope,
+        verify_node_reuse, verify_receipt, verify_reuse,
     };
     use crate::canonical::{derived_id, digest, sha256_bytes};
     use crate::error::{ErrorClass, GatePolicyError, Result};
@@ -1114,13 +1265,13 @@ mod tests {
     #[test]
     #[allow(clippy::too_many_lines)]
     fn reuse_fails_closed_for_nonreusable_failed_wrong_trust_and_stale_evidence() {
-        let plan = json!({"execution_key": "a", "environment_roots": {}, "boundary": "INCREMENT", "nodes": [{"node_id": "n", "reuse_class": "NON_REUSABLE", "trust_requirement": "REPOSITORY_REVIEWED"}]});
+        let plan = json!({"plan_id": "plan", "execution_key": "a", "environment_roots": {}, "boundary": "INCREMENT", "nodes": [{"node_id": "n", "reuse_class": "NON_REUSABLE", "trust_requirement": "REPOSITORY_REVIEWED"}]});
         let receipt = json!({"receipt_id": "r", "execution_key": "a", "roots": {}});
         let receipt_sha256 = digest(&receipt).expect("receipt digest");
         let receipt_verdict = ReceiptVerdict {
             receipt_id: "r".to_owned(),
             receipt_sha256: receipt_sha256.clone(),
-            plan_id: String::new(),
+            plan_id: "plan".to_owned(),
             plan_sha256: digest(&plan).expect("plan digest"),
             execution_key: "a".to_owned(),
             roots_sha256: digest(&json!({})).expect("roots digest"),
@@ -1147,7 +1298,7 @@ mod tests {
                 job: "j".to_owned(),
                 runner_image_sha256: "0".repeat(64),
                 attempt: 1,
-                plan_id: String::new(),
+                plan_id: "plan".to_owned(),
                 execution_key: "a".to_owned(),
                 receipt_id: "r".to_owned(),
                 receipt_sha256,
@@ -1168,11 +1319,56 @@ mod tests {
             .is_err()
         );
 
+        let mut node = json!({
+            "node_id": "n",
+            "reuse_class": "NON_REUSABLE",
+            "trust_requirement": "REPOSITORY_REVIEWED"
+        });
+        let error = verify_node_reuse(&node, &envelope_verdict, &envelope_verdict)
+            .expect_err("non-reusable nodes must fail closed");
+        assert_eq!(error.code, "GATE-REUSE-NONREUSABLE");
+
+        node["reuse_class"] = json!("SAME_EXECUTION");
+        verify_node_reuse(&node, &envelope_verdict, &envelope_verdict)
+            .expect("the exact verified execution is reusable");
+        let different_target = EnvelopeVerdict {
+            envelope_id: "different".to_owned(),
+            ..envelope_verdict.clone()
+        };
+        let error = verify_node_reuse(&node, &envelope_verdict, &different_target)
+            .expect_err("different execution identities must fail closed");
+        assert_eq!(error.code, "GATE-REUSE-EXECUTION");
+
+        node["reuse_class"] = json!("HERMETIC_CONTENT");
+        let error = verify_node_reuse(&node, &envelope_verdict, &envelope_verdict)
+            .expect_err("v1 has no hermetic reuse capability");
+        assert_eq!(error.code, "GATE-REUSE-HERMETIC");
+
+        node["reuse_class"] = json!("UNKNOWN");
+        let error = verify_node_reuse(&node, &envelope_verdict, &envelope_verdict)
+            .expect_err("unknown reuse classes must fail closed");
+        assert_eq!(error.code, "GATE-REUSE-CLASS");
+
         let mut reusable_plan = plan;
         reusable_plan["nodes"][0]["reuse_class"] = json!("SAME_EXECUTION");
+        let reusable_verdict = ReceiptVerdict {
+            plan_sha256: digest(&reusable_plan).expect("reusable plan digest"),
+            ..receipt_verdict.clone()
+        };
+        verify_reuse(
+            &reusable_plan,
+            &receipt,
+            &reusable_verdict,
+            &envelope_verdict,
+            ReuseContext {
+                target_boundary: "INCREMENT",
+                target_envelope: &envelope_verdict,
+            },
+        )
+        .expect("exact same-execution evidence is reusable");
         let failed = ReceiptVerdict {
             result: "FAIL".to_owned(),
-            ..receipt_verdict.clone()
+            ..reusable_verdict.clone()
         };
         assert!(
             verify_reuse(
@@ -1188,11 +1384,15 @@ mod tests {
             .is_err()
         );
         reusable_plan["nodes"][0]["trust_requirement"] = json!("PROTECTED_CI");
+        let protected_verdict = ReceiptVerdict {
+            plan_sha256: digest(&reusable_plan).expect("protected plan digest"),
+            ..receipt_verdict.clone()
+        };
         assert!(
             verify_reuse(
                 &reusable_plan,
                 &receipt,
-                &receipt_verdict,
+                &protected_verdict,
                 &envelope_verdict,
                 ReuseContext {
                     target_boundary: "INCREMENT",
@@ -1202,6 +1402,10 @@ mod tests {
             .is_err()
         );
         reusable_plan["nodes"][0]["trust_requirement"] = json!("REPOSITORY_REVIEWED");
+        let current_verdict = ReceiptVerdict {
+            plan_sha256: digest(&reusable_plan).expect("current plan digest"),
+            ..receipt_verdict
+        };
         let stale_envelope = EnvelopeVerdict {
             policy_generation: 2,
             ..envelope_verdict.clone()
@@ -1210,7 +1414,7 @@ mod tests {
             verify_reuse(
                 &reusable_plan,
                 &receipt,
-                &receipt_verdict,
+                &current_verdict,
                 &envelope_verdict,
                 ReuseContext {
                     target_boundary: "INCREMENT",
@@ -1219,6 +1423,35 @@ mod tests {
             )
             .is_err()
         );
+    }
+
+    #[test]
+    fn authority_outcome_contract_distinguishes_admission_blocking_and_investigation() {
+        let mut node = json!({"authority_class": "NONE", "outcome_policy": "BLOCKING"});
+        let mut outcome = json!({
+            "admission_outcome": null,
+            "scientific_outcome": null,
+            "investigation_record_id": null
+        });
+        assert!(authority_outcome_accepted(&node, &outcome));
+
+        node["authority_class"] = json!("A0");
+        outcome["admission_outcome"] = json!("ADMITTED");
+        assert!(authority_outcome_accepted(&node, &outcome));
+
+        node["authority_class"] = json!("A1");
+        outcome["admission_outcome"] = Value::Null;
+        outcome["scientific_outcome"] = json!("CONFORMS");
+        assert!(authority_outcome_accepted(&node, &outcome));
+        outcome["scientific_outcome"] = json!("DIVERGES");
+        assert!(!authority_outcome_accepted(&node, &outcome));
+
+        node["outcome_policy"] = json!("INVESTIGATION");
+        assert!(!authority_outcome_accepted(&node, &outcome));
+        outcome["investigation_record_id"] = json!("investigation");
+        assert!(authority_outcome_accepted(&node, &outcome));
+        outcome["scientific_outcome"] = json!("NOT_EVALUATED");
+        assert!(!authority_outcome_accepted(&node, &outcome));
     }
 
     struct MemoryArtifacts(BTreeMap<String, Vec<u8>>);

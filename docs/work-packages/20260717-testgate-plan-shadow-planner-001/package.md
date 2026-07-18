@@ -4,7 +4,7 @@ Package ID: `20260717-testgate-plan-shadow-planner-001`
 
 Queue ID: `TESTGATE-PLAN-01`
 
-Status: `EXECUTED-BLOCKED-CRAP`
+Status: `COMPLETE`
 
 Execution date: 2026-07-17
 
@@ -41,6 +41,8 @@ assurance records.
 - [x] (2026-07-17) Ran the single terminal conservative closure set once; format,
   Clippy, full Nextest, and cargo-deny passed, then adjudicated CRAP blocked closure.
 - [x] (2026-07-17) Recorded `EXECUTED-BLOCKED-CRAP`; no successful broad gate was repeated.
+- [x] (2026-07-18) Bounded successor `20260718-testgate-plan-crap-cleanup-001`
+  closed all 12 actionable rows and renewed the full terminal sequence.
 
 ## Authority And Rationale
 
@@ -244,17 +246,17 @@ does not modify campaign, assurance, Git, or source state.
 ## Outcomes & Retrospective
 
 The shadow planner/verifier, retained replay, focused validation, terminal
-reconciliation, and dual static review are implemented. The one conservative
-terminal sequence passed format, workspace Clippy, full Nextest (2,115/2,115),
-and cargo-deny, then stopped on the adjudicated CRAP gate with 12 actionable
-rows in the new crate. The package is therefore executed but not complete and
-does not authorize TESTGATE-CI-01, gate reduction, publication, or cutover.
+reconciliation, and dual static review are implemented. The bounded
+`20260718-testgate-plan-crap-cleanup-001` successor added three essential
+security tests, strengthened the existing reuse test, decomposed the 12
+eligible production rows without semantic change, and renewed the conservative
+terminal sequence. Format,
+workspace Clippy, full Nextest (2,118/2,118), cargo-deny, and fresh adjudicated
+CRAP all pass; CRAP closed at 2 raw / 2 existing adjudications / 0 actionable.
 
-The failed metric is not being answered by an unplanned burst of tests. A
-follow-on must first decide, function by function, whether the new verification
-logic needs essential adversarial coverage or lower-complexity decomposition;
-only then may it rerun the affected closure evidence. This preserves the
-campaign's test-economy objective and the non-deferral rule simultaneously.
+TESTGATE-PLAN-01 is complete and TESTGATE-CI-01 may begin. This does not
+authorize gate reduction, evidence publication, campaign certification,
+assurance mutation, or cutover; those remain governed CI/adoption work.
 
 Revision note (2026-07-17): initial end-to-end scaffold created from the
 TESTGATE-PLAN-01 roadmap row and TESTGATE-ALIGN-01 handoff.
