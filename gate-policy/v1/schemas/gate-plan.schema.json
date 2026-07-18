@@ -4,7 +4,7 @@
   "title": "openWEPP deterministic gate plan v1",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "policy", "planning_stage", "predecessor_intent_plan_id", "plan_id", "execution_key", "boundary", "campaign_id", "source", "changed_objects", "affected_packages", "reverse_dependencies", "impact_edges", "risk", "planning_controls", "execution_context", "nodes", "zero_work_disposition", "environment_roots", "deferred_obligations", "assurance_impacts", "unmapped_inputs", "output_root"],
+  "required": ["schema_version", "policy", "planning_stage", "predecessor_intent_plan_id", "plan_id", "execution_key", "boundary", "campaign_id", "authorized_paths", "source", "changed_objects", "affected_packages", "reverse_dependencies", "impact_edges", "risk", "planning_controls", "execution_context", "nodes", "zero_work_disposition", "environment_roots", "deferred_obligations", "assurance_impacts", "unmapped_inputs", "output_root"],
   "properties": {
     "schema_version": { "const": "openwepp-gate-plan-v1" },
     "policy": { "$ref": "#/$defs/policy" },
@@ -14,6 +14,7 @@
     "execution_key": { "$ref": "#/$defs/digest" },
     "boundary": { "enum": ["INCREMENT", "CHECKPOINT", "CAMPAIGN", "RELEASE"] },
     "campaign_id": { "$ref": "#/$defs/nullableId" },
+    "authorized_paths": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/path" } },
     "source": { "$ref": "#/$defs/source" },
     "changed_objects": { "type": "array", "items": { "$ref": "#/$defs/change" } },
     "affected_packages": { "$ref": "#/$defs/idList" },
@@ -108,7 +109,7 @@
           "properties": {
             "kind": { "const": "NUMERIC_THRESHOLD" },
             "operator": { "enum": ["EQUALS", "AT_LEAST", "AT_MOST"] },
-            "expected": { "type": "number" },
+            "expected": { "type": "integer", "minimum": -9007199254740991, "maximum": 9007199254740991 },
             "children": { "type": "array", "maxItems": 0 }
           }
         },
@@ -119,7 +120,7 @@
           "properties": {
             "kind": { "const": "NUMERIC_RANGE" },
             "operator": { "const": "RANGE" },
-            "expected": { "type": "object", "additionalProperties": false, "required": ["minimum", "maximum"], "properties": { "minimum": { "type": "number" }, "maximum": { "type": "number" } } },
+            "expected": { "type": "object", "additionalProperties": false, "required": ["minimum", "maximum"], "properties": { "minimum": { "type": "integer", "minimum": -9007199254740991, "maximum": 9007199254740991 }, "maximum": { "type": "integer", "minimum": -9007199254740991, "maximum": 9007199254740991 } } },
             "children": { "type": "array", "maxItems": 0 }
           }
         },

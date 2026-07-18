@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "openwepp:gate-policy:gate-definitions:1",
+  "title": "openWEPP typed gate definitions v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "generation", "enforcement_status", "definitions"],
+  "properties": {
+    "schema_version": { "const": "openwepp-gate-definitions-v1" },
+    "generation": { "type": "integer", "minimum": 1 },
+    "enforcement_status": { "const": "SHADOW" },
+    "definitions": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/definition" } }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$" },
+    "digest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "idList": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/id" } },
+    "textList": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "\\S" } },
+    "definition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "gate_definition_id", "gate_family", "target_template", "risk_classes", "executor",
+        "arguments_template", "environment_allowlist", "authority_class", "outcome_policy",
+        "failure_classification", "owner", "investigation_owner", "boundary", "trust_requirement",
+        "reuse_class", "inventory_mode", "inventory_source", "minimum_count", "acceptance", "timeout_seconds",
+        "maximum_attempts", "permitted_retry_reasons", "artifact_contract", "output_paths",
+        "blocks_transition", "identity_breakers", "prerequisite_definition_ids"
+      ],
+      "properties": {
+        "gate_definition_id": { "$ref": "#/$defs/id" },
+        "gate_family": { "$ref": "#/$defs/id" },
+        "target_template": { "enum": ["WORKSPACE", "CARGO_PACKAGE", "STATIC"] },
+        "risk_classes": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "enum": ["EDITORIAL", "BOUNDED_COMPONENT", "INTEGRATED_DOMAIN", "CRITICAL"] } },
+        "executor": {
+          "type": "object", "additionalProperties": false,
+          "required": ["kind", "version", "adapter_sha256"],
+          "properties": {
+            "kind": { "enum": ["PROCESS_V1", "NEXTEST_V1", "SCHEMA_V1", "LEGACY_ADAPTER_V1"] },
+            "version": { "$ref": "#/$defs/id" },
+            "adapter_sha256": { "oneOf": [{ "$ref": "#/$defs/digest" }, { "type": "null" }] }
+          },
+          "allOf": [{
+            "if": { "properties": { "kind": { "const": "LEGACY_ADAPTER_V1" } } },
+            "then": { "properties": { "adapter_sha256": { "$ref": "#/$defs/digest" } } },
+            "else": { "properties": { "adapter_sha256": { "type": "null" } } }
+          }]
+        },
+        "arguments_template": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "environment_allowlist": { "$ref": "#/$defs/textList" },
+        "authority_class": { "enum": ["A0", "A1", "A2", "A3", "A4", "A5", "A6", "NONE"] },
+        "outcome_policy": { "enum": ["BLOCKING", "INVESTIGATION"] },
+        "failure_classification": { "enum": ["HARD_FAIL", "INVESTIGATION"] },
+        "owner": { "$ref": "#/$defs/id" },
+        "investigation_owner": { "$ref": "#/$defs/id" },
+        "boundary": { "enum": ["INCREMENT", "CHECKPOINT", "CAMPAIGN", "RELEASE"] },
+        "trust_requirement": { "enum": ["LOCAL_UNTRUSTED", "REPOSITORY_REVIEWED", "PROTECTED_CI"] },
+        "reuse_class": { "enum": ["NON_REUSABLE", "SAME_EXECUTION", "HERMETIC_CONTENT"] },
+        "inventory_mode": { "enum": ["EXACT", "SUBSET", "SUPERSET"] },
+        "inventory_source": { "enum": ["NEXTEST_PACKAGE", "NEXTEST_WORKSPACE", "NEXTEST_TEST_TARGET", "DOCTEST_WORKSPACE", "COMMAND"] },
+        "minimum_count": { "type": "integer", "minimum": 0 },
+        "acceptance": {
+          "type": "object", "additionalProperties": false,
+          "required": ["kind", "operator", "expected", "children"],
+          "properties": {
+            "kind": { "const": "EXIT_CODE" },
+            "operator": { "const": "EQUALS" },
+            "expected": { "type": "integer" },
+            "children": { "type": "array", "maxItems": 0 }
+          }
+        },
+        "timeout_seconds": { "type": "integer", "minimum": 1 },
+        "maximum_attempts": { "type": "integer", "minimum": 1 },
+        "permitted_retry_reasons": { "$ref": "#/$defs/idList" },
+        "artifact_contract": { "$ref": "#/$defs/id" },
+        "output_paths": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^[^/]" } },
+        "blocks_transition": { "enum": ["INCREMENT", "CHECKPOINT", "CAMPAIGN", "RELEASE"] },
+        "identity_breakers": { "$ref": "#/$defs/idList" },
+        "prerequisite_definition_ids": { "$ref": "#/$defs/idList" }
+      }
+    }
+  }
+}

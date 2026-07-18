@@ -6,6 +6,20 @@ use sha2::{Digest, Sha256};
 
 const CONTRACTS: &[(&str, &str, &str, &str, &str)] = &[
     (
+        "execution-matrix",
+        "execution-matrix.schema.json",
+        "execution-matrix-unsupported-target.json",
+        "openwepp:gate-policy:execution-matrix:1",
+        "openwepp-gate-execution-matrix-v1",
+    ),
+    (
+        "gate-definitions",
+        "gate-definitions.schema.json",
+        "gate-definitions-shell-template.json",
+        "openwepp:gate-policy:gate-definitions:1",
+        "openwepp-gate-definitions-v1",
+    ),
+    (
         "impact-map",
         "impact-map.schema.json",
         "impact-map-unknown-downgrade.json",
@@ -137,8 +151,8 @@ fn production_impact_map_is_schema_valid_and_fail_closed() {
         "unknown paths must never silently narrow selection"
     );
     assert_eq!(
-        impact_map["enforcement_status"], "SCHEMA_ONLY_NONBLOCKING",
-        "TESTGATE-ALIGN-01 must not claim planner cutover"
+        impact_map["enforcement_status"], "SHADOW",
+        "TESTGATE-PLAN-01 must remain nonblocking"
     );
     let policy_bytes = fs::read(repo_root().join("docs/standards/testing-and-gate-strategy.md"))
         .expect("read canonical gate strategy");
@@ -156,6 +170,46 @@ fn production_impact_map_is_schema_valid_and_fail_closed() {
         }),
         "the gate-policy authority must map to critical risk"
     );
+}
+
+#[test]
+fn production_gate_definitions_are_schema_valid_and_registered() {
+    let policy = repo_root().join("gate-policy/v1");
+    let schema = load_json(&policy.join("schemas/gate-definitions.schema.json"));
+    let registry = load_json(&policy.join("gate-definitions.json"));
+    let validator = jsonschema::draft202012::new(&schema).expect("compile definitions schema");
+    validator
+        .validate(&registry)
+        .expect("production gate definitions must validate");
+    assert_eq!(registry["enforcement_status"], "SHADOW");
+
+    let definitions = registry["definitions"].as_array().expect("definitions");
+    let ids = definitions
+        .iter()
+        .map(|definition| {
+            definition["gate_definition_id"]
+                .as_str()
+                .expect("definition id")
+        })
+        .collect::<std::collections::BTreeSet<_>>();
+    assert_eq!(
+        ids.len(),
+        definitions.len(),
+        "definition IDs must be unique"
+    );
+
+    let impact_map = load_json(&policy.join("impact-map.json"));
+    for entry in impact_map["entries"].as_array().expect("impact entries") {
+        for id in entry["gate_definition_ids"]
+            .as_array()
+            .expect("definition IDs")
+        {
+            assert!(
+                ids.contains(id.as_str().expect("definition ID")),
+                "unregistered gate definition: {id}"
+            );
+        }
+    }
 }
 
 #[test]

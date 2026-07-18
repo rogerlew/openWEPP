@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "openwepp:gate-policy:execution-matrix:1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "generation", "target_policy", "feature_sets", "cargo_configuration", "unsupported_projection_action"],
+  "properties": {
+    "schema_version": { "const": "openwepp-gate-execution-matrix-v1" },
+    "generation": { "type": "integer", "minimum": 1 },
+    "target_policy": { "const": "RUSTC_HOST" },
+    "feature_sets": { "const": [["default"]] },
+    "cargo_configuration": { "const": "REPOSITORY_PLUS_CLI_OVERRIDES" },
+    "unsupported_projection_action": { "const": "FAIL_CLOSED" }
+  }
+}

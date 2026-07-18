@@ -28,6 +28,7 @@ members = [
     "crates/openwepp-unit-boundary",
     "crates/openwepp-summary-accumulator",
     "crates/openwepp-comparator-metadata",
+    "crates/openwepp-gate-planner",
     "crates/openwepp-runner",
 ]
 

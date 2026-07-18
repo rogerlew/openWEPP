@@ -12,6 +12,7 @@
   "execution_key": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
   "boundary": "INCREMENT",
   "campaign_id": "TESTGATE-ALIGN-01",
+  "authorized_paths": ["gate-policy/v1/impact-map.json"],
   "source": {
     "base_commit": "1111111111111111111111111111111111111111111111111111111111111111",
     "head_commit": null,

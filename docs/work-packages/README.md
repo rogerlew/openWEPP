@@ -133,6 +133,17 @@
 
 State as of `2026-07-17 UTC`:
 
+- `20260717-testgate-plan-shadow-planner-001/` - EXECUTED-BLOCKED-CRAP:
+  implements the
+  TESTGATE-PLAN-01 deterministic planner and receipt verifier in shadow mode.
+  It owns canonical Git/Cargo/non-Cargo impact selection, identities and roots,
+  receipt/trust/reuse verification, ledger folds, and retained-package replay;
+  it does not execute gates, change CI, reduce current gates, publish evidence,
+  certify campaigns, or mutate assurance records. Dual exact-tree static review
+  passes; terminal format, workspace Clippy, full Nextest (2,115/2,115), and
+  cargo-deny pass. Fresh adjudicated CRAP stops closure with 12 actionable rows
+  in the new crate, so no cutover or gate reduction is authorized.
+
 - `20260717-canopy-phenology-gsi-kernel-001/` -
   COMPLETE-PASS-PROCESS-KERNEL (2026-07-17): implements
   the published Jolly–Nemani–Running Growing Season Index as the first bounded

@@ -1,0 +1,8 @@
+{
+  "base_fixture": "execution-matrix.json",
+  "operation": "replace",
+  "instance_pointer": "/target_policy",
+  "invalid_value": "ALL_TARGETS",
+  "expected_instance_path": "/target_policy",
+  "expected_schema_path_contains": "/properties/target_policy/const"
+}

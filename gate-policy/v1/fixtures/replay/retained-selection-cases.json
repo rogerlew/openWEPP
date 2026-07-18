@@ -1,0 +1,37 @@
+{
+  "schema_version": "openwepp-gate-shadow-replay-v1",
+  "cases": [
+    {
+      "case_id": "testgate-align-governance",
+      "retained_package": "20260717-testgate-align-governance-schemas-001",
+      "paths": ["gate-policy/v1/impact-map.json"],
+      "expected_risk": "CRITICAL",
+      "must_affect": ["openwepp"],
+      "expected_unmapped": 0
+    },
+    {
+      "case_id": "ordinary-rust-reverse-dependencies",
+      "retained_package": "20260713-cqr-growth-state-crap-regression-001",
+      "paths": ["crates/openwepp-comparator-metadata/src/lib.rs"],
+      "expected_risk": "BOUNDED_COMPONENT",
+      "must_affect": ["openwepp-comparator-metadata", "openwepp"],
+      "expected_unmapped": 0
+    },
+    {
+      "case_id": "cargo-graph-change",
+      "retained_package": "20260716-assurance-editorial-fast-path-001",
+      "paths": ["Cargo.lock"],
+      "expected_risk": "CRITICAL",
+      "must_affect": [],
+      "expected_unmapped": 0
+    },
+    {
+      "case_id": "unknown-input-fails-critical",
+      "retained_package": "synthetic-anti-evasion",
+      "paths": ["novel-authority/input.policy"],
+      "expected_risk": "CRITICAL",
+      "must_affect": [],
+      "expected_unmapped": 1
+    }
+  ]
+}
