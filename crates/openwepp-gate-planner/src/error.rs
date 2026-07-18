@@ -12,6 +12,7 @@ pub enum ErrorClass {
     CargoMetadata,
     Policy,
     Planning,
+    Execution,
     Receipt,
     Trust,
     Ledger,

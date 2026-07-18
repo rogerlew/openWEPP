@@ -12,8 +12,12 @@ in the sealed acquisition provenance.
 ## Scripts
 
 - `run_adjudicated_crap_gate.sh`
-  - Collects fresh full-workspace LCOV and `cargo-crap` JSON, or assesses an
-    explicitly supplied retained CRAP artifact.
+  - Collects fresh full-workspace LCOV and `cargo-crap` JSON by default, or
+    assesses an explicitly supplied retained CRAP artifact.
+  - `--scope affected --package <name> --base-ref <ref>` is the shadow
+    increment path. It measures exactly one planner-selected production package
+    and enforces that package's complete actionable set. It is fresh-only and
+    cannot substitute for global critical, campaign, or release closure.
   - Applies the exact production filter and deduplication tuple established by
     the completed CQR pre-integration campaign.
   - Fresh closure snapshots every production Rust source, Rust/Cargo/gate
@@ -141,6 +145,19 @@ bash tools/release/run_adjudicated_crap_gate.sh \
   --base-ref <frozen-base> \
   --output-dir <package-artifacts>/adjudicated-crap
 ```
+
+For planner-selected bounded-package feedback during shadow observation:
+
+```bash
+bash tools/release/run_adjudicated_crap_gate.sh \
+  --scope affected \
+  --package openwepp-gate-planner \
+  --base-ref <frozen-base> \
+  --output-dir target/affected-crap-openwepp-gate-planner
+```
+
+The terminal plan, not a human shortcut, must select the package. Critical
+changes continue to use the global command above.
 
 To reproduce the completed CQR adjudication against its retained immutable
 CRAP JSON without claiming current-source closure:

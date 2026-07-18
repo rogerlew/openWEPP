@@ -49,6 +49,19 @@ report-name = "openwepp-nextest-quick"
 store-success-output = false
 store-failure-output = true
 
+# Planner-selected affected-package execution. The plan supplies the exact
+# package/test selector; this profile owns only scheduling and receipt identity.
+[profile.affected]
+inherits = "default"
+default-filter = "all()"
+fail-fast = true
+
+[profile.affected.junit]
+path = "junit.xml"
+report-name = "openwepp-nextest-affected"
+store-success-output = false
+store-failure-output = true
+
 # Scientific-assurance editorial loop. This retains the complete assurance
 # crate plus the source, planner, assembly, normalization, and report-facing
 # integration boundaries while excluding unrelated kernel and publication suites.
@@ -103,6 +116,35 @@ slow-timeout = { period = "90s", terminate-after = 8 }
 [profile.full.junit]
 path = "junit.xml"
 report-name = "openwepp-nextest-full"
+store-success-output = false
+store-failure-output = true
+
+# Lifecycle aliases retain complete inventory while giving checkpoint,
+# campaign, and release receipts distinct configuration identities.
+[profile.checkpoint]
+inherits = "full"
+
+[profile.checkpoint.junit]
+path = "junit.xml"
+report-name = "openwepp-nextest-checkpoint"
+store-success-output = false
+store-failure-output = true
+
+[profile.campaign]
+inherits = "full"
+
+[profile.campaign.junit]
+path = "junit.xml"
+report-name = "openwepp-nextest-campaign"
+store-success-output = false
+store-failure-output = true
+
+[profile.release]
+inherits = "full"
+
+[profile.release.junit]
+path = "junit.xml"
+report-name = "openwepp-nextest-release"
 store-success-output = false
 store-failure-output = true
 

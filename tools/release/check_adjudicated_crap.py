@@ -138,7 +138,9 @@ def _row_sort_key(row: dict[str, Any]) -> tuple[Any, ...]:
 
 
 def _production_rows(
-    crap_payload: dict[str, Any], repo_root: Path
+    crap_payload: dict[str, Any],
+    repo_root: Path,
+    expected_production_crates: set[str] | None = None,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], set[str]]:
     if crap_payload.get("$schema") != CARGO_CRAP_SCHEMA:
         raise GateInputError("unsupported or missing cargo-crap report schema")
@@ -151,6 +153,10 @@ def _production_rows(
         raise GateInputError("CRAP JSON must contain a non-empty entries array")
     parsed = [_parse_row(entry, repo_root) for entry in entries]
     production_all = [row for row in parsed if _is_production_row(row)]
+    if expected_production_crates is not None:
+        production_all = [
+            row for row in production_all if row["crate"] in expected_production_crates
+        ]
     if not production_all:
         raise GateInputError("CRAP JSON contains no production rows after filtering")
 
@@ -274,6 +280,36 @@ def _workspace_production_crates(repo_root: Path) -> set[str]:
     if not names:
         raise GateInputError("Cargo workspace has no production crates under crates/")
     return names
+
+
+def _production_package_source_prefixes(
+    repo_root: Path, package_names: set[str]
+) -> tuple[str, ...]:
+    result = subprocess.run(
+        ["cargo", "metadata", "--no-deps", "--format-version", "1"],
+        cwd=repo_root,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        raise GateInputError(f"cannot read Cargo workspace metadata: {result.stderr.strip()}")
+    try:
+        packages = json.loads(result.stdout).get("packages", [])
+    except json.JSONDecodeError as error:
+        raise GateInputError(f"Cargo workspace metadata is invalid JSON: {error}") from error
+    prefixes: list[str] = []
+    for package in packages:
+        if not isinstance(package, dict) or package.get("name") not in package_names:
+            continue
+        manifest_path = package.get("manifest_path")
+        if not isinstance(manifest_path, str):
+            continue
+        manifest = _repo_relative_path(manifest_path, repo_root)
+        prefixes.append(f"{Path(manifest).parent.as_posix()}/src/")
+    if len(prefixes) != len(package_names):
+        raise GateInputError("cannot bind every expected package to a source root")
+    return tuple(sorted(prefixes))
 
 
 def _safe_registry_path(raw_path: Any, repo_root: Path, field: str) -> tuple[str, Path]:
@@ -642,7 +678,7 @@ def evaluate(
 
     repo_root = repo_root.resolve()
     production_all, raw_rows, reported_production_crates = _production_rows(
-        crap_payload, repo_root
+        crap_payload, repo_root, expected_production_crates
     )
     if (
         expected_production_crates is not None
@@ -663,8 +699,15 @@ def evaluate(
     }
 
     present_symbols = {(row["file"], row["function"]) for row in production_all}
+    scoped_prefixes = (
+        _production_package_source_prefixes(repo_root, expected_production_crates)
+        if expected_production_crates is not None
+        else ("crates/",)
+    )
     for entry in adjudications:
-        if (entry["file"], entry["function"]) not in present_symbols:
+        if entry["file"].startswith(scoped_prefixes) and (
+            entry["file"], entry["function"]
+        ) not in present_symbols:
             invalid_adjudications.append(
                 {
                     "id": entry["id"],
@@ -837,6 +880,12 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--rustc-version-file", type=Path)
     parser.add_argument("--llvm-cov-version-file", type=Path)
     parser.add_argument("--cargo-crap-version-file", type=Path)
+    parser.add_argument(
+        "--expected-package",
+        action="append",
+        default=[],
+        help="Restrict a fresh affected measurement to one exact Cargo package",
+    )
     parser.add_argument("--retained-provenance")
     parser.add_argument("--report-json", type=Path)
     parser.add_argument("--report-markdown", type=Path)
@@ -884,6 +933,10 @@ def main() -> int:
         if args.acquisition_mode == "retained" and (args.base_ref or args.head_ref):
             raise GateInputError(
                 "retained assessment cannot claim current touched-file provenance"
+            )
+        if args.acquisition_mode == "retained" and args.expected_package:
+            raise GateInputError(
+                "retained assessment cannot claim affected-package measurement"
             )
 
         crap_payload = _read_json(args.crap_json)
@@ -933,7 +986,17 @@ def main() -> int:
                 raise GateInputError("fresh closure has an unexpected llvm-cov version")
             if cargo_crap_version != "cargo-crap 0.2.2":
                 raise GateInputError("fresh closure has an unexpected cargo-crap version")
-            expected_production_crates = _workspace_production_crates(repo_root)
+            workspace_production_crates = _workspace_production_crates(repo_root)
+            requested_packages = set(args.expected_package)
+            unknown_packages = requested_packages - workspace_production_crates
+            if unknown_packages:
+                raise GateInputError(
+                    "affected measurement names unknown production packages: "
+                    f"{sorted(unknown_packages)}"
+                )
+            expected_production_crates = (
+                requested_packages if requested_packages else workspace_production_crates
+            )
             acquisition_provenance = {
                 "source_manifest": str(args.source_manifest),
                 "source_count": supplied_manifest.get("source_count"),
@@ -975,6 +1038,9 @@ def main() -> int:
         report["debt_status"] = debt_status
         report["acquisition_mode"] = args.acquisition_mode
         report["closure_eligible"] = args.acquisition_mode == "fresh"
+        report["measurement_scope"] = (
+            "AFFECTED_PACKAGE" if args.expected_package else "GLOBAL_WORKSPACE"
+        )
         report["acquisition_provenance"] = acquisition_provenance
         if args.acquisition_mode == "retained":
             report["status"] = (

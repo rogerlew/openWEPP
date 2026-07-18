@@ -5,6 +5,7 @@ use std::path::{Path, PathBuf};
 
 use openwepp_gate_planner::canonical::{canonical_bytes, parse_strict};
 use openwepp_gate_planner::error::{ErrorClass, GatePolicyError, Result};
+use openwepp_gate_planner::executor::{ExecutionClaims, execute_plan};
 use openwepp_gate_planner::ledger::{verify_assurance_impact, verify_campaign_ledger};
 use openwepp_gate_planner::planner::reconcile_intent_terminal;
 use openwepp_gate_planner::planner::{NextestInventory, PlanRequest, Planner, PlanningStage};
@@ -14,8 +15,9 @@ use serde_json::{Value, json};
 
 type CommandHandler = fn(&Path, &BTreeMap<String, String>) -> Result<Value>;
 
-const COMMANDS: [(&str, CommandHandler); 5] = [
+const COMMANDS: [(&str, CommandHandler); 6] = [
     ("plan", plan_command),
+    ("run", run_command),
     ("verify-receipt", receipt_command),
     ("verify-ledger", ledger_command),
     ("verify-assurance", assurance_command),
@@ -74,6 +76,20 @@ fn reject_unknown_options(command: &str, options: &BTreeMap<String, String>) -> 
             "predecessor",
             "authorized-paths",
         ],
+        "run" => &[
+            "repo",
+            "plan",
+            "artifact-root",
+            "output",
+            "principal",
+            "repository",
+            "source-event",
+            "source-ref",
+            "workflow",
+            "job",
+            "runner",
+            "attempt",
+        ],
         "reconcile" => &["repo", "intent", "terminal"],
         "verify-receipt" => &["repo", "plan", "receipt", "artifact-root"],
         "verify-ledger" => &["repo", "ledger", "predecessor"],
@@ -85,6 +101,49 @@ fn reject_unknown_options(command: &str, options: &BTreeMap<String, String>) -> 
     } else {
         Err(usage_error())
     }
+}
+
+fn run_command(repo: &Path, options: &BTreeMap<String, String>) -> Result<Value> {
+    let plan = read_json(Path::new(required(options, "plan")?))?;
+    let artifact_root = PathBuf::from(required(options, "artifact-root")?);
+    let claims = execution_claims(options)?;
+    let receipt = execute_plan(repo, &plan, &artifact_root, &claims)?;
+    let artifacts = DirectoryArtifacts::new(artifact_root);
+    let verdict = verify_receipt(repo, &plan, &receipt, &artifacts)?;
+    let output = persist_plan(repo, options, &receipt)?;
+    Ok(json!({
+        "result": verdict.result(),
+        "receipt_id": verdict.receipt_id(),
+        "trust_class": verdict.trust_class(),
+        "output": output
+    }))
+}
+
+fn execution_claims(options: &BTreeMap<String, String>) -> Result<ExecutionClaims> {
+    let defaults = ExecutionClaims::default();
+    let attempt = options
+        .get("attempt")
+        .map(|value| value.parse::<u64>())
+        .transpose()
+        .map_err(|_| usage_error())?
+        .unwrap_or(defaults.attempt);
+    if attempt == 0 {
+        return Err(usage_error());
+    }
+    Ok(ExecutionClaims {
+        principal: option_or(options, "principal", defaults.principal),
+        repository: option_or(options, "repository", defaults.repository),
+        source_event: option_or(options, "source-event", defaults.source_event),
+        source_ref: option_or(options, "source-ref", defaults.source_ref),
+        workflow: option_or(options, "workflow", defaults.workflow),
+        job: option_or(options, "job", defaults.job),
+        runner: option_or(options, "runner", defaults.runner),
+        attempt,
+    })
+}
+
+fn option_or(options: &BTreeMap<String, String>, key: &str, default: String) -> String {
+    options.get(key).cloned().unwrap_or(default)
 }
 
 fn reconcile_command(repo: &Path, options: &BTreeMap<String, String>) -> Result<Value> {
@@ -404,7 +463,7 @@ fn usage_error() -> GatePolicyError {
     GatePolicyError::new(
         ErrorClass::Cli,
         "GATE-CLI-USAGE",
-        "usage: openwepp-gate-plan <plan|reconcile|verify-receipt|verify-ledger|verify-assurance> --key value ...",
+        "usage: openwepp-gate-plan <plan|run|reconcile|verify-receipt|verify-ledger|verify-assurance> --key value ...",
     )
 }
 

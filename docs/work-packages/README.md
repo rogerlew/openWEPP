@@ -11,6 +11,20 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260718-testgate-ci-shadow-executor-001/` executed to `HOLD` for
+  TESTGATE-CI-01. Two review rounds closed exact-checkout and fabricated-PASS
+  critical findings, but failure receipts/tests, terminal-plan covering-test
+  closure, and external subprocess-output confinement remain blocking. The
+  focused combined benchmark passed 26/26 with exact inventory but achieved
+  48.8% rather than the required 50% reduction; planner time was 91.876 seconds
+  versus the 30-second threshold. No shadow launch or gate reduction occurred.
+  It remains the active
+  implementation and observation package. It owns the fail-closed typed
+  executor, affected-quality adapter, nonblocking lifecycle lanes, initial
+  combined-path benchmark, scorecard seed, and rollback evidence. The existing
+  conservative release runner remains authoritative. The package cannot claim
+  blocking cutover before the canonical 14-day/20-increment scorecard and
+  provider-side migration evidence actually pass.
 - `20260717-testgate-plan-shadow-planner-001/` and its bounded
   `20260718-testgate-plan-crap-cleanup-001/` successor completed
   TESTGATE-PLAN-01. The repository-owned shadow planner/verifier now owns

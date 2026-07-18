@@ -1,12 +1,15 @@
 //! Deterministic, fail-closed ADR-0039 gate planning and evidence verification.
 //!
-//! This crate is shadow-only. It never executes planned gate commands or
-//! mutates Git, campaign, assurance, CI, or evidence state.
+//! The planner and verifier remain shadow-only policy components. The executor
+//! consumes only independently reconstructable plans and emits local,
+//! untrusted receipts; it never promotes trust, certifies a campaign, or
+//! mutates Git, assurance, or repository policy.
 
 #![forbid(unsafe_code)]
 
 pub mod canonical;
 pub mod error;
+pub mod executor;
 pub mod ledger;
 pub mod planner;
 pub mod policy;

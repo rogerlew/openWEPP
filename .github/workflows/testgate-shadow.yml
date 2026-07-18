@@ -1,0 +1,228 @@
+name: testgate-shadow
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "17 8 * * *"
+  workflow_dispatch:
+    inputs:
+      boundary:
+        description: "Shadow lifecycle boundary"
+        required: true
+        default: INCREMENT
+        type: choice
+        options:
+          - INCREMENT
+          - CHECKPOINT
+          - CAMPAIGN
+          - RELEASE
+      base_ref:
+        description: "Comparison base (blank uses event-derived base)"
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: testgate-shadow-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  shadow-presubmit:
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: Swatinem/rust-cache@v2
+      - name: Install shadow gate tools
+        run: |
+          cargo install cargo-nextest --locked --version 0.9.138
+          cargo install cargo-deny --locked
+          cargo install cargo-llvm-cov --locked --version 0.8.7
+          cargo install cargo-crap --locked --version 0.2.2
+          python -m venv .venv
+      - name: Build planner and executor
+        run: cargo build -p openwepp-gate-planner --bin openwepp-gate-plan
+      - name: Plan and execute nonblocking presubmit shadow
+        run: |
+          evidence_dir="${RUNNER_TEMP}/testgate-shadow-presubmit-${GITHUB_RUN_ID}"
+          python tools/local_ci/testgate_shadow.py \
+            --binary target/debug/openwepp-gate-plan \
+            --base "${{ github.event.pull_request.base.sha }}" \
+            --head "${{ github.event.pull_request.head.sha }}" \
+            --artifact-root "${evidence_dir}" \
+            --job shadow-presubmit \
+            --execute
+      - name: Upload presubmit observation
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: testgate-shadow-presubmit-${{ github.run_id }}
+          path: ${{ runner.temp }}/testgate-shadow-presubmit-${{ github.run_id }}
+          if-no-files-found: error
+
+  shadow-backstop:
+    if: ${{ github.event_name == 'push' || github.event_name == 'schedule' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: Swatinem/rust-cache@v2
+      - name: Install shadow gate tools
+        run: |
+          cargo install cargo-nextest --locked --version 0.9.138
+          cargo install cargo-deny --locked
+          cargo install cargo-llvm-cov --locked --version 0.8.7
+          cargo install cargo-crap --locked --version 0.2.2
+          python -m venv .venv
+      - name: Build planner and executor
+        run: cargo build -p openwepp-gate-planner --bin openwepp-gate-plan
+      - name: Plan and execute nonblocking backstop shadow
+        env:
+          EVENT_BEFORE: ${{ github.event.before }}
+        run: |
+          base_ref="${EVENT_BEFORE}"
+          if [[ "${{ github.event_name }}" == "schedule" || -z "${base_ref}" || "${base_ref}" =~ ^0+$ ]]; then
+            base_ref="HEAD^"
+          fi
+          evidence_dir="${RUNNER_TEMP}/testgate-shadow-backstop-${GITHUB_RUN_ID}"
+          python tools/local_ci/testgate_shadow.py \
+            --binary target/debug/openwepp-gate-plan \
+            --base "${base_ref}" \
+            --artifact-root "${evidence_dir}" \
+            --job shadow-backstop \
+            --execute
+      - name: Upload backstop observation
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: testgate-shadow-backstop-${{ github.run_id }}
+          path: ${{ runner.temp }}/testgate-shadow-backstop-${{ github.run_id }}
+          if-no-files-found: error
+
+  shadow-campaign:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.boundary == 'CAMPAIGN' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: Swatinem/rust-cache@v2
+      - name: Install shadow gate tools
+        run: |
+          cargo install cargo-nextest --locked --version 0.9.138
+          cargo install cargo-deny --locked
+          cargo install cargo-llvm-cov --locked --version 0.8.7
+          cargo install cargo-crap --locked --version 0.2.2
+          python -m venv .venv
+      - name: Build planner and executor
+        run: cargo build -p openwepp-gate-planner --bin openwepp-gate-plan
+      - name: Plan and execute requested lifecycle shadow
+        run: |
+          base_ref="${{ inputs.base_ref }}"
+          if [[ -z "${base_ref}" ]]; then
+            base_ref="HEAD^"
+          fi
+          evidence_dir="${RUNNER_TEMP}/testgate-shadow-lifecycle-${GITHUB_RUN_ID}"
+          python tools/local_ci/testgate_shadow.py \
+            --binary target/debug/openwepp-gate-plan \
+            --base "${base_ref}" \
+            --boundary "${{ inputs.boundary }}" \
+            --artifact-root "${evidence_dir}" \
+            --job shadow-campaign \
+            --execute
+      - name: Upload lifecycle observation
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: testgate-shadow-campaign-${{ github.run_id }}
+          path: ${{ runner.temp }}/testgate-shadow-lifecycle-${{ github.run_id }}
+          if-no-files-found: error
+
+  shadow-release:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.boundary == 'RELEASE' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: Swatinem/rust-cache@v2
+      - name: Install shadow gate tools
+        run: |
+          cargo install cargo-nextest --locked --version 0.9.138
+          cargo install cargo-deny --locked
+          cargo install cargo-llvm-cov --locked --version 0.8.7
+          cargo install cargo-crap --locked --version 0.2.2
+          python -m venv .venv
+      - name: Build planner and executor
+        run: cargo build -p openwepp-gate-planner --bin openwepp-gate-plan
+      - name: Plan and execute release shadow
+        run: |
+          base_ref="${{ inputs.base_ref }}"
+          if [[ -z "${base_ref}" ]]; then
+            base_ref="HEAD^"
+          fi
+          evidence_dir="${RUNNER_TEMP}/testgate-shadow-release-${GITHUB_RUN_ID}"
+          python tools/local_ci/testgate_shadow.py \
+            --binary target/debug/openwepp-gate-plan \
+            --base "${base_ref}" \
+            --boundary RELEASE \
+            --artifact-root "${evidence_dir}" \
+            --job shadow-release \
+            --execute
+      - name: Upload release observation
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: testgate-shadow-release-${{ github.run_id }}
+          path: ${{ runner.temp }}/testgate-shadow-release-${{ github.run_id }}
+          if-no-files-found: error
+
+  testgate-shadow-observation:
+    if: ${{ always() }}
+    needs:
+      - shadow-presubmit
+      - shadow-backstop
+      - shadow-campaign
+      - shadow-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish stable nonblocking aggregate
+        env:
+          PRESUBMIT_RESULT: ${{ needs.shadow-presubmit.result }}
+          BACKSTOP_RESULT: ${{ needs.shadow-backstop.result }}
+          CAMPAIGN_RESULT: ${{ needs.shadow-campaign.result }}
+          RELEASE_RESULT: ${{ needs.shadow-release.result }}
+        run: |
+          echo "TESTGATE shadow is observational and not a cutover context."
+          echo "presubmit=${PRESUBMIT_RESULT} backstop=${BACKSTOP_RESULT} campaign=${CAMPAIGN_RESULT} release=${RELEASE_RESULT}"
+          for result in "${PRESUBMIT_RESULT}" "${BACKSTOP_RESULT}" "${CAMPAIGN_RESULT}" "${RELEASE_RESULT}"; do
+            if [[ "${result}" == "failure" || "${result}" == "cancelled" ]]; then
+              exit 1
+            fi
+          done

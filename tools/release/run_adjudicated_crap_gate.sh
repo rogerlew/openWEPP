@@ -7,6 +7,8 @@ Usage:
   run_adjudicated_crap_gate.sh \
     [--base-ref <git-ref>] \
     [--head-ref <git-ref>] \
+    [--scope <global|affected>] \
+    [--package <cargo-package>] \
     [--output-dir <path>] \
     [--crap-json <existing-report.json>] \
     [--retained-provenance <repository-evidence.md>] \
@@ -19,6 +21,9 @@ registries are allowed only for retained assessment and can never close current
 source. Fresh closure always uses the canonical registry.
 --base-ref enables touched-production-file reporting; the workspace actionable
 set is always enforced whether or not a base ref is supplied.
+Affected mode is fresh-only, requires one exact package and a base ref, and
+enforces the actionable set for that package. Global mode remains the default
+and is unchanged for critical, campaign, and release closure.
 USAGE
 }
 
@@ -38,6 +43,8 @@ CRAP_JSON=""
 RETAINED_PROVENANCE=""
 BASE_REF=""
 HEAD_REF=""
+SCOPE="global"
+PACKAGE=""
 ADJUDICATIONS_OVERRIDDEN=0
 HELP_REQUESTED=0
 PARSE_ERRORS=()
@@ -60,6 +67,24 @@ while [[ $# -gt 0 ]]; do
         continue
       fi
       HEAD_REF="${2:-}"
+      shift 2
+      ;;
+    --scope)
+      if ! require_value "$1" "${2:-}"; then
+        PARSE_ERRORS+=("$1 requires a non-empty value")
+        shift
+        continue
+      fi
+      SCOPE="${2:-}"
+      shift 2
+      ;;
+    --package)
+      if ! require_value "$1" "${2:-}"; then
+        PARSE_ERRORS+=("$1 requires a non-empty value")
+        shift
+        continue
+      fi
+      PACKAGE="${2:-}"
       shift 2
       ;;
     --output-dir)
@@ -195,6 +220,23 @@ if [[ -n "${HEAD_REF}" && -z "${BASE_REF}" ]]; then
   echo "ERROR: --head-ref requires --base-ref" >&2
   exit 2
 fi
+if [[ "${SCOPE}" != "global" && "${SCOPE}" != "affected" ]]; then
+  echo "ERROR: --scope must be exactly global or affected" >&2
+  exit 2
+fi
+if [[ "${SCOPE}" == "affected" ]]; then
+  if [[ "${ACQUISITION_MODE}" != "fresh" || -z "${BASE_REF}" || -z "${PACKAGE}" ]]; then
+    echo "ERROR: affected scope requires fresh acquisition, --base-ref, and --package" >&2
+    exit 2
+  fi
+  if [[ ! "${PACKAGE}" =~ ^[A-Za-z0-9][A-Za-z0-9_-]*$ ]]; then
+    echo "ERROR: --package is not a safe Cargo package name" >&2
+    exit 2
+  fi
+elif [[ -n "${PACKAGE}" ]]; then
+  echo "ERROR: --package requires --scope affected" >&2
+  exit 2
+fi
 if [[ "${ACQUISITION_MODE}" == "retained" ]]; then
   if [[ -z "${RETAINED_PROVENANCE}" ]]; then
     echo "ERROR: --crap-json requires --retained-provenance" >&2
@@ -240,11 +282,16 @@ if [[ "${ACQUISITION_MODE}" == "fresh" ]]; then
     --repo-root "${ROOT_DIR}" \
     --snapshot-production-sources "${OUTPUT_DIR}/source-manifest-before.json"
   cargo llvm-cov clean --workspace > "${OUTPUT_DIR}/llvm-cov-clean.log" 2>&1
-  cargo llvm-cov --workspace --ignore-run-fail --lcov \
+  COVERAGE_SCOPE_ARGS=(--workspace)
+  CRAP_SCOPE_ARGS=(--workspace)
+  if [[ "${SCOPE}" == "affected" ]]; then
+    COVERAGE_SCOPE_ARGS=(--package "${PACKAGE}")
+  fi
+  cargo llvm-cov "${COVERAGE_SCOPE_ARGS[@]}" --ignore-run-fail --lcov \
     --output-path "${OUTPUT_DIR}/workspace.lcov" \
     > "${OUTPUT_DIR}/llvm-cov.log" 2>&1
   CRAP_JSON="${OUTPUT_DIR}/workspace-crap.json"
-  cargo crap --workspace \
+  cargo crap "${CRAP_SCOPE_ARGS[@]}" \
     --lcov "${OUTPUT_DIR}/workspace.lcov" \
     --min 0 \
     --format json \
@@ -295,6 +342,9 @@ if [[ -n "${BASE_REF}" ]]; then
 fi
 if [[ -n "${HEAD_REF}" ]]; then
   CHECK_ARGS+=(--head-ref "${HEAD_REF}")
+fi
+if [[ "${SCOPE}" == "affected" ]]; then
+  CHECK_ARGS+=(--expected-package "${PACKAGE}")
 fi
 
 set +e

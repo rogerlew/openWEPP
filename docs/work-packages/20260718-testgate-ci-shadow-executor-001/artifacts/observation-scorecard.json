@@ -1,0 +1,41 @@
+{
+  "schema_version": "openwepp-testgate-cutover-scorecard-v1",
+  "as_of": "2026-07-18",
+  "status": "OBSERVING",
+  "required_consecutive_days": 14,
+  "observed_consecutive_days": 0,
+  "required_representative_increments": 20,
+  "observed_representative_increments": 0,
+  "required_strata": [
+    "DOCUMENTATION",
+    "BOUNDED_COMPONENT",
+    "INTEGRATED_DOMAIN",
+    "CRITICAL",
+    "AVAILABLE_PROCESS_DOMAINS"
+  ],
+  "observed_strata": [],
+  "selector_misses": [],
+  "unsafe_reuse_events": [],
+  "inventory_mismatches": [],
+  "missing_executor_jobs": [],
+  "discrepancies": [],
+  "planner_p95_seconds": null,
+  "ordinary_increment_median_reduction_percent": null,
+  "ordinary_increment_p95_no_worse": null,
+  "clean_environment_replays": 0,
+  "eligible_retained_campaigns": null,
+  "replayed_retained_campaigns": 0,
+  "protected_publication_proven": false,
+  "stable_required_contexts_proven": false,
+  "dual_required_interval_proven": false,
+  "cutover_eligible": false,
+  "blocking_reasons": [
+    "OBSERVATION_WINDOW_NOT_STARTED",
+    "REPRESENTATIVE_INCREMENT_MINIMUM_NOT_MET",
+    "RETAINED_CAMPAIGN_CENSUS_AND_REPLAY_INCOMPLETE",
+    "TWO_CLEAN_ENVIRONMENT_REPLAYS_NOT_PROVEN",
+    "PERFORMANCE_SCORECARD_NOT_PROVEN",
+    "PROTECTED_PUBLICATION_NOT_PROVEN",
+    "PROVIDER_CONTEXT_MIGRATION_NOT_PROVEN"
+  ]
+}

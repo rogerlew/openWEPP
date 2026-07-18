@@ -428,6 +428,33 @@ impl InventoryProvider for NextestInventory {
     }
 }
 
+/// Recompute the current exact inventory for one already-instantiated plan node.
+///
+/// # Errors
+///
+/// Returns a policy or planning error when the definition is missing, the node
+/// is malformed, or the live inventory cannot be acquired exactly.
+pub(crate) fn inventory_for_node(repo: &Path, node: &Value) -> Result<Vec<String>> {
+    let policy = PolicyBundle::load(repo)?;
+    let definition_id = node["gate_definition_id"].as_str().ok_or_else(|| {
+        GatePolicyError::new(
+            ErrorClass::Planning,
+            "GATE-NODE-SHAPE",
+            "gate_definition_id",
+        )
+    })?;
+    let definition = policy.definition(definition_id).ok_or_else(|| {
+        GatePolicyError::new(ErrorClass::Policy, "GATE-DEFINITION-MISSING", definition_id)
+    })?;
+    let target = node["target"]
+        .as_str()
+        .ok_or_else(|| GatePolicyError::new(ErrorClass::Planning, "GATE-NODE-SHAPE", "target"))?;
+    let mut inventory = NextestInventory.inventory(repo, definition, target)?;
+    inventory.sort_by(|left, right| left.as_bytes().cmp(right.as_bytes()));
+    inventory.dedup();
+    Ok(inventory)
+}
+
 pub struct Planner<P> {
     inventory: P,
 }
