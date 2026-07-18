@@ -48,3 +48,21 @@ adopted by that ADR.
 The v1 execution matrix is deliberately limited to the exact `rustc` host and
 the default feature set. Any other target or declared non-default feature fails
 closed until a later versioned matrix explicitly admits it.
+
+`assurance-registry.json` is the planner-owned, versioned dependency/watch
+registry for TESTGATE-ASSURE-01. Its report IDs must equal the canonical
+`assurance/v2/catalog.yaml` report set. Loading is structural and fail-closed;
+operators cannot preselect reports. Exact paths, component prefixes,
+repository-rooted globs, contracts, Cargo packages, process/domain tags,
+result procedures, and builder/schema surfaces are closed watch kinds.
+Mechanical matches create pending exact-target plan records only: they do not
+rewrite reports, results, lifecycle state, review authority, or public output.
+When a resolution principal is known, `role_record_sha256` is the RFC 8785
+digest of `principal_id`, `record_version`, and `role_id`; policy loading
+reconstructs it from `assurance/v2/principals.yaml`. A missing principal and
+digest is explicit incomplete ownership and yields `OPEN_UNKNOWN`.
+Each registry report also binds `source_root` and the best available assessed
+realization root (`realization_root`, otherwise `preapproval_realization_root`)
+from its generated review lock. Policy loading rejects drift, so a `CURRENT`
+integrity axis is never target-free while ordinary impact planning remains
+read-only.

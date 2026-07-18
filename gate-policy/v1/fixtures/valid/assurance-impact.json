@@ -19,6 +19,7 @@
   },
   "entries": [{
     "impact_entry_id": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "impact_subject_id": "abababababababababababababababababababababababababababababababab",
     "event_id": "dededededededededededededededededededededededededededededededede",
     "predecessor_event_id": null,
     "event_type": "IMPACT_DISCOVERED",

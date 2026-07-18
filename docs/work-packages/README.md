@@ -11,6 +11,17 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260718-testgate-assure-campaign-currency-001/` completed
+  TESTGATE-ASSURE-01. The gate planner now owns a strict catalog-complete
+  assurance watch registry, exact commit/dirty-tree impact targets, all-report
+  unknown escalation, immutable subject-keyed folds, monotonic intent/terminal
+  reconciliation, and lifecycle-selected resolution ownership without changing
+  report science or public surfaces. Dual implementation review and dual
+  terminal verification passed. Full Nextest passed 2,154/2,154; cargo-deny
+  passed; fresh global CRAP closed at 2 raw / 2 adjudicated / 0 actionable.
+  Campaign and release `CURRENT` remain fail-closed until authenticated
+  lifecycle capability exists; no report refresh, publication, CI cutover, or
+  gate reduction occurred.
 - `20260718-testgate-ci-four-blocker-lift-001/` completed the focused follow-on
   that closed TESTGATE-CI-01's four accepted blockers: verifier-valid
   nonpass receipts, executable adversarial coverage, terminal-plan-derived

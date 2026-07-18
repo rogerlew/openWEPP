@@ -2,9 +2,9 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::Path;
 
-use serde_json::Value;
+use serde_json::{Value, json};
 
-use crate::canonical::{derived_id, parse_strict, validate_schema};
+use crate::canonical::{derived_id, digest, parse_strict, validate_schema};
 use crate::error::{ErrorClass, GatePolicyError, Result};
 
 /// Verify append-only campaign ancestry, transitions, closure, and identity.
@@ -475,20 +475,26 @@ pub fn verify_assurance_impact(repo: &Path, record: &Value) -> Result<()> {
     verify_id(record, "record_id", "GATE-ASSURANCE-RECORD-ID")?;
     let target = &record["campaign_head"];
     let raw_entries = array(record, "/entries")?;
-    let entries = assurance_entries(raw_entries, target)?;
-    verify_assurance_replacements(&entries)?;
+    let fold = assurance_entries(raw_entries, target)?;
+    verify_assurance_replacements(&fold.entries)?;
     verify_assurance_events(record, raw_entries)?;
-    let aggregate = aggregate_impact(entries.values().map(|entry| string(entry, "/state")))?;
+    let aggregate = if assurance_invalidation_active(record, array(record, "/events")?) {
+        "IMPACT_PENDING"
+    } else {
+        aggregate_impact(fold.object_states.values().map(|state| Ok(*state)))?
+    };
     verify_assurance_axes(record, aggregate)
 }
 
-fn assurance_entries<'a>(
-    raw_entries: &'a [Value],
-    target: &Value,
-) -> Result<BTreeMap<&'a str, &'a Value>> {
+struct AssuranceFold<'a> {
+    entries: BTreeMap<&'a str, &'a Value>,
+    object_states: BTreeMap<String, &'a str>,
+}
+
+fn assurance_entries<'a>(raw_entries: &'a [Value], target: &Value) -> Result<AssuranceFold<'a>> {
     let mut entries = BTreeMap::new();
     let mut predecessor_event: Option<&str> = None;
-    let mut object_states = BTreeMap::<&str, &str>::new();
+    let mut object_states = BTreeMap::<String, &str>::new();
     for entry in raw_entries {
         verify_id(entry, "impact_entry_id", "GATE-ASSURANCE-ENTRY-ID")?;
         let id = string(entry, "/impact_entry_id")?;
@@ -498,8 +504,11 @@ fn assurance_entries<'a>(
         if entry["target_head"] != *target {
             return Err(ledger_error("GATE-ASSURANCE-TARGET", id));
         }
-        let object_path = string(entry, "/changed_object/path")?;
-        let previous_state = object_states.get(object_path).copied();
+        let subject_id = string(entry, "/impact_subject_id")?;
+        if subject_id != assurance_subject_id(entry)? {
+            return Err(ledger_error("GATE-ASSURANCE-SUBJECT-ID", subject_id));
+        }
+        let previous_state = object_states.get(subject_id).copied();
         let next_state = string(entry, "/state")?;
         if entry["predecessor_event_id"].as_str() != predecessor_event
             || entry["previous_state"].as_str() != previous_state
@@ -512,18 +521,32 @@ fn assurance_entries<'a>(
             return Err(ledger_error("GATE-ASSURANCE-ANCESTRY", id));
         }
         predecessor_event = Some(string(entry, "/event_id")?);
-        object_states.insert(object_path, next_state);
+        object_states.insert(subject_id.to_owned(), next_state);
         if matches!(
             next_state,
-            "NO_MATERIAL_IMPACT_AUTHORIZED" | "REFRESH_COMPLETE"
+            "NO_MATERIAL_IMPACT_AUTHORIZED" | "REFRESH_COMPLETE" | "SUPERSEDED" | "WITHDRAWN"
         ) {
             return Err(ledger_error(
                 "GATE-ASSURANCE-RESOLUTION-UNAUTHENTICATED",
-                "terminal assurance resolution requires verified receipt and role capabilities",
+                "terminal resolution, supersession, or withdrawal requires verified lifecycle authority",
             ));
         }
     }
-    Ok(entries)
+    Ok(AssuranceFold {
+        entries,
+        object_states,
+    })
+}
+
+fn assurance_subject_id(entry: &Value) -> Result<String> {
+    digest(&json!({
+        "predecessor_ledger_id": entry["predecessor_ledger_id"],
+        "terminal_plan_id": entry["terminal_plan_id"],
+        "changed_object": entry["changed_object"],
+        "matching_watch_ids": entry["matching_watch_ids"],
+        "report_root": entry["report_root"],
+        "target_head": entry["target_head"]
+    }))
 }
 
 fn allowed_assurance_transition(previous: Option<&str>, event: &str, next: &str) -> bool {
@@ -684,13 +707,7 @@ fn verify_assurance_currency_events(record: &Value) -> Result<()> {
 }
 
 fn verify_assurance_invalidation_events(record: &Value, events: &[Value]) -> Result<()> {
-    let authority = &record["resolution_authority"];
-    let invalidated = events.iter().any(|event| {
-        event["event_type"] == "TARGET_HEAD_CHANGED"
-            || event["event_type"] == "PRINCIPAL_ROLE_REVOKED"
-                && event["principal_id"] == authority["principal_id"]
-                && event["role_record_sha256"] == authority["role_record_sha256"]
-    });
+    let invalidated = assurance_invalidation_active(record, events);
     if invalidated
         && (record["aggregate_impact"] != "IMPACT_PENDING"
             || record["axes"]["campaign_transfer_currency"] != "BLOCKED"
@@ -703,6 +720,16 @@ fn verify_assurance_invalidation_events(record: &Value, events: &[Value]) -> Res
     } else {
         Ok(())
     }
+}
+
+fn assurance_invalidation_active(record: &Value, events: &[Value]) -> bool {
+    let authority = &record["resolution_authority"];
+    events.iter().any(|event| {
+        event["event_type"] == "TARGET_HEAD_CHANGED"
+            || event["event_type"] == "PRINCIPAL_ROLE_REVOKED"
+                && event["principal_id"] == authority["principal_id"]
+                && event["role_record_sha256"] == authority["role_record_sha256"]
+    })
 }
 
 fn aggregate_impact<'a>(states: impl Iterator<Item = Result<&'a str>>) -> Result<&'static str> {
@@ -818,9 +845,9 @@ mod tests {
     use serde_json::{Value, json};
 
     use super::{
-        allowed_transition, verify_assurance_impact, verify_assurance_replacements,
-        verify_authorizations, verify_campaign_ledger, verify_certification_references,
-        verify_predecessor,
+        aggregate_impact, allowed_transition, assurance_subject_id, verify_assurance_impact,
+        verify_assurance_replacements, verify_authorizations, verify_campaign_ledger,
+        verify_certification_references, verify_predecessor,
     };
     use crate::canonical::derived_id;
 
@@ -1014,6 +1041,8 @@ mod tests {
                 .expect("assurance fixture"),
         )
         .expect("assurance JSON");
+        record["entries"][0]["impact_subject_id"] =
+            Value::String(assurance_subject_id(&record["entries"][0]).expect("subject identity"));
         record["entries"][0]["impact_entry_id"] = Value::String(
             derived_id(&record["entries"][0], "impact_entry_id").expect("entry identity"),
         );
@@ -1023,5 +1052,160 @@ mod tests {
 
         record["axes"]["campaign_transfer_currency"] = json!("CURRENT");
         assert!(verify_assurance_impact(&root, &record).is_err());
+    }
+
+    #[test]
+    fn assurance_history_folds_by_immutable_subject_not_path() {
+        let root = repo();
+        let mut record: Value = serde_json::from_slice(
+            &std::fs::read(root.join("gate-policy/v1/fixtures/valid/assurance-impact.json"))
+                .expect("assurance fixture"),
+        )
+        .expect("assurance JSON");
+        record["entries"][0]["impact_subject_id"] =
+            json!(assurance_subject_id(&record["entries"][0]).expect("first subject"));
+        record["entries"][0]["impact_entry_id"] = json!(
+            derived_id(&record["entries"][0], "impact_entry_id").expect("first entry identity")
+        );
+
+        let mut later_change = record["entries"][0].clone();
+        later_change["terminal_plan_id"] = json!("9".repeat(64));
+        later_change["changed_object"]["object_sha256"] = json!("8".repeat(64));
+        later_change["event_id"] = json!("7".repeat(64));
+        later_change["predecessor_event_id"] = record["entries"][0]["event_id"].clone();
+        later_change["impact_subject_id"] =
+            json!(assurance_subject_id(&later_change).expect("later subject"));
+        later_change["impact_entry_id"] =
+            json!(derived_id(&later_change, "impact_entry_id").expect("later entry identity"));
+        assert_ne!(
+            record["entries"][0]["impact_subject_id"], later_change["impact_subject_id"],
+            "a later change at the same path is a distinct immutable subject"
+        );
+        record["entries"]
+            .as_array_mut()
+            .expect("entries")
+            .push(later_change);
+        record["record_id"] = json!(derived_id(&record, "record_id").expect("record identity"));
+        verify_assurance_impact(&root, &record).expect("both same-path impacts remain open");
+    }
+
+    #[test]
+    fn assurance_historical_open_event_does_not_override_terminal_subject_state() {
+        let root = repo();
+        let mut record: Value = serde_json::from_slice(
+            &std::fs::read(root.join("gate-policy/v1/fixtures/valid/assurance-impact.json"))
+                .expect("assurance fixture"),
+        )
+        .expect("assurance JSON");
+        record["entries"][0]["impact_subject_id"] =
+            json!(assurance_subject_id(&record["entries"][0]).expect("subject identity"));
+        record["entries"][0]["impact_entry_id"] = json!(
+            derived_id(&record["entries"][0], "impact_entry_id").expect("discovery identity")
+        );
+        let mut assessment = record["entries"][0].clone();
+        assessment["event_id"] = json!("7".repeat(64));
+        assessment["predecessor_event_id"] = record["entries"][0]["event_id"].clone();
+        assessment["event_type"] = json!("ASSESSMENT_RECORDED");
+        assessment["previous_state"] = json!("OPEN_ASSESSMENT");
+        assessment["state"] = json!("REFRESH_REQUIRED");
+        assessment["impact_entry_id"] =
+            json!(derived_id(&assessment, "impact_entry_id").expect("assessment identity"));
+        record["entries"]
+            .as_array_mut()
+            .expect("entries")
+            .push(assessment);
+        record["aggregate_impact"] = json!("REFRESH_REQUIRED");
+        record["axes"]["campaign_impact_disposition"] = json!("REFRESH_REQUIRED");
+        record["record_id"] = json!(derived_id(&record, "record_id").expect("record identity"));
+        verify_assurance_impact(&root, &record).expect("terminal subject state controls fold");
+    }
+
+    #[test]
+    fn unauthenticated_supersession_and_withdrawal_cannot_erase_open_impact() {
+        let root = repo();
+        for (event_type, state) in [
+            ("SUPERSESSION_RECORDED", "SUPERSEDED"),
+            ("WITHDRAWAL_RECORDED", "WITHDRAWN"),
+        ] {
+            let mut record: Value = serde_json::from_slice(
+                &std::fs::read(root.join("gate-policy/v1/fixtures/valid/assurance-impact.json"))
+                    .expect("assurance fixture"),
+            )
+            .expect("assurance JSON");
+            record["entries"][0]["impact_subject_id"] =
+                json!(assurance_subject_id(&record["entries"][0]).expect("subject identity"));
+            record["entries"][0]["impact_entry_id"] = json!(
+                derived_id(&record["entries"][0], "impact_entry_id").expect("discovery identity")
+            );
+            let mut disposition = record["entries"][0].clone();
+            disposition["event_id"] = json!("7".repeat(64));
+            disposition["predecessor_event_id"] = record["entries"][0]["event_id"].clone();
+            disposition["event_type"] = json!(event_type);
+            disposition["previous_state"] = json!("OPEN_ASSESSMENT");
+            disposition["state"] = json!(state);
+            if state == "SUPERSEDED" {
+                disposition["replacement_entry_id"] =
+                    record["entries"][0]["impact_entry_id"].clone();
+            }
+            disposition["impact_entry_id"] =
+                json!(derived_id(&disposition, "impact_entry_id").expect("disposition identity"));
+            record["entries"]
+                .as_array_mut()
+                .expect("entries")
+                .push(disposition);
+            record["aggregate_impact"] = json!("NO_IMPACT_DETECTED");
+            record["axes"]["campaign_impact_disposition"] = json!("NO_IMPACT_DETECTED");
+            record["record_id"] = json!(derived_id(&record, "record_id").expect("record identity"));
+            let error = verify_assurance_impact(&root, &record)
+                .expect_err("self-declared disposition cannot erase open impact");
+            assert_eq!(error.code, "GATE-ASSURANCE-RESOLUTION-UNAUTHENTICATED");
+        }
+    }
+
+    #[test]
+    fn assurance_multi_object_fold_is_order_independent_and_conservative() {
+        for states in [
+            vec![Ok("NO_MATERIAL_IMPACT_AUTHORIZED"), Ok("REFRESH_COMPLETE")],
+            vec![Ok("REFRESH_COMPLETE"), Ok("NO_MATERIAL_IMPACT_AUTHORIZED")],
+        ] {
+            assert_eq!(
+                aggregate_impact(states.into_iter()).expect("fold"),
+                "REFRESH_COMPLETE"
+            );
+        }
+        for states in [
+            vec![Ok("REFRESH_REQUIRED"), Ok("OPEN_ASSESSMENT")],
+            vec![Ok("OPEN_ASSESSMENT"), Ok("REFRESH_REQUIRED")],
+        ] {
+            assert_eq!(
+                aggregate_impact(states.into_iter()).expect("fold"),
+                "IMPACT_PENDING"
+            );
+        }
+    }
+
+    #[test]
+    fn target_head_change_reopens_empty_exact_target_fold() {
+        let root = repo();
+        let mut record: Value = serde_json::from_slice(
+            &std::fs::read(root.join("gate-policy/v1/fixtures/valid/assurance-impact.json"))
+                .expect("assurance fixture"),
+        )
+        .expect("assurance JSON");
+        record["entries"] = json!([]);
+        let mut event = json!({
+            "event_id": "0".repeat(64),
+            "predecessor_event_id": null,
+            "event_type": "TARGET_HEAD_CHANGED",
+            "previous_head": "9".repeat(64),
+            "target_head": record["campaign_head"],
+            "recorded_at": "2026-07-18T12:00:00Z"
+        });
+        event["event_id"] = json!(derived_id(&event, "event_id").expect("head-change identity"));
+        record["events"] = json!([event]);
+        record["aggregate_impact"] = json!("IMPACT_PENDING");
+        record["axes"]["campaign_impact_disposition"] = json!("IMPACT_PENDING");
+        record["record_id"] = json!(derived_id(&record, "record_id").expect("record identity"));
+        verify_assurance_impact(&root, &record).expect("head change reopens exact target");
     }
 }

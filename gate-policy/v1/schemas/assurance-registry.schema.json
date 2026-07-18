@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "openwepp:gate-policy:assurance-registry:1",
+  "title": "openWEPP assurance dependency registry v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "policy_id", "generation", "reports"],
+  "properties": {
+    "schema_version": { "const": "openwepp-assurance-registry-v1" },
+    "policy_id": { "const": "ADR-0039" },
+    "generation": { "type": "integer", "minimum": 1 },
+    "reports": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/report" }
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:/@#-]*$"
+    },
+    "text": { "type": "string", "pattern": "\\S" },
+    "digest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "nullableId": {
+      "oneOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }]
+    },
+    "nullableDigest": {
+      "oneOf": [{ "$ref": "#/$defs/digest" }, { "type": "null" }]
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["principal_id", "role_id", "role_record_sha256"],
+      "properties": {
+        "principal_id": { "$ref": "#/$defs/nullableId" },
+        "role_id": { "$ref": "#/$defs/id" },
+        "role_record_sha256": { "$ref": "#/$defs/nullableDigest" }
+      },
+      "allOf": [{
+        "if": {
+          "properties": { "principal_id": { "type": "null" } },
+          "required": ["principal_id"]
+        },
+        "then": {
+          "properties": { "role_record_sha256": { "type": "null" } }
+        },
+        "else": {
+          "properties": { "role_record_sha256": { "$ref": "#/$defs/digest" } }
+        }
+      }]
+    },
+    "watch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "watch_id", "owner", "kind", "match_value", "lifecycle_boundary"
+      ],
+      "properties": {
+        "watch_id": { "$ref": "#/$defs/id" },
+        "owner": { "$ref": "#/$defs/text" },
+        "kind": {
+          "enum": [
+            "exact_path", "path_prefix", "path_glob", "contract_id",
+            "cargo_package", "process_domain_tag", "result_procedure",
+            "builder_schema"
+          ]
+        },
+        "match_value": { "$ref": "#/$defs/text" },
+        "lifecycle_boundary": {
+          "enum": ["INCREMENT", "CAMPAIGN_CHECKPOINT", "CAMPAIGN_CLOSURE", "RELEASE"]
+        }
+      }
+    },
+    "report": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "report_id", "watch_generation", "source_root",
+        "assessed_realization_root", "resolution_authority", "watches"
+      ],
+      "properties": {
+        "report_id": { "$ref": "#/$defs/id" },
+        "watch_generation": { "type": "integer", "minimum": 1 },
+        "source_root": { "$ref": "#/$defs/digest" },
+        "assessed_realization_root": { "$ref": "#/$defs/digest" },
+        "resolution_authority": { "$ref": "#/$defs/authority" },
+        "watches": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/watch" }
+        }
+      }
+    }
+  }
+}

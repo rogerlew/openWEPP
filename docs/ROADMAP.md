@@ -32,7 +32,6 @@ state was reached. Execution history lives in the
 | Priority | Owning queue | State | Advancement gate |
 | --- | --- | --- | --- |
 | `TESTGATE-CI-01` executor, coverage/CRAP, and CI lanes | Test/gate architecture | `active` | Lift the executor failure-receipt/test, covering-test closure, and output-confinement HOLD in `20260718-testgate-ci-shadow-executor-001`; then launch observation and satisfy the fixed cutover scorecard before any gate reduction. |
-| `TESTGATE-ASSURE-01` campaign-head assurance currency | Test/gate architecture | `queued` | Start after campaign and receipt identities stabilize; integrate registry-wide mechanical impact planning and exact-head currency without mutating reports or historical evidence. |
 | `CANOPY-PHENOLOGY-02` native canopy integration | Plant/snow-frost science | `queued` | Resume after `TESTGATE-ALIGN-01` lands; use the campaign as an early shadow-mode planner trial while ratifying and implementing native canopy, biomass, litter, closure, YAML, and real-consumer integration. |
 | `SNOW-SURFACE-EB` sublimation and longwave | Snow/frost science | `queued` | Start after `CANOPY-PHENOLOGY-02` closes and a contract-first package reconciles the multilayer surface-energy, vapor-mass, and longwave backlog with the current meteorology and snow-column implementation. |
 | `ASSURE-06` snow/frost flagship synthesis | Scientific assurance | `held` | Roger Lew remains the accountable report lead and a material snow/frost producer. Resume independent review only after canopy phenology and the selected sublimation/longwave work land, the scientific manuscript is refreshed against those changes, and a new exact review root is issued. |
@@ -60,7 +59,6 @@ Each row below requires its own authorized work package.
 | ID | Prospective outcome | Advancement gate | State |
 | --- | --- | --- | --- |
 | `TESTGATE-CI-01` | Add the executor, affected coverage and CRAP measurement, evidence publication, and distinct presubmit, backstop, campaign, and release lanes; benchmark whether one instrumented Nextest run can replace duplicate full/coverage execution. | Shadow and observation lanes meet the standard's fixed scorecard; protected evidence publication and stable aggregate contexts are proven; rollback to the conservative full runner remains available. | `active`; current package is `EXECUTED-HOLD` |
-| `TESTGATE-ASSURE-01` | Extend assurance planning with exact path and semantic dependencies, campaign-impact entries, assessed-realization integrity, campaign-head transfer, release transfer, and registry-wide discovery. | Add/rename/delete/unknown impacts and multi-impact folding are deterministic; report prose, historical results, lifecycle state, and public surfaces remain unchanged until an authorized refresh or release transition. | `queued` after planner identity stabilizes |
 
 ### Adoption Contract
 

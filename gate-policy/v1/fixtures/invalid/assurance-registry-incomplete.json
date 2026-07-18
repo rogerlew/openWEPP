@@ -1,0 +1,8 @@
+{
+  "base_fixture": "assurance-registry.json",
+  "operation": "replace",
+  "instance_pointer": "/reports/0/watches",
+  "invalid_value": [],
+  "expected_instance_path": "/reports/0/watches",
+  "expected_schema_path_contains": "/minItems"
+}

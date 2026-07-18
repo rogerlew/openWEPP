@@ -2,7 +2,7 @@
   "schema_version": "openwepp-gate-impact-map-v1",
   "policy_id": "ADR-0039",
   "policy_sha256": "a0c69780af9f1211b7f779e7f812210e64d75b1373323c52f6a26b13a87850c2",
-  "generation": 2,
+  "generation": 3,
   "enforcement_status": "SHADOW",
   "unknown_path_action": "ESCALATE_CRITICAL",
   "entries": [
@@ -37,6 +37,38 @@
       "assurance_watches": [],
       "gate_definition_ids": ["gate-policy-schema-consistency-v1"],
       "documentation_paths": ["docs/decisions/0039-campaign-scoped-risk-based-testing-and-assurance-gates.md"]
+    },
+    {
+      "entry_id": "groundwater-assurance-domain",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/groundwater.rs" },
+      "owner": "openwepp-groundwater-process-owner",
+      "semantic_surface": "groundwater",
+      "risk_floor": "BOUNDED_COMPONENT",
+      "reason_codes": ["ASSURANCE_IMPACT"],
+      "affected_packages": ["openwepp-hillslope-orchestrator"],
+      "test_targets": [],
+      "covering_test_targets": [],
+      "contracts": ["SC-GWBASEFLOW-001"],
+      "authority_suites": [],
+      "assurance_watches": ["gw-domain"],
+      "gate_definition_ids": [],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-GWBASEFLOW-001.md"]
+    },
+    {
+      "entry_id": "snow-frost-assurance-domain",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-meteorology/src/phase.rs" },
+      "owner": "openwepp-snow-frost-process-owner",
+      "semantic_surface": "snow-frost",
+      "risk_floor": "BOUNDED_COMPONENT",
+      "reason_codes": ["ASSURANCE_IMPACT"],
+      "affected_packages": ["openwepp-meteorology"],
+      "test_targets": [],
+      "covering_test_targets": [],
+      "contracts": ["SC-SNOWFREEZE-001"],
+      "authority_suites": [],
+      "assurance_watches": ["snow-domain"],
+      "gate_definition_ids": [],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-SNOWFREEZE-001.md"]
     }
   ]
 }

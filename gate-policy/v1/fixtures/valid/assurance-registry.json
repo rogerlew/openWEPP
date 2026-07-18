@@ -1,0 +1,27 @@
+{
+  "schema_version": "openwepp-assurance-registry-v1",
+  "policy_id": "ADR-0039",
+  "generation": 1,
+  "reports": [
+    {
+      "report_id": "example-report",
+      "watch_generation": 1,
+      "source_root": "1111111111111111111111111111111111111111111111111111111111111111",
+      "assessed_realization_root": "2222222222222222222222222222222222222222222222222222222222222222",
+      "resolution_authority": {
+        "principal_id": null,
+        "role_id": "assurance_steward",
+        "role_record_sha256": null
+      },
+      "watches": [
+        {
+          "watch_id": "example-contract-watch",
+          "owner": "example process owner",
+          "kind": "contract_id",
+          "match_value": "SC-EXAMPLE-001",
+          "lifecycle_boundary": "CAMPAIGN_CLOSURE"
+        }
+      ]
+    }
+  ]
+}

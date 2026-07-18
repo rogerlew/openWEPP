@@ -4,7 +4,9 @@
     "policy_id": "ADR-0039",
     "policy_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     "impact_map_generation": 1,
-    "impact_map_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    "impact_map_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "assurance_registry_generation": 1,
+    "assurance_registry_sha256": "abababababababababababababababababababababababababababababababab"
   },
   "planning_stage": "TERMINAL",
   "predecessor_intent_plan_id": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",

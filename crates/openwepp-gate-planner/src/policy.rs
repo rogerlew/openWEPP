@@ -3,9 +3,10 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
+use serde_json::{Value, json};
 
-use crate::canonical::{parse_strict, sha256_bytes, validate_schema};
+use crate::assurance::validate_wildmatch_pattern;
+use crate::canonical::{digest, parse_strict, sha256_bytes, validate_schema};
 use crate::error::{ErrorClass, GatePolicyError, Result};
 
 #[derive(Debug, Clone, Deserialize)]
@@ -34,6 +35,39 @@ pub struct ImpactEntry {
     pub assurance_watches: Vec<String>,
     pub gate_definition_ids: Vec<String>,
     pub documentation_paths: Vec<String>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct AssuranceRegistry {
+    pub policy_id: String,
+    pub generation: u64,
+    pub reports: Vec<AssuranceReport>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct AssuranceReport {
+    pub report_id: String,
+    pub watch_generation: u64,
+    pub source_root: String,
+    pub assessed_realization_root: String,
+    pub resolution_authority: AssuranceAuthority,
+    pub watches: Vec<AssuranceWatch>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct AssuranceAuthority {
+    pub principal_id: Option<String>,
+    pub role_id: String,
+    pub role_record_sha256: Option<String>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct AssuranceWatch {
+    pub watch_id: String,
+    pub owner: String,
+    pub kind: String,
+    pub match_value: String,
+    pub lifecycle_boundary: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -110,6 +144,9 @@ pub struct PolicyBundle {
     pub registry: GateRegistry,
     pub registry_value: Value,
     pub execution_matrix_value: Value,
+    pub assurance_registry: AssuranceRegistry,
+    pub assurance_registry_value: Value,
+    pub assurance_registry_sha256: String,
     definitions: BTreeMap<String, GateDefinition>,
 }
 
@@ -124,7 +161,10 @@ impl PolicyBundle {
         let (impact_map, impact_map_value, impact_bytes) = load_impact_map(&root)?;
         let (registry, registry_value) = load_gate_registry(&root)?;
         let execution_matrix_value = load_execution_matrix(&root)?;
+        let (assurance_registry, assurance_registry_value, assurance_registry_bytes) =
+            load_assurance_registry(repo_root, &root)?;
         validate_policy_posture(repo_root, &impact_map, &registry)?;
+        verify_assurance_registry(&impact_map, &assurance_registry)?;
         let definitions = definition_map(&registry)?;
         verify_impact_bindings(&impact_map, &definitions)?;
         verify_definition_dag(&definitions)?;
@@ -138,6 +178,9 @@ impl PolicyBundle {
             registry,
             registry_value,
             execution_matrix_value,
+            assurance_registry,
+            assurance_registry_value,
+            assurance_registry_sha256: sha256_bytes(&assurance_registry_bytes),
             definitions,
         })
     }
@@ -162,6 +205,307 @@ impl PolicyBundle {
             .iter()
             .filter(|entry| matcher_matches(&entry.matcher, path))
             .collect()
+    }
+}
+
+#[derive(Deserialize)]
+struct AssuranceCatalog {
+    reports: Vec<AssuranceCatalogReport>,
+}
+
+#[derive(Deserialize)]
+struct AssuranceCatalogReport {
+    id: String,
+}
+
+#[derive(Deserialize)]
+struct PrincipalCatalog {
+    principals: Vec<PrincipalRecord>,
+}
+
+#[derive(Deserialize)]
+struct PrincipalRecord {
+    id: String,
+    roles: Vec<String>,
+    record_version: u64,
+}
+
+#[derive(Deserialize)]
+struct ReviewLock {
+    report_id: String,
+    science_root: String,
+    preapproval_realization_root: String,
+    realization_root: Option<String>,
+}
+
+#[derive(Deserialize)]
+struct AssuranceLifecycle {
+    id: String,
+    authorship: AssuranceAuthorship,
+}
+
+#[derive(Deserialize)]
+struct AssuranceAuthorship {
+    human_report_lead: Option<String>,
+}
+
+fn load_assurance_registry(
+    repo_root: &Path,
+    policy_root: &Path,
+) -> Result<(AssuranceRegistry, Value, Vec<u8>)> {
+    let bytes = read(&policy_root.join("assurance-registry.json"))?;
+    let value = parse_strict(&bytes)?;
+    let schema = load_json(&policy_root.join("schemas/assurance-registry.schema.json"))?;
+    validate_schema(&schema, &value, "assurance registry")?;
+    let registry: AssuranceRegistry = serde_json::from_value(value.clone()).map_err(|error| {
+        GatePolicyError::new(
+            ErrorClass::Policy,
+            "GATE-ASSURANCE-REGISTRY-DECODE",
+            error.to_string(),
+        )
+    })?;
+    let catalog_bytes = read(&repo_root.join("assurance/v2/catalog.yaml"))?;
+    let catalog: AssuranceCatalog = serde_yaml::from_slice(&catalog_bytes).map_err(|error| {
+        GatePolicyError::new(
+            ErrorClass::Policy,
+            "GATE-ASSURANCE-CATALOG-DECODE",
+            error.to_string(),
+        )
+    })?;
+    let catalog_ids = catalog
+        .reports
+        .into_iter()
+        .map(|report| report.id)
+        .collect::<BTreeSet<_>>();
+    let registry_ids = registry
+        .reports
+        .iter()
+        .map(|report| report.report_id.clone())
+        .collect::<BTreeSet<_>>();
+    if catalog_ids != registry_ids || registry_ids.len() != registry.reports.len() {
+        return Err(GatePolicyError::new(
+            ErrorClass::Policy,
+            "GATE-ASSURANCE-REGISTRY-COVERAGE",
+            "assurance registry report set must equal the canonical catalog",
+        ));
+    }
+    let principal_bytes = read(&repo_root.join("assurance/v2/principals.yaml"))?;
+    let principals: PrincipalCatalog =
+        serde_yaml::from_slice(&principal_bytes).map_err(|error| {
+            GatePolicyError::new(
+                ErrorClass::Policy,
+                "GATE-ASSURANCE-PRINCIPAL-DECODE",
+                error.to_string(),
+            )
+        })?;
+    verify_resolution_authorities(&registry, &principals)?;
+    verify_lifecycle_authorities(repo_root, &registry)?;
+    verify_assessed_roots(repo_root, &registry)?;
+    Ok((registry, value, bytes))
+}
+
+fn verify_lifecycle_authorities(repo_root: &Path, registry: &AssuranceRegistry) -> Result<()> {
+    for report in &registry.reports {
+        let path = repo_root.join(format!(
+            "assurance/v2/reports/{}/report.yaml",
+            report.report_id
+        ));
+        let lifecycle: AssuranceLifecycle =
+            serde_yaml::from_slice(&read(&path)?).map_err(|error| {
+                GatePolicyError::new(
+                    ErrorClass::Policy,
+                    "GATE-ASSURANCE-LIFECYCLE-DECODE",
+                    error.to_string(),
+                )
+            })?;
+        let authority = &report.resolution_authority;
+        if lifecycle.id != report.report_id
+            || authority.principal_id != lifecycle.authorship.human_report_lead
+            || (authority.principal_id.is_some() && authority.role_id != "report_lead")
+            || (authority.principal_id.is_none() && authority.role_id != "assurance_steward")
+        {
+            return Err(GatePolicyError::new(
+                ErrorClass::Policy,
+                "GATE-ASSURANCE-LIFECYCLE-AUTHORITY",
+                &report.report_id,
+            ));
+        }
+    }
+    Ok(())
+}
+
+fn verify_assessed_roots(repo_root: &Path, registry: &AssuranceRegistry) -> Result<()> {
+    for report in &registry.reports {
+        let path = repo_root.join(format!(
+            "assurance/v2/reports/{}/review.lock.json",
+            report.report_id
+        ));
+        let lock: ReviewLock = serde_json::from_slice(&read(&path)?).map_err(|error| {
+            GatePolicyError::new(
+                ErrorClass::Policy,
+                "GATE-ASSURANCE-REVIEW-LOCK-DECODE",
+                error.to_string(),
+            )
+        })?;
+        let assessed_root = lock
+            .realization_root
+            .as_deref()
+            .unwrap_or(&lock.preapproval_realization_root);
+        if lock.report_id != report.report_id
+            || lock.science_root != report.source_root
+            || assessed_root != report.assessed_realization_root
+        {
+            return Err(GatePolicyError::new(
+                ErrorClass::Policy,
+                "GATE-ASSURANCE-ASSESSED-ROOT",
+                &report.report_id,
+            ));
+        }
+    }
+    Ok(())
+}
+
+fn verify_resolution_authorities(
+    registry: &AssuranceRegistry,
+    principals: &PrincipalCatalog,
+) -> Result<()> {
+    for report in &registry.reports {
+        let authority = &report.resolution_authority;
+        let Some(principal_id) = authority.principal_id.as_deref() else {
+            continue;
+        };
+        let principal = principals
+            .principals
+            .iter()
+            .find(|principal| principal.id == principal_id)
+            .ok_or_else(|| {
+                GatePolicyError::new(
+                    ErrorClass::Policy,
+                    "GATE-ASSURANCE-PRINCIPAL-UNKNOWN",
+                    principal_id,
+                )
+            })?;
+        if !principal.roles.contains(&authority.role_id) {
+            return Err(GatePolicyError::new(
+                ErrorClass::Policy,
+                "GATE-ASSURANCE-ROLE-UNKNOWN",
+                &authority.role_id,
+            ));
+        }
+        let expected = digest(&json!({
+            "principal_id": principal.id,
+            "record_version": principal.record_version,
+            "role_id": authority.role_id
+        }))?;
+        if authority.role_record_sha256.as_deref() != Some(expected.as_str()) {
+            return Err(GatePolicyError::new(
+                ErrorClass::Policy,
+                "GATE-ASSURANCE-ROLE-DIGEST",
+                &report.report_id,
+            ));
+        }
+    }
+    Ok(())
+}
+
+fn verify_assurance_registry(impact_map: &ImpactMap, registry: &AssuranceRegistry) -> Result<()> {
+    if registry.policy_id != impact_map.policy_id {
+        return Err(GatePolicyError::new(
+            ErrorClass::Policy,
+            "GATE-ASSURANCE-REGISTRY-POLICY",
+            "assurance registry policy identity differs from the impact map",
+        ));
+    }
+    let report_ids = registry
+        .reports
+        .iter()
+        .map(|report| report.report_id.as_str())
+        .collect::<Vec<_>>();
+    require_sorted_unique(&report_ids, "GATE-ASSURANCE-REGISTRY-REPORT-ORDER")?;
+    let mut watch_ids = BTreeSet::new();
+    for report in &registry.reports {
+        let authority = &report.resolution_authority;
+        if authority.principal_id.is_some() != authority.role_record_sha256.is_some() {
+            return Err(GatePolicyError::new(
+                ErrorClass::Policy,
+                "GATE-ASSURANCE-AUTHORITY-INCOMPLETE",
+                &report.report_id,
+            ));
+        }
+        let ids = report
+            .watches
+            .iter()
+            .map(|watch| watch.watch_id.as_str())
+            .collect::<Vec<_>>();
+        require_sorted_unique(&ids, "GATE-ASSURANCE-REGISTRY-WATCH-ORDER")?;
+        for id in ids {
+            if !watch_ids.insert(id) {
+                return Err(GatePolicyError::new(
+                    ErrorClass::Policy,
+                    "GATE-ASSURANCE-REGISTRY-WATCH-DUPLICATE",
+                    id,
+                ));
+            }
+        }
+        for watch in &report.watches {
+            verify_assurance_watch_value(watch)?;
+        }
+    }
+    let known_watches = impact_map
+        .entries
+        .iter()
+        .flat_map(|entry| entry.assurance_watches.iter())
+        .collect::<BTreeSet<_>>();
+    if let Some(unknown) = known_watches
+        .iter()
+        .find(|id| !watch_ids.contains(id.as_str()))
+    {
+        return Err(GatePolicyError::new(
+            ErrorClass::Policy,
+            "GATE-ASSURANCE-WATCH-UNKNOWN",
+            (*unknown).clone(),
+        ));
+    }
+    Ok(())
+}
+
+fn verify_assurance_watch_value(watch: &AssuranceWatch) -> Result<()> {
+    let path_kind = matches!(
+        watch.kind.as_str(),
+        "exact_path" | "path_prefix" | "path_glob" | "result_procedure" | "builder_schema"
+    );
+    let invalid_component = watch
+        .match_value
+        .split('/')
+        .any(|component| matches!(component, "." | ".."));
+    if path_kind
+        && (watch.match_value.starts_with('/') || watch.match_value.is_empty() || invalid_component)
+    {
+        Err(GatePolicyError::new(
+            ErrorClass::Policy,
+            "GATE-ASSURANCE-WATCH-PATH",
+            &watch.watch_id,
+        ))
+    } else if watch.kind == "path_glob" && !validate_wildmatch_pattern(&watch.match_value) {
+        Err(GatePolicyError::new(
+            ErrorClass::Policy,
+            "GATE-ASSURANCE-WATCH-GLOB",
+            &watch.watch_id,
+        ))
+    } else {
+        Ok(())
+    }
+}
+
+fn require_sorted_unique(values: &[&str], code: &'static str) -> Result<()> {
+    if values.windows(2).all(|pair| pair[0] < pair[1]) {
+        Ok(())
+    } else {
+        Err(GatePolicyError::new(
+            ErrorClass::Policy,
+            code,
+            "registry entries must be byte-sorted and unique",
+        ))
     }
 }
 
@@ -284,21 +628,11 @@ fn verify_impact_bindings(
                 format!("{} uses {}", entry.entry_id, entry.matcher.kind),
             ));
         }
-        if !entry.assurance_watches.is_empty() {
-            return Err(GatePolicyError::new(
-                ErrorClass::Policy,
-                "GATE-ASSURANCE-WATCH-UNSUPPORTED",
-                format!("{} requires assurance impact construction", entry.entry_id),
-            ));
-        }
-        if !entry.contracts.is_empty() || !entry.authority_suites.is_empty() {
+        if !entry.authority_suites.is_empty() {
             return Err(GatePolicyError::new(
                 ErrorClass::Policy,
                 "GATE-SEMANTIC-OBLIGATION-UNSUPPORTED",
-                format!(
-                    "{} requires contract/authority executable binding",
-                    entry.entry_id
-                ),
+                format!("{} requires authority executable binding", entry.entry_id),
             ));
         }
         for id in &entry.gate_definition_ids {
@@ -432,7 +766,9 @@ fn verify_definition_dag(definitions: &BTreeMap<String, GateDefinition>) -> Resu
 
 #[cfg(test)]
 mod tests {
-    use super::{Matcher, matcher_matches};
+    use std::path::Path;
+
+    use super::{AssuranceRegistry, Matcher, matcher_matches, verify_lifecycle_authorities};
 
     #[test]
     fn component_prefix_and_git_style_glob_are_bounded() {
@@ -448,5 +784,35 @@ mod tests {
         };
         assert!(matcher_matches(&glob, "crates/a/src/lib.rs"));
         assert!(!matcher_matches(&glob, "crates/a/tests/x.rs"));
+    }
+
+    #[test]
+    fn registry_authority_must_equal_the_report_lifecycle_selection() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+        let bytes =
+            std::fs::read(root.join("gate-policy/v1/assurance-registry.json")).expect("registry");
+        let mut registry: AssuranceRegistry =
+            serde_json::from_slice(&bytes).expect("registry JSON");
+        let snow = registry
+            .reports
+            .iter_mut()
+            .find(|report| report.report_id == "snow-and-frozen-soil-process-evaluation")
+            .expect("snow report");
+        snow.resolution_authority.principal_id = None;
+        let error = verify_lifecycle_authorities(&root, &registry)
+            .expect_err("registry cannot substitute lifecycle authority");
+        assert_eq!(error.code, "GATE-ASSURANCE-LIFECYCLE-AUTHORITY");
+
+        let mut registry: AssuranceRegistry =
+            serde_json::from_slice(&bytes).expect("registry JSON");
+        let groundwater = registry
+            .reports
+            .iter_mut()
+            .find(|report| report.report_id == "linear-groundwater-reservoir-recurrence")
+            .expect("groundwater report");
+        groundwater.resolution_authority.role_id = "arbitrary_unassigned_role".to_owned();
+        let error = verify_lifecycle_authorities(&root, &registry)
+            .expect_err("null principal cannot substitute the unresolved lifecycle role");
+        assert_eq!(error.code, "GATE-ASSURANCE-LIFECYCLE-AUTHORITY");
     }
 }

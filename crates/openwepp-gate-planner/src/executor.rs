@@ -1705,6 +1705,7 @@ mod tests {
         let repo = TempDirectory::new(label);
         fs::create_dir_all(repo.path().join("src")).expect("create source directory");
         fs::create_dir_all(repo.path().join("docs/standards")).expect("create standards directory");
+        fs::create_dir_all(repo.path().join("assurance/v2")).expect("create assurance directory");
         fs::create_dir_all(repo.path().join("gate-policy/v1")).expect("create policy directory");
         fs::create_dir_all(repo.path().join("tools")).expect("create fixture tools");
         for (name, body) in [
@@ -1752,6 +1753,64 @@ mod tests {
         )
         .expect("write strategy");
         copy_schemas(repo.path());
+        fs::write(
+            repo.path().join("assurance/v2/catalog.yaml"),
+            "reports:\n- id: executor-fixture-report\n",
+        )
+        .expect("write assurance catalog");
+        fs::write(
+            repo.path().join("assurance/v2/principals.yaml"),
+            "principals: []\n",
+        )
+        .expect("write assurance principals");
+        fs::create_dir_all(
+            repo.path()
+                .join("assurance/v2/reports/executor-fixture-report"),
+        )
+        .expect("create fixture report directory");
+        fs::write(
+            repo.path()
+                .join("assurance/v2/reports/executor-fixture-report/report.yaml"),
+            "id: executor-fixture-report\nauthorship:\n  human_report_lead: null\n",
+        )
+        .expect("write fixture report lifecycle");
+        write_json(
+            &repo
+                .path()
+                .join("assurance/v2/reports/executor-fixture-report/review.lock.json"),
+            &json!({
+                "report_id": "executor-fixture-report",
+                "science_root": "1".repeat(64),
+                "preapproval_realization_root": "2".repeat(64),
+                "realization_root": null
+            }),
+        );
+        write_json(
+            &repo.path().join("gate-policy/v1/assurance-registry.json"),
+            &json!({
+                "schema_version": "openwepp-assurance-registry-v1",
+                "policy_id": "ADR-0039",
+                "generation": 1,
+                "reports": [{
+                    "report_id": "executor-fixture-report",
+                    "watch_generation": 1,
+                    "source_root": "1".repeat(64),
+                    "assessed_realization_root": "2".repeat(64),
+                    "resolution_authority": {
+                        "principal_id": null,
+                        "role_id": "assurance_steward",
+                        "role_record_sha256": null
+                    },
+                    "watches": [{
+                        "watch_id": "executor-fixture-watch",
+                        "owner": "fixture owner",
+                        "kind": "exact_path",
+                        "match_value": "assurance/fixture-only",
+                        "lifecycle_boundary": "CAMPAIGN_CLOSURE"
+                    }]
+                }]
+            }),
+        );
         fs::copy(
             source_repo().join("gate-policy/v1/execution-matrix.json"),
             repo.path().join("gate-policy/v1/execution-matrix.json"),

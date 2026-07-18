@@ -91,6 +91,7 @@ sha2 = "0.10"
 openwepp-hillslope-output = { path = "crates/openwepp-hillslope-output", version = "0.1.0" }
 openwepp-landuse-migrate = { path = "crates/openwepp-landuse-migrate", version = "0.1.0" }
 openwepp-assurance = { path = "crates/openwepp-assurance", version = "0.1.0" }
+openwepp-gate-planner = { path = "crates/openwepp-gate-planner", version = "0.1.0" }
 
 [[test]]
 name = "infile_slope_parser_contract"
@@ -455,6 +456,10 @@ path = "tests/integration/testgate_align_authority_contract.rs"
 [[test]]
 name = "testgate_ci_executor_contract"
 path = "tests/integration/testgate_ci_executor_contract.rs"
+
+[[test]]
+name = "testgate_assure_campaign_currency_contract"
+path = "tests/integration/testgate_assure_campaign_currency_contract.rs"
 
 [[test]]
 name = "auth05_level4_constitutive_authority_hardening_contract"

@@ -7,6 +7,7 @@
 
 #![forbid(unsafe_code)]
 
+mod assurance;
 pub mod canonical;
 pub mod error;
 pub mod executor;

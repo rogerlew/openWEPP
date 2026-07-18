@@ -11,6 +11,7 @@ version = 2
 confidence-threshold = 0.93
 allow = [
   "MIT",
+  "MIT-0",
   "Apache-2.0",
   "Apache-2.0 WITH LLVM-exception",
   "BSD-2-Clause",
@@ -20,6 +21,8 @@ allow = [
   "Zlib",
 ]
 # Notes:
+# - MIT-0 is OSI-approved and removes attribution from the already permissive
+#   MIT grant; `borrow-or-share` uses it through the `jsonschema` dependency.
 # - GPL / AGPL / LGPL are denied by absence from the allow list.
 # - MPL-2.0 (weak per-file copyleft) is not allow-listed by default.
 #   Specific MPL-2.0 dependencies may be added with documented justification

@@ -998,6 +998,7 @@ dependencies = [
  "openwepp-assurance",
  "openwepp-climate-runtime-adapter",
  "openwepp-comparator-metadata",
+ "openwepp-gate-planner",
  "openwepp-hillslope-orchestrator",
  "openwepp-hillslope-output",
  "openwepp-input-contract",
@@ -1050,6 +1051,7 @@ dependencies = [
  "rustix",
  "serde",
  "serde_json",
+ "serde_yaml",
  "sha2",
  "time",
 ]

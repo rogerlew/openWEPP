@@ -1,0 +1,51 @@
+{
+  "schema_version": "openwepp-assurance-registry-v1",
+  "policy_id": "ADR-0039",
+  "generation": 1,
+  "reports": [
+    {
+      "report_id": "linear-groundwater-reservoir-recurrence",
+      "watch_generation": 1,
+      "source_root": "1b2f0d0e3c8de9107d7ea5adca8d79c524840dd7555d6eee79538552b162e43d",
+      "assessed_realization_root": "78231571d51e9d3a95868d3f928b84bc9ce5a58d2deb8cc54e70b18b3784f1bb",
+      "resolution_authority": {
+        "principal_id": null,
+        "role_id": "assurance_steward",
+        "role_record_sha256": null
+      },
+      "watches": [
+        { "watch_id": "gw-assurance-builder", "owner": "openWEPP assurance steward", "kind": "builder_schema", "match_value": "crates/openwepp-assurance/", "lifecycle_boundary": "CAMPAIGN_CLOSURE" },
+        { "watch_id": "gw-assurance-schema", "owner": "openWEPP assurance steward", "kind": "builder_schema", "match_value": "assurance/v2/schemas/", "lifecycle_boundary": "CAMPAIGN_CLOSURE" },
+        { "watch_id": "gw-contract", "owner": "openWEPP groundwater process owner", "kind": "contract_id", "match_value": "SC-GWBASEFLOW-001", "lifecycle_boundary": "CAMPAIGN_CLOSURE" },
+        { "watch_id": "gw-domain", "owner": "openWEPP groundwater process owner", "kind": "process_domain_tag", "match_value": "groundwater", "lifecycle_boundary": "CAMPAIGN_CLOSURE" },
+        { "watch_id": "gw-package", "owner": "openWEPP groundwater process owner", "kind": "cargo_package", "match_value": "openwepp-hillslope-orchestrator", "lifecycle_boundary": "CAMPAIGN_CLOSURE" },
+        { "watch_id": "gw-report-source", "owner": "openWEPP assurance steward", "kind": "path_prefix", "match_value": "assurance/v2/reports/linear-groundwater-reservoir-recurrence/", "lifecycle_boundary": "CAMPAIGN_CLOSURE" },
+        { "watch_id": "gw-reproduction-procedure", "owner": "openWEPP groundwater process owner", "kind": "result_procedure", "match_value": "assurance/v2/reports/linear-groundwater-reservoir-recurrence/procedures/reproduce_groundwater_report.py", "lifecycle_boundary": "CAMPAIGN_CLOSURE" },
+        { "watch_id": "gw-runtime-path", "owner": "openWEPP groundwater process owner", "kind": "exact_path", "match_value": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/groundwater.rs", "lifecycle_boundary": "CAMPAIGN_CLOSURE" }
+      ]
+    },
+    {
+      "report_id": "snow-and-frozen-soil-process-evaluation",
+      "watch_generation": 1,
+      "source_root": "a0d51673a934943f63c6ebbadc16450127aa460cec30709a95d70c53269de1ee",
+      "assessed_realization_root": "cb28555406bb3a2b273fea7afaebfe7194f6b0252c66077087194b971aac8703",
+      "resolution_authority": {
+        "principal_id": "roger-lew",
+        "role_id": "report_lead",
+        "role_record_sha256": "39e332927513bccf2418141f5b7049546731be3026760cea9583ebdfb7557916"
+      },
+      "watches": [
+        { "watch_id": "snow-assurance-builder", "owner": "openWEPP assurance steward", "kind": "builder_schema", "match_value": "crates/openwepp-assurance/", "lifecycle_boundary": "CAMPAIGN_CLOSURE" },
+        { "watch_id": "snow-assurance-schema", "owner": "openWEPP assurance steward", "kind": "builder_schema", "match_value": "assurance/v2/schemas/", "lifecycle_boundary": "CAMPAIGN_CLOSURE" },
+        { "watch_id": "snow-contract", "owner": "openWEPP snow/frost process owner", "kind": "contract_id", "match_value": "SC-SNOWFREEZE-001", "lifecycle_boundary": "CAMPAIGN_CLOSURE" },
+        { "watch_id": "snow-domain", "owner": "openWEPP snow/frost process owner", "kind": "process_domain_tag", "match_value": "snow-frost", "lifecycle_boundary": "CAMPAIGN_CLOSURE" },
+        { "watch_id": "snow-fixtures", "owner": "openWEPP snow/frost process owner", "kind": "path_glob", "match_value": "tests/fixtures/*/**", "lifecycle_boundary": "CAMPAIGN_CLOSURE" },
+        { "watch_id": "snow-hillslope-package", "owner": "openWEPP snow/frost process owner", "kind": "cargo_package", "match_value": "openwepp-hillslope-orchestrator", "lifecycle_boundary": "CAMPAIGN_CLOSURE" },
+        { "watch_id": "snow-meteorology-package", "owner": "openWEPP snow/frost process owner", "kind": "cargo_package", "match_value": "openwepp-meteorology", "lifecycle_boundary": "CAMPAIGN_CLOSURE" },
+        { "watch_id": "snow-report-source", "owner": "openWEPP assurance steward", "kind": "path_prefix", "match_value": "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/", "lifecycle_boundary": "CAMPAIGN_CLOSURE" },
+        { "watch_id": "snow-reproduction-procedure", "owner": "openWEPP snow/frost process owner", "kind": "result_procedure", "match_value": "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/procedures/reproduce_snow_frost_synthesis.py", "lifecycle_boundary": "CAMPAIGN_CLOSURE" },
+        { "watch_id": "snow-runner-package", "owner": "openWEPP snow/frost process owner", "kind": "cargo_package", "match_value": "openwepp-runner", "lifecycle_boundary": "CAMPAIGN_CLOSURE" }
+      ]
+    }
+  ]
+}

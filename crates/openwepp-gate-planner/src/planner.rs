@@ -6,6 +6,7 @@ use std::process::{Command, Stdio};
 
 use serde_json::{Value, json};
 
+use crate::assurance::{plan_assurance_impacts, reconcile_assurance_impacts};
 use crate::canonical::{derived_id, digest, parse_strict, sha256_bytes, validate_schema};
 use crate::error::{ErrorClass, GatePolicyError, Result};
 use crate::policy::{GateDefinition, PolicyBundle, RiskClass};
@@ -179,7 +180,7 @@ fn verify_terminal_superset(intent: &Value, terminal: &Value) -> Result<()> {
     }
     require_node_superset(intent, terminal)?;
     require_value_superset(intent, terminal, "/impact_edges")?;
-    require_value_superset(intent, terminal, "/assurance_impacts")
+    reconcile_assurance_impacts(intent, terminal, &changed_paths(terminal)?)
 }
 
 fn require_string_superset(intent: &Value, terminal: &Value, pointer: &str) -> Result<()> {
@@ -593,6 +594,29 @@ impl<P: InventoryProvider> Planner<P> {
         let graph = base_graph.union(&head_graph);
         let selection_inputs = selection_changes(request);
         let selection = select(&policy, &graph, &selection_inputs);
+        let target_head = request
+            .source
+            .head_commit
+            .as_deref()
+            .or(request.source.dirty_tree_digest.as_deref())
+            .ok_or_else(|| {
+                GatePolicyError::new(
+                    ErrorClass::Planning,
+                    "GATE-ASSURANCE-TARGET-MISSING",
+                    "assurance impact requires an exact commit or dirty-tree identity",
+                )
+            })?;
+        let request_campaign_transfer = request.stage == PlanningStage::Terminal
+            && request.source.head_commit.is_some()
+            && request.campaign_id.is_some();
+        let assurance_impacts = plan_assurance_impacts(
+            &policy,
+            &graph,
+            &selection_inputs,
+            target_head,
+            request.campaign_id.as_deref(),
+            request_campaign_transfer,
+        )?;
         let root_revision = request.source.head_commit.as_deref().unwrap_or("HEAD");
         let roots = manifest_roots(repo, root_revision, request.source.head_commit.is_none())?;
         let context = execution_context(repo, &policy)?;
@@ -651,7 +675,9 @@ impl<P: InventoryProvider> Planner<P> {
                 "policy_id": policy.impact_map.policy_id,
                 "policy_sha256": policy.impact_map.policy_sha256,
                 "impact_map_generation": policy.impact_map.generation,
-                "impact_map_sha256": policy.impact_map_sha256
+                "impact_map_sha256": policy.impact_map_sha256,
+                "assurance_registry_generation": policy.assurance_registry.generation,
+                "assurance_registry_sha256": policy.assurance_registry_sha256
             },
             "planning_stage": request.stage.as_str(),
             "predecessor_intent_plan_id": request.predecessor_intent_plan_id,
@@ -681,7 +707,7 @@ impl<P: InventoryProvider> Planner<P> {
             "zero_work_disposition": zero_work,
             "environment_roots": roots,
             "deferred_obligations": [],
-            "assurance_impacts": [],
+            "assurance_impacts": assurance_impacts,
             "unmapped_inputs": selection.unmapped,
             "output_root": "target/gate-plan"
         });
@@ -1989,6 +2015,7 @@ fn execution_context(repo: &Path, policy: &PolicyBundle) -> Result<Value> {
         "impact_map": policy.impact_map_value,
         "gate_definitions": policy.registry_value,
         "execution_matrix": policy.execution_matrix_value,
+        "assurance_registry": policy.assurance_registry_value,
         "cargo_lock": sha256_bytes(&fs::read(repo.join("Cargo.lock")).map_err(|error| GatePolicyError::new(ErrorClass::Io, "GATE-CARGO-LOCK", error.to_string()))?),
         "cargo_configuration": cargo_configuration_manifest(repo)?
     }))?;
@@ -2443,6 +2470,61 @@ mod tests {
             .map(|node| node["node_id"].as_str().expect("node ID"))
             .collect::<std::collections::BTreeSet<_>>();
         assert!(!ids.is_empty());
+    }
+
+    #[test]
+    fn assurance_reconciliation_allows_declared_to_exact_but_not_watch_removal() {
+        let impact = |kind: &str, watches: serde_json::Value| {
+            serde_json::json!({
+                "report_id": "report",
+                "registry_generation": 1,
+                "registry_sha256": "a".repeat(64),
+                "source_root": "b".repeat(64),
+                "assessed_realization_root": "c".repeat(64),
+                "campaign_id": "campaign",
+                "requested_action": "ASSESS",
+                "watch_generation": 1,
+                "impact_state": "OPEN_ASSESSMENT",
+                "resolution_authority": {"principal_id": "lead", "role_id": "report_lead", "role_record_sha256": "d".repeat(64)},
+                "assessed_realization_integrity": "CURRENT",
+                "campaign_impact_disposition": "IMPACT_PENDING",
+                "campaign_transfer_request": "NOT_REQUESTED",
+                "campaign_transfer_currency": "BLOCKED",
+                "release_transfer_request": "NOT_REQUESTED",
+                "release_transfer_currency": "BLOCKED",
+                "lifecycle_boundaries": ["CAMPAIGN_CLOSURE"],
+                "mapping_complete": true,
+                "matching_watch_ids": watches,
+                "changed_object": {"path": "crates/example/src/lib.rs", "change_kind": kind}
+            })
+        };
+        let intent = serde_json::json!({
+            "changed_objects": [{"path": "crates/example/src/lib.rs"}],
+            "assurance_impacts": [impact("DECLARED", serde_json::json!(["package", "path"]))]
+        });
+        let terminal = serde_json::json!({
+            "changed_objects": [{"path": "crates/example/src/lib.rs"}],
+            "assurance_impacts": [impact("MODIFY", serde_json::json!(["package", "path"]))]
+        });
+        let actual = std::collections::BTreeSet::from(["crates/example/src/lib.rs".to_owned()]);
+        crate::assurance::reconcile_assurance_impacts(&intent, &terminal, &actual)
+            .expect("exact terminal impact");
+
+        let weakened = serde_json::json!({
+            "changed_objects": [{"path": "crates/example/src/lib.rs"}],
+            "assurance_impacts": [impact("MODIFY", serde_json::json!(["package"]))]
+        });
+        assert!(
+            crate::assurance::reconcile_assurance_impacts(&intent, &weakened, &actual).is_err()
+        );
+
+        let untouched = serde_json::json!({"changed_objects": [], "assurance_impacts": []});
+        crate::assurance::reconcile_assurance_impacts(
+            &intent,
+            &untouched,
+            &std::collections::BTreeSet::new(),
+        )
+        .expect("an authorized but untouched path creates no terminal impact");
     }
 
     #[test]
