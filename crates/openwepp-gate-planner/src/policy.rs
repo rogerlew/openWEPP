@@ -599,6 +599,24 @@ fn validate_policy_posture(
 fn definition_map(registry: &GateRegistry) -> Result<BTreeMap<String, GateDefinition>> {
     let mut definitions = BTreeMap::new();
     for definition in &registry.definitions {
+        if definition
+            .environment_allowlist
+            .iter()
+            .any(|key| key == "RUSTUP_HOME")
+            && !definition
+                .environment_allowlist
+                .iter()
+                .any(|key| key == "RUSTUP_TOOLCHAIN")
+        {
+            return Err(GatePolicyError::new(
+                ErrorClass::Policy,
+                "GATE-RUSTUP-TOOLCHAIN-UNPINNED",
+                format!(
+                    "{} allows RUSTUP_HOME without RUSTUP_TOOLCHAIN",
+                    definition.gate_definition_id
+                ),
+            ));
+        }
         if definitions
             .insert(definition.gate_definition_id.clone(), definition.clone())
             .is_some()

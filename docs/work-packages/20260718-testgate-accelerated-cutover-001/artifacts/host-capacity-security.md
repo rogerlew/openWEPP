@@ -44,12 +44,19 @@ No `pull_request` or `pull_request_target` event is routed to this runner.
 Ran: 2026-07-18 PDT / 2026-07-19 UTC.
 
 - Container image ID:
-  `sha256:8bd3a534015517ec14912ad8c06eda59586e39829c5f7037cc1912fe94912c9a`
-  (`764,998,197` bytes). `manage.sh` rejects any rebuilt image with a different
+  `sha256:73b3440613c9f8f529377c72826e42675296405e88cd87c46cf9218aabe9f3bb`
+  (`764,999,347` bytes). `manage.sh` rejects any rebuilt image with a different
   identity until the reviewed lock is deliberately updated. The Ubuntu base,
   runner archive, Rust installer, and copied Markdown tool are digest-pinned;
   Ubuntu apt repository contents are recorded by the image identity but are
   not claimed to be byte-reproducible after cache eviction.
+- Acceptance run `29671679629` exposed two immutable-image launch defects
+  before gate execution: Rustup tried to update a named channel on the
+  read-only toolchain store, and the runner rejected a completion-hook path
+  without a supported script extension. The rebuilt image pins
+  `RUSTUP_TOOLCHAIN=1.92.0-x86_64-unknown-linux-gnu` and installs/configures the
+  hook as `openwepp-job-completed-hook.sh`; the runner returned online and idle
+  on that exact image.
 - Container/service identity: `openwepp-actions-runner`, Docker restart policy
   `unless-stopped`, running as image user `runner` (UID 10001). Runner
   self-update is disabled; an update requires a reviewed pinned-image change.

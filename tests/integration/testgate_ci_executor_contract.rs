@@ -200,6 +200,7 @@ fn blocking_executor_and_affected_quality_preserve_manual_rollback() {
 #[test]
 fn runner_container_has_no_host_or_privileged_mounts() {
     let manager = text("tools/ci/omarchy-runner/manage.sh");
+    let image = text("tools/ci/omarchy-runner/Dockerfile");
     assert!(manager.contains("--security-opt no-new-privileges=true"));
     assert!(manager.contains("--cap-drop ALL"));
     assert!(manager.contains("--read-only"));
@@ -211,6 +212,10 @@ fn runner_container_has_no_host_or_privileged_mounts() {
     assert!(!manager.contains("--network host"));
     assert!(manager.contains("registration_token"));
     assert!(manager.contains("printf '%s\\n' \"${registration_token}\""));
+    assert!(image.contains("RUSTUP_TOOLCHAIN=1.92.0-x86_64-unknown-linux-gnu"));
+    assert!(image.contains(
+        "ACTIONS_RUNNER_HOOK_JOB_COMPLETED=/usr/local/bin/openwepp-job-completed-hook.sh"
+    ));
     let hook = text("tools/ci/omarchy-runner/job-completed-hook.sh");
     assert!(hook.contains("/runner-work /cache/cargo /cache/target /home/runner /tmp"));
     assert!(hook.contains("/runner-state/_diag"));

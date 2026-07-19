@@ -197,6 +197,18 @@ fn production_gate_definitions_are_schema_valid_and_registered() {
         definitions.len(),
         "definition IDs must be unique"
     );
+    for definition in definitions {
+        let environment = definition["environment_allowlist"]
+            .as_array()
+            .expect("environment allowlist");
+        if environment.iter().any(|key| key == "RUSTUP_HOME") {
+            assert!(
+                environment.iter().any(|key| key == "RUSTUP_TOOLCHAIN"),
+                "{} must retain the immutable image toolchain selection",
+                definition["gate_definition_id"]
+            );
+        }
+    }
 
     let impact_map = load_json(&policy.join("impact-map.json"));
     for entry in impact_map["entries"].as_array().expect("impact entries") {

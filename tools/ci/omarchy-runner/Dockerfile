@@ -46,18 +46,19 @@ RUN echo "265cdb2d3d6d5e7e98aac18f3bd1041278106d41ba5ff1cf23638381d346ea34  /usr
     && chmod 0755 /usr/local/bin/markdown-doc
 
 COPY entrypoint.sh /usr/local/bin/openwepp-runner-entrypoint
-COPY job-completed-hook.sh /usr/local/bin/openwepp-job-completed-hook
+COPY job-completed-hook.sh /usr/local/bin/openwepp-job-completed-hook.sh
 RUN chmod 0755 /usr/local/bin/openwepp-runner-entrypoint \
-      /usr/local/bin/openwepp-job-completed-hook \
+      /usr/local/bin/openwepp-job-completed-hook.sh \
     && chown root:root /usr/local/bin/openwepp-runner-entrypoint \
-      /usr/local/bin/openwepp-job-completed-hook \
+      /usr/local/bin/openwepp-job-completed-hook.sh \
     && chmod -R go-w /opt/actions-runner /opt/cargo /opt/rustup
 
 ENV CARGO_HOME=/cache/cargo \
     CARGO_TARGET_DIR=/cache/target \
     RUSTUP_HOME=/opt/rustup \
+    RUSTUP_TOOLCHAIN=1.92.0-x86_64-unknown-linux-gnu \
     RUNNER_ALLOW_RUNASROOT=0 \
-    ACTIONS_RUNNER_HOOK_JOB_COMPLETED=/usr/local/bin/openwepp-job-completed-hook
+    ACTIONS_RUNNER_HOOK_JOB_COMPLETED=/usr/local/bin/openwepp-job-completed-hook.sh
 
 USER runner
 WORKDIR /runner-state
