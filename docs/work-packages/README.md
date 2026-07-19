@@ -180,6 +180,10 @@
 
 State as of `2026-07-19 UTC`:
 
+- `20260719-testgate-campaign-closeout-001/` - READY (2026-07-19): archive
+  stale TESTGATE prompts, accept the bounded external-provider orphan exception,
+  and close the campaign without more tests or timed observation.
+
 - `20260719-testgate-queue-governance-hardening-001/` -
   HOLD-PROVIDER-ORPHAN-QUEUE (2026-07-19): implements permanent single-pending
   TESTGATE concurrency, four current-main guards, exact release-runner labels,
