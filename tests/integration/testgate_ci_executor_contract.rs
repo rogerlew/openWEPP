@@ -212,6 +212,7 @@ fn runner_container_has_no_host_or_privileged_mounts() {
     assert!(manager.contains("dst=/runner-state,readonly"));
     assert!(manager.contains("--tmpfs"));
     assert!(manager.contains("/cache/target:rw,exec,nosuid,nodev"));
+    assert!(manager.contains("/cache/target:rw,exec,nosuid,nodev,size=20g"));
     assert!(manager.contains("/cache/cargo:rw,nosuid,nodev"));
     assert!(manager.contains("job-completed-hook.sh"));
     assert!(!manager.contains("/var/run/docker.sock"));

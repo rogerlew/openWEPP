@@ -83,7 +83,7 @@ setup_runner() {
     --tmpfs "/runner-state/_diag:rw,nosuid,nodev,noexec,size=256m,uid=10001,gid=10001,mode=0700" \
     --tmpfs "/runner-work:rw,nosuid,nodev,size=16g,uid=10001,gid=10001,mode=0770" \
     --tmpfs "/cache/cargo:rw,nosuid,nodev,size=4g,uid=10001,gid=10001,mode=0700" \
-    --tmpfs "/cache/target:rw,exec,nosuid,nodev,size=8g,uid=10001,gid=10001,mode=0700" \
+    --tmpfs "/cache/target:rw,exec,nosuid,nodev,size=20g,uid=10001,gid=10001,mode=0700" \
     --tmpfs "/home/runner:rw,nosuid,nodev,size=512m,uid=10001,gid=10001,mode=0700" \
     --tmpfs "/tmp:rw,nosuid,nodev,size=1g,uid=10001,gid=10001,mode=1777" \
     "${IMAGE}" run >/dev/null

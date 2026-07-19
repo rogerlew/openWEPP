@@ -69,12 +69,17 @@ Ran: 2026-07-18 PDT / 2026-07-19 UTC.
 - Runtime limits: 16 CPUs, 28 GiB memory, 4096 PIDs, all Linux capabilities
   dropped, `no-new-privileges`, bridge networking, not privileged.
 - The container root filesystem and sole named registration-state volume are
-  read-only during jobs. Work (16 GiB), Cargo (4 GiB), target (8 GiB), home
+  read-only during jobs. Work (16 GiB), Cargo (4 GiB), target (20 GiB), home
   (512 MiB), diagnostics (256 MiB), and `/tmp` (1 GiB) are bounded tmpfs
   mounts. Only target is executable, because Cargo must execute freshly built
   build scripts and test binaries there; work, Cargo source cache, home,
   diagnostics, and `/tmp` remain `noexec`. Host bind mounts are absent; no
   Docker socket, host home, or homelab data path is present.
+- Acceptance run `29673766929` proved that the original 8 GiB target bound was
+  too small for a clean workspace inventory: compilation stopped with
+  `No space left on device` before plan selection or gate execution. The target
+  tmpfs bound was raised to 20 GiB; it remains isolated, purge-on-completion,
+  and dynamically allocated under the unchanged 28 GiB container memory cap.
 - A root-owned runner completion hook repeatedly terminates non-control-plane
   processes owned by the runner UID until quiescent and deletes work, Cargo,
   target, home, `/tmp`, and writable diagnostics after every job. A standalone
