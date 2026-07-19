@@ -56,6 +56,11 @@ count scorecard remains active.
   rollback-smoke proofs remain.
 - [ ] Activate the normal TESTGATE aggregate, retain the conservative manual
   lane, remove obsolete fallback instructions, and record immediate cutover.
+- [ ] (2026-07-19) Normal consumer run `29692405550` proved forest1 checkout,
+  bootstrap, and planner build, then failed closed before gate execution because
+  the activation evidence increment did not change its owning `package.md`.
+  This package update supplies the required explicit intent delta for the
+  docs-only retry; no broad evidence was invalidated or repeated.
 - [ ] Complete dual terminal verification, documentation integrity checks,
   line-count governance, final disposition, and roadmap/catalog closure.
 
@@ -440,6 +445,13 @@ calendar observation or broad testing on every ordinary increment.
   23 then came online and idle with the exact six-label contract. Direct live
   confinement and disposable cleanup probes passed without exposing a Docker
   socket or host bind.
+- The first enabled trusted-main consumer run `29692405550` reached the exact
+  forest1 runner, passed checkout, ref admission, toolchain verification,
+  cold bootstrap, and planner build, then failed preflight before any selected
+  gate because its documentation-only commit changed evidence files but not
+  the owning pre-existing `package.md`. Hosted verification and aggregation
+  failed closed. TESTGATE was immediately disabled; the retry's package update
+  is the explicit intent delta required by the existing planner contract.
 
 ## Decision Log
 
