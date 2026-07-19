@@ -12,7 +12,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-       ca-certificates curl git jq build-essential pkg-config libssl-dev \
+       ca-certificates curl git jq ripgrep build-essential pkg-config libssl-dev \
        python3 python3-venv python3-pip unzip xz-utils zstd passwd \
     && rm -rf /var/lib/apt/lists/* \
     && useradd --create-home --uid 10001 --shell /bin/bash runner \

@@ -27,7 +27,7 @@ jobs:
     permissions:
       contents: read
     env:
-      OPENWEPP_RUNNER_IMAGE_ID: sha256:73b3440613c9f8f529377c72826e42675296405e88cd87c46cf9218aabe9f3bb
+      OPENWEPP_RUNNER_IMAGE_ID: sha256:cae074269ed8afd33aeeca7ad66143733d0ee379fd8baa546c9afd1f8e09aaf6
       TESTGATE_EXECUTION_ROOT: /cache/target
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -69,6 +69,7 @@ jobs:
           cargo deny --version | grep -F 'cargo-deny 0.19.6'
           cargo llvm-cov --version | grep -F 'cargo-llvm-cov 0.8.7'
           cargo crap --version | grep -F 'cargo-crap 0.2.2'
+          rg --version | grep -F 'ripgrep 14.1.0'
           markdown-doc --version
           python3 -m venv --help >/dev/null
       - name: Bootstrap locked base and head dependencies
@@ -168,7 +169,7 @@ jobs:
       - name: Validate receipt and predicate bindings
         env:
           EVIDENCE_DIR: ${{ runner.temp }}/testgate-evidence
-          EXPECTED_IMAGE: sha256:73b3440613c9f8f529377c72826e42675296405e88cd87c46cf9218aabe9f3bb
+          EXPECTED_IMAGE: sha256:cae074269ed8afd33aeeca7ad66143733d0ee379fd8baa546c9afd1f8e09aaf6
           EXPECTED_BASE: ${{ steps.verification-comparison.outputs.base }}
         run: |
           set -euo pipefail

@@ -149,6 +149,7 @@ fn blocking_executor_and_affected_quality_preserve_manual_rollback() {
         "id-token: write",
         "attestations: write",
         "cargo-nextest@0.9.138",
+        "ripgrep 14.1.0",
         "--artifact-root \"${EVIDENCE_DIR}/execution\"",
         "TESTGATE_EXECUTION_ROOT: /cache/target",
         "TMPDIR=\"${planner_tmp}\"",

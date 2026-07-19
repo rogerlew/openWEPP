@@ -44,8 +44,10 @@ No `pull_request` or `pull_request_target` event is routed to this runner.
 Ran: 2026-07-18 PDT / 2026-07-19 UTC.
 
 - Container image ID:
-  `sha256:73b3440613c9f8f529377c72826e42675296405e88cd87c46cf9218aabe9f3bb`
-  (`764,999,347` bytes). `manage.sh` rejects any rebuilt image with a different
+  `sha256:cae074269ed8afd33aeeca7ad66143733d0ee379fd8baa546c9afd1f8e09aaf6`
+  (`767,010,889` bytes). This revision adds Ubuntu's repository-pinned
+  `ripgrep 14.1.0-1`, required by the planner's execution-context identity.
+  `manage.sh` rejects any rebuilt image with a different
   identity until the reviewed lock is deliberately updated. The Ubuntu base,
   runner archive, Rust installer, and copied Markdown tool are digest-pinned;
   Ubuntu apt repository contents are recorded by the image identity but are
