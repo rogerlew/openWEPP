@@ -16,7 +16,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: openwepp-omarchy-testgate
+  group: openwepp-omarchy-testgate-v2
   cancel-in-progress: false
 
 jobs:
