@@ -45,8 +45,12 @@ Ran: 2026-07-18 PDT / 2026-07-19 UTC.
 
 - Container image ID:
   `sha256:f902cd52ac2f420feb53671f76b7b6bcdcf6a17227e88ee8e5300f86e4b1c768`
-  (`767,010,889` bytes). This revision adds Ubuntu's repository-pinned
-  `ripgrep 14.1.0-1`, required by the planner's execution-context identity.
+  (`822,234,813` bytes). This revision retains Ubuntu's repository-pinned
+  `ripgrep 14.1.0-1` and adds Python 3.12's `python` alias, system-visible
+  PyArrow `22.0.0`, PHP `8.3.6`, and `uk2us` at commit
+  `6ce03a96a9466bed029fb0287786cd903f1876d6` with hashed executable and spelling
+  rules. These tools satisfy the clean-workspace inventory without job-time
+  executable installation.
   `manage.sh` rejects any rebuilt image with a different
   identity until the reviewed lock is deliberately updated. The Ubuntu base,
   runner archive, Rust installer, and copied Markdown tool are digest-pinned;
@@ -101,7 +105,10 @@ Ran: 2026-07-18 PDT / 2026-07-19 UTC.
   `Listening for Jobs` at `2026-07-19T00:23:42Z`.
 - Direct tool verification passed for Rust 1.92.0, Nextest 0.9.138,
   cargo-deny 0.19.6, cargo-llvm-cov 0.8.7, cargo-crap 0.2.2, and
-  markdown-doc-cli 0.1.0.
+  markdown-doc-cli 0.1.0. The unprivileged live runner also reported Python
+  3.12.3, PyArrow 22.0.0 under `/usr/local/lib/python3.12/dist-packages`, PHP
+  8.3.6, and the pinned `uk2us` help surface; a disposable
+  `--system-site-packages` virtual environment imported the same PyArrow.
 - Clean removal deleted the provider registration, container, and dedicated
   registration volume. Reprovisioning created exactly one online/idle runner
   with `disableUpdate=true`; the final image/sizing reprovision again reported

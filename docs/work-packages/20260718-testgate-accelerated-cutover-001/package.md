@@ -87,6 +87,7 @@ authority requirements are not reduced.
 - `tools/release/**`
 - `tests/integration/testgate_ci_*`
 - `tests/integration/testgate_align_authority_contract.rs`
+- `tests/integration/testgate_assure_campaign_currency_contract.rs`
 - `tests/python/test_testgate_shadow.py`
 - `tests/python/test_testgate.py`
 - `docs/ROADMAP.md`
@@ -125,6 +126,10 @@ platform-specific values (the established development host and Ubuntu 24.04).
 The exact oracle test file is admitted solely to bind both observed immutable
 fingerprints; production numerics, physics, tolerances, and contract acceptance
 remain unchanged.
+The stale terminal-assurance contract is also admitted explicitly so it can
+continue proving campaign-transfer behavior at the supported `INCREMENT`
+planner boundary; the production transfer trigger remains terminal-stage
+driven.
 
 ## Protected Boundaries
 

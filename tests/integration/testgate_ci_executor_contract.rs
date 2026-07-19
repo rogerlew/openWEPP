@@ -137,7 +137,13 @@ fn assert_workflow_and_rollback_contract() {
     assert!(conservative.contains("--mode validate"));
     assert!(!conservative.contains("--skip-authority-required"));
     assert!(conservative.contains("--skip-stability"));
-    assert!(!conservative.contains("self-hosted"));
+    assert!(conservative.contains("testgate_run_id:"));
+    assert!(conservative.contains("gh attestation verify"));
+    assert!(conservative.contains("GLOBAL_WORKSPACE"));
+    assert!(conservative.contains("Run conservative comparison with reused global CRAP"));
+    assert!(conservative.contains("--authority-only"));
+    assert!(!conservative.contains("runs-on: [self-hosted"));
+    assert!(conservative.contains("--deny-self-hosted-runners"));
 
     let rollback =
         text("docs/work-packages/20260718-testgate-ci-shadow-executor-001/artifacts/rollback.md");
