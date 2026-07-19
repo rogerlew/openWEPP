@@ -4,7 +4,7 @@ Package ID: `20260719-testgate-global-crap-output-relocation-001`
 
 Queue ID: `TESTGATE-GLOBAL-CRAP-OUTPUT-01`
 
-Status: `IN PROGRESS / PLAN-ENVIRONMENT-NONDETERMINISM / ENVELOPE-AMENDED`
+Status: `IN PROGRESS / ENV-PROJECTION-REVIEW-PASS / COMMITTED-PLAN-PENDING`
 
 Authorization: verified critical receipt
 `78f526eee1d0b8a9142afc9f3ff8f9434702d1a5409d917a1c2a22687aa7638c`
@@ -42,9 +42,13 @@ plan unreconstructable across invokers by hashing undeclared ambient variables.
   variable, including invoker-controlled `_` outside all gate allowlists.
 - [x] (2026-07-19) Prospectively amended this package before planner edits to
   own `TESTGATE-ENV-PROJECTION-DETERMINISM-01` as the integrated blocker.
-- [ ] Project only the union of policy-declared gate environment allowlists,
-  prove undeclared ambient noise cannot alter identity, and repeat focused
-  review before committed planning.
+- [x] (2026-07-19) Projected only the union of policy-declared gate environment
+  allowlists. Focused unit evidence proves undeclared ambient noise is neutral,
+  declared-value changes break identity, and all four current declared keys are
+  discovered from validated policy.
+- [x] (2026-07-19) Dual independent re-review accepts the environment projection
+  with no finding; committed double-plan identity and reconciliation remain the
+  next gate.
 - [ ] Complete dual review, one mechanical terminal execution, dual terminal
   verification, prompt archival, and final disposition.
 
@@ -172,9 +176,9 @@ route, and assign a concrete next defect owner.
 - [x] Focused contract evidence passes.
 - [ ] Mechanical critical receipt passes every node.
 - [ ] Dual review and dual terminal verification have no open finding.
-- [ ] Every changed Rust tooling/test file remains below the 2,000-line warning
+- [x] Changed Rust files are 249 and 558 lines, below the 2,000-line warning
   threshold; no kernel/process Rust changes.
-- [ ] Undeclared ambient variables do not alter plan identity; every
+- [x] Undeclared ambient variables do not alter plan identity; every
   policy-declared gate environment key remains bound.
 - [ ] Two separate exact committed plan invocations are byte-identical and
   independent reconciliation passes before execution.
@@ -224,6 +228,10 @@ or secret-bearing process state.
   although policy permits only `PATH`, `CARGO_HOME`, `RUSTUP_HOME`, and
   `RUSTUP_TOOLCHAIN`; invoker bookkeeping such as `_` therefore poisons
   deterministic reconstruction without representing a permitted gate input.
+- The direct correction derives its key union from the validated gate registry
+  instead of hard-coding the four current names. A future declared key therefore
+  enters identity automatically, while undeclared secrets and shell bookkeeping
+  remain outside the permitted projection.
 
 ## Decision Log
 

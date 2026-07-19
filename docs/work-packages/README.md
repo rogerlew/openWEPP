@@ -207,11 +207,11 @@
 State as of `2026-07-19 UTC`:
 
 - `20260719-testgate-global-crap-output-relocation-001/` -
-  IN-PROGRESS-PLAN-ENVIRONMENT-NONDETERMINISM-ENVELOPE-AMENDED (2026-07-19):
-  output relocation and 13/13 focused cases pass, but both dirty and exact
-  committed plans fail reconstruction solely because the planner hashes
-  undeclared ambient variables. The integrated package now prospectively owns
-  that bounded projection fix before any terminal execution.
+  IN-PROGRESS-ENV-PROJECTION-REVIEW-PASS-COMMITTED-PLAN-PENDING (2026-07-19):
+  output relocation and 13/13 focused cases pass; the integrated environment fix
+  derives identity from policy-declared keys, with 2/2 focused unit cases,
+  focused Clippy, and dual review passing. Committed double-plan identity and
+  reconciliation precede one terminal execution.
 
 - `20260719-testgate-crap-adapter-digest-alignment-001/` -
   EXECUTED-FAIL-GLOBAL-OUTPUT-RELOCATION-REVIEWED (2026-07-19): both adapter

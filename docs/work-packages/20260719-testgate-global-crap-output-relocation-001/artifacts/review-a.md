@@ -20,3 +20,15 @@ stops before acquisition on the deliberately absent scratch Python prerequisite.
 
 Ran: shell syntax, Rust formatting, and diff hygiene pass. No broad gate was run
 by the reviewer. The changed integration test is 558 lines, below WARN.
+
+## Integrated Environment Amendment
+
+Verdict: `PASS`, no findings.
+
+The policy-derived `BTreeSet` projection closes the ambient-variable mechanism,
+excludes undeclared noise/secrets before value decoding, preserves declared
+value sensitivity and typed non-UTF-8 failure, and retains separate compiler,
+target, Cargo/Git configuration, and runner-image identities. Planner,
+same-host executor, and verifier use the same function; `PolicyBundle::load`
+does not recurse. Focused environment tests pass 2/2 and the 249/558-line files
+remain below WARN. Committed determinism and terminal execution remain pending.

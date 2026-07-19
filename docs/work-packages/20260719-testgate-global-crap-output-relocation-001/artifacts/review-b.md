@@ -19,3 +19,14 @@ Re-review confirms seven isolated probes, exactly 13 focused non-ignored cases,
 safe scratch cleanup, truthful supersession of the earlier 12/12 evidence, and
 accurate 558-line governance. Ran: shell syntax, direct digest and path
 reconciliation, and diff hygiene pass. No broad gate was run by the reviewer.
+
+## Integrated Environment Amendment
+
+Verdict: `PASS`, no findings.
+
+The amendment was committed before Rust edits and authorizes the exact planner
+file. The correction derives all keys from validated policy, distinguishes
+missing/present and changed declared values, ignores undeclared invoker state,
+and retains fail-closed policy loading and declared non-UTF-8 handling. Static
+call-graph review finds no recursion. Recorded 2/2 focused cases, focused
+Clippy, 249/558 line counts, and pending terminal claims are truthful.
