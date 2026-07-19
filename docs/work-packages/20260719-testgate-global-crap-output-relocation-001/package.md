@@ -4,7 +4,7 @@ Package ID: `20260719-testgate-global-crap-output-relocation-001`
 
 Queue ID: `TESTGATE-GLOBAL-CRAP-OUTPUT-01`
 
-Status: `IN PROGRESS / ENV-PROJECTION-REVIEW-PASS / COMMITTED-PLAN-PENDING`
+Status: `ACTIVE / ENV-PROJECTION-REVIEW-PASS / COMMITTED-PLAN-PENDING`
 
 Authorization: verified critical receipt
 `78f526eee1d0b8a9142afc9f3ff8f9434702d1a5409d917a1c2a22687aa7638c`
@@ -49,6 +49,9 @@ plan unreconstructable across invokers by hashing undeclared ambient variables.
 - [x] (2026-07-19) Dual independent re-review accepts the environment projection
   with no finding; committed double-plan identity and reconciliation remain the
   next gate.
+- [x] (2026-07-19) Corrected the live package status token to `ACTIVE` before
+  final focused evidence so the canonical helper can admit the already
+  prospective amended write set mechanically.
 - [ ] Complete dual review, one mechanical terminal execution, dual terminal
   verification, prompt archival, and final disposition.
 
