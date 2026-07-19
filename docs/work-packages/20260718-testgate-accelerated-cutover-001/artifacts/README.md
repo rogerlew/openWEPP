@@ -7,7 +7,8 @@ Queued evidence:
   container-runner receipts.
 - `workflow-cost-containment.md` - provider disable/re-enable and trigger state.
 - `bootstrap-evidence.md` - cold/warm cache ordering and receipts.
-- `crap-closure.md` - affected cleanup and exact-candidate global closure.
+- `affected-crap.md` - affected cleanup and exact-candidate patch-loop closure.
+- `crap-closure.md` - exact-candidate global CRAP and full Nextest closure.
 - `acceptance-matrix.md` - event-driven acceptance cases and outcomes.
 - `review-a-adversarial.md`, `review-b.md`, and `review-disposition.md`.
 - `terminal-gate-results.md`, terminal verification records, and

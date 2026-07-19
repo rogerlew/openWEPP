@@ -51,7 +51,9 @@ count scorecard remains active.
   focused gates.
 - [ ] Pass the event-driven acceptance matrix and one conservative full-suite
   comparison on the same exact candidate without repeating successful heavy
-  commands.
+  commands. The full comparison passed 2,165/2,165 instrumented tests and
+  global CRAP at 2 raw / 2 adjudicated / 0 actionable; executable consumer and
+  rollback-smoke proofs remain.
 - [ ] Activate the normal TESTGATE aggregate, retain the conservative manual
   lane, remove obsolete fallback instructions, and record immediate cutover.
 - [ ] Complete dual terminal verification, documentation integrity checks,
@@ -171,6 +173,20 @@ The same focused reproduction then exposed identical hard-coded roots in the
 transitive HPHYS0291 and HPHYS0265 imports. Those two exact artifacts are
 admitted under the same restriction so the full import chain resolves from its
 checked-out repository rather than one developer workstation.
+
+Write-set amendment (2026-07-19): terminal review found that the conservative
+rollback workflow had zero provider executions and incorrectly required valid
+global CRAP evidence to contain zero raw and zero adjudicated rows. Static
+availability cannot close the required rollback consumer-path claim. This
+prospectively authorizes a narrow `smoke_only` manual-dispatch mode in the
+already admitted conservative workflow plus its focused integration contract.
+The smoke may prove exact-main admission, GitHub-hosted isolation, read-only
+permissions, executable rollback-script presence/syntax, and a durable smoke
+receipt. It must skip tool installation and every broad validation command and
+must not claim conservative qualification. The normal reuse predicate may be
+corrected to accept current-source `PASS`, closure-eligible evidence when every
+raw row is adjudicated and actionable rows are empty. Full conservative,
+critical, campaign, release, and authority requirements remain unchanged.
 
 ## Protected Boundaries
 
@@ -455,6 +471,13 @@ calendar observation or broad testing on every ordinary increment.
   can absorb the bounded 32-CPU/48-GiB runner envelope without weakening host
   separation or adding hosted Actions cost.
   Date/Author: 2026-07-19 / Roger Lew and Codex.
+- Decision: add a non-heavy hosted rollback smoke and correct the global-CRAP
+  reuse predicate before cutover.
+  Rationale: terminal review found zero executable rollback evidence and a
+  predicate that rejected the accepted 2 raw / 2 adjudicated / 0 actionable
+  closure. A dispatch/admission smoke closes the real consumer path without
+  repeating broad validation or weakening the full rollback lane.
+  Date/Author: 2026-07-19 / Codex, accepted terminal finding.
 - Decision: amend the declared write set before review remediation to include
   the independent conservative workflow and every active guidance surface
   identified by the governance review.
