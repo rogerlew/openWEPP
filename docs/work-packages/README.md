@@ -206,10 +206,14 @@
 
 State as of `2026-07-19 UTC`:
 
+- `20260719-testgate-coverage-tmpdir-confinement-001/` - READY (2026-07-19):
+  preserve executor confinement while moving coverage `TMPDIR` to the artifact
+  root's short `tmp` child, closing systemic Unix socket path failures.
+
 - `20260719-testgate-assurance-socket-path-portability-001/` -
-  IMPLEMENTED-PENDING-TERMINAL (2026-07-19): the one-line scratch-label fix
-  passes the exact former failure under its retained long `TMPDIR`; focused
-  Clippy passes and the planner-selected terminal run remains.
+  EXECUTED-FAIL-SYSTEMIC-TMPDIR (2026-07-19): its one-line label fix passes in
+  terminal coverage, which then exposes the same `SUN_LEN` failure in another
+  fixture. The runner-level successor owns the common fix.
 
 - `20260719-testgate-adversarial-clippy-cleanup-001/` -
   EXECUTED-FAIL-SOCKET-PATH (2026-07-19): all 126 assertions are preserved and

@@ -18,4 +18,9 @@ Additional focused gates:
 - `git diff --check` — PASS.
 
 No manual broad suite, GitHub workflow, or forest1 action ran. The mechanical
-terminal plan remains pending.
+terminal plan selected 10 bounded-component nodes. Nine passed. Affected CRAP
+passed the corrected dossier case, then failed in a separate assurance-v2
+socket case because the runner overrides `TMPDIR` with the deep
+`target/affected-crap/tmp` path. Receipt
+`065aec86b96505f794d7f8122a638272b928ad78107c7aabbc07dffa0f377b6a` is
+retained as `LOCAL_UNTRUSTED` / `FAIL`; no result is relabeled.

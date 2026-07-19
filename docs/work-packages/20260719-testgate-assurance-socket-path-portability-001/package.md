@@ -4,7 +4,7 @@ Package ID: `20260719-testgate-assurance-socket-path-portability-001`
 
 Queue ID: `TESTGATE-ACCEPT-SOCKET-01`
 
-Status: `IMPLEMENTED / PENDING TERMINAL PLAN`
+Status: `EXECUTED / FAIL-SYSTEMIC-TMPDIR / SUCCESSOR ACTIVE`
 
 Authorization: the verified out-of-scope blocker from
 `20260719-testgate-adversarial-clippy-cleanup-001`, under Roger Lew's 2026-07-19
@@ -27,7 +27,11 @@ label so the existing socket and rejection assertions execute unchanged.
 - [x] (2026-07-19) Replaced only the oversized scratch label with `p`.
 - [x] (2026-07-19) Passed the exact focused case under the formerly failing
   long `TMPDIR`; focused Clippy, format, and diff hygiene pass.
-- [ ] Execute the mechanical terminal plan.
+- [x] (2026-07-19) Executed the 10-node terminal plan. Nine nodes pass; affected
+  CRAP progressed past the corrected test, then a different assurance socket
+  fixture failed on the same deep coverage `TMPDIR` mechanism.
+- [ ] `20260719-testgate-coverage-tmpdir-confinement-001` owns the systemic
+  confined-short-temp correction.
 - [ ] Complete dual review and terminal verification.
 
 ## Correction Authority Envelope
@@ -98,6 +102,12 @@ release-directory creation. Only its non-semantic scratch prefix may change.
 
 - The one-character label passes under the exact retained long coverage
   `TMPDIR`; no runner or test-behavior change is needed.
+- Terminal receipt
+  `065aec86b96505f794d7f8122a638272b928ad78107c7aabbc07dffa0f377b6a`
+  proves this label fix works, then fails in
+  `assurance_v2_source_contract::paths_symlinks_and_special_entries_fail_closed`
+  on the same `SUN_LEN` mechanism. Further fixture-label churn is rejected;
+  the runner's deep `TMPDIR` override is the systemic defect.
 
 ## Decision Log
 
@@ -108,5 +118,7 @@ release-directory creation. Only its non-semantic scratch prefix may change.
 
 ## Outcomes And Retrospective
 
-The one-line portability correction passes focused validation. Mechanical
-terminal execution, dual review, and terminal disposition remain.
+The one-line portability correction passes focused validation and its exact
+case inside terminal coverage. The terminal receipt remains FAIL on a distinct
+fixture with the same runner-root cause. The named systemic successor owns the
+runner patch; dual review and final disposition remain.
