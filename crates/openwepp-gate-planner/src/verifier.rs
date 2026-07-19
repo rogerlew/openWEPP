@@ -2006,7 +2006,13 @@ mod tests {
                 .current_dir(root)
                 .output()
                 .expect("list test inventory for JUnit fixture");
-            assert!(output.status.success(), "nextest list must succeed");
+            assert!(
+                output.status.success(),
+                "nextest list must succeed: status={}\nstdout:\n{}\nstderr:\n{}",
+                output.status,
+                String::from_utf8_lossy(&output.stdout),
+                String::from_utf8_lossy(&output.stderr)
+            );
             let listing: Value =
                 serde_json::from_slice(&output.stdout).expect("nextest listing JSON");
             collect_junit_cases(&listing, "", &mut cases);

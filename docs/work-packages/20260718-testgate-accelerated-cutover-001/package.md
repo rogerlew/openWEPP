@@ -382,6 +382,12 @@ calendar observation or broad testing on every ordinary increment.
   because the two adjudicated-CRAP gate definitions still bound the adapter's
   pre-repair SHA-256. The definitions now bind the repaired adapter bytes;
   this is a policy-integrity correction, not a test-behavior change.
+- After the binding repair, workspace coverage completed 2,160 of 2,164 tests;
+  only four verifier fixtures failed because their nested Cargo inventory
+  commands inherited the outer `cargo llvm-cov` control environment. The
+  canonical neutral Cargo command now removes those coverage controls before
+  launching nested metadata or inventory operations, while fixture failures
+  retain the nested command's status, stdout, and stderr.
 
 ## Decision Log
 
@@ -476,7 +482,7 @@ calendar observation or broad testing on every ordinary increment.
   responsibility, and the focused `nextest_inventory.rs` boundary owns
   execution-selection parsing. Final counts are `planner.rs` at 2,963 lines,
   `nextest_inventory.rs` at 70, `executor.rs` at 2,514, and `verifier.rs` at
-  2,515. Further decomposition belongs to a later authorized refactor, not this
+  2,521. Further decomposition belongs to a later authorized refactor, not this
   cutover.
   Date/Author: 2026-07-18 / Codex.
 

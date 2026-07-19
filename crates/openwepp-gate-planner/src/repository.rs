@@ -985,6 +985,10 @@ fn metadata(repo: &Path) -> Result<Vec<u8>> {
 pub(crate) fn neutral_cargo_command() -> Command {
     let mut command = Command::new("cargo");
     for variable in [
+        "CARGO_LLVM_COV",
+        "CARGO_LLVM_COV_BUILD_DIR",
+        "CARGO_LLVM_COV_SHOW_ENV",
+        "CARGO_LLVM_COV_TARGET_DIR",
         "CARGO_BUILD_RUSTFLAGS",
         "CARGO_ENCODED_RUSTFLAGS",
         "RUSTFLAGS",
@@ -993,7 +997,11 @@ pub(crate) fn neutral_cargo_command() -> Command {
         "RUSTC_WORKSPACE_WRAPPER",
         "CARGO_BUILD_TARGET",
         "CARGO_TARGET_DIR",
+        "LLVM_PROFILE_FILE",
         "NEXTEST_PROFILE",
+        "__CARGO_LLVM_COV_RUSTC_WRAPPER",
+        "__CARGO_LLVM_COV_RUSTC_WRAPPER_CRATE_NAMES",
+        "__CARGO_LLVM_COV_RUSTC_WRAPPER_RUSTFLAGS",
     ] {
         command.env_remove(variable);
     }
@@ -1116,11 +1124,40 @@ impl Drop for Snapshot {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::BTreeSet;
     use std::fs;
     use std::path::{Path, PathBuf};
     use std::process::Command;
 
-    use super::{CargoGraph, observe_committed, observe_dirty, parse_raw_changes, resolve_commit};
+    use super::{
+        CargoGraph, neutral_cargo_command, observe_committed, observe_dirty, parse_raw_changes,
+        resolve_commit,
+    };
+
+    #[test]
+    fn neutral_cargo_command_removes_coverage_instrumentation_environment() {
+        let command = neutral_cargo_command();
+        let removed = command
+            .get_envs()
+            .filter_map(|(name, value)| value.is_none().then_some(name))
+            .collect::<BTreeSet<_>>();
+        for variable in [
+            "CARGO_LLVM_COV",
+            "CARGO_LLVM_COV_BUILD_DIR",
+            "CARGO_LLVM_COV_SHOW_ENV",
+            "CARGO_LLVM_COV_TARGET_DIR",
+            "LLVM_PROFILE_FILE",
+            "RUSTC_WRAPPER",
+            "__CARGO_LLVM_COV_RUSTC_WRAPPER",
+            "__CARGO_LLVM_COV_RUSTC_WRAPPER_CRATE_NAMES",
+            "__CARGO_LLVM_COV_RUSTC_WRAPPER_RUSTFLAGS",
+        ] {
+            assert!(
+                removed.contains(std::ffi::OsStr::new(variable)),
+                "{variable}"
+            );
+        }
+    }
 
     struct TestRepository {
         path: PathBuf,
