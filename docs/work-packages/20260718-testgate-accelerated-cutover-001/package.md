@@ -393,6 +393,12 @@ calendar observation or broad testing on every ordinary increment.
   non-executable. Verifier inventory fixtures now share a neutral target below
   the executable `TMPDIR`; they neither reuse the instrumented target nor
   weaken the runner's mount confinement.
+- A subsequent complete attempt saturated the NUC while the outer coverage
+  target and nested neutral inventory build competed at full Cargo parallelism.
+  Fresh CRAP acquisition now caps Cargo builds at four jobs and omits test
+  debug symbols. Debug assertions, coverage instrumentation, Nextest inventory,
+  and acceptance semantics remain unchanged while CPU and tmpfs demand are
+  bounded.
 
 ## Decision Log
 
