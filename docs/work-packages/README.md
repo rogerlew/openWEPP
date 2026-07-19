@@ -206,10 +206,14 @@
 
 State as of `2026-07-19 UTC`:
 
+- `20260719-testgate-crap-adapter-digest-alignment-001/` - READY (2026-07-19):
+  align the two fail-closed CRAP adapter identities to the corrected confined
+  runner, then execute the final critical plan.
+
 - `20260719-testgate-coverage-tmpdir-confinement-001/` -
-  IMPLEMENTED-PENDING-CRITICAL (2026-07-19): the confined short-temp projection
-  passes both former socket failures and focused TESTGATE contracts; the exact
-  critical terminal plan remains.
+  IMPLEMENTED-BLOCKED-ADAPTER-DIGEST (2026-07-19): the confined short-temp
+  projection passes focused tests; terminal admission correctly requires the
+  named derived-digest successor before any gate runs.
 
 - `20260719-testgate-assurance-socket-path-portability-001/` -
   EXECUTED-FAIL-SYSTEMIC-TMPDIR (2026-07-19): its one-line label fix passes in

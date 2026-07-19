@@ -4,7 +4,7 @@ Package ID: `20260719-testgate-coverage-tmpdir-confinement-001`
 
 Queue ID: `TESTGATE-COVERAGE-TMPDIR-01`
 
-Status: `IMPLEMENTED / PENDING CRITICAL TERMINAL PLAN`
+Status: `IMPLEMENTED / BLOCKED-ADAPTER-DIGEST / SUCCESSOR ACTIVE`
 
 Authorization: three verified TESTGATE receipts demonstrating Unix socket
 `SUN_LEN` failures caused by the coverage runner's deep temporary root, under
@@ -30,6 +30,11 @@ store, evidence, and fail-closed contracts.
   both formerly failing socket cases pass under the projected short temp root.
 - [ ] Run the mechanical critical terminal
   plan.
+- [x] (2026-07-19) Terminal planning failed closed before gate execution on
+  `GATE-ADAPTER-DIGEST`; the runner edit invalidated both pinned CRAP adapter
+  digests as expected.
+- [ ] `20260719-testgate-crap-adapter-digest-alignment-001` updates only those
+  two derived bindings and owns the final critical execution.
 - [ ] Complete dual review and terminal verification.
 
 ## Correction Authority Envelope
@@ -101,6 +106,8 @@ or evidence escape.
 - Both independently failing socket fixtures pass together under the new
   projected path, confirming the runner-root mechanism without further fixture
   edits.
+- The first terminal attempt ran no gate: policy correctly rejected the stale
+  pinned adapter identity after the runner changed.
 
 ## Decision Log
 
@@ -111,5 +118,5 @@ or evidence escape.
 
 ## Outcomes And Retrospective
 
-The systemic correction passes focused validation. Mechanical critical
-execution, dual review, and terminal disposition remain.
+The systemic correction passes focused validation. Its derived adapter binding
+must be aligned before mechanical critical execution can begin.
