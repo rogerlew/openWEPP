@@ -182,7 +182,7 @@ State as of `2026-07-18 UTC`:
 
 - `20260718-testgate-accelerated-cutover-001/` - READY / ACTIVE: owns the entire
   remaining TESTGATE path. It provisions an isolated supported Linux runner on
-  the `omarchy` NUC for trusted `main` and manual events only, fixes cold-cache
+  `forest1` for trusted `main` and manual events only, fixes cold-cache
   bootstrap, closes post-change actionable CRAP, runs adversarial review with
   patches and one exact-candidate acceptance sequence, then cuts over
   immediately. ADR-0040 explicitly removes the 14-day, 20-increment, 50%, and

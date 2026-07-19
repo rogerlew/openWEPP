@@ -31,7 +31,7 @@ state was reached. Execution history lives in the
 
 | Priority | Owning queue | State | Advancement gate |
 | --- | --- | --- | --- |
-| `TESTGATE-CUTOVER-01` accelerated self-hosted cutover | Test/gate architecture | `active` | Execute `20260718-testgate-accelerated-cutover-001` end-to-end: isolate/register the trusted `omarchy` runner, route and bootstrap TESTGATE, close post-change CRAP, patch adversarial findings, pass one exact-candidate acceptance sequence, and cut over immediately. No timed or increment-count gate remains. |
+| `TESTGATE-CUTOVER-01` accelerated self-hosted cutover | Test/gate architecture | `active` | Execute `20260718-testgate-accelerated-cutover-001` end-to-end: isolate/register the trusted `forest1` runner, route and bootstrap TESTGATE, close post-change CRAP, patch adversarial findings, pass one exact-candidate acceptance sequence, and cut over immediately. No timed or increment-count gate remains. |
 | `CANOPY-PHENOLOGY-02` native canopy integration | Plant/snow-frost science | `queued` | Resume after `TESTGATE-ALIGN-01` lands; use the campaign as an early shadow-mode planner trial while ratifying and implementing native canopy, biomass, litter, closure, YAML, and real-consumer integration. |
 | `SNOW-SURFACE-EB` sublimation and longwave | Snow/frost science | `queued` | Start after `CANOPY-PHENOLOGY-02` closes and a contract-first package reconciles the multilayer surface-energy, vapor-mass, and longwave backlog with the current meteorology and snow-column implementation. |
 | `ASSURE-06` snow/frost flagship synthesis | Scientific assurance | `held` | Roger Lew remains the accountable report lead and a material snow/frost producer. Resume independent review only after canopy phenology and the selected sublimation/longwave work land, the scientific manuscript is refreshed against those changes, and a new exact review root is issued. |
@@ -60,7 +60,7 @@ Each row below requires its own authorized work package.
 
 | ID | Prospective outcome | Advancement gate | State |
 | --- | --- | --- | --- |
-| `TESTGATE-CUTOVER-01` | Provision an isolated trusted self-hosted runner on `omarchy`, move trusted TESTGATE execution off hosted runners, correct cold-cache bootstrap, close post-change CRAP, patch adversarial findings, and promote the aggregate. | Runner online and confined; untrusted PR routing impossible; affected/global CRAP actionable set empty; adversarial findings patched; one exact-candidate acceptance matrix and conservative comparison pass; manual rollback proven. | `active`; package ready at `20260718-testgate-accelerated-cutover-001` |
+| `TESTGATE-CUTOVER-01` | Provision an isolated trusted self-hosted runner on `forest1`, move trusted TESTGATE execution off hosted runners, correct cold-cache bootstrap, close post-change CRAP, patch adversarial findings, and promote the aggregate. | Runner online and confined; untrusted PR routing impossible; affected/global CRAP actionable set empty; adversarial findings patched; one exact-candidate acceptance matrix and conservative comparison pass; manual rollback proven. | `active`; package ready at `20260718-testgate-accelerated-cutover-001` |
 
 ### Adoption Contract
 

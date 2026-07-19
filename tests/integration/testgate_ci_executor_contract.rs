@@ -63,7 +63,7 @@ fn assert_workflow_and_rollback_contract() {
         "name: openwepp/verify-increment",
         "name: openwepp/increment-gates",
         "name: openwepp/execute-increment",
-        "runs-on: [self-hosted, Linux, X64, openwepp, omarchy, trusted]",
+        "runs-on: [self-hosted, Linux, X64, openwepp, forest1, trusted]",
         "runs-on: ubuntu-24.04",
         "bootstrap_dependencies.sh",
         "tools/local_ci/testgate.py",
@@ -245,7 +245,7 @@ fn runner_container_has_no_host_or_privileged_mounts() {
     let host_receipt = text(
         "docs/work-packages/20260718-testgate-accelerated-cutover-001/artifacts/host-capacity-security.md",
     );
-    let image_id = "sha256:cc16bebbad9d3acc78e8921043c00a63ec2e7fffd2ede182b071359fe17e376a";
+    let image_id = "sha256:034ce655da139123cd775317d590d04dec6377788e4d124dc0e674f8d021e7e8";
     assert_eq!(manager.matches(image_id).count(), 1);
     assert_eq!(workflow.matches(image_id).count(), 2);
     assert_eq!(host_receipt.matches(image_id).count(), 1);
@@ -256,6 +256,18 @@ fn runner_container_has_no_host_or_privileged_mounts() {
     assert!(manager.contains("--tmpfs"));
     assert!(manager.contains("/t:rw,exec,nosuid,nodev"));
     assert!(manager.contains("/t:rw,exec,nosuid,nodev,size=40g"));
+    assert!(manager.contains("--cpus 32 --cpuset-cpus 0-31 --memory 48g --memory-swap 48g"));
+    assert!(manager.contains("forest1-openwepp-01"));
+    assert!(manager.contains("omarchy-openwepp-01"));
+    assert!(manager.contains("build-image"));
+    assert!(manager.contains("install-image"));
+    assert!(manager.contains("--resource cpuset-cpus=0-7"));
+    assert!(manager.contains("--resource memory=24g"));
+    assert!(manager.contains("--resource memory-swap=24g"));
+    assert!(manager.contains("docker save --output"));
+    assert!(manager.contains("transferred runner image archive digest mismatch"));
+    assert!(manager.contains("provider_contract_matches"));
+    assert!(manager.contains("runner must be uniquely online, idle, and exactly labeled"));
     assert!(manager.contains("/cache/cargo:rw,nosuid,nodev"));
     assert!(manager.contains("job-completed-hook.sh"));
     assert!(!manager.contains("/var/run/docker.sock"));

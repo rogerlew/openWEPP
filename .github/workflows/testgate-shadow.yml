@@ -16,18 +16,18 @@ permissions:
   contents: read
 
 concurrency:
-  group: openwepp-omarchy-testgate-v2
+  group: openwepp-forest1-testgate-v3
   cancel-in-progress: false
 
 jobs:
   execute-increment:
     name: openwepp/execute-increment
-    runs-on: [self-hosted, Linux, X64, openwepp, omarchy, trusted]
+    runs-on: [self-hosted, Linux, X64, openwepp, forest1, trusted]
     timeout-minutes: 120
     permissions:
       contents: read
     env:
-      OPENWEPP_RUNNER_IMAGE_ID: sha256:cc16bebbad9d3acc78e8921043c00a63ec2e7fffd2ede182b071359fe17e376a
+      OPENWEPP_RUNNER_IMAGE_ID: sha256:034ce655da139123cd775317d590d04dec6377788e4d124dc0e674f8d021e7e8
       CARGO_TARGET_DIR: /t
       TESTGATE_EXECUTION_ROOT: /t
     steps:
@@ -176,7 +176,7 @@ jobs:
       - name: Validate receipt and predicate bindings
         env:
           EVIDENCE_DIR: ${{ runner.temp }}/testgate-evidence
-          EXPECTED_IMAGE: sha256:cc16bebbad9d3acc78e8921043c00a63ec2e7fffd2ede182b071359fe17e376a
+          EXPECTED_IMAGE: sha256:034ce655da139123cd775317d590d04dec6377788e4d124dc0e674f8d021e7e8
           EXPECTED_BASE: ${{ steps.verification-comparison.outputs.base }}
         run: |
           set -euo pipefail

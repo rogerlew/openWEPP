@@ -40,7 +40,7 @@ dependencies were present. The repository is public. GitHub warns that
 self-hosted runners must not execute untrusted public pull-request code because
 the runner can be persistently compromised. The `omarchy` host's exact OS and
 isolation posture have not yet been inspected. The runner therefore needs a
-supported isolated Linux guest rather than an assumed direct installation into
+supported isolated Linux container rather than an assumed direct installation into
 the desktop host.
 
 ## Decision
@@ -50,10 +50,10 @@ the desktop host.
    environments, and a dual-required interval are not cutover requirements.
 2. Accept the demonstrated 48.8% projected reduction as sufficient performance
    evidence. The previous 50% threshold is retired; safety findings still block.
-3. Use the `omarchy` NUC as the primary TESTGATE execution host through a
-   supported isolated Linux guest, a repository-scoped runner, a dedicated
+3. Use `forest1` as the primary TESTGATE execution host through a
+   supported isolated Linux container, a repository-scoped runner, a dedicated
    unprivileged account, and labels that select only this trusted runner.
-4. Never route public `pull_request` code to `omarchy`. Automatic self-hosted
+4. Never route public `pull_request` code to `forest1`. Automatic self-hosted
    execution is limited to trusted pushes to `main`; explicit manual dispatches
    must resolve to trusted repository commits. The runner receives read-only
    repository permissions, no host secrets, no privileged container socket,
@@ -114,6 +114,17 @@ review, and an executable conservative rollback lane.
 - A single exact-candidate broad comparison remains necessary because workflow,
   executor, and gate-authority changes are critical. Successful heavy evidence
   is reused rather than rerun for presentation or closure.
+
+## 2026-07-19 Host Pivot
+
+The original isolated `omarchy` runner proved the image, admission, and cleanup
+design but became unreachable when a coverage run saturated its 28 GiB
+container envelope. Roger Lew directed an immediate pivot to `forest1`.
+`forest1` provides 48 logical CPUs, 188 GiB RAM, and more than 300 GiB free
+storage while preserving the same container boundary: no Docker socket, host
+binds, unrelated homelab data, privileged mode, or reusable repository token.
+The event-driven acceptance requirements are unchanged; only the exact trusted
+host label and reviewed resource envelope move to `forest1`.
 
 ## References
 

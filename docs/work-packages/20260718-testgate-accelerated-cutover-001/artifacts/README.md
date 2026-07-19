@@ -3,7 +3,8 @@
 Queued evidence:
 
 - `required-reading-map.md` - instruction and authority intake.
-- `host-capacity-security.md` - `omarchy` guest and runner receipt.
+- `host-capacity-security.md` - original `omarchy` and active `forest1`
+  container-runner receipts.
 - `workflow-cost-containment.md` - provider disable/re-enable and trigger state.
 - `bootstrap-evidence.md` - cold/warm cache ordering and receipts.
 - `crap-closure.md` - affected cleanup and exact-candidate global closure.

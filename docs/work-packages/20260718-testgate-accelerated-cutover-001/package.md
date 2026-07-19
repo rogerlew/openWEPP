@@ -1,4 +1,4 @@
-# Accelerate TESTGATE Cutover On `omarchy`
+# Accelerate TESTGATE Cutover On `forest1`
 
 Package ID: `20260718-testgate-accelerated-cutover-001`
 
@@ -19,12 +19,12 @@ scorecard.
 
 Make the TESTGATE planner/executor the normal increment gate as soon as concrete
 acceptance passes. First move trusted automatic execution onto an isolated
-self-hosted runner on the `omarchy` NUC. Then close any post-change actionable
+self-hosted runner on `forest1`. Then close any post-change actionable
 CRAP, conduct adversarial review with a patch loop, run one exact-candidate
 acceptance sequence, and cut over immediately.
 
 Success is visible when trusted `main` pushes use the accepted TESTGATE
-aggregate on `omarchy`, ordinary increments no longer invoke the conservative
+aggregate on `forest1`, ordinary increments no longer invoke the conservative
 full runner, the old broad path remains manually callable for critical,
 campaign, release, and rollback boundaries, and no elapsed-time or increment-
 count scorecard remains active.
@@ -41,6 +41,9 @@ count scorecard remains active.
 - [x] (2026-07-18) Implement trusted TESTGATE routing to `omarchy`, locked
   bootstrap, hosted attestation verification, schedule removal, and public-PR
   exclusion while keeping the provider workflow disabled until acceptance.
+- [x] (2026-07-19) Replaced the offline `omarchy` provider registration and
+  workflow label with an isolated `forest1` runner, then prove the same pinned
+  image, confinement, cleanup, and online/idle contract.
 - [x] (2026-07-18) Run affected CRAP after implementation and patch every
   actionable row; the exact provider candidate owns the one global CRAP run.
 - [x] (2026-07-18) Complete two independent reviews including one adversarial security and
@@ -121,8 +124,25 @@ authority requirements are not reduced.
 Read-only discovery may inspect GitHub Actions state, repository settings,
 official GitHub runner documentation, host capacity, adjacent workflows, and
 retained TESTGATE evidence. Host writes are limited to the dedicated isolated
-runner guest. Writes outside this set require a recorded pre-implementation
+runner container. Writes outside this set require a recorded pre-implementation
 amendment.
+
+Host/write-set amendment (2026-07-19): Roger Lew directed the runner pivot from
+the unreachable `omarchy` NUC to `forest1`. This prospectively authorizes the
+dedicated `openwepp-actions-runner` container, its registration-state volume,
+repository-scoped `forest1-openwepp-01` registration, `forest1` workflow label,
+and bounded runner tmpfs surfaces on `forest1`. Image preparation may write one
+controller-local `/tmp/openwepp-runner-build.*` context plus a controller Docker
+image, layers, and build cache under Docker's own storage. Transfer may write
+one controller-local `mktemp` staging archive and one digest-named archive under
+`forest1` `/tmp`, plus the reviewed image/layers under `forest1` Docker storage.
+Both archives and the build context must be
+removed on return; build and transfer cannot register or start a runner. No
+Docker socket inside the runner,
+host bind, unrelated service/data access, privileged mode, or host-global
+package install is authorized. The existing `tools/ci/omarchy-runner/**`
+compatibility path may be parameterized for the new host; a directory rename is
+not required for this cutover.
 
 Write-set amendment (2026-07-19): the first exact-candidate full-suite run on
 the pinned Ubuntu runner proved that the Iwagaki oracle's headline metrics are
@@ -155,9 +175,9 @@ checked-out repository rather than one developer workstation.
 ## Protected Boundaries
 
 - The public repository's untrusted `pull_request` code never executes on
-  `omarchy`. Do not use `pull_request_target` to bypass this boundary.
-- Run the GitHub runner in a supported isolated Linux guest, not directly in
-  the uninspected desktop host. Use a repository-scoped,
+  `forest1`. Do not use `pull_request_target` to bypass this boundary.
+- Run the GitHub runner in a supported isolated Linux container, not directly
+  on the multi-service host. Use a repository-scoped,
   unprivileged account with no `sudo`, host home mounts, unrelated data roots,
   privileged container socket, or reusable secrets.
 - Keep workflow permissions read-only unless one narrowly named publication
@@ -177,17 +197,17 @@ checked-out repository rather than one developer workstation.
 
 ## Required Deliverables
 
-1. An idempotent `omarchy` runner setup guide or script that creates a supported
-   isolated Linux guest, dedicated account, repository-scoped registration,
+1. An idempotent `forest1` runner setup guide or script that creates a supported
+   isolated Linux container, dedicated account, repository-scoped registration,
    pinned labels, reviewed image-based runner updates, service management,
    cache/storage limits, health inspection, and clean removal without storing
    registration tokens or repository personal-access tokens.
-2. A capacity and security receipt recording CPU, memory, disk, guest OS,
+2. A capacity and security receipt recording CPU, memory, disk, container OS,
    runner version, labels, outbound connectivity, permissions, forbidden host
    access, and GitHub-visible online/idle state.
 3. Workflow routing with exact labels such as
-   `[self-hosted, Linux, X64, openwepp, omarchy, trusted]`, no daily schedule,
-   no self-hosted public-PR path, concurrency one for the NUC, bounded timeouts,
+   `[self-hosted, Linux, X64, openwepp, forest1, trusted]`, no daily schedule,
+   no self-hosted public-PR path, concurrency one, bounded timeouts,
    and manual conservative fallback.
 4. A deterministic bootstrap that installs or verifies pinned tools once,
    fetches the locked dependency graph before offline metadata, reuses that
@@ -222,25 +242,25 @@ Do not enable the already manually disabled `release-gates` workflow. The first
 committed workflow revision removes the daily schedule so re-enabling TESTGATE
 cannot restart timed observation.
 
-### Phase 1: Provision `omarchy`
+### Phase 1: Provision `forest1`
 
-Inspect the NUC without changing it, then create the smallest supported
-Ubuntu/Debian guest that can use the available CPU, memory, and SSD. Create a
+Inspect `forest1` without changing it, then create the smallest supported
+Ubuntu container that can use the admitted CPU, memory, and storage. Create a
 dedicated runner account and repository-scoped runner with reviewed image-based updates
-and exact labels. Keep the guest disposable and isolated from host homes,
+and exact labels. Keep the container disposable and isolated from host homes,
 credentials, Docker sockets, and homelab data. Install the runner as a service,
 verify outbound GitHub connectivity, and record online/idle state through the
 GitHub API.
 
-If a supported isolated guest cannot be created, stop at a truthful host-
+If a supported isolated container cannot be created, stop at a truthful host-
 provisioning blocker; do not install a privileged persistent runner directly on
-the public-repository desktop host.
+the shared homelab host.
 
 ### Phase 2: Route And Bootstrap
 
 Change TESTGATE automatic triggers to trusted `main` pushes and explicit manual
 dispatch only. Route all substantive jobs and their aggregate to the exact
-`omarchy` label set with concurrency one and job timeouts. Remove repeated
+`forest1` label set with concurrency one and job timeouts. Remove repeated
 `cargo install` work from ordinary jobs. Provision pinned tools once and add an
 explicit locked dependency fetch before the planner's offline Cargo metadata.
 
@@ -399,6 +419,11 @@ calendar observation or broad testing on every ordinary increment.
   debug symbols. Debug assertions, coverage instrumentation, Nextest inventory,
   and acceptance semantics remain unchanged while CPU and tmpfs demand are
   bounded.
+- The reviewed controller-local image build completed in 599 seconds. A
+  SHA-256-verified archive installed the exact image on `forest1`; provider ID
+  23 then came online and idle with the exact six-label contract. Direct live
+  confinement and disposable cleanup probes passed without exposing a Docker
+  socket or host bind.
 
 ## Decision Log
 
@@ -422,6 +447,14 @@ calendar observation or broad testing on every ordinary increment.
   event-only routing meets the isolation objective with substantially less
   setup than installing a new hypervisor.
   Date/Author: 2026-07-18 / Codex.
+- Decision: pivot the exact runner host and provider label from `omarchy` to
+  `forest1` while retaining the pinned container construction and isolation
+  contract.
+  Rationale: the NUC became unreachable under the global coverage working set;
+  `forest1` has 48 CPUs, 188 GiB RAM, and more than 300 GiB free storage, so it
+  can absorb the bounded 32-CPU/48-GiB runner envelope without weakening host
+  separation or adding hosted Actions cost.
+  Date/Author: 2026-07-19 / Roger Lew and Codex.
 - Decision: amend the declared write set before review remediation to include
   the independent conservative workflow and every active guidance surface
   identified by the governance review.

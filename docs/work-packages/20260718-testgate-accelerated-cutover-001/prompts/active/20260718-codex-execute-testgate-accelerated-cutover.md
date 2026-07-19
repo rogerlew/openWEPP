@@ -1,6 +1,6 @@
 # Execute TESTGATE-CUTOVER-01
 
-Scope: local openWEPP repository plus the explicitly named `omarchy` host and
+Scope: local openWEPP repository plus the explicitly named `forest1` host and
 the `rogerlew/openWEPP` GitHub Actions/provider surfaces required by the package.
 
 Execution mode: package-end-to-end (default).
@@ -17,8 +17,8 @@ required-reading map, ADR-0039, ADR-0040, the canonical testing/gate strategy,
 the local CI standard, current workflows, and nearest instructions for every
 write path.
 
-Constraints: never route untrusted public pull-request code to `omarchy`; use a
-supported isolated Linux guest and unprivileged repository-scoped runner;
+Constraints: never route untrusted public pull-request code to `forest1`; use a
+supported isolated Linux container and unprivileged repository-scoped runner;
 never retain registration credentials; preserve fail-closed selection,
 receipts, confinement, coverage/CRAP thresholds, and critical/campaign/release
 qualification; run successful heavy commands once; do not create a 14-day,

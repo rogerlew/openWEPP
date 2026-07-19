@@ -1,4 +1,95 @@
-# `omarchy` Host Capacity And Security
+# TESTGATE Host Capacity And Security
+
+## `forest1` Pivot Intake
+
+Ran: read-only SSH and provider intake on 2026-07-19 PDT.
+
+- SSH hostname: `forest1`; x86_64 with 48 online logical processors.
+- Memory: 188 GiB total, 64 GiB available at intake, and 8 GiB swap.
+- Root/Docker filesystem: 938 GiB total with 306 GiB available.
+- Docker server: `29.4.2`.
+- Existing unrelated service containers remain out of scope. The runner gets no
+  Docker socket, host bind, host network, privileged mode, or service/data
+  mount, and the setup performs no host-global package installation.
+- Reviewed runner envelope: 32 CPUs pinned to CPU IDs 0-31, 48 GiB memory with
+  swap disabled at the same hard limit, 8,192 PIDs, 40 GiB executable target
+  tmpfs, 24 GiB work tmpfs, and the same read-only-root/capability-drop/
+  completion-purge design proven on `omarchy`. This preserves at least 12 GiB of
+  the intake `MemAvailable` for host co-tenants even if the runner reaches its
+  hard limit.
+- Image construction is a separate non-registering controller operation using
+  the default Docker driver and per-build resource controls capped at CPUs 0-7
+  and 24 GiB memory with swap disabled. A SHA-256-verified archive installs only
+  the reviewed image on `forest1`. Setup requires 60 GiB immediately available
+  and refuses an absent or nonmatching reviewed image identity.
+- Read-only coexistence intake found no container named
+  `openwepp-actions-runner` and none of the dedicated `openwepp-runner-state`,
+  `openwepp-runner-work`, `openwepp-runner-cargo`, or
+  `openwepp-runner-target` volumes on `forest1`.
+- Provider target: repository-scoped runner `forest1-openwepp-01` with labels
+  `self-hosted`, `Linux`, `X64`, `openwepp`, `forest1`, and `trusted`.
+- The `omarchy-openwepp-01` registration was offline at pivot intake and is not
+  eligible for the new exact workflow label.
+
+### Controller Image-Build Intake
+
+- Controller hostname `forest`: 48 logical CPUs, 125 GiB RAM, and 114 GiB
+  available at intake.
+- Docker 29.6.2 uses the default non-privileged `docker` Buildx driver;
+  Buildx 0.35.0 and BuildKit 0.31.2 expose per-build `--resource` controls.
+- The rejected `forest1` Docker-container builder probe confirmed its cgroup
+  limits but also proved that driver is privileged. The exact builder and its
+  volume were removed, and the mutable `moby/buildkit:buildx-stable-1` image and
+  layers pulled by the probe were deleted before adopting controller-local
+  construction.
+
+### Controller Image-Build Receipt
+
+Ran: 2026-07-19 PDT.
+
+- `manage.sh build-image` completed successfully in 599 seconds with the
+  reviewed default-driver limits: CPUs 0-7, 24 GiB memory, and swap disabled at
+  the same hard limit.
+- The loaded candidate is `openwepp-actions-runner:2.335.1`, image ID
+  `sha256:034ce655da139123cd775317d590d04dec6377788e4d124dc0e674f8d021e7e8`,
+  size `4,231,049,535` bytes, created at `2026-07-19T07:05:55-07:00`.
+- The manager, workflow envelope, integration contract, and this receipt bind
+  that exact image ID before archive creation or transfer. No image archive or
+  runner artifact had been sent to `forest1` at receipt time.
+- A disposable local container probe used a read-only root filesystem, dropped
+  every capability, enabled `no-new-privileges`, and confirmed Rust 1.92.0,
+  Nextest 0.9.138, cargo-deny 0.19.6, cargo-llvm-cov 0.8.7, cargo-crap 0.2.2,
+  Python 3.12.3, pandas 3.0.3, PyArrow 22.0.0, PHP 8.3.6, markdown-doc-cli
+  0.1.0, and both runner control scripts on the exact candidate.
+- The image archive was `4,265,653,760` bytes with SHA-256
+  `804b66d3fdadbf93f96e601886e349f6430c41f76504c90c99528ba46de6537f`.
+  The digest matched before and after transfer; `forest1` loaded the exact
+  reviewed image ID, and both temporary archives were removed on return.
+
+### `forest1` Provisioned Receipt
+
+Ran: 2026-07-19 PDT.
+
+- Provider ID `23`, name `forest1-openwepp-01`, version `2.335.1`; state
+  `online`, `busy=false`, with exactly `self-hosted`, `Linux`, `X64`,
+  `openwepp`, `forest1`, and `trusted`. The stale `omarchy-openwepp-01`
+  registration was deleted.
+- Container `openwepp-actions-runner` is running from the exact reviewed image
+  with restart policy `unless-stopped`, 32 CPUs pinned to `0-31`, 48 GiB memory
+  and equal memory-plus-swap limit, and 8,192 PIDs.
+- Docker inspection confirms a read-only root, all capabilities dropped,
+  `no-new-privileges`, bridge networking, non-privileged mode, no bind mounts,
+  and one read-only `openwepp-runner-state` volume. The six bounded tmpfs
+  surfaces match the reviewed 40/24/8/2/1/0.25-GiB design.
+- A live unprivileged probe rejected writes to the root and registration state,
+  confirmed the Docker socket absent, and confirmed each bounded job surface
+  writable. A disposable exact-image cleanup probe terminated a process that
+  respawned on `TERM` and emptied every writable surface. The live provider
+  remained online and idle afterward.
+- Existing service containers remained running after setup; none is mounted
+  into or reachable through a host namespace shared with the runner.
+
+## Original `omarchy` Intake And Evidence
 
 Ran: read-only SSH and provider intake on 2026-07-18 PDT.
 
@@ -39,13 +130,12 @@ No `pull_request` or `pull_request_target` event is routed to this runner.
 - Gate tools: cargo-nextest `0.9.138`, cargo-deny `0.19.6`,
   cargo-llvm-cov `0.8.7`, cargo-crap `0.2.2`.
 
-## Provisioned Receipt
+## Original `omarchy` Provisioned Receipt
 
 Ran: 2026-07-18 PDT / 2026-07-19 UTC.
 
-- Container image ID:
-  `sha256:cc16bebbad9d3acc78e8921043c00a63ec2e7fffd2ede182b071359fe17e376a`
-  (`929,077,319` bytes). This revision retains Ubuntu's repository-pinned
+- Original `omarchy` container image ID was superseded by the reviewed
+  `forest1` pivot candidate recorded above. This revision retains Ubuntu's repository-pinned
   `ripgrep 14.1.0-1` and adds Python 3.12's `python` alias, system-visible
   pandas `3.0.3`, PyArrow `22.0.0`, PHP `8.3.6`, and `uk2us` at commit
   `6ce03a96a9466bed029fb0287786cd903f1876d6` with hashed executable and spelling
