@@ -56,8 +56,8 @@ scope.
 4. Preserve mandatory technical gates in every prompt
 - Bind gate lifecycle, boundary assignment, escalation, and receipt currency to
   `docs/standards/testing-and-gate-strategy.md`. Require a pre-implementation
-  intent plan and exact-diff terminal reconciliation when the mechanical path
-  is available; before cutover, name the conservative fallback commands.
+  intent plan and exact-diff terminal reconciliation. Name the conservative
+  full commands only for critical, campaign, release, or rollback boundaries.
 - Contract-first sequencing.
 - Canonical `SC-*` authority requirements.
 - Legacy baseline provenance requirement when migration applies.

@@ -28,10 +28,10 @@ through a package, gates, and review.
 Gate timing and lifecycle selection come from
 [`testing-and-gate-strategy.md`](../standards/testing-and-gate-strategy.md).
 Execute the exact accepted terminal plan for the increment. Critical changes,
-campaign closure, and release retain the full workspace/global-CRAP loop below;
-until the mechanical planner, executor, and receipt verifier complete shadow
-acceptance and cutover, implementation packages use it as the conservative
-fallback (see `AGENTS.md` → Validation Gates for exact commands):
+campaign closure, release, and explicit rollback retain the full
+workspace/global-CRAP loop below (see `AGENTS.md` → Validation Gates for exact
+commands). Ordinary bounded implementation packages use their narrower
+terminal plan:
 
 ```bash
 cargo fmt --check
@@ -62,7 +62,7 @@ For local iteration and review-response fixes, use the cheapest gate that
 actually covers the changed surface: focused nextest filters, `quick`, or a
 domain profile such as `frost` or `erosion`. Run the terminal gates selected by
 the canonical strategy; the full suite remains mandatory for critical,
-campaign, and release boundaries and as the pre-cutover conservative fallback.
+campaign, release, and explicit rollback boundaries.
 See
 [local-ci-gate-selection.md](../standards/local-ci-gate-selection.md) and record
 expensive nextest timing with `tools/local_ci/nextest_timing.py`.

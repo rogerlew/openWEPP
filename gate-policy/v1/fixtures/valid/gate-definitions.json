@@ -1,7 +1,7 @@
 {
   "schema_version": "openwepp-gate-definitions-v1",
   "generation": 1,
-  "enforcement_status": "SHADOW",
+  "enforcement_status": "BLOCKING",
   "definitions": [{
     "gate_definition_id": "example-v1",
     "gate_family": "behavior",

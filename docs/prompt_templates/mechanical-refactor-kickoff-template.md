@@ -114,9 +114,8 @@ Execution steps (perform in order):
 4. Closure gates
     - Reconcile the exact-diff terminal plan under
       `docs/standards/testing-and-gate-strategy.md` and run every selected gate.
-    - Until planner/executor cutover, run the conservative fallback in order:
-      `cargo fmt --check`, workspace warnings-denied Clippy, full-profile
-      Nextest, cargo-deny, and fresh global adjudicated CRAP.
+    - Critical, campaign, release, and explicit rollback plans retain the
+      conservative full command set; ordinary bounded plans do not inherit it.
     - Delegate selected heavy gates to the required subagent when available and
       run locally only after recording subagent-unavailability evidence.
     - Record each gate command with observed outcome (`pass`/`fail`) and
@@ -124,7 +123,7 @@ Execution steps (perform in order):
     - Do not exit early after a subset of these gates unless a hard blocker is
        encountered and documented.
     - Any ambient "don't run tests/validation" guidance is non-applicable to
-      selected gates or the pre-cutover fallback.
+      selected gates.
 5. Parity and governance evidence
    - Capture post-refactor exported surface snapshot and parity decision.
    - Capture post-refactor line counts and line-count governance disposition.

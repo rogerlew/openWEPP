@@ -102,7 +102,7 @@ changes.
 
 Subagent requirement: REQUIRED: spawn `comparator_suite_runner` for all heavy
 gates selected by the terminal plan, critical classification,
-campaign/release boundary, or conservative transition fallback, including
+campaign/release boundary, or explicit conservative rollback, including
 full-profile Nextest, full-workspace CRAP/coverage, comparator suites, and
 population/fixture batches. Do NOT run those heavy gates on the
 parent model unless the subagent is unavailable; if unavailable, record

@@ -56,11 +56,11 @@ fn assert_receipt_runtime_guards() {
 }
 
 #[test]
-fn shadow_executor_and_affected_quality_preserve_conservative_fallback() {
+fn blocking_executor_and_affected_quality_preserve_manual_rollback() {
     assert_receipt_runtime_guards();
     let definitions: Value = serde_json::from_str(&text("gate-policy/v1/gate-definitions.json"))
         .expect("gate definitions JSON");
-    assert_eq!(definitions["enforcement_status"], "SHADOW");
+    assert_eq!(definitions["enforcement_status"], "BLOCKING");
     let entries = definitions["definitions"].as_array().expect("definitions");
     let affected = entries
         .iter()
@@ -82,6 +82,22 @@ fn shadow_executor_and_affected_quality_preserve_conservative_fallback() {
         .find(|entry| entry["gate_definition_id"] == "adjudicated-crap-v1")
         .expect("global CRAP definition");
     assert_eq!(global["risk_classes"], serde_json::json!(["CRITICAL"]));
+    for (id, authority_class) in [
+        ("authority-admission-v1", "A0"),
+        ("required-authority-v1", "A3"),
+    ] {
+        let authority = entries
+            .iter()
+            .find(|entry| entry["gate_definition_id"] == id)
+            .unwrap_or_else(|| panic!("missing authority definition {id}"));
+        assert_eq!(authority["authority_class"], authority_class);
+        assert_eq!(authority["risk_classes"], serde_json::json!(["CRITICAL"]));
+    }
+    let full = entries
+        .iter()
+        .find(|entry| entry["gate_definition_id"] == "workspace-full-nextest-v1")
+        .expect("full workspace definition");
+    assert_eq!(full["authority_class"], "NONE");
 
     let plan_schema = text("gate-policy/v1/schemas/gate-plan.schema.json");
     assert!(plan_schema.contains("quality_scope"));
@@ -106,29 +122,74 @@ fn shadow_executor_and_affected_quality_preserve_conservative_fallback() {
         );
     }
 
-    let conservative = text(".github/workflows/release-gates.yml");
-    assert!(conservative.contains("workspace-validation:"));
-    assert!(conservative.contains("run_release_candidate_gates.sh"));
-    let shadow = text(".github/workflows/testgate-shadow.yml");
+    let workflow = text(".github/workflows/testgate-shadow.yml");
     for context in [
-        "shadow-presubmit:",
-        "shadow-backstop:",
-        "shadow-dispatch:",
-        "shadow-campaign:",
-        "shadow-release:",
-        "testgate-shadow-observation:",
+        "increment-gates:",
+        "verify-increment:",
+        "name: openwepp/verify-increment",
+        "name: openwepp/increment-gates",
+        "name: openwepp/execute-increment",
+        "runs-on: [self-hosted, Linux, X64, openwepp, omarchy, trusted]",
+        "runs-on: ubuntu-24.04",
+        "bootstrap_dependencies.sh",
+        "tools/local_ci/testgate.py",
+        "--boundary INCREMENT",
+        "actions/attest@f7c74d28b9d84cb8768d0b8ca14a4bac6ef463e6",
+        "attestation-predicate.json",
+        "github-attestation.jsonl",
+        "gh attestation verify",
+        "verify-receipt-envelope",
+        "Independently admit comparison base",
+        "_intent_authorization",
+        "--job openwepp/execute-increment",
+        "--signer-workflow",
+        "--source-digest",
+        "--deny-self-hosted-runners",
+        "actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093",
+        "id-token: write",
+        "attestations: write",
+        "cargo-nextest@0.9.138",
+        "--artifact-root \"${EVIDENCE_DIR}/execution\"",
+        "if: ${{ always() }}",
     ] {
         assert!(
-            shadow.contains(context),
-            "missing shadow lifecycle context {context}"
+            workflow.contains(context),
+            "missing blocking workflow contract {context}"
         );
     }
-    assert!(!shadow.contains("continue-on-error: true"));
-    assert!(shadow.contains("shadow-campaign:"));
-    assert!(shadow.contains("shadow-release:"));
-    assert!(shadow.contains("exit 1"));
-    assert!(shadow.contains("inputs.boundary == 'INCREMENT'"));
-    assert!(shadow.contains("inputs.boundary == 'CHECKPOINT'"));
+    assert!(!workflow.contains("pull_request:"));
+    assert!(!workflow.contains("pull_request_target:"));
+    assert!(!workflow.contains("schedule:"));
+    assert!(!workflow.contains("ubuntu-latest"));
+    assert!(!workflow.contains("conservative-rollback:"));
+    assert!(!workflow.contains("inputs.boundary"));
+    assert!(!workflow.contains("inputs.mode"));
+    assert!(!workflow.contains("cargo install"));
+    assert!(!workflow.contains("continue-on-error: true"));
+    assert!(workflow.contains("persist-credentials: false"));
+    assert!(workflow.contains("git merge-base --is-ancestor"));
+    assert!(workflow.contains("permissions:\n  contents: read"));
+    assert!(workflow.contains("execute-increment:\n    name: openwepp/execute-increment"));
+    assert!(workflow.contains(
+        "increment-gates:\n    name: openwepp/increment-gates\n    needs: [execute-increment, verify-increment]\n    if: ${{ always() }}"
+    ));
+    let signer = workflow
+        .split_once("  increment-gates:")
+        .expect("signer job")
+        .1;
+    assert!(!signer.contains("actions/checkout"));
+    assert!(!signer.contains("cargo build"));
+    assert!(!signer.contains("python3"));
+
+    let conservative = text(".github/workflows/testgate-conservative.yml");
+    assert!(conservative.contains("conservative-rollback:"));
+    assert!(conservative.contains("name: openwepp/conservative-rollback"));
+    assert!(conservative.contains("runs-on: ubuntu-24.04"));
+    assert!(conservative.contains("run_release_candidate_gates.sh"));
+    assert!(conservative.contains("--mode validate"));
+    assert!(!conservative.contains("--skip-authority-required"));
+    assert!(conservative.contains("--skip-stability"));
+    assert!(!conservative.contains("self-hosted"));
 
     let rollback =
         text("docs/work-packages/20260718-testgate-ci-shadow-executor-001/artifacts/rollback.md");
@@ -137,24 +198,21 @@ fn shadow_executor_and_affected_quality_preserve_conservative_fallback() {
 }
 
 #[test]
-fn shadow_rollback_removes_only_the_nonrequired_workflow() {
-    let directory =
-        std::env::temp_dir().join(format!("openwepp-testgate-rollback-{}", std::process::id()));
-    fs::create_dir(&directory).expect("create precise rollback fixture");
-    let release_source = root().join(".github/workflows/release-gates.yml");
-    let shadow_source = root().join(".github/workflows/testgate-shadow.yml");
-    let release = directory.join("release-gates.yml");
-    let shadow = directory.join("testgate-shadow.yml");
-    fs::copy(&release_source, &release).expect("copy conservative workflow");
-    fs::copy(&shadow_source, &shadow).expect("copy shadow workflow");
-    let before = fs::read(&release).expect("read conservative workflow before rollback");
-
-    fs::remove_file(&shadow).expect("remove only nonrequired shadow workflow");
-
-    assert!(!shadow.exists());
-    assert_eq!(
-        fs::read(&release).expect("read conservative workflow after rollback"),
-        before
-    );
-    fs::remove_dir_all(&directory).expect("remove precise rollback fixture");
+fn runner_container_has_no_host_or_privileged_mounts() {
+    let manager = text("tools/ci/omarchy-runner/manage.sh");
+    assert!(manager.contains("--security-opt no-new-privileges=true"));
+    assert!(manager.contains("--cap-drop ALL"));
+    assert!(manager.contains("--read-only"));
+    assert!(manager.contains("dst=/runner-state,readonly"));
+    assert!(manager.contains("--tmpfs"));
+    assert!(manager.contains("job-completed-hook.sh"));
+    assert!(!manager.contains("/var/run/docker.sock"));
+    assert!(!manager.contains("--privileged"));
+    assert!(!manager.contains("--network host"));
+    assert!(manager.contains("registration_token"));
+    assert!(manager.contains("printf '%s\\n' \"${registration_token}\""));
+    let hook = text("tools/ci/omarchy-runner/job-completed-hook.sh");
+    assert!(hook.contains("/runner-work /cache/cargo /cache/target /home/runner /tmp"));
+    assert!(hook.contains("/runner-state/_diag"));
+    assert!(hook.contains("for round in {1..10}"));
 }

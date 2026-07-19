@@ -35,7 +35,7 @@
   Test deletion, disabling, filtering, reclassification, or unknown coverage
   impact escalates to critical/global measurement.
 - Full workspace Nextest remains required for critical changes, campaign
-  closure, release, and the conservative pre-cutover implementation fallback.
+  closure, and release.
 - Fall back to `cargo test --workspace` only when validating libtest-specific behavior or when a package explicitly requires the legacy harness.
 - Expensive fixture families are scheduled in `.config/nextest.toml` groups: `snowbench`, `cli-fixture`, `frost-fixture`, and `runner-fixture`.
 - Use `docs/standards/local-ci-gate-selection.md` for gate-tier selection and

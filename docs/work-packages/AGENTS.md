@@ -178,9 +178,8 @@
 - Follow `docs/standards/mechanical-refactor-authoring-guide.md` for structural, behavior-preserving work.
 - Required terminal gates come from the accepted intent/terminal plan under
   `docs/standards/testing-and-gate-strategy.md`. Critical refactors and
-  campaign/release boundaries retain the full workspace closure loop. Until
-  planner/executor cutover, Rust refactors use that full loop as the
-  conservative implementation fallback. Focused, quick, frost, or erosion
+  campaign/release boundaries retain the full workspace closure loop. Focused,
+  quick, frost, or erosion
   profiles remain edit-loop feedback and do not waive selected terminal gates.
 - Fall back to `cargo test --workspace` only for libtest-specific behavior or explicitly required legacy harness checks, and label that as a compatibility run rather than the default closure path.
 - Package-required validation overrides generic ambient instructions to skip tests.
@@ -190,10 +189,8 @@
 
 - Bounded implementation increments require current affected-surface CRAP
   selected by the terminal plan. Critical changes, campaign closure, and
-  release require current global adjudicated CRAP. Until affected-surface
-  execution and receipt verification are accepted and cut over, implementation
-  packages run the existing fresh full-workspace command as a conservative
-  fallback. Documentation-only packages remain exempt.
+  release require current global adjudicated CRAP. Documentation-only packages
+  remain exempt.
 - Supplying an old artifact cannot close current implementation work. Retained
   assessment mode remains non-closure evidence and must report
   `ASSESSMENT-PASS`/`ASSESSMENT-FAIL` with `closure_eligible=false` and cited
@@ -254,8 +251,7 @@
 - Package-specific gates from `package.md`.
 - Gate evidence non-deferral: each required current-scope gate has current
   direct evidence, or the package/phase is held with a named blocker.
-- Exact intent/terminal gate plan and current receipts; use the conservative
-  full Rust/global-CRAP fallback until planner/executor cutover.
+- Exact intent/terminal gate plan and current receipts.
 - Critical, campaign, and release global CRAP with frozen-base touched-file
   reporting.
 - Conservation/publication acceptance rule when output magnitude or closure

@@ -193,15 +193,15 @@ complexity, or public behavior changes.
    eligible affected surface and no per-function floor breach. Run the
    terminal-plan CRAP gate; confirm every affected eligible function is at most
    30 or has an exact current adjudication. Critical, campaign, and release
-   boundaries also require an empty workspace actionable set. Before affected
-   execution cutover, use the global adjudicated command as fallback.
+   boundaries also require an empty workspace actionable set.
 7. **Gate loop.** Execute the exact terminal plan under
    `testing-and-gate-strategy.md`, including formatting, affected
    warnings-denied Clippy and tests, doctest/inventory checks, and the obligation
    guard
    (`auth11_required_suite_obligation_guards_contract`) where the module carries
-   external-authority suite bindings. Use the conservative full workspace,
-   cargo-deny, and global-CRAP loop until planner/executor cutover.
+   external-authority suite bindings. Critical, campaign, release, and explicit
+   rollback boundaries retain the conservative full workspace, cargo-deny, and
+   global-CRAP loop.
 8. **Evidence and disposition.** Disposition states before→after coverage, the
    eligible-surface definition, the exclusion list, the obligation→test map, and
    the threshold pass.

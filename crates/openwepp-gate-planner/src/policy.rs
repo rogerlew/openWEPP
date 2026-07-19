@@ -574,14 +574,14 @@ fn validate_policy_posture(
     impact_map: &ImpactMap,
     registry: &GateRegistry,
 ) -> Result<()> {
-    if impact_map.enforcement_status != "SHADOW"
-        || registry.enforcement_status != "SHADOW"
+    if impact_map.enforcement_status != "BLOCKING"
+        || registry.enforcement_status != "BLOCKING"
         || impact_map.unknown_path_action != "ESCALATE_CRITICAL"
     {
         return Err(GatePolicyError::new(
             ErrorClass::Policy,
-            "GATE-POLICY-NONSHADOW",
-            "TESTGATE-PLAN-01 requires SHADOW policy and critical unknown fallback",
+            "GATE-POLICY-NONBLOCKING",
+            "TESTGATE requires BLOCKING policy and critical unknown fallback",
         ));
     }
     let strategy = read(&repo_root.join("docs/standards/testing-and-gate-strategy.md"))?;
@@ -628,13 +628,6 @@ fn verify_impact_bindings(
                 format!("{} uses {}", entry.entry_id, entry.matcher.kind),
             ));
         }
-        if !entry.authority_suites.is_empty() {
-            return Err(GatePolicyError::new(
-                ErrorClass::Policy,
-                "GATE-SEMANTIC-OBLIGATION-UNSUPPORTED",
-                format!("{} requires authority executable binding", entry.entry_id),
-            ));
-        }
         for id in &entry.gate_definition_ids {
             if !definitions.contains_key(id) {
                 return Err(GatePolicyError::new(
@@ -642,6 +635,50 @@ fn verify_impact_bindings(
                     "GATE-DEFINITION-MISSING",
                     format!("impact entry {} references {id}", entry.entry_id),
                 ));
+            }
+        }
+        if !entry.contracts.is_empty() {
+            if entry.contracts.len() != 1 || entry.covering_test_targets.is_empty() {
+                return Err(GatePolicyError::new(
+                    ErrorClass::Policy,
+                    "GATE-A1-BINDING-MISSING",
+                    format!(
+                        "{} requires one contract and at least one A1 hard-invariant target",
+                        entry.entry_id
+                    ),
+                ));
+            }
+            for target in &entry.covering_test_targets {
+                let hard_invariant = entry.gate_definition_ids.iter().any(|id| {
+                    definitions.get(id).is_some_and(|definition| {
+                        definition.authority_class == "A1"
+                            && definition.executor["kind"] == "NEXTEST_V1"
+                            && definition.outcome_policy == "BLOCKING"
+                            && definition.failure_classification == "HARD_FAIL"
+                            && definition.inventory_mode == "EXACT"
+                            && matches!(
+                                definition.inventory_source.as_str(),
+                                "NEXTEST_PACKAGE"
+                                    | "NEXTEST_PACKAGES"
+                                    | "NEXTEST_WORKSPACE"
+                                    | "NEXTEST_TEST_TARGET"
+                            )
+                            && definition
+                                .arguments_template
+                                .iter()
+                                .any(|argument| argument == target)
+                    })
+                });
+                if !hard_invariant {
+                    return Err(GatePolicyError::new(
+                        ErrorClass::Policy,
+                        "GATE-A1-BINDING-MISSING",
+                        format!(
+                            "{} does not bind {target} to a hard-fail A1 gate",
+                            entry.entry_id
+                        ),
+                    ));
+                }
             }
         }
         for target in entry

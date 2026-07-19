@@ -130,9 +130,8 @@ the metric loop.
 5. **Re-measure.** Record `*_after`; the dimension target (§3) is met.
 6. **Gate loop.** Mechanical guide §6's exact terminal plan, including the
    module's affected coverage/CRAP and no-regression gate. Critical changes,
-   campaign closure, and release use full workspace/global evidence. Before
-   planner/executor cutover, use the mechanical guide's conservative full
-   fallback.
+   campaign closure, release, and explicit rollback use full workspace/global
+   evidence.
 7. **Evidence and disposition.** Before/after metric, the numeric-equivalence
    statement, any exclusions.
 

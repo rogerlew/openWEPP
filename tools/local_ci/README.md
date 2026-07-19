@@ -41,30 +41,32 @@ python tools/local_ci/nextest_timing.py sweep \
 The latest summary is written to `target/local-ci-history/latest.md`; the full
 append-only log is `target/local-ci-history/nextest-runs.jsonl`.
 
-## TESTGATE Shadow Observation
+## TESTGATE Increment Execution
 
 Build the repository-owned planner/executor, then create one external evidence
 directory for an exact base/head increment:
 
 ```bash
 cargo build -p openwepp-gate-planner --bin openwepp-gate-plan
-shadow_dir="$(mktemp -d)"
-python tools/local_ci/testgate_shadow.py \
+testgate_dir="$(mktemp -d)"
+python tools/local_ci/testgate.py \
   --binary target/debug/openwepp-gate-plan \
   --base HEAD^ \
-  --artifact-root "${shadow_dir}" \
+  --artifact-root "${testgate_dir}" \
+  --intent-package docs/work-packages/<id>/package.md \
   --dirty \
   --execute
 ```
 
 The helper invokes typed CLI argument vectors without a shell, writes intent
 and terminal plans, an independently verified unsigned receipt, and
-`observation.json`. The output is always `SHADOW_NONBLOCKING` and explicitly
-records that it is not cutover evidence. Use a fresh external directory for
-every attempt; output collision fails closed. Verified FAIL/BLOCKED receipts
-remain in that directory while the helper exits nonzero, and executor-injected
-Cargo, Nextest, coverage, CRAP, and temporary work paths remain beneath the
-external execution root.
+`observation.json`. Local output remains
+`LOCAL_RECEIPT_PENDING_GITHUB_ATTESTATION` and cannot close an increment. The
+trusted workflow attests the exact receipt and custom predicate before its job
+can pass. Use a fresh external directory for every attempt; output collision
+fails closed. Verified FAIL/BLOCKED receipts remain in that directory while the
+helper exits nonzero, and executor-injected Cargo, Nextest, coverage, CRAP, and
+temporary work paths remain beneath the external execution root.
 
 Nextest lifecycle roles are named `affected`, `checkpoint`, `campaign`, and
 `release`. Selection still comes from the terminal plan; a profile name alone

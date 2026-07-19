@@ -10,15 +10,18 @@ use openwepp_gate_planner::ledger::{verify_assurance_impact, verify_campaign_led
 use openwepp_gate_planner::planner::reconcile_intent_terminal;
 use openwepp_gate_planner::planner::{NextestInventory, PlanRequest, Planner, PlanningStage};
 use openwepp_gate_planner::repository::{ObservedSource, observe_committed, observe_dirty};
-use openwepp_gate_planner::verifier::{DirectoryArtifacts, verify_receipt};
+use openwepp_gate_planner::verifier::{
+    DirectoryArtifacts, verify_receipt, verify_receipt_envelope,
+};
 use serde_json::{Value, json};
 
 type CommandHandler = fn(&Path, &BTreeMap<String, String>) -> Result<Value>;
 
-const COMMANDS: [(&str, CommandHandler); 6] = [
+const COMMANDS: [(&str, CommandHandler); 7] = [
     ("plan", plan_command),
     ("run", run_command),
     ("verify-receipt", receipt_command),
+    ("verify-receipt-envelope", receipt_envelope_command),
     ("verify-ledger", ledger_command),
     ("verify-assurance", assurance_command),
     ("reconcile", reconcile_command),
@@ -104,7 +107,9 @@ fn reject_unknown_options(command: &str, options: &BTreeMap<String, String>) -> 
             "attempt",
         ],
         "reconcile" => &["repo", "intent", "terminal"],
-        "verify-receipt" => &["repo", "plan", "receipt", "artifact-root"],
+        "verify-receipt" | "verify-receipt-envelope" => {
+            &["repo", "plan", "receipt", "artifact-root"]
+        }
         "verify-ledger" => &["repo", "ledger", "predecessor"],
         "verify-assurance" => &["repo", "record"],
         _ => return Err(usage_error()),
@@ -420,6 +425,18 @@ fn receipt_command(repo: &Path, options: &BTreeMap<String, String>) -> Result<Va
     }))
 }
 
+fn receipt_envelope_command(repo: &Path, options: &BTreeMap<String, String>) -> Result<Value> {
+    let (plan, receipt) = receipt_inputs(options)?;
+    let artifacts = receipt_artifacts(options)?;
+    let verdict = verify_receipt_envelope(repo, &plan, &receipt, &artifacts)?;
+    Ok(json!({
+        "result": verdict.result(),
+        "receipt_id": verdict.receipt_id(),
+        "trust_class": verdict.trust_class(),
+        "claimed_trust_class": verdict.claimed_trust_class()
+    }))
+}
+
 fn receipt_inputs(options: &BTreeMap<String, String>) -> Result<(Value, Value)> {
     let plan_path = required(options, "plan")?;
     let receipt_path = required(options, "receipt")?;
@@ -498,7 +515,7 @@ fn usage_error() -> GatePolicyError {
     GatePolicyError::new(
         ErrorClass::Cli,
         "GATE-CLI-USAGE",
-        "usage: openwepp-gate-plan <plan|run|reconcile|verify-receipt|verify-ledger|verify-assurance> --key value ...",
+        "usage: openwepp-gate-plan <plan|run|reconcile|verify-receipt|verify-receipt-envelope|verify-ledger|verify-assurance> --key value ...",
     )
 }
 

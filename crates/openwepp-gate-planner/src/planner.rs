@@ -9,6 +9,8 @@ use serde_json::{Value, json};
 use crate::assurance::{plan_assurance_impacts, reconcile_assurance_impacts};
 use crate::canonical::{derived_id, digest, parse_strict, sha256_bytes, validate_schema};
 use crate::error::{ErrorClass, GatePolicyError, Result};
+use crate::execution_context::cargo_configuration_manifest;
+pub(crate) use crate::execution_context::environment_record;
 use crate::policy::{GateDefinition, PolicyBundle, RiskClass};
 use crate::repository::{
     CargoGraph, ObservedChange, ObservedSource, Snapshot, host_target_triple,
@@ -421,6 +423,7 @@ impl InventoryProvider for NextestInventory {
                 nextest_inventory(repo, definition, target)
             }
             "DOCTEST_WORKSPACE" => doctest_inventory(repo),
+            "AUTHORITY_SUITES" => authority_suite_inventory(repo),
             value => Err(GatePolicyError::new(
                 ErrorClass::Planning,
                 "GATE-INVENTORY-SOURCE",
@@ -428,6 +431,63 @@ impl InventoryProvider for NextestInventory {
             )),
         }
     }
+}
+
+fn authority_suite_inventory(repo: &Path) -> Result<Vec<String>> {
+    let registry_path = repo.join("docs/specifications/external-authority/registry.yaml");
+    let registry = fs::read_to_string(&registry_path).map_err(|error| {
+        GatePolicyError::new(
+            ErrorClass::Planning,
+            "GATE-AUTHORITY-INVENTORY-READ",
+            format!("{}: {error}", registry_path.display()),
+        )
+    })?;
+    let mut suites = Vec::new();
+    let mut fields = BTreeMap::<String, String>::new();
+    let flush = |fields: &mut BTreeMap<String, String>, suites: &mut Vec<String>| {
+        if fields.get("status").map(String::as_str) == Some("active")
+            && fields.get("authority_level").map(String::as_str) == Some("4")
+            && fields.get("gate_lane").map(String::as_str) == Some("required")
+            && fields.get("failure_class").map(String::as_str) == Some("hard-fail")
+            && fields
+                .get("integration_test")
+                .is_some_and(|value| !value.is_empty())
+            && let Some(suite_id) = fields.get("suite_id")
+        {
+            suites.push(suite_id.clone());
+        }
+        fields.clear();
+    };
+    for line in registry.lines() {
+        let stripped = line.trim();
+        if let Some(suite_id) = stripped.strip_prefix("- suite_id: ") {
+            flush(&mut fields, &mut suites);
+            fields.insert("suite_id".to_owned(), suite_id.to_owned());
+            continue;
+        }
+        for key in [
+            "status",
+            "authority_level",
+            "gate_lane",
+            "failure_class",
+            "integration_test",
+        ] {
+            if let Some(value) = stripped.strip_prefix(&format!("{key}: ")) {
+                fields.insert(key.to_owned(), value.to_owned());
+            }
+        }
+    }
+    flush(&mut fields, &mut suites);
+    suites.sort_by(|left, right| left.as_bytes().cmp(right.as_bytes()));
+    suites.dedup();
+    if suites.is_empty() {
+        return Err(GatePolicyError::new(
+            ErrorClass::Planning,
+            "GATE-AUTHORITY-INVENTORY-EMPTY",
+            "no active required hard-fail Level-4 authority suites",
+        ));
+    }
+    Ok(suites)
 }
 
 #[derive(Debug, Clone)]
@@ -448,6 +508,7 @@ impl InventoryProvider for ConfinedNextestInventory {
                 nextest_inventory_at(repo, definition, target, Some(&self.cargo_target))
             }
             "DOCTEST_WORKSPACE" => doctest_inventory_at(repo, Some(&self.cargo_target)),
+            "AUTHORITY_SUITES" => authority_suite_inventory(repo),
             value => Err(GatePolicyError::new(
                 ErrorClass::Planning,
                 "GATE-INVENTORY-SOURCE",
@@ -482,37 +543,52 @@ pub(crate) fn inventory_for_node(
     let target = node["target"]
         .as_str()
         .ok_or_else(|| GatePolicyError::new(ErrorClass::Planning, "GATE-NODE-SHAPE", "target"))?;
-    let mut inventory = if definition.inventory_source == "NEXTEST_PACKAGES" {
-        let mut package_definition = definition.clone();
-        "NEXTEST_PACKAGE".clone_into(&mut package_definition.inventory_source);
-        let mut inventory = Vec::new();
-        for package in node_argument_values(node, "--package")? {
-            inventory.extend(nextest_inventory_at(
-                repo,
-                &package_definition,
-                &package,
-                cargo_target,
-            )?);
-        }
-        inventory
-    } else {
-        match definition.inventory_source.as_str() {
-            "COMMAND" => NextestInventory.inventory(repo, definition, target)?,
-            "NEXTEST_PACKAGE" | "NEXTEST_WORKSPACE" | "NEXTEST_TEST_TARGET" => {
-                nextest_inventory_at(repo, definition, target, cargo_target)?
-            }
-            "DOCTEST_WORKSPACE" => doctest_inventory_at(repo, cargo_target)?,
-            value => {
-                return Err(GatePolicyError::new(
-                    ErrorClass::Planning,
-                    "GATE-INVENTORY-SOURCE",
-                    format!("unsupported inventory source: {value}"),
-                ));
-            }
-        }
-    };
+    let mut inventory = inventory_for_definition(repo, node, definition, target, cargo_target)?;
     inventory.sort_by(|left, right| left.as_bytes().cmp(right.as_bytes()));
     inventory.dedup();
+    Ok(inventory)
+}
+
+fn inventory_for_definition(
+    repo: &Path,
+    node: &Value,
+    definition: &GateDefinition,
+    target: &str,
+    cargo_target: Option<&Path>,
+) -> Result<Vec<String>> {
+    match definition.inventory_source.as_str() {
+        "NEXTEST_PACKAGES" => package_inventories(repo, node, definition, cargo_target),
+        "COMMAND" => NextestInventory.inventory(repo, definition, target),
+        "NEXTEST_PACKAGE" | "NEXTEST_WORKSPACE" | "NEXTEST_TEST_TARGET" => {
+            nextest_inventory_at(repo, definition, target, cargo_target)
+        }
+        "DOCTEST_WORKSPACE" => doctest_inventory_at(repo, cargo_target),
+        "AUTHORITY_SUITES" => authority_suite_inventory(repo),
+        value => Err(GatePolicyError::new(
+            ErrorClass::Planning,
+            "GATE-INVENTORY-SOURCE",
+            format!("unsupported inventory source: {value}"),
+        )),
+    }
+}
+
+fn package_inventories(
+    repo: &Path,
+    node: &Value,
+    definition: &GateDefinition,
+    cargo_target: Option<&Path>,
+) -> Result<Vec<String>> {
+    let mut package_definition = definition.clone();
+    "NEXTEST_PACKAGE".clone_into(&mut package_definition.inventory_source);
+    let mut inventory = Vec::new();
+    for package in node_argument_values(node, "--package")? {
+        inventory.extend(nextest_inventory_at(
+            repo,
+            &package_definition,
+            &package,
+            cargo_target,
+        )?);
+    }
     Ok(inventory)
 }
 
@@ -572,6 +648,20 @@ impl<P: InventoryProvider> Planner<P> {
         request: &PlanRequest,
         workspace: Option<&Path>,
     ) -> Result<Value> {
+        self.build_with_workspace_and_context(repo, request, workspace, None)
+    }
+
+    #[allow(
+        clippy::too_many_lines,
+        reason = "plan assembly mirrors the versioned gate-plan wire contract"
+    )]
+    fn build_with_workspace_and_context(
+        &self,
+        repo: &Path,
+        request: &PlanRequest,
+        workspace: Option<&Path>,
+        context_override: Option<&Value>,
+    ) -> Result<Value> {
         validate_request(request)?;
         let policy = PolicyBundle::load(repo)?;
         let base_graph = match workspace {
@@ -619,7 +709,9 @@ impl<P: InventoryProvider> Planner<P> {
         )?;
         let root_revision = request.source.head_commit.as_deref().unwrap_or("HEAD");
         let roots = manifest_roots(repo, root_revision, request.source.head_commit.is_none())?;
-        let context = execution_context(repo, &policy)?;
+        let context = context_override
+            .cloned()
+            .map_or_else(|| execution_context(repo, &policy), Ok)?;
         let inventory_snapshot = request.source.head_commit.as_deref().map_or_else(
             || Ok(None),
             |head| {
@@ -977,6 +1069,25 @@ pub(crate) fn reconstruct_plan_in(
     .build_with_workspace(repo, &request, Some(&workspace))
 }
 
+pub(crate) fn reconstruct_plan_in_with_bound_context(
+    repo: &Path,
+    plan: &Value,
+    workspace: &Path,
+    after_source_mutation: bool,
+) -> Result<Value> {
+    let request = reconstruction_request(repo, plan, after_source_mutation)?;
+    let workspace = prepare_reconstruction_workspace(workspace)?;
+    Planner::new(ConfinedNextestInventory {
+        cargo_target: workspace.join("cargo-target"),
+    })
+    .build_with_workspace_and_context(
+        repo,
+        &request,
+        Some(&workspace),
+        Some(&plan["execution_context"]),
+    )
+}
+
 fn prepare_reconstruction_workspace(workspace: &Path) -> Result<PathBuf> {
     let parent = workspace
         .parent()
@@ -1165,11 +1276,7 @@ struct Selection {
 }
 
 fn select(policy: &PolicyBundle, graph: &CargoGraph, changes: &[ObservedChange]) -> Selection {
-    let mut risk = if changes.is_empty() {
-        RiskClass::Editorial
-    } else {
-        RiskClass::BoundedComponent
-    };
+    let mut risk = RiskClass::Editorial;
     let mut reasons = BTreeSet::new();
     let mut direct_packages = BTreeSet::new();
     let mut explicit = BTreeSet::new();
@@ -1177,7 +1284,11 @@ fn select(policy: &PolicyBundle, graph: &CargoGraph, changes: &[ObservedChange])
     let mut unmapped = Vec::new();
     for change in changes {
         let mut mapped = false;
-        if let Some(package) = graph.package_for_path(&change.path) {
+        if is_editorial_documentation_path(&change.path) {
+            reasons.insert("DOCUMENTATION_ONLY".to_owned());
+            mapped = true;
+        } else if let Some(package) = graph.package_for_path(&change.path) {
+            risk = risk.max(RiskClass::BoundedComponent);
             if Path::new(&change.path)
                 .extension()
                 .is_some_and(|extension| extension.eq_ignore_ascii_case("rs"))
@@ -1249,6 +1360,37 @@ fn select(policy: &PolicyBundle, graph: &CargoGraph, changes: &[ObservedChange])
     }
 }
 
+fn is_editorial_documentation_path(path: &str) -> bool {
+    const NORMATIVE_PREFIXES: [&str; 9] = [
+        "docs/architecture/",
+        "docs/contracts/",
+        "docs/decisions/",
+        "docs/governance/",
+        "docs/numerics/",
+        "docs/prompt_templates/",
+        "docs/specifications/",
+        "docs/standards/",
+        "docs/work-packages/templates/",
+    ];
+    const NORMATIVE_EXACT: [&str; 2] = [
+        "docs/codex_exec_plans.md",
+        "docs/defect_closure_execplans.md",
+    ];
+    let markdown = path.starts_with("docs/")
+        || path == "README.md"
+        || path.ends_with("/README.md")
+        || Path::new(path)
+            .extension()
+            .is_some_and(|extension| extension.eq_ignore_ascii_case("md"));
+    markdown
+        && path != "AGENTS.md"
+        && !path.ends_with("/AGENTS.md")
+        && !NORMATIVE_EXACT.contains(&path)
+        && !NORMATIVE_PREFIXES
+            .iter()
+            .any(|prefix| path.starts_with(prefix))
+}
+
 fn science_sensitive_package(package: &str) -> bool {
     [
         "climate",
@@ -1286,11 +1428,7 @@ fn add_definition_instances<'a>(
             }
         }
         "STATIC" => {
-            let target = if definition.gate_definition_id == "gate-policy-schema-consistency-v1" {
-                "testgate_align_authority_contract"
-            } else {
-                definition.gate_definition_id.as_str()
-            };
+            let target = static_definition_target(definition);
             instances.insert(
                 format!("{}@{target}", definition.gate_definition_id),
                 (definition, target.to_owned()),
@@ -1303,6 +1441,19 @@ fn add_definition_instances<'a>(
             );
         }
     }
+}
+
+fn static_definition_target(definition: &GateDefinition) -> &str {
+    let selector = match definition.inventory_source.as_str() {
+        "NEXTEST_TEST_TARGET" => "--test",
+        "NEXTEST_PACKAGE" => "-p",
+        _ => return definition.gate_definition_id.as_str(),
+    };
+    definition
+        .arguments_template
+        .windows(2)
+        .find_map(|pair| (pair[0] == selector).then_some(pair[1].as_str()))
+        .unwrap_or(definition.gate_definition_id.as_str())
 }
 
 fn prerequisite_keys(
@@ -1406,14 +1557,11 @@ fn validate_request(request: &PlanRequest) -> Result<()> {
             "intent plans omit a predecessor; terminal plans require a digest",
         ));
     }
-    if !matches!(
-        request.boundary.as_str(),
-        "INCREMENT" | "CHECKPOINT" | "CAMPAIGN" | "RELEASE"
-    ) {
+    if request.boundary != "INCREMENT" {
         return Err(GatePolicyError::new(
             ErrorClass::Planning,
             "GATE-PLAN-BOUNDARY",
-            "invalid boundary",
+            "this planner supports INCREMENT only; use the conservative lane for broader lifecycle qualification",
         ));
     }
     let authorized = request.authorized_paths.iter().collect::<BTreeSet<_>>();
@@ -2027,7 +2175,7 @@ fn execution_context(repo: &Path, policy: &PolicyBundle) -> Result<Value> {
     }))
 }
 
-fn command_identity(repo: &Path, program: &str, arguments: &[&str]) -> Result<String> {
+pub(crate) fn command_identity(repo: &Path, program: &str, arguments: &[&str]) -> Result<String> {
     let mut command = if program == "cargo" {
         neutral_cargo_command()
     } else {
@@ -2143,56 +2291,6 @@ pub(crate) fn tool_records(repo: &Path) -> Result<Value> {
         .map(Value::Array)
 }
 
-pub(crate) fn environment_record(repo: &Path, target: &str) -> Result<Value> {
-    let compiler = command_identity(repo, "rustc", &["-Vv"])?;
-    let mut variables = BTreeMap::new();
-    for (key, value) in std::env::vars_os() {
-        let Some(key) = key.to_str() else {
-            return Err(GatePolicyError::new(
-                ErrorClass::Planning,
-                "GATE-ENVIRONMENT-NONUTF8",
-                "environment key",
-            ));
-        };
-        let value = value.to_str().ok_or_else(|| {
-            GatePolicyError::new(ErrorClass::Planning, "GATE-ENVIRONMENT-NONUTF8", key)
-        })?;
-        variables.insert(key.to_owned(), value.to_owned());
-    }
-    let variables = json!({
-        "variables": variables,
-        "cargo_configuration": cargo_configuration_manifest(repo)?,
-        "git_local_configuration_sha256": git_local_configuration_digest(repo)?
-    });
-    Ok(json!({
-        "platform": format!("{}-{}", std::env::consts::OS, std::env::consts::ARCH),
-        "target_triple": target,
-        "compiler": format!("rustc-{}", &sha256_bytes(compiler.as_bytes())[..16]),
-        "features": ["default"],
-        "variables_sha256": digest(&variables)?,
-        "runner_image_sha256": null
-    }))
-}
-
-fn git_local_configuration_digest(repo: &Path) -> Result<String> {
-    let output = neutral_git_command()
-        .args(["config", "--local", "--null", "--list"])
-        .current_dir(repo)
-        .output()
-        .map_err(|error| {
-            GatePolicyError::new(ErrorClass::Io, "GATE-GIT-CONFIG", error.to_string())
-        })?;
-    if output.status.success() {
-        Ok(sha256_bytes(&output.stdout))
-    } else {
-        Err(GatePolicyError::new(
-            ErrorClass::GitState,
-            "GATE-GIT-CONFIG",
-            String::from_utf8_lossy(&output.stderr).to_string(),
-        ))
-    }
-}
-
 fn resolve_tool_executable(repo: &Path, program: &str) -> Result<std::path::PathBuf> {
     if let Some(component) = program.strip_prefix("@toolchain/") {
         let sysroot = command_identity(repo, "rustc", &["--print", "sysroot"])?;
@@ -2225,81 +2323,6 @@ fn resolve_tool_executable(repo: &Path, program: &str) -> Result<std::path::Path
         "GATE-TOOL-PATH",
         format!("{program} is not on PATH"),
     ))
-}
-
-fn cargo_configuration_manifest(repo: &Path) -> Result<Value> {
-    let candidates = cargo_configuration_candidates(repo);
-    let repository = fs::canonicalize(repo).map_err(|error| {
-        GatePolicyError::new(ErrorClass::Io, "GATE-CARGO-CONFIG", error.to_string())
-    })?;
-    let mut records = Vec::new();
-    for path in candidates {
-        if let Some(record) = cargo_configuration_record(&repository, &path)? {
-            records.push(record);
-        }
-    }
-    Ok(Value::Array(records))
-}
-
-fn cargo_configuration_candidates(repo: &Path) -> BTreeSet<std::path::PathBuf> {
-    let mut candidates = BTreeSet::new();
-    for ancestor in repo.ancestors() {
-        candidates.insert(ancestor.join(".cargo/config"));
-        candidates.insert(ancestor.join(".cargo/config.toml"));
-    }
-    if let Some(home) = std::env::var_os("CARGO_HOME")
-        .map(std::path::PathBuf::from)
-        .or_else(|| {
-            std::env::var_os("HOME").map(|home| std::path::PathBuf::from(home).join(".cargo"))
-        })
-    {
-        candidates.insert(home.join("config"));
-        candidates.insert(home.join("config.toml"));
-    }
-    candidates
-}
-
-fn cargo_configuration_record(repository: &Path, path: &Path) -> Result<Option<Value>> {
-    match fs::read(path) {
-        Ok(bytes) => active_cargo_configuration_record(repository, path, &bytes).map(Some),
-        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(None),
-        Err(error) => Err(GatePolicyError::new(
-            ErrorClass::Io,
-            "GATE-CARGO-CONFIG",
-            format!("{}: {error}", path.display()),
-        )),
-    }
-}
-
-fn active_cargo_configuration_record(
-    repository: &Path,
-    path: &Path,
-    bytes: &[u8],
-) -> Result<Value> {
-    let canonical = fs::canonicalize(path).map_err(|error| {
-        GatePolicyError::new(ErrorClass::Io, "GATE-CARGO-CONFIG", error.to_string())
-    })?;
-    if !canonical.starts_with(repository) {
-        return Err(GatePolicyError::new(
-            ErrorClass::CargoMetadata,
-            "GATE-CARGO-EXTERNAL-CONFIG",
-            format!(
-                "external Cargo configuration is unsupported: {}",
-                canonical.display()
-            ),
-        ));
-    }
-    let path = canonical.to_str().ok_or_else(|| {
-        GatePolicyError::new(
-            ErrorClass::Planning,
-            "GATE-CARGO-CONFIG-NONUTF8",
-            canonical.display().to_string(),
-        )
-    })?;
-    Ok(json!({
-        "path": path,
-        "sha256": sha256_bytes(bytes)
-    }))
 }
 
 fn hash_path_manifest(repo: &Path, prefix: &str) -> Result<String> {
@@ -2357,8 +2380,9 @@ fn load_json(path: &Path) -> Result<Value> {
 #[cfg(test)]
 mod tests {
     use super::{
-        InventoryProvider, PlanRequest, Planner, PlanningStage, prepare_reconstruction_workspace,
-        reconcile_intent_terminal, reconcile_semantics, select,
+        InventoryProvider, PlanRequest, Planner, PlanningStage, authority_suite_inventory,
+        prepare_reconstruction_workspace, reconcile_intent_terminal, reconcile_semantics, select,
+        validate_request,
     };
     use crate::canonical::canonical_bytes;
     use crate::error::Result;
@@ -2366,6 +2390,14 @@ mod tests {
     use crate::repository::{CargoGraph, ObservedChange, ObservedSource};
 
     struct FixedInventory;
+
+    #[test]
+    fn authority_inventory_enumerates_required_level_four_suites() {
+        let repo = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+        let inventory = authority_suite_inventory(&repo).expect("authority suite inventory");
+        assert_eq!(inventory.len(), 9);
+        assert!(inventory.iter().all(|suite| suite.starts_with("cas_l4_")));
+    }
 
     impl InventoryProvider for FixedInventory {
         fn inventory(
@@ -2473,6 +2505,58 @@ mod tests {
     }
 
     #[test]
+    fn science_surfaces_select_explicit_a1_and_gate_planner_is_critical() {
+        let repo = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+        let policy = PolicyBundle::load(&repo).expect("policy bundle");
+        let graph = CargoGraph::load_current(&repo).expect("Cargo graph");
+        for (path, expected_gate) in [
+            (
+                "crates/openwepp-hillslope-orchestrator/src/direct_runtime/groundwater.rs",
+                "hard-invariant-groundwater-v1",
+            ),
+            (
+                "crates/openwepp-meteorology/src/phase.rs",
+                "hard-invariant-snow-phase-v1",
+            ),
+        ] {
+            let selection = select(
+                &policy,
+                &graph,
+                &[ObservedChange {
+                    path: path.to_owned(),
+                    change_kind: "MODIFY".to_owned(),
+                    object_kind: "REGULAR".to_owned(),
+                    old_mode: Some("100644".to_owned()),
+                    new_mode: Some("100644".to_owned()),
+                }],
+            );
+            assert_eq!(selection.risk.as_str(), "CRITICAL", "{path}");
+            assert!(selection.unmapped.is_empty(), "{path}");
+            assert!(
+                selection
+                    .explicit_definitions
+                    .iter()
+                    .any(|definition| definition == expected_gate),
+                "{path}"
+            );
+        }
+
+        let selection = select(
+            &policy,
+            &graph,
+            &[ObservedChange {
+                path: "crates/openwepp-gate-planner/src/verifier.rs".to_owned(),
+                change_kind: "MODIFY".to_owned(),
+                object_kind: "REGULAR".to_owned(),
+                old_mode: Some("100644".to_owned()),
+                new_mode: Some("100644".to_owned()),
+            }],
+        );
+        assert_eq!(selection.risk.as_str(), "CRITICAL");
+        assert!(selection.unmapped.is_empty());
+    }
+
+    #[test]
     fn assurance_reconciliation_allows_declared_to_exact_but_not_watch_removal() {
         let impact = |kind: &str, watches: serde_json::Value| {
             serde_json::json!({
@@ -2573,6 +2657,103 @@ mod tests {
                 );
             }
         }
+    }
+
+    #[test]
+    fn ordinary_documentation_is_editorial_and_mapped() {
+        let repo = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+        let policy = PolicyBundle::load(&repo).expect("policy bundle");
+        let graph = CargoGraph::load_current(&repo).expect("Cargo graph");
+        let changes = [ObservedChange {
+            path: "docs/example/operator-note.md".to_owned(),
+            change_kind: "MODIFY".to_owned(),
+            object_kind: "REGULAR".to_owned(),
+            old_mode: Some("100644".to_owned()),
+            new_mode: Some("100644".to_owned()),
+        }];
+        let selection = select(&policy, &graph, &changes);
+        assert_eq!(selection.risk.as_str(), "EDITORIAL");
+        assert!(selection.unmapped.is_empty());
+        assert!(
+            selection
+                .reason_codes
+                .iter()
+                .any(|reason| reason == "DOCUMENTATION_ONLY")
+        );
+    }
+
+    #[test]
+    fn normative_documentation_is_unknown_critical_without_policy_mapping() {
+        let repo = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+        let policy = PolicyBundle::load(&repo).expect("policy bundle");
+        let graph = CargoGraph::load_current(&repo).expect("Cargo graph");
+        for path in [
+            "docs/specifications/science-contracts/contracts/SC-EXAMPLE-999.md",
+            "docs/decisions/9999-example.md",
+            "docs/contracts/example.md",
+            "docs/architecture/example.md",
+            "docs/numerics/example.md",
+            "docs/codex_exec_plans.md",
+            "docs/defect_closure_execplans.md",
+            "crates/example/AGENTS.md",
+        ] {
+            let changes = [ObservedChange {
+                path: path.to_owned(),
+                change_kind: "MODIFY".to_owned(),
+                object_kind: "REGULAR".to_owned(),
+                old_mode: Some("100644".to_owned()),
+                new_mode: Some("100644".to_owned()),
+            }];
+            let selection = select(&policy, &graph, &changes);
+            assert_eq!(selection.risk.as_str(), "CRITICAL", "{path}");
+            assert_eq!(selection.unmapped.len(), 1, "{path}");
+            assert!(
+                selection
+                    .reason_codes
+                    .iter()
+                    .any(|reason| reason == "UNKNOWN_INPUT"),
+                "{path}"
+            );
+        }
+    }
+
+    #[test]
+    fn prospective_work_package_changes_do_not_force_critical_selection() {
+        let repo = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+        let policy = PolicyBundle::load(&repo).expect("policy bundle");
+        let graph = CargoGraph::load_current(&repo).expect("Cargo graph");
+        let changes = [ObservedChange {
+            path: "docs/work-packages/20260718-example-001/package.md".to_owned(),
+            change_kind: "MODIFY".to_owned(),
+            object_kind: "REGULAR".to_owned(),
+            old_mode: Some("100644".to_owned()),
+            new_mode: Some("100644".to_owned()),
+        }];
+        let selection = select(&policy, &graph, &changes);
+        assert_eq!(selection.risk.as_str(), "EDITORIAL");
+        assert!(selection.unmapped.is_empty());
+    }
+
+    #[test]
+    fn planner_rejects_non_increment_lifecycle_boundaries() {
+        let request = PlanRequest {
+            stage: PlanningStage::Intent,
+            predecessor_intent_plan_id: None,
+            boundary: "RELEASE".to_owned(),
+            campaign_id: None,
+            authorized_paths: vec!["README.md".to_owned()],
+            source: ObservedSource {
+                base_commit: "1".repeat(40),
+                head_commit: None,
+                dirty_tree_digest: Some("11".repeat(32)),
+                index_digest: Some("22".repeat(32)),
+                worktree_digest: Some("33".repeat(32)),
+                untracked_digest: Some("44".repeat(32)),
+                changes: Vec::new(),
+            },
+        };
+        let error = validate_request(&request).expect_err("release must fail closed");
+        assert_eq!(error.code, "GATE-PLAN-BOUNDARY");
     }
 
     #[test]

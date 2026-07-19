@@ -1,0 +1,59 @@
+name: testgate-conservative
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_ref:
+        description: "CRAP comparison base (blank uses the commit parent)"
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: openwepp-conservative-testgate
+  cancel-in-progress: false
+
+jobs:
+  conservative-rollback:
+    name: openwepp/conservative-rollback
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Admit trusted main comparison
+        id: comparison
+        env:
+          INPUT_BASE: ${{ inputs.base_ref }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin main
+          git merge-base --is-ancestor "${GITHUB_SHA}" refs/remotes/origin/main
+          base_ref="${INPUT_BASE:-${GITHUB_SHA}^}"
+          base_commit="$(git rev-parse --verify --end-of-options "${base_ref}^{commit}")"
+          git merge-base --is-ancestor "${base_commit}" "${GITHUB_SHA}"
+          [[ "${base_commit}" != "${GITHUB_SHA}" ]]
+          echo "base=${base_commit}" >> "${GITHUB_OUTPUT}"
+      - name: Install pinned conservative toolchain
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.92.0 --profile minimal --component rustfmt,clippy
+          rustup default 1.92.0
+          cargo install cargo-nextest --locked --version 0.9.138
+          cargo install cargo-deny --locked --version 0.19.6
+          cargo install cargo-llvm-cov --locked --version 0.8.7
+          cargo install cargo-crap --locked --version 0.2.2
+          python3 -m venv .venv
+      - name: Run conservative validation with required authority
+        env:
+          CRAP_BASE_REF: ${{ steps.comparison.outputs.base }}
+        run: >-
+          bash tools/release/run_release_candidate_gates.sh
+          --mode validate
+          --skip-stability
+          --crap-base-ref "${CRAP_BASE_REF}"

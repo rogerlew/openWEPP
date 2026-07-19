@@ -41,7 +41,7 @@ impl Default for ExecutionClaims {
             source_event: "local".to_owned(),
             source_ref: "refs/heads/main".to_owned(),
             workflow: "local-shell".to_owned(),
-            job: "testgate-shadow".to_owned(),
+            job: "openwepp/increment-gates".to_owned(),
             runner: "local".to_owned(),
             attempt: 1,
         }
@@ -592,7 +592,9 @@ fn observed_inventory(
     let planned = string_array(&node["expected_inventory"]["ids"], "inventory")?
         .into_iter()
         .collect::<BTreeSet<_>>();
-    let observed = if node_has_junit_evidence(node) {
+    let observed = if node["gate_definition_id"] == "required-authority-v1" {
+        observed_authority_inventory(artifact_root, node, outcome.result.as_str())?
+    } else if node_has_junit_evidence(node) {
         observed_junit_inventory(artifact_root, node, outcome.result.as_str())?
     } else if outcome.exit_code.is_some() || outcome.termination_signal.is_some() {
         planned.clone()
@@ -614,6 +616,40 @@ fn observed_inventory(
             .or_else(|| Some("TEST_NOT_EXECUTED".to_owned()))
     };
     Ok((observed, reason))
+}
+
+fn observed_authority_inventory(
+    artifact_root: &Path,
+    node: &Value,
+    result: &str,
+) -> Result<BTreeSet<String>> {
+    let report = authority_report_path(artifact_root, node)?;
+    let contents = match fs::read_to_string(&report) {
+        Ok(contents) => contents,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound && result != "PASS" => {
+            return Ok(BTreeSet::new());
+        }
+        Err(error) => {
+            return Err(execution_error(
+                "GATE-EXEC-AUTHORITY-REPORT",
+                format!("{}: {error}", report.display()),
+            ));
+        }
+    };
+    let mut observed = BTreeSet::new();
+    for line in contents.lines().filter(|line| {
+        line.starts_with("- lane=required failure_class=hard-fail ") && line.contains(" status=")
+    }) {
+        let suites = line
+            .split_ascii_whitespace()
+            .find_map(|field| field.strip_prefix("suites="))
+            .ok_or_else(|| execution_error("GATE-EXEC-AUTHORITY-REPORT", line))?;
+        for suite in suites.split(',') {
+            require_identifier(suite, "GATE-EXEC-AUTHORITY-SUITE")?;
+            observed.insert(suite.to_owned());
+        }
+    }
+    Ok(observed)
 }
 
 fn node_has_junit_evidence(node: &Value) -> bool {
@@ -746,6 +782,7 @@ fn real_artifact_sources(artifact_root: &Path, node: &Value) -> Result<Vec<PathB
             ])
         }
         "adjudicated-crap-v1" => Ok(vec![adjudicated_crap_report_path(artifact_root, node)?]),
+        "authority-suite-report-v1" => Ok(vec![authority_report_path(artifact_root, node)?]),
         _ => Ok(Vec::new()),
     }
 }
@@ -788,6 +825,16 @@ fn adjudicated_crap_report_path(artifact_root: &Path, node: &Value) -> Result<Pa
     Ok(work_root(artifact_root)
         .join(relative)
         .join("adjudicated-crap-report.json"))
+}
+
+fn authority_report_path(artifact_root: &Path, node: &Value) -> Result<PathBuf> {
+    let path = string_array(&node["output_paths"], "output_paths")?
+        .into_iter()
+        .next()
+        .ok_or_else(|| execution_error("GATE-EXEC-AUTHORITY-REPORT", "missing output path"))?;
+    let relative = Path::new(&path);
+    require_relative_path(relative, false)?;
+    Ok(work_root(artifact_root).join(relative))
 }
 
 fn run_process(
@@ -1074,7 +1121,7 @@ fn build_receipt(
     Ok(receipt)
 }
 
-fn authority_outcomes(
+pub(crate) fn authority_outcomes(
     nodes: &[Value],
     final_results: &BTreeMap<String, String>,
 ) -> Result<Vec<Value>> {
@@ -1098,20 +1145,57 @@ fn authority_outcomes(
     gates
         .into_iter()
         .map(|(gate_id, (authority_class, results))| {
-            if authority_class != "NONE" {
-                return Err(execution_error("GATE-EXEC-AUTHORITY-UNSUPPORTED", gate_id));
+            if !authority_adapter_supported(&gate_id, &authority_class) {
+                return Err(execution_error(
+                    "GATE-EXEC-AUTHORITY-UNSUPPORTED",
+                    format!("{gate_id} cannot claim authority class {authority_class}"),
+                ));
             }
+            let execution_integrity = aggregate_node_results(&results);
+            let admission_outcome = if authority_class == "A0" {
+                Some(match execution_integrity {
+                    "PASS" | "PASS_WITH_RETRY" => "ADMITTED",
+                    "FAIL" => "REJECTED",
+                    "BLOCKED" => "BLOCKED",
+                    _ => "INVALID",
+                })
+            } else {
+                None
+            };
+            let scientific_outcome = if matches!(
+                authority_class.as_str(),
+                "A1" | "A2" | "A3" | "A4" | "A5" | "A6"
+            ) {
+                Some(
+                    if matches!(execution_integrity, "PASS" | "PASS_WITH_RETRY") {
+                        "CONFORMS"
+                    } else {
+                        "NOT_EVALUATED"
+                    },
+                )
+            } else {
+                None
+            };
             Ok(json!({
                 "gate_id": gate_id,
                 "authority_class": authority_class,
-                "execution_integrity": aggregate_node_results(&results),
-                "admission_outcome": null,
-                "scientific_outcome": null,
+                "execution_integrity": execution_integrity,
+                "admission_outcome": admission_outcome,
+                "scientific_outcome": scientific_outcome,
                 "outcome_policy_generation": 1,
                 "investigation_record_id": null
             }))
         })
         .collect()
+}
+
+pub(crate) fn authority_adapter_supported(gate_id: &str, authority_class: &str) -> bool {
+    authority_class == "NONE"
+        || authority_class == "A1"
+        || matches!(
+            (gate_id, authority_class),
+            ("authority-admission-v1", "A0") | ("required-authority-v1", "A3")
+        )
 }
 
 fn aggregate_node_results(results: &[String]) -> &'static str {
@@ -1260,6 +1344,7 @@ fn real_source_for_output(
         }
         ("adjudicated-crap-v1", Some("lcov")) => affected_lcov_path(artifact_root, node).map(Some),
         ("adjudicated-crap-v1", _) => adjudicated_crap_report_path(artifact_root, node).map(Some),
+        ("authority-suite-report-v1", _) => authority_report_path(artifact_root, node).map(Some),
         _ => Ok(None),
     }
 }
@@ -1525,7 +1610,7 @@ fn execution_error(code: &'static str, message: impl Into<String>) -> GatePolicy
 
 #[cfg(test)]
 mod tests {
-    use std::collections::BTreeSet;
+    use std::collections::{BTreeMap, BTreeSet};
     use std::fs;
     use std::path::{Path, PathBuf};
     use std::process::Command;
@@ -1534,12 +1619,12 @@ mod tests {
     use serde_json::{Value, json};
 
     use super::{
-        ExecutionClaims, ProcessOutcome, allowed_environment, create_confined_directories,
-        execute_node, execute_nodes, execute_plan, junit_inventory, nextest_junit_path,
-        observed_inventory, observed_source_snapshot, preflight, prepare_real_artifacts,
-        read_real_artifact, reject_shell_string, require_relative_path, run_process,
-        runtime_arguments, source_snapshot, supported_executor, validate_plan,
-        validate_success_artifacts, work_root,
+        ExecutionClaims, ProcessOutcome, allowed_environment, authority_outcomes,
+        create_confined_directories, execute_node, execute_nodes, execute_plan, junit_inventory,
+        nextest_junit_path, observed_authority_inventory, observed_inventory,
+        observed_source_snapshot, preflight, prepare_real_artifacts, read_real_artifact,
+        reject_shell_string, require_relative_path, run_process, runtime_arguments,
+        source_snapshot, supported_executor, validate_plan, validate_success_artifacts, work_root,
     };
     use crate::canonical::sha256_bytes;
     use crate::planner::{NextestInventory, PlanRequest, Planner, PlanningStage};
@@ -1549,6 +1634,61 @@ mod tests {
     static TEMP_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
     struct TempDirectory(PathBuf);
+
+    #[test]
+    fn authority_report_proves_executed_suite_inventory() {
+        let artifacts = TempDirectory::new("authority-report");
+        let report = artifacts
+            .path()
+            .join(".work/target/gate-plan/required-authority-report.md");
+        fs::create_dir_all(report.parent().expect("report parent")).expect("report directory");
+        fs::write(
+            &report,
+            "- lane=required failure_class=hard-fail blocking=true test=one suites=suite_a,suite_b status=pass\n\
+             - lane=required failure_class=investigation blocking=false test=two suites=ignored status=pass\n",
+        )
+        .expect("authority report");
+        let node = json!({
+            "gate_definition_id": "required-authority-v1",
+            "output_paths": ["target/gate-plan/required-authority-report.md"]
+        });
+        let observed = observed_authority_inventory(artifacts.path(), &node, "PASS")
+            .expect("observed authority inventory");
+        assert_eq!(
+            observed,
+            BTreeSet::from(["suite_a".to_owned(), "suite_b".to_owned()])
+        );
+    }
+
+    #[test]
+    fn authority_outcomes_encode_admission_science_and_truthful_nonpass() {
+        let nodes = vec![
+            json!({"node_id": "a0", "gate_definition_id": "authority-admission-v1", "authority_class": "A0"}),
+            json!({"node_id": "a3", "gate_definition_id": "required-authority-v1", "authority_class": "A3"}),
+        ];
+        let pass = BTreeMap::from([
+            ("a0".to_owned(), "PASS".to_owned()),
+            ("a3".to_owned(), "PASS".to_owned()),
+        ]);
+        let outcomes = authority_outcomes(&nodes, &pass).expect("authority pass outcomes");
+        assert_eq!(outcomes[0]["admission_outcome"], "ADMITTED");
+        assert_eq!(outcomes[1]["scientific_outcome"], "CONFORMS");
+
+        let fail = BTreeMap::from([
+            ("a0".to_owned(), "FAIL".to_owned()),
+            ("a3".to_owned(), "BLOCKED".to_owned()),
+        ]);
+        let outcomes = authority_outcomes(&nodes, &fail).expect("authority nonpass outcomes");
+        assert_eq!(outcomes[0]["admission_outcome"], "REJECTED");
+        assert_eq!(outcomes[1]["scientific_outcome"], "NOT_EVALUATED");
+
+        let unsupported = vec![
+            json!({"node_id": "fake", "gate_definition_id": "generic-process", "authority_class": "A3"}),
+        ];
+        let result = BTreeMap::from([("fake".to_owned(), "PASS".to_owned())]);
+        let error = authority_outcomes(&unsupported, &result).expect_err("generic authority claim");
+        assert_eq!(error.code, "GATE-EXEC-AUTHORITY-UNSUPPORTED");
+    }
 
     impl TempDirectory {
         fn new(label: &str) -> Self {
@@ -1827,14 +1967,14 @@ mod tests {
                 "policy_id": "ADR-0039",
                 "policy_sha256": sha256_bytes(strategy),
                 "generation": 1,
-                "enforcement_status": "SHADOW",
+                "enforcement_status": "BLOCKING",
                 "unknown_path_action": "ESCALATE_CRITICAL",
                 "entries": [{
                     "entry_id": "executor-fixture",
                     "matcher": {"kind": "exact_path", "value": "src/lib.rs"},
                     "owner": "openwepp-maintainers",
                     "semantic_surface": "executor-contract",
-                    "risk_floor": "EDITORIAL",
+                    "risk_floor": "BOUNDED_COMPONENT",
                     "reason_codes": ["EXECUTOR_FIXTURE_CHANGED"],
                     "affected_packages": ["executor-fixture"],
                     "test_targets": [],
@@ -1852,7 +1992,7 @@ mod tests {
             &json!({
                 "schema_version": "openwepp-gate-definitions-v1",
                 "generation": 1,
-                "enforcement_status": "SHADOW",
+                "enforcement_status": "BLOCKING",
                 "definitions": definitions
             }),
         );

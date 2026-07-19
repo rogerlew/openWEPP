@@ -60,7 +60,7 @@ unless a subagent is explicitly assigned a bounded implementation fix in
 
 Subagent requirement: this package requires spawning `comparator_suite_runner`
 for heavy gates selected by the terminal plan, critical classification,
-campaign/release boundary, or conservative transition fallback, including
+campaign/release boundary, or explicit conservative rollback, including
 full-workspace CRAP/coverage, full-profile Nextest, comparator suites, and
 population/fixture batches. Do not run those heavy gates locally on the parent
 model unless the subagent is unavailable; if unavailable, record command-level
@@ -160,8 +160,8 @@ and report the blocked commit boundary.
 3. Record numeric/API/output identity in `artifacts/numeric-equivalence.md`.
 4. Record `.rs` line-count governance in
    `artifacts/line-count-governance.md`.
-5. Reconcile the exact terminal plan and run every selected gate. Until
-   planner/executor cutover, run and record the conservative fallback:
+5. Reconcile the exact terminal plan and run every selected gate. At critical,
+   campaign, release, or explicit rollback boundaries, run and record:
    - `git diff --check`
    - markdown/doc lint for touched docs
    - focused tests for the touched module/crate

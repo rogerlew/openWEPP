@@ -69,12 +69,7 @@ openWEPP is the Rust simulation engine. openWEPP owns its architecture and scien
   escalation. Every package must declare implementation intent before edits
   (in `package.md` during transition, then as a machine intent plan after
   cutover) and reconcile the exact terminal diff before disposition.
-- Until the repository-owned planner/executor completes shadow acceptance and
-  blocking cutover, Rust implementation packages use the existing conservative
-  fallback: `cargo fmt --check`, workspace Clippy with warnings denied, full
-  workspace Nextest, cargo-deny, and fresh global adjudicated CRAP. This is
-  transition behavior, not a competing frequency authority.
-- After cutover, execute every increment gate selected by the authenticated
+- Execute every increment gate selected by the authenticated
   terminal plan. Critical changes still require immediate campaign-strength
   full regression and global CRAP. Campaign closure and release qualification
   retain exact-head full-workspace and global-quality obligations.

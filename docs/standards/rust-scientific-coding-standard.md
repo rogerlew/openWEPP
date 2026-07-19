@@ -346,16 +346,8 @@ changes select cargo-deny. Critical changes, campaign closure, and release
 select full workspace regression, full doctests, cargo-deny, and global
 adjudicated CRAP.
 
-Until the planner/executor and receipt path complete governed cutover, use the
-existing conservative full command set as the implementation fallback:
-
-1. `cargo fmt --check`
-2. `cargo clippy --workspace --all-targets -- -D warnings -D clippy::todo -D clippy::unimplemented`
-3. `rg -n --glob '!target' 'todo!\(|unimplemented!\(|panic!\(.*(TODO|todo|stub|not implemented)|unreachable!\(.*(TODO|todo|stub|not implemented)' crates src`
-4. `cargo nextest run --workspace --profile full`
-5. `cargo test --doc`
-6. `cargo deny check`
-7. `bash tools/release/run_adjudicated_crap_gate.sh --base-ref <frozen-base>`
+The conservative full command set is reserved for critical, campaign, release,
+or explicit rollback plans. It is not an implementation-package default.
 
 ### 7.3 Scientific-model verification requirements
 

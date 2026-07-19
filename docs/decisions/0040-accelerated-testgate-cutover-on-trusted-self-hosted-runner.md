@@ -59,8 +59,14 @@ the desktop host.
    repository permissions, no host secrets, no privileged container socket,
    and no access to unrelated homelab data.
 5. Remove the daily shadow schedule and repeated per-job tool installation.
-   Bootstrap the locked dependency set before any offline planner operation,
-   preserve a persistent tool/dependency cache, and prove one cold-cache job.
+   Bake the reviewed, pinned toolchain into an immutable runner image. Bootstrap
+   the locked dependency set before any offline planner operation, reuse it only
+   within that job, purge all writable surfaces afterward, and prove one cold
+   writable-surface job.
+   Receipt authentication uses a tokenless hosted verification job that
+   independently reconstructs selection and exact Nextest/A3 inventory, then a
+   separate minimal OIDC-enabled aggregate that runs no candidate code before
+   minting and verifying the native attestation.
 6. Cutover occurs immediately after all of these event gates pass on one exact
    candidate commit:
    - the labeled runner is online and completes a confined end-to-end job;

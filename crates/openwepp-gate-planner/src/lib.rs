@@ -10,6 +10,7 @@
 mod assurance;
 pub mod canonical;
 pub mod error;
+mod execution_context;
 pub mod executor;
 pub mod ledger;
 pub mod planner;

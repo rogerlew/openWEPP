@@ -64,8 +64,8 @@ requirement, not optional package style guidance.
   plan assigned its owner, trigger, rationale, and later boundary in the
   campaign ledger. A terminal discovery cannot be retroactively deferred.
 - Require pre-implementation intent planning and exact-diff terminal
-  reconciliation when the mechanical planner is available. Until cutover,
-  declare the conservative fallback gates explicitly.
+  reconciliation. Declare the conservative full path only for critical,
+  campaign, release, or explicit rollback boundaries.
 - For DC-ExecPlans, encode the Correction Authority Envelope, conversion rule,
   seven-gate bar, `HOLD`-legitimacy boundaries, required hold legitimacy audit,
   and defect-shaped handoff.

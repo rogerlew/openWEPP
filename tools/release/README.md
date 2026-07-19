@@ -15,7 +15,7 @@ in the sealed acquisition provenance.
   - Collects fresh full-workspace LCOV and `cargo-crap` JSON by default, or
     assesses an explicitly supplied retained CRAP artifact.
   - `--scope affected --package <name>... --nextest-profile affected
-    --base-ref <ref>` is the shadow increment path. Repeated packages are the
+    --base-ref <ref>` is the bounded increment path. Repeated packages are the
     terminal plan's exact affected/reverse-dependent closure. One instrumented
     Nextest run emits JUnit and LCOV, then CRAP is evaluated for that package
     set. The mode is fresh-only and cannot substitute for global critical,
@@ -148,7 +148,7 @@ bash tools/release/run_adjudicated_crap_gate.sh \
   --output-dir <package-artifacts>/adjudicated-crap
 ```
 
-For planner-selected bounded-package feedback during shadow observation:
+For planner-selected bounded-package increment closure:
 
 ```bash
 bash tools/release/run_adjudicated_crap_gate.sh \

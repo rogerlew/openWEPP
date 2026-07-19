@@ -38,11 +38,12 @@ count scorecard remains active.
 - [x] (2026-07-18) Provisioned and registered the isolated `omarchy` runner and
   recorded capacity,
   labels, permissions, service health, and security boundaries.
-- [ ] Route trusted TESTGATE jobs to `omarchy`, fix cold-cache bootstrap, remove
-  the daily schedule, and keep untrusted public PR code off the runner.
-- [ ] Run affected CRAP after implementation, patch every actionable row, and
-  run global CRAP once on the exact cutover candidate.
-- [ ] Complete two independent reviews including one adversarial security and
+- [x] (2026-07-18) Implement trusted TESTGATE routing to `omarchy`, locked
+  bootstrap, hosted attestation verification, schedule removal, and public-PR
+  exclusion while keeping the provider workflow disabled until acceptance.
+- [x] (2026-07-18) Run affected CRAP after implementation and patch every
+  actionable row; the exact provider candidate owns the one global CRAP run.
+- [x] (2026-07-18) Complete two independent reviews including one adversarial security and
   test-selection review; patch every accepted finding and rerun only affected
   focused gates.
 - [ ] Pass the event-driven acceptance matrix and one conservative full-suite
@@ -143,8 +144,9 @@ amendment.
 
 1. An idempotent `omarchy` runner setup guide or script that creates a supported
    isolated Linux guest, dedicated account, repository-scoped registration,
-   pinned labels, automatic runner updates, service management, cache/storage
-   limits, health inspection, and clean removal without storing credentials.
+   pinned labels, reviewed image-based runner updates, service management,
+   cache/storage limits, health inspection, and clean removal without storing
+   registration tokens or repository personal-access tokens.
 2. A capacity and security receipt recording CPU, memory, disk, guest OS,
    runner version, labels, outbound connectivity, permissions, forbidden host
    access, and GitHub-visible online/idle state.
@@ -153,9 +155,9 @@ amendment.
    no self-hosted public-PR path, concurrency one for the NUC, bounded timeouts,
    and manual conservative fallback.
 4. A deterministic bootstrap that installs or verifies pinned tools once,
-   fetches the locked dependency graph before offline metadata, uses a warm
-   cache for normal jobs, and proves a cold-cache execution without source-tree
-   pollution.
+   fetches the locked dependency graph before offline metadata, reuses that
+   same-job cache for execution, and proves a cold writable-surface execution
+   without source-tree pollution or cross-job executable state.
 5. Current affected and global CRAP evidence after implementation, with every
    actionable row corrected and no broad rerun between accepted evidence and
    cutover.
@@ -189,7 +191,7 @@ cannot restart timed observation.
 
 Inspect the NUC without changing it, then create the smallest supported
 Ubuntu/Debian guest that can use the available CPU, memory, and SSD. Create a
-dedicated runner account and repository-scoped runner with automatic updates
+dedicated runner account and repository-scoped runner with reviewed image-based updates
 and exact labels. Keep the guest disposable and isolated from host homes,
 credentials, Docker sockets, and homelab data. Install the runner as a service,
 verify outbound GitHub connectivity, and record online/idle state through the
@@ -207,8 +209,9 @@ dispatch only. Route all substantive jobs and their aggregate to the exact
 `cargo install` work from ordinary jobs. Provision pinned tools once and add an
 explicit locked dependency fetch before the planner's offline Cargo metadata.
 
-Exercise one empty-cache job and one warm-cache job. Both must produce valid
-plans and receipts in external artifact roots. A public pull-request event must
+Exercise one empty-cache job whose build reuses the dependencies fetched by its
+bootstrap step. It must produce valid plans and receipts in an external
+artifact root, then purge writable job state. A public pull-request event must
 be statically and dynamically proven unable to select the self-hosted runner.
 
 ### Phase 3: CRAP Cleanup
@@ -306,6 +309,11 @@ calendar observation or broad testing on every ordinary increment.
   GitHub-hosted Linux execution for public repositories is free, while also
   warning that persistent self-hosted runners should not execute untrusted
   public-repository pull-request code.
+- The first adversarial reviews correctly found unauthenticated local receipt
+  promotion, post-hoc intent authorization, co-located/weakened rollback,
+  documentation false escalation, missing executable authority classes, and a
+  job-writable persistent runner control plane. Cutover remained disabled while
+  these findings entered the patch loop.
 
 ## Decision Log
 
@@ -349,6 +357,57 @@ calendar observation or broad testing on every ordinary increment.
   Rationale: an authorization dry check found that `testgate_ci_*` does not
   match the separately named schema/authority contract. The workflow remained
   disabled while this correction was published.
+  Date/Author: 2026-07-18 / Codex.
+- Decision: grant `id-token: write` and `attestations: write` only to the normal
+  TESTGATE workflow so `actions/attest` can bind the exact unsigned receipt and
+  custom predicate to GitHub's repository/workflow identity.
+  Rationale: the executor truthfully emits `LOCAL_UNTRUSTED`; normal increment
+  authority requires a separately verifiable repository-reviewed envelope.
+  Checkout credentials remain disabled and contents remain read-only.
+  Date/Author: 2026-07-18 / Codex.
+- Decision: make runner registration state and the container root filesystem
+  read-only during jobs, use size-bounded tmpfs writable surfaces, purge them
+  after every job, and disable in-place runner updates.
+  Rationale: trusted-main dependencies must not be able to replace the runner
+  control plane or poison later jobs. A reviewed image revision is the runner
+  update mechanism; cross-job warm executable caches are intentionally traded
+  away for persistence safety.
+  Date/Author: 2026-07-18 / Codex.
+- Decision: separate substantive execution from authority minting.
+  Rationale: the self-hosted job has contents-read permission only. A tokenless
+  GitHub-hosted verification job independently reconstructs selection and
+  Nextest/A3 inventory, validates the receipt and predicate, and uploads the
+  verified immutable evidence. A separate minimal hosted aggregate receives
+  OIDC/attestation authority, runs no candidate checkout, build, or Python,
+  mints the native attestation, and verifies repository, workflow, source ref,
+  source digest, predicate type, and hosted signer identity.
+  Date/Author: 2026-07-18 / Codex.
+- Decision: admit explicit A0, hard-invariant A1, and inventory-backed A3
+  adapters; the broad workspace suite does not claim A1.
+  Rationale: science-contract admission, hard-invariant mapping, broad
+  regression, and required external authority have distinct meanings. A0
+  blocks a changed science surface without an executable hard-fail A1 binding,
+  validates every declared applicable A3 mapping, and admits empty A3 mappings
+  only when the authority registry has no applicable suite. Generic successful
+  processes cannot manufacture scientific conformance.
+  Date/Author: 2026-07-18 / Codex.
+- Decision: use the pre-edit `package.md` as the prospective intent authority
+  for this transition, then materialize and reconcile machine intent/terminal
+  plans against its exact base-commit digest at execution.
+  Rationale: root `AGENTS.md` explicitly authorizes `package.md` intent during
+  transition. The base package existed and authorized the complete write set
+  before implementation; the machine record does not retroactively expand it.
+  Date/Author: 2026-07-18 / Codex.
+- Decision: retain the planner, executor, and verifier files in the 2,000-line
+  warning band for this cutover, while extracting execution-environment
+  projection from `planner.rs` so every non-generated file remains below the
+  3,000-line hard ceiling.
+  Rationale: each remaining file is one versioned wire-contract state machine;
+  splitting those state transitions during terminal acceptance would increase
+  review risk. The new `execution_context.rs` boundary removes a coherent
+  responsibility and leaves `planner.rs` at 2,961 lines, `executor.rs` at
+  2,493, and `verifier.rs` at 2,484. Further decomposition belongs to a later
+  authorized refactor, not this cutover.
   Date/Author: 2026-07-18 / Codex.
 
 ## Outcomes & Retrospective

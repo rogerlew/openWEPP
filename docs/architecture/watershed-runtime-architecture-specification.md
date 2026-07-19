@@ -750,8 +750,8 @@ Before this document becomes binding architecture authority:
 7. A W5 deletion package removes the old watershed runtime from production or
    records the exact blocker that prevents deletion.
 8. W2-W5 packages run or explicitly hold on the accepted terminal plan, using
-   the full Rust closure loop at critical/campaign/release boundaries and as the
-   conservative pre-cutover fallback.
+   the full Rust closure loop at critical/campaign/release and explicit
+   rollback boundaries.
 9. Work-package evidence confirms no production source changes were made merely
    to fit the benchmark harness.
 10. `docs/ROADMAP.md` carries the active watershed runtime planning queue until

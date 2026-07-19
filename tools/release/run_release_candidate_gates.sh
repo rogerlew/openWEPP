@@ -13,6 +13,7 @@ Usage:
     [--v2-assurance-release-commit <sha>] \
     [--v2-assurance-release-configuration <id>] \
     [--skip-stability] \
+    [--authority-only] \
     [--skip-authority-required] \
     [--run-authority-periodic] \
     [--run-authority-manual] \
@@ -37,6 +38,8 @@ cannot create assurance snapshots, release binaries, sidecars, or release-
 candidate artifacts. Release mode explicitly enables assembly after assurance
 transition preflight. Use --skip-stability to omit the release stability gate.
 Required authority lane runs by default; periodic/manual lanes are opt-in.
+Authority-only is valid only with validation mode and runs fixture integrity
+plus the required external-authority lanes without repeating workspace gates.
 USAGE
 }
 
@@ -50,6 +53,7 @@ RELEASE_TAG="$(date -u +%y%m%d)ci"
 RELEASE_DIR=""
 MODE=""
 SKIP_STABILITY=0
+AUTHORITY_ONLY=0
 SKIP_AUTHORITY_REQUIRED=0
 RUN_AUTHORITY_PERIODIC=0
 RUN_AUTHORITY_MANUAL=0
@@ -108,6 +112,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --skip-stability)
       SKIP_STABILITY=1
+      shift
+      ;;
+    --authority-only)
+      AUTHORITY_ONLY=1
       shift
       ;;
     --skip-authority-required)
@@ -198,6 +206,10 @@ if [[ "${MODE}" != "validate" && "${MODE}" != "release" ]]; then
   echo "ERROR: --mode must be exactly 'validate' or 'release'." >&2
   exit 2
 fi
+if [[ "${AUTHORITY_ONLY}" -eq 1 && "${MODE}" != "validate" ]]; then
+  echo "ERROR: --authority-only requires --mode validate." >&2
+  exit 2
+fi
 
 # This preflight runs before creating an evidence/release directory. In release
 # mode it is the fail-closed ASSURE03-REL-001/ASSURE-04D assembly boundary.
@@ -250,8 +262,13 @@ if [[ -z "${HILLSTAB_OUTPUT_JSON}" ]]; then
 fi
 
 if [[ -z "${AUTHORITY_REPORT}" ]]; then
-  AUTHORITY_REPORT="${RELEASE_DIR}/authority_suite_results.md"
+  if [[ "${AUTHORITY_ONLY}" -eq 1 && -n "${OPENWEPP_GATE_ARTIFACT_ROOT:-}" ]]; then
+    AUTHORITY_REPORT="${OPENWEPP_GATE_ARTIFACT_ROOT}/target/gate-plan/required-authority-report.md"
+  else
+    AUTHORITY_REPORT="${RELEASE_DIR}/authority_suite_results.md"
+  fi
 fi
+mkdir -p "$(dirname "${AUTHORITY_REPORT}")"
 
 authority_lane_rows() {
   local lane="$1"
@@ -552,22 +569,26 @@ run_authority_lane() {
 
 cd "${ROOT_DIR}"
 
-echo "INFO: checking scientific assurance zero-report exports"
-bash tools/release/check_assurance_dossier_exports.sh
+if [[ "${AUTHORITY_ONLY}" -eq 0 ]]; then
+  echo "INFO: checking scientific assurance zero-report exports"
+  bash tools/release/check_assurance_dossier_exports.sh
 
-echo "INFO: running workspace release gates"
-cargo nextest --version > "${RELEASE_DIR}/cargo-nextest-version.txt"
-cargo fmt --check
-cargo clippy --workspace --all-targets -- -D warnings
-cargo nextest run --workspace --profile full
-cargo deny check
-.venv/bin/python -m unittest -v tests.python.test_adjudicated_crap_gate
+  echo "INFO: running workspace release gates"
+  cargo nextest --version > "${RELEASE_DIR}/cargo-nextest-version.txt"
+  cargo fmt --check
+  cargo clippy --workspace --all-targets -- -D warnings
+  cargo nextest run --workspace --profile full
+  cargo deny check
+  .venv/bin/python -m unittest -v tests.python.test_adjudicated_crap_gate
 
-CRAP_GATE_ARGS=(--output-dir "${RELEASE_DIR}/adjudicated-crap")
-if [[ -n "${CRAP_BASE_REF}" ]]; then
-  CRAP_GATE_ARGS+=(--base-ref "${CRAP_BASE_REF}")
+  CRAP_GATE_ARGS=(--output-dir "${RELEASE_DIR}/adjudicated-crap")
+  if [[ -n "${CRAP_BASE_REF}" ]]; then
+    CRAP_GATE_ARGS+=(--base-ref "${CRAP_BASE_REF}")
+  fi
+  bash tools/release/run_adjudicated_crap_gate.sh "${CRAP_GATE_ARGS[@]}"
+else
+  echo "INFO: authority-only mode skips workspace and CRAP gates"
 fi
-bash tools/release/run_adjudicated_crap_gate.sh "${CRAP_GATE_ARGS[@]}"
 
 ASSURANCE_SNAPSHOT_MANIFEST=""
 if [[ "${MODE}" == "release" ]]; then

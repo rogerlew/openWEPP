@@ -752,6 +752,22 @@ unauthenticated receipt alone. A locator is storage metadata outside the
 receipt identity. Missing, mismatched, recursive, or multiply inconsistent
 envelopes are `INVALID`.
 
+For normal GitHub increment execution, a native GitHub artifact-attestation
+bundle is the repository-reviewed envelope when all of these checks pass: its
+subject is the exact `receipt.json` bytes; its custom predicate type is
+`https://openwepp.org/attestations/testgate/v1`; the predicate repeats the
+receipt digest, plan/execution identity, base/head, and pre-edit package
+authorization digest; and verification constrains repository, source ref,
+source digest, and the pinned TESTGATE workflow identity. The unsigned receipt
+truthfully remains `LOCAL_UNTRUSTED`; only the verified bundle plus receipt is
+`REPOSITORY_REVIEWED`. Merely uploading either file cannot upgrade trust.
+Candidate checkout, builds, intent reconciliation, plan reconstruction, and
+independent Nextest/A3 inventory enumeration run in a tokenless hosted
+verification job. The OIDC/attestation-enabled aggregate consumes only that
+job's immutable artifact, runs no candidate code, fails closed unless execution
+and verification both succeeded, and performs the minimal subject recheck,
+attestation, and native verification sequence.
+
 Release-eligible envelopes carry an offline-verifiable attestation bundle that
 binds repository, source commit/ref, workflow and job revision, runner/image,
 attempt, plan/execution key, subjects, and artifact digests. The authority
@@ -1373,8 +1389,9 @@ provider interval. Acceptance on one exact candidate requires:
   unknown-impact, and failure-injection acceptance matrix;
 - zero unsafe receipt reuse, missing executor jobs, unexplained inventory
   mismatches, or unresolved production/authority mappings;
-- one cold-cache bootstrap followed by deterministic offline plan/root/receipt
-  execution and one normal warm-cache execution on the trusted runner;
+- one cold writable-surface bootstrap followed by same-job cached build and
+  deterministic plan/root/receipt execution on the trusted runner; writable
+  work, target, and dependency surfaces are destroyed after every job;
 - current affected and global CRAP with zero actionable rows after accepted
   patches;
 - every adversarial and independent review finding dispositioned, with accepted
@@ -1401,8 +1418,8 @@ operand. After acceptance, the accepted TESTGATE aggregate becomes normal
 increment authority immediately and the broad runner remains available only
 for critical, campaign, release, or explicit rollback boundaries.
 
-Until that package closes, current automation may be more conservative and more
-expensive than this standard. It may not be described as already aligned.
+Cutover is recorded only after the exact-candidate acceptance and terminal
+verification artifacts pass. No elapsed-time or increment-count gate applies.
 
 ## 20. References
 

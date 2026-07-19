@@ -1,26 +1,13 @@
-name: testgate-shadow
+name: testgate
 
 on:
-  pull_request:
   push:
     branches:
       - main
-  schedule:
-    - cron: "17 8 * * *"
   workflow_dispatch:
     inputs:
-      boundary:
-        description: "Shadow lifecycle boundary"
-        required: true
-        default: INCREMENT
-        type: choice
-        options:
-          - INCREMENT
-          - CHECKPOINT
-          - CAMPAIGN
-          - RELEASE
       base_ref:
-        description: "Comparison base (blank uses event-derived base)"
+        description: "Comparison base (blank uses the commit parent)"
         required: false
         default: ""
         type: string
@@ -29,245 +16,306 @@ permissions:
   contents: read
 
 concurrency:
-  group: testgate-shadow-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: openwepp-omarchy-testgate
+  cancel-in-progress: false
 
 jobs:
-  shadow-presubmit:
-    if: ${{ github.event_name == 'pull_request' }}
-    runs-on: ubuntu-latest
+  execute-increment:
+    name: openwepp/execute-increment
+    runs-on: [self-hosted, Linux, X64, openwepp, omarchy, trusted]
+    timeout-minutes: 120
+    permissions:
+      contents: read
+    env:
+      OPENWEPP_RUNNER_IMAGE_ID: sha256:8bd3a534015517ec14912ad8c06eda59586e39829c5f7037cc1912fe94912c9a
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
-          ref: ${{ github.event.pull_request.head.sha }}
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - uses: Swatinem/rust-cache@v2
-      - name: Install shadow gate tools
-        run: |
-          cargo install cargo-nextest --locked --version 0.9.138
-          cargo install cargo-deny --locked
-          cargo install cargo-llvm-cov --locked --version 0.8.7
-          cargo install cargo-crap --locked --version 0.2.2
-          python -m venv .venv
-      - name: Build planner and executor
-        run: cargo build -p openwepp-gate-planner --bin openwepp-gate-plan
-      - name: Plan and execute nonblocking presubmit shadow
-        run: |
-          evidence_dir="${RUNNER_TEMP}/testgate-shadow-presubmit-${GITHUB_RUN_ID}"
-          python tools/local_ci/testgate_shadow.py \
-            --binary target/debug/openwepp-gate-plan \
-            --base "${{ github.event.pull_request.base.sha }}" \
-            --head "${{ github.event.pull_request.head.sha }}" \
-            --artifact-root "${evidence_dir}" \
-            --job shadow-presubmit \
-            --execute
-      - name: Upload presubmit observation
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: testgate-shadow-presubmit-${{ github.run_id }}
-          path: ${{ runner.temp }}/testgate-shadow-presubmit-${{ github.run_id }}
-          if-no-files-found: error
-
-  shadow-backstop:
-    if: ${{ github.event_name == 'push' || github.event_name == 'schedule' }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - uses: Swatinem/rust-cache@v2
-      - name: Install shadow gate tools
-        run: |
-          cargo install cargo-nextest --locked --version 0.9.138
-          cargo install cargo-deny --locked
-          cargo install cargo-llvm-cov --locked --version 0.8.7
-          cargo install cargo-crap --locked --version 0.2.2
-          python -m venv .venv
-      - name: Build planner and executor
-        run: cargo build -p openwepp-gate-planner --bin openwepp-gate-plan
-      - name: Plan and execute nonblocking backstop shadow
+          persist-credentials: false
+      - name: Admit trusted main comparison
+        id: comparison
         env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_REF: ${{ github.ref }}
           EVENT_BEFORE: ${{ github.event.before }}
+          INPUT_BASE: ${{ inputs.base_ref }}
         run: |
-          base_ref="${EVENT_BEFORE}"
-          if [[ "${{ github.event_name }}" == "schedule" || -z "${base_ref}" || "${base_ref}" =~ ^0+$ ]]; then
-            base_ref="HEAD^"
+          set -euo pipefail
+          git fetch --no-tags origin main
+          [[ "${EVENT_REF}" == "refs/heads/main" ]]
+          git merge-base --is-ancestor "${GITHUB_SHA}" refs/remotes/origin/main
+          base_ref="${INPUT_BASE}"
+          if [[ "${EVENT_NAME}" == "push" ]]; then
+            base_ref="${EVENT_BEFORE}"
           fi
-          evidence_dir="${RUNNER_TEMP}/testgate-shadow-backstop-${GITHUB_RUN_ID}"
-          python tools/local_ci/testgate_shadow.py \
-            --binary target/debug/openwepp-gate-plan \
-            --base "${base_ref}" \
-            --artifact-root "${evidence_dir}" \
-            --job shadow-backstop \
-            --execute
-      - name: Upload backstop observation
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: testgate-shadow-backstop-${{ github.run_id }}
-          path: ${{ runner.temp }}/testgate-shadow-backstop-${{ github.run_id }}
-          if-no-files-found: error
-
-  shadow-dispatch:
-    if: ${{ github.event_name == 'workflow_dispatch' && (inputs.boundary == 'INCREMENT' || inputs.boundary == 'CHECKPOINT') }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - uses: Swatinem/rust-cache@v2
-      - name: Install shadow gate tools
+          if [[ -z "${base_ref}" || "${base_ref}" =~ ^0+$ ]]; then
+            base_ref="${GITHUB_SHA}^"
+          fi
+          base_commit="$(git rev-parse --verify --end-of-options "${base_ref}^{commit}")"
+          head_commit="$(git rev-parse --verify --end-of-options "${GITHUB_SHA}^{commit}")"
+          git merge-base --is-ancestor "${base_commit}" "${head_commit}"
+          [[ "${base_commit}" != "${head_commit}" ]]
+          {
+            echo "base=${base_commit}"
+            echo "head=${head_commit}"
+          } >> "${GITHUB_OUTPUT}"
+      - name: Verify pinned gate toolchain
         run: |
-          cargo install cargo-nextest --locked --version 0.9.138
-          cargo install cargo-deny --locked
-          cargo install cargo-llvm-cov --locked --version 0.8.7
-          cargo install cargo-crap --locked --version 0.2.2
-          python -m venv .venv
+          set -euo pipefail
+          rustc --version | grep -F 'rustc 1.92.0'
+          cargo nextest --version | grep -F 'cargo-nextest 0.9.138'
+          cargo deny --version | grep -F 'cargo-deny 0.19.6'
+          cargo llvm-cov --version | grep -F 'cargo-llvm-cov 0.8.7'
+          cargo crap --version | grep -F 'cargo-crap 0.2.2'
+          markdown-doc --version
+          python3 -m venv --help >/dev/null
+      - name: Bootstrap locked base and head dependencies
+        run: >-
+          bash tools/ci/omarchy-runner/bootstrap_dependencies.sh
+          "${{ steps.comparison.outputs.base }}"
+          "${{ steps.comparison.outputs.head }}"
       - name: Build planner and executor
-        run: cargo build -p openwepp-gate-planner --bin openwepp-gate-plan
-      - name: Plan and execute requested increment/checkpoint shadow
+        run: cargo build --locked -p openwepp-gate-planner --bin openwepp-gate-plan
+      - name: Execute content-verifiable increment gates
+        id: testgate
         run: |
-          base_ref="${{ inputs.base_ref }}"
-          if [[ -z "${base_ref}" ]]; then
-            base_ref="HEAD^"
-          fi
-          evidence_dir="${RUNNER_TEMP}/testgate-shadow-dispatch-${GITHUB_RUN_ID}"
-          python tools/local_ci/testgate_shadow.py \
-            --binary target/debug/openwepp-gate-plan \
-            --base "${base_ref}" \
-            --boundary "${{ inputs.boundary }}" \
+          set -euo pipefail
+          evidence_dir="${RUNNER_TEMP}/testgate-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          python3 tools/local_ci/testgate.py \
+            --binary "${CARGO_TARGET_DIR}/debug/openwepp-gate-plan" \
+            --base "${{ steps.comparison.outputs.base }}" \
+            --head "${{ steps.comparison.outputs.head }}" \
+            --boundary INCREMENT \
             --artifact-root "${evidence_dir}" \
-            --job shadow-dispatch \
+            --job openwepp/execute-increment \
             --execute
-      - name: Upload dispatch observation
+          echo "evidence_dir=${evidence_dir}" >> "${GITHUB_OUTPUT}"
+      - name: Upload unsigned execution evidence
         if: ${{ always() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: testgate-shadow-dispatch-${{ github.run_id }}
-          path: ${{ runner.temp }}/testgate-shadow-dispatch-${{ github.run_id }}
+          name: testgate-unsigned-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/testgate-${{ github.run_id }}-${{ github.run_attempt }}
           if-no-files-found: error
+          retention-days: 7
 
-  shadow-campaign:
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.boundary == 'CAMPAIGN' }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - uses: Swatinem/rust-cache@v2
-      - name: Install shadow gate tools
-        run: |
-          cargo install cargo-nextest --locked --version 0.9.138
-          cargo install cargo-deny --locked
-          cargo install cargo-llvm-cov --locked --version 0.8.7
-          cargo install cargo-crap --locked --version 0.2.2
-          python -m venv .venv
-      - name: Build planner and executor
-        run: cargo build -p openwepp-gate-planner --bin openwepp-gate-plan
-      - name: Plan and execute requested lifecycle shadow
-        run: |
-          base_ref="${{ inputs.base_ref }}"
-          if [[ -z "${base_ref}" ]]; then
-            base_ref="HEAD^"
-          fi
-          evidence_dir="${RUNNER_TEMP}/testgate-shadow-lifecycle-${GITHUB_RUN_ID}"
-          python tools/local_ci/testgate_shadow.py \
-            --binary target/debug/openwepp-gate-plan \
-            --base "${base_ref}" \
-            --boundary "${{ inputs.boundary }}" \
-            --artifact-root "${evidence_dir}" \
-            --job shadow-campaign \
-            --execute
-      - name: Upload lifecycle observation
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: testgate-shadow-campaign-${{ github.run_id }}
-          path: ${{ runner.temp }}/testgate-shadow-lifecycle-${{ github.run_id }}
-          if-no-files-found: error
-
-  shadow-release:
-    if: ${{ github.event_name == 'workflow_dispatch' && inputs.boundary == 'RELEASE' }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - uses: Swatinem/rust-cache@v2
-      - name: Install shadow gate tools
-        run: |
-          cargo install cargo-nextest --locked --version 0.9.138
-          cargo install cargo-deny --locked
-          cargo install cargo-llvm-cov --locked --version 0.8.7
-          cargo install cargo-crap --locked --version 0.2.2
-          python -m venv .venv
-      - name: Build planner and executor
-        run: cargo build -p openwepp-gate-planner --bin openwepp-gate-plan
-      - name: Plan and execute release shadow
-        run: |
-          base_ref="${{ inputs.base_ref }}"
-          if [[ -z "${base_ref}" ]]; then
-            base_ref="HEAD^"
-          fi
-          evidence_dir="${RUNNER_TEMP}/testgate-shadow-release-${GITHUB_RUN_ID}"
-          python tools/local_ci/testgate_shadow.py \
-            --binary target/debug/openwepp-gate-plan \
-            --base "${base_ref}" \
-            --boundary RELEASE \
-            --artifact-root "${evidence_dir}" \
-            --job shadow-release \
-            --execute
-      - name: Upload release observation
-        if: ${{ always() }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: testgate-shadow-release-${{ github.run_id }}
-          path: ${{ runner.temp }}/testgate-shadow-release-${{ github.run_id }}
-          if-no-files-found: error
-
-  testgate-shadow-observation:
+  verify-increment:
+    name: openwepp/verify-increment
+    needs: execute-increment
     if: ${{ always() }}
-    needs:
-      - shadow-presubmit
-      - shadow-backstop
-      - shadow-dispatch
-      - shadow-campaign
-      - shadow-release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
     steps:
-      - name: Publish stable nonblocking aggregate
+      - name: Fail closed when execution did not succeed
         env:
-          PRESUBMIT_RESULT: ${{ needs.shadow-presubmit.result }}
-          BACKSTOP_RESULT: ${{ needs.shadow-backstop.result }}
-          DISPATCH_RESULT: ${{ needs.shadow-dispatch.result }}
-          CAMPAIGN_RESULT: ${{ needs.shadow-campaign.result }}
-          RELEASE_RESULT: ${{ needs.shadow-release.result }}
+          EXECUTION_RESULT: ${{ needs.execute-increment.result }}
+        run: test "${EXECUTION_RESULT}" = success
+      - name: Download unsigned execution evidence
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: testgate-unsigned-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/testgate-evidence
+      - name: Checkout exact source for independent verification
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Independently admit comparison base
+        id: verification-comparison
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_REF: ${{ github.ref }}
+          EVENT_BEFORE: ${{ github.event.before }}
+          INPUT_BASE: ${{ inputs.base_ref }}
         run: |
-          echo "TESTGATE shadow is observational and not a cutover context."
-          echo "presubmit=${PRESUBMIT_RESULT} backstop=${BACKSTOP_RESULT} dispatch=${DISPATCH_RESULT} campaign=${CAMPAIGN_RESULT} release=${RELEASE_RESULT}"
-          for result in "${PRESUBMIT_RESULT}" "${BACKSTOP_RESULT}" "${DISPATCH_RESULT}" "${CAMPAIGN_RESULT}" "${RELEASE_RESULT}"; do
-            if [[ "${result}" == "failure" || "${result}" == "cancelled" ]]; then
-              exit 1
-            fi
-          done
+          set -euo pipefail
+          git fetch --no-tags origin main
+          [[ "${EVENT_REF}" == "refs/heads/main" ]]
+          git merge-base --is-ancestor "${GITHUB_SHA}" refs/remotes/origin/main
+          base_ref="${INPUT_BASE}"
+          if [[ "${EVENT_NAME}" == "push" ]]; then
+            base_ref="${EVENT_BEFORE}"
+          fi
+          if [[ -z "${base_ref}" || "${base_ref}" =~ ^0+$ ]]; then
+            base_ref="${GITHUB_SHA}^"
+          fi
+          base_commit="$(git rev-parse --verify --end-of-options "${base_ref}^{commit}")"
+          git merge-base --is-ancestor "${base_commit}" "${GITHUB_SHA}"
+          [[ "${base_commit}" != "${GITHUB_SHA}" ]]
+          echo "base=${base_commit}" >> "${GITHUB_OUTPUT}"
+      - name: Install pinned inventory enumerator
+        uses: taiki-e/install-action@07b4745e0c39a41822af610387492e3e53aa222b
+        with:
+          tool: cargo-nextest@0.9.138
+      - name: Build immutable-envelope verifier
+        run: |
+          cargo fetch --locked
+          cargo build --locked -p openwepp-gate-planner --bin openwepp-gate-plan
+      - name: Validate receipt and predicate bindings
+        env:
+          EVIDENCE_DIR: ${{ runner.temp }}/testgate-evidence
+          EXPECTED_IMAGE: sha256:8bd3a534015517ec14912ad8c06eda59586e39829c5f7037cc1912fe94912c9a
+          EXPECTED_BASE: ${{ steps.verification-comparison.outputs.base }}
+        run: |
+          set -euo pipefail
+          receipt_sha="$(sha256sum "${EVIDENCE_DIR}/receipt.json" | cut -d' ' -f1)"
+          jq -e \
+            --arg receipt_sha "${receipt_sha}" \
+            --arg repository "${GITHUB_REPOSITORY}" \
+            --arg source_ref "${GITHUB_REF}" \
+            --arg base "${EXPECTED_BASE}" \
+            --arg head "${GITHUB_SHA}" \
+            --arg image "${EXPECTED_IMAGE}" \
+            '.schema_version == "openwepp-testgate-attestation-v1"
+             and .receipt_sha256 == $receipt_sha
+             and .receipt_result == "PASS"
+             and .receipt_trust_class == "LOCAL_UNTRUSTED"
+             and .repository == $repository
+             and .source_ref == $source_ref
+             and .base_commit == $base
+             and .head_commit == $head
+             and .workflow == "testgate"
+             and .job == "openwepp/execute-increment"
+             and .runner_image == $image
+             and (.receipt_plan_id | type == "string" and length == 64)
+             and (.receipt_execution_key | type == "string" and length == 64)' \
+            "${EVIDENCE_DIR}/attestation-predicate.json"
+          jq -se \
+            --arg repository "${GITHUB_REPOSITORY}" \
+            --arg source_event "${GITHUB_EVENT_NAME}" \
+            --arg source_ref "${GITHUB_REF}" \
+            --arg head "${GITHUB_SHA}" \
+            '.[0] as $receipt | .[1] as $predicate |
+             $receipt.result == "PASS"
+             and $receipt.claims.trust_class == "LOCAL_UNTRUSTED"
+             and $receipt.claims.repository == $repository
+             and $receipt.claims.source_event == $source_event
+             and $receipt.claims.source_ref == $source_ref
+             and $receipt.claims.workflow == "testgate"
+             and $receipt.claims.job == "openwepp/execute-increment"
+             and $receipt.claims.runner == $predicate.runner
+             and $receipt.environment.runner_image_sha256 == ($predicate.runner_image | sub("^sha256:"; ""))
+             and $receipt.source.base_commit == $predicate.base_commit
+             and $receipt.source.head_commit == $head
+             and $receipt.source.dirty_tree_digest == null
+             and $receipt.plan_id == $predicate.receipt_plan_id
+             and $receipt.execution_key == $predicate.receipt_execution_key
+             and $receipt.result == $predicate.receipt_result' \
+            "${EVIDENCE_DIR}/receipt.json" \
+            "${EVIDENCE_DIR}/attestation-predicate.json"
+          python3 - "${EXPECTED_BASE}" "${GITHUB_SHA}" "${EVIDENCE_DIR}" <<'PY'
+          import json
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          from tools.local_ci.testgate import _intent_authorization
+
+          base, head, evidence_text = sys.argv[1:]
+          evidence = Path(evidence_text)
+          predicate = json.loads((evidence / "attestation-predicate.json").read_text())
+          changed = subprocess.check_output(
+              ["git", "diff", "--name-only", "--diff-filter=ACDMRT", base, head],
+              text=True,
+          ).splitlines()
+          package_path = predicate["intent_authorization"]["package_path"]
+          observed = _intent_authorization(Path.cwd(), base, changed, package_path)
+          if observed != predicate["intent_authorization"]:
+              raise SystemExit("intent authorization differs from base package and event diff")
+          PY
+          target/debug/openwepp-gate-plan verify-receipt-envelope \
+            --repo . \
+            --plan "${EVIDENCE_DIR}/terminal-plan.json" \
+            --receipt "${EVIDENCE_DIR}/receipt.json" \
+            --artifact-root "${EVIDENCE_DIR}/execution" \
+            > "${EVIDENCE_DIR}/envelope-verification.json"
+          jq -e '.result == "PASS" and .trust_class == "LOCAL_UNTRUSTED"' \
+            "${EVIDENCE_DIR}/envelope-verification.json"
+      - name: Upload independently verified evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: testgate-verified-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/testgate-evidence
+          if-no-files-found: error
+          retention-days: 7
+
+  increment-gates:
+    name: openwepp/increment-gates
+    needs: [execute-increment, verify-increment]
+    if: ${{ always() }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - name: Fail closed when required jobs did not succeed
+        env:
+          EXECUTION_RESULT: ${{ needs.execute-increment.result }}
+          VERIFICATION_RESULT: ${{ needs.verify-increment.result }}
+        run: |
+          test "${EXECUTION_RESULT}" = success
+          test "${VERIFICATION_RESULT}" = success
+      - name: Download independently verified evidence
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: testgate-verified-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/testgate-evidence
+      - name: Recheck immutable signing subject
+        env:
+          EVIDENCE_DIR: ${{ runner.temp }}/testgate-evidence
+        run: |
+          set -euo pipefail
+          receipt_sha="$(sha256sum "${EVIDENCE_DIR}/receipt.json" | cut -d' ' -f1)"
+          jq -e \
+            --arg receipt_sha "${receipt_sha}" \
+            --arg repository "${GITHUB_REPOSITORY}" \
+            --arg source_ref "${GITHUB_REF}" \
+            --arg head "${GITHUB_SHA}" \
+            '.receipt_sha256 == $receipt_sha
+             and .receipt_result == "PASS"
+             and .receipt_trust_class == "LOCAL_UNTRUSTED"
+             and .repository == $repository
+             and .source_ref == $source_ref
+             and .head_commit == $head
+             and .workflow == "testgate"
+             and .job == "openwepp/execute-increment"' \
+            "${EVIDENCE_DIR}/attestation-predicate.json"
+          jq -e '.result == "PASS" and .trust_class == "LOCAL_UNTRUSTED"' \
+            "${EVIDENCE_DIR}/envelope-verification.json"
+      - name: Authenticate receipt to repository and workflow identity
+        id: attest
+        uses: actions/attest@f7c74d28b9d84cb8768d0b8ca14a4bac6ef463e6
+        with:
+          subject-path: ${{ runner.temp }}/testgate-evidence/receipt.json
+          predicate-type: https://openwepp.org/attestations/testgate/v1
+          predicate-path: ${{ runner.temp }}/testgate-evidence/attestation-predicate.json
+      - name: Verify native attestation before authority succeeds
+        env:
+          EVIDENCE_DIR: ${{ runner.temp }}/testgate-evidence
+          BUNDLE_PATH: ${{ steps.attest.outputs.bundle-path }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cp -- "${BUNDLE_PATH}" "${EVIDENCE_DIR}/github-attestation.jsonl"
+          gh attestation verify "${EVIDENCE_DIR}/receipt.json" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --signer-workflow "${GITHUB_REPOSITORY}/.github/workflows/testgate-shadow.yml" \
+            --source-ref "${GITHUB_REF}" \
+            --source-digest "${GITHUB_SHA}" \
+            --predicate-type https://openwepp.org/attestations/testgate/v1 \
+            --deny-self-hosted-runners \
+            --bundle "${EVIDENCE_DIR}/github-attestation.jsonl" \
+            --format json > "${EVIDENCE_DIR}/attestation-verification.json"
+          jq -e 'length == 1' "${EVIDENCE_DIR}/attestation-verification.json"
+      - name: Upload authenticated gate evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: testgate-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/testgate-evidence
+          if-no-files-found: error
+          retention-days: 7

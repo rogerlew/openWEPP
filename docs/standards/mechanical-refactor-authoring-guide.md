@@ -136,8 +136,7 @@ Run focused checks after each move, then execute the exact-diff terminal plan
 under `testing-and-gate-strategy.md`. The terminal plan selects formatting,
 affected Clippy/tests/consumers, coverage/CRAP, and any manifest or specialized
 gates. A critical refactor selects immediate full workspace regression and
-global CRAP. Until planner/executor cutover, use the full command set in
-section 6.2 as the conservative fallback.
+global CRAP through the generated terminal plan.
 
 ## 5) Mechanical refactor patterns
 
@@ -183,14 +182,9 @@ Use a narrow loop while moving code:
 ### 6.2 Required terminal gate plan
 
 Before package disposition, run and record every gate in the accepted terminal
-plan. Operators may escalate and may not silently downgrade. During the
-pre-cutover transition, the conservative fallback is:
-
-1. `cargo fmt --check`
-2. `cargo clippy --workspace --all-targets -- -D warnings`
-3. `cargo nextest run --workspace --profile full`
-4. `cargo deny check`
-5. `bash tools/release/run_adjudicated_crap_gate.sh --base-ref <frozen-base>`
+plan. Operators may escalate and may not silently downgrade. Critical,
+campaign, release, and explicit rollback boundaries retain the full workspace
+and global-CRAP closure loop.
 
 Execution rule:
 
@@ -201,7 +195,7 @@ Execution rule:
 3. Any missing selected gate keeps the package in progress unless a declared
    hard blocker has command-level evidence.
 4. Generic guidance to skip validation does not waive a selected gate.
-5. Before mechanical cutover, all five fallback commands above are selected.
+5. Do not add the conservative full command set to an ordinary bounded plan.
 
 Completion rule:
 
@@ -280,6 +274,6 @@ A mechanical refactor package is complete only when:
 5. Review findings are fully dispositioned.
 6. No unresolved invariant or contract violations are left undispositioned.
 7. End-to-end completion is demonstrated: code movement, the selected terminal
-   gates (or the conservative pre-cutover fallback), artifact updates, and
+   gates, artifact updates, and
    disposition-ready review/verification surfaces are all complete (or
    blocker-documented under declared stop conditions).

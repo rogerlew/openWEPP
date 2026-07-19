@@ -151,8 +151,8 @@ fn production_impact_map_is_schema_valid_and_fail_closed() {
         "unknown paths must never silently narrow selection"
     );
     assert_eq!(
-        impact_map["enforcement_status"], "SHADOW",
-        "TESTGATE-PLAN-01 must remain nonblocking"
+        impact_map["enforcement_status"], "BLOCKING",
+        "TESTGATE must be normal increment authority"
     );
     let policy_bytes = fs::read(repo_root().join("docs/standards/testing-and-gate-strategy.md"))
         .expect("read canonical gate strategy");
@@ -181,7 +181,7 @@ fn production_gate_definitions_are_schema_valid_and_registered() {
     validator
         .validate(&registry)
         .expect("production gate definitions must validate");
-    assert_eq!(registry["enforcement_status"], "SHADOW");
+    assert_eq!(registry["enforcement_status"], "BLOCKING");
 
     let definitions = registry["definitions"].as_array().expect("definitions");
     let ids = definitions
@@ -210,6 +210,38 @@ fn production_gate_definitions_are_schema_valid_and_registered() {
             );
         }
     }
+
+    let groundwater = definitions
+        .iter()
+        .find(|definition| definition["gate_definition_id"] == "hard-invariant-groundwater-v1")
+        .expect("groundwater A1 definition");
+    assert_eq!(groundwater["authority_class"], "A1");
+    assert_eq!(groundwater["inventory_source"], "NEXTEST_PACKAGE");
+    assert!(
+        groundwater["arguments_template"]
+            .as_array()
+            .expect("groundwater arguments")
+            .iter()
+            .any(|argument| argument == "openwepp-hillslope-orchestrator")
+    );
+    let groundwater_tests = fs::read_to_string(
+        repo_root()
+            .join("crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/direct_runtime.rs"),
+    )
+    .expect("groundwater producer tests");
+    for invariant in [
+        "gwbaseflow_linear_reservoir_recurrence_uses_prior_day_exports",
+        "gwbaseflow_mofe_recharge_aggregates_lane_deep_percolation",
+        "gwbaseflow_exports_over_accepted_storage_fail_closed",
+    ] {
+        assert!(groundwater_tests.contains(invariant), "missing {invariant}");
+    }
+
+    let admission =
+        fs::read_to_string(repo_root().join("tools/release/check_science_contract_admission.sh"))
+            .expect("science admission gate");
+    assert!(admission.contains("applicable_a3 = sorted("));
+    assert!(admission.contains("sorted(suites) != applicable_a3"));
 }
 
 #[test]
@@ -693,7 +725,7 @@ fn primary_governance_surfaces_delegate_lifecycle_to_adr0039() {
 
     let root = load_text("AGENTS.md");
     let root_normalized = root.split_whitespace().collect::<Vec<_>>().join(" ");
-    assert!(root_normalized.contains("conservative fallback"));
+    assert!(root_normalized.contains("Execute every increment gate selected"));
     assert!(root_normalized.contains("Critical changes still require"));
 
     for (path, forbidden) in [
@@ -742,7 +774,8 @@ fn adr0021_thresholds_and_correctness_authority_remain_protected() {
         assert!(adr.contains(protected), "ADR-0021 lost: {protected}");
     }
     assert!(adr.contains("Execution cadence aligned to ADR-0039"));
-    assert!(adr.contains("conservative global fallback"));
+    assert!(adr.contains("not the default for an ordinary bounded"));
+    assert!(adr.contains("critical change, campaign closure, and release close against the whole"));
 
     let correctness = load_text("docs/specifications/correctness-authority-model.md");
     assert!(correctness.contains("affected A0 admission, A1 hard-invariant, and A3"));

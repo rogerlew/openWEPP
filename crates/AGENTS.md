@@ -44,9 +44,6 @@
 - Execute the exact increment terminal plan selected under
   `docs/standards/testing-and-gate-strategy.md`; critical changes, campaign
   closure, and release retain full-workspace gates and global CRAP.
-- Until the mechanical planner/executor is accepted and cut over, Rust
-  implementation packages retain the conservative full closure loop and fresh
-  global adjudicated CRAP as transition fallback.
 - Use `cargo nextest run --workspace --profile quick` for ordinary local loops and `cargo nextest run --workspace --profile frost` for snow/frost-focused work; fall back to `cargo test` only for libtest-specific behavior or explicitly required legacy harness checks.
 - Contract-derived tests and closure checks for touched state surfaces.
 - Legacy comparator delta review using confidence tiers when migration/parity is in scope.

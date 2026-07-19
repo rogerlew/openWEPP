@@ -9,7 +9,7 @@ accepted intent/terminal plan, science-contract gate, or release gate.
 
 - Match gate cost to change risk.
 - Keep full-suite evidence for critical changes, campaign closure, release,
-  and the conservative transition fallback before planner/executor cutover.
+  and explicit conservative rollback.
 - Do not run the full suite as a reflex after every narrow review-response fix.
 - Record timing for expensive local CI runs so future profile decisions are
   empirical.
@@ -24,7 +24,7 @@ accepted intent/terminal plan, science-contract gate, or release gate.
 | Domain profile | The change touches a known expensive domain | `cargo nextest run --workspace --profile frost` or `cargo nextest run --workspace --profile erosion` |
 | Assurance editorial | The assurance normalizer produced the complete diff for pre-review DRAFT prose | `cargo nextest run --workspace --profile assurance-editorial` |
 | Assurance amendment | A report-data-only transaction produced a current valid `metadata-fast`, `editorial-fast`, or `governance-focused` receipt | `.venv/bin/python tools/local_ci/run_assurance_amendment.py --receipt <path>` |
-| Full/critical | Critical changes, campaign closure, release, or the conservative pre-cutover fallback | `cargo nextest run --workspace --profile full` |
+| Full/critical | Critical changes, campaign closure, release, or explicit rollback | `cargo nextest run --workspace --profile full` |
 | Release/manual | Release candidates, observed cohorts, legacy comparators, stability lanes, or manual authority lanes | `tools/release/*` and explicitly named comparator/cohort commands |
 
 ## Deferrable Slow Families
@@ -95,7 +95,7 @@ means two matching fixture tests may run at once.
 
 - Report `Ran:` only for commands executed in the current session.
 - Report `Static:` for timing conclusions derived from existing JUnit/history.
-- Record the terminal plan or transition-fallback rule that selected each
+- Record the terminal plan or explicit rollback authority that selected each
   closure gate. A focused pass claims only its affected surface.
 - If `full` is selected, do not replace it with `quick` or a domain profile.
   Operators and agents may escalate but may not silently downgrade.

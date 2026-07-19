@@ -146,10 +146,8 @@ complement to the coverage floor.
    `R-OBSERVABILITY` rows. Under ADR-0039, a bounded implementation increment
    closes against its mechanically selected affected eligible surface; a
    critical change, campaign closure, and release close against the whole
-   workspace. Until affected-surface planning, execution, and receipt
-   verification complete governed cutover, implementation packages retain
-   `tools/release/run_adjudicated_crap_gate.sh --base-ref <frozen-base>` as the
-   conservative global fallback. Every closure-eligible report must:
+   workspace. The global command is not the default for an ordinary bounded
+   implementation package. Every closure-eligible report must:
    - apply the campaign's exact production filter and deduplication tuple;
    - preserve raw rows separately from actionable rows;
    - identify production Rust files touched since the frozen base;
