@@ -4,7 +4,7 @@ Package ID: `20260719-testgate-global-crap-output-relocation-001`
 
 Queue ID: `TESTGATE-GLOBAL-CRAP-OUTPUT-01`
 
-Status: `READY`
+Status: `IMPLEMENTED / FOCUSED-PASS / REVIEW-PASS / TERMINAL-PENDING`
 
 Authorization: verified critical receipt
 `78f526eee1d0b8a9142afc9f3ff8f9434702d1a5409d917a1c2a22687aa7638c`
@@ -26,7 +26,14 @@ against the repository only for standalone runs. Rebind both adapter digests.
   `78f526eee1d0b8a9142afc9f3ff8f9434702d1a5409d917a1c2a22687aa7638c`.
 - [x] (2026-07-19) Completed the bounded authority, phase, security, HOLD,
   delegation, and active-handoff surfaces required for READY status.
-- [ ] Implement the correction and focused evidence.
+- [x] (2026-07-19) Implemented the bounded default-relocation correction,
+  exact contract assertions, and two derived adapter digest updates.
+- [x] (2026-07-19) Shell syntax, Rust formatting, direct digest reconstruction,
+  and 13 focused TESTGATE contract cases pass, including isolated behavioral
+  probes for executor/standalone default and explicit output branches.
+- [x] (2026-07-19) Dual independent review completed; both findings were
+  accepted, the behavioral-evidence finding is patched and reverified, and the
+  stale-plan finding becomes the committed-plan pre-execution gate.
 - [ ] Complete dual review, one mechanical terminal execution, dual terminal
   verification, prompt archival, and final disposition.
 
@@ -127,12 +134,14 @@ route, and assign a concrete next defect owner.
 
 ## Acceptance
 
-- [ ] Executor global CRAP output is relative then confined; standalone default
+- [x] Executor global CRAP output is relative then confined; standalone default
   remains repository `target/adjudicated-crap`.
-- [ ] Both adapter identities match direct script SHA.
-- [ ] Focused contract evidence passes.
+- [x] Both adapter identities match direct script SHA.
+- [x] Focused contract evidence passes.
 - [ ] Mechanical critical receipt passes every node.
 - [ ] Dual review and dual terminal verification have no open finding.
+- [x] The changed integration test is 558 lines, below the 2,000-line warning
+  threshold; no production Rust changed.
 
 ## Review And Delegation
 
@@ -160,6 +169,16 @@ admission, while preserving the standalone repository-local default.
   evidence when it never ran.
 - The same runner behaves correctly when the executor supplies an explicit safe
   relative output; only default initialization precedes relocation incorrectly.
+- The local TESTGATE helper correctly rejected a pre-edit zero-work observation;
+  the committed package remains the prospective authority, and the intent plus
+  terminal plans are generated from the bounded implementation diff.
+- Review finding `TGGO-A-02` correctly rejected source-substring checks as
+  behavioral branch proof. The accepted patch executes seven isolated path
+  cases and stops before coverage acquisition because the scratch repository
+  intentionally lacks the Python prerequisite.
+- Review finding `TGGO-A-01` correctly rejected the first non-reconciling dirty
+  terminal plan. It is retained as non-executable review evidence; the final
+  committed plan must independently reconcile before execution.
 
 ## Decision Log
 
@@ -171,4 +190,7 @@ admission, while preserving the standalone repository-local default.
 
 ## Outcomes And Retrospective
 
-Pending execution.
+Implementation, focused evidence, and dual review pass. The first dirty terminal
+plan is explicitly rejected and must not execute. A committed exact plan must
+reconcile independently before the one terminal execution; terminal outcome and
+final retrospective remain pending.

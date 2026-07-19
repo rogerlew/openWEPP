@@ -216,7 +216,7 @@
     {
       "gate_definition_id": "affected-adjudicated-crap-v1", "gate_family": "coverage-complexity", "target_template": "STATIC",
       "risk_classes": ["BOUNDED_COMPONENT", "INTEGRATED_DOMAIN"],
-      "executor": { "kind": "LEGACY_ADAPTER_V1", "version": "affected-adjudicated-crap-1", "adapter_sha256": "b75a06fae6899a05aabb77805933b4466b072a71a58e815430eefcffa0db1a85" },
+      "executor": { "kind": "LEGACY_ADAPTER_V1", "version": "affected-adjudicated-crap-1", "adapter_sha256": "31ea52774fe7ed013794d82c50dc14926163f0e0a50286c532c0fde3daae4491" },
       "arguments_template": ["bash", "tools/release/run_adjudicated_crap_gate.sh", "--scope", "affected", "--base-ref", "{base_commit}", "--nextest-profile", "affected", "--output-dir", "target/affected-crap"],
       "environment_allowlist": ["PATH", "CARGO_HOME", "RUSTUP_HOME", "RUSTUP_TOOLCHAIN"],
       "authority_class": "NONE", "outcome_policy": "BLOCKING", "failure_classification": "HARD_FAIL",
@@ -232,7 +232,7 @@
     {
       "gate_definition_id": "adjudicated-crap-v1", "gate_family": "coverage-complexity", "target_template": "WORKSPACE",
       "risk_classes": ["CRITICAL"],
-      "executor": { "kind": "LEGACY_ADAPTER_V1", "version": "adjudicated-crap-1", "adapter_sha256": "b75a06fae6899a05aabb77805933b4466b072a71a58e815430eefcffa0db1a85" },
+      "executor": { "kind": "LEGACY_ADAPTER_V1", "version": "adjudicated-crap-1", "adapter_sha256": "31ea52774fe7ed013794d82c50dc14926163f0e0a50286c532c0fde3daae4491" },
       "arguments_template": ["bash", "tools/release/run_adjudicated_crap_gate.sh", "--base-ref", "{base_commit}"],
       "environment_allowlist": ["PATH", "CARGO_HOME", "RUSTUP_HOME", "RUSTUP_TOOLCHAIN"],
       "authority_class": "NONE", "outcome_policy": "BLOCKING", "failure_classification": "HARD_FAIL",

@@ -41,7 +41,8 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 PYTHON_BIN="${ROOT_DIR}/.venv/bin/python"
 CHECKER="${ROOT_DIR}/tools/release/check_adjudicated_crap.py"
 ADJUDICATIONS="${ROOT_DIR}/tools/release/adjudicated_crap_exceptions.json"
-OUTPUT_DIR="${ROOT_DIR}/target/adjudicated-crap"
+OUTPUT_DIR="target/adjudicated-crap"
+OUTPUT_DIR_OVERRIDDEN=0
 CRAP_JSON=""
 RETAINED_PROVENANCE=""
 BASE_REF=""
@@ -107,6 +108,7 @@ while [[ $# -gt 0 ]]; do
         continue
       fi
       OUTPUT_DIR="${2:-}"
+      OUTPUT_DIR_OVERRIDDEN=1
       shift 2
       ;;
     --crap-json)
@@ -165,6 +167,8 @@ if [[ -n "${OPENWEPP_GATE_ARTIFACT_ROOT:-}" ]]; then
     exit 2
   fi
   OUTPUT_DIR="${OPENWEPP_GATE_ARTIFACT_ROOT}/${OUTPUT_DIR}"
+elif [[ "${OUTPUT_DIR_OVERRIDDEN}" -eq 0 ]]; then
+  OUTPUT_DIR="${ROOT_DIR}/${OUTPUT_DIR}"
 fi
 mkdir -p -- "${OUTPUT_DIR}"
 

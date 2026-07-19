@@ -1,5 +1,7 @@
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+use std::process::{Command, Output};
+use std::sync::atomic::{AtomicU64, Ordering};
 
 use serde_json::Value;
 
@@ -9,6 +11,60 @@ fn root() -> PathBuf {
 
 fn text(path: &str) -> String {
     fs::read_to_string(root().join(path)).expect("contract source must be readable")
+}
+
+static SCRATCH_COUNTER: AtomicU64 = AtomicU64::new(0);
+
+struct Scratch {
+    path: PathBuf,
+}
+
+impl Scratch {
+    fn new() -> Self {
+        let count = SCRATCH_COUNTER.fetch_add(1, Ordering::Relaxed);
+        let path = std::env::temp_dir().join(format!(
+            "openwepp-testgate-output-{}-{count}",
+            std::process::id()
+        ));
+        fs::create_dir(&path).expect("create unique TESTGATE output scratch");
+        Self { path }
+    }
+}
+
+impl Drop for Scratch {
+    fn drop(&mut self) {
+        fs::remove_dir_all(&self.path).expect("remove TESTGATE output scratch");
+    }
+}
+
+fn run_crap_path_probe(
+    script: &Path,
+    working_directory: &Path,
+    output_dir: Option<&Path>,
+    artifact_root: Option<&Path>,
+) -> Output {
+    let mut command = Command::new("bash");
+    command
+        .arg(script)
+        .current_dir(working_directory)
+        .env_remove("OPENWEPP_GATE_ARTIFACT_ROOT");
+    if let Some(output_dir) = output_dir {
+        command.arg("--output-dir").arg(output_dir);
+    }
+    if let Some(artifact_root) = artifact_root {
+        command.env("OPENWEPP_GATE_ARTIFACT_ROOT", artifact_root);
+    }
+    command.output().expect("run CRAP output-resolution probe")
+}
+
+fn assert_failed_after_output_resolution(output: &Output, resolved_output: &Path) {
+    assert!(!output.status.success());
+    assert!(
+        resolved_output.join("run-status.json").is_file(),
+        "resolved output was not initialized: {}\nstderr: {}",
+        resolved_output.display(),
+        String::from_utf8_lossy(&output.stderr)
+    );
 }
 
 fn assert_receipt_runtime_guards() {
@@ -325,6 +381,11 @@ fn blocking_executor_and_affected_quality_preserve_manual_rollback() {
     assert!(affected_driver.contains("cargo nextest run"));
     assert!(affected_driver.contains("--config-file \"${NEXTEST_CONFIG}\""));
     assert!(affected_driver.contains("COVERAGE_PROFILE=\"${NEXTEST_PROFILE:-full}\""));
+    assert!(affected_driver.contains("OUTPUT_DIR=\"target/adjudicated-crap\""));
+    assert!(affected_driver.contains("OUTPUT_DIR_OVERRIDDEN=0"));
+    assert!(affected_driver.contains("OUTPUT_DIR_OVERRIDDEN=1"));
+    assert!(affected_driver.contains("elif [[ \"${OUTPUT_DIR_OVERRIDDEN}\" -eq 0 ]]"));
+    assert!(affected_driver.contains("OUTPUT_DIR=\"${ROOT_DIR}/${OUTPUT_DIR}\""));
     assert!(affected_driver.contains("COVERAGE_TMP=\"${OPENWEPP_GATE_ARTIFACT_ROOT}/tmp\""));
     assert!(affected_driver.contains("COVERAGE_TMP=\"${OUTPUT_DIR}/tmp\""));
     assert!(affected_driver.contains("TMPDIR=\"${COVERAGE_TMP}\""));
@@ -353,6 +414,88 @@ fn blocking_executor_and_affected_quality_preserve_manual_rollback() {
     }
 
     assert_workflow_and_rollback_contract();
+}
+
+#[test]
+fn crap_runner_resolves_executor_and_standalone_output_branches() {
+    let scratch = Scratch::new();
+    let scratch_repo = scratch.path.join("repo");
+    let script_directory = scratch_repo.join("tools/release");
+    let working_directory = scratch.path.join("working");
+    fs::create_dir_all(&script_directory).expect("create scratch script directory");
+    fs::create_dir(&working_directory).expect("create scratch working directory");
+    let script = script_directory.join("run_adjudicated_crap_gate.sh");
+    fs::copy(
+        root().join("tools/release/run_adjudicated_crap_gate.sh"),
+        &script,
+    )
+    .expect("copy CRAP runner into isolated scratch repository");
+
+    let standalone_default = run_crap_path_probe(&script, &working_directory, None, None);
+    assert_failed_after_output_resolution(
+        &standalone_default,
+        &scratch_repo.join("target/adjudicated-crap"),
+    );
+
+    let standalone_relative = run_crap_path_probe(
+        &script,
+        &working_directory,
+        Some(Path::new("explicit-relative")),
+        None,
+    );
+    assert_failed_after_output_resolution(
+        &standalone_relative,
+        &working_directory.join("explicit-relative"),
+    );
+
+    let standalone_absolute_path = scratch.path.join("explicit-absolute");
+    let standalone_absolute = run_crap_path_probe(
+        &script,
+        &working_directory,
+        Some(&standalone_absolute_path),
+        None,
+    );
+    assert_failed_after_output_resolution(&standalone_absolute, &standalone_absolute_path);
+
+    let artifact_root = scratch.path.join("artifacts");
+    fs::create_dir(&artifact_root).expect("create executor artifact root");
+    let executor_default =
+        run_crap_path_probe(&script, &working_directory, None, Some(&artifact_root));
+    assert_failed_after_output_resolution(
+        &executor_default,
+        &artifact_root.join("target/adjudicated-crap"),
+    );
+
+    let executor_relative = run_crap_path_probe(
+        &script,
+        &working_directory,
+        Some(Path::new("executor-relative")),
+        Some(&artifact_root),
+    );
+    assert_failed_after_output_resolution(
+        &executor_relative,
+        &artifact_root.join("executor-relative"),
+    );
+
+    let rejected_absolute = run_crap_path_probe(
+        &script,
+        &working_directory,
+        Some(&scratch.path.join("executor-absolute")),
+        Some(&artifact_root),
+    );
+    assert!(!rejected_absolute.status.success());
+    assert!(String::from_utf8_lossy(&rejected_absolute.stderr).contains(
+        "executor artifact relocation requires an absolute root and safe relative output path"
+    ));
+
+    let rejected_traversal = run_crap_path_probe(
+        &script,
+        &working_directory,
+        Some(Path::new("../executor-escape")),
+        Some(&artifact_root),
+    );
+    assert!(!rejected_traversal.status.success());
+    assert!(!scratch.path.join("executor-escape").exists());
 }
 
 #[test]

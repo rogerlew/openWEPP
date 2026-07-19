@@ -206,9 +206,12 @@
 
 State as of `2026-07-19 UTC`:
 
-- `20260719-testgate-global-crap-output-relocation-001/` - READY (2026-07-19):
-  correct the global CRAP default-output relocation defect that is the sole
-  failure after 11/12 critical nodes and full Nextest 2,165/2,165 pass.
+- `20260719-testgate-global-crap-output-relocation-001/` -
+  IMPLEMENTED-FOCUSED-PASS-REVIEW-PASS-TERMINAL-PENDING (2026-07-19): the
+  bounded default relocation, exact contract assertions, and adapter identities
+  are corrected; 13/13 focused contract cases pass, including seven isolated
+  behavioral path probes. Dual review passes after rejecting the first stale
+  plan; a freshly reconciled committed plan precedes one terminal execution.
 
 - `20260719-testgate-crap-adapter-digest-alignment-001/` -
   EXECUTED-FAIL-GLOBAL-OUTPUT-RELOCATION-REVIEWED (2026-07-19): both adapter
