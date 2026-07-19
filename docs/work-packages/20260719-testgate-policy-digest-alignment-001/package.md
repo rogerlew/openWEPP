@@ -4,7 +4,7 @@ Package ID: `20260719-testgate-policy-digest-alignment-001`
 
 Queue ID: `TESTGATE-POLICY-DIGEST-01`
 
-Status: `IN PROGRESS / CRITICAL GATES REQUIRED`
+Status: `IN PROGRESS / FAIL-CLIPPY / SUCCESSOR ACTIVE`
 
 Authorization: the accepted and terminal-confirmed blocker from
 `20260719-testgate-adversarial-agent-acceptance-001`, under Roger Lew's
@@ -35,6 +35,12 @@ testing strategy.
   `RB-03` are accepted.
 - [ ] Execute and independently verify the mechanically selected CRITICAL gate
   plan; do not substitute the focused evidence for that plan.
+- [x] (2026-07-19) Mechanical local execution produced verified FAIL receipt
+  `1ad770581b147ba8bb8797e431d2a2d81e6395a61a231f03f807f44bd5ee1d6e`:
+  8 nodes passed, workspace Clippy failed, and 3 dependent nodes blocked.
+- [ ] `20260719-testgate-adversarial-clippy-cleanup-001` closes the exact
+  pre-existing test-helper lint blocker before current-head critical evidence
+  is retried.
 - [ ] Complete dual review, terminal verification, and disposition.
 
 ## Correction Authority Envelope
@@ -158,6 +164,12 @@ restores currency without altering selection behavior or weakening policy.
   `CRITICAL` classification. This is an accepted closure-blocking package
   defect. Because the required evidence remains producible, HOLD is not
   legitimate and the package continues with the planner-selected gate set.
+- The first fully admitted local critical execution selected 12 nodes and
+  2,183 inventory items. Workspace Clippy found one pre-existing violation:
+  `assert_workflow_and_rollback_contract` is 193 lines against the 100-line
+  limit. Eight independent nodes passed; doctest, full Nextest, and global CRAP
+  blocked on the Clippy prerequisite. The test file is outside this package's
+  correction envelope, so the named test-only successor owns the patch.
 
 ## Decision Log
 
@@ -171,5 +183,6 @@ restores currency without altering selection behavior or weakening policy.
 The one-field correction restores exact policy identity without altering gate
 selection or weakening fail-closed behavior. Focused executable evidence is
 complete but cannot close the critical increment. Mechanical critical-plan
-execution and terminal closure remain before this package can move from the
-active catalog.
+execution exposed one test-only blocker. The successor must repair it without
+weakening assertions, then produce current-head critical evidence before this
+package can move from the active catalog.
