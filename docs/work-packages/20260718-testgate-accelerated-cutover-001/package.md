@@ -90,6 +90,7 @@ authority requirements are not reduced.
 - `tests/integration/testgate_assure_campaign_currency_contract.rs`
 - `tests/integration/assurance_dossier_build_contract.rs`
 - `tests/integration/hphys0298_paired_lineage_partition_contract.rs`
+- `docs/work-packages/20260605-hphys0295-cumulative-storage-budget-ownership-closure-001/artifacts/hphys0295_diagnostics.py`
 - `tests/python/test_testgate_shadow.py`
 - `tests/python/test_testgate.py`
 - `docs/ROADMAP.md`
@@ -138,6 +139,12 @@ isolated runner-specific failures in those two tests. Remediation is limited to
 preserving the same fail-closed assertions with portable temporary paths and
 actionable failure diagnostics; assurance publication and snow-physics
 authority remain unchanged.
+The HPHYS0295 diagnostic imported transitively by the HPHYS0298 guard is also
+admitted prospectively after the focused runner reproduction exposed its
+hard-coded development-host repository root. Remediation is limited to deriving
+the repository root from the artifact's own location, matching the adjacent
+HPHYS0296 through HPHYS0298 diagnostics; no process math, inputs, outputs, or
+acceptance criteria may change.
 
 ## Protected Boundaries
 
@@ -336,6 +343,11 @@ calendar observation or broad testing on every ordinary increment.
   documentation false escalation, missing executable authority classes, and a
   job-writable persistent runner control plane. Cutover remained disabled while
   these findings entered the patch loop.
+- Exact-candidate runs `29677049559` and `29677779525` proved that full-suite
+  repository reconstruction needed both serialized snapshot fixtures and a
+  larger dynamically allocated target ceiling. The latter run selected all
+  `2,163` tests and reduced failures to four storage reconstructions plus two
+  portable-fixture defects; global CRAP remained blocked and did not run.
 
 ## Decision Log
 
