@@ -1,0 +1,33 @@
+{
+    "skip_replacements": [
+        "analyzes",
+        "baer",
+        "dialog",
+        "dialogs",
+        "dialogue",
+        "dialogues",
+        "dove",
+        "esthetic",
+        "expertize",
+        "fuze",
+        "fuzed",
+        "fuzes",
+        "fuzing",
+        "line-by-line",
+        "naan",
+        "nan",
+        "prepending",
+        "perpend",
+        "perpended",
+        "programable",
+        "ret",
+        "ert",
+        "reexport",
+        "reexporting",
+        "schemata"
+    ],
+    "forced_mappings": {
+        "line-byline": "line-by-line",
+        "modelling": "modeling"
+    }
+}

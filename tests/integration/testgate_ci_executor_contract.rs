@@ -86,6 +86,8 @@ fn assert_workflow_and_rollback_contract() {
         "ripgrep 14.1.0",
         "--artifact-root \"${EVIDENCE_DIR}/execution\"",
         "TESTGATE_EXECUTION_ROOT: /cache/target",
+        "evidence_dir=\"${TESTGATE_EXECUTION_ROOT}/e\"",
+        "planner_tmp=\"${TESTGATE_EXECUTION_ROOT}/p\"",
         "TMPDIR=\"${planner_tmp}\"",
         "orchestration-error.log",
         "if: ${{ always() }}",
@@ -232,6 +234,13 @@ fn runner_container_has_no_host_or_privileged_mounts() {
     assert!(manager.contains("registration_token"));
     assert!(manager.contains("printf '%s\\n' \"${registration_token}\""));
     assert!(image.contains("RUSTUP_TOOLCHAIN=1.92.0-x86_64-unknown-linux-gnu"));
+    assert!(image.contains("pyarrow==22.0.0"));
+    assert!(image.contains("UK2US_COMMIT=6ce03a96a9466bed029fb0287786cd903f1876d6"));
+    assert!(image.contains("python-is-python3 php-cli"));
+    assert!(manager.contains("uk2us_rules.json"));
+    let bootstrap = text("tools/ci/omarchy-runner/bootstrap_dependencies.sh");
+    assert!(bootstrap.contains("python3 -m venv --system-site-packages .venv"));
+    assert!(bootstrap.contains("pyarrow.__version__ == \"22.0.0\""));
     assert!(image.contains(
         "ACTIONS_RUNNER_HOOK_JOB_COMPLETED=/usr/local/bin/openwepp-job-completed-hook.sh"
     ));

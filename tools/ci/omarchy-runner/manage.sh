@@ -4,7 +4,7 @@ set -euo pipefail
 readonly HOST="${OPENWEPP_RUNNER_HOST:-omarchy}"
 readonly REPOSITORY="${OPENWEPP_RUNNER_REPOSITORY:-rogerlew/openWEPP}"
 readonly IMAGE="openwepp-actions-runner:2.335.1"
-readonly EXPECTED_IMAGE_ID="sha256:cae074269ed8afd33aeeca7ad66143733d0ee379fd8baa546c9afd1f8e09aaf6"
+readonly EXPECTED_IMAGE_ID="sha256:f902cd52ac2f420feb53671f76b7b6bcdcf6a17227e88ee8e5300f86e4b1c768"
 readonly CONTAINER="openwepp-actions-runner"
 readonly RUNNER_NAME="omarchy-openwepp-01"
 readonly LABELS="openwepp,omarchy,trusted"
@@ -39,7 +39,7 @@ setup_runner() {
   build_dir="$(remote mktemp -d /tmp/openwepp-runner-build.XXXXXX)"
   trap 'remote rm -rf -- "${build_dir}" >/dev/null 2>&1 || true' RETURN
   scp -q "${SCRIPT_DIR}/Dockerfile" "${SCRIPT_DIR}/entrypoint.sh" \
-    "${SCRIPT_DIR}/job-completed-hook.sh" \
+    "${SCRIPT_DIR}/job-completed-hook.sh" "${SCRIPT_DIR}/uk2us_rules.json" \
     /usr/local/bin/markdown-doc "${HOST}:${build_dir}/"
   remote docker build --pull --provenance=false --tag "${IMAGE}" "${build_dir}"
   actual_image_id="$(remote docker image inspect --format '{{.Id}}' "${IMAGE}")"

@@ -44,7 +44,7 @@ No `pull_request` or `pull_request_target` event is routed to this runner.
 Ran: 2026-07-18 PDT / 2026-07-19 UTC.
 
 - Container image ID:
-  `sha256:cae074269ed8afd33aeeca7ad66143733d0ee379fd8baa546c9afd1f8e09aaf6`
+  `sha256:f902cd52ac2f420feb53671f76b7b6bcdcf6a17227e88ee8e5300f86e4b1c768`
   (`767,010,889` bytes). This revision adds Ubuntu's repository-pinned
   `ripgrep 14.1.0-1`, required by the planner's execution-context identity.
   `manage.sh` rejects any rebuilt image with a different

@@ -284,7 +284,7 @@ fn only_an_exact_committed_terminal_requests_campaign_transfer() {
     let request = PlanRequest {
         stage: PlanningStage::Terminal,
         predecessor_intent_plan_id: Some("55".repeat(32)),
-        boundary: "CAMPAIGN".to_owned(),
+        boundary: "INCREMENT".to_owned(),
         campaign_id: Some("TESTGATE-ASSURE-01".to_owned()),
         authorized_paths: vec![changed.path.clone()],
         source: ObservedSource {

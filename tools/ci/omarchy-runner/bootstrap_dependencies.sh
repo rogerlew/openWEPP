@@ -20,3 +20,6 @@ fetch_tree() {
 
 fetch_tree "${BASE_COMMIT}" "${BOOTSTRAP_ROOT}/base"
 fetch_tree "${HEAD_COMMIT}" "${BOOTSTRAP_ROOT}/head"
+
+python3 -m venv --system-site-packages .venv
+.venv/bin/python -c 'import pyarrow; assert pyarrow.__version__ == "22.0.0"'

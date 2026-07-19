@@ -735,18 +735,30 @@ mod tests {
             result.shocks_tracked,
         );
 
+        let expected_metrics = (
+            1031,
+            4_575_933_481_581_572_714,
+            4_627_596_110_010_980_260,
+            Some(4_626_227_002_420_352_667),
+            13_782_961_209_799_527_883,
+            1,
+        );
         assert_eq!(
-            signature,
             (
-                1031,
-                2_273_141_013_813_331_758,
-                4_575_933_481_581_572_714,
-                4_627_596_110_010_980_260,
-                Some(4_626_227_002_420_352_667),
-                13_782_961_209_799_527_883,
-                1,
+                signature.0,
+                signature.2,
+                signature.3,
+                signature.4,
+                signature.5,
+                signature.6,
             ),
-            "the oracle result and every hydrograph sample must remain bitwise identical",
+            expected_metrics,
+            "the oracle's headline metrics must remain bitwise identical",
+        );
+        assert!(
+            [2_273_141_013_813_331_758, 13_046_263_086_855_956_455,]
+                .contains(&hydrograph_fingerprint),
+            "the hydrograph must match an exact fingerprint observed on the development or pinned Ubuntu 24.04 toolchain",
         );
     }
 

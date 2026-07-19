@@ -4,6 +4,7 @@ ARG RUNNER_VERSION=2.335.1
 ARG RUNNER_SHA256=4ef2f25285f0ae4477f1fe1e346db76d2f3ebf03824e2ddd1973a2819bf6c8cf
 ARG RUST_VERSION=1.92.0
 ARG RUSTUP_INIT_SHA256=6c30b75a75b28a96fd913a037c8581b580080b6ee9b8169a3c0feb1af7fe8caf
+ARG UK2US_COMMIT=6ce03a96a9466bed029fb0287786cd903f1876d6
 
 ENV DEBIAN_FRONTEND=noninteractive \
     CARGO_HOME=/opt/cargo \
@@ -13,11 +14,13 @@ ENV DEBIAN_FRONTEND=noninteractive \
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
        ca-certificates curl git jq ripgrep build-essential pkg-config libssl-dev \
-       python3 python3-venv python3-pip unzip xz-utils zstd passwd \
+       python3 python3-venv python3-pip python-is-python3 php-cli unzip xz-utils zstd passwd \
     && rm -rf /var/lib/apt/lists/* \
     && useradd --create-home --uid 10001 --shell /bin/bash runner \
     && mkdir -p /opt/actions-runner /runner-state /runner-work /cache/cargo /cache/target \
     && chown -R runner:runner /opt/actions-runner /runner-state /runner-work /cache
+
+RUN python3 -m pip install --break-system-packages --no-cache-dir pyarrow==22.0.0
 
 WORKDIR /opt/actions-runner
 RUN curl --fail --location --silent --show-error \
@@ -44,6 +47,18 @@ COPY markdown-doc /usr/local/bin/markdown-doc
 RUN echo "265cdb2d3d6d5e7e98aac18f3bd1041278106d41ba5ff1cf23638381d346ea34  /usr/local/bin/markdown-doc" \
       | sha256sum --check --strict \
     && chmod 0755 /usr/local/bin/markdown-doc
+
+RUN git clone --filter=blob:none https://github.com/rogerlew/uk2us /opt/uk2us \
+    && git -C /opt/uk2us checkout --detach "${UK2US_COMMIT}" \
+    && test "$(git -C /opt/uk2us rev-parse HEAD)" = "${UK2US_COMMIT}" \
+    && rm -rf /opt/uk2us/.git
+COPY uk2us_rules.json /opt/uk2us/config/uk2us_rules.json
+RUN echo "634e90ef3713a9910d165a6d93eeabcbe009a7bd402ef0a1e1cfe5d4f944356b  /opt/uk2us/uk2us" \
+      | sha256sum --check --strict \
+    && echo "c60e0d899f00e9faf2b8b8d3d71d0a735e8faa0fe96466ecd6619193eeaa425a  /opt/uk2us/config/uk2us_rules.json" \
+      | sha256sum --check --strict \
+    && chmod 0755 /opt/uk2us/uk2us \
+    && ln -s /opt/uk2us/uk2us /usr/local/bin/uk2us
 
 COPY entrypoint.sh /usr/local/bin/openwepp-runner-entrypoint
 COPY job-completed-hook.sh /usr/local/bin/openwepp-job-completed-hook.sh

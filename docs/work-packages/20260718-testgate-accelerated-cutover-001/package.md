@@ -80,6 +80,7 @@ authority requirements are not reduced.
 - `Cargo.toml`
 - `Cargo.lock`
 - `crates/openwepp-gate-planner/**`
+- `crates/openwepp-hillslope-orchestrator/src/ofe_routing/iwagaki_oracle.rs`
 - `gate-policy/v1/**`
 - `tools/ci/omarchy-runner/**`
 - `tools/local_ci/**`
@@ -116,6 +117,14 @@ official GitHub runner documentation, host capacity, adjacent workflows, and
 retained TESTGATE evidence. Host writes are limited to the dedicated isolated
 runner guest. Writes outside this set require a recorded pre-implementation
 amendment.
+
+Write-set amendment (2026-07-19): the first exact-candidate full-suite run on
+the pinned Ubuntu runner proved that the Iwagaki oracle's headline metrics are
+bitwise identical while its whole-hydrograph fingerprint has two exact,
+platform-specific values (the established development host and Ubuntu 24.04).
+The exact oracle test file is admitted solely to bind both observed immutable
+fingerprints; production numerics, physics, tolerances, and contract acceptance
+remain unchanged.
 
 ## Protected Boundaries
 

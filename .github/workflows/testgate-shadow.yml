@@ -27,7 +27,7 @@ jobs:
     permissions:
       contents: read
     env:
-      OPENWEPP_RUNNER_IMAGE_ID: sha256:cae074269ed8afd33aeeca7ad66143733d0ee379fd8baa546c9afd1f8e09aaf6
+      OPENWEPP_RUNNER_IMAGE_ID: sha256:f902cd52ac2f420feb53671f76b7b6bcdcf6a17227e88ee8e5300f86e4b1c768
       TESTGATE_EXECUTION_ROOT: /cache/target
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -71,6 +71,10 @@ jobs:
           cargo crap --version | grep -F 'cargo-crap 0.2.2'
           rg --version | grep -F 'ripgrep 14.1.0'
           markdown-doc --version
+          php --version | grep -F 'PHP 8.3.'
+          uk2us --help >/dev/null
+          python --version | grep -F 'Python 3.12.'
+          python3 -c 'import pyarrow; assert pyarrow.__version__ == "22.0.0"'
           python3 -m venv --help >/dev/null
       - name: Bootstrap locked base and head dependencies
         run: >-
@@ -83,10 +87,11 @@ jobs:
         id: testgate
         run: |
           set -euo pipefail
-          evidence_dir="${TESTGATE_EXECUTION_ROOT}/testgate-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          planner_tmp="${TESTGATE_EXECUTION_ROOT}/planner-tmp-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          evidence_dir="${TESTGATE_EXECUTION_ROOT}/e"
+          planner_tmp="${TESTGATE_EXECUTION_ROOT}/p"
           orchestration_log="${evidence_dir}/orchestration-error.log"
-          mkdir -p "${planner_tmp}" "${evidence_dir}"
+          [[ ! -e "${planner_tmp}" && ! -e "${evidence_dir}" ]]
+          mkdir "${planner_tmp}" "${evidence_dir}"
           set +e
           TMPDIR="${planner_tmp}" python3 tools/local_ci/testgate.py \
             --binary "${CARGO_TARGET_DIR}/debug/openwepp-gate-plan" \
@@ -108,7 +113,7 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: testgate-unsigned-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ env.TESTGATE_EXECUTION_ROOT }}/testgate-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.TESTGATE_EXECUTION_ROOT }}/e
           if-no-files-found: error
           retention-days: 7
 
@@ -169,7 +174,7 @@ jobs:
       - name: Validate receipt and predicate bindings
         env:
           EVIDENCE_DIR: ${{ runner.temp }}/testgate-evidence
-          EXPECTED_IMAGE: sha256:cae074269ed8afd33aeeca7ad66143733d0ee379fd8baa546c9afd1f8e09aaf6
+          EXPECTED_IMAGE: sha256:f902cd52ac2f420feb53671f76b7b6bcdcf6a17227e88ee8e5300f86e4b1c768
           EXPECTED_BASE: ${{ steps.verification-comparison.outputs.base }}
         run: |
           set -euo pipefail

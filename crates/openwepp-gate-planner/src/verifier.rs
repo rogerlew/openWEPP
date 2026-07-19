@@ -2031,8 +2031,13 @@ mod tests {
         let root = repo();
         let plan = PLAN
             .get_or_init(|| {
+                let head = crate::repository::resolve_commit(&root, "HEAD")
+                    .expect("resolved fixture head");
+                let base = crate::repository::resolve_commit(&root, "HEAD^")
+                    .expect("resolved fixture base");
                 let source =
-                    crate::repository::observe_dirty(&root, "HEAD").expect("observed source");
+                    crate::repository::observe_committed_after_mutation(&root, &base, &head)
+                        .expect("observed committed source");
                 let authorized_paths = source
                     .changes
                     .iter()
