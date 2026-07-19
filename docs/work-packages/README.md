@@ -199,6 +199,11 @@
 
 State as of `2026-07-19 UTC`:
 
+- `20260719-testgate-adversarial-agent-acceptance-001/` - READY (2026-07-19):
+  run a governance-strict, efficiency-seeking executor through deterministic
+  instruction, sentinel, hygiene, planner, receipt, supersession, queue, and
+  one-push live forest1 acceptance without broad or timed gates.
+
 - `20260717-canopy-phenology-gsi-kernel-001/` -
   COMPLETE-PASS-PROCESS-KERNEL (2026-07-17): implements
   the published Jolly–Nemani–Running Growing Season Index as the first bounded
