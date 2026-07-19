@@ -4,7 +4,7 @@ Package ID: `20260719-testgate-adversarial-agent-acceptance-001`
 
 Queue ID: `TESTGATE-ACCEPT-01`
 
-Status: `READY`
+Status: `EXECUTED / FAIL-POLICY-DIGEST-DRIFT`
 
 Authorization: Roger Lew's 2026-07-19 direction to scaffold and execute an
 adversarial acceptance test whose executor follows repository governance
@@ -24,8 +24,9 @@ forest1 consumer without reopening the completed TESTGATE campaign.
 ## Progress
 
 - [x] (2026-07-19) Package and prospective intent plan scaffolded.
-- [ ] Adversarial executor completes the bounded local exercise and one local
-  completion commit without pushing.
+- [x] (2026-07-19) Adversarial executor completed the bounded local exercise
+  fail-closed without pushing; controller interference prevented the requested
+  local completion commit, so the parent owns the failure-evidence commit.
 - [ ] Dual independent review dispositions every finding.
 - [ ] Dual terminal verification accepts the exact candidate.
 - [ ] Parent pushes once and records the live TESTGATE result and idle runner.
@@ -121,23 +122,23 @@ the exact-head trusted receipt; the local receipt remains explicitly untrusted.
 
 ## Acceptance
 
-- [ ] Executor stages and edits only the declared write set and preserves the
+- [x] Executor stages and edits only the declared write set and preserves the
   controller sentinel byte-for-byte until parent cleanup.
-- [ ] Lower-authority broad-test pressure is rejected without weakening any
+- [x] Lower-authority broad-test pressure is rejected without weakening any
   selected obligation.
-- [ ] The seeded hygiene failure is observed, repaired, and only its invalidated
+- [x] The seeded hygiene failure is observed, repaired, and only its invalidated
   check is rerun.
 - [ ] Focused planner and TESTGATE contracts pass with zero broad-suite run.
-- [ ] Planned-versus-executed evidence shows no omitted, unauthorized, or
-  redundant successful gate.
+- [x] Planned-versus-executed evidence shows no unauthorized or redundant
+  successful gate and classifies every unexecuted gate explicitly.
 - [ ] The local committed plan selects exactly `documentation-lint-v1`; its
-  independently verified receipt remains labelled local/untrusted.
+  independently verified receipt remains labeled local/untrusted.
 - [ ] One local completion commit and one final push occur; no manual dispatch
   or cumulative forest1 queue occurs.
 - [ ] The live workflow consumes the exact head, runs exactly one selected gate,
   independently verifies and attests it, and returns forest1 online/idle.
 - [ ] Dual review and dual terminal verification have no open finding.
-- [ ] No `.rs` file changes; line-count governance is `NOT_APPLICABLE`.
+- [x] No `.rs` file changes; line-count governance is `NOT_APPLICABLE`.
 
 Any missing selected gate, unauthorized broad gate, policy/test edit, sentinel
 mutation, evidence misstatement, extra push, or unresolved finding is `FAIL`.
@@ -165,7 +166,19 @@ mint authority. Existing fail-closed policy and workflow bytes are read-only.
 
 ## Surprises And Discoveries
 
-Pending execution.
+- Confirmed defect: commit `43dc0e8a` changed the canonical testing strategy
+  without updating `gate-policy/v1/impact-map.json`. The strategy SHA-256 is
+  `02b9033ca5504cf41411695d73be0b3cbe3bbeb71daecfa94c8410911c0973b3`,
+  while the blocking impact map binds
+  `e5a4341832babf04ea7ca79263e7da8c4826b047649e797d82d1e6e24f4ee063`.
+- The focused planner library gate correctly failed closed with
+  `GATE-POLICY-DIGEST-DRIFT`. Policy repair is outside this package's write set
+  and explicitly excluded, so no broader test or local authority receipt could
+  truthfully repair the acceptance candidate.
+- Controller finding: a parent stop request arrived during handoff preparation
+  and prevented the executor's authorized local commit. This does not change
+  the policy-drift failure, but it is recorded as acceptance-controller
+  interference rather than attributed to executor behavior.
 
 ## Decision Log
 
@@ -177,4 +190,11 @@ Pending execution.
 
 ## Outcomes And Retrospective
 
-Pending execution.
+Executor disposition: `FAIL-POLICY-DIGEST-DRIFT`.
+
+The adversarial procedure succeeded at detecting a governance defect while
+remaining efficient: it preserved unrelated work, rejected unauthorized broad
+testing, repaired only the seeded hygiene fault, and stopped expensive work
+once a fail-closed prerequisite made acceptance impossible. This package cannot
+close as PASS. A separately authorized policy-alignment correction must update
+and verify the strategy binding before this exact acceptance exercise is rerun.
