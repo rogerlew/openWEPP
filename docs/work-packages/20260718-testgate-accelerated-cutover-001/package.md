@@ -378,6 +378,10 @@ calendar observation or broad testing on every ordinary increment.
   report selector is incomplete here, the global report expands locked Cargo
   metadata into a sorted, nonempty repeated `--package` list before LCOV
   publication.
+- The first canonical Nextest coverage attempt after that repair failed closed
+  because the two adjudicated-CRAP gate definitions still bound the adapter's
+  pre-repair SHA-256. The definitions now bind the repaired adapter bytes;
+  this is a policy-integrity correction, not a test-behavior change.
 
 ## Decision Log
 
