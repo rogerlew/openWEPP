@@ -31,7 +31,7 @@ state was reached. Execution history lives in the
 
 | Priority | Owning queue | State | Advancement gate |
 | --- | --- | --- | --- |
-| `TESTGATE-CI-01` executor, coverage/CRAP, and CI lanes | Test/gate architecture | `active` | Lift the executor failure-receipt/test, covering-test closure, and output-confinement HOLD in `20260718-testgate-ci-shadow-executor-001`; then launch observation and satisfy the fixed cutover scorecard before any gate reduction. |
+| `TESTGATE-CUTOVER-01` accelerated self-hosted cutover | Test/gate architecture | `active` | Execute `20260718-testgate-accelerated-cutover-001` end-to-end: isolate/register the trusted `omarchy` runner, route and bootstrap TESTGATE, close post-change CRAP, patch adversarial findings, pass one exact-candidate acceptance sequence, and cut over immediately. No timed or increment-count gate remains. |
 | `CANOPY-PHENOLOGY-02` native canopy integration | Plant/snow-frost science | `queued` | Resume after `TESTGATE-ALIGN-01` lands; use the campaign as an early shadow-mode planner trial while ratifying and implementing native canopy, biomass, litter, closure, YAML, and real-consumer integration. |
 | `SNOW-SURFACE-EB` sublimation and longwave | Snow/frost science | `queued` | Start after `CANOPY-PHENOLOGY-02` closes and a contract-first package reconciles the multilayer surface-energy, vapor-mass, and longwave backlog with the current meteorology and snow-column implementation. |
 | `ASSURE-06` snow/frost flagship synthesis | Scientific assurance | `held` | Roger Lew remains the accountable report lead and a material snow/frost producer. Resume independent review only after canopy phenology and the selected sublimation/longwave work land, the scientific manuscript is refreshed against those changes, and a new exact review root is issued. |
@@ -42,6 +42,8 @@ state was reached. Execution history lives in the
 ### Direction
 
 Implement [ADR-0039](decisions/0039-campaign-scoped-risk-based-testing-and-assurance-gates.md)
+as amended by
+[ADR-0040](decisions/0040-accelerated-testgate-cutover-on-trusted-self-hosted-runner.md)
 and the [testing and gate strategy](standards/testing-and-gate-strategy.md) so
 increments receive fast affected-surface feedback while campaigns and releases
 retain comprehensive exact-boundary qualification. Selection, escalation,
@@ -58,24 +60,25 @@ Each row below requires its own authorized work package.
 
 | ID | Prospective outcome | Advancement gate | State |
 | --- | --- | --- | --- |
-| `TESTGATE-CI-01` | Add the executor, affected coverage and CRAP measurement, evidence publication, and distinct presubmit, backstop, campaign, and release lanes; benchmark whether one instrumented Nextest run can replace duplicate full/coverage execution. | Shadow and observation lanes meet the standard's fixed scorecard; protected evidence publication and stable aggregate contexts are proven; rollback to the conservative full runner remains available. | `active`; current package is `EXECUTED-HOLD` |
+| `TESTGATE-CUTOVER-01` | Provision an isolated trusted self-hosted runner on `omarchy`, move trusted TESTGATE execution off hosted runners, correct cold-cache bootstrap, close post-change CRAP, patch adversarial findings, and promote the aggregate. | Runner online and confined; untrusted PR routing impossible; affected/global CRAP actionable set empty; adversarial findings patched; one exact-candidate acceptance matrix and conservative comparison pass; manual rollback proven. | `active`; package ready at `20260718-testgate-accelerated-cutover-001` |
 
 ### Adoption Contract
 
-- Existing conservative gates remain authoritative until the new path passes
-  shadow execution, retained-campaign replay, nonblocking observation, and the
-  fixed cutover scorecard.
+- Existing conservative gates remain authoritative only until the accelerated
+  package passes its event-driven exact-candidate acceptance. Cutover then
+  occurs immediately; there is no elapsed-time, increment-count, 50%, or dual-
+  required gate.
 - Unknown production impact escalates to critical/full execution; there is no
   generic operator or agent downgrade.
 - Campaign and release certificates bind exact clean commits, complete gate
   inventories, current transitive inputs, and authenticated evidence.
-- Protected evidence publication, provider-side rulesets, issuer authority,
-  revocation, crash recovery, and fresh-clone verification are implementation
-  work, not assumed infrastructure.
+- Protected evidence publication, issuer authority, revocation, and crash
+  recovery remain campaign/release work. Provider-context migration applies
+  only when a provider rule actually exists; none exists at current intake.
 - Active campaigns enter through the governed bootstrap path. Prior evidence
   remains `LEGACY_UNVERIFIED` unless independently reconstructed and verified.
-- `CANOPY-PHENOLOGY-02` may proceed after alignment and serve as a shadow-mode
-  campaign; it does not wait for blocking cutover of every implementation row.
+- `CANOPY-PHENOLOGY-02` may proceed after alignment; it does not own or wait on
+  a TESTGATE observation clock.
 
 ## Scientific Assurance Queue
 

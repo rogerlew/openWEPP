@@ -1360,40 +1360,46 @@ package must, at minimum:
 8. extend assurance planning with semantic watches and campaign-head currency;
 9. update package templates, prompt standards, test guidance, local-CI docs,
    release docs, and catalogs; and
-10. prove the selector against retained completed campaigns before enforcing it
-    as the normal path.
+10. prove the selector against the event-driven acceptance matrix and one exact
+    cutover candidate before enforcing it as the normal path. Retained campaign
+    replay remains campaign/release evidence, not an ordinary-cutover delay.
 
-Blocking cutover requires a scorecard over at least 14 consecutive days and 20
-representative increments spanning documentation, bounded, integrated, and all
-available critical/process-domain strata, plus every retained completed
-campaign since 2026-07-01 that can be replayed. Acceptance requires:
+Blocking cutover is event-driven under ADR-0040. It does not wait for elapsed
+days, an increment count, duplicate clean environments, or a dual-required
+provider interval. Acceptance on one exact candidate requires:
 
 - zero missed non-deferrable, critical, consumer, conservation, authority, or
-  anti-evasion obligations compared with current full gates and independent
-  review;
+  anti-evasion obligations in the documentation, bounded, integrated/critical,
+  unknown-impact, and failure-injection acceptance matrix;
 - zero unsafe receipt reuse, missing executor jobs, unexplained inventory
   mismatches, or unresolved production/authority mappings;
-- every broad-suite discovered miss recorded and corrected in the selector;
-- deterministic plan/root/receipt replay across two clean environments;
-- planner wall time p95 at or below 30 seconds;
-- matched ordinary-increment median wall time at least 50% lower than the
-  current conservative runner, with p95 no worse; and
-- every discrepancy dispositioned without a safety waiver.
+- one cold-cache bootstrap followed by deterministic offline plan/root/receipt
+  execution and one normal warm-cache execution on the trusted runner;
+- current affected and global CRAP with zero actionable rows after accepted
+  patches;
+- every adversarial and independent review finding dispositioned, with accepted
+  findings patched and verified;
+- one exact-candidate conservative full-suite comparison;
+- untrusted public pull-request code proven unable to route to the trusted
+  self-hosted runner; and
+- a callable conservative manual rollback lane.
 
-Performance failure delays cutover but cannot waive safety. Automatic rollback
-triggers are any false-negative required obligation, unsafe reuse, certificate
-trust failure, ledger lost update, or required aggregate context disappearing.
-Operator rollback may also respond to sustained availability failure. Rollback
-restores the pinned conservative runner and its original required context while
-keeping the new aggregate failing/visible until repository rules are changed by
-an authenticated owner event. Campaigns admitted under the new schema retain
-their ledgers but cannot claim certification through legacy evidence.
+The operator accepted the measured 48.8% projected reduction on 2026-07-18;
+there is no separate 50% threshold. Performance evidence cannot waive safety.
+Rollback triggers are any false-negative required obligation, unsafe reuse,
+certificate trust failure, ledger lost update, untrusted-event admission, or
+required aggregate disappearance. Rollback disables the normal TESTGATE
+trigger and invokes the conservative manual lane until the concrete defect is
+patched. Campaigns admitted under the new schema retain their ledgers but
+cannot claim certification through legacy evidence.
 
-Migration updates repository rulesets/branch protection/merge queues in this
-order: add new contexts nonblocking; observe shadow results; require the new
-aggregate alongside the old runner; prove one dual-required interval; then
-remove the old required context. The human/provider-side rule change and
-captured before/after evidence are explicit cutover gates.
+When repository rulesets, branch protection, or merge queues actually require
+an old context, migration replaces it with the accepted aggregate in one
+authenticated owner change after acceptance; no dual-required interval is
+required. If no provider rule exists, provider migration is not a cutover
+operand. After acceptance, the accepted TESTGATE aggregate becomes normal
+increment authority immediately and the broad runner remains available only
+for critical, campaign, release, or explicit rollback boundaries.
 
 Until that package closes, current automation may be more conservative and more
 expensive than this standard. It may not be described as already aligned.
@@ -1403,6 +1409,8 @@ expensive than this standard. It may not be described as already aligned.
 ### Internal authority
 
 - [Correctness Authority Model](../specifications/correctness-authority-model.md)
+- [ADR-0039: Campaign-scoped, risk-based testing and assurance gates](../decisions/0039-campaign-scoped-risk-based-testing-and-assurance-gates.md)
+- [ADR-0040: Accelerated TESTGATE cutover](../decisions/0040-accelerated-testgate-cutover-on-trusted-self-hosted-runner.md)
 - [ADR-0021: Module coverage and complexity-risk closure thresholds](../decisions/0021-module-coverage-closure-thresholds.md)
 - [Rust Scientific Coding Standard](rust-scientific-coding-standard.md)
 - [Module Test-Enhancement Work-Package Authoring Guide](module-test-enhancement-authoring-guide.md)

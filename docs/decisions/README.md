@@ -43,6 +43,13 @@ Each ADR documents a decision that constrains future work. Format follows the li
 | [0037](0037-abandon-hybrid-implicit-stepping.md) | Abandon hybrid implicit-explicit kinematic-wave stepping | Accepted |
 | [0038](0038-manuscript-first-scientific-assurance-publication.md) | Manuscript-first scientific assurance publication | Accepted 2026-07-14 |
 | [0039](0039-campaign-scoped-risk-based-testing-and-assurance-gates.md) | Campaign-scoped, risk-based testing and assurance gates | Accepted 2026-07-17 |
+| [0040](0040-accelerated-testgate-cutover-on-trusted-self-hosted-runner.md) | Accelerate TESTGATE cutover on a trusted self-hosted runner | Accepted 2026-07-18 |
+
+ADR-0040 amends ADR-0039's transition policy: TESTGATE cutover is event-driven
+after trusted self-hosted runner setup, CRAP closure, adversarial patch review,
+and exact-candidate acceptance. It retires the 14-day/20-increment scorecard,
+50% threshold, and dual-required interval while preserving concrete safety,
+coverage, CRAP, receipt, campaign, release, and rollback obligations.
 
 ADR-0025 was ratified 2026-06-18 and is the accepted hot-path runtime authority. ADR-0023's dense-authority
 principle is retained; its incremental symbol/phase migration application is superseded — no further

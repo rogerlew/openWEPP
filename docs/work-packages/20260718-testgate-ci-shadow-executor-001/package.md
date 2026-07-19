@@ -22,12 +22,12 @@ distinct, nonblocking CI observation lanes beside the unchanged conservative
 release runner. Benchmark a combined instrumented Nextest path without assuming
 that it replaces the independent full and coverage runs.
 
-This package executes the implementation and shadow-launch phase. It cannot
-truthfully complete blocking cutover in one execution: the canonical standard
-requires at least 14 consecutive days, 20 representative increments, retained
-campaign replay, provider-side context evidence, and a dual-required interval.
-Those operands remain current package acceptance rather than being fabricated,
-waived, or silently deferred.
+At its execution boundary, this package could not truthfully complete blocking
+cutover because the then-current standard required at least 14 consecutive
+days, 20 representative increments, retained campaign replay, provider-side
+context evidence, and a dual-required interval. ADR-0040 later superseded those
+transition operands. This package now supplies historical implementation and
+HOLD evidence; `20260718-testgate-accelerated-cutover-001` owns cutover.
 
 ## Progress
 
@@ -49,9 +49,9 @@ waived, or silently deferred.
   findings remain.
 - [ ] Run the single conservative terminal closure set on the stable tree and
   complete dual terminal verification.
-- [ ] Observe at least 14 consecutive days and 20 representative increments,
-  replay every eligible retained campaign, prove protected publication and
-  provider contexts, and disposition the fixed scorecard.
+- [x] (2026-07-18) Transferred the unexecuted observation/cutover handoff to
+  `20260718-testgate-accelerated-cutover-001`; ADR-0040 retired the fixed
+  scorecard rather than requiring a human or agent to track it.
 
 ## Authority And Intent
 
@@ -153,11 +153,10 @@ execution result; post-submit/backstop collects broad comparison evidence;
 campaign and release entry points retain their separate authority. The existing
 `workspace-validation` context and release runner remain intact.
 
-Milestone 4 captures the initial benchmark and scorecard seed, then completes
-focused checks and dual exact-diff review. Accepted findings are fixed before a
-single terminal conservative gate sequence and dual exact-tree verification.
-Shadow launch can pass while cutover remains `OBSERVING`; the package stays
-active until all time-, increment-, replay-, and provider-bound operands pass.
+Milestone 4 captured the initial benchmark and historical scorecard seed, then
+completed focused checks and dual exact-diff review until the package held.
+ADR-0040 later removed the time-, increment-, and nonexistent-provider-rule
+operands; the accelerated successor owns the accepted patch and cutover loop.
 
 ## Validation And Acceptance
 
@@ -182,13 +181,10 @@ inventory mismatch; dual review; and the terminal conservative sequence:
     cargo deny check
     bash tools/release/run_adjudicated_crap_gate.sh --base-ref 28daa0339cbc99ceb94b176a506ce0c213685d7c
 
-Blocking cutover additionally requires every operand in section 19 of the
-canonical testing-and-gate strategy: at least 14 consecutive observation days,
-20 representative increments across every required stratum, every eligible
-retained campaign replay, zero unsafe misses/reuse/inventory defects, two clean
-environment replays, planner p95 at or below 30 seconds, median ordinary
-increment wall time at least 50% lower with p95 no worse, discrepancy closure,
-protected publication, stable required contexts, and a dual-required interval.
+The former blocking-cutover operands above are retained in the historical
+scorecard but are not active authority. ADR-0040 and the accelerated successor
+require concrete runner, CRAP, adversarial patch-review, acceptance-matrix,
+exact-candidate comparison, and rollback evidence without a timed interval.
 
 Do not repeat a passing broad command merely to refresh presentation evidence.
 Any failed or unavailable current-scope gate prevents package completion.
@@ -234,15 +230,23 @@ Post-cutover failing-sentinel behavior remains a future provider-side contract.
 
 ## Decision Log
 
-- Decision: Treat implementation launch and blocking cutover as two observable
-  states of one package.
+- Decision: supersede the package's unexecuted timed observation/cutover
+  handoff with `20260718-testgate-accelerated-cutover-001` and ADR-0040.
+  Rationale: the operator rejected the 14-day/20-increment cost and directed an
+  event-driven path through `omarchy`, CRAP cleanup, adversarial patch review,
+  acceptance, and immediate cutover. The historical scorecard remains evidence
+  of the former HOLD and is not an active gate.
+  Date/Author: 2026-07-18 / Roger Lew and Codex.
+
+- Historical decision, superseded by ADR-0040: treat implementation launch and
+  blocking cutover as two observable states of one package.
   Rationale: The fixed 14-day/20-increment scorecard is a real current-scope
   cutover gate, but waiting to implement until history exists is impossible.
   The package may record `SHADOW-LAUNCHED / OBSERVING`; it may not claim
   `COMPLETE` until those operands exist and pass.
   Date/Author: 2026-07-18 / Codex.
-- Decision: Keep the conservative workflow authoritative and duplicative during
-  observation.
+- Historical decision, superseded by ADR-0040: keep the conservative workflow
+  authoritative and duplicative during observation.
   Rationale: The governing standard explicitly requires shadow and a
   dual-required interval before removal; benchmark evidence cannot authorize
   early economy changes.

@@ -16,6 +16,11 @@ canonical test authority before repository alignment
 [ADR-0021](0021-module-coverage-closure-thresholds.md), and
 [ADR-0038](0038-manuscript-first-scientific-assurance-publication.md)
 
+**Transition amendment:** [ADR-0040](0040-accelerated-testgate-cutover-on-trusted-self-hosted-runner.md)
+replaces the elapsed-time, increment-count, 50%, and dual-required pre-cutover
+operands with event-driven acceptance on a trusted self-hosted runner. The core
+risk-based testing decision remains accepted.
+
 ## Context
 
 openWEPP accumulated strong but fragmented quality rules. Science contracts

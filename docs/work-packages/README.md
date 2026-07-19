@@ -29,8 +29,9 @@
   external subprocess-output confinement. Dual review, dual terminal
   verification, 2,141 full-profile tests, cargo-deny, and fresh global
   adjudicated CRAP passed. The operator accepts the measured
-  48.8% projected savings as a win; the canonical 50% blocking-cutover
-  threshold and conservative release workflow remain unchanged.
+  48.8% projected savings as a win. ADR-0040 subsequently retired the former
+  50% and timed/count cutover thresholds; the accelerated successor now owns
+  runner setup, adversarial acceptance, and immediate cutover.
 - `20260718-testgate-ci-shadow-executor-001/` executed to `HOLD` for
   TESTGATE-CI-01. Two review rounds closed exact-checkout and fabricated-PASS
   critical findings, but failure receipts/tests, terminal-plan covering-test
@@ -38,13 +39,14 @@
   focused combined benchmark passed 26/26 with exact inventory but achieved
   48.8% rather than the required 50% reduction; planner time was 91.876 seconds
   versus the 30-second threshold. No shadow launch or gate reduction occurred.
-  It remains the underlying implementation and observation package. It owns
-  the fail-closed typed
+  It remains the underlying implementation and historical HOLD-evidence
+  package. It owns the fail-closed typed
   executor, affected-quality adapter, nonblocking lifecycle lanes, initial
   combined-path benchmark, scorecard seed, and rollback evidence. The existing
-  conservative release runner remains authoritative. The package cannot claim
-  blocking cutover before the canonical 14-day/20-increment scorecard and
-  provider-side migration evidence actually pass.
+  conservative release runner remains authoritative at that historical HOLD.
+  Its 14-day/20-increment scorecard is retained as historical evidence but was
+  superseded prospectively by ADR-0040 and
+  `20260718-testgate-accelerated-cutover-001/`.
 - `20260717-testgate-plan-shadow-planner-001/` and its bounded
   `20260718-testgate-plan-crap-cleanup-001/` successor completed
   TESTGATE-PLAN-01. The repository-owned shadow planner/verifier now owns
@@ -177,6 +179,14 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-18 UTC`:
+
+- `20260718-testgate-accelerated-cutover-001/` - READY / ACTIVE: owns the entire
+  remaining TESTGATE path. It provisions an isolated supported Linux runner on
+  the `omarchy` NUC for trusted `main` and manual events only, fixes cold-cache
+  bootstrap, closes post-change actionable CRAP, runs adversarial review with
+  patches and one exact-candidate acceptance sequence, then cuts over
+  immediately. ADR-0040 explicitly removes the 14-day, 20-increment, 50%, and
+  dual-required preconditions; no human or agent observation handoff remains.
 
 - `20260717-canopy-phenology-gsi-kernel-001/` -
   COMPLETE-PASS-PROCESS-KERNEL (2026-07-17): implements
