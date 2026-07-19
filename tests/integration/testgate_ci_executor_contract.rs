@@ -226,13 +226,21 @@ fn blocking_executor_and_affected_quality_preserve_manual_rollback() {
 fn runner_container_has_no_host_or_privileged_mounts() {
     let manager = text("tools/ci/omarchy-runner/manage.sh");
     let image = text("tools/ci/omarchy-runner/Dockerfile");
+    let workflow = text(".github/workflows/testgate-shadow.yml");
+    let host_receipt = text(
+        "docs/work-packages/20260718-testgate-accelerated-cutover-001/artifacts/host-capacity-security.md",
+    );
+    let image_id = "sha256:17c413a944e4a456cfceee254425f5c7f081a22b74b9cd88f1b9e8f1f37fcf7a";
+    assert_eq!(manager.matches(image_id).count(), 1);
+    assert_eq!(workflow.matches(image_id).count(), 2);
+    assert_eq!(host_receipt.matches(image_id).count(), 1);
     assert!(manager.contains("--security-opt no-new-privileges=true"));
     assert!(manager.contains("--cap-drop ALL"));
     assert!(manager.contains("--read-only"));
     assert!(manager.contains("dst=/runner-state,readonly"));
     assert!(manager.contains("--tmpfs"));
     assert!(manager.contains("/t:rw,exec,nosuid,nodev"));
-    assert!(manager.contains("/t:rw,exec,nosuid,nodev,size=26g"));
+    assert!(manager.contains("/t:rw,exec,nosuid,nodev,size=40g"));
     assert!(manager.contains("/cache/cargo:rw,nosuid,nodev"));
     assert!(manager.contains("job-completed-hook.sh"));
     assert!(!manager.contains("/var/run/docker.sock"));
@@ -242,12 +250,14 @@ fn runner_container_has_no_host_or_privileged_mounts() {
     assert!(manager.contains("printf '%s\\n' \"${registration_token}\""));
     assert!(image.contains("RUSTUP_TOOLCHAIN=1.92.0-x86_64-unknown-linux-gnu"));
     assert!(image.contains("pyarrow==22.0.0"));
+    assert!(image.contains("pandas==3.0.3"));
     assert!(image.contains("UK2US_COMMIT=6ce03a96a9466bed029fb0287786cd903f1876d6"));
     assert!(image.contains("python-is-python3 php-cli"));
     assert!(manager.contains("uk2us_rules.json"));
     let bootstrap = text("tools/ci/omarchy-runner/bootstrap_dependencies.sh");
     assert!(bootstrap.contains("python3 -m venv --system-site-packages .venv"));
     assert!(bootstrap.contains("pyarrow.__version__ == \"22.0.0\""));
+    assert!(bootstrap.contains("pandas.__version__ == \"3.0.3\""));
     assert!(image.contains(
         "ACTIONS_RUNNER_HOOK_JOB_COMPLETED=/usr/local/bin/openwepp-job-completed-hook.sh"
     ));

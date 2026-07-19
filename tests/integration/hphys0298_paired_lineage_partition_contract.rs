@@ -182,6 +182,6 @@ fn hphys0298_harness_rejects_historical_hrsnow_water_equiv_pairing() {
         stderr.contains("snow_hourly_snowfall_water_equiv_sum_m")
             && stderr.contains("snow_hourly_snowfall_depth_sum_m")
             && stderr.contains("HPHYS0299 corrected depth-vs-depth"),
-        "unit guard stderr must point to the bad water-equivalent field and corrected HPHYS0299 depth surface"
+        "unit guard stderr must point to the bad water-equivalent field and corrected HPHYS0299 depth surface; stderr: {stderr}"
     );
 }

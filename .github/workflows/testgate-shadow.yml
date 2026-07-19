@@ -27,7 +27,7 @@ jobs:
     permissions:
       contents: read
     env:
-      OPENWEPP_RUNNER_IMAGE_ID: sha256:b3717ae3a05357450b8cabc8c4eca17ea493578fac5bb2aa15e4528032c64219
+      OPENWEPP_RUNNER_IMAGE_ID: sha256:17c413a944e4a456cfceee254425f5c7f081a22b74b9cd88f1b9e8f1f37fcf7a
       CARGO_TARGET_DIR: /t
       TESTGATE_EXECUTION_ROOT: /t
     steps:
@@ -75,7 +75,7 @@ jobs:
           php --version | grep -F 'PHP 8.3.'
           uk2us --help >/dev/null
           python --version | grep -F 'Python 3.12.'
-          python3 -c 'import pyarrow; assert pyarrow.__version__ == "22.0.0"'
+          python3 -c 'import pandas, pyarrow; assert pandas.__version__ == "3.0.3"; assert pyarrow.__version__ == "22.0.0"'
           python3 -m venv --help >/dev/null
       - name: Bootstrap locked base and head dependencies
         run: >-
@@ -175,7 +175,7 @@ jobs:
       - name: Validate receipt and predicate bindings
         env:
           EVIDENCE_DIR: ${{ runner.temp }}/testgate-evidence
-          EXPECTED_IMAGE: sha256:b3717ae3a05357450b8cabc8c4eca17ea493578fac5bb2aa15e4528032c64219
+          EXPECTED_IMAGE: sha256:17c413a944e4a456cfceee254425f5c7f081a22b74b9cd88f1b9e8f1f37fcf7a
           EXPECTED_BASE: ${{ steps.verification-comparison.outputs.base }}
         run: |
           set -euo pipefail

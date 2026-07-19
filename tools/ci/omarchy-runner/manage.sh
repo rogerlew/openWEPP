@@ -4,7 +4,7 @@ set -euo pipefail
 readonly HOST="${OPENWEPP_RUNNER_HOST:-omarchy}"
 readonly REPOSITORY="${OPENWEPP_RUNNER_REPOSITORY:-rogerlew/openWEPP}"
 readonly IMAGE="openwepp-actions-runner:2.335.1"
-readonly EXPECTED_IMAGE_ID="sha256:b3717ae3a05357450b8cabc8c4eca17ea493578fac5bb2aa15e4528032c64219"
+readonly EXPECTED_IMAGE_ID="sha256:17c413a944e4a456cfceee254425f5c7f081a22b74b9cd88f1b9e8f1f37fcf7a"
 readonly CONTAINER="openwepp-actions-runner"
 readonly RUNNER_NAME="omarchy-openwepp-01"
 readonly LABELS="openwepp,omarchy,trusted"
@@ -83,7 +83,7 @@ setup_runner() {
     --tmpfs "/runner-state/_diag:rw,nosuid,nodev,noexec,size=256m,uid=10001,gid=10001,mode=0700" \
     --tmpfs "/runner-work:rw,nosuid,nodev,size=16g,uid=10001,gid=10001,mode=0770" \
     --tmpfs "/cache/cargo:rw,nosuid,nodev,size=4g,uid=10001,gid=10001,mode=0700" \
-    --tmpfs "/t:rw,exec,nosuid,nodev,size=26g,uid=10001,gid=10001,mode=0700" \
+    --tmpfs "/t:rw,exec,nosuid,nodev,size=40g,uid=10001,gid=10001,mode=0700" \
     --tmpfs "/home/runner:rw,nosuid,nodev,size=512m,uid=10001,gid=10001,mode=0700" \
     --tmpfs "/tmp:rw,nosuid,nodev,size=1g,uid=10001,gid=10001,mode=1777" \
     "${IMAGE}" run >/dev/null

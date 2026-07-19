@@ -18,7 +18,7 @@ from typing import Any
 import pandas as pd
 
 
-REPO = Path("/home/workdir/openWEPP")
+REPO = Path(__file__).resolve().parents[4]
 WEPPPY_PYTHON = Path("/workdir/wepppy/.venv/bin/python")
 SOURCE_RUNS = Path("/tmp/unpalatable_parity_20260529T192707Z/runs")
 BASELINE_PARTITIONS = Path(

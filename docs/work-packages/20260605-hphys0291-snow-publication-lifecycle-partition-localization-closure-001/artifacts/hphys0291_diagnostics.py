@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any
 
 
-REPO = Path("/home/workdir/openWEPP")
+REPO = Path(__file__).resolve().parents[4]
 HPHYS0265_SCRIPT = (
     REPO
     / "docs/work-packages/20260603-hphys0265-longer-season-ep-divergence-localization-closure-001/artifacts/hphys0265_diagnostics.py"

@@ -23,15 +23,15 @@ read-only.
 The image verifies the official runner archive, the Rust installer, and the
 controller's `markdown-doc` binary by SHA-256. Rust and the repository's gate
 tools are pinned in the image; normal jobs verify them instead of installing
-them. The clean-workspace test inventory also receives Python 3.12, PyArrow
-22.0.0, PHP 8.3, and the commit-pinned `uk2us` converter with the repository's
-reviewed spelling rules. Bootstrap creates the ignored repo-local `.venv` with
-system packages enabled, and the completion hook removes it with the workspace.
-Runner updates are deliberate image revisions so a job cannot replace the
-persistent control plane.
+them. The clean-workspace test inventory also receives Python 3.12, pandas
+3.0.3, PyArrow 22.0.0, PHP 8.3, and the commit-pinned `uk2us` converter with the
+repository's reviewed spelling rules. Bootstrap creates the ignored repo-local
+`.venv` with system packages enabled, and the completion hook removes it with
+the workspace. Runner updates are deliberate image revisions so a job cannot
+replace the persistent control plane.
 
 Execution evidence, Cargo output, and planner temporary files share the bounded
-26 GiB executable tmpfs at the short fixed paths `/t/e`, `/t`, and `/t/p`.
+40 GiB executable tmpfs at the short fixed paths `/t/e`, `/t`, and `/t/p`.
 Concurrency is one and the completion hook purges the mount after every job, so
 the fixed names stay fresh while keeping Unix-domain socket fixtures below
 Linux's path limit. Repository-snapshot verifier fixtures are serialized within

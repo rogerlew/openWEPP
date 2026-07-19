@@ -44,10 +44,10 @@ No `pull_request` or `pull_request_target` event is routed to this runner.
 Ran: 2026-07-18 PDT / 2026-07-19 UTC.
 
 - Container image ID:
-  `sha256:b3717ae3a05357450b8cabc8c4eca17ea493578fac5bb2aa15e4528032c64219`
-  (`822,234,639` bytes). This revision retains Ubuntu's repository-pinned
+  `sha256:17c413a944e4a456cfceee254425f5c7f081a22b74b9cd88f1b9e8f1f37fcf7a`
+  (`863,351,191` bytes). This revision retains Ubuntu's repository-pinned
   `ripgrep 14.1.0-1` and adds Python 3.12's `python` alias, system-visible
-  PyArrow `22.0.0`, PHP `8.3.6`, and `uk2us` at commit
+  pandas `3.0.3`, PyArrow `22.0.0`, PHP `8.3.6`, and `uk2us` at commit
   `6ce03a96a9466bed029fb0287786cd903f1876d6` with hashed executable and spelling
   rules. These tools satisfy the clean-workspace inventory without job-time
   executable installation.
@@ -73,7 +73,7 @@ Ran: 2026-07-18 PDT / 2026-07-19 UTC.
 - Runtime limits: 16 CPUs, 28 GiB memory, 4096 PIDs, all Linux capabilities
   dropped, `no-new-privileges`, bridge networking, not privileged.
 - The container root filesystem and sole named registration-state volume are
-  read-only during jobs. Work (16 GiB), Cargo (4 GiB), target (26 GiB), home
+  read-only during jobs. Work (16 GiB), Cargo (4 GiB), target (40 GiB), home
   (512 MiB), diagnostics (256 MiB), and `/tmp` (1 GiB) are bounded tmpfs
   mounts. Only target is executable, because Cargo must execute freshly built
   build scripts and test binaries there; work, Cargo source cache, home,
@@ -97,9 +97,15 @@ Ran: 2026-07-18 PDT / 2026-07-19 UTC.
 - Exact-candidate run `29677049559` proved that four concurrent independent
   repository-snapshot verifier fixtures could fill the 20 GiB target mount and
   that `/cache/target/e/execution/.work/tmp` remained too long for the longest
-  Unix-domain socket fixture. The target mount is now 26 GiB at `/t`, with
+  Unix-domain socket fixture. The target mount was 26 GiB at `/t`, with
   execution paths `/t/e` and `/t/p`; full-profile executor/verifier snapshot
   fixtures are serialized without removing or skipping any test.
+- Exact-candidate run `29677779525` then proved that one serialized immutable-
+  envelope reconstruction can peak near the 26 GiB ceiling because it compiles
+  a complete independent workspace beside the retained primary full-suite
+  target. The dynamically allocated `/t` ceiling is now 40 GiB; the container
+  retains its 28 GiB memory limit and host-backed swap boundary, and the same
+  completion hook purges the entire mount after every job.
 - A root-owned runner completion hook repeatedly terminates non-control-plane
   processes owned by the runner UID until quiescent and deletes work, Cargo,
   target, home, `/tmp`, and writable diagnostics after every job. A standalone
@@ -112,9 +118,10 @@ Ran: 2026-07-18 PDT / 2026-07-19 UTC.
 - Direct tool verification passed for Rust 1.92.0, Nextest 0.9.138,
   cargo-deny 0.19.6, cargo-llvm-cov 0.8.7, cargo-crap 0.2.2, and
   markdown-doc-cli 0.1.0. The unprivileged live runner also reported Python
-  3.12.3, PyArrow 22.0.0 under `/usr/local/lib/python3.12/dist-packages`, PHP
-  8.3.6, and the pinned `uk2us` help surface; a disposable
-  `--system-site-packages` virtual environment imported the same PyArrow.
+  3.12.3, pandas 3.0.3 and PyArrow 22.0.0 under
+  `/usr/local/lib/python3.12/dist-packages`, PHP 8.3.6, and the pinned `uk2us`
+  help surface; a disposable `--system-site-packages` virtual environment
+  imported the same pandas and PyArrow versions.
 - Clean removal deleted the provider registration, container, and dedicated
   registration volume. Reprovisioning created exactly one online/idle runner
   with `disableUpdate=true`; the final image/sizing reprovision again reported

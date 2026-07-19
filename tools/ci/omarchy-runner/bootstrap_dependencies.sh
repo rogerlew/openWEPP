@@ -22,4 +22,4 @@ fetch_tree "${BASE_COMMIT}" "${BOOTSTRAP_ROOT}/base"
 fetch_tree "${HEAD_COMMIT}" "${BOOTSTRAP_ROOT}/head"
 
 python3 -m venv --system-site-packages .venv
-.venv/bin/python -c 'import pyarrow; assert pyarrow.__version__ == "22.0.0"'
+.venv/bin/python -c 'import pandas, pyarrow; assert pandas.__version__ == "3.0.3"; assert pyarrow.__version__ == "22.0.0"'

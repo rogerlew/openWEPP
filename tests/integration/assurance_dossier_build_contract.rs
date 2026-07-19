@@ -268,14 +268,12 @@ fn output_symlink_escape_is_rejected() {
 fn public_output_and_snapshot_special_entries_are_rejected() {
     use std::os::unix::net::UnixListener;
 
-    let fixture = transition_fixture("assure03-special-entry-source");
+    let fixture = transition_fixture("s");
     let assurance = Assurance::open(&fixture.path).expect("load special-entry fixture");
     assurance
         .build(&BuildOptions::default())
         .expect("build tracked fixture outputs");
-    let public_socket = fixture
-        .path
-        .join("usersum/assurance/unexpected-public.sock");
+    let public_socket = fixture.path.join("usersum/assurance/p");
     let public_listener = UnixListener::bind(&public_socket).expect("bind public socket");
     assert!(matches!(
         assurance.check(),
@@ -284,14 +282,14 @@ fn public_output_and_snapshot_special_entries_are_rejected() {
     drop(public_listener);
     fs::remove_file(&public_socket).expect("remove public socket");
 
-    let snapshot_root = Scratch::new("assure03-special-entry-snapshot");
+    let snapshot_root = Scratch::new("t");
     let options = BuildOptions {
         output_root: None,
-        snapshot: Some("special".to_owned()),
+        snapshot: Some("s".to_owned()),
         snapshot_root: Some(snapshot_root.path.clone()),
     };
     assurance.build(&options).expect("create clean snapshot");
-    let snapshot_socket = snapshot_root.path.join("special/unexpected.sock");
+    let snapshot_socket = snapshot_root.path.join("s/p");
     let snapshot_listener = UnixListener::bind(&snapshot_socket).expect("bind snapshot socket");
     assert!(matches!(
         assurance.build(&options),
