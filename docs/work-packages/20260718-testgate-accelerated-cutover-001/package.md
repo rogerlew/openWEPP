@@ -84,6 +84,7 @@ authority requirements are not reduced.
 - `tools/local_ci/**`
 - `tools/release/**`
 - `tests/integration/testgate_ci_*`
+- `tests/integration/testgate_align_authority_contract.rs`
 - `tests/python/test_testgate_shadow.py`
 - `tests/python/test_testgate.py`
 - `docs/ROADMAP.md`
@@ -342,6 +343,12 @@ calendar observation or broad testing on every ordinary increment.
   Rationale: the active-guidance sweep found the same pre-cutover fallback on
   those two canonical surfaces after the first amendment. The provider
   TESTGATE workflow remained disabled during both admission commits.
+  Date/Author: 2026-07-18 / Codex.
+- Decision: add the TESTGATE authority integration contract to the prospective
+  write set before the implementation candidate.
+  Rationale: an authorization dry check found that `testgate_ci_*` does not
+  match the separately named schema/authority contract. The workflow remained
+  disabled while this correction was published.
   Date/Author: 2026-07-18 / Codex.
 
 ## Outcomes & Retrospective
