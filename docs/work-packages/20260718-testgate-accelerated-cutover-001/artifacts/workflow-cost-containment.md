@@ -20,3 +20,10 @@ Cutover acceptance run `29671679629` failed in 26 seconds before gate execution
 and therefore incurred no repeated heavy suite. Its always-reporting verifier
 and aggregate failed closed. The runner image was rebuilt for the two launch
 defects recorded in `host-capacity-security.md`; it was not blindly rerun.
+
+Run `29671981925` then passed checkout, event admission, toolchain preflight,
+dependency bootstrap, and the corrected completion hook, but failed in 18
+seconds before gate execution because Docker's target tmpfs defaulted to
+`noexec`. A confined container reproduction produced the same build-script
+permission failure. Only the disposable target tmpfs was changed to `exec`;
+the other writable surfaces remain `noexec`.

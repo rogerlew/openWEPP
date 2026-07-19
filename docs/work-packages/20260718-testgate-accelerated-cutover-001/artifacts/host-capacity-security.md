@@ -69,8 +69,10 @@ Ran: 2026-07-18 PDT / 2026-07-19 UTC.
 - The container root filesystem and sole named registration-state volume are
   read-only during jobs. Work (16 GiB), Cargo (4 GiB), target (8 GiB), home
   (512 MiB), diagnostics (256 MiB), and `/tmp` (1 GiB) are bounded tmpfs
-  mounts. Host bind mounts are absent; no Docker socket, host home, or homelab
-  data path is present.
+  mounts. Only target is executable, because Cargo must execute freshly built
+  build scripts and test binaries there; work, Cargo source cache, home,
+  diagnostics, and `/tmp` remain `noexec`. Host bind mounts are absent; no
+  Docker socket, host home, or homelab data path is present.
 - A root-owned runner completion hook repeatedly terminates non-control-plane
   processes owned by the runner UID until quiescent and deletes work, Cargo,
   target, home, `/tmp`, and writable diagnostics after every job. A standalone
