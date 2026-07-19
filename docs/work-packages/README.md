@@ -211,9 +211,10 @@ State as of `2026-07-19 UTC`:
   failure after 11/12 critical nodes and full Nextest 2,165/2,165 pass.
 
 - `20260719-testgate-crap-adapter-digest-alignment-001/` -
-  EXECUTED-FAIL-GLOBAL-OUTPUT-RELOCATION (2026-07-19): both adapter identities
-  are correct and 11/12 critical nodes pass; global CRAP fails before
-  acquisition on its absolute default output. The named successor owns it.
+  EXECUTED-FAIL-GLOBAL-OUTPUT-RELOCATION-REVIEWED (2026-07-19): both adapter
+  identities are correct and 11/12 critical nodes pass; global CRAP fails before
+  acquisition on its absolute default output. Dual review accepts the truthful
+  failed disposition, and the named READY successor owns it.
 
 - `20260719-testgate-coverage-tmpdir-confinement-001/` -
   IMPLEMENTED-BLOCKED-ADAPTER-DIGEST (2026-07-19): the confined short-temp

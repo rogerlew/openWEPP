@@ -4,7 +4,7 @@ Package ID: `20260719-testgate-crap-adapter-digest-alignment-001`
 
 Queue ID: `TESTGATE-CRAP-ADAPTER-DIGEST-01`
 
-Status: `EXECUTED / FAIL-GLOBAL-OUTPUT-RELOCATION`
+Status: `EXECUTED / FAIL-GLOBAL-OUTPUT-RELOCATION / REVIEWED`
 
 Authorization: fail-closed `GATE-ADAPTER-DIGEST` from the confined coverage
 temp correction, under Roger Lew's 2026-07-19 adversarial acceptance direction.
@@ -31,7 +31,9 @@ mechanically selected critical plan.
   default absolute output conflicts with executor-safe relative relocation.
 - [x] (2026-07-19) `20260719-testgate-global-crap-output-relocation-001` owns
   that distinct gate-runner defect. No passing node is rerun in this package.
-- [ ] Complete dual review and terminal verification.
+- [x] (2026-07-19) Dual review and terminal verification accept the truthful
+  failed disposition and the sole READY successor; no executable gate was
+  repeated during documentation reconciliation.
 
 ## Correction Authority Envelope
 
@@ -61,8 +63,9 @@ action is authorized.
 - [x] Both adapter digests equal direct script SHA; all other JSON is unchanged.
 - [x] Focused policy contracts pass.
 - [ ] Mechanical critical receipt passes every selected node.
-- [ ] Dual review and dual terminal verification have no open finding.
-- [ ] No Rust change; line-count governance is `NOT_APPLICABLE`.
+- [x] Dual review and dual terminal verification have no open finding about the
+  failed disposition or successor readiness.
+- [x] No Rust change; line-count governance is `NOT_APPLICABLE`.
 
 ## Review And Delegation
 
@@ -93,6 +96,7 @@ weakening any behavior or gate.
 ## Outcomes And Retrospective
 
 The binding correction passes focused policy evidence and 11/12 critical
-nodes. Terminal target: a truthful failed execution that assigns the distinct
-global-output relocation defect to the named successor. Dual review and
-terminal verification must accept that disposition before closure.
+nodes. The package closes as a reviewed, truthful failed execution and assigns
+the distinct global-output relocation defect to the named READY successor. The
+failed global CRAP gate remains failed; no passing evidence was relabeled and no
+passing executable node was rerun for documentation closure.
