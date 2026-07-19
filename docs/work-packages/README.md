@@ -206,9 +206,11 @@
 
 State as of `2026-07-19 UTC`:
 
-- `20260719-testgate-policy-digest-alignment-001/` - READY (2026-07-19): close
-  `GATE-POLICY-DIGEST-DRIFT` by aligning the impact map's one stale strategy
-  digest, then rerun only the focused planner and TESTGATE contract gates.
+- `20260719-testgate-policy-digest-alignment-001/` - IN-PROGRESS-CRITICAL-GATES
+  (2026-07-19): the exact one-field digest correction and focused gates pass;
+  dual review rejected the initial focused-only plan because impact-map changes
+  are mechanically CRITICAL. The package now owns one local planner-selected
+  critical execution before terminal closure.
 
 - `20260717-canopy-phenology-gsi-kernel-001/` -
   COMPLETE-PASS-PROCESS-KERNEL (2026-07-17): implements

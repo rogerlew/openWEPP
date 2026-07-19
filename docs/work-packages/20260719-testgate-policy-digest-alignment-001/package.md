@@ -4,7 +4,7 @@ Package ID: `20260719-testgate-policy-digest-alignment-001`
 
 Queue ID: `TESTGATE-POLICY-DIGEST-01`
 
-Status: `READY`
+Status: `IN PROGRESS / CRITICAL GATES REQUIRED`
 
 Authorization: the accepted and terminal-confirmed blocker from
 `20260719-testgate-adversarial-agent-acceptance-001`, under Roger Lew's
@@ -24,8 +24,17 @@ testing strategy.
 ## Progress
 
 - [x] (2026-07-19) Reproduced and independently reviewed the exact mismatch.
-- [ ] Update the one stale policy digest inside the correction envelope.
-- [ ] Run the focused policy/planner and TESTGATE contract gates once.
+- [x] (2026-07-19) Updated only the stale `policy_sha256` binding and committed
+  the exact correction as `3536643ec6a044883f168f4351ae9dff6df7dcb6`.
+- [x] (2026-07-19) Completed the focused planner inventory as 57 retained
+  passes plus a 5/5 clean-commit rerun, then passed all 15 focused TESTGATE
+  integration tests.
+- [x] (2026-07-19) Dual review accepted the exact correction but found that
+  the focused-only gate plan improperly downgraded the policy-declared
+  `CRITICAL` change; findings `TGDA-A-01`, `TGDA-A-02`, `RB-01`, `RB-02`, and
+  `RB-03` are accepted.
+- [ ] Execute and independently verify the mechanically selected CRITICAL gate
+  plan; do not substitute the focused evidence for that plan.
 - [ ] Complete dual review, terminal verification, and disposition.
 
 ## Correction Authority Envelope
@@ -78,17 +87,19 @@ the attempted in-envelope correction, and the next defect owner.
 
 ## Intended Gate Plan
 
-Run exactly:
+The initial focused-only plan was rejected by both independent reviewers.
+`gate-policy/v1/impact-map.json` classifies every `gate-policy/` change as
+`CRITICAL`, and the canonical strategy makes an impact-map change inherently
+critical. The corrected plan is therefore the repository planner's exact
+terminal selection over the scaffold base through the correction-and-review
+head, executed once by `tools/local_ci/testgate.py`.
 
-1. pre-edit and post-edit SHA-256 reconstruction plus JSON parsing;
-2. `cargo nextest run -p openwepp-gate-planner --lib`;
-3. `cargo nextest run --test testgate_align_authority_contract --test testgate_assure_campaign_currency_contract --test testgate_ci_executor_contract`;
-4. package/catalog Markdown lint and `git diff --check`.
-
-No full workspace Nextest, Clippy, coverage, CRAP, cargo-deny, campaign,
-release, comparator, workflow dispatch, or runner action is selected. Rust and
-test bytes do not change. A validation failure is fixed at cause and only its
-invalidated focused family reruns.
+The terminal plan, rather than this prose, owns the final gate inventory. It
+must include campaign-closure-strength workspace regression, global
+adjudicated CRAP, and all specialized/prerequisite gates selected from
+`gate-policy/v1/gate-definitions.json`. No manually narrowed substitute is
+authorized. No workflow dispatch or runner action is selected; execution is
+local and produces an explicitly untrusted local receipt.
 
 ## Execution Plan
 
@@ -96,19 +107,23 @@ invalidated focused family reruns.
 2. Reconstruct both digests and confirm only `policy_sha256` is stale.
 3. Apply the one-field correction; prove the JSON diff is exactly one value.
 4. Run the intended focused gates once and record commands, counts, and timing.
-5. Complete dual independent review and terminal verification. Patch accepted
-   findings and rerun only invalidated focused checks.
-6. Archive the prompt and close the defect. A fresh adversarial acceptance
+5. Complete dual independent review. Patch accepted findings and execute the
+   mechanically selected critical plan once; do not repeat already-passing
+   focused commands separately.
+6. Complete terminal verification, archive the prompt, and close the defect. A
+   fresh adversarial acceptance
    rerun owns live TESTGATE acceptance.
 
 ## Acceptance
 
-- [ ] Exact current strategy SHA equals `impact-map.json` `policy_sha256`.
-- [ ] Policy diff changes exactly the one authorized digest value.
-- [ ] Planner library and three focused TESTGATE contracts pass.
-- [ ] No broad or unauthorized gate runs.
+- [x] Exact current strategy SHA equals `impact-map.json` `policy_sha256`.
+- [x] Policy diff changes exactly the one authorized digest value.
+- [x] Planner library and three focused TESTGATE contracts pass.
+- [ ] Mechanically selected CRITICAL terminal plan passes with independently
+  verified local receipt.
+- [ ] No command outside the mechanical terminal plan runs.
 - [ ] Dual review and dual terminal verification have no open finding.
-- [ ] No `.rs` file changes; line-count governance is `NOT_APPLICABLE`.
+- [x] No `.rs` file changes; line-count governance is `NOT_APPLICABLE`.
 - [ ] Gate evidence non-deferral and HOLD legitimacy checks pass.
 
 ## Review And Delegation
@@ -130,7 +145,19 @@ restores currency without altering selection behavior or weakening policy.
 
 ## Surprises And Discoveries
 
-Pending execution.
+- The first focused planner invocation ran 57 tests successfully before a
+  receipt reconstruction test rejected the uncommitted correction with
+  `GATE-COMMITTED-CHECKOUT-NOT-EXACT`; four tests were canceled by fail-fast.
+  The correction bytes were already proven exact, so they were committed and
+  only the failed plus four canceled cases were rerun. All five passed.
+- The focused planner evidence consumed 782.617 seconds for the initial run
+  and 933.146 seconds for the five-case clean-commit rerun. This is observed
+  test-cost evidence, not authority to expand this mechanical repair into test
+  architecture work.
+- Both reviewers found that the initial plan contradicted the canonical
+  `CRITICAL` classification. This is an accepted closure-blocking package
+  defect. Because the required evidence remains producible, HOLD is not
+  legitimate and the package continues with the planner-selected gate set.
 
 ## Decision Log
 
@@ -141,4 +168,8 @@ Pending execution.
 
 ## Outcomes And Retrospective
 
-Pending execution.
+The one-field correction restores exact policy identity without altering gate
+selection or weakening fail-closed behavior. Focused executable evidence is
+complete but cannot close the critical increment. Mechanical critical-plan
+execution and terminal closure remain before this package can move from the
+active catalog.
