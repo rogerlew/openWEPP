@@ -206,9 +206,10 @@
 
 State as of `2026-07-19 UTC`:
 
-- `20260719-testgate-crap-adapter-digest-alignment-001/` - READY (2026-07-19):
-  align the two fail-closed CRAP adapter identities to the corrected confined
-  runner, then execute the final critical plan.
+- `20260719-testgate-crap-adapter-digest-alignment-001/` -
+  IMPLEMENTED-PENDING-CRITICAL (2026-07-19): both exact adapter identities match
+  direct runner SHA and policy contracts pass 10/10; the final critical plan
+  remains.
 
 - `20260719-testgate-coverage-tmpdir-confinement-001/` -
   IMPLEMENTED-BLOCKED-ADAPTER-DIGEST (2026-07-19): the confined short-temp
