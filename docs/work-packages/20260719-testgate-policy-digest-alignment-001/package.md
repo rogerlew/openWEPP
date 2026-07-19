@@ -25,7 +25,7 @@ testing strategy.
 
 - [x] (2026-07-19) Reproduced and independently reviewed the exact mismatch.
 - [x] (2026-07-19) Updated only the stale `policy_sha256` binding and committed
-  the exact correction as `3536643ec6a044883f168f4351ae9dff6df7dcb6`.
+  the exact correction as `734a7861f25e38a6d1a37ca453905bd607cd779e`.
 - [x] (2026-07-19) Completed the focused planner inventory as 57 retained
   passes plus a 5/5 clean-commit rerun, then passed all 15 focused TESTGATE
   integration tests.

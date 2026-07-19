@@ -12,7 +12,7 @@ Before correction:
   `gate-policy/v1/impact-map.json`.
 
 Correction commit:
-`3536643ec6a044883f168f4351ae9dff6df7dcb6`.
+`734a7861f25e38a6d1a37ca453905bd607cd779e`.
 
 After correction, direct `sha256sum` reconstruction and `jq` extraction both
 return
