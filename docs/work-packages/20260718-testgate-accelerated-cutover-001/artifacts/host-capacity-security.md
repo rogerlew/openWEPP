@@ -80,14 +80,16 @@ Ran: 2026-07-18 PDT / 2026-07-19 UTC.
   `No space left on device` before plan selection or gate execution. The target
   tmpfs bound was raised to 20 GiB; it remains isolated, purge-on-completion,
   and dynamically allocated under the unchanged 28 GiB container memory cap.
-- Acceptance run `29673913049` then exposed two concurrent full Cargo target
-  trees: terminal-plan reconstruction used one tree while executor preflight
-  built the same 2,185-test inventory into another. The executor now shares its
-  confined target tree across reconstruction, preflight, execution, and local
-  receipt reconstruction. This removes duplicate local build storage and
-  preserves exact inventory-drift validation instead of increasing the memory
-  bound again. The GitHub-hosted immutable-envelope verifier still reconstructs
-  independently on a clean hosted worker.
+- Acceptance runs `29673913049` and `29674327727` exposed two distinct target
+  lifecycle defects. The first retained concurrent reconstruction and executor
+  trees. Direct sharing then reused binaries containing the temporary
+  snapshot's compile-time source path, so path-aware tests in the second run
+  could not find the deleted snapshot. Reconstruction now uses an isolated
+  target tree that is deleted before preflight; preflight, gate execution, and
+  local receipt reconstruction then use one retained repository-root tree.
+  This bounded sequential lifecycle prevents concurrent full build trees and
+  path-bound binary reuse. The GitHub-hosted immutable-envelope verifier still
+  reconstructs independently on a clean hosted worker.
 - A root-owned runner completion hook repeatedly terminates non-control-plane
   processes owned by the runner UID until quiescent and deletes work, Cargo,
   target, home, `/tmp`, and writable diagnostics after every job. A standalone

@@ -252,7 +252,10 @@ fn validate_plan(repo: &Path, artifact_root: &Path, plan: &Value) -> Result<()> 
     let schema = read_json(&repo.join("gate-policy/v1/schemas/gate-plan.schema.json"))?;
     validate_schema(&schema, plan, "executor gate plan")?;
     verify_plan_identity(plan)?;
-    let reconstructed = reconstruct_plan_in(repo, plan, &work_root(artifact_root), false)?;
+    let reconstruction = work_root(artifact_root).join("reconstruction");
+    let reconstructed = reconstruct_plan_in(repo, plan, &reconstruction, false);
+    remove_reconstruction_workspace(&reconstruction)?;
+    let reconstructed = reconstructed?;
     if digest(&reconstructed)? != digest(plan)? {
         return Err(execution_error(
             "GATE-EXEC-PLAN-RECONSTRUCTION",
@@ -266,6 +269,25 @@ fn validate_plan(repo: &Path, artifact_root: &Path, plan: &Value) -> Result<()> 
         ));
     }
     Ok(())
+}
+
+fn remove_reconstruction_workspace(path: &Path) -> Result<()> {
+    match fs::symlink_metadata(path) {
+        Ok(metadata) if metadata.file_type().is_symlink() || !metadata.is_dir() => {
+            Err(execution_error(
+                "GATE-EXEC-RECONSTRUCTION-CLEANUP",
+                path.display().to_string(),
+            ))
+        }
+        Ok(_) => fs::remove_dir_all(path).map_err(|error| {
+            execution_error("GATE-EXEC-RECONSTRUCTION-CLEANUP", error.to_string())
+        }),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
+        Err(error) => Err(execution_error(
+            "GATE-EXEC-RECONSTRUCTION-CLEANUP",
+            error.to_string(),
+        )),
+    }
 }
 
 fn verify_execution_checkout(repo: &Path, plan: &Value) -> Result<()> {

@@ -9,6 +9,7 @@
 
 mod assurance;
 pub mod canonical;
+mod documentation;
 pub mod error;
 mod execution_context;
 pub mod executor;

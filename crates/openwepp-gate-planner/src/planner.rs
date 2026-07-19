@@ -8,6 +8,7 @@ use serde_json::{Value, json};
 
 use crate::assurance::{plan_assurance_impacts, reconcile_assurance_impacts};
 use crate::canonical::{derived_id, digest, parse_strict, sha256_bytes, validate_schema};
+use crate::documentation::{append_lint_paths, changed_markdown_paths};
 use crate::error::{ErrorClass, GatePolicyError, Result};
 use crate::execution_context::cargo_configuration_manifest;
 pub(crate) use crate::execution_context::environment_record;
@@ -829,13 +830,17 @@ impl<P: InventoryProvider> Planner<P> {
             .cloned()
             .collect::<BTreeSet<_>>();
         for definition in policy.definitions_for_risk(selection.risk) {
-            add_definition_instances(&mut instances, definition, selection);
+            if definition_applies(definition, selection) {
+                add_definition_instances(&mut instances, definition, selection);
+            }
         }
         for id in explicit {
             let definition = policy.definition(&id).ok_or_else(|| {
                 GatePolicyError::new(ErrorClass::Policy, "GATE-DEFINITION-MISSING", id.clone())
             })?;
-            add_definition_instances(&mut instances, definition, selection);
+            if definition_applies(definition, selection) {
+                add_definition_instances(&mut instances, definition, selection);
+            }
         }
         add_prerequisite_closure(policy, selection, &mut instances)?;
 
@@ -864,6 +869,7 @@ impl<P: InventoryProvider> Planner<P> {
                     target,
                     base_commit,
                     &selection.affected_packages,
+                    &selection.documentation_paths,
                 )?;
                 let output_paths = expand_arguments(&definition.output_paths, target, base_commit)?;
                 let mut inventory = if definition.inventory_source == "NEXTEST_PACKAGES" {
@@ -1268,6 +1274,7 @@ fn array_value<'a>(value: &'a Value, pointer: &str) -> Result<&'a [Value]> {
 struct Selection {
     risk: RiskClass,
     reason_codes: Vec<String>,
+    documentation_paths: Vec<String>,
     affected_packages: Vec<String>,
     reverse_dependencies: Vec<String>,
     explicit_definitions: Vec<String>,
@@ -1352,6 +1359,7 @@ fn select(policy: &PolicyBundle, graph: &CargoGraph, changes: &[ObservedChange])
     Selection {
         risk,
         reason_codes: reasons.into_iter().collect(),
+        documentation_paths: changed_markdown_paths(changes),
         affected_packages: affected.into_iter().collect(),
         reverse_dependencies,
         explicit_definitions: explicit.into_iter().collect(),
@@ -1376,13 +1384,13 @@ fn is_editorial_documentation_path(path: &str) -> bool {
         "docs/codex_exec_plans.md",
         "docs/defect_closure_execplans.md",
     ];
-    let markdown = path.starts_with("docs/")
+    let documentation = path.starts_with("docs/")
         || path == "README.md"
         || path.ends_with("/README.md")
         || Path::new(path)
             .extension()
             .is_some_and(|extension| extension.eq_ignore_ascii_case("md"));
-    markdown
+    documentation
         && path != "AGENTS.md"
         && !path.ends_with("/AGENTS.md")
         && !NORMATIVE_EXACT.contains(&path)
@@ -1443,6 +1451,11 @@ fn add_definition_instances<'a>(
     }
 }
 
+fn definition_applies(definition: &GateDefinition, selection: &Selection) -> bool {
+    definition.gate_definition_id != "documentation-lint-v1"
+        || !selection.documentation_paths.is_empty()
+}
+
 fn static_definition_target(definition: &GateDefinition) -> &str {
     let selector = match definition.inventory_source.as_str() {
         "NEXTEST_TEST_TARGET" => "--test",
@@ -1495,6 +1508,13 @@ fn add_prerequisite_closure<'a>(
                         prerequisite,
                     )
                 })?;
+                if !definition_applies(dependency, selection) {
+                    return Err(GatePolicyError::new(
+                        ErrorClass::Policy,
+                        "GATE-CONDITIONAL-PREREQUISITE",
+                        prerequisite,
+                    ));
+                }
                 add_definition_instances(instances, dependency, selection);
             }
         }
@@ -1531,6 +1551,7 @@ fn expand_node_arguments(
     target: &str,
     base_commit: &str,
     affected_packages: &[String],
+    documentation_paths: &[String],
 ) -> Result<Vec<String>> {
     let mut arguments = expand_arguments(&definition.arguments_template, target, base_commit)?;
     if definition.gate_definition_id == "affected-adjudicated-crap-v1" {
@@ -1539,6 +1560,11 @@ fn expand_node_arguments(
             arguments.push(package.clone());
         }
     }
+    append_lint_paths(
+        &mut arguments,
+        &definition.gate_definition_id,
+        documentation_paths,
+    );
     Ok(arguments)
 }
 
@@ -2485,6 +2511,13 @@ mod tests {
         assert_eq!(first["risk"]["class"], "CRITICAL");
         assert_eq!(first["quality_scope"]["mode"], "GLOBAL");
         assert_eq!(first["quality_scope"]["completeness"], "ESCALATED_GLOBAL");
+        assert!(
+            first["nodes"]
+                .as_array()
+                .expect("nodes")
+                .iter()
+                .all(|node| { node["gate_definition_id"] != "documentation-lint-v1" })
+        );
         assert_eq!(
             first["nodes"]
                 .as_array()
@@ -2674,6 +2707,10 @@ mod tests {
         let selection = select(&policy, &graph, &changes);
         assert_eq!(selection.risk.as_str(), "EDITORIAL");
         assert!(selection.unmapped.is_empty());
+        assert_eq!(
+            selection.documentation_paths,
+            ["docs/example/operator-note.md"]
+        );
         assert!(
             selection
                 .reason_codes
