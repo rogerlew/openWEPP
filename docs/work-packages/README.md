@@ -206,10 +206,14 @@
 
 State as of `2026-07-19 UTC`:
 
+- `20260719-testgate-global-crap-output-relocation-001/` - READY (2026-07-19):
+  correct the global CRAP default-output relocation defect that is the sole
+  failure after 11/12 critical nodes and full Nextest 2,165/2,165 pass.
+
 - `20260719-testgate-crap-adapter-digest-alignment-001/` -
-  IMPLEMENTED-PENDING-CRITICAL (2026-07-19): both exact adapter identities match
-  direct runner SHA and policy contracts pass 10/10; the final critical plan
-  remains.
+  EXECUTED-FAIL-GLOBAL-OUTPUT-RELOCATION (2026-07-19): both adapter identities
+  are correct and 11/12 critical nodes pass; global CRAP fails before
+  acquisition on its absolute default output. The named successor owns it.
 
 - `20260719-testgate-coverage-tmpdir-confinement-001/` -
   IMPLEMENTED-BLOCKED-ADAPTER-DIGEST (2026-07-19): the confined short-temp

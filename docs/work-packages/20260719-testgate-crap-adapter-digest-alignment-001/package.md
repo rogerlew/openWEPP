@@ -4,7 +4,7 @@ Package ID: `20260719-testgate-crap-adapter-digest-alignment-001`
 
 Queue ID: `TESTGATE-CRAP-ADAPTER-DIGEST-01`
 
-Status: `IMPLEMENTED / PENDING CRITICAL TERMINAL PLAN`
+Status: `EXECUTED / FAIL-GLOBAL-OUTPUT-RELOCATION`
 
 Authorization: fail-closed `GATE-ADAPTER-DIGEST` from the confined coverage
 temp correction, under Roger Lew's 2026-07-19 adversarial acceptance direction.
@@ -26,7 +26,11 @@ mechanically selected critical plan.
 - [x] (2026-07-19) Aligned both exact fields and changed no other JSON field.
 - [x] (2026-07-19) Direct SHA reconstruction matches both bindings; focused
   policy contracts pass 10/10.
-- [ ] Run the mechanical critical plan.
+- [x] (2026-07-19) Executed the 12-node critical plan: 11 nodes pass, including
+  full Nextest 2,165/2,165; global CRAP fails before acquisition because its
+  default absolute output conflicts with executor-safe relative relocation.
+- [ ] `20260719-testgate-global-crap-output-relocation-001` owns that distinct
+  gate-runner defect. No passing node is rerun in this package.
 - [ ] Complete dual review and terminal verification.
 
 ## Correction Authority Envelope
@@ -75,8 +79,14 @@ weakening any behavior or gate.
 
 - The fail-closed admission error was fully explained by the two expected
   derived bindings; no third stale adapter reference exists.
+- Final receipt
+  `78f526eee1d0b8a9142afc9f3ff8f9434702d1a5409d917a1c2a22687aa7638c`
+  is `LOCAL_UNTRUSTED` / `FAIL`: 11 passed, 1 failed, 0 blocked. Global CRAP
+  exits 2 with `executor artifact relocation requires an absolute root and
+  safe relative output path`; it never begins coverage acquisition.
 
 ## Outcomes And Retrospective
 
-The mechanical binding correction and focused policy evidence pass. Critical
-terminal execution, dual review, and terminal disposition remain.
+The binding correction passes focused policy evidence and 11/12 critical
+nodes. This package closes as a truthful failed execution and assigns the
+distinct global-output relocation defect to the named successor.
