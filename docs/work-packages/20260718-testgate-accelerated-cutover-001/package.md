@@ -91,6 +91,8 @@ authority requirements are not reduced.
 - `tests/integration/assurance_dossier_build_contract.rs`
 - `tests/integration/hphys0298_paired_lineage_partition_contract.rs`
 - `docs/work-packages/20260605-hphys0295-cumulative-storage-budget-ownership-closure-001/artifacts/hphys0295_diagnostics.py`
+- `docs/work-packages/20260605-hphys0291-snow-publication-lifecycle-partition-localization-closure-001/artifacts/hphys0291_diagnostics.py`
+- `docs/work-packages/20260603-hphys0265-longer-season-ep-divergence-localization-closure-001/artifacts/hphys0265_diagnostics.py`
 - `tests/python/test_testgate_shadow.py`
 - `tests/python/test_testgate.py`
 - `docs/ROADMAP.md`
@@ -145,6 +147,10 @@ hard-coded development-host repository root. Remediation is limited to deriving
 the repository root from the artifact's own location, matching the adjacent
 HPHYS0296 through HPHYS0298 diagnostics; no process math, inputs, outputs, or
 acceptance criteria may change.
+The same focused reproduction then exposed identical hard-coded roots in the
+transitive HPHYS0291 and HPHYS0265 imports. Those two exact artifacts are
+admitted under the same restriction so the full import chain resolves from its
+checked-out repository rather than one developer workstation.
 
 ## Protected Boundaries
 
