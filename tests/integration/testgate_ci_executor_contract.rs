@@ -325,6 +325,8 @@ fn blocking_executor_and_affected_quality_preserve_manual_rollback() {
     assert!(affected_driver.contains("cargo nextest run"));
     assert!(affected_driver.contains("--config-file \"${NEXTEST_CONFIG}\""));
     assert!(affected_driver.contains("COVERAGE_PROFILE=\"${NEXTEST_PROFILE:-full}\""));
+    assert!(affected_driver.contains("COVERAGE_TMP=\"${OPENWEPP_GATE_ARTIFACT_ROOT}/tmp\""));
+    assert!(affected_driver.contains("COVERAGE_TMP=\"${OUTPUT_DIR}/tmp\""));
     assert!(affected_driver.contains("TMPDIR=\"${COVERAGE_TMP}\""));
     assert!(affected_driver.contains("CARGO_BUILD_JOBS=4"));
     assert!(affected_driver.contains("CARGO_PROFILE_TEST_DEBUG=0"));

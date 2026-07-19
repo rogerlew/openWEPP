@@ -4,7 +4,7 @@ Package ID: `20260719-testgate-coverage-tmpdir-confinement-001`
 
 Queue ID: `TESTGATE-COVERAGE-TMPDIR-01`
 
-Status: `READY`
+Status: `IMPLEMENTED / PENDING CRITICAL TERMINAL PLAN`
 
 Authorization: three verified TESTGATE receipts demonstrating Unix socket
 `SUN_LEN` failures caused by the coverage runner's deep temporary root, under
@@ -24,9 +24,11 @@ store, evidence, and fail-closed contracts.
 
 - [x] (2026-07-19) Reproduced across three local receipts and two independent
   assurance socket fixtures.
-- [ ] Apply the confined-short-temp correction and bind it in the TESTGATE
+- [x] (2026-07-19) Applied the confined-short-temp correction and bound it in the TESTGATE
   executor contract.
-- [ ] Run focused static/contract gates, then the mechanical critical terminal
+- [x] (2026-07-19) Shell syntax, focused Clippy, the 2/2 TESTGATE contract, and
+  both formerly failing socket cases pass under the projected short temp root.
+- [ ] Run the mechanical critical terminal
   plan.
 - [ ] Complete dual review and terminal verification.
 
@@ -70,10 +72,10 @@ the next owner.
 
 ## Acceptance
 
-- [ ] Executor coverage temp is confined to
+- [x] Executor coverage temp is confined to
   `${OPENWEPP_GATE_ARTIFACT_ROOT}/tmp`; standalone fallback is unchanged.
-- [ ] Output/evidence paths and coverage/CRAP semantics are unchanged.
-- [ ] Focused contract gates pass with no test weakening.
+- [x] Output/evidence paths and coverage/CRAP semantics are unchanged.
+- [x] Focused contract gates pass with no test weakening.
 - [ ] Mechanical terminal receipt passes every selected node.
 - [ ] Dual review and dual terminal verification have no open finding.
 - [ ] Production Rust line-count governance is `NOT_APPLICABLE`.
@@ -96,7 +98,9 @@ or evidence escape.
 
 ## Surprises And Discoveries
 
-Pending execution.
+- Both independently failing socket fixtures pass together under the new
+  projected path, confirming the runner-root mechanism without further fixture
+  edits.
 
 ## Decision Log
 
@@ -107,4 +111,5 @@ Pending execution.
 
 ## Outcomes And Retrospective
 
-Pending execution.
+The systemic correction passes focused validation. Mechanical critical
+execution, dual review, and terminal disposition remain.

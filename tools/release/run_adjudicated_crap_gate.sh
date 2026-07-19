@@ -275,7 +275,11 @@ if [[ "${ACQUISITION_MODE}" == "fresh" ]]; then
   export CARGO_BUILD_JOBS CARGO_PROFILE_TEST_DEBUG
   NEXTEST_CONFIG="${OUTPUT_DIR}/nextest.toml"
   NEXTEST_STORE="${OUTPUT_DIR}/nextest"
-  COVERAGE_TMP="${OUTPUT_DIR}/tmp"
+  if [[ -n "${OPENWEPP_GATE_ARTIFACT_ROOT:-}" ]]; then
+    COVERAGE_TMP="${OPENWEPP_GATE_ARTIFACT_ROOT}/tmp"
+  else
+    COVERAGE_TMP="${OUTPUT_DIR}/tmp"
+  fi
   mkdir -p "${COVERAGE_TMP}"
   TMPDIR="${COVERAGE_TMP}"
   export TMPDIR

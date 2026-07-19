@@ -206,9 +206,10 @@
 
 State as of `2026-07-19 UTC`:
 
-- `20260719-testgate-coverage-tmpdir-confinement-001/` - READY (2026-07-19):
-  preserve executor confinement while moving coverage `TMPDIR` to the artifact
-  root's short `tmp` child, closing systemic Unix socket path failures.
+- `20260719-testgate-coverage-tmpdir-confinement-001/` -
+  IMPLEMENTED-PENDING-CRITICAL (2026-07-19): the confined short-temp projection
+  passes both former socket failures and focused TESTGATE contracts; the exact
+  critical terminal plan remains.
 
 - `20260719-testgate-assurance-socket-path-portability-001/` -
   EXECUTED-FAIL-SYSTEMIC-TMPDIR (2026-07-19): its one-line label fix passes in
