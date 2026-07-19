@@ -1969,37 +1969,69 @@ mod tests {
             .replace('\'', "&apos;")
     }
 
+    fn nextest_listing_selectors(node: &Value) -> Vec<Vec<String>> {
+        let arguments = node["arguments"].as_array().expect("node arguments");
+        let mut packages = Vec::new();
+        for pair in arguments.windows(2) {
+            let option = pair[0].as_str();
+            let value = pair[1].as_str().map(str::to_owned);
+            match (option, value) {
+                (Some("--test"), Some(target)) => return vec![vec!["--test".to_owned(), target]],
+                (Some("-p" | "--package"), Some(package)) => packages.push(package),
+                _ => {}
+            }
+        }
+        if packages.is_empty() {
+            vec![vec!["--workspace".to_owned()]]
+        } else {
+            packages
+                .into_iter()
+                .map(|package| vec!["-p".to_owned(), package])
+                .collect()
+        }
+    }
+
     fn junit_bytes_for_node(root: &std::path::Path, node: &Value) -> Vec<u8> {
-        let output = Command::new("cargo")
-            .args([
-                "nextest",
-                "list",
-                "--locked",
-                "--offline",
-                "--message-format",
-                "json",
-                "--workspace",
-            ])
-            .current_dir(root)
-            .output()
-            .expect("list test inventory for JUnit fixture");
-        assert!(output.status.success(), "nextest list must succeed");
-        let listing: Value = serde_json::from_slice(&output.stdout).expect("nextest listing JSON");
+        let mut cases = Vec::new();
+        for selector in nextest_listing_selectors(node) {
+            let output = Command::new("cargo")
+                .args([
+                    "nextest",
+                    "list",
+                    "--locked",
+                    "--offline",
+                    "--message-format",
+                    "json",
+                ])
+                .args(selector)
+                .current_dir(root)
+                .output()
+                .expect("list test inventory for JUnit fixture");
+            assert!(output.status.success(), "nextest list must succeed");
+            let listing: Value =
+                serde_json::from_slice(&output.stdout).expect("nextest listing JSON");
+            collect_junit_cases(&listing, "", &mut cases);
+        }
         let planned = node["expected_inventory"]["ids"]
             .as_array()
             .expect("planned inventory")
             .iter()
             .map(|item| item.as_str().expect("inventory ID"))
             .collect::<BTreeSet<_>>();
-        let mut cases = Vec::new();
-        collect_junit_cases(&listing, "", &mut cases);
+        cases.sort();
+        cases.dedup();
         let retained = cases
             .into_iter()
             .filter(|(class, name)| {
                 planned.contains(sha256_bytes(format!("{class}\0{name}").as_bytes()).as_str())
             })
             .collect::<Vec<_>>();
-        assert_eq!(retained.len(), planned.len(), "JUnit fixture must be exact");
+        assert_eq!(
+            retained.len(),
+            planned.len(),
+            "JUnit fixture must be exact for {}",
+            node["gate_definition_id"]
+        );
         let mut xml = String::from("<testsuite>\n");
         for (class, name) in retained {
             let junit_class = class
