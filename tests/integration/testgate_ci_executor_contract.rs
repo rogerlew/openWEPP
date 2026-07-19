@@ -208,6 +208,19 @@ fn blocking_executor_and_affected_quality_preserve_manual_rollback() {
     assert!(affected_driver.contains("cargo llvm-cov show-env --sh"));
     assert!(affected_driver.contains("cargo nextest run"));
     assert!(affected_driver.contains("--config-file \"${NEXTEST_CONFIG}\""));
+    assert!(affected_driver.contains("COVERAGE_PROFILE=\"${NEXTEST_PROFILE:-full}\""));
+    assert!(affected_driver.contains("TMPDIR=\"${COVERAGE_TMP}\""));
+    assert!(affected_driver.contains("workspace-metadata.json"));
+    let generated_files = affected_driver
+        .split_once("GENERATED_FILES=(")
+        .expect("generated artifact inventory")
+        .1
+        .split_once("\n)")
+        .expect("generated artifact inventory terminator")
+        .0;
+    assert!(generated_files.contains("workspace-metadata.json"));
+    assert!(affected_driver.contains("REPORT_SCOPE_ARGS+=(--package \"${package}\")"));
+    assert!(affected_driver.contains("global LCOV report requires explicit workspace packages"));
     assert!(affected_driver.contains("OPENWEPP_GATE_ARTIFACT_ROOT"));
     assert!(affected_driver.contains("for package in \"${PACKAGES[@]}\""));
 

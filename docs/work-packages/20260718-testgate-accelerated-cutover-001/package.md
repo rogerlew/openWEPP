@@ -369,6 +369,15 @@ calendar observation or broad testing on every ordinary increment.
   the immutable runner image lacked `llvm-tools-preview`; the read-only runtime
   correctly blocked an on-demand toolchain mutation. The component is now a
   pinned image input and a verified bootstrap prerequisite.
+- The legacy global coverage branch bypassed Nextest and exhausted the
+  container's small non-executable `/tmp` while concurrently reconstructing
+  planner fixtures. Global and affected coverage now share the canonical
+  Nextest path, external executable temporary storage, and profile-specific
+  serialization; global defaults to the `full` profile.
+- Because `cargo llvm-cov report` does not support `--workspace` and an empty
+  report selector is incomplete here, the global report expands locked Cargo
+  metadata into a sorted, nonempty repeated `--package` list before LCOV
+  publication.
 
 ## Decision Log
 

@@ -185,6 +185,7 @@ GENERATED_FILES=(
   source-manifest-after.json
   source-manifest-before.json
   source-manifest-final.json
+  workspace-metadata.json
   workspace-crap.json
   workspace.lcov
 )
@@ -264,13 +265,17 @@ elif [[ "${#PACKAGES[@]}" -ne 0 || -n "${NEXTEST_PROFILE}" ]]; then
   echo "ERROR: --package and --nextest-profile require --scope affected" >&2
   exit 2
 fi
-if [[ "${SCOPE}" == "affected" && -z "${CARGO_TARGET_DIR:-}" ]]; then
+if [[ -z "${CARGO_TARGET_DIR:-}" ]]; then
   CARGO_TARGET_DIR="${OUTPUT_DIR}/cargo-target"
   export CARGO_TARGET_DIR
 fi
-if [[ "${SCOPE}" == "affected" ]]; then
+if [[ "${ACQUISITION_MODE}" == "fresh" ]]; then
   NEXTEST_CONFIG="${OUTPUT_DIR}/nextest.toml"
   NEXTEST_STORE="${OUTPUT_DIR}/nextest"
+  COVERAGE_TMP="${OUTPUT_DIR}/tmp"
+  mkdir -p "${COVERAGE_TMP}"
+  TMPDIR="${COVERAGE_TMP}"
+  export TMPDIR
   "${PYTHON_BIN}" - "${ROOT_DIR}/.config/nextest.toml" "${NEXTEST_CONFIG}" "${NEXTEST_STORE}" <<'PY'
 import json
 import pathlib
@@ -330,29 +335,52 @@ if [[ "${ACQUISITION_MODE}" == "fresh" ]]; then
     --snapshot-production-sources "${OUTPUT_DIR}/source-manifest-before.json"
   cargo llvm-cov clean --workspace > "${OUTPUT_DIR}/llvm-cov-clean.log" 2>&1
   COVERAGE_SCOPE_ARGS=(--workspace)
+  REPORT_SCOPE_ARGS=()
   CRAP_SCOPE_ARGS=(--workspace)
   if [[ "${SCOPE}" == "affected" ]]; then
     COVERAGE_SCOPE_ARGS=()
+    REPORT_SCOPE_ARGS=()
     for package in "${PACKAGES[@]}"; do
       COVERAGE_SCOPE_ARGS+=(--package "${package}")
+      REPORT_SCOPE_ARGS+=(--package "${package}")
+    done
+  else
+    WORKSPACE_METADATA="${OUTPUT_DIR}/workspace-metadata.json"
+    cargo metadata --locked --offline --no-deps --format-version 1 \
+      > "${WORKSPACE_METADATA}"
+    mapfile -t WORKSPACE_PACKAGES < <(
+      "${PYTHON_BIN}" - "${WORKSPACE_METADATA}" <<'PY'
+import json
+import pathlib
+import sys
+
+payload = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
+members = set(payload["workspace_members"])
+names = sorted(package["name"] for package in payload["packages"] if package["id"] in members)
+if not names:
+    raise SystemExit("locked Cargo metadata contains no workspace packages")
+print(*names, sep="\n")
+PY
+    )
+    if [[ "${#WORKSPACE_PACKAGES[@]}" -eq 0 ]]; then
+      echo "ERROR: global LCOV report requires explicit workspace packages" >&2
+      exit 2
+    fi
+    for package in "${WORKSPACE_PACKAGES[@]}"; do
+      REPORT_SCOPE_ARGS+=(--package "${package}")
     done
   fi
-  if [[ "${SCOPE}" == "affected" ]]; then
-    source <(cargo llvm-cov show-env --sh)
-    cargo nextest run "${COVERAGE_SCOPE_ARGS[@]}" \
-      --profile "${NEXTEST_PROFILE}" \
-      --target-dir "${CARGO_LLVM_COV_TARGET_DIR}" \
-      --config-file "${NEXTEST_CONFIG}" \
-      > "${OUTPUT_DIR}/llvm-cov.log" 2>&1
-    cargo llvm-cov report "${COVERAGE_SCOPE_ARGS[@]}" \
-      --lcov \
-      --output-path "${OUTPUT_DIR}/workspace.lcov" \
-      >> "${OUTPUT_DIR}/llvm-cov.log" 2>&1
-  else
-    cargo llvm-cov "${COVERAGE_SCOPE_ARGS[@]}" --ignore-run-fail --lcov \
-      --output-path "${OUTPUT_DIR}/workspace.lcov" \
-      > "${OUTPUT_DIR}/llvm-cov.log" 2>&1
-  fi
+  COVERAGE_PROFILE="${NEXTEST_PROFILE:-full}"
+  source <(cargo llvm-cov show-env --sh)
+  cargo nextest run "${COVERAGE_SCOPE_ARGS[@]}" \
+    --profile "${COVERAGE_PROFILE}" \
+    --target-dir "${CARGO_LLVM_COV_TARGET_DIR}" \
+    --config-file "${NEXTEST_CONFIG}" \
+    > "${OUTPUT_DIR}/llvm-cov.log" 2>&1
+  cargo llvm-cov report "${REPORT_SCOPE_ARGS[@]}" \
+    --lcov \
+    --output-path "${OUTPUT_DIR}/workspace.lcov" \
+    >> "${OUTPUT_DIR}/llvm-cov.log" 2>&1
   CRAP_JSON="${OUTPUT_DIR}/workspace-crap.json"
   cargo crap "${CRAP_SCOPE_ARGS[@]}" \
     --lcov "${OUTPUT_DIR}/workspace.lcov" \
