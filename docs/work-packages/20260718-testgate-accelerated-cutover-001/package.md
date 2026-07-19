@@ -354,6 +354,11 @@ calendar observation or broad testing on every ordinary increment.
   larger dynamically allocated target ceiling. The latter run selected all
   `2,163` tests and reduced failures to four storage reconstructions plus two
   portable-fixture defects; global CRAP remained blocked and did not run.
+- Run `29678738923` failed in planner preflight before any gate ran because the
+  selected comparison base left no `package.md` change in the increment. The
+  frozen acceptance base is therefore `c90d4dab`: that commit prospectively
+  authorizes the complete portable-runner write set, while this living-package
+  update supplies the required explicit intent delta.
 
 ## Decision Log
 
