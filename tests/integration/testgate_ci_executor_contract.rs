@@ -55,6 +55,94 @@ fn assert_receipt_runtime_guards() {
     }
 }
 
+fn assert_workflow_and_rollback_contract() {
+    let workflow = text(".github/workflows/testgate-shadow.yml");
+    for context in [
+        "increment-gates:",
+        "verify-increment:",
+        "name: openwepp/verify-increment",
+        "name: openwepp/increment-gates",
+        "name: openwepp/execute-increment",
+        "runs-on: [self-hosted, Linux, X64, openwepp, omarchy, trusted]",
+        "runs-on: ubuntu-24.04",
+        "bootstrap_dependencies.sh",
+        "tools/local_ci/testgate.py",
+        "--boundary INCREMENT",
+        "actions/attest@f7c74d28b9d84cb8768d0b8ca14a4bac6ef463e6",
+        "attestation-predicate.json",
+        "github-attestation.jsonl",
+        "gh attestation verify",
+        "verify-receipt-envelope",
+        "Independently admit comparison base",
+        "_intent_authorization",
+        "--job openwepp/execute-increment",
+        "--signer-workflow",
+        "--source-digest",
+        "--deny-self-hosted-runners",
+        "actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093",
+        "id-token: write",
+        "attestations: write",
+        "cargo-nextest@0.9.138",
+        "ripgrep 14.1.0",
+        "--artifact-root \"${EVIDENCE_DIR}/execution\"",
+        "TESTGATE_EXECUTION_ROOT: /cache/target",
+        "TMPDIR=\"${planner_tmp}\"",
+        "orchestration-error.log",
+        "if: ${{ always() }}",
+    ] {
+        assert!(
+            workflow.contains(context),
+            "missing blocking workflow contract {context}"
+        );
+    }
+    for forbidden in [
+        "pull_request:",
+        "pull_request_target:",
+        "schedule:",
+        "ubuntu-latest",
+        "conservative-rollback:",
+        "inputs.boundary",
+        "inputs.mode",
+        "cargo install",
+        "${RUNNER_TEMP}/testgate-",
+        "continue-on-error: true",
+    ] {
+        assert!(
+            !workflow.contains(forbidden),
+            "forbidden workflow contract {forbidden}"
+        );
+    }
+    assert!(workflow.contains("persist-credentials: false"));
+    assert!(workflow.contains("git merge-base --is-ancestor"));
+    assert!(workflow.contains("permissions:\n  contents: read"));
+    assert!(workflow.contains("execute-increment:\n    name: openwepp/execute-increment"));
+    assert!(workflow.contains(
+        "increment-gates:\n    name: openwepp/increment-gates\n    needs: [execute-increment, verify-increment]\n    if: ${{ always() }}"
+    ));
+    let signer = workflow
+        .split_once("  increment-gates:")
+        .expect("signer job")
+        .1;
+    assert!(!signer.contains("actions/checkout"));
+    assert!(!signer.contains("cargo build"));
+    assert!(!signer.contains("python3"));
+
+    let conservative = text(".github/workflows/testgate-conservative.yml");
+    assert!(conservative.contains("conservative-rollback:"));
+    assert!(conservative.contains("name: openwepp/conservative-rollback"));
+    assert!(conservative.contains("runs-on: ubuntu-24.04"));
+    assert!(conservative.contains("run_release_candidate_gates.sh"));
+    assert!(conservative.contains("--mode validate"));
+    assert!(!conservative.contains("--skip-authority-required"));
+    assert!(conservative.contains("--skip-stability"));
+    assert!(!conservative.contains("self-hosted"));
+
+    let rollback =
+        text("docs/work-packages/20260718-testgate-ci-shadow-executor-001/artifacts/rollback.md");
+    assert!(rollback.contains("entire nonrequired shadow workflow"));
+    assert!(rollback.contains("required only after provider-side cutover"));
+}
+
 #[test]
 fn blocking_executor_and_affected_quality_preserve_manual_rollback() {
     assert_receipt_runtime_guards();
@@ -122,84 +210,7 @@ fn blocking_executor_and_affected_quality_preserve_manual_rollback() {
         );
     }
 
-    let workflow = text(".github/workflows/testgate-shadow.yml");
-    for context in [
-        "increment-gates:",
-        "verify-increment:",
-        "name: openwepp/verify-increment",
-        "name: openwepp/increment-gates",
-        "name: openwepp/execute-increment",
-        "runs-on: [self-hosted, Linux, X64, openwepp, omarchy, trusted]",
-        "runs-on: ubuntu-24.04",
-        "bootstrap_dependencies.sh",
-        "tools/local_ci/testgate.py",
-        "--boundary INCREMENT",
-        "actions/attest@f7c74d28b9d84cb8768d0b8ca14a4bac6ef463e6",
-        "attestation-predicate.json",
-        "github-attestation.jsonl",
-        "gh attestation verify",
-        "verify-receipt-envelope",
-        "Independently admit comparison base",
-        "_intent_authorization",
-        "--job openwepp/execute-increment",
-        "--signer-workflow",
-        "--source-digest",
-        "--deny-self-hosted-runners",
-        "actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093",
-        "id-token: write",
-        "attestations: write",
-        "cargo-nextest@0.9.138",
-        "ripgrep 14.1.0",
-        "--artifact-root \"${EVIDENCE_DIR}/execution\"",
-        "TESTGATE_EXECUTION_ROOT: /cache/target",
-        "TMPDIR=\"${planner_tmp}\"",
-        "orchestration-error.log",
-        "if: ${{ always() }}",
-    ] {
-        assert!(
-            workflow.contains(context),
-            "missing blocking workflow contract {context}"
-        );
-    }
-    assert!(!workflow.contains("pull_request:"));
-    assert!(!workflow.contains("pull_request_target:"));
-    assert!(!workflow.contains("schedule:"));
-    assert!(!workflow.contains("ubuntu-latest"));
-    assert!(!workflow.contains("conservative-rollback:"));
-    assert!(!workflow.contains("inputs.boundary"));
-    assert!(!workflow.contains("inputs.mode"));
-    assert!(!workflow.contains("cargo install"));
-    assert!(!workflow.contains("${RUNNER_TEMP}/testgate-"));
-    assert!(!workflow.contains("continue-on-error: true"));
-    assert!(workflow.contains("persist-credentials: false"));
-    assert!(workflow.contains("git merge-base --is-ancestor"));
-    assert!(workflow.contains("permissions:\n  contents: read"));
-    assert!(workflow.contains("execute-increment:\n    name: openwepp/execute-increment"));
-    assert!(workflow.contains(
-        "increment-gates:\n    name: openwepp/increment-gates\n    needs: [execute-increment, verify-increment]\n    if: ${{ always() }}"
-    ));
-    let signer = workflow
-        .split_once("  increment-gates:")
-        .expect("signer job")
-        .1;
-    assert!(!signer.contains("actions/checkout"));
-    assert!(!signer.contains("cargo build"));
-    assert!(!signer.contains("python3"));
-
-    let conservative = text(".github/workflows/testgate-conservative.yml");
-    assert!(conservative.contains("conservative-rollback:"));
-    assert!(conservative.contains("name: openwepp/conservative-rollback"));
-    assert!(conservative.contains("runs-on: ubuntu-24.04"));
-    assert!(conservative.contains("run_release_candidate_gates.sh"));
-    assert!(conservative.contains("--mode validate"));
-    assert!(!conservative.contains("--skip-authority-required"));
-    assert!(conservative.contains("--skip-stability"));
-    assert!(!conservative.contains("self-hosted"));
-
-    let rollback =
-        text("docs/work-packages/20260718-testgate-ci-shadow-executor-001/artifacts/rollback.md");
-    assert!(rollback.contains("entire nonrequired shadow workflow"));
-    assert!(rollback.contains("required only after provider-side cutover"));
+    assert_workflow_and_rollback_contract();
 }
 
 #[test]
