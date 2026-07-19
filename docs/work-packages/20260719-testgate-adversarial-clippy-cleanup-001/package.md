@@ -4,7 +4,7 @@ Package ID: `20260719-testgate-adversarial-clippy-cleanup-001`
 
 Queue ID: `TESTGATE-ACCEPT-CLIPPY-01`
 
-Status: `READY`
+Status: `IMPLEMENTED / PENDING TERMINAL PLAN`
 
 Authorization: the verified closure blocker from
 `20260719-testgate-policy-digest-alignment-001`, under Roger Lew's 2026-07-19
@@ -26,8 +26,10 @@ filtering any assertion.
 
 - [x] (2026-07-19) Reproduced through mechanical critical receipt
   `1ad770581b147ba8bb8797e431d2a2d81e6395a61a231f03f807f44bd5ee1d6e`.
-- [ ] Extract behavior-preserving helpers and retain every assertion.
-- [ ] Run the focused test/Clippy loop once, then execute the mechanical
+- [x] (2026-07-19) Extracted three boundary helpers; the diff changes no
+  existing assertion line and preserves all assertion/match inventories.
+- [x] (2026-07-19) Focused Clippy passes and the integration target passes 2/2.
+- [ ] Execute the mechanical
   terminal plan selected for this exact increment.
 - [ ] Complete dual review and terminal verification.
 
@@ -88,10 +90,10 @@ is not repeated separately after documentation-only review edits.
 
 ## Acceptance
 
-- [ ] The formerly 193-line helper and every extracted helper pass Clippy's
+- [x] The formerly 193-line helper and every extracted helper pass Clippy's
   100-line limit without lint suppression.
-- [ ] Exact assertion/match/source-string inventory is preserved.
-- [ ] Focused Clippy and the two-test integration target pass.
+- [x] Exact assertion/match/source-string inventory is preserved.
+- [x] Focused Clippy and the two-test integration target pass.
 - [ ] The mechanical terminal plan passes or truthfully fails on a distinct
   named blocker; no gate is manually omitted.
 - [ ] No production, workflow, policy, schema, fixture, or test-selection byte
@@ -118,7 +120,9 @@ security assertion exactly.
 
 ## Surprises And Discoveries
 
-Pending execution.
+- The correction is smaller than the lint report implied: three helper
+  boundaries plus a wrapper are sufficient. No assertion operand or asserted
+  source string changes.
 
 ## Decision Log
 
@@ -129,4 +133,5 @@ Pending execution.
 
 ## Outcomes And Retrospective
 
-Pending execution.
+The bounded structural correction passes its focused loop. Mechanical terminal
+execution, dual review, and terminal disposition remain.

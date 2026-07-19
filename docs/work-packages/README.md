@@ -206,9 +206,10 @@
 
 State as of `2026-07-19 UTC`:
 
-- `20260719-testgate-adversarial-clippy-cleanup-001/` - READY (2026-07-19):
-  preserve every assertion while splitting one 193-line TESTGATE contract-test
-  helper that blocks the mechanically selected critical Clippy gate.
+- `20260719-testgate-adversarial-clippy-cleanup-001/` -
+  IMPLEMENTED-PENDING-TERMINAL (2026-07-19): all 126 assertions are preserved,
+  focused Clippy passes, and the integration target passes 2/2; the exact local
+  planner-selected terminal plan remains.
 
 - `20260719-testgate-policy-digest-alignment-001/` - IN-PROGRESS-CRITICAL-GATES
   (2026-07-19): the exact one-field digest correction and focused gates pass;

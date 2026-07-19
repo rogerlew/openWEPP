@@ -55,7 +55,7 @@ fn assert_receipt_runtime_guards() {
     }
 }
 
-fn assert_workflow_and_rollback_contract() {
+fn assert_testgate_workflow_surface() {
     let workflow = text(".github/workflows/testgate-shadow.yml");
     for context in [
         "increment-gates:",
@@ -147,6 +147,10 @@ fn assert_workflow_and_rollback_contract() {
     assert!(workflow.contains(
         "increment-gates:\n    name: openwepp/increment-gates\n    needs: [execute-increment, verify-increment]\n    if: ${{ always() }}"
     ));
+}
+
+fn assert_testgate_job_order() {
+    let workflow = text(".github/workflows/testgate-shadow.yml");
     let execution_job = workflow
         .split_once("  execute-increment:")
         .expect("execution job")
@@ -216,7 +220,9 @@ fn assert_workflow_and_rollback_contract() {
     assert!(verify_attestation < upload);
     assert!(upload < after_authority);
     assert!(!signer[after_authority + 1..].contains("      - name:"));
+}
 
+fn assert_conservative_rollback_contract() {
     let conservative = text(".github/workflows/testgate-conservative.yml");
     assert!(conservative.contains("conservative-rollback:"));
     assert!(conservative.contains("name: openwepp/conservative-rollback"));
@@ -254,6 +260,12 @@ fn assert_workflow_and_rollback_contract() {
         text("docs/work-packages/20260718-testgate-ci-shadow-executor-001/artifacts/rollback.md");
     assert!(rollback.contains("entire nonrequired shadow workflow"));
     assert!(rollback.contains("required only after provider-side cutover"));
+}
+
+fn assert_workflow_and_rollback_contract() {
+    assert_testgate_workflow_surface();
+    assert_testgate_job_order();
+    assert_conservative_rollback_contract();
 }
 
 #[test]
