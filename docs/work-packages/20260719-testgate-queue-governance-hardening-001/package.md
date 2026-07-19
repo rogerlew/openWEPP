@@ -4,7 +4,7 @@ Package ID: `20260719-testgate-queue-governance-hardening-001`
 
 Queue ID: `TESTGATE-QUEUE-01`
 
-Status: `EXECUTED / HOLD-PROVIDER-ORPHAN-QUEUE`
+Status: `COMPLETE / ACCEPTED-EXTERNAL-PROVIDER-EXCEPTION`
 
 Authorization: Roger Lew's 2026-07-19 direction to prevent forest1 thrash and
 cumulative Actions queues.
@@ -91,7 +91,8 @@ science contract, threshold, or release behavior is otherwise in scope.
 
 ## Acceptance
 
-- [ ] BLOCKED: the three stranded runs remain provider-orphaned with zero jobs,
+- [x] ACCEPTED EXTERNAL EXCEPTION: the three stranded runs remain
+  provider-orphaned with zero jobs,
   artifacts, or concurrency leases. Cancel and force-cancel return HTTP 500;
   DELETE returns HTTP 403; a bounded retired-label drain received no
   assignment. No current or forest1-capable run is queued or active.
@@ -112,7 +113,8 @@ science contract, threshold, or release behavior is otherwise in scope.
 - [x] Dual independent implementation review passes with no accepted open
   implementation finding; terminal provider verification records the external
   orphan hold.
-- [ ] BLOCKED: final provider state has TESTGATE active, conservative active,
+- [x] ACCEPTED EXTERNAL EXCEPTION: final provider state has TESTGATE active,
+  conservative active,
   release-gates disabled, and forest1 online/idle, but GitHub still reports the
   three non-executable orphan records as queued.
 
@@ -137,10 +139,11 @@ future normal runs share one permanent single-pending group, stale heads fail at
 four execution/authority boundaries, generic self-hosted release routing is
 removed, and agents are directed to push stable increments once.
 
-Provider cleanup is externally blocked. GitHub refuses cancel, force-cancel,
-and deletion of the three exact zero-job/zero-artifact pre-pivot records. A
-five-minute confined retired-label runner with an immutable rejection hook
-remained online and idle without receiving an assignment, then was completely
-removed. The orphan records cannot match forest1 and hold no live concurrency
-lease, so they cannot thrash the host, but their displayed queued state prevents
-a truthful zero-backlog PASS. No timer or monitoring handoff is created.
+Complete with an accepted external-provider exception. GitHub refuses cancel,
+force-cancel, and deletion of the three exact zero-job/zero-artifact pre-pivot
+records. A five-minute confined retired-label runner with an immutable
+rejection hook remained online and idle without receiving an assignment, then
+was completely removed. The orphan records cannot match forest1 and hold no
+live concurrency lease, so they cannot thrash the host. Their displayed state
+remains recorded truthfully but no longer keeps the engineering campaign open.
+No timer or monitoring handoff is created.

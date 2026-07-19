@@ -7,5 +7,5 @@ This follow-on package closes the four accepted implementation blockers from
 release gate or claiming blocking CI cutover.
 
 - ExecPlan: [package.md](package.md)
-- Active kickoff: [prompts/active/20260718-codex-execute-testgate-ci-four-blocker-lift.md](prompts/active/20260718-codex-execute-testgate-ci-four-blocker-lift.md)
+- Archived kickoff: [prompts/archived/20260718-codex-execute-testgate-ci-four-blocker-lift.md](prompts/archived/20260718-codex-execute-testgate-ci-four-blocker-lift.md)
 - Evidence: [artifacts/](artifacts/)

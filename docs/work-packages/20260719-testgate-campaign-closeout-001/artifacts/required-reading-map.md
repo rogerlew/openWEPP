@@ -7,7 +7,7 @@
 | `AGENTS.md` | 11,317 | Repository-wide invariants. |
 | `docs/work-packages/AGENTS.md` | 21,247 | Package execution and closure rules. |
 | `package.md` | 3,477 | Authorized objective, write set, and gates. |
-| `prompts/active/execute.md` | 1,505 | Execution constraints and delegation. |
+| `prompts/archived/execute.md` | 1,505 | Execution constraints and delegation. |
 | `artifacts/required-reading-map.md` | 1,244 | Reading tiers and applicability. |
 
 Recorded core budget: 38,790 bytes, `OK` (`<=400000`). Package-local sizes were

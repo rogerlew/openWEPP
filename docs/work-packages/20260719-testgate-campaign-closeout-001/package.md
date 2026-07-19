@@ -4,7 +4,7 @@ Package ID: `20260719-testgate-campaign-closeout-001`
 
 Queue ID: `TESTGATE-CLOSEOUT-01`
 
-Status: `READY`
+Status: `COMPLETE / PASS`
 
 Authorization: Roger Lew's 2026-07-19 direction to close the TESTGATE campaign
 without further timed gates, tests, or operator tracking.
@@ -36,10 +36,15 @@ Excluded:
 ## Intended Write Set
 
 - `docs/work-packages/README.md`
+- `docs/work-packages/20260717-testgate-align-governance-schemas-001/README.md`
 - `docs/work-packages/20260717-testgate-plan-shadow-planner-001/prompts/**`
+- `docs/work-packages/20260717-testgate-plan-shadow-planner-001/README.md`
 - `docs/work-packages/20260718-testgate-plan-crap-cleanup-001/prompts/**`
+- `docs/work-packages/20260718-testgate-plan-crap-cleanup-001/README.md`
 - `docs/work-packages/20260718-testgate-ci-shadow-executor-001/prompts/**`
+- `docs/work-packages/20260718-testgate-ci-shadow-executor-001/README.md`
 - `docs/work-packages/20260718-testgate-ci-four-blocker-lift-001/prompts/**`
+- `docs/work-packages/20260718-testgate-ci-four-blocker-lift-001/README.md`
 - `docs/work-packages/20260719-testgate-queue-governance-hardening-001/**`
 - `docs/work-packages/20260719-testgate-campaign-closeout-001/**`
 
@@ -51,19 +56,19 @@ Excluded:
    move TESTGATE out of the active/held catalog.
 4. Run Markdown lint, path integrity checks, and `git diff --check` only.
 5. Complete dual independent review and dual terminal verification, archive
-   this prompt, commit the closeout, and push once with TESTGATE temporarily
-   paused.
+   this prompt, commit the closeout with a CI-skip marker, and push once without
+   toggling TESTGATE or creating a runner job.
 
 ## Acceptance
 
-- [ ] Every TESTGATE package has zero files under `prompts/active/`.
-- [ ] The queue-governance package is complete with a precisely bounded
+- [x] Every TESTGATE package has zero files under `prompts/active/`.
+- [x] The queue-governance package is complete with a precisely bounded
   external-provider exception; it does not claim the orphan records vanished.
-- [ ] No TESTGATE package remains in `Current Active/Held Packages`.
-- [ ] Catalog text preserves the historical CI HOLD and its later supersession.
-- [ ] Markdown lint, moved-path integrity, and diff checks pass.
-- [ ] Dual review and dual terminal verification have no open findings.
-- [ ] No code test, gate execution, runner operation, or provider cleanup runs.
+- [x] No TESTGATE package remains in `Current Active/Held Packages`.
+- [x] Catalog text preserves the historical CI HOLD and its later supersession.
+- [x] Markdown lint, moved-path integrity, and diff checks pass.
+- [x] Dual review and dual terminal verification have no open findings.
+- [x] No code test, gate execution, runner operation, or provider cleanup runs.
 
 ## Review And Delegation
 
@@ -80,4 +85,21 @@ documentation-only and explicitly exempt from campaign CRAP/testing gates.
 
 ## Outcomes
 
-Pending execution.
+Complete. Four stale prompts moved to their archived directories, this
+package's prompt is also archived, the bounded provider exception is accepted
+without changing its facts, and the catalog has no TESTGATE package under
+active/held work. Dual review and dual terminal verification passed. No code or
+provider surface changed, and no test or live gate was run.
+
+## Decisions
+
+- The canonical move tool updates inbound package README links as part of a
+  history-preserving prompt move. Those adjacent README files are included in
+  the write set so their link text and target can both describe the archived
+  state truthfully.
+- The active-path sweep found one pre-existing stale link in TESTGATE-ALIGN and
+  one generic active-prompt pointer in queue governance. Both are included in
+  closeout because their prompts were already archived.
+- Publication uses the repository provider's CI-skip commit marker instead of
+  disabling and re-enabling TESTGATE. This preserves the no-provider-mutation
+  scope and avoids a documentation-only runner job.

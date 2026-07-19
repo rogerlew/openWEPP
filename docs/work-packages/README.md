@@ -11,6 +11,25 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260719-testgate-campaign-closeout-001/` completed the TESTGATE campaign.
+  Four stale kickoff prompts were archived, the queue-governance package's
+  non-executable GitHub records were accepted as a bounded external-provider
+  exception, and every TESTGATE package left the active/held catalog. No timed
+  observation, test suite, live gate, runner operation, or provider mutation
+  was used for this documentation-only closeout.
+- `20260719-testgate-queue-governance-hardening-001/` completed with an accepted
+  external-provider exception. It implements permanent single-pending TESTGATE
+  concurrency, four current-main guards, exact release-runner labels, and
+  one-push-per-stable-increment guidance. Three pre-pivot `omarchy` records
+  remain displayed as queued after all bounded cleanup routes failed, but they
+  have zero jobs, artifacts, and concurrency leases and cannot match forest1.
+- `20260718-testgate-accelerated-cutover-001/` completed immediate cutover of
+  ordinary trusted-main increments to the isolated forest1 TESTGATE runner.
+  Exact-candidate closure passed 2,165/2,165 instrumented tests and global CRAP
+  at 2 raw / 2 adjudicated / 0 actionable. Normal run `29692537685` passed
+  forest1 execution, independent verification, and native attestation. The
+  conservative lane remains manually callable, release gates remain manually
+  disabled, and no timed or increment-count gate remains.
 - `20260718-testgate-assure-campaign-currency-001/` completed
   TESTGATE-ASSURE-01. The gate planner now owns a strict catalog-complete
   assurance watch registry, exact commit/dirty-tree impact targets, all-report
@@ -179,29 +198,6 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-19 UTC`:
-
-- `20260719-testgate-campaign-closeout-001/` - READY (2026-07-19): archive
-  stale TESTGATE prompts, accept the bounded external-provider orphan exception,
-  and close the campaign without more tests or timed observation.
-
-- `20260719-testgate-queue-governance-hardening-001/` -
-  HOLD-PROVIDER-ORPHAN-QUEUE (2026-07-19): implements permanent single-pending
-  TESTGATE concurrency, four current-main guards, exact release-runner labels,
-  and one-push-per-stable-increment guidance. Focused contracts and dual review
-  pass. Three pre-pivot `omarchy` records remain displayed as queued despite
-  cancel, force-cancel, DELETE, and a bounded rejection-runner attempt; they
-  have zero jobs/artifacts/concurrency leases and cannot match forest1. Only
-  GitHub provider repair can remove those inert records.
-
-- `20260718-testgate-accelerated-cutover-001/` - COMPLETE-PASS (2026-07-19):
-  cut over ordinary trusted-main increments to the isolated forest1 TESTGATE
-  runner. Exact-candidate closure passed 2,165/2,165 instrumented tests and
-  global CRAP at 2 raw / 2 adjudicated / 0 actionable. Rollback smoke run
-  `29692305394` proved the non-qualifying hosted conservative entry point;
-  normal run `29692537685` passed forest1 execution, independent verification,
-  and native attestation with only documentation lint selected. The
-  conservative lane remains manually callable, release gates remain manually
-  disabled, and no timed or increment-count gate remains.
 
 - `20260717-canopy-phenology-gsi-kernel-001/` -
   COMPLETE-PASS-PROCESS-KERNEL (2026-07-17): implements

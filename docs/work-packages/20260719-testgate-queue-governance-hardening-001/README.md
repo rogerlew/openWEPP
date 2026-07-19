@@ -1,4 +1,4 @@
 # TESTGATE Queue Governance Hardening
 
-Execute [package.md](package.md). The active prompt is under `prompts/active/`;
-evidence belongs under `artifacts/`.
+The completed execution specification is [package.md](package.md). Its prompt
+is archived under `prompts/archived/`; evidence is under `artifacts/`.
