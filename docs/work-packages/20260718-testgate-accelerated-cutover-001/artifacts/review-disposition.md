@@ -12,8 +12,8 @@ Updated: 2026-07-19 PDT.
 | Portable Ubuntu fixtures and inventory mismatch | Accepted / patched | Focused contracts and exact full-profile run pass. |
 | Coverage/CRAP resource and nested-Cargo defects | Accepted / patched | Forest1 global run passes 2,165 tests and 2/2/0 CRAP within bounds. |
 | Missing real forest1 workflow consumer | Accepted / open | One docs-only trusted-main run is required before final cutover. |
-| Unexecuted/defective conservative rollback | Accepted / patched | Dual focused review passed; hosted non-heavy smoke remains required. |
+| Unexecuted/defective conservative rollback | Accepted / closed | Dual review and hosted smoke run 29692305394 passed; broad steps skipped. |
 
 Rejected findings: none. Deferred findings: none. Waivers: none. The two open
-consumer items block a final PASS claim but do not authorize another broad
-suite.
+normal consumer item blocks a final PASS claim but does not authorize another
+broad suite.

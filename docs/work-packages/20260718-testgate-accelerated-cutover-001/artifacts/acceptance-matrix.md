@@ -30,13 +30,13 @@ presentation.
 | Cold writable surfaces | PASS | Empty Cargo/target/work surfaces fetched the locked base/head graph, then completed 2,165 tests and global CRAP offline inventories. |
 | Source/output confinement | PASS | Exact source manifests stayed identical; live root/state writes failed; output remained on bounded external tmpfs; cleanup emptied all writable surfaces. |
 | Untrusted pull requests | PASS | The only forest1 workflow admits push-to-main and manual dispatch; contract tests reject both pull-request trigger forms, credentials persistence, host binds, and a Docker socket. |
-| Trusted main routing | PASS | Workflow labels exactly match the unique online/idle provider ID 23; concurrency is one. Provider enable is the cutover action after terminal acceptance. |
-| Conservative rollback | HOLD | Static contract is present, but provider execution count is zero and the reuse predicate rejects valid adjudicated closure. A prospectively authorized non-heavy hosted smoke and predicate patch must pass. |
+| Trusted main routing | HOLD | Workflow labels exactly match unique online/idle provider ID 23, but the real normal workflow consumer must pass on the docs-only activation push. |
+| Conservative rollback | PASS | Hosted run 29692305394 passed exact-main admission and uploaded a non-qualifying smoke receipt; all six broad/reuse steps skipped. The reviewed reuse predicate accepts canonical fully adjudicated closure. |
 
 ## Cost And Cutover Decision
 
 The operator accepted the measured 48.8% projected savings. No elapsed-time,
 increment-count, 50%, or duplicate-environment gate remains. The accepted
-candidate requires immediate provider activation after the accepted terminal
-findings are patched and the two real consumer paths pass. `release-gates`
-remains manually disabled; no broad command is repeated.
+candidate requires immediate provider activation and one docs-only
+trusted-main consumer run. `release-gates` remains manually disabled; no broad
+command is repeated.

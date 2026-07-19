@@ -27,3 +27,8 @@ seconds before gate execution because Docker's target tmpfs defaulted to
 `noexec`. A confined container reproduction produced the same build-script
 permission failure. Only the disposable target tmpfs was changed to `exec`;
 the other writable surfaces remain `noexec`.
+
+Conservative rollback smoke run `29692305394` completed successfully in 19
+seconds on GitHub-hosted isolation. It installed no tools and ran no broad
+validation; all six expensive/reuse steps were skipped. Normal `testgate` and
+`release-gates` remained manually disabled throughout the smoke.
