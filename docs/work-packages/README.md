@@ -180,6 +180,12 @@
 
 State as of `2026-07-19 UTC`:
 
+- `20260719-testgate-queue-governance-hardening-001/` - READY / ACTIVE:
+  prevents forest1 thrash and cumulative Actions queues by clearing stranded
+  pre-pivot runs, stabilizing one single-pending concurrency identity, rejecting
+  stale heads before expensive work, excluding generic self-hosted routing,
+  and binding one-push-per-stable-increment operation.
+
 - `20260718-testgate-accelerated-cutover-001/` - COMPLETE-PASS (2026-07-19):
   cut over ordinary trusted-main increments to the isolated forest1 TESTGATE
   runner. Exact-candidate closure passed 2,165/2,165 instrumented tests and
