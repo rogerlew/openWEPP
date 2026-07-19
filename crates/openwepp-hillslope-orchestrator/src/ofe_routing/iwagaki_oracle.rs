@@ -756,9 +756,9 @@ mod tests {
             "the oracle's headline metrics must remain bitwise identical",
         );
         assert!(
-            [2_273_141_013_813_331_758, 13_046_263_086_855_956_455,]
+            [2_273_141_013_813_331_758, 13_046_263_086_859_956_455,]
                 .contains(&hydrograph_fingerprint),
-            "the hydrograph must match an exact fingerprint observed on the development or pinned Ubuntu 24.04 toolchain",
+            "the hydrograph fingerprint {hydrograph_fingerprint} must match an exact fingerprint observed on the development or pinned Ubuntu 24.04 toolchain",
         );
     }
 

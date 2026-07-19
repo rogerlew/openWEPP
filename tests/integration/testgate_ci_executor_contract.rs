@@ -85,7 +85,8 @@ fn assert_workflow_and_rollback_contract() {
         "cargo-nextest@0.9.138",
         "ripgrep 14.1.0",
         "--artifact-root \"${EVIDENCE_DIR}/execution\"",
-        "TESTGATE_EXECUTION_ROOT: /cache/target",
+        "CARGO_TARGET_DIR: /t",
+        "TESTGATE_EXECUTION_ROOT: /t",
         "evidence_dir=\"${TESTGATE_EXECUTION_ROOT}/e\"",
         "planner_tmp=\"${TESTGATE_EXECUTION_ROOT}/p\"",
         "TMPDIR=\"${planner_tmp}\"",
@@ -230,8 +231,8 @@ fn runner_container_has_no_host_or_privileged_mounts() {
     assert!(manager.contains("--read-only"));
     assert!(manager.contains("dst=/runner-state,readonly"));
     assert!(manager.contains("--tmpfs"));
-    assert!(manager.contains("/cache/target:rw,exec,nosuid,nodev"));
-    assert!(manager.contains("/cache/target:rw,exec,nosuid,nodev,size=20g"));
+    assert!(manager.contains("/t:rw,exec,nosuid,nodev"));
+    assert!(manager.contains("/t:rw,exec,nosuid,nodev,size=26g"));
     assert!(manager.contains("/cache/cargo:rw,nosuid,nodev"));
     assert!(manager.contains("job-completed-hook.sh"));
     assert!(!manager.contains("/var/run/docker.sock"));
@@ -251,7 +252,7 @@ fn runner_container_has_no_host_or_privileged_mounts() {
         "ACTIONS_RUNNER_HOOK_JOB_COMPLETED=/usr/local/bin/openwepp-job-completed-hook.sh"
     ));
     let hook = text("tools/ci/omarchy-runner/job-completed-hook.sh");
-    assert!(hook.contains("/runner-work /cache/cargo /cache/target /home/runner /tmp"));
+    assert!(hook.contains("/runner-work /cache/cargo /t /home/runner /tmp"));
     assert!(hook.contains("/runner-state/_diag"));
     assert!(hook.contains("for round in {1..10}"));
 }

@@ -17,8 +17,8 @@ RUN apt-get update \
        python3 python3-venv python3-pip python-is-python3 php-cli unzip xz-utils zstd passwd \
     && rm -rf /var/lib/apt/lists/* \
     && useradd --create-home --uid 10001 --shell /bin/bash runner \
-    && mkdir -p /opt/actions-runner /runner-state /runner-work /cache/cargo /cache/target \
-    && chown -R runner:runner /opt/actions-runner /runner-state /runner-work /cache
+    && mkdir -p /opt/actions-runner /runner-state /runner-work /cache/cargo /t \
+    && chown -R runner:runner /opt/actions-runner /runner-state /runner-work /cache /t
 
 RUN python3 -m pip install --break-system-packages --no-cache-dir pyarrow==22.0.0
 
@@ -69,7 +69,7 @@ RUN chmod 0755 /usr/local/bin/openwepp-runner-entrypoint \
     && chmod -R go-w /opt/actions-runner /opt/cargo /opt/rustup
 
 ENV CARGO_HOME=/cache/cargo \
-    CARGO_TARGET_DIR=/cache/target \
+    CARGO_TARGET_DIR=/t \
     RUSTUP_HOME=/opt/rustup \
     RUSTUP_TOOLCHAIN=1.92.0-x86_64-unknown-linux-gnu \
     RUNNER_ALLOW_RUNASROOT=0 \

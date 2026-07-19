@@ -30,10 +30,12 @@ system packages enabled, and the completion hook removes it with the workspace.
 Runner updates are deliberate image revisions so a job cannot replace the
 persistent control plane.
 
-Execution evidence and planner temporary files use the short fixed paths
-`/cache/target/e` and `/cache/target/p`. Concurrency is one and the completion
-hook purges both after every job, so the fixed names stay fresh while keeping
-Unix-domain socket fixtures below Linux's path limit.
+Execution evidence, Cargo output, and planner temporary files share the bounded
+26 GiB executable tmpfs at the short fixed paths `/t/e`, `/t`, and `/t/p`.
+Concurrency is one and the completion hook purges the mount after every job, so
+the fixed names stay fresh while keeping Unix-domain socket fixtures below
+Linux's path limit. Repository-snapshot verifier fixtures are serialized within
+the full profile so their disposable build trees cannot exhaust the mount.
 
 `manage.sh remove` deregisters the runner, stops and removes its container, and
 deletes the dedicated registration-state volume. Job surfaces are tmpfs and

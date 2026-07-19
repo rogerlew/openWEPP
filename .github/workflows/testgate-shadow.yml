@@ -27,8 +27,9 @@ jobs:
     permissions:
       contents: read
     env:
-      OPENWEPP_RUNNER_IMAGE_ID: sha256:f902cd52ac2f420feb53671f76b7b6bcdcf6a17227e88ee8e5300f86e4b1c768
-      TESTGATE_EXECUTION_ROOT: /cache/target
+      OPENWEPP_RUNNER_IMAGE_ID: sha256:b3717ae3a05357450b8cabc8c4eca17ea493578fac5bb2aa15e4528032c64219
+      CARGO_TARGET_DIR: /t
+      TESTGATE_EXECUTION_ROOT: /t
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
@@ -174,7 +175,7 @@ jobs:
       - name: Validate receipt and predicate bindings
         env:
           EVIDENCE_DIR: ${{ runner.temp }}/testgate-evidence
-          EXPECTED_IMAGE: sha256:f902cd52ac2f420feb53671f76b7b6bcdcf6a17227e88ee8e5300f86e4b1c768
+          EXPECTED_IMAGE: sha256:b3717ae3a05357450b8cabc8c4eca17ea493578fac5bb2aa15e4528032c64219
           EXPECTED_BASE: ${{ steps.verification-comparison.outputs.base }}
         run: |
           set -euo pipefail

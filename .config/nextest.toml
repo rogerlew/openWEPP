@@ -197,6 +197,9 @@ max-threads = 4
 [test-groups.runner-fixture]
 max-threads = 4
 
+[test-groups.repository-snapshot]
+max-threads = 1
+
 # The snowbench/PySnobal tests are the observed top wall-time offenders. Keep
 # them serial to avoid multiple full WAT/PySnobal export pipelines competing for
 # parquet and target-dir I/O.
@@ -250,3 +253,16 @@ package(openwepp-runner)
 test-group = "runner-fixture"
 threads-required = 2
 slow-timeout = { period = "90s", terminate-after = 6 }
+
+# Planner executor/verifier fixtures archive the repository and may compile an
+# independent target tree. Keep those content-independence checks intact while
+# preventing several complete snapshots from consuming the bounded runner
+# target mount at once.
+[[profile.default.overrides]]
+filter = '''
+package(openwepp-gate-planner)
+& test(/(executor::tests::|verifier::tests::)/)
+'''
+test-group = "repository-snapshot"
+threads-required = 1
+slow-timeout = { period = "90s", terminate-after = 8 }

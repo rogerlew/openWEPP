@@ -44,6 +44,6 @@ done
 
 # The runner registration is read-only at runtime; all writable job surfaces
 # are bounded tmpfs mounts and are emptied after every job.
-for root in /runner-work /cache/cargo /cache/target /home/runner /tmp /runner-state/_diag; do
+for root in /runner-work /cache/cargo /t /home/runner /tmp /runner-state/_diag; do
   find "${root}" -mindepth 1 -delete
 done
