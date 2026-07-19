@@ -209,7 +209,7 @@ State as of `2026-07-19 UTC`:
 - `20260719-testgate-global-crap-output-relocation-001/` -
   IN-PROGRESS-ENV-PROJECTION-REVIEW-PASS-COMMITTED-PLAN-PENDING (2026-07-19):
   output relocation and 13/13 focused cases pass; the integrated environment fix
-  derives identity from policy-declared keys, with 2/2 focused unit cases,
+  derives identity from policy-declared keys, with 3/3 focused unit cases,
   focused Clippy, and dual review passing. Committed double-plan identity and
   reconciliation precede one terminal execution.
 

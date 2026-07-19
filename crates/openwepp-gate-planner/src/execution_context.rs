@@ -246,4 +246,18 @@ mod tests {
         );
         assert!(!declared.contains("_"));
     }
+
+    #[cfg(unix)]
+    #[test]
+    fn declared_non_utf8_environment_value_fails_closed() {
+        use std::os::unix::ffi::OsStringExt;
+
+        let declared = BTreeSet::from(["PATH".to_owned()]);
+        let error = projected_environment_variables(
+            &declared,
+            [(OsString::from("PATH"), OsString::from_vec(vec![0xff]))],
+        )
+        .expect_err("declared non-UTF-8 value must fail closed");
+        assert_eq!(error.code, "GATE-ENVIRONMENT-NONUTF8");
+    }
 }

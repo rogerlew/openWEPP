@@ -52,6 +52,8 @@ plan unreconstructable across invokers by hashing undeclared ambient variables.
 - [x] (2026-07-19) Corrected the live package status token to `ACTIVE` before
   final focused evidence so the canonical helper can admit the already
   prospective amended write set mechanically.
+- [x] (2026-07-19) Added the final declared-non-UTF-8 fail-closed regression;
+  focused environment evidence is 3/3 and focused Clippy remains clean.
 - [ ] Complete dual review, one mechanical terminal execution, dual terminal
   verification, prompt archival, and final disposition.
 
@@ -179,7 +181,7 @@ route, and assign a concrete next defect owner.
 - [x] Focused contract evidence passes.
 - [ ] Mechanical critical receipt passes every node.
 - [ ] Dual review and dual terminal verification have no open finding.
-- [x] Changed Rust files are 249 and 558 lines, below the 2,000-line warning
+- [x] Changed Rust files are 263 and 558 lines, below the 2,000-line warning
   threshold; no kernel/process Rust changes.
 - [x] Undeclared ambient variables do not alter plan identity; every
   policy-declared gate environment key remains bound.

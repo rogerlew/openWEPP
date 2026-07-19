@@ -17,16 +17,18 @@ Focused evidence:
 
 - `cargo fmt --check`: PASS.
 - `cargo nextest run -p openwepp-gate-planner -E
-  'test(environment_projection)'`: 2/2 PASS, 65 filtered; 0.142 seconds after a
-  7.58-second build.
+  'test(environment_projection) |
+  test(declared_non_utf8_environment_value_fails_closed)'`: 3/3 PASS, 65
+  filtered; 0.141 seconds after a 2.42-second incremental build.
 - `cargo clippy -p openwepp-gate-planner --all-targets -- -D warnings`: PASS in
-  3.90 seconds.
+  2.58 seconds on the final focused diff.
 - Unit regression: changes to `_` and an undeclared secret leave the projection
   identical; a changed declared `PATH` changes it.
 - Policy regression: the derived union equals the four current registry keys and
   excludes `_`.
+- Declared non-UTF-8 value regression: typed `GATE-ENVIRONMENT-NONUTF8` PASS.
 - `git diff --check`: PASS.
 
-Line-count governance: `execution_context.rs` is 249 lines and the previously
+Line-count governance: `execution_context.rs` is 263 lines and the previously
 changed integration test is 558 lines; both are below the 2,000-line warning
 threshold. No kernel/process Rust changed.
