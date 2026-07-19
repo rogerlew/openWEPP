@@ -388,6 +388,11 @@ calendar observation or broad testing on every ordinary increment.
   canonical neutral Cargo command now removes those coverage controls before
   launching nested metadata or inventory operations, while fixture failures
   retain the nested command's status, stdout, and stderr.
+- The next fresh run proved that a neutral nested build cannot fall back to the
+  confined runner work mount because that mount is intentionally
+  non-executable. Verifier inventory fixtures now share a neutral target below
+  the executable `TMPDIR`; they neither reuse the instrumented target nor
+  weaken the runner's mount confinement.
 
 ## Decision Log
 
@@ -482,7 +487,7 @@ calendar observation or broad testing on every ordinary increment.
   responsibility, and the focused `nextest_inventory.rs` boundary owns
   execution-selection parsing. Final counts are `planner.rs` at 2,963 lines,
   `nextest_inventory.rs` at 70, `executor.rs` at 2,514, and `verifier.rs` at
-  2,521. Further decomposition belongs to a later authorized refactor, not this
+  2,526. Further decomposition belongs to a later authorized refactor, not this
   cutover.
   Date/Author: 2026-07-18 / Codex.
 

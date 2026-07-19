@@ -1992,8 +1992,12 @@ mod tests {
 
     fn junit_bytes_for_node(root: &std::path::Path, node: &Value) -> Vec<u8> {
         let mut cases = Vec::new();
+        let neutral_target =
+            std::env::temp_dir().join("openwepp-gate-planner-neutral-cargo-target");
         for selector in nextest_listing_selectors(node) {
-            let output = crate::repository::neutral_cargo_command()
+            let mut command = crate::repository::neutral_cargo_command();
+            command
+                .env("CARGO_TARGET_DIR", &neutral_target)
                 .args([
                     "nextest",
                     "list",
@@ -2003,7 +2007,8 @@ mod tests {
                     "json",
                 ])
                 .args(selector)
-                .current_dir(root)
+                .current_dir(root);
+            let output = command
                 .output()
                 .expect("list test inventory for JUnit fixture");
             assert!(
