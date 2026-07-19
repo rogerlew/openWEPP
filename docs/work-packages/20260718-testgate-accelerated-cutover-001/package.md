@@ -88,6 +88,8 @@ authority requirements are not reduced.
 - `tests/integration/testgate_ci_*`
 - `tests/integration/testgate_align_authority_contract.rs`
 - `tests/integration/testgate_assure_campaign_currency_contract.rs`
+- `tests/integration/assurance_dossier_build_contract.rs`
+- `tests/integration/hphys0298_paired_lineage_partition_contract.rs`
 - `tests/python/test_testgate_shadow.py`
 - `tests/python/test_testgate.py`
 - `docs/ROADMAP.md`
@@ -130,6 +132,12 @@ The stale terminal-assurance contract is also admitted explicitly so it can
 continue proving campaign-transfer behavior at the supported `INCREMENT`
 planner boundary; the production transfer trigger remains terminal-stage
 driven.
+The exact assurance-dossier special-entry test and historical HPHYS0298 guard
+test are admitted prospectively after exact-candidate full-suite evidence
+isolated runner-specific failures in those two tests. Remediation is limited to
+preserving the same fail-closed assertions with portable temporary paths and
+actionable failure diagnostics; assurance publication and snow-physics
+authority remain unchanged.
 
 ## Protected Boundaries
 
