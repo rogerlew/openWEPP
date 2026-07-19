@@ -152,6 +152,7 @@ fn blocking_executor_and_affected_quality_preserve_manual_rollback() {
         "--artifact-root \"${EVIDENCE_DIR}/execution\"",
         "TESTGATE_EXECUTION_ROOT: /cache/target",
         "TMPDIR=\"${planner_tmp}\"",
+        "orchestration-error.log",
         "if: ${{ always() }}",
     ] {
         assert!(
