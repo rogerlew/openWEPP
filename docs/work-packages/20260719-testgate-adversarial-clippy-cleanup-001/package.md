@@ -4,7 +4,7 @@ Package ID: `20260719-testgate-adversarial-clippy-cleanup-001`
 
 Queue ID: `TESTGATE-ACCEPT-CLIPPY-01`
 
-Status: `IMPLEMENTED / PENDING TERMINAL PLAN`
+Status: `EXECUTED / FAIL-SOCKET-PATH / SUCCESSOR ACTIVE`
 
 Authorization: the verified closure blocker from
 `20260719-testgate-policy-digest-alignment-001`, under Roger Lew's 2026-07-19
@@ -29,8 +29,12 @@ filtering any assertion.
 - [x] (2026-07-19) Extracted three boundary helpers; the diff changes no
   existing assertion line and preserves all assertion/match inventories.
 - [x] (2026-07-19) Focused Clippy passes and the integration target passes 2/2.
-- [ ] Execute the mechanical
-  terminal plan selected for this exact increment.
+- [x] (2026-07-19) Executed the 10-node bounded-component terminal plan twice.
+  Nine nodes pass; affected CRAP fails on an out-of-scope Unix-socket scratch
+  path before the refactored test runs. The second attempt used a short outer
+  root and confirmed the remaining length comes from the fixture label.
+- [ ] `20260719-testgate-assurance-socket-path-portability-001` owns the exact
+  one-line fixture-label correction and current-head terminal evidence.
 - [ ] Complete dual review and terminal verification.
 
 ## Correction Authority Envelope
@@ -123,6 +127,12 @@ security assertion exactly.
 - The correction is smaller than the lint report implied: three helper
   boundaries plus a wrapper are sufficient. No assertion operand or asserted
   source string changes.
+- The terminal plan proves the original Clippy blocker is closed: package and
+  workspace Clippy both pass. Its affected-CRAP node instead exposed
+  `assurance_dossier_build_contract` binding a Unix socket under a scratch label
+  too long for nested executor roots. A shorter outer root fixed one socket
+  case but not `assure03-release-symlink-preflight`; this is assigned to a
+  separate test-only successor.
 
 ## Decision Log
 
@@ -133,5 +143,7 @@ security assertion exactly.
 
 ## Outcomes And Retrospective
 
-The bounded structural correction passes its focused loop. Mechanical terminal
-execution, dual review, and terminal disposition remain.
+The bounded structural correction passes its focused loop and every selected
+non-coverage node. This package cannot claim terminal PASS from its two failed
+local receipts. The named successor owns the distinct socket-path correction;
+dual review and final disposition remain after that evidence returns.
