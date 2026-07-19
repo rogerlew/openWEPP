@@ -12,6 +12,7 @@ use crate::documentation::{append_lint_paths, changed_markdown_paths};
 use crate::error::{ErrorClass, GatePolicyError, Result};
 use crate::execution_context::cargo_configuration_manifest;
 pub(crate) use crate::execution_context::environment_record;
+use crate::nextest_inventory::collect_testcases;
 use crate::policy::{GateDefinition, PolicyBundle, RiskClass};
 use crate::repository::{
     CargoGraph, ObservedChange, ObservedSource, Snapshot, host_target_triple,
@@ -1754,42 +1755,6 @@ fn doctest_inventory_at(repo: &Path, cargo_target: Option<&Path>) -> Result<Vec<
     inventory.sort();
     inventory.dedup();
     Ok(inventory)
-}
-
-fn collect_testcases(value: &Value, prefix: &str, output: &mut Vec<String>) {
-    match value {
-        Value::Object(object) => collect_object_testcases(object, prefix, output),
-        Value::Array(array) => collect_array_testcases(array, prefix, output),
-        _ => {}
-    }
-}
-
-fn collect_object_testcases(
-    object: &serde_json::Map<String, Value>,
-    prefix: &str,
-    output: &mut Vec<String>,
-) {
-    if let Some(testcases) = object.get("testcases").and_then(Value::as_object) {
-        output.extend(
-            testcases
-                .keys()
-                .map(|name| sha256_bytes(format!("{prefix}\0{name}").as_bytes())),
-        );
-    }
-    for (key, child) in object {
-        let next = if prefix.is_empty() {
-            key.clone()
-        } else {
-            format!("{prefix}::{key}")
-        };
-        collect_testcases(child, &next, output);
-    }
-}
-
-fn collect_array_testcases(array: &[Value], prefix: &str, output: &mut Vec<String>) {
-    for child in array {
-        collect_testcases(child, prefix, output);
-    }
 }
 
 pub(crate) fn manifest_roots(repo: &Path, revision: &str, include_dirty: bool) -> Result<Value> {

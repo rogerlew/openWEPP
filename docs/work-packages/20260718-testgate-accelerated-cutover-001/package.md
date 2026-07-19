@@ -359,6 +359,12 @@ calendar observation or broad testing on every ordinary increment.
   frozen acceptance base is therefore `c90d4dab`: that commit prospectively
   authorizes the complete portable-runner write set, while this living-package
   update supplies the required explicit intent delta.
+- Run `29678990162` executed the full Nextest command successfully with `2,163`
+  observed tests, then failed its evidence adapter because the planner had also
+  counted the five explicit `#[ignore]` mismatches returned by `nextest list`.
+  The adapter's `expected 2168, observed 2163` error proves the command reached
+  PASS artifact validation; the ignored-test accounting patch receives focused
+  validation, and the successful full command is not repeated.
 
 ## Decision Log
 
@@ -450,9 +456,11 @@ calendar observation or broad testing on every ordinary increment.
   Rationale: each remaining file is one versioned wire-contract state machine;
   splitting those state transitions during terminal acceptance would increase
   review risk. The new `execution_context.rs` boundary removes a coherent
-  responsibility and leaves `planner.rs` at 2,961 lines, `executor.rs` at
-  2,493, and `verifier.rs` at 2,484. Further decomposition belongs to a later
-  authorized refactor, not this cutover.
+  responsibility, and the focused `nextest_inventory.rs` boundary owns
+  execution-selection parsing. Final counts are `planner.rs` at 2,963 lines,
+  `nextest_inventory.rs` at 70, `executor.rs` at 2,514, and `verifier.rs` at
+  2,515. Further decomposition belongs to a later authorized refactor, not this
+  cutover.
   Date/Author: 2026-07-18 / Codex.
 
 ## Outcomes & Retrospective

@@ -14,6 +14,7 @@ pub mod error;
 mod execution_context;
 pub mod executor;
 pub mod ledger;
+mod nextest_inventory;
 pub mod planner;
 pub mod policy;
 pub mod repository;
