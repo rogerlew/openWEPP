@@ -230,7 +230,7 @@ fn runner_container_has_no_host_or_privileged_mounts() {
     let host_receipt = text(
         "docs/work-packages/20260718-testgate-accelerated-cutover-001/artifacts/host-capacity-security.md",
     );
-    let image_id = "sha256:17c413a944e4a456cfceee254425f5c7f081a22b74b9cd88f1b9e8f1f37fcf7a";
+    let image_id = "sha256:cc16bebbad9d3acc78e8921043c00a63ec2e7fffd2ede182b071359fe17e376a";
     assert_eq!(manager.matches(image_id).count(), 1);
     assert_eq!(workflow.matches(image_id).count(), 2);
     assert_eq!(host_receipt.matches(image_id).count(), 1);
@@ -251,6 +251,7 @@ fn runner_container_has_no_host_or_privileged_mounts() {
     assert!(image.contains("RUSTUP_TOOLCHAIN=1.92.0-x86_64-unknown-linux-gnu"));
     assert!(image.contains("pyarrow==22.0.0"));
     assert!(image.contains("pandas==3.0.3"));
+    assert!(image.contains("rustup component add llvm-tools-preview"));
     assert!(image.contains("UK2US_COMMIT=6ce03a96a9466bed029fb0287786cd903f1876d6"));
     assert!(image.contains("python-is-python3 php-cli"));
     assert!(manager.contains("uk2us_rules.json"));
@@ -258,6 +259,7 @@ fn runner_container_has_no_host_or_privileged_mounts() {
     assert!(bootstrap.contains("python3 -m venv --system-site-packages .venv"));
     assert!(bootstrap.contains("pyarrow.__version__ == \"22.0.0\""));
     assert!(bootstrap.contains("pandas.__version__ == \"3.0.3\""));
+    assert!(workflow.contains("rustup component list --installed"));
     assert!(image.contains(
         "ACTIONS_RUNNER_HOOK_JOB_COMPLETED=/usr/local/bin/openwepp-job-completed-hook.sh"
     ));

@@ -44,8 +44,8 @@ No `pull_request` or `pull_request_target` event is routed to this runner.
 Ran: 2026-07-18 PDT / 2026-07-19 UTC.
 
 - Container image ID:
-  `sha256:17c413a944e4a456cfceee254425f5c7f081a22b74b9cd88f1b9e8f1f37fcf7a`
-  (`863,351,191` bytes). This revision retains Ubuntu's repository-pinned
+  `sha256:cc16bebbad9d3acc78e8921043c00a63ec2e7fffd2ede182b071359fe17e376a`
+  (`929,077,319` bytes). This revision retains Ubuntu's repository-pinned
   `ripgrep 14.1.0-1` and adds Python 3.12's `python` alias, system-visible
   pandas `3.0.3`, PyArrow `22.0.0`, PHP `8.3.6`, and `uk2us` at commit
   `6ce03a96a9466bed029fb0287786cd903f1876d6` with hashed executable and spelling
@@ -117,7 +117,8 @@ Ran: 2026-07-18 PDT / 2026-07-19 UTC.
   `Listening for Jobs` at `2026-07-19T00:23:42Z`.
 - Direct tool verification passed for Rust 1.92.0, Nextest 0.9.138,
   cargo-deny 0.19.6, cargo-llvm-cov 0.8.7, cargo-crap 0.2.2, and
-  markdown-doc-cli 0.1.0. The unprivileged live runner also reported Python
+  the `llvm-tools-preview` component, and markdown-doc-cli 0.1.0. The
+  unprivileged live runner also reported Python
   3.12.3, pandas 3.0.3 and PyArrow 22.0.0 under
   `/usr/local/lib/python3.12/dist-packages`, PHP 8.3.6, and the pinned `uk2us`
   help surface; a disposable `--system-site-packages` virtual environment

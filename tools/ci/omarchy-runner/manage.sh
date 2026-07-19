@@ -4,7 +4,7 @@ set -euo pipefail
 readonly HOST="${OPENWEPP_RUNNER_HOST:-omarchy}"
 readonly REPOSITORY="${OPENWEPP_RUNNER_REPOSITORY:-rogerlew/openWEPP}"
 readonly IMAGE="openwepp-actions-runner:2.335.1"
-readonly EXPECTED_IMAGE_ID="sha256:17c413a944e4a456cfceee254425f5c7f081a22b74b9cd88f1b9e8f1f37fcf7a"
+readonly EXPECTED_IMAGE_ID="sha256:cc16bebbad9d3acc78e8921043c00a63ec2e7fffd2ede182b071359fe17e376a"
 readonly CONTAINER="openwepp-actions-runner"
 readonly RUNNER_NAME="omarchy-openwepp-01"
 readonly LABELS="openwepp,omarchy,trusted"

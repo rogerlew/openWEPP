@@ -365,6 +365,10 @@ calendar observation or broad testing on every ordinary increment.
   The adapter's `expected 2168, observed 2163` error proves the command reached
   PASS artifact validation; the ignored-test accounting patch receives focused
   validation, and the successful full command is not repeated.
+- The first fresh global-CRAP invocation stopped before test execution because
+  the immutable runner image lacked `llvm-tools-preview`; the read-only runtime
+  correctly blocked an on-demand toolchain mutation. The component is now a
+  pinned image input and a verified bootstrap prerequisite.
 
 ## Decision Log
 

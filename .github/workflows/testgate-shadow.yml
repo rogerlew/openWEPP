@@ -27,7 +27,7 @@ jobs:
     permissions:
       contents: read
     env:
-      OPENWEPP_RUNNER_IMAGE_ID: sha256:17c413a944e4a456cfceee254425f5c7f081a22b74b9cd88f1b9e8f1f37fcf7a
+      OPENWEPP_RUNNER_IMAGE_ID: sha256:cc16bebbad9d3acc78e8921043c00a63ec2e7fffd2ede182b071359fe17e376a
       CARGO_TARGET_DIR: /t
       TESTGATE_EXECUTION_ROOT: /t
     steps:
@@ -70,6 +70,7 @@ jobs:
           cargo deny --version | grep -F 'cargo-deny 0.19.6'
           cargo llvm-cov --version | grep -F 'cargo-llvm-cov 0.8.7'
           cargo crap --version | grep -F 'cargo-crap 0.2.2'
+          rustup component list --installed | grep -F 'llvm-tools-'
           rg --version | grep -F 'ripgrep 14.1.0'
           markdown-doc --version
           php --version | grep -F 'PHP 8.3.'
@@ -175,7 +176,7 @@ jobs:
       - name: Validate receipt and predicate bindings
         env:
           EVIDENCE_DIR: ${{ runner.temp }}/testgate-evidence
-          EXPECTED_IMAGE: sha256:17c413a944e4a456cfceee254425f5c7f081a22b74b9cd88f1b9e8f1f37fcf7a
+          EXPECTED_IMAGE: sha256:cc16bebbad9d3acc78e8921043c00a63ec2e7fffd2ede182b071359fe17e376a
           EXPECTED_BASE: ${{ steps.verification-comparison.outputs.base }}
         run: |
           set -euo pipefail

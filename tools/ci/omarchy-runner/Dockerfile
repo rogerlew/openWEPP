@@ -60,6 +60,8 @@ RUN echo "634e90ef3713a9910d165a6d93eeabcbe009a7bd402ef0a1e1cfe5d4f944356b  /opt
     && chmod 0755 /opt/uk2us/uk2us \
     && ln -s /opt/uk2us/uk2us /usr/local/bin/uk2us
 
+RUN rustup component add llvm-tools-preview
+
 RUN python3 -m pip install --break-system-packages --no-cache-dir pandas==3.0.3
 
 COPY entrypoint.sh /usr/local/bin/openwepp-runner-entrypoint
