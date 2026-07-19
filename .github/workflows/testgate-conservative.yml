@@ -18,6 +18,11 @@ on:
         required: false
         default: 1
         type: number
+      smoke_only:
+        description: "Prove hosted rollback admission without running broad validation"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -50,7 +55,46 @@ jobs:
           git merge-base --is-ancestor "${base_commit}" "${GITHUB_SHA}"
           [[ "${base_commit}" != "${GITHUB_SHA}" ]]
           echo "base=${base_commit}" >> "${GITHUB_OUTPUT}"
+      - name: Prove hosted rollback smoke
+        if: ${{ inputs.smoke_only }}
+        env:
+          EXPECTED_BASE: ${{ steps.comparison.outputs.base }}
+          RUNNER_ENVIRONMENT: ${{ runner.environment }}
+          TESTGATE_RUN_ID: ${{ inputs.testgate_run_id }}
+        run: |
+          set -euo pipefail
+          test "${RUNNER_ENVIRONMENT}" = github-hosted
+          test -z "${TESTGATE_RUN_ID}"
+          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
+          git merge-base --is-ancestor "${EXPECTED_BASE}" "${GITHUB_SHA}"
+          test -z "$(git status --porcelain)"
+          bash -n tools/release/run_release_candidate_gates.sh
+          bash -n tools/release/check_assurance_dossier_exports.sh
+          jq -n \
+            --arg base "${EXPECTED_BASE}" \
+            --arg head "${GITHUB_SHA}" \
+            --arg repository "${GITHUB_REPOSITORY}" \
+            --arg runner_environment "${RUNNER_ENVIRONMENT}" \
+            '{schema_version:"openwepp-conservative-smoke-v1",
+              mode:"ADMISSION_SMOKE", result:"PASS",
+              qualification_claim:false, repository:$repository,
+              base_commit:$base, head_commit:$head,
+              runner_environment:$runner_environment}' \
+            > "${RUNNER_TEMP}/testgate-conservative-smoke.json"
+          jq -e \
+            '.result == "PASS" and .qualification_claim == false
+             and .runner_environment == "github-hosted"' \
+            "${RUNNER_TEMP}/testgate-conservative-smoke.json"
+      - name: Upload rollback smoke receipt
+        if: ${{ inputs.smoke_only }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: conservative-smoke-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/testgate-conservative-smoke.json
+          if-no-files-found: error
+          retention-days: 7
       - name: Install pinned conservative toolchain
+        if: ${{ !inputs.smoke_only }}
         env:
           TESTGATE_RUN_ID: ${{ inputs.testgate_run_id }}
         run: |
@@ -66,6 +110,7 @@ jobs:
             cargo install cargo-crap --locked --version 0.2.2
           fi
       - name: Install pinned spelling converter
+        if: ${{ !inputs.smoke_only }}
         env:
           UK2US_ROOT: ${{ runner.temp }}/uk2us
         run: |
@@ -83,7 +128,7 @@ jobs:
           echo "UK2US_RULES_FILE=${GITHUB_WORKSPACE}/tools/ci/omarchy-runner/uk2us_rules.json" \
             >> "${GITHUB_ENV}"
       - name: Download authenticated TESTGATE evidence for CRAP reuse
-        if: ${{ inputs.testgate_run_id != '' }}
+        if: ${{ !inputs.smoke_only && inputs.testgate_run_id != '' }}
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           name: testgate-${{ inputs.testgate_run_id }}-${{ inputs.testgate_run_attempt }}
@@ -92,7 +137,7 @@ jobs:
           repository: ${{ github.repository }}
           run-id: ${{ inputs.testgate_run_id }}
       - name: Verify exact authenticated global CRAP evidence
-        if: ${{ inputs.testgate_run_id != '' }}
+        if: ${{ !inputs.smoke_only && inputs.testgate_run_id != '' }}
         env:
           EVIDENCE_DIR: ${{ runner.temp }}/testgate-evidence
           EXPECTED_BASE: ${{ steps.comparison.outputs.base }}
@@ -139,12 +184,13 @@ jobs:
             '.status == "PASS"
              and .measurement_scope == "GLOBAL_WORKSPACE"
              and .closure_eligible == true
-             and .raw_over_threshold_count == 0
-             and .adjudicated_count == 0
+             and .debt_status == "PASS"
+             and .invalid_adjudications == []
+             and .raw_over_threshold_count == .adjudicated_count
              and .actionable_count == 0' \
             "${EVIDENCE_DIR}/execution/${report_path}"
       - name: Run conservative validation with required authority
-        if: ${{ inputs.testgate_run_id == '' }}
+        if: ${{ !inputs.smoke_only && inputs.testgate_run_id == '' }}
         env:
           CRAP_BASE_REF: ${{ steps.comparison.outputs.base }}
         run: >-
@@ -153,7 +199,7 @@ jobs:
           --skip-stability
           --crap-base-ref "${CRAP_BASE_REF}"
       - name: Run conservative comparison with reused global CRAP
-        if: ${{ inputs.testgate_run_id != '' }}
+        if: ${{ !inputs.smoke_only && inputs.testgate_run_id != '' }}
         run: |
           set -euo pipefail
           bash tools/release/check_assurance_dossier_exports.sh

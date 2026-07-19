@@ -6,11 +6,12 @@ Queued evidence:
 - `host-capacity-security.md` - original `omarchy` and active `forest1`
   container-runner receipts.
 - `workflow-cost-containment.md` - provider disable/re-enable and trigger state.
-- `bootstrap-evidence.md` - cold/warm cache ordering and receipts.
+- `bootstrap-evidence.md` - cold-cache ordering, bounds, and cleanup receipt.
 - `affected-crap.md` - affected cleanup and exact-candidate patch-loop closure.
 - `crap-closure.md` - exact-candidate global CRAP and full Nextest closure.
 - `acceptance-matrix.md` - event-driven acceptance cases and outcomes.
-- `review-a-adversarial.md`, `review-b.md`, and `review-disposition.md`.
+- `review-a-adversarial.md`, `review-b.md`, and `review-disposition.md` -
+  independent findings and patch-loop disposition.
 - `terminal-gate-results.md`, terminal verification records, and
   `final-disposition.md`.
 

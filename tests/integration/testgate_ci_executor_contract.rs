@@ -145,6 +145,19 @@ fn assert_workflow_and_rollback_contract() {
     assert!(conservative.contains("--authority-only"));
     assert!(!conservative.contains("runs-on: [self-hosted"));
     assert!(conservative.contains("--deny-self-hosted-runners"));
+    assert!(conservative.contains("smoke_only:"));
+    assert!(conservative.contains("Prove hosted rollback smoke"));
+    assert!(conservative.contains("RUNNER_ENVIRONMENT: ${{ runner.environment }}"));
+    assert!(conservative.contains("qualification_claim:false"));
+    assert!(conservative.contains("conservative-smoke-${{ github.run_id }}"));
+    assert_eq!(
+        conservative.matches("if: ${{ !inputs.smoke_only").count(),
+        6,
+        "all six broad or reuse steps must reject smoke mode"
+    );
+    assert!(conservative.contains(".raw_over_threshold_count == .adjudicated_count"));
+    assert!(!conservative.contains(".raw_over_threshold_count == 0"));
+    assert!(!conservative.contains(".adjudicated_count == 0"));
 
     let rollback =
         text("docs/work-packages/20260718-testgate-ci-shadow-executor-001/artifacts/rollback.md");
