@@ -237,12 +237,7 @@ fn reconstruct_receipt_plan(
             "artifact provider must supply an external reconstruction root",
         )
     })?;
-    crate::planner::reconstruct_plan_in(
-        repo,
-        plan,
-        &root.join(".verification"),
-        after_source_mutation,
-    )
+    crate::planner::reconstruct_plan_in(repo, plan, &root.join(".work"), after_source_mutation)
 }
 
 fn verify_tool_environment(repo: &Path, plan: &Value, receipt: &Value) -> Result<()> {

@@ -252,12 +252,7 @@ fn validate_plan(repo: &Path, artifact_root: &Path, plan: &Value) -> Result<()> 
     let schema = read_json(&repo.join("gate-policy/v1/schemas/gate-plan.schema.json"))?;
     validate_schema(&schema, plan, "executor gate plan")?;
     verify_plan_identity(plan)?;
-    let reconstructed = reconstruct_plan_in(
-        repo,
-        plan,
-        &work_root(artifact_root).join("reconstruction"),
-        false,
-    )?;
+    let reconstructed = reconstruct_plan_in(repo, plan, &work_root(artifact_root), false)?;
     if digest(&reconstructed)? != digest(plan)? {
         return Err(execution_error(
             "GATE-EXEC-PLAN-RECONSTRUCTION",
@@ -2368,6 +2363,10 @@ mod tests {
         assert_eq!(receipt["counts"]["passed"], 1);
         assert!(!repo.path().join("target").exists());
         assert!(artifacts.path().join(".work/cargo-target").is_dir());
+        assert!(artifacts.path().join(".work/graph-snapshots").is_dir());
+        assert!(artifacts.path().join(".work/inventory-snapshots").is_dir());
+        assert!(!artifacts.path().join(".work/reconstruction").exists());
+        assert!(!artifacts.path().join(".verification").exists());
     }
 
     #[test]
