@@ -33,9 +33,10 @@ count scorecard remains active.
 
 - [x] (2026-07-18) Accepted ADR-0040, retired the timed/count scorecard as
   prospective authority, and scaffolded this autonomous cutover handoff.
-- [ ] Stop automatic hosted TESTGATE shadow execution while the trusted runner
-  is provisioned; retain manual recovery access.
-- [ ] Provision and register the isolated `omarchy` runner and record capacity,
+- [x] (2026-07-18) Stopped automatic hosted TESTGATE shadow execution while
+  provisioning the trusted runner; retained manual recovery access.
+- [x] (2026-07-18) Provisioned and registered the isolated `omarchy` runner and
+  recorded capacity,
   labels, permissions, service health, and security boundaries.
 - [ ] Route trusted TESTGATE jobs to `omarchy`, fix cold-cache bootstrap, remove
   the daily schedule, and keep untrusted public PR code off the runner.
@@ -68,7 +69,11 @@ authority requirements are not reduced.
 ## Declared Write Set
 
 - `AGENTS.md`
+- `crates/AGENTS.md`
+- `tests/AGENTS.md`
 - `.github/workflows/testgate-shadow.yml`
+- `.github/workflows/testgate-conservative.yml`
+- `.github/workflows/testgate.yml`
 - `.github/workflows/release-gates.yml`
 - `.config/nextest.toml`
 - `Cargo.toml`
@@ -80,12 +85,22 @@ authority requirements are not reduced.
 - `tools/release/**`
 - `tests/integration/testgate_ci_*`
 - `tests/python/test_testgate_shadow.py`
+- `tests/python/test_testgate.py`
 - `docs/ROADMAP.md`
 - `docs/decisions/0039-campaign-scoped-risk-based-testing-and-assurance-gates.md`
 - `docs/decisions/0040-accelerated-testgate-cutover-on-trusted-self-hosted-runner.md`
+- `docs/decisions/0021-module-coverage-closure-thresholds.md`
 - `docs/decisions/README.md`
 - `docs/standards/testing-and-gate-strategy.md`
 - `docs/standards/local-ci-gate-selection.md`
+- `docs/standards/kernel-work-package-preparation.md`
+- `docs/standards/mechanical-refactor-authoring-guide.md`
+- `docs/standards/module-test-enhancement-authoring-guide.md`
+- `docs/standards/rust-scientific-coding-standard.md`
+- `docs/prompt_templates/mechanical-refactor-kickoff-template.md`
+- `docs/dev-guide/01-orientation.md`
+- `docs/dev-guide/07-contributing.md`
+- `docs/architecture/watershed-runtime-architecture-specification.md`
 - `docs/work-packages/AGENTS.md`
 - `docs/work-packages/README.md`
 - `docs/work-packages/templates/**`
@@ -302,6 +317,22 @@ calendar observation or broad testing on every ordinary increment.
   Date/Author: 2026-07-18 / Codex.
 - Decision: do not create a provider migration gate.
   Rationale: live inspection found no branch protection or ruleset to migrate.
+  Date/Author: 2026-07-18 / Codex.
+- Decision: amend the isolated guest implementation to an unprivileged Ubuntu
+  24.04 container on `omarchy` before implementation edits.
+  Rationale: read-only intake proved the host is Arch Linux, Docker 29.2.1 is
+  installed and unused, and no VM manager is present. A pinned Ubuntu userspace
+  with dedicated volumes, no Docker socket, no host-home mounts, and trusted-
+  event-only routing meets the isolation objective with substantially less
+  setup than installing a new hypervisor.
+  Date/Author: 2026-07-18 / Codex.
+- Decision: amend the declared write set before review remediation to include
+  the independent conservative workflow and every active guidance surface
+  identified by the governance review.
+  Rationale: rollback must remain callable when normal TESTGATE is disabled,
+  and obsolete conservative-every-increment wording must be removed
+  consistently. Publishing this amendment before the implementation candidate
+  also provides a base-commit authorization source for intent admission.
   Date/Author: 2026-07-18 / Codex.
 
 ## Outcomes & Retrospective
