@@ -92,6 +92,16 @@ fn assert_workflow_and_rollback_contract() {
         "TMPDIR=\"${planner_tmp}\"",
         "orchestration-error.log",
         "if: ${{ always() }}",
+        "group: openwepp-forest1-testgate",
+        "queue: single",
+        "cancel-in-progress: false",
+        "Reject superseded head before gate execution",
+        "Reject superseded head before authority",
+        "Reject superseded head after authority verification",
+        "ERROR: superseded TESTGATE head",
+        "ERROR: refusing to verify superseded head",
+        "ERROR: refusing authority for superseded head",
+        "ERROR: refusing aggregate success for superseded head",
     ] {
         assert!(
             workflow.contains(context),
@@ -109,6 +119,7 @@ fn assert_workflow_and_rollback_contract() {
         "cargo install",
         "${RUNNER_TEMP}/testgate-",
         "continue-on-error: true",
+        "openwepp-forest1-testgate-v",
     ] {
         assert!(
             !workflow.contains(forbidden),
@@ -117,11 +128,67 @@ fn assert_workflow_and_rollback_contract() {
     }
     assert!(workflow.contains("persist-credentials: false"));
     assert!(workflow.contains("git merge-base --is-ancestor"));
+    assert!(workflow.contains(
+        "concurrency:\n  group: openwepp-forest1-testgate\n  queue: single\n  cancel-in-progress: false"
+    ));
+    assert_eq!(
+        workflow
+            .matches("git rev-parse --verify refs/remotes/origin/main")
+            .count(),
+        3,
+        "execution admission, pre-gate execution, and independent verification must require current main"
+    );
+    assert!(
+        !workflow
+            .contains("git merge-base --is-ancestor \"${GITHUB_SHA}\" refs/remotes/origin/main")
+    );
     assert!(workflow.contains("permissions:\n  contents: read"));
     assert!(workflow.contains("execute-increment:\n    name: openwepp/execute-increment"));
     assert!(workflow.contains(
         "increment-gates:\n    name: openwepp/increment-gates\n    needs: [execute-increment, verify-increment]\n    if: ${{ always() }}"
     ));
+    let execution_job = workflow
+        .split_once("  execute-increment:")
+        .expect("execution job")
+        .1
+        .split_once("  verify-increment:")
+        .expect("verification job boundary")
+        .0;
+    let admission = execution_job
+        .find("Admit trusted main comparison")
+        .expect("execution admission");
+    let bootstrap = execution_job
+        .find("Bootstrap locked base and head dependencies")
+        .expect("dependency bootstrap");
+    let pre_gate = execution_job
+        .find("Reject superseded head before gate execution")
+        .expect("pre-gate supersession guard");
+    let execute = execution_job
+        .find("Execute content-verifiable increment gates")
+        .expect("gate execution");
+    assert!(admission < bootstrap);
+    assert!(bootstrap < pre_gate);
+    assert!(pre_gate < execute);
+
+    let verifier_job = workflow
+        .split_once("  verify-increment:")
+        .expect("verification job")
+        .1
+        .split_once("  increment-gates:")
+        .expect("aggregate job boundary")
+        .0;
+    let verifier_guard = verifier_job
+        .find("ERROR: refusing to verify superseded head")
+        .expect("verification current-main guard");
+    let verifier_build = verifier_job
+        .find("Build immutable-envelope verifier")
+        .expect("verifier build");
+    let verifier_upload = verifier_job
+        .find("Upload independently verified evidence")
+        .expect("verified evidence upload");
+    assert!(verifier_guard < verifier_build);
+    assert!(verifier_build < verifier_upload);
+
     let signer = workflow
         .split_once("  increment-gates:")
         .expect("signer job")
@@ -129,6 +196,26 @@ fn assert_workflow_and_rollback_contract() {
     assert!(!signer.contains("actions/checkout"));
     assert!(!signer.contains("cargo build"));
     assert!(!signer.contains("python3"));
+    let before_authority = signer
+        .find("Reject superseded head before authority")
+        .expect("pre-authority current-main guard");
+    let attest = signer
+        .find("Authenticate receipt to repository and workflow identity")
+        .expect("attestation step");
+    let verify_attestation = signer
+        .find("Verify native attestation before authority succeeds")
+        .expect("native verification step");
+    let after_authority = signer
+        .find("Reject superseded head after authority verification")
+        .expect("post-authority current-main guard");
+    let upload = signer
+        .find("Upload authenticated gate evidence")
+        .expect("authenticated evidence upload");
+    assert!(before_authority < attest);
+    assert!(attest < verify_attestation);
+    assert!(verify_attestation < upload);
+    assert!(upload < after_authority);
+    assert!(!signer[after_authority + 1..].contains("      - name:"));
 
     let conservative = text(".github/workflows/testgate-conservative.yml");
     assert!(conservative.contains("conservative-rollback:"));
@@ -158,6 +245,10 @@ fn assert_workflow_and_rollback_contract() {
     assert!(conservative.contains(".raw_over_threshold_count == .adjudicated_count"));
     assert!(!conservative.contains(".raw_over_threshold_count == 0"));
     assert!(!conservative.contains(".adjudicated_count == 0"));
+
+    let release = text(".github/workflows/release-gates.yml");
+    assert!(!release.contains("runs-on: self-hosted"));
+    assert!(release.contains("runs-on: [self-hosted, Linux, X64, openwepp, release, trusted]"));
 
     let rollback =
         text("docs/work-packages/20260718-testgate-ci-shadow-executor-001/artifacts/rollback.md");

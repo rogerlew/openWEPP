@@ -1274,6 +1274,30 @@ conservation, security, or default-production failure pauses dependent campaign
 work until contained; unrelated diagnostic failures may remain investigation
 debt only when their governing authority permits it.
 
+### 14.1 Queue and runner governance
+
+Normal TESTGATE uses one permanent repository concurrency identity with the
+provider's single-pending queue and `cancel-in-progress: false`. The current run
+may finish rather than repeatedly restarting cold work; only the newest pending
+run is retained. Never version or rename that identity without first draining
+its exact live group.
+
+Every self-hosted job uses exact capability and site labels. Generic
+`self-hosted` routing is forbidden because it can make an unrelated workflow
+consume the trusted increment runner. Historical manual dispatch is rejected:
+normal execution, independent verification, and authority minting each require
+the run SHA to equal current `main`. A second current-head check immediately
+before gate execution bounds work when a push is superseded after admission.
+The aggregate checks current `main` both before attestation and as its final
+success condition after native verification and authenticated evidence upload;
+a head superseded during authority work cannot finish successful.
+
+Agents make package-required scaffold and intermediate commits locally and push
+once when the increment is stable. Manual dispatch first proves no TESTGATE run
+is queued or active. Provider queue records bound to retired labels or obsolete
+concurrency identities are canceled before later dispatch; they are never
+revived by re-registering an obsolete runner.
+
 ## 15. Performance And Friction Budgets
 
 Budgets are diagnostic objectives, not permission to omit affected gates:

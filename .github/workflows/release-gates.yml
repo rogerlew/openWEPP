@@ -233,7 +233,7 @@ jobs:
   stability-cohort:
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_stability }}
     needs: workspace-validation
-    runs-on: self-hosted
+    runs-on: [self-hosted, Linux, X64, openwepp, release, trusted]
     steps:
       - name: Checkout
         uses: actions/checkout@v4

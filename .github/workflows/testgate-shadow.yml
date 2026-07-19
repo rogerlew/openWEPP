@@ -16,7 +16,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: openwepp-forest1-testgate-v3
+  group: openwepp-forest1-testgate
+  queue: single
   cancel-in-progress: false
 
 jobs:
@@ -46,7 +47,6 @@ jobs:
           set -euo pipefail
           git fetch --no-tags origin main
           [[ "${EVENT_REF}" == "refs/heads/main" ]]
-          git merge-base --is-ancestor "${GITHUB_SHA}" refs/remotes/origin/main
           base_ref="${INPUT_BASE}"
           if [[ "${EVENT_NAME}" == "push" ]]; then
             base_ref="${EVENT_BEFORE}"
@@ -56,6 +56,11 @@ jobs:
           fi
           base_commit="$(git rev-parse --verify --end-of-options "${base_ref}^{commit}")"
           head_commit="$(git rev-parse --verify --end-of-options "${GITHUB_SHA}^{commit}")"
+          current_head="$(git rev-parse --verify refs/remotes/origin/main)"
+          if [[ "${head_commit}" != "${current_head}" ]]; then
+            echo "ERROR: superseded TESTGATE head ${head_commit}; current main is ${current_head}" >&2
+            exit 1
+          fi
           git merge-base --is-ancestor "${base_commit}" "${head_commit}"
           [[ "${base_commit}" != "${head_commit}" ]]
           {
@@ -85,6 +90,17 @@ jobs:
           "${{ steps.comparison.outputs.head }}"
       - name: Build planner and executor
         run: cargo build --locked -p openwepp-gate-planner --bin openwepp-gate-plan
+      - name: Reject superseded head before gate execution
+        env:
+          EXPECTED_HEAD: ${{ steps.comparison.outputs.head }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin main
+          current_head="$(git rev-parse --verify refs/remotes/origin/main)"
+          if [[ "${EXPECTED_HEAD}" != "${current_head}" ]]; then
+            echo "ERROR: superseded TESTGATE head ${EXPECTED_HEAD}; current main is ${current_head}" >&2
+            exit 1
+          fi
       - name: Execute content-verifiable increment gates
         id: testgate
         run: |
@@ -153,7 +169,11 @@ jobs:
           set -euo pipefail
           git fetch --no-tags origin main
           [[ "${EVENT_REF}" == "refs/heads/main" ]]
-          git merge-base --is-ancestor "${GITHUB_SHA}" refs/remotes/origin/main
+          current_head="$(git rev-parse --verify refs/remotes/origin/main)"
+          if [[ "${GITHUB_SHA}" != "${current_head}" ]]; then
+            echo "ERROR: refusing to verify superseded head ${GITHUB_SHA}; current main is ${current_head}" >&2
+            exit 1
+          fi
           base_ref="${INPUT_BASE}"
           if [[ "${EVENT_NAME}" == "push" ]]; then
             base_ref="${EVENT_BEFORE}"
@@ -306,6 +326,16 @@ jobs:
             "${EVIDENCE_DIR}/attestation-predicate.json"
           jq -e '.result == "PASS" and .trust_class == "LOCAL_UNTRUSTED"' \
             "${EVIDENCE_DIR}/envelope-verification.json"
+      - name: Reject superseded head before authority
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          current_head="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/heads/main" --jq .object.sha)"
+          if [[ "${GITHUB_SHA}" != "${current_head}" ]]; then
+            echo "ERROR: refusing authority for superseded head ${GITHUB_SHA}; current main is ${current_head}" >&2
+            exit 1
+          fi
       - name: Authenticate receipt to repository and workflow identity
         id: attest
         uses: actions/attest@f7c74d28b9d84cb8768d0b8ca14a4bac6ef463e6
@@ -338,3 +368,13 @@ jobs:
           path: ${{ runner.temp }}/testgate-evidence
           if-no-files-found: error
           retention-days: 7
+      - name: Reject superseded head after authority verification
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          current_head="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/heads/main" --jq .object.sha)"
+          if [[ "${GITHUB_SHA}" != "${current_head}" ]]; then
+            echo "ERROR: refusing aggregate success for superseded head ${GITHUB_SHA}; current main is ${current_head}" >&2
+            exit 1
+          fi

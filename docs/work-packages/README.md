@@ -180,11 +180,14 @@
 
 State as of `2026-07-19 UTC`:
 
-- `20260719-testgate-queue-governance-hardening-001/` - READY / ACTIVE:
-  prevents forest1 thrash and cumulative Actions queues by clearing stranded
-  pre-pivot runs, stabilizing one single-pending concurrency identity, rejecting
-  stale heads before expensive work, excluding generic self-hosted routing,
-  and binding one-push-per-stable-increment operation.
+- `20260719-testgate-queue-governance-hardening-001/` -
+  HOLD-PROVIDER-ORPHAN-QUEUE (2026-07-19): implements permanent single-pending
+  TESTGATE concurrency, four current-main guards, exact release-runner labels,
+  and one-push-per-stable-increment guidance. Focused contracts and dual review
+  pass. Three pre-pivot `omarchy` records remain displayed as queued despite
+  cancel, force-cancel, DELETE, and a bounded rejection-runner attempt; they
+  have zero jobs/artifacts/concurrency leases and cannot match forest1. Only
+  GitHub provider repair can remove those inert records.
 
 - `20260718-testgate-accelerated-cutover-001/` - COMPLETE-PASS (2026-07-19):
   cut over ordinary trusted-main increments to the isolated forest1 TESTGATE

@@ -38,6 +38,10 @@
   endpoint, direct-path, publication, or cutover claims. The real downstream
   consumer must be proven to read the new path.
 - Do not create or switch git branches unless the user explicitly asks.
+- Keep required scaffold/intermediate commits local and push once per stable
+  increment unless an explicit remote checkpoint is necessary.
+- Do not manually dispatch TESTGATE while a run is queued or active; its stable
+  concurrency identity permits one running and only the newest pending run.
 - Do not add fallback wrappers that silently mask missing required dependencies; prefer explicit failures.
 - Correctness over completion: do not mark work complete when known invariant, closure, or contract violations remain unresolved.
 - Inherit the agentic governance posture from wepppy. openWEPP is the simulation engine, not a separate culture.
