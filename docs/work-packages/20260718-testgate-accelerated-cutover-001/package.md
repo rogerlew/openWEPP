@@ -94,9 +94,11 @@ authority requirements are not reduced.
 - `docs/standards/testing-and-gate-strategy.md`
 - `docs/standards/local-ci-gate-selection.md`
 - `docs/standards/kernel-work-package-preparation.md`
+- `docs/standards/code-quality-refactor-authoring-guide.md`
 - `docs/standards/mechanical-refactor-authoring-guide.md`
 - `docs/standards/module-test-enhancement-authoring-guide.md`
 - `docs/standards/rust-scientific-coding-standard.md`
+- `docs/standards/prompt-wording-guidance.md`
 - `docs/prompt_templates/mechanical-refactor-kickoff-template.md`
 - `docs/dev-guide/01-orientation.md`
 - `docs/dev-guide/07-contributing.md`
@@ -333,6 +335,13 @@ calendar observation or broad testing on every ordinary increment.
   and obsolete conservative-every-increment wording must be removed
   consistently. Publishing this amendment before the implementation candidate
   also provides a base-commit authorization source for intent admission.
+  Date/Author: 2026-07-18 / Codex.
+- Decision: extend that admission amendment to the prompt-wording and
+  code-quality-refactor standards before their obsolete fallback wording is
+  committed.
+  Rationale: the active-guidance sweep found the same pre-cutover fallback on
+  those two canonical surfaces after the first amendment. The provider
+  TESTGATE workflow remained disabled during both admission commits.
   Date/Author: 2026-07-18 / Codex.
 
 ## Outcomes & Retrospective
