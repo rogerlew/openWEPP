@@ -1613,7 +1613,6 @@ fn verification_error(code: &'static str, message: impl Into<String>) -> GatePol
 mod tests {
     use std::collections::{BTreeMap, BTreeSet};
     use std::fmt::Write as _;
-    use std::process::Command;
     use std::sync::OnceLock;
     use std::sync::atomic::{AtomicU64, Ordering};
 
@@ -1994,7 +1993,7 @@ mod tests {
     fn junit_bytes_for_node(root: &std::path::Path, node: &Value) -> Vec<u8> {
         let mut cases = Vec::new();
         for selector in nextest_listing_selectors(node) {
-            let output = Command::new("cargo")
+            let output = crate::repository::neutral_cargo_command()
                 .args([
                     "nextest",
                     "list",
