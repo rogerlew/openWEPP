@@ -28,6 +28,7 @@ jobs:
       contents: read
     env:
       OPENWEPP_RUNNER_IMAGE_ID: sha256:73b3440613c9f8f529377c72826e42675296405e88cd87c46cf9218aabe9f3bb
+      TESTGATE_EXECUTION_ROOT: /cache/target
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
@@ -81,8 +82,10 @@ jobs:
         id: testgate
         run: |
           set -euo pipefail
-          evidence_dir="${RUNNER_TEMP}/testgate-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          python3 tools/local_ci/testgate.py \
+          evidence_dir="${TESTGATE_EXECUTION_ROOT}/testgate-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          planner_tmp="${TESTGATE_EXECUTION_ROOT}/planner-tmp-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          mkdir -p "${planner_tmp}"
+          TMPDIR="${planner_tmp}" python3 tools/local_ci/testgate.py \
             --binary "${CARGO_TARGET_DIR}/debug/openwepp-gate-plan" \
             --base "${{ steps.comparison.outputs.base }}" \
             --head "${{ steps.comparison.outputs.head }}" \
@@ -96,7 +99,7 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: testgate-unsigned-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/testgate-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.TESTGATE_EXECUTION_ROOT }}/testgate-${{ github.run_id }}-${{ github.run_attempt }}
           if-no-files-found: error
           retention-days: 7
 

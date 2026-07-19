@@ -150,6 +150,8 @@ fn blocking_executor_and_affected_quality_preserve_manual_rollback() {
         "attestations: write",
         "cargo-nextest@0.9.138",
         "--artifact-root \"${EVIDENCE_DIR}/execution\"",
+        "TESTGATE_EXECUTION_ROOT: /cache/target",
+        "TMPDIR=\"${planner_tmp}\"",
         "if: ${{ always() }}",
     ] {
         assert!(
@@ -165,6 +167,7 @@ fn blocking_executor_and_affected_quality_preserve_manual_rollback() {
     assert!(!workflow.contains("inputs.boundary"));
     assert!(!workflow.contains("inputs.mode"));
     assert!(!workflow.contains("cargo install"));
+    assert!(!workflow.contains("${RUNNER_TEMP}/testgate-"));
     assert!(!workflow.contains("continue-on-error: true"));
     assert!(workflow.contains("persist-credentials: false"));
     assert!(workflow.contains("git merge-base --is-ancestor"));
