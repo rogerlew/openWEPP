@@ -11,9 +11,8 @@ Updated: 2026-07-19 PDT.
 | Privileged forest1 image builder | Accepted / removed | Controller default-driver bounded build and exact transfer receipt pass. |
 | Portable Ubuntu fixtures and inventory mismatch | Accepted / patched | Focused contracts and exact full-profile run pass. |
 | Coverage/CRAP resource and nested-Cargo defects | Accepted / patched | Forest1 global run passes 2,165 tests and 2/2/0 CRAP within bounds. |
-| Missing real forest1 workflow consumer | Accepted / open | One docs-only trusted-main run is required before final cutover. |
+| Missing real forest1 workflow consumer | Accepted / closed | Run 29692537685 passed forest1 execution, independent verification, and authenticated aggregation with only documentation lint selected. |
 | Unexecuted/defective conservative rollback | Accepted / closed | Dual review and hosted smoke run 29692305394 passed; broad steps skipped. |
 
-Rejected findings: none. Deferred findings: none. Waivers: none. The two open
-normal consumer item blocks a final PASS claim but does not authorize another
-broad suite.
+Rejected findings: none. Deferred findings: none. Waivers: none. Every accepted
+finding is closed; no broad suite was authorized or repeated for presentation.

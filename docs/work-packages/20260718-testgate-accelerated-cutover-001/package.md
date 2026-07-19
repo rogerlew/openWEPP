@@ -4,7 +4,7 @@ Package ID: `20260718-testgate-accelerated-cutover-001`
 
 Queue ID: `TESTGATE-CUTOVER-01`
 
-Status: `READY / ACTIVE`
+Status: `COMPLETE / PASS`
 
 Authorization date: 2026-07-18
 
@@ -49,19 +49,21 @@ count scorecard remains active.
 - [x] (2026-07-18) Complete two independent reviews including one adversarial security and
   test-selection review; patch every accepted finding and rerun only affected
   focused gates.
-- [ ] Pass the event-driven acceptance matrix and one conservative full-suite
+- [x] (2026-07-19) Pass the event-driven acceptance matrix and one conservative full-suite
   comparison on the same exact candidate without repeating successful heavy
   commands. The full comparison passed 2,165/2,165 instrumented tests and
-  global CRAP at 2 raw / 2 adjudicated / 0 actionable; executable consumer and
-  rollback-smoke proofs remain.
-- [ ] Activate the normal TESTGATE aggregate, retain the conservative manual
-  lane, remove obsolete fallback instructions, and record immediate cutover.
-- [ ] (2026-07-19) Normal consumer run `29692405550` proved forest1 checkout,
+  global CRAP at 2 raw / 2 adjudicated / 0 actionable. Rollback smoke run
+  `29692305394` and normal consumer run `29692537685` close the real paths.
+- [x] (2026-07-19) Activate the normal TESTGATE aggregate, retain the
+  conservative manual lane, remove obsolete fallback instructions, and record
+  immediate cutover.
+- [x] (2026-07-19) Normal consumer run `29692405550` proved forest1 checkout,
   bootstrap, and planner build, then failed closed before gate execution because
   the activation evidence increment did not change its owning `package.md`.
   This package update supplies the required explicit intent delta for the
-  docs-only retry; no broad evidence was invalidated or repeated.
-- [ ] Complete dual terminal verification, documentation integrity checks,
+  docs-only retry. Run `29692537685` then passed forest1 execution, independent
+  verification, and native attestation without running a broad suite.
+- [x] (2026-07-19) Complete dual terminal verification, documentation integrity checks,
   line-count governance, final disposition, and roadmap/catalog closure.
 
 ## Authority And Intent
@@ -452,6 +454,13 @@ calendar observation or broad testing on every ordinary increment.
   the owning pre-existing `package.md`. Hosted verification and aggregation
   failed closed. TESTGATE was immediately disabled; the retry's package update
   is the explicit intent delta required by the existing planner contract.
+- The corrected normal consumer run `29692537685` passed on exact head
+  `770cbfad38124b39f568fd4c6f563e0396999f6a`. Forest1 executed only
+  `documentation-lint-v1`; independent hosted verification and the minimal
+  aggregate authenticated the exact receipt with GitHub's native attestation.
+  The runner returned online and idle; all five job-data surfaces were empty,
+  and the diagnostic tmpfs contained only its two live empty control
+  directories.
 
 ## Decision Log
 
@@ -567,5 +576,16 @@ calendar observation or broad testing on every ordinary increment.
 
 ## Outcomes & Retrospective
 
-Not executed. This package is ready and owns the complete remaining TESTGATE
-path; there is no separate observation or timed-cutover follow-on.
+TESTGATE cut over immediately after event-driven acceptance. Exact candidate
+`7ccc61d5e405529789417f87130978f63679ded5` passed 2,165/2,165 instrumented
+tests and global CRAP at 2 raw / 2 adjudicated / 0 actionable on forest1.
+Rollback smoke run `29692305394` proved the conservative hosted entry point
+without qualification or broad work. Normal run `29692537685` proved the real
+forest1 consumer, independent verifier, and authenticated aggregate on exact
+head `770cbfad38124b39f568fd4c6f563e0396999f6a`; its sole selected gate was
+documentation lint.
+
+The normal TESTGATE workflow is the ordinary trusted-main gate. The
+conservative workflow remains manually callable, `release-gates` remains
+manually disabled, and no observation timer, increment counter, duplicate
+environment, or human monitoring handoff remains.

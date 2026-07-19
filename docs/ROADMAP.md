@@ -2,7 +2,7 @@
 
 Status: living — canonical prospective planning queue
 
-Last updated: 2026-07-18
+Last updated: 2026-07-19
 
 This file answers one question: **what work is openWEPP intentionally doing
 next, later, or at a named future gate?** It does not record how the current
@@ -31,8 +31,7 @@ state was reached. Execution history lives in the
 
 | Priority | Owning queue | State | Advancement gate |
 | --- | --- | --- | --- |
-| `TESTGATE-CUTOVER-01` accelerated self-hosted cutover | Test/gate architecture | `active` | Execute `20260718-testgate-accelerated-cutover-001` end-to-end: isolate/register the trusted `forest1` runner, route and bootstrap TESTGATE, close post-change CRAP, patch adversarial findings, pass one exact-candidate acceptance sequence, and cut over immediately. No timed or increment-count gate remains. |
-| `CANOPY-PHENOLOGY-02` native canopy integration | Plant/snow-frost science | `queued` | Resume after `TESTGATE-ALIGN-01` lands; use the campaign as an early shadow-mode planner trial while ratifying and implementing native canopy, biomass, litter, closure, YAML, and real-consumer integration. |
+| `CANOPY-PHENOLOGY-02` native canopy integration | Plant/snow-frost science | `next` | Ratify and implement native canopy, biomass, litter, closure, YAML, and real-consumer integration under the completed TESTGATE increment authority. |
 | `SNOW-SURFACE-EB` sublimation and longwave | Snow/frost science | `queued` | Start after `CANOPY-PHENOLOGY-02` closes and a contract-first package reconciles the multilayer surface-energy, vapor-mass, and longwave backlog with the current meteorology and snow-column implementation. |
 | `ASSURE-06` snow/frost flagship synthesis | Scientific assurance | `held` | Roger Lew remains the accountable report lead and a material snow/frost producer. Resume independent review only after canopy phenology and the selected sublimation/longwave work land, the scientific manuscript is refreshed against those changes, and a new exact review root is issued. |
 | `ASSURE-05` first production v2 report | Scientific assurance | `held` | Technical review handoff is complete; formal review has not started. Advancement requires assignment of accountable human reviewers, exact-subject review and approval, assurance-steward approval, release-owner transfer, and exact-root publication gates. |
@@ -54,20 +53,14 @@ may not silently narrow one.
 The detailed implementation scope, transition inventory, acceptance fixtures,
 and staged-adoption contract live in the
 [implementation handoff](work-packages/20260717-test-gate-authority-001/artifacts/implementation-handoff.md).
-Each row below requires its own authorized work package.
-
-### Ordered Work
-
-| ID | Prospective outcome | Advancement gate | State |
-| --- | --- | --- | --- |
-| `TESTGATE-CUTOVER-01` | Provision an isolated trusted self-hosted runner on `forest1`, move trusted TESTGATE execution off hosted runners, correct cold-cache bootstrap, close post-change CRAP, patch adversarial findings, and promote the aggregate. | Runner online and confined; untrusted PR routing impossible; affected/global CRAP actionable set empty; adversarial findings patched; one exact-candidate acceptance matrix and conservative comparison pass; manual rollback proven. | `active`; package ready at `20260718-testgate-accelerated-cutover-001` |
+No additional test/gate architecture package is currently queued.
 
 ### Adoption Contract
 
-- Existing conservative gates remain authoritative only until the accelerated
-  package passes its event-driven exact-candidate acceptance. Cutover then
-  occurs immediately; there is no elapsed-time, increment-count, 50%, or dual-
-  required gate.
+- TESTGATE is authoritative for ordinary trusted-main increments. Conservative
+  broad gates remain callable at critical, campaign, release, and explicit
+  rollback boundaries; there is no elapsed-time, increment-count, 50%, or
+  dual-required gate.
 - Unknown production impact escalates to critical/full execution; there is no
   generic operator or agent downgrade.
 - Campaign and release certificates bind exact clean commits, complete gate
@@ -77,8 +70,8 @@ Each row below requires its own authorized work package.
   only when a provider rule actually exists; none exists at current intake.
 - Active campaigns enter through the governed bootstrap path. Prior evidence
   remains `LEGACY_UNVERIFIED` unless independently reconstructed and verified.
-- `CANOPY-PHENOLOGY-02` may proceed after alignment; it does not own or wait on
-  a TESTGATE observation clock.
+- `CANOPY-PHENOLOGY-02` may proceed; it does not own or wait on a TESTGATE
+  observation clock.
 
 ## Scientific Assurance Queue
 

@@ -178,15 +178,17 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-07-18 UTC`:
+State as of `2026-07-19 UTC`:
 
-- `20260718-testgate-accelerated-cutover-001/` - READY / ACTIVE: owns the entire
-  remaining TESTGATE path. It provisions an isolated supported Linux runner on
-  `forest1` for trusted `main` and manual events only, fixes cold-cache
-  bootstrap, closes post-change actionable CRAP, runs adversarial review with
-  patches and one exact-candidate acceptance sequence, then cuts over
-  immediately. ADR-0040 explicitly removes the 14-day, 20-increment, 50%, and
-  dual-required preconditions; no human or agent observation handoff remains.
+- `20260718-testgate-accelerated-cutover-001/` - COMPLETE-PASS (2026-07-19):
+  cut over ordinary trusted-main increments to the isolated forest1 TESTGATE
+  runner. Exact-candidate closure passed 2,165/2,165 instrumented tests and
+  global CRAP at 2 raw / 2 adjudicated / 0 actionable. Rollback smoke run
+  `29692305394` proved the non-qualifying hosted conservative entry point;
+  normal run `29692537685` passed forest1 execution, independent verification,
+  and native attestation with only documentation lint selected. The
+  conservative lane remains manually callable, release gates remain manually
+  disabled, and no timed or increment-count gate remains.
 
 - `20260717-canopy-phenology-gsi-kernel-001/` -
   COMPLETE-PASS-PROCESS-KERNEL (2026-07-17): implements

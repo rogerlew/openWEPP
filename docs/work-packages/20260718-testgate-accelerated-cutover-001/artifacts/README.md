@@ -1,6 +1,6 @@
 # Artifacts
 
-Queued evidence:
+Completed evidence:
 
 - `required-reading-map.md` - instruction and authority intake.
 - `host-capacity-security.md` - original `omarchy` and active `forest1`
@@ -14,9 +14,9 @@ Queued evidence:
 - `review-a-adversarial.md`, `review-b.md`, and `review-disposition.md` -
   independent findings and patch-loop disposition.
 - `terminal-gate-results.md`, `terminal-verification-a.md`, and
-  `terminal-verification-b.md` - terminal evidence and the remaining consumer
-  condition.
+  `terminal-verification-b.md` - terminal evidence and resolved closure
+  conditions.
 - `final-disposition.md` - final cutover receipt after the normal consumer.
 
-Create artifacts as evidence exists. Do not pre-fill PASS or fabricate host,
-provider, or execution state.
+All listed artifacts are present and bound to observed host, provider, or
+execution evidence.

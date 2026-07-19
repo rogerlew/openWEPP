@@ -30,13 +30,12 @@ presentation.
 | Cold writable surfaces | PASS | Empty Cargo/target/work surfaces fetched the locked base/head graph, then completed 2,165 tests and global CRAP offline inventories. |
 | Source/output confinement | PASS | Exact source manifests stayed identical; live root/state writes failed; output remained on bounded external tmpfs; cleanup emptied all writable surfaces. |
 | Untrusted pull requests | PASS | The only forest1 workflow admits push-to-main and manual dispatch; contract tests reject both pull-request trigger forms, credentials persistence, host binds, and a Docker socket. |
-| Trusted main routing | HOLD | Workflow labels exactly match unique online/idle provider ID 23, but the real normal workflow consumer must pass on the docs-only activation push. |
+| Trusted main routing | PASS | Run 29692537685 scheduled provider ID 23, executed only `documentation-lint-v1` on forest1, passed independent hosted verification, and passed native aggregate attestation on exact head `770cbfad38124b39f568fd4c6f563e0396999f6a`. |
 | Conservative rollback | PASS | Hosted run 29692305394 passed exact-main admission and uploaded a non-qualifying smoke receipt; all six broad/reuse steps skipped. The reviewed reuse predicate accepts canonical fully adjudicated closure. |
 
 ## Cost And Cutover Decision
 
 The operator accepted the measured 48.8% projected savings. No elapsed-time,
-increment-count, 50%, or duplicate-environment gate remains. The accepted
-candidate requires immediate provider activation and one docs-only
-trusted-main consumer run. `release-gates` remains manually disabled; no broad
-command is repeated.
+increment-count, 50%, or duplicate-environment gate remains. The docs-only
+trusted-main consumer passed, so immediate cutover is accepted. `release-gates`
+remains manually disabled; no broad command was repeated.

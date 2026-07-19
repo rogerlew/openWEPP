@@ -32,3 +32,11 @@ Conservative rollback smoke run `29692305394` completed successfully in 19
 seconds on GitHub-hosted isolation. It installed no tools and ran no broad
 validation; all six expensive/reuse steps were skipped. Normal `testgate` and
 `release-gates` remained manually disabled throughout the smoke.
+
+The first normal consumer run `29692405550` failed closed in planner preflight
+before any selected gate. The corrected docs-only run `29692537685` passed:
+forest1 execution took 5 minutes 1 second, the independent hosted verifier took
+1 minute 17 seconds, and the minimal hosted aggregate took 11 seconds. The
+planner selected only `documentation-lint-v1`; no Rust test, coverage, CRAP, or
+other broad command ran. The workflow was paused only while publishing the
+closure-only commit, preventing a redundant presentation run.
