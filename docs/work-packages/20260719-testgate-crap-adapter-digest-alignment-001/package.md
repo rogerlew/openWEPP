@@ -29,8 +29,8 @@ mechanically selected critical plan.
 - [x] (2026-07-19) Executed the 12-node critical plan: 11 nodes pass, including
   full Nextest 2,165/2,165; global CRAP fails before acquisition because its
   default absolute output conflicts with executor-safe relative relocation.
-- [ ] `20260719-testgate-global-crap-output-relocation-001` owns that distinct
-  gate-runner defect. No passing node is rerun in this package.
+- [x] (2026-07-19) `20260719-testgate-global-crap-output-relocation-001` owns
+  that distinct gate-runner defect. No passing node is rerun in this package.
 - [ ] Complete dual review and terminal verification.
 
 ## Correction Authority Envelope
@@ -66,9 +66,14 @@ action is authorized.
 
 ## Review And Delegation
 
-Subagent authorization: two independent read-only reviewer/verifier roles are
-required for exact binding, anti-evasion, receipt integrity, gate economy,
-non-deferral, HOLD legitimacy, and terminal disposition.
+Subagent authorization: this package explicitly authorizes subagent
+spawning/delegation to two independent read-only reviewer/verifier roles for
+exact binding, anti-evasion, receipt integrity, gate economy, non-deferral,
+HOLD legitimacy, and terminal disposition; expected outputs are compact finding
+reports, evidence reconciliation, and PASS/HOLD/FAIL verdicts; write access is
+read-only.
+
+Subagent requirement: two independent reviewer/verifier roles are required.
 
 ## Security Impact
 
@@ -88,5 +93,6 @@ weakening any behavior or gate.
 ## Outcomes And Retrospective
 
 The binding correction passes focused policy evidence and 11/12 critical
-nodes. This package closes as a truthful failed execution and assigns the
-distinct global-output relocation defect to the named successor.
+nodes. Terminal target: a truthful failed execution that assigns the distinct
+global-output relocation defect to the named successor. Dual review and
+terminal verification must accept that disposition before closure.

@@ -33,14 +33,14 @@ testing strategy.
   the focused-only gate plan improperly downgraded the policy-declared
   `CRITICAL` change; findings `TGDA-A-01`, `TGDA-A-02`, `RB-01`, `RB-02`, and
   `RB-03` are accepted.
-- [ ] Execute and independently verify the mechanically selected CRITICAL gate
-  plan; do not substitute the focused evidence for that plan.
+- [x] (2026-07-19) Executed the mechanically selected CRITICAL gate plan without
+  substituting the focused evidence; the truthful result was FAIL-CLIPPY.
 - [x] (2026-07-19) Mechanical local execution produced verified FAIL receipt
   `1ad770581b147ba8bb8797e431d2a2d81e6395a61a231f03f807f44bd5ee1d6e`:
   8 nodes passed, workspace Clippy failed, and 3 dependent nodes blocked.
-- [ ] `20260719-testgate-adversarial-clippy-cleanup-001` closes the exact
-  pre-existing test-helper lint blocker before current-head critical evidence
-  is retried.
+- [x] (2026-07-19) Handed the exact pre-existing test-helper lint blocker to
+  `20260719-testgate-adversarial-clippy-cleanup-001`; that successor corrected
+  it and the reviewed chain progressed to the distinct global-CRAP blocker.
 - [ ] Complete dual review, terminal verification, and disposition.
 
 ## Correction Authority Envelope
@@ -141,8 +141,9 @@ test-economy, gate non-deferral, HOLD legitimacy, and terminal verification;
 expected outputs are compact findings, commands, counts, timings, and
 PASS/HOLD/FAIL evidence; write access is read-only.
 
-Subagent requirement: two independent reviewer/verifier roles are required. No
-heavy-run subagent is selected because no broad gate is authorized.
+Subagent requirement: two independent reviewer/verifier roles are required. The
+terminal gate inventory is mechanically selected; no extra heavy-run subagent
+or manually added broad gate is authorized.
 
 ## Security Impact
 

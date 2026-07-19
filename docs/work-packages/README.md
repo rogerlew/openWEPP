@@ -231,11 +231,12 @@ State as of `2026-07-19 UTC`:
   out-of-scope assurance fixture exceeds Unix `SUN_LEN`. The named successor
   owns that one-line portability fix.
 
-- `20260719-testgate-policy-digest-alignment-001/` - IN-PROGRESS-CRITICAL-GATES
-  (2026-07-19): the exact one-field digest correction and focused gates pass;
-  dual review rejected the initial focused-only plan because impact-map changes
-  are mechanically CRITICAL. The package now owns one local planner-selected
-  critical execution before terminal closure.
+- `20260719-testgate-policy-digest-alignment-001/` -
+  EXECUTED-FAIL-CLIPPY-SUCCESSOR-CHAIN (2026-07-19): the exact one-field digest
+  correction and focused gates pass; its mechanically selected critical receipt
+  truthfully failed on Clippy. The successor chain corrected that blocker and
+  progressed through separately owned defects to the sole current global-CRAP
+  output-relocation blocker named above.
 
 - `20260717-canopy-phenology-gsi-kernel-001/` -
   COMPLETE-PASS-PROCESS-KERNEL (2026-07-17): implements

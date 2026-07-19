@@ -87,10 +87,12 @@ the next owner.
 
 ## Review And Delegation
 
-Subagent authorization: this package explicitly authorizes two independent
-read-only reviewer/verifier roles for confinement, shell safety, exact diff,
-test-evasion, receipt integrity, gate economy, non-deferral, HOLD legitimacy,
-and terminal disposition.
+Subagent authorization: this package explicitly authorizes subagent
+spawning/delegation to two independent read-only reviewer/verifier roles for
+confinement, shell safety, exact diff, test-evasion, receipt integrity, gate
+economy, non-deferral, HOLD legitimacy, and terminal disposition; expected
+outputs are compact finding reports and PASS/HOLD/FAIL verdicts; write access
+is read-only.
 
 Subagent requirement: two independent reviewer/verifier roles are required. No
 heavy-run subagent is selected; the parent runs the mechanical plan.
