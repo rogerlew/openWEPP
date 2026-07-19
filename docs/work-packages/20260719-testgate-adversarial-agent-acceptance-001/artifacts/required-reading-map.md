@@ -10,7 +10,7 @@
 | `tests/AGENTS.md` | 4,684 | Focused integration-test execution rules. |
 | `tools/local_ci/README.md` | 4,111 | Canonical local TESTGATE invocation. |
 | `package.md` | 8,440 | Package objective and bounded gate plan. |
-| `prompts/active/execute.md` | 2,038 | Executor posture and handoff. |
+| `prompts/archived/execute.md` | 2,038 | Executor posture and handoff. |
 | `artifacts/required-reading-map.md` | 1,339 | Reading applicability and budget. |
 
 Core total: 134,747 bytes, `OK` (`<=400000`).

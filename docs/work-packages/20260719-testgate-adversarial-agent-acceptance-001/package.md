@@ -27,9 +27,15 @@ forest1 consumer without reopening the completed TESTGATE campaign.
 - [x] (2026-07-19) Adversarial executor completed the bounded local exercise
   fail-closed without pushing; controller interference prevented the requested
   local completion commit, so the parent owns the failure-evidence commit.
-- [ ] Dual independent review dispositions every finding.
-- [ ] Dual terminal verification accepts the exact candidate.
-- [ ] Parent pushes once and records the live TESTGATE result and idle runner.
+- [x] (2026-07-19) Dual independent review dispositioned every finding; two
+  evidence-only findings were accepted, patched, and reverified without a Rust
+  rerun.
+- [x] (2026-07-19) Dual terminal verification accepts the exact failed
+  disposition after the live authorization and successor surfaces were made
+  explicit.
+- [x] (2026-07-19) Live acceptance push canceled after the blocking local FAIL;
+  failure evidence may be published later with CI skipped, but it cannot mint
+  acceptance authority.
 
 ## Scope
 
@@ -43,7 +49,8 @@ Included:
 - existing focused planner/verifier and CI-contract tests;
 - one committed local TESTGATE execution over the exact scaffold-to-completion
   documentation diff;
-- one final push and the normal live forest1 documentation-only gate.
+- terminal verification of the exact failed disposition and a named correction
+  successor.
 
 Excluded:
 
@@ -100,6 +107,12 @@ No broad Rust, coverage, CRAP, campaign, or release gate is selected. Review
 artifact edits invalidate documentation lint only. The live workflow provides
 the exact-head trusted receipt; the local receipt remains explicitly untrusted.
 
+Terminal reconciliation supersedes prospective items 5 and 6 for this failed
+candidate. Policy admission failed before a local plan could be minted, so the
+local receipt and live acceptance push are `BLOCKED` and `NOT RUN / NOT
+AUTHORIZED`, respectively. The prospective intent remains historical evidence;
+it is not rewritten as though the failure never occurred.
+
 ## Execution Plan
 
 1. Parent commits this scaffold and records a controller sentinel hash plus an
@@ -113,12 +126,11 @@ the exact-head trusted receipt; the local receipt remains explicitly untrusted.
    write set; creates one local completion commit; and returns its SHA.
 4. Two independent reviewers inspect governance/security and efficiency/test
    economy. Accepted findings are patched; only invalidated checks rerun.
-5. Two terminal verifiers inspect the exact local candidate, prompt inventory,
-   line-count applicability, gate non-deferral, controller sentinel receipt,
-   and provider preconditions.
-6. Parent removes its untracked sentinel, commits final review evidence, pushes
-   once, and records the live run, selected gate count, attestation result,
-   queue state, runner state, and final disposition.
+5. Two terminal verifiers inspect the exact failed disposition, prompt
+   inventory, line-count applicability, gate non-deferral, controller sentinel
+   receipt, and named successor.
+6. Parent removes its untracked sentinel, archives the prompt, commits final
+   failure evidence, and does not push this candidate as acceptance authority.
 
 ## Acceptance
 
@@ -133,11 +145,11 @@ the exact-head trusted receipt; the local receipt remains explicitly untrusted.
   successful gate and classifies every unexecuted gate explicitly.
 - [ ] The local committed plan selects exactly `documentation-lint-v1`; its
   independently verified receipt remains labeled local/untrusted.
-- [ ] One local completion commit and one final push occur; no manual dispatch
-  or cumulative forest1 queue occurs.
-- [ ] The live workflow consumes the exact head, runs exactly one selected gate,
-  independently verifies and attests it, and returns forest1 online/idle.
-- [ ] Dual review and dual terminal verification have no open finding.
+- [ ] FAIL: controller interference prevented the executor-owned local commit;
+  the parent committed failure evidence instead.
+- [x] NOT RUN / NOT AUTHORIZED: the blocking local FAIL canceled the live
+  acceptance push; no manual dispatch or cumulative forest1 queue occurred.
+- [x] Dual review and dual terminal verification have no open finding.
 - [x] No `.rs` file changes; line-count governance is `NOT_APPLICABLE`.
 
 Any missing selected gate, unauthorized broad gate, policy/test edit, sentinel
@@ -198,3 +210,5 @@ testing, repaired only the seeded hygiene fault, and stopped expensive work
 once a fail-closed prerequisite made acceptance impossible. This package cannot
 close as PASS. A separately authorized policy-alignment correction must update
 and verify the strategy binding before this exact acceptance exercise is rerun.
+The named correction owner is
+`20260719-testgate-policy-digest-alignment-001`.

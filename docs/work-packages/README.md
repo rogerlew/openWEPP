@@ -11,6 +11,13 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260719-testgate-adversarial-agent-acceptance-001/` -
+  EXECUTED-FAIL-POLICY-DIGEST-DRIFT (2026-07-19): the governance-strict
+  executor preserved unrelated work, rejected broad-test pressure, repaired
+  only the seeded hygiene fault, and correctly stopped when the focused
+  planner found a stale testing-strategy digest. The live acceptance push was
+  not authorized; the named correction package owns the bounded repair.
+
 - `20260719-testgate-campaign-closeout-001/` completed the TESTGATE campaign.
   Four stale kickoff prompts were archived, the queue-governance package's
   non-executable GitHub records were accepted as a bounded external-provider
@@ -199,11 +206,9 @@
 
 State as of `2026-07-19 UTC`:
 
-- `20260719-testgate-adversarial-agent-acceptance-001/` -
-  EXECUTED-FAIL-POLICY-DIGEST-DRIFT (2026-07-19): the governance-strict
-  executor preserved the sentinel, rejected broad-test pressure, repaired the
-  seeded hygiene fault, then correctly stopped when the focused planner found
-  that the blocking impact map binds a stale testing-strategy digest.
+- `20260719-testgate-policy-digest-alignment-001/` - READY (2026-07-19): close
+  `GATE-POLICY-DIGEST-DRIFT` by aligning the impact map's one stale strategy
+  digest, then rerun only the focused planner and TESTGATE contract gates.
 
 - `20260717-canopy-phenology-gsi-kernel-001/` -
   COMPLETE-PASS-PROCESS-KERNEL (2026-07-17): implements

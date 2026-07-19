@@ -94,7 +94,7 @@ Evidence class: `Ran` unless an entry says `Static`.
     `oneline` format. Expected invalidation scope: none; listing does not execute
     a selected gate.
 
-    Outcome: `PASS`; 63 planner library cases and 15 cases across exactly the
+    Outcome: `PASS`; 62 planner library cases and 15 cases across exactly the
     three named integration targets were discovered. No case executed.
 
 12. **Planner fail-closed gate.** Purpose: run exactly

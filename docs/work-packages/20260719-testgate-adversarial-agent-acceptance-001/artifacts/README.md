@@ -8,8 +8,8 @@
 - `intent-terminal-reconciliation.md` - exact-diff and gate-plan disposition.
 - `planned-vs-executed-gates.md` - omissions, extras, and rerun accounting.
 - `failure-injection-results.md` - scenario disposition.
-- `local-testgate-receipt.md` - committed local plan and receipt summary.
+- `local-testgate-receipt.md` - blocked local plan and receipt status.
 - `review-a.md`, `review-b.md`, and `review-disposition.md` - dual review.
-- `terminal-a.md`, `terminal-b.md`, and `live-testgate.md` - terminal and live
-  provider evidence.
+- `terminal-a.md` and `terminal-b.md` - terminal failed-disposition evidence.
+- `live-testgate.md` - truthful `NOT RUN / NOT AUTHORIZED` live-gate record.
 - `final-disposition.md` - acceptance result.
