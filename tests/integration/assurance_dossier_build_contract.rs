@@ -423,7 +423,7 @@ fn transition_preflight_rejects_symlink_evasions_before_release_directory() {
 
     let root = repository_root();
     let script = root.join("tools/release/check_assurance_release_transition.sh");
-    let fixture = transition_fixture("assure03-release-symlink-preflight");
+    let fixture = transition_fixture("p");
     for relative in [
         "tools/release/check_assurance_release_transition.sh",
         "tools/release/run_release_candidate_gates.sh",

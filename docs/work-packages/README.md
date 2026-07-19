@@ -206,9 +206,10 @@
 
 State as of `2026-07-19 UTC`:
 
-- `20260719-testgate-assurance-socket-path-portability-001/` - READY
-  (2026-07-19): shorten one non-semantic assurance-test scratch label so its
-  existing Unix socket rejection case runs beneath isolated TESTGATE roots.
+- `20260719-testgate-assurance-socket-path-portability-001/` -
+  IMPLEMENTED-PENDING-TERMINAL (2026-07-19): the one-line scratch-label fix
+  passes the exact former failure under its retained long `TMPDIR`; focused
+  Clippy passes and the planner-selected terminal run remains.
 
 - `20260719-testgate-adversarial-clippy-cleanup-001/` -
   EXECUTED-FAIL-SOCKET-PATH (2026-07-19): all 126 assertions are preserved and

@@ -4,7 +4,7 @@ Package ID: `20260719-testgate-assurance-socket-path-portability-001`
 
 Queue ID: `TESTGATE-ACCEPT-SOCKET-01`
 
-Status: `READY`
+Status: `IMPLEMENTED / PENDING TERMINAL PLAN`
 
 Authorization: the verified out-of-scope blocker from
 `20260719-testgate-adversarial-clippy-cleanup-001`, under Roger Lew's 2026-07-19
@@ -24,9 +24,10 @@ label so the existing socket and rejection assertions execute unchanged.
 
 - [x] (2026-07-19) Reproduced in two local terminal receipts, including one
   short-root retry that isolated the remaining fixture-label contribution.
-- [ ] Replace the one oversized scratch label with a one-character label.
-- [ ] Pass the exact focused case under the formerly failing long `TMPDIR`,
-  then execute the mechanical terminal plan.
+- [x] (2026-07-19) Replaced only the oversized scratch label with `p`.
+- [x] (2026-07-19) Passed the exact focused case under the formerly failing
+  long `TMPDIR`; focused Clippy, format, and diff hygiene pass.
+- [ ] Execute the mechanical terminal plan.
 - [ ] Complete dual review and terminal verification.
 
 ## Correction Authority Envelope
@@ -69,9 +70,9 @@ the next owner.
 
 ## Acceptance
 
-- [ ] The exact formerly failing case passes under the retained long `TMPDIR`.
-- [ ] Assertion, test, and socket-target inventories are unchanged.
-- [ ] Focused Clippy passes with no suppression.
+- [x] The exact formerly failing case passes under the retained long `TMPDIR`.
+- [x] Assertion, test, and socket-target inventories are unchanged.
+- [x] Focused Clippy passes with no suppression.
 - [ ] The mechanical terminal plan passes or truthfully names a distinct
   blocker without omitted gates.
 - [ ] Only the temporary label and authorized package evidence change.
@@ -95,7 +96,8 @@ release-directory creation. Only its non-semantic scratch prefix may change.
 
 ## Surprises And Discoveries
 
-Pending execution.
+- The one-character label passes under the exact retained long coverage
+  `TMPDIR`; no runner or test-behavior change is needed.
 
 ## Decision Log
 
@@ -106,4 +108,5 @@ Pending execution.
 
 ## Outcomes And Retrospective
 
-Pending execution.
+The one-line portability correction passes focused validation. Mechanical
+terminal execution, dual review, and terminal disposition remain.
