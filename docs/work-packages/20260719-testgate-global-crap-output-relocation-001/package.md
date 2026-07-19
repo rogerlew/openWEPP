@@ -19,6 +19,17 @@ Make the global CRAP runner's default output relocatable beneath the executor
 artifact root: retain a safe relative default until relocation, then resolve it
 against the repository only for standalone runs. Rebind both adapter digests.
 
+## Progress
+
+- [x] (2026-07-19) Scaffolded the package from the verified sole failure in
+  critical receipt
+  `78f526eee1d0b8a9142afc9f3ff8f9434702d1a5409d917a1c2a22687aa7638c`.
+- [x] (2026-07-19) Completed the bounded authority, phase, security, HOLD,
+  delegation, and active-handoff surfaces required for READY status.
+- [ ] Implement the correction and focused evidence.
+- [ ] Complete dual review, one mechanical terminal execution, dual terminal
+  verification, prompt archival, and final disposition.
+
 ## Rationale And Dependencies
 
 Critical receipt
@@ -142,6 +153,22 @@ fail-closed executable identities. Review must prove the correction neither
 permits traversal/absolute child paths under executor mode nor weakens digest
 admission, while preserving the standalone repository-local default.
 
-## Outcomes
+## Surprises And Discoveries
+
+- The predecessor's global CRAP node failed before coverage acquisition. This
+  keeps the correction mechanism narrow and avoids treating expensive work as
+  evidence when it never ran.
+- The same runner behaves correctly when the executor supplies an explicit safe
+  relative output; only default initialization precedes relocation incorrectly.
+
+## Decision Log
+
+- Decision: correct default resolution in the existing runner rather than
+  weaken executor relocation validation.
+  Rationale: relocation is the security boundary; the script default is the
+  in-envelope conflicting input.
+  Date/author: 2026-07-19, parent agent.
+
+## Outcomes And Retrospective
 
 Pending execution.
