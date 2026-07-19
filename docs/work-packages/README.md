@@ -207,11 +207,11 @@
 State as of `2026-07-19 UTC`:
 
 - `20260719-testgate-global-crap-output-relocation-001/` -
-  IMPLEMENTED-FOCUSED-PASS-REVIEW-PASS-TERMINAL-PENDING (2026-07-19): the
-  bounded default relocation, exact contract assertions, and adapter identities
-  are corrected; 13/13 focused contract cases pass, including seven isolated
-  behavioral path probes. Dual review passes after rejecting the first stale
-  plan; a freshly reconciled committed plan precedes one terminal execution.
+  IN-PROGRESS-PLAN-ENVIRONMENT-NONDETERMINISM-ENVELOPE-AMENDED (2026-07-19):
+  output relocation and 13/13 focused cases pass, but both dirty and exact
+  committed plans fail reconstruction solely because the planner hashes
+  undeclared ambient variables. The integrated package now prospectively owns
+  that bounded projection fix before any terminal execution.
 
 - `20260719-testgate-crap-adapter-digest-alignment-001/` -
   EXECUTED-FAIL-GLOBAL-OUTPUT-RELOCATION-REVIEWED (2026-07-19): both adapter

@@ -4,7 +4,7 @@ Package ID: `20260719-testgate-global-crap-output-relocation-001`
 
 Queue ID: `TESTGATE-GLOBAL-CRAP-OUTPUT-01`
 
-Status: `IMPLEMENTED / FOCUSED-PASS / REVIEW-PASS / TERMINAL-PENDING`
+Status: `IN PROGRESS / PLAN-ENVIRONMENT-NONDETERMINISM / ENVELOPE-AMENDED`
 
 Authorization: verified critical receipt
 `78f526eee1d0b8a9142afc9f3ff8f9434702d1a5409d917a1c2a22687aa7638c`
@@ -18,6 +18,8 @@ This is a Defect-Closure ExecPlan governed by
 Make the global CRAP runner's default output relocatable beneath the executor
 artifact root: retain a safe relative default until relocation, then resolve it
 against the repository only for standalone runs. Rebind both adapter digests.
+Also close the integrated planner defect that makes an otherwise exact terminal
+plan unreconstructable across invokers by hashing undeclared ambient variables.
 
 ## Progress
 
@@ -34,6 +36,15 @@ against the repository only for standalone runs. Rebind both adapter digests.
 - [x] (2026-07-19) Dual independent review completed; both findings were
   accepted, the behavioral-evidence finding is patched and reverified, and the
   stale-plan finding becomes the committed-plan pre-execution gate.
+- [x] (2026-07-19) Exact committed planning reproduced `TGGO-A-01`: independent
+  reconstruction differs only in `environment_manifest_sha256`, plan ID, and
+  execution key. The environment projection currently hashes every ambient
+  variable, including invoker-controlled `_` outside all gate allowlists.
+- [x] (2026-07-19) Prospectively amended this package before planner edits to
+  own `TESTGATE-ENV-PROJECTION-DETERMINISM-01` as the integrated blocker.
+- [ ] Project only the union of policy-declared gate environment allowlists,
+  prove undeclared ambient noise cannot alter identity, and repeat focused
+  review before committed planning.
 - [ ] Complete dual review, one mechanical terminal execution, dual terminal
   verification, prompt archival, and final disposition.
 
@@ -52,12 +63,13 @@ science contract, or Rust kernel change is a dependency.
 ## Included And Excluded Scope
 
 Included: the runner's default-output initialization and standalone resolution,
-the exact executor contract assertions for both branches, and the two adapter
-digests mechanically derived from the corrected script.
+the exact executor contract assertions for both branches, the two adapter
+digests mechanically derived from the corrected script, and the planner's
+environment-variable identity projection.
 
 Excluded: coverage/CRAP algorithms, thresholds, exception registries, command
 selection, prerequisites, policy risk, workflow or runner configuration,
-production Rust, science behavior, and any unrelated test cleanup.
+kernel/science behavior, and any unrelated test cleanup.
 
 ## Correction Authority Envelope
 
@@ -78,11 +90,29 @@ script SHA, and the repository planner's exact critical plan passes. Any cause
 outside this envelope, changed policy semantics, or need to alter CRAP behavior
 is a branch-out boundary requiring prospective package amendment.
 
+Defect `TESTGATE-ENV-PROJECTION-DETERMINISM-01` is the exact committed terminal
+plan failing independent reconstruction because
+`environment_manifest_sha256` changes across invokers while every source,
+policy, tool, fixture, configuration, node, and inventory field is identical.
+The in-scope correction is limited to
+`crates/openwepp-gate-planner/src/execution_context.rs`: replace the unbounded
+ambient-variable projection with the union of `environment_allowlist` keys in
+the validated gate registry. Compiler, platform, target, features, runner image,
+Cargo configuration, and Git-local configuration identities remain protected.
+Unknown policy-declared environment keys remain bound automatically; secrets or
+shell bookkeeping outside the declared projection must not affect identity.
+
+Acceptance for the integrated defect is observable when focused unit evidence
+proves undeclared-variable changes are identity-neutral and declared-variable
+changes are identity-breaking, then two separately invoked exact committed
+plans are byte-identical and independent reconciliation passes.
+
 ## Declared Write Set
 
 - `tools/release/run_adjudicated_crap_gate.sh`
 - `gate-policy/v1/gate-definitions.json`
 - `tests/integration/testgate_ci_executor_contract.rs`
+- `crates/openwepp-gate-planner/src/execution_context.rs`
 - `docs/work-packages/README.md`
 - `docs/work-packages/20260719-testgate-global-crap-output-relocation-001/**`
 
@@ -110,6 +140,8 @@ broad suite, GitHub dispatch, or forest1 action is authorized.
    instructions, exact diff baseline, and protected semantics.
 2. Correct: change only default path resolution, update its exact contract
    assertions, and rebind the two mechanically derived adapter SHA fields.
+   If exact committed reconstruction fails solely on the environment projection,
+   project only policy-declared environment keys and add focused unit evidence.
 3. Focused validation: run shell syntax, formatting when invalidated, the exact
    TESTGATE executor contract, direct digest reconstruction, and diff hygiene.
 4. Review: obtain two independent read-only reviews, disposition every finding,
@@ -140,8 +172,12 @@ route, and assign a concrete next defect owner.
 - [x] Focused contract evidence passes.
 - [ ] Mechanical critical receipt passes every node.
 - [ ] Dual review and dual terminal verification have no open finding.
-- [x] The changed integration test is 558 lines, below the 2,000-line warning
-  threshold; no production Rust changed.
+- [ ] Every changed Rust tooling/test file remains below the 2,000-line warning
+  threshold; no kernel/process Rust changes.
+- [ ] Undeclared ambient variables do not alter plan identity; every
+  policy-declared gate environment key remains bound.
+- [ ] Two separate exact committed plan invocations are byte-identical and
+  independent reconciliation passes before execution.
 
 ## Review And Delegation
 
@@ -161,6 +197,9 @@ Executor relocation is a path-confinement boundary and adapter SHA values are
 fail-closed executable identities. Review must prove the correction neither
 permits traversal/absolute child paths under executor mode nor weakens digest
 admission, while preserving the standalone repository-local default.
+The environment projection is also an execution-identity boundary: it must bind
+every policy-permitted gate variable without hashing undeclared ambient values
+or secret-bearing process state.
 
 ## Surprises And Discoveries
 
@@ -179,6 +218,12 @@ admission, while preserving the standalone repository-local default.
 - Review finding `TGGO-A-01` correctly rejected the first non-reconciling dirty
   terminal plan. It is retained as non-executable review evidence; the final
   committed plan must independently reconcile before execution.
+- Repeating the plan on the exact committed head reproduced `TGGO-A-01`. A
+  canonical JSON diff showed only `environment_manifest_sha256`, `plan_id`, and
+  `execution_key` changed. `environment_record` hashes every process variable,
+  although policy permits only `PATH`, `CARGO_HOME`, `RUSTUP_HOME`, and
+  `RUSTUP_TOOLCHAIN`; invoker bookkeeping such as `_` therefore poisons
+  deterministic reconstruction without representing a permitted gate input.
 
 ## Decision Log
 
@@ -187,10 +232,18 @@ admission, while preserving the standalone repository-local default.
   Rationale: relocation is the security boundary; the script default is the
   in-envelope conflicting input.
   Date/author: 2026-07-19, parent agent.
+- Decision: prospectively widen the same tooling package to the integrated
+  environment-projection defect rather than execute a known-invalid plan or
+  create another diagnostic relay.
+  Rationale: the user's package objective is integrated tooling closure, the
+  mechanism is reproduced and in repository-owned planner code, and the direct
+  fail-closed correction is bounded and testable.
+  Date/author: 2026-07-19, parent agent.
 
 ## Outcomes And Retrospective
 
-Implementation, focused evidence, and dual review pass. The first dirty terminal
-plan is explicitly rejected and must not execute. A committed exact plan must
-reconcile independently before the one terminal execution; terminal outcome and
-final retrospective remain pending.
+Output relocation implementation, focused evidence, and its dual review pass.
+Both dirty and committed terminal plans are explicitly rejected and must not
+execute because independent reconstruction exposes the integrated environment-
+projection defect. The prospectively amended package owns its direct correction;
+terminal outcome and final retrospective remain pending.
