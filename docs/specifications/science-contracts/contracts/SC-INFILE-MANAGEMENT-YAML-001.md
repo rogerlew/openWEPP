@@ -4,9 +4,9 @@ title: Canonical Management YAML Input Parser Contract
 status: in_review
 maturity: draft
 owner: openWEPP
-contract_version: 0.1.0
+contract_version: 0.3.0
 evidence_mode: Static + Ran
-last_updated_utc: 2026-07-08T00:00:00Z
+last_updated_utc: 2026-07-20T00:00:00Z
 ---
 
 # SC-INFILE-MANAGEMENT-YAML-001 Canonical Management YAML Input Parser Contract
@@ -84,6 +84,20 @@ The typed schema MUST contain:
   references;
 - explicit native landuse variants rather than legacy-sentinel ambiguity.
 
+Every `native_forest` plant scenario MUST contain a `phenology` object with:
+
+- `model: generalized_gsi_v1`;
+- finite `summer_foliar_biomass_kg_m2 > 0`;
+- finite `evergreen_fraction` in `[0,1]`;
+- finite `structural_canopy_cover_fraction` in `[0,0.999]`;
+- finite non-negative `structural_biomass_kg_m2`; and
+- all six ordered GSI temperature, VPD, and photoperiod thresholds.
+
+The existing forest `growth.xmxlai` and `growth.bb` are the maximum-LAI and
+canopy-cover operands. The adapter must project every phenology operand into
+the native forest PL growth surface. Missing or partial phenology authority
+fails closed; flat/compatibility input is not silently upgraded.
+
 The parser is strict by default: unknown fields, missing required fields,
 invalid references, invalid counts, and unsupported schema/domain values fail
 closed with typed errors.
@@ -133,6 +147,7 @@ source `.man` files cannot close runtime eligibility.
 | `INV-MANAGEMENT-YAML-003` | Native YAML carries typed section registries and schedule references; malformed counts/references fail closed. | schema validator + adapter | Typed validation failure; no runtime projection. | `E-RUST-SCHEMA-01`, `E-RUST-ADAPTER-01` |
 | `INV-MANAGEMENT-YAML-004` | Native route coefficients are explicit typed operands with provenance, finite non-negative values, and no sidecar/legacy-field inference. | schema validator | Missing or invalid route coefficient object fails closed. | `E-LANUSE-AUTH-01`, `E-SC-OFEROUTE-01`, `E-RAN-01` |
 | `INV-MANAGEMENT-YAML-005` | Hillslope runtime intake reads YAML directly and projects route coefficients into the existing PL schedule surfaces. | integration test | Missing PL route symbols or wrong values fail the test. | `E-RUST-ADAPTER-01`, `E-RAN-02` |
+| `INV-MANAGEMENT-YAML-006` | Every native forest declares a complete `generalized_gsi_v1` phenology block; schema/parser/runtime projection preserves exact values and fails closed on missing, partial, non-finite, unordered, or out-of-domain operands. Its referenced growth record has finite strictly positive `bb` and `xmxlai`, and its native yearly schedule is continuous (`jdplt=0`, `jdstop=0`); seasonally gated native phenology is rejected before runtime. | schema + adapter + PL projection | Typed validation failure before native forest runtime activation. | `E-RUST-SCHEMA-01`, `E-RUST-ADAPTER-01`, `SC-PLANT-001#INV-PLANT-033` |
 
 ## 8. Guard Mapping
 
@@ -144,9 +159,12 @@ source `.man` files cannot close runtime eligibility.
 | `G-MAN-YAML-004` | input-contract adapter | Convert YAML schedule indices and native landuse variants into `ManagementParseOutput` without reading a source `.man`. |
 | `G-MAN-YAML-005` | hillslope runner intake | Dispatch YAML management paths through `parse_management_document_from_path`. |
 | `G-MAN-YAML-006` | PL projection integration test | Prove `ofeN_route_*` and slotted route coefficient symbols originate from YAML. |
+| `G-MAN-YAML-007` | native forest phenology validator and PL projection test | Reject missing/invalid operands and prove exact slotted plus primary phenology symbols originate from YAML. |
 
 ## 9. Revision History
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-07-20` | `0.3.0` | `Codex` | Review amendment: required strictly positive native `bb`/`xmxlai` and continuous zero-sentinel native forest scheduling so GSI chronology cannot skip inactive intervals. |
+| `2026-07-19` | `0.2.0` | `Codex` | CP-GSI02 contract-first amendment: required explicit native forest GSI model, foliar/evergreen/structural operands, six thresholds, strict validation, and runtime projection. |
 | `2026-07-08` | `0.1.0` | `Codex` | Initial canonical management YAML input contract: identity, extension policy, typed schema, route-coefficient authority, input-contract adapter, and runtime PL projection proof. |
