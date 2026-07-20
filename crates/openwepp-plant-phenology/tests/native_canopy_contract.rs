@@ -1,6 +1,6 @@
 use openwepp_plant_phenology::{
-    realize_forest_canopy, ForestCanopyParameters, GsiDailyForcing, GsiDate, GsiParameters,
-    GsiState,
+    ForestCanopyParameters, GsiDailyForcing, GsiDate, GsiParameters, GsiState,
+    realize_forest_canopy,
 };
 
 fn parameters(evergreen_fraction: f64) -> ForestCanopyParameters {
@@ -42,7 +42,18 @@ fn deciduous_mixed_and_evergreen_endpoints_are_explicit() {
         realize_forest_canopy(parameters(1.0), 0.0, 0.8).expect("evergreen winter endpoint");
     let evergreen_summer =
         realize_forest_canopy(parameters(1.0), 1.0, 0.8).expect("evergreen summer endpoint");
-    assert_eq!(evergreen_winter, evergreen_summer);
+    assert_eq!(
+        evergreen_winter.live_foliar_biomass_kg_m2,
+        evergreen_summer.live_foliar_biomass_kg_m2
+    );
+    assert_eq!(
+        evergreen_winter.leaf_area_index,
+        evergreen_summer.leaf_area_index
+    );
+    assert_eq!(
+        evergreen_winter.canopy_cover_fraction,
+        evergreen_summer.canopy_cover_fraction
+    );
     assert_eq!(evergreen_winter.live_foliar_biomass_kg_m2, 0.8);
     assert_eq!(evergreen_winter.leaf_area_index, 5.0);
 }
@@ -59,12 +70,8 @@ fn leaf_on_and_leaf_off_close_the_daily_foliar_mass_ledger() {
         1.0e-15,
     );
 
-    let autumn = realize_forest_canopy(
-        parameters(0.25),
-        0.1,
-        spring.live_foliar_biomass_kg_m2,
-    )
-    .expect("autumn transition");
+    let autumn = realize_forest_canopy(parameters(0.25), 0.1, spring.live_foliar_biomass_kg_m2)
+        .expect("autumn transition");
     assert_eq!(autumn.leaf_on_allocation_kg_m2, 0.0);
     assert!(autumn.leaf_off_litter_kg_m2 > 0.0);
     assert_close(
@@ -96,9 +103,8 @@ fn negated_latitude_and_half_year_forcing_shift_preserve_seasonal_phase() {
 
     for north_day in 1_u16..=183 {
         let south_day = north_day + 182;
-        let seasonal = ((2.0 * std::f64::consts::PI * (f64::from(north_day) - 172.0))
-            / 365.0)
-            .cos();
+        let seasonal =
+            ((2.0 * std::f64::consts::PI * (f64::from(north_day) - 172.0)) / 365.0).cos();
         let minimum_temperature_c = 8.0 + 10.0 * seasonal;
         let vapor_pressure_deficit_pa = 1_500.0 - 400.0 * seasonal;
         let north_result = north

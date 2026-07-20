@@ -113,6 +113,9 @@ pub struct PlantForestData {
     /// `openwepp-disturbed.json` binding, and the `.sol` `DisturbedPolicy`.
     pub forest_class: String,
     pub growth: PlantForestGrowth,
+    /// Present only for native YAML. Flat forest compatibility inputs cannot
+    /// infer phenology authority and deliberately retain `None`.
+    pub phenology: Option<PlantForestPhenology>,
     /// Flat residue-cover equation coefficient (m^2/kg) — litter cover→mass
     /// inversion for the initial residue-depth seed (cropland `cf` analogue).
     pub cf: f64,
@@ -121,6 +124,20 @@ pub struct PlantForestData {
     pub decomposition: PlantForestDecomposition,
     pub community: PlantForestCommunity,
     pub routing: Option<RoutingCoefficientExtension>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct PlantForestPhenology {
+    pub summer_foliar_biomass_kg_m2: f64,
+    pub evergreen_fraction: f64,
+    pub structural_canopy_cover_fraction: f64,
+    pub structural_biomass_kg_m2: f64,
+    pub minimum_temperature_inactive_c: f64,
+    pub minimum_temperature_unconstrained_c: f64,
+    pub vapor_pressure_deficit_unconstrained_pa: f64,
+    pub vapor_pressure_deficit_inactive_pa: f64,
+    pub photoperiod_inactive_hours: f64,
+    pub photoperiod_unconstrained_hours: f64,
 }
 
 /// Tier-A shared growth-kernel operands (the 19 symbols the daily growth kernel
@@ -801,6 +818,7 @@ fn yaml_plant_to_management(
             description,
             forest_class,
             growth,
+            phenology,
             cf,
             diam,
             decomposition,
@@ -836,6 +854,21 @@ fn yaml_plant_to_management(
                     rtmmax: growth.rtmmax,
                     rdmax: growth.rdmax,
                 },
+                phenology: Some(PlantForestPhenology {
+                    summer_foliar_biomass_kg_m2: phenology.summer_foliar_biomass_kg_m2,
+                    evergreen_fraction: phenology.evergreen_fraction,
+                    structural_canopy_cover_fraction: phenology.structural_canopy_cover_fraction,
+                    structural_biomass_kg_m2: phenology.structural_biomass_kg_m2,
+                    minimum_temperature_inactive_c: phenology.minimum_temperature_inactive_c,
+                    minimum_temperature_unconstrained_c: phenology
+                        .minimum_temperature_unconstrained_c,
+                    vapor_pressure_deficit_unconstrained_pa: phenology
+                        .vapor_pressure_deficit_unconstrained_pa,
+                    vapor_pressure_deficit_inactive_pa: phenology
+                        .vapor_pressure_deficit_inactive_pa,
+                    photoperiod_inactive_hours: phenology.photoperiod_inactive_hours,
+                    photoperiod_unconstrained_hours: phenology.photoperiod_unconstrained_hours,
+                }),
                 cf,
                 diam,
                 decomposition: PlantForestDecomposition {
@@ -1696,6 +1729,7 @@ fn parse_plant_forest(
             decfct: lookup[2],
             dropfc: lookup[3],
         },
+        phenology: None,
         cf: residue[0],
         diam: residue[1],
         decomposition: PlantForestDecomposition {
