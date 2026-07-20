@@ -84,3 +84,25 @@ this one-path extension; no unauthorized evidence edit is retained at intake.
 This plan preserves the prior 48-path manifest and adds only
 `artifacts/kernel-profile-compliance.md`. Terminal reconciliation must use this
 plan ID and 49-path manifest.
+
+## Promotion And Closure Documentation Extension
+
+Status: `consolidated intent admitted`
+
+Before contract promotion, a final prospective check found six declared
+documentation paths absent from the 49-path machine manifest: the three
+contract-reference receipts plus the roadmap, backlog, and work-package catalog
+records needed at closure. No edit to those paths occurred before admission.
+
+- Base commit: `a749ed7a`
+- Observed head: `837c1ec6`
+- Consolidated intent plan ID:
+  `0d4c98b24e6012bf2c8508f54f12c318f7cd98a16ceee4af10e0c7c121ad05d5`
+- External plan:
+  `/tmp/canopy02-closure-intent-837/intent-plan.json`
+- Authorized-path manifest:
+  `/tmp/canopy02-closure-intent-837/authorized-paths.json`
+- Result/risk: `PASS` / `CRITICAL`
+- Authorized paths: 55; selected nodes: 15.
+
+The terminal plan must use this final intent plan ID and 55-path manifest.
