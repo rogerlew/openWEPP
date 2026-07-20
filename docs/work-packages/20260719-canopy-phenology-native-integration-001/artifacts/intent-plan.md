@@ -225,3 +225,24 @@ that already-declared integration-test path.
 
 This refreshed intent supersedes the 57-path scheduling intent and is the
 implementation authority for the config plus its exact contract assertion.
+
+## Repaired Scheduling Intent Refresh
+
+Status: `refreshed critical intent admitted`
+
+The authorized two-case cohort and its contract assertion landed at
+`98bb8ae5` after independent review passed. A fresh intent now binds the
+corrected Nextest configuration digest before terminal execution.
+
+- Base commit: `a749ed7a`
+- Observed repaired head: `98bb8ae5`
+- Refreshed intent plan ID:
+  `92ecdcbb9a385fe001abc70723b83496e87a88e7cfa2d934d50d2562db25e821`
+- External plan:
+  `/tmp/canopy02-nextest-fixed-intent-98bb8ae5/intent-plan.json`
+- Authorized-path manifest:
+  `/tmp/canopy02-nextest-fixed-intent-98bb8ae5/authorized-paths.json`
+- Result/risk: `PASS` / `CRITICAL`
+- Authorized paths: 58; selected nodes: 15.
+
+This is the terminal predecessor for the corrected scheduling campaign.
