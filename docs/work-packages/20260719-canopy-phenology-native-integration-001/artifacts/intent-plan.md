@@ -293,3 +293,28 @@ helper requires direct coverage in the newly declared verifier path.
 
 The remediation must not alter canopy physics, authority semantics, selected
 tests, CRAP thresholds, or adjudication state.
+
+## Remediated CRAP Intent Refresh
+
+Status: `refreshed critical intent admitted`
+
+The bounded helper extractions and direct receipt-inventory coverage landed at
+`c9591b41` after focused tests, Clippy, formatting, and independent review
+passed. A fresh intent now binds the remediated production and verifier source
+before exact terminal planning.
+
+- Base commit: `a749ed7a`
+- Observed remediated head: `c9591b41`
+- Refreshed intent plan ID:
+  `997b72d027b19e979e4131d7e3cd6ef557cf55d5e1fc0fc483a54a5bad68598c`
+- External plan:
+  `/tmp/canopy02-crap-fixed-intent-c9591b41/intent-plan.json`
+- Authorized-path manifest:
+  `/tmp/canopy02-crap-fixed-intent-c9591b41/authorized-paths.json`
+- Result/risk: `PASS` / `CRITICAL`
+- Authorized paths: 59, lexicographically sorted; selected nodes: 15.
+
+This refreshed intent is the terminal predecessor for the remediated campaign.
+The standalone exact-inventory verifier test reached its 720-second local
+timeout while reconstructing inventories and produced no assertion failure;
+the terminal campaign remains the authoritative receipt verification.
