@@ -1,6 +1,6 @@
 # CANOPY-PHENOLOGY-02 Native Forest Integration
 
-Status: `active — contract-first intake`
+Status: `ACTIVE — contract-first intake`
 
 Package id: `20260719-canopy-phenology-native-integration-001`
 
@@ -71,7 +71,7 @@ exact daily foliar mass ledger; and remove native forest dependence on the
   frost equations, erosion equations, or public output schema changes.
 - A binary GSI `0.5` production switch or any fixed leaf-on/off calendar day.
 
-## Intended Write Set
+## Declared Write Set
 
 - `Cargo.lock`
 - `crates/openwepp-plant-phenology/**`
