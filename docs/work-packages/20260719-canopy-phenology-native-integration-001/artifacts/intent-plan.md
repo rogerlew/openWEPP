@@ -131,3 +131,27 @@ identity change as equivalent to the older intent.
 
 Subsequent terminal planning must bind the Rust toolchain environment used by
 the executor and use this refreshed intent as predecessor.
+
+## Multi-Package Inventory Symmetry Extension
+
+Status: `consolidated intent admitted`
+
+Executor preflight then proved a planner defect: `NEXTEST_PACKAGES` expected
+inventories were built from every affected package rather than the packages
+expanded into the individual gate node. The package write set was amended at
+`fc83846b` before authorizing the single planner source/test file needed for a
+durable symmetry repair.
+
+- Base commit: `a749ed7a`
+- Observed head before planner edits: `fc83846b`
+- Consolidated intent plan ID:
+  `b652611e3e29b956ef2c759220253b2105105f90137d5f0c048e679dbc3bdb33`
+- External plan:
+  `/tmp/canopy02-planner-intent-fc83846b/intent-plan.json`
+- Authorized-path manifest:
+  `/tmp/canopy02-planner-intent-fc83846b/authorized-paths.json`
+- Result/risk: `PASS` / `CRITICAL`
+- Authorized paths: 56; selected nodes: 15.
+
+The repair must preserve exact inventory mode and make planning derive the
+package union from each expanded node's canonical `--package` arguments.
