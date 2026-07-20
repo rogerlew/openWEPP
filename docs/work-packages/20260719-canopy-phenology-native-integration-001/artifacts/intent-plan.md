@@ -271,3 +271,25 @@ made for this correction.
 
 This canonical intent supersedes the order-unstable predecessor and is the
 terminal predecessor for the next isolated executor attempt.
+
+## Global-CRAP Remediation Extension
+
+Status: `critical intent admitted`
+
+The validated terminal receipt passed 14 nodes and failed only global CRAP.
+Two already-authorized runner functions require bounded helper extraction to
+reduce actual cyclomatic complexity, while one receipt-authority inventory
+helper requires direct coverage in the newly declared verifier path.
+
+- Base commit: `a749ed7a`
+- Observed authorization head: `8f12313e`
+- Intent plan ID:
+  `4565e4b496391ccba58b6160707018383dfba9e55f003fca3c3fb8bf6241cd84`
+- External plan: `/tmp/canopy02-crap-intent-8f12313e/intent-plan.json`
+- Authorized-path manifest:
+  `/tmp/canopy02-crap-intent-8f12313e/authorized-paths.json`
+- Result/risk: `PASS` / `CRITICAL`
+- Authorized paths: 59, lexicographically sorted; selected nodes: 15.
+
+The remediation must not alter canopy physics, authority semantics, selected
+tests, CRAP thresholds, or adjudication state.
