@@ -31,8 +31,8 @@ state was reached. Execution history lives in the
 
 | Priority | Owning queue | State | Advancement gate |
 | --- | --- | --- | --- |
-| `CANOPY-PHENOLOGY-02` native canopy integration | Plant/snow-frost science | `active` | Execute `20260719-canopy-phenology-native-integration-001`: ratify and implement native canopy, biomass, litter, closure, YAML, phase-flipped SH symmetry, and real-consumer integration. |
-| `SNOW-SURFACE-EB` sublimation and longwave | Snow/frost science | `queued` | Start after `CANOPY-PHENOLOGY-02` closes and a contract-first package reconciles the multilayer surface-energy, vapor-mass, and longwave backlog with the current meteorology and snow-column implementation. |
+| `CANOPY-PHENOLOGY-02` native canopy integration | Plant/snow-frost science | `complete` | Closed by `20260719-canopy-phenology-native-integration-001`: native canopy, biomass, litter, YAML, phase-flipped SH symmetry, conservation, and real-consumer integration passed exact critical gates. |
+| `SNOW-SURFACE-EB` sublimation and longwave | Snow/frost science | `queued` | Scaffold a contract-first package that reconciles the multilayer surface-energy, vapor-mass, and longwave backlog with the current meteorology and snow-column implementation. |
 | `ASSURE-06` snow/frost flagship synthesis | Scientific assurance | `held` | Roger Lew remains the accountable report lead and a material snow/frost producer. Resume independent review only after canopy phenology and the selected sublimation/longwave work land, the scientific manuscript is refreshed against those changes, and a new exact review root is issued. |
 | `ASSURE-05` first production v2 report | Scientific assurance | `held` | Technical review handoff is complete; formal review has not started. Advancement requires assignment of accountable human reviewers, exact-subject review and approval, assurance-steward approval, release-owner transfer, and exact-root publication gates. |
 
@@ -68,8 +68,8 @@ and staged-adoption contract live in the
   only when a provider rule actually exists; none exists at current intake.
 - Active campaigns enter through the governed bootstrap path. Prior evidence
   remains `LEGACY_UNVERIFIED` unless independently reconstructed and verified.
-- `CANOPY-PHENOLOGY-02` may proceed; it does not own or wait on a TESTGATE
-  observation clock.
+- `CANOPY-PHENOLOGY-02` is complete and does not own a TESTGATE observation
+  clock.
 
 ## Scientific Assurance Queue
 

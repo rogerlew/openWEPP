@@ -2,7 +2,7 @@
 
 Evidence mode: `Ran`
 
-Status: `focused implementation gates pass; terminal campaign pending`
+Status: `PASS — focused and exact terminal implementation gates complete`
 
 Implemented surfaces:
 
@@ -32,6 +32,11 @@ plant package result was 12 unit, 6 canopy-contract, 1 restart, and 0 doctest
 failures. Management/input/migration and the two integration targets passed.
 The targeted multi-year authority test and the real direct-path consumer test
 also passed after the verification-A corrections. The latter dynamically
-observed an active frost consumer on the same native leaf-off transition. The
-terminal TESTGATE receipt remains required after verification and contract
-promotion.
+observed an active frost consumer on the same native leaf-off transition.
+
+After the behavior-preserving closure splits, focused planner, source-guard,
+native consumer, continuous-schedule, plant, formatting, and strict Clippy
+checks passed again. Exact C13 then passed the management, plant, and runtime
+A1 inventories at 71/71, 19/19, and 624/624 tests respectively; full workspace
+passed 2,185/2,185 tests. See `gate-results.md` for the independently verified
+receipt and global CRAP evidence.

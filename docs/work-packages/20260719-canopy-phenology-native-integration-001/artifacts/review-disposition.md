@@ -17,7 +17,9 @@ Status: `all review findings accepted, implemented, and independently verified`
 | B-04 | agent_b | high | accepted | Same fix as A-03; corrected consumer and conservation evidence now matches the runtime proof. | `consumer-path-proof.md` and `conservation-audit.md` | Closure verbs must match dynamic evidence. |
 | B-05 | agent_b | medium | accepted | Every negative derived VPD now fails without clamp or tolerance. | runner negative test | No bounded-normalization authority exists. |
 | B-06 | agent_b | medium | accepted | Added full transformed-calendar and bit-identical periodic endpoint/transfer assertions. | `native_canopy_contract.rs` | Matches package acceptance wording. |
-| B-07 | agent_b | high | accepted | Exact float comparisons were replaced and focused Clippy passes. Execute a fresh exact terminal plan immediately after promotion. | `gate-results.md` | Failed and blocked gates cannot be deferred. |
+| B-07 | agent_b | high | accepted | Exact float comparisons were replaced, focused Clippy passed, and exact C13 closed 15/15 critical nodes with dual independent receipt verification. | `gate-results.md` | Failed and blocked gates cannot be deferred. |
 
-No finding is rejected, deferred, or silently closed. B-07 remains open only
-for the package's sequenced terminal campaign after contract promotion.
+No finding is rejected, deferred, open, or silently closed. The independent
+closure-split reviewer also reported no finding: the production relocation was
+byte-identical, the moved planner test preserved its assertions, all affected
+focused tests passed, and final line counts cleared the mandatory threshold.

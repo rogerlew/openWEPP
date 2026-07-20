@@ -224,13 +224,14 @@
 State as of `2026-07-20 UTC`:
 
 - `20260719-canopy-phenology-native-integration-001/` -
-  ACTIVE-CONTRACT-FIRST: `CANOPY-PHENOLOGY-02` integrates the verified GSI
+  COMPLETE-PASS (2026-07-20): `CANOPY-PHENOLOGY-02` integrates the verified GSI
   signal into native deciduous, mixed, and evergreen forest canopy, LAI,
   foliar biomass, litter transfer, YAML authority, and real snow/ET/
   interception/residue/frost/erosion consumers. The Southern Hemisphere gate
   uses the operator-selected half-year phase transform of a Northern Hemisphere
   forcing sequence with negated latitude; it is a symmetry test, not an
-  independent observational validation claim.
+  independent observational validation claim. Exact C13 closed 15/15 critical
+  nodes with dual independent receipt verification.
 
 - `20260717-canopy-phenology-gsi-kernel-001/` -
   COMPLETE-PASS-PROCESS-KERNEL (2026-07-17): implements

@@ -1,6 +1,6 @@
 # CANOPY-PHENOLOGY-02 Native Forest Integration
 
-Status: `ACTIVE — contracts promoted; exact terminal campaign pending`
+Status: `COMPLETE / PASS`
 
 Package id: `20260719-canopy-phenology-native-integration-001`
 
@@ -236,7 +236,11 @@ Subagents have no production write access.
 - [x] (2026-07-20) Exact global CRAP passed its instrumented 2,184-test run but
   found two touched runner functions above the complexity ceiling and one
   uncovered receipt-authority helper; amended the write set before remediation.
-- [ ] Execute and reconcile the exact terminal campaign.
+- [x] (2026-07-20) Cleared mandatory line-count governance with two
+  behavior-preserving module splits and independent review.
+- [x] (2026-07-20) Reconciled and executed the exact C13 terminal campaign:
+  15/15 critical nodes passed, and receipt `ed12971d...` passed dual
+  independent verification.
 
 ## Surprises & Discoveries
 
@@ -282,6 +286,16 @@ Subagents have no production write access.
   cannot clear them; the third row is a zero-coverage verifier helper.
   Evidence: validated receipt `bac49c42...` and
   `/tmp/c03e/.work/target/adjudicated-crap/adjudicated-crap-report.json`.
+- Observation: the remediated C12 campaign passed every selected gate, but
+  closure inspection found `planner.rs` and the direct builder aggregation at
+  or above the mandatory 3,000-line split threshold.
+  Evidence: `line-count-governance.md`; commit `14e470eb` moved one planner
+  test to the integration suite and one schedule-authority responsibility to
+  the existing authority-runtime module without behavior change.
+- Observation: the first C13 launch stopped before node execution because a
+  preserved C12 executor-output directory remained at `/tmp/c03e/target`.
+  Evidence: `GATE-EXEC-OUTPUT-COLLISION`; the directory was recoverably
+  archived and the unchanged plan then passed 15/15 nodes.
 
 ## Decision Log
 
@@ -329,10 +343,29 @@ Subagents have no production write access.
   CRAP threshold, while direct verifier coverage proves the existing fail-closed
   authority-inventory behavior without adjudicating new debt.
   Date/Author: 2026-07-20 / Codex.
+- Decision: treat the 3,000-line threshold as a real closure blocker even after
+  the exact C12 terminal campaign passed.
+  Rationale: package correctness includes source-governance obligations; the
+  bounded relocations reduced both files below threshold and preserved exact
+  behavior under focused tests, review, and a new full terminal campaign.
+  Date/Author: 2026-07-20 / Codex.
 
 ## Outcomes & Retrospective
 
-Pending execution.
+Native deciduous, mixed, and evergreen forests now use the continuous GSI
+process to publish explicit daily foliar pools, LAI, structural-floor canopy,
+allocation, and leaf-off litter. Native YAML is strict and complete; runtime
+requires an uninterrupted perennial schedule; first realization fabricates no
+mass transfer; and same-day snow, ET, WB15, residue/decomposition, frost, and
+erosion consumers read the typed post-phenology state. The operator-selected
+Southern Hemisphere check uses a complete 365-day Northern Hemisphere forcing
+sequence shifted by 182 days with negated latitude, and multi-year tests prove
+restart continuity and no phase drift.
+
+The three amended contracts are active. Exact C13 receipt `ed12971d...` passed
+all 15 critical nodes at `7053a9b8`, including 2,185/2,185 workspace tests and
+global CRAP with zero actionable debt, and passed two independent receipt
+verifications. No acceptance criterion or review finding remains open.
 
 ## Idempotence And Recovery
 

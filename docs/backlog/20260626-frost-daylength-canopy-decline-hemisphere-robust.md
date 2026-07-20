@@ -124,16 +124,17 @@ integrated canopy and litter-transfer law lands.
 - **SH validation** is deferrable to an NH-only interim if no SH climate source
   is available (see open questions).
 
-### Active package
+### Completed package
 
 `docs/work-packages/20260717-canopy-phenology-gsi-kernel-001/` closed Increment
 2 with process-kernel conformance, not integrated canopy or snow fidelity.
-`CANOPY-PHENOLOGY-02` is active as
+`CANOPY-PHENOLOGY-02` is complete as
 `docs/work-packages/20260719-canopy-phenology-native-integration-001/`. Its
 Southern Hemisphere symmetry gate negates latitude and shifts the same
 Northern Hemisphere forcing sequence by half a year. This tests calendar and
 hemisphere phase without claiming independent Southern Hemisphere
-observational validation.
+observational validation. Exact critical receipt `ed12971d...` passed 15/15
+nodes at head `7053a9b8`.
 
 ## Origin (the structural finding)
 
