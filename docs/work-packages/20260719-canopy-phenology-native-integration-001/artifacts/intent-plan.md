@@ -246,3 +246,28 @@ corrected Nextest configuration digest before terminal execution.
 - Authorized paths: 58; selected nodes: 15.
 
 This is the terminal predecessor for the corrected scheduling campaign.
+
+## Canonical Authorized-Path Order Refresh
+
+Status: `refreshed critical intent admitted`
+
+Executor preflight proved that the prior external 58-path manifest placed the
+new `testgate_ci_executor_contract.rs` entry before the existing
+`testgate_align_authority_contract.rs` entry. Initial planning preserved input
+order while fail-closed reconstruction canonicalized through a sorted set, so
+the otherwise identical plan digest could not reconstruct. No source edit was
+made for this correction.
+
+- Base commit: `a749ed7a`
+- Observed clean head: `81fe73fb`
+- Canonical intent plan ID:
+  `e50cd0d956799da0e20759f502221b59615de83822a0df9056ae7ded693ba264`
+- External plan:
+  `/tmp/canopy02-nextest-sorted-intent-81fe73fb/intent-plan.json`
+- Authorized-path manifest:
+  `/tmp/canopy02-nextest-sorted-intent-81fe73fb/authorized-paths.json`
+- Result/risk: `PASS` / `CRITICAL`
+- Authorized paths: 58, lexicographically sorted; selected nodes: 15.
+
+This canonical intent supersedes the order-unstable predecessor and is the
+terminal predecessor for the next isolated executor attempt.
