@@ -106,3 +106,28 @@ records needed at closure. No edit to those paths occurred before admission.
 - Authorized paths: 55; selected nodes: 15.
 
 The terminal plan must use this final intent plan ID and 55-path manifest.
+
+## Gate-Inventory Policy Repair Intent Refresh
+
+Status: `refreshed critical intent admitted`
+
+Terminal executor preflight proved that the new multi-package canopy A1 gates
+used Cargo's short `-p` token while the authenticated inventory reconstructor
+requires canonical `--package`. The already-authorized gate-policy and policy
+test paths were corrected at `4529e677`, independently re-verified, and then
+replanned because terminal reconciliation correctly refused to treat the node
+identity change as equivalent to the older intent.
+
+- Base commit: `a749ed7a`
+- Observed repaired head: `4529e677`
+- Refreshed intent plan ID:
+  `a7b3c77245a4866dc2fee6c94810c1a35448a62b458ffb0f6050c1cc384c1db7`
+- External plan:
+  `/tmp/canopy02-policy-intent-4529e677/intent-plan.json`
+- Authorized-path manifest:
+  `/tmp/canopy02-policy-intent-4529e677/authorized-paths.json`
+- Result/risk: `PASS` / `CRITICAL`
+- Authorized paths: 55; selected nodes: 15.
+
+Subsequent terminal planning must bind the Rust toolchain environment used by
+the executor and use this refreshed intent as predecessor.
