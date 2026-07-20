@@ -155,3 +155,24 @@ durable symmetry repair.
 
 The repair must preserve exact inventory mode and make planning derive the
 package union from each expanded node's canonical `--package` arguments.
+
+## Repaired Planner Intent Refresh
+
+Status: `refreshed critical intent admitted`
+
+The authorized planner repair landed at `e714db6a` and passed independent
+verification. A fresh intent binds both the corrected planner behavior and its
+rebuilt executable into the planning context before terminal execution.
+
+- Base commit: `a749ed7a`
+- Observed repaired head: `e714db6a`
+- Refreshed intent plan ID:
+  `377c555bd586744c02abe85ddd1785fd29bed1c1da20c4ddbe0d06d379fe7c2b`
+- External plan:
+  `/tmp/canopy02-planner-fixed-intent-e714db6a/intent-plan.json`
+- Authorized-path manifest:
+  `/tmp/canopy02-planner-fixed-intent-e714db6a/authorized-paths.json`
+- Result/risk: `PASS` / `CRITICAL`
+- Authorized paths: 56; selected nodes: 15.
+
+This is the terminal predecessor for the final executor attempt.
