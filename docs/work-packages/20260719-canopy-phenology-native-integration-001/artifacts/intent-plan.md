@@ -344,3 +344,32 @@ output-root, and path identities were unchanged. No receipt was produced.
 Terminal planning, reconciliation, execution, and verification must all use
 the same explicit `CARGO_HOME`, `RUSTUP_HOME`, and `RUSTUP_TOOLCHAIN=stable`
 environment bound by this intent.
+
+## Line-Count Closure Intent Refresh
+
+Status: `refreshed critical intent admitted`
+
+The exact-head C12 campaign passed every selected gate, but terminal
+line-count governance found two touched non-generated Rust files above the
+mandatory 3,000-line split threshold. The behavior-preserving split landed at
+`14e470eb` after focused tests, strict Clippy, formatting, and independent
+review passed. A fresh intent now binds the split source and relocated test
+inventory before the final terminal campaign.
+
+- Base commit: `a749ed7a`
+- Observed split head: `14e470eb`
+- Refreshed intent plan ID:
+  `1134bc7f9388af74ba1bd162113016ead748a99bd5d6ccf8f7e5f53894e0ba71`
+- External plan:
+  `/tmp/canopy02-linesplit-intent-14e470eb/intent-plan.json`
+- Authorized-path manifest:
+  `/tmp/canopy02-linesplit-intent-14e470eb/authorized-paths.json`
+- Result/risk: `PASS` / `CRITICAL`
+- Environment manifest:
+  `ddcb915642236e6e1904f78ae1208ab24cdb6921f5b205f5e1b422108bf782a1`
+- Authorized paths: 59, lexicographically sorted; selected nodes: 15.
+
+The planner test relocation changes the exact test binary inventory, so the
+prior passing C12 receipt remains diagnostic history rather than terminal
+closure evidence. The final terminal plan must use this intent as predecessor
+under the same explicit Rust/Cargo environment.
