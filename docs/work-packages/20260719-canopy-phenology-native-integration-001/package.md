@@ -85,6 +85,9 @@ exact daily foliar mass ledger; and remove native forest dependence on the
 - `crates/openwepp-runner/src/hillslope/**`
 - `gate-policy/v1/impact-map.json`
 - `gate-policy/v1/gate-definitions.json`
+- `.config/nextest.toml` for the bounded assurance-publication concurrency
+  correction exposed by repeated exact terminal runs; test selection, timeout,
+  and assertions remain unchanged
 - `crates/openwepp-gate-planner/src/planner.rs` for the exact
   `NEXTEST_PACKAGES` planner/executor inventory-symmetry defect exposed by this
   package's new multi-package A1 gates
@@ -223,6 +226,10 @@ Subagents have no production write access.
 - [x] (2026-07-20) Terminal preflight exposed a planner/executor mismatch for
   exact multi-package inventories; amended the write set before repairing the
   single planner source/test file.
+- [x] (2026-07-20) Repeated exact full-workspace runs proved that four concurrent
+  assurance-publication snapshot fixtures can exceed the unchanged 720-second
+  ceiling under contention; amended the write set before reducing that bounded
+  cohort to two concurrent cases.
 - [ ] Execute and reconcile the exact terminal campaign.
 
 ## Surprises & Discoveries
@@ -258,6 +265,11 @@ Subagents have no production write access.
   before node execution.
   Evidence: terminal preflight error `GATE-EXEC-INVENTORY-DRIFT` on plan
   `2e8a8f96...` and static planner/executor inspection.
+- Observation: with `assurance-publication` allowing four cases concurrently,
+  three complete-snapshot publication cases remained CPU-active but timed out
+  together at 720 seconds; focused and authority gates had already passed.
+  Evidence: `/tmp/c03e-diagnostic-8e5830a2` and the interrupted C05 full-nextest
+  log under `/tmp/c03e/.attempts/`.
 
 ## Decision Log
 
@@ -291,6 +303,13 @@ Subagents have no production write access.
   execution.
   Rationale: exact inventory identity is an A1 assurance invariant; the planner
   must inventory the packages actually named by each expanded node.
+  Date/Author: 2026-07-20 / Codex.
+- Decision: reduce the existing assurance-publication resource cohort from four
+  concurrent cases to two before the next exact terminal campaign.
+  Rationale: this is a scheduling-only correction to prevent mutually
+  contending full-snapshot builds from exhausting the existing per-test time
+  budget; it preserves inventory, assertions, and the 720-second fail-closed
+  timeout.
   Date/Author: 2026-07-20 / Codex.
 
 ## Outcomes & Retrospective
