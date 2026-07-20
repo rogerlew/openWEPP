@@ -445,10 +445,56 @@ class AdjudicatedCrapGateTests(unittest.TestCase):
             )
             self.assertEqual(run_status["result"], "FAIL")
             self.assertEqual(run_status["exit_status"], 2)
+            self.assertIsNone(run_status["adjudicated_crap_report_sha256"])
             checksum_manifest = (
                 output_directory / "sha256sums.txt"
             ).read_text(encoding="utf-8")
             self.assertIn("run-status.json", checksum_manifest)
+
+    def test_successful_driver_control_envelope_binds_numeric_report(self) -> None:
+        driver = REPO_ROOT / "tools" / "release" / "run_adjudicated_crap_gate.sh"
+        retained_report = (
+            REPO_ROOT
+            / "docs/work-packages/cqr-pre-integration-campaign-evidence/low/final/final-crap.json"
+        )
+        retained_provenance = (
+            "docs/work-packages/cqr-pre-integration-campaign-evidence/low/"
+            "campaign-final-assessment.md"
+        )
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            output_directory = Path(temporary_directory) / "output"
+            result = subprocess.run(
+                [
+                    "bash",
+                    str(driver),
+                    "--crap-json",
+                    str(retained_report),
+                    "--retained-provenance",
+                    retained_provenance,
+                    "--output-dir",
+                    str(output_directory),
+                ],
+                cwd=REPO_ROOT,
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+
+            self.assertEqual(result.returncode, 0, result.stderr)
+            detailed_report = output_directory / "adjudicated-crap-report.json"
+            self.assertIsInstance(
+                json.loads(detailed_report.read_text(encoding="utf-8"))["threshold"],
+                float,
+            )
+            run_status = json.loads(
+                (output_directory / "run-status.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(run_status["result"], "PASS")
+            self.assertEqual(run_status["exit_status"], 0)
+            self.assertEqual(
+                run_status["adjudicated_crap_report_sha256"],
+                _sha256(detailed_report),
+            )
 
     def test_pre_acquisition_failure_replaces_stale_pass_envelope(self) -> None:
         driver = REPO_ROOT / "tools" / "release" / "run_adjudicated_crap_gate.sh"
@@ -487,6 +533,7 @@ class AdjudicatedCrapGateTests(unittest.TestCase):
             self.assertEqual(run_status["result"], "FAIL")
             self.assertEqual(run_status["acquisition_mode"], "retained")
             self.assertEqual(run_status["exit_status"], 2)
+            self.assertIsNone(run_status["adjudicated_crap_report_sha256"])
             checksum_manifest = stale_checksums.read_text(encoding="utf-8")
             self.assertNotIn("stale PASS checksums", checksum_manifest)
             self.assertIn("run-status.json", checksum_manifest)

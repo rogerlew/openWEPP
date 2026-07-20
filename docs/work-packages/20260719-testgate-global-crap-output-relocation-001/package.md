@@ -4,7 +4,7 @@ Package ID: `20260719-testgate-global-crap-output-relocation-001`
 
 Queue ID: `TESTGATE-GLOBAL-CRAP-OUTPUT-01`
 
-Status: `ACTIVE / TERMINAL-INTEGRATION-DEFECT-IN-CORRECTION`
+Status: `ACTIVE / CONTROL-ENVELOPE-REVIEW-PASS / COMMITTED-PLAN-PENDING`
 
 Authorization: verified critical receipt
 `78f526eee1d0b8a9142afc9f3ff8f9434702d1a5409d917a1c2a22687aa7638c`
@@ -65,6 +65,9 @@ real report without applying the integer-only policy parser to science metrics.
   report's valid floating-point metrics with `GATE-JSON-INVALID`.
 - [x] (2026-07-19) Prospectively amended this package before correction to own
   the reproduced control-envelope defect and its bounded executor regression.
+- [x] (2026-07-19) Patched the strict control/report-byte binding, closed both
+  independent reviewers' confinement, publication-race, regression, and
+  line-count findings, and received dual final PASS verdicts.
 - [ ] Complete dual review, one mechanical terminal execution, dual terminal
   verification, prompt archival, and final disposition.
 
@@ -209,8 +212,14 @@ route, and assign a concrete next defect owner.
 - [x] Focused contract evidence passes.
 - [ ] Mechanical critical receipt passes every node.
 - [ ] Dual review and dual terminal verification have no open finding.
-- [x] Changed Rust files are 263 and 558 lines, below the 2,000-line warning
-  threshold; no kernel/process Rust changes.
+- [x] `execution_context.rs` and the integration contract remain 263 and 558
+  lines. The newly touched `executor.rs` is 2,611 lines, above the 2,000-line
+  WARN but below the 3,000-line hard block. The bounded security correction
+  stays local because splitting artifact-contract code during a receipt-binding
+  fix would expand review risk. Follow-on intent: after this package and its
+  adversarial acceptance rerun close, scaffold a mechanical tooling package to
+  extract artifact path, validation, and publication helpers from `executor.rs`
+  without changing behavior. No kernel/process Rust changes.
 - [x] Undeclared ambient variables do not alter plan identity; every
   policy-declared gate environment key remains bound.
 - [x] Two separate exact committed plan invocations are byte-identical and
@@ -272,6 +281,11 @@ or secret-bearing process state.
   but executor validation reused the policy parser for the detailed report and
   rejected its first metric (`"coverage": 0.0`). This is a control/data-plane
   type mismatch, not a CRAP failure and not authority to stringify metrics.
+- Dual re-review found that the first control-envelope correction read control
+  JSON through an unconfined generic reader and re-read the report after digest
+  validation. Both findings are accepted: control now uses the confined reader,
+  and publication obtains the exact report buffer from a fresh control/digest
+  validation immediately before atomic write.
 
 ## Decision Log
 
