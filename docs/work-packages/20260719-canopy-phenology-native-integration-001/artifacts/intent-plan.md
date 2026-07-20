@@ -60,3 +60,27 @@ This consolidated plan preserves all 46 paths from corrected intent
 `direct_runtime/03_executor.rs` and
 `src/tests/tests_mod/direct_runtime.rs`. It includes the three generation-7 A1
 native-canopy gates in addition to the 12 critical campaign nodes.
+
+## Kernel-Profile Evidence Extension
+
+Status: `consolidated intent admitted`
+
+Independent verification found that the completed kernel-profile evidence file
+was inside the declared package write set but absent from the 48-path machine
+manifest. Commit `64fac657` audibly reverses the correction increment before
+this one-path extension; no unauthorized evidence edit is retained at intake.
+
+- Base commit: `a749ed7a`
+- Observed head before reapplying the correction: `64fac657`
+- Consolidated intent plan ID:
+  `782bce0723c3e3a03eace4947dbf226f451295702d04efc6f90caa7e6667fa1d`
+- External plan:
+  `/tmp/canopy02-profile-intent-64f/intent-plan.json`
+- Authorized-path manifest:
+  `/tmp/canopy02-profile-intent-64f/authorized-paths.json`
+- Result/risk: `PASS` / `CRITICAL`
+- Authorized paths: 49; observed changed paths: 38; selected nodes: 15.
+
+This plan preserves the prior 48-path manifest and adds only
+`artifacts/kernel-profile-compliance.md`. Terminal reconciliation must use this
+plan ID and 49-path manifest.
