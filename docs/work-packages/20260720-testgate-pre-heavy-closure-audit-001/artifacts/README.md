@@ -3,6 +3,8 @@
 Status: scaffolded; implementation evidence is pending.
 
 - `required-reading-map.md`: tiered authority and byte budget.
+- `implementation-intake.md`: exact base, instruction chain, scope, and initial
+  gate intent before production edits.
 - `defect-inventory.md`: observed defects, reproducers, owners, and closure
   tests.
 - `pre-heavy-audit-contract.md`: proposed typed report and state machine.

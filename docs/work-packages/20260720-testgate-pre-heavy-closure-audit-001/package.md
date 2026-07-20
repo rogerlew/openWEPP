@@ -4,7 +4,7 @@ Package ID: `20260720-testgate-pre-heavy-closure-audit-001`
 
 Queue ID: `TESTGATE-CLOSURE-AUDIT-01`
 
-Status: `READY / REVIEWED`
+Status: `ACTIVE / IMPLEMENTATION`
 
 Authorization: Roger Lew's 2026-07-20 direction to make tooling correction
 canonical, create one pre-heavy closure audit, scaffold the repair package, and
@@ -29,6 +29,9 @@ defects rather than repeated retries.
 - [x] Scaffold the implementation package and acceptance inventory.
 - [x] (2026-07-20) Complete dual independent scaffold review and disposition;
   both final re-reviews pass with no open finding.
+- [x] (2026-07-20) Freeze implementation intake at
+  `fc514188651b3bb3353e2cab247f5112a0c324f6`, confirm a clean worktree, and
+  record the applicable instruction chain and intended implementation diff.
 - [ ] Implement the audit report, package bootstrap, lifecycle protections, and
   focused tests.
 - [ ] Prove combined regression/coverage parity or retain an explicit typed
