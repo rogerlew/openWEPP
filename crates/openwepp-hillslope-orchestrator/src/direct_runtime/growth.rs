@@ -197,9 +197,6 @@ pub enum DirectGrowthAction {
     StopReset,
     Cut,
     Grazing,
-    /// Publish the validated typed process state carried in `state_before`
-    /// without evaluating the legacy GDD canopy equations.
-    TypedStateOverride,
 }
 
 impl DirectGrowthAction {
@@ -213,7 +210,6 @@ impl DirectGrowthAction {
                 | Self::StopReset
                 | Self::Cut
                 | Self::Grazing
-                | Self::TypedStateOverride
         )
     }
 
@@ -450,9 +446,7 @@ impl DirectGrowthInputs {
         validate_runtime_day(self.planting_day)?;
         validate_runtime_day(self.harvest_day)?;
         match self.active_action {
-            DirectGrowthAction::None
-            | DirectGrowthAction::Cut
-            | DirectGrowthAction::TypedStateOverride => {
+            DirectGrowthAction::None | DirectGrowthAction::Cut => {
                 self.validate_annual_active_window_required()
             }
             DirectGrowthAction::PrePlantSkip => self.validate_annual_preplant_skip(),
@@ -491,10 +485,9 @@ impl DirectGrowthInputs {
         validate_optional_runtime_day(self.harvest_day)?;
         validate_optional_runtime_day(self.stop_day)?;
         match self.active_action {
-            DirectGrowthAction::None
-            | DirectGrowthAction::Cut
-            | DirectGrowthAction::Grazing
-            | DirectGrowthAction::TypedStateOverride => Ok(()),
+            DirectGrowthAction::None | DirectGrowthAction::Cut | DirectGrowthAction::Grazing => {
+                Ok(())
+            }
             DirectGrowthAction::PlantingReset => self.validate_perennial_planting_reset(),
             DirectGrowthAction::StopReset => self.validate_perennial_stop_reset(),
             DirectGrowthAction::HarvestReset | DirectGrowthAction::PrePlantSkip => {
@@ -627,7 +620,6 @@ impl DirectGrowthInputs {
 
         let state_after = if self.active_context == DirectGrowthActiveContext::Inactive
             || self.active_action == DirectGrowthAction::PrePlantSkip
-            || self.active_action == DirectGrowthAction::TypedStateOverride
         {
             self.state_before
         } else if self.active_action.is_reset() {
@@ -1329,39 +1321,6 @@ mod cqr_row6_growth_tests {
             }
             other => panic!("expected NonFiniteDirectValue for {field}, got {other:?}"),
         }
-    }
-
-    #[test]
-    fn typed_state_override_is_the_published_perennial_state() {
-        let mut inputs = perennial_inputs();
-        let authority_state = DirectGrowthStateSurface {
-            sumgdd: 0.0,
-            live_biomass_kg_m2: 0.18,
-            interception_live_biomass_kg_m2: 0.18,
-            canopy_height_m: 0.16,
-            canopy_cover_fraction: 0.42,
-            leaf_area_index: 1.75,
-            root_mass_kg_m2: 0.35,
-            root_depth_m: 0.50,
-            harvest_index: 0.0,
-        };
-        inputs.state_before = authority_state;
-        inputs.active_action = DirectGrowthAction::TypedStateOverride;
-
-        let state = inputs
-            .compute_perennial()
-            .expect("typed canopy authority should publish");
-        assert_eq!(state.state_after, authority_state);
-        let downstream = DirectGrowthDownstreamOperands::from(state);
-        assert_eq!(downstream.state_after, authority_state);
-        assert_eq!(
-            downstream.canopy_cover_fraction.to_bits(),
-            authority_state.canopy_cover_fraction.to_bits()
-        );
-        assert_eq!(
-            downstream.leaf_area_index.to_bits(),
-            authority_state.leaf_area_index.to_bits()
-        );
     }
 
     #[test]

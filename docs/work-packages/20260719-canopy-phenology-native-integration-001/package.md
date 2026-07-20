@@ -79,8 +79,6 @@ exact daily foliar mass ledger; and remove native forest dependence on the
 - `crates/openwepp-input-contract/src/parsers/management.rs`
 - `crates/openwepp-landuse-migrate/src/convert.rs`
 - `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/01_management.rs`
-- `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/05_projection_helpers.rs`
-- `crates/openwepp-hillslope-orchestrator/src/direct_runtime/growth.rs`
 - `crates/openwepp-runner/Cargo.toml`
 - `crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00_builders_and_authority.rs`
 - `crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00c_day_input_builder_impl.rs`
@@ -197,14 +195,8 @@ Subagents have no production write access.
   SH symmetry test, without observational-validation overclaim.
 - [x] (2026-07-19) Froze the base-commit authorization scaffold and began the
   machine intent plan for the declared critical write set.
-- [x] (2026-07-19) Machine intent plan admitted; terminal reconciliation and
-  execution remain pending implementation.
-- [x] (2026-07-19) Amended the three canonical contracts and added executable
-  contract-derived realization and hemisphere tests before production edits.
-- [x] (2026-07-19) Recorded the intentionally red pre-implementation contract
-  gate: the new test failed only on the absent canopy realization API.
-- [x] (2026-07-19) Implemented native YAML, typed realization, per-lane runner
-  state, same-day litter, and the real executor consumer handoff.
+- [ ] Freeze contracts, tests, and the pre-implementation gate.
+- [ ] Implement native YAML, typed realization, runner state, and consumers.
 - [ ] Execute selected gates and conservation/consumer audits.
 - [ ] Complete independent review, disposition, verification, and closure.
 
@@ -216,17 +208,6 @@ Subagents have no production write access.
   Evidence: `00c_day_input_builder_impl.rs` and
   `00d_authority_runtime_impl.rs`; integration can replace one producer and one
   fixed-date branch rather than duplicate consumers.
-- Observation: forest equation symbols are implemented in
-  `runtime_inputs/05_projection_helpers.rs`, while the originally declared
-  `01_management.rs` path owns the surrounding projection assembly.
-  Evidence: static call-path inspection before edits. The declared write set
-  was expanded to the helper before changing it.
-- Observation: the direct executor recomputes growth after day-input assembly
-  and republishes that result to ET and erosion, so runner-local canopy use
-  alone cannot close the real-consumer claim.
-  Evidence: `direct_runtime/growth.rs::apply_growth_downstream_to_r4n` and the
-  erosion daily-state assembly. The write set was expanded before introducing
-  the typed post-phenology state handoff.
 
 ## Decision Log
 

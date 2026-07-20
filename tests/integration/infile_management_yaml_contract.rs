@@ -30,11 +30,6 @@ fn canonical_management_yaml_projects_route_coefficients_to_pl_surfaces() {
         plant.routing.is_some(),
         "YAML parser must carry typed route coefficients into ManagementParseOutput"
     );
-    let phenology = plant
-        .phenology
-        .expect("native YAML must carry explicit forest phenology authority");
-    assert_scalar_close(phenology.summer_foliar_biomass_kg_m2, 0.2);
-    assert_scalar_close(phenology.evergreen_fraction, 0.2);
 
     let surfaces = build_hillslope_pl_runtime_surfaces_from_management(&management)
         .expect("YAML-derived management should project to PL surfaces");
@@ -82,52 +77,6 @@ fn canonical_management_yaml_projects_route_coefficients_to_pl_surfaces() {
             ),
         ),
         500.0,
-    );
-    for (root, expected) in [
-        ("forest_phenology_model", 1.0),
-        ("forest_summer_foliar_biomass_kg_m2", 0.2),
-        ("forest_evergreen_fraction", 0.2),
-        ("forest_structural_canopy_cover_fraction", 0.2),
-        ("forest_structural_biomass_kg_m2", 0.1),
-        ("forest_minimum_temperature_inactive_c", -2.0),
-        ("forest_minimum_temperature_unconstrained_c", 5.0),
-        ("forest_vapor_pressure_deficit_unconstrained_pa", 900.0),
-        ("forest_vapor_pressure_deficit_inactive_pa", 4_100.0),
-        ("forest_photoperiod_inactive_hours", 10.0),
-        ("forest_photoperiod_unconstrained_hours", 11.0),
-    ] {
-        assert_scalar_close(
-            scalar_at(
-                &surfaces.pl_growth_surface,
-                &BoundarySymbol::from(format!("pl_growth_slot_0001_crop_0001_{root}")),
-            ),
-            expected,
-        );
-    }
-}
-
-#[test]
-fn native_forest_yaml_without_phenology_fails_closed() {
-    let source = fs::read_to_string(fixture_path(
-        "canonical_forest_nonzero_ow_lanuse_1.man.yaml",
-    ))
-    .expect("fixture should be readable");
-    let start = source.find("    phenology:\n").expect("phenology block");
-    let end = source[start..]
-        .find("    cf: 5.0\n")
-        .map(|offset| start + offset)
-        .expect("field after phenology block");
-    let without = format!("{}{}", &source[..start], &source[end..]);
-    let path = std::env::temp_dir().join(format!(
-        "openwepp-native-forest-missing-phenology-{}.man.yaml",
-        std::process::id()
-    ));
-    fs::write(&path, without).expect("temporary YAML fixture should be writable");
-    let result = parse_management_document_from_path(&path, ParseMode::Strict);
-    fs::remove_file(&path).ok();
-    assert!(
-        result.is_err(),
-        "missing phenology authority must fail closed"
     );
 }
 

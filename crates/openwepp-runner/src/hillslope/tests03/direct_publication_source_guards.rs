@@ -491,63 +491,6 @@
         );
     }
 
-    #[test]
-    fn canopy_phenology_02_real_consumers_share_the_typed_native_state() {
-        let builder = include_str!(
-            "../direct_publication/day_input_and_helpers/00c_day_input_builder_impl.rs",
-        );
-        let residue = include_str!(
-            "../direct_publication/day_input_and_helpers/00d_authority_runtime_impl.rs",
-        );
-        let growth = include_str!(
-            "../../../../openwepp-hillslope-orchestrator/src/direct_runtime/growth.rs",
-        );
-
-        let phenology_position = builder
-            .find("native_forest_growth_state_for_build(")
-            .expect("native forest producer call");
-        let residue_position = builder
-            .find("residue_cover_projection_for_build(")
-            .expect("residue consumer call");
-        let snow_position = builder
-            .find("snow_liquid_partition(")
-            .expect("snow consumer call");
-        let interception_position = builder
-            .find("compute_direct_canopy_interception(")
-            .expect("WB15 interception consumer call");
-        assert!(phenology_position < residue_position);
-        assert!(phenology_position < snow_position);
-        assert!(phenology_position < interception_position);
-        assert!(
-            builder.contains(
-                "perennial_growth_inputs.state_before = growth_state_for_publication"
-            ) && builder.contains(
-                "annual_growth_inputs.state_before = growth_state_for_publication"
-            ),
-            "ET and erosion must receive the same state through the direct growth phase"
-        );
-        assert!(
-            growth.contains("self.active_action == DirectGrowthAction::TypedStateOverride")
-                && growth.contains(
-                    "self.evapotranspiration_compute_inputs.leaf_area_index =\n                operands.state_after.leaf_area_index",
-                ),
-            "the executor must publish the typed state to its real downstream consumers"
-        );
-
-        let native_litter_position = residue
-            .find("if let Some(native_litter) = native_leaf_off_litter_kg_m2")
-            .expect("native litter branch");
-        let aggregate_loss_position = residue
-            .find("let daily_litter_loss_kg_m2")
-            .expect("compatibility aggregate-loss branch");
-        assert!(native_litter_position < aggregate_loss_position);
-        assert!(
-            residue[native_litter_position..aggregate_loss_position]
-                .contains("surface_litter_input_kg_m2: native_litter"),
-            "native litter must return directly before aggregate biomass loss and jdharv logic"
-        );
-    }
-
     fn r7g_snow_forcing(tmax_c: f64, tmin_c: f64) -> HillslopeDirectClimateDayForcing {
         HillslopeDirectClimateDayForcing {
             prcp_m: 0.0,

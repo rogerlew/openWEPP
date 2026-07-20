@@ -60,7 +60,6 @@ impl DirectProductionResidueCoverAuthority {
         state_before: DirectProductionResidueCoverState,
         plant_state_before: DirectGrowthStateSurface,
         plant_state_after: DirectGrowthStateSurface,
-        native_leaf_off_litter_kg_m2: Option<f64>,
         water_stress: f64,
     ) -> Result<DirectProductionResidueCoverProjection, HillslopeCliError> {
         let runtime_year =
@@ -80,7 +79,6 @@ impl DirectProductionResidueCoverAuthority {
             state_before,
             plant_state_before,
             plant_state_after,
-            native_leaf_off_litter_kg_m2,
         )?;
         let decomposition_inputs = self.decomposition_inputs(
             growth,
@@ -151,7 +149,8 @@ impl DirectProductionResidueCoverAuthority {
                 rill_ground_seed_kg_m2: state_before.rill_ground_residue_kg_m2,
                 residue_cover_factor: self.residue_cover_factor,
                 surface_litter_input_kg_m2,
-                residue_depth_conversion_m_per_kg_m2: self.residue_depth_conversion_m_per_kg_m2,
+                residue_depth_conversion_m_per_kg_m2: self
+                    .residue_depth_conversion_m_per_kg_m2,
                 ..DirectDecompositionInputs::zero()
             });
         };
@@ -208,31 +207,7 @@ fn direct_production_surface_litter_projection(
     residue_state_before: DirectProductionResidueCoverState,
     state_before: DirectGrowthStateSurface,
     state_after: DirectGrowthStateSurface,
-    native_leaf_off_litter_kg_m2: Option<f64>,
 ) -> Result<DirectProductionSurfaceLitterProjection, HillslopeCliError> {
-    if let Some(native_litter) = native_leaf_off_litter_kg_m2 {
-        if !native_litter.is_finite() || native_litter < 0.0 {
-            return Err(HillslopeCliError::RuntimeSurfaceFailure {
-                surface: "direct_production_residue_cover",
-                detail: format!(
-                    "{SIMOUT_GUARD_ID} native forest leaf-off litter must be finite and nonnegative, observed {native_litter}"
-                ),
-            });
-        }
-        if residue_state_before.pending_surface_litter_kg_m2 != 0.0 {
-            return Err(HillslopeCliError::RuntimeSurfaceFailure {
-                surface: "direct_production_residue_cover",
-                detail: format!(
-                    "{SIMOUT_GUARD_ID} native forest GSI cannot enter with compatibility pending litter, observed {} kg/m2",
-                    residue_state_before.pending_surface_litter_kg_m2
-                ),
-            });
-        }
-        return Ok(DirectProductionSurfaceLitterProjection {
-            surface_litter_input_kg_m2: native_litter,
-            pending_surface_litter_after_kg_m2: 0.0,
-        });
-    }
     let daily_litter_loss_kg_m2 =
         (state_before.live_biomass_kg_m2 - state_after.live_biomass_kg_m2).max(0.0);
     if !daily_litter_loss_kg_m2.is_finite() {
@@ -388,39 +363,39 @@ impl DirectProductionInfiltrationAuthority {
         frost_infcap_m_s: Option<f64>,
     ) -> Result<DirectInfiltrationDepressionInputs, HillslopeCliError> {
         direct_production_validate_layers(lane_index, layers)?;
-        let effective_conductivity_m_s = if let Some(ksatadj_policy) = &self.ksatadj_policy {
-            let ksatadj_effective_conductivity_m_s =
-                direct_production_ksatadj_effective_conductivity(ksatadj_policy, layers)?;
-            direct_production_positive_frost_conductivity_limit_m_s(
-                frost_infcap_m_s,
-                self.effective_conductivity_m_s,
-            )
-            .map_or(ksatadj_effective_conductivity_m_s, |frost_limit_m_s| {
-                ksatadj_effective_conductivity_m_s.min(frost_limit_m_s)
-            })
-        } else {
-            direct_production_positive_frost_conductivity_limit_m_s(
-                frost_infcap_m_s,
-                self.effective_conductivity_m_s,
-            )
-            .or_else(|| layers.first().map(|layer| layer.conductivity_m_s))
-            .ok_or_else(|| {
-                direct_production_executor_blocked(
-                    "direct production WB14 infiltration requires layer conductivity",
+        let effective_conductivity_m_s =
+            if let Some(ksatadj_policy) = &self.ksatadj_policy {
+                let ksatadj_effective_conductivity_m_s =
+                    direct_production_ksatadj_effective_conductivity(ksatadj_policy, layers)?;
+                direct_production_positive_frost_conductivity_limit_m_s(
+                    frost_infcap_m_s,
+                    self.effective_conductivity_m_s,
                 )
-            })?
-        };
+                .map_or(ksatadj_effective_conductivity_m_s, |frost_limit_m_s| {
+                    ksatadj_effective_conductivity_m_s.min(frost_limit_m_s)
+                })
+            } else {
+                direct_production_positive_frost_conductivity_limit_m_s(
+                    frost_infcap_m_s,
+                    self.effective_conductivity_m_s,
+                )
+                    .or_else(|| layers.first().map(|layer| layer.conductivity_m_s))
+                    .ok_or_else(|| {
+                        direct_production_executor_blocked(
+                            "direct production WB14 infiltration requires layer conductivity",
+                        )
+                    })?
+            };
         let matric_potential_m = self.matric_potential_m.unwrap_or_else(|| {
             let first_layer = &layers[0];
-            first_layer.depth_m
-                * (first_layer.field_capacity_theta - first_layer.residual_theta).max(0.0)
+            first_layer.depth_m * (first_layer.field_capacity_theta - first_layer.residual_theta).max(0.0)
         });
         let storage_capacity_m = direct_publication_wb14_top_storage_capacity(layers)?;
         Ok(DirectInfiltrationDepressionInputs {
             cumulative_infiltration_handoff_m: 0.0,
             depression_storage_delta_handoff_m: 0.0,
             producer_inputs: Some(DirectWb14InfiltrationProducerInputs {
-                runon_hourly_supply_m: [0.0; 24],
+            runon_hourly_supply_m: [0.0; 24],
                 hyetograph,
                 effective_conductivity_m_s,
                 matric_potential_m,
@@ -453,11 +428,8 @@ impl DirectProductionEvapotranspirationAuthority {
             )
         } else {
             (
-                self.priestley_taylor.compute_demand(
-                    forcing,
-                    self.leaf_area_index,
-                    self.canopy_cover_fraction,
-                )?,
+                self.priestley_taylor
+                    .compute_demand(forcing, self.leaf_area_index, self.canopy_cover_fraction)?,
                 None,
             )
         };
@@ -594,7 +566,8 @@ impl DirectProductionPmetAuthority {
             * (1.35 * (ra / rso) - 0.35);
         let rn_mj_m2 = ra * 0.77 - rbo;
         let fwv_m_s = forcing.vwind_m_s * 4.87 / (67.8_f64.mul_add(10.0, -5.42)).ln();
-        let dlt = 4098.0 / ((tave + 237.3) * (tave + 237.3)) * saturation_vapor_pressure_kpa(tave);
+        let dlt = 4098.0 / ((tave + 237.3) * (tave + 237.3))
+            * saturation_vapor_pressure_kpa(tave);
         let pressure_base = 1.0 - 0.0065 * climate_request.direct_elevation_m() / 293.0;
         if pressure_base <= 0.0 {
             return Err(direct_production_executor_blocked(format!(
@@ -609,9 +582,9 @@ impl DirectProductionPmetAuthority {
                 "direct production PMET etorc denominator must be > 0.0, observed {denominator}"
             )));
         }
-        let etorc_mm = (0.408 * dlt * rn_mj_m2
-            + gma * (900.0 / (tave + 273.0)) * (ee - ed) * fwv_m_s)
-            / denominator;
+        let etorc_mm =
+            (0.408 * dlt * rn_mj_m2 + gma * (900.0 / (tave + 273.0)) * (ee - ed) * fwv_m_s)
+                / denominator;
         let rhd_pct = ed / emaxt * 100.0;
         let height_factor = (self.canhgt / 3.0).powf(0.3);
         let kcbadj = if et.leaf_area_index > 0.0 && et.root_depth_m > 0.0 {
@@ -628,7 +601,8 @@ impl DirectProductionPmetAuthority {
 
         let profile_depth_m = direct_production_profile_depth_m(layers)?;
         let epdp_m = 0.1_f64.min(profile_depth_m);
-        let (tew_mm, rew_mm, wfevp_base_mm) = self.evaporation_storage_terms(layers, epdp_m)?;
+        let (tew_mm, rew_mm, wfevp_base_mm) =
+            self.evaporation_storage_terms(layers, epdp_m)?;
         let wfevp_mm = wfevp_base_mm + et.residue_interception_m * 1_000.0;
         let etkr = if (tew_mm - wfevp_mm) <= rew_mm {
             1.0
@@ -641,7 +615,8 @@ impl DirectProductionPmetAuthority {
             }
         };
         let tpdp_m = et.root_depth_m.min(profile_depth_m);
-        let (taw_mm, wftrp_mm) = self.transpiration_storage_terms(layers, tpdp_m, wfevp_mm)?;
+        let (taw_mm, wftrp_mm) =
+            self.transpiration_storage_terms(layers, tpdp_m, wfevp_mm)?;
         let etcsc = kcbadj * etorc_mm;
         let rawpaj = self.rawp + 0.04 * (5.0 - etcsc);
         let raw_mm = rawpaj * taw_mm;
@@ -727,12 +702,15 @@ impl DirectProductionPmetAuthority {
                 )));
             }
             if layer_fraction > 0.0 {
-                tew_mm += (layer.field_capacity_theta - 0.5 * layer.residual_theta)
-                    * layer.depth_m
-                    * 1_000.0
-                    * layer_fraction;
+                tew_mm +=
+                    (layer.field_capacity_theta - 0.5 * layer.residual_theta)
+                        * layer.depth_m
+                        * 1_000.0
+                        * layer_fraction;
                 rew_mm +=
-                    (layer.field_capacity_theta - layer.residual_theta) * layer.depth_m * 1_000.0
+                    (layer.field_capacity_theta - layer.residual_theta)
+                        * layer.depth_m
+                        * 1_000.0
                         / 3.0
                         * layer_fraction;
                 wfevp_mm += layer.theta_m * 1_000.0 * layer_fraction;
@@ -761,8 +739,9 @@ impl DirectProductionPmetAuthority {
                 break;
             }
             if solthk <= tpdp_m {
-                taw_mm +=
-                    (layer.field_capacity_theta - layer.residual_theta) * layer.depth_m * 1_000.0;
+                taw_mm += (layer.field_capacity_theta - layer.residual_theta)
+                    * layer.depth_m
+                    * 1_000.0;
                 wftrp_mm += layer.theta_m * 1_000.0;
             } else if cumulative_depth_m < tpdp_m {
                 let layer_span_m = solthk - cumulative_depth_m;
@@ -872,14 +851,15 @@ impl DirectProductionGrowthAuthority {
                 ))
             }
             2 => {
-                let active_action =
-                    if selection.crop.jdplt != 0 && runtime_day == selection.crop.jdplt {
-                        DirectGrowthAction::PlantingReset
-                    } else if selection.crop.jdstop != 0 && runtime_day == selection.crop.jdstop {
-                        DirectGrowthAction::StopReset
-                    } else {
-                        DirectGrowthAction::None
-                    };
+                let active_action = if selection.crop.jdplt != 0
+                    && runtime_day == selection.crop.jdplt
+                {
+                    DirectGrowthAction::PlantingReset
+                } else if selection.crop.jdstop != 0 && runtime_day == selection.crop.jdstop {
+                    DirectGrowthAction::StopReset
+                } else {
+                    DirectGrowthAction::None
+                };
                 Ok((
                     DirectGrowthInputs::zero(),
                     self.crop_inputs(
@@ -1066,7 +1046,9 @@ impl DirectProductionGrowthCropAuthority {
             return false;
         }
         let end = usize::from(self.jdharv);
-        let start = end.saturating_sub(FOREST_LITTER_DROP_WINDOW_DAYS).max(1);
+        let start = end
+            .saturating_sub(FOREST_LITTER_DROP_WINDOW_DAYS)
+            .max(1);
         runtime_day >= start && runtime_day <= end
     }
 }
@@ -1126,11 +1108,19 @@ fn direct_growth_schedule_slot_crop_symbol(
     format!("pl_schedule_slot_{slot_index:04}_crop_{crop_slot_index:04}_{root}")
 }
 
-fn direct_growth_slot_crop_symbol(slot_index: usize, crop_slot_index: usize, root: &str) -> String {
+fn direct_growth_slot_crop_symbol(
+    slot_index: usize,
+    crop_slot_index: usize,
+    root: &str,
+) -> String {
     format!("pl_growth_slot_{slot_index:04}_crop_{crop_slot_index:04}_{root}")
 }
 
-fn direct_decomp_slot_crop_symbol(slot_index: usize, crop_slot_index: usize, root: &str) -> String {
+fn direct_decomp_slot_crop_symbol(
+    slot_index: usize,
+    crop_slot_index: usize,
+    root: &str,
+) -> String {
     format!("pl_decomp_slot_{slot_index:04}_crop_{crop_slot_index:04}_{root}")
 }
 
@@ -1171,11 +1161,7 @@ fn direct_growth_integral_usize(
     }
     Ok(parsed)
 }
-#[allow(
-    clippy::cast_possible_truncation,
-    clippy::cast_precision_loss,
-    clippy::cast_sign_loss
-)]
+#[allow(clippy::cast_possible_truncation, clippy::cast_precision_loss, clippy::cast_sign_loss)]
 fn direct_growth_rounded_to_usize(symbol: &str, value: f64) -> Result<usize, HillslopeCliError> {
     if value > usize::MAX as f64 {
         return Err(direct_growth_failure(format!(
@@ -1237,8 +1223,9 @@ fn direct_growth_validate_usize(
 }
 
 fn direct_growth_usize_to_u16(symbol: &str, value: usize) -> Result<u16, HillslopeCliError> {
-    u16::try_from(value)
-        .map_err(|_| direct_growth_failure(format!("{symbol} value {value} exceeds u16 range")))
+    u16::try_from(value).map_err(|_| {
+        direct_growth_failure(format!("{symbol} value {value} exceeds u16 range"))
+    })
 }
 
 fn direct_growth_failure(detail: impl Into<String>) -> HillslopeCliError {

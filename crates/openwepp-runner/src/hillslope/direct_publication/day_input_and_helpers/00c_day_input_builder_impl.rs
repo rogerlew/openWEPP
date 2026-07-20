@@ -2,7 +2,8 @@ const SNOWDENSITY09_DENSITY_MODEL_ENV: &str = "OPENWEPP_SNOWDENSITY09_DENSITY_MO
 const SNOWDENSITY1035_PHASE_MODEL_ENV: &str = "OPENWEPP_SNOWDENSITY1035_PHASE_MODEL";
 const SNOWDENSITY1037_MELT_MODEL_ENV: &str = "OPENWEPP_SNOWDENSITY1037_MELT_MODEL";
 const SNOWDENSITY1038_MELT_MODEL_ENV: &str = "OPENWEPP_SNOWDENSITY1038_MELT_MODEL";
-const PARADIGM2_STAGE3_LIQUID_MODEL_ENV: &str = "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL";
+const PARADIGM2_STAGE3_LIQUID_MODEL_ENV: &str =
+    "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL";
 
 #[allow(clippy::struct_field_names)]
 #[derive(Clone, Copy)]
@@ -42,13 +43,11 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             .iter()
             .map(|authority| authority.residue_cover.initial_state())
             .collect::<Vec<_>>();
-        let forest_canopy_state = vec![None; lane_authority.len()];
         Ok(Self {
             climate_request,
             climate_span,
             lane_authority,
             residue_cover_state: std::cell::RefCell::new(residue_cover_state),
-            forest_canopy_state: std::cell::RefCell::new(forest_canopy_state),
             winter_hourly_geometry: seed_authority.winter_hourly_geometry,
             sturm_climate_class,
         })
@@ -78,7 +77,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
                 self.climate_request,
                 growth_state_before,
             )?;
-        let (mut annual_growth_inputs, mut perennial_growth_inputs) = authority.growth.inputs(
+        let (annual_growth_inputs, perennial_growth_inputs) = authority.growth.inputs(
             &day,
             simulation_year,
             lane_index + 1,
@@ -87,34 +86,11 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             lane.plant_water_stress,
             &pre_growth_evapotranspiration_compute_inputs,
         )?;
-        let baseline_growth_state_for_publication = direct_production_growth_state_for_publication(
+        let growth_state_for_publication = direct_production_growth_state_for_publication(
             &annual_growth_inputs,
             &perennial_growth_inputs,
             growth_state_before,
         )?;
-        let (growth_state_for_publication, native_canopy) = self
-            .native_forest_growth_state_for_build(
-                authority,
-                day,
-                simulation_year,
-                lane_index,
-                &forcing,
-                growth_state_before,
-                baseline_growth_state_for_publication,
-            )?;
-        if native_canopy.is_some() {
-            if perennial_growth_inputs.active_context.is_active() {
-                perennial_growth_inputs.state_before = growth_state_for_publication;
-                perennial_growth_inputs.active_action = DirectGrowthAction::TypedStateOverride;
-            } else if annual_growth_inputs.active_context.is_active() {
-                annual_growth_inputs.state_before = growth_state_for_publication;
-                annual_growth_inputs.active_action = DirectGrowthAction::TypedStateOverride;
-            } else {
-                return Err(direct_growth_failure(
-                    "native forest GSI produced state without an active growth consumer",
-                ));
-            }
-        }
         let residue_cover_projection = self.residue_cover_projection_for_build(
             authority,
             day,
@@ -123,7 +99,6 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             &forcing,
             growth_state_before,
             growth_state_for_publication,
-            native_canopy.map(|canopy| canopy.leaf_off_litter_kg_m2),
             lane.plant_water_stress,
         )?;
         maybe_write_frost_residue_cover_trace(day_index, lane_index, &residue_cover_projection)?;
@@ -167,18 +142,18 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             rainfall_input_m > 1.0e-12 || snow_liquid.routed_melt_m > 1.0e-12,
             Some(residue_cover_projection.state_after.residue_depth_m),
         )?;
-        let interception_state =
-            compute_direct_canopy_interception(DirectCanopyInterceptionInputs {
+        let interception_state = compute_direct_canopy_interception(
+            DirectCanopyInterceptionInputs {
                 hyetograph_rainfall_m: snow_liquid.post_winter_rain_m,
                 interception_rainfall_input_m: snow_liquid.post_winter_rain_m,
                 canopy_cover_fraction: growth_state_for_publication.canopy_cover_fraction,
                 leaf_area_index: growth_state_for_publication.leaf_area_index,
-                interception_live_biomass_kg_m2:
-                    direct_growth_interception_live_biomass_from_state(
-                        growth_state_for_publication,
-                    )?,
-            })
-            .map_err(|source| direct_publication_runtime_error(&source))?;
+                interception_live_biomass_kg_m2: direct_growth_interception_live_biomass_from_state(
+                    growth_state_for_publication,
+                )?,
+            },
+        )
+        .map_err(|source| direct_publication_runtime_error(&source))?;
         maybe_write_r7h_direct_production_wb15_trace(
             day_index,
             lane_index,
@@ -215,9 +190,10 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
         day_input.storage_input_inputs = Some(DirectStorageInputInputs {
             precip_input_handoff_m: Some(precipitation_m),
         });
-        day_input.liquid_input_inputs = Some(direct_publication_liquid_input_inputs(
-            interception_state.liquid_after_interception_m + snow_liquid.routed_melt_m,
-        )?);
+        day_input.liquid_input_inputs =
+            Some(direct_publication_liquid_input_inputs(
+                interception_state.liquid_after_interception_m + snow_liquid.routed_melt_m,
+            )?);
         day_input.snow_coupling_inputs = Some(DirectSnowCouplingInputs {
             snow_coupling_handoff_m: snow_liquid.snow_coupling_signed_s_m,
             snow_state_projected: authority.snow_frost.snow_state_projected(&snow_lane_state),
@@ -235,7 +211,8 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             runtime_settle_day_count_after: snow_liquid.runtime_settle_day_count_after,
             coe_boundary_depth_after_m: snow_liquid.coe_boundary_depth_after_m,
             coe_boundary_density_after_kg_m3: snow_liquid.coe_boundary_density_after_kg_m3,
-            coe_boundary_settle_day_count_after: snow_liquid.coe_boundary_settle_day_count_after,
+            coe_boundary_settle_day_count_after: snow_liquid
+                .coe_boundary_settle_day_count_after,
             liquid_holding_capacity_after_m: snow_liquid.liquid_holding_capacity_after_m,
             liquid_water_retained_after_m: snow_liquid.liquid_water_retained_after_m,
             liquid_water_released_m: snow_liquid.liquid_water_released_m,
@@ -245,35 +222,25 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
         });
         day_input.peak_runoff_inputs = Some(authority.peak_runoff.inputs(hyetograph.clone()));
         day_input.infiltration_depression_inputs = Some(
-            authority.infiltration.inputs(
-                lane_index,
-                hydrology_layers,
-                hyetograph,
-                frost_context
-                    .as_ref()
-                    .map(|context| context.frozen_infiltration_capacity_m_s),
-            )?,
+            authority
+                .infiltration
+                .inputs(
+                    lane_index,
+                    hydrology_layers,
+                    hyetograph,
+                    frost_context
+                        .as_ref()
+                        .map(|context| context.frozen_infiltration_capacity_m_s),
+                )?,
         );
         day_input.percolation_inputs =
             Some(authority.percolation_inputs(lane_index, lane, hydrology_layers)?);
         day_input.subsurface_compute_inputs =
             Some(authority.subsurface_inputs(lane_index, hydrology_layers)?);
-        let evapotranspiration_compute_inputs = if native_canopy.is_some() {
-            authority.evapotranspiration.inputs_with_growth_surface(
-                &day,
-                &forcing,
-                lane.evapotranspiration_stage_state.as_deref().copied(),
-                &lane.subsurface_layers,
-                self.climate_request,
-                growth_state_for_publication,
-            )?
-        } else {
-            pre_growth_evapotranspiration_compute_inputs
-        };
+        let evapotranspiration_compute_inputs = pre_growth_evapotranspiration_compute_inputs;
         day_input.evapotranspiration_compute_inputs = Some(evapotranspiration_compute_inputs);
         day_input.decomposition_inputs = Some(residue_cover_projection.decomposition_inputs);
-        day_input.residue_partition_inputs =
-            Some(residue_cover_projection.residue_partition_inputs);
+        day_input.residue_partition_inputs = Some(residue_cover_projection.residue_partition_inputs);
         day_input.annual_growth_inputs = Some(annual_growth_inputs);
         day_input.perennial_growth_inputs = Some(perennial_growth_inputs);
         let mut hydrology_projection_inputs =
@@ -306,15 +273,15 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
         direct_publication_validate_day(&day)?;
         let simulation_year =
             simulation_year_from_calendar_year(day.year, self.climate_span.first_day.year)?;
-        let forcing = self
-            .climate_request
-            .direct_day_forcing(day_index)
-            .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {
-                surface: "direct_publication_frame",
-                detail: format!(
-                    "{SIMOUT_GUARD_ID} direct production typed climate forcing failed: {source}"
-                ),
-            })?;
+        let forcing =
+            self.climate_request
+                .direct_day_forcing(day_index)
+                .map_err(|source| HillslopeCliError::RuntimeSurfaceFailure {
+                    surface: "direct_publication_frame",
+                    detail: format!(
+                        "{SIMOUT_GUARD_ID} direct production typed climate forcing failed: {source}"
+                    ),
+                })?;
         Ok((day, simulation_year, forcing))
     }
 
@@ -345,7 +312,6 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
         forcing: &HillslopeDirectClimateDayForcing,
         growth_state_before: DirectGrowthStateSurface,
         growth_state_for_publication: DirectGrowthStateSurface,
-        native_leaf_off_litter_kg_m2: Option<f64>,
         plant_water_stress: f64,
     ) -> Result<DirectProductionResidueCoverProjection, HillslopeCliError> {
         let mut states = self.residue_cover_state.borrow_mut();
@@ -361,105 +327,10 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             states[lane_index],
             growth_state_before,
             growth_state_for_publication,
-            native_leaf_off_litter_kg_m2,
             plant_water_stress,
         )?;
         states[lane_index] = projection.state_after;
         Ok(projection)
-    }
-
-    #[allow(clippy::too_many_arguments)]
-    fn native_forest_growth_state_for_build(
-        &self,
-        authority: &DirectProductionLaneDayInputAuthority,
-        day: ClimateDayProjection,
-        simulation_year: i32,
-        lane_index: usize,
-        forcing: &HillslopeDirectClimateDayForcing,
-        initial_growth_state: DirectGrowthStateSurface,
-        mut growth_state: DirectGrowthStateSurface,
-    ) -> Result<
-        (
-            DirectGrowthStateSurface,
-            Option<openwepp_plant_phenology::ForestCanopyRealization>,
-        ),
-        HillslopeCliError,
-    > {
-        let runtime_year =
-            direct_growth_i32_to_usize("simulation_year", simulation_year, 1, usize::MAX)?;
-        let runtime_day = direct_growth_u16_to_usize("day", day.julian_day, 1, 366)?;
-        let Some(selection) =
-            authority
-                .growth
-                .active_crop(runtime_year, runtime_day, lane_index + 1)?
-        else {
-            return Ok((growth_state, None));
-        };
-        let Some(phenology) = selection.crop.forest_phenology else {
-            return Ok((growth_state, None));
-        };
-        let parameters = openwepp_plant_phenology::ForestCanopyParameters {
-            gsi: openwepp_plant_phenology::GsiParameters {
-                minimum_temperature_inactive_c: phenology.minimum_temperature_inactive_c,
-                minimum_temperature_unconstrained_c: phenology.minimum_temperature_unconstrained_c,
-                vapor_pressure_deficit_unconstrained_pa: phenology
-                    .vapor_pressure_deficit_unconstrained_pa,
-                vapor_pressure_deficit_inactive_pa: phenology.vapor_pressure_deficit_inactive_pa,
-                photoperiod_inactive_hours: phenology.photoperiod_inactive_hours,
-                photoperiod_unconstrained_hours: phenology.photoperiod_unconstrained_hours,
-            },
-            summer_foliar_biomass_kg_m2: phenology.summer_foliar_biomass_kg_m2,
-            maximum_leaf_area_index: selection.crop.xmxlai,
-            evergreen_fraction: phenology.evergreen_fraction,
-            structural_canopy_cover_fraction: phenology.structural_canopy_cover_fraction,
-            structural_biomass_kg_m2: phenology.structural_biomass_kg_m2,
-            canopy_cover_coefficient_m2_kg: selection.crop.bb,
-        };
-        let ee_kpa = 0.5
-            * (saturation_vapor_pressure_kpa(forcing.tmax_c)
-                + saturation_vapor_pressure_kpa(forcing.tmin_c));
-        let ed_kpa = saturation_vapor_pressure_kpa(forcing.tdpt_c);
-        let vapor_pressure_deficit_kpa = ee_kpa - ed_kpa;
-        if !vapor_pressure_deficit_kpa.is_finite() || vapor_pressure_deficit_kpa < -1.0e-9 {
-            return Err(direct_growth_failure(format!(
-                "native forest GSI derived VPD must be finite and nonnegative, observed {vapor_pressure_deficit_kpa} kPa"
-            )));
-        }
-        let gsi_forcing = openwepp_plant_phenology::GsiDailyForcing {
-            minimum_temperature_c: forcing.tmin_c,
-            vapor_pressure_deficit_pa: vapor_pressure_deficit_kpa.max(0.0) * 1_000.0,
-            latitude_degrees: self.climate_request.direct_latitude_degrees(),
-            date: openwepp_plant_phenology::GsiDate {
-                year: day.year,
-                ordinal_day: day.julian_day,
-            },
-        };
-        let mut states = self.forest_canopy_state.borrow_mut();
-        if lane_index >= states.len() {
-            states.resize(lane_index + 1, None);
-        }
-        let state = if let Some(state) = &mut states[lane_index] {
-            state
-        } else {
-            states[lane_index] = Some(
-                openwepp_plant_phenology::ForestCanopyState::new(
-                    initial_growth_state.live_biomass_kg_m2,
-                )
-                    .map_err(|source| direct_growth_failure(source.to_string()))?,
-            );
-            states[lane_index].as_mut().ok_or_else(|| {
-                direct_growth_failure("native forest GSI state initialization failed")
-            })?
-        };
-        let canopy = state
-            .advance(parameters, gsi_forcing)
-            .map_err(|source| direct_growth_failure(source.to_string()))?
-            .canopy;
-        growth_state.live_biomass_kg_m2 = canopy.live_foliar_biomass_kg_m2;
-        growth_state.interception_live_biomass_kg_m2 = canopy.live_foliar_biomass_kg_m2;
-        growth_state.leaf_area_index = canopy.leaf_area_index;
-        growth_state.canopy_cover_fraction = canopy.canopy_cover_fraction;
-        Ok((growth_state, Some(canopy)))
     }
 
     fn lane_authority(
@@ -484,7 +355,8 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
     pub(crate) fn laned_shadow_lane_day_operands(
         &self,
         day_frame: &openwepp_hillslope_orchestrator::DirectDayFrame,
-    ) -> Result<crate::hillslope::laned_shadow::LanedShadowLaneDayOperands, HillslopeCliError> {
+    ) -> Result<crate::hillslope::laned_shadow::LanedShadowLaneDayOperands, HillslopeCliError>
+    {
         let _ = self.lane_authority(day_frame.lane_index)?;
         build_laned_shadow_lane_day_operands(
             day_frame.lane_index,
@@ -505,10 +377,9 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
         hyetograph_rainfall_m: f64,
         runtime_swe_m: f64,
     ) -> Result<(), HillslopeCliError> {
-        let _active_snow =
-            authority
-                .snow_frost
-                .active_forcing(forcing, hyetograph_rainfall_m, runtime_swe_m)?;
+        let _active_snow = authority
+            .snow_frost
+            .active_forcing(forcing, hyetograph_rainfall_m, runtime_swe_m)?;
         let _ = lane_index;
         Ok(())
     }
@@ -562,14 +433,12 @@ fn maybe_write_r7h_direct_production_snow_trace(
         snow_phase_model,
         snow_liquid,
     );
-    std::io::Write::write_all(&mut file, line.as_bytes()).map_err(|error| {
-        HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "direct_production_snow_trace",
-            detail: format!(
-                "{SIMOUT_GUARD_ID} failed writing direct production snow trace {}: {error}",
-                std::path::PathBuf::from(&path).display()
-            ),
-        }
+    std::io::Write::write_all(&mut file, line.as_bytes()).map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+        surface: "direct_production_snow_trace",
+        detail: format!(
+            "{SIMOUT_GUARD_ID} failed writing direct production snow trace {}: {error}",
+            std::path::PathBuf::from(&path).display()
+        ),
     })
 }
 
@@ -706,11 +575,15 @@ fn direct_snow_trace_layer_diagnostics(
     }
 }
 
-fn snow_layer_swe_sum(layers: &[openwepp_hillslope_orchestrator::DirectSnowLayerState]) -> f64 {
+fn snow_layer_swe_sum(
+    layers: &[openwepp_hillslope_orchestrator::DirectSnowLayerState],
+) -> f64 {
     layers.iter().map(|layer| layer.mass_swe_m).sum()
 }
 
-fn snow_layer_depth_sum(layers: &[openwepp_hillslope_orchestrator::DirectSnowLayerState]) -> f64 {
+fn snow_layer_depth_sum(
+    layers: &[openwepp_hillslope_orchestrator::DirectSnowLayerState],
+) -> f64 {
     layers.iter().map(|layer| layer.thickness_m).sum()
 }
 
@@ -723,11 +596,7 @@ fn snow_layer_density_profile(
     let basal = layers.last().unwrap_or(surface);
     let surface_density = surface.density_kg_m3;
     let basal_density = basal.density_kg_m3;
-    (
-        surface_density,
-        basal_density,
-        basal_density - surface_density,
-    )
+    (surface_density, basal_density, basal_density - surface_density)
 }
 
 fn maybe_write_r7h_direct_production_wb15_trace(
@@ -797,14 +666,12 @@ fn maybe_write_r7h_direct_production_wb15_trace(
         direct_production_trace_number(interception_state.rainfall_scale),
     );
     let line = format!("{line}\n");
-    std::io::Write::write_all(&mut file, line.as_bytes()).map_err(|error| {
-        HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "direct_production_wb15_trace",
-            detail: format!(
-                "{SIMOUT_GUARD_ID} failed writing direct production WB15 trace {}: {error}",
-                std::path::PathBuf::from(&path).display()
-            ),
-        }
+    std::io::Write::write_all(&mut file, line.as_bytes()).map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+        surface: "direct_production_wb15_trace",
+        detail: format!(
+            "{SIMOUT_GUARD_ID} failed writing direct production WB15 trace {}: {error}",
+            std::path::PathBuf::from(&path).display()
+        ),
     })
 }
 
@@ -841,15 +708,15 @@ fn parse_snowdensity1015_default_snow_density_model(
             Ok(openwepp_hillslope_orchestrator::SnowDensityModel::PhysicsBulkDensityCompactionV1)
         }
         "legacy_wepp" => Ok(openwepp_hillslope_orchestrator::SnowDensityModel::LegacyWepp),
-        "physics_bulk_shallow_guard_v1" => {
-            Ok(openwepp_hillslope_orchestrator::SnowDensityModel::PhysicsBulkShallowGuardV1)
-        }
-        "physics_bulk_climate_class_density_v1" => {
-            Ok(openwepp_hillslope_orchestrator::SnowDensityModel::PhysicsBulkClimateClassDensityV1)
-        }
-        "physics_bulk_multilayer_density_v1" => {
-            Ok(openwepp_hillslope_orchestrator::SnowDensityModel::PhysicsBulkMultilayerDensityV1)
-        }
+        "physics_bulk_shallow_guard_v1" => Ok(
+            openwepp_hillslope_orchestrator::SnowDensityModel::PhysicsBulkShallowGuardV1,
+        ),
+        "physics_bulk_climate_class_density_v1" => Ok(
+            openwepp_hillslope_orchestrator::SnowDensityModel::PhysicsBulkClimateClassDensityV1,
+        ),
+        "physics_bulk_multilayer_density_v1" => Ok(
+            openwepp_hillslope_orchestrator::SnowDensityModel::PhysicsBulkMultilayerDensityV1,
+        ),
         observed => Err(HillslopeCliError::RuntimeSurfaceFailure {
             surface: "direct_production_snow_density_model",
             detail: format!(
@@ -863,7 +730,9 @@ fn parse_snowdensity1037_diagnostic_snow_melt_model(
     value: Option<&str>,
 ) -> Result<openwepp_hillslope_orchestrator::SnowMeltModel, HillslopeCliError> {
     match value.map_or("", str::trim) {
-        "" | "legacy_coe" => Ok(openwepp_hillslope_orchestrator::SnowMeltModel::LegacyCoe),
+        "" | "legacy_coe" => {
+            Ok(openwepp_hillslope_orchestrator::SnowMeltModel::LegacyCoe)
+        }
         "coe_winter_thaw_state_loss_v1" => {
             Ok(openwepp_hillslope_orchestrator::SnowMeltModel::CoeWinterThawStateLossV1)
         }
@@ -880,15 +749,15 @@ fn parse_snowdensity1015_default_snow_melt_model(
     value: Option<&str>,
 ) -> Result<openwepp_hillslope_orchestrator::SnowMeltModel, HillslopeCliError> {
     match value.map_or("", str::trim) {
-        "" | "coe_liquid_holding_capacity_v1" => {
-            Ok(openwepp_hillslope_orchestrator::SnowMeltModel::CoeLiquidHoldingCapacityV1)
-        }
-        "coe_open_sublimation_stage_a_v1" => {
-            Ok(openwepp_hillslope_orchestrator::SnowMeltModel::CoeOpenSublimationStageAV1)
-        }
-        "coe_open_sublimation_stage_b_v1" => {
-            Ok(openwepp_hillslope_orchestrator::SnowMeltModel::CoeOpenSublimationStageBV1)
-        }
+        "" | "coe_liquid_holding_capacity_v1" => Ok(
+            openwepp_hillslope_orchestrator::SnowMeltModel::CoeLiquidHoldingCapacityV1,
+        ),
+        "coe_open_sublimation_stage_a_v1" => Ok(
+            openwepp_hillslope_orchestrator::SnowMeltModel::CoeOpenSublimationStageAV1,
+        ),
+        "coe_open_sublimation_stage_b_v1" => Ok(
+            openwepp_hillslope_orchestrator::SnowMeltModel::CoeOpenSublimationStageBV1,
+        ),
         "legacy_coe" => Ok(openwepp_hillslope_orchestrator::SnowMeltModel::LegacyCoe),
         observed => Err(HillslopeCliError::RuntimeSurfaceFailure {
             surface: "direct_production_snow_melt_model",
@@ -899,8 +768,8 @@ fn parse_snowdensity1015_default_snow_melt_model(
     }
 }
 
-fn snowdensity1015_default_snow_density_model()
--> Result<openwepp_hillslope_orchestrator::SnowDensityModel, HillslopeCliError> {
+fn snowdensity1015_default_snow_density_model(
+) -> Result<openwepp_hillslope_orchestrator::SnowDensityModel, HillslopeCliError> {
     match std::env::var(SNOWDENSITY09_DENSITY_MODEL_ENV) {
         Ok(value) => parse_snowdensity1015_default_snow_density_model(Some(&value)),
         Err(std::env::VarError::NotPresent) => {
@@ -935,8 +804,8 @@ fn direct_production_sturm_climate_class_for_density_candidate(
         })
 }
 
-fn paradigm2_stage3_liquid_routing_model()
--> Result<openwepp_hillslope_orchestrator::SnowStage3LiquidRoutingModel, HillslopeCliError> {
+fn paradigm2_stage3_liquid_routing_model(
+) -> Result<openwepp_hillslope_orchestrator::SnowStage3LiquidRoutingModel, HillslopeCliError> {
     match std::env::var(PARADIGM2_STAGE3_LIQUID_MODEL_ENV) {
         Ok(value) => match value.trim() {
             "" | "disabled" => {
@@ -984,15 +853,14 @@ fn direct_production_sturm1995_climate_normals(
                 ),
             }
         })?;
-        let month_index = usize::try_from(day.month - 1).map_err(|_| {
-            HillslopeCliError::RuntimeSurfaceFailure {
+        let month_index =
+            usize::try_from(day.month - 1).map_err(|_| HillslopeCliError::RuntimeSurfaceFailure {
                 surface: "direct_production_sturm1995_climate_class",
                 detail: format!(
                     "{SIMOUT_GUARD_ID} invalid climate month {} for Sturm 1995 climate normals",
                     day.month
                 ),
-            }
-        })?;
+            })?;
         let Some(month) = months.get_mut(month_index) else {
             return Err(HillslopeCliError::RuntimeSurfaceFailure {
                 surface: "direct_production_sturm1995_climate_class",
@@ -1016,8 +884,7 @@ fn direct_production_sturm1995_climate_normals(
     let mut winter_wind_day_count = 0u32;
     for month in months.iter().filter(|month| month.day_count > 0) {
         let mean_temperature_c = month.mean_temperature_c();
-        if mean_temperature_c
-            < openwepp_hillslope_orchestrator::STURM1995_CDM_CRITICAL_TEMPERATURE_C
+        if mean_temperature_c < openwepp_hillslope_orchestrator::STURM1995_CDM_CRITICAL_TEMPERATURE_C
         {
             cdm_c_month += openwepp_hillslope_orchestrator::STURM1995_CDM_CRITICAL_TEMPERATURE_C
                 - mean_temperature_c;
@@ -1067,14 +934,16 @@ impl DirectProductionSturm1995MonthlyAccumulator {
     }
 }
 
-fn snowdensity1035_diagnostic_snow_phase_model()
--> Result<openwepp_hillslope_orchestrator::SnowPhasePartitionModel, HillslopeCliError> {
+fn snowdensity1035_diagnostic_snow_phase_model(
+) -> Result<openwepp_hillslope_orchestrator::SnowPhasePartitionModel, HillslopeCliError> {
     match std::env::var(SNOWDENSITY1035_PHASE_MODEL_ENV) {
         Ok(value) => match value.trim() {
-            "" | "harder_pomeroy_hourly" => {
-                Ok(openwepp_hillslope_orchestrator::SnowPhasePartitionModel::HarderPomeroyHourly)
+            "" | "harder_pomeroy_hourly" => Ok(
+                openwepp_hillslope_orchestrator::SnowPhasePartitionModel::HarderPomeroyHourly,
+            ),
+            "legacy_rst" => {
+                Ok(openwepp_hillslope_orchestrator::SnowPhasePartitionModel::LegacyRst)
             }
-            "legacy_rst" => Ok(openwepp_hillslope_orchestrator::SnowPhasePartitionModel::LegacyRst),
             observed => Err(HillslopeCliError::RuntimeSurfaceFailure {
                 surface: "direct_production_snow_phase_model",
                 detail: format!(
@@ -1093,8 +962,8 @@ fn snowdensity1035_diagnostic_snow_phase_model()
 }
 
 #[allow(dead_code)]
-fn snowdensity1037_diagnostic_snow_melt_model()
--> Result<openwepp_hillslope_orchestrator::SnowMeltModel, HillslopeCliError> {
+fn snowdensity1037_diagnostic_snow_melt_model(
+) -> Result<openwepp_hillslope_orchestrator::SnowMeltModel, HillslopeCliError> {
     match std::env::var(SNOWDENSITY1037_MELT_MODEL_ENV) {
         Ok(value) => parse_snowdensity1037_diagnostic_snow_melt_model(Some(&value)),
         Err(std::env::VarError::NotPresent) => {
@@ -1107,11 +976,13 @@ fn snowdensity1037_diagnostic_snow_melt_model()
     }
 }
 
-fn snowdensity1015_default_snow_melt_model()
--> Result<openwepp_hillslope_orchestrator::SnowMeltModel, HillslopeCliError> {
+fn snowdensity1015_default_snow_melt_model(
+) -> Result<openwepp_hillslope_orchestrator::SnowMeltModel, HillslopeCliError> {
     match std::env::var(SNOWDENSITY1038_MELT_MODEL_ENV) {
         Ok(value) => parse_snowdensity1015_default_snow_melt_model(Some(&value)),
-        Err(std::env::VarError::NotPresent) => parse_snowdensity1015_default_snow_melt_model(None),
+        Err(std::env::VarError::NotPresent) => {
+            parse_snowdensity1015_default_snow_melt_model(None)
+        }
         Err(std::env::VarError::NotUnicode(_)) => Err(HillslopeCliError::RuntimeSurfaceFailure {
             surface: "direct_production_snow_melt_model",
             detail: format!("{SIMOUT_GUARD_ID} {SNOWDENSITY1038_MELT_MODEL_ENV} must be UTF-8"),
@@ -1264,12 +1135,14 @@ fn build_laned_shadow_lane_day_operands(
             ),
         });
     }
-    Ok(crate::hillslope::laned_shadow::LanedShadowLaneDayOperands {
-        hourly_rainfall_m,
-        hourly_routed_melt_m,
-        leaf_area_index,
-        canopy_height_m,
-    })
+    Ok(
+        crate::hillslope::laned_shadow::LanedShadowLaneDayOperands {
+            hourly_rainfall_m,
+            hourly_routed_melt_m,
+            leaf_area_index,
+            canopy_height_m,
+        },
+    )
 }
 
 #[cfg(test)]
@@ -1333,10 +1206,7 @@ mod laned_shadow_dynamic_operand_tests {
         )
         .expect("bare day operands should accept absent canopy height");
 
-        assert_eq!(
-            operands.hourly_rainfall_m[3].to_bits(),
-            0.0125_f64.to_bits()
-        );
+        assert_eq!(operands.hourly_rainfall_m[3].to_bits(), 0.0125_f64.to_bits());
         assert_eq!(
             operands.hourly_routed_melt_m[7].to_bits(),
             0.0025_f64.to_bits()
@@ -1404,7 +1274,12 @@ mod laned_shadow_dynamic_operand_tests {
             let mut rainfall = [0.0; 24];
             rainfall[4] = invalid_rainfall;
             let detail = dynamic_operand_error_detail(build_laned_shadow_lane_day_operands(
-                1, 2, rainfall, [0.0; 24], 0.0, None,
+                1,
+                2,
+                rainfall,
+                [0.0; 24],
+                0.0,
+                None,
             ));
             assert_eq!(
                 detail,
@@ -1450,9 +1325,15 @@ mod laned_shadow_dynamic_operand_tests {
             );
         }
 
-        let operands =
-            build_laned_shadow_lane_day_operands(1, 2, [0.0; 24], [0.0; 24], 1.25, Some(0.75))
-                .expect("finite positive vegetation operands must pass");
+        let operands = build_laned_shadow_lane_day_operands(
+            1,
+            2,
+            [0.0; 24],
+            [0.0; 24],
+            1.25,
+            Some(0.75),
+        )
+        .expect("finite positive vegetation operands must pass");
         assert_eq!(operands.leaf_area_index.to_bits(), 1.25_f64.to_bits());
         assert_eq!(operands.canopy_height_m.to_bits(), 0.75_f64.to_bits());
     }
