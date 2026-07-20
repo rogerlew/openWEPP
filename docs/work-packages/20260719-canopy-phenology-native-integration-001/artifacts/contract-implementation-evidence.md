@@ -2,7 +2,7 @@
 
 Evidence mode: `Static`
 
-Status: `implemented; promotion pending verification`
+Status: `implemented and independently verified; joint promotion ready`
 
 | Contract | Implementing surfaces |
 |---|---|
@@ -10,6 +10,6 @@ Status: `implemented; promotion pending verification`
 | `SC-RESIDUE-001` | `direct_production_surface_litter_projection` native-litter branch, decomposition input, evolved surface residue and residue-depth handoffs |
 | `SC-INFILE-MANAGEMENT-YAML-001` | required strict `phenology` block, positive `bb`/`xmxlai`, continuous native schedule validation, parser projection, migration refusal to invent authority |
 
-All three contracts remain draft/in-review until the two independent
-verification verdicts pass. No production claim relies on the withdrawn
-prototype commits.
+Both independent verification verdicts pass at exact head `00cee98d`. All three
+contracts are ready for joint promotion. No production claim relies on the
+withdrawn prototype commits.

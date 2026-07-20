@@ -1,6 +1,6 @@
 # CANOPY-PHENOLOGY-02 Native Forest Integration
 
-Status: `ACTIVE — corrected implementation ready for independent verification`
+Status: `ACTIVE — dual verification passed; joint promotion pending`
 
 Package id: `20260719-canopy-phenology-native-integration-001`
 
@@ -213,7 +213,9 @@ Subagents have no production write access.
   same-day litter, and real downstream consumers.
 - [x] (2026-07-20) Passed focused package, integration, consumer, conservation,
   formatting, gate-policy schema, and selected-package Clippy checks.
-- [ ] Complete independent review, disposition, verification, and closure.
+- [x] (2026-07-20) Closed dual independent review and verification with no
+  undispositioned science or implementation finding.
+- [ ] Promote contracts jointly and execute the exact terminal campaign.
 
 ## Surprises & Discoveries
 

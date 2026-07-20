@@ -1,13 +1,13 @@
 # Review Finding Disposition
 
-Evidence mode: `Static + Ran; pending independent verification`
+Evidence mode: `Static + Ran`
 
-Status: `all findings accepted and implemented; verification pending`
+Status: `all review findings accepted, implemented, and independently verified`
 
 | Finding ID | Source | Severity | Decision | Action taken / required | Artifact ref | Rationale |
 |---|---|---|---|---|---|---|
 | A-01 | agent_a | high | accepted | Added uninitialized first realization with exact zero transfers; runtime no longer seeds from aggregate `vdmt`. | plant and runner tests | Foliar and aggregate live biomass are distinct contract operands. |
-| A-02 | agent_a | high | accepted | Keep contracts draft until both verification agents pass, then promote all three together. | verification artifacts pending | Contract promotion logic is binding. |
+| A-02 | agent_a | high | accepted | Both verification agents passed at exact head `00cee98d`; promote all three contracts together in the next atomic increment. | `verification_agent_a.md`, `verification_agent_b.md` | Contract promotion logic is binding. |
 | A-03 | agent_a | high | accepted | Added a real native run with exact producer/consumer value joins and independent WB15 reconstruction. | `consumer-path-proof.md` | Source order and execution success are insufficient consumer evidence. |
 | A-04 | agent_a | medium | accepted | Replaced the half-year probe with full wrapped NH/SH canopy and limb-phase checks. | `native_canopy_contract.rs` | The operator selected a phase transform of a complete NH climate. |
 | A-05 | agent_a | medium | accepted | Enforced finite positive `bb` through schema, projection, and kernel. | schema and plant negative tests | Matches ratified CP-GSI02 domain. |
@@ -17,6 +17,7 @@ Status: `all findings accepted and implemented; verification pending`
 | B-04 | agent_b | high | accepted | Same fix as A-03; corrected consumer and conservation evidence now matches the runtime proof. | `consumer-path-proof.md` and `conservation-audit.md` | Closure verbs must match dynamic evidence. |
 | B-05 | agent_b | medium | accepted | Every negative derived VPD now fails without clamp or tolerance. | runner negative test | No bounded-normalization authority exists. |
 | B-06 | agent_b | medium | accepted | Added full transformed-calendar and bit-identical periodic endpoint/transfer assertions. | `native_canopy_contract.rs` | Matches package acceptance wording. |
-| B-07 | agent_b | high | accepted | Exact float comparisons were replaced; focused Clippy passes. A fresh terminal plan remains required after promotion. | `gate-results.md` | Failed and blocked gates cannot be deferred. |
+| B-07 | agent_b | high | accepted | Exact float comparisons were replaced and focused Clippy passes. Execute a fresh exact terminal plan immediately after promotion. | `gate-results.md` | Failed and blocked gates cannot be deferred. |
 
-No finding is rejected, deferred, or silently closed.
+No finding is rejected, deferred, or silently closed. B-07 remains open only
+for the package's sequenced terminal campaign after contract promotion.
