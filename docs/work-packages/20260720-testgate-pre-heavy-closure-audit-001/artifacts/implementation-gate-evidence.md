@@ -11,6 +11,7 @@ Evidence class: Ran.
 | Exact three failed executor tests after `FINAL_LIGHT` correction | 3 pass, return code 0 | No broader rerun; only the production-path failures were repeated. |
 | Exact two clean-checkout verifier tests | 2 fail in 991.474 seconds | Clean checkout closed the original precondition. Both then exposed the same fixture-only boundary: an `INTENT` plan was being treated as an executable terminal heavy receipt. |
 | `heavy_audit_is_required_only_at_the_terminal_execution_boundary` | 1 pass, return code 0 | Fast seam proof: synthetic intent evidence remains usable for verifier fixtures, while a terminal heavy receipt without a `READY` audit is rejected. The two 16-minute fixture workflows were not repeated. |
+| `heavy_handoff_accepts_only_checkpoint_bound_light_artifacts` | 1 pass, return code 0 | Exact handoff seam: the frozen light artifact is accepted and a byte mutation is rejected with `GATE-EXEC-CHECKPOINT-ARTIFACT-DRIFT`. |
 | `cargo nextest run --test testgate_align_authority_contract --test testgate_ci_executor_contract --profile quick` | 15 pass, return code 0 | Final focused integration evidence before implementation commit. |
 | `.venv/bin/python -m unittest tests/python/test_testgate.py` | 7 pass | Includes append-only history, attempt index, package authorization, and qualification subject-freeze cases. |
 | Scoped `markdown-doc lint` | 30 files, 0 errors, 0 warnings | Package, standards, and local/release tooling documentation. |
@@ -50,3 +51,10 @@ it is retained as evidence and is not eligible for final heavy admission.
   tests whose inputs changed.
 
 No reassurance rerun is accepted as closure evidence.
+
+The first exact-head audit reported `READY`, but no heavy dispatch occurred:
+pre-dispatch inspection proved heavy preflight would reject the existing light
+outputs. The corrected executor permits only audit-admitted light node IDs and
+revalidates each checkpoint/node/artifact digest. Because this correction
+changes execution identity, the earlier plan, light receipt, and audit are
+retained but cannot authorize the final heavy stage.

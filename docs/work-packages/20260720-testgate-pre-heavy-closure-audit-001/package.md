@@ -408,6 +408,11 @@ back around the new audit.
   passing checks because the unchanged package path was absent from the exact
   diff. Updating this progress record makes the package part of the terminal
   authorization instead of weakening package admission.
+- The first exact-head audit reached `READY`, but static inspection before
+  delegation found that heavy preflight would reject the audit-bound light
+  outputs as ordinary collisions. No heavy process was dispatched. The
+  handoff now admits only existing light outputs whose node checkpoint and
+  artifact digests match the exact audit; mutation remains fail-closed.
 
 ## Decision Log
 

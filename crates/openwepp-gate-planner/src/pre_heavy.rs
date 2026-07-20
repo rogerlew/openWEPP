@@ -63,7 +63,7 @@ pub fn build_audit(
     )?);
     checks.push(check(
         CHECK_IDS[4],
-        artifact_identity(light_receipt, artifact_root),
+        light_attempt_isolated(plan, light_receipt, artifact_root),
         json!({"artifact_root_sha256": path_digest(artifact_root)}),
     )?);
     checks.push(check(
@@ -355,6 +355,45 @@ fn artifact_identity(receipt: &Value, artifact_root: &Path) -> Result<()> {
             "stage receipt belongs to another attempt root",
         ))
     }
+}
+
+fn light_attempt_isolated(plan: &Value, receipt: &Value, artifact_root: &Path) -> Result<()> {
+    artifact_identity(receipt, artifact_root)?;
+    for node in nodes(plan)?
+        .iter()
+        .filter(|node| node["execution_cost_class"] == "LIGHT")
+    {
+        let node_id = string(node, "node_id")?;
+        let checkpoint = read_json(
+            &artifact_root
+                .join(".checkpoints")
+                .join(format!("{node_id}.json")),
+        )?;
+        if checkpoint["node_sha256"] != digest(node)? || checkpoint["result"] != "PASS" {
+            return Err(audit_error("GATE-AUDIT-CHECKPOINT-DRIFT", node_id));
+        }
+        for relative in node["output_paths"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .filter_map(Value::as_str)
+        {
+            let expected = checkpoint["artifacts"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .find(|artifact| artifact["path"] == relative)
+                .and_then(|artifact| artifact["sha256"].as_str())
+                .ok_or_else(|| audit_error("GATE-AUDIT-CHECKPOINT-ARTIFACT", relative))?;
+            if file_digest(&artifact_root.join(relative))? != expected {
+                return Err(audit_error(
+                    "GATE-AUDIT-CHECKPOINT-ARTIFACT-DRIFT",
+                    relative,
+                ));
+            }
+        }
+    }
+    Ok(())
 }
 
 fn separated_roots(plan: &Value) -> Result<()> {

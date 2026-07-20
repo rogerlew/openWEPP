@@ -184,15 +184,24 @@ pub fn execute_plan_stage(
     create_confined_directories(&artifacts, &work_root(&artifacts).join("tmp"))?;
     validate_plan(&repository, &artifacts, plan)?;
     verify_execution_checkout(&repository, plan)?;
-    preflight(&repository, &artifacts, plan)?;
+    let admitted_audit = if stage == "HEAVY" {
+        let audit = audit.ok_or_else(|| {
+            execution_error("GATE-EXEC-AUDIT-REQUIRED", "heavy stage requires an audit")
+        })?;
+        validate_audit(&repository, plan, audit, &artifacts)?;
+        Some(audit)
+    } else {
+        None
+    };
+    let allowed_existing = admitted_light_nodes(admitted_audit)?;
+    preflight(&repository, &artifacts, plan, &allowed_existing)?;
 
     let mut imported = match stage {
         "LIGHT" | "FINAL_LIGHT" => ExecutionRecord::empty(),
         "HEAVY" => {
-            let audit = audit.ok_or_else(|| {
+            let audit = admitted_audit.ok_or_else(|| {
                 execution_error("GATE-EXEC-AUDIT-REQUIRED", "heavy stage requires an audit")
             })?;
-            validate_audit(&repository, plan, audit, &artifacts)?;
             ExecutionRecord::from_stage_receipt(&audit["light_receipt"])?
         }
         _ => return Err(execution_error("GATE-EXEC-STAGE", stage)),
@@ -472,7 +481,12 @@ fn verify_execution_checkout(repo: &Path, plan: &Value) -> Result<()> {
     }
 }
 
-fn preflight(repo: &Path, artifact_root: &Path, plan: &Value) -> Result<()> {
+fn preflight(
+    repo: &Path,
+    artifact_root: &Path,
+    plan: &Value,
+    allowed_existing: &BTreeSet<String>,
+) -> Result<()> {
     validate_quality_scope(plan)?;
     let nodes = plan["nodes"]
         .as_array()
@@ -504,11 +518,53 @@ fn preflight(repo: &Path, artifact_root: &Path, plan: &Value) -> Result<()> {
             }
             let destination = confined_output_path(artifact_root, &path)?;
             if fs::symlink_metadata(&destination).is_ok() {
-                return Err(execution_error("GATE-EXEC-OUTPUT-COLLISION", path));
+                let node_id = required_string(node, "node_id")?;
+                if !allowed_existing.contains(node_id) {
+                    return Err(execution_error("GATE-EXEC-OUTPUT-COLLISION", path));
+                }
+                verify_checkpoint_artifact(artifact_root, node, &path)?;
             }
         }
     }
     Ok(())
+}
+
+fn admitted_light_nodes(audit: Option<&Value>) -> Result<BTreeSet<String>> {
+    let Some(audit) = audit else {
+        return Ok(BTreeSet::new());
+    };
+    audit["light_receipt"]["final_results"]
+        .as_object()
+        .ok_or_else(|| execution_error("GATE-EXEC-AUDIT-LIGHT-RESULTS", "final_results"))?
+        .iter()
+        .filter(|(_, result)| *result == "PASS")
+        .map(|(node_id, _)| Ok(node_id.clone()))
+        .collect()
+}
+
+fn verify_checkpoint_artifact(artifact_root: &Path, node: &Value, relative: &str) -> Result<()> {
+    let node_id = required_string(node, "node_id")?;
+    let checkpoint_path = artifact_root
+        .join(".checkpoints")
+        .join(format!("{node_id}.json"));
+    let checkpoint = read_json(&checkpoint_path)?;
+    let expected = checkpoint["artifacts"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .find(|artifact| artifact["path"] == relative)
+        .and_then(|artifact| artifact["sha256"].as_str())
+        .ok_or_else(|| execution_error("GATE-EXEC-CHECKPOINT-ARTIFACT", relative))?;
+    let bytes = fs::read(confined_output_path(artifact_root, relative)?)
+        .map_err(|error| execution_error("GATE-EXEC-CHECKPOINT-ARTIFACT", error.to_string()))?;
+    if checkpoint["node_sha256"] == digest(node)? && sha256_bytes(&bytes) == expected {
+        Ok(())
+    } else {
+        Err(execution_error(
+            "GATE-EXEC-CHECKPOINT-ARTIFACT-DRIFT",
+            relative,
+        ))
+    }
 }
 
 fn reject_shell_string(node: &Value) -> Result<()> {
@@ -1932,7 +1988,7 @@ mod tests {
         reject_shell_string, require_relative_path, run_process, runtime_arguments,
         source_snapshot, supported_executor, validate_plan, validate_success_artifacts, work_root,
     };
-    use crate::canonical::sha256_bytes;
+    use crate::canonical::{digest, sha256_bytes};
     use crate::planner::{NextestInventory, PlanRequest, Planner, PlanningStage};
     use crate::repository::observe_committed;
 
@@ -1949,6 +2005,39 @@ mod tests {
         )
         .expect_err("heavy plan must require staged audit admission");
         assert_eq!(error.code, "GATE-EXEC-HEAVY-REQUIRES-AUDIT");
+    }
+
+    #[test]
+    fn heavy_handoff_accepts_only_checkpoint_bound_light_artifacts() {
+        let artifacts = TempDirectory::new("light-handoff");
+        let node_id = "1".repeat(64);
+        let node = json!({
+            "node_id": node_id,
+            "output_paths": ["target/light/result.json"]
+        });
+        let output = artifacts.path().join("target/light/result.json");
+        fs::create_dir_all(output.parent().expect("output parent")).expect("output directory");
+        fs::write(&output, b"bound\n").expect("light output");
+        let checkpoint_dir = artifacts.path().join(".checkpoints");
+        fs::create_dir(&checkpoint_dir).expect("checkpoint directory");
+        write_json(
+            &checkpoint_dir.join(format!("{node_id}.json")),
+            &json!({
+                "node_sha256": digest(&node).expect("node digest"),
+                "result": "PASS",
+                "artifacts": [{
+                    "path": "target/light/result.json",
+                    "sha256": sha256_bytes(b"bound\n")
+                }]
+            }),
+        );
+        super::verify_checkpoint_artifact(artifacts.path(), &node, "target/light/result.json")
+            .expect("bound light artifact");
+        fs::write(&output, b"mutated\n").expect("mutate light output");
+        let error =
+            super::verify_checkpoint_artifact(artifacts.path(), &node, "target/light/result.json")
+                .expect_err("mutated light artifact must fail");
+        assert_eq!(error.code, "GATE-EXEC-CHECKPOINT-ARTIFACT-DRIFT");
     }
     use crate::verifier::{DirectoryArtifacts, verify_receipt};
 
@@ -2425,13 +2514,13 @@ mod tests {
 
         let mut drifted = plan.clone();
         drifted["nodes"][0]["expected_inventory"]["ids"] = json!(["0".repeat(64)]);
-        let error = preflight(repo.path(), artifacts.path(), &drifted)
+        let error = preflight(repo.path(), artifacts.path(), &drifted, &BTreeSet::new())
             .expect_err("inventory drift must fail");
         assert_eq!(error.code, "GATE-EXEC-INVENTORY-DRIFT");
 
         let mut colliding = plan;
         colliding["nodes"][1]["output_paths"] = colliding["nodes"][0]["output_paths"].clone();
-        let error = preflight(repo.path(), artifacts.path(), &colliding)
+        let error = preflight(repo.path(), artifacts.path(), &colliding, &BTreeSet::new())
             .expect_err("output collision must fail");
         assert_eq!(error.code, "GATE-EXEC-OUTPUT-COLLISION");
     }
