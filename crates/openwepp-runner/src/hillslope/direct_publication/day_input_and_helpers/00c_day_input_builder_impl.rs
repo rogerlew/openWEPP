@@ -29,6 +29,15 @@ struct DirectProductionEvappmSeed {
     soil_evaporation_storage_return_m: f64,
 }
 
+struct DirectProductionGrowthBuildState {
+    pre_growth_evapotranspiration_compute_inputs: DirectEvapotranspirationComputeInputs,
+    annual_growth_inputs: DirectGrowthInputs,
+    perennial_growth_inputs: DirectGrowthInputs,
+    growth_state_before: DirectGrowthStateSurface,
+    growth_state_for_publication: DirectGrowthStateSurface,
+    native_canopy: Option<openwepp_plant_phenology::ForestCanopyRealization>,
+}
+
 #[allow(dead_code)]
 impl<'a> DirectProductionDayInputBuilder<'a> {
     fn new(
@@ -84,52 +93,21 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
         let mut hyetograph = direct_production_hyetograph(&forcing)?;
         let rainfall_input_m = direct_publication_hyetograph_rainfall_m(&hyetograph)?;
         let snow_lane_state = authority.snow_frost.current_snow_lane_state(lane);
-        let growth_state_before = *lane.plant_growth_state;
-        let pre_growth_evapotranspiration_compute_inputs =
-            authority.evapotranspiration.inputs_with_growth_surface(
-                &day,
-                &forcing,
-                lane.evapotranspiration_stage_state.as_deref().copied(),
-                &lane.subsurface_layers,
-                self.climate_request,
-                growth_state_before,
-            )?;
-        let (mut annual_growth_inputs, mut perennial_growth_inputs) = authority.growth.inputs(
+        let DirectProductionGrowthBuildState {
+            pre_growth_evapotranspiration_compute_inputs,
+            annual_growth_inputs,
+            perennial_growth_inputs,
+            growth_state_before,
+            growth_state_for_publication,
+            native_canopy,
+        } = self.growth_state_for_build(
+            authority,
             &day,
             simulation_year,
-            lane_index + 1,
+            lane_index,
             &forcing,
-            growth_state_before,
-            lane.plant_water_stress,
-            &pre_growth_evapotranspiration_compute_inputs,
+            lane,
         )?;
-        let baseline_growth_state_for_publication = direct_production_growth_state_for_publication(
-            &annual_growth_inputs,
-            &perennial_growth_inputs,
-            growth_state_before,
-        )?;
-        let (growth_state_for_publication, native_canopy) = self
-            .native_forest_growth_state_for_build(
-                authority,
-                day,
-                simulation_year,
-                lane_index,
-                &forcing,
-                baseline_growth_state_for_publication,
-            )?;
-        if native_canopy.is_some() {
-            if perennial_growth_inputs.active_context.is_active() {
-                perennial_growth_inputs.state_before = growth_state_for_publication;
-                perennial_growth_inputs.active_action = DirectGrowthAction::TypedStateOverride;
-            } else if annual_growth_inputs.active_context.is_active() {
-                annual_growth_inputs.state_before = growth_state_for_publication;
-                annual_growth_inputs.active_action = DirectGrowthAction::TypedStateOverride;
-            } else {
-                return Err(direct_growth_failure(
-                    "native forest GSI produced state without an active growth consumer",
-                ));
-            }
-        }
         let residue_cover_projection = self.residue_cover_projection_for_build(
             authority,
             day,
@@ -318,6 +296,72 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
         day_input.frost_runtime_carry =
             direct_publication_frost_runtime_carry_from_lane_state(&lane.winter_column.frost);
         Ok(day_input)
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn growth_state_for_build(
+        &self,
+        authority: &DirectProductionLaneDayInputAuthority,
+        day: &ClimateDayProjection,
+        simulation_year: i32,
+        lane_index: usize,
+        forcing: &HillslopeDirectClimateDayForcing,
+        lane: &DirectLaneFrame,
+    ) -> Result<DirectProductionGrowthBuildState, HillslopeCliError> {
+        let growth_state_before = *lane.plant_growth_state;
+        let pre_growth_evapotranspiration_compute_inputs =
+            authority.evapotranspiration.inputs_with_growth_surface(
+                day,
+                forcing,
+                lane.evapotranspiration_stage_state.as_deref().copied(),
+                &lane.subsurface_layers,
+                self.climate_request,
+                growth_state_before,
+            )?;
+        let (mut annual_growth_inputs, mut perennial_growth_inputs) = authority.growth.inputs(
+            day,
+            simulation_year,
+            lane_index + 1,
+            forcing,
+            growth_state_before,
+            lane.plant_water_stress,
+            &pre_growth_evapotranspiration_compute_inputs,
+        )?;
+        let baseline_growth_state_for_publication = direct_production_growth_state_for_publication(
+            &annual_growth_inputs,
+            &perennial_growth_inputs,
+            growth_state_before,
+        )?;
+        let (growth_state_for_publication, native_canopy) = self
+            .native_forest_growth_state_for_build(
+                authority,
+                *day,
+                simulation_year,
+                lane_index,
+                forcing,
+                baseline_growth_state_for_publication,
+            )?;
+        if native_canopy.is_some() {
+            if perennial_growth_inputs.active_context.is_active() {
+                perennial_growth_inputs.state_before = growth_state_for_publication;
+                perennial_growth_inputs.active_action = DirectGrowthAction::TypedStateOverride;
+            } else if annual_growth_inputs.active_context.is_active() {
+                annual_growth_inputs.state_before = growth_state_for_publication;
+                annual_growth_inputs.active_action = DirectGrowthAction::TypedStateOverride;
+            } else {
+                return Err(direct_growth_failure(
+                    "native forest GSI produced state without an active growth consumer",
+                ));
+            }
+        }
+        Ok(DirectProductionGrowthBuildState {
+            pre_growth_evapotranspiration_compute_inputs,
+            annual_growth_inputs,
+            perennial_growth_inputs,
+            growth_state_before,
+            growth_state_for_publication,
+            native_canopy,
+        })
     }
 
     fn climate_day_for_build(

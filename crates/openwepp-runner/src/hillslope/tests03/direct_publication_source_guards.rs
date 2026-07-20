@@ -509,9 +509,9 @@ fn canopy_phenology_02_real_consumers_share_the_typed_native_state() {
     let growth =
         include_str!("../../../../openwepp-hillslope-orchestrator/src/direct_runtime/growth.rs",);
 
-    let phenology_position = builder
-        .find("native_forest_growth_state_for_build(")
-        .expect("native forest producer call");
+    let growth_state_position = builder
+        .find("self.growth_state_for_build(")
+        .expect("growth-state producer call");
     let residue_position = builder
         .find("residue_cover_projection_for_build(")
         .expect("residue consumer call");
@@ -521,9 +521,13 @@ fn canopy_phenology_02_real_consumers_share_the_typed_native_state() {
     let interception_position = builder
         .find("compute_direct_canopy_interception(")
         .expect("WB15 interception consumer call");
-    assert!(phenology_position < residue_position);
-    assert!(phenology_position < snow_position);
-    assert!(phenology_position < interception_position);
+    assert!(growth_state_position < residue_position);
+    assert!(growth_state_position < snow_position);
+    assert!(growth_state_position < interception_position);
+    assert!(
+        builder.contains(".native_forest_growth_state_for_build("),
+        "the growth-state producer must realize native forest phenology"
+    );
     assert!(
         builder.contains("perennial_growth_inputs.state_before = growth_state_for_publication")
             && builder.contains("annual_growth_inputs.state_before = growth_state_for_publication"),

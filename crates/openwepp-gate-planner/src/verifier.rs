@@ -1868,6 +1868,34 @@ mod tests {
         }
     }
 
+    #[test]
+    fn authority_report_inventory_is_exact_and_fail_closed() {
+        let node = json!({"output_paths": ["required-authority.txt"]});
+        let artifacts = MemoryArtifacts::new(BTreeMap::from([(
+            "required-authority.txt".to_owned(),
+            b"- lane=required failure_class=hard-fail suites=suite-a,suite-b status=pass\n\
+- lane=required failure_class=hard-fail suites=suite-c status=fail\n"
+                .to_vec(),
+        )]));
+        let observed = super::receipt_authority_inventory(&node, &artifacts, false)
+            .expect("nonpass receipt inventory");
+        assert_eq!(
+            observed,
+            BTreeSet::from([
+                "suite-a".to_owned(),
+                "suite-b".to_owned(),
+                "suite-c".to_owned(),
+            ])
+        );
+        assert!(super::receipt_authority_inventory(&node, &artifacts, true).is_err());
+
+        let missing_suites = MemoryArtifacts::new(BTreeMap::from([(
+            "required-authority.txt".to_owned(),
+            b"- lane=required failure_class=hard-fail status=pass\n".to_vec(),
+        )]));
+        assert!(super::receipt_authority_inventory(&node, &missing_suites, true).is_err());
+    }
+
     struct RootlessArtifacts;
 
     impl ArtifactProvider for RootlessArtifacts {
