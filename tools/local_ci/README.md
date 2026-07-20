@@ -58,8 +58,21 @@ python tools/local_ci/testgate.py \
   --execute
 ```
 
-The helper invokes typed CLI argument vectors without a shell, writes intent
-and terminal plans, an independently verified unsigned receipt, and
+The helper validates base-commit package authority, invokes typed CLI argument
+vectors without a shell, and writes intent and terminal plans. Execution is a
+mandatory state machine: it runs only policy-owned `LIGHT` nodes, freezes their
+stage receipt, obtains the ten-check `pre-heavy-audit.json`, and starts a
+`HEAVY` node only when that exact audit is `READY`. The heavy receipt embeds the
+audit and imports the light prefix; a monolithic heavy path fails closed.
+
+Every node writes a digest-bound checkpoint before aggregate receipt creation.
+Attempt, timing, cost, failure, and tooling-defect records are appended to
+`target/local-ci-history/testgate-attempts.jsonl` by default. Trusted execution
+instead places that ledger under the uploaded evidence root. The attempt index
+covers pre-receipt failures and per-node checkpoints so a hosted verifier can
+re-ingest and verify them after runner loss.
+
+The helper also writes an independently verified unsigned receipt and
 `observation.json`. Local output remains
 `LOCAL_RECEIPT_PENDING_GITHUB_ATTESTATION` and cannot close an increment. The
 trusted workflow attests the exact receipt and custom predicate before its job
@@ -67,6 +80,13 @@ can pass. Use a fresh external directory for every attempt; output collision
 fails closed. Verified FAIL/BLOCKED receipts remain in that directory while the
 helper exits nonzero, and executor-injected Cargo, Nextest, coverage, CRAP, and
 temporary work paths remain beneath the external execution root.
+
+The stable black-box follow-up interface is
+`tools/local_ci/testgate_qualification.py`. Its `validate`, `run`, and `verify`
+subcommands freeze the subject, invoke the ordinary helper once per declared
+case, stop on the first mismatch, and independently rehash the resulting
+evidence. Qualification never converts local probe evidence into a live
+provider claim.
 
 Nextest lifecycle roles are named `affected`, `checkpoint`, `campaign`, and
 `release`. Selection still comes from the terminal plan; a profile name alone

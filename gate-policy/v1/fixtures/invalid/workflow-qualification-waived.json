@@ -1,0 +1,8 @@
+{
+  "base_fixture": "workflow-qualification.json",
+  "operation": "replace",
+  "instance_pointer": "/result",
+  "invalid_value": "WAIVED",
+  "expected_instance_path": "/result",
+  "expected_schema_path_contains": "/enum"
+}

@@ -5,11 +5,14 @@ use std::path::{Path, PathBuf};
 
 use openwepp_gate_planner::canonical::{canonical_bytes, parse_strict};
 use openwepp_gate_planner::error::{ErrorClass, GatePolicyError, Result};
-use openwepp_gate_planner::executor::{ExecutionClaims, execute_plan};
+use openwepp_gate_planner::executor::{ExecutionClaims, execute_plan, execute_plan_stage};
 use openwepp_gate_planner::ledger::{verify_assurance_impact, verify_campaign_ledger};
+use openwepp_gate_planner::package_validation::validate_package;
 use openwepp_gate_planner::planner::reconcile_intent_terminal;
 use openwepp_gate_planner::planner::{NextestInventory, PlanRequest, Planner, PlanningStage};
+use openwepp_gate_planner::pre_heavy::{build_audit, validate_resume_ledger};
 use openwepp_gate_planner::repository::{ObservedSource, observe_committed, observe_dirty};
+use openwepp_gate_planner::resume::load_candidate;
 use openwepp_gate_planner::verifier::{
     DirectoryArtifacts, verify_receipt, verify_receipt_envelope,
 };
@@ -17,7 +20,7 @@ use serde_json::{Value, json};
 
 type CommandHandler = fn(&Path, &BTreeMap<String, String>) -> Result<Value>;
 
-const COMMANDS: [(&str, CommandHandler); 7] = [
+const COMMANDS: [(&str, CommandHandler); 9] = [
     ("plan", plan_command),
     ("run", run_command),
     ("verify-receipt", receipt_command),
@@ -25,6 +28,8 @@ const COMMANDS: [(&str, CommandHandler); 7] = [
     ("verify-ledger", ledger_command),
     ("verify-assurance", assurance_command),
     ("reconcile", reconcile_command),
+    ("pre-heavy-audit", pre_heavy_audit_command),
+    ("validate-package", validate_package_command),
 ];
 
 fn main() {
@@ -105,7 +110,19 @@ fn reject_unknown_options(command: &str, options: &BTreeMap<String, String>) -> 
             "job",
             "runner",
             "attempt",
+            "stage",
+            "audit",
+            "resume",
         ],
+        "pre-heavy-audit" => &[
+            "repo",
+            "plan",
+            "light-receipts",
+            "artifact-root",
+            "ledger",
+            "output",
+        ],
+        "validate-package" => &["repo", "base", "package", "output"],
         "reconcile" => &["repo", "intent", "terminal"],
         "verify-receipt" | "verify-receipt-envelope" => {
             &["repo", "plan", "receipt", "artifact-root"]
@@ -123,12 +140,90 @@ fn reject_unknown_options(command: &str, options: &BTreeMap<String, String>) -> 
 
 fn run_command(repo: &Path, options: &BTreeMap<String, String>) -> Result<Value> {
     let (plan, artifact_root, claims) = execution_inputs(options)?;
+    if let Some(stage) = options.get("stage") {
+        return staged_run_command(repo, options, &plan, &artifact_root, &claims, stage);
+    }
     let (receipt, verdict) = verified_execution(repo, &plan, &artifact_root, &claims)?;
     let output = persist_plan(repo, options, &receipt)?;
     Ok(json!({
         "result": verdict["result"],
         "receipt_id": verdict["receipt_id"],
         "trust_class": verdict["trust_class"],
+        "output": output
+    }))
+}
+
+fn staged_run_command(
+    repo: &Path,
+    options: &BTreeMap<String, String>,
+    plan: &Value,
+    artifact_root: &Path,
+    claims: &ExecutionClaims,
+    stage: &str,
+) -> Result<Value> {
+    let (audit, resume_candidate) = if stage == "heavy" {
+        let value = read_json(Path::new(required(options, "audit")?))?;
+        let resume = PathBuf::from(required(options, "resume")?);
+        validate_resume_ledger(&value, &resume)?;
+        let candidate = load_candidate(repo, plan, &resume)?;
+        (Some(value), candidate)
+    } else if stage == "light" {
+        (None, None)
+    } else {
+        return Err(usage_error());
+    };
+    let receipt = execute_plan_stage(
+        repo,
+        plan,
+        artifact_root,
+        claims,
+        &stage.to_ascii_uppercase(),
+        audit.as_ref(),
+        resume_candidate.as_ref(),
+    )?;
+    if stage == "heavy" {
+        let artifacts = DirectoryArtifacts::new(artifact_root.to_owned());
+        verify_receipt(repo, plan, &receipt, &artifacts)?;
+    }
+    let result = receipt["result"].clone();
+    let receipt_id = receipt
+        .get("receipt_id")
+        .or_else(|| receipt.get("stage_receipt_id"))
+        .cloned()
+        .unwrap_or(Value::Null);
+    let output = persist_plan(repo, options, &receipt)?;
+    Ok(json!({
+        "result": result,
+        "receipt_id": receipt_id,
+        "output": output,
+        "stage": stage.to_ascii_uppercase()
+    }))
+}
+
+fn pre_heavy_audit_command(repo: &Path, options: &BTreeMap<String, String>) -> Result<Value> {
+    let plan = read_json(Path::new(required(options, "plan")?))?;
+    let light = read_json(Path::new(required(options, "light-receipts")?))?;
+    let artifact_root = PathBuf::from(required(options, "artifact-root")?);
+    let ledger = PathBuf::from(required(options, "ledger")?);
+    let audit = build_audit(repo, &plan, &light, &artifact_root, &ledger)?;
+    let output = persist_plan(repo, options, &audit)?;
+    Ok(json!({
+        "result": audit["status"],
+        "audit_id": audit["audit_id"],
+        "reason_codes": audit["reason_codes"],
+        "output": output
+    }))
+}
+
+fn validate_package_command(repo: &Path, options: &BTreeMap<String, String>) -> Result<Value> {
+    let base = required(options, "base")?;
+    let package = PathBuf::from(required(options, "package")?);
+    let audit = validate_package(repo, base, &package)?;
+    let output = persist_plan(repo, options, &audit)?;
+    Ok(json!({
+        "result": audit["status"],
+        "package_audit_id": audit["package_audit_id"],
+        "reason_codes": audit["reason_codes"],
         "output": output
     }))
 }

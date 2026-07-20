@@ -1,0 +1,8 @@
+{
+  "base_fixture": "workflow-qualification-controller.json",
+  "operation": "replace",
+  "instance_pointer": "/cases/0/expected_heavy_spawn_count",
+  "invalid_value": -1,
+  "expected_instance_path": "/cases/0/expected_heavy_spawn_count",
+  "expected_schema_path_contains": "/minimum"
+}

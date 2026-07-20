@@ -5,6 +5,7 @@
   "definitions": [{
     "gate_definition_id": "example-v1",
     "gate_family": "behavior",
+    "execution_cost_class": "LIGHT",
     "target_template": "CARGO_PACKAGE",
     "risk_classes": ["BOUNDED_COMPONENT"],
     "executor": { "kind": "NEXTEST_V1", "version": "cargo-nextest-0.9", "adapter_sha256": null },

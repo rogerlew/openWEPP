@@ -1,10 +1,10 @@
 {
   "schema_version": "openwepp-gate-definitions-v1",
-  "generation": 7,
+  "generation": 8,
   "enforcement_status": "BLOCKING",
   "definitions": [
     {
-      "gate_definition_id": "cargo-fmt-v1", "gate_family": "source-quality", "target_template": "WORKSPACE",
+      "gate_definition_id": "cargo-fmt-v1", "gate_family": "source-quality", "execution_cost_class": "LIGHT", "target_template": "WORKSPACE",
       "risk_classes": ["BOUNDED_COMPONENT", "INTEGRATED_DOMAIN"],
       "executor": { "kind": "PROCESS_V1", "version": "cargo-1", "adapter_sha256": null },
       "arguments_template": ["cargo", "fmt", "--check"], "environment_allowlist": ["PATH", "CARGO_HOME", "RUSTUP_HOME", "RUSTUP_TOOLCHAIN"],
@@ -18,7 +18,7 @@
       "blocks_transition": "INCREMENT", "identity_breakers": ["rust-toolchain"], "prerequisite_definition_ids": []
     },
     {
-      "gate_definition_id": "cargo-package-clippy-v1", "gate_family": "source-quality", "target_template": "CARGO_PACKAGE",
+      "gate_definition_id": "cargo-package-clippy-v1", "gate_family": "source-quality", "execution_cost_class": "LIGHT", "target_template": "CARGO_PACKAGE",
       "risk_classes": ["BOUNDED_COMPONENT", "INTEGRATED_DOMAIN"],
       "executor": { "kind": "PROCESS_V1", "version": "cargo-clippy-1", "adapter_sha256": null },
       "arguments_template": ["cargo", "clippy", "-p", "{package}", "--all-targets", "--", "-D", "warnings"], "environment_allowlist": ["PATH", "CARGO_HOME", "RUSTUP_HOME", "RUSTUP_TOOLCHAIN"],
@@ -33,7 +33,7 @@
       "prerequisite_definition_ids": ["cargo-fmt-v1"]
     },
     {
-      "gate_definition_id": "gate-policy-schema-consistency-v1", "gate_family": "gate-policy", "target_template": "STATIC",
+      "gate_definition_id": "gate-policy-schema-consistency-v1", "gate_family": "gate-policy", "execution_cost_class": "LIGHT", "target_template": "STATIC",
       "risk_classes": ["CRITICAL"],
       "executor": { "kind": "NEXTEST_V1", "version": "cargo-nextest-0.9", "adapter_sha256": null },
       "arguments_template": ["cargo", "nextest", "run", "--test", "testgate_align_authority_contract"], "environment_allowlist": ["PATH", "CARGO_HOME", "RUSTUP_HOME", "RUSTUP_TOOLCHAIN"],
@@ -48,7 +48,7 @@
       "prerequisite_definition_ids": []
     },
     {
-      "gate_definition_id": "authority-admission-v1", "gate_family": "correctness-authority", "target_template": "STATIC",
+      "gate_definition_id": "authority-admission-v1", "gate_family": "correctness-authority", "execution_cost_class": "LIGHT", "target_template": "STATIC",
       "risk_classes": ["CRITICAL"],
       "executor": { "kind": "PROCESS_V1", "version": "science-contract-admission-1", "adapter_sha256": null },
       "arguments_template": ["bash", "tools/release/check_science_contract_admission.sh", "--base-ref", "{base_commit}", "--head-ref", "HEAD"], "environment_allowlist": ["PATH"],
@@ -63,7 +63,7 @@
       "prerequisite_definition_ids": []
     },
     {
-      "gate_definition_id": "authority-antievasion-v1", "gate_family": "correctness-authority", "target_template": "STATIC",
+      "gate_definition_id": "authority-antievasion-v1", "gate_family": "correctness-authority", "execution_cost_class": "LIGHT", "target_template": "STATIC",
       "risk_classes": ["CRITICAL"],
       "executor": { "kind": "PROCESS_V1", "version": "authority-antievasion-1", "adapter_sha256": null },
       "arguments_template": ["bash", "tools/release/check_authority_suite_antievasion.sh", "--base-ref", "{base_commit}", "--head-ref", "HEAD"], "environment_allowlist": ["PATH"],
@@ -78,7 +78,7 @@
       "prerequisite_definition_ids": ["authority-admission-v1"]
     },
     {
-      "gate_definition_id": "workspace-clippy-v1", "gate_family": "source-quality", "target_template": "WORKSPACE",
+      "gate_definition_id": "workspace-clippy-v1", "gate_family": "source-quality", "execution_cost_class": "HEAVY", "target_template": "WORKSPACE",
       "risk_classes": ["CRITICAL"],
       "executor": { "kind": "PROCESS_V1", "version": "cargo-clippy-1", "adapter_sha256": null },
       "arguments_template": ["cargo", "clippy", "--workspace", "--all-targets", "--", "-D", "warnings"], "environment_allowlist": ["PATH", "CARGO_HOME", "RUSTUP_HOME", "RUSTUP_TOOLCHAIN"],
@@ -93,7 +93,7 @@
       "prerequisite_definition_ids": ["cargo-fmt-v1"]
     },
     {
-      "gate_definition_id": "workspace-full-nextest-v1", "gate_family": "full-regression", "target_template": "WORKSPACE",
+      "gate_definition_id": "workspace-full-nextest-v1", "gate_family": "full-regression", "execution_cost_class": "HEAVY", "target_template": "WORKSPACE",
       "risk_classes": ["CRITICAL"],
       "executor": { "kind": "NEXTEST_V1", "version": "cargo-nextest-0.9", "adapter_sha256": null },
       "arguments_template": ["cargo", "nextest", "run", "--workspace", "--profile", "full"], "environment_allowlist": ["PATH", "CARGO_HOME", "RUSTUP_HOME", "RUSTUP_TOOLCHAIN"],
@@ -108,7 +108,7 @@
       "prerequisite_definition_ids": ["workspace-clippy-v1", "authority-antievasion-v1"]
     },
     {
-      "gate_definition_id": "required-authority-v1", "gate_family": "correctness-authority", "target_template": "STATIC",
+      "gate_definition_id": "required-authority-v1", "gate_family": "correctness-authority", "execution_cost_class": "HEAVY", "target_template": "STATIC",
       "risk_classes": ["CRITICAL"],
       "executor": { "kind": "PROCESS_V1", "version": "required-authority-1", "adapter_sha256": null },
       "arguments_template": ["bash", "tools/release/run_release_candidate_gates.sh", "--mode", "validate", "--authority-only", "--skip-stability"], "environment_allowlist": ["PATH", "CARGO_HOME", "RUSTUP_HOME", "RUSTUP_TOOLCHAIN"],
@@ -123,7 +123,7 @@
       "prerequisite_definition_ids": ["authority-antievasion-v1"]
     },
     {
-      "gate_definition_id": "workspace-doctest-v1", "gate_family": "documentation-behavior", "target_template": "WORKSPACE",
+      "gate_definition_id": "workspace-doctest-v1", "gate_family": "documentation-behavior", "execution_cost_class": "HEAVY", "target_template": "WORKSPACE",
       "risk_classes": ["BOUNDED_COMPONENT", "INTEGRATED_DOMAIN", "CRITICAL"],
       "executor": { "kind": "PROCESS_V1", "version": "cargo-test-doc-1", "adapter_sha256": null },
       "arguments_template": ["cargo", "test", "--workspace", "--doc", "--locked", "--offline"], "environment_allowlist": ["PATH", "CARGO_HOME", "RUSTUP_HOME", "RUSTUP_TOOLCHAIN"],
@@ -138,7 +138,7 @@
       "prerequisite_definition_ids": ["workspace-clippy-v1"]
     },
     {
-      "gate_definition_id": "placeholder-scan-v1", "gate_family": "source-quality", "target_template": "WORKSPACE",
+      "gate_definition_id": "placeholder-scan-v1", "gate_family": "source-quality", "execution_cost_class": "LIGHT", "target_template": "WORKSPACE",
       "risk_classes": ["BOUNDED_COMPONENT", "INTEGRATED_DOMAIN", "CRITICAL"],
       "executor": { "kind": "PROCESS_V1", "version": "ripgrep-1", "adapter_sha256": null },
       "arguments_template": ["rg", "-n", "--glob", "!target/**", "todo!\\(|unimplemented!\\(|panic!\\(.*(TODO|todo|stub|not implemented)|unreachable!\\(.*(TODO|todo|stub|not implemented)", "crates", "src"], "environment_allowlist": ["PATH"],
@@ -153,7 +153,7 @@
       "prerequisite_definition_ids": ["cargo-fmt-v1"]
     },
     {
-      "gate_definition_id": "documentation-lint-v1", "gate_family": "documentation", "target_template": "STATIC",
+      "gate_definition_id": "documentation-lint-v1", "gate_family": "documentation", "execution_cost_class": "LIGHT", "target_template": "STATIC",
       "risk_classes": ["EDITORIAL", "BOUNDED_COMPONENT", "INTEGRATED_DOMAIN", "CRITICAL"],
       "executor": { "kind": "PROCESS_V1", "version": "markdown-doc-1", "adapter_sha256": null },
       "arguments_template": ["markdown-doc", "lint"], "environment_allowlist": ["PATH"],
@@ -168,7 +168,7 @@
       "prerequisite_definition_ids": []
     },
     {
-      "gate_definition_id": "cargo-deny-v1", "gate_family": "supply-chain", "target_template": "WORKSPACE",
+      "gate_definition_id": "cargo-deny-v1", "gate_family": "supply-chain", "execution_cost_class": "HEAVY", "target_template": "WORKSPACE",
       "risk_classes": ["CRITICAL"],
       "executor": { "kind": "PROCESS_V1", "version": "cargo-deny-1", "adapter_sha256": null },
       "arguments_template": ["cargo", "deny", "check"], "environment_allowlist": ["PATH", "CARGO_HOME", "RUSTUP_HOME", "RUSTUP_TOOLCHAIN"],
@@ -182,7 +182,7 @@
       "blocks_transition": "INCREMENT", "identity_breakers": ["cargo-lock", "deny-config"], "prerequisite_definition_ids": []
     },
     {
-      "gate_definition_id": "hard-invariant-groundwater-v1", "gate_family": "science-hard-invariant", "target_template": "STATIC",
+      "gate_definition_id": "hard-invariant-groundwater-v1", "gate_family": "science-hard-invariant", "execution_cost_class": "HEAVY", "target_template": "STATIC",
       "risk_classes": ["BOUNDED_COMPONENT", "INTEGRATED_DOMAIN"],
       "executor": { "kind": "NEXTEST_V1", "version": "cargo-nextest-0.9", "adapter_sha256": null },
       "arguments_template": ["cargo", "nextest", "run", "-p", "openwepp-hillslope-orchestrator"],
@@ -198,7 +198,7 @@
       "prerequisite_definition_ids": ["authority-admission-v1"]
     },
     {
-      "gate_definition_id": "hard-invariant-snow-phase-v1", "gate_family": "science-hard-invariant", "target_template": "STATIC",
+      "gate_definition_id": "hard-invariant-snow-phase-v1", "gate_family": "science-hard-invariant", "execution_cost_class": "HEAVY", "target_template": "STATIC",
       "risk_classes": ["BOUNDED_COMPONENT", "INTEGRATED_DOMAIN"],
       "executor": { "kind": "NEXTEST_V1", "version": "cargo-nextest-0.9", "adapter_sha256": null },
       "arguments_template": ["cargo", "nextest", "run", "-p", "openwepp-meteorology"],
@@ -214,7 +214,7 @@
       "prerequisite_definition_ids": ["authority-admission-v1"]
     },
     {
-      "gate_definition_id": "hard-invariant-native-canopy-plant-v1", "gate_family": "science-hard-invariant", "target_template": "STATIC",
+      "gate_definition_id": "hard-invariant-native-canopy-plant-v1", "gate_family": "science-hard-invariant", "execution_cost_class": "HEAVY", "target_template": "STATIC",
       "risk_classes": ["BOUNDED_COMPONENT", "INTEGRATED_DOMAIN", "CRITICAL"],
       "executor": { "kind": "NEXTEST_V1", "version": "cargo-nextest-0.9", "adapter_sha256": null },
       "arguments_template": ["cargo", "nextest", "run", "-p", "openwepp-plant-phenology"],
@@ -230,7 +230,7 @@
       "prerequisite_definition_ids": ["authority-admission-v1"]
     },
     {
-      "gate_definition_id": "hard-invariant-native-canopy-management-v1", "gate_family": "science-hard-invariant", "target_template": "STATIC",
+      "gate_definition_id": "hard-invariant-native-canopy-management-v1", "gate_family": "science-hard-invariant", "execution_cost_class": "HEAVY", "target_template": "STATIC",
       "risk_classes": ["BOUNDED_COMPONENT", "INTEGRATED_DOMAIN", "CRITICAL"],
       "executor": { "kind": "NEXTEST_V1", "version": "cargo-nextest-0.9", "adapter_sha256": null },
       "arguments_template": ["cargo", "nextest", "run", "--package", "openwepp-management-schema", "--package", "openwepp-input-contract", "--package", "openwepp-landuse-migrate"],
@@ -246,7 +246,7 @@
       "prerequisite_definition_ids": ["authority-admission-v1"]
     },
     {
-      "gate_definition_id": "hard-invariant-native-canopy-runtime-v1", "gate_family": "science-hard-invariant", "target_template": "STATIC",
+      "gate_definition_id": "hard-invariant-native-canopy-runtime-v1", "gate_family": "science-hard-invariant", "execution_cost_class": "HEAVY", "target_template": "STATIC",
       "risk_classes": ["BOUNDED_COMPONENT", "INTEGRATED_DOMAIN", "CRITICAL"],
       "executor": { "kind": "NEXTEST_V1", "version": "cargo-nextest-0.9", "adapter_sha256": null },
       "arguments_template": ["cargo", "nextest", "run", "--package", "openwepp-hillslope-orchestrator", "--package", "openwepp-runner"],
@@ -262,7 +262,7 @@
       "prerequisite_definition_ids": ["authority-admission-v1"]
     },
     {
-      "gate_definition_id": "affected-adjudicated-crap-v1", "gate_family": "coverage-complexity", "target_template": "STATIC",
+      "gate_definition_id": "affected-adjudicated-crap-v1", "gate_family": "coverage-complexity", "execution_cost_class": "HEAVY", "target_template": "STATIC",
       "risk_classes": ["BOUNDED_COMPONENT", "INTEGRATED_DOMAIN"],
       "executor": { "kind": "LEGACY_ADAPTER_V1", "version": "affected-adjudicated-crap-1", "adapter_sha256": "f7108868659c16fe1648dbb27cea573578db4e3bb86d75a6b29b63bb78b0f857" },
       "arguments_template": ["bash", "tools/release/run_adjudicated_crap_gate.sh", "--scope", "affected", "--base-ref", "{base_commit}", "--nextest-profile", "affected", "--output-dir", "target/affected-crap"],
@@ -278,7 +278,7 @@
       "prerequisite_definition_ids": ["cargo-fmt-v1"]
     },
     {
-      "gate_definition_id": "adjudicated-crap-v1", "gate_family": "coverage-complexity", "target_template": "WORKSPACE",
+      "gate_definition_id": "adjudicated-crap-v1", "gate_family": "coverage-complexity", "execution_cost_class": "HEAVY", "target_template": "WORKSPACE",
       "risk_classes": ["CRITICAL"],
       "executor": { "kind": "LEGACY_ADAPTER_V1", "version": "adjudicated-crap-1", "adapter_sha256": "f7108868659c16fe1648dbb27cea573578db4e3bb86d75a6b29b63bb78b0f857" },
       "arguments_template": ["bash", "tools/release/run_adjudicated_crap_gate.sh", "--base-ref", "{base_commit}"],

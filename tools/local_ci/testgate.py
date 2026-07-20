@@ -30,6 +30,41 @@ def _atomic_json(path: Path, value: Any) -> None:
     temporary.replace(path)
 
 
+def _append_history(path: Path, value: dict[str, Any]) -> str:
+    """Append one canonical, predecessor-bound record and return its digest."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    previous = None
+    if path.is_file():
+        lines = [line for line in path.read_text(encoding="utf-8").splitlines() if line]
+        if lines:
+            previous = json.loads(lines[-1]).get("entry_sha256")
+    record = {**value, "previous_entry_sha256": previous}
+    canonical = json.dumps(record, sort_keys=True, separators=(",", ":"))
+    entry_sha256 = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+    record["entry_sha256"] = entry_sha256
+    with path.open("a", encoding="utf-8") as stream:
+        stream.write(json.dumps(record, sort_keys=True, separators=(",", ":")) + "\n")
+        stream.flush()
+        os.fsync(stream.fileno())
+    return entry_sha256
+
+
+def _write_attempt_index(root: Path) -> None:
+    entries = []
+    for path in sorted(root.rglob("*")):
+        if path.is_file() and path.name != "attempt-index.json":
+            entries.append(
+                {
+                    "path": path.relative_to(root).as_posix(),
+                    "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                }
+            )
+    _atomic_json(
+        root / "attempt-index.json",
+        {"schema_version": "openwepp-testgate-attempt-index-v1", "files": entries},
+    )
+
+
 def _git(repo: Path, arguments: list[str], *, binary: bool = False) -> bytes | str:
     result = subprocess.run(
         ["git", *arguments],
@@ -196,6 +231,9 @@ def observe(args: argparse.Namespace) -> dict[str, Any]:
     artifact_root.mkdir(parents=True, exist_ok=True)
     execution_root = artifact_root / "execution"
     execution_root.mkdir(exist_ok=False)
+    ledger = args.history_ledger.resolve()
+    if Path("/tmp") in ledger.parents or ledger == Path("/tmp"):
+        raise TestgateError("history ledger must not be ephemeral-only")
     base = _resolve_commit(repo, args.base)
     head = None if args.dirty else _resolve_commit(repo, args.head)
     authorized_paths = (
@@ -210,8 +248,44 @@ def observe(args: argparse.Namespace) -> dict[str, Any]:
     intent_path = artifact_root / "intent-plan.json"
     terminal_path = artifact_root / "terminal-plan.json"
     receipt_path = artifact_root / "receipt.json"
+    light_receipt_path = artifact_root / "light-receipts.json"
+    audit_path = artifact_root / "pre-heavy-audit.json"
+    package_audit_path = artifact_root / "package-audit.json"
     _atomic_json(authorized_path, authorized_paths)
     _atomic_json(artifact_root / "intent-authorization.json", authorization)
+    _atomic_json(
+        artifact_root / "observation.json",
+        {
+            "schema_version": "openwepp-testgate-execution-v1",
+            "enforcement_status": "STARTED",
+            "base_commit": base,
+            "head_commit": head,
+            "execution_requested": args.execute,
+            "execution_result": None,
+            "execution_error": None,
+        },
+    )
+
+    package_result = _invoke(
+        [
+            str(args.binary.resolve()),
+            "validate-package",
+            "--repo",
+            str(repo),
+            "--base",
+            base,
+            "--package",
+            str(authorization["package_path"]),
+            "--output",
+            str(package_audit_path),
+        ],
+        repo,
+        allow_nonpass=True,
+    )
+    if package_result.get("result") != "READY":
+        raise TestgateError(
+            f"package validation did not authorize execution: {package_result.get('reason_codes')}"
+        )
 
     common = [
         str(args.binary.resolve()),
@@ -253,41 +327,100 @@ def observe(args: argparse.Namespace) -> dict[str, Any]:
     if args.execute:
         execution_started = time.monotonic_ns()
         try:
-            execution_result = _invoke(
-                [
-                    str(args.binary.resolve()),
-                    "run",
-                    "--repo",
-                    str(repo),
-                    "--plan",
-                    str(terminal_path),
-                    "--artifact-root",
-                    str(execution_root),
-                    "--output",
-                    str(receipt_path),
-                    "--principal",
-                    args.principal,
-                    "--repository",
-                    args.repository,
-                    "--source-event",
-                    args.source_event,
-                    "--source-ref",
-                    args.source_ref,
-                    "--workflow",
-                    args.workflow,
-                    "--job",
-                    args.job,
-                    "--runner",
-                    args.runner,
-                    "--attempt",
-                    str(args.attempt),
-                ],
-                repo,
-                allow_nonpass=True,
+            execution_arguments = [
+                "--repo", str(repo),
+                "--plan", str(terminal_path),
+                "--artifact-root", str(execution_root),
+                "--principal", args.principal,
+                "--repository", args.repository,
+                "--source-event", args.source_event,
+                "--source-ref", args.source_ref,
+                "--workflow", args.workflow,
+                "--job", args.job,
+                "--runner", args.runner,
+                "--attempt", str(args.attempt),
+            ]
+            has_heavy = any(
+                node.get("execution_cost_class") == "HEAVY"
+                for node in terminal_plan["nodes"]
             )
+            if has_heavy:
+                light_result = _invoke(
+                    [
+                        str(args.binary.resolve()), "run", *execution_arguments,
+                        "--stage", "light", "--output", str(light_receipt_path),
+                    ],
+                    repo,
+                    allow_nonpass=True,
+                )
+                _append_history(
+                    ledger,
+                    {
+                        "record_type": "STAGE_ATTEMPT",
+                        "status": "CLOSED",
+                        "stage": "LIGHT",
+                        "plan_id": terminal_result["plan_id"],
+                        "receipt_id": light_result.get("receipt_id"),
+                        "result": light_result.get("result"),
+                        "artifact_root": str(artifact_root),
+                        "wall_time_ms": (time.monotonic_ns() - execution_started) // 1_000_000,
+                    },
+                )
+                audit_result = _invoke(
+                    [
+                        str(args.binary.resolve()), "pre-heavy-audit",
+                        "--repo", str(repo),
+                        "--plan", str(terminal_path),
+                        "--light-receipts", str(light_receipt_path),
+                        "--artifact-root", str(execution_root),
+                        "--ledger", str(ledger),
+                        "--output", str(audit_path),
+                    ],
+                    repo,
+                    allow_nonpass=True,
+                )
+                if audit_result.get("result") == "READY":
+                    execution_result = _invoke(
+                        [
+                            str(args.binary.resolve()), "run", *execution_arguments,
+                            "--stage", "heavy",
+                            "--audit", str(audit_path),
+                            "--resume", str(ledger),
+                            "--output", str(receipt_path),
+                        ],
+                        repo,
+                        allow_nonpass=True,
+                    )
+                else:
+                    execution_result = {
+                        "result": audit_result.get("result"),
+                        "audit_id": audit_result.get("audit_id"),
+                        "reason_codes": audit_result.get("reason_codes", []),
+                    }
+            else:
+                execution_result = _invoke(
+                    [
+                        str(args.binary.resolve()), "run", *execution_arguments,
+                        "--output", str(receipt_path),
+                    ],
+                    repo,
+                    allow_nonpass=True,
+                )
         except TestgateError as error:
             execution_error = str(error)
         execution_ms = (time.monotonic_ns() - execution_started) // 1_000_000
+        _append_history(
+            ledger,
+            {
+                "record_type": "ATTEMPT",
+                "status": "CLOSED",
+                "plan_id": terminal_result["plan_id"],
+                "result": None if execution_result is None else execution_result.get("result"),
+                "error": execution_error,
+                "artifact_root": str(artifact_root),
+                "wall_time_ms": execution_ms,
+            },
+        )
 
     observation = {
         "schema_version": "openwepp-testgate-execution-v1",
@@ -317,6 +450,9 @@ def observe(args: argparse.Namespace) -> dict[str, Any]:
         "execution_wall_time_ms": execution_ms,
         "authority_status": "LOCAL_RECEIPT_PENDING_GITHUB_ATTESTATION",
         "intent_authorization": authorization,
+        "package_audit": package_result,
+        "pre_heavy_audit_path": str(audit_path) if audit_path.is_file() else None,
+        "history_ledger": str(ledger),
     }
     _atomic_json(artifact_root / "observation.json", observation)
     if execution_result is not None and receipt_path.is_file():
@@ -339,6 +475,7 @@ def observe(args: argparse.Namespace) -> dict[str, Any]:
             "runner_image": os.environ.get("OPENWEPP_RUNNER_IMAGE_ID"),
         }
         _atomic_json(artifact_root / "attestation-predicate.json", predicate)
+    _write_attempt_index(artifact_root)
     return observation
 
 
@@ -354,6 +491,11 @@ def _parse_args() -> argparse.Namespace:
         help="Observe the current index/worktree/untracked state instead of a head commit",
     )
     parser.add_argument("--artifact-root", type=Path, required=True)
+    parser.add_argument(
+        "--history-ledger",
+        type=Path,
+        default=Path(__file__).parents[2] / "target/local-ci-history/testgate-attempts.jsonl",
+    )
     parser.add_argument(
         "--intent-package",
         help="Base-commit work package that prospectively authorizes the changed paths",
@@ -373,9 +515,19 @@ def _parse_args() -> argparse.Namespace:
 
 
 def main() -> int:
+    args = _parse_args()
     try:
-        observation = observe(_parse_args())
+        observation = observe(args)
     except (OSError, KeyError, ValueError, TestgateError) as error:
+        if args.artifact_root.is_dir():
+            _atomic_json(
+                args.artifact_root / "pre-receipt-failure.json",
+                {
+                    "schema_version": "openwepp-testgate-pre-receipt-failure-v1",
+                    "error": str(error),
+                },
+            )
+            _write_attempt_index(args.artifact_root)
         print(f"ERROR: {error}", file=sys.stderr)
         return 2
     print(json.dumps(observation, sort_keys=True))

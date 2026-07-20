@@ -32,11 +32,16 @@ defects rather than repeated retries.
 - [x] (2026-07-20) Freeze implementation intake at
   `fc514188651b3bb3353e2cab247f5112a0c324f6`, confirm a clean worktree, and
   record the applicable instruction chain and intended implementation diff.
-- [ ] Implement the audit report, package bootstrap, lifecycle protections, and
-  focused tests.
-- [ ] Prove combined regression/coverage parity or retain an explicit typed
-  separation reason.
-- [ ] Run the authenticated terminal plan, dual verification, and closeout.
+- [x] (2026-07-20) Implement typed cost classes, staged light/heavy execution,
+  package validation, the ten-check audit, per-node checkpoints, durable
+  attempt indexing, and trusted-workflow re-ingestion.
+- [x] (2026-07-20) Retain separate full-regression and global-coverage nodes
+  with typed `COMBINATION_NOT_ADOPTED_INSUFFICIENT_COMPATIBLE_HISTORY`; no
+  compatible three-receipt same-host baseline exists for safe adoption.
+- [ ] Run the exact current light plan and pre-heavy audit, then delegate
+  selected heavy nodes once.
+- [ ] Complete dual implementation review, dual terminal verification, and
+  closeout.
 
 ## Context
 
@@ -390,6 +395,19 @@ back around the new audit.
   only from the selected base commit and requires an exact
   `## Declared Write Set` heading. That is incompatible with a newly scaffolded
   package using the previously accepted `## Intended Write Set` spelling.
+- The first staged-light attempt stopped during preflight before any node spawn
+  because `CARGO_HOME`, `RUSTUP_HOME`, and `RUSTUP_TOOLCHAIN` were treated as
+  required even though Cargo and rustup define standard defaults. The durable
+  ledger records `TGCA-ENV-OPTIONAL-001`; the executor now projects optional
+  allowlisted variables when present while continuing to require `PATH`.
+- Planner/executor reconstruction takes roughly 60-90 seconds on this
+  worktree, materially more than any individual light node. This is retained
+  as timing evidence for follow-up qualification rather than hidden as test
+  time.
+- The first complete audit report correctly returned `BLOCKED` with nine
+  passing checks because the unchanged package path was absent from the exact
+  diff. Updating this progress record makes the package part of the terminal
+  authorization instead of weakening package admission.
 
 ## Decision Log
 

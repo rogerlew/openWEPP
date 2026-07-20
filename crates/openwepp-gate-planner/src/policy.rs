@@ -108,6 +108,7 @@ pub struct GateRegistry {
 pub struct GateDefinition {
     pub gate_definition_id: String,
     pub gate_family: String,
+    pub execution_cost_class: String,
     pub target_template: String,
     pub risk_classes: Vec<RiskClass>,
     pub executor: Value,

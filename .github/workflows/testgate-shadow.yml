@@ -117,6 +117,7 @@ jobs:
             --head "${{ steps.comparison.outputs.head }}" \
             --boundary INCREMENT \
             --artifact-root "${evidence_dir}" \
+            --history-ledger "${evidence_dir}/attempts.jsonl" \
             --job openwepp/execute-increment \
             --execute 2>"${orchestration_log}"
           testgate_status=$?
@@ -133,7 +134,7 @@ jobs:
           name: testgate-unsigned-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ env.TESTGATE_EXECUTION_ROOT }}/e
           if-no-files-found: error
-          retention-days: 7
+          retention-days: 30
 
   verify-increment:
     name: openwepp/verify-increment
@@ -153,6 +154,18 @@ jobs:
         with:
           name: testgate-unsigned-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/testgate-evidence
+      - name: Re-ingest and verify durable attempt index
+        env:
+          EVIDENCE_DIR: ${{ runner.temp }}/testgate-evidence
+        run: |
+          set -euo pipefail
+          jq -e '.schema_version == "openwepp-testgate-attempt-index-v1" and (.files | length > 0)' \
+            "${EVIDENCE_DIR}/attempt-index.json"
+          while IFS=$'\t' read -r expected relative; do
+            [[ "${relative}" != /* && "${relative}" != *..* ]]
+            actual="$(sha256sum "${EVIDENCE_DIR}/${relative}" | cut -d' ' -f1)"
+            [[ "${actual}" == "${expected}" ]]
+          done < <(jq -r '.files[] | [.sha256, .path] | @tsv' "${EVIDENCE_DIR}/attempt-index.json")
       - name: Checkout exact source for independent verification
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:

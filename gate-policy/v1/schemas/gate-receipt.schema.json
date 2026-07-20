@@ -4,79 +4,1437 @@
   "title": "openWEPP unsigned gate receipt v1",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "receipt_id", "plan_id", "plan_sha256", "execution_key", "boundary", "campaign_id", "source", "roots", "dag_sha256", "dag_nodes", "zero_work", "attempts", "planned_inventory", "executed_inventory", "tools", "environment", "started_at", "finished_at", "counts", "authority_outcomes", "artifacts", "unavailable_items", "source_mutation_check", "result", "claims"],
+  "required": [
+    "schema_version",
+    "receipt_id",
+    "plan_id",
+    "plan_sha256",
+    "execution_key",
+    "boundary",
+    "campaign_id",
+    "source",
+    "roots",
+    "dag_sha256",
+    "dag_nodes",
+    "zero_work",
+    "attempts",
+    "planned_inventory",
+    "executed_inventory",
+    "tools",
+    "environment",
+    "started_at",
+    "finished_at",
+    "counts",
+    "authority_outcomes",
+    "artifacts",
+    "unavailable_items",
+    "source_mutation_check",
+    "result",
+    "pre_heavy_audit",
+    "resume_decisions",
+    "claims"
+  ],
   "properties": {
-    "schema_version": { "const": "openwepp-gate-receipt-v1" },
-    "receipt_id": { "$ref": "#/$defs/digest" },
-    "plan_id": { "$ref": "#/$defs/digest" },
-    "plan_sha256": { "$ref": "#/$defs/digest" },
-    "execution_key": { "$ref": "#/$defs/digest" },
-    "boundary": { "enum": ["INCREMENT", "CHECKPOINT", "CAMPAIGN", "RELEASE"] },
-    "campaign_id": { "$ref": "#/$defs/nullableId" },
-    "source": { "$ref": "#/$defs/source" },
-    "roots": { "$ref": "#/$defs/roots" },
-    "dag_sha256": { "$ref": "#/$defs/digest" },
-    "dag_nodes": { "type": "array", "items": { "$ref": "#/$defs/dagNode" } },
-    "zero_work": { "type": "boolean" },
-    "attempts": { "type": "array", "items": { "$ref": "#/$defs/attempt" } },
-    "planned_inventory": { "$ref": "#/$defs/idList" },
-    "executed_inventory": { "$ref": "#/$defs/idList" },
-    "tools": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/tool" } },
-    "environment": { "$ref": "#/$defs/environment" },
-    "started_at": { "$ref": "#/$defs/timestamp" },
-    "finished_at": { "$ref": "#/$defs/timestamp" },
-    "counts": { "$ref": "#/$defs/counts" },
-    "authority_outcomes": { "type": "array", "items": { "$ref": "#/$defs/authorityOutcome" } },
-    "artifacts": { "type": "array", "items": { "$ref": "#/$defs/artifact" } },
-    "unavailable_items": { "type": "array", "items": { "$ref": "#/$defs/unavailable" } },
-    "source_mutation_check": { "$ref": "#/$defs/mutation" },
-    "result": { "enum": ["PASS", "PASS_WITH_RETRY", "FAIL", "BLOCKED", "INVALID"] },
-    "claims": { "$ref": "#/$defs/claims" }
+    "schema_version": {
+      "const": "openwepp-gate-receipt-v1"
+    },
+    "receipt_id": {
+      "$ref": "#/$defs/digest"
+    },
+    "plan_id": {
+      "$ref": "#/$defs/digest"
+    },
+    "plan_sha256": {
+      "$ref": "#/$defs/digest"
+    },
+    "execution_key": {
+      "$ref": "#/$defs/digest"
+    },
+    "boundary": {
+      "enum": [
+        "INCREMENT",
+        "CHECKPOINT",
+        "CAMPAIGN",
+        "RELEASE"
+      ]
+    },
+    "campaign_id": {
+      "$ref": "#/$defs/nullableId"
+    },
+    "source": {
+      "$ref": "#/$defs/source"
+    },
+    "roots": {
+      "$ref": "#/$defs/roots"
+    },
+    "dag_sha256": {
+      "$ref": "#/$defs/digest"
+    },
+    "dag_nodes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/dagNode"
+      }
+    },
+    "zero_work": {
+      "type": "boolean"
+    },
+    "attempts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/attempt"
+      }
+    },
+    "planned_inventory": {
+      "$ref": "#/$defs/idList"
+    },
+    "executed_inventory": {
+      "$ref": "#/$defs/idList"
+    },
+    "tools": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/tool"
+      }
+    },
+    "environment": {
+      "$ref": "#/$defs/environment"
+    },
+    "started_at": {
+      "$ref": "#/$defs/timestamp"
+    },
+    "finished_at": {
+      "$ref": "#/$defs/timestamp"
+    },
+    "counts": {
+      "$ref": "#/$defs/counts"
+    },
+    "authority_outcomes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/authorityOutcome"
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/artifact"
+      }
+    },
+    "unavailable_items": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/unavailable"
+      }
+    },
+    "source_mutation_check": {
+      "$ref": "#/$defs/mutation"
+    },
+    "result": {
+      "enum": [
+        "PASS",
+        "PASS_WITH_RETRY",
+        "FAIL",
+        "BLOCKED",
+        "INVALID"
+      ]
+    },
+    "pre_heavy_audit": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schema_version", "audit_id", "status", "reason_codes", "plan_id",
+            "plan_sha256", "execution_key", "light_stage_receipt_id",
+            "artifact_root_sha256", "ledger_path_sha256", "node_manifest",
+            "checks", "combined_execution", "light_receipt"
+          ],
+          "properties": {
+            "schema_version": {"const": "openwepp-pre-heavy-audit-v1"},
+            "audit_id": {"$ref": "#/$defs/digest"},
+            "status": {"enum": ["READY", "BLOCKED", "INVALID"]},
+            "reason_codes": {"type": "array"},
+            "plan_id": {"$ref": "#/$defs/digest"},
+            "plan_sha256": {"$ref": "#/$defs/digest"},
+            "execution_key": {"$ref": "#/$defs/digest"},
+            "light_stage_receipt_id": {"$ref": "#/$defs/digest"},
+            "artifact_root_sha256": {"$ref": "#/$defs/digest"},
+            "ledger_path_sha256": {"$ref": "#/$defs/digest"},
+            "node_manifest": {"type": "array"},
+            "checks": {"type": "array"},
+            "combined_execution": {"type": "object", "additionalProperties": {}},
+            "light_receipt": {"type": "object", "additionalProperties": {}}
+          }
+        },
+        {"type": "null"}
+      ]
+    },
+    "resume_decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["node_id", "prior_receipt_id", "decision", "reason_code"],
+        "properties": {
+          "node_id": {"$ref": "#/$defs/digest"},
+          "prior_receipt_id": {"$ref": "#/$defs/digest"},
+          "decision": {"enum": ["IMPORTED", "RERUN"]},
+          "reason_code": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "claims": {
+      "$ref": "#/$defs/claims"
+    }
   },
   "allOf": [
-    { "if": { "properties": { "zero_work": { "const": true } }, "required": ["zero_work"] }, "then": { "properties": { "dag_nodes": { "maxItems": 0 }, "attempts": { "maxItems": 0 }, "planned_inventory": { "maxItems": 0 }, "executed_inventory": { "maxItems": 0 } } }, "else": { "properties": { "dag_nodes": { "minItems": 1 }, "attempts": { "minItems": 1 }, "planned_inventory": { "minItems": 1 } } } },
-    { "if": { "properties": { "result": { "enum": ["PASS", "PASS_WITH_RETRY"] } }, "required": ["result"] }, "then": { "properties": { "counts": { "properties": { "failed": { "const": 0 }, "blocked": { "const": 0 } } }, "source_mutation_check": { "properties": { "unchanged": { "const": true } } } } } },
-    { "if": { "properties": { "zero_work": { "const": false }, "result": { "enum": ["PASS", "PASS_WITH_RETRY"] } }, "required": ["zero_work", "result"] }, "then": { "properties": { "executed_inventory": { "minItems": 1 } } } },
-    { "if": { "properties": { "result": { "const": "PASS" } }, "required": ["result"] }, "then": { "properties": { "counts": { "properties": { "retried": { "const": 0 } } } } } },
-    { "if": { "properties": { "result": { "const": "PASS_WITH_RETRY" } }, "required": ["result"] }, "then": { "properties": { "counts": { "properties": { "retried": { "minimum": 1 } } } } } }
+    {
+      "if": {
+        "properties": {
+          "zero_work": {
+            "const": true
+          }
+        },
+        "required": [
+          "zero_work"
+        ]
+      },
+      "then": {
+        "properties": {
+          "dag_nodes": {
+            "maxItems": 0
+          },
+          "attempts": {
+            "maxItems": 0
+          },
+          "planned_inventory": {
+            "maxItems": 0
+          },
+          "executed_inventory": {
+            "maxItems": 0
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "dag_nodes": {
+            "minItems": 1
+          },
+          "attempts": {
+            "minItems": 1
+          },
+          "planned_inventory": {
+            "minItems": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "result": {
+            "enum": [
+              "PASS",
+              "PASS_WITH_RETRY"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "then": {
+        "properties": {
+          "counts": {
+            "properties": {
+              "failed": {
+                "const": 0
+              },
+              "blocked": {
+                "const": 0
+              }
+            }
+          },
+          "source_mutation_check": {
+            "properties": {
+              "unchanged": {
+                "const": true
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "zero_work": {
+            "const": false
+          },
+          "result": {
+            "enum": [
+              "PASS",
+              "PASS_WITH_RETRY"
+            ]
+          }
+        },
+        "required": [
+          "zero_work",
+          "result"
+        ]
+      },
+      "then": {
+        "properties": {
+          "executed_inventory": {
+            "minItems": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "result": {
+            "const": "PASS"
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "then": {
+        "properties": {
+          "counts": {
+            "properties": {
+              "retried": {
+                "const": 0
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "result": {
+            "const": "PASS_WITH_RETRY"
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "then": {
+        "properties": {
+          "counts": {
+            "properties": {
+              "retried": {
+                "minimum": 1
+              }
+            }
+          }
+        }
+      }
+    }
   ],
   "$defs": {
-    "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:/@-]*$" },
-    "digest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
-    "gitOid": { "type": "string", "pattern": "^[0-9a-f]{40}([0-9a-f]{24})?$" },
-    "nullableDigest": { "oneOf": [{ "$ref": "#/$defs/digest" }, { "type": "null" }] },
-    "nullableGitOid": { "oneOf": [{ "$ref": "#/$defs/gitOid" }, { "type": "null" }] },
-    "nullableId": { "oneOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }] },
-    "timestamp": { "type": "string", "format": "date-time" },
-    "path": { "type": "string", "minLength": 1, "pattern": "^[^/]", "not": { "pattern": "(^|/)\\.{1,2}(/|$)" } },
-    "idList": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/id" } },
-    "source": { "type": "object", "additionalProperties": false, "required": ["base_commit", "head_commit", "tree_sha256", "dirty_tree_digest"], "properties": { "base_commit": { "$ref": "#/$defs/gitOid" }, "head_commit": { "$ref": "#/$defs/nullableGitOid" }, "tree_sha256": { "$ref": "#/$defs/digest" }, "dirty_tree_digest": { "$ref": "#/$defs/nullableDigest" } } },
-    "roots": { "type": "object", "additionalProperties": false, "required": ["execution_root", "authority_root", "documentation_root", "assurance_root"], "properties": { "execution_root": { "$ref": "#/$defs/digest" }, "authority_root": { "$ref": "#/$defs/digest" }, "documentation_root": { "$ref": "#/$defs/digest" }, "assurance_root": { "$ref": "#/$defs/nullableDigest" } } },
-    "dagNode": { "type": "object", "additionalProperties": false, "required": ["node_id", "plan_node_sha256", "gate_definition_id", "gate_family", "target", "features", "authority_class", "outcome_policy", "failure_classification", "owner", "investigation_owner", "boundary", "trust_requirement", "reuse_class", "executor", "arguments", "working_directory", "environment_allowlist", "prerequisites", "expected_inventory", "acceptance", "timeout_seconds", "retry", "artifact_contract", "output_paths", "blocks_transition", "identity_breakers", "matrix", "shard"], "properties": { "node_id": { "$ref": "#/$defs/digest" }, "plan_node_sha256": { "$ref": "#/$defs/digest" }, "gate_definition_id": { "$ref": "#/$defs/id" }, "gate_family": { "$ref": "#/$defs/id" }, "target": { "$ref": "#/$defs/id" }, "features": { "$ref": "#/$defs/idList" }, "authority_class": { "enum": ["A0", "A1", "A2", "A3", "A4", "A5", "A6", "NONE"] }, "outcome_policy": { "enum": ["BLOCKING", "INVESTIGATION"] }, "failure_classification": { "enum": ["HARD_FAIL", "INVESTIGATION"] }, "owner": { "$ref": "#/$defs/id" }, "investigation_owner": { "$ref": "#/$defs/id" }, "boundary": { "enum": ["INCREMENT", "CHECKPOINT", "CAMPAIGN", "RELEASE"] }, "trust_requirement": { "enum": ["LOCAL_UNTRUSTED", "REPOSITORY_REVIEWED", "PROTECTED_CI"] }, "reuse_class": { "enum": ["NON_REUSABLE", "SAME_EXECUTION", "HERMETIC_CONTENT"] }, "executor": { "$ref": "#/$defs/executor" }, "arguments": { "type": "array", "minItems": 1, "items": { "type": "string" } }, "working_directory": { "$ref": "#/$defs/pathOrDot" }, "environment_allowlist": { "$ref": "#/$defs/idList" }, "prerequisites": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/digest" } }, "expected_inventory": { "$ref": "#/$defs/expectedInventory" }, "acceptance": { "$ref": "#/$defs/predicate" }, "timeout_seconds": { "type": "integer", "minimum": 1 }, "retry": { "$ref": "#/$defs/retry" }, "artifact_contract": { "$ref": "#/$defs/id" }, "output_paths": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/path" } }, "blocks_transition": { "enum": ["INCREMENT", "CHECKPOINT", "CAMPAIGN", "RELEASE"] }, "identity_breakers": { "$ref": "#/$defs/idList" }, "matrix": { "type": "object", "additionalProperties": { "type": "string" } }, "shard": { "$ref": "#/$defs/shard" } } },
-    "pathOrDot": { "oneOf": [{ "const": "." }, { "$ref": "#/$defs/path" }] },
-    "executor": { "type": "object", "additionalProperties": false, "required": ["kind", "version", "adapter_sha256"], "properties": { "kind": { "enum": ["PROCESS_V1", "NEXTEST_V1", "SCHEMA_V1", "LEGACY_ADAPTER_V1"] }, "version": { "$ref": "#/$defs/id" }, "adapter_sha256": { "$ref": "#/$defs/nullableDigest" } }, "allOf": [{ "if": { "properties": { "kind": { "const": "LEGACY_ADAPTER_V1" } } }, "then": { "properties": { "adapter_sha256": { "$ref": "#/$defs/digest" } } }, "else": { "properties": { "adapter_sha256": { "type": "null" } } } }] },
-    "expectedInventory": { "type": "object", "additionalProperties": false, "required": ["mode", "ids", "minimum_count"], "properties": { "mode": { "enum": ["EXACT", "SUBSET", "SUPERSET"] }, "ids": { "$ref": "#/$defs/idList" }, "minimum_count": { "type": "integer", "minimum": 0 } } },
-    "predicate": { "oneOf": [
-      { "type": "object", "additionalProperties": false, "required": ["kind", "operator", "expected", "children"], "properties": { "kind": { "const": "EXIT_CODE" }, "operator": { "const": "EQUALS" }, "expected": { "type": "integer" }, "children": { "type": "array", "maxItems": 0 } } },
-      { "type": "object", "additionalProperties": false, "required": ["kind", "operator", "expected", "children"], "properties": { "kind": { "const": "INVENTORY" }, "operator": { "enum": ["EQUALS", "SUBSET", "SUPERSET"] }, "expected": { "$ref": "#/$defs/idList" }, "children": { "type": "array", "maxItems": 0 } } },
-      { "type": "object", "additionalProperties": false, "required": ["kind", "operator", "expected", "children"], "properties": { "kind": { "const": "COUNT" }, "operator": { "enum": ["EQUALS", "RANGE", "AT_LEAST", "AT_MOST"] }, "expected": { "type": "object", "additionalProperties": false, "required": ["minimum", "maximum"], "properties": { "minimum": { "type": "integer", "minimum": 0 }, "maximum": { "type": ["integer", "null"], "minimum": 0 } } }, "children": { "type": "array", "maxItems": 0 } } },
-      { "type": "object", "additionalProperties": false, "required": ["kind", "operator", "expected", "children"], "properties": { "kind": { "const": "NUMERIC_THRESHOLD" }, "operator": { "enum": ["EQUALS", "AT_LEAST", "AT_MOST"] }, "expected": { "type": "integer", "minimum": -9007199254740991, "maximum": 9007199254740991 }, "children": { "type": "array", "maxItems": 0 } } },
-      { "type": "object", "additionalProperties": false, "required": ["kind", "operator", "expected", "children"], "properties": { "kind": { "const": "NUMERIC_RANGE" }, "operator": { "const": "RANGE" }, "expected": { "type": "object", "additionalProperties": false, "required": ["minimum", "maximum"], "properties": { "minimum": { "type": "integer", "minimum": -9007199254740991, "maximum": 9007199254740991 }, "maximum": { "type": "integer", "minimum": -9007199254740991, "maximum": 9007199254740991 } } }, "children": { "type": "array", "maxItems": 0 } } },
-      { "type": "object", "additionalProperties": false, "required": ["kind", "operator", "expected", "children"], "properties": { "kind": { "const": "ARTIFACT" }, "operator": { "const": "PRESENT" }, "expected": { "$ref": "#/$defs/id" }, "children": { "type": "array", "maxItems": 0 } } },
-      { "type": "object", "additionalProperties": false, "required": ["kind", "operator", "expected", "children"], "properties": { "kind": { "const": "SCHEMA" }, "operator": { "const": "VALID" }, "expected": { "$ref": "#/$defs/id" }, "children": { "type": "array", "maxItems": 0 } } },
-      { "type": "object", "additionalProperties": false, "required": ["kind", "operator", "expected", "children"], "properties": { "kind": { "const": "REGISTERED_COMPARATOR" }, "operator": { "const": "EQUALS" }, "expected": { "$ref": "#/$defs/id" }, "children": { "type": "array", "maxItems": 0 } } },
-      { "type": "object", "additionalProperties": false, "required": ["kind", "operator", "expected", "children"], "properties": { "kind": { "const": "BOOLEAN" }, "operator": { "enum": ["ALL", "ANY"] }, "expected": { "type": "null" }, "children": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/predicate" } } } }
-    ] },
-    "retry": { "type": "object", "additionalProperties": false, "required": ["maximum_attempts", "permitted_reasons"], "properties": { "maximum_attempts": { "type": "integer", "minimum": 1 }, "permitted_reasons": { "$ref": "#/$defs/idList" } } },
-    "shard": { "type": "object", "additionalProperties": false, "required": ["index", "total"], "properties": { "index": { "type": "integer", "minimum": 0 }, "total": { "type": "integer", "minimum": 1 } } },
-    "attempt": { "type": "object", "additionalProperties": false, "required": ["node_id", "attempt", "arguments", "started_at", "finished_at", "exit_code", "termination_signal", "result", "retry_reason"], "properties": { "node_id": { "$ref": "#/$defs/digest" }, "attempt": { "type": "integer", "minimum": 1 }, "arguments": { "type": "array", "minItems": 1, "items": { "type": "string" } }, "started_at": { "$ref": "#/$defs/timestamp" }, "finished_at": { "$ref": "#/$defs/timestamp" }, "exit_code": { "type": ["integer", "null"] }, "termination_signal": { "type": ["integer", "null"], "minimum": 1 }, "result": { "enum": ["PASS", "FAIL", "BLOCKED", "INVALID"] }, "retry_reason": { "$ref": "#/$defs/nullableId" } } },
-    "tool": { "type": "object", "additionalProperties": false, "required": ["tool_id", "version", "sha256"], "properties": { "tool_id": { "$ref": "#/$defs/id" }, "version": { "$ref": "#/$defs/id" }, "sha256": { "$ref": "#/$defs/digest" } } },
-    "environment": { "type": "object", "additionalProperties": false, "required": ["platform", "target_triple", "compiler", "features", "variables_sha256", "runner_image_sha256"], "properties": { "platform": { "$ref": "#/$defs/id" }, "target_triple": { "$ref": "#/$defs/id" }, "compiler": { "$ref": "#/$defs/id" }, "features": { "$ref": "#/$defs/idList" }, "variables_sha256": { "$ref": "#/$defs/digest" }, "runner_image_sha256": { "$ref": "#/$defs/nullableDigest" } } },
-    "counts": { "type": "object", "additionalProperties": false, "required": ["passed", "failed", "skipped", "blocked", "retried"], "properties": { "passed": { "type": "integer", "minimum": 0 }, "failed": { "type": "integer", "minimum": 0 }, "skipped": { "type": "integer", "minimum": 0 }, "blocked": { "type": "integer", "minimum": 0 }, "retried": { "type": "integer", "minimum": 0 } } },
-    "authorityOutcome": { "type": "object", "additionalProperties": false, "required": ["gate_id", "authority_class", "execution_integrity", "admission_outcome", "scientific_outcome", "outcome_policy_generation", "investigation_record_id"], "properties": { "gate_id": { "$ref": "#/$defs/id" }, "authority_class": { "enum": ["A0", "A1", "A2", "A3", "A4", "A5", "A6", "NONE"] }, "execution_integrity": { "enum": ["PASS", "PASS_WITH_RETRY", "FAIL", "BLOCKED", "INVALID"] }, "admission_outcome": { "oneOf": [{ "enum": ["ADMITTED", "REJECTED", "BLOCKED", "INVALID"] }, { "type": "null" }] }, "scientific_outcome": { "oneOf": [{ "enum": ["CONFORMS", "DIVERGES", "INCONCLUSIVE", "NOT_EVALUATED"] }, { "type": "null" }] }, "outcome_policy_generation": { "type": "integer", "minimum": 1 }, "investigation_record_id": { "$ref": "#/$defs/nullableId" } }, "allOf": [{ "if": { "properties": { "authority_class": { "const": "A0" } } }, "then": { "properties": { "admission_outcome": { "enum": ["ADMITTED", "REJECTED", "BLOCKED", "INVALID"] }, "scientific_outcome": { "type": "null" } } }, "else": { "properties": { "admission_outcome": { "type": "null" } } } }, { "if": { "properties": { "authority_class": { "const": "NONE" } } }, "then": { "properties": { "scientific_outcome": { "type": "null" } } } }] },
-    "artifact": { "type": "object", "additionalProperties": false, "required": ["artifact_id", "kind", "path", "sha256"], "properties": { "artifact_id": { "$ref": "#/$defs/id" }, "kind": { "enum": ["JUNIT", "LCOV", "CRAP", "COMPARATOR", "RECONSTRUCTION", "SCHEMA", "LOG", "OTHER"] }, "path": { "$ref": "#/$defs/path" }, "sha256": { "$ref": "#/$defs/digest" } } },
-    "unavailable": { "type": "object", "additionalProperties": false, "required": ["item_id", "reason_code", "policy_disposition"], "properties": { "item_id": { "$ref": "#/$defs/id" }, "reason_code": { "$ref": "#/$defs/id" }, "policy_disposition": { "enum": ["BLOCK", "CONFIGURED_SKIP", "INVESTIGATION"] } } },
-    "mutation": { "type": "object", "additionalProperties": false, "required": ["required", "before_sha256", "after_sha256", "unchanged"], "properties": { "required": { "type": "boolean" }, "before_sha256": { "$ref": "#/$defs/digest" }, "after_sha256": { "$ref": "#/$defs/digest" }, "unchanged": { "type": "boolean" } } },
-    "claims": { "type": "object", "additionalProperties": false, "required": ["trust_class", "principal", "repository", "source_event", "source_ref", "workflow", "job", "runner", "attempt"], "properties": { "trust_class": { "enum": ["LOCAL_UNTRUSTED", "REPOSITORY_REVIEWED", "PROTECTED_CI"] }, "principal": { "$ref": "#/$defs/id" }, "repository": { "$ref": "#/$defs/id" }, "source_event": { "$ref": "#/$defs/id" }, "source_ref": { "$ref": "#/$defs/id" }, "workflow": { "$ref": "#/$defs/id" }, "job": { "$ref": "#/$defs/id" }, "runner": { "$ref": "#/$defs/id" }, "attempt": { "type": "integer", "minimum": 1 } } }
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:/@-]*$"
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "gitOid": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}([0-9a-f]{24})?$"
+    },
+    "nullableDigest": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/digest"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "nullableGitOid": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/gitOid"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "nullableId": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/id"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "path": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[^/]",
+      "not": {
+        "pattern": "(^|/)\\.{1,2}(/|$)"
+      }
+    },
+    "idList": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/id"
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "base_commit",
+        "head_commit",
+        "tree_sha256",
+        "dirty_tree_digest"
+      ],
+      "properties": {
+        "base_commit": {
+          "$ref": "#/$defs/gitOid"
+        },
+        "head_commit": {
+          "$ref": "#/$defs/nullableGitOid"
+        },
+        "tree_sha256": {
+          "$ref": "#/$defs/digest"
+        },
+        "dirty_tree_digest": {
+          "$ref": "#/$defs/nullableDigest"
+        }
+      }
+    },
+    "roots": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "execution_root",
+        "authority_root",
+        "documentation_root",
+        "assurance_root"
+      ],
+      "properties": {
+        "execution_root": {
+          "$ref": "#/$defs/digest"
+        },
+        "authority_root": {
+          "$ref": "#/$defs/digest"
+        },
+        "documentation_root": {
+          "$ref": "#/$defs/digest"
+        },
+        "assurance_root": {
+          "$ref": "#/$defs/nullableDigest"
+        }
+      }
+    },
+    "dagNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "node_id",
+        "plan_node_sha256",
+        "gate_definition_id",
+        "gate_family",
+        "execution_cost_class",
+        "target",
+        "features",
+        "authority_class",
+        "outcome_policy",
+        "failure_classification",
+        "owner",
+        "investigation_owner",
+        "boundary",
+        "trust_requirement",
+        "reuse_class",
+        "executor",
+        "arguments",
+        "working_directory",
+        "environment_allowlist",
+        "prerequisites",
+        "expected_inventory",
+        "acceptance",
+        "timeout_seconds",
+        "retry",
+        "artifact_contract",
+        "output_paths",
+        "blocks_transition",
+        "identity_breakers",
+        "matrix",
+        "shard"
+      ],
+      "properties": {
+        "node_id": {
+          "$ref": "#/$defs/digest"
+        },
+        "plan_node_sha256": {
+          "$ref": "#/$defs/digest"
+        },
+        "gate_definition_id": {
+          "$ref": "#/$defs/id"
+        },
+        "gate_family": {
+          "$ref": "#/$defs/id"
+        },
+        "execution_cost_class": {
+          "enum": [
+            "LIGHT",
+            "HEAVY"
+          ]
+        },
+        "target": {
+          "$ref": "#/$defs/id"
+        },
+        "features": {
+          "$ref": "#/$defs/idList"
+        },
+        "authority_class": {
+          "enum": [
+            "A0",
+            "A1",
+            "A2",
+            "A3",
+            "A4",
+            "A5",
+            "A6",
+            "NONE"
+          ]
+        },
+        "outcome_policy": {
+          "enum": [
+            "BLOCKING",
+            "INVESTIGATION"
+          ]
+        },
+        "failure_classification": {
+          "enum": [
+            "HARD_FAIL",
+            "INVESTIGATION"
+          ]
+        },
+        "owner": {
+          "$ref": "#/$defs/id"
+        },
+        "investigation_owner": {
+          "$ref": "#/$defs/id"
+        },
+        "boundary": {
+          "enum": [
+            "INCREMENT",
+            "CHECKPOINT",
+            "CAMPAIGN",
+            "RELEASE"
+          ]
+        },
+        "trust_requirement": {
+          "enum": [
+            "LOCAL_UNTRUSTED",
+            "REPOSITORY_REVIEWED",
+            "PROTECTED_CI"
+          ]
+        },
+        "reuse_class": {
+          "enum": [
+            "NON_REUSABLE",
+            "SAME_EXECUTION",
+            "HERMETIC_CONTENT"
+          ]
+        },
+        "executor": {
+          "$ref": "#/$defs/executor"
+        },
+        "arguments": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "working_directory": {
+          "$ref": "#/$defs/pathOrDot"
+        },
+        "environment_allowlist": {
+          "$ref": "#/$defs/idList"
+        },
+        "prerequisites": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/digest"
+          }
+        },
+        "expected_inventory": {
+          "$ref": "#/$defs/expectedInventory"
+        },
+        "acceptance": {
+          "$ref": "#/$defs/predicate"
+        },
+        "timeout_seconds": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "retry": {
+          "$ref": "#/$defs/retry"
+        },
+        "artifact_contract": {
+          "$ref": "#/$defs/id"
+        },
+        "output_paths": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/path"
+          }
+        },
+        "blocks_transition": {
+          "enum": [
+            "INCREMENT",
+            "CHECKPOINT",
+            "CAMPAIGN",
+            "RELEASE"
+          ]
+        },
+        "identity_breakers": {
+          "$ref": "#/$defs/idList"
+        },
+        "matrix": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "shard": {
+          "$ref": "#/$defs/shard"
+        }
+      }
+    },
+    "pathOrDot": {
+      "oneOf": [
+        {
+          "const": "."
+        },
+        {
+          "$ref": "#/$defs/path"
+        }
+      ]
+    },
+    "executor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "version",
+        "adapter_sha256"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "PROCESS_V1",
+            "NEXTEST_V1",
+            "SCHEMA_V1",
+            "LEGACY_ADAPTER_V1"
+          ]
+        },
+        "version": {
+          "$ref": "#/$defs/id"
+        },
+        "adapter_sha256": {
+          "$ref": "#/$defs/nullableDigest"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "LEGACY_ADAPTER_V1"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "adapter_sha256": {
+                "$ref": "#/$defs/digest"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "adapter_sha256": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "expectedInventory": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "ids",
+        "minimum_count"
+      ],
+      "properties": {
+        "mode": {
+          "enum": [
+            "EXACT",
+            "SUBSET",
+            "SUPERSET"
+          ]
+        },
+        "ids": {
+          "$ref": "#/$defs/idList"
+        },
+        "minimum_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "predicate": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "operator",
+            "expected",
+            "children"
+          ],
+          "properties": {
+            "kind": {
+              "const": "EXIT_CODE"
+            },
+            "operator": {
+              "const": "EQUALS"
+            },
+            "expected": {
+              "type": "integer"
+            },
+            "children": {
+              "type": "array",
+              "maxItems": 0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "operator",
+            "expected",
+            "children"
+          ],
+          "properties": {
+            "kind": {
+              "const": "INVENTORY"
+            },
+            "operator": {
+              "enum": [
+                "EQUALS",
+                "SUBSET",
+                "SUPERSET"
+              ]
+            },
+            "expected": {
+              "$ref": "#/$defs/idList"
+            },
+            "children": {
+              "type": "array",
+              "maxItems": 0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "operator",
+            "expected",
+            "children"
+          ],
+          "properties": {
+            "kind": {
+              "const": "COUNT"
+            },
+            "operator": {
+              "enum": [
+                "EQUALS",
+                "RANGE",
+                "AT_LEAST",
+                "AT_MOST"
+              ]
+            },
+            "expected": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "minimum",
+                "maximum"
+              ],
+              "properties": {
+                "minimum": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "maximum": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0
+                }
+              }
+            },
+            "children": {
+              "type": "array",
+              "maxItems": 0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "operator",
+            "expected",
+            "children"
+          ],
+          "properties": {
+            "kind": {
+              "const": "NUMERIC_THRESHOLD"
+            },
+            "operator": {
+              "enum": [
+                "EQUALS",
+                "AT_LEAST",
+                "AT_MOST"
+              ]
+            },
+            "expected": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "children": {
+              "type": "array",
+              "maxItems": 0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "operator",
+            "expected",
+            "children"
+          ],
+          "properties": {
+            "kind": {
+              "const": "NUMERIC_RANGE"
+            },
+            "operator": {
+              "const": "RANGE"
+            },
+            "expected": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "minimum",
+                "maximum"
+              ],
+              "properties": {
+                "minimum": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "maximum": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              }
+            },
+            "children": {
+              "type": "array",
+              "maxItems": 0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "operator",
+            "expected",
+            "children"
+          ],
+          "properties": {
+            "kind": {
+              "const": "ARTIFACT"
+            },
+            "operator": {
+              "const": "PRESENT"
+            },
+            "expected": {
+              "$ref": "#/$defs/id"
+            },
+            "children": {
+              "type": "array",
+              "maxItems": 0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "operator",
+            "expected",
+            "children"
+          ],
+          "properties": {
+            "kind": {
+              "const": "SCHEMA"
+            },
+            "operator": {
+              "const": "VALID"
+            },
+            "expected": {
+              "$ref": "#/$defs/id"
+            },
+            "children": {
+              "type": "array",
+              "maxItems": 0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "operator",
+            "expected",
+            "children"
+          ],
+          "properties": {
+            "kind": {
+              "const": "REGISTERED_COMPARATOR"
+            },
+            "operator": {
+              "const": "EQUALS"
+            },
+            "expected": {
+              "$ref": "#/$defs/id"
+            },
+            "children": {
+              "type": "array",
+              "maxItems": 0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "operator",
+            "expected",
+            "children"
+          ],
+          "properties": {
+            "kind": {
+              "const": "BOOLEAN"
+            },
+            "operator": {
+              "enum": [
+                "ALL",
+                "ANY"
+              ]
+            },
+            "expected": {
+              "type": "null"
+            },
+            "children": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/predicate"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "retry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "maximum_attempts",
+        "permitted_reasons"
+      ],
+      "properties": {
+        "maximum_attempts": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "permitted_reasons": {
+          "$ref": "#/$defs/idList"
+        }
+      }
+    },
+    "shard": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "index",
+        "total"
+      ],
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "attempt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "node_id",
+        "attempt",
+        "arguments",
+        "started_at",
+        "finished_at",
+        "exit_code",
+        "termination_signal",
+        "result",
+        "retry_reason"
+      ],
+      "properties": {
+        "node_id": {
+          "$ref": "#/$defs/digest"
+        },
+        "attempt": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "arguments": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "started_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "finished_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "exit_code": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "termination_signal": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "result": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "BLOCKED",
+            "INVALID"
+          ]
+        },
+        "retry_reason": {
+          "$ref": "#/$defs/nullableId"
+        }
+      }
+    },
+    "tool": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tool_id",
+        "version",
+        "sha256"
+      ],
+      "properties": {
+        "tool_id": {
+          "$ref": "#/$defs/id"
+        },
+        "version": {
+          "$ref": "#/$defs/id"
+        },
+        "sha256": {
+          "$ref": "#/$defs/digest"
+        }
+      }
+    },
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "platform",
+        "target_triple",
+        "compiler",
+        "features",
+        "variables_sha256",
+        "runner_image_sha256"
+      ],
+      "properties": {
+        "platform": {
+          "$ref": "#/$defs/id"
+        },
+        "target_triple": {
+          "$ref": "#/$defs/id"
+        },
+        "compiler": {
+          "$ref": "#/$defs/id"
+        },
+        "features": {
+          "$ref": "#/$defs/idList"
+        },
+        "variables_sha256": {
+          "$ref": "#/$defs/digest"
+        },
+        "runner_image_sha256": {
+          "$ref": "#/$defs/nullableDigest"
+        }
+      }
+    },
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "passed",
+        "failed",
+        "skipped",
+        "blocked",
+        "retried"
+      ],
+      "properties": {
+        "passed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "failed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "skipped": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "blocked": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "retried": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "authorityOutcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "gate_id",
+        "authority_class",
+        "execution_integrity",
+        "admission_outcome",
+        "scientific_outcome",
+        "outcome_policy_generation",
+        "investigation_record_id"
+      ],
+      "properties": {
+        "gate_id": {
+          "$ref": "#/$defs/id"
+        },
+        "authority_class": {
+          "enum": [
+            "A0",
+            "A1",
+            "A2",
+            "A3",
+            "A4",
+            "A5",
+            "A6",
+            "NONE"
+          ]
+        },
+        "execution_integrity": {
+          "enum": [
+            "PASS",
+            "PASS_WITH_RETRY",
+            "FAIL",
+            "BLOCKED",
+            "INVALID"
+          ]
+        },
+        "admission_outcome": {
+          "oneOf": [
+            {
+              "enum": [
+                "ADMITTED",
+                "REJECTED",
+                "BLOCKED",
+                "INVALID"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "scientific_outcome": {
+          "oneOf": [
+            {
+              "enum": [
+                "CONFORMS",
+                "DIVERGES",
+                "INCONCLUSIVE",
+                "NOT_EVALUATED"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "outcome_policy_generation": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "investigation_record_id": {
+          "$ref": "#/$defs/nullableId"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "authority_class": {
+                "const": "A0"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "admission_outcome": {
+                "enum": [
+                  "ADMITTED",
+                  "REJECTED",
+                  "BLOCKED",
+                  "INVALID"
+                ]
+              },
+              "scientific_outcome": {
+                "type": "null"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "admission_outcome": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "authority_class": {
+                "const": "NONE"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "scientific_outcome": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_id",
+        "kind",
+        "path",
+        "sha256"
+      ],
+      "properties": {
+        "artifact_id": {
+          "$ref": "#/$defs/id"
+        },
+        "kind": {
+          "enum": [
+            "JUNIT",
+            "LCOV",
+            "CRAP",
+            "COMPARATOR",
+            "RECONSTRUCTION",
+            "SCHEMA",
+            "LOG",
+            "OTHER"
+          ]
+        },
+        "path": {
+          "$ref": "#/$defs/path"
+        },
+        "sha256": {
+          "$ref": "#/$defs/digest"
+        }
+      }
+    },
+    "unavailable": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "item_id",
+        "reason_code",
+        "policy_disposition"
+      ],
+      "properties": {
+        "item_id": {
+          "$ref": "#/$defs/id"
+        },
+        "reason_code": {
+          "$ref": "#/$defs/id"
+        },
+        "policy_disposition": {
+          "enum": [
+            "BLOCK",
+            "CONFIGURED_SKIP",
+            "INVESTIGATION"
+          ]
+        }
+      }
+    },
+    "mutation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "required",
+        "before_sha256",
+        "after_sha256",
+        "unchanged"
+      ],
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "before_sha256": {
+          "$ref": "#/$defs/digest"
+        },
+        "after_sha256": {
+          "$ref": "#/$defs/digest"
+        },
+        "unchanged": {
+          "type": "boolean"
+        }
+      }
+    },
+    "claims": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "trust_class",
+        "principal",
+        "repository",
+        "source_event",
+        "source_ref",
+        "workflow",
+        "job",
+        "runner",
+        "attempt"
+      ],
+      "properties": {
+        "trust_class": {
+          "enum": [
+            "LOCAL_UNTRUSTED",
+            "REPOSITORY_REVIEWED",
+            "PROTECTED_CI"
+          ]
+        },
+        "principal": {
+          "$ref": "#/$defs/id"
+        },
+        "repository": {
+          "$ref": "#/$defs/id"
+        },
+        "source_event": {
+          "$ref": "#/$defs/id"
+        },
+        "source_ref": {
+          "$ref": "#/$defs/id"
+        },
+        "workflow": {
+          "$ref": "#/$defs/id"
+        },
+        "job": {
+          "$ref": "#/$defs/id"
+        },
+        "runner": {
+          "$ref": "#/$defs/id"
+        },
+        "attempt": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    }
   }
 }

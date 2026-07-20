@@ -917,6 +917,7 @@ impl<P: InventoryProvider> Planner<P> {
                     "node_id": "0000000000000000000000000000000000000000000000000000000000000000",
                     "gate_definition_id": definition.gate_definition_id,
                     "gate_family": definition.gate_family,
+                    "execution_cost_class": definition.execution_cost_class,
                     "target": target,
                     "features": ["default"],
                     "authority_class": definition.authority_class,

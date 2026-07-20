@@ -15,9 +15,12 @@ mod execution_context;
 pub mod executor;
 pub mod ledger;
 mod nextest_inventory;
+pub mod package_validation;
 pub mod planner;
 pub mod policy;
+pub mod pre_heavy;
 pub mod repository;
+pub mod resume;
 pub mod verifier;
 
 pub use error::{ErrorClass, GatePolicyError, Result};

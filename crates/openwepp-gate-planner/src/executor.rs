@@ -18,7 +18,9 @@ use crate::planner::{
     environment_record, inventory_for_node, manifest_roots, reconstruct_plan_in, tool_records,
     verify_plan_identity,
 };
+use crate::pre_heavy::validate_audit;
 use crate::repository::observe_dirty;
+use crate::resume::{ResumeCandidate, apply_candidate};
 
 /// Provenance labels for a local, unsigned execution receipt.
 #[derive(Debug, Clone)]
@@ -69,6 +71,59 @@ struct ExecutionRecord {
     attempts: Vec<Value>,
     executed_inventory: BTreeSet<String>,
     unavailable: BTreeMap<String, String>,
+    resume_decisions: Vec<Value>,
+}
+
+impl ExecutionRecord {
+    fn empty() -> Self {
+        Self {
+            final_results: BTreeMap::new(),
+            attempts: Vec::new(),
+            executed_inventory: BTreeSet::new(),
+            unavailable: BTreeMap::new(),
+            resume_decisions: Vec::new(),
+        }
+    }
+
+    fn from_stage_receipt(receipt: &Value) -> Result<Self> {
+        let final_results = receipt["final_results"]
+            .as_object()
+            .ok_or_else(|| execution_error("GATE-EXEC-STAGE-RECEIPT", "final_results"))?
+            .iter()
+            .map(|(node_id, result)| {
+                result
+                    .as_str()
+                    .map(|value| (node_id.clone(), value.to_owned()))
+                    .ok_or_else(|| execution_error("GATE-EXEC-STAGE-RECEIPT", "non-string result"))
+            })
+            .collect::<Result<BTreeMap<_, _>>>()?;
+        let attempts = receipt["attempts"]
+            .as_array()
+            .cloned()
+            .ok_or_else(|| execution_error("GATE-EXEC-STAGE-RECEIPT", "attempts"))?;
+        let executed_inventory =
+            string_array(&receipt["executed_inventory"], "stage executed inventory")?
+                .into_iter()
+                .collect();
+        let unavailable = receipt["unavailable_items"]
+            .as_array()
+            .ok_or_else(|| execution_error("GATE-EXEC-STAGE-RECEIPT", "unavailable_items"))?
+            .iter()
+            .map(|item| {
+                Ok((
+                    required_string(item, "item_id")?.to_owned(),
+                    required_string(item, "reason_code")?.to_owned(),
+                ))
+            })
+            .collect::<Result<BTreeMap<_, _>>>()?;
+        Ok(Self {
+            final_results,
+            attempts,
+            executed_inventory,
+            unavailable,
+            resume_decisions: Vec::new(),
+        })
+    }
 }
 
 /// Execute a terminal plan and construct an unsigned local receipt.
@@ -89,6 +144,33 @@ pub fn execute_plan(
     artifact_root: &Path,
     claims: &ExecutionClaims,
 ) -> Result<Value> {
+    if has_cost_class(plan, "HEAVY")? {
+        return Err(execution_error(
+            "GATE-EXEC-HEAVY-REQUIRES-AUDIT",
+            "a plan containing HEAVY nodes must use the staged executor",
+        ));
+    }
+    execute_plan_stage(repo, plan, artifact_root, claims, "FINAL_LIGHT", None, None)
+}
+
+/// Execute exactly one authenticated stage of a terminal plan.
+///
+/// LIGHT returns a frozen stage receipt. HEAVY requires the exact READY audit,
+/// imports its successful light prefix, and returns the ordinary final receipt.
+///
+/// # Errors
+///
+/// Returns a typed execution error for an unknown stage, invalid audit,
+/// mismatched light receipt, stale plan, or any ordinary execution failure.
+pub fn execute_plan_stage(
+    repo: &Path,
+    plan: &Value,
+    artifact_root: &Path,
+    claims: &ExecutionClaims,
+    stage: &str,
+    audit: Option<&Value>,
+    resume: Option<&ResumeCandidate>,
+) -> Result<Value> {
     let repository = canonical_directory(repo, "GATE-EXEC-REPOSITORY")?;
     let artifacts = canonical_directory(artifact_root, "GATE-EXEC-ARTIFACT-ROOT")?;
     if artifacts.starts_with(&repository) {
@@ -103,6 +185,25 @@ pub fn execute_plan(
     validate_plan(&repository, &artifacts, plan)?;
     verify_execution_checkout(&repository, plan)?;
     preflight(&repository, &artifacts, plan)?;
+
+    let mut imported = match stage {
+        "LIGHT" | "FINAL_LIGHT" => ExecutionRecord::empty(),
+        "HEAVY" => {
+            let audit = audit.ok_or_else(|| {
+                execution_error("GATE-EXEC-AUDIT-REQUIRED", "heavy stage requires an audit")
+            })?;
+            validate_audit(&repository, plan, audit, &artifacts)?;
+            ExecutionRecord::from_stage_receipt(&audit["light_receipt"])?
+        }
+        _ => return Err(execution_error("GATE-EXEC-STAGE", stage)),
+    };
+    if stage == "HEAVY" {
+        let seed = apply_candidate(plan, &artifacts, claims, resume)?;
+        imported.attempts.extend(seed.attempts);
+        imported.final_results.extend(seed.final_results);
+        imported.executed_inventory.extend(seed.executed_inventory);
+        imported.resume_decisions = seed.decisions;
+    }
 
     let started_at = timestamp()?;
     let source_snapshot = source_snapshot(plan)?;
@@ -121,12 +222,19 @@ pub fn execute_plan(
         ));
     }
 
-    let mut execution = execute_nodes(
+    let execution_class = if stage == "FINAL_LIGHT" {
+        "LIGHT"
+    } else {
+        stage
+    };
+    let mut execution = execute_nodes_for(
         &repository,
         &artifacts,
         plan,
         &roots_before,
         &observed_before,
+        execution_class,
+        &mut imported,
     )?;
 
     let roots_after = current_roots(&repository, plan)?;
@@ -142,6 +250,18 @@ pub fn execute_plan(
     }
     let unavailable_items = unavailable_items(&mut execution);
     let finished_at = timestamp()?;
+    if stage == "LIGHT" {
+        return build_stage_receipt(
+            &repository,
+            plan,
+            &artifacts,
+            &execution,
+            &unavailable_items,
+            &started_at,
+            &finished_at,
+            claims,
+        );
+    }
     build_receipt(
         &repository,
         plan,
@@ -156,9 +276,12 @@ pub fn execute_plan(
         &observed_after,
         source_unchanged,
         claims,
+        audit,
+        &execution.resume_decisions,
     )
 }
 
+#[cfg(test)]
 fn execute_nodes(
     repo: &Path,
     artifact_root: &Path,
@@ -166,17 +289,43 @@ fn execute_nodes(
     roots_before: &Value,
     observed_before: &str,
 ) -> Result<ExecutionRecord> {
+    let mut record = ExecutionRecord::empty();
+    execute_nodes_for(
+        repo,
+        artifact_root,
+        plan,
+        roots_before,
+        observed_before,
+        "ALL",
+        &mut record,
+    )
+}
+
+fn execute_nodes_for(
+    repo: &Path,
+    artifact_root: &Path,
+    plan: &Value,
+    roots_before: &Value,
+    observed_before: &str,
+    cost_class: &str,
+    record: &mut ExecutionRecord,
+) -> Result<ExecutionRecord> {
     let nodes = plan["nodes"]
         .as_array()
         .ok_or_else(|| execution_error("GATE-EXEC-PLAN-SHAPE", "nodes must be an array"))?;
-    let mut record = ExecutionRecord {
-        final_results: BTreeMap::new(),
-        attempts: Vec::new(),
-        executed_inventory: BTreeSet::new(),
-        unavailable: BTreeMap::new(),
-    };
     let mut source_invalid = false;
     for node in nodes {
+        if cost_class != "ALL" && node["execution_cost_class"] != cost_class {
+            continue;
+        }
+        let node_id = required_string(node, "node_id")?;
+        if record
+            .final_results
+            .get(node_id)
+            .is_some_and(|result| result == "PASS")
+        {
+            continue;
+        }
         let forced_reason = source_invalid.then_some("SOURCE_MUTATION_DETECTED");
         let mut run = execute_node(
             repo,
@@ -194,7 +343,7 @@ fn execute_nodes(
             run.unavailable_reason = Some("SOURCE_MUTATION_DETECTED".to_owned());
             source_invalid = true;
         }
-        let node_id = required_string(node, "node_id")?.to_owned();
+        let node_id = node_id.to_owned();
         record.final_results.insert(node_id, run.result.clone());
         write_node_artifacts(artifact_root, node, &run)?;
         record
@@ -203,7 +352,7 @@ fn execute_nodes(
         record_unavailable(node, &run, &mut record.unavailable)?;
         record.attempts.push(run.attempt);
     }
-    Ok(record)
+    Ok(std::mem::replace(record, ExecutionRecord::empty()))
 }
 
 fn record_unavailable(
@@ -230,6 +379,14 @@ fn mark_source_mutation(record: &mut ExecutionRecord) -> Result<()> {
     let node_id = required_string(last_attempt, "node_id")?.to_owned();
     record.final_results.insert(node_id, "INVALID".to_owned());
     Ok(())
+}
+
+fn has_cost_class(plan: &Value, class: &str) -> Result<bool> {
+    Ok(plan["nodes"]
+        .as_array()
+        .ok_or_else(|| execution_error("GATE-EXEC-PLAN-SHAPE", "nodes must be an array"))?
+        .iter()
+        .any(|node| node["execution_cost_class"] == class))
 }
 
 fn unavailable_items(record: &mut ExecutionRecord) -> Vec<Value> {
@@ -532,9 +689,18 @@ fn confined_working_directory(repo: &Path, node: &Value) -> Result<PathBuf> {
 fn allowed_environment(node: &Value) -> Result<BTreeMap<String, String>> {
     let mut environment = BTreeMap::new();
     for key in string_array(&node["environment_allowlist"], "environment_allowlist")? {
-        let value = std::env::var(&key)
-            .map_err(|_| execution_error("GATE-EXEC-ENVIRONMENT-MISSING", key.clone()))?;
-        environment.insert(key, value);
+        match std::env::var(&key) {
+            Ok(value) => {
+                environment.insert(key, value);
+            }
+            Err(std::env::VarError::NotPresent) if key != "PATH" => {}
+            Err(std::env::VarError::NotPresent) => {
+                return Err(execution_error("GATE-EXEC-ENVIRONMENT-MISSING", key));
+            }
+            Err(std::env::VarError::NotUnicode(_)) => {
+                return Err(execution_error("GATE-EXEC-ENVIRONMENT-NONUTF8", key));
+            }
+        }
     }
     Ok(environment)
 }
@@ -1060,6 +1226,59 @@ fn kill_process_tree(child: &mut std::process::Child) -> Result<()> {
     clippy::too_many_arguments,
     reason = "receipt fields mirror the v1 wire contract"
 )]
+fn build_stage_receipt(
+    repo: &Path,
+    plan: &Value,
+    artifact_root: &Path,
+    execution: &ExecutionRecord,
+    unavailable_items: &[Value],
+    started_at: &str,
+    finished_at: &str,
+    claims: &ExecutionClaims,
+) -> Result<Value> {
+    let (passed, failed, blocked, invalid) = result_counts(&execution.final_results);
+    let mut receipt = json!({
+        "schema_version": "openwepp-gate-stage-receipt-v1",
+        "stage_receipt_id": "0".repeat(64),
+        "stage": "LIGHT",
+        "plan_id": plan["plan_id"],
+        "plan_sha256": digest(plan)?,
+        "execution_key": plan["execution_key"],
+        "artifact_root_sha256": sha256_bytes(artifact_root.as_os_str().as_encoded_bytes()),
+        "roots": plan["environment_roots"],
+        "attempts": execution.attempts,
+        "final_results": execution.final_results,
+        "executed_inventory": execution.executed_inventory,
+        "unavailable_items": unavailable_items,
+        "started_at": started_at,
+        "finished_at": finished_at,
+        "claims": {
+            "principal": claims.principal,
+            "repository": claims.repository,
+            "source_event": claims.source_event,
+            "source_ref": claims.source_ref,
+            "workflow": claims.workflow,
+            "job": claims.job,
+            "runner": claims.runner,
+            "attempt": claims.attempt
+        },
+        "result": aggregate_result(failed, blocked, invalid),
+        "counts": {"passed": passed, "failed": failed, "blocked": blocked}
+    });
+    receipt
+        .as_object_mut()
+        .ok_or_else(|| execution_error("GATE-EXEC-STAGE-RECEIPT", "object"))?
+        .remove("counts");
+    receipt["stage_receipt_id"] = Value::String(derived_id(&receipt, "stage_receipt_id")?);
+    let schema = read_json(&repo.join("gate-policy/v1/schemas/stage-receipt.schema.json"))?;
+    validate_schema(&schema, &receipt, "executor stage receipt")?;
+    Ok(receipt)
+}
+
+#[allow(
+    clippy::too_many_arguments,
+    reason = "receipt fields mirror the v1 wire contract"
+)]
 fn build_receipt(
     repo: &Path,
     plan: &Value,
@@ -1074,6 +1293,8 @@ fn build_receipt(
     observed_after: &str,
     source_unchanged: bool,
     claims: &ExecutionClaims,
+    pre_heavy_audit: Option<&Value>,
+    resume_decisions: &[Value],
 ) -> Result<Value> {
     let nodes = plan["nodes"]
         .as_array()
@@ -1148,6 +1369,8 @@ fn build_receipt(
             "unchanged": source_unchanged
         },
         "result": result,
+        "pre_heavy_audit": pre_heavy_audit,
+        "resume_decisions": resume_decisions,
         "claims": {
             "trust_class": "LOCAL_UNTRUSTED",
             "principal": claims.principal,
@@ -1296,7 +1519,38 @@ fn write_node_artifacts(artifact_root: &Path, node: &Value, run: &NodeRun) -> Re
         let bytes = artifact_bytes(artifact_root, node, run, &log_sha256, &path)?;
         write_atomic(&destination, &bytes)?;
     }
+    write_node_checkpoint(artifact_root, node, run)?;
     Ok(())
+}
+
+fn write_node_checkpoint(artifact_root: &Path, node: &Value, run: &NodeRun) -> Result<()> {
+    let node_id = required_string(node, "node_id")?;
+    let artifacts = string_array(&node["output_paths"], "output_paths")?
+        .into_iter()
+        .map(|path| {
+            let bytes = fs::read(confined_output_path(artifact_root, &path)?).map_err(|error| {
+                execution_error("GATE-EXEC-CHECKPOINT-ARTIFACT", format!("{path}: {error}"))
+            })?;
+            Ok(json!({"path": path, "sha256": sha256_bytes(&bytes)}))
+        })
+        .collect::<Result<Vec<_>>>()?;
+    let mut checkpoint = json!({
+        "schema_version": "openwepp-gate-node-checkpoint-v1",
+        "checkpoint_id": "0".repeat(64),
+        "node_id": node_id,
+        "node_sha256": digest(node)?,
+        "reuse_class": node["reuse_class"],
+        "result": run.result,
+        "attempt": run.attempt,
+        "artifacts": artifacts,
+    });
+    checkpoint["checkpoint_id"] = Value::String(derived_id(&checkpoint, "checkpoint_id")?);
+    let directory = artifact_root.join(".checkpoints");
+    create_confined_directories(artifact_root, &directory)?;
+    write_atomic(
+        &directory.join(format!("{node_id}.json")),
+        &crate::canonical::canonical_bytes(&checkpoint)?,
+    )
 }
 
 fn write_atomic(destination: &Path, bytes: &[u8]) -> Result<()> {
@@ -1681,6 +1935,21 @@ mod tests {
     use crate::canonical::sha256_bytes;
     use crate::planner::{NextestInventory, PlanRequest, Planner, PlanningStage};
     use crate::repository::observe_committed;
+
+    #[test]
+    fn monolithic_executor_rejects_heavy_before_repository_access() {
+        let plan = json!({
+            "nodes": [{"execution_cost_class": "HEAVY"}]
+        });
+        let error = execute_plan(
+            Path::new("/path/that/must/not/be-opened"),
+            &plan,
+            Path::new("/path/that/must/not/be-created"),
+            &ExecutionClaims::default(),
+        )
+        .expect_err("heavy plan must require staged audit admission");
+        assert_eq!(error.code, "GATE-EXEC-HEAVY-REQUIRES-AUDIT");
+    }
     use crate::verifier::{DirectoryArtifacts, verify_receipt};
 
     static TEMP_SEQUENCE: AtomicU64 = AtomicU64::new(0);
@@ -1808,6 +2077,7 @@ mod tests {
         json!({
             "gate_definition_id": id,
             "gate_family": "executor-contract",
+            "execution_cost_class": "LIGHT",
             "target_template": "WORKSPACE",
             "risk_classes": ["EDITORIAL", "BOUNDED_COMPONENT"],
             "executor": {"kind": "PROCESS_V1", "version": "process-1", "adapter_sha256": null},

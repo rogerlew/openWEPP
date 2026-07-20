@@ -24,6 +24,7 @@
     "plan_node_sha256": "8989898989898989898989898989898989898989898989898989898989898989",
     "gate_definition_id": "gate-policy-schema-consistency-v1",
     "gate_family": "source-quality",
+    "execution_cost_class": "LIGHT",
     "target": "testgate_align_authority_contract",
     "features": [],
     "authority_class": "NONE",
@@ -116,6 +117,8 @@
     "unchanged": true
   },
   "result": "PASS",
+  "pre_heavy_audit": null,
+  "resume_decisions": [],
   "claims": {
     "trust_class": "LOCAL_UNTRUSTED",
     "principal": "developer",

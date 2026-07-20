@@ -1,0 +1,5 @@
+{
+  "schema_version": "openwepp-testgate-qualification-controller-v1",
+  "matrix_id": "TESTGATE-WORKFLOW-QUALIFY-01",
+  "cases": [{"case_id": "Q01", "helper_arguments": ["--base", "HEAD^"], "expected_status": "BLOCKED", "expected_heavy_spawn_count": 0}]
+}

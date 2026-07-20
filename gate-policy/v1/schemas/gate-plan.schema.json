@@ -4,256 +4,1480 @@
   "title": "openWEPP deterministic gate plan v1",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "policy", "planning_stage", "predecessor_intent_plan_id", "plan_id", "execution_key", "boundary", "campaign_id", "authorized_paths", "source", "changed_objects", "affected_packages", "reverse_dependencies", "impact_edges", "risk", "planning_controls", "execution_context", "nodes", "quality_scope", "zero_work_disposition", "environment_roots", "deferred_obligations", "assurance_impacts", "unmapped_inputs", "output_root"],
+  "required": [
+    "schema_version",
+    "policy",
+    "planning_stage",
+    "predecessor_intent_plan_id",
+    "plan_id",
+    "execution_key",
+    "boundary",
+    "campaign_id",
+    "authorized_paths",
+    "source",
+    "changed_objects",
+    "affected_packages",
+    "reverse_dependencies",
+    "impact_edges",
+    "risk",
+    "planning_controls",
+    "execution_context",
+    "nodes",
+    "quality_scope",
+    "zero_work_disposition",
+    "environment_roots",
+    "deferred_obligations",
+    "assurance_impacts",
+    "unmapped_inputs",
+    "output_root"
+  ],
   "properties": {
-    "schema_version": { "const": "openwepp-gate-plan-v1" },
-    "policy": { "$ref": "#/$defs/policy" },
-    "planning_stage": { "enum": ["INTENT", "TERMINAL"] },
-    "predecessor_intent_plan_id": { "$ref": "#/$defs/nullableDigest" },
-    "plan_id": { "$ref": "#/$defs/digest" },
-    "execution_key": { "$ref": "#/$defs/digest" },
-    "boundary": { "enum": ["INCREMENT", "CHECKPOINT", "CAMPAIGN", "RELEASE"] },
-    "campaign_id": { "$ref": "#/$defs/nullableId" },
-    "authorized_paths": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/path" } },
-    "source": { "$ref": "#/$defs/source" },
-    "changed_objects": { "type": "array", "items": { "$ref": "#/$defs/change" } },
-    "affected_packages": { "$ref": "#/$defs/idList" },
-    "reverse_dependencies": { "$ref": "#/$defs/idList" },
-    "impact_edges": { "type": "array", "items": { "$ref": "#/$defs/impactEdge" } },
-    "risk": { "$ref": "#/$defs/risk" },
-    "planning_controls": { "$ref": "#/$defs/planningControls" },
-    "execution_context": { "$ref": "#/$defs/executionContext" },
-    "nodes": { "type": "array", "items": { "$ref": "#/$defs/node" } },
-    "quality_scope": { "$ref": "#/$defs/qualityScope" },
-    "zero_work_disposition": { "oneOf": [{ "$ref": "#/$defs/zeroWork" }, { "type": "null" }] },
-    "environment_roots": { "$ref": "#/$defs/roots" },
-    "deferred_obligations": { "type": "array", "items": { "$ref": "#/$defs/deferred" } },
-    "assurance_impacts": { "type": "array", "items": { "$ref": "#/$defs/assuranceImpact" } },
-    "unmapped_inputs": { "type": "array", "items": { "$ref": "#/$defs/unmapped" } },
-    "output_root": { "$ref": "#/$defs/path" }
+    "schema_version": {
+      "const": "openwepp-gate-plan-v1"
+    },
+    "policy": {
+      "$ref": "#/$defs/policy"
+    },
+    "planning_stage": {
+      "enum": [
+        "INTENT",
+        "TERMINAL"
+      ]
+    },
+    "predecessor_intent_plan_id": {
+      "$ref": "#/$defs/nullableDigest"
+    },
+    "plan_id": {
+      "$ref": "#/$defs/digest"
+    },
+    "execution_key": {
+      "$ref": "#/$defs/digest"
+    },
+    "boundary": {
+      "enum": [
+        "INCREMENT",
+        "CHECKPOINT",
+        "CAMPAIGN",
+        "RELEASE"
+      ]
+    },
+    "campaign_id": {
+      "$ref": "#/$defs/nullableId"
+    },
+    "authorized_paths": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/path"
+      }
+    },
+    "source": {
+      "$ref": "#/$defs/source"
+    },
+    "changed_objects": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/change"
+      }
+    },
+    "affected_packages": {
+      "$ref": "#/$defs/idList"
+    },
+    "reverse_dependencies": {
+      "$ref": "#/$defs/idList"
+    },
+    "impact_edges": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/impactEdge"
+      }
+    },
+    "risk": {
+      "$ref": "#/$defs/risk"
+    },
+    "planning_controls": {
+      "$ref": "#/$defs/planningControls"
+    },
+    "execution_context": {
+      "$ref": "#/$defs/executionContext"
+    },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/node"
+      }
+    },
+    "quality_scope": {
+      "$ref": "#/$defs/qualityScope"
+    },
+    "zero_work_disposition": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/zeroWork"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "environment_roots": {
+      "$ref": "#/$defs/roots"
+    },
+    "deferred_obligations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/deferred"
+      }
+    },
+    "assurance_impacts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/assuranceImpact"
+      }
+    },
+    "unmapped_inputs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/unmapped"
+      }
+    },
+    "output_root": {
+      "$ref": "#/$defs/path"
+    }
   },
   "allOf": [
-    { "if": { "properties": { "planning_stage": { "const": "INTENT" } } }, "then": { "properties": { "predecessor_intent_plan_id": { "type": "null" } } } },
-    { "if": { "properties": { "planning_stage": { "const": "TERMINAL" } } }, "then": { "properties": { "predecessor_intent_plan_id": { "$ref": "#/$defs/digest" } } } },
-    { "if": { "properties": { "nodes": { "maxItems": 0 } }, "required": ["nodes"] }, "then": { "properties": { "zero_work_disposition": { "$ref": "#/$defs/zeroWork" } } }, "else": { "properties": { "zero_work_disposition": { "type": "null" } } } }
+    {
+      "if": {
+        "properties": {
+          "planning_stage": {
+            "const": "INTENT"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "predecessor_intent_plan_id": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "planning_stage": {
+            "const": "TERMINAL"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "predecessor_intent_plan_id": {
+            "$ref": "#/$defs/digest"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "nodes": {
+            "maxItems": 0
+          }
+        },
+        "required": [
+          "nodes"
+        ]
+      },
+      "then": {
+        "properties": {
+          "zero_work_disposition": {
+            "$ref": "#/$defs/zeroWork"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "zero_work_disposition": {
+            "type": "null"
+          }
+        }
+      }
+    }
   ],
   "$defs": {
-    "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$" },
-    "text": { "type": "string", "pattern": "\\S" },
-    "digest": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
-    "gitOid": { "type": "string", "pattern": "^[0-9a-f]{40}([0-9a-f]{24})?$" },
-    "nullableDigest": { "oneOf": [{ "$ref": "#/$defs/digest" }, { "type": "null" }] },
-    "nullableGitOid": { "oneOf": [{ "$ref": "#/$defs/gitOid" }, { "type": "null" }] },
-    "nullableId": { "oneOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }] },
-    "path": { "type": "string", "minLength": 1, "pattern": "^[^/]", "not": { "pattern": "(^|/)\\.{1,2}(/|$)" } },
-    "workingDirectory": { "oneOf": [{ "const": "." }, { "$ref": "#/$defs/path" }] },
-    "idList": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/id" } },
-    "textList": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/text" } },
-    "policy": { "type": "object", "additionalProperties": false, "required": ["policy_id", "policy_sha256", "impact_map_generation", "impact_map_sha256", "assurance_registry_generation", "assurance_registry_sha256"], "properties": { "policy_id": { "const": "ADR-0039" }, "policy_sha256": { "$ref": "#/$defs/digest" }, "impact_map_generation": { "type": "integer", "minimum": 1 }, "impact_map_sha256": { "$ref": "#/$defs/digest" }, "assurance_registry_generation": { "type": "integer", "minimum": 1 }, "assurance_registry_sha256": { "$ref": "#/$defs/digest" } } },
-    "source": { "type": "object", "additionalProperties": false, "required": ["base_commit", "head_commit", "dirty_tree_digest", "index_digest", "worktree_digest", "untracked_digest"], "properties": { "base_commit": { "$ref": "#/$defs/gitOid" }, "head_commit": { "$ref": "#/$defs/nullableGitOid" }, "dirty_tree_digest": { "$ref": "#/$defs/nullableDigest" }, "index_digest": { "$ref": "#/$defs/nullableDigest" }, "worktree_digest": { "$ref": "#/$defs/nullableDigest" }, "untracked_digest": { "$ref": "#/$defs/nullableDigest" } } },
-    "change": { "type": "object", "additionalProperties": false, "required": ["path", "change_kind", "object_kind", "old_mode", "new_mode", "owner"], "properties": { "path": { "$ref": "#/$defs/path" }, "change_kind": { "enum": ["ADD", "DELETE", "MODIFY", "TYPE_CHANGE"] }, "object_kind": { "enum": ["REGULAR", "SYMLINK", "GITLINK"] }, "old_mode": { "type": ["string", "null"], "pattern": "^[0-7]{6}$" }, "new_mode": { "type": ["string", "null"], "pattern": "^[0-7]{6}$" }, "owner": { "$ref": "#/$defs/id" } } },
-    "impactEdge": { "type": "object", "additionalProperties": false, "required": ["entry_id", "changed_path", "selected_ids"], "properties": { "entry_id": { "$ref": "#/$defs/id" }, "changed_path": { "$ref": "#/$defs/path" }, "selected_ids": { "$ref": "#/$defs/idList" } } },
-    "risk": { "type": "object", "additionalProperties": false, "required": ["class", "reason_codes", "operator_escalation"], "properties": { "class": { "enum": ["EDITORIAL", "BOUNDED_COMPONENT", "INTEGRATED_DOMAIN", "CRITICAL"] }, "reason_codes": { "$ref": "#/$defs/idList" }, "operator_escalation": { "type": "boolean" } } },
-    "planningControls": { "type": "object", "additionalProperties": false, "required": ["blocking_promotion_rule", "investigation_owner_rule", "unknown_input_rule"], "properties": { "blocking_promotion_rule": { "enum": ["PROSPECTIVE_POLICY_ONLY", "POLICY_GENERATION_BOUND"] }, "investigation_owner_rule": { "enum": ["NAMED_OWNER_REQUIRED", "CAMPAIGN_OWNER_REQUIRED"] }, "unknown_input_rule": { "const": "ESCALATE_CRITICAL" } } },
-    "executionContext": { "type": "object", "additionalProperties": false, "required": ["environment_manifest_sha256", "fixture_manifest_sha256", "tool_manifest_sha256", "configuration_sha256"], "properties": { "environment_manifest_sha256": { "$ref": "#/$defs/digest" }, "fixture_manifest_sha256": { "$ref": "#/$defs/digest" }, "tool_manifest_sha256": { "$ref": "#/$defs/digest" }, "configuration_sha256": { "$ref": "#/$defs/digest" } } },
-    "qualityScope": { "type": "object", "additionalProperties": false, "required": ["mode", "production_packages", "covering_node_ids", "covering_inventory_ids", "completeness", "reason_codes"], "properties": { "mode": { "enum": ["AFFECTED", "GLOBAL", "NOT_APPLICABLE"] }, "production_packages": { "$ref": "#/$defs/idList" }, "covering_node_ids": { "$ref": "#/$defs/idList" }, "covering_inventory_ids": { "$ref": "#/$defs/idList" }, "completeness": { "enum": ["COMPLETE", "ESCALATED_GLOBAL"] }, "reason_codes": { "$ref": "#/$defs/idList" } }, "allOf": [{ "if": { "properties": { "mode": { "const": "AFFECTED" } }, "required": ["mode"] }, "then": { "properties": { "production_packages": { "minItems": 1 }, "covering_node_ids": { "minItems": 1 }, "covering_inventory_ids": { "minItems": 1 }, "completeness": { "const": "COMPLETE" } } } }, { "if": { "properties": { "mode": { "const": "GLOBAL" } }, "required": ["mode"] }, "then": { "properties": { "production_packages": { "maxItems": 0 }, "covering_node_ids": { "maxItems": 0 }, "covering_inventory_ids": { "maxItems": 0 }, "completeness": { "const": "ESCALATED_GLOBAL" } } } }, { "if": { "properties": { "mode": { "const": "NOT_APPLICABLE" } }, "required": ["mode"] }, "then": { "properties": { "production_packages": { "maxItems": 0 }, "covering_node_ids": { "maxItems": 0 }, "covering_inventory_ids": { "maxItems": 0 }, "completeness": { "const": "COMPLETE" } } } }] },
-    "zeroWork": { "type": "object", "additionalProperties": false, "required": ["verified", "reason_code", "evidence_sha256"], "properties": { "verified": { "const": true }, "reason_code": { "enum": ["NO_AFFECTED_TARGETS", "NO_EXECUTABLE_OBLIGATIONS"] }, "evidence_sha256": { "$ref": "#/$defs/digest" } } },
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+    },
+    "text": {
+      "type": "string",
+      "pattern": "\\S"
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "gitOid": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}([0-9a-f]{24})?$"
+    },
+    "nullableDigest": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/digest"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "nullableGitOid": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/gitOid"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "nullableId": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/id"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "path": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[^/]",
+      "not": {
+        "pattern": "(^|/)\\.{1,2}(/|$)"
+      }
+    },
+    "workingDirectory": {
+      "oneOf": [
+        {
+          "const": "."
+        },
+        {
+          "$ref": "#/$defs/path"
+        }
+      ]
+    },
+    "idList": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/id"
+      }
+    },
+    "textList": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/text"
+      }
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policy_id",
+        "policy_sha256",
+        "impact_map_generation",
+        "impact_map_sha256",
+        "assurance_registry_generation",
+        "assurance_registry_sha256"
+      ],
+      "properties": {
+        "policy_id": {
+          "const": "ADR-0039"
+        },
+        "policy_sha256": {
+          "$ref": "#/$defs/digest"
+        },
+        "impact_map_generation": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "impact_map_sha256": {
+          "$ref": "#/$defs/digest"
+        },
+        "assurance_registry_generation": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "assurance_registry_sha256": {
+          "$ref": "#/$defs/digest"
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "base_commit",
+        "head_commit",
+        "dirty_tree_digest",
+        "index_digest",
+        "worktree_digest",
+        "untracked_digest"
+      ],
+      "properties": {
+        "base_commit": {
+          "$ref": "#/$defs/gitOid"
+        },
+        "head_commit": {
+          "$ref": "#/$defs/nullableGitOid"
+        },
+        "dirty_tree_digest": {
+          "$ref": "#/$defs/nullableDigest"
+        },
+        "index_digest": {
+          "$ref": "#/$defs/nullableDigest"
+        },
+        "worktree_digest": {
+          "$ref": "#/$defs/nullableDigest"
+        },
+        "untracked_digest": {
+          "$ref": "#/$defs/nullableDigest"
+        }
+      }
+    },
+    "change": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "change_kind",
+        "object_kind",
+        "old_mode",
+        "new_mode",
+        "owner"
+      ],
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/path"
+        },
+        "change_kind": {
+          "enum": [
+            "ADD",
+            "DELETE",
+            "MODIFY",
+            "TYPE_CHANGE"
+          ]
+        },
+        "object_kind": {
+          "enum": [
+            "REGULAR",
+            "SYMLINK",
+            "GITLINK"
+          ]
+        },
+        "old_mode": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[0-7]{6}$"
+        },
+        "new_mode": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[0-7]{6}$"
+        },
+        "owner": {
+          "$ref": "#/$defs/id"
+        }
+      }
+    },
+    "impactEdge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entry_id",
+        "changed_path",
+        "selected_ids"
+      ],
+      "properties": {
+        "entry_id": {
+          "$ref": "#/$defs/id"
+        },
+        "changed_path": {
+          "$ref": "#/$defs/path"
+        },
+        "selected_ids": {
+          "$ref": "#/$defs/idList"
+        }
+      }
+    },
+    "risk": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "class",
+        "reason_codes",
+        "operator_escalation"
+      ],
+      "properties": {
+        "class": {
+          "enum": [
+            "EDITORIAL",
+            "BOUNDED_COMPONENT",
+            "INTEGRATED_DOMAIN",
+            "CRITICAL"
+          ]
+        },
+        "reason_codes": {
+          "$ref": "#/$defs/idList"
+        },
+        "operator_escalation": {
+          "type": "boolean"
+        }
+      }
+    },
+    "planningControls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "blocking_promotion_rule",
+        "investigation_owner_rule",
+        "unknown_input_rule"
+      ],
+      "properties": {
+        "blocking_promotion_rule": {
+          "enum": [
+            "PROSPECTIVE_POLICY_ONLY",
+            "POLICY_GENERATION_BOUND"
+          ]
+        },
+        "investigation_owner_rule": {
+          "enum": [
+            "NAMED_OWNER_REQUIRED",
+            "CAMPAIGN_OWNER_REQUIRED"
+          ]
+        },
+        "unknown_input_rule": {
+          "const": "ESCALATE_CRITICAL"
+        }
+      }
+    },
+    "executionContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "environment_manifest_sha256",
+        "fixture_manifest_sha256",
+        "tool_manifest_sha256",
+        "configuration_sha256"
+      ],
+      "properties": {
+        "environment_manifest_sha256": {
+          "$ref": "#/$defs/digest"
+        },
+        "fixture_manifest_sha256": {
+          "$ref": "#/$defs/digest"
+        },
+        "tool_manifest_sha256": {
+          "$ref": "#/$defs/digest"
+        },
+        "configuration_sha256": {
+          "$ref": "#/$defs/digest"
+        }
+      }
+    },
+    "qualityScope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "production_packages",
+        "covering_node_ids",
+        "covering_inventory_ids",
+        "completeness",
+        "reason_codes"
+      ],
+      "properties": {
+        "mode": {
+          "enum": [
+            "AFFECTED",
+            "GLOBAL",
+            "NOT_APPLICABLE"
+          ]
+        },
+        "production_packages": {
+          "$ref": "#/$defs/idList"
+        },
+        "covering_node_ids": {
+          "$ref": "#/$defs/idList"
+        },
+        "covering_inventory_ids": {
+          "$ref": "#/$defs/idList"
+        },
+        "completeness": {
+          "enum": [
+            "COMPLETE",
+            "ESCALATED_GLOBAL"
+          ]
+        },
+        "reason_codes": {
+          "$ref": "#/$defs/idList"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "AFFECTED"
+              }
+            },
+            "required": [
+              "mode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "production_packages": {
+                "minItems": 1
+              },
+              "covering_node_ids": {
+                "minItems": 1
+              },
+              "covering_inventory_ids": {
+                "minItems": 1
+              },
+              "completeness": {
+                "const": "COMPLETE"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "GLOBAL"
+              }
+            },
+            "required": [
+              "mode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "production_packages": {
+                "maxItems": 0
+              },
+              "covering_node_ids": {
+                "maxItems": 0
+              },
+              "covering_inventory_ids": {
+                "maxItems": 0
+              },
+              "completeness": {
+                "const": "ESCALATED_GLOBAL"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "NOT_APPLICABLE"
+              }
+            },
+            "required": [
+              "mode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "production_packages": {
+                "maxItems": 0
+              },
+              "covering_node_ids": {
+                "maxItems": 0
+              },
+              "covering_inventory_ids": {
+                "maxItems": 0
+              },
+              "completeness": {
+                "const": "COMPLETE"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "zeroWork": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "verified",
+        "reason_code",
+        "evidence_sha256"
+      ],
+      "properties": {
+        "verified": {
+          "const": true
+        },
+        "reason_code": {
+          "enum": [
+            "NO_AFFECTED_TARGETS",
+            "NO_EXECUTABLE_OBLIGATIONS"
+          ]
+        },
+        "evidence_sha256": {
+          "$ref": "#/$defs/digest"
+        }
+      }
+    },
     "assuranceImpact": {
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "impact_record_id", "registry_generation", "registry_sha256", "campaign_id",
-        "report_id", "source_root", "assessed_realization_root", "target_head", "requested_action",
-        "watch_generation", "matching_watch_ids", "lifecycle_boundaries", "changed_object",
-        "impact_state", "mapping_complete", "resolution_authority",
-        "assessed_realization_integrity", "campaign_impact_disposition",
-        "campaign_transfer_request", "campaign_transfer_currency",
-        "release_transfer_request", "release_transfer_currency"
+        "impact_record_id",
+        "registry_generation",
+        "registry_sha256",
+        "campaign_id",
+        "report_id",
+        "source_root",
+        "assessed_realization_root",
+        "target_head",
+        "requested_action",
+        "watch_generation",
+        "matching_watch_ids",
+        "lifecycle_boundaries",
+        "changed_object",
+        "impact_state",
+        "mapping_complete",
+        "resolution_authority",
+        "assessed_realization_integrity",
+        "campaign_impact_disposition",
+        "campaign_transfer_request",
+        "campaign_transfer_currency",
+        "release_transfer_request",
+        "release_transfer_currency"
       ],
       "properties": {
-        "impact_record_id": { "$ref": "#/$defs/digest" },
-        "registry_generation": { "type": "integer", "minimum": 1 },
-        "registry_sha256": { "$ref": "#/$defs/digest" },
-        "campaign_id": { "$ref": "#/$defs/nullableId" },
-        "report_id": { "$ref": "#/$defs/id" },
-        "source_root": { "$ref": "#/$defs/digest" },
-        "assessed_realization_root": { "$ref": "#/$defs/digest" },
-        "target_head": { "$ref": "#/$defs/gitOid" },
-        "requested_action": {
-          "enum": ["ASSESS", "REFRESH", "TRANSFER_CAMPAIGN", "TRANSFER_RELEASE"]
+        "impact_record_id": {
+          "$ref": "#/$defs/digest"
         },
-        "watch_generation": { "type": "integer", "minimum": 1 },
-        "matching_watch_ids": { "$ref": "#/$defs/idList" },
+        "registry_generation": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "registry_sha256": {
+          "$ref": "#/$defs/digest"
+        },
+        "campaign_id": {
+          "$ref": "#/$defs/nullableId"
+        },
+        "report_id": {
+          "$ref": "#/$defs/id"
+        },
+        "source_root": {
+          "$ref": "#/$defs/digest"
+        },
+        "assessed_realization_root": {
+          "$ref": "#/$defs/digest"
+        },
+        "target_head": {
+          "$ref": "#/$defs/gitOid"
+        },
+        "requested_action": {
+          "enum": [
+            "ASSESS",
+            "REFRESH",
+            "TRANSFER_CAMPAIGN",
+            "TRANSFER_RELEASE"
+          ]
+        },
+        "watch_generation": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "matching_watch_ids": {
+          "$ref": "#/$defs/idList"
+        },
         "lifecycle_boundaries": {
           "type": "array",
           "minItems": 1,
           "uniqueItems": true,
           "items": {
-            "enum": ["INCREMENT", "CAMPAIGN_CHECKPOINT", "CAMPAIGN_CLOSURE", "RELEASE"]
+            "enum": [
+              "INCREMENT",
+              "CAMPAIGN_CHECKPOINT",
+              "CAMPAIGN_CLOSURE",
+              "RELEASE"
+            ]
           }
         },
         "changed_object": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["path", "change_kind"],
+          "required": [
+            "path",
+            "change_kind"
+          ],
           "properties": {
-            "path": { "$ref": "#/$defs/path" },
+            "path": {
+              "$ref": "#/$defs/path"
+            },
             "change_kind": {
-              "enum": ["ADD", "DELETE", "MODIFY", "TYPE_CHANGE", "DECLARED"]
+              "enum": [
+                "ADD",
+                "DELETE",
+                "MODIFY",
+                "TYPE_CHANGE",
+                "DECLARED"
+              ]
             }
           }
         },
-        "impact_state": { "enum": ["OPEN_UNKNOWN", "OPEN_ASSESSMENT"] },
-        "mapping_complete": { "type": "boolean" },
+        "impact_state": {
+          "enum": [
+            "OPEN_UNKNOWN",
+            "OPEN_ASSESSMENT"
+          ]
+        },
+        "mapping_complete": {
+          "type": "boolean"
+        },
         "resolution_authority": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["principal_id", "role_id", "role_record_sha256"],
+          "required": [
+            "principal_id",
+            "role_id",
+            "role_record_sha256"
+          ],
           "properties": {
-            "principal_id": { "$ref": "#/$defs/nullableId" },
-            "role_id": { "$ref": "#/$defs/id" },
-            "role_record_sha256": { "$ref": "#/$defs/nullableDigest" }
+            "principal_id": {
+              "$ref": "#/$defs/nullableId"
+            },
+            "role_id": {
+              "$ref": "#/$defs/id"
+            },
+            "role_record_sha256": {
+              "$ref": "#/$defs/nullableDigest"
+            }
           }
         },
         "assessed_realization_integrity": {
-          "enum": ["CURRENT", "INVALIDATED_BY_EVIDENCE", "UNKNOWN"]
+          "enum": [
+            "CURRENT",
+            "INVALIDATED_BY_EVIDENCE",
+            "UNKNOWN"
+          ]
         },
         "campaign_impact_disposition": {
-          "enum": ["NO_IMPACT_DETECTED", "IMPACT_PENDING", "NO_MATERIAL_IMPACT_AUTHORIZED", "REFRESH_REQUIRED", "REFRESH_COMPLETE"]
+          "enum": [
+            "NO_IMPACT_DETECTED",
+            "IMPACT_PENDING",
+            "NO_MATERIAL_IMPACT_AUTHORIZED",
+            "REFRESH_REQUIRED",
+            "REFRESH_COMPLETE"
+          ]
         },
-        "campaign_transfer_request": { "enum": ["NOT_REQUESTED", "REQUESTED"] },
-        "campaign_transfer_currency": { "enum": ["BLOCKED", "CURRENT"] },
-        "release_transfer_request": { "enum": ["NOT_REQUESTED", "REQUESTED"] },
-        "release_transfer_currency": { "enum": ["BLOCKED", "CURRENT"] }
+        "campaign_transfer_request": {
+          "enum": [
+            "NOT_REQUESTED",
+            "REQUESTED"
+          ]
+        },
+        "campaign_transfer_currency": {
+          "enum": [
+            "BLOCKED",
+            "CURRENT"
+          ]
+        },
+        "release_transfer_request": {
+          "enum": [
+            "NOT_REQUESTED",
+            "REQUESTED"
+          ]
+        },
+        "release_transfer_currency": {
+          "enum": [
+            "BLOCKED",
+            "CURRENT"
+          ]
+        }
       },
-      "allOf": [{
-        "if": {
-          "properties": { "mapping_complete": { "const": false } },
-          "required": ["mapping_complete"]
-        },
-        "then": {
-          "properties": {
-            "impact_state": { "const": "OPEN_UNKNOWN" },
-            "campaign_transfer_currency": { "const": "BLOCKED" },
-            "release_transfer_currency": { "const": "BLOCKED" }
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "mapping_complete": {
+                "const": false
+              }
+            },
+            "required": [
+              "mapping_complete"
+            ]
+          },
+          "then": {
+            "properties": {
+              "impact_state": {
+                "const": "OPEN_UNKNOWN"
+              },
+              "campaign_transfer_currency": {
+                "const": "BLOCKED"
+              },
+              "release_transfer_currency": {
+                "const": "BLOCKED"
+              }
+            }
           }
         }
-      }]
+      ]
     },
-    "roots": { "type": "object", "additionalProperties": false, "required": ["execution_root", "authority_root", "documentation_root", "assurance_root"], "properties": { "execution_root": { "$ref": "#/$defs/digest" }, "authority_root": { "$ref": "#/$defs/digest" }, "documentation_root": { "$ref": "#/$defs/digest" }, "assurance_root": { "$ref": "#/$defs/nullableDigest" } } },
-    "node": { "type": "object", "additionalProperties": false, "required": ["node_id", "gate_definition_id", "gate_family", "target", "features", "authority_class", "outcome_policy", "failure_classification", "owner", "investigation_owner", "boundary", "trust_requirement", "reuse_class", "executor", "arguments", "working_directory", "environment_allowlist", "prerequisites", "expected_inventory", "acceptance", "timeout_seconds", "retry", "artifact_contract", "output_paths", "blocks_transition", "identity_breakers", "matrix", "shard"], "properties": { "node_id": { "$ref": "#/$defs/digest" }, "gate_definition_id": { "$ref": "#/$defs/id" }, "gate_family": { "$ref": "#/$defs/id" }, "target": { "$ref": "#/$defs/id" }, "features": { "$ref": "#/$defs/idList" }, "authority_class": { "enum": ["A0", "A1", "A2", "A3", "A4", "A5", "A6", "NONE"] }, "outcome_policy": { "enum": ["BLOCKING", "INVESTIGATION"] }, "failure_classification": { "enum": ["HARD_FAIL", "INVESTIGATION"] }, "owner": { "$ref": "#/$defs/id" }, "investigation_owner": { "$ref": "#/$defs/id" }, "boundary": { "enum": ["INCREMENT", "CHECKPOINT", "CAMPAIGN", "RELEASE"] }, "trust_requirement": { "enum": ["LOCAL_UNTRUSTED", "REPOSITORY_REVIEWED", "PROTECTED_CI"] }, "reuse_class": { "enum": ["NON_REUSABLE", "SAME_EXECUTION", "HERMETIC_CONTENT"] }, "executor": { "type": "object", "additionalProperties": false, "required": ["kind", "version", "adapter_sha256"], "properties": { "kind": { "enum": ["PROCESS_V1", "NEXTEST_V1", "SCHEMA_V1", "LEGACY_ADAPTER_V1"] }, "version": { "$ref": "#/$defs/id" }, "adapter_sha256": { "$ref": "#/$defs/nullableDigest" } }, "allOf": [{ "if": { "properties": { "kind": { "const": "LEGACY_ADAPTER_V1" } } }, "then": { "properties": { "adapter_sha256": { "$ref": "#/$defs/digest" } } }, "else": { "properties": { "adapter_sha256": { "type": "null" } } } }] }, "arguments": { "type": "array", "minItems": 1, "items": { "type": "string" } }, "working_directory": { "$ref": "#/$defs/workingDirectory" }, "environment_allowlist": { "$ref": "#/$defs/textList" }, "prerequisites": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/digest" } }, "expected_inventory": { "type": "object", "additionalProperties": false, "required": ["mode", "ids", "minimum_count"], "properties": { "mode": { "enum": ["EXACT", "SUBSET", "SUPERSET"] }, "ids": { "$ref": "#/$defs/idList" }, "minimum_count": { "type": "integer", "minimum": 0 } } }, "acceptance": { "$ref": "#/$defs/predicate" }, "timeout_seconds": { "type": "integer", "minimum": 1 }, "retry": { "type": "object", "additionalProperties": false, "required": ["maximum_attempts", "permitted_reasons"], "properties": { "maximum_attempts": { "type": "integer", "minimum": 1 }, "permitted_reasons": { "$ref": "#/$defs/idList" } } }, "artifact_contract": { "$ref": "#/$defs/id" }, "output_paths": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/path" } }, "blocks_transition": { "enum": ["INCREMENT", "CHECKPOINT", "CAMPAIGN", "RELEASE"] }, "identity_breakers": { "$ref": "#/$defs/idList" }, "matrix": { "type": "object", "additionalProperties": { "type": "string" } }, "shard": { "type": "object", "additionalProperties": false, "required": ["index", "total"], "properties": { "index": { "type": "integer", "minimum": 0 }, "total": { "type": "integer", "minimum": 1 } } } } },
+    "roots": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "execution_root",
+        "authority_root",
+        "documentation_root",
+        "assurance_root"
+      ],
+      "properties": {
+        "execution_root": {
+          "$ref": "#/$defs/digest"
+        },
+        "authority_root": {
+          "$ref": "#/$defs/digest"
+        },
+        "documentation_root": {
+          "$ref": "#/$defs/digest"
+        },
+        "assurance_root": {
+          "$ref": "#/$defs/nullableDigest"
+        }
+      }
+    },
+    "node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "node_id",
+        "gate_definition_id",
+        "gate_family",
+        "execution_cost_class",
+        "target",
+        "features",
+        "authority_class",
+        "outcome_policy",
+        "failure_classification",
+        "owner",
+        "investigation_owner",
+        "boundary",
+        "trust_requirement",
+        "reuse_class",
+        "executor",
+        "arguments",
+        "working_directory",
+        "environment_allowlist",
+        "prerequisites",
+        "expected_inventory",
+        "acceptance",
+        "timeout_seconds",
+        "retry",
+        "artifact_contract",
+        "output_paths",
+        "blocks_transition",
+        "identity_breakers",
+        "matrix",
+        "shard"
+      ],
+      "properties": {
+        "node_id": {
+          "$ref": "#/$defs/digest"
+        },
+        "gate_definition_id": {
+          "$ref": "#/$defs/id"
+        },
+        "gate_family": {
+          "$ref": "#/$defs/id"
+        },
+        "execution_cost_class": {
+          "enum": [
+            "LIGHT",
+            "HEAVY"
+          ]
+        },
+        "target": {
+          "$ref": "#/$defs/id"
+        },
+        "features": {
+          "$ref": "#/$defs/idList"
+        },
+        "authority_class": {
+          "enum": [
+            "A0",
+            "A1",
+            "A2",
+            "A3",
+            "A4",
+            "A5",
+            "A6",
+            "NONE"
+          ]
+        },
+        "outcome_policy": {
+          "enum": [
+            "BLOCKING",
+            "INVESTIGATION"
+          ]
+        },
+        "failure_classification": {
+          "enum": [
+            "HARD_FAIL",
+            "INVESTIGATION"
+          ]
+        },
+        "owner": {
+          "$ref": "#/$defs/id"
+        },
+        "investigation_owner": {
+          "$ref": "#/$defs/id"
+        },
+        "boundary": {
+          "enum": [
+            "INCREMENT",
+            "CHECKPOINT",
+            "CAMPAIGN",
+            "RELEASE"
+          ]
+        },
+        "trust_requirement": {
+          "enum": [
+            "LOCAL_UNTRUSTED",
+            "REPOSITORY_REVIEWED",
+            "PROTECTED_CI"
+          ]
+        },
+        "reuse_class": {
+          "enum": [
+            "NON_REUSABLE",
+            "SAME_EXECUTION",
+            "HERMETIC_CONTENT"
+          ]
+        },
+        "executor": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "version",
+            "adapter_sha256"
+          ],
+          "properties": {
+            "kind": {
+              "enum": [
+                "PROCESS_V1",
+                "NEXTEST_V1",
+                "SCHEMA_V1",
+                "LEGACY_ADAPTER_V1"
+              ]
+            },
+            "version": {
+              "$ref": "#/$defs/id"
+            },
+            "adapter_sha256": {
+              "$ref": "#/$defs/nullableDigest"
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "kind": {
+                    "const": "LEGACY_ADAPTER_V1"
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "adapter_sha256": {
+                    "$ref": "#/$defs/digest"
+                  }
+                }
+              },
+              "else": {
+                "properties": {
+                  "adapter_sha256": {
+                    "type": "null"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "arguments": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "working_directory": {
+          "$ref": "#/$defs/workingDirectory"
+        },
+        "environment_allowlist": {
+          "$ref": "#/$defs/textList"
+        },
+        "prerequisites": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/digest"
+          }
+        },
+        "expected_inventory": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "ids",
+            "minimum_count"
+          ],
+          "properties": {
+            "mode": {
+              "enum": [
+                "EXACT",
+                "SUBSET",
+                "SUPERSET"
+              ]
+            },
+            "ids": {
+              "$ref": "#/$defs/idList"
+            },
+            "minimum_count": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "acceptance": {
+          "$ref": "#/$defs/predicate"
+        },
+        "timeout_seconds": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "retry": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "maximum_attempts",
+            "permitted_reasons"
+          ],
+          "properties": {
+            "maximum_attempts": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "permitted_reasons": {
+              "$ref": "#/$defs/idList"
+            }
+          }
+        },
+        "artifact_contract": {
+          "$ref": "#/$defs/id"
+        },
+        "output_paths": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/path"
+          }
+        },
+        "blocks_transition": {
+          "enum": [
+            "INCREMENT",
+            "CHECKPOINT",
+            "CAMPAIGN",
+            "RELEASE"
+          ]
+        },
+        "identity_breakers": {
+          "$ref": "#/$defs/idList"
+        },
+        "matrix": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "shard": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "index",
+            "total"
+          ],
+          "properties": {
+            "index": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "total": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        }
+      }
+    },
     "predicate": {
       "oneOf": [
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["kind", "operator", "expected", "children"],
+          "required": [
+            "kind",
+            "operator",
+            "expected",
+            "children"
+          ],
           "properties": {
-            "kind": { "const": "EXIT_CODE" },
-            "operator": { "const": "EQUALS" },
-            "expected": { "type": "integer" },
-            "children": { "type": "array", "maxItems": 0 }
+            "kind": {
+              "const": "EXIT_CODE"
+            },
+            "operator": {
+              "const": "EQUALS"
+            },
+            "expected": {
+              "type": "integer"
+            },
+            "children": {
+              "type": "array",
+              "maxItems": 0
+            }
           }
         },
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["kind", "operator", "expected", "children"],
+          "required": [
+            "kind",
+            "operator",
+            "expected",
+            "children"
+          ],
           "properties": {
-            "kind": { "const": "INVENTORY" },
-            "operator": { "enum": ["EQUALS", "SUBSET", "SUPERSET"] },
-            "expected": { "$ref": "#/$defs/idList" },
-            "children": { "type": "array", "maxItems": 0 }
+            "kind": {
+              "const": "INVENTORY"
+            },
+            "operator": {
+              "enum": [
+                "EQUALS",
+                "SUBSET",
+                "SUPERSET"
+              ]
+            },
+            "expected": {
+              "$ref": "#/$defs/idList"
+            },
+            "children": {
+              "type": "array",
+              "maxItems": 0
+            }
           }
         },
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["kind", "operator", "expected", "children"],
+          "required": [
+            "kind",
+            "operator",
+            "expected",
+            "children"
+          ],
           "properties": {
-            "kind": { "const": "COUNT" },
-            "operator": { "enum": ["EQUALS", "RANGE", "AT_LEAST", "AT_MOST"] },
+            "kind": {
+              "const": "COUNT"
+            },
+            "operator": {
+              "enum": [
+                "EQUALS",
+                "RANGE",
+                "AT_LEAST",
+                "AT_MOST"
+              ]
+            },
             "expected": {
               "type": "object",
               "additionalProperties": false,
-              "required": ["minimum", "maximum"],
+              "required": [
+                "minimum",
+                "maximum"
+              ],
               "properties": {
-                "minimum": { "type": "integer", "minimum": 0 },
-                "maximum": { "type": ["integer", "null"], "minimum": 0 }
+                "minimum": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "maximum": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 0
+                }
               }
             },
-            "children": { "type": "array", "maxItems": 0 }
+            "children": {
+              "type": "array",
+              "maxItems": 0
+            }
           }
         },
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["kind", "operator", "expected", "children"],
+          "required": [
+            "kind",
+            "operator",
+            "expected",
+            "children"
+          ],
           "properties": {
-            "kind": { "const": "NUMERIC_THRESHOLD" },
-            "operator": { "enum": ["EQUALS", "AT_LEAST", "AT_MOST"] },
-            "expected": { "type": "integer", "minimum": -9007199254740991, "maximum": 9007199254740991 },
-            "children": { "type": "array", "maxItems": 0 }
+            "kind": {
+              "const": "NUMERIC_THRESHOLD"
+            },
+            "operator": {
+              "enum": [
+                "EQUALS",
+                "AT_LEAST",
+                "AT_MOST"
+              ]
+            },
+            "expected": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "children": {
+              "type": "array",
+              "maxItems": 0
+            }
           }
         },
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["kind", "operator", "expected", "children"],
+          "required": [
+            "kind",
+            "operator",
+            "expected",
+            "children"
+          ],
           "properties": {
-            "kind": { "const": "NUMERIC_RANGE" },
-            "operator": { "const": "RANGE" },
-            "expected": { "type": "object", "additionalProperties": false, "required": ["minimum", "maximum"], "properties": { "minimum": { "type": "integer", "minimum": -9007199254740991, "maximum": 9007199254740991 }, "maximum": { "type": "integer", "minimum": -9007199254740991, "maximum": 9007199254740991 } } },
-            "children": { "type": "array", "maxItems": 0 }
+            "kind": {
+              "const": "NUMERIC_RANGE"
+            },
+            "operator": {
+              "const": "RANGE"
+            },
+            "expected": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "minimum",
+                "maximum"
+              ],
+              "properties": {
+                "minimum": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "maximum": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              }
+            },
+            "children": {
+              "type": "array",
+              "maxItems": 0
+            }
           }
         },
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["kind", "operator", "expected", "children"],
+          "required": [
+            "kind",
+            "operator",
+            "expected",
+            "children"
+          ],
           "properties": {
-            "kind": { "const": "ARTIFACT" },
-            "operator": { "const": "PRESENT" },
-            "expected": { "$ref": "#/$defs/id" },
-            "children": { "type": "array", "maxItems": 0 }
+            "kind": {
+              "const": "ARTIFACT"
+            },
+            "operator": {
+              "const": "PRESENT"
+            },
+            "expected": {
+              "$ref": "#/$defs/id"
+            },
+            "children": {
+              "type": "array",
+              "maxItems": 0
+            }
           }
         },
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["kind", "operator", "expected", "children"],
+          "required": [
+            "kind",
+            "operator",
+            "expected",
+            "children"
+          ],
           "properties": {
-            "kind": { "const": "SCHEMA" },
-            "operator": { "const": "VALID" },
-            "expected": { "$ref": "#/$defs/id" },
-            "children": { "type": "array", "maxItems": 0 }
+            "kind": {
+              "const": "SCHEMA"
+            },
+            "operator": {
+              "const": "VALID"
+            },
+            "expected": {
+              "$ref": "#/$defs/id"
+            },
+            "children": {
+              "type": "array",
+              "maxItems": 0
+            }
           }
         },
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["kind", "operator", "expected", "children"],
+          "required": [
+            "kind",
+            "operator",
+            "expected",
+            "children"
+          ],
           "properties": {
-            "kind": { "const": "REGISTERED_COMPARATOR" },
-            "operator": { "const": "EQUALS" },
-            "expected": { "$ref": "#/$defs/id" },
-            "children": { "type": "array", "maxItems": 0 }
+            "kind": {
+              "const": "REGISTERED_COMPARATOR"
+            },
+            "operator": {
+              "const": "EQUALS"
+            },
+            "expected": {
+              "$ref": "#/$defs/id"
+            },
+            "children": {
+              "type": "array",
+              "maxItems": 0
+            }
           }
         },
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["kind", "operator", "expected", "children"],
+          "required": [
+            "kind",
+            "operator",
+            "expected",
+            "children"
+          ],
           "properties": {
-            "kind": { "const": "BOOLEAN" },
-            "operator": { "enum": ["ALL", "ANY"] },
-            "expected": { "type": "null" },
-            "children": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/predicate" } }
+            "kind": {
+              "const": "BOOLEAN"
+            },
+            "operator": {
+              "enum": [
+                "ALL",
+                "ANY"
+              ]
+            },
+            "expected": {
+              "type": "null"
+            },
+            "children": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/predicate"
+              }
+            }
           }
         }
       ]
     },
-    "deferred": { "type": "object", "additionalProperties": false, "required": ["obligation_id", "owner", "boundary", "trigger", "rationale"], "properties": { "obligation_id": { "$ref": "#/$defs/id" }, "owner": { "$ref": "#/$defs/id" }, "boundary": { "enum": ["CHECKPOINT", "CAMPAIGN", "RELEASE"] }, "trigger": { "$ref": "#/$defs/id" }, "rationale": { "$ref": "#/$defs/text" } } },
-    "unmapped": { "type": "object", "additionalProperties": false, "required": ["path", "reason_code", "escalation"], "properties": { "path": { "$ref": "#/$defs/path" }, "reason_code": { "$ref": "#/$defs/id" }, "escalation": { "const": "CRITICAL" } } }
+    "deferred": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "obligation_id",
+        "owner",
+        "boundary",
+        "trigger",
+        "rationale"
+      ],
+      "properties": {
+        "obligation_id": {
+          "$ref": "#/$defs/id"
+        },
+        "owner": {
+          "$ref": "#/$defs/id"
+        },
+        "boundary": {
+          "enum": [
+            "CHECKPOINT",
+            "CAMPAIGN",
+            "RELEASE"
+          ]
+        },
+        "trigger": {
+          "$ref": "#/$defs/id"
+        },
+        "rationale": {
+          "$ref": "#/$defs/text"
+        }
+      }
+    },
+    "unmapped": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "reason_code",
+        "escalation"
+      ],
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/path"
+        },
+        "reason_code": {
+          "$ref": "#/$defs/id"
+        },
+        "escalation": {
+          "const": "CRITICAL"
+        }
+      }
+    }
   }
 }

@@ -181,6 +181,8 @@ fn assert_receipt_runtime_guards() {
         "SOURCE_MUTATION_DETECTED",
         "TEST_NOT_EXECUTED",
         "GATE-EXEC-SHELL-STRING",
+        "GATE-EXEC-HEAVY-REQUIRES-AUDIT",
+        "write_node_checkpoint",
     ] {
         assert!(
             executor.contains(required),
@@ -190,6 +192,8 @@ fn assert_receipt_runtime_guards() {
     assert!(!executor.contains("sh -c"));
     let cli = text("crates/openwepp-gate-planner/src/main.rs");
     assert!(cli.contains("verify_receipt(repo, &plan, &receipt, &artifacts)"));
+    assert!(cli.contains("pre-heavy-audit"));
+    assert!(cli.contains("validate-package"));
     assert!(cli.contains("Some(\"FAIL\" | \"BLOCKED\" | \"INVALID\")"));
 
     let verifier = text("crates/openwepp-gate-planner/src/verifier.rs");
@@ -253,6 +257,8 @@ fn assert_testgate_workflow_surface() {
         "ERROR: refusing to verify superseded head",
         "ERROR: refusing authority for superseded head",
         "ERROR: refusing aggregate success for superseded head",
+        "Re-ingest and verify durable attempt index",
+        "--history-ledger \"${evidence_dir}/attempts.jsonl\"",
     ] {
         assert!(
             workflow.contains(context),

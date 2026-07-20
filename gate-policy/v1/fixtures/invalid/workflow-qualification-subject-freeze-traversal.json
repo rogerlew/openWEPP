@@ -1,0 +1,8 @@
+{
+  "base_fixture": "workflow-qualification-subject-freeze.json",
+  "operation": "replace",
+  "instance_pointer": "/paths/0/path",
+  "invalid_value": "../secret",
+  "expected_instance_path": "/paths/0/path",
+  "expected_schema_path_contains": "/pattern"
+}

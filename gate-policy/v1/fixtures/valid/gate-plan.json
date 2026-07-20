@@ -58,6 +58,7 @@
     "node_id": "6666666666666666666666666666666666666666666666666666666666666666",
     "gate_definition_id": "gate-policy-schema-consistency-v1",
     "gate_family": "source-quality",
+    "execution_cost_class": "LIGHT",
     "target": "testgate_align_authority_contract",
     "features": [],
     "authority_class": "NONE",
