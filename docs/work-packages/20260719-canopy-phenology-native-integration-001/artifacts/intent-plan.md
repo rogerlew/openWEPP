@@ -373,3 +373,28 @@ The planner test relocation changes the exact test binary inventory, so the
 prior passing C12 receipt remains diagnostic history rather than terminal
 closure evidence. The final terminal plan must use this intent as predecessor
 under the same explicit Rust/Cargo environment.
+
+## Owned-Manifest Closure Extension
+
+Status: `critical intent admitted`
+
+Post-C13 closure reconciliation found that `owned-file-manifest.md` was inside
+the declared package write set but absent from the 59-path machine manifest.
+The unadmitted draft was immediately reversed; the file remained byte-identical
+to head while this one-path extension was planned. All other closure records
+were already authorized.
+
+- Base commit: `a749ed7a`
+- Observed closure head: `2171ca13`
+- Intent plan ID:
+  `29142c2e8951c52f2de3e8bf3fdb2d4d74f6196ab33c467724508e359b2d87ac`
+- External plan: `/tmp/canopy02-owned-intent-2171ca13/intent-plan.json`
+- Authorized-path manifest:
+  `/tmp/canopy02-owned-intent-2171ca13/authorized-paths.json`
+- Result/risk: `PASS` / `CRITICAL`
+- Authorized paths: 60, lexicographically sorted; selected nodes: 15.
+- Environment manifest:
+  `ddcb915642236e6e1904f78ae1208ab24cdb6921f5b205f5e1b422108bf782a1`.
+
+Only the owned-file manifest may now be completed. The exact terminal plan
+must use this intent as predecessor and bind the resulting clean head.
