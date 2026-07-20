@@ -333,6 +333,8 @@ struct NativeCanopyConsumerTrace {
     decomposition_litter_kg_m2: f64,
     decomposition_surface_residue_kg_m2: f64,
     decomposition_residue_depth_m: f64,
+    frost_residue_depth_m_consumed: Option<f64>,
+    erosion_canopy_cover_fraction: Option<f64>,
 }
 
 #[cfg(test)]
@@ -406,6 +408,8 @@ fn record_native_canopy_consumer_trace(
             decomposition_litter_kg_m2: day_frame.decomposition_inputs.surface_litter_input_kg_m2,
             decomposition_surface_residue_kg_m2: day_frame.decomposition.surface_residue_kg_m2,
             decomposition_residue_depth_m: day_frame.decomposition.residue_depth_m,
+            frost_residue_depth_m_consumed: day_frame.frost_residue_depth_m_consumed,
+            erosion_canopy_cover_fraction: day_frame.erosion_canopy_cover_fraction_consumed,
         });
 }
 

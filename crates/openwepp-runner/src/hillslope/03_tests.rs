@@ -253,6 +253,7 @@ mod tests {
             0.0,
         );
 
+        let mut observed_erosion_consumer = false;
         for trace in &traces {
             let canopy = trace.builder.canopy;
             assert_close(
@@ -337,13 +338,33 @@ mod tests {
                 trace.builder.projected_residue_depth_m,
             );
             if let Some(frost_residue_depth_m) = trace.builder.frost_residue_depth_m {
+                let consumed = trace
+                    .frost_residue_depth_m_consumed
+                    .expect("the real frost span must consume the traced thermal inputs");
                 assert_close(
-                    "frost builder residue depth",
-                    frost_residue_depth_m,
+                    "frost thermal residue depth",
+                    consumed,
                     trace.builder.projected_residue_depth_m,
+                );
+                assert_close(
+                    "frost builder/consumer residue depth",
+                    consumed,
+                    frost_residue_depth_m,
+                );
+            }
+            if let Some(erosion_canopy_cover_fraction) = trace.erosion_canopy_cover_fraction {
+                observed_erosion_consumer = true;
+                assert_close(
+                    "erosion canopy cover",
+                    erosion_canopy_cover_fraction,
+                    canopy.canopy_cover_fraction,
                 );
             }
         }
+        assert!(
+            observed_erosion_consumer,
+            "the real direct run must exercise the active erosion canopy consumer"
+        );
         assert!(
             traces
                 .iter()

@@ -1555,7 +1555,10 @@ fn r7b_constructor_type_size_layout_is_bounded() {
     // operand bundle (+8 B).
     // GWBASEFLOW M-T2B adds the per-day groundwater output carried from the
     // run-level linear-reservoir recurrence into terminal-row publication (+48 B).
-    assert!(day_frame <= 15_536);
+    // CANOPY-PHENOLOGY-02 adds two exact consumed-value observations for the
+    // erosion canopy and frost residue-depth seams (+32 B including Option
+    // discriminants); these are contract closure evidence, not producers.
+    assert!(day_frame <= 15_568);
 }
 
 fn r7b_breakpoint_management_pmet_day() -> DirectDayConstructorInputs {

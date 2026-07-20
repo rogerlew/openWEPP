@@ -561,6 +561,8 @@ impl DirectDayFrame {
             strldn: 0.0,
         };
 
+        self.erosion_canopy_cover_fraction_consumed = Some(daily.canopy_cover_fraction);
+
         let continuity = assemble_wave1_continuity_inputs(seed, &daily)?;
 
         // ADR-0036 / INV-SED-013: the hydrograph-resolved hourly plan. The

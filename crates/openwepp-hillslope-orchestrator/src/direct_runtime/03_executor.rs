@@ -1317,6 +1317,8 @@ impl DirectFrameExecutor {
         counters: &mut DirectExecutionCounters,
         winter_frost_compute_inputs: Option<&crate::hydrology::DirectWinterFrostComputeInputs>,
     ) -> Result<(), DirectRuntimeError> {
+        day_frame.frost_residue_depth_m_consumed =
+            winter_frost_compute_inputs.map(|inputs| inputs.thermal.residue_depth_m);
         record_direct_span_report!(counters, day_frame.run_r5b_normalization_phase());
         record_direct_span_report!(counters, day_frame.run_r5b_storage_bounds_phase());
         record_direct_span_report!(counters, day_frame.run_r5c_decomposition_phase());
