@@ -195,7 +195,12 @@ Subagents have no production write access.
   SH symmetry test, without observational-validation overclaim.
 - [x] (2026-07-19) Froze the base-commit authorization scaffold and began the
   machine intent plan for the declared critical write set.
-- [ ] Freeze contracts, tests, and the pre-implementation gate.
+- [x] (2026-07-19) Machine intent plan admitted; terminal reconciliation and
+  execution remain pending implementation.
+- [x] (2026-07-19) Amended the three canonical contracts and added executable
+  contract-derived realization and hemisphere tests before production edits.
+- [x] (2026-07-19) Recorded the intentionally red pre-implementation contract
+  gate: the new test failed only on the absent canopy realization API.
 - [ ] Implement native YAML, typed realization, runner state, and consumers.
 - [ ] Execute selected gates and conservation/consumer audits.
 - [ ] Complete independent review, disposition, verification, and closure.

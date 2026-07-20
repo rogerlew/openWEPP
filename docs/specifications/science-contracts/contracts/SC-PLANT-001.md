@@ -4,7 +4,7 @@ title: Plant Growth Process Contract
 status: in_review
 maturity: draft
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 21
+contract_version: 22
 producer_scope:
   - Plant state evolution for cropland and rangeland growth submodels
   - Plant to water-balance coupling surfaces (LAI, root depth, plant biomass/residue descriptors)
@@ -16,7 +16,7 @@ consumer_scope:
   - Residue decomposition and management surfaces consuming plant-to-residue transfers
   - Scheduler and PL kernel boundaries consuming projected management transition controls
 evidence_level: static
-last_reviewed: 2026-07-17
+last_reviewed: 2026-07-19
 supersedes: []
 superseded_by: []
 ---
@@ -373,6 +373,11 @@ algorithm.
 | INV-PLANT-030 | GSI photoperiod and hemisphere law: photoperiod is computed from finite signed latitude and runtime day using FAO-56 solar declination and sunset-hour-angle geometry, remains in `[0,24]` hours including polar day/night, and preserves opposite seasonal phase at equal-magnitude Northern/Southern latitudes. | hard-fail | REF-PLANT-FAO56-DAYLIGHT, REF-PLANT-JOLLY-GSI | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PLANT-031 | GSI failure and scope law: invalid latitude/day, non-finite forcing, negative VPD, unordered thresholds, or malformed history hard-fails with a typed error. GSI is a foliar-phenology signal only until a later contract amendment ratifies canopy, LAI, biomass, litter, and downstream-consumer mapping. | hard-fail | REF-PLANT-JOLLY-GSI, REF-PLANT-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PLANT-032 | GSI chronology and restart law: stateful admission accepts only the calendar day immediately following the newest retained sample, including Gregorian year rollover. Repeated, skipped, reversed, or year-invalid dates hard-fail before state mutation. Exact restart restores both ordered history and its newest calendar date. | hard-fail | REF-PLANT-JOLLY-GSI, REF-PLANT-PHYS-BOUNDS | `[INFERENCE][Static]` |
+| INV-PLANT-033 | Native forest phenology authority: an active native forest must provide a complete typed `generalized_gsi_v1` block containing explicit GSI thresholds, summer foliar biomass, evergreen fraction, persistent structural cover, and structural biomass. Missing, non-finite, negative, unordered, or out-of-domain operands hard-fail before daily state mutation; compatibility forest inputs do not silently acquire this authority. | hard-fail | REF-PLANT-JOLLY-GSI, REF-PLANT-PHYS-BOUNDS, SC-INFILE-MANAGEMENT-YAML-001#INV-MANAGEMENT-YAML-006 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-PLANT-034 | Native foliar-state law: for `g=GSI21`, `f=fe+(1-fe)g`, `Bf=Bf,max*f`, and `LAI=xmxlai*f`, where `fe` is the evergreen foliar fraction. Persistent structural biomass does not transfer seasonally. Canopy is `max(Cs, 1-exp(-bb*Bf))` within the existing finite canopy cap. The diagnostic `g=0.5` crossing is never a production branch. | hard-fail | REF-PLANT-JOLLY-GSI, REF-PLANT-LEGACY-GROW, REF-PLANT-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-PLANT-035 | Native daily foliar mass closure: `Bf_after = Bf_before + A_leaf - L_leaf`, where `A_leaf=max(Bf_after-Bf_before,0)` is explicit leaf-on allocation and `L_leaf=max(Bf_before-Bf_after,0)` is same-day leaf-off litter transfer. All operands are finite and non-negative, the closure is exact within roundoff, and a repeated forcing cycle returns to the same endpoint without accumulated canopy-state drift. | hard-fail | REF-PLANT-CH8-SENESCENCE, REF-PLANT-CH9-COUPLING, REF-PLANT-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-PLANT-036 | Native real-consumer ordering: one post-phenology daily state supplies snow canopy attenuation, ET LAI/canopy, WB15 interception, erosion-facing canopy, and the plant-to-residue litter handoff before residue depth/frost publication. Static initial canopy, crop-GDD senescence, producer-only shadow state, and `jdharv` litter windows cannot carry the native integration claim. | hard-fail | REF-PLANT-CH5-COUPLING, REF-PLANT-CH9-COUPLING, REF-PLANT-CH11-COUPLING | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-PLANT-037 | Hemisphere phase-transform law: negating latitude and shifting an identical NH daily forcing sequence by one half-year must shift the native GSI/canopy trajectory to the corresponding SH seasonal phase, with leaf-off and leaf-on order preserved. This is a deterministic symmetry test, not independent SH observational validation. | hard-fail | REF-PLANT-FAO56-DAYLIGHT, REF-PLANT-JOLLY-GSI | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Allowed Degenerate States
 
@@ -415,6 +420,9 @@ algorithm.
 - OBL-PLANT-P-009: Publish monthly climate vectors (`obmaxt[1..12]`, `obmint[1..12]`) to growth runtime surfaces and resolve projected `gddmax<=0` via legacy `yldopt/gdmax` semantics before phenology updates; unresolved or non-positive outcomes are typed hard failures. `[DIRECT][Static] + [INFERENCE][Static]`
 - OBL-PLANT-P-010: Project decomposition-rate constants (`oratea`, `orater`) as finite non-negative values; zero is an explicit no-decay control and negative values are typed hard failures. `[DIRECT][Static] + [INFERENCE][Static]`
 - OBL-PLANT-P-011: Assimilate initial-condition live canopy into primary plant state before first daily scheduler execution, using baseline `init1/initgr` semantics for established perennial cover and typed failures for impossible domains. `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-PLANT-P-012: Advance one year-aware GSI state per active native-forest lane and publish evergreen, deciduous, aggregate foliar, structural, LAI, canopy, allocation, and litter surfaces before daily consumers execute. `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-PLANT-P-013: Derive daily atmospheric VPD as `max(((es(Tmax)+es(Tmin))/2)-ea(Tdew),0)` in pascals using the same climate saturation-vapor-pressure lineage already consumed by PMET; a materially negative or non-finite result hard-fails rather than being hidden by the zero boundary. `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-PLANT-P-014: Preserve exact per-lane GSI chronology and foliar-mass carry across every simulated day and fail closed when the climate date is nonconsecutive. `[INFERENCE][Static]`
 
 ## Consumer Obligations
 
@@ -424,6 +432,7 @@ algorithm.
 - OBL-PLANT-C-004: All consumers must propagate invariant-violation context without silent clamping/defaulting. `[INFERENCE][Static]`
 - OBL-PLANT-C-005: Scheduler/growth/decomp consumers must treat transition-control symbol families as deterministic indexed sets; missing/extra indices are hard failures. `[INFERENCE][Static]`
 - OBL-PLANT-C-006: Hydrology/ET consumers must preserve WB11 `swu`-derived stress and root-uptake lineage semantics when returning `Ws` to growth regulation; surrogate stress substitution is non-authoritative. `[DIRECT][Static] + [INFERENCE][Static]`
+- OBL-PLANT-C-007: Native forest snow, ET, interception, erosion, residue, and frost consumers must read the same post-phenology day state; negative proof must show the static initial canopy and fixed-date litter bridge do not carry this claim. `[INFERENCE][Static]`
 
 ## Boundary Disposition
 
@@ -475,6 +484,11 @@ algorithm.
 | `INV-PLANT-030` | runtime | `openwepp_plant_phenology::photoperiod_hours` | Typed hard error for invalid geometry input; finite polar boundary result otherwise | CP-GSI01 hemisphere gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-PLANT-031` | runtime + governance | GSI typed API boundary and downstream integration hold | Typed hard error for invalid process input; promotion hold on unratified canopy consumers | CP-GSI01 scope gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `INV-PLANT-032` | runtime | `openwepp_plant_phenology::GsiState::advance` calendar admission and `try_from_history` anchor restoration | Typed hard error before mutation on nonconsecutive forcing or incoherent restart state | CP-GSI01 chronology gate | `[INFERENCE][Static]` |
+| `INV-PLANT-033` | parser + runtime | Native YAML schema, input-contract adapter, and PL projection | Typed hard error before native phenology activation | CP-GSI02 authority gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-PLANT-034` | runtime | `openwepp_plant_phenology::ForestCanopyState::advance` | Typed hard error before out-of-domain state publication | CP-GSI02 state-law gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-PLANT-035` | runtime | Forest canopy daily transition and residue handoff | Typed hard error on non-finite, negative, or non-closing foliar mass transfer | CP-GSI02 conservation gate | `[INFERENCE][Static]` |
+| `INV-PLANT-036` | runtime + integration | Direct-production day builder and downstream consumer calls | Package `HOLD` if any real consumer reads pre-phenology/static/fixed-date state | CP-GSI02 consumer gate | `[INFERENCE][Static]` |
+| `INV-PLANT-037` | contract test | Phase-shifted forcing at negated latitude | Test failure on phase/order mismatch; no empirical verdict | CP-GSI02 hemisphere gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -804,13 +818,67 @@ Jolly et al. specified restart serialization.
    history/date-anchor restoration vectors.
 8. Bit-identical replay of the same parameter/forcing sequence.
 
-### Integration Hold
+### Integration Boundary
 
-`GSI21` may be exposed as a process-kernel result, but it must not alter
-`cancov`, `LAI`, `vdmt`, interception biomass, litter/residue, snow, ET, or
-erosion until a later SC-PLANT/SC-RESIDUE amendment defines the native forest
-state and transfer laws and proves the real downstream consumers. The 0.5
-crossing is a diagnostic phenophase marker, not a production canopy switch.
+Revision 22 authorizes `GSI21` consumption only for a complete native
+`generalized_gsi_v1` forest block and only through the CP-GSI02 state, transfer,
+and real-consumer laws below. Compatibility cropland/perennial and flat forest
+inputs retain their prior behavior. The 0.5 crossing remains diagnostic.
+
+## CP-GSI02 Native Forest Canopy And Litter Integration Addendum
+
+### Typed Native Operands
+
+| Symbol | Unit | Domain | Native YAML/runtime meaning |
+|---|---|---|---|
+| `Bf,max` | `kg m^-2` | finite, `>0` | Full-leaf summer foliar biomass endpoint. |
+| `fe` | fraction | finite, `[0,1]` | Evergreen fraction of the summer foliar pool. |
+| `Cs` | fraction | finite, `[0,0.999]` | Persistent branch/stem effective canopy-cover floor. |
+| `Bs` | `kg m^-2` | finite, `>=0` | Persistent structural biomass, excluded from seasonal transfer. |
+| `xmxlai` | `m^2 m^-2` | finite, `>0` | Existing full-leaf maximum LAI. |
+| `bb` | `m^2 kg^-1` | finite, `>0` | Existing WEPP canopy-cover coefficient. |
+
+The native block also carries all six `GsiParameters` thresholds explicitly.
+There is no hidden generalized fallback at the parser/runtime boundary.
+
+### Daily State And Transfer Algorithm
+
+1. Derive daily mean VPD from the existing climate `Tmax`, `Tmin`, and dewpoint
+   saturation-vapor-pressure lineage; convert kPa to Pa and reject non-finite or
+   materially negative values.
+2. Advance the lane's exact `GsiState` using signed climate latitude and the
+   year-aware calendar day.
+3. Compute `f=fe+(1-fe)*GSI21`, evergreen foliar mass `Bfe=Bf,max*fe`,
+   deciduous foliar mass `Bfd=Bf,max*(1-fe)*GSI21`, aggregate `Bf=Bfe+Bfd`, and
+   `LAI=xmxlai*f`.
+4. Compute `Cc=max(Cs,1-exp(-bb*Bf))`, then apply only the existing finite
+   `0.999` canopy boundary. Invalid operands hard-fail before this step; the cap
+   is not input normalization.
+5. Against the prior day's `Bf`, publish `A_leaf=max(Bf-Bf_prev,0)` and
+   `L_leaf=max(Bf_prev-Bf,0)`. Verify
+   `Bf=Bf_prev+A_leaf-L_leaf` within roundoff before mutation.
+6. Route `L_leaf` to same-day surface litter before decomposition and dynamic
+   residue-depth/frost construction. `A_leaf` is the explicit plant production
+   allocation flux; `Bs` is unchanged.
+7. Publish one post-phenology `Bf/LAI/Cc` state to snow, ET, WB15 interception,
+   and erosion-facing day inputs. Native forest does not run crop heat-unit
+   senescence or the `jdharv` litter publication window.
+
+### Contract-Test Vectors
+
+1. Deciduous (`fe=0`), mixed (`0<fe<1`), and evergreen (`fe=1`) endpoints at
+   `GSI21=0` and `1`, including structural-cover-floor dominance.
+2. Increasing, decreasing, and unchanged GSI days independently reconstruct
+   allocation, litter, and exact mass closure.
+3. Two identical annual forcing cycles return bit-identical endpoint canopy and
+   foliar state and do not retain pending fixed-date litter.
+4. A phase-shifted NH sequence at negated latitude produces the corresponding
+   SH canopy series and limb ordering within one transformed calendar day.
+5. Missing/partial YAML, invalid thresholds/fractions/masses, non-finite VPD,
+   and nonconsecutive dates fail before state mutation.
+6. A real direct-production native forest run proves post-phenology canopy/LAI
+   reaches snow, ET, WB15 interception, erosion-facing day input, and leaf-off
+   litter reaches surface residue/depth/frost on the same day.
 
 ## Gap Register
 
@@ -824,12 +892,13 @@ crossing is a diagnostic phenophase marker, not a production canopy switch.
 | GAP-PLANT-006 | Contract-level typed error taxonomy for projection-domain failures is defined, but full cross-domain consumer harmonization of error labels is still open. | Residual traceability work remains for downstream consumers; runtime projection labels are implemented. | promotable-with-risk | `[INFERENCE][Static] + [Ran]` |
 | GAP-PLANT-007 | Alias continuity for projected PL slot/crop runtime naming required explicit closure (`conset/drset` schedule drift and PL11 projected family template continuity). | Closed by PL13A canonical registry + contract alias-map reconciliation; remaining non-canonical structural scheduler symbols are explicitly exceptioned. | closed | `[DIRECT][Static] + [Ran]` |
 | GAP-PLANT-008 | PL13 growth transition path used reset/plumbing semantics without full equation-driven daily growth updates. | Closed by PL16 equation-path authority and implementation for active annual/perennial growth branches. | closed | `[DIRECT][Static] + [Ran]` |
-| GAP-PLANT-009 | The GSI process law is defined independently of an openWEPP native forest canopy/LAI/biomass/litter mapping. | Process phenology can be verified, but production canopy and snow/ET/erosion effects remain non-promotable until the integration law and real consumers close. | non-promotable | `[DIRECT][Static] + [INFERENCE][Static]` |
+| GAP-PLANT-009 | The GSI process law was defined independently of an openWEPP native forest canopy/LAI/biomass/litter mapping. | Closed by the CP-GSI02 explicit endpoint, transfer, YAML, chronology, and real-consumer law; empirical calibration remains outside this gap. | closed pending CP-GSI02 implementation evidence | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Revision History
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-07-19` | `22` | `Codex` | CP-GSI02 contract-first amendment: authorized explicit native GSI operands, evergreen/deciduous/structural state, baseline canopy relation, exact leaf-on/leaf-off mass ledger, same-day litter handoff, real-consumer ordering, and operator-selected phase-shifted SH symmetry validation. |
 | `2026-07-17` | `21` | `Codex` | CP-GSI01 amendment: added Jolly GSI and FAO-56 daylight authority, `INV-PLANT-028..032`, exact indicator/window/hemisphere/chronology laws, contract vectors, explicit cold-start inference, and a hold on canopy/biomass/litter and downstream integration. |
 | `2026-07-13` | `20` | `Codex` | INTVAL perennial root-cap amendment: restored pinned `grow.for` cap-before-increment ordering, made finite zero `rtmmax` valid, required saturated zero-cap state to bypass division and retain the `rdmax`/soil root-depth envelope, and added `INV-PLANT-027`. |
 | `2026-05-20` | `0` | `Codex` | Initial canonical stub created by SCI-02 package prep. |
