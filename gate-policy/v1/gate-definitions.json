@@ -1,6 +1,6 @@
 {
   "schema_version": "openwepp-gate-definitions-v1",
-  "generation": 6,
+  "generation": 7,
   "enforcement_status": "BLOCKING",
   "definitions": [
     {
@@ -210,6 +210,54 @@
       "acceptance": { "kind": "EXIT_CODE", "operator": "EQUALS", "expected": 0, "children": [] },
       "timeout_seconds": 600, "maximum_attempts": 1, "permitted_retry_reasons": [],
       "artifact_contract": "nextest-junit-v1", "output_paths": ["target/gate-plan/hard-invariant-snow-phase.xml"],
+      "blocks_transition": "INCREMENT", "identity_breakers": ["cargo-lock", "rust-toolchain", "target-triple"],
+      "prerequisite_definition_ids": ["authority-admission-v1"]
+    },
+    {
+      "gate_definition_id": "hard-invariant-native-canopy-plant-v1", "gate_family": "science-hard-invariant", "target_template": "STATIC",
+      "risk_classes": ["BOUNDED_COMPONENT", "INTEGRATED_DOMAIN", "CRITICAL"],
+      "executor": { "kind": "NEXTEST_V1", "version": "cargo-nextest-0.9", "adapter_sha256": null },
+      "arguments_template": ["cargo", "nextest", "run", "-p", "openwepp-plant-phenology"],
+      "environment_allowlist": ["PATH", "CARGO_HOME", "RUSTUP_HOME", "RUSTUP_TOOLCHAIN"],
+      "authority_class": "A1", "outcome_policy": "BLOCKING", "failure_classification": "HARD_FAIL",
+      "owner": "openwepp-plant-process-owner", "investigation_owner": "openwepp-plant-process-owner", "boundary": "INCREMENT",
+      "trust_requirement": "REPOSITORY_REVIEWED", "reuse_class": "NON_REUSABLE",
+      "inventory_mode": "EXACT", "inventory_source": "NEXTEST_PACKAGE", "minimum_count": 1,
+      "acceptance": { "kind": "EXIT_CODE", "operator": "EQUALS", "expected": 0, "children": [] },
+      "timeout_seconds": 600, "maximum_attempts": 1, "permitted_retry_reasons": [],
+      "artifact_contract": "nextest-junit-v1", "output_paths": ["target/gate-plan/hard-invariant-native-canopy-plant.xml"],
+      "blocks_transition": "INCREMENT", "identity_breakers": ["cargo-lock", "rust-toolchain", "target-triple"],
+      "prerequisite_definition_ids": ["authority-admission-v1"]
+    },
+    {
+      "gate_definition_id": "hard-invariant-native-canopy-management-v1", "gate_family": "science-hard-invariant", "target_template": "STATIC",
+      "risk_classes": ["BOUNDED_COMPONENT", "INTEGRATED_DOMAIN", "CRITICAL"],
+      "executor": { "kind": "NEXTEST_V1", "version": "cargo-nextest-0.9", "adapter_sha256": null },
+      "arguments_template": ["cargo", "nextest", "run", "-p", "openwepp-management-schema", "-p", "openwepp-input-contract", "-p", "openwepp-landuse-migrate"],
+      "environment_allowlist": ["PATH", "CARGO_HOME", "RUSTUP_HOME", "RUSTUP_TOOLCHAIN"],
+      "authority_class": "A1", "outcome_policy": "BLOCKING", "failure_classification": "HARD_FAIL",
+      "owner": "openwepp-plant-process-owner", "investigation_owner": "openwepp-plant-process-owner", "boundary": "INCREMENT",
+      "trust_requirement": "REPOSITORY_REVIEWED", "reuse_class": "NON_REUSABLE",
+      "inventory_mode": "EXACT", "inventory_source": "NEXTEST_PACKAGES", "minimum_count": 3,
+      "acceptance": { "kind": "EXIT_CODE", "operator": "EQUALS", "expected": 0, "children": [] },
+      "timeout_seconds": 900, "maximum_attempts": 1, "permitted_retry_reasons": [],
+      "artifact_contract": "nextest-junit-v1", "output_paths": ["target/gate-plan/hard-invariant-native-canopy-management.xml"],
+      "blocks_transition": "INCREMENT", "identity_breakers": ["cargo-lock", "rust-toolchain", "target-triple"],
+      "prerequisite_definition_ids": ["authority-admission-v1"]
+    },
+    {
+      "gate_definition_id": "hard-invariant-native-canopy-runtime-v1", "gate_family": "science-hard-invariant", "target_template": "STATIC",
+      "risk_classes": ["BOUNDED_COMPONENT", "INTEGRATED_DOMAIN", "CRITICAL"],
+      "executor": { "kind": "NEXTEST_V1", "version": "cargo-nextest-0.9", "adapter_sha256": null },
+      "arguments_template": ["cargo", "nextest", "run", "-p", "openwepp-hillslope-orchestrator", "-p", "openwepp-runner"],
+      "environment_allowlist": ["PATH", "CARGO_HOME", "RUSTUP_HOME", "RUSTUP_TOOLCHAIN"],
+      "authority_class": "A1", "outcome_policy": "BLOCKING", "failure_classification": "HARD_FAIL",
+      "owner": "openwepp-plant-process-owner", "investigation_owner": "openwepp-plant-process-owner", "boundary": "INCREMENT",
+      "trust_requirement": "REPOSITORY_REVIEWED", "reuse_class": "NON_REUSABLE",
+      "inventory_mode": "EXACT", "inventory_source": "NEXTEST_PACKAGES", "minimum_count": 2,
+      "acceptance": { "kind": "EXIT_CODE", "operator": "EQUALS", "expected": 0, "children": [] },
+      "timeout_seconds": 1800, "maximum_attempts": 1, "permitted_retry_reasons": [],
+      "artifact_contract": "nextest-junit-v1", "output_paths": ["target/gate-plan/hard-invariant-native-canopy-runtime.xml"],
       "blocks_transition": "INCREMENT", "identity_breakers": ["cargo-lock", "rust-toolchain", "target-triple"],
       "prerequisite_definition_ids": ["authority-admission-v1"]
     },

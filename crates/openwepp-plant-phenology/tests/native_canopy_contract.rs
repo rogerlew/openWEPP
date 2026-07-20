@@ -1,6 +1,6 @@
 use openwepp_plant_phenology::{
-    realize_forest_canopy, ForestCanopyDailyResult, ForestCanopyParameters, ForestCanopyState,
-    GsiDailyForcing, GsiDate, GsiParameters,
+    ForestCanopyDailyResult, ForestCanopyParameters, ForestCanopyState, GsiDailyForcing, GsiDate,
+    GsiParameters, realize_forest_canopy,
 };
 
 const YEAR_DAYS: u16 = 365;
@@ -229,10 +229,12 @@ fn full_wrapped_nh_climate_phase_flip_preserves_sh_canopy_and_limb_order() {
         assert!(!south_events.is_empty());
         for north_day in north_events {
             let expected_south_day = shift_day(north_day);
-            assert!(south_events
-                .iter()
-                .copied()
-                .any(|south_day| { circular_day_distance(expected_south_day, south_day) <= 1 }));
+            assert!(
+                south_events
+                    .iter()
+                    .copied()
+                    .any(|south_day| { circular_day_distance(expected_south_day, south_day) <= 1 })
+            );
         }
     }
 }

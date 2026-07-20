@@ -10,6 +10,8 @@ struct DirectProductionDayInputBuilder<'a> {
     climate_span: &'a ClimateRunSpanSummary,
     lane_authority: Vec<DirectProductionLaneDayInputAuthority>,
     residue_cover_state: std::cell::RefCell<Vec<DirectProductionResidueCoverState>>,
+    forest_canopy_state:
+        std::cell::RefCell<Vec<Option<openwepp_plant_phenology::ForestCanopyState>>>,
     winter_hourly_geometry: DirectProductionWinterHourlyGeometry,
     sturm_climate_class: Option<openwepp_hillslope_orchestrator::SnowClimateClass>,
 }
@@ -26,9 +28,7 @@ impl DirectProductionDayInputBuilder<'_> {
     /// when every scheduled lane carries native `routing_coefficients`;
     /// no-lane authority is a protected legacy/off fallback, and mixed
     /// authority must fail closed before streaming.
-    pub(crate) fn laned_active_default_eligibility(
-        &self,
-    ) -> DirectLanedActiveDefaultEligibility {
+    pub(crate) fn laned_active_default_eligibility(&self) -> DirectLanedActiveDefaultEligibility {
         let present = self
             .lane_authority
             .iter()
@@ -69,8 +69,8 @@ impl DirectProductionDayInputBuilder<'_> {
             .laned_geometry_with_selector("OPENWEPP_LANED_ACTIVE")?
             .into_iter()
             .zip(self.lane_authority.iter())
-            .map(|(geometry, lane)| {
-                openwepp_hillslope_orchestrator::DirectLanedActiveLaneConfig {
+            .map(
+                |(geometry, lane)| openwepp_hillslope_orchestrator::DirectLanedActiveLaneConfig {
                     slplen_m: geometry.slplen_m,
                     width_m: geometry.width_m,
                     mean_gradient: geometry.mean_gradient,
@@ -80,8 +80,8 @@ impl DirectProductionDayInputBuilder<'_> {
                     roughness_concentration: geometry.routing.roughness_concentration,
                     vegetation_drag_coefficient: geometry.routing.vegetation_drag_coefficient,
                     canopy_height_m: lane.evapotranspiration.canopy_height_m,
-                }
-            })
+                },
+            )
             .collect();
         let mesh_policy = crate::hillslope::laned_active::mesh_policy_from_env()?;
         let max_dt_s = crate::hillslope::laned_active::max_dt_s_from_env()?;
@@ -291,6 +291,131 @@ struct DirectProductionGrowthCropAuthority {
     rdmax: f64,
     oratea: f64,
     orater: f64,
+    forest_phenology: Option<DirectProductionForestPhenologyAuthority>,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+struct DirectProductionForestPhenologyAuthority {
+    summer_foliar_biomass_kg_m2: f64,
+    evergreen_fraction: f64,
+    structural_canopy_cover_fraction: f64,
+    structural_biomass_kg_m2: f64,
+    minimum_temperature_inactive_c: f64,
+    minimum_temperature_unconstrained_c: f64,
+    vapor_pressure_deficit_unconstrained_pa: f64,
+    vapor_pressure_deficit_inactive_pa: f64,
+    photoperiod_inactive_hours: f64,
+    photoperiod_unconstrained_hours: f64,
+}
+
+#[cfg(test)]
+#[derive(Clone, Copy, Debug)]
+struct NativeCanopyBuilderTrace {
+    day_index: usize,
+    lane_index: usize,
+    canopy: openwepp_plant_phenology::ForestCanopyRealization,
+    snow_canopy_cover_fraction: f64,
+    interception_inputs: DirectCanopyInterceptionInputs,
+    interception_state: openwepp_hillslope_orchestrator::DirectCanopyInterceptionState,
+    projected_surface_residue_kg_m2: f64,
+    projected_residue_depth_m: f64,
+    frost_residue_depth_m: Option<f64>,
+}
+
+#[cfg(test)]
+#[derive(Clone, Copy, Debug)]
+struct NativeCanopyConsumerTrace {
+    builder: NativeCanopyBuilderTrace,
+    growth_state_after: DirectGrowthStateSurface,
+    et_leaf_area_index: f64,
+    et_canopy_cover_fraction: f64,
+    interception_m: f64,
+    decomposition_litter_kg_m2: f64,
+    decomposition_surface_residue_kg_m2: f64,
+    decomposition_residue_depth_m: f64,
+}
+
+#[cfg(test)]
+fn native_canopy_builder_traces() -> &'static std::sync::Mutex<Vec<NativeCanopyBuilderTrace>> {
+    static TRACES: std::sync::OnceLock<std::sync::Mutex<Vec<NativeCanopyBuilderTrace>>> =
+        std::sync::OnceLock::new();
+    TRACES.get_or_init(|| std::sync::Mutex::new(Vec::new()))
+}
+
+#[cfg(test)]
+fn native_canopy_consumer_traces() -> &'static std::sync::Mutex<Vec<NativeCanopyConsumerTrace>> {
+    static TRACES: std::sync::OnceLock<std::sync::Mutex<Vec<NativeCanopyConsumerTrace>>> =
+        std::sync::OnceLock::new();
+    TRACES.get_or_init(|| std::sync::Mutex::new(Vec::new()))
+}
+
+#[cfg(test)]
+fn reset_native_canopy_runtime_traces() {
+    native_canopy_builder_traces()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner)
+        .clear();
+    native_canopy_consumer_traces()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner)
+        .clear();
+}
+
+#[cfg(test)]
+fn record_native_canopy_builder_trace(trace: NativeCanopyBuilderTrace) {
+    native_canopy_builder_traces()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner)
+        .push(trace);
+}
+
+#[cfg(test)]
+fn record_native_canopy_consumer_trace(
+    day_frame: &openwepp_hillslope_orchestrator::DirectDayFrame,
+) {
+    let builder = {
+        let traces = native_canopy_builder_traces()
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        traces
+            .iter()
+            .find(|trace| {
+                trace.day_index == day_frame.day_index && trace.lane_index == day_frame.lane_index
+            })
+            .copied()
+    };
+    let Some(builder) = builder else {
+        return;
+    };
+    let growth_state_after = if day_frame.perennial_growth_inputs.active_context.is_active() {
+        day_frame.perennial_growth.state_after
+    } else {
+        day_frame.annual_growth.state_after
+    };
+    native_canopy_consumer_traces()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner)
+        .push(NativeCanopyConsumerTrace {
+            builder,
+            growth_state_after,
+            et_leaf_area_index: day_frame.evapotranspiration_compute_inputs.leaf_area_index,
+            et_canopy_cover_fraction: day_frame
+                .evapotranspiration_compute_inputs
+                .canopy_cover_fraction,
+            interception_m: day_frame.interception_m,
+            decomposition_litter_kg_m2: day_frame.decomposition_inputs.surface_litter_input_kg_m2,
+            decomposition_surface_residue_kg_m2: day_frame.decomposition.surface_residue_kg_m2,
+            decomposition_residue_depth_m: day_frame.decomposition.residue_depth_m,
+        });
+}
+
+#[cfg(test)]
+fn take_native_canopy_consumer_traces() -> Vec<NativeCanopyConsumerTrace> {
+    std::mem::take(
+        &mut *native_canopy_consumer_traces()
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner),
+    )
 }
 
 #[derive(Clone, Copy)]
@@ -396,7 +521,6 @@ impl DirectProductionWinterHourlyGeometry {
             azimuth: ofe.azimuth_deg,
         })
     }
-
 }
 
 #[allow(clippy::struct_excessive_bools)]
@@ -411,8 +535,7 @@ struct DirectProductionSnowFrostAuthority {
     snow_density_model: openwepp_hillslope_orchestrator::SnowDensityModel,
     snow_phase_model: openwepp_hillslope_orchestrator::SnowPhasePartitionModel,
     snow_melt_model: openwepp_hillslope_orchestrator::SnowMeltModel,
-    stage3_liquid_routing_model:
-        openwepp_hillslope_orchestrator::SnowStage3LiquidRoutingModel,
+    stage3_liquid_routing_model: openwepp_hillslope_orchestrator::SnowStage3LiquidRoutingModel,
     snow_rst_c: f64,
     snow_newsnw_kg_m3: f64,
     snow_ssd_kg_m3: f64,
@@ -496,9 +619,7 @@ impl DirectProductionSeedAuthority {
             .into_iter()
             .map(|typed_lane_seed| DirectProductionLaneSeedAuthority {
                 constructor: typed_lane_seed.constructor.clone(),
-                day_input: direct_production_day_input_authority_from_typed_seed(
-                    typed_lane_seed,
-                ),
+                day_input: direct_production_day_input_authority_from_typed_seed(typed_lane_seed),
             })
             .collect::<Vec<_>>();
         let winter_hourly_geometry =
@@ -529,9 +650,7 @@ impl DirectProductionSeedAuthority {
         })
     }
 
-    fn outlet_snow_frost(
-        &self,
-    ) -> Result<&DirectProductionSnowFrostAuthority, HillslopeCliError> {
+    fn outlet_snow_frost(&self) -> Result<&DirectProductionSnowFrostAuthority, HillslopeCliError> {
         let outlet_index = self.lanes.len().saturating_sub(1);
         Ok(&self.lane(outlet_index)?.day_input.snow_frost)
     }
@@ -550,7 +669,9 @@ impl DirectProductionSeedAuthority {
             })
     }
 
-    fn snowbench_export_seed(&self) -> Result<DirectProductionSnowbenchExportSeed, HillslopeCliError> {
+    fn snowbench_export_seed(
+        &self,
+    ) -> Result<DirectProductionSnowbenchExportSeed, HillslopeCliError> {
         let primary_lane = self.lane(0)?;
         let outlet_snow_frost = self.outlet_snow_frost()?;
         Ok(DirectProductionSnowbenchExportSeed {
@@ -567,7 +688,8 @@ impl DirectProductionSeedAuthority {
                 avg_slope: self.winter_hourly_geometry.avg_slope,
                 azimuth: self.winter_hourly_geometry.azimuth,
                 snow_rst_c: outlet_snow_frost.snow_rst_c,
-                snow_phase_model: openwepp_hillslope_orchestrator::SnowPhasePartitionModel::LegacyRst,
+                snow_phase_model:
+                    openwepp_hillslope_orchestrator::SnowPhasePartitionModel::LegacyRst,
             },
             snow_density_kg_m3: outlet_snow_frost.snow_newsnw_kg_m3,
         })
@@ -1024,12 +1146,9 @@ fn direct_production_typed_peak_runoff_authority(
         direct_production_executor_blocked("typed peak-runoff seed requires at least one slope OFE")
     })?;
     let efflen_and_m = project_typed_wb11_efflen_and_m(None, first_ofe.slplen_m, None)?;
-    let ealpha = direct_production_typed_wb16_ealpha(
-        slope,
-        management_projection,
-        efflen_and_m.exponent_m,
-    )?
-    .map_or(1.0, |projection| projection.ealpha);
+    let ealpha =
+        direct_production_typed_wb16_ealpha(slope, management_projection, efflen_and_m.exponent_m)?
+            .map_or(1.0, |projection| projection.ealpha);
     Ok(DirectProductionPeakRunoffAuthority {
         irrigation_rate_m_s: 0.0,
         efflen_m: efflen_and_m.efflen_m,
@@ -1141,8 +1260,7 @@ fn direct_production_typed_wb16_ealpha(
             ),
         });
     }
-    project_typed_wb16_ealpha_producer(&TypedWb16EalphaProducerInput { exponent_m, ofes })
-        .map(Some)
+    project_typed_wb16_ealpha_producer(&TypedWb16EalphaProducerInput { exponent_m, ofes }).map(Some)
 }
 
 fn direct_production_typed_wb16_canopy_scalar(
@@ -1174,9 +1292,7 @@ fn direct_production_typed_lane_constructor_seed_from_projections(
         soil_water_m: layer_seed.soil_water_m,
         subsurface_layers: layer_seed.layers.clone(),
         evapotranspiration_stage_state: None,
-        plant_growth_state: direct_growth_state_surface_from_pl_projection(
-            management_projection,
-        )?,
+        plant_growth_state: direct_growth_state_surface_from_pl_projection(management_projection)?,
         plant_water_stress: optional_defaults.water_stress,
         snow_lane_state: DirectSnowLaneState::from_runtime_values(
             snow_projection.runtime_swe_m,
@@ -1190,11 +1306,12 @@ fn direct_production_typed_lane_constructor_seed_from_projections(
 fn direct_production_typed_residue_cover_authority(
     management_projection: &openwepp_hillslope_orchestrator::runtime_inputs::HillslopePlRuntimeSurfaces,
 ) -> Result<DirectProductionResidueCoverAuthority, HillslopeCliError> {
-    let initial_surface_residue_kg_m2 = direct_production_pl_projection_optional_nonnegative_scalar(
-        management_projection,
-        "sumsrm_seed",
-    )?
-    .unwrap_or(0.0);
+    let initial_surface_residue_kg_m2 =
+        direct_production_pl_projection_optional_nonnegative_scalar(
+            management_projection,
+            "sumsrm_seed",
+        )?
+        .unwrap_or(0.0);
     let initial_root_residue_kg_m2 = direct_production_pl_projection_optional_nonnegative_scalar(
         management_projection,
         "sumrtm_seed",
@@ -1272,7 +1389,11 @@ fn direct_production_typed_residue_cover_authority(
         "width",
     )?
     .unwrap_or(0.0);
-    let rescov_rspace = if rescov_rspace <= 0.0 { 1.0 } else { rescov_rspace };
+    let rescov_rspace = if rescov_rspace <= 0.0 {
+        1.0
+    } else {
+        rescov_rspace
+    };
     let rescov_width = rescov_width.min(rescov_rspace);
     let rescov_interrill_weight = (rescov_rspace - rescov_width) / rescov_rspace;
 
@@ -1315,7 +1436,11 @@ fn direct_production_typed_evapotranspiration_authority(
                 "canhgt",
             )?,
             radpot_ly: None,
-            solthk_m: soil.layers.iter().map(|layer| Some(layer.solthk_m)).collect(),
+            solthk_m: soil
+                .layers
+                .iter()
+                .map(|layer| Some(layer.solthk_m))
+                .collect(),
         })
     };
     let canopy_height_m = if let Some(pmet) = &pmet {
@@ -1411,14 +1536,12 @@ fn direct_production_erosion_particle_classes(
         surface: "direct_production_erosion_particle_classes",
         detail: format!("{SIMOUT_GUARD_ID} {detail}"),
     };
-    let soil_ofe = parsed_soil
-        .ofes
-        .first()
-        .ok_or_else(|| blocked("erosion particle classes require at least one soil OFE".to_string()))?;
-    let surface_layer = soil_ofe
-        .layers
-        .first()
-        .ok_or_else(|| blocked("erosion particle classes require at least one soil layer".to_string()))?;
+    let soil_ofe = parsed_soil.ofes.first().ok_or_else(|| {
+        blocked("erosion particle classes require at least one soil OFE".to_string())
+    })?;
+    let surface_layer = soil_ofe.layers.first().ok_or_else(|| {
+        blocked("erosion particle classes require at least one soil layer".to_string())
+    })?;
     let sand = surface_layer.sand_pct / 100.0;
     let clay = surface_layer.clay_pct / 100.0;
     let silt = 1.0 - sand - clay;
@@ -1466,9 +1589,10 @@ fn direct_production_wave1_operand_seed(
         .ofes
         .first()
         .ok_or_else(|| seed_blocked("erosion seed requires at least one soil OFE".to_string()))?;
-    let surface_layer = soil_ofe.layers.first().ok_or_else(|| {
-        seed_blocked("erosion seed requires at least one soil layer".to_string())
-    })?;
+    let surface_layer = soil_ofe
+        .layers
+        .first()
+        .ok_or_else(|| seed_blocked("erosion seed requires at least one soil layer".to_string()))?;
     let slope_ofe = slope
         .ofes
         .first()
@@ -1495,9 +1619,8 @@ fn direct_production_wave1_operand_seed(
     let rfg = surface_layer.rock_frag_pct / 100.0;
 
     let classes = direct_production_erosion_particle_classes(parsed_soil)?;
-    let (diaeff, spgeff) =
-        openwepp_hillslope_orchestrator::erosion_effective_particle(&classes)
-            .map_err(|e| seed_blocked(format!("erosion effective particle failed: {e}")))?;
+    let (diaeff, spgeff) = openwepp_hillslope_orchestrator::erosion_effective_particle(&classes)
+        .map_err(|e| seed_blocked(format!("erosion effective particle failed: {e}")))?;
     let veleff_m_s = openwepp_hillslope_orchestrator::erosion_falvel(spgeff, diaeff);
 
     let baselines = openwepp_hillslope_orchestrator::erosion_consolidation_baselines(
@@ -1558,9 +1681,12 @@ fn direct_production_wave1_operand_seed(
     let hmax_m =
         direct_production_typed_wb16_canopy_scalar(management_projection, FIRST_OFE_INDEX, "hmax")
             .unwrap_or(0.0);
-    let flivmx =
-        direct_production_typed_wb16_canopy_scalar(management_projection, FIRST_OFE_INDEX, "flivmx")
-            .unwrap_or(0.0);
+    let flivmx = direct_production_typed_wb16_canopy_scalar(
+        management_projection,
+        FIRST_OFE_INDEX,
+        "flivmx",
+    )
+    .unwrap_or(0.0);
 
     // Random roughness (`rrinit`) — first-cut static value (no daily decay).
     // Days-since-disturbance (`daydi1`) seeds the consolidation carry;
@@ -1591,17 +1717,10 @@ fn direct_production_wave1_operand_seed(
         avg_slope: slope_ofe.avgslp,
         slpend,
         sand,
-        ssasol: openwepp_hillslope_orchestrator::erosion_surface_soil_ssa(
-            sand,
-            silt,
-            clay,
-            orgmat,
-        )
-        .map_err(|e| {
-            direct_production_executor_blocked(format!(
-                "erosion surface-soil SSA failed: {e}"
-            ))
-        })?,
+        ssasol: openwepp_hillslope_orchestrator::erosion_surface_soil_ssa(sand, silt, clay, orgmat)
+            .map_err(|e| {
+                direct_production_executor_blocked(format!("erosion surface-soil SSA failed: {e}"))
+            })?,
         classes,
         veleff_m_s,
         baselines,
@@ -1646,9 +1765,9 @@ fn direct_production_schedule_lanuse_is_cropland(
                 .get(yearly_ref.wrapping_sub(1))
                 .map(|yearly| &yearly.data)
             {
-                Some(openwepp_input_contract::parsers::management::YearlyScenarioData::Cropland(
-                    _,
-                )) => saw_cropland = true,
+                Some(
+                    openwepp_input_contract::parsers::management::YearlyScenarioData::Cropland(_),
+                ) => saw_cropland = true,
                 Some(openwepp_input_contract::parsers::management::YearlyScenarioData::Forest(
                     _,
                 )) => saw_forest = true,
@@ -1698,9 +1817,9 @@ fn direct_production_management_has_active_tillage(management: &ManagementParseO
                     ),
                     // Native forest yearlies carry no surface-effect
                     // sequence (LANUSE-AUTH-3) — never active tillage.
-                    openwepp_input_contract::parsers::management::YearlyScenarioData::Forest(
-                        _,
-                    ) => false,
+                    openwepp_input_contract::parsers::management::YearlyScenarioData::Forest(_) => {
+                        false
+                    }
                 })
         })
     })
@@ -1778,15 +1897,15 @@ fn direct_production_typed_erosion_authority(
     })
 }
 
-
 fn direct_production_typed_growth_authority(
     management_projection: &openwepp_hillslope_orchestrator::runtime_inputs::HillslopePlRuntimeSurfaces,
     climate_request: &HillslopeClimateRuntimeRequest,
     soil: &TypedSoilWb11RuntimeProjection,
 ) -> Result<DirectProductionGrowthAuthority, HillslopeCliError> {
-    let Some(slot_count_value) =
-        direct_production_pl_projection_optional_scalar(management_projection, "pl_schedule_slot_count")
-    else {
+    let Some(slot_count_value) = direct_production_pl_projection_optional_scalar(
+        management_projection,
+        "pl_schedule_slot_count",
+    ) else {
         return Ok(DirectProductionGrowthAuthority::inactive());
     };
     let slot_count =
@@ -1920,6 +2039,16 @@ fn direct_production_typed_growth_crop_authority(
     } else {
         (0, 1)
     };
+    let forest_phenology = direct_production_forest_phenology_authority(
+        management_projection,
+        slot_index,
+        crop_slot_index,
+    )?;
+    if forest_phenology.is_some() && (schedule_imngmt != 2 || jdplt != 0 || jdstop != 0) {
+        return Err(direct_growth_failure(format!(
+            "native forest phenology slot {slot_index} crop {crop_slot_index} requires perennial continuous schedule imngmt=2, jdplt=0, jdstop=0"
+        )));
+    }
     Ok(DirectProductionGrowthCropAuthority {
         schedule_imngmt,
         imngmt,
@@ -2002,15 +2131,57 @@ fn direct_production_typed_growth_crop_authority(
             management_projection,
             &direct_decomp_slot_crop_symbol(slot_index, crop_slot_index, "orater"),
         )?,
+        forest_phenology,
     })
+}
+
+fn direct_production_forest_phenology_authority(
+    projection: &openwepp_hillslope_orchestrator::runtime_inputs::HillslopePlRuntimeSurfaces,
+    slot_index: usize,
+    crop_slot_index: usize,
+) -> Result<Option<DirectProductionForestPhenologyAuthority>, HillslopeCliError> {
+    let model_symbol =
+        direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "forest_phenology_model");
+    let Some(model) = direct_production_pl_projection_optional_scalar(projection, &model_symbol)
+    else {
+        return Ok(None);
+    };
+    let model = direct_growth_integral_usize(&model_symbol, model, 1, 1)?;
+    if model != 1 {
+        return Err(direct_growth_failure(format!(
+            "unsupported native forest phenology model {model}"
+        )));
+    }
+    let required = |root: &str| {
+        direct_growth_projection_required_scalar(
+            projection,
+            &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, root),
+        )
+    };
+    Ok(Some(DirectProductionForestPhenologyAuthority {
+        summer_foliar_biomass_kg_m2: required("forest_summer_foliar_biomass_kg_m2")?,
+        evergreen_fraction: required("forest_evergreen_fraction")?,
+        structural_canopy_cover_fraction: required("forest_structural_canopy_cover_fraction")?,
+        structural_biomass_kg_m2: required("forest_structural_biomass_kg_m2")?,
+        minimum_temperature_inactive_c: required("forest_minimum_temperature_inactive_c")?,
+        minimum_temperature_unconstrained_c: required(
+            "forest_minimum_temperature_unconstrained_c",
+        )?,
+        vapor_pressure_deficit_unconstrained_pa: required(
+            "forest_vapor_pressure_deficit_unconstrained_pa",
+        )?,
+        vapor_pressure_deficit_inactive_pa: required("forest_vapor_pressure_deficit_inactive_pa")?,
+        photoperiod_inactive_hours: required("forest_photoperiod_inactive_hours")?,
+        photoperiod_unconstrained_hours: required("forest_photoperiod_unconstrained_hours")?,
+    }))
 }
 
 fn direct_growth_projection_required_scalar(
     projection: &openwepp_hillslope_orchestrator::runtime_inputs::HillslopePlRuntimeSurfaces,
     symbol: &str,
 ) -> Result<f64, HillslopeCliError> {
-    let value = direct_production_pl_projection_optional_scalar(projection, symbol)
-        .ok_or_else(|| {
+    let value =
+        direct_production_pl_projection_optional_scalar(projection, symbol).ok_or_else(|| {
             direct_growth_failure(format!("missing required direct growth symbol {symbol}"))
         })?;
     if !value.is_finite() {
@@ -2043,9 +2214,8 @@ fn direct_growth_projection_required_integral_u8(
         min_allowed,
         max_allowed,
     )?;
-    u8::try_from(parsed).map_err(|_| {
-        direct_growth_failure(format!("{symbol} value {parsed} outside u8 range"))
-    })
+    u8::try_from(parsed)
+        .map_err(|_| direct_growth_failure(format!("{symbol} value {parsed} outside u8 range")))
 }
 
 fn direct_growth_projection_required_integral_u16(
@@ -2060,9 +2230,8 @@ fn direct_growth_projection_required_integral_u16(
         min_allowed,
         max_allowed,
     )?;
-    u16::try_from(parsed).map_err(|_| {
-        direct_growth_failure(format!("{symbol} value {parsed} outside u16 range"))
-    })
+    u16::try_from(parsed)
+        .map_err(|_| direct_growth_failure(format!("{symbol} value {parsed} outside u16 range")))
 }
 
 fn direct_production_typed_snow_frost_authority(
@@ -2132,8 +2301,7 @@ fn direct_production_typed_snow_frost_authority(
         frost_wint_red_enabled,
         frost_runtime_depth_m,
         frost_runtime_frozen_water_m,
-        frost_active: frost_runtime_depth_m > 1.0e-12
-            || frost_runtime_frozen_water_m > 1.0e-12,
+        frost_active: frost_runtime_depth_m > 1.0e-12 || frost_runtime_frozen_water_m > 1.0e-12,
     })
 }
 
@@ -2237,10 +2405,14 @@ fn direct_production_typed_frost_layer_carry_projection(
     layer_seed: &DirectProductionTypedLayerSeed,
     frost_projection: &openwepp_hillslope_orchestrator::runtime_inputs::TypedFrostRuntimeProjection,
 ) -> Result<Vec<DirectFrostLayerCarryProjection>, HillslopeCliError> {
-    let fine_top_count =
-        direct_production_typed_frost_fine_count("frost.options.fineTop", frost_projection.fine_top)?;
-    let fine_bot_count =
-        direct_production_typed_frost_fine_count("frost.options.fineBot", frost_projection.fine_bot)?;
+    let fine_top_count = direct_production_typed_frost_fine_count(
+        "frost.options.fineTop",
+        frost_projection.fine_top,
+    )?;
+    let fine_bot_count = direct_production_typed_frost_fine_count(
+        "frost.options.fineBot",
+        frost_projection.fine_bot,
+    )?;
     let layer_count = layer_seed.layers.len();
     let mut projection = Vec::with_capacity(layer_count);
     for (offset, layer) in layer_seed.layers.iter().enumerate() {
@@ -2279,14 +2451,14 @@ fn direct_production_typed_frost_fine_count(
     if !(1..=10).contains(&value) {
         return Err(HillslopeCliError::RuntimeSurfaceFailure {
             surface: "direct_production_typed_seed",
-            detail: format!("{SIMOUT_GUARD_ID} {symbol} must be an integer in [1,10], observed {value}"),
+            detail: format!(
+                "{SIMOUT_GUARD_ID} {symbol} must be an integer in [1,10], observed {value}"
+            ),
         });
     }
-    usize::try_from(value).map_err(|_| {
-        HillslopeCliError::RuntimeSurfaceFailure {
-            surface: "direct_production_typed_seed",
-            detail: format!("{SIMOUT_GUARD_ID} {symbol} could not convert to usize: {value}"),
-        }
+    usize::try_from(value).map_err(|_| HillslopeCliError::RuntimeSurfaceFailure {
+        surface: "direct_production_typed_seed",
+        detail: format!("{SIMOUT_GUARD_ID} {symbol} could not convert to usize: {value}"),
     })
 }
 
@@ -2376,16 +2548,11 @@ fn direct_production_typed_subsurface_inputs(
     let slope_ofe = slope.ofes.first().ok_or_else(|| {
         direct_production_executor_blocked("typed subsurface seed requires at least one slope OFE")
     })?;
-    let drain_enabled = direct_production_pl_projection_optional_flag(
-        management_projection,
-        "wb19_drain_enabled",
-    )?
-    .unwrap_or(false);
+    let drain_enabled =
+        direct_production_pl_projection_optional_flag(management_projection, "wb19_drain_enabled")?
+            .unwrap_or(false);
     let drain_depth_m = if drain_enabled {
-        direct_production_pl_projection_required_scalar(
-            management_projection,
-            "wb19_drain_depth",
-        )?
+        direct_production_pl_projection_required_scalar(management_projection, "wb19_drain_depth")?
     } else {
         0.5
     };
@@ -2594,9 +2761,7 @@ fn direct_growth_state_surface_from_pl_projection(
             .filter(|value: &f64| value.is_finite())
             .ok_or_else(|| HillslopeCliError::RuntimeSurfaceFailure {
                 surface: "direct_production_typed_seed",
-                detail: format!(
-                    "{SIMOUT_GUARD_ID} typed PL projection missing finite {symbol}"
-                ),
+                detail: format!("{SIMOUT_GUARD_ID} typed PL projection missing finite {symbol}"),
             })
     };
     let vdmt = value("vdmt")?;
@@ -2674,20 +2839,22 @@ fn direct_production_typed_layer_seed(
         .iter()
         .zip(storage.layers.iter())
         .zip(frozen_depths.frozen_depths_m.iter().copied())
-        .map(|((layer, store), frozen_depth_m)| DirectSubsurfaceLayerState {
-            theta_m: store.theta,
-            field_capacity_m: store.field_capacity,
-            upper_limit_m: store.upper_limit,
-            conductivity_m_s: layer.ssc_m_s,
-            depth_m: layer.dg_m,
-            residual_theta: layer.thetdr,
-            frozen_depth_m,
-            frozen_water_m: 0.0,
-            porosity: layer.porosity,
-            field_capacity_theta: layer.thetfc,
-            coca: layer.coca,
-            lateral_conductivity_m_s: layer.lateral_ssh_m_s,
-        })
+        .map(
+            |((layer, store), frozen_depth_m)| DirectSubsurfaceLayerState {
+                theta_m: store.theta,
+                field_capacity_m: store.field_capacity,
+                upper_limit_m: store.upper_limit,
+                conductivity_m_s: layer.ssc_m_s,
+                depth_m: layer.dg_m,
+                residual_theta: layer.thetdr,
+                frozen_depth_m,
+                frozen_water_m: 0.0,
+                porosity: layer.porosity,
+                field_capacity_theta: layer.thetfc,
+                coca: layer.coca,
+                lateral_conductivity_m_s: layer.lateral_ssh_m_s,
+            },
+        )
         .collect();
 
     Ok(DirectProductionTypedLayerSeed {

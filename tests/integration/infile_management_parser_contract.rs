@@ -1123,6 +1123,10 @@ fn native_ow_lanuse_1_datver_parses_forest_scenarios() {
     assert_f64_close(plant.growth.rdmax, 0.3);
     assert_f64_close(plant.growth.decfct, 1.0);
     assert_f64_close(plant.growth.dropfc, 1.0);
+    assert_eq!(
+        plant.phenology, None,
+        "flat forest compatibility input must not infer GSI authority"
+    );
     assert_f64_close(plant.cf, 5.0);
     assert_f64_close(plant.diam, 0.005);
     assert_f64_close(plant.decomposition.oratea, 0.0);

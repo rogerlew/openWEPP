@@ -2,7 +2,7 @@
   "schema_version": "openwepp-gate-impact-map-v1",
   "policy_id": "ADR-0039",
   "policy_sha256": "02b9033ca5504cf41411695d73be0b3cbe3bbeb71daecfa94c8410911c0973b3",
-  "generation": 6,
+  "generation": 7,
   "enforcement_status": "BLOCKING",
   "unknown_path_action": "ESCALATE_CRITICAL",
   "entries": [
@@ -53,6 +53,176 @@
       "assurance_watches": [],
       "gate_definition_ids": ["gate-policy-schema-consistency-v1"],
       "documentation_paths": ["docs/standards/testing-and-gate-strategy.md"]
+    },
+    {
+      "entry_id": "canopy-phenology-direct-core-frames",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/00_core_frames.rs" },
+      "owner": "openwepp-plant-process-owner", "semantic_surface": "native-forest-canopy-runtime", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-PLANT-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-native-canopy-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-PLANT-001.md"]
+    },
+    {
+      "entry_id": "canopy-phenology-direct-executor",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/03_executor.rs" },
+      "owner": "openwepp-plant-process-owner", "semantic_surface": "native-forest-canopy-runtime", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-PLANT-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-native-canopy-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-PLANT-001.md"]
+    },
+    {
+      "entry_id": "canopy-phenology-erosion-consumer",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/erosion.rs" },
+      "owner": "openwepp-plant-process-owner", "semantic_surface": "native-forest-canopy-runtime", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-PLANT-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-native-canopy-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-PLANT-001.md"]
+    },
+    {
+      "entry_id": "canopy-phenology-growth-consumer",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/direct_runtime/growth.rs" },
+      "owner": "openwepp-plant-process-owner", "semantic_surface": "native-forest-canopy-runtime", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-PLANT-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-native-canopy-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-PLANT-001.md"]
+    },
+    {
+      "entry_id": "canopy-phenology-management-projection",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/runtime_inputs/05_projection_helpers.rs" },
+      "owner": "openwepp-plant-process-owner", "semantic_surface": "native-forest-management-projection", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-INFILE-MANAGEMENT-YAML-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-native-canopy-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-INFILE-MANAGEMENT-YAML-001.md"]
+    },
+    {
+      "entry_id": "canopy-phenology-direct-runtime-guards",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/direct_runtime.rs" },
+      "owner": "openwepp-plant-process-owner", "semantic_surface": "native-forest-canopy-runtime", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-hillslope-orchestrator"],
+      "test_targets": ["openwepp-hillslope-orchestrator"], "covering_test_targets": ["openwepp-hillslope-orchestrator"],
+      "contracts": ["SC-PLANT-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-native-canopy-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-PLANT-001.md"]
+    },
+    {
+      "entry_id": "canopy-phenology-management-parser",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-input-contract/src/parsers/management.rs" },
+      "owner": "openwepp-plant-process-owner", "semantic_surface": "native-forest-management-input", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-input-contract"],
+      "test_targets": ["openwepp-input-contract"], "covering_test_targets": ["openwepp-input-contract"],
+      "contracts": ["SC-INFILE-MANAGEMENT-YAML-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-native-canopy-management-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-INFILE-MANAGEMENT-YAML-001.md"]
+    },
+    {
+      "entry_id": "canopy-phenology-landuse-migration",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-landuse-migrate/src/convert.rs" },
+      "owner": "openwepp-plant-process-owner", "semantic_surface": "native-forest-management-migration", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-landuse-migrate"],
+      "test_targets": ["openwepp-landuse-migrate"], "covering_test_targets": ["openwepp-landuse-migrate"],
+      "contracts": ["SC-INFILE-MANAGEMENT-YAML-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-native-canopy-management-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-INFILE-MANAGEMENT-YAML-001.md"]
+    },
+    {
+      "entry_id": "canopy-phenology-management-schema",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-management-schema/src/lib.rs" },
+      "owner": "openwepp-plant-process-owner", "semantic_surface": "native-forest-management-schema", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-management-schema"],
+      "test_targets": ["openwepp-management-schema"], "covering_test_targets": ["openwepp-management-schema"],
+      "contracts": ["SC-INFILE-MANAGEMENT-YAML-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-native-canopy-management-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-INFILE-MANAGEMENT-YAML-001.md"]
+    },
+    {
+      "entry_id": "canopy-phenology-plant-domain",
+      "matcher": { "kind": "path_prefix", "value": "crates/openwepp-plant-phenology/" },
+      "owner": "openwepp-plant-process-owner", "semantic_surface": "native-forest-canopy-kernel", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-plant-phenology"],
+      "test_targets": ["openwepp-plant-phenology"], "covering_test_targets": ["openwepp-plant-phenology"],
+      "contracts": ["SC-PLANT-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-native-canopy-plant-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-PLANT-001.md"]
+    },
+    {
+      "entry_id": "canopy-phenology-runner-manifest",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-runner/Cargo.toml" },
+      "owner": "openwepp-plant-process-owner", "semantic_surface": "native-forest-canopy-runtime", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-runner"],
+      "test_targets": ["openwepp-runner"], "covering_test_targets": ["openwepp-runner"],
+      "contracts": ["SC-PLANT-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-native-canopy-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-PLANT-001.md"]
+    },
+    {
+      "entry_id": "canopy-phenology-runner-tests",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-runner/src/hillslope/03_tests.rs" },
+      "owner": "openwepp-plant-process-owner", "semantic_surface": "native-forest-canopy-runtime", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-runner"],
+      "test_targets": ["openwepp-runner"], "covering_test_targets": ["openwepp-runner"],
+      "contracts": ["SC-PLANT-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-native-canopy-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-PLANT-001.md"]
+    },
+    {
+      "entry_id": "canopy-phenology-runner-execution",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-runner/src/hillslope/05_runner_execution_and_outputs.rs" },
+      "owner": "openwepp-plant-process-owner", "semantic_surface": "native-forest-canopy-runtime", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-runner"],
+      "test_targets": ["openwepp-runner"], "covering_test_targets": ["openwepp-runner"],
+      "contracts": ["SC-PLANT-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-native-canopy-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-PLANT-001.md"]
+    },
+    {
+      "entry_id": "canopy-phenology-runner-authority",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00_builders_and_authority.rs" },
+      "owner": "openwepp-plant-process-owner", "semantic_surface": "native-forest-canopy-runtime", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-runner"],
+      "test_targets": ["openwepp-runner"], "covering_test_targets": ["openwepp-runner"],
+      "contracts": ["SC-PLANT-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-native-canopy-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-PLANT-001.md"]
+    },
+    {
+      "entry_id": "canopy-phenology-runner-builder",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00c_day_input_builder_impl.rs" },
+      "owner": "openwepp-plant-process-owner", "semantic_surface": "native-forest-canopy-runtime", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-runner"],
+      "test_targets": ["openwepp-runner"], "covering_test_targets": ["openwepp-runner"],
+      "contracts": ["SC-PLANT-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-native-canopy-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-PLANT-001.md"]
+    },
+    {
+      "entry_id": "canopy-phenology-residue-handoff",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00d_authority_runtime_impl.rs" },
+      "owner": "openwepp-plant-process-owner", "semantic_surface": "native-forest-leaf-off-residue", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-runner"],
+      "test_targets": ["openwepp-runner"], "covering_test_targets": ["openwepp-runner"],
+      "contracts": ["SC-RESIDUE-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-native-canopy-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-RESIDUE-001.md"]
+    },
+    {
+      "entry_id": "canopy-phenology-runner-source-guards",
+      "matcher": { "kind": "exact_path", "value": "crates/openwepp-runner/src/hillslope/tests03/direct_publication_source_guards.rs" },
+      "owner": "openwepp-plant-process-owner", "semantic_surface": "native-forest-canopy-runtime", "risk_floor": "CRITICAL",
+      "reason_codes": ["SCIENCE_CONTRACT_IMPACT"], "affected_packages": ["openwepp-runner"],
+      "test_targets": ["openwepp-runner"], "covering_test_targets": ["openwepp-runner"],
+      "contracts": ["SC-PLANT-001"], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["hard-invariant-native-canopy-runtime-v1"],
+      "documentation_paths": ["docs/specifications/science-contracts/contracts/SC-PLANT-001.md"]
     },
     {
       "entry_id": "groundwater-assurance-domain",

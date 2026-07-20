@@ -1493,9 +1493,11 @@ mod tests {
         let high_lambda = VALID_ROUTING_YAML.replace("lambda: 0.2", "lambda: 1.2");
         let lambda_err = parse_management_yaml_from_str(&high_lambda)
             .expect_err("lambda above one must fail closed");
-        assert!(lambda_err
-            .to_string()
-            .contains("routing_coefficients.lambda"));
+        assert!(
+            lambda_err
+                .to_string()
+                .contains("routing_coefficients.lambda")
+        );
     }
 
     #[test]
@@ -1516,9 +1518,11 @@ mod tests {
         );
         let schedule_error = parse_management_yaml_from_str(&gated)
             .expect_err("seasonally gated native phenology must fail");
-        assert!(schedule_error
-            .to_string()
-            .contains("requires continuous jdplt=0 and jdstop=0"));
+        assert!(
+            schedule_error
+                .to_string()
+                .contains("requires continuous jdplt=0 and jdstop=0")
+        );
     }
 
     #[test]

@@ -1,6 +1,6 @@
 # CANOPY-PHENOLOGY-02 Native Forest Integration
 
-Status: `ACTIVE — reviewed prototype withdrawn; corrected intake`
+Status: `ACTIVE — corrected implementation ready for independent verification`
 
 Package id: `20260719-canopy-phenology-native-integration-001`
 
@@ -207,9 +207,12 @@ Subagents have no production write access.
   by the failed exact-diff terminal attempt.
 - [x] (2026-07-20) Admitted corrected critical intent plan `f307138c...` from
   base `a749ed7a` and the exact prospective path manifest before reimplementation.
-- [ ] Freeze contracts, tests, and the pre-implementation gate.
-- [ ] Implement native YAML, typed realization, runner state, and consumers.
-- [ ] Execute selected gates and conservation/consumer audits.
+- [x] (2026-07-20) Froze corrected contracts, contract-derived tests, and the
+  expected-red pre-implementation gate.
+- [x] (2026-07-20) Implemented native YAML, typed realization, runner state,
+  same-day litter, and real downstream consumers.
+- [x] (2026-07-20) Passed focused package, integration, consumer, conservation,
+  formatting, gate-policy schema, and selected-package Clippy checks.
 - [ ] Complete independent review, disposition, verification, and closure.
 
 ## Surprises & Discoveries
@@ -231,6 +234,14 @@ Subagents have no production write access.
   GSI comparison, zero `bb`, inactive native schedule gaps, and silent negative
   VPD normalization.
   Evidence: `artifacts/review_agent_a.md` and `artifacts/review_agent_b.md`.
+- Observation: the original two-day runner fixture could prove wiring but not a
+  nonzero leaf-off transfer. A controlled equatorial warm-to-cold pair produces
+  leaf-on then leaf-off without lengthening the real-run fixture.
+  Evidence: the 132-test runner library pass and `consumer-path-proof.md`.
+- Observation: exact erosion-canopy and frost-residue consumer observations add
+  32 bytes to `DirectDayFrame`; the bounded-layout guard records this explicit
+  contract-evidence cost at 15,568 bytes.
+  Evidence: focused `r7b_constructor_type_size_layout_is_bounded` pass.
 
 ## Decision Log
 

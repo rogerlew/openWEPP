@@ -37,11 +37,8 @@ fn execute_hillslope_direct_production_days(
     frame
         .configure_groundwater(groundwater_authority)
         .map_err(|source| direct_production_runtime_error(&source))?;
-    let day_input_builder = DirectProductionDayInputBuilder::new(
-        &climate_request,
-        &climate_span,
-        &seed_authority,
-    )?;
+    let day_input_builder =
+        DirectProductionDayInputBuilder::new(&climate_request, &climate_span, &seed_authority)?;
     let metadata = DirectPublicationRunMetadata {
         run_name: run_name.to_string(),
         runtime_selection: HillslopeRuntimeSelection::DirectProductionExecutor
@@ -159,7 +156,8 @@ fn apply_laned_active_configuration(
 fn validate_laned_active_summary(
     laned_active_enabled: bool,
     laned_active: Option<openwepp_hillslope_orchestrator::DirectLanedActiveRunSummary>,
-) -> Result<Option<openwepp_hillslope_orchestrator::DirectLanedActiveRunSummary>, HillslopeCliError> {
+) -> Result<Option<openwepp_hillslope_orchestrator::DirectLanedActiveRunSummary>, HillslopeCliError>
+{
     if laned_active_enabled && laned_active.is_none() {
         return Err(HillslopeCliError::RuntimeSurfaceFailure {
             surface: "laned_active_summary",
@@ -174,12 +172,11 @@ fn configure_laned_active_execution(
     day_input_builder: &DirectProductionDayInputBuilder<'_>,
 ) -> Result<(bool, bool), HillslopeCliError> {
     let laned_active_enabled = resolve_laned_active_enabled(day_input_builder)?;
-    let (laned_active_enabled, laned_active_profile_enabled) =
-        resolve_laned_active_configuration(
-            laned_active_enabled,
-            crate::hillslope::laned_shadow::LanedShadowCollector::env_enabled(),
-            std::env::var("OPENWEPP_LANED_SHADOW_PROFILE").is_ok_and(|value| value == "1"),
-        )?;
+    let (laned_active_enabled, laned_active_profile_enabled) = resolve_laned_active_configuration(
+        laned_active_enabled,
+        crate::hillslope::laned_shadow::LanedShadowCollector::env_enabled(),
+        std::env::var("OPENWEPP_LANED_SHADOW_PROFILE").is_ok_and(|value| value == "1"),
+    )?;
     let config = if laned_active_enabled {
         Some(day_input_builder.laned_active_config()?)
     } else {
@@ -195,8 +192,11 @@ fn execute_direct_publication_stream(
     day_input_builder: &DirectProductionDayInputBuilder<'_>,
     streaming_targets: &DirectPublicationStreamingTargets,
 ) -> Result<RetainedDirectPublication, HillslopeCliError> {
-    let mut stream_sink =
-        DirectPublicationStreamingSink::create(frame.identity, metadata.clone(), streaming_targets)?;
+    let mut stream_sink = DirectPublicationStreamingSink::create(
+        frame.identity,
+        metadata.clone(),
+        streaming_targets,
+    )?;
     // Lane D ACTIVE owner (SC-OFEROUTE-001 rev 46): explicit active opt-in
     // or conditional default activation when every scheduled lane carries
     // native routing-coefficient authority. A no-coefficient run remains
@@ -205,8 +205,7 @@ fn execute_direct_publication_stream(
         configure_laned_active_execution(frame, day_input_builder)?;
     // Lane D seam shadow (INV-OFEROUTE-012 activation increment):
     // opt-in, diagnostics-only; geometry from the Wave-1 operand seeds.
-    let mut laned_shadow = if crate::hillslope::laned_shadow::LanedShadowCollector::env_enabled()
-    {
+    let mut laned_shadow = if crate::hillslope::laned_shadow::LanedShadowCollector::env_enabled() {
         Some(crate::hillslope::laned_shadow::LanedShadowCollector::new(
             day_input_builder.laned_shadow_geometry()?,
         ))
@@ -223,6 +222,8 @@ fn execute_direct_publication_stream(
                     .map_err(|error| direct_publication_day_input_build_error(&error))
             },
             |row, day_frame| {
+                #[cfg(test)]
+                record_native_canopy_consumer_trace(day_frame);
                 if let Some(collector) = laned_shadow.as_mut() {
                     let operand_span = collector.profile_span_start();
                     let operands = Box::new(
@@ -233,9 +234,7 @@ fn execute_direct_publication_stream(
                     collector.record_operand_build(operand_span);
                     collector
                         .observe_row(row, operands)
-                        .map_err(|detail| {
-                            DirectRuntimeError::PublicationSinkFailure { detail }
-                        })?;
+                        .map_err(|detail| DirectRuntimeError::PublicationSinkFailure { detail })?;
                 }
                 stream_sink.observe_row(row).map_err(|error| {
                     DirectRuntimeError::PublicationSinkFailure {
@@ -250,9 +249,7 @@ fn execute_direct_publication_stream(
         .map(crate::hillslope::laned_shadow::LanedShadowCollector::finalize)
         .transpose()
         .map_err(|detail| {
-            direct_production_runtime_error(&DirectRuntimeError::PublicationSinkFailure {
-                detail,
-            })
+            direct_production_runtime_error(&DirectRuntimeError::PublicationSinkFailure { detail })
         })?;
     // D15A: the executor accumulated the active evidence on the frame; a
     // missing summary under the active selector is a wiring defect and
@@ -261,8 +258,7 @@ fn execute_direct_publication_stream(
     if laned_active_profile_enabled {
         // Lane D diagnostics: one stderr line, same posture as the shadow's
         // profile report (never touches outputs or the manifest).
-        let routing =
-            openwepp_hillslope_orchestrator::ofe_routing::profile::snapshot_and_reset();
+        let routing = openwepp_hillslope_orchestrator::ofe_routing::profile::snapshot_and_reset();
         eprintln!(
             "laned_active_profile {{\"solver_runs\":{},\"solver_steps\":{},\"solver_steps_homogeneous\":{},\"solver_steps_source_free\":{},\"alpha_evaluations\":{},\"solver_cfl_ns\":{},\"solver_step_ns\":{},\"solver_sample_ns\":{}}}",
             routing.solver_runs,
@@ -319,11 +315,12 @@ fn build_direct_production_run_frame(
         .copied()
         .enumerate()
         .map(|(lane_index, area_m2)| {
-            let mut lane_inputs = DirectLaneConstructorInputs::from_topology_with_dynamic_day_inputs(
-                lane_index,
-                lane_areas_m2.len(),
-            )
-            .map_err(|source| direct_production_runtime_error(&source))?;
+            let mut lane_inputs =
+                DirectLaneConstructorInputs::from_topology_with_dynamic_day_inputs(
+                    lane_index,
+                    lane_areas_m2.len(),
+                )
+                .map_err(|source| direct_production_runtime_error(&source))?;
             if !area_m2.is_finite() || area_m2 <= 0.0 {
                 return Err(direct_production_executor_blocked(format!(
                     "direct production lane {} area must be finite and > 0.0, observed {area_m2}",
@@ -345,8 +342,7 @@ fn build_direct_production_run_frame(
             lane_inputs.runoff_publication_efflen_m = runoff_publication_geometry.efflen_m;
             lane_inputs.runoff_publication_cumulative_length_m =
                 runoff_publication_geometry.cumulative_length_m;
-            lane_inputs.runoff_publication_ofe_length_m =
-                runoff_publication_geometry.ofe_length_m;
+            lane_inputs.runoff_publication_ofe_length_m = runoff_publication_geometry.ofe_length_m;
             seed_direct_production_lane_constructor_inputs(
                 &mut lane_inputs,
                 lane_index,
@@ -465,16 +461,19 @@ fn build_direct_production_coupling_vector_provenance(
     let runtime_swe = row.storage.snow_water_mm / 1_000.0;
     let frost_file_present = snow_frost_authority.frost_file_present;
     let wint_red_enabled = snow_frost_authority.frost_wint_red_enabled;
-    let outlet_frost_carry = frame
-        .lanes
-        .last()
-        .and_then(|lane| {
-            direct_publication_frost_runtime_carry_from_lane_state(&lane.winter_column.frost)
-        });
-    let dfrost = outlet_frost_carry.as_ref().map_or(0.0, |carry| carry.dfrost_m);
-    let dthaw = outlet_frost_carry.as_ref().map_or(0.0, |carry| carry.dthaw_m);
+    let outlet_frost_carry = frame.lanes.last().and_then(|lane| {
+        direct_publication_frost_runtime_carry_from_lane_state(&lane.winter_column.frost)
+    });
+    let dfrost = outlet_frost_carry
+        .as_ref()
+        .map_or(0.0, |carry| carry.dfrost_m);
+    let dthaw = outlet_frost_carry
+        .as_ref()
+        .map_or(0.0, |carry| carry.dthaw_m);
     let nft = outlet_frost_carry.as_ref().map_or(0.0, |carry| carry.nft);
-    let ws_frz = outlet_frost_carry.as_ref().map_or(0.0, |carry| carry.ws_frz_m);
+    let ws_frz = outlet_frost_carry
+        .as_ref()
+        .map_or(0.0, |carry| carry.ws_frz_m);
     let infcap_frz = outlet_frost_carry
         .as_ref()
         .map_or(0.0, |carry| carry.infcap_frz_m_s);
@@ -574,41 +573,43 @@ fn build_hillslope_execution_provenance(
             total_source_m3: summary.total_source_m3,
             total_routed_outlet_m3: summary.total_routed_outlet_m3,
         }),
-        laned_active: execution.laned_active.as_ref().map(|summary| LanedActiveProvenance {
-            trace_record_count: summary.trace_records.as_ref().map(Vec::len),
-            mesh_policy: LanedActiveMeshPolicyProvenance {
-                mode: summary.mesh_policy.mode.to_string(),
-                fixed_cells: summary.mesh_policy.fixed_cells,
-                target_dx_m: summary.mesh_policy.target_dx_m,
-                min_cells: summary.mesh_policy.min_cells,
-                max_cells: summary.mesh_policy.max_cells,
-            },
-            max_dt_s: summary.max_dt_s,
-            days_seen: summary.days_seen,
-            days_routed: summary.days_routed,
-            days_uniform_shape: summary.days_uniform_shape,
-            total_source_m3: summary.total_source_m3,
-            total_routed_outlet_m3: summary.total_routed_outlet_m3,
-            total_end_window_storage_m3: summary.total_end_window_storage_m3,
-            total_clamp_m3: summary.total_clamp_m3,
-            total_tail_fold_m3: summary.total_tail_fold_m3,
-            total_latqcc_outlet_m3: summary.total_latqcc_outlet_m3,
-            groundwater_enabled_days: summary.groundwater_enabled_days,
-            total_groundwater_recharge_m3: summary.total_groundwater_recharge_m3,
-            total_groundwater_baseflow_m3: summary.total_groundwater_baseflow_m3,
-            total_groundwater_deep_seepage_m3: summary.total_groundwater_deep_seepage_m3,
-            initial_groundwater_storage_m3: summary.initial_groundwater_storage_m3,
-            terminal_groundwater_storage_m3: summary.terminal_groundwater_storage_m3,
-            terminal_groundwater_baseflow_m3: summary.terminal_groundwater_baseflow_m3,
-            terminal_groundwater_deep_seepage_m3: summary
-                .terminal_groundwater_deep_seepage_m3,
-            max_supply_reconstruction_rel: summary.max_supply_reconstruction_rel,
-            max_day_cascade_residual_rel: summary.max_day_cascade_residual_rel,
-            max_day_seam_residual_rel: summary.max_day_seam_residual_rel,
-            max_day_identity_residual_rel: summary.max_day_identity_residual_rel,
-            lane_days_erosion_source_shape_degenerate: summary
-                .lane_days_erosion_source_shape_degenerate,
-        }),
+        laned_active: execution
+            .laned_active
+            .as_ref()
+            .map(|summary| LanedActiveProvenance {
+                trace_record_count: summary.trace_records.as_ref().map(Vec::len),
+                mesh_policy: LanedActiveMeshPolicyProvenance {
+                    mode: summary.mesh_policy.mode.to_string(),
+                    fixed_cells: summary.mesh_policy.fixed_cells,
+                    target_dx_m: summary.mesh_policy.target_dx_m,
+                    min_cells: summary.mesh_policy.min_cells,
+                    max_cells: summary.mesh_policy.max_cells,
+                },
+                max_dt_s: summary.max_dt_s,
+                days_seen: summary.days_seen,
+                days_routed: summary.days_routed,
+                days_uniform_shape: summary.days_uniform_shape,
+                total_source_m3: summary.total_source_m3,
+                total_routed_outlet_m3: summary.total_routed_outlet_m3,
+                total_end_window_storage_m3: summary.total_end_window_storage_m3,
+                total_clamp_m3: summary.total_clamp_m3,
+                total_tail_fold_m3: summary.total_tail_fold_m3,
+                total_latqcc_outlet_m3: summary.total_latqcc_outlet_m3,
+                groundwater_enabled_days: summary.groundwater_enabled_days,
+                total_groundwater_recharge_m3: summary.total_groundwater_recharge_m3,
+                total_groundwater_baseflow_m3: summary.total_groundwater_baseflow_m3,
+                total_groundwater_deep_seepage_m3: summary.total_groundwater_deep_seepage_m3,
+                initial_groundwater_storage_m3: summary.initial_groundwater_storage_m3,
+                terminal_groundwater_storage_m3: summary.terminal_groundwater_storage_m3,
+                terminal_groundwater_baseflow_m3: summary.terminal_groundwater_baseflow_m3,
+                terminal_groundwater_deep_seepage_m3: summary.terminal_groundwater_deep_seepage_m3,
+                max_supply_reconstruction_rel: summary.max_supply_reconstruction_rel,
+                max_day_cascade_residual_rel: summary.max_day_cascade_residual_rel,
+                max_day_seam_residual_rel: summary.max_day_seam_residual_rel,
+                max_day_identity_residual_rel: summary.max_day_identity_residual_rel,
+                lane_days_erosion_source_shape_degenerate: summary
+                    .lane_days_erosion_source_shape_degenerate,
+            }),
     }
 }
 
@@ -754,18 +755,9 @@ fn require_direct_publication_output_family_authority_row(
         "climate.precipitation_mm",
         row.climate.precipitation_mm,
     )?;
-    require_finite_nonnegative_direct_publication_scalar(
-        "runoff.runvol_m3",
-        row.runoff.runvol_m3,
-    )?;
-    require_direct_publication_option(
-        "erosion.peak_runoff_m3_s",
-        row.erosion.peak_runoff_m3_s,
-    )?;
-    require_direct_publication_option(
-        "erosion.runoff_duration_s",
-        row.erosion.runoff_duration_s,
-    )?;
+    require_finite_nonnegative_direct_publication_scalar("runoff.runvol_m3", row.runoff.runvol_m3)?;
+    require_direct_publication_option("erosion.peak_runoff_m3_s", row.erosion.peak_runoff_m3_s)?;
+    require_direct_publication_option("erosion.runoff_duration_s", row.erosion.runoff_duration_s)?;
     require_direct_publication_option(
         "erosion.total_detachment_kg",
         row.erosion.total_detachment_kg,
@@ -851,7 +843,8 @@ fn write_hillslope_direct_publication_optional_outputs(
                 "direct PASS output requested but direct PASS projection rows were not streamed",
             )
         })?;
-        if rows_written != artifacts.execution.identity.day_count || !pass_parquet_output.is_file() {
+        if rows_written != artifacts.execution.identity.day_count || !pass_parquet_output.is_file()
+        {
             return Err(direct_publication_cutover_blocked(format!(
                 "direct PASS streamed row-count mismatch: direct_days={} streamed_rows={} path={}",
                 artifacts.execution.identity.day_count,
@@ -1046,14 +1039,13 @@ fn write_generic_optional_outputs(
 fn validated_laned_active_trace_records(
     execution: &HillslopeClimateExecution,
 ) -> Result<&[openwepp_hillslope_orchestrator::DirectLanedActiveTraceRecord], HillslopeCliError> {
-    let summary = execution
-        .laned_active
-        .as_ref()
-        .ok_or_else(|| HillslopeCliError::RuntimeSurfaceFailure {
+    let summary = execution.laned_active.as_ref().ok_or_else(|| {
+        HillslopeCliError::RuntimeSurfaceFailure {
             surface: "laned_active_trace",
             detail: "OPENWEPP_LANED_ACTIVE_TRACE=1 requires OPENWEPP_LANED_ACTIVE=1 active summary"
                 .to_string(),
-        })?;
+        }
+    })?;
     let records =
         summary
             .trace_records
@@ -1062,16 +1054,13 @@ fn validated_laned_active_trace_records(
                 surface: "laned_active_trace",
                 detail: "active summary did not retain diagnostic trace records".to_string(),
             })?;
-    let artifacts =
-        execution
-            .direct_publication
-            .as_ref()
-            .ok_or_else(|| HillslopeCliError::RuntimeSurfaceFailure {
-                surface: "laned_active_trace",
-                detail:
-                    "direct publication artifacts are required for trace row-count validation"
-                        .to_string(),
-            })?;
+    let artifacts = execution.direct_publication.as_ref().ok_or_else(|| {
+        HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "laned_active_trace",
+            detail: "direct publication artifacts are required for trace row-count validation"
+                .to_string(),
+        }
+    })?;
     let expected_rows = artifacts
         .execution
         .identity
@@ -1127,10 +1116,7 @@ fn validate_laned_active_trace_nonnegative(
     Ok(())
 }
 
-fn validate_laned_active_trace_positive(
-    field: &str,
-    value: f64,
-) -> Result<(), HillslopeCliError> {
+fn validate_laned_active_trace_positive(field: &str, value: f64) -> Result<(), HillslopeCliError> {
     if !value.is_finite() || value <= 0.0 {
         return Err(invalid_laned_active_trace_numeric(
             field,
@@ -1289,10 +1275,7 @@ fn validate_laned_active_trace_record(
         )?;
         weight_sum += weight;
     }
-    validate_laned_active_trace_finite(
-        &format!("{prefix}.routed_hourly_weight_sum"),
-        weight_sum,
-    )?;
+    validate_laned_active_trace_finite(&format!("{prefix}.routed_hourly_weight_sum"), weight_sum)?;
     if record.source_m3 == 0.0 {
         if record.routed_weights.iter().any(|weight| *weight != 0.0) {
             return Err(invalid_laned_active_trace_numeric(
@@ -1318,44 +1301,44 @@ fn laned_active_step_trace_json(
     step: &openwepp_hillslope_orchestrator::DirectLanedActiveStepTraceRecord,
 ) -> serde_json::Value {
     serde_json::json!({
-                            "step_index": step.step_index,
-                            "t_start_s": step.t_start_s,
-                            "t_end_s": step.t_end_s,
-                            "dt_s": step.dt_s,
-                            "max_courant": step.max_courant,
-                            "max_courant_cell_index": step.max_courant_cell_index,
-                            "max_courant_cell_center_x_m": step.max_courant_cell_center_x_m,
-                            "q_up_m3_s": step.q_up_m3_s,
-                            "source_m3": step.source_m3,
-                            "upstream_inflow_m3": step.upstream_inflow_m3,
-                            "outflow_m3": step.outflow_m3,
-                            "storage_before_m3": step.storage_before_m3,
-                            "storage_after_m3": step.storage_after_m3,
-                            "clamp_injected_m3": step.clamp_injected_m3,
-                            "pred_out_face_m3_s": step.pred_out_face_m3_s,
-                            "corr_out_face_m3_s": step.corr_out_face_m3_s,
-                            "outlet_depth_m": step.outlet_depth_m,
-                            "outlet_discharge_m3_s": step.outlet_discharge_m3_s,
-                            "predictor_limiter": {
-                                "reductions": step.predictor_limiter.reductions,
-                                "max_reduction_m3_s": step.predictor_limiter.max_reduction_m3_s,
-                                "face_index": step.predictor_limiter.face_index,
-                                "face_x_m": step.predictor_limiter.face_x_m,
-                            },
-                            "corrector_limiter": {
-                                "reductions": step.corrector_limiter.reductions,
-                                "max_reduction_m3_s": step.corrector_limiter.max_reduction_m3_s,
-                                "face_index": step.corrector_limiter.face_index,
-                                "face_x_m": step.corrector_limiter.face_x_m,
-                            },
-                            "tvd": {
-                                "scale": step.tvd.scale,
-                                "max_abs_delta_m": step.tvd.max_abs_delta_m,
-                                "cell_index": step.tvd.cell_index,
-                                "cell_center_x_m": step.tvd.cell_center_x_m,
-                                "signed_delta_m": step.tvd.signed_delta_m,
-                            }
-                        })
+        "step_index": step.step_index,
+        "t_start_s": step.t_start_s,
+        "t_end_s": step.t_end_s,
+        "dt_s": step.dt_s,
+        "max_courant": step.max_courant,
+        "max_courant_cell_index": step.max_courant_cell_index,
+        "max_courant_cell_center_x_m": step.max_courant_cell_center_x_m,
+        "q_up_m3_s": step.q_up_m3_s,
+        "source_m3": step.source_m3,
+        "upstream_inflow_m3": step.upstream_inflow_m3,
+        "outflow_m3": step.outflow_m3,
+        "storage_before_m3": step.storage_before_m3,
+        "storage_after_m3": step.storage_after_m3,
+        "clamp_injected_m3": step.clamp_injected_m3,
+        "pred_out_face_m3_s": step.pred_out_face_m3_s,
+        "corr_out_face_m3_s": step.corr_out_face_m3_s,
+        "outlet_depth_m": step.outlet_depth_m,
+        "outlet_discharge_m3_s": step.outlet_discharge_m3_s,
+        "predictor_limiter": {
+            "reductions": step.predictor_limiter.reductions,
+            "max_reduction_m3_s": step.predictor_limiter.max_reduction_m3_s,
+            "face_index": step.predictor_limiter.face_index,
+            "face_x_m": step.predictor_limiter.face_x_m,
+        },
+        "corrector_limiter": {
+            "reductions": step.corrector_limiter.reductions,
+            "max_reduction_m3_s": step.corrector_limiter.max_reduction_m3_s,
+            "face_index": step.corrector_limiter.face_index,
+            "face_x_m": step.corrector_limiter.face_x_m,
+        },
+        "tvd": {
+            "scale": step.tvd.scale,
+            "max_abs_delta_m": step.tvd.max_abs_delta_m,
+            "cell_index": step.tvd.cell_index,
+            "cell_center_x_m": step.tvd.cell_center_x_m,
+            "signed_delta_m": step.tvd.signed_delta_m,
+        }
+    })
 }
 
 fn laned_active_trace_detail_json(
@@ -1368,17 +1351,17 @@ fn laned_active_trace_detail_json(
             .collect::<Vec<_>>()
     });
     serde_json::json!({
-                "schema": "openwepp-laned-active-trace-detail-v1",
-                "mesh_cell_count": detail.mesh_cell_count,
-                "mesh_dx_m": detail.mesh_dx_m,
-                "max_dt_s": detail.max_dt_s,
-                "outlet_bin_m3": &detail.outlet_bin_m3,
-                "outlet_bin_spans_s": &detail.outlet_bin_spans_s,
-                "hydrograph_time_s": &detail.hydrograph_time_s,
-                "hydrograph_outlet_m3_s": &detail.hydrograph_outlet_m3_s,
-                "hydrograph_outlet_depth_m": &detail.hydrograph_outlet_depth_m,
-                "step_trace": step_trace,
-            })
+        "schema": "openwepp-laned-active-trace-detail-v1",
+        "mesh_cell_count": detail.mesh_cell_count,
+        "mesh_dx_m": detail.mesh_dx_m,
+        "max_dt_s": detail.max_dt_s,
+        "outlet_bin_m3": &detail.outlet_bin_m3,
+        "outlet_bin_spans_s": &detail.outlet_bin_spans_s,
+        "hydrograph_time_s": &detail.hydrograph_time_s,
+        "hydrograph_outlet_m3_s": &detail.hydrograph_outlet_m3_s,
+        "hydrograph_outlet_depth_m": &detail.hydrograph_outlet_depth_m,
+        "step_trace": step_trace,
+    })
 }
 
 fn serialize_laned_active_trace_record(
@@ -1390,25 +1373,25 @@ fn serialize_laned_active_trace_record(
         .as_deref()
         .map(laned_active_trace_detail_json);
     serde_json::to_string(&serde_json::json!({
-            "schema": "openwepp-laned-active-trace-row-v1",
-            "day_index_zero_based": record.day_index,
-            "sim_day_index": record.day_index + 1,
-            "lane_index_zero_based": record.lane_index,
-            "lane_index": record.lane_index + 1,
-            "max_dt_s": record.max_dt_s,
-            "is_terminal_lane": record.is_terminal_lane,
-            "source_m3": record.source_m3,
-            "outlet_m3": record.outlet_m3,
-            "terminal_day_outlet_m3": record.terminal_day_outlet_m3,
-            "mesh_end_storage_m3": record.mesh_end_storage_m3,
-            "clamp_m3": record.clamp_m3,
-            "tail_fold_m3": record.tail_fold_m3,
-            "routed_hourly_weights": record.routed_weights,
-            "routed_hourly_weight_sum": weight_sum,
-            "uniform_shape": record.uniform_shape,
-            "erosion_source_shape_degenerate": record.erosion_source_shape_degenerate,
-            "trace_detail": trace_detail,
-        }))
+        "schema": "openwepp-laned-active-trace-row-v1",
+        "day_index_zero_based": record.day_index,
+        "sim_day_index": record.day_index + 1,
+        "lane_index_zero_based": record.lane_index,
+        "lane_index": record.lane_index + 1,
+        "max_dt_s": record.max_dt_s,
+        "is_terminal_lane": record.is_terminal_lane,
+        "source_m3": record.source_m3,
+        "outlet_m3": record.outlet_m3,
+        "terminal_day_outlet_m3": record.terminal_day_outlet_m3,
+        "mesh_end_storage_m3": record.mesh_end_storage_m3,
+        "clamp_m3": record.clamp_m3,
+        "tail_fold_m3": record.tail_fold_m3,
+        "routed_hourly_weights": record.routed_weights,
+        "routed_hourly_weight_sum": weight_sum,
+        "uniform_shape": record.uniform_shape,
+        "erosion_source_shape_degenerate": record.erosion_source_shape_degenerate,
+        "trace_detail": trace_detail,
+    }))
     .map_err(|source| HillslopeCliError::ManifestSerialize { source })
 }
 
@@ -1471,12 +1454,16 @@ fn write_hillslope_run_manifest(
     let input_checksums =
         build_hillslope_input_checksums(publication.inputs, publication.sidecars.input_paths)?;
     let output_checksums = build_hillslope_output_checksums(publication.targets)?;
-    let manifest_path = publication.request.manifest_path.clone().unwrap_or_else(|| {
-        publication
-            .request
-            .output_dir
-            .join("openwepp_hillslope_run_manifest.json")
-    });
+    let manifest_path = publication
+        .request
+        .manifest_path
+        .clone()
+        .unwrap_or_else(|| {
+            publication
+                .request
+                .output_dir
+                .join("openwepp_hillslope_run_manifest.json")
+        });
     let manifest = build_hillslope_run_manifest(
         publication,
         &binary_path,
@@ -1791,7 +1778,8 @@ pub fn execute_hillslope_run_with_runtime_policy(
     let runtime_selection = runtime_resolution.selected();
     let direct_runtime_counter_baseline = direct_runtime_audit_snapshot();
     let mut sidecars = resolve_hillslope_sidecars(request, &inputs, &targets)?;
-    let runtime_setup = build_static_hillslope_runtime_setup(request, &inputs, &sidecars, runtime_selection)?;
+    let runtime_setup =
+        build_static_hillslope_runtime_setup(request, &inputs, &sidecars, runtime_selection)?;
     let StaticHillslopeRuntimeSetup {
         timestep_policy,
         adapter_boundary,
@@ -1807,8 +1795,13 @@ pub fn execute_hillslope_run_with_runtime_policy(
         &inputs.climate,
         &streaming_targets,
     )?;
-    execution.direct_publication =
-        build_direct_publication_artifacts(runtime_selection, &inputs, &targets, &sidecars, &mut execution)?;
+    execution.direct_publication = build_direct_publication_artifacts(
+        runtime_selection,
+        &inputs,
+        &targets,
+        &sidecars,
+        &mut execution,
+    )?;
     let direct_runtime_counters = direct_runtime_counters_for_manifest(
         runtime_selection,
         direct_runtime_counter_baseline,

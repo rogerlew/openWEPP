@@ -3,12 +3,12 @@ use openwepp_management_schema as yaml;
 use sha2::{Digest, Sha256};
 
 use crate::disturbed::{
-    disturbed_route_table_checksum, row_for_disturbed_class, DISTURBED_ROUTE_TABLE_ID,
-    DISTURBED_ROUTE_TABLE_SOURCE_AUTHORITY, DISTURBED_ROUTE_TABLE_VERSION,
+    DISTURBED_ROUTE_TABLE_ID, DISTURBED_ROUTE_TABLE_SOURCE_AUTHORITY,
+    DISTURBED_ROUTE_TABLE_VERSION, disturbed_route_table_checksum, row_for_disturbed_class,
 };
 use crate::{
-    legacy_class_map, LanduseMigrationError, MigrationAuthority, MigrationTarget,
-    ResolvedCoefficientSite, SourceManagement,
+    LanduseMigrationError, MigrationAuthority, MigrationTarget, ResolvedCoefficientSite,
+    SourceManagement, legacy_class_map,
 };
 
 pub(crate) fn source_to_yaml_document(

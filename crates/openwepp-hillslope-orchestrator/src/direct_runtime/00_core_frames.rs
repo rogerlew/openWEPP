@@ -600,7 +600,10 @@ impl DirectRunFrame {
             lanes,
             phase_plan: inputs.phase_plan,
             publication: DirectPublicationFrame::empty(),
-            lane_transfer_ledger: vec![DirectLaneTransferLedger::zero(); inputs.identity.lane_count],
+            lane_transfer_ledger: vec![
+                DirectLaneTransferLedger::zero();
+                inputs.identity.lane_count
+            ],
             lane_transfer_downstream_operands: DirectRunTransferDownstreamOperands::zero(),
             lane_transfer_shadow_projection: None,
             groundwater: DirectGroundwaterRunState::disabled(),
@@ -631,8 +634,7 @@ impl DirectRunFrame {
         }
         let mut recharge_m3 = 0.0;
         let mut total_area_m2 = 0.0;
-        for (lane_index, (lane, day_frame)) in
-            self.lanes.iter().zip(day_frames.iter()).enumerate()
+        for (lane_index, (lane, day_frame)) in self.lanes.iter().zip(day_frames.iter()).enumerate()
         {
             if day_frame.day_index != day_index {
                 return Err(DirectRuntimeError::DayIndexOutOfRange {
@@ -1046,10 +1048,9 @@ impl DirectLaneFrame {
                 winter_column.frost = carry.into();
             }
         }
-        let snow_runtime_carry =
-            direct_snow_runtime_carry_from_winter_state(&winter_column.snow)
-                .or(inputs.snow_runtime_carry)
-                .map(Box::new);
+        let snow_runtime_carry = direct_snow_runtime_carry_from_winter_state(&winter_column.snow)
+            .or(inputs.snow_runtime_carry)
+            .map(Box::new);
         let frost_runtime_carry =
             direct_frost_runtime_carry_from_winter_state(&winter_column.frost)
                 .or(inputs.frost_runtime_carry);
@@ -1062,8 +1063,7 @@ impl DirectLaneFrame {
             runoff_publication_q_scale: inputs.runoff_publication_q_scale,
             runoff_publication_qofe_scale: inputs.runoff_publication_qofe_scale,
             runoff_publication_efflen_m: inputs.runoff_publication_efflen_m,
-            runoff_publication_cumulative_length_m: inputs
-                .runoff_publication_cumulative_length_m,
+            runoff_publication_cumulative_length_m: inputs.runoff_publication_cumulative_length_m,
             runoff_publication_ofe_length_m: inputs.runoff_publication_ofe_length_m,
             water: inputs.water,
             transfer: inputs.transfer,
@@ -2139,18 +2139,9 @@ fn validate_direct_snow_lane_state(
 ) -> Result<(), DirectRuntimeError> {
     for (field, value) in [
         ("runtime_swe_m", state.runtime_swe_m),
-        (
-            "runtime_depth_m",
-            state.runtime_depth_m,
-        ),
-        (
-            "runtime_density_kg_m3",
-            state.runtime_density_kg_m3,
-        ),
-        (
-            "runtime_settle_day_count",
-            state.runtime_settle_day_count,
-        ),
+        ("runtime_depth_m", state.runtime_depth_m),
+        ("runtime_density_kg_m3", state.runtime_density_kg_m3),
+        ("runtime_settle_day_count", state.runtime_settle_day_count),
         ("coe_boundary_depth_m", state.coe_boundary_depth_m),
         (
             "coe_boundary_density_kg_m3",
@@ -2235,10 +2226,7 @@ fn validate_direct_snow_layers(
     Ok(())
 }
 
-fn direct_snow_lane_validation_field(
-    prefix: &'static str,
-    field: &'static str,
-) -> &'static str {
+fn direct_snow_lane_validation_field(prefix: &'static str, field: &'static str) -> &'static str {
     match (prefix, field) {
         ("constructor.winter_column.snow", "runtime_swe_m") => {
             "constructor.winter_column.snow.runtime_swe_m"
@@ -2402,7 +2390,10 @@ fn validate_direct_frost_runtime_layer_shadows(
             });
         }
         for (field, value) in [
-            ("constructor.frost_runtime_carry.layer_shadow.st_m", layer.st_m),
+            (
+                "constructor.frost_runtime_carry.layer_shadow.st_m",
+                layer.st_m,
+            ),
             (
                 "constructor.frost_runtime_carry.layer_shadow.soil_water_m",
                 layer.soil_water_m,
@@ -2598,10 +2589,7 @@ fn validate_direct_subsurface_layer_inputs(
     validate_nonnegative_direct_m("constructor.layer.theta_m", layer.theta_m)?;
     validate_nonnegative_direct_m("constructor.layer.field_capacity_m", layer.field_capacity_m)?;
     validate_nonnegative_direct_m("constructor.layer.upper_limit_m", layer.upper_limit_m)?;
-    validate_nonnegative_direct_m(
-        "constructor.layer.conductivity_m_s",
-        layer.conductivity_m_s,
-    )?;
+    validate_nonnegative_direct_m("constructor.layer.conductivity_m_s", layer.conductivity_m_s)?;
     validate_positive_direct("constructor.layer.depth_m", layer.depth_m)?;
     validate_finite("constructor.layer.residual_theta", layer.residual_theta)?;
     validate_nonnegative_direct_m("constructor.layer.frozen_depth_m", layer.frozen_depth_m)?;
