@@ -238,6 +238,15 @@ State as of `2026-07-20 UTC`:
   timing/attempt evidence, and combined full-regression/coverage execution
   after parity is proven.
 
+- `20260720-testgate-workflow-qualify-001/` -
+  SCAFFOLDED-REVIEW-PENDING: `TESTGATE-WORKFLOW-QUALIFY-01` is queued directly
+  behind the audit-tool implementation. It freezes the resulting tool and
+  policy bytes, replays the complete adversarial failure matrix through the
+  real entry point with bounded probe nodes, verifies crash/resume and durable
+  evidence in a fresh environment, and accepts exactly one ordinary trusted-
+  runner execution for the real heavy/provider path. It cannot repair the
+  subject it evaluates.
+
 - `20260717-canopy-phenology-gsi-kernel-001/` -
   COMPLETE-PASS-PROCESS-KERNEL (2026-07-17): implements
   the published Jolly–Nemani–Running Growing Season Index as the first bounded

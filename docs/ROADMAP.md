@@ -32,6 +32,7 @@ state was reached. Execution history lives in the
 | Priority | Owning queue | State | Advancement gate |
 | --- | --- | --- | --- |
 | `TESTGATE-CLOSURE-AUDIT-01` pre-heavy closure and defect correction | Test/gate architecture | `next` | Execute reviewed package `20260720-testgate-pre-heavy-closure-audit-001`; require the single pre-heavy audit, corrected scaffold admission, immutable attempts, safe reuse, persistent cost history, and no duplicate full/coverage execution after parity. |
+| `TESTGATE-WORKFLOW-QUALIFY-01` black-box workflow qualification | Test/gate architecture | `queued` | After `TESTGATE-CLOSURE-AUDIT-01` closes, execute `20260720-testgate-workflow-qualify-001` against the frozen implementation. Require all bounded adversarial cases plus one real trusted-runner execution; qualification cannot edit the tooling it evaluates. |
 | `SNOW-SURFACE-EB` sublimation and longwave | Snow/frost science | `queued` | Scaffold a contract-first package that reconciles the multilayer surface-energy, vapor-mass, and longwave backlog with the current meteorology and snow-column implementation. |
 | `ASSURE-06` snow/frost flagship synthesis | Scientific assurance | `held` | Roger Lew remains the accountable report lead and a material snow/frost producer. Resume independent review only after canopy phenology and the selected sublimation/longwave work land, the scientific manuscript is refreshed against those changes, and a new exact review root is issued. |
 | `ASSURE-05` first production v2 report | Scientific assurance | `held` | Technical review handoff is complete; formal review has not started. Advancement requires assignment of accountable human reviewers, exact-subject review and approval, assurance-steward approval, release-owner transfer, and exact-root publication gates. |
@@ -70,6 +71,9 @@ and staged-adoption contract live in the
   remains `LEGACY_UNVERIFIED` unless independently reconstructed and verified.
 - `TESTGATE-CLOSURE-AUDIT-01` precedes the next heavy scientific package so the
   repaired path is exercised before another critical closure campaign.
+- `TESTGATE-WORKFLOW-QUALIFY-01` immediately follows implementation and must
+  pass black-box local and trusted-workflow acceptance before
+  `SNOW-SURFACE-EB` may advance.
 
 ## Scientific Assurance Queue
 
