@@ -2,7 +2,7 @@
 
 Evidence mode: `Static`
 
-Status: `implemented and independently verified; joint promotion ready`
+Status: `implemented, independently verified, and jointly promoted`
 
 | Contract | Implementing surfaces |
 |---|---|
@@ -11,5 +11,5 @@ Status: `implemented and independently verified; joint promotion ready`
 | `SC-INFILE-MANAGEMENT-YAML-001` | required strict `phenology` block, positive `bb`/`xmxlai`, continuous native schedule validation, parser projection, migration refusal to invent authority |
 
 Both independent verification verdicts pass at exact head `00cee98d`. All three
-contracts are ready for joint promotion. No production claim relies on the
+contracts are jointly `approved` / `active`. No production claim relies on the
 withdrawn prototype commits.

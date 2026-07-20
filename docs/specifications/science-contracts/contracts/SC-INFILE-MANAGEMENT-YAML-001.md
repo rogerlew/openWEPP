@@ -1,8 +1,8 @@
 ---
 contract_id: SC-INFILE-MANAGEMENT-YAML-001
 title: Canonical Management YAML Input Parser Contract
-status: in_review
-maturity: draft
+status: approved
+maturity: active
 owner: openWEPP
 contract_version: 0.3.0
 evidence_mode: Static + Ran
@@ -11,8 +11,8 @@ last_updated_utc: 2026-07-20T00:00:00Z
 
 # SC-INFILE-MANAGEMENT-YAML-001 Canonical Management YAML Input Parser Contract
 
-Status: `in_review`
-Maturity: `draft`
+Status: `approved`
+Maturity: `active`
 Evidence mode: `Static + Ran`
 
 ## Evidence Anchors

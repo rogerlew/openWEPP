@@ -1,8 +1,8 @@
 ---
 contract_id: SC-RESIDUE-001
 title: Residue Management Process Contract
-status: in_review
-maturity: draft
+status: approved
+maturity: active
 owner: openWEPP maintainers + hydrology reviewer
 contract_version: 15
 producer_scope:
@@ -23,8 +23,8 @@ superseded_by: []
 
 # SC-RESIDUE-001 Residue Management Process Contract
 
-Status: `in_review`
-Maturity: `draft`
+Status: `approved`
+Maturity: `active`
 Evidence mode: `Static`
 
 ## Purpose

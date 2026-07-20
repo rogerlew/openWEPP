@@ -1,8 +1,8 @@
 ---
 contract_id: SC-PLANT-001
 title: Plant Growth Process Contract
-status: in_review
-maturity: draft
+status: approved
+maturity: active
 owner: openWEPP maintainers + hydrology reviewer
 contract_version: 23
 producer_scope:
@@ -23,8 +23,8 @@ superseded_by: []
 
 # SC-PLANT-001 Plant Growth Process Contract
 
-Status: `in_review`
-Maturity: `draft`
+Status: `approved`
+Maturity: `active`
 Evidence mode: `static`
 
 ## Purpose

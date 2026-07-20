@@ -7,7 +7,7 @@ Status: `all review findings accepted, implemented, and independently verified`
 | Finding ID | Source | Severity | Decision | Action taken / required | Artifact ref | Rationale |
 |---|---|---|---|---|---|---|
 | A-01 | agent_a | high | accepted | Added uninitialized first realization with exact zero transfers; runtime no longer seeds from aggregate `vdmt`. | plant and runner tests | Foliar and aggregate live biomass are distinct contract operands. |
-| A-02 | agent_a | high | accepted | Both verification agents passed at exact head `00cee98d`; promote all three contracts together in the next atomic increment. | `verification_agent_a.md`, `verification_agent_b.md` | Contract promotion logic is binding. |
+| A-02 | agent_a | high | accepted | Both verification agents passed at exact head `00cee98d`; all three contracts were then promoted together. | `verification_agent_a.md`, `verification_agent_b.md`, contract references | Contract promotion logic is binding. |
 | A-03 | agent_a | high | accepted | Added a real native run with exact producer/consumer value joins and independent WB15 reconstruction. | `consumer-path-proof.md` | Source order and execution success are insufficient consumer evidence. |
 | A-04 | agent_a | medium | accepted | Replaced the half-year probe with full wrapped NH/SH canopy and limb-phase checks. | `native_canopy_contract.rs` | The operator selected a phase transform of a complete NH climate. |
 | A-05 | agent_a | medium | accepted | Enforced finite positive `bb` through schema, projection, and kernel. | schema and plant negative tests | Matches ratified CP-GSI02 domain. |
