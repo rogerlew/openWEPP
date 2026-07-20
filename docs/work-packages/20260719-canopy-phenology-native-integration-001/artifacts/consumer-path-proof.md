@@ -19,8 +19,7 @@ day and lane. The assertions compare the producer realization with:
 - the residue depth recorded at the active frost thermal compute; and
 - the canopy cover recorded at active erosion daily-state assembly.
 
-The two-day controlled forcing makes day 1 establish a high-foliage cold-start
-boundary with zero fabricated transfer and day 2 produce nonzero leaf-off. The
-day-2 trace is required to carry the resulting residue depth into an active
-frost thermal consumer, so the frost assertion cannot pass vacuously. A focused
-rerun after this non-vacuity guard is recorded in the implementation evidence.
+The two-day controlled forcing makes day 1 leaf-on and day 2 leaf-off, so the
+run exercises a nonzero litter handoff rather than proving only zero-value
+wiring. The first realization independently asserts zero allocation and zero
+litter. `cargo test -p openwepp-runner --lib` passed all 132 tests.
