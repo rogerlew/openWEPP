@@ -205,7 +205,8 @@ Subagents have no production write access.
 - [x] (2026-07-20) Expanded the corrected intake before reimplementation to
   cover gate-policy A1 bindings and runtime-value consumer evidence discovered
   by the failed exact-diff terminal attempt.
-- [ ] Generate and admit the corrected machine intent plan.
+- [x] (2026-07-20) Admitted corrected critical intent plan `f307138c...` from
+  base `a749ed7a` and the exact prospective path manifest before reimplementation.
 - [ ] Freeze contracts, tests, and the pre-implementation gate.
 - [ ] Implement native YAML, typed realization, runner state, and consumers.
 - [ ] Execute selected gates and conservation/consumer audits.
