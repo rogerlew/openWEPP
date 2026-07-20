@@ -208,6 +208,25 @@ fn production_gate_definitions_are_schema_valid_and_registered() {
                 definition["gate_definition_id"]
             );
         }
+        if definition["gate_definition_id"]
+            .as_str()
+            .is_some_and(|id| id.starts_with("hard-invariant-native-canopy-"))
+            && definition["inventory_source"] == "NEXTEST_PACKAGES"
+        {
+            let arguments = definition["arguments_template"]
+                .as_array()
+                .expect("nextest package arguments");
+            assert!(
+                arguments.iter().any(|argument| argument == "--package"),
+                "{} must use the canonical package token consumed by inventory reconstruction",
+                definition["gate_definition_id"]
+            );
+            assert!(
+                arguments.iter().all(|argument| argument != "-p"),
+                "{} must not use the unsupported short package token",
+                definition["gate_definition_id"]
+            );
+        }
     }
 
     let impact_map = load_json(&policy.join("impact-map.json"));
