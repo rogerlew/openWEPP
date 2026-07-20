@@ -2,7 +2,7 @@
 
 Status: living — canonical prospective planning queue
 
-Last updated: 2026-07-19
+Last updated: 2026-07-20
 
 This file answers one question: **what work is openWEPP intentionally doing
 next, later, or at a named future gate?** It does not record how the current
@@ -53,8 +53,6 @@ may not silently narrow one.
 The detailed implementation scope, transition inventory, acceptance fixtures,
 and staged-adoption contract live in the
 [implementation handoff](work-packages/20260717-test-gate-authority-001/artifacts/implementation-handoff.md).
-No additional test/gate architecture package is currently queued.
-
 ### Adoption Contract
 
 - TESTGATE is authoritative for ordinary trusted-main increments. Conservative

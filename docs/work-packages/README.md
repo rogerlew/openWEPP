@@ -17,6 +17,14 @@
   only the seeded hygiene fault, and correctly stopped when the focused
   planner found a stale testing-strategy digest. The live acceptance push was
   not authorized; the named correction package owns the bounded repair.
+- `20260720-testgate-adversarial-agent-acceptance-rerun-001/` -
+  EXECUTED-FAIL-INTENT-PACKAGE-BASE-AUTHORIZATION (2026-07-20): the fresh
+  rerun preserved the sentinel, repaired only its injected hygiene fault,
+  rejected broad-test pressure, and made exactly one local TESTGATE attempt.
+  The helper correctly stopped before planning because the untracked intent
+  package was absent from its base commit; it also uses `## Intended Write Set`
+  instead of the required `## Declared Write Set`. No receipt or acceptance was
+  minted; a fresh follow-on must close the named defect before reattempting.
 - `20260719-testgate-global-crap-output-relocation-001/` completed the
   integrated defect chain exposed by adversarial acceptance. Relocatable CRAP
   output, declared-only environment identity, strict digest-bound CRAP control,
