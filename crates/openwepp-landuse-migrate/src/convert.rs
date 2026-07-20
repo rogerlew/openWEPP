@@ -3,12 +3,12 @@ use openwepp_management_schema as yaml;
 use sha2::{Digest, Sha256};
 
 use crate::disturbed::{
-    DISTURBED_ROUTE_TABLE_ID, DISTURBED_ROUTE_TABLE_SOURCE_AUTHORITY,
-    DISTURBED_ROUTE_TABLE_VERSION, disturbed_route_table_checksum, row_for_disturbed_class,
+    disturbed_route_table_checksum, row_for_disturbed_class, DISTURBED_ROUTE_TABLE_ID,
+    DISTURBED_ROUTE_TABLE_SOURCE_AUTHORITY, DISTURBED_ROUTE_TABLE_VERSION,
 };
 use crate::{
-    LanduseMigrationError, MigrationAuthority, MigrationTarget, ResolvedCoefficientSite,
-    SourceManagement, legacy_class_map,
+    legacy_class_map, LanduseMigrationError, MigrationAuthority, MigrationTarget,
+    ResolvedCoefficientSite, SourceManagement,
 };
 
 pub(crate) fn source_to_yaml_document(
@@ -299,52 +299,14 @@ where
                 )?),
             })
         }
-        flat::PlantScenarioData::Forest(data) => Ok(yaml::PlantScenario::NativeForest {
-            name: plant.meta.name.clone(),
-            description: description_vec(&plant.meta.description),
-            forest_class: data.forest_class.clone(),
-            growth: yaml::PlantForestGrowth {
-                bb: data.growth.bb,
-                bbb: data.growth.bbb,
-                beinp: data.growth.beinp,
-                btemp: data.growth.btemp,
-                otemp: data.growth.otemp,
-                gddmax: data.growth.gddmax,
-                dlai: data.growth.dlai,
-                dropfc: data.growth.dropfc,
-                decfct: data.growth.decfct,
-                spriod: data.growth.spriod,
-                extnct: data.growth.extnct,
-                flivmx: data.growth.flivmx,
-                hmax: data.growth.hmax,
-                hi: data.growth.hi,
-                pltol: data.growth.pltol,
-                xmxlai: data.growth.xmxlai,
-                rsr: data.growth.rsr,
-                rtmmax: data.growth.rtmmax,
-                rdmax: data.growth.rdmax,
-            },
-            cf: data.cf,
-            diam: data.diam,
-            decomposition: yaml::PlantForestDecomposition {
-                oratea: data.decomposition.oratea,
-                orater: data.decomposition.orater,
-            },
-            community: yaml::PlantForestCommunity {
-                tempmn: data.community.tempmn,
-                gtemp: data.community.gtemp,
-                plive: data.community.plive,
-                wood: data.community.wood,
-                grass: stratum_to_yaml(data.community.grass),
-                shrub: stratum_to_yaml(data.community.shrub),
-                tree: stratum_to_yaml(data.community.tree),
-            },
-            routing_coefficients: Some(route_for_plant(
-                plant_index,
-                &plant.meta.name,
-                data.routing,
-            )?),
-        }),
+        flat::PlantScenarioData::Forest(_) => {
+            Err(LanduseMigrationError::MissingMigrationAuthority {
+                site: format!(
+                    "plant_index={plant_index} plant_scenario_name={} native forest phenology",
+                    plant.meta.name
+                ),
+            })
+        }
     }
 }
 
@@ -544,15 +506,6 @@ fn schedule_to_yaml(schedule: &flat::ManagementSchedule) -> yaml::ManagementSche
                 yearly_refs: slot.yearly_refs.clone(),
             })
             .collect(),
-    }
-}
-
-fn stratum_to_yaml(stratum: flat::PlantForestStratum) -> yaml::PlantForestStratum {
-    yaml::PlantForestStratum {
-        coeff: stratum.coeff,
-        diam: stratum.diam,
-        hgt: stratum.hgt,
-        pop: stratum.pop,
     }
 }
 

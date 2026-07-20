@@ -2,8 +2,8 @@
 //!
 //! The initial kernel implements the generalized Growing Season Index (GSI)
 //! from Jolly, Nemani, and Running (2005). It deliberately stops at the
-//! dimensionless foliar-phenology signal. Mapping that signal to openWEPP
-//! canopy, biomass, litter, or hydrology state requires separate authority.
+//! dimensionless foliar-phenology signal and the contract-authorized native
+//! forest realization of that signal into daily canopy and foliar mass state.
 
 #![deny(unsafe_code)]
 
@@ -18,6 +18,232 @@ pub const GSI_WINDOW_DAYS: usize = 21;
 ///
 /// This is not a production canopy switch.
 pub const GSI_DIAGNOSTIC_THRESHOLD: f64 = 0.5;
+
+/// Existing openWEPP finite canopy-cover ceiling.
+pub const FOREST_CANOPY_COVER_CAP: f64 = 0.999;
+
+/// Explicit native-forest authority for realizing a GSI value.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct ForestCanopyParameters {
+    pub gsi: GsiParameters,
+    pub summer_foliar_biomass_kg_m2: f64,
+    pub maximum_leaf_area_index: f64,
+    pub evergreen_fraction: f64,
+    pub structural_canopy_cover_fraction: f64,
+    pub structural_biomass_kg_m2: f64,
+    pub canopy_cover_coefficient_m2_kg: f64,
+}
+
+impl ForestCanopyParameters {
+    fn validate(self) -> Result<(), ForestCanopyError> {
+        self.gsi.validate().map_err(ForestCanopyError::Gsi)?;
+        validate_positive_finite_forest(
+            "summer_foliar_biomass_kg_m2",
+            self.summer_foliar_biomass_kg_m2,
+        )?;
+        validate_positive_finite_forest("maximum_leaf_area_index", self.maximum_leaf_area_index)?;
+        validate_unit_interval("evergreen_fraction", self.evergreen_fraction)
+            .map_err(ForestCanopyError::Gsi)?;
+        validate_non_negative_finite_forest(
+            "structural_canopy_cover_fraction",
+            self.structural_canopy_cover_fraction,
+        )?;
+        if self.structural_canopy_cover_fraction > FOREST_CANOPY_COVER_CAP {
+            return Err(ForestCanopyError::OutOfDomain {
+                field: "structural_canopy_cover_fraction",
+            });
+        }
+        validate_non_negative_finite_forest(
+            "structural_biomass_kg_m2",
+            self.structural_biomass_kg_m2,
+        )?;
+        validate_positive_finite_forest(
+            "canopy_cover_coefficient_m2_kg",
+            self.canopy_cover_coefficient_m2_kg,
+        )
+    }
+}
+
+/// One native-forest canopy realization and its exact daily foliar ledger.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct ForestCanopyRealization {
+    pub growing_season_index: f64,
+    pub foliar_activity_fraction: f64,
+    pub previous_foliar_biomass_kg_m2: f64,
+    pub evergreen_foliar_biomass_kg_m2: f64,
+    pub deciduous_foliar_biomass_kg_m2: f64,
+    pub live_foliar_biomass_kg_m2: f64,
+    pub structural_biomass_kg_m2: f64,
+    pub leaf_area_index: f64,
+    pub canopy_cover_fraction: f64,
+    pub leaf_on_allocation_kg_m2: f64,
+    pub leaf_off_litter_kg_m2: f64,
+}
+
+/// Coupled moving-window and prior-foliar-mass state for one forest lane.
+#[derive(Debug, Clone, PartialEq)]
+pub struct ForestCanopyState {
+    gsi: GsiState,
+    previous_foliar_biomass_kg_m2: Option<f64>,
+}
+
+impl ForestCanopyState {
+    /// Start from an explicit live foliar-mass boundary without synthetic GSI
+    /// history.
+    ///
+    /// # Errors
+    ///
+    /// Returns a typed error when the boundary is non-finite or negative.
+    pub fn new(previous_foliar_biomass_kg_m2: f64) -> Result<Self, ForestCanopyError> {
+        validate_non_negative_finite_forest(
+            "previous_foliar_biomass_kg_m2",
+            previous_foliar_biomass_kg_m2,
+        )?;
+        Ok(Self {
+            gsi: GsiState::new(),
+            previous_foliar_biomass_kg_m2: Some(previous_foliar_biomass_kg_m2),
+        })
+    }
+
+    /// Start a native lane without inventing a prior foliar-mass boundary.
+    /// The first realization initializes the carry and publishes no allocation
+    /// or litter transfer.
+    #[must_use]
+    pub fn new_uninitialized() -> Self {
+        Self {
+            gsi: GsiState::new(),
+            previous_foliar_biomass_kg_m2: None,
+        }
+    }
+
+    /// Advance the GSI window and realize its post-phenology canopy state.
+    /// Mutation is atomic: all validation and realization complete first.
+    ///
+    /// # Errors
+    ///
+    /// Returns a typed GSI, authority, state, or closure error.
+    pub fn advance(
+        &mut self,
+        parameters: ForestCanopyParameters,
+        forcing: GsiDailyForcing,
+    ) -> Result<ForestCanopyDailyResult, ForestCanopyError> {
+        parameters.validate()?;
+        let mut next_gsi = self.gsi.clone();
+        let gsi = next_gsi
+            .advance(parameters.gsi, forcing)
+            .map_err(ForestCanopyError::Gsi)?;
+        let foliar_activity_fraction = parameters.evergreen_fraction
+            + (1.0 - parameters.evergreen_fraction) * gsi.growing_season_index;
+        let realized_foliar_biomass_kg_m2 =
+            parameters.summer_foliar_biomass_kg_m2 * foliar_activity_fraction;
+        let previous_foliar_biomass_kg_m2 = self
+            .previous_foliar_biomass_kg_m2
+            .unwrap_or(realized_foliar_biomass_kg_m2);
+        let canopy = realize_forest_canopy(
+            parameters,
+            gsi.growing_season_index,
+            previous_foliar_biomass_kg_m2,
+        )?;
+        self.gsi = next_gsi;
+        self.previous_foliar_biomass_kg_m2 = Some(canopy.live_foliar_biomass_kg_m2);
+        Ok(ForestCanopyDailyResult { gsi, canopy })
+    }
+
+    #[must_use]
+    pub fn gsi_state(&self) -> &GsiState {
+        &self.gsi
+    }
+
+    #[must_use]
+    pub fn previous_foliar_biomass_kg_m2(&self) -> Option<f64> {
+        self.previous_foliar_biomass_kg_m2
+    }
+}
+
+/// One coupled GSI and native-forest canopy update.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct ForestCanopyDailyResult {
+    pub gsi: GsiDailyResult,
+    pub canopy: ForestCanopyRealization,
+}
+
+/// Realize an already-computed trailing GSI value into native forest state.
+///
+/// # Errors
+///
+/// Returns a typed error for invalid authority, GSI, prior state, computed
+/// state, or daily foliar-mass closure.
+pub fn realize_forest_canopy(
+    parameters: ForestCanopyParameters,
+    growing_season_index: f64,
+    previous_foliar_biomass_kg_m2: f64,
+) -> Result<ForestCanopyRealization, ForestCanopyError> {
+    parameters.validate()?;
+    validate_unit_interval("growing_season_index", growing_season_index)
+        .map_err(ForestCanopyError::Gsi)?;
+    validate_non_negative_finite_forest(
+        "previous_foliar_biomass_kg_m2",
+        previous_foliar_biomass_kg_m2,
+    )?;
+
+    let deciduous_fraction = 1.0 - parameters.evergreen_fraction;
+    let foliar_activity_fraction =
+        parameters.evergreen_fraction + deciduous_fraction * growing_season_index;
+    let evergreen_foliar_biomass_kg_m2 =
+        parameters.summer_foliar_biomass_kg_m2 * parameters.evergreen_fraction;
+    let deciduous_foliar_biomass_kg_m2 =
+        parameters.summer_foliar_biomass_kg_m2 * deciduous_fraction * growing_season_index;
+    let live_foliar_biomass_kg_m2 = evergreen_foliar_biomass_kg_m2 + deciduous_foliar_biomass_kg_m2;
+    let leaf_area_index = parameters.maximum_leaf_area_index * foliar_activity_fraction;
+    let foliar_canopy_cover =
+        1.0 - (-parameters.canopy_cover_coefficient_m2_kg * live_foliar_biomass_kg_m2).exp();
+    let canopy_cover_fraction = parameters
+        .structural_canopy_cover_fraction
+        .max(foliar_canopy_cover)
+        .min(FOREST_CANOPY_COVER_CAP);
+    let change = live_foliar_biomass_kg_m2 - previous_foliar_biomass_kg_m2;
+    let leaf_on_allocation_kg_m2 = change.max(0.0);
+    let leaf_off_litter_kg_m2 = (-change).max(0.0);
+
+    for (field, value) in [
+        ("foliar_activity_fraction", foliar_activity_fraction),
+        (
+            "evergreen_foliar_biomass_kg_m2",
+            evergreen_foliar_biomass_kg_m2,
+        ),
+        (
+            "deciduous_foliar_biomass_kg_m2",
+            deciduous_foliar_biomass_kg_m2,
+        ),
+        ("live_foliar_biomass_kg_m2", live_foliar_biomass_kg_m2),
+        ("leaf_area_index", leaf_area_index),
+        ("canopy_cover_fraction", canopy_cover_fraction),
+        ("leaf_on_allocation_kg_m2", leaf_on_allocation_kg_m2),
+        ("leaf_off_litter_kg_m2", leaf_off_litter_kg_m2),
+    ] {
+        validate_non_negative_finite_forest(field, value)?;
+    }
+    let reconstructed =
+        previous_foliar_biomass_kg_m2 + leaf_on_allocation_kg_m2 - leaf_off_litter_kg_m2;
+    let closure_tolerance = 16.0 * f64::EPSILON * live_foliar_biomass_kg_m2.abs().max(1.0);
+    if (reconstructed - live_foliar_biomass_kg_m2).abs() > closure_tolerance {
+        return Err(ForestCanopyError::MassClosure);
+    }
+
+    Ok(ForestCanopyRealization {
+        growing_season_index,
+        foliar_activity_fraction,
+        previous_foliar_biomass_kg_m2,
+        evergreen_foliar_biomass_kg_m2,
+        deciduous_foliar_biomass_kg_m2,
+        live_foliar_biomass_kg_m2,
+        structural_biomass_kg_m2: parameters.structural_biomass_kg_m2,
+        leaf_area_index,
+        canopy_cover_fraction,
+        leaf_on_allocation_kg_m2,
+        leaf_off_litter_kg_m2,
+    })
+}
 
 /// Parameters for the generalized GSI constraint indicators.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -382,6 +608,59 @@ fn validate_unit_interval(field: &'static str, value: f64) -> Result<(), GsiErro
         Ok(())
     } else {
         Err(GsiError::UnitIntervalViolation { field })
+    }
+}
+
+fn validate_non_negative_finite_forest(
+    field: &'static str,
+    value: f64,
+) -> Result<(), ForestCanopyError> {
+    if !value.is_finite() {
+        return Err(ForestCanopyError::NonFinite { field });
+    }
+    if value < 0.0 {
+        return Err(ForestCanopyError::OutOfDomain { field });
+    }
+    Ok(())
+}
+
+fn validate_positive_finite_forest(
+    field: &'static str,
+    value: f64,
+) -> Result<(), ForestCanopyError> {
+    validate_non_negative_finite_forest(field, value)?;
+    if value == 0.0 {
+        return Err(ForestCanopyError::OutOfDomain { field });
+    }
+    Ok(())
+}
+
+/// Typed native-forest canopy authority, state, and closure failures.
+#[derive(Debug, Clone, PartialEq)]
+pub enum ForestCanopyError {
+    Gsi(GsiError),
+    NonFinite { field: &'static str },
+    OutOfDomain { field: &'static str },
+    MassClosure,
+}
+
+impl fmt::Display for ForestCanopyError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Gsi(source) => write!(formatter, "invalid GSI authority or forcing: {source}"),
+            Self::NonFinite { field } => write!(formatter, "{field} must be finite"),
+            Self::OutOfDomain { field } => write!(formatter, "{field} is outside its domain"),
+            Self::MassClosure => formatter.write_str("daily foliar mass ledger does not close"),
+        }
+    }
+}
+
+impl Error for ForestCanopyError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        match self {
+            Self::Gsi(source) => Some(source),
+            Self::NonFinite { .. } | Self::OutOfDomain { .. } | Self::MassClosure => None,
+        }
     }
 }
 

@@ -42,6 +42,18 @@ plants:
       rsr: 0.33
       rtmmax: 0.2
       rdmax: 0.3
+    phenology:
+      model: generalized_gsi_v1
+      summer_foliar_biomass_kg_m2: 0.2
+      evergreen_fraction: 0.2
+      structural_canopy_cover_fraction: 0.2
+      structural_biomass_kg_m2: 0.1
+      minimum_temperature_inactive_c: -2.0
+      minimum_temperature_unconstrained_c: 5.0
+      vapor_pressure_deficit_unconstrained_pa: 900.0
+      vapor_pressure_deficit_inactive_pa: 4100.0
+      photoperiod_inactive_hours: 10.0
+      photoperiod_unconstrained_hours: 11.0
     cf: 5.0
     diam: 0.005
     decomposition:

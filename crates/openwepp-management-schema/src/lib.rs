@@ -86,6 +86,7 @@ pub enum PlantScenario {
         description: Vec<String>,
         forest_class: String,
         growth: PlantForestGrowth,
+        phenology: PlantForestPhenology,
         cf: f64,
         diam: f64,
         decomposition: PlantForestDecomposition,
@@ -148,6 +149,28 @@ pub struct PlantForestGrowth {
     pub rsr: f64,
     pub rtmmax: f64,
     pub rdmax: f64,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum PlantForestPhenologyModel {
+    GeneralizedGsiV1,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct PlantForestPhenology {
+    pub model: PlantForestPhenologyModel,
+    pub summer_foliar_biomass_kg_m2: f64,
+    pub evergreen_fraction: f64,
+    pub structural_canopy_cover_fraction: f64,
+    pub structural_biomass_kg_m2: f64,
+    pub minimum_temperature_inactive_c: f64,
+    pub minimum_temperature_unconstrained_c: f64,
+    pub vapor_pressure_deficit_unconstrained_pa: f64,
+    pub vapor_pressure_deficit_inactive_pa: f64,
+    pub photoperiod_inactive_hours: f64,
+    pub photoperiod_unconstrained_hours: f64,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -579,11 +602,6 @@ fn validate_plant(index: usize, plant: &PlantScenario) -> Result<(), ManagementY
             description,
             routing_coefficients,
             ..
-        }
-        | PlantScenario::NativeForest {
-            description,
-            routing_coefficients,
-            ..
         } => {
             validate_description(&format!("plants[{index}].description"), description)?;
             validate_route_coefficients(
@@ -591,6 +609,111 @@ fn validate_plant(index: usize, plant: &PlantScenario) -> Result<(), ManagementY
                 &format!("plants[{index}].routing_coefficients"),
             )
         }
+        PlantScenario::NativeForest {
+            description,
+            growth,
+            phenology,
+            routing_coefficients,
+            ..
+        } => {
+            validate_description(&format!("plants[{index}].description"), description)?;
+            validate_positive_finite(&format!("plants[{index}].growth.bb"), growth.bb)?;
+            validate_positive_finite(&format!("plants[{index}].growth.xmxlai"), growth.xmxlai)?;
+            validate_forest_phenology(index, phenology)?;
+            validate_route_coefficients(
+                routing_coefficients.as_ref(),
+                &format!("plants[{index}].routing_coefficients"),
+            )
+        }
+    }
+}
+
+fn validate_forest_phenology(
+    index: usize,
+    phenology: &PlantForestPhenology,
+) -> Result<(), ManagementYamlError> {
+    let path = format!("plants[{index}].phenology");
+    validate_positive_finite(
+        &format!("{path}.summer_foliar_biomass_kg_m2"),
+        phenology.summer_foliar_biomass_kg_m2,
+    )?;
+    validate_unit_interval(
+        &format!("{path}.evergreen_fraction"),
+        phenology.evergreen_fraction,
+    )?;
+    validate_non_negative_finite(
+        &format!("{path}.structural_canopy_cover_fraction"),
+        phenology.structural_canopy_cover_fraction,
+    )?;
+    if phenology.structural_canopy_cover_fraction > 0.999 {
+        return Err(ManagementYamlError::InvalidField {
+            path: format!("{path}.structural_canopy_cover_fraction"),
+            detail: "must be at most 0.999".to_string(),
+        });
+    }
+    validate_non_negative_finite(
+        &format!("{path}.structural_biomass_kg_m2"),
+        phenology.structural_biomass_kg_m2,
+    )?;
+    validate_ordered_finite_pair(
+        &path,
+        "minimum_temperature_inactive_c",
+        phenology.minimum_temperature_inactive_c,
+        "minimum_temperature_unconstrained_c",
+        phenology.minimum_temperature_unconstrained_c,
+    )?;
+    validate_ordered_finite_pair(
+        &path,
+        "vapor_pressure_deficit_unconstrained_pa",
+        phenology.vapor_pressure_deficit_unconstrained_pa,
+        "vapor_pressure_deficit_inactive_pa",
+        phenology.vapor_pressure_deficit_inactive_pa,
+    )?;
+    validate_ordered_finite_pair(
+        &path,
+        "photoperiod_inactive_hours",
+        phenology.photoperiod_inactive_hours,
+        "photoperiod_unconstrained_hours",
+        phenology.photoperiod_unconstrained_hours,
+    )?;
+    if phenology.vapor_pressure_deficit_unconstrained_pa < 0.0
+        || phenology.photoperiod_inactive_hours < 0.0
+        || phenology.photoperiod_unconstrained_hours > 24.0
+    {
+        return Err(ManagementYamlError::InvalidField {
+            path,
+            detail: "GSI thresholds are outside their physical domains".to_string(),
+        });
+    }
+    Ok(())
+}
+
+fn validate_ordered_finite_pair(
+    path: &str,
+    lower_name: &str,
+    lower: f64,
+    upper_name: &str,
+    upper: f64,
+) -> Result<(), ManagementYamlError> {
+    validate_finite_value(&format!("{path}.{lower_name}"), lower)?;
+    validate_finite_value(&format!("{path}.{upper_name}"), upper)?;
+    if lower >= upper {
+        return Err(ManagementYamlError::InvalidField {
+            path: path.to_string(),
+            detail: format!("{lower_name} must be less than {upper_name}"),
+        });
+    }
+    Ok(())
+}
+
+fn validate_finite_value(path: &str, value: f64) -> Result<(), ManagementYamlError> {
+    if value.is_finite() {
+        Ok(())
+    } else {
+        Err(ManagementYamlError::InvalidField {
+            path: path.to_string(),
+            detail: "must be finite".to_string(),
+        })
     }
 }
 
@@ -770,12 +893,23 @@ fn validate_yearly(
             )
         }
         YearlyScenario::NativeForest {
-            description, itype, ..
+            description,
+            itype,
+            jdplt,
+            jdstop,
+            ..
         } => {
             validate_description(
                 &format!("yearly_scenarios[{index}].description"),
                 description,
             )?;
+            if *jdplt != 0 || *jdstop != 0 {
+                return Err(ManagementYamlError::InvalidField {
+                    path: format!("yearly_scenarios[{index}]"),
+                    detail: "native forest phenology requires continuous jdplt=0 and jdstop=0"
+                        .to_string(),
+                });
+            }
             validate_reference(
                 &format!("yearly_scenarios[{index}].itype"),
                 *itype,
@@ -1359,11 +1493,32 @@ mod tests {
         let high_lambda = VALID_ROUTING_YAML.replace("lambda: 0.2", "lambda: 1.2");
         let lambda_err = parse_management_yaml_from_str(&high_lambda)
             .expect_err("lambda above one must fail closed");
-        assert!(
-            lambda_err
-                .to_string()
-                .contains("routing_coefficients.lambda")
+        assert!(lambda_err
+            .to_string()
+            .contains("routing_coefficients.lambda"));
+    }
+
+    #[test]
+    fn native_phenology_rejects_zero_growth_endpoints_and_schedule_gaps() {
+        let zero_bb = VALID_ROUTING_YAML.replace("bb: 14.0", "bb: 0.0");
+        let bb_error =
+            parse_management_yaml_from_str(&zero_bb).expect_err("zero native bb must fail");
+        assert!(bb_error.to_string().contains("plants[0].growth.bb"));
+
+        let zero_lai = VALID_ROUTING_YAML.replace("xmxlai: 2.0", "xmxlai: 0.0");
+        let lai_error =
+            parse_management_yaml_from_str(&zero_lai).expect_err("zero native LAI must fail");
+        assert!(lai_error.to_string().contains("plants[0].growth.xmxlai"));
+
+        let gated = VALID_ROUTING_YAML.replace(
+            "    itype: 1\nschedule:",
+            "    itype: 1\n    jdplt: 120\n    jdstop: 280\nschedule:",
         );
+        let schedule_error = parse_management_yaml_from_str(&gated)
+            .expect_err("seasonally gated native phenology must fail");
+        assert!(schedule_error
+            .to_string()
+            .contains("requires continuous jdplt=0 and jdstop=0"));
     }
 
     #[test]
@@ -1415,6 +1570,18 @@ plants:
       rsr: 0.33
       rtmmax: 0.2
       rdmax: 0.3
+    phenology:
+      model: generalized_gsi_v1
+      summer_foliar_biomass_kg_m2: 0.2
+      evergreen_fraction: 0.2
+      structural_canopy_cover_fraction: 0.2
+      structural_biomass_kg_m2: 0.1
+      minimum_temperature_inactive_c: -2.0
+      minimum_temperature_unconstrained_c: 5.0
+      vapor_pressure_deficit_unconstrained_pa: 900.0
+      vapor_pressure_deficit_inactive_pa: 4100.0
+      photoperiod_inactive_hours: 10.0
+      photoperiod_unconstrained_hours: 11.0
     cf: 5.0
     diam: 0.005
     decomposition:
@@ -1506,6 +1673,18 @@ plants:
       rsr: 0.33
       rtmmax: 0.2
       rdmax: 0.3
+    phenology:
+      model: generalized_gsi_v1
+      summer_foliar_biomass_kg_m2: 0.2
+      evergreen_fraction: 0.2
+      structural_canopy_cover_fraction: 0.2
+      structural_biomass_kg_m2: 0.1
+      minimum_temperature_inactive_c: -2.0
+      minimum_temperature_unconstrained_c: 5.0
+      vapor_pressure_deficit_unconstrained_pa: 900.0
+      vapor_pressure_deficit_inactive_pa: 4100.0
+      photoperiod_inactive_hours: 10.0
+      photoperiod_unconstrained_hours: 11.0
     cf: 5.0
     diam: 0.005
     decomposition:

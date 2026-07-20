@@ -76,7 +76,21 @@ fn deciduous_mixed_and_evergreen_endpoints_are_explicit() {
         realize_forest_canopy(parameters(1.0), 0.0, 0.8).expect("evergreen winter endpoint");
     let evergreen_summer =
         realize_forest_canopy(parameters(1.0), 1.0, 0.8).expect("evergreen summer endpoint");
-    assert_eq!(evergreen_winter, evergreen_summer);
+    assert_close(
+        evergreen_winter.live_foliar_biomass_kg_m2,
+        evergreen_summer.live_foliar_biomass_kg_m2,
+        0.0,
+    );
+    assert_close(
+        evergreen_winter.leaf_area_index,
+        evergreen_summer.leaf_area_index,
+        0.0,
+    );
+    assert_close(
+        evergreen_winter.canopy_cover_fraction,
+        evergreen_summer.canopy_cover_fraction,
+        0.0,
+    );
     assert_close(evergreen_winter.live_foliar_biomass_kg_m2, 0.8, 1.0e-15);
     assert_close(evergreen_winter.leaf_area_index, 5.0, 1.0e-15);
 }
