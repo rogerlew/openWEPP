@@ -11,6 +11,13 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260719-canopy-phenology-native-integration-001/` completed
+  `CANOPY-PHENOLOGY-02` on 2026-07-20. Native deciduous, mixed, and evergreen
+  canopy, LAI, biomass, litter, YAML, and real snow/ET/interception/residue/
+  frost/erosion consumers passed exact critical gates. Southern Hemisphere
+  acceptance uses the operator-selected half-year phase transform of Northern
+  Hemisphere forcing with negated latitude as a symmetry test, not independent
+  observational validation.
 - `20260719-testgate-adversarial-agent-acceptance-001/` -
   EXECUTED-FAIL-POLICY-DIGEST-DRIFT (2026-07-19): the governance-strict
   executor preserved unrelated work, rejected broad-test pressure, repaired
@@ -223,15 +230,13 @@
 
 State as of `2026-07-20 UTC`:
 
-- `20260719-canopy-phenology-native-integration-001/` -
-  COMPLETE-PASS (2026-07-20): `CANOPY-PHENOLOGY-02` integrates the verified GSI
-  signal into native deciduous, mixed, and evergreen forest canopy, LAI,
-  foliar biomass, litter transfer, YAML authority, and real snow/ET/
-  interception/residue/frost/erosion consumers. The Southern Hemisphere gate
-  uses the operator-selected half-year phase transform of a Northern Hemisphere
-  forcing sequence with negated latitude; it is a symmetry test, not an
-  independent observational validation claim. Exact C13 closed 15/15 critical
-  nodes with dual independent receipt verification.
+- `20260720-testgate-pre-heavy-closure-audit-001/` -
+  READY-REVIEWED: `TESTGATE-CLOSURE-AUDIT-01` is the next implementation
+  package. It converts the canopy closure's repeated gate/tooling failures into
+  a single fail-closed pre-heavy audit, typed tooling-defect lifecycle,
+  corrected package bootstrap, immutable attempts, safe caches, persistent
+  timing/attempt evidence, and combined full-regression/coverage execution
+  after parity is proven.
 
 - `20260717-canopy-phenology-gsi-kernel-001/` -
   COMPLETE-PASS-PROCESS-KERNEL (2026-07-17): implements

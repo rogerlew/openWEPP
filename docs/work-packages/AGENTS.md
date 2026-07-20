@@ -71,6 +71,31 @@
   that was not a current required gate. If it was a current required gate, that
   phrase must be paired with a hold disposition and blocker rationale.
 
+## Pre-Heavy Closure Audit And Tooling Correction
+
+- Before full workspace regression, global coverage/CRAP, broad Clippy/deny,
+  comparator/parity, release, or population/cohort execution, run the canonical
+  pre-heavy closure audit defined by
+  `docs/standards/testing-and-gate-strategy.md` §8.5.
+- Assemble the intended closure diff and evidence artifacts before the audit.
+  Only the report's exact admitted state may proceed to heavy execution.
+- Run cheap deterministic blockers first: package/write-set schema, exact path
+  reconciliation, diff hygiene, documentation/schema checks, required artifact
+  presence, prompt state, and line-count governance.
+- The audit must bind one admitted inventory and execution DAG for the
+  executor. The verifier must independently enumerate the current inventory
+  and compare it to the admitted inventory; it may not replace, repair, or
+  reorder the execution inventory.
+- Treat a planner, executor, verifier, workflow, cache, evidence-lifecycle, or
+  operator-interface flaw as a tooling defect. Fix it in the active package
+  when authorized; otherwise retain the failed evidence and activate a
+  prerequisite tooling package before repeating expensive work.
+- One infrastructure-only retry may follow the declared retry policy. A second
+  occurrence of the same cause blocks another heavy retry until the tool is
+  corrected or explicit authority accepts a bounded external outage.
+- When a workflow gap is mechanically detectable, closure requires a tooling
+  control or an owned tooling package. A prose reminder alone is insufficient.
+
 ## Consumer-Path Closure Rule
 - A package that claims `endpoint`, `direct`, `cutover`, `publication`,
   `ready`, `activation`, or equivalent production-readiness language must prove

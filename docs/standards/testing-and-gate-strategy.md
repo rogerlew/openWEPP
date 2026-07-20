@@ -111,6 +111,24 @@ derived from the exact completed change set. It reconciles the intent plan,
 affected set, risk reasons, executable gate DAG, and campaign obligations before
 increment closure.
 
+**Pre-heavy closure audit** is the single machine-readable, fail-closed audit
+run after the intended closure diff is assembled and before any heavy gate is
+launched. It proves that cheap prerequisites, identities, inventories,
+artifact locations, reuse decisions, and the exact heavy execution DAG are
+ready. It is planning evidence, not closure evidence.
+
+**Tooling defect** is a typed failure in the planner, executor, verifier,
+workflow, cache, evidence lifecycle, or operator interface that causes
+unnecessary work, prevents a valid governed workflow, loses audit evidence, or
+requires a manual workaround. A tooling defect is repository work, not an
+ambient inconvenience.
+
+**Heavy gate node** is a gate definition carrying the machine-owned
+`execution_cost_class: HEAVY`. Full workspace regression, global
+coverage/CRAP, broad Clippy or deny, comparator and parity suites, release
+gates, and population or cohort batches must carry that class. Timing history
+may propose a policy change but does not dynamically relabel a node.
+
 **Gate receipt** is the immutable machine-readable result of executing one
 gate plan against identified inputs.
 
@@ -162,6 +180,12 @@ together.
    is non-conforming.
 10. Preserve auditability. Every deferred, stale, skipped, failed, or escalated
     gate has a machine-readable reason.
+11. Optimize the gate system for timely evidence. A discovered tooling flaw is
+    corrected at its owning layer; repeatedly paying its cost is not an
+    acceptable operating procedure.
+12. Close workflow gaps with enforceable tooling. Narrative reminders may
+    bridge a transition, but a repeated or mechanically detectable failure
+    requires a validator, planner rule, executor guard, or workflow control.
 
 ## 5. Test And Check Families
 
@@ -601,6 +625,68 @@ An operator may request additional suites, a broader risk class, or a broader
 boundary. The resulting plan records the escalation. There is no general
 `--skip`, `--bless`, `--accept-current`, or agent-decided downgrade operation.
 Existing explicit exception authorities remain narrow and content-bound.
+
+### 8.5 Pre-heavy closure audit
+
+Before any selected heavy node starts, one canonical pre-heavy closure audit
+must evaluate the complete intended closure state. Heavy nodes include full
+workspace regression, global coverage/CRAP, broad Clippy or deny, comparator
+and parity suites, release gates, and population or cohort batches. The audit
+must produce one versioned report consumed unchanged by the executor and
+terminal verifier. It must check:
+
+1. the package exists in the authenticated base commit, its write-set schema is
+   valid, and its declared plus intended closure paths cover the exact Git
+   change set; a scaffold-only validator may prepare this admission but cannot
+   authorize execution before the scaffold commit exists;
+2. cheap prerequisites, including diff hygiene, documentation and schema lint,
+   required artifact presence, prompt state, and line-count governance;
+3. one canonical admitted test/check inventory, argument vector, stable
+   ordering, and expected cardinality consumed by execution; verification must
+   independently enumerate the current inventory and compare it to the admitted
+   inventory rather than trusting or replacing it;
+4. toolchain, environment, fixture, policy, binary, feature, and configuration
+   identities needed by every selected node;
+5. a fresh immutable attempt root, collision-free output namespaces, and cache
+   keys that cannot expose or reuse mutable source, index, or measurement
+   state;
+6. execution-, authority-, and documentation-root separation plus every
+   evidence-reuse decision and its invalidation reason;
+7. whether a proven instrumented execution can satisfy both full-regression
+   and global-coverage obligations without duplicate test execution;
+8. prerequisite ordering, timeout and retry policy, concurrency ownership, and
+   the exact heavy-runner handoff;
+9. persistent append-only attempt, timing, cost, and failure records outside an
+   ephemeral-only directory; and
+10. every open tooling defect that can invalidate, duplicate, or materially
+    delay the selected execution.
+
+The report status is `READY`, `BLOCKED`, or `INVALID`. Only `READY` from the
+repository-owned command authorizes heavy execution. Until that command is cut
+over, no new heavy package may start; the implementation package for the
+command must finish the tool under focused checks and then use it for its own
+heavy closure.
+
+Execution is a mandatory two-stage state machine. The executor first runs only
+`LIGHT` prerequisite nodes, freezes their receipts and the intended closure
+state, and obtains the audit decision. It may enter the `HEAVY` stage only with
+the exact `READY` audit ID. A monolithic loop that can reach a heavy node before
+this transition is invalid. After any late failure, a new attempt imports every
+successful per-node receipt that is both current and reusable in the target
+attempt under §10.4, then runs only missing, invalidated, or context-ineligible
+nodes. Restarting a reusable successful prefix is forbidden. Every receipt not
+reusable in the target attempt records the exact trust, reuse-class, or
+execution-context reason that requires rerun, including `SAME_EXECUTION` after
+a runner, job, or authenticated workflow-attempt change.
+
+A newly discovered tooling defect is recorded with owner, reproducer, impact,
+and correction boundary. If correction is inside the active package write set,
+fix and verify it before retry. Otherwise stop, retain the failed attempt, and
+open or activate a prerequisite tooling package. After one infrastructure-only
+workaround, recurrence of the same cause blocks another expensive retry until
+the owning tooling defect is corrected or explicit authority accepts a bounded
+external outage. Human memory and package prose are not substitutes for this
+enforcement.
 
 ## 9. Execution Architecture
 
@@ -1088,11 +1174,13 @@ The full run applies the canonical production filter,
 deduplication, adjudication registry, source freeze, and zero actionable
 workspace condition.
 
-The implementation follow-up should prototype one instrumented full Nextest run
-that supplies both full regression results and LCOV to cargo-crap. Adoption
-requires test-inventory parity, acceptable runtime, complete required coverage,
-and evidence that coverage instrumentation does not invalidate a gate's
-semantics. Until proven, functional and coverage executions remain distinct.
+The implementation must provide one instrumented full Nextest run that can
+supply both full regression results and LCOV to cargo-crap. Adoption requires
+test-inventory parity, acceptable runtime, complete required coverage, and
+evidence that coverage instrumentation does not invalidate a gate's semantics.
+Until proven, functional and coverage executions remain distinct. After parity
+is proven for a gate definition and environment identity, separately rerunning
+the same full inventory for regression and coverage is forbidden.
 
 ## 13. Assurance Impact And Deferral
 
@@ -1327,6 +1415,12 @@ The following are tracked separately:
 This separation prevents a slow build, duplicated coverage pass, or manual
 governance step from being mislabeled as test execution.
 
+An infrastructure-invalid heavy attempt may be repeated once only under its
+declared retry policy. If the same cause recurs, execution stops before another
+heavy attempt and opens or updates the owning tooling defect. Restarting in a
+new directory, clearing a cache, changing an unbound environment variable, or
+manually restating an argument is a workaround, not a correction.
+
 ## 16. Failure, Flakiness, And Nondeterminism
 
 - Failures retain the failing receipt and artifacts; a retry never erases the
@@ -1376,10 +1470,15 @@ Reviewers evaluate both adequacy and economy:
 - Did unnecessary full or assurance work reveal a missing impact mapping?
 - Did a broad gate discover a regression the planner missed? If so, that is a
   planner defect and must update the impact map or risk rule.
+- Did the pre-heavy closure audit run once against the final intended closure
+  state, and did execution consume that exact report?
+- Did any workaround or repeated failure reveal a tooling defect, and is the
+  defect fixed or blocking further expensive execution?
 
 Avoidable friction is evidence. The timing history, selected inventory, missed
 regressions, escalations, and false-positive broad runs should inform later
-policy revisions without silently weakening the current policy.
+policy revisions without silently weakening the current policy. Narrative
+capture alone does not close a mechanically preventable recurrence.
 
 ## 19. Transition Requirements
 
