@@ -202,3 +202,26 @@ unchanged.
 The implementation may reduce only the existing assurance-publication cohort
 concurrency. It must preserve exact inventory, all test cases, assertions, and
 the fail-closed timeout.
+
+## Scheduling Contract-Test Extension
+
+Status: `refreshed critical intent admitted`
+
+Static inspection after the first scheduling intent found that the canonical
+CI executor contract directly asserts the assurance-publication group capacity.
+The uncommitted config edit was reversed before refreshing intent to include
+that already-declared integration-test path.
+
+- Base commit: `a749ed7a`
+- Observed clean head: `bd41ddae`
+- Refreshed intent plan ID:
+  `4363357dfc72027883e7c716d1fa0082c42e1e0aaded0e2e3d4f2c0146a348f6`
+- External plan:
+  `/tmp/canopy02-nextest-intent-bd41ddae/intent-plan.json`
+- Authorized-path manifest:
+  `/tmp/canopy02-nextest-intent-bd41ddae/authorized-paths.json`
+- Result/risk: `PASS` / `CRITICAL`
+- Authorized paths: 58; selected nodes: 15.
+
+This refreshed intent supersedes the 57-path scheduling intent and is the
+implementation authority for the config plus its exact contract assertion.
