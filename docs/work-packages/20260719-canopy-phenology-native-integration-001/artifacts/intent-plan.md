@@ -176,3 +176,29 @@ rebuilt executable into the planning context before terminal execution.
 - Authorized paths: 56; selected nodes: 15.
 
 This is the terminal predecessor for the final executor attempt.
+
+## Assurance-Publication Scheduling Extension
+
+Status: `critical intent admitted`
+
+Repeated exact terminal execution proved that the existing four-case
+assurance-publication cohort can leave multiple complete-snapshot fixtures
+CPU-active until the unchanged 720-second timeout. The package write set was
+amended at `2267b458` before authorizing the one scheduling-policy path needed
+to bound this resource contention. Test selection, assertions, and timeout are
+unchanged.
+
+- Base commit: `a749ed7a`
+- Observed authorization head: `2267b458`
+- Intent plan ID:
+  `a2cd5f4a87e57f3c38a52e5f51181579949bcfd16ce58a01058fa58d1297b104`
+- External plan:
+  `/tmp/canopy02-nextest-intent-2267b458/intent-plan.json`
+- Authorized-path manifest:
+  `/tmp/canopy02-nextest-intent-2267b458/authorized-paths.json`
+- Result/risk: `PASS` / `CRITICAL`
+- Authorized paths: 57; selected nodes: 15.
+
+The implementation may reduce only the existing assurance-publication cohort
+concurrency. It must preserve exact inventory, all test cases, assertions, and
+the fail-closed timeout.
