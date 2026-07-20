@@ -33,3 +33,13 @@ The prospective manifest names the exact anticipated science, parser, schema,
 projection, runtime, dynamic-consumer-evidence, gate-policy, fixture, test, and
 closure-artifact paths. Terminal reconciliation must still bind the actual
 exact diff and may add focused A1 nodes introduced by the gate-policy mapping.
+
+## Consumed-Value Observation Extension
+
+Status: `scaffolded; machine plan pending`
+
+Focused execution found that exact frost and erosion consumed-value observations
+require edits to the direct executor and its bounded-layout guard. Both paths
+are inside the package's pre-existing declared write set, but neither appears in
+the corrected exact prospective manifest. No such code edit is retained before
+this narrow extension receives its own intent plan.

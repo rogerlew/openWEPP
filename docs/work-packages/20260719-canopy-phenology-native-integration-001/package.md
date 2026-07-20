@@ -263,6 +263,13 @@ Subagents have no production write access.
   source state without rewriting history; corrected implementation starts only
   after a new admitted intent plan.
   Date/Author: 2026-07-20 / Codex.
+- Decision: admit a narrow follow-on intent extension before adding exact
+  consumed-value observations inside the frost executor and the bounded-layout
+  guard.
+  Rationale: those two files are inside the declared package write set but were
+  absent from corrected intent plan `f307138c...`; machine intent is path-exact
+  and cannot be expanded retroactively.
+  Date/Author: 2026-07-20 / Codex.
 
 ## Outcomes & Retrospective
 
