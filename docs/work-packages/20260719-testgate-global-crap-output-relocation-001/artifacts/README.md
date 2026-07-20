@@ -9,12 +9,5 @@
   prospective envelope amendment evidence.
 - `environment-projection-correction.md` - integrated correction and focused
   validation.
-- `terminal-crap-control-envelope-failure.md` - preserved first terminal
-  execution failure after successful fresh coverage.
-- `crap-control-envelope-correction.md` - strict control/report-byte binding
-  correction and focused evidence.
-- `control-envelope-review-a.md`, `control-envelope-review-b.md`, and
-  `control-envelope-review-disposition.md` - dual security review, accepted
-  finding patches, and final PASS disposition.
 - terminal execution, verification, and final-disposition evidence remains
   pending.

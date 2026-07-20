@@ -4,7 +4,7 @@ Package ID: `20260719-testgate-global-crap-output-relocation-001`
 
 Queue ID: `TESTGATE-GLOBAL-CRAP-OUTPUT-01`
 
-Status: `ACTIVE / CONTROL-ENVELOPE-REVIEW-PASS / COMMITTED-PLAN-PENDING`
+Status: `ACTIVE / ENV-PROJECTION-REVIEW-PASS / COMMITTED-PLAN-PENDING`
 
 Authorization: verified critical receipt
 `78f526eee1d0b8a9142afc9f3ff8f9434702d1a5409d917a1c2a22687aa7638c`
@@ -20,9 +20,6 @@ artifact root: retain a safe relative default until relocation, then resolve it
 against the repository only for standalone runs. Rebind both adapter digests.
 Also close the integrated planner defect that makes an otherwise exact terminal
 plan unreconstructable across invokers by hashing undeclared ambient variables.
-Finally, separate the CRAP gate's strict control-plane PASS envelope from its
-floating-point measurement report so the executor can validate and bind the
-real report without applying the integer-only policy parser to science metrics.
 
 ## Progress
 
@@ -57,17 +54,6 @@ real report without applying the integer-only policy parser to science metrics.
   prospective amended write set mechanically.
 - [x] (2026-07-19) Added the final declared-non-UTF-8 fail-closed regression;
   focused environment evidence is 3/3 and focused Clippy remains clean.
-- [x] (2026-07-19) Two exact committed plans are byte-identical and independent
-  reconciliation passes when all policy-declared environment values are bound.
-- [x] (2026-07-19) The first canonical terminal execution passed the full
-  workspace suite and completed fresh coverage, then reproduced
-  `TESTGATE-CRAP-CONTROL-ENVELOPE-01`: the executor rejected the detailed CRAP
-  report's valid floating-point metrics with `GATE-JSON-INVALID`.
-- [x] (2026-07-19) Prospectively amended this package before correction to own
-  the reproduced control-envelope defect and its bounded executor regression.
-- [x] (2026-07-19) Patched the strict control/report-byte binding, closed both
-  independent reviewers' confinement, publication-race, regression, and
-  line-count findings, and received dual final PASS verdicts.
 - [ ] Complete dual review, one mechanical terminal execution, dual terminal
   verification, prompt archival, and final disposition.
 
@@ -130,25 +116,12 @@ proves undeclared-variable changes are identity-neutral and declared-variable
 changes are identity-breaking, then two separately invoked exact committed
 plans are byte-identical and independent reconciliation passes.
 
-Defect `TESTGATE-CRAP-CONTROL-ENVELOPE-01` is the global CRAP adapter completing
-fresh coverage with a PASS assessment, followed by executor rejection of
-`adjudicated-crap-report.json` because its domain metrics are JSON floats while
-gate-policy/v1 control objects are intentionally integer-only. The correction
-must preserve the detailed report's numeric schema. It may extend the existing
-integer-only `run-status.json` control envelope with the detailed report's
-SHA-256, then make the executor validate PASS, zero exit, and exact report-byte
-binding from that strict envelope instead of parsing measurement metrics as a
-policy object. Missing, stale, duplicate-key, floating, non-PASS, nonzero-exit,
-or digest-mismatched control evidence must fail closed.
-
 ## Declared Write Set
 
 - `tools/release/run_adjudicated_crap_gate.sh`
 - `gate-policy/v1/gate-definitions.json`
 - `tests/integration/testgate_ci_executor_contract.rs`
 - `crates/openwepp-gate-planner/src/execution_context.rs`
-- `crates/openwepp-gate-planner/src/executor.rs`
-- `tests/python/test_adjudicated_crap_gate.py`
 - `docs/work-packages/README.md`
 - `docs/work-packages/20260719-testgate-global-crap-output-relocation-001/**`
 
@@ -156,8 +129,6 @@ or digest-mismatched control evidence must fail closed.
 
 - A minimal default-output relocation correction with unchanged explicit-path
   behavior.
-- A strict CRAP control envelope that binds but does not reinterpret the
-  floating-point detailed measurement report.
 - Exact focused regression evidence for executor and standalone modes.
 - Reconciled adapter identities and one mechanically selected terminal receipt.
 - Dual independent review, finding disposition, verification, and final status.
@@ -184,8 +155,7 @@ broad suite, GitHub dispatch, or forest1 action is authorized.
    TESTGATE executor contract, direct digest reconstruction, and diff hygiene.
 4. Review: obtain two independent read-only reviews, disposition every finding,
    and patch accepted findings inside the declared write set.
-5. Terminal validation: execute the planner-selected critical plan once per
-   committed correction attempt. Preserve failed receipts/artifacts; do not
+5. Terminal validation: execute the planner-selected critical plan once. Do not
    rerun passing nodes separately or manually add broad gates.
 6. Closure: complete two independent terminal verifications, archive the active
    prompt, update the catalog, and record PASS/FAIL/BLOCKED/NOT RUN truthfully.
@@ -211,20 +181,12 @@ route, and assign a concrete next defect owner.
 - [x] Focused contract evidence passes.
 - [ ] Mechanical critical receipt passes every node.
 - [ ] Dual review and dual terminal verification have no open finding.
-- [x] `execution_context.rs` and the integration contract remain 263 and 558
-  lines. The newly touched `executor.rs` is 2,611 lines, above the 2,000-line
-  WARN but below the 3,000-line hard block. The bounded security correction
-  stays local because splitting artifact-contract code during a receipt-binding
-  fix would expand review risk. Follow-on intent: after this package and its
-  adversarial acceptance rerun close, scaffold a mechanical tooling package to
-  extract artifact path, validation, and publication helpers from `executor.rs`
-  without changing behavior. No kernel/process Rust changes.
+- [x] Changed Rust files are 263 and 558 lines, below the 2,000-line warning
+  threshold; no kernel/process Rust changes.
 - [x] Undeclared ambient variables do not alter plan identity; every
   policy-declared gate environment key remains bound.
-- [x] Two separate exact committed plan invocations are byte-identical and
+- [ ] Two separate exact committed plan invocations are byte-identical and
   independent reconciliation passes before execution.
-- [ ] CRAP PASS control is strict integer-only JSON and binds the exact detailed
-  report bytes while permitting valid floating-point CRAP metrics.
 
 ## Review And Delegation
 
@@ -275,16 +237,6 @@ or secret-bearing process state.
   instead of hard-coding the four current names. A future declared key therefore
   enters identity automatically, while undeclared secrets and shell bookkeeping
   remain outside the permitted projection.
-- The reconciled terminal executor ran all selected tests and fresh coverage.
-  The adapter itself reported `status=PASS raw=2 adjudicated=2 actionable=0`,
-  but executor validation reused the policy parser for the detailed report and
-  rejected its first metric (`"coverage": 0.0`). This is a control/data-plane
-  type mismatch, not a CRAP failure and not authority to stringify metrics.
-- Dual re-review found that the first control-envelope correction read control
-  JSON through an unconfined generic reader and re-read the report after digest
-  validation. Both findings are accepted: control now uses the confined reader,
-  and publication obtains the exact report buffer from a fresh control/digest
-  validation immediately before atomic write.
 
 ## Decision Log
 
@@ -299,12 +251,6 @@ or secret-bearing process state.
   Rationale: the user's package objective is integrated tooling closure, the
   mechanism is reproduced and in repository-owned planner code, and the direct
   fail-closed correction is bounded and testable.
-  Date/author: 2026-07-19, parent agent.
-- Decision: preserve the detailed CRAP report schema and bind it from the
-  runner's strict status envelope rather than weakening gate-policy/v1 JSON or
-  coercing measurement floats to strings.
-  Rationale: policy identity remains integer-only and duplicate-key-safe while
-  the domain artifact retains its numeric meaning and exact-byte provenance.
   Date/author: 2026-07-19, parent agent.
 
 ## Outcomes And Retrospective

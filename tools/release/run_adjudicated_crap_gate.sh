@@ -198,21 +198,12 @@ finalize() {
   local exit_status="$?"
   trap - EXIT
   local result="PASS"
-  local report_sha256=""
   if [[ "${exit_status}" -ne 0 ]]; then
     result="FAIL"
-  fi
-  if [[ -f "${OUTPUT_DIR}/adjudicated-crap-report.json" ]]; then
-    report_sha256="$(sha256sum "${OUTPUT_DIR}/adjudicated-crap-report.json" | cut -d ' ' -f 1)"
   fi
   {
     printf '{\n'
     printf '  "acquisition_mode": "%s",\n' "${ACQUISITION_MODE}"
-    if [[ -n "${report_sha256}" ]]; then
-      printf '  "adjudicated_crap_report_sha256": "%s",\n' "${report_sha256}"
-    else
-      printf '  "adjudicated_crap_report_sha256": null,\n'
-    fi
     printf '  "exit_status": %s,\n' "${exit_status}"
     printf '  "finished_utc": "%s",\n' "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
     printf '  "result": "%s",\n' "${result}"

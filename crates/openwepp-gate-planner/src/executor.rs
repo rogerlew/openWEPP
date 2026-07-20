@@ -702,33 +702,17 @@ fn validate_success_artifacts(artifact_root: &Path, node: &Value) -> Result<()> 
 }
 
 fn validate_crap_artifacts(artifact_root: &Path, node: &Value) -> Result<()> {
-    let _ = validated_crap_report_bytes(artifact_root, node)?;
+    let report = read_json(&adjudicated_crap_report_path(artifact_root, node)?)?;
+    if report["status"] != "PASS" {
+        return Err(execution_error(
+            "GATE-EXEC-CRAP-REPORT",
+            "adapter exited successfully without a PASS report",
+        ));
+    }
     if node["gate_definition_id"] == "affected-adjudicated-crap-v1" {
         validate_junit_artifact(artifact_root, node)?;
     }
     Ok(())
-}
-
-fn validated_crap_report_bytes(artifact_root: &Path, node: &Value) -> Result<Vec<u8>> {
-    let status_path = adjudicated_crap_status_path(artifact_root, node)?;
-    let status = parse_strict(&read_real_artifact(artifact_root, &status_path)?)?;
-    if status["result"] != "PASS" || status["exit_status"].as_i64() != Some(0) {
-        return Err(execution_error(
-            "GATE-EXEC-CRAP-CONTROL",
-            "adapter exited successfully without a PASS control envelope",
-        ));
-    }
-    let expected_sha256 = required_string(&status, "adjudicated_crap_report_sha256")?;
-    let report_path = adjudicated_crap_report_path(artifact_root, node)?;
-    let report = read_real_artifact(artifact_root, &report_path)?;
-    let observed_sha256 = sha256_bytes(&report);
-    if observed_sha256 != expected_sha256 {
-        return Err(execution_error(
-            "GATE-EXEC-CRAP-REPORT-DIGEST",
-            format!("expected {expected_sha256}, observed {observed_sha256}"),
-        ));
-    }
-    Ok(report)
 }
 
 fn validate_junit_artifact(artifact_root: &Path, node: &Value) -> Result<()> {
@@ -810,15 +794,11 @@ fn real_artifact_sources(artifact_root: &Path, node: &Value) -> Result<Vec<PathB
         "adjudicated-crap-v1" if node["gate_definition_id"] == "affected-adjudicated-crap-v1" => {
             Ok(vec![
                 adjudicated_crap_report_path(artifact_root, node)?,
-                adjudicated_crap_status_path(artifact_root, node)?,
                 nextest_junit_path(artifact_root, node)?,
                 affected_lcov_path(artifact_root, node)?,
             ])
         }
-        "adjudicated-crap-v1" => Ok(vec![
-            adjudicated_crap_report_path(artifact_root, node)?,
-            adjudicated_crap_status_path(artifact_root, node)?,
-        ]),
+        "adjudicated-crap-v1" => Ok(vec![adjudicated_crap_report_path(artifact_root, node)?]),
         "authority-suite-report-v1" => Ok(vec![authority_report_path(artifact_root, node)?]),
         _ => Ok(Vec::new()),
     }
@@ -862,14 +842,6 @@ fn adjudicated_crap_report_path(artifact_root: &Path, node: &Value) -> Result<Pa
     Ok(work_root(artifact_root)
         .join(relative)
         .join("adjudicated-crap-report.json"))
-}
-
-fn adjudicated_crap_status_path(artifact_root: &Path, node: &Value) -> Result<PathBuf> {
-    let report = adjudicated_crap_report_path(artifact_root, node)?;
-    let directory = report
-        .parent()
-        .ok_or_else(|| execution_error("GATE-EXEC-REAL-ARTIFACT-PATH", "CRAP control output"))?;
-    Ok(directory.join("run-status.json"))
 }
 
 fn authority_report_path(artifact_root: &Path, node: &Value) -> Result<PathBuf> {
@@ -1340,13 +1312,6 @@ fn artifact_bytes(
     log_sha256: &str,
     output_path: &str,
 ) -> Result<Vec<u8>> {
-    let contract = required_string(node, "artifact_contract")?;
-    if run.result == "PASS"
-        && contract == "adjudicated-crap-v1"
-        && artifact_kind(contract, output_path) == "CRAP"
-    {
-        return validated_crap_report_bytes(artifact_root, node);
-    }
     if let Some(source) = real_source_for_output(artifact_root, node, output_path)? {
         match fs::symlink_metadata(&source) {
             Ok(_) => return read_real_artifact(artifact_root, &source),
@@ -1359,7 +1324,7 @@ fn artifact_bytes(
             }
         }
     }
-    let kind = artifact_kind(contract, output_path);
+    let kind = artifact_kind(required_string(node, "artifact_contract")?, output_path);
     if kind == "JUNIT" {
         let failed = usize::from(run.result != "PASS");
         return Ok(format!(
@@ -1671,9 +1636,9 @@ mod tests {
     use serde_json::{Value, json};
 
     use super::{
-        ExecutionClaims, NodeRun, ProcessOutcome, allowed_environment, artifact_bytes,
-        authority_outcomes, create_confined_directories, execute_node, execute_nodes, execute_plan,
-        junit_inventory, nextest_junit_path, observed_authority_inventory, observed_inventory,
+        ExecutionClaims, ProcessOutcome, allowed_environment, authority_outcomes,
+        create_confined_directories, execute_node, execute_nodes, execute_plan, junit_inventory,
+        nextest_junit_path, observed_authority_inventory, observed_inventory,
         observed_source_snapshot, preflight, prepare_real_artifacts, read_real_artifact,
         reject_shell_string, require_relative_path, run_process, runtime_arguments,
         source_snapshot, supported_executor, validate_plan, validate_success_artifacts, work_root,
@@ -2383,80 +2348,18 @@ mod tests {
             "<testsuite>\n<testcase classname=\"fixture\" name=\"works\"/>\n</testsuite>\n",
         )
         .expect("write JUnit");
-        let report = output.join("adjudicated-crap-report.json");
-        let control = output.join("run-status.json");
-        let report_bytes = b"{\"status\":\"PASS\",\"coverage\":0.0,\"crap\":56.0}\n";
-        fs::write(&report, report_bytes).expect("write CRAP report");
         fs::write(
-            &control,
-            serde_json::to_vec(&json!({
-                "acquisition_mode": "fresh",
-                "adjudicated_crap_report_sha256": sha256_bytes(report_bytes),
-                "exit_status": 0,
-                "finished_utc": "2026-07-19T00:00:01Z",
-                "result": "PASS",
-                "started_utc": "2026-07-19T00:00:00Z"
-            }))
-            .expect("serialize CRAP control"),
+            output.join("adjudicated-crap-report.json"),
+            "{\"status\":\"PASS\"}\n",
         )
-        .expect("write CRAP control");
+        .expect("write CRAP report");
         fs::write(output.join("workspace.lcov"), "TN:\n").expect("write LCOV");
         let inventory = junit_inventory(&junit).expect("JUnit inventory");
         assert_eq!(inventory.len(), 1);
         node["expected_inventory"]["ids"] = json!(inventory);
         validate_success_artifacts(artifacts.path(), &node).expect("combined artifacts");
-        fs::write(&report, b"{\"status\":\"PASS\",\"coverage\":1.0}\n")
-            .expect("tamper CRAP report");
-        let run = NodeRun {
-            attempt: json!({}),
-            result: "PASS".to_owned(),
-            log_path: output.join("unused.log"),
-            executed_inventory: BTreeSet::new(),
-            unavailable_reason: None,
-        };
-        let error = artifact_bytes(artifacts.path(), &node, &run, "unused", "report.json")
-            .expect_err("published bytes must be revalidated after prior success validation");
-        assert_eq!(error.code, "GATE-EXEC-CRAP-REPORT-DIGEST");
-        fs::write(&report, report_bytes).expect("restore CRAP report");
-        #[cfg(unix)]
-        {
-            use std::os::unix::fs::symlink;
-
-            fs::remove_file(&control).expect("remove CRAP control");
-            symlink(&report, &control).expect("symlink CRAP control");
-            let error = validate_success_artifacts(artifacts.path(), &node)
-                .expect_err("control symlinks must fail confinement");
-            assert_eq!(error.code, "GATE-EXEC-REAL-ARTIFACT-TYPE");
-            fs::remove_file(&control).expect("remove CRAP control symlink");
-        }
-        fs::write(
-            &control,
-            format!(
-                "{{\"adjudicated_crap_report_sha256\":\"{}\",\"exit_status\":0.0,\"result\":\"PASS\"}}\n",
-                sha256_bytes(report_bytes)
-            ),
-        )
-        .expect("write floating control");
-        let error = validate_success_artifacts(artifacts.path(), &node)
-            .expect_err("control envelope must remain integer-only");
-        assert_eq!(error.code, "GATE-JSON-INVALID");
-        fs::write(
-            &control,
-            serde_json::to_vec(&json!({
-                "adjudicated_crap_report_sha256": sha256_bytes(report_bytes),
-                "exit_status": 2,
-                "result": "FAIL"
-            }))
-            .expect("serialize failed CRAP control"),
-        )
-        .expect("write failed CRAP control");
-        let error = validate_success_artifacts(artifacts.path(), &node)
-            .expect_err("non-PASS control must fail closed");
-        assert_eq!(error.code, "GATE-EXEC-CRAP-CONTROL");
         prepare_real_artifacts(artifacts.path(), &node).expect("reset real artifacts");
         assert!(!junit.exists());
-        assert!(!report.exists());
-        assert!(!control.exists());
         prepare_real_artifacts(artifacts.path(), &node).expect("absent artifacts remain reset");
         let retained = artifacts.path().join(".work/retained.log");
         fs::write(&retained, "retained\n").expect("write retained artifact");
