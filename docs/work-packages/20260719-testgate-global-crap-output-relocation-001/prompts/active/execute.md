@@ -27,6 +27,14 @@ require two independently generated exact plans plus reconciliation to agree
 before the exact planner-selected critical terminal plan runs once. Do not rerun
 passing nodes separately or substitute an ad hoc broad suite.
 
+Also close `TESTGATE-CRAP-CONTROL-ENVELOPE-01`, reproduced only after the real
+fresh-coverage adapter returned PASS. Preserve floating-point metrics in the
+detailed CRAP report; validate PASS through a strict integer-only control
+envelope that binds the detailed report SHA-256, and fail closed on control or
+digest drift. Commit the bounded correction and generate a fresh exact plan;
+the preserved failed terminal attempt is evidence, not authority to resume a
+stale plan.
+
 Subagent requirement: two independent read-only reviewer/verifier roles. This
 prompt explicitly authorizes subagent spawning/delegation by the parent for the
 scope and expected outputs defined in `package.md`; the parent retains all write
