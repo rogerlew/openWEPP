@@ -553,6 +553,17 @@ states required deterministic alias mapping for transition-control projections.
 | `iGSI` | `GsiDailyIndicators::instantaneous_gsi` | daily indicator product | `fraction` -> `fraction` | `[DIRECT][Static]` |
 | `GSI21` | `GsiDailyResult::growing_season_index` | trailing GSI signal | `fraction` -> `fraction` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | GSI FIFO / newest date | `GsiState::history` / `GsiState::last_date` | exact warm-up and restart state | ordered fractions / calendar date -> same | `[INFERENCE][Static]` |
+| `Bf,max` | YAML `phenology.summer_foliar_biomass_kg_m2`; projection `forest_summer_foliar_biomass_kg_m2`; `ForestCanopyParameters::summer_foliar_biomass_kg_m2` | native full-leaf foliar endpoint | `kg m^-2` -> `kg m^-2` | `[DIRECT][Static]` |
+| `fe` | YAML `phenology.evergreen_fraction`; projection `forest_evergreen_fraction`; `ForestCanopyParameters::evergreen_fraction` | native evergreen fraction | fraction -> fraction | `[DIRECT][Static]` |
+| `Cs` | YAML `phenology.structural_canopy_cover_fraction`; projection `forest_structural_canopy_cover_fraction`; `ForestCanopyParameters::structural_canopy_cover_fraction` | structural canopy floor | fraction -> fraction | `[DIRECT][Static]` |
+| `Bs` | YAML `phenology.structural_biomass_kg_m2`; projection `forest_structural_biomass_kg_m2`; `ForestCanopyRealization::structural_biomass_kg_m2` | nonseasonal structural biomass | `kg m^-2` -> `kg m^-2` | `[DIRECT][Static]` |
+| `Bfe` | `ForestCanopyRealization::evergreen_foliar_biomass_kg_m2` | realized evergreen foliar pool | `kg m^-2` -> `kg m^-2` | `[DIRECT][Static]` |
+| `Bfd` | `ForestCanopyRealization::deciduous_foliar_biomass_kg_m2` | realized deciduous foliar pool | `kg m^-2` -> `kg m^-2` | `[DIRECT][Static]` |
+| `Bf` | `ForestCanopyRealization::live_foliar_biomass_kg_m2`; `DirectGrowthStateSurface::{live_biomass_kg_m2,interception_live_biomass_kg_m2}` | realized foliar pool and native consumer handoff | `kg m^-2` -> `kg m^-2` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| native `LAI` | `ForestCanopyRealization::leaf_area_index`; `DirectGrowthStateSurface::leaf_area_index` | native ET/interception handoff | `m^2 m^-2` -> `m^2 m^-2` | `[DIRECT][Static]` |
+| native `Cc` | `ForestCanopyRealization::canopy_cover_fraction`; `DirectGrowthStateSurface::canopy_cover_fraction` | snow/interception/ET/erosion handoff | fraction -> fraction | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `A_leaf` | `ForestCanopyRealization::leaf_on_allocation_kg_m2` | daily foliar allocation flux | `kg m^-2 d^-1` -> `kg m^-2 d^-1` | `[DIRECT][Static]` |
+| `L_leaf` | `ForestCanopyRealization::leaf_off_litter_kg_m2`; `DirectDecompositionInputs::surface_litter_input_kg_m2` | same-day plant-to-residue flux | `kg m^-2 d^-1` -> `kg m^-2 d^-1` | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Constants and Parameters Table
 
@@ -573,6 +584,23 @@ states required deterministic alias mapping for transition-control projections.
 | `ROOT_DEPTH_CURVE_A` | scalar | `3.03` | Annual root-depth sinusoid coefficient | REF-PLANT-LEGACY-GROW |
 | `ROOT_DEPTH_CURVE_B` | scalar | `1.47` | Annual root-depth sinusoid phase offset | REF-PLANT-LEGACY-GROW |
 | `CANCOV_MAX` | fraction | `0.999` | OpenWEPP finite-domain guard for canopy-cover equation output and initial `cancov` assimilation before logarithm evaluation; numeric deviation from unguarded baseline singularity handling | REF-PLANT-LEGACY-INITGR, REF-PLANT-LEGACY-GROW, REF-PLANT-PHYS-BOUNDS |
+
+## Unit-Governance Map
+
+| Surface family | Registry / typed boundary disposition | Conversion authority | Publication linkage |
+|---|---|---|---|
+| Native YAML phenology parameters | Strict typed fields in `openwepp-management-schema`; projection symbols remain validated scalar exceptions pending a typed PL boundary replacement | Identity for `kg m^-2`, fractions, `degC`, `Pa`, and hours | Input authority only; not a public output |
+| Climate VPD input | Typed `HillslopeDirectClimateDayForcing` temperatures/dewpoint to typed `GsiDailyForcing::vapor_pressure_deficit_pa` | `saturation_vapor_pressure_kpa`; explicit `kPa * 1000 = Pa` in `direct_native_forest_vpd_pa` | Internal process input; not published |
+| `Bfe`, `Bfd`, `Bf`, `Bs` | Typed `ForestCanopyRealization` fields; `Bf` alone crosses into typed growth state | Identity `kg m^-2` | No new public output metadata in this package |
+| Native LAI and canopy cover | Typed realization and `DirectGrowthStateSurface`; unitless/fraction guards at every consumer | Identity | Existing internal ET/snow/interception/erosion surfaces; no output-schema change |
+| `A_leaf`, `L_leaf` | Typed daily realization fluxes; `L_leaf` crosses directly into typed decomposition input | Identity `kg m^-2` per daily step; no annualization | No new public output; conservation evidence is test/artifact only |
+| Residue mass and depth | Typed decomposition/residue state | Existing `residue_depth_conversion_m_per_kg_m2` converts `kg m^-2` to `m` | Internal frost thermal input; no output-schema change |
+
+Registry gap disposition: the PL runtime projection is still a validated
+`BoundarySymbol -> BoundaryValue` scalar surface. This package adds no raw
+literal conversion or public metadata claim; all native values are revalidated
+into typed structures before kernel mutation. Replacing the wider PL scalar
+registry is outside CP-GSI02 and remains governed by the existing PL contract.
 
 ## Tolerance and Numeric Notes
 
