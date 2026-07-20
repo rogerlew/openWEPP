@@ -92,7 +92,7 @@ exact daily foliar mass ledger; and remove native forest dependence on the
 - `docs/ROADMAP.md`
 - `docs/backlog/20260626-frost-daylength-canopy-decline-hemisphere-robust.md`
 - `docs/work-packages/README.md`
-- this package tree
+- `docs/work-packages/20260719-canopy-phenology-native-integration-001/**`
 
 Everything else is read-only. A terminal-plan discovery outside this set
 requires a pre-implementation package amendment and review or a truthful hold.
@@ -193,6 +193,8 @@ Subagents have no production write access.
 - [x] (2026-07-19) Reconstructed Increment 3 authority and direct consumer path.
 - [x] (2026-07-19) Accepted operator-selected phase-flipped NH forcing as the
   SH symmetry test, without observational-validation overclaim.
+- [x] (2026-07-19) Froze the base-commit authorization scaffold and began the
+  machine intent plan for the declared critical write set.
 - [ ] Freeze contracts, tests, and the pre-implementation gate.
 - [ ] Implement native YAML, typed realization, runner state, and consumers.
 - [ ] Execute selected gates and conservation/consumer audits.
