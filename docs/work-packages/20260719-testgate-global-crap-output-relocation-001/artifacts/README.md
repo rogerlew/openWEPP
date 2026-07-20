@@ -16,5 +16,12 @@
 - `control-envelope-review-a.md`, `control-envelope-review-b.md`, and
   `control-envelope-review-disposition.md` - dual security review, accepted
   finding patches, and final PASS disposition.
+- `terminal-coverage-scheduling-failure.md` - preserved truthful receipt and
+  coverage-only timeout evidence from the second terminal attempt.
+- `coverage-scheduling-correction.md` - bounded cohort correction, inventory
+  proof, focused tests, and protected-semantics evidence.
+- `coverage-scheduling-review-a.md`, `coverage-scheduling-review-b.md`, and
+  `coverage-scheduling-review-disposition.md` - independent cap, timeout,
+  inventory, and package-truthfulness review with accepted finding closure.
 - terminal execution, verification, and final-disposition evidence remains
   pending.

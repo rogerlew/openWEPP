@@ -417,6 +417,27 @@ fn blocking_executor_and_affected_quality_preserve_manual_rollback() {
 }
 
 #[test]
+fn coverage_scheduling_bounds_the_complete_assurance_publication_binary() {
+    let profiles = text(".config/nextest.toml");
+    assert!(profiles.contains("[test-groups.assurance-publication]\nmax-threads = 8"));
+    let publication_override = profiles
+        .split_once("filter = 'binary(assurance_v2_publication_contract)'")
+        .expect("assurance publication override")
+        .1
+        .split_once("[[profile.default.overrides]]")
+        .expect("next override must terminate assurance publication override")
+        .0;
+    assert!(publication_override.contains("test-group = \"assurance-publication\""));
+    assert!(publication_override.contains("threads-required = 2"));
+    assert!(!publication_override.contains("slow-timeout"));
+    assert!(profiles.contains(
+        "[profile.full]\ninherits = \"default\"\ndefault-filter = \"all()\"\n\
+         fail-fast = false\nslow-timeout = { period = \"90s\", terminate-after = 8 }"
+    ));
+    assert!(!profiles.contains("all() - binary(assurance_v2_publication_contract)"));
+}
+
+#[test]
 fn crap_runner_resolves_executor_and_standalone_output_branches() {
     let scratch = Scratch::new();
     let scratch_repo = scratch.path.join("repo");

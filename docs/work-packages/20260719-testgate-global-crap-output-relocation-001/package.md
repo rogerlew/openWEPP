@@ -4,7 +4,7 @@ Package ID: `20260719-testgate-global-crap-output-relocation-001`
 
 Queue ID: `TESTGATE-GLOBAL-CRAP-OUTPUT-01`
 
-Status: `ACTIVE / COVERAGE-SCHEDULER-CORRECTION-AUTHORIZED`
+Status: `ACTIVE / COVERAGE-SCHEDULER-REVIEW-PASS / COMMITTED-PLAN-PENDING`
 
 Authorization: verified critical receipt
 `78f526eee1d0b8a9142afc9f3ff8f9434702d1a5409d917a1c2a22687aa7638c`
@@ -78,8 +78,11 @@ without excluding tests, changing coverage, or extending the timeout.
 - [x] (2026-07-20) Prospectively amended this package before scheduler edits to
   own `TESTGATE-CRAP-COVERAGE-SCHEDULING-01` inside a bounded Nextest-group and
   exact-contract write set.
-- [ ] Complete dual review, one mechanical terminal execution, dual terminal
-  verification, prompt archival, and final disposition.
+- [x] (2026-07-20) Bound all 25 assurance-publication cases to effective
+  concurrency four, preserved inventory and per-profile timeouts, passed focused
+  policy/authority evidence, and closed dual review with no open finding.
+- [ ] Complete one mechanical terminal execution, dual terminal verification,
+  prompt archival, and final disposition.
 
 ## Rationale And Dependencies
 
@@ -162,11 +165,13 @@ cases pass in the normal full-workspace node, while coverage evidence shows a
 large cohort of publication cases simultaneously running for 9--12 minutes.
 The in-scope correction is limited to a named `.config/nextest.toml` test group
 and exact TESTGATE contract assertions that bind the publication binary to that
-group. It must retain `profile.full`, the 720-second ceiling, all 2,169 selected
-tests, LLVM coverage instrumentation, and the unchanged CRAP threshold and
-adjudication semantics. The group filter must select the complete publication
-contract binary, not individual cases, and must not alter gate commands or
-adapter identity.
+group. It must retain `profile.full`, the 720-second ceiling, the preexisting
+selected inventory, LLVM coverage instrumentation, and the unchanged CRAP
+threshold and adjudication semantics. All 2,169 tests selected by the failed
+attempt must remain selected; the new scheduler contract regression may
+increase that count but may not replace or subtract an existing case. The group
+filter must select the complete publication contract binary, not individual
+cases, and must not alter gate commands or adapter identity.
 
 ## Declared Write Set
 
@@ -244,9 +249,11 @@ route, and assign a concrete next defect owner.
 - [x] Both adapter identities match direct script SHA.
 - [x] Focused contract evidence passes.
 - [ ] Mechanical critical receipt passes every node.
-- [ ] Dual review and dual terminal verification have no open finding.
-- [x] `execution_context.rs` and the integration contract remain 263 and 558
-  lines. The newly touched `executor.rs` is 2,611 lines, above the 2,000-line
+- [x] Dual implementation review has no open finding; dual terminal
+  verification remains pending.
+- [x] `execution_context.rs` remains 263 lines and the integration contract is
+  579 lines after the 21-line scheduler regression. The newly touched
+  `executor.rs` is 2,611 lines, above the 2,000-line
   WARN but below the 3,000-line hard block. The bounded security correction
   stays local because splitting artifact-contract code during a receipt-binding
   fix would expand review risk. Follow-on intent: after this package and its
@@ -363,8 +370,9 @@ an unbounded wait.
 
 ## Outcomes And Retrospective
 
-Output relocation implementation, focused evidence, and its dual review pass.
-Both dirty and committed terminal plans are explicitly rejected and must not
-execute because independent reconstruction exposes the integrated environment-
-projection defect. The prospectively amended package owns its direct correction;
-terminal outcome and final retrospective remain pending.
+Output relocation, deterministic environment projection, and the strict CRAP
+control/report binding are implemented and reviewed. The latest exact terminal
+attempt truthfully failed only fresh-coverage scheduling after the ordinary full
+workspace passed. Its bounded four-case publication-cohort correction and
+focused evidence pass dual review; committed exact-plan execution, terminal
+verification, and the final retrospective remain pending.
