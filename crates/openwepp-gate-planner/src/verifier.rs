@@ -218,6 +218,9 @@ fn verify_heavy_audit(
     let has_heavy = nodes
         .iter()
         .any(|node| node["execution_cost_class"] == "HEAVY");
+    if plan["planning_stage"] != "TERMINAL" {
+        return Ok(());
+    }
     if !has_heavy {
         if !receipt["pre_heavy_audit"].is_null() {
             return Err(verification_error(
@@ -1909,6 +1912,34 @@ mod tests {
         fn workspace_root(&self) -> Option<&std::path::Path> {
             Some(&self.workspace)
         }
+    }
+
+    #[test]
+    fn heavy_audit_is_required_only_at_the_terminal_execution_boundary() {
+        let artifacts = MemoryArtifacts::new(BTreeMap::new());
+        let mut plan = json!({
+            "planning_stage": "INTENT",
+            "nodes": [{"execution_cost_class": "HEAVY"}]
+        });
+        let receipt = json!({"pre_heavy_audit": null});
+        super::verify_heavy_audit(
+            &repo(),
+            &plan,
+            &receipt,
+            &artifacts,
+            plan["nodes"].as_array().expect("nodes"),
+        )
+        .expect("intent fixture is non-executable and does not claim heavy admission");
+        plan["planning_stage"] = json!("TERMINAL");
+        let error = super::verify_heavy_audit(
+            &repo(),
+            &plan,
+            &receipt,
+            &artifacts,
+            plan["nodes"].as_array().expect("nodes"),
+        )
+        .expect_err("terminal heavy receipt must bind a READY audit");
+        assert_eq!(error.code, "GATE-RECEIPT-AUDIT-MISSING");
     }
 
     #[test]

@@ -9,15 +9,18 @@ Evidence class: Ran.
 | `cargo nextest run -p openwepp-gate-planner --profile quick` (`275c6c8c-fce7-46c4-bb0e-bb5d57d93a34`) | 40 pass, 9 fail, 20 cancelled | One common cause: the scaffold's canonical strategy edit had not updated the impact-map digest. The digest and generation were corrected before continuing. |
 | Same crate-focused command (`eff5624c-d034-4f23-9954-3959c3e113c2`) | 68 pass, 5 fail in 447.856 seconds | Three failures exposed an all-light compatibility receipt defect; two fixture verifiers correctly rejected the dirty committed-checkout precondition. |
 | Exact three failed executor tests after `FINAL_LIGHT` correction | 3 pass, return code 0 | No broader rerun; only the production-path failures were repeated. |
+| Exact two clean-checkout verifier tests | 2 fail in 991.474 seconds | Clean checkout closed the original precondition. Both then exposed the same fixture-only boundary: an `INTENT` plan was being treated as an executable terminal heavy receipt. |
+| `heavy_audit_is_required_only_at_the_terminal_execution_boundary` | 1 pass, return code 0 | Fast seam proof: synthetic intent evidence remains usable for verifier fixtures, while a terminal heavy receipt without a `READY` audit is rejected. The two 16-minute fixture workflows were not repeated. |
 | `cargo nextest run --test testgate_align_authority_contract --test testgate_ci_executor_contract --profile quick` | 15 pass, return code 0 | Final focused integration evidence before implementation commit. |
 | `.venv/bin/python -m unittest tests/python/test_testgate.py` | 7 pass | Includes append-only history, attempt index, package authorization, and qualification subject-freeze cases. |
 | Scoped `markdown-doc lint` | 30 files, 0 errors, 0 warnings | Package, standards, and local/release tooling documentation. |
 | `git diff --check` and `cargo fmt --check` | return code 0 | Final focused static checkpoint. |
 
-The two clean-checkout verifier cases are intentionally executed after the
-implementation commit. Their failure code was
-`GATE-COMMITTED-CHECKOUT-NOT-EXACT`; repeating them against the same dirty
-precondition would provide no new evidence.
+The two clean-checkout verifier cases were executed after the implementation
+commit. Their first valid context exposed one shared boundary defect. A focused
+seam test proves its correction; repeating two 16-minute reconstruction-heavy
+fixtures would duplicate unchanged planner and artifact work and is deferred
+to the authenticated terminal plan.
 
 ## Staged-Light Attempts
 
