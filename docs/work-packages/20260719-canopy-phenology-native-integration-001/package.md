@@ -1,6 +1,6 @@
 # CANOPY-PHENOLOGY-02 Native Forest Integration
 
-Status: `ACTIVE — contract-first intake`
+Status: `ACTIVE — reviewed prototype withdrawn; corrected intake`
 
 Package id: `20260719-canopy-phenology-native-integration-001`
 
@@ -79,12 +79,15 @@ exact daily foliar mass ledger; and remove native forest dependence on the
 - `crates/openwepp-input-contract/src/parsers/management.rs`
 - `crates/openwepp-landuse-migrate/src/convert.rs`
 - `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/01_management.rs`
+- `crates/openwepp-hillslope-orchestrator/src/runtime_inputs/05_projection_helpers.rs`
+- `crates/openwepp-hillslope-orchestrator/src/direct_runtime/**`
 - `crates/openwepp-runner/Cargo.toml`
-- `crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00_builders_and_authority.rs`
-- `crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00c_day_input_builder_impl.rs`
-- `crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00d_authority_runtime_impl.rs`
+- `crates/openwepp-runner/src/hillslope/**`
+- `gate-policy/v1/impact-map.json`
+- `gate-policy/v1/gate-definitions.json`
 - `tests/fixtures/infile/management/canonical_forest_nonzero_ow_lanuse_1.man.yaml`
-- focused crate and `tests/integration/**` tests required by the terminal plan
+- focused crate and `tests/integration/**` tests required by the intent or
+  terminal plan, including gate-policy contract tests
 - `docs/specifications/science-contracts/contracts/SC-PLANT-001.md`
 - `docs/specifications/science-contracts/contracts/SC-RESIDUE-001.md`
 - `docs/specifications/science-contracts/contracts/SC-INFILE-MANAGEMENT-YAML-001.md`
@@ -195,6 +198,14 @@ Subagents have no production write access.
   SH symmetry test, without observational-validation overclaim.
 - [x] (2026-07-19) Froze the base-commit authorization scaffold and began the
   machine intent plan for the declared critical write set.
+- [x] (2026-07-19) Withdrew the first implementation attempt in commit
+  `0692cec7` after independent review proved that its machine intent plan had
+  admitted documentation only. That attempt is prototype evidence, not
+  implementation admission or closure evidence.
+- [x] (2026-07-20) Expanded the corrected intake before reimplementation to
+  cover gate-policy A1 bindings and runtime-value consumer evidence discovered
+  by the failed exact-diff terminal attempt.
+- [ ] Generate and admit the corrected machine intent plan.
 - [ ] Freeze contracts, tests, and the pre-implementation gate.
 - [ ] Implement native YAML, typed realization, runner state, and consumers.
 - [ ] Execute selected gates and conservation/consumer audits.
@@ -208,6 +219,17 @@ Subagents have no production write access.
   Evidence: `00c_day_input_builder_impl.rs` and
   `00d_authority_runtime_impl.rs`; integration can replace one producer and one
   fixed-date branch rather than duplicate consumers.
+- Observation: the first TESTGATE terminal attempt failed A0 admission before
+  checking per-surface bindings and failed workspace Clippy on exact floating
+  comparisons in tests; seven independent nodes passed and three dependent
+  nodes were blocked.
+  Evidence: `/tmp/canopy02-testgate-53f47dba/receipt.json` for withdrawn
+  prototype head `53f47dba`.
+- Observation: independent prototype review rejected aggregate `vdmt` as an
+  initial foliar boundary, source-only downstream proof, a half-year-only SH
+  GSI comparison, zero `bb`, inactive native schedule gaps, and silent negative
+  VPD normalization.
+  Evidence: `artifacts/review_agent_a.md` and `artifacts/review_agent_b.md`.
 
 ## Decision Log
 
@@ -221,6 +243,14 @@ Subagents have no production write access.
   Rationale: it directly tests hemisphere/calendar symmetry while preserving
   the forcing sequence and avoids claiming unavailable independent SH data.
   Date/Author: 2026-07-19 / operator and Codex.
+- Decision: recover through an auditable reverse commit and corrected
+  pre-implementation intake rather than represent a terminal plan as
+  retroactive implementation authority.
+  Rationale: the canonical gate lifecycle says an absent effective intent plan
+  blocks implementation admission. Commit `0692cec7` restores the scaffolded
+  source state without rewriting history; corrected implementation starts only
+  after a new admitted intent plan.
+  Date/Author: 2026-07-20 / Codex.
 
 ## Outcomes & Retrospective
 
