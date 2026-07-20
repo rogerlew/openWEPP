@@ -318,3 +318,29 @@ This refreshed intent is the terminal predecessor for the remediated campaign.
 The standalone exact-inventory verifier test reached its 720-second local
 timeout while reconstructing inventories and produced no assertion failure;
 the terminal campaign remains the authoritative receipt verification.
+
+## Execution-Environment Intent Refresh
+
+Status: `refreshed critical intent admitted`
+
+C10 stopped in executor preflight before any node ran because the terminal plan
+was generated without the three allowlisted Rust/Cargo variables that the
+executor launch supplied. The only differing authenticated context field was
+`environment_manifest_sha256`; source, policy, tool, fixture, configuration,
+output-root, and path identities were unchanged. No receipt was produced.
+
+- Base commit: `a749ed7a`
+- Observed clean head: `6672a729`
+- Refreshed intent plan ID:
+  `82fe1a672deb84c29b79a6f969cdb265e0dcb1ac0c2cce2c9c5c3c23082b1ea0`
+- External plan: `/tmp/canopy02-env-intent-6672/intent-plan.json`
+- Authorized-path manifest:
+  `/tmp/canopy02-env-intent-6672/authorized-paths.json`
+- Result/risk: `PASS` / `CRITICAL`
+- Environment manifest:
+  `ddcb915642236e6e1904f78ae1208ab24cdb6921f5b205f5e1b422108bf782a1`
+- Authorized paths: 59, lexicographically sorted; selected nodes: 15.
+
+Terminal planning, reconciliation, execution, and verification must all use
+the same explicit `CARGO_HOME`, `RUSTUP_HOME`, and `RUSTUP_TOOLCHAIN=stable`
+environment bound by this intent.
