@@ -91,6 +91,9 @@ exact daily foliar mass ledger; and remove native forest dependence on the
 - `crates/openwepp-gate-planner/src/planner.rs` for the exact
   `NEXTEST_PACKAGES` planner/executor inventory-symmetry defect exposed by this
   package's new multi-package A1 gates
+- `crates/openwepp-gate-planner/src/verifier.rs` for direct coverage of the
+  receipt-authority inventory helper exposed by this package's required global
+  CRAP gate
 - `tests/fixtures/infile/management/canonical_forest_nonzero_ow_lanuse_1.man.yaml`
 - focused crate and `tests/integration/**` tests required by the intent or
   terminal plan, including gate-policy contract tests
@@ -230,6 +233,9 @@ Subagents have no production write access.
   assurance-publication snapshot fixtures can exceed the unchanged 720-second
   ceiling under contention; amended the write set before reducing that bounded
   cohort to two concurrent cases.
+- [x] (2026-07-20) Exact global CRAP passed its instrumented 2,184-test run but
+  found two touched runner functions above the complexity ceiling and one
+  uncovered receipt-authority helper; amended the write set before remediation.
 - [ ] Execute and reconcile the exact terminal campaign.
 
 ## Surprises & Discoveries
@@ -270,6 +276,12 @@ Subagents have no production write access.
   together at 720 seconds; focused and authority gates had already passed.
   Evidence: `/tmp/c03e-diagnostic-8e5830a2` and the interrupted C05 full-nextest
   log under `/tmp/c03e/.attempts/`.
+- Observation: the corrected terminal campaign passed 14 gates, including
+  2,184/2,184 full-workspace tests, then failed only global CRAP on three rows.
+  Two runner functions have cyclomatic complexity above 30, so coverage alone
+  cannot clear them; the third row is a zero-coverage verifier helper.
+  Evidence: validated receipt `bac49c42...` and
+  `/tmp/c03e/.work/target/adjudicated-crap/adjudicated-crap-report.json`.
 
 ## Decision Log
 
@@ -310,6 +322,12 @@ Subagents have no production write access.
   contending full-snapshot builds from exhausting the existing per-test time
   budget; it preserves inventory, assertions, and the 720-second fail-closed
   timeout.
+  Date/Author: 2026-07-20 / Codex.
+- Decision: extract bounded helpers from the two touched runner functions and
+  add direct branch coverage for the receipt-authority inventory helper.
+  Rationale: helper extraction reduces actual complexity without weakening the
+  CRAP threshold, while direct verifier coverage proves the existing fail-closed
+  authority-inventory behavior without adjudicating new debt.
   Date/Author: 2026-07-20 / Codex.
 
 ## Outcomes & Retrospective
