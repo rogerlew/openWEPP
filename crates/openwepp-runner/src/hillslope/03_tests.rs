@@ -254,6 +254,7 @@ mod tests {
         );
 
         let mut observed_erosion_consumer = false;
+        let mut observed_leaf_off_frost_consumer = false;
         for trace in &traces {
             let canopy = trace.builder.canopy;
             assert_close(
@@ -351,6 +352,9 @@ mod tests {
                     consumed,
                     frost_residue_depth_m,
                 );
+                if canopy.leaf_off_litter_kg_m2 > 1.0e-12 {
+                    observed_leaf_off_frost_consumer = true;
+                }
             }
             if let Some(erosion_canopy_cover_fraction) = trace.erosion_canopy_cover_fraction {
                 observed_erosion_consumer = true;
@@ -364,6 +368,10 @@ mod tests {
         assert!(
             observed_erosion_consumer,
             "the real direct run must exercise the active erosion canopy consumer"
+        );
+        assert!(
+            observed_leaf_off_frost_consumer,
+            "the nonzero leaf-off day must reach the active frost residue-depth consumer"
         );
         assert!(
             traces
@@ -1793,6 +1801,71 @@ mod tests {
             );
         }
         projection
+    }
+
+    fn cqr_row7_add_native_phenology(
+        projection: &mut openwepp_hillslope_orchestrator::runtime_inputs::HillslopePlRuntimeSurfaces,
+    ) {
+        for (root, value) in [
+            ("forest_phenology_model", 1.0),
+            ("forest_summer_foliar_biomass_kg_m2", 0.2),
+            ("forest_evergreen_fraction", 0.2),
+            ("forest_structural_canopy_cover_fraction", 0.2),
+            ("forest_structural_biomass_kg_m2", 0.1),
+            ("forest_minimum_temperature_inactive_c", -2.0),
+            ("forest_minimum_temperature_unconstrained_c", 5.0),
+            ("forest_vapor_pressure_deficit_unconstrained_pa", 900.0),
+            ("forest_vapor_pressure_deficit_inactive_pa", 4_100.0),
+            ("forest_photoperiod_inactive_hours", 10.0),
+            ("forest_photoperiod_unconstrained_hours", 11.0),
+        ] {
+            cqr_row7_insert_projection_scalar(
+                &mut projection.pl_growth_surface,
+                direct_growth_slot_crop_symbol(1, 1, root),
+                value,
+            );
+        }
+    }
+
+    #[test]
+    fn native_forest_runtime_authority_rejects_gaps_and_stays_active_across_years() {
+        let mut continuous = cqr_row7_growth_projection();
+        for (root, value) in [("jdharv", 0.0), ("jdstop", 0.0)] {
+            cqr_row7_insert_projection_scalar(
+                &mut continuous.pl_growth_surface,
+                direct_growth_slot_crop_symbol(1, 1, root),
+                value,
+            );
+        }
+        cqr_row7_add_native_phenology(&mut continuous);
+        let crop = direct_production_typed_growth_crop_authority(&continuous, 1, 1)
+            .expect("continuous native forest authority");
+        for _runtime_year in 1..=3 {
+            for runtime_day in 1..=365 {
+                assert!(crop.active_on_day(runtime_day));
+            }
+        }
+
+        let mut seasonal_perennial = continuous.clone();
+        cqr_row7_insert_projection_scalar(
+            &mut seasonal_perennial.pl_growth_surface,
+            direct_growth_slot_crop_symbol(1, 1, "jdstop"),
+            200.0,
+        );
+        assert!(direct_production_typed_growth_crop_authority(&seasonal_perennial, 1, 1).is_err());
+
+        let mut annual = continuous;
+        cqr_row7_insert_projection_scalar(
+            &mut annual.pl_schedule_surface,
+            direct_growth_schedule_slot_crop_symbol(1, 1, "imngmt"),
+            1.0,
+        );
+        cqr_row7_insert_projection_scalar(
+            &mut annual.pl_growth_surface,
+            direct_growth_slot_crop_symbol(1, 1, "jdplt"),
+            1.0,
+        );
+        assert!(direct_production_typed_growth_crop_authority(&annual, 1, 1).is_err());
     }
 
     fn cqr_row7_growth_surface(live_biomass_kg_m2: f64) -> DirectGrowthStateSurface {
