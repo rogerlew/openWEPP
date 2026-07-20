@@ -85,6 +85,9 @@ exact daily foliar mass ledger; and remove native forest dependence on the
 - `crates/openwepp-runner/src/hillslope/**`
 - `gate-policy/v1/impact-map.json`
 - `gate-policy/v1/gate-definitions.json`
+- `crates/openwepp-gate-planner/src/planner.rs` for the exact
+  `NEXTEST_PACKAGES` planner/executor inventory-symmetry defect exposed by this
+  package's new multi-package A1 gates
 - `tests/fixtures/infile/management/canonical_forest_nonzero_ow_lanuse_1.man.yaml`
 - focused crate and `tests/integration/**` tests required by the intent or
   terminal plan, including gate-policy contract tests
@@ -217,6 +220,9 @@ Subagents have no production write access.
   undispositioned science or implementation finding.
 - [x] (2026-07-20) Promoted the three amended contracts jointly after dual
   verification passed.
+- [x] (2026-07-20) Terminal preflight exposed a planner/executor mismatch for
+  exact multi-package inventories; amended the write set before repairing the
+  single planner source/test file.
 - [ ] Execute and reconcile the exact terminal campaign.
 
 ## Surprises & Discoveries
@@ -246,6 +252,12 @@ Subagents have no production write access.
   32 bytes to `DirectDayFrame`; the bounded-layout guard records this explicit
   contract-evidence cost at 15,568 bytes.
   Evidence: focused `r7b_constructor_type_size_layout_is_bounded` pass.
+- Observation: `NEXTEST_PACKAGES` planning inventories every affected package,
+  while executor preflight inventories only packages expanded into that gate
+  node. The two sets differ for focused multi-package A1 gates and fail closed
+  before node execution.
+  Evidence: terminal preflight error `GATE-EXEC-INVENTORY-DRIFT` on plan
+  `2e8a8f96...` and static planner/executor inspection.
 
 ## Decision Log
 
@@ -273,6 +285,12 @@ Subagents have no production write access.
   Rationale: those two files are inside the declared package write set but were
   absent from corrected intent plan `f307138c...`; machine intent is path-exact
   and cannot be expanded retroactively.
+  Date/Author: 2026-07-20 / Codex.
+- Decision: repair planner/executor multi-package inventory symmetry instead of
+  weakening the A1 gates to command-only inventories or overclaiming workspace
+  execution.
+  Rationale: exact inventory identity is an A1 assurance invariant; the planner
+  must inventory the packages actually named by each expanded node.
   Date/Author: 2026-07-20 / Codex.
 
 ## Outcomes & Retrospective
