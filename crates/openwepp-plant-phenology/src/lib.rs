@@ -57,7 +57,7 @@ impl ForestCanopyParameters {
             "structural_biomass_kg_m2",
             self.structural_biomass_kg_m2,
         )?;
-        validate_positive_finite_forest(
+        validate_non_negative_finite_forest(
             "canopy_cover_coefficient_m2_kg",
             self.canopy_cover_coefficient_m2_kg,
         )

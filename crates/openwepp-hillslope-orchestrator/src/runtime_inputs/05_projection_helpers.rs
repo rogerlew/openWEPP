@@ -213,12 +213,21 @@ fn project_growth_equation_symbols_forest(
     crop_slot_index: usize,
     plant: &openwepp_input_contract::parsers::management::PlantForestData,
 ) -> Result<(), HillslopeRuntimeInputError> {
-    for (root, value) in growth_equation_parameter_values_forest(slot_index, crop_slot_index, plant)?
+    for (root, value) in
+        growth_equation_parameter_values_forest(slot_index, crop_slot_index, plant)?
     {
         surface.insert(
             pl_growth_slot_crop_symbol(root, slot_index, crop_slot_index),
             BoundaryValue::scalar(value),
         );
+    }
+    if let Some(values) = forest_phenology_parameter_values(slot_index, crop_slot_index, plant)? {
+        for (root, value) in values {
+            surface.insert(
+                pl_growth_slot_crop_symbol(root, slot_index, crop_slot_index),
+                BoundaryValue::scalar(value),
+            );
+        }
     }
     Ok(())
 }
@@ -230,7 +239,167 @@ fn project_primary_growth_equation_aliases_forest(
     for (root, value) in growth_equation_parameter_values_forest(1, 1, plant)? {
         surface.insert(BoundarySymbol::from(root), BoundaryValue::scalar(value));
     }
+    if let Some(values) = forest_phenology_parameter_values(1, 1, plant)? {
+        for (root, value) in values {
+            surface.insert(BoundarySymbol::from(root), BoundaryValue::scalar(value));
+        }
+    }
     Ok(())
+}
+
+fn forest_phenology_parameter_values(
+    slot_index: usize,
+    crop_slot_index: usize,
+    plant: &openwepp_input_contract::parsers::management::PlantForestData,
+) -> Result<Option<[(&'static str, f64); 11]>, HillslopeRuntimeInputError> {
+    let Some(phenology) = plant.phenology else {
+        return Ok(None);
+    };
+    let summer_foliar_biomass_kg_m2 = validate_projection_positive(
+        "forest_summer_foliar_biomass_kg_m2",
+        slot_index,
+        crop_slot_index,
+        phenology.summer_foliar_biomass_kg_m2,
+    )?;
+    let evergreen_fraction = validate_projection_fraction(
+        "forest_evergreen_fraction",
+        slot_index,
+        crop_slot_index,
+        phenology.evergreen_fraction,
+    )?;
+    let structural_canopy_cover_fraction = validate_projection_fraction(
+        "forest_structural_canopy_cover_fraction",
+        slot_index,
+        crop_slot_index,
+        phenology.structural_canopy_cover_fraction,
+    )?;
+    if structural_canopy_cover_fraction > 0.999 {
+        return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+            field: "forest_structural_canopy_cover_fraction",
+            slot_index,
+            crop_slot_index,
+            value: structural_canopy_cover_fraction,
+            allowed: "<=0.999",
+        });
+    }
+    let structural_biomass_kg_m2 = validate_projection_non_negative(
+        "forest_structural_biomass_kg_m2",
+        slot_index,
+        crop_slot_index,
+        phenology.structural_biomass_kg_m2,
+    )?;
+    let minimum_temperature_inactive_c = validate_projection_finite(
+        "forest_minimum_temperature_inactive_c",
+        slot_index,
+        crop_slot_index,
+        phenology.minimum_temperature_inactive_c,
+    )?;
+    let minimum_temperature_unconstrained_c = validate_projection_finite(
+        "forest_minimum_temperature_unconstrained_c",
+        slot_index,
+        crop_slot_index,
+        phenology.minimum_temperature_unconstrained_c,
+    )?;
+    let vapor_pressure_deficit_unconstrained_pa = validate_projection_non_negative(
+        "forest_vapor_pressure_deficit_unconstrained_pa",
+        slot_index,
+        crop_slot_index,
+        phenology.vapor_pressure_deficit_unconstrained_pa,
+    )?;
+    let vapor_pressure_deficit_inactive_pa = validate_projection_non_negative(
+        "forest_vapor_pressure_deficit_inactive_pa",
+        slot_index,
+        crop_slot_index,
+        phenology.vapor_pressure_deficit_inactive_pa,
+    )?;
+    let photoperiod_inactive_hours = validate_projection_non_negative(
+        "forest_photoperiod_inactive_hours",
+        slot_index,
+        crop_slot_index,
+        phenology.photoperiod_inactive_hours,
+    )?;
+    let photoperiod_unconstrained_hours = validate_projection_non_negative(
+        "forest_photoperiod_unconstrained_hours",
+        slot_index,
+        crop_slot_index,
+        phenology.photoperiod_unconstrained_hours,
+    )?;
+    for (lower_name, lower, upper_name, upper) in [
+        (
+            "forest_minimum_temperature_inactive_c",
+            minimum_temperature_inactive_c,
+            "forest_minimum_temperature_unconstrained_c",
+            minimum_temperature_unconstrained_c,
+        ),
+        (
+            "forest_vapor_pressure_deficit_unconstrained_pa",
+            vapor_pressure_deficit_unconstrained_pa,
+            "forest_vapor_pressure_deficit_inactive_pa",
+            vapor_pressure_deficit_inactive_pa,
+        ),
+        (
+            "forest_photoperiod_inactive_hours",
+            photoperiod_inactive_hours,
+            "forest_photoperiod_unconstrained_hours",
+            photoperiod_unconstrained_hours,
+        ),
+    ] {
+        if lower >= upper {
+            return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+                field: lower_name,
+                slot_index,
+                crop_slot_index,
+                value: lower,
+                allowed: upper_name,
+            });
+        }
+    }
+    if photoperiod_unconstrained_hours > 24.0 {
+        return Err(HillslopeRuntimeInputError::PlProjectionFieldOutOfDomain {
+            field: "forest_photoperiod_unconstrained_hours",
+            slot_index,
+            crop_slot_index,
+            value: photoperiod_unconstrained_hours,
+            allowed: "<=24.0",
+        });
+    }
+    Ok(Some([
+        ("forest_phenology_model", 1.0),
+        (
+            "forest_summer_foliar_biomass_kg_m2",
+            summer_foliar_biomass_kg_m2,
+        ),
+        ("forest_evergreen_fraction", evergreen_fraction),
+        (
+            "forest_structural_canopy_cover_fraction",
+            structural_canopy_cover_fraction,
+        ),
+        ("forest_structural_biomass_kg_m2", structural_biomass_kg_m2),
+        (
+            "forest_minimum_temperature_inactive_c",
+            minimum_temperature_inactive_c,
+        ),
+        (
+            "forest_minimum_temperature_unconstrained_c",
+            minimum_temperature_unconstrained_c,
+        ),
+        (
+            "forest_vapor_pressure_deficit_unconstrained_pa",
+            vapor_pressure_deficit_unconstrained_pa,
+        ),
+        (
+            "forest_vapor_pressure_deficit_inactive_pa",
+            vapor_pressure_deficit_inactive_pa,
+        ),
+        (
+            "forest_photoperiod_inactive_hours",
+            photoperiod_inactive_hours,
+        ),
+        (
+            "forest_photoperiod_unconstrained_hours",
+            photoperiod_unconstrained_hours,
+        ),
+    ]))
 }
 
 fn project_decomposition_equation_symbols_forest(
@@ -268,12 +437,8 @@ fn growth_equation_parameter_values(
 ) -> Result<[(&'static str, f64); 19], HillslopeRuntimeInputError> {
     let bb =
         validate_projection_non_negative("bb", slot_index, crop_slot_index, plant.canopy_line[0])?;
-    let bbb = validate_projection_non_negative(
-        "bbb",
-        slot_index,
-        crop_slot_index,
-        plant.canopy_line[1],
-    )?;
+    let bbb =
+        validate_projection_non_negative("bbb", slot_index, crop_slot_index, plant.canopy_line[1])?;
     let beinp = validate_projection_non_negative(
         "beinp",
         slot_index,
@@ -688,12 +853,14 @@ fn project_annual_extension_controls(
         4 => project_cut_annual_extension_controls(slot_index, crop_slot_index, extension),
         5 => project_remove_annual_extension_controls(slot_index, crop_slot_index, extension),
         6 => project_no_annual_extension_controls(slot_index, crop_slot_index, resmgt, extension),
-        7 => Err(HillslopeRuntimeInputError::PlProjectionUnsupportedPayloadCombination {
-            field: "resmgt",
-            slot_index,
-            crop_slot_index,
-            reason: "resmgt=7 annual-cut payload is not represented by runtime projection",
-        }),
+        7 => Err(
+            HillslopeRuntimeInputError::PlProjectionUnsupportedPayloadCombination {
+                field: "resmgt",
+                slot_index,
+                crop_slot_index,
+                reason: "resmgt=7 annual-cut payload is not represented by runtime projection",
+            },
+        ),
         _ => Err(HillslopeRuntimeInputError::UnsupportedPlManagementOption {
             field: "resmgt",
             value: resmgt,

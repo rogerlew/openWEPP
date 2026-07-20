@@ -4,17 +4,14 @@ mod tests {
     use crate::SidecarPolicy;
     use crate::hillslope::HillslopeDirectClimateDayForcing;
     use openwepp_hillslope_orchestrator::{
-        DIRECT_R3B_PHASE_SPAN_COUNT, DIRECT_R3C_PHASE_SPAN_COUNT,
+        DIRECT_R3B_PHASE_SPAN_COUNT, DIRECT_R3C_PHASE_SPAN_COUNT, DIRECT_R4A_PHASE_SPAN_COUNT,
+        DIRECT_R4B_PHASE_SPAN_COUNT, DIRECT_R4C_PHASE_SPAN_COUNT, DIRECT_R4G_PHASE_SPAN_COUNT,
+        DIRECT_R4I_PHASE_SPAN_COUNT, DIRECT_R4J_PHASE_SPAN_COUNT, DIRECT_R4K_PHASE_SPAN_COUNT,
+        DIRECT_R4L_PHASE_SPAN_COUNT, DIRECT_R4M_PHASE_SPAN_COUNT, DIRECT_R4N_PHASE_SPAN_COUNT,
+        DIRECT_R4O_PHASE_SPAN_COUNT, DIRECT_R4PQZ_PHASE_SPAN_COUNT,
         DIRECT_R5B_NORMALIZATION_PHASE_SPAN_COUNT, DIRECT_R5B_STORAGE_BOUNDS_PHASE_SPAN_COUNT,
         DIRECT_R5C_DECOMPOSITION_PHASE_SPAN_COUNT, DIRECT_R5C_RESIDUE_PARTITION_PHASE_SPAN_COUNT,
-        DIRECT_R5D_ANNUAL_GROWTH_PHASE_SPAN_COUNT,
-        DIRECT_R5D_PERENNIAL_GROWTH_PHASE_SPAN_COUNT,
-        DIRECT_R4A_PHASE_SPAN_COUNT, DIRECT_R4B_PHASE_SPAN_COUNT, DIRECT_R4C_PHASE_SPAN_COUNT,
-        DIRECT_R4G_PHASE_SPAN_COUNT, DIRECT_R4I_PHASE_SPAN_COUNT,
-        DIRECT_R4J_PHASE_SPAN_COUNT, DIRECT_R4K_PHASE_SPAN_COUNT, DIRECT_R4L_PHASE_SPAN_COUNT,
-        DIRECT_R4M_PHASE_SPAN_COUNT, DIRECT_R4N_PHASE_SPAN_COUNT,
-        DIRECT_R4O_PHASE_SPAN_COUNT, DIRECT_R4PQZ_PHASE_SPAN_COUNT,
-        reset_direct_runtime_audit_counters,
+        DIRECT_R5D_ANNUAL_GROWTH_PHASE_SPAN_COUNT, DIRECT_R5D_PERENNIAL_GROWTH_PHASE_SPAN_COUNT,
         DirectPublicationCalendarDay, DirectPublicationClimateOperands, DirectPublicationDayRow,
         DirectPublicationErosionOperands, DirectPublicationEvaporationOperands,
         DirectPublicationInterceptionOperands, DirectPublicationLiquidInputOperands,
@@ -22,6 +19,7 @@ mod tests {
         DirectPublicationRunoffOperands, DirectPublicationStorageOperands,
         DirectPublicationSubsurfaceOperands, DirectPublicationTransferOperands,
         DirectPublicationWaterTemperatureOperands, DirectRunIdentity, DirectRunPublicationFrame,
+        reset_direct_runtime_audit_counters,
     };
     use openwepp_input_contract::parsers::hbp::{
         HbpParseOptions, parse_hbp_from_bytes_with_latest_event_payload, parse_hbp_from_path,
@@ -43,8 +41,6 @@ mod tests {
         include!("tests03/cqr_laned_active_outputs.rs");
     }
     include!("tests03/direct_publication_source_guards.rs");
-
-
 
     fn canonical_calendar_day_probe() -> ClimateDayProjection {
         ClimateDayProjection {
@@ -152,6 +148,66 @@ mod tests {
             .routing
             .expect("YAML route coefficients should reach runner intake output");
         assert!((routing.skin_friction_coefficient_ko - 500.0).abs() <= 1.0e-12);
+    }
+
+    #[test]
+    fn native_forest_yaml_executes_through_the_direct_production_consumer() {
+        let _execution_guard = runner_execution_lock()
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        let source_fixture_dir = fixture_path("hillslope_run_dir");
+        let temp_run_dir = copy_fixture_to_temp(
+            &source_fixture_dir,
+            "canopy_phenology_02_native_forest_direct",
+        );
+        let management_source = Path::new(env!("CARGO_MANIFEST_DIR")).join(
+            "../../tests/fixtures/infile/management/canonical_forest_nonzero_ow_lanuse_1.man.yaml",
+        );
+        fs::copy(&management_source, temp_run_dir.join("case.man.yaml"))
+            .expect("native forest management should copy into the run directory");
+        let run_path = temp_run_dir.join("case.run");
+        let run_text = fs::read_to_string(&run_path).expect("run file should be readable");
+        fs::write(
+            &run_path,
+            run_text.replace("management = \"case.man\"", "management = \"case.man.yaml\""),
+        )
+        .expect("run file should select native forest YAML");
+        let soil_path = temp_run_dir.join("case.sol");
+        let soil_text = fs::read_to_string(&soil_path).expect("soil file should be readable");
+        fs::write(
+            &soil_path,
+            soil_text.replace("1 forest silt_loam", "1 forest_high_sev_fire silt_loam"),
+        )
+        .expect("soil class should match the native forest fixture");
+        fs::write(
+            temp_run_dir.join("pmetpara.txt"),
+            "3\nCORN,1.20,0.55,1,default\nWHEAT,1.05,0.45,2,cover\nForest_High_Severity_Fire,0.20,0.45,1,native forest\n",
+        )
+        .expect("native forest PMET authority should be explicit");
+
+        reset_direct_runtime_audit_counters();
+        let report = execute_hillslope_run_with_runtime_policy(
+            &HillslopeRunRequest {
+                run_dir: temp_run_dir.clone(),
+                run_file: PathBuf::from("case.run"),
+                output_dir: temp_run_dir.join("output"),
+                sidecar_policy: SidecarPolicy::Compat,
+                legacy_sidecar_discovery: false,
+                manifest_path: None,
+            },
+            &["openwepp-cli-hill".to_string()],
+            HillslopeRuntimeSelectionPolicy::default(),
+        )
+        .expect("native GSI forest should execute through direct production");
+
+        assert!(report.output_pass.is_file());
+        let manifest = read_manifest_json(&report);
+        assert_eq!(
+            manifest
+                .pointer("/runtime_selection/selected")
+                .and_then(serde_json::Value::as_str),
+            Some("direct-production-executor")
+        );
     }
 
     fn r5c_day_span_run_count() -> u64 {
@@ -437,10 +493,22 @@ mod tests {
         let expected_phase_spans = 1 + expected_day_frames * r5c_day_span_run_count();
         let expected_phase_entries =
             DIRECT_R3C_PHASE_SPAN_COUNT as u64 + expected_day_frames * r5c_day_phase_entry_count();
-        assert_json_i64(&manifest_json, "/direct_runtime_counters/run_frame_constructions", 1);
-        assert_json_i64(&manifest_json, "/direct_runtime_counters/executor_constructions", 1);
+        assert_json_i64(
+            &manifest_json,
+            "/direct_runtime_counters/run_frame_constructions",
+            1,
+        );
+        assert_json_i64(
+            &manifest_json,
+            "/direct_runtime_counters/executor_constructions",
+            1,
+        );
         assert_json_i64(&manifest_json, "/direct_runtime_counters/skeleton_runs", 0);
-        assert_json_i64(&manifest_json, "/direct_runtime_counters/publication_capture_runs", 1);
+        assert_json_i64(
+            &manifest_json,
+            "/direct_runtime_counters/publication_capture_runs",
+            1,
+        );
         assert_json_i64(
             &manifest_json,
             "/direct_runtime_counters/day_frame_constructions",
@@ -471,7 +539,10 @@ mod tests {
                 .pointer(counter)
                 .and_then(serde_json::Value::as_i64)
                 .unwrap_or_else(|| panic!("manifest must include {counter}"));
-            assert!(value > 0, "{counter} must be nonzero for R7C direct production");
+            assert!(
+                value > 0,
+                "{counter} must be nonzero for R7C direct production"
+            );
         }
         assert_json_i64(
             &manifest_json,
@@ -518,8 +589,7 @@ mod tests {
 
         let mut unrelated_direct = direct;
         unrelated_direct.p = 9.5;
-        let unrelated_fields =
-            reduced_wat_mismatch_fields(&[unrelated_direct], &[compatibility]);
+        let unrelated_fields = reduced_wat_mismatch_fields(&[unrelated_direct], &[compatibility]);
         assert!(unrelated_fields.contains(&"P"));
         assert!(!r6f_wat_direct_process_producer_authority_gap(
             &unrelated_fields
@@ -548,12 +618,9 @@ mod tests {
 
         let mut unrelated_direct = direct;
         unrelated_direct.dp = 2.0;
-        let unrelated_fields =
-            reduced_wat_mismatch_fields(&[unrelated_direct], &[compatibility]);
+        let unrelated_fields = reduced_wat_mismatch_fields(&[unrelated_direct], &[compatibility]);
         assert!(unrelated_fields.contains(&"Dp"));
-        assert!(!r6g_wat_direct_et_storage_producer_gap(
-            &unrelated_fields
-        ));
+        assert!(!r6g_wat_direct_et_storage_producer_gap(&unrelated_fields));
     }
 
     #[test]
@@ -604,11 +671,7 @@ mod tests {
         direct_second.es = 0.767_760_184_372_260_5;
         let mut direct_third = compatibility_third.clone();
         direct_third.es = 0.5;
-        let direct_rows = [
-            compatibility_rows[0].clone(),
-            direct_second,
-            direct_third,
-        ];
+        let direct_rows = [compatibility_rows[0].clone(), direct_second, direct_third];
         let compatibility_rows = [
             compatibility_rows[0].clone(),
             compatibility_rows[1].clone(),
@@ -751,6 +814,7 @@ mod tests {
             rdmax: 1.0,
             oratea: 0.0,
             orater: 0.0,
+            forest_phenology: None,
         }
     }
 
@@ -1160,7 +1224,10 @@ mod tests {
         assert_eq!(wb13_publication.source, "direct-publication-frame");
         assert_eq!(wb13_publication.contributor_ofe_count, 2);
         assert_eq!(wb13_publication.row_count, 4);
-        assert_eq!(wb13_publication.publication_area_m2.to_bits(), 1200.0_f64.to_bits());
+        assert_eq!(
+            wb13_publication.publication_area_m2.to_bits(),
+            1200.0_f64.to_bits()
+        );
         assert_eq!(wb13_publication.per_ofe_record_count, 4);
         assert_eq!(wb13_publication.per_ofe_internal_day_count, 2);
         assert_eq!(wb13_publication.per_ofe_expected_record_count, 4);
@@ -1306,9 +1373,8 @@ mod tests {
             openwepp_hillslope_orchestrator::DirectSnowLayerState::new(0.08, 0.20, 400.0, 0.0),
         ];
         let snow = cqr_row7_snow_lane_state(layers);
-        let (depth_m, density_kg_m3) =
-            layered_snow_frost_insulation_depth_density(&snow, 1.0)
-                .expect("layered snow insulation should compute");
+        let (depth_m, density_kg_m3) = layered_snow_frost_insulation_depth_density(&snow, 1.0)
+            .expect("layered snow insulation should compute");
         assert_eq!(depth_m.to_bits(), snow.runtime_depth_m.to_bits());
         assert!(density_kg_m3.is_finite() && density_kg_m3 > 0.0);
 
@@ -1355,9 +1421,7 @@ mod tests {
                 .expect("legacy density selector should parse"),
             openwepp_hillslope_orchestrator::SnowDensityModel::LegacyWepp
         );
-        assert!(
-            parse_snowdensity1015_default_snow_density_model(Some("bad_density")).is_err()
-        );
+        assert!(parse_snowdensity1015_default_snow_density_model(Some("bad_density")).is_err());
 
         assert_eq!(
             parse_snowdensity1037_diagnostic_snow_melt_model(None)
@@ -1365,9 +1429,9 @@ mod tests {
             openwepp_hillslope_orchestrator::SnowMeltModel::LegacyCoe
         );
         assert_eq!(
-            parse_snowdensity1037_diagnostic_snow_melt_model(Some(
-                "coe_winter_thaw_state_loss_v1",
-            ))
+            parse_snowdensity1037_diagnostic_snow_melt_model(
+                Some("coe_winter_thaw_state_loss_v1",)
+            )
             .expect("diagnostic melt selector should parse"),
             openwepp_hillslope_orchestrator::SnowMeltModel::CoeWinterThawStateLossV1
         );
@@ -1379,10 +1443,8 @@ mod tests {
             openwepp_hillslope_orchestrator::SnowMeltModel::CoeLiquidHoldingCapacityV1
         );
         assert_eq!(
-            parse_snowdensity1015_default_snow_melt_model(Some(
-                "coe_open_sublimation_stage_b_v1",
-            ))
-            .expect("default melt selector should parse stage B"),
+            parse_snowdensity1015_default_snow_melt_model(Some("coe_open_sublimation_stage_b_v1",))
+                .expect("default melt selector should parse stage B"),
             openwepp_hillslope_orchestrator::SnowMeltModel::CoeOpenSublimationStageBV1
         );
         assert!(parse_snowdensity1015_default_snow_melt_model(Some("bad_default_melt")).is_err());
@@ -1496,7 +1558,9 @@ mod tests {
             first_day: span.first_day,
             last_day: span.last_day,
         };
-        assert!(direct_production_sturm1995_climate_normals(&climate_request, &empty_span).is_err());
+        assert!(
+            direct_production_sturm1995_climate_normals(&climate_request, &empty_span).is_err()
+        );
 
         let bad_month_span = cqr_row7_climate_span(vec![ClimateDayProjection {
             month: 13,
@@ -1515,7 +1579,8 @@ mod tests {
         surface.insert(BoundarySymbol::from(symbol), BoundaryValue::scalar(value));
     }
 
-    fn cqr_row7_growth_projection() -> openwepp_hillslope_orchestrator::runtime_inputs::HillslopePlRuntimeSurfaces {
+    fn cqr_row7_growth_projection()
+    -> openwepp_hillslope_orchestrator::runtime_inputs::HillslopePlRuntimeSurfaces {
         let mut projection =
             openwepp_hillslope_orchestrator::runtime_inputs::HillslopePlRuntimeSurfaces {
                 pl_schedule_surface: BTreeMap::new(),
@@ -1611,9 +1676,11 @@ mod tests {
         assert!(direct_production_typed_growth_crop_authority(&invalid_schedule, 1, 1).is_err());
 
         let mut missing_scalar = cqr_row7_growth_projection();
-        missing_scalar.pl_growth_surface.remove(&BoundarySymbol::from(
-            direct_growth_slot_crop_symbol(1, 1, "btemp"),
-        ));
+        missing_scalar
+            .pl_growth_surface
+            .remove(&BoundarySymbol::from(direct_growth_slot_crop_symbol(
+                1, 1, "btemp",
+            )));
         assert!(direct_production_typed_growth_crop_authority(&missing_scalar, 1, 1).is_err());
 
         let residue = DirectProductionResidueCoverState {
@@ -1627,25 +1694,79 @@ mod tests {
         let before = cqr_row7_growth_surface(2.0);
         let after = cqr_row7_growth_surface(1.5);
 
-        let in_window =
-            direct_production_surface_litter_projection(Some(&crop), 100, residue, before, after)
-                .expect("in-window litter should drop");
-        assert_eq!(in_window.surface_litter_input_kg_m2.to_bits(), 0.7_f64.to_bits());
-        assert_eq!(in_window.pending_surface_litter_after_kg_m2.to_bits(), 0.0_f64.to_bits());
+        let in_window = direct_production_surface_litter_projection(
+            Some(&crop),
+            100,
+            residue,
+            before,
+            after,
+            None,
+        )
+        .expect("in-window litter should drop");
+        assert_eq!(
+            in_window.surface_litter_input_kg_m2.to_bits(),
+            0.7_f64.to_bits()
+        );
+        assert_eq!(
+            in_window.pending_surface_litter_after_kg_m2.to_bits(),
+            0.0_f64.to_bits()
+        );
 
-        let out_of_window =
-            direct_production_surface_litter_projection(Some(&crop), 1, residue, before, after)
-                .expect("out-of-window litter should remain pending");
-        assert_eq!(out_of_window.surface_litter_input_kg_m2.to_bits(), 0.0_f64.to_bits());
+        let out_of_window = direct_production_surface_litter_projection(
+            Some(&crop),
+            1,
+            residue,
+            before,
+            after,
+            None,
+        )
+        .expect("out-of-window litter should remain pending");
+        assert_eq!(
+            out_of_window.surface_litter_input_kg_m2.to_bits(),
+            0.0_f64.to_bits()
+        );
         assert_eq!(
             out_of_window.pending_surface_litter_after_kg_m2.to_bits(),
             0.7_f64.to_bits()
         );
 
         let no_crop =
-            direct_production_surface_litter_projection(None, 1, residue, before, after)
+            direct_production_surface_litter_projection(None, 1, residue, before, after, None)
                 .expect("non-scheduled crop should emit daily litter directly");
-        assert_eq!(no_crop.surface_litter_input_kg_m2.to_bits(), 0.5_f64.to_bits());
+        let native_residue = DirectProductionResidueCoverState {
+            pending_surface_litter_kg_m2: 0.0,
+            ..residue
+        };
+        let native = direct_production_surface_litter_projection(
+            Some(&crop),
+            1,
+            native_residue,
+            before,
+            after,
+            Some(0.125),
+        )
+        .expect("native GSI litter should bypass the fall window");
+        assert_eq!(
+            native.surface_litter_input_kg_m2.to_bits(),
+            0.125_f64.to_bits()
+        );
+        assert_eq!(native.pending_surface_litter_after_kg_m2, 0.0);
+        assert!(
+            direct_production_surface_litter_projection(
+                Some(&crop),
+                1,
+                residue,
+                before,
+                after,
+                Some(0.125),
+            )
+            .is_err(),
+            "native GSI must reject the compatibility pending bucket"
+        );
+        assert_eq!(
+            no_crop.surface_litter_input_kg_m2.to_bits(),
+            0.5_f64.to_bits()
+        );
     }
 
     fn cqr_row7_forcing(rad_ly: f64, tmax_c: f64, tmin_c: f64) -> HillslopeDirectClimateDayForcing {
@@ -1675,7 +1796,11 @@ mod tests {
         assert!(bare.is_finite() && bare > 0.0);
         assert!(canopy.is_finite() && canopy > 0.0);
 
-        assert!(authority.compute_demand(&cqr_row7_forcing(-1.0, 12.0, 2.0), 0.0, 0.0).is_err());
+        assert!(
+            authority
+                .compute_demand(&cqr_row7_forcing(-1.0, 12.0, 2.0), 0.0, 0.0)
+                .is_err()
+        );
         assert!(
             DirectProductionPriestleyTaylorAuthority { salb: 1.2 }
                 .compute_demand(&forcing, 0.0, 0.0)
@@ -1732,12 +1857,8 @@ mod tests {
 
         let mut cannot_debit = vec![cqr_row7_subsurface_layer(0.0)];
         assert!(
-            rebalance_direct_production_no_final_frost_layers_to_storage(
-                0,
-                &mut cannot_debit,
-                0.0
-            )
-            .is_err()
+            rebalance_direct_production_no_final_frost_layers_to_storage(0, &mut cannot_debit, 0.0)
+                .is_err()
         );
 
         let mut invalid_top_credit = vec![cqr_row7_subsurface_layer(-1.0)];
@@ -1808,20 +1929,6 @@ mod tests {
         }
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     fn read_manifest_json(report: &HillslopeRunReport) -> serde_json::Value {
         let manifest_text = fs::read_to_string(&report.manifest_path).unwrap_or_else(|error| {
             panic!(
@@ -1841,7 +1948,8 @@ mod tests {
         assert_eq!(observed, expected, "unexpected value at {pointer}");
     }
 
-    fn zero_winter_frost_outcome() -> openwepp_hillslope_orchestrator::DirectWinterFrostPartitionOutcome {
+    fn zero_winter_frost_outcome()
+    -> openwepp_hillslope_orchestrator::DirectWinterFrostPartitionOutcome {
         openwepp_hillslope_orchestrator::DirectWinterFrostPartitionOutcome {
             active_frost_coupling: false,
             dthaw_after_m: 0.0,
@@ -1968,14 +2076,9 @@ mod tests {
         outcome.frost_depth_after_m = 0.050;
         outcome.frozen_water_after_m = 0.002;
 
-        let unchanged = direct_production_same_day_frost_hydrology_layers(
-            0,
-            &layers,
-            &outcome,
-            0.230,
-            true,
-        )
-        .expect("final-frozen outcome must not clear the layer projection");
+        let unchanged =
+            direct_production_same_day_frost_hydrology_layers(0, &layers, &outcome, 0.230, true)
+                .expect("final-frozen outcome must not clear the layer projection");
         assert_eq!(
             unchanged[0].frozen_depth_m.to_bits(),
             layers[0].frozen_depth_m.to_bits()

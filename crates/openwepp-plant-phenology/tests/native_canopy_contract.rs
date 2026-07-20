@@ -1,5 +1,5 @@
 use openwepp_plant_phenology::{
-    ForestCanopyParameters, GsiDailyForcing, GsiDate, GsiParameters, GsiState,
+    ForestCanopyParameters, ForestCanopyState, GsiDailyForcing, GsiDate, GsiParameters, GsiState,
     realize_forest_canopy,
 };
 
@@ -142,4 +142,39 @@ fn negated_latitude_and_half_year_forcing_shift_preserve_seasonal_phase() {
             0.025,
         );
     }
+}
+
+#[test]
+fn repeated_annual_forcing_has_no_foliar_state_drift() {
+    let parameters = parameters(0.25);
+    let mut state = ForestCanopyState::new(0.2).expect("valid initial foliar mass");
+    let mut endpoints = Vec::new();
+    let mut annual_transfers = Vec::new();
+    for year in [2025, 2026] {
+        let mut allocation = 0.0;
+        let mut litter = 0.0;
+        for ordinal_day in 1_u16..=365 {
+            let seasonal =
+                ((2.0 * std::f64::consts::PI * (f64::from(ordinal_day) - 172.0)) / 365.0).cos();
+            let result = state
+                .advance(
+                    parameters,
+                    GsiDailyForcing {
+                        minimum_temperature_c: 8.0 + 10.0 * seasonal,
+                        vapor_pressure_deficit_pa: 1_500.0 - 400.0 * seasonal,
+                        latitude_degrees: 45.0,
+                        date: GsiDate { year, ordinal_day },
+                    },
+                )
+                .expect("valid cyclic forcing");
+            allocation += result.canopy.leaf_on_allocation_kg_m2;
+            litter += result.canopy.leaf_off_litter_kg_m2;
+        }
+        endpoints.push(state.previous_foliar_biomass_kg_m2());
+        annual_transfers.push((allocation, litter));
+    }
+
+    assert_close(endpoints[0], endpoints[1], 1.0e-15);
+    assert_close(annual_transfers[0].0, annual_transfers[1].0, 1.0e-15);
+    assert_close(annual_transfers[0].1, annual_transfers[1].1, 1.0e-15);
 }
