@@ -17,6 +17,10 @@ from base `0427e78c304582730c991beac054c931e9dccfe3` to head
 - No terminal receipt was emitted. The failed execution root is retained at
   `/tmp/tgGO-env.tIsU0D` for the current session.
 
+Later lifecycle note: after the control finding, correction, and review evidence
+were committed, this generated scratch root was removed during the final
+host-ENOSPC remediation. It is not current retained evidence.
+
 Disposition: reproduced integrated tooling defect
 `TESTGATE-CRAP-CONTROL-ENVELOPE-01`. Preserve the detailed numeric report and
 move executor PASS validation to a strict status envelope that binds the exact

@@ -23,5 +23,11 @@
 - `coverage-scheduling-review-a.md`, `coverage-scheduling-review-b.md`, and
   `coverage-scheduling-review-disposition.md` - independent cap, timeout,
   inventory, and package-truthfulness review with accepted finding closure.
-- terminal execution, verification, and final-disposition evidence remains
-  pending.
+- `terminal-execution-and-verification.md` - exact plan, preserved ENOSPC
+  attempt, clean PASS receipt, JUnit scheduling evidence, CRAP binding, and
+  independent verifier result.
+- `terminal-review-a.md`, `terminal-review-b.md`, and
+  `terminal-review-disposition.md` - dual independent receipt, inventory,
+  scheduling, control-envelope, and source-integrity verification.
+- `final-disposition.md` - complete package outcome and acceptance-rerun
+  handoff.

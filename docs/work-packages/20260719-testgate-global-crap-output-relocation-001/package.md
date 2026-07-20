@@ -4,7 +4,7 @@ Package ID: `20260719-testgate-global-crap-output-relocation-001`
 
 Queue ID: `TESTGATE-GLOBAL-CRAP-OUTPUT-01`
 
-Status: `ACTIVE / COVERAGE-SCHEDULER-REVIEW-PASS / COMMITTED-PLAN-PENDING`
+Status: `COMPLETE / PASS`
 
 Authorization: verified critical receipt
 `78f526eee1d0b8a9142afc9f3ff8f9434702d1a5409d917a1c2a22687aa7638c`
@@ -74,15 +74,26 @@ without excluding tests, changing coverage, or extending the timeout.
 - [x] (2026-07-20) The exact corrected terminal run passed the normal full
   workspace node, then truthfully failed fresh coverage after 2,167/2,169 tests
   passed and two assurance-publication cases timed out at the unchanged
-  720-second ceiling. The complete failed receipt and JUnit remain preserved.
+  720-second ceiling. Its receipt/JUnit findings were retained through review
+  and committed before that generated scratch tree was removed during later
+  host-ENOSPC remediation.
 - [x] (2026-07-20) Prospectively amended this package before scheduler edits to
   own `TESTGATE-CRAP-COVERAGE-SCHEDULING-01` inside a bounded Nextest-group and
   exact-contract write set.
 - [x] (2026-07-20) Bound all 25 assurance-publication cases to effective
   concurrency four, preserved inventory and per-profile timeouts, passed focused
   policy/authority evidence, and closed dual review with no open finding.
-- [ ] Complete one mechanical terminal execution, dual terminal verification,
-  prompt archival, and final disposition.
+- [x] (2026-07-20) Generated two byte-identical committed terminal plans and
+  passed independent reconciliation with no path or risk delta.
+- [x] (2026-07-20) Preserved truthful receipt `2722edb7...` after the first
+  execution attempt encountered host `ENOSPC`; removed only stale generated
+  TESTGATE scratch, retained its receipt/logs, and reused no result.
+- [x] (2026-07-20) Fresh attempt two passed all 12 nodes. Ordinary full Nextest
+  passed 2,170/2,170 in 1,644.854 seconds; fresh coverage passed 2,170/2,170 in
+  1,905.125 seconds; global CRAP closed 2 raw / 2 adjudicated / 0 actionable.
+- [x] (2026-07-20) Independent receipt verification and dual terminal review
+  passed for receipt `b8a44936...`; the prompt is archived and final
+  disposition is COMPLETE/PASS.
 
 ## Rationale And Dependencies
 
@@ -248,9 +259,9 @@ route, and assign a concrete next defect owner.
   remains repository `target/adjudicated-crap`.
 - [x] Both adapter identities match direct script SHA.
 - [x] Focused contract evidence passes.
-- [ ] Mechanical critical receipt passes every node.
-- [x] Dual implementation review has no open finding; dual terminal
-  verification remains pending.
+- [x] Mechanical critical receipt passes every node.
+- [x] Dual implementation review and dual terminal verification have no open
+  finding.
 - [x] `execution_context.rs` remains 263 lines and the integration contract is
   579 lines after the 21-line scheduler regression. The newly touched
   `executor.rs` is 2,611 lines, above the 2,000-line
@@ -264,9 +275,9 @@ route, and assign a concrete next defect owner.
   policy-declared gate environment key remains bound.
 - [x] Two separate exact committed plan invocations are byte-identical and
   independent reconciliation passes before execution.
-- [ ] CRAP PASS control is strict integer-only JSON and binds the exact detailed
+- [x] CRAP PASS control is strict integer-only JSON and binds the exact detailed
   report bytes while permitting valid floating-point CRAP metrics.
-- [ ] The complete `assurance_v2_publication_contract` binary is bounded by a
+- [x] The complete `assurance_v2_publication_contract` binary is bounded by a
   named Nextest group; `profile.full`, its timeout, exact selected inventory,
   coverage acquisition, CRAP thresholds, and adjudications remain unchanged.
 
@@ -370,9 +381,12 @@ an unbounded wait.
 
 ## Outcomes And Retrospective
 
-Output relocation, deterministic environment projection, and the strict CRAP
-control/report binding are implemented and reviewed. The latest exact terminal
-attempt truthfully failed only fresh-coverage scheduling after the ordinary full
-workspace passed. Its bounded four-case publication-cohort correction and
-focused evidence pass dual review; committed exact-plan execution, terminal
-verification, and the final retrospective remain pending.
+Output relocation, deterministic environment projection, the strict CRAP
+control/report binding, and bounded publication scheduling are implemented and
+reviewed. After preserving one host-ENOSPC receipt and clearing only generated
+scratch, fresh attempt two passed all 12 exact-plan nodes. Both former coverage
+timeouts passed, all 25 publication cases remained selected, and fresh global
+CRAP reported 2 raw / 2 adjudicated / 0 actionable with exact control/report
+digest equality. Independent receipt verification and dual terminal review pass.
+The package is complete and hands off to a separate adversarial acceptance
+rerun without pre-claiming its result.

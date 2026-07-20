@@ -17,6 +17,15 @@
   only the seeded hygiene fault, and correctly stopped when the focused
   planner found a stale testing-strategy digest. The live acceptance push was
   not authorized; the named correction package owns the bounded repair.
+- `20260719-testgate-global-crap-output-relocation-001/` completed the
+  integrated defect chain exposed by adversarial acceptance. Relocatable CRAP
+  output, declared-only environment identity, strict digest-bound CRAP control,
+  and effective four-case publication scheduling all pass exact terminal and
+  dual verification. Ordinary and fresh-coverage Nextest each pass
+  2,170/2,170; global CRAP is 2 raw / 2 adjudicated / 0 actionable. The
+  adapter-digest, confined-TMPDIR, socket-portability, adversarial-Clippy, and
+  policy-digest predecessor packages are historical and leave the active/held
+  catalog with this closure.
 
 - `20260719-testgate-campaign-closeout-001/` completed the TESTGATE campaign.
   Four stale kickoff prompts were archived, the queue-governance package's
@@ -204,43 +213,7 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-07-19 UTC`:
-
-- `20260719-testgate-global-crap-output-relocation-001/` -
-  IN-PROGRESS-ENV-PROJECTION-REVIEW-PASS-COMMITTED-PLAN-PENDING (2026-07-19):
-  output relocation and 13/13 focused cases pass; the integrated environment fix
-  derives identity from policy-declared keys, with 3/3 focused unit cases,
-  focused Clippy, and dual review passing. Committed double-plan identity and
-  reconciliation precede one terminal execution.
-
-- `20260719-testgate-crap-adapter-digest-alignment-001/` -
-  EXECUTED-FAIL-GLOBAL-OUTPUT-RELOCATION-REVIEWED (2026-07-19): both adapter
-  identities are correct and 11/12 critical nodes pass; global CRAP fails before
-  acquisition on its absolute default output. Dual review accepts the truthful
-  failed disposition, and the named READY successor owns it.
-
-- `20260719-testgate-coverage-tmpdir-confinement-001/` -
-  IMPLEMENTED-BLOCKED-ADAPTER-DIGEST (2026-07-19): the confined short-temp
-  projection passes focused tests; terminal admission correctly requires the
-  named derived-digest successor before any gate runs.
-
-- `20260719-testgate-assurance-socket-path-portability-001/` -
-  EXECUTED-FAIL-SYSTEMIC-TMPDIR (2026-07-19): its one-line label fix passes in
-  terminal coverage, which then exposes the same `SUN_LEN` failure in another
-  fixture. The runner-level successor owns the common fix.
-
-- `20260719-testgate-adversarial-clippy-cleanup-001/` -
-  EXECUTED-FAIL-SOCKET-PATH (2026-07-19): all 126 assertions are preserved and
-  both package/workspace Clippy pass; two 10-node receipts fail only because an
-  out-of-scope assurance fixture exceeds Unix `SUN_LEN`. The named successor
-  owns that one-line portability fix.
-
-- `20260719-testgate-policy-digest-alignment-001/` -
-  EXECUTED-FAIL-CLIPPY-SUCCESSOR-CHAIN (2026-07-19): the exact one-field digest
-  correction and focused gates pass; its mechanically selected critical receipt
-  truthfully failed on Clippy. The successor chain corrected that blocker and
-  progressed through separately owned defects to the sole current global-CRAP
-  output-relocation blocker named above.
+State as of `2026-07-20 UTC`:
 
 - `20260717-canopy-phenology-gsi-kernel-001/` -
   COMPLETE-PASS-PROCESS-KERNEL (2026-07-17): implements
