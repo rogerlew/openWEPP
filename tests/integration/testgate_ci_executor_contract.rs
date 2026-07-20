@@ -419,7 +419,7 @@ fn blocking_executor_and_affected_quality_preserve_manual_rollback() {
 #[test]
 fn coverage_scheduling_bounds_the_complete_assurance_publication_binary() {
     let profiles = text(".config/nextest.toml");
-    assert!(profiles.contains("[test-groups.assurance-publication]\nmax-threads = 8"));
+    assert!(profiles.contains("[test-groups.assurance-publication]\nmax-threads = 4"));
     let publication_override = profiles
         .split_once("filter = 'binary(assurance_v2_publication_contract)'")
         .expect("assurance publication override")

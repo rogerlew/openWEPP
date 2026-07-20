@@ -198,7 +198,7 @@ max-threads = 4
 max-threads = 4
 
 [test-groups.assurance-publication]
-max-threads = 8
+max-threads = 4
 
 [test-groups.repository-snapshot]
 max-threads = 1
@@ -260,9 +260,10 @@ slow-timeout = { period = "90s", terminate-after = 6 }
 # The assurance publication contract cases repeatedly build, hash, and verify
 # complete report trees. Fresh LLVM coverage on the 48-logical/24-physical-core
 # local runner allowed all 25 cases to compete: 2,167/2,169 tests passed, but
-# two publication cases reached the unchanged 720-second ceiling. Four-way
-# publication concurrency preserves useful host parallelism while bounding this
-# complete binary as one resource cohort; each case reserves two scheduler
+# two publication cases reached the unchanged 720-second ceiling. Repeated
+# terminal execution then reproduced the timeout with four-way concurrency.
+# Two-way publication concurrency preserves host parallelism while bounding
+# this complete binary as one resource cohort; each case reserves two scheduler
 # slots. Selection and timeout are unchanged.
 [[profile.default.overrides]]
 filter = 'binary(assurance_v2_publication_contract)'
