@@ -100,7 +100,7 @@ has published global and Harvard Forest evaluation. This increment owns the
 equations, typed domains, state/history semantics, hemisphere invariants, and
 process-level tests. It does not claim a canopy-cover or biomass realization.
 
-### Increment 3 (next) — native canopy, biomass, litter, and consumer integration
+### Increment 3 (active) — native canopy, biomass, litter, and consumer integration
 
 Map the verified signal into native deciduous and mixed-forest seasonal canopy
 state. Ratify the winter/summer canopy envelope, foliar versus persistent
@@ -128,7 +128,12 @@ integrated canopy and litter-transfer law lands.
 
 `docs/work-packages/20260717-canopy-phenology-gsi-kernel-001/` closed Increment
 2 with process-kernel conformance, not integrated canopy or snow fidelity.
-`CANOPY-PHENOLOGY-02` is the next package boundary for Increment 3.
+`CANOPY-PHENOLOGY-02` is active as
+`docs/work-packages/20260719-canopy-phenology-native-integration-001/`. Its
+Southern Hemisphere symmetry gate negates latitude and shifts the same
+Northern Hemisphere forcing sequence by half a year. This tests calendar and
+hemisphere phase without claiming independent Southern Hemisphere
+observational validation.
 
 ## Origin (the structural finding)
 
@@ -447,7 +452,7 @@ operator opened it foundation-first, so the previously-blocking "first-class
 - **Increment 2 (GSI process kernel) — COMPLETE.** The cited equations,
   signed-latitude phase, 21-day state, chronology, and restart behavior pass;
   no canopy/biomass claim was made.
-- **Increment 3 (integration) — NEXT.** It must first ratify the
+- **Increment 3 (integration) — ACTIVE.** It must first ratify the
   canopy/biomass/litter state law, then close the fixed-date litter anchor and
   real-consumer path in the same package or stop on hold.
 - **Snow-program criticality** (SNOWDENSITY mixed-forest fixtures active, canopy
