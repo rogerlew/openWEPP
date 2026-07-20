@@ -36,10 +36,27 @@ exact diff and may add focused A1 nodes introduced by the gate-policy mapping.
 
 ## Consumed-Value Observation Extension
 
-Status: `scaffolded; machine plan pending`
+Status: `consolidated intent admitted`
 
 Focused execution found that exact frost and erosion consumed-value observations
 require edits to the direct executor and its bounded-layout guard. Both paths
 are inside the package's pre-existing declared write set, but neither appears in
 the corrected exact prospective manifest. No such code edit is retained before
 this narrow extension receives its own intent plan.
+
+- Base commit: `a749ed7a`
+- Observed head before extension code: `977118b7`
+- Consolidated intent plan ID:
+  `3f819c5bbc11030dfb2c6c771547d1cf9315381c39666d6aa8236264664e9e58`
+- External plan:
+  `/tmp/canopy02-consolidated-intent-977/intent-plan.json`
+- Authorized-path manifest:
+  `/tmp/canopy02-consolidated-intent-977/authorized-paths.json`
+- Result/risk: `PASS` / `CRITICAL`
+- Authorized paths: 48; observed changed paths: 35; selected nodes: 15.
+
+This consolidated plan preserves all 46 paths from corrected intent
+`f307138c...` and adds only
+`direct_runtime/03_executor.rs` and
+`src/tests/tests_mod/direct_runtime.rs`. It includes the three generation-7 A1
+native-canopy gates in addition to the 12 critical campaign nodes.
