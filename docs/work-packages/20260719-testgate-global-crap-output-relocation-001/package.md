@@ -4,7 +4,7 @@ Package ID: `20260719-testgate-global-crap-output-relocation-001`
 
 Queue ID: `TESTGATE-GLOBAL-CRAP-OUTPUT-01`
 
-Status: `ACTIVE / CONTROL-ENVELOPE-REVIEW-PASS / COMMITTED-PLAN-PENDING`
+Status: `ACTIVE / COVERAGE-SCHEDULER-CORRECTION-AUTHORIZED`
 
 Authorization: verified critical receipt
 `78f526eee1d0b8a9142afc9f3ff8f9434702d1a5409d917a1c2a22687aa7638c`
@@ -23,6 +23,9 @@ plan unreconstructable across invokers by hashing undeclared ambient variables.
 Finally, separate the CRAP gate's strict control-plane PASS envelope from its
 floating-point measurement report so the executor can validate and bind the
 real report without applying the integer-only policy parser to science metrics.
+Close the resulting coverage-only resource-governance defect by scheduling the
+subprocess-heavy assurance publication cohort through a bounded Nextest group,
+without excluding tests, changing coverage, or extending the timeout.
 
 ## Progress
 
@@ -68,6 +71,13 @@ real report without applying the integer-only policy parser to science metrics.
 - [x] (2026-07-19) Patched the strict control/report-byte binding, closed both
   independent reviewers' confinement, publication-race, regression, and
   line-count findings, and received dual final PASS verdicts.
+- [x] (2026-07-20) The exact corrected terminal run passed the normal full
+  workspace node, then truthfully failed fresh coverage after 2,167/2,169 tests
+  passed and two assurance-publication cases timed out at the unchanged
+  720-second ceiling. The complete failed receipt and JUnit remain preserved.
+- [x] (2026-07-20) Prospectively amended this package before scheduler edits to
+  own `TESTGATE-CRAP-COVERAGE-SCHEDULING-01` inside a bounded Nextest-group and
+  exact-contract write set.
 - [ ] Complete dual review, one mechanical terminal execution, dual terminal
   verification, prompt archival, and final disposition.
 
@@ -87,12 +97,14 @@ science contract, or Rust kernel change is a dependency.
 
 Included: the runner's default-output initialization and standalone resolution,
 the exact executor contract assertions for both branches, the two adapter
-digests mechanically derived from the corrected script, and the planner's
-environment-variable identity projection.
+digests mechanically derived from the corrected script, the planner's
+environment-variable identity projection, and bounded Nextest scheduling for
+the subprocess-heavy assurance-publication integration-test binary.
 
 Excluded: coverage/CRAP algorithms, thresholds, exception registries, command
 selection, prerequisites, policy risk, workflow or runner configuration,
-kernel/science behavior, and any unrelated test cleanup.
+timeout expansion, test exclusion or reclassification, kernel/science behavior,
+and any unrelated test cleanup.
 
 ## Correction Authority Envelope
 
@@ -142,6 +154,20 @@ policy object. Missing, stale, duplicate-key, floating, non-PASS, nonzero-exit,
 symlinked, unconfined, publication-raced, or digest-mismatched control evidence
 must fail closed.
 
+Defect `TESTGATE-CRAP-COVERAGE-SCHEDULING-01` is the exact corrected terminal
+plan passing its normal full-workspace node, then running 2,169 tests under
+LLVM coverage with 2,167 passing and two
+`assurance_v2_publication_contract` cases timing out at 720 seconds. The same
+cases pass in the normal full-workspace node, while coverage evidence shows a
+large cohort of publication cases simultaneously running for 9--12 minutes.
+The in-scope correction is limited to a named `.config/nextest.toml` test group
+and exact TESTGATE contract assertions that bind the publication binary to that
+group. It must retain `profile.full`, the 720-second ceiling, all 2,169 selected
+tests, LLVM coverage instrumentation, and the unchanged CRAP threshold and
+adjudication semantics. The group filter must select the complete publication
+contract binary, not individual cases, and must not alter gate commands or
+adapter identity.
+
 ## Declared Write Set
 
 - `tools/release/run_adjudicated_crap_gate.sh`
@@ -150,6 +176,7 @@ must fail closed.
 - `crates/openwepp-gate-planner/src/execution_context.rs`
 - `crates/openwepp-gate-planner/src/executor.rs`
 - `tests/python/test_adjudicated_crap_gate.py`
+- `.config/nextest.toml`
 - `docs/work-packages/README.md`
 - `docs/work-packages/20260719-testgate-global-crap-output-relocation-001/**`
 
@@ -160,6 +187,8 @@ must fail closed.
 - A strict CRAP control envelope that binds but does not reinterpret the
   floating-point detailed measurement report.
 - Exact focused regression evidence for executor and standalone modes.
+- A bounded assurance-publication scheduling policy inherited by normal and
+  coverage full-profile execution, with no inventory or timeout weakening.
 - Reconciled adapter identities and one mechanically selected terminal receipt.
 - Dual independent review, finding disposition, verification, and final status.
 
@@ -185,10 +214,14 @@ broad suite, GitHub dispatch, or forest1 action is authorized.
    TESTGATE executor contract, direct digest reconstruction, and diff hygiene.
 4. Review: obtain two independent read-only reviews, disposition every finding,
    and patch accepted findings inside the declared write set.
-5. Terminal validation: execute the planner-selected critical plan once per
+5. If coverage-only contention reproduces after the control correction, bind
+   the complete assurance-publication binary to a bounded Nextest group; prove
+   config parsing, exact selection, unchanged timeout, and absence of exclusion
+   before another terminal attempt.
+6. Terminal validation: execute the planner-selected critical plan once per
    committed correction attempt. Preserve failed receipts/artifacts; do not
    rerun passing nodes separately or manually add broad gates.
-6. Closure: complete two independent terminal verifications, archive the active
+7. Closure: complete two independent terminal verifications, archive the active
    prompt, update the catalog, and record PASS/FAIL/BLOCKED/NOT RUN truthfully.
 
 ## Conversion Rule And HOLD Legitimacy
@@ -226,6 +259,9 @@ route, and assign a concrete next defect owner.
   independent reconciliation passes before execution.
 - [ ] CRAP PASS control is strict integer-only JSON and binds the exact detailed
   report bytes while permitting valid floating-point CRAP metrics.
+- [ ] The complete `assurance_v2_publication_contract` binary is bounded by a
+  named Nextest group; `profile.full`, its timeout, exact selected inventory,
+  coverage acquisition, CRAP thresholds, and adjudications remain unchanged.
 
 ## Review And Delegation
 
@@ -248,6 +284,10 @@ admission, while preserving the standalone repository-local default.
 The environment projection is also an execution-identity boundary: it must bind
 every policy-permitted gate variable without hashing undeclared ambient values
 or secret-bearing process state.
+Nextest scheduling is availability governance for the shared local runner. The
+correction must bound known subprocess-heavy work without concealing failures,
+dropping coverage, changing selection, or converting a correctness failure into
+an unbounded wait.
 
 ## Surprises And Discoveries
 
@@ -286,6 +326,13 @@ or secret-bearing process state.
   validation. Both findings are accepted: control now uses the confined reader,
   and publication obtains the exact report buffer from a fresh control/digest
   validation immediately before atomic write.
+- The next exact terminal attempt emitted a truthful FAIL receipt rather than
+  failing control publication. Its normal full-workspace node passed. Under
+  fresh coverage, 2,167 tests passed and only two assurance-publication cases
+  timed out at exactly 720 seconds; many sibling cases were concurrently slow
+  for 9--12 minutes. This isolates the new mechanism to coverage-amplified
+  subprocess contention rather than a test, coverage, or control-envelope
+  correctness failure.
 
 ## Decision Log
 
@@ -307,6 +354,12 @@ or secret-bearing process state.
   Rationale: policy identity remains integer-only and duplicate-key-safe while
   the domain artifact retains its numeric meaning and exact-byte provenance.
   Date/author: 2026-07-19, parent agent.
+- Decision: cap the complete assurance-publication contract binary through
+  canonical Nextest scheduling rather than increase timeouts or exclude cases.
+  Rationale: the normal suite proves the cases pass, the coverage JUnit proves
+  cohort-wide contention, and a named inherited group preserves inventory and
+  coverage while bounding shared-host load.
+  Date/author: 2026-07-20, parent agent.
 
 ## Outcomes And Retrospective
 

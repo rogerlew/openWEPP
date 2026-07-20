@@ -35,6 +35,14 @@ digest drift. Commit the bounded correction and generate a fresh exact plan;
 the preserved failed terminal attempt is evidence, not authority to resume a
 stale plan.
 
+Also close `TESTGATE-CRAP-COVERAGE-SCHEDULING-01`: the corrected terminal run
+passed the normal full workspace, but fresh LLVM coverage ran the heavy
+`assurance_v2_publication_contract` cohort concurrently and two cases timed out
+at the unchanged 720-second ceiling after 2,167/2,169 tests passed. Bind the
+complete binary to a bounded canonical Nextest group. Do not exclude or filter
+tests, change coverage/CRAP semantics, extend the timeout, or rerun the broad
+suite outside the next exact committed terminal plan.
+
 Subagent requirement: two independent read-only reviewer/verifier roles. This
 prompt explicitly authorizes subagent spawning/delegation by the parent for the
 scope and expected outputs defined in `package.md`; the parent retains all write
