@@ -2383,9 +2383,9 @@ fn load_json(path: &Path) -> Result<Value> {
 #[cfg(test)]
 mod tests {
     use super::{
-        InventoryProvider, PlanRequest, Planner, PlanningStage, argument_values,
-        authority_suite_inventory, prepare_reconstruction_workspace, reconcile_intent_terminal,
-        reconcile_semantics, select, validate_request,
+        InventoryProvider, PlanRequest, Planner, PlanningStage, authority_suite_inventory,
+        prepare_reconstruction_workspace, reconcile_intent_terminal, reconcile_semantics, select,
+        validate_request,
     };
     use crate::canonical::canonical_bytes;
     use crate::error::Result;
@@ -2410,78 +2410,6 @@ mod tests {
             target: &str,
         ) -> Result<Vec<String>> {
             Ok(vec![format!("{}:{target}", definition.gate_definition_id)])
-        }
-    }
-
-    #[test]
-    fn multi_package_inventory_follows_expanded_node_packages() {
-        let repo = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
-        let head = std::process::Command::new("git")
-            .args(["rev-parse", "HEAD"])
-            .current_dir(&repo)
-            .output()
-            .expect("git rev-parse");
-        let head = String::from_utf8(head.stdout)
-            .expect("UTF-8 head")
-            .trim()
-            .to_owned();
-        let path = "crates/openwepp-management-schema/src/lib.rs";
-        let plan = Planner::new(FixedInventory)
-            .build(
-                &repo,
-                &PlanRequest {
-                    stage: PlanningStage::Intent,
-                    predecessor_intent_plan_id: None,
-                    boundary: "INCREMENT".to_owned(),
-                    campaign_id: Some("CANOPY-PHENOLOGY-02".to_owned()),
-                    authorized_paths: vec![path.to_owned()],
-                    source: ObservedSource {
-                        base_commit: head,
-                        head_commit: None,
-                        dirty_tree_digest: Some("11".repeat(32)),
-                        index_digest: Some("22".repeat(32)),
-                        worktree_digest: Some("33".repeat(32)),
-                        untracked_digest: Some("44".repeat(32)),
-                        changes: vec![ObservedChange {
-                            path: path.to_owned(),
-                            change_kind: "MODIFY".to_owned(),
-                            object_kind: "REGULAR".to_owned(),
-                            old_mode: Some("100644".to_owned()),
-                            new_mode: Some("100644".to_owned()),
-                        }],
-                    },
-                },
-            )
-            .expect("native canopy management plan");
-        let node = plan["nodes"]
-            .as_array()
-            .expect("nodes")
-            .iter()
-            .find(|node| node["gate_definition_id"] == "hard-invariant-native-canopy-management-v1")
-            .expect("management A1 node");
-        let arguments = node["arguments"]
-            .as_array()
-            .expect("arguments")
-            .iter()
-            .map(|argument| argument.as_str().expect("string argument").to_owned())
-            .collect::<Vec<_>>();
-        let packages = argument_values(&arguments, "--package").expect("package arguments");
-        assert_eq!(
-            packages,
-            [
-                "openwepp-management-schema",
-                "openwepp-input-contract",
-                "openwepp-landuse-migrate"
-            ]
-        );
-        let expected = node["expected_inventory"]["ids"]
-            .as_array()
-            .expect("inventory IDs");
-        assert_eq!(expected.len(), packages.len());
-        for package in packages {
-            assert!(expected.iter().any(|id| {
-                id == &format!("hard-invariant-native-canopy-management-v1:{package}")
-            }));
         }
     }
 

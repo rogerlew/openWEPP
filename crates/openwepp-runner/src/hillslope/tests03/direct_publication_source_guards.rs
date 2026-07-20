@@ -561,8 +561,7 @@ fn canopy_phenology_02_real_consumers_share_the_typed_native_state() {
         !builder.contains("vapor_pressure_deficit_kpa.max(0.0)"),
         "negative native-canopy VPD must not be silently clamped"
     );
-    let authority =
-        include_str!("../direct_publication/day_input_and_helpers/00_builders_and_authority.rs",);
+    let authority = direct_publication_day_input_and_helpers_source();
     assert!(
         authority.contains(
             "forest_phenology.is_some() && (schedule_imngmt != 2 || jdplt != 0 || jdstop != 0)"

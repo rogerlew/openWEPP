@@ -295,16 +295,6 @@ struct DirectProductionGrowthCropAuthority {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-struct DirectProductionGrowthCropScheduleAuthority {
-    schedule_imngmt: u8,
-    imngmt: u8,
-    jdharv: u16,
-    jdplt: u16,
-    jdstop: u16,
-    forest_phenology: Option<DirectProductionForestPhenologyAuthority>,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq)]
 struct DirectProductionForestPhenologyAuthority {
     summer_foliar_biomass_kg_m2: f64,
     evergreen_fraction: f64,
@@ -2098,74 +2088,6 @@ fn direct_production_typed_growth_crop_authority(
             &direct_decomp_slot_crop_symbol(slot_index, crop_slot_index, "orater"),
         )?,
         forest_phenology: schedule.forest_phenology,
-    })
-}
-
-fn direct_production_typed_growth_crop_schedule_authority(
-    management_projection: &openwepp_hillslope_orchestrator::runtime_inputs::HillslopePlRuntimeSurfaces,
-    slot_index: usize,
-    crop_slot_index: usize,
-) -> Result<DirectProductionGrowthCropScheduleAuthority, HillslopeCliError> {
-    let schedule_imngmt = direct_growth_projection_required_integral_u8(
-        management_projection,
-        &direct_growth_schedule_slot_crop_symbol(slot_index, crop_slot_index, "imngmt"),
-        1,
-        3,
-    )?;
-    let imngmt = direct_growth_projection_required_integral_u8(
-        management_projection,
-        &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "imngmt"),
-        1,
-        3,
-    )?;
-    let jdplt_min = usize::from(schedule_imngmt != 2);
-    let jdplt = direct_growth_projection_required_integral_u16(
-        management_projection,
-        &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "jdplt"),
-        jdplt_min,
-        366,
-    )?;
-    let jdharv = direct_growth_projection_required_integral_u16(
-        management_projection,
-        &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "jdharv"),
-        0,
-        366,
-    )?;
-    let (jdstop, _mgtopt) = if schedule_imngmt == 2 {
-        (
-            direct_growth_projection_required_integral_u16(
-                management_projection,
-                &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "jdstop"),
-                0,
-                366,
-            )?,
-            direct_growth_projection_required_integral_u8(
-                management_projection,
-                &direct_growth_slot_crop_symbol(slot_index, crop_slot_index, "mgtopt"),
-                1,
-                3,
-            )?,
-        )
-    } else {
-        (0, 1)
-    };
-    let forest_phenology = direct_production_forest_phenology_authority(
-        management_projection,
-        slot_index,
-        crop_slot_index,
-    )?;
-    if forest_phenology.is_some() && (schedule_imngmt != 2 || jdplt != 0 || jdstop != 0) {
-        return Err(direct_growth_failure(format!(
-            "native forest phenology slot {slot_index} crop {crop_slot_index} requires perennial continuous schedule imngmt=2, jdplt=0, jdstop=0"
-        )));
-    }
-    Ok(DirectProductionGrowthCropScheduleAuthority {
-        schedule_imngmt,
-        imngmt,
-        jdharv,
-        jdplt,
-        jdstop,
-        forest_phenology,
     })
 }
 
