@@ -840,6 +840,13 @@ fn crap_runner_removes_standalone_temporary_root_after_failure() {
         .arg(root().join("tools/release/run_adjudicated_crap_gate.sh"))
         .arg("--output-dir")
         .arg(&output)
+        .env("OPENWEPP_GATE_ARTIFACT_ROOT", "/tmp/outer-gate-artifact")
+        .env(
+            "OPENWEPP_GATE_NEXTEST_CONFIG",
+            "/tmp/outer-gate-config.toml",
+        )
+        .env_remove("OPENWEPP_GATE_ARTIFACT_ROOT")
+        .env_remove("OPENWEPP_GATE_NEXTEST_CONFIG")
         .env("PATH", format!("{}:{inherited_path}", fake_bin.display()))
         .env("FAKE_CARGO_TMP", &observed_tmp)
         .output()
@@ -882,6 +889,13 @@ fn crap_runner_records_signal_termination_as_failure() {
         .arg(root().join("tools/release/run_adjudicated_crap_gate.sh"))
         .arg("--output-dir")
         .arg(&output)
+        .env("OPENWEPP_GATE_ARTIFACT_ROOT", "/tmp/outer-gate-artifact")
+        .env(
+            "OPENWEPP_GATE_NEXTEST_CONFIG",
+            "/tmp/outer-gate-config.toml",
+        )
+        .env_remove("OPENWEPP_GATE_ARTIFACT_ROOT")
+        .env_remove("OPENWEPP_GATE_NEXTEST_CONFIG")
         .env("PATH", format!("{}:{inherited_path}", fake_bin.display()))
         .env("FAKE_CARGO_STARTED", &started)
         .env("FAKE_CARGO_TMP", &observed_tmp)
@@ -919,15 +933,22 @@ fn crap_runner_records_signal_termination_as_failure() {
             .trim(),
     );
     assert!(!temporary.exists());
-    let group_gone = Command::new("kill")
-        .args(["-0", "--"])
-        .arg(format!("-{}", child.id()))
-        .status()
-        .expect("probe terminated process group");
-    assert!(
-        !group_gone.success(),
-        "fake cargo descendant survived SIGTERM"
-    );
+    let group_deadline = Instant::now() + Duration::from_secs(2);
+    loop {
+        let group_gone = Command::new("kill")
+            .args(["-0", "--"])
+            .arg(format!("-{}", child.id()))
+            .status()
+            .expect("probe terminated process group");
+        if !group_gone.success() {
+            break;
+        }
+        assert!(
+            Instant::now() < group_deadline,
+            "fake cargo descendant survived SIGTERM"
+        );
+        thread::sleep(Duration::from_millis(20));
+    }
 }
 
 #[test]

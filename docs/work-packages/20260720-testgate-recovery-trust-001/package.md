@@ -38,6 +38,7 @@ quality paths without editing its frozen subject.
 - [x] (2026-07-21) Correct RTR-019/RTR-020: nested CRAP now consumes executor-qualified configuration and short TMPDIR, and signal/cleanup outcomes are fail-closed.
 - [x] (2026-07-21) Mechanically split source-state observation from `executor.rs` for RTR-021; the file is 2,955 lines and focused planner/executor checks pass.
 - [x] (2026-07-21) Mechanically split the 101-line CRAP source-contract test for RTR-022; targeted Clippy and the eight-case integration target pass.
+- [x] (2026-07-21) Isolated standalone CRAP probes from executor-only inherited environment for RTR-023; regression probes pass under injected outer executor variables.
 - [ ] Reconcile the exact terminal diff and obtain a fresh `READY` audit.
 - [ ] Delegate each selected HEAVY batch once.
 - [ ] Complete dual terminal verification, prompt archival, and final disposition.
@@ -94,6 +95,8 @@ Attempt 7 opened two execution-envelope defects. `RTR-019` (`GATE-CRAP-NESTED-EX
 Attempt 8 opened `RTR-021` (`GATE-EXECUTOR-RUST-FILE-OVER-3000`): pre-HEAVY audit blocked the changed-head attempt because `executor.rs` reached 3,023 lines. The correction is a behavior-preserving source-state helper extraction to `executor_source.rs`; public executor APIs, error codes, and execution logic remain unchanged. The main file is now 2,955 lines, below the hard 3,000-line limit; the remaining 2,000-line WARN is accepted with this extraction as the first decomposition seam and a follow-on test-module split retained for future readability work.
 
 Attempt 9 reached a READY pre-HEAVY audit, then workspace Clippy opened `RTR-022` (`GATE-TEST-CONTRACT-FUNCTION-OVER-100`): `blocking_executor_and_affected_quality_preserve_manual_rollback` was 101 lines, exceeding the enforced 100-line test-function limit. The correction mechanically extracts gate-definition and CRAP-driver assertion helpers without changing assertions or coverage; targeted Clippy and the complete eight-case integration target pass. Doctests, full Nextest, and CRAP did not run in attempt 9 because its terminal plan correctly blocked them after Clippy.
+
+Attempt 10 reached a READY pre-HEAVY audit and passed 13 HEAVY nodes before full Nextest exposed `RTR-023` (`GATE-STANDALONE-CRAP-PROBE-INHERITS-EXECUTOR-ENVIRONMENT`): standalone CRAP tests inherited `OPENWEPP_GATE_ARTIFACT_ROOT` and `OPENWEPP_GATE_NEXTEST_CONFIG` from the executor, unintentionally entering executor mode and failing before their fake Cargo probes. The correction explicitly removes those executor-only variables in standalone test subprocesses and proves the probes pass even when outer executor values are injected. The comparator process then terminated externally before sealing its receipt; retained evidence is preserved at `/home/workdir/testgate-recovery-trust-01-final9.p5rh73`, its ledger is intentionally unreconciled, and CRAP was never started.
 ## Declared Write Set
 
 - `.github/workflows/testgate-shadow.yml`
