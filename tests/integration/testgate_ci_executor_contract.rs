@@ -558,13 +558,7 @@ fn assert_workflow_and_rollback_contract() {
     assert_conservative_rollback_contract();
 }
 
-#[test]
-fn blocking_executor_and_affected_quality_preserve_manual_rollback() {
-    assert_receipt_runtime_guards();
-    let definitions: Value = serde_json::from_str(&text("gate-policy/v1/gate-definitions.json"))
-        .expect("gate definitions JSON");
-    assert_eq!(definitions["enforcement_status"], "BLOCKING");
-    let entries = definitions["definitions"].as_array().expect("definitions");
+fn assert_gate_definition_contract(entries: &[Value]) {
     let affected = entries
         .iter()
         .find(|entry| entry["gate_definition_id"] == "affected-adjudicated-crap-v1")
@@ -615,7 +609,9 @@ fn blocking_executor_and_affected_quality_preserve_manual_rollback() {
         .find(|entry| entry["gate_definition_id"] == "workspace-full-nextest-v1")
         .expect("full workspace definition");
     assert_eq!(full["authority_class"], "NONE");
+}
 
+fn assert_crap_driver_contract() {
     let plan_schema = text("gate-policy/v1/schemas/gate-plan.schema.json");
     assert!(plan_schema.contains("quality_scope"));
     assert!(plan_schema.contains("covering_inventory_ids"));
@@ -655,6 +651,17 @@ fn blocking_executor_and_affected_quality_preserve_manual_rollback() {
     assert!(affected_driver.contains("global LCOV report requires explicit workspace packages"));
     assert!(affected_driver.contains("OPENWEPP_GATE_ARTIFACT_ROOT"));
     assert!(affected_driver.contains("for package in \"${PACKAGES[@]}\""));
+}
+
+#[test]
+fn blocking_executor_and_affected_quality_preserve_manual_rollback() {
+    assert_receipt_runtime_guards();
+    let definitions: Value = serde_json::from_str(&text("gate-policy/v1/gate-definitions.json"))
+        .expect("gate definitions JSON");
+    assert_eq!(definitions["enforcement_status"], "BLOCKING");
+    let entries = definitions["definitions"].as_array().expect("definitions");
+    assert_gate_definition_contract(entries);
+    assert_crap_driver_contract();
 
     let profiles = text(".config/nextest.toml");
     for profile in ["affected", "checkpoint", "campaign", "release", "full"] {
