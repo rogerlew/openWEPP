@@ -29,9 +29,11 @@ quality paths without editing its frozen subject.
 - [x] (2026-07-20) Commit scaffold `ee4d9946` before implementation adoption.
 - [x] (2026-07-20) Freeze and pass focused tests for RTR-001 through RTR-009.
 - [x] (2026-07-20) Implement durable attested recovery, exact audits, lifecycle reconciliation, and combined-selection corrections.
+- [x] (2026-07-20) Correct the discovered verifier-fixture timeout without relaxing its limit; exact quick passed 94/94.
+- [x] (2026-07-20) Complete dual implementation review and disposition every finding.
 - [ ] Commit and reconcile the exact terminal diff; obtain a fresh `READY` audit.
 - [ ] Delegate each selected HEAVY batch once.
-- [ ] Complete dual implementation review, finding disposition, dual terminal verification, prompt archival, and final disposition.
+- [ ] Complete dual terminal verification, prompt archival, and final disposition.
 ## Correction Authority Envelope
 
 This package owns these observed violations end-to-end:
