@@ -1325,14 +1325,16 @@ fn audit_error(code: &'static str, message: impl Into<String>) -> GatePolicyErro
 mod tests {
     use std::fs;
     use std::path::PathBuf;
+    use std::process::Command;
+    use std::sync::atomic::{AtomicU64, Ordering};
 
     use serde_json::json;
 
     use super::{
         append_attempt_record, audit_reconstruction_root, build_failure_audit, check,
         documentation_scope_is_exact, durable_ledger, execution_claims_match,
-        execution_context_is_current, no_open_tooling_defect, package_admitted, read_json,
-        reconcile_orphaned_attempts, reconstructed_plan_is_exact, record_heavy_failure,
+        execution_context_is_current, no_open_tooling_defect, package_admission, package_admitted,
+        read_json, reconcile_orphaned_attempts, reconstructed_plan_is_exact, record_heavy_failure,
         select_package_admission, validate_started_successor, verify_ledger_chain,
         with_disposable_audit_reconstruction,
     };
@@ -1749,5 +1751,171 @@ mod tests {
             .expect_err("no exact authority must fail closed");
         assert_eq!(error.code, "GATE-AUDIT-PACKAGE-NOT-ADMITTED");
         assert_eq!(error.class, ErrorClass::Identity);
+    }
+
+    static PACKAGE_FIXTURE_SEQUENCE: AtomicU64 = AtomicU64::new(0);
+
+    struct PackageFixture {
+        root: PathBuf,
+        base: String,
+        paths: Vec<String>,
+    }
+
+    impl PackageFixture {
+        fn new(owner_ready: bool, contender_ready: bool) -> Self {
+            let sequence = PACKAGE_FIXTURE_SEQUENCE.fetch_add(1, Ordering::Relaxed);
+            let root = std::env::temp_dir().join(format!(
+                "openwepp-package-admission-{}-{sequence}",
+                std::process::id()
+            ));
+            fs::create_dir_all(root.join("gate-policy/v1/schemas")).expect("schema directory");
+            fs::create_dir_all(root.join("docs/work-packages/owner")).expect("owner directory");
+            fs::create_dir_all(root.join("docs/work-packages/contender"))
+                .expect("contender directory");
+            fs::create_dir_all(root.join("src")).expect("source directory");
+            let repository = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
+            fs::copy(
+                repository.join("gate-policy/v1/schemas/package-audit.schema.json"),
+                root.join("gate-policy/v1/schemas/package-audit.schema.json"),
+            )
+            .expect("copy package schema");
+            Self::write_package(&root, "owner", owner_ready, "base owner");
+            Self::write_package(&root, "contender", contender_ready, "base contender");
+            fs::write(root.join("src/lib.rs"), "pub fn base() {}\n").expect("base source");
+            Self::git(&root, &["init", "-q"]);
+            Self::git(&root, &["config", "user.email", "test@example.invalid"]);
+            Self::git(&root, &["config", "user.name", "Test"]);
+            Self::git(&root, &["add", "."]);
+            Self::git(&root, &["commit", "-qm", "base"]);
+            let base = String::from_utf8(Self::git_output(&root, &["rev-parse", "HEAD"]))
+                .expect("UTF-8 base")
+                .trim()
+                .to_owned();
+            Self::write_package(&root, "owner", owner_ready, "changed owner");
+            Self::write_package(&root, "contender", contender_ready, "changed contender");
+            fs::write(root.join("src/lib.rs"), "pub fn changed() {}\n").expect("changed source");
+            Self {
+                root,
+                base,
+                paths: vec![
+                    "docs/work-packages/contender/package.md".to_owned(),
+                    "docs/work-packages/owner/package.md".to_owned(),
+                    "src/lib.rs".to_owned(),
+                ],
+            }
+        }
+
+        fn write_package(root: &std::path::Path, name: &str, ready: bool, note: &str) {
+            let write_set = if ready {
+                "- `docs/work-packages/**`\n- `src/**`".to_owned()
+            } else {
+                format!("- `docs/work-packages/{name}/**`")
+            };
+            fs::write(
+                root.join(format!("docs/work-packages/{name}/package.md")),
+                format!("# {name}\n\n{note}\n\n## Declared Write Set\n\n{write_set}\n"),
+            )
+            .expect("write package");
+        }
+
+        fn plan(&self) -> serde_json::Value {
+            json!({
+                "source": {"base_commit": self.base},
+                "authorized_paths": self.paths
+            })
+        }
+
+        fn git(root: &std::path::Path, arguments: &[&str]) {
+            assert!(
+                Command::new("git")
+                    .args(arguments)
+                    .current_dir(root)
+                    .status()
+                    .expect("run git")
+                    .success(),
+                "git {arguments:?}"
+            );
+        }
+
+        fn git_output(root: &std::path::Path, arguments: &[&str]) -> Vec<u8> {
+            let output = Command::new("git")
+                .args(arguments)
+                .current_dir(root)
+                .output()
+                .expect("run git");
+            assert!(output.status.success(), "git {arguments:?}");
+            output.stdout
+        }
+    }
+
+    impl Drop for PackageFixture {
+        fn drop(&mut self) {
+            fs::remove_dir_all(&self.root).expect("remove package fixture");
+        }
+    }
+
+    #[test]
+    fn package_admission_reconstructs_real_candidate_authority_and_fails_closed() {
+        let unique = PackageFixture::new(true, false);
+        let selected = package_admission(&unique.root, &unique.plan()).expect("unique authority");
+        assert_eq!(
+            selected["package_path"],
+            "docs/work-packages/owner/package.md"
+        );
+
+        let multiple = PackageFixture::new(true, true);
+        assert_eq!(
+            package_admission(&multiple.root, &multiple.plan())
+                .expect_err("multiple authorities")
+                .code,
+            "GATE-AUDIT-PACKAGE-AMBIGUOUS"
+        );
+        let none = PackageFixture::new(false, false);
+        assert_eq!(
+            package_admission(&none.root, &none.plan())
+                .expect_err("no authority")
+                .code,
+            "GATE-AUDIT-PACKAGE-NOT-ADMITTED"
+        );
+
+        let mut mismatched = unique.plan();
+        mismatched["authorized_paths"] = json!(&unique.paths[..2]);
+        assert_eq!(
+            package_admission(&unique.root, &mismatched)
+                .expect_err("changed-path mismatch")
+                .code,
+            "GATE-AUDIT-PACKAGE-NOT-ADMITTED"
+        );
+        let mut invalid_base = unique.plan();
+        invalid_base["source"]["base_commit"] = json!("not-a-commit");
+        assert_eq!(
+            package_admission(&unique.root, &invalid_base)
+                .expect_err("invalid base")
+                .code,
+            "GATE-PACKAGE-GIT"
+        );
+        for (path, code) in [
+            ("docs/work-packages/../package.md", "GATE-PACKAGE-PATH"),
+            ("docs/work-packages/missing/package.md", "GATE-PACKAGE-READ"),
+        ] {
+            let plan = json!({
+                "source": {"base_commit": unique.base},
+                "authorized_paths": [path]
+            });
+            assert_eq!(
+                package_admission(&unique.root, &plan)
+                    .expect_err("invalid candidate")
+                    .code,
+                code
+            );
+        }
+        let schema = unique
+            .root
+            .join("gate-policy/v1/schemas/package-audit.schema.json");
+        let held_schema = schema.with_extension("held");
+        fs::rename(&schema, &held_schema).expect("hold schema");
+        let error = package_admission(&unique.root, &unique.plan()).expect_err("missing schema");
+        fs::rename(held_schema, schema).expect("restore schema");
+        assert_eq!(error.code, "GATE-PACKAGE-SCHEMA-READ");
     }
 }
