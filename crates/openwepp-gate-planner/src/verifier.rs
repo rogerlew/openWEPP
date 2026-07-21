@@ -2432,6 +2432,7 @@ mod tests {
 
         let nodes = plan["nodes"].as_array().expect("nodes");
         let blocked_index = nodes.len() - 1;
+        let blocked_node = &nodes[blocked_index];
         blocked["attempts"][blocked_index]["exit_code"] = Value::Null;
         blocked["attempts"][blocked_index]["result"] = json!("BLOCKED");
         let executed = nodes
@@ -2470,14 +2471,32 @@ mod tests {
         blocked["counts"]["blocked"] = json!(1);
         blocked["counts"]["skipped"] = json!(unavailable.len());
         blocked["result"] = json!("BLOCKED");
-        set_gate_integrity(
-            &mut blocked,
-            &nodes[blocked_index]["gate_definition_id"],
-            "BLOCKED",
-        );
+        set_gate_integrity(&mut blocked, &blocked_node["gate_definition_id"], "BLOCKED");
+        let mut blocked_artifact_bytes = artifacts.bytes.clone();
+        for path in blocked_node["output_paths"]
+            .as_array()
+            .expect("blocked node output paths")
+        {
+            let path = path.as_str().expect("blocked output path");
+            if std::path::Path::new(path)
+                .extension()
+                .is_some_and(|extension| extension == "xml")
+            {
+                let bytes = b"<testsuite></testsuite>\n".to_vec();
+                blocked_artifact_bytes.insert(path.to_owned(), bytes.clone());
+                let artifact = blocked["artifacts"]
+                    .as_array_mut()
+                    .expect("receipt artifacts")
+                    .iter_mut()
+                    .find(|artifact| artifact["path"] == path)
+                    .expect("blocked JUnit artifact");
+                artifact["sha256"] = json!(sha256_bytes(&bytes));
+            }
+        }
         refresh_receipt_id(&mut blocked);
-        let verdict =
-            verify_receipt(&repo(), &plan, &blocked, &artifacts).expect("truthful BLOCKED receipt");
+        let blocked_artifacts = MemoryArtifacts::new(blocked_artifact_bytes);
+        let verdict = verify_receipt(&repo(), &plan, &blocked, &blocked_artifacts)
+            .expect("truthful BLOCKED receipt");
         assert_eq!(verdict.result(), "BLOCKED");
     }
 
