@@ -61,6 +61,7 @@ Execution is blocked until all conditions hold:
    trusted-runner qualification. If not, local cases may run but the package
    remains `HOLD-PROVIDER-EVIDENCE`; provider evidence is not simulated.
 
+Before subject freeze, independently disposition the direct/manual full-profile publication schedule. Confirm that canonical campaign and release closure enters the authenticated TESTGATE executor and consumes its retained, canonical-source-bound serial derivative. If direct `cargo nextest --profile full` is still an accepted closure path on the qualified runner, activate a prerequisite correction package with prospective authority for `.config/nextest.toml`; do not freeze or execute qualification with the known two-case publication schedule.
 ## Scope
 
 Included:

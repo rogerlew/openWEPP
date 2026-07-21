@@ -6,7 +6,7 @@ import json
 import subprocess
 import tempfile
 import unittest
-from contextlib import redirect_stdout
+from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from unittest import mock
 
@@ -132,6 +132,51 @@ class TestGateTest(unittest.TestCase):
             with self.assertRaises(TESTGATE.TestgateError):
                 TESTGATE._prune_disposable_execution_state(root)
             self.assertTrue(outside.exists())
+
+    def test_main_does_not_repeat_a_failed_attempt_finalizer(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            args = mock.Mock()
+            args.artifact_root = Path(directory)
+            args.history_ledger = args.artifact_root / "history.jsonl"
+            failure = TESTGATE.AttemptFinalizationError("injected finalizer failure")
+            with (
+                mock.patch.object(TESTGATE, "_parse_args", return_value=args),
+                mock.patch.object(TESTGATE, "observe", side_effect=failure),
+                mock.patch.object(TESTGATE, "_finalize_attempt_archive") as finalize,
+                redirect_stderr(io.StringIO()) as stderr,
+            ):
+                self.assertEqual(TESTGATE.main(), 2)
+            finalize.assert_not_called()
+            self.assertTrue(
+                (args.artifact_root / "pre-receipt-failure.json").is_file()
+            )
+            self.assertIn("injected finalizer failure", stderr.getvalue())
+
+    def test_main_reports_failure_when_error_archive_finalization_also_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            args = mock.Mock()
+            args.artifact_root = Path(directory)
+            args.history_ledger = args.artifact_root / "history.jsonl"
+            with (
+                mock.patch.object(TESTGATE, "_parse_args", return_value=args),
+                mock.patch.object(
+                    TESTGATE,
+                    "observe",
+                    side_effect=TESTGATE.TestgateError("injected observation failure"),
+                ),
+                mock.patch.object(
+                    TESTGATE,
+                    "_finalize_attempt_archive",
+                    side_effect=TESTGATE.AttemptFinalizationError(
+                        "injected secondary failure"
+                    ),
+                ) as finalize,
+                redirect_stderr(io.StringIO()) as stderr,
+            ):
+                self.assertEqual(TESTGATE.main(), 2)
+            finalize.assert_called_once()
+            self.assertIn("injected observation failure", stderr.getvalue())
+            self.assertIn("injected secondary failure", stderr.getvalue())
 
     def test_durable_history_snapshot_is_indexable_and_exact(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

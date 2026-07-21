@@ -31,6 +31,10 @@ class TestgateError(RuntimeError):
     """Raised when a TESTGATE execution cannot be represented exactly."""
 
 
+class AttemptFinalizationError(TestgateError):
+    """Raised after the single authoritative attempt-finalization pass fails."""
+
+
 def _canonical_json(value: Any) -> str:
     """Serialize the integer-only RFC 8785 subset shared with the Rust gate."""
     if value is None or isinstance(value, (bool, str)):
@@ -129,6 +133,16 @@ def _prune_disposable_execution_state(artifact_root: Path) -> None:
                 raise TestgateError(f"disposable execution path is not a directory: {cursor}")
         if not missing:
             shutil.rmtree(target)
+
+
+def _finalize_attempt_archive(ledger: Path, artifact_root: Path) -> None:
+    """Snapshot, prune, and index once; expose finalizer failures distinctly."""
+    try:
+        _snapshot_history(ledger, artifact_root)
+        _prune_disposable_execution_state(artifact_root)
+        _write_attempt_index(artifact_root)
+    except (OSError, KeyError, ValueError, TestgateError) as error:
+        raise AttemptFinalizationError(str(error)) from error
 
 
 def _snapshot_history(ledger: Path, artifact_root: Path) -> None:
@@ -841,9 +855,7 @@ def observe(args: argparse.Namespace) -> dict[str, Any]:
             "runner_image": os.environ.get("OPENWEPP_RUNNER_IMAGE_ID"),
         }
         _atomic_json(artifact_root / "attestation-predicate.json", predicate)
-    _snapshot_history(ledger, artifact_root)
-    _prune_disposable_execution_state(artifact_root)
-    _write_attempt_index(artifact_root)
+    _finalize_attempt_archive(ledger, artifact_root)
     return observation
 
 
@@ -889,16 +901,25 @@ def main() -> int:
         observation = observe(args)
     except (OSError, KeyError, ValueError, TestgateError) as error:
         if args.artifact_root.is_dir():
-            _atomic_json(
-                args.artifact_root / "pre-receipt-failure.json",
-                {
-                    "schema_version": "openwepp-testgate-pre-receipt-failure-v1",
-                    "error": str(error),
-                },
-            )
-            _snapshot_history(args.history_ledger.resolve(), args.artifact_root)
-            _prune_disposable_execution_state(args.artifact_root)
-            _write_attempt_index(args.artifact_root)
+            try:
+                _atomic_json(
+                    args.artifact_root / "pre-receipt-failure.json",
+                    {
+                        "schema_version": "openwepp-testgate-pre-receipt-failure-v1",
+                        "error": str(error),
+                    },
+                )
+                if not isinstance(error, AttemptFinalizationError):
+                    _finalize_attempt_archive(
+                        args.history_ledger.resolve(), args.artifact_root
+                    )
+            except (OSError, KeyError, ValueError, TestgateError) as finalization_error:
+                print(f"ERROR: {error}", file=sys.stderr)
+                print(
+                    f"ERROR: attempt finalization failed: {finalization_error}",
+                    file=sys.stderr,
+                )
+                return 2
         print(f"ERROR: {error}", file=sys.stderr)
         return 2
     print(json.dumps(observation, sort_keys=True))

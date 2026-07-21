@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="openwepp-nextest-full" tests="4" failures="0" errors="0" uuid="77ab5b9c-4867-4ac5-bf64-e3e7a753633e" timestamp="2026-07-21T01:26:28.588-07:00" time="267.751">
+    <testsuite name="openwepp::assurance_v2_publication_contract" tests="4" disabled="0" errors="0" failures="0">
+        <testcase name="all_mode_extra_staging_and_overlapping_roots_fail_without_public_mutation" classname="openwepp::assurance_v2_publication_contract" timestamp="2026-07-21T01:26:28.589-07:00" time="18.992">
+        </testcase>
+        <testcase name="approval_conflicts_and_release_mismatch_fail_before_publication" classname="openwepp::assurance_v2_publication_contract" timestamp="2026-07-21T01:26:47.581-07:00" time="53.325">
+        </testcase>
+        <testcase name="authority_bound_byte_negative_matrix_is_fail_closed" classname="openwepp::assurance_v2_publication_contract" timestamp="2026-07-21T01:27:40.906-07:00" time="83.441">
+        </testcase>
+        <testcase name="authority_lifecycle_and_bound_byte_negative_matrix_is_fail_closed" classname="openwepp::assurance_v2_publication_contract" timestamp="2026-07-21T01:29:04.347-07:00" time="111.992">
+        </testcase>
+    </testsuite>
+</testsuites>

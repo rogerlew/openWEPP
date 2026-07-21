@@ -7,10 +7,12 @@ use crate::error::{ErrorClass, GatePolicyError, Result};
 const STORE_DECLARATION: &str = "dir = \"target/nextest\"";
 const PUBLICATION_GROUP: &str = "[test-groups.assurance-publication]\nmax-threads = 4";
 const QUALIFIED_PUBLICATION_GROUP: &str = "[test-groups.assurance-publication]\nmax-threads = 2";
+const PUBLICATION_OVERRIDE: &str = "[[profile.default.overrides]]\nfilter = 'binary(assurance_v2_publication_contract)'\ntest-group = \"assurance-publication\"\nthreads-required = 2";
 
 pub(crate) fn derive_execution_config(source: &str, store: &Path) -> Result<String> {
     if source.matches(STORE_DECLARATION).count() != 1
         || source.matches(PUBLICATION_GROUP).count() != 1
+        || source.matches(PUBLICATION_OVERRIDE).count() != 1
     {
         return Err(config_error(
             "canonical Nextest store or publication-group declaration is missing or ambiguous",
@@ -37,20 +39,29 @@ mod tests {
 
     #[test]
     fn config_derivation_is_strict_and_serializes_publication_cases() {
-        let canonical =
-            "dir = \"target/nextest\"\n[test-groups.assurance-publication]\nmax-threads = 4\n";
+        let canonical = "dir = \"target/nextest\"\n[test-groups.assurance-publication]\nmax-threads = 4\n[[profile.default.overrides]]\nfilter = 'binary(assurance_v2_publication_contract)'\ntest-group = \"assurance-publication\"\nthreads-required = 2\n";
         let derived = derive_execution_config(canonical, Path::new("/tmp/store"))
             .expect("derive execution config");
         assert!(derived.contains("dir = \"/tmp/store\""));
         assert!(derived.contains("max-threads = 2"));
-        assert_eq!(
-            derive_execution_config(
-                &canonical.replace("max-threads = 4", "max-threads = 3"),
-                Path::new("/tmp/store"),
-            )
-            .expect_err("drift must fail")
-            .code,
-            "GATE-EXEC-NEXTEST-CONFIG"
-        );
+        for drifted in [
+            canonical.replace("max-threads = 4", "max-threads = 3"),
+            canonical.replace("threads-required = 2", "threads-required = 1"),
+            canonical.replace(
+                "binary(assurance_v2_publication_contract)",
+                "binary(other_contract)",
+            ),
+            canonical.replace(
+                "test-group = \"assurance-publication\"",
+                "test-group = \"other\"",
+            ),
+        ] {
+            assert_eq!(
+                derive_execution_config(&drifted, Path::new("/tmp/store"))
+                    .expect_err("drift must fail")
+                    .code,
+                "GATE-EXEC-NEXTEST-CONFIG"
+            );
+        }
     }
 }
