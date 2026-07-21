@@ -130,6 +130,9 @@ Excluded:
 
 - `crates/openwepp-gate-planner/**`
 - `tools/local_ci/**`
+- `tools/ci/omarchy-runner/Dockerfile`
+- `tools/ci/omarchy-runner/manage.sh`
+- `tools/ci/omarchy-runner/README.md`
 - `tools/release/README.md`
 - `tools/release/run_adjudicated_crap_gate.sh`
 - `tools/release/check_adjudicated_crap.py`
@@ -428,6 +431,11 @@ back around the new audit.
   receipt and plan ID, recurrence depended on manually authored defect records,
   and resume copying lacked symlink confinement. All were accepted as package
   defects and corrected before another heavy attempt.
+- Re-review proved the initially selected `/workdir/testgate-history` path does
+  not exist in the read-only trusted-runner container, and a ledger-only restore
+  cannot recover checkpoint outputs purged from `/t`. The declared write set was
+  widened before runner-source edits to add a dedicated persistent history
+  volume and per-node recovery mirror; no live runner mutation is authorized.
 
 ## Decision Log
 
@@ -447,6 +455,11 @@ back around the new audit.
   no-subject-edit boundary prevents the implementation from grading itself.
   Focused implementation seams remain required here; no black-box PASS is
   claimed here. Date/author: 2026-07-20, execution agent.
+- Decision: widen source authority to the three exact trusted-runner definition
+  files before implementing durable recovery. Rationale: persistence is a
+  container mount contract, not something the workflow can manufacture inside
+  a read-only root filesystem. The change remains source-only; live setup or
+  deployment stays excluded. Date/author: 2026-07-20, execution agent.
 
 ## Outcomes And Retrospective
 
