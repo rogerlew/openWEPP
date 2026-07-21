@@ -65,6 +65,18 @@ def _write_attempt_index(root: Path) -> None:
     )
 
 
+def _snapshot_history(ledger: Path, artifact_root: Path) -> None:
+    """Copy the durable ledger into the indexed upload without changing authority."""
+    if not ledger.is_file():
+        return
+    destination = artifact_root / "attempts.jsonl"
+    if destination.resolve() == ledger.resolve():
+        return
+    temporary = destination.with_name(f".{destination.name}.tmp")
+    temporary.write_bytes(ledger.read_bytes())
+    temporary.replace(destination)
+
+
 def _git(repo: Path, arguments: list[str], *, binary: bool = False) -> bytes | str:
     result = subprocess.run(
         ["git", *arguments],
@@ -475,6 +487,7 @@ def observe(args: argparse.Namespace) -> dict[str, Any]:
             "runner_image": os.environ.get("OPENWEPP_RUNNER_IMAGE_ID"),
         }
         _atomic_json(artifact_root / "attestation-predicate.json", predicate)
+    _snapshot_history(ledger, artifact_root)
     _write_attempt_index(artifact_root)
     return observation
 
@@ -527,6 +540,7 @@ def main() -> int:
                     "error": str(error),
                 },
             )
+            _snapshot_history(args.history_ledger.resolve(), args.artifact_root)
             _write_attempt_index(args.artifact_root)
         print(f"ERROR: {error}", file=sys.stderr)
         return 2

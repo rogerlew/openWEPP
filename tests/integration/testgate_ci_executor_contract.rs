@@ -258,7 +258,9 @@ fn assert_testgate_workflow_surface() {
         "ERROR: refusing authority for superseded head",
         "ERROR: refusing aggregate success for superseded head",
         "Re-ingest and verify durable attempt index",
-        "--history-ledger \"${evidence_dir}/attempts.jsonl\"",
+        "TESTGATE_HISTORY_ROOT: /workdir/testgate-history/openwepp",
+        "Restore and verify newest durable attempt history",
+        "--history-ledger \"${TESTGATE_HISTORY_ROOT}/attempts.jsonl\"",
     ] {
         assert!(
             workflow.contains(context),

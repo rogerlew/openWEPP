@@ -12,13 +12,15 @@ use serde_json::{Value, json};
 use time::OffsetDateTime;
 use time::format_description::well_known::Rfc3339;
 
-use crate::canonical::{derived_id, digest, parse_strict, sha256_bytes, validate_schema};
+use crate::canonical::{
+    current_executable_sha256, derived_id, digest, parse_strict, sha256_bytes, validate_schema,
+};
 use crate::error::{ErrorClass, GatePolicyError, Result};
 use crate::planner::{
     environment_record, inventory_for_node, manifest_roots, reconstruct_plan_in, tool_records,
     verify_plan_identity,
 };
-use crate::pre_heavy::validate_audit;
+use crate::pre_heavy::validate_audit_for_execution;
 use crate::repository::observe_dirty;
 use crate::resume::{ResumeCandidate, apply_candidate};
 
@@ -188,7 +190,7 @@ pub fn execute_plan_stage(
         let audit = audit.ok_or_else(|| {
             execution_error("GATE-EXEC-AUDIT-REQUIRED", "heavy stage requires an audit")
         })?;
-        validate_audit(&repository, plan, audit, &artifacts)?;
+        validate_audit_for_execution(&repository, plan, audit, &artifacts)?;
         Some(audit)
     } else {
         None
@@ -1300,6 +1302,7 @@ fn build_stage_receipt(
         "plan_id": plan["plan_id"],
         "plan_sha256": digest(plan)?,
         "execution_key": plan["execution_key"],
+        "executor_binary_sha256": current_executable_sha256()?,
         "artifact_root_sha256": sha256_bytes(artifact_root.as_os_str().as_encoded_bytes()),
         "roots": plan["environment_roots"],
         "attempts": execution.attempts,

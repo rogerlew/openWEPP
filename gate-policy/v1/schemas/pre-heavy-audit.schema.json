@@ -5,7 +5,7 @@
   "additionalProperties": false,
   "required": [
     "schema_version", "audit_id", "status", "reason_codes", "plan_id", "plan_sha256",
-    "execution_key", "light_stage_receipt_id", "artifact_root_sha256", "ledger_path_sha256",
+    "execution_key", "executor_binary_sha256", "light_stage_receipt_id", "artifact_root_sha256", "ledger_path_sha256",
     "node_manifest", "checks", "combined_execution", "light_receipt"
   ],
   "properties": {
@@ -16,6 +16,7 @@
     "plan_id": {"$ref": "#/$defs/digest"},
     "plan_sha256": {"$ref": "#/$defs/digest"},
     "execution_key": {"$ref": "#/$defs/digest"},
+    "executor_binary_sha256": {"$ref": "#/$defs/digest"},
     "light_stage_receipt_id": {"$ref": "#/$defs/digest"},
     "artifact_root_sha256": {"$ref": "#/$defs/digest"},
     "ledger_path_sha256": {"$ref": "#/$defs/digest"},
@@ -33,16 +34,19 @@
     },
     "checks": {
       "type": "array", "minItems": 10, "maxItems": 10,
-      "items": {
-        "type": "object", "additionalProperties": false,
-        "required": ["check_id", "status", "reason_codes", "evidence_sha256"],
-        "properties": {
-          "check_id": {"type": "string"},
-          "status": {"enum": ["PASS", "BLOCKED", "INVALID"]},
-          "reason_codes": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
-          "evidence_sha256": {"$ref": "#/$defs/digest"}
-        }
-      }
+      "prefixItems": [
+        {"$ref": "#/$defs/packageAdmissionCheck"},
+        {"$ref": "#/$defs/cheapPrerequisitesCheck"},
+        {"$ref": "#/$defs/inventoryArgumentsCheck"},
+        {"$ref": "#/$defs/executionIdentitiesCheck"},
+        {"$ref": "#/$defs/attemptIsolationCheck"},
+        {"$ref": "#/$defs/rootsEvidenceCheck"},
+        {"$ref": "#/$defs/combinedCoverageCheck"},
+        {"$ref": "#/$defs/orderingRetryCheck"},
+        {"$ref": "#/$defs/durableLedgerCheck"},
+        {"$ref": "#/$defs/openDefectsCheck"}
+      ],
+      "items": false
     },
     "combined_execution": {
       "type": "object", "additionalProperties": false,
@@ -55,6 +59,26 @@
     "light_receipt": {"type": "object", "additionalProperties": {}}
   },
   "$defs": {
-    "digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+    "digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "check": {
+      "type": "object", "additionalProperties": false,
+      "required": ["check_id", "status", "reason_codes", "evidence_sha256"],
+      "properties": {
+        "check_id": {"type": "string"},
+        "status": {"enum": ["PASS", "BLOCKED", "INVALID"]},
+        "reason_codes": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+        "evidence_sha256": {"$ref": "#/$defs/digest"}
+      }
+    },
+    "packageAdmissionCheck": {"allOf": [{"$ref": "#/$defs/check"}, {"properties": {"check_id": {"const": "PACKAGE_ADMISSION"}}}]},
+    "cheapPrerequisitesCheck": {"allOf": [{"$ref": "#/$defs/check"}, {"properties": {"check_id": {"const": "CHEAP_PREREQUISITES"}}}]},
+    "inventoryArgumentsCheck": {"allOf": [{"$ref": "#/$defs/check"}, {"properties": {"check_id": {"const": "INVENTORY_AND_ARGUMENTS"}}}]},
+    "executionIdentitiesCheck": {"allOf": [{"$ref": "#/$defs/check"}, {"properties": {"check_id": {"const": "EXECUTION_IDENTITIES"}}}]},
+    "attemptIsolationCheck": {"allOf": [{"$ref": "#/$defs/check"}, {"properties": {"check_id": {"const": "ATTEMPT_AND_OUTPUT_ISOLATION"}}}]},
+    "rootsEvidenceCheck": {"allOf": [{"$ref": "#/$defs/check"}, {"properties": {"check_id": {"const": "ROOTS_AND_EVIDENCE_REUSE"}}}]},
+    "combinedCoverageCheck": {"allOf": [{"$ref": "#/$defs/check"}, {"properties": {"check_id": {"const": "COMBINED_FULL_COVERAGE"}}}]},
+    "orderingRetryCheck": {"allOf": [{"$ref": "#/$defs/check"}, {"properties": {"check_id": {"const": "ORDERING_RETRY_AND_HANDOFF"}}}]},
+    "durableLedgerCheck": {"allOf": [{"$ref": "#/$defs/check"}, {"properties": {"check_id": {"const": "DURABLE_ATTEMPT_LEDGER"}}}]},
+    "openDefectsCheck": {"allOf": [{"$ref": "#/$defs/check"}, {"properties": {"check_id": {"const": "OPEN_TOOLING_DEFECTS"}}}]}
   }
 }

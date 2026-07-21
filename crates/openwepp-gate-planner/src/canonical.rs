@@ -2,6 +2,7 @@
 
 use std::collections::HashSet;
 use std::fmt;
+use std::fs;
 
 use serde::de::{DeserializeSeed, MapAccess, SeqAccess, Visitor};
 use serde_json::{Map, Value};
@@ -205,6 +206,27 @@ fn write_value(value: &Value, output: &mut Vec<u8>) -> Result<()> {
 #[must_use]
 pub fn sha256_bytes(bytes: &[u8]) -> String {
     format!("{:x}", Sha256::digest(bytes))
+}
+
+/// Hash the exact executable image running this process.
+///
+/// # Errors
+///
+/// Returns a typed I/O error when the current executable cannot be resolved or
+/// read. Gate-stage handoffs use this identity to prevent a stale binary from
+/// consuming artifacts emitted by a different build.
+pub fn current_executable_sha256() -> Result<String> {
+    let executable = std::env::current_exe().map_err(|error| {
+        GatePolicyError::new(ErrorClass::Io, "GATE-EXECUTABLE-PATH", error.to_string())
+    })?;
+    let bytes = fs::read(&executable).map_err(|error| {
+        GatePolicyError::new(
+            ErrorClass::Io,
+            "GATE-EXECUTABLE-READ",
+            format!("{}: {error}", executable.display()),
+        )
+    })?;
+    Ok(sha256_bytes(&bytes))
 }
 
 /// Hash one canonical v1 value.

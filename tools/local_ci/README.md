@@ -68,9 +68,18 @@ audit and imports the light prefix; a monolithic heavy path fails closed.
 Every node writes a digest-bound checkpoint before aggregate receipt creation.
 Attempt, timing, cost, failure, and tooling-defect records are appended to
 `target/local-ci-history/testgate-attempts.jsonl` by default. Trusted execution
-instead places that ledger under the uploaded evidence root. The attempt index
-covers pre-receipt failures and per-node checkpoints so a hosted verifier can
-re-ingest and verify them after runner loss.
+uses `/workdir/testgate-history/openwepp/attempts.jsonl`, outside the runner's
+`/t` tmpfs, snapshots that ledger into every indexed evidence upload, and
+restores the newest verified snapshot when durable host history is absent. The
+attempt index covers pre-receipt failures and per-node checkpoints so a hosted
+verifier can re-ingest and verify them after runner loss.
+
+The LIGHT receipt binds the SHA-256 of the exact executor image. Audit creation
+and HEAVY admission independently require the same image, so rebuilding source
+without rebuilding the binary cannot produce a usable transition. A HEAVY CLI
+attempt appends `STARTED` and terminal `CLOSED` or `FAILED` records itself;
+recurrence of one stable failure cause after the allowed retry automatically
+opens a blocking tooling defect.
 
 The helper also writes an independently verified unsigned receipt and
 `observation.json`. Local output remains

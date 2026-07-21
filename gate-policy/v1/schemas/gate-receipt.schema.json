@@ -147,7 +147,7 @@
           "additionalProperties": false,
           "required": [
             "schema_version", "audit_id", "status", "reason_codes", "plan_id",
-            "plan_sha256", "execution_key", "light_stage_receipt_id",
+            "plan_sha256", "execution_key", "executor_binary_sha256", "light_stage_receipt_id",
             "artifact_root_sha256", "ledger_path_sha256", "node_manifest",
             "checks", "combined_execution", "light_receipt"
           ],
@@ -159,6 +159,7 @@
             "plan_id": {"$ref": "#/$defs/digest"},
             "plan_sha256": {"$ref": "#/$defs/digest"},
             "execution_key": {"$ref": "#/$defs/digest"},
+            "executor_binary_sha256": {"$ref": "#/$defs/digest"},
             "light_stage_receipt_id": {"$ref": "#/$defs/digest"},
             "artifact_root_sha256": {"$ref": "#/$defs/digest"},
             "ledger_path_sha256": {"$ref": "#/$defs/digest"},

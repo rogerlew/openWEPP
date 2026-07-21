@@ -74,6 +74,25 @@ class TestGateTest(unittest.TestCase):
             index = json.loads((root / "attempt-index.json").read_text())
         self.assertEqual(index["files"][0]["path"], "pre-receipt-failure.json")
 
+    def test_durable_history_snapshot_is_indexable_and_exact(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            evidence = root / "evidence"
+            evidence.mkdir()
+            ledger = root / "durable" / "attempts.jsonl"
+            ledger.parent.mkdir()
+            TESTGATE._append_history(
+                ledger,
+                {"record_type": "STAGE_ATTEMPT", "status": "FAILED"},
+            )
+            TESTGATE._snapshot_history(ledger, evidence)
+            TESTGATE._write_attempt_index(evidence)
+            self.assertEqual(
+                (evidence / "attempts.jsonl").read_bytes(), ledger.read_bytes()
+            )
+            index = json.loads((evidence / "attempt-index.json").read_text())
+            self.assertEqual(index["files"][0]["path"], "attempts.jsonl")
+
     def test_base_package_authorizes_only_declared_changed_paths(self) -> None:
         package = """# Package\n\nStatus: `READY / ACTIVE`\n\n## Declared Write Set\n\n- `src/**`\n- `docs/work-packages/example/package.md`\n\n## Next\n"""
         changed = ["docs/work-packages/example/package.md", "src/lib.rs"]

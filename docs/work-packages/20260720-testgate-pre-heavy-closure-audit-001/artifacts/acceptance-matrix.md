@@ -1,7 +1,9 @@
 # Pre-Heavy Acceptance Matrix
 
-Status: scaffold contract; Phase A binds each row to exact fixtures and
-commands before production edits.
+Status: implementation control map. Focused producer/consumer seam evidence is
+owned here; the independent black-box executions are `Q01` through `Q15` in
+`TESTGATE-WORKFLOW-QUALIFY-01`, which freezes this package's landed bytes and
+cannot repair them.
 
 | Case | Injection | Required observation |
 | --- | --- | --- |
@@ -26,3 +28,12 @@ workflow boundary. Unit-level producer output alone cannot close `A03` through
 `A15`; the real local helper or trusted-workflow contract path must consume the
 artifact. Trusted-workflow cases may use a hermetic workflow harness rather than
 live GitHub dispatch, which remains outside package scope.
+
+Implementation evidence before landing includes schema rejection of a forged
+check set, binary-image binding across LIGHT/audit/HEAVY, exact audit
+reconstruction from the durable ledger, automatic recurrence defect creation,
+checkpoint import without an aggregate receipt or matching plan ID, symlink-
+confined output import, durable-history snapshot/indexing, and workflow-source
+contracts for restore and persistent paths. The follow-up qualification package
+owns the once-only real-helper and provider-path observations; those results are
+not claimed by this implementation package.

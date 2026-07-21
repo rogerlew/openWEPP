@@ -5,7 +5,7 @@
   "additionalProperties": false,
   "required": [
     "schema_version", "stage_receipt_id", "stage", "plan_id", "plan_sha256",
-    "execution_key", "artifact_root_sha256", "roots", "attempts", "final_results",
+    "execution_key", "executor_binary_sha256", "artifact_root_sha256", "roots", "attempts", "final_results",
     "executed_inventory", "unavailable_items", "started_at", "finished_at", "claims", "result"
   ],
   "properties": {
@@ -15,6 +15,7 @@
     "plan_id": {"$ref": "#/$defs/digest"},
     "plan_sha256": {"$ref": "#/$defs/digest"},
     "execution_key": {"$ref": "#/$defs/digest"},
+    "executor_binary_sha256": {"$ref": "#/$defs/digest"},
     "artifact_root_sha256": {"$ref": "#/$defs/digest"},
     "roots": {"type": "object", "additionalProperties": {}},
     "attempts": {"type": "array", "items": {"type": "object", "additionalProperties": {}}},

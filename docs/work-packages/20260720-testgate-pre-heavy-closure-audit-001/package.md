@@ -251,9 +251,11 @@ reason and a measured follow-up; parity or speed is never assumed.
 
 1. Run the focused unit, schema, integration, failure-injection, and workflow
    contract tests.
-2. Execute the adversarial fixture through the real local helper. It must stop
-   each defect before heavy launch and produce one `READY` audit after all
-   defects are corrected.
+2. Execute focused implementation seams through the real CLI/helper boundary
+   and publish the frozen black-box controller interface. The once-only
+   adversarial helper/provider matrix is independently owned by
+   `TESTGATE-WORKFLOW-QUALIFY-01` after this implementation lands; this package
+   must not pre-consume or self-review that qualification evidence.
 3. Generate the exact terminal plan. Run every selected gate once, using the
    required heavy-run subagent for heavy nodes, and retain all attempt/timing
    records.
@@ -333,10 +335,12 @@ nodes; it may not remove these focused obligations when their inputs changed.
 - [ ] One infrastructure retry is retained; recurrence of the same cause blocks
   another heavy retry until the linked tooling defect is resolved or a bounded
   external-outage authority is recorded.
-- [ ] The adversarial acceptance matrix covers non-`READY` spawn counters,
-  mid-DAG fail/resume, active-run/newest-pending/concurrency timeout, runner
-  reset, parity-proven and parity-unproven paths, and selective post-review
-  invalidation in addition to the historical failure chain.
+- [ ] The implementation publishes versioned, frozen interfaces for the
+  adversarial matrix covering non-`READY` spawn counters, mid-DAG fail/resume,
+  active-run/newest-pending/concurrency timeout, runner reset, parity-proven and
+  parity-unproven paths, and selective post-review invalidation. Independent
+  black-box disposition remains exclusively owned by
+  `TESTGATE-WORKFLOW-QUALIFY-01` after landing.
 - [ ] No science, threshold, authority, trust, or test-membership weakening is
   used to close the package.
 - [ ] Dual review and dual terminal verification leave no finding
@@ -413,6 +417,17 @@ back around the new audit.
   outputs as ordinary collisions. No heavy process was dispatched. The
   handoff now admits only existing light outputs whose node checkpoint and
   artifact digests match the exact audit; mutation remains fail-closed.
+- The delegated HEAVY transition used a stale 15:24 executor image against
+  16:35 evidence. It ran no heavy node but spent 175.467 seconds reconstructing
+  before rejecting a LIGHT output collision. The audit had not bound executor
+  bytes, and the direct CLI emitted no durable terminal record. The failed
+  attempt is now retained; stage receipts bind the executor image and the Rust
+  CLI writes STARTED/CLOSED/FAILED history itself.
+- Implementation review found that a rehashed report could duplicate check IDs,
+  trusted history still lived under `/t`, resume required an exact aggregate
+  receipt and plan ID, recurrence depended on manually authored defect records,
+  and resume copying lacked symlink confinement. All were accepted as package
+  defects and corrected before another heavy attempt.
 
 ## Decision Log
 
@@ -426,6 +441,12 @@ back around the new audit.
 - Decision: require combined full/coverage execution only after measured parity.
   Rationale: avoiding duplicate work cannot weaken regression or coverage
   semantics. Date/author: 2026-07-20, scaffold author.
+- Decision: land the repair interface before independently executing the
+  black-box workflow qualification. Rationale: Roger Lew explicitly sequenced
+  `TESTGATE-WORKFLOW-QUALIFY-01` after this package lands, and that package's
+  no-subject-edit boundary prevents the implementation from grading itself.
+  Focused implementation seams remain required here; no black-box PASS is
+  claimed here. Date/author: 2026-07-20, execution agent.
 
 ## Outcomes And Retrospective
 

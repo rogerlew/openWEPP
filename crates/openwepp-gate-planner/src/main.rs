@@ -2,6 +2,7 @@ use std::collections::BTreeMap;
 use std::fs;
 use std::io::Write;
 use std::path::{Path, PathBuf};
+use std::time::Instant;
 
 use openwepp_gate_planner::canonical::{canonical_bytes, parse_strict};
 use openwepp_gate_planner::error::{ErrorClass, GatePolicyError, Result};
@@ -10,7 +11,9 @@ use openwepp_gate_planner::ledger::{verify_assurance_impact, verify_campaign_led
 use openwepp_gate_planner::package_validation::validate_package;
 use openwepp_gate_planner::planner::reconcile_intent_terminal;
 use openwepp_gate_planner::planner::{NextestInventory, PlanRequest, Planner, PlanningStage};
-use openwepp_gate_planner::pre_heavy::{build_audit, validate_resume_ledger};
+use openwepp_gate_planner::pre_heavy::{
+    append_attempt_record, build_audit, record_heavy_failure, validate_resume_ledger,
+};
 use openwepp_gate_planner::repository::{ObservedSource, observe_committed, observe_dirty};
 use openwepp_gate_planner::resume::load_candidate;
 use openwepp_gate_planner::verifier::{
@@ -161,43 +164,108 @@ fn staged_run_command(
     claims: &ExecutionClaims,
     stage: &str,
 ) -> Result<Value> {
-    let (audit, resume_candidate) = if stage == "heavy" {
+    let (audit, resume_candidate, resume_ledger) = if stage == "heavy" {
         let value = read_json(Path::new(required(options, "audit")?))?;
         let resume = PathBuf::from(required(options, "resume")?);
-        validate_resume_ledger(&value, &resume)?;
+        validate_resume_ledger(repo, plan, &value, artifact_root, &resume)?;
         let candidate = load_candidate(repo, plan, &resume)?;
-        (Some(value), candidate)
+        (Some(value), candidate, Some(resume))
     } else if stage == "light" {
-        (None, None)
+        (None, None, None)
     } else {
         return Err(usage_error());
     };
-    let receipt = execute_plan_stage(
-        repo,
-        plan,
-        artifact_root,
-        claims,
-        &stage.to_ascii_uppercase(),
-        audit.as_ref(),
-        resume_candidate.as_ref(),
+    let execute = || -> Result<Value> {
+        let receipt = execute_plan_stage(
+            repo,
+            plan,
+            artifact_root,
+            claims,
+            &stage.to_ascii_uppercase(),
+            audit.as_ref(),
+            resume_candidate.as_ref(),
+        )?;
+        if stage == "heavy" {
+            let artifacts = DirectoryArtifacts::new(artifact_root.to_owned());
+            verify_receipt(repo, plan, &receipt, &artifacts)?;
+        }
+        let result = receipt["result"].clone();
+        let receipt_id = receipt
+            .get("receipt_id")
+            .or_else(|| receipt.get("stage_receipt_id"))
+            .cloned()
+            .unwrap_or(Value::Null);
+        let output = persist_plan(repo, options, &receipt)?;
+        Ok(json!({
+            "result": result,
+            "receipt_id": receipt_id,
+            "output": output,
+            "stage": stage.to_ascii_uppercase()
+        }))
+    };
+    let Some(ledger) = resume_ledger else {
+        return execute();
+    };
+    let started = Instant::now();
+    let audit_id = audit
+        .as_ref()
+        .map_or(Value::Null, |value| value["audit_id"].clone());
+    append_attempt_record(
+        &ledger,
+        json!({
+            "record_type": "STAGE_ATTEMPT",
+            "status": "STARTED",
+            "stage": "HEAVY",
+            "plan_id": plan["plan_id"],
+            "audit_id": audit_id,
+            "artifact_root": artifact_root.display().to_string(),
+            "workflow": claims.workflow,
+            "job": claims.job,
+            "runner": claims.runner,
+            "attempt": claims.attempt,
+        }),
     )?;
-    if stage == "heavy" {
-        let artifacts = DirectoryArtifacts::new(artifact_root.to_owned());
-        verify_receipt(repo, plan, &receipt, &artifacts)?;
+    match execute() {
+        Ok(value) => {
+            append_attempt_record(
+                &ledger,
+                json!({
+                    "record_type": "STAGE_ATTEMPT",
+                    "status": "CLOSED",
+                    "stage": "HEAVY",
+                    "plan_id": plan["plan_id"],
+                    "audit_id": audit_id,
+                    "artifact_root": artifact_root.display().to_string(),
+                    "receipt_id": value["receipt_id"],
+                    "result": value["result"],
+                    "wall_time_ms": started.elapsed().as_millis() as u64,
+                }),
+            )?;
+            Ok(value)
+        }
+        Err(error) => {
+            let cause_key = error.code;
+            record_heavy_failure(
+                &ledger,
+                json!({
+                    "record_type": "STAGE_ATTEMPT",
+                    "status": "FAILED",
+                    "stage": "HEAVY",
+                    "plan_id": plan["plan_id"],
+                    "audit_id": audit_id,
+                    "artifact_root": artifact_root.display().to_string(),
+                    "result": null,
+                    "error_code": error.code,
+                    "error_message": error.message,
+                    "cause_key": cause_key,
+                    "failure_class": if cause_key.contains("SPAWN") || cause_key.contains("TIMEOUT") || cause_key.contains("RUNNER") {"INFRASTRUCTURE"} else {"TOOLING"},
+                    "wall_time_ms": started.elapsed().as_millis() as u64,
+                }),
+                cause_key,
+            )?;
+            Err(error)
+        }
     }
-    let result = receipt["result"].clone();
-    let receipt_id = receipt
-        .get("receipt_id")
-        .or_else(|| receipt.get("stage_receipt_id"))
-        .cloned()
-        .unwrap_or(Value::Null);
-    let output = persist_plan(repo, options, &receipt)?;
-    Ok(json!({
-        "result": result,
-        "receipt_id": receipt_id,
-        "output": output,
-        "stage": stage.to_ascii_uppercase()
-    }))
 }
 
 fn pre_heavy_audit_command(repo: &Path, options: &BTreeMap<String, String>) -> Result<Value> {

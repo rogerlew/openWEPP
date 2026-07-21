@@ -1,13 +1,17 @@
 //! Canonical admission artifact for the LIGHT-to-HEAVY execution transition.
 
 use std::collections::BTreeSet;
-use std::fs;
+use std::fs::{self, OpenOptions};
+use std::io::Write;
 use std::path::Path;
 use std::process::Command;
 
 use serde_json::{Value, json};
 
-use crate::canonical::{derived_id, digest, parse_strict, sha256_bytes, validate_schema};
+use crate::canonical::{
+    canonical_bytes, current_executable_sha256, derived_id, digest, parse_strict, sha256_bytes,
+    validate_schema,
+};
 use crate::error::{ErrorClass, GatePolicyError, Result};
 use crate::planner::verify_plan_identity;
 
@@ -38,7 +42,7 @@ pub fn build_audit(
     ledger: &Path,
 ) -> Result<Value> {
     verify_plan_identity(plan)?;
-    validate_stage_receipt(repo, plan, light_receipt, artifact_root)?;
+    validate_stage_receipt(repo, plan, light_receipt, artifact_root, true)?;
 
     let mut checks = Vec::with_capacity(CHECK_IDS.len());
     checks.push(check(
@@ -58,8 +62,13 @@ pub fn build_audit(
     )?);
     checks.push(check(
         CHECK_IDS[3],
-        Ok(()),
-        json!({"policy": plan["policy"], "context": plan["execution_context"]}),
+        execution_identities(plan, light_receipt),
+        json!({
+            "policy": plan["policy"],
+            "context": plan["execution_context"],
+            "claims": light_receipt["claims"],
+            "executor_binary_sha256": light_receipt["executor_binary_sha256"],
+        }),
     )?);
     checks.push(check(
         CHECK_IDS[4],
@@ -112,6 +121,7 @@ pub fn build_audit(
         "plan_id": plan["plan_id"],
         "plan_sha256": digest(plan)?,
         "execution_key": plan["execution_key"],
+        "executor_binary_sha256": light_receipt["executor_binary_sha256"],
         "light_stage_receipt_id": light_receipt["stage_receipt_id"],
         "artifact_root_sha256": path_digest(artifact_root),
         "ledger_path_sha256": path_digest(ledger),
@@ -161,7 +171,27 @@ pub fn validate_audit(
             audit["status"].to_string(),
         ));
     }
-    validate_stage_receipt(repo, plan, &audit["light_receipt"], artifact_root)?;
+    let checks = audit["checks"]
+        .as_array()
+        .ok_or_else(|| audit_error("GATE-AUDIT-CHECK-SET", "checks must be an array"))?;
+    if checks.len() != CHECK_IDS.len()
+        || checks.iter().zip(CHECK_IDS).any(|(item, expected)| {
+            item["check_id"] != expected
+                || item["status"] != "PASS"
+                || item["reason_codes"]
+                    .as_array()
+                    .is_none_or(|codes| !codes.is_empty())
+        })
+        || audit["reason_codes"]
+            .as_array()
+            .is_none_or(|codes| !codes.is_empty())
+    {
+        return Err(audit_error(
+            "GATE-AUDIT-CHECK-SET",
+            "READY requires the ordered canonical ten-check set, all PASS, with no reasons",
+        ));
+    }
+    validate_stage_receipt(repo, plan, &audit["light_receipt"], artifact_root, false)?;
     if audit["light_stage_receipt_id"] != audit["light_receipt"]["stage_receipt_id"] {
         return Err(audit_error(
             "GATE-AUDIT-LIGHT-RECEIPT",
@@ -178,13 +208,44 @@ pub fn validate_audit(
     Ok(())
 }
 
+/// Verify a READY audit and bind it to the exact executor image admitting HEAVY.
+///
+/// # Errors
+///
+/// Returns a typed error for every ordinary audit defect plus an executable
+/// identity mismatch. Receipt-envelope verification deliberately uses
+/// [`validate_audit`] because a verifier on another runner need not have the
+/// byte-identical executable image used for execution.
+pub fn validate_audit_for_execution(
+    repo: &Path,
+    plan: &Value,
+    audit: &Value,
+    artifact_root: &Path,
+) -> Result<()> {
+    validate_audit(repo, plan, audit, artifact_root)?;
+    let current = current_executable_sha256()?;
+    if audit["executor_binary_sha256"] != current {
+        return Err(audit_error(
+            "GATE-AUDIT-EXECUTOR-BINARY-DRIFT",
+            "HEAVY executor differs from the binary that emitted the LIGHT receipt",
+        ));
+    }
+    Ok(())
+}
+
 /// Verify that a resume ledger is the exact durable ledger admitted by audit.
 ///
 /// # Errors
 ///
 /// Returns a typed execution error for path substitution, ephemeral storage,
 /// unreadable history, or an unresolved tooling defect.
-pub fn validate_resume_ledger(audit: &Value, ledger: &Path) -> Result<()> {
+pub fn validate_resume_ledger(
+    repo: &Path,
+    plan: &Value,
+    audit: &Value,
+    artifact_root: &Path,
+    ledger: &Path,
+) -> Result<()> {
     if audit["ledger_path_sha256"] != path_digest(ledger) {
         return Err(audit_error(
             "GATE-AUDIT-LEDGER-SUBSTITUTION",
@@ -192,7 +253,111 @@ pub fn validate_resume_ledger(audit: &Value, ledger: &Path) -> Result<()> {
         ));
     }
     durable_ledger(ledger)?;
-    no_open_tooling_defect(ledger)
+    no_open_tooling_defect(ledger)?;
+    let reconstructed = build_audit(repo, plan, &audit["light_receipt"], artifact_root, ledger)?;
+    if &reconstructed != audit {
+        return Err(audit_error(
+            "GATE-AUDIT-RECONSTRUCTION-MISMATCH",
+            "submitted audit differs from an independent reconstruction",
+        ));
+    }
+    Ok(())
+}
+
+/// Append a terminal HEAVY failure and open a tooling defect when its stable
+/// cause key has already failed once.
+///
+/// # Errors
+///
+/// Returns a typed ledger error when history cannot be parsed or persisted.
+pub fn record_heavy_failure(path: &Path, record: Value, cause_key: &str) -> Result<()> {
+    let text = fs::read_to_string(path)
+        .map_err(|error| audit_error("GATE-AUDIT-LEDGER-READ", error.to_string()))?;
+    let prior = text
+        .lines()
+        .filter(|line| !line.trim().is_empty())
+        .map(|line| parse_strict(line.as_bytes()))
+        .collect::<Result<Vec<_>>>()?
+        .into_iter()
+        .filter(|item| {
+            item["record_type"] == "STAGE_ATTEMPT"
+                && item["status"] == "FAILED"
+                && item["cause_key"] == cause_key
+        })
+        .count();
+    append_attempt_record(path, record)?;
+    if prior >= 1 {
+        let defect_key = sha256_bytes(cause_key.as_bytes());
+        append_attempt_record(
+            path,
+            json!({
+                "record_type": "TOOLING_DEFECT",
+                "defect_id": format!("AUTO-{}", &defect_key[..16]),
+                "status": "OPEN",
+                "cause_key": cause_key,
+                "failure_class": failure_class(cause_key),
+                "reason_code": "SAME_CAUSE_RECURRED_AFTER_ONE_RETRY",
+            }),
+        )?;
+    }
+    Ok(())
+}
+
+fn failure_class(cause_key: &str) -> &'static str {
+    if cause_key.contains("SPAWN") || cause_key.contains("TIMEOUT") || cause_key.contains("RUNNER")
+    {
+        "INFRASTRUCTURE"
+    } else {
+        "TOOLING"
+    }
+}
+
+/// Durably append one predecessor-bound execution-attempt record.
+///
+/// # Errors
+///
+/// Returns a typed error when the existing chain is invalid, the record uses
+/// reserved identity fields, or the append cannot be flushed to stable storage.
+pub fn append_attempt_record(path: &Path, mut record: Value) -> Result<String> {
+    verify_ledger_chain(path)?;
+    let object = record
+        .as_object_mut()
+        .ok_or_else(|| audit_error("GATE-AUDIT-LEDGER-RECORD", "record must be an object"))?;
+    if object.contains_key("previous_entry_sha256") || object.contains_key("entry_sha256") {
+        return Err(audit_error(
+            "GATE-AUDIT-LEDGER-RECORD",
+            "record contains reserved chain fields",
+        ));
+    }
+    let text = fs::read_to_string(path)
+        .map_err(|error| audit_error("GATE-AUDIT-LEDGER-READ", error.to_string()))?;
+    let previous = text
+        .lines()
+        .rev()
+        .find(|line| !line.trim().is_empty())
+        .map(|line| parse_strict(line.as_bytes()))
+        .transpose()?
+        .and_then(|item| item["entry_sha256"].as_str().map(str::to_owned));
+    object.insert(
+        "previous_entry_sha256".to_owned(),
+        previous.map_or(Value::Null, Value::String),
+    );
+    let entry = digest(&record)?;
+    record
+        .as_object_mut()
+        .ok_or_else(|| audit_error("GATE-AUDIT-LEDGER-RECORD", "record must be an object"))?
+        .insert("entry_sha256".to_owned(), Value::String(entry.clone()));
+    let mut bytes = canonical_bytes(&record)?;
+    bytes.push(b'\n');
+    let mut stream = OpenOptions::new()
+        .append(true)
+        .open(path)
+        .map_err(|error| audit_error("GATE-AUDIT-LEDGER-APPEND", error.to_string()))?;
+    stream
+        .write_all(&bytes)
+        .and_then(|()| stream.sync_all())
+        .map_err(|error| audit_error("GATE-AUDIT-LEDGER-APPEND", error.to_string()))?;
+    Ok(entry)
 }
 
 fn check(id: &str, result: Result<()>, evidence: Value) -> Result<Value> {
@@ -346,6 +511,48 @@ fn inventory_is_exact(plan: &Value) -> Result<()> {
     Ok(())
 }
 
+fn execution_identities(plan: &Value, receipt: &Value) -> Result<()> {
+    for field in [
+        "configuration_sha256",
+        "environment_manifest_sha256",
+        "fixture_manifest_sha256",
+        "tool_manifest_sha256",
+    ] {
+        if string(&plan["execution_context"], field)?.len() != 64 {
+            return Err(audit_error("GATE-AUDIT-EXECUTION-IDENTITY", field));
+        }
+    }
+    for field in [
+        "principal",
+        "repository",
+        "source_event",
+        "source_ref",
+        "workflow",
+        "job",
+        "runner",
+    ] {
+        if string(&receipt["claims"], field)?.is_empty() {
+            return Err(audit_error("GATE-AUDIT-EXECUTION-CLAIM", field));
+        }
+    }
+    if receipt["claims"]["attempt"]
+        .as_u64()
+        .is_none_or(|attempt| attempt == 0)
+    {
+        return Err(audit_error(
+            "GATE-AUDIT-EXECUTION-CLAIM",
+            "attempt must be positive",
+        ));
+    }
+    if string(receipt, "executor_binary_sha256")?.len() != 64 {
+        return Err(audit_error(
+            "GATE-AUDIT-EXECUTION-IDENTITY",
+            "executor_binary_sha256",
+        ));
+    }
+    Ok(())
+}
+
 fn artifact_identity(receipt: &Value, artifact_root: &Path) -> Result<()> {
     if receipt["artifact_root_sha256"] == path_digest(artifact_root) {
         Ok(())
@@ -437,7 +644,7 @@ fn durable_ledger(path: &Path) -> Result<()> {
     let absolute = path
         .canonicalize()
         .map_err(|error| audit_error("GATE-AUDIT-LEDGER-MISSING", error.to_string()))?;
-    if absolute.starts_with("/tmp") || !absolute.is_file() {
+    if absolute.starts_with("/tmp") || absolute.starts_with("/t") || !absolute.is_file() {
         Err(audit_error(
             "GATE-AUDIT-LEDGER-EPHEMERAL",
             absolute.display().to_string(),
@@ -526,6 +733,7 @@ fn validate_stage_receipt(
     plan: &Value,
     receipt: &Value,
     artifact_root: &Path,
+    enforce_current_binary: bool,
 ) -> Result<()> {
     let schema = read_json(&repo.join("gate-policy/v1/schemas/stage-receipt.schema.json"))?;
     validate_schema(&schema, receipt, "light stage receipt")?;
@@ -539,6 +747,12 @@ fn validate_stage_receipt(
         return Err(audit_error(
             "GATE-AUDIT-STAGE-RECEIPT-IDENTITY",
             "light stage receipt binding mismatch",
+        ));
+    }
+    if enforce_current_binary && receipt["executor_binary_sha256"] != current_executable_sha256()? {
+        return Err(audit_error(
+            "GATE-AUDIT-EXECUTOR-BINARY-DRIFT",
+            "audit binary differs from the binary that emitted the LIGHT receipt",
         ));
     }
     Ok(())
@@ -589,4 +803,53 @@ fn read_json(path: &Path) -> Result<Value> {
 
 fn audit_error(code: &'static str, message: impl Into<String>) -> GatePolicyError {
     GatePolicyError::new(ErrorClass::Execution, code, message)
+}
+
+#[cfg(test)]
+mod tests {
+    use std::fs;
+    use std::path::PathBuf;
+
+    use serde_json::json;
+
+    use super::{read_json, record_heavy_failure};
+    use crate::canonical::validate_schema;
+
+    #[test]
+    fn audit_schema_rejects_duplicate_canonical_check_ids() {
+        let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
+        let schema = read_json(&root.join("gate-policy/v1/schemas/pre-heavy-audit.schema.json"))
+            .expect("audit schema");
+        let mut audit = read_json(&root.join("gate-policy/v1/fixtures/valid/pre-heavy-audit.json"))
+            .expect("valid audit fixture");
+        validate_schema(&schema, &audit, "valid audit").expect("valid audit must pass schema");
+        audit["checks"][1]["check_id"] = audit["checks"][0]["check_id"].clone();
+        assert!(validate_schema(&schema, &audit, "duplicate audit").is_err());
+    }
+
+    #[test]
+    fn recurring_cause_opens_a_blocking_tooling_defect() {
+        let path = std::env::temp_dir().join(format!(
+            "openwepp-gate-recurrence-{}-{}.jsonl",
+            std::process::id(),
+            std::thread::current().name().unwrap_or("test")
+        ));
+        fs::write(&path, "").expect("empty ledger");
+        for _ in 0..2 {
+            record_heavy_failure(
+                &path,
+                json!({
+                    "record_type": "STAGE_ATTEMPT",
+                    "status": "FAILED",
+                    "cause_key": "GATE-EXEC-SPAWN",
+                }),
+                "GATE-EXEC-SPAWN",
+            )
+            .expect("record failure");
+        }
+        let text = fs::read_to_string(&path).expect("ledger");
+        assert!(text.contains("SAME_CAUSE_RECURRED_AFTER_ONE_RETRY"));
+        assert!(text.contains("\"status\":\"OPEN\""));
+        fs::remove_file(path).expect("remove ledger");
+    }
 }

@@ -27,10 +27,12 @@ jobs:
     timeout-minutes: 120
     permissions:
       contents: read
+      actions: read
     env:
       OPENWEPP_RUNNER_IMAGE_ID: sha256:034ce655da139123cd775317d590d04dec6377788e4d124dc0e674f8d021e7e8
       CARGO_TARGET_DIR: /t
       TESTGATE_EXECUTION_ROOT: /t
+      TESTGATE_HISTORY_ROOT: /workdir/testgate-history/openwepp
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
@@ -90,6 +92,42 @@ jobs:
           "${{ steps.comparison.outputs.head }}"
       - name: Build planner and executor
         run: cargo build --locked -p openwepp-gate-planner --bin openwepp-gate-plan
+      - name: Restore and verify newest durable attempt history
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p "${TESTGATE_HISTORY_ROOT}"
+          chmod 700 "${TESTGATE_HISTORY_ROOT}"
+          history="${TESTGATE_HISTORY_ROOT}/attempts.jsonl"
+          if [[ ! -s "${history}" ]]; then
+            artifact_url="$(gh api \
+              "repos/${GITHUB_REPOSITORY}/actions/artifacts?per_page=100" \
+              --jq '[.artifacts[] | select(.expired == false) | select(.name | startswith("testgate-unsigned-"))] | sort_by(.created_at) | last | .archive_download_url // empty')"
+            if [[ -n "${artifact_url}" ]]; then
+              restore_root="${TESTGATE_EXECUTION_ROOT}/history-restore"
+              mkdir "${restore_root}"
+              gh api "${artifact_url}" > "${restore_root}/history.zip"
+              unzip -q "${restore_root}/history.zip" -d "${restore_root}/evidence"
+              EVIDENCE_DIR="${restore_root}/evidence" python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+
+          root = Path(os.environ["EVIDENCE_DIR"])
+          index = json.loads((root / "attempt-index.json").read_text())
+          for item in index["files"]:
+              relative = Path(item["path"])
+              if relative.is_absolute() or ".." in relative.parts:
+                  raise SystemExit("invalid attempt-index path")
+              if hashlib.sha256((root / relative).read_bytes()).hexdigest() != item["sha256"]:
+                  raise SystemExit("attempt-index digest mismatch")
+          PY
+              install -m 600 "${restore_root}/evidence/attempts.jsonl" "${history}"
+            fi
+          fi
+          touch "${history}"
       - name: Reject superseded head before gate execution
         env:
           EXPECTED_HEAD: ${{ steps.comparison.outputs.head }}
@@ -117,7 +155,7 @@ jobs:
             --head "${{ steps.comparison.outputs.head }}" \
             --boundary INCREMENT \
             --artifact-root "${evidence_dir}" \
-            --history-ledger "${evidence_dir}/attempts.jsonl" \
+            --history-ledger "${TESTGATE_HISTORY_ROOT}/attempts.jsonl" \
             --job openwepp/execute-increment \
             --execute 2>"${orchestration_log}"
           testgate_status=$?
