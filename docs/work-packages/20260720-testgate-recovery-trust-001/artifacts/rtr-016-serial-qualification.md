@@ -2,9 +2,18 @@
 
 Evidence class: Ran.
 
-The exact four publication cases that timed out in attempt 5 were selected by
-name and run with `cargo nextest run --workspace --profile full --config-file
-/home/workdir/testgate-serial-nextest.toml`. The temporary configuration was an
+The exact four publication cases that timed out in attempt 5 were selected and
+run with:
+
+```bash
+cargo nextest run \
+  --config-file /home/workdir/testgate-serial-nextest.toml \
+  --profile full \
+  --test assurance_v2_publication_contract \
+  -E 'test(approval_conflicts_and_release_mismatch_fail_before_publication) or test(all_mode_extra_staging_and_overlapping_roots_fail_without_public_mutation) or test(authority_bound_byte_negative_matrix_is_fail_closed) or test(authority_lifecycle_and_bound_byte_negative_matrix_is_fail_closed)'
+```
+
+No selection environment variable was set. The temporary configuration was an
 exact copy of `.config/nextest.toml` except that the
 `assurance-publication` group cap was reduced from four slots to two. Each
 bound case retained `threads-required = 2`, so execution was serial; the
