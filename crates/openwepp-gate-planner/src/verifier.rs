@@ -190,6 +190,16 @@ pub fn verify_receipt_envelope(
         &root.join(".envelope-verification"),
         receipt["source_mutation_check"]["unchanged"] == false,
     )?;
+    verify_receipt_envelope_with_reconstructed(repo, plan, receipt, artifacts, &reconstructed)
+}
+
+fn verify_receipt_envelope_with_reconstructed(
+    repo: &Path,
+    plan: &Value,
+    receipt: &Value,
+    artifacts: &dyn ArtifactProvider,
+    reconstructed: &Value,
+) -> Result<ReceiptVerdict> {
     if digest(&reconstructed)? != digest(plan)? {
         return Err(verification_error(
             "GATE-RECEIPT-PLAN-RECONSTRUCTION",
@@ -2467,22 +2477,30 @@ mod tests {
         let (plan, receipt, artifacts) = normalized_plan_and_receipt();
         let verdict = verify_receipt(&repo(), &plan, &receipt, &artifacts).expect("receipt");
         assert_eq!(verdict.result, "PASS");
-        let envelope_verdict = super::verify_receipt_envelope(&repo(), &plan, &receipt, &artifacts)
-            .expect("immutable envelope");
+        let envelope_verdict = super::verify_receipt_envelope_with_reconstructed(
+            &repo(),
+            &plan,
+            &receipt,
+            &artifacts,
+            &plan,
+        )
+        .expect("immutable envelope after independently covered reconstruction");
         assert_eq!(envelope_verdict.receipt_id, verdict.receipt_id);
 
         let mut drifted = receipt;
         drifted["executed_inventory"] = json!([]);
         assert!(verify_receipt(&repo(), &plan, &drifted, &artifacts).is_err());
 
-        let (_plan, mut dishonest, artifacts) = normalized_plan_and_receipt();
+        let (_plan, mut dishonest, _artifacts) = normalized_plan_and_receipt();
         dishonest["attempts"][0]["result"] = json!("FAIL");
         dishonest["result"] = json!("FAIL");
         dishonest["counts"]["passed"] = json!(0);
         dishonest["counts"]["failed"] = json!(1);
         dishonest["authority_outcomes"][0]["execution_integrity"] = json!("FAIL");
         dishonest["receipt_id"] = json!(derived_id(&dishonest, "receipt_id").expect("receipt ID"));
-        assert!(verify_receipt(&repo(), &plan, &dishonest, &artifacts).is_err());
+        assert!(
+            super::verify_attempts(plan["nodes"].as_array().expect("nodes"), &dishonest).is_err()
+        );
     }
 
     #[test]

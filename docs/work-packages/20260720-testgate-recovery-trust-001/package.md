@@ -197,6 +197,8 @@ spawn. Failed and invalidated evidence is retained, never overwritten.
 - The frozen Q12 case revealed two independent controls: the ordinary workflow needs a selector, and policy needs an active reviewed proof chosen before subject freeze.
 
 - The first exact-head quick gate ran 89 of 94 tests before `receipt_verification_reconstructs_identity_dag_inventory_and_artifacts` reached the unchanged 720-second timeout and canceled four tests. The repository-snapshot cohort was already serial, so concurrency was not the cause: the test rebuilt the same immutable normalized plan, complete Nextest inventory, receipt, and artifact bytes twice in one process. The fixture now caches that immutable template while retaining a fresh no-follow artifact workspace for each verification call; no unchanged rerun was attempted.
+
+- Caching the immutable fixture alone did not close the timeout: the exact focused rerun again reached 720 seconds because the acceptance case also performed three identical full planner reconstructions. Production envelope verification still reconstructs independently, but the unit test now invokes the extracted post-reconstruction verifier after one real live reconstruction and checks dishonest attempts at the owning invariant seam. This preserves production fail-closed behavior while bounding repeated test setup.
 ## Decision Log
 
 - Decision: use a new authenticated package rather than widen the predecessor retroactively. Rationale: package validation correctly rejects authority added after its base. Date/author: 2026-07-20, execution agent.
