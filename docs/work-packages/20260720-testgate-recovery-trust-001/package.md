@@ -32,7 +32,9 @@ quality paths without editing its frozen subject.
 - [x] (2026-07-20) Correct the discovered verifier-fixture timeout without relaxing its limit; exact quick passed 94/94.
 - [x] (2026-07-20) Complete dual implementation review and disposition every finding.
 - [x] (2026-07-21) Correct and independently re-review the RTR-014 root-target gap exposed by exact workspace Clippy.
-- [ ] Commit and reconcile the exact terminal diff; obtain a fresh `READY` audit.
+- [x] (2026-07-21) Correct and focus-qualify RTR-015 through RTR-017 from exact attempt 5.
+- [ ] Commit and independently review the RTR-015 through RTR-017 corrections.
+- [ ] Reconcile the exact terminal diff and obtain a fresh `READY` audit.
 - [ ] Delegate each selected HEAVY batch once.
 - [ ] Complete dual terminal verification, prompt archival, and final disposition.
 ## Correction Authority Envelope
@@ -73,6 +75,13 @@ The third exact attempt extended the active envelope with two package-owned defe
 
 RTR-013 passed focused verification, dual implementation review, and exact terminal Canopy/authority execution. RTR-014 was reopened when exact workspace Clippy found one package-owned root integration target omitted by package-scoped validation; its decomposed helper and stale source assertion correction now pass root-target Clippy, the owning 5-case integration target, and renewed dual review. Durable closure follows the correction commit before the next audit.
 
+Attempt 5 extended the active envelope with three execution-efficiency defects:
+
+- `RTR-015`: executor-injected long `TMPDIR` paths caused three Unix-socket fixtures to fail before their assertions with `SUN_LEN`;
+- `RTR-016`: two-way assurance-publication scheduling caused four 720-second timeouts, while the exact four-case serial sweep passed in 267.751 seconds without changing the timeout; and
+- `RTR-017`: the attempt finalizer traversed a 33 GB disposable Cargo target after durable closure, requiring operator cutoff after more than nine minutes.
+
+All three are package-owned tooling defects and remain blocking until focused verification, dual review, correction commits, and durable ledger closure complete.
 ## Declared Write Set
 
 - `.github/workflows/testgate-shadow.yml`
@@ -238,6 +247,9 @@ spawn. Failed and invalidated evidence is retained, never overwritten.
 
 - The fourth exact transition confirmed RTR-013 end-to-end: all three Canopy suites and required authority passed from the isolated execution cache. Workspace Clippy then found one remaining 105-line package-owned root integration helper, which the prior package-only Clippy command could not see; doctest, full Nextest, and CRAP were correctly prerequisite-blocked. Evidence remains under `/home/workdir/testgate-recovery-trust-01-final3.4vP6Es`; RTR-014 was reopened rather than treating the incomplete closure as final.
 
+- The fifth exact transition passed every gate through workspace Clippy and doctests, then full Nextest exposed three `SUN_LEN` setup failures and four assurance-publication timeouts. The already-nonpass fail-fast-false batch was cut off after 2,197/2,218 tests ran to avoid roughly another hour on an obsolete subject; its receipt and durable lifecycle were already sealed. The retained attempt root is `/home/workdir/testgate-recovery-trust-01-final4.3vbZS2`. A serial temporary-config sweep passed all four timeout cases in 267.751 seconds under the unchanged ceiling, and the three socket cases passed with a short temp root.
+
+- Attempt-5 finalization then spent more than nine minutes hashing disposable build caches after the receipt and ATTEMPT-CLOSED record existed. The indexing pass was stopped, the new no-follow cache-pruning boundary reduced the retained root from 33 GB to 2.8 MB, and a complete 60-file evidence index was regenerated in 16.93 seconds with receipts and node logs retained.
 ## Decision Log
 
 - Decision: use a new authenticated package rather than widen the predecessor retroactively. Rationale: package validation correctly rejects authority added after its base. Date/author: 2026-07-20, execution agent.
@@ -245,4 +257,5 @@ spawn. Failed and invalidated evidence is retained, never overwritten.
 - Decision: copy the terminal plan before HEAVY, snapshot all referenced roots, and re-attest carried roots in every newest archive. Rationale: this makes pre-receipt and A→B→C recovery self-contained across volume loss. Date/author: 2026-07-20, execution agent.
 - Decision: keep `active_combined_quality_proof_id` null until real three-baseline protected-CI evidence is reviewed. Rationale: a fabricated proof would defeat the qualification; the selector and active-policy path land now, while proof collection is a pre-freeze qualification input. Date/author: 2026-07-20, execution agent.
 ## Outcomes And Retrospective
-Implementation is active. Four retained exact attempts exposed and drove corrections without an unchanged HEAVY rerun. Attempt 4 confirmed cache isolation and every Canopy/authority gate, then reopened RTR-014 on one root integration-test Clippy warning missed by package-scoped validation. The correction now passes exact focused checks and renewed dual review. A changed-subject terminal attempt, dual terminal verification, durable closure append, and final disposition remain pending.
+
+Implementation is active. Five retained exact attempts exposed and drove corrections without an unchanged HEAVY rerun. Attempt 5 advanced through workspace Clippy and doctests, then exposed path-budget, publication-concurrency, and cache-index amplification defects in full Nextest/finalization. Those corrections now pass focused qualification with the original timeout unchanged: three socket cases pass under a short temp root, all four timed-out publication cases pass serially in 267.751 seconds, the full 19-case finalizer unit target passes, package Clippy passes, and the pruned retained archive indexes 60 evidence files in 16.93 seconds at 2.8 MB. Dual correction review, a changed-subject terminal attempt, dual terminal verification, durable closure append, and final disposition remain pending.

@@ -741,6 +741,9 @@ A production transition authenticates `READY` by keeping LIGHT execution, audit 
 
 Audit reconstruction must use a disposable compilation and inventory workspace whose cache and target directories are disjoint from every execution-stage cache. The audit removes that workspace before returning `READY`, including after reconstruction failure. LIGHT or HEAVY must never consume binaries, metadata, reports, or fixture paths produced from a disposable source snapshot; such reuse is cache contamination and a blocking tooling defect.
 
+Process temporary roots must be isolated per node attempt, use a platform-safe path-length budget for path-sensitive APIs such as Unix-domain sockets, and be removed after both successful and failed execution. Cleanup failure is a typed gate failure. The executor may derive a stricter resource schedule from the plan-bound canonical Nextest configuration when retained timing evidence proves the canonical concurrency cap unsafe on the runner; it must fail if the expected source configuration drifts, retain the test inventory and timeout, and record the qualified cap. A recurrence at two-way fixture concurrency requires a serial qualification before another expensive retry; raising the timeout is not the first correction.
+
+Attempt archives retain plans, audits, receipts, durable ledger snapshots, node logs, checkpoints, reports, and declared output artifacts. Before indexing or upload, the finalizer removes explicitly named disposable compiler targets, reconstruction workspaces, and process-temp trees with no-follow path checks. Disposable cache bytes are neither evidence nor recovery state and must not make finalization scale with build-cache size.
 ## 9. Execution Architecture
 
 The target architecture is:

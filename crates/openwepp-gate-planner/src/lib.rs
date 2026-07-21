@@ -16,6 +16,8 @@ pub mod combined_quality;
 mod documentation;
 pub mod error;
 mod execution_context;
+mod execution_nextest;
+mod execution_temp;
 pub mod executor;
 pub mod ledger;
 mod nextest_inventory;

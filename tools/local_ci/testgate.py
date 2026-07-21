@@ -19,6 +19,12 @@ from typing import Any
 
 
 PACKAGE_PATH_RE = re.compile(r"^docs/work-packages/[^/]+/package\.md$")
+DISPOSABLE_ATTEMPT_DIRECTORIES = (
+    Path("execution/.work/cargo-target"),
+    Path("execution/.work/reconstruction"),
+    Path("execution/.work/audit-reconstruction"),
+    Path("execution/.work/tmp"),
+)
 
 
 class TestgateError(RuntimeError):
@@ -104,6 +110,25 @@ def _write_attempt_index(root: Path, provenance: dict[str, Any] | None = None) -
             "files": entries,
         },
     )
+
+
+def _prune_disposable_execution_state(artifact_root: Path) -> None:
+    """Remove only explicit cache/temp trees that are not evidence artifacts."""
+    for relative in DISPOSABLE_ATTEMPT_DIRECTORIES:
+        target = artifact_root / relative
+        cursor = artifact_root
+        missing = False
+        for part in relative.parts:
+            cursor /= part
+            if cursor.is_symlink():
+                raise TestgateError(f"disposable execution path is a symlink: {cursor}")
+            if not cursor.exists():
+                missing = True
+                break
+            if not cursor.is_dir():
+                raise TestgateError(f"disposable execution path is not a directory: {cursor}")
+        if not missing:
+            shutil.rmtree(target)
 
 
 def _snapshot_history(ledger: Path, artifact_root: Path) -> None:
@@ -817,6 +842,7 @@ def observe(args: argparse.Namespace) -> dict[str, Any]:
         }
         _atomic_json(artifact_root / "attestation-predicate.json", predicate)
     _snapshot_history(ledger, artifact_root)
+    _prune_disposable_execution_state(artifact_root)
     _write_attempt_index(artifact_root)
     return observation
 
@@ -871,6 +897,7 @@ def main() -> int:
                 },
             )
             _snapshot_history(args.history_ledger.resolve(), args.artifact_root)
+            _prune_disposable_execution_state(args.artifact_root)
             _write_attempt_index(args.artifact_root)
         print(f"ERROR: {error}", file=sys.stderr)
         return 2

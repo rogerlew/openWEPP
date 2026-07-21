@@ -19,6 +19,8 @@ use crate::canonical::{
     current_executable_sha256, derived_id, digest, parse_strict, sha256_bytes, validate_schema,
 };
 use crate::error::{ErrorClass, GatePolicyError, Result};
+use crate::execution_nextest::derive_execution_config;
+use crate::execution_temp::with_process_temp;
 use crate::planner::{
     environment_record, inventory_for_node, manifest_roots, reconstruct_plan_in, tool_records,
     verify_plan_identity,
@@ -189,7 +191,6 @@ pub fn execute_plan_stage(
     }
     create_confined_directories(&artifacts, &work_root(&artifacts))?;
     create_confined_directories(&artifacts, &cargo_target_root(&artifacts))?;
-    create_confined_directories(&artifacts, &work_root(&artifacts).join("tmp"))?;
     validate_plan(&repository, &artifacts, plan, stage != "HEAVY")?;
     verify_execution_checkout(&repository, plan)?;
     let admitted_audit = if stage == "HEAVY" {
@@ -1124,89 +1125,88 @@ fn run_process(
     node: &Value,
     log_path: &Path,
 ) -> Result<ProcessOutcome> {
-    let arguments = runtime_arguments(repo, artifact_root, node)?;
-    let program = arguments
-        .first()
-        .ok_or_else(|| execution_error("GATE-EXEC-ARGUMENTS", "missing executable"))?;
-    let log = File::create(log_path)
-        .map_err(|error| execution_error("GATE-EXEC-LOG-CREATE", error.to_string()))?;
-    let stderr = log
-        .try_clone()
-        .map_err(|error| execution_error("GATE-EXEC-LOG-CLONE", error.to_string()))?;
-    let mut environment = allowed_environment(node)?;
-    environment.insert(
-        "CARGO_TARGET_DIR".to_owned(),
-        cargo_target_root(artifact_root).display().to_string(),
-    );
-    environment.insert(
-        "OPENWEPP_GATE_ARTIFACT_ROOT".to_owned(),
-        work_root(artifact_root).display().to_string(),
-    );
-    environment.insert(
-        "TMPDIR".to_owned(),
-        work_root(artifact_root).join("tmp").display().to_string(),
-    );
-    let mut command = Command::new(program);
-    command
-        .args(&arguments[1..])
-        .current_dir(confined_working_directory(repo, node)?)
-        .env_clear()
-        .envs(environment)
-        .stdin(Stdio::null())
-        .stdout(Stdio::from(log))
-        .stderr(Stdio::from(stderr));
-    #[cfg(unix)]
-    {
-        use std::os::unix::process::CommandExt;
-        command.process_group(0);
-    }
-    let mut child = match command.spawn() {
-        Ok(child) => child,
-        Err(error) => {
-            fs::write(log_path, format!("process spawn failed: {error}\n")).map_err(
-                |write_error| execution_error("GATE-EXEC-LOG-WRITE", write_error.to_string()),
-            )?;
-            return Ok(ProcessOutcome {
+    with_process_temp(|temporary| {
+        let arguments = runtime_arguments(repo, artifact_root, node)?;
+        let program = arguments
+            .first()
+            .ok_or_else(|| execution_error("GATE-EXEC-ARGUMENTS", "missing executable"))?;
+        let log = File::create(log_path)
+            .map_err(|error| execution_error("GATE-EXEC-LOG-CREATE", error.to_string()))?;
+        let stderr = log
+            .try_clone()
+            .map_err(|error| execution_error("GATE-EXEC-LOG-CLONE", error.to_string()))?;
+        let mut environment = allowed_environment(node)?;
+        environment.insert(
+            "CARGO_TARGET_DIR".to_owned(),
+            cargo_target_root(artifact_root).display().to_string(),
+        );
+        environment.insert(
+            "OPENWEPP_GATE_ARTIFACT_ROOT".to_owned(),
+            work_root(artifact_root).display().to_string(),
+        );
+        environment.insert("TMPDIR".to_owned(), temporary.display().to_string());
+        let mut command = Command::new(program);
+        command
+            .args(&arguments[1..])
+            .current_dir(confined_working_directory(repo, node)?)
+            .env_clear()
+            .envs(environment)
+            .stdin(Stdio::null())
+            .stdout(Stdio::from(log))
+            .stderr(Stdio::from(stderr));
+        #[cfg(unix)]
+        {
+            use std::os::unix::process::CommandExt;
+            command.process_group(0);
+        }
+        let mut child = match command.spawn() {
+            Ok(child) => child,
+            Err(error) => {
+                fs::write(log_path, format!("process spawn failed: {error}\n")).map_err(
+                    |write_error| execution_error("GATE-EXEC-LOG-WRITE", write_error.to_string()),
+                )?;
+                return Ok(ProcessOutcome {
+                    exit_code: None,
+                    termination_signal: None,
+                    result: "BLOCKED".to_owned(),
+                    unavailable_reason: Some("PROCESS_SPAWN_FAILED".to_owned()),
+                });
+            }
+        };
+        let timeout = required_u64(node, "timeout_seconds")?;
+        let status = wait_with_timeout(&mut child, Duration::from_secs(timeout))?;
+        Ok(match status {
+            Some(status) => {
+                let code = status.code();
+                #[cfg(unix)]
+                let signal = {
+                    use std::os::unix::process::ExitStatusExt;
+                    status.signal()
+                };
+                #[cfg(not(unix))]
+                let signal = None;
+                let expected = node["acceptance"]["expected"]
+                    .as_i64()
+                    .ok_or_else(|| execution_error("GATE-EXEC-ACCEPTANCE", "expected exit code"))?;
+                let result = if code.map(i64::from) == Some(expected) {
+                    "PASS"
+                } else {
+                    "FAIL"
+                };
+                ProcessOutcome {
+                    exit_code: code,
+                    termination_signal: signal,
+                    result: result.to_owned(),
+                    unavailable_reason: None,
+                }
+            }
+            None => ProcessOutcome {
                 exit_code: None,
                 termination_signal: None,
                 result: "BLOCKED".to_owned(),
-                unavailable_reason: Some("PROCESS_SPAWN_FAILED".to_owned()),
-            });
-        }
-    };
-    let timeout = required_u64(node, "timeout_seconds")?;
-    let status = wait_with_timeout(&mut child, Duration::from_secs(timeout))?;
-    Ok(match status {
-        Some(status) => {
-            let code = status.code();
-            #[cfg(unix)]
-            let signal = {
-                use std::os::unix::process::ExitStatusExt;
-                status.signal()
-            };
-            #[cfg(not(unix))]
-            let signal = None;
-            let expected = node["acceptance"]["expected"]
-                .as_i64()
-                .ok_or_else(|| execution_error("GATE-EXEC-ACCEPTANCE", "expected exit code"))?;
-            let result = if code.map(i64::from) == Some(expected) {
-                "PASS"
-            } else {
-                "FAIL"
-            };
-            ProcessOutcome {
-                exit_code: code,
-                termination_signal: signal,
-                result: result.to_owned(),
-                unavailable_reason: None,
-            }
-        }
-        None => ProcessOutcome {
-            exit_code: None,
-            termination_signal: None,
-            result: "BLOCKED".to_owned(),
-            unavailable_reason: Some("TIMEOUT".to_owned()),
-        },
+                unavailable_reason: Some("TIMEOUT".to_owned()),
+            },
+        })
     })
 }
 
@@ -1227,26 +1227,10 @@ fn runtime_arguments(repo: &Path, artifact_root: &Path, node: &Value) -> Result<
 fn external_nextest_config(repo: &Path, artifact_root: &Path) -> Result<PathBuf> {
     let source = fs::read_to_string(repo.join(".config/nextest.toml"))
         .map_err(|error| execution_error("GATE-EXEC-NEXTEST-CONFIG", error.to_string()))?;
-    let expected = "dir = \"target/nextest\"";
-    if source.matches(expected).count() != 1 {
-        return Err(execution_error(
-            "GATE-EXEC-NEXTEST-CONFIG",
-            "canonical Nextest store declaration is missing or ambiguous",
-        ));
-    }
     let store = work_root(artifact_root).join("nextest");
-    let store = store.to_str().ok_or_else(|| {
-        execution_error("GATE-EXEC-NEXTEST-CONFIG", "external store is non-UTF-8")
-    })?;
-    let encoded = serde_json::to_string(store)
-        .map_err(|error| execution_error("GATE-EXEC-NEXTEST-CONFIG", error.to_string()))?;
+    let contents = derive_execution_config(&source, &store)?;
     let destination = work_root(artifact_root).join("nextest.toml");
-    write_atomic(
-        &destination,
-        source
-            .replacen(expected, &format!("dir = {encoded}"), 1)
-            .as_bytes(),
-    )?;
+    write_atomic(&destination, contents.as_bytes())?;
     Ok(destination)
 }
 
@@ -2157,8 +2141,6 @@ mod tests {
             &work_root(artifacts.path()).join("cargo-target"),
         )
         .expect("external cargo target");
-        create_confined_directories(artifacts.path(), &work_root(artifacts.path()).join("tmp"))
-            .expect("external temporary root");
         artifacts
     }
 
@@ -2713,6 +2695,13 @@ mod tests {
             "OPENWEPP_GATE_ARTIFACT_ROOT={}",
             artifacts.path().join(".work").display()
         )));
+        let temporary = environment
+            .lines()
+            .find_map(|line| line.strip_prefix("TMPDIR="))
+            .expect("process temporary root");
+        #[cfg(unix)]
+        assert!(temporary.len() <= 40);
+        assert!(!Path::new(temporary).exists());
         assert!(!repo.path().join("target").exists());
     }
 
@@ -2742,6 +2731,8 @@ mod tests {
             "dir = \"{}\"",
             artifacts.path().join(".work/nextest").display()
         )));
+        assert!(contents.contains("[test-groups.assurance-publication]\nmax-threads = 2"));
+        assert!(!contents.contains("[test-groups.assurance-publication]\nmax-threads = 4"));
     }
 
     #[test]

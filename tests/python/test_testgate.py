@@ -99,6 +99,40 @@ class TestGateTest(unittest.TestCase):
             index = json.loads((root / "attempt-index.json").read_text())
         self.assertEqual(index["files"][0]["path"], "pre-receipt-failure.json")
 
+    def test_attempt_index_prunes_caches_but_retains_execution_evidence(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            cache = root / "execution/.work/cargo-target/debug"
+            report = root / "execution/.work/nextest/full/junit.xml"
+            attempt = root / "execution/.attempts/node-1.log"
+            for path in (cache / "binary", report, attempt):
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("retained or disposable\n", encoding="utf-8")
+            TESTGATE._prune_disposable_execution_state(root)
+            TESTGATE._write_attempt_index(root)
+            index = json.loads((root / "attempt-index.json").read_text())
+            paths = {item["path"] for item in index["files"]}
+        self.assertFalse(cache.exists())
+        self.assertEqual(
+            paths,
+            {
+                "execution/.attempts/node-1.log",
+                "execution/.work/nextest/full/junit.xml",
+            },
+        )
+
+    def test_attempt_cache_pruning_rejects_symlink_escape(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            work = root / "execution/.work"
+            outside = root / "outside"
+            work.mkdir(parents=True)
+            outside.mkdir()
+            (work / "cargo-target").symlink_to(outside, target_is_directory=True)
+            with self.assertRaises(TESTGATE.TestgateError):
+                TESTGATE._prune_disposable_execution_state(root)
+            self.assertTrue(outside.exists())
+
     def test_durable_history_snapshot_is_indexable_and_exact(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
