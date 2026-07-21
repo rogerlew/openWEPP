@@ -41,6 +41,7 @@ quality paths without editing its frozen subject.
 - [x] (2026-07-21) Isolated standalone CRAP probes from executor-only inherited environment for RTR-023; regression probes pass under injected outer executor variables.
 - [x] (2026-07-21) Corrected the blocked-receipt fixture's stale JUnit artifact set for RTR-024; its direct verifier regression passes.
 - [x] (2026-07-21) Aligned CRAP executor TMPDIR validation with the hexadecimal executor namespace for RTR-025; nested contract coverage passes.
+- [x] (2026-07-21) Rebound all three CRAP policy adapters to the current driver SHA for RTR-026; focused policy checks pending review.
 - [ ] Reconcile the exact terminal diff and obtain a fresh `READY` audit.
 - [ ] Delegate each selected HEAVY batch once.
 - [ ] Complete dual terminal verification, prompt archival, and final disposition.
@@ -103,6 +104,8 @@ Attempt 10 reached a READY pre-HEAVY audit and passed 13 HEAVY nodes before full
 Attempt 11 reconciled the interrupted predecessor, then reached a READY audit and passed 13 HEAVY nodes before ordinary full Nextest exposed `RTR-024` (`GATE-VERIFIER-BLOCKED-FIXTURE-STALE-JUNIT`): a blocked-receipt fixture changed the final attempt to `BLOCKED` but retained its original JUnit artifact bytes. The verifier correctly reconstructed that JUnit inventory as executed and rejected the inconsistent receipt. The correction retains the required artifact manifest but replaces the blocked JUnit payload with a valid empty suite and updates its receipt digest before verification. The direct verifier regression passes; CRAP was not run because full Nextest was nonpass.
 
 Attempt 12 passed ordinary full Nextest (2,225/2,225) but opened `RTR-025` (`GATE-CRAP-TMPDIR-HEX-SEQUENCE-REJECTED`): the executor creates `/tmp/owg-<pid>-<hex>` paths while CRAP accepted decimal-only sequence text. The script rejected its own executor's qualified temporary root before coverage began. The correction accepts lowercase hexadecimal sequences, retains ownership/mode/path-budget guards, and proves a hexadecimal temporary path reaches the subsequent config validation seam. CRAP was not rerun.
+
+Attempt 13 opened `RTR-026` (`GATE-CRAP-ADAPTER-DIGEST-DRIFT`) before LIGHT: after the RTR-025 script correction, all three CRAP adapters still bound its older SHA. The package audit was READY, but terminal-plan construction correctly rejected the stale binding without admitting an attempt or running any gate. The correction updates each adapter definition to the current script SHA; no expensive execution was consumed.
 ## Declared Write Set
 
 - `.github/workflows/testgate-shadow.yml`
