@@ -2495,8 +2495,14 @@ mod tests {
         }
         refresh_receipt_id(&mut blocked);
         let blocked_artifacts = MemoryArtifacts::new(blocked_artifact_bytes);
-        let verdict = verify_receipt(&repo(), &plan, &blocked, &blocked_artifacts)
-            .expect("truthful BLOCKED receipt");
+        super::verify_receipt_identity(&repo(), &plan, &blocked).expect("blocked receipt identity");
+        let verdict = super::verify_receipt_after_plan_admission(
+            &repo(),
+            &plan,
+            &blocked,
+            &blocked_artifacts,
+        )
+        .expect("truthful BLOCKED receipt");
         assert_eq!(verdict.result(), "BLOCKED");
     }
 

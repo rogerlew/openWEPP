@@ -42,6 +42,7 @@ quality paths without editing its frozen subject.
 - [x] (2026-07-21) Corrected the blocked-receipt fixture's stale JUnit artifact set for RTR-024; its direct verifier regression passes.
 - [x] (2026-07-21) Aligned CRAP executor TMPDIR validation with the hexadecimal executor namespace for RTR-025; nested contract coverage passes.
 - [x] (2026-07-21) Rebound all three CRAP policy adapters to the current driver SHA for RTR-026; focused policy checks pending review.
+- [x] (2026-07-21) Bounded duplicate receipt-plan reconstruction in RTR-027's blocked-fixture test; direct regression passes.
 - [ ] Reconcile the exact terminal diff and obtain a fresh `READY` audit.
 - [ ] Delegate each selected HEAVY batch once.
 - [ ] Complete dual terminal verification, prompt archival, and final disposition.
@@ -106,6 +107,8 @@ Attempt 11 reconciled the interrupted predecessor, then reached a READY audit an
 Attempt 12 passed ordinary full Nextest (2,225/2,225) but opened `RTR-025` (`GATE-CRAP-TMPDIR-HEX-SEQUENCE-REJECTED`): the executor creates `/tmp/owg-<pid>-<hex>` paths while CRAP accepted decimal-only sequence text. The script rejected its own executor's qualified temporary root before coverage began. The correction accepts lowercase hexadecimal sequences, retains ownership/mode/path-budget guards, and proves a hexadecimal temporary path reaches the subsequent config validation seam. CRAP was not rerun.
 
 Attempt 13 opened `RTR-026` (`GATE-CRAP-ADAPTER-DIGEST-DRIFT`) before LIGHT: after the RTR-025 script correction, all three CRAP adapters still bound its older SHA. The package audit was READY, but terminal-plan construction correctly rejected the stale binding without admitting an attempt or running any gate. The correction updates each adapter definition to the current script SHA; no expensive execution was consumed.
+
+Attempt 14 passed LIGHT, audit, ordinary full Nextest, and entered CRAP, whose instrumented traversal timed out `verifier_accepts_truthful_fail_and_blocked_receipts` after 720 seconds. `RTR-027` (`GATE-VERIFIER-BLOCKED-FIXTURE-DUPLICATE-RECONSTRUCTION`) corrects that test to retain one public receipt reconstruction for the FAIL assertion while exercising the BLOCKED fixture at the already-admitted invariant seam. This preserves production verification behavior and avoids a second isolated full plan reconstruction.
 ## Declared Write Set
 
 - `.github/workflows/testgate-shadow.yml`
