@@ -169,6 +169,7 @@ pub fn execute_plan(
 ///
 /// Returns a typed execution error for an unknown stage, invalid audit,
 /// mismatched light receipt, stale plan, or any ordinary execution failure.
+#[allow(clippy::too_many_lines)] // One fail-closed stage transaction.
 pub fn execute_plan_stage(
     repo: &Path,
     plan: &Value,
@@ -321,7 +322,7 @@ fn execute_nodes(
         &mut record,
     )
 }
-
+#[allow(clippy::too_many_arguments)] // Independently authenticated inputs.
 fn execute_nodes_for(
     repo: &Path,
     artifact_root: &Path,
@@ -2744,6 +2745,7 @@ mod tests {
     }
 
     #[test]
+    #[allow(clippy::too_many_lines)] // Complete combined artifact contract fixture.
     fn combined_quality_artifacts_are_external_resettable_and_inventory_checked() {
         let artifacts = prepare_artifacts("combined-artifacts");
         let mut node = json!({

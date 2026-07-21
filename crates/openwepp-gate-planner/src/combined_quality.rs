@@ -18,6 +18,10 @@ const COMBINED_ID: &str = "combined-workspace-quality-v1";
 /// # Errors
 ///
 /// Returns a typed planning error for an internally inconsistent policy or DAG.
+#[allow(
+    clippy::too_many_lines,
+    reason = "the selector is one ordered fail-closed proof-admission transaction"
+)]
 pub fn select_and_apply(
     policy: &PolicyBundle,
     requested_proof_id: Option<&str>,
@@ -43,7 +47,7 @@ pub fn select_and_apply(
                 None,
                 None,
                 0,
-            )?,
+            ),
         ));
     }
     let Some(requested) = requested_proof_id else {
@@ -56,7 +60,7 @@ pub fn select_and_apply(
                 None,
                 None,
                 0,
-            )?,
+            ),
         ));
     };
     let Some(proof) = policy
@@ -74,7 +78,7 @@ pub fn select_and_apply(
                 None,
                 None,
                 0,
-            )?,
+            ),
         ));
     };
     let proof_sha = digest(proof)?;
@@ -89,7 +93,7 @@ pub fn select_and_apply(
                 None,
                 Some(&proof_sha),
                 baseline_count,
-            )?,
+            ),
         ));
     }
     if let Err(reason) = validate_proof(proof, context) {
@@ -102,7 +106,7 @@ pub fn select_and_apply(
                 None,
                 Some(&proof_sha),
                 baseline_count,
-            )?,
+            ),
         ));
     }
     let definition = policy.definition(COMBINED_ID).ok_or_else(|| {
@@ -151,7 +155,7 @@ pub fn select_and_apply(
             Some(requested),
             Some(&proof_sha),
             baseline_count,
-        )?,
+        ),
     ))
 }
 
@@ -325,15 +329,15 @@ fn decision(
     accepted_proof_id: Option<&str>,
     proof_sha256: Option<&str>,
     baseline_count: usize,
-) -> Result<Value> {
-    Ok(json!({
+) -> Value {
+    json!({
         "decision": selected,
         "reason_code": reason,
         "requested_proof_id": requested_proof_id,
         "accepted_proof_id": accepted_proof_id,
         "proof_sha256": proof_sha256,
         "baseline_count": baseline_count,
-    }))
+    })
 }
 
 fn planning_error(code: &'static str, message: impl Into<String>) -> GatePolicyError {

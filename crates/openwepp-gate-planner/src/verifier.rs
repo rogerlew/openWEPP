@@ -246,7 +246,7 @@ fn verify_receipt_envelope_with_reconstructed(
     artifacts: &dyn ArtifactProvider,
     reconstructed: &Value,
 ) -> Result<ReceiptVerdict> {
-    if digest(&reconstructed)? != digest(plan)? {
+    if digest(reconstructed)? != digest(plan)? {
         return Err(verification_error(
             "GATE-RECEIPT-PLAN-RECONSTRUCTION",
             "source selection or node contract differs from the supplied plan",

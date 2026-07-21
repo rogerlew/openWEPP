@@ -17,3 +17,13 @@ Two independent read-only reviewers examined the recovery provenance, durable wo
 - Q12 real three-baseline combined-quality proof: follow-up/pre-freeze input owned by `TESTGATE-WORKFLOW-QUALIFY-01`. Production policy remains typed `SEPARATE` until real protected-CI evidence is reviewed and pinned; no synthetic proof was admitted.
 
 No implementation-review finding remains undispositioned. Dual terminal verification remains pending exact terminal evidence.
+
+## Audit-discovered correction reviews
+
+Two independent read-only reviewers examined the RTR-013 cache isolation and RTR-014 Clippy correction. Both returned PASS after the following accepted findings were corrected:
+
+- stale canonical policy digest: accepted; refreshed to `bb69884b...` and authority-tested;
+- `executor.rs` at the 3,000-line hard limit: accepted; compacted to 2,999 lines without semantic change; and
+- fallible timing conversion could theoretically bypass a terminal HEAVY ledger append: accepted; conversion is now infallible under a narrowly scoped physical-lifetime rationale.
+
+Both reviewers confirmed audit compilation uses `.work/audit-reconstruction/cargo-target`, execution uses `.work/cargo-target`, cleanup occurs after success and failure, cleanup failure is fail-closed, package authority covers every changed path, Clippy passes, and no 3,000-line blocker remains. No corrective-review finding is undispositioned. Neither reviewer ran HEAVY work.

@@ -218,7 +218,7 @@ fn trusted_transition_command(
             "receipt_id": light["stage_receipt_id"],
             "result": light["result"],
             "artifact_root": artifact_root.display().to_string(),
-            "wall_time_ms": light_started.elapsed().as_millis() as u64,
+            "wall_time_ms": elapsed_millis(&light_started),
         }),
     )?;
     let audit = construct_audit(repo, plan, &light, artifact_root, &ledger)?;
@@ -279,6 +279,10 @@ fn validate_transition_outputs(_repo: &Path, _options: &BTreeMap<String, String>
     ))
 }
 
+#[allow(
+    clippy::too_many_lines,
+    reason = "HEAVY admission, execution, and terminal ledger reconciliation are one transaction"
+)]
 fn trusted_heavy_run(
     repo: &Path,
     options: &BTreeMap<String, String>,
@@ -294,7 +298,7 @@ fn trusted_heavy_run(
         .map_or(Value::Null, |path| json!(path.display().to_string()));
     let submitted_audit_id = audit.as_value()["audit_id"].clone();
     let started_entry_sha256 = append_attempt_record(
-        &ledger,
+        ledger,
         json!({
             "record_type": "STAGE_ATTEMPT",
             "status": "STARTED",
@@ -316,12 +320,11 @@ fn trusted_heavy_run(
             plan,
             audit.as_value(),
             artifact_root,
-            &ledger,
+            ledger,
             &started_entry_sha256,
             claims,
         )?;
-        let resume_candidate =
-            load_candidate_after_ready_audit(repo, plan, &ledger, claims, audit)?;
+        let resume_candidate = load_candidate_after_ready_audit(repo, plan, ledger, claims, audit)?;
         let receipt = execute_plan_stage(
             repo,
             plan,
@@ -348,7 +351,7 @@ fn trusted_heavy_run(
     match execute() {
         Ok(value) => {
             append_attempt_record(
-                &ledger,
+                ledger,
                 json!({
                     "record_type": "STAGE_ATTEMPT",
                     "status": "CLOSED",
@@ -363,7 +366,7 @@ fn trusted_heavy_run(
                     "attempt": claims.attempt,
                     "receipt_id": value["receipt_id"],
                     "result": value["result"],
-                    "wall_time_ms": started.elapsed().as_millis() as u64,
+                    "wall_time_ms": elapsed_millis(&started),
                     "started_entry_sha256": started_entry_sha256,
                 }),
             )?;
@@ -372,7 +375,7 @@ fn trusted_heavy_run(
         Err(error) => {
             let cause_key = error.code;
             record_heavy_failure(
-                &ledger,
+                ledger,
                 json!({
                     "record_type": "STAGE_ATTEMPT",
                     "status": "FAILED",
@@ -390,7 +393,7 @@ fn trusted_heavy_run(
                     "error_message": error.message,
                     "cause_key": cause_key,
                     "failure_class": if cause_key.contains("SPAWN") || cause_key.contains("TIMEOUT") || cause_key.contains("RUNNER") {"INFRASTRUCTURE"} else {"TOOLING"},
-                    "wall_time_ms": started.elapsed().as_millis() as u64,
+                    "wall_time_ms": elapsed_millis(&started),
                     "started_entry_sha256": started_entry_sha256,
                 }),
                 cause_key,
@@ -398,6 +401,12 @@ fn trusted_heavy_run(
             Err(error)
         }
     }
+}
+
+#[allow(clippy::cast_possible_truncation)]
+fn elapsed_millis(started: &Instant) -> u64 {
+    // A live process cannot span the roughly 584 million years needed to exceed u64 milliseconds.
+    started.elapsed().as_millis() as u64
 }
 
 fn reconcile_attempts_command(_repo: &Path, options: &BTreeMap<String, String>) -> Result<Value> {

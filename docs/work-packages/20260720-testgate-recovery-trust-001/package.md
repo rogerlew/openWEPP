@@ -31,6 +31,7 @@ quality paths without editing its frozen subject.
 - [x] (2026-07-20) Implement durable attested recovery, exact audits, lifecycle reconciliation, and combined-selection corrections.
 - [x] (2026-07-20) Correct the discovered verifier-fixture timeout without relaxing its limit; exact quick passed 94/94.
 - [x] (2026-07-20) Complete dual implementation review and disposition every finding.
+- [x] (2026-07-20) Correct and independently re-review audit-discovered defects RTR-010 through RTR-014.
 - [ ] Commit and reconcile the exact terminal diff; obtain a fresh `READY` audit.
 - [ ] Delegate each selected HEAVY batch once.
 - [ ] Complete dual terminal verification, prompt archival, and final disposition.
@@ -64,6 +65,14 @@ Audit-discovered extensions remain inside the same lifecycle authority envelope:
 - `RTR-012`: `INVENTORY_AND_ARGUMENTS` checks an `EXACT` label and node shape but does not independently enumerate and compare the current inventory.
 
 These defects were discovered by the package own first exact pre-heavy audit. They must be corrected, regression-tested, independently reviewed, and recorded closed before another audit attempt.
+
+The third exact attempt extended the active envelope with two package-owned defects:
+
+- `RTR-013`: independent audit inventory compilation shared the execution target, so HEAVY reused binaries whose compile-time fixture root belonged to a deleted source snapshot; and
+- `RTR-014`: the selected workspace Clippy node found package-owned warnings in the gate-planner implementation.
+
+Both corrections passed focused verification and dual implementation review. Their durable ledger closure follows the correction commit and precedes the fresh audit.
+
 ## Declared Write Set
 
 - `.github/workflows/testgate-shadow.yml`
@@ -224,6 +233,9 @@ spawn. Failed and invalidated evidence is retained, never overwritten.
 - Canonical-parent collision checks still missed a final-component symlink on the plan or durable ledger. Transition input preflight now requires existing regular non-symlink inputs and covers both parent traversal aliases and a ledger symlink targeting an output.
 
 - The first in-process exact attempt reached a genuine READY audit, then stopped before HEAVY because recovery scanning treated the current LIGHT/STARTED artifact root as an explicit historical recovery archive. The correction skips ordinary artifact-root records outside the durable recovery namespace while retaining fail-closed rejection for an explicit invalid `recovery_root`. Evidence remains under `/home/workdir/testgate-recovery-trust-01-final.9vt9qp`; the ledger opened `AUTO-6ec4b6897533dd60`.
+
+- The third exact transition passed all six LIGHT nodes and obtained `READY`, then exposed cache contamination in three HEAVY suites: audit reconstruction and execution shared `.work/cargo-target`, so cached binaries retained compile-time `CARGO_MANIFEST_DIR` paths into deleted inventory snapshots. The same run also surfaced 18 package-owned Clippy findings. Evidence remains under `/home/workdir/testgate-recovery-trust-01-final2.ALfL49`; the durable ledger opened `RTR-013` and `RTR-014`. Audit compilation is now isolated under a disposable reconstruction root, and the implementation is Clippy-clean under the selected package command.
+
 ## Decision Log
 
 - Decision: use a new authenticated package rather than widen the predecessor retroactively. Rationale: package validation correctly rejects authority added after its base. Date/author: 2026-07-20, execution agent.
@@ -231,4 +243,4 @@ spawn. Failed and invalidated evidence is retained, never overwritten.
 - Decision: copy the terminal plan before HEAVY, snapshot all referenced roots, and re-attest carried roots in every newest archive. Rationale: this makes pre-receipt and A→B→C recovery self-contained across volume loss. Date/author: 2026-07-20, execution agent.
 - Decision: keep `active_combined_quality_proof_id` null until real three-baseline protected-CI evidence is reviewed. Rationale: a fabricated proof would defeat the qualification; the selector and active-policy path land now, while proof collection is a pre-freeze qualification input. Date/author: 2026-07-20, execution agent.
 ## Outcomes And Retrospective
-Implementation is active. The first exact closure attempt ran every selected LIGHT node once and correctly blocked HEAVY when the pre-heavy audit exposed RTR-010 through RTR-012. The attempt and its evidence remain retained. The accepted corrective diff is under renewed dual implementation review; a fresh exact terminal attempt, delegated HEAVY execution, dual terminal verification, defect closure, and final disposition remain pending.
+Implementation is active. Three retained exact attempts exposed and drove corrections for RTR-010 through RTR-014 without an unchanged HEAVY rerun. The latest cache-isolation and Clippy corrections passed focused checks and dual implementation review. A fresh exact terminal attempt, delegated HEAVY execution, dual terminal verification, durable defect closure, and final disposition remain pending.

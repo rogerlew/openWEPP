@@ -10,7 +10,10 @@ Evidence class: Ran unless explicitly labeled Static.
 - `.venv/bin/python -m unittest tests/python/test_testgate.py`: 17/17 PASS.
 - `bash -n tools/ci/omarchy-runner/manage.sh`: PASS.
 - `cargo fmt --all -- --check`, `git diff --check`, and targeted Markdown lint: PASS.
-- Static: final Rust line counts remain below the hard limit; `planner.rs` is 2,999 lines, `executor.rs` is 2,994 lines, and `verifier.rs` is 2,637 lines. The 2,000-line warning remains dispositioned as existing decomposition debt; no 3,000-line closure blocker exists.
+- Static: final Rust line counts remain below the hard limit; `planner.rs` and `executor.rs` are each 2,999 lines, and `verifier.rs` is 2,664 lines. The 2,000-line warning remains dispositioned as existing decomposition debt; no 3,000-line closure blocker exists.
+- `cargo clippy -p openwepp-gate-planner --all-targets -- -D warnings`: PASS after correcting all package-owned findings from exact attempt 3.
+- Disposable audit-reconstruction regression: PASS after both successful and injected-failure reconstruction; the audit root was removed and remained distinct from execution `.work/cargo-target`.
+- Canonical policy/digest authority regression: PASS; `testing-and-gate-strategy.md` SHA-256 `bb69884b...` matches the policy bundle.
 
 ## Quick-gate defect and rerun audit
 
@@ -26,4 +29,10 @@ The same expensive verifier acceptance was invoked only after its source or acce
 
 ## Terminal evidence
 
-Not run yet. The intended closure artifacts are being assembled before one exact terminal plan, its LIGHT stage, and the canonical pre-heavy audit. Selected HEAVY nodes will be delegated once to the authorized comparator runner.
+Three exact attempts are retained; none was rerun unchanged.
+
+1. `/home/workdir/testgate-recovery-trust-01.FFQVyI`: all six LIGHT nodes passed; the audit blocked before HEAVY and opened RTR-010 through RTR-012.
+2. `/home/workdir/testgate-recovery-trust-01-final.9vt9qp`: all six LIGHT nodes passed and audit `5fafb85c...` was `READY`; HEAVY admission failed before node execution with `GATE-RESUME-PROVENANCE-PATH`, opening `AUTO-6ec4b6897533dd60`.
+3. `/home/workdir/testgate-recovery-trust-01-final2.ALfL49`: all six LIGHT nodes passed and audit `6c0744ff...` was `READY`; 15 scheduler attempts produced 8 PASS, 4 FAIL, and 3 prerequisite BLOCKED. Three suites proved audit/execution cache contamination and Clippy exposed 18 package-owned warnings, opening RTR-013 and RTR-014. Wall times were 241,081 ms LIGHT and 287,391 ms HEAVY.
+
+The attempt-3 failures are corrected and dual-reviewed. A changed-subject exact terminal attempt remains pending; its selected HEAVY nodes will be delegated once to the authorized comparator runner.

@@ -16,6 +16,7 @@ use crate::error::{ErrorClass, GatePolicyError, Result};
 use crate::executor::ExecutionClaims;
 use crate::package_validation::validate_package;
 use crate::planner::{reconstruct_plan_in, verify_plan_identity};
+use crate::repository::remove_reconstruction_workspace;
 
 pub const CHECK_IDS: [&str; 10] = [
     "PACKAGE_ADMISSION",
@@ -72,6 +73,10 @@ pub fn construct_audit(
 ///
 /// Returns a typed error when an input cannot be parsed or the produced report
 /// violates its schema or derived identity.
+#[allow(
+    clippy::too_many_lines,
+    reason = "the ten canonical checks must be assembled and sealed in one audit transaction"
+)]
 pub fn build_audit(
     repo: &Path,
     plan: &Value,
@@ -649,6 +654,10 @@ pub fn append_attempt_record(path: &Path, mut record: Value) -> Result<String> {
     Ok(entry)
 }
 
+#[allow(
+    clippy::needless_pass_by_value,
+    reason = "each ephemeral evidence value is consumed immediately into its canonical digest"
+)]
 fn check(id: &str, result: Result<()>, evidence: Value) -> Result<Value> {
     let (status, reason_codes) = match result {
         Ok(()) => ("PASS", Vec::new()),
@@ -746,7 +755,11 @@ fn cheap_prerequisites(repo: &Path, plan: &Value, receipt: &Value) -> Result<()>
         .into_iter()
         .flatten()
         .filter_map(Value::as_str)
-        .filter(|path| path.ends_with(".rs"))
+        .filter(|path| {
+            Path::new(path)
+                .extension()
+                .is_some_and(|extension| extension.eq_ignore_ascii_case("rs"))
+        })
     {
         let lines = fs::read_to_string(repo.join(path))
             .map_err(|error| audit_error("GATE-AUDIT-LINE-COUNT", error.to_string()))?
@@ -805,8 +818,24 @@ fn inventory_and_arguments_are_exact(
             ));
         }
     }
-    let reconstructed = reconstruct_plan_in(repo, plan, &artifact_root.join(".work"), false)?;
+    let reconstructed = with_disposable_audit_reconstruction(artifact_root, |reconstruction| {
+        reconstruct_plan_in(repo, plan, reconstruction, false)
+    })?;
     reconstructed_plan_is_exact(plan, &reconstructed)
+}
+
+fn audit_reconstruction_root(artifact_root: &Path) -> std::path::PathBuf {
+    artifact_root.join(".work/audit-reconstruction")
+}
+
+fn with_disposable_audit_reconstruction<T>(
+    artifact_root: &Path,
+    reconstruct: impl FnOnce(&Path) -> Result<T>,
+) -> Result<T> {
+    let reconstruction = audit_reconstruction_root(artifact_root);
+    let result = reconstruct(&reconstruction);
+    remove_reconstruction_workspace(&reconstruction)?;
+    result
 }
 
 fn reconstructed_plan_is_exact(plan: &Value, reconstructed: &Value) -> Result<()> {
@@ -1282,15 +1311,49 @@ mod tests {
     use serde_json::json;
 
     use super::{
-        append_attempt_record, build_failure_audit, check, documentation_scope_is_exact,
-        durable_ledger, execution_claims_match, execution_context_is_current,
-        no_open_tooling_defect, package_admission, package_admitted, read_json,
-        reconcile_orphaned_attempts, reconstructed_plan_is_exact, record_heavy_failure,
-        validate_started_successor, verify_ledger_chain,
+        append_attempt_record, audit_reconstruction_root, build_failure_audit, check,
+        documentation_scope_is_exact, durable_ledger, execution_claims_match,
+        execution_context_is_current, no_open_tooling_defect, package_admission, package_admitted,
+        read_json, reconcile_orphaned_attempts, reconstructed_plan_is_exact, record_heavy_failure,
+        validate_started_successor, verify_ledger_chain, with_disposable_audit_reconstruction,
     };
     use crate::canonical::{parse_strict, validate_schema};
     use crate::error::{ErrorClass, GatePolicyError};
     use crate::executor::ExecutionClaims;
+
+    #[test]
+    fn audit_inventory_uses_a_disposable_target_distinct_from_execution() {
+        let artifacts = std::env::temp_dir().join(format!(
+            "openwepp-audit-disposable-{}-{}",
+            std::process::id(),
+            std::thread::current().name().unwrap_or("test")
+        ));
+        let audit_root = audit_reconstruction_root(&artifacts);
+        assert_eq!(audit_root, artifacts.join(".work/audit-reconstruction"));
+        assert_ne!(audit_root, artifacts.join(".work/cargo-target"));
+        let value = with_disposable_audit_reconstruction(&artifacts, |root| {
+            fs::create_dir_all(root).expect("create audit workspace");
+            fs::write(root.join("compiled-test"), b"snapshot-bound").expect("write cache marker");
+            Ok(7)
+        })
+        .expect("successful reconstruction");
+        assert_eq!(value, 7);
+        assert!(!audit_root.exists());
+
+        let error = with_disposable_audit_reconstruction(&artifacts, |root| {
+            fs::create_dir_all(root).expect("create failed audit workspace");
+            fs::write(root.join("compiled-test"), b"snapshot-bound").expect("write cache marker");
+            Err::<(), _>(GatePolicyError::new(
+                ErrorClass::Execution,
+                "GATE-AUDIT-TEST-FAILURE",
+                "injected reconstruction failure",
+            ))
+        })
+        .expect_err("reconstruction failure must be retained");
+        assert_eq!(error.code, "GATE-AUDIT-TEST-FAILURE");
+        assert!(!audit_root.exists());
+        fs::remove_dir_all(artifacts).expect("remove fixture");
+    }
 
     #[test]
     fn audit_schema_rejects_duplicate_canonical_check_ids() {

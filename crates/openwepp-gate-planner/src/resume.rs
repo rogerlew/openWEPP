@@ -76,6 +76,10 @@ pub fn load_candidate_after_ready_audit(
     load_candidate_internal(repo, plan, ledger, claims, true)
 }
 
+#[allow(
+    clippy::too_many_lines,
+    reason = "candidate discovery validates one provenance chain before admitting any checkpoint"
+)]
 fn load_candidate_internal(
     repo: &Path,
     plan: &Value,
@@ -354,13 +358,13 @@ fn verify_native_attestation(
             "verify",
             &index_argument,
             "--repo",
-            &repository,
+            repository,
             "--signer-workflow",
             &signer,
             "--source-ref",
-            string(&predicate, "source_ref")?,
+            string(predicate, "source_ref")?,
             "--source-digest",
-            string(&predicate, "head_sha")?,
+            string(predicate, "head_sha")?,
             "--predicate-type",
             "https://openwepp.org/attestations/testgate-recovery/v1",
             "--deny-self-hosted-runners",
@@ -987,6 +991,10 @@ mod tests {
     }
 
     #[test]
+    #[allow(
+        clippy::too_many_lines,
+        reason = "the recovery fixture binds provenance, checkpoint, prior plan, and documentation drift"
+    )]
     fn hosted_attested_pre_receipt_checkpoint_survives_documentation_plan_change() {
         let root = std::env::temp_dir().join(format!(
             "openwepp-resume-{}-attested-pre-receipt",

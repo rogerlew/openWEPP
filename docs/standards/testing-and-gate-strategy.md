@@ -738,6 +738,9 @@ same admitted local transition is a tooling defect; independent reconstruction
 at a distinct trust boundary is required assurance.
 
 A production transition authenticates `READY` by keeping LIGHT execution, audit construction, and HEAVY admission inside one trusted binary process while persisting the unchanged audit as evidence. Standalone HEAVY admission rejects a merely self-hashed audit; an external attestation may become an additional authenticated transport only when its trust root and subject contract are explicitly implemented. This construction prevents forged PASS checks without repeating audit inventory enumeration.
+
+Audit reconstruction must use a disposable compilation and inventory workspace whose cache and target directories are disjoint from every execution-stage cache. The audit removes that workspace before returning `READY`, including after reconstruction failure. LIGHT or HEAVY must never consume binaries, metadata, reports, or fixture paths produced from a disposable source snapshot; such reuse is cache contamination and a blocking tooling defect.
+
 ## 9. Execution Architecture
 
 The target architecture is:

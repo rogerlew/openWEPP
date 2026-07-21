@@ -44,7 +44,7 @@ pub fn validate_package(repo: &Path, base: &str, package: &Path) -> Result<Value
             let base_digest = Some(sha256_bytes(&base_bytes));
             let base_text = String::from_utf8(base_bytes)
                 .map_err(|error| package_error("GATE-PACKAGE-UTF8", error.to_string()))?;
-            disposition(&base_text, &current_text, &changed_paths, base_digest)?
+            disposition(&base_text, &current_text, &changed_paths, base_digest)
         }
     };
     let mut audit = json!({
@@ -79,42 +79,36 @@ fn disposition(
     current_text: &str,
     changed_paths: &[String],
     base_digest: Option<String>,
-) -> Result<Disposition> {
-    let base_set = match parse_write_set(base_text) {
-        Ok(value) => value,
-        Err(_) => {
-            return Ok((
-                "INVALID",
-                vec!["BASE_WRITE_SET_SCHEMA_INVALID"],
-                base_digest,
-                Vec::new(),
-                changed_paths.to_vec(),
-            ));
-        }
+) -> Disposition {
+    let Ok(base_set) = parse_write_set(base_text) else {
+        return (
+            "INVALID",
+            vec!["BASE_WRITE_SET_SCHEMA_INVALID"],
+            base_digest,
+            Vec::new(),
+            changed_paths.to_vec(),
+        );
     };
-    let current_set = match parse_write_set(current_text) {
-        Ok(value) => value,
-        Err(_) => {
-            return Ok((
-                "INVALID",
-                vec!["CURRENT_WRITE_SET_SCHEMA_INVALID"],
-                base_digest,
-                Vec::new(),
-                changed_paths.to_vec(),
-            ));
-        }
+    let Ok(current_set) = parse_write_set(current_text) else {
+        return (
+            "INVALID",
+            vec!["CURRENT_WRITE_SET_SCHEMA_INVALID"],
+            base_digest,
+            Vec::new(),
+            changed_paths.to_vec(),
+        );
     };
     if current_set
         .iter()
         .any(|pattern| !base_set.contains(pattern))
     {
-        return Ok((
+        return (
             "INVALID",
             vec!["RETROACTIVE_WRITE_SET_WIDENING"],
             base_digest,
             current_set,
             changed_paths.to_vec(),
-        ));
+        );
     }
     let unauthorized = changed_paths
         .iter()
@@ -127,15 +121,15 @@ fn disposition(
         .cloned()
         .collect::<Vec<_>>();
     if unauthorized.is_empty() {
-        Ok(("READY", Vec::new(), base_digest, current_set, unauthorized))
+        ("READY", Vec::new(), base_digest, current_set, unauthorized)
     } else {
-        Ok((
+        (
             "INVALID",
             vec!["UNDECLARED_CHANGED_PATH"],
             base_digest,
             current_set,
             unauthorized,
-        ))
+        )
     }
 }
 
@@ -177,11 +171,10 @@ fn parse_write_set(text: &str) -> Result<Vec<String>> {
 }
 
 fn changed_paths(repo: &Path, base: &str) -> Result<Vec<String>> {
-    let mut paths = nul_paths(git(repo, &["diff", "--name-only", "-z", base, "--"])?)?;
-    paths.extend(nul_paths(git(
-        repo,
-        &["ls-files", "--others", "--exclude-standard", "-z"],
-    )?)?);
+    let diff = git(repo, &["diff", "--name-only", "-z", base, "--"])?;
+    let mut paths = nul_paths(&diff)?;
+    let untracked = git(repo, &["ls-files", "--others", "--exclude-standard", "-z"])?;
+    paths.extend(nul_paths(&untracked)?);
     paths.sort_by(|left, right| left.as_bytes().cmp(right.as_bytes()));
     paths.dedup();
     Ok(paths)
@@ -217,7 +210,7 @@ fn git(repo: &Path, args: &[&str]) -> Result<Vec<u8>> {
     }
 }
 
-fn nul_paths(bytes: Vec<u8>) -> Result<Vec<String>> {
+fn nul_paths(bytes: &[u8]) -> Result<Vec<String>> {
     bytes
         .split(|byte| *byte == 0)
         .filter(|item| !item.is_empty())
