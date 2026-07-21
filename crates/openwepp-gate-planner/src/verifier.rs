@@ -1865,6 +1865,12 @@ mod tests {
         workspace: std::path::PathBuf,
     }
 
+    struct NormalizedFixture {
+        plan: Value,
+        receipt: Value,
+        artifact_bytes: BTreeMap<String, Vec<u8>>,
+    }
+
     impl MemoryArtifacts {
         fn new(bytes: BTreeMap<String, Vec<u8>>) -> Self {
             let sequence = ARTIFACT_SEQUENCE.fetch_add(1, Ordering::Relaxed);
@@ -2153,10 +2159,10 @@ mod tests {
         reason = "the fixture mirrors the closed receipt wire contract field by field"
     )]
     fn normalized_plan_and_receipt() -> (Value, Value, MemoryArtifacts) {
-        static PLAN: OnceLock<Value> = OnceLock::new();
-        let root = repo();
-        let plan = PLAN
+        static FIXTURE: OnceLock<NormalizedFixture> = OnceLock::new();
+        let fixture = FIXTURE
             .get_or_init(|| {
+                let root = repo();
                 let head = crate::repository::resolve_commit(&root, "HEAD")
                     .expect("resolved fixture head");
                 let base = crate::repository::resolve_commit(&root, "HEAD^")
@@ -2169,7 +2175,7 @@ mod tests {
                     .iter()
                     .map(|change| change.path.clone())
                     .collect();
-                Planner::new(NextestInventory)
+                let plan = Planner::new(NextestInventory)
                     .build(
                         &root,
                         &PlanRequest {
@@ -2182,37 +2188,37 @@ mod tests {
                             source,
                         },
                     )
-                    .expect("fixture plan")
-            })
-            .clone();
-        let target = plan["nodes"][0]["matrix"]["target"]
-            .as_str()
-            .expect("target")
-            .to_owned();
-        let tools = crate::planner::tool_records(&root).expect("tool records");
-        let environment =
-            crate::planner::environment_record(&root, &target).expect("environment record");
+                    .expect("fixture plan");
+                let target = plan["nodes"][0]["matrix"]["target"]
+                    .as_str()
+                    .expect("target")
+                    .to_owned();
+                let tools = crate::planner::tool_records(&root).expect("tool records");
+                let environment = crate::planner::environment_record(&root, &target)
+                    .expect("environment record");
 
-        let mut receipt: Value = serde_json::from_slice(
-            &std::fs::read(root.join("gate-policy/v1/fixtures/valid/gate-receipt.json"))
-                .expect("receipt fixture"),
-        )
-        .expect("receipt JSON");
-        receipt["plan_id"] = plan["plan_id"].clone();
-        receipt["plan_sha256"] = Value::String(digest(&plan).expect("plan digest"));
-        receipt["execution_key"] = plan["execution_key"].clone();
-        receipt["boundary"] = plan["boundary"].clone();
-        receipt["campaign_id"] = plan["campaign_id"].clone();
-        receipt["source"]["base_commit"] = plan["source"]["base_commit"].clone();
-        receipt["source"]["head_commit"] = plan["source"]["head_commit"].clone();
-        receipt["source"]["dirty_tree_digest"] = plan["source"]["dirty_tree_digest"].clone();
-        receipt["roots"] = plan["environment_roots"].clone();
-        receipt["tools"] = tools;
-        receipt["environment"] = environment;
-        receipt["source"]["tree_sha256"] =
-            Value::String(digest(&plan["environment_roots"]).expect("tree digest"));
-        receipt["dag_sha256"] = Value::String(digest(&plan["nodes"]).expect("DAG digest"));
-        let nodes = plan["nodes"].as_array().expect("nodes");
+                let mut receipt: Value = serde_json::from_slice(
+                    &std::fs::read(root.join("gate-policy/v1/fixtures/valid/gate-receipt.json"))
+                        .expect("receipt fixture"),
+                )
+                .expect("receipt JSON");
+                receipt["plan_id"] = plan["plan_id"].clone();
+                receipt["plan_sha256"] = Value::String(digest(&plan).expect("plan digest"));
+                receipt["execution_key"] = plan["execution_key"].clone();
+                receipt["boundary"] = plan["boundary"].clone();
+                receipt["campaign_id"] = plan["campaign_id"].clone();
+                receipt["source"]["base_commit"] = plan["source"]["base_commit"].clone();
+                receipt["source"]["head_commit"] = plan["source"]["head_commit"].clone();
+                receipt["source"]["dirty_tree_digest"] =
+                    plan["source"]["dirty_tree_digest"].clone();
+                receipt["roots"] = plan["environment_roots"].clone();
+                receipt["tools"] = tools;
+                receipt["environment"] = environment;
+                receipt["source"]["tree_sha256"] =
+                    Value::String(digest(&plan["environment_roots"]).expect("tree digest"));
+                receipt["dag_sha256"] =
+                    Value::String(digest(&plan["nodes"]).expect("DAG digest"));
+                let nodes = plan["nodes"].as_array().expect("nodes");
         receipt["dag_nodes"] = Value::Array(
             nodes
                 .iter()
@@ -2323,7 +2329,17 @@ mod tests {
             receipt["source_mutation_check"]["before_sha256"].clone();
         receipt["receipt_id"] =
             Value::String(derived_id(&receipt, "receipt_id").expect("receipt ID"));
-        (plan, receipt, MemoryArtifacts::new(artifact_bytes))
+                NormalizedFixture {
+                    plan,
+                    receipt,
+                    artifact_bytes,
+                }
+            });
+        (
+            fixture.plan.clone(),
+            fixture.receipt.clone(),
+            MemoryArtifacts::new(fixture.artifact_bytes.clone()),
+        )
     }
 
     fn set_gate_integrity(receipt: &mut Value, gate_id: &Value, result: &str) {

@@ -195,6 +195,8 @@ spawn. Failed and invalidated evidence is retained, never overwritten.
 - A killed Rust process leaves an unmatched admission unless the always-run finalizer or next admission reconciles it.
 - Aggregate receipts and pre-receipt checkpoints need distinct lineage fields; forcing both into `prior_receipt_id` made provenance-only recovery schema-invalid.
 - The frozen Q12 case revealed two independent controls: the ordinary workflow needs a selector, and policy needs an active reviewed proof chosen before subject freeze.
+
+- The first exact-head quick gate ran 89 of 94 tests before `receipt_verification_reconstructs_identity_dag_inventory_and_artifacts` reached the unchanged 720-second timeout and canceled four tests. The repository-snapshot cohort was already serial, so concurrency was not the cause: the test rebuilt the same immutable normalized plan, complete Nextest inventory, receipt, and artifact bytes twice in one process. The fixture now caches that immutable template while retaining a fresh no-follow artifact workspace for each verification call; no unchanged rerun was attempted.
 ## Decision Log
 
 - Decision: use a new authenticated package rather than widen the predecessor retroactively. Rationale: package validation correctly rejects authority added after its base. Date/author: 2026-07-20, execution agent.
