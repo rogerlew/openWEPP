@@ -222,6 +222,8 @@ spawn. Failed and invalidated evidence is retained, never overwritten.
 - The gate-receipt schema duplicated the embedded audit contract and initially omitted the new ledger-head field. A non-null READY-audit receipt test now keeps the duplicated boundary synchronized.
 
 - Canonical-parent collision checks still missed a final-component symlink on the plan or durable ledger. Transition input preflight now requires existing regular non-symlink inputs and covers both parent traversal aliases and a ledger symlink targeting an output.
+
+- The first in-process exact attempt reached a genuine READY audit, then stopped before HEAVY because recovery scanning treated the current LIGHT/STARTED artifact root as an explicit historical recovery archive. The correction skips ordinary artifact-root records outside the durable recovery namespace while retaining fail-closed rejection for an explicit invalid `recovery_root`. Evidence remains under `/home/workdir/testgate-recovery-trust-01-final.9vt9qp`; the ledger opened `AUTO-6ec4b6897533dd60`.
 ## Decision Log
 
 - Decision: use a new authenticated package rather than widen the predecessor retroactively. Rationale: package validation correctly rejects authority added after its base. Date/author: 2026-07-20, execution agent.

@@ -102,14 +102,37 @@ fn load_candidate_internal(
         ) {
             continue;
         }
-        let Some(root) = item["recovery_root"]
-            .as_str()
+        let explicit_recovery = match item.get("recovery_root") {
+            None | Some(Value::Null) => None,
+            Some(value) => Some(value.as_str().ok_or_else(|| {
+                resume_error(
+                    "GATE-RESUME-PROVENANCE-PATH",
+                    "recovery_root must be a path",
+                )
+            })?),
+        };
+        let Some(root) = explicit_recovery
             .or_else(|| item["artifact_root"].as_str())
             .map(PathBuf::from)
         else {
             continue;
         };
-        if !seen_roots.insert(root.clone()) {
+        let recovery_parent = ledger
+            .parent()
+            .ok_or_else(|| {
+                resume_error("GATE-RESUME-PROVENANCE-PATH", ledger.display().to_string())
+            })?
+            .join("recovery");
+        if root.parent() != Some(recovery_parent.as_path()) {
+            if explicit_recovery.is_some() {
+                return Err(resume_error(
+                    "GATE-RESUME-PROVENANCE-PATH",
+                    root.display().to_string(),
+                ));
+            }
+            continue;
+        }
+        if seen_roots.contains(&root) {
             continue;
         }
         let artifact_root = if root.join(".checkpoints").is_dir() {
@@ -118,13 +141,25 @@ fn load_candidate_internal(
             root.join("execution")
         };
         if !artifact_root.is_dir() {
+            if explicit_recovery.is_some() {
+                return Err(resume_error(
+                    "GATE-RESUME-PROVENANCE-PATH",
+                    root.display().to_string(),
+                ));
+            }
             continue;
         }
         let provenance = match verify_archive_provenance(ledger, &root, claims) {
             Ok(provenance) => provenance,
-            Err(error) if error.code == "GATE-RESUME-PROVENANCE-MISSING" => continue,
+            Err(error)
+                if error.code == "GATE-RESUME-PROVENANCE-MISSING"
+                    && explicit_recovery.is_none() =>
+            {
+                continue;
+            }
             Err(error) => return Err(error),
         };
+        seen_roots.insert(root.clone());
         let receipt_path = root.join("receipt.json");
         let prior_plan_path = root.join("plan.json");
         if !prior_plan_path.is_file() {
@@ -736,6 +771,101 @@ mod tests {
     };
     use crate::canonical::{canonical_bytes, derived_id, digest, sha256_bytes};
     use crate::executor::ExecutionClaims;
+
+    #[test]
+    fn ordinary_current_attempt_artifact_root_is_not_a_recovery_claim() {
+        let scratch = std::env::temp_dir().join(format!(
+            "openwepp-resume-current-attempt-{}",
+            std::process::id()
+        ));
+        let history = scratch.join("history");
+        fs::create_dir_all(&history).expect("history");
+        let ledger = history.join("attempts.jsonl");
+        fs::write(
+            &ledger,
+            format!(
+                "{}\n",
+                serde_json::to_string(&json!({
+                    "record_type": "STAGE_ATTEMPT",
+                    "status": "STARTED",
+                    "stage": "HEAVY",
+                    "artifact_root": scratch.join("current-execution")
+                }))
+                .expect("record")
+            ),
+        )
+        .expect("ledger");
+        let candidate = load_candidate(
+            &scratch,
+            &json!({"nodes": []}),
+            &ledger,
+            &ExecutionClaims::default(),
+        )
+        .expect("ordinary artifact record is ignored");
+        assert!(candidate.is_none());
+
+        fs::write(
+            &ledger,
+            format!(
+                "{}\n",
+                serde_json::to_string(&json!({
+                    "record_type": "STAGE_ATTEMPT",
+                    "status": "CLOSED",
+                    "stage": "HEAVY",
+                    "recovery_root": scratch.join("forged-recovery")
+                }))
+                .expect("record")
+            ),
+        )
+        .expect("ledger");
+        let error = load_candidate(
+            &scratch,
+            &json!({"nodes": []}),
+            &ledger,
+            &ExecutionClaims::default(),
+        )
+        .err()
+        .expect("explicit recovery roots remain strict");
+        assert_eq!(error.code, "GATE-RESUME-PROVENANCE-PATH");
+
+        let missing = history.join("recovery/missing");
+        fs::create_dir_all(missing.parent().expect("recovery parent")).expect("recovery namespace");
+        fs::write(
+            &ledger,
+            format!(
+                "{}\n",
+                serde_json::to_string(&json!({
+                    "record_type": "STAGE_ATTEMPT",
+                    "status": "CLOSED",
+                    "stage": "HEAVY",
+                    "recovery_root": missing
+                }))
+                .expect("record")
+            ),
+        )
+        .expect("ledger");
+        let error = load_candidate(
+            &scratch,
+            &json!({"nodes": []}),
+            &ledger,
+            &ExecutionClaims::default(),
+        )
+        .err()
+        .expect("missing explicit recovery root must fail");
+        assert_eq!(error.code, "GATE-RESUME-PROVENANCE-PATH");
+
+        fs::create_dir_all(missing.join(".checkpoints")).expect("unattested recovery root");
+        let error = load_candidate(
+            &scratch,
+            &json!({"nodes": []}),
+            &ledger,
+            &ExecutionClaims::default(),
+        )
+        .err()
+        .expect("missing explicit recovery provenance must fail");
+        assert_eq!(error.code, "GATE-RESUME-PROVENANCE-MISSING");
+        fs::remove_dir_all(scratch).expect("remove scratch");
+    }
 
     #[test]
     fn same_execution_rejects_runner_and_attempt_changes() {
