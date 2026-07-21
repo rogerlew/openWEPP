@@ -682,18 +682,36 @@ fn package_admission(repo: &Path, plan: &Value) -> Result<Value> {
         .filter_map(Value::as_str)
         .filter(|path| path.starts_with("docs/work-packages/") && path.ends_with("/package.md"))
         .collect::<Vec<_>>();
-    if packages.len() != 1 {
-        return Err(GatePolicyError::new(
+    let base = string(&plan["source"], "base_commit")?;
+    let candidates = packages
+        .iter()
+        .map(|package| validate_package(repo, base, Path::new(package)))
+        .collect::<Result<Vec<_>>>()?;
+    select_package_admission(plan, candidates, packages.len())
+}
+
+fn select_package_admission(
+    plan: &Value,
+    candidates: Vec<Value>,
+    candidate_count: usize,
+) -> Result<Value> {
+    let mut admitted = candidates
+        .into_iter()
+        .filter(|candidate| package_admitted(plan, candidate).is_ok())
+        .collect::<Vec<_>>();
+    match admitted.len() {
+        1 => Ok(admitted.remove(0)),
+        0 => Err(GatePolicyError::new(
+            ErrorClass::Identity,
+            "GATE-AUDIT-PACKAGE-NOT-ADMITTED",
+            format!("none of {candidate_count} changed package candidates admits the exact diff"),
+        )),
+        count => Err(GatePolicyError::new(
             ErrorClass::Identity,
             "GATE-AUDIT-PACKAGE-AMBIGUOUS",
-            format!(
-                "expected exactly one package authority, found {}",
-                packages.len()
-            ),
-        ));
+            format!("{count} of {candidate_count} changed package candidates admit the exact diff"),
+        )),
     }
-    let base = string(&plan["source"], "base_commit")?;
-    validate_package(repo, base, Path::new(packages[0]))
 }
 
 fn package_admitted(plan: &Value, result: &Value) -> Result<()> {
@@ -1313,9 +1331,10 @@ mod tests {
     use super::{
         append_attempt_record, audit_reconstruction_root, build_failure_audit, check,
         documentation_scope_is_exact, durable_ledger, execution_claims_match,
-        execution_context_is_current, no_open_tooling_defect, package_admission, package_admitted,
-        read_json, reconcile_orphaned_attempts, reconstructed_plan_is_exact, record_heavy_failure,
-        validate_started_successor, verify_ledger_chain, with_disposable_audit_reconstruction,
+        execution_context_is_current, no_open_tooling_defect, package_admitted, read_json,
+        reconcile_orphaned_attempts, reconstructed_plan_is_exact, record_heavy_failure,
+        select_package_admission, validate_started_successor, verify_ledger_chain,
+        with_disposable_audit_reconstruction,
     };
     use crate::canonical::{parse_strict, validate_schema};
     use crate::error::{ErrorClass, GatePolicyError};
@@ -1695,19 +1714,40 @@ mod tests {
     }
 
     #[test]
-    fn multiple_changed_package_authorities_are_invalid() {
-        let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
-        let error = package_admission(
-            &root,
-            &json!({
-                "authorized_paths": [
-                    "docs/work-packages/one/package.md",
-                    "docs/work-packages/two/package.md"
-                ]
-            }),
-        )
-        .expect_err("authority must not be inferred");
+    fn package_admission_selects_exactly_one_independently_valid_authority() {
+        let plan = json!({
+            "source": {"base_commit": "a"},
+            "authorized_paths": [
+                "docs/work-packages/one/package.md",
+                "docs/work-packages/two/package.md"
+            ]
+        });
+        let ready = json!({
+            "status": "READY",
+            "base_commit": "a",
+            "package_path": "docs/work-packages/one/package.md",
+            "changed_paths": plan["authorized_paths"],
+            "reason_codes": []
+        });
+        let invalid = json!({
+            "status": "INVALID",
+            "base_commit": "a",
+            "package_path": "docs/work-packages/two/package.md",
+            "changed_paths": plan["authorized_paths"],
+            "reason_codes": ["UNDECLARED_CHANGED_PATH"]
+        });
+        let selected = select_package_admission(&plan, vec![ready.clone(), invalid.clone()], 2)
+            .expect("one exact authority");
+        assert_eq!(selected["package_path"], ready["package_path"]);
+
+        let error = select_package_admission(&plan, vec![ready.clone(), ready], 2)
+            .expect_err("multiple exact authorities must remain ambiguous");
         assert_eq!(error.code, "GATE-AUDIT-PACKAGE-AMBIGUOUS");
+        assert_eq!(error.class, ErrorClass::Identity);
+
+        let error = select_package_admission(&plan, vec![invalid], 1)
+            .expect_err("no exact authority must fail closed");
+        assert_eq!(error.code, "GATE-AUDIT-PACKAGE-NOT-ADMITTED");
         assert_eq!(error.class, ErrorClass::Identity);
     }
 }

@@ -34,6 +34,7 @@ quality paths without editing its frozen subject.
 - [x] (2026-07-21) Correct and independently re-review the RTR-014 root-target gap exposed by exact workspace Clippy.
 - [x] (2026-07-21) Correct and focus-qualify RTR-015 through RTR-017 from exact attempt 5.
 - [x] (2026-07-21) Commit and independently review the RTR-015 through RTR-017 corrections; dual PASS at `a1c34412`.
+- [ ] Correct and independently review RTR-018 from exact attempt 6.
 - [ ] Reconcile the exact terminal diff and obtain a fresh `READY` audit.
 - [ ] Delegate each selected HEAVY batch once.
 - [ ] Complete dual terminal verification, prompt archival, and final disposition.
@@ -82,6 +83,8 @@ Attempt 5 extended the active envelope with three execution-efficiency defects:
 - `RTR-017`: the attempt finalizer traversed a 33 GB disposable Cargo target after durable closure, requiring operator cutoff after more than nine minutes.
 
 All three package-owned tooling defects passed focused verification and dual review, then closed in the durable ledger at correction commit `a1c34412`. The direct/manual full-profile schedule is explicitly outside the current TESTGATE execution claim and is a blocking pre-freeze intake item for `TESTGATE-WORKFLOW-QUALIFY-01`.
+
+Attempt 6 opened `RTR-018`: standalone package audit correctly admitted the explicit recovery package, but pre-heavy audit rejected the same exact path set merely because it contained two changed `package.md` files. The audit must independently validate every candidate against the exact base and complete path set, admit the unique `READY` authority, and continue to reject zero or multiple admitted authorities.
 ## Declared Write Set
 
 - `.github/workflows/testgate-shadow.yml`
@@ -250,6 +253,8 @@ spawn. Failed and invalidated evidence is retained, never overwritten.
 - The fifth exact transition passed every gate through workspace Clippy and doctests, then full Nextest exposed three `SUN_LEN` setup failures and four assurance-publication timeouts. The already-nonpass fail-fast-false batch was cut off after 2,197/2,218 tests ran to avoid roughly another hour on an obsolete subject; its receipt and durable lifecycle were already sealed. The retained attempt root is `/home/workdir/testgate-recovery-trust-01-final4.3vbZS2`. A serial temporary-config sweep passed all four timeout cases in 267.751 seconds under the unchanged ceiling, and the three socket cases passed with a short temp root.
 
 - Attempt-5 finalization then spent more than nine minutes hashing disposable build caches after the receipt and ATTEMPT-CLOSED record existed. The indexing pass was stopped, the new no-follow cache-pruning boundary reduced the retained root from 33 GB to 2.8 MB, and a complete 60-file evidence index was regenerated in 16.93 seconds with receipts and node logs retained.
+
+- The sixth exact transition passed all six LIGHT nodes, then pre-heavy returned `INVALID / GATE-AUDIT-PACKAGE-AMBIGUOUS` while standalone package audit was `READY`. It counted the recovery and workflow-qualification package documents instead of independently checking which one admitted the complete exact diff. No HEAVY lifecycle or node started. The 29-file, 860 KB retained evidence root is `/home/workdir/testgate-recovery-trust-01-final5.mbHSTh`; durable defect `RTR-018` is `69a447f9...`.
 ## Decision Log
 
 - Decision: use a new authenticated package rather than widen the predecessor retroactively. Rationale: package validation correctly rejects authority added after its base. Date/author: 2026-07-20, execution agent.
@@ -258,4 +263,4 @@ spawn. Failed and invalidated evidence is retained, never overwritten.
 - Decision: keep `active_combined_quality_proof_id` null until real three-baseline protected-CI evidence is reviewed. Rationale: a fabricated proof would defeat the qualification; the selector and active-policy path land now, while proof collection is a pre-freeze qualification input. Date/author: 2026-07-20, execution agent.
 ## Outcomes And Retrospective
 
-Implementation is active. Five retained exact attempts exposed and drove corrections without an unchanged HEAVY rerun. Attempt 5 advanced through workspace Clippy and doctests, then exposed path-budget, publication-concurrency, and cache-index amplification defects in full Nextest/finalization. Those corrections pass focused qualification with the original timeout unchanged: three socket cases pass under a short temp root, all four timed-out publication cases pass serially in 267.751 seconds, the full 21-case finalizer unit target passes, package Clippy passes, and the pruned retained archive indexes 60 evidence files in 16.93 seconds at 2.8 MB. Dual correction review is PASS and the three durable defects are CLOSED. A changed-subject terminal attempt, dual terminal verification, and final disposition remain pending.
+Implementation is active. Six retained exact attempts exposed and drove corrections without an unchanged HEAVY rerun. Attempt 5 exposed path-budget, publication-concurrency, and cache-index amplification defects; those corrections pass focused qualification and dual review and are durably closed. Attempt 6 stopped before HEAVY on the inconsistent multi-package admission reconstruction now owned by RTR-018. Its correction, renewed dual review, a changed-subject terminal attempt, dual terminal verification, and final disposition remain pending.
