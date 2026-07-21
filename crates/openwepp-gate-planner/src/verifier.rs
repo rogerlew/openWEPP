@@ -2475,17 +2475,9 @@ mod tests {
     #[test]
     fn receipt_verification_reconstructs_identity_dag_inventory_and_artifacts() {
         let (plan, receipt, artifacts) = normalized_plan_and_receipt();
-        let verdict = verify_receipt(&repo(), &plan, &receipt, &artifacts).expect("receipt");
-        assert_eq!(verdict.result, "PASS");
-        let envelope_verdict = super::verify_receipt_envelope_with_reconstructed(
-            &repo(),
-            &plan,
-            &receipt,
-            &artifacts,
-            &plan,
-        )
-        .expect("immutable envelope after independently covered reconstruction");
-        assert_eq!(envelope_verdict.receipt_id, verdict.receipt_id);
+        let envelope_verdict = super::verify_receipt_envelope(&repo(), &plan, &receipt, &artifacts)
+            .expect("independently reconstructed immutable envelope");
+        assert_eq!(envelope_verdict.result, "PASS");
 
         let mut drifted = receipt;
         drifted["executed_inventory"] = json!([]);
