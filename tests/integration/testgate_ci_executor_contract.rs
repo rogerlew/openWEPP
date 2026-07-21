@@ -201,7 +201,7 @@ fn assert_receipt_runtime_guards() {
     assert!(cli.contains("verify_receipt_after_ready_audit("));
     assert!(cli.contains("trusted_transition_command("));
     assert!(cli.contains("GATE-EXEC-AUDIT-UNAUTHENTICATED"));
-    assert!(cli.contains("load_candidate_after_ready_audit(repo, plan, &ledger, claims, audit)"));
+    assert!(cli.contains("load_candidate_after_ready_audit(repo, plan, ledger, claims, audit)"));
     let final_context_check = executor
         .rfind("validate_current_execution_context(&repository, plan)?")
         .expect("final HEAVY context check");
@@ -331,6 +331,10 @@ fn assert_testgate_workflow_surface() {
             "forbidden workflow contract {forbidden}"
         );
     }
+    assert_testgate_workflow_admission(&workflow);
+}
+
+fn assert_testgate_workflow_admission(workflow: &str) {
     assert!(workflow.contains("persist-credentials: false"));
     assert!(workflow.contains("git merge-base --is-ancestor"));
     assert!(workflow.contains(

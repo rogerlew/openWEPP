@@ -31,7 +31,7 @@ quality paths without editing its frozen subject.
 - [x] (2026-07-20) Implement durable attested recovery, exact audits, lifecycle reconciliation, and combined-selection corrections.
 - [x] (2026-07-20) Correct the discovered verifier-fixture timeout without relaxing its limit; exact quick passed 94/94.
 - [x] (2026-07-20) Complete dual implementation review and disposition every finding.
-- [x] (2026-07-20) Correct and independently re-review audit-discovered defects RTR-010 through RTR-014.
+- [x] (2026-07-21) Correct and independently re-review the RTR-014 root-target gap exposed by exact workspace Clippy.
 - [ ] Commit and reconcile the exact terminal diff; obtain a fresh `READY` audit.
 - [ ] Delegate each selected HEAVY batch once.
 - [ ] Complete dual terminal verification, prompt archival, and final disposition.
@@ -71,7 +71,7 @@ The third exact attempt extended the active envelope with two package-owned defe
 - `RTR-013`: independent audit inventory compilation shared the execution target, so HEAVY reused binaries whose compile-time fixture root belonged to a deleted source snapshot; and
 - `RTR-014`: the selected workspace Clippy node found package-owned warnings in the gate-planner implementation.
 
-Both corrections passed focused verification and dual implementation review. Their durable ledger closure follows the correction commit and precedes the fresh audit.
+RTR-013 passed focused verification, dual implementation review, and exact terminal Canopy/authority execution. RTR-014 was reopened when exact workspace Clippy found one package-owned root integration target omitted by package-scoped validation; its decomposed helper and stale source assertion correction now pass root-target Clippy, the owning 5-case integration target, and renewed dual review. Durable closure follows the correction commit before the next audit.
 
 ## Declared Write Set
 
@@ -236,6 +236,8 @@ spawn. Failed and invalidated evidence is retained, never overwritten.
 
 - The third exact transition passed all six LIGHT nodes and obtained `READY`, then exposed cache contamination in three HEAVY suites: audit reconstruction and execution shared `.work/cargo-target`, so cached binaries retained compile-time `CARGO_MANIFEST_DIR` paths into deleted inventory snapshots. The same run also surfaced 18 package-owned Clippy findings. Evidence remains under `/home/workdir/testgate-recovery-trust-01-final2.ALfL49`; the durable ledger opened `RTR-013` and `RTR-014`. Audit compilation is now isolated under a disposable reconstruction root, and the implementation is Clippy-clean under the selected package command.
 
+- The fourth exact transition confirmed RTR-013 end-to-end: all three Canopy suites and required authority passed from the isolated execution cache. Workspace Clippy then found one remaining 105-line package-owned root integration helper, which the prior package-only Clippy command could not see; doctest, full Nextest, and CRAP were correctly prerequisite-blocked. Evidence remains under `/home/workdir/testgate-recovery-trust-01-final3.4vP6Es`; RTR-014 was reopened rather than treating the incomplete closure as final.
+
 ## Decision Log
 
 - Decision: use a new authenticated package rather than widen the predecessor retroactively. Rationale: package validation correctly rejects authority added after its base. Date/author: 2026-07-20, execution agent.
@@ -243,4 +245,4 @@ spawn. Failed and invalidated evidence is retained, never overwritten.
 - Decision: copy the terminal plan before HEAVY, snapshot all referenced roots, and re-attest carried roots in every newest archive. Rationale: this makes pre-receipt and A→B→C recovery self-contained across volume loss. Date/author: 2026-07-20, execution agent.
 - Decision: keep `active_combined_quality_proof_id` null until real three-baseline protected-CI evidence is reviewed. Rationale: a fabricated proof would defeat the qualification; the selector and active-policy path land now, while proof collection is a pre-freeze qualification input. Date/author: 2026-07-20, execution agent.
 ## Outcomes And Retrospective
-Implementation is active. Three retained exact attempts exposed and drove corrections for RTR-010 through RTR-014 without an unchanged HEAVY rerun. The latest cache-isolation and Clippy corrections passed focused checks and dual implementation review. A fresh exact terminal attempt, delegated HEAVY execution, dual terminal verification, durable defect closure, and final disposition remain pending.
+Implementation is active. Four retained exact attempts exposed and drove corrections without an unchanged HEAVY rerun. Attempt 4 confirmed cache isolation and every Canopy/authority gate, then reopened RTR-014 on one root integration-test Clippy warning missed by package-scoped validation. The correction now passes exact focused checks and renewed dual review. A changed-subject terminal attempt, dual terminal verification, durable closure append, and final disposition remain pending.

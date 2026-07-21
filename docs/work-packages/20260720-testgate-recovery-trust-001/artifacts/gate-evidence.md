@@ -29,10 +29,12 @@ The same expensive verifier acceptance was invoked only after its source or acce
 
 ## Terminal evidence
 
-Three exact attempts are retained; none was rerun unchanged.
+Four exact attempts are retained; none was rerun unchanged.
 
 1. `/home/workdir/testgate-recovery-trust-01.FFQVyI`: all six LIGHT nodes passed; the audit blocked before HEAVY and opened RTR-010 through RTR-012.
 2. `/home/workdir/testgate-recovery-trust-01-final.9vt9qp`: all six LIGHT nodes passed and audit `5fafb85c...` was `READY`; HEAVY admission failed before node execution with `GATE-RESUME-PROVENANCE-PATH`, opening `AUTO-6ec4b6897533dd60`.
 3. `/home/workdir/testgate-recovery-trust-01-final2.ALfL49`: all six LIGHT nodes passed and audit `6c0744ff...` was `READY`; 15 scheduler attempts produced 8 PASS, 4 FAIL, and 3 prerequisite BLOCKED. Three suites proved audit/execution cache contamination and Clippy exposed 18 package-owned warnings, opening RTR-013 and RTR-014. Wall times were 241,081 ms LIGHT and 287,391 ms HEAVY.
 
-The attempt-3 failures are corrected and dual-reviewed. A changed-subject exact terminal attempt remains pending; its selected HEAVY nodes will be delegated once to the authorized comparator runner.
+4. `/home/workdir/testgate-recovery-trust-01-final3.4vP6Es`: all six LIGHT nodes and audit `52da7670...` passed. Cargo deny, all three Canopy suites, and required authority passed, confirming RTR-013 end-to-end. Workspace Clippy alone failed on a 105-line package-owned root integration helper; doctest, full Nextest, and CRAP were prerequisite-blocked. The verified-form receipt `58af9ac8...` retained 11 PASS, 1 FAIL, 3 BLOCKED, zero retries/resumes, unchanged source, and 228,835/291,227 ms LIGHT/HEAVY time.
+
+Attempt 4 reopened RTR-014 because package-scoped Clippy had omitted the root integration target. The chained OPEN record `775b0dbf...` is in the caller-selected canonical ledger `/home/workdir/testgate-history/recovery-trust-01-attempts.jsonl`; the attempt-local ledger copy remains an immutable finalization snapshot ending at attempt closure. The root-target Clippy command and all 5 owning integration cases pass after decomposing the long helper and correcting its stale `&ledger` source assertion. Both renewed reviewers returned PASS; no unchanged rerun is authorized.
