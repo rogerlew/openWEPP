@@ -19,6 +19,7 @@ mod execution_context;
 mod execution_nextest;
 mod execution_temp;
 pub mod executor;
+mod executor_source;
 pub mod ledger;
 mod nextest_inventory;
 pub mod package_validation;
