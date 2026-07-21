@@ -34,7 +34,7 @@ quality paths without editing its frozen subject.
 - [x] (2026-07-21) Correct and independently re-review the RTR-014 root-target gap exposed by exact workspace Clippy.
 - [x] (2026-07-21) Correct and focus-qualify RTR-015 through RTR-017 from exact attempt 5.
 - [x] (2026-07-21) Commit and independently review the RTR-015 through RTR-017 corrections; dual PASS at `a1c34412`.
-- [ ] Correct and independently review RTR-018 from exact attempt 6.
+- [x] (2026-07-21) Correct and independently review RTR-018 from exact attempt 6; dual PASS at `7ff552dc`.
 - [ ] Reconcile the exact terminal diff and obtain a fresh `READY` audit.
 - [ ] Delegate each selected HEAVY batch once.
 - [ ] Complete dual terminal verification, prompt archival, and final disposition.
@@ -263,4 +263,4 @@ spawn. Failed and invalidated evidence is retained, never overwritten.
 - Decision: keep `active_combined_quality_proof_id` null until real three-baseline protected-CI evidence is reviewed. Rationale: a fabricated proof would defeat the qualification; the selector and active-policy path land now, while proof collection is a pre-freeze qualification input. Date/author: 2026-07-20, execution agent.
 ## Outcomes And Retrospective
 
-Implementation is active. Six retained exact attempts exposed and drove corrections without an unchanged HEAVY rerun. Attempt 5 exposed path-budget, publication-concurrency, and cache-index amplification defects; those corrections pass focused qualification and dual review and are durably closed. Attempt 6 stopped before HEAVY on the inconsistent multi-package admission reconstruction now owned by RTR-018. Its correction, renewed dual review, a changed-subject terminal attempt, dual terminal verification, and final disposition remain pending.
+Implementation is active. Six retained exact attempts exposed and drove corrections without an unchanged HEAVY rerun. Attempt 5 exposed path-budget, publication-concurrency, and cache-index amplification defects; those corrections pass focused qualification and dual review and are durably closed. Attempt 6 stopped before HEAVY on inconsistent multi-package admission reconstruction; RTR-018 now passes a real Git/schema regression and dual review and is durably closed. A changed-subject terminal attempt, dual terminal verification, and final disposition remain pending.
