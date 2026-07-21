@@ -211,6 +211,17 @@ impl ShortProcessTemp {
         Self { path }
     }
 
+    fn hexadecimal_directory() -> Self {
+        use std::os::unix::fs::PermissionsExt;
+
+        let count = SCRATCH_COUNTER.fetch_add(1, Ordering::Relaxed);
+        let path = PathBuf::from(format!("/tmp/owg-{}-{:x}", std::process::id(), count + 10));
+        fs::create_dir(&path).expect("create hexadecimal executor temporary directory");
+        fs::set_permissions(&path, fs::Permissions::from_mode(0o700))
+            .expect("set hexadecimal executor temporary directory mode");
+        Self { path }
+    }
+
     fn symlink(target: &Path) -> Self {
         let count = SCRATCH_COUNTER.fetch_add(1, Ordering::Relaxed);
         let path = PathBuf::from(format!("/tmp/owg-{}-{count}", std::process::id()));
@@ -633,6 +644,7 @@ fn assert_crap_driver_contract() {
     assert!(affected_driver.contains("OUTPUT_DIR=\"${ROOT_DIR}/${OUTPUT_DIR}\""));
     assert!(affected_driver.contains("OPENWEPP_GATE_NEXTEST_CONFIG"));
     assert!(affected_driver.contains("COVERAGE_TMP=\"${TMPDIR}\""));
+    assert!(affected_driver.contains("^/tmp/owg-[0-9]+-[0-9a-f]+$"));
     assert!(affected_driver.contains("mktemp -d /tmp/owg-crap-XXXXXX"));
     assert!(affected_driver.contains("TMPDIR=\"${COVERAGE_TMP}\""));
     assert!(affected_driver.contains("trap 'terminate 143' TERM"));
@@ -800,6 +812,19 @@ fn crap_runner_rejects_unsafe_executor_nested_contracts() {
     std::os::unix::fs::symlink(&config, &config_symlink).expect("create Nextest config symlink");
     let symlinked = run_executor_crap_probe(&artifact_root, Some(&config_symlink), None);
     assert_eq!(symlinked.status.code(), Some(2));
+
+    let hexadecimal = ShortProcessTemp::hexadecimal_directory();
+    let hexadecimal_result = run_executor_crap_probe(
+        &artifact_root,
+        Some(&config_symlink),
+        Some(&hexadecimal.path),
+    );
+    assert_eq!(hexadecimal_result.status.code(), Some(2));
+    assert!(
+        String::from_utf8_lossy(&hexadecimal_result.stderr)
+            .contains("nested Nextest configuration is missing or unsafe"),
+        "hexadecimal executor TMPDIR must reach config validation"
+    );
 
     let missing_tmp = run_executor_crap_probe(&artifact_root, Some(&config), None);
     assert_eq!(missing_tmp.status.code(), Some(2));

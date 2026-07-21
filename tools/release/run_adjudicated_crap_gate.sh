@@ -321,7 +321,7 @@ if [[ "${ACQUISITION_MODE}" == "fresh" ]]; then
       echo "ERROR: executor nested Nextest configuration is missing or unsafe" >&2
       exit 2
     fi
-    if [[ -z "${TMPDIR:-}" || ! "${TMPDIR}" =~ ^/tmp/owg-[0-9]+-[0-9]+$ ||
+    if [[ -z "${TMPDIR:-}" || ! "${TMPDIR}" =~ ^/tmp/owg-[0-9]+-[0-9a-f]+$ ||
       ! -d "${TMPDIR}" || -L "${TMPDIR}" || "${#TMPDIR}" -gt 40 ||
       "$(stat -c '%a' -- "${TMPDIR}")" != "700" ||
       "$(stat -c '%u' -- "${TMPDIR}")" != "$(id -u)" ]]; then
