@@ -230,8 +230,17 @@
 
 State as of `2026-07-20 UTC`:
 
+- `20260720-testgate-recovery-trust-001/` -
+  ACTIVE-SCAFFOLD: `TESTGATE-RECOVERY-TRUST-01` owns the checkpoint trust,
+  persistent runner recovery, typed audit failure, claim/package binding,
+  cross-language ledger, symlink confinement, and combined-quality defects
+  that held `TESTGATE-CLOSURE-AUDIT-01`. It precedes closure retry and frozen
+  workflow qualification.
+
 - `20260720-testgate-pre-heavy-closure-audit-001/` -
-  READY-REVIEWED: `TESTGATE-CLOSURE-AUDIT-01` is the next implementation
+  IMPLEMENTED-HOLD: `TESTGATE-CLOSURE-AUDIT-01` reached one false-READY heavy
+  transition with zero heavy node spawns and is blocked on
+  `TESTGATE-RECOVERY-TRUST-01`. It originally was the next implementation
   package. It converts the canopy closure's repeated gate/tooling failures into
   a single fail-closed pre-heavy audit, typed tooling-defect lifecycle,
   corrected package bootstrap, immutable attempts, safe caches, persistent
