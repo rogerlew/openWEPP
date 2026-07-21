@@ -194,9 +194,30 @@ GENERATED_FILES=(
   workspace.lcov
 )
 RUN_STARTED_UTC="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+COVERAGE_TMP=""
+COVERAGE_TMP_OWNED=0
+cleanup_owned_coverage_tmp() {
+  if [[ "${COVERAGE_TMP_OWNED}" -ne 1 ]]; then
+    return 0
+  fi
+  if [[ ! "${COVERAGE_TMP}" =~ ^/tmp/owg-crap-[A-Za-z0-9]{6}$ ||
+    -L "${COVERAGE_TMP}" || ! -d "${COVERAGE_TMP}" ||
+    "$(stat -c '%u' -- "${COVERAGE_TMP}")" != "$(id -u)" ]]; then
+    echo "ERROR: refusing to remove an invalid standalone coverage temporary root" >&2
+    return 1
+  fi
+  if ! rm -rf --one-file-system -- "${COVERAGE_TMP}" ||
+    [[ -e "${COVERAGE_TMP}" || -L "${COVERAGE_TMP}" ]]; then
+    echo "ERROR: standalone coverage temporary root cleanup failed" >&2
+    return 1
+  fi
+}
 finalize() {
   local exit_status="$?"
-  trap - EXIT
+  trap - EXIT INT TERM
+  if ! cleanup_owned_coverage_tmp && [[ "${exit_status}" -eq 0 ]]; then
+    exit_status=1
+  fi
   local result="PASS"
   local report_sha256=""
   if [[ "${exit_status}" -ne 0 ]]; then
@@ -227,7 +248,14 @@ finalize() {
   done
   exit "${exit_status}"
 }
+terminate() {
+  local exit_status="$1"
+  trap - INT TERM
+  exit "${exit_status}"
+}
 trap finalize EXIT
+trap 'terminate 130' INT
+trap 'terminate 143' TERM
 
 for generated_file in "${GENERATED_FILES[@]}"; do
   rm -f -- "${OUTPUT_DIR}/${generated_file}"
@@ -289,14 +317,72 @@ if [[ "${ACQUISITION_MODE}" == "fresh" ]]; then
   NEXTEST_CONFIG="${OUTPUT_DIR}/nextest.toml"
   NEXTEST_STORE="${OUTPUT_DIR}/nextest"
   if [[ -n "${OPENWEPP_GATE_ARTIFACT_ROOT:-}" ]]; then
-    COVERAGE_TMP="${OPENWEPP_GATE_ARTIFACT_ROOT}/tmp"
+    if [[ -z "${OPENWEPP_GATE_NEXTEST_CONFIG:-}" ]]; then
+      echo "ERROR: executor nested Nextest configuration is missing or unsafe" >&2
+      exit 2
+    fi
+    if [[ -z "${TMPDIR:-}" || ! "${TMPDIR}" =~ ^/tmp/owg-[0-9]+-[0-9]+$ ||
+      ! -d "${TMPDIR}" || -L "${TMPDIR}" || "${#TMPDIR}" -gt 40 ||
+      "$(stat -c '%a' -- "${TMPDIR}")" != "700" ||
+      "$(stat -c '%u' -- "${TMPDIR}")" != "$(id -u)" ]]; then
+      echo "ERROR: executor process TMPDIR is missing or violates the qualified path contract" >&2
+      exit 2
+    fi
+    COVERAGE_TMP="${TMPDIR}"
+    if ! "${PYTHON_BIN}" - \
+      "${OPENWEPP_GATE_ARTIFACT_ROOT}" \
+      "${OPENWEPP_GATE_NEXTEST_CONFIG}" \
+      "${NEXTEST_CONFIG}" <<'PY'
+import os
+import pathlib
+import shutil
+import stat
+import sys
+
+artifact_root = pathlib.Path(sys.argv[1])
+source = pathlib.Path(sys.argv[2])
+destination = pathlib.Path(sys.argv[3])
+try:
+    root_resolved = artifact_root.resolve(strict=True)
+    source_resolved = source.resolve(strict=True)
+    source_parent = source.parent.resolve(strict=True)
+    source.relative_to(artifact_root)
+    source_parent.relative_to(root_resolved)
+    if (
+        artifact_root != root_resolved
+        or source != source_resolved
+        or artifact_root.is_symlink()
+        or source.is_symlink()
+    ):
+        raise ValueError("symlink")
+    source_fd = os.open(source, os.O_RDONLY | os.O_NOFOLLOW)
+    try:
+        if not stat.S_ISREG(os.fstat(source_fd).st_mode):
+            raise ValueError("not regular")
+        destination_fd = os.open(
+            destination,
+            os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW,
+            0o600,
+        )
+        try:
+            with os.fdopen(source_fd, "rb", closefd=False) as input_stream:
+                with os.fdopen(destination_fd, "wb", closefd=False) as output_stream:
+                    shutil.copyfileobj(input_stream, output_stream)
+        finally:
+            os.close(destination_fd)
+    finally:
+        os.close(source_fd)
+except (OSError, ValueError):
+    raise SystemExit(1)
+PY
+    then
+      echo "ERROR: executor nested Nextest configuration is missing or unsafe" >&2
+      exit 2
+    fi
   else
-    COVERAGE_TMP="${OUTPUT_DIR}/tmp"
-  fi
-  mkdir -p "${COVERAGE_TMP}"
-  TMPDIR="${COVERAGE_TMP}"
-  export TMPDIR
-  "${PYTHON_BIN}" - "${ROOT_DIR}/.config/nextest.toml" "${NEXTEST_CONFIG}" "${NEXTEST_STORE}" <<'PY'
+    COVERAGE_TMP="$(mktemp -d /tmp/owg-crap-XXXXXX)"
+    COVERAGE_TMP_OWNED=1
+    "${PYTHON_BIN}" - "${ROOT_DIR}/.config/nextest.toml" "${NEXTEST_CONFIG}" "${NEXTEST_STORE}" <<'PY'
 import json
 import pathlib
 import sys
@@ -308,6 +394,9 @@ if source.count(expected) != 1:
 replacement = f"dir = {json.dumps(sys.argv[3])}"
 pathlib.Path(sys.argv[2]).write_text(source.replace(expected, replacement), encoding="utf-8")
 PY
+  fi
+  TMPDIR="${COVERAGE_TMP}"
+  export TMPDIR
 fi
 if [[ "${ACQUISITION_MODE}" == "retained" ]]; then
   if [[ -z "${RETAINED_PROVENANCE}" ]]; then

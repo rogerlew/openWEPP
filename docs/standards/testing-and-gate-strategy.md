@@ -713,6 +713,12 @@ most 80 percent of the summed full plus coverage medians. Missing, stale,
 unpinned, incomplete, or uneconomic proof retains separate nodes with a typed
 non-adoption reason.
 
+Nested coverage/CRAP subprocesses are executor children, not independent
+launchers: they must consume the executor-injected qualified Nextest
+configuration and short process `TMPDIR`. They may not regenerate scheduling,
+resource, or temporary-root contracts from repository defaults. Signal or
+cleanup termination must be represented as a nonzero failed run status.
+
 The audit is the single independent inventory verifier for the LIGHT-to-HEAVY transition. LIGHT execution may reconstruct the terminal plan once; the audit then independently reconstructs current policy, canonical arguments, and exact inventory once in the same confined attempt workspace. A READY audit binds that result. HEAVY consumes the READY result and must not repeat the same plan or inventory enumeration unless source, policy, execution context, or another identity breaker changed. Executor preflight retains non-inventory safety checks. Repeating enumeration at LIGHT preflight, audit, and HEAVY admission is a tooling defect, not extra assurance.
 
 For documentation, LIGHT runs the exact sorted, deduplicated, non-deleted changed-path `markdown-doc lint --path ...` node. The audit validates that canonical scope, its PASS result, checkpoint, and artifact identity; it does not launch a second lint and may never substitute an unscoped repository-wide lint.

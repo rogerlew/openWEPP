@@ -1145,6 +1145,14 @@ fn run_process(
             work_root(artifact_root).display().to_string(),
         );
         environment.insert("TMPDIR".to_owned(), temporary.display().to_string());
+        if node["artifact_contract"] == "adjudicated-crap-v1" {
+            environment.insert(
+                "OPENWEPP_GATE_NEXTEST_CONFIG".to_owned(),
+                external_nextest_config(repo, artifact_root)?
+                    .display()
+                    .to_string(),
+            );
+        }
         let mut command = Command::new(program);
         command
             .args(&arguments[1..])
@@ -2703,6 +2711,31 @@ mod tests {
         assert!(temporary.len() <= 40);
         assert!(!Path::new(temporary).exists());
         assert!(!repo.path().join("target").exists());
+    }
+
+    #[test]
+    fn executor_binds_nested_crap_nextest_to_the_qualified_config() {
+        let repo = source_repo();
+        let artifacts = prepare_artifacts("nested-crap-config");
+        let log = artifacts.path().join("environment.log");
+        let mut node = process_node(&["env"], 5);
+        node["artifact_contract"] = json!("adjudicated-crap-v1");
+        let outcome = run_process(&repo, artifacts.path(), &node, &log)
+            .expect("nested CRAP environment process");
+        assert_eq!(outcome.result, "PASS");
+        let environment = fs::read_to_string(log).expect("environment log");
+        let config = environment
+            .lines()
+            .find_map(|line| line.strip_prefix("OPENWEPP_GATE_NEXTEST_CONFIG="))
+            .map(PathBuf::from)
+            .expect("nested Nextest config");
+        assert_eq!(config, artifacts.path().join(".work/nextest.toml"));
+        let contents = fs::read_to_string(config).expect("qualified nested config");
+        assert!(contents.contains("[test-groups.assurance-publication]\nmax-threads = 2"));
+        assert!(contents.contains(&format!(
+            "dir = \"{}\"",
+            artifacts.path().join(".work/nextest").display()
+        )));
     }
 
     #[test]

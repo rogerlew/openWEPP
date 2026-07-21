@@ -35,6 +35,7 @@ quality paths without editing its frozen subject.
 - [x] (2026-07-21) Correct and focus-qualify RTR-015 through RTR-017 from exact attempt 5.
 - [x] (2026-07-21) Commit and independently review the RTR-015 through RTR-017 corrections; dual PASS at `a1c34412`.
 - [x] (2026-07-21) Correct and independently review RTR-018 from exact attempt 6; dual PASS at `7ff552dc`.
+- [x] (2026-07-21) Correct RTR-019/RTR-020: nested CRAP now consumes executor-qualified configuration and short TMPDIR, and signal/cleanup outcomes are fail-closed.
 - [ ] Reconcile the exact terminal diff and obtain a fresh `READY` audit.
 - [ ] Delegate each selected HEAVY batch once.
 - [ ] Complete dual terminal verification, prompt archival, and final disposition.
@@ -85,6 +86,8 @@ Attempt 5 extended the active envelope with three execution-efficiency defects:
 All three package-owned tooling defects passed focused verification and dual review, then closed in the durable ledger at correction commit `a1c34412`. The direct/manual full-profile schedule is explicitly outside the current TESTGATE execution claim and is a blocking pre-freeze intake item for `TESTGATE-WORKFLOW-QUALIFY-01`.
 
 Attempt 6 opened `RTR-018`: standalone package audit correctly admitted the explicit recovery package, but pre-heavy audit rejected the same exact path set merely because it contained two changed `package.md` files. The audit must independently validate every candidate against the exact base and complete path set, admit the unique `READY` authority, and continue to reject zero or multiple admitted authorities.
+
+Attempt 7 opened two execution-envelope defects. `RTR-019` (`GATE-CRAP-NESTED-EXECUTION-CONTRACT-BYPASS`) occurred when nested CRAP replaced the executor short `TMPDIR` and regenerated Nextest configuration, causing three socket-contract failures and bypassing the qualified publication schedule. `RTR-020` (`GATE-CRAP-SIGNAL-ENVELOPE-FALSE-PASS`) occurred when signal termination left CRAP `run-status.json` at PASS/0 despite the authoritative receipt recording signal 15. The correction injects and validates the qualified config/TMPDIR, restricts standalone cleanup to owned `/tmp/owg-crap-*` roots, and records signal/cleanup failures as nonzero FAIL statuses. Focused regressions pass; durable closure awaits dual review and correction commit.
 ## Declared Write Set
 
 - `.github/workflows/testgate-shadow.yml`

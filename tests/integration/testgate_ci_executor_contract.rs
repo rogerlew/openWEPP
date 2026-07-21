@@ -153,6 +153,87 @@ fn run_crap_path_probe(
     command.output().expect("run CRAP output-resolution probe")
 }
 
+fn write_executable(path: &Path, contents: &str) {
+    use std::os::unix::fs::PermissionsExt;
+
+    fs::write(path, contents).expect("write executable probe");
+    fs::set_permissions(path, fs::Permissions::from_mode(0o755)).expect("make probe executable");
+}
+
+fn run_executor_crap_probe(
+    artifact_root: &Path,
+    nextest_config: Option<&Path>,
+    temporary: Option<&Path>,
+) -> Output {
+    let mut command = Command::new("bash");
+    command
+        .arg(root().join("tools/release/run_adjudicated_crap_gate.sh"))
+        .arg("--output-dir")
+        .arg("nested-crap")
+        .current_dir(root())
+        .env("OPENWEPP_GATE_ARTIFACT_ROOT", artifact_root)
+        .env_remove("OPENWEPP_GATE_NEXTEST_CONFIG")
+        .env_remove("TMPDIR");
+    if let Some(nextest_config) = nextest_config {
+        command.env("OPENWEPP_GATE_NEXTEST_CONFIG", nextest_config);
+    }
+    if let Some(temporary) = temporary {
+        command.env("TMPDIR", temporary);
+    }
+    command.output().expect("run executor CRAP contract probe")
+}
+
+struct ShortProcessTemp {
+    path: PathBuf,
+}
+
+impl ShortProcessTemp {
+    fn directory(mode: u32) -> Self {
+        use std::os::unix::fs::PermissionsExt;
+
+        let count = SCRATCH_COUNTER.fetch_add(1, Ordering::Relaxed);
+        let path = PathBuf::from(format!("/tmp/owg-{}-{count}", std::process::id()));
+        fs::create_dir(&path).expect("create short executor temporary directory");
+        fs::set_permissions(&path, fs::Permissions::from_mode(mode))
+            .expect("set executor temporary directory mode");
+        Self { path }
+    }
+
+    fn long_directory() -> Self {
+        let count = SCRATCH_COUNTER.fetch_add(1, Ordering::Relaxed);
+        let path = PathBuf::from(format!(
+            "/tmp/owg-{}{:020}-{:020}",
+            std::process::id(),
+            count,
+            count
+        ));
+        fs::create_dir(&path).expect("create overlong executor temporary directory");
+        Self { path }
+    }
+
+    fn symlink(target: &Path) -> Self {
+        let count = SCRATCH_COUNTER.fetch_add(1, Ordering::Relaxed);
+        let path = PathBuf::from(format!("/tmp/owg-{}-{count}", std::process::id()));
+        std::os::unix::fs::symlink(target, &path).expect("create executor temporary symlink");
+        Self { path }
+    }
+}
+
+impl Drop for ShortProcessTemp {
+    fn drop(&mut self) {
+        match fs::symlink_metadata(&self.path) {
+            Ok(metadata) if metadata.file_type().is_symlink() => {
+                fs::remove_file(&self.path).expect("remove executor temporary symlink");
+            }
+            Ok(_) => {
+                fs::remove_dir_all(&self.path).expect("remove executor temporary directory");
+            }
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+            Err(error) => panic!("inspect executor temporary path: {error}"),
+        }
+    }
+}
+
 fn assert_failed_after_output_resolution(output: &Output, resolved_output: &Path) {
     assert!(!output.status.success());
     assert!(
@@ -554,9 +635,11 @@ fn blocking_executor_and_affected_quality_preserve_manual_rollback() {
     assert!(affected_driver.contains("OUTPUT_DIR_OVERRIDDEN=1"));
     assert!(affected_driver.contains("elif [[ \"${OUTPUT_DIR_OVERRIDDEN}\" -eq 0 ]]"));
     assert!(affected_driver.contains("OUTPUT_DIR=\"${ROOT_DIR}/${OUTPUT_DIR}\""));
-    assert!(affected_driver.contains("COVERAGE_TMP=\"${OPENWEPP_GATE_ARTIFACT_ROOT}/tmp\""));
-    assert!(affected_driver.contains("COVERAGE_TMP=\"${OUTPUT_DIR}/tmp\""));
+    assert!(affected_driver.contains("OPENWEPP_GATE_NEXTEST_CONFIG"));
+    assert!(affected_driver.contains("COVERAGE_TMP=\"${TMPDIR}\""));
+    assert!(affected_driver.contains("mktemp -d /tmp/owg-crap-XXXXXX"));
     assert!(affected_driver.contains("TMPDIR=\"${COVERAGE_TMP}\""));
+    assert!(affected_driver.contains("trap 'terminate 143' TERM"));
     assert!(affected_driver.contains("CARGO_BUILD_JOBS=4"));
     assert!(affected_driver.contains("CARGO_PROFILE_TEST_DEBUG=0"));
     assert!(affected_driver.contains("workspace-metadata.json"));
@@ -685,6 +768,159 @@ fn crap_runner_resolves_executor_and_standalone_output_branches() {
     );
     assert!(!rejected_traversal.status.success());
     assert!(!scratch.path.join("executor-escape").exists());
+}
+
+#[test]
+#[cfg(unix)]
+fn crap_runner_rejects_unsafe_executor_nested_contracts() {
+    use std::os::unix::fs::PermissionsExt;
+
+    let scratch = Scratch::new();
+    let artifact_root = scratch.path.join("artifacts");
+    let outside_config = scratch.path.join("outside-nextest.toml");
+    fs::create_dir(&artifact_root).expect("create executor artifact root");
+    fs::write(&outside_config, "[store]\n").expect("write outside Nextest config");
+
+    let missing_config = run_executor_crap_probe(&artifact_root, None, None);
+    assert_eq!(missing_config.status.code(), Some(2));
+
+    let outside = run_executor_crap_probe(&artifact_root, Some(&outside_config), None);
+    assert_eq!(outside.status.code(), Some(2));
+
+    let config = artifact_root.join("qualified-nextest.toml");
+    fs::write(&config, "[store]\n").expect("write qualified Nextest config");
+    let config_symlink = artifact_root.join("qualified-nextest-link.toml");
+    std::os::unix::fs::symlink(&config, &config_symlink).expect("create Nextest config symlink");
+    let symlinked = run_executor_crap_probe(&artifact_root, Some(&config_symlink), None);
+    assert_eq!(symlinked.status.code(), Some(2));
+
+    let missing_tmp = run_executor_crap_probe(&artifact_root, Some(&config), None);
+    assert_eq!(missing_tmp.status.code(), Some(2));
+
+    let wrong_mode = ShortProcessTemp::directory(0o755);
+    let wrong_mode_result =
+        run_executor_crap_probe(&artifact_root, Some(&config), Some(&wrong_mode.path));
+    assert_eq!(wrong_mode_result.status.code(), Some(2));
+
+    let long = ShortProcessTemp::long_directory();
+    let long_result = run_executor_crap_probe(&artifact_root, Some(&config), Some(&long.path));
+    assert_eq!(long_result.status.code(), Some(2));
+
+    let symlink_target = scratch.path.join("tmp-target");
+    fs::create_dir(&symlink_target).expect("create temporary symlink target");
+    fs::set_permissions(&symlink_target, fs::Permissions::from_mode(0o700))
+        .expect("set temporary symlink target mode");
+    let symlink_tmp = ShortProcessTemp::symlink(&symlink_target);
+    let symlink_result =
+        run_executor_crap_probe(&artifact_root, Some(&config), Some(&symlink_tmp.path));
+    assert_eq!(symlink_result.status.code(), Some(2));
+}
+
+#[test]
+#[cfg(unix)]
+fn crap_runner_removes_standalone_temporary_root_after_failure() {
+    let scratch = Scratch::new();
+    let fake_bin = scratch.path.join("fake-bin");
+    let output = scratch.path.join("failure-output");
+    let observed_tmp = scratch.path.join("observed-tmp");
+    fs::create_dir(&fake_bin).expect("create fake binary directory");
+    write_executable(
+        &fake_bin.join("cargo"),
+        "#!/bin/sh\nprintf '%s\\n' \"${TMPDIR}\" > \"${FAKE_CARGO_TMP}\"\nexit 9\n",
+    );
+    let inherited_path = std::env::var("PATH").expect("PATH");
+    let result = Command::new("bash")
+        .arg(root().join("tools/release/run_adjudicated_crap_gate.sh"))
+        .arg("--output-dir")
+        .arg(&output)
+        .env("PATH", format!("{}:{inherited_path}", fake_bin.display()))
+        .env("FAKE_CARGO_TMP", &observed_tmp)
+        .output()
+        .expect("run standalone cleanup failure probe");
+    assert_eq!(result.status.code(), Some(9));
+    let temporary = PathBuf::from(
+        fs::read_to_string(observed_tmp)
+            .expect("observed TMPDIR")
+            .trim(),
+    );
+    assert!(!temporary.exists());
+    let run_status: serde_json::Value =
+        serde_json::from_slice(&fs::read(output.join("run-status.json")).expect("run status"))
+            .expect("parse run status");
+    assert_eq!(run_status["result"], "FAIL");
+    assert_eq!(run_status["exit_status"], 9);
+}
+
+#[test]
+#[cfg(unix)]
+fn crap_runner_records_signal_termination_as_failure() {
+    use std::os::unix::process::CommandExt;
+    use std::thread;
+    use std::time::{Duration, Instant};
+
+    let scratch = Scratch::new();
+    let fake_bin = scratch.path.join("fake-bin");
+    let output = scratch.path.join("signal-output");
+    let started = scratch.path.join("cargo-started");
+    fs::create_dir(&fake_bin).expect("create fake binary directory");
+    let fake_cargo = fake_bin.join("cargo");
+    write_executable(
+        &fake_cargo,
+        "#!/bin/sh\nprintf '%s\\n' \"${TMPDIR}\" > \"${FAKE_CARGO_TMP}\"\n: > \"${FAKE_CARGO_STARTED}\"\nsleep 60\n",
+    );
+    let observed_tmp = scratch.path.join("observed-tmp");
+    let inherited_path = std::env::var("PATH").expect("PATH");
+    let mut child = Command::new("bash");
+    child
+        .arg(root().join("tools/release/run_adjudicated_crap_gate.sh"))
+        .arg("--output-dir")
+        .arg(&output)
+        .env("PATH", format!("{}:{inherited_path}", fake_bin.display()))
+        .env("FAKE_CARGO_STARTED", &started)
+        .env("FAKE_CARGO_TMP", &observed_tmp)
+        .process_group(0);
+    let mut child = child.spawn().expect("spawn signal probe");
+    let deadline = Instant::now() + Duration::from_secs(10);
+    while !started.is_file() && Instant::now() < deadline {
+        thread::sleep(Duration::from_millis(20));
+    }
+    if !started.is_file() {
+        let _ = Command::new("kill")
+            .args(["-KILL", "--"])
+            .arg(format!("-{}", child.id()))
+            .status();
+        let _ = child.wait();
+        panic!("fake cargo did not start");
+    }
+    let terminated = Command::new("kill")
+        .arg("-TERM")
+        .arg("--")
+        .arg(format!("-{}", child.id()))
+        .status()
+        .expect("terminate CRAP process group");
+    assert!(terminated.success());
+    let status = child.wait().expect("wait for signal probe");
+    assert_eq!(status.code(), Some(143));
+    let run_status: serde_json::Value =
+        serde_json::from_slice(&fs::read(output.join("run-status.json")).expect("read run status"))
+            .expect("parse run status");
+    assert_eq!(run_status["result"], "FAIL");
+    assert_eq!(run_status["exit_status"], 143);
+    let temporary = PathBuf::from(
+        fs::read_to_string(observed_tmp)
+            .expect("observed TMPDIR")
+            .trim(),
+    );
+    assert!(!temporary.exists());
+    let group_gone = Command::new("kill")
+        .args(["-0", "--"])
+        .arg(format!("-{}", child.id()))
+        .status()
+        .expect("probe terminated process group");
+    assert!(
+        !group_gone.success(),
+        "fake cargo descendant survived SIGTERM"
+    );
 }
 
 #[test]
