@@ -107,6 +107,8 @@ Q12 subject freeze.
 Nextest lifecycle roles are named `affected`, `checkpoint`, `campaign`, and
 `release`. Selection still comes from the terminal plan; a profile name alone
 never authorizes narrowing.
+
+The production helper invokes one binary `transition` for LIGHT, audit construction, and HEAVY admission. The binary persists the LIGHT receipt and `READY` audit, carries that audit in process, and rejects standalone HEAVY use because a self-hash alone cannot authenticate audit provenance. This keeps the two independent inventory enumerations at LIGHT validation and audit construction while eliminating a forged-audit gap and any third local enumeration.
 ## Assurance Amendment Receipts
 
 For a typed report-data-only amendment, build the assurance binary once and run

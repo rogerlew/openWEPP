@@ -23,8 +23,10 @@ use crate::planner::{
     environment_record, inventory_for_node, manifest_roots, reconstruct_plan_in, tool_records,
     verify_plan_identity,
 };
-use crate::pre_heavy::validate_audit_for_execution;
-use crate::repository::observe_dirty;
+use crate::pre_heavy::{
+    ConstructedAudit, validate_audit_for_execution, validate_current_execution_context,
+};
+use crate::repository::{observe_dirty, remove_reconstruction_workspace};
 use crate::resume::{ResumeCandidate, apply_candidate};
 
 /// Provenance labels for a local, unsigned execution receipt.
@@ -173,7 +175,7 @@ pub fn execute_plan_stage(
     artifact_root: &Path,
     claims: &ExecutionClaims,
     stage: &str,
-    audit: Option<&Value>,
+    audit: Option<&ConstructedAudit>,
     resume: Option<&ResumeCandidate>,
 ) -> Result<Value> {
     let repository = canonical_directory(repo, "GATE-EXEC-REPOSITORY")?;
@@ -187,19 +189,19 @@ pub fn execute_plan_stage(
     create_confined_directories(&artifacts, &work_root(&artifacts))?;
     create_confined_directories(&artifacts, &cargo_target_root(&artifacts))?;
     create_confined_directories(&artifacts, &work_root(&artifacts).join("tmp"))?;
-    validate_plan(&repository, &artifacts, plan)?;
+    validate_plan(&repository, &artifacts, plan, stage != "HEAVY")?;
     verify_execution_checkout(&repository, plan)?;
     let admitted_audit = if stage == "HEAVY" {
         let audit = audit.ok_or_else(|| {
             execution_error("GATE-EXEC-AUDIT-REQUIRED", "heavy stage requires an audit")
         })?;
-        validate_audit_for_execution(&repository, plan, audit, &artifacts, claims)?;
-        Some(audit)
+        validate_audit_for_execution(&repository, plan, audit.as_value(), &artifacts, claims)?;
+        Some(audit.as_value())
     } else {
         None
     };
     let allowed_existing = admitted_light_nodes(admitted_audit)?;
-    preflight(&repository, &artifacts, plan, &allowed_existing)?;
+    preflight(&repository, &artifacts, plan, &allowed_existing, false)?;
 
     let mut imported = match stage {
         "LIGHT" | "FINAL_LIGHT" => ExecutionRecord::empty(),
@@ -241,6 +243,9 @@ pub fn execute_plan_stage(
     } else {
         stage
     };
+    if execution_class == "HEAVY" {
+        validate_current_execution_context(&repository, plan)?;
+    }
     let mut execution = execute_nodes_for(
         &repository,
         &artifacts,
@@ -291,7 +296,7 @@ pub fn execute_plan_stage(
         &observed_after,
         source_unchanged,
         claims,
-        audit,
+        admitted_audit,
         &execution.resume_decisions,
     )
 }
@@ -422,19 +427,21 @@ fn unavailable_items(record: &mut ExecutionRecord) -> Vec<Value> {
         .collect()
 }
 
-fn validate_plan(repo: &Path, artifact_root: &Path, plan: &Value) -> Result<()> {
+fn validate_plan(repo: &Path, artifact_root: &Path, plan: &Value, reconstruct: bool) -> Result<()> {
     let schema = read_json(&repo.join("gate-policy/v1/schemas/gate-plan.schema.json"))?;
     validate_schema(&schema, plan, "executor gate plan")?;
     verify_plan_identity(plan)?;
-    let reconstruction = work_root(artifact_root).join("reconstruction");
-    let reconstructed = reconstruct_plan_in(repo, plan, &reconstruction, false);
-    remove_reconstruction_workspace(&reconstruction)?;
-    let reconstructed = reconstructed?;
-    if digest(&reconstructed)? != digest(plan)? {
-        return Err(execution_error(
-            "GATE-EXEC-PLAN-RECONSTRUCTION",
-            "current policy and source do not reconstruct the supplied plan",
-        ));
+    if reconstruct {
+        let reconstruction = work_root(artifact_root).join("reconstruction");
+        let reconstructed = reconstruct_plan_in(repo, plan, &reconstruction, false);
+        remove_reconstruction_workspace(&reconstruction)?;
+        let reconstructed = reconstructed?;
+        if digest(&reconstructed)? != digest(plan)? {
+            return Err(execution_error(
+                "GATE-EXEC-PLAN-RECONSTRUCTION",
+                "current policy and source do not reconstruct the supplied plan",
+            ));
+        }
     }
     if plan["planning_stage"] != "TERMINAL" {
         return Err(execution_error(
@@ -443,25 +450,6 @@ fn validate_plan(repo: &Path, artifact_root: &Path, plan: &Value) -> Result<()> 
         ));
     }
     Ok(())
-}
-
-fn remove_reconstruction_workspace(path: &Path) -> Result<()> {
-    match fs::symlink_metadata(path) {
-        Ok(metadata) if metadata.file_type().is_symlink() || !metadata.is_dir() => {
-            Err(execution_error(
-                "GATE-EXEC-RECONSTRUCTION-CLEANUP",
-                path.display().to_string(),
-            ))
-        }
-        Ok(_) => fs::remove_dir_all(path).map_err(|error| {
-            execution_error("GATE-EXEC-RECONSTRUCTION-CLEANUP", error.to_string())
-        }),
-        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
-        Err(error) => Err(execution_error(
-            "GATE-EXEC-RECONSTRUCTION-CLEANUP",
-            error.to_string(),
-        )),
-    }
 }
 
 fn verify_execution_checkout(repo: &Path, plan: &Value) -> Result<()> {
@@ -494,6 +482,7 @@ fn preflight(
     artifact_root: &Path,
     plan: &Value,
     allowed_existing: &BTreeSet<String>,
+    enumerate_inventory: bool,
 ) -> Result<()> {
     validate_quality_scope(plan)?;
     let nodes = plan["nodes"]
@@ -511,14 +500,16 @@ fn preflight(
         }
         confined_working_directory(repo, node)?;
         allowed_environment(node)?;
-        let current_inventory =
-            inventory_for_node(repo, node, Some(&cargo_target_root(artifact_root)))?;
-        let expected = string_array(&node["expected_inventory"]["ids"], "inventory")?;
-        if current_inventory != expected {
-            return Err(execution_error(
-                "GATE-EXEC-INVENTORY-DRIFT",
-                required_string(node, "gate_definition_id")?,
-            ));
+        if enumerate_inventory {
+            let current_inventory =
+                inventory_for_node(repo, node, Some(&cargo_target_root(artifact_root)))?;
+            let expected = string_array(&node["expected_inventory"]["ids"], "inventory")?;
+            if current_inventory != expected {
+                return Err(execution_error(
+                    "GATE-EXEC-INVENTORY-DRIFT",
+                    required_string(node, "gate_definition_id")?,
+                ));
+            }
         }
         for path in string_array(&node["output_paths"], "output_paths")? {
             if !outputs.insert(path.clone()) {
@@ -2527,20 +2518,32 @@ mod tests {
 
         let mut malformed = plan.clone();
         malformed["plan_id"] = json!("0".repeat(64));
-        let error = validate_plan(repo.path(), artifacts.path(), &malformed)
+        let error = validate_plan(repo.path(), artifacts.path(), &malformed, true)
             .expect_err("malformed identity must fail");
         assert_eq!(error.code, "GATE-PLAN-IDENTITY");
 
         let mut drifted = plan.clone();
         drifted["nodes"][0]["expected_inventory"]["ids"] = json!(["0".repeat(64)]);
-        let error = preflight(repo.path(), artifacts.path(), &drifted, &BTreeSet::new())
-            .expect_err("inventory drift must fail");
+        let error = preflight(
+            repo.path(),
+            artifacts.path(),
+            &drifted,
+            &BTreeSet::new(),
+            true,
+        )
+        .expect_err("inventory drift must fail");
         assert_eq!(error.code, "GATE-EXEC-INVENTORY-DRIFT");
 
         let mut colliding = plan;
         colliding["nodes"][1]["output_paths"] = colliding["nodes"][0]["output_paths"].clone();
-        let error = preflight(repo.path(), artifacts.path(), &colliding, &BTreeSet::new())
-            .expect_err("output collision must fail");
+        let error = preflight(
+            repo.path(),
+            artifacts.path(),
+            &colliding,
+            &BTreeSet::new(),
+            false,
+        )
+        .expect_err("output collision must fail");
         assert_eq!(error.code, "GATE-EXEC-OUTPUT-COLLISION");
     }
 

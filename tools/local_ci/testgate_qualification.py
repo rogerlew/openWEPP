@@ -70,8 +70,7 @@ def validate(args: argparse.Namespace) -> dict[str, Any]:
     required = [
         "validate-package",
         "pre-heavy-audit",
-        '"--stage", "light"',
-        '"--stage", "heavy"',
+        '"--stage", "transition"',
         "verify_receipt",
     ]
     surface = helper + controller + cli

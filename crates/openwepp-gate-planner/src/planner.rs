@@ -729,7 +729,7 @@ impl<P: InventoryProvider> Planner<P> {
         let roots = manifest_roots(repo, root_revision, request.source.head_commit.is_none())?;
         let context = context_override
             .cloned()
-            .map_or_else(|| execution_context(repo, &policy), Ok)?;
+            .map_or_else(|| current_execution_context(repo), Ok)?;
         let inventory_snapshot = request.source.head_commit.as_deref().map_or_else(
             || Ok(None),
             |head| {
@@ -2173,8 +2173,8 @@ fn path_role(path: &str) -> &'static str {
         "execution"
     }
 }
-
-fn execution_context(repo: &Path, policy: &PolicyBundle) -> Result<Value> {
+pub(crate) fn current_execution_context(repo: &Path) -> Result<Value> {
+    let policy = PolicyBundle::load(repo)?;
     let target = host_target_triple(repo)?;
     let environment = environment_record(repo, &target)?;
     let tools = tool_records(repo)?;

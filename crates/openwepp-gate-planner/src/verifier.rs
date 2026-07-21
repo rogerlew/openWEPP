@@ -147,8 +147,54 @@ pub fn verify_receipt(
             "observed source, selection, or node contract differs from the supplied plan",
         ));
     }
+    verify_receipt_after_plan_admission(repo, plan, receipt, artifacts)
+}
+
+/// Verify a HEAVY receipt while consuming the READY audit's independent plan
+/// reconstruction instead of enumerating the same terminal inventory again.
+///
+/// The executor must call this only after [`crate::pre_heavy::validate_audit_for_execution`]
+/// admitted the same plan and audit immediately before HEAVY. All receipt,
+/// source, live tool/environment, DAG, artifact, inventory, summary, and
+/// authority checks remain active.
+///
+/// # Errors
+///
+/// Returns a receipt error when the plan has no HEAVY node or any retained
+/// receipt invariant fails.
+pub fn verify_receipt_after_ready_audit(
+    repo: &Path,
+    plan: &Value,
+    receipt: &Value,
+    artifacts: &dyn ArtifactProvider,
+) -> Result<ReceiptVerdict> {
+    verify_receipt_identity(repo, plan, receipt)?;
+    if crate::planner::current_execution_context(repo)? != plan["execution_context"] {
+        return Err(verification_error(
+            "GATE-RECEIPT-EXECUTION-CONTEXT",
+            "execution context changed during the audit-admitted HEAVY transition",
+        ));
+    }
+    if !array(plan, "/nodes")?
+        .iter()
+        .any(|node| node["execution_cost_class"] == "HEAVY")
+    {
+        return Err(verification_error(
+            "GATE-RECEIPT-AUDIT-ADMISSION",
+            "READY-audit receipt verification requires a HEAVY terminal plan",
+        ));
+    }
+    verify_receipt_after_plan_admission(repo, plan, receipt, artifacts)
+}
+
+fn verify_receipt_after_plan_admission(
+    repo: &Path,
+    plan: &Value,
+    receipt: &Value,
+    artifacts: &dyn ArtifactProvider,
+) -> Result<ReceiptVerdict> {
     verify_source_roots(repo, plan, receipt)?;
-    verify_tool_environment(repo, plan, receipt)?;
+    verify_tool_environment_bindings(plan, receipt)?;
     let plan_nodes = array(plan, "/nodes")?;
     verify_heavy_audit(repo, plan, receipt, artifacts, plan_nodes)?;
     verify_dag(plan_nodes, receipt)?;
@@ -295,25 +341,6 @@ fn reconstruct_receipt_plan(
         )
     })?;
     crate::planner::reconstruct_plan_in(repo, plan, &root.join(".work"), after_source_mutation)
-}
-
-fn verify_tool_environment(repo: &Path, plan: &Value, receipt: &Value) -> Result<()> {
-    verify_tool_environment_bindings(plan, receipt)?;
-    let tools = crate::planner::tool_records(repo)?;
-    let environment =
-        crate::planner::environment_record(repo, string(receipt, "/environment/target_triple")?)?;
-    if digest(&tools)? != plan["execution_context"]["tool_manifest_sha256"]
-        || receipt["tools"] != tools
-        || digest(&environment)? != plan["execution_context"]["environment_manifest_sha256"]
-        || receipt["environment"] != environment
-    {
-        Err(verification_error(
-            "GATE-RECEIPT-EXECUTION-CONTEXT",
-            "tool or environment projection differs from the verified plan",
-        ))
-    } else {
-        Ok(())
-    }
 }
 
 fn verify_tool_environment_bindings(plan: &Value, receipt: &Value) -> Result<()> {

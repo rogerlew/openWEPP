@@ -12,13 +12,14 @@ use openwepp_gate_planner::package_validation::validate_package;
 use openwepp_gate_planner::planner::reconcile_intent_terminal;
 use openwepp_gate_planner::planner::{NextestInventory, PlanRequest, Planner, PlanningStage};
 use openwepp_gate_planner::pre_heavy::{
-    admit_attempt_ledger, append_attempt_record, build_audit, build_failure_audit,
-    reconcile_orphaned_attempts, record_heavy_failure, validate_resume_ledger,
+    ConstructedAudit, admit_attempt_ledger, append_attempt_record, build_audit,
+    build_failure_audit, construct_audit, reconcile_orphaned_attempts, record_heavy_failure,
+    validate_resume_ledger,
 };
 use openwepp_gate_planner::repository::{ObservedSource, observe_committed, observe_dirty};
-use openwepp_gate_planner::resume::load_candidate;
+use openwepp_gate_planner::resume::load_candidate_after_ready_audit;
 use openwepp_gate_planner::verifier::{
-    DirectoryArtifacts, verify_receipt, verify_receipt_envelope,
+    DirectoryArtifacts, verify_receipt, verify_receipt_after_ready_audit, verify_receipt_envelope,
 };
 use serde_json::{Value, json};
 
@@ -119,6 +120,8 @@ fn reject_unknown_options(command: &str, options: &BTreeMap<String, String>) -> 
             "stage",
             "audit",
             "resume",
+            "light-output",
+            "audit-output",
         ],
         "pre-heavy-audit" => &[
             "repo",
@@ -168,6 +171,9 @@ fn staged_run_command(
     claims: &ExecutionClaims,
     stage: &str,
 ) -> Result<Value> {
+    if stage == "transition" {
+        return trusted_transition_command(repo, options, plan, artifact_root, claims);
+    }
     if stage == "light" {
         let receipt = execute_plan_stage(repo, plan, artifact_root, claims, "LIGHT", None, None)?;
         let output = persist_plan(repo, options, &receipt)?;
@@ -181,19 +187,112 @@ fn staged_run_command(
     if stage != "heavy" {
         return Err(usage_error());
     }
+    Err(GatePolicyError::new(
+        ErrorClass::Trust,
+        "GATE-EXEC-AUDIT-UNAUTHENTICATED",
+        "standalone HEAVY cannot authenticate a self-hashed READY audit; use the in-process transition",
+    ))
+}
+
+fn trusted_transition_command(
+    repo: &Path,
+    options: &BTreeMap<String, String>,
+    plan: &Value,
+    artifact_root: &Path,
+    claims: &ExecutionClaims,
+) -> Result<Value> {
+    validate_transition_outputs(repo, options)?;
     let ledger = PathBuf::from(required(options, "resume")?);
     admit_attempt_ledger(&ledger)?;
     reconcile_orphaned_attempts(&ledger)?;
+    let light_started = Instant::now();
+    let light = execute_plan_stage(repo, plan, artifact_root, claims, "LIGHT", None, None)?;
+    persist_named(repo, options, "light-output", &light)?;
+    append_attempt_record(
+        &ledger,
+        json!({
+            "record_type": "STAGE_ATTEMPT",
+            "status": "CLOSED",
+            "stage": "LIGHT",
+            "plan_id": plan["plan_id"],
+            "receipt_id": light["stage_receipt_id"],
+            "result": light["result"],
+            "artifact_root": artifact_root.display().to_string(),
+            "wall_time_ms": light_started.elapsed().as_millis() as u64,
+        }),
+    )?;
+    let audit = construct_audit(repo, plan, &light, artifact_root, &ledger)?;
+    persist_named(repo, options, "audit-output", audit.as_value())?;
+    if audit.as_value()["status"] != "READY" {
+        return Ok(json!({
+            "result": audit.as_value()["status"],
+            "audit_id": audit.as_value()["audit_id"],
+            "reason_codes": audit.as_value()["reason_codes"],
+            "stage": "AUDIT"
+        }));
+    }
+    trusted_heavy_run(repo, options, plan, artifact_root, claims, &ledger, &audit)
+}
+
+#[cfg(target_os = "linux")]
+fn validate_transition_outputs(repo: &Path, options: &BTreeMap<String, String>) -> Result<()> {
+    use std::collections::BTreeSet;
+    use std::os::fd::AsRawFd;
+
+    let mut identities = BTreeSet::new();
+    for name in ["resume", "plan", "light-output", "audit-output", "output"] {
+        let path = PathBuf::from(required(options, name)?);
+        if matches!(name, "resume" | "plan") {
+            let metadata = fs::symlink_metadata(&path).map_err(|error| {
+                GatePolicyError::new(ErrorClass::Io, "GATE-CLI-INPUT", error.to_string())
+            })?;
+            if metadata.file_type().is_symlink() || !metadata.is_file() {
+                return Err(GatePolicyError::new(
+                    ErrorClass::Cli,
+                    "GATE-CLI-INPUT-SYMLINK",
+                    format!("{name} must be an existing regular file, not a symlink"),
+                ));
+            }
+        }
+        let (parent, filename) = confined_output_parent(repo, &path)?;
+        let stable_parent = fs::canonicalize(format!("/proc/self/fd/{}", parent.as_raw_fd()))
+            .map_err(|error| {
+                GatePolicyError::new(ErrorClass::Io, "GATE-CLI-OUTPUT-DIR", error.to_string())
+            })?;
+        if !identities.insert(stable_parent.join(filename)) {
+            return Err(GatePolicyError::new(
+                ErrorClass::Cli,
+                "GATE-CLI-OUTPUT-COLLISION",
+                "transition inputs and outputs must resolve to distinct paths",
+            ));
+        }
+    }
+    Ok(())
+}
+
+#[cfg(not(target_os = "linux"))]
+fn validate_transition_outputs(_repo: &Path, _options: &BTreeMap<String, String>) -> Result<()> {
+    Err(GatePolicyError::new(
+        ErrorClass::Io,
+        "GATE-CLI-OUTPUT-UNSUPPORTED",
+        "descriptor-confined output is unavailable on this platform",
+    ))
+}
+
+fn trusted_heavy_run(
+    repo: &Path,
+    options: &BTreeMap<String, String>,
+    plan: &Value,
+    artifact_root: &Path,
+    claims: &ExecutionClaims,
+    ledger: &Path,
+    audit: &ConstructedAudit,
+) -> Result<Value> {
     let started = Instant::now();
     let recovery_root = std::env::var_os("OPENWEPP_GATE_CHECKPOINT_MIRROR_ROOT")
         .map(PathBuf::from)
         .map_or(Value::Null, |path| json!(path.display().to_string()));
-    let audit_path = options.get("audit").map(PathBuf::from);
-    let submitted_audit_id = audit_path
-        .as_ref()
-        .and_then(|path| fs::read(path).ok())
-        .and_then(|bytes| parse_strict(&bytes).ok())
-        .map_or(Value::Null, |value| value["audit_id"].clone());
+    let submitted_audit_id = audit.as_value()["audit_id"].clone();
     let started_entry_sha256 = append_attempt_record(
         &ledger,
         json!({
@@ -212,20 +311,27 @@ fn staged_run_command(
         }),
     )?;
     let execute = || -> Result<Value> {
-        let audit_path = audit_path.as_ref().ok_or_else(usage_error)?;
-        let audit = read_json(&audit_path)?;
-        validate_resume_ledger(repo, plan, &audit, artifact_root, &ledger)?;
-        let resume_candidate = load_candidate(repo, plan, &ledger, claims)?;
+        validate_resume_ledger(
+            repo,
+            plan,
+            audit.as_value(),
+            artifact_root,
+            &ledger,
+            &started_entry_sha256,
+            claims,
+        )?;
+        let resume_candidate =
+            load_candidate_after_ready_audit(repo, plan, &ledger, claims, audit)?;
         let receipt = execute_plan_stage(
             repo,
             plan,
             artifact_root,
             claims,
             "HEAVY",
-            Some(&audit),
+            Some(audit),
             resume_candidate.as_ref(),
         )?;
-        verify_receipt(
+        verify_receipt_after_ready_audit(
             repo,
             plan,
             &receipt,
@@ -303,15 +409,35 @@ fn pre_heavy_audit_command(repo: &Path, options: &BTreeMap<String, String>) -> R
     let plan = read_json(Path::new(required(options, "plan")?))?;
     let artifact_root = PathBuf::from(required(options, "artifact-root")?);
     let ledger = PathBuf::from(required(options, "ledger")?);
+    let ledger_preparation = admit_attempt_ledger(&ledger)
+        .and_then(|()| reconcile_orphaned_attempts(&ledger).map(|_| ()));
     let light_result = read_json(Path::new(required(options, "light-receipts")?));
-    let audit = match light_result {
-        Ok(light) => match build_audit(repo, &plan, &light, &artifact_root, &ledger) {
+    let audit = match (light_result, ledger_preparation) {
+        (Ok(light), Err(failure)) => {
+            build_failure_audit(repo, &plan, &light, &artifact_root, &ledger, &failure)?
+        }
+        (Err(failure), Err(_ledger_failure)) => {
+            let represented = GatePolicyError::new(
+                failure.class,
+                "GATE-AUDIT-LIGHT-INPUT-INVALID",
+                format!("{}: {}", failure.code, failure.message),
+            );
+            build_failure_audit(
+                repo,
+                &plan,
+                &json!({}),
+                &artifact_root,
+                &ledger,
+                &represented,
+            )?
+        }
+        (Ok(light), Ok(())) => match build_audit(repo, &plan, &light, &artifact_root, &ledger) {
             Ok(audit) => audit,
             Err(failure) => {
                 build_failure_audit(repo, &plan, &light, &artifact_root, &ledger, &failure)?
             }
         },
-        Err(failure) => {
+        (Err(failure), Ok(())) => {
             let represented = GatePolicyError::new(
                 failure.class,
                 "GATE-AUDIT-LIGHT-INPUT-INVALID",
@@ -480,8 +606,17 @@ fn boundary(options: &BTreeMap<String, String>) -> String {
 }
 
 fn persist_plan(repo: &Path, options: &BTreeMap<String, String>, plan: &Value) -> Result<PathBuf> {
-    let output = PathBuf::from(required(options, "output")?);
-    write_plan_confined(repo, &output, &canonical_bytes(plan)?)?;
+    persist_named(repo, options, "output", plan)
+}
+
+fn persist_named(
+    repo: &Path,
+    options: &BTreeMap<String, String>,
+    name: &str,
+    value: &Value,
+) -> Result<PathBuf> {
+    let output = PathBuf::from(required(options, name)?);
+    write_plan_confined(repo, &output, &canonical_bytes(value)?)?;
     Ok(output)
 }
 
@@ -742,7 +877,10 @@ mod tests {
     use std::fs;
     use std::path::PathBuf;
 
-    use super::{parse_options, run_arguments, staged_run_command, write_plan_confined};
+    use super::{
+        parse_options, run_arguments, staged_run_command, validate_transition_outputs,
+        write_plan_confined,
+    };
     use openwepp_gate_planner::executor::ExecutionClaims;
     use serde_json::json;
 
@@ -768,7 +906,7 @@ mod tests {
     }
 
     #[test]
-    fn heavy_audit_parse_failure_has_balanced_lifecycle_records() {
+    fn standalone_heavy_rejects_an_unauthenticated_ready_document() {
         let repo = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
         let root = repo.join("target").join(format!(
             "testgate-heavy-lifecycle-{}-{}",
@@ -779,7 +917,7 @@ mod tests {
         let ledger = root.join("attempts.jsonl");
         let audit = root.join("audit.json");
         fs::write(&ledger, "").expect("ledger");
-        fs::write(&audit, "{").expect("invalid audit");
+        fs::write(&audit, r#"{"status":"READY"}"#).expect("forged audit");
         let options = BTreeMap::from([
             ("resume".to_owned(), ledger.display().to_string()),
             ("audit".to_owned(), audit.display().to_string()),
@@ -796,11 +934,13 @@ mod tests {
             &ExecutionClaims::default(),
             "heavy",
         )
-        .expect_err("invalid audit must fail");
-        assert_eq!(error.code, "GATE-JSON-INVALID");
+        .expect_err("standalone HEAVY must fail");
+        assert_eq!(error.code, "GATE-EXEC-AUDIT-UNAUTHENTICATED");
         let records = fs::read_to_string(&ledger).expect("ledger records");
-        assert!(records.contains("\"status\":\"STARTED\""));
-        assert!(records.contains("\"status\":\"FAILED\""));
+        assert!(
+            records.is_empty(),
+            "rejected transport is not an admitted attempt"
+        );
         fs::remove_dir_all(root).expect("remove test root");
     }
 
@@ -819,6 +959,72 @@ mod tests {
             let error = run_arguments(case).expect_err("incomplete command must fail");
             assert_eq!(error.code, "GATE-CLI-USAGE");
         }
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn transition_rejects_missing_or_colliding_outputs_before_execution() {
+        let repo = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
+        let empty = BTreeMap::new();
+        let error = validate_transition_outputs(&repo, &empty)
+            .expect_err("missing transition outputs must fail");
+        assert_eq!(error.code, "GATE-CLI-USAGE");
+
+        let scratch = std::env::temp_dir().join(format!(
+            "testgate-transition-preflight-{}",
+            std::process::id()
+        ));
+        fs::create_dir_all(&scratch).expect("transition preflight scratch");
+        let history = scratch.join("history");
+        fs::create_dir(&history).expect("transition history");
+        let same = history.join("attempts.jsonl").display().to_string();
+        fs::write(&same, "").expect("transition ledger");
+        let plan = scratch.join("plan.json");
+        fs::write(&plan, "{}").expect("transition plan");
+        let alias = history
+            .join("..")
+            .join("history")
+            .join("attempts.jsonl")
+            .display()
+            .to_string();
+        let options = BTreeMap::from([
+            ("resume".to_owned(), same.clone()),
+            ("plan".to_owned(), plan.display().to_string()),
+            ("light-output".to_owned(), alias),
+            (
+                "audit-output".to_owned(),
+                scratch.join("audit.json").display().to_string(),
+            ),
+            (
+                "output".to_owned(),
+                scratch.join("receipt.json").display().to_string(),
+            ),
+        ]);
+        let error = validate_transition_outputs(&repo, &options)
+            .expect_err("colliding transition outputs must fail");
+        assert_eq!(error.code, "GATE-CLI-OUTPUT-COLLISION");
+
+        let target = scratch.join("symlink-target.json");
+        fs::write(&target, "ledger").expect("symlink target");
+        let link = scratch.join("ledger-link.jsonl");
+        std::os::unix::fs::symlink(&target, &link).expect("ledger symlink");
+        let symlink_options = BTreeMap::from([
+            ("resume".to_owned(), link.display().to_string()),
+            ("plan".to_owned(), plan.display().to_string()),
+            (
+                "light-output".to_owned(),
+                scratch.join("light.json").display().to_string(),
+            ),
+            (
+                "audit-output".to_owned(),
+                scratch.join("audit.json").display().to_string(),
+            ),
+            ("output".to_owned(), target.display().to_string()),
+        ]);
+        let error = validate_transition_outputs(&repo, &symlink_options)
+            .expect_err("final-component ledger symlink must fail");
+        assert_eq!(error.code, "GATE-CLI-INPUT-SYMLINK");
+        fs::remove_dir_all(scratch).expect("remove transition preflight scratch");
     }
 
     #[cfg(target_os = "linux")]

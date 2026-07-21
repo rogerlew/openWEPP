@@ -15,7 +15,7 @@ use crate::canonical::{
 use crate::error::{ErrorClass, GatePolicyError, Result};
 use crate::executor::ExecutionClaims;
 use crate::package_validation::validate_package;
-use crate::planner::verify_plan_identity;
+use crate::planner::{reconstruct_plan_in, verify_plan_identity};
 
 pub const CHECK_IDS: [&str; 10] = [
     "PACKAGE_ADMISSION",
@@ -29,6 +29,42 @@ pub const CHECK_IDS: [&str; 10] = [
     "DURABLE_ATTEMPT_LEDGER",
     "OPEN_TOOLING_DEFECTS",
 ];
+
+/// An audit value constructed by the repository-owned implementation.
+///
+/// The private field prevents execution APIs from accepting caller-synthesized
+/// READY JSON as proof that independent reconstruction occurred.
+#[derive(Debug)]
+pub struct ConstructedAudit(Value);
+
+impl ConstructedAudit {
+    #[must_use]
+    pub fn as_value(&self) -> &Value {
+        &self.0
+    }
+}
+
+/// Construct and retain provenance for one audit decision.
+///
+/// # Errors
+///
+/// Returns an error only when neither the ordinary nor fallback audit can be
+/// represented as a valid canonical document.
+pub fn construct_audit(
+    repo: &Path,
+    plan: &Value,
+    light_receipt: &Value,
+    artifact_root: &Path,
+    ledger: &Path,
+) -> Result<ConstructedAudit> {
+    let audit = match build_audit(repo, plan, light_receipt, artifact_root, ledger) {
+        Ok(audit) => audit,
+        Err(failure) => {
+            build_failure_audit(repo, plan, light_receipt, artifact_root, ledger, &failure)?
+        }
+    };
+    Ok(ConstructedAudit(audit))
+}
 
 /// Build the only artifact that may authorize the heavy execution stage.
 ///
@@ -45,6 +81,7 @@ pub fn build_audit(
 ) -> Result<Value> {
     verify_plan_identity(plan)?;
     validate_stage_receipt(repo, plan, light_receipt, artifact_root, true)?;
+    let ledger_head_sha256 = ledger_head(ledger).ok().flatten();
 
     let mut checks = Vec::with_capacity(CHECK_IDS.len());
     let package_admission = package_admission(repo, plan)?;
@@ -60,7 +97,7 @@ pub fn build_audit(
     )?);
     checks.push(check(
         CHECK_IDS[2],
-        inventory_is_exact(plan),
+        inventory_and_arguments_are_exact(repo, plan, artifact_root),
         json!({"nodes": plan["nodes"]}),
     )?);
     checks.push(check(
@@ -101,10 +138,10 @@ pub fn build_audit(
     )?);
     checks.push(check(
         CHECK_IDS[9],
-        no_open_tooling_defect(ledger),
+        no_open_tooling_defect_at_head(ledger, ledger_head_sha256.as_deref()),
         json!({
             "ledger_path_sha256": path_digest(ledger),
-            "ledger_sha256": fs::read(ledger).ok().map(|bytes| sha256_bytes(&bytes)),
+            "ledger_head_sha256": ledger_head_sha256,
         }),
     )?);
 
@@ -135,6 +172,7 @@ pub fn build_audit(
         "light_stage_receipt_id": light_receipt["stage_receipt_id"],
         "artifact_root_sha256": path_digest(artifact_root),
         "ledger_path_sha256": path_digest(ledger),
+        "ledger_head_sha256": ledger_head_sha256,
         "node_manifest": node_manifest(plan)?,
         "package_admission": package_admission,
         "checks": checks,
@@ -209,6 +247,7 @@ pub fn build_failure_audit(
         "light_stage_receipt_id": light_id,
         "artifact_root_sha256": path_digest(artifact_root),
         "ledger_path_sha256": path_digest(ledger),
+        "ledger_head_sha256": ledger_head(ledger).ok().flatten(),
         "node_manifest": node_manifest(plan).unwrap_or_else(|_| Value::Array(Vec::new())),
         "package_admission": null,
         "checks": checks,
@@ -365,6 +404,7 @@ pub fn validate_audit_for_execution(
             "HEAVY executor differs from the binary that emitted the LIGHT receipt",
         ));
     }
+    validate_current_execution_context(repo, plan)?;
     let light = &audit["light_receipt"]["claims"];
     if !execution_claims_match(light, claims) {
         return Err(audit_error(
@@ -373,6 +413,21 @@ pub fn validate_audit_for_execution(
         ));
     }
     Ok(())
+}
+
+pub(crate) fn validate_current_execution_context(repo: &Path, plan: &Value) -> Result<()> {
+    execution_context_is_current(plan, &crate::planner::current_execution_context(repo)?)
+}
+
+fn execution_context_is_current(plan: &Value, current: &Value) -> Result<()> {
+    if *current == plan["execution_context"] {
+        Ok(())
+    } else {
+        Err(audit_error(
+            "GATE-AUDIT-EXECUTION-CONTEXT-DRIFT",
+            "tool, environment, fixture, or configuration identity changed after READY",
+        ))
+    }
 }
 
 fn execution_claims_match(light: &Value, claims: &ExecutionClaims) -> bool {
@@ -394,7 +449,10 @@ pub fn validate_resume_ledger(
     audit: &Value,
     artifact_root: &Path,
     ledger: &Path,
+    started_entry_sha256: &str,
+    claims: &ExecutionClaims,
 ) -> Result<()> {
+    validate_audit(repo, plan, audit, artifact_root)?;
     if audit["ledger_path_sha256"] != path_digest(ledger) {
         return Err(audit_error(
             "GATE-AUDIT-LEDGER-SUBSTITUTION",
@@ -403,14 +461,14 @@ pub fn validate_resume_ledger(
     }
     durable_ledger(ledger)?;
     no_open_tooling_defect(ledger)?;
-    let reconstructed = build_audit(repo, plan, &audit["light_receipt"], artifact_root, ledger)?;
-    if &reconstructed != audit {
-        return Err(audit_error(
-            "GATE-AUDIT-RECONSTRUCTION-MISMATCH",
-            "submitted audit differs from an independent reconstruction",
-        ));
-    }
-    Ok(())
+    validate_started_successor(
+        plan,
+        audit,
+        artifact_root,
+        ledger,
+        started_entry_sha256,
+        claims,
+    )
 }
 
 /// Admit only the caller-selected durable append target before a HEAVY
@@ -701,25 +759,7 @@ fn cheap_prerequisites(repo: &Path, plan: &Value, receipt: &Value) -> Result<()>
             ));
         }
     }
-    if plan["authorized_paths"]
-        .as_array()
-        .into_iter()
-        .flatten()
-        .filter_map(Value::as_str)
-        .any(|path| path.ends_with(".md"))
-    {
-        let lint = Command::new("markdown-doc")
-            .args(["lint"])
-            .current_dir(repo)
-            .output()
-            .map_err(|error| audit_error("GATE-AUDIT-DOC-LINT", error.to_string()))?;
-        if !lint.status.success() {
-            return Err(audit_error(
-                "GATE-AUDIT-DOC-LINT",
-                String::from_utf8_lossy(&lint.stdout),
-            ));
-        }
-    }
+    documentation_scope_is_exact(plan)?;
     let package = plan["authorized_paths"]
         .as_array()
         .into_iter()
@@ -747,7 +787,11 @@ fn cheap_prerequisites(repo: &Path, plan: &Value, receipt: &Value) -> Result<()>
     Ok(())
 }
 
-fn inventory_is_exact(plan: &Value) -> Result<()> {
+fn inventory_and_arguments_are_exact(
+    repo: &Path,
+    plan: &Value,
+    artifact_root: &Path,
+) -> Result<()> {
     let mut ids = BTreeSet::new();
     for node in nodes(plan)? {
         let id = string(node, "node_id")?;
@@ -761,7 +805,94 @@ fn inventory_is_exact(plan: &Value) -> Result<()> {
             ));
         }
     }
-    Ok(())
+    let reconstructed = reconstruct_plan_in(repo, plan, &artifact_root.join(".work"), false)?;
+    reconstructed_plan_is_exact(plan, &reconstructed)
+}
+
+fn reconstructed_plan_is_exact(plan: &Value, reconstructed: &Value) -> Result<()> {
+    if digest(reconstructed)? == digest(plan)? {
+        Ok(())
+    } else {
+        Err(GatePolicyError::new(
+            ErrorClass::Identity,
+            "GATE-AUDIT-INVENTORY-DRIFT",
+            "current source, policy, execution context, arguments, or independently enumerated inventory differs from the terminal plan",
+        ))
+    }
+}
+
+fn documentation_scope_is_exact(plan: &Value) -> Result<()> {
+    let expected = plan["changed_objects"]
+        .as_array()
+        .ok_or_else(|| audit_error("GATE-AUDIT-DOC-SCOPE", "changed_objects"))?
+        .iter()
+        .filter(|change| change["change_kind"] != "DELETE")
+        .filter_map(|change| change["path"].as_str())
+        .filter(|path| {
+            Path::new(path)
+                .extension()
+                .is_some_and(|extension| extension.eq_ignore_ascii_case("md"))
+        })
+        .map(str::to_owned)
+        .collect::<BTreeSet<_>>();
+    let document_nodes = nodes(plan)?
+        .iter()
+        .filter(|node| node["gate_definition_id"] == "documentation-lint-v1")
+        .collect::<Vec<_>>();
+    if expected.is_empty() {
+        if document_nodes.is_empty() {
+            return Ok(());
+        }
+        return Err(audit_error(
+            "GATE-AUDIT-DOC-SCOPE",
+            "documentation lint is present without changed Markdown",
+        ));
+    }
+    if document_nodes.len() != 1 {
+        return Err(audit_error(
+            "GATE-AUDIT-DOC-SCOPE",
+            "changed Markdown requires exactly one documentation lint node",
+        ));
+    }
+    let arguments = document_nodes[0]["arguments"]
+        .as_array()
+        .ok_or_else(|| audit_error("GATE-AUDIT-DOC-SCOPE", "arguments"))?
+        .iter()
+        .map(|argument| {
+            argument
+                .as_str()
+                .map(str::to_owned)
+                .ok_or_else(|| audit_error("GATE-AUDIT-DOC-SCOPE", "non-string argument"))
+        })
+        .collect::<Result<Vec<_>>>()?;
+    if arguments.len() != 2 + expected.len() * 2
+        || arguments.first().map(String::as_str) != Some("markdown-doc")
+        || arguments.get(1).map(String::as_str) != Some("lint")
+    {
+        return Err(audit_error(
+            "GATE-AUDIT-DOC-SCOPE",
+            "documentation lint command shape differs from the canonical scoped form",
+        ));
+    }
+    let mut unique = BTreeSet::new();
+    let mut actual = Vec::new();
+    for pair in arguments[2..].chunks_exact(2) {
+        if pair[0] != "--path" || !unique.insert(pair[1].clone()) {
+            return Err(audit_error(
+                "GATE-AUDIT-DOC-SCOPE",
+                "documentation lint paths are malformed or duplicated",
+            ));
+        }
+        actual.push(pair[1].clone());
+    }
+    if actual == expected.into_iter().collect::<Vec<_>>() {
+        Ok(())
+    } else {
+        Err(audit_error(
+            "GATE-AUDIT-DOC-SCOPE",
+            "documentation lint paths differ from changed non-deleted Markdown",
+        ))
+    }
 }
 
 fn execution_identities(plan: &Value, receipt: &Value) -> Result<()> {
@@ -907,6 +1038,62 @@ fn durable_ledger(path: &Path) -> Result<()> {
     }
 }
 
+fn ledger_head(path: &Path) -> Result<Option<String>> {
+    verify_ledger_chain(path)?;
+    let text = fs::read_to_string(path)
+        .map_err(|error| audit_error("GATE-AUDIT-LEDGER-READ", error.to_string()))?;
+    text.lines()
+        .rev()
+        .find(|line| !line.trim().is_empty())
+        .map(|line| {
+            let record = parse_strict(line.as_bytes())?;
+            string(&record, "entry_sha256").map(str::to_owned)
+        })
+        .transpose()
+}
+
+fn validate_started_successor(
+    plan: &Value,
+    audit: &Value,
+    artifact_root: &Path,
+    ledger: &Path,
+    started_entry_sha256: &str,
+    claims: &ExecutionClaims,
+) -> Result<()> {
+    let text = fs::read_to_string(ledger)
+        .map_err(|error| audit_error("GATE-AUDIT-LEDGER-READ", error.to_string()))?;
+    let started = text
+        .lines()
+        .rev()
+        .find(|line| !line.trim().is_empty())
+        .map(|line| parse_strict(line.as_bytes()))
+        .transpose()?
+        .ok_or_else(|| audit_error("GATE-AUDIT-STARTED-MISSING", "ledger is empty"))?;
+    let expected_previous = audit["ledger_head_sha256"].clone();
+    let exact = started["entry_sha256"] == started_entry_sha256
+        && started["previous_entry_sha256"] == expected_previous
+        && started["record_type"] == "STAGE_ATTEMPT"
+        && started["status"] == "STARTED"
+        && started["stage"] == "HEAVY"
+        && started["phase"] == "ADMISSION"
+        && started["plan_id"] == plan["plan_id"]
+        && started["audit_id"] == audit["audit_id"]
+        && started["artifact_root"] == artifact_root.display().to_string()
+        && started["workflow"] == claims.workflow
+        && started["job"] == claims.job
+        && started["runner"] == claims.runner
+        && started["attempt"] == claims.attempt;
+    if exact {
+        Ok(())
+    } else {
+        Err(GatePolicyError::new(
+            ErrorClass::Identity,
+            "GATE-AUDIT-LEDGER-SUCCESSOR",
+            "current ledger must equal the audited prefix followed by this exact HEAVY STARTED record",
+        ))
+    }
+}
+
 fn verify_ledger_chain(path: &Path) -> Result<()> {
     let text = fs::read_to_string(path)
         .map_err(|error| audit_error("GATE-AUDIT-LEDGER-READ", error.to_string()))?;
@@ -961,6 +1148,19 @@ fn no_open_tooling_defect(path: &Path) -> Result<()> {
         }
     }
     Ok(())
+}
+
+fn no_open_tooling_defect_at_head(path: &Path, expected_head: Option<&str>) -> Result<()> {
+    no_open_tooling_defect(path)?;
+    if ledger_head(path)?.as_deref() == expected_head {
+        Ok(())
+    } else {
+        Err(GatePolicyError::new(
+            ErrorClass::Identity,
+            "GATE-AUDIT-LEDGER-DRIFT",
+            "durable ledger changed while the pre-heavy audit was being constructed",
+        ))
+    }
 }
 
 fn validate_combined_decision(plan: &Value) -> Result<()> {
@@ -1082,9 +1282,11 @@ mod tests {
     use serde_json::json;
 
     use super::{
-        append_attempt_record, build_failure_audit, check, durable_ledger, execution_claims_match,
+        append_attempt_record, build_failure_audit, check, documentation_scope_is_exact,
+        durable_ledger, execution_claims_match, execution_context_is_current,
         no_open_tooling_defect, package_admission, package_admitted, read_json,
-        reconcile_orphaned_attempts, record_heavy_failure, verify_ledger_chain,
+        reconcile_orphaned_attempts, reconstructed_plan_is_exact, record_heavy_failure,
+        validate_started_successor, verify_ledger_chain,
     };
     use crate::canonical::{parse_strict, validate_schema};
     use crate::error::{ErrorClass, GatePolicyError};
@@ -1132,6 +1334,138 @@ mod tests {
         let text = fs::read_to_string(&path).expect("ledger");
         assert!(text.contains("SAME_CAUSE_RECURRED_AFTER_ONE_RETRY"));
         assert!(text.contains("\"status\":\"OPEN\""));
+        fs::remove_file(path).expect("remove ledger");
+    }
+
+    #[test]
+    fn documentation_scope_is_exact_sorted_and_excludes_deletions() {
+        let plan = json!({
+            "changed_objects": [
+                {"path": "docs/a.md", "change_kind": "MODIFY"},
+                {"path": "docs/deleted.md", "change_kind": "DELETE"},
+                {"path": "README.MD", "change_kind": "ADD"},
+                {"path": "docs/schema.json", "change_kind": "MODIFY"}
+            ],
+            "nodes": [{
+                "gate_definition_id": "documentation-lint-v1",
+                "arguments": [
+                    "markdown-doc", "lint", "--path", "README.MD", "--path", "docs/a.md"
+                ]
+            }]
+        });
+        documentation_scope_is_exact(&plan).expect("exact changed Markdown scope");
+        for arguments in [
+            json!(["markdown-doc", "lint", "--path", "docs/a.md"]),
+            json!([
+                "markdown-doc",
+                "lint",
+                "--path",
+                "docs/a.md",
+                "--path",
+                "README.MD"
+            ]),
+            json!([
+                "markdown-doc",
+                "lint",
+                "--path",
+                "README.MD",
+                "--path",
+                "docs/deleted.md"
+            ]),
+        ] {
+            let mut drifted = plan.clone();
+            drifted["nodes"][0]["arguments"] = arguments;
+            assert!(documentation_scope_is_exact(&drifted).is_err());
+        }
+    }
+
+    #[test]
+    fn independently_reconstructed_plan_must_match_all_identity_fields() {
+        let plan = json!({
+            "execution_context": {"configuration_sha256": "original"},
+            "nodes": [{
+            "node_id": "a", "arguments": ["cargo", "nextest", "run"],
+            "expected_inventory": {"mode": "EXACT", "ids": ["one"]}
+        }]});
+        reconstructed_plan_is_exact(&plan, &plan).expect("exact reconstruction");
+        for pointer in [
+            "/execution_context/configuration_sha256",
+            "/nodes/0/arguments/2",
+            "/nodes/0/expected_inventory/ids/0",
+        ] {
+            let mut drifted = plan.clone();
+            *drifted.pointer_mut(pointer).expect("mutation pointer") = json!("drift");
+            assert!(reconstructed_plan_is_exact(&plan, &drifted).is_err());
+        }
+    }
+
+    #[test]
+    fn heavy_admission_rejects_every_execution_context_identity_breaker() {
+        let context = json!({
+            "environment_manifest_sha256": "environment",
+            "runner_host_class": "runner",
+            "runner_image_sha256": "image",
+            "fixture_manifest_sha256": "fixtures",
+            "tool_manifest_sha256": "tools",
+            "configuration_sha256": "configuration"
+        });
+        let plan = json!({"execution_context": context});
+        execution_context_is_current(&plan, &plan["execution_context"]).expect("unchanged context");
+        for field in [
+            "environment_manifest_sha256",
+            "runner_host_class",
+            "runner_image_sha256",
+            "fixture_manifest_sha256",
+            "tool_manifest_sha256",
+            "configuration_sha256",
+        ] {
+            let mut drifted = plan["execution_context"].clone();
+            drifted[field] = json!("drift");
+            assert!(execution_context_is_current(&plan, &drifted).is_err());
+        }
+    }
+
+    #[test]
+    fn heavy_started_must_be_the_exact_successor_of_the_audited_ledger_head() {
+        let path = std::env::temp_dir().join(format!(
+            "openwepp-gate-started-successor-{}-{}.jsonl",
+            std::process::id(),
+            std::thread::current().name().unwrap_or("test")
+        ));
+        fs::write(&path, "").expect("empty ledger");
+        let head = append_attempt_record(
+            &path,
+            json!({"record_type": "STAGE_ATTEMPT", "status": "CLOSED", "stage": "LIGHT"}),
+        )
+        .expect("audited ledger head");
+        let plan = json!({"plan_id": "1".repeat(64)});
+        let audit = json!({"audit_id": "2".repeat(64), "ledger_head_sha256": head});
+        let artifacts = PathBuf::from("/external/evidence");
+        let claims = ExecutionClaims {
+            workflow: "workflow".to_owned(),
+            job: "job".to_owned(),
+            runner: "runner".to_owned(),
+            attempt: 1,
+            ..ExecutionClaims::default()
+        };
+        let started = append_attempt_record(
+            &path,
+            json!({
+                "record_type": "STAGE_ATTEMPT", "status": "STARTED", "stage": "HEAVY",
+                "phase": "ADMISSION", "plan_id": plan["plan_id"], "audit_id": audit["audit_id"],
+                "artifact_root": artifacts.display().to_string(), "workflow": claims.workflow,
+                "job": claims.job, "runner": claims.runner, "attempt": claims.attempt,
+            }),
+        )
+        .expect("started successor");
+        validate_started_successor(&plan, &audit, &artifacts, &path, &started, &claims)
+            .expect("exact successor");
+        append_attempt_record(&path, json!({"record_type": "ATTEMPT", "status": "CLOSED"}))
+            .expect("intervening record");
+        assert!(
+            validate_started_successor(&plan, &audit, &artifacts, &path, &started, &claims)
+                .is_err()
+        );
         fs::remove_file(path).expect("remove ledger");
     }
 

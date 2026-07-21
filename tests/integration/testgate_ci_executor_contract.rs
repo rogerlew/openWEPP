@@ -196,6 +196,40 @@ fn assert_receipt_runtime_guards() {
     assert!(cli.contains("pre-heavy-audit"));
     assert!(cli.contains("validate-package"));
     assert!(cli.contains("Some(\"FAIL\" | \"BLOCKED\" | \"INVALID\")"));
+    assert!(cli.contains("reconcile_orphaned_attempts(&ledger).map(|_| ())"));
+    assert!(cli.contains("&started_entry_sha256"));
+    assert!(cli.contains("verify_receipt_after_ready_audit("));
+    assert!(cli.contains("trusted_transition_command("));
+    assert!(cli.contains("GATE-EXEC-AUDIT-UNAUTHENTICATED"));
+    assert!(cli.contains("load_candidate_after_ready_audit(repo, plan, &ledger, claims, audit)"));
+    let final_context_check = executor
+        .rfind("validate_current_execution_context(&repository, plan)?")
+        .expect("final HEAVY context check");
+    let execution_spawn = executor
+        .find("let mut execution = execute_nodes_for(")
+        .expect("execution boundary");
+    assert!(
+        final_context_check < execution_spawn,
+        "current context must be rechecked at the final HEAVY execution boundary"
+    );
+
+    let pre_heavy = text("crates/openwepp-gate-planner/src/pre_heavy.rs");
+    for required in [
+        "documentation_scope_is_exact(plan)",
+        "reconstruct_plan_in(",
+        "ledger_head_sha256",
+        "GATE-AUDIT-LEDGER-SUCCESSOR",
+        "no_open_tooling_defect_at_head",
+        "current_execution_context(repo)",
+        "reconstructed_plan_is_exact",
+        "pub struct ConstructedAudit(Value)",
+    ] {
+        assert!(
+            pre_heavy.contains(required),
+            "missing pre-heavy closure guard: {required}"
+        );
+    }
+    assert!(!pre_heavy.contains("Command::new(\"markdown-doc\")"));
 
     let verifier = text("crates/openwepp-gate-planner/src/verifier.rs");
     for required in [
@@ -203,6 +237,7 @@ fn assert_receipt_runtime_guards() {
         "GATE-RECEIPT-UNAVAILABLE",
         "GATE-RECEIPT-PREREQUISITE",
         "verifier_accepts_truthful_fail_and_blocked_receipts",
+        "verify_receipt_after_ready_audit",
     ] {
         assert!(
             verifier.contains(required),

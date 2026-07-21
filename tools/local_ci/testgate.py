@@ -724,58 +724,18 @@ def observe(args: argparse.Namespace) -> dict[str, Any]:
                 for node in terminal_plan["nodes"]
             )
             if has_heavy:
-                light_result = _invoke(
+                execution_result = _invoke(
                     [
                         str(args.binary.resolve()), "run", *execution_arguments,
-                        "--stage", "light", "--output", str(light_receipt_path),
+                        "--stage", "transition",
+                        "--resume", str(ledger),
+                        "--light-output", str(light_receipt_path),
+                        "--audit-output", str(audit_path),
+                        "--output", str(receipt_path),
                     ],
                     repo,
                     allow_nonpass=True,
                 )
-                _append_history(
-                    ledger,
-                    {
-                        "record_type": "STAGE_ATTEMPT",
-                        "status": "CLOSED",
-                        "stage": "LIGHT",
-                        "plan_id": terminal_result["plan_id"],
-                        "receipt_id": light_result.get("receipt_id"),
-                        "result": light_result.get("result"),
-                        "artifact_root": str(artifact_root),
-                        "wall_time_ms": (time.monotonic_ns() - execution_started) // 1_000_000,
-                    },
-                )
-                audit_result = _invoke(
-                    [
-                        str(args.binary.resolve()), "pre-heavy-audit",
-                        "--repo", str(repo),
-                        "--plan", str(terminal_path),
-                        "--light-receipts", str(light_receipt_path),
-                        "--artifact-root", str(execution_root),
-                        "--ledger", str(ledger),
-                        "--output", str(audit_path),
-                    ],
-                    repo,
-                    allow_nonpass=True,
-                )
-                if audit_result.get("result") == "READY":
-                    execution_result = _invoke(
-                        [
-                            str(args.binary.resolve()), "run", *execution_arguments,
-                            "--stage", "heavy",
-                            "--audit", str(audit_path),
-                            "--resume", str(ledger),
-                            "--output", str(receipt_path),
-                        ],
-                        repo,
-                        allow_nonpass=True,
-                    )
-                else:
-                    execution_result = {
-                        "result": audit_result.get("result"),
-                        "audit_id": audit_result.get("audit_id"),
-                        "reason_codes": audit_result.get("reason_codes", []),
-                    }
             else:
                 execution_result = _invoke(
                     [

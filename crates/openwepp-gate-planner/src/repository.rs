@@ -1048,6 +1048,31 @@ fn metadata_error(field: &str) -> GatePolicyError {
     )
 }
 
+pub(crate) fn remove_reconstruction_workspace(path: &Path) -> Result<()> {
+    match fs::symlink_metadata(path) {
+        Ok(metadata) if metadata.file_type().is_symlink() || !metadata.is_dir() => {
+            Err(GatePolicyError::new(
+                ErrorClass::Io,
+                "GATE-EXEC-RECONSTRUCTION-CLEANUP",
+                path.display().to_string(),
+            ))
+        }
+        Ok(_) => fs::remove_dir_all(path).map_err(|error| {
+            GatePolicyError::new(
+                ErrorClass::Io,
+                "GATE-EXEC-RECONSTRUCTION-CLEANUP",
+                error.to_string(),
+            )
+        }),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
+        Err(error) => Err(GatePolicyError::new(
+            ErrorClass::Io,
+            "GATE-EXEC-RECONSTRUCTION-CLEANUP",
+            error.to_string(),
+        )),
+    }
+}
+
 pub(crate) struct Snapshot {
     path: PathBuf,
 }

@@ -426,6 +426,19 @@ fn contradictory_pass_receipts_fail_closed() {
 }
 
 #[test]
+fn heavy_receipt_schema_accepts_the_complete_ready_audit_contract() {
+    let policy = repo_root().join("gate-policy/v1");
+    let schema = load_json(&policy.join("schemas/gate-receipt.schema.json"));
+    let validator = jsonschema::draft202012::new(&schema).expect("compile receipt schema");
+    let mut receipt = load_json(&policy.join("fixtures/valid/gate-receipt.json"));
+    receipt["pre_heavy_audit"] = load_json(&policy.join("fixtures/valid/pre-heavy-audit.json"));
+    assert!(
+        validator.is_valid(&receipt),
+        "HEAVY receipt must embed every current READY audit field"
+    );
+}
+
+#[test]
 fn contradictory_campaign_states_fail_closed() {
     let policy = repo_root().join("gate-policy/v1");
 

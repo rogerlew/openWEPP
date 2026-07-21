@@ -57,6 +57,13 @@ If the package establishes a reproducible root cause inside this envelope, it
 must implement and validate the correction. It may not close as `HOLD` merely
 because further implementation or testing remains possible in scope.
 
+Audit-discovered extensions remain inside the same lifecycle authority envelope:
+
+- `RTR-010`: the audit substitutes repository-wide Markdown lint for the terminal plan changed-path lint and can block on unrelated historical files after LIGHT passed;
+- `RTR-011`: HEAVY `STARTED` mutates the admitted ledger before resume validation rebuilds an audit whose evidence hashes the pre-STARTED ledger; and
+- `RTR-012`: `INVENTORY_AND_ARGUMENTS` checks an `EXACT` label and node shape but does not independently enumerate and compare the current inventory.
+
+These defects were discovered by the package own first exact pre-heavy audit. They must be corrected, regression-tested, independently reviewed, and recorded closed before another audit attempt.
 ## Declared Write Set
 
 - `.github/workflows/testgate-shadow.yml`
@@ -203,6 +210,18 @@ spawn. Failed and invalidated evidence is retained, never overwritten.
 - Caching the immutable fixture alone did not close the timeout: the exact focused rerun again reached 720 seconds because the acceptance case also performed three identical full planner reconstructions. Production envelope verification still reconstructs independently, but the unit test now invokes the extracted post-reconstruction verifier after one real live reconstruction and checks dishonest attempts at the owning invariant seam. This preserves production fail-closed behavior while bounding repeated test setup.
 
 - Independent re-review caught that the first bounded rewrite no longer invoked public `verify_receipt_envelope` and supplied the plan itself to the extracted equality check. That made the test-local reconstruction comparison tautological even though production behavior was unchanged. The accepted correction makes the single expensive call the public envelope verifier; existing truthful FAIL/BLOCKED tests retain live `verify_receipt` coverage, and cheap negatives remain at their owning invariant seams.
+
+- The first exact pre-heavy audit correctly blocked before HEAVY, but exposed three more tooling defects: its Markdown check ignored the selected node paths, its inventory check trusted labels instead of enumerating, and the HEAVY STARTED append would self-invalidate ledger-content-bound audit reconstruction. The failed audit and original LIGHT receipt are retained under `/home/workdir/testgate-recovery-trust-01.FFQVyI`.
+
+- Dual review of the first RTR-010 through RTR-012 correction found that audit reconstruction compared only nodes, HEAVY did not cheaply revalidate all execution-context identity breakers, and local post-HEAVY verification reconstructed the same plan a third time. The accepted correction binds the complete plan digest, rechecks current context without inventory enumeration, and consumes the READY proof for local receipt validation while retaining independent reconstruction at the external verification boundary.
+
+- Review proved that a self-hashed READY audit was not provenance: a caller could synthesize PASS checks unless audit construction and HEAVY admission shared an unforgeable boundary. Production now carries an opaque constructed-audit capability through one in-process LIGHT-to-audit-to-HEAVY transition; standalone HEAVY rejects audit JSON.
+
+- The in-process transition initially discovered required output paths too late and did not reserve the durable ledger identity. Canonical preflight now validates every required path and rejects canonical aliases among the plan, ledger, LIGHT receipt, audit, and aggregate receipt before LIGHT begins.
+
+- The gate-receipt schema duplicated the embedded audit contract and initially omitted the new ledger-head field. A non-null READY-audit receipt test now keeps the duplicated boundary synchronized.
+
+- Canonical-parent collision checks still missed a final-component symlink on the plan or durable ledger. Transition input preflight now requires existing regular non-symlink inputs and covers both parent traversal aliases and a ledger symlink targeting an output.
 ## Decision Log
 
 - Decision: use a new authenticated package rather than widen the predecessor retroactively. Rationale: package validation correctly rejects authority added after its base. Date/author: 2026-07-20, execution agent.
@@ -210,5 +229,4 @@ spawn. Failed and invalidated evidence is retained, never overwritten.
 - Decision: copy the terminal plan before HEAVY, snapshot all referenced roots, and re-attest carried roots in every newest archive. Rationale: this makes pre-receipt and A→B→C recovery self-contained across volume loss. Date/author: 2026-07-20, execution agent.
 - Decision: keep `active_combined_quality_proof_id` null until real three-baseline protected-CI evidence is reviewed. Rationale: a fabricated proof would defeat the qualification; the selector and active-policy path land now, while proof collection is a pre-freeze qualification input. Date/author: 2026-07-20, execution agent.
 ## Outcomes And Retrospective
-
-Implementation is active. Focused Rust, integration, Python, shell, formatting, and diff-hygiene checks are passing. Both independent reviews confirmed the recovery trust corrections; their retained HOLD is limited to an aggregate-receipt black-box case assigned to Q07 and the intentionally absent real Q12 calibration proof, which must be produced and pinned before qualification freeze rather than synthesized in this defect package. Terminal planning and delegated HEAVY evidence remain pending.
+Implementation is active. The first exact closure attempt ran every selected LIGHT node once and correctly blocked HEAVY when the pre-heavy audit exposed RTR-010 through RTR-012. The attempt and its evidence remain retained. The accepted corrective diff is under renewed dual implementation review; a fresh exact terminal attempt, delegated HEAVY execution, dual terminal verification, defect closure, and final disposition remain pending.

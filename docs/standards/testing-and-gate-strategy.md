@@ -697,7 +697,7 @@ invalid ledger chains, and workflow or run provenance drift before installing
 bytes at their stable paths.
 
 Once the caller-selected durable ledger is admissible, HEAVY records `STARTED`
-before audit reconstruction, resume admission, executable checks, or subprocess
+before audit validation, resume admission, executable checks, or subprocess
 preparation, and records exactly one terminal outcome for every such start.
 Representable pre-heavy failures still emit the versioned ten-check report:
 identity or authority substitution is `INVALID`, while an unavailable external
@@ -713,6 +713,31 @@ most 80 percent of the summed full plus coverage medians. Missing, stale,
 unpinned, incomplete, or uneconomic proof retains separate nodes with a typed
 non-adoption reason.
 
+The audit is the single independent inventory verifier for the LIGHT-to-HEAVY transition. LIGHT execution may reconstruct the terminal plan once; the audit then independently reconstructs current policy, canonical arguments, and exact inventory once in the same confined attempt workspace. A READY audit binds that result. HEAVY consumes the READY result and must not repeat the same plan or inventory enumeration unless source, policy, execution context, or another identity breaker changed. Executor preflight retains non-inventory safety checks. Repeating enumeration at LIGHT preflight, audit, and HEAVY admission is a tooling defect, not extra assurance.
+
+For documentation, LIGHT runs the exact sorted, deduplicated, non-deleted changed-path `markdown-doc lint --path ...` node. The audit validates that canonical scope, its PASS result, checkpoint, and artifact identity; it does not launch a second lint and may never substitute an unscoped repository-wide lint.
+
+The audit also binds the durable ledger head after orphan reconciliation and before new HEAVY admission. HEAVY appends `STARTED` first, then requires the current ledger to be exactly the audited prefix followed by that one plan-, audit-, artifact-, and claim-bound STARTED record. It validates chain integrity and open-defect posture against the current ledger without rebuilding mutable audit evidence. Any intervening append, wrong predecessor, or claim drift invalidates admission while preserving the balanced STARTED/FAILED lifecycle.
+
+#### 8.5.1 Exact reuse boundaries
+
+The audit reconstruction compares the complete canonical terminal plan digest,
+not only node labels, arguments, or inventory. This binds source selection,
+policy, execution context, configuration, fixtures, tools, roots, and every node
+field to the `READY` decision. Immediately before spawning HEAVY, the executor
+recomputes all cheap execution-context identity breakers and rejects drift. It
+does not enumerate test inventory again.
+
+After HEAVY, the local executor validates the complete receipt, source roots,
+live tool and environment identities, audit, DAG, artifact bytes, executed
+inventory, summary, and authority outcomes by consuming the audit-admitted plan
+proof. It does not perform another identical terminal-plan reconstruction. An
+independent verifier crossing the host or signing boundary reconstructs the
+plan once from its own trusted context. Repeating reconstruction inside the
+same admitted local transition is a tooling defect; independent reconstruction
+at a distinct trust boundary is required assurance.
+
+A production transition authenticates `READY` by keeping LIGHT execution, audit construction, and HEAVY admission inside one trusted binary process while persisting the unchanged audit as evidence. Standalone HEAVY admission rejects a merely self-hashed audit; an external attestation may become an additional authenticated transport only when its trust root and subject contract are explicitly implemented. This construction prevents forged PASS checks without repeating audit inventory enumeration.
 ## 9. Execution Architecture
 
 The target architecture is:

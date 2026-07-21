@@ -12,7 +12,8 @@ use crate::canonical::{derived_id, digest, parse_strict, sha256_bytes};
 use crate::error::{ErrorClass, GatePolicyError, Result};
 use crate::executor::ExecutionClaims;
 use crate::planner::verify_plan_identity;
-use crate::verifier::{DirectoryArtifacts, verify_receipt};
+use crate::pre_heavy::ConstructedAudit;
+use crate::verifier::{DirectoryArtifacts, verify_receipt, verify_receipt_after_ready_audit};
 
 pub struct ResumeCandidate {
     nodes: BTreeMap<String, CheckpointEvidence>,
@@ -46,6 +47,41 @@ pub fn load_candidate(
     plan: &Value,
     ledger: &Path,
     claims: &ExecutionClaims,
+) -> Result<Option<ResumeCandidate>> {
+    load_candidate_internal(repo, plan, ledger, claims, false)
+}
+
+/// Load recovery evidence after the current plan was independently admitted by
+/// an in-process READY audit.
+///
+/// # Errors
+///
+/// Returns the same typed recovery errors as [`load_candidate`].
+pub fn load_candidate_after_ready_audit(
+    repo: &Path,
+    plan: &Value,
+    ledger: &Path,
+    claims: &ExecutionClaims,
+    audit: &ConstructedAudit,
+) -> Result<Option<ResumeCandidate>> {
+    if audit.as_value()["status"] != "READY"
+        || audit.as_value()["plan_id"] != plan["plan_id"]
+        || audit.as_value()["plan_sha256"] != digest(plan)?
+    {
+        return Err(resume_error(
+            "GATE-RESUME-AUDIT-BINDING",
+            "recovery fast path requires the current constructed READY audit",
+        ));
+    }
+    load_candidate_internal(repo, plan, ledger, claims, true)
+}
+
+fn load_candidate_internal(
+    repo: &Path,
+    plan: &Value,
+    ledger: &Path,
+    claims: &ExecutionClaims,
+    current_plan_admitted: bool,
 ) -> Result<Option<ResumeCandidate>> {
     let text = fs::read_to_string(ledger)
         .map_err(|error| resume_error("GATE-RESUME-LEDGER", error.to_string()))?;
@@ -107,13 +143,13 @@ pub fn load_candidate(
                 &fs::read(&receipt_path)
                     .map_err(|error| resume_error("GATE-RESUME-RECEIPT", error.to_string()))?,
             )?;
-            verify_receipt(
-                repo,
-                &prior_plan,
-                &receipt,
-                &DirectoryArtifacts::new(artifact_root.clone()),
-            )
-            .map_err(|error| {
+            let artifacts = DirectoryArtifacts::new(artifact_root.clone());
+            let verification = if current_plan_admitted && digest(&prior_plan)? == digest(plan)? {
+                verify_receipt_after_ready_audit(repo, &prior_plan, &receipt, &artifacts)
+            } else {
+                verify_receipt(repo, &prior_plan, &receipt, &artifacts)
+            };
+            verification.map_err(|error| {
                 resume_error(
                     "GATE-RESUME-RECEIPT-INVALID",
                     format!("{}: {}", error.code, error.message),
