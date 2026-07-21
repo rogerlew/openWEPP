@@ -32,8 +32,11 @@ build and transfer files are removed on return.
 `EXPECTED_IMAGE_ID`, the host has at least 60 GiB available, and the provider
 ultimately reports one online, idle runner with the exact label set.
 
-The only named volume holds registration state and is mounted read-only for
-jobs. Work, Cargo downloads, target output, home, diagnostics, and `/tmp` use
+One named volume holds registration state and is mounted read-only for jobs. A
+second volume is mounted read-write at `/testgate-history` for the hash-chained
+attempt ledger and per-node recovery mirror; setup fixes ownership for the
+unprivileged runner and ordinary removal deliberately preserves it. Work,
+Cargo downloads, target output, home, diagnostics, and `/tmp` use
 size-bounded tmpfs mounts. A root-owned completion hook repeatedly terminates
 runner-owned job processes until quiescent, then clears job, target, dependency,
 home, temporary, and diagnostic state after every attempt. A killed runner
@@ -63,5 +66,6 @@ The runtime is capped at 32 of 48 CPUs, 48 GiB memory with swap disabled, and
 host headroom for co-tenants before the runner is admitted.
 
 `manage.sh remove` deregisters the runner, stops and removes its container, and
-deletes the dedicated registration-state volume. Job surfaces are tmpfs and
-therefore have no retained recovery state.
+deletes the dedicated registration-state volume. Job surfaces are tmpfs. The
+separate TESTGATE history volume and digest-indexed uploads retain only the
+attempt ledger, checkpoints, and their declared output artifacts.

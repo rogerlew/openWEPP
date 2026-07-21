@@ -5,6 +5,7 @@ use std::path::{Path, PathBuf};
 
 use serde_json::{Value, json};
 
+use crate::artifact_contract::{artifact_kind as expected_artifact_kind, node_has_junit_evidence};
 use crate::canonical::{derived_id, digest, parse_strict, sha256_bytes, validate_schema};
 use crate::error::{ErrorClass, GatePolicyError, Result};
 use crate::executor::authority_adapter_supported;
@@ -585,12 +586,6 @@ fn receipt_authority_inventory(
     Ok(observed)
 }
 
-fn node_has_junit_evidence(node: &Value) -> bool {
-    node["artifact_contract"] == "nextest-junit-v1" && node["executor"]["kind"] == "NEXTEST_V1"
-        || node["artifact_contract"] == "adjudicated-crap-v1"
-            && node["gate_definition_id"] == "affected-adjudicated-crap-v1"
-}
-
 fn receipt_junit_inventory(
     node: &Value,
     artifacts: &dyn ArtifactProvider,
@@ -1052,19 +1047,6 @@ fn verify_artifacts(
         }
     }
     Ok(())
-}
-
-fn expected_artifact_kind(contract: &str, path: &str) -> &'static str {
-    match (
-        contract,
-        Path::new(path).extension().and_then(|value| value.to_str()),
-    ) {
-        ("adjudicated-crap-v1", Some("lcov")) => "LCOV",
-        ("adjudicated-crap-v1", Some("xml")) | ("nextest-junit-v1", _) => "JUNIT",
-        ("adjudicated-crap-v1", _) => "CRAP",
-        ("schema-validation-v1", _) => "SCHEMA",
-        _ => "LOG",
-    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -2195,6 +2177,7 @@ mod tests {
                             predecessor_intent_plan_id: None,
                             boundary: "INCREMENT".to_owned(),
                             campaign_id: Some("TESTGATE-PLAN-01".to_owned()),
+                            combined_quality_proof_id: None,
                             authorized_paths,
                             source,
                         },

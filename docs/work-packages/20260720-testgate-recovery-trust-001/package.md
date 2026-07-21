@@ -26,14 +26,12 @@ quality paths without editing its frozen subject.
 ## Progress
 
 - [x] (2026-07-20) Reproduce and independently review the predecessor defects.
-- [ ] Commit this scaffold before adopting or editing implementation bytes.
-- [ ] Freeze failing tests for all nine recovery/trust defects.
-- [ ] Implement corrections and focused verification.
-- [ ] Reconcile the exact terminal diff and obtain a fresh `READY` audit.
+- [x] (2026-07-20) Commit scaffold `ee4d9946` before implementation adoption.
+- [x] (2026-07-20) Freeze and pass focused tests for RTR-001 through RTR-009.
+- [x] (2026-07-20) Implement durable attested recovery, exact audits, lifecycle reconciliation, and combined-selection corrections.
+- [ ] Commit and reconcile the exact terminal diff; obtain a fresh `READY` audit.
 - [ ] Delegate each selected HEAVY batch once.
-- [ ] Complete dual implementation review, finding disposition, dual terminal
-  verification, prompt archival, and final disposition.
-
+- [ ] Complete dual implementation review, finding disposition, dual terminal verification, prompt archival, and final disposition.
 ## Correction Authority Envelope
 
 This package owns these observed violations end-to-end:
@@ -191,25 +189,18 @@ spawn. Failed and invalidated evidence is retained, never overwritten.
 
 ## Surprises And Discoveries
 
-- The predecessor's apparent persistence fix targeted a path absent from the
-  read-only container and restored only references to outputs already purged
-  from `/t`.
-- A digest chain proves mutation, not authorship; self-hashed checkpoints are
-  not independently admissible gate evidence.
-- The frozen Q12 case revealed that a typed `SEPARATE` result is honest but does
-  not implement a selectable proven-combined path.
-
+- The predecessor persistence fix named a path absent from the read-only container and restored references to outputs already purged from `/t`.
+- A digest chain proves mutation, not authorship. Reusable recovery requires a hosted attestation of the exact archive index plus prior-plan/node binding.
+- One newest archive must carry every ledger-referenced root; otherwise a later failed attempt silently drops an older accepted candidate.
+- A killed Rust process leaves an unmatched admission unless the always-run finalizer or next admission reconciles it.
+- Aggregate receipts and pre-receipt checkpoints need distinct lineage fields; forcing both into `prior_receipt_id` made provenance-only recovery schema-invalid.
+- The frozen Q12 case revealed two independent controls: the ordinary workflow needs a selector, and policy needs an active reviewed proof chosen before subject freeze.
 ## Decision Log
 
-- Decision: use a new authenticated package rather than widen the predecessor
-  retroactively. Rationale: package validation correctly rejects authority
-  added after its base. Date/author: 2026-07-20, execution agent.
-- Decision: preserve pre-receipt evidence but never equate persistence with
-  trust. Rationale: safety takes precedence over avoiding a rerun. Date/author:
-  2026-07-20, execution agent.
-
+- Decision: use a new authenticated package rather than widen the predecessor retroactively. Rationale: package validation correctly rejects authority added after its base. Date/author: 2026-07-20, execution agent.
+- Decision: require hosted archive-index provenance for every cross-attempt checkpoint, and additionally verify an aggregate receipt when present. Rationale: self-authored plans, receipts, checkpoints, and ledgers cannot establish authorship. Date/author: 2026-07-20, execution agent.
+- Decision: copy the terminal plan before HEAVY, snapshot all referenced roots, and re-attest carried roots in every newest archive. Rationale: this makes pre-receipt and A→B→C recovery self-contained across volume loss. Date/author: 2026-07-20, execution agent.
+- Decision: keep `active_combined_quality_proof_id` null until real three-baseline protected-CI evidence is reviewed. Rationale: a fabricated proof would defeat the qualification; the selector and active-policy path land now, while proof collection is a pre-freeze qualification input. Date/author: 2026-07-20, execution agent.
 ## Outcomes And Retrospective
 
-Execution has not started. The retained prototype is untrusted input until the
-scaffold commit establishes this envelope and focused failing tests adjudicate
-each change.
+Implementation is active. Focused Rust, integration, Python, shell, formatting, and diff-hygiene checks are passing. Both independent reviews confirmed the recovery trust corrections; their retained HOLD is limited to an aggregate-receipt black-box case assigned to Q07 and the intentionally absent real Q12 calibration proof, which must be produced and pinned before qualification freeze rather than synthesized in this defect package. Terminal planning and delegated HEAVY evidence remain pending.

@@ -13,6 +13,8 @@ use crate::canonical::{
     validate_schema,
 };
 use crate::error::{ErrorClass, GatePolicyError, Result};
+use crate::executor::ExecutionClaims;
+use crate::package_validation::validate_package;
 use crate::planner::verify_plan_identity;
 
 pub const CHECK_IDS: [&str; 10] = [
@@ -45,10 +47,11 @@ pub fn build_audit(
     validate_stage_receipt(repo, plan, light_receipt, artifact_root, true)?;
 
     let mut checks = Vec::with_capacity(CHECK_IDS.len());
+    let package_admission = package_admission(repo, plan)?;
     checks.push(check(
         CHECK_IDS[0],
-        package_admitted(repo, plan),
-        json!({"base": plan["source"]["base_commit"], "paths": plan["authorized_paths"]}),
+        package_admitted(plan, &package_admission),
+        package_admission.clone(),
     )?);
     checks.push(check(
         CHECK_IDS[1],
@@ -80,8 +83,12 @@ pub fn build_audit(
         separated_roots(plan),
         json!({"roots": plan["environment_roots"]}),
     )?);
-    let combined_execution = combined_decision(plan);
-    checks.push(check(CHECK_IDS[6], Ok(()), combined_execution.clone())?);
+    let combined_execution = plan["combined_quality"].clone();
+    checks.push(check(
+        CHECK_IDS[6],
+        validate_combined_decision(plan),
+        combined_execution.clone(),
+    )?);
     checks.push(check(
         CHECK_IDS[7],
         valid_stage_order(plan),
@@ -95,7 +102,10 @@ pub fn build_audit(
     checks.push(check(
         CHECK_IDS[9],
         no_open_tooling_defect(ledger),
-        json!({"ledger_sha256": file_digest(ledger)?}),
+        json!({
+            "ledger_path_sha256": path_digest(ledger),
+            "ledger_sha256": fs::read(ledger).ok().map(|bytes| sha256_bytes(&bytes)),
+        }),
     )?);
 
     let reason_codes = checks
@@ -126,6 +136,7 @@ pub fn build_audit(
         "artifact_root_sha256": path_digest(artifact_root),
         "ledger_path_sha256": path_digest(ledger),
         "node_manifest": node_manifest(plan)?,
+        "package_admission": package_admission,
         "checks": checks,
         "combined_execution": combined_execution,
         "light_receipt": light_receipt,
@@ -142,6 +153,126 @@ pub fn build_audit(
     Ok(audit)
 }
 
+/// Build a schema-valid INVALID audit when a representable transaction fails
+/// before the ordinary ten checks can be assembled.
+///
+/// # Errors
+///
+/// Returns a typed error only when the fallback artifact itself cannot be
+/// canonicalized or validated against the audit schema.
+pub fn build_failure_audit(
+    repo: &Path,
+    plan: &Value,
+    light_receipt: &Value,
+    artifact_root: &Path,
+    ledger: &Path,
+    failure: &GatePolicyError,
+) -> Result<Value> {
+    let plan_sha = digest(plan)?;
+    let plan_id = plan["plan_id"]
+        .as_str()
+        .filter(|value| is_digest(value))
+        .unwrap_or(&plan_sha);
+    let execution_key = plan["execution_key"]
+        .as_str()
+        .filter(|value| is_digest(value))
+        .unwrap_or(&plan_sha);
+    let light_id = light_receipt["stage_receipt_id"]
+        .as_str()
+        .filter(|value| is_digest(value))
+        .map(str::to_owned)
+        .unwrap_or(digest(light_receipt)?);
+    let binary = current_executable_sha256()?;
+    let failed_index = failure_check_index(failure.code);
+    let failed_status = failure_status(failure);
+    let checks = CHECK_IDS
+        .iter()
+        .enumerate()
+        .map(|(index, id)| {
+            Ok(json!({
+                "check_id": id,
+                "status": if index == failed_index {failed_status} else {"BLOCKED"},
+                "reason_codes": if index == failed_index {vec![failure.code]} else {vec!["PREREQUISITE_UNAVAILABLE"]},
+                "evidence_sha256": digest(&json!({"failure_code": failure.code, "check_id": id}))?,
+            }))
+        })
+        .collect::<Result<Vec<_>>>()?;
+    let mut audit = json!({
+        "schema_version": "openwepp-pre-heavy-audit-v1",
+        "audit_id": "0".repeat(64),
+        "status": failed_status,
+        "reason_codes": [failure.code],
+        "plan_id": plan_id,
+        "plan_sha256": plan_sha,
+        "execution_key": execution_key,
+        "executor_binary_sha256": binary,
+        "light_stage_receipt_id": light_id,
+        "artifact_root_sha256": path_digest(artifact_root),
+        "ledger_path_sha256": path_digest(ledger),
+        "node_manifest": node_manifest(plan).unwrap_or_else(|_| Value::Array(Vec::new())),
+        "package_admission": null,
+        "checks": checks,
+        "combined_execution": failure_combined_execution(plan),
+        "light_receipt": if light_receipt.is_object() {light_receipt.clone()} else {json!({})},
+    });
+    audit["audit_id"] = Value::String(derived_id(&audit, "audit_id")?);
+    let schema = read_json(&repo.join("gate-policy/v1/schemas/pre-heavy-audit.schema.json"))?;
+    validate_schema(&schema, &audit, "invalid pre-heavy audit")?;
+    Ok(audit)
+}
+
+fn failure_combined_execution(_plan: &Value) -> Value {
+    json!({
+        "decision": "NOT_APPLICABLE",
+        "reason_code": "TRANSACTION_INVALID",
+        "requested_proof_id": null,
+        "accepted_proof_id": null,
+        "proof_sha256": null,
+        "baseline_count": 0
+    })
+}
+
+fn failure_status(failure: &GatePolicyError) -> &'static str {
+    if matches!(
+        failure.class,
+        ErrorClass::Identity | ErrorClass::Json | ErrorClass::Schema
+    ) || failure.code.contains("PACKAGE")
+        || failure.code.contains("IDENTITY")
+        || failure.code.contains("SHAPE")
+        || failure.code.contains("COLLISION")
+        || failure.code.contains("SUBSTITUTION")
+    {
+        "INVALID"
+    } else {
+        "BLOCKED"
+    }
+}
+
+fn failure_check_index(code: &str) -> usize {
+    if code.contains("PACKAGE") {
+        0
+    } else if code.contains("LIGHT") || code.contains("DOC") || code.contains("LINE") {
+        1
+    } else if code.contains("INVENTORY") || code.contains("PLAN") {
+        2
+    } else if code.contains("EXECUT") || code.contains("CLAIM") {
+        3
+    } else if code.contains("ARTIFACT") || code.contains("CHECKPOINT") || code.contains("COLLISION")
+    {
+        4
+    } else if code.contains("ROOT") || code.contains("CACHE") {
+        5
+    } else if code.contains("COMBIN") {
+        6
+    } else if code.contains("ORDER") || code.contains("RETRY") || code.contains("HANDOFF") {
+        7
+    } else if code.contains("LEDGER") {
+        8
+    } else {
+        9
+    }
+}
+
 /// Verify a READY audit against current plan, inventory and artifact identity.
 ///
 /// # Errors
@@ -156,12 +287,15 @@ pub fn validate_audit(
 ) -> Result<()> {
     let schema = read_json(&repo.join("gate-policy/v1/schemas/pre-heavy-audit.schema.json"))?;
     validate_schema(&schema, audit, "pre-heavy audit")?;
+    let current_package_admission = package_admission(repo, plan)?;
     if derived_id(audit, "audit_id")? != string(audit, "audit_id")?
         || audit["plan_id"] != plan["plan_id"]
         || audit["plan_sha256"] != digest(plan)?
         || audit["execution_key"] != plan["execution_key"]
         || audit["artifact_root_sha256"] != path_digest(artifact_root)
         || audit["node_manifest"] != node_manifest(plan)?
+        || audit["combined_execution"] != plan["combined_quality"]
+        || audit["package_admission"] != current_package_admission
     {
         return Err(audit_error("GATE-AUDIT-IDENTITY", "audit binding mismatch"));
     }
@@ -221,6 +355,7 @@ pub fn validate_audit_for_execution(
     plan: &Value,
     audit: &Value,
     artifact_root: &Path,
+    claims: &ExecutionClaims,
 ) -> Result<()> {
     validate_audit(repo, plan, audit, artifact_root)?;
     let current = current_executable_sha256()?;
@@ -230,7 +365,21 @@ pub fn validate_audit_for_execution(
             "HEAVY executor differs from the binary that emitted the LIGHT receipt",
         ));
     }
+    let light = &audit["light_receipt"]["claims"];
+    if !execution_claims_match(light, claims) {
+        return Err(audit_error(
+            "GATE-AUDIT-EXECUTION-CLAIM-DRIFT",
+            "HEAVY workflow/job/runner/attempt differs from LIGHT",
+        ));
+    }
     Ok(())
+}
+
+fn execution_claims_match(light: &Value, claims: &ExecutionClaims) -> bool {
+    light["workflow"] == claims.workflow
+        && light["job"] == claims.job
+        && light["runner"] == claims.runner
+        && light["attempt"] == claims.attempt
 }
 
 /// Verify that a resume ledger is the exact durable ledger admitted by audit.
@@ -264,8 +413,20 @@ pub fn validate_resume_ledger(
     Ok(())
 }
 
-/// Append a terminal HEAVY failure and open a tooling defect when its stable
-/// cause key has already failed once.
+/// Admit only the caller-selected durable append target before a HEAVY
+/// transaction is recorded. Full audit and resume admission happens after the
+/// balanced lifecycle has begun.
+///
+/// # Errors
+///
+/// Returns a typed error when the selected ledger is absent, ephemeral, or has
+/// an invalid predecessor chain.
+pub fn admit_attempt_ledger(ledger: &Path) -> Result<()> {
+    durable_ledger(ledger)
+}
+
+/// Append a terminal HEAVY failure. Tooling failures open a defect immediately;
+/// infrastructure failures retain one declared retry before opening a defect.
 ///
 /// # Errors
 ///
@@ -286,7 +447,8 @@ pub fn record_heavy_failure(path: &Path, record: Value, cause_key: &str) -> Resu
         })
         .count();
     append_attempt_record(path, record)?;
-    if prior >= 1 {
+    let class = failure_class(cause_key);
+    if class == "TOOLING" || prior >= 1 {
         let defect_key = sha256_bytes(cause_key.as_bytes());
         append_attempt_record(
             path,
@@ -295,8 +457,12 @@ pub fn record_heavy_failure(path: &Path, record: Value, cause_key: &str) -> Resu
                 "defect_id": format!("AUTO-{}", &defect_key[..16]),
                 "status": "OPEN",
                 "cause_key": cause_key,
-                "failure_class": failure_class(cause_key),
-                "reason_code": "SAME_CAUSE_RECURRED_AFTER_ONE_RETRY",
+                "failure_class": class,
+                "reason_code": if prior >= 1 {"SAME_CAUSE_RECURRED_AFTER_ONE_RETRY"} else {"TOOLING_FAILURE_REQUIRES_CORRECTION"},
+                "owner": "openwepp-maintainers",
+                "reproducer": cause_key,
+                "impact": "HEAVY admission or execution is not trustworthy",
+                "correction_boundary": "resolve before the next pre-heavy audit",
             }),
         )?;
     }
@@ -304,12 +470,77 @@ pub fn record_heavy_failure(path: &Path, record: Value, cause_key: &str) -> Resu
 }
 
 fn failure_class(cause_key: &str) -> &'static str {
-    if cause_key.contains("SPAWN") || cause_key.contains("TIMEOUT") || cause_key.contains("RUNNER")
+    if cause_key.contains("SPAWN")
+        || cause_key.contains("TIMEOUT")
+        || cause_key.contains("RUNNER")
+        || cause_key.contains("TERMINATED")
     {
         "INFRASTRUCTURE"
     } else {
         "TOOLING"
     }
+}
+
+/// Close HEAVY admissions whose process ended before recording an outcome.
+///
+/// # Errors
+///
+/// Returns a typed ledger error when history cannot be verified or amended.
+pub fn reconcile_orphaned_attempts(path: &Path) -> Result<usize> {
+    verify_ledger_chain(path)?;
+    let text = fs::read_to_string(path)
+        .map_err(|error| audit_error("GATE-AUDIT-LEDGER-READ", error.to_string()))?;
+    let records = text
+        .lines()
+        .filter(|line| !line.trim().is_empty())
+        .map(|line| parse_strict(line.as_bytes()))
+        .collect::<Result<Vec<_>>>()?;
+    let terminal = records
+        .iter()
+        .filter_map(|item| item["started_entry_sha256"].as_str())
+        .collect::<BTreeSet<_>>();
+    let orphaned = records
+        .iter()
+        .filter(|item| {
+            item["record_type"] == "STAGE_ATTEMPT"
+                && item["status"] == "STARTED"
+                && item["phase"] == "ADMISSION"
+        })
+        .filter(|item| {
+            item["entry_sha256"]
+                .as_str()
+                .is_some_and(|entry| !terminal.contains(entry))
+        })
+        .cloned()
+        .collect::<Vec<_>>();
+    for started in &orphaned {
+        let cause = "GATE-ATTEMPT-PREVIOUS-PROCESS-TERMINATED";
+        record_heavy_failure(
+            path,
+            json!({
+                "record_type": "STAGE_ATTEMPT",
+                "status": "FAILED",
+                "stage": "HEAVY",
+                "plan_id": started["plan_id"],
+                "audit_id": started["audit_id"],
+                "artifact_root": started["artifact_root"],
+                "recovery_root": started["recovery_root"],
+                "workflow": started["workflow"],
+                "job": started["job"],
+                "runner": started["runner"],
+                "attempt": started["attempt"],
+                "result": null,
+                "error_code": cause,
+                "error_message": "the admitted HEAVY process ended without a terminal record",
+                "cause_key": cause,
+                "failure_class": "INFRASTRUCTURE",
+                "wall_time_ms": null,
+                "started_entry_sha256": started["entry_sha256"],
+            }),
+            cause,
+        )?;
+    }
+    Ok(orphaned.len())
 }
 
 /// Durably append one predecessor-bound execution-attempt record.
@@ -376,29 +607,51 @@ fn check(id: &str, result: Result<()>, evidence: Value) -> Result<Value> {
     }))
 }
 
-fn package_admitted(repo: &Path, plan: &Value) -> Result<()> {
-    let package = plan["authorized_paths"]
+fn package_admission(repo: &Path, plan: &Value) -> Result<Value> {
+    let packages = plan["authorized_paths"]
         .as_array()
         .into_iter()
         .flatten()
         .filter_map(Value::as_str)
-        .find(|path| path.starts_with("docs/work-packages/") && path.ends_with("/package.md"))
-        .ok_or_else(|| audit_error("GATE-AUDIT-PACKAGE-MISSING", "no package path admitted"))?;
-    let base = string(&plan["source"], "base_commit")?;
-    let object = format!("{base}:{package}");
-    let output = Command::new("git")
-        .args(["cat-file", "-e", &object])
-        .current_dir(repo)
-        .output()
-        .map_err(|error| audit_error("GATE-AUDIT-GIT", error.to_string()))?;
-    if output.status.success() {
-        Ok(())
-    } else {
-        Err(audit_error(
-            "SCAFFOLD_COMMIT_REQUIRED",
-            "package does not exist in authenticated base",
-        ))
+        .filter(|path| path.starts_with("docs/work-packages/") && path.ends_with("/package.md"))
+        .collect::<Vec<_>>();
+    if packages.len() != 1 {
+        return Err(GatePolicyError::new(
+            ErrorClass::Identity,
+            "GATE-AUDIT-PACKAGE-AMBIGUOUS",
+            format!(
+                "expected exactly one package authority, found {}",
+                packages.len()
+            ),
+        ));
     }
+    let base = string(&plan["source"], "base_commit")?;
+    validate_package(repo, base, Path::new(packages[0]))
+}
+
+fn package_admitted(plan: &Value, result: &Value) -> Result<()> {
+    if result["status"] != "READY"
+        || result["changed_paths"] != plan["authorized_paths"]
+        || result["base_commit"] != plan["source"]["base_commit"]
+    {
+        return Err(GatePolicyError::new(
+            ErrorClass::Identity,
+            "GATE-AUDIT-PACKAGE-ADMISSION",
+            format!(
+                "package audit did not admit exact plan paths: {}",
+                result["reason_codes"]
+            ),
+        ));
+    }
+    Ok(())
+}
+
+fn is_digest(value: &str) -> bool {
+    value.len() == 64
+        && value
+            .as_bytes()
+            .iter()
+            .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(byte))
 }
 
 fn light_stage_passed(plan: &Value, receipt: &Value) -> Result<()> {
@@ -710,21 +963,37 @@ fn no_open_tooling_defect(path: &Path) -> Result<()> {
     Ok(())
 }
 
-fn combined_decision(plan: &Value) -> Value {
+fn validate_combined_decision(plan: &Value) -> Result<()> {
     let definitions = nodes(plan)
         .unwrap_or(&[])
         .iter()
         .filter_map(|node| node["gate_definition_id"].as_str())
         .collect::<BTreeSet<_>>();
-    if definitions.contains("workspace-full-nextest-v1")
-        && definitions.contains("adjudicated-crap-v1")
-    {
-        json!({
-            "decision": "SEPARATE",
-            "reason_code": "COMBINATION_NOT_ADOPTED_INSUFFICIENT_COMPATIBLE_HISTORY"
-        })
+    let decision = &plan["combined_quality"];
+    let combined = definitions.contains("combined-workspace-quality-v1");
+    let separate = definitions.contains("workspace-full-nextest-v1")
+        && definitions.contains("adjudicated-crap-v1");
+    let valid = if decision["decision"] == "COMBINED" {
+        combined
+            && !separate
+            && decision["accepted_proof_id"].as_str().is_some()
+            && decision["proof_sha256"].as_str().is_some()
+            && decision["baseline_count"] == 3
+    } else if decision["decision"] == "SEPARATE" {
+        separate && !combined && decision["accepted_proof_id"].is_null()
+    } else if decision["decision"] == "NOT_APPLICABLE" {
+        !combined && !separate && decision["accepted_proof_id"].is_null()
     } else {
-        json!({"decision": "NOT_APPLICABLE", "reason_code": "NO_DUPLICATE_FULL_INVENTORY"})
+        false
+    };
+    if valid {
+        Ok(())
+    } else {
+        Err(GatePolicyError::new(
+            ErrorClass::Identity,
+            "GATE-AUDIT-COMBINED-DAG-MISMATCH",
+            "combined-quality decision does not match the immutable DAG",
+        ))
     }
 }
 
@@ -812,8 +1081,14 @@ mod tests {
 
     use serde_json::json;
 
-    use super::{read_json, record_heavy_failure};
-    use crate::canonical::validate_schema;
+    use super::{
+        append_attempt_record, build_failure_audit, check, durable_ledger, execution_claims_match,
+        no_open_tooling_defect, package_admission, package_admitted, read_json,
+        reconcile_orphaned_attempts, record_heavy_failure, verify_ledger_chain,
+    };
+    use crate::canonical::{parse_strict, validate_schema};
+    use crate::error::{ErrorClass, GatePolicyError};
+    use crate::executor::ExecutionClaims;
 
     #[test]
     fn audit_schema_rejects_duplicate_canonical_check_ids() {
@@ -825,6 +1100,13 @@ mod tests {
         validate_schema(&schema, &audit, "valid audit").expect("valid audit must pass schema");
         audit["checks"][1]["check_id"] = audit["checks"][0]["check_id"].clone();
         assert!(validate_schema(&schema, &audit, "duplicate audit").is_err());
+    }
+
+    #[test]
+    fn rust_verifies_python_jcs_with_adversarial_unicode_keys() {
+        let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
+        verify_ledger_chain(&root.join("tests/fixtures/testgate/python-ledger-unicode.jsonl"))
+            .expect("Python-produced ledger must share Rust RFC 8785 ordering");
     }
 
     #[test]
@@ -851,5 +1133,184 @@ mod tests {
         assert!(text.contains("SAME_CAUSE_RECURRED_AFTER_ONE_RETRY"));
         assert!(text.contains("\"status\":\"OPEN\""));
         fs::remove_file(path).expect("remove ledger");
+    }
+
+    #[test]
+    fn orphaned_admission_is_closed_once_and_recurrence_opens_defect() {
+        let path = std::env::temp_dir().join(format!(
+            "openwepp-gate-orphan-{}-{}.jsonl",
+            std::process::id(),
+            std::thread::current().name().unwrap_or("test")
+        ));
+        fs::write(&path, "").expect("empty ledger");
+        for attempt in 1..=2 {
+            append_attempt_record(
+                &path,
+                json!({
+                    "record_type": "STAGE_ATTEMPT", "status": "STARTED",
+                    "stage": "HEAVY", "phase": "ADMISSION", "attempt": attempt,
+                    "plan_id": "1".repeat(64), "audit_id": "2".repeat(64),
+                    "artifact_root": "/external/e", "recovery_root": "/history/recovery/r",
+                    "workflow": "w", "job": "j", "runner": "r",
+                }),
+            )
+            .expect("started");
+            assert_eq!(reconcile_orphaned_attempts(&path).expect("reconcile"), 1);
+            assert_eq!(reconcile_orphaned_attempts(&path).expect("idempotent"), 0);
+        }
+        let text = fs::read_to_string(&path).expect("ledger");
+        assert_eq!(
+            text.lines()
+                .map(|line| parse_strict(line.as_bytes()).expect("record"))
+                .filter(|item| item["status"] == "FAILED")
+                .count(),
+            2
+        );
+        assert!(text.contains("SAME_CAUSE_RECURRED_AFTER_ONE_RETRY"));
+        fs::remove_file(path).expect("remove ledger");
+    }
+
+    #[test]
+    fn representable_early_failure_emits_ten_check_invalid_audit() {
+        let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
+        let failure = GatePolicyError::new(
+            ErrorClass::Identity,
+            "GATE-PLAN-IDENTITY",
+            "injected identity failure",
+        );
+        let audit = build_failure_audit(
+            &root,
+            &json!({}),
+            &json!({}),
+            &root,
+            &root.join("target/test-ledger.jsonl"),
+            &failure,
+        )
+        .expect("invalid audit");
+        assert_eq!(audit["status"], "INVALID");
+        assert_eq!(audit["checks"].as_array().map(Vec::len), Some(10));
+        assert_eq!(audit["reason_codes"], json!(["GATE-PLAN-IDENTITY"]));
+        assert_eq!(audit["checks"][2]["status"], "INVALID");
+
+        let blocked = GatePolicyError::new(
+            ErrorClass::Io,
+            "GATE-AUDIT-LEDGER-MISSING",
+            "durable ledger unavailable",
+        );
+        let audit = build_failure_audit(
+            &root,
+            &json!({}),
+            &json!({}),
+            &root,
+            &root.join("target/test-ledger.jsonl"),
+            &blocked,
+        )
+        .expect("blocked audit");
+        assert_eq!(audit["status"], "BLOCKED");
+        assert_eq!(audit["checks"][8]["status"], "BLOCKED");
+        assert_eq!(
+            audit["checks"][8]["reason_codes"],
+            json!(["GATE-AUDIT-LEDGER-MISSING"])
+        );
+
+        let malformed = build_failure_audit(
+            &root,
+            &json!({"plan_id": "z".repeat(64), "execution_key": "Z".repeat(64)}),
+            &json!({"stage_receipt_id": "g".repeat(64)}),
+            &root,
+            &root.join("target/test-ledger.jsonl"),
+            &failure,
+        )
+        .expect("malformed identities still yield schema-valid audit");
+        for field in ["plan_id", "execution_key", "light_stage_receipt_id"] {
+            let value = malformed[field].as_str().expect("digest field");
+            assert_eq!(value.len(), 64);
+            assert!(value.bytes().all(|byte| byte.is_ascii_hexdigit()));
+            assert_eq!(value, value.to_ascii_lowercase());
+        }
+    }
+
+    #[test]
+    fn rejected_package_admission_is_an_identity_failure() {
+        let error = package_admitted(
+            &json!({
+                "authorized_paths": ["docs/work-packages/p/package.md"],
+                "source": {"base_commit": "base"},
+            }),
+            &json!({
+                "status": "INVALID", "changed_paths": [], "base_commit": "base",
+                "reason_codes": ["PACKAGE-UNDECLARED-PATH"],
+            }),
+        )
+        .expect_err("authority substitution is invalid");
+        assert_eq!(error.class, ErrorClass::Identity);
+        assert_eq!(error.code, "GATE-AUDIT-PACKAGE-ADMISSION");
+    }
+
+    #[test]
+    fn missing_ledger_is_reported_by_both_owning_checks_without_escape() {
+        let path = std::env::temp_dir().join(format!(
+            "openwepp-gate-missing-ledger-{}-{}.jsonl",
+            std::process::id(),
+            std::thread::current().name().unwrap_or("test")
+        ));
+        let durable = check(
+            "DURABLE_ATTEMPT_LEDGER",
+            durable_ledger(&path),
+            json!({"ledger_path": path.display().to_string()}),
+        )
+        .expect("durable check artifact");
+        let defects = check(
+            "OPEN_TOOLING_DEFECTS",
+            no_open_tooling_defect(&path),
+            json!({"ledger_path": path.display().to_string(), "ledger_sha256": null}),
+        )
+        .expect("defect check artifact");
+        assert_eq!(durable["status"], "BLOCKED");
+        assert_eq!(
+            durable["reason_codes"],
+            json!(["GATE-AUDIT-LEDGER-MISSING"])
+        );
+        assert_eq!(defects["status"], "BLOCKED");
+        assert_eq!(defects["reason_codes"], json!(["GATE-AUDIT-LEDGER-READ"]));
+    }
+
+    #[test]
+    fn every_light_heavy_execution_claim_must_match() {
+        let light = json!({"workflow": "w", "job": "j", "runner": "r", "attempt": 1});
+        let baseline = ExecutionClaims {
+            workflow: "w".to_owned(),
+            job: "j".to_owned(),
+            runner: "r".to_owned(),
+            attempt: 1,
+            ..ExecutionClaims::default()
+        };
+        assert!(execution_claims_match(&light, &baseline));
+        for field in ["workflow", "job", "runner", "attempt"] {
+            let mut mutated = light.clone();
+            mutated[field] = if field == "attempt" {
+                json!(2)
+            } else {
+                json!("other")
+            };
+            assert!(!execution_claims_match(&mutated, &baseline), "{field}");
+        }
+    }
+
+    #[test]
+    fn multiple_changed_package_authorities_are_invalid() {
+        let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
+        let error = package_admission(
+            &root,
+            &json!({
+                "authorized_paths": [
+                    "docs/work-packages/one/package.md",
+                    "docs/work-packages/two/package.md"
+                ]
+            }),
+        )
+        .expect_err("authority must not be inferred");
+        assert_eq!(error.code, "GATE-AUDIT-PACKAGE-AMBIGUOUS");
+        assert_eq!(error.class, ErrorClass::Identity);
     }
 }

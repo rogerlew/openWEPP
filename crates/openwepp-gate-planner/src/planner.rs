@@ -41,6 +41,7 @@ pub struct PlanRequest {
     pub predecessor_intent_plan_id: Option<String>,
     pub boundary: String,
     pub campaign_id: Option<String>,
+    pub combined_quality_proof_id: Option<String>,
     pub authorized_paths: Vec<String>,
     pub source: ObservedSource,
 }
@@ -55,7 +56,6 @@ pub struct Reconciliation {
 /// Reconcile an exact terminal plan to its accepted intent predecessor.
 ///
 /// # Errors
-///
 /// Returns a planning error for invalid stages, predecessor identity, paths, risk, or deferral.
 pub fn reconcile_intent_terminal(
     repo: &Path,
@@ -143,7 +143,11 @@ fn verify_terminal_authorization(
 ) -> Result<()> {
     let authorized = string_set(&intent["authorized_paths"], "/authorized_paths")?;
     let terminal_authorized = string_set(&terminal["authorized_paths"], "/authorized_paths")?;
-    if authorized != terminal_authorized || !actual.is_subset(&authorized) {
+    if authorized != terminal_authorized
+        || !actual.is_subset(&authorized)
+        || intent["combined_quality"]["requested_proof_id"]
+            != terminal["combined_quality"]["requested_proof_id"]
+    {
         return Err(GatePolicyError::new(
             ErrorClass::Planning,
             "GATE-TERMINAL-UNAUTHORIZED-PATH",
@@ -744,6 +748,13 @@ impl<P: InventoryProvider> Planner<P> {
             &selection,
             &request.source.base_commit,
         )?;
+        let (nodes, combined_quality) = crate::combined_quality::select_and_apply(
+            &policy,
+            request.combined_quality_proof_id.as_deref(),
+            &context,
+            &request.source.base_commit,
+            nodes,
+        )?;
         let quality_scope = quality_scope(&selection, &nodes);
 
         let changed_objects = request
@@ -791,6 +802,7 @@ impl<P: InventoryProvider> Planner<P> {
             "execution_key": "0000000000000000000000000000000000000000000000000000000000000000",
             "boundary": request.boundary,
             "campaign_id": request.campaign_id,
+            "combined_quality": combined_quality,
             "authorized_paths": request.authorized_paths,
             "source": source,
             "changed_objects": changed_objects,
@@ -837,7 +849,7 @@ impl<P: InventoryProvider> Planner<P> {
         base_commit: &str,
     ) -> Result<Vec<Value>> {
         let mut instances = BTreeMap::<String, (&GateDefinition, String)>::new();
-        let explicit = selection
+        let mut explicit = selection
             .explicit_definitions
             .iter()
             .cloned()
@@ -847,6 +859,7 @@ impl<P: InventoryProvider> Planner<P> {
                 add_definition_instances(&mut instances, definition, selection);
             }
         }
+        explicit.remove("combined-workspace-quality-v1");
         for id in explicit {
             let definition = policy.definition(&id).ok_or_else(|| {
                 GatePolicyError::new(ErrorClass::Policy, "GATE-DEFINITION-MISSING", id.clone())
@@ -1214,6 +1227,9 @@ fn reconstruction_request(
             .ok_or_else(|| plan_shape("/boundary"))?
             .to_owned(),
         campaign_id: plan["campaign_id"].as_str().map(str::to_owned),
+        combined_quality_proof_id: plan["combined_quality"]["requested_proof_id"]
+            .as_str()
+            .map(str::to_owned),
         authorized_paths,
         source,
     })
@@ -2173,6 +2189,8 @@ fn execution_context(repo: &Path, policy: &PolicyBundle) -> Result<Value> {
     }))?;
     Ok(json!({
         "environment_manifest_sha256": digest(&environment)?,
+        "runner_host_class": std::env::var("RUNNER_NAME").ok(),
+        "runner_image_sha256": environment["runner_image_sha256"],
         "fixture_manifest_sha256": fixtures,
         "tool_manifest_sha256": digest(&tools)?,
         "configuration_sha256": configuration
@@ -2463,6 +2481,7 @@ mod tests {
             predecessor_intent_plan_id: None,
             boundary: "INCREMENT".to_owned(),
             campaign_id: Some("TESTGATE-PLAN-01".to_owned()),
+            combined_quality_proof_id: None,
             authorized_paths: vec!["gate-policy/v1/impact-map.json".to_owned()],
             source: ObservedSource {
                 base_commit: head,
@@ -2756,6 +2775,7 @@ mod tests {
             predecessor_intent_plan_id: None,
             boundary: "RELEASE".to_owned(),
             campaign_id: None,
+            combined_quality_proof_id: None,
             authorized_paths: vec!["README.md".to_owned()],
             source: ObservedSource {
                 base_commit: "1".repeat(40),
@@ -2792,6 +2812,7 @@ mod tests {
                     predecessor_intent_plan_id: None,
                     boundary: "INCREMENT".to_owned(),
                     campaign_id: Some("TESTGATE-PLAN-01".to_owned()),
+                    combined_quality_proof_id: None,
                     authorized_paths: vec![path.to_owned()],
                     source: ObservedSource {
                         base_commit: head,
@@ -2895,6 +2916,7 @@ mod tests {
                     predecessor_intent_plan_id: None,
                     boundary: "INCREMENT".to_owned(),
                     campaign_id: Some("TESTGATE-PLAN-01".to_owned()),
+                    combined_quality_proof_id: None,
                     authorized_paths: vec!["Cargo.lock".to_owned()],
                     source: source(Vec::new()),
                 },
@@ -2908,6 +2930,7 @@ mod tests {
                     predecessor_intent_plan_id: intent["plan_id"].as_str().map(str::to_owned),
                     boundary: "INCREMENT".to_owned(),
                     campaign_id: Some("TESTGATE-PLAN-01".to_owned()),
+                    combined_quality_proof_id: None,
                     authorized_paths: vec!["Cargo.lock".to_owned()],
                     source: source(vec![ObservedChange {
                         path: "Cargo.lock".to_owned(),

@@ -54,6 +54,7 @@ fn multi_package_inventory_follows_expanded_node_packages() {
                 predecessor_intent_plan_id: None,
                 boundary: "INCREMENT".to_owned(),
                 campaign_id: Some("CANOPY-PHENOLOGY-02".to_owned()),
+                combined_quality_proof_id: None,
                 authorized_paths: vec![path.to_owned()],
                 source: ObservedSource {
                     base_commit: head,
@@ -257,10 +258,20 @@ fn assert_testgate_workflow_surface() {
         "ERROR: refusing to verify superseded head",
         "ERROR: refusing authority for superseded head",
         "ERROR: refusing aggregate success for superseded head",
-        "Re-ingest and verify durable attempt index",
-        "TESTGATE_HISTORY_ROOT: /workdir/testgate-history/openwepp",
+        "Re-ingest exact durable attempt archive",
+        "TESTGATE_HISTORY_ROOT: /testgate-history",
+        "OPENWEPP_GATE_CHECKPOINT_MIRROR_ROOT:",
+        "Finalize pre-receipt recovery evidence",
         "Restore and verify newest durable attempt history",
         "--history-ledger \"${TESTGATE_HISTORY_ROOT}/attempts.jsonl\"",
+        "_verify_attempt_archive",
+        "_restore_attempt_archive",
+        "testgate-recovery-verified-",
+        "testgate-recovery/v1",
+        "recovery-attestation.jsonl",
+        "reconcile-attempts",
+        "combined_quality_proof_id",
+        "--combined-proof-id",
     ] {
         assert!(
             workflow.contains(context),
@@ -454,6 +465,20 @@ fn blocking_executor_and_affected_quality_preserve_manual_rollback() {
         .find(|entry| entry["gate_definition_id"] == "adjudicated-crap-v1")
         .expect("global CRAP definition");
     assert_eq!(global["risk_classes"], serde_json::json!(["CRITICAL"]));
+    let combined = entries
+        .iter()
+        .find(|entry| entry["gate_definition_id"] == "combined-workspace-quality-v1")
+        .expect("combined quality definition");
+    assert_eq!(combined["inventory_source"], "NEXTEST_WORKSPACE");
+    assert_eq!(combined["trust_requirement"], "PROTECTED_CI");
+    assert_eq!(combined["output_paths"].as_array().map(Vec::len), Some(3));
+    assert!(
+        !combined["arguments_template"]
+            .as_array()
+            .expect("combined arguments")
+            .iter()
+            .any(|argument| argument == "--nextest-profile")
+    );
     for (id, authority_class) in [
         ("authority-admission-v1", "A0"),
         ("required-authority-v1", "A3"),
@@ -482,6 +507,7 @@ fn blocking_executor_and_affected_quality_preserve_manual_rollback() {
     assert!(affected_driver.contains("--expected-package"));
     assert!(affected_driver.contains("cargo llvm-cov show-env --sh"));
     assert!(affected_driver.contains("cargo nextest run"));
+    assert_eq!(affected_driver.matches("cargo nextest run").count(), 1);
     assert!(affected_driver.contains("--config-file \"${NEXTEST_CONFIG}\""));
     assert!(affected_driver.contains("COVERAGE_PROFILE=\"${NEXTEST_PROFILE:-full}\""));
     assert!(affected_driver.contains("OUTPUT_DIR=\"target/adjudicated-crap\""));
@@ -638,6 +664,8 @@ fn runner_container_has_no_host_or_privileged_mounts() {
     assert!(manager.contains("--cap-drop ALL"));
     assert!(manager.contains("--read-only"));
     assert!(manager.contains("dst=/runner-state,readonly"));
+    assert!(manager.contains("dst=/testgate-history"));
+    assert!(!manager.contains("volume rm \"${HISTORY_VOLUME}\""));
     assert!(manager.contains("--tmpfs"));
     assert!(manager.contains("/t:rw,exec,nosuid,nodev"));
     assert!(manager.contains("/t:rw,exec,nosuid,nodev,size=40g"));

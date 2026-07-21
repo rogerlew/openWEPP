@@ -1,8 +1,8 @@
 {
   "schema_version": "openwepp-gate-impact-map-v1",
   "policy_id": "ADR-0039",
-  "policy_sha256": "fa574474af2f3a9d730e45fb440b0181483240ceb21b5193470a2b65ab126e42",
-  "generation": 8,
+  "policy_sha256": "bf942f69c0f493f88d01f3c4a1e6f84529c05f0bf1c32e7778bf1b8ba4077f37",
+  "generation": 9,
   "enforcement_status": "BLOCKING",
   "unknown_path_action": "ESCALATE_CRITICAL",
   "entries": [

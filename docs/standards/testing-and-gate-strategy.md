@@ -688,6 +688,31 @@ the owning tooling defect is corrected or explicit authority accepts a bounded
 external outage. Human memory and package prose are not substitutes for this
 enforcement.
 
+Checkpoint and recovery records are diagnostic until an independently accepted
+aggregate receipt or protected-CI provenance envelope authenticates the exact
+node attempt, artifacts, non-documentation roots, execution context, and
+claims. A self-hash or predecessor chain proves integrity only; it does not
+establish authority. Durable restore must reject symlinks, unindexed bytes,
+invalid ledger chains, and workflow or run provenance drift before installing
+bytes at their stable paths.
+
+Once the caller-selected durable ledger is admissible, HEAVY records `STARTED`
+before audit reconstruction, resume admission, executable checks, or subprocess
+preparation, and records exactly one terminal outcome for every such start.
+Representable pre-heavy failures still emit the versioned ten-check report:
+identity or authority substitution is `INVALID`, while an unavailable external
+prerequisite is `BLOCKED`, with the failure assigned to its owning check. Rust
+and non-Rust ledger producers must share the same canonical JSON byte contract.
+
+A combined full-regression and LCOV/CRAP node is selectable only by a
+repository-reviewed proof record. The executor recomputes its decision from
+exactly three compatible protected-CI baselines, exact functional inventory and
+result parity, complete JUnit, LCOV, and CRAP lineage, and both economy limits:
+combined median time is at most 120 percent of coverage-only median time and at
+most 80 percent of the summed full plus coverage medians. Missing, stale,
+unpinned, incomplete, or uneconomic proof retains separate nodes with a typed
+non-adoption reason.
+
 ## 9. Execution Architecture
 
 The target architecture is:

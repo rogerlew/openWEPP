@@ -83,6 +83,7 @@ fn build_plan(root: &Path) -> Value {
         predecessor_intent_plan_id: None,
         boundary: "INCREMENT".to_owned(),
         campaign_id: Some("TESTGATE-ASSURE-01".to_owned()),
+        combined_quality_proof_id: None,
         authorized_paths: changes.iter().map(|item| item.path.clone()).collect(),
         source: ObservedSource {
             base_commit: head(root),
@@ -286,6 +287,7 @@ fn only_an_exact_committed_terminal_requests_campaign_transfer() {
         predecessor_intent_plan_id: Some("55".repeat(32)),
         boundary: "INCREMENT".to_owned(),
         campaign_id: Some("TESTGATE-ASSURE-01".to_owned()),
+        combined_quality_proof_id: None,
         authorized_paths: vec![changed.path.clone()],
         source: ObservedSource {
             base_commit: commit.clone(),

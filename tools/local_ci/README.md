@@ -42,7 +42,6 @@ The latest summary is written to `target/local-ci-history/latest.md`; the full
 append-only log is `target/local-ci-history/nextest-runs.jsonl`.
 
 ## TESTGATE Increment Execution
-
 Build the repository-owned planner/executor, then create one external evidence
 directory for an exact base/head increment:
 
@@ -58,49 +57,56 @@ python tools/local_ci/testgate.py \
   --execute
 ```
 
-The helper validates base-commit package authority, invokes typed CLI argument
-vectors without a shell, and writes intent and terminal plans. Execution is a
-mandatory state machine: it runs only policy-owned `LIGHT` nodes, freezes their
-stage receipt, obtains the ten-check `pre-heavy-audit.json`, and starts a
-`HEAVY` node only when that exact audit is `READY`. The heavy receipt embeds the
-audit and imports the light prefix; a monolithic heavy path fails closed.
+The helper validates base-commit package authority, writes intent and terminal
+plans, runs policy-owned `LIGHT` nodes, and emits the canonical ten-check
+`pre-heavy-audit.json`. `HEAVY` begins only for that exact `READY` audit. The
+LIGHT receipt, HEAVY claims, executor digest, package admission, plan, and roots
+remain inseparable.
 
-Every node writes a digest-bound checkpoint before aggregate receipt creation.
-Attempt, timing, cost, failure, and tooling-defect records are appended to
-`target/local-ci-history/testgate-attempts.jsonl` by default. Trusted execution
-uses `/workdir/testgate-history/openwepp/attempts.jsonl`, outside the runner's
-`/t` tmpfs, snapshots that ledger into every indexed evidence upload, and
-restores the newest verified snapshot when durable host history is absent. The
-attempt index covers pre-receipt failures and per-node checkpoints so a hosted
-verifier can re-ingest and verify them after runner loss.
+Every node writes a digest-bound checkpoint and declared outputs to the durable
+`/testgate-history/recovery/<run>-<attempt>` mirror. The terminal plan is copied
+there before HEAVY starts. A checkpoint cannot suppress work from its self-hash:
+resume requires a hosted-runner attestation over an exact archive index, verifies
+the prior plan/node/binding and every indexed byte, and additionally verifies an
+aggregate receipt when one exists. Pre-receipt imports record a provenance ID;
+receipt-backed imports record both receipt and provenance lineage.
 
-The LIGHT receipt binds the SHA-256 of the exact executor image. Audit creation
-and HEAVY admission independently require the same image, so rebuilding source
-without rebuilding the binary cannot produce a usable transition. A HEAVY CLI
-attempt appends `STARTED` and terminal `CLOSED` or `FAILED` records itself;
-recurrence of one stable failure cause after the allowed retry automatically
-opens a blocking tooling defect.
+The always-run finalizer reconciles orphaned `STARTED` admissions, snapshots the
+full ledger and every ledger-referenced recovery root, rejects symlinks and
+unindexed bytes, and uploads the exact archive. A hosted verifier attests its
+index even when execution failed. Every later trusted run verifies the newest
+attestation and refreshes provenance; ledger and recovery bytes themselves are
+restored only into empty durable history. This preserves A→B→C recovery without
+treating a digest chain as authorship.
 
-The helper also writes an independently verified unsigned receipt and
+A tooling failure opens a blocking defect immediately. Infrastructure receives
+at most one declared retry; an unmatched process termination is reconciled to a
+typed infrastructure failure before another admission. Representable audit
+failures still produce the schema-valid ten-check artifact.
+
+Critical plans retain separate full-regression and global CRAP nodes unless a
+repository-reviewed three-baseline proof is active in policy or explicitly
+selected with `--combined-proof-id`. Admission binds the current host/image,
+exact parity and coverage lineage, and the 120%/80% economy limits. The policy
+keeps the active proof null until real protected-CI measurements are reviewed;
+no synthetic proof is permitted.
+
+The helper writes an independently verified unsigned receipt and
 `observation.json`. Local output remains
-`LOCAL_RECEIPT_PENDING_GITHUB_ATTESTATION` and cannot close an increment. The
-trusted workflow attests the exact receipt and custom predicate before its job
-can pass. Use a fresh external directory for every attempt; output collision
-fails closed. Verified FAIL/BLOCKED receipts remain in that directory while the
-helper exits nonzero, and executor-injected Cargo, Nextest, coverage, CRAP, and
-temporary work paths remain beneath the external execution root.
+`LOCAL_RECEIPT_PENDING_GITHUB_ATTESTATION` and cannot close an increment. Use a
+fresh external directory for every attempt; output collision fails closed.
 
 The stable black-box follow-up interface is
 `tools/local_ci/testgate_qualification.py`. Its `validate`, `run`, and `verify`
 subcommands freeze the subject, invoke the ordinary helper once per declared
 case, stop on the first mismatch, and independently rehash the resulting
 evidence. Qualification never converts local probe evidence into a live
-provider claim.
+provider claim. A real combined proof must be collected and pinned before the
+Q12 subject freeze.
 
 Nextest lifecycle roles are named `affected`, `checkpoint`, `campaign`, and
 `release`. Selection still comes from the terminal plan; a profile name alone
 never authorizes narrowing.
-
 ## Assurance Amendment Receipts
 
 For a typed report-data-only amendment, build the assurance binary once and run

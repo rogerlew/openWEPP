@@ -11,6 +11,11 @@ on:
         required: false
         default: ""
         type: string
+      combined_quality_proof_id:
+        description: "Repository-pinned combined quality proof ID (blank keeps separate gates)"
+        required: false
+        default: ""
+        type: string
 
 permissions:
   contents: read
@@ -32,7 +37,9 @@ jobs:
       OPENWEPP_RUNNER_IMAGE_ID: sha256:034ce655da139123cd775317d590d04dec6377788e4d124dc0e674f8d021e7e8
       CARGO_TARGET_DIR: /t
       TESTGATE_EXECUTION_ROOT: /t
-      TESTGATE_HISTORY_ROOT: /workdir/testgate-history/openwepp
+      TESTGATE_HISTORY_ROOT: /testgate-history
+      OPENWEPP_GATE_CHECKPOINT_MIRROR_ROOT: /testgate-history/recovery/${{ github.run_id }}-${{ github.run_attempt }}
+      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
@@ -100,33 +107,87 @@ jobs:
           mkdir -p "${TESTGATE_HISTORY_ROOT}"
           chmod 700 "${TESTGATE_HISTORY_ROOT}"
           history="${TESTGATE_HISTORY_ROOT}/attempts.jsonl"
+          restore_history=false
           if [[ ! -s "${history}" ]]; then
-            artifact_url="$(gh api \
+            restore_history=true
+          fi
+          artifact_json="$(gh api \
               "repos/${GITHUB_REPOSITORY}/actions/artifacts?per_page=100" \
-              --jq '[.artifacts[] | select(.expired == false) | select(.name | startswith("testgate-unsigned-"))] | sort_by(.created_at) | last | .archive_download_url // empty')"
+              --jq '[.artifacts[] | select(.expired == false) | select(.name | startswith("testgate-recovery-verified-")) | select(.workflow_run.head_branch == "main")] | sort_by(.created_at) | last // empty')"
+            artifact_url="$(jq -r '.archive_download_url // empty' <<<"${artifact_json}")"
             if [[ -n "${artifact_url}" ]]; then
+              restored_run_id="$(jq -r '.workflow_run.id' <<<"${artifact_json}")"
+              restored_attempt="$(jq -r '.name | split("-") | last' <<<"${artifact_json}")"
+              restored_run_json="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${restored_run_id}")"
+              [[ "$(jq -r '.path' <<<"${restored_run_json}")" == ".github/workflows/testgate-shadow.yml" ]]
+              [[ "$(jq -r '.head_repository.full_name' <<<"${restored_run_json}")" == "${GITHUB_REPOSITORY}" ]]
+              [[ "$(jq -r '.name' <<<"${artifact_json}")" == "testgate-recovery-verified-${restored_run_id}-${restored_attempt}" ]]
               restore_root="${TESTGATE_EXECUTION_ROOT}/history-restore"
               mkdir "${restore_root}"
               gh api "${artifact_url}" > "${restore_root}/history.zip"
-              unzip -q "${restore_root}/history.zip" -d "${restore_root}/evidence"
-              EVIDENCE_DIR="${restore_root}/evidence" python3 - <<'PY'
-          import hashlib
-          import json
+              unzip -q "${restore_root}/history.zip" -d "${restore_root}/package"
+              evidence="${restore_root}/package/unsigned"
+              auth="${restore_root}/package/auth"
+              index_sha="$(sha256sum "${evidence}/attempt-index.json" | cut -d' ' -f1)"
+              jq -e \
+                --arg index_sha256 "${index_sha}" \
+                --arg repository "${GITHUB_REPOSITORY}" \
+                --arg workflow "${GITHUB_WORKFLOW}" \
+                --arg run_id "${restored_run_id}" \
+                --arg run_attempt "${restored_attempt}" \
+                --arg head_sha "$(jq -r '.workflow_run.head_sha' <<<"${artifact_json}")" \
+                '.schema_version == "openwepp-testgate-recovery-provenance-v1"
+                 and .index_sha256 == $index_sha256
+                 and .repository == $repository
+                 and .workflow == $workflow
+                 and .source_ref == "refs/heads/main"
+                 and .run_id == $run_id
+                 and .run_attempt == $run_attempt
+                 and .head_sha == $head_sha' \
+                "${auth}/recovery-predicate.json"
+              gh attestation verify "${evidence}/attempt-index.json" \
+                --repo "${GITHUB_REPOSITORY}" \
+                --signer-workflow "${GITHUB_REPOSITORY}/.github/workflows/testgate-shadow.yml" \
+                --source-ref refs/heads/main \
+                --source-digest "$(jq -r '.workflow_run.head_sha' <<<"${artifact_json}")" \
+                --predicate-type https://openwepp.org/attestations/testgate-recovery/v1 \
+                --deny-self-hosted-runners \
+                --bundle "${auth}/recovery-attestation.jsonl" \
+                --format json > "${restore_root}/attestation-verification.json"
+              jq -e 'length == 1' "${restore_root}/attestation-verification.json"
+              EVIDENCE_DIR="${evidence}" AUTH_DIR="${auth}" \
+              HISTORY_ROOT="${TESTGATE_HISTORY_ROOT}" \
+              RESTORE_HISTORY="${restore_history}" \
+              EXPECTED_REPOSITORY="${GITHUB_REPOSITORY}" \
+              EXPECTED_WORKFLOW="${GITHUB_WORKFLOW}" \
+              EXPECTED_RUN_ID="${restored_run_id}" \
+              EXPECTED_RUN_ATTEMPT="${restored_attempt}" \
+              EXPECTED_HEAD_SHA="$(jq -r '.workflow_run.head_sha' <<<"${artifact_json}")" \
+              python3 - <<'PY'
           import os
           from pathlib import Path
 
+          from tools.local_ci.testgate import (
+              _install_recovery_provenance,
+              _restore_attempt_archive,
+              _verify_attempt_archive,
+          )
+
           root = Path(os.environ["EVIDENCE_DIR"])
-          index = json.loads((root / "attempt-index.json").read_text())
-          for item in index["files"]:
-              relative = Path(item["path"])
-              if relative.is_absolute() or ".." in relative.parts:
-                  raise SystemExit("invalid attempt-index path")
-              if hashlib.sha256((root / relative).read_bytes()).hexdigest() != item["sha256"]:
-                  raise SystemExit("attempt-index digest mismatch")
+          _verify_attempt_archive(
+              root,
+              repository=os.environ["EXPECTED_REPOSITORY"],
+              workflow=os.environ["EXPECTED_WORKFLOW"],
+              run_id=os.environ["EXPECTED_RUN_ID"],
+              run_attempt=os.environ["EXPECTED_RUN_ATTEMPT"],
+              head_sha=os.environ["EXPECTED_HEAD_SHA"],
+          )
+          history = Path(os.environ["HISTORY_ROOT"])
+          if os.environ["RESTORE_HISTORY"] == "true":
+              _restore_attempt_archive(root, history)
+          _install_recovery_provenance(root, Path(os.environ["AUTH_DIR"]), history)
           PY
-              install -m 600 "${restore_root}/evidence/attempts.jsonl" "${history}"
             fi
-          fi
           touch "${history}"
       - name: Reject superseded head before gate execution
         env:
@@ -141,6 +202,8 @@ jobs:
           fi
       - name: Execute content-verifiable increment gates
         id: testgate
+        env:
+          COMBINED_PROOF_ID: ${{ inputs.combined_quality_proof_id }}
         run: |
           set -euo pipefail
           evidence_dir="${TESTGATE_EXECUTION_ROOT}/e"
@@ -149,6 +212,10 @@ jobs:
           [[ ! -e "${planner_tmp}" && ! -e "${evidence_dir}" ]]
           mkdir "${planner_tmp}" "${evidence_dir}"
           set +e
+          combined_args=()
+          if [[ -n "${COMBINED_PROOF_ID}" ]]; then
+            combined_args=(--combined-proof-id "${COMBINED_PROOF_ID}")
+          fi
           TMPDIR="${planner_tmp}" python3 tools/local_ci/testgate.py \
             --binary "${CARGO_TARGET_DIR}/debug/openwepp-gate-plan" \
             --base "${{ steps.comparison.outputs.base }}" \
@@ -157,6 +224,7 @@ jobs:
             --artifact-root "${evidence_dir}" \
             --history-ledger "${TESTGATE_HISTORY_ROOT}/attempts.jsonl" \
             --job openwepp/execute-increment \
+            "${combined_args[@]}" \
             --execute 2>"${orchestration_log}"
           testgate_status=$?
           set -e
@@ -165,6 +233,26 @@ jobs:
             exit "${testgate_status}"
           fi
           echo "evidence_dir=${evidence_dir}" >> "${GITHUB_OUTPUT}"
+      - name: Finalize pre-receipt recovery evidence
+        if: ${{ always() }}
+        run: |
+          set -euo pipefail
+          evidence_dir="${TESTGATE_EXECUTION_ROOT}/e"
+          mkdir -p "${evidence_dir}"
+          if [[ -x "${CARGO_TARGET_DIR}/debug/openwepp-gate-plan" ]]; then
+            "${CARGO_TARGET_DIR}/debug/openwepp-gate-plan" reconcile-attempts \
+              --ledger "${TESTGATE_HISTORY_ROOT}/attempts.jsonl"
+          fi
+          EVIDENCE_DIR="${evidence_dir}" HISTORY_LEDGER="${TESTGATE_HISTORY_ROOT}/attempts.jsonl" python3 - <<'PY'
+          import os
+          from pathlib import Path
+
+          from tools.local_ci.testgate import _snapshot_history, _write_attempt_index
+
+          evidence = Path(os.environ["EVIDENCE_DIR"])
+          _snapshot_history(Path(os.environ["HISTORY_LEDGER"]), evidence)
+          _write_attempt_index(evidence)
+          PY
       - name: Upload unsigned execution evidence
         if: ${{ always() }}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -182,33 +270,94 @@ jobs:
     timeout-minutes: 20
     permissions:
       contents: read
+      id-token: write
+      attestations: write
     steps:
-      - name: Fail closed when execution did not succeed
-        env:
-          EXECUTION_RESULT: ${{ needs.execute-increment.result }}
-        run: test "${EXECUTION_RESULT}" = success
       - name: Download unsigned execution evidence
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           name: testgate-unsigned-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/testgate-evidence
-      - name: Re-ingest and verify durable attempt index
-        env:
-          EVIDENCE_DIR: ${{ runner.temp }}/testgate-evidence
-        run: |
-          set -euo pipefail
-          jq -e '.schema_version == "openwepp-testgate-attempt-index-v1" and (.files | length > 0)' \
-            "${EVIDENCE_DIR}/attempt-index.json"
-          while IFS=$'\t' read -r expected relative; do
-            [[ "${relative}" != /* && "${relative}" != *..* ]]
-            actual="$(sha256sum "${EVIDENCE_DIR}/${relative}" | cut -d' ' -f1)"
-            [[ "${actual}" == "${expected}" ]]
-          done < <(jq -r '.files[] | [.sha256, .path] | @tsv' "${EVIDENCE_DIR}/attempt-index.json")
+          path: ${{ runner.temp }}/testgate-recovery-package/unsigned
       - name: Checkout exact source for independent verification
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
           persist-credentials: false
+      - name: Re-ingest exact durable attempt archive
+        env:
+          EVIDENCE_DIR: ${{ runner.temp }}/testgate-recovery-package/unsigned
+        run: |
+          set -euo pipefail
+          EVIDENCE_DIR="${EVIDENCE_DIR}" python3 - <<'PY'
+          import os
+          from pathlib import Path
+
+          from tools.local_ci.testgate import _verify_attempt_archive
+
+          _verify_attempt_archive(
+              Path(os.environ["EVIDENCE_DIR"]),
+              repository=os.environ["GITHUB_REPOSITORY"],
+              workflow=os.environ["GITHUB_WORKFLOW"],
+              run_id=os.environ["GITHUB_RUN_ID"],
+              run_attempt=os.environ["GITHUB_RUN_ATTEMPT"],
+              head_sha=os.environ["GITHUB_SHA"],
+          )
+          PY
+      - name: Build recovery provenance predicate
+        env:
+          EVIDENCE_DIR: ${{ runner.temp }}/testgate-recovery-package/unsigned
+          AUTH_DIR: ${{ runner.temp }}/testgate-recovery-package/auth
+        run: |
+          set -euo pipefail
+          mkdir "${AUTH_DIR}"
+          index_sha="$(sha256sum "${EVIDENCE_DIR}/attempt-index.json" | cut -d' ' -f1)"
+          jq -n \
+            --arg index_sha256 "${index_sha}" \
+            --arg repository "${GITHUB_REPOSITORY}" \
+            --arg workflow "${GITHUB_WORKFLOW}" \
+            --arg source_ref "${GITHUB_REF}" \
+            --arg run_id "${GITHUB_RUN_ID}" \
+            --arg run_attempt "${GITHUB_RUN_ATTEMPT}" \
+            --arg head_sha "${GITHUB_SHA}" \
+            '{schema_version:"openwepp-testgate-recovery-provenance-v1", index_sha256:$index_sha256, repository:$repository, workflow:$workflow, source_ref:$source_ref, run_id:$run_id, run_attempt:$run_attempt, head_sha:$head_sha}' \
+            > "${AUTH_DIR}/recovery-predicate.json"
+      - name: Authenticate exact recovery archive index
+        id: attest-recovery
+        uses: actions/attest@f7c74d28b9d84cb8768d0b8ca14a4bac6ef463e6
+        with:
+          subject-path: ${{ runner.temp }}/testgate-recovery-package/unsigned/attempt-index.json
+          predicate-type: https://openwepp.org/attestations/testgate-recovery/v1
+          predicate-path: ${{ runner.temp }}/testgate-recovery-package/auth/recovery-predicate.json
+      - name: Verify recovery attestation before publication
+        env:
+          AUTH_DIR: ${{ runner.temp }}/testgate-recovery-package/auth
+          INDEX_PATH: ${{ runner.temp }}/testgate-recovery-package/unsigned/attempt-index.json
+          BUNDLE_PATH: ${{ steps.attest-recovery.outputs.bundle-path }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cp -- "${BUNDLE_PATH}" "${AUTH_DIR}/recovery-attestation.jsonl"
+          gh attestation verify "${INDEX_PATH}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --signer-workflow "${GITHUB_REPOSITORY}/.github/workflows/testgate-shadow.yml" \
+            --source-ref refs/heads/main \
+            --source-digest "${GITHUB_SHA}" \
+            --predicate-type https://openwepp.org/attestations/testgate-recovery/v1 \
+            --deny-self-hosted-runners \
+            --bundle "${AUTH_DIR}/recovery-attestation.jsonl" \
+            --format json > "${AUTH_DIR}/recovery-verification.json"
+          jq -e 'length == 1' "${AUTH_DIR}/recovery-verification.json"
+      - name: Upload authenticated recovery evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: testgate-recovery-verified-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/testgate-recovery-package
+          if-no-files-found: error
+          retention-days: 30
+      - name: Fail closed when execution did not succeed
+        env:
+          EXECUTION_RESULT: ${{ needs.execute-increment.result }}
+        run: test "${EXECUTION_RESULT}" = success
       - name: Independently admit comparison base
         id: verification-comparison
         env:
@@ -246,7 +395,7 @@ jobs:
           cargo build --locked -p openwepp-gate-planner --bin openwepp-gate-plan
       - name: Validate receipt and predicate bindings
         env:
-          EVIDENCE_DIR: ${{ runner.temp }}/testgate-evidence
+          EVIDENCE_DIR: ${{ runner.temp }}/testgate-recovery-package/unsigned
           EXPECTED_IMAGE: sha256:034ce655da139123cd775317d590d04dec6377788e4d124dc0e674f8d021e7e8
           EXPECTED_BASE: ${{ steps.verification-comparison.outputs.base }}
         run: |
@@ -328,7 +477,7 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: testgate-verified-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/testgate-evidence
+          path: ${{ runner.temp }}/testgate-recovery-package/unsigned
           if-no-files-found: error
           retention-days: 7
 

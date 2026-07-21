@@ -7,8 +7,12 @@
 
 #![forbid(unsafe_code)]
 
+mod artifact_contract;
+
 mod assurance;
 pub mod canonical;
+mod checkpoint_mirror;
+pub mod combined_quality;
 mod documentation;
 pub mod error;
 mod execution_context;

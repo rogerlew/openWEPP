@@ -14,6 +14,14 @@
   "execution_key": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
   "boundary": "INCREMENT",
   "campaign_id": "TESTGATE-ALIGN-01",
+  "combined_quality": {
+    "decision": "SEPARATE",
+    "reason_code": "COMBINATION_NOT_ADOPTED_NO_PROOF",
+    "requested_proof_id": null,
+    "accepted_proof_id": null,
+    "proof_sha256": null,
+    "baseline_count": 0
+  },
   "authorized_paths": ["gate-policy/v1/impact-map.json"],
   "source": {
     "base_commit": "1111111111111111111111111111111111111111111111111111111111111111",
@@ -50,6 +58,8 @@
   },
   "execution_context": {
     "environment_manifest_sha256": "5656565656565656565656565656565656565656565656565656565656565656",
+    "runner_host_class": null,
+    "runner_image_sha256": null,
     "fixture_manifest_sha256": "5757575757575757575757575757575757575757575757575757575757575757",
     "tool_manifest_sha256": "5858585858585858585858585858585858585858585858585858585858585858",
     "configuration_sha256": "5959595959595959595959595959595959595959595959595959595959595959"

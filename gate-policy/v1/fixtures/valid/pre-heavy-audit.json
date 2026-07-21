@@ -15,6 +15,19 @@
     "execution_cost_class": "LIGHT",
     "node_sha256": "9999999999999999999999999999999999999999999999999999999999999999"
   }],
+  "package_admission": {
+    "schema_version": "openwepp-package-audit-v1",
+    "package_audit_id": "1111111111111111111111111111111111111111111111111111111111111111",
+    "status": "READY",
+    "reason_codes": [],
+    "base_commit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "package_path": "docs/work-packages/example/package.md",
+    "base_package_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+    "current_package_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+    "declared_write_set": ["src/**"],
+    "changed_paths": ["src/lib.rs"],
+    "unauthorized_paths": []
+  },
   "checks": [
     {"check_id": "PACKAGE_ADMISSION", "status": "PASS", "reason_codes": [], "evidence_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
     {"check_id": "CHEAP_PREREQUISITES", "status": "PASS", "reason_codes": [], "evidence_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
@@ -27,6 +40,13 @@
     {"check_id": "DURABLE_ATTEMPT_LEDGER", "status": "PASS", "reason_codes": [], "evidence_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
     {"check_id": "OPEN_TOOLING_DEFECTS", "status": "PASS", "reason_codes": [], "evidence_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}
   ],
-  "combined_execution": {"decision": "SEPARATE", "reason_code": "COMBINATION_NOT_ADOPTED_INSUFFICIENT_COMPATIBLE_HISTORY"},
+  "combined_execution": {
+    "decision": "SEPARATE",
+    "reason_code": "COMBINATION_NOT_ADOPTED_NO_PROOF",
+    "requested_proof_id": null,
+    "accepted_proof_id": null,
+    "proof_sha256": null,
+    "baseline_count": 0
+  },
   "light_receipt": {}
 }

@@ -148,7 +148,7 @@
           "required": [
             "schema_version", "audit_id", "status", "reason_codes", "plan_id",
             "plan_sha256", "execution_key", "executor_binary_sha256", "light_stage_receipt_id",
-            "artifact_root_sha256", "ledger_path_sha256", "node_manifest",
+            "artifact_root_sha256", "ledger_path_sha256", "node_manifest", "package_admission",
             "checks", "combined_execution", "light_receipt"
           ],
           "properties": {
@@ -164,6 +164,7 @@
             "artifact_root_sha256": {"$ref": "#/$defs/digest"},
             "ledger_path_sha256": {"$ref": "#/$defs/digest"},
             "node_manifest": {"type": "array"},
+            "package_admission": {"type": ["object", "null"], "additionalProperties": true},
             "checks": {"type": "array"},
             "combined_execution": {"type": "object", "additionalProperties": {}},
             "light_receipt": {"type": "object", "additionalProperties": {}}
@@ -177,13 +178,28 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["node_id", "prior_receipt_id", "decision", "reason_code"],
+        "required": ["node_id", "prior_receipt_id", "prior_provenance_id", "decision", "reason_code"],
         "properties": {
           "node_id": {"$ref": "#/$defs/digest"},
-          "prior_receipt_id": {"$ref": "#/$defs/digest"},
+          "prior_receipt_id": {
+            "oneOf": [
+              {"$ref": "#/$defs/digest"},
+              {"type": "null"}
+            ]
+          },
+          "prior_provenance_id": {
+            "oneOf": [
+              {"$ref": "#/$defs/digest"},
+              {"type": "null"}
+            ]
+          },
           "decision": {"enum": ["IMPORTED", "RERUN"]},
           "reason_code": {"type": "string", "minLength": 1}
-        }
+        },
+        "allOf": [{
+          "if": {"properties": {"decision": {"const": "IMPORTED"}}},
+          "then": {"properties": {"prior_provenance_id": {"$ref": "#/$defs/digest"}}}
+        }]
       }
     },
     "claims": {

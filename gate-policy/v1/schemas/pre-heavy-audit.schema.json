@@ -6,7 +6,7 @@
   "required": [
     "schema_version", "audit_id", "status", "reason_codes", "plan_id", "plan_sha256",
     "execution_key", "executor_binary_sha256", "light_stage_receipt_id", "artifact_root_sha256", "ledger_path_sha256",
-    "node_manifest", "checks", "combined_execution", "light_receipt"
+    "node_manifest", "package_admission", "checks", "combined_execution", "light_receipt"
   ],
   "properties": {
     "schema_version": {"const": "openwepp-pre-heavy-audit-v1"},
@@ -21,7 +21,7 @@
     "artifact_root_sha256": {"$ref": "#/$defs/digest"},
     "ledger_path_sha256": {"$ref": "#/$defs/digest"},
     "node_manifest": {
-      "type": "array", "minItems": 1,
+      "type": "array",
       "items": {
         "type": "object", "additionalProperties": false,
         "required": ["node_id", "execution_cost_class", "node_sha256"],
@@ -32,6 +32,7 @@
         }
       }
     },
+    "package_admission": {"type": ["object", "null"], "additionalProperties": true},
     "checks": {
       "type": "array", "minItems": 10, "maxItems": 10,
       "prefixItems": [
@@ -50,10 +51,14 @@
     },
     "combined_execution": {
       "type": "object", "additionalProperties": false,
-      "required": ["decision", "reason_code"],
+      "required": ["decision", "reason_code", "requested_proof_id", "accepted_proof_id", "proof_sha256", "baseline_count"],
       "properties": {
         "decision": {"enum": ["COMBINED", "SEPARATE", "NOT_APPLICABLE"]},
-        "reason_code": {"type": "string"}
+        "reason_code": {"type": "string"},
+        "requested_proof_id": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+        "accepted_proof_id": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+        "proof_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+        "baseline_count": {"type": "integer", "minimum": 0, "maximum": 3}
       }
     },
     "light_receipt": {"type": "object", "additionalProperties": {}}

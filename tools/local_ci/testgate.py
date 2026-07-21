@@ -9,6 +9,8 @@ import hashlib
 import json
 import os
 import re
+import shutil
+import stat
 import subprocess
 import sys
 import time
@@ -23,6 +25,38 @@ class TestgateError(RuntimeError):
     """Raised when a TESTGATE execution cannot be represented exactly."""
 
 
+def _canonical_json(value: Any) -> str:
+    """Serialize the integer-only RFC 8785 subset shared with the Rust gate."""
+    if value is None or isinstance(value, (bool, str)):
+        return json.dumps(value, ensure_ascii=False, separators=(",", ":"))
+    if isinstance(value, int) and not isinstance(value, bool):
+        if abs(value) > 9_007_199_254_740_991:
+            raise TestgateError("integer is outside the I-JSON safe range")
+        return str(value)
+    if isinstance(value, list):
+        return "[" + ",".join(_canonical_json(item) for item in value) + "]"
+    if isinstance(value, dict):
+        if not all(isinstance(key, str) for key in value):
+            raise TestgateError("JSON object keys must be strings")
+        keys = sorted(value, key=lambda key: key.encode("utf-16-be"))
+        return "{" + ",".join(
+            f"{_canonical_json(key)}:{_canonical_json(value[key])}" for key in keys
+        ) + "}"
+    raise TestgateError(f"unsupported canonical JSON value: {type(value).__name__}")
+
+
+def _strict_json(text: str) -> Any:
+    def object_from_pairs(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+        value: dict[str, Any] = {}
+        for key, item in pairs:
+            if key in value:
+                raise TestgateError(f"duplicate JSON object key: {key}")
+            value[key] = item
+        return value
+
+    return json.loads(text, object_pairs_hook=object_from_pairs)
+
+
 def _atomic_json(path: Path, value: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_name(f".{path.name}.tmp")
@@ -35,23 +69,26 @@ def _append_history(path: Path, value: dict[str, Any]) -> str:
     path.parent.mkdir(parents=True, exist_ok=True)
     previous = None
     if path.is_file():
+        _verify_history_chain(path)
         lines = [line for line in path.read_text(encoding="utf-8").splitlines() if line]
         if lines:
-            previous = json.loads(lines[-1]).get("entry_sha256")
+            previous = _strict_json(lines[-1]).get("entry_sha256")
     record = {**value, "previous_entry_sha256": previous}
-    canonical = json.dumps(record, sort_keys=True, separators=(",", ":"))
+    canonical = _canonical_json(record)
     entry_sha256 = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
     record["entry_sha256"] = entry_sha256
     with path.open("a", encoding="utf-8") as stream:
-        stream.write(json.dumps(record, sort_keys=True, separators=(",", ":")) + "\n")
+        stream.write(_canonical_json(record) + "\n")
         stream.flush()
         os.fsync(stream.fileno())
     return entry_sha256
 
 
-def _write_attempt_index(root: Path) -> None:
+def _write_attempt_index(root: Path, provenance: dict[str, Any] | None = None) -> None:
     entries = []
     for path in sorted(root.rglob("*")):
+        if path.is_symlink():
+            raise TestgateError(f"attempt evidence contains symlink: {path}")
         if path.is_file() and path.name != "attempt-index.json":
             entries.append(
                 {
@@ -61,7 +98,11 @@ def _write_attempt_index(root: Path) -> None:
             )
     _atomic_json(
         root / "attempt-index.json",
-        {"schema_version": "openwepp-testgate-attempt-index-v1", "files": entries},
+        {
+            "schema_version": "openwepp-testgate-attempt-index-v1",
+            "provenance": provenance or _workflow_provenance(),
+            "files": entries,
+        },
     )
 
 
@@ -75,6 +116,329 @@ def _snapshot_history(ledger: Path, artifact_root: Path) -> None:
     temporary = destination.with_name(f".{destination.name}.tmp")
     temporary.write_bytes(ledger.read_bytes())
     temporary.replace(destination)
+    recovery_roots: set[Path] = set()
+    configured = os.environ.get("OPENWEPP_GATE_CHECKPOINT_MIRROR_ROOT")
+    current_recovery = Path(configured) if configured else None
+    if configured:
+        recovery_roots.add(current_recovery)
+    for raw in ledger.read_text(encoding="utf-8").splitlines():
+        if not raw:
+            continue
+        record = _strict_json(raw)
+        named = record.get("recovery_root")
+        if isinstance(named, str):
+            recovery_roots.add(Path(named))
+    allowed = ledger.parent / "recovery"
+    verified_indexes: set[str] = set()
+    for recovery in sorted(recovery_roots):
+        _require_confined_recovery_root(recovery, allowed)
+        if recovery != current_recovery and not _has_retained_provenance(
+            ledger, recovery, verified_indexes
+        ):
+            continue
+        if recovery.exists() or recovery.is_symlink():
+            _validate_directory_nofollow(recovery)
+            _copy_regular_tree(recovery, artifact_root / "recovery" / recovery.name)
+
+
+def _has_retained_provenance(
+    ledger: Path, recovery: Path, verified_indexes: set[str]
+) -> bool:
+    provenance = ledger.parent / "provenance" / recovery.name
+    if not provenance.exists() and not provenance.is_symlink():
+        return False
+    _validate_directory_nofollow(provenance)
+    for filename in (
+        "attempt-index.json",
+        "recovery-predicate.json",
+        "recovery-attestation.jsonl",
+    ):
+        path = provenance / filename
+        if path.is_symlink() or not path.is_file():
+            raise TestgateError(f"retained provenance is incomplete: {path}")
+    index_path = provenance / "attempt-index.json"
+    index_bytes = index_path.read_bytes()
+    index = _strict_json(index_bytes.decode("utf-8"))
+    predicate = _strict_json(
+        (provenance / "recovery-predicate.json").read_text(encoding="utf-8")
+    )
+    index_sha = hashlib.sha256(index_bytes).hexdigest()
+    repository = os.environ.get("GITHUB_REPOSITORY")
+    workflow = os.environ.get("GITHUB_WORKFLOW")
+    source_ref = os.environ.get("GITHUB_REF")
+    expected = index.get("provenance", {})
+    if (
+        predicate.get("schema_version")
+        != "openwepp-testgate-recovery-provenance-v1"
+        or predicate.get("index_sha256") != index_sha
+        or predicate.get("repository") != repository
+        or predicate.get("workflow") != workflow
+        or predicate.get("source_ref") != source_ref
+        or any(predicate.get(key) != expected.get(key) for key in ("repository", "workflow", "run_id", "run_attempt", "head_sha"))
+    ):
+        raise TestgateError("retained recovery provenance identity mismatch")
+    prefix = f"recovery/{recovery.name}/"
+    indexed = {
+        item["path"][len(prefix) :]: item.get("sha256")
+        for item in index.get("files", [])
+        if isinstance(item.get("path"), str) and item["path"].startswith(prefix)
+    }
+    actual: dict[str, str] = {}
+    for path in recovery.rglob("*"):
+        if path.is_symlink():
+            raise TestgateError(f"retained recovery contains symlink: {path}")
+        if path.is_file():
+            actual[path.relative_to(recovery).as_posix()] = hashlib.sha256(
+                path.read_bytes()
+            ).hexdigest()
+        elif not path.is_dir():
+            raise TestgateError(f"retained recovery contains unsafe entry: {path}")
+    if not indexed or actual != indexed:
+        raise TestgateError("retained recovery differs from its authenticated index")
+    if index_sha not in verified_indexes:
+        command = subprocess.run(
+            [
+                "gh", "attestation", "verify", str(index_path),
+                "--repo", str(repository),
+                "--signer-workflow", f"{repository}/.github/workflows/testgate-shadow.yml",
+                "--source-ref", str(source_ref),
+                "--source-digest", str(predicate.get("head_sha")),
+                "--predicate-type", "https://openwepp.org/attestations/testgate-recovery/v1",
+                "--deny-self-hosted-runners",
+                "--bundle", str(provenance / "recovery-attestation.jsonl"),
+                "--format", "json",
+            ],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        try:
+            verified = _strict_json(command.stdout)
+        except (json.JSONDecodeError, TestgateError) as error:
+            raise TestgateError("retained recovery attestation is invalid") from error
+        if command.returncode != 0 or not isinstance(verified, list) or not verified:
+            raise TestgateError("retained recovery attestation did not verify")
+        verified_indexes.add(index_sha)
+    return True
+
+
+def _finalize_recovery(artifact_root: Path) -> str | None:
+    """Make an accepted aggregate receipt available beside durable checkpoints."""
+    configured = os.environ.get("OPENWEPP_GATE_CHECKPOINT_MIRROR_ROOT")
+    receipt = artifact_root / "receipt.json"
+    if not configured or not receipt.is_file():
+        return None
+    recovery = Path(configured)
+    if not recovery.is_absolute():
+        raise TestgateError("checkpoint mirror root must be absolute")
+    _create_absolute_directories_nofollow(recovery)
+    _copy_atomic_nofollow(receipt, recovery / "receipt.json")
+    plan = artifact_root / "terminal-plan.json"
+    if not plan.is_file() or plan.is_symlink():
+        raise TestgateError("accepted recovery is missing a safe terminal plan")
+    _copy_atomic_nofollow(plan, recovery / "plan.json")
+    return str(recovery)
+
+
+def _initialize_recovery_plan(plan: Path) -> str | None:
+    """Persist the signed plan beside checkpoints before any HEAVY process starts."""
+    configured = os.environ.get("OPENWEPP_GATE_CHECKPOINT_MIRROR_ROOT")
+    if not configured:
+        return None
+    recovery = Path(configured)
+    if not recovery.is_absolute():
+        raise TestgateError("checkpoint mirror root must be absolute")
+    _create_absolute_directories_nofollow(recovery)
+    _copy_atomic_nofollow(plan, recovery / "plan.json")
+    return str(recovery)
+
+
+def _create_absolute_directories_nofollow(path: Path) -> None:
+    current = Path(path.anchor)
+    for component in path.parts[1:]:
+        if component in {"", ".", ".."}:
+            raise TestgateError(f"unsafe recovery directory component: {component}")
+        current /= component
+        try:
+            mode = current.lstat().st_mode
+        except FileNotFoundError:
+            current.mkdir()
+            mode = current.lstat().st_mode
+        if stat.S_ISLNK(mode) or not stat.S_ISDIR(mode):
+            raise TestgateError(f"recovery directory is not a real directory: {current}")
+
+
+def _validate_directory_nofollow(path: Path) -> None:
+    if not path.is_absolute():
+        raise TestgateError("recovery directory must be absolute")
+    current = Path(path.anchor)
+    for component in path.parts[1:]:
+        if component in {"", ".", ".."}:
+            raise TestgateError(f"unsafe recovery directory component: {component}")
+        current /= component
+        mode = current.lstat().st_mode
+        if stat.S_ISLNK(mode) or not stat.S_ISDIR(mode):
+            raise TestgateError(f"recovery directory is not a real directory: {current}")
+
+
+def _require_confined_recovery_root(path: Path, allowed: Path) -> None:
+    if not path.is_absolute() or ".." in path.parts:
+        raise TestgateError(f"unsafe recovery root: {path}")
+    try:
+        relative = path.relative_to(allowed)
+    except ValueError as error:
+        raise TestgateError(f"recovery root is outside durable history: {path}") from error
+    if len(relative.parts) != 1 or relative.parts[0] in {"", ".", ".."}:
+        raise TestgateError(f"recovery root is not one attempt directory: {path}")
+
+
+def _copy_atomic_nofollow(source: Path, destination: Path) -> None:
+    if source.is_symlink() or not source.is_file():
+        raise TestgateError(f"recovery source is missing or unsafe: {source}")
+    if destination.is_symlink():
+        raise TestgateError(f"recovery destination is a symlink: {destination}")
+    temporary = destination.with_name(f".{destination.name}.{os.getpid()}.tmp")
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    descriptor = os.open(temporary, flags, 0o600)
+    try:
+        with os.fdopen(descriptor, "wb") as stream:
+            stream.write(source.read_bytes())
+            stream.flush()
+            os.fsync(stream.fileno())
+    except BaseException:
+        temporary.unlink(missing_ok=True)
+        raise
+    temporary.replace(destination)
+
+
+def _copy_regular_tree(source: Path, destination: Path) -> None:
+    """Copy an exact regular-file tree without ever following symlinks."""
+    for path in sorted(source.rglob("*")):
+        if path.is_symlink():
+            raise TestgateError(f"history tree contains symlink: {path}")
+        relative = path.relative_to(source)
+        target = destination / relative
+        if path.is_dir():
+            target.mkdir(parents=True, exist_ok=True)
+        elif path.is_file():
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(path, target)
+        else:
+            raise TestgateError(f"history tree contains non-regular entry: {path}")
+
+
+def _workflow_provenance() -> dict[str, Any]:
+    return {
+        "repository": os.environ.get("GITHUB_REPOSITORY"),
+        "workflow": os.environ.get("GITHUB_WORKFLOW"),
+        "run_id": os.environ.get("GITHUB_RUN_ID"),
+        "run_attempt": os.environ.get("GITHUB_RUN_ATTEMPT"),
+        "head_sha": os.environ.get("GITHUB_SHA"),
+    }
+
+
+def _verify_history_chain(path: Path) -> None:
+    previous = None
+    for raw in path.read_text(encoding="utf-8").splitlines():
+        if not raw:
+            continue
+        record = _strict_json(raw)
+        if not isinstance(record, dict) or record.get("previous_entry_sha256") != previous:
+            raise TestgateError("attempt ledger predecessor mismatch")
+        claimed = record.pop("entry_sha256", None)
+        actual = hashlib.sha256(_canonical_json(record).encode("utf-8")).hexdigest()
+        if claimed != actual:
+            raise TestgateError("attempt ledger entry digest mismatch")
+        previous = claimed
+
+
+def _verify_attempt_archive(
+    root: Path, *, repository: str, workflow: str, run_id: str, run_attempt: str, head_sha: str
+) -> None:
+    index_path = root / "attempt-index.json"
+    if index_path.is_symlink() or not index_path.is_file():
+        raise TestgateError("attempt index is missing or unsafe")
+    index = _strict_json(index_path.read_text(encoding="utf-8"))
+    if index.get("schema_version") != "openwepp-testgate-attempt-index-v1":
+        raise TestgateError("attempt index schema mismatch")
+    provenance = index.get("provenance", {})
+    expected = {
+        "repository": repository,
+        "workflow": workflow,
+        "run_id": run_id,
+        "run_attempt": run_attempt,
+        "head_sha": head_sha,
+    }
+    if any(str(provenance.get(key)) != value for key, value in expected.items()):
+        raise TestgateError("attempt archive provenance mismatch")
+    entries = index.get("files")
+    if not isinstance(entries, list):
+        raise TestgateError("attempt index files must be an array")
+    indexed: dict[str, str] = {}
+    for item in entries:
+        relative = Path(item.get("path", ""))
+        name = relative.as_posix()
+        if relative.is_absolute() or not name or ".." in relative.parts or name in indexed:
+            raise TestgateError("invalid or duplicate attempt-index path")
+        indexed[name] = item.get("sha256", "")
+    actual: set[str] = set()
+    for path in root.rglob("*"):
+        if path.is_symlink():
+            raise TestgateError("attempt archive contains symlink")
+        if path == index_path:
+            continue
+        if path.is_file() and path != index_path:
+            actual.add(path.relative_to(root).as_posix())
+        elif not path.is_dir():
+            raise TestgateError("attempt archive contains non-regular entry")
+    if actual != set(indexed) or "attempts.jsonl" not in actual:
+        raise TestgateError("attempt archive file set differs from its index")
+    for name, expected_digest in indexed.items():
+        if hashlib.sha256((root / name).read_bytes()).hexdigest() != expected_digest:
+            raise TestgateError("attempt-index digest mismatch")
+    _verify_history_chain(root / "attempts.jsonl")
+
+
+def _restore_attempt_archive(root: Path, history_root: Path) -> None:
+    """Install only independently verified regular files into a fresh history root."""
+    if any(history_root.iterdir()):
+        raise TestgateError("history restore destination is not empty")
+    shutil.copyfile(root / "attempts.jsonl", history_root / "attempts.jsonl")
+    (history_root / "attempts.jsonl").chmod(0o600)
+    recovery = root / "recovery"
+    if recovery.is_dir():
+        _copy_regular_tree(recovery, history_root / "recovery")
+
+
+def _install_recovery_provenance(root: Path, auth_root: Path, history_root: Path) -> None:
+    """Retain the hosted-runner attestation needed by the Rust reuse verifier."""
+    index = _strict_json((root / "attempt-index.json").read_text(encoding="utf-8"))
+    names = {
+        item["path"].split("/", 2)[1]
+        for item in index["files"]
+        if isinstance(item.get("path"), str)
+        and item["path"].startswith("recovery/")
+        and len(item["path"].split("/", 2)) == 3
+    }
+    for name in names:
+        _install_provenance_for_root(root, auth_root, history_root, name)
+
+
+def _install_provenance_for_root(
+    root: Path, auth_root: Path, history_root: Path, name: str
+) -> None:
+    if not name or name in {".", ".."} or "/" in name:
+        raise TestgateError("attempt index contains an unsafe recovery root")
+    destination = history_root / "provenance" / name
+    _create_absolute_directories_nofollow(destination)
+    _copy_atomic_nofollow(root / "attempt-index.json", destination / "attempt-index.json")
+    for filename in ("recovery-predicate.json", "recovery-attestation.jsonl"):
+        source = auth_root / filename
+        if source.is_symlink() or not source.is_file():
+            raise TestgateError(f"authenticated recovery file is missing: {filename}")
+        _copy_atomic_nofollow(source, destination / filename)
 
 
 def _git(repo: Path, arguments: list[str], *, binary: bool = False) -> bytes | str:
@@ -315,6 +679,8 @@ def observe(args: argparse.Namespace) -> dict[str, Any]:
     ]
     if head is not None:
         common.extend(["--head", head])
+    if args.combined_proof_id:
+        common.extend(["--combined-proof-id", args.combined_proof_id])
     started = time.monotonic_ns()
     intent_result = _invoke(
         [*common, "--stage", "intent", "--output", str(intent_path)], repo
@@ -337,6 +703,7 @@ def observe(args: argparse.Namespace) -> dict[str, Any]:
     execution_error: str | None = None
     execution_ms: int | None = None
     if args.execute:
+        _initialize_recovery_plan(terminal_path)
         execution_started = time.monotonic_ns()
         try:
             execution_arguments = [
@@ -421,6 +788,7 @@ def observe(args: argparse.Namespace) -> dict[str, Any]:
         except TestgateError as error:
             execution_error = str(error)
         execution_ms = (time.monotonic_ns() - execution_started) // 1_000_000
+        recovery_root = _finalize_recovery(artifact_root)
         _append_history(
             ledger,
             {
@@ -430,6 +798,7 @@ def observe(args: argparse.Namespace) -> dict[str, Any]:
                 "result": None if execution_result is None else execution_result.get("result"),
                 "error": execution_error,
                 "artifact_root": str(artifact_root),
+                "recovery_root": recovery_root,
                 "wall_time_ms": execution_ms,
             },
         )
@@ -515,6 +884,7 @@ def _parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--boundary", choices=("INCREMENT", "CHECKPOINT", "CAMPAIGN", "RELEASE"), default="INCREMENT")
     parser.add_argument("--campaign", default="TESTGATE-CI-01")
+    parser.add_argument("--combined-proof-id")
     parser.add_argument("--execute", action="store_true")
     parser.add_argument("--principal", default=os.environ.get("GITHUB_ACTOR", "developer"))
     parser.add_argument("--repository", default=os.environ.get("GITHUB_REPOSITORY", "rogerlew/openWEPP"))

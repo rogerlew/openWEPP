@@ -13,6 +13,7 @@
     "execution_key",
     "boundary",
     "campaign_id",
+    "combined_quality",
     "authorized_paths",
     "source",
     "changed_objects",
@@ -63,6 +64,19 @@
     },
     "campaign_id": {
       "$ref": "#/$defs/nullableId"
+    },
+    "combined_quality": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["decision", "reason_code", "requested_proof_id", "accepted_proof_id", "proof_sha256", "baseline_count"],
+      "properties": {
+        "decision": {"enum": ["COMBINED", "SEPARATE", "NOT_APPLICABLE"]},
+        "reason_code": {"type": "string"},
+        "requested_proof_id": {"$ref": "#/$defs/nullableDigest"},
+        "accepted_proof_id": {"$ref": "#/$defs/nullableDigest"},
+        "proof_sha256": {"$ref": "#/$defs/nullableDigest"},
+        "baseline_count": {"type": "integer", "minimum": 0, "maximum": 3}
+      }
     },
     "authorized_paths": {
       "type": "array",
@@ -476,6 +490,8 @@
       "additionalProperties": false,
       "required": [
         "environment_manifest_sha256",
+        "runner_host_class",
+        "runner_image_sha256",
         "fixture_manifest_sha256",
         "tool_manifest_sha256",
         "configuration_sha256"
@@ -483,6 +499,18 @@
       "properties": {
         "environment_manifest_sha256": {
           "$ref": "#/$defs/digest"
+        },
+        "runner_host_class": {
+          "oneOf": [
+            { "$ref": "#/$defs/id" },
+            { "type": "null" }
+          ]
+        },
+        "runner_image_sha256": {
+          "oneOf": [
+            { "$ref": "#/$defs/digest" },
+            { "type": "null" }
+          ]
         },
         "fixture_manifest_sha256": {
           "$ref": "#/$defs/digest"

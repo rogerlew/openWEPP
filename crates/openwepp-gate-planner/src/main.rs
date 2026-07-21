@@ -12,7 +12,8 @@ use openwepp_gate_planner::package_validation::validate_package;
 use openwepp_gate_planner::planner::reconcile_intent_terminal;
 use openwepp_gate_planner::planner::{NextestInventory, PlanRequest, Planner, PlanningStage};
 use openwepp_gate_planner::pre_heavy::{
-    append_attempt_record, build_audit, record_heavy_failure, validate_resume_ledger,
+    admit_attempt_ledger, append_attempt_record, build_audit, build_failure_audit,
+    reconcile_orphaned_attempts, record_heavy_failure, validate_resume_ledger,
 };
 use openwepp_gate_planner::repository::{ObservedSource, observe_committed, observe_dirty};
 use openwepp_gate_planner::resume::load_candidate;
@@ -23,7 +24,7 @@ use serde_json::{Value, json};
 
 type CommandHandler = fn(&Path, &BTreeMap<String, String>) -> Result<Value>;
 
-const COMMANDS: [(&str, CommandHandler); 9] = [
+const COMMANDS: [(&str, CommandHandler); 10] = [
     ("plan", plan_command),
     ("run", run_command),
     ("verify-receipt", receipt_command),
@@ -33,6 +34,7 @@ const COMMANDS: [(&str, CommandHandler); 9] = [
     ("reconcile", reconcile_command),
     ("pre-heavy-audit", pre_heavy_audit_command),
     ("validate-package", validate_package_command),
+    ("reconcile-attempts", reconcile_attempts_command),
 ];
 
 fn main() {
@@ -96,6 +98,7 @@ fn reject_unknown_options(command: &str, options: &BTreeMap<String, String>) -> 
             "head",
             "boundary",
             "campaign",
+            "combined-proof-id",
             "output",
             "predecessor",
             "authorized-paths",
@@ -126,6 +129,7 @@ fn reject_unknown_options(command: &str, options: &BTreeMap<String, String>) -> 
             "output",
         ],
         "validate-package" => &["repo", "base", "package", "output"],
+        "reconcile-attempts" => &["repo", "ledger"],
         "reconcile" => &["repo", "intent", "terminal"],
         "verify-receipt" | "verify-receipt-envelope" => {
             &["repo", "plan", "receipt", "artifact-root"]
@@ -164,67 +168,77 @@ fn staged_run_command(
     claims: &ExecutionClaims,
     stage: &str,
 ) -> Result<Value> {
-    let (audit, resume_candidate, resume_ledger) = if stage == "heavy" {
-        let value = read_json(Path::new(required(options, "audit")?))?;
-        let resume = PathBuf::from(required(options, "resume")?);
-        validate_resume_ledger(repo, plan, &value, artifact_root, &resume)?;
-        let candidate = load_candidate(repo, plan, &resume)?;
-        (Some(value), candidate, Some(resume))
-    } else if stage == "light" {
-        (None, None, None)
-    } else {
-        return Err(usage_error());
-    };
-    let execute = || -> Result<Value> {
-        let receipt = execute_plan_stage(
-            repo,
-            plan,
-            artifact_root,
-            claims,
-            &stage.to_ascii_uppercase(),
-            audit.as_ref(),
-            resume_candidate.as_ref(),
-        )?;
-        if stage == "heavy" {
-            let artifacts = DirectoryArtifacts::new(artifact_root.to_owned());
-            verify_receipt(repo, plan, &receipt, &artifacts)?;
-        }
-        let result = receipt["result"].clone();
-        let receipt_id = receipt
-            .get("receipt_id")
-            .or_else(|| receipt.get("stage_receipt_id"))
-            .cloned()
-            .unwrap_or(Value::Null);
+    if stage == "light" {
+        let receipt = execute_plan_stage(repo, plan, artifact_root, claims, "LIGHT", None, None)?;
         let output = persist_plan(repo, options, &receipt)?;
-        Ok(json!({
-            "result": result,
-            "receipt_id": receipt_id,
+        return Ok(json!({
+            "result": receipt["result"],
+            "receipt_id": receipt["stage_receipt_id"],
             "output": output,
-            "stage": stage.to_ascii_uppercase()
-        }))
-    };
-    let Some(ledger) = resume_ledger else {
-        return execute();
-    };
+            "stage": "LIGHT"
+        }));
+    }
+    if stage != "heavy" {
+        return Err(usage_error());
+    }
+    let ledger = PathBuf::from(required(options, "resume")?);
+    admit_attempt_ledger(&ledger)?;
+    reconcile_orphaned_attempts(&ledger)?;
     let started = Instant::now();
-    let audit_id = audit
+    let recovery_root = std::env::var_os("OPENWEPP_GATE_CHECKPOINT_MIRROR_ROOT")
+        .map(PathBuf::from)
+        .map_or(Value::Null, |path| json!(path.display().to_string()));
+    let audit_path = options.get("audit").map(PathBuf::from);
+    let submitted_audit_id = audit_path
         .as_ref()
+        .and_then(|path| fs::read(path).ok())
+        .and_then(|bytes| parse_strict(&bytes).ok())
         .map_or(Value::Null, |value| value["audit_id"].clone());
-    append_attempt_record(
+    let started_entry_sha256 = append_attempt_record(
         &ledger,
         json!({
             "record_type": "STAGE_ATTEMPT",
             "status": "STARTED",
             "stage": "HEAVY",
             "plan_id": plan["plan_id"],
-            "audit_id": audit_id,
+            "audit_id": submitted_audit_id,
+            "phase": "ADMISSION",
             "artifact_root": artifact_root.display().to_string(),
+            "recovery_root": recovery_root,
             "workflow": claims.workflow,
             "job": claims.job,
             "runner": claims.runner,
             "attempt": claims.attempt,
         }),
     )?;
+    let execute = || -> Result<Value> {
+        let audit_path = audit_path.as_ref().ok_or_else(usage_error)?;
+        let audit = read_json(&audit_path)?;
+        validate_resume_ledger(repo, plan, &audit, artifact_root, &ledger)?;
+        let resume_candidate = load_candidate(repo, plan, &ledger, claims)?;
+        let receipt = execute_plan_stage(
+            repo,
+            plan,
+            artifact_root,
+            claims,
+            "HEAVY",
+            Some(&audit),
+            resume_candidate.as_ref(),
+        )?;
+        verify_receipt(
+            repo,
+            plan,
+            &receipt,
+            &DirectoryArtifacts::new(artifact_root.to_owned()),
+        )?;
+        let output = persist_plan(repo, options, &receipt)?;
+        Ok(json!({
+            "result": receipt["result"],
+            "receipt_id": receipt["receipt_id"],
+            "output": output,
+            "stage": "HEAVY"
+        }))
+    };
     match execute() {
         Ok(value) => {
             append_attempt_record(
@@ -234,11 +248,17 @@ fn staged_run_command(
                     "status": "CLOSED",
                     "stage": "HEAVY",
                     "plan_id": plan["plan_id"],
-                    "audit_id": audit_id,
+                    "audit_id": submitted_audit_id,
                     "artifact_root": artifact_root.display().to_string(),
+                    "recovery_root": recovery_root,
+                    "workflow": claims.workflow,
+                    "job": claims.job,
+                    "runner": claims.runner,
+                    "attempt": claims.attempt,
                     "receipt_id": value["receipt_id"],
                     "result": value["result"],
                     "wall_time_ms": started.elapsed().as_millis() as u64,
+                    "started_entry_sha256": started_entry_sha256,
                 }),
             )?;
             Ok(value)
@@ -252,14 +272,20 @@ fn staged_run_command(
                     "status": "FAILED",
                     "stage": "HEAVY",
                     "plan_id": plan["plan_id"],
-                    "audit_id": audit_id,
+                    "audit_id": submitted_audit_id,
                     "artifact_root": artifact_root.display().to_string(),
+                    "recovery_root": recovery_root,
+                    "workflow": claims.workflow,
+                    "job": claims.job,
+                    "runner": claims.runner,
+                    "attempt": claims.attempt,
                     "result": null,
                     "error_code": error.code,
                     "error_message": error.message,
                     "cause_key": cause_key,
                     "failure_class": if cause_key.contains("SPAWN") || cause_key.contains("TIMEOUT") || cause_key.contains("RUNNER") {"INFRASTRUCTURE"} else {"TOOLING"},
                     "wall_time_ms": started.elapsed().as_millis() as u64,
+                    "started_entry_sha256": started_entry_sha256,
                 }),
                 cause_key,
             )?;
@@ -268,12 +294,39 @@ fn staged_run_command(
     }
 }
 
+fn reconcile_attempts_command(_repo: &Path, options: &BTreeMap<String, String>) -> Result<Value> {
+    let reconciled = reconcile_orphaned_attempts(Path::new(required(options, "ledger")?))?;
+    Ok(json!({"result": "PASS", "reconciled_attempts": reconciled}))
+}
+
 fn pre_heavy_audit_command(repo: &Path, options: &BTreeMap<String, String>) -> Result<Value> {
     let plan = read_json(Path::new(required(options, "plan")?))?;
-    let light = read_json(Path::new(required(options, "light-receipts")?))?;
     let artifact_root = PathBuf::from(required(options, "artifact-root")?);
     let ledger = PathBuf::from(required(options, "ledger")?);
-    let audit = build_audit(repo, &plan, &light, &artifact_root, &ledger)?;
+    let light_result = read_json(Path::new(required(options, "light-receipts")?));
+    let audit = match light_result {
+        Ok(light) => match build_audit(repo, &plan, &light, &artifact_root, &ledger) {
+            Ok(audit) => audit,
+            Err(failure) => {
+                build_failure_audit(repo, &plan, &light, &artifact_root, &ledger, &failure)?
+            }
+        },
+        Err(failure) => {
+            let represented = GatePolicyError::new(
+                failure.class,
+                "GATE-AUDIT-LIGHT-INPUT-INVALID",
+                format!("{}: {}", failure.code, failure.message),
+            );
+            build_failure_audit(
+                repo,
+                &plan,
+                &json!({}),
+                &artifact_root,
+                &ledger,
+                &represented,
+            )?
+        }
+    };
     let output = persist_plan(repo, options, &audit)?;
     Ok(json!({
         "result": audit["status"],
@@ -384,6 +437,7 @@ fn plan_request(repo: &Path, options: &BTreeMap<String, String>) -> Result<PlanR
         predecessor_intent_plan_id: options.get("predecessor").cloned(),
         boundary: boundary(options),
         campaign_id: options.get("campaign").cloned(),
+        combined_quality_proof_id: options.get("combined-proof-id").cloned(),
         authorized_paths: authorized_paths(options)?,
         source: planning_source(repo, options)?,
     })
@@ -678,13 +732,19 @@ fn usage_error() -> GatePolicyError {
     GatePolicyError::new(
         ErrorClass::Cli,
         "GATE-CLI-USAGE",
-        "usage: openwepp-gate-plan <plan|run|reconcile|verify-receipt|verify-receipt-envelope|verify-ledger|verify-assurance> --key value ...",
+        "usage: openwepp-gate-plan <plan|run|reconcile|reconcile-attempts|verify-receipt|verify-receipt-envelope|verify-ledger|verify-assurance> --key value ...",
     )
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{parse_options, run_arguments, write_plan_confined};
+    use std::collections::BTreeMap;
+    use std::fs;
+    use std::path::PathBuf;
+
+    use super::{parse_options, run_arguments, staged_run_command, write_plan_confined};
+    use openwepp_gate_planner::executor::ExecutionClaims;
+    use serde_json::json;
 
     fn arguments(values: &[&str]) -> Vec<String> {
         values.iter().map(|value| (*value).to_owned()).collect()
@@ -705,6 +765,43 @@ mod tests {
             let error = parse_options(&invalid).expect_err("invalid options must fail");
             assert_eq!(error.code, "GATE-CLI-USAGE");
         }
+    }
+
+    #[test]
+    fn heavy_audit_parse_failure_has_balanced_lifecycle_records() {
+        let repo = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
+        let root = repo.join("target").join(format!(
+            "testgate-heavy-lifecycle-{}-{}",
+            std::process::id(),
+            std::thread::current().name().unwrap_or("test")
+        ));
+        fs::create_dir_all(&root).expect("test root");
+        let ledger = root.join("attempts.jsonl");
+        let audit = root.join("audit.json");
+        fs::write(&ledger, "").expect("ledger");
+        fs::write(&audit, "{").expect("invalid audit");
+        let options = BTreeMap::from([
+            ("resume".to_owned(), ledger.display().to_string()),
+            ("audit".to_owned(), audit.display().to_string()),
+            (
+                "output".to_owned(),
+                root.join("receipt.json").display().to_string(),
+            ),
+        ]);
+        let error = staged_run_command(
+            &repo,
+            &options,
+            &json!({"plan_id": "1".repeat(64)}),
+            &root,
+            &ExecutionClaims::default(),
+            "heavy",
+        )
+        .expect_err("invalid audit must fail");
+        assert_eq!(error.code, "GATE-JSON-INVALID");
+        let records = fs::read_to_string(&ledger).expect("ledger records");
+        assert!(records.contains("\"status\":\"STARTED\""));
+        assert!(records.contains("\"status\":\"FAILED\""));
+        fs::remove_dir_all(root).expect("remove test root");
     }
 
     #[test]

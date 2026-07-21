@@ -12,6 +12,9 @@ use serde_json::{Value, json};
 use time::OffsetDateTime;
 use time::format_description::well_known::Rfc3339;
 
+use crate::artifact_contract::{
+    artifact_kind, create_confined_directories, has_output_extension, node_has_junit_evidence,
+};
 use crate::canonical::{
     current_executable_sha256, derived_id, digest, parse_strict, sha256_bytes, validate_schema,
 };
@@ -190,7 +193,7 @@ pub fn execute_plan_stage(
         let audit = audit.ok_or_else(|| {
             execution_error("GATE-EXEC-AUDIT-REQUIRED", "heavy stage requires an audit")
         })?;
-        validate_audit_for_execution(&repository, plan, audit, &artifacts)?;
+        validate_audit_for_execution(&repository, plan, audit, &artifacts, claims)?;
         Some(audit)
     } else {
         None
@@ -245,6 +248,7 @@ pub fn execute_plan_stage(
         &roots_before,
         &observed_before,
         execution_class,
+        claims,
         &mut imported,
     )?;
 
@@ -308,6 +312,7 @@ fn execute_nodes(
         roots_before,
         observed_before,
         "ALL",
+        &ExecutionClaims::default(),
         &mut record,
     )
 }
@@ -319,6 +324,7 @@ fn execute_nodes_for(
     roots_before: &Value,
     observed_before: &str,
     cost_class: &str,
+    claims: &ExecutionClaims,
     record: &mut ExecutionRecord,
 ) -> Result<ExecutionRecord> {
     let nodes = plan["nodes"]
@@ -356,7 +362,7 @@ fn execute_nodes_for(
         }
         let node_id = node_id.to_owned();
         record.final_results.insert(node_id, run.result.clone());
-        write_node_artifacts(artifact_root, node, &run)?;
+        write_node_artifacts(artifact_root, plan, roots_before, claims, node, &run)?;
         record
             .executed_inventory
             .extend(run.executed_inventory.iter().cloned());
@@ -893,12 +899,6 @@ fn observed_authority_inventory(
     Ok(observed)
 }
 
-fn node_has_junit_evidence(node: &Value) -> bool {
-    node["artifact_contract"] == "nextest-junit-v1" && node["executor"]["kind"] == "NEXTEST_V1"
-        || node["artifact_contract"] == "adjudicated-crap-v1"
-            && node["gate_definition_id"] == "affected-adjudicated-crap-v1"
-}
-
 fn observed_junit_inventory(
     artifact_root: &Path,
     node: &Value,
@@ -926,9 +926,22 @@ fn validate_success_artifacts(artifact_root: &Path, node: &Value) -> Result<()> 
 }
 
 fn validate_crap_artifacts(artifact_root: &Path, node: &Value) -> Result<()> {
-    let _ = validated_crap_report_bytes(artifact_root, node)?;
-    if node["gate_definition_id"] == "affected-adjudicated-crap-v1" {
+    let report = validated_crap_report_bytes(artifact_root, node)?;
+    if has_output_extension(node, "xml") {
         validate_junit_artifact(artifact_root, node)?;
+    }
+    if has_output_extension(node, "lcov") {
+        let report = parse_strict(&report)?;
+        let lcov = read_real_artifact(artifact_root, &affected_lcov_path(artifact_root, node)?)?;
+        if report["acquisition_mode"] != "fresh"
+            || report["closure_eligible"] != true
+            || report["lcov_sha256"] != sha256_bytes(&lcov)
+        {
+            return Err(execution_error(
+                "GATE-EXEC-CRAP-LCOV-LINEAGE",
+                "CRAP report does not bind the fresh published LCOV bytes",
+            ));
+        }
     }
     Ok(())
 }
@@ -1031,14 +1044,12 @@ fn reset_real_artifact(path: &Path) -> Result<()> {
 fn real_artifact_sources(artifact_root: &Path, node: &Value) -> Result<Vec<PathBuf>> {
     match required_string(node, "artifact_contract")? {
         "nextest-junit-v1" => Ok(vec![nextest_junit_path(artifact_root, node)?]),
-        "adjudicated-crap-v1" if node["gate_definition_id"] == "affected-adjudicated-crap-v1" => {
-            Ok(vec![
-                adjudicated_crap_report_path(artifact_root, node)?,
-                adjudicated_crap_status_path(artifact_root, node)?,
-                nextest_junit_path(artifact_root, node)?,
-                affected_lcov_path(artifact_root, node)?,
-            ])
-        }
+        "adjudicated-crap-v1" if has_output_extension(node, "xml") => Ok(vec![
+            adjudicated_crap_report_path(artifact_root, node)?,
+            adjudicated_crap_status_path(artifact_root, node)?,
+            nextest_junit_path(artifact_root, node)?,
+            affected_lcov_path(artifact_root, node)?,
+        ]),
         "adjudicated-crap-v1" => Ok(vec![
             adjudicated_crap_report_path(artifact_root, node)?,
             adjudicated_crap_status_path(artifact_root, node)?,
@@ -1053,9 +1064,18 @@ fn nextest_junit_path(artifact_root: &Path, node: &Value) -> Result<PathBuf> {
     let profile = arguments
         .windows(2)
         .find(|pair| matches!(pair[0].as_str(), "--profile" | "--nextest-profile"))
-        .map_or("default", |pair| pair[1].as_str());
+        .map_or_else(
+            || {
+                if node["artifact_contract"] == "adjudicated-crap-v1" {
+                    "full"
+                } else {
+                    "default"
+                }
+            },
+            |pair| pair[1].as_str(),
+        );
     require_identifier(profile, "GATE-EXEC-NEXTEST-PROFILE")?;
-    let target = if node["gate_definition_id"] == "affected-adjudicated-crap-v1" {
+    let target = if node["artifact_contract"] == "adjudicated-crap-v1" {
         let report = adjudicated_crap_report_path(artifact_root, node)?;
         report
             .parent()
@@ -1552,20 +1572,14 @@ fn receipt_artifacts(artifact_root: &Path, nodes: &[Value]) -> Result<Vec<Value>
     Ok(artifacts)
 }
 
-fn artifact_kind(contract: &str, path: &str) -> &'static str {
-    match (
-        contract,
-        Path::new(path).extension().and_then(|value| value.to_str()),
-    ) {
-        ("adjudicated-crap-v1", Some("lcov")) => "LCOV",
-        ("adjudicated-crap-v1", Some("xml")) | ("nextest-junit-v1", _) => "JUNIT",
-        ("adjudicated-crap-v1", _) => "CRAP",
-        ("schema-validation-v1", _) => "SCHEMA",
-        _ => "LOG",
-    }
-}
-
-fn write_node_artifacts(artifact_root: &Path, node: &Value, run: &NodeRun) -> Result<()> {
+fn write_node_artifacts(
+    artifact_root: &Path,
+    plan: &Value,
+    roots: &Value,
+    claims: &ExecutionClaims,
+    node: &Value,
+    run: &NodeRun,
+) -> Result<()> {
     let log_sha256 = fs::read(&run.log_path)
         .map(|bytes| sha256_bytes(&bytes))
         .map_err(|error| execution_error("GATE-EXEC-LOG-READ", error.to_string()))?;
@@ -1578,11 +1592,18 @@ fn write_node_artifacts(artifact_root: &Path, node: &Value, run: &NodeRun) -> Re
         let bytes = artifact_bytes(artifact_root, node, run, &log_sha256, &path)?;
         write_atomic(&destination, &bytes)?;
     }
-    write_node_checkpoint(artifact_root, node, run)?;
+    write_node_checkpoint(artifact_root, plan, roots, claims, node, run)?;
     Ok(())
 }
 
-fn write_node_checkpoint(artifact_root: &Path, node: &Value, run: &NodeRun) -> Result<()> {
+fn write_node_checkpoint(
+    artifact_root: &Path,
+    plan: &Value,
+    roots: &Value,
+    claims: &ExecutionClaims,
+    node: &Value,
+    run: &NodeRun,
+) -> Result<()> {
     let node_id = required_string(node, "node_id")?;
     let artifacts = string_array(&node["output_paths"], "output_paths")?
         .into_iter()
@@ -1602,6 +1623,20 @@ fn write_node_checkpoint(artifact_root: &Path, node: &Value, run: &NodeRun) -> R
         "result": run.result,
         "attempt": run.attempt,
         "artifacts": artifacts,
+        "execution_binding": {
+            "plan_id": plan["plan_id"],
+            "execution_key": plan["execution_key"],
+            "boundary": plan["boundary"],
+            "roots": roots,
+            "execution_context": plan["execution_context"],
+            "policy": plan["policy"],
+            "claims": {
+                "workflow": claims.workflow,
+                "job": claims.job,
+                "runner": claims.runner,
+                "attempt": claims.attempt,
+            }
+        },
     });
     checkpoint["checkpoint_id"] = Value::String(derived_id(&checkpoint, "checkpoint_id")?);
     let directory = artifact_root.join(".checkpoints");
@@ -1609,10 +1644,11 @@ fn write_node_checkpoint(artifact_root: &Path, node: &Value, run: &NodeRun) -> R
     write_atomic(
         &directory.join(format!("{node_id}.json")),
         &crate::canonical::canonical_bytes(&checkpoint)?,
-    )
+    )?;
+    crate::checkpoint_mirror::mirror_node_checkpoint(artifact_root, node, &checkpoint)
 }
 
-fn write_atomic(destination: &Path, bytes: &[u8]) -> Result<()> {
+pub(crate) fn write_atomic(destination: &Path, bytes: &[u8]) -> Result<()> {
     let parent = destination.parent().ok_or_else(|| {
         execution_error("GATE-EXEC-ARTIFACT-PATH", destination.display().to_string())
     })?;
@@ -1754,28 +1790,7 @@ fn attempt_log_path(root: &Path, node_id: &str) -> Result<PathBuf> {
     Ok(path)
 }
 
-fn create_confined_directories(root: &Path, directory: &Path) -> Result<()> {
-    if !directory.starts_with(root) {
-        return Err(execution_error(
-            "GATE-EXEC-OUTPUT-ESCAPE",
-            directory.display().to_string(),
-        ));
-    }
-    fs::create_dir_all(directory)
-        .map_err(|error| execution_error("GATE-EXEC-OUTPUT-DIRECTORY", error.to_string()))?;
-    let canonical = fs::canonicalize(directory)
-        .map_err(|error| execution_error("GATE-EXEC-OUTPUT-DIRECTORY", error.to_string()))?;
-    if canonical.starts_with(root) {
-        Ok(())
-    } else {
-        Err(execution_error(
-            "GATE-EXEC-OUTPUT-ESCAPE",
-            directory.display().to_string(),
-        ))
-    }
-}
-
-fn confined_output_path(root: &Path, relative: &str) -> Result<PathBuf> {
+pub(crate) fn confined_output_path(root: &Path, relative: &str) -> Result<PathBuf> {
     let path = Path::new(relative);
     require_relative_path(path, false)?;
     Ok(root.join(path))
@@ -1925,7 +1940,7 @@ fn timestamp() -> Result<String> {
         .map_err(|error| execution_error("GATE-EXEC-TIMESTAMP", error.to_string()))
 }
 
-fn required_string<'a>(value: &'a Value, field: &str) -> Result<&'a str> {
+pub(crate) fn required_string<'a>(value: &'a Value, field: &str) -> Result<&'a str> {
     value[field]
         .as_str()
         .ok_or_else(|| execution_error("GATE-EXEC-SHAPE", field))
@@ -1949,7 +1964,7 @@ fn require_identifier(value: &str, code: &'static str) -> Result<()> {
     }
 }
 
-fn string_array(value: &Value, label: &str) -> Result<Vec<String>> {
+pub(crate) fn string_array(value: &Value, label: &str) -> Result<Vec<String>> {
     value
         .as_array()
         .ok_or_else(|| execution_error("GATE-EXEC-SHAPE", label))?
@@ -2428,6 +2443,7 @@ mod tests {
                     predecessor_intent_plan_id: Some("11".repeat(32)),
                     boundary: "INCREMENT".to_owned(),
                     campaign_id: Some("TESTGATE-CI-01".to_owned()),
+                    combined_quality_proof_id: None,
                     authorized_paths: vec!["src/lib.rs".to_owned()],
                     source,
                 },
@@ -2728,17 +2744,17 @@ mod tests {
     fn combined_quality_artifacts_are_external_resettable_and_inventory_checked() {
         let artifacts = prepare_artifacts("combined-artifacts");
         let mut node = json!({
-            "gate_definition_id": "affected-adjudicated-crap-v1",
+            "gate_definition_id": "combined-workspace-quality-v1",
             "artifact_contract": "adjudicated-crap-v1",
             "arguments": [
-                "bash", "adapter.sh", "--nextest-profile", "affected",
-                "--output-dir", "target/affected-crap"
+                "bash", "adapter.sh", "--nextest-profile", "full",
+                "--output-dir", "target/combined-quality"
             ],
             "expected_inventory": {"ids": ["placeholder"]},
-            "output_paths": ["report.json"]
+            "output_paths": ["report.json", "junit.xml", "workspace.lcov"]
         });
-        let output = artifacts.path().join(".work/target/affected-crap");
-        let junit = output.join("nextest/affected/junit.xml");
+        let output = artifacts.path().join(".work/target/combined-quality");
+        let junit = output.join("nextest/full/junit.xml");
         fs::create_dir_all(junit.parent().expect("JUnit parent")).expect("create JUnit parent");
         fs::write(
             &junit,
@@ -2747,7 +2763,7 @@ mod tests {
         .expect("write JUnit");
         let report = output.join("adjudicated-crap-report.json");
         let control = output.join("run-status.json");
-        let report_bytes = b"{\"status\":\"PASS\",\"coverage\":0.0,\"crap\":56.0}\n";
+        let report_bytes = b"{\"acquisition_mode\":\"fresh\",\"closure_eligible\":true,\"lcov_sha256\":\"ad78bcf9de2caa140900bda1f8c4979af5f3f5c069f5eda785475f7427a306e0\",\"status\":\"PASS\"}\n";
         fs::write(&report, report_bytes).expect("write CRAP report");
         fs::write(
             &control,
@@ -2780,6 +2796,11 @@ mod tests {
             .expect_err("published bytes must be revalidated after prior success validation");
         assert_eq!(error.code, "GATE-EXEC-CRAP-REPORT-DIGEST");
         fs::write(&report, report_bytes).expect("restore CRAP report");
+        fs::write(output.join("workspace.lcov"), "TN:tampered\n").expect("tamper LCOV");
+        let error = validate_success_artifacts(artifacts.path(), &node)
+            .expect_err("published LCOV must match the CRAP report");
+        assert_eq!(error.code, "GATE-EXEC-CRAP-LCOV-LINEAGE");
+        fs::write(output.join("workspace.lcov"), "TN:\n").expect("restore LCOV");
         #[cfg(unix)]
         {
             use std::os::unix::fs::symlink;
