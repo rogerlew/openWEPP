@@ -82,13 +82,18 @@ diagnostic-only HOLD while that route remains available.
 
 - `crates/openwepp-gate-planner/src/package_validation.rs`
 - `crates/openwepp-gate-planner/src/pre_heavy.rs`
+- `crates/openwepp-gate-planner/src/pre_heavy_coverage_tests.rs`
 - `crates/openwepp-gate-planner/src/main.rs`
 - `crates/openwepp-gate-planner/src/planner.rs`
+- `crates/openwepp-gate-planner/src/planner_coverage_tests.rs`
+- `crates/openwepp-gate-planner/src/executor.rs`
+- `crates/openwepp-gate-planner/src/verifier.rs`
 - `gate-policy/v1/schemas/**`
 - `tools/local_ci/testgate.py`
 - `tools/local_ci/testgate_qualification.py`
 - `tests/python/test_testgate.py`
 - `tests/integration/testgate_ci_executor_contract.rs`
+- `tests/integration/testgate_assure_campaign_currency_contract.rs`
 - `docs/standards/testing-and-gate-strategy.md`
 - `docs/work-packages/README.md`
 - `docs/work-packages/20260720-testgate-recovery-trust-001/**`
