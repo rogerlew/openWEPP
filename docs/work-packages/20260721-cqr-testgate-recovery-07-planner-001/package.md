@@ -1,17 +1,17 @@
 # CQR: TESTGATE Planner Complexity
 
 Package: `20260721-cqr-testgate-recovery-07-planner-001`
-Status: `EXECUTING`
+Status: `VERIFYING`
 ExecPlan: `docs/work-packages/20260721-cqr-testgate-recovery-closeout-execplan.md`
 Target module: `crates/openwepp-gate-planner/src/planner.rs`
 Target rank: `7` of `7`
 Quality dimension: `CRAP/cyclomatic-complexity`
 
 Current phase: implementation and coverage characterization are complete and
-dual-reviewed at corrected head `d1f4e772`. The first corrected-head metric
-proved CRAP closure but failed the aggregate region gate; no unchanged rerun
-occurred. One final changed-head matching-module traversal is authorized for
-the reviewed coverage correction before terminal verification.
+dual-reviewed. The single final changed-head traversal passes at exact clean
+head `a428d64b`: 89.8893% line coverage, 85.8576% region coverage, every
+compiled function above the 75% floor, and no CRAP row above 30. Dual terminal
+verification and disposition remain.
 
 ## Objective
 

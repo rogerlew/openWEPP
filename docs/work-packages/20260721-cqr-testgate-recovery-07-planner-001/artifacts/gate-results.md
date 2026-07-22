@@ -38,3 +38,15 @@ Ran: changed-head coverage characterization then passed 21/21 planner tests at
 assertions combined independent mutations; the test was corrected into causal
 staged snapshots and its exact focused test passed 1/1 at `d1f4e772`. Renewed
 review A and B both pass that clean corrected head. No broad or HEAVY gate ran.
+
+Ran: the single final changed-head traversal passed at exact clean head
+`a428d64b`: 147 pass, zero fail, two ignored; test time 238.55 seconds and wall
+time 262.71 seconds. Production coverage is 1,787/1,988 lines (89.8893%) and
+2,738/3,189 deduplicated regions (85.8576%). No compiled function is below the
+75% region floor and no CRAP row exceeds 30. The target is CC 20 / CRAP
+20.2263 / 87.4317% regions; `load_source_graph` is CC 12 / CRAP 12 / 87.8788%
+regions. Evidence is retained at `/tmp/cqr-planner-rank7-final-NYfueDNH`; LCOV
+SHA-256 is `785959be1f8ee13705bff3b01fadd57615d6903059964f3b66c8d6649d57517e`.
+Pre/post HEAD, clean worktree, and production source SHA matched. The runner
+validated and removed only its 660,896,337-byte disposable target. No retry or
+broad/HEAVY gate ran.

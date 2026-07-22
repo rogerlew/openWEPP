@@ -1,9 +1,8 @@
 # Disposition
 
-Status: executing after correction dependency closure.
+Status: VERIFYING.
 
-Static: planner implementation has not started. The package is held only while
-RTR-029 removes ambient-head coupling from the verifier READY-audit fixture.
-RTR-029/RTR-030 met that boundary at code head `219ec924`. This package resumes
-and receives one changed-head matching-module traversal after its complete
-test-first implementation; the failed unchanged head must not be rerun.
+Static: the behavior-preserving extraction, causal characterization, renewed
+dual implementation review, line-count governance, production coverage, all
+function floors, and CRAP closure pass. No unchanged expensive traversal was
+rerun. Final completion awaits dual terminal verification and prompt archival.
