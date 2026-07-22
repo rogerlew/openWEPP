@@ -53,6 +53,54 @@ fn replace_string(value: &mut Value, old: &str, new: &str) {
     }
 }
 
+#[test]
+fn replace_string_preserves_recursive_value_only_mutation() {
+    let mut root_match = json!("old");
+    replace_string(&mut root_match, "old", "new");
+    assert_eq!(root_match, json!("new"));
+
+    let mut root_nonmatch = json!("older");
+    replace_string(&mut root_nonmatch, "old", "new");
+    assert_eq!(root_nonmatch, json!("older"));
+
+    let mut nested = json!({
+        "old": "old",
+        "array": ["old", {"nested": "old", "other": "older"}, "old"],
+        "number": 7,
+        "boolean": true,
+        "null": null,
+        "empty_array": [],
+        "empty_object": {}
+    });
+    replace_string(&mut nested, "old", "new");
+    assert_eq!(
+        nested,
+        json!({
+            "old": "new",
+            "array": ["new", {"nested": "new", "other": "older"}, "new"],
+            "number": 7,
+            "boolean": true,
+            "null": null,
+            "empty_array": [],
+            "empty_object": {}
+        })
+    );
+
+    replace_string(&mut nested, "new", "new");
+    assert_eq!(
+        nested,
+        json!({
+            "old": "new",
+            "array": ["new", {"nested": "new", "other": "older"}, "new"],
+            "number": 7,
+            "boolean": true,
+            "null": null,
+            "empty_array": [],
+            "empty_object": {}
+        })
+    );
+}
+
 struct DurableLedger(PathBuf);
 
 impl DurableLedger {
