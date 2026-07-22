@@ -4,7 +4,8 @@ Static: scaffold commit `ddb00d41` predates all tooling/test edits.
 
 Static: the checker now resolves exact workspace-member identities from locked,
 offline Cargo metadata. Affected measurement admits only direct `crates/*`
-members with a real, non-symlink production target under their own `src/` root.
+members with a real library, binary, or proc-macro target and a non-symlink
+source under their own `src/` root.
 Unknown, nested, test-only, out-of-tree-target, and measurement-only packages
 such as root `openwepp` fail closed with an explicit global-quality requirement.
 

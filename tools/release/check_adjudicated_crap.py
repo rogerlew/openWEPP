@@ -324,6 +324,14 @@ def _production_packages_from_workspace(
                 target.get("src_path"), str
             ):
                 continue
+            kinds = target.get("kind")
+            if (
+                not isinstance(kinds, list)
+                or not kinds
+                or not all(isinstance(kind, str) for kind in kinds)
+                or not set(kinds).issubset({"lib", "bin", "proc-macro"})
+            ):
+                continue
             target_path = _repo_relative_path(target["src_path"], repo_root)
             target_file = repo_root / target_path
             if (

@@ -253,6 +253,16 @@ class AdjudicatedCrapGateTests(unittest.TestCase):
         with self.assertRaisesRegex(gate.GateInputError, "requires global quality"):
             gate.resolve_measurement_packages(self.repo, {"candidate"})
 
+    def test_test_only_target_under_src_requires_global_quality(self) -> None:
+        _configure_candidate_workspace(
+            self.repo,
+            relative_package="crates/candidate",
+            manifest_target='[[test]]\nname = "candidate"\npath = "src/candidate.rs"',
+            target_file="src/candidate.rs",
+        )
+        with self.assertRaisesRegex(gate.GateInputError, "requires global quality"):
+            gate.resolve_measurement_packages(self.repo, {"candidate"})
+
     def test_out_of_tree_target_requires_global_quality(self) -> None:
         _configure_candidate_workspace(
             self.repo,

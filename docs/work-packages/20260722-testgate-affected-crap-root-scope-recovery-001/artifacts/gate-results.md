@@ -2,10 +2,11 @@
 
 Status: review corrections pass focused gates; repeat dual review pending.
 
-Ran: Python checker suite passes 28/28. It covers valid production scope,
+Ran: Python checker suite passes 29/29. It covers valid production scope,
 unknown scope, measurement-only, nested, test-only, and out-of-tree target
-rejection, exact preflight JSON binding/tamper rejection, and a real driver probe
-proving root `openwepp` fails before `llvm-cov.log` exists.
+rejection (including a test target placed under `src/`), exact preflight JSON
+binding/tamper rejection, and a real driver probe proving root `openwepp` fails
+before `llvm-cov.log` exists.
 
 Ran: actual repository preflight rejects `openwepp` with exit 2 and explicit
 `requires global quality`; no coverage process starts.
