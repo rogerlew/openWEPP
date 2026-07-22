@@ -284,7 +284,12 @@ fn package_error(code: &'static str, message: impl Into<String>) -> GatePolicyEr
 
 #[cfg(test)]
 mod tests {
-    use super::wildcard_match;
+    use std::fs;
+    use std::path::{Path, PathBuf};
+    use std::process::Command;
+    use std::sync::atomic::{AtomicU64, Ordering};
+
+    use super::{validate_package_chain, wildcard_match};
 
     #[test]
     fn write_set_wildcard_matches_nested_paths() {
@@ -296,5 +301,201 @@ mod tests {
             "tools/local_ci/**",
             "tools/release/tool.sh"
         ));
+    }
+
+    #[test]
+    fn sequential_chain_admits_single_and_newer_prerequisite_authorities() {
+        let fixture = ChainFixture::new();
+        fixture.write_package("root", "- `src/**`");
+        let base = fixture.commit("base authority");
+        fixture.write_source("src/single.rs", "pub fn single() {}\n");
+        let single_head = fixture.commit("single correction");
+        let single = validate_package_chain(&fixture.root, &base, Some(&single_head))
+            .expect("single authority chain");
+        assert_eq!(single["status"], "READY");
+        assert_eq!(
+            single["steps"][0]["authorities"][0]["package_path"],
+            "docs/work-packages/root/package.md"
+        );
+
+        fixture.write_package("child", "- `docs/work-packages/child/**`\n- `src/child.rs`");
+        let scaffold = fixture.commit("child scaffold");
+        fixture.write_source("src/child.rs", "pub fn child() {}\n");
+        let head = fixture.commit("child correction");
+        let chain = validate_package_chain(&fixture.root, &single_head, Some(&head))
+            .expect("sequential authority chain");
+        assert_eq!(chain["status"], "READY");
+        assert_eq!(chain["steps"][0]["commit"], scaffold);
+        assert_eq!(chain["steps"][0]["authorities"][0]["role"], "SCAFFOLD");
+        assert_eq!(
+            chain["steps"][1]["authorities"][0]["package_path"],
+            "docs/work-packages/child/package.md"
+        );
+    }
+
+    #[test]
+    fn sequential_chain_rejects_zero_ambiguous_and_retroactive_authority() {
+        let zero = ChainFixture::new();
+        let zero_base = zero.commit("empty base");
+        zero.write_source("src/unowned.rs", "pub fn unowned() {}\n");
+        let zero_head = zero.commit("unowned correction");
+        zero.assert_invalid(&zero_base, &zero_head, "NO_PREEXISTING_AUTHORITY");
+
+        let ambiguous = ChainFixture::new();
+        ambiguous.write_package("one", "- `src/**`");
+        ambiguous.write_package("two", "- `src/**`");
+        let ambiguous_base = ambiguous.commit("ambiguous base");
+        ambiguous.write_source("src/value.rs", "pub fn value() {}\n");
+        let ambiguous_head = ambiguous.commit("ambiguous correction");
+        ambiguous.assert_invalid(
+            &ambiguous_base,
+            &ambiguous_head,
+            "AMBIGUOUS_PREEXISTING_AUTHORITY",
+        );
+
+        let retroactive = ChainFixture::new();
+        let retroactive_base = retroactive.commit("empty base");
+        retroactive.write_package("late", "- `docs/work-packages/late/**`\n- `src/late.rs`");
+        retroactive.write_source("src/late.rs", "pub fn late() {}\n");
+        let retroactive_head = retroactive.commit("late authority and correction");
+        retroactive.assert_invalid(
+            &retroactive_base,
+            &retroactive_head,
+            "NO_PREEXISTING_AUTHORITY",
+        );
+    }
+
+    #[test]
+    fn sequential_chain_rejects_malformed_scaffolds_and_unmet_prerequisites() {
+        let malformed = ChainFixture::new();
+        let malformed_base = malformed.commit("empty base");
+        malformed.write_raw_package("broken", "# Broken\n");
+        let malformed_head = malformed.commit("malformed scaffold");
+        malformed.assert_invalid(
+            &malformed_base,
+            &malformed_head,
+            "SCAFFOLD_WRITE_SET_SCHEMA_INVALID",
+        );
+
+        let unmet = ChainFixture::new();
+        let unmet_base = unmet.commit("empty base");
+        unmet.write_package("child", "- `docs/work-packages/child/**`");
+        unmet.write_source("docs/work-packages/README.md", "# Catalog\n");
+        let unmet_head = unmet.commit("scaffold with unowned prerequisite");
+        unmet.assert_invalid(&unmet_base, &unmet_head, "NO_PREEXISTING_AUTHORITY");
+    }
+
+    #[test]
+    fn sequential_chain_uses_parent_version_for_prospective_amendments() {
+        let fixture = ChainFixture::new();
+        fixture.write_package("owner", "- `docs/work-packages/owner/**`");
+        let base = fixture.commit("narrow base authority");
+        fixture.write_package(
+            "owner",
+            "- `docs/work-packages/owner/**`\n- `src/amended.rs`",
+        );
+        fixture.commit("prospective authority amendment");
+        fixture.write_source("src/amended.rs", "pub fn amended() {}\n");
+        let head = fixture.commit("amended correction");
+        let chain = validate_package_chain(&fixture.root, &base, Some(&head))
+            .expect("prospective amendment chain");
+        assert_eq!(chain["status"], "READY");
+        assert_eq!(chain["steps"].as_array().map(Vec::len), Some(2));
+    }
+
+    static CHAIN_SEQUENCE: AtomicU64 = AtomicU64::new(0);
+
+    struct ChainFixture {
+        root: PathBuf,
+    }
+
+    impl ChainFixture {
+        fn new() -> Self {
+            let sequence = CHAIN_SEQUENCE.fetch_add(1, Ordering::Relaxed);
+            let root = std::env::temp_dir().join(format!(
+                "openwepp-package-chain-{}-{sequence}",
+                std::process::id()
+            ));
+            fs::create_dir_all(root.join("gate-policy/v1/schemas")).expect("schema directory");
+            fs::write(
+                root.join("gate-policy/v1/schemas/package-authority-chain.schema.json"),
+                "{\"type\":\"object\"}\n",
+            )
+            .expect("permissive fixture schema");
+            Self::git(&root, &["init", "-q"]);
+            Self::git(&root, &["config", "user.email", "test@example.invalid"]);
+            Self::git(&root, &["config", "user.name", "Test"]);
+            fs::write(root.join("README.md"), "# Fixture\n").expect("fixture root");
+            Self { root }
+        }
+
+        fn write_package(&self, name: &str, write_set: &str) {
+            self.write_raw_package(
+                name,
+                &format!("# {name}\n\nStatus: `ACTIVE`\n\n## Intended Write Set\n\n{write_set}\n"),
+            );
+        }
+
+        fn write_raw_package(&self, name: &str, text: &str) {
+            let directory = self.root.join(format!("docs/work-packages/{name}"));
+            fs::create_dir_all(&directory).expect("package directory");
+            fs::write(directory.join("package.md"), text).expect("package text");
+        }
+
+        fn write_source(&self, path: &str, text: &str) {
+            let path = self.root.join(path);
+            fs::create_dir_all(path.parent().expect("source parent")).expect("source directory");
+            fs::write(path, text).expect("source text");
+        }
+
+        fn commit(&self, message: &str) -> String {
+            Self::git(&self.root, &["add", "."]);
+            Self::git(&self.root, &["commit", "-qm", message]);
+            String::from_utf8(Self::git_output(&self.root, &["rev-parse", "HEAD"]))
+                .expect("UTF-8 commit")
+                .trim()
+                .to_owned()
+        }
+
+        fn assert_invalid(&self, base: &str, head: &str, reason: &str) {
+            let chain = validate_package_chain(&self.root, base, Some(head))
+                .expect("represented invalid chain");
+            assert_eq!(chain["status"], "INVALID");
+            assert!(
+                chain["reason_codes"]
+                    .as_array()
+                    .is_some_and(|items| items.iter().any(|item| item == reason)),
+                "missing {reason}: {chain}"
+            );
+        }
+
+        fn git(root: &Path, arguments: &[&str]) {
+            let output = Command::new("git")
+                .args(arguments)
+                .current_dir(root)
+                .output()
+                .expect("run git");
+            assert!(
+                output.status.success(),
+                "git {arguments:?}: {}",
+                String::from_utf8_lossy(&output.stderr)
+            );
+        }
+
+        fn git_output(root: &Path, arguments: &[&str]) -> Vec<u8> {
+            let output = Command::new("git")
+                .args(arguments)
+                .current_dir(root)
+                .output()
+                .expect("run git");
+            assert!(output.status.success(), "git {arguments:?}");
+            output.stdout
+        }
+    }
+
+    impl Drop for ChainFixture {
+        fn drop(&mut self) {
+            fs::remove_dir_all(&self.root).expect("remove chain fixture");
+        }
     }
 }
