@@ -634,6 +634,7 @@ fn assert_crap_driver_contract() {
     assert!(affected_driver.contains("--expected-package"));
     assert!(affected_driver.contains("--validate-expected-packages"));
     assert!(affected_driver.contains("affected-package-scope.json"));
+    assert!(affected_driver.contains("--expected-package-scope"));
     assert!(affected_driver.contains("cargo llvm-cov show-env --sh"));
     assert!(affected_driver.contains("cargo nextest run"));
     assert_eq!(affected_driver.matches("cargo nextest run").count(), 1);

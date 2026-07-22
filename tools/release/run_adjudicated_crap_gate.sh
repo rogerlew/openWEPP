@@ -556,6 +556,7 @@ if [[ -n "${HEAD_REF}" ]]; then
   CHECK_ARGS+=(--head-ref "${HEAD_REF}")
 fi
 if [[ "${SCOPE}" == "affected" ]]; then
+  CHECK_ARGS+=(--expected-package-scope "${OUTPUT_DIR}/affected-package-scope.json")
   for package in "${PACKAGES[@]}"; do
     CHECK_ARGS+=(--expected-package "${package}")
   done

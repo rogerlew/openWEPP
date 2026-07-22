@@ -266,7 +266,7 @@
     {
       "gate_definition_id": "affected-adjudicated-crap-v1", "gate_family": "coverage-complexity", "execution_cost_class": "HEAVY", "target_template": "STATIC",
       "risk_classes": ["BOUNDED_COMPONENT", "INTEGRATED_DOMAIN"],
-      "executor": { "kind": "LEGACY_ADAPTER_V1", "version": "affected-adjudicated-crap-1", "adapter_sha256": "e801924c5cd04178b6773e09bc57274e61d5606b22e6b0a789d7d499eaf257be" },
+      "executor": { "kind": "LEGACY_ADAPTER_V1", "version": "affected-adjudicated-crap-1", "adapter_sha256": "ebb0d373b3e76b70013c79cf5baf8640c409df06c70e198e2c22bd1a193a6bb4" },
       "arguments_template": ["bash", "tools/release/run_adjudicated_crap_gate.sh", "--scope", "affected", "--base-ref", "{base_commit}", "--nextest-profile", "affected", "--output-dir", "target/affected-crap"],
       "environment_allowlist": ["PATH", "CARGO_HOME", "RUSTUP_HOME", "RUSTUP_TOOLCHAIN"],
       "authority_class": "NONE", "outcome_policy": "BLOCKING", "failure_classification": "HARD_FAIL",
@@ -282,7 +282,7 @@
     {
       "gate_definition_id": "adjudicated-crap-v1", "gate_family": "coverage-complexity", "execution_cost_class": "HEAVY", "target_template": "WORKSPACE",
       "risk_classes": ["CRITICAL"],
-      "executor": { "kind": "LEGACY_ADAPTER_V1", "version": "adjudicated-crap-1", "adapter_sha256": "e801924c5cd04178b6773e09bc57274e61d5606b22e6b0a789d7d499eaf257be" },
+      "executor": { "kind": "LEGACY_ADAPTER_V1", "version": "adjudicated-crap-1", "adapter_sha256": "ebb0d373b3e76b70013c79cf5baf8640c409df06c70e198e2c22bd1a193a6bb4" },
       "arguments_template": ["bash", "tools/release/run_adjudicated_crap_gate.sh", "--base-ref", "{base_commit}"],
       "environment_allowlist": ["PATH", "CARGO_HOME", "RUSTUP_HOME", "RUSTUP_TOOLCHAIN"],
       "authority_class": "NONE", "outcome_policy": "BLOCKING", "failure_classification": "HARD_FAIL",
@@ -298,7 +298,7 @@
     {
       "gate_definition_id": "combined-workspace-quality-v1", "gate_family": "combined-quality", "execution_cost_class": "HEAVY", "target_template": "WORKSPACE",
       "risk_classes": ["CRITICAL"],
-      "executor": { "kind": "LEGACY_ADAPTER_V1", "version": "combined-workspace-quality-1", "adapter_sha256": "e801924c5cd04178b6773e09bc57274e61d5606b22e6b0a789d7d499eaf257be" },
+      "executor": { "kind": "LEGACY_ADAPTER_V1", "version": "combined-workspace-quality-1", "adapter_sha256": "ebb0d373b3e76b70013c79cf5baf8640c409df06c70e198e2c22bd1a193a6bb4" },
       "arguments_template": ["bash", "tools/release/run_adjudicated_crap_gate.sh", "--base-ref", "{base_commit}", "--output-dir", "target/combined-quality"],
       "environment_allowlist": ["PATH", "CARGO_HOME", "RUSTUP_HOME", "RUSTUP_TOOLCHAIN"],
       "authority_class": "NONE", "outcome_policy": "BLOCKING", "failure_classification": "HARD_FAIL",

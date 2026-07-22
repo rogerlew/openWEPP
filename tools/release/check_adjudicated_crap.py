@@ -294,12 +294,55 @@ def _workspace_packages(repo_root: Path) -> dict[str, dict[str, Any]]:
     return by_name
 
 
+def _production_packages_from_workspace(
+    repo_root: Path, workspace: dict[str, dict[str, Any]]
+) -> dict[str, str]:
+    production: dict[str, str] = {}
+    for name, package in workspace.items():
+        manifest = str(package["relative_manifest"])
+        manifest_parts = Path(manifest).parts
+        if (
+            len(manifest_parts) != 3
+            or manifest_parts[0] != "crates"
+            or manifest_parts[2] != "Cargo.toml"
+        ):
+            continue
+        manifest_path = repo_root / manifest
+        source_prefix = f"{Path(manifest).parent.as_posix()}/src/"
+        source_root = repo_root / source_prefix
+        if (
+            manifest_path.is_symlink()
+            or source_root.is_symlink()
+            or not source_root.is_dir()
+        ):
+            continue
+        targets = package.get("targets")
+        if not isinstance(targets, list):
+            continue
+        for target in targets:
+            if not isinstance(target, dict) or not isinstance(
+                target.get("src_path"), str
+            ):
+                continue
+            target_path = _repo_relative_path(target["src_path"], repo_root)
+            target_file = repo_root / target_path
+            if (
+                target_path.startswith(source_prefix)
+                and _is_production_source_path(target_path)
+                and target_file.is_file()
+                and not target_file.is_symlink()
+            ):
+                production[name] = source_prefix
+                break
+    return production
+
+
+def _workspace_production_packages(repo_root: Path) -> dict[str, str]:
+    return _production_packages_from_workspace(repo_root, _workspace_packages(repo_root))
+
+
 def _workspace_production_crates(repo_root: Path) -> set[str]:
-    names = {
-        name
-        for name, package in _workspace_packages(repo_root).items()
-        if str(package["relative_manifest"]).startswith("crates/")
-    }
+    names = set(_workspace_production_packages(repo_root))
     if not names:
         raise GateInputError("Cargo workspace has no production crates under crates/")
     return names
@@ -318,11 +361,7 @@ def resolve_measurement_packages(
         raise GateInputError(
             f"affected measurement names unknown workspace packages: {sorted(unknown)}"
         )
-    production = {
-        name
-        for name, package in workspace.items()
-        if str(package["relative_manifest"]).startswith("crates/")
-    }
+    production = set(_production_packages_from_workspace(repo_root, workspace))
     measurement_only = requested_packages - production
     if measurement_only:
         raise GateInputError(
@@ -338,31 +377,22 @@ def resolve_measurement_packages(
 def _production_package_source_prefixes(
     repo_root: Path, package_names: set[str]
 ) -> tuple[str, ...]:
-    result = subprocess.run(
-        ["cargo", "metadata", "--no-deps", "--format-version", "1"],
-        cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    if result.returncode != 0:
-        raise GateInputError(f"cannot read Cargo workspace metadata: {result.stderr.strip()}")
-    try:
-        packages = json.loads(result.stdout).get("packages", [])
-    except json.JSONDecodeError as error:
-        raise GateInputError(f"Cargo workspace metadata is invalid JSON: {error}") from error
-    prefixes: list[str] = []
-    for package in packages:
-        if not isinstance(package, dict) or package.get("name") not in package_names:
-            continue
-        manifest_path = package.get("manifest_path")
-        if not isinstance(manifest_path, str):
-            continue
-        manifest = _repo_relative_path(manifest_path, repo_root)
-        prefixes.append(f"{Path(manifest).parent.as_posix()}/src/")
-    if len(prefixes) != len(package_names):
+    production = _workspace_production_packages(repo_root)
+    if not package_names.issubset(production):
         raise GateInputError("cannot bind every expected package to a source root")
-    return tuple(sorted(prefixes))
+    return tuple(sorted(production[name] for name in package_names))
+
+
+def _validated_scope_artifact(
+    scope_path: Path, repo_root: Path, requested_packages: set[str]
+) -> tuple[dict[str, list[str]], str]:
+    supplied = _read_json(scope_path)
+    expected = resolve_measurement_packages(repo_root, requested_packages)
+    if supplied != expected:
+        raise GateInputError(
+            "affected package scope changed after preflight or has invalid content"
+        )
+    return expected, _sha256(scope_path)
 
 
 def _safe_registry_path(raw_path: Any, repo_root: Path, field: str) -> tuple[str, Path]:
@@ -944,6 +974,11 @@ def _parse_args() -> argparse.Namespace:
         action="store_true",
         help="Validate and print affected measurement-to-production package scope",
     )
+    parser.add_argument(
+        "--expected-package-scope",
+        type=Path,
+        help="Bind fresh affected assessment to retained preflight scope JSON",
+    )
     parser.add_argument("--retained-provenance")
     parser.add_argument("--report-json", type=Path)
     parser.add_argument("--report-markdown", type=Path)
@@ -1002,6 +1037,10 @@ def main() -> int:
             raise GateInputError(
                 "retained assessment cannot claim affected-package measurement"
             )
+        if args.acquisition_mode == "retained" and args.expected_package_scope:
+            raise GateInputError(
+                "retained assessment cannot claim affected scope preflight"
+            )
 
         crap_payload = _read_json(args.crap_json)
         registry = _read_json(args.adjudications)
@@ -1051,16 +1090,29 @@ def main() -> int:
             if cargo_crap_version != "cargo-crap 0.2.2":
                 raise GateInputError("fresh closure has an unexpected cargo-crap version")
             requested_packages = set(args.expected_package)
-            scope = (
-                resolve_measurement_packages(repo_root, requested_packages)
-                if requested_packages
-                else {
+            scope_sha256: str | None = None
+            if requested_packages:
+                if (
+                    args.expected_package_scope is None
+                    or not args.expected_package_scope.is_file()
+                ):
+                    raise GateInputError(
+                        "fresh affected closure requires --expected-package-scope"
+                    )
+                scope, scope_sha256 = _validated_scope_artifact(
+                    args.expected_package_scope, repo_root, requested_packages
+                )
+            else:
+                if args.expected_package_scope is not None:
+                    raise GateInputError(
+                        "global closure cannot claim affected package scope"
+                    )
+                scope = {
                     "measurement_packages": [],
                     "production_packages": sorted(
                         _workspace_production_crates(repo_root)
                     ),
                 }
-            )
             expected_production_crates = set(scope["production_packages"])
             acquisition_provenance = {
                 "source_manifest": str(args.source_manifest),
@@ -1074,6 +1126,7 @@ def main() -> int:
                 "cargo_crap_version": cargo_crap_version,
                 "measurement_packages": scope["measurement_packages"],
                 "production_packages": scope["production_packages"],
+                "affected_package_scope_sha256": scope_sha256,
             }
         else:
             if not args.retained_provenance:

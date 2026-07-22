@@ -22,7 +22,8 @@ in the sealed acquisition provenance.
     under `crates/*/src`; measurement-only packages such as the workspace-root
     integration harness fail closed and require global quality. Unknown or
     measurement-only packages fail before compilation; the exact admitted scope
-    is retained as `affected-package-scope.json`. The mode is fresh-only and
+    is retained as `affected-package-scope.json`, revalidated after acquisition,
+    and bound by SHA-256 in report provenance. The mode is fresh-only and
     cannot substitute for global critical, campaign, or release closure.
   - Applies the exact production filter and deduplication tuple established by
     the completed CQR pre-integration campaign.

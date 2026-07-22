@@ -15,7 +15,8 @@ Status: `ACTIVE / REVIEW`
 - [x] Update all three CRAP adapter digests.
 - [x] Focused Python, shell, integration, policy, formatting, and Clippy checks
   pass.
-- [ ] Complete dual review and disposition this package at the planner boundary.
+- [ ] Correct review findings, repeat focused checks, and obtain dual PASS.
+- [ ] Disposition this package at the planner boundary.
 - [ ] Scaffold the fresh planner-escalation prerequisite; RTR-035 remains open.
 
 ## Objective
@@ -52,7 +53,8 @@ The incompatibility was checked only after the 689.242-second traversal.
    packages map to themselves; measurement-only or unknown packages fail and
    require global quality.
 3. Invoke the mapping preflight before coverage acquisition and retain its exact
-   JSON in the CRAP output envelope.
+   JSON in the CRAP output envelope. Revalidate its exact content after
+   acquisition and bind its digest in report provenance.
 4. Add positive root-aggregation, ordinary production, unknown, and empty-map
    regressions; update source contracts and the exact adapter digest.
 5. Run focused checks and dual review. Hold at the immutable write-set boundary

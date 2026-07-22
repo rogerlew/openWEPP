@@ -115,6 +115,40 @@ def _configure_measurement_workspace(repo: Path, *, root_depends_on_example: boo
     )
 
 
+def _configure_candidate_workspace(
+    repo: Path,
+    *,
+    relative_package: str,
+    manifest_target: str,
+    target_file: str,
+) -> None:
+    (repo / "Cargo.toml").write_text(
+        "[workspace]\n"
+        f'members = ["{relative_package}"]\n'
+        'resolver = "2"\n',
+        encoding="utf-8",
+    )
+    package_root = repo / relative_package
+    package_root.mkdir(parents=True, exist_ok=True)
+    (package_root / "Cargo.toml").write_text(
+        "[package]\n"
+        'name = "candidate"\n'
+        'version = "0.1.0"\n'
+        'edition = "2024"\n\n'
+        f"{manifest_target}\n",
+        encoding="utf-8",
+    )
+    source = package_root / target_file
+    source.parent.mkdir(parents=True, exist_ok=True)
+    source.write_text("fn candidate() {}\n", encoding="utf-8")
+    subprocess.run(
+        ["cargo", "generate-lockfile", "--offline"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+    )
+
+
 def _registry(repo: Path) -> dict[str, object]:
     source = repo / "crates" / "example" / "src" / "lib.rs"
     source_hash = _sha256(source)
@@ -208,6 +242,62 @@ class AdjudicatedCrapGateTests(unittest.TestCase):
         _configure_measurement_workspace(self.repo, root_depends_on_example=True)
         with self.assertRaisesRegex(gate.GateInputError, "unknown workspace packages"):
             gate.resolve_measurement_packages(self.repo, {"missing"})
+
+    def test_test_only_crates_member_requires_global_quality(self) -> None:
+        _configure_candidate_workspace(
+            self.repo,
+            relative_package="crates/candidate",
+            manifest_target='[[test]]\nname = "candidate"\npath = "tests/candidate.rs"',
+            target_file="tests/candidate.rs",
+        )
+        with self.assertRaisesRegex(gate.GateInputError, "requires global quality"):
+            gate.resolve_measurement_packages(self.repo, {"candidate"})
+
+    def test_out_of_tree_target_requires_global_quality(self) -> None:
+        _configure_candidate_workspace(
+            self.repo,
+            relative_package="crates/candidate",
+            manifest_target='[lib]\npath = "../../outside.rs"',
+            target_file="../../outside.rs",
+        )
+        with self.assertRaisesRegex(gate.GateInputError, "requires global quality"):
+            gate.resolve_measurement_packages(self.repo, {"candidate"})
+
+    def test_nested_crates_member_requires_global_quality(self) -> None:
+        _configure_candidate_workspace(
+            self.repo,
+            relative_package="crates/nested/candidate",
+            manifest_target='[lib]\npath = "src/lib.rs"',
+            target_file="src/lib.rs",
+        )
+        with self.assertRaisesRegex(gate.GateInputError, "requires global quality"):
+            gate.resolve_measurement_packages(self.repo, {"candidate"})
+
+    def test_affected_scope_artifact_tamper_fails_closed(self) -> None:
+        _configure_measurement_workspace(self.repo, root_depends_on_example=True)
+        scope_path = self.repo / "scope.json"
+        scope_path.write_text(
+            json.dumps(
+                {
+                    "measurement_packages": ["example"],
+                    "production_packages": ["different"],
+                }
+            ),
+            encoding="utf-8",
+        )
+        with self.assertRaisesRegex(gate.GateInputError, "changed after preflight"):
+            gate._validated_scope_artifact(scope_path, self.repo, {"example"})
+
+    def test_affected_scope_artifact_binds_exact_bytes(self) -> None:
+        _configure_measurement_workspace(self.repo, root_depends_on_example=True)
+        scope = gate.resolve_measurement_packages(self.repo, {"example"})
+        scope_path = self.repo / "scope.json"
+        scope_path.write_text(json.dumps(scope, sort_keys=True), encoding="utf-8")
+        observed, digest = gate._validated_scope_artifact(
+            scope_path, self.repo, {"example"}
+        )
+        self.assertEqual(observed, scope)
+        self.assertEqual(digest, _sha256(scope_path))
 
     def test_scope_preflight_prints_resolved_identity(self) -> None:
         _configure_measurement_workspace(self.repo, root_depends_on_example=True)
