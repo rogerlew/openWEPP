@@ -6,6 +6,15 @@ Queue ID: `TESTGATE-AFFECTED-CRAP-PLANNER-ESCALATION-01`
 
 Status: `ACTIVE / SCAFFOLD`
 
+## Progress
+
+- [x] Scaffold commit `cb6eda5e` predates planner edits.
+- [x] Separate measurement packages from production-owning quality packages.
+- [x] Escalate direct measurement-only changes to critical/global quality.
+- [x] Focused root/production/repository regressions and target Clippy pass.
+- [ ] Commit the correction and rerun the clean-checkout planner target.
+- [ ] Complete package audit, dual review, RTR-035 closure, and qualification.
+
 ## Objective
 
 Close the planner half of RTR-035 by escalating any bounded selection containing

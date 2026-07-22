@@ -935,6 +935,16 @@ impl CargoGraph {
     pub fn packages(&self) -> impl Iterator<Item = &String> {
         self.package_dirs.keys()
     }
+
+    #[must_use]
+    pub fn owns_production_sources(&self, package: &str) -> bool {
+        self.package_dirs.get(package).is_some_and(|directory| {
+            let mut components = directory.split('/');
+            components.next() == Some("crates")
+                && components.next().is_some_and(|name| !name.is_empty())
+                && components.next().is_none()
+        })
+    }
 }
 
 fn reject_undeclared_feature_projection(package: &Value) -> Result<()> {
@@ -1322,9 +1332,14 @@ mod tests {
         let graph = CargoGraph::from_metadata(metadata, root).expect("metadata graph");
         let initial = std::collections::BTreeSet::from(["a".to_owned()]);
         assert_eq!(graph.reverse_closure(&initial).len(), 2);
+        assert!(graph.owns_production_sources("a"));
         assert_eq!(
             graph.package_for_path("crates/a/src/lib.rs").as_deref(),
             Some("a")
         );
+
+        let root_metadata = br#"{"packages":[{"id":"root 0.1","name":"openwepp","manifest_path":"/repo/Cargo.toml","features":{}}],"workspace_members":["root 0.1"],"resolve":{"nodes":[{"id":"root 0.1","deps":[]}]}}"#;
+        let root_graph = CargoGraph::from_metadata(root_metadata, root).expect("root graph");
+        assert!(!root_graph.owns_production_sources("openwepp"));
     }
 }

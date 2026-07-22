@@ -518,6 +518,69 @@
         {
             assert!(arguments.contains(package));
         }
+        assert!(!arguments.contains(&serde_json::json!("openwepp")));
+    }
+
+    #[test]
+    fn root_measurement_change_escalates_to_global_crap() {
+        let repo = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+        let head = std::process::Command::new("git")
+            .args(["rev-parse", "HEAD"])
+            .current_dir(&repo)
+            .output()
+            .expect("git rev-parse");
+        let head = String::from_utf8(head.stdout)
+            .expect("UTF-8 head")
+            .trim()
+            .to_owned();
+        let path = "tests/integration/testgate_ci_executor_contract.rs";
+        let plan = Planner::new(FixedInventory)
+            .build(
+                &repo,
+                &PlanRequest {
+                    stage: PlanningStage::Intent,
+                    predecessor_intent_plan_id: None,
+                    boundary: "INCREMENT".to_owned(),
+                    campaign_id: Some("TESTGATE-ROOT-MEASUREMENT-01".to_owned()),
+                    combined_quality_proof_id: None,
+                    authorized_paths: vec![path.to_owned()],
+                    source: ObservedSource {
+                        base_commit: head,
+                        head_commit: None,
+                        dirty_tree_digest: Some("11".repeat(32)),
+                        index_digest: Some("22".repeat(32)),
+                        worktree_digest: Some("33".repeat(32)),
+                        untracked_digest: Some("44".repeat(32)),
+                        changes: vec![ObservedChange {
+                            path: path.to_owned(),
+                            change_kind: "MODIFY".to_owned(),
+                            object_kind: "REGULAR".to_owned(),
+                            old_mode: Some("100644".to_owned()),
+                            new_mode: Some("100644".to_owned()),
+                        }],
+                    },
+                },
+            )
+            .expect("root measurement plan");
+
+        assert_eq!(plan["risk"]["class"], "CRITICAL");
+        assert!(
+            plan["risk"]["reason_codes"]
+                .as_array()
+                .expect("reason codes")
+                .contains(&serde_json::json!(
+                    "MEASUREMENT_ONLY_PACKAGE_REQUIRES_GLOBAL_QUALITY"
+                ))
+        );
+        assert_eq!(plan["quality_scope"]["mode"], "GLOBAL");
+        let definitions = plan["nodes"]
+            .as_array()
+            .expect("nodes")
+            .iter()
+            .filter_map(|node| node["gate_definition_id"].as_str())
+            .collect::<std::collections::BTreeSet<_>>();
+        assert!(definitions.contains("adjudicated-crap-v1"));
+        assert!(!definitions.contains("affected-adjudicated-crap-v1"));
     }
 
     #[test]

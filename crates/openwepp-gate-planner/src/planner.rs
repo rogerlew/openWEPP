@@ -873,11 +873,17 @@ impl<P: InventoryProvider> Planner<P> {
                     .iter()
                     .filter_map(|dependency| built.get(dependency).cloned())
                     .collect::<Vec<_>>();
+                let argument_packages =
+                    if definition.gate_definition_id == "affected-adjudicated-crap-v1" {
+                        &selection.quality_packages
+                    } else {
+                        &selection.affected_packages
+                    };
                 let arguments = expand_node_arguments(
                     definition,
                     target,
                     base_commit,
-                    &selection.affected_packages,
+                    argument_packages,
                     &selection.documentation_paths,
                 )?;
                 let output_paths = expand_arguments(&definition.output_paths, target, base_commit)?;
@@ -993,7 +999,7 @@ fn quality_scope(selection: &Selection, nodes: &[Value]) -> Value {
     let affected_mode = matches!(
         selection.risk,
         RiskClass::BoundedComponent | RiskClass::IntegratedDomain
-    ) && !selection.affected_packages.is_empty()
+    ) && !selection.quality_packages.is_empty()
         && selection.unmapped.is_empty();
     if !affected_mode {
         return json!({
@@ -1045,7 +1051,7 @@ fn quality_scope(selection: &Selection, nodes: &[Value]) -> Value {
     }
     json!({
         "mode": "AFFECTED",
-        "production_packages": selection.affected_packages,
+        "production_packages": selection.quality_packages,
         "covering_node_ids": covering_node_ids,
         "covering_inventory_ids": covering_inventory_ids,
         "completeness": "COMPLETE",
@@ -1310,6 +1316,7 @@ struct Selection {
     reason_codes: Vec<String>,
     documentation_paths: Vec<String>,
     affected_packages: Vec<String>,
+    quality_packages: Vec<String>,
     reverse_dependencies: Vec<String>,
     explicit_definitions: Vec<String>,
     impact_edges: Vec<Value>,
@@ -1386,6 +1393,18 @@ fn select(policy: &PolicyBundle, graph: &CargoGraph, changes: &[ObservedChange])
         }
     }
     let affected = graph.reverse_closure(&direct_packages);
+    let quality_packages = affected
+        .iter()
+        .filter(|package| graph.owns_production_sources(package))
+        .cloned()
+        .collect::<Vec<_>>();
+    if direct_packages
+        .iter()
+        .any(|package| !graph.owns_production_sources(package))
+    {
+        risk = RiskClass::Critical;
+        reasons.insert("MEASUREMENT_ONLY_PACKAGE_REQUIRES_GLOBAL_QUALITY".to_owned());
+    }
     let reverse_dependencies = affected
         .difference(&direct_packages)
         .cloned()
@@ -1395,6 +1414,7 @@ fn select(policy: &PolicyBundle, graph: &CargoGraph, changes: &[ObservedChange])
         reason_codes: reasons.into_iter().collect(),
         documentation_paths: changed_markdown_paths(changes),
         affected_packages: affected.into_iter().collect(),
+        quality_packages,
         reverse_dependencies,
         explicit_definitions: explicit.into_iter().collect(),
         impact_edges,
