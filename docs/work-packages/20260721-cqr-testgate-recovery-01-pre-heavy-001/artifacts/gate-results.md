@@ -16,7 +16,7 @@
 | final affected CRAP | PASS | exact head `f1774586`; 105/105 instrumented tests passed; zero target rows above 30; evidence `/tmp/cqr-pre-heavy-final-yzFYI4` |
 | coverage non-regression | PASS | exact head `3d6e8817`; line 67.79%, region 71.08%, 109/109 instrumented tests passed |
 | final affected CRAP after characterization | PASS | zero target rows above 30; maximum exactly 30; matching CRAP SHA `673e514f...` |
-| line-count governance | PASS-WARN | 2,574 lines; WARN accepted, below 3,000 blocker |
+| line-count governance | PASS-WARN | 2,859 production-host lines; WARN accepted, below 3,000 blocker; direct closure tests moved to an authorized child module |
 | affected-surface CRAP/coverage | PASS | exact source-bound evidence retained under `/tmp/cqr-pre-heavy-nonreg-rNRfRV` |
 | terminal-plan heavy gates | NOT RUN | delegate after implementation |
 | ADR-0021 prior affected measurement | HOLD | exact clean head `b1096a78`; aggregate production surface passes, but reviewers found three functions below the binding region floor |
@@ -24,3 +24,5 @@
 | final scoped Clippy | PASS | `cargo clippy -p openwepp-gate-planner --lib --tests -- -D warnings` |
 | exact public reconstruction characterization | PASS | `exact_planner_output_reconstructs_through_the_public_audit_path`; 1/1 PASS in 391.957 seconds; run ID `4c972c0f-405d-4475-82d3-23ef39f0205b` |
 | corrected changed-head ADR-0021 measurement | PASS | exact clean `68e9b747`; 117/117 PASS; production line 96.08%; production region 89.64%; 111/111 functions at least 75% region, minimum 80%; CRAP maximum 17.0 |
+| fixture ownership probe | PASS | exact temp-repository and durable-ledger namespaces empty before and after `ready_audit_validation_execution_and_resume_chains_are_directly_bound`; 1/1 PASS in 55.258 seconds; run ID `cf7e6313-eda8-418f-8c6c-b91eb97e0b31` |
+| true pre-production baseline | PASS | isolated detached `5e0e92c5`; 100/100 PASS; production line 44.34%, region 41.59%; 50 functions, 24 below 75%; active worktree untouched |

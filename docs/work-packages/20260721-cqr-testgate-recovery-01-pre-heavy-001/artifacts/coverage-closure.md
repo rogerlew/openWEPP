@@ -40,3 +40,8 @@ Evidence root: `/tmp/cqr-pre-heavy-final-region-ORwL2Q`.
 The durable compact extraction record is `function-region-summary.json`; its
 exact 111-row TSV source has SHA-256
 `9dc0bf13209f6a6642905ffbfb1a86e962ad4555a0fcc84b8e0333cc45b8fcd6`.
+
+Ran: the exact package-base measurement in `coverage-before.md` was 44.34%
+production line and 41.59% production region coverage, with 24 functions below
+75% region. The final 96.08% line, 89.64% region, and zero-below-floor results
+strictly satisfy non-regression.

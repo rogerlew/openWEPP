@@ -1,0 +1,16 @@
+{
+  "commit": "5e0e92c5865df38e20edbb75b15f50fee1eccc32",
+  "source_sha256": "476b78dc855e9626a170406b85fc1fec3563aae6b00cab8a97003521554c67bc",
+  "production_lines": "1-1323",
+  "tests_passed": 100,
+  "line_coverage": {"covered": 478, "total": 1078, "percent": 44.34137291280148},
+  "region_coverage": {"covered": 732, "total": 1760, "percent": 41.59090909090909},
+  "production_functions": 50,
+  "mapping_failures": 0,
+  "functions_below_75_percent_region": 24,
+  "functions_at_zero_percent_region": 20,
+  "function_tsv_sha256": "dde53e7f85c00987dd1bfe4daf1dd9d2b20ceb6097d2c18ea7cc1c93f5fcaf29",
+  "llvm_json_sha256": "6d189655a684d88ef9267ed4ca2b66adedf65114349c964410d73da45ad40623",
+  "lcov_sha256": "ed7cba2c93433e1bf52516ebafd91031eb0d94b6a0e5709e5ea591a8a7712d8b",
+  "crap_json_sha256": "625e03848fc89e997cb83919842a2523c66b598ed3da997ad403f4d9f66f2844"
+}

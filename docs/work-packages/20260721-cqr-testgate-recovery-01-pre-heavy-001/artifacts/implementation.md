@@ -1,6 +1,7 @@
 # Implementation
 
-Status: in progress.
+Status: implementation and corrected metric complete; terminal verification
+pending.
 
 Static: the first extraction is private and preserves the original evaluation
 order and error codes. It replaces the ordered failure-token ladder with an
@@ -37,3 +38,12 @@ changed. No new lint suppression was added.
 Ran: focused Clippy with warnings denied passed. The focused `pre_heavy` unit
 inventory passed 20/20 in 15.282 seconds (run ID
 `baf52c7c-5b93-497f-8b2a-34499f11150c`).
+
+Static: direct characterization now binds the public audit-construction and
+execution-admission wrappers plus exact committed-plan reconstruction. The
+tests live in the authorized test-only child module and do not expand the sole
+production-module boundary.
+
+Ran: exact head `68e9b747` passed 117/117 instrumented library tests. The
+production target passes the 85% line/region aggregate, every one of 111
+production functions passes the 75% region floor, and no CRAP row exceeds 30.
