@@ -1,6 +1,6 @@
 # Coverage Closure
 
-Status: `PASS / RENEWED REVIEW PENDING`
+Status: `PASS / DUAL REVIEW PASS`
 
 Static: Review A and Review B found that the earlier zero-below-floor statement
 incorrectly used cargo-crap's LCOV line-coverage field. The retained earlier
