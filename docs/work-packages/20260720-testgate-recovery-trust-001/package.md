@@ -47,6 +47,7 @@ quality paths without editing its frozen subject.
 - [x] (2026-07-22) Open RTR-031 when cheap final admission correctly rejected retroactive aggregate authority; activate its pre-implementation workflow correction package.
 - [x] (2026-07-22) Close RTR-031 with the executable aggregate-admission validator, 17 focused regressions, `READY` package admission, and dual renewed PASS review.
 - [x] (2026-07-22) Retain the zero-node pre-admission stop and open RTR-032 because the active intent package was not updated from its scaffold.
+- [x] (2026-07-22) Close RTR-032 after exact intent authorization, `READY` package admission, and dual independent review.
 - [ ] Reconcile the exact terminal diff and obtain a fresh `READY` audit.
 - [ ] Delegate each selected HEAVY batch once.
 - [ ] Complete dual terminal verification, prompt archival, and final disposition.
@@ -131,6 +132,10 @@ started. RTR-032 (`GATE-INTENT-PACKAGE-NOT-UPDATED`) owns the bounded lifecycle
 correction: update package status/progress without changing its immutable write
 set, prove exact admission, and obtain dual review before another changed-head
 attempt.
+
+RTR-032 closed at correction commit `68701b05` with durable ledger entry
+`4eab64c9`. The immutable declared write set is unchanged, while the package
+lifecycle now identifies the authorized increment.
 ## Declared Write Set
 
 - `.github/workflows/testgate-shadow.yml`

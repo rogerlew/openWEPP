@@ -7,6 +7,7 @@ by ledger entry
 `cb46f83249dcd4708e43cdc7b0dddcf21bbd7e96ffbd2045c12dcc8f6044ab88`.
 One changed-head qualification and terminal verification remain pending.
 
-Static: RTR-032 is open for the first pre-admission stop: the package remained
-byte-identical to its scaffold and therefore did not identify the increment.
-This lifecycle/status update preserves the immutable declared write set.
+Static: RTR-032 is closed by durable ledger entry `4eab64c9`. Its correction
+updates package lifecycle/status so the intent identifies the increment while
+preserving the immutable declared write set. Exact package admission and intent
+authorization pass with dual independent review.

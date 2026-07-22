@@ -34,3 +34,8 @@ Attempt-index SHA-256:
 `2fd90e656bbc8c721111fb47e43289fb16c8266a78f83d3644dec60130985120`.
 No intent, plan, audit, checkpoint, receipt, LIGHT node, or HEAVY node was
 created, and no retry ran. RTR-032 records the package-lifecycle omission.
+
+Ran: at correction commit `68701b05`, package admission is `READY` with zero
+unauthorized paths and audit ID `fef7ae5d...32a70`; exact intent authorization
+accepts the 16 changed paths including `package.md`. Static: dual independent
+RTR-032 reviews pass. Durable closure entry: `4eab64c9...17264`.

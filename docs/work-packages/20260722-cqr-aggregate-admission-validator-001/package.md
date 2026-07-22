@@ -15,7 +15,8 @@ Status: `ACTIVE / READY-QUALIFICATION`
 - [x] RTR-031 is durably closed by ledger entry `cb46f832`.
 - [x] Retain the first qualification's pre-admission failure: zero gate nodes
   started because this intent package was not yet updated by the increment.
-- [ ] Close RTR-032 after exact package/intention admission and dual review.
+- [x] Close RTR-032 after exact package/intention admission and dual review;
+  durable ledger entry `4eab64c9`.
 - [ ] Run one changed-head delegated qualification, dual terminal verification,
   prompt archival, and final disposition.
 
