@@ -55,6 +55,8 @@ quality paths without editing its frozen subject.
 - [x] (2026-07-22) Retain affected CRAP's 1,091/1,091 traversal and open RTR-035 when post-acquisition package admission rejected root `openwepp`; no retry.
 - [x] (2026-07-22) Close RTR-035 through RTR-041 after exact-head owning tests,
   a `READY` aggregate audit, and dual independent implementation review.
+- [x] (2026-07-22) Retain the zero-node broader-boundary rejection and open
+  RTR-042 to bind recovery qualification to `INCREMENT`.
 - [ ] Reconcile the exact terminal diff and obtain a fresh `READY` audit.
 - [ ] Delegate each selected HEAVY batch once.
 - [ ] Complete dual terminal verification, prompt archival, and final disposition.
@@ -185,6 +187,12 @@ shapes before quality-node construction. The final planner target passed
 both independent reviews passed. Durable closure digests are RTR-035
 `aa0db31e`, RTR-036 `0915a278`, RTR-037 `9c5a5f69`, RTR-038 `fc01953c`, RTR-039
 `f7f4c2ba`, RTR-040 `e10b42ae`, and RTR-041 `6a481692`.
+
+The next delegated invocation stopped before planning because the package did
+not explicitly constrain the recovery qualification to the planner-supported
+`INCREMENT` boundary. No gate node or retry ran. RTR-042
+(`GATE-QUALIFICATION-BOUNDARY-UNBOUND`) corrects the package and active prompt;
+broader `CAMPAIGN`/`RELEASE` certification remains on the conservative lane.
 ## Declared Write Set
 
 - `.github/workflows/testgate-shadow.yml`

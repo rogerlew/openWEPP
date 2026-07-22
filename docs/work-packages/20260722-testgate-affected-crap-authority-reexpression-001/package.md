@@ -17,6 +17,7 @@ Status: `ACTIVE / READY-QUALIFICATION`
 - [x] Correct RTR-041; exact changed-head reconstruction passes in 476.228s.
 - [x] Run changed-head owning target/Clippy and dual review.
 - [x] Close RTR-035 through RTR-041 at reviewed commit `85d706ed`.
+- [x] Retain the zero-node CAMPAIGN-boundary rejection and open RTR-042.
 - [ ] Rebuild and delegate exactly one changed-head qualification.
 
 ## Objective
@@ -32,6 +33,8 @@ the planner's production classifier with affected CRAP preflight.
 - RTR-040: planner/checker production-classifier drift.
 - RTR-041: reconstructed target canonicalization exceeded the owning test's
   600-second timeout.
+- RTR-042: the qualification package did not bind the planner-supported
+  `INCREMENT` boundary, permitting an invalid broader-boundary invocation.
 - Allowed changes: reconstructed Cargo target classification, planner selection
   tests, test-only global-quality assertions, and test fixture helper extraction.
 - Protected behavior: no science, gate thresholds, executor stages, receipts,
@@ -65,8 +68,11 @@ the planner's production classifier with affected CRAP preflight.
    assertions through shared helpers without changing assertions.
 5. Run focused tests, exact planner target, formatting, Clippy, package audit,
    line-count governance, and dual independent review.
-6. Close RTR-035 through RTR-040 only at the exact reviewed correction commit,
-   then rebuild and delegate exactly one changed-head qualification.
+6. Close RTR-035 through RTR-041 only at the exact reviewed correction commit.
+7. Bind this recovery qualification to `INCREMENT`, rebuild, and delegate
+   exactly one changed-head qualification. `CAMPAIGN` and `RELEASE`
+   certification remain on the conservative lane until a separately authorized
+   planner increment supports them.
 
 ## Exit Criteria
 
@@ -79,6 +85,8 @@ the planner's production classifier with affected CRAP preflight.
   dual review pass.
 - RTR-035 through RTR-040 close durably before qualification.
 - RTR-041 closes only after the exact reconstruction seam and owning target pass.
+- The delegated recovery qualification uses `--boundary INCREMENT`; a broader
+  lifecycle value is a package-command defect, not an authorized substitution.
 
 ## Subagent Authorization
 
