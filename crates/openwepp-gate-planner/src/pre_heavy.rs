@@ -1742,6 +1742,10 @@ fn audit_error(code: &'static str, message: impl Into<String>) -> GatePolicyErro
 }
 
 #[cfg(test)]
+#[path = "pre_heavy_coverage_tests.rs"]
+mod coverage_tests;
+
+#[cfg(test)]
 mod tests {
     use std::fs;
     use std::path::PathBuf;
