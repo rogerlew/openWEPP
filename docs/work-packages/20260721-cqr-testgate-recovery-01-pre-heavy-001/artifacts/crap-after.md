@@ -47,3 +47,7 @@ LCOV SHA-256:
 `72a1f014d7ba0d7d3835f4adca9dc2585b03237ad5af1cb2a19f05c88f09ba38`.
 CRAP JSON SHA-256:
 `d30084ed51f2d6b29cdf5a92668acc2a48e679921c9e509f725f65d8783b6bb2`.
+
+Ran: after direct characterization, exact head `3d6e8817` retained zero rows
+above 30 and a maximum of exactly 30. Matching CRAP JSON SHA-256:
+`673e514f8190382be7e00926e153ed0d733595ebc9e4aa380198e2744d3e6968`.

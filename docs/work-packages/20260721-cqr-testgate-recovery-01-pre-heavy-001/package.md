@@ -1,7 +1,7 @@
 # CQR: TESTGATE Pre-Heavy Admission Complexity
 
 Package: `20260721-cqr-testgate-recovery-01-pre-heavy-001`
-Status: `ACTIVE`
+Status: `IMPLEMENTED / REVIEW PENDING`
 ExecPlan: `docs/work-packages/20260721-cqr-testgate-recovery-closeout-execplan.md`
 Target module: `crates/openwepp-gate-planner/src/pre_heavy.rs`
 Target rank: `1` of `7`

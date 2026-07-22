@@ -14,6 +14,8 @@
 | durable-defect extraction | PASS | 20 passed, 90 skipped, 16.658 s; run ID `31649409-1f30-4002-8c95-6442c4ad97c5` |
 | remaining-hotspot extraction | PASS | `cargo clippy -p openwepp-gate-planner --lib -- -D warnings`; focused inventory 20 passed, 90 skipped, 15.282 s; run ID `baf52c7c-5b93-497f-8b2a-34499f11150c` |
 | final affected CRAP | PASS | exact head `f1774586`; 105/105 instrumented tests passed; zero target rows above 30; evidence `/tmp/cqr-pre-heavy-final-yzFYI4` |
-| coverage non-regression | FAIL | 58.66% line after helper expansion; direct characterization remains required |
-| affected-surface CRAP/coverage | NOT RUN | required before completion |
+| coverage non-regression | PASS | exact head `3d6e8817`; line 67.79%, region 71.08%, 109/109 instrumented tests passed |
+| final affected CRAP after characterization | PASS | zero target rows above 30; maximum exactly 30; matching CRAP SHA `673e514f...` |
+| line-count governance | PASS-WARN | 2,574 lines; WARN accepted, below 3,000 blocker |
+| affected-surface CRAP/coverage | PASS | exact source-bound evidence retained under `/tmp/cqr-pre-heavy-nonreg-rNRfRV` |
 | terminal-plan heavy gates | NOT RUN | delegate after implementation |
