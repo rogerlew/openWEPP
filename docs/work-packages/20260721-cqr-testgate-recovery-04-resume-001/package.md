@@ -50,6 +50,8 @@ TESTGATE.
 ## Declared Write Set
 
 - `crates/openwepp-gate-planner/src/resume.rs`
+- `crates/openwepp-gate-planner/src/resume_coverage_tests.rs` (test-only
+  characterization split for line-count governance)
 - `crates/openwepp-gate-planner/src/pre_heavy_coverage_tests.rs` (test-only
   characterization; no second production module)
 - `docs/work-packages/20260721-cqr-testgate-recovery-04-resume-001/**`
