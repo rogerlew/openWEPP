@@ -4,7 +4,7 @@ Package ID: `20260722-testgate-cqr-aggregate-admission-001`
 
 Queue ID: `TESTGATE-CQR-AGGREGATE-ADMISSION-01`
 
-Status: `ACTIVE`
+Status: `HOLD-PREREQUISITE-VALIDATOR`
 
 ## Objective
 
@@ -60,6 +60,17 @@ dispatch, and direct HEAVY execution.
   qualification diff.
 - Dual independent implementation review passes and RTR-031 is durably closed.
 - No unchanged expensive gate is rerun.
+
+## Hold Legitimacy Audit
+
+Static: review A proved the correction is prose-only and does not mechanically
+validate the aggregate package path, status, base write set, coverage of planned
+paths, or ordering before module implementation. An executable validator with
+positive/negative tests is required. Those tool/test paths are outside this
+package's immutable scaffold write set, and adding them now would reproduce the
+retroactive-widening defect this package exists to prevent. The in-envelope
+documentation route was implemented and reviewed but cannot close the defect.
+`20260722-cqr-aggregate-admission-validator-001` owns the executable prerequisite.
 
 ## Security Impact Gate
 

@@ -1,7 +1,9 @@
 # Disposition
 
-Status: REVIEWING.
+Status: HOLD-PREREQUISITE-VALIDATOR.
 
-Static: RTR-031 remains open until this correction is committed, narrowly
-validated, independently dual-reviewed, and durably closed. Retroactive
-recovery-package widening was removed rather than accepted.
+Static: RTR-031 remains open. The documentation control is committed, narrowly
+validated, and independently reviewed, but review A correctly requires an
+executable pre-implementation validator. Tool/test paths are outside this
+package's immutable scaffold write set, so a bounded prerequisite package owns
+the closure. Retroactive widening was removed rather than accepted.
