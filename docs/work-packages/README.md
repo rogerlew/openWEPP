@@ -231,7 +231,7 @@
 State as of `2026-07-21 UTC`:
 
 - `20260721-cqr-testgate-recovery-01-pre-heavy-001/` -
-  QUEUED: first of the seven one-module CQR packages required by the
+  ACTIVE: first of the seven one-module CQR packages required by the
   attempt-15 adjudicated CRAP report before TESTGATE recovery closeout may
   resume. It owns only `pre_heavy.rs` admission complexity and is scaffolded
   before any implementation edit.
