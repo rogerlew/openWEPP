@@ -109,11 +109,15 @@ fn ready_audit_verification_preserves_order_and_exact_verdict() {
         "execution context changed during the audit-admitted HEAVY transition"
     );
 
-    let (mut light_plan, mut receipt, artifacts) = ready_admitted_fixture();
-    for node in light_plan["nodes"].as_array_mut().expect("plan nodes") {
-        node["execution_cost_class"] = json!("LIGHT");
-    }
-    refresh_plan_and_receipt(&mut light_plan, &mut receipt);
+    let (light_plan, receipt, artifacts) = normalized_plan_and_receipt();
+    assert!(
+        light_plan["nodes"]
+            .as_array()
+            .expect("plan nodes")
+            .iter()
+            .all(|node| node["execution_cost_class"] != "HEAVY"),
+        "the normalized increment fixture must remain light-only"
+    );
     let error = crate::verifier::verify_receipt_after_ready_audit(
         &root,
         &light_plan,
