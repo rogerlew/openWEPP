@@ -7,6 +7,77 @@ use super::{ExecutionClaims, ExecutionRecord, execute_plan, execute_plan_stage};
 use crate::canonical::{derived_id, digest, sha256_bytes};
 use crate::pre_heavy::construct_audit;
 
+fn affected_quality_fixture() -> (Value, Value, Vec<Value>) {
+    let affected = json!({
+        "node_id": "combined-affected",
+        "gate_definition_id": "affected-adjudicated-crap-v1",
+        "arguments": ["--package", "alpha", "--package", "beta"],
+        "expected_inventory": {"ids": ["case-a", "case-b"]},
+    });
+    let scope = json!({
+        "mode": "AFFECTED",
+        "completeness": "COMPLETE",
+        "production_packages": ["alpha", "beta"],
+        "covering_node_ids": ["combined-affected"],
+        "covering_inventory_ids": ["case-a", "case-b"],
+    });
+    (scope, affected.clone(), vec![affected])
+}
+
+#[test]
+fn affected_quality_scope_preserves_success_and_error_precedence() {
+    let (scope, affected, nodes) = affected_quality_fixture();
+    super::validate_affected_quality_scope(&scope, &affected, &nodes)
+        .expect("complete affected quality scope");
+
+    let mut incomplete = scope.clone();
+    incomplete["completeness"] = json!("PARTIAL");
+    assert_eq!(
+        super::validate_affected_quality_scope(&incomplete, &affected, &nodes)
+            .expect_err("incomplete scope must fail first")
+            .code,
+        "GATE-EXEC-QUALITY-INCOMPLETE"
+    );
+
+    let mut packages = scope.clone();
+    packages["production_packages"] = json!(["alpha"]);
+    assert_eq!(
+        super::validate_affected_quality_scope(&packages, &affected, &nodes)
+            .expect_err("package mismatch")
+            .code,
+        "GATE-EXEC-QUALITY-PACKAGES"
+    );
+
+    let mut covering = scope.clone();
+    covering["covering_node_ids"] = json!(["missing"]);
+    assert_eq!(
+        super::validate_affected_quality_scope(&covering, &affected, &nodes)
+            .expect_err("missing covering node")
+            .code,
+        "GATE-EXEC-QUALITY-COVERING-NODES"
+    );
+
+    let mut wrong_gate_nodes = nodes.clone();
+    wrong_gate_nodes[0]["gate_definition_id"] = json!("adjudicated-crap-v1");
+    assert_eq!(
+        super::validate_affected_quality_scope(&scope, &affected, &wrong_gate_nodes)
+            .expect_err("wrong covering gate")
+            .code,
+        "GATE-EXEC-QUALITY-COVERING-NODES"
+    );
+
+    for inventory in [json!(["case-a"]), json!([])] {
+        let mut mismatched = scope.clone();
+        mismatched["covering_inventory_ids"] = inventory;
+        assert_eq!(
+            super::validate_affected_quality_scope(&mismatched, &affected, &nodes)
+                .expect_err("inventory mismatch")
+                .code,
+            "GATE-EXEC-QUALITY-INVENTORY"
+        );
+    }
+}
+
 struct DurableLedger(PathBuf);
 
 impl DurableLedger {
