@@ -6,8 +6,27 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use serde_json::{Value, json};
 
 use super::*;
+use crate::planner::{
+    InventoryProvider, PlanRequest, Planner, PlanningStage, current_execution_context,
+    derive_execution_key, derive_plan_id,
+};
+use crate::policy::GateDefinition;
+use crate::repository::observe_committed;
 
 static SEQUENCE: AtomicU64 = AtomicU64::new(0);
+
+struct FixedInventory;
+
+impl InventoryProvider for FixedInventory {
+    fn inventory(
+        &self,
+        _repo: &Path,
+        definition: &GateDefinition,
+        target: &str,
+    ) -> Result<Vec<String>> {
+        Ok(vec![format!("{}:{target}", definition.gate_definition_id)])
+    }
+}
 
 struct AuditFixture {
     root: PathBuf,
@@ -24,18 +43,29 @@ impl AuditFixture {
             std::process::id()
         ));
         let repository = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
-        fs::create_dir_all(root.join("gate-policy/v1/schemas")).expect("schema directory");
-        for schema in [
-            "package-audit.schema.json",
-            "pre-heavy-audit.schema.json",
-            "stage-receipt.schema.json",
-        ] {
-            fs::copy(
-                repository.join("gate-policy/v1/schemas").join(schema),
-                root.join("gate-policy/v1/schemas").join(schema),
-            )
-            .expect("copy schema");
+        fs::create_dir_all(&root).expect("fixture root");
+        for directory in ["gate-policy", "assurance", "tools"] {
+            assert!(
+                Command::new("cp")
+                    .arg("-R")
+                    .arg(repository.join(directory))
+                    .arg(&root)
+                    .status()
+                    .expect("copy policy authority")
+                    .success()
+            );
         }
+        fs::create_dir_all(root.join("docs")).expect("docs directory");
+        assert!(
+            Command::new("cp")
+                .arg("-R")
+                .arg(repository.join("docs/standards"))
+                .arg(root.join("docs"))
+                .status()
+                .expect("copy standards authority")
+                .success()
+        );
+        fs::copy(repository.join("Cargo.lock"), root.join("Cargo.lock")).expect("copy Cargo.lock");
         fs::create_dir_all(root.join("docs/work-packages/owner")).expect("package directory");
         fs::create_dir_all(root.join("src")).expect("source directory");
         Self::write_package(&root, "base");
@@ -58,17 +88,12 @@ impl AuditFixture {
             std::process::id()
         ));
         fs::write(&ledger, "").expect("durable ledger");
-        let plan = json!({
+        let mut plan = json!({
             "source": {"base_commit": base},
             "authorized_paths": ["docs/work-packages/owner/package.md", "src/lib.rs"],
             "changed_objects": [], "nodes": [],
-            "plan_id": "2".repeat(64), "execution_key": "4".repeat(64),
-            "execution_context": {
-                "configuration_sha256": "a".repeat(64),
-                "environment_manifest_sha256": "b".repeat(64),
-                "fixture_manifest_sha256": "c".repeat(64),
-                "tool_manifest_sha256": "d".repeat(64)
-            },
+            "plan_id": "0".repeat(64), "execution_key": "0".repeat(64),
+            "execution_context": current_execution_context(&root).expect("execution context"),
             "environment_roots": {
                 "execution_root": "/execution", "authority_root": "/authority",
                 "documentation_root": "/documentation"
@@ -79,6 +104,8 @@ impl AuditFixture {
                 "proof_sha256": null, "baseline_count": 0
             }
         });
+        plan["plan_id"] = json!(derive_plan_id(&plan).expect("plan ID"));
+        plan["execution_key"] = json!(derive_execution_key(&plan).expect("execution key"));
         Self {
             root,
             plan,
@@ -159,6 +186,14 @@ fn ready_audit_validation_execution_and_resume_chains_are_directly_bound() {
     .and_then(|audit| seal_audit(&fixture.root, audit))
     .expect("sealed audit");
 
+    build_audit(
+        &fixture.root,
+        &fixture.plan,
+        &receipt,
+        &fixture.artifacts,
+        &fixture.ledger,
+    )
+    .expect("public audit construction wrapper");
     build_unsealed_audit(
         &fixture.root,
         &fixture.plan,
@@ -177,16 +212,14 @@ fn ready_audit_validation_execution_and_resume_chains_are_directly_bound() {
         ..ExecutionClaims::default()
     };
     validate_execution_claim_binding(&audit, &claims).expect("claim binding");
-    assert!(
-        validate_audit_for_execution(
-            &fixture.root,
-            &fixture.plan,
-            &audit,
-            &fixture.artifacts,
-            &claims
-        )
-        .is_err()
-    );
+    validate_audit_for_execution(
+        &fixture.root,
+        &fixture.plan,
+        &audit,
+        &fixture.artifacts,
+        &claims,
+    )
+    .expect("execution validation wrapper");
 
     let started = append_attempt_record(
         &fixture.ledger,
@@ -290,4 +323,31 @@ fn low_coverage_binding_helpers_exercise_their_reject_arms() {
             expected
         );
     }
+}
+
+#[test]
+fn exact_planner_output_reconstructs_through_the_public_audit_path() {
+    let repo = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let source = observe_committed(&repo, "HEAD^", "HEAD").expect("committed source");
+    let authorized_paths = source
+        .changes
+        .iter()
+        .map(|change| change.path.clone())
+        .collect();
+    let request = PlanRequest {
+        stage: PlanningStage::Intent,
+        predecessor_intent_plan_id: None,
+        boundary: "INCREMENT".to_owned(),
+        campaign_id: Some("CQR-PRE-HEAVY-COVERAGE".to_owned()),
+        combined_quality_proof_id: None,
+        authorized_paths,
+        source,
+    };
+    let plan = Planner::new(FixedInventory)
+        .build(&repo, &request)
+        .expect("canonical planner output");
+    let artifacts = repo.join("target/pre-heavy-exact-reconstruction");
+    fs::create_dir_all(artifacts.join(".work")).expect("artifact work root");
+    reconstruct_exact_plan(&repo, &plan, &artifacts).expect("exact audit reconstruction");
+    fs::remove_dir_all(artifacts).expect("remove artifact root");
 }
