@@ -1,3 +1,6 @@
 # Numeric Equivalence
 
-Status: pending byte/order/error equivalence. No process physics exists.
+Static: no floating-point or process-physics expression exists. Equivalence is
+byte identity, canonical JSON identity, path/root admission, error-code
+precedence, and read/write ordering. Characterization records exact output and
+checkpoint bytes before production decomposition.
