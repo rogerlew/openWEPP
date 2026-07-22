@@ -8,3 +8,16 @@ stage/pass/fail/mutation fixture regressions pass 5/5 in 258.946 seconds.
 
 Ran: the checker byte-sealing increment passes Python 30/30, integration 19/19,
 Bash syntax, and target Clippy. No coverage acquisition or HEAVY gate ran.
+
+Ran: package audit at `04f3b619` against clean pre-edit base `afc83394` is
+`READY` with zero unauthorized paths; audit ID `2a4762fa...cada2`.
+
+Ran: the first changed-head owning target reached 146/154 with 146 PASS and 2
+skipped before the exact public-audit reconstruction test timed out at 600.312
+seconds; seven cases were canceled. Total wall was 884.663 seconds. RTR-041 is
+open and no unchanged rerun occurred.
+
+Static: RTR-041 removes filesystem canonicalization for every Cargo target on
+each reconstructed graph load. Locked metadata already supplies absolute paths;
+lexical strip-prefix confinement and the exact target-kind/source predicates
+remain unchanged.

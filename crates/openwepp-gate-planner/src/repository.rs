@@ -983,8 +983,7 @@ fn package_owns_production_target(
             continue;
         }
         let source = Path::new(string_field(target, "src_path")?);
-        let normalized_source = fs::canonicalize(source).unwrap_or_else(|_| source.to_path_buf());
-        let relative = normalized_source
+        let relative = source
             .strip_prefix(normalized_root)
             .map_err(|_| metadata_error("target source outside snapshot"))?
             .to_str()

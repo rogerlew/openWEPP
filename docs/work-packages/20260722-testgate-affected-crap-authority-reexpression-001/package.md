@@ -13,7 +13,9 @@ Status: `ACTIVE / SCAFFOLD`
 - [x] Align reconstructed Cargo production targets with checker admission.
 - [x] Re-express global fixtures and measurement-only assertions under helpers.
 - [x] Focused classification/planner/fixture regressions pass 9/9 total.
-- [ ] Commit, run exact owning target/Clippy, package audit, and dual review.
+- [x] Core aggregate correction commit `04f3b619`; package audit `READY`.
+- [ ] Correct RTR-041 reconstruction timeout and rerun its exact changed-head seam.
+- [ ] Run changed-head owning target/Clippy and dual review.
 - [ ] Close RTR-035 through RTR-040 and delegate qualification.
 
 ## Objective
@@ -73,6 +75,7 @@ the planner's production classifier with affected CRAP preflight.
 - Focused tests, planner target, Clippy, formatting, line-count governance, and
   dual review pass.
 - RTR-035 through RTR-040 close durably before qualification.
+- RTR-041 closes only after the exact reconstruction seam and owning target pass.
 
 ## Subagent Authorization
 
