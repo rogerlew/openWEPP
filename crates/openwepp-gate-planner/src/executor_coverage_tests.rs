@@ -302,11 +302,10 @@ fn real_artifact_reset_and_source_selection_cover_every_contract() {
     }
 
     let nextest = json!({"artifact_contract": "nextest-junit-v1", "arguments": []});
+    let work = artifacts.path().join(".work");
     assert_eq!(
-        super::real_artifact_sources(artifacts.path(), &nextest)
-            .expect("Nextest sources")
-            .len(),
-        1
+        super::real_artifact_sources(artifacts.path(), &nextest).expect("Nextest sources"),
+        [work.join("nextest/default/junit.xml")]
     );
     let crap_xml = json!({
         "artifact_contract": "adjudicated-crap-v1",
@@ -314,10 +313,13 @@ fn real_artifact_reset_and_source_selection_cover_every_contract() {
         "output_paths": ["report.json", "junit.xml", "workspace.lcov"]
     });
     assert_eq!(
-        super::real_artifact_sources(artifacts.path(), &crap_xml)
-            .expect("CRAP XML sources")
-            .len(),
-        4
+        super::real_artifact_sources(artifacts.path(), &crap_xml).expect("CRAP XML sources"),
+        [
+            work.join("target/custom-crap/adjudicated-crap-report.json"),
+            work.join("target/custom-crap/run-status.json"),
+            work.join("target/custom-crap/nextest/full/junit.xml"),
+            work.join("target/custom-crap/workspace.lcov"),
+        ]
     );
     let crap = json!({
         "artifact_contract": "adjudicated-crap-v1",
@@ -325,20 +327,19 @@ fn real_artifact_reset_and_source_selection_cover_every_contract() {
         "output_paths": ["report.json"]
     });
     assert_eq!(
-        super::real_artifact_sources(artifacts.path(), &crap)
-            .expect("CRAP control sources")
-            .len(),
-        2
+        super::real_artifact_sources(artifacts.path(), &crap).expect("CRAP control sources"),
+        [
+            work.join("target/adjudicated-crap/adjudicated-crap-report.json"),
+            work.join("target/adjudicated-crap/run-status.json"),
+        ]
     );
     let authority = json!({
         "artifact_contract": "authority-suite-report-v1",
         "output_paths": ["target/authority.md"]
     });
     assert_eq!(
-        super::real_artifact_sources(artifacts.path(), &authority)
-            .expect("authority source")
-            .len(),
-        1
+        super::real_artifact_sources(artifacts.path(), &authority).expect("authority source"),
+        [work.join("target/authority.md")]
     );
     assert!(
         super::real_artifact_sources(
@@ -407,7 +408,10 @@ fn artifact_publication_selects_real_and_synthetic_sources() {
         "result.xml",
     )
     .expect("synthetic failed JUnit");
-    assert!(String::from_utf8_lossy(&synthetic_junit).contains("failures=\"1\""));
+    assert_eq!(
+        synthetic_junit,
+        b"<?xml version=\"1.0\" encoding=\"UTF-8\"?><testsuite name=\"openwepp-gate\" tests=\"0\" failures=\"1\"></testsuite>\n"
+    );
 
     let crap = json!({
         "node_id": "crap",
@@ -441,8 +445,14 @@ fn artifact_publication_selects_real_and_synthetic_sources() {
     )
     .expect("process fallback JSON");
     assert_eq!(
-        serde_json::from_slice::<Value>(&process_json).expect("process JSON")["result"],
-        "FAIL"
+        serde_json::from_slice::<Value>(&process_json).expect("process JSON"),
+        json!({
+            "schema_version": "openwepp-gate-process-artifact-v1",
+            "node_id": "process",
+            "gate_definition_id": "process-v1",
+            "result": "FAIL",
+            "attempt_log_sha256": "log"
+        })
     );
 }
 
@@ -465,19 +475,39 @@ fn real_output_source_selection_covers_every_contract() {
         "output_paths": ["target/authority.md"]
     });
     let process = json!({"artifact_contract": "process-exit-v1"});
-    for (node, output, expected_some) in [
-        (&nextest, "result.xml", true),
-        (&crap, "junit.xml", true),
-        (&crap, "workspace.lcov", true),
-        (&crap, "report.json", true),
-        (&authority, "authority.md", true),
-        (&process, "result.json", false),
+    let work = artifacts.path().join(".work");
+    for (node, output, expected) in [
+        (
+            &nextest,
+            "result.xml",
+            Some(work.join("nextest/default/junit.xml")),
+        ),
+        (
+            &crap,
+            "junit.xml",
+            Some(work.join("target/adjudicated-crap/nextest/full/junit.xml")),
+        ),
+        (
+            &crap,
+            "workspace.lcov",
+            Some(work.join("target/adjudicated-crap/workspace.lcov")),
+        ),
+        (
+            &crap,
+            "report.json",
+            Some(work.join("target/adjudicated-crap/adjudicated-crap-report.json")),
+        ),
+        (
+            &authority,
+            "authority.md",
+            Some(work.join("target/authority.md")),
+        ),
+        (&process, "result.json", None),
     ] {
         assert_eq!(
             super::real_source_for_output(artifacts.path(), node, output)
-                .expect("real source selection")
-                .is_some(),
-            expected_some
+                .expect("real source selection"),
+            expected
         );
     }
 }
