@@ -10,6 +10,8 @@
 | missing normal directories are created incrementally | success and direct cases |
 | output ordering/paths preserve exact bytes | two-file success case |
 | checkpoint publication is canonical and node-bound | success case exact canonical bytes/path |
+| caller lexical artifact root remains the source-read root | corrected lexical-root child regression |
+| RootDir skips metadata lookup and preserves error precedence | corrected root-component skip regression |
 | real executor/resume consumers remain unchanged | static consumer map plus deferred master qualification |
 
 Static: no process-physics obligation applies. Because module tests materially
