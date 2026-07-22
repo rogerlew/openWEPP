@@ -62,6 +62,44 @@
     }
 
     #[test]
+    fn reconstruction_workspace_creates_owned_children_and_rejects_plain_files() {
+        let fixture = crate::executor::tests::TempDirectory::new("planner-workspace-objects");
+        let parent_file = fixture.path().join("parent-file");
+        std::fs::write(&parent_file, b"not a directory").expect("parent file");
+        assert_eq!(
+            prepare_reconstruction_workspace(&parent_file.join("workspace"))
+                .expect_err("plain-file parent must fail")
+                .code,
+            "GATE-RECONSTRUCTION-WORKSPACE"
+        );
+
+        let workspace_file = fixture.path().join("workspace-file");
+        std::fs::write(&workspace_file, b"not a directory").expect("workspace file");
+        assert_eq!(
+            prepare_reconstruction_workspace(&workspace_file)
+                .expect_err("plain-file workspace must fail")
+                .code,
+            "GATE-RECONSTRUCTION-WORKSPACE"
+        );
+
+        let workspace = fixture.path().join("created-workspace");
+        let canonical = prepare_reconstruction_workspace(&workspace)
+            .expect("missing workspace and owned children are created");
+        for child in ["cargo-target", "graph-snapshots", "inventory-snapshots"] {
+            assert!(canonical.join(child).is_dir(), "missing owned child {child}");
+        }
+        std::fs::remove_dir_all(canonical.join("cargo-target")).expect("remove owned child");
+        std::fs::write(canonical.join("cargo-target"), b"not a directory")
+            .expect("replace child with file");
+        assert_eq!(
+            prepare_reconstruction_workspace(&canonical)
+                .expect_err("plain-file child must fail")
+                .code,
+            "GATE-RECONSTRUCTION-WORKSPACE"
+        );
+    }
+
+    #[test]
     fn gate_policy_change_is_deterministic_and_critical() {
         let repo = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
         let head = std::process::Command::new("git")
@@ -592,6 +630,139 @@
             serde_json::json!(crate::canonical::derived_id(last, "node_id").expect("node ID"));
         reidentify(&mut weakened);
         assert!(reconcile_intent_terminal(&repo, &intent_with_path, &weakened).is_err());
+
+        let semantic_error = |intent: &serde_json::Value,
+                              terminal: &serde_json::Value,
+                              code: &str| {
+            assert_eq!(
+                reconcile_semantics(intent, terminal)
+                    .expect_err("semantic guard must fail")
+                    .code,
+                code
+            );
+        };
+        let semantic_terminal = removed_path.clone();
+
+        let mut invalid_intent_stage = intent_with_path.clone();
+        invalid_intent_stage["planning_stage"] = serde_json::json!("TERMINAL");
+        semantic_error(
+            &invalid_intent_stage,
+            &semantic_terminal,
+            "GATE-PLAN-RECONCILIATION",
+        );
+        let mut invalid_terminal_stage = semantic_terminal.clone();
+        invalid_terminal_stage["planning_stage"] = serde_json::json!("INTENT");
+        semantic_error(
+            &intent_with_path,
+            &invalid_terminal_stage,
+            "GATE-PLAN-RECONCILIATION",
+        );
+        let mut invalid_predecessor = semantic_terminal.clone();
+        invalid_predecessor["predecessor_intent_plan_id"] = serde_json::json!("wrong");
+        semantic_error(
+            &intent_with_path,
+            &invalid_predecessor,
+            "GATE-PLAN-RECONCILIATION",
+        );
+
+        let mut malformed_changes = semantic_terminal.clone();
+        malformed_changes["changed_objects"] = serde_json::Value::Null;
+        semantic_error(
+            &intent_with_path,
+            &malformed_changes,
+            "GATE-PLAN-CHANGES",
+        );
+        let mut missing_changed_path = semantic_terminal.clone();
+        missing_changed_path["changed_objects"] = serde_json::json!([{}]);
+        semantic_error(
+            &intent_with_path,
+            &missing_changed_path,
+            "GATE-PLAN-CHANGE-PATH",
+        );
+
+        let mut mismatched_authorization = semantic_terminal.clone();
+        mismatched_authorization["authorized_paths"] = serde_json::json!(["Cargo.toml"]);
+        semantic_error(
+            &intent_with_path,
+            &mismatched_authorization,
+            "GATE-TERMINAL-UNAUTHORIZED-PATH",
+        );
+        let mut unauthorized_actual = semantic_terminal.clone();
+        unauthorized_actual["changed_objects"] = serde_json::json!([{
+            "path": "Cargo.toml"
+        }]);
+        semantic_error(
+            &intent_with_path,
+            &unauthorized_actual,
+            "GATE-TERMINAL-UNAUTHORIZED-PATH",
+        );
+        let mut mismatched_proof = semantic_terminal.clone();
+        mismatched_proof["combined_quality"]["requested_proof_id"] =
+            serde_json::json!("different-proof");
+        semantic_error(
+            &intent_with_path,
+            &mismatched_proof,
+            "GATE-TERMINAL-UNAUTHORIZED-PATH",
+        );
+
+        let mut invalid_intent_risk = intent_with_path.clone();
+        invalid_intent_risk["risk"]["class"] = serde_json::json!("UNKNOWN");
+        semantic_error(&invalid_intent_risk, &semantic_terminal, "GATE-PLAN-RISK");
+        let mut invalid_terminal_risk = semantic_terminal.clone();
+        invalid_terminal_risk["risk"]["class"] = serde_json::json!("UNKNOWN");
+        semantic_error(&intent_with_path, &invalid_terminal_risk, "GATE-PLAN-RISK");
+
+        let mut malformed_affected = semantic_terminal.clone();
+        malformed_affected["affected_packages"] = serde_json::Value::Null;
+        semantic_error(
+            &intent_with_path,
+            &malformed_affected,
+            "GATE-PLAN-SHAPE",
+        );
+        let mut removed_affected_intent = intent_with_path.clone();
+        removed_affected_intent["affected_packages"] = serde_json::json!(["required-package"]);
+        semantic_error(
+            &removed_affected_intent,
+            &semantic_terminal,
+            "GATE-TERMINAL-OBLIGATION-REMOVED",
+        );
+        let mut malformed_reverse = semantic_terminal.clone();
+        malformed_reverse["reverse_dependencies"] = serde_json::json!([1]);
+        semantic_error(
+            &intent_with_path,
+            &malformed_reverse,
+            "GATE-PLAN-SHAPE",
+        );
+        let mut removed_reverse_intent = intent_with_path.clone();
+        removed_reverse_intent["reverse_dependencies"] = serde_json::json!(["required-package"]);
+        semantic_error(
+            &removed_reverse_intent,
+            &semantic_terminal,
+            "GATE-TERMINAL-OBLIGATION-REMOVED",
+        );
+
+        let mut malformed_impact_edges = semantic_terminal.clone();
+        malformed_impact_edges["impact_edges"] = serde_json::Value::Null;
+        semantic_error(
+            &intent_with_path,
+            &malformed_impact_edges,
+            "GATE-PLAN-SHAPE",
+        );
+        let mut required_impact_intent = intent_with_path.clone();
+        required_impact_intent["impact_edges"] =
+            serde_json::json!([{"entry_id": "required-edge"}]);
+        semantic_error(
+            &required_impact_intent,
+            &semantic_terminal,
+            "GATE-TERMINAL-OBLIGATION-REMOVED",
+        );
+        let mut deferred = semantic_terminal.clone();
+        deferred["deferred_obligations"] = serde_json::json!([{"owner": "later"}]);
+        semantic_error(
+            &intent_with_path,
+            &deferred,
+            "GATE-TERMINAL-RETROACTIVE-DEFERRAL",
+        );
     }
 
     fn node_fixture(definition: &str, target: &str, id: &str) -> serde_json::Value {
@@ -680,6 +851,156 @@
         .is_err());
     }
 
+    #[test]
+    fn node_semantic_and_graph_guards_fail_closed_on_malformed_inputs() {
+        let node = node_fixture("fixture-light-v1", "workspace", "placeholder");
+        assert_eq!(
+            super::require_node_semantics("fixture", &serde_json::Value::Null, &node)
+                .expect_err("non-object intent node must fail")
+                .code,
+            "GATE-PLAN-SHAPE"
+        );
+        assert_eq!(
+            super::require_node_semantics("fixture", &node, &serde_json::Value::Null)
+                .expect_err("non-object terminal node must fail")
+                .code,
+            "GATE-PLAN-SHAPE"
+        );
+
+        assert_eq!(
+            super::verify_node_graph(&[serde_json::json!({})])
+                .expect_err("missing node ID must fail")
+                .code,
+            "GATE-NODE-SHAPE"
+        );
+
+        let identified = |mut value: serde_json::Value| {
+            value["node_id"] = serde_json::Value::Null;
+            value["node_id"] = serde_json::json!(
+                crate::canonical::derived_id(&value, "node_id").expect("derived node ID")
+            );
+            value
+        };
+        let first = identified(serde_json::json!({
+            "node_id": null,
+            "gate_definition_id": "fixture-light-v1",
+            "target": "first",
+            "prerequisites": [],
+            "output_paths": ["target/first.json"]
+        }));
+        assert_eq!(
+            super::verify_node_graph(&[first.clone(), first.clone()])
+                .expect_err("duplicate node ID must fail")
+                .code,
+            "GATE-NODE-IDENTITY"
+        );
+
+        let dangling = identified(serde_json::json!({
+            "node_id": null,
+            "gate_definition_id": "fixture-light-v1",
+            "target": "dangling",
+            "prerequisites": ["missing"],
+            "output_paths": ["target/dangling.json"]
+        }));
+        assert_eq!(
+            super::verify_node_graph(&[dangling])
+                .expect_err("unseen prerequisite must fail")
+                .code,
+            "GATE-NODE-DAG"
+        );
+
+        let second = identified(serde_json::json!({
+            "node_id": null,
+            "gate_definition_id": "fixture-light-v1",
+            "target": "second",
+            "prerequisites": [],
+            "output_paths": ["target/first.json"]
+        }));
+        assert_eq!(
+            super::verify_node_graph(&[first, second])
+                .expect_err("duplicate output must fail")
+                .code,
+            "GATE-NODE-OUTPUT-DUPLICATE"
+        );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn dirty_manifest_roots_replace_remove_and_add_owned_objects() {
+        use std::os::unix::fs::symlink;
+
+        let repo = crate::executor::tests::TempDirectory::new("planner-dirty-manifest");
+        let run = |arguments: &[&str]| {
+            let output = std::process::Command::new("git")
+                .args(arguments)
+                .current_dir(repo.path())
+                .output()
+                .expect("run fixture Git");
+            assert!(
+                output.status.success(),
+                "git {arguments:?}: {}",
+                String::from_utf8_lossy(&output.stderr)
+            );
+            String::from_utf8(output.stdout)
+                .expect("UTF-8 Git output")
+                .trim()
+                .to_owned()
+        };
+        run(&["init", "-q"]);
+        for (path, content) in [
+            ("Cargo.toml", "[workspace]\nresolver = \"3\"\n"),
+            ("tools/obsolete.sh", "#!/bin/sh\nexit 0\n"),
+            ("docs/standards/fixture.md", "# Fixture\n"),
+            ("assurance/existing.txt", "existing\n"),
+        ] {
+            let path = repo.path().join(path);
+            std::fs::create_dir_all(path.parent().expect("fixture parent"))
+                .expect("fixture directory");
+            std::fs::write(path, content).expect("fixture file");
+        }
+        run(&["add", "."]);
+        run(&[
+            "-c",
+            "user.name=Codex Test",
+            "-c",
+            "user.email=codex@example.invalid",
+            "commit",
+            "-q",
+            "-m",
+            "manifest base",
+        ]);
+        let head = run(&["rev-parse", "HEAD"]);
+        let baseline = super::manifest_roots(repo.path(), &head, false)
+            .expect("committed manifest roots");
+
+        std::fs::write(
+            repo.path().join("Cargo.toml"),
+            "[workspace]\nresolver = \"2\"\n",
+        )
+        .expect("modify included regular file");
+        std::fs::remove_file(repo.path().join("tools/obsolete.sh"))
+            .expect("remove included file");
+        symlink("existing.txt", repo.path().join("assurance/new-link"))
+            .expect("add included symlink");
+        std::fs::write(repo.path().join("notes.txt"), "excluded\n")
+            .expect("add excluded file");
+
+        assert_eq!(
+            super::manifest_roots(repo.path(), &head, false)
+                .expect("dirty files excluded from committed roots"),
+            baseline
+        );
+        let dirty = super::manifest_roots(repo.path(), &head, true)
+            .expect("dirty manifest roots");
+        assert_ne!(dirty["execution_root"], baseline["execution_root"]);
+        assert_ne!(dirty["assurance_root"], baseline["assurance_root"]);
+        assert_eq!(dirty["authority_root"], baseline["authority_root"]);
+        assert_eq!(
+            dirty["documentation_root"],
+            baseline["documentation_root"]
+        );
+    }
+
     #[cfg(unix)]
     #[test]
     fn manifest_identity_and_git_guards_cover_object_kinds_and_failures() {
@@ -734,6 +1055,29 @@
                 .code,
             "TEST-GIT"
         );
+        assert!(
+            super::git_blob_batch(&repo, std::iter::empty::<&str>())
+                .expect("empty blob batch")
+                .is_empty()
+        );
+
+        assert!(
+            super::tracked_tree_entry(b"100644 blob deadbeef\texcluded.txt")
+                .expect("excluded tree entry")
+                .is_none()
+        );
+        for entry in [
+            &b"missing-tab"[..],
+            &b"100644 tree deadbeef\tCargo.toml"[..],
+            &b"100644 blob\tCargo.toml"[..],
+            &b"100644 blob deadbeef extra\tCargo.toml"[..],
+            &b"100644 blob deadbeef\tCargo.toml\xff"[..],
+        ] {
+            assert!(
+                super::tracked_tree_entry(entry).is_err(),
+                "malformed tree entry must fail: {entry:?}"
+            );
+        }
 
         for (bytes, count) in [
             (&b""[..], 1),
