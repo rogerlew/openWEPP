@@ -616,7 +616,7 @@ fn public_stage_selection_preserves_light_final_and_rejection_shapes() {
     let (repo, plan) = execution_fixture(
         "stage-selection-repo",
         &[gate_definition(
-            "affected-adjudicated-crap-v1",
+            "adjudicated-crap-v1",
             &["./tools/pass.sh"],
             &[],
         )],

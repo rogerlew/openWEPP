@@ -6,6 +6,14 @@ Queue ID: `TESTGATE-EXECUTOR-STAGE-FIXTURE-RECOVERY-01`
 
 Status: `ACTIVE / SCAFFOLD`
 
+## Progress
+
+- [x] Scaffold commit `a3c80219` predates the fixture edit.
+- [x] Replace only the invalid affected-CRAP fixture identity.
+- [x] Exact regression, formatting, and target Clippy pass.
+- [ ] Commit, run the complete owning target, package audit, and dual review.
+- [ ] Close RTR-036 and resume RTR-035 closure.
+
 ## Objective
 
 Close RTR-036 by aligning one executor-stage selection fixture with the canonical
