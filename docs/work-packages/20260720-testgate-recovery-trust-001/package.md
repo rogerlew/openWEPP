@@ -43,6 +43,8 @@ quality paths without editing its frozen subject.
 - [x] (2026-07-21) Aligned CRAP executor TMPDIR validation with the hexadecimal executor namespace for RTR-025; nested contract coverage passes.
 - [x] (2026-07-21) Rebound all three CRAP policy adapters to the current driver SHA for RTR-026; focused policy checks pending review.
 - [x] (2026-07-21) Bounded duplicate receipt-plan reconstruction in RTR-027's blocked-fixture test; direct regression passes.
+- [x] (2026-07-22) Complete all seven one-module CQR packages and eliminate the 26 actionable attempt-15 CRAP rows.
+- [x] (2026-07-22) Open RTR-031 when cheap final admission correctly rejected retroactive aggregate authority; activate its pre-implementation workflow correction package.
 - [ ] Reconcile the exact terminal diff and obtain a fresh `READY` audit.
 - [ ] Delegate each selected HEAVY batch once.
 - [ ] Complete dual terminal verification, prompt archival, and final disposition.
@@ -109,6 +111,14 @@ Attempt 12 passed ordinary full Nextest (2,225/2,225) but opened `RTR-025` (`GAT
 Attempt 13 opened `RTR-026` (`GATE-CRAP-ADAPTER-DIGEST-DRIFT`) before LIGHT: after the RTR-025 script correction, all three CRAP adapters still bound its older SHA. The package audit was READY, but terminal-plan construction correctly rejected the stale binding without admitting an attempt or running any gate. The correction updates each adapter definition to the current script SHA; no expensive execution was consumed.
 
 Attempt 14 passed LIGHT, audit, ordinary full Nextest, and entered CRAP, whose instrumented traversal timed out `verifier_accepts_truthful_fail_and_blocked_receipts` after 720 seconds. `RTR-027` (`GATE-VERIFIER-BLOCKED-FIXTURE-DUPLICATE-RECONSTRUCTION`) corrects that test to retain one public receipt reconstruction for the FAIL assertion while exercising the BLOCKED fixture at the already-admitted invariant seam. This preserves production verification behavior and avoids a second isolated full plan reconstruction.
+
+After all seven CQR packages completed, the cheap final package audit exposed
+RTR-031 (`GATE-CQR-AGGREGATE-AUTHORITY-NOT-SCAFFOLDED`): the master CQR plan
+was not a base-commit aggregate authority package, and the original recovery
+package could not be widened retroactively. No LIGHT or HEAVY gate started. The
+correction package establishes immutable authority before its own correction
+diff and binds the reusable CQR standard, process, and template to require an
+aggregate scaffold before the first module implementation edit.
 ## Declared Write Set
 
 - `.github/workflows/testgate-shadow.yml`

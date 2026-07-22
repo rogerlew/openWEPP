@@ -17,6 +17,8 @@ Nightly batch: `{{batch_ordinal}}`
 Target module: `{{target_module_path}}`
 Target rank: `{{rank}}` of `{{selected_count}}`
 Quality dimension: `CRAP/cyclomatic-complexity`
+Aggregate admission package: `{{aggregate_admission_package}}`
+Aggregate scaffold commit: `{{aggregate_scaffold_commit}}`
 
 ## Objective
 
@@ -97,6 +99,12 @@ Do not edit unrelated dirty files. If the target path is already dirty from
 unrelated work, stop before implementation and record a global/process hold.
 
 ## Scaffold Commit Gate
+
+Before this module scaffold, verify the batch aggregate admission package
+exists at `{{aggregate_scaffold_commit}}`, has `ACTIVE` or `READY` status, and
+immutably authorizes the batch master plan, all selected module package trees,
+intended source/test paths, catalog, and closeout evidence. Missing aggregate
+authority blocks implementation; do not widen an older package retroactively.
 
 Before any production/test implementation edit, commit the scaffold for this
 package. The scaffold commit includes this `package.md`, prompt directories,
@@ -212,6 +220,7 @@ rollback proof, and first actionable follow-on.
 Complete only when:
 
 - scaffold commit exists before implementation edits;
+- aggregate admission package and pre-implementation scaffold commit are bound;
 - active kickoff prompt exists and includes `Execution mode`, `Autonomy`, tiered
   required reading, required-reading budget/map, and required subagent wording;
 - every raw row above 30 has an exact eligibility classification and both raw

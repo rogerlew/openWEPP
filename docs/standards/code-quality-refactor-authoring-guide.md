@@ -58,6 +58,16 @@ package targets **one module and one quality dimension** (§2.2).
    `R-OBSERVABILITY`/`R-IRREDUCIBLE-CRAP` rows require the recorded independent
    disposition, and `X-*` rows require exact denominator evidence. A module
    name or broad glob never grants an exception.
+5. **Scaffold aggregate admission before a multi-package campaign.** When one
+   operator request creates multiple CQR work packages and the final campaign
+   qualification will reconcile one aggregate diff, commit an `ACTIVE` or
+   `READY` aggregate authority package before the first module implementation
+   edit. Its immutable declared write set must cover the master ExecPlan,
+   module packages, intended production/test paths, and closeout evidence. Each
+   module still retains its one-module package and write set. Do not create the
+   aggregate authority after execution or widen an older package retroactively;
+   if it is missing, stop before the first production edit and correct the
+   scaffold.
 
 ## 3) In-scope dimensions and their closure metric
 

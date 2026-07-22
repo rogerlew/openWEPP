@@ -29,6 +29,16 @@ that batch (`1` through `N`), so a new request for `10` modules always produces
 ten newly selected package targets rather than extending or inspecting the prior
 batch.
 
+Before the first selected module receives an implementation edit, scaffold and
+commit one aggregate admission package for the batch when final campaign
+qualification will reconcile one exact batch diff. The aggregate package must
+exist at its own base commit with `ACTIVE` or `READY` status and an immutable
+write set covering the master plan, every module package tree, every intended
+source/test path, the catalog, and closeout evidence. Record its path and
+scaffold commit in every module package. This authority does not replace the
+one-module packages. If it is absent, stop before implementation; do not widen
+an older package after the diff exists.
+
 ## Governance
 
 This plan is subordinate to:
@@ -176,24 +186,26 @@ selected target unless the operator explicitly forbids commits.
 
 For each selected module:
 
-1. Scaffold the package from the template.
-2. Commit the scaffold.
-3. Capture baseline metrics inside the package artifacts.
-4. Confirm or create characterization coverage before refactoring.
-5. If characterization tests are added or materially changed, record ADR-0021
+1. Confirm the batch aggregate authority package and scaffold commit are bound
+   in the module package.
+2. Scaffold the package from the template.
+3. Commit the scaffold.
+4. Capture baseline metrics inside the package artifacts.
+5. Confirm or create characterization coverage before refactoring.
+6. If characterization tests are added or materially changed, record ADR-0021
    coverage closure: tier assignment, line/region threshold status,
    per-function 75% region-floor disposition, and obligation-to-test binding.
-6. Refactor one cohesive extraction or local simplification at a time.
-7. Preserve floating-point expression order and accumulation order.
-8. Re-run focused tests and target CRAP after meaningful changes.
-9. Stop editing when every owned production function is `<= 30` or explicitly
+7. Refactor one cohesive extraction or local simplification at a time.
+8. Preserve floating-point expression order and accumulation order.
+9. Re-run focused tests and target CRAP after meaningful changes.
+10. Stop editing when every owned production function is `<= 30` or explicitly
    dispositioned.
-10. Reconcile the exact terminal plan and run every selected gate, recording
+11. Reconcile the exact terminal plan and run every selected gate, recording
     command/receipt identities, exit codes, and evidence. Before the gate
     planner/executor cuts over, run the conservative full fallback.
-11. Complete dual review, disposition findings, and dual verification.
-12. Commit completion or hold evidence.
-13. Continue to the next selected target only when the current target is
+12. Complete dual review, disposition findings, and dual verification.
+13. Commit completion or hold evidence.
+14. Continue to the next selected target only when the current target is
     complete or has a local hold.
 
 ## Hold And Rollback Rules

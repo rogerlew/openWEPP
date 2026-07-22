@@ -70,6 +70,13 @@ and every compiled function meets the 75% region floor. Test-first graph and
 fail-closed characterization, renewed dual review, and dual terminal
 verification pass. All seven one-module packages are complete.
 
+Post-completion discovery: the master plan was not scaffolded as an immutable
+aggregate work-package authority before rank 1, so the cheap recovery closeout
+audit correctly rejected retroactive widening before LIGHT. RTR-031 is owned by
+`20260722-testgate-cqr-aggregate-admission-001`; its reusable correction binds
+aggregate admission before future multi-package CQR implementation. No CQR
+metric or TESTGATE gate is rerun for this documentation control.
+
 ## Execution Rules
 
 Use `docs/work-packages/cqr-nightly-burndown-execplan.md` and the CQR package
