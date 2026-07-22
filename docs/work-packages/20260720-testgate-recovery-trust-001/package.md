@@ -43,6 +43,8 @@ quality paths without editing its frozen subject.
 - [x] (2026-07-21) Aligned CRAP executor TMPDIR validation with the hexadecimal executor namespace for RTR-025; nested contract coverage passes.
 - [x] (2026-07-21) Rebound all three CRAP policy adapters to the current driver SHA for RTR-026; focused policy checks pending review.
 - [x] (2026-07-21) Bounded duplicate receipt-plan reconstruction in RTR-027's blocked-fixture test; direct regression passes.
+- [x] (2026-07-22) Complete the seven-package one-module CQR ExecPlan that removes all 26 actionable attempt-15 CRAP rows.
+- [x] (2026-07-22) Correct and durably close RTR-028 through RTR-030; complete renewed dual review and terminal verification for every CQR package.
 - [ ] Reconcile the exact terminal diff and obtain a fresh `READY` audit.
 - [ ] Delegate each selected HEAVY batch once.
 - [ ] Complete dual terminal verification, prompt archival, and final disposition.
@@ -131,6 +133,15 @@ Attempt 14 passed LIGHT, audit, ordinary full Nextest, and entered CRAP, whose i
 - `docs/work-packages/20260720-testgate-pre-heavy-closure-audit-001/**`
 - `docs/work-packages/20260720-testgate-recovery-trust-001/**`
 - `docs/work-packages/20260720-testgate-workflow-qualify-001/**`
+- `docs/work-packages/20260721-cqr-testgate-recovery-01-pre-heavy-001/**`
+- `docs/work-packages/20260721-cqr-testgate-recovery-02-main-001/**`
+- `docs/work-packages/20260721-cqr-testgate-recovery-03-checkpoint-mirror-001/**`
+- `docs/work-packages/20260721-cqr-testgate-recovery-04-resume-001/**`
+- `docs/work-packages/20260721-cqr-testgate-recovery-05-executor-001/**`
+- `docs/work-packages/20260721-cqr-testgate-recovery-06-verifier-001/**`
+- `docs/work-packages/20260721-cqr-testgate-recovery-07-planner-001/**`
+- `docs/work-packages/20260721-cqr-testgate-recovery-closeout-execplan.md`
+- `docs/work-packages/20260722-testgate-verifier-ready-audit-fixture-001/**`
 - `Cargo.lock`
 
 No other tracked path is writable without a reviewed package amendment.
