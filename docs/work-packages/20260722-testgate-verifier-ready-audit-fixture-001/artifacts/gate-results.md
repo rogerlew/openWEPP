@@ -28,3 +28,18 @@ first package authority omitted `executor.rs`; the second still encoded the
 external durable ledger as a repository path. These are retained RTR-030
 evidence, not passing audits. A new valid package base and code-only head are
 required before closure.
+
+Ran: corrected-base validation at exact code-only head `219ec924` returned
+READY, no reason codes, no unauthorized paths, and package audit ID
+`33039a84f9d90052eac88f1e01dbc181e4164d42f69b3b6fffd29c1f07529c7a`.
+The retained audit is `/tmp/rtr029-ready-package-audit.ezphjM.json`, SHA-256
+`e4ce913677564906e35312aeaae3f8c8d33d776d9f2517ffdcb485017d8a1f04`.
+
+Ran: the one focused regression at exact code-only head `219ec924` passed 1/1
+with 144 skipped in 205.964 seconds. Post-run inspection found no fixture
+directory, ledger, or child process leak.
+
+Ran: durable closure records for RTR-030 and RTR-029 have canonical entry
+SHA-256 values `944fccfa9fd41353296842218de5b7cb1b34fea683494610b206dcd00456d150`
+and `79e86283316748d48a02f9bf85a9ada8c4c74a07996d56ff8dae960ddfc68380`.
+The ledger fold contains zero open tooling defects.

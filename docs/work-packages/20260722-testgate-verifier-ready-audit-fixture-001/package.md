@@ -1,7 +1,7 @@
 # TESTGATE Verifier READY-Audit Fixture Closure
 
 Package: `20260722-testgate-verifier-ready-audit-fixture-001`
-Status: `IMPLEMENTED-REVIEW-PENDING`
+Status: `TERMINAL-VERIFICATION-PENDING`
 Defect: `RTR-029`
 Campaign: `TESTGATE-RECOVERY-TRUST-01`
 
@@ -100,6 +100,15 @@ package path admission.
   `BASE_WRITE_SET_SCHEMA_INVALID` because the external durable ledger had also
   been placed in the repository-relative Declared Write Set. RTR-030 owns this
   second manifestation; the ledger authority is now recorded separately.
+- Ran: canonical package validation from corrected package base `31d7a688` to
+  code-only head `219ec924` returned READY with no reasons or unauthorized
+  paths; package audit ID `33039a84f9d90052eac88f1e01dbc181e4164d42f69b3b6fffd29c1f07529c7a`.
+- Ran: the focused non-package-tip regression passed 1/1 at `219ec924` in
+  205.964 seconds.
+- Static: renewed independent reviews A and B both PASS at `219ec924` with no
+  remaining actionable finding.
+- Ran: RTR-030 and RTR-029 closure records validate against their canonical
+  SHA-256 values, and the durable ledger has no open tooling defect.
 
 ## Security Impact Gate
 

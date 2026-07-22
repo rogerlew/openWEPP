@@ -13,3 +13,12 @@ Static: FAIL at implementation commit `d0fdd092` with three accepted findings.
 Static: the reviewer otherwise passed isolated authority construction,
 identity/context/HEAVY/downstream error ordering, `#[cfg(test)]` confinement,
 production-prefix identity, and RAII/process cleanup.
+
+## Corrected Review
+
+Static/Ran: PASS at exact clean code head
+`219ec924ed24a31e1b784cd0cb531d44a2657175`. Package validation evidence is
+READY with no unauthorized paths; the non-package-tip focused regression is
+1/1 PASS. All earlier findings are corrected, the exact-path assertion
+discriminates against ambient-current-diff coupling, and no actionable finding
+remains.
