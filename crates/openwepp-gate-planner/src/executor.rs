@@ -729,6 +729,12 @@ fn validate_affected_quality_scope(scope: &Value, affected: &Value, nodes: &[Val
             "affected quality requires complete contribution evidence",
         ));
     }
+    validate_affected_quality_packages(scope, affected)?;
+    let covering_nodes = affected_quality_covering_nodes(scope, nodes)?;
+    validate_affected_quality_inventory(scope, &covering_nodes)
+}
+
+fn validate_affected_quality_packages(scope: &Value, affected: &Value) -> Result<()> {
     let planned_packages = string_array(&scope["production_packages"], "production_packages")?
         .into_iter()
         .collect::<BTreeSet<_>>();
@@ -741,6 +747,13 @@ fn validate_affected_quality_scope(scope: &Value, affected: &Value, nodes: &[Val
             "affected measurement arguments differ from terminal production packages",
         ));
     }
+    Ok(())
+}
+
+fn affected_quality_covering_nodes<'a>(
+    scope: &Value,
+    nodes: &'a [Value],
+) -> Result<Vec<&'a Value>> {
     let covering_ids = string_array(&scope["covering_node_ids"], "covering_node_ids")?
         .into_iter()
         .collect::<BTreeSet<_>>();
@@ -762,6 +775,10 @@ fn validate_affected_quality_scope(scope: &Value, affected: &Value, nodes: &[Val
             "covering node identity is not the combined affected measurement",
         ));
     }
+    Ok(covering_nodes)
+}
+
+fn validate_affected_quality_inventory(scope: &Value, covering_nodes: &[&Value]) -> Result<()> {
     let observed_inventory = covering_nodes
         .iter()
         .flat_map(|node| {
