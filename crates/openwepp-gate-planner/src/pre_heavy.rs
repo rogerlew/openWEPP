@@ -401,6 +401,12 @@ pub fn validate_audit_for_execution(
     claims: &ExecutionClaims,
 ) -> Result<()> {
     validate_audit(repo, plan, audit, artifact_root)?;
+    validate_executor_binary_binding(audit)?;
+    validate_current_execution_context(repo, plan)?;
+    validate_execution_claim_binding(audit, claims)
+}
+
+fn validate_executor_binary_binding(audit: &Value) -> Result<()> {
     let current = current_executable_sha256()?;
     if audit["executor_binary_sha256"] != current {
         return Err(audit_error(
@@ -408,7 +414,10 @@ pub fn validate_audit_for_execution(
             "HEAVY executor differs from the binary that emitted the LIGHT receipt",
         ));
     }
-    validate_current_execution_context(repo, plan)?;
+    Ok(())
+}
+
+fn validate_execution_claim_binding(audit: &Value, claims: &ExecutionClaims) -> Result<()> {
     let light = &audit["light_receipt"]["claims"];
     if !execution_claims_match(light, claims) {
         return Err(audit_error(
@@ -826,6 +835,11 @@ fn inventory_and_arguments_are_exact(
     plan: &Value,
     artifact_root: &Path,
 ) -> Result<()> {
+    validate_exact_node_shapes(plan)?;
+    reconstruct_exact_plan(repo, plan, artifact_root)
+}
+
+fn validate_exact_node_shapes(plan: &Value) -> Result<()> {
     let mut ids = BTreeSet::new();
     for node in nodes(plan)? {
         let id = string(node, "node_id")?;
@@ -839,6 +853,10 @@ fn inventory_and_arguments_are_exact(
             ));
         }
     }
+    Ok(())
+}
+
+fn reconstruct_exact_plan(repo: &Path, plan: &Value, artifact_root: &Path) -> Result<()> {
     let reconstructed = with_disposable_audit_reconstruction(artifact_root, |reconstruction| {
         reconstruct_plan_in(repo, plan, reconstruction, false)
     })?;
