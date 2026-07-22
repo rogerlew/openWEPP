@@ -96,44 +96,57 @@ impl ExecutionRecord {
     }
 
     fn from_stage_receipt(receipt: &Value) -> Result<Self> {
-        let final_results = receipt["final_results"]
-            .as_object()
-            .ok_or_else(|| execution_error("GATE-EXEC-STAGE-RECEIPT", "final_results"))?
-            .iter()
-            .map(|(node_id, result)| {
-                result
-                    .as_str()
-                    .map(|value| (node_id.clone(), value.to_owned()))
-                    .ok_or_else(|| execution_error("GATE-EXEC-STAGE-RECEIPT", "non-string result"))
-            })
-            .collect::<Result<BTreeMap<_, _>>>()?;
-        let attempts = receipt["attempts"]
-            .as_array()
-            .cloned()
-            .ok_or_else(|| execution_error("GATE-EXEC-STAGE-RECEIPT", "attempts"))?;
-        let executed_inventory =
-            string_array(&receipt["executed_inventory"], "stage executed inventory")?
-                .into_iter()
-                .collect();
-        let unavailable = receipt["unavailable_items"]
-            .as_array()
-            .ok_or_else(|| execution_error("GATE-EXEC-STAGE-RECEIPT", "unavailable_items"))?
-            .iter()
-            .map(|item| {
-                Ok((
-                    required_string(item, "item_id")?.to_owned(),
-                    required_string(item, "reason_code")?.to_owned(),
-                ))
-            })
-            .collect::<Result<BTreeMap<_, _>>>()?;
         Ok(Self {
-            final_results,
-            attempts,
-            executed_inventory,
-            unavailable,
+            final_results: stage_final_results(receipt)?,
+            attempts: stage_attempts(receipt)?,
+            executed_inventory: stage_executed_inventory(receipt)?,
+            unavailable: stage_unavailable_items(receipt)?,
             resume_decisions: Vec::new(),
         })
     }
+}
+
+fn stage_final_results(receipt: &Value) -> Result<BTreeMap<String, String>> {
+    receipt["final_results"]
+        .as_object()
+        .ok_or_else(|| execution_error("GATE-EXEC-STAGE-RECEIPT", "final_results"))?
+        .iter()
+        .map(|(node_id, result)| {
+            result
+                .as_str()
+                .map(|value| (node_id.clone(), value.to_owned()))
+                .ok_or_else(|| execution_error("GATE-EXEC-STAGE-RECEIPT", "non-string result"))
+        })
+        .collect()
+}
+
+fn stage_attempts(receipt: &Value) -> Result<Vec<Value>> {
+    receipt["attempts"]
+        .as_array()
+        .cloned()
+        .ok_or_else(|| execution_error("GATE-EXEC-STAGE-RECEIPT", "attempts"))
+}
+
+fn stage_executed_inventory(receipt: &Value) -> Result<BTreeSet<String>> {
+    Ok(
+        string_array(&receipt["executed_inventory"], "stage executed inventory")?
+            .into_iter()
+            .collect(),
+    )
+}
+
+fn stage_unavailable_items(receipt: &Value) -> Result<BTreeMap<String, String>> {
+    receipt["unavailable_items"]
+        .as_array()
+        .ok_or_else(|| execution_error("GATE-EXEC-STAGE-RECEIPT", "unavailable_items"))?
+        .iter()
+        .map(|item| {
+            Ok((
+                required_string(item, "item_id")?.to_owned(),
+                required_string(item, "reason_code")?.to_owned(),
+            ))
+        })
+        .collect()
 }
 
 /// Execute a terminal plan and construct an unsigned local receipt.
@@ -164,7 +177,6 @@ pub fn execute_plan(
 }
 
 /// Execute exactly one authenticated stage of a terminal plan.
-///
 /// LIGHT returns a frozen stage receipt. HEAVY requires the exact READY audit,
 /// imports its successful light prefix, and returns the ordinary final receipt.
 ///
@@ -172,7 +184,6 @@ pub fn execute_plan(
 ///
 /// Returns a typed execution error for an unknown stage, invalid audit,
 /// mismatched light receipt, stale plan, or any ordinary execution failure.
-#[allow(clippy::too_many_lines)] // One fail-closed stage transaction.
 pub fn execute_plan_stage(
     repo: &Path,
     plan: &Value,
@@ -249,7 +260,7 @@ pub fn execute_plan_stage(
     if execution_class == "HEAVY" {
         validate_current_execution_context(&repository, plan)?;
     }
-    let mut execution = execute_nodes_for(
+    let execution = execute_nodes_for(
         &repository,
         &artifacts,
         plan,
@@ -260,9 +271,38 @@ pub fn execute_plan_stage(
         &mut imported,
     )?;
 
-    let roots_after = current_roots(&repository, plan)?;
-    let observed_after = observed_source_snapshot(&repository, plan)?;
-    let source_unchanged = roots_after == roots_before && observed_after == observed_before;
+    finalize_stage_execution(
+        &repository,
+        plan,
+        &artifacts,
+        execution,
+        &roots_before,
+        &observed_before,
+        &started_at,
+        &source_snapshot,
+        claims,
+        stage,
+        admitted_audit,
+    )
+}
+
+#[allow(clippy::too_many_arguments)] // Independently authenticated stage state.
+fn finalize_stage_execution(
+    repository: &Path,
+    plan: &Value,
+    artifacts: &Path,
+    mut execution: ExecutionRecord,
+    roots_before: &Value,
+    observed_before: &str,
+    started_at: &str,
+    source_snapshot: &str,
+    claims: &ExecutionClaims,
+    stage: &str,
+    admitted_audit: Option<&Value>,
+) -> Result<Value> {
+    let roots_after = current_roots(repository, plan)?;
+    let observed_after = observed_source_snapshot(repository, plan)?;
+    let source_unchanged = roots_after == *roots_before && observed_after == observed_before;
     if !source_unchanged
         && !execution
             .attempts
@@ -275,27 +315,27 @@ pub fn execute_plan_stage(
     let finished_at = timestamp()?;
     if stage == "LIGHT" {
         return build_stage_receipt(
-            &repository,
+            repository,
             plan,
-            &artifacts,
+            artifacts,
             &execution,
             &unavailable_items,
-            &started_at,
+            started_at,
             &finished_at,
             claims,
         );
     }
     build_receipt(
-        &repository,
+        repository,
         plan,
-        &artifacts,
+        artifacts,
         &execution.attempts,
         &execution.final_results,
         &execution.executed_inventory,
         &unavailable_items,
-        &started_at,
+        started_at,
         &finished_at,
-        &source_snapshot,
+        source_snapshot,
         &observed_after,
         source_unchanged,
         claims,
