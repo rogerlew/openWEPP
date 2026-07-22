@@ -18,6 +18,7 @@ Status: `ACTIVE / READY-QUALIFICATION`
 - [x] Run changed-head owning target/Clippy and dual review.
 - [x] Close RTR-035 through RTR-041 at reviewed commit `85d706ed`.
 - [x] Retain the zero-node CAMPAIGN-boundary rejection and open RTR-042.
+- [x] Bind `INCREMENT`, obtain dual review, and close RTR-042 at `dcb43397`.
 - [ ] Rebuild and delegate exactly one changed-head qualification.
 
 ## Objective

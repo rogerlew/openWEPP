@@ -193,6 +193,8 @@ not explicitly constrain the recovery qualification to the planner-supported
 `INCREMENT` boundary. No gate node or retry ran. RTR-042
 (`GATE-QUALIFICATION-BOUNDARY-UNBOUND`) corrects the package and active prompt;
 broader `CAMPAIGN`/`RELEASE` certification remains on the conservative lane.
+Dual independent review passed, and RTR-042 closed at `dcb43397` with durable
+ledger digest `1b65f07f`.
 ## Declared Write Set
 
 - `.github/workflows/testgate-shadow.yml`

@@ -10,3 +10,8 @@ canonicalization or 3,000-line blocker remains.
 
 Ran: the reviewer verified the exact retained log SHA-256 and 155/155 result,
 plus package-audit ID `e4aa4932...a9e87`, without rerunning tests or HEAVY.
+
+Static: review B independently passes RTR-042 at exact clean `dcb43397`. The
+package and prompt require `INCREMENT`, accurately exclude broader boundaries,
+and make no gate-policy or implementation change. The retained failure digest
+and zero-node/no-retry claims match the evidence.

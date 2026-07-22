@@ -53,3 +53,7 @@ package audit and pre-receipt-failure SHA-256
 `a7f8c4bce73e57931f23413e4864aba6c78bb54dd5d9039626a16404cb307234`.
 No plan, LIGHT, pre-heavy audit, HEAVY node, receipt, or retry existed. RTR-042
 binds the supported `INCREMENT` boundary before another changed-head attempt.
+
+Static: both independent reviews pass the exact RTR-042 documentation correction
+at `dcb43397`. RTR-042 is durably closed with ledger digest
+`1b65f07f830ffb3691c6251a0921fe8a0c6368bed8cd66779a764d36f9dc6f55`.

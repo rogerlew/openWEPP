@@ -11,3 +11,8 @@ assertions, the package audit is `READY`, and no line-count blocker remains.
 
 Ran: the reviewer verified diff hygiene and the retained owning-target log
 digest/result without rerunning tests or HEAVY.
+
+Static: review A also passes RTR-042 at exact clean `dcb43397`. The docs-only
+correction binds `INCREMENT`, preserves the conservative broader lane, and
+truthfully records the zero-node pre-receipt failure. Scoped Markdown lint and
+diff hygiene pass; no test or HEAVY node ran.
