@@ -249,7 +249,12 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-07-21 UTC`:
+State as of `2026-07-22 UTC`:
+
+- `20260722-testgate-cqr-aggregate-admission-001/` -
+  ACTIVE: closes RTR-031 by establishing immutable final CQR admission
+  authority and binding the reusable CQR process before the recovery campaign's
+  single changed-head global qualification attempt.
 
 - `20260721-cqr-testgate-recovery-07-planner-001/` -
   COMPLETE: seventh and final one-module CQR package. The target and extracted
