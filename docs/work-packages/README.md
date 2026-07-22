@@ -235,6 +235,11 @@ State as of `2026-07-21 UTC`:
   rows are closed with dual review and verification; campaign-global TESTGATE
   remains deferred until all seven packages complete.
 
+- `20260721-cqr-testgate-recovery-02-main-001/` -
+  COMPLETE: second of seven one-module CQR packages. All four `main.rs` rows and
+  all extracted helpers are at most CRAP 30 with dual review and verification;
+  campaign-global TESTGATE remains deferred to the master closeout.
+
 - `20260720-testgate-recovery-trust-001/` -
   ACTIVE-SCAFFOLD: `TESTGATE-RECOVERY-TRUST-01` owns the checkpoint trust,
   persistent runner recovery, typed audit failure, claim/package binding,

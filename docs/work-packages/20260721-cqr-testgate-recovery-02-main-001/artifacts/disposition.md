@@ -1,6 +1,6 @@
 # Disposition
 
-Status: provisional `EXECUTED-COMPLETE`, pending dual terminal verification.
+Status: `EXECUTED-COMPLETE`.
 
 Static: the sole production module and one declared source-contract assertion
 file changed. All four owned CRAP rows and 17 extracted helpers are at most 30;
@@ -12,3 +12,5 @@ after all seven modules close.
 Ran: formatting, targeted Clippy, binary/source-contract probes, the single
 changed-head affected metric traversal, and the 122-test affected crate
 inventory passed. No unchanged expensive gate was rerun.
+
+Static: both independent terminal verifiers passed at exact clean `ab64b56c`.

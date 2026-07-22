@@ -1,4 +1,4 @@
-# Active Prompt: CQR TESTGATE Gate-Planner CLI
+# Archived Prompt: CQR TESTGATE Gate-Planner CLI
 
 Execution mode: package-end-to-end.
 
@@ -16,3 +16,5 @@ metric, and command-evidence artifacts. Write access is read-only unless a
 subagent is explicitly assigned a bounded change within the declared package
 write set. Do not run campaign-global TESTGATE; the master seven-package
 ExecPlan owns it.
+
+Archived after dual terminal verification and `EXECUTED-COMPLETE` disposition.

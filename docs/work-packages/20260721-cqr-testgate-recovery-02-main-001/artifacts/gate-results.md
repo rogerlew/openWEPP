@@ -12,4 +12,5 @@
 | affected CRAP | PASS | 5/5 instrumented; zero rows above 30; maximum 30; one traversal at exact `dc935c7a` |
 | dual implementation review | PASS | independent A/B reviews at exact `dc935c7a` |
 | affected terminal crate inventory | PASS | 122/122 (117 library + 5 binary), zero failures/errors, 678.176 s; run `86155219-9bf2-4268-bb54-4b47d14c466c`; JUnit SHA-256 `f8323a3b6a91811487e8fb3d20a84000be0e24c1fe12d820c35d0b6919c87011` |
+| dual terminal verification | PASS | independent A/B verification at exact clean `ab64b56c`; no test or metric rerun |
 | campaign-global TESTGATE | DEFERRED-MASTER | owned by the master ExecPlan after all packages close |

@@ -1,6 +1,6 @@
 # CQR ExecPlan: TESTGATE Recovery Closeout
 
-Status: `EXECUTING` (1 of 7 module packages complete)
+Status: `EXECUTING` (2 of 7 module packages complete)
 
 Campaign dependency: `TESTGATE-RECOVERY-TRUST-01` / `TESTGATE-CLOSURE-AUDIT-01`
 
@@ -28,6 +28,12 @@ may edit a second production module without an approved package amendment.
 Completed: rank 1, `pre_heavy.rs`, at package disposition head `f0a665ee`.
 Final production coverage is 96.08% line / 89.64% region; all 111 functions
 meet the 75% region floor and no CRAP row exceeds 17.
+
+Completed: rank 2, `main.rs`. All four owned rows and all 17 extracted helpers
+are at most 30; the final module maximum is 30. Dual review, dual verification,
+and the 122-test affected crate inventory pass. Coverage remains an explicitly
+reported below-threshold assessment; no module-test-enhancement closure is
+claimed because no module characterization test was added or materially changed.
 
 ## Execution Rules
 
