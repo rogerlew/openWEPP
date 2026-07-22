@@ -298,7 +298,7 @@ fn assert_receipt_runtime_guards() {
         .rfind("validate_current_execution_context(&repository, plan)?")
         .expect("final HEAVY context check");
     let execution_spawn = executor
-        .find("let mut execution = execute_nodes_for(")
+        .find("let execution = execute_nodes_for(")
         .expect("execution boundary");
     assert!(
         final_context_check < execution_spawn,

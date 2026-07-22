@@ -4,7 +4,16 @@ Package ID: `20260722-testgate-executor-sentinel-recovery-001`
 
 Queue ID: `TESTGATE-EXECUTOR-SENTINEL-RECOVERY-01`
 
-Status: `ACTIVE / SCAFFOLD`
+Status: `ACTIVE / REVIEW`
+
+## Progress
+
+- [x] Scaffold commit `0c11a7b9` predates the integration-test edit.
+- [x] Replace only the obsolete mutable-binding sentinel.
+- [x] Formatting, exact failed test, complete 8-case integration target, and
+  target Clippy pass.
+- [ ] Complete dual review and durable RTR-034 closure.
+- [ ] Delegate one changed-head qualification and dual terminal verification.
 
 ## Objective
 
