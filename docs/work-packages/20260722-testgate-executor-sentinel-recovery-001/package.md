@@ -12,7 +12,8 @@ Status: `ACTIVE / REVIEW`
 - [x] Replace only the obsolete mutable-binding sentinel.
 - [x] Formatting, exact failed test, complete 8-case integration target, and
   target Clippy pass.
-- [ ] Complete dual review and durable RTR-034 closure.
+- [x] Complete dual independent review at exact correction commit `eeb858b2`.
+- [ ] Close RTR-034 durably at that exact correction commit.
 - [ ] Delegate one changed-head qualification and dual terminal verification.
 
 ## Objective
