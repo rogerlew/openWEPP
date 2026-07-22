@@ -9,7 +9,8 @@ Quality dimension: `CRAP/cyclomatic-complexity`
 
 Current phase: dual implementation review findings and the discovered
 write-set syntax defect are corrected; focused clean-head validation and the
-single corrected-head metric passed. Renewed review is in progress.
+single corrected-head metric passed. Renewed dual review passed and RTR-028 is
+durably closed. Dual terminal verification remains pending.
 
 ## Objective
 
