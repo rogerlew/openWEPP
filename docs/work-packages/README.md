@@ -251,6 +251,10 @@
 
 State as of `2026-07-22 UTC`:
 
+- `20260722-testgate-executor-receipt-fixture-recovery-001/` -
+  ACTIVE / SCAFFOLD: closes RTR-038 by aligning the remaining root-only executor
+  receipt fixtures with global rather than affected CRAP selection.
+
 - `20260722-testgate-executor-mutation-fixture-recovery-001/` -
   ACTIVE / SCAFFOLD: closes RTR-037 by aligning a root-only executor mutation
   fixture with global rather than affected CRAP selection.
