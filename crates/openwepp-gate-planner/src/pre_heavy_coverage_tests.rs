@@ -218,3 +218,76 @@ fn ready_audit_validation_execution_and_resume_chains_are_directly_bound() {
         "GATE-AUDIT-STAGE-RECEIPT-IDENTITY"
     );
 }
+
+#[test]
+fn low_coverage_binding_helpers_exercise_their_reject_arms() {
+    let fixture = AuditFixture::new();
+    let mut audit = json!({"audit_id": "0".repeat(64)});
+    audit["audit_id"] = json!(derived_id(&audit, "audit_id").expect("audit ID"));
+    validate_sealed_audit_identity(&audit).expect("sealed identity");
+    audit["audit_id"] = json!("f".repeat(64));
+    assert!(validate_sealed_audit_identity(&audit).is_err());
+
+    let plan = json!({
+        "nodes": [{"node_id": "n", "execution_cost_class": "LIGHT"}]
+    });
+    let manifest = node_manifest(&plan).expect("node manifest");
+    assert_eq!(manifest.as_array().map(Vec::len), Some(1));
+    assert!(node_manifest(&json!({"nodes": [{"node_id": 1}]})).is_err());
+    assert!(validate_current_audit_inventory(&plan, &json!({"node_manifest": manifest})).is_ok());
+    assert!(validate_current_audit_inventory(&plan, &json!({"node_manifest": []})).is_err());
+
+    let binary = current_executable_sha256().expect("binary digest");
+    validate_executor_binary_binding(&json!({"executor_binary_sha256": binary}))
+        .expect("binary binding");
+    assert!(
+        validate_executor_binary_binding(&json!({"executor_binary_sha256": "0".repeat(64)}))
+            .is_err()
+    );
+    let claims = ExecutionClaims {
+        workflow: "w".to_owned(),
+        job: "j".to_owned(),
+        runner: "r".to_owned(),
+        attempt: 1,
+        ..ExecutionClaims::default()
+    };
+    assert!(
+        validate_execution_claim_binding(
+            &json!({"light_receipt": {"claims": {"workflow": "other"}}}),
+            &claims
+        )
+        .is_err()
+    );
+    assert!(require_executor_binary_digest(&json!({"executor_binary_sha256": "short"})).is_err());
+    assert!(
+        artifact_identity(
+            &json!({"artifact_root_sha256": "0".repeat(64)}),
+            &fixture.artifacts
+        )
+        .is_err()
+    );
+
+    fs::write(fixture.root.join("src/lib.rs"), "pub fn changed() { } \n")
+        .expect("whitespace defect");
+    assert!(require_clean_diff(&fixture.root, &fixture.plan).is_err());
+    fs::write(
+        &fixture.ledger,
+        "{\"previous_entry_sha256\":\"wrong\",\"entry_sha256\":\"wrong\"}\n",
+    )
+    .expect("malformed chain");
+    assert!(verify_ledger_chain(&fixture.ledger).is_err());
+
+    for (decision, definitions, expected) in [
+        (
+            json!({"decision": "COMBINED", "accepted_proof_id": "p", "proof_sha256": "s", "baseline_count": 3}),
+            ["combined-workspace-quality-v1"].into_iter().collect(),
+            true,
+        ),
+        (json!({"decision": "UNKNOWN"}), BTreeSet::new(), false),
+    ] {
+        assert_eq!(
+            combined_decision_is_valid(&decision, &definitions),
+            expected
+        );
+    }
+}
