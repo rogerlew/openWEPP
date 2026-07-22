@@ -57,11 +57,7 @@ fn replace_array_strings(values: &mut [Value], old: &str, new: &str) {
     }
 }
 
-fn replace_object_strings<'a>(
-    values: impl Iterator<Item = &'a mut Value>,
-    old: &str,
-    new: &str,
-) {
+fn replace_object_strings<'a>(values: impl Iterator<Item = &'a mut Value>, old: &str, new: &str) {
     for value in values {
         replace_string(value, old, new);
     }
@@ -212,13 +208,8 @@ fn ready_admitted_fixture() -> ReadyAdmittedFixture {
 }
 
 fn make_light_only(plan: &mut Value, receipt: &mut Value) {
-    let original_nodes = std::mem::take(
-        plan["nodes"]
-            .as_array_mut()
-            .expect("plan nodes"),
-    );
-    let mut replacements: Vec<(String, String)> =
-        Vec::with_capacity(original_nodes.len());
+    let original_nodes = std::mem::take(plan["nodes"].as_array_mut().expect("plan nodes"));
+    let mut replacements: Vec<(String, String)> = Vec::with_capacity(original_nodes.len());
     let mut light_nodes = Vec::with_capacity(original_nodes.len());
     for mut node in original_nodes {
         for (old, new) in &replacements {
@@ -252,7 +243,10 @@ fn ready_audit_verification_preserves_order_and_exact_verdict() {
         crate::verifier::verify_receipt_after_ready_audit(root, plan, receipt, &artifacts)
             .expect("READY-admitted valid receipt");
     let expected = ReceiptVerdict {
-        receipt_id: receipt["receipt_id"].as_str().expect("receipt ID").to_owned(),
+        receipt_id: receipt["receipt_id"]
+            .as_str()
+            .expect("receipt ID")
+            .to_owned(),
         receipt_sha256: digest(receipt).expect("receipt digest"),
         plan_id: plan["plan_id"].as_str().expect("plan ID").to_owned(),
         plan_sha256: digest(plan).expect("plan digest"),
@@ -273,13 +267,9 @@ fn ready_audit_verification_preserves_order_and_exact_verdict() {
 
     let mut wrong_identity = receipt.clone();
     wrong_identity["plan_id"] = json!("0".repeat(64));
-    let error = crate::verifier::verify_receipt_after_ready_audit(
-        root,
-        plan,
-        &wrong_identity,
-        &artifacts,
-    )
-    .expect_err("identity must be checked first");
+    let error =
+        crate::verifier::verify_receipt_after_ready_audit(root, plan, &wrong_identity, &artifacts)
+            .expect_err("identity must be checked first");
     assert_eq!(error.code, "GATE-RECEIPT-ID");
     assert_eq!(error.message, "derived identity mismatch");
 
@@ -392,13 +382,11 @@ fn assert_retry_attempt_guards() {
         "exit_code": 0, "termination_signal": null, "result": "PASS",
         "retry_reason": null
     });
-    super::super::verify_attempt("node", &node, &first, 0, false)
-        .expect("first accepted attempt");
+    super::super::verify_attempt("node", &node, &first, 0, false).expect("first accepted attempt");
     let mut retry = first.clone();
     retry["attempt"] = json!(2);
     retry["retry_reason"] = json!("FLAKY");
-    super::super::verify_attempt("node", &node, &retry, 1, false)
-        .expect("permitted retry");
+    super::super::verify_attempt("node", &node, &retry, 1, false).expect("permitted retry");
     retry["retry_reason"] = json!("UNPERMITTED");
     assert_eq!(
         super::super::verify_attempt("node", &node, &retry, 1, false)
@@ -426,9 +414,12 @@ fn local_verifier_guards_cover_retry_prerequisite_audit_and_binding_edges() {
         {"node_id": "second", "result": "PASS"}
     ]});
     assert_eq!(
-        super::super::verify_prerequisite_results(&[prerequisite.clone(), dependent.clone()], &receipt)
-            .expect_err("dependent must be blocked")
-            .code,
+        super::super::verify_prerequisite_results(
+            &[prerequisite.clone(), dependent.clone()],
+            &receipt
+        )
+        .expect_err("dependent must be blocked")
+        .code,
         "GATE-RECEIPT-PREREQUISITE"
     );
     let blocked = json!({"attempts": [
@@ -482,8 +473,14 @@ fn local_verifier_guards_cover_retry_prerequisite_audit_and_binding_edges() {
 
     let left = json!({"nested": {"value": 1}});
     let right = json!({"nested": {"value": 1}, "other": 2});
-    super::super::equal(&left, "/nested/value", &right, "/nested/value", "TEST-EQUAL")
-        .expect("equal pointer values");
+    super::super::equal(
+        &left,
+        "/nested/value",
+        &right,
+        "/nested/value",
+        "TEST-EQUAL",
+    )
+    .expect("equal pointer values");
     assert_eq!(
         super::super::equal(&left, "/nested/value", &right, "/other", "TEST-EQUAL")
             .expect_err("different pointer values")
