@@ -251,6 +251,10 @@
 
 State as of `2026-07-22 UTC`:
 
+- `20260722-cqr-nightly-b02-aggregate-001/` - ACTIVE: prospective aggregate
+  authority for the two-module CRAP closeout exposed by recovery qualification
+  receipt `cea13649...cd5ce`; module scaffolds and validation follow this commit.
+
 - `20260722-testgate-affected-crap-authority-reexpression-001/` -
   ACTIVE / SCAFFOLD: supplies one prospective authority for RTR-039/RTR-040,
   aligns planner/checker production classification, and re-expresses the final
