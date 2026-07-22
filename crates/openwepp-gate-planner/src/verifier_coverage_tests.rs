@@ -186,9 +186,9 @@ fn ready_audit_verification_preserves_order_and_exact_verdict() {
             .expect("READY-admitted valid receipt");
     let expected = ReceiptVerdict {
         receipt_id: receipt["receipt_id"].as_str().expect("receipt ID").to_owned(),
-        receipt_sha256: digest(&receipt).expect("receipt digest"),
+        receipt_sha256: digest(receipt).expect("receipt digest"),
         plan_id: plan["plan_id"].as_str().expect("plan ID").to_owned(),
-        plan_sha256: digest(&plan).expect("plan digest"),
+        plan_sha256: digest(plan).expect("plan digest"),
         execution_key: plan["execution_key"]
             .as_str()
             .expect("execution key")
