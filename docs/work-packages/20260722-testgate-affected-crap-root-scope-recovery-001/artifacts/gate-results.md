@@ -2,7 +2,7 @@
 
 Status: review corrections pass focused gates; repeat dual review pending.
 
-Ran: Python checker suite passes 29/29. It covers valid production scope,
+Ran: Python checker suite passes 30/30. It covers valid production scope,
 unknown scope, measurement-only, nested, test-only, and out-of-tree target
 rejection (including a test target placed under `src/`), exact preflight JSON
 binding/tamper rejection, and a real driver probe proving root `openwepp` fails

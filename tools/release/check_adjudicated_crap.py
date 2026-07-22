@@ -394,11 +394,17 @@ def _production_package_source_prefixes(
 def _validated_scope_artifact(
     scope_path: Path, repo_root: Path, requested_packages: set[str]
 ) -> tuple[dict[str, list[str]], str]:
+    supplied_bytes = scope_path.read_bytes()
     supplied = _read_json(scope_path)
     expected = resolve_measurement_packages(repo_root, requested_packages)
     if supplied != expected:
         raise GateInputError(
             "affected package scope changed after preflight or has invalid content"
+        )
+    canonical_bytes = (json.dumps(expected, sort_keys=True) + "\n").encode("utf-8")
+    if supplied_bytes != canonical_bytes:
+        raise GateInputError(
+            "affected package scope bytes changed after canonical preflight"
         )
     return expected, _sha256(scope_path)
 

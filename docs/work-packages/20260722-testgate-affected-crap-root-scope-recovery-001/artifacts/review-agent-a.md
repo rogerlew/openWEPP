@@ -12,3 +12,8 @@ aligns the durable package authority with the planner-boundary hold.
 Ran: the reviewer independently passed the 23-case Python suite, 19 integration
 cases, Bash syntax, formatting, target Clippy, package audit, real root rejection,
 and adapter digest comparison before issuing the hold.
+
+Static: Repeat review at `c79bf202` found that semantically identical JSON with
+different bytes could replace the scope artifact. The correction now requires
+the exact canonical bytes emitted by preflight and adds the equivalent-rewrite
+negative regression.

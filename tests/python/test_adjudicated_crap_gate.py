@@ -302,12 +302,20 @@ class AdjudicatedCrapGateTests(unittest.TestCase):
         _configure_measurement_workspace(self.repo, root_depends_on_example=True)
         scope = gate.resolve_measurement_packages(self.repo, {"example"})
         scope_path = self.repo / "scope.json"
-        scope_path.write_text(json.dumps(scope, sort_keys=True), encoding="utf-8")
+        scope_path.write_text(json.dumps(scope, sort_keys=True) + "\n", encoding="utf-8")
         observed, digest = gate._validated_scope_artifact(
             scope_path, self.repo, {"example"}
         )
         self.assertEqual(observed, scope)
         self.assertEqual(digest, _sha256(scope_path))
+
+    def test_affected_scope_artifact_rejects_equivalent_rewrite(self) -> None:
+        _configure_measurement_workspace(self.repo, root_depends_on_example=True)
+        scope = gate.resolve_measurement_packages(self.repo, {"example"})
+        scope_path = self.repo / "scope.json"
+        scope_path.write_text(json.dumps(scope, indent=2, sort_keys=True), encoding="utf-8")
+        with self.assertRaisesRegex(gate.GateInputError, "bytes changed"):
+            gate._validated_scope_artifact(scope_path, self.repo, {"example"})
 
     def test_scope_preflight_prints_resolved_identity(self) -> None:
         _configure_measurement_workspace(self.repo, root_depends_on_example=True)
