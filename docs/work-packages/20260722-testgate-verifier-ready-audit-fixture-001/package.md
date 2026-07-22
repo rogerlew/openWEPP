@@ -59,7 +59,11 @@ artifacts. Write access is read-only.
 - `docs/work-packages/20260722-testgate-verifier-ready-audit-fixture-001/**`
 - `docs/work-packages/20260721-cqr-testgate-recovery-07-planner-001/**`
 - `docs/work-packages/20260721-cqr-testgate-recovery-closeout-execplan.md`
-- `/home/workdir/testgate-history/recovery-trust-01-attempts.jsonl`
+
+Durable external evidence append authority:
+`/home/workdir/testgate-history/recovery-trust-01-attempts.jsonl`. This path is
+not a repository-relative Declared Write Set entry and is never passed to
+package path admission.
 
 ## Phase Plan
 
@@ -92,6 +96,10 @@ artifacts. Write access is read-only.
   visibility edit in the authority envelope but omitted its exact path from the
   binding Declared Write Set. RTR-030 owns that annotation defect; this exact
   bullet is its canonical correction.
+- Ran: the first corrected-head package validation then failed closed with
+  `BASE_WRITE_SET_SCHEMA_INVALID` because the external durable ledger had also
+  been placed in the repository-relative Declared Write Set. RTR-030 owns this
+  second manifestation; the ledger authority is now recorded separately.
 
 ## Security Impact Gate
 

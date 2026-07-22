@@ -21,3 +21,10 @@ Ran: warnings-denied all-target Clippy exposed two correction-owned
 unchanged verifier test. The two owned warnings were corrected. Ran:
 warnings-denied library Clippy then passed. The unchanged historical test lint
 is not attributed to RTR-029 and is not hidden with a new allow.
+
+Ran: package validation from the original scaffold base and the first write-set
+correction base both failed closed with `BASE_WRITE_SET_SCHEMA_INVALID`. The
+first package authority omitted `executor.rs`; the second still encoded the
+external durable ledger as a repository path. These are retained RTR-030
+evidence, not passing audits. A new valid package base and code-only head are
+required before closure.
