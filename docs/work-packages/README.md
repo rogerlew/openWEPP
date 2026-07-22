@@ -255,6 +255,14 @@ State as of `2026-07-22 UTC`:
   authority for the two-module CRAP closeout exposed by recovery qualification
   receipt `cea13649...cd5ce`; module scaffolds and validation follow this commit.
 
+- `20260722-cqr-nightly-b02-1-executor-001/` - EXECUTED-COMPLETE: decomposed
+  affected-quality validation to four CRAP-4 functions with exact precedence
+  characterization and dual review/verification.
+
+- `20260722-cqr-nightly-b02-2-verifier-coverage-tests-001/` - ACTIVE: rank-two
+  characterization and behavior-preserving decomposition of recursive verifier
+  fixture string replacement.
+
 - `20260722-testgate-affected-crap-authority-reexpression-001/` -
   ACTIVE / SCAFFOLD: supplies one prospective authority for RTR-039/RTR-040,
   aligns planner/checker production classification, and re-expresses the final
