@@ -1,11 +1,18 @@
 # CQR: TESTGATE Planner Complexity
 
 Package: `20260721-cqr-testgate-recovery-07-planner-001`
-Status: `EXECUTING`
+Status: `HOLD-CORRECTION-DEPENDENCY`
 ExecPlan: `docs/work-packages/20260721-cqr-testgate-recovery-closeout-execplan.md`
 Target module: `crates/openwepp-gate-planner/src/planner.rs`
 Target rank: `7` of `7`
 Quality dimension: `CRAP/cyclomatic-complexity`
+
+Current phase: the one authorized baseline traversal failed because the
+rank-6 verifier characterization derives its package authority from the
+ambient `HEAD^..HEAD` diff. RTR-029 and the bounded package
+`20260722-testgate-verifier-ready-audit-fixture-001` own the canonical fixture
+correction. No unchanged planner metric traversal may run while this hold is
+active.
 
 ## Objective
 
