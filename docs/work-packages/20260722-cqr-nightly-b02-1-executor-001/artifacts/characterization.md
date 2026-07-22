@@ -9,9 +9,9 @@ The final test at commit `0bd56dc3` proves:
 
 - the valid package/node/inventory path succeeds;
 - one stacked-invalid fixture selects exact precedence in this order:
-  `GATE-AFFECTED-QUALITY-INCOMPLETE`, `GATE-AFFECTED-QUALITY-PACKAGES`,
-  `GATE-AFFECTED-QUALITY-COVERING-NODES`, then
-  `GATE-AFFECTED-QUALITY-INVENTORY` as each earlier fault is repaired;
+  `GATE-EXEC-QUALITY-INCOMPLETE`, `GATE-EXEC-QUALITY-PACKAGES`,
+  `GATE-EXEC-QUALITY-COVERING-NODES`, then
+  `GATE-EXEC-QUALITY-INVENTORY` as each earlier fault is repaired;
 - every seam asserts both the exact stable code and exact message; and
 - a covering node with the wrong gate definition fails with the exact
   covering-node error.
