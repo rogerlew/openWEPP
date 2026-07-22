@@ -19,12 +19,16 @@ behavior.
   `verifier_coverage_tests.rs` source record or owned function symbols; CRAP
   JSON SHA `391bf766...` therefore reported null coverage for all four CQR
   functions.
-- In-scope source: `crates/openwepp-gate-planner/src/verifier.rs` module wiring.
+- In-scope source: `crates/openwepp-gate-planner/src/verifier.rs` module wiring
+  and a content-preserving move of `verifier_coverage_tests.rs` into the natural
+  nested `verifier/tests/coverage_tests.rs` module path when Rust's portable
+  path resolution requires it.
 - Authorized evidence surface:
   `crates/openwepp-gate-planner/src/verifier_coverage_tests.rs`, its direct
   characterization, and its existing real consumer test.
 - Allowed edit: replace only the nested inline `include!` block with an
-  equivalent path-backed private test module declaration.
+  equivalent private module declaration and move the included source without
+  content changes to the portable path resolved by that declaration.
 - Acceptance: direct and consumer tests pass; focused LCOV contains the exact
   included-source path and attributable owned functions; CRAP coverage is
   non-null and every owned row is at most 30; formatting and planner Clippy pass;
@@ -42,6 +46,8 @@ available.
 ## Intended Write Set
 
 - `crates/openwepp-gate-planner/src/verifier.rs`
+- `crates/openwepp-gate-planner/src/verifier_coverage_tests.rs`
+- `crates/openwepp-gate-planner/src/verifier/tests/coverage_tests.rs`
 - `docs/work-packages/20260722-testgate-coverage-include-identity-recovery-001/**`
 - `docs/work-packages/README.md`
 

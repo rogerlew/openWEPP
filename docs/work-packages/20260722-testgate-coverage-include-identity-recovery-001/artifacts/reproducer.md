@@ -12,3 +12,10 @@ Ran at exact HEAD `761f990b1d7db93983d2854bf55c2a3756a6d63f`:
 
 Durable OPEN record digest:
 `e2606bec117ce4d10dbb2925519ec34869ee0b4d99a31628401621903f155f98`.
+
+Ran: a pre-implementation path probe using
+`#[path = "verifier_coverage_tests.rs"]` inside the inline `tests` module failed
+to compile because Rust resolved
+`src/verifier/tests/verifier_coverage_tests.rs`. No test ran. The correction
+therefore requires a content-preserving move into that portable nested module
+directory; the package authority was amended before that move.
