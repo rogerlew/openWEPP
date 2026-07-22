@@ -136,6 +136,65 @@ impl Drop for AuditFixture {
     }
 }
 
+fn characterize_constructed_audit_resume(
+    fixture: &AuditFixture,
+    audit: &Value,
+    claims: &ExecutionClaims,
+) {
+    let constructed = ConstructedAudit(audit.clone());
+    let candidate = crate::resume::load_candidate_after_ready_audit(
+        &fixture.root,
+        &fixture.plan,
+        &fixture.ledger,
+        claims,
+        &constructed,
+    )
+    .expect("constructed READY audit admits resume discovery");
+    assert!(
+        candidate.is_none(),
+        "empty ledger has no recovery candidate"
+    );
+
+    let mut blocked = audit.clone();
+    blocked["status"] = json!("BLOCKED");
+    let error = crate::resume::load_candidate_after_ready_audit(
+        &fixture.root,
+        &fixture.plan,
+        &fixture.ledger,
+        claims,
+        &ConstructedAudit(blocked),
+    )
+    .err()
+    .expect("non-READY constructed audit must fail");
+    assert_eq!(error.code, "GATE-RESUME-AUDIT-BINDING");
+
+    let mut wrong_plan_id = fixture.plan.clone();
+    wrong_plan_id["plan_id"] = json!("f".repeat(64));
+    let error = crate::resume::load_candidate_after_ready_audit(
+        &fixture.root,
+        &wrong_plan_id,
+        &fixture.ledger,
+        claims,
+        &constructed,
+    )
+    .err()
+    .expect("plan substitution must fail");
+    assert_eq!(error.code, "GATE-RESUME-AUDIT-BINDING");
+
+    let mut wrong_plan_digest = fixture.plan.clone();
+    wrong_plan_digest["resume_probe"] = json!(true);
+    let error = crate::resume::load_candidate_after_ready_audit(
+        &fixture.root,
+        &wrong_plan_digest,
+        &fixture.ledger,
+        claims,
+        &constructed,
+    )
+    .err()
+    .expect("plan digest substitution must fail");
+    assert_eq!(error.code, "GATE-RESUME-AUDIT-BINDING");
+}
+
 #[test]
 fn ready_audit_validation_execution_and_resume_chains_are_directly_bound() {
     let fixture = AuditFixture::new();
@@ -197,58 +256,7 @@ fn ready_audit_validation_execution_and_resume_chains_are_directly_bound() {
         attempt: 1,
         ..ExecutionClaims::default()
     };
-    let constructed = ConstructedAudit(audit.clone());
-    let candidate = crate::resume::load_candidate_after_ready_audit(
-        &fixture.root,
-        &fixture.plan,
-        &fixture.ledger,
-        &claims,
-        &constructed,
-    )
-    .expect("constructed READY audit admits resume discovery");
-    assert!(
-        candidate.is_none(),
-        "empty ledger has no recovery candidate"
-    );
-
-    let mut blocked = audit.clone();
-    blocked["status"] = json!("BLOCKED");
-    let error = crate::resume::load_candidate_after_ready_audit(
-        &fixture.root,
-        &fixture.plan,
-        &fixture.ledger,
-        &claims,
-        &ConstructedAudit(blocked),
-    )
-    .err()
-    .expect("non-READY constructed audit must fail");
-    assert_eq!(error.code, "GATE-RESUME-AUDIT-BINDING");
-
-    let mut wrong_plan_id = fixture.plan.clone();
-    wrong_plan_id["plan_id"] = json!("f".repeat(64));
-    let error = crate::resume::load_candidate_after_ready_audit(
-        &fixture.root,
-        &wrong_plan_id,
-        &fixture.ledger,
-        &claims,
-        &constructed,
-    )
-    .err()
-    .expect("plan substitution must fail");
-    assert_eq!(error.code, "GATE-RESUME-AUDIT-BINDING");
-
-    let mut wrong_plan_digest = fixture.plan.clone();
-    wrong_plan_digest["resume_probe"] = json!(true);
-    let error = crate::resume::load_candidate_after_ready_audit(
-        &fixture.root,
-        &wrong_plan_digest,
-        &fixture.ledger,
-        &claims,
-        &constructed,
-    )
-    .err()
-    .expect("plan digest substitution must fail");
-    assert_eq!(error.code, "GATE-RESUME-AUDIT-BINDING");
+    characterize_constructed_audit_resume(&fixture, &audit, &claims);
 
     validate_execution_claim_binding(&audit, &claims).expect("claim binding");
     validate_audit_for_execution(
