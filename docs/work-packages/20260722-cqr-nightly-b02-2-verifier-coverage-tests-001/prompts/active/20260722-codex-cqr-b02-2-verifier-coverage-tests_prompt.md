@@ -20,7 +20,9 @@ target source exceed the preferred quick-intake size; map:
 `artifacts/required-reading-map.md`.
 
 Task: execute the package for
-`crates/openwepp-gate-planner/src/verifier_coverage_tests.rs` end-to-end.
+the historical `crates/openwepp-gate-planner/src/verifier_coverage_tests.rs`
+module, now at
+`crates/openwepp-gate-planner/src/verifier/tests/coverage_tests.rs`, end-to-end.
 Characterize `replace_string` before behavior-preserving decomposition and
 reduce it and every extracted helper to CRAP at most 30.
 

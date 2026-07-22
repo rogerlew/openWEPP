@@ -5,6 +5,8 @@ Status: `ACTIVE`
 ExecPlan: `docs/work-packages/cqr-nightly-burndown-execplan.md`
 Nightly batch: `b02`
 Target module: `crates/openwepp-gate-planner/src/verifier_coverage_tests.rs`
+Terminal module path:
+`crates/openwepp-gate-planner/src/verifier/tests/coverage_tests.rs`
 Target rank: `2` of `2`
 Quality dimension: `CRAP/cyclomatic-complexity`
 Aggregate admission package: `docs/work-packages/20260722-cqr-nightly-b02-aggregate-001/package.md`
@@ -28,7 +30,10 @@ keys, scalar handling, match equality, or consumer fixture behavior.
 - `docs/standards/mechanical-refactor-authoring-guide.md`
 - `docs/standards/code-quality-refactor-authoring-guide.md`
 - `docs/decisions/0021-module-coverage-closure-thresholds.md`
-- `crates/openwepp-gate-planner/src/verifier_coverage_tests.rs`
+- `crates/openwepp-gate-planner/src/verifier_coverage_tests.rs` (historical
+  baseline path)
+- `crates/openwepp-gate-planner/src/verifier/tests/coverage_tests.rs`
+- `docs/work-packages/20260722-testgate-coverage-include-identity-recovery-001/package.md`
 
 ## Subagent Authorization
 
@@ -50,6 +55,12 @@ cleanup.
 - `crates/openwepp-gate-planner/src/verifier_coverage_tests.rs`
 - `docs/work-packages/20260722-cqr-nightly-b02-2-verifier-coverage-tests-001/**`
 - `docs/work-packages/README.md`
+
+The immutable original write set above is retained. The terminal source move
+was not a retroactive widening: prerequisite RTR-043 prospectively authorized
+`verifier.rs`, the original source, and the natural nested module path at
+scaffold/amendment commits `21d0b840` and `fa2d305f`, then closed and received
+dual terminal verification at correction `11df7e1d`.
 
 ## Phase Plan
 
