@@ -56,3 +56,8 @@ Ran: final source-bound measurement at `b1096a78` contains 111 target
 production entries, zero entries above 30, and a maximum CRAP score of 17.0.
 The matching CRAP JSON SHA-256 is
 `df76b158a44df61feb4d752f4b9b3fd7909ee675f99f9d37a345779546e31bca`.
+
+Ran: corrected final measurement at `68e9b747` retains zero production rows
+above 30 and lowers the maximum to 17.0 (`validate_started_successor`). Matching
+CRAP JSON SHA-256:
+`100f9ff7d79e0c2137e3e591077bf2e76055224782a25b3c4bc4fcf41ac8adde`.

@@ -13,12 +13,10 @@ non-regression remains open because helper extraction increased the denominator
 without increasing executed lines. Additional direct characterization is
 required before package review.
 
-Ran: final closure measurement at exact clean head `b1096a78` passed 116/116
-instrumented library tests in 452.40 seconds. The target measures 2,206/2,291
-lines (96.29%), 3,653/3,896 regions (93.76%), and 218/243 functions (89.71%).
-No target CRAP entry is below the 75% per-function coverage floor.
+Ran: corrected final closure at exact clean head `68e9b747` passed 117/117
+instrumented library tests. Restricted to production lines 1-1,743, the target
+measures 1,324/1,378 lines (96.08%) and 1,886/2,104 regions (89.64%). All
+111 production functions meet the 75% region floor; the minimum is 80.00%.
 
-Evidence root: `/tmp/cqr-pre-heavy-final-b1096a78-sPEqMT`. Source SHA-256:
-`b8ed9863410ab9695b0820f4959ec6cd03509c3b64ea8ed7ab991d8c88ca0be3`;
-LCOV SHA-256:
-`9ed27757cba8749a3b26f7e253ef644c859108c0baff9a2ccc7a6cb4c4bce902`.
+Evidence root: `/tmp/cqr-pre-heavy-final-region-ORwL2Q`; LLVM JSON SHA-256:
+`6597a19e8010d47e4cd834364990804c2afb74c2377734772bec0cb202fbc614`.

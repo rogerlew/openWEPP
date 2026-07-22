@@ -15,6 +15,6 @@ as follows; non-applicable numerical families are stated explicitly.
 | G ordering and precedence | Canonical check order: `unsealed_audit_assembles_all_ten_checks_and_fallback_is_representable`; failure-token precedence: `failure_check_index_preserves_first_matching_token_precedence`; stage order: `light_stage_and_stage_order_reject_nonpass_or_forward_dependency`; exact ledger successor: `heavy_started_must_be_the_exact_successor_of_the_audited_ledger_head`; last-status folding: `tooling_defect_ledger_uses_the_last_status_for_each_defect`. |
 | H fail-closed behavior | Fallback audit: `representable_early_failure_emits_ten_check_invalid_audit`; open defects: `tooling_defect_ledger_uses_the_last_status_for_each_defect`; orphan recovery: `orphaned_admission_is_closed_once_and_recurrence_opens_defect`; claim/binary/ledger drift: `low_coverage_binding_helpers_exercise_their_reject_arms` and `heavy_started_must_be_the_exact_successor_of_the_audited_ledger_head`. |
 
-Static: no retained exception is proposed. The corrected changed-head region
-measurement must confirm every eligible function at or above 75% before this
-map can close.
+Ran: the corrected changed-head region measurement confirms all 111 production
+functions at or above 75%, with an 80.00% minimum. No retained exception is
+used.

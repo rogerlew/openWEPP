@@ -1,0 +1,18 @@
+{
+  "head": "68e9b74719e71710000e35bd14b8c4162c28bdd8",
+  "index": "d34c9cbf70713fc735c93c191ee128d85922415b",
+  "source": "crates/openwepp-gate-planner/src/pre_heavy.rs",
+  "production_lines": "1-1743",
+  "llvm_json_sha256": "6597a19e8010d47e4cd834364990804c2afb74c2377734772bec0cb202fbc614",
+  "production_functions": 111,
+  "mapping_failures": 0,
+  "functions_below_75_percent_region": [],
+  "minimum_region_percent": 80.0,
+  "minimum_functions": [
+    {"line": 327, "function": "seal_audit", "covered": 16, "total": 20, "percent": 80.0},
+    {"line": 1034, "function": "cheap_prerequisites", "covered": 16, "total": 20, "percent": 80.0},
+    {"line": 1170, "function": "reconstructed_plan_is_exact", "covered": 8, "total": 10, "percent": 80.0},
+    {"line": 1651, "function": "validate_stage_receipt_plan_fields", "covered": 8, "total": 10, "percent": 80.0}
+  ],
+  "exact_tsv_sha256": "9dc0bf13209f6a6642905ffbfb1a86e962ad4555a0fcc84b8e0333cc45b8fcd6"
+}

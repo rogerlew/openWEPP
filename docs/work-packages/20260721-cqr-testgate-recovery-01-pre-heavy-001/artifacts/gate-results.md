@@ -23,4 +23,4 @@
 | reviewer focused inventory | PASS | Review A 31/31, run ID `0cf42846-6326-4336-ab4f-8271e9e31176`; Review B 31/31, run ID `bbcaad4d-09ed-4ba3-a88d-eb3e8e44b5bc` |
 | final scoped Clippy | PASS | `cargo clippy -p openwepp-gate-planner --lib --tests -- -D warnings` |
 | exact public reconstruction characterization | PASS | `exact_planner_output_reconstructs_through_the_public_audit_path`; 1/1 PASS in 391.957 seconds; run ID `4c972c0f-405d-4475-82d3-23ef39f0205b` |
-| corrected changed-head ADR-0021 measurement | NOT RUN | delegate after evidence correction commit |
+| corrected changed-head ADR-0021 measurement | PASS | exact clean `68e9b747`; 117/117 PASS; production line 96.08%; production region 89.64%; 111/111 functions at least 75% region, minimum 80%; CRAP maximum 17.0 |
