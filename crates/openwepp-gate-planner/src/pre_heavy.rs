@@ -1751,16 +1751,17 @@ mod tests {
     use serde_json::json;
 
     use super::{
-        AuditDocumentInputs, CHECK_IDS, ConstructedAudit, active_package_path,
+        AuditCheckInputs, AuditDocumentInputs, CHECK_IDS, ConstructedAudit, active_package_path,
         admit_attempt_ledger, append_attempt_record, audit_document, audit_reason_codes,
-        audit_reconstruction_root, audit_status, build_failure_audit, check,
-        documentation_scope_is_exact, durable_ledger, enforce_authorized_rust_line_limit,
-        execution_claims_match, execution_context_is_current, execution_identities,
-        failure_check_index, file_digest, ledger_head, light_attempt_isolated, light_stage_passed,
-        no_open_tooling_defect, no_open_tooling_defect_at_head, node_manifest, package_admission,
-        package_admitted, path_digest, read_json, reconcile_orphaned_attempts,
-        reconstructed_plan_is_exact, record_heavy_failure, reject_open_tooling_defects,
-        require_clean_diff, require_ready_audit_status, require_single_active_prompt, seal_audit,
+        audit_reconstruction_root, audit_status, build_audit_checks, build_failure_audit, check,
+        construct_audit, documentation_scope_is_exact, durable_ledger,
+        enforce_authorized_rust_line_limit, execution_claims_match, execution_context_is_current,
+        execution_identities, failure_check_index, file_digest, ledger_head,
+        light_attempt_isolated, light_stage_passed, no_open_tooling_defect,
+        no_open_tooling_defect_at_head, node_manifest, package_admission, package_admitted,
+        path_digest, read_json, reconcile_orphaned_attempts, reconstructed_plan_is_exact,
+        record_heavy_failure, reject_open_tooling_defects, require_clean_diff,
+        require_ready_audit_status, require_single_active_prompt, seal_audit,
         select_package_admission, separated_roots, tooling_defect_statuses, valid_stage_order,
         validate_audit_context_binding, validate_audit_core_binding, validate_audit_schema,
         validate_checkpoint_identity, validate_combined_decision, validate_current_audit_inventory,
@@ -2544,6 +2545,88 @@ mod tests {
             "GATE-AUDIT-OPEN-TOOLING-DEFECT"
         );
         fs::remove_file(ledger).expect("remove ledger fixture");
+    }
+
+    #[test]
+    fn unsealed_audit_assembles_all_ten_checks_and_fallback_is_representable() {
+        let fixture = PackageFixture::new(true, false);
+        for package in ["owner", "contender"] {
+            let active = fixture
+                .root
+                .join(format!("docs/work-packages/{package}/prompts/active"));
+            fs::create_dir_all(&active).expect("active prompt directory");
+            fs::write(active.join("kickoff.md"), "# Kickoff\n").expect("active prompt");
+        }
+        let artifact_root = fixture.root.join("target/audit-artifacts");
+        fs::create_dir_all(&artifact_root).expect("artifact root");
+        let ledger = fixture.root.join("target/attempts.jsonl");
+        fs::write(&ledger, "").expect("durable ledger");
+        let mut plan = fixture.plan();
+        plan["plan_id"] = json!("2".repeat(64));
+        plan["execution_key"] = json!("4".repeat(64));
+        plan["nodes"] = json!([]);
+        plan["changed_objects"] = json!([]);
+        plan["execution_context"] = json!({
+            "configuration_sha256": "a".repeat(64),
+            "environment_manifest_sha256": "b".repeat(64),
+            "fixture_manifest_sha256": "c".repeat(64),
+            "tool_manifest_sha256": "d".repeat(64)
+        });
+        plan["environment_roots"] = json!({
+            "execution_root": "/execution", "authority_root": "/authority",
+            "documentation_root": "/documentation"
+        });
+        plan["combined_quality"] = json!({
+            "decision": "NOT_APPLICABLE", "reason_code": "NO_GLOBAL_QUALITY",
+            "requested_proof_id": null, "accepted_proof_id": null,
+            "proof_sha256": null, "baseline_count": 0
+        });
+        let receipt = json!({
+            "executor_binary_sha256": "e".repeat(64),
+            "artifact_root_sha256": path_digest(&artifact_root), "final_results": {},
+            "claims": {
+                "principal": "p", "repository": "r", "source_event": "e",
+                "source_ref": "s", "workflow": "w", "job": "j",
+                "runner": "r", "attempt": 1
+            }
+        });
+        let admission = json!({
+            "status": "READY", "changed_paths": plan["authorized_paths"],
+            "base_commit": plan["source"]["base_commit"]
+        });
+        let combined = plan["combined_quality"].clone();
+        let checks = build_audit_checks(&AuditCheckInputs {
+            repo: &fixture.root,
+            plan: &plan,
+            light_receipt: &receipt,
+            artifact_root: &artifact_root,
+            ledger: &ledger,
+            package_admission: &admission,
+            combined_execution: &combined,
+            ledger_head_sha256: None,
+        })
+        .expect("ten-check audit assembly");
+        assert_eq!(checks.len(), CHECK_IDS.len());
+        assert!(
+            checks
+                .iter()
+                .zip(CHECK_IDS)
+                .all(|(item, id)| item["check_id"] == id)
+        );
+        assert_eq!(audit_status(&checks), "BLOCKED");
+
+        let fallback = construct_audit(
+            &PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../.."),
+            &json!({"nodes": []}),
+            &json!({}),
+            &artifact_root,
+            &ledger,
+        )
+        .expect("representable fallback audit");
+        assert_eq!(
+            fallback.as_value()["checks"].as_array().map(Vec::len),
+            Some(10)
+        );
     }
 
     #[test]
