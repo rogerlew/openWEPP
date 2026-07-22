@@ -75,7 +75,10 @@ aggregate work-package authority before rank 1, so the cheap recovery closeout
 audit correctly rejected retroactive widening before LIGHT. RTR-031 is owned by
 `20260722-testgate-cqr-aggregate-admission-001`; its reusable correction binds
 aggregate admission before future multi-package CQR implementation. No CQR
-metric or TESTGATE gate is rerun for this documentation control.
+metric was rerun for this correction. The follow-on executable validator closes
+RTR-031 with unique scaffold binding, immutable batch-manifest identity, complete
+inventory checks, 17 focused regressions, and dual renewed review. One
+changed-head TESTGATE qualification remains required for recovery closeout.
 
 ## Execution Rules
 

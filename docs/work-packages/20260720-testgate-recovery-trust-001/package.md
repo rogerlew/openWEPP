@@ -45,6 +45,7 @@ quality paths without editing its frozen subject.
 - [x] (2026-07-21) Bounded duplicate receipt-plan reconstruction in RTR-027's blocked-fixture test; direct regression passes.
 - [x] (2026-07-22) Complete all seven one-module CQR packages and eliminate the 26 actionable attempt-15 CRAP rows.
 - [x] (2026-07-22) Open RTR-031 when cheap final admission correctly rejected retroactive aggregate authority; activate its pre-implementation workflow correction package.
+- [x] (2026-07-22) Close RTR-031 with the executable aggregate-admission validator, 17 focused regressions, `READY` package admission, and dual renewed PASS review.
 - [ ] Reconcile the exact terminal diff and obtain a fresh `READY` audit.
 - [ ] Delegate each selected HEAVY batch once.
 - [ ] Complete dual terminal verification, prompt archival, and final disposition.
@@ -117,8 +118,11 @@ RTR-031 (`GATE-CQR-AGGREGATE-AUTHORITY-NOT-SCAFFOLDED`): the master CQR plan
 was not a base-commit aggregate authority package, and the original recovery
 package could not be widened retroactively. No LIGHT or HEAVY gate started. The
 correction package establishes immutable authority before its own correction
-diff and binds the reusable CQR standard, process, and template to require an
-aggregate scaffold before the first module implementation edit.
+diff. The bounded validator package now mechanically binds the reusable CQR
+standard, process, and template to a unique aggregate scaffold, immutable batch
+manifest, complete master/module/path inventory, committed module scaffold, and
+retained PASS before the first implementation edit. RTR-031 closed at correction
+commit `5f47695e` with durable ledger entry `cb46f832`.
 ## Declared Write Set
 
 - `.github/workflows/testgate-shadow.yml`

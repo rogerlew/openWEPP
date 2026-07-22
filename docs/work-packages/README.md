@@ -252,9 +252,11 @@
 State as of `2026-07-22 UTC`:
 
 - `20260722-cqr-aggregate-admission-validator-001/` -
-  ACTIVE: executable prerequisite for RTR-031. It validates aggregate CQR
-  authority status, immutable write-set coverage, module binding, and commit
-  ordering before implementation may begin.
+  ACTIVE / READY-QUALIFICATION: executable RTR-031 correction. It validates
+  unique aggregate/module scaffold authority, immutable write-set and manifest
+  identity, complete batch/master binding, and commit ordering before
+  implementation may begin. Focused gates and dual review pass; changed-head
+  recovery qualification remains.
 
 - `20260722-testgate-cqr-aggregate-admission-001/` -
   HOLD-PREREQUISITE-VALIDATOR: established immutable final CQR admission
