@@ -1,0 +1,6 @@
+# Eligibility Classification
+
+Static: all four target rows are `E-PRODUCTION`. They control accepted CLI
+options, trust-stage transitions, durable HEAVY lifecycle, fallback audit
+selection, error precedence, or public JSON. Aggregate, 75% region floor, and
+CRAP treatment remain binding; no retained exception is proposed.
