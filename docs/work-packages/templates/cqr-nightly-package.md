@@ -95,10 +95,13 @@ Out of scope:
 - `{{target_module_path}}`
 - `{{test_paths}}`
 - `docs/work-packages/{{package_id}}/**`
-- `docs/work-packages/README.md` after closure if catalog update is needed
+- `docs/work-packages/README.md`
+
+## Write Set Guard
 
 Do not edit unrelated dirty files. If the target path is already dirty from
 unrelated work, stop before implementation and record a global/process hold.
+Edit the catalog only when closure requires a catalog update.
 
 ## Scaffold And Aggregate Admission Gate
 

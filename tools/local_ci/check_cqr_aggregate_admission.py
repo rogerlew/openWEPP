@@ -59,6 +59,8 @@ def _canonical_path(path: str, label: str) -> str:
     if (
         path.startswith("/")
         or "\\" in path
+        or "{{" in path
+        or "}}" in path
         or any(part in {"", ".", ".."} for part in path.split("/"))
     ):
         raise AdmissionError(f"{label} is not repository-relative: {path}")

@@ -25,6 +25,7 @@ class Fixture:
         module_paths: list[str] | None = None,
         module_suffix: str = "",
         scaffold_bindings: bool = True,
+        use_canonical_template: bool = False,
     ) -> None:
         self.temporary = tempfile.TemporaryDirectory(prefix="cqr-aggregate-validator-")
         self.root = Path(self.temporary.name)
@@ -45,15 +46,17 @@ class Fixture:
         self.write(MASTER, "# CQR Batch ExecPlan\n")
         self.commit("aggregate scaffold")
         self.aggregate_scaffold = self.git("rev-parse", "HEAD")
-        self.write(
-            MODULE,
-            self.module_text(
+        module_text = (
+            self.canonical_template_text(self.aggregate_scaffold)
+            if use_canonical_template
+            else self.module_text(
                 self.aggregate_scaffold,
                 paths=module_paths,
                 suffix=module_suffix,
                 include_bindings=scaffold_bindings,
-            ),
+            )
         )
+        self.write(MODULE, module_text)
         self.commit("module scaffold")
         self.module_scaffold = self.git("rev-parse", "HEAD")
 
@@ -141,6 +144,24 @@ Status: `ACTIVE`
 {bullets}
 {suffix}"""
 
+    @staticmethod
+    def canonical_template_text(scaffold: str) -> str:
+        text = (
+            REPO / "docs/work-packages/templates/cqr-nightly-package.md"
+        ).read_text(encoding="utf-8")
+        replacements = {
+            "{{aggregate_admission_package}}": AGGREGATE,
+            "{{aggregate_scaffold_commit}}": scaffold,
+            "{{aggregate_batch_manifest}}": MANIFEST,
+            "{{master_execplan}}": MASTER,
+            "{{target_module_path}}": "crates/example/src/lib.rs",
+            "{{test_paths}}": "tests/python/test_example.py",
+            "{{package_id}}": "module",
+        }
+        for placeholder, value in replacements.items():
+            text = text.replace(placeholder, value)
+        return text
+
     def run(
         self,
         *,
@@ -178,7 +199,7 @@ class AggregateAdmissionTests(unittest.TestCase):
         self.assertIn(phrase, payload["error"])
 
     def test_accepts_canonical_template_shape_and_batch_manifest(self) -> None:
-        result = self.fixture().run()
+        result = self.fixture(use_canonical_template=True).run()
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         payload = json.loads(result.stdout)
         self.assertEqual(payload["status"], "PASS")
