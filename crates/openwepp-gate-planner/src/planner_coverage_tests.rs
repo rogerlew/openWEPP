@@ -973,31 +973,55 @@
         let baseline = super::manifest_roots(repo.path(), &head, false)
             .expect("committed manifest roots");
 
+        std::fs::remove_file(repo.path().join("tools/obsolete.sh"))
+            .expect("remove included file");
+        let deleted = super::manifest_roots(repo.path(), &head, true)
+            .expect("manifest after included deletion");
+        assert_ne!(deleted["execution_root"], baseline["execution_root"]);
+        assert_eq!(deleted["assurance_root"], baseline["assurance_root"]);
+        assert_eq!(deleted["authority_root"], baseline["authority_root"]);
+        assert_eq!(
+            deleted["documentation_root"],
+            baseline["documentation_root"]
+        );
+
+        std::fs::write(repo.path().join("notes.txt"), "excluded\n")
+            .expect("add excluded file");
+        let excluded = super::manifest_roots(repo.path(), &head, true)
+            .expect("manifest after excluded addition");
+        assert_eq!(excluded, deleted);
+
+        symlink("existing.txt", repo.path().join("assurance/new-link"))
+            .expect("add included symlink");
+        let linked = super::manifest_roots(repo.path(), &head, true)
+            .expect("manifest after included symlink addition");
+        assert_eq!(linked["execution_root"], excluded["execution_root"]);
+        assert_ne!(linked["assurance_root"], excluded["assurance_root"]);
+        assert_eq!(linked["authority_root"], excluded["authority_root"]);
+        assert_eq!(
+            linked["documentation_root"],
+            excluded["documentation_root"]
+        );
+
         std::fs::write(
             repo.path().join("Cargo.toml"),
             "[workspace]\nresolver = \"2\"\n",
         )
         .expect("modify included regular file");
-        std::fs::remove_file(repo.path().join("tools/obsolete.sh"))
-            .expect("remove included file");
-        symlink("existing.txt", repo.path().join("assurance/new-link"))
-            .expect("add included symlink");
-        std::fs::write(repo.path().join("notes.txt"), "excluded\n")
-            .expect("add excluded file");
+        let modified = super::manifest_roots(repo.path(), &head, true)
+            .expect("manifest after included regular modification");
+        assert_ne!(modified["execution_root"], linked["execution_root"]);
+        assert_eq!(modified["assurance_root"], linked["assurance_root"]);
+        assert_eq!(modified["authority_root"], linked["authority_root"]);
+        assert_eq!(
+            modified["documentation_root"],
+            linked["documentation_root"]
+        );
 
         assert_eq!(
             super::manifest_roots(repo.path(), &head, false)
                 .expect("dirty files excluded from committed roots"),
             baseline
-        );
-        let dirty = super::manifest_roots(repo.path(), &head, true)
-            .expect("dirty manifest roots");
-        assert_ne!(dirty["execution_root"], baseline["execution_root"]);
-        assert_ne!(dirty["assurance_root"], baseline["assurance_root"]);
-        assert_eq!(dirty["authority_root"], baseline["authority_root"]);
-        assert_eq!(
-            dirty["documentation_root"],
-            baseline["documentation_root"]
         );
     }
 
