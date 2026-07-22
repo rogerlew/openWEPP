@@ -3,7 +3,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::{Path, PathBuf};
-use std::process::Command;
+use std::process::{Command, Output};
 
 use serde_json::{Value, json};
 
@@ -25,6 +25,22 @@ struct CheckpointEvidence {
     claims: Value,
     receipt_id: Value,
     provenance_id: Value,
+}
+
+struct RecoveryRoot {
+    path: PathBuf,
+    explicit: bool,
+}
+
+struct RecoveryArchive {
+    root: PathBuf,
+    artifact_root: PathBuf,
+    provenance: Value,
+}
+
+struct RecoveryEnvelope {
+    prior_plan: Value,
+    accepted_receipt: Option<Value>,
 }
 
 pub struct ResumeSeed {
@@ -76,10 +92,6 @@ pub fn load_candidate_after_ready_audit(
     load_candidate_internal(repo, plan, ledger, claims, true)
 }
 
-#[allow(
-    clippy::too_many_lines,
-    reason = "candidate discovery validates one provenance chain before admitting any checkpoint"
-)]
 fn load_candidate_internal(
     repo: &Path,
     plan: &Value,
@@ -100,172 +112,255 @@ fn load_candidate_internal(
     let mut admitted = BTreeMap::new();
     let mut seen_roots = BTreeSet::new();
     for item in records.iter().rev() {
-        if !matches!(
-            item["record_type"].as_str(),
-            Some("ATTEMPT" | "STAGE_ATTEMPT")
-        ) {
-            continue;
-        }
-        let explicit_recovery = match item.get("recovery_root") {
-            None | Some(Value::Null) => None,
-            Some(value) => Some(value.as_str().ok_or_else(|| {
-                resume_error(
-                    "GATE-RESUME-PROVENANCE-PATH",
-                    "recovery_root must be a path",
-                )
-            })?),
-        };
-        let Some(root) = explicit_recovery
-            .or_else(|| item["artifact_root"].as_str())
-            .map(PathBuf::from)
-        else {
+        let Some(recovery_root) = recovery_root_from_record(item, ledger)? else {
             continue;
         };
-        let recovery_parent = ledger
-            .parent()
-            .ok_or_else(|| {
-                resume_error("GATE-RESUME-PROVENANCE-PATH", ledger.display().to_string())
-            })?
-            .join("recovery");
-        if root.parent() != Some(recovery_parent.as_path()) {
-            if explicit_recovery.is_some() {
-                return Err(resume_error(
-                    "GATE-RESUME-PROVENANCE-PATH",
-                    root.display().to_string(),
-                ));
-            }
+        if seen_roots.contains(&recovery_root.path) {
             continue;
         }
-        if seen_roots.contains(&root) {
+        let Some(archive) = inspect_recovery_archive(ledger, claims, recovery_root)? else {
             continue;
-        }
-        let artifact_root = if root.join(".checkpoints").is_dir() {
-            root.clone()
-        } else {
-            root.join("execution")
         };
-        if !artifact_root.is_dir() {
-            if explicit_recovery.is_some() {
-                return Err(resume_error(
-                    "GATE-RESUME-PROVENANCE-PATH",
-                    root.display().to_string(),
-                ));
-            }
-            continue;
-        }
-        let provenance = match verify_archive_provenance(ledger, &root, claims) {
-            Ok(provenance) => provenance,
-            Err(error)
-                if error.code == "GATE-RESUME-PROVENANCE-MISSING"
-                    && explicit_recovery.is_none() =>
-            {
-                continue;
-            }
-            Err(error) => return Err(error),
-        };
-        seen_roots.insert(root.clone());
-        let receipt_path = root.join("receipt.json");
-        let prior_plan_path = root.join("plan.json");
-        if !prior_plan_path.is_file() {
-            return Err(resume_error(
-                "GATE-RESUME-PROVENANCE-PLAN-MISSING",
-                root.display().to_string(),
-            ));
-        }
-        let prior_plan = parse_strict(
-            &fs::read(&prior_plan_path)
-                .map_err(|error| resume_error("GATE-RESUME-PLAN", error.to_string()))?,
-        )?;
-        verify_plan_identity(&prior_plan)?;
-        let accepted = if receipt_path.is_file() {
-            let receipt = parse_strict(
-                &fs::read(&receipt_path)
-                    .map_err(|error| resume_error("GATE-RESUME-RECEIPT", error.to_string()))?,
-            )?;
-            let artifacts = DirectoryArtifacts::new(artifact_root.clone());
-            let verification = if current_plan_admitted && digest(&prior_plan)? == digest(plan)? {
-                verify_receipt_after_ready_audit(repo, &prior_plan, &receipt, &artifacts)
-            } else {
-                verify_receipt(repo, &prior_plan, &receipt, &artifacts)
-            };
-            verification.map_err(|error| {
-                resume_error(
-                    "GATE-RESUME-RECEIPT-INVALID",
-                    format!("{}: {}", error.code, error.message),
-                )
-            })?;
-            if receipt["claims"]["workflow"] != provenance["workflow"]
-                || receipt["claims"]["job"] != "openwepp/execute-increment"
-                || receipt["claims"]["attempt"].as_u64()
-                    != provenance["run_attempt"]
-                        .as_str()
-                        .and_then(|value| value.parse().ok())
-            {
-                return Err(resume_error(
-                    "GATE-RESUME-PROVENANCE-RECEIPT-BINDING",
-                    root.display().to_string(),
-                ));
-            }
-            Some(receipt)
-        } else {
-            None
-        };
-        for node in nodes
-            .iter()
-            .filter(|node| node["execution_cost_class"] == "HEAVY")
-        {
-            let node_id = string(node, "node_id")?;
-            if admitted.contains_key(node_id) {
-                continue;
-            }
-            let checkpoint_path = artifact_root
-                .join(".checkpoints")
-                .join(format!("{node_id}.json"));
-            if !checkpoint_path.is_file() {
-                continue;
-            }
-            let checkpoint = parse_strict(
-                &fs::read(&checkpoint_path)
-                    .map_err(|error| resume_error("GATE-RESUME-CHECKPOINT", error.to_string()))?,
-            )?;
-            verify_checkpoint_prior_plan(&checkpoint, node, &prior_plan)?;
-            let envelope = accepted.clone().unwrap_or_else(|| {
-                json!({
-                    "claims": checkpoint["execution_binding"]["claims"],
-                    "attempts": [checkpoint["attempt"].clone()],
-                    "artifacts": checkpoint["artifacts"].clone(),
-                })
-            });
-            if accepted.is_none()
-                && (checkpoint["execution_binding"]["claims"]["workflow"] != provenance["workflow"]
-                    || checkpoint["execution_binding"]["claims"]["job"]
-                        != "openwepp/execute-increment"
-                    || checkpoint["execution_binding"]["claims"]["attempt"].as_u64()
-                        != provenance["run_attempt"]
-                            .as_str()
-                            .and_then(|value| value.parse().ok()))
-            {
-                return Err(resume_error(
-                    "GATE-RESUME-PROVENANCE-CHECKPOINT-BINDING",
-                    node_id,
-                ));
-            }
-            verify_checkpoint(plan, node, &checkpoint, &envelope, &artifact_root)?;
-            admitted.insert(
-                node_id.to_owned(),
-                CheckpointEvidence {
-                    checkpoint,
-                    artifact_root: artifact_root.clone(),
-                    claims: envelope["claims"].clone(),
-                    receipt_id: accepted
-                        .as_ref()
-                        .map_or(Value::Null, |receipt| receipt["receipt_id"].clone()),
-                    provenance_id: provenance["index_sha256"].clone(),
-                },
-            );
-        }
+        seen_roots.insert(archive.root.clone());
+        let envelope = load_recovery_envelope(repo, plan, &archive, current_plan_admitted)?;
+        admit_archive_nodes(plan, nodes, &archive, &envelope, &mut admitted)?;
     }
     Ok((!admitted.is_empty()).then_some(ResumeCandidate { nodes: admitted }))
+}
+
+fn recovery_root_from_record(item: &Value, ledger: &Path) -> Result<Option<RecoveryRoot>> {
+    if !matches!(
+        item["record_type"].as_str(),
+        Some("ATTEMPT" | "STAGE_ATTEMPT")
+    ) {
+        return Ok(None);
+    }
+    let explicit = match item.get("recovery_root") {
+        None | Some(Value::Null) => None,
+        Some(value) => Some(value.as_str().ok_or_else(|| {
+            resume_error(
+                "GATE-RESUME-PROVENANCE-PATH",
+                "recovery_root must be a path",
+            )
+        })?),
+    };
+    let Some(path) = explicit
+        .or_else(|| item["artifact_root"].as_str())
+        .map(PathBuf::from)
+    else {
+        return Ok(None);
+    };
+    let recovery_parent = ledger
+        .parent()
+        .ok_or_else(|| resume_error("GATE-RESUME-PROVENANCE-PATH", ledger.display().to_string()))?
+        .join("recovery");
+    if path.parent() != Some(recovery_parent.as_path()) {
+        if explicit.is_some() {
+            return Err(resume_error(
+                "GATE-RESUME-PROVENANCE-PATH",
+                path.display().to_string(),
+            ));
+        }
+        return Ok(None);
+    }
+    Ok(Some(RecoveryRoot {
+        path,
+        explicit: explicit.is_some(),
+    }))
+}
+
+fn inspect_recovery_archive(
+    ledger: &Path,
+    claims: &ExecutionClaims,
+    recovery: RecoveryRoot,
+) -> Result<Option<RecoveryArchive>> {
+    let artifact_root = if recovery.path.join(".checkpoints").is_dir() {
+        recovery.path.clone()
+    } else {
+        recovery.path.join("execution")
+    };
+    if !artifact_root.is_dir() {
+        if recovery.explicit {
+            return Err(resume_error(
+                "GATE-RESUME-PROVENANCE-PATH",
+                recovery.path.display().to_string(),
+            ));
+        }
+        return Ok(None);
+    }
+    let provenance = match verify_archive_provenance(ledger, &recovery.path, claims) {
+        Ok(provenance) => provenance,
+        Err(error) if error.code == "GATE-RESUME-PROVENANCE-MISSING" && !recovery.explicit => {
+            return Ok(None);
+        }
+        Err(error) => return Err(error),
+    };
+    Ok(Some(RecoveryArchive {
+        root: recovery.path,
+        artifact_root,
+        provenance,
+    }))
+}
+
+fn load_recovery_envelope(
+    repo: &Path,
+    plan: &Value,
+    archive: &RecoveryArchive,
+    current_plan_admitted: bool,
+) -> Result<RecoveryEnvelope> {
+    let prior_plan_path = archive.root.join("plan.json");
+    if !prior_plan_path.is_file() {
+        return Err(resume_error(
+            "GATE-RESUME-PROVENANCE-PLAN-MISSING",
+            archive.root.display().to_string(),
+        ));
+    }
+    let prior_plan = parse_strict(
+        &fs::read(&prior_plan_path)
+            .map_err(|error| resume_error("GATE-RESUME-PLAN", error.to_string()))?,
+    )?;
+    verify_plan_identity(&prior_plan)?;
+    let receipt_path = archive.root.join("receipt.json");
+    let accepted_receipt = if receipt_path.is_file() {
+        Some(load_accepted_receipt(
+            repo,
+            plan,
+            archive,
+            &prior_plan,
+            &receipt_path,
+            current_plan_admitted,
+        )?)
+    } else {
+        None
+    };
+    Ok(RecoveryEnvelope {
+        prior_plan,
+        accepted_receipt,
+    })
+}
+
+fn load_accepted_receipt(
+    repo: &Path,
+    plan: &Value,
+    archive: &RecoveryArchive,
+    prior_plan: &Value,
+    receipt_path: &Path,
+    current_plan_admitted: bool,
+) -> Result<Value> {
+    let receipt = parse_strict(
+        &fs::read(receipt_path)
+            .map_err(|error| resume_error("GATE-RESUME-RECEIPT", error.to_string()))?,
+    )?;
+    let artifacts = DirectoryArtifacts::new(archive.artifact_root.clone());
+    let verification = if current_plan_admitted && digest(prior_plan)? == digest(plan)? {
+        verify_receipt_after_ready_audit(repo, prior_plan, &receipt, &artifacts)
+    } else {
+        verify_receipt(repo, prior_plan, &receipt, &artifacts)
+    };
+    verification.map_err(|error| {
+        resume_error(
+            "GATE-RESUME-RECEIPT-INVALID",
+            format!("{}: {}", error.code, error.message),
+        )
+    })?;
+    verify_provenance_claims(
+        &receipt["claims"],
+        &archive.provenance,
+        "GATE-RESUME-PROVENANCE-RECEIPT-BINDING",
+        &archive.root.display().to_string(),
+    )?;
+    Ok(receipt)
+}
+
+fn verify_provenance_claims(
+    claims: &Value,
+    provenance: &Value,
+    code: &'static str,
+    message: &str,
+) -> Result<()> {
+    if claims["workflow"] != provenance["workflow"]
+        || claims["job"] != "openwepp/execute-increment"
+        || claims["attempt"].as_u64()
+            != provenance["run_attempt"]
+                .as_str()
+                .and_then(|value| value.parse().ok())
+    {
+        return Err(resume_error(code, message));
+    }
+    Ok(())
+}
+
+fn admit_archive_nodes(
+    plan: &Value,
+    nodes: &[Value],
+    archive: &RecoveryArchive,
+    recovery: &RecoveryEnvelope,
+    admitted: &mut BTreeMap<String, CheckpointEvidence>,
+) -> Result<()> {
+    for node in nodes
+        .iter()
+        .filter(|node| node["execution_cost_class"] == "HEAVY")
+    {
+        let node_id = string(node, "node_id")?;
+        if admitted.contains_key(node_id) {
+            continue;
+        }
+        let checkpoint_path = archive
+            .artifact_root
+            .join(".checkpoints")
+            .join(format!("{node_id}.json"));
+        if !checkpoint_path.is_file() {
+            continue;
+        }
+        let checkpoint = parse_strict(
+            &fs::read(&checkpoint_path)
+                .map_err(|error| resume_error("GATE-RESUME-CHECKPOINT", error.to_string()))?,
+        )?;
+        admit_checkpoint(plan, node, checkpoint, archive, recovery, admitted)?;
+    }
+    Ok(())
+}
+
+fn admit_checkpoint(
+    plan: &Value,
+    node: &Value,
+    checkpoint: Value,
+    archive: &RecoveryArchive,
+    recovery: &RecoveryEnvelope,
+    admitted: &mut BTreeMap<String, CheckpointEvidence>,
+) -> Result<()> {
+    let node_id = string(node, "node_id")?;
+    verify_checkpoint_prior_plan(&checkpoint, node, &recovery.prior_plan)?;
+    let envelope = recovery.accepted_receipt.clone().unwrap_or_else(|| {
+        json!({
+            "claims": checkpoint["execution_binding"]["claims"],
+            "attempts": [checkpoint["attempt"].clone()],
+            "artifacts": checkpoint["artifacts"].clone(),
+        })
+    });
+    if recovery.accepted_receipt.is_none() {
+        verify_provenance_claims(
+            &checkpoint["execution_binding"]["claims"],
+            &archive.provenance,
+            "GATE-RESUME-PROVENANCE-CHECKPOINT-BINDING",
+            node_id,
+        )?;
+    }
+    verify_checkpoint(plan, node, &checkpoint, &envelope, &archive.artifact_root)?;
+    admitted.insert(
+        node_id.to_owned(),
+        CheckpointEvidence {
+            checkpoint,
+            artifact_root: archive.artifact_root.clone(),
+            claims: envelope["claims"].clone(),
+            receipt_id: recovery
+                .accepted_receipt
+                .as_ref()
+                .map_or(Value::Null, |receipt| receipt["receipt_id"].clone()),
+            provenance_id: archive.provenance["index_sha256"].clone(),
+        },
+    );
+    Ok(())
 }
 
 fn verify_archive_provenance(
@@ -349,10 +444,20 @@ fn verify_native_attestation(
     if fs::read(bundle_path).ok().as_deref() == Some(b"TEST-VALID-BUNDLE") {
         return Ok(());
     }
+    let output = run_native_attestation(index_path, bundle_path, predicate, repository)?;
+    verify_native_attestation_output(&output)
+}
+
+fn run_native_attestation(
+    index_path: &Path,
+    bundle_path: &Path,
+    predicate: &Value,
+    repository: &str,
+) -> Result<Output> {
     let index_argument = index_path.to_string_lossy().into_owned();
     let bundle_argument = bundle_path.to_string_lossy().into_owned();
     let signer = format!("{repository}/.github/workflows/testgate-shadow.yml");
-    let output = Command::new("gh")
+    Command::new("gh")
         .args([
             "attestation",
             "verify",
@@ -374,7 +479,10 @@ fn verify_native_attestation(
             "json",
         ])
         .output()
-        .map_err(|error| resume_error("GATE-RESUME-PROVENANCE-VERIFY", error.to_string()))?;
+        .map_err(|error| resume_error("GATE-RESUME-PROVENANCE-VERIFY", error.to_string()))
+}
+
+fn verify_native_attestation_output(output: &Output) -> Result<()> {
     let verified = parse_strict(&output.stdout).map_err(|error| {
         resume_error(
             "GATE-RESUME-PROVENANCE-VERIFY",
@@ -648,6 +756,14 @@ fn verify_checkpoint(
     receipt: &Value,
     root: &Path,
 ) -> Result<()> {
+    verify_checkpoint_identity(node, checkpoint)?;
+    verify_checkpoint_roots(plan, node, checkpoint)?;
+    verify_checkpoint_execution(plan, node, checkpoint)?;
+    verify_checkpoint_receipt(node, checkpoint, receipt)?;
+    verify_checkpoint_artifacts(checkpoint, receipt, root)
+}
+
+fn verify_checkpoint_identity(node: &Value, checkpoint: &Value) -> Result<()> {
     if checkpoint["schema_version"] != "openwepp-gate-node-checkpoint-v1"
         || checkpoint["checkpoint_id"] != derived_id(checkpoint, "checkpoint_id")?
         || checkpoint["node_id"] != node["node_id"]
@@ -659,6 +775,10 @@ fn verify_checkpoint(
             string(node, "node_id")?,
         ));
     }
+    Ok(())
+}
+
+fn verify_checkpoint_roots(plan: &Value, node: &Value, checkpoint: &Value) -> Result<()> {
     let binding = &checkpoint["execution_binding"];
     let prior_roots = &binding["roots"];
     let current_roots = &plan["environment_roots"];
@@ -674,6 +794,11 @@ fn verify_checkpoint(
             string(node, "node_id")?,
         ));
     }
+    Ok(())
+}
+
+fn verify_checkpoint_execution(plan: &Value, node: &Value, checkpoint: &Value) -> Result<()> {
+    let binding = &checkpoint["execution_binding"];
     if node["reuse_class"] == "SAME_EXECUTION"
         && (binding["plan_id"] != plan["plan_id"]
             || binding["execution_key"] != plan["execution_key"])
@@ -683,6 +808,11 @@ fn verify_checkpoint(
             string(node, "node_id")?,
         ));
     }
+    Ok(())
+}
+
+fn verify_checkpoint_receipt(node: &Value, checkpoint: &Value, receipt: &Value) -> Result<()> {
+    let binding = &checkpoint["execution_binding"];
     if !checkpoint_claims_match(&binding["claims"], &receipt["claims"])
         || !receipt["attempts"]
             .as_array()
@@ -695,6 +825,10 @@ fn verify_checkpoint(
             string(node, "node_id")?,
         ));
     }
+    Ok(())
+}
+
+fn verify_checkpoint_artifacts(checkpoint: &Value, receipt: &Value, root: &Path) -> Result<()> {
     for artifact in checkpoint["artifacts"]
         .as_array()
         .ok_or_else(|| resume_error("GATE-RESUME-CHECKPOINT-SHAPE", "artifacts"))?
