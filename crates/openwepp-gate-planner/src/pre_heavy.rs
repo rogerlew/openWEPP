@@ -1751,15 +1751,18 @@ mod tests {
     use serde_json::json;
 
     use super::{
-        append_attempt_record, audit_reconstruction_root, build_failure_audit, check,
-        documentation_scope_is_exact, durable_ledger, execution_claims_match,
-        execution_context_is_current, execution_identities, failure_check_index,
-        light_stage_passed, no_open_tooling_defect, package_admission, package_admitted, read_json,
-        reconcile_orphaned_attempts, reconstructed_plan_is_exact, record_heavy_failure,
-        select_package_admission, valid_stage_order, validate_combined_decision,
+        CHECK_IDS, append_attempt_record, audit_reason_codes, audit_reconstruction_root,
+        audit_status, build_failure_audit, check, documentation_scope_is_exact, durable_ledger,
+        execution_claims_match, execution_context_is_current, execution_identities,
+        failure_check_index, light_stage_passed, no_open_tooling_defect, node_manifest,
+        package_admission, package_admitted, path_digest, read_json, reconcile_orphaned_attempts,
+        reconstructed_plan_is_exact, record_heavy_failure, select_package_admission,
+        valid_stage_order, validate_audit_context_binding, validate_audit_core_binding,
+        validate_checkpoint_identity, validate_combined_decision, validate_ready_check_set,
+        validate_stage_receipt_execution_binding, validate_stage_receipt_plan_binding,
         validate_started_successor, verify_ledger_chain, with_disposable_audit_reconstruction,
     };
-    use crate::canonical::{parse_strict, validate_schema};
+    use crate::canonical::{derived_id, digest, parse_strict, validate_schema};
     use crate::error::{ErrorClass, GatePolicyError};
     use crate::executor::ExecutionClaims;
 
@@ -2258,6 +2261,88 @@ mod tests {
                 .expect_err("zero attempt")
                 .code,
             "GATE-AUDIT-EXECUTION-CLAIM"
+        );
+    }
+
+    #[test]
+    fn extracted_audit_bindings_preserve_exact_identity_checks() {
+        let plan = json!({
+            "plan_id": "plan", "execution_key": "execution",
+            "combined_quality": {"decision": "NOT_APPLICABLE"}, "nodes": []
+        });
+        let admission = json!({"status": "READY"});
+        let artifact_root = PathBuf::from("/external/audit-root");
+        let mut audit = json!({
+            "audit_id": "0".repeat(64), "plan_id": plan["plan_id"],
+            "plan_sha256": digest(&plan).expect("plan digest"),
+            "execution_key": plan["execution_key"],
+            "artifact_root_sha256": path_digest(&artifact_root),
+            "node_manifest": node_manifest(&plan).expect("node manifest"),
+            "combined_execution": plan["combined_quality"],
+            "package_admission": admission
+        });
+        audit["audit_id"] = json!(derived_id(&audit, "audit_id").expect("audit ID"));
+        validate_audit_core_binding(&plan, &audit).expect("core binding");
+        validate_audit_context_binding(&plan, &audit, &artifact_root, &admission)
+            .expect("context binding");
+        let mut drifted = audit;
+        drifted["execution_key"] = json!("drift");
+        assert_eq!(
+            validate_audit_core_binding(&plan, &drifted)
+                .expect_err("binding drift")
+                .code,
+            "GATE-AUDIT-IDENTITY"
+        );
+    }
+
+    #[test]
+    fn extracted_ready_checks_preserve_status_and_reason_rules() {
+        let checks = CHECK_IDS
+            .iter()
+            .map(|id| json!({"check_id": id, "status": "PASS", "reason_codes": []}))
+            .collect::<Vec<_>>();
+        let audit = json!({"checks": checks, "reason_codes": []});
+        validate_ready_check_set(&audit).expect("canonical READY checks");
+        let ready = audit["checks"].as_array().expect("checks");
+        assert_eq!(audit_status(ready), "READY");
+        assert!(audit_reason_codes(ready).is_empty());
+
+        let mut invalid = audit;
+        invalid["checks"][0]["status"] = json!("INVALID");
+        invalid["checks"][0]["reason_codes"] = json!(["GATE-INVALID"]);
+        let failed = invalid["checks"].as_array().expect("checks");
+        assert!(validate_ready_check_set(&invalid).is_err());
+        assert_eq!(audit_status(failed), "INVALID");
+        assert_eq!(audit_reason_codes(failed), vec!["GATE-INVALID"]);
+    }
+
+    #[test]
+    fn extracted_receipt_and_checkpoint_bindings_remain_fail_closed() {
+        let plan = json!({"plan_id": "plan", "execution_key": "key"});
+        let root = PathBuf::from("/external/light-root");
+        let mut receipt = json!({
+            "stage_receipt_id": "0".repeat(64), "plan_id": plan["plan_id"],
+            "plan_sha256": digest(&plan).expect("plan digest"),
+            "execution_key": plan["execution_key"],
+            "artifact_root_sha256": path_digest(&root), "stage": "LIGHT"
+        });
+        receipt["stage_receipt_id"] =
+            json!(derived_id(&receipt, "stage_receipt_id").expect("receipt ID"));
+        validate_stage_receipt_plan_binding(&plan, &receipt).expect("plan binding");
+        validate_stage_receipt_execution_binding(&plan, &receipt, &root)
+            .expect("execution binding");
+
+        let node = json!({"node_id": "node"});
+        let mut checkpoint = json!({
+            "node_sha256": digest(&node).expect("node digest"), "result": "PASS"
+        });
+        validate_checkpoint_identity(&node, &checkpoint, "node").expect("checkpoint identity");
+        checkpoint["result"] = json!("FAIL");
+        assert_eq!(
+            validate_checkpoint_identity(&node, &checkpoint, "node")
+                .expect_err("checkpoint failure")
+                .code,
+            "GATE-AUDIT-CHECKPOINT-DRIFT"
         );
     }
 
