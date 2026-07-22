@@ -7,26 +7,12 @@ use serde_json::{Value, json};
 
 use super::*;
 use crate::planner::{
-    InventoryProvider, PlanRequest, Planner, PlanningStage, current_execution_context,
+    NextestInventory, PlanRequest, Planner, PlanningStage, current_execution_context,
     derive_execution_key, derive_plan_id,
 };
-use crate::policy::GateDefinition;
 use crate::repository::observe_committed;
 
 static SEQUENCE: AtomicU64 = AtomicU64::new(0);
-
-struct FixedInventory;
-
-impl InventoryProvider for FixedInventory {
-    fn inventory(
-        &self,
-        _repo: &Path,
-        definition: &GateDefinition,
-        target: &str,
-    ) -> Result<Vec<String>> {
-        Ok(vec![format!("{}:{target}", definition.gate_definition_id)])
-    }
-}
 
 struct AuditFixture {
     root: PathBuf,
@@ -343,7 +329,7 @@ fn exact_planner_output_reconstructs_through_the_public_audit_path() {
         authorized_paths,
         source,
     };
-    let plan = Planner::new(FixedInventory)
+    let plan = Planner::new(NextestInventory)
         .build(&repo, &request)
         .expect("canonical planner output");
     let artifacts = repo.join("target/pre-heavy-exact-reconstruction");
