@@ -1,7 +1,7 @@
 # CQR: TESTGATE Executor Complexity
 
 Package: `20260721-cqr-testgate-recovery-05-executor-001`
-Status: `QUEUED`
+Status: `EXECUTING`
 ExecPlan: `docs/work-packages/20260721-cqr-testgate-recovery-closeout-execplan.md`
 Target module: `crates/openwepp-gate-planner/src/executor.rs`
 Target rank: `5` of `7`
@@ -38,13 +38,15 @@ Heavy global gates remain owned by the master ExecPlan.
 ## Scope
 
 In scope: characterization and behavior-preserving private helper extraction in
-`executor.rs`, test-only coverage fixtures when declared, and package evidence.
+`executor.rs`, the split test-only `executor_coverage_tests.rs`, and package evidence.
 Out of scope: schema/policy changes, execution semantics, resource schedules,
 other production modules, and campaign-global TESTGATE.
 
 ## Declared Write Set
 
 - `crates/openwepp-gate-planner/src/executor.rs`
+- `crates/openwepp-gate-planner/src/executor_coverage_tests.rs` (test-only
+  characterization split for line-count governance)
 - `docs/work-packages/20260721-cqr-testgate-recovery-05-executor-001/**`
 - `docs/work-packages/README.md`
 - `docs/work-packages/20260721-cqr-testgate-recovery-closeout-execplan.md`
