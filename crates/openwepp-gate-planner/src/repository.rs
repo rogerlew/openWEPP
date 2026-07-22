@@ -1016,7 +1016,7 @@ fn package_owns_production_target(
         if relative.starts_with(&prefix)
             && Path::new(&relative)
                 .extension()
-                .is_some_and(|extension| extension.eq_ignore_ascii_case("rs"))
+                .is_some_and(|extension| extension == "rs")
             && !relative.contains("/src/tests/")
         {
             return Ok(true);
@@ -1453,6 +1453,7 @@ mod tests {
             "crates/traversal/src",
             "crates/symlink/src",
             "crates/missing/src",
+            "crates/uppercase/src",
             "crates/ancestor",
             "shared/ancestor",
             "shared",
@@ -1467,6 +1468,7 @@ mod tests {
             "crates/traversal/Cargo.toml",
             "crates/symlink/Cargo.toml",
             "crates/missing/Cargo.toml",
+            "crates/uppercase/Cargo.toml",
             "crates/ancestor/Cargo.toml",
             "crates/a/src/lib.rs",
             "crates/b/src/main.rs",
@@ -1475,6 +1477,7 @@ mod tests {
             "shared/traversal.rs",
             "shared/symlink.rs",
             "shared/ancestor/lib.rs",
+            "crates/uppercase/src/lib.RS",
         ] {
             fs::write(root.join(relative), b"fixture\n").expect("write Cargo fixture");
         }
@@ -1529,6 +1532,12 @@ mod tests {
                 "lib",
                 root.join("crates/missing/src/lib.rs"),
             ),
+            package(
+                "uppercase 0.1",
+                "uppercase",
+                "lib",
+                root.join("crates/uppercase/src/lib.RS"),
+            ),
         ];
         let mut members = vec![
             "a 0.1",
@@ -1537,6 +1546,7 @@ mod tests {
             "out-of-tree 0.1",
             "traversal 0.1",
             "missing 0.1",
+            "uppercase 0.1",
         ];
         let mut nodes = vec![
             serde_json::json!({"id": "a 0.1", "deps": []}),
@@ -1545,6 +1555,7 @@ mod tests {
             serde_json::json!({"id": "out-of-tree 0.1", "deps": []}),
             serde_json::json!({"id": "traversal 0.1", "deps": []}),
             serde_json::json!({"id": "missing 0.1", "deps": []}),
+            serde_json::json!({"id": "uppercase 0.1", "deps": []}),
         ];
         #[cfg(unix)]
         {
@@ -1588,6 +1599,7 @@ mod tests {
         assert!(!graph.owns_production_sources("out-of-tree"));
         assert!(!graph.owns_production_sources("traversal"));
         assert!(!graph.owns_production_sources("missing"));
+        assert!(!graph.owns_production_sources("uppercase"));
         #[cfg(unix)]
         {
             assert!(!graph.owns_production_sources("symlink"));
