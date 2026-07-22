@@ -20,3 +20,11 @@ neither target was repeated unchanged.
 Ran: the next changed-head target exposed RTR-038 at 135/153. Source audit found
 and corrected the one adjacent remaining receipt fixture in the same package;
 the failed target was not repeated unchanged.
+
+Ran: after RTR-038 corrected both remaining occurrences, the changed-head
+planner target passes 153/153 with 2 skipped in 1,790.336 seconds. Planner
+all-target Clippy, formatting, and diff hygiene pass.
+
+Ran: reconstructed package audit at exact core correction commit `2f2645bc`
+against pre-edit base `be5b5da8` is `READY` with zero unauthorized paths; audit
+ID `edab63db...fc40e`.
