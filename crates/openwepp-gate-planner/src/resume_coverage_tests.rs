@@ -19,6 +19,29 @@ struct CheckpointFixture {
     receipt: Value,
 }
 
+struct OwnedScratch(PathBuf);
+
+impl OwnedScratch {
+    fn new(label: &str) -> Self {
+        let path =
+            std::env::temp_dir().join(format!("openwepp-resume-{label}-{}", std::process::id()));
+        fs::create_dir_all(&path).expect("scratch root");
+        Self(path)
+    }
+
+    fn path(&self) -> &std::path::Path {
+        &self.0
+    }
+}
+
+impl Drop for OwnedScratch {
+    fn drop(&mut self) {
+        if self.0.is_dir() {
+            fs::remove_dir_all(&self.0).expect("remove scratch root");
+        }
+    }
+}
+
 impl CheckpointFixture {
     fn new() -> Self {
         let root = std::env::temp_dir().join(format!(
@@ -451,10 +474,8 @@ fn candidate_discovery_preserves_initial_error_and_reverse_record_precedence() {
 
 #[test]
 fn receipt_loading_and_envelope_branch_selection_fail_closed() {
-    let scratch = std::env::temp_dir().join(format!(
-        "openwepp-resume-receipt-characterization-{}",
-        std::process::id()
-    ));
+    let owned_scratch = OwnedScratch::new("receipt-characterization");
+    let scratch = owned_scratch.path();
     let artifact_root = scratch.join("execution");
     fs::create_dir_all(&artifact_root).expect("artifact root");
     let mut plan = json!({
@@ -475,7 +496,7 @@ fn receipt_loading_and_envelope_branch_selection_fail_closed() {
     )
     .expect("prior plan");
     let archive = RecoveryArchive {
-        root: scratch.clone(),
+        root: scratch.to_path_buf(),
         artifact_root,
         provenance: json!({
             "workflow": "testgate", "run_attempt": "1", "index_sha256": "f".repeat(64)
@@ -483,33 +504,31 @@ fn receipt_loading_and_envelope_branch_selection_fail_closed() {
     };
     let receipt_path = scratch.join("receipt.json");
 
-    let error = load_accepted_receipt(&scratch, &plan, &archive, &plan, &receipt_path, false)
+    let error = load_accepted_receipt(scratch, &plan, &archive, &plan, &receipt_path, false)
         .expect_err("missing receipt must fail");
     assert_eq!(error.code, "GATE-RESUME-RECEIPT");
 
     fs::write(&receipt_path, b"not-json").expect("malformed receipt");
-    assert!(
-        load_accepted_receipt(&scratch, &plan, &archive, &plan, &receipt_path, false,).is_err()
-    );
+    let error = load_accepted_receipt(scratch, &plan, &archive, &plan, &receipt_path, false)
+        .expect_err("malformed receipt must fail strict parsing");
+    assert_eq!(error.code, "GATE-JSON-INVALID");
 
     fs::write(&receipt_path, b"{}").expect("invalid receipt");
     for admitted in [false, true] {
-        let error =
-            load_accepted_receipt(&scratch, &plan, &archive, &plan, &receipt_path, admitted)
-                .expect_err("invalid receipt must fail after verifier selection");
+        let error = load_accepted_receipt(scratch, &plan, &archive, &plan, &receipt_path, admitted)
+            .expect_err("invalid receipt must fail after verifier selection");
         assert_eq!(error.code, "GATE-RESUME-RECEIPT-INVALID");
     }
 
     fs::remove_file(&receipt_path).expect("remove invalid receipt");
     let envelope =
-        load_recovery_envelope(&scratch, &plan, &archive, false).expect("receipt-absent envelope");
+        load_recovery_envelope(scratch, &plan, &archive, false).expect("receipt-absent envelope");
     assert!(envelope.accepted_receipt.is_none());
     fs::write(&receipt_path, b"{}").expect("restore invalid receipt");
-    let error = load_recovery_envelope(&scratch, &plan, &archive, true)
+    let error = load_recovery_envelope(scratch, &plan, &archive, true)
         .err()
         .expect("receipt-present envelope must invoke verifier");
     assert_eq!(error.code, "GATE-RESUME-RECEIPT-INVALID");
-    fs::remove_dir_all(scratch).expect("remove receipt fixture");
 }
 
 #[test]
