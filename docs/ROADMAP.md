@@ -2,7 +2,7 @@
 
 Status: living — canonical prospective planning queue
 
-Last updated: 2026-07-20
+Last updated: 2026-07-21
 
 This file answers one question: **what work is openWEPP intentionally doing
 next, later, or at a named future gate?** It does not record how the current
@@ -31,7 +31,7 @@ state was reached. Execution history lives in the
 
 | Priority | Owning queue | State | Advancement gate |
 | --- | --- | --- | --- |
-| `TESTGATE-RECOVERY-TRUST-01` recovery trust and qualification readiness | Test/gate architecture | `next` | Execute `20260720-testgate-recovery-trust-001`; require independently admissible checkpoint reuse, real persistent runner recovery, typed audit outcomes, exact claim/package binding, shared ledger canonicalization, and selectable combined quality. |
+| `TESTGATE-RECOVERY-TRUST-01` recovery trust and qualification readiness | Test/gate architecture | `active` | Execute the seven-module CQR queue at `20260721-cqr-testgate-recovery-closeout-execplan.md`, then resume the recovery package only after its global adjudicated CRAP debt is empty. |
 | `TESTGATE-CLOSURE-AUDIT-01` pre-heavy closure and defect correction | Test/gate architecture | `held` | Resume one corrected terminal attempt only after `TESTGATE-RECOVERY-TRUST-01` closes and both independent HOLD reviews are dispositioned. |
 | `TESTGATE-WORKFLOW-QUALIFY-01` black-box workflow qualification | Test/gate architecture | `queued` | After `TESTGATE-CLOSURE-AUDIT-01` closes, execute `20260720-testgate-workflow-qualify-001` against the frozen implementation. Require all bounded adversarial cases plus one real trusted-runner execution; qualification cannot edit the tooling it evaluates. |
 | `SNOW-SURFACE-EB` sublimation and longwave | Snow/frost science | `queued` | Scaffold a contract-first package that reconciles the multilayer surface-energy, vapor-mass, and longwave backlog with the current meteorology and snow-column implementation. |

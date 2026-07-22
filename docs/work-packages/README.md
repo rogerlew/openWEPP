@@ -228,7 +228,13 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-07-20 UTC`:
+State as of `2026-07-21 UTC`:
+
+- `20260721-cqr-testgate-recovery-01-pre-heavy-001/` -
+  QUEUED: first of the seven one-module CQR packages required by the
+  attempt-15 adjudicated CRAP report before TESTGATE recovery closeout may
+  resume. It owns only `pre_heavy.rs` admission complexity and is scaffolded
+  before any implementation edit.
 
 - `20260720-testgate-recovery-trust-001/` -
   ACTIVE-SCAFFOLD: `TESTGATE-RECOVERY-TRUST-01` owns the checkpoint trust,
