@@ -32,3 +32,7 @@ Static: final Review A and Review B both pass. RTR-028 is durably CLOSED with
 ledger entry SHA-256
 `f1083bfd8674033b535405ed534d0f7ae6cfe923191a10115a0d0cd4c8411f9b`.
 Dual terminal verification is the only remaining rank-6 gate.
+
+Static/Ran: dual terminal verification passed after all docs-only findings were
+accepted, corrected, and explicitly dispositioned. Rank 6 has no remaining
+gate or defect blocker.

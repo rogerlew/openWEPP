@@ -1,16 +1,15 @@
 # CQR: TESTGATE Verifier Complexity
 
 Package: `20260721-cqr-testgate-recovery-06-verifier-001`
-Status: `EXECUTING`
+Status: `COMPLETE`
 ExecPlan: `docs/work-packages/20260721-cqr-testgate-recovery-closeout-execplan.md`
 Target module: `crates/openwepp-gate-planner/src/verifier.rs`
 Target rank: `6` of `7`
 Quality dimension: `CRAP/cyclomatic-complexity`
 
-Current phase: dual implementation review findings and the discovered
-write-set syntax defect are corrected; focused clean-head validation and the
-single corrected-head metric passed. Renewed dual review passed and RTR-028 is
-durably closed. Dual terminal verification remains pending.
+Current phase: complete. Corrected-head coverage/CRAP, renewed dual review,
+RTR-028 durable closure, and dual terminal verification all pass. Rank 7 is
+unblocked.
 
 ## Objective
 

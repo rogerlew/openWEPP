@@ -1,6 +1,6 @@
 # Disposition
 
-Status: `EXECUTED-COMPLETE` candidate pending dual terminal verification.
+Status: `EXECUTED-COMPLETE`.
 
 Static: no production extraction was required because the exact baseline had
 no compiled function above CRAP 30. Test-only characterization closes the
@@ -21,3 +21,6 @@ unchanged production bytes. RTR-028 is corrected, reviewed, and durably closed.
 | Terminal Verifier A | Review findings lacked explicit disposition values | `accepted` - corrected | `75295249` |
 
 Static: no finding was rejected, deferred, or assigned follow-up treatment.
+
+Static/Ran: dual terminal verification PASS with no remaining findings. Rank 6
+is complete and rank 7 may scaffold.
