@@ -2894,7 +2894,7 @@ pub(crate) mod tests {
         let (repo, plan) = execution_fixture(
             "e2e-mutation-repo",
             &[
-                gate_definition("affected-adjudicated-crap-v1", &["./tools/mutate.sh"], &[]),
+                gate_definition("adjudicated-crap-v1", &["./tools/mutate.sh"], &[]),
                 gate_definition("fixture-independent-v1", &["./tools/mark.sh"], &[]),
             ],
         );

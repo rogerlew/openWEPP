@@ -1412,7 +1412,15 @@
             serde_json::json!(request.source.head_commit)
         );
         assert_eq!(&plan["execution_context"], context);
-        assert_eq!(plan["risk"]["class"], "BOUNDED_COMPONENT");
+        assert_eq!(plan["risk"]["class"], "CRITICAL");
+        assert!(
+            plan["risk"]["reason_codes"]
+                .as_array()
+                .expect("reason codes")
+                .contains(&serde_json::json!(
+                    "MEASUREMENT_ONLY_PACKAGE_REQUIRES_GLOBAL_QUALITY"
+                ))
+        );
         assert_eq!(
             plan["affected_packages"],
             serde_json::json!(["consumer", "executor-fixture", "legacy"])

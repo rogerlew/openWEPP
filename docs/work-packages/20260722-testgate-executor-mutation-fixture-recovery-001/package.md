@@ -6,6 +6,14 @@ Queue ID: `TESTGATE-EXECUTOR-MUTATION-FIXTURE-RECOVERY-01`
 
 Status: `ACTIVE / SCAFFOLD`
 
+## Progress
+
+- [x] Scaffold commit `d0396804` predates the fixture edit.
+- [x] Replace only the invalid affected-CRAP fixture identity.
+- [x] Exact mutation and graph-union regressions pass.
+- [ ] Commit, run owning target/Clippy, package audit, and dual review.
+- [ ] Close RTR-037 and resume RTR-035 closure.
+
 ## Objective
 
 Close RTR-037 by aligning the root-only executor mutation fixture with global
