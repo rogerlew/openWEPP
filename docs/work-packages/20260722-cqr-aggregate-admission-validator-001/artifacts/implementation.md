@@ -4,7 +4,17 @@ Static: scaffold commit `86b15053` predates all tool and test edits.
 
 Static: `check_cqr_aggregate_admission.py` fail-closes unless the aggregate
 package has `ACTIVE`/`READY` scaffold status, an unchanged canonical write set,
-an exact module package/commit binding, strict ancestry before the module
-scaffold, and coverage of every module intended-write-set entry. The canonical
-command is bound consistently in tool docs, the CQR standard, work-package
-instructions, nightly ExecPlan, and module template.
+strict ancestry before one unique module scaffold, and immutable module
+bindings/write-set recorded at that scaffold. The committed package-local batch
+manifest must bind the master ExecPlan, complete module package list, catalog,
+and all required paths; both the manifest and aggregate scaffold must cover the
+module plan.
+
+Static: the first dual review findings were accepted. The correction aligns the
+validator with the template's `Intended Write Set`, reads module authority at
+its addition commit, rejects duplicate/malformed authority and delete/re-add
+ambiguity, adds complete-batch manifest binding, and orders the operator flow as
+aggregate scaffold -> module scaffold commit -> retained validator PASS ->
+implementation. The canonical command and ordering are bound consistently in
+tool docs, the CQR standard, work-package instructions, nightly ExecPlan, and
+module template.

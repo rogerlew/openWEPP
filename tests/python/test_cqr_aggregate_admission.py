@@ -11,10 +11,21 @@ REPO = Path(__file__).resolve().parents[2]
 VALIDATOR = REPO / "tools/local_ci/check_cqr_aggregate_admission.py"
 AGGREGATE = "docs/work-packages/aggregate/package.md"
 MODULE = "docs/work-packages/module/package.md"
+MANIFEST = "docs/work-packages/aggregate/artifacts/batch-authority.json"
+MASTER = "docs/work-packages/cqr-batch-execplan.md"
 
 
 class Fixture:
-    def __init__(self, aggregate_status: str = "ACTIVE", cover_tests: bool = True) -> None:
+    def __init__(
+        self,
+        *,
+        aggregate_status: str = "ACTIVE",
+        cover_tests: bool = True,
+        manifest_master: bool = True,
+        module_paths: list[str] | None = None,
+        module_suffix: str = "",
+        scaffold_bindings: bool = True,
+    ) -> None:
         self.temporary = tempfile.TemporaryDirectory(prefix="cqr-aggregate-validator-")
         self.root = Path(self.temporary.name)
         self.git("init", "-q")
@@ -22,17 +33,26 @@ class Fixture:
         self.git("config", "user.email", "codex@example.invalid")
         patterns = [
             "crates/example/src/lib.rs",
+            "docs/work-packages/aggregate/**",
+            MASTER,
             "docs/work-packages/module/**",
             "docs/work-packages/README.md",
         ]
         if cover_tests:
             patterns.append("tests/python/test_example.py")
         self.write(AGGREGATE, self.aggregate_text(aggregate_status, patterns))
+        self.write(MANIFEST, self.manifest_text(cover_tests, manifest_master))
+        self.write(MASTER, "# CQR Batch ExecPlan\n")
         self.commit("aggregate scaffold")
         self.aggregate_scaffold = self.git("rev-parse", "HEAD")
         self.write(
             MODULE,
-            self.module_text(self.aggregate_scaffold),
+            self.module_text(
+                self.aggregate_scaffold,
+                paths=module_paths,
+                suffix=module_suffix,
+                include_bindings=scaffold_bindings,
+            ),
         )
         self.commit("module scaffold")
         self.module_scaffold = self.git("rev-parse", "HEAD")
@@ -65,20 +85,61 @@ class Fixture:
         return f"# Aggregate\n\nStatus: `{status}`\n\n## Declared Write Set\n\n{bullets}\n"
 
     @staticmethod
-    def module_text(scaffold: str, aggregate: str = AGGREGATE) -> str:
+    def manifest_text(cover_tests: bool = True, include_master: bool = True) -> str:
+        required_paths = [
+            "docs/work-packages/README.md",
+            MODULE,
+            MANIFEST,
+            "docs/work-packages/module/**",
+            "docs/work-packages/aggregate/**",
+            "crates/example/src/lib.rs",
+        ]
+        if include_master:
+            required_paths.insert(0, MASTER)
+        if cover_tests:
+            required_paths.append("tests/python/test_example.py")
+        return json.dumps(
+            {
+                "schema_version": "openwepp-cqr-aggregate-batch-v1",
+                "aggregate_package": AGGREGATE,
+                "master_execplan": MASTER,
+                "module_packages": [MODULE],
+                "required_paths": required_paths,
+            },
+            indent=2,
+        ) + "\n"
+
+    @staticmethod
+    def module_text(
+        scaffold: str,
+        aggregate: str = AGGREGATE,
+        *,
+        paths: list[str] | None = None,
+        suffix: str = "",
+        include_bindings: bool = True,
+    ) -> str:
+        bindings = ""
+        if include_bindings:
+            bindings = f"""Aggregate admission package: `{aggregate}`
+Aggregate scaffold commit: `{scaffold}`
+Aggregate batch manifest: `{MANIFEST}`
+Master ExecPlan: `{MASTER}`
+"""
+        planned = paths or [
+            "crates/example/src/lib.rs",
+            "tests/python/test_example.py",
+            "docs/work-packages/module/**",
+            "docs/work-packages/README.md",
+        ]
+        bullets = "\n".join(f"- `{path}`" for path in planned)
         return f"""# Module
 
 Status: `ACTIVE`
-Aggregate admission package: `{aggregate}`
-Aggregate scaffold commit: `{scaffold}`
+{bindings}
+## Intended Write Set
 
-## Declared Write Set
-
-- `crates/example/src/lib.rs`
-- `tests/python/test_example.py`
-- `docs/work-packages/module/**`
-- `docs/work-packages/README.md`
-"""
+{bullets}
+{suffix}"""
 
     def run(
         self,
@@ -116,10 +177,13 @@ class AggregateAdmissionTests(unittest.TestCase):
         self.assertEqual(payload["status"], "FAIL")
         self.assertIn(phrase, payload["error"])
 
-    def test_accepts_earlier_immutable_covering_authority(self) -> None:
+    def test_accepts_canonical_template_shape_and_batch_manifest(self) -> None:
         result = self.fixture().run()
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        self.assertEqual(json.loads(result.stdout)["status"], "PASS")
+        payload = json.loads(result.stdout)
+        self.assertEqual(payload["status"], "PASS")
+        self.assertEqual(payload["aggregate_batch_manifest"], MANIFEST)
+        self.assertEqual(payload["master_execplan"], MASTER)
 
     def test_rejects_non_active_scaffold_status(self) -> None:
         self.assert_failure(
@@ -139,7 +203,7 @@ class AggregateAdmissionTests(unittest.TestCase):
             "does not cover",
         )
 
-    def test_rejects_aggregate_scaffold_that_does_not_predate_module(self) -> None:
+    def test_rejects_late_aggregate_scaffold(self) -> None:
         fixture = self.fixture()
         fixture.write("late-marker.txt", "late\n")
         fixture.commit("late aggregate marker")
@@ -152,10 +216,7 @@ class AggregateAdmissionTests(unittest.TestCase):
         fixture = self.fixture()
         fixture.write(
             AGGREGATE,
-            Fixture.aggregate_text(
-                "ACTIVE",
-                ["crates/example/src/lib.rs", "docs/work-packages/module/**"],
-            ),
+            Fixture.aggregate_text("ACTIVE", ["docs/work-packages/**"]),
         )
         fixture.commit("mutate aggregate authority")
         self.assert_failure(fixture.run(), "changed after scaffold")
@@ -170,7 +231,57 @@ class AggregateAdmissionTests(unittest.TestCase):
             ),
         )
         fixture.commit("mismatch module binding")
-        self.assert_failure(fixture.run(), "binding does not match")
+        self.assert_failure(fixture.run(), "binding changed after scaffold")
+
+    def test_rejects_bindings_added_after_unique_module_scaffold(self) -> None:
+        fixture = self.fixture(scaffold_bindings=False)
+        fixture.write(MODULE, Fixture.module_text(fixture.aggregate_scaffold))
+        fixture.commit("late aggregate binding")
+        self.assert_failure(fixture.run(), "Aggregate admission package")
+
+    def test_rejects_module_write_set_mutation(self) -> None:
+        fixture = self.fixture()
+        fixture.write(
+            MODULE,
+            Fixture.module_text(
+                fixture.aggregate_scaffold,
+                paths=[
+                    "crates/example/src/lib.rs",
+                    "tests/python/test_example.py",
+                    "docs/work-packages/module/**",
+                ],
+            ),
+        )
+        fixture.commit("mutate module authority")
+        self.assert_failure(fixture.run(), "intended write set changed")
+
+    def test_rejects_deleted_and_readded_module_package(self) -> None:
+        fixture = self.fixture()
+        fixture.git("rm", "-q", MODULE)
+        fixture.commit("delete module package")
+        fixture.write(MODULE, Fixture.module_text(fixture.aggregate_scaffold))
+        fixture.commit("readd module package")
+        self.assert_failure(fixture.run(), "unique scaffold addition")
+
+    def test_rejects_parent_traversal_path(self) -> None:
+        self.assert_failure(
+            self.fixture(module_paths=["../outside.rs"]).run(),
+            "not repository-relative",
+        )
+
+    def test_rejects_duplicate_intended_write_set_heading(self) -> None:
+        self.assert_failure(
+            self.fixture(
+                module_suffix="\n## Intended Write Set\n\n- `crates/example/src/lib.rs`\n"
+            ).run(),
+            "exactly one section",
+        )
+
+    def test_rejects_manifest_that_omits_mandatory_master(self) -> None:
+        self.assert_failure(
+            self.fixture(manifest_master=False).run(),
+            "omits mandatory paths",
+        )
 
 
 if __name__ == "__main__":

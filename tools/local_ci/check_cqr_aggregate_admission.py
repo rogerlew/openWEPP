@@ -15,6 +15,7 @@ from pathlib import Path
 PACKAGE_RE = re.compile(r"^docs/work-packages/[^/]+/package\.md$")
 FIELD_RE = re.compile(r"^(?P<label>[^:]+):\s*`(?P<value>[^`]+)`\s*$")
 WRITE_SET_ITEM_RE = re.compile(r"^- `(?P<path>[^`]+)`$")
+MANIFEST_SCHEMA = "openwepp-cqr-aggregate-batch-v1"
 
 
 class AdmissionError(RuntimeError):
@@ -43,10 +44,10 @@ def _git_text(repo: Path, revision: str, path: str) -> str:
 def _section(text: str, heading: str) -> list[str]:
     lines = text.splitlines()
     marker = f"## {heading}"
-    try:
-        start = lines.index(marker) + 1
-    except ValueError as error:
-        raise AdmissionError(f"missing section: {marker}") from error
+    positions = [index for index, line in enumerate(lines) if line == marker]
+    if len(positions) != 1:
+        raise AdmissionError(f"expected exactly one section: {marker}")
+    start = positions[0] + 1
     end = next(
         (index for index in range(start, len(lines)) if lines[index].startswith("## ")),
         len(lines),
@@ -54,33 +55,74 @@ def _section(text: str, heading: str) -> list[str]:
     return lines[start:end]
 
 
-def _write_set(text: str) -> list[str]:
+def _canonical_path(path: str, label: str) -> str:
+    if (
+        path.startswith("/")
+        or "\\" in path
+        or any(part in {"", ".", ".."} for part in path.split("/"))
+    ):
+        raise AdmissionError(f"{label} is not repository-relative: {path}")
+    return path
+
+
+def _write_set(text: str, heading: str) -> list[str]:
+    body = [line for line in _section(text, heading) if line]
+    if any(WRITE_SET_ITEM_RE.fullmatch(line) is None for line in body):
+        raise AdmissionError(f"malformed bullet in {heading}")
     patterns = [
-        match.group("path")
-        for line in _section(text, "Declared Write Set")
-        if (match := WRITE_SET_ITEM_RE.fullmatch(line))
+        _canonical_path(WRITE_SET_ITEM_RE.fullmatch(line).group("path"), heading)
+        for line in body
     ]
     if not patterns:
         raise AdmissionError("declared write set is empty or not canonical")
+    if len(patterns) != len(set(patterns)):
+        raise AdmissionError(f"duplicate path in {heading}")
     return patterns
 
 
 def _field(text: str, label: str) -> str:
+    values = []
     for line in text.splitlines():
         match = FIELD_RE.fullmatch(line)
         if match and match.group("label") == label:
-            value = match.group("value")
-            if "{{" in value or "}}" in value:
-                raise AdmissionError(f"unresolved placeholder in {label}")
-            return value
-    raise AdmissionError(f"missing field: {label}")
+            values.append(match.group("value"))
+    if len(values) != 1:
+        raise AdmissionError(f"expected exactly one field: {label}")
+    value = values[0]
+    if "{{" in value or "}}" in value:
+        raise AdmissionError(f"unresolved placeholder in {label}")
+    return value
 
 
 def _status(text: str) -> str:
-    for line in text.splitlines():
-        if line.startswith("Status:"):
-            return line.removeprefix("Status:").strip(" `*")
-    raise AdmissionError("aggregate package has no status")
+    values = [
+        line.removeprefix("Status:").strip(" `*")
+        for line in text.splitlines()
+        if line.startswith("Status:")
+    ]
+    if len(values) != 1:
+        raise AdmissionError("aggregate package must have exactly one status")
+    return values[0]
+
+
+def _batch_manifest(repo: Path, revision: str, path: str) -> dict[str, object]:
+    path = _canonical_path(path, "aggregate batch manifest")
+    try:
+        value = json.loads(_git(repo, "show", f"{revision}:{path}"))
+    except json.JSONDecodeError as error:
+        raise AdmissionError("aggregate batch manifest is not valid JSON") from error
+    if not isinstance(value, dict) or value.get("schema_version") != MANIFEST_SCHEMA:
+        raise AdmissionError("aggregate batch manifest schema is invalid")
+    return value
+
+
+def _string_paths(value: object, label: str) -> list[str]:
+    if not isinstance(value, list) or any(not isinstance(item, str) for item in value):
+        raise AdmissionError(f"{label} must be a list of strings")
+    paths = [_canonical_path(item, label) for item in value]
+    if len(paths) != len(set(paths)):
+        raise AdmissionError(f"{label} contains duplicates")
+    return paths
 
 
 def _covers(authority: str, planned: str) -> bool:
@@ -108,15 +150,9 @@ def validate(
     status = _status(base_aggregate)
     if status not in {"ACTIVE", "READY"}:
         raise AdmissionError("aggregate scaffold status must be ACTIVE or READY")
-    base_write_set = _write_set(base_aggregate)
-    if base_write_set != _write_set(current_aggregate):
+    base_write_set = _write_set(base_aggregate, "Declared Write Set")
+    if base_write_set != _write_set(current_aggregate, "Declared Write Set"):
         raise AdmissionError("aggregate declared write set changed after scaffold")
-
-    module_text = _git_text(repo, head, module_package)
-    if _field(module_text, "Aggregate admission package") != aggregate_package:
-        raise AdmissionError("module aggregate package binding does not match")
-    if _field(module_text, "Aggregate scaffold commit") != aggregate_scaffold:
-        raise AdmissionError("module aggregate scaffold binding does not match")
 
     additions = _git(
         repo,
@@ -127,8 +163,8 @@ def validate(
         "--",
         module_package,
     ).splitlines()
-    if not additions:
-        raise AdmissionError("module package has no committed scaffold addition")
+    if len(additions) != 1:
+        raise AdmissionError("module package must have one unique scaffold addition")
     module_scaffold = additions[0]
     ancestor = subprocess.run(
         ["git", "merge-base", "--is-ancestor", aggregate_scaffold, module_scaffold],
@@ -138,7 +174,69 @@ def validate(
     if not ancestor or aggregate_scaffold == module_scaffold:
         raise AdmissionError("aggregate scaffold must predate module scaffold")
 
-    planned_paths = _write_set(module_text)
+    scaffold_module = _git_text(repo, module_scaffold, module_package)
+    current_module = _git_text(repo, head, module_package)
+    binding_labels = [
+        "Aggregate admission package",
+        "Aggregate scaffold commit",
+        "Aggregate batch manifest",
+        "Master ExecPlan",
+    ]
+    scaffold_bindings = {label: _field(scaffold_module, label) for label in binding_labels}
+    current_bindings = {label: _field(current_module, label) for label in binding_labels}
+    if scaffold_bindings != current_bindings:
+        raise AdmissionError("module aggregate binding changed after scaffold")
+    if scaffold_bindings["Aggregate admission package"] != aggregate_package:
+        raise AdmissionError("module aggregate package binding does not match")
+    if scaffold_bindings["Aggregate scaffold commit"] != aggregate_scaffold:
+        raise AdmissionError("module aggregate scaffold binding does not match")
+    scaffold_paths = _write_set(scaffold_module, "Intended Write Set")
+    if scaffold_paths != _write_set(current_module, "Intended Write Set"):
+        raise AdmissionError("module intended write set changed after scaffold")
+
+    manifest_path = scaffold_bindings["Aggregate batch manifest"]
+    aggregate_root = aggregate_package.removesuffix("package.md")
+    if not manifest_path.startswith(aggregate_root):
+        raise AdmissionError("aggregate batch manifest must be package-local")
+    manifest = _batch_manifest(repo, aggregate_scaffold, manifest_path)
+    if manifest.get("aggregate_package") != aggregate_package:
+        raise AdmissionError("aggregate batch manifest package binding does not match")
+    master_execplan = _canonical_path(
+        scaffold_bindings["Master ExecPlan"], "master ExecPlan"
+    )
+    if manifest.get("master_execplan") != master_execplan:
+        raise AdmissionError("module and batch manifest master ExecPlan differ")
+    module_packages = _string_paths(manifest.get("module_packages"), "module_packages")
+    required_paths = _string_paths(manifest.get("required_paths"), "required_paths")
+    if module_package not in module_packages:
+        raise AdmissionError("module package is absent from aggregate batch manifest")
+    mandatory = [
+        manifest_path,
+        master_execplan,
+        "docs/work-packages/README.md",
+        *module_packages,
+    ]
+    if any(path not in required_paths for path in mandatory):
+        raise AdmissionError("aggregate batch manifest omits mandatory paths")
+    uncovered_manifest = [
+        path
+        for path in required_paths
+        if not any(_covers(authority, path) for authority in base_write_set)
+    ]
+    if uncovered_manifest:
+        raise AdmissionError(
+            f"aggregate write set does not cover batch manifest: {uncovered_manifest}"
+        )
+    planned_paths = scaffold_paths
+    absent_from_manifest = [
+        path
+        for path in planned_paths
+        if not any(_covers(required, path) for required in required_paths)
+    ]
+    if absent_from_manifest:
+        raise AdmissionError(
+            f"aggregate batch manifest does not cover module paths: {absent_from_manifest}"
+        )
     uncovered = [
         planned
         for planned in planned_paths
@@ -153,6 +251,8 @@ def validate(
         "aggregate_scaffold_commit": aggregate_scaffold,
         "module_package": module_package,
         "module_scaffold_commit": module_scaffold,
+        "aggregate_batch_manifest": manifest_path,
+        "master_execplan": master_execplan,
         "planned_paths": planned_paths,
     }
 

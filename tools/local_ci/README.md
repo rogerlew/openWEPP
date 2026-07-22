@@ -43,8 +43,11 @@ append-only log is `target/local-ci-history/nextest-runs.jsonl`.
 
 ## CQR Aggregate Admission
 
-Before the first implementation edit in a multi-package CQR batch, validate
-each module package against the earlier aggregate scaffold:
+Before the first implementation edit in a multi-package CQR batch, commit an
+aggregate scaffold with its package-local batch manifest. The manifest must
+enumerate the master ExecPlan, every module package, and all required batch
+paths. Bind that authority in each module scaffold, commit the module scaffold,
+then validate it against the earlier aggregate scaffold:
 
 ```bash
 python tools/local_ci/check_cqr_aggregate_admission.py \
@@ -57,8 +60,10 @@ python tools/local_ci/check_cqr_aggregate_admission.py \
 The command fails unless the aggregate package existed with `ACTIVE` or
 `READY` status at the named commit, its declared write set remains unchanged,
 it predates the module scaffold, the module binds the exact package/commit, and
-every module intended-write-set entry is covered. Retain the PASS JSON in the
-module's scaffold evidence before implementation.
+the immutable batch manifest and module scaffold jointly bind the master plan,
+complete module list, and intended write set. Duplicate headings/fields,
+non-canonical paths, late bindings, and post-scaffold write-set changes fail
+closed. Retain the PASS JSON before production/test implementation.
 
 ## TESTGATE Increment Execution
 Build the repository-owned planner/executor, then create one external evidence

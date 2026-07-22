@@ -19,6 +19,8 @@ Target rank: `{{rank}}` of `{{selected_count}}`
 Quality dimension: `CRAP/cyclomatic-complexity`
 Aggregate admission package: `{{aggregate_admission_package}}`
 Aggregate scaffold commit: `{{aggregate_scaffold_commit}}`
+Aggregate batch manifest: `{{aggregate_batch_manifest}}`
+Master ExecPlan: `{{master_execplan}}`
 
 ## Objective
 
@@ -98,14 +100,19 @@ Out of scope:
 Do not edit unrelated dirty files. If the target path is already dirty from
 unrelated work, stop before implementation and record a global/process hold.
 
-## Scaffold Commit Gate
+## Scaffold And Aggregate Admission Gate
 
-Before this module scaffold, verify the batch aggregate admission package
-exists at `{{aggregate_scaffold_commit}}`, has `ACTIVE` or `READY` status, and
-immutably authorizes the batch master plan, all selected module package trees,
-intended source/test paths, catalog, and closeout evidence. Missing aggregate
-authority blocks implementation; do not widen an older package retroactively.
-Run and retain:
+Before creating this module scaffold, verify the batch aggregate admission
+package exists at `{{aggregate_scaffold_commit}}`, has `ACTIVE` or `READY`
+status, and commits `{{aggregate_batch_manifest}}`. The manifest must enumerate
+`{{master_execplan}}`, every selected module package, intended source/test
+paths, the catalog, and closeout evidence. Missing aggregate authority blocks
+implementation; do not widen an older package retroactively.
+
+Commit this module scaffold before running the validator. The scaffold commit
+includes this `package.md`, prompt directories, artifact placeholders including
+`artifacts/eligibility-classification.md`, target-selection evidence, baseline
+command provenance, and this gate list. Then run and retain:
 
 ```bash
 python tools/local_ci/check_cqr_aggregate_admission.py \
@@ -115,12 +122,8 @@ python tools/local_ci/check_cqr_aggregate_admission.py \
   --module-package docs/work-packages/{{package_id}}/package.md
 ```
 
-The command must return `PASS` before implementation.
-
-Before any production/test implementation edit, commit the scaffold for this
-package. The scaffold commit includes this `package.md`, prompt directories,
-artifact placeholders including `artifacts/eligibility-classification.md`,
-target-selection evidence, baseline command provenance, and this gate list.
+The command must return `PASS`, and its JSON must be retained in the module
+package, before any production or test implementation edit.
 
 If the scaffold commit cannot be created because commits are not authorized, stop
 and report the blocked commit boundary.

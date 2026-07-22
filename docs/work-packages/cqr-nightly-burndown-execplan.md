@@ -35,10 +35,14 @@ qualification will reconcile one exact batch diff. The aggregate package must
 exist at its own base commit with `ACTIVE` or `READY` status and an immutable
 write set covering the master plan, every module package tree, every intended
 source/test path, the catalog, and closeout evidence. Record its path and
-scaffold commit in every module package. This authority does not replace the
-one-module packages. If it is absent, stop before implementation; do not widen
-an older package after the diff exists. Run the canonical validator for each
-module and retain its PASS JSON in that module's scaffold evidence:
+scaffold commit in every module package. Commit a package-local batch manifest
+at that same aggregate scaffold. The manifest enumerates the master ExecPlan,
+all module packages, and every required batch path. Bind the manifest and
+master ExecPlan paths in each module package. This authority does not replace
+the one-module packages. If it is absent, stop before implementation; do not
+widen an older package after the diff exists. After each module scaffold is
+committed, run the canonical validator and retain its PASS JSON before the
+module's first production or test implementation edit:
 
 ```bash
 python tools/local_ci/check_cqr_aggregate_admission.py \
@@ -195,10 +199,11 @@ selected target unless the operator explicitly forbids commits.
 
 For each selected module:
 
-1. Confirm the batch aggregate authority package and scaffold commit are bound
-   in the module package, then retain the canonical validator's PASS JSON.
-2. Scaffold the package from the template.
-3. Commit the scaffold.
+1. Scaffold the package from the template, binding the earlier aggregate
+   package, scaffold commit, batch manifest, and master ExecPlan.
+2. Commit the module scaffold.
+3. Run the canonical aggregate-admission validator and retain its PASS JSON.
+   A failure blocks production/test implementation.
 4. Capture baseline metrics inside the package artifacts.
 5. Confirm or create characterization coverage before refactoring.
 6. If characterization tests are added or materially changed, record ADR-0021

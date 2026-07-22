@@ -67,8 +67,12 @@ package targets **one module and one quality dimension** (§2.2).
    module still retains its one-module package and write set. Do not create the
    aggregate authority after execution or widen an older package retroactively;
    if it is missing, stop before the first production edit and correct the
-   scaffold. Run `tools/local_ci/check_cqr_aggregate_admission.py` for every
-   module package and retain its PASS JSON before implementation.
+   scaffold. Commit a package-local batch manifest with the aggregate scaffold;
+   it must enumerate the master ExecPlan, every module package, and all required
+   batch paths. Scaffold and commit each module with exact aggregate, manifest,
+   and master-plan bindings, then run
+   `tools/local_ci/check_cqr_aggregate_admission.py` and retain its PASS JSON
+   before that module's first production or test implementation edit.
 
 ## 3) In-scope dimensions and their closure metric
 
