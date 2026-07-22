@@ -21,3 +21,7 @@ Static: RTR-041 removes filesystem canonicalization for every Cargo target on
 each reconstructed graph load. Locked metadata already supplies absolute paths;
 lexical strip-prefix confinement and the exact target-kind/source predicates
 remain unchanged.
+
+Ran: at changed HEAD `2010fc5a`, the exact previously timed-out public-audit
+reconstruction test passes 1/1 in 476.228 seconds, below its unchanged 600-second
+ceiling. No unchanged rerun occurred.

@@ -14,7 +14,7 @@ Status: `ACTIVE / SCAFFOLD`
 - [x] Re-express global fixtures and measurement-only assertions under helpers.
 - [x] Focused classification/planner/fixture regressions pass 9/9 total.
 - [x] Core aggregate correction commit `04f3b619`; package audit `READY`.
-- [ ] Correct RTR-041 reconstruction timeout and rerun its exact changed-head seam.
+- [x] Correct RTR-041; exact changed-head reconstruction passes in 476.228s.
 - [ ] Run changed-head owning target/Clippy and dual review.
 - [ ] Close RTR-035 through RTR-040 and delegate qualification.
 
