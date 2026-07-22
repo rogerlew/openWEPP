@@ -125,6 +125,11 @@ fn ready_admitted_fixture() -> ReadyAdmittedFixture {
     let audit = construct_audit(repo.path(), &plan, &light, artifacts.path(), ledger.path())
         .expect("construct READY audit");
     assert_eq!(audit.as_value()["status"], "READY");
+    assert_eq!(
+        audit.as_value()["package_admission"]["changed_paths"],
+        plan["authorized_paths"],
+        "isolated package authority must admit the fixture's exact source range"
+    );
     let receipt = execute_plan_stage(
         repo.path(),
         &plan,
