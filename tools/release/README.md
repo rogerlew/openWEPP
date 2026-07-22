@@ -18,8 +18,12 @@ in the sealed acquisition provenance.
     --base-ref <ref>` is the bounded increment path. Repeated packages are the
     terminal plan's exact affected/reverse-dependent closure. One instrumented
     Nextest run emits JUnit and LCOV, then CRAP is evaluated for that package
-    set. The mode is fresh-only and cannot substitute for global critical,
-    campaign, or release closure.
+    set. Before acquisition, every requested package must own production sources
+    under `crates/*/src`; measurement-only packages such as the workspace-root
+    integration harness fail closed and require global quality. Unknown or
+    measurement-only packages fail before compilation; the exact admitted scope
+    is retained as `affected-package-scope.json`. The mode is fresh-only and
+    cannot substitute for global critical, campaign, or release closure.
   - Applies the exact production filter and deduplication tuple established by
     the completed CQR pre-integration campaign.
   - Fresh closure snapshots every production Rust source, Rust/Cargo/gate
@@ -43,8 +47,8 @@ in the sealed acquisition provenance.
   - Fail-closed evaluator used by the shell driver. It validates registry
     schema, current and historical whole-file hashes, exact symbols,
     classifications, evidence hashes/content bindings, production-crate census,
-    source manifest, and path containment before generating JSON and Markdown
-    reports.
+    measurement-to-production package scope, source manifest, and path
+    containment before generating JSON and Markdown reports.
 - `run_release_candidate_gates.sh`
   - Requires `--mode validate` or `--mode release`; ambiguous invocation fails.
   - Validation mode runs workspace gates (`fmt`, `clippy`, full-profile `nextest`, `deny`, the

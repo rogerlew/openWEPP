@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -75,6 +76,42 @@ def _initialize_repo(repo: Path) -> None:
         ],
         cwd=repo,
         check=True,
+    )
+
+
+def _configure_measurement_workspace(repo: Path, *, root_depends_on_example: bool) -> None:
+    dependency = (
+        'example = { path = "crates/example" }\n'
+        if root_depends_on_example
+        else ""
+    )
+    (repo / "Cargo.toml").write_text(
+        "[package]\n"
+        'name = "measurement-root"\n'
+        'version = "0.1.0"\n'
+        'edition = "2024"\n\n'
+        "[workspace]\n"
+        'members = ["crates/example"]\n'
+        'resolver = "2"\n\n'
+        "[dependencies]\n"
+        f"{dependency}",
+        encoding="utf-8",
+    )
+    root_source = repo / "src" / "lib.rs"
+    root_source.parent.mkdir(exist_ok=True)
+    root_source.write_text("//! Measurement-only test aggregator.\n", encoding="utf-8")
+    (repo / "crates" / "example" / "Cargo.toml").write_text(
+        "[package]\n"
+        'name = "example"\n'
+        'version = "0.1.0"\n'
+        'edition = "2024"\n',
+        encoding="utf-8",
+    )
+    subprocess.run(
+        ["cargo", "generate-lockfile", "--offline"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
     )
 
 
@@ -156,6 +193,83 @@ class AdjudicatedCrapGateTests(unittest.TestCase):
 
     def tearDown(self) -> None:
         self.temporary.cleanup()
+
+    def test_measurement_root_requires_global_quality(self) -> None:
+        _configure_measurement_workspace(self.repo, root_depends_on_example=True)
+        with self.assertRaisesRegex(gate.GateInputError, "requires global quality"):
+            gate.resolve_measurement_packages(self.repo, {"measurement-root"})
+
+    def test_production_measurement_package_resolves_to_itself(self) -> None:
+        _configure_measurement_workspace(self.repo, root_depends_on_example=True)
+        scope = gate.resolve_measurement_packages(self.repo, {"example"})
+        self.assertEqual(scope["production_packages"], ["example"])
+
+    def test_unknown_measurement_package_fails_closed(self) -> None:
+        _configure_measurement_workspace(self.repo, root_depends_on_example=True)
+        with self.assertRaisesRegex(gate.GateInputError, "unknown workspace packages"):
+            gate.resolve_measurement_packages(self.repo, {"missing"})
+
+    def test_scope_preflight_prints_resolved_identity(self) -> None:
+        _configure_measurement_workspace(self.repo, root_depends_on_example=True)
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPT),
+                "--repo-root",
+                str(self.repo),
+                "--validate-expected-packages",
+                "--expected-package",
+                "example",
+            ],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(
+            json.loads(result.stdout),
+            {
+                "measurement_packages": ["example"],
+                "production_packages": ["example"],
+            },
+        )
+
+    def test_driver_rejects_root_measurement_before_coverage(self) -> None:
+        driver = REPO_ROOT / "tools/release/run_adjudicated_crap_gate.sh"
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            output_directory = Path(temporary_directory) / "output"
+            result = subprocess.run(
+                [
+                    "bash",
+                    str(driver),
+                    "--scope",
+                    "affected",
+                    "--package",
+                    "openwepp",
+                    "--nextest-profile",
+                    "affected",
+                    "--base-ref",
+                    "HEAD",
+                    "--output-dir",
+                    str(output_directory),
+                ],
+                cwd=REPO_ROOT,
+                check=False,
+                capture_output=True,
+                text=True,
+                env={
+                    key: value
+                    for key, value in os.environ.items()
+                    if key
+                    not in {
+                        "OPENWEPP_GATE_ARTIFACT_ROOT",
+                        "OPENWEPP_GATE_NEXTEST_CONFIG",
+                    }
+                },
+            )
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("requires global quality", result.stderr)
+            self.assertFalse((output_directory / "llvm-cov.log").exists())
 
     def test_exact_adjudication_closes_raw_row(self) -> None:
         report = gate.evaluate(

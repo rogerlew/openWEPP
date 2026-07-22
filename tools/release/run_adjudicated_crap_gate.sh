@@ -176,6 +176,7 @@ GENERATED_FILES=(
   adjudication-registry.json
   adjudicated-crap-report.json
   adjudicated-crap-report.md
+  affected-package-scope.json
   cargo-version.txt
   cargo-crap-version.txt
   cargo-crap.log
@@ -305,6 +306,17 @@ if [[ "${SCOPE}" == "affected" ]]; then
 elif [[ "${#PACKAGES[@]}" -ne 0 || -n "${NEXTEST_PROFILE}" ]]; then
   echo "ERROR: --package and --nextest-profile require --scope affected" >&2
   exit 2
+fi
+if [[ "${SCOPE}" == "affected" ]]; then
+  SCOPE_CHECK_ARGS=(
+    --repo-root "${ROOT_DIR}"
+    --validate-expected-packages
+  )
+  for package in "${PACKAGES[@]}"; do
+    SCOPE_CHECK_ARGS+=(--expected-package "${package}")
+  done
+  "${PYTHON_BIN}" "${CHECKER}" "${SCOPE_CHECK_ARGS[@]}" \
+    > "${OUTPUT_DIR}/affected-package-scope.json"
 fi
 if [[ -z "${CARGO_TARGET_DIR:-}" ]]; then
   CARGO_TARGET_DIR="${OUTPUT_DIR}/cargo-target"

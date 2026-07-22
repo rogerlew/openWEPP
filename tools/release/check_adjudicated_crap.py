@@ -249,9 +249,17 @@ def production_source_manifest(repo_root: Path) -> dict[str, Any]:
     }
 
 
-def _workspace_production_crates(repo_root: Path) -> set[str]:
+def _workspace_packages(repo_root: Path) -> dict[str, dict[str, Any]]:
     result = subprocess.run(
-        ["cargo", "metadata", "--no-deps", "--format-version", "1"],
+        [
+            "cargo",
+            "metadata",
+            "--locked",
+            "--offline",
+            "--no-deps",
+            "--format-version",
+            "1",
+        ],
         cwd=repo_root,
         check=False,
         capture_output=True,
@@ -264,22 +272,67 @@ def _workspace_production_crates(repo_root: Path) -> set[str]:
     except json.JSONDecodeError as error:
         raise GateInputError(f"Cargo workspace metadata is invalid JSON: {error}") from error
     packages = metadata.get("packages")
-    if not isinstance(packages, list):
+    workspace_members = metadata.get("workspace_members")
+    if not isinstance(packages, list) or not isinstance(workspace_members, list):
         raise GateInputError("Cargo workspace metadata has no package list")
-    names: set[str] = set()
+    member_ids = {item for item in workspace_members if isinstance(item, str)}
+    by_name: dict[str, dict[str, Any]] = {}
     for package in packages:
-        if not isinstance(package, dict):
+        if not isinstance(package, dict) or package.get("id") not in member_ids:
             continue
         name = package.get("name")
         manifest_path = package.get("manifest_path")
         if not isinstance(name, str) or not isinstance(manifest_path, str):
             continue
-        relative_manifest = _repo_relative_path(manifest_path, repo_root)
-        if relative_manifest.startswith("crates/"):
-            names.add(name)
+        if name in by_name:
+            raise GateInputError(f"Cargo workspace has duplicate package name: {name}")
+        package = dict(package)
+        package["relative_manifest"] = _repo_relative_path(manifest_path, repo_root)
+        by_name[name] = package
+    if not by_name:
+        raise GateInputError("Cargo workspace has no member packages")
+    return by_name
+
+
+def _workspace_production_crates(repo_root: Path) -> set[str]:
+    names = {
+        name
+        for name, package in _workspace_packages(repo_root).items()
+        if str(package["relative_manifest"]).startswith("crates/")
+    }
     if not names:
         raise GateInputError("Cargo workspace has no production crates under crates/")
     return names
+
+
+def resolve_measurement_packages(
+    repo_root: Path, requested_packages: set[str]
+) -> dict[str, list[str]]:
+    """Validate that affected measurement packages own production sources."""
+
+    if not requested_packages:
+        raise GateInputError("affected measurement requires at least one package")
+    workspace = _workspace_packages(repo_root)
+    unknown = requested_packages - set(workspace)
+    if unknown:
+        raise GateInputError(
+            f"affected measurement names unknown workspace packages: {sorted(unknown)}"
+        )
+    production = {
+        name
+        for name, package in workspace.items()
+        if str(package["relative_manifest"]).startswith("crates/")
+    }
+    measurement_only = requested_packages - production
+    if measurement_only:
+        raise GateInputError(
+            "affected measurement package has no production source owner and "
+            f"requires global quality: {sorted(measurement_only)}"
+        )
+    return {
+        "measurement_packages": sorted(requested_packages),
+        "production_packages": sorted(requested_packages),
+    }
 
 
 def _production_package_source_prefixes(
@@ -886,6 +939,11 @@ def _parse_args() -> argparse.Namespace:
         default=[],
         help="Restrict fresh affected measurement to repeated exact Cargo packages",
     )
+    parser.add_argument(
+        "--validate-expected-packages",
+        action="store_true",
+        help="Validate and print affected measurement-to-production package scope",
+    )
     parser.add_argument("--retained-provenance")
     parser.add_argument("--report-json", type=Path)
     parser.add_argument("--report-markdown", type=Path)
@@ -896,6 +954,12 @@ def main() -> int:
     args = _parse_args()
     repo_root = args.repo_root.resolve()
     try:
+        if args.validate_expected_packages:
+            scope = resolve_measurement_packages(
+                repo_root, set(args.expected_package)
+            )
+            print(json.dumps(scope, sort_keys=True))
+            return 0
         if args.snapshot_production_sources is not None:
             manifest = production_source_manifest(repo_root)
             rendered_manifest = json.dumps(manifest, indent=2, sort_keys=True) + "\n"
@@ -986,17 +1050,18 @@ def main() -> int:
                 raise GateInputError("fresh closure has an unexpected llvm-cov version")
             if cargo_crap_version != "cargo-crap 0.2.2":
                 raise GateInputError("fresh closure has an unexpected cargo-crap version")
-            workspace_production_crates = _workspace_production_crates(repo_root)
             requested_packages = set(args.expected_package)
-            unknown_packages = requested_packages - workspace_production_crates
-            if unknown_packages:
-                raise GateInputError(
-                    "affected measurement names unknown production packages: "
-                    f"{sorted(unknown_packages)}"
-                )
-            expected_production_crates = (
-                requested_packages if requested_packages else workspace_production_crates
+            scope = (
+                resolve_measurement_packages(repo_root, requested_packages)
+                if requested_packages
+                else {
+                    "measurement_packages": [],
+                    "production_packages": sorted(
+                        _workspace_production_crates(repo_root)
+                    ),
+                }
             )
+            expected_production_crates = set(scope["production_packages"])
             acquisition_provenance = {
                 "source_manifest": str(args.source_manifest),
                 "source_count": supplied_manifest.get("source_count"),
@@ -1007,6 +1072,8 @@ def main() -> int:
                 "rustc_version": rustc_version,
                 "llvm_cov_version": llvm_cov_version,
                 "cargo_crap_version": cargo_crap_version,
+                "measurement_packages": scope["measurement_packages"],
+                "production_packages": scope["production_packages"],
             }
         else:
             if not args.retained_provenance:

@@ -52,6 +52,7 @@ quality paths without editing its frozen subject.
 - [x] (2026-07-22) Close RTR-033 after mechanical 157->42 and 101->75 test splits, exact workspace Clippy, `READY` package admission, and dual review.
 - [x] (2026-07-22) Retain the 2,271/2,272 full-Nextest result, open RTR-034 for its stale executor mutability sentinel, and preserve blocked CRAP without running it.
 - [x] (2026-07-22) Close RTR-034 after the canonical immutable-binding sentinel, owning 8/8 target, Clippy, `READY` admission, and dual review.
+- [x] (2026-07-22) Retain affected CRAP's 1,091/1,091 traversal and open RTR-035 when post-acquisition package admission rejected root `openwepp`; no retry.
 - [ ] Reconcile the exact terminal diff and obtain a fresh `READY` audit.
 - [ ] Delegate each selected HEAVY batch once.
 - [ ] Complete dual terminal verification, prompt archival, and final disposition.
@@ -164,6 +165,14 @@ there was no retry.
 RTR-034 closed at correction commit `eeb858b2` with durable ledger entry
 `f01d2e9e`. The exact failed test and all eight owning integration tests pass;
 the final-context-before-spawn guard remains substantive and unchanged.
+
+The following changed-head attempt passed LIGHT 5/5, audit 10/10, and its first
+seven HEAVY nodes. Affected CRAP's instrumented Nextest passed 1,091/1,091 in
+689.242 seconds, but post-acquisition adjudication rejected root measurement
+package `openwepp` because production ownership is restricted to `crates/*`.
+RTR-035 (`GATE-AFFECTED-CRAP-ROOT-PACKAGE-ADMISSION-MISMATCH`) owns early
+measurement-package rejection plus planner escalation to global quality. No
+retry ran.
 ## Declared Write Set
 
 - `.github/workflows/testgate-shadow.yml`
