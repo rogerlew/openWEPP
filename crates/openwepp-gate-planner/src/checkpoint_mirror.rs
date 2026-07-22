@@ -15,50 +15,99 @@ pub(crate) fn mirror_node_checkpoint(
     node: &Value,
     checkpoint: &Value,
 ) -> Result<()> {
-    let Some(configured) = std::env::var_os("OPENWEPP_GATE_CHECKPOINT_MIRROR_ROOT") else {
+    let Some(mirror) = configured_mirror_root()? else {
         return Ok(());
     };
+    let roots = prepare_mirror_roots(artifact_root, &mirror)?;
+    mirror_node_outputs(&roots, node)?;
+    publish_mirrored_checkpoint(&roots.mirror, node, checkpoint)
+}
+
+fn configured_mirror_root() -> Result<Option<PathBuf>> {
+    let Some(configured) = std::env::var_os("OPENWEPP_GATE_CHECKPOINT_MIRROR_ROOT") else {
+        return Ok(None);
+    };
     let mirror = PathBuf::from(configured);
+    validate_configured_mirror_root(&mirror)?;
+    Ok(Some(mirror))
+}
+
+fn validate_configured_mirror_root(mirror: &Path) -> Result<()> {
     if !mirror.is_absolute() || mirror.starts_with("/tmp") || mirror.starts_with("/t") {
         return Err(mirror_error(
             "GATE-EXEC-CHECKPOINT-MIRROR-EPHEMERAL",
             mirror.display().to_string(),
         ));
     }
-    create_absolute_directories(&mirror)?;
+    Ok(())
+}
+
+struct MirrorRoots {
+    mirror: PathBuf,
+    artifact: PathBuf,
+}
+
+fn prepare_mirror_roots(artifact_root: &Path, mirror: &Path) -> Result<MirrorRoots> {
+    create_absolute_directories(mirror)?;
     let mirror = mirror
         .canonicalize()
         .map_err(|error| mirror_error("GATE-EXEC-CHECKPOINT-MIRROR", error.to_string()))?;
     let artifact = artifact_root
         .canonicalize()
         .map_err(|error| mirror_error("GATE-EXEC-CHECKPOINT-MIRROR", error.to_string()))?;
+    validate_mirror_root_aliases(&mirror, &artifact)?;
+    Ok(MirrorRoots { mirror, artifact })
+}
+
+fn validate_mirror_root_aliases(mirror: &Path, artifact: &Path) -> Result<()> {
     if mirror.starts_with("/tmp")
         || mirror.starts_with("/t")
-        || mirror.starts_with(&artifact)
-        || artifact.starts_with(&mirror)
+        || mirror.starts_with(artifact)
+        || artifact.starts_with(mirror)
     {
         return Err(mirror_error(
             "GATE-EXEC-CHECKPOINT-MIRROR-ROOT-ALIAS",
             mirror.display().to_string(),
         ));
     }
+    Ok(())
+}
+
+fn mirror_node_outputs(roots: &MirrorRoots, node: &Value) -> Result<()> {
     for relative in string_array(&node["output_paths"], "output_paths")? {
-        let source = confined_output_path(artifact_root, &relative)?;
-        let destination = confined_output_path(&mirror, &relative)?;
-        let parent = destination
-            .parent()
-            .ok_or_else(|| mirror_error("GATE-EXEC-CHECKPOINT-MIRROR", &relative))?;
-        create_confined_directories(&mirror, parent)?;
-        let bytes = fs::read(&source).map_err(|error| {
-            mirror_error(
-                "GATE-EXEC-CHECKPOINT-MIRROR",
-                format!("{relative}: {error}"),
-            )
-        })?;
-        write_atomic(&destination, &bytes)?;
+        mirror_node_output(roots, &relative)?;
     }
+    Ok(())
+}
+
+fn mirror_node_output(roots: &MirrorRoots, relative: &str) -> Result<()> {
+    let source = confined_output_path(&roots.artifact, relative)?;
+    let destination = prepare_mirror_destination(&roots.mirror, relative)?;
+    copy_mirror_output(&source, &destination, relative)
+}
+
+fn prepare_mirror_destination(mirror: &Path, relative: &str) -> Result<PathBuf> {
+    let destination = confined_output_path(mirror, relative)?;
+    let parent = destination
+        .parent()
+        .ok_or_else(|| mirror_error("GATE-EXEC-CHECKPOINT-MIRROR", relative))?;
+    create_confined_directories(mirror, parent)?;
+    Ok(destination)
+}
+
+fn copy_mirror_output(source: &Path, destination: &Path, relative: &str) -> Result<()> {
+    let bytes = fs::read(source).map_err(|error| {
+        mirror_error(
+            "GATE-EXEC-CHECKPOINT-MIRROR",
+            format!("{relative}: {error}"),
+        )
+    })?;
+    write_atomic(destination, &bytes)
+}
+
+fn publish_mirrored_checkpoint(mirror: &Path, node: &Value, checkpoint: &Value) -> Result<()> {
     let directory = mirror.join(".checkpoints");
-    create_confined_directories(&mirror, &directory)?;
+    create_confined_directories(mirror, &directory)?;
     let node_id = required_string(node, "node_id")?;
     write_atomic(
         &directory.join(format!("{node_id}.json")),
@@ -69,33 +118,48 @@ pub(crate) fn mirror_node_checkpoint(
 fn create_absolute_directories(path: &Path) -> Result<()> {
     let mut current = PathBuf::from("/");
     for component in path.components() {
-        match component {
-            Component::RootDir => continue,
-            Component::Normal(name) => current.push(name),
-            _ => {
-                return Err(mirror_error(
-                    "GATE-EXEC-CHECKPOINT-MIRROR-PATH",
-                    path.display().to_string(),
-                ));
-            }
+        push_absolute_component(&mut current, component, path)?;
+        ensure_absolute_directory(&current)?;
+    }
+    Ok(())
+}
+
+fn push_absolute_component(
+    current: &mut PathBuf,
+    component: Component<'_>,
+    path: &Path,
+) -> Result<()> {
+    match component {
+        Component::RootDir => Ok(()),
+        Component::Normal(name) => {
+            current.push(name);
+            Ok(())
         }
-        match fs::symlink_metadata(&current) {
-            Ok(metadata) if metadata.file_type().is_symlink() || !metadata.is_dir() => {
-                return Err(mirror_error(
-                    "GATE-EXEC-CHECKPOINT-MIRROR-SYMLINK",
-                    current.display().to_string(),
-                ));
-            }
-            Ok(_) => {}
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => fs::create_dir(&current)
-                .map_err(|error| mirror_error("GATE-EXEC-CHECKPOINT-MIRROR", error.to_string()))?,
-            Err(error) => {
-                return Err(mirror_error(
-                    "GATE-EXEC-CHECKPOINT-MIRROR",
-                    error.to_string(),
-                ));
-            }
-        }
+        _ => Err(mirror_error(
+            "GATE-EXEC-CHECKPOINT-MIRROR-PATH",
+            path.display().to_string(),
+        )),
+    }
+}
+
+fn ensure_absolute_directory(current: &Path) -> Result<()> {
+    match fs::symlink_metadata(current) {
+        Ok(metadata) => validate_directory_metadata(current, &metadata),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => fs::create_dir(current)
+            .map_err(|error| mirror_error("GATE-EXEC-CHECKPOINT-MIRROR", error.to_string())),
+        Err(error) => Err(mirror_error(
+            "GATE-EXEC-CHECKPOINT-MIRROR",
+            error.to_string(),
+        )),
+    }
+}
+
+fn validate_directory_metadata(current: &Path, metadata: &fs::Metadata) -> Result<()> {
+    if metadata.file_type().is_symlink() || !metadata.is_dir() {
+        return Err(mirror_error(
+            "GATE-EXEC-CHECKPOINT-MIRROR-SYMLINK",
+            current.display().to_string(),
+        ));
     }
     Ok(())
 }
