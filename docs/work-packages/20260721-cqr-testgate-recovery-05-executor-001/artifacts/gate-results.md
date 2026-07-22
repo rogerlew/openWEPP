@@ -13,6 +13,6 @@
 | first changed-head metric | FAIL-CORRECTED | `9fe678a7`; retained and not rerun |
 | authoritative corrected metric | PASS | `2c0f1b12`; 135 pass, lines 92.96%, regions 85.01%, floor 79/79, zero CRAP above 30 |
 | terminal verification A | PASS | independent hash/count/floor/CRAP/package audit at `98d6fc62`; no rerun |
-| terminal verification B | HOLD-CORRECTED | implementation/metric PASS; three scaffold-doc findings corrected at changed docs head |
-| terminal verification B re-audit | PENDING | exact corrected evidence commit required |
+| terminal verification B | PASS | initial docs-only hold corrected; final exact-head PASS at `4efbbb8d` |
+| dual terminal verification | PASS | independent A/B at exact clean corrected evidence head; no rerun |
 | campaign-global TESTGATE | DEFERRED-MASTER | master owns it after all seven packages close |

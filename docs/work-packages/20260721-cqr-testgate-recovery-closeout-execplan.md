@@ -1,6 +1,6 @@
 # CQR ExecPlan: TESTGATE Recovery Closeout
 
-Status: `EXECUTING` (4 of 7 module packages complete)
+Status: `EXECUTING` (5 of 7 module packages complete)
 
 Campaign dependency: `TESTGATE-RECOVERY-TRUST-01` / `TESTGATE-CLOSURE-AUDIT-01`
 
@@ -46,6 +46,14 @@ isolation coverage is 92.38% line / 85.50% region, all 29 production functions
 meet the 75% floor, and both formerly colliding checkpoint tests pass in the
 same instrumented process. Fresh dual review and dual terminal verification
 pass. Earlier failed/staled measurements remain retained and were not reused.
+
+Completed: rank 5, `executor.rs`. Both owned rows and all extracted helpers are
+below CRAP 30; `execute_plan_stage` is 21.216 and the module has no compiled row
+above 30. Authoritative coverage is 92.96% line / 85.01% region, and all 79
+compiled current-profile functions meet the 75% region floor. The failed first
+measurement remains retained and was not rerun. Dual corrected implementation
+review and dual terminal verification pass; documentation-only verifier
+findings were corrected without invalidating metric reuse.
 
 ## Execution Rules
 

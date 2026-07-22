@@ -15,5 +15,11 @@ directive, and autonomy wording; the required-reading map lacked its mandated
 fields; and target-selection Review A/B artifacts were absent. All three were
 accepted and corrected without changing production, tests, or metric inputs.
 
-Status: pending exact corrected-docs re-audit. No test, metric, HEAVY gate, or
-TESTGATE rerun is authorized or required.
+Ran/Static: FINAL PASS at exact clean corrected-docs commit
+`4efbbb8d202cde6188fc12fd1b629b21392228ca`. All three findings are closed:
+the active prompt is canonical, the 14-row reading map independently sums to
+347,441 bytes, and both target-selection review artifacts bind exact scaffold
+lineage. The delta is documentation-only, retained metric reuse is valid, and
+package lint passed 25 files with zero errors or warnings.
+
+No test, metric, HEAVY gate, or TESTGATE was rerun.
