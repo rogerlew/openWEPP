@@ -13,12 +13,12 @@ non-regression remains open because helper extraction increased the denominator
 without increasing executed lines. Additional direct characterization is
 required before package review.
 
-Ran: final non-regression measurement at exact head `3d6e8817` passed 109/109
-instrumented tests. The target now measures 1,406/2,074 lines (67.79%),
-2,401/3,378 regions (71.08%), and 152/235 functions (64.68%). Line and region
-coverage exceed the source-identical pre-refactor checkpoint. This CQR package
-claims characterization and non-regression, not standalone module-test-
-enhancement closure at the ADR-0021 glue-tier floor.
+Ran: final closure measurement at exact clean head `b1096a78` passed 116/116
+instrumented library tests in 452.40 seconds. The target measures 2,206/2,291
+lines (96.29%), 3,653/3,896 regions (93.76%), and 218/243 functions (89.71%).
+No target CRAP entry is below the 75% per-function coverage floor.
 
-Evidence root: `/tmp/cqr-pre-heavy-nonreg-rNRfRV`; summary SHA-256:
-`d2d97592ebf4c3f5e82691f1010df561c21c10bfb0601afda45c85b3f3427163`.
+Evidence root: `/tmp/cqr-pre-heavy-final-b1096a78-sPEqMT`. Source SHA-256:
+`b8ed9863410ab9695b0820f4959ec6cd03509c3b64ea8ed7ab991d8c88ca0be3`;
+LCOV SHA-256:
+`9ed27757cba8749a3b26f7e253ef644c859108c0baff9a2ccc7a6cb4c4bce902`.

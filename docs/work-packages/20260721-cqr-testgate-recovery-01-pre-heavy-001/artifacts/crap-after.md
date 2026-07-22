@@ -51,3 +51,8 @@ CRAP JSON SHA-256:
 Ran: after direct characterization, exact head `3d6e8817` retained zero rows
 above 30 and a maximum of exactly 30. Matching CRAP JSON SHA-256:
 `673e514f8190382be7e00926e153ed0d733595ebc9e4aa380198e2744d3e6968`.
+
+Ran: final source-bound measurement at `b1096a78` contains 111 target
+production entries, zero entries above 30, and a maximum CRAP score of 17.0.
+The matching CRAP JSON SHA-256 is
+`df76b158a44df61feb4d752f4b9b3fd7909ee675f99f9d37a345779546e31bca`.

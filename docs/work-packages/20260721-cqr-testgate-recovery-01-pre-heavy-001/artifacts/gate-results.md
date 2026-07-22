@@ -19,3 +19,6 @@
 | line-count governance | PASS-WARN | 2,574 lines; WARN accepted, below 3,000 blocker |
 | affected-surface CRAP/coverage | PASS | exact source-bound evidence retained under `/tmp/cqr-pre-heavy-nonreg-rNRfRV` |
 | terminal-plan heavy gates | NOT RUN | delegate after implementation |
+| ADR-0021 final affected measurement | PASS | exact clean head `b1096a78`; 116/116 PASS; line 96.29%; region 93.76%; zero functions below 75%; zero CRAP above 30; maximum 17.0; evidence `/tmp/cqr-pre-heavy-final-b1096a78-sPEqMT` |
+| final focused inventory | PASS | `cargo nextest run -p openwepp-gate-planner pre_heavy:: --profile quick`; 30/30 PASS; run ID `1165168c-a86a-4a48-80fa-557fa5e0eeb7` |
+| final scoped Clippy | PASS | `cargo clippy -p openwepp-gate-planner --lib --tests -- -D warnings` |
