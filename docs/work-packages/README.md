@@ -251,6 +251,10 @@
 
 State as of `2026-07-22 UTC`:
 
+- `20260722-testgate-executor-stage-fixture-recovery-001/` -
+  ACTIVE / SCAFFOLD: closes RTR-036 by aligning a root-only executor stage
+  fixture with global rather than affected CRAP selection.
+
 - `20260722-testgate-affected-crap-planner-escalation-001/` -
   ACTIVE / SCAFFOLD: owns RTR-035 planner escalation from measurement-only
   affected selection to critical/global quality before gate-node construction.
