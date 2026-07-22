@@ -42,12 +42,12 @@ fn validate_configured_mirror_root(mirror: &Path) -> Result<()> {
     Ok(())
 }
 
-struct MirrorRoots {
+struct MirrorRoots<'a> {
     mirror: PathBuf,
-    artifact: PathBuf,
+    artifact_root: &'a Path,
 }
 
-fn prepare_mirror_roots(artifact_root: &Path, mirror: &Path) -> Result<MirrorRoots> {
+fn prepare_mirror_roots<'a>(artifact_root: &'a Path, mirror: &Path) -> Result<MirrorRoots<'a>> {
     create_absolute_directories(mirror)?;
     let mirror = mirror
         .canonicalize()
@@ -56,7 +56,10 @@ fn prepare_mirror_roots(artifact_root: &Path, mirror: &Path) -> Result<MirrorRoo
         .canonicalize()
         .map_err(|error| mirror_error("GATE-EXEC-CHECKPOINT-MIRROR", error.to_string()))?;
     validate_mirror_root_aliases(&mirror, &artifact)?;
-    Ok(MirrorRoots { mirror, artifact })
+    Ok(MirrorRoots {
+        mirror,
+        artifact_root,
+    })
 }
 
 fn validate_mirror_root_aliases(mirror: &Path, artifact: &Path) -> Result<()> {
@@ -73,15 +76,15 @@ fn validate_mirror_root_aliases(mirror: &Path, artifact: &Path) -> Result<()> {
     Ok(())
 }
 
-fn mirror_node_outputs(roots: &MirrorRoots, node: &Value) -> Result<()> {
+fn mirror_node_outputs(roots: &MirrorRoots<'_>, node: &Value) -> Result<()> {
     for relative in string_array(&node["output_paths"], "output_paths")? {
         mirror_node_output(roots, &relative)?;
     }
     Ok(())
 }
 
-fn mirror_node_output(roots: &MirrorRoots, relative: &str) -> Result<()> {
-    let source = confined_output_path(&roots.artifact, relative)?;
+fn mirror_node_output(roots: &MirrorRoots<'_>, relative: &str) -> Result<()> {
+    let source = confined_output_path(roots.artifact_root, relative)?;
     let destination = prepare_mirror_destination(&roots.mirror, relative)?;
     copy_mirror_output(&source, &destination, relative)
 }
@@ -118,8 +121,9 @@ fn publish_mirrored_checkpoint(mirror: &Path, node: &Value, checkpoint: &Value) 
 fn create_absolute_directories(path: &Path) -> Result<()> {
     let mut current = PathBuf::from("/");
     for component in path.components() {
-        push_absolute_component(&mut current, component, path)?;
-        ensure_absolute_directory(&current)?;
+        if push_absolute_component(&mut current, component, path)? {
+            ensure_absolute_directory(&current)?;
+        }
     }
     Ok(())
 }
@@ -128,12 +132,12 @@ fn push_absolute_component(
     current: &mut PathBuf,
     component: Component<'_>,
     path: &Path,
-) -> Result<()> {
+) -> Result<bool> {
     match component {
-        Component::RootDir => Ok(()),
+        Component::RootDir => Ok(false),
         Component::Normal(name) => {
             current.push(name);
-            Ok(())
+            Ok(true)
         }
         _ => Err(mirror_error(
             "GATE-EXEC-CHECKPOINT-MIRROR-PATH",
@@ -177,7 +181,10 @@ mod tests {
 
     use serde_json::json;
 
-    use super::{create_absolute_directories, mirror_node_checkpoint};
+    use super::{
+        create_absolute_directories, mirror_node_checkpoint, prepare_mirror_roots,
+        push_absolute_component,
+    };
     use crate::canonical::canonical_bytes;
 
     const CHILD_TEST: &str = "checkpoint_mirror::tests::mirror_scenario_child";
@@ -266,6 +273,13 @@ mod tests {
         fs::create_dir(&artifact).expect("create alias artifact");
         assert_child_passes("alias", alias.path(), Some(&artifact));
 
+        let lexical = Scratch::new("lexical");
+        assert_child_passes(
+            "lexical-error",
+            lexical.path(),
+            Some(&lexical.path().join("mirror")),
+        );
+
         let symlink = Scratch::new("symlink");
         let real = symlink.path().join("real");
         fs::create_dir(&real).expect("create symlink target");
@@ -281,6 +295,13 @@ mod tests {
     #[test]
     fn absolute_directory_creation_rejects_invalid_components_and_entries() {
         let scratch = Scratch::new("directories");
+        let mut root = PathBuf::from("/");
+        let root_component = Path::new("/").components().next().expect("root component");
+        assert!(
+            !push_absolute_component(&mut root, root_component, Path::new("/"))
+                .expect("root component is valid"),
+            "root component must skip metadata lookup"
+        );
         let parent_path = scratch.path().join("created/../escape");
         let error = create_absolute_directories(&parent_path)
             .expect_err("parent component must fail closed");
@@ -309,8 +330,17 @@ mod tests {
         let scratch = PathBuf::from(
             std::env::var_os("OPENWEPP_CHECKPOINT_MIRROR_TEST_SCRATCH").expect("mirror scratch"),
         );
-        let artifact = scratch.join("artifact");
-        fs::create_dir_all(&artifact).expect("create artifact root");
+        let artifact = if scenario == "lexical-error" {
+            let target = scratch.join("artifact-target");
+            fs::create_dir_all(&target).expect("create lexical artifact target");
+            let link = scratch.join("artifact-link");
+            std::os::unix::fs::symlink(&target, &link).expect("create lexical artifact link");
+            link
+        } else {
+            let artifact = scratch.join("artifact");
+            fs::create_dir_all(&artifact).expect("create artifact root");
+            artifact
+        };
         let node = json!({
             "node_id": "a".repeat(64),
             "output_paths": ["outputs/one.txt", "nested/two.bin"]
@@ -329,6 +359,16 @@ mod tests {
                 let error = mirror_node_checkpoint(&artifact, &node, &checkpoint)
                     .expect_err("artifact alias must fail");
                 assert_eq!(error.code, "GATE-EXEC-CHECKPOINT-MIRROR-ROOT-ALIAS");
+            }
+            "lexical-error" => {
+                let mirror = scratch.join("mirror");
+                let roots =
+                    prepare_mirror_roots(&artifact, &mirror).expect("prepare lexical mirror roots");
+                assert_eq!(roots.artifact_root, artifact);
+                let error = mirror_node_checkpoint(&artifact, &node, &checkpoint)
+                    .expect_err("missing source must retain lexical artifact path");
+                assert_eq!(error.code, "GATE-EXEC-CHECKPOINT-MIRROR");
+                assert!(error.message.starts_with("outputs/one.txt:"));
             }
             "symlink" => {
                 let error = mirror_node_checkpoint(&artifact, &node, &checkpoint)
