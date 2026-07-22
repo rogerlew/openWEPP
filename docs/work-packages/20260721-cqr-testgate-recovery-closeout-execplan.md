@@ -1,6 +1,6 @@
 # CQR ExecPlan: TESTGATE Recovery Closeout
 
-Status: `QUEUED`
+Status: `EXECUTING` (1 of 7 module packages complete)
 
 Campaign dependency: `TESTGATE-RECOVERY-TRUST-01` / `TESTGATE-CLOSURE-AUDIT-01`
 
@@ -24,6 +24,10 @@ may edit a second production module without an approved package amendment.
 | 5 | `20260721-cqr-testgate-recovery-05-executor-001` | `crates/openwepp-gate-planner/src/executor.rs` | 2 |
 | 6 | `20260721-cqr-testgate-recovery-06-verifier-001` | `crates/openwepp-gate-planner/src/verifier.rs` | 1 |
 | 7 | `20260721-cqr-testgate-recovery-07-planner-001` | `crates/openwepp-gate-planner/src/planner.rs` | 1 |
+
+Completed: rank 1, `pre_heavy.rs`, at package disposition head `f0a665ee`.
+Final production coverage is 96.08% line / 89.64% region; all 111 functions
+meet the 75% region floor and no CRAP row exceeds 17.
 
 ## Execution Rules
 

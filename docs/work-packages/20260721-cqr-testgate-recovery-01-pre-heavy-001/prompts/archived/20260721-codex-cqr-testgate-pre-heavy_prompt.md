@@ -1,4 +1,4 @@
-# Active Prompt: CQR TESTGATE Pre-Heavy Admission Complexity
+# Archived Prompt: CQR TESTGATE Pre-Heavy Admission Complexity
 
 Execution mode: package-end-to-end.
 

@@ -231,10 +231,9 @@
 State as of `2026-07-21 UTC`:
 
 - `20260721-cqr-testgate-recovery-01-pre-heavy-001/` -
-  ACTIVE: first of the seven one-module CQR packages required by the
-  attempt-15 adjudicated CRAP report before TESTGATE recovery closeout may
-  resume. It owns only `pre_heavy.rs` admission complexity and is scaffolded
-  before any implementation edit.
+  COMPLETE: first of seven one-module CQR packages. All 13 `pre_heavy.rs`
+  rows are closed with dual review and verification; campaign-global TESTGATE
+  remains deferred until all seven packages complete.
 
 - `20260720-testgate-recovery-trust-001/` -
   ACTIVE-SCAFFOLD: `TESTGATE-RECOVERY-TRUST-01` owns the checkpoint trust,
