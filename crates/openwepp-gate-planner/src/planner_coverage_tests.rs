@@ -593,3 +593,260 @@
         reidentify(&mut weakened);
         assert!(reconcile_intent_terminal(&repo, &intent_with_path, &weakened).is_err());
     }
+
+    fn node_fixture(definition: &str, target: &str, id: &str) -> serde_json::Value {
+        serde_json::json!({
+            "node_id": id,
+            "gate_definition_id": definition,
+            "target": target,
+            "arguments": ["check"],
+            "prerequisites": [],
+            "expected_inventory": {
+                "mode": "EXACT",
+                "minimum_count": 1,
+                "ids": ["inventory"]
+            },
+            "acceptance": {"kind": "EXIT_CODE", "expected": 0}
+        })
+    }
+
+    #[test]
+    fn terminal_node_superset_accepts_stronger_gates_and_rejects_weakening() {
+        let package_clippy = node_fixture("cargo-package-clippy-v1", "fixture", "package");
+        let workspace_clippy = node_fixture("workspace-clippy-v1", "workspace", "workspace");
+        let intent = serde_json::json!({"nodes": [package_clippy.clone()]});
+        let stronger = serde_json::json!({"nodes": [workspace_clippy]});
+        super::require_node_superset(&intent, &stronger).expect("workspace gate supersedes package");
+
+        let removed = serde_json::json!({"nodes": []});
+        let error = super::require_node_superset(&intent, &removed)
+            .expect_err("unrecognized removal must fail");
+        assert_eq!(error.code, "GATE-TERMINAL-OBLIGATION-REMOVED");
+
+        let terminal = serde_json::json!({"nodes": [package_clippy.clone()]});
+        super::require_node_superset(&intent, &terminal).expect("identical node");
+
+        let mut weakened = package_clippy;
+        weakened["arguments"] = serde_json::json!(["check", "--weakened"]);
+        let weakened = serde_json::json!({"nodes": [weakened]});
+        let error = super::require_node_superset(&intent, &weakened)
+            .expect_err("semantic weakening must fail");
+        assert_eq!(error.code, "GATE-TERMINAL-NODE-WEAKENED");
+
+        let nextest = node_fixture("cargo-package-nextest-v1", "fixture", "nextest");
+        let full = node_fixture("workspace-full-nextest-v1", "workspace", "full");
+        super::require_node_superset(
+            &serde_json::json!({"nodes": [nextest]}),
+            &serde_json::json!({"nodes": [full]}),
+        )
+        .expect("full Nextest supersedes package Nextest");
+    }
+
+    #[test]
+    fn risk_and_node_argument_guards_cover_all_typed_outcomes() {
+        for (risk, rank) in [
+            ("EDITORIAL", 0),
+            ("BOUNDED_COMPONENT", 1),
+            ("INTEGRATED_DOMAIN", 2),
+            ("CRITICAL", 3),
+        ] {
+            assert_eq!(super::risk_rank(Some(risk)).expect("known risk"), rank);
+        }
+        assert_eq!(
+            super::risk_rank(None).expect_err("missing risk").code,
+            "GATE-PLAN-RISK"
+        );
+        assert_eq!(
+            super::risk_rank(Some("UNKNOWN"))
+                .expect_err("unknown risk")
+                .code,
+            "GATE-PLAN-RISK"
+        );
+
+        let node = serde_json::json!({
+            "arguments": ["nextest", "--package", "one", "--package", "two"]
+        });
+        assert_eq!(
+            super::node_argument_values(&node, "--package").expect("package arguments"),
+            ["one", "two"]
+        );
+        assert!(super::node_argument_values(&node, "--test").is_err());
+        assert!(super::node_argument_values(&serde_json::json!({"arguments": [1]}), "--package")
+            .is_err());
+        assert!(super::node_argument_values(
+            &serde_json::json!({"arguments": ["--package"]}),
+            "--package"
+        )
+        .is_err());
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn manifest_identity_and_git_guards_cover_object_kinds_and_failures() {
+        use std::os::unix::ffi::OsStringExt;
+        use std::os::unix::fs::symlink;
+
+        let fixture = crate::executor::tests::TempDirectory::new("planner-manifest-identity");
+        std::fs::write(fixture.path().join("regular"), b"content").expect("regular file");
+        std::fs::create_dir(fixture.path().join("directory")).expect("directory");
+        symlink("regular", fixture.path().join("link")).expect("symlink");
+        symlink(
+            std::ffi::OsString::from_vec(vec![0xff]),
+            fixture.path().join("non-utf8-link"),
+        )
+        .expect("non-UTF8 symlink");
+
+        let regular = super::manifest_object_identity(fixture.path(), "regular")
+            .expect("regular identity");
+        assert_eq!(regular.0, "REGULAR");
+        assert_eq!(regular.1, Some("100644"));
+        assert!(regular.2.is_some());
+        assert_eq!(
+            super::manifest_object_identity(fixture.path(), "missing")
+                .expect("missing identity"),
+            ("MISSING", None, None)
+        );
+        let link = super::manifest_object_identity(fixture.path(), "link")
+            .expect("symlink identity");
+        assert_eq!(link.0, "SYMLINK");
+        assert_eq!(link.1, Some("120000"));
+        assert!(link.2.is_some());
+        assert_eq!(
+            super::manifest_object_identity(fixture.path(), "directory")
+                .expect_err("directory must fail")
+                .code,
+            "GATE-MANIFEST-OBJECT"
+        );
+        assert_eq!(
+            super::manifest_object_identity(fixture.path(), "non-utf8-link")
+                .expect_err("non-UTF8 symlink target must fail")
+                .code,
+            "GATE-MANIFEST-SYMLINK-NONUTF8"
+        );
+
+        let repo = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+        assert!(!super::git_bytes(&repo, &["rev-parse", "HEAD"], "TEST-GIT")
+            .expect("valid Git query")
+            .is_empty());
+        assert_eq!(
+            super::git_bytes(&repo, &["rev-parse", "not-a-revision"], "TEST-GIT")
+                .expect_err("invalid revision")
+                .code,
+            "TEST-GIT"
+        );
+
+        for (bytes, count) in [
+            (&b""[..], 1),
+            (&b"oid blob invalid\n"[..], 1),
+            (&b"oid blob 3\nab"[..], 1),
+            (&b"oid blob 1\na\ntrailing"[..], 1),
+        ] {
+            assert_eq!(
+                super::parse_blob_batch(bytes, count)
+                    .expect_err("malformed batch")
+                    .code,
+                "GATE-MANIFEST-BLOB"
+            );
+        }
+    }
+
+    #[test]
+    fn inventory_dispatch_covers_command_package_and_unsupported_sources() {
+        let repo = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+        let policy = PolicyBundle::load(&repo).expect("policy bundle");
+        let command = policy
+            .definition("documentation-lint-v1")
+            .expect("command definition")
+            .clone();
+        let node = serde_json::json!({"arguments": ["markdown-doc", "lint"]});
+        let direct = super::inventory_for_definition(&repo, &node, &command, "workspace", None)
+            .expect("command inventory");
+        assert_eq!(direct.len(), 1);
+
+        let confined = super::ConfinedNextestInventory {
+            cargo_target: repo.join("target/planner-confined-inventory-test"),
+        };
+        assert_eq!(
+            confined
+                .inventory(&repo, &command, "workspace")
+                .expect("confined command inventory"),
+            direct
+        );
+
+        let mut unsupported = command.clone();
+        unsupported.inventory_source = "UNSUPPORTED".to_owned();
+        assert_eq!(
+            super::inventory_for_definition(&repo, &node, &unsupported, "workspace", None)
+                .expect_err("unsupported inventory")
+                .code,
+            "GATE-INVENTORY-SOURCE"
+        );
+        assert_eq!(
+            confined
+                .inventory(&repo, &unsupported, "workspace")
+                .expect_err("unsupported confined inventory")
+                .code,
+            "GATE-INVENTORY-SOURCE"
+        );
+
+        let mut packages = command;
+        packages.inventory_source = "NEXTEST_PACKAGES".to_owned();
+        assert!(super::package_inventories(&repo, &node, &packages, None).is_err());
+    }
+
+    #[test]
+    fn workspace_and_bound_context_plan_build_preserves_exact_graph_selection() {
+        let repo = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+        let head = std::process::Command::new("git")
+            .args(["rev-parse", "HEAD"])
+            .current_dir(&repo)
+            .output()
+            .expect("git rev-parse");
+        let head = String::from_utf8(head.stdout)
+            .expect("UTF-8 head")
+            .trim()
+            .to_owned();
+        let path = "docs/example/operator-note.md";
+        let request = PlanRequest {
+            stage: PlanningStage::Intent,
+            predecessor_intent_plan_id: None,
+            boundary: "INCREMENT".to_owned(),
+            campaign_id: Some("TESTGATE-PLAN-01".to_owned()),
+            combined_quality_proof_id: None,
+            authorized_paths: vec![path.to_owned()],
+            source: ObservedSource {
+                base_commit: head.clone(),
+                head_commit: Some(head),
+                dirty_tree_digest: None,
+                index_digest: None,
+                worktree_digest: None,
+                untracked_digest: None,
+                changes: vec![ObservedChange {
+                    path: path.to_owned(),
+                    change_kind: "MODIFY".to_owned(),
+                    object_kind: "REGULAR".to_owned(),
+                    old_mode: Some("100644".to_owned()),
+                    new_mode: Some("100644".to_owned()),
+                }],
+            },
+        };
+        let fixture = crate::executor::tests::TempDirectory::new("planner-workspace-build");
+        let workspace = fixture.path().join("workspace");
+        std::fs::create_dir(&workspace).expect("workspace");
+        let context = super::current_execution_context(&repo).expect("execution context");
+        let plan = Planner::new(FixedInventory)
+            .build_with_workspace_and_context(
+                &repo,
+                &request,
+                Some(&workspace),
+                Some(&context),
+            )
+            .expect("workspace-bound plan");
+        assert_eq!(plan["source"]["base_commit"], request.source.base_commit);
+        assert_eq!(
+            plan["source"]["head_commit"],
+            serde_json::json!(request.source.head_commit)
+        );
+        assert_eq!(plan["execution_context"], context);
+        assert_eq!(plan["risk"]["class"], "EDITORIAL");
+    }
