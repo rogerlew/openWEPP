@@ -764,6 +764,10 @@ fn resume_error(code: &'static str, message: impl Into<String>) -> GatePolicyErr
 }
 
 #[cfg(test)]
+#[path = "resume_coverage_tests.rs"]
+mod coverage_tests;
+
+#[cfg(test)]
 mod tests {
     use std::fs;
 
