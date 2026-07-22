@@ -251,6 +251,10 @@
 
 State as of `2026-07-22 UTC`:
 
+- `20260722-testgate-affected-crap-planner-escalation-001/` -
+  ACTIVE / SCAFFOLD: owns RTR-035 planner escalation from measurement-only
+  affected selection to critical/global quality before gate-node construction.
+
 - `20260722-testgate-affected-crap-root-scope-recovery-001/` -
   ACTIVE / REVIEW: rejects measurement-only affected CRAP packages before
   acquisition and binds the retained admitted scope through final adjudication.
