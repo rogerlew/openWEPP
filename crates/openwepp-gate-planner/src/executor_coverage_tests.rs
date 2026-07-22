@@ -265,6 +265,8 @@ fn public_stage_selection_preserves_light_final_and_rejection_shapes() {
 
 #[test]
 fn ready_audited_heavy_preserves_import_and_final_receipt_bindings() {
+    use std::collections::BTreeSet;
+
     use super::tests::{TempDirectory, execution_fixture, gate_definition};
 
     let documentation_definition =
@@ -313,16 +315,56 @@ fn ready_audited_heavy_preserves_import_and_final_receipt_bindings() {
     )
     .expect("audited HEAVY receipt");
     let attempts = receipt["attempts"].as_array().expect("attempts");
-    for node in plan["nodes"].as_array().expect("nodes") {
-        let node_id = node["node_id"].as_str().expect("node ID");
-        assert!(
-            attempts
-                .iter()
-                .any(|attempt| attempt["node_id"] == node_id && attempt["result"] == "PASS"),
-            "missing PASS attempt for {node_id}"
-        );
-    }
+    let light_attempts = light["attempts"].as_array().expect("LIGHT attempts");
+    assert_eq!(&attempts[..light_attempts.len()], light_attempts);
+    let heavy_node_ids = plan["nodes"]
+        .as_array()
+        .expect("nodes")
+        .iter()
+        .filter(|node| node["execution_cost_class"] == "HEAVY")
+        .map(|node| node["node_id"].as_str().expect("node ID"))
+        .collect::<Vec<_>>();
+    let heavy_attempts = &attempts[light_attempts.len()..];
+    assert_eq!(
+        heavy_attempts
+            .iter()
+            .map(|attempt| attempt["node_id"].as_str().expect("attempt node ID"))
+            .collect::<Vec<_>>(),
+        heavy_node_ids
+    );
+    assert!(
+        heavy_attempts
+            .iter()
+            .all(|attempt| attempt["result"] == "PASS")
+    );
     assert_eq!(attempts.len(), 3);
+    let expected_inventory = light["executed_inventory"]
+        .as_array()
+        .expect("LIGHT inventory")
+        .iter()
+        .chain(
+            plan["nodes"]
+                .as_array()
+                .expect("nodes")
+                .iter()
+                .filter(|node| node["execution_cost_class"] == "HEAVY")
+                .flat_map(|node| {
+                    node["expected_inventory"]["ids"]
+                        .as_array()
+                        .expect("expected inventory")
+                }),
+        )
+        .map(|item| item.as_str().expect("inventory ID"))
+        .collect::<BTreeSet<_>>();
+    assert_eq!(
+        receipt["executed_inventory"]
+            .as_array()
+            .expect("executed inventory")
+            .iter()
+            .map(|item| item.as_str().expect("inventory ID"))
+            .collect::<BTreeSet<_>>(),
+        expected_inventory
+    );
     assert_eq!(receipt["pre_heavy_audit"], *audit.as_value());
     assert_eq!(receipt["resume_decisions"], json!([]));
     assert_eq!(receipt["result"], "PASS");
