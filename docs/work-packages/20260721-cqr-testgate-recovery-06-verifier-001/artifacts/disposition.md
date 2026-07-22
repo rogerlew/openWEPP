@@ -11,6 +11,7 @@ unchanged production bytes. RTR-028 is corrected, reviewed, and durably closed.
 
 | Source | Finding | Disposition | Correction |
 | --- | --- | --- | --- |
+| Target Selection Review B | Worker handoff called the committed scaffold pending | `accepted` - corrected | `ce1da0a6` |
 | Implementation Review A | INTENT fixture bypassed terminal READY-audit validation | `accepted` - corrected | `223b034e` |
 | Implementation Review A | Package phase and split line count were stale | `accepted` - corrected | `c30f15b8` |
 | Implementation Review B | INTENT fixture bypassed terminal READY-audit validation | `accepted` - corrected | `223b034e` |
