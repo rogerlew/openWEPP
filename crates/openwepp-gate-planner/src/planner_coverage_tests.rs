@@ -1240,40 +1240,28 @@
         assert!(!reconciliation.risk_escalated);
     }
 
-    #[test]
-    fn workspace_and_bound_context_plan_build_preserves_exact_graph_selection() {
-        use crate::executor::tests::{execution_fixture, gate_definition};
-
-        let mut package_definition =
-            gate_definition("cargo-package-nextest-v1", &["./tools/pass.sh", "{package}"], &[]);
-        package_definition["target_template"] = serde_json::json!("CARGO_PACKAGE");
-        package_definition["risk_classes"] = serde_json::json!(["BOUNDED_COMPONENT"]);
-        package_definition["output_paths"] =
-            serde_json::json!(["target/e2e/{package}-result.json"]);
-        let component = gate_definition("fixture-light-v1", &["./tools/pass.sh"], &[]);
-        let (repo, _) = execution_fixture(
-            "planner-graph-union",
-            &[package_definition, component],
+    fn run_graph_fixture_git(repo: &std::path::Path, arguments: &[&str]) -> String {
+        let output = std::process::Command::new("git")
+            .args(arguments)
+            .current_dir(repo)
+            .output()
+            .expect("run fixture Git");
+        assert!(
+            output.status.success(),
+            "git {arguments:?}: {}",
+            String::from_utf8_lossy(&output.stderr)
         );
-        let run = |arguments: &[&str]| {
-            let output = std::process::Command::new("git")
-                .args(arguments)
-                .current_dir(repo.path())
-                .output()
-                .expect("run fixture Git");
-            assert!(
-                output.status.success(),
-                "git {arguments:?}: {}",
-                String::from_utf8_lossy(&output.stderr)
-            );
-            String::from_utf8(output.stdout)
-                .expect("UTF-8 Git output")
-                .trim()
-                .to_owned()
-        };
-        let commit = |message: &str| {
-            run(&["add", "."]);
-            run(&[
+        String::from_utf8(output.stdout)
+            .expect("UTF-8 Git output")
+            .trim()
+            .to_owned()
+    }
+
+    fn commit_graph_fixture(repo: &std::path::Path, message: &str) -> String {
+        run_graph_fixture_git(repo, &["add", "."]);
+        run_graph_fixture_git(
+            repo,
+            &[
                 "-c",
                 "user.name=Codex Test",
                 "-c",
@@ -1282,53 +1270,50 @@
                 "-q",
                 "-m",
                 message,
-            ]);
-            run(&["rev-parse", "HEAD"])
-        };
-        let write_package = |name: &str| {
-            let root = repo.path().join(name);
-            std::fs::create_dir_all(root.join("src")).expect("package source directory");
-            std::fs::write(
-                root.join("Cargo.toml"),
-                format!(
-                    "[package]\nname = \"{name}\"\nversion = \"0.1.0\"\nedition = \"2024\"\n\n[dependencies]\nexecutor-fixture = {{ path = \"..\" }}\n"
-                ),
-            )
-            .expect("package manifest");
-            std::fs::write(root.join("src/lib.rs"), "pub fn uses_root() {}\n")
-                .expect("package source");
-        };
+            ],
+        );
+        run_graph_fixture_git(repo, &["rev-parse", "HEAD"])
+    }
 
-        write_package("legacy");
+    fn write_graph_fixture_package(repo: &std::path::Path, name: &str) {
+        let root = repo.join(name);
+        std::fs::create_dir_all(root.join("src")).expect("package source directory");
         std::fs::write(
-            repo.path().join("Cargo.toml"),
-            "[package]\nname = \"executor-fixture\"\nversion = \"0.1.0\"\nedition = \"2024\"\n\n[workspace]\nmembers = [\"legacy\"]\nresolver = \"3\"\n",
+            root.join("Cargo.toml"),
+            format!(
+                "[package]\nname = \"{name}\"\nversion = \"0.1.0\"\nedition = \"2024\"\n\n[dependencies]\nexecutor-fixture = {{ path = \"..\" }}\n"
+            ),
         )
-        .expect("base workspace manifest");
+        .expect("package manifest");
+        std::fs::write(root.join("src/lib.rs"), "pub fn uses_root() {}\n")
+            .expect("package source");
+    }
+
+    fn write_graph_fixture_workspace(
+        repo: &std::path::Path,
+        member: &str,
+        expectation: &str,
+    ) {
+        std::fs::write(
+            repo.join("Cargo.toml"),
+            format!(
+                "[package]\nname = \"executor-fixture\"\nversion = \"0.1.0\"\nedition = \"2024\"\n\n[workspace]\nmembers = [\"{member}\"]\nresolver = \"3\"\n"
+            ),
+        )
+        .expect(expectation);
+    }
+
+    fn generate_graph_fixture_lockfile(repo: &std::path::Path, expectation: &str) {
         let lock = std::process::Command::new("cargo")
             .args(["generate-lockfile", "--offline"])
-            .current_dir(repo.path())
+            .current_dir(repo)
             .output()
-            .expect("base lockfile");
+            .expect(expectation);
         assert!(lock.status.success());
-        let base = commit("base graph with legacy dependent");
+    }
 
-        std::fs::remove_dir_all(repo.path().join("legacy")).expect("remove legacy package");
-        write_package("consumer");
-        std::fs::write(
-            repo.path().join("Cargo.toml"),
-            "[package]\nname = \"executor-fixture\"\nversion = \"0.1.0\"\nedition = \"2024\"\n\n[workspace]\nmembers = [\"consumer\"]\nresolver = \"3\"\n",
-        )
-        .expect("head workspace manifest");
-        let lock = std::process::Command::new("cargo")
-            .args(["generate-lockfile", "--offline"])
-            .current_dir(repo.path())
-            .output()
-            .expect("head lockfile");
-        assert!(lock.status.success());
-        let head = commit("head graph with consumer dependent");
-
-        let request = PlanRequest {
+    fn graph_union_request(base: String, head: String) -> PlanRequest {
+        PlanRequest {
             stage: PlanningStage::Intent,
             predecessor_intent_plan_id: None,
             boundary: "INCREMENT".to_owned(),
@@ -1350,25 +1335,20 @@
                     new_mode: Some("100644".to_owned()),
                 }],
             },
-        };
-        let fixture = crate::executor::tests::TempDirectory::new("planner-workspace-build");
-        let workspace = fixture.path().join("workspace");
-        std::fs::create_dir(&workspace).expect("workspace");
-        let context = super::current_execution_context(repo.path()).expect("execution context");
-        let plan = Planner::new(FixedInventory)
-            .build_with_workspace_and_context(
-                repo.path(),
-                &request,
-                Some(&workspace),
-                Some(&context),
-            )
-            .expect("workspace-bound plan");
+        }
+    }
+
+    fn assert_exact_graph_selection(
+        plan: &serde_json::Value,
+        request: &PlanRequest,
+        context: &serde_json::Value,
+    ) {
         assert_eq!(plan["source"]["base_commit"], request.source.base_commit);
         assert_eq!(
             plan["source"]["head_commit"],
             serde_json::json!(request.source.head_commit)
         );
-        assert_eq!(plan["execution_context"], context);
+        assert_eq!(&plan["execution_context"], context);
         assert_eq!(plan["risk"]["class"], "BOUNDED_COMPONENT");
         assert_eq!(
             plan["affected_packages"],
@@ -1389,19 +1369,70 @@
             package_targets,
             std::collections::BTreeSet::from(["consumer", "executor-fixture", "legacy"])
         );
+    }
 
+    fn assert_invalid_base_precedes_invalid_head(
+        repo: &std::path::Path,
+        workspace: &std::path::Path,
+        context: &serde_json::Value,
+        request: PlanRequest,
+    ) {
         let mut invalid = request;
         invalid.source.base_commit = "missing-base-revision".to_owned();
         invalid.source.head_commit = Some("missing-head-revision".to_owned());
         let error = Planner::new(FixedInventory)
             .build_with_workspace_and_context(
-                repo.path(),
+                repo,
                 &invalid,
-                Some(&workspace),
-                Some(&context),
+                Some(workspace),
+                Some(context),
             )
             .expect_err("invalid base must fail before invalid head");
         assert_eq!(error.code, "GATE-GIT-COMMAND");
         assert!(error.message.contains("missing-base-revision"));
         assert!(!error.message.contains("missing-head-revision"));
+    }
+
+    #[test]
+    fn workspace_and_bound_context_plan_build_preserves_exact_graph_selection() {
+        use crate::executor::tests::{execution_fixture, gate_definition};
+
+        let mut package_definition =
+            gate_definition("cargo-package-nextest-v1", &["./tools/pass.sh", "{package}"], &[]);
+        package_definition["target_template"] = serde_json::json!("CARGO_PACKAGE");
+        package_definition["risk_classes"] = serde_json::json!(["BOUNDED_COMPONENT"]);
+        package_definition["output_paths"] =
+            serde_json::json!(["target/e2e/{package}-result.json"]);
+        let component = gate_definition("fixture-light-v1", &["./tools/pass.sh"], &[]);
+        let (repo, _) = execution_fixture(
+            "planner-graph-union",
+            &[package_definition, component],
+        );
+
+        write_graph_fixture_package(repo.path(), "legacy");
+        write_graph_fixture_workspace(repo.path(), "legacy", "base workspace manifest");
+        generate_graph_fixture_lockfile(repo.path(), "base lockfile");
+        let base = commit_graph_fixture(repo.path(), "base graph with legacy dependent");
+
+        std::fs::remove_dir_all(repo.path().join("legacy")).expect("remove legacy package");
+        write_graph_fixture_package(repo.path(), "consumer");
+        write_graph_fixture_workspace(repo.path(), "consumer", "head workspace manifest");
+        generate_graph_fixture_lockfile(repo.path(), "head lockfile");
+        let head = commit_graph_fixture(repo.path(), "head graph with consumer dependent");
+
+        let request = graph_union_request(base, head);
+        let fixture = crate::executor::tests::TempDirectory::new("planner-workspace-build");
+        let workspace = fixture.path().join("workspace");
+        std::fs::create_dir(&workspace).expect("workspace");
+        let context = super::current_execution_context(repo.path()).expect("execution context");
+        let plan = Planner::new(FixedInventory)
+            .build_with_workspace_and_context(
+                repo.path(),
+                &request,
+                Some(&workspace),
+                Some(&context),
+            )
+            .expect("workspace-bound plan");
+        assert_exact_graph_selection(&plan, &request, &context);
+        assert_invalid_base_precedes_invalid_head(repo.path(), &workspace, &context, request);
     }

@@ -48,6 +48,7 @@ quality paths without editing its frozen subject.
 - [x] (2026-07-22) Close RTR-031 with the executable aggregate-admission validator, 17 focused regressions, `READY` package admission, and dual renewed PASS review.
 - [x] (2026-07-22) Retain the zero-node pre-admission stop and open RTR-032 because the active intent package was not updated from its scaffold.
 - [x] (2026-07-22) Close RTR-032 after exact intent authorization, `READY` package admission, and dual independent review.
+- [x] (2026-07-22) Retain the changed-head receipt that exposed two overlong CQR characterization tests and open RTR-033; downstream full Nextest and CRAP did not run.
 - [ ] Reconcile the exact terminal diff and obtain a fresh `READY` audit.
 - [ ] Delegate each selected HEAVY batch once.
 - [ ] Complete dual terminal verification, prompt archival, and final disposition.
@@ -136,6 +137,13 @@ attempt.
 RTR-032 closed at correction commit `68701b05` with durable ledger entry
 `4eab64c9`. The immutable declared write set is unchanged, while the package
 lifecycle now identifies the authorized increment.
+
+The next changed-head attempt sealed receipt `20038867...fd4`: LIGHT passed 6/6,
+the pre-HEAVY audit was READY 10/10, five HEAVY nodes passed, and workspace
+Clippy rejected two CQR characterization tests at 157 and 101 lines. RTR-033
+(`GATE-CQR-TEST-FUNCTION-LENGTH-REGRESSION`) owns their mechanical split in the
+fresh `20260722-testgate-clippy-test-length-recovery-001` package. Downstream
+doctest, full Nextest, and CRAP were blocked and did not run; there was no retry.
 ## Declared Write Set
 
 - `.github/workflows/testgate-shadow.yml`

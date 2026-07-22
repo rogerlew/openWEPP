@@ -4,7 +4,17 @@ Package ID: `20260722-testgate-clippy-test-length-recovery-001`
 
 Queue ID: `TESTGATE-CLIPPY-TEST-LENGTH-RECOVERY-01`
 
-Status: `ACTIVE / SCAFFOLD`
+Status: `ACTIVE / REVIEW`
+
+## Progress
+
+- [x] Scaffold commit `3e9a1427` predates both Rust test edits.
+- [x] Mechanically split the planner test from 157 to 42 lines.
+- [x] Mechanically split the verifier test from 101 to 75 lines.
+- [x] Formatting, both exact focused tests, package Clippy, and exact workspace
+  Clippy pass.
+- [ ] Complete dual independent review and durable RTR-033 closure.
+- [ ] Delegate one changed-head qualification and dual terminal verification.
 
 ## Objective
 

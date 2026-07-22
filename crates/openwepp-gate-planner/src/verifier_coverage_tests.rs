@@ -317,8 +317,7 @@ fn verdict_accessors_preserve_identity_and_trust_fields() {
     assert_eq!(envelope.trust_class(), "PROTECTED_CI");
 }
 
-#[test]
-fn local_verifier_guards_cover_retry_prerequisite_audit_and_binding_edges() {
+fn assert_retry_attempt_guards() {
     let node = json!({
         "node_id": "node",
         "arguments": ["test"],
@@ -352,6 +351,11 @@ fn local_verifier_guards_cover_retry_prerequisite_audit_and_binding_edges() {
             .code,
         "GATE-RECEIPT-ATTEMPT"
     );
+}
+
+#[test]
+fn local_verifier_guards_cover_retry_prerequisite_audit_and_binding_edges() {
+    assert_retry_attempt_guards();
 
     let prerequisite = json!({"node_id": "first", "prerequisites": []});
     let dependent = json!({"node_id": "second", "prerequisites": ["first"]});
