@@ -245,9 +245,10 @@
 State as of `2026-07-21 UTC`:
 
 - `20260721-cqr-testgate-recovery-06-verifier-001/` -
-  EXECUTING: sixth of seven one-module CQR packages. It targets the one
-  actionable READY-audit receipt-verifier row; production edits remain blocked
-  until scaffold, dual eligibility review, baseline, and characterization.
+  TERMINAL VERIFICATION: sixth of seven one-module CQR packages. Test-only
+  characterization closes the READY-audit receipt-verifier row with unchanged
+  production bytes, corrected-head coverage/CRAP closure, renewed dual review,
+  and RTR-028 durably closed. Docs-only terminal findings are being corrected.
 
 - `20260721-cqr-testgate-recovery-01-pre-heavy-001/` -
   COMPLETE: first of seven one-module CQR packages. All 13 `pre_heavy.rs`
