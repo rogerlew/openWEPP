@@ -1751,16 +1751,21 @@ mod tests {
     use serde_json::json;
 
     use super::{
-        CHECK_IDS, active_package_path, append_attempt_record, audit_reason_codes,
+        AuditDocumentInputs, CHECK_IDS, ConstructedAudit, active_package_path,
+        admit_attempt_ledger, append_attempt_record, audit_document, audit_reason_codes,
         audit_reconstruction_root, audit_status, build_failure_audit, check,
-        documentation_scope_is_exact, durable_ledger, execution_claims_match,
-        execution_context_is_current, execution_identities, failure_check_index,
-        light_stage_passed, no_open_tooling_defect, node_manifest, package_admission,
+        documentation_scope_is_exact, durable_ledger, enforce_authorized_rust_line_limit,
+        execution_claims_match, execution_context_is_current, execution_identities,
+        failure_check_index, file_digest, ledger_head, light_attempt_isolated, light_stage_passed,
+        no_open_tooling_defect, no_open_tooling_defect_at_head, node_manifest, package_admission,
         package_admitted, path_digest, read_json, reconcile_orphaned_attempts,
-        reconstructed_plan_is_exact, record_heavy_failure, require_single_active_prompt,
-        select_package_admission, valid_stage_order, validate_audit_context_binding,
-        validate_audit_core_binding, validate_checkpoint_identity, validate_combined_decision,
-        validate_ready_check_set, validate_stage_receipt_execution_binding,
+        reconstructed_plan_is_exact, record_heavy_failure, reject_open_tooling_defects,
+        require_clean_diff, require_ready_audit_status, require_single_active_prompt, seal_audit,
+        select_package_admission, separated_roots, tooling_defect_statuses, valid_stage_order,
+        validate_audit_context_binding, validate_audit_core_binding, validate_audit_schema,
+        validate_checkpoint_identity, validate_combined_decision, validate_current_audit_inventory,
+        validate_embedded_light_receipt_id, validate_exact_node_shapes, validate_ready_audit,
+        validate_ready_check_set, validate_stage_receipt, validate_stage_receipt_execution_binding,
         validate_stage_receipt_plan_binding, validate_started_successor, verify_ledger_chain,
         with_disposable_audit_reconstruction,
     };
@@ -2346,6 +2351,199 @@ mod tests {
                 .code,
             "GATE-AUDIT-CHECKPOINT-DRIFT"
         );
+    }
+
+    #[test]
+    fn canonical_audit_document_seals_and_ready_helpers_fail_closed() {
+        let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
+        let plan = json!({
+            "plan_id": "2".repeat(64), "execution_key": "4".repeat(64), "nodes": [],
+            "combined_quality": {
+                "decision": "NOT_APPLICABLE", "reason_code": "NO_GLOBAL_QUALITY",
+                "requested_proof_id": null, "accepted_proof_id": null,
+                "proof_sha256": null, "baseline_count": 0
+            }
+        });
+        let receipt = json!({
+            "stage_receipt_id": "5".repeat(64),
+            "executor_binary_sha256": "a".repeat(64)
+        });
+        let checks = CHECK_IDS
+            .iter()
+            .map(|id| check(id, Ok(()), json!({"id": id})).expect("check"))
+            .collect();
+        let artifact_root = PathBuf::from("/external/audit-artifacts");
+        let ledger = PathBuf::from("/external/audit-ledger.jsonl");
+        let audit = audit_document(AuditDocumentInputs {
+            plan: &plan,
+            light_receipt: &receipt,
+            artifact_root: &artifact_root,
+            ledger: &ledger,
+            ledger_head_sha256: None,
+            package_admission: json!({"status": "READY"}),
+            checks,
+            combined_execution: plan["combined_quality"].clone(),
+            status: "READY",
+            reason_codes: Vec::new(),
+        })
+        .and_then(|audit| seal_audit(&root, audit))
+        .expect("canonical sealed audit");
+        assert_eq!(ConstructedAudit(audit.clone()).as_value(), &audit);
+        validate_audit_schema(&root, &audit).expect("schema-valid audit");
+        validate_ready_audit(&audit).expect("READY audit");
+        validate_current_audit_inventory(&plan, &audit).expect("current inventory");
+
+        let mut drifted = audit.clone();
+        drifted["status"] = json!("BLOCKED");
+        assert_eq!(
+            require_ready_audit_status(&drifted)
+                .expect_err("blocked audit")
+                .code,
+            "GATE-AUDIT-NOT-READY"
+        );
+        drifted = audit;
+        drifted["light_receipt"]["stage_receipt_id"] = json!("6".repeat(64));
+        assert_eq!(
+            validate_embedded_light_receipt_id(&drifted)
+                .expect_err("receipt substitution")
+                .code,
+            "GATE-AUDIT-LIGHT-RECEIPT"
+        );
+    }
+
+    #[test]
+    fn stage_receipt_schema_and_binary_binding_are_enforced_together() {
+        let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
+        let artifact_root = PathBuf::from("/external/light-artifacts");
+        let plan = json!({"plan_id": "2".repeat(64), "execution_key": "4".repeat(64)});
+        let mut receipt = read_json(&root.join("gate-policy/v1/fixtures/valid/stage-receipt.json"))
+            .expect("stage receipt fixture");
+        receipt["plan_id"] = plan["plan_id"].clone();
+        receipt["plan_sha256"] = json!(digest(&plan).expect("plan digest"));
+        receipt["execution_key"] = plan["execution_key"].clone();
+        receipt["artifact_root_sha256"] = json!(path_digest(&artifact_root));
+        receipt["stage_receipt_id"] = json!("0".repeat(64));
+        receipt["stage_receipt_id"] =
+            json!(derived_id(&receipt, "stage_receipt_id").expect("receipt ID"));
+        validate_stage_receipt(&root, &plan, &receipt, &artifact_root, false)
+            .expect("cross-runner receipt validation");
+        assert_eq!(
+            validate_stage_receipt(&root, &plan, &receipt, &artifact_root, true)
+                .expect_err("binary drift")
+                .code,
+            "GATE-AUDIT-EXECUTOR-BINARY-DRIFT"
+        );
+        let mut malformed = receipt;
+        malformed["execution_key"] = json!("9".repeat(64));
+        malformed["stage_receipt_id"] = json!("0".repeat(64));
+        malformed["stage_receipt_id"] =
+            json!(derived_id(&malformed, "stage_receipt_id").expect("drifted receipt ID"));
+        assert_eq!(
+            validate_stage_receipt(&root, &plan, &malformed, &artifact_root, false)
+                .expect_err("wrong stage")
+                .code,
+            "GATE-AUDIT-STAGE-RECEIPT-IDENTITY"
+        );
+    }
+
+    #[test]
+    fn light_checkpoint_artifacts_are_content_and_attempt_bound() {
+        let root = std::env::temp_dir().join(format!(
+            "openwepp-light-checkpoint-{}-{}",
+            std::process::id(),
+            std::thread::current().name().unwrap_or("test")
+        ));
+        fs::create_dir_all(root.join(".checkpoints")).expect("checkpoint directory");
+        fs::write(root.join("result.txt"), "bound\n").expect("output artifact");
+        let node = json!({
+            "node_id": "a".repeat(64), "execution_cost_class": "LIGHT",
+            "output_paths": ["result.txt"]
+        });
+        let checkpoint = json!({
+            "node_sha256": digest(&node).expect("node digest"), "result": "PASS",
+            "artifacts": [{"path": "result.txt", "sha256": file_digest(&root.join("result.txt")).expect("artifact digest")}]
+        });
+        fs::write(
+            root.join(".checkpoints").join(format!(
+                "{}.json",
+                node["node_id"].as_str().expect("node ID")
+            )),
+            serde_json::to_vec(&checkpoint).expect("checkpoint JSON"),
+        )
+        .expect("checkpoint");
+        let plan = json!({"nodes": [node]});
+        let receipt = json!({"artifact_root_sha256": path_digest(&root)});
+        light_attempt_isolated(&plan, &receipt, &root).expect("isolated LIGHT artifacts");
+        fs::write(root.join("result.txt"), "drift\n").expect("drift output");
+        assert_eq!(
+            light_attempt_isolated(&plan, &receipt, &root)
+                .expect_err("artifact drift")
+                .code,
+            "GATE-AUDIT-CHECKPOINT-ARTIFACT-DRIFT"
+        );
+        fs::remove_dir_all(root).expect("remove checkpoint fixture");
+    }
+
+    #[test]
+    fn cheap_file_shape_root_and_ledger_guards_cover_success_and_failure() {
+        let fixture = PackageFixture::new(true, false);
+        require_clean_diff(&fixture.root, &fixture.plan()).expect("clean diff hygiene");
+        enforce_authorized_rust_line_limit(&fixture.root, &fixture.plan()).expect("line limit");
+        let mut malformed = json!({"nodes": [
+            {"node_id": "n", "execution_cost_class": "LIGHT", "arguments": [],
+             "expected_inventory": {"mode": "EXACT"}, "prerequisites": []},
+            {"node_id": "n", "execution_cost_class": "SIDE", "arguments": [],
+             "expected_inventory": {"mode": "EXACT"}, "prerequisites": []}
+        ]});
+        assert_eq!(
+            validate_exact_node_shapes(&malformed)
+                .expect_err("duplicate node")
+                .code,
+            "GATE-AUDIT-INVENTORY-INVALID"
+        );
+        assert_eq!(
+            valid_stage_order(&malformed).expect_err("cost class").code,
+            "GATE-AUDIT-COST-CLASS"
+        );
+        malformed["environment_roots"] = json!({
+            "execution_root": "/same", "authority_root": "/same", "documentation_root": "/docs"
+        });
+        assert_eq!(
+            separated_roots(&malformed).expect_err("aliased roots").code,
+            "GATE-AUDIT-ROOT-ALIAS"
+        );
+
+        let ledger = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("target")
+            .join(format!("pre-heavy-ledger-{}.jsonl", std::process::id()));
+        fs::create_dir_all(ledger.parent().expect("ledger parent")).expect("target directory");
+        fs::write(&ledger, "").expect("empty ledger");
+        admit_attempt_ledger(&ledger).expect("durable empty ledger");
+        assert_eq!(ledger_head(&ledger).expect("ledger head"), None);
+        let entry = append_attempt_record(&ledger, json!({"record_type": "NOTE"}))
+            .expect("append ledger entry");
+        assert_eq!(
+            ledger_head(&ledger).expect("ledger head"),
+            Some(entry.clone())
+        );
+        no_open_tooling_defect_at_head(&ledger, Some(&entry)).expect("stable closed ledger");
+        assert_eq!(
+            no_open_tooling_defect_at_head(&ledger, None)
+                .expect_err("ledger drift")
+                .code,
+            "GATE-AUDIT-LEDGER-DRIFT"
+        );
+        let defects = tooling_defect_statuses(
+            "{\"record_type\":\"TOOLING_DEFECT\",\"defect_id\":\"RTR-X\",\"status\":\"OPEN\"}\n",
+        )
+        .expect("defect statuses");
+        assert_eq!(
+            reject_open_tooling_defects(defects)
+                .expect_err("open defect")
+                .code,
+            "GATE-AUDIT-OPEN-TOOLING-DEFECT"
+        );
+        fs::remove_file(ledger).expect("remove ledger fixture");
     }
 
     #[test]
