@@ -244,7 +244,9 @@
   the master plan, all module package trees, intended source/test paths, and
   closeout evidence. Per-module packages remain mandatory and one-module-only.
   Missing aggregate authority is a pre-implementation blocker; never repair it
-  by retroactively widening an older package.
+  by retroactively widening an older package. Require a retained PASS from
+  `tools/local_ci/check_cqr_aggregate_admission.py` for every module before its
+  first implementation edit.
 - Operator phrasing such as `execute cqr nightly for 8 modules` means: read
   `docs/work-packages/cqr-nightly-burndown-execplan.md`, measure live workspace
   CRAP/LCOV, select the requested number of eligible production modules, scaffold

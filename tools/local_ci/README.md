@@ -41,6 +41,25 @@ python tools/local_ci/nextest_timing.py sweep \
 The latest summary is written to `target/local-ci-history/latest.md`; the full
 append-only log is `target/local-ci-history/nextest-runs.jsonl`.
 
+## CQR Aggregate Admission
+
+Before the first implementation edit in a multi-package CQR batch, validate
+each module package against the earlier aggregate scaffold:
+
+```bash
+python tools/local_ci/check_cqr_aggregate_admission.py \
+  --repo . \
+  --aggregate-package docs/work-packages/<aggregate-id>/package.md \
+  --aggregate-scaffold <aggregate-scaffold-commit> \
+  --module-package docs/work-packages/<module-id>/package.md
+```
+
+The command fails unless the aggregate package existed with `ACTIVE` or
+`READY` status at the named commit, its declared write set remains unchanged,
+it predates the module scaffold, the module binds the exact package/commit, and
+every module intended-write-set entry is covered. Retain the PASS JSON in the
+module's scaffold evidence before implementation.
+
 ## TESTGATE Increment Execution
 Build the repository-owned planner/executor, then create one external evidence
 directory for an exact base/head increment:

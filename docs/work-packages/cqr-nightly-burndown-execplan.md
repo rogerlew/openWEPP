@@ -37,7 +37,16 @@ write set covering the master plan, every module package tree, every intended
 source/test path, the catalog, and closeout evidence. Record its path and
 scaffold commit in every module package. This authority does not replace the
 one-module packages. If it is absent, stop before implementation; do not widen
-an older package after the diff exists.
+an older package after the diff exists. Run the canonical validator for each
+module and retain its PASS JSON in that module's scaffold evidence:
+
+```bash
+python tools/local_ci/check_cqr_aggregate_admission.py \
+  --repo . \
+  --aggregate-package <aggregate-package.md> \
+  --aggregate-scaffold <aggregate-scaffold-commit> \
+  --module-package <module-package.md>
+```
 
 ## Governance
 
@@ -187,7 +196,7 @@ selected target unless the operator explicitly forbids commits.
 For each selected module:
 
 1. Confirm the batch aggregate authority package and scaffold commit are bound
-   in the module package.
+   in the module package, then retain the canonical validator's PASS JSON.
 2. Scaffold the package from the template.
 3. Commit the scaffold.
 4. Capture baseline metrics inside the package artifacts.

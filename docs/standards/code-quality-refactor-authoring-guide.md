@@ -67,7 +67,8 @@ package targets **one module and one quality dimension** (§2.2).
    module still retains its one-module package and write set. Do not create the
    aggregate authority after execution or widen an older package retroactively;
    if it is missing, stop before the first production edit and correct the
-   scaffold.
+   scaffold. Run `tools/local_ci/check_cqr_aggregate_admission.py` for every
+   module package and retain its PASS JSON before implementation.
 
 ## 3) In-scope dimensions and their closure metric
 

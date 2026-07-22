@@ -105,6 +105,17 @@ exists at `{{aggregate_scaffold_commit}}`, has `ACTIVE` or `READY` status, and
 immutably authorizes the batch master plan, all selected module package trees,
 intended source/test paths, catalog, and closeout evidence. Missing aggregate
 authority blocks implementation; do not widen an older package retroactively.
+Run and retain:
+
+```bash
+python tools/local_ci/check_cqr_aggregate_admission.py \
+  --repo . \
+  --aggregate-package {{aggregate_admission_package}} \
+  --aggregate-scaffold {{aggregate_scaffold_commit}} \
+  --module-package docs/work-packages/{{package_id}}/package.md
+```
+
+The command must return `PASS` before implementation.
 
 Before any production/test implementation edit, commit the scaffold for this
 package. The scaffold commit includes this `package.md`, prompt directories,
