@@ -1,3 +1,4 @@
 # Worker Handoff
 
-Status: rank 4 queued after completed ranks 1-3.
+Status: rank 4 implementation and numeric closure complete; dual terminal
+re-audit of the durable evidence increment remains before rank 5 may scaffold.
