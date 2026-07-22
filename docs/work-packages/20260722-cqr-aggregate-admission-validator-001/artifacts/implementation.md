@@ -8,7 +8,7 @@ strict ancestry before one unique module scaffold, and immutable module
 bindings/write-set recorded at that scaffold. The committed package-local batch
 manifest must bind the master ExecPlan, complete module package list, catalog,
 and all required paths; both the manifest and aggregate scaffold must cover the
-module plan.
+module plan. Its exact committed bytes must remain unchanged at current HEAD.
 
 Static: the first dual review findings were accepted. The correction aligns the
 validator with the template's `Intended Write Set`, reads module authority at

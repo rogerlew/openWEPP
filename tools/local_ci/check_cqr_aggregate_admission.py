@@ -107,15 +107,18 @@ def _status(text: str) -> str:
     return values[0]
 
 
-def _batch_manifest(repo: Path, revision: str, path: str) -> dict[str, object]:
+def _batch_manifest(
+    repo: Path, revision: str, path: str
+) -> tuple[dict[str, object], str]:
     path = _canonical_path(path, "aggregate batch manifest")
+    raw = _git(repo, "show", f"{revision}:{path}")
     try:
-        value = json.loads(_git(repo, "show", f"{revision}:{path}"))
+        value = json.loads(raw)
     except json.JSONDecodeError as error:
         raise AdmissionError("aggregate batch manifest is not valid JSON") from error
     if not isinstance(value, dict) or value.get("schema_version") != MANIFEST_SCHEMA:
         raise AdmissionError("aggregate batch manifest schema is invalid")
-    return value
+    return value, raw
 
 
 def _string_paths(value: object, label: str) -> list[str]:
@@ -200,7 +203,12 @@ def validate(
     aggregate_root = aggregate_package.removesuffix("package.md")
     if not manifest_path.startswith(aggregate_root):
         raise AdmissionError("aggregate batch manifest must be package-local")
-    manifest = _batch_manifest(repo, aggregate_scaffold, manifest_path)
+    manifest, scaffold_manifest_text = _batch_manifest(
+        repo, aggregate_scaffold, manifest_path
+    )
+    _, current_manifest_text = _batch_manifest(repo, head, manifest_path)
+    if scaffold_manifest_text != current_manifest_text:
+        raise AdmissionError("aggregate batch manifest changed after scaffold")
     if manifest.get("aggregate_package") != aggregate_package:
         raise AdmissionError("aggregate batch manifest package binding does not match")
     master_execplan = _canonical_path(

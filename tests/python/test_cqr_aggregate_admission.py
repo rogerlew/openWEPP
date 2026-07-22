@@ -242,6 +242,14 @@ class AggregateAdmissionTests(unittest.TestCase):
         fixture.commit("mutate aggregate authority")
         self.assert_failure(fixture.run(), "changed after scaffold")
 
+    def test_rejects_mutated_batch_manifest(self) -> None:
+        fixture = self.fixture()
+        manifest = json.loads(Fixture.manifest_text())
+        manifest["required_paths"] = [MANIFEST, MASTER, MODULE]
+        fixture.write(MANIFEST, json.dumps(manifest, indent=2) + "\n")
+        fixture.commit("mutate batch manifest")
+        self.assert_failure(fixture.run(), "manifest changed after scaffold")
+
     def test_rejects_mismatched_module_binding(self) -> None:
         fixture = self.fixture()
         fixture.write(
