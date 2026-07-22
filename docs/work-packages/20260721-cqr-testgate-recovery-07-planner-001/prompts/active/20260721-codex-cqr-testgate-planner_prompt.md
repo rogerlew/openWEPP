@@ -1,7 +1,7 @@
 # Active Prompt: Planner CQR
 
-Scope: local behavior-preserving CQR work inside `/home/workdir/openWEPP`; no
-external connectivity is required.
+Scope: local behavior-preserving CQR work inside `/home/workdir/openWEPP` using
+repository flat-file reads and edits only; no external connectivity is required.
 
 Execution mode: package-end-to-end.
 
@@ -34,7 +34,8 @@ On-demand:
 - `crates/openwepp-gate-planner/src/planner.rs`
 - `crates/openwepp-gate-planner/src/planner_coverage_tests.rs`
 
-Required-reading budget: 318,598 local bytes, REQUIRES-JUSTIFICATION; map:
+Required-reading budget: 318,598 local bytes, REQUIRES-JUSTIFICATION because
+the trust-bearing planner and full gate standard must be read in full; map:
 `artifacts/required-reading-map.md`.
 
 Files:
@@ -51,9 +52,14 @@ Constraints: behavior-preserving decomposition only. Do not change public APIs,
 schemas, selection/reconciliation meanings, validation order, typed errors, or
 fail-closed behavior. Do not rerun unchanged expensive gates.
 
-Subagent requirement: REQUIRED: delegate every heavy batch, comparator, or
-campaign-global gate selected by the terminal plan. This prompt explicitly
-authorizes metric, review, verification, comparator, and closure-runner roles.
+Subagent requirement: REQUIRED: spawn `comparator_suite_runner` for every heavy
+batch, closure, comparator, or campaign-global gate selected by the terminal
+plan; do NOT run those gates on the parent model unless the subagent is
+unavailable and command-level evidence records that fact. This prompt
+explicitly authorizes subagent spawning/delegation to metric, review,
+verification, comparator, and closure-runner roles. Outputs are compact
+metrics, package-local review/verification artifacts, and retained log paths.
+Write access is read-only unless a bounded package write is explicitly assigned.
 
 Autonomy: execute package phases end-to-end and update required artifacts
 without requesting direction unless hard-blocked.
