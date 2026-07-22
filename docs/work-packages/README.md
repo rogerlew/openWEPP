@@ -252,8 +252,10 @@
 State as of `2026-07-22 UTC`:
 
 - `20260722-testgate-executor-sentinel-recovery-001/` -
-  ACTIVE / SCAFFOLD: closes RTR-034 by correcting one stale integration
-  source-contract sentinel while preserving final-context-before-spawn ordering.
+  ACTIVE / READY-QUALIFICATION: closes RTR-034 by correcting one stale
+  integration source-contract sentinel while preserving final-context-before-
+  spawn ordering. Focused gates, package admission, and dual review pass;
+  changed-head recovery qualification remains.
 
 - `20260722-testgate-clippy-test-length-recovery-001/` -
   ACTIVE / READY-QUALIFICATION: closes RTR-033 by mechanically splitting two

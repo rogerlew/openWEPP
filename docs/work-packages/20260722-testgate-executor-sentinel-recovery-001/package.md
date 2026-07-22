@@ -4,7 +4,7 @@ Package ID: `20260722-testgate-executor-sentinel-recovery-001`
 
 Queue ID: `TESTGATE-EXECUTOR-SENTINEL-RECOVERY-01`
 
-Status: `ACTIVE / REVIEW`
+Status: `ACTIVE / READY-QUALIFICATION`
 
 ## Progress
 
@@ -13,7 +13,8 @@ Status: `ACTIVE / REVIEW`
 - [x] Formatting, exact failed test, complete 8-case integration target, and
   target Clippy pass.
 - [x] Complete dual independent review at exact correction commit `eeb858b2`.
-- [ ] Close RTR-034 durably at that exact correction commit.
+- [x] Close RTR-034 at correction commit `eeb858b2`; durable ledger entry
+  `f01d2e9e`.
 - [ ] Delegate one changed-head qualification and dual terminal verification.
 
 ## Objective

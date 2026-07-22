@@ -51,6 +51,7 @@ quality paths without editing its frozen subject.
 - [x] (2026-07-22) Retain the changed-head receipt that exposed two overlong CQR characterization tests and open RTR-033; downstream full Nextest and CRAP did not run.
 - [x] (2026-07-22) Close RTR-033 after mechanical 157->42 and 101->75 test splits, exact workspace Clippy, `READY` package admission, and dual review.
 - [x] (2026-07-22) Retain the 2,271/2,272 full-Nextest result, open RTR-034 for its stale executor mutability sentinel, and preserve blocked CRAP without running it.
+- [x] (2026-07-22) Close RTR-034 after the canonical immutable-binding sentinel, owning 8/8 target, Clippy, `READY` admission, and dual review.
 - [ ] Reconcile the exact terminal diff and obtain a fresh `READY` audit.
 - [ ] Delegate each selected HEAVY batch once.
 - [ ] Complete dual terminal verification, prompt archival, and final disposition.
@@ -159,6 +160,10 @@ failure was a stale integration source-contract search for
 immutable; the substantive final-context-before-spawn ordering remains present.
 RTR-034 owns the one-line sentinel correction. CRAP was blocked and did not run;
 there was no retry.
+
+RTR-034 closed at correction commit `eeb858b2` with durable ledger entry
+`f01d2e9e`. The exact failed test and all eight owning integration tests pass;
+the final-context-before-spawn guard remains substantive and unchanged.
 ## Declared Write Set
 
 - `.github/workflows/testgate-shadow.yml`
