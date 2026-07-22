@@ -1,6 +1,7 @@
 use std::fs;
 use std::path::PathBuf;
 use std::process::Command;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 use serde_json::{Value, json};
 
@@ -10,6 +11,8 @@ use super::{
 };
 use crate::canonical::{canonical_bytes, derived_id, digest, sha256_bytes};
 use crate::executor::ExecutionClaims;
+
+static SCRATCH_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
 struct CheckpointFixture {
     root: PathBuf,
@@ -44,9 +47,10 @@ impl Drop for OwnedScratch {
 
 impl CheckpointFixture {
     fn new() -> Self {
+        let sequence = SCRATCH_SEQUENCE.fetch_add(1, Ordering::Relaxed);
         let root = std::env::temp_dir().join(format!(
-            "openwepp-resume-checkpoint-characterization-{}",
-            std::process::id()
+            "openwepp-resume-checkpoint-characterization-{}-{sequence}",
+            std::process::id(),
         ));
         fs::create_dir_all(root.join("out")).expect("artifact root");
         fs::write(root.join("out/result"), b"pass").expect("artifact");
