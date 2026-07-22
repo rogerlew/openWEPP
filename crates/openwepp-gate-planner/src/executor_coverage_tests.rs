@@ -114,6 +114,394 @@ fn authority_report_proves_executed_suite_inventory() {
     );
 }
 
+#[test]
+fn authority_outcomes_encode_admission_science_and_truthful_nonpass() {
+    use std::collections::BTreeMap;
+
+    let nodes = vec![
+        json!({"node_id": "a0", "gate_definition_id": "authority-admission-v1", "authority_class": "A0"}),
+        json!({"node_id": "a3", "gate_definition_id": "required-authority-v1", "authority_class": "A3"}),
+    ];
+    let pass = BTreeMap::from([
+        ("a0".to_owned(), "PASS".to_owned()),
+        ("a3".to_owned(), "PASS".to_owned()),
+    ]);
+    let outcomes = super::authority_outcomes(&nodes, &pass).expect("authority pass outcomes");
+    assert_eq!(outcomes[0]["admission_outcome"], "ADMITTED");
+    assert_eq!(outcomes[1]["scientific_outcome"], "CONFORMS");
+
+    let fail = BTreeMap::from([
+        ("a0".to_owned(), "FAIL".to_owned()),
+        ("a3".to_owned(), "BLOCKED".to_owned()),
+    ]);
+    let outcomes = super::authority_outcomes(&nodes, &fail).expect("authority nonpass outcomes");
+    assert_eq!(outcomes[0]["admission_outcome"], "REJECTED");
+    assert_eq!(outcomes[1]["scientific_outcome"], "NOT_EVALUATED");
+
+    let unsupported = vec![
+        json!({"node_id": "fake", "gate_definition_id": "generic-process", "authority_class": "A3"}),
+    ];
+    let result = BTreeMap::from([("fake".to_owned(), "PASS".to_owned())]);
+    let error =
+        super::authority_outcomes(&unsupported, &result).expect_err("generic authority claim");
+    assert_eq!(error.code, "GATE-EXEC-AUTHORITY-UNSUPPORTED");
+}
+
+#[test]
+fn source_mutation_and_checkout_precedence_are_preserved() {
+    use std::collections::{BTreeMap, BTreeSet};
+
+    use super::tests::{execution_fixture, gate_definition};
+
+    let mut empty = ExecutionRecord::empty();
+    assert_eq!(
+        super::mark_source_mutation(&mut empty)
+            .expect_err("mutation without an attempt must fail")
+            .code,
+        "GATE-EXEC-SOURCE-MUTATION"
+    );
+    let mut record = ExecutionRecord {
+        final_results: BTreeMap::from([("node".to_owned(), "PASS".to_owned())]),
+        attempts: vec![json!({"node_id": "node", "result": "PASS"})],
+        executed_inventory: BTreeSet::new(),
+        unavailable: BTreeMap::new(),
+        resume_decisions: Vec::new(),
+    };
+    super::mark_source_mutation(&mut record).expect("attribute mutation to last attempt");
+    assert_eq!(record.attempts[0]["result"], "INVALID");
+    assert_eq!(record.final_results["node"], "INVALID");
+
+    super::verify_execution_checkout(Path::new("/path/not-read"), &json!({"source": {}}))
+        .expect("a plan without committed head has no checkout binding");
+    let (repo, plan) = execution_fixture(
+        "checkout-precedence-repo",
+        &[gate_definition("fixture-checkout-v1", &["true"], &[])],
+    );
+    super::verify_execution_checkout(repo.path(), &plan).expect("matching clean checkout");
+    let mut wrong_head = plan.clone();
+    wrong_head["source"]["head_commit"] = json!("0".repeat(40));
+    assert_eq!(
+        super::verify_execution_checkout(repo.path(), &wrong_head)
+            .expect_err("wrong committed head must fail first")
+            .code,
+        "GATE-EXEC-CHECKOUT-HEAD"
+    );
+    fs::write(repo.path().join("untracked-checkout-probe"), "dirty\n")
+        .expect("write untracked probe");
+    assert_eq!(
+        super::verify_execution_checkout(repo.path(), &plan)
+            .expect_err("dirty matching checkout must fail")
+            .code,
+        "GATE-EXEC-CHECKOUT-DIRTY"
+    );
+}
+
+#[test]
+fn environment_and_missing_observed_inventory_are_fail_closed() {
+    use super::tests::TempDirectory;
+
+    let absent_key = "OPENWEPP_EXECUTOR_COVERAGE_ABSENT_KEY_7A13";
+    let environment = super::allowed_environment(&json!({"environment_allowlist": [absent_key]}))
+        .expect("absent optional environment key");
+    assert!(environment.is_empty());
+
+    let artifacts = TempDirectory::new("missing-observed-inventory");
+    let authority = json!({
+        "output_paths": ["target/gate-plan/required-authority-report.md"]
+    });
+    assert!(
+        super::observed_authority_inventory(artifacts.path(), &authority, "FAIL")
+            .expect("missing nonpass authority report")
+            .is_empty()
+    );
+    assert_eq!(
+        super::observed_authority_inventory(artifacts.path(), &authority, "PASS")
+            .expect_err("missing PASS authority report")
+            .code,
+        "GATE-EXEC-AUTHORITY-REPORT"
+    );
+
+    let junit = json!({"arguments": [], "artifact_contract": "nextest-junit-v1"});
+    assert!(
+        super::observed_junit_inventory(artifacts.path(), &junit, "FAIL")
+            .expect("missing nonpass JUnit")
+            .is_empty()
+    );
+    assert_eq!(
+        super::observed_junit_inventory(artifacts.path(), &junit, "PASS")
+            .expect_err("missing PASS JUnit")
+            .code,
+        "GATE-EXEC-JUNIT-READ"
+    );
+}
+
+#[test]
+fn junit_contract_dispatch_preserves_exact_inventory() {
+    use super::tests::TempDirectory;
+
+    let artifacts = TempDirectory::new("junit-contract-dispatch");
+    let expected = sha256_bytes(b"rust-suites::suite\0case");
+    let mut node = json!({
+        "artifact_contract": "nextest-junit-v1",
+        "arguments": [],
+        "expected_inventory": {"ids": [expected]},
+    });
+    let junit = super::nextest_junit_path(artifacts.path(), &node).expect("JUnit path");
+    fs::create_dir_all(junit.parent().expect("JUnit parent")).expect("JUnit directory");
+    fs::write(
+        &junit,
+        "<testsuite>\n<testcase classname=\"suite\" name=\"case\"/>\n</testsuite>\n",
+    )
+    .expect("JUnit report");
+    super::validate_success_artifacts(artifacts.path(), &node).expect("exact JUnit inventory");
+    node["expected_inventory"]["ids"] = json!(["0".repeat(64)]);
+    assert_eq!(
+        super::validate_success_artifacts(artifacts.path(), &node)
+            .expect_err("mismatched JUnit inventory")
+            .code,
+        "GATE-EXEC-JUNIT-INVENTORY"
+    );
+    super::validate_success_artifacts(
+        artifacts.path(),
+        &json!({"artifact_contract": "process-exit-v1"}),
+    )
+    .expect("ordinary process artifacts need no real-artifact validation");
+}
+
+#[test]
+fn real_artifact_reset_and_source_selection_cover_every_contract() {
+    use super::tests::TempDirectory;
+
+    let artifacts = TempDirectory::new("real-artifact-reset-sources");
+    let absent = artifacts.path().join("absent");
+    super::reset_real_artifact(&absent).expect("absent artifact reset");
+    let file = artifacts.path().join("file");
+    fs::write(&file, "artifact\n").expect("regular artifact");
+    super::reset_real_artifact(&file).expect("regular artifact removed");
+    assert!(!file.exists());
+    let directory = artifacts.path().join("directory");
+    fs::create_dir(&directory).expect("artifact directory");
+    assert_eq!(
+        super::reset_real_artifact(&directory)
+            .expect_err("directory is not an artifact file")
+            .code,
+        "GATE-EXEC-REAL-ARTIFACT-TYPE"
+    );
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::symlink;
+
+        let link = artifacts.path().join("link");
+        symlink(&directory, &link).expect("artifact symlink");
+        assert_eq!(
+            super::reset_real_artifact(&link)
+                .expect_err("artifact symlink must fail")
+                .code,
+            "GATE-EXEC-REAL-ARTIFACT-SYMLINK"
+        );
+    }
+
+    let nextest = json!({"artifact_contract": "nextest-junit-v1", "arguments": []});
+    assert_eq!(
+        super::real_artifact_sources(artifacts.path(), &nextest)
+            .expect("Nextest sources")
+            .len(),
+        1
+    );
+    let crap_xml = json!({
+        "artifact_contract": "adjudicated-crap-v1",
+        "arguments": ["--output-dir", "target/custom-crap"],
+        "output_paths": ["report.json", "junit.xml", "workspace.lcov"]
+    });
+    assert_eq!(
+        super::real_artifact_sources(artifacts.path(), &crap_xml)
+            .expect("CRAP XML sources")
+            .len(),
+        4
+    );
+    let crap = json!({
+        "artifact_contract": "adjudicated-crap-v1",
+        "arguments": [],
+        "output_paths": ["report.json"]
+    });
+    assert_eq!(
+        super::real_artifact_sources(artifacts.path(), &crap)
+            .expect("CRAP control sources")
+            .len(),
+        2
+    );
+    let authority = json!({
+        "artifact_contract": "authority-suite-report-v1",
+        "output_paths": ["target/authority.md"]
+    });
+    assert_eq!(
+        super::real_artifact_sources(artifacts.path(), &authority)
+            .expect("authority source")
+            .len(),
+        1
+    );
+    assert!(
+        super::real_artifact_sources(
+            artifacts.path(),
+            &json!({"artifact_contract": "process-exit-v1"})
+        )
+        .expect("process source set")
+        .is_empty()
+    );
+}
+
+#[test]
+fn artifact_publication_selects_real_and_synthetic_sources() {
+    use std::collections::BTreeSet;
+
+    use super::tests::TempDirectory;
+
+    let artifacts = TempDirectory::new("artifact-publication-sources");
+    fs::create_dir_all(artifacts.path().join(".work")).expect("work root");
+    let nextest = json!({
+        "node_id": "nextest",
+        "gate_definition_id": "nextest-v1",
+        "artifact_contract": "nextest-junit-v1",
+        "arguments": [],
+        "output_paths": ["result.xml"]
+    });
+    let junit = super::nextest_junit_path(artifacts.path(), &nextest).expect("JUnit path");
+    fs::create_dir_all(junit.parent().expect("JUnit parent")).expect("JUnit directory");
+    fs::write(&junit, b"real junit\n").expect("real JUnit");
+    let run = |result: &str| super::NodeRun {
+        attempt: json!({}),
+        result: result.to_owned(),
+        log_path: artifacts.path().join("attempt.log"),
+        executed_inventory: BTreeSet::new(),
+        unavailable_reason: None,
+    };
+    assert_eq!(
+        super::artifact_bytes(
+            artifacts.path(),
+            &nextest,
+            &run("PASS"),
+            "log",
+            "result.xml"
+        )
+        .expect("published real JUnit"),
+        b"real junit\n"
+    );
+    fs::remove_file(&junit).expect("remove real JUnit");
+    assert_eq!(
+        super::artifact_bytes(
+            artifacts.path(),
+            &nextest,
+            &run("PASS"),
+            "log",
+            "result.xml"
+        )
+        .expect_err("missing PASS real artifact")
+        .code,
+        "GATE-EXEC-REAL-ARTIFACT-MISSING"
+    );
+    let synthetic_junit = super::artifact_bytes(
+        artifacts.path(),
+        &nextest,
+        &run("FAIL"),
+        "log",
+        "result.xml",
+    )
+    .expect("synthetic failed JUnit");
+    assert!(String::from_utf8_lossy(&synthetic_junit).contains("failures=\"1\""));
+
+    let crap = json!({
+        "node_id": "crap",
+        "gate_definition_id": "adjudicated-crap-v1",
+        "artifact_contract": "adjudicated-crap-v1",
+        "arguments": [],
+        "output_paths": ["workspace.lcov", "report.json"]
+    });
+    assert_eq!(
+        super::artifact_bytes(
+            artifacts.path(),
+            &crap,
+            &run("FAIL"),
+            "log",
+            "workspace.lcov"
+        )
+        .expect("synthetic LCOV"),
+        b"TN:\n"
+    );
+    let process = json!({
+        "node_id": "process",
+        "gate_definition_id": "process-v1",
+        "artifact_contract": "process-exit-v1"
+    });
+    let process_json = super::artifact_bytes(
+        artifacts.path(),
+        &process,
+        &run("FAIL"),
+        "log",
+        "result.json",
+    )
+    .expect("process fallback JSON");
+    assert_eq!(
+        serde_json::from_slice::<Value>(&process_json).expect("process JSON")["result"],
+        "FAIL"
+    );
+}
+
+#[test]
+fn real_output_source_selection_covers_every_contract() {
+    use super::tests::TempDirectory;
+
+    let artifacts = TempDirectory::new("real-output-source-selection");
+    let nextest = json!({
+        "artifact_contract": "nextest-junit-v1",
+        "arguments": []
+    });
+    let crap = json!({
+        "artifact_contract": "adjudicated-crap-v1",
+        "arguments": [],
+        "output_paths": ["workspace.lcov", "report.json"]
+    });
+    let authority = json!({
+        "artifact_contract": "authority-suite-report-v1",
+        "output_paths": ["target/authority.md"]
+    });
+    let process = json!({"artifact_contract": "process-exit-v1"});
+    for (node, output, expected_some) in [
+        (&nextest, "result.xml", true),
+        (&crap, "junit.xml", true),
+        (&crap, "workspace.lcov", true),
+        (&crap, "report.json", true),
+        (&authority, "authority.md", true),
+        (&process, "result.json", false),
+    ] {
+        assert_eq!(
+            super::real_source_for_output(artifacts.path(), node, output)
+                .expect("real source selection")
+                .is_some(),
+            expected_some
+        );
+    }
+}
+
+#[test]
+fn canonical_directory_accepts_only_directories() {
+    use super::tests::TempDirectory;
+
+    let root = TempDirectory::new("canonical-directory");
+    assert_eq!(
+        super::canonical_directory(root.path(), "GATE-TEST-DIRECTORY")
+            .expect("canonical directory"),
+        fs::canonicalize(root.path()).expect("expected canonical directory")
+    );
+    let file = root.path().join("file");
+    fs::write(&file, "not a directory\n").expect("regular file");
+    assert_eq!(
+        super::canonical_directory(&file, "GATE-TEST-DIRECTORY")
+            .expect_err("regular file must fail")
+            .code,
+        "GATE-TEST-DIRECTORY"
+    );
+}
+
 fn valid_stage_receipt() -> Value {
     json!({
         "final_results": {"node-a": "PASS", "node-b": "FAIL"},

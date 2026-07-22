@@ -205,35 +205,10 @@ pub fn execute_plan_stage(
     create_confined_directories(&artifacts, &cargo_target_root(&artifacts))?;
     validate_plan(&repository, &artifacts, plan, stage != "HEAVY")?;
     verify_execution_checkout(&repository, plan)?;
-    let admitted_audit = if stage == "HEAVY" {
-        let audit = audit.ok_or_else(|| {
-            execution_error("GATE-EXEC-AUDIT-REQUIRED", "heavy stage requires an audit")
-        })?;
-        validate_audit_for_execution(&repository, plan, audit.as_value(), &artifacts, claims)?;
-        Some(audit.as_value())
-    } else {
-        None
-    };
-    let allowed_existing = admitted_light_nodes(admitted_audit)?;
-    preflight(&repository, &artifacts, plan, &allowed_existing, false)?;
-
-    let mut imported = match stage {
-        "LIGHT" | "FINAL_LIGHT" => ExecutionRecord::empty(),
-        "HEAVY" => {
-            let audit = admitted_audit.ok_or_else(|| {
-                execution_error("GATE-EXEC-AUDIT-REQUIRED", "heavy stage requires an audit")
-            })?;
-            ExecutionRecord::from_stage_receipt(&audit["light_receipt"])?
-        }
-        _ => return Err(execution_error("GATE-EXEC-STAGE", stage)),
-    };
-    if stage == "HEAVY" {
-        let seed = apply_candidate(plan, &artifacts, claims, resume)?;
-        imported.attempts.extend(seed.attempts);
-        imported.final_results.extend(seed.final_results);
-        imported.executed_inventory.extend(seed.executed_inventory);
-        imported.resume_decisions = seed.decisions;
-    }
+    let StageAdmission {
+        mut imported,
+        admitted_audit,
+    } = admit_stage(&repository, plan, &artifacts, claims, stage, audit, resume)?;
 
     let started_at = timestamp()?;
     let source_snapshot = source_snapshot(plan)?;
@@ -286,6 +261,55 @@ pub fn execute_plan_stage(
         },
         execution,
     )
+}
+
+struct StageAdmission<'a> {
+    imported: ExecutionRecord,
+    admitted_audit: Option<&'a Value>,
+}
+
+fn admit_stage<'a>(
+    repository: &Path,
+    plan: &Value,
+    artifacts: &Path,
+    claims: &ExecutionClaims,
+    stage: &str,
+    audit: Option<&'a ConstructedAudit>,
+    resume: Option<&ResumeCandidate>,
+) -> Result<StageAdmission<'a>> {
+    let admitted_audit = if stage == "HEAVY" {
+        let audit = audit.ok_or_else(|| {
+            execution_error("GATE-EXEC-AUDIT-REQUIRED", "heavy stage requires an audit")
+        })?;
+        validate_audit_for_execution(repository, plan, audit.as_value(), artifacts, claims)?;
+        Some(audit.as_value())
+    } else {
+        None
+    };
+    let allowed_existing = admitted_light_nodes(admitted_audit)?;
+    preflight(repository, artifacts, plan, &allowed_existing, false)?;
+
+    let mut imported = match stage {
+        "LIGHT" | "FINAL_LIGHT" => ExecutionRecord::empty(),
+        "HEAVY" => {
+            let audit = admitted_audit.ok_or_else(|| {
+                execution_error("GATE-EXEC-AUDIT-REQUIRED", "heavy stage requires an audit")
+            })?;
+            ExecutionRecord::from_stage_receipt(&audit["light_receipt"])?
+        }
+        _ => return Err(execution_error("GATE-EXEC-STAGE", stage)),
+    };
+    if stage == "HEAVY" {
+        let seed = apply_candidate(plan, artifacts, claims, resume)?;
+        imported.attempts.extend(seed.attempts);
+        imported.final_results.extend(seed.final_results);
+        imported.executed_inventory.extend(seed.executed_inventory);
+        imported.resume_decisions = seed.decisions;
+    }
+    Ok(StageAdmission {
+        imported,
+        admitted_audit,
+    })
 }
 
 #[derive(Clone, Copy)]
@@ -1968,7 +1992,7 @@ mod coverage_tests;
 
 #[cfg(test)]
 mod tests {
-    use std::collections::{BTreeMap, BTreeSet};
+    use std::collections::BTreeSet;
     use std::fs;
     use std::path::{Path, PathBuf};
     use std::process::Command;
@@ -1978,11 +2002,11 @@ mod tests {
 
     use super::{
         ExecutionClaims, NodeRun, ProcessOutcome, allowed_environment, artifact_bytes,
-        authority_outcomes, create_confined_directories, execute_node, execute_nodes, execute_plan,
-        junit_inventory, nextest_junit_path, observed_inventory, observed_source_snapshot,
-        preflight, prepare_real_artifacts, read_real_artifact, reject_shell_string,
-        require_relative_path, run_process, runtime_arguments, source_snapshot, supported_executor,
-        validate_plan, validate_success_artifacts, work_root,
+        create_confined_directories, execute_node, execute_nodes, execute_plan, junit_inventory,
+        nextest_junit_path, observed_inventory, observed_source_snapshot, preflight,
+        prepare_real_artifacts, read_real_artifact, reject_shell_string, require_relative_path,
+        run_process, runtime_arguments, source_snapshot, supported_executor, validate_plan,
+        validate_success_artifacts, work_root,
     };
     use crate::canonical::sha256_bytes;
     use crate::planner::{NextestInventory, PlanRequest, Planner, PlanningStage};
@@ -1993,36 +2017,6 @@ mod tests {
     static TEMP_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
     pub(super) struct TempDirectory(PathBuf);
-
-    #[test]
-    fn authority_outcomes_encode_admission_science_and_truthful_nonpass() {
-        let nodes = vec![
-            json!({"node_id": "a0", "gate_definition_id": "authority-admission-v1", "authority_class": "A0"}),
-            json!({"node_id": "a3", "gate_definition_id": "required-authority-v1", "authority_class": "A3"}),
-        ];
-        let pass = BTreeMap::from([
-            ("a0".to_owned(), "PASS".to_owned()),
-            ("a3".to_owned(), "PASS".to_owned()),
-        ]);
-        let outcomes = authority_outcomes(&nodes, &pass).expect("authority pass outcomes");
-        assert_eq!(outcomes[0]["admission_outcome"], "ADMITTED");
-        assert_eq!(outcomes[1]["scientific_outcome"], "CONFORMS");
-
-        let fail = BTreeMap::from([
-            ("a0".to_owned(), "FAIL".to_owned()),
-            ("a3".to_owned(), "BLOCKED".to_owned()),
-        ]);
-        let outcomes = authority_outcomes(&nodes, &fail).expect("authority nonpass outcomes");
-        assert_eq!(outcomes[0]["admission_outcome"], "REJECTED");
-        assert_eq!(outcomes[1]["scientific_outcome"], "NOT_EVALUATED");
-
-        let unsupported = vec![
-            json!({"node_id": "fake", "gate_definition_id": "generic-process", "authority_class": "A3"}),
-        ];
-        let result = BTreeMap::from([("fake".to_owned(), "PASS".to_owned())]);
-        let error = authority_outcomes(&unsupported, &result).expect_err("generic authority claim");
-        assert_eq!(error.code, "GATE-EXEC-AUTHORITY-UNSUPPORTED");
-    }
 
     impl TempDirectory {
         pub(super) fn new(label: &str) -> Self {
