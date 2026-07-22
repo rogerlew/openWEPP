@@ -251,6 +251,10 @@
 
 State as of `2026-07-22 UTC`:
 
+- `20260722-testgate-affected-crap-root-scope-recovery-001/` -
+  ACTIVE / SCAFFOLD: closes RTR-035 by mapping affected CRAP's root
+  measurement package to its production dependency closure before acquisition.
+
 - `20260722-testgate-executor-sentinel-recovery-001/` -
   ACTIVE / READY-QUALIFICATION: closes RTR-034 by correcting one stale
   integration source-contract sentinel while preserving final-context-before-
