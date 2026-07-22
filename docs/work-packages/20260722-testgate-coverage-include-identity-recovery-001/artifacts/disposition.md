@@ -8,3 +8,6 @@
 
 Both implementation reviews pass. No finding is open before the correction
 commit.
+
+Terminal disposition: `EXECUTED-COMPLETE-RTR-043`. Both verifiers passed the
+exact correction commit and durable CLOSED record; no finding remains open.

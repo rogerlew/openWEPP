@@ -263,9 +263,10 @@ State as of `2026-07-22 UTC`:
   characterization and behavior-preserving decomposition of recursive verifier
   fixture string replacement.
 
-- `20260722-testgate-coverage-include-identity-recovery-001/` - ACTIVE:
-  prerequisite closure of RTR-043, restoring attributable LLVM source identity
-  for the verifier coverage-test module before B02-2 may close.
+- `20260722-testgate-coverage-include-identity-recovery-001/` -
+  EXECUTED-COMPLETE: closed RTR-043 at `11df7e1d` by moving the verifier
+  coverage-test module to its natural source path and proving exact full-source
+  LLVM/cargo-crap attribution through dual review and verification.
 
 - `20260722-testgate-affected-crap-authority-reexpression-001/` -
   ACTIVE / SCAFFOLD: supplies one prospective authority for RTR-039/RTR-040,

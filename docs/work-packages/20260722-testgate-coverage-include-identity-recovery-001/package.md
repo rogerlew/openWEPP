@@ -1,7 +1,7 @@
 # TESTGATE Coverage Include Identity Recovery
 
 Package: `20260722-testgate-coverage-include-identity-recovery-001`
-Status: `ACTIVE`
+Status: `EXECUTED-COMPLETE-RTR-043`
 Defect: `RTR-043`
 Cause: `GATE-COVERAGE-INCLUDED-SOURCE-IDENTITY-LOSS`
 
@@ -82,3 +82,11 @@ artifacts. No HEAVY gate is selected for this bounded prerequisite.
 - RTR-043 has a durable CLOSED record bound to the reviewed correction commit.
 - Source-attributable coverage and CRAP evidence pass.
 - Dual implementation review and dual verification pass with no open finding.
+
+## Completion
+
+Correction commit:
+`11df7e1db4c772f55a65ccda51f3dc64f0b2ad3e`. Durable CLOSED digest:
+`db483f16ddcac00825abebbef36a83b315fda30a809c0beec9225c91b411bc29`.
+Both implementation reviews and both terminal verifications passed. No RTR-043
+finding remains open.
