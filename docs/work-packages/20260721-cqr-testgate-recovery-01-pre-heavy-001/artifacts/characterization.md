@@ -19,3 +19,8 @@ pin token-precedence routing, LIGHT/pass and dependency ordering failures,
 combined-DAG consistency, and execution identity/attempt validation. The
 focused inventory passed 19/19 in 15.561 seconds (run ID
 `5bd3f726-7c16-49ba-8678-b2e7ed451dc0`).
+
+Ran: a durable-ledger characterization test now proves that an `OPEN` tooling
+defect blocks admission and a later record for the same defect with `CLOSED`
+status restores admission. The focused inventory passed 20/20 in 16.521
+seconds (run ID `f3262ee4-9f1a-4567-9269-704c4637cf2a`).

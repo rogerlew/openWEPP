@@ -10,5 +10,6 @@
 | first extraction scoped Clippy | NOT RUN/UNCONFIRMED | invoked as `cargo clippy -p openwepp-gate-planner --lib -- -D warnings`; client did not return a terminal status, so no result is asserted and it will be rerun only after the next source increment |
 | delegated first affected CQR metric | PASS | `cargo llvm-cov -p openwepp-gate-planner --lib --ignore-run-fail --lcov` exited 0; 104/104 passed in 496.36 s. Matching `cargo crap` exited 0. Eight target rows remain; see `crap-after.md`. |
 | second extraction focused inventory | PASS | 19 passed, 90 skipped, 16.876 s; run ID `8f3c1bd4-18f0-4a40-b9a4-3a97d99559fb` |
+| durable-defect characterization | PASS | 20 passed, 90 skipped, 16.521 s; run ID `f3262ee4-9f1a-4567-9269-704c4637cf2a` |
 | affected-surface CRAP/coverage | NOT RUN | required before completion |
 | terminal-plan heavy gates | NOT RUN | delegate after implementation |

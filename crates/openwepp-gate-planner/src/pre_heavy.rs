@@ -1745,6 +1745,34 @@ mod tests {
     }
 
     #[test]
+    fn tooling_defect_ledger_uses_the_last_status_for_each_defect() {
+        let path = std::env::temp_dir().join(format!(
+            "openwepp-gate-tooling-defect-{}-{}.jsonl",
+            std::process::id(),
+            std::thread::current().name().unwrap_or("test")
+        ));
+        fs::write(&path, "").expect("empty ledger");
+        append_attempt_record(
+            &path,
+            json!({"record_type": "TOOLING_DEFECT", "defect_id": "RTR-OPEN", "status": "OPEN"}),
+        )
+        .expect("open defect");
+        assert_eq!(
+            no_open_tooling_defect(&path)
+                .expect_err("open defect blocks")
+                .code,
+            "GATE-AUDIT-OPEN-TOOLING-DEFECT"
+        );
+        append_attempt_record(
+            &path,
+            json!({"record_type": "TOOLING_DEFECT", "defect_id": "RTR-OPEN", "status": "CLOSED"}),
+        )
+        .expect("close defect");
+        no_open_tooling_defect(&path).expect("latest CLOSED status admits");
+        fs::remove_file(path).expect("remove ledger");
+    }
+
+    #[test]
     fn every_light_heavy_execution_claim_must_match() {
         let light = json!({"workflow": "w", "job": "j", "runner": "r", "attempt": 1});
         let baseline = ExecutionClaims {
