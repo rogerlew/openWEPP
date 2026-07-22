@@ -35,7 +35,7 @@ On-demand:
 - `crates/openwepp-gate-planner/src/verifier.rs`
 - `crates/openwepp-gate-planner/src/verifier_coverage_tests.rs`
 
-Required-reading budget: 305,089 local bytes, REQUIRES-JUSTIFICATION
+Required-reading budget: 323,088 local bytes, REQUIRES-JUSTIFICATION
 because the trust-bearing verifier and full gate standard must be read in full;
 map: `artifacts/required-reading-map.md`.
 
