@@ -463,8 +463,26 @@ pub fn validate_audit(
     artifact_root: &Path,
 ) -> Result<()> {
     validate_audit_schema(repo, audit)?;
+    validate_audit_admission(repo, plan, audit, artifact_root)?;
+    validate_audit_evidence(repo, plan, audit, artifact_root)
+}
+
+fn validate_audit_admission(
+    repo: &Path,
+    plan: &Value,
+    audit: &Value,
+    artifact_root: &Path,
+) -> Result<()> {
     let current_package_admission = package_admission(repo, plan)?;
-    validate_audit_bindings(plan, audit, artifact_root, &current_package_admission)?;
+    validate_audit_bindings(plan, audit, artifact_root, &current_package_admission)
+}
+
+fn validate_audit_evidence(
+    repo: &Path,
+    plan: &Value,
+    audit: &Value,
+    artifact_root: &Path,
+) -> Result<()> {
     validate_ready_audit(audit)?;
     validate_embedded_light_receipt(repo, plan, audit, artifact_root)?;
     validate_current_audit_inventory(plan, audit)
