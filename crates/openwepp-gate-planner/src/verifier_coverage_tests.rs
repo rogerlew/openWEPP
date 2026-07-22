@@ -38,18 +38,32 @@ fn refresh_plan_and_receipt(plan: &mut Value, receipt: &mut Value) {
 
 fn replace_string(value: &mut Value, old: &str, new: &str) {
     match value {
-        Value::String(text) if text == old => *text = new.to_owned(),
-        Value::Array(values) => {
-            for value in values {
-                replace_string(value, old, new);
-            }
-        }
-        Value::Object(object) => {
-            for value in object.values_mut() {
-                replace_string(value, old, new);
-            }
-        }
+        Value::String(text) => replace_matching_string(text, old, new),
+        Value::Array(values) => replace_array_strings(values, old, new),
+        Value::Object(object) => replace_object_strings(object.values_mut(), old, new),
         _ => {}
+    }
+}
+
+fn replace_matching_string(text: &mut String, old: &str, new: &str) {
+    if text == old {
+        *text = new.to_owned();
+    }
+}
+
+fn replace_array_strings(values: &mut [Value], old: &str, new: &str) {
+    for value in values {
+        replace_string(value, old, new);
+    }
+}
+
+fn replace_object_strings<'a>(
+    values: impl Iterator<Item = &'a mut Value>,
+    old: &str,
+    new: &str,
+) {
+    for value in values {
+        replace_string(value, old, new);
     }
 }
 
