@@ -94,6 +94,17 @@ pub fn build_audit(
 ) -> Result<Value> {
     verify_plan_identity(plan)?;
     validate_stage_receipt(repo, plan, light_receipt, artifact_root, true)?;
+    let audit = build_unsealed_audit(repo, plan, light_receipt, artifact_root, ledger)?;
+    seal_audit(repo, audit)
+}
+
+fn build_unsealed_audit(
+    repo: &Path,
+    plan: &Value,
+    light_receipt: &Value,
+    artifact_root: &Path,
+    ledger: &Path,
+) -> Result<Value> {
     let ledger_head_sha256 = ledger_head(ledger).ok().flatten();
     let package_admission = package_admission(repo, plan)?;
     let combined_execution = plan["combined_quality"].clone();
@@ -121,7 +132,7 @@ pub fn build_audit(
         status,
         reason_codes,
     })?;
-    seal_audit(repo, audit)
+    Ok(audit)
 }
 
 struct AuditCheckInputs<'a> {
@@ -451,28 +462,57 @@ pub fn validate_audit(
     audit: &Value,
     artifact_root: &Path,
 ) -> Result<()> {
-    let schema = read_json(&repo.join("gate-policy/v1/schemas/pre-heavy-audit.schema.json"))?;
-    validate_schema(&schema, audit, "pre-heavy audit")?;
+    validate_audit_schema(repo, audit)?;
     let current_package_admission = package_admission(repo, plan)?;
-    validate_audit_core_binding(plan, audit)?;
-    validate_audit_context_binding(plan, audit, artifact_root, &current_package_admission)?;
-    require_ready_audit_status(audit)?;
-    validate_ready_check_set(audit)?;
-    validate_stage_receipt(repo, plan, &audit["light_receipt"], artifact_root, false)?;
-    validate_embedded_light_receipt_id(audit)?;
+    validate_audit_bindings(plan, audit, artifact_root, &current_package_admission)?;
+    validate_ready_audit(audit)?;
+    validate_embedded_light_receipt(repo, plan, audit, artifact_root)?;
     validate_current_audit_inventory(plan, audit)
 }
 
+fn validate_audit_schema(repo: &Path, audit: &Value) -> Result<()> {
+    let schema = read_json(&repo.join("gate-policy/v1/schemas/pre-heavy-audit.schema.json"))?;
+    validate_schema(&schema, audit, "pre-heavy audit")
+}
+
+fn validate_audit_bindings(
+    plan: &Value,
+    audit: &Value,
+    artifact_root: &Path,
+    current_package_admission: &Value,
+) -> Result<()> {
+    validate_audit_core_binding(plan, audit)?;
+    validate_audit_context_binding(plan, audit, artifact_root, current_package_admission)
+}
+
+fn validate_ready_audit(audit: &Value) -> Result<()> {
+    require_ready_audit_status(audit)?;
+    validate_ready_check_set(audit)
+}
+
+fn validate_embedded_light_receipt(
+    repo: &Path,
+    plan: &Value,
+    audit: &Value,
+    artifact_root: &Path,
+) -> Result<()> {
+    validate_stage_receipt(repo, plan, &audit["light_receipt"], artifact_root, false)?;
+    validate_embedded_light_receipt_id(audit)
+}
+
 fn validate_audit_core_binding(plan: &Value, audit: &Value) -> Result<()> {
-    if derived_id(audit, "audit_id")? == string(audit, "audit_id")?
-        && audit["plan_id"] == plan["plan_id"]
-        && audit["plan_sha256"] == digest(plan)?
-        && audit["execution_key"] == plan["execution_key"]
-    {
-        Ok(())
-    } else {
-        Err(audit_error("GATE-AUDIT-IDENTITY", "audit binding mismatch"))
-    }
+    validate_audit_identity_fields(plan, audit)?;
+    validate_audit_plan_fields(plan, audit)
+}
+
+fn validate_audit_identity_fields(plan: &Value, audit: &Value) -> Result<()> {
+    require_audit_binding(derived_id(audit, "audit_id")? == string(audit, "audit_id")?)?;
+    require_audit_binding(audit["plan_id"] == plan["plan_id"])
+}
+
+fn validate_audit_plan_fields(plan: &Value, audit: &Value) -> Result<()> {
+    require_audit_binding(audit["plan_sha256"] == digest(plan)?)?;
+    require_audit_binding(audit["execution_key"] == plan["execution_key"])
 }
 
 fn validate_audit_context_binding(
@@ -481,11 +521,26 @@ fn validate_audit_context_binding(
     artifact_root: &Path,
     current_package_admission: &Value,
 ) -> Result<()> {
-    if audit["artifact_root_sha256"] == path_digest(artifact_root)
-        && audit["node_manifest"] == node_manifest(plan)?
-        && audit["combined_execution"] == plan["combined_quality"]
-        && audit["package_admission"] == *current_package_admission
-    {
+    validate_audit_artifact_fields(plan, audit, artifact_root)?;
+    validate_audit_policy_fields(plan, audit, current_package_admission)
+}
+
+fn validate_audit_artifact_fields(plan: &Value, audit: &Value, artifact_root: &Path) -> Result<()> {
+    require_audit_binding(audit["artifact_root_sha256"] == path_digest(artifact_root))?;
+    require_audit_binding(audit["node_manifest"] == node_manifest(plan)?)
+}
+
+fn validate_audit_policy_fields(
+    plan: &Value,
+    audit: &Value,
+    current_package_admission: &Value,
+) -> Result<()> {
+    require_audit_binding(audit["combined_execution"] == plan["combined_quality"])?;
+    require_audit_binding(audit["package_admission"] == *current_package_admission)
+}
+
+fn require_audit_binding(matches: bool) -> Result<()> {
+    if matches {
         Ok(())
     } else {
         Err(audit_error("GATE-AUDIT-IDENTITY", "audit binding mismatch"))
@@ -503,20 +558,36 @@ fn require_ready_audit_status(audit: &Value) -> Result<()> {
 }
 
 fn validate_ready_check_set(audit: &Value) -> Result<()> {
+    let checks = ready_checks(audit)?;
+    validate_ready_checks(checks)?;
+    validate_ready_reason_codes(audit)
+}
+
+fn ready_checks(audit: &Value) -> Result<&[Value]> {
     let checks = audit["checks"]
         .as_array()
         .ok_or_else(|| audit_error("GATE-AUDIT-CHECK-SET", "checks must be an array"))?;
-    if checks.len() != CHECK_IDS.len() {
-        return invalid_ready_check_set();
+    if checks.len() == CHECK_IDS.len() {
+        Ok(checks)
+    } else {
+        invalid_ready_check_set()
     }
+}
+
+fn validate_ready_checks(checks: &[Value]) -> Result<()> {
     for (item, expected) in checks.iter().zip(CHECK_IDS) {
         validate_ready_check(item, expected)?;
     }
+    Ok(())
+}
+
+fn validate_ready_reason_codes(audit: &Value) -> Result<()> {
     let reasons = audit["reason_codes"].as_array();
     if reasons.is_none_or(|codes| !codes.is_empty()) {
-        return invalid_ready_check_set();
+        invalid_ready_check_set()
+    } else {
+        Ok(())
     }
-    Ok(())
 }
 
 fn validate_ready_check(item: &Value, expected: &str) -> Result<()> {
@@ -1037,18 +1108,24 @@ fn inventory_and_arguments_are_exact(
 fn validate_exact_node_shapes(plan: &Value) -> Result<()> {
     let mut ids = BTreeSet::new();
     for node in nodes(plan)? {
-        let id = string(node, "node_id")?;
-        if !ids.insert(id)
-            || !node["arguments"].is_array()
-            || node["expected_inventory"]["mode"] != "EXACT"
-        {
-            return Err(audit_error(
-                "GATE-AUDIT-INVENTORY-INVALID",
-                "node identity, arguments, or exact inventory is invalid",
-            ));
-        }
+        validate_exact_node_shape(node, &mut ids)?;
     }
     Ok(())
+}
+
+fn validate_exact_node_shape<'a>(node: &'a Value, ids: &mut BTreeSet<&'a str>) -> Result<()> {
+    let id = string(node, "node_id")?;
+    if ids.insert(id)
+        && node["arguments"].is_array()
+        && node["expected_inventory"]["mode"] == "EXACT"
+    {
+        Ok(())
+    } else {
+        Err(audit_error(
+            "GATE-AUDIT-INVENTORY-INVALID",
+            "node identity, arguments, or exact inventory is invalid",
+        ))
+    }
 }
 
 fn reconstruct_exact_plan(repo: &Path, plan: &Value, artifact_root: &Path) -> Result<()> {
@@ -1541,17 +1618,31 @@ fn validate_stage_receipt(
 }
 
 fn validate_stage_receipt_plan_binding(plan: &Value, receipt: &Value) -> Result<()> {
-    if derived_id(receipt, "stage_receipt_id")? == string(receipt, "stage_receipt_id")?
-        && receipt["plan_id"] == plan["plan_id"]
-        && receipt["plan_sha256"] == digest(plan)?
-    {
+    validate_stage_receipt_identity(receipt)?;
+    validate_stage_receipt_plan_fields(plan, receipt)
+}
+
+fn validate_stage_receipt_identity(receipt: &Value) -> Result<()> {
+    if derived_id(receipt, "stage_receipt_id")? == string(receipt, "stage_receipt_id")? {
         Ok(())
     } else {
-        Err(audit_error(
-            "GATE-AUDIT-STAGE-RECEIPT-IDENTITY",
-            "light stage receipt binding mismatch",
-        ))
+        invalid_stage_receipt_binding()
     }
+}
+
+fn validate_stage_receipt_plan_fields(plan: &Value, receipt: &Value) -> Result<()> {
+    if receipt["plan_id"] == plan["plan_id"] && receipt["plan_sha256"] == digest(plan)? {
+        Ok(())
+    } else {
+        invalid_stage_receipt_binding()
+    }
+}
+
+fn invalid_stage_receipt_binding<T>() -> Result<T> {
+    Err(audit_error(
+        "GATE-AUDIT-STAGE-RECEIPT-IDENTITY",
+        "light stage receipt binding mismatch",
+    ))
 }
 
 fn validate_stage_receipt_execution_binding(
