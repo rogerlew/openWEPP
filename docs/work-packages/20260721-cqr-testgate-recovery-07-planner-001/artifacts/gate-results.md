@@ -1,6 +1,6 @@
 # Gate Results
 
-Status: HOLD-CORRECTION-DEPENDENCY.
+Status: PASS pending dual terminal verification.
 
 Ran: `/tmp/cqr-planner-baseline-hrNVaR` completed one instrumented traversal at
 `71b89668d03c7824bddc40b6cb6d58978221ddac`: 137 pass, one fail, two ignored;
