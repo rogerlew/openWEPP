@@ -1751,16 +1751,18 @@ mod tests {
     use serde_json::json;
 
     use super::{
-        CHECK_IDS, append_attempt_record, audit_reason_codes, audit_reconstruction_root,
-        audit_status, build_failure_audit, check, documentation_scope_is_exact, durable_ledger,
-        execution_claims_match, execution_context_is_current, execution_identities,
-        failure_check_index, light_stage_passed, no_open_tooling_defect, node_manifest,
-        package_admission, package_admitted, path_digest, read_json, reconcile_orphaned_attempts,
-        reconstructed_plan_is_exact, record_heavy_failure, select_package_admission,
-        valid_stage_order, validate_audit_context_binding, validate_audit_core_binding,
-        validate_checkpoint_identity, validate_combined_decision, validate_ready_check_set,
-        validate_stage_receipt_execution_binding, validate_stage_receipt_plan_binding,
-        validate_started_successor, verify_ledger_chain, with_disposable_audit_reconstruction,
+        CHECK_IDS, active_package_path, append_attempt_record, audit_reason_codes,
+        audit_reconstruction_root, audit_status, build_failure_audit, check,
+        documentation_scope_is_exact, durable_ledger, execution_claims_match,
+        execution_context_is_current, execution_identities, failure_check_index,
+        light_stage_passed, no_open_tooling_defect, node_manifest, package_admission,
+        package_admitted, path_digest, read_json, reconcile_orphaned_attempts,
+        reconstructed_plan_is_exact, record_heavy_failure, require_single_active_prompt,
+        select_package_admission, valid_stage_order, validate_audit_context_binding,
+        validate_audit_core_binding, validate_checkpoint_identity, validate_combined_decision,
+        validate_ready_check_set, validate_stage_receipt_execution_binding,
+        validate_stage_receipt_plan_binding, validate_started_successor, verify_ledger_chain,
+        with_disposable_audit_reconstruction,
     };
     use crate::canonical::{derived_id, digest, parse_strict, validate_schema};
     use crate::error::{ErrorClass, GatePolicyError};
@@ -2344,6 +2346,26 @@ mod tests {
                 .code,
             "GATE-AUDIT-CHECKPOINT-DRIFT"
         );
+    }
+
+    #[test]
+    fn active_package_prompt_requires_exactly_one_markdown_file() {
+        let root = std::env::temp_dir().join(format!(
+            "openwepp-active-prompt-{}-{}",
+            std::process::id(),
+            std::thread::current().name().unwrap_or("test")
+        ));
+        let package = "docs/work-packages/prompt/package.md";
+        let active = root.join("docs/work-packages/prompt/prompts/active");
+        fs::create_dir_all(&active).expect("active prompt directory");
+        let plan = json!({"authorized_paths": [package, "src/lib.rs"]});
+        assert_eq!(active_package_path(&plan), Some(package));
+        assert!(require_single_active_prompt(&root, &plan).is_err());
+        fs::write(active.join("kickoff.md"), "# Kickoff\n").expect("active prompt");
+        require_single_active_prompt(&root, &plan).expect("one active prompt");
+        fs::write(active.join("notes.txt"), "ignored\n").expect("non-Markdown note");
+        require_single_active_prompt(&root, &plan).expect("non-Markdown file ignored");
+        fs::remove_dir_all(root).expect("remove prompt fixture");
     }
 
     #[test]
