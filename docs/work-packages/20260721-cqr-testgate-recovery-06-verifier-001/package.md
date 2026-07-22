@@ -7,8 +7,9 @@ Target module: `crates/openwepp-gate-planner/src/verifier.rs`
 Target rank: `6` of `7`
 Quality dimension: `CRAP/cyclomatic-complexity`
 
-Current phase: dual implementation review findings corrected; focused
-clean-head validation and one new changed-head metric remain pending.
+Current phase: dual implementation review findings and the discovered
+write-set syntax defect are corrected; focused clean-head validation and one
+new changed-head metric remain pending.
 
 ## Objective
 

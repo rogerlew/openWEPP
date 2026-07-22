@@ -79,15 +79,17 @@ fn ready_admitted_fixture() -> (Value, Value, MemoryArtifacts) {
 
 fn ready_audit(plan: &Value, artifacts: &MemoryArtifacts) -> Value {
     let root = super::repo();
-    let package_path = plan["authorized_paths"]
+    let package_paths = plan["authorized_paths"]
         .as_array()
         .expect("authorized paths")
         .iter()
         .filter_map(Value::as_str)
-        .find(|path| {
+        .filter(|path| {
             path.starts_with("docs/work-packages/") && path.ends_with("/package.md")
         })
-        .expect("one changed package path");
+        .collect::<Vec<_>>();
+    assert_eq!(package_paths.len(), 1, "exactly one package authority");
+    let package_path = package_paths[0];
     let package_admission = validate_package(
         &root,
         plan["source"]["base_commit"]
