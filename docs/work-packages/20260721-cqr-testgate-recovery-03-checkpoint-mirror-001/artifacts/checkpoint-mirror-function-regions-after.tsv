@@ -1,0 +1,15 @@
+13	mirror_node_checkpoint	19	19	100	4.0	4.0
+26	configured_mirror_root	12	12	100	2.0	2.0
+35	validate_configured_mirror_root	11	11	100	4.0	4.0
+50	prepare_mirror_roots	18	20	90	5.0	5.0
+65	validate_mirror_root_aliases	16	16	100	5.0	5.0
+79	mirror_node_outputs	11	12	91.66666666666667	4.0	4.0
+86	mirror_node_output	14	16	87.5	3.0	3.0
+92	prepare_mirror_destination	13	16	81.25	4.0	4.0
+101	copy_mirror_output	10	10	100	2.0	2.0
+111	publish_mirrored_checkpoint	18	21	85.71428571428571	4.0	4.0
+121	create_absolute_directories	17	17	100	5.0	5.0
+131	push_absolute_component	11	11	100	4.0	4.0
+149	ensure_absolute_directory	14	17	82.3529411764706	4.0	5.024
+161	validate_directory_metadata	9	9	100	3.0	3.0
+171	mirror_error	6	6	100	1.0	1.0
