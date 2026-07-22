@@ -50,8 +50,7 @@ TESTGATE.
 ## Declared Write Set
 
 - `crates/openwepp-gate-planner/src/verifier.rs`
-- `crates/openwepp-gate-planner/src/verifier_coverage_tests.rs` (test-only
-  characterization split for line-count governance)
+- `crates/openwepp-gate-planner/src/verifier_coverage_tests.rs`
 - `docs/work-packages/20260721-cqr-testgate-recovery-06-verifier-001/**`
 - `docs/work-packages/README.md`
 - `docs/work-packages/20260721-cqr-testgate-recovery-closeout-execplan.md`
