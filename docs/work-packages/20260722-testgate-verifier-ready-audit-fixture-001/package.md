@@ -1,7 +1,7 @@
 # TESTGATE Verifier READY-Audit Fixture Closure
 
 Package: `20260722-testgate-verifier-ready-audit-fixture-001`
-Status: `TERMINAL-VERIFICATION-PENDING`
+Status: `COMPLETE`
 Defect: `RTR-029`
 Campaign: `TESTGATE-RECOVERY-TRUST-01`
 
@@ -109,6 +109,8 @@ package path admission.
   remaining actionable finding.
 - Ran: RTR-030 and RTR-029 closure records validate against their canonical
   SHA-256 values, and the durable ledger has no open tooling defect.
+- Static/Ran: terminal verifiers A and B both PASS at exact clean documentation
+  head `814b5b7e`; no actionable closure finding remains.
 
 ## Security Impact Gate
 

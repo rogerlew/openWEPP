@@ -11,6 +11,13 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260722-testgate-verifier-ready-audit-fixture-001/` closed RTR-029 and
+  RTR-030 after a planner baseline exposed ambient-HEAD package-authority
+  coupling in a verifier characterization. The test now constructs a self-owned
+  committed package, real LIGHT/READY/HEAVY envelope, and exact admitted path
+  assertion. Focused changed-head evidence, canonical package audit, dual
+  review, dual verification, cleanup, and durable ledger closure pass; no broad
+  or HEAVY gate was rerun. Rank 7 of the recovery CRAP burndown resumed.
 - `20260721-cqr-testgate-recovery-05-executor-001/` completed rank 5 of the
   TESTGATE recovery CRAP burndown. Exact audit/stage/receipt and artifact-path
   characterization closes the module at 92.96% line / 85.01% region coverage,
