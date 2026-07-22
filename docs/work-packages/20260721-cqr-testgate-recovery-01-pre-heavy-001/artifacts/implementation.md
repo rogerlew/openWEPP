@@ -27,3 +27,13 @@ the first lexicographic OPEN-defect error.
 
 Ran: the focused inventory passed 20/20 in 16.658 seconds (run ID
 `31649409-1f30-4002-8c95-6442c4ad97c5`).
+
+Static: the remaining original hot spots were split into ordered private
+helpers for ten-check assembly, audit binding/check-set validation, diff/line/
+prompt prerequisites, LIGHT checkpoint artifacts, and stage-receipt binding.
+No gate ordering, canonical field, error code, public API, or policy input was
+changed. No new lint suppression was added.
+
+Ran: focused Clippy with warnings denied passed. The focused `pre_heavy` unit
+inventory passed 20/20 in 15.282 seconds (run ID
+`baf52c7c-5b93-497f-8b2a-34499f11150c`).

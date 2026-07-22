@@ -85,10 +85,6 @@ pub fn construct_audit(
 ///
 /// Returns a typed error when an input cannot be parsed or the produced report
 /// violates its schema or derived identity.
-#[allow(
-    clippy::too_many_lines,
-    reason = "the ten canonical checks must be assembled and sealed in one audit transaction"
-)]
 pub fn build_audit(
     repo: &Path,
     plan: &Value,
@@ -99,85 +95,204 @@ pub fn build_audit(
     verify_plan_identity(plan)?;
     validate_stage_receipt(repo, plan, light_receipt, artifact_root, true)?;
     let ledger_head_sha256 = ledger_head(ledger).ok().flatten();
-
-    let mut checks = Vec::with_capacity(CHECK_IDS.len());
     let package_admission = package_admission(repo, plan)?;
-    checks.push(check(
-        CHECK_IDS[0],
-        package_admitted(plan, &package_admission),
-        package_admission.clone(),
-    )?);
-    checks.push(check(
-        CHECK_IDS[1],
-        cheap_prerequisites(repo, plan, light_receipt),
-        json!({"light_results": light_receipt["final_results"]}),
-    )?);
-    checks.push(check(
-        CHECK_IDS[2],
-        inventory_and_arguments_are_exact(repo, plan, artifact_root),
-        json!({"nodes": plan["nodes"]}),
-    )?);
-    checks.push(check(
-        CHECK_IDS[3],
-        execution_identities(plan, light_receipt),
-        json!({
-            "policy": plan["policy"],
-            "context": plan["execution_context"],
-            "claims": light_receipt["claims"],
-            "executor_binary_sha256": light_receipt["executor_binary_sha256"],
-        }),
-    )?);
-    checks.push(check(
-        CHECK_IDS[4],
-        light_attempt_isolated(plan, light_receipt, artifact_root),
-        json!({"artifact_root_sha256": path_digest(artifact_root)}),
-    )?);
-    checks.push(check(
-        CHECK_IDS[5],
-        separated_roots(plan),
-        json!({"roots": plan["environment_roots"]}),
-    )?);
     let combined_execution = plan["combined_quality"].clone();
-    checks.push(check(
-        CHECK_IDS[6],
-        validate_combined_decision(plan),
-        combined_execution.clone(),
-    )?);
-    checks.push(check(
-        CHECK_IDS[7],
-        valid_stage_order(plan),
-        json!({"nodes": node_manifest(plan)?}),
-    )?);
-    checks.push(check(
-        CHECK_IDS[8],
-        durable_ledger(ledger),
-        json!({"ledger_path_sha256": path_digest(ledger)}),
-    )?);
-    checks.push(check(
-        CHECK_IDS[9],
-        no_open_tooling_defect_at_head(ledger, ledger_head_sha256.as_deref()),
-        json!({
-            "ledger_path_sha256": path_digest(ledger),
-            "ledger_head_sha256": ledger_head_sha256,
-        }),
-    )?);
+    let checks = build_audit_checks(&AuditCheckInputs {
+        repo,
+        plan,
+        light_receipt,
+        artifact_root,
+        ledger,
+        package_admission: &package_admission,
+        combined_execution: &combined_execution,
+        ledger_head_sha256: ledger_head_sha256.as_deref(),
+    })?;
+    let reason_codes = audit_reason_codes(&checks);
+    let status = audit_status(&checks);
+    let audit = audit_document(AuditDocumentInputs {
+        plan,
+        light_receipt,
+        artifact_root,
+        ledger,
+        ledger_head_sha256,
+        package_admission,
+        checks,
+        combined_execution,
+        status,
+        reason_codes,
+    })?;
+    seal_audit(repo, audit)
+}
 
-    let reason_codes = checks
+struct AuditCheckInputs<'a> {
+    repo: &'a Path,
+    plan: &'a Value,
+    light_receipt: &'a Value,
+    artifact_root: &'a Path,
+    ledger: &'a Path,
+    package_admission: &'a Value,
+    combined_execution: &'a Value,
+    ledger_head_sha256: Option<&'a str>,
+}
+
+fn build_audit_checks(inputs: &AuditCheckInputs<'_>) -> Result<Vec<Value>> {
+    let mut checks = audit_check_prefix(
+        inputs.repo,
+        inputs.plan,
+        inputs.light_receipt,
+        inputs.artifact_root,
+        inputs.package_admission,
+    )?;
+    checks.extend(audit_check_middle(
+        inputs.plan,
+        inputs.light_receipt,
+        inputs.artifact_root,
+        inputs.combined_execution,
+    )?);
+    checks.extend(audit_check_suffix(
+        inputs.plan,
+        inputs.ledger,
+        inputs.ledger_head_sha256,
+    )?);
+    Ok(checks)
+}
+
+fn audit_check_prefix(
+    repo: &Path,
+    plan: &Value,
+    light_receipt: &Value,
+    artifact_root: &Path,
+    package_admission: &Value,
+) -> Result<Vec<Value>> {
+    Ok(vec![
+        check(
+            CHECK_IDS[0],
+            package_admitted(plan, package_admission),
+            package_admission.clone(),
+        )?,
+        check(
+            CHECK_IDS[1],
+            cheap_prerequisites(repo, plan, light_receipt),
+            json!({"light_results": light_receipt["final_results"]}),
+        )?,
+        check(
+            CHECK_IDS[2],
+            inventory_and_arguments_are_exact(repo, plan, artifact_root),
+            json!({"nodes": plan["nodes"]}),
+        )?,
+        check(
+            CHECK_IDS[3],
+            execution_identities(plan, light_receipt),
+            json!({
+                "policy": plan["policy"],
+                "context": plan["execution_context"],
+                "claims": light_receipt["claims"],
+                "executor_binary_sha256": light_receipt["executor_binary_sha256"],
+            }),
+        )?,
+    ])
+}
+
+fn audit_check_middle(
+    plan: &Value,
+    light_receipt: &Value,
+    artifact_root: &Path,
+    combined_execution: &Value,
+) -> Result<Vec<Value>> {
+    Ok(vec![
+        check(
+            CHECK_IDS[4],
+            light_attempt_isolated(plan, light_receipt, artifact_root),
+            json!({"artifact_root_sha256": path_digest(artifact_root)}),
+        )?,
+        check(
+            CHECK_IDS[5],
+            separated_roots(plan),
+            json!({"roots": plan["environment_roots"]}),
+        )?,
+        check(
+            CHECK_IDS[6],
+            validate_combined_decision(plan),
+            combined_execution.clone(),
+        )?,
+    ])
+}
+
+fn audit_check_suffix(
+    plan: &Value,
+    ledger: &Path,
+    ledger_head_sha256: Option<&str>,
+) -> Result<Vec<Value>> {
+    Ok(vec![
+        check(
+            CHECK_IDS[7],
+            valid_stage_order(plan),
+            json!({"nodes": node_manifest(plan)?}),
+        )?,
+        check(
+            CHECK_IDS[8],
+            durable_ledger(ledger),
+            json!({"ledger_path_sha256": path_digest(ledger)}),
+        )?,
+        check(
+            CHECK_IDS[9],
+            no_open_tooling_defect_at_head(ledger, ledger_head_sha256),
+            json!({
+                "ledger_path_sha256": path_digest(ledger),
+                "ledger_head_sha256": ledger_head_sha256,
+            }),
+        )?,
+    ])
+}
+
+fn audit_reason_codes(checks: &[Value]) -> Vec<String> {
+    checks
         .iter()
         .flat_map(|item| item["reason_codes"].as_array().into_iter().flatten())
         .filter_map(Value::as_str)
         .map(str::to_owned)
         .collect::<BTreeSet<_>>()
         .into_iter()
-        .collect::<Vec<_>>();
-    let status = if checks.iter().any(|item| item["status"] == "INVALID") {
+        .collect()
+}
+
+fn audit_status(checks: &[Value]) -> &'static str {
+    if checks.iter().any(|item| item["status"] == "INVALID") {
         "INVALID"
     } else if checks.iter().any(|item| item["status"] == "BLOCKED") {
         "BLOCKED"
     } else {
         "READY"
-    };
-    let mut audit = json!({
+    }
+}
+
+struct AuditDocumentInputs<'a> {
+    plan: &'a Value,
+    light_receipt: &'a Value,
+    artifact_root: &'a Path,
+    ledger: &'a Path,
+    ledger_head_sha256: Option<String>,
+    package_admission: Value,
+    checks: Vec<Value>,
+    combined_execution: Value,
+    status: &'a str,
+    reason_codes: Vec<String>,
+}
+
+fn audit_document(inputs: AuditDocumentInputs<'_>) -> Result<Value> {
+    let AuditDocumentInputs {
+        plan,
+        light_receipt,
+        artifact_root,
+        ledger,
+        ledger_head_sha256,
+        package_admission,
+        checks,
+        combined_execution,
+        status,
+        reason_codes,
+    } = inputs;
+    Ok(json!({
         "schema_version": "openwepp-pre-heavy-audit-v1",
         "audit_id": "0".repeat(64),
         "status": status,
@@ -195,17 +310,25 @@ pub fn build_audit(
         "checks": checks,
         "combined_execution": combined_execution,
         "light_receipt": light_receipt,
-    });
+    }))
+}
+
+fn seal_audit(repo: &Path, mut audit: Value) -> Result<Value> {
     audit["audit_id"] = Value::String(derived_id(&audit, "audit_id")?);
     let schema = read_json(&repo.join("gate-policy/v1/schemas/pre-heavy-audit.schema.json"))?;
     validate_schema(&schema, &audit, "pre-heavy audit")?;
-    if derived_id(&audit, "audit_id")? != string(&audit, "audit_id")? {
+    validate_sealed_audit_identity(&audit)?;
+    Ok(audit)
+}
+
+fn validate_sealed_audit_identity(audit: &Value) -> Result<()> {
+    if derived_id(audit, "audit_id")? != string(audit, "audit_id")? {
         return Err(audit_error(
             "GATE-AUDIT-IDENTITY",
             "generated audit identity mismatch",
         ));
     }
-    Ok(audit)
+    Ok(())
 }
 
 /// Build a schema-valid INVALID audit when a representable transaction fails
@@ -331,58 +454,111 @@ pub fn validate_audit(
     let schema = read_json(&repo.join("gate-policy/v1/schemas/pre-heavy-audit.schema.json"))?;
     validate_schema(&schema, audit, "pre-heavy audit")?;
     let current_package_admission = package_admission(repo, plan)?;
-    if derived_id(audit, "audit_id")? != string(audit, "audit_id")?
-        || audit["plan_id"] != plan["plan_id"]
-        || audit["plan_sha256"] != digest(plan)?
-        || audit["execution_key"] != plan["execution_key"]
-        || audit["artifact_root_sha256"] != path_digest(artifact_root)
-        || audit["node_manifest"] != node_manifest(plan)?
-        || audit["combined_execution"] != plan["combined_quality"]
-        || audit["package_admission"] != current_package_admission
+    validate_audit_core_binding(plan, audit)?;
+    validate_audit_context_binding(plan, audit, artifact_root, &current_package_admission)?;
+    require_ready_audit_status(audit)?;
+    validate_ready_check_set(audit)?;
+    validate_stage_receipt(repo, plan, &audit["light_receipt"], artifact_root, false)?;
+    validate_embedded_light_receipt_id(audit)?;
+    validate_current_audit_inventory(plan, audit)
+}
+
+fn validate_audit_core_binding(plan: &Value, audit: &Value) -> Result<()> {
+    if derived_id(audit, "audit_id")? == string(audit, "audit_id")?
+        && audit["plan_id"] == plan["plan_id"]
+        && audit["plan_sha256"] == digest(plan)?
+        && audit["execution_key"] == plan["execution_key"]
     {
-        return Err(audit_error("GATE-AUDIT-IDENTITY", "audit binding mismatch"));
+        Ok(())
+    } else {
+        Err(audit_error("GATE-AUDIT-IDENTITY", "audit binding mismatch"))
     }
+}
+
+fn validate_audit_context_binding(
+    plan: &Value,
+    audit: &Value,
+    artifact_root: &Path,
+    current_package_admission: &Value,
+) -> Result<()> {
+    if audit["artifact_root_sha256"] == path_digest(artifact_root)
+        && audit["node_manifest"] == node_manifest(plan)?
+        && audit["combined_execution"] == plan["combined_quality"]
+        && audit["package_admission"] == *current_package_admission
+    {
+        Ok(())
+    } else {
+        Err(audit_error("GATE-AUDIT-IDENTITY", "audit binding mismatch"))
+    }
+}
+
+fn require_ready_audit_status(audit: &Value) -> Result<()> {
     if audit["status"] != "READY" {
         return Err(audit_error(
             "GATE-AUDIT-NOT-READY",
             audit["status"].to_string(),
         ));
     }
+    Ok(())
+}
+
+fn validate_ready_check_set(audit: &Value) -> Result<()> {
     let checks = audit["checks"]
         .as_array()
         .ok_or_else(|| audit_error("GATE-AUDIT-CHECK-SET", "checks must be an array"))?;
-    if checks.len() != CHECK_IDS.len()
-        || checks.iter().zip(CHECK_IDS).any(|(item, expected)| {
-            item["check_id"] != expected
-                || item["status"] != "PASS"
-                || item["reason_codes"]
-                    .as_array()
-                    .is_none_or(|codes| !codes.is_empty())
-        })
-        || audit["reason_codes"]
-            .as_array()
-            .is_none_or(|codes| !codes.is_empty())
-    {
-        return Err(audit_error(
-            "GATE-AUDIT-CHECK-SET",
-            "READY requires the ordered canonical ten-check set, all PASS, with no reasons",
-        ));
+    if checks.len() != CHECK_IDS.len() {
+        return invalid_ready_check_set();
     }
-    validate_stage_receipt(repo, plan, &audit["light_receipt"], artifact_root, false)?;
-    if audit["light_stage_receipt_id"] != audit["light_receipt"]["stage_receipt_id"] {
-        return Err(audit_error(
-            "GATE-AUDIT-LIGHT-RECEIPT",
-            "light receipt was substituted",
-        ));
+    for (item, expected) in checks.iter().zip(CHECK_IDS) {
+        validate_ready_check(item, expected)?;
     }
-    let current_inventory = node_manifest(plan)?;
-    if current_inventory != audit["node_manifest"] {
-        return Err(audit_error(
-            "GATE-AUDIT-INVENTORY-DRIFT",
-            "independent current inventory differs from admitted inventory",
-        ));
+    let reasons = audit["reason_codes"].as_array();
+    if reasons.is_none_or(|codes| !codes.is_empty()) {
+        return invalid_ready_check_set();
     }
     Ok(())
+}
+
+fn validate_ready_check(item: &Value, expected: &str) -> Result<()> {
+    let reasons = item["reason_codes"].as_array();
+    if item["check_id"] == expected
+        && item["status"] == "PASS"
+        && reasons.is_some_and(Vec::is_empty)
+    {
+        Ok(())
+    } else {
+        invalid_ready_check_set()
+    }
+}
+
+fn invalid_ready_check_set<T>() -> Result<T> {
+    Err(audit_error(
+        "GATE-AUDIT-CHECK-SET",
+        "READY requires the ordered canonical ten-check set, all PASS, with no reasons",
+    ))
+}
+
+fn validate_embedded_light_receipt_id(audit: &Value) -> Result<()> {
+    if audit["light_stage_receipt_id"] == audit["light_receipt"]["stage_receipt_id"] {
+        Ok(())
+    } else {
+        Err(audit_error(
+            "GATE-AUDIT-LIGHT-RECEIPT",
+            "light receipt was substituted",
+        ))
+    }
+}
+
+fn validate_current_audit_inventory(plan: &Value, audit: &Value) -> Result<()> {
+    let current_inventory = node_manifest(plan)?;
+    if current_inventory == audit["node_manifest"] {
+        Ok(())
+    } else {
+        Err(audit_error(
+            "GATE-AUDIT-INVENTORY-DRIFT",
+            "independent current inventory differs from admitted inventory",
+        ))
+    }
 }
 
 /// Verify a READY audit and bind it to the exact executor image admitting HEAVY.
@@ -768,6 +944,13 @@ fn require_light_node_pass(node: &Value, receipt: &Value) -> Result<()> {
 
 fn cheap_prerequisites(repo: &Path, plan: &Value, receipt: &Value) -> Result<()> {
     light_stage_passed(plan, receipt)?;
+    require_clean_diff(repo, plan)?;
+    enforce_authorized_rust_line_limit(repo, plan)?;
+    documentation_scope_is_exact(plan)?;
+    require_single_active_prompt(repo, plan)
+}
+
+fn require_clean_diff(repo: &Path, plan: &Value) -> Result<()> {
     let base = string(&plan["source"], "base_commit")?;
     let diff = Command::new("git")
         .args(["diff", "--check", base, "--"])
@@ -780,6 +963,10 @@ fn cheap_prerequisites(repo: &Path, plan: &Value, receipt: &Value) -> Result<()>
             String::from_utf8_lossy(&diff.stdout),
         ));
     }
+    Ok(())
+}
+
+fn enforce_authorized_rust_line_limit(repo: &Path, plan: &Value) -> Result<()> {
     for path in plan["authorized_paths"]
         .as_array()
         .into_iter()
@@ -802,32 +989,40 @@ fn cheap_prerequisites(repo: &Path, plan: &Value, receipt: &Value) -> Result<()>
             ));
         }
     }
-    documentation_scope_is_exact(plan)?;
-    let package = plan["authorized_paths"]
+    Ok(())
+}
+
+fn active_package_path(plan: &Value) -> Option<&str> {
+    plan["authorized_paths"]
         .as_array()
         .into_iter()
         .flatten()
         .filter_map(Value::as_str)
-        .find(|path| path.starts_with("docs/work-packages/") && path.ends_with("/package.md"));
-    if let Some(package) = package {
-        let active = repo
-            .join(package)
-            .parent()
-            .ok_or_else(|| audit_error("GATE-AUDIT-PROMPT-STATE", package))?
-            .join("prompts/active");
-        let count = fs::read_dir(active)
-            .map_err(|error| audit_error("GATE-AUDIT-PROMPT-STATE", error.to_string()))?
-            .filter_map(std::result::Result::ok)
-            .filter(|entry| entry.path().extension().is_some_and(|value| value == "md"))
-            .count();
-        if count != 1 {
-            return Err(audit_error(
-                "GATE-AUDIT-PROMPT-STATE",
-                format!("expected one active prompt, found {count}"),
-            ));
-        }
+        .find(|path| path.starts_with("docs/work-packages/") && path.ends_with("/package.md"))
+}
+
+fn require_single_active_prompt(repo: &Path, plan: &Value) -> Result<()> {
+    let Some(package) = active_package_path(plan) else {
+        return Ok(());
+    };
+    let active = repo
+        .join(package)
+        .parent()
+        .ok_or_else(|| audit_error("GATE-AUDIT-PROMPT-STATE", package))?
+        .join("prompts/active");
+    let count = fs::read_dir(active)
+        .map_err(|error| audit_error("GATE-AUDIT-PROMPT-STATE", error.to_string()))?
+        .filter_map(std::result::Result::ok)
+        .filter(|entry| entry.path().extension().is_some_and(|value| value == "md"))
+        .count();
+    if count == 1 {
+        Ok(())
+    } else {
+        Err(audit_error(
+            "GATE-AUDIT-PROMPT-STATE",
+            format!("expected one active prompt, found {count}"),
+        ))
     }
-    Ok(())
 }
 
 fn inventory_and_arguments_are_exact(
@@ -1041,37 +1236,66 @@ fn light_attempt_isolated(plan: &Value, receipt: &Value, artifact_root: &Path) -
         .iter()
         .filter(|node| node["execution_cost_class"] == "LIGHT")
     {
-        let node_id = string(node, "node_id")?;
-        let checkpoint = read_json(
-            &artifact_root
-                .join(".checkpoints")
-                .join(format!("{node_id}.json")),
-        )?;
-        if checkpoint["node_sha256"] != digest(node)? || checkpoint["result"] != "PASS" {
-            return Err(audit_error("GATE-AUDIT-CHECKPOINT-DRIFT", node_id));
-        }
-        for relative in node["output_paths"]
-            .as_array()
-            .into_iter()
-            .flatten()
-            .filter_map(Value::as_str)
-        {
-            let expected = checkpoint["artifacts"]
-                .as_array()
-                .into_iter()
-                .flatten()
-                .find(|artifact| artifact["path"] == relative)
-                .and_then(|artifact| artifact["sha256"].as_str())
-                .ok_or_else(|| audit_error("GATE-AUDIT-CHECKPOINT-ARTIFACT", relative))?;
-            if file_digest(&artifact_root.join(relative))? != expected {
-                return Err(audit_error(
-                    "GATE-AUDIT-CHECKPOINT-ARTIFACT-DRIFT",
-                    relative,
-                ));
-            }
-        }
+        validate_light_node_checkpoint(node, artifact_root)?;
     }
     Ok(())
+}
+
+fn validate_light_node_checkpoint(node: &Value, artifact_root: &Path) -> Result<()> {
+    let node_id = string(node, "node_id")?;
+    let checkpoint = read_json(
+        &artifact_root
+            .join(".checkpoints")
+            .join(format!("{node_id}.json")),
+    )?;
+    validate_checkpoint_identity(node, &checkpoint, node_id)?;
+    validate_checkpoint_artifacts(node, &checkpoint, artifact_root)
+}
+
+fn validate_checkpoint_identity(node: &Value, checkpoint: &Value, node_id: &str) -> Result<()> {
+    if checkpoint["node_sha256"] == digest(node)? && checkpoint["result"] == "PASS" {
+        Ok(())
+    } else {
+        Err(audit_error("GATE-AUDIT-CHECKPOINT-DRIFT", node_id))
+    }
+}
+
+fn validate_checkpoint_artifacts(
+    node: &Value,
+    checkpoint: &Value,
+    artifact_root: &Path,
+) -> Result<()> {
+    for relative in node["output_paths"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(Value::as_str)
+    {
+        validate_checkpoint_artifact(checkpoint, artifact_root, relative)?;
+    }
+    Ok(())
+}
+
+fn validate_checkpoint_artifact(
+    checkpoint: &Value,
+    artifact_root: &Path,
+    relative: &str,
+) -> Result<()> {
+    let expected = checkpoint["artifacts"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .find(|artifact| artifact["path"] == relative)
+        .and_then(|artifact| artifact["sha256"].as_str())
+        .ok_or_else(|| audit_error("GATE-AUDIT-CHECKPOINT-ARTIFACT", relative))?;
+    if file_digest(&artifact_root.join(relative))? == expected {
+        Ok(())
+    } else {
+        Err(audit_error(
+            "GATE-AUDIT-CHECKPOINT-ARTIFACT-DRIFT",
+            relative,
+        ))
+    }
 }
 
 fn separated_roots(plan: &Value) -> Result<()> {
@@ -1311,18 +1535,47 @@ fn validate_stage_receipt(
 ) -> Result<()> {
     let schema = read_json(&repo.join("gate-policy/v1/schemas/stage-receipt.schema.json"))?;
     validate_schema(&schema, receipt, "light stage receipt")?;
-    if derived_id(receipt, "stage_receipt_id")? != string(receipt, "stage_receipt_id")?
-        || receipt["plan_id"] != plan["plan_id"]
-        || receipt["plan_sha256"] != digest(plan)?
-        || receipt["execution_key"] != plan["execution_key"]
-        || receipt["artifact_root_sha256"] != path_digest(artifact_root)
-        || receipt["stage"] != "LIGHT"
+    validate_stage_receipt_plan_binding(plan, receipt)?;
+    validate_stage_receipt_execution_binding(plan, receipt, artifact_root)?;
+    validate_stage_receipt_binary_binding(receipt, enforce_current_binary)
+}
+
+fn validate_stage_receipt_plan_binding(plan: &Value, receipt: &Value) -> Result<()> {
+    if derived_id(receipt, "stage_receipt_id")? == string(receipt, "stage_receipt_id")?
+        && receipt["plan_id"] == plan["plan_id"]
+        && receipt["plan_sha256"] == digest(plan)?
     {
-        return Err(audit_error(
+        Ok(())
+    } else {
+        Err(audit_error(
             "GATE-AUDIT-STAGE-RECEIPT-IDENTITY",
             "light stage receipt binding mismatch",
-        ));
+        ))
     }
+}
+
+fn validate_stage_receipt_execution_binding(
+    plan: &Value,
+    receipt: &Value,
+    artifact_root: &Path,
+) -> Result<()> {
+    if receipt["execution_key"] == plan["execution_key"]
+        && receipt["artifact_root_sha256"] == path_digest(artifact_root)
+        && receipt["stage"] == "LIGHT"
+    {
+        Ok(())
+    } else {
+        Err(audit_error(
+            "GATE-AUDIT-STAGE-RECEIPT-IDENTITY",
+            "light stage receipt binding mismatch",
+        ))
+    }
+}
+
+fn validate_stage_receipt_binary_binding(
+    receipt: &Value,
+    enforce_current_binary: bool,
+) -> Result<()> {
     if enforce_current_binary && receipt["executor_binary_sha256"] != current_executable_sha256()? {
         return Err(audit_error(
             "GATE-AUDIT-EXECUTOR-BINARY-DRIFT",

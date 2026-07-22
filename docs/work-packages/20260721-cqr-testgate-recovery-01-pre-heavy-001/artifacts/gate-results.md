@@ -12,5 +12,6 @@
 | second extraction focused inventory | PASS | 19 passed, 90 skipped, 16.876 s; run ID `8f3c1bd4-18f0-4a40-b9a4-3a97d99559fb` |
 | durable-defect characterization | PASS | 20 passed, 90 skipped, 16.521 s; run ID `f3262ee4-9f1a-4567-9269-704c4637cf2a` |
 | durable-defect extraction | PASS | 20 passed, 90 skipped, 16.658 s; run ID `31649409-1f30-4002-8c95-6442c4ad97c5` |
+| remaining-hotspot extraction | PASS | `cargo clippy -p openwepp-gate-planner --lib -- -D warnings`; focused inventory 20 passed, 90 skipped, 15.282 s; run ID `baf52c7c-5b93-497f-8b2a-34499f11150c` |
 | affected-surface CRAP/coverage | NOT RUN | required before completion |
 | terminal-plan heavy gates | NOT RUN | delegate after implementation |
