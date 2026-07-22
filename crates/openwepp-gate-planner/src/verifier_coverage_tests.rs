@@ -66,6 +66,34 @@ fn ready_admitted_fixture() -> (Value, Value, MemoryArtifacts) {
     (plan, receipt, artifacts)
 }
 
+fn make_light_only(plan: &mut Value, receipt: &mut Value) {
+    let original_nodes = std::mem::take(
+        plan["nodes"]
+            .as_array_mut()
+            .expect("plan nodes"),
+    );
+    let mut replacements: Vec<(String, String)> =
+        Vec::with_capacity(original_nodes.len());
+    let mut light_nodes = Vec::with_capacity(original_nodes.len());
+    for mut node in original_nodes {
+        for (old, new) in &replacements {
+            replace_string(&mut node, old, new);
+        }
+        let old_node_id = node["node_id"].as_str().expect("node ID").to_owned();
+        node["execution_cost_class"] = json!("LIGHT");
+        let new_node_id = derived_id(&node, "node_id").expect("light node ID");
+        node["node_id"] = json!(new_node_id);
+        replacements.push((old_node_id, new_node_id));
+        light_nodes.push(node);
+    }
+    plan["nodes"] = Value::Array(light_nodes);
+    for (old, new) in replacements {
+        replace_string(plan, &old, &new);
+        replace_string(receipt, &old, &new);
+    }
+    refresh_plan_and_receipt(plan, receipt);
+}
+
 #[test]
 fn ready_audit_verification_preserves_order_and_exact_verdict() {
     let root = super::repo();
@@ -110,8 +138,7 @@ fn ready_audit_verification_preserves_order_and_exact_verdict() {
     );
 
     let (mut light_plan, mut receipt, artifacts) = normalized_plan_and_receipt();
-    light_plan["nodes"] = json!([]);
-    refresh_plan_and_receipt(&mut light_plan, &mut receipt);
+    make_light_only(&mut light_plan, &mut receipt);
     let error = crate::verifier::verify_receipt_after_ready_audit(
         &root,
         &light_plan,
