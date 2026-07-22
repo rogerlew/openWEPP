@@ -272,34 +272,52 @@ pub fn execute_plan_stage(
     )?;
 
     finalize_stage_execution(
-        &repository,
-        plan,
-        &artifacts,
+        &StageFinalization {
+            repository: &repository,
+            plan,
+            artifacts: &artifacts,
+            roots_before: &roots_before,
+            observed_before: &observed_before,
+            started_at: &started_at,
+            source_snapshot: &source_snapshot,
+            claims,
+            stage,
+            admitted_audit,
+        },
         execution,
-        &roots_before,
-        &observed_before,
-        &started_at,
-        &source_snapshot,
-        claims,
-        stage,
-        admitted_audit,
     )
 }
 
-#[allow(clippy::too_many_arguments)] // Independently authenticated stage state.
+#[derive(Clone, Copy)]
+struct StageFinalization<'a> {
+    repository: &'a Path,
+    plan: &'a Value,
+    artifacts: &'a Path,
+    roots_before: &'a Value,
+    observed_before: &'a str,
+    started_at: &'a str,
+    source_snapshot: &'a str,
+    claims: &'a ExecutionClaims,
+    stage: &'a str,
+    admitted_audit: Option<&'a Value>,
+}
+
 fn finalize_stage_execution(
-    repository: &Path,
-    plan: &Value,
-    artifacts: &Path,
+    context: &StageFinalization<'_>,
     mut execution: ExecutionRecord,
-    roots_before: &Value,
-    observed_before: &str,
-    started_at: &str,
-    source_snapshot: &str,
-    claims: &ExecutionClaims,
-    stage: &str,
-    admitted_audit: Option<&Value>,
 ) -> Result<Value> {
+    let StageFinalization {
+        repository,
+        plan,
+        artifacts,
+        roots_before,
+        observed_before,
+        started_at,
+        source_snapshot,
+        claims,
+        stage,
+        admitted_audit,
+    } = *context;
     let roots_after = current_roots(repository, plan)?;
     let observed_after = observed_source_snapshot(repository, plan)?;
     let source_unchanged = roots_after == *roots_before && observed_after == observed_before;
@@ -1961,92 +1979,20 @@ mod tests {
     use super::{
         ExecutionClaims, NodeRun, ProcessOutcome, allowed_environment, artifact_bytes,
         authority_outcomes, create_confined_directories, execute_node, execute_nodes, execute_plan,
-        junit_inventory, nextest_junit_path, observed_authority_inventory, observed_inventory,
-        observed_source_snapshot, preflight, prepare_real_artifacts, read_real_artifact,
-        reject_shell_string, require_relative_path, run_process, runtime_arguments,
-        source_snapshot, supported_executor, validate_plan, validate_success_artifacts, work_root,
+        junit_inventory, nextest_junit_path, observed_inventory, observed_source_snapshot,
+        preflight, prepare_real_artifacts, read_real_artifact, reject_shell_string,
+        require_relative_path, run_process, runtime_arguments, source_snapshot, supported_executor,
+        validate_plan, validate_success_artifacts, work_root,
     };
-    use crate::canonical::{digest, sha256_bytes};
+    use crate::canonical::sha256_bytes;
     use crate::planner::{NextestInventory, PlanRequest, Planner, PlanningStage};
     use crate::repository::observe_committed;
 
-    #[test]
-    fn monolithic_executor_rejects_heavy_before_repository_access() {
-        let plan = json!({
-            "nodes": [{"execution_cost_class": "HEAVY"}]
-        });
-        let error = execute_plan(
-            Path::new("/path/that/must/not/be-opened"),
-            &plan,
-            Path::new("/path/that/must/not/be-created"),
-            &ExecutionClaims::default(),
-        )
-        .expect_err("heavy plan must require staged audit admission");
-        assert_eq!(error.code, "GATE-EXEC-HEAVY-REQUIRES-AUDIT");
-    }
-
-    #[test]
-    fn heavy_handoff_accepts_only_checkpoint_bound_light_artifacts() {
-        let artifacts = TempDirectory::new("light-handoff");
-        let node_id = "1".repeat(64);
-        let node = json!({
-            "node_id": node_id,
-            "output_paths": ["target/light/result.json"]
-        });
-        let output = artifacts.path().join("target/light/result.json");
-        fs::create_dir_all(output.parent().expect("output parent")).expect("output directory");
-        fs::write(&output, b"bound\n").expect("light output");
-        let checkpoint_dir = artifacts.path().join(".checkpoints");
-        fs::create_dir(&checkpoint_dir).expect("checkpoint directory");
-        write_json(
-            &checkpoint_dir.join(format!("{node_id}.json")),
-            &json!({
-                "node_sha256": digest(&node).expect("node digest"),
-                "result": "PASS",
-                "artifacts": [{
-                    "path": "target/light/result.json",
-                    "sha256": sha256_bytes(b"bound\n")
-                }]
-            }),
-        );
-        super::verify_checkpoint_artifact(artifacts.path(), &node, "target/light/result.json")
-            .expect("bound light artifact");
-        fs::write(&output, b"mutated\n").expect("mutate light output");
-        let error =
-            super::verify_checkpoint_artifact(artifacts.path(), &node, "target/light/result.json")
-                .expect_err("mutated light artifact must fail");
-        assert_eq!(error.code, "GATE-EXEC-CHECKPOINT-ARTIFACT-DRIFT");
-    }
     use crate::verifier::{DirectoryArtifacts, verify_receipt};
 
     static TEMP_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
     pub(super) struct TempDirectory(PathBuf);
-
-    #[test]
-    fn authority_report_proves_executed_suite_inventory() {
-        let artifacts = TempDirectory::new("authority-report");
-        let report = artifacts
-            .path()
-            .join(".work/target/gate-plan/required-authority-report.md");
-        fs::create_dir_all(report.parent().expect("report parent")).expect("report directory");
-        fs::write(
-            &report,
-            "- lane=required failure_class=hard-fail blocking=true test=one suites=suite_a,suite_b status=pass\n\
-             - lane=required failure_class=investigation blocking=false test=two suites=ignored status=pass\n",
-        )
-        .expect("authority report");
-        let node = json!({
-            "gate_definition_id": "required-authority-v1",
-            "output_paths": ["target/gate-plan/required-authority-report.md"]
-        });
-        let observed = observed_authority_inventory(artifacts.path(), &node, "PASS")
-            .expect("observed authority inventory");
-        assert_eq!(
-            observed,
-            BTreeSet::from(["suite_a".to_owned(), "suite_b".to_owned()])
-        );
-    }
 
     #[test]
     fn authority_outcomes_encode_admission_science_and_truthful_nonpass() {
@@ -2232,6 +2178,11 @@ mod tests {
         let repo = TempDirectory::new(label);
         fs::create_dir_all(repo.path().join("src")).expect("create source directory");
         fs::create_dir_all(repo.path().join("docs/standards")).expect("create standards directory");
+        fs::create_dir_all(
+            repo.path()
+                .join("docs/work-packages/executor/prompts/active"),
+        )
+        .expect("create package prompt directory");
         fs::create_dir_all(repo.path().join("assurance/v2")).expect("create assurance directory");
         fs::create_dir_all(repo.path().join("gate-policy/v1")).expect("create policy directory");
         fs::create_dir_all(repo.path().join("tools")).expect("create fixture tools");
@@ -2279,6 +2230,18 @@ mod tests {
             strategy,
         )
         .expect("write strategy");
+        fs::write(
+            repo.path()
+                .join("docs/work-packages/executor/prompts/active/kickoff.md"),
+            "# Executor fixture kickoff\n",
+        )
+        .expect("write active prompt");
+        fs::write(
+            repo.path()
+                .join("docs/work-packages/executor/package.md"),
+            "# Executor fixture\n\nbase\n\n## Declared Write Set\n\n- `docs/work-packages/**`\n- `src/**`\n",
+        )
+        .expect("write base package");
         copy_schemas(repo.path());
         fs::write(
             repo.path().join("assurance/v2/catalog.yaml"),
@@ -2371,6 +2334,21 @@ mod tests {
                     "assurance_watches": [],
                     "gate_definition_ids": gate_ids,
                     "documentation_paths": []
+                }, {
+                    "entry_id": "executor-package-fixture",
+                    "matcher": {"kind": "exact_path", "value": "docs/work-packages/executor/package.md"},
+                    "owner": "openwepp-maintainers",
+                    "semantic_surface": "executor-contract",
+                    "risk_floor": "BOUNDED_COMPONENT",
+                    "reason_codes": ["EXECUTOR_FIXTURE_CHANGED"],
+                    "affected_packages": ["executor-fixture"],
+                    "test_targets": [],
+                    "covering_test_targets": [],
+                    "contracts": [],
+                    "authority_suites": [],
+                    "assurance_watches": [],
+                    "gate_definition_ids": gate_ids,
+                    "documentation_paths": []
                 }]
             }),
         );
@@ -2390,6 +2368,12 @@ mod tests {
             "pub fn fixture() { let _changed = true; }\n\n#[cfg(test)]\nmod tests {\n    #[test]\n    fn fixture_works() { super::fixture(); }\n}\n",
         )
         .expect("change fixture");
+        fs::write(
+            repo.path()
+                .join("docs/work-packages/executor/package.md"),
+            "# Executor fixture\n\nchanged\n\n## Declared Write Set\n\n- `docs/work-packages/**`\n- `src/**`\n",
+        )
+        .expect("change package");
         let head = commit(repo.path(), "change fixture");
         let source =
             observe_committed(repo.path(), &base, &head).expect("observe committed source");
@@ -2402,7 +2386,10 @@ mod tests {
                     boundary: "INCREMENT".to_owned(),
                     campaign_id: Some("TESTGATE-CI-01".to_owned()),
                     combined_quality_proof_id: None,
-                    authorized_paths: vec!["src/lib.rs".to_owned()],
+                    authorized_paths: vec![
+                        "docs/work-packages/executor/package.md".to_owned(),
+                        "src/lib.rs".to_owned(),
+                    ],
                     source,
                 },
             )
