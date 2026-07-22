@@ -61,6 +61,7 @@ Out of scope:
 ## Declared Write Set
 
 - `crates/openwepp-gate-planner/src/pre_heavy.rs`
+- `crates/openwepp-gate-planner/src/pre_heavy_coverage_tests.rs`
 - `tests/integration/testgate_ci_executor_contract.rs`
 - `docs/work-packages/20260721-cqr-testgate-recovery-01-pre-heavy-001/**`
 - `docs/work-packages/README.md`

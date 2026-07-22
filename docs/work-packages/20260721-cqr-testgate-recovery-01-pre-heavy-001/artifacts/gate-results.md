@@ -19,6 +19,8 @@
 | line-count governance | PASS-WARN | 2,574 lines; WARN accepted, below 3,000 blocker |
 | affected-surface CRAP/coverage | PASS | exact source-bound evidence retained under `/tmp/cqr-pre-heavy-nonreg-rNRfRV` |
 | terminal-plan heavy gates | NOT RUN | delegate after implementation |
-| ADR-0021 final affected measurement | PASS | exact clean head `b1096a78`; 116/116 PASS; line 96.29%; region 93.76%; zero functions below 75%; zero CRAP above 30; maximum 17.0; evidence `/tmp/cqr-pre-heavy-final-b1096a78-sPEqMT` |
-| final focused inventory | PASS | `cargo nextest run -p openwepp-gate-planner pre_heavy:: --profile quick`; 30/30 PASS; run ID `1165168c-a86a-4a48-80fa-557fa5e0eeb7` |
+| ADR-0021 prior affected measurement | HOLD | exact clean head `b1096a78`; aggregate production surface passes, but reviewers found three functions below the binding region floor |
+| reviewer focused inventory | PASS | Review A 31/31, run ID `0cf42846-6326-4336-ab4f-8271e9e31176`; Review B 31/31, run ID `bbcaad4d-09ed-4ba3-a88d-eb3e8e44b5bc` |
 | final scoped Clippy | PASS | `cargo clippy -p openwepp-gate-planner --lib --tests -- -D warnings` |
+| exact public reconstruction characterization | PASS | `exact_planner_output_reconstructs_through_the_public_audit_path`; 1/1 PASS in 391.957 seconds; run ID `4c972c0f-405d-4475-82d3-23ef39f0205b` |
+| corrected changed-head ADR-0021 measurement | NOT RUN | delegate after evidence correction commit |

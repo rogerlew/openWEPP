@@ -12,4 +12,5 @@
 | `docs/standards/code-quality-refactor-authoring-guide.md` | CQR | CRAP closure requirements | read |
 | `docs/decisions/0021-module-coverage-closure-thresholds.md` | authority | eligibility and CRAP threshold | read |
 | `crates/openwepp-gate-planner/src/pre_heavy.rs` | target | audited production behavior | read |
+| `crates/openwepp-gate-planner/src/pre_heavy_coverage_tests.rs` | test | direct private and public admission-path characterization | read |
 | `tests/integration/testgate_ci_executor_contract.rs` | test | public contract coverage | pending focused review |
