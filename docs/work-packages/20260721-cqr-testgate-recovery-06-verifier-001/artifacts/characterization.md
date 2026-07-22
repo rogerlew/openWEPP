@@ -18,6 +18,10 @@ Ran: `verifier::tests::coverage_tests` binds:
 - retry, prerequisite, HEAVY-audit, envelope-artifact, equality, and public
   verdict-accessor edges required by the baseline floor gaps.
 
-Ran: the exact public-path test passed at clean HEAD `9970ac32` in 314.72
-seconds. The same test and all other library tests passed in the authoritative
-changed-head metric traversal.
+Ran: after dual-review correction, the exact public path uses a TERMINAL plan,
+a non-null READY audit bound to the exact plan/package/artifact root, and
+`validate_audit_for_execution` immediately before receipt verification. It
+compares the complete ten-field `ReceiptVerdict` and exact stable messages for
+all four ordered rejection stages. The focused clean-head test passed at
+`223b034e` in 358.56 seconds; it and every other library test passed in the
+authoritative corrected-head measurement.

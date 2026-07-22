@@ -20,5 +20,15 @@ and the worktree remained clean. Evidence is retained at
 validated and pruned.
 
 Static: dual review required a test-oracle correction after this measurement.
-These results remain historical evidence for `9970ac32`; one new measurement
-is required for the corrected head.
+These results remain historical evidence for `9970ac32`; the required
+corrected-head measurement follows.
+
+Ran: the single corrected-head measurement at exact clean HEAD
+`223b034e61e8b7912ab0160dbbca8fa3072fe945` reports 1,116/1,279 production
+lines (87.2557%), 1,734/2,019 deduplicated regions (85.8841%), and no compiled
+function below 75% region. All 138 tests passed, 2 were intentionally ignored,
+and none failed in 493.55 seconds (517.05 seconds wall).
+
+Ran: source/worktree identity remained exact and clean. Evidence is retained at
+`/tmp/cqr-verifier-corrected-Na0tkK`; its validated 633 MB disposable target
+was pruned.

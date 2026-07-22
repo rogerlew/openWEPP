@@ -8,3 +8,10 @@ required a TERMINAL plan, canonical READY-audit admission immediately before
 the public verifier, and the existing ordered rejection assertions.
 
 Static: corrected in the next test-only increment. Renewed review is pending.
+
+Static: renewed technical review accepted the TERMINAL/READY audit correction,
+complete verdict, exact errors, corrected package authority, RTR-028 boundary,
+and corrected metric. It found only two stale documentation statements: the
+package phase still called completed validation/metric pending, and the split
+line count remained 324 instead of 457. Both statements are corrected in the
+documentation evidence increment; final docs-only re-review is pending.

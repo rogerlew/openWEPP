@@ -11,5 +11,7 @@ Ran: the ADR-0021 glue thresholds passed at historical HEAD `9970ac32`.
 
 Static: no retained exception or denominator suppression was used.
 
-Static: closure is pending one new changed-head measurement after the
-dual-review test-oracle correction.
+Ran: PASS on the corrected exact HEAD `223b034e`: 87.2557% line and 85.8841%
+region, with all 81 compiled production functions at or above 75% region. The
+one non-Linux function remains the sole current-profile omission. No exception
+or denominator suppression was used.

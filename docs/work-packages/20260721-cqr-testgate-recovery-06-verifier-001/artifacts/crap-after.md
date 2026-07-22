@@ -10,5 +10,12 @@ Ran: report SHA-256 is
 LCOV SHA-256 is
 `bb279cea2951623fdf8f3bfd8d1611717aae1caf1d75218dd06318bdb631d8b7`.
 
-Static: this is historical `9970ac32` evidence. The corrected test head requires
-one new same-LCOV measurement before final closure.
+Static: this is historical `9970ac32` evidence. The required corrected-head
+same-LCOV measurement follows.
+
+Ran: the corrected-head same-LCOV report at `223b034e` has no compiled function
+above CRAP 30. The retained target remains 100% line-covered, 24/26 regions
+(92.3077%), CC 6, and CRAP 6.0. Corrected report SHA-256 is
+`d0f57a4f189049519fffd59874f937d09ddd302ad8508a1bca0ac643855cfada`;
+LCOV SHA-256 is
+`c92d32e1f5e8acd6cf1e5cbcafc2107d6f5bc730c051ab45e56318f839b4160c`.

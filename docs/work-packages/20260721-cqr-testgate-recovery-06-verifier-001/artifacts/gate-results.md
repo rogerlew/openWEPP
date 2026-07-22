@@ -18,3 +18,12 @@ admission because the scaffold's split-file bullet contained trailing prose and
 was not part of the parsed base write set. The declaration was corrected alone
 at `05baef7f`; the subsequent test/package increment now requires exactly one
 package authority. No admission bypass or unchanged metric rerun was used.
+
+Ran: focused terminal READY-audit characterization passed at clean
+`223b034e`. One new corrected-head matching-module traversal passed 138 tests,
+87.2557% line, 85.8841% region, all per-function floors, and all CRAP bounds.
+No HEAVY gate or TESTGATE ran. Renewed dual review is in progress.
+
+Static: renewed Review B passed. Renewed Review A accepted all technical and
+metric evidence and requested only two stale documentation corrections, now
+applied. Final Review A docs-only re-audit remains pending.
