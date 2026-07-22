@@ -251,6 +251,10 @@
 
 State as of `2026-07-22 UTC`:
 
+- `20260722-testgate-sequential-package-authority-recovery-001/` - ACTIVE:
+  closes RTR-044 by reconstructing prospective package authority in commit
+  order and binding intent plus pre-HEAVY admission to one canonical chain.
+
 - `20260722-cqr-nightly-b02-aggregate-001/` - ACTIVE: prospective aggregate
   authority for the two-module CRAP closeout exposed by recovery qualification
   receipt `cea13649...cd5ce`; module scaffolds and validation follow this commit.
