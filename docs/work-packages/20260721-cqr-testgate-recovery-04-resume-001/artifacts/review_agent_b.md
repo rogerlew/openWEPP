@@ -13,5 +13,7 @@ Static/Ran: FINAL PASS by fresh independent reviewer
   block, both checkpoint tests pass, and all current hashes/metrics reconcile.
 - No production byte, API, schema, trust decision, or coverage scenario changed.
 
-Ran: reviewer read-only diff, source, and retained-evidence audits passed. The
-reviewer did not rerun a gate.
+Ran: the reviewer passed a narrow two-test checkpoint concurrency probe and
+targeted Clippy during the intermediate isolation review. The final retained
+evidence re-review was read-only; no expensive gate or metric was rerun by the
+reviewer.
