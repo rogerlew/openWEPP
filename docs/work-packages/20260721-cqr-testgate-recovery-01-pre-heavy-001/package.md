@@ -25,6 +25,7 @@ codes, canonical JSON, artifact identity, and execution ordering.
 - `docs/standards/code-quality-refactor-authoring-guide.md`
 - `docs/decisions/0021-module-coverage-closure-thresholds.md`
 - `crates/openwepp-gate-planner/src/pre_heavy.rs`
+- `crates/openwepp-gate-planner/src/pre_heavy_coverage_tests.rs`
 - `tests/integration/testgate_ci_executor_contract.rs`
 
 ## Subagent Authorization
@@ -80,6 +81,11 @@ and required-reading map must be committed before any production or test edit.
 4. Run focused planner/integration checks and affected-surface metrics.
 5. Reconcile the exact terminal plan, delegate selected heavy gates, and record
    dual review, dual verification, line-count governance, and disposition.
+
+The test-only child module is authorized after the aggregate coverage floor was
+met at `7e6a9a08`; it holds direct private-helper characterization needed for
+the ADR-0021 per-function floor without pushing the production host above the
+3,000-line hard blocker. It does not expand the production-module boundary.
 
 ## Exit Criteria
 
