@@ -13,3 +13,10 @@ write-set/read-map omission for the test-only child module, generic obligation
 bindings, and stale or incomplete metric evidence. Direct public wrapper and
 canonical reconstruction coverage plus exact durable evidence are required
 before renewed review.
+
+## Renewed Review at `dcc86c39`
+
+Static/Ran: PASS. All prior findings are corrected. Final and baseline
+per-symbol records are complete and hash-bound, aggregate and floor arithmetic
+recompute exactly, fixture cleanup is proven, Markdown lint and diff hygiene
+pass, and the worktree is clean. Terminal verification remains separate.

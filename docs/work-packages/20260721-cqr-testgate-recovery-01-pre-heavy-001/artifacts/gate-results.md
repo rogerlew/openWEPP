@@ -26,3 +26,5 @@
 | corrected changed-head ADR-0021 measurement | PASS | exact clean `68e9b747`; 117/117 PASS; production line 96.08%; production region 89.64%; 111/111 functions at least 75% region, minimum 80%; CRAP maximum 17.0 |
 | fixture ownership probe | PASS | exact temp-repository and durable-ledger namespaces empty before and after `ready_audit_validation_execution_and_resume_chains_are_directly_bound`; 1/1 PASS in 55.258 seconds; run ID `cf7e6313-eda8-418f-8c6c-b91eb97e0b31` |
 | true pre-production baseline | PASS | isolated detached `5e0e92c5`; 100/100 PASS; production line 44.34%, region 41.59%; 50 functions, 24 below 75%; active worktree untouched |
+| renewed implementation review A | PASS | exact `dcc86c39`; all prior semantic/evidence findings cleared |
+| renewed implementation review B | PASS | exact `dcc86c39`; all prior semantic/evidence findings cleared; Markdown lint and diff-check PASS |
