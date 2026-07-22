@@ -792,6 +792,84 @@
         let mut packages = command;
         packages.inventory_source = "NEXTEST_PACKAGES".to_owned();
         assert!(super::package_inventories(&repo, &node, &packages, None).is_err());
+
+        let target = crate::executor::tests::TempDirectory::new("planner-package-inventory");
+        let package_node = serde_json::json!({
+            "arguments": ["nextest", "--package", "openwepp-gate-planner"]
+        });
+        let package_inventory = super::package_inventories(
+            &repo,
+            &package_node,
+            &packages,
+            Some(&target.path().join("cargo-target")),
+        )
+        .expect("one package inventory");
+        assert!(!package_inventory.is_empty());
+
+        let mut authority = packages.clone();
+        authority.inventory_source = "AUTHORITY_SUITES".to_owned();
+        assert_eq!(
+            super::inventory_for_definition(&repo, &node, &authority, "workspace", None)
+                .expect("authority inventory")
+                .len(),
+            9
+        );
+
+        let mut nextest = packages;
+        nextest.inventory_source = "NEXTEST_PACKAGE".to_owned();
+        let empty = crate::executor::tests::TempDirectory::new("planner-empty-inventory");
+        assert_eq!(
+            super::inventory_for_definition(
+                empty.path(),
+                &node,
+                &nextest,
+                "missing",
+                Some(&target.path().join("cargo-target")),
+            )
+            .expect_err("missing manifest must fail")
+            .code,
+            "GATE-NEXTEST-LIST"
+        );
+        assert_eq!(
+            super::ConfinedNextestInventory {
+                cargo_target: target.path().join("cargo-target"),
+            }
+            .inventory(empty.path(), &nextest, "missing")
+            .expect_err("confined missing manifest must fail")
+            .code,
+            "GATE-NEXTEST-LIST"
+        );
+    }
+
+    #[test]
+    fn terminal_reconciliation_accepts_canonical_isolated_reconstruction() {
+        use crate::executor::tests::{execution_fixture, gate_definition};
+
+        let documentation =
+            gate_definition("documentation-lint-v1", &["./tools/pass.sh"], &[]);
+        let component = gate_definition("fixture-light-v1", &["./tools/pass.sh"], &[]);
+        let (repo, mut terminal) = execution_fixture(
+            "planner-reconciliation-reconstruction",
+            &[documentation, component],
+        );
+        let mut intent = terminal.clone();
+        intent["planning_stage"] = serde_json::json!("INTENT");
+        intent["predecessor_intent_plan_id"] = serde_json::Value::Null;
+        intent["plan_id"] =
+            serde_json::json!(super::derive_plan_id(&intent).expect("intent plan ID"));
+        intent["execution_key"] =
+            serde_json::json!(super::derive_execution_key(&intent).expect("intent key"));
+        terminal["predecessor_intent_plan_id"] = intent["plan_id"].clone();
+        terminal["plan_id"] =
+            serde_json::json!(super::derive_plan_id(&terminal).expect("terminal plan ID"));
+        terminal["execution_key"] =
+            serde_json::json!(super::derive_execution_key(&terminal).expect("terminal key"));
+
+        let reconciliation = reconcile_intent_terminal(repo.path(), &intent, &terminal)
+            .expect("canonical terminal reconstruction");
+        assert!(reconciliation.added_paths.is_empty());
+        assert!(reconciliation.removed_paths.is_empty());
+        assert!(!reconciliation.risk_escalated);
     }
 
     #[test]

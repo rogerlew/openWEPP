@@ -15,3 +15,8 @@ Ran: the expanded exact planner namespace passed 17/17 with 133 skipped in
 77.579 seconds. The initial compilation-only mismatch between JSON and
 `Option<String>` was corrected before this passing run. No production line had
 changed when the characterization passed.
+
+Static: characterization was then strengthened with a real package-only Nextest
+inventory, authority dispatch, confined/unsupported inventory failures, and a
+canonical isolated `reconcile_intent_terminal` success path. Ran: the resulting
+18-test namespace passes after the production extraction.

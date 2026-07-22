@@ -13,3 +13,15 @@ Ran: format and diff hygiene passed. The exact planner test namespace passed
 
 Status: mechanical split complete; characterization additions precede the
 private helper extraction.
+
+Static: after the test-first commit, the complete base/head Cargo-graph load
+and union block moved to private `load_source_graph`. The call remains in the
+same statement position after request validation and policy load. Base graph is
+still acquired before head graph; each workspace/current/committed branch and
+every `?` propagation remains in the original order. The union still occurs
+only after both loads succeed. No clone, allocation, public surface, error, or
+selection behavior changed.
+
+Ran: the expanded planner namespace passed 18/18 with 133 skipped in 79.835
+seconds after extraction, including canonical isolated terminal reconstruction
+and real narrow package inventory.

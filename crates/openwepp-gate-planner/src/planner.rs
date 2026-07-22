@@ -682,24 +682,7 @@ impl<P: InventoryProvider> Planner<P> {
     ) -> Result<Value> {
         validate_request(request)?;
         let policy = PolicyBundle::load(repo)?;
-        let base_graph = match workspace {
-            Some(root) => CargoGraph::load_at_commit_in(
-                repo,
-                &request.source.base_commit,
-                &root.join("graph-snapshots"),
-            )?,
-            None => CargoGraph::load_at_commit(repo, &request.source.base_commit)?,
-        };
-        let head_graph = match request.source.head_commit.as_deref() {
-            Some(head) => match workspace {
-                Some(root) => {
-                    CargoGraph::load_at_commit_in(repo, head, &root.join("graph-snapshots"))?
-                }
-                None => CargoGraph::load_at_commit(repo, head)?,
-            },
-            None => CargoGraph::load_current(repo)?,
-        };
-        let graph = base_graph.union(&head_graph);
+        let graph = load_source_graph(repo, &request.source, workspace)?;
         let selection_inputs = selection_changes(request);
         let selection = select(&policy, &graph, &selection_inputs);
         let target_head = request
@@ -973,6 +956,27 @@ impl<P: InventoryProvider> Planner<P> {
         }
         Ok(output)
     }
+}
+
+fn load_source_graph(
+    repo: &Path,
+    source: &ObservedSource,
+    workspace: Option<&Path>,
+) -> Result<CargoGraph> {
+    let base_graph = match workspace {
+        Some(root) => {
+            CargoGraph::load_at_commit_in(repo, &source.base_commit, &root.join("graph-snapshots"))?
+        }
+        None => CargoGraph::load_at_commit(repo, &source.base_commit)?,
+    };
+    let head_graph = match source.head_commit.as_deref() {
+        Some(head) => match workspace {
+            Some(root) => CargoGraph::load_at_commit_in(repo, head, &root.join("graph-snapshots"))?,
+            None => CargoGraph::load_at_commit(repo, head)?,
+        },
+        None => CargoGraph::load_current(repo)?,
+    };
+    Ok(base_graph.union(&head_graph))
 }
 
 fn quality_scope(selection: &Selection, nodes: &[Value]) -> Value {
