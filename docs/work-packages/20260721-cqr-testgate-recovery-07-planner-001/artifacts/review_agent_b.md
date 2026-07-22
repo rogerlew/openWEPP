@@ -17,3 +17,11 @@ lines rather than the stale 930 recorded after the earlier increment. This
 artifact correction updates the count; both files remain below their closure
 threshold, and the reviewer stated no code change or renewed implementation
 review is required.
+
+Static: review B initially held coverage commit `36c4f126` because the dirty
+manifest test combined deletion and excluded-file behavior behind an already
+changed execution root. The accepted P1 was corrected with sequential root
+snapshots. Renewed review B passes exact clean head `d1f4e772`: each mutation is
+independently discriminating, fixture cleanup is safe, scope is test-only, and
+no implementation finding remains. The reviewer also bound the exact final
+line counts recorded in line-count governance.

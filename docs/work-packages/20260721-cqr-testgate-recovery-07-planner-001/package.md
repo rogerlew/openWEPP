@@ -7,11 +7,11 @@ Target module: `crates/openwepp-gate-planner/src/planner.rs`
 Target rank: `7` of `7`
 Quality dimension: `CRAP/cyclomatic-complexity`
 
-Current phase: RTR-029 and its package-authority annotation defect RTR-030 are
-corrected, dual-reviewed, narrowly validated, and durably closed. Rank 7 may
-resume test-first implementation. Its failed unchanged baseline must not be
-rerun; one changed-head matching-module traversal remains authorized after the
-planner test split, characterization, and decomposition are complete.
+Current phase: implementation and coverage characterization are complete and
+dual-reviewed at corrected head `d1f4e772`. The first corrected-head metric
+proved CRAP closure but failed the aggregate region gate; no unchanged rerun
+occurred. One final changed-head matching-module traversal is authorized for
+the reviewed coverage correction before terminal verification.
 
 ## Objective
 

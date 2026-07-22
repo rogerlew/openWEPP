@@ -13,3 +13,9 @@ finding remains. The reviewer independently confirmed distinct graph commits,
 union-sensitive package/reverse/node assertions, error precedence, identical
 pre/post-extraction oracle passes, fixture cleanup, scope, and unchanged
 production bytes.
+
+Static: renewed PASS at exact clean coverage-correction head `d1f4e772`. The
+reviewer confirmed that deletion, exclusion, symlink addition, and regular-file
+replacement are independently causal; fixtures remain confined and cleaned;
+production `planner.rs` is byte-identical; and no public, schema, numeric, or
+error behavior changed. No metric, broad, or HEAVY gate was run by the reviewer.
