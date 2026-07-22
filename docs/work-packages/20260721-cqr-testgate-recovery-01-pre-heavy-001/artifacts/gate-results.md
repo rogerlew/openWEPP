@@ -8,5 +8,6 @@
 | characterization inventory | PASS | `cargo fmt --all`; then the same focused inventory, 19 passed, 90 skipped, 15.561 s; run ID `5bd3f726-7c16-49ba-8678-b2e7ed451dc0` |
 | first extraction focused inventory | PASS | `cargo fmt --all -- --check`; `cargo nextest run -p openwepp-gate-planner pre_heavy::tests --profile quick`; 19 passed, 90 skipped, 15.710 s; run ID `bd87c218-85b7-4379-af70-177eec5d0f16` |
 | first extraction scoped Clippy | NOT RUN/UNCONFIRMED | invoked as `cargo clippy -p openwepp-gate-planner --lib -- -D warnings`; client did not return a terminal status, so no result is asserted and it will be rerun only after the next source increment |
+| delegated first affected CQR metric | PASS | `cargo llvm-cov -p openwepp-gate-planner --lib --ignore-run-fail --lcov` exited 0; 104/104 passed in 496.36 s. Matching `cargo crap` exited 0. Eight target rows remain; see `crap-after.md`. |
 | affected-surface CRAP/coverage | NOT RUN | required before completion |
 | terminal-plan heavy gates | NOT RUN | delegate after implementation |
