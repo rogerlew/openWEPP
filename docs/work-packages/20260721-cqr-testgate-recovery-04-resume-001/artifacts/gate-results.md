@@ -9,8 +9,9 @@
 | affected resume tests | PASS | 13/13 after production refactor |
 | clean-head crate library | PASS | 123/123 executed at reviewed production head; two intentional ignores |
 | targeted Clippy | PASS | library/tests, warnings denied after test-only correction |
-| dual implementation review | PASS | A/B plus exact correction confirmations |
+| dual fresh implementation review | PASS | Review C/D at `9c0db17d`; C isolation finding corrected and D stale-evidence block closed |
 | first post-change metric | FAIL-CORRECTED | `7faa45f9`; retained, not rerun/reused |
-| authoritative corrected metric | PASS | 125 pass; lines 92.38%, regions 85.50%, floor 29/29, CRAP max 25.3961 |
+| receipt/reuse corrected metric | HISTORICAL-PASS | `47eb418d`; staled by later test-isolation correction |
+| authoritative isolation metric | PASS | `9c0db17d`; 125 pass, both checkpoint tests; lines 92.38%, regions 85.50%, floor 29/29, CRAP max 25.3961 |
 | dual terminal verification | PENDING-FINAL-RECORD | technical evidence passed; durable lineage blocker corrected in this increment |
 | campaign-global TESTGATE | DEFERRED-MASTER | master owns it after all seven packages close |

@@ -15,8 +15,10 @@ APIs or serialized contracts.
 
 Static: characterization commit `dc99797b` added isolated native-attestation,
 checkpoint, candidate, and constructed-audit cases before production edits.
-Test-only commits `7faa45f9`, `7f650cb0`, and `47eb418d` respectively closed
-Clippy shape, the first metric's receipt/reuse gaps, and reviewer hardening. The
-production SHA-256 remained
+Test-only commits `7faa45f9`, `7f650cb0`, `47eb418d`, and `9c0db17d`
+respectively closed Clippy shape, the first metric's receipt/reuse gaps,
+reviewer hardening, and a fresh review finding about same-process checkpoint
+fixture isolation. The production SHA-256 remained
 `e2d5d61e24e7f695d87530a6a585fa84b2962cb2737516265b4e24bd4b1246d9`
-after `4b8f0cce`.
+after `4b8f0cce`. The isolation correction uses a process-local atomic sequence
+in the owned fixture path while retaining RAII cleanup.

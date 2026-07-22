@@ -8,4 +8,10 @@ Ran: the first post-refactor measurement at `7faa45f9` was retained at
 `/tmp/cqr-resume-post-Qu3eaQ` but failed closure: regions were 80.8312%,
 `load_accepted_receipt` was unexecuted/CRAP 90, and three functions missed the
 floor. It was not rerun or reused. Receipt/envelope/reuse characterization
-changed the head before the single corrected measurement at `47eb418d`.
+changed the head before the corrected measurement at `47eb418d`.
+
+Ran: fresh Review C then found a PID-only test-fixture isolation defect. The
+head changed to `9c0db17d`; per the gate strategy, the `47eb418d` receipt became
+historical. Exactly one fresh current-head measurement passed with identical
+production numeric results and explicit same-process PASS for both affected
+checkpoint tests.

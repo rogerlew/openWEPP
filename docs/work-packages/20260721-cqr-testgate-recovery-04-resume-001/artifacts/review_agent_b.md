@@ -1,14 +1,17 @@
 # Review B
 
-Static: PASS by `/root/cqr_main_eligibility_b`.
+Static/Ran: FINAL PASS by fresh independent reviewer
+`/root/resume_fresh_review_d` at exact clean
+`9c0db17d83247e138ccce08943ac9bfc83915021`.
 
-- Exact production review head: `4b8f0ccef69304a170158d8f282326b3c99cf5b5`.
 - Independently verified candidate admission/error order, exact native
   attestation invocation and fail-closed semantics, checkpoint guard/artifact
   order, private-only helpers, and unchanged APIs/schemas.
-- Exact confirmations passed at `7faa45f9`, coverage correction `7f650cb0`, and
-  hardened correction `47eb418d4700a009b01c7345962b36960329ab1a`.
-- The final correction binds `GATE-JSON-INVALID` exactly and adds RAII fixture
-  cleanup without changing a coverage scenario or production byte.
+- Initially passed semantics, then correctly blocked the stale `47eb418d`
+  metric after the test-isolation correction under the gate strategy.
+- Confirmed the single fresh changed-head `9c0db17d` measurement closes that
+  block, both checkpoint tests pass, and all current hashes/metrics reconcile.
+- No production byte, API, schema, trust decision, or coverage scenario changed.
 
-Ran: reviewer diff hygiene passed. The reviewer did not rerun a gate.
+Ran: reviewer read-only diff, source, and retained-evidence audits passed. The
+reviewer did not rerun a gate.
