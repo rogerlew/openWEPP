@@ -1,7 +1,7 @@
 # CQR: TESTGATE Gate-Planner CLI Complexity
 
 Package: `20260721-cqr-testgate-recovery-02-main-001`
-Status: `QUEUED`
+Status: `EXECUTING`
 ExecPlan: `docs/work-packages/20260721-cqr-testgate-recovery-closeout-execplan.md`
 Target module: `crates/openwepp-gate-planner/src/main.rs`
 Target rank: `2` of `7`
@@ -29,10 +29,14 @@ typed errors, canonical output, and process exit behavior.
 
 ## Subagent Authorization
 
-Subagent authorization: this package explicitly authorizes independent review,
-verification, and comparator/closure-runner agents for eligibility, semantic
-diff review, focused metrics, and terminal verification. Heavy global gates are
-delegated and remain owned by the master ExecPlan after all seven packages.
+Subagent authorization: this package explicitly authorizes subagent
+spawning/delegation to independent review, verification, and
+comparator/closure-runner subagents for eligibility, semantic-diff review,
+focused metrics, and terminal verification. Expected outputs are package-local
+review, verification, compact metric, and command-evidence artifacts. Write
+access is read-only unless a subagent is explicitly assigned a bounded change
+within this package's declared write set. Heavy global gates are delegated and
+remain owned by the master ExecPlan after all seven packages.
 
 ## Scope
 
