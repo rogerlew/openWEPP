@@ -1,7 +1,7 @@
 # CQR: TESTGATE Checkpoint Mirror Complexity
 
 Package: `20260721-cqr-testgate-recovery-03-checkpoint-mirror-001`
-Status: `QUEUED`
+Status: `EXECUTING`
 ExecPlan: `docs/work-packages/20260721-cqr-testgate-recovery-closeout-execplan.md`
 Target module: `crates/openwepp-gate-planner/src/checkpoint_mirror.rs`
 Target rank: `3` of `7`
