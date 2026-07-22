@@ -11,6 +11,12 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260721-cqr-testgate-recovery-05-executor-001/` completed rank 5 of the
+  TESTGATE recovery CRAP burndown. Exact audit/stage/receipt and artifact-path
+  characterization closes the module at 92.96% line / 85.01% region coverage,
+  all 79 compiled functions meet the region floor, and no CRAP row exceeds 30.
+  Dual corrected review and verification passed without rerunning stale metric
+  evidence. Campaign-global TESTGATE remains deferred through ranks 6--7.
 - `20260721-cqr-testgate-recovery-04-resume-001/` completed rank 4 of the
   TESTGATE recovery CRAP burndown. Behavior-preserving recovery, attestation,
   and checkpoint decomposition closes all 29 production rows below CRAP 30;
@@ -237,6 +243,11 @@
 ## Current Active/Held Packages
 
 State as of `2026-07-21 UTC`:
+
+- `20260721-cqr-testgate-recovery-06-verifier-001/` -
+  EXECUTING: sixth of seven one-module CQR packages. It targets the one
+  actionable READY-audit receipt-verifier row; production edits remain blocked
+  until scaffold, dual eligibility review, baseline, and characterization.
 
 - `20260721-cqr-testgate-recovery-01-pre-heavy-001/` -
   COMPLETE: first of seven one-module CQR packages. All 13 `pre_heavy.rs`
