@@ -259,9 +259,10 @@ State as of `2026-07-22 UTC`:
   affected-quality validation to four CRAP-4 functions with exact precedence
   characterization and dual review/verification.
 
-- `20260722-cqr-nightly-b02-2-verifier-coverage-tests-001/` - ACTIVE: rank-two
-  characterization and behavior-preserving decomposition of recursive verifier
-  fixture string replacement.
+- `20260722-cqr-nightly-b02-2-verifier-coverage-tests-001/` -
+  EXECUTED-COMPLETE: decomposed recursive verifier fixture string replacement
+  to target CRAP 5 and helper CRAP 2, with full-source coverage, real-consumer
+  evidence, and dual review/verification.
 
 - `20260722-testgate-coverage-include-identity-recovery-001/` -
   EXECUTED-COMPLETE: closed RTR-043 at `11df7e1d` by moving the verifier

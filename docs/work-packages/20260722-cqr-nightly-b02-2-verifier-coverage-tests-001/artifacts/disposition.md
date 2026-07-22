@@ -10,3 +10,6 @@
 
 No source, review, or classification finding remains open. Final disposition
 and handoff remain pending dual terminal verification.
+
+Terminal update: both independent verifications passed at `1eea1158`; final
+disposition and handoff are authorized with no open finding.

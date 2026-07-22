@@ -1,7 +1,7 @@
 # CQR Nightly B02-2: Verifier Coverage Test Mutation
 
 Package: `20260722-cqr-nightly-b02-2-verifier-coverage-tests-001`
-Status: `ACTIVE`
+Status: `EXECUTED-COMPLETE-CQR-NIGHTLY`
 ExecPlan: `docs/work-packages/cqr-nightly-burndown-execplan.md`
 Nightly batch: `b02`
 Target module: `crates/openwepp-gate-planner/src/verifier_coverage_tests.rs`
@@ -76,3 +76,12 @@ dual terminal verification at correction `11df7e1d`.
 - Recursive mutation behavior and fixture consumers remain unchanged.
 - Focused characterization, formatting, Clippy, aggregate admission, dual
   review, and dual verification pass.
+
+## Completion
+
+Completed at verification head
+`1eea115804bc6a1d16052519b0e31412d9f612eb`. The target is CRAP 5 and all
+three helpers are CRAP 2 at measured 100% coverage. Direct characterization,
+the real verifier consumer, both implementation reviews, and both terminal
+verifications passed. The master ExecPlan now owns the single changed-head
+batch qualification.
