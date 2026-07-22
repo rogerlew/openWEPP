@@ -31,6 +31,18 @@ pub const CHECK_IDS: [&str; 10] = [
     "OPEN_TOOLING_DEFECTS",
 ];
 
+const FAILURE_CHECK_INDEX_RULES: &[(&[&str], usize)] = &[
+    (&["PACKAGE"], 0),
+    (&["LIGHT", "DOC", "LINE"], 1),
+    (&["INVENTORY", "PLAN"], 2),
+    (&["EXECUT", "CLAIM"], 3),
+    (&["ARTIFACT", "CHECKPOINT", "COLLISION"], 4),
+    (&["ROOT", "CACHE"], 5),
+    (&["COMBIN"], 6),
+    (&["ORDER", "RETRY", "HANDOFF"], 7),
+    (&["LEDGER"], 8),
+];
+
 /// An audit value constructed by the repository-owned implementation.
 ///
 /// The private field prevents execution APIs from accepting caller-synthesized
@@ -293,28 +305,15 @@ fn failure_status(failure: &GatePolicyError) -> &'static str {
 }
 
 fn failure_check_index(code: &str) -> usize {
-    if code.contains("PACKAGE") {
-        0
-    } else if code.contains("LIGHT") || code.contains("DOC") || code.contains("LINE") {
-        1
-    } else if code.contains("INVENTORY") || code.contains("PLAN") {
-        2
-    } else if code.contains("EXECUT") || code.contains("CLAIM") {
-        3
-    } else if code.contains("ARTIFACT") || code.contains("CHECKPOINT") || code.contains("COLLISION")
-    {
-        4
-    } else if code.contains("ROOT") || code.contains("CACHE") {
-        5
-    } else if code.contains("COMBIN") {
-        6
-    } else if code.contains("ORDER") || code.contains("RETRY") || code.contains("HANDOFF") {
-        7
-    } else if code.contains("LEDGER") {
-        8
-    } else {
-        9
-    }
+    FAILURE_CHECK_INDEX_RULES
+        .iter()
+        .find_map(|(tokens, index)| {
+            tokens
+                .iter()
+                .any(|token| code.contains(token))
+                .then_some(*index)
+        })
+        .unwrap_or(9)
 }
 
 /// Verify a READY audit against current plan, inventory and artifact identity.
@@ -740,18 +739,22 @@ fn is_digest(value: &str) -> bool {
 }
 
 fn light_stage_passed(plan: &Value, receipt: &Value) -> Result<()> {
-    for node in nodes(plan)? {
-        if node["execution_cost_class"] == "LIGHT" {
-            let id = string(node, "node_id")?;
-            if receipt["final_results"][id] != "PASS" {
-                return Err(audit_error(
-                    "GATE-AUDIT-LIGHT-NONPASS",
-                    format!("light node {id} did not pass"),
-                ));
-            }
-        }
+    nodes(plan)?
+        .iter()
+        .filter(|node| node["execution_cost_class"] == "LIGHT")
+        .try_for_each(|node| require_light_node_pass(node, receipt))
+}
+
+fn require_light_node_pass(node: &Value, receipt: &Value) -> Result<()> {
+    let id = string(node, "node_id")?;
+    if receipt["final_results"][id] == "PASS" {
+        Ok(())
+    } else {
+        Err(audit_error(
+            "GATE-AUDIT-LIGHT-NONPASS",
+            format!("light node {id} did not pass"),
+        ))
     }
-    Ok(())
 }
 
 fn cheap_prerequisites(repo: &Path, plan: &Value, receipt: &Value) -> Result<()> {
@@ -943,6 +946,13 @@ fn documentation_scope_is_exact(plan: &Value) -> Result<()> {
 }
 
 fn execution_identities(plan: &Value, receipt: &Value) -> Result<()> {
+    require_execution_context_digests(plan)?;
+    require_nonempty_execution_claims(receipt)?;
+    require_positive_execution_attempt(receipt)?;
+    require_executor_binary_digest(receipt)
+}
+
+fn require_execution_context_digests(plan: &Value) -> Result<()> {
     for field in [
         "configuration_sha256",
         "environment_manifest_sha256",
@@ -953,6 +963,10 @@ fn execution_identities(plan: &Value, receipt: &Value) -> Result<()> {
             return Err(audit_error("GATE-AUDIT-EXECUTION-IDENTITY", field));
         }
     }
+    Ok(())
+}
+
+fn require_nonempty_execution_claims(receipt: &Value) -> Result<()> {
     for field in [
         "principal",
         "repository",
@@ -966,6 +980,10 @@ fn execution_identities(plan: &Value, receipt: &Value) -> Result<()> {
             return Err(audit_error("GATE-AUDIT-EXECUTION-CLAIM", field));
         }
     }
+    Ok(())
+}
+
+fn require_positive_execution_attempt(receipt: &Value) -> Result<()> {
     if receipt["claims"]["attempt"]
         .as_u64()
         .is_none_or(|attempt| attempt == 0)
@@ -975,6 +993,10 @@ fn execution_identities(plan: &Value, receipt: &Value) -> Result<()> {
             "attempt must be positive",
         ));
     }
+    Ok(())
+}
+
+fn require_executor_binary_digest(receipt: &Value) -> Result<()> {
     if string(receipt, "executor_binary_sha256")?.len() != 64 {
         return Err(audit_error(
             "GATE-AUDIT-EXECUTION-IDENTITY",
@@ -1051,23 +1073,27 @@ fn separated_roots(plan: &Value) -> Result<()> {
 }
 
 fn valid_stage_order(plan: &Value) -> Result<()> {
-    let nodes = nodes(plan)?;
     let mut seen = BTreeSet::new();
-    for node in nodes {
-        let class = string(node, "execution_cost_class")?;
-        if !matches!(class, "LIGHT" | "HEAVY") {
-            return Err(audit_error("GATE-AUDIT-COST-CLASS", class));
-        }
-        for dependency in node["prerequisites"].as_array().into_iter().flatten() {
-            let dependency = dependency
-                .as_str()
-                .ok_or_else(|| audit_error("GATE-AUDIT-PREREQUISITE", "non-string prerequisite"))?;
-            if !seen.contains(dependency) {
-                return Err(audit_error("GATE-AUDIT-PREREQUISITE-ORDER", dependency));
-            }
-        }
-        seen.insert(string(node, "node_id")?);
+    for node in nodes(plan)? {
+        validate_node_stage_order(node, &mut seen)?;
     }
+    Ok(())
+}
+
+fn validate_node_stage_order(node: &Value, seen: &mut BTreeSet<String>) -> Result<()> {
+    let class = string(node, "execution_cost_class")?;
+    if !matches!(class, "LIGHT" | "HEAVY") {
+        return Err(audit_error("GATE-AUDIT-COST-CLASS", class));
+    }
+    for dependency in node["prerequisites"].as_array().into_iter().flatten() {
+        let dependency = dependency
+            .as_str()
+            .ok_or_else(|| audit_error("GATE-AUDIT-PREREQUISITE", "non-string prerequisite"))?;
+        if !seen.contains(dependency) {
+            return Err(audit_error("GATE-AUDIT-PREREQUISITE-ORDER", dependency));
+        }
+    }
+    seen.insert(string(node, "node_id")?.to_owned());
     Ok(())
 }
 
@@ -1211,16 +1237,31 @@ fn no_open_tooling_defect_at_head(path: &Path, expected_head: Option<&str>) -> R
 }
 
 fn validate_combined_decision(plan: &Value) -> Result<()> {
-    let definitions = nodes(plan)
+    let definitions = quality_definition_ids(plan);
+    if combined_decision_is_valid(&plan["combined_quality"], &definitions) {
+        Ok(())
+    } else {
+        Err(GatePolicyError::new(
+            ErrorClass::Identity,
+            "GATE-AUDIT-COMBINED-DAG-MISMATCH",
+            "combined-quality decision does not match the immutable DAG",
+        ))
+    }
+}
+
+fn quality_definition_ids(plan: &Value) -> BTreeSet<&str> {
+    nodes(plan)
         .unwrap_or(&[])
         .iter()
         .filter_map(|node| node["gate_definition_id"].as_str())
-        .collect::<BTreeSet<_>>();
-    let decision = &plan["combined_quality"];
+        .collect()
+}
+
+fn combined_decision_is_valid(decision: &Value, definitions: &BTreeSet<&str>) -> bool {
     let combined = definitions.contains("combined-workspace-quality-v1");
     let separate = definitions.contains("workspace-full-nextest-v1")
         && definitions.contains("adjudicated-crap-v1");
-    let valid = if decision["decision"] == "COMBINED" {
+    if decision["decision"] == "COMBINED" {
         combined
             && !separate
             && decision["accepted_proof_id"].as_str().is_some()
@@ -1232,15 +1273,6 @@ fn validate_combined_decision(plan: &Value) -> Result<()> {
         !combined && !separate && decision["accepted_proof_id"].is_null()
     } else {
         false
-    };
-    if valid {
-        Ok(())
-    } else {
-        Err(GatePolicyError::new(
-            ErrorClass::Identity,
-            "GATE-AUDIT-COMBINED-DAG-MISMATCH",
-            "combined-quality decision does not match the immutable DAG",
-        ))
     }
 }
 
