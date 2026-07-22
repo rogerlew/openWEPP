@@ -22,10 +22,12 @@ class Fixture:
         aggregate_status: str = "ACTIVE",
         cover_tests: bool = True,
         manifest_master: bool = True,
+        manifest_module: str = MODULE,
         module_paths: list[str] | None = None,
         module_suffix: str = "",
         scaffold_bindings: bool = True,
         use_canonical_template: bool = False,
+        write_master: bool = True,
     ) -> None:
         self.temporary = tempfile.TemporaryDirectory(prefix="cqr-aggregate-validator-")
         self.root = Path(self.temporary.name)
@@ -42,8 +44,12 @@ class Fixture:
         if cover_tests:
             patterns.append("tests/python/test_example.py")
         self.write(AGGREGATE, self.aggregate_text(aggregate_status, patterns))
-        self.write(MANIFEST, self.manifest_text(cover_tests, manifest_master))
-        self.write(MASTER, "# CQR Batch ExecPlan\n")
+        self.write(
+            MANIFEST,
+            self.manifest_text(cover_tests, manifest_master, manifest_module),
+        )
+        if write_master:
+            self.write(MASTER, "# CQR Batch ExecPlan\n")
         self.commit("aggregate scaffold")
         self.aggregate_scaffold = self.git("rev-parse", "HEAD")
         module_text = (
@@ -88,7 +94,11 @@ class Fixture:
         return f"# Aggregate\n\nStatus: `{status}`\n\n## Declared Write Set\n\n{bullets}\n"
 
     @staticmethod
-    def manifest_text(cover_tests: bool = True, include_master: bool = True) -> str:
+    def manifest_text(
+        cover_tests: bool = True,
+        include_master: bool = True,
+        module_package: str = MODULE,
+    ) -> str:
         required_paths = [
             "docs/work-packages/README.md",
             MODULE,
@@ -106,7 +116,7 @@ class Fixture:
                 "schema_version": "openwepp-cqr-aggregate-batch-v1",
                 "aggregate_package": AGGREGATE,
                 "master_execplan": MASTER,
-                "module_packages": [MODULE],
+                "module_packages": [module_package],
                 "required_paths": required_paths,
             },
             indent=2,
@@ -310,6 +320,18 @@ class AggregateAdmissionTests(unittest.TestCase):
         self.assert_failure(
             self.fixture(manifest_master=False).run(),
             "omits mandatory paths",
+        )
+
+    def test_rejects_invalid_manifest_module_package_path(self) -> None:
+        self.assert_failure(
+            self.fixture(manifest_module="docs/work-packages/not-a-package.md").run(),
+            "invalid module package paths",
+        )
+
+    def test_rejects_missing_master_execplan_at_aggregate_scaffold(self) -> None:
+        self.assert_failure(
+            self.fixture(write_master=False).run(),
+            "does not exist",
         )
 
 

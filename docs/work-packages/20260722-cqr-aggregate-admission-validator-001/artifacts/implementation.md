@@ -9,6 +9,8 @@ bindings/write-set recorded at that scaffold. The committed package-local batch
 manifest must bind the master ExecPlan, complete module package list, catalog,
 and all required paths; both the manifest and aggregate scaffold must cover the
 module plan. Its exact committed bytes must remain unchanged at current HEAD.
+Every manifest module entry must be a canonical package path, and the bound
+master ExecPlan must exist as a committed file at the aggregate scaffold.
 
 Static: the first dual review findings were accepted. The correction aligns the
 validator with the template's `Intended Write Set`, reads module authority at

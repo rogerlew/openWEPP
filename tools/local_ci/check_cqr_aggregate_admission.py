@@ -13,6 +13,7 @@ from pathlib import Path
 
 
 PACKAGE_RE = re.compile(r"^docs/work-packages/[^/]+/package\.md$")
+MASTER_EXECPLAN_RE = re.compile(r"^docs/work-packages/[^/]+\.md$")
 FIELD_RE = re.compile(r"^(?P<label>[^:]+):\s*`(?P<value>[^`]+)`\s*$")
 WRITE_SET_ITEM_RE = re.compile(r"^- `(?P<path>[^`]+)`$")
 MANIFEST_SCHEMA = "openwepp-cqr-aggregate-batch-v1"
@@ -39,6 +40,12 @@ def _git_text(repo: Path, revision: str, path: str) -> str:
     if not PACKAGE_RE.fullmatch(path):
         raise AdmissionError(f"invalid work-package path: {path}")
     return _git(repo, "show", f"{revision}:{path}")
+
+
+def _require_blob(repo: Path, revision: str, path: str, label: str) -> None:
+    object_type = _git(repo, "cat-file", "-t", f"{revision}:{path}")
+    if object_type != "blob":
+        raise AdmissionError(f"{label} is not a committed file: {path}")
 
 
 def _section(text: str, heading: str) -> list[str]:
@@ -218,6 +225,16 @@ def validate(
         raise AdmissionError("module and batch manifest master ExecPlan differ")
     module_packages = _string_paths(manifest.get("module_packages"), "module_packages")
     required_paths = _string_paths(manifest.get("required_paths"), "required_paths")
+    invalid_module_packages = [
+        path for path in module_packages if PACKAGE_RE.fullmatch(path) is None
+    ]
+    if invalid_module_packages:
+        raise AdmissionError(
+            f"batch manifest has invalid module package paths: {invalid_module_packages}"
+        )
+    if MASTER_EXECPLAN_RE.fullmatch(master_execplan) is None:
+        raise AdmissionError("master ExecPlan path is not canonical")
+    _require_blob(repo, aggregate_scaffold, master_execplan, "master ExecPlan")
     if module_package not in module_packages:
         raise AdmissionError("module package is absent from aggregate batch manifest")
     mandatory = [
