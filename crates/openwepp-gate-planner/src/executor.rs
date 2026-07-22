@@ -1991,7 +1991,7 @@ fn execution_error(code: &'static str, message: impl Into<String>) -> GatePolicy
 mod coverage_tests;
 
 #[cfg(test)]
-mod tests {
+pub(crate) mod tests {
     use std::collections::BTreeSet;
     use std::fs;
     use std::path::{Path, PathBuf};
@@ -2016,10 +2016,10 @@ mod tests {
 
     static TEMP_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
-    pub(super) struct TempDirectory(PathBuf);
+    pub(crate) struct TempDirectory(PathBuf);
 
     impl TempDirectory {
-        pub(super) fn new(label: &str) -> Self {
+        pub(crate) fn new(label: &str) -> Self {
             let sequence = TEMP_SEQUENCE.fetch_add(1, Ordering::Relaxed);
             let path = std::env::temp_dir().join(format!(
                 "openwepp-gate-executor-{label}-{}-{sequence}",
@@ -2029,7 +2029,7 @@ mod tests {
             Self(path)
         }
 
-        pub(super) fn path(&self) -> &Path {
+        pub(crate) fn path(&self) -> &Path {
             &self.0
         }
     }
@@ -2073,7 +2073,7 @@ mod tests {
             .expect("canonical source repository")
     }
 
-    pub(super) fn gate_definition(id: &str, arguments: &[&str], prerequisites: &[&str]) -> Value {
+    pub(crate) fn gate_definition(id: &str, arguments: &[&str], prerequisites: &[&str]) -> Value {
         let inventory_source = if id == "affected-adjudicated-crap-v1" {
             "NEXTEST_PACKAGES"
         } else {
@@ -2168,7 +2168,7 @@ mod tests {
         clippy::too_many_lines,
         reason = "the isolated repository fixture declares the complete policy wire contract"
     )]
-    pub(super) fn execution_fixture(label: &str, definitions: &[Value]) -> (TempDirectory, Value) {
+    pub(crate) fn execution_fixture(label: &str, definitions: &[Value]) -> (TempDirectory, Value) {
         let repo = TempDirectory::new(label);
         fs::create_dir_all(repo.path().join("src")).expect("create source directory");
         fs::create_dir_all(repo.path().join("docs/standards")).expect("create standards directory");
