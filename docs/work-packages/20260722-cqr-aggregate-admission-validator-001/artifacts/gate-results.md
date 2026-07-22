@@ -15,9 +15,11 @@ compilation and diff hygiene pass.
 Ran: scoped `markdown-doc lint` passes with zero errors and warnings for all
 five changed Markdown authority/tooling files.
 
-Ran: canonical package admission from immutable scaffold `86b15053` is `READY`
-with zero unauthorized paths and audit ID
-`41b7a5aedc13209dcd891c1228fa2ad5f1173a616417c50eec494496af1625f0`.
+Ran: final qualification-head package admission from immutable scaffold
+`86b15053` is `READY` with zero unauthorized paths and audit ID
+`70e531ad4c7e23652ec86154ba98291d151bee7942054a02a70c62790617dd17`.
+The earlier implementation-review audit ID was `41b7a5ae...1625f0` before
+recovery closeout documentation entered the authorized diff.
 
 Static: dual renewed implementation reviews pass at exact correction commit
 `5f47695e8fc521f9c2f1d28ac0e6c5db6bf02ff8`. RTR-031 is closed in the durable
