@@ -395,7 +395,14 @@ def _validated_scope_artifact(
     scope_path: Path, repo_root: Path, requested_packages: set[str]
 ) -> tuple[dict[str, list[str]], str]:
     supplied_bytes = scope_path.read_bytes()
-    supplied = _read_json(scope_path)
+    try:
+        supplied = json.loads(supplied_bytes)
+    except json.JSONDecodeError as error:
+        raise GateInputError(
+            f"affected package scope is invalid JSON: {error}"
+        ) from error
+    if not isinstance(supplied, dict):
+        raise GateInputError("affected package scope root must be an object")
     expected = resolve_measurement_packages(repo_root, requested_packages)
     if supplied != expected:
         raise GateInputError(
@@ -406,7 +413,7 @@ def _validated_scope_artifact(
         raise GateInputError(
             "affected package scope bytes changed after canonical preflight"
         )
-    return expected, _sha256(scope_path)
+    return expected, _sha256_bytes(supplied_bytes)
 
 
 def _safe_registry_path(raw_path: Any, repo_root: Path, field: str) -> tuple[str, Path]:

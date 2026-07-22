@@ -14,7 +14,11 @@ compilation, coverage cleaning, or instrumented Nextest. Valid scope JSON is
 retained as `affected-package-scope.json`. Final adjudication revalidates those
 exact bytes against current locked/offline metadata and binds their SHA-256 in
 acquisition provenance. All three driver adapters bind SHA-256
-`ebb0d373b3e76b70013c79cf5baf8640c409df06c70e198e2c22bd1a193a6bb4`.
+`4d475967b2b3fd35b7ea167bf8c9b60e0160e3329b1467243f1e31ebad557e2b`.
+
+Static: final validation parses and hashes one in-memory byte buffer. The driver
+also compares that preflight digest again immediately before PASS publication,
+so an acquisition-time rewrite fails closed.
 
 Static: planner escalation is outside the immutable write set. RTR-035 remains
 open for a fresh prerequisite package that selects global rather than affected

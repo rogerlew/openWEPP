@@ -317,6 +317,14 @@ if [[ "${SCOPE}" == "affected" ]]; then
   done
   "${PYTHON_BIN}" "${CHECKER}" "${SCOPE_CHECK_ARGS[@]}" \
     > "${OUTPUT_DIR}/affected-package-scope.json"
+  SCOPE_SHA256="$("${PYTHON_BIN}" - "${OUTPUT_DIR}/affected-package-scope.json" <<'PY'
+import hashlib
+import pathlib
+import sys
+
+print(hashlib.sha256(pathlib.Path(sys.argv[1]).read_bytes()).hexdigest())
+PY
+)"
 fi
 if [[ -z "${CARGO_TARGET_DIR:-}" ]]; then
   CARGO_TARGET_DIR="${OUTPUT_DIR}/cargo-target"
@@ -581,6 +589,20 @@ fi
 if ! cmp -s "${ADJUDICATIONS}" "${OUTPUT_DIR}/adjudication-registry.json"; then
   echo "ERROR: adjudication registry changed before report publication" >&2
   exit 2
+fi
+if [[ "${SCOPE}" == "affected" ]]; then
+  FINAL_SCOPE_SHA256="$("${PYTHON_BIN}" - "${OUTPUT_DIR}/affected-package-scope.json" <<'PY'
+import hashlib
+import pathlib
+import sys
+
+print(hashlib.sha256(pathlib.Path(sys.argv[1]).read_bytes()).hexdigest())
+PY
+)"
+  if [[ "${FINAL_SCOPE_SHA256}" != "${SCOPE_SHA256}" ]]; then
+    echo "ERROR: affected package scope changed before report publication" >&2
+    exit 2
+  fi
 fi
 if [[ "${CHECK_STATUS}" -ne 0 ]]; then
   exit "${CHECK_STATUS}"

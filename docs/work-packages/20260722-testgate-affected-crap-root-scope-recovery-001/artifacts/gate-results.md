@@ -18,6 +18,14 @@ Python byte compilation and diff hygiene pass.
 Ran: package audit is `READY` with zero unauthorized paths; audit ID
 `2f552572ba88a19143528484fa80eb5d2dbd15d2fc6f11dd0112be72e0949914`.
 
+Ran: the complete corrected checker increment through `be5b5da8` has a
+reconstructed `READY` audit with zero unauthorized paths, ID
+`844016abc54ec8cb94d2d3d678cbe97427d75d1b092c4cbc44c272562dff336e`.
+
+Ran: the single-buffer/final-publication correction passes the 30-case Python
+suite in 27.279 seconds, Bash syntax, the 19-case executor/policy integration
+targets in 61.303 seconds, and target Clippy with warnings denied.
+
 Ran: direct evaluation of the retained root-package CRAP JSON against the full
 production dependency set reports 1,533 actionable rows. This static retained
 evaluation proves dependency expansion cannot provide valid affected closure;
