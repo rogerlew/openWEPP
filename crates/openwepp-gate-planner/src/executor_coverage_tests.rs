@@ -24,58 +24,74 @@ fn affected_quality_fixture() -> (Value, Value, Vec<Value>) {
     (scope, affected.clone(), vec![affected])
 }
 
+fn assert_quality_scope_error(
+    scope: &Value,
+    affected: &Value,
+    nodes: &[Value],
+    code: &'static str,
+    message: &str,
+) {
+    let error = super::validate_affected_quality_scope(scope, affected, nodes)
+        .expect_err("invalid affected quality scope");
+    assert_eq!(error.code, code);
+    assert_eq!(error.message, message);
+}
+
 #[test]
 fn affected_quality_scope_preserves_success_and_error_precedence() {
     let (scope, affected, nodes) = affected_quality_fixture();
     super::validate_affected_quality_scope(&scope, &affected, &nodes)
         .expect("complete affected quality scope");
 
-    let mut incomplete = scope.clone();
-    incomplete["completeness"] = json!("PARTIAL");
-    assert_eq!(
-        super::validate_affected_quality_scope(&incomplete, &affected, &nodes)
-            .expect_err("incomplete scope must fail first")
-            .code,
-        "GATE-EXEC-QUALITY-INCOMPLETE"
+    let mut invalid = scope.clone();
+    invalid["completeness"] = json!("PARTIAL");
+    invalid["production_packages"] = json!(["alpha"]);
+    invalid["covering_node_ids"] = json!(["missing"]);
+    invalid["covering_inventory_ids"] = json!([]);
+    assert_quality_scope_error(
+        &invalid,
+        &affected,
+        &nodes,
+        "GATE-EXEC-QUALITY-INCOMPLETE",
+        "affected quality requires complete contribution evidence",
     );
 
-    let mut packages = scope.clone();
-    packages["production_packages"] = json!(["alpha"]);
-    assert_eq!(
-        super::validate_affected_quality_scope(&packages, &affected, &nodes)
-            .expect_err("package mismatch")
-            .code,
-        "GATE-EXEC-QUALITY-PACKAGES"
+    invalid["completeness"] = json!("COMPLETE");
+    assert_quality_scope_error(
+        &invalid,
+        &affected,
+        &nodes,
+        "GATE-EXEC-QUALITY-PACKAGES",
+        "affected measurement arguments differ from terminal production packages",
     );
 
-    let mut covering = scope.clone();
-    covering["covering_node_ids"] = json!(["missing"]);
-    assert_eq!(
-        super::validate_affected_quality_scope(&covering, &affected, &nodes)
-            .expect_err("missing covering node")
-            .code,
-        "GATE-EXEC-QUALITY-COVERING-NODES"
+    invalid["production_packages"] = scope["production_packages"].clone();
+    assert_quality_scope_error(
+        &invalid,
+        &affected,
+        &nodes,
+        "GATE-EXEC-QUALITY-COVERING-NODES",
+        "covering node identity is not the combined affected measurement",
+    );
+
+    invalid["covering_node_ids"] = scope["covering_node_ids"].clone();
+    assert_quality_scope_error(
+        &invalid,
+        &affected,
+        &nodes,
+        "GATE-EXEC-QUALITY-INVENTORY",
+        "covering inventory differs from terminal package test closure",
     );
 
     let mut wrong_gate_nodes = nodes.clone();
     wrong_gate_nodes[0]["gate_definition_id"] = json!("adjudicated-crap-v1");
-    assert_eq!(
-        super::validate_affected_quality_scope(&scope, &affected, &wrong_gate_nodes)
-            .expect_err("wrong covering gate")
-            .code,
-        "GATE-EXEC-QUALITY-COVERING-NODES"
+    assert_quality_scope_error(
+        &scope,
+        &affected,
+        &wrong_gate_nodes,
+        "GATE-EXEC-QUALITY-COVERING-NODES",
+        "covering node identity is not the combined affected measurement",
     );
-
-    for inventory in [json!(["case-a"]), json!([])] {
-        let mut mismatched = scope.clone();
-        mismatched["covering_inventory_ids"] = inventory;
-        assert_eq!(
-            super::validate_affected_quality_scope(&mismatched, &affected, &nodes)
-                .expect_err("inventory mismatch")
-                .code,
-            "GATE-EXEC-QUALITY-INVENTORY"
-        );
-    }
 }
 
 struct DurableLedger(PathBuf);
