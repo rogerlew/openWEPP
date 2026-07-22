@@ -32,3 +32,18 @@ LCOV `c82c50ca2b6d4f5c76c9c7626abe49448a686f3bece96fcc75b509b188d18f0b`;
 CRAP JSON `f8850edf3828d313fd6e36e305888c87faa118e7797bf3b71f64aa87d0a778f8`.
 The target-only LCOV warns about source files outside the measured package; that
 is expected and does not affect the included `pre_heavy.rs` rows.
+
+## Final CRAP Closure
+
+Ran: exact-head measurement at `f1774586800525dd2339ac836349f252166d74ca`
+and source SHA
+`b7548382fc19ddaca3e2275cd4abeca4ed82abdc100ac38471ef1ee4727bf842`
+passed 105/105 instrumented library tests in 455.79 seconds (469.84 seconds
+wall). Matching CRAP exited 0 with zero target rows above 30 and a maximum of
+exactly 30. Evidence root:
+`/tmp/cqr-pre-heavy-final-yzFYI4`.
+
+LCOV SHA-256:
+`72a1f014d7ba0d7d3835f4adca9dc2585b03237ad5af1cb2a19f05c88f09ba38`.
+CRAP JSON SHA-256:
+`d30084ed51f2d6b29cdf5a92668acc2a48e679921c9e509f725f65d8783b6bb2`.
