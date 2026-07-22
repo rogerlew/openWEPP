@@ -13,5 +13,5 @@
 | first post-change metric | FAIL-CORRECTED | `7faa45f9`; retained, not rerun/reused |
 | receipt/reuse corrected metric | HISTORICAL-PASS | `47eb418d`; staled by later test-isolation correction |
 | authoritative isolation metric | PASS | `9c0db17d`; 125 pass, both checkpoint tests; lines 92.38%, regions 85.50%, floor 29/29, CRAP max 25.3961 |
-| dual terminal verification | PENDING-FINAL-RECORD | technical evidence passed; durable lineage blocker corrected in this increment |
+| dual terminal verification | PASS | independent A/B at exact clean evidence commit `513acc64`; no rerun |
 | campaign-global TESTGATE | DEFERRED-MASTER | master owns it after all seven packages close |

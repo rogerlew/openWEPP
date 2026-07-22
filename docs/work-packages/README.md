@@ -11,6 +11,14 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260721-cqr-testgate-recovery-04-resume-001/` completed rank 4 of the
+  TESTGATE recovery CRAP burndown. Behavior-preserving recovery, attestation,
+  and checkpoint decomposition closes all 29 production rows below CRAP 30;
+  exact matching-module coverage is 92.38% line / 85.50% region with every
+  function above the 75% floor. A fresh review found and closed same-process
+  fixture isolation before renewed exact-head metrics and dual terminal
+  verification passed. Campaign-global TESTGATE remains deferred through ranks
+  5--7.
 - `20260719-canopy-phenology-native-integration-001/` completed
   `CANOPY-PHENOLOGY-02` on 2026-07-20. Native deciduous, mixed, and evergreen
   canopy, LAI, biomass, litter, YAML, and real snow/ET/interception/residue/
