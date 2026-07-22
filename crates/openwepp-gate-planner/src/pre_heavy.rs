@@ -1417,7 +1417,7 @@ fn valid_stage_order(plan: &Value) -> Result<()> {
     Ok(())
 }
 
-fn validate_node_stage_order(node: &Value, seen: &mut BTreeSet<String>) -> Result<()> {
+fn validate_node_stage_order<'a>(node: &'a Value, seen: &mut BTreeSet<&'a str>) -> Result<()> {
     let class = string(node, "execution_cost_class")?;
     if !matches!(class, "LIGHT" | "HEAVY") {
         return Err(audit_error("GATE-AUDIT-COST-CLASS", class));
@@ -1430,7 +1430,7 @@ fn validate_node_stage_order(node: &Value, seen: &mut BTreeSet<String>) -> Resul
             return Err(audit_error("GATE-AUDIT-PREREQUISITE-ORDER", dependency));
         }
     }
-    seen.insert(string(node, "node_id")?.to_owned());
+    seen.insert(string(node, "node_id")?);
     Ok(())
 }
 
