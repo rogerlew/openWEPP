@@ -288,8 +288,8 @@ fn assert_receipt_runtime_guards() {
     assert!(cli.contains("pre-heavy-audit"));
     assert!(cli.contains("validate-package"));
     assert!(cli.contains("Some(\"FAIL\" | \"BLOCKED\" | \"INVALID\")"));
-    assert!(cli.contains("reconcile_orphaned_attempts(&ledger).map(|_| ())"));
-    assert!(cli.contains("&started_entry_sha256"));
+    assert!(cli.contains("reconcile_orphaned_attempts(ledger).map(|_| ())"));
+    assert!(cli.contains("&context.started_entry_sha256"));
     assert!(cli.contains("verify_receipt_after_ready_audit("));
     assert!(cli.contains("trusted_transition_command("));
     assert!(cli.contains("GATE-EXEC-AUDIT-UNAUTHENTICATED"));

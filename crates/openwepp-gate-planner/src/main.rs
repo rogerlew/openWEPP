@@ -17,25 +17,95 @@ use openwepp_gate_planner::pre_heavy::{
     validate_resume_ledger,
 };
 use openwepp_gate_planner::repository::{ObservedSource, observe_committed, observe_dirty};
-use openwepp_gate_planner::resume::load_candidate_after_ready_audit;
+use openwepp_gate_planner::resume::{ResumeCandidate, load_candidate_after_ready_audit};
 use openwepp_gate_planner::verifier::{
     DirectoryArtifacts, verify_receipt, verify_receipt_after_ready_audit, verify_receipt_envelope,
 };
 use serde_json::{Value, json};
 
 type CommandHandler = fn(&Path, &BTreeMap<String, String>) -> Result<Value>;
+type CommandDefinition = (&'static str, CommandHandler, &'static [&'static str]);
 
-const COMMANDS: [(&str, CommandHandler); 10] = [
-    ("plan", plan_command),
-    ("run", run_command),
-    ("verify-receipt", receipt_command),
-    ("verify-receipt-envelope", receipt_envelope_command),
-    ("verify-ledger", ledger_command),
-    ("verify-assurance", assurance_command),
-    ("reconcile", reconcile_command),
-    ("pre-heavy-audit", pre_heavy_audit_command),
-    ("validate-package", validate_package_command),
-    ("reconcile-attempts", reconcile_attempts_command),
+const RECEIPT_OPTIONS: &[&str] = &["repo", "plan", "receipt", "artifact-root"];
+const COMMANDS: [CommandDefinition; 10] = [
+    (
+        "plan",
+        plan_command,
+        &[
+            "repo",
+            "stage",
+            "base",
+            "head",
+            "boundary",
+            "campaign",
+            "combined-proof-id",
+            "output",
+            "predecessor",
+            "authorized-paths",
+        ],
+    ),
+    (
+        "run",
+        run_command,
+        &[
+            "repo",
+            "plan",
+            "artifact-root",
+            "output",
+            "principal",
+            "repository",
+            "source-event",
+            "source-ref",
+            "workflow",
+            "job",
+            "runner",
+            "attempt",
+            "stage",
+            "audit",
+            "resume",
+            "light-output",
+            "audit-output",
+        ],
+    ),
+    ("verify-receipt", receipt_command, RECEIPT_OPTIONS),
+    (
+        "verify-receipt-envelope",
+        receipt_envelope_command,
+        RECEIPT_OPTIONS,
+    ),
+    (
+        "verify-ledger",
+        ledger_command,
+        &["repo", "ledger", "predecessor"],
+    ),
+    ("verify-assurance", assurance_command, &["repo", "record"]),
+    (
+        "reconcile",
+        reconcile_command,
+        &["repo", "intent", "terminal"],
+    ),
+    (
+        "pre-heavy-audit",
+        pre_heavy_audit_command,
+        &[
+            "repo",
+            "plan",
+            "light-receipts",
+            "artifact-root",
+            "ledger",
+            "output",
+        ],
+    ),
+    (
+        "validate-package",
+        validate_package_command,
+        &["repo", "base", "package", "output"],
+    ),
+    (
+        "reconcile-attempts",
+        reconcile_attempts_command,
+        &["repo", "ledger"],
+    ),
 ];
 
 fn main() {
@@ -81,66 +151,16 @@ fn run_arguments(arguments: impl IntoIterator<Item = String>) -> Result<Value> {
 }
 
 fn dispatch(command: &str, repo: &Path, options: &BTreeMap<String, String>) -> Result<Value> {
-    let handler = COMMANDS
+    let (handler, allowed) = COMMANDS
         .iter()
-        .find(|(name, _)| *name == command)
-        .map(|(_, handler)| *handler)
+        .find(|(name, _, _)| *name == command)
+        .map(|(_, handler, allowed)| (*handler, *allowed))
         .ok_or_else(usage_error)?;
-    reject_unknown_options(command, options)?;
+    reject_unknown_options(options, allowed)?;
     handler(repo, options)
 }
 
-fn reject_unknown_options(command: &str, options: &BTreeMap<String, String>) -> Result<()> {
-    let allowed: &[&str] = match command {
-        "plan" => &[
-            "repo",
-            "stage",
-            "base",
-            "head",
-            "boundary",
-            "campaign",
-            "combined-proof-id",
-            "output",
-            "predecessor",
-            "authorized-paths",
-        ],
-        "run" => &[
-            "repo",
-            "plan",
-            "artifact-root",
-            "output",
-            "principal",
-            "repository",
-            "source-event",
-            "source-ref",
-            "workflow",
-            "job",
-            "runner",
-            "attempt",
-            "stage",
-            "audit",
-            "resume",
-            "light-output",
-            "audit-output",
-        ],
-        "pre-heavy-audit" => &[
-            "repo",
-            "plan",
-            "light-receipts",
-            "artifact-root",
-            "ledger",
-            "output",
-        ],
-        "validate-package" => &["repo", "base", "package", "output"],
-        "reconcile-attempts" => &["repo", "ledger"],
-        "reconcile" => &["repo", "intent", "terminal"],
-        "verify-receipt" | "verify-receipt-envelope" => {
-            &["repo", "plan", "receipt", "artifact-root"]
-        }
-        "verify-ledger" => &["repo", "ledger", "predecessor"],
-        "verify-assurance" => &["repo", "record"],
-        _ => return Err(usage_error()),
-    };
+fn reject_unknown_options(options: &BTreeMap<String, String>, allowed: &[&str]) -> Result<()> {
     if options.keys().all(|key| allowed.contains(&key.as_str())) {
         Ok(())
     } else {
@@ -201,15 +221,33 @@ fn trusted_transition_command(
     artifact_root: &Path,
     claims: &ExecutionClaims,
 ) -> Result<Value> {
+    let ledger = prepare_transition(repo, options)?;
+    let light = execute_light_transition(repo, options, plan, artifact_root, claims, &ledger)?;
+    let audit = construct_transition_audit(repo, options, plan, &light, artifact_root, &ledger)?;
+    finish_transition(repo, options, plan, artifact_root, claims, &ledger, &audit)
+}
+
+fn prepare_transition(repo: &Path, options: &BTreeMap<String, String>) -> Result<PathBuf> {
     validate_transition_outputs(repo, options)?;
     let ledger = PathBuf::from(required(options, "resume")?);
     admit_attempt_ledger(&ledger)?;
     reconcile_orphaned_attempts(&ledger)?;
+    Ok(ledger)
+}
+
+fn execute_light_transition(
+    repo: &Path,
+    options: &BTreeMap<String, String>,
+    plan: &Value,
+    artifact_root: &Path,
+    claims: &ExecutionClaims,
+    ledger: &Path,
+) -> Result<Value> {
     let light_started = Instant::now();
     let light = execute_plan_stage(repo, plan, artifact_root, claims, "LIGHT", None, None)?;
     persist_named(repo, options, "light-output", &light)?;
     append_attempt_record(
-        &ledger,
+        ledger,
         json!({
             "record_type": "STAGE_ATTEMPT",
             "status": "CLOSED",
@@ -221,8 +259,31 @@ fn trusted_transition_command(
             "wall_time_ms": elapsed_millis(&light_started),
         }),
     )?;
-    let audit = construct_audit(repo, plan, &light, artifact_root, &ledger)?;
+    Ok(light)
+}
+
+fn construct_transition_audit(
+    repo: &Path,
+    options: &BTreeMap<String, String>,
+    plan: &Value,
+    light: &Value,
+    artifact_root: &Path,
+    ledger: &Path,
+) -> Result<ConstructedAudit> {
+    let audit = construct_audit(repo, plan, light, artifact_root, ledger)?;
     persist_named(repo, options, "audit-output", audit.as_value())?;
+    Ok(audit)
+}
+
+fn finish_transition(
+    repo: &Path,
+    options: &BTreeMap<String, String>,
+    plan: &Value,
+    artifact_root: &Path,
+    claims: &ExecutionClaims,
+    ledger: &Path,
+    audit: &ConstructedAudit,
+) -> Result<Value> {
     if audit.as_value()["status"] != "READY" {
         return Ok(json!({
             "result": audit.as_value()["status"],
@@ -231,7 +292,7 @@ fn trusted_transition_command(
             "stage": "AUDIT"
         }));
     }
-    trusted_heavy_run(repo, options, plan, artifact_root, claims, &ledger, &audit)
+    trusted_heavy_run(repo, options, plan, artifact_root, claims, ledger, audit)
 }
 
 #[cfg(target_os = "linux")]
@@ -279,10 +340,6 @@ fn validate_transition_outputs(_repo: &Path, _options: &BTreeMap<String, String>
     ))
 }
 
-#[allow(
-    clippy::too_many_lines,
-    reason = "HEAVY admission, execution, and terminal ledger reconciliation are one transaction"
-)]
 fn trusted_heavy_run(
     repo: &Path,
     options: &BTreeMap<String, String>,
@@ -292,115 +349,216 @@ fn trusted_heavy_run(
     ledger: &Path,
     audit: &ConstructedAudit,
 ) -> Result<Value> {
+    let inputs = HeavyAttemptInputs {
+        repo,
+        options,
+        plan,
+        artifact_root,
+        claims,
+        ledger,
+        audit,
+    };
+    let context = begin_heavy_attempt(&inputs)?;
+    let outcome = execute_heavy_attempt(&inputs, &context.started_entry_sha256);
+    finish_heavy_attempt(outcome, &inputs, &context)
+}
+
+struct HeavyAttemptInputs<'a> {
+    repo: &'a Path,
+    options: &'a BTreeMap<String, String>,
+    plan: &'a Value,
+    artifact_root: &'a Path,
+    claims: &'a ExecutionClaims,
+    ledger: &'a Path,
+    audit: &'a ConstructedAudit,
+}
+
+struct HeavyAttemptContext {
+    started: Instant,
+    recovery_root: Value,
+    submitted_audit_id: Value,
+    started_entry_sha256: String,
+}
+
+fn begin_heavy_attempt(inputs: &HeavyAttemptInputs<'_>) -> Result<HeavyAttemptContext> {
     let started = Instant::now();
     let recovery_root = std::env::var_os("OPENWEPP_GATE_CHECKPOINT_MIRROR_ROOT")
         .map(PathBuf::from)
         .map_or(Value::Null, |path| json!(path.display().to_string()));
-    let submitted_audit_id = audit.as_value()["audit_id"].clone();
+    let submitted_audit_id = inputs.audit.as_value()["audit_id"].clone();
     let started_entry_sha256 = append_attempt_record(
-        ledger,
+        inputs.ledger,
         json!({
             "record_type": "STAGE_ATTEMPT",
             "status": "STARTED",
             "stage": "HEAVY",
-            "plan_id": plan["plan_id"],
+            "plan_id": inputs.plan["plan_id"],
             "audit_id": submitted_audit_id,
             "phase": "ADMISSION",
-            "artifact_root": artifact_root.display().to_string(),
+            "artifact_root": inputs.artifact_root.display().to_string(),
             "recovery_root": recovery_root,
-            "workflow": claims.workflow,
-            "job": claims.job,
-            "runner": claims.runner,
-            "attempt": claims.attempt,
+            "workflow": inputs.claims.workflow,
+            "job": inputs.claims.job,
+            "runner": inputs.claims.runner,
+            "attempt": inputs.claims.attempt,
         }),
     )?;
-    let execute = || -> Result<Value> {
-        validate_resume_ledger(
-            repo,
-            plan,
-            audit.as_value(),
-            artifact_root,
-            ledger,
-            &started_entry_sha256,
-            claims,
-        )?;
-        let resume_candidate = load_candidate_after_ready_audit(repo, plan, ledger, claims, audit)?;
-        let receipt = execute_plan_stage(
-            repo,
-            plan,
-            artifact_root,
-            claims,
-            "HEAVY",
-            Some(audit),
-            resume_candidate.as_ref(),
-        )?;
-        verify_receipt_after_ready_audit(
-            repo,
-            plan,
-            &receipt,
-            &DirectoryArtifacts::new(artifact_root.to_owned()),
-        )?;
-        let output = persist_plan(repo, options, &receipt)?;
-        Ok(json!({
-            "result": receipt["result"],
-            "receipt_id": receipt["receipt_id"],
-            "output": output,
-            "stage": "HEAVY"
-        }))
-    };
-    match execute() {
-        Ok(value) => {
-            append_attempt_record(
-                ledger,
-                json!({
-                    "record_type": "STAGE_ATTEMPT",
-                    "status": "CLOSED",
-                    "stage": "HEAVY",
-                    "plan_id": plan["plan_id"],
-                    "audit_id": submitted_audit_id,
-                    "artifact_root": artifact_root.display().to_string(),
-                    "recovery_root": recovery_root,
-                    "workflow": claims.workflow,
-                    "job": claims.job,
-                    "runner": claims.runner,
-                    "attempt": claims.attempt,
-                    "receipt_id": value["receipt_id"],
-                    "result": value["result"],
-                    "wall_time_ms": elapsed_millis(&started),
-                    "started_entry_sha256": started_entry_sha256,
-                }),
-            )?;
-            Ok(value)
-        }
-        Err(error) => {
-            let cause_key = error.code;
-            record_heavy_failure(
-                ledger,
-                json!({
-                    "record_type": "STAGE_ATTEMPT",
-                    "status": "FAILED",
-                    "stage": "HEAVY",
-                    "plan_id": plan["plan_id"],
-                    "audit_id": submitted_audit_id,
-                    "artifact_root": artifact_root.display().to_string(),
-                    "recovery_root": recovery_root,
-                    "workflow": claims.workflow,
-                    "job": claims.job,
-                    "runner": claims.runner,
-                    "attempt": claims.attempt,
-                    "result": null,
-                    "error_code": error.code,
-                    "error_message": error.message,
-                    "cause_key": cause_key,
-                    "failure_class": if cause_key.contains("SPAWN") || cause_key.contains("TIMEOUT") || cause_key.contains("RUNNER") {"INFRASTRUCTURE"} else {"TOOLING"},
-                    "wall_time_ms": elapsed_millis(&started),
-                    "started_entry_sha256": started_entry_sha256,
-                }),
-                cause_key,
-            )?;
-            Err(error)
-        }
+    Ok(HeavyAttemptContext {
+        started,
+        recovery_root,
+        submitted_audit_id,
+        started_entry_sha256,
+    })
+}
+
+fn execute_heavy_attempt(
+    inputs: &HeavyAttemptInputs<'_>,
+    started_entry_sha256: &str,
+) -> Result<Value> {
+    let resume_candidate = admit_heavy_resume(
+        inputs.repo,
+        inputs.plan,
+        inputs.artifact_root,
+        inputs.claims,
+        inputs.ledger,
+        inputs.audit,
+        started_entry_sha256,
+    )?;
+    execute_and_verify_heavy(
+        inputs.repo,
+        inputs.options,
+        inputs.plan,
+        inputs.artifact_root,
+        inputs.claims,
+        inputs.audit,
+        resume_candidate.as_ref(),
+    )
+}
+
+fn admit_heavy_resume(
+    repo: &Path,
+    plan: &Value,
+    artifact_root: &Path,
+    claims: &ExecutionClaims,
+    ledger: &Path,
+    audit: &ConstructedAudit,
+    started_entry_sha256: &str,
+) -> Result<Option<ResumeCandidate>> {
+    validate_resume_ledger(
+        repo,
+        plan,
+        audit.as_value(),
+        artifact_root,
+        ledger,
+        started_entry_sha256,
+        claims,
+    )?;
+    load_candidate_after_ready_audit(repo, plan, ledger, claims, audit)
+}
+
+fn execute_and_verify_heavy(
+    repo: &Path,
+    options: &BTreeMap<String, String>,
+    plan: &Value,
+    artifact_root: &Path,
+    claims: &ExecutionClaims,
+    audit: &ConstructedAudit,
+    resume_candidate: Option<&ResumeCandidate>,
+) -> Result<Value> {
+    let receipt = execute_plan_stage(
+        repo,
+        plan,
+        artifact_root,
+        claims,
+        "HEAVY",
+        Some(audit),
+        resume_candidate,
+    )?;
+    verify_receipt_after_ready_audit(
+        repo,
+        plan,
+        &receipt,
+        &DirectoryArtifacts::new(artifact_root.to_owned()),
+    )?;
+    let output = persist_plan(repo, options, &receipt)?;
+    Ok(json!({
+        "result": receipt["result"],
+        "receipt_id": receipt["receipt_id"],
+        "output": output,
+        "stage": "HEAVY"
+    }))
+}
+
+fn finish_heavy_attempt(
+    outcome: Result<Value>,
+    inputs: &HeavyAttemptInputs<'_>,
+    context: &HeavyAttemptContext,
+) -> Result<Value> {
+    match outcome {
+        Ok(value) => close_heavy_attempt(value, inputs, context),
+        Err(error) => fail_heavy_attempt(error, inputs, context),
     }
+}
+
+fn close_heavy_attempt(
+    value: Value,
+    inputs: &HeavyAttemptInputs<'_>,
+    context: &HeavyAttemptContext,
+) -> Result<Value> {
+    append_attempt_record(
+        inputs.ledger,
+        json!({
+            "record_type": "STAGE_ATTEMPT",
+            "status": "CLOSED",
+            "stage": "HEAVY",
+            "plan_id": inputs.plan["plan_id"],
+            "audit_id": context.submitted_audit_id,
+            "artifact_root": inputs.artifact_root.display().to_string(),
+            "recovery_root": context.recovery_root,
+            "workflow": inputs.claims.workflow,
+            "job": inputs.claims.job,
+            "runner": inputs.claims.runner,
+            "attempt": inputs.claims.attempt,
+            "receipt_id": value["receipt_id"],
+            "result": value["result"],
+            "wall_time_ms": elapsed_millis(&context.started),
+            "started_entry_sha256": context.started_entry_sha256,
+        }),
+    )?;
+    Ok(value)
+}
+
+fn fail_heavy_attempt(
+    error: GatePolicyError,
+    inputs: &HeavyAttemptInputs<'_>,
+    context: &HeavyAttemptContext,
+) -> Result<Value> {
+    let cause_key = error.code;
+    record_heavy_failure(
+        inputs.ledger,
+        json!({
+            "record_type": "STAGE_ATTEMPT",
+            "status": "FAILED",
+            "stage": "HEAVY",
+            "plan_id": inputs.plan["plan_id"],
+            "audit_id": context.submitted_audit_id,
+            "artifact_root": inputs.artifact_root.display().to_string(),
+            "recovery_root": context.recovery_root,
+            "workflow": inputs.claims.workflow,
+            "job": inputs.claims.job,
+            "runner": inputs.claims.runner,
+            "attempt": inputs.claims.attempt,
+            "result": null,
+            "error_code": error.code,
+            "error_message": error.message,
+            "cause_key": cause_key,
+            "failure_class": if cause_key.contains("SPAWN") || cause_key.contains("TIMEOUT") || cause_key.contains("RUNNER") {"INFRASTRUCTURE"} else {"TOOLING"},
+            "wall_time_ms": elapsed_millis(&context.started),
+            "started_entry_sha256": context.started_entry_sha256,
+        }),
+        cause_key,
+    )?;
+    Err(error)
 }
 
 #[allow(clippy::cast_possible_truncation)]
@@ -415,53 +573,10 @@ fn reconcile_attempts_command(_repo: &Path, options: &BTreeMap<String, String>) 
 }
 
 fn pre_heavy_audit_command(repo: &Path, options: &BTreeMap<String, String>) -> Result<Value> {
-    let plan = read_json(Path::new(required(options, "plan")?))?;
-    let artifact_root = PathBuf::from(required(options, "artifact-root")?);
-    let ledger = PathBuf::from(required(options, "ledger")?);
-    let ledger_preparation = admit_attempt_ledger(&ledger)
-        .and_then(|()| reconcile_orphaned_attempts(&ledger).map(|_| ()));
+    let inputs = pre_heavy_audit_inputs(options)?;
+    let ledger_preparation = prepare_audit_ledger(&inputs.ledger);
     let light_result = read_json(Path::new(required(options, "light-receipts")?));
-    let audit = match (light_result, ledger_preparation) {
-        (Ok(light), Err(failure)) => {
-            build_failure_audit(repo, &plan, &light, &artifact_root, &ledger, &failure)?
-        }
-        (Err(failure), Err(_ledger_failure)) => {
-            let represented = GatePolicyError::new(
-                failure.class,
-                "GATE-AUDIT-LIGHT-INPUT-INVALID",
-                format!("{}: {}", failure.code, failure.message),
-            );
-            build_failure_audit(
-                repo,
-                &plan,
-                &json!({}),
-                &artifact_root,
-                &ledger,
-                &represented,
-            )?
-        }
-        (Ok(light), Ok(())) => match build_audit(repo, &plan, &light, &artifact_root, &ledger) {
-            Ok(audit) => audit,
-            Err(failure) => {
-                build_failure_audit(repo, &plan, &light, &artifact_root, &ledger, &failure)?
-            }
-        },
-        (Err(failure), Ok(())) => {
-            let represented = GatePolicyError::new(
-                failure.class,
-                "GATE-AUDIT-LIGHT-INPUT-INVALID",
-                format!("{}: {}", failure.code, failure.message),
-            );
-            build_failure_audit(
-                repo,
-                &plan,
-                &json!({}),
-                &artifact_root,
-                &ledger,
-                &represented,
-            )?
-        }
-    };
+    let audit = select_pre_heavy_audit(repo, &inputs, light_result, ledger_preparation)?;
     let output = persist_plan(repo, options, &audit)?;
     Ok(json!({
         "result": audit["status"],
@@ -469,6 +584,99 @@ fn pre_heavy_audit_command(repo: &Path, options: &BTreeMap<String, String>) -> R
         "reason_codes": audit["reason_codes"],
         "output": output
     }))
+}
+
+struct PreHeavyAuditInputs {
+    plan: Value,
+    artifact_root: PathBuf,
+    ledger: PathBuf,
+}
+
+fn pre_heavy_audit_inputs(options: &BTreeMap<String, String>) -> Result<PreHeavyAuditInputs> {
+    Ok(PreHeavyAuditInputs {
+        plan: read_json(Path::new(required(options, "plan")?))?,
+        artifact_root: PathBuf::from(required(options, "artifact-root")?),
+        ledger: PathBuf::from(required(options, "ledger")?),
+    })
+}
+
+fn prepare_audit_ledger(ledger: &Path) -> Result<()> {
+    admit_attempt_ledger(ledger).and_then(|()| reconcile_orphaned_attempts(ledger).map(|_| ()))
+}
+
+fn select_pre_heavy_audit(
+    repo: &Path,
+    inputs: &PreHeavyAuditInputs,
+    light_result: Result<Value>,
+    ledger_preparation: Result<()>,
+) -> Result<Value> {
+    match light_result {
+        Ok(light) => audit_for_readable_light(repo, inputs, &light, ledger_preparation),
+        Err(failure) => audit_for_invalid_light(repo, inputs, &failure),
+    }
+}
+
+fn audit_for_readable_light(
+    repo: &Path,
+    inputs: &PreHeavyAuditInputs,
+    light: &Value,
+    ledger_preparation: Result<()>,
+) -> Result<Value> {
+    match ledger_preparation {
+        Ok(()) => build_or_failure_audit(repo, inputs, light),
+        Err(failure) => build_failure_audit(
+            repo,
+            &inputs.plan,
+            light,
+            &inputs.artifact_root,
+            &inputs.ledger,
+            &failure,
+        ),
+    }
+}
+
+fn build_or_failure_audit(
+    repo: &Path,
+    inputs: &PreHeavyAuditInputs,
+    light: &Value,
+) -> Result<Value> {
+    match build_audit(
+        repo,
+        &inputs.plan,
+        light,
+        &inputs.artifact_root,
+        &inputs.ledger,
+    ) {
+        Ok(audit) => Ok(audit),
+        Err(failure) => build_failure_audit(
+            repo,
+            &inputs.plan,
+            light,
+            &inputs.artifact_root,
+            &inputs.ledger,
+            &failure,
+        ),
+    }
+}
+
+fn audit_for_invalid_light(
+    repo: &Path,
+    inputs: &PreHeavyAuditInputs,
+    failure: &GatePolicyError,
+) -> Result<Value> {
+    let represented = GatePolicyError::new(
+        failure.class,
+        "GATE-AUDIT-LIGHT-INPUT-INVALID",
+        format!("{}: {}", failure.code, failure.message),
+    );
+    build_failure_audit(
+        repo,
+        &inputs.plan,
+        &json!({}),
+        &inputs.artifact_root,
+        &inputs.ledger,
+        &represented,
+    )
 }
 
 fn validate_package_command(repo: &Path, options: &BTreeMap<String, String>) -> Result<Value> {
