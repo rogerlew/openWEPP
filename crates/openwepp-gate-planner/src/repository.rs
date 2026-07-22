@@ -1,6 +1,6 @@
 use std::collections::{BTreeMap, BTreeSet, VecDeque};
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::{Component, Path, PathBuf};
 use std::process::{Command, Output};
 use std::sync::atomic::{AtomicU64, Ordering};
 
@@ -963,6 +963,26 @@ fn package_owns_production_target(
     if !direct_crate {
         return Ok(false);
     }
+    let manifest = Path::new(string_field(package, "manifest_path")?);
+    let relative_manifest = manifest
+        .strip_prefix(normalized_root)
+        .map_err(|_| metadata_error("manifest outside snapshot"))?;
+    let manifest_components = relative_manifest.components().collect::<Vec<_>>();
+    let direct_manifest = matches!(
+        manifest_components.as_slice(),
+        [Component::Normal(crates), Component::Normal(name), Component::Normal(file)]
+            if *crates == "crates" && !name.is_empty() && *file == "Cargo.toml"
+    );
+    if !direct_manifest {
+        return Ok(false);
+    }
+    if !plain_path_has_kind(normalized_root, relative_manifest, PlainPathKind::File) {
+        return Ok(false);
+    }
+    let source_root = Path::new(directory).join("src");
+    if !plain_path_has_kind(normalized_root, &source_root, PlainPathKind::Directory) {
+        return Ok(false);
+    }
     let prefix = format!("{directory}/src/");
     let targets = package["targets"]
         .as_array()
@@ -983,9 +1003,13 @@ fn package_owns_production_target(
             continue;
         }
         let source = Path::new(string_field(target, "src_path")?);
-        let relative = source
+        let relative_path = source
             .strip_prefix(normalized_root)
-            .map_err(|_| metadata_error("target source outside snapshot"))?
+            .map_err(|_| metadata_error("target source outside snapshot"))?;
+        if !plain_path_has_kind(normalized_root, relative_path, PlainPathKind::File) {
+            continue;
+        }
+        let relative = relative_path
             .to_str()
             .ok_or_else(|| metadata_error("non-UTF8 target source"))?
             .replace('\\', "/");
@@ -999,6 +1023,47 @@ fn package_owns_production_target(
         }
     }
     Ok(false)
+}
+
+#[derive(Clone, Copy)]
+enum PlainPathKind {
+    Directory,
+    File,
+}
+
+fn plain_path_has_kind(root: &Path, relative: &Path, expected: PlainPathKind) -> bool {
+    let components = relative.components().collect::<Vec<_>>();
+    if components.is_empty()
+        || components
+            .iter()
+            .any(|component| !matches!(component, Component::Normal(_)))
+    {
+        return false;
+    }
+    let mut current = root.to_path_buf();
+    for (index, component) in components.iter().enumerate() {
+        let Component::Normal(component) = component else {
+            return false;
+        };
+        current.push(component);
+        let Ok(metadata) = fs::symlink_metadata(&current) else {
+            return false;
+        };
+        if metadata.file_type().is_symlink() {
+            return false;
+        }
+        let last = index + 1 == components.len();
+        if !last && !metadata.is_dir() {
+            return false;
+        }
+        if last {
+            return match expected {
+                PlainPathKind::Directory => metadata.is_dir(),
+                PlainPathKind::File => metadata.is_file(),
+            };
+        }
+    }
+    false
 }
 
 fn reject_undeclared_feature_projection(package: &Value) -> Result<()> {
@@ -1379,24 +1444,178 @@ mod tests {
         assert_eq!(error.code, "GATE-GIT-INTENT-TO-ADD");
     }
 
+    fn create_cargo_graph_files(root: &Path) {
+        for relative in [
+            "crates/a/src",
+            "crates/b/src",
+            "crates/test-only/src",
+            "crates/out-of-tree/src",
+            "crates/traversal/src",
+            "crates/symlink/src",
+            "crates/missing/src",
+            "crates/ancestor",
+            "shared/ancestor",
+            "shared",
+        ] {
+            fs::create_dir_all(root.join(relative)).expect("create Cargo fixture directory");
+        }
+        for relative in [
+            "crates/a/Cargo.toml",
+            "crates/b/Cargo.toml",
+            "crates/test-only/Cargo.toml",
+            "crates/out-of-tree/Cargo.toml",
+            "crates/traversal/Cargo.toml",
+            "crates/symlink/Cargo.toml",
+            "crates/missing/Cargo.toml",
+            "crates/ancestor/Cargo.toml",
+            "crates/a/src/lib.rs",
+            "crates/b/src/main.rs",
+            "crates/test-only/src/contract.rs",
+            "shared/out_of_tree.rs",
+            "shared/traversal.rs",
+            "shared/symlink.rs",
+            "shared/ancestor/lib.rs",
+        ] {
+            fs::write(root.join(relative), b"fixture\n").expect("write Cargo fixture");
+        }
+        #[cfg(unix)]
+        std::os::unix::fs::symlink(
+            root.join("shared/symlink.rs"),
+            root.join("crates/symlink/src/lib.rs"),
+        )
+        .expect("create escaping target symlink");
+        #[cfg(unix)]
+        std::os::unix::fs::symlink(
+            root.join("shared/ancestor"),
+            root.join("crates/ancestor/src"),
+        )
+        .expect("create escaping source-root symlink");
+    }
+
+    fn cargo_graph_metadata(root: &Path) -> Vec<u8> {
+        let package = |id: &str, name: &str, kind: &str, source: PathBuf| {
+            serde_json::json!({
+                "id": id,
+                "name": name,
+                "manifest_path": root.join("crates").join(name).join("Cargo.toml"),
+                "features": {},
+                "targets": [{"kind": [kind], "src_path": source}],
+            })
+        };
+        let mut packages = vec![
+            package("a 0.1", "a", "lib", root.join("crates/a/src/lib.rs")),
+            package("b 0.1", "b", "bin", root.join("crates/b/src/main.rs")),
+            package(
+                "test-only 0.1",
+                "test-only",
+                "test",
+                root.join("crates/test-only/src/contract.rs"),
+            ),
+            package(
+                "out-of-tree 0.1",
+                "out-of-tree",
+                "lib",
+                root.join("shared/out_of_tree.rs"),
+            ),
+            package(
+                "traversal 0.1",
+                "traversal",
+                "lib",
+                root.join("crates/traversal/src/../../shared/traversal.rs"),
+            ),
+            package(
+                "missing 0.1",
+                "missing",
+                "lib",
+                root.join("crates/missing/src/lib.rs"),
+            ),
+        ];
+        let mut members = vec![
+            "a 0.1",
+            "b 0.1",
+            "test-only 0.1",
+            "out-of-tree 0.1",
+            "traversal 0.1",
+            "missing 0.1",
+        ];
+        let mut nodes = vec![
+            serde_json::json!({"id": "a 0.1", "deps": []}),
+            serde_json::json!({"id": "b 0.1", "deps": [{"pkg": "a 0.1", "dep_kinds": [{"kind": null, "target": null}]}]}),
+            serde_json::json!({"id": "test-only 0.1", "deps": []}),
+            serde_json::json!({"id": "out-of-tree 0.1", "deps": []}),
+            serde_json::json!({"id": "traversal 0.1", "deps": []}),
+            serde_json::json!({"id": "missing 0.1", "deps": []}),
+        ];
+        #[cfg(unix)]
+        {
+            packages.push(package(
+                "symlink 0.1",
+                "symlink",
+                "lib",
+                root.join("crates/symlink/src/lib.rs"),
+            ));
+            members.push("symlink 0.1");
+            nodes.push(serde_json::json!({"id": "symlink 0.1", "deps": []}));
+            packages.push(package(
+                "ancestor 0.1",
+                "ancestor",
+                "lib",
+                root.join("crates/ancestor/src/lib.rs"),
+            ));
+            members.push("ancestor 0.1");
+            nodes.push(serde_json::json!({"id": "ancestor 0.1", "deps": []}));
+        }
+        serde_json::to_vec(&serde_json::json!({
+            "packages": packages,
+            "workspace_members": members,
+            "resolve": {"nodes": nodes},
+        }))
+        .expect("serialize metadata graph")
+    }
+
     #[test]
     fn cargo_graph_expands_reverse_dependencies() {
-        let root = std::path::Path::new("/repo");
-        let metadata = br#"{"packages":[{"id":"a 0.1","name":"a","manifest_path":"/repo/crates/a/Cargo.toml","features":{},"targets":[{"kind":["lib"],"src_path":"/repo/crates/a/src/lib.rs"}]},{"id":"b 0.1","name":"b","manifest_path":"/repo/crates/b/Cargo.toml","features":{},"targets":[{"kind":["bin"],"src_path":"/repo/crates/b/src/main.rs"}]},{"id":"test-only 0.1","name":"test-only","manifest_path":"/repo/crates/test-only/Cargo.toml","features":{},"targets":[{"kind":["test"],"src_path":"/repo/crates/test-only/src/contract.rs"}]},{"id":"out-of-tree 0.1","name":"out-of-tree","manifest_path":"/repo/crates/out-of-tree/Cargo.toml","features":{},"targets":[{"kind":["lib"],"src_path":"/repo/shared/out_of_tree.rs"}]}],"workspace_members":["a 0.1","b 0.1","test-only 0.1","out-of-tree 0.1"],"resolve":{"nodes":[{"id":"a 0.1","deps":[]},{"id":"b 0.1","deps":[{"pkg":"a 0.1","dep_kinds":[{"kind":null,"target":null}]}]},{"id":"test-only 0.1","deps":[]},{"id":"out-of-tree 0.1","deps":[]}]}}"#;
-        let graph = CargoGraph::from_metadata(metadata, root).expect("metadata graph");
+        let (repo, _base) = TestRepository::create();
+        let root = &repo.path;
+        create_cargo_graph_files(root);
+        let metadata = cargo_graph_metadata(root);
+        let graph = CargoGraph::from_metadata(&metadata, root).expect("metadata graph");
         let initial = std::collections::BTreeSet::from(["a".to_owned()]);
         assert_eq!(graph.reverse_closure(&initial).len(), 2);
         assert!(graph.owns_production_sources("a"));
         assert!(graph.owns_production_sources("b"));
         assert!(!graph.owns_production_sources("test-only"));
         assert!(!graph.owns_production_sources("out-of-tree"));
+        assert!(!graph.owns_production_sources("traversal"));
+        assert!(!graph.owns_production_sources("missing"));
+        #[cfg(unix)]
+        {
+            assert!(!graph.owns_production_sources("symlink"));
+            assert!(!graph.owns_production_sources("ancestor"));
+        }
         assert_eq!(
             graph.package_for_path("crates/a/src/lib.rs").as_deref(),
             Some("a")
         );
+    }
 
-        let root_metadata = br#"{"packages":[{"id":"root 0.1","name":"openwepp","manifest_path":"/repo/Cargo.toml","features":{},"targets":[{"kind":["lib"],"src_path":"/repo/src/lib.rs"}]}],"workspace_members":["root 0.1"],"resolve":{"nodes":[{"id":"root 0.1","deps":[]}]}}"#;
-        let root_graph = CargoGraph::from_metadata(root_metadata, root).expect("root graph");
-        assert!(!root_graph.owns_production_sources("openwepp"));
+    #[test]
+    fn cargo_graph_rejects_root_package_as_production() {
+        let (repo, _base) = TestRepository::create();
+        let root = &repo.path;
+        let metadata = serde_json::to_vec(&serde_json::json!({
+            "packages": [{
+                "id": "root 0.1",
+                "name": "openwepp",
+                "manifest_path": root.join("Cargo.toml"),
+                "features": {},
+                "targets": [{"kind": ["lib"], "src_path": root.join("src/lib.rs")}],
+            }],
+            "workspace_members": ["root 0.1"],
+            "resolve": {"nodes": [{"id": "root 0.1", "deps": []}]},
+        }))
+        .expect("serialize root graph");
+        let graph = CargoGraph::from_metadata(&metadata, root).expect("root graph");
+        assert!(!graph.owns_production_sources("openwepp"));
     }
 }
