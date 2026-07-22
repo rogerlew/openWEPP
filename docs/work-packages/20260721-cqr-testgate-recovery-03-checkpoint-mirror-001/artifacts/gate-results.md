@@ -11,5 +11,5 @@
 | first changed-head metric | INVALIDATED-REVIEW | `424a1a5c`; numeric pass but two semantic review blockers; not reused |
 | dual corrected implementation review | PASS | independent A/B at exact `d5af6207`; both blockers closed |
 | authoritative affected library/coverage/CRAP | PASS | 119 pass, one intentional ignore; lines 96.95%, regions 89.08%, floor 15/15, CRAP max 5.024 |
-| dual terminal verification | NOT RUN | pending committed evidence reconciliation |
+| dual terminal verification | PASS | independent A/B at exact clean `0b3e989b`; no gate rerun |
 | campaign-global TESTGATE | DEFERRED-MASTER | master seven-package ExecPlan owns it after all ranks close |

@@ -1,4 +1,4 @@
-# Active Prompt: CQR TESTGATE Checkpoint Mirror
+# Archived Prompt: CQR TESTGATE Checkpoint Mirror
 
 Execution mode: package-end-to-end.
 
@@ -16,3 +16,6 @@ verification. Outputs are package-local review, verification, metric, and
 command evidence. Write access is read-only unless explicitly assigned a
 bounded change inside the declared package write set. Do not run
 campaign-global TESTGATE; the master seven-package ExecPlan owns it.
+
+Archived after corrected dual review, dual terminal verification, and
+`EXECUTED-COMPLETE` disposition.

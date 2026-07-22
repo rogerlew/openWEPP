@@ -240,6 +240,11 @@ State as of `2026-07-21 UTC`:
   all extracted helpers are at most CRAP 30 with dual review and verification;
   campaign-global TESTGATE remains deferred to the master closeout.
 
+- `20260721-cqr-testgate-recovery-03-checkpoint-mirror-001/` -
+  COMPLETE: third of seven one-module CQR packages. Both checkpoint-mirror rows
+  close with direct filesystem characterization, corrected dual review, ADR-0021
+  coverage closure, and dual terminal verification.
+
 - `20260720-testgate-recovery-trust-001/` -
   ACTIVE-SCAFFOLD: `TESTGATE-RECOVERY-TRUST-01` owns the checkpoint trust,
   persistent runner recovery, typed audit failure, claim/package binding,
