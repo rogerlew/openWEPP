@@ -4,7 +4,20 @@ Package ID: `20260722-cqr-aggregate-admission-validator-001`
 
 Queue ID: `TESTGATE-CQR-AGGREGATE-VALIDATOR-01`
 
-Status: `ACTIVE`
+Status: `ACTIVE / READY-QUALIFICATION`
+
+## Progress
+
+- [x] Scaffold committed at `86b15053` before implementation.
+- [x] Validator and 17 focused Git-fixture regressions pass.
+- [x] Canonical package admission is `READY`; dual renewed review passes at
+  exact correction commit `5f47695e`.
+- [x] RTR-031 is durably closed by ledger entry `cb46f832`.
+- [x] Retain the first qualification's pre-admission failure: zero gate nodes
+  started because this intent package was not yet updated by the increment.
+- [ ] Close RTR-032 after exact package/intention admission and dual review.
+- [ ] Run one changed-head delegated qualification, dual terminal verification,
+  prompt archival, and final disposition.
 
 ## Objective
 

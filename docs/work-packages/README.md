@@ -256,7 +256,9 @@ State as of `2026-07-22 UTC`:
   unique aggregate/module scaffold authority, immutable write-set and manifest
   identity, complete batch/master binding, and commit ordering before
   implementation may begin. Focused gates and dual review pass; changed-head
-  recovery qualification remains.
+  recovery qualification remains after RTR-032 corrects the intent package's
+  missing lifecycle update. The first attempt stopped before planning with zero
+  gate nodes.
 
 - `20260722-testgate-cqr-aggregate-admission-001/` -
   HOLD-PREREQUISITE-VALIDATOR: established immutable final CQR admission

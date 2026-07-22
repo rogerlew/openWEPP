@@ -6,3 +6,7 @@ package admission, and dual independent PASS review. RTR-031 is durably closed
 by ledger entry
 `cb46f83249dcd4708e43cdc7b0dddcf21bbd7e96ffbd2045c12dcc8f6044ab88`.
 One changed-head qualification and terminal verification remain pending.
+
+Static: RTR-032 is open for the first pre-admission stop: the package remained
+byte-identical to its scaffold and therefore did not identify the increment.
+This lifecycle/status update preserves the immutable declared write set.
