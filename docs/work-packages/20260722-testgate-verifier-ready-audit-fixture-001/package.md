@@ -17,15 +17,21 @@ changed `package.md`.
 - Observed violation: the rank-7 planner baseline failed at
   `ready_audit_verification_preserves_order_and_exact_verdict` with zero package
   authorities after a prompt-only commit.
-- In-scope module: test-only fixture code in
-  `crates/openwepp-gate-planner/src/verifier_coverage_tests.rs`.
-- Allowed edit: create an isolated committed repository/package fixture and
-  preserve the existing READY-audit success and error-order assertions.
+- In-scope modules: test-only fixture code in
+  `crates/openwepp-gate-planner/src/verifier_coverage_tests.rs` and crate-scoped
+  `#[cfg(test)]` visibility for the existing isolated executor fixture in
+  `crates/openwepp-gate-planner/src/executor.rs`.
+- Allowed edit: reuse the isolated committed repository/package fixture and
+  preserve the existing READY-audit success and error-order assertions. The
+  executor amendment is visibility-only inside `#[cfg(test)]`; no production
+  item or compiled production byte may change.
 - Acceptance: the focused verifier READY-audit tests pass from a head whose
   latest commit does not change a package file; the fixture leaves no repository
   or process state behind.
 - Protected boundaries: no production verifier, planner, executor, schema,
-  policy, package-validation, receipt, or audit semantics may change.
+  policy, package-validation, receipt, or audit semantics may change. Copying
+  the full fixture into a second module is rejected because it would create two
+  trust-fixture implementations that can drift.
 
 ## Required Reading
 
@@ -36,6 +42,8 @@ changed `package.md`.
 - `docs/standards/testing-and-gate-strategy.md`
 - `crates/openwepp-gate-planner/src/verifier.rs`
 - `crates/openwepp-gate-planner/src/verifier_coverage_tests.rs`
+- `crates/openwepp-gate-planner/src/executor.rs` (`#[cfg(test)]` fixture
+  visibility only)
 
 ## Subagent Authorization
 
