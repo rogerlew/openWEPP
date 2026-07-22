@@ -13,7 +13,8 @@ Status: `ACTIVE / REVIEW`
 - [x] Mechanically split the verifier test from 101 to 75 lines.
 - [x] Formatting, both exact focused tests, package Clippy, and exact workspace
   Clippy pass.
-- [ ] Complete dual independent review and durable RTR-033 closure.
+- [x] Complete dual independent review at exact correction commit `8b26689c`.
+- [ ] Close RTR-033 durably at that exact correction commit.
 - [ ] Delegate one changed-head qualification and dual terminal verification.
 
 ## Objective
