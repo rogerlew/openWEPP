@@ -41,13 +41,17 @@ global gates remain owned by the master ExecPlan.
 ## Scope
 
 In scope: characterization and behavior-preserving private helper extraction in
-`resume.rs`, plus package evidence. Out of scope: schema/policy changes,
-attestation trust changes, checkpoint format changes, consumer changes, other
-production modules, and campaign-global TESTGATE.
+`resume.rs`, one test-only call from the existing pre-HEAVY coverage fixture to
+the public constructed-audit resume entry point, plus package evidence. Out of
+scope: schema/policy changes, attestation trust changes, checkpoint format
+changes, consumer changes, other production modules, and campaign-global
+TESTGATE.
 
 ## Declared Write Set
 
 - `crates/openwepp-gate-planner/src/resume.rs`
+- `crates/openwepp-gate-planner/src/pre_heavy_coverage_tests.rs` (test-only
+  characterization; no second production module)
 - `docs/work-packages/20260721-cqr-testgate-recovery-04-resume-001/**`
 - `docs/work-packages/README.md`
 - `docs/work-packages/20260721-cqr-testgate-recovery-closeout-execplan.md`
