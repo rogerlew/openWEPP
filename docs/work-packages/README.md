@@ -251,6 +251,11 @@
 
 State as of `2026-07-22 UTC`:
 
+- `20260722-testgate-affected-crap-authority-reexpression-001/` -
+  ACTIVE / SCAFFOLD: supplies one prospective authority for RTR-039/RTR-040,
+  aligns planner/checker production classification, and re-expresses the final
+  affected-CRAP recovery before qualification.
+
 - `20260722-testgate-executor-receipt-fixture-recovery-001/` -
   ACTIVE / SCAFFOLD: closes RTR-038 by aligning the remaining root-only executor
   receipt fixtures with global rather than affected CRAP selection.
