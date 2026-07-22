@@ -114,9 +114,7 @@ def _status(text: str) -> str:
     return values[0]
 
 
-def _batch_manifest(
-    repo: Path, revision: str, path: str
-) -> tuple[dict[str, object], str]:
+def _batch_manifest(repo: Path, revision: str, path: str) -> dict[str, object]:
     path = _canonical_path(path, "aggregate batch manifest")
     raw = _git(repo, "show", f"{revision}:{path}")
     try:
@@ -125,7 +123,7 @@ def _batch_manifest(
         raise AdmissionError("aggregate batch manifest is not valid JSON") from error
     if not isinstance(value, dict) or value.get("schema_version") != MANIFEST_SCHEMA:
         raise AdmissionError("aggregate batch manifest schema is invalid")
-    return value, raw
+    return value
 
 
 def _string_paths(value: object, label: str) -> list[str]:
@@ -159,6 +157,19 @@ def validate(
     head = _git(repo, "rev-parse", "HEAD^{commit}")
     base_aggregate = _git_text(repo, aggregate_scaffold, aggregate_package)
     current_aggregate = _git_text(repo, head, aggregate_package)
+    aggregate_additions = _git(
+        repo,
+        "log",
+        "--reverse",
+        "--diff-filter=A",
+        "--format=%H",
+        "--",
+        aggregate_package,
+    ).splitlines()
+    if aggregate_additions != [aggregate_scaffold]:
+        raise AdmissionError(
+            "aggregate scaffold must be its one unique package addition commit"
+        )
     status = _status(base_aggregate)
     if status not in {"ACTIVE", "READY"}:
         raise AdmissionError("aggregate scaffold status must be ACTIVE or READY")
@@ -210,11 +221,13 @@ def validate(
     aggregate_root = aggregate_package.removesuffix("package.md")
     if not manifest_path.startswith(aggregate_root):
         raise AdmissionError("aggregate batch manifest must be package-local")
-    manifest, scaffold_manifest_text = _batch_manifest(
-        repo, aggregate_scaffold, manifest_path
+    manifest = _batch_manifest(repo, aggregate_scaffold, manifest_path)
+    _batch_manifest(repo, head, manifest_path)
+    scaffold_manifest_oid = _git(
+        repo, "rev-parse", f"{aggregate_scaffold}:{manifest_path}"
     )
-    _, current_manifest_text = _batch_manifest(repo, head, manifest_path)
-    if scaffold_manifest_text != current_manifest_text:
+    current_manifest_oid = _git(repo, "rev-parse", f"{head}:{manifest_path}")
+    if scaffold_manifest_oid != current_manifest_oid:
         raise AdmissionError("aggregate batch manifest changed after scaffold")
     if manifest.get("aggregate_package") != aggregate_package:
         raise AdmissionError("aggregate batch manifest package binding does not match")

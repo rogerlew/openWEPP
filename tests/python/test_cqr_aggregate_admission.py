@@ -234,14 +234,14 @@ class AggregateAdmissionTests(unittest.TestCase):
             "does not cover",
         )
 
-    def test_rejects_late_aggregate_scaffold(self) -> None:
+    def test_rejects_aggregate_commit_after_its_unique_scaffold(self) -> None:
         fixture = self.fixture()
         fixture.write("late-marker.txt", "late\n")
         fixture.commit("late aggregate marker")
         late_scaffold = fixture.git("rev-parse", "HEAD")
         fixture.write(MODULE, Fixture.module_text(late_scaffold))
         fixture.commit("bind late aggregate scaffold")
-        self.assert_failure(fixture.run(scaffold=late_scaffold), "predate")
+        self.assert_failure(fixture.run(scaffold=late_scaffold), "unique package addition")
 
     def test_rejects_mutated_aggregate_write_set(self) -> None:
         fixture = self.fixture()
@@ -258,6 +258,12 @@ class AggregateAdmissionTests(unittest.TestCase):
         manifest["required_paths"] = [MANIFEST, MASTER, MODULE]
         fixture.write(MANIFEST, json.dumps(manifest, indent=2) + "\n")
         fixture.commit("mutate batch manifest")
+        self.assert_failure(fixture.run(), "manifest changed after scaffold")
+
+    def test_rejects_whitespace_only_batch_manifest_mutation(self) -> None:
+        fixture = self.fixture()
+        fixture.write(MANIFEST, Fixture.manifest_text() + "\n")
+        fixture.commit("mutate batch manifest whitespace")
         self.assert_failure(fixture.run(), "manifest changed after scaffold")
 
     def test_rejects_mismatched_module_binding(self) -> None:
