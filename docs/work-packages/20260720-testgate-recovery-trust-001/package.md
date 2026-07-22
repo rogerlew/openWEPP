@@ -49,6 +49,7 @@ quality paths without editing its frozen subject.
 - [x] (2026-07-22) Retain the zero-node pre-admission stop and open RTR-032 because the active intent package was not updated from its scaffold.
 - [x] (2026-07-22) Close RTR-032 after exact intent authorization, `READY` package admission, and dual independent review.
 - [x] (2026-07-22) Retain the changed-head receipt that exposed two overlong CQR characterization tests and open RTR-033; downstream full Nextest and CRAP did not run.
+- [x] (2026-07-22) Close RTR-033 after mechanical 157->42 and 101->75 test splits, exact workspace Clippy, `READY` package admission, and dual review.
 - [ ] Reconcile the exact terminal diff and obtain a fresh `READY` audit.
 - [ ] Delegate each selected HEAVY batch once.
 - [ ] Complete dual terminal verification, prompt archival, and final disposition.
@@ -144,6 +145,11 @@ Clippy rejected two CQR characterization tests at 157 and 101 lines. RTR-033
 (`GATE-CQR-TEST-FUNCTION-LENGTH-REGRESSION`) owns their mechanical split in the
 fresh `20260722-testgate-clippy-test-length-recovery-001` package. Downstream
 doctest, full Nextest, and CRAP were blocked and did not run; there was no retry.
+
+RTR-033 closed at correction commit `8b26689c` with durable ledger entry
+`1a40c57e`. Both exact focused tests, package Clippy, and the previously failing
+workspace Clippy command pass; dual independent reviews found no behavior or
+assertion drift.
 ## Declared Write Set
 
 - `.github/workflows/testgate-shadow.yml`

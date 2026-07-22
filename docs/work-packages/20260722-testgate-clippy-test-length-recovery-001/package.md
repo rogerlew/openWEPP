@@ -4,7 +4,7 @@ Package ID: `20260722-testgate-clippy-test-length-recovery-001`
 
 Queue ID: `TESTGATE-CLIPPY-TEST-LENGTH-RECOVERY-01`
 
-Status: `ACTIVE / REVIEW`
+Status: `ACTIVE / READY-QUALIFICATION`
 
 ## Progress
 
@@ -14,7 +14,8 @@ Status: `ACTIVE / REVIEW`
 - [x] Formatting, both exact focused tests, package Clippy, and exact workspace
   Clippy pass.
 - [x] Complete dual independent review at exact correction commit `8b26689c`.
-- [ ] Close RTR-033 durably at that exact correction commit.
+- [x] Close RTR-033 at exact correction commit `8b26689c`; durable ledger entry
+  `1a40c57e`.
 - [ ] Delegate one changed-head qualification and dual terminal verification.
 
 ## Objective
