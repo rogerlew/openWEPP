@@ -54,6 +54,7 @@ artifacts. Write access is read-only.
 
 ## Declared Write Set
 
+- `crates/openwepp-gate-planner/src/executor.rs`
 - `crates/openwepp-gate-planner/src/verifier_coverage_tests.rs`
 - `docs/work-packages/20260722-testgate-verifier-ready-audit-fixture-001/**`
 - `docs/work-packages/20260721-cqr-testgate-recovery-07-planner-001/**`
@@ -87,6 +88,10 @@ artifacts. Write access is read-only.
   `eb481c992b73419ce76fe8beff7e437c9a06b805db3e47d2673ef0bf68386098`.
 - Ran: no fixture repository, artifact directory, ledger, or child process was
   retained after the focused test.
+- Static: review A found that the earlier amendment described the executor test
+  visibility edit in the authority envelope but omitted its exact path from the
+  binding Declared Write Set. RTR-030 owns that annotation defect; this exact
+  bullet is its canonical correction.
 
 ## Security Impact Gate
 

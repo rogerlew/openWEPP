@@ -15,3 +15,9 @@ Ran: post-test inspection found no
 Static: `git diff --check` passed. Repository-wide `markdown-doc lint` checked
 17,730 files and reported only 17 pre-existing broken-link errors outside both
 active packages; it reported no warning or error in their files.
+
+Ran: warnings-denied all-target Clippy exposed two correction-owned
+`needless_borrow` warnings and one pre-existing `too_many_lines` warning in an
+unchanged verifier test. The two owned warnings were corrected. Ran:
+warnings-denied library Clippy then passed. The unchanged historical test lint
+is not attributed to RTR-029 and is not hidden with a new allow.
