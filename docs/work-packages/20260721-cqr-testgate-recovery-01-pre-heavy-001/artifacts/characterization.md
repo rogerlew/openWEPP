@@ -10,3 +10,6 @@ documentation changed while its exact-checkout verifier fixture was executing.
 The fixture failed closed with `GATE-COMMITTED-CHECKOUT-NOT-EXACT`; it does not
 establish a target-module behavioral failure. The replacement is a narrower,
 clean-worktree `pre_heavy` inventory, not a repeat of the broad suite.
+
+Ran: `cargo nextest run -p openwepp-gate-planner pre_heavy::tests --profile
+quick` passed 15/15 in 16.175 seconds from committed head `fdf2c4c1`.
