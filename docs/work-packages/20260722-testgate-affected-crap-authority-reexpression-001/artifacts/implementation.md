@@ -15,3 +15,13 @@ remain intact.
 
 Static: the preceding checker correction parses and hashes one retained scope
 byte buffer and rechecks its digest immediately before PASS publication.
+
+Static: final production ownership additionally requires an exact plain
+`crates/*/Cargo.toml`, a plain source-root directory, and an existing plain
+lowercase-`.rs` target reached only through normal path components. Missing
+sources, lexical traversal, target symlinks, symlinked source ancestors,
+uppercase extensions, test-only targets, root packages, and out-of-tree targets
+fail closed without restoring per-target filesystem canonicalization.
+
+Static: exact reviewed correction commit is
+`85d706ed4fefc2011bd23c56f60688a7ba5e63ba`.

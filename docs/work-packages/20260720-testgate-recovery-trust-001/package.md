@@ -53,6 +53,8 @@ quality paths without editing its frozen subject.
 - [x] (2026-07-22) Retain the 2,271/2,272 full-Nextest result, open RTR-034 for its stale executor mutability sentinel, and preserve blocked CRAP without running it.
 - [x] (2026-07-22) Close RTR-034 after the canonical immutable-binding sentinel, owning 8/8 target, Clippy, `READY` admission, and dual review.
 - [x] (2026-07-22) Retain affected CRAP's 1,091/1,091 traversal and open RTR-035 when post-acquisition package admission rejected root `openwepp`; no retry.
+- [x] (2026-07-22) Close RTR-035 through RTR-041 after exact-head owning tests,
+  a `READY` aggregate audit, and dual independent implementation review.
 - [ ] Reconcile the exact terminal diff and obtain a fresh `READY` audit.
 - [ ] Delegate each selected HEAVY batch once.
 - [ ] Complete dual terminal verification, prompt archival, and final disposition.
@@ -173,6 +175,16 @@ package `openwepp` because production ownership is restricted to `crates/*`.
 RTR-035 (`GATE-AFFECTED-CRAP-ROOT-PACKAGE-ADMISSION-MISMATCH`) owns early
 measurement-package rejection plus planner escalation to global quality. No
 retry ran.
+
+RTR-035 through RTR-041 closed at exact reviewed correction commit `85d706ed`.
+The final classifier admits only exact direct `Cargo.toml` production members
+with plain existing lowercase-`.rs` targets beneath plain source roots and
+rejects traversal, missing, symlink, root, test-only, uppercase, and out-of-tree
+shapes before quality-node construction. The final planner target passed
+155/155 with two skipped in 1,862.964 seconds, package audit was `READY`, and
+both independent reviews passed. Durable closure digests are RTR-035
+`aa0db31e`, RTR-036 `0915a278`, RTR-037 `9c5a5f69`, RTR-038 `fc01953c`, RTR-039
+`f7f4c2ba`, RTR-040 `e10b42ae`, and RTR-041 `6a481692`.
 ## Declared Write Set
 
 - `.github/workflows/testgate-shadow.yml`

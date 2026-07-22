@@ -4,7 +4,7 @@ Package ID: `20260722-testgate-affected-crap-authority-reexpression-001`
 
 Queue ID: `TESTGATE-AFFECTED-CRAP-AUTHORITY-REEXPRESSION-01`
 
-Status: `ACTIVE / SCAFFOLD`
+Status: `ACTIVE / READY-QUALIFICATION`
 
 ## Progress
 
@@ -15,8 +15,9 @@ Status: `ACTIVE / SCAFFOLD`
 - [x] Focused classification/planner/fixture regressions pass 9/9 total.
 - [x] Core aggregate correction commit `04f3b619`; package audit `READY`.
 - [x] Correct RTR-041; exact changed-head reconstruction passes in 476.228s.
-- [ ] Run changed-head owning target/Clippy and dual review.
-- [ ] Close RTR-035 through RTR-040 and delegate qualification.
+- [x] Run changed-head owning target/Clippy and dual review.
+- [x] Close RTR-035 through RTR-041 at reviewed commit `85d706ed`.
+- [ ] Rebuild and delegate exactly one changed-head qualification.
 
 ## Objective
 
@@ -29,6 +30,8 @@ the planner's production classifier with affected CRAP preflight.
 
 - RTR-039: split package authority at commit `92f35b24`.
 - RTR-040: planner/checker production-classifier drift.
+- RTR-041: reconstructed target canonicalization exceeded the owning test's
+  600-second timeout.
 - Allowed changes: reconstructed Cargo target classification, planner selection
   tests, test-only global-quality assertions, and test fixture helper extraction.
 - Protected behavior: no science, gate thresholds, executor stages, receipts,

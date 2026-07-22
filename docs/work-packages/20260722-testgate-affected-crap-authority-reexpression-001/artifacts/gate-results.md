@@ -25,3 +25,23 @@ remain unchanged.
 Ran: at changed HEAD `2010fc5a`, the exact previously timed-out public-audit
 reconstruction test passes 1/1 in 476.228 seconds, below its unchanged 600-second
 ceiling. No unchanged rerun occurred.
+
+Ran: at exact clean correction HEAD `85d706ed4fefc2011bd23c56f60688a7ba5e63ba`,
+`cargo nextest run -p openwepp-gate-planner --no-fail-fast` passes 155/155
+with two skipped in 1,862.964 seconds. The retained log is
+`/home/workdir/testgate-history/rtr035-041-planner-nextest-85d706ed.log`,
+SHA-256 `16dce4671f22253836c592e0e1bd0d7e214270816ee0a9f0ee0bd1305f23c18f`.
+The exact reconstruction case completed below its unchanged 600-second limit.
+
+Ran: final focused Cargo-graph classification passes 2/2; formatting, diff
+hygiene, and planner all-target Clippy with warnings denied pass.
+
+Ran: exact package audit against base `afc83394` is `READY`, with zero
+unauthorized paths and package-audit ID
+`e4aa493265069de63c393037a66dc8526d499e903bdb8314f5e80fc7d76a9e87`.
+
+Static: line counts are `repository.rs` 1,633, `planner.rs` 2,429,
+`planner_coverage_tests.rs` 1,535, `executor.rs` 2,979, and
+`executor_coverage_tests.rs` 785. The planner and executor warnings retain the
+existing recovery-package decomposition disposition; no file reaches the
+3,000-line blocker.
