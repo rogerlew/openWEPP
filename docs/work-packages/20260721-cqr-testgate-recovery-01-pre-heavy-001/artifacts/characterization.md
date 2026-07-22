@@ -13,3 +13,9 @@ clean-worktree `pre_heavy` inventory, not a repeat of the broad suite.
 
 Ran: `cargo nextest run -p openwepp-gate-planner pre_heavy::tests --profile
 quick` passed 15/15 in 16.175 seconds from committed head `fdf2c4c1`.
+
+Ran: four characterization tests were added before production extraction. They
+pin token-precedence routing, LIGHT/pass and dependency ordering failures,
+combined-DAG consistency, and execution identity/attempt validation. The
+focused inventory passed 19/19 in 15.561 seconds (run ID
+`5bd3f726-7c16-49ba-8678-b2e7ed451dc0`).

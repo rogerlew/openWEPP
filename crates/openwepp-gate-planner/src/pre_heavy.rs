@@ -1333,10 +1333,11 @@ mod tests {
     use super::{
         append_attempt_record, audit_reconstruction_root, build_failure_audit, check,
         documentation_scope_is_exact, durable_ledger, execution_claims_match,
-        execution_context_is_current, no_open_tooling_defect, package_admission, package_admitted,
-        read_json, reconcile_orphaned_attempts, reconstructed_plan_is_exact, record_heavy_failure,
-        select_package_admission, validate_started_successor, verify_ledger_chain,
-        with_disposable_audit_reconstruction,
+        execution_context_is_current, execution_identities, failure_check_index,
+        light_stage_passed, no_open_tooling_defect, package_admission, package_admitted, read_json,
+        reconcile_orphaned_attempts, reconstructed_plan_is_exact, record_heavy_failure,
+        select_package_admission, valid_stage_order, validate_combined_decision,
+        validate_started_successor, verify_ledger_chain, with_disposable_audit_reconstruction,
     };
     use crate::canonical::{parse_strict, validate_schema};
     use crate::error::{ErrorClass, GatePolicyError};
@@ -1713,6 +1714,103 @@ mod tests {
             };
             assert!(!execution_claims_match(&mutated, &baseline), "{field}");
         }
+    }
+
+    #[test]
+    fn failure_check_index_preserves_first_matching_token_precedence() {
+        for (code, expected) in [
+            ("GATE-PACKAGE-LIGHT", 0),
+            ("GATE-LIGHT-DOC", 1),
+            ("GATE-INVENTORY-PLAN", 2),
+            ("GATE-EXECUTION-CLAIM", 3),
+            ("GATE-ARTIFACT-CHECKPOINT", 4),
+            ("GATE-ROOT-CACHE", 5),
+            ("GATE-COMBINED-ORDER", 6),
+            ("GATE-ORDER-RETRY", 7),
+            ("GATE-LEDGER-UNKNOWN", 8),
+            ("GATE-UNKNOWN", 9),
+        ] {
+            assert_eq!(failure_check_index(code), expected, "{code}");
+        }
+    }
+
+    #[test]
+    fn light_stage_and_stage_order_reject_nonpass_or_forward_dependency() {
+        let mut plan = json!({
+            "nodes": [
+                {"node_id": "light", "execution_cost_class": "LIGHT", "prerequisites": []},
+                {"node_id": "heavy", "execution_cost_class": "HEAVY", "prerequisites": ["light"]}
+            ]
+        });
+        let receipt = json!({"final_results": {"light": "PASS"}});
+        light_stage_passed(&plan, &receipt).expect("passing LIGHT receipt");
+        valid_stage_order(&plan).expect("ordered LIGHT then HEAVY");
+
+        plan["nodes"][1]["prerequisites"] = json!(["missing"]);
+        assert_eq!(
+            valid_stage_order(&plan)
+                .expect_err("forward dependency")
+                .code,
+            "GATE-AUDIT-PREREQUISITE-ORDER"
+        );
+        assert_eq!(
+            light_stage_passed(&plan, &json!({"final_results": {"light": "FAIL"}}))
+                .expect_err("LIGHT failure")
+                .code,
+            "GATE-AUDIT-LIGHT-NONPASS"
+        );
+    }
+
+    #[test]
+    fn combined_decision_requires_its_exact_dag_shape() {
+        let separate = json!({
+            "nodes": [
+                {"gate_definition_id": "workspace-full-nextest-v1"},
+                {"gate_definition_id": "adjudicated-crap-v1"}
+            ],
+            "combined_quality": {
+                "decision": "SEPARATE", "accepted_proof_id": null
+            }
+        });
+        validate_combined_decision(&separate).expect("separate quality DAG");
+
+        let mut drifted = separate.clone();
+        drifted["combined_quality"]["decision"] = json!("COMBINED");
+        assert_eq!(
+            validate_combined_decision(&drifted)
+                .expect_err("decision/DAG mismatch")
+                .code,
+            "GATE-AUDIT-COMBINED-DAG-MISMATCH"
+        );
+    }
+
+    #[test]
+    fn execution_identity_requires_all_bound_digests_and_claims() {
+        let digest = "a".repeat(64);
+        let plan = json!({"execution_context": {
+            "configuration_sha256": digest,
+            "environment_manifest_sha256": "b".repeat(64),
+            "fixture_manifest_sha256": "c".repeat(64),
+            "tool_manifest_sha256": "d".repeat(64)
+        }});
+        let receipt = json!({
+            "claims": {
+                "principal": "principal", "repository": "repository",
+                "source_event": "event", "source_ref": "ref", "workflow": "workflow",
+                "job": "job", "runner": "runner", "attempt": 1
+            },
+            "executor_binary_sha256": "e".repeat(64)
+        });
+        execution_identities(&plan, &receipt).expect("complete execution identity");
+
+        let mut malformed = receipt.clone();
+        malformed["claims"]["attempt"] = json!(0);
+        assert_eq!(
+            execution_identities(&plan, &malformed)
+                .expect_err("zero attempt")
+                .code,
+            "GATE-AUDIT-EXECUTION-CLAIM"
+        );
     }
 
     #[test]
