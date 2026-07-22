@@ -6,6 +6,16 @@ Queue ID: `TESTGATE-AFFECTED-CRAP-AUTHORITY-REEXPRESSION-01`
 
 Status: `ACTIVE / SCAFFOLD`
 
+## Progress
+
+- [x] Scaffold commit `ae5f33b1` predates implementation edits.
+- [x] Seal checker scope bytes at one read and final publication boundary.
+- [x] Align reconstructed Cargo production targets with checker admission.
+- [x] Re-express global fixtures and measurement-only assertions under helpers.
+- [x] Focused classification/planner/fixture regressions pass 9/9 total.
+- [ ] Commit, run exact owning target/Clippy, package audit, and dual review.
+- [ ] Close RTR-035 through RTR-040 and delegate qualification.
+
 ## Objective
 
 Close RTR-039 and RTR-040, and provide one prospective exact authority for the

@@ -29,6 +29,19 @@
         }
     }
 
+    fn assert_measurement_only_global_risk(plan: &serde_json::Value) {
+        assert_eq!(plan["risk"]["class"], "CRITICAL");
+        assert!(
+            plan["risk"]["reason_codes"]
+                .as_array()
+                .expect("reason codes")
+                .contains(&serde_json::json!(
+                    "MEASUREMENT_ONLY_PACKAGE_REQUIRES_GLOBAL_QUALITY"
+                ))
+        );
+        assert_eq!(plan["quality_scope"]["mode"], "GLOBAL");
+    }
+
     #[cfg(unix)]
     #[test]
     fn reconstruction_workspace_rejects_symlink_escape() {
@@ -219,6 +232,36 @@
         );
         assert_eq!(selection.risk.as_str(), "CRITICAL");
         assert!(selection.unmapped.is_empty());
+    }
+
+    #[test]
+    fn nonproduction_cargo_targets_require_global_quality() {
+        let repo = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+        let policy = PolicyBundle::load(&repo).expect("policy bundle");
+        let metadata = br#"{"packages":[{"id":"test-only 0.1","name":"test-only","manifest_path":"/repo/crates/test-only/Cargo.toml","features":{},"targets":[{"kind":["test"],"src_path":"/repo/crates/test-only/src/contract.rs"}]},{"id":"out-of-tree 0.1","name":"out-of-tree","manifest_path":"/repo/crates/out-of-tree/Cargo.toml","features":{},"targets":[{"kind":["lib"],"src_path":"/repo/shared/lib.rs"}]}],"workspace_members":["test-only 0.1","out-of-tree 0.1"],"resolve":{"nodes":[{"id":"test-only 0.1","deps":[]},{"id":"out-of-tree 0.1","deps":[]}]}}"#;
+        let graph = CargoGraph::from_metadata(metadata, std::path::Path::new("/repo"))
+            .expect("Cargo graph");
+        for path in [
+            "crates/test-only/src/contract.rs",
+            "crates/out-of-tree/src/lib.rs",
+        ] {
+            let selection = select(
+                &policy,
+                &graph,
+                &[ObservedChange {
+                    path: path.to_owned(),
+                    change_kind: "MODIFY".to_owned(),
+                    object_kind: "REGULAR".to_owned(),
+                    old_mode: Some("100644".to_owned()),
+                    new_mode: Some("100644".to_owned()),
+                }],
+            );
+            assert_eq!(selection.risk.as_str(), "CRITICAL", "{path}");
+            assert!(selection.reason_codes.iter().any(|reason| {
+                reason == "MEASUREMENT_ONLY_PACKAGE_REQUIRES_GLOBAL_QUALITY"
+            }));
+            assert!(selection.quality_packages.is_empty());
+        }
     }
 
     #[test]
@@ -563,16 +606,7 @@
             )
             .expect("root measurement plan");
 
-        assert_eq!(plan["risk"]["class"], "CRITICAL");
-        assert!(
-            plan["risk"]["reason_codes"]
-                .as_array()
-                .expect("reason codes")
-                .contains(&serde_json::json!(
-                    "MEASUREMENT_ONLY_PACKAGE_REQUIRES_GLOBAL_QUALITY"
-                ))
-        );
-        assert_eq!(plan["quality_scope"]["mode"], "GLOBAL");
+        assert_measurement_only_global_risk(&plan);
         let definitions = plan["nodes"]
             .as_array()
             .expect("nodes")
@@ -1412,15 +1446,7 @@
             serde_json::json!(request.source.head_commit)
         );
         assert_eq!(&plan["execution_context"], context);
-        assert_eq!(plan["risk"]["class"], "CRITICAL");
-        assert!(
-            plan["risk"]["reason_codes"]
-                .as_array()
-                .expect("reason codes")
-                .contains(&serde_json::json!(
-                    "MEASUREMENT_ONLY_PACKAGE_REQUIRES_GLOBAL_QUALITY"
-                ))
-        );
+        assert_measurement_only_global_risk(plan);
         assert_eq!(
             plan["affected_packages"],
             serde_json::json!(["consumer", "executor-fixture", "legacy"])

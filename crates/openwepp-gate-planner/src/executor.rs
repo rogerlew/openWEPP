@@ -2111,6 +2111,13 @@ pub(crate) mod tests {
         })
     }
 
+    pub(crate) fn global_quality_gate_definition(
+        arguments: &[&str],
+        prerequisites: &[&str],
+    ) -> Value {
+        gate_definition("adjudicated-crap-v1", arguments, prerequisites)
+    }
+
     fn write_json(path: &Path, value: &Value) {
         fs::write(
             path,
@@ -2458,7 +2465,7 @@ pub(crate) mod tests {
         let (repo, plan) = execution_fixture(
             "preflight-repo",
             &[
-                gate_definition("adjudicated-crap-v1", &["./tools/pass.sh"], &[]),
+                global_quality_gate_definition(&["./tools/pass.sh"], &[]),
                 gate_definition("fixture-command-v1", &["./tools/pass.sh"], &[]),
             ],
         );
@@ -2839,11 +2846,7 @@ pub(crate) mod tests {
     fn terminal_plan_executes_and_independent_verifier_accepts_pass_receipt() {
         let (repo, plan) = execution_fixture(
             "e2e-pass-repo",
-            &[gate_definition(
-                "adjudicated-crap-v1",
-                &["./tools/pass.sh"],
-                &[],
-            )],
+            &[global_quality_gate_definition(&["./tools/pass.sh"], &[])],
         );
         let artifacts = TempDirectory::new("e2e-pass-artifacts");
         let receipt = execute_and_verify(repo.path(), &plan, artifacts.path());
@@ -2862,7 +2865,7 @@ pub(crate) mod tests {
         let (repo, plan) = execution_fixture(
             "e2e-nonpass-repo",
             &[
-                gate_definition("adjudicated-crap-v1", &["./tools/fail.sh"], &[]),
+                global_quality_gate_definition(&["./tools/fail.sh"], &[]),
                 gate_definition("fixture-dependent-v1", &["true"], &["adjudicated-crap-v1"]),
             ],
         );
@@ -2890,7 +2893,7 @@ pub(crate) mod tests {
         let (repo, plan) = execution_fixture(
             "e2e-mutation-repo",
             &[
-                gate_definition("adjudicated-crap-v1", &["./tools/mutate.sh"], &[]),
+                global_quality_gate_definition(&["./tools/mutate.sh"], &[]),
                 gate_definition("fixture-independent-v1", &["./tools/mark.sh"], &[]),
             ],
         );

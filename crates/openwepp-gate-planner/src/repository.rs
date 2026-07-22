@@ -787,6 +787,7 @@ fn utf8_stdout(output: &Output, code: &'static str) -> Result<String> {
 #[derive(Debug, Clone, Default)]
 pub struct CargoGraph {
     package_dirs: BTreeMap<String, String>,
+    production_packages: BTreeSet<String>,
     reverse: BTreeMap<String, BTreeSet<String>>,
 }
 
@@ -834,6 +835,7 @@ impl CargoGraph {
             .collect::<BTreeSet<_>>();
         let mut by_id = BTreeMap::new();
         let mut package_dirs = BTreeMap::new();
+        let mut production_packages = BTreeSet::new();
         for package in packages {
             let id = string_field(package, "id")?;
             if !workspace_members.contains(id) {
@@ -855,6 +857,9 @@ impl CargoGraph {
                 .ok_or_else(|| metadata_error("non-UTF8 manifest path"))?
                 .replace('\\', "/");
             by_id.insert(id.to_owned(), name.to_owned());
+            if package_owns_production_target(package, &relative, &normalized_root)? {
+                production_packages.insert(name.to_owned());
+            }
             package_dirs.insert(name.to_owned(), relative);
         }
         let mut reverse: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
@@ -880,6 +885,7 @@ impl CargoGraph {
         }
         Ok(Self {
             package_dirs,
+            production_packages,
             reverse,
         })
     }
@@ -888,6 +894,9 @@ impl CargoGraph {
     pub fn union(&self, other: &Self) -> Self {
         let mut union = self.clone();
         union.package_dirs.extend(other.package_dirs.clone());
+        union
+            .production_packages
+            .extend(other.production_packages.clone());
         for (dependency, dependents) in &other.reverse {
             union
                 .reverse
@@ -938,13 +947,59 @@ impl CargoGraph {
 
     #[must_use]
     pub fn owns_production_sources(&self, package: &str) -> bool {
-        self.package_dirs.get(package).is_some_and(|directory| {
-            let mut components = directory.split('/');
-            components.next() == Some("crates")
-                && components.next().is_some_and(|name| !name.is_empty())
-                && components.next().is_none()
-        })
+        self.production_packages.contains(package)
     }
+}
+
+fn package_owns_production_target(
+    package: &Value,
+    directory: &str,
+    normalized_root: &Path,
+) -> Result<bool> {
+    let mut components = directory.split('/');
+    let direct_crate = components.next() == Some("crates")
+        && components.next().is_some_and(|name| !name.is_empty())
+        && components.next().is_none();
+    if !direct_crate {
+        return Ok(false);
+    }
+    let prefix = format!("{directory}/src/");
+    let targets = package["targets"]
+        .as_array()
+        .ok_or_else(|| metadata_error("package targets"))?;
+    for target in targets {
+        let kinds = target["kind"]
+            .as_array()
+            .ok_or_else(|| metadata_error("target kind"))?;
+        let kinds = kinds
+            .iter()
+            .map(|kind| kind.as_str().ok_or_else(|| metadata_error("target kind")))
+            .collect::<Result<Vec<_>>>()?;
+        let production_kind = !kinds.is_empty()
+            && kinds
+                .iter()
+                .all(|kind| matches!(*kind, "lib" | "bin" | "proc-macro"));
+        if !production_kind {
+            continue;
+        }
+        let source = Path::new(string_field(target, "src_path")?);
+        let normalized_source = fs::canonicalize(source).unwrap_or_else(|_| source.to_path_buf());
+        let relative = normalized_source
+            .strip_prefix(normalized_root)
+            .map_err(|_| metadata_error("target source outside snapshot"))?
+            .to_str()
+            .ok_or_else(|| metadata_error("non-UTF8 target source"))?
+            .replace('\\', "/");
+        if relative.starts_with(&prefix)
+            && Path::new(&relative)
+                .extension()
+                .is_some_and(|extension| extension.eq_ignore_ascii_case("rs"))
+            && !relative.contains("/src/tests/")
+        {
+            return Ok(true);
+        }
+    }
+    Ok(false)
 }
 
 fn reject_undeclared_feature_projection(package: &Value) -> Result<()> {
@@ -1328,17 +1383,20 @@ mod tests {
     #[test]
     fn cargo_graph_expands_reverse_dependencies() {
         let root = std::path::Path::new("/repo");
-        let metadata = br#"{"packages":[{"id":"a 0.1","name":"a","manifest_path":"/repo/crates/a/Cargo.toml","features":{}},{"id":"b 0.1","name":"b","manifest_path":"/repo/crates/b/Cargo.toml","features":{}}],"workspace_members":["a 0.1","b 0.1"],"resolve":{"nodes":[{"id":"a 0.1","deps":[]},{"id":"b 0.1","deps":[{"pkg":"a 0.1","dep_kinds":[{"kind":null,"target":null}]}]}]}}"#;
+        let metadata = br#"{"packages":[{"id":"a 0.1","name":"a","manifest_path":"/repo/crates/a/Cargo.toml","features":{},"targets":[{"kind":["lib"],"src_path":"/repo/crates/a/src/lib.rs"}]},{"id":"b 0.1","name":"b","manifest_path":"/repo/crates/b/Cargo.toml","features":{},"targets":[{"kind":["bin"],"src_path":"/repo/crates/b/src/main.rs"}]},{"id":"test-only 0.1","name":"test-only","manifest_path":"/repo/crates/test-only/Cargo.toml","features":{},"targets":[{"kind":["test"],"src_path":"/repo/crates/test-only/src/contract.rs"}]},{"id":"out-of-tree 0.1","name":"out-of-tree","manifest_path":"/repo/crates/out-of-tree/Cargo.toml","features":{},"targets":[{"kind":["lib"],"src_path":"/repo/shared/out_of_tree.rs"}]}],"workspace_members":["a 0.1","b 0.1","test-only 0.1","out-of-tree 0.1"],"resolve":{"nodes":[{"id":"a 0.1","deps":[]},{"id":"b 0.1","deps":[{"pkg":"a 0.1","dep_kinds":[{"kind":null,"target":null}]}]},{"id":"test-only 0.1","deps":[]},{"id":"out-of-tree 0.1","deps":[]}]}}"#;
         let graph = CargoGraph::from_metadata(metadata, root).expect("metadata graph");
         let initial = std::collections::BTreeSet::from(["a".to_owned()]);
         assert_eq!(graph.reverse_closure(&initial).len(), 2);
         assert!(graph.owns_production_sources("a"));
+        assert!(graph.owns_production_sources("b"));
+        assert!(!graph.owns_production_sources("test-only"));
+        assert!(!graph.owns_production_sources("out-of-tree"));
         assert_eq!(
             graph.package_for_path("crates/a/src/lib.rs").as_deref(),
             Some("a")
         );
 
-        let root_metadata = br#"{"packages":[{"id":"root 0.1","name":"openwepp","manifest_path":"/repo/Cargo.toml","features":{}}],"workspace_members":["root 0.1"],"resolve":{"nodes":[{"id":"root 0.1","deps":[]}]}}"#;
+        let root_metadata = br#"{"packages":[{"id":"root 0.1","name":"openwepp","manifest_path":"/repo/Cargo.toml","features":{},"targets":[{"kind":["lib"],"src_path":"/repo/src/lib.rs"}]}],"workspace_members":["root 0.1"],"resolve":{"nodes":[{"id":"root 0.1","deps":[]}]}}"#;
         let root_graph = CargoGraph::from_metadata(root_metadata, root).expect("root graph");
         assert!(!root_graph.owns_production_sources("openwepp"));
     }

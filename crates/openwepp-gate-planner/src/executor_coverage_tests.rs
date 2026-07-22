@@ -611,15 +611,11 @@ fn stage_receipt_reconstruction_preserves_field_order_and_collections() {
 
 #[test]
 fn public_stage_selection_preserves_light_final_and_rejection_shapes() {
-    use super::tests::{TempDirectory, execution_fixture, gate_definition};
+    use super::tests::{TempDirectory, execution_fixture, global_quality_gate_definition};
 
     let (repo, plan) = execution_fixture(
         "stage-selection-repo",
-        &[gate_definition(
-            "adjudicated-crap-v1",
-            &["./tools/pass.sh"],
-            &[],
-        )],
+        &[global_quality_gate_definition(&["./tools/pass.sh"], &[])],
     );
     let light_artifacts = TempDirectory::new("stage-selection-light");
     let light = execute_plan_stage(
