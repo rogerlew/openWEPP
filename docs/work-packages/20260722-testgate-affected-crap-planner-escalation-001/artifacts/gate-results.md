@@ -16,3 +16,7 @@ Ran: the first clean target attempt exposed RTR-036 at 117/153 before fail-fast
 cancellation. After its one-line correction, the changed-head target exposed
 RTR-037 and one stale planner expectation at 131/153. Both failures are retained;
 neither target was repeated unchanged.
+
+Ran: the next changed-head target exposed RTR-038 at 135/153. Source audit found
+and corrected the one adjacent remaining receipt fixture in the same package;
+the failed target was not repeated unchanged.

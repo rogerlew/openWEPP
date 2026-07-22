@@ -6,6 +6,14 @@ Queue ID: `TESTGATE-EXECUTOR-RECEIPT-FIXTURE-RECOVERY-01`
 
 Status: `ACTIVE / SCAFFOLD`
 
+## Progress
+
+- [x] Scaffold commit `e01c8952` predates fixture edits.
+- [x] Correct both remaining root-only affected-CRAP identities and prerequisite.
+- [x] Both exact receipt regressions pass.
+- [ ] Commit, run owning target/Clippy, package audit, and dual review.
+- [ ] Close RTR-038 and resume RTR-035 closure.
+
 ## Objective
 
 Close RTR-038 by aligning the two remaining root-only executor receipt fixtures

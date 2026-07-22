@@ -2840,7 +2840,7 @@ pub(crate) mod tests {
         let (repo, plan) = execution_fixture(
             "e2e-pass-repo",
             &[gate_definition(
-                "affected-adjudicated-crap-v1",
+                "adjudicated-crap-v1",
                 &["./tools/pass.sh"],
                 &[],
             )],
@@ -2862,12 +2862,8 @@ pub(crate) mod tests {
         let (repo, plan) = execution_fixture(
             "e2e-nonpass-repo",
             &[
-                gate_definition("affected-adjudicated-crap-v1", &["./tools/fail.sh"], &[]),
-                gate_definition(
-                    "fixture-dependent-v1",
-                    &["true"],
-                    &["affected-adjudicated-crap-v1"],
-                ),
+                gate_definition("adjudicated-crap-v1", &["./tools/fail.sh"], &[]),
+                gate_definition("fixture-dependent-v1", &["true"], &["adjudicated-crap-v1"]),
             ],
         );
         let artifacts = TempDirectory::new("e2e-nonpass-artifacts");
