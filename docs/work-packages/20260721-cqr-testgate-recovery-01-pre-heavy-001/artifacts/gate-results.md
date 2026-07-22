@@ -11,5 +11,6 @@
 | delegated first affected CQR metric | PASS | `cargo llvm-cov -p openwepp-gate-planner --lib --ignore-run-fail --lcov` exited 0; 104/104 passed in 496.36 s. Matching `cargo crap` exited 0. Eight target rows remain; see `crap-after.md`. |
 | second extraction focused inventory | PASS | 19 passed, 90 skipped, 16.876 s; run ID `8f3c1bd4-18f0-4a40-b9a4-3a97d99559fb` |
 | durable-defect characterization | PASS | 20 passed, 90 skipped, 16.521 s; run ID `f3262ee4-9f1a-4567-9269-704c4637cf2a` |
+| durable-defect extraction | PASS | 20 passed, 90 skipped, 16.658 s; run ID `31649409-1f30-4002-8c95-6442c4ad97c5` |
 | affected-surface CRAP/coverage | NOT RUN | required before completion |
 | terminal-plan heavy gates | NOT RUN | delegate after implementation |

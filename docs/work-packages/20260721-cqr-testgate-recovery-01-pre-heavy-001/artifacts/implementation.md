@@ -20,3 +20,10 @@ original typed errors remain unchanged.
 
 Ran: the focused inventory passed 19/19 in 16.876 seconds (run ID
 `8f3c1bd4-18f0-4a40-b9a4-3a97d99559fb`).
+
+Static: the durable-defect scan now separates exact ledger parsing/status
+folding from ordered OPEN rejection. It retains later-record-wins semantics and
+the first lexicographic OPEN-defect error.
+
+Ran: the focused inventory passed 20/20 in 16.658 seconds (run ID
+`31649409-1f30-4002-8c95-6442c4ad97c5`).

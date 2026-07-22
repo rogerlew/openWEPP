@@ -1220,6 +1220,10 @@ fn verify_ledger_chain(path: &Path) -> Result<()> {
 fn no_open_tooling_defect(path: &Path) -> Result<()> {
     let text = fs::read_to_string(path)
         .map_err(|error| audit_error("GATE-AUDIT-LEDGER-READ", error.to_string()))?;
+    reject_open_tooling_defects(tooling_defect_statuses(&text)?)
+}
+
+fn tooling_defect_statuses(text: &str) -> Result<std::collections::BTreeMap<String, String>> {
     let mut defects = std::collections::BTreeMap::new();
     for line in text.lines().filter(|line| !line.trim().is_empty()) {
         let item = parse_strict(line.as_bytes())?;
@@ -1233,6 +1237,10 @@ fn no_open_tooling_defect(path: &Path) -> Result<()> {
             defects.insert(defect_id.to_owned(), status.to_owned());
         }
     }
+    Ok(defects)
+}
+
+fn reject_open_tooling_defects(defects: std::collections::BTreeMap<String, String>) -> Result<()> {
     for (defect_id, status) in defects {
         if status == "OPEN" {
             return Err(audit_error("GATE-AUDIT-OPEN-TOOLING-DEFECT", defect_id));
