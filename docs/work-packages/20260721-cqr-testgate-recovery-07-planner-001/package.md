@@ -1,17 +1,17 @@
 # CQR: TESTGATE Planner Complexity
 
 Package: `20260721-cqr-testgate-recovery-07-planner-001`
-Status: `VERIFYING`
+Status: `COMPLETE`
 ExecPlan: `docs/work-packages/20260721-cqr-testgate-recovery-closeout-execplan.md`
 Target module: `crates/openwepp-gate-planner/src/planner.rs`
 Target rank: `7` of `7`
 Quality dimension: `CRAP/cyclomatic-complexity`
 
-Current phase: implementation and coverage characterization are complete and
-dual-reviewed. The single final changed-head traversal passes at exact clean
-head `a428d64b`: 89.8893% line coverage, 85.8576% region coverage, every
-compiled function above the 75% floor, and no CRAP row above 30. Dual terminal
-verification and disposition remain.
+Final disposition: complete. The single final changed-head traversal passes at
+exact clean metric head `a428d64b`: 89.8893% line coverage, 85.8576% region
+coverage, every compiled function above the 75% floor, and no CRAP row above
+30. Dual terminal verification passes at exact clean docs head `1a459717`; the
+active prompt is archived and rank 7 returns control to campaign closeout.
 
 ## Objective
 

@@ -252,9 +252,9 @@
 State as of `2026-07-21 UTC`:
 
 - `20260721-cqr-testgate-recovery-07-planner-001/` -
-  EXECUTING: seventh and final one-module CQR package. It targets the retained
-  planner construction row; source/test edits remain blocked until its scaffold
-  commit, dual eligibility review, and exact baseline complete.
+  COMPLETE: seventh and final one-module CQR package. The target and extracted
+  helper are below CRAP 30, module line/region coverage and all function floors
+  pass, and renewed dual review and dual terminal verification are complete.
 
 - `20260721-cqr-testgate-recovery-06-verifier-001/` -
   COMPLETE: sixth of seven one-module CQR packages. Test-only

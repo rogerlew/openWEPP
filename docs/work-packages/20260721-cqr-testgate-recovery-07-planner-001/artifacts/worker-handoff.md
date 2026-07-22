@@ -1,8 +1,8 @@
 # Worker Handoff
 
-Status: rank 7 resumed. RTR-029/RTR-030 are durably closed after isolated
-package-authority construction, corrected package admission, exact non-package-
-tip regression, and dual review. Mechanically split the planner tests, land
-characterization before production extraction, then use one changed-head
-matching-module traversal. Do not rerun the unchanged failed baseline.
-Campaign closeout stays blocked until rank 7 closes.
+Status: rank 7 complete. The target and helper are below CRAP 30; aggregate
+line/region coverage and every function floor pass; dual implementation review
+and terminal verification pass; retained evidence is bound and the prompt is
+archived. Return to the master ExecPlan: rebuild the release planner, generate
+fresh intent/terminal plans, and delegate exactly one changed-head TESTGATE
+qualification attempt. Do not rerun any unchanged expensive gate.

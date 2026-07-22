@@ -1,6 +1,6 @@
 # CQR ExecPlan: TESTGATE Recovery Closeout
 
-Status: `EXECUTING` (6 of 7 module packages complete)
+Status: `COMPLETE` (7 of 7 module packages complete)
 
 Campaign dependency: `TESTGATE-RECOVERY-TRUST-01` / `TESTGATE-CLOSURE-AUDIT-01`
 
@@ -62,6 +62,13 @@ compiled current-profile functions meet the 75% region floor, and no compiled
 row exceeds CRAP 30. RTR-028 is durably closed. Renewed dual implementation
 review and dual terminal verification pass with every finding explicitly
 dispositioned.
+
+Completed: rank 7, `planner.rs`. The sole retained target is reduced from CRAP
+30.4997 to 20.2263; the extracted helper is CRAP 12 and no compiled production
+row exceeds 30. Final production coverage is 89.8893% line / 85.8576% region,
+and every compiled function meets the 75% region floor. Test-first graph and
+fail-closed characterization, renewed dual review, and dual terminal
+verification pass. All seven one-module packages are complete.
 
 ## Execution Rules
 
