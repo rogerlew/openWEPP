@@ -2686,4 +2686,8 @@ mod tests {
             .is_err()
         );
     }
+
+    mod coverage_tests {
+        include!("verifier_coverage_tests.rs");
+    }
 }
