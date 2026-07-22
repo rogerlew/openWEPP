@@ -3,8 +3,13 @@ use std::collections::BTreeSet;
 use serde_json::{Value, json};
 
 use super::{MemoryArtifacts, RootlessArtifacts, normalized_plan_and_receipt, refresh_receipt_id};
-use crate::canonical::{derived_id, digest};
+use crate::canonical::{
+    current_executable_sha256, derived_id, digest, sha256_bytes,
+};
+use crate::executor::ExecutionClaims;
+use crate::package_validation::validate_package;
 use crate::planner::{derive_execution_key, derive_plan_id};
+use crate::pre_heavy::{CHECK_IDS, validate_audit_for_execution};
 use crate::verifier::{AttestationIdentity, EnvelopeVerdict, ReceiptVerdict};
 
 fn refresh_plan_and_receipt(plan: &mut Value, receipt: &mut Value) {
@@ -62,8 +67,110 @@ fn ready_admitted_fixture() -> (Value, Value, MemoryArtifacts) {
     node["node_id"] = json!(new_node_id);
     replace_string(&mut plan, &old_node_id, &new_node_id);
     replace_string(&mut receipt, &old_node_id, &new_node_id);
+    let predecessor_intent_plan_id = plan["plan_id"].clone();
+    plan["planning_stage"] = json!("TERMINAL");
+    plan["predecessor_intent_plan_id"] = predecessor_intent_plan_id;
     refresh_plan_and_receipt(&mut plan, &mut receipt);
+    let audit = ready_audit(&plan, &artifacts);
+    receipt["pre_heavy_audit"] = audit;
+    refresh_receipt_id(&mut receipt);
     (plan, receipt, artifacts)
+}
+
+fn ready_audit(plan: &Value, artifacts: &MemoryArtifacts) -> Value {
+    let root = super::repo();
+    let package_path = plan["authorized_paths"]
+        .as_array()
+        .expect("authorized paths")
+        .iter()
+        .filter_map(Value::as_str)
+        .find(|path| {
+            path.starts_with("docs/work-packages/") && path.ends_with("/package.md")
+        })
+        .expect("one changed package path");
+    let package_admission = validate_package(
+        &root,
+        plan["source"]["base_commit"]
+            .as_str()
+            .expect("base commit"),
+        std::path::Path::new(package_path),
+    )
+    .expect("package admission");
+    assert_eq!(package_admission["status"], "READY");
+    assert_eq!(package_admission["changed_paths"], plan["authorized_paths"]);
+
+    let claims = ExecutionClaims::default();
+    let mut light_receipt: Value = serde_json::from_slice(
+        &std::fs::read(root.join("gate-policy/v1/fixtures/valid/stage-receipt.json"))
+            .expect("stage receipt fixture"),
+    )
+    .expect("stage receipt JSON");
+    light_receipt["plan_id"] = plan["plan_id"].clone();
+    light_receipt["plan_sha256"] = json!(digest(plan).expect("plan digest"));
+    light_receipt["execution_key"] = plan["execution_key"].clone();
+    light_receipt["executor_binary_sha256"] =
+        json!(current_executable_sha256().expect("executor digest"));
+    light_receipt["artifact_root_sha256"] = json!(sha256_bytes(
+        artifacts.workspace.as_os_str().as_encoded_bytes()
+    ));
+    light_receipt["roots"] = plan["environment_roots"].clone();
+    light_receipt["claims"] = json!({
+        "principal": claims.principal,
+        "repository": claims.repository,
+        "source_event": claims.source_event,
+        "source_ref": claims.source_ref,
+        "workflow": claims.workflow,
+        "job": claims.job,
+        "runner": claims.runner,
+        "attempt": claims.attempt
+    });
+    light_receipt["stage_receipt_id"] =
+        json!(derived_id(&light_receipt, "stage_receipt_id").expect("stage receipt ID"));
+
+    let node_manifest = plan["nodes"]
+        .as_array()
+        .expect("plan nodes")
+        .iter()
+        .map(|node| {
+            json!({
+                "node_id": node["node_id"],
+                "execution_cost_class": node["execution_cost_class"],
+                "node_sha256": digest(node).expect("node digest")
+            })
+        })
+        .collect::<Vec<_>>();
+    let checks = CHECK_IDS
+        .iter()
+        .map(|check_id| {
+            json!({
+                "check_id": check_id,
+                "status": "PASS",
+                "reason_codes": [],
+                "evidence_sha256": sha256_bytes(check_id.as_bytes())
+            })
+        })
+        .collect::<Vec<_>>();
+    let mut audit = json!({
+        "schema_version": "openwepp-pre-heavy-audit-v1",
+        "audit_id": "0".repeat(64),
+        "status": "READY",
+        "reason_codes": [],
+        "plan_id": plan["plan_id"],
+        "plan_sha256": digest(plan).expect("plan digest"),
+        "execution_key": plan["execution_key"],
+        "executor_binary_sha256": light_receipt["executor_binary_sha256"],
+        "light_stage_receipt_id": light_receipt["stage_receipt_id"],
+        "artifact_root_sha256": light_receipt["artifact_root_sha256"],
+        "ledger_path_sha256": "0".repeat(64),
+        "ledger_head_sha256": null,
+        "node_manifest": node_manifest,
+        "package_admission": package_admission,
+        "checks": checks,
+        "combined_execution": plan["combined_quality"],
+        "light_receipt": light_receipt
+    });
+    audit["audit_id"] = json!(derived_id(&audit, "audit_id").expect("audit ID"));
+    audit
 }
 
 fn make_light_only(plan: &mut Value, receipt: &mut Value) {
@@ -98,17 +205,39 @@ fn make_light_only(plan: &mut Value, receipt: &mut Value) {
 fn ready_audit_verification_preserves_order_and_exact_verdict() {
     let root = super::repo();
     let (plan, receipt, artifacts) = ready_admitted_fixture();
+    assert_eq!(plan["planning_stage"], "TERMINAL");
+    assert_eq!(receipt["pre_heavy_audit"]["status"], "READY");
+    validate_audit_for_execution(
+        &root,
+        &plan,
+        &receipt["pre_heavy_audit"],
+        &artifacts.workspace,
+        &ExecutionClaims::default(),
+    )
+    .expect("READY audit must be admitted immediately before receipt verification");
     let verdict = crate::verifier::verify_receipt_after_ready_audit(
         &root, &plan, &receipt, &artifacts,
     )
     .expect("READY-admitted valid receipt");
-    assert_eq!(verdict.receipt_id(), receipt["receipt_id"]);
-    assert_eq!(verdict.result(), "PASS");
-    assert_eq!(verdict.trust_class(), "LOCAL_UNTRUSTED");
-    assert_eq!(
-        verdict.claimed_trust_class(),
-        receipt["claims"]["trust_class"]
-    );
+    let expected = ReceiptVerdict {
+        receipt_id: receipt["receipt_id"].as_str().expect("receipt ID").to_owned(),
+        receipt_sha256: digest(&receipt).expect("receipt digest"),
+        plan_id: plan["plan_id"].as_str().expect("plan ID").to_owned(),
+        plan_sha256: digest(&plan).expect("plan digest"),
+        execution_key: plan["execution_key"]
+            .as_str()
+            .expect("execution key")
+            .to_owned(),
+        roots_sha256: digest(&plan["environment_roots"]).expect("roots digest"),
+        boundary: plan["boundary"].as_str().expect("boundary").to_owned(),
+        result: "PASS".to_owned(),
+        trust_class: "LOCAL_UNTRUSTED".to_owned(),
+        claimed_trust_class: receipt["claims"]["trust_class"]
+            .as_str()
+            .expect("claimed trust")
+            .to_owned(),
+    };
+    assert_eq!(verdict, expected);
 
     let (plan, mut wrong_identity, artifacts) = ready_admitted_fixture();
     wrong_identity["plan_id"] = json!("0".repeat(64));
@@ -120,6 +249,7 @@ fn ready_audit_verification_preserves_order_and_exact_verdict() {
     )
     .expect_err("identity must be checked first");
     assert_eq!(error.code, "GATE-RECEIPT-ID");
+    assert_eq!(error.message, "derived identity mismatch");
 
     let (mut wrong_context, mut receipt, artifacts) = ready_admitted_fixture();
     wrong_context["execution_context"]["tool_manifest_sha256"] = json!("0".repeat(64));
@@ -163,6 +293,7 @@ fn ready_audit_verification_preserves_order_and_exact_verdict() {
     )
     .expect_err("valid admission must delegate to full receipt verification");
     assert_eq!(error.code, "GATE-RECEIPT-TREE");
+    assert_eq!(error.message, "source tree/root digest mismatch");
 }
 
 #[test]

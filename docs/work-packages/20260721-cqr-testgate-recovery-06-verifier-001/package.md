@@ -7,6 +7,9 @@ Target module: `crates/openwepp-gate-planner/src/verifier.rs`
 Target rank: `6` of `7`
 Quality dimension: `CRAP/cyclomatic-complexity`
 
+Current phase: dual implementation review findings corrected; focused
+clean-head validation and one new changed-head metric remain pending.
+
 ## Objective
 
 Reduce the one eligible verifier function above CRAP 30 to at most 30 while
