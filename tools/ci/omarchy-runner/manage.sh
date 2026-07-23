@@ -154,7 +154,7 @@ setup_runner() {
     --tmpfs "/cache/cargo:rw,nosuid,nodev,size=8g,uid=10001,gid=10001,mode=0700" \
     --tmpfs "/t:rw,exec,nosuid,nodev,size=56g,uid=10001,gid=10001,mode=0700" \
     --tmpfs "/home/runner:rw,nosuid,nodev,size=1g,uid=10001,gid=10001,mode=0700" \
-    --tmpfs "/tmp:rw,nosuid,nodev,size=2g,uid=10001,gid=10001,mode=1777" \
+    --tmpfs "/tmp:rw,exec,nosuid,nodev,size=24g,uid=10001,gid=10001,mode=1777" \
     "${IMAGE}" run >/dev/null
   for _ in {1..30}; do
     if provider_contract_matches | grep -Fx true >/dev/null; then
