@@ -702,9 +702,7 @@ fn validate_package_chain_command(
     repo: &Path,
     options: &BTreeMap<String, String>,
 ) -> Result<Value> {
-    let base = required(options, "base")?;
-    let head = required(options, "head")?;
-    let package = PathBuf::from(required(options, "package")?);
+    let (base, head, package) = package_chain_command_inputs(options)?;
     let chain = validate_package_chain(repo, base, Some(head), &package)?;
     let output = persist_plan(repo, options, &chain)?;
     Ok(json!({
@@ -713,6 +711,15 @@ fn validate_package_chain_command(
         "reason_codes": chain["reason_codes"],
         "output": output
     }))
+}
+
+fn package_chain_command_inputs(
+    options: &BTreeMap<String, String>,
+) -> Result<(&str, &str, PathBuf)> {
+    let base = required(options, "base")?;
+    let head = required(options, "head")?;
+    let package = PathBuf::from(required(options, "package")?);
+    Ok((base, head, package))
 }
 
 fn execution_inputs(
@@ -798,26 +805,43 @@ fn plan_command(repo: &Path, options: &BTreeMap<String, String>) -> Result<Value
 }
 
 fn plan_request(repo: &Path, options: &BTreeMap<String, String>) -> Result<PlanRequest> {
-    let authorized_paths = authorized_paths(options)?;
-    let source = planning_source(repo, options)?;
-    let package_authority = package_authority(repo, options, &authorized_paths, &source)?;
+    let (authorized_paths, source, package_authority) = planning_context(repo, options)?;
+    let stage = planning_stage(options)?;
+    let (package_authority_chain_id, intent_package_path) =
+        package_authority_fields(&package_authority)?;
     Ok(PlanRequest {
-        stage: planning_stage(options)?,
+        stage,
         predecessor_intent_plan_id: options.get("predecessor").cloned(),
         boundary: boundary(options),
         campaign_id: options.get("campaign").cloned(),
         combined_quality_proof_id: options.get("combined-proof-id").cloned(),
         authorized_paths,
-        package_authority_chain_id: package_authority["package_authority_chain_id"]
-            .as_str()
-            .ok_or_else(usage_error)?
-            .to_owned(),
-        intent_package_path: package_authority["intent_package_path"]
-            .as_str()
-            .ok_or_else(usage_error)?
-            .to_owned(),
+        package_authority_chain_id,
+        intent_package_path,
         source,
     })
+}
+
+fn planning_context(
+    repo: &Path,
+    options: &BTreeMap<String, String>,
+) -> Result<(Vec<String>, ObservedSource, Value)> {
+    let authorized_paths = authorized_paths(options)?;
+    let source = planning_source(repo, options)?;
+    let package_authority = package_authority(repo, options, &authorized_paths, &source)?;
+    Ok((authorized_paths, source, package_authority))
+}
+
+fn package_authority_fields(authority: &Value) -> Result<(String, String)> {
+    let package_authority_chain_id = authority["package_authority_chain_id"]
+        .as_str()
+        .ok_or_else(usage_error)?
+        .to_owned();
+    let intent_package_path = authority["intent_package_path"]
+        .as_str()
+        .ok_or_else(usage_error)?
+        .to_owned();
+    Ok((package_authority_chain_id, intent_package_path))
 }
 
 fn package_authority(
@@ -826,7 +850,21 @@ fn package_authority(
     authorized: &[String],
     source: &ObservedSource,
 ) -> Result<Value> {
-    let value = read_json(Path::new(required(options, "package-authority-chain")?))?;
+    let value = read_package_authority(options)?;
+    let reconstructed = reconstruct_package_authority(repo, &value, source)?;
+    require_exact_package_authority(&value, &reconstructed, authorized)?;
+    Ok(value)
+}
+
+fn read_package_authority(options: &BTreeMap<String, String>) -> Result<Value> {
+    read_json(Path::new(required(options, "package-authority-chain")?))
+}
+
+fn reconstruct_package_authority(
+    repo: &Path,
+    value: &Value,
+    source: &ObservedSource,
+) -> Result<Value> {
     let intent_package = value["intent_package_path"]
         .as_str()
         .ok_or_else(usage_error)?;
@@ -837,14 +875,12 @@ fn package_authority(
             "package authority requires a committed head",
         )
     })?;
-    let reconstructed = validate_package_chain(
+    validate_package_chain(
         repo,
         &source.base_commit,
         Some(head),
         Path::new(intent_package),
-    )?;
-    require_exact_package_authority(&value, &reconstructed, authorized)?;
-    Ok(value)
+    )
 }
 
 fn require_exact_package_authority(
@@ -1174,13 +1210,17 @@ fn usage_error() -> GatePolicyError {
 mod tests {
     use std::collections::BTreeMap;
     use std::fs;
-    use std::path::PathBuf;
+    use std::path::{Path, PathBuf};
+    use std::process::Command;
+    use std::sync::atomic::{AtomicU64, Ordering};
 
     use super::{
-        parse_options, require_exact_package_authority, run_arguments, staged_run_command,
+        package_authority, parse_options, plan_request, require_exact_package_authority,
+        run_arguments, staged_run_command, validate_package_chain_command,
         validate_transition_outputs, write_plan_confined,
     };
     use openwepp_gate_planner::executor::ExecutionClaims;
+    use openwepp_gate_planner::repository::ObservedSource;
     use serde_json::json;
 
     fn arguments(values: &[&str]) -> Vec<String> {
@@ -1219,6 +1259,101 @@ mod tests {
         let error = require_exact_package_authority(&forged, &live, &authorized)
             .expect_err("forged authority");
         assert_eq!(error.code, "GATE-PLAN-PACKAGE-AUTHORITY");
+    }
+
+    #[test]
+    fn package_chain_command_and_plan_request_preserve_authority_identity() {
+        let fixture = PlanningFixture::new();
+        fixture.write_package("child", "- `docs/work-packages/child/**`\n- `src/input.rs`");
+        let base = fixture.commit("child authority");
+        fixture.write_source("src/input.rs", "pub fn input() {}\n");
+        let head = fixture.commit("authorized source");
+        let output = fixture.external("package-authority-chain.json");
+        let command_options = BTreeMap::from([
+            ("base".to_owned(), base.clone()),
+            ("head".to_owned(), head.clone()),
+            (
+                "package".to_owned(),
+                "docs/work-packages/child/package.md".to_owned(),
+            ),
+            ("output".to_owned(), output.display().to_string()),
+        ]);
+
+        let summary = validate_package_chain_command(&fixture.root, &command_options)
+            .expect("package chain command");
+        assert_eq!(summary["result"], "READY");
+        let authority = openwepp_gate_planner::canonical::parse_strict(
+            &fs::read(&output).expect("persisted package authority"),
+        )
+        .expect("strict package authority JSON");
+        assert_eq!(
+            summary["package_authority_chain_id"],
+            authority["package_authority_chain_id"]
+        );
+        assert_eq!(summary["output"], output.display().to_string());
+
+        let authorized = fixture.external("authorized-paths.json");
+        fs::write(
+            &authorized,
+            serde_json::to_vec(&authority["changed_paths"]).expect("authorized path bytes"),
+        )
+        .expect("authorized paths");
+        let plan_options = BTreeMap::from([
+            ("stage".to_owned(), "intent".to_owned()),
+            ("base".to_owned(), base.clone()),
+            ("head".to_owned(), head.clone()),
+            (
+                "authorized-paths".to_owned(),
+                authorized.display().to_string(),
+            ),
+            (
+                "package-authority-chain".to_owned(),
+                output.display().to_string(),
+            ),
+        ]);
+        let request = plan_request(&fixture.root, &plan_options).expect("bound plan request");
+        assert_eq!(request.source.base_commit, base);
+        assert_eq!(request.source.head_commit.as_deref(), Some(head.as_str()));
+        assert_eq!(
+            request.package_authority_chain_id,
+            authority["package_authority_chain_id"]
+                .as_str()
+                .expect("authority identity")
+        );
+        assert_eq!(
+            request.intent_package_path,
+            "docs/work-packages/child/package.md"
+        );
+        assert_eq!(json!(request.authorized_paths), authority["changed_paths"]);
+    }
+
+    #[test]
+    fn package_authority_requires_a_committed_head_before_reconstruction() {
+        let fixture = PlanningFixture::new();
+        let authority = fixture.external("authority.json");
+        fs::write(
+            &authority,
+            r#"{"intent_package_path":"docs/work-packages/child/package.md"}"#,
+        )
+        .expect("authority fixture");
+        let options = BTreeMap::from([(
+            "package-authority-chain".to_owned(),
+            authority.display().to_string(),
+        )]);
+        let source = ObservedSource {
+            base_commit: "a".repeat(40),
+            head_commit: None,
+            dirty_tree_digest: Some("c".repeat(64)),
+            index_digest: Some("d".repeat(64)),
+            worktree_digest: Some("e".repeat(64)),
+            untracked_digest: Some("f".repeat(64)),
+            changes: Vec::new(),
+        };
+
+        let error = package_authority(&fixture.root, &options, &[], &source)
+            .expect_err("dirty source cannot bind package authority");
+        assert_eq!(error.code, "GATE-PLAN-PACKAGE-AUTHORITY");
+        assert_eq!(error.message, "package authority requires a committed head");
     }
 
     #[test]
@@ -1371,5 +1506,98 @@ mod tests {
             .expect_err("repository-confined output must fail closed");
         assert_eq!(error.code, "GATE-CLI-OUTPUT-IN-REPOSITORY");
         std::fs::remove_dir_all(&scratch).expect("remove test scratch directory");
+    }
+
+    static PLANNING_SEQUENCE: AtomicU64 = AtomicU64::new(0);
+
+    struct PlanningFixture {
+        root: PathBuf,
+        external_root: PathBuf,
+    }
+
+    impl PlanningFixture {
+        fn new() -> Self {
+            let sequence = PLANNING_SEQUENCE.fetch_add(1, Ordering::Relaxed);
+            let root = std::env::temp_dir().join(format!(
+                "openwepp-main-planning-{}-{sequence}",
+                std::process::id()
+            ));
+            let external_root = std::env::temp_dir().join(format!(
+                "openwepp-main-planning-output-{}-{sequence}",
+                std::process::id()
+            ));
+            fs::create_dir_all(root.join("gate-policy/v1/schemas")).expect("schema directory");
+            fs::create_dir(&external_root).expect("external output directory");
+            fs::write(
+                root.join("gate-policy/v1/schemas/package-authority-chain.schema.json"),
+                "{\"type\":\"object\"}\n",
+            )
+            .expect("permissive fixture schema");
+            Self::git(&root, &["init", "-q"]);
+            Self::git(&root, &["config", "user.email", "test@example.invalid"]);
+            Self::git(&root, &["config", "user.name", "Test"]);
+            fs::write(root.join("README.md"), "# Fixture\n").expect("fixture root");
+            Self {
+                root,
+                external_root,
+            }
+        }
+
+        fn write_package(&self, name: &str, write_set: &str) {
+            let directory = self.root.join(format!("docs/work-packages/{name}"));
+            fs::create_dir_all(directory.join("prompts/active")).expect("active prompt directory");
+            fs::write(
+                directory.join("package.md"),
+                format!("# {name}\n\nStatus: `ACTIVE`\n\n## Intended Write Set\n\n{write_set}\n"),
+            )
+            .expect("package text");
+            fs::write(directory.join("prompts/active/kickoff.md"), "# Kickoff\n")
+                .expect("active prompt");
+        }
+
+        fn write_source(&self, path: &str, text: &str) {
+            let path = self.root.join(path);
+            fs::create_dir_all(path.parent().expect("source parent")).expect("source directory");
+            fs::write(path, text).expect("source text");
+        }
+
+        fn external(&self, name: &str) -> PathBuf {
+            self.external_root.join(name)
+        }
+
+        fn commit(&self, message: &str) -> String {
+            Self::git(&self.root, &["add", "."]);
+            Self::git(&self.root, &["commit", "-qm", message]);
+            String::from_utf8(Self::git_output(&self.root, &["rev-parse", "HEAD"]))
+                .expect("UTF-8 commit")
+                .trim()
+                .to_owned()
+        }
+
+        fn git(repo: &Path, args: &[&str]) {
+            let _output = Self::git_output(repo, args);
+        }
+
+        fn git_output(repo: &Path, args: &[&str]) -> Vec<u8> {
+            let output = Command::new("git")
+                .args(args)
+                .current_dir(repo)
+                .output()
+                .expect("git command");
+            assert!(
+                output.status.success(),
+                "git {:?}: {}",
+                args,
+                String::from_utf8_lossy(&output.stderr)
+            );
+            output.stdout
+        }
+    }
+
+    impl Drop for PlanningFixture {
+        fn drop(&mut self) {
+            fs::remove_dir_all(&self.root).expect("remove planning fixture");
+            fs::remove_dir_all(&self.external_root).expect("remove planning fixture outputs");
+        }
     }
 }

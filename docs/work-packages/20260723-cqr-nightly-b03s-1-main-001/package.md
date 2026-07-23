@@ -1,7 +1,7 @@
 # CQR Nightly B03S-1: Gate Planner Main Authority Commands
 
 Package: `20260723-cqr-nightly-b03s-1-main-001`
-Status: `ACTIVE`
+Status: `IMPLEMENTED / DUAL REVIEW PASS / VERIFICATION PENDING`
 ExecPlan: `docs/work-packages/20260723-cqr-nightly-b03-execplan.md`
 Nightly batch: `b03s`
 Target module: `crates/openwepp-gate-planner/src/main.rs`
