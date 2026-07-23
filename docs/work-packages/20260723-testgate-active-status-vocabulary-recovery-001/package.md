@@ -45,7 +45,7 @@ reviewer may push, deploy, dispatch TESTGATE, or run an expensive gate.
 
 - [x] Opened durable defect RTR-048 after exact cheap package-chain validation.
 - [x] Scaffolded prospective correction authority before Rust edits.
-- [ ] Correct and narrowly test the active-status vocabulary.
+- [x] Corrected and narrowly tested the active-status vocabulary.
 - [ ] Obtain dual review, close RTR-048, and obtain dual verification.
 
 ## Exit Criteria

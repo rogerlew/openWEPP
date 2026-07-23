@@ -58,9 +58,9 @@ reviewer may push, deploy, dispatch TESTGATE, or run an expensive gate.
 
 - [x] Retained run `29981856347` and opened durable defect RTR-047.
 - [x] Scaffolded prospective correction authority before implementation.
-- [ ] Implement exact event-bound intent-package resolution.
-- [ ] Run focused validation and obtain dual implementation review.
-- [ ] Close RTR-047 durably and obtain dual terminal verification.
+- [x] Implemented exact event-bound intent-package resolution.
+- [x] Ran focused validation and exact package-chain admission.
+- [ ] Obtain dual implementation review, close RTR-047, and obtain dual terminal verification.
 
 ## Exit Criteria
 
