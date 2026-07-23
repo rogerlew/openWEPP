@@ -96,6 +96,13 @@ quality paths without editing its frozen subject.
   by the prior pre-execution finalizer deadlocked authenticated history restore.
 - [x] Close RTR-049 by admitting only the exact safe zero-byte ledger
   placeholder while preserving fail-closed nonempty and unsafe destinations.
+- [x] Retain automatic run `29984179443`: LIGHT passed 6/6 and audit was
+  `READY`; HEAVY admission stopped before any node on current-root provenance,
+  and hosted re-ingest exposed hidden indexed-file omission.
+- [ ] Close RTR-050 by excluding only the exact current HEAVY STARTED record
+  from prior-attempt resume discovery.
+- [ ] Close RTR-051 by preserving indexed hidden evidence through every
+  TESTGATE artifact publication.
 - [ ] Obtain the exact repository-reviewed GitHub attestation, complete the
   held terminal verification, archive the prompt, and record final
   disposition.
