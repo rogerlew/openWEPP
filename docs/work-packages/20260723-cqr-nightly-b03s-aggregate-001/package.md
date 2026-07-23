@@ -2,7 +2,7 @@
 
 Package ID: `20260723-cqr-nightly-b03s-aggregate-001`
 
-Status: `EXECUTED-HOLD-RTR-046-RUNNER-ACTIVATION`
+Status: `EXECUTED-HOLD-PROVIDER-ORPHAN-QUEUE`
 
 ## Objective
 
@@ -59,3 +59,5 @@ assigned bounded module implementation or comparator artifact root.
   `LOCAL_UNTRUSTED`, which cannot close an increment boundary.
 - [ ] Close RTR-046 after activating and verifying the reviewed persistent
   history mount required by the trusted runner.
+- [ ] Reconcile the three provider-orphaned zero-job queue records before the
+  next changed-head push.
