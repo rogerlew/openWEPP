@@ -781,6 +781,14 @@ reconstructs the live chain and requires exact identity. Dirty authority chains
 remain invalid until a separately specified synthetic-transition contract
 exists.
 
+The trusted push controller obtains the operator-supplied anchor from exactly
+one case-sensitive `TESTGATE-Intent-Package` trailer on the exact pushed head
+commit. Trusted manual dispatch instead requires one explicit
+`intent_package` input. Missing, duplicate, malformed, or event-inconsistent
+declarations fail before planning; the controller passes the exact resolved
+path to `testgate.py --intent-package` and never infers an anchor from multiple
+changed package candidates.
+
 Process temporary roots must be isolated per node attempt, use a platform-safe path-length budget for path-sensitive APIs such as Unix-domain sockets, and be removed after both successful and failed execution. Cleanup failure is a typed gate failure. The executor may derive a stricter resource schedule from the plan-bound canonical Nextest configuration when retained timing evidence proves the canonical concurrency cap unsafe on the runner; it must fail if the expected source configuration drifts, retain the test inventory and timeout, and record the qualified cap. A recurrence at two-way fixture concurrency requires a serial qualification before another expensive retry; raising the timeout is not the first correction.
 
 Attempt archives retain plans, audits, receipts, durable ledger snapshots, node logs, checkpoints, reports, and declared output artifacts. Before indexing or upload, the finalizer removes explicitly named disposable compiler targets, reconstruction workspaces, and process-temp trees with no-follow path checks. Disposable cache bytes are neither evidence nor recovery state and must not make finalization scale with build-cache size.

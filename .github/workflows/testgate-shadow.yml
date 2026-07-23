@@ -16,6 +16,10 @@ on:
         required: false
         default: ""
         type: string
+      intent_package:
+        description: "Prospective intent package anchor"
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -52,6 +56,7 @@ jobs:
           EVENT_REF: ${{ github.ref }}
           EVENT_BEFORE: ${{ github.event.before }}
           INPUT_BASE: ${{ inputs.base_ref }}
+          INPUT_INTENT_PACKAGE: ${{ inputs.intent_package }}
         run: |
           set -euo pipefail
           git fetch --no-tags origin main
@@ -72,9 +77,15 @@ jobs:
           fi
           git merge-base --is-ancestor "${base_commit}" "${head_commit}"
           [[ "${base_commit}" != "${head_commit}" ]]
+          intent_package="$(python3 tools/local_ci/resolve_testgate_intent_package.py \
+            --repo . \
+            --event-name "${EVENT_NAME}" \
+            --head "${head_commit}" \
+            --input-package "${INPUT_INTENT_PACKAGE}")"
           {
             echo "base=${base_commit}"
             echo "head=${head_commit}"
+            echo "intent_package=${intent_package}"
           } >> "${GITHUB_OUTPUT}"
       - name: Verify pinned gate toolchain
         run: |
@@ -221,6 +232,7 @@ jobs:
             --binary "${CARGO_TARGET_DIR}/debug/openwepp-gate-plan" \
             --base "${{ steps.comparison.outputs.base }}" \
             --head "${{ steps.comparison.outputs.head }}" \
+            --intent-package "${{ steps.comparison.outputs.intent_package }}" \
             --boundary INCREMENT \
             --artifact-root "${evidence_dir}" \
             --history-ledger "${TESTGATE_HISTORY_ROOT}/attempts.jsonl" \

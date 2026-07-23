@@ -999,7 +999,7 @@ fn runner_container_has_no_host_or_privileged_mounts() {
         "sha256:034ce655da139123cd775317d590d04dec6377788e4d124dc0e674f8d021e7e8";
     assert_eq!(manager.matches(image_id).count(), 1);
     assert_eq!(workflow.matches(image_id).count(), 2);
-    assert_eq!(runner_recovery_evidence.matches(image_id).count(), 1);
+    assert_eq!(runner_recovery_evidence.matches(image_id).count(), 2);
     assert_eq!(host_receipt.matches(historical_image_id).count(), 1);
     assert!(manager.contains("--security-opt no-new-privileges=true"));
     assert!(manager.contains("--cap-drop ALL"));
@@ -1075,4 +1075,22 @@ fn runner_github_cli_preflight_rejects_version_suffix_drift() {
         .status()
         .expect("run suffix-drift GitHub CLI version probe");
     assert!(!suffix_drift.success());
+}
+
+#[test]
+fn trusted_workflow_binds_one_explicit_intent_package() {
+    let workflow = text(".github/workflows/testgate-shadow.yml");
+    let resolver = text("tools/local_ci/resolve_testgate_intent_package.py");
+
+    assert!(workflow.contains("intent_package:"));
+    assert!(workflow.contains("required: true"));
+    assert!(workflow.contains("resolve_testgate_intent_package.py"));
+    assert!(workflow.contains("echo \"intent_package=${intent_package}\""));
+    assert!(
+        workflow.contains("--intent-package \"${{ steps.comparison.outputs.intent_package }}\"")
+    );
+    assert!(resolver.contains("TESTGATE-Intent-Package"));
+    assert!(resolver.contains("push head must contain exactly one"));
+    assert!(resolver.contains("workflow_dispatch requires an explicit"));
+    assert!(resolver.contains("PACKAGE_PATH.fullmatch(package)"));
 }
