@@ -991,7 +991,7 @@ fn runner_container_has_no_host_or_privileged_mounts() {
     let host_receipt = text(
         "docs/work-packages/20260718-testgate-accelerated-cutover-001/artifacts/host-capacity-security.md",
     );
-    let image_id = "sha256:034ce655da139123cd775317d590d04dec6377788e4d124dc0e674f8d021e7e8";
+    let image_id = "sha256:a0dbc987aa4ea42041e1148739a04ee8b2ce805e38d0197c16d3f4545baf7f6d";
     assert_eq!(manager.matches(image_id).count(), 1);
     assert_eq!(workflow.matches(image_id).count(), 2);
     assert_eq!(host_receipt.matches(image_id).count(), 1);
@@ -1028,6 +1028,13 @@ fn runner_container_has_no_host_or_privileged_mounts() {
     assert!(image.contains("pandas==3.0.3"));
     assert!(image.contains("rustup component add llvm-tools-preview"));
     assert!(image.contains("UK2US_COMMIT=6ce03a96a9466bed029fb0287786cd903f1876d6"));
+    assert!(image.contains("GH_VERSION=2.96.0"));
+    assert!(image.contains(
+        "GH_LINUX_AMD64_SHA256=83d5c2ccad5498f58bf6368acb1ab32588cf43ab3a4b1c301bf36328b1c8bd60"
+    ));
+    assert!(image.contains("gh_${GH_VERSION}_linux_amd64.tar.gz"));
+    assert!(image.contains("sha256sum --check --strict"));
+    assert!(workflow.contains("gh --version | grep -F 'gh version 2.96.0'"));
     assert!(image.contains("python-is-python3 php-cli"));
     assert!(manager.contains("uk2us_rules.json"));
     let bootstrap = text("tools/ci/omarchy-runner/bootstrap_dependencies.sh");

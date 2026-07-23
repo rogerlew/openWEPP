@@ -43,12 +43,13 @@ home, temporary, and diagnostic state after every attempt. A killed runner
 loses those surfaces when Docker restarts it. The container root filesystem is
 read-only.
 
-The image verifies the official runner archive, the Rust installer, and the
-controller's `markdown-doc` binary by SHA-256. Rust and the repository's gate
-tools and Rust's LLVM coverage component are pinned in the image; normal jobs
-verify them instead of installing them. The clean-workspace test inventory also
-receives Python 3.12, pandas 3.0.3, PyArrow 22.0.0, PHP 8.3, and the
-commit-pinned `uk2us` converter with the repository's reviewed spelling rules.
+The image verifies the official runner archive, GitHub CLI 2.96.0 archive,
+Rust installer, and controller's `markdown-doc` binary by SHA-256. Rust,
+GitHub CLI, the repository's gate tools, and Rust's LLVM coverage component are
+pinned in the image; normal jobs verify them instead of installing them. The
+clean-workspace test inventory also receives Python 3.12, pandas 3.0.3,
+PyArrow 22.0.0, PHP 8.3, and the commit-pinned `uk2us` converter with the
+repository's reviewed spelling rules.
 Bootstrap creates the ignored repo-local `.venv` with system packages enabled,
 and the completion hook removes it with the workspace. Runner updates are
 deliberate image revisions so a job cannot replace the persistent control

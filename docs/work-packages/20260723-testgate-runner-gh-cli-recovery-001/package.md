@@ -61,9 +61,9 @@ evidence. No reviewer may deploy, push, or dispatch TESTGATE.
 
 - [x] Retained the two zero-node trusted-run failures and reopened RTR-046.
 - [x] Scaffolded prospective correction authority before image edits.
-- [ ] Install and preflight the exact checksum-pinned CLI.
-- [ ] Run focused source-contract and image-build validation.
-- [ ] Obtain dual review, bind/install the exact image, and close RTR-046.
+- [x] Installed and preflighted the exact checksum-pinned CLI in the candidate image.
+- [x] Ran focused source-contract and image-build validation.
+- [ ] Obtain dual review, install the exact bound image, and close RTR-046.
 
 ## Exit Criteria
 
@@ -73,4 +73,3 @@ evidence. No reviewer may deploy, push, or dispatch TESTGATE.
 - Exact rebuilt image identity is bound everywhere and dual reviewed.
 - Live runner proves the exact CLI and persistent history contract before the
   next changed-head push.
-

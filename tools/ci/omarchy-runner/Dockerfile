@@ -5,6 +5,8 @@ ARG RUNNER_SHA256=4ef2f25285f0ae4477f1fe1e346db76d2f3ebf03824e2ddd1973a2819bf6c8
 ARG RUST_VERSION=1.92.0
 ARG RUSTUP_INIT_SHA256=6c30b75a75b28a96fd913a037c8581b580080b6ee9b8169a3c0feb1af7fe8caf
 ARG UK2US_COMMIT=6ce03a96a9466bed029fb0287786cd903f1876d6
+ARG GH_VERSION=2.96.0
+ARG GH_LINUX_AMD64_SHA256=83d5c2ccad5498f58bf6368acb1ab32588cf43ab3a4b1c301bf36328b1c8bd60
 
 ENV DEBIAN_FRONTEND=noninteractive \
     CARGO_HOME=/opt/cargo \
@@ -21,6 +23,16 @@ RUN apt-get update \
     && chown -R runner:runner /opt/actions-runner /runner-state /runner-work /cache /t
 
 RUN python3 -m pip install --break-system-packages --no-cache-dir pyarrow==22.0.0
+
+RUN curl --proto '=https' --tlsv1.2 --location --silent --show-error --fail \
+      "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.tar.gz" \
+      --output /tmp/gh.tar.gz \
+    && echo "${GH_LINUX_AMD64_SHA256}  /tmp/gh.tar.gz" | sha256sum --check --strict \
+    && tar -xzf /tmp/gh.tar.gz -C /usr/local/bin --strip-components=2 \
+      "gh_${GH_VERSION}_linux_amd64/bin/gh" \
+    && rm /tmp/gh.tar.gz \
+    && chmod 0755 /usr/local/bin/gh \
+    && gh --version | grep -F "gh version ${GH_VERSION}"
 
 WORKDIR /opt/actions-runner
 RUN curl --fail --location --silent --show-error \

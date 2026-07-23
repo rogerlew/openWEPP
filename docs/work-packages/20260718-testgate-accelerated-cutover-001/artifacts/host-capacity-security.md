@@ -51,7 +51,7 @@ Ran: 2026-07-19 PDT.
   reviewed default-driver limits: CPUs 0-7, 24 GiB memory, and swap disabled at
   the same hard limit.
 - The loaded candidate is `openwepp-actions-runner:2.335.1`, image ID
-  `sha256:034ce655da139123cd775317d590d04dec6377788e4d124dc0e674f8d021e7e8`,
+  `sha256:a0dbc987aa4ea42041e1148739a04ee8b2ce805e38d0197c16d3f4545baf7f6d`,
   size `4,231,049,535` bytes, created at `2026-07-19T07:05:55-07:00`.
 - The manager, workflow envelope, integration contract, and this receipt bind
   that exact image ID before archive creation or transfer. No image archive or
