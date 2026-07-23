@@ -1021,8 +1021,9 @@ fn runner_container_has_no_host_or_privileged_mounts() {
     assert!(!manager.contains("volume rm \"${HISTORY_VOLUME}\""));
     assert!(manager.contains("--tmpfs"));
     assert!(manager.contains("/t:rw,exec,nosuid,nodev"));
-    assert!(manager.contains("/t:rw,exec,nosuid,nodev,size=40g"));
-    assert!(manager.contains("--cpus 32 --cpuset-cpus 0-31 --memory 48g --memory-swap 48g"));
+    assert!(manager.contains("/t:rw,exec,nosuid,nodev,size=56g"));
+    assert!(manager.contains("/tmp:rw,exec,nosuid,nodev,size=24g"));
+    assert!(manager.contains("--cpus 32 --cpuset-cpus 0-31 --memory 64g --memory-swap 64g"));
     assert!(manager.contains("forest1-openwepp-01"));
     assert!(manager.contains("omarchy-openwepp-01"));
     assert!(manager.contains("build-image"));
