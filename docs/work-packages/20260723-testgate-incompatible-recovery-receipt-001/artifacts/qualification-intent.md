@@ -6,4 +6,7 @@ Dispatch exactly one forest1 TESTGATE run for the pushed schema-corrected
 hardening head using this package. Recovery roots `30026171869-1` and
 `30031338388-1` must remain invalidated; the incompatible receipt rejection
 must validate in the aggregate receipt, and the current admitted attempt must
-proceed without importing either root.
+proceed without importing either root. Run `30034378700` proved the corrected
+schema path but exhausted the former 40 GiB `/t` bound during full-workspace
+execution. The changed-head qualification is the single infrastructure retry
+against the corrected 56 GiB forest1 tmpfs envelope.
