@@ -1095,8 +1095,65 @@ fn trusted_workflow_binds_one_explicit_intent_package() {
     let resolver = text("tools/local_ci/resolve_testgate_intent_package.py");
     let base_resolver = text("tools/local_ci/resolve_testgate_comparison_base.py");
 
-    assert!(workflow.contains("intent_package:"));
-    assert!(workflow.contains("required: true"));
+    let document: serde_yaml::Value =
+        serde_yaml::from_str(&workflow).expect("workflow YAML must parse");
+    let events = document
+        .get("on")
+        .and_then(serde_yaml::Value::as_mapping)
+        .expect("workflow event map");
+    assert_eq!(events.len(), 1);
+    let dispatch = events
+        .get("workflow_dispatch")
+        .and_then(serde_yaml::Value::as_mapping)
+        .expect("workflow_dispatch must be the sole event");
+    let inputs = dispatch
+        .get("inputs")
+        .and_then(serde_yaml::Value::as_mapping)
+        .expect("workflow_dispatch inputs");
+    for input_name in ["base_ref", "intent_package"] {
+        let input = inputs
+            .get(input_name)
+            .and_then(serde_yaml::Value::as_mapping)
+            .expect("required dispatch input");
+        assert_eq!(
+            input.get("required"),
+            Some(&serde_yaml::Value::Bool(true)),
+            "{input_name} must remain required"
+        );
+        assert!(
+            !input.contains_key("default"),
+            "{input_name} must not have a default"
+        );
+    }
+    let jobs = document
+        .get("jobs")
+        .and_then(serde_yaml::Value::as_mapping)
+        .expect("workflow jobs");
+    for (job_name, step_name) in [
+        ("execute-increment", "Admit trusted main comparison"),
+        ("verify-increment", "Independently admit comparison base"),
+    ] {
+        let steps = jobs
+            .get(job_name)
+            .and_then(serde_yaml::Value::as_mapping)
+            .and_then(|job| job.get("steps"))
+            .and_then(serde_yaml::Value::as_sequence)
+            .expect("admission job steps");
+        let script = steps
+            .iter()
+            .filter_map(serde_yaml::Value::as_mapping)
+            .find(|step| step.get("name").and_then(serde_yaml::Value::as_str) == Some(step_name))
+            .and_then(|step| step.get("run"))
+            .and_then(serde_yaml::Value::as_str)
+            .expect("admission step script");
+        assert_eq!(
+            script
+                .matches(r#"[[ ! "${INPUT_BASE}" =~ ^[0-9a-f]{40}$ ]]"#)
+                .count(),
+            1,
+            "{job_name} must independently reject a non-exact base_ref"
+        );
+    }
     assert!(workflow.contains("resolve_testgate_intent_package.py"));
     assert_eq!(
         workflow

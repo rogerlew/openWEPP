@@ -66,10 +66,10 @@ commit, push, dispatch, or execute TESTGATE.
 ## Progress
 
 - [x] Scaffold prospective correction authority before implementation.
-- [ ] Remove automatic push execution and bind explicit agent dispatch.
-- [ ] Add negative source-contract coverage for forbidden push triggers.
-- [ ] Update canonical and operator guidance; rebind policy digest.
-- [ ] Run focused validation and obtain dual implementation review.
+- [x] Remove automatic push execution and bind explicit agent dispatch.
+- [x] Add negative source-contract coverage for forbidden push triggers.
+- [x] Update canonical and operator guidance; rebind policy digest.
+- [x] Run focused validation and obtain dual implementation review.
 - [ ] Close `TGD-001`, complete dual terminal verification, archive the prompt,
   and record final disposition.
 - [ ] Push once and verify that the push does not create a TESTGATE run.

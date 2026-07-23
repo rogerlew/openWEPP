@@ -1,15 +1,11 @@
 name: testgate
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
     inputs:
       base_ref:
-        description: "Comparison base (blank uses the commit parent)"
-        required: false
-        default: ""
+        description: "Exact active-package scaffold commit"
+        required: true
         type: string
       combined_quality_proof_id:
         description: "Repository-pinned combined quality proof ID (blank keeps separate gates)"
@@ -61,6 +57,10 @@ jobs:
           set -euo pipefail
           git fetch --no-tags origin main
           [[ "${EVENT_REF}" == "refs/heads/main" ]]
+          if [[ ! "${INPUT_BASE}" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "ERROR: base_ref must be one lowercase 40-character commit ID" >&2
+            exit 1
+          fi
           base_commit="$(python3 tools/local_ci/resolve_testgate_comparison_base.py \
             --repo . \
             --event-name "${EVENT_NAME}" \
@@ -380,6 +380,10 @@ jobs:
           set -euo pipefail
           git fetch --no-tags origin main
           [[ "${EVENT_REF}" == "refs/heads/main" ]]
+          if [[ ! "${INPUT_BASE}" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "ERROR: base_ref must be one lowercase 40-character commit ID" >&2
+            exit 1
+          fi
           current_head="$(git rev-parse --verify refs/remotes/origin/main)"
           if [[ "${GITHUB_SHA}" != "${current_head}" ]]; then
             echo "ERROR: refusing to verify superseded head ${GITHUB_SHA}; current main is ${current_head}" >&2

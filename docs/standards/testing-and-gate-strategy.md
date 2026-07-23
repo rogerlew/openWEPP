@@ -793,18 +793,15 @@ reconstructs the live chain and requires exact identity. Dirty authority chains
 remain invalid until a separately specified synthetic-transition contract
 exists.
 
-The trusted push controller obtains the operator-supplied anchor from exactly
-one case-sensitive `TESTGATE-Intent-Package` trailer on the exact pushed head
-commit. Trusted manual dispatch instead requires one explicit
-`intent_package` input. Missing, duplicate, malformed, or event-inconsistent
-declarations fail before planning; the controller passes the exact resolved
-path to `testgate.py --intent-package` and never infers an anchor from multiple
-changed package candidates. A push may recover work omitted after an earlier
-pre-planning failure through at most one exact-head
-`TESTGATE-Comparison-Base` trailer. Its value must be a lowercase full commit
-ID that is an ancestor of the push event's `before` commit, so it can only
-expand the comparison backward and never exclude event changes. Execution and
-hosted verification independently resolve the same base.
+The trusted TESTGATE controller is dispatch-only. A push never launches
+TESTGATE. After the stable increment is pushed, an authorized agent dispatches
+the exact current `main` head with one explicit `intent_package` input and one
+explicit `base_ref` identifying the active package scaffold commit. Missing,
+blank, malformed, non-ancestor, terminal-at-base, or event-inconsistent inputs
+fail before planning; the controller passes the exact resolved path to
+`testgate.py --intent-package` and never infers an anchor from commit trailers
+or multiple changed package candidates. Execution and hosted verification
+independently resolve the same dispatch inputs.
 
 Process temporary roots must be isolated per node attempt, use a platform-safe path-length budget for path-sensitive APIs such as Unix-domain sockets, and be removed after both successful and failed execution. Cleanup failure is a typed gate failure. The executor may derive a stricter resource schedule from the plan-bound canonical Nextest configuration when retained timing evidence proves the canonical concurrency cap unsafe on the runner; it must fail if the expected source configuration drifts, retain the test inventory and timeout, and record the qualified cap. A recurrence at two-way fixture concurrency requires a serial qualification before another expensive retry; raising the timeout is not the first correction.
 
@@ -1525,19 +1522,29 @@ its exact live group.
 
 Every self-hosted job uses exact capability and site labels. Generic
 `self-hosted` routing is forbidden because it can make an unrelated workflow
-consume the trusted increment runner. Historical manual dispatch is rejected:
-normal execution, independent verification, and authority minting each require
-the run SHA to equal current `main`. A second current-head check immediately
-before gate execution bounds work when a push is superseded after admission.
+consume the trusted increment runner. TESTGATE runs only by explicit authorized
+dispatch: normal execution, independent verification, and authority minting
+each require the run SHA to equal current `main`. A second current-head check
+immediately before gate execution bounds work when a dispatch is superseded
+after admission.
 The aggregate checks current `main` both before attestation and as its final
 success condition after native verification and authenticated evidence upload;
 a head superseded during authority work cannot finish successful.
 
 Agents make package-required scaffold and intermediate commits locally and push
-once when the increment is stable. Manual dispatch first proves no TESTGATE run
-is queued or active. Provider queue records bound to retired labels or obsolete
-concurrency identities are canceled before later dispatch; they are never
-revived by re-registering an obsolete runner.
+once when the increment is stable. The push itself does not start TESTGATE.
+The agent then proves no TESTGATE run is queued or active and dispatches the
+exact current head with the active scaffold commit and package path:
+
+```bash
+gh workflow run testgate-shadow.yml --ref main \
+  -f base_ref=<active-scaffold-commit> \
+  -f intent_package=docs/work-packages/<id>/package.md
+```
+
+Provider queue records bound to retired labels or obsolete concurrency
+identities are canceled before later dispatch; they are never revived by
+re-registering an obsolete runner.
 
 ## 15. Performance And Friction Budgets
 

@@ -66,6 +66,24 @@ non-canonical paths, late bindings, and post-scaffold write-set changes fail
 closed. Retain the PASS JSON before production/test implementation.
 
 ## TESTGATE Increment Execution
+
+The protected workflow is agent-dispatch-only. Pushing `main` never starts
+TESTGATE. After pushing one stable increment, confirm no TESTGATE run is queued
+or active, then dispatch the exact current head with the commit where the
+intent package was still active and the exact package path:
+
+```bash
+gh workflow run testgate-shadow.yml --ref main \
+  -f base_ref=<active-scaffold-commit> \
+  -f intent_package=docs/work-packages/<id>/package.md
+```
+
+`base_ref` and `intent_package` are required. The base must be a strict
+ancestor of current `main` and must contain the named package in an active
+state. Do not substitute commit trailers or dispatch before the stable head is
+pushed. The protected execution still runs on forest1; GitHub-hosted jobs only
+verify and attest the resulting immutable evidence.
+
 Build the repository-owned planner/executor, then create one external evidence
 directory for an exact base/head increment:
 
