@@ -4,7 +4,7 @@ Package ID: `20260720-testgate-recovery-trust-001`
 
 Queue ID: `TESTGATE-RECOVERY-TRUST-01`
 
-Status: `ACTIVE / READY-QUALIFICATION`
+Status: `ACTIVE / REVIEW`
 
 Authorization: Roger Lew's 2026-07-20 direction to scaffold and execute
 `TESTGATE-RECOVERY-TRUST-01` after independent review held the predecessor.
@@ -148,9 +148,17 @@ quality paths without editing its frozen subject.
 - [x] (2026-07-23) Obtain dual implementation PASS at exact correction head
   `22d3db03`, close RTR-056 through RTR-058 with ledger tip `6246459e`, and
   retain zero effective open defects.
-- [ ] Obtain the exact repository-reviewed GitHub attestation, complete the
-  held terminal verification, archive the prompt, and record final
-  disposition.
+- [x] (2026-07-23) Retain automatic run `29993134526`: all six LIGHT nodes ran
+  once, five passed, formatting alone failed, pre-HEAVY blocked, and no HEAVY
+  or CRAP node started.
+- [x] Cancel the orphaned GitHub scheduler record after the self-hosted runner
+  stopped progressing; preserve unsigned artifact `8558284504` and classify
+  the cancelled record as non-gate infrastructure history.
+- [ ] Close RTR-059 after canonical formatting, narrow validation, and dual
+  independent review.
+- [ ] Apply the operator-authorized defunct-runner exception to repository
+  attestation, complete dual terminal verification from retained exact
+  evidence, archive the prompt, and record final disposition.
 
 ## Correction Authority Envelope
 

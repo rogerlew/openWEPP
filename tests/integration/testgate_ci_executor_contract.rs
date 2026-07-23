@@ -1116,19 +1116,8 @@ fn trusted_workflow_binds_one_explicit_intent_package() {
     assert!(resolver.contains("\"\\n\" not in parts[2]"));
     assert!(base_resolver.contains("TESTGATE-Comparison-Base"));
     assert!(base_resolver.contains("may only expand to an ancestor"));
-    assert!(
-        workflow.contains(
-            "predicate[\"intent_authorization\"][\"intent_package_path\"]"
-        )
-    );
-    assert!(
-        !workflow
-            .contains("predicate[\"intent_authorization\"][\"package_path\"]")
-    );
+    assert!(workflow.contains("predicate[\"intent_authorization\"][\"intent_package_path\"]"));
+    assert!(!workflow.contains("predicate[\"intent_authorization\"][\"package_path\"]"));
     assert!(workflow.contains("Path(\"target/debug/openwepp-gate-plan\")"));
-    assert!(
-        workflow.contains(
-            "evidence / \"reconstructed-intent-authorization.json\""
-        )
-    );
+    assert!(workflow.contains("evidence / \"reconstructed-intent-authorization.json\""));
 }
