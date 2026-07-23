@@ -158,7 +158,7 @@ fn invalidated_recovery_roots(records: &[Value], ledger: &Path) -> Result<BTreeS
         })?
         .join("recovery");
     let mut latest = BTreeMap::<String, Option<PathBuf>>::new();
-    for item in records {
+    for (record_index, item) in records.iter().enumerate() {
         if item["record_type"] != "TOOLING_DEFECT" {
             continue;
         }
@@ -189,17 +189,40 @@ fn invalidated_recovery_roots(records: &[Value], ledger: &Path) -> Result<BTreeS
         }
         item["closure_evidence"]
             .as_str()
-            .filter(|value| !value.is_empty())
+            .filter(|value| !value.trim().is_empty())
             .ok_or_else(|| resume_error("GATE-RESUME-INVALIDATION-SHAPE", "closure_evidence"))?;
+        let cause_key = item["cause_key"]
+            .as_str()
+            .filter(|value| !value.is_empty())
+            .ok_or_else(|| resume_error("GATE-RESUME-INVALIDATION-SHAPE", "cause_key"))?;
         let root = PathBuf::from(raw_root.as_str().ok_or_else(|| {
             resume_error(
                 "GATE-RESUME-INVALIDATION-SHAPE",
                 "invalidated_recovery_root",
             )
         })?);
-        if root.parent() != Some(recovery_parent.as_path()) {
+        if !root.is_absolute()
+            || root.parent() != Some(recovery_parent.as_path())
+            || !matches!(
+                root.components().next_back(),
+                Some(std::path::Component::Normal(_))
+            )
+        {
             return Err(resume_error(
                 "GATE-RESUME-INVALIDATION-PATH",
+                root.display().to_string(),
+            ));
+        }
+        let associated = records[..record_index].iter().rev().any(|prior| {
+            prior["record_type"] == "STAGE_ATTEMPT"
+                && prior["stage"] == "HEAVY"
+                && prior["status"] == "FAILED"
+                && prior["cause_key"] == cause_key
+                && prior["recovery_root"] == root.display().to_string()
+        });
+        if !associated {
+            return Err(resume_error(
+                "GATE-RESUME-INVALIDATION-UNASSOCIATED",
                 root.display().to_string(),
             ));
         }
@@ -988,8 +1011,8 @@ mod tests {
     use serde_json::json;
 
     use super::{
-        apply_candidate, copy_outputs, load_candidate, load_candidate_internal, reuse_reason,
-        verify_checkpoint, verify_indexed_recovery_root,
+        apply_candidate, copy_outputs, invalidated_recovery_roots, load_candidate,
+        load_candidate_internal, reuse_reason, verify_checkpoint, verify_indexed_recovery_root,
     };
     use crate::canonical::{canonical_bytes, derived_id, digest, sha256_bytes};
     use crate::executor::ExecutionClaims;
@@ -1171,6 +1194,7 @@ mod tests {
             "record_type": "STAGE_ATTEMPT",
             "status": "FAILED",
             "stage": "HEAVY",
+            "cause_key": "GATE-EXAMPLE",
             "recovery_root": invalidated,
         });
         let closed = json!({
@@ -1179,6 +1203,7 @@ mod tests {
             "status": "CLOSED",
             "correction_commit": "a".repeat(40),
             "closure_evidence": "dual review passed",
+            "cause_key": "GATE-EXAMPLE",
             "invalidated_recovery_root": failed["recovery_root"],
         });
         fs::write(
@@ -1206,6 +1231,7 @@ mod tests {
             "record_type": "STAGE_ATTEMPT",
             "status": "FAILED",
             "stage": "HEAVY",
+            "cause_key": "GATE-OTHER",
             "recovery_root": other,
         });
         fs::write(
@@ -1231,6 +1257,69 @@ mod tests {
     }
 
     #[test]
+    fn raw_invalidation_requires_safe_associated_failure_and_nonblank_review() {
+        let history = std::env::temp_dir().join(format!(
+            "openwepp-resume-raw-invalidation-{}",
+            std::process::id()
+        ));
+        let ledger = history.join("attempts.jsonl");
+        let root = history.join("recovery/failed");
+        let failed = json!({
+            "record_type": "STAGE_ATTEMPT",
+            "status": "FAILED",
+            "stage": "HEAVY",
+            "cause_key": "GATE-EXAMPLE",
+            "recovery_root": root,
+        });
+        let closure = json!({
+            "record_type": "TOOLING_DEFECT",
+            "defect_id": "AUTO-example",
+            "status": "CLOSED",
+            "correction_commit": "a".repeat(40),
+            "closure_evidence": "dual review passed",
+            "cause_key": "GATE-EXAMPLE",
+            "invalidated_recovery_root": failed["recovery_root"],
+        });
+        invalidated_recovery_roots(&[failed.clone(), closure.clone()], &ledger)
+            .expect("exact associated closure");
+
+        for (field, value, expected) in [
+            (
+                "closure_evidence",
+                json!(" \t "),
+                "GATE-RESUME-INVALIDATION-SHAPE",
+            ),
+            ("cause_key", json!(""), "GATE-RESUME-INVALIDATION-SHAPE"),
+            (
+                "cause_key",
+                json!("GATE-OTHER"),
+                "GATE-RESUME-INVALIDATION-UNASSOCIATED",
+            ),
+            (
+                "invalidated_recovery_root",
+                json!(history.join("recovery/unassociated")),
+                "GATE-RESUME-INVALIDATION-UNASSOCIATED",
+            ),
+            (
+                "invalidated_recovery_root",
+                json!(history.join("recovery/..")),
+                "GATE-RESUME-INVALIDATION-PATH",
+            ),
+            (
+                "invalidated_recovery_root",
+                json!("recovery/relative"),
+                "GATE-RESUME-INVALIDATION-PATH",
+            ),
+        ] {
+            let mut invalid = closure.clone();
+            invalid[field] = value;
+            let error =
+                invalidated_recovery_roots(&[failed.clone(), invalid], &ledger).expect_err(field);
+            assert_eq!(error.code, expected, "{field}");
+        }
+    }
+
+    #[test]
     fn recovery_invalidation_fails_closed_and_reopen_revokes_it() {
         let scratch = std::env::temp_dir().join(format!(
             "openwepp-resume-invalidation-shape-{}",
@@ -1244,6 +1333,7 @@ mod tests {
             "record_type": "STAGE_ATTEMPT",
             "status": "FAILED",
             "stage": "HEAVY",
+            "cause_key": "GATE-EXAMPLE",
             "recovery_root": recovery,
         });
         let invalid = json!({
@@ -1252,6 +1342,7 @@ mod tests {
             "status": "CLOSED",
             "correction_commit": "not-a-commit",
             "closure_evidence": "reviewed",
+            "cause_key": "GATE-EXAMPLE",
             "invalidated_recovery_root": failed["recovery_root"],
         });
         fs::write(
@@ -1279,6 +1370,7 @@ mod tests {
             "status": "CLOSED",
             "correction_commit": "b".repeat(40),
             "closure_evidence": "dual review passed",
+            "cause_key": "GATE-EXAMPLE",
             "invalidated_recovery_root": failed["recovery_root"],
         });
         let reopened = json!({

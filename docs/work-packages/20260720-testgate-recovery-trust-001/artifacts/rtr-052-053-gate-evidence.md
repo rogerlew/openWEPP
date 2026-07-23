@@ -11,8 +11,10 @@ Static: resume discovery folds invalidations by defect ID. Only the latest
 evidence suppresses that root. A later reopen revokes the invalidation.
 Unrelated explicit roots still require authenticated provenance.
 
-Ran: all 12 `resume::tests` cases pass, including exact-root invalidation,
-unrelated-root rejection, malformed closure rejection, and reopen revocation.
+Ran: all 13 `resume::tests` cases pass, including exact-root invalidation,
+unrelated-root rejection, malformed closure rejection, reopen revocation, and
+raw consumer rejection for blank evidence, missing/mismatched cause, relative
+or dot-dot paths, and unassociated roots.
 
 Ran: the focused tooling-defect closure command regression passes. It proves
 outside-root rejection, canonical closure, audit admission after closure, exact
@@ -55,7 +57,7 @@ without outside mutation.
 
 Static: the mechanically extracted `pre_heavy_tests.rs` contains the unchanged
 inline test module plus the new closure regressions. `pre_heavy.rs` is 1,863
-lines, below the 2,000-line warning threshold; the new test-only file is 1,250
+lines, below the 2,000-line warning threshold; the new test-only file is 1,253
 lines. This closes the reviewer-requested decomposition without a follow-on
 split obligation.
 
