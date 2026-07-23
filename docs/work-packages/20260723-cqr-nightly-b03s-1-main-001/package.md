@@ -1,7 +1,9 @@
 # CQR Nightly B03S-1: Gate Planner Main Authority Commands
 
 Package: `20260723-cqr-nightly-b03s-1-main-001`
-Status: `IMPLEMENTED / DUAL REVIEW PASS / VERIFICATION PENDING`
+Status: `EXECUTED-COMPLETE-CQR-NIGHTLY`
+
+Completion commit: `0ff8f3407732ecd5fd178e9181a79cb8f15f2883`
 ExecPlan: `docs/work-packages/20260723-cqr-nightly-b03-execplan.md`
 Nightly batch: `b03s`
 Target module: `crates/openwepp-gate-planner/src/main.rs`
@@ -66,3 +68,10 @@ authority semantics, persistence changes, thresholds, and unrelated cleanup.
   unchanged.
 - Focused tests, formatting, Clippy, aggregate admission, dual review, and dual
   verification pass.
+
+## Completion
+
+Completed at exact commit `0ff8f3407732ecd5fd178e9181a79cb8f15f2883`.
+All three targets and five helpers are CRAP 2–4 at 100% focused coverage.
+Focused gates, aggregate admission, dual review, and dual terminal verification
+passed. Aggregate closeout owns the changed-head TESTGATE qualification.
