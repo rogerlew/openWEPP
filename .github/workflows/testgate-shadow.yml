@@ -61,22 +61,18 @@ jobs:
           set -euo pipefail
           git fetch --no-tags origin main
           [[ "${EVENT_REF}" == "refs/heads/main" ]]
-          base_ref="${INPUT_BASE}"
-          if [[ "${EVENT_NAME}" == "push" ]]; then
-            base_ref="${EVENT_BEFORE}"
-          fi
-          if [[ -z "${base_ref}" || "${base_ref}" =~ ^0+$ ]]; then
-            base_ref="${GITHUB_SHA}^"
-          fi
-          base_commit="$(git rev-parse --verify --end-of-options "${base_ref}^{commit}")"
+          base_commit="$(python3 tools/local_ci/resolve_testgate_comparison_base.py \
+            --repo . \
+            --event-name "${EVENT_NAME}" \
+            --head "${GITHUB_SHA}" \
+            --event-before "${EVENT_BEFORE}" \
+            --input-base "${INPUT_BASE}")"
           head_commit="$(git rev-parse --verify --end-of-options "${GITHUB_SHA}^{commit}")"
           current_head="$(git rev-parse --verify refs/remotes/origin/main)"
           if [[ "${head_commit}" != "${current_head}" ]]; then
             echo "ERROR: superseded TESTGATE head ${head_commit}; current main is ${current_head}" >&2
             exit 1
           fi
-          git merge-base --is-ancestor "${base_commit}" "${head_commit}"
-          [[ "${base_commit}" != "${head_commit}" ]]
           intent_package="$(python3 tools/local_ci/resolve_testgate_intent_package.py \
             --repo . \
             --event-name "${EVENT_NAME}" \
@@ -389,16 +385,12 @@ jobs:
             echo "ERROR: refusing to verify superseded head ${GITHUB_SHA}; current main is ${current_head}" >&2
             exit 1
           fi
-          base_ref="${INPUT_BASE}"
-          if [[ "${EVENT_NAME}" == "push" ]]; then
-            base_ref="${EVENT_BEFORE}"
-          fi
-          if [[ -z "${base_ref}" || "${base_ref}" =~ ^0+$ ]]; then
-            base_ref="${GITHUB_SHA}^"
-          fi
-          base_commit="$(git rev-parse --verify --end-of-options "${base_ref}^{commit}")"
-          git merge-base --is-ancestor "${base_commit}" "${GITHUB_SHA}"
-          [[ "${base_commit}" != "${GITHUB_SHA}" ]]
+          base_commit="$(python3 tools/local_ci/resolve_testgate_comparison_base.py \
+            --repo . \
+            --event-name "${EVENT_NAME}" \
+            --head "${GITHUB_SHA}" \
+            --event-before "${EVENT_BEFORE}" \
+            --input-base "${INPUT_BASE}")"
           echo "base=${base_commit}" >> "${GITHUB_OUTPUT}"
       - name: Install pinned inventory enumerator
         uses: taiki-e/install-action@07b4745e0c39a41822af610387492e3e53aa222b
@@ -475,8 +467,16 @@ jobs:
               ["git", "diff", "--name-only", "--diff-filter=ACDMRT", base, head],
               text=True,
           ).splitlines()
-          package_path = predicate["intent_authorization"]["package_path"]
-          observed = _intent_authorization(Path.cwd(), base, changed, package_path)
+          package_path = predicate["intent_authorization"]["intent_package_path"]
+          observed = _intent_authorization(
+              Path.cwd(),
+              Path("target/debug/openwepp-gate-plan"),
+              base,
+              head,
+              changed,
+              package_path,
+              evidence / "reconstructed-intent-authorization.json",
+          )
           if observed != predicate["intent_authorization"]:
               raise SystemExit("intent authorization differs from base package and event diff")
           PY

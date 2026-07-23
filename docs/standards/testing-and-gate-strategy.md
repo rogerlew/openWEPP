@@ -799,7 +799,12 @@ commit. Trusted manual dispatch instead requires one explicit
 `intent_package` input. Missing, duplicate, malformed, or event-inconsistent
 declarations fail before planning; the controller passes the exact resolved
 path to `testgate.py --intent-package` and never infers an anchor from multiple
-changed package candidates.
+changed package candidates. A push may recover work omitted after an earlier
+pre-planning failure through at most one exact-head
+`TESTGATE-Comparison-Base` trailer. Its value must be a lowercase full commit
+ID that is an ancestor of the push event's `before` commit, so it can only
+expand the comparison backward and never exclude event changes. Execution and
+hosted verification independently resolve the same base.
 
 Process temporary roots must be isolated per node attempt, use a platform-safe path-length budget for path-sensitive APIs such as Unix-domain sockets, and be removed after both successful and failed execution. Cleanup failure is a typed gate failure. The executor may derive a stricter resource schedule from the plan-bound canonical Nextest configuration when retained timing evidence proves the canonical concurrency cap unsafe on the runner; it must fail if the expected source configuration drifts, retain the test inventory and timeout, and record the qualified cap. A recurrence at two-way fixture concurrency requires a serial qualification before another expensive retry; raising the timeout is not the first correction.
 

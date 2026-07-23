@@ -433,7 +433,12 @@ fn assert_testgate_workflow_surface() {
 
 fn assert_testgate_workflow_admission(workflow: &str) {
     assert!(workflow.contains("persist-credentials: false"));
-    assert!(workflow.contains("git merge-base --is-ancestor"));
+    assert_eq!(
+        workflow
+            .matches("resolve_testgate_comparison_base.py")
+            .count(),
+        2
+    );
     assert!(workflow.contains(
         "concurrency:\n  group: openwepp-forest1-testgate\n  queue: single\n  cancel-in-progress: false"
     ));
@@ -1088,10 +1093,17 @@ fn runner_github_cli_preflight_rejects_version_suffix_drift() {
 fn trusted_workflow_binds_one_explicit_intent_package() {
     let workflow = text(".github/workflows/testgate-shadow.yml");
     let resolver = text("tools/local_ci/resolve_testgate_intent_package.py");
+    let base_resolver = text("tools/local_ci/resolve_testgate_comparison_base.py");
 
     assert!(workflow.contains("intent_package:"));
     assert!(workflow.contains("required: true"));
     assert!(workflow.contains("resolve_testgate_intent_package.py"));
+    assert_eq!(
+        workflow
+            .matches("resolve_testgate_comparison_base.py")
+            .count(),
+        2
+    );
     assert!(workflow.contains("echo \"intent_package=${intent_package}\""));
     assert!(
         workflow.contains("--intent-package \"${{ steps.comparison.outputs.intent_package }}\"")
@@ -1102,4 +1114,21 @@ fn trusted_workflow_binds_one_explicit_intent_package() {
     assert!(resolver.contains("parts[2] not in {\"\", \".\", \"..\"}"));
     assert!(resolver.contains("\"\\r\" not in parts[2]"));
     assert!(resolver.contains("\"\\n\" not in parts[2]"));
+    assert!(base_resolver.contains("TESTGATE-Comparison-Base"));
+    assert!(base_resolver.contains("may only expand to an ancestor"));
+    assert!(
+        workflow.contains(
+            "predicate[\"intent_authorization\"][\"intent_package_path\"]"
+        )
+    );
+    assert!(
+        !workflow
+            .contains("predicate[\"intent_authorization\"][\"package_path\"]")
+    );
+    assert!(workflow.contains("Path(\"target/debug/openwepp-gate-plan\")"));
+    assert!(
+        workflow.contains(
+            "evidence / \"reconstructed-intent-authorization.json\""
+        )
+    );
 }
