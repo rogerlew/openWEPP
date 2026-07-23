@@ -34,3 +34,13 @@ returned `PASS` with both claimed and derived trust class
 `LOCAL_UNTRUSTED`. The focused relocation regression, clean public audit-path
 reconstruction, and all 15 verifier tests passed. Dispatch exactly one
 changed-head qualification for the amended implementation head.
+
+Run `30049926340` retained four full-workspace failures from reconstruction
+fixtures: one private cargo target was placed on the intentionally
+non-executable checkout surface, while three isolated whole-workspace linker
+builds competed with the remaining full-suite workload and terminated
+`rust-lld` with `SIGBUS`. The correction moves the pre-heavy fixture to the
+bounded executable temp surface and makes every repository-snapshot fixture
+reserve all nextest scheduler slots. The corrected exact reconstruction passed
+under the full profile in 389 seconds. Dispatch the next single changed-head
+qualification only after this evidence update is pushed.
