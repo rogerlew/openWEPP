@@ -62,3 +62,22 @@ full Nextest, coverage, or CRAP.
 Ran: RTR-059 closed through the canonical command at ledger tip
 `dd312eb7d1263cffaf9ecdde7bff0887be7ab498b81b7c3e7e0b7cc44f2d2ef5`.
 No implementation-review finding or effective tooling defect remains open.
+
+## RTR-060 review
+
+Two independent reviewers returned `PASS` at exact clean HEAD
+`6ac8ea1c2b96ea1f2f16935029bd2f0f28d05a68`.
+
+Static: the correction only canonicalizes `CARGO_MANIFEST_DIR/../..` in the
+two duplicated durable-ledger coverage fixtures before joining `target`. It
+does not change production behavior, gate assertions, or path validation.
+
+Ran: the two formerly failing tests passed 2/2, planner all-target Clippy
+passed with warnings denied, formatting passed, and package Markdown lint
+passed. Both reviewers verified the failed receipt's 13 PASS, one FAIL, one
+prerequisite-BLOCKED, zero-retry accounting and confirmed that CRAP did not
+launch. Neither reviewer ran HEAVY or a global gate.
+
+Ran: RTR-060 closed through the canonical command at ledger tip
+`467779318665170c93a6bb633f1103d8ab48676339626e4892dbbba6845ed7ba`.
+The 190-record chain verifies with zero effective open defects.
