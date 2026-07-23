@@ -1,0 +1,3 @@
+# Verification B
+
+Static: pending.
