@@ -9,3 +9,8 @@ helper for both PASS and FAIL results.
 
 Static: both independent implementation reviewers now report PASS with no open
 findings. Exact correction commit, durable closure, and verification remain.
+
+Ran: COMPLETE. Correction commit `4181e914` is durably bound by superseding
+CLOSED record `b4ab096a...`; dual terminal verification passed. The earlier
+CLOSED record with a mistyped nonexistent SHA remains immutable and is
+explicitly superseded.

@@ -1,7 +1,7 @@
 # TESTGATE Observer Result Recovery
 
 Package: `20260723-testgate-observer-result-recovery-001`
-Status: `ACTIVE`
+Status: `EXECUTED-COMPLETE`
 Defect: `RTR-045`
 Cause: `GATE-POST-ATTEMPT-OBSERVATION-PACKAGE-RESULT-UNBOUND`
 
@@ -58,7 +58,8 @@ authorized by this prerequisite package.
 - [x] Added focused regression and implemented the bounded correction.
 - [x] Obtained dual independent implementation-review PASS after correcting one
   accepted behavioral-test finding.
-- [ ] Commit, durably close RTR-045, and dual verify.
+- [x] Committed correction `4181e914`, appended superseding exact CLOSED ledger
+  record `b4ab096a...`, and obtained dual terminal-verification PASS.
 
 ## Exit Criteria
 
