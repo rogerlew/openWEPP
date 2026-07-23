@@ -4,7 +4,7 @@ set -euo pipefail
 readonly HOST="${OPENWEPP_RUNNER_HOST:-forest1}"
 readonly REPOSITORY="${OPENWEPP_RUNNER_REPOSITORY:-rogerlew/openWEPP}"
 readonly IMAGE="openwepp-actions-runner:2.335.1"
-readonly EXPECTED_IMAGE_ID="sha256:a0dbc987aa4ea42041e1148739a04ee8b2ce805e38d0197c16d3f4545baf7f6d"
+readonly EXPECTED_IMAGE_ID="sha256:8a551a87d0784a74be1a76452beb1e4e6726cc36135722020e20a042e04bae84"
 readonly CONTAINER="openwepp-actions-runner"
 readonly RUNNER_NAME="${OPENWEPP_RUNNER_NAME:-forest1-openwepp-01}"
 readonly SITE_LABEL="${OPENWEPP_RUNNER_SITE_LABEL:-forest1}"

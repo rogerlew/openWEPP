@@ -991,10 +991,16 @@ fn runner_container_has_no_host_or_privileged_mounts() {
     let host_receipt = text(
         "docs/work-packages/20260718-testgate-accelerated-cutover-001/artifacts/host-capacity-security.md",
     );
-    let image_id = "sha256:a0dbc987aa4ea42041e1148739a04ee8b2ce805e38d0197c16d3f4545baf7f6d";
+    let runner_recovery_evidence = text(
+        "docs/work-packages/20260723-testgate-runner-gh-cli-recovery-001/artifacts/gate-evidence.md",
+    );
+    let image_id = "sha256:8a551a87d0784a74be1a76452beb1e4e6726cc36135722020e20a042e04bae84";
+    let historical_image_id =
+        "sha256:034ce655da139123cd775317d590d04dec6377788e4d124dc0e674f8d021e7e8";
     assert_eq!(manager.matches(image_id).count(), 1);
     assert_eq!(workflow.matches(image_id).count(), 2);
-    assert_eq!(host_receipt.matches(image_id).count(), 1);
+    assert_eq!(runner_recovery_evidence.matches(image_id).count(), 1);
+    assert_eq!(host_receipt.matches(historical_image_id).count(), 1);
     assert!(manager.contains("--security-opt no-new-privileges=true"));
     assert!(manager.contains("--cap-drop ALL"));
     assert!(manager.contains("--read-only"));
@@ -1034,7 +1040,11 @@ fn runner_container_has_no_host_or_privileged_mounts() {
     ));
     assert!(image.contains("gh_${GH_VERSION}_linux_amd64.tar.gz"));
     assert!(image.contains("sha256sum --check --strict"));
-    assert!(workflow.contains("gh --version | grep -F 'gh version 2.96.0'"));
+    assert!(
+        image.contains("test \"$(gh --version | awk 'NR == 1 { print $3 }')\" = \"${GH_VERSION}\"")
+    );
+    assert!(image.contains("chown root:root /usr/local/bin/gh"));
+    assert!(workflow.contains("test \"$(gh --version | awk 'NR == 1 { print $3 }')\" = '2.96.0'"));
     assert!(image.contains("python-is-python3 php-cli"));
     assert!(manager.contains("uk2us_rules.json"));
     let bootstrap = text("tools/ci/omarchy-runner/bootstrap_dependencies.sh");
@@ -1049,4 +1059,20 @@ fn runner_container_has_no_host_or_privileged_mounts() {
     assert!(hook.contains("/runner-work /cache/cargo /t /home/runner /tmp"));
     assert!(hook.contains("/runner-state/_diag"));
     assert!(hook.contains("for round in {1..10}"));
+}
+
+#[test]
+fn runner_github_cli_preflight_rejects_version_suffix_drift() {
+    let probe = r#"test "$(printf '%s\n' "$1" | awk 'NR == 1 { print $3 }')" = '2.96.0'"#;
+    let exact = Command::new("bash")
+        .args(["-c", probe, "_", "gh version 2.96.0 (2026-07-02)"])
+        .status()
+        .expect("run exact GitHub CLI version probe");
+    assert!(exact.success());
+
+    let suffix_drift = Command::new("bash")
+        .args(["-c", probe, "_", "gh version 2.96.0-malicious (2026-07-02)"])
+        .status()
+        .expect("run suffix-drift GitHub CLI version probe");
+    assert!(!suffix_drift.success());
 }

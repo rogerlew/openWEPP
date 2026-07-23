@@ -24,16 +24,6 @@ RUN apt-get update \
 
 RUN python3 -m pip install --break-system-packages --no-cache-dir pyarrow==22.0.0
 
-RUN curl --proto '=https' --tlsv1.2 --location --silent --show-error --fail \
-      "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.tar.gz" \
-      --output /tmp/gh.tar.gz \
-    && echo "${GH_LINUX_AMD64_SHA256}  /tmp/gh.tar.gz" | sha256sum --check --strict \
-    && tar -xzf /tmp/gh.tar.gz -C /usr/local/bin --strip-components=2 \
-      "gh_${GH_VERSION}_linux_amd64/bin/gh" \
-    && rm /tmp/gh.tar.gz \
-    && chmod 0755 /usr/local/bin/gh \
-    && gh --version | grep -F "gh version ${GH_VERSION}"
-
 WORKDIR /opt/actions-runner
 RUN curl --fail --location --silent --show-error \
       "https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-linux-x64-${RUNNER_VERSION}.tar.gz" \
@@ -75,6 +65,17 @@ RUN echo "634e90ef3713a9910d165a6d93eeabcbe009a7bd402ef0a1e1cfe5d4f944356b  /opt
 RUN rustup component add llvm-tools-preview
 
 RUN python3 -m pip install --break-system-packages --no-cache-dir pandas==3.0.3
+
+RUN curl --proto '=https' --tlsv1.2 --location --silent --show-error --fail \
+      "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_amd64.tar.gz" \
+      --output /tmp/gh.tar.gz \
+    && echo "${GH_LINUX_AMD64_SHA256}  /tmp/gh.tar.gz" | sha256sum --check --strict \
+    && tar -xzf /tmp/gh.tar.gz -C /usr/local/bin --strip-components=2 \
+      "gh_${GH_VERSION}_linux_amd64/bin/gh" \
+    && rm /tmp/gh.tar.gz \
+    && chmod 0755 /usr/local/bin/gh \
+    && chown root:root /usr/local/bin/gh \
+    && test "$(gh --version | awk 'NR == 1 { print $3 }')" = "${GH_VERSION}"
 
 COPY entrypoint.sh /usr/local/bin/openwepp-runner-entrypoint
 COPY job-completed-hook.sh /usr/local/bin/openwepp-job-completed-hook.sh

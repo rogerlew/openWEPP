@@ -34,7 +34,7 @@ jobs:
       contents: read
       actions: read
     env:
-      OPENWEPP_RUNNER_IMAGE_ID: sha256:a0dbc987aa4ea42041e1148739a04ee8b2ce805e38d0197c16d3f4545baf7f6d
+      OPENWEPP_RUNNER_IMAGE_ID: sha256:8a551a87d0784a74be1a76452beb1e4e6726cc36135722020e20a042e04bae84
       CARGO_TARGET_DIR: /t
       TESTGATE_EXECUTION_ROOT: /t
       TESTGATE_HISTORY_ROOT: /testgate-history
@@ -79,7 +79,7 @@ jobs:
       - name: Verify pinned gate toolchain
         run: |
           set -euo pipefail
-          gh --version | grep -F 'gh version 2.96.0'
+          test "$(gh --version | awk 'NR == 1 { print $3 }')" = '2.96.0'
           rustc --version | grep -F 'rustc 1.92.0'
           cargo nextest --version | grep -F 'cargo-nextest 0.9.138'
           cargo deny --version | grep -F 'cargo-deny 0.19.6'
@@ -397,7 +397,7 @@ jobs:
       - name: Validate receipt and predicate bindings
         env:
           EVIDENCE_DIR: ${{ runner.temp }}/testgate-recovery-package/unsigned
-          EXPECTED_IMAGE: sha256:a0dbc987aa4ea42041e1148739a04ee8b2ce805e38d0197c16d3f4545baf7f6d
+          EXPECTED_IMAGE: sha256:8a551a87d0784a74be1a76452beb1e4e6726cc36135722020e20a042e04bae84
           EXPECTED_BASE: ${{ steps.verification-comparison.outputs.base }}
         run: |
           set -euo pipefail
