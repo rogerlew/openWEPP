@@ -13,6 +13,9 @@ ledger, path, or checkpoint evidence remains fail-closed.
 ## Intended Write Set
 
 - `crates/openwepp-gate-planner/src/resume.rs`
+- `crates/openwepp-gate-planner/src/pre_heavy.rs`
+- `crates/openwepp-gate-planner/src/pre_heavy_tests.rs`
+- `crates/openwepp-gate-planner/src/verifier.rs`
 - `gate-policy/v1/schemas/gate-receipt.schema.json`
 - `tools/ci/omarchy-runner/manage.sh`
 - `tests/integration/testgate_ci_executor_contract.rs`
@@ -31,6 +34,11 @@ ledger, path, or checkpoint evidence remains fail-closed.
 - The trusted forest1 runner provides enough bounded tmpfs capacity for the
   selected full-workspace gate without weakening its read-only or ephemeral
   workspace controls.
+- Independent hosted verification accepts a sealed audit and LIGHT receipt
+  after evidence relocation by checking their mutually sealed artifact-root
+  identity. Runtime audit construction still binds both documents to the
+  actual forest1 execution root, and artifact contents remain independently
+  verified.
 - All other recovery-integrity errors remain typed and fail closed.
 - Focused resume tests pass.
 - One exact changed-head forest1 TESTGATE qualification proves that a rejected
