@@ -1,0 +1,4 @@
+# Disposition
+
+Static: ACTIVE / SCAFFOLD.
+

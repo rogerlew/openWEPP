@@ -251,6 +251,10 @@
 
 State as of `2026-07-23 UTC`:
 
+- `20260723-testgate-runner-gh-cli-recovery-001/` - ACTIVE / SCAFFOLD:
+  corrects RTR-046 by adding the checksum-pinned GitHub CLI required by trusted
+  history restore and native attestation.
+
 - `20260723-testgate-observer-result-recovery-001/` - EXECUTED-COMPLETE:
   closed RTR-045 at `4181e914...`, with dual review, dual verification, and a
   superseding exact durable closure record.
