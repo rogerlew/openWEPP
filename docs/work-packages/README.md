@@ -251,6 +251,10 @@
 
 State as of `2026-07-23 UTC`:
 
+- `20260723-testgate-intent-package-binding-recovery-001/` - ACTIVE / SCAFFOLD:
+  corrects RTR-047 by binding trusted execution to one explicit,
+  authenticated intent package before planning.
+
 - `20260723-testgate-runner-gh-cli-recovery-001/` - COMPLETE: checksum-pinned
   GitHub CLI 2.96.0, exact-version preflight, reviewed activation, and durable
   RTR-046 closure.
