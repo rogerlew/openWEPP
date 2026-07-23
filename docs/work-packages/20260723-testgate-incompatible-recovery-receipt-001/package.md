@@ -14,6 +14,7 @@ ledger, path, or checkpoint evidence remains fail-closed.
 
 - `crates/openwepp-gate-planner/src/resume.rs`
 - `gate-policy/v1/schemas/gate-receipt.schema.json`
+- `tools/ci/omarchy-runner/manage.sh`
 - `docs/work-packages/20260723-testgate-incompatible-recovery-receipt-001/**`
 - `docs/work-packages/20260720-testgate-workflow-qualify-001/**`
 - `docs/work-packages/README.md`
@@ -26,6 +27,9 @@ ledger, path, or checkpoint evidence remains fail-closed.
 - The receipt schema admits that archive-level rejection as a distinct,
   fail-closed decision shape without weakening node-level `IMPORTED` or
   `RERUN` bindings.
+- The trusted forest1 runner provides enough bounded tmpfs capacity for the
+  selected full-workspace gate without weakening its read-only or ephemeral
+  workspace controls.
 - All other recovery-integrity errors remain typed and fail closed.
 - Focused resume tests pass.
 - One exact changed-head forest1 TESTGATE qualification proves that a rejected
