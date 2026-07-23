@@ -4,7 +4,7 @@ Package ID: `20260720-testgate-workflow-qualify-001`
 
 Queue ID: `TESTGATE-WORKFLOW-QUALIFY-01`
 
-Status: `READY-FOREST1-DISPATCH`
+Status: `ACTIVE / READY-QUALIFICATION`
 
 ## Objective
 
@@ -46,8 +46,10 @@ to TESTGATE implementation/policy/workflow code.
 4. Record the forest1 run ID, exact head/base, result, local receipt, ledger,
    retained artifacts, and any hosted verification record. A forest1 local
    receipt remains valid evidence even when labeled `LOCAL_UNTRUSTED`.
-5. If the single run fails, retain its evidence and open a focused defect
-   package; do not repair or retry inside this package.
+5. If the run fails before any selected gate starts because package admission is
+   malformed, correct the package metadata in this package and make one fresh
+   changed-head dispatch. For any gate-execution failure, retain its evidence
+   and open a focused defect package; do not retry inside this package.
 
 ## Acceptance
 
