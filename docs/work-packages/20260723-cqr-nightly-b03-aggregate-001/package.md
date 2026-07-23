@@ -2,7 +2,7 @@
 
 Package ID: `20260723-cqr-nightly-b03-aggregate-001`
 
-Status: `ACTIVE`
+Status: `EXECUTED-HOLD-CQR-NIGHTLY-LOCAL-INVALID-AGGREGATE-SCAFFOLD`
 
 ## Objective
 
@@ -44,3 +44,10 @@ assigned bounded module implementation or comparator artifact root.
 - Every review finding is dispositioned and dual terminal verification passes.
 - The final changed-head recovery qualification passes without an unchanged
   retry.
+
+## Disposition
+
+Ran: HOLD before implementation. Canonical aggregate admission rejected this
+immutable scaffold because it declared `Intended Write Set` instead of the
+required `Declared Write Set`. A new prospective aggregate must replace it;
+this package's write set and batch manifest are not amended retroactively.

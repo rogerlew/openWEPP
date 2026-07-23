@@ -1,7 +1,7 @@
 # CQR Nightly B03-1: Gate Planner Main Authority Commands
 
 Package: `20260723-cqr-nightly-b03-1-main-001`
-Status: `ACTIVE`
+Status: `EXECUTED-HOLD-CQR-NIGHTLY-LOCAL-INVALID-AGGREGATE-SCAFFOLD`
 ExecPlan: `docs/work-packages/20260723-cqr-nightly-b03-execplan.md`
 Nightly batch: `b03`
 Target module: `crates/openwepp-gate-planner/src/main.rs`
@@ -66,3 +66,10 @@ authority semantics, persistence changes, thresholds, and unrelated cleanup.
   unchanged.
 - Focused tests, formatting, Clippy, aggregate admission, dual review, and dual
   verification pass.
+
+## Hold Disposition
+
+Ran: canonical aggregate admission failed before any production or test edit
+because the bound aggregate scaffold used the wrong immutable write-set
+heading. This module scaffold is terminal. A new module package must bind the
+corrected prospective aggregate.
