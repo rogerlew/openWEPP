@@ -1,0 +1,15 @@
+{
+  "aggregate_batch_manifest": "docs/work-packages/20260723-cqr-nightly-b03s-aggregate-001/artifacts/batch-authority.json",
+  "aggregate_package": "docs/work-packages/20260723-cqr-nightly-b03s-aggregate-001/package.md",
+  "aggregate_scaffold_commit": "f72e59d0917940a611378515219d6f44d6ef5604",
+  "master_execplan": "docs/work-packages/20260723-cqr-nightly-b03-execplan.md",
+  "module_package": "docs/work-packages/20260723-cqr-nightly-b03s-2-package-validation-001/package.md",
+  "module_scaffold_commit": "d369735f928bdee67e8e9426f6a5b7079bb84ed4",
+  "planned_paths": [
+    "crates/openwepp-gate-planner/src/package_validation.rs",
+    "docs/work-packages/20260723-cqr-nightly-b03s-2-package-validation-001/**",
+    "docs/work-packages/README.md"
+  ],
+  "schema_version": "openwepp-cqr-aggregate-admission-v1",
+  "status": "PASS"
+}
