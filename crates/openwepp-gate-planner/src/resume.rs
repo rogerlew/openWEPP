@@ -19,6 +19,7 @@ use crate::verifier::{DirectoryArtifacts, verify_receipt, verify_receipt_after_r
 
 pub struct ResumeCandidate {
     nodes: BTreeMap<String, CheckpointEvidence>,
+    decisions: Vec<Value>,
 }
 
 struct CheckpointEvidence {
@@ -122,6 +123,7 @@ fn load_candidate_internal(
         .as_array()
         .ok_or_else(|| resume_error("GATE-RESUME-PLAN-SHAPE", "nodes"))?;
     let mut admitted = BTreeMap::new();
+    let mut decisions = Vec::new();
     let mut seen_roots = BTreeSet::new();
     for item in records.iter().rev() {
         if excluded_entry_sha256.is_some() && item["entry_sha256"].as_str() == excluded_entry_sha256
@@ -142,10 +144,31 @@ fn load_candidate_internal(
             continue;
         };
         seen_roots.insert(archive.root.clone());
-        let envelope = load_recovery_envelope(repo, plan, &archive, current_plan_admitted)?;
+        let envelope = match load_recovery_envelope(repo, plan, &archive, current_plan_admitted) {
+            Ok(envelope) => envelope,
+            Err(error) if is_nonblocking_recovery_rejection(error.code) => {
+                decisions.push(json!({
+                    "decision": "REJECTED_INCOMPATIBLE_RECEIPT",
+                    "reason_code": error.code,
+                    "recovery_root": archive.root,
+                    "detail": error.message,
+                }));
+                continue;
+            }
+            Err(error) => return Err(error),
+        };
         admit_archive_nodes(plan, nodes, &archive, &envelope, &mut admitted)?;
     }
-    Ok((!admitted.is_empty()).then_some(ResumeCandidate { nodes: admitted }))
+    Ok(
+        (!admitted.is_empty() || !decisions.is_empty()).then_some(ResumeCandidate {
+            nodes: admitted,
+            decisions,
+        }),
+    )
+}
+
+fn is_nonblocking_recovery_rejection(code: &str) -> bool {
+    code == "GATE-RESUME-RECEIPT-INVALID"
 }
 
 fn invalidated_recovery_roots(
@@ -740,6 +763,7 @@ pub fn apply_candidate(
     let Some(candidate) = candidate else {
         return Ok(seed);
     };
+    seed.decisions.extend(candidate.decisions.clone());
     let nodes = plan["nodes"]
         .as_array()
         .ok_or_else(|| resume_error("GATE-RESUME-PLAN-SHAPE", "nodes"))?;
@@ -1059,6 +1083,16 @@ mod tests {
     };
     use crate::canonical::{canonical_bytes, derived_id, digest, sha256_bytes};
     use crate::executor::ExecutionClaims;
+
+    #[test]
+    fn incompatible_receipt_is_the_only_nonblocking_recovery_rejection() {
+        assert!(super::is_nonblocking_recovery_rejection(
+            "GATE-RESUME-RECEIPT-INVALID"
+        ));
+        assert!(!super::is_nonblocking_recovery_rejection(
+            "GATE-RESUME-PROVENANCE-IDENTITY"
+        ));
+    }
 
     fn repository_root() -> PathBuf {
         fs::canonicalize(
