@@ -13,8 +13,8 @@ use openwepp_gate_planner::planner::reconcile_intent_terminal;
 use openwepp_gate_planner::planner::{NextestInventory, PlanRequest, Planner, PlanningStage};
 use openwepp_gate_planner::pre_heavy::{
     ConstructedAudit, admit_attempt_ledger, append_attempt_record, build_audit,
-    build_failure_audit, construct_audit, reconcile_orphaned_attempts, record_heavy_failure,
-    validate_resume_ledger,
+    build_failure_audit, close_tooling_defect, construct_audit, reconcile_orphaned_attempts,
+    record_heavy_failure, validate_resume_ledger,
 };
 use openwepp_gate_planner::repository::{ObservedSource, observe_committed, observe_dirty};
 use openwepp_gate_planner::resume::{ResumeCandidate, load_candidate_after_ready_audit};
@@ -27,7 +27,7 @@ type CommandHandler = fn(&Path, &BTreeMap<String, String>) -> Result<Value>;
 type CommandDefinition = (&'static str, CommandHandler, &'static [&'static str]);
 
 const RECEIPT_OPTIONS: &[&str] = &["repo", "plan", "receipt", "artifact-root"];
-const COMMANDS: [CommandDefinition; 11] = [
+const COMMANDS: [CommandDefinition; 12] = [
     (
         "plan",
         plan_command,
@@ -111,6 +111,18 @@ const COMMANDS: [CommandDefinition; 11] = [
         "reconcile-attempts",
         reconcile_attempts_command,
         &["repo", "ledger"],
+    ),
+    (
+        "close-tooling-defect",
+        close_tooling_defect_command,
+        &[
+            "repo",
+            "ledger",
+            "defect-id",
+            "correction-commit",
+            "closure-evidence",
+            "invalidated-recovery-root",
+        ],
     ),
 ];
 
@@ -576,6 +588,26 @@ fn elapsed_millis(started: &Instant) -> u64 {
 fn reconcile_attempts_command(_repo: &Path, options: &BTreeMap<String, String>) -> Result<Value> {
     let reconciled = reconcile_orphaned_attempts(Path::new(required(options, "ledger")?))?;
     Ok(json!({"result": "PASS", "reconciled_attempts": reconciled}))
+}
+
+fn close_tooling_defect_command(_repo: &Path, options: &BTreeMap<String, String>) -> Result<Value> {
+    let ledger = Path::new(required(options, "ledger")?);
+    let defect_id = required(options, "defect-id")?;
+    let entry_sha256 = close_tooling_defect(
+        ledger,
+        defect_id,
+        required(options, "correction-commit")?,
+        required(options, "closure-evidence")?,
+        options
+            .get("invalidated-recovery-root")
+            .map(PathBuf::from)
+            .as_deref(),
+    )?;
+    Ok(json!({
+        "result": "CLOSED",
+        "defect_id": defect_id,
+        "entry_sha256": entry_sha256,
+    }))
 }
 
 fn pre_heavy_audit_command(repo: &Path, options: &BTreeMap<String, String>) -> Result<Value> {
@@ -1202,7 +1234,7 @@ fn usage_error() -> GatePolicyError {
     GatePolicyError::new(
         ErrorClass::Cli,
         "GATE-CLI-USAGE",
-        "usage: openwepp-gate-plan <plan|validate-package-chain|run|reconcile|reconcile-attempts|verify-receipt|verify-receipt-envelope|verify-ledger|verify-assurance> --key value ...",
+        "usage: openwepp-gate-plan <plan|validate-package-chain|run|reconcile|reconcile-attempts|close-tooling-defect|verify-receipt|verify-receipt-envelope|verify-ledger|verify-assurance> --key value ...",
     )
 }
 
@@ -1215,11 +1247,12 @@ mod tests {
     use std::sync::atomic::{AtomicU64, Ordering};
 
     use super::{
-        package_authority, parse_options, plan_request, require_exact_package_authority,
-        run_arguments, staged_run_command, validate_package_chain_command,
-        validate_transition_outputs, write_plan_confined,
+        close_tooling_defect_command, package_authority, parse_options, plan_request,
+        require_exact_package_authority, run_arguments, staged_run_command,
+        validate_package_chain_command, validate_transition_outputs, write_plan_confined,
     };
     use openwepp_gate_planner::executor::ExecutionClaims;
+    use openwepp_gate_planner::pre_heavy::append_attempt_record;
     use openwepp_gate_planner::repository::ObservedSource;
     use serde_json::json;
 
@@ -1242,6 +1275,47 @@ mod tests {
             let error = parse_options(&invalid).expect_err("invalid options must fail");
             assert_eq!(error.code, "GATE-CLI-USAGE");
         }
+    }
+
+    #[test]
+    fn tooling_defect_closure_cli_persists_the_canonical_result() {
+        let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!(
+            "../../target/openwepp-gate-closure-cli-{}",
+            std::process::id()
+        ));
+        let history = root.join("history");
+        fs::create_dir_all(history.join("recovery")).expect("history");
+        let ledger = history.join("attempts.jsonl");
+        fs::write(&ledger, "").expect("ledger");
+        append_attempt_record(
+            &ledger,
+            json!({
+                "record_type": "TOOLING_DEFECT",
+                "defect_id": "AUTO-cli",
+                "status": "OPEN",
+            }),
+        )
+        .expect("open defect");
+        let result = close_tooling_defect_command(
+            &root,
+            &BTreeMap::from([
+                ("ledger".to_owned(), ledger.display().to_string()),
+                ("defect-id".to_owned(), "AUTO-cli".to_owned()),
+                ("correction-commit".to_owned(), "c".repeat(40)),
+                (
+                    "closure-evidence".to_owned(),
+                    "dual review passed".to_owned(),
+                ),
+                (
+                    "invalidated-recovery-root".to_owned(),
+                    history.join("recovery/failed").display().to_string(),
+                ),
+            ]),
+        )
+        .expect("closure command");
+        assert_eq!(result["result"], "CLOSED");
+        assert_eq!(result["defect_id"], "AUTO-cli");
+        fs::remove_dir_all(root).expect("remove scratch");
     }
 
     #[test]

@@ -696,6 +696,14 @@ establish authority. Durable restore must reject symlinks, unindexed bytes,
 invalid ledger chains, and workflow or run provenance drift before installing
 bytes at their stable paths.
 
+If publication fails before one exact recovery root can receive protected-CI
+provenance, that root may be excluded from future resume discovery only by a
+later append-only `CLOSED` tooling-defect record. The closure must bind the
+exact recovery path inside the durable recovery namespace, a lowercase
+40-character correction commit, and nonempty review evidence. Reopening the
+same defect revokes the exclusion. Deleting the failed record or broadly
+ignoring unattested roots is forbidden.
+
 Once the caller-selected durable ledger is admissible, HEAVY records `STARTED`
 before audit validation, resume admission, executable checks, or subprocess
 preparation, and records exactly one terminal outcome for every such start.

@@ -4,7 +4,7 @@ Package ID: `20260720-testgate-recovery-trust-001`
 
 Queue ID: `TESTGATE-RECOVERY-TRUST-01`
 
-Status: `ACTIVE / READY-REPOSITORY-ATTESTATION`
+Status: `ACTIVE / REVIEW`
 
 Authorization: Roger Lew's 2026-07-20 direction to scaffold and execute
 `TESTGATE-RECOVERY-TRUST-01` after independent review held the predecessor.
@@ -103,6 +103,11 @@ quality paths without editing its frozen subject.
   from prior-attempt resume discovery.
 - [x] Close RTR-051 by preserving indexed hidden evidence through every
   TESTGATE artifact publication.
+- [x] Retain automatic run `29985878363`: authenticated recovery publication
+  passed with hidden evidence present, LIGHT passed 6/6, and pre-HEAVY blocked
+  solely on the runner-local AUTO defect left open by the prior failed run.
+- [ ] Close RTR-052/RTR-053 through the reviewed ledger closure command and
+  exact failed-root invalidation before one later changed-head attempt.
 - [ ] Obtain the exact repository-reviewed GitHub attestation, complete the
   held terminal verification, archive the prompt, and record final
   disposition.
@@ -282,6 +287,12 @@ preserves history. The executor mirrors each completed checkpoint and its
 declared outputs before continuing. An always-run finalizer indexes the ledger
 and recovery tree for upload. Restore independently verifies every indexed byte
 before installing it at the original stable recovery paths.
+
+An exact failed recovery root that can never acquire hosted provenance remains
+in history. It may be excluded only by a canonical `CLOSED` tooling-defect
+record binding the exact root, reviewed correction commit, and closure
+evidence. Reopening that defect revokes the exclusion; unrelated explicit
+recovery roots remain fail-closed.
 
 The pre-heavy command always emits its versioned report once it can identify
 the submitted transaction. Identity/schema substitution is `INVALID`; an

@@ -115,6 +115,7 @@ fn load_candidate_internal(
         .filter(|line| !line.trim().is_empty())
         .map(|line| parse_strict(line.as_bytes()))
         .collect::<Result<Vec<_>>>()?;
+    let invalidated_roots = invalidated_recovery_roots(&records, ledger)?;
     let nodes = plan["nodes"]
         .as_array()
         .ok_or_else(|| resume_error("GATE-RESUME-PLAN-SHAPE", "nodes"))?;
@@ -128,6 +129,10 @@ fn load_candidate_internal(
         let Some(recovery_root) = recovery_root_from_record(item, ledger)? else {
             continue;
         };
+        if invalidated_roots.contains(&recovery_root.path) {
+            seen_roots.insert(recovery_root.path);
+            continue;
+        }
         if seen_roots.contains(&recovery_root.path) {
             continue;
         }
@@ -139,6 +144,66 @@ fn load_candidate_internal(
         admit_archive_nodes(plan, nodes, &archive, &envelope, &mut admitted)?;
     }
     Ok((!admitted.is_empty()).then_some(ResumeCandidate { nodes: admitted }))
+}
+
+fn invalidated_recovery_roots(records: &[Value], ledger: &Path) -> Result<BTreeSet<PathBuf>> {
+    let recovery_parent = ledger
+        .parent()
+        .ok_or_else(|| {
+            resume_error(
+                "GATE-RESUME-INVALIDATION-PATH",
+                ledger.display().to_string(),
+            )
+        })?
+        .join("recovery");
+    let mut latest = BTreeMap::<String, Option<PathBuf>>::new();
+    for item in records {
+        if item["record_type"] != "TOOLING_DEFECT" {
+            continue;
+        }
+        let defect_id = item["defect_id"]
+            .as_str()
+            .filter(|value| !value.is_empty())
+            .ok_or_else(|| resume_error("GATE-RESUME-INVALIDATION-SHAPE", "defect_id"))?;
+        let Some(raw_root) = item.get("invalidated_recovery_root") else {
+            if latest.contains_key(defect_id) {
+                latest.insert(defect_id.to_owned(), None);
+            }
+            continue;
+        };
+        if item["status"] != "CLOSED" {
+            latest.insert(defect_id.to_owned(), None);
+            continue;
+        }
+        let correction = item["correction_commit"]
+            .as_str()
+            .filter(|value| value.len() == 40 && value.bytes().all(|byte| byte.is_ascii_hexdigit()))
+            .ok_or_else(|| resume_error("GATE-RESUME-INVALIDATION-SHAPE", "correction_commit"))?;
+        if correction.bytes().any(|byte| byte.is_ascii_uppercase()) {
+            return Err(resume_error(
+                "GATE-RESUME-INVALIDATION-SHAPE",
+                "correction_commit",
+            ));
+        }
+        item["closure_evidence"]
+            .as_str()
+            .filter(|value| !value.is_empty())
+            .ok_or_else(|| resume_error("GATE-RESUME-INVALIDATION-SHAPE", "closure_evidence"))?;
+        let root = PathBuf::from(raw_root.as_str().ok_or_else(|| {
+            resume_error(
+                "GATE-RESUME-INVALIDATION-SHAPE",
+                "invalidated_recovery_root",
+            )
+        })?);
+        if root.parent() != Some(recovery_parent.as_path()) {
+            return Err(resume_error(
+                "GATE-RESUME-INVALIDATION-PATH",
+                root.display().to_string(),
+            ));
+        }
+        latest.insert(defect_id.to_owned(), Some(root));
+    }
+    Ok(latest.into_values().flatten().collect())
 }
 
 fn recovery_root_from_record(item: &Value, ledger: &Path) -> Result<Option<RecoveryRoot>> {
@@ -1086,6 +1151,157 @@ mod tests {
         )
         .err()
         .expect("older explicit root still requires provenance");
+        assert_eq!(error.code, "GATE-RESUME-PROVENANCE-MISSING");
+        fs::remove_dir_all(scratch).expect("remove scratch");
+    }
+
+    #[test]
+    fn reviewed_closure_invalidates_only_its_exact_failed_recovery_root() {
+        let scratch = std::env::temp_dir().join(format!(
+            "openwepp-resume-invalidated-root-{}",
+            std::process::id()
+        ));
+        let history = scratch.join("history");
+        let invalidated = history.join("recovery/failed");
+        fs::create_dir_all(invalidated.join(".checkpoints")).expect("failed recovery root");
+        let ledger = history.join("attempts.jsonl");
+        let failed = json!({
+            "record_type": "STAGE_ATTEMPT",
+            "status": "FAILED",
+            "stage": "HEAVY",
+            "recovery_root": invalidated,
+        });
+        let closed = json!({
+            "record_type": "TOOLING_DEFECT",
+            "defect_id": "AUTO-example",
+            "status": "CLOSED",
+            "correction_commit": "a".repeat(40),
+            "closure_evidence": "dual review passed",
+            "invalidated_recovery_root": failed["recovery_root"],
+        });
+        fs::write(
+            &ledger,
+            format!(
+                "{}\n{}\n",
+                serde_json::to_string(&failed).expect("failed record"),
+                serde_json::to_string(&closed).expect("closed defect")
+            ),
+        )
+        .expect("ledger");
+
+        let candidate = load_candidate(
+            &scratch,
+            &json!({"nodes": []}),
+            &ledger,
+            &ExecutionClaims::default(),
+        )
+        .expect("reviewed closure invalidates the exact root");
+        assert!(candidate.is_none());
+
+        let other = history.join("recovery/other");
+        fs::create_dir_all(other.join(".checkpoints")).expect("other recovery root");
+        let other_record = json!({
+            "record_type": "STAGE_ATTEMPT",
+            "status": "FAILED",
+            "stage": "HEAVY",
+            "recovery_root": other,
+        });
+        fs::write(
+            &ledger,
+            format!(
+                "{}\n{}\n{}\n",
+                serde_json::to_string(&failed).expect("failed record"),
+                serde_json::to_string(&other_record).expect("other record"),
+                serde_json::to_string(&closed).expect("closed defect")
+            ),
+        )
+        .expect("ledger");
+        let error = load_candidate(
+            &scratch,
+            &json!({"nodes": []}),
+            &ledger,
+            &ExecutionClaims::default(),
+        )
+        .err()
+        .expect("another explicit root remains strict");
+        assert_eq!(error.code, "GATE-RESUME-PROVENANCE-MISSING");
+        fs::remove_dir_all(scratch).expect("remove scratch");
+    }
+
+    #[test]
+    fn recovery_invalidation_fails_closed_and_reopen_revokes_it() {
+        let scratch = std::env::temp_dir().join(format!(
+            "openwepp-resume-invalidation-shape-{}",
+            std::process::id()
+        ));
+        let history = scratch.join("history");
+        let recovery = history.join("recovery/failed");
+        fs::create_dir_all(recovery.join(".checkpoints")).expect("failed recovery root");
+        let ledger = history.join("attempts.jsonl");
+        let failed = json!({
+            "record_type": "STAGE_ATTEMPT",
+            "status": "FAILED",
+            "stage": "HEAVY",
+            "recovery_root": recovery,
+        });
+        let invalid = json!({
+            "record_type": "TOOLING_DEFECT",
+            "defect_id": "AUTO-example",
+            "status": "CLOSED",
+            "correction_commit": "not-a-commit",
+            "closure_evidence": "reviewed",
+            "invalidated_recovery_root": failed["recovery_root"],
+        });
+        fs::write(
+            &ledger,
+            format!(
+                "{}\n{}\n",
+                serde_json::to_string(&failed).expect("failed record"),
+                serde_json::to_string(&invalid).expect("invalid closure")
+            ),
+        )
+        .expect("ledger");
+        let error = load_candidate(
+            &scratch,
+            &json!({"nodes": []}),
+            &ledger,
+            &ExecutionClaims::default(),
+        )
+        .err()
+        .expect("unreviewed closure shape must fail");
+        assert_eq!(error.code, "GATE-RESUME-INVALIDATION-SHAPE");
+
+        let closed = json!({
+            "record_type": "TOOLING_DEFECT",
+            "defect_id": "AUTO-example",
+            "status": "CLOSED",
+            "correction_commit": "b".repeat(40),
+            "closure_evidence": "dual review passed",
+            "invalidated_recovery_root": failed["recovery_root"],
+        });
+        let reopened = json!({
+            "record_type": "TOOLING_DEFECT",
+            "defect_id": "AUTO-example",
+            "status": "OPEN",
+        });
+        fs::write(
+            &ledger,
+            format!(
+                "{}\n{}\n{}\n",
+                serde_json::to_string(&failed).expect("failed record"),
+                serde_json::to_string(&closed).expect("closed defect"),
+                serde_json::to_string(&reopened).expect("reopened defect")
+            ),
+        )
+        .expect("ledger");
+        let error = load_candidate(
+            &scratch,
+            &json!({"nodes": []}),
+            &ledger,
+            &ExecutionClaims::default(),
+        )
+        .err()
+        .expect("reopened defect revokes invalidation");
         assert_eq!(error.code, "GATE-RESUME-PROVENANCE-MISSING");
         fs::remove_dir_all(scratch).expect("remove scratch");
     }

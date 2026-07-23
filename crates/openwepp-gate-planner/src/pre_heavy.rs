@@ -927,6 +927,70 @@ pub fn append_attempt_record(path: &Path, mut record: Value) -> Result<String> {
     Ok(entry)
 }
 
+/// Close one exact open tooling defect and optionally invalidate its failed
+/// recovery root.
+///
+/// # Errors
+///
+/// Returns a typed ledger error unless the ledger is valid, the named defect's
+/// latest state is open, and every closure binding is canonical.
+pub fn close_tooling_defect(
+    path: &Path,
+    defect_id: &str,
+    correction_commit: &str,
+    closure_evidence: &str,
+    invalidated_recovery_root: Option<&Path>,
+) -> Result<String> {
+    admit_attempt_ledger(path)?;
+    if defect_id.is_empty()
+        || closure_evidence.is_empty()
+        || correction_commit.len() != 40
+        || !correction_commit
+            .bytes()
+            .all(|byte| byte.is_ascii_hexdigit() && !byte.is_ascii_uppercase())
+    {
+        return Err(audit_error("GATE-AUDIT-DEFECT-CLOSURE-SHAPE", defect_id));
+    }
+    let records = fs::read_to_string(path)
+        .map_err(|error| audit_error("GATE-AUDIT-LEDGER-READ", error.to_string()))?
+        .lines()
+        .filter(|line| !line.trim().is_empty())
+        .map(|line| parse_strict(line.as_bytes()))
+        .collect::<Result<Vec<_>>>()?;
+    let latest = records
+        .iter()
+        .rev()
+        .find(|item| item["record_type"] == "TOOLING_DEFECT" && item["defect_id"] == defect_id)
+        .ok_or_else(|| audit_error("GATE-AUDIT-DEFECT-CLOSURE-UNKNOWN", defect_id))?;
+    if latest["status"] != "OPEN" {
+        return Err(audit_error("GATE-AUDIT-DEFECT-CLOSURE-NOT-OPEN", defect_id));
+    }
+    let mut record = json!({
+        "record_type": "TOOLING_DEFECT",
+        "defect_id": defect_id,
+        "status": "CLOSED",
+        "owner": "openwepp-maintainers",
+        "correction_commit": correction_commit,
+        "closure_evidence": closure_evidence,
+    });
+    if let Some(root) = invalidated_recovery_root {
+        let expected_parent = path
+            .parent()
+            .ok_or_else(|| {
+                audit_error("GATE-AUDIT-DEFECT-CLOSURE-PATH", path.display().to_string())
+            })?
+            .join("recovery");
+        if root.parent() != Some(expected_parent.as_path()) {
+            return Err(audit_error(
+                "GATE-AUDIT-DEFECT-CLOSURE-PATH",
+                root.display().to_string(),
+            ));
+        }
+        record["invalidated_recovery_root"] = json!(root);
+    }
+    append_attempt_record(path, record)
+}
+
 #[allow(
     clippy::needless_pass_by_value,
     reason = "each ephemeral evidence value is consumed immediately into its canonical digest"
@@ -1745,17 +1809,18 @@ mod tests {
     use super::{
         AuditCheckInputs, AuditDocumentInputs, CHECK_IDS, ConstructedAudit, admit_attempt_ledger,
         append_attempt_record, audit_document, audit_reason_codes, audit_reconstruction_root,
-        audit_status, build_audit_checks, build_failure_audit, check, construct_audit,
-        documentation_scope_is_exact, durable_ledger, enforce_authorized_rust_line_limit,
-        execution_claims_match, execution_context_is_current, execution_identities,
-        failure_check_index, file_digest, ledger_head, light_attempt_isolated, light_stage_passed,
-        no_open_tooling_defect, no_open_tooling_defect_at_head, node_manifest, package_admission,
-        package_admitted, path_digest, read_json, reconcile_orphaned_attempts,
-        reconstructed_plan_is_exact, record_heavy_failure, reject_open_tooling_defects,
-        require_bound_active_prompt, require_clean_diff, require_ready_audit_status, seal_audit,
-        separated_roots, tooling_defect_statuses, valid_stage_order,
-        validate_audit_context_binding, validate_audit_core_binding, validate_audit_schema,
-        validate_checkpoint_identity, validate_combined_decision, validate_current_audit_inventory,
+        audit_status, build_audit_checks, build_failure_audit, check, close_tooling_defect,
+        construct_audit, documentation_scope_is_exact, durable_ledger,
+        enforce_authorized_rust_line_limit, execution_claims_match, execution_context_is_current,
+        execution_identities, failure_check_index, file_digest, ledger_head,
+        light_attempt_isolated, light_stage_passed, no_open_tooling_defect,
+        no_open_tooling_defect_at_head, node_manifest, package_admission, package_admitted,
+        path_digest, read_json, reconcile_orphaned_attempts, reconstructed_plan_is_exact,
+        record_heavy_failure, reject_open_tooling_defects, require_bound_active_prompt,
+        require_clean_diff, require_ready_audit_status, seal_audit, separated_roots,
+        tooling_defect_statuses, valid_stage_order, validate_audit_context_binding,
+        validate_audit_core_binding, validate_audit_schema, validate_checkpoint_identity,
+        validate_combined_decision, validate_current_audit_inventory,
         validate_embedded_light_receipt_id, validate_exact_node_shapes, validate_ready_audit,
         validate_ready_check_set, validate_stage_receipt, validate_stage_receipt_execution_binding,
         validate_stage_receipt_plan_binding, validate_started_successor, verify_ledger_chain,
@@ -2142,6 +2207,67 @@ mod tests {
         .expect("close defect");
         no_open_tooling_defect(&path).expect("latest CLOSED status admits");
         fs::remove_file(path).expect("remove ledger");
+    }
+
+    #[test]
+    fn tooling_defect_closure_command_binds_review_and_exact_recovery_root() {
+        let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!(
+            "../../target/openwepp-gate-tooling-closure-{}-{}",
+            std::process::id(),
+            std::thread::current().name().unwrap_or("test")
+        ));
+        let history = root.join("history");
+        fs::create_dir_all(history.join("recovery")).expect("history");
+        let ledger = history.join("attempts.jsonl");
+        fs::write(&ledger, "").expect("empty ledger");
+        append_attempt_record(
+            &ledger,
+            json!({
+                "record_type": "TOOLING_DEFECT",
+                "defect_id": "AUTO-example",
+                "status": "OPEN",
+            }),
+        )
+        .expect("open defect");
+        let recovery = history.join("recovery/failed");
+        assert_eq!(
+            close_tooling_defect(
+                &ledger,
+                "AUTO-example",
+                &"a".repeat(40),
+                "dual review passed",
+                Some(&root.join("outside")),
+            )
+            .expect_err("outside recovery root must fail")
+            .code,
+            "GATE-AUDIT-DEFECT-CLOSURE-PATH"
+        );
+        let entry = close_tooling_defect(
+            &ledger,
+            "AUTO-example",
+            &"a".repeat(40),
+            "dual review passed",
+            Some(&recovery),
+        )
+        .expect("close exact defect");
+        assert_eq!(entry.len(), 64);
+        no_open_tooling_defect(&ledger).expect("closure admits audit");
+        let closed = fs::read_to_string(&ledger)
+            .expect("closed ledger")
+            .lines()
+            .map(|line| parse_strict(line.as_bytes()).expect("canonical record"))
+            .collect::<Vec<_>>();
+        assert_eq!(
+            closed.last().expect("closure")["invalidated_recovery_root"],
+            recovery.display().to_string()
+        );
+        assert_eq!(
+            close_tooling_defect(&ledger, "AUTO-example", &"a".repeat(40), "duplicate", None,)
+                .expect_err("duplicate closure must fail")
+                .code,
+            "GATE-AUDIT-DEFECT-CLOSURE-NOT-OPEN"
+        );
+        fs::remove_dir_all(root).expect("remove scratch");
     }
 
     #[test]
