@@ -1,0 +1,43 @@
+# CQR Nightly B03S Aggregate Admission
+
+Package ID: `20260723-cqr-nightly-b03s-aggregate-001`
+
+Status: `ACTIVE`
+
+## Objective
+
+Provide fully validator-shaped prospective aggregate authority for the
+two-module CQR batch exposed by TESTGATE receipt `64a6f292...26b44`, after two
+terminal pre-implementation scaffold checks refined the immutable contract.
+
+## Declared Write Set
+
+- `crates/openwepp-gate-planner/src/main.rs`
+- `crates/openwepp-gate-planner/src/package_validation.rs`
+- `docs/work-packages/20260723-cqr-nightly-b03s-aggregate-001/**`
+- `docs/work-packages/20260723-cqr-nightly-b03s-1-main-001/**`
+- `docs/work-packages/20260723-cqr-nightly-b03s-2-package-validation-001/**`
+- `docs/work-packages/20260723-cqr-nightly-b03-execplan.md`
+- `docs/work-packages/20260722-testgate-sequential-package-authority-recovery-001/**`
+- `docs/work-packages/20260720-testgate-recovery-trust-001/**`
+- `docs/work-packages/README.md`
+
+## Execution Contract
+
+The immutable manifest enumerates every mandatory exact path and every batch
+coverage path. Each module scaffold must be committed after this aggregate and
+pass canonical aggregate admission before implementation edits.
+
+## Subagent Authorization
+
+Subagent authorization: this package explicitly authorizes subagent
+spawning/delegation to two independent reviewers, two terminal verifiers, and
+one comparator runner. Expected outputs are package-local artifacts and
+retained external evidence. Write access is read-only except for an explicitly
+assigned bounded module implementation or comparator artifact root.
+
+## Exit Criteria
+
+- Both module packages complete exact CRAP and behavior gates.
+- Every review finding is dispositioned and dual terminal verification passes.
+- One changed-head recovery qualification passes without an unchanged retry.

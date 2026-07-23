@@ -1,0 +1,23 @@
+{
+  "schema_version": "openwepp-cqr-aggregate-batch-v1",
+  "aggregate_package": "docs/work-packages/20260723-cqr-nightly-b03s-aggregate-001/package.md",
+  "master_execplan": "docs/work-packages/20260723-cqr-nightly-b03-execplan.md",
+  "module_packages": [
+    "docs/work-packages/20260723-cqr-nightly-b03s-1-main-001/package.md",
+    "docs/work-packages/20260723-cqr-nightly-b03s-2-package-validation-001/package.md"
+  ],
+  "required_paths": [
+    "crates/openwepp-gate-planner/src/main.rs",
+    "crates/openwepp-gate-planner/src/package_validation.rs",
+    "docs/work-packages/20260723-cqr-nightly-b03s-aggregate-001/**",
+    "docs/work-packages/20260723-cqr-nightly-b03s-aggregate-001/artifacts/batch-authority.json",
+    "docs/work-packages/20260723-cqr-nightly-b03s-1-main-001/package.md",
+    "docs/work-packages/20260723-cqr-nightly-b03s-1-main-001/**",
+    "docs/work-packages/20260723-cqr-nightly-b03s-2-package-validation-001/package.md",
+    "docs/work-packages/20260723-cqr-nightly-b03s-2-package-validation-001/**",
+    "docs/work-packages/20260723-cqr-nightly-b03-execplan.md",
+    "docs/work-packages/20260722-testgate-sequential-package-authority-recovery-001/**",
+    "docs/work-packages/20260720-testgate-recovery-trust-001/**",
+    "docs/work-packages/README.md"
+  ]
+}
