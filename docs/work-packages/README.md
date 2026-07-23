@@ -251,6 +251,10 @@
 
 State as of `2026-07-23 UTC`:
 
+- `20260723-testgate-incompatible-recovery-receipt-001/` - ACTIVE: hardens
+  recovery so a prior receipt rejected as incompatible is retained as a typed
+  decision rather than blocking a newly admitted forest1 attempt.
+
 - `20260720-testgate-workflow-qualify-001/` - ACTIVE / READY-FOREST1-DISPATCH:
   one ordinary exact-head forest1 TESTGATE execution after a queue-idle
   preflight. The prior Q01--Q15 controller scope was superseded as over-scoped;
