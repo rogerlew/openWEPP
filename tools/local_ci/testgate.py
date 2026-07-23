@@ -441,10 +441,20 @@ def _verify_attempt_archive(
 
 def _restore_attempt_archive(root: Path, history_root: Path) -> None:
     """Install only independently verified regular files into a fresh history root."""
-    if any(history_root.iterdir()):
-        raise TestgateError("history restore destination is not empty")
-    shutil.copyfile(root / "attempts.jsonl", history_root / "attempts.jsonl")
-    (history_root / "attempts.jsonl").chmod(0o600)
+    _validate_directory_nofollow(history_root)
+    entries = list(history_root.iterdir())
+    if entries:
+        placeholder = history_root / "attempts.jsonl"
+        if len(entries) != 1 or entries[0] != placeholder:
+            raise TestgateError("history restore destination is not empty")
+        status = placeholder.lstat()
+        if (
+            stat.S_ISLNK(status.st_mode)
+            or not stat.S_ISREG(status.st_mode)
+            or status.st_size != 0
+        ):
+            raise TestgateError("history restore destination is not empty")
+    _copy_atomic_nofollow(root / "attempts.jsonl", history_root / "attempts.jsonl")
     recovery = root / "recovery"
     if recovery.is_dir():
         _copy_regular_tree(recovery, history_root / "recovery")

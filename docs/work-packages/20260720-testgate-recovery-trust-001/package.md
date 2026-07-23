@@ -91,6 +91,11 @@ quality paths without editing its frozen subject.
   resolution, traversal/output-injection rejection, exact active-status
   vocabulary repair, focused validation, dual review, and dual verification.
   The 161-record ledger ends at `5cb57d17...` with zero effective open defects.
+- [x] Retained automatic run `29983039718`, which passed runner/toolchain
+  admission but stopped before any gate node when the zero-byte ledger produced
+  by the prior pre-execution finalizer deadlocked authenticated history restore.
+- [ ] Close RTR-049 by admitting only the exact safe zero-byte ledger
+  placeholder while preserving fail-closed nonempty and unsafe destinations.
 - [ ] Obtain the exact repository-reviewed GitHub attestation, complete the
   held terminal verification, archive the prompt, and record final
   disposition.

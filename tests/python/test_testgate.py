@@ -464,6 +464,90 @@ class TestGateTest(unittest.TestCase):
                 (history / "recovery/run-1/checkpoint.json").read_text(), "{}\n"
             )
 
+    def test_archive_restore_replaces_only_safe_empty_ledger_placeholder(self) -> None:
+        for source_is_empty in (True, False):
+            with (
+                self.subTest(source_is_empty=source_is_empty),
+                tempfile.TemporaryDirectory() as directory,
+            ):
+                root = Path(directory)
+                evidence = root / "evidence"
+                history = root / "history"
+                evidence.mkdir()
+                history.mkdir()
+                if source_is_empty:
+                    (evidence / "attempts.jsonl").touch()
+                else:
+                    TESTGATE._append_history(
+                        evidence / "attempts.jsonl",
+                        {"record_type": "ATTEMPT", "status": "CLOSED"},
+                    )
+                (history / "attempts.jsonl").touch()
+
+                TESTGATE._restore_attempt_archive(evidence, history)
+
+                self.assertEqual(
+                    (history / "attempts.jsonl").read_bytes(),
+                    (evidence / "attempts.jsonl").read_bytes(),
+                )
+                self.assertEqual(
+                    (history / "attempts.jsonl").stat().st_mode & 0o777, 0o600
+                )
+
+    def test_archive_restore_rejects_symlinked_history_chain(self) -> None:
+        cases = ("history-root", "history-ancestor")
+        for case in cases:
+            with self.subTest(case=case), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                evidence = root / "evidence"
+                outside = root / "outside"
+                evidence.mkdir()
+                outside.mkdir()
+                (evidence / "attempts.jsonl").touch()
+                if case == "history-root":
+                    history = root / "history"
+                    history.symlink_to(outside, target_is_directory=True)
+                else:
+                    ancestor = root / "ancestor"
+                    ancestor.symlink_to(outside, target_is_directory=True)
+                    history = ancestor / "history"
+                    (outside / "history").mkdir()
+
+                with self.assertRaisesRegex(
+                    TESTGATE.TestgateError,
+                    "recovery directory is not a real directory",
+                ):
+                    TESTGATE._restore_attempt_archive(evidence, history)
+                self.assertFalse((outside / "attempts.jsonl").exists())
+                self.assertFalse((outside / "history/attempts.jsonl").exists())
+
+    def test_archive_restore_rejects_occupied_or_unsafe_destination(self) -> None:
+        cases = ("nonempty-ledger", "extra-entry", "ledger-directory", "ledger-symlink")
+        for case in cases:
+            with self.subTest(case=case), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                evidence = root / "evidence"
+                history = root / "history"
+                evidence.mkdir()
+                history.mkdir()
+                (evidence / "attempts.jsonl").write_text("")
+                placeholder = history / "attempts.jsonl"
+                if case == "nonempty-ledger":
+                    placeholder.write_text("{}\n")
+                elif case == "extra-entry":
+                    placeholder.touch()
+                    (history / "other").touch()
+                elif case == "ledger-directory":
+                    placeholder.mkdir()
+                else:
+                    placeholder.symlink_to(evidence / "attempts.jsonl")
+
+                with self.assertRaisesRegex(
+                    TESTGATE.TestgateError,
+                    "history restore destination is not empty",
+                ):
+                    TESTGATE._restore_attempt_archive(evidence, history)
+
     def test_archive_rejects_unindexed_file_and_symlink(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
