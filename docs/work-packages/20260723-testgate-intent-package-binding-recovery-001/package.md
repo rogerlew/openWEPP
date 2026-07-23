@@ -30,6 +30,7 @@ before gate planning.
 ## Declared Write Set
 
 - `.github/workflows/testgate-shadow.yml`
+- `gate-policy/v1/impact-map.json`
 - `tools/local_ci/resolve_testgate_intent_package.py`
 - `tests/python/test_resolve_testgate_intent_package.py`
 - `tests/integration/testgate_ci_executor_contract.rs`
