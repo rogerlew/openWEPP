@@ -251,6 +251,10 @@
 
 State as of `2026-07-23 UTC`:
 
+- `20260723-testgate-observer-result-recovery-001/` - ACTIVE: closes RTR-045,
+  the post-seal final-observation `package_result` binding defect exposed by
+  receipt `64a6f292...26b44`.
+
 - `20260723-cqr-nightly-b03s-aggregate-001/` - ACTIVE: validator-shaped
   prospective aggregate authority for the `main.rs` and
   `package_validation.rs` CRAP closeout exposed by recovery receipt
