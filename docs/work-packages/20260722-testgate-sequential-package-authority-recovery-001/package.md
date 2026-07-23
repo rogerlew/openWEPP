@@ -24,11 +24,11 @@ and malformed chains fail closed.
 - [x] (2026-07-22) Scaffolded this prospective correction package before code.
 - [x] (2026-07-22) Accepted both architecture-review HOLDs and prospectively
   expanded the artifact-binding write set before planner edits.
-- [ ] Add failing focused tests for single, zero, ambiguous, retroactive,
+- [x] (2026-07-22) Added focused tests for single, zero, ambiguous, retroactive,
   scaffold, and prerequisite authority sequences.
-- [ ] Implement one canonical sequential authority reconstruction consumed by
+- [x] (2026-07-22) Implemented one canonical sequential authority reconstruction consumed by
   intent and pre-HEAVY admission.
-- [ ] Run focused non-HEAVY validation and reconcile exact diff/line counts.
+- [x] (2026-07-22) Ran focused non-HEAVY validation and reconciled exact diff/line counts.
 - [ ] Obtain dual independent implementation review and disposition findings.
 - [ ] Commit the correction, durably close RTR-044 at that exact commit, and
   obtain dual terminal verification.
@@ -53,11 +53,16 @@ and malformed chains fail closed.
   regression and source-contract coverage.
 - Explicit anchor: the operator-supplied intent package must exist and be
   active at the base. Only that anchor and valid packages scaffolded inside the
-  audited range may authorize later commits; unrelated historical packages are
-  never candidates.
+  audited range may authorize implementation or package-tree paths; unrelated
+  historical packages are never candidates. A root `*-execplan.md` is distinct
+  planning state that may cover only its exact path while its bound prior
+  lifecycle remains prospective.
 - Lifecycle and prompt binding: Rust parses exactly one sanctioned write-set
-  heading and one exact status field. Only exact active/ready states authorize.
-  The chain binds the anchor's one active Markdown prompt and its blob digest.
+  heading and one exact status field. Only enumerated prospective lifecycle
+  states authorize; unknown, misspelled, terminal, and blocking states do not.
+  A terminal package may only perform one byte-preserving active-to-archived
+  prompt move. The chain binds the anchor's one active Markdown prompt, its
+  blob digest, and exact live directory membership.
 - History posture: each first-parent transition is audited with renames
   disabled. A merge is one atomic transition from its first parent; authority
   arriving from another parent is treated as a new scaffold and cannot
@@ -89,6 +94,7 @@ diagnostic-only HOLD while that route remains available.
 - `crates/openwepp-gate-planner/src/executor.rs`
 - `crates/openwepp-gate-planner/src/verifier.rs`
 - `gate-policy/v1/schemas/**`
+- `gate-policy/v1/impact-map.json`
 - `tools/local_ci/testgate.py`
 - `tools/local_ci/testgate_qualification.py`
 - `tests/python/test_testgate.py`
@@ -174,6 +180,13 @@ then resume qualification on a changed head.
 - Observation: singular package admission is correct for one package but cannot
   represent multiple separately prospective authorities across a commit range.
   Evidence: audit ID `8def4036...631e` at HEAD `59557953`.
+- Observation: the canonical recovery range needs path-level composition when
+  separate prospective packages own disjoint paths in one later commit.
+  Evidence: the committed recovery history reconstructed `READY` only after
+  allocation selected the newest unambiguous owner for each exact path.
+- Observation: executor fixture binding initially grew `executor.rs` to 3,008
+  lines. A behavior-neutral documentation cleanup and removal of an obsolete
+  disabled pre-HEAVY test restored the executor to 2,999 lines before review.
 
 ## Decision Log
 
@@ -202,6 +215,17 @@ then resume qualification on a changed head.
   Rationale: this closes current TOCTOU ambiguity without silently skipping
   merged content or inventing an under-specified synthetic worktree identity.
   Date/Author: 2026-07-22 / Codex after dual architecture review.
+- Decision: represent top-level CQR ExecPlans as digest- and lifecycle-bound,
+  exact-path-only planning state rather than package authority.
+  Rationale: historical recovery planning was prospectively scaffolded outside
+  a package directory, but it must never authorize source, sibling, or package
+  changes. Terminal planning state cannot authorize later edits.
+  Date/Author: 2026-07-22 / Codex after implementation review.
+- Decision: permit terminal package state only to archive an unchanged active
+  prompt under the same filename, with exactly the deletion/addition pair.
+  Rationale: prompt archival finalizes lifecycle after status completion but is
+  not continuing package authority.
+  Date/Author: 2026-07-22 / Codex after implementation review.
 
 ## Outcomes & Retrospective
 
