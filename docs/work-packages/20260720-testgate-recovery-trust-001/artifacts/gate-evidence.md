@@ -72,3 +72,13 @@ Attempt 4 reopened RTR-014 because package-scoped Clippy had omitted the root in
    `LOCAL_UNTRUSTED`; a repository-reviewed GitHub attestation is still needed
    to close the `INCREMENT` boundary. The absolute-path pre-receipt rejection
    in sibling root `...Hs7tZ9` ran zero nodes and did not mutate the ledger.
+
+9. GitHub run `29978778150` at pushed head `ba6c1e1d...` admitted the exact
+   trusted main comparison, verified the pinned toolchain, bootstrapped
+   dependencies, and built the planner. It then failed before TESTGATE
+   execution at `Restore and verify newest durable attempt history`.
+   `Execute content-verifiable increment gates` was skipped. Live read-only
+   inspection proved runner `forest1-openwepp-01` used the reviewed image but
+   mounted only `/runner-state`; named volume `openwepp-testgate-history` did
+   not exist. RTR-046 records the unactivated runner configuration. No gate
+   node, receipt, or unchanged expensive rerun occurred.

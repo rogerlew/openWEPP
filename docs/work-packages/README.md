@@ -256,10 +256,10 @@ State as of `2026-07-23 UTC`:
   superseding exact durable closure record.
 
 - `20260723-cqr-nightly-b03s-aggregate-001/` -
-  EXECUTED-HOLD-REPOSITORY-ATTESTATION: both module packages, aggregate
-  review, and the sole changed-head qualification passed. Exact receipt
-  `c22fe3f...f06ca` remains local-untrusted pending its native GitHub
-  attestation envelope.
+  EXECUTED-HOLD-RTR-046-RUNNER-ACTIVATION: both module packages, aggregate
+  review, and the local changed-head qualification passed. The first automatic
+  trusted run stopped before gate execution because its reviewed persistent
+  history mount was not active.
 
 - `20260723-cqr-nightly-b03s-1-main-001/` - EXECUTED-COMPLETE: reduced three
   authority command targets and five helpers to CRAP 2–4 at 100% focused
@@ -380,13 +380,14 @@ State as of `2026-07-23 UTC`:
   coverage closure, and dual terminal verification.
 
 - `20260720-testgate-recovery-trust-001/` -
-  EXECUTED-HOLD-REPOSITORY-ATTESTATION: `TESTGATE-RECOVERY-TRUST-01` owns the
+  EXECUTED-HOLD-RTR-046-RUNNER-ACTIVATION: `TESTGATE-RECOVERY-TRUST-01` owns the
   checkpoint trust, persistent runner recovery, typed audit failure,
   claim/package binding, cross-language ledger, symlink confinement, and
   combined-quality defects that held `TESTGATE-CLOSURE-AUDIT-01`. It precedes
   closure retry and frozen workflow qualification. Its local exact-head
-  receipt passed 15/15 with zero retries and zero actionable global CRAP rows;
-  repository-reviewed attestation remains required for increment closure.
+  receipt passed 15/15 with zero retries and zero actionable global CRAP rows.
+  RTR-046 now owns activation of the reviewed persistent runner contract before
+  repository-reviewed attestation can close the increment.
 
 - `20260720-testgate-pre-heavy-closure-audit-001/` -
   IMPLEMENTED-HOLD: `TESTGATE-CLOSURE-AUDIT-01` reached one false-READY heavy

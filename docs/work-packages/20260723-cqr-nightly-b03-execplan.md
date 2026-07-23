@@ -1,6 +1,6 @@
 # CQR Nightly B03: Sequential Authority CRAP Closeout
 
-Status: `EXECUTED-HOLD-REPOSITORY-ATTESTATION`
+Status: `EXECUTED-HOLD-RTR-046-RUNNER-ACTIVATION`
 
 ## Objective
 
@@ -67,3 +67,5 @@ changed-head `INCREMENT` TESTGATE qualification.
 - [ ] Verify a repository-reviewed GitHub attestation envelope for exact
   receipt `c22fe3f...f06ca`; the local-untrusted receipt cannot close the
   increment boundary.
+- [ ] Close RTR-046 by activating the already-reviewed trusted-runner history
+  volume before the next changed-head push.

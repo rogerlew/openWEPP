@@ -4,7 +4,7 @@ Package ID: `20260720-testgate-recovery-trust-001`
 
 Queue ID: `TESTGATE-RECOVERY-TRUST-01`
 
-Status: `ACTIVE / HOLD-REPOSITORY-ATTESTATION`
+Status: `ACTIVE / RTR-046-CORRECTION`
 
 Authorization: Roger Lew's 2026-07-20 direction to scaffold and execute
 `TESTGATE-RECOVERY-TRUST-01` after independent review held the predecessor.
@@ -61,6 +61,13 @@ quality paths without editing its frozen subject.
   `35729c88...009b8` with all ten checks passing.
 - [x] Delegated every selected HEAVY gate through one comparator execution;
   receipt `c22fe3f...f06ca` sealed 15/15 PASS with zero retries.
+- [x] Pushed exact head `ba6c1e1d...`; automatic trusted run `29978778150`
+  stopped before gate execution because the live runner lacked the reviewed
+  `/testgate-history` volume. Opened durable defect RTR-046 at
+  `7c4dfaf1...`.
+- [ ] Activate and narrowly verify the already-reviewed persistent runner
+  contract, obtain dual review, commit the exact correction evidence, and
+  close RTR-046 durably.
 - [ ] Obtain the exact repository-reviewed GitHub attestation, complete the
   held terminal verification, archive the prompt, and record final
   disposition.

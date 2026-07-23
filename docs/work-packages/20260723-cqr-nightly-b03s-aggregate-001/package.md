@@ -2,7 +2,7 @@
 
 Package ID: `20260723-cqr-nightly-b03s-aggregate-001`
 
-Status: `EXECUTED-HOLD-REPOSITORY-ATTESTATION`
+Status: `EXECUTED-HOLD-RTR-046-RUNNER-ACTIVATION`
 
 ## Objective
 
@@ -57,3 +57,5 @@ assigned bounded module implementation or comparator artifact root.
 - [ ] Obtain and verify the repository-reviewed GitHub attestation envelope
   for that exact receipt and HEAD. Local receipt trust is
   `LOCAL_UNTRUSTED`, which cannot close an increment boundary.
+- [ ] Close RTR-046 after activating and verifying the reviewed persistent
+  history mount required by the trusted runner.
