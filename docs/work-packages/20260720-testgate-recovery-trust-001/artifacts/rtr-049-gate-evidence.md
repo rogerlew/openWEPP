@@ -45,5 +45,8 @@ No expensive gate or manual TESTGATE dispatch ran.
 - Accepted: reviewer A requested an exact zero-byte archive to zero-byte
   placeholder positive case. The success regression now exercises both empty
   and nonempty independently verified source ledgers.
-- Pending: both independent reviewers must rebind their final verdicts to the
-  corrected exact commit before durable closure.
+- Passed: both independent reviewers rebound `PASS` with no remaining finding
+  to exact correction commit `36327cb5...`.
+
+RTR-049 closed in the append-only durable ledger at digest
+`9b82798d0638c73f5d849ac927f64919815de5c56c8e82bf2ba23b7bf567beac`.
