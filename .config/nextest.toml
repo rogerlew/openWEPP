@@ -272,13 +272,13 @@ threads-required = 2
 
 # Planner executor/verifier fixtures archive the repository and may compile an
 # independent target tree. Keep those content-independence checks intact while
-# preventing several complete snapshots from consuming the bounded runner
-# target mount at once.
+# preventing complete snapshot/linker builds from competing with any other
+# test on bounded runner memory and executable temporary storage.
 [[profile.default.overrides]]
 filter = '''
 package(openwepp-gate-planner)
-& test(/(executor::tests::|verifier::tests::)/)
+& test(/(pre_heavy::coverage_tests::exact_planner_output_reconstructs_through_the_public_audit_path|executor::tests::|verifier::tests::)/)
 '''
 test-group = "repository-snapshot"
-threads-required = 1
+threads-required = "num-test-threads"
 slow-timeout = { period = "90s", terminate-after = 8 }

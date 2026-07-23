@@ -433,7 +433,10 @@ fn exact_planner_output_reconstructs_through_the_public_audit_path() {
     let plan = Planner::new(NextestInventory)
         .build(&repo, &request)
         .expect("canonical planner output");
-    let artifacts = repo.join("target/pre-heavy-exact-reconstruction");
+    let artifacts = std::env::temp_dir().join(format!(
+        "openwepp-pre-heavy-exact-reconstruction-{}",
+        std::process::id()
+    ));
     fs::create_dir_all(artifacts.join(".work")).expect("artifact work root");
     reconstruct_exact_plan(&repo, &plan, &artifacts).expect("exact audit reconstruction");
     fs::remove_dir_all(artifacts).expect("remove artifact root");
