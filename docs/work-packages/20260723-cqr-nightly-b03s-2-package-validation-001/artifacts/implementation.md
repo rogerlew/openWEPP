@@ -1,3 +1,3 @@
 # Implementation
 
-Static: pending behavior-preserving decomposition.
+Static: `validate_package` now preserves its original stage order through three private whole-stage helpers: `collect_package_audit_evidence`, `package_audit_disposition`, and `build_package_audit`. Evidence collection still reads and decodes the current package before Git path discovery and base-object lookup. Disposition still consumes the same base/current bytes and ordered changed paths. Serialization still constructs the same fields, derives `package_audit_id`, reads the same schema, and validates before returning. No public API, status, reason, Git command, wildcard, schema, or hash behavior changed.

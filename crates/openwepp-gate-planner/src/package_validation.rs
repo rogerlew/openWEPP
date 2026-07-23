@@ -21,6 +21,23 @@ use crate::error::{ErrorClass, GatePolicyError, Result};
 /// produced artifact violates its schema.
 pub fn validate_package(repo: &Path, base: &str, package: &Path) -> Result<Value> {
     validate_package_path(package)?;
+    let mut evidence = collect_package_audit_evidence(repo, base, package)?;
+    let disposition = package_audit_disposition(&mut evidence)?;
+    build_package_audit(repo, base, package, &evidence, disposition)
+}
+
+struct PackageAuditEvidence {
+    current_digest: String,
+    current_text: String,
+    changed_paths: Vec<String>,
+    base_text: Option<Vec<u8>>,
+}
+
+fn collect_package_audit_evidence(
+    repo: &Path,
+    base: &str,
+    package: &Path,
+) -> Result<PackageAuditEvidence> {
     let package_text = fs::read(package_absolute(repo, package)).map_err(|error| {
         package_error(
             "GATE-PACKAGE-READ",
@@ -32,22 +49,46 @@ pub fn validate_package(repo: &Path, base: &str, package: &Path) -> Result<Value
         .map_err(|error| package_error("GATE-PACKAGE-UTF8", error.to_string()))?;
     let changed_paths = changed_paths(repo, base)?;
     let base_text = git_show(repo, base, package)?;
+    Ok(PackageAuditEvidence {
+        current_digest,
+        current_text,
+        changed_paths,
+        base_text,
+    })
+}
 
-    let (status, reasons, base_digest, declared, unauthorized) = match base_text {
+fn package_audit_disposition(evidence: &mut PackageAuditEvidence) -> Result<Disposition> {
+    let disposition = match evidence.base_text.take() {
         None => (
             "BLOCKED",
             vec!["SCAFFOLD_COMMIT_REQUIRED"],
             None,
-            parse_write_set(&current_text).unwrap_or_default(),
-            changed_paths.clone(),
+            parse_write_set(&evidence.current_text).unwrap_or_default(),
+            evidence.changed_paths.clone(),
         ),
         Some(base_bytes) => {
             let base_digest = Some(sha256_bytes(&base_bytes));
             let base_text = String::from_utf8(base_bytes)
                 .map_err(|error| package_error("GATE-PACKAGE-UTF8", error.to_string()))?;
-            disposition(&base_text, &current_text, &changed_paths, base_digest)
+            disposition(
+                &base_text,
+                &evidence.current_text,
+                &evidence.changed_paths,
+                base_digest,
+            )
         }
     };
+    Ok(disposition)
+}
+
+fn build_package_audit(
+    repo: &Path,
+    base: &str,
+    package: &Path,
+    evidence: &PackageAuditEvidence,
+    disposition: Disposition,
+) -> Result<Value> {
+    let (status, reasons, base_digest, declared, unauthorized) = disposition;
     let mut audit = json!({
         "schema_version": "openwepp-package-audit-v1",
         "package_audit_id": "0".repeat(64),
@@ -56,9 +97,9 @@ pub fn validate_package(repo: &Path, base: &str, package: &Path) -> Result<Value
         "base_commit": base,
         "package_path": package.to_string_lossy(),
         "base_package_sha256": base_digest,
-        "current_package_sha256": current_digest,
+        "current_package_sha256": evidence.current_digest,
         "declared_write_set": declared,
-        "changed_paths": changed_paths,
+        "changed_paths": evidence.changed_paths,
         "unauthorized_paths": unauthorized,
     });
     audit["package_audit_id"] = Value::String(derived_id(&audit, "package_audit_id")?);
@@ -1452,12 +1493,187 @@ mod tests {
     use std::process::Command;
     use std::sync::atomic::{AtomicU64, Ordering};
 
-    use serde_json::json;
+    use serde_json::{Value, json};
 
     use super::{
-        parse_write_set, planning_status_authorizes, status_authorizes, validate_package_chain,
-        wildcard_match,
+        parse_write_set, planning_status_authorizes, status_authorizes, validate_package,
+        validate_package_chain, wildcard_match,
     };
+    use crate::canonical::{derived_id, sha256_bytes};
+
+    #[test]
+    fn package_audit_entry_point_preserves_status_reasons_and_identity() {
+        let ready = ChainFixture::new();
+        ready.write_package("audit", "- `src/**`");
+        let base = ready.commit("audit base");
+        ready.write_source("src/ready.rs", "pub fn ready() {}\n");
+        let package = ChainFixture::package("audit");
+        let audit = validate_package(&ready.root, &base, &package).expect("ready package audit");
+        assert_eq!(audit["status"], "READY");
+        assert_eq!(audit["reason_codes"], json!([]));
+        assert_eq!(audit["base_commit"], base);
+        assert_eq!(audit["package_path"], "docs/work-packages/audit/package.md");
+        assert_eq!(audit["declared_write_set"], json!(["src/**"]));
+        assert_eq!(audit["changed_paths"], json!(["src/ready.rs"]));
+        assert_eq!(audit["unauthorized_paths"], json!([]));
+        assert_eq!(
+            audit["current_package_sha256"],
+            sha256_bytes(
+                &fs::read(ready.root.join(&package)).expect("current package characterization")
+            )
+        );
+        assert_derived_audit_identity(&audit);
+
+        ready.write_source("tests/unowned.rs", "#[test] fn unowned() {}\n");
+        let unauthorized =
+            validate_package(&ready.root, &base, &package).expect("unauthorized package audit");
+        assert_eq!(unauthorized["status"], "INVALID");
+        assert_eq!(
+            unauthorized["reason_codes"],
+            json!(["UNDECLARED_CHANGED_PATH"])
+        );
+        assert_eq!(
+            unauthorized["unauthorized_paths"],
+            json!(["tests/unowned.rs"])
+        );
+        assert_derived_audit_identity(&unauthorized);
+
+        ready.write_raw_package(
+            "audit",
+            "# Audit\n\nStatus: ACTIVE\n\n## Intended Write Set\n\n- `src/**`\n- `tests/**`\n",
+        );
+        let widened =
+            validate_package(&ready.root, &base, &package).expect("widened package audit");
+        assert_eq!(widened["status"], "INVALID");
+        assert_eq!(
+            widened["reason_codes"],
+            json!(["RETROACTIVE_WRITE_SET_WIDENING"])
+        );
+        assert_eq!(widened["declared_write_set"], json!(["src/**", "tests/**"]));
+        assert_derived_audit_identity(&widened);
+
+        ready.write_raw_package("audit", "# Audit\n\nStatus: ACTIVE\n");
+        let malformed_current =
+            validate_package(&ready.root, &base, &package).expect("malformed current audit");
+        assert_eq!(malformed_current["status"], "INVALID");
+        assert_eq!(
+            malformed_current["reason_codes"],
+            json!(["CURRENT_WRITE_SET_SCHEMA_INVALID"])
+        );
+        assert_eq!(malformed_current["declared_write_set"], json!([]));
+        assert_derived_audit_identity(&malformed_current);
+
+        let malformed_base = ChainFixture::new();
+        malformed_base.write_raw_package("audit", "# Audit\n\nStatus: ACTIVE\n");
+        let malformed_base_commit = malformed_base.commit("malformed audit base");
+        malformed_base.write_package("audit", "- `src/**`");
+        let malformed = validate_package(
+            &malformed_base.root,
+            &malformed_base_commit,
+            &ChainFixture::package("audit"),
+        )
+        .expect("malformed base audit");
+        assert_eq!(malformed["status"], "INVALID");
+        assert_eq!(
+            malformed["reason_codes"],
+            json!(["BASE_WRITE_SET_SCHEMA_INVALID"])
+        );
+        assert_derived_audit_identity(&malformed);
+
+        let scaffold = ChainFixture::new();
+        let scaffold_base = scaffold.commit("package absent base");
+        scaffold.write_raw_package("new", "# New\n\nStatus: ACTIVE\n");
+        let blocked = validate_package(
+            &scaffold.root,
+            &scaffold_base,
+            &ChainFixture::package("new"),
+        )
+        .expect("scaffold audit");
+        assert_eq!(blocked["status"], "BLOCKED");
+        assert_eq!(blocked["reason_codes"], json!(["SCAFFOLD_COMMIT_REQUIRED"]));
+        assert_eq!(blocked["base_package_sha256"], Value::Null);
+        assert_eq!(blocked["declared_write_set"], json!([]));
+        assert_eq!(blocked["unauthorized_paths"], blocked["changed_paths"]);
+        assert_derived_audit_identity(&blocked);
+
+        let invalid_path = validate_package(
+            &scaffold.root,
+            &scaffold_base,
+            Path::new("docs/work-packages/../package.md"),
+        )
+        .expect_err("invalid package path");
+        assert_eq!(invalid_path.code, "GATE-PACKAGE-PATH");
+        let missing = validate_package(
+            &scaffold.root,
+            &scaffold_base,
+            &ChainFixture::package("missing"),
+        )
+        .expect_err("missing current package");
+        assert_eq!(missing.code, "GATE-PACKAGE-READ");
+
+        let invalid_current = ChainFixture::new();
+        invalid_current.write_package("audit", "- `src/**`");
+        let invalid_current_base = invalid_current.commit("valid UTF-8 base");
+        fs::write(
+            invalid_current.root.join(ChainFixture::package("audit")),
+            [0xff],
+        )
+        .expect("invalid current UTF-8");
+        let current_utf8 = validate_package(
+            &invalid_current.root,
+            &invalid_current_base,
+            &ChainFixture::package("audit"),
+        )
+        .expect_err("invalid current package UTF-8");
+        assert_eq!(current_utf8.code, "GATE-PACKAGE-UTF8");
+
+        let invalid_base = ChainFixture::new();
+        let invalid_base_path = invalid_base.root.join(ChainFixture::package("audit"));
+        fs::create_dir_all(invalid_base_path.parent().expect("invalid base parent"))
+            .expect("invalid base directory");
+        fs::write(&invalid_base_path, [0xff]).expect("invalid base UTF-8");
+        let invalid_base_commit = invalid_base.commit("invalid UTF-8 base");
+        invalid_base.write_package("audit", "- `src/**`");
+        let base_utf8 = validate_package(
+            &invalid_base.root,
+            &invalid_base_commit,
+            &ChainFixture::package("audit"),
+        )
+        .expect_err("invalid base package UTF-8");
+        assert_eq!(base_utf8.code, "GATE-PACKAGE-UTF8");
+
+        let invalid_git =
+            validate_package(&ready.root, "not-a-commit", &ChainFixture::package("audit"))
+                .expect_err("invalid Git base");
+        assert_eq!(invalid_git.code, "GATE-PACKAGE-GIT");
+
+        let missing_schema = ChainFixture::new();
+        missing_schema.write_package("audit", "- `src/**`");
+        let missing_schema_base = missing_schema.commit("schema fixture base");
+        missing_schema.write_source("src/ready.rs", "pub fn ready() {}\n");
+        fs::remove_file(
+            missing_schema
+                .root
+                .join("gate-policy/v1/schemas/package-audit.schema.json"),
+        )
+        .expect("remove package audit schema");
+        let schema_error = validate_package(
+            &missing_schema.root,
+            &missing_schema_base,
+            &ChainFixture::package("audit"),
+        )
+        .expect_err("missing package audit schema");
+        assert_eq!(schema_error.code, "GATE-PACKAGE-SCHEMA-READ");
+    }
+
+    fn assert_derived_audit_identity(audit: &Value) {
+        let mut subject = audit.clone();
+        subject["package_audit_id"] = json!("0".repeat(64));
+        assert_eq!(
+            audit["package_audit_id"],
+            derived_id(&subject, "package_audit_id").expect("derived package audit identity")
+        );
+    }
 
     #[test]
     fn write_set_wildcard_matches_nested_paths() {
@@ -2065,6 +2281,11 @@ mod tests {
                 "{\"type\":\"object\"}\n",
             )
             .expect("permissive fixture schema");
+            fs::write(
+                root.join("gate-policy/v1/schemas/package-audit.schema.json"),
+                "{\"type\":\"object\"}\n",
+            )
+            .expect("permissive package audit schema");
             Self::git(&root, &["init", "-q"]);
             Self::git(&root, &["config", "user.email", "test@example.invalid"]);
             Self::git(&root, &["config", "user.name", "Test"]);
