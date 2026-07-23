@@ -182,30 +182,45 @@
     "resume_decisions": {
       "type": "array",
       "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": ["node_id", "prior_receipt_id", "prior_provenance_id", "decision", "reason_code"],
-        "properties": {
-          "node_id": {"$ref": "#/$defs/digest"},
-          "prior_receipt_id": {
-            "oneOf": [
-              {"$ref": "#/$defs/digest"},
-              {"type": "null"}
-            ]
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["node_id", "prior_receipt_id", "prior_provenance_id", "decision", "reason_code"],
+            "properties": {
+              "node_id": {"$ref": "#/$defs/digest"},
+              "prior_receipt_id": {
+                "oneOf": [
+                  {"$ref": "#/$defs/digest"},
+                  {"type": "null"}
+                ]
+              },
+              "prior_provenance_id": {
+                "oneOf": [
+                  {"$ref": "#/$defs/digest"},
+                  {"type": "null"}
+                ]
+              },
+              "decision": {"enum": ["IMPORTED", "RERUN"]},
+              "reason_code": {"type": "string", "minLength": 1}
+            },
+            "allOf": [{
+              "if": {"properties": {"decision": {"const": "IMPORTED"}}},
+              "then": {"properties": {"prior_provenance_id": {"$ref": "#/$defs/digest"}}}
+            }]
           },
-          "prior_provenance_id": {
-            "oneOf": [
-              {"$ref": "#/$defs/digest"},
-              {"type": "null"}
-            ]
-          },
-          "decision": {"enum": ["IMPORTED", "RERUN"]},
-          "reason_code": {"type": "string", "minLength": 1}
-        },
-        "allOf": [{
-          "if": {"properties": {"decision": {"const": "IMPORTED"}}},
-          "then": {"properties": {"prior_provenance_id": {"$ref": "#/$defs/digest"}}}
-        }]
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["decision", "reason_code", "recovery_root", "detail"],
+            "properties": {
+              "decision": {"const": "REJECTED_INCOMPATIBLE_RECEIPT"},
+              "reason_code": {"const": "GATE-RESUME-RECEIPT-INVALID"},
+              "recovery_root": {"type": "string", "minLength": 1},
+              "detail": {"type": "string", "minLength": 1}
+            }
+          }
+        ]
       }
     },
     "claims": {
