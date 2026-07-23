@@ -24,16 +24,18 @@ using one behavior-preserving module package per source module.
 
 ## Modules
 
-1. `20260723-cqr-nightly-b03-1-main-001`: characterize and decompose the three
+1. `20260723-cqr-nightly-b03r-1-main-001`: characterize and decompose the three
    `main.rs` command/request authority functions without changing CLI, typed
    error, persistence, or reconstruction behavior.
-2. `20260723-cqr-nightly-b03-2-package-validation-001`: characterize and
+2. `20260723-cqr-nightly-b03r-2-package-validation-001`: characterize and
    decompose `validate_package` without changing Git evidence, reason-code,
    status, or artifact identity behavior.
 
 ## Execution
 
-Commit the aggregate scaffold first. Commit each module scaffold separately,
+The first B03 aggregate was held before implementation because its immutable
+heading did not satisfy canonical admission. Commit corrected aggregate B03R
+first. Commit each corrected module scaffold separately,
 retain canonical aggregate-admission PASS, then execute characterization,
 behavior-preserving decomposition, focused metrics, dual review, and dual
 verification. Do not rerun the failed exact-head global gates. After both
