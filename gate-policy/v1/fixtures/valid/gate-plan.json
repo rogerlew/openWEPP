@@ -23,6 +23,10 @@
     "baseline_count": 0
   },
   "authorized_paths": ["gate-policy/v1/impact-map.json"],
+  "package_authority": {
+    "chain_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "intent_package_path": "docs/work-packages/fixture/package.md"
+  },
   "source": {
     "base_commit": "1111111111111111111111111111111111111111111111111111111111111111",
     "head_commit": null,

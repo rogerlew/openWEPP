@@ -14,7 +14,7 @@ use crate::canonical::{
 };
 use crate::error::{ErrorClass, GatePolicyError, Result};
 use crate::executor::ExecutionClaims;
-use crate::package_validation::validate_package;
+use crate::package_validation::validate_package_chain;
 use crate::planner::{reconstruct_plan_in, verify_plan_identity};
 use crate::repository::remove_reconstruction_workspace;
 
@@ -183,7 +183,7 @@ fn audit_check_prefix(
         )?,
         check(
             CHECK_IDS[1],
-            cheap_prerequisites(repo, plan, light_receipt),
+            cheap_prerequisites(repo, plan, light_receipt, package_admission),
             json!({"light_results": light_receipt["final_results"]}),
         )?,
         check(
@@ -948,49 +948,21 @@ fn check(id: &str, result: Result<()>, evidence: Value) -> Result<Value> {
 }
 
 fn package_admission(repo: &Path, plan: &Value) -> Result<Value> {
-    let packages = plan["authorized_paths"]
-        .as_array()
-        .into_iter()
-        .flatten()
-        .filter_map(Value::as_str)
-        .filter(|path| path.starts_with("docs/work-packages/") && path.ends_with("/package.md"))
-        .collect::<Vec<_>>();
     let base = string(&plan["source"], "base_commit")?;
-    let candidates = packages
-        .iter()
-        .map(|package| validate_package(repo, base, Path::new(package)))
-        .collect::<Result<Vec<_>>>()?;
-    select_package_admission(plan, candidates, packages.len())
-}
-
-fn select_package_admission(
-    plan: &Value,
-    candidates: Vec<Value>,
-    candidate_count: usize,
-) -> Result<Value> {
-    let mut admitted = candidates
-        .into_iter()
-        .filter(|candidate| package_admitted(plan, candidate).is_ok())
-        .collect::<Vec<_>>();
-    match admitted.len() {
-        1 => Ok(admitted.remove(0)),
-        0 => Err(GatePolicyError::new(
-            ErrorClass::Identity,
-            "GATE-AUDIT-PACKAGE-NOT-ADMITTED",
-            format!("none of {candidate_count} changed package candidates admits the exact diff"),
-        )),
-        count => Err(GatePolicyError::new(
-            ErrorClass::Identity,
-            "GATE-AUDIT-PACKAGE-AMBIGUOUS",
-            format!("{count} of {candidate_count} changed package candidates admit the exact diff"),
-        )),
-    }
+    let head = string(&plan["source"], "head_commit")?;
+    let package = string(&plan["package_authority"], "intent_package_path")?;
+    let chain = validate_package_chain(repo, base, Some(head), Path::new(package))?;
+    package_admitted(plan, &chain)?;
+    Ok(chain)
 }
 
 fn package_admitted(plan: &Value, result: &Value) -> Result<()> {
     if result["status"] != "READY"
         || result["changed_paths"] != plan["authorized_paths"]
         || result["base_commit"] != plan["source"]["base_commit"]
+        || result["head_commit"] != plan["source"]["head_commit"]
+        || result["package_authority_chain_id"] != plan["package_authority"]["chain_id"]
+        || result["intent_package_path"] != plan["package_authority"]["intent_package_path"]
     {
         return Err(GatePolicyError::new(
             ErrorClass::Identity,
@@ -1031,12 +1003,17 @@ fn require_light_node_pass(node: &Value, receipt: &Value) -> Result<()> {
     }
 }
 
-fn cheap_prerequisites(repo: &Path, plan: &Value, receipt: &Value) -> Result<()> {
+fn cheap_prerequisites(
+    repo: &Path,
+    plan: &Value,
+    receipt: &Value,
+    package_admission: &Value,
+) -> Result<()> {
     light_stage_passed(plan, receipt)?;
     require_clean_diff(repo, plan)?;
     enforce_authorized_rust_line_limit(repo, plan)?;
     documentation_scope_is_exact(plan)?;
-    require_single_active_prompt(repo, plan)
+    require_bound_active_prompt(repo, package_admission)
 }
 
 fn require_clean_diff(repo: &Path, plan: &Value) -> Result<()> {
@@ -1081,35 +1058,46 @@ fn enforce_authorized_rust_line_limit(repo: &Path, plan: &Value) -> Result<()> {
     Ok(())
 }
 
-fn active_package_path(plan: &Value) -> Option<&str> {
-    plan["authorized_paths"]
-        .as_array()
-        .into_iter()
-        .flatten()
-        .filter_map(Value::as_str)
-        .find(|path| path.starts_with("docs/work-packages/") && path.ends_with("/package.md"))
-}
-
-fn require_single_active_prompt(repo: &Path, plan: &Value) -> Result<()> {
-    let Some(package) = active_package_path(plan) else {
-        return Ok(());
-    };
-    let active = repo
-        .join(package)
+fn require_bound_active_prompt(repo: &Path, admission: &Value) -> Result<()> {
+    let prompt = string(&admission["prompt_owner"], "prompt_path")?;
+    let prompt_path = Path::new(prompt);
+    let active = prompt_path
         .parent()
-        .ok_or_else(|| audit_error("GATE-AUDIT-PROMPT-STATE", package))?
-        .join("prompts/active");
-    let count = fs::read_dir(active)
-        .map_err(|error| audit_error("GATE-AUDIT-PROMPT-STATE", error.to_string()))?
-        .filter_map(std::result::Result::ok)
-        .filter(|entry| entry.path().extension().is_some_and(|value| value == "md"))
-        .count();
-    if count == 1 {
+        .ok_or_else(|| audit_error("GATE-AUDIT-PROMPT-STATE", prompt))?;
+    let entries = fs::read_dir(repo.join(active))
+        .map_err(|error| audit_error("GATE-AUDIT-PROMPT-STATE", error.to_string()))?;
+    let mut markdown = Vec::new();
+    for entry in entries {
+        let entry =
+            entry.map_err(|error| audit_error("GATE-AUDIT-PROMPT-STATE", error.to_string()))?;
+        if entry.path().extension().is_some_and(|value| value == "md") {
+            let kind = entry
+                .file_type()
+                .map_err(|error| audit_error("GATE-AUDIT-PROMPT-STATE", error.to_string()))?;
+            if !kind.is_file() {
+                return Err(audit_error(
+                    "GATE-AUDIT-PROMPT-STATE",
+                    "active Markdown prompt must be a regular file",
+                ));
+            }
+            markdown.push(entry.path());
+        }
+    }
+    let bound = repo.join(prompt_path);
+    if markdown.len() != 1 || markdown[0] != bound {
+        return Err(audit_error(
+            "GATE-AUDIT-PROMPT-STATE",
+            "active directory does not contain exactly the bound prompt",
+        ));
+    }
+    let bytes = fs::read(bound)
+        .map_err(|error| audit_error("GATE-AUDIT-PROMPT-STATE", error.to_string()))?;
+    if sha256_bytes(&bytes) == string(&admission["prompt_owner"], "prompt_sha256")? {
         Ok(())
     } else {
         Err(audit_error(
             "GATE-AUDIT-PROMPT-STATE",
-            format!("expected one active prompt, found {count}"),
+            "bound active prompt digest changed",
         ))
     }
 }
@@ -1755,18 +1743,17 @@ mod tests {
     use serde_json::json;
 
     use super::{
-        AuditCheckInputs, AuditDocumentInputs, CHECK_IDS, ConstructedAudit, active_package_path,
-        admit_attempt_ledger, append_attempt_record, audit_document, audit_reason_codes,
-        audit_reconstruction_root, audit_status, build_audit_checks, build_failure_audit, check,
-        construct_audit, documentation_scope_is_exact, durable_ledger,
-        enforce_authorized_rust_line_limit, execution_claims_match, execution_context_is_current,
-        execution_identities, failure_check_index, file_digest, ledger_head,
-        light_attempt_isolated, light_stage_passed, no_open_tooling_defect,
-        no_open_tooling_defect_at_head, node_manifest, package_admission, package_admitted,
-        path_digest, read_json, reconcile_orphaned_attempts, reconstructed_plan_is_exact,
-        record_heavy_failure, reject_open_tooling_defects, require_clean_diff,
-        require_ready_audit_status, require_single_active_prompt, seal_audit,
-        select_package_admission, separated_roots, tooling_defect_statuses, valid_stage_order,
+        AuditCheckInputs, AuditDocumentInputs, CHECK_IDS, ConstructedAudit, admit_attempt_ledger,
+        append_attempt_record, audit_document, audit_reason_codes, audit_reconstruction_root,
+        audit_status, build_audit_checks, build_failure_audit, check, construct_audit,
+        documentation_scope_is_exact, durable_ledger, enforce_authorized_rust_line_limit,
+        execution_claims_match, execution_context_is_current, execution_identities,
+        failure_check_index, file_digest, ledger_head, light_attempt_isolated, light_stage_passed,
+        no_open_tooling_defect, no_open_tooling_defect_at_head, node_manifest, package_admission,
+        package_admitted, path_digest, read_json, reconcile_orphaned_attempts,
+        reconstructed_plan_is_exact, record_heavy_failure, reject_open_tooling_defects,
+        require_bound_active_prompt, require_clean_diff, require_ready_audit_status, seal_audit,
+        separated_roots, tooling_defect_statuses, valid_stage_order,
         validate_audit_context_binding, validate_audit_core_binding, validate_audit_schema,
         validate_checkpoint_identity, validate_combined_decision, validate_current_audit_inventory,
         validate_embedded_light_receipt_id, validate_exact_node_shapes, validate_ready_audit,
@@ -2594,10 +2581,7 @@ mod tests {
                 "runner": "r", "attempt": 1
             }
         });
-        let admission = json!({
-            "status": "READY", "changed_paths": plan["authorized_paths"],
-            "base_commit": plan["source"]["base_commit"]
-        });
+        let admission = package_admission(&fixture.root, &plan).expect("package admission");
         let combined = plan["combined_quality"].clone();
         let checks = build_audit_checks(&AuditCheckInputs {
             repo: &fixture.root,
@@ -2634,61 +2618,63 @@ mod tests {
     }
 
     #[test]
-    fn active_package_prompt_requires_exactly_one_markdown_file() {
+    fn active_package_prompt_must_match_bound_digest() {
         let root = std::env::temp_dir().join(format!(
             "openwepp-active-prompt-{}-{}",
             std::process::id(),
             std::thread::current().name().unwrap_or("test")
         ));
-        let package = "docs/work-packages/prompt/package.md";
         let active = root.join("docs/work-packages/prompt/prompts/active");
         fs::create_dir_all(&active).expect("active prompt directory");
-        let plan = json!({"authorized_paths": [package, "src/lib.rs"]});
-        assert_eq!(active_package_path(&plan), Some(package));
-        assert!(require_single_active_prompt(&root, &plan).is_err());
-        fs::write(active.join("kickoff.md"), "# Kickoff\n").expect("active prompt");
-        require_single_active_prompt(&root, &plan).expect("one active prompt");
-        fs::write(active.join("notes.txt"), "ignored\n").expect("non-Markdown note");
-        require_single_active_prompt(&root, &plan).expect("non-Markdown file ignored");
+        let prompt = active.join("kickoff.md");
+        fs::write(&prompt, "# Kickoff\n").expect("active prompt");
+        let admission = json!({
+            "prompt_owner": {
+                "prompt_path": "docs/work-packages/prompt/prompts/active/kickoff.md",
+                "prompt_sha256": crate::canonical::sha256_bytes(b"# Kickoff\n")
+            }
+        });
+        require_bound_active_prompt(&root, &admission).expect("bound active prompt");
+        fs::write(&prompt, "# Mutated\n").expect("mutated prompt");
+        assert!(require_bound_active_prompt(&root, &admission).is_err());
+        fs::write(&prompt, "# Kickoff\n").expect("restore prompt");
+        fs::write(active.join("extra.md"), "# Extra\n").expect("extra prompt");
+        assert!(require_bound_active_prompt(&root, &admission).is_err());
+        fs::remove_file(active.join("extra.md")).expect("remove extra prompt");
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::symlink;
+
+            fs::remove_file(&prompt).expect("remove regular prompt");
+            symlink("../../../../README.md", &prompt).expect("symlink prompt");
+            assert!(require_bound_active_prompt(&root, &admission).is_err());
+        }
         fs::remove_dir_all(root).expect("remove prompt fixture");
     }
 
     #[test]
-    fn package_admission_selects_exactly_one_independently_valid_authority() {
+    fn package_admission_requires_exact_chain_identity() {
         let plan = json!({
-            "source": {"base_commit": "a"},
-            "authorized_paths": [
-                "docs/work-packages/one/package.md",
-                "docs/work-packages/two/package.md"
-            ]
+            "source": {"base_commit": "a", "head_commit": "b"},
+            "authorized_paths": ["src/lib.rs"],
+            "package_authority": {
+                "chain_id": "c".repeat(64),
+                "intent_package_path": "docs/work-packages/one/package.md"
+            }
         });
         let ready = json!({
             "status": "READY",
             "base_commit": "a",
-            "package_path": "docs/work-packages/one/package.md",
+            "head_commit": "b",
+            "package_authority_chain_id": "c".repeat(64),
+            "intent_package_path": "docs/work-packages/one/package.md",
             "changed_paths": plan["authorized_paths"],
             "reason_codes": []
         });
-        let invalid = json!({
-            "status": "INVALID",
-            "base_commit": "a",
-            "package_path": "docs/work-packages/two/package.md",
-            "changed_paths": plan["authorized_paths"],
-            "reason_codes": ["UNDECLARED_CHANGED_PATH"]
-        });
-        let selected = select_package_admission(&plan, vec![ready.clone(), invalid.clone()], 2)
-            .expect("one exact authority");
-        assert_eq!(selected["package_path"], ready["package_path"]);
-
-        let error = select_package_admission(&plan, vec![ready.clone(), ready], 2)
-            .expect_err("multiple exact authorities must remain ambiguous");
-        assert_eq!(error.code, "GATE-AUDIT-PACKAGE-AMBIGUOUS");
-        assert_eq!(error.class, ErrorClass::Identity);
-
-        let error = select_package_admission(&plan, vec![invalid], 1)
-            .expect_err("no exact authority must fail closed");
-        assert_eq!(error.code, "GATE-AUDIT-PACKAGE-NOT-ADMITTED");
-        assert_eq!(error.class, ErrorClass::Identity);
+        package_admitted(&plan, &ready).expect("exact chain identity");
+        let mut tampered = ready;
+        tampered["package_authority_chain_id"] = json!("d".repeat(64));
+        assert!(package_admitted(&plan, &tampered).is_err());
     }
 
     static PACKAGE_FIXTURE_SEQUENCE: AtomicU64 = AtomicU64::new(0);
@@ -2696,6 +2682,7 @@ mod tests {
     struct PackageFixture {
         root: PathBuf,
         base: String,
+        head: String,
         paths: Vec<String>,
     }
 
@@ -2713,12 +2700,15 @@ mod tests {
             fs::create_dir_all(root.join("src")).expect("source directory");
             let repository = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
             fs::copy(
-                repository.join("gate-policy/v1/schemas/package-audit.schema.json"),
-                root.join("gate-policy/v1/schemas/package-audit.schema.json"),
+                repository.join("gate-policy/v1/schemas/package-authority-chain.schema.json"),
+                root.join("gate-policy/v1/schemas/package-authority-chain.schema.json"),
             )
             .expect("copy package schema");
             Self::write_package(&root, "owner", owner_ready, "base owner");
             Self::write_package(&root, "contender", contender_ready, "base contender");
+            let active = root.join("docs/work-packages/owner/prompts/active");
+            fs::create_dir_all(&active).expect("owner active prompt directory");
+            fs::write(active.join("kickoff.md"), "# Kickoff\n").expect("owner active prompt");
             fs::write(root.join("src/lib.rs"), "pub fn base() {}\n").expect("base source");
             Self::git(&root, &["init", "-q"]);
             Self::git(&root, &["config", "user.email", "test@example.invalid"]);
@@ -2732,9 +2722,16 @@ mod tests {
             Self::write_package(&root, "owner", owner_ready, "changed owner");
             Self::write_package(&root, "contender", contender_ready, "changed contender");
             fs::write(root.join("src/lib.rs"), "pub fn changed() {}\n").expect("changed source");
+            Self::git(&root, &["add", "."]);
+            Self::git(&root, &["commit", "-qm", "change"]);
+            let head = String::from_utf8(Self::git_output(&root, &["rev-parse", "HEAD"]))
+                .expect("UTF-8 head")
+                .trim()
+                .to_owned();
             Self {
                 root,
                 base,
+                head,
                 paths: vec![
                     "docs/work-packages/contender/package.md".to_owned(),
                     "docs/work-packages/owner/package.md".to_owned(),
@@ -2751,15 +2748,28 @@ mod tests {
             };
             fs::write(
                 root.join(format!("docs/work-packages/{name}/package.md")),
-                format!("# {name}\n\n{note}\n\n## Declared Write Set\n\n{write_set}\n"),
+                format!(
+                    "# {name}\n\nStatus: ACTIVE\n\n{note}\n\n## Declared Write Set\n\n{write_set}\n"
+                ),
             )
             .expect("write package");
         }
 
         fn plan(&self) -> serde_json::Value {
+            let chain = crate::package_validation::validate_package_chain(
+                &self.root,
+                &self.base,
+                Some(&self.head),
+                std::path::Path::new("docs/work-packages/owner/package.md"),
+            )
+            .expect("fixture package chain");
             json!({
-                "source": {"base_commit": self.base},
-                "authorized_paths": self.paths
+                "source": {"base_commit": self.base, "head_commit": self.head},
+                "authorized_paths": self.paths,
+                "package_authority": {
+                    "chain_id": chain["package_authority_chain_id"],
+                    "intent_package_path": "docs/work-packages/owner/package.md"
+                }
             })
         }
 
@@ -2790,70 +2800,5 @@ mod tests {
         fn drop(&mut self) {
             fs::remove_dir_all(&self.root).expect("remove package fixture");
         }
-    }
-
-    #[test]
-    fn package_admission_reconstructs_real_candidate_authority_and_fails_closed() {
-        let unique = PackageFixture::new(true, false);
-        let selected = package_admission(&unique.root, &unique.plan()).expect("unique authority");
-        assert_eq!(
-            selected["package_path"],
-            "docs/work-packages/owner/package.md"
-        );
-
-        let multiple = PackageFixture::new(true, true);
-        assert_eq!(
-            package_admission(&multiple.root, &multiple.plan())
-                .expect_err("multiple authorities")
-                .code,
-            "GATE-AUDIT-PACKAGE-AMBIGUOUS"
-        );
-        let none = PackageFixture::new(false, false);
-        assert_eq!(
-            package_admission(&none.root, &none.plan())
-                .expect_err("no authority")
-                .code,
-            "GATE-AUDIT-PACKAGE-NOT-ADMITTED"
-        );
-
-        let mut mismatched = unique.plan();
-        mismatched["authorized_paths"] = json!(&unique.paths[..2]);
-        assert_eq!(
-            package_admission(&unique.root, &mismatched)
-                .expect_err("changed-path mismatch")
-                .code,
-            "GATE-AUDIT-PACKAGE-NOT-ADMITTED"
-        );
-        let mut invalid_base = unique.plan();
-        invalid_base["source"]["base_commit"] = json!("not-a-commit");
-        assert_eq!(
-            package_admission(&unique.root, &invalid_base)
-                .expect_err("invalid base")
-                .code,
-            "GATE-PACKAGE-GIT"
-        );
-        for (path, code) in [
-            ("docs/work-packages/../package.md", "GATE-PACKAGE-PATH"),
-            ("docs/work-packages/missing/package.md", "GATE-PACKAGE-READ"),
-        ] {
-            let plan = json!({
-                "source": {"base_commit": unique.base},
-                "authorized_paths": [path]
-            });
-            assert_eq!(
-                package_admission(&unique.root, &plan)
-                    .expect_err("invalid candidate")
-                    .code,
-                code
-            );
-        }
-        let schema = unique
-            .root
-            .join("gate-policy/v1/schemas/package-audit.schema.json");
-        let held_schema = schema.with_extension("held");
-        fs::rename(&schema, &held_schema).expect("hold schema");
-        let error = package_admission(&unique.root, &unique.plan()).expect_err("missing schema");
-        fs::rename(held_schema, schema).expect("restore schema");
-        assert_eq!(error.code, "GATE-PACKAGE-SCHEMA-READ");
     }
 }

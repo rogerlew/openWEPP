@@ -68,7 +68,8 @@ def validate(args: argparse.Namespace) -> dict[str, Any]:
     controller = Path(__file__).read_text(encoding="utf-8")
     cli = (repo / "crates/openwepp-gate-planner/src/main.rs").read_text(encoding="utf-8")
     required = [
-        "validate-package",
+        "validate-package-chain",
+        "package_authority_chain_id",
         "pre-heavy-audit",
         '"--stage", "transition"',
         "verify_receipt",

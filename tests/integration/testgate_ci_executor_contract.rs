@@ -56,6 +56,8 @@ fn multi_package_inventory_follows_expanded_node_packages() {
                 campaign_id: Some("CANOPY-PHENOLOGY-02".to_owned()),
                 combined_quality_proof_id: None,
                 authorized_paths: vec![path.to_owned()],
+                package_authority_chain_id: "aa".repeat(32),
+                intent_package_path: "docs/work-packages/fixture/package.md".to_owned(),
                 source: ObservedSource {
                     base_commit: head,
                     head_commit: None,
@@ -286,7 +288,8 @@ fn assert_receipt_runtime_guards() {
     let cli = text("crates/openwepp-gate-planner/src/main.rs");
     assert!(cli.contains("verify_receipt(repo, &plan, &receipt, &artifacts)"));
     assert!(cli.contains("pre-heavy-audit"));
-    assert!(cli.contains("validate-package"));
+    assert!(cli.contains("validate-package-chain"));
+    assert!(cli.contains("package_authority_chain_id"));
     assert!(cli.contains("Some(\"FAIL\" | \"BLOCKED\" | \"INVALID\")"));
     assert!(cli.contains("reconcile_orphaned_attempts(ledger).map(|_| ())"));
     assert!(cli.contains("&context.started_entry_sha256"));

@@ -43,6 +43,8 @@ pub struct PlanRequest {
     pub campaign_id: Option<String>,
     pub combined_quality_proof_id: Option<String>,
     pub authorized_paths: Vec<String>,
+    pub package_authority_chain_id: String,
+    pub intent_package_path: String,
     pub source: ObservedSource,
 }
 
@@ -145,6 +147,7 @@ fn verify_terminal_authorization(
     let terminal_authorized = string_set(&terminal["authorized_paths"], "/authorized_paths")?;
     if authorized != terminal_authorized
         || !actual.is_subset(&authorized)
+        || intent["package_authority"] != terminal["package_authority"]
         || intent["combined_quality"]["requested_proof_id"]
             != terminal["combined_quality"]["requested_proof_id"]
     {
@@ -787,6 +790,10 @@ impl<P: InventoryProvider> Planner<P> {
             "campaign_id": request.campaign_id,
             "combined_quality": combined_quality,
             "authorized_paths": request.authorized_paths,
+            "package_authority": {
+                "chain_id": request.package_authority_chain_id,
+                "intent_package_path": request.intent_package_path,
+            },
             "source": source,
             "changed_objects": changed_objects,
             "affected_packages": selection.affected_packages,
@@ -1241,6 +1248,14 @@ fn reconstruction_request(
             .as_str()
             .map(str::to_owned),
         authorized_paths,
+        package_authority_chain_id: plan["package_authority"]["chain_id"]
+            .as_str()
+            .ok_or_else(|| plan_shape("/package_authority/chain_id"))?
+            .to_owned(),
+        intent_package_path: plan["package_authority"]["intent_package_path"]
+            .as_str()
+            .ok_or_else(|| plan_shape("/package_authority/intent_package_path"))?
+            .to_owned(),
         source,
     })
 }
@@ -1667,6 +1682,19 @@ fn validate_request(request: &PlanRequest) -> Result<()> {
             ErrorClass::Planning,
             "GATE-PLAN-UNAUTHORIZED-OBSERVED-PATH",
             "observed changes must remain inside the authorized intent surface",
+        ));
+    }
+    if !is_digest(&request.package_authority_chain_id)
+        || !request
+            .intent_package_path
+            .starts_with("docs/work-packages/")
+        || !request.intent_package_path.ends_with("/package.md")
+        || request.intent_package_path.split('/').count() != 4
+    {
+        return Err(GatePolicyError::new(
+            ErrorClass::Planning,
+            "GATE-PLAN-PACKAGE-AUTHORITY",
+            "package authority requires a digest and direct work-package path",
         ));
     }
     Ok(())

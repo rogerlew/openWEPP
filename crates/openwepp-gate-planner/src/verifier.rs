@@ -2222,6 +2222,9 @@ mod tests {
                             campaign_id: Some("TESTGATE-PLAN-01".to_owned()),
                             combined_quality_proof_id: None,
                             authorized_paths,
+                            package_authority_chain_id: "aa".repeat(32),
+                            intent_package_path:
+                                "docs/work-packages/fixture/package.md".to_owned(),
                             source,
                         },
                     )

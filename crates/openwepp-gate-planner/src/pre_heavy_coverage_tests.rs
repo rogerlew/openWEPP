@@ -53,6 +53,13 @@ impl AuditFixture {
         );
         fs::copy(repository.join("Cargo.lock"), root.join("Cargo.lock")).expect("copy Cargo.lock");
         fs::create_dir_all(root.join("docs/work-packages/owner")).expect("package directory");
+        fs::create_dir_all(root.join("docs/work-packages/owner/prompts/active"))
+            .expect("active prompt directory");
+        fs::write(
+            root.join("docs/work-packages/owner/prompts/active/kickoff.md"),
+            "# Kickoff\n",
+        )
+        .expect("active prompt");
         fs::create_dir_all(root.join("src")).expect("source directory");
         Self::write_package(&root, "base");
         fs::write(root.join("src/lib.rs"), "pub fn base() {}\n").expect("base source");
@@ -67,6 +74,19 @@ impl AuditFixture {
             .to_owned();
         Self::write_package(&root, "changed");
         fs::write(root.join("src/lib.rs"), "pub fn changed() {}\n").expect("changed source");
+        Self::git(&root, &["add", "."]);
+        Self::git(&root, &["commit", "-qm", "change"]);
+        let head = String::from_utf8(Self::git_output(&root, &["rev-parse", "HEAD"]))
+            .expect("UTF-8 head")
+            .trim()
+            .to_owned();
+        let authority = crate::package_validation::validate_package_chain(
+            &root,
+            &base,
+            Some(&head),
+            Path::new("docs/work-packages/owner/package.md"),
+        )
+        .expect("fixture package authority");
         let artifacts = root.join("target/artifacts");
         fs::create_dir_all(&artifacts).expect("artifact root");
         let ledger = repository.join("target").join(format!(
@@ -75,8 +95,12 @@ impl AuditFixture {
         ));
         fs::write(&ledger, "").expect("durable ledger");
         let mut plan = json!({
-            "source": {"base_commit": base},
+            "source": {"base_commit": base, "head_commit": head},
             "authorized_paths": ["docs/work-packages/owner/package.md", "src/lib.rs"],
+            "package_authority": {
+                "chain_id": authority["package_authority_chain_id"],
+                "intent_package_path": "docs/work-packages/owner/package.md"
+            },
             "changed_objects": [], "nodes": [],
             "plan_id": "0".repeat(64), "execution_key": "0".repeat(64),
             "execution_context": current_execution_context(&root).expect("execution context"),
@@ -103,7 +127,7 @@ impl AuditFixture {
     fn write_package(root: &Path, note: &str) {
         fs::write(
             root.join("docs/work-packages/owner/package.md"),
-            format!("# Owner\n\n{note}\n\n## Declared Write Set\n\n- `docs/work-packages/**`\n- `src/**`\n"),
+            format!("# Owner\n\nStatus: ACTIVE\n\n{note}\n\n## Declared Write Set\n\n- `docs/work-packages/**`\n- `src/**`\n"),
         )
         .expect("package");
     }
@@ -388,6 +412,8 @@ fn exact_planner_output_reconstructs_through_the_public_audit_path() {
         campaign_id: Some("CQR-PRE-HEAVY-COVERAGE".to_owned()),
         combined_quality_proof_id: None,
         authorized_paths,
+        package_authority_chain_id: "aa".repeat(32),
+        intent_package_path: "docs/work-packages/fixture/package.md".to_owned(),
         source,
     };
     let plan = Planner::new(NextestInventory)

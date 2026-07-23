@@ -131,6 +131,8 @@
             campaign_id: Some("TESTGATE-PLAN-01".to_owned()),
             combined_quality_proof_id: None,
             authorized_paths: vec!["gate-policy/v1/impact-map.json".to_owned()],
+            package_authority_chain_id: "aa".repeat(32),
+            intent_package_path: "docs/work-packages/fixture/package.md".to_owned(),
             source: ObservedSource {
                 base_commit: head,
                 head_commit: None,
@@ -455,6 +457,8 @@
             campaign_id: None,
             combined_quality_proof_id: None,
             authorized_paths: vec!["README.md".to_owned()],
+            package_authority_chain_id: "aa".repeat(32),
+            intent_package_path: "docs/work-packages/fixture/package.md".to_owned(),
             source: ObservedSource {
                 base_commit: "1".repeat(40),
                 head_commit: None,
@@ -492,6 +496,8 @@
                     campaign_id: Some("TESTGATE-PLAN-01".to_owned()),
                     combined_quality_proof_id: None,
                     authorized_paths: vec![path.to_owned()],
+                    package_authority_chain_id: "aa".repeat(32),
+                    intent_package_path: "docs/work-packages/fixture/package.md".to_owned(),
                     source: ObservedSource {
                         base_commit: head,
                         head_commit: None,
@@ -587,6 +593,8 @@
                     campaign_id: Some("TESTGATE-ROOT-MEASUREMENT-01".to_owned()),
                     combined_quality_proof_id: None,
                     authorized_paths: vec![path.to_owned()],
+                    package_authority_chain_id: "aa".repeat(32),
+                    intent_package_path: "docs/work-packages/fixture/package.md".to_owned(),
                     source: ObservedSource {
                         base_commit: head,
                         head_commit: None,
@@ -650,6 +658,8 @@
                     campaign_id: Some("TESTGATE-PLAN-01".to_owned()),
                     combined_quality_proof_id: None,
                     authorized_paths: vec!["Cargo.lock".to_owned()],
+                    package_authority_chain_id: "aa".repeat(32),
+                    intent_package_path: "docs/work-packages/fixture/package.md".to_owned(),
                     source: source(Vec::new()),
                 },
             )
@@ -664,6 +674,8 @@
                     campaign_id: Some("TESTGATE-PLAN-01".to_owned()),
                     combined_quality_proof_id: None,
                     authorized_paths: vec!["Cargo.lock".to_owned()],
+                    package_authority_chain_id: "aa".repeat(32),
+                    intent_package_path: "docs/work-packages/fixture/package.md".to_owned(),
                     source: source(vec![ObservedChange {
                         path: "Cargo.lock".to_owned(),
                         change_kind: "MODIFY".to_owned(),
@@ -1417,6 +1429,8 @@
             campaign_id: Some("TESTGATE-PLAN-01".to_owned()),
             combined_quality_proof_id: None,
             authorized_paths: vec!["src/lib.rs".to_owned()],
+            package_authority_chain_id: "aa".repeat(32),
+            intent_package_path: "docs/work-packages/fixture/package.md".to_owned(),
             source: ObservedSource {
                 base_commit: base,
                 head_commit: Some(head),

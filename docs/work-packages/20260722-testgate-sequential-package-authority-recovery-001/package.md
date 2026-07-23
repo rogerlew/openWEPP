@@ -29,7 +29,8 @@ and malformed chains fail closed.
 - [x] (2026-07-22) Implemented one canonical sequential authority reconstruction consumed by
   intent and pre-HEAVY admission.
 - [x] (2026-07-22) Ran focused non-HEAVY validation and reconciled exact diff/line counts.
-- [ ] Obtain dual independent implementation review and disposition findings.
+- [x] (2026-07-22) Obtained dual independent implementation-review PASS
+  dispositions with no actionable findings.
 - [ ] Commit the correction, durably close RTR-044 at that exact commit, and
   obtain dual terminal verification.
 - [ ] Rebuild the release planner and delegate exactly one changed-head
@@ -219,12 +220,15 @@ then resume qualification on a changed head.
   exact-path-only planning state rather than package authority.
   Rationale: historical recovery planning was prospectively scaffolded outside
   a package directory, but it must never authorize source, sibling, or package
-  changes. Terminal planning state cannot authorize later edits.
+  changes. Terminal planning state cannot self-authorize later edits; only a
+  strictly newer prospective package may supersede its exact path.
   Date/Author: 2026-07-22 / Codex after implementation review.
 - Decision: permit terminal package state only to archive an unchanged active
   prompt under the same filename, with exactly the deletion/addition pair.
   Rationale: prompt archival finalizes lifecycle after status completion but is
-  not continuing package authority.
+  not continuing package authority. Terminal package state shadows older broad
+  authorities inside its own tree, while a strictly newer prospective package
+  may explicitly supersede it.
   Date/Author: 2026-07-22 / Codex after implementation review.
 
 ## Outcomes & Retrospective

@@ -149,18 +149,13 @@ fn stage_unavailable_items(receipt: &Value) -> Result<BTreeMap<String, String>> 
         .collect()
 }
 
-/// Execute a terminal plan and construct an unsigned local receipt.
+/// Execute a validated terminal plan and construct an unsigned local receipt.
 ///
-/// The plan is schema-checked, identity-checked, and independently
-/// reconstructed before the first process starts. Outputs are confined to an
-/// external artifact root. The returned receipt still requires the independent
-/// receipt verifier before use.
+/// Fails closed on invalid or stale plans, execution-contract violations, or
+/// source mutation. The receipt still requires independent verification.
 ///
 /// # Errors
-///
-/// Returns a typed execution error for an invalid or stale plan, unsupported
-/// executor, inventory drift, path/environment escape, output collision,
-/// process I/O failure, or source mutation.
+/// Returns a typed execution-contract error.
 pub fn execute_plan(
     repo: &Path,
     plan: &Value,
@@ -176,14 +171,10 @@ pub fn execute_plan(
     execute_plan_stage(repo, plan, artifact_root, claims, "FINAL_LIGHT", None, None)
 }
 
-/// Execute exactly one authenticated stage of a terminal plan.
-/// LIGHT returns a frozen stage receipt. HEAVY requires the exact READY audit,
-/// imports its successful light prefix, and returns the ordinary final receipt.
+/// Execute one authenticated plan stage.
 ///
 /// # Errors
-///
-/// Returns a typed execution error for an unknown stage, invalid audit,
-/// mismatched light receipt, stale plan, or any ordinary execution failure.
+/// Returns a typed error on invalid bindings or execution failure.
 pub fn execute_plan_stage(
     repo: &Path,
     plan: &Value,
@@ -2257,7 +2248,7 @@ pub(crate) mod tests {
         fs::write(
             repo.path()
                 .join("docs/work-packages/executor/package.md"),
-            "# Executor fixture\n\nbase\n\n## Declared Write Set\n\n- `docs/work-packages/**`\n- `src/**`\n",
+            "# Executor fixture\n\nStatus: ACTIVE\n\nbase\n\n## Declared Write Set\n\n- `docs/work-packages/**`\n- `src/**`\n",
         )
         .expect("write base package");
         copy_schemas(repo.path());
@@ -2389,10 +2380,17 @@ pub(crate) mod tests {
         fs::write(
             repo.path()
                 .join("docs/work-packages/executor/package.md"),
-            "# Executor fixture\n\nchanged\n\n## Declared Write Set\n\n- `docs/work-packages/**`\n- `src/**`\n",
+            "# Executor fixture\n\nStatus: ACTIVE\n\nchanged\n\n## Declared Write Set\n\n- `docs/work-packages/**`\n- `src/**`\n",
         )
         .expect("change package");
         let head = commit(repo.path(), "change fixture");
+        let authority = crate::package_validation::validate_package_chain(
+            repo.path(),
+            &base,
+            Some(&head),
+            Path::new("docs/work-packages/executor/package.md"),
+        )
+        .expect("fixture package authority");
         let source =
             observe_committed(repo.path(), &base, &head).expect("observe committed source");
         let plan = Planner::new(NextestInventory)
@@ -2408,6 +2406,11 @@ pub(crate) mod tests {
                         "docs/work-packages/executor/package.md".to_owned(),
                         "src/lib.rs".to_owned(),
                     ],
+                    package_authority_chain_id: authority["package_authority_chain_id"]
+                        .as_str()
+                        .expect("authority chain ID")
+                        .to_owned(),
+                    intent_package_path: "docs/work-packages/executor/package.md".to_owned(),
                     source,
                 },
             )

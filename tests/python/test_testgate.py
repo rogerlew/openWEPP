@@ -482,28 +482,83 @@ class TestGateTest(unittest.TestCase):
             with self.assertRaises(TESTGATE.TestgateError):
                 TESTGATE._write_attempt_index(root, provenance)
 
-    def test_base_package_authorizes_only_declared_changed_paths(self) -> None:
-        package = """# Package\n\nStatus: `READY / ACTIVE`\n\n## Declared Write Set\n\n- `src/**`\n- `docs/work-packages/example/package.md`\n\n## Next\n"""
+    def test_intent_authorization_consumes_exact_rust_chain(self) -> None:
         changed = ["docs/work-packages/example/package.md", "src/lib.rs"]
-        with mock.patch.object(TESTGATE, "_base_text", return_value=package):
-            authorization = TESTGATE._intent_authorization(
-                ROOT, "a" * 40, changed, "docs/work-packages/example/package.md"
-            )
-        self.assertEqual(authorization["authorized_changed_paths"], changed)
-        self.assertEqual(authorization["package_path"], changed[0])
+        chain_id = "c" * 64
+        chain = {
+            "status": "READY",
+            "base_commit": "a" * 40,
+            "head_commit": "b" * 40,
+            "intent_package_path": "docs/work-packages/example/package.md",
+            "changed_paths": changed,
+            "package_authority_chain_id": chain_id,
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "chain.json"
+            output.write_text(json.dumps(chain), encoding="utf-8")
+            with mock.patch.object(
+                TESTGATE,
+                "_invoke",
+                return_value={
+                    "result": "READY",
+                    "package_authority_chain_id": chain_id,
+                },
+            ):
+                authorization = TESTGATE._intent_authorization(
+                    ROOT,
+                    ROOT / "target/release/openwepp-gate-plan",
+                    "a" * 40,
+                    "b" * 40,
+                    changed,
+                    "docs/work-packages/example/package.md",
+                    output,
+                )
+            self.assertEqual(authorization["changed_paths"], changed)
 
-        with mock.patch.object(TESTGATE, "_base_text", return_value=package):
+            chain["changed_paths"] = [*changed, "undeclared"]
+            output.write_text(json.dumps(chain), encoding="utf-8")
+            with mock.patch.object(
+                TESTGATE,
+                "_invoke",
+                return_value={
+                    "result": "READY",
+                    "package_authority_chain_id": chain_id,
+                },
+            ):
+                with self.assertRaises(TESTGATE.TestgateError):
+                    TESTGATE._intent_authorization(
+                        ROOT,
+                        ROOT / "target/release/openwepp-gate-plan",
+                        "a" * 40,
+                        "b" * 40,
+                        changed,
+                        "docs/work-packages/example/package.md",
+                        output,
+                    )
+
+    def test_intent_package_is_explicit_and_paths_are_nonempty(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "chain.json"
             with self.assertRaises(TESTGATE.TestgateError):
                 TESTGATE._intent_authorization(
                     ROOT,
+                    ROOT / "target/release/openwepp-gate-plan",
                     "a" * 40,
-                    [*changed, ".github/workflows/undeclared.yml"],
+                    "b" * 40,
+                    [],
                     "docs/work-packages/example/package.md",
+                    output,
                 )
-
-    def test_intent_package_must_preexist_and_change(self) -> None:
-        with self.assertRaises(TESTGATE.TestgateError):
-            TESTGATE._intent_authorization(ROOT, "a" * 40, ["src/lib.rs"], None)
+            with self.assertRaises(TESTGATE.TestgateError):
+                TESTGATE._intent_authorization(
+                    ROOT,
+                    ROOT / "target/release/openwepp-gate-plan",
+                    "a" * 40,
+                    "b" * 40,
+                    ["src/lib.rs"],
+                    "invalid/package.md",
+                    output,
+                )
 
     def test_invoke_retains_valid_nonpass_result(self) -> None:
         completed = subprocess.CompletedProcess(

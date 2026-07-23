@@ -85,6 +85,8 @@ fn build_plan(root: &Path) -> Value {
         campaign_id: Some("TESTGATE-ASSURE-01".to_owned()),
         combined_quality_proof_id: None,
         authorized_paths: changes.iter().map(|item| item.path.clone()).collect(),
+        package_authority_chain_id: "aa".repeat(32),
+        intent_package_path: "docs/work-packages/fixture/package.md".to_owned(),
         source: ObservedSource {
             base_commit: head(root),
             head_commit: None,
@@ -289,6 +291,8 @@ fn only_an_exact_committed_terminal_requests_campaign_transfer() {
         campaign_id: Some("TESTGATE-ASSURE-01".to_owned()),
         combined_quality_proof_id: None,
         authorized_paths: vec![changed.path.clone()],
+        package_authority_chain_id: "aa".repeat(32),
+        intent_package_path: "docs/work-packages/fixture/package.md".to_owned(),
         source: ObservedSource {
             base_commit: commit.clone(),
             head_commit: Some(commit.clone()),

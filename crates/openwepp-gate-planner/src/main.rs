@@ -8,7 +8,7 @@ use openwepp_gate_planner::canonical::{canonical_bytes, parse_strict};
 use openwepp_gate_planner::error::{ErrorClass, GatePolicyError, Result};
 use openwepp_gate_planner::executor::{ExecutionClaims, execute_plan, execute_plan_stage};
 use openwepp_gate_planner::ledger::{verify_assurance_impact, verify_campaign_ledger};
-use openwepp_gate_planner::package_validation::validate_package;
+use openwepp_gate_planner::package_validation::{validate_package, validate_package_chain};
 use openwepp_gate_planner::planner::reconcile_intent_terminal;
 use openwepp_gate_planner::planner::{NextestInventory, PlanRequest, Planner, PlanningStage};
 use openwepp_gate_planner::pre_heavy::{
@@ -27,7 +27,7 @@ type CommandHandler = fn(&Path, &BTreeMap<String, String>) -> Result<Value>;
 type CommandDefinition = (&'static str, CommandHandler, &'static [&'static str]);
 
 const RECEIPT_OPTIONS: &[&str] = &["repo", "plan", "receipt", "artifact-root"];
-const COMMANDS: [CommandDefinition; 10] = [
+const COMMANDS: [CommandDefinition; 11] = [
     (
         "plan",
         plan_command,
@@ -42,6 +42,7 @@ const COMMANDS: [CommandDefinition; 10] = [
             "output",
             "predecessor",
             "authorized-paths",
+            "package-authority-chain",
         ],
     ),
     (
@@ -100,6 +101,11 @@ const COMMANDS: [CommandDefinition; 10] = [
         "validate-package",
         validate_package_command,
         &["repo", "base", "package", "output"],
+    ),
+    (
+        "validate-package-chain",
+        validate_package_chain_command,
+        &["repo", "base", "head", "package", "output"],
     ),
     (
         "reconcile-attempts",
@@ -692,6 +698,23 @@ fn validate_package_command(repo: &Path, options: &BTreeMap<String, String>) -> 
     }))
 }
 
+fn validate_package_chain_command(
+    repo: &Path,
+    options: &BTreeMap<String, String>,
+) -> Result<Value> {
+    let base = required(options, "base")?;
+    let head = required(options, "head")?;
+    let package = PathBuf::from(required(options, "package")?);
+    let chain = validate_package_chain(repo, base, Some(head), &package)?;
+    let output = persist_plan(repo, options, &chain)?;
+    Ok(json!({
+        "result": chain["status"],
+        "package_authority_chain_id": chain["package_authority_chain_id"],
+        "reason_codes": chain["reason_codes"],
+        "output": output
+    }))
+}
+
 fn execution_inputs(
     options: &BTreeMap<String, String>,
 ) -> Result<(Value, PathBuf, ExecutionClaims)> {
@@ -775,15 +798,74 @@ fn plan_command(repo: &Path, options: &BTreeMap<String, String>) -> Result<Value
 }
 
 fn plan_request(repo: &Path, options: &BTreeMap<String, String>) -> Result<PlanRequest> {
+    let authorized_paths = authorized_paths(options)?;
+    let source = planning_source(repo, options)?;
+    let package_authority = package_authority(repo, options, &authorized_paths, &source)?;
     Ok(PlanRequest {
         stage: planning_stage(options)?,
         predecessor_intent_plan_id: options.get("predecessor").cloned(),
         boundary: boundary(options),
         campaign_id: options.get("campaign").cloned(),
         combined_quality_proof_id: options.get("combined-proof-id").cloned(),
-        authorized_paths: authorized_paths(options)?,
-        source: planning_source(repo, options)?,
+        authorized_paths,
+        package_authority_chain_id: package_authority["package_authority_chain_id"]
+            .as_str()
+            .ok_or_else(usage_error)?
+            .to_owned(),
+        intent_package_path: package_authority["intent_package_path"]
+            .as_str()
+            .ok_or_else(usage_error)?
+            .to_owned(),
+        source,
     })
+}
+
+fn package_authority(
+    repo: &Path,
+    options: &BTreeMap<String, String>,
+    authorized: &[String],
+    source: &ObservedSource,
+) -> Result<Value> {
+    let value = read_json(Path::new(required(options, "package-authority-chain")?))?;
+    let intent_package = value["intent_package_path"]
+        .as_str()
+        .ok_or_else(usage_error)?;
+    let head = source.head_commit.as_deref().ok_or_else(|| {
+        GatePolicyError::new(
+            ErrorClass::Identity,
+            "GATE-PLAN-PACKAGE-AUTHORITY",
+            "package authority requires a committed head",
+        )
+    })?;
+    let reconstructed = validate_package_chain(
+        repo,
+        &source.base_commit,
+        Some(head),
+        Path::new(intent_package),
+    )?;
+    require_exact_package_authority(&value, &reconstructed, authorized)?;
+    Ok(value)
+}
+
+fn require_exact_package_authority(
+    value: &Value,
+    reconstructed: &Value,
+    authorized: &[String],
+) -> Result<()> {
+    let paths = value["changed_paths"]
+        .as_array()
+        .ok_or_else(usage_error)?
+        .iter()
+        .map(|path| path.as_str().map(str::to_owned).ok_or_else(usage_error))
+        .collect::<Result<Vec<_>>>()?;
+    if value["status"] != "READY" || paths != authorized || value != reconstructed {
+        return Err(GatePolicyError::new(
+            ErrorClass::Identity,
+            "GATE-PLAN-PACKAGE-AUTHORITY",
+            "package authority chain does not bind authorized paths",
+        ));
+    }
+    Ok(())
 }
 
 fn authorized_paths(options: &BTreeMap<String, String>) -> Result<Vec<String>> {
@@ -1084,7 +1166,7 @@ fn usage_error() -> GatePolicyError {
     GatePolicyError::new(
         ErrorClass::Cli,
         "GATE-CLI-USAGE",
-        "usage: openwepp-gate-plan <plan|run|reconcile|reconcile-attempts|verify-receipt|verify-receipt-envelope|verify-ledger|verify-assurance> --key value ...",
+        "usage: openwepp-gate-plan <plan|validate-package-chain|run|reconcile|reconcile-attempts|verify-receipt|verify-receipt-envelope|verify-ledger|verify-assurance> --key value ...",
     )
 }
 
@@ -1095,8 +1177,8 @@ mod tests {
     use std::path::PathBuf;
 
     use super::{
-        parse_options, run_arguments, staged_run_command, validate_transition_outputs,
-        write_plan_confined,
+        parse_options, require_exact_package_authority, run_arguments, staged_run_command,
+        validate_transition_outputs, write_plan_confined,
     };
     use openwepp_gate_planner::executor::ExecutionClaims;
     use serde_json::json;
@@ -1120,6 +1202,23 @@ mod tests {
             let error = parse_options(&invalid).expect_err("invalid options must fail");
             assert_eq!(error.code, "GATE-CLI-USAGE");
         }
+    }
+
+    #[test]
+    fn planning_rejects_forged_package_authority_artifacts() {
+        let authorized = vec!["src/lib.rs".to_owned()];
+        let live = json!({
+            "status": "READY",
+            "changed_paths": authorized,
+            "package_authority_chain_id": "a".repeat(64)
+        });
+        require_exact_package_authority(&live, &live, &authorized)
+            .expect("exact reconstructed authority");
+        let mut forged = live.clone();
+        forged["package_authority_chain_id"] = json!("b".repeat(64));
+        let error = require_exact_package_authority(&forged, &live, &authorized)
+            .expect_err("forged authority");
+        assert_eq!(error.code, "GATE-PLAN-PACKAGE-AUTHORITY");
     }
 
     #[test]

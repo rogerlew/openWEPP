@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import fnmatch
 import hashlib
 import json
 import os
@@ -536,86 +535,54 @@ def _dirty_changed_paths(repo: Path, base: str) -> list[str]:
     return sorted(set(paths), key=lambda path: path.encode("utf-8"))
 
 
-def _base_text(repo: Path, base: str, path: str) -> str:
-    output = _git(repo, ["show", f"{base}:{path}"])
-    if not isinstance(output, str):
-        raise TestgateError(f"base package is not text: {path}")
-    return output
-
-
-def _declared_write_set(package_text: str) -> list[str]:
-    in_write_set = False
-    patterns: list[str] = []
-    for line in package_text.splitlines():
-        if line == "## Declared Write Set":
-            in_write_set = True
-            continue
-        if in_write_set and line.startswith("## "):
-            break
-        if in_write_set:
-            match = re.fullmatch(r"- `([^`]+)`", line)
-            if match:
-                patterns.append(match.group(1))
-    if not patterns:
-        raise TestgateError("intent package has no declared write set")
-    return patterns
-
-
-def _path_is_authorized(path: str, patterns: list[str]) -> bool:
-    return any(path == pattern or fnmatch.fnmatchcase(path, pattern) for pattern in patterns)
-
-
 def _intent_authorization(
     repo: Path,
+    binary: Path,
     base: str,
+    head: str,
     changed_paths: list[str],
-    requested_package: str | None,
+    requested_package: str,
+    output: Path,
 ) -> dict[str, Any]:
     if not changed_paths:
         raise TestgateError("zero-work increment cannot be admitted")
-    changed_packages = sorted(path for path in changed_paths if PACKAGE_PATH_RE.fullmatch(path))
-    candidates = [requested_package] if requested_package else changed_packages
-    if not candidates:
+    if not PACKAGE_PATH_RE.fullmatch(requested_package):
+        raise TestgateError(f"invalid intent package path: {requested_package}")
+    result = _invoke(
+        [
+            str(binary.resolve()),
+            "validate-package-chain",
+            "--repo",
+            str(repo),
+            "--base",
+            base,
+            "--head",
+            head,
+            "--package",
+            requested_package,
+            "--output",
+            str(output),
+        ],
+        repo,
+        allow_nonpass=True,
+    )
+    if result.get("result") != "READY":
         raise TestgateError(
-            "increment must change its pre-existing work-package package.md or name it explicitly"
+            f"package authority chain did not authorize execution: {result.get('reason_codes')}"
         )
-    admitted: list[dict[str, Any]] = []
-    for package_path in candidates:
-        if package_path is None or not PACKAGE_PATH_RE.fullmatch(package_path):
-            raise TestgateError(f"invalid intent package path: {package_path}")
-        if package_path not in changed_paths:
-            raise TestgateError(f"intent package must be updated by the increment: {package_path}")
-        try:
-            package_text = _base_text(repo, base, package_path)
-            patterns = _declared_write_set(package_text)
-        except TestgateError:
-            if requested_package:
-                raise
-            continue
-        status = next(
-            (line.removeprefix("Status:").strip(" `") for line in package_text.splitlines() if line.startswith("Status:")),
-            "",
-        )
-        if "READY" not in status and "ACTIVE" not in status:
-            continue
-        unauthorized = [
-            path for path in changed_paths if not _path_is_authorized(path, patterns)
-        ]
-        if not unauthorized:
-            admitted.append(
-                {
-                    "package_path": package_path,
-                    "package_sha256": hashlib.sha256(package_text.encode("utf-8")).hexdigest(),
-                    "declared_write_set": patterns,
-                }
-            )
-    if len(admitted) != 1:
-        raise TestgateError(
-            f"expected exactly one base-commit work package to authorize the diff; found {len(admitted)}"
-        )
-    authorization = admitted[0]
-    authorization["base_commit"] = base
-    authorization["authorized_changed_paths"] = changed_paths
+    authorization = _strict_json(output.read_text(encoding="utf-8"))
+    if not isinstance(authorization, dict):
+        raise TestgateError("package authority chain must be an object")
+    if (
+        authorization.get("status") != "READY"
+        or authorization.get("base_commit") != base
+        or authorization.get("head_commit") != head
+        or authorization.get("intent_package_path") != requested_package
+        or authorization.get("changed_paths") != changed_paths
+        or authorization.get("package_authority_chain_id")
+        != result.get("package_authority_chain_id")
+    ):
+        raise TestgateError("package authority chain does not bind the observed intent")
     return authorization
 
 
@@ -650,24 +617,28 @@ def observe(args: argparse.Namespace) -> dict[str, Any]:
     if Path("/tmp") in ledger.parents or ledger == Path("/tmp"):
         raise TestgateError("history ledger must not be ephemeral-only")
     base = _resolve_commit(repo, args.base)
-    head = None if args.dirty else _resolve_commit(repo, args.head)
-    authorized_paths = (
-        _dirty_changed_paths(repo, base)
-        if args.dirty
-        else _changed_paths(repo, base, str(head))
-    )
-    authorization = _intent_authorization(
-        repo, base, authorized_paths, args.intent_package
-    )
+    if args.dirty:
+        raise TestgateError("sequential package authority requires a committed head")
+    head = _resolve_commit(repo, args.head)
+    authorized_paths = _changed_paths(repo, base, head)
     authorized_path = artifact_root / "authorized-paths.json"
     intent_path = artifact_root / "intent-plan.json"
     terminal_path = artifact_root / "terminal-plan.json"
     receipt_path = artifact_root / "receipt.json"
     light_receipt_path = artifact_root / "light-receipts.json"
     audit_path = artifact_root / "pre-heavy-audit.json"
-    package_audit_path = artifact_root / "package-audit.json"
+    package_audit_path = artifact_root / "package-authority-chain.json"
+    authorization = _intent_authorization(
+        repo,
+        args.binary,
+        base,
+        head,
+        authorized_paths,
+        args.intent_package,
+        package_audit_path,
+    )
     _atomic_json(authorized_path, authorized_paths)
-    _atomic_json(artifact_root / "intent-authorization.json", authorization)
+    shutil.copyfile(package_audit_path, artifact_root / "intent-authorization.json")
     _atomic_json(
         artifact_root / "observation.json",
         {
@@ -680,27 +651,6 @@ def observe(args: argparse.Namespace) -> dict[str, Any]:
             "execution_error": None,
         },
     )
-
-    package_result = _invoke(
-        [
-            str(args.binary.resolve()),
-            "validate-package",
-            "--repo",
-            str(repo),
-            "--base",
-            base,
-            "--package",
-            str(authorization["package_path"]),
-            "--output",
-            str(package_audit_path),
-        ],
-        repo,
-        allow_nonpass=True,
-    )
-    if package_result.get("result") != "READY":
-        raise TestgateError(
-            f"package validation did not authorize execution: {package_result.get('reason_codes')}"
-        )
 
     common = [
         str(args.binary.resolve()),
@@ -715,6 +665,8 @@ def observe(args: argparse.Namespace) -> dict[str, Any]:
         args.campaign,
         "--authorized-paths",
         str(authorized_path),
+        "--package-authority-chain",
+        str(package_audit_path),
     ]
     if head is not None:
         common.extend(["--head", head])
@@ -878,6 +830,7 @@ def _parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--intent-package",
+        required=True,
         help="Base-commit work package that prospectively authorizes the changed paths",
     )
     parser.add_argument("--boundary", choices=("INCREMENT", "CHECKPOINT", "CAMPAIGN", "RELEASE"), default="INCREMENT")

@@ -745,7 +745,41 @@ at a distinct trust boundary is required assurance.
 
 A production transition authenticates `READY` by keeping LIGHT execution, audit construction, and HEAVY admission inside one trusted binary process while persisting the unchanged audit as evidence. Standalone HEAVY admission rejects a merely self-hashed audit; an external attestation may become an additional authenticated transport only when its trust root and subject contract are explicitly implemented. This construction prevents forged PASS checks without repeating audit inventory enumeration.
 
-Audit reconstruction must use a disposable compilation and inventory workspace whose cache and target directories are disjoint from every execution-stage cache. The audit removes that workspace before returning `READY`, including after reconstruction failure. LIGHT or HEAVY must never consume binaries, metadata, reports, or fixture paths produced from a disposable source snapshot; such reuse is cache contamination and a blocking tooling defect. When multiple changed work-package documents are present, package admission independently validates each candidate against the exact base and complete changed-path set, then requires exactly one `READY` authority. Counting package-document paths is not authority reconstruction; zero or multiple independently admitted candidates fail closed.
+Audit reconstruction must use a disposable compilation and inventory workspace
+whose cache and target directories are disjoint from every execution-stage
+cache. The audit removes that workspace before returning `READY`, including
+after reconstruction failure. LIGHT or HEAVY must never consume binaries,
+metadata, reports, or fixture paths produced from a disposable source snapshot;
+such reuse is cache contamination and a blocking tooling defect.
+
+Package admission reconstructs authority across the exact first-parent
+base-to-head commit range. The operator-supplied intent package must be an
+active anchor in the authenticated base; only that anchor and packages validly
+scaffolded inside the range may authorize implementation and package-tree
+transitions. Each transition
+consumes package status and write-set bytes from its parent, treats merges
+atomically against the first parent, disables rename inference, and allocates
+every changed path to one unambiguous prospective authority. A scaffold may
+authorize only newly added regular files in its own package directory in that
+commit. A top-level `docs/work-packages/*-execplan.md` is separate planning
+state: when added as a regular file with a sanctioned prospective lifecycle it
+may authorize only its exact path, and later modifications consume its prior
+bound status and digest. It never authorizes a sibling or implementation path,
+and terminal planning state cannot self-authorize another modification. A
+strictly newer prospective package may supersede that exact path. A terminal
+package has no ordinary authority and shadows older broad authorities within
+its own package tree; its sole closure exception is a
+content-preserving move of its one Markdown prompt from `prompts/active/` to
+`prompts/archived/`, with no other package-tree change. Same-commit widening,
+unrelated historical packages, malformed or non-regular paths, zero authority
+outside the planning-only case, and same-sequence ambiguity fail closed. The
+canonical chain artifact binds ordered commit, parent, tree, package, lifecycle
+status, write-set, path-allocation, planning-state status/digest/introduction,
+prompt-owner, and prompt-digest identities. Intent planning retains the exact
+Rust-produced artifact and terminal planning binds its chain ID; pre-HEAVY independently
+reconstructs the live chain and requires exact identity. Dirty authority chains
+remain invalid until a separately specified synthetic-transition contract
+exists.
 
 Process temporary roots must be isolated per node attempt, use a platform-safe path-length budget for path-sensitive APIs such as Unix-domain sockets, and be removed after both successful and failed execution. Cleanup failure is a typed gate failure. The executor may derive a stricter resource schedule from the plan-bound canonical Nextest configuration when retained timing evidence proves the canonical concurrency cap unsafe on the runner; it must fail if the expected source configuration drifts, retain the test inventory and timeout, and record the qualified cap. A recurrence at two-way fixture concurrency requires a serial qualification before another expensive retry; raising the timeout is not the first correction.
 

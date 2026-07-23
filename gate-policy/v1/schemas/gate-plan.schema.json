@@ -15,6 +15,7 @@
     "campaign_id",
     "combined_quality",
     "authorized_paths",
+    "package_authority",
     "source",
     "changed_objects",
     "affected_packages",
@@ -84,6 +85,18 @@
       "uniqueItems": true,
       "items": {
         "$ref": "#/$defs/path"
+      }
+    },
+    "package_authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["chain_id", "intent_package_path"],
+      "properties": {
+        "chain_id": {"$ref": "#/$defs/digest"},
+        "intent_package_path": {
+          "type": "string",
+          "pattern": "^docs/work-packages/[^/]+/package\\.md$"
+        }
       }
     },
     "source": {
