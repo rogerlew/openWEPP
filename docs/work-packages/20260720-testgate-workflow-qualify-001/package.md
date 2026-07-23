@@ -29,6 +29,7 @@ to TESTGATE implementation/policy/workflow code.
 - `docs/ROADMAP.md`
 - `AGENTS.md`
 - `docs/standards/testing-and-gate-strategy.md`
+- `gate-policy/v1/impact-map.json`
 - `tools/local_ci/testgate.py`
 - `tools/local_ci/README.md`
 - `docs/work-packages/README.md`
@@ -47,9 +48,10 @@ to TESTGATE implementation/policy/workflow code.
    retained artifacts, and any hosted verification record. A forest1 local
    receipt remains valid evidence even when labeled `LOCAL_UNTRUSTED`.
 5. If the run fails before any selected gate starts because package admission is
-   malformed, correct the package metadata in this package and make one fresh
-   changed-head dispatch. For any gate-execution failure, retain its evidence
-   and open a focused defect package; do not retry inside this package.
+   malformed or a directly caused policy-identity binding is stale, correct the
+   metadata/binding in this package and make one fresh changed-head dispatch.
+   For any gate-execution failure, retain its evidence and open a focused defect
+   package; do not retry inside this package.
 
 ## Acceptance
 
