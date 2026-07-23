@@ -43,3 +43,22 @@ Reviewer C's request to change `.config/nextest.toml` is dispositioned `follow-u
 Final re-review at `a1c34412` is dual PASS. Reviewer B verified both accepted code findings, the exact four-name selection command, retained JUnit/configuration digests, and 21-case Python evidence. Reviewer C independently verified the canonical-source-bound derivative, attempt-5 timeout-cohort equality, one-pass typed finalizer behavior, direct/manual follow-up boundary, formatting, and diff hygiene. Neither reviewer ran HEAVY work. RTR-015, RTR-016, and RTR-017 closed in the durable ledger as `f4b8f99d...`, `b77f06ba...`, and `d0e39b6d...`; no implementation-review finding remains open.
 
 Attempt-6 correction RTR-018 passed dual review at `7ff552dc`. Reviewer C's initial HOLD was accepted because the first selector test bypassed the real enumeration/validation seam; the corrected regression now creates temporary Git repositories, copies the real package-audit schema, and covers unique/zero/multiple authority plus path/read/schema/base/changed-path failures through `package_admission`. Reviewer B's 42-path and line-count evidence corrections were also accepted. Both reviewers returned PASS after focused package-admission tests, package Clippy, formatting, policy digest, docs, and diff hygiene passed. Durable closure record `cbc3d35f...` leaves no implementation-review finding open.
+
+## RTR-059 review
+
+Both independent reviewers initially returned `HOLD` at `5a2e2c66` because
+the attempt artifact, package, and first durable OPEN record overstated LIGHT
+execution as five PASS. The finding was accepted. Artifact `8558284504`
+actually retains six checkpoint envelopes: four PASS, formatting FAIL, and one
+dependency-BLOCKED placeholder without command launch.
+
+Ran: the corrected attempt/package text and superseding OPEN record
+`200b5ab1...` match the retained artifact. Both reviewers renewed `PASS` at
+exact clean HEAD `7129ab0e1d11db508f44df6a245789c08dd1b2c2`.
+`cargo fmt --all -- --check`, the owning source-contract case, package
+Markdown lint, and the 183-record ledger chain passed. No reviewer ran HEAVY,
+full Nextest, coverage, or CRAP.
+
+Ran: RTR-059 closed through the canonical command at ledger tip
+`dd312eb7d1263cffaf9ecdde7bff0887be7ab498b81b7c3e7e0b7cc44f2d2ef5`.
+No implementation-review finding or effective tooling defect remains open.

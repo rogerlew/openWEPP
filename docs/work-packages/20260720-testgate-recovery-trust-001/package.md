@@ -4,7 +4,7 @@ Package ID: `20260720-testgate-recovery-trust-001`
 
 Queue ID: `TESTGATE-RECOVERY-TRUST-01`
 
-Status: `ACTIVE / REVIEW`
+Status: `ACTIVE / READY-QUALIFICATION`
 
 Authorization: Roger Lew's 2026-07-20 direction to scaffold and execute
 `TESTGATE-RECOVERY-TRUST-01` after independent review held the predecessor.
@@ -154,8 +154,9 @@ quality paths without editing its frozen subject.
 - [x] Cancel the orphaned GitHub scheduler record after the self-hosted runner
   stopped progressing; preserve unsigned artifact `8558284504` and classify
   the cancelled record as non-gate infrastructure history.
-- [ ] Close RTR-059 after canonical formatting, narrow validation, and dual
-  independent review.
+- [x] Close RTR-059 after canonical formatting, narrow validation, corrected
+  retained-attempt accounting, and dual independent renewed PASS review; the
+  184-record ledger ends at `dd312eb7` with zero effective open defects.
 - [ ] Apply the operator-authorized defunct-runner exception to repository
   attestation, complete dual terminal verification from retained exact
   evidence, archive the prompt, and record final disposition.
