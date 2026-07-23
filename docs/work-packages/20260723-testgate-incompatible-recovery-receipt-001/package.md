@@ -14,8 +14,10 @@ ledger, path, or checkpoint evidence remains fail-closed.
 
 - `crates/openwepp-gate-planner/src/resume.rs`
 - `crates/openwepp-gate-planner/src/pre_heavy.rs`
+- `crates/openwepp-gate-planner/src/pre_heavy_coverage_tests.rs`
 - `crates/openwepp-gate-planner/src/pre_heavy_tests.rs`
 - `crates/openwepp-gate-planner/src/verifier.rs`
+- `.config/nextest.toml`
 - `gate-policy/v1/schemas/gate-receipt.schema.json`
 - `tools/ci/omarchy-runner/manage.sh`
 - `tests/integration/testgate_ci_executor_contract.rs`
@@ -39,6 +41,8 @@ ledger, path, or checkpoint evidence remains fail-closed.
   identity. Runtime audit construction still binds both documents to the
   actual forest1 execution root, and artifact contents remain independently
   verified.
+- Repository-snapshot tests use an executable disposable root and run without
+  concurrent workspace-linker pressure inside the full nextest profile.
 - All other recovery-integrity errors remain typed and fail closed.
 - Focused resume tests pass.
 - One exact changed-head forest1 TESTGATE qualification proves that a rejected
