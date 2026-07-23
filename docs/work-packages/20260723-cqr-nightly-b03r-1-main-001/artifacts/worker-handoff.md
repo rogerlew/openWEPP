@@ -1,4 +1,4 @@
 # Worker Handoff
 
-Static: first action is retain aggregate-admission PASS, then characterize the
-three actionable functions before decomposition.
+Static: first action is scaffold a replacement aggregate whose immutable
+manifest enumerates every mandatory exact path, then bind a new module package.

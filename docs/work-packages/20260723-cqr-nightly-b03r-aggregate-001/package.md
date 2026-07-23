@@ -2,7 +2,7 @@
 
 Package ID: `20260723-cqr-nightly-b03r-aggregate-001`
 
-Status: `ACTIVE`
+Status: `EXECUTED-HOLD-CQR-NIGHTLY-LOCAL-INCOMPLETE-BATCH-MANIFEST`
 
 ## Objective
 
@@ -43,3 +43,9 @@ assigned bounded module implementation or comparator artifact root.
 - Both corrected module packages complete exact CRAP and behavior gates.
 - Every review finding is dispositioned and dual terminal verification passes.
 - One changed-head recovery qualification passes without an unchanged retry.
+
+## Disposition
+
+Ran: HOLD before implementation. Canonical aggregate admission required exact
+module package paths in `required_paths`; the immutable manifest contained only
+their recursive package paths. A new prospective aggregate replaces it.

@@ -1,7 +1,7 @@
 # CQR Nightly B03R-1: Gate Planner Main Authority Commands
 
 Package: `20260723-cqr-nightly-b03r-1-main-001`
-Status: `ACTIVE`
+Status: `EXECUTED-HOLD-CQR-NIGHTLY-LOCAL-INCOMPLETE-BATCH-MANIFEST`
 ExecPlan: `docs/work-packages/20260723-cqr-nightly-b03-execplan.md`
 Nightly batch: `b03r`
 Target module: `crates/openwepp-gate-planner/src/main.rs`
@@ -66,3 +66,9 @@ authority semantics, persistence changes, thresholds, and unrelated cleanup.
   unchanged.
 - Focused tests, formatting, Clippy, aggregate admission, dual review, and dual
   verification pass.
+
+## Hold Disposition
+
+Ran: canonical aggregate admission failed before implementation because the
+bound immutable manifest omitted exact mandatory module package paths. A new
+prospectively bound module package owns execution.
