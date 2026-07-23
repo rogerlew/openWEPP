@@ -4,7 +4,7 @@ Package ID: `20260720-testgate-recovery-trust-001`
 
 Queue ID: `TESTGATE-RECOVERY-TRUST-01`
 
-Status: `ACTIVE / READY-QUALIFICATION`
+Status: `ACTIVE / REVIEW`
 
 Authorization: Roger Lew's 2026-07-20 direction to scaffold and execute
 `TESTGATE-RECOVERY-TRUST-01` after independent review held the predecessor.
@@ -136,6 +136,15 @@ quality paths without editing its frozen subject.
 - [x] (2026-07-23) Close RTR-055 after dual PASS at exact trailer-bearing head
   `35e3d83b`; the campaign ledger now ends at `39c4ee9a` with zero effective
   open defects.
+- [x] (2026-07-23) Retain automatic run `29991322951`: one documentation-lint
+  node passed with no retry, but hosted verification failed on producer/consumer
+  intent-authority field drift; no HEAVY or coverage ran.
+- [ ] Close RTR-056 by consuming `intent_package_path` in hosted verification.
+- [ ] Close RTR-057 with a fail-closed exact-head comparison-base declaration
+  that can only expand the push diff backward to an ancestor.
+- [ ] Close RTR-058 by invoking canonical hosted intent-authority
+  reconstruction with the exact binary, head, changed paths, package, and
+  retained output.
 - [ ] Obtain the exact repository-reviewed GitHub attestation, complete the
   held terminal verification, archive the prompt, and record final
   disposition.
@@ -282,6 +291,7 @@ ledger digest `1b65f07f`.
 - `gate-policy/v1/**`
 - `tests/integration/testgate_*`
 - `tests/python/test_testgate.py`
+- `tests/python/test_resolve_testgate_comparison_base.py`
 - `tests/fixtures/testgate/**`
 - `tools/ci/omarchy-runner/Dockerfile`
 - `tools/ci/omarchy-runner/manage.sh`
