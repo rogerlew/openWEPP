@@ -1,7 +1,7 @@
 # TESTGATE Active Status Vocabulary Recovery
 
 Package: `20260723-testgate-active-status-vocabulary-recovery-001`
-Status: `ACTIVE / SCAFFOLD`
+Status: `COMPLETE`
 Defect: `RTR-048`
 Cause: `GATE-PACKAGE-ACTIVE-STATUS-VOCABULARY-DRIFT`
 
@@ -46,7 +46,7 @@ reviewer may push, deploy, dispatch TESTGATE, or run an expensive gate.
 - [x] Opened durable defect RTR-048 after exact cheap package-chain validation.
 - [x] Scaffolded prospective correction authority before Rust edits.
 - [x] Corrected and narrowly tested the active-status vocabulary.
-- [ ] Obtain dual review, close RTR-048, and obtain dual verification.
+- [x] Obtained dual review, closed RTR-048, and completed dual verification.
 
 ## Exit Criteria
 

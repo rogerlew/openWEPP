@@ -1,7 +1,7 @@
 # TESTGATE Intent Package Binding Recovery
 
 Package: `20260723-testgate-intent-package-binding-recovery-001`
-Status: `ACTIVE / SCAFFOLD`
+Status: `COMPLETE`
 Defect: `RTR-047`
 Cause: `GATE-TRUSTED-WORKFLOW-INTENT-PACKAGE-OMISSION`
 
@@ -60,7 +60,8 @@ reviewer may push, deploy, dispatch TESTGATE, or run an expensive gate.
 - [x] Scaffolded prospective correction authority before implementation.
 - [x] Implemented exact event-bound intent-package resolution.
 - [x] Ran focused validation and exact package-chain admission.
-- [ ] Obtain dual implementation review, close RTR-047, and obtain dual terminal verification.
+- [x] Obtained dual implementation review, closed RTR-047, and completed dual
+  terminal verification.
 
 ## Exit Criteria
 

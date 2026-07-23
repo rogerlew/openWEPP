@@ -84,6 +84,13 @@ quality paths without editing its frozen subject.
   SHA through an explicit append-only reopen/reclose pair; the 157-record
   ledger verifies with RTR-046 CLOSED at `1c36ef0c...` and zero effective
   open defects.
+- [x] Retained automatic run `29981856347`, which passed runner/history
+  recovery but stopped before planning because `--intent-package` was absent;
+  its authenticated archive binds zero TESTGATE nodes.
+- [x] Closed RTR-047/RTR-048 after authenticated event-bound package
+  resolution, traversal/output-injection rejection, exact active-status
+  vocabulary repair, focused validation, dual review, and dual verification.
+  The 161-record ledger ends at `5cb57d17...` with zero effective open defects.
 - [ ] Obtain the exact repository-reviewed GitHub attestation, complete the
   held terminal verification, archive the prompt, and record final
   disposition.

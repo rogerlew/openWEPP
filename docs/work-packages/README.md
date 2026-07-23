@@ -251,13 +251,13 @@
 
 State as of `2026-07-23 UTC`:
 
-- `20260723-testgate-active-status-vocabulary-recovery-001/` - ACTIVE /
-  SCAFFOLD: corrects RTR-048 so the explicitly active repository-attestation
-  state remains a valid package-authority anchor.
+- `20260723-testgate-active-status-vocabulary-recovery-001/` - COMPLETE:
+  exact active repository-attestation status admission, bounded terminal-state
+  rejection, dual review/verification, and durable RTR-048 closure.
 
-- `20260723-testgate-intent-package-binding-recovery-001/` - ACTIVE / SCAFFOLD:
-  corrects RTR-047 by binding trusted execution to one explicit,
-  authenticated intent package before planning.
+- `20260723-testgate-intent-package-binding-recovery-001/` - COMPLETE:
+  authenticated push/manual intent-package binding, adversarial declaration
+  rejection, dual review/verification, and durable RTR-047 closure.
 
 - `20260723-testgate-runner-gh-cli-recovery-001/` - COMPLETE: checksum-pinned
   GitHub CLI 2.96.0, exact-version preflight, reviewed activation, and durable
