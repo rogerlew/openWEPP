@@ -63,7 +63,8 @@ evidence. No reviewer may deploy, push, or dispatch TESTGATE.
 - [x] Scaffolded prospective correction authority before image edits.
 - [x] Installed and preflighted the exact checksum-pinned CLI in the candidate image.
 - [x] Ran focused source-contract and image-build validation.
-- [ ] Obtain dual review, install the exact bound image, and close RTR-046.
+- [x] Obtained dual implementation review and activated the exact bound image.
+- [ ] Close RTR-046 and obtain dual terminal verification.
 
 ## Exit Criteria
 
