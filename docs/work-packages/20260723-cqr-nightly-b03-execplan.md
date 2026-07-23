@@ -1,0 +1,49 @@
+# CQR Nightly B03: Sequential Authority CRAP Closeout
+
+Status: `ACTIVE`
+
+## Objective
+
+Close the four actionable CRAP rows retained by TESTGATE receipt
+`64a6f2926d41f2805f1f94fb83ad90d95940a3603e6f2ea8207b5f9bfe026b44`
+using one behavior-preserving module package per source module.
+
+## Frozen Baseline
+
+- HEAD: `21ac2fdf2fe33e855ed440e7e9bb05554434e32e`
+- CRAP report:
+  `/home/workdir/testgate-recovery-trust-01-final-rtr044.IYxJPd/execution/.work/target/adjudicated-crap/adjudicated-crap-report.json`
+- Ordinary Nextest: 2,290/2,290 PASS in 1,014.144 seconds.
+- Instrumented Nextest: 2,290/2,290 PASS in 806.407 seconds.
+- Actionable rows:
+  - `main.rs::validate_package_chain_command`: CRAP 42, CC 6, coverage 0%.
+  - `main.rs::plan_request`: CRAP 37.092125, CC 7, coverage 15%.
+  - `main.rs::package_authority`: CRAP 56, CC 7, coverage 0%.
+  - `package_validation.rs::validate_package`: CRAP 156, CC 12,
+    coverage 0%.
+
+## Modules
+
+1. `20260723-cqr-nightly-b03-1-main-001`: characterize and decompose the three
+   `main.rs` command/request authority functions without changing CLI, typed
+   error, persistence, or reconstruction behavior.
+2. `20260723-cqr-nightly-b03-2-package-validation-001`: characterize and
+   decompose `validate_package` without changing Git evidence, reason-code,
+   status, or artifact identity behavior.
+
+## Execution
+
+Commit the aggregate scaffold first. Commit each module scaffold separately,
+retain canonical aggregate-admission PASS, then execute characterization,
+behavior-preserving decomposition, focused metrics, dual review, and dual
+verification. Do not rerun the failed exact-head global gates. After both
+modules and the independent RTR-045 prerequisite close, delegate one new
+changed-head `INCREMENT` TESTGATE qualification.
+
+## Exit Criteria
+
+- All four actionable functions and every extracted helper are CRAP at most 30.
+- Focused behavior and output identity pass with no error-precedence drift.
+- Each module package has aggregate admission, dual review, dual verification,
+  and complete disposition evidence.
+- One new exact-head recovery qualification passes without an unchanged retry.

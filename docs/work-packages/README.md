@@ -249,7 +249,11 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-07-22 UTC`:
+State as of `2026-07-23 UTC`:
+
+- `20260723-cqr-nightly-b03-aggregate-001/` - ACTIVE: prospective aggregate
+  authority for the `main.rs` and `package_validation.rs` CRAP closeout exposed
+  by recovery receipt `64a6f292...26b44`.
 
 - `20260722-testgate-sequential-package-authority-recovery-001/` - ACTIVE:
   closes RTR-044 by reconstructing prospective package authority in commit
