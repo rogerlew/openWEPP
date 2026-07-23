@@ -1,7 +1,7 @@
 # TESTGATE Sequential Package Authority Recovery
 
 Package: `20260722-testgate-sequential-package-authority-recovery-001`
-Status: `ACTIVE`
+Status: `ACTIVE / HOLD-REPOSITORY-ATTESTATION`
 Defect: `RTR-044`
 Cause: `GATE-PACKAGE-SEQUENTIAL-AUTHORITY-NOT-COMPOSABLE`
 
@@ -33,8 +33,10 @@ and malformed chains fail closed.
   dispositions with no actionable findings.
 - [x] (2026-07-22) Committed correction `51c7e06d`, durably closed RTR-044 at
   ledger digest `b5005a54...`, and obtained dual terminal-verification PASS.
-- [ ] Rebuild the release planner and delegate exactly one changed-head
-  `INCREMENT` qualification attempt.
+- [x] Rebuilt the release planner and delegated exactly one changed-head
+  `INCREMENT` qualification attempt. All 15 nodes passed with zero retries at
+  exact HEAD `eadc0145...`; repository-reviewed attestation remains required
+  for increment closure.
 
 ## Correction Authority Envelope
 

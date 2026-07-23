@@ -2,7 +2,7 @@
 
 Package ID: `20260723-cqr-nightly-b03s-aggregate-001`
 
-Status: `ACTIVE / READY-QUALIFICATION`
+Status: `EXECUTED-HOLD-REPOSITORY-ATTESTATION`
 
 ## Objective
 
@@ -50,5 +50,10 @@ assigned bounded module implementation or comparator artifact root.
   terminal verification.
 - [x] RTR-045 observer prerequisite closed and dual verified.
 - [x] Obtained dual independent aggregate implementation-review PASS.
-- [ ] Run one changed-head recovery
-  qualification through the comparator.
+- [x] Ran one changed-head recovery qualification through the comparator at
+  exact HEAD `eadc01459df18e83d94362dc225219232f0a4c65`; receipt
+  `c22fe3f...f06ca` sealed 15/15 PASS with zero retries and global CRAP had
+  zero actionable rows.
+- [ ] Obtain and verify the repository-reviewed GitHub attestation envelope
+  for that exact receipt and HEAD. Local receipt trust is
+  `LOCAL_UNTRUSTED`, which cannot close an increment boundary.

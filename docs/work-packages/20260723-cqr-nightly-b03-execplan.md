@@ -1,6 +1,6 @@
 # CQR Nightly B03: Sequential Authority CRAP Closeout
 
-Status: `EXECUTING (2 of 2 module packages complete)`
+Status: `EXECUTED-HOLD-REPOSITORY-ATTESTATION`
 
 ## Objective
 
@@ -61,4 +61,9 @@ changed-head `INCREMENT` TESTGATE qualification.
   100% coverage, dual review and dual verification PASS.
 - [x] Independent observer prerequisite RTR-045 closed at `4181e914` with
   superseding ledger digest `b4ab096a...` and dual verification PASS.
-- [ ] Complete aggregate review and one changed-head recovery qualification.
+- [x] Completed dual aggregate review and the sole changed-head recovery
+  qualification: 15/15 PASS, zero retries, and zero actionable global CRAP
+  rows at exact HEAD `eadc0145...`.
+- [ ] Verify a repository-reviewed GitHub attestation envelope for exact
+  receipt `c22fe3f...f06ca`; the local-untrusted receipt cannot close the
+  increment boundary.

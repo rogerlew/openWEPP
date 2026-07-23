@@ -60,3 +60,15 @@ Attempt 4 reopened RTR-014 because package-scoped Clippy had omitted the root in
    rows across `main.rs` and `package_validation.rs`. Source mutation passed.
    Post-seal observer defect RTR-045 was preserved separately; the attempt and
    ledger remained authoritative.
+
+8. `/home/workdir/testgate-recovery-trust-01-final-b03s.oJ1TCz`: exact HEAD
+   `eadc01459df18e83d94362dc225219232f0a4c65` passed LIGHT 6/6 and READY audit
+   `35729c88...009b8` 10/10. Receipt `c22fe3f...f06ca` sealed all 15 nodes PASS
+   with zero retries and unchanged source. Ordinary and instrumented Nextest
+   passed 2,293/2,293 in 1,026.563 and 795.488 seconds. Fresh global CRAP was
+   closure eligible with zero actionable rows, two valid adjudications, and no
+   invalid adjudication. The durable 151-record chain closed PASS at
+   `2096272c...b067b`. The unsigned local receipt remains
+   `LOCAL_UNTRUSTED`; a repository-reviewed GitHub attestation is still needed
+   to close the `INCREMENT` boundary. The absolute-path pre-receipt rejection
+   in sibling root `...Hs7tZ9` ran zero nodes and did not mutate the ledger.

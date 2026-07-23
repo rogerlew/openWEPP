@@ -4,7 +4,7 @@ Package ID: `20260720-testgate-recovery-trust-001`
 
 Queue ID: `TESTGATE-RECOVERY-TRUST-01`
 
-Status: `ACTIVE / SCAFFOLD`
+Status: `ACTIVE / HOLD-REPOSITORY-ATTESTATION`
 
 Authorization: Roger Lew's 2026-07-20 direction to scaffold and execute
 `TESTGATE-RECOVERY-TRUST-01` after independent review held the predecessor.
@@ -57,9 +57,14 @@ quality paths without editing its frozen subject.
   a `READY` aggregate audit, and dual independent implementation review.
 - [x] (2026-07-22) Retain the zero-node broader-boundary rejection and open
   RTR-042 to bind recovery qualification to `INCREMENT`.
-- [ ] Reconcile the exact terminal diff and obtain a fresh `READY` audit.
-- [ ] Delegate each selected HEAVY batch once.
-- [ ] Complete dual terminal verification, prompt archival, and final disposition.
+- [x] Reconciled the exact terminal diff and obtained READY audit
+  `35729c88...009b8` with all ten checks passing.
+- [x] Delegated every selected HEAVY gate through one comparator execution;
+  receipt `c22fe3f...f06ca` sealed 15/15 PASS with zero retries.
+- [ ] Obtain the exact repository-reviewed GitHub attestation, complete the
+  held terminal verification, archive the prompt, and record final
+  disposition.
+
 ## Correction Authority Envelope
 
 This package owns these observed violations end-to-end:

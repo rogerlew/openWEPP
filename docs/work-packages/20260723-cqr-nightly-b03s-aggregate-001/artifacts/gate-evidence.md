@@ -23,3 +23,24 @@ dual verification passed.
 
 Static: no unchanged TESTGATE, HEAVY, global Nextest, or global CRAP rerun was
 launched during module correction.
+
+Ran: the sole changed-head qualification at exact HEAD
+`eadc01459df18e83d94362dc225219232f0a4c65` completed in
+`/home/workdir/testgate-recovery-trust-01-final-b03s.oJ1TCz`. Intent plan
+`c403fc60...f7b68`, terminal plan `8bd2c1ed...8c684`, and READY audit
+`35729c88...009b8` bound the execution. Receipt
+`c22fe3f57bb179e62f8460f4acc933c02653811c866bf575eeefed58217f06ca`
+sealed 15/15 PASS with zero failures, blocked nodes, or retries. Ordinary and
+instrumented Nextest passed 2,293/2,293 in 1,026.563 and 795.488 seconds.
+Fresh global CRAP passed with `closure_eligible=true`, zero actionable rows,
+two valid adjudications, and zero invalid adjudications. Source mutation was
+unchanged. The durable 151-record ledger closed PASS at
+`2096272c6a1fe5a5d5d18095a895be070eb688408a2abb6d2f9f42dd5b3b067b`.
+
+Static: the unsigned receipt remains `LOCAL_UNTRUSTED`, and
+`observation.json` records `PENDING_GITHUB_ATTESTATION`. The canonical trust
+contract forbids this evidence from closing an `INCREMENT` boundary until a
+native repository-reviewed attestation envelope for the exact receipt and HEAD
+verifies. The earlier absolute-package-path invocation was rejected before
+planning, node execution, or ledger mutation; correcting it to the required
+repository-relative syntax did not repeat an expensive gate.

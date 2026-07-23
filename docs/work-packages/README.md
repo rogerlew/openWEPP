@@ -251,14 +251,15 @@
 
 State as of `2026-07-23 UTC`:
 
-- `20260723-testgate-observer-result-recovery-001/` - ACTIVE: closes RTR-045,
-  the post-seal final-observation `package_result` binding defect exposed by
-  receipt `64a6f292...26b44`.
+- `20260723-testgate-observer-result-recovery-001/` - EXECUTED-COMPLETE:
+  closed RTR-045 at `4181e914...`, with dual review, dual verification, and a
+  superseding exact durable closure record.
 
-- `20260723-cqr-nightly-b03s-aggregate-001/` - ACTIVE: validator-shaped
-  prospective aggregate authority for the `main.rs` and
-  `package_validation.rs` CRAP closeout exposed by recovery receipt
-  `64a6f292...26b44`.
+- `20260723-cqr-nightly-b03s-aggregate-001/` -
+  EXECUTED-HOLD-REPOSITORY-ATTESTATION: both module packages, aggregate
+  review, and the sole changed-head qualification passed. Exact receipt
+  `c22fe3f...f06ca` remains local-untrusted pending its native GitHub
+  attestation envelope.
 
 - `20260723-cqr-nightly-b03s-1-main-001/` - EXECUTED-COMPLETE: reduced three
   authority command targets and five helpers to CRAP 2–4 at 100% focused
@@ -276,9 +277,10 @@ State as of `2026-07-23 UTC`:
   terminal local HOLDs; admission required exact mandatory module-package paths
   in the immutable manifest before implementation.
 
-- `20260722-testgate-sequential-package-authority-recovery-001/` - ACTIVE:
-  closes RTR-044 by reconstructing prospective package authority in commit
-  order and binding intent plus pre-HEAVY admission to one canonical chain.
+- `20260722-testgate-sequential-package-authority-recovery-001/` -
+  EXECUTED-HOLD-REPOSITORY-ATTESTATION: RTR-044 is durably closed and the
+  changed-head qualification passed 15/15; final increment trust awaits the
+  exact repository-reviewed envelope.
 
 - `20260722-cqr-nightly-b02-aggregate-001/` - ACTIVE: prospective aggregate
   authority for the two-module CRAP closeout exposed by recovery qualification
@@ -378,11 +380,13 @@ State as of `2026-07-23 UTC`:
   coverage closure, and dual terminal verification.
 
 - `20260720-testgate-recovery-trust-001/` -
-  ACTIVE-SCAFFOLD: `TESTGATE-RECOVERY-TRUST-01` owns the checkpoint trust,
-  persistent runner recovery, typed audit failure, claim/package binding,
-  cross-language ledger, symlink confinement, and combined-quality defects
-  that held `TESTGATE-CLOSURE-AUDIT-01`. It precedes closure retry and frozen
-  workflow qualification.
+  EXECUTED-HOLD-REPOSITORY-ATTESTATION: `TESTGATE-RECOVERY-TRUST-01` owns the
+  checkpoint trust, persistent runner recovery, typed audit failure,
+  claim/package binding, cross-language ledger, symlink confinement, and
+  combined-quality defects that held `TESTGATE-CLOSURE-AUDIT-01`. It precedes
+  closure retry and frozen workflow qualification. Its local exact-head
+  receipt passed 15/15 with zero retries and zero actionable global CRAP rows;
+  repository-reviewed attestation remains required for increment closure.
 
 - `20260720-testgate-pre-heavy-closure-audit-001/` -
   IMPLEMENTED-HOLD: `TESTGATE-CLOSURE-AUDIT-01` reached one false-READY heavy
