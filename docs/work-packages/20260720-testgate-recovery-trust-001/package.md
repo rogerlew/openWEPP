@@ -99,9 +99,9 @@ quality paths without editing its frozen subject.
 - [x] Retain automatic run `29984179443`: LIGHT passed 6/6 and audit was
   `READY`; HEAVY admission stopped before any node on current-root provenance,
   and hosted re-ingest exposed hidden indexed-file omission.
-- [x] Correct RTR-050 by excluding only the exact current HEAVY STARTED record
+- [x] Close RTR-050 by excluding only the exact current HEAVY STARTED record
   from prior-attempt resume discovery.
-- [x] Correct RTR-051 by preserving indexed hidden evidence through every
+- [x] Close RTR-051 by preserving indexed hidden evidence through every
   TESTGATE artifact publication.
 - [ ] Obtain the exact repository-reviewed GitHub attestation, complete the
   held terminal verification, archive the prompt, and record final

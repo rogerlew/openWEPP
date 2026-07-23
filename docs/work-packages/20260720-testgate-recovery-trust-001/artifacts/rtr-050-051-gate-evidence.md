@@ -26,3 +26,13 @@ four bindings.
 Static: the retained run `29984179443` downloaded archive omitted exactly 20
 indexed hidden files. No HEAVY node ran, no retry occurred, and no unchanged
 expensive gate was launched.
+
+## Review Finding Disposition
+
+- Accepted: reviewer A found the first source contract did not bind the exact
+  public call's sixth argument. The renewed exact-call assertion passed 10/10
+  owning integration cases, and both reviewers rebound `PASS` to
+  `999f0a0b...`.
+
+RTR-050 closed at durable digest `9c1c5901...`; RTR-051 closed at durable digest
+`8ba7eb97...`.
