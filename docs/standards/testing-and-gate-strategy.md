@@ -996,7 +996,9 @@ verification and signing boundary; it does not mean that GitHub-hosted runners
 execute TESTGATE's expensive nodes. Runner availability must be evaluated
 against the exact runner name, labels, and generation. Defunct records for a
 retired runner, such as the pre-pivot Omarchy runner, do not prove that
-forest1 is unavailable and do not justify canceling an active forest1 job.
+forest1 is unavailable, are not live queue occupancy, and do not justify
+canceling an active forest1 job. Permanently queued Omarchy records are ignored
+for forest1 dispatch preflight; agents must neither wait for nor cancel them.
 A terminal job state also does not imply a passing gate: cancellation during
 `execute-increment` prevents the downstream attestation even when cleanup,
 evidence upload, and hosted fail-closed jobs complete.

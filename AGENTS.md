@@ -42,6 +42,9 @@
   increment unless an explicit remote checkpoint is necessary.
 - Do not manually dispatch TESTGATE while a run is queued or active; its stable
   concurrency identity permits one running and only the newest pending run.
+- Exception: permanently queued records from the retired pre-pivot Omarchy
+  runner are defunct historical metadata, not live queue occupancy. Do not
+  block, cancel, or wait on them; preflight only current forest1-runner work.
 - Forest1 is the trusted TESTGATE heavy runner. A receipt labeled
   `LOCAL_UNTRUSTED` is normal unsigned forest1 evidence, not a hold, failure,
   or reason to request GitHub-hosted heavy execution. Do not block any workflow

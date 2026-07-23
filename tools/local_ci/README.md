@@ -81,7 +81,9 @@ gh workflow run testgate-shadow.yml --ref main \
 `base_ref` and `intent_package` are required. The base must be a strict
 ancestor of current `main` and must contain the named package in an active
 state. Do not substitute commit trailers or dispatch before the stable head is
-pushed. The protected execution still runs on forest1; GitHub-hosted jobs only
+pushed. Ignore permanently queued records from the retired pre-pivot Omarchy
+runner: they are immutable historical metadata, not live queue occupancy, and
+must not be canceled or block a forest1 dispatch. The protected execution still runs on forest1; GitHub-hosted jobs only
 verify and attest the resulting immutable evidence.
 
 Build the repository-owned planner/executor, then create one external evidence

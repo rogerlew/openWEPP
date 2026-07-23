@@ -39,7 +39,8 @@ to TESTGATE implementation/policy/workflow code.
 1. Commit and push the documentation-only ready increment through the normal
    repository workflow; use the active-scaffold commit and exact package path
    required by `testgate-shadow.yml`.
-2. Prove no TESTGATE run is queued or active.
+2. Prove no current forest1 TESTGATE run is queued or active. Ignore immutable
+   queued records from the retired Omarchy runner; do not cancel them.
 3. Dispatch exactly one run for the pushed exact head. Do not dispatch again
    for reassurance or to create a concurrency scenario.
 4. Record the forest1 run ID, exact head/base, result, local receipt, ledger,
