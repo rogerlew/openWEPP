@@ -31,8 +31,8 @@ state was reached. Execution history lives in the
 
 | Priority | Owning queue | State | Advancement gate |
 | --- | --- | --- | --- |
-| `TESTGATE-RECOVERY-TRUST-01` recovery trust and qualification readiness | Test/gate architecture | `active` | Execute the seven-module CQR queue at `20260721-cqr-testgate-recovery-closeout-execplan.md`, then resume the recovery package only after its global adjudicated CRAP debt is empty. |
-| `TESTGATE-CLOSURE-AUDIT-01` pre-heavy closure and defect correction | Test/gate architecture | `held` | Resume one corrected terminal attempt only after `TESTGATE-RECOVERY-TRUST-01` closes and both independent HOLD reviews are dispositioned. |
+| `TESTGATE-RECOVERY-TRUST-01` recovery trust and qualification readiness | Test/gate architecture | `complete` | Closed at exact receipt `7b3c199d...`: 15/15 PASS, zero retries, zero actionable global CRAP rows, and dual terminal verification. |
+| `TESTGATE-CLOSURE-AUDIT-01` pre-heavy closure and defect correction | Test/gate architecture | `complete` | Closed by the same exact transaction: LIGHT 6/6, audit 10/10 READY, HEAVY 9/9, and zero open durable defects. |
 | `TESTGATE-WORKFLOW-QUALIFY-01` black-box workflow qualification | Test/gate architecture | `queued` | After `TESTGATE-CLOSURE-AUDIT-01` closes, execute `20260720-testgate-workflow-qualify-001` against the frozen implementation. Require all bounded adversarial cases plus one real trusted-runner execution; qualification cannot edit the tooling it evaluates. |
 | `SNOW-SURFACE-EB` sublimation and longwave | Snow/frost science | `queued` | Scaffold a contract-first package that reconciles the multilayer surface-energy, vapor-mass, and longwave backlog with the current meteorology and snow-column implementation. |
 | `ASSURE-06` snow/frost flagship synthesis | Scientific assurance | `held` | Roger Lew remains the accountable report lead and a material snow/frost producer. Resume independent review only after canopy phenology and the selected sublimation/longwave work land, the scientific manuscript is refreshed against those changes, and a new exact review root is issued. |

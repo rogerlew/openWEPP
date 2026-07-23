@@ -4,7 +4,7 @@ Package ID: `20260720-testgate-recovery-trust-001`
 
 Queue ID: `TESTGATE-RECOVERY-TRUST-01`
 
-Status: `ACTIVE / READY-QUALIFICATION`
+Status: `EXECUTED-COMPLETE`
 
 Authorization: Roger Lew's 2026-07-20 direction to scaffold and execute
 `TESTGATE-RECOVERY-TRUST-01` after independent review held the predecessor.
@@ -164,7 +164,7 @@ quality paths without editing its frozen subject.
 - [x] Close RTR-060 after canonicalizing both fixture repository roots, exact
   2/2 qualification, dual independent PASS review, and durable closure at
   ledger tip `46777931`; zero effective defects remain open.
-- [ ] Apply the operator-authorized defunct-runner exception to repository
+- [x] Apply the operator-authorized defunct-runner exception to repository
   attestation, complete dual terminal verification from retained exact
   evidence, archive the prompt, and record final disposition.
 

@@ -1,15 +1,35 @@
 # Final Disposition
 
-Disposition: `ACTIVE / READY-REPOSITORY-ATTESTATION`.
+Disposition: `EXECUTED-COMPLETE`.
 
-Ran: the exact terminal plan, READY pre-heavy audit, and comparator-delegated HEAVY execution passed at HEAD `eadc0145...`; receipt `c22fe3f...f06ca` has 15/15 PASS, zero retries, and zero actionable global CRAP rows. The held terminal verification still requires repository-reviewed attestation rather than another unchanged gate execution.
+Ran: exact changed-head comparator execution passed at HEAD
+`b114ecf50a091cc6e9fafa480d09e647149ed3b6`. Terminal plan
+`5924abf84e8719620ba13d61944b70724220994356a75edf1684a0fa78dd040e`
+selected 15 nodes. LIGHT passed 6/6, pre-HEAVY audit
+`e43501429ddf898c28a9aca3c2d0d78c7c85212157b9ba62d4ab97af4741a7fa`
+was `READY` with 10/10 checks PASS, and final receipt
+`7b3c199d3dbb0e26beab73ea0b8fd37c16ebac86b886e83fa6eff3e198988613`
+sealed 15/15 PASS with zero retries, no unavailable items, and unchanged
+source.
 
-Ran: automatic push run `29978778150` stopped before gates because the live runner lacked its persistent history mount. After canonical activation, automatic push run `29979508839` again stopped before gates because the reviewed image lacked the `gh` executable required by durable-history restore. Neither run executed TESTGATE nodes or repeated expensive gates.
+Ran: ordinary full-workspace Nextest passed 2,304/2,304 in 994.409 seconds.
+The distinct instrumented traversal passed 2,304/2,304 in 817.610 seconds.
+Fresh global CRAP is closure eligible with two valid adjudications, zero
+invalid adjudications, and zero actionable rows. Planner and execution wall
+times were 339.551 and 2,698.833 seconds.
 
-Ran: package `20260723-testgate-runner-gh-cli-recovery-001` installed checksum-pinned GitHub CLI 2.96.0, enforced exact parsed-token preflight with suffix-drift rejection, built and activated exact image `sha256:8a551a87d0784a74be1a76452beb1e4e6726cc36135722020e20a042e04bae84`, and passed dual implementation review and dual terminal verification. The 157-record durable ledger verifies with RTR-046 CLOSED at corrected tip `1c36ef0c9106ca41ab3e6eaa64738b7e437b2172b3fd68a8d412b87a62befc12` and zero effective open defects.
+Ran: both independent terminal verifiers passed without executing a gate.
+Canonical receipt and envelope verification passed; planned and executed
+inventories match at 2,322 entries; all 79 indexed retained files match their
+SHA-256 values; package authority is `READY` with chain
+`ec8076bb057cdce07069590a1901c06b8b431cb7b786f703c99c4c206f5ab11b`;
+and the 194-record durable ledger ends at
+`a14e4751817ba5730017cfe82f0b2e037ae13f2d7be0aeea2395935bdd573e4c`
+with zero effective open defects.
 
-Static: the three zero-job provider records belong to a defunct runner generation and remain non-blocking historical metadata. One normal push of the new changed head may now request repository-reviewed attestation automatically. No manual dispatch or unchanged expensive rerun is authorized.
-
-Ran: the next automatic changed-head run `29981856347` proved the repaired runner path through CLI preflight, durable-history restore, and superseded-head rejection, then stopped before planning because the workflow omitted required `--intent-package`. Its authenticated recovery archive contains an empty attempts ledger; no gate node or expensive traversal ran.
-
-Ran: RTR-047 and RTR-048 corrected authenticated event-bound intent-package selection and the missing active repository-attestation status. Dual implementation review and dual terminal verification pass. The 161-record durable ledger ends at `5cb57d17691454ccf2392712c2612c552a1eae7446a8e81318e3c556d166b34b` with zero effective open defects. One later changed-head automatic qualification is authorized after the correction packages are closed and their prompts archived.
+Static: GitHub attestation remains unavailable because the self-hosted runner
+is defunct. The operator explicitly accepted that bounded external outage as
+non-blocking historical infrastructure. This disposition does not claim a
+hosted attestation or upgrade the local receipt's trust label; it closes the
+package on exact comparator evidence plus dual independent verification.
+No unchanged gate rerun is authorized.

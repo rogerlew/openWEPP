@@ -393,25 +393,22 @@ State as of `2026-07-23 UTC`:
   coverage closure, and dual terminal verification.
 
 - `20260720-testgate-recovery-trust-001/` -
-  ACTIVE / READY-REPOSITORY-ATTESTATION: `TESTGATE-RECOVERY-TRUST-01` owns the
+  EXECUTED-COMPLETE: `TESTGATE-RECOVERY-TRUST-01` closed the
   checkpoint trust, persistent runner recovery, typed audit failure,
   claim/package binding, cross-language ledger, symlink confinement, and
-  combined-quality defects that held `TESTGATE-CLOSURE-AUDIT-01`. It precedes
-  closure retry and frozen workflow qualification. Its local exact-head
-  receipt passed 15/15 with zero retries and zero actionable global CRAP rows.
-  RTR-046 persistent runner activation passes dual review and is durably
-  closed. The defunct-runner zero-job records are retained as non-blocking
-  historical metadata.
+  combined-quality defects that held `TESTGATE-CLOSURE-AUDIT-01`. Exact-head
+  receipt `7b3c199d...` passed 15/15 with zero retries; ordinary and
+  instrumented Nextest passed 2,304/2,304; global CRAP has zero actionable
+  rows; and dual terminal verification passed. The defunct self-hosted runner
+  is a bounded operator-accepted external-attestation exception, not a hosted
+  provenance claim.
 
 - `20260720-testgate-pre-heavy-closure-audit-001/` -
-  IMPLEMENTED-HOLD: `TESTGATE-CLOSURE-AUDIT-01` reached one false-READY heavy
-  transition with zero heavy node spawns and is blocked on
-  `TESTGATE-RECOVERY-TRUST-01`. It originally was the next implementation
-  package. It converts the canopy closure's repeated gate/tooling failures into
-  a single fail-closed pre-heavy audit, typed tooling-defect lifecycle,
-  corrected package bootstrap, immutable attempts, safe caches, persistent
-  timing/attempt evidence, and combined full-regression/coverage execution
-  after parity is proven.
+  EXECUTED-COMPLETE: `TESTGATE-CLOSURE-AUDIT-01` provides the fail-closed
+  pre-heavy audit, typed tooling-defect lifecycle, corrected package
+  bootstrap, immutable attempts, safe caches, persistent timing/evidence, and
+  independently verified inventory. Exact changed-head execution passed LIGHT,
+  audit 10/10, HEAVY 9/9, dual terminal verification, and closeout.
 
 - `20260720-testgate-workflow-qualify-001/` -
   SCAFFOLDED-REVIEW-PENDING: `TESTGATE-WORKFLOW-QUALIFY-01` is queued directly

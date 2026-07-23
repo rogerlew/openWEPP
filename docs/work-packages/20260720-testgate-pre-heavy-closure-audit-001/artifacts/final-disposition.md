@@ -1,29 +1,27 @@
-# Current Disposition
+# Final Disposition
 
-Evidence classes: Static package/design review; Ran documentation and diff
-validation.
+Evidence classes: Static + Ran.
 
-Disposition: `READY / REVIEWED` for implementation kickoff.
+Disposition: `EXECUTED-COMPLETE`.
 
-The canonical strategy now requires the repository-owned pre-heavy audit and
-tooling-defect correction. The implementation package closes `TGCA-001` through
-`TGCA-011` with an enforced light/audit/heavy transaction, independent inventory
-verification, immutable and durable attempt evidence, target-context receipt
-resume, combined-run economy thresholds, and a 15-case acceptance matrix.
+The implementation closed `TGCA-001` through `TGCA-011` through the recovery
+and qualification campaign owned by
+`20260720-testgate-recovery-trust-001`. The final exact transaction at HEAD
+`b114ecf50a091cc6e9fafa480d09e647149ed3b6` passed LIGHT 6/6, produced
+pre-HEAVY audit `e4350142...` with all ten checks PASS, and admitted the same
+in-process transition to HEAVY.
 
-Two independent scaffold reviews initially held. Every finding was accepted,
-patched, and re-reviewed to `PASS`; none is open or deferred. Implementation,
-heavy execution, and terminal package closure have not started and are not
-claimed by this disposition.
+Ran: receipt `7b3c199d...` sealed 15/15 PASS with zero retries. Ordinary and
+instrumented full-workspace Nextest each passed 2,304/2,304. Global CRAP was
+closure eligible with zero actionable rows. Source mutation passed. The
+durable ledger has zero effective open defects.
 
-## Scaffold Validation
+Ran: two independent terminal verifiers passed canonical receipt and envelope
+verification, exact 2,322-entry inventory reconstruction, 79-file retained
+index verification, package-authority reconstruction, and ledger validation.
+No verifier executed a gate.
 
-- Ran: `markdown-doc lint` over both canonical amendments, roadmap/catalog, and
-  the complete package subtree: 18 files, zero errors, zero warnings.
-- Ran: `git diff --check`: pass.
-- Ran: active/archive prompt inventory and package-path presence checks: pass.
-- Ran: Rust line-count baseline; three existing planner files are `WARN`, none
-  reaches the 3,000-line refactor threshold.
-- Not run: Rust, TESTGATE, coverage, CRAP, comparator, or other heavy execution.
-  This increment is a documentation-only reviewed scaffold; the package now
-  prohibits new heavy work until its repository-owned audit is implemented.
+Static: the defunct self-hosted runner leaves hosted attestation unavailable.
+The operator explicitly accepted that bounded external outage as non-blocking.
+The receipt remains truthfully `LOCAL_UNTRUSTED`; this disposition makes no
+hosted-attestation claim and does not authorize an unchanged rerun.

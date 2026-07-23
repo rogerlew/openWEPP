@@ -82,3 +82,14 @@ Attempt 4 reopened RTR-014 because package-scoped Clippy had omitted the root in
    mounted only `/runner-state`; named volume `openwepp-testgate-history` did
    not exist. RTR-046 records the unactivated runner configuration. No gate
    node, receipt, or unchanged expensive rerun occurred.
+
+10. `/home/workdir/testgate-recovery-trust-01-final-rtr060.D7NH60`: exact HEAD
+    `b114ecf50a091cc6e9fafa480d09e647149ed3b6` passed LIGHT 6/6 and pre-HEAVY
+    audit `e4350142...` 10/10. Receipt `7b3c199d...` sealed all 15 nodes PASS
+    with zero retries. Ordinary and instrumented Nextest each passed
+    2,304/2,304 in 994.409 and 817.610 seconds. Fresh global CRAP was closure
+    eligible with two valid adjudications, zero invalid adjudications, and
+    zero actionable rows. Source mutation passed. Dual terminal verifiers
+    independently verified the receipt, envelope, 2,322-entry inventory,
+    79-file retained index, package authority, and durable ledger without
+    rerunning a gate.

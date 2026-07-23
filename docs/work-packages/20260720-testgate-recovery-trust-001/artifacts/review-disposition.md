@@ -81,3 +81,22 @@ launch. Neither reviewer ran HEAVY or a global gate.
 Ran: RTR-060 closed through the canonical command at ledger tip
 `467779318665170c93a6bb633f1103d8ab48676339626e4892dbbba6845ed7ba`.
 The 190-record chain verifies with zero effective open defects.
+
+## Terminal verification
+
+Both independent terminal verifiers returned `PASS` for exact clean HEAD
+`b114ecf50a091cc6e9fafa480d09e647149ed3b6`. Neither executed a gate.
+
+Ran: both canonical receipt and envelope verification passed for receipt
+`7b3c199d3dbb0e26beab73ea0b8fd37c16ebac86b886e83fa6eff3e198988613`.
+The verifiers confirmed all 15 checkpoints PASS on attempt 1, 2,322 planned
+and executed inventory entries, 2,304/2,304 ordinary and instrumented tests,
+closure-eligible CRAP with zero actionable rows, unchanged source, 79/79
+indexed evidence files, `READY` package authority, and zero open defects in
+the matching durable and retained ledger chains.
+
+Static: both verifiers applied the operator-authorized bounded exception for
+the defunct self-hosted runner. The local receipt correctly remains
+`LOCAL_UNTRUSTED`; no hosted-attestation claim is made. The unavailable
+external attestation is not a package closeout blocker, and no terminal
+finding remains open.

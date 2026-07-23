@@ -4,7 +4,7 @@ Package ID: `20260720-testgate-pre-heavy-closure-audit-001`
 
 Queue ID: `TESTGATE-CLOSURE-AUDIT-01`
 
-Status: `ACTIVE / IMPLEMENTATION`
+Status: `EXECUTED-COMPLETE`
 
 Authorization: Roger Lew's 2026-07-20 direction to make tooling correction
 canonical, create one pre-heavy closure audit, scaffold the repair package, and
@@ -38,9 +38,9 @@ defects rather than repeated retries.
 - [x] (2026-07-20) Retain separate full-regression and global-coverage nodes
   with typed `COMBINATION_NOT_ADOPTED_INSUFFICIENT_COMPATIBLE_HISTORY`; no
   compatible three-receipt same-host baseline exists for safe adoption.
-- [ ] Run the exact current light plan and pre-heavy audit, then delegate
+- [x] Run the exact current light plan and pre-heavy audit, then delegate
   selected heavy nodes once.
-- [ ] Complete dual implementation review, dual terminal verification, and
+- [x] Complete dual implementation review, dual terminal verification, and
   closeout.
 
 ## Context
@@ -306,47 +306,47 @@ nodes; it may not remove these focused obligations when their inputs changed.
 
 ## Acceptance
 
-- [ ] One canonical command produces a schema-valid `READY`, `BLOCKED`, or
+- [x] One canonical command produces a schema-valid `READY`, `BLOCKED`, or
   `INVALID` pre-heavy report and no heavy node starts unless it is `READY`.
-- [ ] The report covers the exact ten checks in the canonical standard and is
+- [x] The report covers the exact ten checks in the canonical standard and is
   consumed by the executor; the verifier independently enumerates and compares
   the current inventory without replacing the admitted inventory.
-- [ ] Machine-owned `LIGHT`/`HEAVY` classes and an enforced two-stage executor
+- [x] Machine-owned `LIGHT`/`HEAVY` classes and an enforced two-stage executor
   keep a heavy-spawn sentinel at zero for every non-`READY` audit state.
-- [ ] A new package receives a useful scaffold-only validation result and must
+- [x] A new package receives a useful scaffold-only validation result and must
   be committed before execution admission; stale-base authorization, malformed
   headings, undeclared paths, and retroactive widening fail closed.
-- [ ] Diff hygiene, docs/schema checks, artifact/prompt completeness, and `.rs`
+- [x] Diff hygiene, docs/schema checks, artifact/prompt completeness, and `.rs`
   line-count governance fail before any heavy process is spawned.
-- [ ] Toolchain, environment, binary, fixture, policy, feature, runner, and
+- [x] Toolchain, environment, binary, fixture, policy, feature, runner, and
   concurrency mismatches fail during preflight.
-- [ ] Attempt roots are fresh and immutable; collisions, output aliasing,
+- [x] Attempt roots are fresh and immutable; collisions, output aliasing,
   source/index mutation, and cache poisoning fail closed.
-- [ ] Receipt verification proves safe reuse across documentation-only edits
+- [x] Receipt verification proves safe reuse across documentation-only edits
   and rejects changed executable or authority inputs.
-- [ ] Combined full regression plus LCOV/CRAP proves inventory and semantic
+- [x] Combined full regression plus LCOV/CRAP proves inventory and semantic
   parity, or the report records a typed reason for separate execution. Proven
   combinations cannot schedule the same full inventory twice.
-- [ ] Attempts, timings, cost classes, failures, retries, cache hits, and linked
+- [x] Attempts, timings, cost classes, failures, retries, cache hits, and linked
   tooling defects persist in append-only ignored history outside `/tmp`.
-- [ ] Trusted-run attempt records, including pre-receipt failures, survive a
+- [x] Trusted-run attempt records, including pre-receipt failures, survive a
   runner/job reset through digest-bound upload, indexing, and re-ingestion.
-- [ ] After a late-node failure, a new attempt imports every successful
+- [x] After a late-node failure, a new attempt imports every successful
   per-node receipt that is current and target-reusable under §10.4. Every
   rejected receipt records its exact trust/reuse/context reason, including
   `SAME_EXECUTION` after runner, job, or workflow-attempt change.
-- [ ] One infrastructure retry is retained; recurrence of the same cause blocks
+- [x] One infrastructure retry is retained; recurrence of the same cause blocks
   another heavy retry until the linked tooling defect is resolved or a bounded
   external-outage authority is recorded.
-- [ ] The implementation publishes versioned, frozen interfaces for the
+- [x] The implementation publishes versioned, frozen interfaces for the
   adversarial matrix covering non-`READY` spawn counters, mid-DAG fail/resume,
   active-run/newest-pending/concurrency timeout, runner reset, parity-proven and
   parity-unproven paths, and selective post-review invalidation. Independent
   black-box disposition remains exclusively owned by
   `TESTGATE-WORKFLOW-QUALIFY-01` after landing.
-- [ ] No science, threshold, authority, trust, or test-membership weakening is
+- [x] No science, threshold, authority, trust, or test-membership weakening is
   used to close the package.
-- [ ] Dual review and dual terminal verification leave no finding
+- [x] Dual review and dual terminal verification leave no finding
   undispositioned; `.rs` line-count governance passes.
 
 ## Prospective Gate Plan
