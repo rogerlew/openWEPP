@@ -23,4 +23,8 @@ ledger, path, or checkpoint evidence remains fail-closed.
   `REJECTED_INCOMPATIBLE_RECEIPT` resume decision and does not prevent the
   current admitted heavy attempt.
 - All other recovery-integrity errors remain typed and fail closed.
-- Focused resume tests pass; no TESTGATE dispatch occurs in this correction.
+- Focused resume tests pass.
+- One exact changed-head forest1 TESTGATE qualification proves that a rejected
+  incompatible receipt is retained without blocking the current attempt. The
+  permanent queued records from retired Omarchy are ignored; no duplicate
+  dispatch is permitted.
