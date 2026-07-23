@@ -15,6 +15,7 @@ ledger, path, or checkpoint evidence remains fail-closed.
 - `crates/openwepp-gate-planner/src/resume.rs`
 - `gate-policy/v1/schemas/gate-receipt.schema.json`
 - `tools/ci/omarchy-runner/manage.sh`
+- `tests/integration/testgate_ci_executor_contract.rs`
 - `docs/work-packages/20260723-testgate-incompatible-recovery-receipt-001/**`
 - `docs/work-packages/20260720-testgate-workflow-qualify-001/**`
 - `docs/work-packages/README.md`
