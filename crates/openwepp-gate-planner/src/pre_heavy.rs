@@ -467,6 +467,27 @@ pub fn validate_audit(
     validate_audit_evidence(repo, plan, audit, artifact_root)
 }
 
+/// Verify a READY audit after its evidence archive has moved to another runner.
+///
+/// The execution-time audit and LIGHT receipt remain mutually bound to the
+/// original attempt-root identity. The independent verifier checks that sealed
+/// identity instead of hashing its unrelated extraction pathname.
+///
+/// # Errors
+///
+/// Returns a typed execution error for a malformed, substituted, stale, or
+/// internally inconsistent audit or LIGHT receipt.
+pub fn validate_relocated_audit(repo: &Path, plan: &Value, audit: &Value) -> Result<()> {
+    validate_audit_schema(repo, audit)?;
+    let current_package_admission = package_admission(repo, plan)?;
+    validate_audit_core_binding(plan, audit)?;
+    validate_relocated_artifact_binding(plan, audit)?;
+    validate_audit_policy_fields(plan, audit, &current_package_admission)?;
+    validate_ready_audit(audit)?;
+    validate_relocated_light_receipt(repo, plan, audit)?;
+    validate_current_audit_inventory(plan, audit)
+}
+
 fn validate_audit_admission(
     repo: &Path,
     plan: &Value,
@@ -518,6 +539,18 @@ fn validate_embedded_light_receipt(
     validate_embedded_light_receipt_id(audit)
 }
 
+fn validate_relocated_light_receipt(repo: &Path, plan: &Value, audit: &Value) -> Result<()> {
+    let receipt = &audit["light_receipt"];
+    let schema = read_json(&repo.join("gate-policy/v1/schemas/stage-receipt.schema.json"))?;
+    validate_schema(&schema, receipt, "light stage receipt")?;
+    validate_stage_receipt_plan_binding(plan, receipt)?;
+    validate_stage_receipt_binary_binding(receipt, false)?;
+    if receipt["execution_key"] != plan["execution_key"] || receipt["stage"] != "LIGHT" {
+        return invalid_stage_receipt_binding();
+    }
+    validate_embedded_light_receipt_id(audit)
+}
+
 fn validate_audit_core_binding(plan: &Value, audit: &Value) -> Result<()> {
     validate_audit_identity_fields(plan, audit)?;
     validate_audit_plan_fields(plan, audit)
@@ -545,6 +578,13 @@ fn validate_audit_context_binding(
 
 fn validate_audit_artifact_fields(plan: &Value, audit: &Value, artifact_root: &Path) -> Result<()> {
     require_audit_binding(audit["artifact_root_sha256"] == path_digest(artifact_root))?;
+    require_audit_binding(audit["node_manifest"] == node_manifest(plan)?)
+}
+
+fn validate_relocated_artifact_binding(plan: &Value, audit: &Value) -> Result<()> {
+    require_audit_binding(
+        audit["artifact_root_sha256"] == audit["light_receipt"]["artifact_root_sha256"],
+    )?;
     require_audit_binding(audit["node_manifest"] == node_manifest(plan)?)
 }
 

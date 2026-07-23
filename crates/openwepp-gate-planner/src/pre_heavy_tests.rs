@@ -16,13 +16,14 @@ use super::{
     package_admission, package_admitted, path_digest, read_json, reconcile_orphaned_attempts,
     reconstructed_plan_is_exact, record_heavy_failure, reject_open_tooling_defects,
     require_bound_active_prompt, require_clean_diff, require_ready_audit_status, seal_audit,
-    separated_roots, tooling_defect_statuses, valid_stage_order, validate_audit_context_binding,
-    validate_audit_core_binding, validate_audit_schema, validate_checkpoint_identity,
-    validate_combined_decision, validate_current_audit_inventory,
+    separated_roots, tooling_defect_statuses, valid_stage_order, validate_audit_artifact_fields,
+    validate_audit_context_binding, validate_audit_core_binding, validate_audit_schema,
+    validate_checkpoint_identity, validate_combined_decision, validate_current_audit_inventory,
     validate_embedded_light_receipt_id, validate_exact_node_shapes, validate_ready_audit,
-    validate_ready_check_set, validate_stage_receipt, validate_stage_receipt_execution_binding,
-    validate_stage_receipt_plan_binding, validate_started_successor, verify_ledger_chain,
-    with_disposable_audit_reconstruction,
+    validate_ready_check_set, validate_relocated_artifact_binding,
+    validate_relocated_light_receipt, validate_stage_receipt,
+    validate_stage_receipt_execution_binding, validate_stage_receipt_plan_binding,
+    validate_started_successor, verify_ledger_chain, with_disposable_audit_reconstruction,
 };
 use crate::canonical::{derived_id, digest, parse_strict, validate_schema};
 use crate::error::{ErrorClass, GatePolicyError};
@@ -741,6 +742,55 @@ fn extracted_audit_bindings_preserve_exact_identity_checks() {
     assert_eq!(
         validate_audit_core_binding(&plan, &drifted)
             .expect_err("binding drift")
+            .code,
+        "GATE-AUDIT-IDENTITY"
+    );
+}
+
+#[test]
+fn relocated_audit_binds_sealed_attempt_root_instead_of_extraction_path() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let original_root = PathBuf::from("/forest1/runtime/e");
+    let extracted_root = PathBuf::from("/hosted/runner/unsigned/execution");
+    let plan = json!({
+        "plan_id": "1".repeat(64), "execution_key": "2".repeat(64),
+        "combined_quality": {"decision": "NOT_APPLICABLE"}, "nodes": []
+    });
+    let mut receipt = read_json(&root.join("gate-policy/v1/fixtures/valid/stage-receipt.json"))
+        .expect("stage receipt fixture");
+    receipt["plan_id"] = plan["plan_id"].clone();
+    receipt["plan_sha256"] = json!(digest(&plan).expect("plan digest"));
+    receipt["execution_key"] = plan["execution_key"].clone();
+    receipt["artifact_root_sha256"] = json!(path_digest(&original_root));
+    receipt["stage_receipt_id"] = json!("0".repeat(64));
+    receipt["stage_receipt_id"] =
+        json!(derived_id(&receipt, "stage_receipt_id").expect("receipt ID"));
+    let mut audit = json!({
+        "audit_id": "0".repeat(64), "plan_id": plan["plan_id"],
+        "plan_sha256": digest(&plan).expect("plan digest"),
+        "execution_key": plan["execution_key"],
+        "artifact_root_sha256": path_digest(&original_root),
+        "node_manifest": node_manifest(&plan).expect("node manifest"),
+        "combined_execution": plan["combined_quality"],
+        "package_admission": {"status": "READY"},
+        "light_stage_receipt_id": receipt["stage_receipt_id"],
+        "light_receipt": receipt
+    });
+    audit["audit_id"] = json!(derived_id(&audit, "audit_id").expect("audit ID"));
+
+    validate_relocated_artifact_binding(&plan, &audit).expect("sealed original root is portable");
+    assert_eq!(
+        validate_audit_artifact_fields(&plan, &audit, &extracted_root)
+            .expect_err("extraction pathname must differ")
+            .code,
+        "GATE-AUDIT-IDENTITY"
+    );
+    validate_relocated_light_receipt(&root, &plan, &audit).expect("relocated LIGHT receipt");
+
+    audit["light_receipt"]["artifact_root_sha256"] = json!(path_digest(&extracted_root));
+    assert_eq!(
+        validate_relocated_artifact_binding(&plan, &audit)
+            .expect_err("substituted root identity")
             .code,
         "GATE-AUDIT-IDENTITY"
     );

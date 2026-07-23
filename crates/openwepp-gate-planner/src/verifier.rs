@@ -9,7 +9,7 @@ use crate::artifact_contract::{artifact_kind as expected_artifact_kind, node_has
 use crate::canonical::{derived_id, digest, parse_strict, sha256_bytes, validate_schema};
 use crate::error::{ErrorClass, GatePolicyError, Result};
 use crate::executor::authority_adapter_supported;
-use crate::pre_heavy::validate_audit;
+use crate::pre_heavy::{validate_audit, validate_relocated_audit};
 
 pub trait ArtifactProvider {
     /// Read one confined artifact by repository-relative receipt path.
@@ -255,7 +255,7 @@ fn verify_receipt_envelope_with_reconstructed(
     verify_source_roots(repo, plan, receipt)?;
     verify_tool_environment_bindings(plan, receipt)?;
     let plan_nodes = array(plan, "/nodes")?;
-    verify_heavy_audit(repo, plan, receipt, artifacts, plan_nodes)?;
+    verify_relocated_heavy_audit(repo, plan, receipt, artifacts, plan_nodes)?;
     verify_dag(plan_nodes, receipt)?;
     let counts = verify_attempts(plan_nodes, receipt)?;
     verify_artifacts(plan_nodes, receipt, artifacts)?;
@@ -301,6 +301,49 @@ fn verify_heavy_audit(
         ));
     }
     validate_audit(repo, plan, audit, root).map_err(|error| {
+        verification_error(
+            "GATE-RECEIPT-AUDIT-INVALID",
+            format!("{}: {}", error.code, error.message),
+        )
+    })
+}
+
+fn verify_relocated_heavy_audit(
+    repo: &Path,
+    plan: &Value,
+    receipt: &Value,
+    artifacts: &dyn ArtifactProvider,
+    nodes: &[Value],
+) -> Result<()> {
+    let has_heavy = nodes
+        .iter()
+        .any(|node| node["execution_cost_class"] == "HEAVY");
+    if plan["planning_stage"] != "TERMINAL" {
+        return Ok(());
+    }
+    if !has_heavy {
+        if !receipt["pre_heavy_audit"].is_null() {
+            return Err(verification_error(
+                "GATE-RECEIPT-UNEXPECTED-AUDIT",
+                "light-only receipt must not claim a heavy transition",
+            ));
+        }
+        return Ok(());
+    }
+    artifacts.workspace_root().ok_or_else(|| {
+        verification_error(
+            "GATE-RECEIPT-AUDIT-ROOT",
+            "artifact provider must expose the extracted attempt root",
+        )
+    })?;
+    let audit = &receipt["pre_heavy_audit"];
+    if !audit.is_object() {
+        return Err(verification_error(
+            "GATE-RECEIPT-AUDIT-MISSING",
+            "heavy receipt does not bind its READY audit",
+        ));
+    }
+    validate_relocated_audit(repo, plan, audit).map_err(|error| {
         verification_error(
             "GATE-RECEIPT-AUDIT-INVALID",
             format!("{}: {}", error.code, error.message),
