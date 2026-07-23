@@ -1,8 +1,19 @@
 # Focused Gate Evidence
 
-Static: subject is the uncommitted RTR-044 correction over committed HEAD
-`c5e7a93faa5842c99785147a282bd8b11c2ddf47`. No TESTGATE or HEAVY node was
-started while producing this evidence.
+Static: the focused pre-commit evidence below was produced from the RTR-044
+correction over committed parent `c5e7a93faa5842c99785147a282bd8b11c2ddf47`.
+No TESTGATE or HEAVY node was started while producing it.
+
+Ran: the accepted correction was committed as
+`51c7e06db1d7a9e2a9f1173f0e287c1168b2df28`. Exact-commit recovery history
+reconstruction returned `READY` for 215/215 steps with chain ID
+`ad9711222d35627026ef80d20624b1b2816b346665b3dec20c630128d7bf0cdb`;
+the retained artifact is `/tmp/rtr044-recovery-51c7e06d.json`.
+
+Ran: RTR-044 closed durably at ledger digest
+`b5005a54709e0b415dae3180e3333085bdf5fd8a1c4e4ea851e8cb4ddb3468b6`,
+bound to the exact correction commit. Both independent terminal verifiers
+returned PASS without running HEAVY or TESTGATE.
 
 Ran: `cargo fmt --all -- --check` passed after canonical formatting.
 

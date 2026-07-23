@@ -31,8 +31,8 @@ and malformed chains fail closed.
 - [x] (2026-07-22) Ran focused non-HEAVY validation and reconciled exact diff/line counts.
 - [x] (2026-07-22) Obtained dual independent implementation-review PASS
   dispositions with no actionable findings.
-- [ ] Commit the correction, durably close RTR-044 at that exact commit, and
-  obtain dual terminal verification.
+- [x] (2026-07-22) Committed correction `51c7e06d`, durably closed RTR-044 at
+  ledger digest `b5005a54...`, and obtained dual terminal-verification PASS.
 - [ ] Rebuild the release planner and delegate exactly one changed-head
   `INCREMENT` qualification attempt.
 
