@@ -70,6 +70,27 @@ pub fn resolve_commit(repo: &Path, revision: &str) -> Result<String> {
     utf8_stdout(&output, "GATE-GIT-REVISION").map(|value| value.trim().to_owned())
 }
 
+/// Resolve one exact commit ID and require it to be an ancestor of current
+/// `HEAD`.
+///
+/// # Errors
+///
+/// Returns a Git-state error when the ID is abbreviated, absent, or outside
+/// current ancestry.
+pub fn require_exact_ancestor_commit(repo: &Path, revision: &str) -> Result<String> {
+    let exact = resolve_commit(repo, revision)?;
+    if exact != revision {
+        return Err(GatePolicyError::new(
+            ErrorClass::Identity,
+            "GATE-GIT-ANCESTOR",
+            revision,
+        ));
+    }
+    let head = resolve_commit(repo, "HEAD")?;
+    git(repo, &["merge-base", "--is-ancestor", &exact, &head])?;
+    Ok(exact)
+}
+
 /// Observe a canonical committed base/head change set.
 ///
 /// # Errors

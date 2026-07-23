@@ -14,6 +14,7 @@ use crate::executor::ExecutionClaims;
 use crate::planner::verify_plan_identity;
 use crate::pre_heavy::ConstructedAudit;
 use crate::pre_heavy::tooling_defect_status;
+use crate::repository::require_exact_ancestor_commit;
 use crate::verifier::{DirectoryArtifacts, verify_receipt, verify_receipt_after_ready_audit};
 
 pub struct ResumeCandidate {
@@ -116,7 +117,7 @@ fn load_candidate_internal(
         .filter(|line| !line.trim().is_empty())
         .map(|line| parse_strict(line.as_bytes()))
         .collect::<Result<Vec<_>>>()?;
-    let invalidated_roots = invalidated_recovery_roots(&records, ledger)?;
+    let invalidated_roots = invalidated_recovery_roots(repo, &records, ledger)?;
     let nodes = plan["nodes"]
         .as_array()
         .ok_or_else(|| resume_error("GATE-RESUME-PLAN-SHAPE", "nodes"))?;
@@ -147,7 +148,11 @@ fn load_candidate_internal(
     Ok((!admitted.is_empty()).then_some(ResumeCandidate { nodes: admitted }))
 }
 
-fn invalidated_recovery_roots(records: &[Value], ledger: &Path) -> Result<BTreeSet<PathBuf>> {
+fn invalidated_recovery_roots(
+    repo: &Path,
+    records: &[Value],
+    ledger: &Path,
+) -> Result<BTreeSet<PathBuf>> {
     let recovery_parent = ledger
         .parent()
         .ok_or_else(|| {
@@ -158,6 +163,7 @@ fn invalidated_recovery_roots(records: &[Value], ledger: &Path) -> Result<BTreeS
         })?
         .join("recovery");
     let mut latest = BTreeMap::<String, Option<PathBuf>>::new();
+    let mut lifecycle = BTreeMap::<String, (String, Option<String>)>::new();
     for (record_index, item) in records.iter().enumerate() {
         if item["record_type"] != "TOOLING_DEFECT" {
             continue;
@@ -168,67 +174,103 @@ fn invalidated_recovery_roots(records: &[Value], ledger: &Path) -> Result<BTreeS
             .ok_or_else(|| resume_error("GATE-RESUME-INVALIDATION-SHAPE", "defect_id"))?;
         let status = tooling_defect_status(item)?;
         let Some(raw_root) = item.get("invalidated_recovery_root") else {
-            if latest.contains_key(defect_id) {
-                latest.insert(defect_id.to_owned(), None);
-            }
+            latest.insert(defect_id.to_owned(), None);
+            lifecycle.insert(
+                defect_id.to_owned(),
+                (
+                    status.to_owned(),
+                    item["cause_key"].as_str().map(str::to_owned),
+                ),
+            );
             continue;
         };
         if status != "CLOSED" {
-            latest.insert(defect_id.to_owned(), None);
-            continue;
-        }
-        let correction = item["correction_commit"]
-            .as_str()
-            .filter(|value| value.len() == 40 && value.bytes().all(|byte| byte.is_ascii_hexdigit()))
-            .ok_or_else(|| resume_error("GATE-RESUME-INVALIDATION-SHAPE", "correction_commit"))?;
-        if correction.bytes().any(|byte| byte.is_ascii_uppercase()) {
             return Err(resume_error(
                 "GATE-RESUME-INVALIDATION-SHAPE",
-                "correction_commit",
+                "invalidated_recovery_root requires CLOSED",
             ));
         }
-        item["closure_evidence"]
-            .as_str()
-            .filter(|value| !value.trim().is_empty())
-            .ok_or_else(|| resume_error("GATE-RESUME-INVALIDATION-SHAPE", "closure_evidence"))?;
-        let cause_key = item["cause_key"]
-            .as_str()
-            .filter(|value| !value.is_empty())
-            .ok_or_else(|| resume_error("GATE-RESUME-INVALIDATION-SHAPE", "cause_key"))?;
-        let root = PathBuf::from(raw_root.as_str().ok_or_else(|| {
-            resume_error(
-                "GATE-RESUME-INVALIDATION-SHAPE",
-                "invalidated_recovery_root",
-            )
-        })?);
-        if !root.is_absolute()
-            || root.parent() != Some(recovery_parent.as_path())
-            || !matches!(
-                root.components().next_back(),
-                Some(std::path::Component::Normal(_))
-            )
-        {
-            return Err(resume_error(
-                "GATE-RESUME-INVALIDATION-PATH",
-                root.display().to_string(),
-            ));
-        }
-        let associated = records[..record_index].iter().rev().any(|prior| {
-            prior["record_type"] == "STAGE_ATTEMPT"
-                && prior["stage"] == "HEAVY"
-                && prior["status"] == "FAILED"
-                && prior["cause_key"] == cause_key
-                && prior["recovery_root"] == root.display().to_string()
-        });
-        if !associated {
-            return Err(resume_error(
-                "GATE-RESUME-INVALIDATION-UNASSOCIATED",
-                root.display().to_string(),
-            ));
-        }
+        let (root, cause_key) = validate_recovery_invalidation(
+            repo,
+            records,
+            record_index,
+            item,
+            raw_root,
+            &recovery_parent,
+            lifecycle.get(defect_id),
+        )?;
         latest.insert(defect_id.to_owned(), Some(root));
+        lifecycle.insert(defect_id.to_owned(), (status.to_owned(), Some(cause_key)));
     }
     Ok(latest.into_values().flatten().collect())
+}
+
+fn validate_recovery_invalidation(
+    repo: &Path,
+    records: &[Value],
+    record_index: usize,
+    item: &Value,
+    raw_root: &Value,
+    recovery_parent: &Path,
+    prior_lifecycle: Option<&(String, Option<String>)>,
+) -> Result<(PathBuf, String)> {
+    let correction = item["correction_commit"]
+        .as_str()
+        .filter(|value| value.len() == 40 && value.bytes().all(|byte| byte.is_ascii_hexdigit()))
+        .filter(|value| !value.bytes().any(|byte| byte.is_ascii_uppercase()))
+        .ok_or_else(|| resume_error("GATE-RESUME-INVALIDATION-SHAPE", "correction_commit"))?;
+    require_exact_ancestor_commit(repo, correction)
+        .map_err(|error| resume_error("GATE-RESUME-INVALIDATION-COMMIT", error.to_string()))?;
+    item["closure_evidence"]
+        .as_str()
+        .filter(|value| !value.trim().is_empty())
+        .ok_or_else(|| resume_error("GATE-RESUME-INVALIDATION-SHAPE", "closure_evidence"))?;
+    let cause_key = item["cause_key"]
+        .as_str()
+        .filter(|value| !value.is_empty())
+        .ok_or_else(|| resume_error("GATE-RESUME-INVALIDATION-SHAPE", "cause_key"))?;
+    if !matches!(
+        prior_lifecycle,
+        Some((prior_status, Some(prior_cause)))
+            if prior_status == "OPEN" && prior_cause == cause_key
+    ) {
+        return Err(resume_error(
+            "GATE-RESUME-INVALIDATION-LIFECYCLE",
+            item["defect_id"].as_str().unwrap_or_default(),
+        ));
+    }
+    let root = PathBuf::from(raw_root.as_str().ok_or_else(|| {
+        resume_error(
+            "GATE-RESUME-INVALIDATION-SHAPE",
+            "invalidated_recovery_root",
+        )
+    })?);
+    if !root.is_absolute()
+        || root.parent() != Some(recovery_parent)
+        || !matches!(
+            root.components().next_back(),
+            Some(std::path::Component::Normal(_))
+        )
+    {
+        return Err(resume_error(
+            "GATE-RESUME-INVALIDATION-PATH",
+            root.display().to_string(),
+        ));
+    }
+    let associated = records[..record_index].iter().rev().any(|prior| {
+        prior["record_type"] == "STAGE_ATTEMPT"
+            && prior["stage"] == "HEAVY"
+            && prior["status"] == "FAILED"
+            && prior["cause_key"] == cause_key
+            && prior["recovery_root"] == root.display().to_string()
+    });
+    if !associated {
+        return Err(resume_error(
+            "GATE-RESUME-INVALIDATION-UNASSOCIATED",
+            root.display().to_string(),
+        ));
+    }
+    Ok((root, cause_key.to_owned()))
 }
 
 fn recovery_root_from_record(item: &Value, ledger: &Path) -> Result<Option<RecoveryRoot>> {
@@ -1007,15 +1049,30 @@ mod coverage_tests;
 #[cfg(test)]
 mod tests {
     use std::fs;
+    use std::path::{Path, PathBuf};
 
     use serde_json::json;
 
     use super::{
         apply_candidate, copy_outputs, invalidated_recovery_roots, load_candidate,
-        load_candidate_internal, reuse_reason, verify_checkpoint, verify_indexed_recovery_root,
+        load_candidate_internal, verify_checkpoint, verify_indexed_recovery_root,
     };
     use crate::canonical::{canonical_bytes, derived_id, digest, sha256_bytes};
     use crate::executor::ExecutionClaims;
+
+    fn repository_root() -> PathBuf {
+        fs::canonicalize(
+            PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                .parent()
+                .and_then(Path::parent)
+                .expect("repository root"),
+        )
+        .expect("canonical repository")
+    }
+
+    fn repository_head(repo: &Path) -> String {
+        crate::repository::resolve_commit(repo, "HEAD").expect("repository HEAD")
+    }
 
     #[test]
     fn ordinary_current_attempt_artifact_root_is_not_a_recovery_claim() {
@@ -1182,6 +1239,7 @@ mod tests {
 
     #[test]
     fn reviewed_closure_invalidates_only_its_exact_failed_recovery_root() {
+        let repo = repository_root();
         let scratch = std::env::temp_dir().join(format!(
             "openwepp-resume-invalidated-root-{}",
             std::process::id()
@@ -1197,11 +1255,17 @@ mod tests {
             "cause_key": "GATE-EXAMPLE",
             "recovery_root": invalidated,
         });
+        let opened = json!({
+            "record_type": "TOOLING_DEFECT",
+            "defect_id": "AUTO-example",
+            "status": "OPEN",
+            "cause_key": "GATE-EXAMPLE",
+        });
         let closed = json!({
             "record_type": "TOOLING_DEFECT",
             "defect_id": "AUTO-example",
             "status": "CLOSED",
-            "correction_commit": "a".repeat(40),
+            "correction_commit": repository_head(&repo),
             "closure_evidence": "dual review passed",
             "cause_key": "GATE-EXAMPLE",
             "invalidated_recovery_root": failed["recovery_root"],
@@ -1209,15 +1273,16 @@ mod tests {
         fs::write(
             &ledger,
             format!(
-                "{}\n{}\n",
+                "{}\n{}\n{}\n",
                 serde_json::to_string(&failed).expect("failed record"),
+                serde_json::to_string(&opened).expect("opened defect"),
                 serde_json::to_string(&closed).expect("closed defect")
             ),
         )
         .expect("ledger");
 
         let candidate = load_candidate(
-            &scratch,
+            &repo,
             &json!({"nodes": []}),
             &ledger,
             &ExecutionClaims::default(),
@@ -1237,15 +1302,16 @@ mod tests {
         fs::write(
             &ledger,
             format!(
-                "{}\n{}\n{}\n",
+                "{}\n{}\n{}\n{}\n",
                 serde_json::to_string(&failed).expect("failed record"),
                 serde_json::to_string(&other_record).expect("other record"),
+                serde_json::to_string(&opened).expect("opened defect"),
                 serde_json::to_string(&closed).expect("closed defect")
             ),
         )
         .expect("ledger");
         let error = load_candidate(
-            &scratch,
+            &repo,
             &json!({"nodes": []}),
             &ledger,
             &ExecutionClaims::default(),
@@ -1258,6 +1324,7 @@ mod tests {
 
     #[test]
     fn raw_invalidation_requires_safe_associated_failure_and_nonblank_review() {
+        let repo = repository_root();
         let history = std::env::temp_dir().join(format!(
             "openwepp-resume-raw-invalidation-{}",
             std::process::id()
@@ -1271,17 +1338,27 @@ mod tests {
             "cause_key": "GATE-EXAMPLE",
             "recovery_root": root,
         });
+        let opened = json!({
+            "record_type": "TOOLING_DEFECT",
+            "defect_id": "AUTO-example",
+            "status": "OPEN",
+            "cause_key": "GATE-EXAMPLE",
+        });
         let closure = json!({
             "record_type": "TOOLING_DEFECT",
             "defect_id": "AUTO-example",
             "status": "CLOSED",
-            "correction_commit": "a".repeat(40),
+            "correction_commit": repository_head(&repo),
             "closure_evidence": "dual review passed",
             "cause_key": "GATE-EXAMPLE",
             "invalidated_recovery_root": failed["recovery_root"],
         });
-        invalidated_recovery_roots(&[failed.clone(), closure.clone()], &ledger)
-            .expect("exact associated closure");
+        invalidated_recovery_roots(
+            &repo,
+            &[failed.clone(), opened.clone(), closure.clone()],
+            &ledger,
+        )
+        .expect("exact associated closure");
 
         for (field, value, expected) in [
             (
@@ -1293,7 +1370,7 @@ mod tests {
             (
                 "cause_key",
                 json!("GATE-OTHER"),
-                "GATE-RESUME-INVALIDATION-UNASSOCIATED",
+                "GATE-RESUME-INVALIDATION-LIFECYCLE",
             ),
             (
                 "invalidated_recovery_root",
@@ -1313,14 +1390,98 @@ mod tests {
         ] {
             let mut invalid = closure.clone();
             invalid[field] = value;
-            let error =
-                invalidated_recovery_roots(&[failed.clone(), invalid], &ledger).expect_err(field);
+            let error = invalidated_recovery_roots(
+                &repo,
+                &[failed.clone(), opened.clone(), invalid],
+                &ledger,
+            )
+            .expect_err(field);
             assert_eq!(error.code, expected, "{field}");
         }
+
+        let mut missing_cause = closure.clone();
+        missing_cause
+            .as_object_mut()
+            .expect("closure object")
+            .remove("cause_key");
+        let error = invalidated_recovery_roots(
+            &repo,
+            &[failed.clone(), opened.clone(), missing_cause],
+            &ledger,
+        )
+        .expect_err("missing cause");
+        assert_eq!(error.code, "GATE-RESUME-INVALIDATION-SHAPE");
     }
 
     #[test]
-    fn recovery_invalidation_fails_closed_and_reopen_revokes_it() {
+    fn raw_invalidation_requires_matching_open_lifecycle_and_real_commit() {
+        let repo = repository_root();
+        let history = std::env::temp_dir().join(format!(
+            "openwepp-resume-raw-lifecycle-{}",
+            std::process::id()
+        ));
+        let ledger = history.join("attempts.jsonl");
+        let root = history.join("recovery/failed");
+        let failed = json!({
+            "record_type": "STAGE_ATTEMPT",
+            "status": "FAILED",
+            "stage": "HEAVY",
+            "cause_key": "GATE-EXAMPLE",
+            "recovery_root": root,
+        });
+        let opened = json!({
+            "record_type": "TOOLING_DEFECT",
+            "defect_id": "AUTO-example",
+            "status": "OPEN",
+            "cause_key": "GATE-EXAMPLE",
+        });
+        let closure = json!({
+            "record_type": "TOOLING_DEFECT",
+            "defect_id": "AUTO-example",
+            "status": "CLOSED",
+            "correction_commit": repository_head(&repo),
+            "closure_evidence": "dual review passed",
+            "cause_key": "GATE-EXAMPLE",
+            "invalidated_recovery_root": failed["recovery_root"],
+        });
+        for (label, prior) in [
+            ("missing-open", None),
+            (
+                "prior-closed",
+                Some(json!({
+                    "record_type": "TOOLING_DEFECT",
+                    "defect_id": "AUTO-example",
+                    "status": "CLOSED",
+                    "cause_key": "GATE-EXAMPLE",
+                })),
+            ),
+            (
+                "open-cause-mismatch",
+                Some(json!({
+                    "record_type": "TOOLING_DEFECT",
+                    "defect_id": "AUTO-example",
+                    "status": "OPEN",
+                    "cause_key": "GATE-OTHER",
+                })),
+            ),
+        ] {
+            let mut records = vec![failed.clone()];
+            records.extend(prior);
+            records.push(closure.clone());
+            let error = invalidated_recovery_roots(&repo, &records, &ledger).expect_err(label);
+            assert_eq!(error.code, "GATE-RESUME-INVALIDATION-LIFECYCLE", "{label}");
+        }
+
+        let mut nonexistent = closure.clone();
+        nonexistent["correction_commit"] = json!("c".repeat(40));
+        let error = invalidated_recovery_roots(&repo, &[failed, opened, nonexistent], &ledger)
+            .expect_err("nonexistent correction commit");
+        assert_eq!(error.code, "GATE-RESUME-INVALIDATION-COMMIT");
+    }
+
+    #[test]
+    fn recovery_invalidation_fails_closed_on_invalid_shape_and_status() {
+        let repo = repository_root();
         let scratch = std::env::temp_dir().join(format!(
             "openwepp-resume-invalidation-shape-{}",
             std::process::id()
@@ -1364,19 +1525,20 @@ mod tests {
         .expect("unreviewed closure shape must fail");
         assert_eq!(error.code, "GATE-RESUME-INVALIDATION-SHAPE");
 
+        let opened = json!({
+            "record_type": "TOOLING_DEFECT",
+            "defect_id": "AUTO-example",
+            "status": "OPEN",
+            "cause_key": "GATE-EXAMPLE",
+        });
         let closed = json!({
             "record_type": "TOOLING_DEFECT",
             "defect_id": "AUTO-example",
             "status": "CLOSED",
-            "correction_commit": "b".repeat(40),
+            "correction_commit": repository_head(&repo),
             "closure_evidence": "dual review passed",
             "cause_key": "GATE-EXAMPLE",
             "invalidated_recovery_root": failed["recovery_root"],
-        });
-        let reopened = json!({
-            "record_type": "TOOLING_DEFECT",
-            "defect_id": "AUTO-example",
-            "status": "OPEN",
         });
         let malformed = json!({
             "record_type": "TOOLING_DEFECT",
@@ -1386,15 +1548,16 @@ mod tests {
         fs::write(
             &ledger,
             format!(
-                "{}\n{}\n{}\n",
+                "{}\n{}\n{}\n{}\n",
                 serde_json::to_string(&failed).expect("failed record"),
+                serde_json::to_string(&opened).expect("opened defect"),
                 serde_json::to_string(&closed).expect("closed defect"),
                 serde_json::to_string(&malformed).expect("malformed defect")
             ),
         )
         .expect("ledger");
         let error = load_candidate(
-            &scratch,
+            &repo,
             &json!({"nodes": []}),
             &ledger,
             &ExecutionClaims::default(),
@@ -1403,18 +1566,60 @@ mod tests {
         .expect("malformed status must fail closed");
         assert_eq!(error.code, "GATE-AUDIT-TOOLING-DEFECT-SHAPE");
 
+        fs::remove_dir_all(scratch).expect("remove scratch");
+    }
+
+    #[test]
+    fn recovery_reopen_revokes_reviewed_invalidation() {
+        let repo = repository_root();
+        let scratch = std::env::temp_dir().join(format!(
+            "openwepp-resume-invalidation-reopen-{}",
+            std::process::id()
+        ));
+        let history = scratch.join("history");
+        let recovery = history.join("recovery/failed");
+        fs::create_dir_all(recovery.join(".checkpoints")).expect("failed recovery root");
+        let ledger = history.join("attempts.jsonl");
+        let failed = json!({
+            "record_type": "STAGE_ATTEMPT",
+            "status": "FAILED",
+            "stage": "HEAVY",
+            "cause_key": "GATE-EXAMPLE",
+            "recovery_root": recovery,
+        });
+        let opened = json!({
+            "record_type": "TOOLING_DEFECT",
+            "defect_id": "AUTO-example",
+            "status": "OPEN",
+            "cause_key": "GATE-EXAMPLE",
+        });
+        let closed = json!({
+            "record_type": "TOOLING_DEFECT",
+            "defect_id": "AUTO-example",
+            "status": "CLOSED",
+            "correction_commit": repository_head(&repo),
+            "closure_evidence": "dual review passed",
+            "cause_key": "GATE-EXAMPLE",
+            "invalidated_recovery_root": failed["recovery_root"],
+        });
+        let reopened = json!({
+            "record_type": "TOOLING_DEFECT",
+            "defect_id": "AUTO-example",
+            "status": "OPEN",
+        });
         fs::write(
             &ledger,
             format!(
-                "{}\n{}\n{}\n",
+                "{}\n{}\n{}\n{}\n",
                 serde_json::to_string(&failed).expect("failed record"),
+                serde_json::to_string(&opened).expect("opened defect"),
                 serde_json::to_string(&closed).expect("closed defect"),
                 serde_json::to_string(&reopened).expect("reopened defect")
             ),
         )
         .expect("ledger");
         let error = load_candidate(
-            &scratch,
+            &repo,
             &json!({"nodes": []}),
             &ledger,
             &ExecutionClaims::default(),
@@ -1423,48 +1628,6 @@ mod tests {
         .expect("reopened defect revokes invalidation");
         assert_eq!(error.code, "GATE-RESUME-PROVENANCE-MISSING");
         fs::remove_dir_all(scratch).expect("remove scratch");
-    }
-
-    #[test]
-    fn same_execution_rejects_runner_and_attempt_changes() {
-        let node = json!({"reuse_class": "SAME_EXECUTION"});
-        let attempt = json!({"result": "PASS"});
-        let prior_claims = json!({
-            "workflow": "workflow", "job": "job", "runner": "runner", "attempt": 1
-        });
-        let mut claims = ExecutionClaims {
-            workflow: "workflow".to_owned(),
-            job: "job".to_owned(),
-            runner: "other".to_owned(),
-            ..ExecutionClaims::default()
-        };
-        assert_eq!(
-            reuse_reason(&node, Some(&attempt), &prior_claims, &claims).expect("runner decision"),
-            "SAME_EXECUTION_RUNNER_MISMATCH"
-        );
-        claims.runner = "runner".to_owned();
-        claims.attempt = 2;
-        assert_eq!(
-            reuse_reason(&node, Some(&attempt), &prior_claims, &claims).expect("attempt decision"),
-            "SAME_EXECUTION_ATTEMPT_MISMATCH"
-        );
-    }
-
-    #[test]
-    fn non_reusable_pass_retains_exact_policy_reason() {
-        let node = json!({"reuse_class": "NON_REUSABLE"});
-        let attempt = json!({"result": "PASS"});
-        let prior_claims = json!({});
-        assert_eq!(
-            reuse_reason(
-                &node,
-                Some(&attempt),
-                &prior_claims,
-                &ExecutionClaims::default()
-            )
-            .expect("reuse decision"),
-            "NON_REUSABLE_POLICY"
-        );
     }
 
     #[test]

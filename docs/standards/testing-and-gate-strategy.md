@@ -702,7 +702,8 @@ later append-only `CLOSED` tooling-defect record. The closure must bind the
 exact safe child path inside the durable recovery namespace to an earlier
 failed HEAVY record with the same cause, a lowercase 40-character correction
 commit that resolves in the current repository ancestry, and nonblank review
-evidence. The ledger path and every ancestor must pass no-follow validation
+evidence. The latest prior state for the same defect and cause must be `OPEN`.
+The ledger path and every ancestor must pass no-follow validation
 before append. Reopening the same defect revokes the exclusion. Malformed
 lifecycle states, deleting the failed record, or broadly ignoring unattested
 roots fail closed.

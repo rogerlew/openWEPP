@@ -14,6 +14,16 @@ use crate::repository::observe_committed;
 
 static SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
+fn repository_root() -> PathBuf {
+    fs::canonicalize(
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .parent()
+            .and_then(Path::parent)
+            .expect("repository root"),
+    )
+    .expect("canonical repository root")
+}
+
 struct AuditFixture {
     root: PathBuf,
     plan: Value,
@@ -28,7 +38,7 @@ impl AuditFixture {
             "openwepp-pre-heavy-coverage-{}-{sequence}",
             std::process::id()
         ));
-        let repository = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
+        let repository = repository_root();
         fs::create_dir_all(&root).expect("fixture root");
         for directory in ["gate-policy", "assurance", "tools"] {
             assert!(

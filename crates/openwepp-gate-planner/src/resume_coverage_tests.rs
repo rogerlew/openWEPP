@@ -14,6 +14,48 @@ use crate::executor::ExecutionClaims;
 
 static SCRATCH_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
+#[test]
+fn same_execution_rejects_runner_and_attempt_changes() {
+    let node = json!({"reuse_class": "SAME_EXECUTION"});
+    let attempt = json!({"result": "PASS"});
+    let prior_claims = json!({
+        "workflow": "workflow", "job": "job", "runner": "runner", "attempt": 1
+    });
+    let mut claims = ExecutionClaims {
+        workflow: "workflow".to_owned(),
+        job: "job".to_owned(),
+        runner: "other".to_owned(),
+        ..ExecutionClaims::default()
+    };
+    assert_eq!(
+        reuse_reason(&node, Some(&attempt), &prior_claims, &claims).expect("runner decision"),
+        "SAME_EXECUTION_RUNNER_MISMATCH"
+    );
+    claims.runner = "runner".to_owned();
+    claims.attempt = 2;
+    assert_eq!(
+        reuse_reason(&node, Some(&attempt), &prior_claims, &claims).expect("attempt decision"),
+        "SAME_EXECUTION_ATTEMPT_MISMATCH"
+    );
+}
+
+#[test]
+fn non_reusable_pass_retains_exact_policy_reason() {
+    let node = json!({"reuse_class": "NON_REUSABLE"});
+    let attempt = json!({"result": "PASS"});
+    let prior_claims = json!({});
+    assert_eq!(
+        reuse_reason(
+            &node,
+            Some(&attempt),
+            &prior_claims,
+            &ExecutionClaims::default()
+        )
+        .expect("reuse decision"),
+        "NON_REUSABLE_POLICY"
+    );
+}
+
 struct CheckpointFixture {
     root: PathBuf,
     plan: Value,

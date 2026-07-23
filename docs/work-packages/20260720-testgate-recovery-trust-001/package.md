@@ -106,7 +106,7 @@ quality paths without editing its frozen subject.
 - [x] Retain automatic run `29985878363`: authenticated recovery publication
   passed with hidden evidence present, LIGHT passed 6/6, and pre-HEAVY blocked
   solely on the runner-local AUTO defect left open by the prior failed run.
-- [ ] Close RTR-052/RTR-053 through the reviewed ledger closure command and
+- [ ] Close RTR-052/RTR-054 through the reviewed ledger closure command and
   exact failed-root invalidation before one later changed-head attempt.
 - [x] (2026-07-23) Accept both initial reviewers' HOLD findings: require exact
   OPEN/CLOSED states, real correction ancestry, nonblank review evidence,
@@ -115,6 +115,12 @@ quality paths without editing its frozen subject.
 - [x] (2026-07-23) Mechanically extract the inline `pre_heavy.rs` test module
   to `pre_heavy_tests.rs`; production authority remains unchanged and
   `pre_heavy.rs` falls from 3,116 to 1,863 lines.
+- [x] (2026-07-23) Accept the renewed reviewer HOLD findings by requiring the
+  resume consumer to mirror prior-OPEN/cause lifecycle and exact correction
+  ancestry instead of trusting producer-only validation.
+- [x] (2026-07-23) Open RTR-054 when the no-follow guard exposed a
+  noncanonical pre-HEAVY coverage-fixture ledger path; construct the fixture
+  from the canonical repository root and pass its exact regression.
 - [ ] Obtain the exact repository-reviewed GitHub attestation, complete the
   held terminal verification, archive the prompt, and record final
   disposition.

@@ -1,4 +1,4 @@
-# RTR-052 And RTR-053 Gate Evidence
+# RTR-052 Through RTR-054 Gate Evidence
 
 Static: `close-tooling-defect` is a repository-owned append-only operator
 command. It accepts only the latest `OPEN` state of one exact defect, requires a
@@ -9,12 +9,15 @@ uses the canonical durable ledger append path.
 Static: resume discovery folds invalidations by defect ID. Only the latest
 `CLOSED` record carrying the exact root, correction commit, and closure
 evidence suppresses that root. A later reopen revokes the invalidation.
-Unrelated explicit roots still require authenticated provenance.
+The latest prior state must be `OPEN` for the same defect and cause, and the
+correction must resolve as an exact ancestor of repository `HEAD`. Unrelated
+explicit roots still require authenticated provenance.
 
-Ran: all 13 `resume::tests` cases pass, including exact-root invalidation,
+Ran: all 15 `resume::tests` cases pass, including exact-root invalidation,
 unrelated-root rejection, malformed closure rejection, reopen revocation, and
 raw consumer rejection for blank evidence, missing/mismatched cause, relative
-or dot-dot paths, and unassociated roots.
+or dot-dot paths, unassociated roots, absent/mismatched OPEN lifecycle, and a
+nonexistent correction commit.
 
 Ran: the focused tooling-defect closure command regression passes. It proves
 outside-root rejection, canonical closure, audit admission after closure, exact
@@ -23,7 +26,7 @@ root persistence, and duplicate-closure rejection.
 Ran: planner all-target Clippy with warnings denied passes. Rust formatting
 passes.
 
-Static: impact-map generation 11 binds the exact amended testing-strategy
+Static: impact-map generation 12 binds the exact amended testing-strategy
 bytes. The policy update is part of the same prospective package write set.
 
 Ran: the initial broad planner library sweep produced 149 PASS, 20 FAIL, and
@@ -61,6 +64,15 @@ lines, below the 2,000-line warning threshold; the new test-only file is 1,253
 lines. This closes the reviewer-requested decomposition without a follow-on
 split obligation.
 
+Ran: the no-follow ledger guard exposed a pre-HEAVY coverage fixture that built
+its durable ledger path through `../..`. RTR-054 records the tooling-only
+failure. The fixture now derives a canonical repository root, and its exact
+55.70-second regression passes. No HEAVY or coverage traversal was launched.
+
+Static: the final accepted reviewer findings are implemented in the resume
+consumer itself: it mirrors the producer's OPEN-lifecycle/cause association
+and calls the shared exact-ancestor correction validator.
+
 Pending: dual independent implementation review, exact correction commit,
-runner-ledger closure, durable RTR-052/RTR-053 closure, and one changed-head
+runner-ledger closure, durable RTR-052/RTR-054 closure, and one changed-head
 automatic qualification.

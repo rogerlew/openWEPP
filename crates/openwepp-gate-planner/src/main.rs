@@ -2,7 +2,6 @@ use std::collections::BTreeMap;
 use std::fs;
 use std::io::Write;
 use std::path::{Path, PathBuf};
-use std::process::Command;
 use std::time::Instant;
 
 use openwepp_gate_planner::canonical::{canonical_bytes, parse_strict};
@@ -18,7 +17,7 @@ use openwepp_gate_planner::pre_heavy::{
     record_heavy_failure, validate_resume_ledger,
 };
 use openwepp_gate_planner::repository::{
-    ObservedSource, observe_committed, observe_dirty, resolve_commit,
+    ObservedSource, observe_committed, observe_dirty, require_exact_ancestor_commit,
 };
 use openwepp_gate_planner::resume::{ResumeCandidate, load_candidate_after_ready_audit};
 use openwepp_gate_planner::verifier::{
@@ -616,35 +615,15 @@ fn close_tooling_defect_command(repo: &Path, options: &BTreeMap<String, String>)
 }
 
 fn validate_correction_commit(repo: &Path, correction_commit: &str) -> Result<()> {
-    let exact = resolve_commit(repo, correction_commit)?;
-    if exact != correction_commit {
-        return Err(GatePolicyError::new(
-            ErrorClass::Identity,
-            "GATE-CLI-CORRECTION-COMMIT",
-            correction_commit,
-        ));
-    }
-    let head = resolve_commit(repo, "HEAD")?;
-    let status = Command::new("git")
-        .args(["merge-base", "--is-ancestor", correction_commit, &head])
-        .current_dir(repo)
-        .status()
+    require_exact_ancestor_commit(repo, correction_commit)
+        .map(|_| ())
         .map_err(|error| {
             GatePolicyError::new(
-                ErrorClass::GitState,
+                ErrorClass::Identity,
                 "GATE-CLI-CORRECTION-COMMIT",
                 error.to_string(),
             )
-        })?;
-    if status.success() {
-        Ok(())
-    } else {
-        Err(GatePolicyError::new(
-            ErrorClass::Identity,
-            "GATE-CLI-CORRECTION-COMMIT",
-            correction_commit,
-        ))
-    }
+        })
 }
 fn pre_heavy_audit_command(repo: &Path, options: &BTreeMap<String, String>) -> Result<Value> {
     let inputs = pre_heavy_audit_inputs(options)?;
@@ -1284,7 +1263,7 @@ mod tests {
 
     use super::{
         close_tooling_defect_command, package_authority, parse_options, plan_request,
-        require_exact_package_authority, resolve_commit, run_arguments, staged_run_command,
+        require_exact_package_authority, run_arguments, staged_run_command,
         validate_package_chain_command, validate_transition_outputs, write_plan_confined,
     };
     use openwepp_gate_planner::executor::ExecutionClaims;
@@ -1352,7 +1331,8 @@ mod tests {
             }),
         )
         .expect("open defect");
-        let correction = resolve_commit(&repo, "HEAD").expect("current commit");
+        let correction = openwepp_gate_planner::repository::resolve_commit(&repo, "HEAD")
+            .expect("current commit");
         let options = BTreeMap::from([
             ("ledger".to_owned(), ledger.display().to_string()),
             ("defect-id".to_owned(), "AUTO-cli".to_owned()),
@@ -1372,7 +1352,7 @@ mod tests {
             close_tooling_defect_command(&repo, &nonexistent)
                 .expect_err("nonexistent correction commit must fail")
                 .code,
-            "GATE-GIT-COMMAND"
+            "GATE-CLI-CORRECTION-COMMIT"
         );
         let result = close_tooling_defect_command(&repo, &options).expect("closure command");
         assert_eq!(result["result"], "CLOSED");
