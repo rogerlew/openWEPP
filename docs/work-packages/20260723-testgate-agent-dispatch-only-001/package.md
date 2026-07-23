@@ -1,7 +1,7 @@
 # TESTGATE Agent Dispatch Only
 
 Package: `20260723-testgate-agent-dispatch-only-001`
-Status: `ACTIVE / REVIEW`
+Status: `COMPLETE`
 Defect: `TGD-001`
 Cause: `GATE-AUTOMATIC-DISPATCH-PACKAGE-ANCHOR-MISMATCH`
 
@@ -70,7 +70,7 @@ commit, push, dispatch, or execute TESTGATE.
 - [x] Add negative source-contract coverage for forbidden push triggers.
 - [x] Update canonical and operator guidance; rebind policy digest.
 - [x] Run focused validation and obtain dual implementation review.
-- [ ] Close `TGD-001`, complete dual terminal verification, archive the prompt,
+- [x] Close `TGD-001`, complete dual terminal verification, archive the prompt,
   and record final disposition.
 - [ ] Push once and verify that the push does not create a TESTGATE run.
 

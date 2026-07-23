@@ -252,9 +252,10 @@
 State as of `2026-07-23 UTC`:
 
 - `20260723-testgate-agent-dispatch-only-001/` -
-  ACTIVE / IMPLEMENTATION: removes automatic TESTGATE push execution and
+  COMPLETE: removes automatic TESTGATE push execution and
   requires an agent-dispatched exact active scaffold and intent package while
-  preserving forest1 HEAVY and hosted verification/attestation.
+  preserving forest1 HEAVY and hosted verification/attestation. Dual review,
+  dual verification, focused contracts, and package admission passed.
 
 - `20260723-testgate-runner-role-closeout-correction-001/` -
   COMPLETE: corrects the durable TESTGATE closeout

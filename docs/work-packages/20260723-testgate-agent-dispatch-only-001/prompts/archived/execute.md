@@ -1,4 +1,4 @@
-# Execute TESTGATE Agent Dispatch Only
+# Archived: Execute TESTGATE Agent Dispatch Only
 
 Scope: local openWEPP workflow, test, policy, and documentation correction.
 
