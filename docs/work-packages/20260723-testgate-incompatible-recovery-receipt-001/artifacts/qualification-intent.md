@@ -14,3 +14,8 @@ against the corrected 56 GiB forest1 tmpfs envelope.
 Run `30037453241` proved `/t` remained healthy but exposed the independent
 2 GiB `/tmp` cap and non-executable test-temp surface. The terminal
 qualification uses the corrected bounded 24 GiB executable `/tmp` mount.
+
+Run `30040042088` then passed 2,304 of 2,305 full-workspace tests; its sole
+failure was the stale runner-contract assertion for the former capacity
+values. The terminal changed-head qualification includes the corrected exact
+mount and memory assertions.
