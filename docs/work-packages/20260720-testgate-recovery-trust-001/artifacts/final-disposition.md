@@ -1,6 +1,6 @@
 # Final Disposition
 
-Disposition: `EXECUTED-HOLD-PROVIDER-ORPHAN-QUEUE`.
+Disposition: `ACTIVE / READY-REPOSITORY-ATTESTATION`.
 
 Ran: the exact terminal plan, READY pre-heavy audit, and comparator-delegated
 HEAVY execution passed at HEAD `eadc0145...`; receipt `c22fe3f...f06ca` has
@@ -17,9 +17,8 @@ returns HTTP 500 for both normal and force cancellation. An explicitly
 authorized exact-run deletion attempt returned HTTP 403 for all three and
 deleted nothing.
 
-Static: preserve the orphan metadata and reconcile the exact records after
-documented deletion eligibility or an explicitly accepted bounded recovery
-exception. The exception was attempted and refused, so provider intervention
-or the documented age boundary is required. Then close RTR-046 and obtain the
-repository-reviewed attestation. The active prompt remains unarchived, and no
-unchanged TESTGATE rerun is authorized.
+Static: the three zero-job provider records belong to a defunct runner
+generation and are non-blocking historical metadata. RTR-046 is durably CLOSED
+at `fb11933d...`. One changed-head push may now obtain the
+repository-reviewed attestation. The active prompt remains unarchived until
+that exact evidence verifies.

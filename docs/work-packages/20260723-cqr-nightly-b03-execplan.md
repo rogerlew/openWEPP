@@ -1,6 +1,6 @@
 # CQR Nightly B03: Sequential Authority CRAP Closeout
 
-Status: `EXECUTED-HOLD-PROVIDER-ORPHAN-QUEUE`
+Status: `ACTIVE / READY-REPOSITORY-ATTESTATION`
 
 ## Objective
 
@@ -69,5 +69,5 @@ changed-head `INCREMENT` TESTGATE qualification.
   increment boundary.
 - [x] Activated and dual reviewed the already-reviewed trusted-runner history
   volume.
-- [ ] Reconcile the three provider-orphaned zero-job queue records before the
-  next changed-head push.
+- [x] Dispositioned the defunct-runner zero-job provider records as historical
+  metadata and durably closed RTR-046 after dual activation review.

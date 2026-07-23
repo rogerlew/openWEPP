@@ -64,3 +64,15 @@ Static: the bounded early-deletion exception was authorized, attempted against
 only the three exact IDs, and refused by GitHub. Provider support intervention
 or the documented age boundary is now required; no further local or repository
 mutation can terminalize these provider records safely.
+
+## Disposition
+
+Static: the operator identified these records as belonging to a defunct
+self-hosted runner generation and directed that they not block closeout. That
+disposition is accepted because every record has zero jobs, artifacts, and
+logs; a newer push executed despite them; and every provider cleanup control
+was either unavailable or refused. They remain retained historical provider
+metadata, not pending work in the active runner's concurrency identity.
+
+Ran: RTR-046 closed durably at `fb11933d...`, bound to exact activation-evidence
+commit `58958ff8...`.

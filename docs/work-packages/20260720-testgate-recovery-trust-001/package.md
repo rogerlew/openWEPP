@@ -4,7 +4,7 @@ Package ID: `20260720-testgate-recovery-trust-001`
 
 Queue ID: `TESTGATE-RECOVERY-TRUST-01`
 
-Status: `ACTIVE / HOLD-PROVIDER-ORPHAN-QUEUE`
+Status: `ACTIVE / READY-REPOSITORY-ATTESTATION`
 
 Authorization: Roger Lew's 2026-07-20 direction to scaffold and execute
 `TESTGATE-RECOVERY-TRUST-01` after independent review held the predecessor.
@@ -68,15 +68,15 @@ quality paths without editing its frozen subject.
 - [x] Activated and dual reviewed the runner contract: exact image, read-only
   root, dedicated writable history mount, ownership, isolation, provider
   identity, and residue checks pass.
-- [ ] Reconcile three provider-orphaned `queued` records whose normal and force
-  cancellation both return GitHub HTTP 500. Do not delete them before
-  documented eligibility without an explicit bounded recovery exception.
+- [x] Dispositioned three defunct-runner provider records as non-blocking
+  historical metadata: zero jobs/artifacts/logs, no scheduler exclusion of the
+  newer push, and no available cancel/force-cancel/delete control.
 - [x] Obtained the bounded early-deletion exception and attempted only the
   three exact orphan IDs; GitHub refused each deletion with HTTP 403 and
   deleted nothing.
-- [ ] Obtain provider support intervention or delete the exact records after
-  the newest exceeds the documented two-week boundary on
-  `2026-08-02T04:25:36Z`.
+- [x] Closed RTR-046 durably at `fb11933d...` after exact activation commit
+  `58958ff8...`, dual activation review, and operator disposition of the
+  defunct-runner records.
 - [ ] Obtain the exact repository-reviewed GitHub attestation, complete the
   held terminal verification, archive the prompt, and record final
   disposition.
