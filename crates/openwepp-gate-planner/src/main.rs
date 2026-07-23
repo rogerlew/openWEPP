@@ -2,6 +2,7 @@ use std::collections::BTreeMap;
 use std::fs;
 use std::io::Write;
 use std::path::{Path, PathBuf};
+use std::process::Command;
 use std::time::Instant;
 
 use openwepp_gate_planner::canonical::{canonical_bytes, parse_strict};
@@ -16,7 +17,9 @@ use openwepp_gate_planner::pre_heavy::{
     build_failure_audit, close_tooling_defect, construct_audit, reconcile_orphaned_attempts,
     record_heavy_failure, validate_resume_ledger,
 };
-use openwepp_gate_planner::repository::{ObservedSource, observe_committed, observe_dirty};
+use openwepp_gate_planner::repository::{
+    ObservedSource, observe_committed, observe_dirty, resolve_commit,
+};
 use openwepp_gate_planner::resume::{ResumeCandidate, load_candidate_after_ready_audit};
 use openwepp_gate_planner::verifier::{
     DirectoryArtifacts, verify_receipt, verify_receipt_after_ready_audit, verify_receipt_envelope,
@@ -590,13 +593,15 @@ fn reconcile_attempts_command(_repo: &Path, options: &BTreeMap<String, String>) 
     Ok(json!({"result": "PASS", "reconciled_attempts": reconciled}))
 }
 
-fn close_tooling_defect_command(_repo: &Path, options: &BTreeMap<String, String>) -> Result<Value> {
+fn close_tooling_defect_command(repo: &Path, options: &BTreeMap<String, String>) -> Result<Value> {
     let ledger = Path::new(required(options, "ledger")?);
     let defect_id = required(options, "defect-id")?;
+    let correction_commit = required(options, "correction-commit")?;
+    validate_correction_commit(repo, correction_commit)?;
     let entry_sha256 = close_tooling_defect(
         ledger,
         defect_id,
-        required(options, "correction-commit")?,
+        correction_commit,
         required(options, "closure-evidence")?,
         options
             .get("invalidated-recovery-root")
@@ -610,6 +615,37 @@ fn close_tooling_defect_command(_repo: &Path, options: &BTreeMap<String, String>
     }))
 }
 
+fn validate_correction_commit(repo: &Path, correction_commit: &str) -> Result<()> {
+    let exact = resolve_commit(repo, correction_commit)?;
+    if exact != correction_commit {
+        return Err(GatePolicyError::new(
+            ErrorClass::Identity,
+            "GATE-CLI-CORRECTION-COMMIT",
+            correction_commit,
+        ));
+    }
+    let head = resolve_commit(repo, "HEAD")?;
+    let status = Command::new("git")
+        .args(["merge-base", "--is-ancestor", correction_commit, &head])
+        .current_dir(repo)
+        .status()
+        .map_err(|error| {
+            GatePolicyError::new(
+                ErrorClass::GitState,
+                "GATE-CLI-CORRECTION-COMMIT",
+                error.to_string(),
+            )
+        })?;
+    if status.success() {
+        Ok(())
+    } else {
+        Err(GatePolicyError::new(
+            ErrorClass::Identity,
+            "GATE-CLI-CORRECTION-COMMIT",
+            correction_commit,
+        ))
+    }
+}
 fn pre_heavy_audit_command(repo: &Path, options: &BTreeMap<String, String>) -> Result<Value> {
     let inputs = pre_heavy_audit_inputs(options)?;
     let ledger_preparation = prepare_audit_ledger(&inputs.ledger);
@@ -1248,7 +1284,7 @@ mod tests {
 
     use super::{
         close_tooling_defect_command, package_authority, parse_options, plan_request,
-        require_exact_package_authority, run_arguments, staged_run_command,
+        require_exact_package_authority, resolve_commit, run_arguments, staged_run_command,
         validate_package_chain_command, validate_transition_outputs, write_plan_confined,
     };
     use openwepp_gate_planner::executor::ExecutionClaims;
@@ -1279,40 +1315,66 @@ mod tests {
 
     #[test]
     fn tooling_defect_closure_cli_persists_the_canonical_result() {
-        let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!(
-            "../../target/openwepp-gate-closure-cli-{}",
+        let repo = fs::canonicalize(
+            PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                .parent()
+                .and_then(Path::parent)
+                .expect("repository root"),
+        )
+        .expect("canonical repository");
+        let root = repo.join(format!(
+            "target/openwepp-gate-closure-cli-{}",
             std::process::id()
         ));
         let history = root.join("history");
         fs::create_dir_all(history.join("recovery")).expect("history");
         let ledger = history.join("attempts.jsonl");
         fs::write(&ledger, "").expect("ledger");
+        let recovery = history.join("recovery/failed");
+        append_attempt_record(
+            &ledger,
+            json!({
+                "record_type": "STAGE_ATTEMPT",
+                "stage": "HEAVY",
+                "status": "FAILED",
+                "cause_key": "GATE-CLI-EXAMPLE",
+                "recovery_root": recovery,
+            }),
+        )
+        .expect("failed attempt");
         append_attempt_record(
             &ledger,
             json!({
                 "record_type": "TOOLING_DEFECT",
                 "defect_id": "AUTO-cli",
                 "status": "OPEN",
+                "cause_key": "GATE-CLI-EXAMPLE",
             }),
         )
         .expect("open defect");
-        let result = close_tooling_defect_command(
-            &root,
-            &BTreeMap::from([
-                ("ledger".to_owned(), ledger.display().to_string()),
-                ("defect-id".to_owned(), "AUTO-cli".to_owned()),
-                ("correction-commit".to_owned(), "c".repeat(40)),
-                (
-                    "closure-evidence".to_owned(),
-                    "dual review passed".to_owned(),
-                ),
-                (
-                    "invalidated-recovery-root".to_owned(),
-                    history.join("recovery/failed").display().to_string(),
-                ),
-            ]),
-        )
-        .expect("closure command");
+        let correction = resolve_commit(&repo, "HEAD").expect("current commit");
+        let options = BTreeMap::from([
+            ("ledger".to_owned(), ledger.display().to_string()),
+            ("defect-id".to_owned(), "AUTO-cli".to_owned()),
+            ("correction-commit".to_owned(), correction),
+            (
+                "closure-evidence".to_owned(),
+                "dual review passed".to_owned(),
+            ),
+            (
+                "invalidated-recovery-root".to_owned(),
+                recovery.display().to_string(),
+            ),
+        ]);
+        let mut nonexistent = options.clone();
+        nonexistent.insert("correction-commit".to_owned(), "c".repeat(40));
+        assert_eq!(
+            close_tooling_defect_command(&repo, &nonexistent)
+                .expect_err("nonexistent correction commit must fail")
+                .code,
+            "GATE-GIT-COMMAND"
+        );
+        let result = close_tooling_defect_command(&repo, &options).expect("closure command");
         assert_eq!(result["result"], "CLOSED");
         assert_eq!(result["defect_id"], "AUTO-cli");
         fs::remove_dir_all(root).expect("remove scratch");

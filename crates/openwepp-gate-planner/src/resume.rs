@@ -13,6 +13,7 @@ use crate::error::{ErrorClass, GatePolicyError, Result};
 use crate::executor::ExecutionClaims;
 use crate::planner::verify_plan_identity;
 use crate::pre_heavy::ConstructedAudit;
+use crate::pre_heavy::tooling_defect_status;
 use crate::verifier::{DirectoryArtifacts, verify_receipt, verify_receipt_after_ready_audit};
 
 pub struct ResumeCandidate {
@@ -165,13 +166,14 @@ fn invalidated_recovery_roots(records: &[Value], ledger: &Path) -> Result<BTreeS
             .as_str()
             .filter(|value| !value.is_empty())
             .ok_or_else(|| resume_error("GATE-RESUME-INVALIDATION-SHAPE", "defect_id"))?;
+        let status = tooling_defect_status(item)?;
         let Some(raw_root) = item.get("invalidated_recovery_root") else {
             if latest.contains_key(defect_id) {
                 latest.insert(defect_id.to_owned(), None);
             }
             continue;
         };
-        if item["status"] != "CLOSED" {
+        if status != "CLOSED" {
             latest.insert(defect_id.to_owned(), None);
             continue;
         }
@@ -1284,6 +1286,31 @@ mod tests {
             "defect_id": "AUTO-example",
             "status": "OPEN",
         });
+        let malformed = json!({
+            "record_type": "TOOLING_DEFECT",
+            "defect_id": "AUTO-example",
+            "status": "CLOZED",
+        });
+        fs::write(
+            &ledger,
+            format!(
+                "{}\n{}\n{}\n",
+                serde_json::to_string(&failed).expect("failed record"),
+                serde_json::to_string(&closed).expect("closed defect"),
+                serde_json::to_string(&malformed).expect("malformed defect")
+            ),
+        )
+        .expect("ledger");
+        let error = load_candidate(
+            &scratch,
+            &json!({"nodes": []}),
+            &ledger,
+            &ExecutionClaims::default(),
+        )
+        .err()
+        .expect("malformed status must fail closed");
+        assert_eq!(error.code, "GATE-AUDIT-TOOLING-DEFECT-SHAPE");
+
         fs::write(
             &ledger,
             format!(
