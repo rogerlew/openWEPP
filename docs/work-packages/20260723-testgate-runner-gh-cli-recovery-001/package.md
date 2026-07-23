@@ -1,7 +1,7 @@
 # TESTGATE Runner GitHub CLI Recovery
 
 Package: `20260723-testgate-runner-gh-cli-recovery-001`
-Status: `ACTIVE / SCAFFOLD`
+Status: `COMPLETE`
 Defect: `RTR-046`
 Cause: `GATE-TRUSTED-RUNNER-GH-CLI-MISSING`
 
@@ -64,7 +64,7 @@ evidence. No reviewer may deploy, push, or dispatch TESTGATE.
 - [x] Installed and preflighted the exact checksum-pinned CLI in the candidate image.
 - [x] Ran focused source-contract and image-build validation.
 - [x] Obtained dual implementation review and activated the exact bound image.
-- [ ] Close RTR-046 and obtain dual terminal verification.
+- [x] Closed RTR-046 and obtained dual terminal verification.
 
 ## Exit Criteria
 

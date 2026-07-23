@@ -76,3 +76,11 @@ metadata, not pending work in the active runner's concurrency identity.
 
 Ran: RTR-046 closed durably at `fb11933d...`, bound to exact activation-evidence
 commit `58958ff8...`.
+
+## GitHub CLI Image Recovery
+
+Ran: automatic push run `29979508839` reached the restored live runner but failed before gate execution with exit 127 because `gh` was absent. RTR-046 reopened at `a114c916...`; no TESTGATE node or expensive gate ran.
+
+Ran: prospective package `20260723-testgate-runner-gh-cli-recovery-001` installed checksum-pinned GitHub CLI 2.96.0 and added exact-version preflight with a suffix-drift negative regression. Dual implementation review passed correction `e82f1e46c0bf03aa7fb1e6596cdad987b71f49cb`. Exact image `sha256:8a551a87d0784a74be1a76452beb1e4e6726cc36135722020e20a042e04bae84` was transferred with archive digest `fefb7230acf478e5f01db174fd541eec19313fef9c90dc1d20a4df6f9700788c` and activated on the unique online-idle runner.
+
+Ran: dual terminal verification passed the live CLI, image, security, mount, ownership, provider, and append-only ledger contracts. An initial closure record transcribed a nonexistent activation-evidence SHA; explicit OPEN `3b215dc7...` and superseding CLOSED `1c36ef0c...` preserve that error and bind actual activation evidence commit `46248f3b215d84d3e359d28affe5e3677a038d1d`. The canonical ledger has 157 records and zero effective open defects.

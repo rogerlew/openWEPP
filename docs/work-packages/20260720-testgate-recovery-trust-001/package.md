@@ -74,9 +74,16 @@ quality paths without editing its frozen subject.
 - [x] Obtained the bounded early-deletion exception and attempted only the
   three exact orphan IDs; GitHub refused each deletion with HTTP 403 and
   deleted nothing.
-- [x] Closed RTR-046 durably at `fb11933d...` after exact activation commit
-  `58958ff8...`, dual activation review, and operator disposition of the
-  defunct-runner records.
+- [x] Retained automatic push run `29979508839`, which reached durable-history
+  restore but stopped before gate execution because the runner image lacked
+  the required `gh` executable; reopened RTR-046 at `a114c916...`.
+- [x] Installed checksum-pinned GitHub CLI 2.96.0, enforced exact-version
+  preflight, bound and activated exact image `sha256:8a551a87...`, and
+  completed dual implementation review and dual terminal verification.
+- [x] Corrected the first CLI closure record's mistyped activation-evidence
+  SHA through an explicit append-only reopen/reclose pair; the 157-record
+  ledger verifies with RTR-046 CLOSED at `1c36ef0c...` and zero effective
+  open defects.
 - [ ] Obtain the exact repository-reviewed GitHub attestation, complete the
   held terminal verification, archive the prompt, and record final
   disposition.
