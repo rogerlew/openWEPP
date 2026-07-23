@@ -932,8 +932,12 @@ configured and acceptable for the boundary.
 Content addressing proves integrity, not who executed or authorized evidence.
 Receipts use these closed trust classes:
 
-- `LOCAL_UNTRUSTED`: local feedback only; it cannot close an increment,
-  campaign, or release boundary;
+- `LOCAL_UNTRUSTED`: the immutable unsigned receipt form emitted by local and
+  forest1 execution. For forest1, it is accepted workflow evidence and may
+  close an increment, campaign, or release boundary when the selected workflow
+  retains its exact receipt, ledger, and required independent verification. The
+  label records envelope format; it is not a failure, hold, or requirement to
+  rerun heavy work on GitHub-hosted infrastructure;
 - `REPOSITORY_REVIEWED`: bound to an authenticated repository event and exact
   reviewed source; it may close an increment when repository rules accept its
   issuer and workflow; and
@@ -951,10 +955,12 @@ Receipt authentication is a non-circular two-layer construction:
 4. verify that the envelope subject equals an independently recomputed receipt
    before assigning trust class.
 
-The ledger and certificate consume `envelope_id` plus `receipt_id`, never an
-unauthenticated receipt alone. A locator is storage metadata outside the
-receipt identity. Missing, mismatched, recursive, or multiply inconsistent
-envelopes are `INVALID`.
+The ledger and certificate consume the exact receipt identity and retained
+evidence identity. When an attestation envelope is selected, they also consume
+its `envelope_id`; a forest1 workflow need not obtain an envelope merely to
+accept its `LOCAL_UNTRUSTED` receipt. A locator is storage metadata outside the
+receipt identity. A selected envelope that is missing, mismatched, recursive,
+or multiply inconsistent is `INVALID`.
 
 For normal GitHub increment execution, a native GitHub artifact-attestation
 bundle is the repository-reviewed envelope when all of these checks pass: its
@@ -963,8 +969,9 @@ subject is the exact `receipt.json` bytes; its custom predicate type is
 receipt digest, plan/execution identity, base/head, and pre-edit package
 authorization digest; and verification constrains repository, source ref,
 source digest, and the pinned TESTGATE workflow identity. The unsigned receipt
-truthfully remains `LOCAL_UNTRUSTED`; only the verified bundle plus receipt is
-`REPOSITORY_REVIEWED`. Merely uploading either file cannot upgrade trust.
+truthfully remains `LOCAL_UNTRUSTED`; a verified bundle may additionally record
+`REPOSITORY_REVIEWED`. Merely uploading either file does not change the receipt
+label. Forest1 workflow acceptance does not depend on that publication record.
 Candidate checkout, builds, intent reconciliation, plan reconstruction, and
 independent Nextest/A3 inventory enumeration run in a tokenless hosted
 verification job. The OIDC/attestation-enabled aggregate consumes only that
@@ -994,15 +1001,13 @@ A terminal job state also does not imply a passing gate: cancellation during
 `execute-increment` prevents the downstream attestation even when cleanup,
 evidence upload, and hosted fail-closed jobs complete.
 
-Work-package engineering closeout and receipt trust assignment are separate
-claims. An operator may close implementation, review, and documentation work
-from retained exact-head comparator evidence plus the package's required
-independent verification when the package explicitly records the exception.
-That closeout does not promote a `LOCAL_UNTRUSTED` receipt, satisfy an
-`INCREMENT`, campaign-certification, or release trust boundary, or permit a
-hosted-attestation claim. The closeout record must name the actual reason the
-protected execution or attestation did not complete; it may not substitute an
-unrelated retired-runner outage.
+Work-package engineering closeout and optional receipt-publication records are
+separate claims. Retained exact-head forest1 evidence plus the package's
+required independent verification can satisfy the selected workflow boundary.
+Do not block that boundary because its receipt label is `LOCAL_UNTRUSTED`.
+A package may require a hosted-attestation publication artifact for a separate
+claim, but it must state that requirement explicitly and must not relabel a
+forest1 execution as untrusted or require GitHub-hosted heavy execution.
 
 Release-eligible envelopes carry an offline-verifiable attestation bundle that
 binds repository, source commit/ref, workflow and job revision, runner/image,

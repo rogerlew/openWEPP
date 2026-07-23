@@ -1,3 +1,3 @@
-# Qualification Review A
+# Result Review A
 
-Status: pending independent governance, security, and evidence review.
+Status: pending the one forest1 execution.

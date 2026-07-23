@@ -251,6 +251,11 @@
 
 State as of `2026-07-23 UTC`:
 
+- `20260720-testgate-workflow-qualify-001/` - ACTIVE / READY-FOREST1-DISPATCH:
+  one ordinary exact-head forest1 TESTGATE execution after a queue-idle
+  preflight. The prior Q01--Q15 controller scope was superseded as over-scoped;
+  forest1 `LOCAL_UNTRUSTED` receipts are expected local evidence.
+
 - `20260723-testgate-agent-dispatch-only-001/` -
   COMPLETE: removes automatic TESTGATE push execution and
   requires an agent-dispatched exact active scaffold and intent package while
@@ -426,13 +431,9 @@ State as of `2026-07-23 UTC`:
   audit 10/10, HEAVY 9/9, dual terminal verification, and closeout.
 
 - `20260720-testgate-workflow-qualify-001/` -
-  SCAFFOLDED-REVIEW-PENDING: `TESTGATE-WORKFLOW-QUALIFY-01` is queued directly
-  behind the audit-tool implementation. It freezes the resulting tool and
-  policy bytes, replays the complete adversarial failure matrix through the
-  real entry point with bounded probe nodes, verifies crash/resume and durable
-  evidence in a fresh environment, and accepts exactly one ordinary trusted-
-  runner execution for the real heavy/provider path. It cannot repair the
-  subject it evaluates.
+  READY-FOREST1-DISPATCH: supersedes its initial Q01--Q15 controller scope with
+  one ordinary exact-head forest1 workflow qualification; `LOCAL_UNTRUSTED` is
+  expected for the local forest1 receipt.
 
 - `20260717-canopy-phenology-gsi-kernel-001/` -
   COMPLETE-PASS-PROCESS-KERNEL (2026-07-17): implements

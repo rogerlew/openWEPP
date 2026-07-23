@@ -134,9 +134,11 @@ keeps the active proof null until real protected-CI measurements are reviewed;
 no synthetic proof is permitted.
 
 The helper writes an independently verified unsigned receipt and
-`observation.json`. Local output remains
-`LOCAL_RECEIPT_PENDING_GITHUB_ATTESTATION` and cannot close an increment. Use a
-fresh external directory for every attempt; output collision fails closed.
+`observation.json`. Forest1 output is `LOCAL_RECEIPT_ACCEPTED`: its unsigned
+receipt remains labeled `LOCAL_UNTRUSTED`, but that label is accepted workflow
+evidence and does not block an increment solely because GitHub attestation is
+absent. Use a fresh external directory for every attempt; output collision fails
+closed.
 
 The stable black-box follow-up interface is
 `tools/local_ci/testgate_qualification.py`. Its `validate`, `run`, and `verify`

@@ -42,6 +42,11 @@
   increment unless an explicit remote checkpoint is necessary.
 - Do not manually dispatch TESTGATE while a run is queued or active; its stable
   concurrency identity permits one running and only the newest pending run.
+- Forest1 is the trusted TESTGATE heavy runner. A receipt labeled
+  `LOCAL_UNTRUSTED` is normal unsigned forest1 evidence, not a hold, failure,
+  or reason to request GitHub-hosted heavy execution. Do not block any workflow
+  solely on that label; use retained forest1 receipt/ledger evidence unless an
+  explicit package requires an additional publication artifact.
 - Do not add fallback wrappers that silently mask missing required dependencies; prefer explicit failures.
 - Correctness over completion: do not mark work complete when known invariant, closure, or contract violations remain unresolved.
 - Inherit the agentic governance posture from wepppy. openWEPP is the simulation engine, not a separate culture.

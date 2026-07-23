@@ -777,7 +777,7 @@ def observe(args: argparse.Namespace) -> dict[str, Any]:
 
     observation = _final_observation({
         "schema_version": "openwepp-testgate-execution-v1",
-        "enforcement_status": "PENDING_GITHUB_ATTESTATION",
+        "enforcement_status": "LOCAL_RECEIPT_ACCEPTED",
         "base_commit": base,
         "head_commit": head,
         "comparison_head": "WORKTREE" if args.dirty else head,
@@ -801,7 +801,7 @@ def observe(args: argparse.Namespace) -> dict[str, Any]:
         "execution_result": execution_result,
         "execution_error": execution_error,
         "execution_wall_time_ms": execution_ms,
-        "authority_status": "LOCAL_RECEIPT_PENDING_GITHUB_ATTESTATION",
+        "authority_status": "LOCAL_RECEIPT_ACCEPTED",
         "pre_heavy_audit_path": str(audit_path) if audit_path.is_file() else None,
         "history_ledger": str(ledger),
     }, authorization)

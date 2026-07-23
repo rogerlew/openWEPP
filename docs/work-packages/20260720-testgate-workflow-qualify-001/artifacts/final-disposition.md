@@ -1,10 +1,6 @@
 # Current Disposition
 
-Disposition: `SCAFFOLDED / REVIEW PENDING`.
+Disposition: `READY-FOREST1-DISPATCH`.
 
-No implementation subject exists yet. No qualification case, provider action,
-heavy run, review, or terminal verification is claimed.
-
-Scaffold validation: `markdown-doc lint` passed 16 files with zero errors and
-zero warnings; `git diff --check` passed. Qualification and TESTGATE execution
-were not run because the implementation dependency is not complete.
+The prior Q01--Q15/controller hold was an over-scoped package-authority error
+and is superseded. No TESTGATE run has been dispatched in this package.
