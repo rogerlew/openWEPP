@@ -1,7 +1,9 @@
 # CQR Nightly B03S-2: Package Validation Entry Point
 
 Package: `20260723-cqr-nightly-b03s-2-package-validation-001`
-Status: `IMPLEMENTED / DUAL REVIEW PASS / VERIFICATION PENDING`
+Status: `EXECUTED-COMPLETE-CQR-NIGHTLY`
+
+Completion commit: `c85c1a15d9b8fdd63f328a125bde345f898ad444`
 ExecPlan: `docs/work-packages/20260723-cqr-nightly-b03-execplan.md`
 Nightly batch: `b03s`
 Target module: `crates/openwepp-gate-planner/src/package_validation.rs`
@@ -64,3 +66,10 @@ unrelated cleanup.
 - Exact audit JSON, reason ordering, hashes, and status remain unchanged.
 - Focused tests, formatting, Clippy, aggregate admission, dual review, and dual
   verification pass.
+
+## Completion
+
+Completed at exact commit `c85c1a15d9b8fdd63f328a125bde345f898ad444`.
+Target/helper CRAP is 4–5 at 100% focused coverage. Focused gates, aggregate
+admission, dual implementation review, and dual terminal verification passed.
+Aggregate closeout owns the later changed-head TESTGATE qualification.
