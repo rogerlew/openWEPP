@@ -605,6 +605,17 @@ def _invoke(
     return value
 
 
+def _final_observation(
+    fields: dict[str, Any], authorization: dict[str, Any]
+) -> dict[str, Any]:
+    """Bind both observation authority views to the retained Rust artifact."""
+    return {
+        **fields,
+        "intent_authorization": authorization,
+        "package_audit": authorization,
+    }
+
+
 def observe(args: argparse.Namespace) -> dict[str, Any]:
     repo = args.repo.resolve()
     artifact_root = args.artifact_root.resolve()
@@ -754,7 +765,7 @@ def observe(args: argparse.Namespace) -> dict[str, Any]:
             },
         )
 
-    observation = {
+    observation = _final_observation({
         "schema_version": "openwepp-testgate-execution-v1",
         "enforcement_status": "PENDING_GITHUB_ATTESTATION",
         "base_commit": base,
@@ -781,11 +792,9 @@ def observe(args: argparse.Namespace) -> dict[str, Any]:
         "execution_error": execution_error,
         "execution_wall_time_ms": execution_ms,
         "authority_status": "LOCAL_RECEIPT_PENDING_GITHUB_ATTESTATION",
-        "intent_authorization": authorization,
-        "package_audit": package_result,
         "pre_heavy_audit_path": str(audit_path) if audit_path.is_file() else None,
         "history_ledger": str(ledger),
-    }
+    }, authorization)
     _atomic_json(artifact_root / "observation.json", observation)
     if execution_result is not None and receipt_path.is_file():
         receipt = json.loads(receipt_path.read_text(encoding="utf-8"))

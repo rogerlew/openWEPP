@@ -55,8 +55,10 @@ authorized by this prerequisite package.
 
 - [x] Retained the sealed attempt and opened RTR-045 durably.
 - [x] Scaffolded prospective correction authority before implementation.
-- [ ] Add focused regression and implement the bounded correction.
-- [ ] Obtain dual review, commit, durably close RTR-045, and dual verify.
+- [x] Added focused regression and implemented the bounded correction.
+- [x] Obtained dual independent implementation-review PASS after correcting one
+  accepted behavioral-test finding.
+- [ ] Commit, durably close RTR-045, and dual verify.
 
 ## Exit Criteria
 

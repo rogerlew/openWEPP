@@ -27,6 +27,17 @@ QUALIFICATION_SPEC.loader.exec_module(QUALIFICATION)
 
 
 class TestGateTest(unittest.TestCase):
+    def test_final_observation_binds_retained_package_authorization(self) -> None:
+        authorization = {"package_authority_chain_id": "c" * 64}
+        for result in ("PASS", "FAIL"):
+            with self.subTest(result=result):
+                observation = TESTGATE._final_observation(
+                    {"execution_result": {"result": result}}, authorization
+                )
+                self.assertIs(observation["intent_authorization"], authorization)
+                self.assertIs(observation["package_audit"], authorization)
+                self.assertEqual(observation["execution_result"]["result"], result)
+
     def test_qualification_freeze_rejects_subject_mutation(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             repo = Path(directory)
