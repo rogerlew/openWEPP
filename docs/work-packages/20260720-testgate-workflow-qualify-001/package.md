@@ -51,8 +51,9 @@ to TESTGATE implementation/policy/workflow code.
 ## Acceptance
 
 - Exactly one ordinary TESTGATE dispatch occurs after a queue-idle preflight.
-- The run executes heavy work on forest1, binds the exact pushed head and active
-  package, and produces retained receipt/ledger/artifact evidence.
+- The run executes the policy-selected TESTGATE nodes on forest1, binds the
+  exact pushed head and active package, and produces retained receipt/ledger/
+  artifact evidence.
 - `LOCAL_UNTRUSTED` does not invalidate the forest1 result.
 - No duplicate heavy run, policy change, or implementation edit occurs.
 - Independent review accurately records PASS or FAIL from the retained evidence.
