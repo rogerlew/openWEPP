@@ -459,7 +459,7 @@ fn admit_heavy_resume(
         started_entry_sha256,
         claims,
     )?;
-    load_candidate_after_ready_audit(repo, plan, ledger, claims, audit)
+    load_candidate_after_ready_audit(repo, plan, ledger, claims, audit, started_entry_sha256)
 }
 
 fn execute_and_verify_heavy(

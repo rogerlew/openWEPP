@@ -430,6 +430,7 @@ fn candidate_discovery_preserves_initial_error_and_reverse_record_precedence() {
         &ledger,
         &ExecutionClaims::default(),
         false,
+        None,
     )
     .err()
     .expect("ledger read precedes plan shape");
@@ -442,6 +443,7 @@ fn candidate_discovery_preserves_initial_error_and_reverse_record_precedence() {
         &ledger,
         &ExecutionClaims::default(),
         false,
+        None,
     )
     .err()
     .expect("plan shape follows ledger parsing");
@@ -468,6 +470,7 @@ fn candidate_discovery_preserves_initial_error_and_reverse_record_precedence() {
         &ledger,
         &ExecutionClaims::default(),
         false,
+        None,
     )
     .err()
     .expect("newest explicit recovery root fails closed first");

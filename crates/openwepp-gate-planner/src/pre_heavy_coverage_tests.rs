@@ -172,6 +172,7 @@ fn characterize_constructed_audit_resume(
         &fixture.ledger,
         claims,
         &constructed,
+        "",
     )
     .expect("constructed READY audit admits resume discovery");
     assert!(
@@ -187,6 +188,7 @@ fn characterize_constructed_audit_resume(
         &fixture.ledger,
         claims,
         &ConstructedAudit(blocked),
+        "",
     )
     .err()
     .expect("non-READY constructed audit must fail");
@@ -200,6 +202,7 @@ fn characterize_constructed_audit_resume(
         &fixture.ledger,
         claims,
         &constructed,
+        "",
     )
     .err()
     .expect("plan substitution must fail");
@@ -213,6 +216,7 @@ fn characterize_constructed_audit_resume(
         &fixture.ledger,
         claims,
         &constructed,
+        "",
     )
     .err()
     .expect("plan digest substitution must fail");

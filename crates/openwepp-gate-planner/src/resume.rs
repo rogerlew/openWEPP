@@ -64,7 +64,7 @@ pub fn load_candidate(
     ledger: &Path,
     claims: &ExecutionClaims,
 ) -> Result<Option<ResumeCandidate>> {
-    load_candidate_internal(repo, plan, ledger, claims, false)
+    load_candidate_internal(repo, plan, ledger, claims, false, None)
 }
 
 /// Load recovery evidence after the current plan was independently admitted by
@@ -79,6 +79,7 @@ pub fn load_candidate_after_ready_audit(
     ledger: &Path,
     claims: &ExecutionClaims,
     audit: &ConstructedAudit,
+    current_started_entry_sha256: &str,
 ) -> Result<Option<ResumeCandidate>> {
     if audit.as_value()["status"] != "READY"
         || audit.as_value()["plan_id"] != plan["plan_id"]
@@ -89,7 +90,14 @@ pub fn load_candidate_after_ready_audit(
             "recovery fast path requires the current constructed READY audit",
         ));
     }
-    load_candidate_internal(repo, plan, ledger, claims, true)
+    load_candidate_internal(
+        repo,
+        plan,
+        ledger,
+        claims,
+        true,
+        Some(current_started_entry_sha256),
+    )
 }
 
 fn load_candidate_internal(
@@ -98,6 +106,7 @@ fn load_candidate_internal(
     ledger: &Path,
     claims: &ExecutionClaims,
     current_plan_admitted: bool,
+    excluded_entry_sha256: Option<&str>,
 ) -> Result<Option<ResumeCandidate>> {
     let text = fs::read_to_string(ledger)
         .map_err(|error| resume_error("GATE-RESUME-LEDGER", error.to_string()))?;
@@ -112,6 +121,10 @@ fn load_candidate_internal(
     let mut admitted = BTreeMap::new();
     let mut seen_roots = BTreeSet::new();
     for item in records.iter().rev() {
+        if excluded_entry_sha256.is_some() && item["entry_sha256"].as_str() == excluded_entry_sha256
+        {
+            continue;
+        }
         let Some(recovery_root) = recovery_root_from_record(item, ledger)? else {
             continue;
         };
@@ -908,8 +921,8 @@ mod tests {
     use serde_json::json;
 
     use super::{
-        apply_candidate, copy_outputs, load_candidate, reuse_reason, verify_checkpoint,
-        verify_indexed_recovery_root,
+        apply_candidate, copy_outputs, load_candidate, load_candidate_internal, reuse_reason,
+        verify_checkpoint, verify_indexed_recovery_root,
     };
     use crate::canonical::{canonical_bytes, derived_id, digest, sha256_bytes};
     use crate::executor::ExecutionClaims;
@@ -1005,6 +1018,74 @@ mod tests {
         )
         .err()
         .expect("missing explicit recovery provenance must fail");
+        assert_eq!(error.code, "GATE-RESUME-PROVENANCE-MISSING");
+        fs::remove_dir_all(scratch).expect("remove scratch");
+    }
+
+    #[test]
+    fn current_started_recovery_root_is_not_a_prior_resume_archive() {
+        let scratch = std::env::temp_dir().join(format!(
+            "openwepp-resume-current-started-{}",
+            std::process::id()
+        ));
+        let history = scratch.join("history");
+        let current = history.join("recovery/current");
+        fs::create_dir_all(current.join(".checkpoints")).expect("current recovery root");
+        let ledger = history.join("attempts.jsonl");
+        let current_digest = "c".repeat(64);
+        let current_record = json!({
+            "record_type": "STAGE_ATTEMPT",
+            "status": "STARTED",
+            "stage": "HEAVY",
+            "entry_sha256": current_digest,
+            "recovery_root": current,
+        });
+        fs::write(
+            &ledger,
+            format!(
+                "{}\n",
+                serde_json::to_string(&current_record).expect("current record")
+            ),
+        )
+        .expect("ledger");
+
+        let candidate = load_candidate_internal(
+            &scratch,
+            &json!({"nodes": []}),
+            &ledger,
+            &ExecutionClaims::default(),
+            true,
+            current_record["entry_sha256"].as_str(),
+        )
+        .expect("current STARTED root is excluded");
+        assert!(candidate.is_none());
+
+        let prior = json!({
+            "record_type": "STAGE_ATTEMPT",
+            "status": "FAILED",
+            "stage": "HEAVY",
+            "entry_sha256": "p".repeat(64),
+            "recovery_root": current_record["recovery_root"],
+        });
+        fs::write(
+            &ledger,
+            format!(
+                "{}\n{}\n",
+                serde_json::to_string(&prior).expect("prior record"),
+                serde_json::to_string(&current_record).expect("current record")
+            ),
+        )
+        .expect("ledger");
+        let error = load_candidate_internal(
+            &scratch,
+            &json!({"nodes": []}),
+            &ledger,
+            &ExecutionClaims::default(),
+            true,
+            current_record["entry_sha256"].as_str(),
+        )
+        .err()
+        .expect("older explicit root still requires provenance");
         assert_eq!(error.code, "GATE-RESUME-PROVENANCE-MISSING");
         fs::remove_dir_all(scratch).expect("remove scratch");
     }

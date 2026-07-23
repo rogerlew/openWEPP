@@ -272,6 +272,7 @@ jobs:
         with:
           name: testgate-unsigned-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ env.TESTGATE_EXECUTION_ROOT }}/e
+          include-hidden-files: true
           if-no-files-found: error
           retention-days: 30
 
@@ -365,6 +366,7 @@ jobs:
         with:
           name: testgate-recovery-verified-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/testgate-recovery-package
+          include-hidden-files: true
           if-no-files-found: error
           retention-days: 30
       - name: Fail closed when execution did not succeed
@@ -491,6 +493,7 @@ jobs:
         with:
           name: testgate-verified-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/testgate-recovery-package/unsigned
+          include-hidden-files: true
           if-no-files-found: error
           retention-days: 7
 
@@ -579,6 +582,7 @@ jobs:
         with:
           name: testgate-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/testgate-evidence
+          include-hidden-files: true
           if-no-files-found: error
           retention-days: 7
       - name: Reject superseded head after authority verification
