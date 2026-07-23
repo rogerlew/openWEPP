@@ -71,6 +71,12 @@ quality paths without editing its frozen subject.
 - [ ] Reconcile three provider-orphaned `queued` records whose normal and force
   cancellation both return GitHub HTTP 500. Do not delete them before
   documented eligibility without an explicit bounded recovery exception.
+- [x] Obtained the bounded early-deletion exception and attempted only the
+  three exact orphan IDs; GitHub refused each deletion with HTTP 403 and
+  deleted nothing.
+- [ ] Obtain provider support intervention or delete the exact records after
+  the newest exceeds the documented two-week boundary on
+  `2026-08-02T04:25:36Z`.
 - [ ] Obtain the exact repository-reviewed GitHub attestation, complete the
   held terminal verification, archive the prompt, and record final
   disposition.

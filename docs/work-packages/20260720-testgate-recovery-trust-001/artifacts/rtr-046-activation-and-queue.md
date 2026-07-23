@@ -46,6 +46,11 @@ Ran:
 - Log inspection: GitHub returns HTTP 404 for every run.
 - Normal cancellation: GitHub HTTP 500 for every exact run.
 - REST force cancellation: GitHub HTTP 500 for every exact run.
+- Explicitly authorized exact-run deletion on 2026-07-23: GitHub HTTP 403 for
+  every run; no record was deleted. Request IDs:
+  `16B3:38D69C:F42C53:F90EEE:6A61972C`,
+  `5665:AFBD7:101C83E:106ACFA:6A61972C`, and
+  `FBC8:C4BD1:FCC0A8:101A648:6A61972C`.
 - Newer push run `29978778150` executed, so the records are provider-orphaned
   rather than scheduler-active.
 
@@ -55,3 +60,7 @@ than two weeks. The newest orphan reaches the documented age boundary after
 bounded provider-recovery exception or provider confirmation. Do not delete or
 rerun `29978778150`.
 
+Static: the bounded early-deletion exception was authorized, attempted against
+only the three exact IDs, and refused by GitHub. Provider support intervention
+or the documented age boundary is now required; no further local or repository
+mutation can terminalize these provider records safely.
