@@ -32,6 +32,12 @@ generation 10 rebound the policy digest, the representative deterministic
 critical-policy case passed, and both owning integration targets passed 10/10
 and 11/11. Passing cases were not repeated unchanged.
 
+Ran: after committing the exact corrected tree, the full planner library sweep
+passed 169/169 with two declared ignored child-process cases in 541.30 seconds.
+The planner binary suite passed 9/9. Exact package-chain reconstruction from
+`9864a94c...` returned `READY`, chain ID
+`8d25e476...f6e0943`, and zero unauthorized paths.
+
 Pending: dual independent implementation review, exact correction commit,
 runner-ledger closure, durable RTR-052/RTR-053 closure, and one changed-head
 automatic qualification.
