@@ -4,7 +4,7 @@ Package ID: `20260720-testgate-recovery-trust-001`
 
 Queue ID: `TESTGATE-RECOVERY-TRUST-01`
 
-Status: `ACTIVE / READY-QUALIFICATION`
+Status: `ACTIVE / REVIEW`
 
 Authorization: Roger Lew's 2026-07-20 direction to scaffold and execute
 `TESTGATE-RECOVERY-TRUST-01` after independent review held the predecessor.
@@ -125,6 +125,14 @@ quality paths without editing its frozen subject.
   `94462c30`, close the runner-local AUTO defect with canonical ledger tip
   `2852c7ed`, and close RTR-052 through RTR-054 with campaign-ledger tip
   `50a59cc7`; both ledgers re-hash with zero effective open defects.
+- [x] (2026-07-23) Retain automatic run `29990800842`, which stopped in
+  trusted comparison admission because exact pushed tip `8e55cb91` omitted
+  the mandatory intent-package trailer; no TESTGATE node or retry ran.
+- [ ] Close RTR-055 with an exact trailer-bearing tip, narrow resolver proof,
+  and dual independent review before another changed-head push.
+- [x] (2026-07-23) Restore the package to admitted `ACTIVE / REVIEW` after
+  package-chain reconstruction correctly rejected the noncanonical temporary
+  `ACTIVE / CORRECTION` label.
 - [ ] Obtain the exact repository-reviewed GitHub attestation, complete the
   held terminal verification, archive the prompt, and record final
   disposition.
