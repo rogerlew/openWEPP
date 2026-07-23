@@ -13,11 +13,14 @@ The latest prior state must be `OPEN` for the same defect and cause, and the
 correction must resolve as an exact ancestor of repository `HEAD`. Unrelated
 explicit roots still require authenticated provenance.
 
-Ran: all 15 `resume::tests` cases pass, including exact-root invalidation,
+Ran: all 13 `resume::tests` cases pass, including exact-root invalidation,
 unrelated-root rejection, malformed closure rejection, reopen revocation, and
 raw consumer rejection for blank evidence, missing/mismatched cause, relative
 or dot-dot paths, unassociated roots, absent/mismatched OPEN lifecycle, and a
 nonexistent correction commit.
+
+Ran: the two mechanically moved `resume::coverage_tests` reuse-policy
+characterizations pass at their new paths.
 
 Ran: the focused tooling-defect closure command regression passes. It proves
 outside-root rejection, canonical closure, audit admission after closure, exact
