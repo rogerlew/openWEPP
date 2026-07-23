@@ -4,7 +4,7 @@ Package ID: `20260720-testgate-recovery-trust-001`
 
 Queue ID: `TESTGATE-RECOVERY-TRUST-01`
 
-Status: `ACTIVE / READY-QUALIFICATION`
+Status: `ACTIVE / REVIEW`
 
 Authorization: Roger Lew's 2026-07-20 direction to scaffold and execute
 `TESTGATE-RECOVERY-TRUST-01` after independent review held the predecessor.
@@ -157,6 +157,12 @@ quality paths without editing its frozen subject.
 - [x] Close RTR-059 after canonical formatting, narrow validation, corrected
   retained-attempt accounting, and dual independent renewed PASS review; the
   184-record ledger ends at `dd312eb7` with zero effective open defects.
+- [x] Delegate one changed-head comparator attempt at `a2446adc`: LIGHT passed,
+  audit was READY 10/10, and seven HEAVY nodes passed before full Nextest
+  exposed two duplicated noncanonical durable-ledger fixtures; CRAP did not
+  launch and no retry ran.
+- [ ] Close RTR-060 after canonicalizing both fixture repository roots, exact
+  two-test qualification, dual independent review, and durable closure.
 - [ ] Apply the operator-authorized defunct-runner exception to repository
   attestation, complete dual terminal verification from retained exact
   evidence, archive the prompt, and record final disposition.

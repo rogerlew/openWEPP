@@ -98,7 +98,8 @@ struct DurableLedger(PathBuf);
 
 impl DurableLedger {
     fn new(label: &str) -> Self {
-        let repository = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
+        let repository = fs::canonicalize(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../.."))
+            .expect("canonical repository");
         let path = repository.join("target").join(format!(
             "{label}-{}-{}.jsonl",
             std::process::id(),
