@@ -35,6 +35,11 @@ Ran: two independent terminal verifiers returned PASS for exact clean HEAD
 inventory, package-authority, retained-index, CRAP, source-mutation, and ledger
 checks passed. Neither verifier executed HEAVY or another gate.
 
-Static: the operator-authorized defunct-runner exception is bounded to
-unavailable hosted attestation. No local receipt trust upgrade is claimed and
-no review finding remains open.
+Static: correction to the original exception rationale: the defunct records
+belong to the retired pre-pivot Omarchy runner, while forest1 remains the
+active self-hosted HEAVY runner. Automatic run `30002884134` was canceled
+during forest1 content-gate execution, and its GitHub-hosted verifier correctly
+failed closed. The operator exception is bounded to engineering-package
+closeout from retained exact-head evidence; no local receipt trust upgrade,
+hosted-attestation claim, or forest1-outage finding is made. No review finding
+remains open.

@@ -34,7 +34,7 @@ The same expensive verifier acceptance was invoked only after its source or acce
 4. Focused exact run after reconstruction-seam commit `02ba3e01` passed in 443.485 seconds. This timing result was retained, but reviewer A found that the test no longer entered public envelope reconstruction, so it was not accepted as final semantic closure.
 5. The broad quick run at `02ba3e01` was interrupted when that review finding arrived. Its subject was obsolete; continuing would have wasted compute and could not produce admissible evidence.
 6. Focused exact run after reviewer correction commit `edde1deb` passed through public `verify_receipt_envelope` in 399.504 seconds with the unchanged 720-second limit.
-7. One fresh exact broad run at `edde1deb` passed 94/94 with zero failures or cancellations in 1,711.098 seconds. The corrected case took 390.124 seconds in-suite; truthful FAIL/BLOCKED verification took 559.319 seconds and also remained under the unchanged limit. This run will not be repeated for reassurance.
+7. One fresh exact broad run at `edde1deb` passed 94/94 with zero failures or cancelations in 1,711.098 seconds. The corrected case took 390.124 seconds in-suite; truthful FAIL/BLOCKED verification took 559.319 seconds and also remained under the unchanged limit. This run will not be repeated for reassurance.
 
 ## Terminal evidence
 
@@ -93,3 +93,16 @@ Attempt 4 reopened RTR-014 because package-scoped Clippy had omitted the root in
     independently verified the receipt, envelope, 2,322-entry inventory,
     79-file retained index, package authority, and durable ledger without
     rerunning a gate.
+
+11. GitHub run `30002884134` at pushed head `aeddd4b4...` used
+    `forest1-openwepp-01` with the `self-hosted`, `forest1`, and `trusted`
+    labels. Checkout, comparison admission, toolchain verification, dependency
+    bootstrap, planner build, durable-history restore, and the superseded-head
+    guard passed. The run was canceled during
+    `Execute content-verifiable increment gates`; cleanup and unsigned evidence
+    upload completed. The GitHub-hosted `verify-increment` job authenticated
+    recovery evidence and then correctly failed closed because execution had
+    not succeeded. The aggregate job also failed closed. No passing repository
+    attestation or unchanged expensive rerun resulted. The three defunct
+    provider records referenced by earlier attempts belong to the retired
+    pre-pivot Omarchy runner, not forest1.

@@ -68,9 +68,10 @@ quality paths without editing its frozen subject.
 - [x] Activated and dual reviewed the runner contract: exact image, read-only
   root, dedicated writable history mount, ownership, isolation, provider
   identity, and residue checks pass.
-- [x] Dispositioned three defunct-runner provider records as non-blocking
-  historical metadata: zero jobs/artifacts/logs, no scheduler exclusion of the
-  newer push, and no available cancel/force-cancel/delete control.
+- [x] Dispositioned three defunct pre-pivot Omarchy runner records as
+  non-blocking historical metadata: zero jobs/artifacts/logs, no scheduler
+  exclusion of the newer forest1 push, and no available
+  cancel/force-cancel/delete control.
 - [x] Obtained the bounded early-deletion exception and attempted only the
   three exact orphan IDs; GitHub refused each deletion with HTTP 403 and
   deleted nothing.
@@ -153,7 +154,7 @@ quality paths without editing its frozen subject.
   pre-HEAVY blocked, and no HEAVY or CRAP node started.
 - [x] Cancel the orphaned GitHub scheduler record after the self-hosted runner
   stopped progressing; preserve unsigned artifact `8558284504` and classify
-  the cancelled record as non-gate infrastructure history.
+  the canceled record as non-gate infrastructure history.
 - [x] Close RTR-059 after canonical formatting, narrow validation, corrected
   retained-attempt accounting, and dual independent renewed PASS review; the
   184-record ledger ends at `dd312eb7` with zero effective open defects.
@@ -164,9 +165,13 @@ quality paths without editing its frozen subject.
 - [x] Close RTR-060 after canonicalizing both fixture repository roots, exact
   2/2 qualification, dual independent PASS review, and durable closure at
   ledger tip `46777931`; zero effective defects remain open.
-- [x] Apply the operator-authorized defunct-runner exception to repository
-  attestation, complete dual terminal verification from retained exact
-  evidence, archive the prompt, and record final disposition.
+- [x] Apply the operator-authorized engineering-closeout exception to the
+  missing repository attestation, complete dual terminal verification from
+  retained exact evidence, archive the prompt, and record final disposition.
+- [x] Correct the closeout record after operator clarification: Omarchy is the
+  defunct historical runner; forest1 is the active self-hosted HEAVY runner.
+  Automatic run `30002884134` reached forest1 content-gate execution and was
+  canceled there, so it produced no passing repository attestation.
 
 ## Correction Authority Envelope
 

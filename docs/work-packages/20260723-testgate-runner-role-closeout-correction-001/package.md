@@ -1,7 +1,7 @@
 # TESTGATE Runner Role And Closeout Correction
 
 Package: `20260723-testgate-runner-role-closeout-correction-001`
-Status: `ACTIVE / DOCUMENTATION CORRECTION`
+Status: `COMPLETE`
 
 ## Objective
 
@@ -51,10 +51,10 @@ reviewers may not edit, commit, push, dispatch, or execute a gate.
 ## Progress
 
 - [x] Scaffold prospective correction authority before committing corrections.
-- [ ] Correct the canonical closeout guidance and package evidence.
-- [ ] Rebind the policy digest and run narrow documentation/policy validation.
-- [ ] Obtain dual independent documentation review.
-- [ ] Record final disposition and archive the active prompt.
+- [x] Correct the canonical closeout guidance and package evidence.
+- [x] Rebind the policy digest and run narrow documentation/policy validation.
+- [x] Obtain dual independent documentation review.
+- [x] Record final disposition and archive the active prompt.
 
 ## Exit Criteria
 

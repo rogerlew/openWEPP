@@ -12,9 +12,10 @@ Ran: live runner inspection found one regular zero-byte
 archive also contains a valid zero-byte ledger. The helper reproducer rejected
 the sole placeholder with `history restore destination is not empty`.
 
-Static: defunct runner records `29673299308`, `29672334757`, and `29672149962`
-have zero jobs, artifacts, and logs and do not exclude the current runner.
-They are historical non-blocking metadata.
+Static: defunct pre-pivot Omarchy runner records `29673299308`,
+`29672334757`, and `29672149962` have zero jobs, artifacts, and logs and do
+not exclude the current forest1 runner. They are historical non-blocking
+metadata.
 
 ## Correction
 

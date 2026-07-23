@@ -251,6 +251,13 @@
 
 State as of `2026-07-23 UTC`:
 
+- `20260723-testgate-runner-role-closeout-correction-001/` -
+  COMPLETE: corrects the durable TESTGATE closeout
+  record to distinguish retired pre-pivot Omarchy from active forest1 and
+  self-hosted HEAVY execution from GitHub-hosted verification/attestation.
+  Run `30002884134` is recorded as canceled during forest1 content-gate
+  execution; dual documentation review and narrow policy validation passed.
+
 - `20260723-testgate-active-status-vocabulary-recovery-001/` - COMPLETE:
   exact active repository-attestation status admission, bounded terminal-state
   rejection, dual review/verification, and durable RTR-048 closure.
@@ -399,9 +406,11 @@ State as of `2026-07-23 UTC`:
   combined-quality defects that held `TESTGATE-CLOSURE-AUDIT-01`. Exact-head
   receipt `7b3c199d...` passed 15/15 with zero retries; ordinary and
   instrumented Nextest passed 2,304/2,304; global CRAP has zero actionable
-  rows; and dual terminal verification passed. The defunct self-hosted runner
-  is a bounded operator-accepted external-attestation exception, not a hosted
-  provenance claim.
+  rows; and dual terminal verification passed. The defunct provider records
+  belong to the retired pre-pivot Omarchy runner, not active forest1. The
+  operator accepted engineering closeout from retained exact-head evidence
+  after automatic forest1 run `30002884134` was canceled during content-gate
+  execution; no hosted-attestation or receipt trust-upgrade claim is made.
 
 - `20260720-testgate-pre-heavy-closure-audit-001/` -
   EXECUTED-COMPLETE: `TESTGATE-CLOSURE-AUDIT-01` provides the fail-closed

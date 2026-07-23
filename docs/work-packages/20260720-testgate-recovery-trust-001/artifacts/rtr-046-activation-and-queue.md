@@ -67,12 +67,13 @@ mutation can terminalize these provider records safely.
 
 ## Disposition
 
-Static: the operator identified these records as belonging to a defunct
-self-hosted runner generation and directed that they not block closeout. That
+Static: the operator identified these records as belonging to the retired
+pre-pivot Omarchy self-hosted runner generation and directed that they not
+block closeout. They do not describe the active forest1 runner. That
 disposition is accepted because every record has zero jobs, artifacts, and
-logs; a newer push executed despite them; and every provider cleanup control
-was either unavailable or refused. They remain retained historical provider
-metadata, not pending work in the active runner's concurrency identity.
+logs; a newer forest1 push executed despite them; and every provider cleanup
+control was either unavailable or refused. They remain retained historical
+provider metadata, not pending work in forest1's concurrency identity.
 
 Ran: RTR-046 closed durably at `fb11933d...`, bound to exact activation-evidence
 commit `58958ff8...`.

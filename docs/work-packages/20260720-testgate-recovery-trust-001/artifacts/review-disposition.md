@@ -95,8 +95,15 @@ closure-eligible CRAP with zero actionable rows, unchanged source, 79/79
 indexed evidence files, `READY` package authority, and zero open defects in
 the matching durable and retained ledger chains.
 
-Static: both verifiers applied the operator-authorized bounded exception for
-the defunct self-hosted runner. The local receipt correctly remains
-`LOCAL_UNTRUSTED`; no hosted-attestation claim is made. The unavailable
-external attestation is not a package closeout blocker, and no terminal
-finding remains open.
+Static: correction to the supplied exception rationale: both verifiers'
+technical receipt, inventory, retained-index, package-authority, and ledger
+checks remain valid, but the defunct records belong to the retired pre-pivot
+Omarchy runner. The active protected HEAVY runner is forest1.
+
+Ran: later automatic run `30002884134` reached the content-gate step on
+`forest1-openwepp-01` and was canceled there. Its GitHub-hosted verifier
+correctly failed closed because execution did not succeed. The local receipt
+therefore remains `LOCAL_UNTRUSTED`, and no hosted-attestation claim is made.
+The operator exception is bounded to engineering-package closeout from the
+retained comparator evidence; it is not a forest1-outage finding or a receipt
+trust upgrade. No terminal review finding remains open.

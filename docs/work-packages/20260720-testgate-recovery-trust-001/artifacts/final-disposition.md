@@ -27,9 +27,20 @@ and the 194-record durable ledger ends at
 `a14e4751817ba5730017cfe82f0b2e037ae13f2d7be0aeea2395935bdd573e4c`
 with zero effective open defects.
 
-Static: GitHub attestation remains unavailable because the self-hosted runner
-is defunct. The operator explicitly accepted that bounded external outage as
-non-blocking historical infrastructure. This disposition does not claim a
-hosted attestation or upgrade the local receipt's trust label; it closes the
-package on exact comparator evidence plus dual independent verification.
-No unchanged gate rerun is authorized.
+Static: correction to the original closeout rationale: the defunct provider
+records belong to the retired pre-pivot Omarchy runner. The active protected
+HEAVY runner is `forest1-openwepp-01`; it is not defunct. GitHub-hosted runners
+perform bounded independent verification and attestation, not HEAVY compute.
+
+Ran: automatic push run `30002884134` used the forest1 runner and passed
+checkout, comparison admission, toolchain verification, dependency bootstrap,
+planner build, durable-history restore, and the superseded-head guard. It was
+canceled during `Execute content-verifiable increment gates`. The hosted
+verifier then failed closed because execution had not succeeded, so the run
+did not issue a passing repository attestation.
+
+Static: the operator-accepted exception closes this engineering package on the
+retained exact-head comparator evidence plus dual independent verification. It
+does not claim forest1 unavailability, a hosted attestation, or an upgrade of
+the local receipt's `LOCAL_UNTRUSTED` label. No unchanged gate rerun is
+authorized.

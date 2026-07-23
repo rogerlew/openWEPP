@@ -975,6 +975,38 @@ job's immutable artifact, runs no candidate code, fails closed unless execution
 and verification both succeeded, and performs the minimal subject recheck,
 attestation, and native verification sequence.
 
+The protected TESTGATE architecture separates execution from verification and
+attestation:
+
+- `execute-increment`, including every selected HEAVY node, runs on the trusted
+  self-hosted forest1 runner. GitHub-hosted compute is not a substitute for
+  this workload.
+- `verify-increment` runs the bounded independent reconstruction and evidence
+  checks on GitHub-hosted infrastructure. It must not execute HEAVY.
+- `increment-gates` consumes the verified immutable artifact and performs the
+  minimal repository attestation and authority checks. It runs no candidate
+  gate code.
+
+Accordingly, "GitHub attestation" identifies the repository-controlled
+verification and signing boundary; it does not mean that GitHub-hosted runners
+execute TESTGATE's expensive nodes. Runner availability must be evaluated
+against the exact runner name, labels, and generation. Defunct records for a
+retired runner, such as the pre-pivot Omarchy runner, do not prove that
+forest1 is unavailable and do not justify canceling an active forest1 job.
+A terminal job state also does not imply a passing gate: cancellation during
+`execute-increment` prevents the downstream attestation even when cleanup,
+evidence upload, and hosted fail-closed jobs complete.
+
+Work-package engineering closeout and receipt trust assignment are separate
+claims. An operator may close implementation, review, and documentation work
+from retained exact-head comparator evidence plus the package's required
+independent verification when the package explicitly records the exception.
+That closeout does not promote a `LOCAL_UNTRUSTED` receipt, satisfy an
+`INCREMENT`, campaign-certification, or release trust boundary, or permit a
+hosted-attestation claim. The closeout record must name the actual reason the
+protected execution or attestation did not complete; it may not substitute an
+unrelated retired-runner outage.
+
 Release-eligible envelopes carry an offline-verifiable attestation bundle that
 binds repository, source commit/ref, workflow and job revision, runner/image,
 attempt, plan/execution key, subjects, and artifact digests. The authority

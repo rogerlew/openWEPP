@@ -21,7 +21,17 @@ verification, exact 2,322-entry inventory reconstruction, 79-file retained
 index verification, package-authority reconstruction, and ledger validation.
 No verifier executed a gate.
 
-Static: the defunct self-hosted runner leaves hosted attestation unavailable.
-The operator explicitly accepted that bounded external outage as non-blocking.
-The receipt remains truthfully `LOCAL_UNTRUSTED`; this disposition makes no
-hosted-attestation claim and does not authorize an unchanged rerun.
+Static: correction to the original closeout rationale: the defunct historical
+records belong to the retired pre-pivot Omarchy runner. Forest1 remains the
+active self-hosted HEAVY runner; GitHub-hosted runners provide bounded
+verification and attestation only.
+
+Ran: automatic run `30002884134` reached content-gate execution on
+`forest1-openwepp-01` and was canceled there. The hosted verifier correctly
+failed closed, so no passing repository attestation exists for that run.
+
+Static: the operator exception closes the engineering package on retained
+exact-head comparator evidence and dual terminal verification. The receipt
+remains truthfully `LOCAL_UNTRUSTED`; this disposition makes no
+hosted-attestation or forest1-outage claim and does not authorize an unchanged
+rerun.

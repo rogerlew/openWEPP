@@ -6,7 +6,7 @@ Evidence class: Ran.
 
 | Invocation | Result | Disposition |
 |---|---|---|
-| `cargo nextest run -p openwepp-gate-planner --profile quick` (`275c6c8c-fce7-46c4-bb0e-bb5d57d93a34`) | 40 pass, 9 fail, 20 cancelled | One common cause: the scaffold's canonical strategy edit had not updated the impact-map digest. The digest and generation were corrected before continuing. |
+| `cargo nextest run -p openwepp-gate-planner --profile quick` (`275c6c8c-fce7-46c4-bb0e-bb5d57d93a34`) | 40 pass, 9 fail, 20 canceled | One common cause: the scaffold's canonical strategy edit had not updated the impact-map digest. The digest and generation were corrected before continuing. |
 | Same crate-focused command (`eff5624c-d034-4f23-9954-3959c3e113c2`) | 68 pass, 5 fail in 447.856 seconds | Three failures exposed an all-light compatibility receipt defect; two fixture verifiers correctly rejected the dirty committed-checkout precondition. |
 | Exact three failed executor tests after `FINAL_LIGHT` correction | 3 pass, return code 0 | No broader rerun; only the production-path failures were repeated. |
 | Exact two clean-checkout verifier tests | 2 fail in 991.474 seconds | Clean checkout closed the original precondition. Both then exposed the same fixture-only boundary: an `INTENT` plan was being treated as an executable terminal heavy receipt. |
