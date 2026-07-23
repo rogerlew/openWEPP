@@ -251,6 +251,10 @@
 
 State as of `2026-07-23 UTC`:
 
+- `20260723-testgate-active-status-vocabulary-recovery-001/` - ACTIVE /
+  SCAFFOLD: corrects RTR-048 so the explicitly active repository-attestation
+  state remains a valid package-authority anchor.
+
 - `20260723-testgate-intent-package-binding-recovery-001/` - ACTIVE / SCAFFOLD:
   corrects RTR-047 by binding trusted execution to one explicit,
   authenticated intent package before planning.
