@@ -51,3 +51,12 @@ Attempt 4 reopened RTR-014 because package-scoped Clippy had omitted the root in
 5. `/home/workdir/testgate-recovery-trust-01-final4.3vbZS2`: all six LIGHT nodes and audit `17bd0021...` passed; HEAVY reached 13 PASS, 1 FAIL, and 1 prerequisite BLOCKED. Full Nextest ran 2,197/2,218 cases before the obsolete nonpass subject was cut off: 2,187 passed, three socket fixtures failed on `SUN_LEN`, four publication cases timed out at the unchanged 720-second ceiling, and three cases were terminated during drain. The executor had already sealed receipt `42907514...`, both stage lifecycles, and ATTEMPT-CLOSED with no source mutation. Finalizer traversal was stopped separately only after durable closure because it spent more than nine minutes hashing a 33 GB disposable target; the corrected pruning boundary retained the evidence and regenerated the index.
 
 6. `/home/workdir/testgate-recovery-trust-01-final5.mbHSTh`: package audit `519885dd...` was `READY`, all six LIGHT nodes passed in 237,285 ms, and receipt `3cd013ab...` was sealed. Pre-heavy audit `7f7be60e...` then returned `INVALID / GATE-AUDIT-PACKAGE-AMBIGUOUS`; no HEAVY lifecycle or node started. The exact subject was clean `1e09babc...`, the binary was `69afb24e...`, and the 29-file retained root is 860 KB. The mismatch opened RTR-018 rather than authorizing an unchanged retry.
+
+7. `/home/workdir/testgate-recovery-trust-01-final-rtr044.IYxJPd`: exact HEAD
+   `21ac2fdf` passed LIGHT 6/6 and pre-HEAVY 10/10 READY. HEAVY sealed receipt
+   `64a6f292...26b44` with 14 PASS, 1 FAIL, and zero retries. Ordinary Nextest
+   passed 2,290/2,290 in 1,014.144 seconds; instrumented Nextest passed
+   2,290/2,290 in 806.407 seconds. CRAP adjudication exposed four actionable
+   rows across `main.rs` and `package_validation.rs`. Source mutation passed.
+   Post-seal observer defect RTR-045 was preserved separately; the attempt and
+   ledger remained authoritative.

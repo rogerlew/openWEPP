@@ -2,7 +2,7 @@
 
 Package ID: `20260723-cqr-nightly-b03s-aggregate-001`
 
-Status: `ACTIVE`
+Status: `ACTIVE / READY-QUALIFICATION`
 
 ## Objective
 
@@ -41,3 +41,14 @@ assigned bounded module implementation or comparator artifact root.
 - Both module packages complete exact CRAP and behavior gates.
 - Every review finding is dispositioned and dual terminal verification passes.
 - One changed-head recovery qualification passes without an unchanged retry.
+
+## Progress
+
+- [x] Aggregate scaffold committed before both module scaffolds.
+- [x] Canonical aggregate admission passed for both modules.
+- [x] B03S-1 and B03S-2 completed with exact metrics, dual review, and dual
+  terminal verification.
+- [x] RTR-045 observer prerequisite closed and dual verified.
+- [x] Obtained dual independent aggregate implementation-review PASS.
+- [ ] Run one changed-head recovery
+  qualification through the comparator.

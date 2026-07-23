@@ -1,6 +1,6 @@
 # CQR Nightly B03: Sequential Authority CRAP Closeout
 
-Status: `ACTIVE`
+Status: `EXECUTING (2 of 2 module packages complete)`
 
 ## Objective
 
@@ -50,3 +50,15 @@ changed-head `INCREMENT` TESTGATE qualification.
 - Each module package has aggregate admission, dual review, dual verification,
   and complete disposition evidence.
 - One new exact-head recovery qualification passes without an unchanged retry.
+
+## Progress
+
+- [x] Fully validator-shaped B03S aggregate and both module scaffolds committed.
+- [x] Both module aggregate-admission checks passed before implementation.
+- [x] B03S-1 `main.rs` completed at `0ff8f340`; CRAP 2–4, 100% coverage,
+  dual review and dual verification PASS.
+- [x] B03S-2 `package_validation.rs` completed at `c85c1a15`; CRAP 4–5,
+  100% coverage, dual review and dual verification PASS.
+- [x] Independent observer prerequisite RTR-045 closed at `4181e914` with
+  superseding ledger digest `b4ab096a...` and dual verification PASS.
+- [ ] Complete aggregate review and one changed-head recovery qualification.

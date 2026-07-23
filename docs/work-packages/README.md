@@ -260,6 +260,14 @@ State as of `2026-07-23 UTC`:
   `package_validation.rs` CRAP closeout exposed by recovery receipt
   `64a6f292...26b44`.
 
+- `20260723-cqr-nightly-b03s-1-main-001/` - EXECUTED-COMPLETE: reduced three
+  authority command targets and five helpers to CRAP 2–4 at 100% focused
+  coverage with dual review and verification.
+
+- `20260723-cqr-nightly-b03s-2-package-validation-001/` -
+  EXECUTED-COMPLETE: reduced package-audit entry and helpers to CRAP 4–5 at
+  100% focused coverage with dual review and verification.
+
 - `20260723-cqr-nightly-b03-aggregate-001/` and its first main-module scaffold
   are terminal local HOLDs; canonical admission rejected the immutable
   aggregate heading before any implementation edit.
