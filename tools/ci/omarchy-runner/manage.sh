@@ -143,7 +143,7 @@ setup_runner() {
     --mount "type=volume,src=${HISTORY_VOLUME},dst=/testgate-history" \
     "${IMAGE}" -c 'chown 10001:10001 /testgate-history && chmod 0700 /testgate-history'
   remote docker run --detach --name "${CONTAINER}" --restart unless-stopped \
-    --cpus 32 --cpuset-cpus 0-31 --memory 48g --memory-swap 48g --pids-limit 8192 \
+    --cpus 32 --cpuset-cpus 0-31 --memory 64g --memory-swap 64g --pids-limit 8192 \
     --read-only \
     --security-opt no-new-privileges=true \
     --cap-drop ALL \
@@ -152,7 +152,7 @@ setup_runner() {
     --tmpfs "/runner-state/_diag:rw,nosuid,nodev,noexec,size=256m,uid=10001,gid=10001,mode=0700" \
     --tmpfs "/runner-work:rw,nosuid,nodev,size=24g,uid=10001,gid=10001,mode=0770" \
     --tmpfs "/cache/cargo:rw,nosuid,nodev,size=8g,uid=10001,gid=10001,mode=0700" \
-    --tmpfs "/t:rw,exec,nosuid,nodev,size=40g,uid=10001,gid=10001,mode=0700" \
+    --tmpfs "/t:rw,exec,nosuid,nodev,size=56g,uid=10001,gid=10001,mode=0700" \
     --tmpfs "/home/runner:rw,nosuid,nodev,size=1g,uid=10001,gid=10001,mode=0700" \
     --tmpfs "/tmp:rw,nosuid,nodev,size=2g,uid=10001,gid=10001,mode=1777" \
     "${IMAGE}" run >/dev/null
