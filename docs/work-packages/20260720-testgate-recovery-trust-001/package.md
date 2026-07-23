@@ -4,7 +4,7 @@ Package ID: `20260720-testgate-recovery-trust-001`
 
 Queue ID: `TESTGATE-RECOVERY-TRUST-01`
 
-Status: `ACTIVE / REVIEW`
+Status: `ACTIVE / READY-QUALIFICATION`
 
 Authorization: Roger Lew's 2026-07-20 direction to scaffold and execute
 `TESTGATE-RECOVERY-TRUST-01` after independent review held the predecessor.
@@ -106,7 +106,7 @@ quality paths without editing its frozen subject.
 - [x] Retain automatic run `29985878363`: authenticated recovery publication
   passed with hidden evidence present, LIGHT passed 6/6, and pre-HEAVY blocked
   solely on the runner-local AUTO defect left open by the prior failed run.
-- [ ] Close RTR-052/RTR-054 through the reviewed ledger closure command and
+- [x] Close RTR-052/RTR-054 through the reviewed ledger closure command and
   exact failed-root invalidation before one later changed-head attempt.
 - [x] (2026-07-23) Accept both initial reviewers' HOLD findings: require exact
   OPEN/CLOSED states, real correction ancestry, nonblank review evidence,
@@ -121,6 +121,10 @@ quality paths without editing its frozen subject.
 - [x] (2026-07-23) Open RTR-054 when the no-follow guard exposed a
   noncanonical pre-HEAVY coverage-fixture ledger path; construct the fixture
   from the canonical repository root and pass its exact regression.
+- [x] (2026-07-23) Obtain dual renewed implementation PASS at exact head
+  `94462c30`, close the runner-local AUTO defect with canonical ledger tip
+  `2852c7ed`, and close RTR-052 through RTR-054 with campaign-ledger tip
+  `50a59cc7`; both ledgers re-hash with zero effective open defects.
 - [ ] Obtain the exact repository-reviewed GitHub attestation, complete the
   held terminal verification, archive the prompt, and record final
   disposition.

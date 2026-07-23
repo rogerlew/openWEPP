@@ -76,6 +76,25 @@ Static: the final accepted reviewer findings are implemented in the resume
 consumer itself: it mirrors the producer's OPEN-lifecycle/cause association
 and calls the shared exact-ancestor correction validator.
 
-Pending: dual independent implementation review, exact correction commit,
-runner-ledger closure, durable RTR-052/RTR-054 closure, and one changed-head
-automatic qualification.
+Ran: dual independent implementation review passed at exact clean head
+`94462c30cc57735828d774a963245b82cb964f61`. Package-chain reconstruction was
+`READY`, with chain ID
+`5884de7cdb317be96ba53e51003143e72fdf60754746424122d7ccb09ee2fdab`
+and zero unauthorized paths.
+
+Ran: the release planner built from that reviewed head has SHA-256
+`db0a1d8b48e93783c96632391a5f81210ca00f90eb7e078d18951f89bff5a3aa`.
+Its canonical runner-local closure appended record
+`2852c7ed8076cc53ff8dfae7d68abf53d0820e4a794ce2fbc1860c659477d978`,
+closing `AUTO-5f75d58df001e6fe` and invalidating only
+`/testgate-history/recovery/29984179443-1`. All eight runner-ledger records
+re-hash correctly.
+
+Ran: durable campaign closures for RTR-052, RTR-053, and RTR-054 have digests
+`3531837d52d0c1a66b602cff15204cb553f4ca49a872b5e3ea20d5368db530f1`,
+`39834102c6a33a9ffa27fae8ba5e89b8fe8760054241289df01e43e156857537`,
+and `50a59cc7f86656cd04dc454c7281fecbb17c5ab72c411902528a089bdf60d362`.
+The 173-record campaign ledger re-hashes correctly and has zero effective open
+defects.
+
+Pending: one changed-head automatic qualification.
