@@ -123,6 +123,46 @@ class ResolveTestgateIntentPackageTests(unittest.TestCase):
         ):
             RESOLVER.resolve(self.fixture.root, "push", head, "")
 
+    def test_dot_components_inside_package_prefix_fail_closed(self) -> None:
+        head = self.fixture.commit("dot components")
+        for package in [
+            "docs/work-packages/../package.md",
+            "docs/work-packages/./package.md",
+        ]:
+            with self.subTest(package=package), self.assertRaisesRegex(
+                RESOLVER.IntentPackageError, "invalid intent package"
+            ):
+                RESOLVER.resolve(
+                    self.fixture.root,
+                    "workflow_dispatch",
+                    head,
+                    package,
+                )
+
+    def test_push_rejects_dot_component_inside_package_prefix(self) -> None:
+        head = self.fixture.commit(
+            "dot component\n\n"
+            "TESTGATE-Intent-Package: docs/work-packages/../package.md"
+        )
+        with self.assertRaisesRegex(
+            RESOLVER.IntentPackageError, "invalid intent package"
+        ):
+            RESOLVER.resolve(self.fixture.root, "push", head, "")
+
+    def test_dispatch_rejects_output_line_injection(self) -> None:
+        head = self.fixture.commit("output injection")
+        for separator in ["\n", "\r"]:
+            package = f"docs/work-packages/owner{separator}injected=value/package.md"
+            with self.subTest(separator=repr(separator)), self.assertRaisesRegex(
+                RESOLVER.IntentPackageError, "invalid intent package"
+            ):
+                RESOLVER.resolve(
+                    self.fixture.root,
+                    "workflow_dispatch",
+                    head,
+                    package,
+                )
+
     def test_unsupported_event_fails_closed(self) -> None:
         head = self.fixture.commit("unsupported")
         with self.assertRaisesRegex(

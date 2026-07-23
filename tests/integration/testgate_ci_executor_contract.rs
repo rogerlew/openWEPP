@@ -1092,5 +1092,7 @@ fn trusted_workflow_binds_one_explicit_intent_package() {
     assert!(resolver.contains("TESTGATE-Intent-Package"));
     assert!(resolver.contains("push head must contain exactly one"));
     assert!(resolver.contains("workflow_dispatch requires an explicit"));
-    assert!(resolver.contains("PACKAGE_PATH.fullmatch(package)"));
+    assert!(resolver.contains("parts[2] not in {\"\", \".\", \"..\"}"));
+    assert!(resolver.contains("\"\\r\" not in parts[2]"));
+    assert!(resolver.contains("\"\\n\" not in parts[2]"));
 }

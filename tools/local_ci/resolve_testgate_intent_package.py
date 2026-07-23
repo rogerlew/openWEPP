@@ -4,12 +4,10 @@
 from __future__ import annotations
 
 import argparse
-import re
 import subprocess
 import sys
 from pathlib import Path
 
-PACKAGE_PATH = re.compile(r"docs/work-packages/[^/]+/package[.]md")
 TRAILER_KEY = "TESTGATE-Intent-Package"
 
 
@@ -49,6 +47,18 @@ def _push_package(repo: Path, head: str) -> str:
     return values[0]
 
 
+def _valid_package_path(package: str) -> bool:
+    parts = package.split("/")
+    return (
+        len(parts) == 4
+        and parts[:2] == ["docs", "work-packages"]
+        and parts[2] not in {"", ".", ".."}
+        and "\r" not in parts[2]
+        and "\n" not in parts[2]
+        and parts[3] == "package.md"
+    )
+
+
 def resolve(
     repo: Path, event_name: str, head: str, input_package: str
 ) -> str:
@@ -67,7 +77,7 @@ def resolve(
         package = supplied
     else:
         raise IntentPackageError(f"unsupported trusted event: {event_name}")
-    if PACKAGE_PATH.fullmatch(package) is None:
+    if not _valid_package_path(package):
         raise IntentPackageError(f"invalid intent package path: {package}")
     return package
 
