@@ -535,6 +535,26 @@ fn assert_testgate_job_order() {
     assert!(attest < verify_attestation);
     assert!(verify_attestation < upload);
     assert!(upload < after_authority);
+    let authenticated_upload = &signer[upload..after_authority];
+    for required in [
+        "path: |",
+        "testgate-evidence/receipt.json",
+        "testgate-evidence/terminal-plan.json",
+        "testgate-evidence/attestation-predicate.json",
+        "testgate-evidence/envelope-verification.json",
+        "testgate-evidence/github-attestation.jsonl",
+        "testgate-evidence/attestation-verification.json",
+        "testgate-evidence/execution/target/gate-plan/adjudicated-crap.json",
+    ] {
+        assert!(
+            authenticated_upload.contains(required),
+            "authenticated publication missing bounded evidence: {required}"
+        );
+    }
+    assert!(
+        !authenticated_upload.contains("path: ${{ runner.temp }}/testgate-evidence\n"),
+        "authenticated publication must not re-upload the full verified archive"
+    );
     assert!(!signer[after_authority + 1..].contains("      - name:"));
 }
 

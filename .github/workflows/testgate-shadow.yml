@@ -585,7 +585,14 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: testgate-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/testgate-evidence
+          path: |
+            ${{ runner.temp }}/testgate-evidence/receipt.json
+            ${{ runner.temp }}/testgate-evidence/terminal-plan.json
+            ${{ runner.temp }}/testgate-evidence/attestation-predicate.json
+            ${{ runner.temp }}/testgate-evidence/envelope-verification.json
+            ${{ runner.temp }}/testgate-evidence/github-attestation.jsonl
+            ${{ runner.temp }}/testgate-evidence/attestation-verification.json
+            ${{ runner.temp }}/testgate-evidence/execution/target/gate-plan/adjudicated-crap.json
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 7
