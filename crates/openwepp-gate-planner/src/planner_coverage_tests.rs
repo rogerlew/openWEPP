@@ -1491,32 +1491,18 @@
     }
 
     #[test]
-    #[cfg_attr(
-        not(coverage),
-        ignore = "development-only: enumerates exact workspace profile inventories"
-    )]
-    fn full_profile_inventory_excludes_exact_manual_science_cohort() {
+    fn full_profile_inventory_binds_profile_argument() {
         let repo = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
         let policy = PolicyBundle::load(&repo).expect("policy bundle");
         let full = policy
             .definition("workspace-full-nextest-v1")
             .expect("full regression definition");
-        let full_inventory =
-            super::nextest_inventory(&repo, full, "workspace").expect("full inventory");
-
-        let mut unfiltered = full.clone();
-        unfiltered
+        let index = full
             .arguments_template
-            .retain(|argument| argument != "--profile" && argument != "full");
-        let unfiltered_inventory =
-            super::nextest_inventory(&repo, &unfiltered, "workspace").expect("workspace inventory");
-
-        let excluded = unfiltered_inventory
             .iter()
-            .filter(|item| full_inventory.binary_search(item).is_err())
-            .collect::<Vec<_>>();
-        assert_eq!(excluded.len(), 36);
-        assert_eq!(unfiltered_inventory.len(), full_inventory.len() + 36);
+            .position(|argument| argument == "--profile")
+            .expect("profile flag");
+        assert_eq!(full.arguments_template.get(index + 1).map(String::as_str), Some("full"));
     }
 
     #[test]

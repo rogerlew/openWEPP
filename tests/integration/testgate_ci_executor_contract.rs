@@ -813,7 +813,6 @@ fn live_testgate_reconstruction_fixtures_have_one_explicit_development_profile()
     let fixtures = [
         "exact_planner_output_reconstructs_through_the_public_audit_path",
         "terminal_reconciliation_reports_added_paths_and_escalation",
-        "full_profile_inventory_excludes_exact_manual_science_cohort",
         "ready_audit_verification_preserves_order_and_exact_verdict",
         "verifier_accepts_truthful_fail_and_blocked_receipts",
         "normalized_junit_artifacts_reconstruct_exact_inventory",
@@ -827,7 +826,7 @@ fn live_testgate_reconstruction_fixtures_have_one_explicit_development_profile()
     ];
     for selector in [
         "pre_heavy::coverage_tests::exact_planner_output",
-        "planner::tests::(",
+        "planner::tests::terminal_reconciliation",
         "verifier::tests::(",
         "verifier::tests::coverage_tests::ready_audit",
         "executor::tests::terminal_plan_",
@@ -857,10 +856,10 @@ fn live_testgate_reconstruction_fixtures_have_one_explicit_development_profile()
     }
     assert_eq!(
         sources.matches("development-only:").count(),
-        13,
+        12,
         "the governed live-reconstruction cohort must remain exact"
     );
-    assert_eq!(sources.matches("not(coverage),").count(), 13);
+    assert_eq!(sources.matches("not(coverage),").count(), 12);
 }
 
 #[test]

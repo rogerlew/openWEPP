@@ -1839,15 +1839,18 @@ fn nextest_inventory_at(
         "--message-format",
         "json",
     ]);
-    if let Some(index) = definition
+    if let Some(profile) = definition
         .arguments_template
         .iter()
         .position(|argument| argument == "--profile")
+        .map(|index| {
+            definition
+                .arguments_template
+                .get(index + 1)
+                .ok_or_else(|| plan_shape("/gate-definitions/arguments_template/profile"))
+        })
+        .transpose()?
     {
-        let profile = definition
-            .arguments_template
-            .get(index + 1)
-            .ok_or_else(|| plan_shape("/gate-definitions/arguments_template/profile"))?;
         command.args(["--profile", profile]);
     }
     if definition.inventory_source == "NEXTEST_PACKAGE" {

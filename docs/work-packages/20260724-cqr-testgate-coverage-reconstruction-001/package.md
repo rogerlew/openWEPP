@@ -82,7 +82,11 @@ Evidence class: Ran
   tests with 15 development-only tests skipped.
 - Forest1 run `30104030978` confirmed the profile fix by clearing exact JUnit
   comparison, then the full suite failed its own cohort-governance contract
-  because the new profile regression was the thirteenth development fixture
-  while the explicit profile still declared twelve. The fixture and contract
-  inventories now both declare the exact 13-item cohort.
+  because the new profile regression was temporarily a thirteenth development
+  fixture while the explicit profile still declared twelve.
+- Forest1 run `30107431813` cleared both prior seams, but the added thirteenth
+  fixture launched nested Cargo compilation inside instrumented coverage and
+  failed on the runner's protected target context. The nested live fixture was
+  removed, profile binding is covered by a pure unit test, and the explicit
+  live reconstruction cohort is restored to 12.
 - Changed-head forest1 TESTGATE success remains pending.
