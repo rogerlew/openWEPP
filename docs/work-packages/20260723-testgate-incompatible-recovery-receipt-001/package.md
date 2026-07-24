@@ -16,6 +16,7 @@ ledger, path, or checkpoint evidence remains fail-closed.
 - `crates/openwepp-gate-planner/src/pre_heavy.rs`
 - `crates/openwepp-gate-planner/src/pre_heavy_coverage_tests.rs`
 - `crates/openwepp-gate-planner/src/pre_heavy_tests.rs`
+- `crates/openwepp-gate-planner/src/planner_coverage_tests.rs`
 - `crates/openwepp-gate-planner/src/verifier.rs`
 - `.config/nextest.toml`
 - `.github/workflows/testgate-shadow.yml`
@@ -52,6 +53,11 @@ ledger, path, or checkpoint evidence remains fail-closed.
 - Final hosted authority publication uploads only the authenticated signing
   subject, verification proofs, terminal plan, and reusable global-quality
   report. The already-published full verified archive is not uploaded again.
+- Routine affected/full profiles retain deterministic planner, verifier,
+  receipt, and JUnit contract coverage without repeatedly enumerating or
+  reconstructing the complete repository. Explicit development-only fixtures
+  own live repository reconstruction, have a documented invocation, and remain
+  required when their inventory/reconstruction surfaces change.
 - One exact changed-head forest1 TESTGATE qualification proves that a rejected
   incompatible receipt is retained without blocking the current attempt. The
   permanent queued records from retired Omarchy are ignored; no duplicate
