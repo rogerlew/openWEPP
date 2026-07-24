@@ -1734,8 +1734,7 @@ mod tests {
     };
     use crate::canonical::{derived_id, digest, sha256_bytes};
     use crate::error::{ErrorClass, GatePolicyError, Result};
-    use crate::planner::{InventoryProvider, PlanRequest, Planner, PlanningStage};
-    use crate::policy::GateDefinition;
+    use crate::planner::{NextestInventory, PlanRequest, Planner, PlanningStage};
 
     #[test]
     #[allow(clippy::too_many_lines)]
@@ -2111,56 +2110,101 @@ mod tests {
             .replace('\'', "&apos;")
     }
 
-    fn normalized_fixture_case(gate_definition_id: &str, target: &str) -> (String, String) {
-        (
-            format!("rust-suites::fixture::{gate_definition_id}"),
-            format!("case::{target}"),
-        )
-    }
-
-    struct NormalizedFixtureInventory;
-
-    impl InventoryProvider for NormalizedFixtureInventory {
-        fn inventory(
-            &self,
-            _repo: &std::path::Path,
-            definition: &GateDefinition,
-            target: &str,
-        ) -> Result<Vec<String>> {
-            let (class, name) = normalized_fixture_case(&definition.gate_definition_id, target);
-            Ok(vec![sha256_bytes(format!("{class}\0{name}").as_bytes())])
+    fn collect_junit_cases(value: &Value, prefix: &str, output: &mut Vec<(String, String)>) {
+        match value {
+            Value::Object(object) => {
+                if let Some(testcases) = object.get("testcases").and_then(Value::as_object) {
+                    output.extend(
+                        testcases
+                            .keys()
+                            .map(|name| (prefix.to_owned(), name.to_owned())),
+                    );
+                }
+                for (key, child) in object {
+                    let next = if prefix.is_empty() {
+                        key.clone()
+                    } else {
+                        format!("{prefix}::{key}")
+                    };
+                    collect_junit_cases(child, &next, output);
+                }
+            }
+            Value::Array(array) => {
+                for child in array {
+                    collect_junit_cases(child, prefix, output);
+                }
+            }
+            _ => {}
         }
     }
 
-    fn junit_bytes_for_node(node: &Value) -> Vec<u8> {
-        let definition = node["gate_definition_id"]
-            .as_str()
-            .expect("gate definition ID");
+    fn nextest_listing_selectors(node: &Value) -> Vec<Vec<String>> {
         let arguments = node["arguments"].as_array().expect("node arguments");
-        let mut targets = arguments
-            .windows(2)
-            .filter_map(|pair| {
-                matches!(pair[0].as_str(), Some("-p" | "--package"))
-                    .then(|| pair[1].as_str().expect("package argument").to_owned())
-            })
-            .collect::<Vec<_>>();
-        if targets.is_empty() {
-            targets.push(node["target"].as_str().expect("node target").to_owned());
+        let mut packages = Vec::new();
+        for pair in arguments.windows(2) {
+            match (pair[0].as_str(), pair[1].as_str()) {
+                (Some("--test"), Some(target)) => {
+                    return vec![vec!["--test".to_owned(), target.to_owned()]];
+                }
+                (Some("-p" | "--package"), Some(package)) => packages.push(package.to_owned()),
+                _ => {}
+            }
         }
-        let cases = targets
-            .iter()
-            .map(|target| normalized_fixture_case(definition, target))
-            .collect::<Vec<_>>();
+        if packages.is_empty() {
+            vec![vec!["--workspace".to_owned()]]
+        } else {
+            packages
+                .into_iter()
+                .map(|package| vec!["-p".to_owned(), package])
+                .collect()
+        }
+    }
+
+    fn junit_bytes_for_node(root: &std::path::Path, node: &Value) -> Vec<u8> {
+        let mut cases = Vec::new();
+        let neutral_target =
+            std::env::temp_dir().join("openwepp-gate-planner-neutral-cargo-target");
+        for selector in nextest_listing_selectors(node) {
+            let output = crate::repository::neutral_cargo_command()
+                .env("CARGO_TARGET_DIR", &neutral_target)
+                .args([
+                    "nextest",
+                    "list",
+                    "--locked",
+                    "--offline",
+                    "--message-format",
+                    "json",
+                ])
+                .args(selector)
+                .current_dir(root)
+                .output()
+                .expect("list test inventory for JUnit fixture");
+            assert!(
+                output.status.success(),
+                "nextest list must succeed: {}",
+                String::from_utf8_lossy(&output.stderr)
+            );
+            let listing: Value =
+                serde_json::from_slice(&output.stdout).expect("nextest listing JSON");
+            collect_junit_cases(&listing, "", &mut cases);
+        }
         let planned = node["expected_inventory"]["ids"]
             .as_array()
             .expect("planned inventory")
             .iter()
             .map(|item| item.as_str().expect("inventory ID"))
             .collect::<BTreeSet<_>>();
-        assert_eq!(planned.len(), cases.len());
+        cases.sort();
+        cases.dedup();
+        let retained = cases
+            .into_iter()
+            .filter(|(class, name)| {
+                planned.contains(sha256_bytes(format!("{class}\0{name}").as_bytes()).as_str())
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(retained.len(), planned.len(), "JUnit fixture must be exact");
         let mut xml = String::from("<testsuite>\n");
-        for (class, name) in cases {
-            assert!(planned.contains(sha256_bytes(format!("{class}\0{name}").as_bytes()).as_str()));
+        for (class, name) in retained {
             let junit_class = class
                 .strip_prefix("rust-suites::")
                 .expect("Nextest inventory class prefix");
@@ -2202,7 +2246,7 @@ mod tests {
                     .iter()
                     .map(|change| change.path.clone())
                     .collect();
-                let plan = Planner::new(NormalizedFixtureInventory)
+                let plan = Planner::new(NextestInventory)
                     .build(
                         &root,
                         &PlanRequest {
@@ -2332,7 +2376,7 @@ mod tests {
                         .extension()
                         .is_some_and(|extension| extension == "xml")
                 {
-                    junit_bytes_for_node(node)
+                    junit_bytes_for_node(&root, node)
                 } else {
                     format!("verified artifact {index}: {path}").into_bytes()
                 };
