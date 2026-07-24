@@ -1,6 +1,6 @@
 # TESTGATE And Quality Observatory Roadmap
 
-Status: `RATIFIED / EXECUTING / ORDER-2-NEXT`
+Status: `RATIFIED / EXECUTING / ORDER-3-NEXT`
 
 Owner: maintainers
 
@@ -17,11 +17,18 @@ the other.
   authority commit `bd11e60d`. ADR-0041 is accepted, canonical governance is
   aligned, predecessor obligations are dispositioned, and dual terminal
   verification passed.
-- Order 2, `20260724-testgate-quality-deferral-001`, is the next executable
-  package. Orders 3 through 7 remain queued behind their declared dependencies.
-- No typed `DEFERRED_TO_QUALITY_CI` execution claim exists yet. Order 2 must
-  implement and verify that planner, receipt, verifier, and workflow behavior
-  before Order 6 may qualify TESTGATE.
+- Order 2 is complete at implementation head `e1e26a15` and closeout commit
+  `1d7b4576`. The exact terminal execution passed 12/12 nodes and 2,288/2,288
+  inventory items, including 2,262 full-workspace nextest tests. Dual review
+  and detached exact-head terminal verification passed.
+- TESTGATE now records the closure-eligible
+  `DEFERRED_TO_QUALITY_CI` disposition owned by
+  `openwepp-quality-observatory` and triggered by
+  `OPTIONAL_OPERATOR_DISPATCH`. Ordinary TESTGATE and routine release
+  validation execute no retired coverage/CRAP subprocess or upload path.
+- Order 3, `20260724-quality-observatory-merged-coverage-001`, is the next
+  executable package. Orders 4 through 7 remain queued behind their declared
+  dependencies.
 
 ## Outcome
 
@@ -63,8 +70,8 @@ caches remain local-only even when compressed.
 | --- | --- | --- | --- | --- |
 | 0 | `COMPLETE` | `20260724-testgate-quality-observatory-roadmap-001` | Ratify this decomposition, independent review, and finding disposition. | User direction |
 | 1 | `COMPLETE` | `20260724-testgate-quality-authority-separation-001` | Adopt ADR-0041 and align canonical policy so ordinary closure no longer depends on workspace CRAP/coverage. | Order 0 |
-| 2 | `NEXT / QUEUED` | `20260724-testgate-quality-deferral-001` | Remove quality execution nodes from TESTGATE and issue a verified `DEFERRED_TO_QUALITY_CI` receipt state. | Order 1 |
-| 3 | `QUEUED` | `20260724-quality-observatory-merged-coverage-001` | Produce one valid merged `full` plus `science-manual` coverage identity and prove snowbench is measured. | Order 2 |
+| 2 | `COMPLETE` | `20260724-testgate-quality-deferral-001` | Removed quality execution nodes from TESTGATE and issued a verified `DEFERRED_TO_QUALITY_CI` receipt state. | Order 1 |
+| 3 | `NEXT / QUEUED` | `20260724-quality-observatory-merged-coverage-001` | Produce one valid merged `full` plus `science-manual` coverage identity and prove snowbench is measured. | Order 2 |
 | 4 | `QUEUED` | `20260724-quality-observatory-workflow-001` | Implement the optional forest1 QA workflow, TESTGATE-first deferral, compact artifacts, and non-blocking result contract. | Orders 2-3 |
 | 5 | `QUEUED` | `20260724-cqr-nightly-quality-evidence-handoff-001` | Make CQR Nightly consume an exact current QA report and recollect only with typed stale/invalid evidence plus an explicit operator directive. | Orders 3-4 |
 | 6 | `QUEUED` | `20260724-testgate-quality-observatory-qualification-001` | Prove changed-head TESTGATE succeeds on forest1 without quality execution and with typed deferral. | Orders 1-5 |
