@@ -312,6 +312,58 @@
     }
 
     #[test]
+    fn increment_nodes_reconstruct_selected_authority_suite_arguments_and_inventory() {
+        let repo = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+        let policy = PolicyBundle::load(&repo).expect("policy bundle");
+        let graph = CargoGraph::load_current(&repo).expect("Cargo graph");
+        let head = crate::repository::resolve_commit(&repo, "HEAD").expect("repository head");
+        let path = "crates/openwepp-hillslope-orchestrator/src/direct_runtime/groundwater.rs";
+        let mut selection = select(
+            &policy,
+            &graph,
+            &[ObservedChange {
+                path: path.to_owned(),
+                change_kind: "MODIFY".to_owned(),
+                object_kind: "REGULAR".to_owned(),
+                old_mode: Some("100644".to_owned()),
+                new_mode: Some("100644".to_owned()),
+            }],
+        );
+        selection
+            .explicit_definitions
+            .push("required-authority-v1".to_owned());
+        selection.authority_suites =
+            vec!["cas_l4_watbal_relax_to_fc_001".to_owned()];
+        let nodes = Planner::new(FixedInventory)
+            .build_nodes(
+                &repo,
+                &policy,
+                &selection,
+                &head,
+                "INCREMENT",
+            )
+            .expect("increment nodes");
+        let node = nodes
+            .iter()
+            .find(|node| node["gate_definition_id"] == "required-authority-v1")
+            .expect("required authority node");
+        let expected = &selection.authority_suites;
+        assert!(!expected.is_empty());
+        assert_eq!(
+            node["expected_inventory"]["ids"],
+            serde_json::json!(expected)
+        );
+        let arguments = node["arguments"].as_array().expect("arguments");
+        for suite in &selection.authority_suites {
+            assert!(
+                arguments
+                    .windows(2)
+                    .any(|pair| pair[0] == "--authority-suite" && pair[1] == *suite)
+            );
+        }
+    }
+
+    #[test]
     fn nonproduction_cargo_targets_require_global_quality() {
         let repo = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
         let policy = PolicyBundle::load(&repo).expect("policy bundle");
