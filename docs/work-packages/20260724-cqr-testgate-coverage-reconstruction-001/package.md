@@ -80,4 +80,9 @@ Evidence class: Ran
   Nextest profile. A coverage-only regression proves that `full` excludes
   exactly 36 manual science fixtures; routine regression remains 175 passing
   tests with 15 development-only tests skipped.
+- Forest1 run `30104030978` confirmed the profile fix by clearing exact JUnit
+  comparison, then the full suite failed its own cohort-governance contract
+  because the new profile regression was the thirteenth development fixture
+  while the explicit profile still declared twelve. The fixture and contract
+  inventories now both declare the exact 13-item cohort.
 - Changed-head forest1 TESTGATE success remains pending.
