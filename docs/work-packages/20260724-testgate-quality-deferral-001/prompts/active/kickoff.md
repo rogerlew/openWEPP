@@ -14,8 +14,8 @@ Required reading:
 - On-demand: gate definitions/schemas, planner, executor, verifier, workflow
   contracts, and predecessor TESTGATE failure evidence.
 
-Required-reading budget: `147236` current local bytes, `OK`; map:
-`artifacts/required-reading-map.md`. Recompute after Order 1 lands and before
+Required-reading budget: `153370` current local bytes, `OK`; map:
+`artifacts/required-reading-map.md`. Recomputed after Order 1 landed and before
 implementation edits.
 
 Task: remove quality execution from ordinary TESTGATE, add independently

@@ -1,8 +1,8 @@
 # Required Reading Map
 
-Current Core set: root and work-package instructions, this package, roadmap,
-and the testing/gate strategy.
+Current Core set: root and work-package instructions, this package, ADR-0041,
+the roadmap, and the testing/gate strategy.
 
-Current bytes: `147236`. Disposition: `OK`.
+Current bytes: `153370`. Disposition: `OK`.
 
-Recompute after Order 1 lands and before implementation edits.
+Recomputed after Order 1 landed and before implementation edits.
