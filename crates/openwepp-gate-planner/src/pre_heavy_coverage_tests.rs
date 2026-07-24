@@ -287,6 +287,8 @@ fn ready_audit_validation_execution_and_resume_chains_are_directly_bound() {
     .expect("unsealed audit chain");
     validate_audit(&fixture.root, &fixture.plan, &audit, &fixture.artifacts)
         .expect("READY audit validation chain");
+    validate_relocated_audit(&fixture.root, &fixture.plan, &audit)
+        .expect("relocated READY audit validation wrapper");
     let claims = ExecutionClaims {
         workflow: "w".to_owned(),
         job: "j".to_owned(),
