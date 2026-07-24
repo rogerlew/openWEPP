@@ -1031,6 +1031,32 @@ fn cheap_file_shape_root_and_ledger_guards_cover_success_and_failure() {
 }
 
 #[test]
+fn line_limit_skips_only_typed_rust_deletions() {
+    let root = std::env::temp_dir().join(format!(
+        "openwepp-line-limit-deletion-{}",
+        std::process::id()
+    ));
+    fs::create_dir_all(&root).expect("line-limit root");
+    let deleted = json!({
+        "authorized_paths": ["src/deleted.rs"],
+        "changed_objects": [{"path": "src/deleted.rs", "change_kind": "DELETE"}]
+    });
+    enforce_authorized_rust_line_limit(&root, &deleted).expect("typed deletion is absent");
+
+    let missing = json!({
+        "authorized_paths": ["src/missing.rs"],
+        "changed_objects": [{"path": "src/missing.rs", "change_kind": "MODIFY"}]
+    });
+    assert_eq!(
+        enforce_authorized_rust_line_limit(&root, &missing)
+            .expect_err("non-deleted Rust path remains required")
+            .code,
+        "GATE-AUDIT-LINE-COUNT"
+    );
+    fs::remove_dir_all(root).expect("remove line-limit root");
+}
+
+#[test]
 fn unsealed_audit_assembles_all_ten_checks_and_fallback_is_representable() {
     let fixture = PackageFixture::new(true, false);
     for package in ["owner", "contender"] {

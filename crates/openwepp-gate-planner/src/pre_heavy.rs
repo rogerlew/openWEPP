@@ -1166,11 +1166,19 @@ fn require_clean_diff(repo: &Path, plan: &Value) -> Result<()> {
 }
 
 fn enforce_authorized_rust_line_limit(repo: &Path, plan: &Value) -> Result<()> {
+    let deleted_paths = plan["changed_objects"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter(|change| change["change_kind"] == "DELETE")
+        .filter_map(|change| change["path"].as_str())
+        .collect::<BTreeSet<_>>();
     for path in plan["authorized_paths"]
         .as_array()
         .into_iter()
         .flatten()
         .filter_map(Value::as_str)
+        .filter(|path| !deleted_paths.contains(path))
         .filter(|path| {
             Path::new(path)
                 .extension()
