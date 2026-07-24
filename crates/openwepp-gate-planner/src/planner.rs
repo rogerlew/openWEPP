@@ -431,6 +431,7 @@ impl InventoryProvider for NextestInventory {
             "NEXTEST_PACKAGE" | "NEXTEST_WORKSPACE" | "NEXTEST_TEST_TARGET" => {
                 nextest_inventory(repo, definition, target)
             }
+            "DOCTEST_PACKAGE" => doctest_package_inventory_at(repo, target, None),
             "DOCTEST_WORKSPACE" => doctest_inventory(repo),
             "AUTHORITY_SUITES" => authority_suite_inventory(repo),
             value => Err(GatePolicyError::new(
@@ -516,6 +517,9 @@ impl InventoryProvider for ConfinedNextestInventory {
             "NEXTEST_PACKAGE" | "NEXTEST_WORKSPACE" | "NEXTEST_TEST_TARGET" => {
                 nextest_inventory_at(repo, definition, target, Some(&self.cargo_target))
             }
+            "DOCTEST_PACKAGE" => {
+                doctest_package_inventory_at(repo, target, Some(&self.cargo_target))
+            }
             "DOCTEST_WORKSPACE" => doctest_inventory_at(repo, Some(&self.cargo_target)),
             "AUTHORITY_SUITES" => authority_suite_inventory(repo),
             value => Err(GatePolicyError::new(
@@ -571,8 +575,25 @@ fn inventory_for_definition(
         "NEXTEST_PACKAGE" | "NEXTEST_WORKSPACE" | "NEXTEST_TEST_TARGET" => {
             nextest_inventory_at(repo, definition, target, cargo_target)
         }
+        "DOCTEST_PACKAGE" => doctest_package_inventory_at(repo, target, cargo_target),
         "DOCTEST_WORKSPACE" => doctest_inventory_at(repo, cargo_target),
-        "AUTHORITY_SUITES" => authority_suite_inventory(repo),
+        "AUTHORITY_SUITES" => {
+            let arguments = array_value(node, "/arguments")?
+                .iter()
+                .map(|argument| {
+                    argument
+                        .as_str()
+                        .map(str::to_owned)
+                        .ok_or_else(|| plan_shape("/nodes/arguments"))
+                })
+                .collect::<Result<Vec<_>>>()?;
+            let selected = optional_argument_values(&arguments, "--authority-suite")?;
+            if selected.is_empty() {
+                authority_suite_inventory(repo)
+            } else {
+                Ok(selected)
+            }
+        }
         value => Err(GatePolicyError::new(
             ErrorClass::Planning,
             "GATE-INVENTORY-SOURCE",
@@ -616,6 +637,15 @@ fn node_argument_values(node: &Value, flag: &str) -> Result<Vec<String>> {
 }
 
 fn argument_values(arguments: &[String], flag: &str) -> Result<Vec<String>> {
+    let values = optional_argument_values(arguments, flag)?;
+    if values.is_empty() {
+        Err(plan_shape("/nodes/arguments/packages"))
+    } else {
+        Ok(values)
+    }
+}
+
+fn optional_argument_values(arguments: &[String], flag: &str) -> Result<Vec<String>> {
     let mut values = Vec::new();
     let mut index = 0;
     while index < arguments.len() {
@@ -629,11 +659,7 @@ fn argument_values(arguments: &[String], flag: &str) -> Result<Vec<String>> {
             index += 1;
         }
     }
-    if values.is_empty() {
-        Err(plan_shape("/nodes/arguments/packages"))
-    } else {
-        Ok(values)
-    }
+    Ok(values)
 }
 
 pub struct Planner<P> {
@@ -733,6 +759,7 @@ impl<P: InventoryProvider> Planner<P> {
             &policy,
             &selection,
             &request.source.base_commit,
+            &request.boundary,
         )?;
         let (nodes, combined_quality) = crate::combined_quality::select_and_apply(
             &policy,
@@ -837,6 +864,7 @@ impl<P: InventoryProvider> Planner<P> {
         policy: &PolicyBundle,
         selection: &Selection,
         base_commit: &str,
+        boundary: &str,
     ) -> Result<Vec<Value>> {
         let mut instances = BTreeMap::<String, (&GateDefinition, String)>::new();
         let mut explicit = selection
@@ -845,7 +873,7 @@ impl<P: InventoryProvider> Planner<P> {
             .cloned()
             .collect::<BTreeSet<_>>();
         for definition in policy.definitions_for_risk(selection.risk) {
-            if definition_applies(definition, selection) {
+            if definition_applies(definition, selection, boundary) {
                 add_definition_instances(&mut instances, definition, selection);
             }
         }
@@ -854,11 +882,11 @@ impl<P: InventoryProvider> Planner<P> {
             let definition = policy.definition(&id).ok_or_else(|| {
                 GatePolicyError::new(ErrorClass::Policy, "GATE-DEFINITION-MISSING", id.clone())
             })?;
-            if definition_applies(definition, selection) {
+            if definition_applies(definition, selection, boundary) {
                 add_definition_instances(&mut instances, definition, selection);
             }
         }
-        add_prerequisite_closure(policy, selection, &mut instances)?;
+        add_prerequisite_closure(policy, selection, boundary, &mut instances)?;
 
         let mut built = BTreeMap::<String, String>::new();
         let mut output = Vec::new();
@@ -886,15 +914,25 @@ impl<P: InventoryProvider> Planner<P> {
                     } else {
                         &selection.affected_packages
                     };
-                let arguments = expand_node_arguments(
+                let mut arguments = expand_node_arguments(
                     definition,
                     target,
                     base_commit,
                     argument_packages,
                     &selection.documentation_paths,
                 )?;
+                if definition.gate_definition_id == "required-authority-v1" {
+                    for suite in &selection.authority_suites {
+                        arguments.push("--authority-suite".to_owned());
+                        arguments.push(suite.clone());
+                    }
+                }
                 let output_paths = expand_arguments(&definition.output_paths, target, base_commit)?;
-                let mut inventory = if definition.inventory_source == "NEXTEST_PACKAGES" {
+                let mut inventory = if definition.gate_definition_id == "required-authority-v1"
+                    && !selection.authority_suites.is_empty()
+                {
+                    selection.authority_suites.clone()
+                } else if definition.inventory_source == "NEXTEST_PACKAGES" {
                     let mut package_definition = (*definition).clone();
                     "NEXTEST_PACKAGE".clone_into(&mut package_definition.inventory_source);
                     let mut inventory = Vec::new();
@@ -1334,6 +1372,8 @@ struct Selection {
     quality_packages: Vec<String>,
     reverse_dependencies: Vec<String>,
     explicit_definitions: Vec<String>,
+    authority_suites: Vec<String>,
+    changed_paths: Vec<String>,
     impact_edges: Vec<Value>,
     unmapped: Vec<Value>,
 }
@@ -1343,20 +1383,18 @@ fn select(policy: &PolicyBundle, graph: &CargoGraph, changes: &[ObservedChange])
     let mut reasons = BTreeSet::new();
     let mut direct_packages = BTreeSet::new();
     let mut explicit = BTreeSet::new();
+    let mut authority_suites = BTreeSet::new();
     let mut impact_edges = Vec::new();
     let mut unmapped = Vec::new();
     for change in changes {
         let mut mapped = false;
+        let matching_entries = policy.matching_entries(&change.path);
         if is_editorial_documentation_path(&change.path) {
             reasons.insert("DOCUMENTATION_ONLY".to_owned());
             mapped = true;
         } else if let Some(package) = graph.package_for_path(&change.path) {
             risk = risk.max(RiskClass::BoundedComponent);
-            if Path::new(&change.path)
-                .extension()
-                .is_some_and(|extension| extension.eq_ignore_ascii_case("rs"))
-                && science_sensitive_package(&package)
-            {
+            if is_unmapped_science_source(&change.path, &package, &matching_entries) {
                 risk = RiskClass::Critical;
                 reasons.insert("SCIENCE_PACKAGE_WITHOUT_SEMANTIC_EDGE".to_owned());
             }
@@ -1376,12 +1414,13 @@ fn select(policy: &PolicyBundle, graph: &CargoGraph, changes: &[ObservedChange])
             reasons.insert("CARGO_GRAPH_OR_BUILD_INPUT_CHANGED".to_owned());
             mapped = true;
         }
-        for entry in policy.matching_entries(&change.path) {
+        for entry in matching_entries {
             mapped = true;
             risk = risk.max(entry.risk_floor);
             reasons.extend(entry.reason_codes.iter().cloned());
             direct_packages.extend(entry.affected_packages.iter().cloned());
             explicit.extend(entry.gate_definition_ids.iter().cloned());
+            authority_suites.extend(entry.authority_suites.iter().cloned());
             let selected_ids = entry
                 .gate_definition_ids
                 .iter()
@@ -1432,6 +1471,8 @@ fn select(policy: &PolicyBundle, graph: &CargoGraph, changes: &[ObservedChange])
         quality_packages,
         reverse_dependencies,
         explicit_definitions: explicit.into_iter().collect(),
+        authority_suites: authority_suites.into_iter().collect(),
+        changed_paths: changes.iter().map(|change| change.path.clone()).collect(),
         impact_edges,
         unmapped,
     }
@@ -1490,6 +1531,18 @@ fn science_sensitive_package(package: &str) -> bool {
     .any(|token| package.contains(token))
 }
 
+fn is_unmapped_science_source(
+    path: &str,
+    package: &str,
+    matching_entries: &[&crate::policy::ImpactEntry],
+) -> bool {
+    Path::new(path)
+        .extension()
+        .is_some_and(|extension| extension.eq_ignore_ascii_case("rs"))
+        && science_sensitive_package(package)
+        && matching_entries.is_empty()
+}
+
 fn add_definition_instances<'a>(
     instances: &mut BTreeMap<String, (&'a GateDefinition, String)>,
     definition: &'a GateDefinition,
@@ -1520,9 +1573,28 @@ fn add_definition_instances<'a>(
     }
 }
 
-fn definition_applies(definition: &GateDefinition, selection: &Selection) -> bool {
-    definition.gate_definition_id != "documentation-lint-v1"
-        || !selection.documentation_paths.is_empty()
+fn definition_applies(definition: &GateDefinition, selection: &Selection, boundary: &str) -> bool {
+    match definition.gate_definition_id.as_str() {
+        "documentation-lint-v1" => !selection.documentation_paths.is_empty(),
+        "cargo-deny-v1" => {
+            matches!(boundary, "CAMPAIGN" | "RELEASE")
+                || selection.changed_paths.iter().any(|path| {
+                    matches!(
+                        path.as_str(),
+                        "Cargo.toml"
+                            | "Cargo.lock"
+                            | "deny.toml"
+                            | "rust-toolchain"
+                            | "rust-toolchain.toml"
+                    ) || path.ends_with("/Cargo.toml")
+                        || path.ends_with("/build.rs")
+                })
+        }
+        "required-authority-v1" => {
+            matches!(boundary, "CAMPAIGN" | "RELEASE") || !selection.authority_suites.is_empty()
+        }
+        _ => true,
+    }
 }
 
 fn static_definition_target(definition: &GateDefinition) -> &str {
@@ -1560,6 +1632,7 @@ fn prerequisite_keys(
 fn add_prerequisite_closure<'a>(
     policy: &'a PolicyBundle,
     selection: &Selection,
+    boundary: &str,
     instances: &mut BTreeMap<String, (&'a GateDefinition, String)>,
 ) -> Result<()> {
     loop {
@@ -1577,7 +1650,7 @@ fn add_prerequisite_closure<'a>(
                         prerequisite,
                     )
                 })?;
-                if !definition_applies(dependency, selection) {
+                if !definition_applies(dependency, selection, boundary) {
                     return Err(GatePolicyError::new(
                         ErrorClass::Policy,
                         "GATE-CONDITIONAL-PREREQUISITE",
@@ -1796,20 +1869,37 @@ fn doctest_inventory(repo: &Path) -> Result<Vec<String>> {
 }
 
 fn doctest_inventory_at(repo: &Path, cargo_target: Option<&Path>) -> Result<Vec<String>> {
+    doctest_inventory_for(repo, None, cargo_target)
+}
+
+fn doctest_package_inventory_at(
+    repo: &Path,
+    package: &str,
+    cargo_target: Option<&Path>,
+) -> Result<Vec<String>> {
+    doctest_inventory_for(repo, Some(package), cargo_target)
+}
+
+fn doctest_inventory_for(
+    repo: &Path,
+    package: Option<&str>,
+    cargo_target: Option<&Path>,
+) -> Result<Vec<String>> {
     let mut command = neutral_cargo_command();
     if let Some(cargo_target) = cargo_target {
         command.env("CARGO_TARGET_DIR", cargo_target);
     }
+    command.arg("test");
+    match package {
+        Some(package) => {
+            command.args(["-p", package]);
+        }
+        None => {
+            command.arg("--workspace");
+        }
+    }
     let output = command
-        .args([
-            "test",
-            "--workspace",
-            "--doc",
-            "--locked",
-            "--offline",
-            "--",
-            "--list",
-        ])
+        .args(["--doc", "--locked", "--offline", "--", "--list"])
         .current_dir(repo)
         .output()
         .map_err(|error| {

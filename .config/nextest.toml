@@ -128,7 +128,13 @@ store-failure-output = true
 # Use `cargo nextest run --workspace --profile full`.
 [profile.full]
 inherits = "default"
-default-filter = "all()"
+default-filter = '''
+all() - (
+    binary(/^(snowdensity03_physics_bulk_offline_contract|snowdensity05e_melt_adjudication|snowdensity05g_harness_fidelity_rerun)$/)
+    | binary(/^(snowdensity06b_coe_bound_density_replay|snowfrost_fidelity_g0_pysnobal_bridge_contract)$/)
+    | test(/(snowbench|pysnobal|snotel|frost_tube|coe_melt_snowbench|physics_bulk_snowbench|density_compaction_snowbench)/)
+)
+'''
 fail-fast = false
 slow-timeout = { period = "90s", terminate-after = 8 }
 
@@ -201,6 +207,26 @@ slow-timeout = { period = "90s", terminate-after = 8 }
 [profile.erosion.junit]
 path = "junit.xml"
 report-name = "openwepp-nextest-erosion"
+store-success-output = false
+store-failure-output = true
+
+# Empirical/external snow and frost evidence. These cohorts depend on observed
+# data, external-model bridges, or adjudication fixtures and are not part of
+# deterministic workspace regression. Run them when snow/frost is affected,
+# at a domain checkpoint, or when a campaign/release ledger selects them.
+[profile.science-manual]
+inherits = "default"
+default-filter = '''
+binary(/^(snowdensity03_physics_bulk_offline_contract|snowdensity05e_melt_adjudication|snowdensity05g_harness_fidelity_rerun)$/)
+| binary(/^(snowdensity06b_coe_bound_density_replay|snowfrost_fidelity_g0_pysnobal_bridge_contract)$/)
+| test(/(snowbench|pysnobal|snotel|frost_tube|coe_melt_snowbench|physics_bulk_snowbench|density_compaction_snowbench)/)
+'''
+fail-fast = false
+slow-timeout = { period = "90s", terminate-after = 8 }
+
+[profile.science-manual.junit]
+path = "junit.xml"
+report-name = "openwepp-nextest-science-manual"
 store-success-output = false
 store-failure-output = true
 

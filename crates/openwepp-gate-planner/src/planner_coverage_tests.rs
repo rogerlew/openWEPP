@@ -1,7 +1,7 @@
     use super::{
         InventoryProvider, PlanRequest, Planner, PlanningStage, authority_suite_inventory,
-        prepare_reconstruction_workspace, reconcile_intent_terminal, reconcile_semantics, select,
-        validate_request,
+        definition_applies, prepare_reconstruction_workspace, reconcile_intent_terminal,
+        reconcile_semantics, select, validate_request,
     };
     use crate::canonical::canonical_bytes;
     use crate::error::Result;
@@ -40,6 +40,15 @@
                 ))
         );
         assert_eq!(plan["quality_scope"]["mode"], "GLOBAL");
+    }
+
+    fn assert_increment_omits_unrelated_workspace_gates(plan: &serde_json::Value) {
+        assert!(plan["nodes"].as_array().expect("nodes").iter().all(|node| {
+            !matches!(
+                node["gate_definition_id"].as_str(),
+                Some("cargo-deny-v1" | "required-authority-v1" | "workspace-doctest-v1")
+            )
+        }));
     }
 
     #[cfg(unix)]
@@ -185,7 +194,7 @@
     }
 
     #[test]
-    fn science_surfaces_select_explicit_a1_and_gate_planner_is_critical() {
+    fn mapped_science_surfaces_select_bounded_a1_and_gate_planner_is_critical() {
         let repo = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
         let policy = PolicyBundle::load(&repo).expect("policy bundle");
         let graph = CargoGraph::load_current(&repo).expect("Cargo graph");
@@ -210,8 +219,9 @@
                     new_mode: Some("100644".to_owned()),
                 }],
             );
-            assert_eq!(selection.risk.as_str(), "CRITICAL", "{path}");
+            assert_eq!(selection.risk.as_str(), "BOUNDED_COMPONENT", "{path}");
             assert!(selection.unmapped.is_empty(), "{path}");
+            assert!(selection.authority_suites.is_empty(), "{path}");
             assert!(
                 selection
                     .explicit_definitions
@@ -234,6 +244,71 @@
         );
         assert_eq!(selection.risk.as_str(), "CRITICAL");
         assert!(selection.unmapped.is_empty());
+    }
+
+    #[test]
+    fn increment_only_selects_dependency_and_a3_gates_when_their_inputs_apply() {
+        let repo = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+        let policy = PolicyBundle::load(&repo).expect("policy bundle");
+        let graph = CargoGraph::load_current(&repo).expect("Cargo graph");
+        let change = |path: &str| ObservedChange {
+            path: path.to_owned(),
+            change_kind: "MODIFY".to_owned(),
+            object_kind: "REGULAR".to_owned(),
+            old_mode: Some("100644".to_owned()),
+            new_mode: Some("100644".to_owned()),
+        };
+        let mapped = select(
+            &policy,
+            &graph,
+            &[change(
+                "crates/openwepp-hillslope-orchestrator/src/direct_runtime/groundwater.rs",
+            )],
+        );
+        assert!(definition_applies(
+            policy
+                .definition("hard-invariant-groundwater-v1")
+                .expect("groundwater gate"),
+            &mapped,
+            "INCREMENT"
+        ));
+        for unrelated in ["cargo-deny-v1", "required-authority-v1"] {
+            assert!(
+                !definition_applies(
+                    policy.definition(unrelated).expect("conditional gate"),
+                    &mapped,
+                    "INCREMENT"
+                ),
+                "{unrelated}"
+            );
+        }
+
+        let dependency = select(&policy, &graph, &[change("Cargo.lock")]);
+        assert!(definition_applies(
+            policy.definition("cargo-deny-v1").expect("deny gate"),
+            &dependency,
+            "INCREMENT"
+        ));
+        assert!(definition_applies(
+            policy.definition("required-authority-v1").expect("A3 gate"),
+            &mapped,
+            "CAMPAIGN"
+        ));
+
+        let unmapped = select(
+            &policy,
+            &graph,
+            &[change(
+                "crates/openwepp-hillslope-orchestrator/src/direct_runtime/unmapped_process.rs",
+            )],
+        );
+        assert_eq!(unmapped.risk.as_str(), "CRITICAL");
+        assert!(
+            unmapped
+                .reason_codes
+                .iter()
+                .any(|reason| reason == "SCIENCE_PACKAGE_WITHOUT_SEMANTIC_EDGE")
+        );
     }
 
     #[test]
@@ -523,7 +598,11 @@
             .filter(|node| {
                 matches!(
                     node["gate_definition_id"].as_str(),
-                    Some("cargo-package-clippy-v1" | "cargo-package-nextest-v1")
+                    Some(
+                        "cargo-package-clippy-v1"
+                            | "cargo-package-nextest-v1"
+                            | "cargo-package-doctest-v1"
+                    )
                 )
             })
             .collect::<Vec<_>>();
@@ -558,6 +637,7 @@
             .filter(|node| node["gate_definition_id"] == "affected-adjudicated-crap-v1")
             .collect::<Vec<_>>();
         assert_eq!(affected_nodes.len(), 1);
+        assert_increment_omits_unrelated_workspace_gates(&plan);
         let arguments = affected_nodes[0]["arguments"]
             .as_array()
             .expect("affected arguments");
@@ -1292,7 +1372,6 @@
                 .len(),
             9
         );
-
         let mut nextest = packages;
         nextest.inventory_source = "NEXTEST_PACKAGE".to_owned();
         let empty = crate::executor::tests::TempDirectory::new("planner-empty-inventory");
@@ -1317,6 +1396,46 @@
             .code,
             "GATE-NEXTEST-LIST"
         );
+    }
+
+    #[test]
+    fn selected_authority_and_package_doctest_inventories_are_exact() {
+        let repo = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+        let policy = PolicyBundle::load(&repo).expect("policy bundle");
+        let authority = policy
+            .definition("required-authority-v1")
+            .expect("authority definition");
+        let selected_authority = serde_json::json!({
+            "arguments": [
+                "authority", "--authority-suite", "cas_l4_watbal_relax_to_fc_001"
+            ]
+        });
+        assert_eq!(
+            super::inventory_for_definition(
+                &repo,
+                &selected_authority,
+                authority,
+                "workspace",
+                None
+            )
+            .expect("selected authority inventory"),
+            ["cas_l4_watbal_relax_to_fc_001"]
+        );
+
+        let doctest = policy
+            .definition("cargo-package-doctest-v1")
+            .expect("package doctest definition");
+        let node = serde_json::json!({"arguments": ["cargo", "test"]});
+        let target = crate::executor::tests::TempDirectory::new("planner-doctest-inventory");
+        let inventory = super::inventory_for_definition(
+            &repo,
+            &node,
+            doctest,
+            "openwepp-gate-planner",
+            Some(&target.path().join("cargo-target")),
+        )
+        .expect("package doctest inventory");
+        assert!(!inventory.is_empty());
     }
 
     #[test]

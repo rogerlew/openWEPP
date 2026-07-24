@@ -721,6 +721,7 @@ fn verify_impact_bindings(
                                     | "NEXTEST_PACKAGES"
                                     | "NEXTEST_WORKSPACE"
                                     | "NEXTEST_TEST_TARGET"
+                                    | "DOCTEST_PACKAGE"
                             )
                             && definition
                                 .arguments_template

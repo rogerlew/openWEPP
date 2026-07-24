@@ -19,6 +19,7 @@ Usage:
     [--run-authority-manual] \
     [--authority-registry <path>] \
     [--authority-report <path>] \
+    [--authority-suite <suite-id> ...] \
     [--crap-base-ref <git-ref>] \
     [--cohort-seeds-csv <path>] \
     [--watchlist-csv <path>] \
@@ -79,6 +80,7 @@ LIMIT_1166=""
 LIMIT_WATCHLIST=""
 KEEP_PASSING_WORKDIRS=0
 EXPECT_SUITE_ARGS=()
+AUTHORITY_SUITE_FILTER=()
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -136,6 +138,14 @@ while [[ $# -gt 0 ]]; do
       ;;
     --authority-report)
       AUTHORITY_REPORT="${2:-}"
+      shift 2
+      ;;
+    --authority-suite)
+      if [[ -z "${2:-}" ]]; then
+        echo "ERROR: --authority-suite requires a non-empty suite ID." >&2
+        exit 2
+      fi
+      AUTHORITY_SUITE_FILTER+=("${2:-}")
       shift 2
       ;;
     --crap-base-ref)
@@ -273,7 +283,24 @@ mkdir -p "$(dirname "${AUTHORITY_REPORT}")"
 authority_lane_rows() {
   local lane="$1"
   local failure_class="$2"
-  awk -v lane="${lane}" -v failure_class="${failure_class}" '
+  local row suite_id selected requested
+  while IFS= read -r row; do
+    suite_id="${row%%|*}"
+    selected=0
+    if [[ "${#AUTHORITY_SUITE_FILTER[@]}" -eq 0 ]]; then
+      selected=1
+    else
+      for requested in "${AUTHORITY_SUITE_FILTER[@]}"; do
+        if [[ "${suite_id}" == "${requested}" ]]; then
+          selected=1
+          break
+        fi
+      done
+    fi
+    if [[ "${selected}" -eq 1 ]]; then
+      echo "${row}"
+    fi
+  done < <(awk -v lane="${lane}" -v failure_class="${failure_class}" '
     function flush_suite() {
       if (suite_id != "" && gate_lane == lane && suite_failure_class == failure_class && integration_test != "") {
         print suite_id "|" integration_test
@@ -303,7 +330,7 @@ authority_lane_rows() {
     END {
       flush_suite()
     }
-  ' "${AUTHORITY_REGISTRY}"
+  ' "${AUTHORITY_REGISTRY}")
 }
 
 active_suite_fixture_roots() {
@@ -334,6 +361,16 @@ active_suite_fixture_roots() {
     }
   ' "${AUTHORITY_REGISTRY}"
 }
+
+for requested_suite in "${AUTHORITY_SUITE_FILTER[@]}"; do
+  if ! awk -v requested="${requested_suite}" '
+    $1 == "-" && $2 == "suite_id:" && $3 == requested { found = 1 }
+    END { exit(found ? 0 : 1) }
+  ' "${AUTHORITY_REGISTRY}"; then
+    echo "ERROR: requested authority suite is absent from the registry: ${requested_suite}" >&2
+    exit 2
+  fi
+done
 
 verify_fixture_provenance_entry() {
   local provenance_file="$1"

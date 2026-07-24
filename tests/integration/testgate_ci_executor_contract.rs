@@ -655,6 +655,28 @@ fn assert_gate_definition_contract(entries: &[Value]) {
         .find(|entry| entry["gate_definition_id"] == "workspace-full-nextest-v1")
         .expect("full workspace definition");
     assert_eq!(full["authority_class"], "NONE");
+    let package_doctest = entries
+        .iter()
+        .find(|entry| entry["gate_definition_id"] == "cargo-package-doctest-v1")
+        .expect("affected package doctest definition");
+    assert_eq!(package_doctest["inventory_source"], "DOCTEST_PACKAGE");
+    assert_eq!(
+        package_doctest["risk_classes"],
+        serde_json::json!(["BOUNDED_COMPONENT", "INTEGRATED_DOMAIN"])
+    );
+    let workspace_doctest = entries
+        .iter()
+        .find(|entry| entry["gate_definition_id"] == "workspace-doctest-v1")
+        .expect("workspace doctest definition");
+    assert_eq!(
+        workspace_doctest["risk_classes"],
+        serde_json::json!(["CRITICAL"])
+    );
+
+    let release_driver = text("tools/release/run_release_candidate_gates.sh");
+    assert!(release_driver.contains("--authority-suite <suite-id>"));
+    assert!(release_driver.contains("AUTHORITY_SUITE_FILTER"));
+    assert!(release_driver.contains("requested authority suite is absent from the registry"));
 }
 
 fn assert_crap_driver_contract() {
@@ -739,11 +761,43 @@ fn coverage_scheduling_bounds_the_complete_assurance_publication_binary() {
     assert!(publication_override.contains("test-group = \"assurance-publication\""));
     assert!(publication_override.contains("threads-required = 2"));
     assert!(!publication_override.contains("slow-timeout"));
-    assert!(profiles.contains(
-        "[profile.full]\ninherits = \"default\"\ndefault-filter = \"all()\"\n\
-         fail-fast = false\nslow-timeout = { period = \"90s\", terminate-after = 8 }"
-    ));
-    assert!(!profiles.contains("all() - binary(assurance_v2_publication_contract)"));
+    let full = profiles
+        .split_once("[profile.full]")
+        .expect("full profile")
+        .1
+        .split_once("[profile.full.junit]")
+        .expect("full JUnit profile")
+        .0;
+    let manual = profiles
+        .split_once("[profile.science-manual]")
+        .expect("science manual profile")
+        .1
+        .split_once("[profile.science-manual.junit]")
+        .expect("science manual JUnit profile")
+        .0;
+    for selector in [
+        "snowdensity03_physics_bulk_offline_contract",
+        "snowdensity05e_melt_adjudication",
+        "snowdensity05g_harness_fidelity_rerun",
+        "snowdensity06b_coe_bound_density_replay",
+        "snowfrost_fidelity_g0_pysnobal_bridge_contract",
+        "snowbench",
+        "pysnobal",
+        "snotel",
+        "frost_tube",
+    ] {
+        assert!(
+            full.contains(selector),
+            "full must explicitly exclude {selector}"
+        );
+        assert!(
+            manual.contains(selector),
+            "manual profile must select {selector}"
+        );
+    }
+    assert!(full.contains("all() - ("));
+    assert!(!full.contains("cli01_runner_hillslope_integration"));
+    assert!(!full.contains("r7c_direct_production"));
 }
 
 #[test]

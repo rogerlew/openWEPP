@@ -118,7 +118,7 @@
         "trust_requirement": { "enum": ["LOCAL_UNTRUSTED", "REPOSITORY_REVIEWED", "PROTECTED_CI"] },
         "reuse_class": { "enum": ["NON_REUSABLE", "SAME_EXECUTION", "HERMETIC_CONTENT"] },
         "inventory_mode": { "enum": ["EXACT", "SUBSET", "SUPERSET"] },
-        "inventory_source": { "enum": ["NEXTEST_PACKAGE", "NEXTEST_PACKAGES", "NEXTEST_WORKSPACE", "NEXTEST_TEST_TARGET", "DOCTEST_WORKSPACE", "AUTHORITY_SUITES", "COMMAND"] },
+        "inventory_source": { "enum": ["NEXTEST_PACKAGE", "NEXTEST_PACKAGES", "NEXTEST_WORKSPACE", "NEXTEST_TEST_TARGET", "DOCTEST_PACKAGE", "DOCTEST_WORKSPACE", "AUTHORITY_SUITES", "COMMAND"] },
         "minimum_count": { "type": "integer", "minimum": 0 },
         "acceptance": {
           "type": "object", "additionalProperties": false,
