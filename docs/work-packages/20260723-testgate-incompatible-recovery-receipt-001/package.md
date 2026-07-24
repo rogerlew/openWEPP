@@ -20,6 +20,7 @@ ledger, path, or checkpoint evidence remains fail-closed.
 - `crates/openwepp-gate-planner/src/executor.rs`
 - `crates/openwepp-gate-planner/src/executor_coverage_tests.rs`
 - `crates/openwepp-gate-planner/Cargo.toml`
+- `Cargo.toml`
 - `crates/openwepp-gate-planner/src/verifier.rs`
 - `crates/openwepp-gate-planner/src/verifier/tests/coverage_tests.rs`
 - `.config/nextest.toml`
