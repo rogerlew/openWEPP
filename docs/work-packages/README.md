@@ -249,8 +249,12 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-07-23 UTC`:
+State as of `2026-07-24 UTC`:
 
+- `20260724-testgate-science-gate-proportionality-001/` - ACTIVE: aligns
+  executable TESTGATE selection with ADR-0039 so ordinary science increments
+  retain affected A0/A1/A3, contract, consumer, conservation, and CRAP gates
+  without automatically running campaign/release or periodic fixture cohorts.
 - `20260723-testgate-incompatible-recovery-receipt-001/` - ACTIVE: hardens
   recovery so a prior receipt rejected as incompatible is retained as a typed
   decision rather than blocking a newly admitted forest1 attempt.
