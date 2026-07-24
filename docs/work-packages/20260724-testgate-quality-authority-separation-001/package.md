@@ -2,7 +2,7 @@
 
 Package ID: `20260724-testgate-quality-authority-separation-001`
 
-Status: `QUEUED / ORDER-1`
+Status: `ACTIVE / ORDER-1`
 
 ## Objective
 
@@ -40,6 +40,9 @@ authority and documentation only; executable TESTGATE decoupling is Order 2.
 - `docs/decisions/0040-accelerated-testgate-cutover-on-trusted-self-hosted-runner.md`
 - `docs/decisions/0041-separate-testgate-from-observational-quality-ci.md`
 - `docs/standards/testing-and-gate-strategy.md`
+- `docs/standards/README.md`
+- `docs/standards/prompt-wording-guidance.md`
+- `docs/standards/local-ci-gate-selection.md`
 - `docs/standards/mechanical-refactor-authoring-guide.md`
 - `docs/standards/module-test-enhancement-authoring-guide.md`
 - `docs/standards/code-quality-refactor-authoring-guide.md`
@@ -49,6 +52,8 @@ authority and documentation only; executable TESTGATE decoupling is Order 2.
 - `docs/work-packages/templates/**`
 - `docs/work-packages/20260724-cqr-testgate-coverage-reconstruction-001/**`
 - `docs/work-packages/20260724-testgate-science-gate-proportionality-001/**`
+- `docs/work-packages/20260720-testgate-workflow-qualify-001/**`
+- `docs/work-packages/20260723-testgate-incompatible-recovery-receipt-001/**`
 - `docs/work-packages/20260724-testgate-quality-authority-separation-001/**`
 - `docs/work-packages/README.md`
 - `tools/local_ci/README.md`
