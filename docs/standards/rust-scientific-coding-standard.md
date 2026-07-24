@@ -340,11 +340,12 @@ would be harder to test externally.
 Before disposition, execute the exact terminal plan selected under
 `testing-and-gate-strategy.md`. For affected Rust surfaces the plan includes
 formatting, warnings-denied Clippy, placeholder/stub scanning, affected tests
-and doctests, applicable A0/A1/A3 and specialized gates, and targeted
-coverage/CRAP. Manifest, lock, dependency-policy, or toolchain dependency
-changes select cargo-deny. Critical changes, campaign closure, and release
-select full workspace regression, full doctests, cargo-deny, and global
-adjudicated CRAP.
+and doctests, and applicable A0/A1/A3 and specialized gates. TESTGATE records
+coverage/CRAP as `DEFERRED_TO_QUALITY_CI`; explicit CQR/module-test-enhancement
+packages retain their owned metrics. Manifest, lock, dependency-policy, or
+toolchain dependency changes select cargo-deny. Critical changes, campaign
+closure, and release select full workspace correctness regression, full
+doctests, and cargo-deny.
 
 The conservative full command set is reserved for critical, campaign, release,
 or explicit rollback plans. It is not an implementation-package default.
@@ -399,9 +400,10 @@ the taxonomy.
 
 ### 7.6 Obligation-to-test binding (Normative)
 
-This binding, the module coverage closure thresholds, and the per-function
-CRAP ≤ 30 complexity-risk bound are binding policy under
-[ADR-0021](../decisions/0021-module-coverage-closure-thresholds.md).
+This obligation-to-test binding is universal correctness authority. ADR-0021's
+module coverage thresholds and CRAP ≤ 30 bound are binding for explicit
+CQR/module-test-enhancement objectives and observational elsewhere under
+ADR-0041.
 
 - Every entry in a contract's "Test-Vector Obligations" / "Contract-Derived Test
   Vectors" maps to a named, implemented test (one obligation ⇒ one or more

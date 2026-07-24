@@ -134,9 +134,10 @@ For monolith split planning, capture:
 
 Run focused checks after each move, then execute the exact-diff terminal plan
 under `testing-and-gate-strategy.md`. The terminal plan selects formatting,
-affected Clippy/tests/consumers, coverage/CRAP, and any manifest or specialized
-gates. A critical refactor selects immediate full workspace regression and
-global CRAP through the generated terminal plan.
+affected Clippy/tests/consumers, and any manifest or specialized gates.
+Coverage/CRAP is observational unless this is an explicit CQR/module-test-
+enhancement package. A critical refactor selects immediate full workspace
+correctness regression through the generated terminal plan.
 
 ## 5) Mechanical refactor patterns
 
@@ -184,7 +185,8 @@ Use a narrow loop while moving code:
 Before package disposition, run and record every gate in the accepted terminal
 plan. Operators may escalate and may not silently downgrade. Critical,
 campaign, release, and explicit rollback boundaries retain the full workspace
-and global-CRAP closure loop.
+correctness loop. Explicit CQR/module-test-enhancement packages additionally
+retain their declared owned-surface metric closure.
 
 Execution rule:
 

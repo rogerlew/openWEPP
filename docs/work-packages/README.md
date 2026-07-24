@@ -261,21 +261,24 @@
 
 State as of `2026-07-24 UTC`:
 
-- `20260724-cqr-testgate-coverage-reconstruction-001/` - ACTIVE: corrects the
-  coverage-only exact-plan reconstruction fixture exposed by proportional gate
-  selection, then resumes affected CRAP and changed-head TESTGATE qualification.
-- `20260724-testgate-science-gate-proportionality-001/` - ACTIVE: aligns
-  executable TESTGATE selection with ADR-0039 so ordinary science increments
-  retain affected A0/A1/A3, contract, consumer, conservation, and CRAP gates
-  without automatically running campaign/release or periodic fixture cohorts.
-- `20260723-testgate-incompatible-recovery-receipt-001/` - ACTIVE: hardens
-  recovery so a prior receipt rejected as incompatible is retained as a typed
-  decision rather than blocking a newly admitted forest1 attempt.
+- `20260724-cqr-testgate-coverage-reconstruction-001/` -
+  EXECUTED-HOLD / QUALIFICATION-HANDOFF-ORDER-6: retains its completed
+  package-local CQR evidence and historical failures; live qualification moved
+  to the ratified roadmap.
+- `20260724-testgate-science-gate-proportionality-001/` - SUPERSEDED /
+  MERGED-INTO-ROADMAP-ORDER-2 under ADR-0041.
+- `20260723-testgate-incompatible-recovery-receipt-001/` - IMPLEMENTED /
+  QUALIFICATION-HANDOFF-ORDER-6: typed incompatible-receipt behavior remains;
+  final live proof moved to the ratified roadmap.
 
-- `20260720-testgate-workflow-qualify-001/` - ACTIVE / READY-FOREST1-DISPATCH:
-  one ordinary exact-head forest1 TESTGATE execution after a queue-idle
-  preflight. The prior Q01--Q15 controller scope was superseded as over-scoped;
-  forest1 `LOCAL_UNTRUSTED` receipts are expected local evidence.
+- `20260720-testgate-workflow-qualify-001/` - SUPERSEDED /
+  QUALIFICATION-HANDOFF-ORDER-6. Historical attempts retain their verdicts;
+  forest1 `LOCAL_UNTRUSTED` receipts remain accepted workflow evidence.
+
+All TESTGATE recovery packages below whose remaining objective is affected/
+global CRAP selection, combined-quality adoption, or CRAP-driven qualification
+are frozen and prospectively subsumed by roadmap Order 2. Their historical
+artifacts remain factual; do not dispatch or resume them independently.
 
 - `20260723-testgate-agent-dispatch-only-001/` -
   COMPLETE: removes automatic TESTGATE push execution and
@@ -452,9 +455,10 @@ State as of `2026-07-24 UTC`:
   audit 10/10, HEAVY 9/9, dual terminal verification, and closeout.
 
 - `20260720-testgate-workflow-qualify-001/` -
-  READY-FOREST1-DISPATCH: supersedes its initial Q01--Q15 controller scope with
-  one ordinary exact-head forest1 workflow qualification; `LOCAL_UNTRUSTED` is
-  expected for the local forest1 receipt.
+  SUPERSEDED / QUALIFICATION-HANDOFF-ORDER-6: its initial Q01--Q15 controller
+  scope and later single-dispatch qualification are historical. Do not
+  dispatch this package; roadmap Order 6 owns changed-head qualification.
+  `LOCAL_UNTRUSTED` remains the expected label for local forest1 evidence.
 
 - `20260717-canopy-phenology-gsi-kernel-001/` -
   COMPLETE-PASS-PROCESS-KERNEL (2026-07-17): implements

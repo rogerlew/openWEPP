@@ -24,7 +24,7 @@ Each ADR documents a decision that constrains future work. Format follows the li
 | [0018](0018-defect-closure-execplans-conversion-rule.md) | Defect-Closure ExecPlans — diagnosis must convert to correction | Accepted |
 | [0019](0019-openwepp-owns-its-output-surface-wepppyo3-legacy-only.md) | openWEPP owns its output surface; wepppyo3 interchange stays wepp-legacy-only | Accepted (supersedes 0005) |
 | [0020](0020-totalwatsed3-dedicated-output-aggregation-cli.md) | totalwatsed3 is a dedicated output-aggregation CLI | Accepted (amends 0006) |
-| [0021](0021-module-coverage-closure-thresholds.md) | Module coverage and complexity-risk closure thresholds are binding (90% science / 85% glue region+line; per-function CRAP ≤ 30; obligation binding non-waivable) | Accepted |
+| [0021](0021-module-coverage-closure-thresholds.md) | Module coverage and complexity-risk thresholds (90% science / 85% glue region+line; per-function CRAP ≤ 30; obligation binding non-waivable) | Accepted; transition-gate cadence superseded by 0041 |
 | [0022](0022-indexed-runtime-surface-representation.md) | Indexed runtime-surface representation | Accepted |
 | [0023](0023-array-authoritative-hot-path-state.md) | Array-authoritative hot-path state | Accepted (incremental application superseded by 0025; dense-authority principle retained) |
 | [0024](0024-reference-implementation-intent-authority.md) | Reference-implementation intent can anchor empirical model authority | Accepted |
@@ -44,12 +44,19 @@ Each ADR documents a decision that constrains future work. Format follows the li
 | [0038](0038-manuscript-first-scientific-assurance-publication.md) | Manuscript-first scientific assurance publication | Accepted 2026-07-14 |
 | [0039](0039-campaign-scoped-risk-based-testing-and-assurance-gates.md) | Campaign-scoped, risk-based testing and assurance gates | Accepted 2026-07-17 |
 | [0040](0040-accelerated-testgate-cutover-on-trusted-self-hosted-runner.md) | Accelerate TESTGATE cutover on a trusted self-hosted runner | Accepted 2026-07-18 |
+| [0041](0041-separate-testgate-from-observational-quality-ci.md) | Separate TESTGATE admission from optional observational quality CI | Accepted 2026-07-24 |
 
-ADR-0040 amends ADR-0039's transition policy: TESTGATE cutover is event-driven
-after trusted self-hosted runner setup, CRAP closure, adversarial patch review,
-and exact-candidate acceptance. It retires the 14-day/20-increment scorecard,
-50% threshold, and dual-required interval while preserving concrete safety,
-coverage, CRAP, receipt, campaign, release, and rollback obligations.
+At its 2026-07-18 cutover boundary, ADR-0040 amended ADR-0039's transition
+policy: TESTGATE cutover became event-driven after trusted self-hosted runner
+setup, CRAP closure, adversarial patch review, and exact-candidate acceptance.
+It retired the 14-day/20-increment scorecard, 50% threshold, and dual-required
+interval while preserving the historical cutover evidence and quality
+definitions later amended by ADR-0041.
+
+ADR-0041 supersedes ADR-0021/ADR-0039/ADR-0040 only where coverage or CRAP is
+made a transition gate. TESTGATE remains blocking correctness admission;
+coverage/CRAP move to optional observational QA and remain binding only for an
+explicit metric-focused CQR or module test-enhancement package.
 
 ADR-0025 was ratified 2026-06-18 and is the accepted hot-path runtime authority. ADR-0023's dense-authority
 principle is retained; its incremental symbol/phase migration application is superseded — no further

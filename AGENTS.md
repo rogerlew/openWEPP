@@ -83,8 +83,14 @@ openWEPP is the Rust simulation engine. openWEPP owns its architecture and scien
   cutover) and reconcile the exact terminal diff before disposition.
 - Execute every increment gate selected by the authenticated
   terminal plan. Critical changes still require immediate campaign-strength
-  full regression and global CRAP. Campaign closure and release qualification
-  retain exact-head full-workspace and global-quality obligations.
+  full correctness regression. Campaign closure and release qualification
+  retain exact-head full-workspace correctness obligations.
+- ADR-0041 requires TESTGATE to record coverage/CRAP as
+  `DEFERRED_TO_QUALITY_CI`; executable alignment is pending roadmap Order 2,
+  and no earlier receipt may be represented as carrying that disposition.
+  Optional operator-directed QA is observational and non-blocking for
+  increment, campaign, and release transitions. Explicit CQR/module-test-
+  enhancement packages retain their declared owned-surface metric gates.
 - Kernel work always retains touched contract invariants, applicable A0/A1/A3
   authority gates, typed guards, and closure checks. Legacy comparator deltas
   use confidence tiers. Conservation-sensitive output work retains independent

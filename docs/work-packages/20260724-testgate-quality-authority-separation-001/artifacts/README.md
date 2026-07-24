@@ -1,5 +1,5 @@
 # Artifacts
 
-Queued: required-reading map, authority inventory, intent/terminal plans, gate
-evidence, dual reviews, finding disposition, dual verification, and final
-disposition.
+Complete: required-reading map, authority inventory, intent and terminal
+reconciliation, gate evidence, three independent reviews, finding disposition,
+dual terminal verification, security review, and final disposition.

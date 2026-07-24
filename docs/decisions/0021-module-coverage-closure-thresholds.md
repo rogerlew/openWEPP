@@ -1,4 +1,4 @@
-# ADR-0021: Module coverage and complexity-risk closure thresholds are binding policy
+# ADR-0021: Module coverage and complexity-risk thresholds
 
 **Status:** Accepted
 **Date:** 2026-06-14 UTC
@@ -14,6 +14,10 @@ increment measurement replaces automatic global measurement only after the
 mechanical planner/executor and receipt path complete governed cutover;
 thresholds, taxonomy, adjudication, and the empty actionable-set objective are
 unchanged.
+**Amendment:** [ADR-0041](0041-separate-testgate-from-observational-quality-ci.md)
+on 2026-07-24 removes coverage/CRAP from increment, campaign, and release
+transition gates. The metric definitions, thresholds, taxonomy, registry, and
+explicit CQR/test-enhancement package-local closure remain accepted.
 **Builds on:** [ADR-0011](0011-architecture-first-top-down-science-contracts.md)
 **Authoring authority:** [docs/standards/module-test-enhancement-authoring-guide.md](../standards/module-test-enhancement-authoring-guide.md), [docs/standards/rust-scientific-coding-standard.md](../standards/rust-scientific-coding-standard.md) §7.5–7.8
 
@@ -54,8 +58,10 @@ complement to the coverage floor.
 
 ## Decision
 
-1. **Adopt the module coverage closure thresholds as binding policy.** Measured
-   on the eligible surface (Decision 3):
+1. **Adopt the module coverage thresholds as binding quality policy.** They are
+   observational outside an explicit metric-focused package and binding for a
+   declared CQR/module test-enhancement closure claim. Measured on the eligible
+   surface (Decision 3):
    - **Science tier** (kernel / contract-bearing / conservation-law modules):
      **≥ 90% region AND ≥ 90% line.**
    - **Glue tier** (parser / orchestration-runner / IO-adapter / output):
@@ -119,8 +125,11 @@ complement to the coverage floor.
    contract invariant, or a conservation identity; otherwise glue-tier. An
    ambiguous module defaults to **science-tier** (the stricter bar).
 
-5. **Scope, floor, and ratchet.** The thresholds bind module test-enhancement
-   packages and any package that adds or materially changes a module's tests.
+5. **Scope, floor, and ratchet.** The thresholds bind explicit module
+   test-enhancement, coverage-closure, CRAP-reduction, and CQR packages. Adding
+   or materially changing tests in an unrelated package does not silently
+   convert that package into metric-focused work; optional QA observes quality
+   effects and may open operator-directed follow-up.
    They are a floor, not a ceiling, and are **non-regressive**: a package may not
    drop a module already above its tier bar back below it. They are **not** a
    global per-PR line-coverage gate — the engine-wide gate philosophy stays
@@ -129,8 +138,9 @@ complement to the coverage floor.
 
 6. **Per-function complexity-risk bound (CRAP ≤ 30).** Adopt the CRAP metric
    (`CC² · (1 − cov)³ + CC`) at the conventional threshold **30** as a
-   per-function closure condition: every eligible function in a module under a
-   test-enhancement package scores CRAP ≤ 30 (`cargo-crap`, LCOV from the same
+   per-function metric-closure condition: every eligible function in a module
+   under an explicit metric-focused package scores CRAP ≤ 30 (`cargo-crap`,
+   LCOV from the same
    llvm-cov run). Because CRAP = CC at full coverage, a function above 30 is
    reduced by **behavior-preserving decomposition, landed test-first** (the
    coverage gate is the safety net) — never by adding tests alone. That
@@ -140,21 +150,23 @@ complement to the coverage floor.
 7. **Tuning authority.** A coverage tier percentage or the CRAP threshold may be
    changed only by a superseding ADR. The obligation binding (Decision 2) is not
    tunable.
-8. **Post-burndown adjudicated closure ratchet.** The 2026-07-13 CQR
+8. **Post-burndown adjudicated quality ratchet.** The 2026-07-13 CQR
    pre-integration campaign established an empty actionable production set and
    retained exactly two independently reviewed, source-hash-bound
-   `R-OBSERVABILITY` rows. Under ADR-0039, a bounded implementation increment
-   closes against its mechanically selected affected eligible surface; a
-   critical change, campaign closure, and release close against the whole
-   workspace. The global command is not the default for an ordinary bounded
-   implementation package. Every closure-eligible report must:
+   `R-OBSERVABILITY` rows. Under ADR-0041, workspace reports are observational
+   and carry `closure_eligible=false`; an explicit metric-focused package closes
+   only its declared owned surface. Every quality report must:
    - apply the campaign's exact production filter and deduplication tuple;
    - preserve raw rows separately from actionable rows;
    - identify production Rust files touched since the frozen base;
    - accept a raw row only through an exact current entry in
      `tools/release/adjudicated_crap_exceptions.json`; and
-   - contain zero actionable rows across the whole workspace, including rows in
+   - preserve every actionable workspace row, including rows in
      source-untouched files whose coverage regressed.
+
+   An explicit metric-focused package additionally requires zero actionable
+   rows in its declared owned closure surface. Unrelated workspace debt remains
+   visible and non-blocking.
 
    An adjudication is not a wildcard waiver. Its symbol, classification,
    cyclomatic complexity, whole-file SHA-256, and dual-review evidence are
@@ -183,12 +195,11 @@ complement to the coverage floor.
   into a coverage package and a follow-on mechanical-refactor package — rather
   than letting a fully-covered monster function pass as closed.
 - The module coverage percentages still do **not** retroactively fail existing
-  modules or become a global per-PR coverage threshold. Every bounded increment
-  must preserve an empty actionable set over its complete affected eligible
-  surface, including every known covering test; critical, campaign, and release
-  boundaries preserve the empty actionable set across the whole workspace.
-  Test deletion, filtering, proven coverage loss, or unknown contribution
-  escalates to global measurement.
+  modules or become a global per-PR coverage threshold. Optional QA observes
+  workspace debt; explicit metric-focused packages close their declared owned
+  surfaces. Test deletion, filtering, proven coverage loss, or unknown
+  contribution invalidates or stales the observation rather than failing an
+  unrelated transition.
 - Raw CRAP rankings are discovery evidence, not the actionable queue. Nightly
   selection classifies every row above 30 before ranking, removes only accepted
   exceptions from actionable excess, publishes both raw and actionable counts,
@@ -198,12 +209,14 @@ complement to the coverage floor.
 - The executable post-burndown gate fails closed on malformed or incomplete
   reports, stale source hashes, missing review evidence, wildcard entries, and
   any new unmatched row. A raw `cargo crap --fail-above` invocation is not the
-  repository closure gate because it cannot represent reviewed retained rows.
+  canonical quality evaluator because it cannot represent reviewed retained
+  rows.
 - **Enforcement wiring.** Until the §7.6 machine guard (binding ordinary `SC-*`
   obligations to tests, modeled on `auth11_required_suite_obligation_guards`)
-  ships, the thresholds and the obligation binding are enforced as a package
-  exit gate (guide §6) and a review-checklist item (standard §7.4#6). The guard,
-  once built, is the automated enforcement of Decision 2.
+  ships, the obligation binding remains a package exit gate and
+  review-checklist item for applicable contract work. Coverage/CRAP thresholds
+  are package exit gates only for an explicit metric-focused package. The
+  guard, once built, is the automated enforcement of Decision 2.
 - Consistent with ADR-0011: the obligations are SC-* contract-derived, so this
   ADR adds an enforcement floor without introducing a new correctness authority.
 

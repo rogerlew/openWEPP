@@ -128,12 +128,12 @@ at most one declared retry; an unmatched process termination is reconciled to a
 typed infrastructure failure before another admission. Representable audit
 failures still produce the schema-valid ten-check artifact.
 
-Critical plans retain separate full-regression and global CRAP nodes unless a
-repository-reviewed three-baseline proof is active in policy or explicitly
-selected with `--combined-proof-id`. Admission binds the current host/image,
-exact parity and coverage lineage, and the 120%/80% economy limits. The policy
-keeps the active proof null until real protected-CI measurements are reviewed;
-no synthetic proof is permitted.
+Under ADR-0041, TESTGATE plans retain selected full correctness regression for
+critical work and must record coverage/CRAP as `DEFERRED_TO_QUALITY_CI`. The
+retired combined-quality proof/input is not TESTGATE authority. Executable
+removal of the old nodes/input and issuance of the typed disposition are
+pending roadmap Order 2; no pre-Order-2 receipt may be represented as carrying
+that disposition. Optional QA executes separately at operator direction.
 
 The helper writes an independently verified unsigned receipt and
 `observation.json`. Forest1 output is `LOCAL_RECEIPT_ACCEPTED`: its unsigned
@@ -142,13 +142,19 @@ evidence and does not block an increment solely because GitHub attestation is
 absent. Use a fresh external directory for every attempt; output collision fails
 closed.
 
+Retained pre-ADR-0041 receipts remain byte-identical. A receipt with removed
+quality nodes receives a separate `REJECTED_INCOMPATIBLE_RECEIPT` import
+decision; it is never rewritten as deferred, and the new attempt emits a new
+receipt.
+
 The stable black-box follow-up interface is
 `tools/local_ci/testgate_qualification.py`. Its `validate`, `run`, and `verify`
 subcommands freeze the subject, invoke the ordinary helper once per declared
 case, stop on the first mismatch, and independently rehash the resulting
 evidence. Qualification never converts local probe evidence into a live
-provider claim. A real combined proof must be collected and pinned before the
-Q12 subject freeze.
+provider claim. The retired Q12 combined-proof path is not a qualification
+prerequisite; roadmap Order 6 owns the only prospective changed-head TESTGATE
+qualification.
 
 Nextest lifecycle roles are named `affected`, `checkpoint`, `campaign`, and
 `release`. Selection still comes from the terminal plan; a profile name alone

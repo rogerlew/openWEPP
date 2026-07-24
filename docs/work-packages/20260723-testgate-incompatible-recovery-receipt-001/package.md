@@ -2,7 +2,7 @@
 
 Package ID: `20260723-testgate-incompatible-recovery-receipt-001`
 
-Status: `ACTIVE`
+Status: `IMPLEMENTED / QUALIFICATION-HANDOFF-ORDER-6`
 
 ## Objective
 
@@ -53,17 +53,25 @@ ledger, path, or checkpoint evidence remains fail-closed.
   concurrent workspace-linker pressure inside the full nextest profile.
 - All other recovery-integrity errors remain typed and fail closed.
 - Focused resume tests pass.
-- The public relocated-audit verifier is exercised directly under the
-  instrumented affected-quality profile and has adjudicated CRAP at most `30`.
+- Historical pre-ADR-0041 evidence exercised the public relocated-audit
+  verifier directly under the instrumented affected-quality profile and
+  reported adjudicated CRAP at most `30`. That retained fact is not a
+  prospective Order 6 gate.
 - Final hosted authority publication uploads only the authenticated signing
-  subject, verification proofs, terminal plan, and reusable global-quality
-  report. The already-published full verified archive is not uploaded again.
+  subject, verification proofs, and terminal plan. Quality evidence is separate
+  optional QA and is not a TESTGATE publication prerequisite.
 - Routine affected/full profiles retain deterministic planner, verifier,
   receipt, and JUnit contract coverage without repeatedly enumerating or
   reconstructing the complete repository. Explicit development-only fixtures
   own live repository reconstruction, have a documented invocation, and remain
   required when their inventory/reconstruction surfaces change.
-- One exact changed-head forest1 TESTGATE qualification proves that a rejected
-  incompatible receipt is retained without blocking the current attempt. The
-  permanent queued records from retired Omarchy are ignored; no duplicate
-  dispatch is permitted.
+- Roadmap Order 6 owns exact changed-head forest1 qualification proving that a
+  rejected incompatible receipt is retained without blocking the current
+  attempt. Permanent queued records from retired Omarchy are ignored.
+
+## ADR-0041 Prospective Disposition
+
+The implemented typed recovery behavior remains required. Its final live
+qualification transfers to Order 6 because pre-ADR-0041 receipts containing
+quality nodes must remain byte-identical and receive a separate
+`REJECTED_INCOMPATIBLE_RECEIPT` import decision.

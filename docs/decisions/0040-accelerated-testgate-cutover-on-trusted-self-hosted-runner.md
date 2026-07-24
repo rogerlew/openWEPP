@@ -12,6 +12,10 @@ elapsed-time and increment-count observation gates are explicitly rejected.
 
 **Amends:** [ADR-0039](0039-campaign-scoped-risk-based-testing-and-assurance-gates.md)
 
+**Quality amendment:** [ADR-0041](0041-separate-testgate-from-observational-quality-ci.md)
+preserves the historical cutover evidence but removes coverage/CRAP from
+prospective TESTGATE, campaign, and release transition gates.
+
 **Canonical operational authority:**
 [Testing And Gate Strategy](../standards/testing-and-gate-strategy.md)
 
@@ -96,10 +100,11 @@ performance threshold, protected-context migration when no such provider rule
 exists, or a dual-required interval before TESTGATE cutover.
 
 It preserves fail-closed selection, unknown-impact escalation, receipt
-verification, output confinement, coverage and CRAP thresholds, exact
+verification, output confinement, coverage and CRAP quality definitions, exact
 adjudication, science-contract obligations, conservation and consumer-path
-proof, external-authority anti-evasion, campaign/release qualification, dual
-review, and an executable conservative rollback lane.
+proof, external-authority anti-evasion, campaign/release correctness
+qualification, dual review, and an executable conservative rollback lane.
+Prospective quality cadence is governed by ADR-0041.
 
 ## Consequences
 

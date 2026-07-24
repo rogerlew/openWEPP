@@ -4,7 +4,7 @@ Package ID: `20260720-testgate-workflow-qualify-001`
 
 Queue ID: `TESTGATE-WORKFLOW-QUALIFY-01`
 
-Status: `ACTIVE / READY-QUALIFICATION`
+Status: `SUPERSEDED / QUALIFICATION-HANDOFF-ORDER-6`
 
 ## Objective
 
@@ -68,3 +68,11 @@ to TESTGATE implementation/policy/workflow code.
 Subagent authorization: this package explicitly authorizes two read-only result
 reviewers and two read-only terminal verifiers. Their outputs are concise
 evidence checks; no subagent may dispatch, push, or edit TESTGATE.
+
+## ADR-0041 Prospective Disposition
+
+The original one-dispatch qualification contract is superseded by the ratified
+roadmap after multiple retained failed attempts and the quality-authority
+separation. Roadmap Order 6 owns final changed-head TESTGATE qualification. All
+existing attempts and receipts remain byte-identical and retain their original
+verdicts.

@@ -63,12 +63,13 @@ unless a subagent is explicitly assigned a bounded implementation fix in
 `{{target_module_path}}` or package-local artifacts.
 
 Subagent requirement: this package requires spawning `comparator_suite_runner`
-for heavy gates selected by the terminal plan, critical classification,
-campaign/release boundary, or explicit conservative rollback, including
-full-workspace CRAP/coverage, full-profile Nextest, comparator suites, and
-population/fixture batches. Do not run those heavy gates locally on the parent
-model unless the subagent is unavailable; if unavailable, record command-level
-evidence before running locally.
+for package-owned metric measurement and for heavy correctness gates selected
+by the terminal plan, critical classification, campaign/release boundary, or
+explicit conservative rollback, including full-profile Nextest, comparator
+suites, and population/fixture batches. Campaign/release lifecycle alone does
+not select full-workspace CRAP/coverage. Do not run those heavy gates locally
+on the parent model unless the subagent is unavailable; if unavailable, record
+command-level evidence before running locally.
 
 ## Scope
 
@@ -146,9 +147,9 @@ and report the blocked commit boundary.
    serialization/publication, and consumer behavior remains eligible.
 4. Populate `artifacts/required-reading-map.md` with path, tier, rationale,
    applicability trigger, and read status for all kickoff required reading.
-5. Run or copy from the batch measurement:
-   - `cargo llvm-cov --workspace --ignore-run-fail --lcov --output-path {{lcov_before_path}}`
-   - `cargo crap --workspace --lcov {{lcov_before_path}} --min 0 --format json --output {{crap_before_path}}`
+5. Verify and extract the target rows from the batch's current
+   `quality_evidence_id`. Recollection is allowed only after typed
+   `STALE`/`INVALID` evidence under the CQR ExecPlan.
 6. Summarize raw and actionable target rows separately in
    `artifacts/crap-before.md` and
    `artifacts/coverage-before.md`.
@@ -185,8 +186,10 @@ and report the blocked commit boundary.
 3. Record numeric/API/output identity in `artifacts/numeric-equivalence.md`.
 4. Record `.rs` line-count governance in
    `artifacts/line-count-governance.md`.
-5. Reconcile the exact terminal plan and run every selected gate. At critical,
-   campaign, release, or explicit rollback boundaries, run and record:
+5. Reconcile the exact terminal plan and run every selected correctness gate
+   plus this package's target-module metric gates. At critical, campaign,
+   release, or explicit rollback boundaries, run and record selected
+   correctness operations:
    - `git diff --check`
    - markdown/doc lint for touched docs
    - focused tests for the touched module/crate
@@ -194,7 +197,7 @@ and report the blocked commit boundary.
    - `cargo clippy --workspace --all-targets -- -D warnings`
    - `cargo nextest run --workspace --profile full`
    - `cargo deny check`
-   - `bash tools/release/run_adjudicated_crap_gate.sh --base-ref <frozen-base>`
+   Unrelated workspace quality debt remains observational and non-blocking.
 6. Use `comparator_suite_runner` for selected heavy full-workspace/batch gates when
    available. If unavailable, record the spawn/tool-policy failure before
    running locally.

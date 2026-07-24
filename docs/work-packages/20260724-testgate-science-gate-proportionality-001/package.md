@@ -2,13 +2,13 @@
 
 Package ID: `20260724-testgate-science-gate-proportionality-001`
 
-Status: `ACTIVE`
+Status: `SUPERSEDED / MERGED-INTO-ROADMAP-ORDER-2`
 
 ## Objective
 
-Align executable TESTGATE selection with ADR-0039 and the canonical testing
-strategy so ordinary science increments run affected correctness and quality
-gates without automatically paying campaign/release or periodic fixture costs.
+Align executable TESTGATE selection with ADR-0041 and the canonical testing
+strategy so ordinary science increments run affected correctness gates and
+record quality as `DEFERRED_TO_QUALITY_CI`.
 
 ## Rationale
 
@@ -46,8 +46,7 @@ required by `docs/standards/testing-and-gate-strategy.md`.
   manifest, lockfile, toolchain, or deny-policy changes.
 - Select required authority suites by the affected process binding rather than
   executing unrelated suites.
-- Prevent duplicate full-regression execution when an instrumented combined
-  quality node supplies the same exact inventory.
+- Remove the retired combined-quality node/input from TESTGATE.
 
 ## Excluded Scope
 
@@ -55,13 +54,12 @@ required by `docs/standards/testing-and-gate-strategy.md`.
   conservation checks, or consumer-path evidence.
 - Changing scientific equations, fixtures, expected values, or production
   runtime behavior.
-- Removing campaign/release full-workspace and global-quality obligations.
+- Weakening campaign/release full-workspace correctness obligations.
 
 ## Acceptance
 
 - Representative ordinary science changes plan as `BOUNDED_COMPONENT` or
-  `INTEGRATED_DOMAIN` with affected quality rather than automatic global
-  quality.
+  `INTEGRATED_DOMAIN` with typed `DEFERRED_TO_QUALITY_CI`.
 - Every mapped process change retains its applicable A0/A1/A3 and explicit
   integration/conservation/consumer obligations.
 - Known critical triggers remain `CRITICAL`; unknown paths remain fail-closed.
@@ -71,15 +69,19 @@ required by `docs/standards/testing-and-gate-strategy.md`.
   lifecycle standard; campaign/release selection remains complete.
 - Authority inventory is exact and process-scoped.
 - Planner/source anti-evasion tests, profile contract tests, focused planner
-  tests, Clippy, affected CRAP, and the exact terminal plan pass before
-  disposition.
-- A changed-head TESTGATE run completes with no duplicated full-workspace test
-  execution and publishes an independently verified receipt.
+  tests, Clippy, and the exact terminal plan pass before disposition.
+- Changed-head TESTGATE qualification is owned by roadmap Order 6.
 
 ## Implementation Intent
 
 Risk is `CRITICAL` because this package changes gate selection, filtering, and
-authority lanes. Cheap policy/schema/anti-evasion checks run before affected or
-global quality. The package must retain negative tests proving that deleted,
+authority lanes. Cheap policy/schema/anti-evasion checks run before full
+correctness regression. The package must retain negative tests proving that deleted,
 unknown, security-boundary, global build, coverage-policy, and test-filter
 changes cannot be downgraded.
+
+## ADR-0041 Prospective Disposition
+
+Roadmap Order 2 owns this package's remaining executable scope. No historical
+attempt, receipt, or evidence is relabeled. This package must not be dispatched
+or independently resumed.

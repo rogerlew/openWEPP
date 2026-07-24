@@ -203,27 +203,27 @@
 - Follow `docs/standards/mechanical-refactor-authoring-guide.md` for structural, behavior-preserving work.
 - Required terminal gates come from the accepted intent/terminal plan under
   `docs/standards/testing-and-gate-strategy.md`. Critical refactors and
-  campaign/release boundaries retain the full workspace closure loop. Focused,
-  quick, frost, or erosion
+  campaign/release boundaries retain the full workspace correctness loop.
+  Coverage/CRAP is observational unless the package is explicitly CQR or module
+  test enhancement. Focused, quick, frost, or erosion
   profiles remain edit-loop feedback and do not waive selected terminal gates.
 - Fall back to `cargo test --workspace` only for libtest-specific behavior or explicitly required legacy harness checks, and label that as a compatibility run rather than the default closure path.
 - Package-required validation overrides generic ambient instructions to skip tests.
 - Reconcile tests mechanically only; do not hide semantic changes inside refactor diffs.
 
-## Adjudicated CRAP Closure Gate
+## Observational Quality And Explicit Metric Packages
 
-- Bounded implementation increments require current affected-surface CRAP
-  selected by the terminal plan. Critical changes, campaign closure, and
-  release require current global adjudicated CRAP. Documentation-only packages
-  remain exempt.
-- Supplying an old artifact cannot close current implementation work. Retained
-  assessment mode remains non-closure evidence and must report
-  `ASSESSMENT-PASS`/`ASSESSMENT-FAIL` with `closure_eligible=false` and cited
-  repository provenance.
-- Closure requires an empty actionable workspace set. The report must also list
-  production Rust files touched since the package base; checking only those
-  files is insufficient because test changes can regress coverage and CRAP in
-  source-untouched functions.
+- Workspace coverage and adjudicated CRAP are observational quality evidence.
+  Their absence, staleness, or debt verdict does not block ordinary TESTGATE,
+  implementation-package, campaign, or release closure.
+- ADR-0041 requires TESTGATE to record `DEFERRED_TO_QUALITY_CI`; executable
+  alignment is pending roadmap Order 2, and no earlier receipt may be
+  represented as carrying that disposition. A valid optional QA report has
+  `closure_eligible=false`.
+- An explicitly authorized CQR/module-test-enhancement package retains binding
+  package-local metrics. Its declared eligible coverage/obligation thresholds
+  and owned actionable CRAP target must pass or the package holds. Unrelated
+  workspace debt remains visible and non-blocking.
 - Raw rows above 30 remain visible. A raw row is non-actionable only when it
   matches an exact, current entry in
   `tools/release/adjudicated_crap_exceptions.json`. Wildcards, filename-based
@@ -232,7 +232,8 @@
   public behavior, or consumer posture invalidates its prior disposition.
   Registry changes require an authorized package and two independent reviews
   applying ADR-0021's symbol-level taxonomy.
-- Fresh closure is canonical-registry-only and source-snapshot-bound. The
+- Fresh measurement and package-local metric closure are
+  canonical-registry-only and source-snapshot-bound. The
   before/after/final source manifests must match; a source or Git-index change
   during metric collection invalidates the run.
 
@@ -251,11 +252,15 @@
   `tools/local_ci/check_cqr_aggregate_admission.py` before its first
   implementation edit.
 - Operator phrasing such as `execute cqr nightly for 8 modules` means: read
-  `docs/work-packages/cqr-nightly-burndown-execplan.md`, measure live workspace
-  CRAP/LCOV, select the requested number of eligible production modules, scaffold
-  one package per module from
+  `docs/work-packages/cqr-nightly-burndown-execplan.md`, consume a verified
+  current quality-observatory report, select the requested number of eligible
+  production modules, and scaffold one package per module from
   `docs/work-packages/templates/cqr-nightly-package.md`, and execute each package
   end-to-end.
+- Until Order 5 of the ratified quality-observatory roadmap implements exact
+  QA-evidence intake, new CQR Nightly dispatch is `HOLD`. After Order 5, fresh
+  recollection is allowed only after typed `STALE`/`INVALID` evidence and an
+  explicit operator CQR directive.
 - Treat each new imperative CQR-nightly request as authorization for a **fresh,
   separately numbered batch**, even when a completed nightly batch is already
   present in the worktree or recent history. A prior batch may inform exclusions,
@@ -290,8 +295,10 @@
 - Gate evidence non-deferral: each required current-scope gate has current
   direct evidence, or the package/phase is held with a named blocker.
 - Exact intent/terminal gate plan and current receipts.
-- Critical, campaign, and release global CRAP with frozen-base touched-file
-  reporting.
+- Exact TESTGATE quality deferral and selected full-workspace correctness
+  regression at critical, campaign, and release boundaries.
+- Package-local coverage/CRAP only for explicit CQR/module-test-enhancement
+  objectives.
 - Conservation/publication acceptance rule when output magnitude or closure
   evidence is in scope.
 - Doc-path integrity checks when moving documentation or required-reading lists.

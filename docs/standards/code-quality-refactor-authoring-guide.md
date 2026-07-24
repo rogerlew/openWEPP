@@ -144,9 +144,10 @@ the metric loop.
    edit at a time, numeric equivalence preserved (§4).
 5. **Re-measure.** Record `*_after`; the dimension target (§3) is met.
 6. **Gate loop.** Mechanical guide §6's exact terminal plan, including the
-   module's affected coverage/CRAP and no-regression gate. Critical changes,
-   campaign closure, release, and explicit rollback use full workspace/global
-   evidence.
+   module's package-local coverage/CRAP and no-regression gate. Critical
+   changes, campaign closure, release, and explicit rollback use full workspace
+   correctness evidence; unrelated workspace quality debt remains
+   observational.
 7. **Evidence and disposition.** Before/after metric, the numeric-equivalence
    statement, any exclusions.
 
@@ -177,12 +178,12 @@ workspace-wide without bricking the gate. Adoption is a ratchet:
   a module-level `#![warn(clippy::cognitive_complexity)]` (→ deny under the gate)
   as that module reaches closure, then clears it. The lint is promoted to a
   workspace `warn` only once the backlog is clear.
-- **The adjudicated `cargo-crap` gate** is the active repo-wide complexity
-  ratchet. The completed CQR campaign left no actionable production row above
-  30. The gate retains raw rows for visibility, accepts only exact current
-  adjudications from `tools/release/adjudicated_crap_exceptions.json`, and fails
-  on any new actionable row. Clippy's complexity lints remain local signal
-  until promoted.
+- **The adjudicated `cargo-crap` report** is the active repo-wide complexity
+  observation. It retains raw rows for visibility and accepts only exact current
+  adjudications from `tools/release/adjudicated_crap_exceptions.json`.
+  An explicit CQR package fails on its owned actionable rows; unrelated
+  workspace rows remain observational. Clippy's complexity lints remain local
+  signal until promoted.
 
 The same pattern applies to any other lint promotion (e.g. burning down the 202
 `#[allow(clippy::…)]`): enable per-module, clear, then promote workspace-wide.

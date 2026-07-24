@@ -88,11 +88,10 @@ record ADR-0021 tier assignment, line/region threshold status, per-function
 region-floor disposition, and obligation-to-test binding in
 `artifacts/coverage-closure.md` before decomposition closes.
 
-Terminal CRAP closure: run
-`bash tools/release/run_adjudicated_crap_gate.sh --base-ref <frozen-base>` and
-record both the touched-file set and empty workspace actionable set. Do not use
-raw `--fail-above`, an inline exception, or a package-local wildcard as the
-adjudicated closure result.
+Terminal CRAP closure: remeasure the owned target surface and require an empty
+owned actionable set. Preserve unrelated workspace rows as observational debt.
+Do not use raw `--fail-above`, an inline exception, or a package-local wildcard
+as the adjudicated result.
 
 Hold handling: local target holds roll back only current-package
 production/test implementation edits to the scaffold baseline, preserve and
@@ -103,8 +102,8 @@ changes.
 Subagent requirement: REQUIRED: spawn `comparator_suite_runner` for all heavy
 gates selected by the terminal plan, critical classification,
 campaign/release boundary, or explicit conservative rollback, including
-full-profile Nextest, full-workspace CRAP/coverage, comparator suites, and
-population/fixture batches. Do NOT run those heavy gates on the
+full-profile Nextest, explicit target metric measurement, comparator suites,
+and population/fixture batches. Do NOT run those heavy gates on the
 parent model unless the subagent is unavailable; if unavailable, record
 command-level evidence before running locally. This prompt explicitly authorizes
 subagent spawning/delegation to comparator/closure-runner, review, and

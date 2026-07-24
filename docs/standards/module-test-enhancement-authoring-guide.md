@@ -39,7 +39,11 @@ modules; do not fragment a single module across packages. If the module also
 needs a physics/contract change, that is a kernel package (different guide), not
 a test-enhancement package.
 
-## 2) Closure threshold (Normative)
+## 2) Explicit Package Closure Threshold (Normative)
+
+This section applies when an authorized package explicitly declares module
+test enhancement or metric closure as its objective. It is not a gate for
+ordinary feature/science work or for optional workspace QA.
 
 Coverage closure for the targeted module is met when **all** of the following
 hold:
@@ -58,9 +62,9 @@ hold:
    aggregate from hiding a wholly untested function.)
 4. **Per-function complexity-risk bound (CRAP ≤ 30).** Every eligible function in
    the module scores **CRAP ≤ 30** under `cargo-crap` (LCOV from the same
-   llvm-cov run; threshold 30). Repository closure uses the adjudicated gate,
-   not raw `--fail-above`, because reviewed retained rows remain visible in the
-   denominator. CRAP is
+   llvm-cov run; threshold 30). This package's target-module closure uses
+   canonical adjudication, not raw `--fail-above`, because reviewed retained
+   rows remain visible in the denominator. CRAP is
    `CC² · (1 − cov)³ + CC`, so at full coverage it collapses to cyclomatic
    complexity: a function above the bound is reduced by **decomposition, not by
    adding tests**. Decomposition is behavior-preserving and lands **test-first**
@@ -174,8 +178,8 @@ complexity, or public behavior changes.
      `cargo llvm-cov --workspace --ignore-run-fail --lcov --output-path <artifacts>/lcov.info`,
      then `cargo crap --workspace --lcov <artifacts>/lcov.info --threshold 30 --format markdown`
      → `<artifacts>/crap_before.md`. Record every eligible function in the module
-     with CRAP > 30. Refresh the repo CRAP baseline so functions outside this
-     module are held no-regression, not re-litigated here.
+     with CRAP > 30. Preserve unrelated workspace rows as observational context;
+     only the target module's owned rows gate this package.
 3. **Gap classification.** For each uncovered region, assign exactly one bucket:
    missing case family (→ author per §7.5/§7.8), unbound obligation (→ §7.6),
    eligible production gap, retained reviewed exception, or denominator
@@ -192,16 +196,16 @@ complexity, or public behavior changes.
 6. **Re-measure.** Emit `coverage_after.json`; confirm §2 thresholds on the
    eligible affected surface and no per-function floor breach. Run the
    terminal-plan CRAP gate; confirm every affected eligible function is at most
-   30 or has an exact current adjudication. Critical, campaign, and release
-   boundaries also require an empty workspace actionable set.
+   30 or has an exact current adjudication. Unrelated workspace debt remains
+   visible and non-blocking.
 7. **Gate loop.** Execute the exact terminal plan under
    `testing-and-gate-strategy.md`, including formatting, affected
    warnings-denied Clippy and tests, doctest/inventory checks, and the obligation
    guard
    (`auth11_required_suite_obligation_guards_contract`) where the module carries
    external-authority suite bindings. Critical, campaign, release, and explicit
-   rollback boundaries retain the conservative full workspace, cargo-deny, and
-   global-CRAP loop.
+   rollback boundaries retain the conservative full workspace correctness and
+   cargo-deny loop; this package retains its target-module metric gate.
 8. **Evidence and disposition.** Disposition states before→after coverage, the
    eligible-surface definition, the exclusion list, the obligation→test map, and
    the threshold pass.

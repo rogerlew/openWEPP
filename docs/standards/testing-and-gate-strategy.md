@@ -2,7 +2,10 @@
 
 Status: Active
 
-Decision authority: [ADR-0039](../decisions/0039-campaign-scoped-risk-based-testing-and-assurance-gates.md)
+Decision authority:
+[ADR-0039](../decisions/0039-campaign-scoped-risk-based-testing-and-assurance-gates.md)
+as amended by
+[ADR-0041](../decisions/0041-separate-testgate-from-observational-quality-ci.md)
 
 Owner: openWEPP maintainers
 
@@ -33,7 +36,7 @@ The following authorities remain distinct:
 | What process behavior is correct? | Canonical `SC-*` science contract and accepted decisions |
 | Which evidence can support a correctness verdict? | `docs/specifications/correctness-authority-model.md` |
 | Which test families and contract obligations must be authored? | `docs/standards/rust-scientific-coding-standard.md` §7 |
-| What coverage, function-floor, CRAP, and exception thresholds apply? | ADR-0021 and the module test-enhancement standard |
+| What coverage, function-floor, CRAP, and exception thresholds apply to QA or explicit metric packages? | ADR-0021 and the module test-enhancement standard |
 | Which affected gates run at which lifecycle boundary? | This standard |
 | What makes a scientific report reviewed, approved, or publishable? | Scientific-assurance architecture, lifecycle, and report standard |
 
@@ -124,10 +127,12 @@ requires a manual workaround. A tooling defect is repository work, not an
 ambient inconvenience.
 
 **Heavy gate node** is a gate definition carrying the machine-owned
-`execution_cost_class: HEAVY`. Full workspace regression, global
-coverage/CRAP, broad Clippy or deny, comparator and parity suites, release
-gates, and population or cohort batches must carry that class. Timing history
-may propose a policy change but does not dynamically relabel a node.
+`execution_cost_class: HEAVY`. Full workspace regression, broad Clippy or deny,
+comparator and parity suites, release gates, and population or cohort batches
+must carry that class. Optional QA collection and explicit metric-package
+coverage/CRAP are heavy operations but are not TESTGATE transition nodes.
+Timing history may propose a policy change but does not dynamically relabel a
+node.
 
 **Gate receipt** is the immutable machine-readable result of executing one
 gate plan against identified inputs.
@@ -142,6 +147,11 @@ Stale does not mean failed; it means the result cannot prove the new target.
 to a later named campaign boundary. It has an owner, reason, and trigger. It
 remains visible and unresolved. A terminal-plan discovery is not retroactively
 called deferred.
+
+**`DEFERRED_TO_QUALITY_CI`** is the typed TESTGATE disposition proving no
+coverage/CRAP execution node was selected and optional operator QA owns the
+observation trigger. It is not a generic campaign deferral, pass, skip, waiver,
+or satisfaction of an explicit CQR/module-test-enhancement metric gate.
 
 **Waiver** is explicit authority to proceed without a normally required gate.
 Deferral is not waiver. This standard creates no new waiver authority.
@@ -202,7 +212,7 @@ The families describe purpose, not a strength ladder.
 | Constitutive correctness authority | Exercise every applicable A3 externally governed constitutive suite for a touched process family | Required authority suite and pinned fixture cohort | Increment when applicable; non-deferrable |
 | Empirical and independent authority | Evaluate against observations or independent calculations beyond constitutive closure | A4 empirical cohorts, A5 independent solvers, SNOTEL, frost-tube | Domain checkpoint, periodic, campaign, or release as declared |
 | System and stability | Exercise large populations, concurrency, binaries, manifests, and failure recovery | Stability cohort, watchlist, multi-worker CLI | Critical increment, campaign, or release |
-| Coverage and complexity risk | Measure exercised eligible regions and change risk | LLVM coverage, cargo-crap | Affected increment; global campaign/release |
+| Coverage and complexity risk | Measure exercised eligible regions and change risk | LLVM coverage, cargo-crap | Optional operator QA; package-local when an explicit CQR/module-test-enhancement objective owns the metric |
 | Assurance and publication | Plan report impact, reproduce selected evidence, render, approve, transfer, and publish | Assurance plan/build/check/publish/verify-release | Impact planning during campaign; realization and publication at closure/release |
 
 A suite must declare its family, owner, dependencies, expected duration class,
@@ -279,7 +289,8 @@ bounded Rust production change, the minimum plan contains:
 - affected integration and real-consumer tests from explicit mappings;
 - affected negative, error-precedence, chronology, restart, serialization,
   conservation, and publication tests where those behaviors can change;
-- targeted coverage/CRAP evidence for the changed eligible production surface;
+- typed `DEFERRED_TO_QUALITY_CI` coverage/CRAP disposition naming the optional
+  QA owner and trigger;
 - affected doctests when public items, examples, feature behavior, or rustdoc
   inputs can change, with planned and executed doctest inventory recorded;
 - the repository placeholder/stub-pattern scan when production Rust, tests,
@@ -293,7 +304,7 @@ dependency policy, license policy, source policy, or toolchain dependency
 surface changes. It remains a campaign and release gate regardless.
 
 An ordinary bounded increment does not require full workspace regression or
-fresh global CRAP. It closes as `PASS-INCREMENT` only after every increment
+quality measurement. It closes as `PASS-INCREMENT` only after every increment
 gate passes and every campaign-owned obligation is already declared in the
 campaign ledger.
 
@@ -327,8 +338,6 @@ Campaign closure requires a clean exact commit and:
 - full workspace regression;
 - full workspace doctests and the repository placeholder/stub-pattern scan;
 - cargo-deny;
-- current full-workspace coverage and adjudicated CRAP for the exact closure
-  execution root;
 - every campaign-owned contract, consumer, conservation, comparator,
   empirical, external-authority, and stability gate named by the campaign;
 - disposition of all failed, stale, blocked, deferred, and unmapped items;
@@ -338,8 +347,8 @@ Campaign closure requires a clean exact commit and:
 
 Campaign closure fails if any deferred campaign obligation remains unresolved.
 The closure receipt may incorporate still-current increment or checkpoint
-receipts instead of rerunning them. Full workspace and global CRAP evidence
-must be current for the exact closure execution root.
+receipts instead of rerunning them. Optional quality evidence remains
+observational and is not campaign currency.
 
 ### 6.5 Release qualification
 
@@ -398,7 +407,8 @@ Failure to prove any condition emits
 `WORKSPACE_RESOLUTION_OR_BEHAVIOR_CHANGED` or
 `WORKSPACE_ISOLATION_UNPROVEN` and escalates to critical.
 
-The increment plan plus targeted coverage/CRAP is normally sufficient.
+The affected correctness/authority plan plus typed quality deferral is normally
+sufficient.
 
 ### 7.3 Integrated domain
 
@@ -411,7 +421,7 @@ required before the next integration seam.
 ### 7.4 Critical
 
 A critical change requires immediate campaign-closure-strength workspace
-regression and global CRAP in addition to specialized gates. Critical triggers
+correctness regression in addition to specialized gates. Critical triggers
 include:
 
 - shared numerical primitives, calendars, chronology, state layout, restart,
@@ -630,8 +640,9 @@ Existing explicit exception authorities remain narrow and content-bound.
 
 Before any selected heavy node starts, one canonical pre-heavy closure audit
 must evaluate the complete intended closure state. Heavy nodes include full
-workspace regression, global coverage/CRAP, broad Clippy or deny, comparator
-and parity suites, release gates, and population or cohort batches. The audit
+workspace regression, broad Clippy or deny, comparator and parity suites,
+release gates, and population or cohort batches. Optional QA and explicit
+metric-package coverage/CRAP use their own heavy-operation admission. The audit
 must produce one versioned report consumed unchanged by the executor and
 terminal verifier. It must check:
 
@@ -652,8 +663,8 @@ terminal verifier. It must check:
    state;
 6. execution-, authority-, and documentation-root separation plus every
    evidence-reuse decision and its invalidation reason;
-7. whether a proven instrumented execution can satisfy both full-regression
-   and global-coverage obligations without duplicate test execution;
+7. whether any selected heavy operation duplicates an already admitted
+   functional inventory or current reusable receipt;
 8. prerequisite ordering, timeout and retry policy, concurrency ownership, and
    the exact heavy-runner handoff;
 9. persistent append-only attempt, timing, cost, and failure records outside an
@@ -716,20 +727,11 @@ identity or authority substitution is `INVALID`, while an unavailable external
 prerequisite is `BLOCKED`, with the failure assigned to its owning check. Rust
 and non-Rust ledger producers must share the same canonical JSON byte contract.
 
-A combined full-regression and LCOV/CRAP node is selectable only by a
-repository-reviewed proof record. The executor recomputes its decision from
-exactly three compatible protected-CI baselines, exact functional inventory and
-result parity, complete JUnit, LCOV, and CRAP lineage, and both economy limits:
-combined median time is at most 120 percent of coverage-only median time and at
-most 80 percent of the summed full plus coverage medians. Missing, stale,
-unpinned, incomplete, or uneconomic proof retains separate nodes with a typed
-non-adoption reason.
-
-Nested coverage/CRAP subprocesses are executor children, not independent
-launchers: they must consume the executor-injected qualified Nextest
-configuration and short process `TMPDIR`. They may not regenerate scheduling,
-resource, or temporary-root contracts from repository defaults. Signal or
-cleanup termination must be represented as a nonzero failed run status.
+The retired combined full-regression/LCOV/CRAP TESTGATE node is not selectable
+under ADR-0041. Functional TESTGATE and optional QA have separate authority,
+receipts, concurrency, and failure semantics. Coverage/CRAP subprocess
+confinement belongs to the quality observatory or an explicit metric package,
+not the TESTGATE execution DAG.
 
 The audit is the single independent inventory verifier for the LIGHT-to-HEAVY transition. LIGHT execution may reconstruct the terminal plan once; the audit then independently reconstructs current policy, canonical arguments, and exact inventory once in the same confined attempt workspace. A READY audit binds that result. HEAVY consumes the READY result and must not repeat the same plan or inventory enumeration unless source, policy, execution context, or another identity breaker changed. Executor preflight retains non-inventory safety checks. Repeating enumeration at LIGHT preflight, audit, and HEAVY admission is a tooling defect, not extra assurance.
 
@@ -918,7 +920,11 @@ Every receipt contains:
 - claimed execution principal/context, repository, source event/ref,
   workflow/job, runner/image, and attempt; these claims are unauthenticated
   until enclosed as described below;
-- hashes of JUnit, LCOV, CRAP, comparator, reconstruction, or other evidence;
+- hashes of JUnit, comparator, reconstruction, or other selected correctness
+  evidence; QA/CQR receipts separately bind LCOV and CRAP;
+- typed quality disposition. TESTGATE requires
+  `DEFERRED_TO_QUALITY_CI`, the optional QA workflow owner/trigger, and proof
+  that no coverage/CRAP node executed;
 - skipped or unavailable items with policy reason;
 - source mutation checks for gates that require a frozen tree; and
 - final execution result: `PASS`, `PASS_WITH_RETRY`, `FAIL`, `BLOCKED`, or
@@ -941,8 +947,9 @@ Receipts use these closed trust classes:
 - `REPOSITORY_REVIEWED`: bound to an authenticated repository event and exact
   reviewed source; it may close an increment when repository rules accept its
   issuer and workflow; and
-- `PROTECTED_CI`: issued by the protected, pinned CI workflow/runner identity
-  with verifiable provenance; required for campaign certification and release.
+- `PROTECTED_CI`: issued by a protected, pinned CI workflow/runner identity
+  with verifiable provenance; required only when a boundary explicitly selects
+  a separate authenticated publication/certification claim.
 
 Receipt authentication is a non-circular two-layer construction:
 
@@ -1248,96 +1255,60 @@ certificate ID, and digest but is not part of the certified source. Fresh-clone
 verification must fetch the evidence branch/tag and validate the offline trust
 bundle.
 
-## 12. Coverage And CRAP
+## 12. Observational Coverage And CRAP
 
 ADR-0021 remains authority for eligible surfaces, thresholds, function floor,
-CRAP threshold 30, retained exceptions, and adjudication. This section governs
-when those measurements run.
+CRAP threshold 30, retained exceptions, and adjudication. ADR-0041 governs
+execution and transition effect.
 
-### 12.1 Increment measurement
+### 12.1 TESTGATE disposition
 
-A Rust production increment first maps changed **source items**: functions,
-constants and statics, coefficient/data tables, types and traits, impls, macros,
-generated inputs, build scripts, feature-controlled items, and shared error or
-configuration definitions. It then expands those items to every eligible
-production function whose behavior can depend on them and measures that
-affected function surface using selected component, contract, integration, and
-reverse-dependency tests. It must:
+TESTGATE does not execute coverage or CRAP. Its plan and receipt carry
+`DEFERRED_TO_QUALITY_CI`, name the optional operator-triggered quality workflow,
+and prove no quality execution node ran. This disposition leaves correctness
+closure eligible and does not satisfy an explicit CQR/module-test-enhancement
+metric objective.
 
-- include every new or changed eligible function;
-- include unchanged functions when their branch behavior, dependencies, build
-  inputs, features, or tests were changed;
-- preserve the obligation-to-test map;
-- expand each affected function to its complete mechanically known
-  covering-test closure, including unchanged tests whose retained coverage
-  contributes to that function; the behavior-suite selection alone is not the
-  CRAP denominator;
-- report coverage and CRAP for the affected surface;
-- fail when an affected actionable function exceeds CRAP 30 or violates its
-  applicable coverage closure requirement; and
-- record that global workspace certification is pending for campaign closure.
+### 12.2 Optional quality observation
 
-The follow-up implementation must define a source-item dependency mapper.
-When exact expansion is unavailable for a non-function item, the affected
-surface becomes all eligible functions in the owning package and selected
-reverse-dependent packages. If that conservative surface still cannot be
-bounded, global measurement is required. An empty affected selection for a
-production constant, type/trait, macro/build input, or feature change is
-invalid. Acceptance fixtures must exercise each of those cases.
+The operator may dispatch the forest1 quality observatory after TESTGATE
+activity. The observation:
 
-Coverage-contribution mappings are versioned evidence produced from a current
-global or affected instrumented run. If the planner cannot prove that the map
-contains every known covering test for an affected function, it expands to the
-owning package and reverse-dependent test inventory; if completeness remains
-unknown, it runs global measurement rather than reporting artificially narrow
-CRAP.
+- freezes one exact source, tree, toolchain, policy, and workflow identity;
+- executes `full` then `science-manual` sequentially in one instrumented root;
+- independently binds both inventories and their canonical nonignored union;
+- derives one merged coverage identity and adjudicated CRAP report;
+- preserves raw, adjudicated, and actionable rows; and
+- emits `closure_eligible=false` with debt status separate from execution
+  integrity.
 
-### 12.2 Immediate global measurement
+Actionable debt does not fail the measured source or any increment, campaign,
+or release transition. Collector corruption, identity mismatch, incomplete
+inventory, malformed evidence, or publication failure invalidates the
+observation itself.
 
-Fresh full-workspace coverage and adjudicated CRAP run immediately after any
-change that can reduce coverage or alter classification outside a bounded
-source surface, including:
+Test/profile/filter/source changes stale prior quality evidence. They do not
+automatically launch measurement. Exact source-freeze, registry, taxonomy,
+deduplication, and exception-integrity requirements remain fail-closed whenever
+quality measurement is requested.
 
-- deleting, disabling, ignoring, filtering, or moving a test or required case
-  whose prior coverage contribution is not proven to remain in the complete
-  affected closure (`COVERAGE_CONTRIBUTION_REMOVED`);
-- changing a test so its prior covered-function set cannot be reconstructed or
-  bounded (`COVERAGE_CONTRIBUTION_UNKNOWN`);
-- changing workspace test membership, features, coverage flags, profiles, or
-  production filters;
-- changing the adjudication registry or exception evidence;
-- changing shared test helpers with broad fan-out; or
-- any critical change for which affected coverage cannot be bounded.
+### 12.3 Explicit metric packages and CQR
 
-Purely additive tests and bounded test edits remain on affected measurement
-when inventory comparison and prior/new contribution maps prove that no
-coverage outside the affected closure was removed. A modified test whose prior
-coverage remains supplied by other mapped tests does not trigger global
-measurement. Unknown mapping fails to the global gate; planner or agent
-judgment is not a predicate.
+An explicitly authorized module test-enhancement, coverage-closure,
+CRAP-reduction, or CQR package retains binding metrics for its declared owned
+surface. It must satisfy its package-local thresholds and owned actionable-row
+target before claiming that metric objective complete. Unrelated workspace
+debt remains visible and non-blocking.
 
-### 12.3 Campaign and release measurement
+Until Order 5 of the ratified quality-observatory roadmap implements exact
+evidence intake, new CQR Nightly dispatch is `HOLD`. After Order 5, CQR consumes
+one verified current `quality_evidence_id` for baseline selection and ranking
+without recollection. Only typed `STALE` or `INVALID` evidence plus an explicit
+operator CQR directive permits fresh acquisition.
 
-Campaign closure and release qualification require **current** global evidence
-for their exact execution root. Here, current/fresh means produced for that
-exact root and reuse contract, not necessarily rerun at both lifecycle labels.
-A current campaign full-regression or global CRAP receipt satisfies the release
-gate only when it is `HERMETIC_CONTENT`, has release-accepted `PROTECTED_CI`
-trust, the release changes none of its bound inputs, and the gate has no
-explicit `rerun_on_release` policy. `NON_REUSABLE` and `SAME_EXECUTION` evidence
-must rerun at release. A new execution is also required when the release changes
-a bound input, the receipt fails verification, or that declared policy applies.
-The full run applies the canonical production filter,
-deduplication, adjudication registry, source freeze, and zero actionable
-workspace condition.
-
-The implementation must provide one instrumented full Nextest run that can
-supply both full regression results and LCOV to cargo-crap. Adoption requires
-test-inventory parity, acceptable runtime, complete required coverage, and
-evidence that coverage instrumentation does not invalidate a gate's semantics.
-Until proven, functional and coverage executions remain distinct. After parity
-is proven for a gate definition and environment identity, separately rerunning
-the same full inventory for regression and coverage is forbidden.
+Campaign and release may display or retain a quality observation, but do not
+require its presence or currency and do not reduce its debt verdict into a
+transition result. A later ADR is required to promote quality back into a gate.
 
 ## 13. Assurance Impact And Deferral
 
@@ -1494,6 +1465,7 @@ The target CI mapping is:
 | Presubmit/increment | Pull request or requested local closure | Mechanical increment plan | Increment merge/closure |
 | Post-submit/checkpoint | Push to integration branch or campaign checkpoint | Fast workspace, affected domains, accumulated integration | Opens visible campaign debt; critical failures require prompt action |
 | Periodic/backstop | Scheduled | Full regression or expensive authority families according to cadence | Campaign/release closure until disposition |
+| Quality observatory | Optional manual operator dispatch | Sequential `full` plus `science-manual` merged coverage and adjudicated CRAP | Non-blocking observation only |
 | Campaign closure | Explicit dispatch on candidate head | Complete campaign gate set and certification | Campaign disposition |
 | Release | Explicit release dispatch | Current campaign certification plus release-only gates | Release publication/distribution |
 
@@ -1549,9 +1521,11 @@ gh workflow run testgate-shadow.yml --ref main \
   -f intent_package=docs/work-packages/<id>/package.md
 ```
 
-Provider queue records bound to retired labels or obsolete concurrency
-identities are canceled before later dispatch; they are never revived by
-re-registering an obsolete runner.
+Permanently queued pre-pivot Omarchy records are immutable historical metadata,
+excluded from current forest1 occupancy, and must not be awaited or canceled.
+Preflight only the current forest1 workflow, labels, and concurrency identity.
+Genuinely live current forest1 work remains occupancy and is not canceled to
+admit another run.
 
 ## 15. Performance And Friction Budgets
 
@@ -1659,10 +1633,11 @@ package must, at minimum:
 3. define campaign metadata and the machine-readable ledger;
 4. implement the gate planner, explicit impact map, receipt schema, verifier,
    and status renderer;
-5. implement targeted affected-surface coverage/CRAP and critical escalation;
+5. implement typed `DEFERRED_TO_QUALITY_CI` and remove quality execution from
+   TESTGATE;
 6. split presubmit, post-submit, periodic, campaign, and release workflows;
-7. prevent duplicate full regression and coverage runs where a proven combined
-   path is safe;
+7. implement the separate optional quality observatory and prevent it from
+   competing with TESTGATE;
 8. extend assurance planning with semantic watches and campaign-head currency;
 9. update package templates, prompt standards, test guidance, local-CI docs,
    release docs, and catalogs; and
@@ -1682,8 +1657,8 @@ provider interval. Acceptance on one exact candidate requires:
 - one cold writable-surface bootstrap followed by same-job cached build and
   deterministic plan/root/receipt execution on the trusted runner; writable
   work, target, and dependency surfaces are destroyed after every job;
-- current affected and global CRAP with zero actionable rows after accepted
-  patches;
+- the historical cutover's accepted affected/global CRAP evidence, retained
+  without making it a prospective transition gate;
 - every adversarial and independent review finding dispositioned, with accepted
   findings patched and verified;
 - one exact-candidate conservative full-suite comparison;

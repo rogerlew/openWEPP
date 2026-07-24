@@ -21,6 +21,11 @@ replaces the elapsed-time, increment-count, 50%, and dual-required pre-cutover
 operands with event-driven acceptance on a trusted self-hosted runner. The core
 risk-based testing decision remains accepted.
 
+**Quality amendment:** [ADR-0041](0041-separate-testgate-from-observational-quality-ci.md)
+removes coverage/CRAP from increment, critical, campaign, and release
+transition gates while preserving the quality model and explicit metric-package
+closure.
+
 ## Context
 
 openWEPP accumulated strong but fragmented quality rules. Science contracts
@@ -71,23 +76,18 @@ external-authority, and release obligations.
    then reconcile the intent plan. Newly discovered increment obligations must
    run before closure; governed campaign amendments cannot retroactively defer
    failed or increment-required gates. Deferred is not waived.
-4. Require full workspace regression and current full-workspace CRAP at campaign
-   closure, release qualification, and immediately after a critical-risk
-   change. “Current” binds an exact execution root: release reuses a verified
-   campaign receipt only when its bound inputs are identical and its protected-
-   CI trust plus `HERMETIC_CONTENT` reuse class are release-accepted, and reruns
-   non-reusable, invalidated, or explicit release-rerun gates. They are not
-   ordinary increment gates.
+4. Require full workspace regression at campaign closure, release
+   qualification, and immediately after a critical-risk change. Coverage/CRAP
+   is optional observational QA under ADR-0041 and is not a transition gate.
 5. Select increment gates mechanically from the changed paths, Cargo dependency
    graph, explicit non-Cargo dependency map, contract/test bindings, external
    authority registry, assurance dependency graph, and risk rules. Unknown or
    ambiguous production-impact paths escalate; an agent does not silently
    choose a narrower suite.
 6. Retain ADR-0021's coverage thresholds, obligation binding, eligibility
-   taxonomy, CRAP threshold 30, exact adjudication requirements, and global
-   empty-actionable-set objective. Change only measurement cadence: bounded
-   increments prove the affected eligible surface; campaign and release closure
-   prove the whole workspace.
+   taxonomy, CRAP threshold 30, and exact adjudication requirements as the
+   quality-observation and explicit metric-package authority. ADR-0041 governs
+   the non-blocking cadence.
 7. Treat Nextest as a test executor, filter, scheduler, and sharder—not as the
    authority for manuscript, result, fixture, contract, publication, or other
    non-Cargo dependency impact.
@@ -151,7 +151,7 @@ This ADR does not supersede:
 
 - canonical `SC-*` authority or test-vector obligations;
 - ADR-0021 coverage percentages, function floor, eligibility taxonomy, CRAP
-  threshold, or exception discipline;
+  threshold, exception discipline, or explicit metric-package closure;
 - fail-closed numerical and domain guards;
 - direct consumer-path, conservation, reconstruction, or anti-tautology proof;
 - external-authority lane classifications and fixture provenance;
@@ -164,7 +164,7 @@ This ADR does not supersede:
   a campaign without repeated workspace qualification.
 - Campaign closure becomes a real integration event with an exact certified
   head, rather than the repetition of package-level release gates.
-- A critical change still receives immediate full regression and global CRAP.
+- A critical change still receives immediate full correctness regression.
 - Gate planners and receipts become governed interfaces. Missing mappings fail
   conservatively rather than allowing an agent to infer low risk.
 - Assurance work can accumulate mechanically identified impact during a
@@ -195,8 +195,8 @@ agent operators may escalate but may not silently downgrade a plan.
 ### Defer all testing until campaign end
 
 This produces slow fault localization and permits avoidable integration debt.
-Every increment still requires focused contract, affected dependency, and
-quality gates.
+Every increment still requires its mechanically selected focused contract,
+affected dependency, authority, consumer, and other correctness gates.
 
 ### Mark assurance reports simply stale
 
@@ -206,9 +206,7 @@ the exact assessed result while making new-realization impact visible.
 
 ## Transition
 
-The next implementation package must reconcile root and nested instructions,
-ADR-0021, the correctness-authority lane wording, package templates, local-CI
-guidance, Nextest profiles, release workflows, coverage/CRAP runners, and
-assurance planning. It must implement and validate the gate-plan, receipt, and
-campaign-ledger contracts before the new selection mechanics become the normal
-execution path.
+ADR-0041 Order 1 aligns repository governance with the amended authority.
+Roadmap Order 2 must remove quality execution from TESTGATE and validate the
+typed deferral in the gate-plan, receipt, verifier, and workflow contracts
+before the amended selection mechanics become the normal execution path.

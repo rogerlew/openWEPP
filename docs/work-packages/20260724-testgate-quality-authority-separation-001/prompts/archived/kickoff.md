@@ -17,9 +17,9 @@ Required reading:
 - On-demand: ADR-0039, ADR-0040, gate-policy schemas, planner implementation,
   TESTGATE workflow contracts, and CQR templates.
 
-Required-reading budget: `164140` current local bytes, `OK`; map:
-`artifacts/required-reading-map.md`. Recompute after ADR-0041 exists and before
-implementation edits.
+Required-reading budget: `170333` current local bytes, `OK`; map:
+`artifacts/required-reading-map.md`. Recomputed after ADR-0041 and the aligned
+authority edits existed.
 
 Task: execute every package phase through disposition. Adopt and align the
 normative authority and specify typed non-blocking deferral without weakening

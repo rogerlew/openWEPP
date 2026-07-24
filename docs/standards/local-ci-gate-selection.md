@@ -67,7 +67,8 @@ repeat staging, or reproduce unchanged science. Escalate only when the
 amendment tool refuses the focused class, assurance implementation/schema/
 builder code changed, or publication/release work is requested. The one-time
 implementation of the amendment machinery remains an implementation package
-and must pass its full closure and CRAP gates.
+and must pass its full correctness closure. Coverage/CRAP is observational
+unless that package explicitly declares a metric-focused objective.
 
 ## Timing Diagnostics
 

@@ -103,9 +103,9 @@ scope.
   only when package governance allows local substitution.
 - **Required, not optional, for selected heavy batch/closure/comparator work.**
   When a terminal plan, critical classification, campaign/release boundary, or
-  transition fallback selects full workspace tests, global coverage/CRAP,
-  Clippy/deny, comparator/parity suites, release gates, or population/cohort
-  batches, the
+  transition fallback selects full workspace tests, broad Clippy/deny,
+  comparator/parity suites, release gates, population/cohort batches, optional
+  operator QA, or explicit metric-package coverage/CRAP, the
   prompt MUST *require* — not merely authorize — spawning the
   `comparator_suite_runner` subagent (gpt-5.3-codex-spark) for those runs, with an
   imperative directive (see the `Subagent requirement:` template line).

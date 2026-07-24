@@ -61,8 +61,9 @@ and staged-adoption contract live in the
 ### Adoption Contract
 
 - TESTGATE is authoritative for ordinary trusted-main increments. Conservative
-  broad gates remain callable at critical, campaign, release, and explicit
-  rollback boundaries; there is no elapsed-time, increment-count, 50%, or
+  broad correctness gates remain callable at critical, campaign, release, and
+  explicit rollback boundaries. Coverage/CRAP is separate optional
+  observational QA. There is no elapsed-time, increment-count, 50%, or
   dual-required gate.
 - Unknown production impact escalates to critical/full execution; there is no
   generic operator or agent downgrade.

@@ -5,3 +5,5 @@ Preserve all applicable affected science authority and correctness obligations,
 retain fail-closed unknown and critical escalation, and move only
 lifecycle-inappropriate empirical, migration-development, or unrelated
 workspace evidence out of ordinary increment execution.
+
+Archived by ADR-0041. Remaining executable scope merged into roadmap Order 2.

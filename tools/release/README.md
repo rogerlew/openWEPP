@@ -1,6 +1,7 @@
-# Release Gate Automation
+# Release And Quality Automation
 
-This directory hosts repository-local automation for openWEPP release gates.
+This directory hosts repository-local release automation and observational
+quality tooling.
 
 Required authority lane runs by default.
 
@@ -15,28 +16,32 @@ in the sealed acquisition provenance.
   - Collects fresh full-workspace LCOV and `cargo-crap` JSON by default, or
     assesses an explicitly supplied retained CRAP artifact.
   - `--scope affected --package <name>... --nextest-profile affected
-    --base-ref <ref>` is the bounded increment path. Repeated packages are the
-    terminal plan's exact affected/reverse-dependent closure. One instrumented
-    Nextest run emits JUnit and LCOV, then CRAP is evaluated for that package
-    set. Before acquisition, every requested package must own production sources
+    --base-ref <ref>` is the bounded explicit metric-package path. Repeated
+    packages are the metric package's exact affected/reverse-dependent closure.
+    One instrumented Nextest run emits JUnit and LCOV, then CRAP is evaluated
+    for that package set. Before acquisition, every requested package must own production sources
     under `crates/*/src`; measurement-only packages such as the workspace-root
-    integration harness fail closed and require global quality. Unknown or
+    integration harness fail closed as measurement requests. Unknown or
     measurement-only packages fail before compilation; the exact admitted scope
     is retained as `affected-package-scope.json`, revalidated after acquisition,
-    and bound by SHA-256 in report provenance. The mode is fresh-only and
-    cannot substitute for global critical, campaign, or release closure.
+    and bound by SHA-256 in report provenance. The mode is fresh-only. Outside
+    an explicit CQR/module-test-enhancement package, its debt verdict is
+    observational and `closure_eligible=false`.
   - Applies the exact production filter and deduplication tuple established by
     the completed CQR pre-integration campaign.
-  - Fresh closure snapshots every production Rust source, Rust/Cargo/gate
+  - Fresh measurement snapshots every production Rust source, Rust/Cargo/gate
     measurement input (including `rust-toolchain.toml`), HEAD, and the Git index
     before, after, and immediately after report generation; any drift fails the
     run. The canonical adjudication registry cannot be overridden in this mode.
-  - Preserves raw rows above 30, matches only exact current adjudications from
-    `adjudicated_crap_exceptions.json`, and fails unless the actionable
-    workspace set is empty.
-  - With `--base-ref`, reports every touched production Rust file while still
-    blocking actionable regressions in source-untouched files. Status records
-    distinguish additions, modifications, deletions, and both rename paths.
+  - Preserves raw rows above 30 and matches only exact current adjudications
+    from `adjudicated_crap_exceptions.json`. ADR-0041 requires a future explicit
+    metric package to apply failure only to its owned rows and optional QA to
+    report workspace debt without blocking source closure. The current
+    executable still returns a workspace-wide debt verdict; callers must not
+    use that verdict to block non-metric closure during the transition.
+  - With `--base-ref`, reports every touched production Rust file and preserves
+    actionable rows in source-untouched files. Status records distinguish
+    additions, modifications, deletions, and both rename paths.
   - `--crap-json` is retained assessment mode. It requires a repository-local
     provenance artifact, cannot report current touched files, and emits
     `ASSESSMENT-PASS` rather than a closure `PASS`.
@@ -52,13 +57,16 @@ in the sealed acquisition provenance.
     containment before generating JSON and Markdown reports.
 - `run_release_candidate_gates.sh`
   - Requires `--mode validate` or `--mode release`; ambiguous invocation fails.
-  - Validation mode runs workspace gates (`fmt`, `clippy`, full-profile `nextest`, `deny`, the
-    adjudicated-CRAP unit tests, and a fresh adjudicated CRAP measurement),
+  - Validation mode currently runs workspace gates (`fmt`, `clippy`,
+    full-profile `nextest`, `deny`, adjudicated-CRAP unit tests, and a fresh
+    adjudicated CRAP measurement),
     but exits before assurance snapshotting, binary staging, sidecar emission,
     and release lint. Ordinary CI uses only this mode and names its upload
-    validation evidence.
+    validation evidence. The inline quality collection is transition debt owned
+    by roadmap Order 2; ADR-0041 makes its debt verdict non-blocking and removes
+    automatic recollection from the executable path.
   - Release mode first passes the fail-closed assurance transition preflight,
-    then runs the same closure gates, creates an immutable zero-report assurance
+    then runs the same correctness gates, creates an immutable zero-report assurance
     snapshot, builds/stages release binaries, emits sidecars, and runs
     `open_wepp_runner release lint`. Full-profile nextest supplies the required
     process-per-test isolation for environment-mutating integration tests.
@@ -145,7 +153,7 @@ in the sealed acquisition provenance.
 
 ## Typical Usage
 
-For implementation-package closure from its frozen base:
+For explicit CQR/module-test-enhancement measurement from its frozen base:
 
 ```bash
 bash tools/release/run_adjudicated_crap_gate.sh \
@@ -153,7 +161,7 @@ bash tools/release/run_adjudicated_crap_gate.sh \
   --output-dir <package-artifacts>/adjudicated-crap
 ```
 
-For planner-selected bounded-package increment closure:
+For an explicit metric package's bounded measurement:
 
 ```bash
 bash tools/release/run_adjudicated_crap_gate.sh \
@@ -164,10 +172,10 @@ bash tools/release/run_adjudicated_crap_gate.sh \
   --output-dir target/affected-crap
 ```
 
-The terminal plan, not a human shortcut, must select every repeated package and
-the exact covering-test inventory. Under executor control, the output and Cargo
-target are relocated beneath the external artifact root. Critical or unknown
-coverage contribution continues to use the global command above.
+The metric package, not a human shortcut, must select every repeated package
+and the exact covering-test inventory. Under executor control, the output and
+Cargo target are relocated beneath the external artifact root. Optional
+workspace QA is separate and non-blocking.
 
 To reproduce the completed CQR adjudication against its retained immutable
 CRAP JSON without claiming current-source closure:

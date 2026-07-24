@@ -1,16 +1,17 @@
 # CQR Nightly Burndown ExecPlan
 
-Status: **active**
+Status: **transition HOLD until quality-observatory Order 5**
 Dispatch surface: **main** unless the operator explicitly authorizes a branch.
 Owner: maintainers.
-Last updated: 2026-07-11.
+Last updated: 2026-07-24.
 
 This ExecPlan defines the operator shorthand:
 
 `execute cqr nightly for <N> modules`
 
-The command means: measure the live workspace CRAP surface, select the top `N`
-eligible production modules by current complexity-risk burden, scaffold one
+After Order 5, the command means: verify one current `quality_evidence_id`,
+select the top `N` eligible production modules from its compact raw/
+adjudicated/actionable rows, scaffold one
 ordinary work package per selected module, commit each scaffold, execute each
 package end-to-end, and commit either completion evidence or hold evidence before
 moving to the next selected target.
@@ -18,9 +19,12 @@ moving to the next selected target.
 Each occurrence of this imperative is a fresh operator-authorized nightly batch.
 Do not treat a completed batch in the current worktree or recent Git history as
 completion of a later request. Use prior batches only as context or an exclusion
-signal; perform the new live measurement and create newly numbered packages.
-Only an explicit request to inspect, summarize, audit, verify, or avoid rerunning
-the existing batch changes this interpretation.
+signal; consume a verified current QA observation and create newly numbered
+packages. A fresh batch means new package ordinals and execution, not mandatory
+QA reacquisition; the same still-current `quality_evidence_id` may be reused.
+Recollection requires typed `STALE` or `INVALID` evidence plus the new explicit
+operator directive. Only an explicit request to inspect, summarize, audit,
+verify, or avoid rerunning the existing batch changes this interpretation.
 
 For a second or later batch on the same calendar date, assign the next two-digit
 batch ordinal (`b02`, `b03`, ...) and use it in every package identifier:
@@ -73,15 +77,11 @@ science, contract, defect-closure, or feature package.
 
 ## Target Selection
 
-Run the live measurement from the current worktree before selecting targets:
-
-1. `cargo llvm-cov clean --workspace`
-2. `cargo llvm-cov --workspace --ignore-run-fail --lcov --output-path /tmp/openwepp-cqr-nightly.lcov`
-3. `cargo crap --workspace --lcov /tmp/openwepp-cqr-nightly.lcov --min 0 --format json --output /tmp/openwepp-cqr-nightly-crap.json`
-
-The initial live CRAP/LCOV measurement is a heavy batch run. Delegate it to
-`comparator_suite_runner` when available. If the subagent is unavailable, record
-the spawn/tool-policy failure before running the measurement locally.
+Until Order 5 implements exact QA-evidence intake, stop in `HOLD`; do not
+reconstruct the old full-only baseline. After Order 5, verify the operator-
+supplied `quality_evidence_id` and derive selection from its compact exact rows.
+Only typed `STALE` or `INVALID` evidence plus the explicit CQR directive permits
+fresh recollection.
 
 Candidate files are production Rust modules under `crates/**/src/`, excluding
 test-only modules. Preserve the raw CRAP table, then classify every unique row
@@ -176,7 +176,7 @@ contains:
 
 - package directory and prompt skeletons;
 - selected module row and intended write set;
-- live CRAP/LCOV baseline summary or command provenance;
+- verified QA evidence identity and compact baseline row provenance;
 - package gates and hold/rollback rules.
 
 If the operator has forbidden commits for the session, stop after scaffolding and
@@ -214,9 +214,9 @@ For each selected module:
 9. Re-run focused tests and target CRAP after meaningful changes.
 10. Stop editing when every owned production function is `<= 30` or explicitly
    dispositioned.
-11. Reconcile the exact terminal plan and run every selected gate, recording
-    command/receipt identities, exit codes, and evidence. Before the gate
-    planner/executor cuts over, run the conservative full fallback.
+11. Reconcile the exact terminal plan and run every selected correctness gate
+    plus the package's target metric gates, recording command/receipt
+    identities, exit codes, and evidence.
 12. Complete dual review, disposition findings, and dual verification.
 13. Commit completion or hold evidence.
 14. Continue to the next selected target only when the current target is
@@ -301,9 +301,9 @@ Each per-module package records:
 - `artifacts/final-disposition.md`
 - `artifacts/worker-handoff.md`
 
-Raw LCOV and full CRAP JSON may stay in `/tmp` when large. Commit compact,
-package-local summaries, command provenance, hashes or paths, and the filtered
-target rows needed to reproduce the decision.
+Raw LCOV/profraw remains forest1-local under quality-observatory retention
+policy. Commit compact package-local summaries, QA evidence identity, hashes,
+and target rows needed to reproduce the decision.
 
 ## Required Gates
 
@@ -312,16 +312,19 @@ At minimum:
 - `git diff --check`
 - markdown/doc lint for touched docs
 - focused tests for the touched module/crate
-- target-module `cargo llvm-cov` / `cargo crap` before and after, or a recorded
-  reason an after measurement is not possible on hold
+- verified QA baseline plus target-module `cargo llvm-cov` / `cargo crap`
+  after measurement, or a recorded reason an after measurement is not possible
+  on hold; fresh before acquisition is allowed only through the typed
+  `STALE`/`INVALID` plus operator-directive path
 - output identity or API/fixture identity appropriate to the touched surface
 - `.rs` line-count governance;
 - the intent/terminal gate-plan reconciliation required by
   `docs/standards/testing-and-gate-strategy.md`;
-- every selected affected gate; and
-- until planner/executor cutover, `cargo fmt --check`, workspace
-  warnings-denied Clippy, full-profile Nextest, cargo-deny, and fresh global
-  adjudicated CRAP as the conservative fallback.
+- every selected affected correctness gate.
+
+The verified baseline and target-module after metric are binding for this CQR
+package.
+Unrelated workspace quality debt is observational and non-blocking.
 
 If the package touches external-authority suite posture, cohort fixtures, or
 required-case bindings, also run:

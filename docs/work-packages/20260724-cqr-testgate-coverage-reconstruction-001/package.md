@@ -2,7 +2,7 @@
 
 Package ID: `20260724-cqr-testgate-coverage-reconstruction-001`
 
-Status: `ACTIVE`
+Status: `EXECUTED-HOLD / QUALIFICATION-HANDOFF-ORDER-6`
 
 ## Objective
 
@@ -51,8 +51,7 @@ package doctest and conditional authority/dependency nodes.
 - Routine gate-planner regression remains approximately one minute.
 - Fresh affected CRAP reports zero actionable rows.
 - Exact terminal planning and pre-heavy audit pass.
-- A changed-head forest1 TESTGATE run reaches successful independent
-  verification and attestation publication.
+- Changed-head forest1 TESTGATE qualification is owned by roadmap Order 6.
 
 ## Qualification Progress
 
@@ -90,3 +89,11 @@ Evidence class: Ran
   removed, profile binding is covered by a pure unit test, and the explicit
   live reconstruction cohort is restored to 12.
 - Changed-head forest1 TESTGATE success remains pending.
+
+## ADR-0041 Prospective Disposition
+
+This explicit CQR/coverage package retains its already satisfied package-local
+affected-CRAP acceptance and all historical run evidence. Its former live
+TESTGATE qualification obligation is superseded prospectively by roadmap Order
+6; workspace quality observation moves to Orders 3-7. No historical failure is
+rewritten as a pass.
