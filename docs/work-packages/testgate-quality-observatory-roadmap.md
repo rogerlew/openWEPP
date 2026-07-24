@@ -1,8 +1,10 @@
 # TESTGATE And Quality Observatory Roadmap
 
-Status: `AUTHORIZED / SCAFFOLDED`
+Status: `RATIFIED / SCAFFOLDED`
 
 Owner: maintainers
+
+Ratified by Roger Lew on 2026-07-24.
 
 Decision statement: TESTGATE determines whether an increment is admissible.
 The quality observatory measures maintainability debt. Neither may impersonate

@@ -8,6 +8,7 @@ and architecture assessment.
 ## Delivered
 
 - Canonical roadmap with seven ordered implementation/qualification packages.
+- Operator ratification by Roger Lew on 2026-07-24.
 - Prospective package scaffolds with bounded scope, dependencies, write sets,
   acceptance, active prompts, delegation authority, artifacts, and reading
   budgets.
