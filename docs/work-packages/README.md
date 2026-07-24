@@ -4697,6 +4697,9 @@ Initiative tracking convention inherited from wepp-palimpsest. Each work package
 
 ## Recent CQR Defect Closures
 
+- `20260724-cqr37-testgate-relocated-audit-001/` — ACTIVE; closes the sole
+  actionable row retained by TESTGATE run `30053439151` by directly covering
+  the public relocated-audit verifier before any further heavy qualification.
 - `20260712-dc-cqr-preint-ha-07-growth-nonfinite-001/` — terminal PASS;
   required direct-production growth scalars now reject NaN/infinity through the
   existing typed boundary error under `SC-PLANT-001#INV-PLANT-021`.

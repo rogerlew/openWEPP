@@ -23,6 +23,7 @@ ledger, path, or checkpoint evidence remains fail-closed.
 - `tests/integration/testgate_ci_executor_contract.rs`
 - `docs/work-packages/20260723-testgate-incompatible-recovery-receipt-001/**`
 - `docs/work-packages/20260720-testgate-workflow-qualify-001/**`
+- `docs/work-packages/20260724-cqr37-testgate-relocated-audit-001/**`
 - `docs/work-packages/README.md`
 
 ## Acceptance
@@ -45,6 +46,8 @@ ledger, path, or checkpoint evidence remains fail-closed.
   concurrent workspace-linker pressure inside the full nextest profile.
 - All other recovery-integrity errors remain typed and fail closed.
 - Focused resume tests pass.
+- The public relocated-audit verifier is exercised directly under the
+  instrumented affected-quality profile and has adjudicated CRAP at most `30`.
 - One exact changed-head forest1 TESTGATE qualification proves that a rejected
   incompatible receipt is retained without blocking the current attempt. The
   permanent queued records from retired Omarchy are ignored; no duplicate
