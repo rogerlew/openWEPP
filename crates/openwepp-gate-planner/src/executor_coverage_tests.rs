@@ -698,6 +698,10 @@ fn stage_receipt_reconstruction_preserves_field_order_and_collections() {
 }
 
 #[test]
+#[cfg_attr(
+    not(coverage),
+    ignore = "development-only: compiles public-stage reconstructed repositories"
+)]
 fn public_stage_selection_preserves_light_final_and_rejection_shapes() {
     use super::tests::{TempDirectory, execution_fixture, global_quality_gate_definition};
 
@@ -766,6 +770,10 @@ fn public_stage_selection_preserves_light_final_and_rejection_shapes() {
 }
 
 #[test]
+#[cfg_attr(
+    not(coverage),
+    ignore = "development-only: compiles a READY-audited reconstructed repository"
+)]
 fn ready_audited_heavy_preserves_import_and_final_receipt_bindings() {
     use std::collections::BTreeSet;
 

@@ -42,6 +42,7 @@ repository = "https://github.com/rogerlew/openWEPP"
 [workspace.lints.rust]
 unsafe_op_in_unsafe_fn = "warn"
 unreachable_pub = "warn"
+unexpected_cfgs = { level = "warn", check-cfg = ["cfg(coverage)"] }
 
 [workspace.lints.clippy]
 all = { level = "warn", priority = -1 }

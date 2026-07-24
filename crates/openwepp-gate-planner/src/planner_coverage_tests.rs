@@ -626,6 +626,7 @@
     }
 
     #[test]
+    #[cfg_attr(not(coverage), ignore = "development-only: repeatedly constructs complete repository plans")]
     #[allow(clippy::too_many_lines)]
     fn terminal_reconciliation_reports_added_paths_and_escalation() {
         let repo = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");

@@ -747,6 +747,68 @@ fn coverage_scheduling_bounds_the_complete_assurance_publication_binary() {
 }
 
 #[test]
+fn live_testgate_reconstruction_fixtures_have_one_explicit_development_profile() {
+    let profiles = text(".config/nextest.toml");
+    let development = profiles
+        .split_once("[profile.testgate-development]")
+        .expect("TESTGATE development profile")
+        .1
+        .split_once("[profile.testgate-development.junit]")
+        .expect("TESTGATE development JUnit profile")
+        .0;
+    let fixtures = [
+        "exact_planner_output_reconstructs_through_the_public_audit_path",
+        "terminal_reconciliation_reports_added_paths_and_escalation",
+        "ready_audit_verification_preserves_order_and_exact_verdict",
+        "verifier_accepts_truthful_fail_and_blocked_receipts",
+        "normalized_junit_artifacts_reconstruct_exact_inventory",
+        "receipt_verification_reconstructs_identity_dag_inventory_and_artifacts",
+        "envelope_requires_exact_subject_bundle_current_issuer_and_external_proof",
+        "terminal_plan_executes_and_independent_verifier_accepts_pass_receipt",
+        "terminal_plan_preserves_fail_and_blocked_attempts_in_verified_receipt",
+        "terminal_plan_detects_out_of_manifest_source_mutation_and_verifies_invalid_receipt",
+        "public_stage_selection_preserves_light_final_and_rejection_shapes",
+        "ready_audited_heavy_preserves_import_and_final_receipt_bindings",
+    ];
+    for selector in [
+        "pre_heavy::coverage_tests::exact_planner_output",
+        "planner::tests::terminal_reconciliation",
+        "verifier::tests::(",
+        "verifier::tests::coverage_tests::ready_audit",
+        "executor::tests::terminal_plan_",
+        "executor::coverage_tests::(",
+    ] {
+        assert!(
+            development.contains(selector),
+            "missing selector {selector}"
+        );
+    }
+    assert!(profiles.contains("--run-ignored ignored-only"));
+
+    let sources = [
+        text("crates/openwepp-gate-planner/src/pre_heavy_coverage_tests.rs"),
+        text("crates/openwepp-gate-planner/src/planner_coverage_tests.rs"),
+        text("crates/openwepp-gate-planner/src/executor.rs"),
+        text("crates/openwepp-gate-planner/src/executor_coverage_tests.rs"),
+        text("crates/openwepp-gate-planner/src/verifier.rs"),
+        text("crates/openwepp-gate-planner/src/verifier/tests/coverage_tests.rs"),
+    ]
+    .join("\n");
+    for fixture in fixtures {
+        assert!(
+            sources.contains(fixture),
+            "missing governed fixture {fixture}"
+        );
+    }
+    assert_eq!(
+        sources.matches("development-only:").count(),
+        12,
+        "the governed live-reconstruction cohort must remain exact"
+    );
+    assert_eq!(sources.matches("not(coverage),").count(), 12);
+}
+
+#[test]
 fn crap_runner_resolves_executor_and_standalone_output_branches() {
     let scratch = Scratch::new();
     let scratch_repo = scratch.path.join("repo");

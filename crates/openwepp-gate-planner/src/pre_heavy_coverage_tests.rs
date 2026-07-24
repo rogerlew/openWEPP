@@ -413,6 +413,10 @@ fn low_coverage_binding_helpers_exercise_their_reject_arms() {
 }
 
 #[test]
+#[cfg_attr(
+    not(coverage),
+    ignore = "development-only: performs live full-repository inventory and exact reconstruction"
+)]
 fn exact_planner_output_reconstructs_through_the_public_audit_path() {
     let repo = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
     let source = observe_committed(&repo, "HEAD^", "HEAD").expect("committed source");

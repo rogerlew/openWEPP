@@ -2863,6 +2863,10 @@ pub(crate) mod tests {
     }
 
     #[test]
+    #[cfg_attr(
+        not(coverage),
+        ignore = "development-only: compiles and executes a reconstructed repository"
+    )]
     fn terminal_plan_executes_and_independent_verifier_accepts_pass_receipt() {
         let (repo, plan) = execution_fixture(
             "e2e-pass-repo",
@@ -2881,6 +2885,10 @@ pub(crate) mod tests {
     }
 
     #[test]
+    #[cfg_attr(
+        not(coverage),
+        ignore = "development-only: compiles and executes a reconstructed repository"
+    )]
     fn terminal_plan_preserves_fail_and_blocked_attempts_in_verified_receipt() {
         let (repo, plan) = execution_fixture(
             "e2e-nonpass-repo",
@@ -2909,6 +2917,10 @@ pub(crate) mod tests {
     }
 
     #[test]
+    #[cfg_attr(
+        not(coverage),
+        ignore = "development-only: compiles and executes a source-mutating reconstructed repository"
+    )]
     fn terminal_plan_detects_out_of_manifest_source_mutation_and_verifies_invalid_receipt() {
         let (repo, plan) = execution_fixture(
             "e2e-mutation-repo",

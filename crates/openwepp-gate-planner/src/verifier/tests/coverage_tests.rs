@@ -232,6 +232,10 @@ fn make_light_only(plan: &mut Value, receipt: &mut Value) {
 }
 
 #[test]
+#[cfg_attr(
+    not(coverage),
+    ignore = "development-only: archives and reconstructs an isolated repository"
+)]
 fn ready_audit_verification_preserves_order_and_exact_verdict() {
     let fixture = ready_admitted_fixture();
     let root = fixture.repo.path();

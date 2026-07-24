@@ -1734,7 +1734,8 @@ mod tests {
     };
     use crate::canonical::{derived_id, digest, sha256_bytes};
     use crate::error::{ErrorClass, GatePolicyError, Result};
-    use crate::planner::{NextestInventory, PlanRequest, Planner, PlanningStage};
+    use crate::planner::{InventoryProvider, PlanRequest, Planner, PlanningStage};
+    use crate::policy::GateDefinition;
 
     #[test]
     #[allow(clippy::too_many_lines)]
@@ -2101,34 +2102,6 @@ mod tests {
         std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
     }
 
-    fn collect_junit_cases(value: &Value, prefix: &str, output: &mut Vec<(String, String)>) {
-        match value {
-            Value::Object(object) => {
-                if let Some(testcases) = object.get("testcases").and_then(Value::as_object) {
-                    output.extend(
-                        testcases
-                            .keys()
-                            .map(|name| (prefix.to_owned(), name.to_owned())),
-                    );
-                }
-                for (key, child) in object {
-                    let next = if prefix.is_empty() {
-                        key.clone()
-                    } else {
-                        format!("{prefix}::{key}")
-                    };
-                    collect_junit_cases(child, &next, output);
-                }
-            }
-            Value::Array(array) => {
-                for child in array {
-                    collect_junit_cases(child, prefix, output);
-                }
-            }
-            _ => {}
-        }
-    }
-
     fn xml_escape(value: &str) -> String {
         value
             .replace('&', "&amp;")
@@ -2138,93 +2111,53 @@ mod tests {
             .replace('\'', "&apos;")
     }
 
-    fn nextest_listing_selectors(node: &Value) -> Vec<Vec<String>> {
-        let arguments = node["arguments"].as_array().expect("node arguments");
-        let mut packages = Vec::new();
-        for pair in arguments.windows(2) {
-            let option = pair[0].as_str();
-            let value = pair[1].as_str().map(str::to_owned);
-            match (option, value) {
-                (Some("--test"), Some(target)) => return vec![vec!["--test".to_owned(), target]],
-                (Some("-p" | "--package"), Some(package)) => packages.push(package),
-                _ => {}
-            }
-        }
-        if packages.is_empty() {
-            vec![vec!["--workspace".to_owned()]]
-        } else {
-            packages
-                .into_iter()
-                .map(|package| vec!["-p".to_owned(), package])
-                .collect()
+    fn normalized_fixture_case(gate_definition_id: &str, target: &str) -> (String, String) {
+        (
+            format!("rust-suites::fixture::{gate_definition_id}"),
+            format!("case::{target}"),
+        )
+    }
+
+    struct NormalizedFixtureInventory;
+
+    impl InventoryProvider for NormalizedFixtureInventory {
+        fn inventory(
+            &self,
+            _repo: &std::path::Path,
+            definition: &GateDefinition,
+            target: &str,
+        ) -> Result<Vec<String>> {
+            let (class, name) = normalized_fixture_case(&definition.gate_definition_id, target);
+            Ok(vec![sha256_bytes(format!("{class}\0{name}").as_bytes())])
         }
     }
 
-    fn junit_bytes_for_node(root: &std::path::Path, node: &Value) -> Vec<u8> {
-        let mut cases = Vec::new();
-        let neutral_target =
-            std::env::temp_dir().join("openwepp-gate-planner-neutral-cargo-target");
-        for selector in nextest_listing_selectors(node) {
-            let mut command = crate::repository::neutral_cargo_command();
-            command
-                .env("CARGO_TARGET_DIR", &neutral_target)
-                .args([
-                    "nextest",
-                    "list",
-                    "--locked",
-                    "--offline",
-                    "--message-format",
-                    "json",
-                ])
-                .args(selector)
-                .current_dir(root);
-            let output = command
-                .output()
-                .expect("list test inventory for JUnit fixture");
-            assert!(
-                output.status.success(),
-                "nextest list must succeed: status={}\nstdout:\n{}\nstderr:\n{}",
-                output.status,
-                String::from_utf8_lossy(&output.stdout),
-                String::from_utf8_lossy(&output.stderr)
-            );
-            let listing: Value =
-                serde_json::from_slice(&output.stdout).expect("nextest listing JSON");
-            collect_junit_cases(&listing, "", &mut cases);
-        }
+    fn junit_bytes_for_node(node: &Value) -> Vec<u8> {
+        let (class, name) = normalized_fixture_case(
+            node["gate_definition_id"]
+                .as_str()
+                .expect("gate definition ID"),
+            node["matrix"]["target"].as_str().expect("matrix target"),
+        );
         let planned = node["expected_inventory"]["ids"]
             .as_array()
             .expect("planned inventory")
             .iter()
             .map(|item| item.as_str().expect("inventory ID"))
             .collect::<BTreeSet<_>>();
-        cases.sort();
-        cases.dedup();
-        let retained = cases
-            .into_iter()
-            .filter(|(class, name)| {
-                planned.contains(sha256_bytes(format!("{class}\0{name}").as_bytes()).as_str())
-            })
-            .collect::<Vec<_>>();
-        assert_eq!(
-            retained.len(),
-            planned.len(),
-            "JUnit fixture must be exact for {}",
-            node["gate_definition_id"]
-        );
+        assert_eq!(planned.len(), 1, "normalized fixture has one case per node");
+        assert!(planned.contains(sha256_bytes(format!("{class}\0{name}").as_bytes()).as_str()));
         let mut xml = String::from("<testsuite>\n");
-        for (class, name) in retained {
-            let junit_class = class
-                .strip_prefix("rust-suites::")
-                .expect("Nextest inventory class prefix");
-            writeln!(
-                xml,
-                "<testcase classname=\"{}\" name=\"{}\"/>",
-                xml_escape(junit_class),
-                xml_escape(&name)
-            )
-            .expect("write JUnit fixture");
-        }
+        let junit_class = class
+            .strip_prefix("rust-suites::")
+            .expect("Nextest inventory class prefix");
+        writeln!(
+            xml,
+            "<testcase classname=\"{}\" name=\"{}\"/>",
+            xml_escape(junit_class),
+            xml_escape(&name)
+        )
+        .expect("write JUnit fixture");
         xml.push_str("</testsuite>\n");
         let parsed = super::junit_inventory_bytes(xml.as_bytes()).expect("parse JUnit fixture");
         assert_eq!(
@@ -2255,7 +2188,7 @@ mod tests {
                     .iter()
                     .map(|change| change.path.clone())
                     .collect();
-                let plan = Planner::new(NextestInventory)
+                let plan = Planner::new(NormalizedFixtureInventory)
                     .build(
                         &root,
                         &PlanRequest {
@@ -2385,7 +2318,7 @@ mod tests {
                         .extension()
                         .is_some_and(|extension| extension == "xml")
                 {
-                    junit_bytes_for_node(&root, node)
+                    junit_bytes_for_node(node)
                 } else {
                     format!("verified artifact {index}: {path}").into_bytes()
                 };
@@ -2458,6 +2391,10 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(
+        not(coverage),
+        ignore = "development-only: reconstructs the exact repository plan and receipt"
+    )]
     fn verifier_accepts_truthful_fail_and_blocked_receipts() {
         let (plan, mut failed, artifacts) = normalized_plan_and_receipt();
         let mut blocked = failed.clone();
@@ -2553,6 +2490,10 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(
+        not(coverage),
+        ignore = "development-only: reconstructs the exact repository plan and JUnit inventory"
+    )]
     fn normalized_junit_artifacts_reconstruct_exact_inventory() {
         let (plan, receipt, artifacts) = normalized_plan_and_receipt();
         let observed = expected_executed_inventory(
@@ -2571,6 +2512,10 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(
+        not(coverage),
+        ignore = "development-only: reconstructs the exact repository identity and DAG"
+    )]
     fn receipt_verification_reconstructs_identity_dag_inventory_and_artifacts() {
         let (plan, receipt, artifacts) = normalized_plan_and_receipt();
         let envelope_verdict = super::verify_receipt_envelope(&repo(), &plan, &receipt, &artifacts)
@@ -2594,6 +2539,10 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(
+        not(coverage),
+        ignore = "development-only: reconstructs the exact repository subject bundle"
+    )]
     #[allow(clippy::too_many_lines)]
     fn envelope_requires_exact_subject_bundle_current_issuer_and_external_proof() {
         let (_plan, mut receipt, _artifacts) = normalized_plan_and_receipt();

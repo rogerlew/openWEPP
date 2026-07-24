@@ -42,3 +42,9 @@ touches:
 - the READY-audit end-to-end reconstruction boundary.
 
 It is not a routine work-package completion gate for unrelated science work.
+
+The fixtures use `cfg_attr(not(coverage), ignore = ...)`: normal affected/full
+regression skips them, while fresh LLVM coverage/CRAP still executes them.
+Consequently a science package does not pay this reconstruction cost unless its
+mechanical affected-package closure includes `openwepp-gate-planner`; campaign
+and release global quality retain complete branch evidence.
