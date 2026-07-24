@@ -2133,31 +2133,45 @@ mod tests {
     }
 
     fn junit_bytes_for_node(node: &Value) -> Vec<u8> {
-        let (class, name) = normalized_fixture_case(
-            node["gate_definition_id"]
-                .as_str()
-                .expect("gate definition ID"),
-            node["matrix"]["target"].as_str().expect("matrix target"),
-        );
+        let definition = node["gate_definition_id"]
+            .as_str()
+            .expect("gate definition ID");
+        let arguments = node["arguments"].as_array().expect("node arguments");
+        let mut targets = arguments
+            .windows(2)
+            .filter_map(|pair| {
+                matches!(pair[0].as_str(), Some("-p" | "--package"))
+                    .then(|| pair[1].as_str().expect("package argument").to_owned())
+            })
+            .collect::<Vec<_>>();
+        if targets.is_empty() {
+            targets.push(node["target"].as_str().expect("node target").to_owned());
+        }
+        let cases = targets
+            .iter()
+            .map(|target| normalized_fixture_case(definition, target))
+            .collect::<Vec<_>>();
         let planned = node["expected_inventory"]["ids"]
             .as_array()
             .expect("planned inventory")
             .iter()
             .map(|item| item.as_str().expect("inventory ID"))
             .collect::<BTreeSet<_>>();
-        assert_eq!(planned.len(), 1, "normalized fixture has one case per node");
-        assert!(planned.contains(sha256_bytes(format!("{class}\0{name}").as_bytes()).as_str()));
+        assert_eq!(planned.len(), cases.len());
         let mut xml = String::from("<testsuite>\n");
-        let junit_class = class
-            .strip_prefix("rust-suites::")
-            .expect("Nextest inventory class prefix");
-        writeln!(
-            xml,
-            "<testcase classname=\"{}\" name=\"{}\"/>",
-            xml_escape(junit_class),
-            xml_escape(&name)
-        )
-        .expect("write JUnit fixture");
+        for (class, name) in cases {
+            assert!(planned.contains(sha256_bytes(format!("{class}\0{name}").as_bytes()).as_str()));
+            let junit_class = class
+                .strip_prefix("rust-suites::")
+                .expect("Nextest inventory class prefix");
+            writeln!(
+                xml,
+                "<testcase classname=\"{}\" name=\"{}\"/>",
+                xml_escape(junit_class),
+                xml_escape(&name)
+            )
+            .expect("write JUnit fixture");
+        }
         xml.push_str("</testsuite>\n");
         let parsed = super::junit_inventory_bytes(xml.as_bytes()).expect("parse JUnit fixture");
         assert_eq!(

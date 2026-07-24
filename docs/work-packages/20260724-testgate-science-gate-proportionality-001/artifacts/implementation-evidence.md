@@ -35,3 +35,15 @@ Evidence class: Ran
 - Focused authority and doctest inventory tests: 2 passed.
 - `cargo clippy -p openwepp-gate-planner --all-targets -- -D warnings`: PASS.
 - `bash -n tools/release/run_release_candidate_gates.sh`: PASS.
+
+## Coverage-only defect correction
+
+- Fresh affected CRAP attempt 1 stopped after 1,364.065 seconds when the
+  coverage-only envelope fixture found that its synthetic JUnit builder used
+  the host matrix target rather than each planner node's selection target.
+- The first focused correction exposed the legitimate three-package inventory
+  of a `NEXTEST_PACKAGES` node.
+- The corrected builder now emits one stable JUnit case per selected package,
+  or one case for a single package/workspace target.
+- Ran with `cfg(coverage)`: the previously failing envelope fixture passed in
+  70.725 seconds.
