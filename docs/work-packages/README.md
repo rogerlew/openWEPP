@@ -251,6 +251,9 @@
 
 State as of `2026-07-24 UTC`:
 
+- `20260724-cqr-testgate-coverage-reconstruction-001/` - ACTIVE: corrects the
+  coverage-only exact-plan reconstruction fixture exposed by proportional gate
+  selection, then resumes affected CRAP and changed-head TESTGATE qualification.
 - `20260724-testgate-science-gate-proportionality-001/` - ACTIVE: aligns
   executable TESTGATE selection with ADR-0039 so ordinary science increments
   retain affected A0/A1/A3, contract, consumer, conservation, and CRAP gates
