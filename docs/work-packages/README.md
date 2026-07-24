@@ -11,6 +11,16 @@
 
 ## Reusable Execution Plans And Templates
 
+- `testgate-quality-observatory-roadmap.md` is the authorized seven-package
+  implementation and qualification sequence that restores TESTGATE to blocking
+  correctness admission, moves workspace coverage/CRAP to optional
+  observational forest1 QA, merges `full` plus `science-manual` coverage,
+  hands exact evidence to CQR Nightly, and requires live functional proof of
+  both workflows before returning priority to science work.
+- `20260724-testgate-quality-observatory-roadmap-001/` is the documentation-only
+  roadmap authoring package. Its prospective children are the ADR/authority
+  pivot, TESTGATE quality deferral, merged measurement, QA workflow, CQR
+  evidence handoff, TESTGATE qualification, and QA/CQR qualification packages.
 - `20260722-testgate-verifier-ready-audit-fixture-001/` closed RTR-029 and
   RTR-030 after a planner baseline exposed ambient-HEAD package-authority
   coupling in a verifier characterization. The test now constructs a self-owned

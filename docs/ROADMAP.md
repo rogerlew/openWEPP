@@ -2,7 +2,7 @@
 
 Status: living — canonical prospective planning queue
 
-Last updated: 2026-07-21
+Last updated: 2026-07-24
 
 This file answers one question: **what work is openWEPP intentionally doing
 next, later, or at a named future gate?** It does not record how the current
@@ -33,7 +33,10 @@ state was reached. Execution history lives in the
 | --- | --- | --- | --- |
 | `TESTGATE-RECOVERY-TRUST-01` recovery trust and qualification readiness | Test/gate architecture | `complete` | Closed at exact receipt `7b3c199d...`: 15/15 PASS, zero retries, zero actionable global CRAP rows, and dual terminal verification. |
 | `TESTGATE-CLOSURE-AUDIT-01` pre-heavy closure and defect correction | Test/gate architecture | `complete` | Closed by the same exact transaction: LIGHT 6/6, audit 10/10 READY, HEAVY 9/9, and zero open durable defects. |
-| `TESTGATE-WORKFLOW-QUALIFY-01` forest1 workflow qualification | Test/gate architecture | `active` | Push the ready package, prove the TESTGATE queue idle, and execute exactly one ordinary exact-head forest1 dispatch. `LOCAL_UNTRUSTED` is the expected forest1 local receipt classification. |
+| `TESTGATE-QUALITY-SEPARATION-01` authority and TESTGATE decoupling | Test/gate architecture | `next` | Execute roadmap Orders 1-2: adopt ADR-0041, align authority, remove quality execution from TESTGATE, and prove typed `DEFERRED_TO_QUALITY_CI`. |
+| `QUALITY-OBSERVATORY-01` merged measurement and optional forest1 QA | Test/gate architecture | `queued` | Execute Orders 3-4 after authority adoption; merge `full` plus `science-manual`, enforce TESTGATE-first deferral, and publish compact observational evidence. |
+| `QUALITY-CQR-HANDOFF-01` exact QA evidence consumption | Test/gate architecture | `queued` | Execute Order 5 after the QA report schema and workflow are stable; CQR must consume the exact current report without recollection. |
+| `TESTGATE-QUALITY-QUALIFY-01` functional workflow qualification | Test/gate architecture | `queued` | Execute Orders 6-7: changed-head TESTGATE first, optional QA second, then selection-only CQR intake. |
 | `SNOW-SURFACE-EB` sublimation and longwave | Snow/frost science | `queued` | Scaffold a contract-first package that reconciles the multilayer surface-energy, vapor-mass, and longwave backlog with the current meteorology and snow-column implementation. |
 | `ASSURE-06` snow/frost flagship synthesis | Scientific assurance | `held` | Roger Lew remains the accountable report lead and a material snow/frost producer. Resume independent review only after canopy phenology and the selected sublimation/longwave work land, the scientific manuscript is refreshed against those changes, and a new exact review root is issued. |
 | `ASSURE-05` first production v2 report | Scientific assurance | `held` | Technical review handoff is complete; formal review has not started. Advancement requires assignment of accountable human reviewers, exact-subject review and approval, assurance-steward approval, release-owner transfer, and exact-root publication gates. |
@@ -72,9 +75,9 @@ and staged-adoption contract live in the
   remains `LEGACY_UNVERIFIED` unless independently reconstructed and verified.
 - `TESTGATE-CLOSURE-AUDIT-01` precedes the next heavy scientific package so the
   repaired path is exercised before another critical closure campaign.
-- `TESTGATE-WORKFLOW-QUALIFY-01` immediately follows implementation and must
-  pass black-box local and trusted-workflow acceptance before
-  `SNOW-SURFACE-EB` may advance.
+- `TESTGATE-WORKFLOW-QUALIFY-01` is superseded by the
+  [TESTGATE/quality-observatory roadmap](work-packages/testgate-quality-observatory-roadmap.md).
+  Orders 1-7 must pass before `SNOW-SURFACE-EB` advances.
 
 ## Scientific Assurance Queue
 
@@ -151,7 +154,7 @@ It is a dormant compatibility record, not authority to vendor.
 
 | ID | Owner and purpose | Trigger | State |
 | --- | --- | --- | --- |
-| `CQR-NIGHTLY` | Operator-owned repo-wide complexity/coverage maintenance under the [rolling ExecPlan](work-packages/cqr-nightly-burndown-execplan.md). Each selected module receives a behavior-preserving package, current measurement, gates, review, verification, and disposition. | An operator requests a bounded batch after active feature/science packages release overlapping write sets. | `recurring`; not an automatic blocker for the scientific-assurance queue. |
+| `CQR-NIGHTLY` | Operator-owned repo-wide complexity/coverage maintenance under the [rolling ExecPlan](work-packages/cqr-nightly-burndown-execplan.md). After `QUALITY-CQR-HANDOFF-01`, selection consumes an exact current quality-observatory report and recollects only when stale or invalid. | An operator requests a bounded batch after optional QA and after active feature/science packages release overlapping write sets. | `recurring`; observational QA and CQR are not automatic blockers for science-package closure. |
 
 ## Promotion And History Routing
 
