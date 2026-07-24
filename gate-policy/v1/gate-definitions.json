@@ -1,9 +1,19 @@
 {
   "schema_version": "openwepp-gate-definitions-v1",
-  "generation": 10,
+  "generation": 11,
   "enforcement_status": "BLOCKING",
-  "active_combined_quality_proof_id": null,
-  "combined_quality_proofs": [],
+  "quality_disposition": {
+    "status": "DEFERRED_TO_QUALITY_CI",
+    "observations": ["COVERAGE", "CRAP"],
+    "owner": "openwepp-quality-observatory",
+    "trigger": "OPTIONAL_OPERATOR_DISPATCH",
+    "closure_eligible": true,
+    "prohibited_gate_definition_ids": [
+      "affected-adjudicated-crap-v1",
+      "adjudicated-crap-v1",
+      "combined-workspace-quality-v1"
+    ]
+  },
   "definitions": [
     {
       "gate_definition_id": "cargo-fmt-v1", "gate_family": "source-quality", "execution_cost_class": "LIGHT", "target_template": "WORKSPACE",
@@ -277,54 +287,6 @@
       "artifact_contract": "nextest-junit-v1", "output_paths": ["target/gate-plan/hard-invariant-native-canopy-runtime.xml"],
       "blocks_transition": "INCREMENT", "identity_breakers": ["cargo-lock", "rust-toolchain", "target-triple"],
       "prerequisite_definition_ids": ["authority-admission-v1"]
-    },
-    {
-      "gate_definition_id": "affected-adjudicated-crap-v1", "gate_family": "coverage-complexity", "execution_cost_class": "HEAVY", "target_template": "STATIC",
-      "risk_classes": ["BOUNDED_COMPONENT", "INTEGRATED_DOMAIN"],
-      "executor": { "kind": "LEGACY_ADAPTER_V1", "version": "affected-adjudicated-crap-1", "adapter_sha256": "4d475967b2b3fd35b7ea167bf8c9b60e0160e3329b1467243f1e31ebad557e2b" },
-      "arguments_template": ["bash", "tools/release/run_adjudicated_crap_gate.sh", "--scope", "affected", "--base-ref", "{base_commit}", "--nextest-profile", "affected", "--output-dir", "target/affected-crap"],
-      "environment_allowlist": ["PATH", "CARGO_HOME", "RUSTUP_HOME", "RUSTUP_TOOLCHAIN"],
-      "authority_class": "NONE", "outcome_policy": "BLOCKING", "failure_classification": "HARD_FAIL",
-      "owner": "openwepp-maintainers", "investigation_owner": "openwepp-maintainers", "boundary": "INCREMENT",
-      "trust_requirement": "REPOSITORY_REVIEWED", "reuse_class": "NON_REUSABLE",
-      "inventory_mode": "EXACT", "inventory_source": "NEXTEST_PACKAGES", "minimum_count": 1,
-      "acceptance": { "kind": "EXIT_CODE", "operator": "EQUALS", "expected": 0, "children": [] },
-      "timeout_seconds": 3600, "maximum_attempts": 1, "permitted_retry_reasons": [],
-      "artifact_contract": "adjudicated-crap-v1", "output_paths": ["target/gate-plan/affected-crap.json", "target/gate-plan/affected-junit.xml", "target/gate-plan/affected.lcov"],
-      "blocks_transition": "INCREMENT", "identity_breakers": ["coverage-map", "adjudication-registry", "rust-toolchain"],
-      "prerequisite_definition_ids": ["cargo-fmt-v1"]
-    },
-    {
-      "gate_definition_id": "adjudicated-crap-v1", "gate_family": "coverage-complexity", "execution_cost_class": "HEAVY", "target_template": "WORKSPACE",
-      "risk_classes": ["CRITICAL"],
-      "executor": { "kind": "LEGACY_ADAPTER_V1", "version": "adjudicated-crap-1", "adapter_sha256": "4d475967b2b3fd35b7ea167bf8c9b60e0160e3329b1467243f1e31ebad557e2b" },
-      "arguments_template": ["bash", "tools/release/run_adjudicated_crap_gate.sh", "--base-ref", "{base_commit}"],
-      "environment_allowlist": ["PATH", "CARGO_HOME", "RUSTUP_HOME", "RUSTUP_TOOLCHAIN"],
-      "authority_class": "NONE", "outcome_policy": "BLOCKING", "failure_classification": "HARD_FAIL",
-      "owner": "openwepp-maintainers", "investigation_owner": "openwepp-maintainers", "boundary": "INCREMENT",
-      "trust_requirement": "REPOSITORY_REVIEWED", "reuse_class": "NON_REUSABLE",
-      "inventory_mode": "EXACT", "inventory_source": "COMMAND", "minimum_count": 1,
-      "acceptance": { "kind": "EXIT_CODE", "operator": "EQUALS", "expected": 0, "children": [] },
-      "timeout_seconds": 7200, "maximum_attempts": 1, "permitted_retry_reasons": [],
-      "artifact_contract": "adjudicated-crap-v1", "output_paths": ["target/gate-plan/adjudicated-crap.json"],
-      "blocks_transition": "INCREMENT", "identity_breakers": ["coverage-map", "adjudication-registry", "rust-toolchain"],
-      "prerequisite_definition_ids": ["workspace-full-nextest-v1"]
-    },
-    {
-      "gate_definition_id": "combined-workspace-quality-v1", "gate_family": "combined-quality", "execution_cost_class": "HEAVY", "target_template": "WORKSPACE",
-      "risk_classes": ["CRITICAL"],
-      "executor": { "kind": "LEGACY_ADAPTER_V1", "version": "combined-workspace-quality-1", "adapter_sha256": "4d475967b2b3fd35b7ea167bf8c9b60e0160e3329b1467243f1e31ebad557e2b" },
-      "arguments_template": ["bash", "tools/release/run_adjudicated_crap_gate.sh", "--base-ref", "{base_commit}", "--output-dir", "target/combined-quality"],
-      "environment_allowlist": ["PATH", "CARGO_HOME", "RUSTUP_HOME", "RUSTUP_TOOLCHAIN"],
-      "authority_class": "NONE", "outcome_policy": "BLOCKING", "failure_classification": "HARD_FAIL",
-      "owner": "openwepp-maintainers", "investigation_owner": "openwepp-maintainers", "boundary": "INCREMENT",
-      "trust_requirement": "PROTECTED_CI", "reuse_class": "NON_REUSABLE",
-      "inventory_mode": "EXACT", "inventory_source": "NEXTEST_WORKSPACE", "minimum_count": 1,
-      "acceptance": { "kind": "EXIT_CODE", "operator": "EQUALS", "expected": 0, "children": [] },
-      "timeout_seconds": 7200, "maximum_attempts": 1, "permitted_retry_reasons": [],
-      "artifact_contract": "adjudicated-crap-v1", "output_paths": ["target/gate-plan/combined-crap.json", "target/gate-plan/combined-junit.xml", "target/gate-plan/combined.lcov"],
-      "blocks_transition": "INCREMENT", "identity_breakers": ["cargo-lock", "coverage-map", "adjudication-registry", "rust-toolchain", "target-triple"],
-      "prerequisite_definition_ids": ["workspace-clippy-v1", "authority-antievasion-v1"]
     }
   ]
 }

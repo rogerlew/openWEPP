@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 
 use crate::assurance::validate_wildmatch_pattern;
-use crate::canonical::{derived_id, digest, parse_strict, sha256_bytes, validate_schema};
+use crate::canonical::{digest, parse_strict, sha256_bytes, validate_schema};
 use crate::error::{ErrorClass, GatePolicyError, Result};
 
 #[derive(Debug, Clone, Deserialize)]
@@ -101,11 +101,18 @@ impl RiskClass {
 pub struct GateRegistry {
     pub generation: u64,
     pub enforcement_status: String,
-    #[serde(default)]
-    pub combined_quality_proofs: Vec<Value>,
-    #[serde(default)]
-    pub active_combined_quality_proof_id: Option<String>,
+    pub quality_disposition: QualityDisposition,
     pub definitions: Vec<GateDefinition>,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
+pub struct QualityDisposition {
+    pub status: String,
+    pub observations: Vec<String>,
+    pub owner: String,
+    pub trigger: String,
+    pub closure_eligible: bool,
+    pub prohibited_gate_definition_ids: Vec<String>,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -165,7 +172,6 @@ impl PolicyBundle {
         let root = repo_root.join("gate-policy/v1");
         let (impact_map, impact_map_value, impact_bytes) = load_impact_map(&root)?;
         let (registry, registry_value) = load_gate_registry(&root)?;
-        verify_combined_quality_proofs(&registry)?;
         let execution_matrix_value = load_execution_matrix(&root)?;
         let (assurance_registry, assurance_registry_value, assurance_registry_bytes) =
             load_assurance_registry(repo_root, &root)?;
@@ -200,10 +206,7 @@ impl PolicyBundle {
     pub fn definitions_for_risk(&self, risk: RiskClass) -> Vec<&GateDefinition> {
         self.definitions
             .values()
-            .filter(|definition| {
-                definition.gate_definition_id != "combined-workspace-quality-v1"
-                    && definition.risk_classes.contains(&risk)
-            })
+            .filter(|definition| definition.risk_classes.contains(&risk))
             .collect()
     }
 
@@ -215,38 +218,6 @@ impl PolicyBundle {
             .filter(|entry| matcher_matches(&entry.matcher, path))
             .collect()
     }
-}
-
-fn verify_combined_quality_proofs(registry: &GateRegistry) -> Result<()> {
-    let mut ids = BTreeSet::new();
-    for proof in &registry.combined_quality_proofs {
-        let id = proof["proof_id"].as_str().ok_or_else(|| {
-            GatePolicyError::new(
-                ErrorClass::Policy,
-                "GATE-COMBINED-PROOF-ID",
-                "missing proof ID",
-            )
-        })?;
-        if derived_id(proof, "proof_id")? != id || !ids.insert(id) {
-            return Err(GatePolicyError::new(
-                ErrorClass::Policy,
-                "GATE-COMBINED-PROOF-ID",
-                "combined-quality proof identity is invalid or duplicated",
-            ));
-        }
-    }
-    if registry
-        .active_combined_quality_proof_id
-        .as_ref()
-        .is_some_and(|active| !ids.contains(active.as_str()))
-    {
-        return Err(GatePolicyError::new(
-            ErrorClass::Policy,
-            "GATE-COMBINED-ACTIVE-PROOF",
-            "active combined-quality proof is absent from the reviewed registry",
-        ));
-    }
-    Ok(())
 }
 
 #[derive(Deserialize)]

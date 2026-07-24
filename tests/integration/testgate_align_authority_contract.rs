@@ -105,6 +105,54 @@ const CONTRACTS: &[(&str, &str, &str, &str, &str)] = &[
     ),
 ];
 
+const ADDITIONAL_NEGATIVE_FIXTURES: &[(&str, &str, &str)] = &[
+    (
+        "gate-definitions",
+        "gate-definitions.schema.json",
+        "gate-definitions-retired-quality-node.json",
+    ),
+    (
+        "gate-plan",
+        "gate-plan.schema.json",
+        "gate-plan-quality-disposition-missing.json",
+    ),
+    (
+        "gate-plan",
+        "gate-plan.schema.json",
+        "gate-plan-quality-disposition-not-applicable.json",
+    ),
+    (
+        "gate-plan",
+        "gate-plan.schema.json",
+        "gate-plan-quality-disposition-owner.json",
+    ),
+    (
+        "gate-plan",
+        "gate-plan.schema.json",
+        "gate-plan-retired-quality-field.json",
+    ),
+    (
+        "gate-receipt",
+        "gate-receipt.schema.json",
+        "gate-receipt-quality-closure-false.json",
+    ),
+    (
+        "gate-receipt",
+        "gate-receipt.schema.json",
+        "gate-receipt-quality-disposition-skipped.json",
+    ),
+    (
+        "gate-receipt",
+        "gate-receipt.schema.json",
+        "gate-receipt-quality-disposition-trigger.json",
+    ),
+    (
+        "gate-receipt",
+        "gate-receipt.schema.json",
+        "gate-receipt-quality-observation-missing.json",
+    ),
+];
+
 fn repo_root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
 }
@@ -120,6 +168,55 @@ fn load_text(path: &str) -> String {
     let full_path = repo_root().join(path);
     fs::read_to_string(&full_path)
         .unwrap_or_else(|error| panic!("expected readable file {}: {error}", full_path.display()))
+}
+
+fn assert_negative_fixture(
+    policy: &Path,
+    fixture_stem: &str,
+    schema_name: &str,
+    invalid_name: &str,
+) {
+    let schema_path = policy.join("schemas").join(schema_name);
+    let schema = load_json(&schema_path);
+    let validator = jsonschema::draft202012::new(&schema)
+        .unwrap_or_else(|error| panic!("schema must compile {}: {error}", schema_path.display()));
+    let valid = load_json(
+        &policy
+            .join("fixtures/valid")
+            .join(format!("{fixture_stem}.json")),
+    );
+    let invalid_path = policy.join("fixtures/invalid").join(invalid_name);
+    let mutation = load_json(&invalid_path);
+    assert_eq!(mutation["base_fixture"], format!("{fixture_stem}.json"));
+    let mut invalid = valid;
+    apply_single_mutation(&mut invalid, &mutation, &invalid_path);
+    let errors = validator
+        .iter_errors(&invalid)
+        .map(|error| {
+            (
+                error.instance_path().to_string(),
+                error.schema_path().to_string(),
+            )
+        })
+        .collect::<Vec<_>>();
+    assert!(
+        !errors.is_empty(),
+        "one-mutation negative fixture must be rejected: {}",
+        invalid_path.display()
+    );
+    let expected_instance = mutation["expected_instance_path"]
+        .as_str()
+        .expect("expected instance path");
+    let expected_schema = mutation["expected_schema_path_contains"]
+        .as_str()
+        .expect("expected schema path fragment");
+    assert!(
+        errors.iter().any(|(instance, schema)| {
+            instance == expected_instance && schema.contains(expected_schema)
+        }),
+        "negative fixture {} missed intended rejection; errors: {errors:?}",
+        invalid_path.display()
+    );
 }
 
 #[test]
@@ -175,6 +272,9 @@ fn schemas_accept_positive_and_reject_negative_fixtures() {
             "negative fixture {} missed intended rejection; errors: {errors:?}",
             invalid_path.display()
         );
+    }
+    for (fixture_stem, schema_name, invalid_name) in ADDITIONAL_NEGATIVE_FIXTURES {
+        assert_negative_fixture(&policy, fixture_stem, schema_name, invalid_name);
     }
 }
 
@@ -715,6 +815,25 @@ fn apply_single_mutation(instance: &mut Value, mutation: &Value, fixture_path: &
             );
             parent.insert(key, value);
         }
+        "remove" => {
+            let (parent_pointer, encoded_key) = pointer
+                .rsplit_once('/')
+                .expect("remove pointer must include an object key");
+            let key = encoded_key.replace("~1", "/").replace("~0", "~");
+            let parent = instance
+                .pointer_mut(parent_pointer)
+                .and_then(Value::as_object_mut)
+                .unwrap_or_else(|| {
+                    panic!(
+                        "remove parent absent in {}: {parent_pointer}",
+                        fixture_path.display()
+                    )
+                });
+            assert!(
+                parent.remove(&key).is_some(),
+                "remove mutation must delete one existing key"
+            );
+        }
         operation => panic!("unsupported mutation operation {operation}"),
     }
 }
@@ -859,9 +978,10 @@ fn adr0021_thresholds_and_correctness_authority_remain_protected() {
     ] {
         assert!(adr.contains(protected), "ADR-0021 lost: {protected}");
     }
-    assert!(adr.contains("Execution cadence aligned to ADR-0039"));
-    assert!(adr.contains("not the default for an ordinary bounded"));
-    assert!(adr.contains("critical change, campaign closure, and release close against the whole"));
+    assert!(adr.contains("explicit module"));
+    assert!(adr.contains("not a"));
+    assert!(adr.contains("global per-PR line-coverage gate"));
+    assert!(adr.contains("workspace reports are observational"));
 
     let correctness = load_text("docs/specifications/correctness-authority-model.md");
     assert!(correctness.contains("affected A0 admission, A1 hard-invariant, and A3"));

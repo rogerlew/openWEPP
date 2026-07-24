@@ -3,6 +3,8 @@
 Status: blocking normal-increment authority
 
 Decision authority: `docs/decisions/0039-campaign-scoped-risk-based-testing-and-assurance-gates.md`
+as amended by
+`docs/decisions/0041-separate-testgate-from-observational-quality-ci.md`
 
 Operational authority: `docs/standards/testing-and-gate-strategy.md`
 
@@ -14,6 +16,12 @@ case from its positive counterpart and bind the intended instance/schema error
 path. `impact-map.json` seeds non-Cargo ownership for the gate-policy authority
 itself. `gate-definitions.json` supplies the planner's closed typed
 argument-vector registry; it never contains shell source.
+
+`gate-definitions.json` also owns the exact
+`DEFERRED_TO_QUALITY_CI` disposition. Plans, pre-heavy audits, and receipts
+bind that closed value and reject coverage/CRAP execution nodes. Quality
+measurement is optional operator-directed observatory work, not TESTGATE
+transition authority.
 
 TESTGATE-PLAN-01 consumes these contracts for blocking normal-increment
 selection and verification. TESTGATE-CI-01 executes the selected plan and

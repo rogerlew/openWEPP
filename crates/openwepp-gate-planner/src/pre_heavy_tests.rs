@@ -18,9 +18,9 @@ use super::{
     require_bound_active_prompt, require_clean_diff, require_ready_audit_status, seal_audit,
     separated_roots, tooling_defect_statuses, valid_stage_order, validate_audit_artifact_fields,
     validate_audit_context_binding, validate_audit_core_binding, validate_audit_schema,
-    validate_checkpoint_identity, validate_combined_decision, validate_current_audit_inventory,
-    validate_embedded_light_receipt_id, validate_exact_node_shapes, validate_ready_audit,
-    validate_ready_check_set, validate_relocated_artifact_binding,
+    validate_checkpoint_identity, validate_current_audit_inventory,
+    validate_embedded_light_receipt_id, validate_exact_node_shapes, validate_quality_deferral,
+    validate_ready_audit, validate_ready_check_set, validate_relocated_artifact_binding,
     validate_relocated_light_receipt, validate_stage_receipt,
     validate_stage_receipt_execution_binding, validate_stage_receipt_plan_binding,
     validate_started_successor, verify_ledger_chain, with_disposable_audit_reconstruction,
@@ -628,7 +628,7 @@ fn failure_check_index_preserves_first_matching_token_precedence() {
         ("GATE-EXECUTION-CLAIM", 3),
         ("GATE-ARTIFACT-CHECKPOINT", 4),
         ("GATE-ROOT-CACHE", 5),
-        ("GATE-COMBINED-ORDER", 6),
+        ("GATE-QUALITY-DISPOSITION", 6),
         ("GATE-ORDER-RETRY", 7),
         ("GATE-LEDGER-UNKNOWN", 8),
         ("GATE-UNKNOWN", 9),
@@ -665,25 +665,20 @@ fn light_stage_and_stage_order_reject_nonpass_or_forward_dependency() {
 }
 
 #[test]
-fn combined_decision_requires_its_exact_dag_shape() {
-    let separate = json!({
-        "nodes": [
-            {"gate_definition_id": "workspace-full-nextest-v1"},
-            {"gate_definition_id": "adjudicated-crap-v1"}
-        ],
-        "combined_quality": {
-            "decision": "SEPARATE", "accepted_proof_id": null
-        }
+fn quality_deferral_requires_its_exact_dag_shape() {
+    let plan = json!({
+        "nodes": [{"gate_definition_id": "workspace-full-nextest-v1"}],
+        "quality_disposition": super::expected_quality_disposition()
     });
-    validate_combined_decision(&separate).expect("separate quality DAG");
+    validate_quality_deferral(&plan).expect("deferred quality DAG");
 
-    let mut drifted = separate.clone();
-    drifted["combined_quality"]["decision"] = json!("COMBINED");
+    let mut drifted = plan.clone();
+    drifted["nodes"][0]["gate_definition_id"] = json!("adjudicated-crap-v1");
     assert_eq!(
-        validate_combined_decision(&drifted)
-            .expect_err("decision/DAG mismatch")
+        validate_quality_deferral(&drifted)
+            .expect_err("retired quality node")
             .code,
-        "GATE-AUDIT-COMBINED-DAG-MISMATCH"
+        "GATE-AUDIT-QUALITY-NODE-PROHIBITED"
     );
 }
 
@@ -720,7 +715,7 @@ fn execution_identity_requires_all_bound_digests_and_claims() {
 fn extracted_audit_bindings_preserve_exact_identity_checks() {
     let plan = json!({
         "plan_id": "plan", "execution_key": "execution",
-        "combined_quality": {"decision": "NOT_APPLICABLE"}, "nodes": []
+        "quality_disposition": super::expected_quality_disposition(), "nodes": []
     });
     let admission = json!({"status": "READY"});
     let artifact_root = PathBuf::from("/external/audit-root");
@@ -730,7 +725,7 @@ fn extracted_audit_bindings_preserve_exact_identity_checks() {
         "execution_key": plan["execution_key"],
         "artifact_root_sha256": path_digest(&artifact_root),
         "node_manifest": node_manifest(&plan).expect("node manifest"),
-        "combined_execution": plan["combined_quality"],
+        "quality_disposition": plan["quality_disposition"],
         "package_admission": admission
     });
     audit["audit_id"] = json!(derived_id(&audit, "audit_id").expect("audit ID"));
@@ -754,7 +749,7 @@ fn relocated_audit_binds_sealed_attempt_root_instead_of_extraction_path() {
     let extracted_root = PathBuf::from("/hosted/runner/unsigned/execution");
     let plan = json!({
         "plan_id": "1".repeat(64), "execution_key": "2".repeat(64),
-        "combined_quality": {"decision": "NOT_APPLICABLE"}, "nodes": []
+        "quality_disposition": super::expected_quality_disposition(), "nodes": []
     });
     let mut receipt = read_json(&root.join("gate-policy/v1/fixtures/valid/stage-receipt.json"))
         .expect("stage receipt fixture");
@@ -771,7 +766,7 @@ fn relocated_audit_binds_sealed_attempt_root_instead_of_extraction_path() {
         "execution_key": plan["execution_key"],
         "artifact_root_sha256": path_digest(&original_root),
         "node_manifest": node_manifest(&plan).expect("node manifest"),
-        "combined_execution": plan["combined_quality"],
+        "quality_disposition": plan["quality_disposition"],
         "package_admission": {"status": "READY"},
         "light_stage_receipt_id": receipt["stage_receipt_id"],
         "light_receipt": receipt
@@ -851,11 +846,7 @@ fn canonical_audit_document_seals_and_ready_helpers_fail_closed() {
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
     let plan = json!({
         "plan_id": "2".repeat(64), "execution_key": "4".repeat(64), "nodes": [],
-        "combined_quality": {
-            "decision": "NOT_APPLICABLE", "reason_code": "NO_GLOBAL_QUALITY",
-            "requested_proof_id": null, "accepted_proof_id": null,
-            "proof_sha256": null, "baseline_count": 0
-        }
+        "quality_disposition": super::expected_quality_disposition()
     });
     let receipt = json!({
         "stage_receipt_id": "5".repeat(64),
@@ -875,7 +866,7 @@ fn canonical_audit_document_seals_and_ready_helpers_fail_closed() {
         ledger_head_sha256: None,
         package_admission: json!({"status": "READY"}),
         checks,
-        combined_execution: plan["combined_quality"].clone(),
+        quality_disposition: plan["quality_disposition"].clone(),
         status: "READY",
         reason_codes: Vec::new(),
     })
@@ -1068,11 +1059,7 @@ fn unsealed_audit_assembles_all_ten_checks_and_fallback_is_representable() {
         "execution_root": "/execution", "authority_root": "/authority",
         "documentation_root": "/documentation"
     });
-    plan["combined_quality"] = json!({
-        "decision": "NOT_APPLICABLE", "reason_code": "NO_GLOBAL_QUALITY",
-        "requested_proof_id": null, "accepted_proof_id": null,
-        "proof_sha256": null, "baseline_count": 0
-    });
+    plan["quality_disposition"] = super::expected_quality_disposition();
     let receipt = json!({
         "executor_binary_sha256": "e".repeat(64),
         "artifact_root_sha256": path_digest(&artifact_root), "final_results": {},
@@ -1083,7 +1070,7 @@ fn unsealed_audit_assembles_all_ten_checks_and_fallback_is_representable() {
         }
     });
     let admission = package_admission(&fixture.root, &plan).expect("package admission");
-    let combined = plan["combined_quality"].clone();
+    let quality_disposition = plan["quality_disposition"].clone();
     let checks = build_audit_checks(&AuditCheckInputs {
         repo: &fixture.root,
         plan: &plan,
@@ -1091,7 +1078,7 @@ fn unsealed_audit_assembles_all_ten_checks_and_fallback_is_representable() {
         artifact_root: &artifact_root,
         ledger: &ledger,
         package_admission: &admission,
-        combined_execution: &combined,
+        quality_disposition: &quality_disposition,
         ledger_head_sha256: None,
     })
     .expect("ten-check audit assembly");

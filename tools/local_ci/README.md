@@ -130,10 +130,9 @@ failures still produce the schema-valid ten-check artifact.
 
 Under ADR-0041, TESTGATE plans retain selected full correctness regression for
 critical work and must record coverage/CRAP as `DEFERRED_TO_QUALITY_CI`. The
-retired combined-quality proof/input is not TESTGATE authority. Executable
-removal of the old nodes/input and issuance of the typed disposition are
-pending roadmap Order 2; no pre-Order-2 receipt may be represented as carrying
-that disposition. Optional QA executes separately at operator direction.
+retired combined-quality proof/input is not TESTGATE authority. TESTGATE no
+longer probes quality tools, selects quality nodes, or accepts the retired
+proof input. Optional QA executes separately at operator direction.
 
 The helper writes an independently verified unsigned receipt and
 `observation.json`. Forest1 output is `LOCAL_RECEIPT_ACCEPTED`: its unsigned

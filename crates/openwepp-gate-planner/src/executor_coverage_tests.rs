@@ -7,90 +7,43 @@ use super::{ExecutionClaims, ExecutionRecord, execute_plan, execute_plan_stage};
 use crate::canonical::{derived_id, digest, sha256_bytes};
 use crate::pre_heavy::construct_audit;
 
-fn affected_quality_fixture() -> (Value, Value, Vec<Value>) {
-    let affected = json!({
-        "node_id": "combined-affected",
-        "gate_definition_id": "affected-adjudicated-crap-v1",
-        "arguments": ["--package", "alpha", "--package", "beta"],
-        "expected_inventory": {"ids": ["case-a", "case-b"]},
-    });
-    let scope = json!({
-        "mode": "AFFECTED",
-        "completeness": "COMPLETE",
-        "production_packages": ["alpha", "beta"],
-        "covering_node_ids": ["combined-affected"],
-        "covering_inventory_ids": ["case-a", "case-b"],
-    });
-    (scope, affected.clone(), vec![affected])
-}
-
-fn assert_quality_scope_error(
-    scope: &Value,
-    affected: &Value,
-    nodes: &[Value],
-    code: &'static str,
-    message: &str,
-) {
-    let error = super::validate_affected_quality_scope(scope, affected, nodes)
-        .expect_err("invalid affected quality scope");
-    assert_eq!(error.code, code);
-    assert_eq!(error.message, message);
-}
-
 #[test]
-fn affected_quality_scope_preserves_success_and_error_precedence() {
-    let (scope, affected, nodes) = affected_quality_fixture();
-    super::validate_affected_quality_scope(&scope, &affected, &nodes)
-        .expect("complete affected quality scope");
+fn quality_deferral_is_exact_and_rejects_retired_nodes() {
+    let disposition = json!({
+        "status": "DEFERRED_TO_QUALITY_CI",
+        "observations": ["COVERAGE", "CRAP"],
+        "owner": "openwepp-quality-observatory",
+        "trigger": "OPTIONAL_OPERATOR_DISPATCH",
+        "closure_eligible": true,
+        "prohibited_gate_definition_ids": [
+            "affected-adjudicated-crap-v1",
+            "adjudicated-crap-v1",
+            "combined-workspace-quality-v1"
+        ]
+    });
+    let plan = json!({"quality_disposition": disposition, "nodes": []});
+    super::validate_quality_disposition(&plan).expect("exact quality deferral");
 
-    let mut invalid = scope.clone();
-    invalid["completeness"] = json!("PARTIAL");
-    invalid["production_packages"] = json!(["alpha"]);
-    invalid["covering_node_ids"] = json!(["missing"]);
-    invalid["covering_inventory_ids"] = json!([]);
-    assert_quality_scope_error(
-        &invalid,
-        &affected,
-        &nodes,
-        "GATE-EXEC-QUALITY-INCOMPLETE",
-        "affected quality requires complete contribution evidence",
+    let mut invalid = plan.clone();
+    invalid["quality_disposition"]["status"] = json!("SKIPPED");
+    assert_eq!(
+        super::validate_quality_disposition(&invalid)
+            .expect_err("invalid disposition")
+            .code,
+        "GATE-EXEC-QUALITY-DISPOSITION"
     );
 
-    invalid["completeness"] = json!("COMPLETE");
-    assert_quality_scope_error(
-        &invalid,
-        &affected,
-        &nodes,
-        "GATE-EXEC-QUALITY-PACKAGES",
-        "affected measurement arguments differ from terminal production packages",
-    );
-
-    invalid["production_packages"] = scope["production_packages"].clone();
-    assert_quality_scope_error(
-        &invalid,
-        &affected,
-        &nodes,
-        "GATE-EXEC-QUALITY-COVERING-NODES",
-        "covering node identity is not the combined affected measurement",
-    );
-
-    invalid["covering_node_ids"] = scope["covering_node_ids"].clone();
-    assert_quality_scope_error(
-        &invalid,
-        &affected,
-        &nodes,
-        "GATE-EXEC-QUALITY-INVENTORY",
-        "covering inventory differs from terminal package test closure",
-    );
-
-    let mut wrong_gate_nodes = nodes.clone();
-    wrong_gate_nodes[0]["gate_definition_id"] = json!("adjudicated-crap-v1");
-    assert_quality_scope_error(
-        &scope,
-        &affected,
-        &wrong_gate_nodes,
-        "GATE-EXEC-QUALITY-COVERING-NODES",
-        "covering node identity is not the combined affected measurement",
+    invalid = plan;
+    invalid["nodes"] = json!([{
+        "gate_definition_id": "adjudicated-crap-v1",
+        "gate_family": "coverage-complexity",
+        "artifact_contract": "adjudicated-crap-v1"
+    }]);
+    assert_eq!(
+        super::validate_quality_disposition(&invalid)
+            .expect_err("retired node")
+            .code,
+        "GATE-EXEC-QUALITY-NODE-PROHIBITED"
     );
 }
 
@@ -703,11 +656,11 @@ fn stage_receipt_reconstruction_preserves_field_order_and_collections() {
     ignore = "development-only: compiles public-stage reconstructed repositories"
 )]
 fn public_stage_selection_preserves_light_final_and_rejection_shapes() {
-    use super::tests::{TempDirectory, execution_fixture, global_quality_gate_definition};
+    use super::tests::{TempDirectory, execution_fixture, fixture_gate_definition};
 
     let (repo, plan) = execution_fixture(
         "stage-selection-repo",
-        &[global_quality_gate_definition(&["./tools/pass.sh"], &[])],
+        &[fixture_gate_definition(&["./tools/pass.sh"], &[])],
     );
     let light_artifacts = TempDirectory::new("stage-selection-light");
     let light = execute_plan_stage(

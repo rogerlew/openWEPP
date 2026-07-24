@@ -41,7 +41,6 @@ pub struct PlanRequest {
     pub predecessor_intent_plan_id: Option<String>,
     pub boundary: String,
     pub campaign_id: Option<String>,
-    pub combined_quality_proof_id: Option<String>,
     pub authorized_paths: Vec<String>,
     pub package_authority_chain_id: String,
     pub intent_package_path: String,
@@ -148,8 +147,6 @@ fn verify_terminal_authorization(
     if authorized != terminal_authorized
         || !actual.is_subset(&authorized)
         || intent["package_authority"] != terminal["package_authority"]
-        || intent["combined_quality"]["requested_proof_id"]
-            != terminal["combined_quality"]["requested_proof_id"]
     {
         return Err(GatePolicyError::new(
             ErrorClass::Planning,
@@ -761,14 +758,14 @@ impl<P: InventoryProvider> Planner<P> {
             &request.source.base_commit,
             &request.boundary,
         )?;
-        let (nodes, combined_quality) = crate::combined_quality::select_and_apply(
-            &policy,
-            request.combined_quality_proof_id.as_deref(),
-            &context,
-            &request.source.base_commit,
-            nodes,
-        )?;
-        let quality_scope = quality_scope(&selection, &nodes);
+        let quality_disposition = serde_json::to_value(&policy.registry.quality_disposition)
+            .map_err(|error| {
+                GatePolicyError::new(
+                    ErrorClass::Planning,
+                    "GATE-PLAN-QUALITY-DISPOSITION",
+                    error.to_string(),
+                )
+            })?;
 
         let changed_objects = request
             .source
@@ -815,7 +812,7 @@ impl<P: InventoryProvider> Planner<P> {
             "execution_key": "0000000000000000000000000000000000000000000000000000000000000000",
             "boundary": request.boundary,
             "campaign_id": request.campaign_id,
-            "combined_quality": combined_quality,
+            "quality_disposition": quality_disposition,
             "authorized_paths": request.authorized_paths,
             "package_authority": {
                 "chain_id": request.package_authority_chain_id,
@@ -838,7 +835,6 @@ impl<P: InventoryProvider> Planner<P> {
             },
             "execution_context": context,
             "nodes": nodes,
-            "quality_scope": quality_scope,
             "zero_work_disposition": zero_work,
             "environment_roots": roots,
             "deferred_obligations": [],
@@ -867,7 +863,7 @@ impl<P: InventoryProvider> Planner<P> {
         boundary: &str,
     ) -> Result<Vec<Value>> {
         let mut instances = BTreeMap::<String, (&GateDefinition, String)>::new();
-        let mut explicit = selection
+        let explicit = selection
             .explicit_definitions
             .iter()
             .cloned()
@@ -877,7 +873,6 @@ impl<P: InventoryProvider> Planner<P> {
                 add_definition_instances(&mut instances, definition, selection);
             }
         }
-        explicit.remove("combined-workspace-quality-v1");
         for id in explicit {
             let definition = policy.definition(&id).ok_or_else(|| {
                 GatePolicyError::new(ErrorClass::Policy, "GATE-DEFINITION-MISSING", id.clone())
@@ -908,17 +903,10 @@ impl<P: InventoryProvider> Planner<P> {
                     .iter()
                     .filter_map(|dependency| built.get(dependency).cloned())
                     .collect::<Vec<_>>();
-                let argument_packages =
-                    if definition.gate_definition_id == "affected-adjudicated-crap-v1" {
-                        &selection.quality_packages
-                    } else {
-                        &selection.affected_packages
-                    };
                 let mut arguments = expand_node_arguments(
                     definition,
                     target,
                     base_commit,
-                    argument_packages,
                     &selection.documentation_paths,
                 )?;
                 if definition.gate_definition_id == "required-authority-v1" {
@@ -1028,80 +1016,6 @@ fn load_source_graph(
         None => CargoGraph::load_current(repo)?,
     };
     Ok(base_graph.union(&head_graph))
-}
-
-fn quality_scope(selection: &Selection, nodes: &[Value]) -> Value {
-    if selection.risk == RiskClass::Editorial {
-        return json!({
-            "mode": "NOT_APPLICABLE",
-            "production_packages": [],
-            "covering_node_ids": [],
-            "covering_inventory_ids": [],
-            "completeness": "COMPLETE",
-            "reason_codes": ["NO_PRODUCTION_SURFACE"]
-        });
-    }
-    let affected_mode = matches!(
-        selection.risk,
-        RiskClass::BoundedComponent | RiskClass::IntegratedDomain
-    ) && !selection.quality_packages.is_empty()
-        && selection.unmapped.is_empty();
-    if !affected_mode {
-        return json!({
-            "mode": "GLOBAL",
-            "production_packages": [],
-            "covering_node_ids": [],
-            "covering_inventory_ids": [],
-            "completeness": "ESCALATED_GLOBAL",
-            "reason_codes": ["AFFECTED_CONTRIBUTION_UNBOUNDED"]
-        });
-    }
-
-    let affected_nodes = nodes
-        .iter()
-        .filter(|node| node["gate_definition_id"] == "affected-adjudicated-crap-v1")
-        .collect::<Vec<_>>();
-    if affected_nodes.len() != 1 {
-        return json!({
-            "mode": "GLOBAL",
-            "production_packages": [],
-            "covering_node_ids": [],
-            "covering_inventory_ids": [],
-            "completeness": "ESCALATED_GLOBAL",
-            "reason_codes": ["COVERING_TEST_CONTRIBUTION_UNKNOWN"]
-        });
-    }
-    let affected = affected_nodes[0];
-    let covering_node_ids = affected["node_id"]
-        .as_str()
-        .map(|id| vec![id])
-        .unwrap_or_default();
-    let covering_inventory_ids = affected["expected_inventory"]["ids"]
-        .as_array()
-        .into_iter()
-        .flatten()
-        .filter_map(Value::as_str)
-        .collect::<BTreeSet<_>>()
-        .into_iter()
-        .collect::<Vec<_>>();
-    if covering_inventory_ids.is_empty() {
-        return json!({
-            "mode": "GLOBAL",
-            "production_packages": [],
-            "covering_node_ids": [],
-            "covering_inventory_ids": [],
-            "completeness": "ESCALATED_GLOBAL",
-            "reason_codes": ["COVERING_TEST_INVENTORY_EMPTY"]
-        });
-    }
-    json!({
-        "mode": "AFFECTED",
-        "production_packages": selection.quality_packages,
-        "covering_node_ids": covering_node_ids,
-        "covering_inventory_ids": covering_inventory_ids,
-        "completeness": "COMPLETE",
-        "reason_codes": ["TERMINAL_PLAN_COVERING_CLOSURE"]
-    })
 }
 
 pub(crate) fn derive_plan_id(plan: &Value) -> Result<String> {
@@ -1282,9 +1196,6 @@ fn reconstruction_request(
             .ok_or_else(|| plan_shape("/boundary"))?
             .to_owned(),
         campaign_id: plan["campaign_id"].as_str().map(str::to_owned),
-        combined_quality_proof_id: plan["combined_quality"]["requested_proof_id"]
-            .as_str()
-            .map(str::to_owned),
         authorized_paths,
         package_authority_chain_id: plan["package_authority"]["chain_id"]
             .as_str()
@@ -1369,7 +1280,6 @@ struct Selection {
     reason_codes: Vec<String>,
     documentation_paths: Vec<String>,
     affected_packages: Vec<String>,
-    quality_packages: Vec<String>,
     reverse_dependencies: Vec<String>,
     explicit_definitions: Vec<String>,
     authority_suites: Vec<String>,
@@ -1447,17 +1357,12 @@ fn select(policy: &PolicyBundle, graph: &CargoGraph, changes: &[ObservedChange])
         }
     }
     let affected = graph.reverse_closure(&direct_packages);
-    let quality_packages = affected
-        .iter()
-        .filter(|package| graph.owns_production_sources(package))
-        .cloned()
-        .collect::<Vec<_>>();
     if direct_packages
         .iter()
         .any(|package| !graph.owns_production_sources(package))
     {
         risk = RiskClass::Critical;
-        reasons.insert("MEASUREMENT_ONLY_PACKAGE_REQUIRES_GLOBAL_QUALITY".to_owned());
+        reasons.insert("MEASUREMENT_ONLY_PACKAGE_REQUIRES_GLOBAL_CORRECTNESS".to_owned());
     }
     let reverse_dependencies = affected
         .difference(&direct_packages)
@@ -1468,7 +1373,6 @@ fn select(policy: &PolicyBundle, graph: &CargoGraph, changes: &[ObservedChange])
         reason_codes: reasons.into_iter().collect(),
         documentation_paths: changed_markdown_paths(changes),
         affected_packages: affected.into_iter().collect(),
-        quality_packages,
         reverse_dependencies,
         explicit_definitions: explicit.into_iter().collect(),
         authority_suites: authority_suites.into_iter().collect(),
@@ -1692,16 +1596,9 @@ fn expand_node_arguments(
     definition: &GateDefinition,
     target: &str,
     base_commit: &str,
-    affected_packages: &[String],
     documentation_paths: &[String],
 ) -> Result<Vec<String>> {
     let mut arguments = expand_arguments(&definition.arguments_template, target, base_commit)?;
-    if definition.gate_definition_id == "affected-adjudicated-crap-v1" {
-        for package in affected_packages {
-            arguments.push("--package".to_owned());
-            arguments.push(package.clone());
-        }
-    }
     append_lint_paths(
         &mut arguments,
         &definition.gate_definition_id,
@@ -2384,7 +2281,7 @@ pub(crate) fn command_identity(repo: &Path, program: &str, arguments: &[&str]) -
 }
 
 pub(crate) fn tool_records(repo: &Path) -> Result<Value> {
-    let specifications: [(&str, &str, &[&str], &str); 21] = [
+    let specifications: [(&str, &str, &[&str], &str); 19] = [
         ("git", "git", &["--version"], "git"),
         ("cargo-launcher", "cargo", &["--version"], "cargo"),
         ("cargo", "cargo", &["--version"], "@toolchain/cargo"),
@@ -2426,13 +2323,6 @@ pub(crate) fn tool_records(repo: &Path) -> Result<Value> {
             "cargo-nextest",
         ),
         ("cargo-deny", "cargo", &["deny", "--version"], "cargo-deny"),
-        (
-            "cargo-llvm-cov",
-            "cargo",
-            &["llvm-cov", "--version"],
-            "cargo-llvm-cov",
-        ),
-        ("cargo-crap", "cargo", &["crap", "--version"], "cargo-crap"),
         ("rustc-launcher", "rustc", &["-Vv"], "rustc"),
         ("rustc", "rustc", &["-Vv"], "@toolchain/rustc"),
         ("rustdoc-launcher", "rustdoc", &["--version"], "rustdoc"),

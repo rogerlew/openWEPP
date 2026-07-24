@@ -36,10 +36,23 @@
                 .as_array()
                 .expect("reason codes")
                 .contains(&serde_json::json!(
-                    "MEASUREMENT_ONLY_PACKAGE_REQUIRES_GLOBAL_QUALITY"
+                    "MEASUREMENT_ONLY_PACKAGE_REQUIRES_GLOBAL_CORRECTNESS"
                 ))
         );
-        assert_eq!(plan["quality_scope"]["mode"], "GLOBAL");
+        assert_eq!(
+            plan["quality_disposition"]["status"],
+            "DEFERRED_TO_QUALITY_CI"
+        );
+        assert!(plan["nodes"].as_array().expect("nodes").iter().all(|node| {
+            !matches!(
+                node["gate_definition_id"].as_str(),
+                Some(
+                    "affected-adjudicated-crap-v1"
+                        | "adjudicated-crap-v1"
+                        | "combined-workspace-quality-v1"
+                )
+            )
+        }));
     }
 
     fn assert_increment_omits_unrelated_workspace_gates(plan: &serde_json::Value) {
@@ -138,7 +151,6 @@
             predecessor_intent_plan_id: None,
             boundary: "INCREMENT".to_owned(),
             campaign_id: Some("TESTGATE-PLAN-01".to_owned()),
-            combined_quality_proof_id: None,
             authorized_paths: vec!["gate-policy/v1/impact-map.json".to_owned()],
             package_authority_chain_id: "aa".repeat(32),
             intent_package_path: "docs/work-packages/fixture/package.md".to_owned(),
@@ -165,8 +177,10 @@
             canonical_bytes(&first).expect("second canonicalization")
         );
         assert_eq!(first["risk"]["class"], "CRITICAL");
-        assert_eq!(first["quality_scope"]["mode"], "GLOBAL");
-        assert_eq!(first["quality_scope"]["completeness"], "ESCALATED_GLOBAL");
+        assert_eq!(
+            first["quality_disposition"]["status"],
+            "DEFERRED_TO_QUALITY_CI"
+        );
         assert!(
             first["nodes"]
                 .as_array()
@@ -174,15 +188,9 @@
                 .iter()
                 .all(|node| { node["gate_definition_id"] != "documentation-lint-v1" })
         );
-        assert_eq!(
-            first["nodes"]
-                .as_array()
-                .expect("nodes")
-                .iter()
-                .filter(|node| node["gate_definition_id"] == "adjudicated-crap-v1")
-                .count(),
-            1
-        );
+        assert!(first["nodes"].as_array().expect("nodes").iter().all(|node| {
+            node["gate_definition_id"] != "adjudicated-crap-v1"
+        }));
         assert!(!first["nodes"].as_array().expect("nodes").is_empty());
         let ids = first["nodes"]
             .as_array()
@@ -387,9 +395,8 @@
             );
             assert_eq!(selection.risk.as_str(), "CRITICAL", "{path}");
             assert!(selection.reason_codes.iter().any(|reason| {
-                reason == "MEASUREMENT_ONLY_PACKAGE_REQUIRES_GLOBAL_QUALITY"
+                reason == "MEASUREMENT_ONLY_PACKAGE_REQUIRES_GLOBAL_CORRECTNESS"
             }));
-            assert!(selection.quality_packages.is_empty());
         }
     }
 
@@ -582,7 +589,6 @@
             predecessor_intent_plan_id: None,
             boundary: "RELEASE".to_owned(),
             campaign_id: None,
-            combined_quality_proof_id: None,
             authorized_paths: vec!["README.md".to_owned()],
             package_authority_chain_id: "aa".repeat(32),
             intent_package_path: "docs/work-packages/fixture/package.md".to_owned(),
@@ -621,7 +627,6 @@
                     predecessor_intent_plan_id: None,
                     boundary: "INCREMENT".to_owned(),
                     campaign_id: Some("TESTGATE-PLAN-01".to_owned()),
-                    combined_quality_proof_id: None,
                     authorized_paths: vec![path.to_owned()],
                     package_authority_chain_id: "aa".repeat(32),
                     intent_package_path: "docs/work-packages/fixture/package.md".to_owned(),
@@ -666,44 +671,17 @@
             .collect::<std::collections::BTreeSet<_>>();
         assert_eq!(outputs.len(), package_nodes.len());
         assert_eq!(
-            plan["quality_scope"]["mode"],
-            "AFFECTED",
-            "scope={} affected={} nextest_targets={}",
-            plan["quality_scope"],
-            plan["affected_packages"],
-            serde_json::Value::Array(
-                plan["nodes"]
-                    .as_array()
-                    .expect("nodes")
-                    .iter()
-                    .filter(|node| node["gate_definition_id"] == "cargo-package-nextest-v1")
-                    .map(|node| node["target"].clone())
-                    .collect()
-            )
+            plan["quality_disposition"]["status"],
+            "DEFERRED_TO_QUALITY_CI"
         );
-        assert_eq!(plan["quality_scope"]["completeness"], "COMPLETE");
-        let affected_nodes = plan["nodes"]
-            .as_array()
-            .expect("nodes")
-            .iter()
-            .filter(|node| node["gate_definition_id"] == "affected-adjudicated-crap-v1")
-            .collect::<Vec<_>>();
-        assert_eq!(affected_nodes.len(), 1);
+        assert!(plan["nodes"].as_array().expect("nodes").iter().all(|node| {
+            node["gate_definition_id"] != "affected-adjudicated-crap-v1"
+        }));
         assert_increment_omits_unrelated_workspace_gates(&plan);
-        let arguments = affected_nodes[0]["arguments"]
-            .as_array()
-            .expect("affected arguments");
-        for package in plan["quality_scope"]["production_packages"]
-            .as_array()
-            .expect("production packages")
-        {
-            assert!(arguments.contains(package));
-        }
-        assert!(!arguments.contains(&serde_json::json!("openwepp")));
     }
 
     #[test]
-    fn root_measurement_change_escalates_to_global_crap() {
+    fn root_measurement_change_escalates_correctness_and_defers_quality() {
         let repo = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
         let head = std::process::Command::new("git")
             .args(["rev-parse", "HEAD"])
@@ -723,7 +701,6 @@
                     predecessor_intent_plan_id: None,
                     boundary: "INCREMENT".to_owned(),
                     campaign_id: Some("TESTGATE-ROOT-MEASUREMENT-01".to_owned()),
-                    combined_quality_proof_id: None,
                     authorized_paths: vec![path.to_owned()],
                     package_authority_chain_id: "aa".repeat(32),
                     intent_package_path: "docs/work-packages/fixture/package.md".to_owned(),
@@ -753,7 +730,7 @@
             .iter()
             .filter_map(|node| node["gate_definition_id"].as_str())
             .collect::<std::collections::BTreeSet<_>>();
-        assert!(definitions.contains("adjudicated-crap-v1"));
+        assert!(!definitions.contains("adjudicated-crap-v1"));
         assert!(!definitions.contains("affected-adjudicated-crap-v1"));
     }
 
@@ -789,7 +766,6 @@
                     predecessor_intent_plan_id: None,
                     boundary: "INCREMENT".to_owned(),
                     campaign_id: Some("TESTGATE-PLAN-01".to_owned()),
-                    combined_quality_proof_id: None,
                     authorized_paths: vec!["Cargo.lock".to_owned()],
                     package_authority_chain_id: "aa".repeat(32),
                     intent_package_path: "docs/work-packages/fixture/package.md".to_owned(),
@@ -805,7 +781,6 @@
                     predecessor_intent_plan_id: intent["plan_id"].as_str().map(str::to_owned),
                     boundary: "INCREMENT".to_owned(),
                     campaign_id: Some("TESTGATE-PLAN-01".to_owned()),
-                    combined_quality_proof_id: None,
                     authorized_paths: vec!["Cargo.lock".to_owned()],
                     package_authority_chain_id: "aa".repeat(32),
                     intent_package_path: "docs/work-packages/fixture/package.md".to_owned(),
@@ -939,8 +914,8 @@
             "GATE-TERMINAL-UNAUTHORIZED-PATH",
         );
         let mut mismatched_proof = semantic_terminal.clone();
-        mismatched_proof["combined_quality"]["requested_proof_id"] =
-            serde_json::json!("different-proof");
+        mismatched_proof["quality_disposition"]["owner"] =
+            serde_json::json!("untrusted-producer");
         semantic_error(
             &intent_with_path,
             &mismatched_proof,
@@ -1614,7 +1589,6 @@
             predecessor_intent_plan_id: None,
             boundary: "INCREMENT".to_owned(),
             campaign_id: Some("TESTGATE-PLAN-01".to_owned()),
-            combined_quality_proof_id: None,
             authorized_paths: vec!["src/lib.rs".to_owned()],
             package_authority_chain_id: "aa".repeat(32),
             intent_package_path: "docs/work-packages/fixture/package.md".to_owned(),

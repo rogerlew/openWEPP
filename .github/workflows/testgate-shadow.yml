@@ -7,11 +7,6 @@ on:
         description: "Exact active-package scaffold commit"
         required: true
         type: string
-      combined_quality_proof_id:
-        description: "Repository-pinned combined quality proof ID (blank keeps separate gates)"
-        required: false
-        default: ""
-        type: string
       intent_package:
         description: "Prospective intent package anchor"
         required: true
@@ -90,9 +85,6 @@ jobs:
           rustc --version | grep -F 'rustc 1.92.0'
           cargo nextest --version | grep -F 'cargo-nextest 0.9.138'
           cargo deny --version | grep -F 'cargo-deny 0.19.6'
-          cargo llvm-cov --version | grep -F 'cargo-llvm-cov 0.8.7'
-          cargo crap --version | grep -F 'cargo-crap 0.2.2'
-          rustup component list --installed | grep -F 'llvm-tools-'
           rg --version | grep -F 'ripgrep 14.1.0'
           markdown-doc --version
           php --version | grep -F 'PHP 8.3.'
@@ -210,8 +202,6 @@ jobs:
           fi
       - name: Execute content-verifiable increment gates
         id: testgate
-        env:
-          COMBINED_PROOF_ID: ${{ inputs.combined_quality_proof_id }}
         run: |
           set -euo pipefail
           evidence_dir="${TESTGATE_EXECUTION_ROOT}/e"
@@ -220,10 +210,6 @@ jobs:
           [[ ! -e "${planner_tmp}" && ! -e "${evidence_dir}" ]]
           mkdir "${planner_tmp}" "${evidence_dir}"
           set +e
-          combined_args=()
-          if [[ -n "${COMBINED_PROOF_ID}" ]]; then
-            combined_args=(--combined-proof-id "${COMBINED_PROOF_ID}")
-          fi
           TMPDIR="${planner_tmp}" python3 tools/local_ci/testgate.py \
             --binary "${CARGO_TARGET_DIR}/debug/openwepp-gate-plan" \
             --base "${{ steps.comparison.outputs.base }}" \
@@ -233,7 +219,6 @@ jobs:
             --artifact-root "${evidence_dir}" \
             --history-ledger "${TESTGATE_HISTORY_ROOT}/attempts.jsonl" \
             --job openwepp/execute-increment \
-            "${combined_args[@]}" \
             --execute 2>"${orchestration_log}"
           testgate_status=$?
           set -e
@@ -592,7 +577,6 @@ jobs:
             ${{ runner.temp }}/testgate-evidence/envelope-verification.json
             ${{ runner.temp }}/testgate-evidence/github-attestation.jsonl
             ${{ runner.temp }}/testgate-evidence/attestation-verification.json
-            ${{ runner.temp }}/testgate-evidence/execution/target/gate-plan/adjudicated-crap.json
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 7

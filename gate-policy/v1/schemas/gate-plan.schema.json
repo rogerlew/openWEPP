@@ -13,7 +13,7 @@
     "execution_key",
     "boundary",
     "campaign_id",
-    "combined_quality",
+    "quality_disposition",
     "authorized_paths",
     "package_authority",
     "source",
@@ -25,7 +25,6 @@
     "planning_controls",
     "execution_context",
     "nodes",
-    "quality_scope",
     "zero_work_disposition",
     "environment_roots",
     "deferred_obligations",
@@ -66,18 +65,8 @@
     "campaign_id": {
       "$ref": "#/$defs/nullableId"
     },
-    "combined_quality": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["decision", "reason_code", "requested_proof_id", "accepted_proof_id", "proof_sha256", "baseline_count"],
-      "properties": {
-        "decision": {"enum": ["COMBINED", "SEPARATE", "NOT_APPLICABLE"]},
-        "reason_code": {"type": "string"},
-        "requested_proof_id": {"$ref": "#/$defs/nullableDigest"},
-        "accepted_proof_id": {"$ref": "#/$defs/nullableDigest"},
-        "proof_sha256": {"$ref": "#/$defs/nullableDigest"},
-        "baseline_count": {"type": "integer", "minimum": 0, "maximum": 3}
-      }
+    "quality_disposition": {
+      "$ref": "#/$defs/qualityDisposition"
     },
     "authorized_paths": {
       "type": "array",
@@ -133,10 +122,41 @@
       "type": "array",
       "items": {
         "$ref": "#/$defs/node"
+      },
+      "not": {
+        "contains": {
+          "anyOf": [
+            {
+              "properties": {
+                "gate_definition_id": {
+                  "enum": [
+                    "affected-adjudicated-crap-v1",
+                    "adjudicated-crap-v1",
+                    "combined-workspace-quality-v1"
+                  ]
+                }
+              },
+              "required": ["gate_definition_id"]
+            },
+            {
+              "properties": {
+                "gate_family": {
+                  "enum": ["coverage-complexity", "combined-quality"]
+                }
+              },
+              "required": ["gate_family"]
+            },
+            {
+              "properties": {
+                "artifact_contract": {
+                  "const": "adjudicated-crap-v1"
+                }
+              },
+              "required": ["artifact_contract"]
+            }
+          ]
+        }
       }
-    },
-    "quality_scope": {
-      "$ref": "#/$defs/qualityScope"
     },
     "zero_work_disposition": {
       "oneOf": [
@@ -536,130 +556,31 @@
         }
       }
     },
-    "qualityScope": {
+    "qualityDisposition": {
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "mode",
-        "production_packages",
-        "covering_node_ids",
-        "covering_inventory_ids",
-        "completeness",
-        "reason_codes"
+        "status",
+        "observations",
+        "owner",
+        "trigger",
+        "closure_eligible",
+        "prohibited_gate_definition_ids"
       ],
       "properties": {
-        "mode": {
-          "enum": [
-            "AFFECTED",
-            "GLOBAL",
-            "NOT_APPLICABLE"
+        "status": {"const": "DEFERRED_TO_QUALITY_CI"},
+        "observations": {"const": ["COVERAGE", "CRAP"]},
+        "owner": {"const": "openwepp-quality-observatory"},
+        "trigger": {"const": "OPTIONAL_OPERATOR_DISPATCH"},
+        "closure_eligible": {"const": true},
+        "prohibited_gate_definition_ids": {
+          "const": [
+            "affected-adjudicated-crap-v1",
+            "adjudicated-crap-v1",
+            "combined-workspace-quality-v1"
           ]
-        },
-        "production_packages": {
-          "$ref": "#/$defs/idList"
-        },
-        "covering_node_ids": {
-          "$ref": "#/$defs/idList"
-        },
-        "covering_inventory_ids": {
-          "$ref": "#/$defs/idList"
-        },
-        "completeness": {
-          "enum": [
-            "COMPLETE",
-            "ESCALATED_GLOBAL"
-          ]
-        },
-        "reason_codes": {
-          "$ref": "#/$defs/idList"
         }
-      },
-      "allOf": [
-        {
-          "if": {
-            "properties": {
-              "mode": {
-                "const": "AFFECTED"
-              }
-            },
-            "required": [
-              "mode"
-            ]
-          },
-          "then": {
-            "properties": {
-              "production_packages": {
-                "minItems": 1
-              },
-              "covering_node_ids": {
-                "minItems": 1
-              },
-              "covering_inventory_ids": {
-                "minItems": 1
-              },
-              "completeness": {
-                "const": "COMPLETE"
-              }
-            }
-          }
-        },
-        {
-          "if": {
-            "properties": {
-              "mode": {
-                "const": "GLOBAL"
-              }
-            },
-            "required": [
-              "mode"
-            ]
-          },
-          "then": {
-            "properties": {
-              "production_packages": {
-                "maxItems": 0
-              },
-              "covering_node_ids": {
-                "maxItems": 0
-              },
-              "covering_inventory_ids": {
-                "maxItems": 0
-              },
-              "completeness": {
-                "const": "ESCALATED_GLOBAL"
-              }
-            }
-          }
-        },
-        {
-          "if": {
-            "properties": {
-              "mode": {
-                "const": "NOT_APPLICABLE"
-              }
-            },
-            "required": [
-              "mode"
-            ]
-          },
-          "then": {
-            "properties": {
-              "production_packages": {
-                "maxItems": 0
-              },
-              "covering_node_ids": {
-                "maxItems": 0
-              },
-              "covering_inventory_ids": {
-                "maxItems": 0
-              },
-              "completeness": {
-                "const": "COMPLETE"
-              }
-            }
-          }
-        }
-      ]
+      }
     },
     "zeroWork": {
       "type": "object",

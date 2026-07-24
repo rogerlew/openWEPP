@@ -25,7 +25,7 @@ pub const CHECK_IDS: [&str; 10] = [
     "EXECUTION_IDENTITIES",
     "ATTEMPT_AND_OUTPUT_ISOLATION",
     "ROOTS_AND_EVIDENCE_REUSE",
-    "COMBINED_FULL_COVERAGE",
+    "QUALITY_DEFERRAL",
     "ORDERING_RETRY_AND_HANDOFF",
     "DURABLE_ATTEMPT_LEDGER",
     "OPEN_TOOLING_DEFECTS",
@@ -38,7 +38,7 @@ const FAILURE_CHECK_INDEX_RULES: &[(&[&str], usize)] = &[
     (&["EXECUT", "CLAIM"], 3),
     (&["ARTIFACT", "CHECKPOINT", "COLLISION"], 4),
     (&["ROOT", "CACHE"], 5),
-    (&["COMBIN"], 6),
+    (&["QUALITY"], 6),
     (&["ORDER", "RETRY", "HANDOFF"], 7),
     (&["LEDGER"], 8),
 ];
@@ -107,7 +107,7 @@ fn build_unsealed_audit(
 ) -> Result<Value> {
     let ledger_head_sha256 = ledger_head(ledger).ok().flatten();
     let package_admission = package_admission(repo, plan)?;
-    let combined_execution = plan["combined_quality"].clone();
+    let quality_disposition = plan["quality_disposition"].clone();
     let checks = build_audit_checks(&AuditCheckInputs {
         repo,
         plan,
@@ -115,7 +115,7 @@ fn build_unsealed_audit(
         artifact_root,
         ledger,
         package_admission: &package_admission,
-        combined_execution: &combined_execution,
+        quality_disposition: &quality_disposition,
         ledger_head_sha256: ledger_head_sha256.as_deref(),
     })?;
     let reason_codes = audit_reason_codes(&checks);
@@ -128,7 +128,7 @@ fn build_unsealed_audit(
         ledger_head_sha256,
         package_admission,
         checks,
-        combined_execution,
+        quality_disposition,
         status,
         reason_codes,
     })?;
@@ -142,7 +142,7 @@ struct AuditCheckInputs<'a> {
     artifact_root: &'a Path,
     ledger: &'a Path,
     package_admission: &'a Value,
-    combined_execution: &'a Value,
+    quality_disposition: &'a Value,
     ledger_head_sha256: Option<&'a str>,
 }
 
@@ -158,7 +158,7 @@ fn build_audit_checks(inputs: &AuditCheckInputs<'_>) -> Result<Vec<Value>> {
         inputs.plan,
         inputs.light_receipt,
         inputs.artifact_root,
-        inputs.combined_execution,
+        inputs.quality_disposition,
     )?);
     checks.extend(audit_check_suffix(
         inputs.plan,
@@ -208,7 +208,7 @@ fn audit_check_middle(
     plan: &Value,
     light_receipt: &Value,
     artifact_root: &Path,
-    combined_execution: &Value,
+    quality_disposition: &Value,
 ) -> Result<Vec<Value>> {
     Ok(vec![
         check(
@@ -223,8 +223,8 @@ fn audit_check_middle(
         )?,
         check(
             CHECK_IDS[6],
-            validate_combined_decision(plan),
-            combined_execution.clone(),
+            validate_quality_deferral(plan),
+            quality_disposition.clone(),
         )?,
     ])
 }
@@ -285,7 +285,7 @@ struct AuditDocumentInputs<'a> {
     ledger_head_sha256: Option<String>,
     package_admission: Value,
     checks: Vec<Value>,
-    combined_execution: Value,
+    quality_disposition: Value,
     status: &'a str,
     reason_codes: Vec<String>,
 }
@@ -299,7 +299,7 @@ fn audit_document(inputs: AuditDocumentInputs<'_>) -> Result<Value> {
         ledger_head_sha256,
         package_admission,
         checks,
-        combined_execution,
+        quality_disposition,
         status,
         reason_codes,
     } = inputs;
@@ -319,7 +319,7 @@ fn audit_document(inputs: AuditDocumentInputs<'_>) -> Result<Value> {
         "node_manifest": node_manifest(plan)?,
         "package_admission": package_admission,
         "checks": checks,
-        "combined_execution": combined_execution,
+        "quality_disposition": quality_disposition,
         "light_receipt": light_receipt,
     }))
 }
@@ -402,7 +402,7 @@ pub fn build_failure_audit(
         "node_manifest": node_manifest(plan).unwrap_or_else(|_| Value::Array(Vec::new())),
         "package_admission": null,
         "checks": checks,
-        "combined_execution": failure_combined_execution(plan),
+        "quality_disposition": expected_quality_disposition(),
         "light_receipt": if light_receipt.is_object() {light_receipt.clone()} else {json!({})},
     });
     audit["audit_id"] = Value::String(derived_id(&audit, "audit_id")?);
@@ -411,14 +411,18 @@ pub fn build_failure_audit(
     Ok(audit)
 }
 
-fn failure_combined_execution(_plan: &Value) -> Value {
+fn expected_quality_disposition() -> Value {
     json!({
-        "decision": "NOT_APPLICABLE",
-        "reason_code": "TRANSACTION_INVALID",
-        "requested_proof_id": null,
-        "accepted_proof_id": null,
-        "proof_sha256": null,
-        "baseline_count": 0
+        "status": "DEFERRED_TO_QUALITY_CI",
+        "observations": ["COVERAGE", "CRAP"],
+        "owner": "openwepp-quality-observatory",
+        "trigger": "OPTIONAL_OPERATOR_DISPATCH",
+        "closure_eligible": true,
+        "prohibited_gate_definition_ids": [
+            "affected-adjudicated-crap-v1",
+            "adjudicated-crap-v1",
+            "combined-workspace-quality-v1"
+        ]
     })
 }
 
@@ -593,7 +597,7 @@ fn validate_audit_policy_fields(
     audit: &Value,
     current_package_admission: &Value,
 ) -> Result<()> {
-    require_audit_binding(audit["combined_execution"] == plan["combined_quality"])?;
+    require_audit_binding(audit["quality_disposition"] == plan["quality_disposition"])?;
     require_audit_binding(audit["package_admission"] == *current_package_admission)
 }
 
@@ -1734,43 +1738,38 @@ fn no_open_tooling_defect_at_head(path: &Path, expected_head: Option<&str>) -> R
     }
 }
 
-fn validate_combined_decision(plan: &Value) -> Result<()> {
-    let definitions = quality_definition_ids(plan);
-    if combined_decision_is_valid(&plan["combined_quality"], &definitions) {
-        Ok(())
-    } else {
+fn validate_quality_deferral(plan: &Value) -> Result<()> {
+    if plan["quality_disposition"] != expected_quality_disposition()
+        || plan.get("combined_quality").is_some()
+        || plan.get("quality_scope").is_some()
+    {
+        return Err(GatePolicyError::new(
+            ErrorClass::Identity,
+            "GATE-AUDIT-QUALITY-DISPOSITION",
+            "quality disposition does not match immutable policy",
+        ));
+    }
+    let has_prohibited_node = nodes(plan).unwrap_or(&[]).iter().any(|node| {
+        matches!(
+            node["gate_definition_id"].as_str(),
+            Some(
+                "affected-adjudicated-crap-v1"
+                    | "adjudicated-crap-v1"
+                    | "combined-workspace-quality-v1"
+            )
+        ) || matches!(
+            node["gate_family"].as_str(),
+            Some("coverage-complexity" | "combined-quality")
+        ) || node["artifact_contract"] == "adjudicated-crap-v1"
+    });
+    if has_prohibited_node {
         Err(GatePolicyError::new(
             ErrorClass::Identity,
-            "GATE-AUDIT-COMBINED-DAG-MISMATCH",
-            "combined-quality decision does not match the immutable DAG",
+            "GATE-AUDIT-QUALITY-NODE-PROHIBITED",
+            "coverage/CRAP execution cannot enter the TESTGATE DAG",
         ))
-    }
-}
-
-fn quality_definition_ids(plan: &Value) -> BTreeSet<&str> {
-    nodes(plan)
-        .unwrap_or(&[])
-        .iter()
-        .filter_map(|node| node["gate_definition_id"].as_str())
-        .collect()
-}
-
-fn combined_decision_is_valid(decision: &Value, definitions: &BTreeSet<&str>) -> bool {
-    let combined = definitions.contains("combined-workspace-quality-v1");
-    let separate = definitions.contains("workspace-full-nextest-v1")
-        && definitions.contains("adjudicated-crap-v1");
-    if decision["decision"] == "COMBINED" {
-        combined
-            && !separate
-            && decision["accepted_proof_id"].as_str().is_some()
-            && decision["proof_sha256"].as_str().is_some()
-            && decision["baseline_count"] == 3
-    } else if decision["decision"] == "SEPARATE" {
-        separate && !combined && decision["accepted_proof_id"].is_null()
-    } else if decision["decision"] == "NOT_APPLICABLE" {
-        !combined && !separate && decision["accepted_proof_id"].is_null()
     } else {
-        false
+        Ok(())
     }
 }
 

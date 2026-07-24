@@ -691,8 +691,6 @@ def observe(args: argparse.Namespace) -> dict[str, Any]:
     ]
     if head is not None:
         common.extend(["--head", head])
-    if args.combined_proof_id:
-        common.extend(["--combined-proof-id", args.combined_proof_id])
     started = time.monotonic_ns()
     intent_result = _invoke(
         [*common, "--stage", "intent", "--output", str(intent_path)], repo
@@ -854,7 +852,6 @@ def _parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--boundary", choices=("INCREMENT", "CHECKPOINT", "CAMPAIGN", "RELEASE"), default="INCREMENT")
     parser.add_argument("--campaign", default="TESTGATE-CI-01")
-    parser.add_argument("--combined-proof-id")
     parser.add_argument("--execute", action="store_true")
     parser.add_argument("--principal", default=os.environ.get("GITHUB_ACTOR", "developer"))
     parser.add_argument("--repository", default=os.environ.get("GITHUB_REPOSITORY", "rogerlew/openWEPP"))

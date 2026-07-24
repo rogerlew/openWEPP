@@ -6,6 +6,18 @@
   "execution_key": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
   "boundary": "INCREMENT",
   "campaign_id": "TESTGATE-ALIGN-01",
+  "quality_disposition": {
+    "status": "DEFERRED_TO_QUALITY_CI",
+    "observations": ["COVERAGE", "CRAP"],
+    "owner": "openwepp-quality-observatory",
+    "trigger": "OPTIONAL_OPERATOR_DISPATCH",
+    "closure_eligible": true,
+    "prohibited_gate_definition_ids": [
+      "affected-adjudicated-crap-v1",
+      "adjudicated-crap-v1",
+      "combined-workspace-quality-v1"
+    ]
+  },
   "source": {
     "base_commit": "1111111111111111111111111111111111111111111111111111111111111111",
     "head_commit": null,

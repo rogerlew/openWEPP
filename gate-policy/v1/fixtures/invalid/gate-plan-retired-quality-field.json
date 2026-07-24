@@ -1,0 +1,8 @@
+{
+  "base_fixture": "gate-plan.json",
+  "operation": "add",
+  "instance_pointer": "/combined_quality",
+  "invalid_value": {"decision": "NOT_APPLICABLE"},
+  "expected_instance_path": "",
+  "expected_schema_path_contains": "/additionalProperties"
+}

@@ -57,14 +57,11 @@ in the sealed acquisition provenance.
     containment before generating JSON and Markdown reports.
 - `run_release_candidate_gates.sh`
   - Requires `--mode validate` or `--mode release`; ambiguous invocation fails.
-  - Validation mode currently runs workspace gates (`fmt`, `clippy`,
-    full-profile `nextest`, `deny`, adjudicated-CRAP unit tests, and a fresh
-    adjudicated CRAP measurement),
-    but exits before assurance snapshotting, binary staging, sidecar emission,
-    and release lint. Ordinary CI uses only this mode and names its upload
-    validation evidence. The inline quality collection is transition debt owned
-    by roadmap Order 2; ADR-0041 makes its debt verdict non-blocking and removes
-    automatic recollection from the executable path.
+  - Validation mode runs correctness workspace gates (`fmt`, `clippy`,
+    full-profile `nextest`, and `deny`), but exits before assurance snapshotting,
+    binary staging, sidecar emission, and release lint. It does not collect
+    coverage or CRAP; those observations belong to optional operator-directed
+    quality CI under ADR-0041.
   - Release mode first passes the fail-closed assurance transition preflight,
     then runs the same correctness gates, creates an immutable zero-report assurance
     snapshot, builds/stages release binaries, emits sidecars, and runs

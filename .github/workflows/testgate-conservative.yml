@@ -4,20 +4,10 @@ on:
   workflow_dispatch:
     inputs:
       base_ref:
-        description: "CRAP comparison base (blank uses the commit parent)"
+        description: "Correctness comparison base (blank uses the commit parent)"
         required: false
         default: ""
         type: string
-      testgate_run_id:
-        description: "Successful exact-candidate TESTGATE run whose global CRAP evidence may be reused"
-        required: false
-        default: ""
-        type: string
-      testgate_run_attempt:
-        description: "Attempt number for the reusable TESTGATE run"
-        required: false
-        default: 1
-        type: number
       smoke_only:
         description: "Prove hosted rollback admission without running broad validation"
         required: false
@@ -60,11 +50,9 @@ jobs:
         env:
           EXPECTED_BASE: ${{ steps.comparison.outputs.base }}
           RUNNER_ENVIRONMENT: ${{ runner.environment }}
-          TESTGATE_RUN_ID: ${{ inputs.testgate_run_id }}
         run: |
           set -euo pipefail
           test "${RUNNER_ENVIRONMENT}" = github-hosted
-          test -z "${TESTGATE_RUN_ID}"
           test "$(git rev-parse HEAD)" = "${GITHUB_SHA}"
           git merge-base --is-ancestor "${EXPECTED_BASE}" "${GITHUB_SHA}"
           test -z "$(git status --porcelain)"
@@ -95,8 +83,6 @@ jobs:
           retention-days: 7
       - name: Install pinned conservative toolchain
         if: ${{ !inputs.smoke_only }}
-        env:
-          TESTGATE_RUN_ID: ${{ inputs.testgate_run_id }}
         run: |
           set -euo pipefail
           rustup toolchain install 1.92.0 --profile minimal --component rustfmt,clippy
@@ -105,10 +91,6 @@ jobs:
           cargo install cargo-deny --locked --version 0.19.6
           python3 -m venv .venv
           .venv/bin/pip install --requirement tools/owcmp/requirements.lock.txt
-          if [[ -z "${TESTGATE_RUN_ID}" ]]; then
-            cargo install cargo-llvm-cov --locked --version 0.8.7
-            cargo install cargo-crap --locked --version 0.2.2
-          fi
       - name: Install pinned spelling converter
         if: ${{ !inputs.smoke_only }}
         env:
@@ -127,88 +109,9 @@ jobs:
           echo "${UK2US_ROOT}" >> "${GITHUB_PATH}"
           echo "UK2US_RULES_FILE=${GITHUB_WORKSPACE}/tools/ci/omarchy-runner/uk2us_rules.json" \
             >> "${GITHUB_ENV}"
-      - name: Download authenticated TESTGATE evidence for CRAP reuse
-        if: ${{ !inputs.smoke_only && inputs.testgate_run_id != '' }}
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
-        with:
-          name: testgate-${{ inputs.testgate_run_id }}-${{ inputs.testgate_run_attempt }}
-          path: ${{ runner.temp }}/testgate-evidence
-          github-token: ${{ github.token }}
-          repository: ${{ github.repository }}
-          run-id: ${{ inputs.testgate_run_id }}
-      - name: Verify exact authenticated global CRAP evidence
-        if: ${{ !inputs.smoke_only && inputs.testgate_run_id != '' }}
-        env:
-          EVIDENCE_DIR: ${{ runner.temp }}/testgate-evidence
-          EXPECTED_BASE: ${{ steps.comparison.outputs.base }}
-          SOURCE_RUN_ID: ${{ inputs.testgate_run_id }}
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          [[ "${SOURCE_RUN_ID}" =~ ^[1-9][0-9]*$ ]]
-          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${SOURCE_RUN_ID}" \
-            | jq -e --arg head "${GITHUB_SHA}" \
-              '.conclusion == "success" and .head_sha == $head'
-          gh attestation verify "${EVIDENCE_DIR}/receipt.json" \
-            --repo "${GITHUB_REPOSITORY}" \
-            --signer-workflow "${GITHUB_REPOSITORY}/.github/workflows/testgate-shadow.yml" \
-            --source-ref refs/heads/main \
-            --source-digest "${GITHUB_SHA}" \
-            --predicate-type https://openwepp.org/attestations/testgate/v1 \
-            --deny-self-hosted-runners \
-            --bundle "${EVIDENCE_DIR}/github-attestation.jsonl" \
-            --format json > "${RUNNER_TEMP}/crap-reuse-attestation.json"
-          jq -e 'length == 1' "${RUNNER_TEMP}/crap-reuse-attestation.json"
-          crap_node_id="$(jq -er \
-            '.nodes | map(select(.gate_definition_id == "adjudicated-crap-v1"))
-             | if length == 1 then .[0].node_id else error("global CRAP node missing or duplicated") end' \
-            "${EVIDENCE_DIR}/terminal-plan.json")"
-          jq -e \
-            --arg base "${EXPECTED_BASE}" \
-            --arg head "${GITHUB_SHA}" \
-            --arg node "${crap_node_id}" \
-            '.result == "PASS"
-             and .source.base_commit == $base
-             and .source.head_commit == $head
-             and any(.attempts[]; .node_id == $node and .result == "PASS" and .exit_code == 0)' \
-            "${EVIDENCE_DIR}/receipt.json"
-          report_path=target/gate-plan/adjudicated-crap.json
-          expected_sha="$(jq -er \
-            --arg path "${report_path}" \
-            '.artifacts | map(select(.path == $path))
-             | if length == 1 then .[0].sha256 else error("global CRAP artifact missing or duplicated") end' \
-            "${EVIDENCE_DIR}/receipt.json")"
-          echo "${expected_sha}  ${EVIDENCE_DIR}/execution/${report_path}" \
-            | sha256sum --check --strict
-          jq -e \
-            '.status == "PASS"
-             and .measurement_scope == "GLOBAL_WORKSPACE"
-             and .closure_eligible == true
-             and .debt_status == "PASS"
-             and .invalid_adjudications == []
-             and .raw_over_threshold_count == .adjudicated_count
-             and .actionable_count == 0' \
-            "${EVIDENCE_DIR}/execution/${report_path}"
       - name: Run conservative validation with required authority
-        if: ${{ !inputs.smoke_only && inputs.testgate_run_id == '' }}
-        env:
-          CRAP_BASE_REF: ${{ steps.comparison.outputs.base }}
+        if: ${{ !inputs.smoke_only }}
         run: >-
           bash tools/release/run_release_candidate_gates.sh
           --mode validate
           --skip-stability
-          --crap-base-ref "${CRAP_BASE_REF}"
-      - name: Run conservative comparison with reused global CRAP
-        if: ${{ !inputs.smoke_only && inputs.testgate_run_id != '' }}
-        run: |
-          set -euo pipefail
-          bash tools/release/check_assurance_dossier_exports.sh
-          cargo fmt --check
-          cargo clippy --workspace --all-targets -- -D warnings
-          cargo nextest run --workspace --profile full
-          cargo deny check
-          .venv/bin/python -m unittest -v tests.python.test_adjudicated_crap_gate
-          bash tools/release/run_release_candidate_gates.sh \
-            --mode validate \
-            --skip-stability \
-            --authority-only

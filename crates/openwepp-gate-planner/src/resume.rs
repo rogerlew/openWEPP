@@ -1078,8 +1078,9 @@ mod tests {
     use serde_json::json;
 
     use super::{
-        apply_candidate, copy_outputs, invalidated_recovery_roots, load_candidate,
-        load_candidate_internal, verify_checkpoint, verify_indexed_recovery_root,
+        RecoveryArchive, apply_candidate, copy_outputs, invalidated_recovery_roots,
+        load_accepted_receipt, load_candidate, load_candidate_internal, verify_checkpoint,
+        verify_indexed_recovery_root,
     };
     use crate::canonical::{canonical_bytes, derived_id, digest, sha256_bytes};
     use crate::executor::ExecutionClaims;
@@ -1092,6 +1093,61 @@ mod tests {
         assert!(!super::is_nonblocking_recovery_rejection(
             "GATE-RESUME-PROVENANCE-IDENTITY"
         ));
+    }
+
+    #[test]
+    fn pre_split_quality_receipt_is_classified_incompatible() {
+        let repo = repository_root();
+        let scratch = std::env::temp_dir().join(format!(
+            "openwepp-resume-pre-split-quality-{}",
+            std::process::id()
+        ));
+        fs::create_dir_all(&scratch).expect("scratch");
+        let mut prior_plan: serde_json::Value = serde_json::from_slice(
+            &fs::read(repo.join("gate-policy/v1/fixtures/valid/gate-plan.json"))
+                .expect("plan fixture"),
+        )
+        .expect("plan JSON");
+        prior_plan
+            .as_object_mut()
+            .expect("plan object")
+            .remove("quality_disposition");
+        prior_plan["combined_quality"] = json!({"decision": "SEPARATE"});
+        prior_plan["nodes"][0]["gate_definition_id"] = json!("adjudicated-crap-v1");
+
+        let mut receipt: serde_json::Value = serde_json::from_slice(
+            &fs::read(repo.join("gate-policy/v1/fixtures/valid/gate-receipt.json"))
+                .expect("receipt fixture"),
+        )
+        .expect("receipt JSON");
+        receipt
+            .as_object_mut()
+            .expect("receipt object")
+            .remove("quality_disposition");
+        receipt["dag_nodes"][0]["gate_definition_id"] = json!("adjudicated-crap-v1");
+        let receipt_path = scratch.join("receipt.json");
+        fs::write(
+            &receipt_path,
+            serde_json::to_vec(&receipt).expect("receipt bytes"),
+        )
+        .expect("receipt file");
+        let archive = RecoveryArchive {
+            root: scratch.clone(),
+            artifact_root: scratch.join("execution"),
+            provenance: json!({}),
+        };
+        let error = load_accepted_receipt(
+            &repo,
+            &json!({"nodes": []}),
+            &archive,
+            &prior_plan,
+            &receipt_path,
+            false,
+        )
+        .expect_err("pre-split receipt must be incompatible");
+        assert_eq!(error.code, "GATE-RESUME-RECEIPT-INVALID");
+        assert!(super::is_nonblocking_recovery_rejection(error.code));
+        fs::remove_dir_all(scratch).expect("remove scratch");
     }
 
     fn repository_root() -> PathBuf {

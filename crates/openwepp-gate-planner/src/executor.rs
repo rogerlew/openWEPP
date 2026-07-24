@@ -560,7 +560,7 @@ fn preflight(
     allowed_existing: &BTreeSet<String>,
     enumerate_inventory: bool,
 ) -> Result<()> {
-    validate_quality_scope(plan)?;
+    validate_quality_disposition(plan)?;
     let nodes = plan["nodes"]
         .as_array()
         .ok_or_else(|| execution_error("GATE-EXEC-PLAN-SHAPE", "nodes must be an array"))?;
@@ -688,129 +688,50 @@ fn shell_uses_command_string(arguments: &[String]) -> bool {
     false
 }
 
-fn validate_quality_scope(plan: &Value) -> Result<()> {
+pub(crate) fn validate_quality_disposition(plan: &Value) -> Result<()> {
+    let expected = json!({
+        "status": "DEFERRED_TO_QUALITY_CI",
+        "observations": ["COVERAGE", "CRAP"],
+        "owner": "openwepp-quality-observatory",
+        "trigger": "OPTIONAL_OPERATOR_DISPATCH",
+        "closure_eligible": true,
+        "prohibited_gate_definition_ids": [
+            "affected-adjudicated-crap-v1",
+            "adjudicated-crap-v1",
+            "combined-workspace-quality-v1"
+        ]
+    });
+    if plan["quality_disposition"] != expected
+        || plan.get("combined_quality").is_some()
+        || plan.get("quality_scope").is_some()
+    {
+        return Err(execution_error(
+            "GATE-EXEC-QUALITY-DISPOSITION",
+            "quality deferral must exactly match policy with no retired quality authority",
+        ));
+    }
     let nodes = plan["nodes"]
         .as_array()
         .ok_or_else(|| execution_error("GATE-EXEC-PLAN-SHAPE", "nodes must be an array"))?;
-    let affected_nodes = nodes
-        .iter()
-        .filter(|node| node["gate_definition_id"] == "affected-adjudicated-crap-v1")
-        .collect::<Vec<_>>();
-    let global_nodes = nodes
-        .iter()
-        .filter(|node| node["gate_definition_id"] == "adjudicated-crap-v1")
-        .collect::<Vec<_>>();
-    match required_string(&plan["quality_scope"], "mode")? {
-        "NOT_APPLICABLE" if affected_nodes.is_empty() => Ok(()),
-        "GLOBAL" if affected_nodes.is_empty() && global_nodes.len() == 1 => Ok(()),
-        "AFFECTED" if affected_nodes.len() == 1 && global_nodes.is_empty() => {
-            validate_affected_quality_scope(&plan["quality_scope"], affected_nodes[0], nodes)
-        }
-        mode => Err(execution_error(
-            "GATE-EXEC-QUALITY-SCOPE",
-            format!("quality scope {mode} does not match the planned measurement nodes"),
-        )),
-    }
-}
-
-fn validate_affected_quality_scope(scope: &Value, affected: &Value, nodes: &[Value]) -> Result<()> {
-    if scope["completeness"] != "COMPLETE" {
+    if nodes.iter().any(|node| {
+        matches!(
+            node["gate_definition_id"].as_str(),
+            Some(
+                "affected-adjudicated-crap-v1"
+                    | "adjudicated-crap-v1"
+                    | "combined-workspace-quality-v1"
+            )
+        ) || matches!(
+            node["gate_family"].as_str(),
+            Some("coverage-complexity" | "combined-quality")
+        ) || node["artifact_contract"] == "adjudicated-crap-v1"
+    }) {
         return Err(execution_error(
-            "GATE-EXEC-QUALITY-INCOMPLETE",
-            "affected quality requires complete contribution evidence",
-        ));
-    }
-    validate_affected_quality_packages(scope, affected)?;
-    let covering_nodes = affected_quality_covering_nodes(scope, nodes)?;
-    validate_affected_quality_inventory(scope, &covering_nodes)
-}
-
-fn validate_affected_quality_packages(scope: &Value, affected: &Value) -> Result<()> {
-    let planned_packages = string_array(&scope["production_packages"], "production_packages")?
-        .into_iter()
-        .collect::<BTreeSet<_>>();
-    let argument_packages = argument_values(affected, "--package")?
-        .into_iter()
-        .collect::<BTreeSet<_>>();
-    if planned_packages != argument_packages {
-        return Err(execution_error(
-            "GATE-EXEC-QUALITY-PACKAGES",
-            "affected measurement arguments differ from terminal production packages",
+            "GATE-EXEC-QUALITY-NODE-PROHIBITED",
+            "coverage/CRAP execution is owned by optional quality CI",
         ));
     }
     Ok(())
-}
-
-fn affected_quality_covering_nodes<'a>(
-    scope: &Value,
-    nodes: &'a [Value],
-) -> Result<Vec<&'a Value>> {
-    let covering_ids = string_array(&scope["covering_node_ids"], "covering_node_ids")?
-        .into_iter()
-        .collect::<BTreeSet<_>>();
-    let covering_nodes = nodes
-        .iter()
-        .filter(|node| {
-            node["node_id"]
-                .as_str()
-                .is_some_and(|id| covering_ids.contains(id))
-        })
-        .collect::<Vec<_>>();
-    if covering_nodes.len() != covering_ids.len()
-        || covering_nodes
-            .iter()
-            .any(|node| node["gate_definition_id"] != "affected-adjudicated-crap-v1")
-    {
-        return Err(execution_error(
-            "GATE-EXEC-QUALITY-COVERING-NODES",
-            "covering node identity is not the combined affected measurement",
-        ));
-    }
-    Ok(covering_nodes)
-}
-
-fn validate_affected_quality_inventory(scope: &Value, covering_nodes: &[&Value]) -> Result<()> {
-    let observed_inventory = covering_nodes
-        .iter()
-        .flat_map(|node| {
-            node["expected_inventory"]["ids"]
-                .as_array()
-                .into_iter()
-                .flatten()
-        })
-        .filter_map(Value::as_str)
-        .map(str::to_owned)
-        .collect::<BTreeSet<_>>();
-    let planned_inventory =
-        string_array(&scope["covering_inventory_ids"], "covering_inventory_ids")?
-            .into_iter()
-            .collect::<BTreeSet<_>>();
-    if observed_inventory == planned_inventory && !planned_inventory.is_empty() {
-        Ok(())
-    } else {
-        Err(execution_error(
-            "GATE-EXEC-QUALITY-INVENTORY",
-            "covering inventory differs from terminal package test closure",
-        ))
-    }
-}
-
-fn argument_values(node: &Value, flag: &str) -> Result<Vec<String>> {
-    let arguments = string_array(&node["arguments"], "arguments")?;
-    let mut values = Vec::new();
-    let mut index = 0;
-    while index < arguments.len() {
-        if arguments[index] == flag {
-            let value = arguments.get(index + 1).ok_or_else(|| {
-                execution_error("GATE-EXEC-QUALITY-ARGUMENT", format!("{flag} has no value"))
-            })?;
-            values.push(value.clone());
-            index += 2;
-        } else {
-            index += 1;
-        }
-    }
-    Ok(values)
 }
 
 fn supported_executor(node: &Value) -> Result<()> {
@@ -1495,6 +1416,7 @@ fn build_receipt(
         "execution_key": plan["execution_key"],
         "boundary": plan["boundary"],
         "campaign_id": plan["campaign_id"],
+        "quality_disposition": plan["quality_disposition"],
         "source": {
             "base_commit": plan["source"]["base_commit"],
             "head_commit": plan["source"]["head_commit"],
@@ -2119,11 +2041,8 @@ pub(crate) mod tests {
         })
     }
 
-    pub(crate) fn global_quality_gate_definition(
-        arguments: &[&str],
-        prerequisites: &[&str],
-    ) -> Value {
-        gate_definition("adjudicated-crap-v1", arguments, prerequisites)
+    pub(crate) fn fixture_gate_definition(arguments: &[&str], prerequisites: &[&str]) -> Value {
+        gate_definition("fixture-primary-v1", arguments, prerequisites)
     }
 
     fn write_json(path: &Path, value: &Value) {
@@ -2367,6 +2286,18 @@ pub(crate) mod tests {
                 "schema_version": "openwepp-gate-definitions-v1",
                 "generation": 1,
                 "enforcement_status": "BLOCKING",
+                "quality_disposition": {
+                    "status": "DEFERRED_TO_QUALITY_CI",
+                    "observations": ["COVERAGE", "CRAP"],
+                    "owner": "openwepp-quality-observatory",
+                    "trigger": "OPTIONAL_OPERATOR_DISPATCH",
+                    "closure_eligible": true,
+                    "prohibited_gate_definition_ids": [
+                        "affected-adjudicated-crap-v1",
+                        "adjudicated-crap-v1",
+                        "combined-workspace-quality-v1"
+                    ]
+                },
                 "definitions": definitions
             }),
         );
@@ -2401,7 +2332,6 @@ pub(crate) mod tests {
                     predecessor_intent_plan_id: Some("11".repeat(32)),
                     boundary: "INCREMENT".to_owned(),
                     campaign_id: Some("TESTGATE-CI-01".to_owned()),
-                    combined_quality_proof_id: None,
                     authorized_paths: vec![
                         "docs/work-packages/executor/package.md".to_owned(),
                         "src/lib.rs".to_owned(),
@@ -2485,7 +2415,7 @@ pub(crate) mod tests {
         let (repo, plan) = execution_fixture(
             "preflight-repo",
             &[
-                global_quality_gate_definition(&["./tools/pass.sh"], &[]),
+                fixture_gate_definition(&["./tools/pass.sh"], &[]),
                 gate_definition("fixture-command-v1", &["./tools/pass.sh"], &[]),
             ],
         );
@@ -2754,7 +2684,7 @@ pub(crate) mod tests {
 
     #[test]
     #[allow(clippy::too_many_lines)] // Complete combined artifact contract fixture.
-    fn combined_quality_artifacts_are_external_resettable_and_inventory_checked() {
+    fn standalone_quality_artifacts_are_external_resettable_and_inventory_checked() {
         let artifacts = prepare_artifacts("combined-artifacts");
         let mut node = json!({
             "gate_definition_id": "combined-workspace-quality-v1",
@@ -2870,7 +2800,7 @@ pub(crate) mod tests {
     fn terminal_plan_executes_and_independent_verifier_accepts_pass_receipt() {
         let (repo, plan) = execution_fixture(
             "e2e-pass-repo",
-            &[global_quality_gate_definition(&["./tools/pass.sh"], &[])],
+            &[fixture_gate_definition(&["./tools/pass.sh"], &[])],
         );
         let artifacts = TempDirectory::new("e2e-pass-artifacts");
         let receipt = execute_and_verify(repo.path(), &plan, artifacts.path());
@@ -2893,8 +2823,8 @@ pub(crate) mod tests {
         let (repo, plan) = execution_fixture(
             "e2e-nonpass-repo",
             &[
-                global_quality_gate_definition(&["./tools/fail.sh"], &[]),
-                gate_definition("fixture-dependent-v1", &["true"], &["adjudicated-crap-v1"]),
+                fixture_gate_definition(&["./tools/fail.sh"], &[]),
+                gate_definition("fixture-dependent-v1", &["true"], &["fixture-primary-v1"]),
             ],
         );
         let artifacts = TempDirectory::new("e2e-nonpass-artifacts");
@@ -2925,7 +2855,7 @@ pub(crate) mod tests {
         let (repo, plan) = execution_fixture(
             "e2e-mutation-repo",
             &[
-                global_quality_gate_definition(&["./tools/mutate.sh"], &[]),
+                fixture_gate_definition(&["./tools/mutate.sh"], &[]),
                 gate_definition("fixture-independent-v1", &["./tools/mark.sh"], &[]),
             ],
         );

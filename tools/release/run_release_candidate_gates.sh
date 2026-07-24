@@ -20,7 +20,6 @@ Usage:
     [--authority-registry <path>] \
     [--authority-report <path>] \
     [--authority-suite <suite-id> ...] \
-    [--crap-base-ref <git-ref>] \
     [--cohort-seeds-csv <path>] \
     [--watchlist-csv <path>] \
     [--wepp-forest-root <path>] \
@@ -66,7 +65,6 @@ V2_ASSURANCE_RELEASE_CONFIGURATION=""
 AUTHORITY_REGISTRY="${ROOT_DIR}/docs/specifications/external-authority/registry.yaml"
 AUTHORITY_REPORT=""
 AUTHORITY_INVESTIGATION_FAILURES=0
-CRAP_BASE_REF=""
 
 COHORT_SEEDS_CSV=""
 WATCHLIST_CSV=""
@@ -146,10 +144,6 @@ while [[ $# -gt 0 ]]; do
         exit 2
       fi
       AUTHORITY_SUITE_FILTER+=("${2:-}")
-      shift 2
-      ;;
-    --crap-base-ref)
-      CRAP_BASE_REF="${2:-}"
       shift 2
       ;;
     --cohort-seeds-csv)
@@ -616,15 +610,8 @@ if [[ "${AUTHORITY_ONLY}" -eq 0 ]]; then
   cargo clippy --workspace --all-targets -- -D warnings
   cargo nextest run --workspace --profile full
   cargo deny check
-  .venv/bin/python -m unittest -v tests.python.test_adjudicated_crap_gate
-
-  CRAP_GATE_ARGS=(--output-dir "${RELEASE_DIR}/adjudicated-crap")
-  if [[ -n "${CRAP_BASE_REF}" ]]; then
-    CRAP_GATE_ARGS+=(--base-ref "${CRAP_BASE_REF}")
-  fi
-  bash tools/release/run_adjudicated_crap_gate.sh "${CRAP_GATE_ARGS[@]}"
 else
-  echo "INFO: authority-only mode skips workspace and CRAP gates"
+  echo "INFO: authority-only mode skips workspace correctness gates"
 fi
 
 ASSURANCE_SNAPSHOT_MANIFEST=""

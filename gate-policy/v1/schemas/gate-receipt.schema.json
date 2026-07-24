@@ -12,6 +12,7 @@
     "execution_key",
     "boundary",
     "campaign_id",
+    "quality_disposition",
     "source",
     "roots",
     "dag_sha256",
@@ -61,6 +62,9 @@
     "campaign_id": {
       "$ref": "#/$defs/nullableId"
     },
+    "quality_disposition": {
+      "$ref": "#/$defs/qualityDisposition"
+    },
     "source": {
       "$ref": "#/$defs/source"
     },
@@ -74,6 +78,38 @@
       "type": "array",
       "items": {
         "$ref": "#/$defs/dagNode"
+      },
+      "not": {
+        "contains": {
+          "anyOf": [
+            {
+              "properties": {
+                "gate_definition_id": {
+                  "enum": [
+                    "affected-adjudicated-crap-v1",
+                    "adjudicated-crap-v1",
+                    "combined-workspace-quality-v1"
+                  ]
+                }
+              },
+              "required": ["gate_definition_id"]
+            },
+            {
+              "properties": {
+                "gate_family": {
+                  "enum": ["coverage-complexity", "combined-quality"]
+                }
+              },
+              "required": ["gate_family"]
+            },
+            {
+              "properties": {
+                "artifact_contract": {"const": "adjudicated-crap-v1"}
+              },
+              "required": ["artifact_contract"]
+            }
+          ]
+        }
       }
     },
     "zero_work": {
@@ -149,7 +185,7 @@
             "schema_version", "audit_id", "status", "reason_codes", "plan_id",
             "plan_sha256", "execution_key", "executor_binary_sha256", "light_stage_receipt_id",
             "artifact_root_sha256", "ledger_path_sha256", "ledger_head_sha256", "node_manifest", "package_admission",
-            "checks", "combined_execution", "light_receipt"
+            "checks", "quality_disposition", "light_receipt"
           ],
           "properties": {
             "schema_version": {"const": "openwepp-pre-heavy-audit-v1"},
@@ -172,7 +208,7 @@
             "node_manifest": {"type": "array"},
             "package_admission": {"type": ["object", "null"], "additionalProperties": true},
             "checks": {"type": "array"},
-            "combined_execution": {"type": "object", "additionalProperties": {}},
+            "quality_disposition": {"$ref": "#/$defs/qualityDisposition"},
             "light_receipt": {"type": "object", "additionalProperties": {}}
           }
         },
@@ -438,6 +474,32 @@
       "uniqueItems": true,
       "items": {
         "$ref": "#/$defs/id"
+      }
+    },
+    "qualityDisposition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "observations",
+        "owner",
+        "trigger",
+        "closure_eligible",
+        "prohibited_gate_definition_ids"
+      ],
+      "properties": {
+        "status": {"const": "DEFERRED_TO_QUALITY_CI"},
+        "observations": {"const": ["COVERAGE", "CRAP"]},
+        "owner": {"const": "openwepp-quality-observatory"},
+        "trigger": {"const": "OPTIONAL_OPERATOR_DISPATCH"},
+        "closure_eligible": {"const": true},
+        "prohibited_gate_definition_ids": {
+          "const": [
+            "affected-adjudicated-crap-v1",
+            "adjudicated-crap-v1",
+            "combined-workspace-quality-v1"
+          ]
+        }
       }
     },
     "source": {

@@ -54,7 +54,6 @@ fn multi_package_inventory_follows_expanded_node_packages() {
                 predecessor_intent_plan_id: None,
                 boundary: "INCREMENT".to_owned(),
                 campaign_id: Some("CANOPY-PHENOLOGY-02".to_owned()),
-                combined_quality_proof_id: None,
                 authorized_paths: vec![path.to_owned()],
                 package_authority_chain_id: "aa".repeat(32),
                 intent_package_path: "docs/work-packages/fixture/package.md".to_owned(),
@@ -402,8 +401,6 @@ fn assert_testgate_workflow_surface() {
         "testgate-recovery/v1",
         "recovery-attestation.jsonl",
         "reconcile-attempts",
-        "combined_quality_proof_id",
-        "--combined-proof-id",
     ] {
         assert!(
             workflow.contains(context),
@@ -422,6 +419,11 @@ fn assert_testgate_workflow_surface() {
         "${RUNNER_TEMP}/testgate-",
         "continue-on-error: true",
         "openwepp-forest1-testgate-v",
+        "combined_quality_proof_id",
+        "--combined-proof-id",
+        "cargo llvm-cov",
+        "cargo crap",
+        "adjudicated-crap.json",
     ] {
         assert!(
             !workflow.contains(forbidden),
@@ -544,7 +546,6 @@ fn assert_testgate_job_order() {
         "testgate-evidence/envelope-verification.json",
         "testgate-evidence/github-attestation.jsonl",
         "testgate-evidence/attestation-verification.json",
-        "testgate-evidence/execution/target/gate-plan/adjudicated-crap.json",
     ] {
         assert!(
             authenticated_upload.contains(required),
@@ -567,13 +568,14 @@ fn assert_conservative_rollback_contract() {
     assert!(conservative.contains("--mode validate"));
     assert!(!conservative.contains("--skip-authority-required"));
     assert!(conservative.contains("--skip-stability"));
-    assert!(conservative.contains("testgate_run_id:"));
-    assert!(conservative.contains("gh attestation verify"));
-    assert!(conservative.contains("GLOBAL_WORKSPACE"));
-    assert!(conservative.contains("Run conservative comparison with reused global CRAP"));
-    assert!(conservative.contains("--authority-only"));
+    assert!(!conservative.contains("testgate_run_id:"));
+    assert!(!conservative.contains("gh attestation verify"));
+    assert!(!conservative.contains("GLOBAL_WORKSPACE"));
+    assert!(!conservative.contains("reused global CRAP"));
+    assert!(!conservative.contains("--authority-only"));
+    assert!(!conservative.contains("cargo-llvm-cov"));
+    assert!(!conservative.contains("cargo-crap"));
     assert!(!conservative.contains("runs-on: [self-hosted"));
-    assert!(conservative.contains("--deny-self-hosted-runners"));
     assert!(conservative.contains("smoke_only:"));
     assert!(conservative.contains("Prove hosted rollback smoke"));
     assert!(conservative.contains("RUNNER_ENVIRONMENT: ${{ runner.environment }}"));
@@ -581,12 +583,9 @@ fn assert_conservative_rollback_contract() {
     assert!(conservative.contains("conservative-smoke-${{ github.run_id }}"));
     assert_eq!(
         conservative.matches("if: ${{ !inputs.smoke_only").count(),
-        6,
-        "all six broad or reuse steps must reject smoke mode"
+        3,
+        "all three broad correctness steps must reject smoke mode"
     );
-    assert!(conservative.contains(".raw_over_threshold_count == .adjudicated_count"));
-    assert!(!conservative.contains(".raw_over_threshold_count == 0"));
-    assert!(!conservative.contains(".adjudicated_count == 0"));
 
     let release = text(".github/workflows/release-gates.yml");
     assert!(!release.contains("runs-on: self-hosted"));
@@ -605,40 +604,18 @@ fn assert_workflow_and_rollback_contract() {
 }
 
 fn assert_gate_definition_contract(entries: &[Value]) {
-    let affected = entries
-        .iter()
-        .find(|entry| entry["gate_definition_id"] == "affected-adjudicated-crap-v1")
-        .expect("affected CRAP definition");
-    assert_eq!(
-        affected["risk_classes"],
-        serde_json::json!(["BOUNDED_COMPONENT", "INTEGRATED_DOMAIN"])
-    );
-    assert!(
-        affected["arguments_template"]
-            .as_array()
-            .expect("affected arguments")
-            .iter()
-            .any(|argument| argument == "affected")
-    );
-    let global = entries
-        .iter()
-        .find(|entry| entry["gate_definition_id"] == "adjudicated-crap-v1")
-        .expect("global CRAP definition");
-    assert_eq!(global["risk_classes"], serde_json::json!(["CRITICAL"]));
-    let combined = entries
-        .iter()
-        .find(|entry| entry["gate_definition_id"] == "combined-workspace-quality-v1")
-        .expect("combined quality definition");
-    assert_eq!(combined["inventory_source"], "NEXTEST_WORKSPACE");
-    assert_eq!(combined["trust_requirement"], "PROTECTED_CI");
-    assert_eq!(combined["output_paths"].as_array().map(Vec::len), Some(3));
-    assert!(
-        !combined["arguments_template"]
-            .as_array()
-            .expect("combined arguments")
-            .iter()
-            .any(|argument| argument == "--nextest-profile")
-    );
+    for retired in [
+        "affected-adjudicated-crap-v1",
+        "adjudicated-crap-v1",
+        "combined-workspace-quality-v1",
+    ] {
+        assert!(
+            entries
+                .iter()
+                .all(|entry| entry["gate_definition_id"] != retired),
+            "retired TESTGATE quality definition remains: {retired}"
+        );
+    }
     for (id, authority_class) in [
         ("authority-admission-v1", "A0"),
         ("required-authority-v1", "A3"),
@@ -677,13 +654,23 @@ fn assert_gate_definition_contract(entries: &[Value]) {
     assert!(release_driver.contains("--authority-suite <suite-id>"));
     assert!(release_driver.contains("AUTHORITY_SUITE_FILTER"));
     assert!(release_driver.contains("requested authority suite is absent from the registry"));
+    assert!(!release_driver.contains("--crap-base-ref"));
+    assert!(!release_driver.contains("run_adjudicated_crap_gate.sh"));
+    assert!(!release_driver.contains("test_adjudicated_crap_gate"));
+
+    let release_workflow = text(".github/workflows/release-gates.yml");
+    assert!(!release_workflow.contains("cargo-llvm-cov"));
+    assert!(!release_workflow.contains("cargo-crap"));
+    assert!(!release_workflow.contains("--crap-base-ref"));
 }
 
 fn assert_crap_driver_contract() {
     let plan_schema = text("gate-policy/v1/schemas/gate-plan.schema.json");
-    assert!(plan_schema.contains("quality_scope"));
-    assert!(plan_schema.contains("covering_inventory_ids"));
-    assert!(plan_schema.contains("ESCALATED_GLOBAL"));
+    assert!(plan_schema.contains("DEFERRED_TO_QUALITY_CI"));
+    assert!(plan_schema.contains("openwepp-quality-observatory"));
+    assert!(plan_schema.contains("OPTIONAL_OPERATOR_DISPATCH"));
+    assert!(!plan_schema.contains("\"quality_scope\""));
+    assert!(!plan_schema.contains("\"combined_quality\""));
 
     let affected_driver = text("tools/release/run_adjudicated_crap_gate.sh");
     assert!(affected_driver.contains("SCOPE=\"global\""));
@@ -727,7 +714,7 @@ fn assert_crap_driver_contract() {
 }
 
 #[test]
-fn blocking_executor_and_affected_quality_preserve_manual_rollback() {
+fn blocking_executor_and_quality_deferral_preserve_manual_rollback() {
     assert_receipt_runtime_guards();
     let definitions: Value = serde_json::from_str(&text("gate-policy/v1/gate-definitions.json"))
         .expect("gate definitions JSON");
@@ -1200,7 +1187,7 @@ fn runner_container_has_no_host_or_privileged_mounts() {
     assert!(bootstrap.contains("python3 -m venv --system-site-packages .venv"));
     assert!(bootstrap.contains("pyarrow.__version__ == \"22.0.0\""));
     assert!(bootstrap.contains("pandas.__version__ == \"3.0.3\""));
-    assert!(workflow.contains("rustup component list --installed"));
+    assert!(!workflow.contains("rustup component list --installed"));
     assert!(image.contains(
         "ACTIONS_RUNNER_HOOK_JOB_COMPLETED=/usr/local/bin/openwepp-job-completed-hook.sh"
     ));

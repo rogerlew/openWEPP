@@ -1,0 +1,8 @@
+{
+  "base_fixture": "gate-definitions.json",
+  "operation": "replace",
+  "instance_pointer": "/definitions/0/gate_definition_id",
+  "invalid_value": "adjudicated-crap-v1",
+  "expected_instance_path": "/definitions",
+  "expected_schema_path_contains": "/not"
+}

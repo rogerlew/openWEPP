@@ -14,13 +14,17 @@
   "execution_key": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
   "boundary": "INCREMENT",
   "campaign_id": "TESTGATE-ALIGN-01",
-  "combined_quality": {
-    "decision": "SEPARATE",
-    "reason_code": "COMBINATION_NOT_ADOPTED_NO_PROOF",
-    "requested_proof_id": null,
-    "accepted_proof_id": null,
-    "proof_sha256": null,
-    "baseline_count": 0
+  "quality_disposition": {
+    "status": "DEFERRED_TO_QUALITY_CI",
+    "observations": ["COVERAGE", "CRAP"],
+    "owner": "openwepp-quality-observatory",
+    "trigger": "OPTIONAL_OPERATOR_DISPATCH",
+    "closure_eligible": true,
+    "prohibited_gate_definition_ids": [
+      "affected-adjudicated-crap-v1",
+      "adjudicated-crap-v1",
+      "combined-workspace-quality-v1"
+    ]
   },
   "authorized_paths": ["gate-policy/v1/impact-map.json"],
   "package_authority": {
@@ -99,14 +103,6 @@
     "matrix": { "target": "x86_64-unknown-linux-gnu" },
     "shard": { "index": 0, "total": 1 }
   }],
-  "quality_scope": {
-    "mode": "GLOBAL",
-    "production_packages": [],
-    "covering_node_ids": [],
-    "covering_inventory_ids": [],
-    "completeness": "ESCALATED_GLOBAL",
-    "reason_codes": ["AFFECTED_CONTRIBUTION_UNBOUNDED"]
-  },
   "zero_work_disposition": null,
   "environment_roots": {
     "execution_root": "7777777777777777777777777777777777777777777777777777777777777777",

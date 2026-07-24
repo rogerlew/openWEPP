@@ -118,11 +118,7 @@ impl AuditFixture {
                 "execution_root": "/execution", "authority_root": "/authority",
                 "documentation_root": "/documentation"
             },
-            "combined_quality": {
-                "decision": "NOT_APPLICABLE", "reason_code": "NO_GLOBAL_QUALITY",
-                "requested_proof_id": null, "accepted_proof_id": null,
-                "proof_sha256": null, "baseline_count": 0
-            }
+            "quality_disposition": expected_quality_disposition()
         });
         plan["plan_id"] = json!(derive_plan_id(&plan).expect("plan ID"));
         plan["execution_key"] = json!(derive_execution_key(&plan).expect("execution key"));
@@ -262,7 +258,7 @@ fn ready_audit_validation_execution_and_resume_chains_are_directly_bound() {
         ledger_head_sha256: None,
         package_admission: admission,
         checks,
-        combined_execution: fixture.plan["combined_quality"].clone(),
+        quality_disposition: fixture.plan["quality_disposition"].clone(),
         status: "READY",
         reason_codes: Vec::new(),
     })
@@ -397,19 +393,10 @@ fn low_coverage_binding_helpers_exercise_their_reject_arms() {
     .expect("malformed chain");
     assert!(verify_ledger_chain(&fixture.ledger).is_err());
 
-    for (decision, definitions, expected) in [
-        (
-            json!({"decision": "COMBINED", "accepted_proof_id": "p", "proof_sha256": "s", "baseline_count": 3}),
-            ["combined-workspace-quality-v1"].into_iter().collect(),
-            true,
-        ),
-        (json!({"decision": "UNKNOWN"}), BTreeSet::new(), false),
-    ] {
-        assert_eq!(
-            combined_decision_is_valid(&decision, &definitions),
-            expected
-        );
-    }
+    validate_quality_deferral(&fixture.plan).expect("quality deferral");
+    let mut invalid = fixture.plan.clone();
+    invalid["quality_disposition"]["status"] = json!("NOT_APPLICABLE");
+    assert!(validate_quality_deferral(&invalid).is_err());
 }
 
 #[test]
@@ -430,7 +417,6 @@ fn exact_planner_output_reconstructs_through_the_public_audit_path() {
         predecessor_intent_plan_id: None,
         boundary: "INCREMENT".to_owned(),
         campaign_id: Some("CQR-PRE-HEAVY-COVERAGE".to_owned()),
-        combined_quality_proof_id: None,
         authorized_paths,
         package_authority_chain_id: "aa".repeat(32),
         intent_package_path: "docs/work-packages/fixture/package.md".to_owned(),

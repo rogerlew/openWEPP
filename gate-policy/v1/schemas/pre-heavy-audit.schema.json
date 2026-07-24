@@ -6,7 +6,7 @@
   "required": [
     "schema_version", "audit_id", "status", "reason_codes", "plan_id", "plan_sha256",
     "execution_key", "executor_binary_sha256", "light_stage_receipt_id", "artifact_root_sha256", "ledger_path_sha256", "ledger_head_sha256",
-    "node_manifest", "package_admission", "checks", "combined_execution", "light_receipt"
+    "node_manifest", "package_admission", "checks", "quality_disposition", "light_receipt"
   ],
   "properties": {
     "schema_version": {"const": "openwepp-pre-heavy-audit-v1"},
@@ -43,23 +43,25 @@
         {"$ref": "#/$defs/executionIdentitiesCheck"},
         {"$ref": "#/$defs/attemptIsolationCheck"},
         {"$ref": "#/$defs/rootsEvidenceCheck"},
-        {"$ref": "#/$defs/combinedCoverageCheck"},
+        {"$ref": "#/$defs/qualityDeferralCheck"},
         {"$ref": "#/$defs/orderingRetryCheck"},
         {"$ref": "#/$defs/durableLedgerCheck"},
         {"$ref": "#/$defs/openDefectsCheck"}
       ],
       "items": false
     },
-    "combined_execution": {
+    "quality_disposition": {
       "type": "object", "additionalProperties": false,
-      "required": ["decision", "reason_code", "requested_proof_id", "accepted_proof_id", "proof_sha256", "baseline_count"],
+      "required": ["status", "observations", "owner", "trigger", "closure_eligible", "prohibited_gate_definition_ids"],
       "properties": {
-        "decision": {"enum": ["COMBINED", "SEPARATE", "NOT_APPLICABLE"]},
-        "reason_code": {"type": "string"},
-        "requested_proof_id": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
-        "accepted_proof_id": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
-        "proof_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
-        "baseline_count": {"type": "integer", "minimum": 0, "maximum": 3}
+        "status": {"const": "DEFERRED_TO_QUALITY_CI"},
+        "observations": {"const": ["COVERAGE", "CRAP"]},
+        "owner": {"const": "openwepp-quality-observatory"},
+        "trigger": {"const": "OPTIONAL_OPERATOR_DISPATCH"},
+        "closure_eligible": {"const": true},
+        "prohibited_gate_definition_ids": {
+          "const": ["affected-adjudicated-crap-v1", "adjudicated-crap-v1", "combined-workspace-quality-v1"]
+        }
       }
     },
     "light_receipt": {"type": "object", "additionalProperties": {}}
@@ -82,7 +84,7 @@
     "executionIdentitiesCheck": {"allOf": [{"$ref": "#/$defs/check"}, {"properties": {"check_id": {"const": "EXECUTION_IDENTITIES"}}}]},
     "attemptIsolationCheck": {"allOf": [{"$ref": "#/$defs/check"}, {"properties": {"check_id": {"const": "ATTEMPT_AND_OUTPUT_ISOLATION"}}}]},
     "rootsEvidenceCheck": {"allOf": [{"$ref": "#/$defs/check"}, {"properties": {"check_id": {"const": "ROOTS_AND_EVIDENCE_REUSE"}}}]},
-    "combinedCoverageCheck": {"allOf": [{"$ref": "#/$defs/check"}, {"properties": {"check_id": {"const": "COMBINED_FULL_COVERAGE"}}}]},
+    "qualityDeferralCheck": {"allOf": [{"$ref": "#/$defs/check"}, {"properties": {"check_id": {"const": "QUALITY_DEFERRAL"}}}]},
     "orderingRetryCheck": {"allOf": [{"$ref": "#/$defs/check"}, {"properties": {"check_id": {"const": "ORDERING_RETRY_AND_HANDOFF"}}}]},
     "durableLedgerCheck": {"allOf": [{"$ref": "#/$defs/check"}, {"properties": {"check_id": {"const": "DURABLE_ATTEMPT_LEDGER"}}}]},
     "openDefectsCheck": {"allOf": [{"$ref": "#/$defs/check"}, {"properties": {"check_id": {"const": "OPEN_TOOLING_DEFECTS"}}}]}

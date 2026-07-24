@@ -430,6 +430,14 @@ fn verify_receipt_identity(repo: &Path, plan: &Value, receipt: &Value) -> Result
     )?;
     equal(
         receipt,
+        "/quality_disposition",
+        plan,
+        "/quality_disposition",
+        "GATE-RECEIPT-QUALITY-DISPOSITION",
+    )?;
+    verify_quality_deferral(plan, receipt)?;
+    equal(
+        receipt,
         "/roots",
         plan,
         "/environment_roots",
@@ -449,6 +457,49 @@ fn verify_receipt_identity(repo: &Path, plan: &Value, receipt: &Value) -> Result
             &format!("/source/{field}"),
             "GATE-RECEIPT-SOURCE",
         )?;
+    }
+    Ok(())
+}
+
+fn verify_quality_deferral(plan: &Value, receipt: &Value) -> Result<()> {
+    let expected = json!({
+        "status": "DEFERRED_TO_QUALITY_CI",
+        "observations": ["COVERAGE", "CRAP"],
+        "owner": "openwepp-quality-observatory",
+        "trigger": "OPTIONAL_OPERATOR_DISPATCH",
+        "closure_eligible": true,
+        "prohibited_gate_definition_ids": [
+            "affected-adjudicated-crap-v1",
+            "adjudicated-crap-v1",
+            "combined-workspace-quality-v1"
+        ]
+    });
+    if plan["quality_disposition"] != expected || receipt["quality_disposition"] != expected {
+        return Err(verification_error(
+            "GATE-RECEIPT-QUALITY-DISPOSITION",
+            "quality deferral differs from independently reconstructed policy",
+        ));
+    }
+    let retired_node = |node: &Value| {
+        matches!(
+            node["gate_definition_id"].as_str(),
+            Some(
+                "affected-adjudicated-crap-v1"
+                    | "adjudicated-crap-v1"
+                    | "combined-workspace-quality-v1"
+            )
+        ) || matches!(
+            node["gate_family"].as_str(),
+            Some("coverage-complexity" | "combined-quality")
+        ) || node["artifact_contract"] == "adjudicated-crap-v1"
+    };
+    let plan_nodes = array(plan, "/nodes")?;
+    let receipt_nodes = array(receipt, "/dag_nodes")?;
+    if plan_nodes.iter().any(retired_node) || receipt_nodes.iter().any(retired_node) {
+        return Err(verification_error(
+            "GATE-RECEIPT-QUALITY-NODE-PROHIBITED",
+            "coverage/CRAP execution cannot satisfy TESTGATE",
+        ));
     }
     Ok(())
 }
@@ -2254,7 +2305,6 @@ mod tests {
                             predecessor_intent_plan_id: None,
                             boundary: "INCREMENT".to_owned(),
                             campaign_id: Some("TESTGATE-PLAN-01".to_owned()),
-                            combined_quality_proof_id: None,
                             authorized_paths,
                             package_authority_chain_id: "aa".repeat(32),
                             intent_package_path:
