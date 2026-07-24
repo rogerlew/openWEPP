@@ -18,6 +18,7 @@ ledger, path, or checkpoint evidence remains fail-closed.
 - `crates/openwepp-gate-planner/src/pre_heavy_tests.rs`
 - `crates/openwepp-gate-planner/src/verifier.rs`
 - `.config/nextest.toml`
+- `.github/workflows/testgate-shadow.yml`
 - `gate-policy/v1/schemas/gate-receipt.schema.json`
 - `tools/ci/omarchy-runner/manage.sh`
 - `tests/integration/testgate_ci_executor_contract.rs`
@@ -48,6 +49,9 @@ ledger, path, or checkpoint evidence remains fail-closed.
 - Focused resume tests pass.
 - The public relocated-audit verifier is exercised directly under the
   instrumented affected-quality profile and has adjudicated CRAP at most `30`.
+- Final hosted authority publication uploads only the authenticated signing
+  subject, verification proofs, terminal plan, and reusable global-quality
+  report. The already-published full verified archive is not uploaded again.
 - One exact changed-head forest1 TESTGATE qualification proves that a rejected
   incompatible receipt is retained without blocking the current attempt. The
   permanent queued records from retired Omarchy are ignored; no duplicate
