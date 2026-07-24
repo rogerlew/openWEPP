@@ -53,3 +53,21 @@ package doctest and conditional authority/dependency nodes.
 - Exact terminal planning and pre-heavy audit pass.
 - A changed-head forest1 TESTGATE run reaches successful independent
   verification and attestation publication.
+
+## Qualification Progress
+
+Evidence class: Ran
+
+- Exact production reconstruction passed on clean head `1366e5b4`: one test
+  passed in 459.20 seconds.
+- Routine gate-planner regression passed: 174 tests passed, 14
+  development-only tests skipped, in 62.089 seconds.
+- Fresh affected CRAP round 1 on `1366e5b4` correctly rejected
+  `Planner::build_nodes` at CRAP 30.605 and 82.963% coverage.
+- A focused reconstruction now proves exact selected-authority arguments and
+  inventory through `Planner::build_nodes`.
+- Fresh affected CRAP round 2 passed on clean head `e6b0feb1`: raw debt 0,
+  adjudicated debt 0, actionable debt 0. Retained local artifacts:
+  `target/cqr-testgate-coverage-reconstruction-affected-crap-r2/`.
+- Exact terminal planning, pre-heavy audit, and changed-head forest1 TESTGATE
+  remain pending.
