@@ -30,6 +30,7 @@ closure-eligible `DEFERRED_TO_QUALITY_CI` receipt disposition.
 - `gate-policy/v1/**`
 - `crates/openwepp-gate-planner/**`
 - `tests/integration/testgate_align_authority_contract.rs`
+- `tests/integration/testgate_assure_campaign_currency_contract.rs`
 - `tests/integration/testgate_ci_executor_contract.rs`
 - `tools/local_ci/**`
 - `tools/release/**`
@@ -83,3 +84,13 @@ Subagent authorization: this package explicitly authorizes spawning/delegating
 to two read-only implementation/security reviewers and two read-only terminal
 verifiers; expected outputs are compact package artifacts; write access is
 read-only.
+
+## Prospective Amendments
+
+- 2026-07-24: Added
+  `tests/integration/testgate_assure_campaign_currency_contract.rs` to the
+  declared write set before editing it. Removing the obsolete
+  `combined_quality_proof_id` planner request field requires updating this
+  compile-time integration caller; retaining a deprecated request surface would
+  violate the package exit criterion that obsolete combined-proof input be
+  removed or rejected.
