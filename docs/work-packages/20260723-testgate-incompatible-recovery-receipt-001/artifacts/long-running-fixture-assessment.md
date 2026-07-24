@@ -48,3 +48,18 @@ regression skips them, while fresh LLVM coverage/CRAP still executes them.
 Consequently a science package does not pay this reconstruction cost unless its
 mechanical affected-package closure includes `openwepp-gate-planner`; campaign
 and release global quality retain complete branch evidence.
+
+## Measured result
+
+- Ran: routine `openwepp-gate-planner` affected profile: 172 passed, 14
+  skipped, 60.432 seconds (61.06 seconds including command overhead).
+- Ran: focused routine verifier/reconciliation surface: 9 passed in 0.013
+  seconds (3.16 seconds including compilation/command overhead).
+- Ran: workflow profile contract: passed.
+- Ran: crate Clippy with warnings denied: passed.
+- Ran: fresh affected CRAP without conditional coverage execution: failed with
+  28 actionable rows, proving that unconditional ignore was unacceptable.
+- Ran: fresh affected CRAP with `cfg(coverage)` re-enabling the cohort:
+  intentionally stopped after approximately 18 minutes while still performing
+  live inventory enumeration. This is partial diagnostic evidence, not a CRAP
+  pass and not closure evidence.
