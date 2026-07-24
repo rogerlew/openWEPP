@@ -18,6 +18,7 @@ ledger, path, or checkpoint evidence remains fail-closed.
 - `crates/openwepp-gate-planner/src/pre_heavy_tests.rs`
 - `crates/openwepp-gate-planner/src/planner_coverage_tests.rs`
 - `crates/openwepp-gate-planner/src/verifier.rs`
+- `crates/openwepp-gate-planner/src/verifier/tests/coverage_tests.rs`
 - `.config/nextest.toml`
 - `.github/workflows/testgate-shadow.yml`
 - `gate-policy/v1/schemas/gate-receipt.schema.json`
