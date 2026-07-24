@@ -11,6 +11,12 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260724-testgate-quality-deferral-001/` completed roadmap Order 2.
+  Ordinary TESTGATE and routine release validation now execute no coverage/CRAP
+  subprocess and emit the independently verified, closure-eligible
+  `DEFERRED_TO_QUALITY_CI` disposition. Exact terminal qualification passed
+  12/12 nodes and 2,288/2,288 inventory items, including 2,262 full-workspace
+  nextest tests; no live workflow was dispatched.
 - `testgate-quality-observatory-roadmap.md` is the authorized seven-package
   implementation and qualification sequence that restores TESTGATE to blocking
   correctness admission, moves workspace coverage/CRAP to optional

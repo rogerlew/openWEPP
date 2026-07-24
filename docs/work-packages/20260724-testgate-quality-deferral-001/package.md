@@ -2,7 +2,7 @@
 
 Package ID: `20260724-testgate-quality-deferral-001`
 
-Status: `ACTIVE`
+Status: `COMPLETE`
 
 ## Objective
 
