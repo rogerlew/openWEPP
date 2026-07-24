@@ -69,5 +69,15 @@ Evidence class: Ran
 - Fresh affected CRAP round 2 passed on clean head `e6b0feb1`: raw debt 0,
   adjudicated debt 0, actionable debt 0. Retained local artifacts:
   `target/cqr-testgate-coverage-reconstruction-affected-crap-r2/`.
-- Exact terminal planning, pre-heavy audit, and changed-head forest1 TESTGATE
-  remain pending.
+- Exact terminal planning passed on `4aa731d4`: authority `READY`, zero
+  unauthorized paths, 15 nodes, and 2,316 planned inventory items.
+- Forest1 run `30100370376` passed all ten pre-heavy checks and every executed
+  test, including 2,262 full-profile tests, but failed closed with
+  `GATE-EXEC-JUNIT-INVENTORY`: the planner expected 2,298 tests because its
+  Nextest inventory command omitted `--profile full`. The exact 36-item delta
+  was the manual science cohort intentionally excluded from `full`.
+- The inventory enumerator now propagates the gate definition's selected
+  Nextest profile. A coverage-only regression proves that `full` excludes
+  exactly 36 manual science fixtures; routine regression remains 175 passing
+  tests with 15 development-only tests skipped.
+- Changed-head forest1 TESTGATE success remains pending.
