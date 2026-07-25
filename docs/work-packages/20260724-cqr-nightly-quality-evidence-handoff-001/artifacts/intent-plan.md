@@ -8,7 +8,9 @@ Evidence class: Static.
   receipt inputs plus an expected evidence ID.
 - Reuse the canonical verifier with current-source checks enabled.
 - Classify source/head/tree, registry, policy, collector, workflow, toolchain,
-  profile, and bound artifact changes as `STALE`.
+  and verifiable profile/control changes as `STALE`. An unsupported profile
+  topology that the adopted historical verifier cannot authenticate is
+  `INVALID`, never current.
 - Classify malformed, incomplete, unsafe, digest-inconsistent, or
   identity-internally-inconsistent evidence as `INVALID`.
 - Emit `CURRENT` only after exact verification and independent row

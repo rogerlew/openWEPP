@@ -68,19 +68,23 @@ fn missing_evidence_is_typed_invalid_without_collection() {
 fn recollection_requires_typed_noncurrent_receipt_and_explicit_directive() {
     let temp = scratch("recollect");
     let receipt = temp.join("intake.json");
-    fs::write(
-        &receipt,
-        concat!(
-            "{\"collection_launched\":false,\"disposition\":\"INVALID\",",
-            "\"inputs\":{\"control_locator\":\"missing\",",
-            "\"expected_quality_evidence_id\":\"0000000000000000000000000000000000000000000000000000000000000000\",",
-            "\"published_locator\":\"missing\"},\"quality_evidence_id\":null,",
-            "\"reasons\":[\"fixture absent\"],",
-            "\"schema_version\":\"openwepp-cqr-quality-intake-v1\",",
-            "\"selection\":null}\n"
-        ),
-    )
-    .expect("write canonical intake receipt");
+    let inspected = Command::new(root().join(".venv/bin/python"))
+        .arg(root().join("tools/local_ci/cqr_quality_evidence.py"))
+        .args(["inspect", "--repo", "."])
+        .arg("--published-dir")
+        .arg(temp.join("missing-published"))
+        .arg("--control-receipt")
+        .arg(temp.join("missing-control/quality-control-receipt.json"))
+        .args([
+            "--expected-id",
+            "0000000000000000000000000000000000000000000000000000000000000000",
+        ])
+        .arg("--output")
+        .arg(&receipt)
+        .current_dir(root())
+        .status()
+        .expect("create retained invalid intake");
+    assert!(!inspected.success());
     let authorization = temp.join("authorization.json");
     let accepted = Command::new(root().join(".venv/bin/python"))
         .arg(root().join("tools/local_ci/cqr_quality_evidence.py"))
@@ -96,6 +100,40 @@ fn recollection_requires_typed_noncurrent_receipt_and_explicit_directive() {
     assert!(accepted.success());
     let authorization_text = fs::read_to_string(&authorization).expect("read authorization");
     assert!(authorization_text.contains("\"status\":\"AUTHORIZED\""));
+
+    let alias_rejected = Command::new(root().join(".venv/bin/python"))
+        .arg(root().join("tools/local_ci/cqr_quality_evidence.py"))
+        .arg("authorize-recollection")
+        .arg("--intake-receipt")
+        .arg(&receipt)
+        .args(["--operator-directive", "execute cqr nightly"])
+        .arg("--output")
+        .arg(&receipt)
+        .current_dir(root())
+        .status()
+        .expect("reject intake receipt overwrite");
+    assert!(!alias_rejected.success());
+
+    let mut forged: serde_json::Value =
+        serde_json::from_str(&fs::read_to_string(&receipt).expect("read receipt"))
+            .expect("parse receipt");
+    forged["reasons"] = serde_json::json!(["forged reason"]);
+    let forged_receipt = temp.join("forged-intake.json");
+    let mut forged_bytes = serde_json::to_vec(&forged).expect("encode forged receipt");
+    forged_bytes.push(b'\n');
+    fs::write(&forged_receipt, forged_bytes).expect("write forged receipt");
+    let forgery_rejected = Command::new(root().join(".venv/bin/python"))
+        .arg(root().join("tools/local_ci/cqr_quality_evidence.py"))
+        .arg("authorize-recollection")
+        .arg("--intake-receipt")
+        .arg(&forged_receipt)
+        .args(["--operator-directive", "execute cqr nightly"])
+        .arg("--output")
+        .arg(temp.join("forged-authorization.json"))
+        .current_dir(root())
+        .status()
+        .expect("reject forged receipt");
+    assert!(!forgery_rejected.success());
 
     let rejected = Command::new(root().join(".venv/bin/python"))
         .arg(root().join("tools/local_ci/cqr_quality_evidence.py"))
@@ -123,6 +161,9 @@ fn source_and_execplan_forbid_silent_recollection() {
         "receipt.get(\"disposition\") not in {\"STALE\", \"INVALID\"}",
         "current registry does not reconstruct report partitions",
         "expected evidence ID differs from canonical payload",
+        "build_intake_fixture(",
+        "selection_review_status",
+        "retained intake receipt did not reproduce exactly",
     ] {
         assert!(
             source.contains(required),

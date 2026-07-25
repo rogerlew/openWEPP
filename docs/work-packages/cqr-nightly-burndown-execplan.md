@@ -92,8 +92,10 @@ python tools/local_ci/cqr_quality_evidence.py inspect \
 
 The complete control receipt supplies the independently bound admission object;
 the locator itself is not authority. Preserve the canonical `CURRENT` receipt
-and selected exact rows in the aggregate and first module package. Intake
-launches no measurement command.
+and candidate exact rows in the aggregate and first module package. Intake
+launches no measurement command. Its `candidate_selection` is a deterministic
+metric ordering, not final selection authority; finalize `N` only after the two
+semantic/evidence reviews below apply the fourth ranking criterion.
 
 Only typed `STALE` or `INVALID` evidence plus the explicit CQR directive permits
 fresh recollection. Before collection, retain the intake receipt and run:

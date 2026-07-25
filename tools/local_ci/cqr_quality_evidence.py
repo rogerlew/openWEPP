@@ -8,10 +8,12 @@ import hashlib
 import importlib.util
 import json
 import math
+import os
 import re
 import subprocess
 import sys
 import tempfile
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Any
 
@@ -55,6 +57,47 @@ def write_json(path: Path, value: Any) -> None:
     temporary = path.with_name(f".{path.name}.tmp")
     temporary.write_bytes(canonical_bytes(value) + b"\n")
     temporary.replace(path)
+
+
+def ensure_safe_new_output(path: Path, forbidden_roots: tuple[Path, ...]) -> Path:
+    absolute = path.absolute()
+    parent = absolute.parent
+    if not parent.is_dir() or parent.is_symlink():
+        raise IntakeError("output parent must be an existing real directory")
+    current = parent
+    while True:
+        if current.is_symlink():
+            raise IntakeError("output path contains a symlink component")
+        if current == current.parent:
+            break
+        current = current.parent
+    if absolute.exists() or absolute.is_symlink():
+        raise IntakeError("output must be a fresh path")
+    for root in forbidden_roots:
+        resolved_root = root.resolve()
+        if absolute == resolved_root or absolute.is_relative_to(resolved_root):
+            raise IntakeError("output must be outside evidence input roots")
+    return absolute
+
+
+def write_json_new(path: Path, value: Any, forbidden_roots: tuple[Path, ...]) -> None:
+    absolute = ensure_safe_new_output(path, forbidden_roots)
+    with tempfile.NamedTemporaryFile(
+        mode="wb",
+        dir=absolute.parent,
+        prefix=".cqr-output-",
+        delete=False,
+    ) as stream:
+        temporary = Path(stream.name)
+        stream.write(canonical_bytes(value) + b"\n")
+        stream.flush()
+        os.fsync(stream.fileno())
+    try:
+        os.link(temporary, absolute)
+    except FileExistsError as error:
+        raise IntakeError("output path was created concurrently") from error
+    finally:
+        temporary.unlink(missing_ok=True)
 
 
 def read_object(path: Path) -> dict[str, Any]:
@@ -146,9 +189,9 @@ def row_key(row: dict[str, Any]) -> tuple[Any, ...]:
         or float(crap) <= 30.0
     ):
         raise IntakeError("CRAP row contains invalid values")
+    production_path(file_name)
     return (
-        crate,
-        production_path(file_name),
+        file_name,
         function,
         line,
         cyclomatic,
@@ -258,8 +301,9 @@ def reconstruct_selection(
         "adjudicated_count": len(reconstructed_adjudicated),
         "actionable_count": len(reconstructed_actionable),
         "actionable_module_count": len(ranking),
-        "ranking": ranking,
-        "selected": selected,
+        "candidate_ranking": ranking,
+        "candidate_selection": selected,
+        "selection_review_status": "REQUIRED",
     }
 
 
@@ -326,6 +370,10 @@ def stale_reasons(
 
 def intake(args: argparse.Namespace) -> int:
     repo = args.repo.resolve()
+    output = ensure_safe_new_output(
+        args.output,
+        (args.published_dir.absolute(), args.control_receipt.absolute().parent),
+    )
     disposition = "INVALID"
     reasons: list[str] = []
     evidence_id: str | None = None
@@ -334,6 +382,7 @@ def intake(args: argparse.Namespace) -> int:
         "published_locator": str(args.published_dir),
         "control_locator": str(args.control_receipt),
         "expected_quality_evidence_id": args.expected_id,
+        "selection_limit": args.limit,
     }
     try:
         if not SHA256.fullmatch(args.expected_id):
@@ -376,10 +425,9 @@ def intake(args: argparse.Namespace) -> int:
                 "complete control receipt does not bind the supplied publication"
             )
         report = read_object(published / "adjudicated-crap-report.json")
-        args.output.parent.mkdir(parents=True, exist_ok=True)
         with tempfile.NamedTemporaryFile(
             mode="wb",
-            dir=args.output.parent,
+            dir=output.parent,
             prefix=".cqr-admission-",
             suffix=".json",
             delete=False,
@@ -403,16 +451,21 @@ def intake(args: argparse.Namespace) -> int:
         if reasons:
             disposition = "STALE"
         else:
-            admission_path = args.output.with_name(
-                f".{args.output.name}.admission.tmp"
-            )
-            write_json(admission_path, control["admission"])
+            with tempfile.NamedTemporaryFile(
+                mode="wb",
+                dir=output.parent,
+                prefix=".cqr-admission-",
+                suffix=".json",
+                delete=False,
+            ) as stream:
+                admission_path = Path(stream.name)
+                stream.write(canonical_bytes(control["admission"]) + b"\n")
             try:
                 verified_id = quality.verify_published(
                     repo,
                     published,
                     admission_path,
-                    independent_inventory=False,
+                    independent_inventory=True,
                     check_source=True,
                     check_current_controls=True,
                 )
@@ -435,7 +488,7 @@ def intake(args: argparse.Namespace) -> int:
         "selection": selection,
         "collection_launched": False,
     }
-    write_json(args.output, receipt)
+    write_json_new(output, receipt, ())
     print(
         f"cqr-quality-intake: {disposition}"
         + (f" id={evidence_id}" if evidence_id else "")
@@ -471,11 +524,13 @@ def authorize_recollection(args: argparse.Namespace) -> int:
                 "published_locator",
                 "control_locator",
                 "expected_quality_evidence_id",
+                "selection_limit",
             },
             {
                 "published_locator",
                 "control_locator",
                 "expected_quality_evidence_id",
+                "selection_limit",
                 "control_sha256",
             },
         )
@@ -488,6 +543,14 @@ def authorize_recollection(args: argparse.Namespace) -> int:
             )
         )
         or not SHA256.fullmatch(inputs["expected_quality_evidence_id"])
+        or (
+            inputs["selection_limit"] is not None
+            and (
+                isinstance(inputs["selection_limit"], bool)
+                or not isinstance(inputs["selection_limit"], int)
+                or inputs["selection_limit"] < 1
+            )
+        )
         or (
             "control_sha256" in inputs
             and (
@@ -512,6 +575,23 @@ def authorize_recollection(args: argparse.Namespace) -> int:
     directive = args.operator_directive.strip()
     if DIRECTIVE.fullmatch(directive) is None:
         raise IntakeError("operator directive is not an explicit CQR execution request")
+    output = ensure_safe_new_output(args.output, (args.intake_receipt.absolute(),))
+    with tempfile.TemporaryDirectory(
+        prefix=".cqr-reinspect-", dir=output.parent
+    ) as temporary:
+        reproduced_path = Path(temporary) / "intake.json"
+        reproduced_status = intake(
+            argparse.Namespace(
+                repo=args.repo,
+                published_dir=Path(inputs["published_locator"]),
+                control_receipt=Path(inputs["control_locator"]),
+                expected_id=inputs["expected_quality_evidence_id"],
+                limit=inputs["selection_limit"],
+                output=reproduced_path,
+            )
+        )
+        if reproduced_status == 0 or reproduced_path.read_bytes() != args.intake_receipt.read_bytes():
+            raise IntakeError("retained intake receipt did not reproduce exactly")
     authorization = {
         "schema_version": AUTHORIZATION_SCHEMA,
         "status": "AUTHORIZED",
@@ -521,9 +601,270 @@ def authorize_recollection(args: argparse.Namespace) -> int:
         "disposition": receipt["disposition"],
         "reasons": receipt["reasons"],
     }
-    write_json(args.output, authorization)
+    write_json_new(output, authorization, ())
     print(f"cqr-recollection: AUTHORIZED disposition={receipt['disposition']}")
     return 0
+
+
+def build_intake_fixture(
+    repo: Path,
+    root: Path,
+    quality: Any,
+    workflow: Any,
+    *,
+    subject_head: str,
+    inventories: dict[str, dict[str, Any]] | None = None,
+) -> tuple[Path, Path, str]:
+    published = root / "published"
+    control = root / "control"
+    published.mkdir(parents=True)
+    control.mkdir()
+    if inventories is None:
+        inventories = quality.independent_inventory_partition(repo)
+    inventory_bindings: dict[str, Any] = {}
+    junit_bindings: dict[str, Any] = {}
+    for name, inventory in inventories.items():
+        inventory_path = published / f"inventory-{name}.json"
+        write_json(inventory_path, inventory)
+        inventory_bindings[name] = {
+            "count": inventory["count"],
+            "identities_sha256": inventory["identities_sha256"],
+            "artifact_sha256": sha256_file(inventory_path),
+        }
+        if name in quality.PROFILES:
+            root_element = ET.Element(
+                "testsuites",
+                {
+                    "tests": str(inventory["count"]),
+                    "failures": "0",
+                    "errors": "0",
+                    "skipped": "0",
+                },
+            )
+            suite = ET.SubElement(root_element, "testsuite", {"name": name})
+            for identity in inventory["identities"]:
+                classname, test_name = identity.rsplit("::", 1)
+                ET.SubElement(
+                    suite,
+                    "testcase",
+                    {"classname": classname, "name": test_name},
+                )
+            ET.indent(root_element, space="  ")
+            junit_path = published / f"junit-{name}.xml"
+            junit_path.write_bytes(
+                b'<?xml version="1.0" encoding="UTF-8"?>\n'
+                + ET.tostring(root_element, encoding="utf-8")
+                + b"\n"
+            )
+            parsed = quality.parse_compact_junit(junit_path)
+            parsed.pop("identities")
+            junit_bindings[name] = {
+                **parsed,
+                "sha256": sha256_file(junit_path),
+            }
+
+    crap_module = quality.load_crap_module(repo)
+    registry_sha = sha256_file(
+        repo / "tools/release/adjudicated_crap_exceptions.json"
+    )
+    row = {
+        "crate": "openwepp-sim-contract",
+        "file": "crates/openwepp-sim-contract/src/lib.rs",
+        "function": "fixture_actionable",
+        "line": 1,
+        "cyclomatic": 6.0,
+        "coverage": 20.0,
+        "crap": 42.0,
+    }
+    merged_lcov_sha = "1" * 64
+    workspace_crap_sha = "2" * 64
+    source_manifest_artifact_sha = "3" * 64
+    report = {
+        "schema_version": "openwepp-adjudicated-crap-report-v1",
+        "status": "OBSERVATION-COMPLETE",
+        "debt_status": "FAIL",
+        "closure_eligible": False,
+        "production_filter": crap_module.EXPECTED_FILTER,
+        "deduplication_key": crap_module.EXPECTED_DEDUPLICATION_KEY,
+        "raw_over_threshold_count": 1,
+        "adjudicated_count": 0,
+        "actionable_count": 1,
+        "raw_over_threshold": [row],
+        "adjudicated": [],
+        "actionable": [row],
+        "invalid_adjudications": [],
+        "adjudication_registry_sha256": registry_sha,
+        "crap_json_sha256": workspace_crap_sha,
+        "lcov_sha256": merged_lcov_sha,
+        "source_manifest_sha256": source_manifest_artifact_sha,
+    }
+    write_json(published / "adjudicated-crap-report.json", report)
+    (published / "adjudicated-crap-report.md").write_text(
+        "# Fixture CRAP Report\n", encoding="utf-8"
+    )
+    ledger_path = (
+        repo
+        / "docs/work-packages/20260724-quality-observatory-merged-coverage-001"
+        / "artifacts/snowbench-full-only-row-ledger.json"
+    )
+    ledger = json.loads(ledger_path.read_text(encoding="utf-8"))
+    snowbench_rows = []
+    for historical in ledger["rows"]:
+        measured = {
+            "crate": historical["crate"],
+            "file": historical["file"],
+            "function": historical["function"],
+            "line": historical["line"],
+            "cyclomatic": historical["cyclomatic"],
+            "coverage": 1.0,
+        }
+        snowbench_rows.append(
+            {
+                "historical": historical,
+                "science_manual": measured,
+                "merged": measured,
+                "disposition": "SCIENCE_MANUAL_CONTRIBUTION",
+                "science_manual_contributed": True,
+                "retained_as_debt": False,
+            }
+        )
+    write_json(
+        published / "coverage-summary.json",
+        {
+            "schema_version": quality.COVERAGE_SCHEMA,
+            "snowbench_gate_status": "PASS",
+            "snowbench_ledger_sha256": sha256_file(ledger_path),
+            "snowbench_rows": snowbench_rows,
+        },
+    )
+    source_manifest = quality.source_manifest(repo)
+    source_manifest_sha = quality.manifest_sha256(source_manifest)
+    source_tree = git_text(repo, "rev-parse", "HEAD^{tree}")
+    workflow_sha = sha256_file(repo / ".github/workflows/quality-observatory.yml")
+    toolchain = quality.identity_versions(repo)
+    nextest_config_sha = sha256_file(repo / ".config/nextest.toml")
+    instrumented_build_id = "4" * 64
+    build_identity = {
+        "coverage_mode": "workspace-default-features-instrument-coverage-cfg-coverage",
+        "features": [],
+        "runtime_cargo_artifacts": [dict(item) for item in quality.RUNTIME_CARGO_ARTIFACTS],
+        "toolchain": toolchain,
+        "nextest_config_sha256": nextest_config_sha,
+    }
+    admission_payload = {
+        "schema_version": quality.ADMISSION_SCHEMA,
+        "status": "READY",
+        "head_commit": subject_head,
+        "source_tree": source_tree,
+        "workflow_revision": subject_head,
+        "workflow_sha256": workflow_sha,
+        "source_manifest_sha256": source_manifest_sha,
+        "ordered_profiles": list(quality.PROFILES),
+        "inventories": inventory_bindings,
+        "instrumented_build_id": instrumented_build_id,
+        "build_identity": build_identity,
+        "registry_sha256": registry_sha,
+        "snowbench_ledger_sha256": sha256_file(ledger_path),
+        "collector_sha256": sha256_file(
+            repo / "tools/local_ci/quality_observatory.py"
+        ),
+        "runner": "fixture",
+        "workflow": "quality-observatory",
+        "run_id": "fixture",
+        "run_attempt": "1",
+    }
+    admission_id = sha256_bytes(canonical_bytes(admission_payload))
+    admission = {"admission_id": admission_id, "payload": admission_payload}
+    artifact_names = quality.PUBLISHED_FILES - {
+        "quality-envelope.json",
+        "quality-payload.json",
+        "run-status.json",
+    }
+    payload = {
+        "schema_version": quality.SCHEMA,
+        "head_commit": subject_head,
+        "source_manifest_sha256": source_manifest_sha,
+        "instrumented_build_id": instrumented_build_id,
+        "ordered_profiles": list(quality.PROFILES),
+        "coverage_mode": build_identity["coverage_mode"],
+        "features": [],
+        "runtime_cargo_artifacts": build_identity["runtime_cargo_artifacts"],
+        "toolchain": toolchain,
+        "inventories": inventory_bindings,
+        "junit": junit_bindings,
+        "crap": {
+            "registry_sha256": registry_sha,
+            "workspace_crap_sha256": workspace_crap_sha,
+            "source_manifest_artifact_sha256": source_manifest_artifact_sha,
+            "raw_count": 1,
+            "adjudicated_count": 0,
+            "actionable_count": 1,
+        },
+        "coverage": {"merged_lcov_sha256": merged_lcov_sha},
+        "control_inputs": {
+            "registry_sha256": registry_sha,
+            "snowbench_ledger_sha256": sha256_file(ledger_path),
+            "collector_sha256": admission_payload["collector_sha256"],
+            "nextest_config_sha256": nextest_config_sha,
+        },
+        "execution": {
+            "runner": "fixture",
+            "workflow": "quality-observatory",
+            "run_id": "fixture",
+            "run_attempt": "1",
+        },
+        "subject": {
+            "source_commit": subject_head,
+            "source_tree": source_tree,
+            "workflow_revision": subject_head,
+            "workflow_sha256": workflow_sha,
+            "current_main": subject_head == git_text(repo, "rev-parse", "HEAD"),
+        },
+        "admission_id": admission_id,
+        "closure_eligible": False,
+        "artifacts": quality.artifact_digest_map(published, artifact_names),
+    }
+    write_json(published / "quality-payload.json", payload)
+    evidence_id = sha256_bytes(canonical_bytes(payload))
+    write_json(
+        published / "run-status.json",
+        {
+            "schema_version": quality.SCHEMA,
+            "execution_integrity": "PASS",
+            "debt_status": "FAIL",
+            "closure_eligible": False,
+            "admission_id": admission_id,
+            "quality_evidence_id": evidence_id,
+        },
+    )
+    envelope_files = quality.PUBLISHED_FILES - {"quality-envelope.json"}
+    write_json(
+        published / "quality-envelope.json",
+        {
+            "schema_version": quality.ENVELOPE_SCHEMA,
+            "quality_evidence_id": evidence_id,
+            "payload": payload,
+            "publication": {
+                "allowed_files": sorted(quality.PUBLISHED_FILES),
+                "max_total_bytes": quality.MAX_PUBLISHED_BYTES,
+                "files": quality.artifact_digest_map(published, envelope_files),
+            },
+        },
+    )
+    workflow.control_receipt(
+        control,
+        disposition="COMPLETE",
+        source_sha=subject_head,
+        source_tree=source_tree,
+        workflow_revision=subject_head,
+        workflow_sha256=workflow_sha,
+        occupancy={"status": "CLEAR"},
+        child_exit=0,
+        publication=workflow.publication_manifest(published),
+        admission=admission,
+        quality_evidence_id=evidence_id,
+    )
+    return published, control / "quality-control-receipt.json", evidence_id
 
 
 def self_test() -> int:
@@ -568,7 +909,10 @@ def self_test() -> int:
     report["actionable"] = list(report["raw_over_threshold"])
     selection = reconstruct_selection(Path.cwd(), report, quality, 1)
     assert selection["actionable_count"] == 2
-    assert selection["selected"][0]["module"] == "crates/demo/src/alpha.rs"
+    assert (
+        selection["candidate_selection"][0]["module"]
+        == "crates/demo/src/alpha.rs"
+    )
     forged = {**report, "actionable": []}
     try:
         reconstruct_selection(Path.cwd(), forged, quality, None)
@@ -576,6 +920,19 @@ def self_test() -> int:
         pass
     else:
         raise IntakeError("summary-only or forged partition was accepted")
+    duplicate = dict(report["raw_over_threshold"][0])
+    duplicate["crate"] = "alias"
+    duplicate_report = {
+        "raw_over_threshold": [report["raw_over_threshold"][0], duplicate],
+        "adjudicated": [],
+        "actionable": [report["raw_over_threshold"][0], duplicate],
+    }
+    try:
+        reconstruct_selection(Path.cwd(), duplicate_report, quality, None)
+    except IntakeError:
+        pass
+    else:
+        raise IntakeError("canonical duplicate with crate drift was accepted")
     quality.load_crap_module = original_crap_loader
     repo = Path.cwd()
     crap_module = quality.load_crap_module(repo)
@@ -623,25 +980,21 @@ def self_test() -> int:
         root = Path(raw)
         receipt_path = root / "intake.json"
         output = root / "authorization.json"
-        write_json(
-            receipt_path,
-            {
-                "schema_version": SCHEMA,
-                "disposition": "INVALID",
-                "quality_evidence_id": None,
-                "inputs": {
-                    "published_locator": "missing",
-                    "control_locator": "missing",
-                    "expected_quality_evidence_id": "0" * 64,
-                },
-                "reasons": ["fixture is absent"],
-                "selection": None,
-                "collection_launched": False,
-            },
+        intake(
+            argparse.Namespace(
+                repo=repo,
+                published_dir=root / "missing-published",
+                control_receipt=root
+                / "missing-control/quality-control-receipt.json",
+                expected_id="0" * 64,
+                limit=None,
+                output=receipt_path,
+            )
         )
         authorize_recollection(
             argparse.Namespace(
                 intake_receipt=receipt_path,
+                repo=repo,
                 operator_directive="execute cqr nightly for 2 modules",
                 output=output,
             )
@@ -654,6 +1007,7 @@ def self_test() -> int:
             authorize_recollection(
                 argparse.Namespace(
                     intake_receipt=receipt_path,
+                    repo=repo,
                     operator_directive="execute cqr nightly",
                     output=output,
                 )
@@ -662,6 +1016,90 @@ def self_test() -> int:
             pass
         else:
             raise IntakeError("CURRENT evidence authorized recollection")
+    workflow = load_module(
+        repo / "tools/local_ci/quality_observatory_workflow.py",
+        "quality_workflow_intake_self_test",
+    )
+    inventories = quality.independent_inventory_partition(repo)
+    with tempfile.TemporaryDirectory(prefix="cqr-current-fixture-") as raw:
+        root = Path(raw)
+        current_root = root / "current"
+        published, control_receipt, evidence_id = build_intake_fixture(
+            repo,
+            current_root,
+            quality,
+            workflow,
+            subject_head=current_head,
+            inventories=inventories,
+        )
+        current_receipt_path = root / "current-intake.json"
+        if (
+            intake(
+                argparse.Namespace(
+                    repo=repo,
+                    published_dir=published,
+                    control_receipt=control_receipt,
+                    expected_id=evidence_id,
+                    limit=1,
+                    output=current_receipt_path,
+                )
+            )
+            != 0
+        ):
+            raise IntakeError("valid exact-head fixture was not CURRENT")
+        current_receipt = read_object(current_receipt_path)
+        if (
+            current_receipt["selection"]["candidate_selection"][0]["module"]
+            != "crates/openwepp-sim-contract/src/lib.rs"
+            or current_receipt["selection"]["selection_review_status"]
+            != "REQUIRED"
+            or current_receipt["collection_launched"] is not False
+        ):
+            raise IntakeError("CURRENT fixture selection parity failed")
+
+        invalid_receipt_path = root / "invalid-intake.json"
+        (published / "coverage-summary.json").write_text("{}\n", encoding="utf-8")
+        if (
+            intake(
+                argparse.Namespace(
+                    repo=repo,
+                    published_dir=published,
+                    control_receipt=control_receipt,
+                    expected_id=evidence_id,
+                    limit=1,
+                    output=invalid_receipt_path,
+                )
+            )
+            == 0
+            or read_object(invalid_receipt_path)["disposition"] != "INVALID"
+        ):
+            raise IntakeError("artifact digest corruption was not INVALID")
+
+        stale_root = root / "stale"
+        stale_published, stale_control, stale_id = build_intake_fixture(
+            repo,
+            stale_root,
+            quality,
+            workflow,
+            subject_head="0" * 40,
+            inventories=inventories,
+        )
+        stale_receipt_path = root / "stale-intake.json"
+        if (
+            intake(
+                argparse.Namespace(
+                    repo=repo,
+                    published_dir=stale_published,
+                    control_receipt=stale_control,
+                    expected_id=stale_id,
+                    limit=1,
+                    output=stale_receipt_path,
+                )
+            )
+            == 0
+            or read_object(stale_receipt_path)["disposition"] != "STALE"
+        ):
+            raise IntakeError("internally valid historical fixture was not STALE")
     print("cqr-quality-evidence-self-test: PASS")
     return 0
 
@@ -678,6 +1116,7 @@ def parser() -> argparse.ArgumentParser:
     inspect.add_argument("--output", type=Path, required=True)
     inspect.set_defaults(function=intake)
     recollect = commands.add_parser("authorize-recollection")
+    recollect.add_argument("--repo", type=Path, default=Path.cwd())
     recollect.add_argument("--intake-receipt", type=Path, required=True)
     recollect.add_argument("--operator-directive", required=True)
     recollect.add_argument("--output", type=Path, required=True)

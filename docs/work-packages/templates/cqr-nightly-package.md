@@ -150,7 +150,8 @@ and report the blocked commit boundary.
 5. Verify and extract the target rows from the batch's current
    `quality_evidence_id` using the retained canonical
    `quality-evidence-intake.json`. Require `CURRENT` and
-   `collection_launched=false`. Recollection is allowed only after a retained
+   `collection_launched=false`; treat `candidate_selection` as pre-review
+   evidence, not final target authority. Recollection is allowed only after a retained
    typed `STALE`/`INVALID` intake receipt and
    `recollection-authorization.json` under the CQR ExecPlan.
 6. Summarize raw and actionable target rows separately in
