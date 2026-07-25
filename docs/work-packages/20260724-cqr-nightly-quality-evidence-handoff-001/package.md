@@ -2,7 +2,7 @@
 
 Package ID: `20260724-cqr-nightly-quality-evidence-handoff-001`
 
-Status: `ACTIVE / IMPLEMENTATION / ORDER-5`
+Status: `ACTIVE / CLOSEOUT / ORDER-5`
 
 ## Pre-Implementation Intent
 
@@ -73,8 +73,8 @@ evidence is stale, malformed, incomplete, or identity-incompatible.
 - `docs/work-packages/testgate-quality-observatory-roadmap.md` (Order-5
   closeout routing only)
 - `Cargo.toml` (exact Order-5 integration-test registration only)
-- `gate-policy/v1/impact-map.json` (exact inherited Order-4 testing-strategy
-  digest correction only)
+- `gate-policy/v1/impact-map.json` (testing-strategy `policy_sha256`
+  synchronization only)
 - `tools/local_ci/**`
 - `tools/release/**`
 - `tests/integration/cqr_*`
