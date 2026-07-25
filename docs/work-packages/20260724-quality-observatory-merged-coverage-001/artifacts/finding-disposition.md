@@ -31,5 +31,6 @@ Review A final disposition: `PASS`.
 
 Review B final disposition: `PASS`.
 
-Heavy collection authorization: `BLOCKED` pending the required committed
-admitted-snapshot downstream-consumer unchanged-manifest probe.
+Heavy collection authorization: `READY`. Attempt 10 passed the required
+committed admitted-snapshot downstream-consumer proof with 3/3 tests and exact
+291-row executable-manifest and working-tree identity preservation.

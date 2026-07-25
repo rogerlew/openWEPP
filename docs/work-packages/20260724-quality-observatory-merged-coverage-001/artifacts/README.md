@@ -10,6 +10,8 @@ Present:
 - attempt-4 wrapper-preflight and attempt-5 venv-exclude defect evidence;
 - attempt-6 admitted execution-snapshot preflight;
 - attempt-7 post-full runtime-artifact manifest defect;
+- attempt-10 admitted runtime-consumer unchanged-manifest proof, with retained
+  attempt-8 and attempt-9 selector diagnostics;
 - follow-on focused gate, dual-review, runtime-review, and line-count records.
 
 Not yet produced because the required full profile failed: science-manual

@@ -2,7 +2,7 @@
 
 Package ID: `20260724-quality-observatory-merged-coverage-001`
 
-Status: `ACTIVE / PROBE / ORDER-3`
+Status: `ACTIVE / READY / ORDER-3`
 
 ## Objective
 
@@ -179,5 +179,8 @@ artifacts added by assurance publication tests after admission. See
 `artifacts/heavy-attempt-07-runtime-cargo-artifacts.md`. Collection is blocked
 until that exact runtime consumer is primed and identity-bound before manifest
 sealing. The correction and both re-reviews now pass with zero open findings;
-the committed admitted-snapshot downstream-consumer probe remains required
-before fresh collection.
+attempt 10 then passed the committed admitted-snapshot downstream-consumer
+probe with 3/3 tests and preserved all 291 admitted executable rows and the
+working-tree identity. See
+`artifacts/heavy-attempt-10-runtime-consumer-probe.md`. Fresh collection is
+authorized after committing this evidence.

@@ -20,6 +20,10 @@ Current correction gates:
 - Runtime-artifact measurement re-review: `PASS`, no findings.
 - Runtime-artifact security re-review: `PASS`; one HIGH accepted, fixed, and
   closed.
+- Fresh committed runtime-consumer admission: `READY`; 2,279 full, 36
+  science-manual, and 2,315 workspace tests.
+- Exact assurance publication consumer probe: `PASS`; 3 passed in `47.951s`.
+- Admitted executable manifest: 291 rows before and after, exact equality.
+- Admitted working-tree identity: exact equality before and after.
 
-Committed downstream-consumer unchanged-manifest probe, fresh complete
-transition, and terminal verification remain pending.
+Fresh complete transition and terminal verification remain pending.
