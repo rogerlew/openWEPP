@@ -2,7 +2,7 @@
 
 Evidence class: Static / Ran.
 
-Open closure-blocking findings: `0`.
+Open closure-blocking findings: `1`.
 
 | Finding | Disposition | Resolution |
 | --- | --- | --- |
@@ -28,11 +28,11 @@ Open closure-blocking findings: `0`.
 | Final manifest check precedes target-using finalization | `accepted / fixed` | Exact execution identity is rechecked after CRAP/evaluator/snowbench work immediately before PASS publication; executable-growth self-test rejects drift. |
 | Governance-only science binary name rejected by confinement allowlist | `accepted / fixed` | The exact governance path is allowed; ordinary and nested suffix-collision unlisted paths remain rejected. |
 | Confinement allowlist used suffix rather than exact path matching | `accepted / fixed` | Security re-review found a `HIGH` nested-path bypass. The walker now compares normalized repository-relative paths by equality, and an adversarial suffix collision fails with its exact path. |
+| Coverage-only public-audit test observes shared checkout | `accepted / prerequisite reopened` | Attempt 12 failed transient exactness while final admission identity remained exact. The gate-planner prerequisite must run the content-independence proof from its own no-hardlink committed clone. |
 
 Review A final disposition: `PASS`.
 
 Review B final disposition: `PASS`.
 
-Heavy collection authorization: `READY`. The attempt-11 confinement correction
-passes positive, ordinary-negative, and suffix-collision-negative proofs;
-both independent re-reviews pass with zero open findings.
+Heavy collection authorization: `BLOCKED` pending isolated-clone correction,
+focused downstream proof, and both independent re-reviews.

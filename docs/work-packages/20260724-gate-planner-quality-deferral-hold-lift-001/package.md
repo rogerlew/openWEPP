@@ -7,7 +7,7 @@ This Defect-Closure ExecPlan is a living document governed by
 
 Package ID: `20260724-gate-planner-quality-deferral-hold-lift-001`
 
-Status: `ACTIVE / TERMINAL-GATES`
+Status: `ACTIVE / CORRECTION`
 
 ## Purpose / Big Picture
 
@@ -33,6 +33,8 @@ pass independent terminal verification.
   pass both implementation and security re-reviews with zero open findings.
 - [x] 2026-07-24: Pass exact-seven, complete coverage-configured owning-crate,
   review, and full-workspace gates on clean committed head `0342b9f8`.
+- [ ] Isolate the coverage-only public-audit consumer from the shared
+  execution checkout after the attempt-12 transient exactness failure.
 - [ ] Lift Order 3, run fresh merged coverage, and verify publication twice.
 - [ ] Reconcile and close both packages.
 
@@ -195,6 +197,10 @@ durable log paths. Repository write access for all subagents is read-only.
   deterministic lexical ordering ran `fixture-independent-v1` before the
   primary mutator. The prerequisite-free secondary fixture now has a later
   identity so the intended mutation runs first.
+- Attempt 12 proved the coverage-only public-audit consumer still observed the
+  shared execution checkout. It failed exactness transiently while the final
+  observatory identity remained exact; a content-independence test must use
+  its own committed clone.
 
 ## Decision Log
 

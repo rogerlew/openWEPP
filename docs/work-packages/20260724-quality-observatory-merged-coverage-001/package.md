@@ -2,7 +2,7 @@
 
 Package ID: `20260724-quality-observatory-merged-coverage-001`
 
-Status: `ACTIVE / READY / ORDER-3`
+Status: `ACTIVE / BLOCKED / ORDER-3`
 
 ## Objective
 
@@ -197,3 +197,10 @@ correction passes both reviews after closing a security-review `HIGH`
 suffix-collision bypass in the older matcher. Exact repository-relative
 equality now admits the one governance path and rejects ordinary and nested
 unlisted paths. Fresh collection is authorized after committing this evidence.
+
+Attempt 12 then ran all 2,279 full tests and failed only the coverage-only
+gate-planner public-audit consumer because it observed transient dirt in the
+shared execution checkout. Final observatory identity remained exact. The
+gate-planner prerequisite is reopened to move that content-independence proof
+onto its own committed no-hardlink clone. See the prerequisite artifact
+`artifacts/attempt-12-repository-snapshot-isolation.md`.

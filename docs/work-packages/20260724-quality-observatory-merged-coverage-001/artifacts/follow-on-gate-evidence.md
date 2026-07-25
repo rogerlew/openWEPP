@@ -42,5 +42,13 @@ Current correction gates:
 - Science-confinement implementation re-review: `PASS`, no findings.
 - Science-confinement security re-review: one `HIGH` fixed and closed; final
   `PASS`, no findings.
+- Attempt 12 `full`: `FAIL`; 2,278 passed, 1 failed, 15 slow, 31 skipped;
+  `2840.520s`.
+- Attempt 12 sole failure: gate-planner public-audit coverage test rejected
+  transient shared-checkout dirt.
+- Attempt 12 final identity: 291 executable rows and working tree equal
+  admission; source and snapshot clean.
+- Attempt 12 publication: not reached; 0 files and no evidence ID.
 
-Fresh complete transition and terminal verification remain pending.
+Isolated-clone prerequisite correction, fresh complete transition, and
+terminal verification remain pending.
