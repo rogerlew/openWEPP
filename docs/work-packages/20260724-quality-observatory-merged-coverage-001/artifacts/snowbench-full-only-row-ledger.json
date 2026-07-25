@@ -1,0 +1,174 @@
+{
+  "rows": [
+    {
+      "coverage": 18.181818181818183,
+      "crap": 43.053343350864004,
+      "crate": "openwepp-runner",
+      "cyclomatic": 8.0,
+      "file": "crates/openwepp-runner/src/hillslope/snowbench.rs",
+      "function": "SnowbenchError::fmt",
+      "line": 138
+    },
+    {
+      "coverage": 0.0,
+      "crap": 72.0,
+      "crate": "openwepp-runner",
+      "cyclomatic": 8.0,
+      "file": "crates/openwepp-runner/src/hillslope/snowbench.rs",
+      "function": "read_openwepp_snow_rows",
+      "line": 1249
+    },
+    {
+      "coverage": 0.0,
+      "crap": 210.0,
+      "crate": "openwepp-runner",
+      "cyclomatic": 14.0,
+      "file": "crates/openwepp-runner/src/hillslope/snowbench.rs",
+      "function": "append_openwepp_snow_batch",
+      "line": 1288
+    },
+    {
+      "coverage": 0.0,
+      "crap": 42.0,
+      "crate": "openwepp-runner",
+      "cyclomatic": 6.0,
+      "file": "crates/openwepp-runner/src/hillslope/snowbench.rs",
+      "function": "write_openwepp_snow_csv",
+      "line": 1312
+    },
+    {
+      "coverage": 18.0,
+      "crap": 77.715528,
+      "crate": "openwepp-runner",
+      "cyclomatic": 11.0,
+      "file": "crates/openwepp-runner/src/hillslope/snowbench_coe_density.rs",
+      "function": "run_coe_bound_density_snowbench",
+      "line": 113
+    },
+    {
+      "coverage": 0.0,
+      "crap": 72.0,
+      "crate": "openwepp-runner",
+      "cyclomatic": 8.0,
+      "file": "crates/openwepp-runner/src/hillslope/snowbench_coe_density.rs",
+      "function": "read_daily_forcing",
+      "line": 175
+    },
+    {
+      "coverage": 0.0,
+      "crap": 72.0,
+      "crate": "openwepp-runner",
+      "cyclomatic": 8.0,
+      "file": "crates/openwepp-runner/src/hillslope/snowbench_coe_density.rs",
+      "function": "parse_forcing_line",
+      "line": 256
+    },
+    {
+      "coverage": 0.0,
+      "crap": 342.0,
+      "crate": "openwepp-runner",
+      "cyclomatic": 18.0,
+      "file": "crates/openwepp-runner/src/hillslope/snowbench_coe_density.rs",
+      "function": "read_coe_boundary",
+      "line": 302
+    },
+    {
+      "coverage": 0.0,
+      "crap": 72.0,
+      "crate": "openwepp-runner",
+      "cyclomatic": 8.0,
+      "file": "crates/openwepp-runner/src/hillslope/snowbench_coe_density.rs",
+      "function": "simulate_coe_bound_density",
+      "line": 418
+    },
+    {
+      "coverage": 0.0,
+      "crap": 72.0,
+      "crate": "openwepp-runner",
+      "cyclomatic": 8.0,
+      "file": "crates/openwepp-runner/src/hillslope/snowbench_coe_density.rs",
+      "function": "apply_daily_compaction",
+      "line": 569
+    },
+    {
+      "coverage": 45.0,
+      "crap": 41.11737500000001,
+      "crate": "openwepp-runner",
+      "cyclomatic": 13.0,
+      "file": "crates/openwepp-runner/src/hillslope/snowbench_coe_melt.rs",
+      "function": "read_canopy_series",
+      "line": 315
+    },
+    {
+      "coverage": 59.34065934065934,
+      "crap": 50.64282463099032,
+      "crate": "openwepp-runner",
+      "cyclomatic": 21.0,
+      "file": "crates/openwepp-runner/src/hillslope/snowbench_coe_melt.rs",
+      "function": "parse_forcing_line",
+      "line": 400
+    },
+    {
+      "coverage": 0.0,
+      "crap": 56.0,
+      "crate": "openwepp-runner",
+      "cyclomatic": 7.0,
+      "file": "crates/openwepp-runner/src/hillslope/snowbench_physics_bulk.rs",
+      "function": "PhysicsBulkVariant::name",
+      "line": 280
+    },
+    {
+      "coverage": 0.0,
+      "crap": 56.0,
+      "crate": "openwepp-runner",
+      "cyclomatic": 7.0,
+      "file": "crates/openwepp-runner/src/hillslope/snowbench_physics_bulk.rs",
+      "function": "PhysicsBulkVariant::model_id",
+      "line": 292
+    },
+    {
+      "coverage": 0.0,
+      "crap": 90.0,
+      "crate": "openwepp-runner",
+      "cyclomatic": 9.0,
+      "file": "crates/openwepp-runner/src/hillslope/snowbench_physics_bulk.rs",
+      "function": "run_physics_bulk_snowbench",
+      "line": 338
+    },
+    {
+      "coverage": 0.0,
+      "crap": 72.0,
+      "crate": "openwepp-runner",
+      "cyclomatic": 8.0,
+      "file": "crates/openwepp-runner/src/hillslope/snowbench_physics_bulk.rs",
+      "function": "read_physics_bulk_forcing",
+      "line": 393
+    },
+    {
+      "coverage": 0.0,
+      "crap": 90.0,
+      "crate": "openwepp-runner",
+      "cyclomatic": 9.0,
+      "file": "crates/openwepp-runner/src/hillslope/snowbench_physics_bulk.rs",
+      "function": "parse_forcing_line",
+      "line": 426
+    },
+    {
+      "coverage": 0.0,
+      "crap": 110.0,
+      "crate": "openwepp-runner",
+      "cyclomatic": 10.0,
+      "file": "crates/openwepp-runner/src/hillslope/snowbench_physics_bulk.rs",
+      "function": "step_physics_bulk",
+      "line": 550
+    }
+  ],
+  "row_count": 18,
+  "schema_version": "openwepp-snowbench-full-only-row-ledger-v1",
+  "source": {
+    "adjudicated_crap_report_sha256": "738e6d9a96c00731f3be739427b3cb8e64e771f170544c7e24da534aaeaae796",
+    "artifact": "testgate-unsigned-30113946779-1",
+    "head_commit": "4b3e5435b1831c2a8a7d021c2dae879c18a6cd17",
+    "run_id": "30113946779"
+  }
+}

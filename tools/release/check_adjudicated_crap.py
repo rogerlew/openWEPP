@@ -211,6 +211,8 @@ def production_source_manifest(repo_root: Path) -> dict[str, Any]:
         "tools/release/adjudicated_crap_exceptions.json",
         "tools/release/check_adjudicated_crap.py",
         "tools/release/run_adjudicated_crap_gate.sh",
+        "tools/local_ci/quality_observatory.py",
+        "docs/work-packages/20260724-quality-observatory-merged-coverage-001/artifacts/snowbench-full-only-row-ledger.json",
     ):
         candidate = repo_root / relative_path
         if candidate.is_file():
@@ -1003,6 +1005,11 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--retained-provenance")
     parser.add_argument("--report-json", type=Path)
     parser.add_argument("--report-markdown", type=Path)
+    parser.add_argument(
+        "--observational",
+        action="store_true",
+        help="Publish debt without making actionable rows an execution failure",
+    )
     return parser.parse_args()
 
 
@@ -1179,6 +1186,11 @@ def main() -> int:
         report["debt_status"] = debt_status
         report["acquisition_mode"] = args.acquisition_mode
         report["closure_eligible"] = args.acquisition_mode == "fresh"
+        if args.observational:
+            if args.acquisition_mode != "fresh":
+                raise GateInputError("--observational requires fresh acquisition")
+            report["closure_eligible"] = False
+            report["status"] = "OBSERVATION-COMPLETE"
         report["measurement_scope"] = (
             "AFFECTED_PACKAGES" if args.expected_package else "GLOBAL_WORKSPACE"
         )
@@ -1243,7 +1255,7 @@ def main() -> int:
         f"actionable={report['actionable_count']} "
         f"touched_files={len(report['touched_production_files'])}"
     )
-    return 0 if report["debt_status"] == "PASS" else 1
+    return 0 if args.observational or report["debt_status"] == "PASS" else 1
 
 
 if __name__ == "__main__":

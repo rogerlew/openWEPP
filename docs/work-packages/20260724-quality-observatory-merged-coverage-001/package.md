@@ -2,7 +2,7 @@
 
 Package ID: `20260724-quality-observatory-merged-coverage-001`
 
-Status: `QUEUED / ORDER-3`
+Status: `ACTIVE / HOLD / ORDER-3`
 
 ## Objective
 
@@ -43,7 +43,51 @@ is represented rather than reported as false 0% debt.
 
 ## Dependencies
 
-- Order 2 complete.
+- Order 2 complete at closeout commit `1d7b457603942a15c0d89d66002f64dc32420934`.
+
+## Pre-Implementation Intent
+
+Risk: `CRITICAL`.
+
+Reason: this package changes global coverage configuration and repository-owned
+quality collection, inventory, evidence, and verification behavior.
+
+Implementation is limited to:
+
+1. one repository-owned collector/verifier under `tools/local_ci/`;
+2. an observational mode in the canonical adjudicated-CRAP evaluator so debt
+   remains visible without turning a valid QA observation into a transition
+   failure;
+3. focused integration/source-contract tests and the minimum Cargo/Nextest
+   registration needed to run them;
+4. package evidence and catalog disposition.
+
+The collector must use one immutable admitted identity, independently enumerate
+`full`, `science-manual`, and canonical nonignored workspace inventories, run
+the profiles sequentially in one instrumented target, preserve per-profile raw
+inputs locally, derive full-only, science-only, and merged LCOV views, and feed
+only merged LCOV to the canonical CRAP evaluator. It must refuse identity,
+inventory, JUnit, source, registry, toolchain, feature, coverage-mode, profile,
+or instrumented-build drift.
+
+Selected increment gates:
+
+- focused quality-observatory integration and CRAP evaluator tests;
+- exact profile/source guards and independent inventory/JUnit reconciliation;
+- Rustfmt and warnings-denied Clippy for the registered integration contract;
+- Python bytecode compilation and CLI negative-path probes;
+- documentation lint for changed package/catalog evidence;
+- diff hygiene, write-set reconciliation, prompt state, and line-count
+  governance;
+- repository-owned quality pre-heavy admission followed by the package-required
+  delegated instrumented `full` plus `science-manual` collection;
+- two independent read-only measurement reviews, finding disposition, and two
+  independent read-only terminal verifications.
+
+The instrumented full-profile execution is the selected exact-head
+full-workspace correctness regression for this critical coverage-runner change.
+Coverage/CRAP debt remains observational; execution-integrity, inventory, and
+evidence-integrity failures are closure-blocking.
 
 ## Phase Plan
 
@@ -111,3 +155,13 @@ to two read-only measurement reviewers and two read-only terminal verifiers;
 expected outputs are profile/inventory, provenance, and report-integrity
 artifacts; write access is read-only. Any selected heavy collection must be
 delegated to `comparator_suite_runner`.
+
+## Current Hold
+
+Corrected attempt 3 proved the observatory permission defects closed but found
+seven predecessor gate-planner regression failures. See
+`artifacts/heavy-attempt-03-gate-planner-blocker.md`. The required full
+correctness gate is `FAIL`; downstream science-manual, merge, CRAP,
+publication, and terminal verification are `NOT RUN`. This package cannot
+advance to complete until an authorized prerequisite package aligns those
+out-of-write-set fixtures and a fresh admitted attempt passes.
