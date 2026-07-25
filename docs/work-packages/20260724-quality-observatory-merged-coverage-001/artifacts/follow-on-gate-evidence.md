@@ -49,6 +49,9 @@ Current correction gates:
 - Attempt 12 final identity: 291 executable rows and working tree equal
   admission; source and snapshot clean.
 - Attempt 12 publication: not reached; 0 files and no evidence ID.
+- Isolated public-audit consumer: three `PASS` runs, including one with
+  deliberate ambient untracked dirt.
+- Snapshot-isolation implementation/security reviews: both `PASS`, no
+  findings.
 
-Isolated-clone prerequisite correction, fresh complete transition, and
-terminal verification remain pending.
+Fresh complete transition and terminal verification remain pending.

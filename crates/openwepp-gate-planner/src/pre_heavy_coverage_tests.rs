@@ -405,8 +405,57 @@ fn low_coverage_binding_helpers_exercise_their_reject_arms() {
     ignore = "development-only: performs live full-repository inventory and exact reconstruction"
 )]
 fn exact_planner_output_reconstructs_through_the_public_audit_path() {
-    let repo = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
-    let source = observe_committed(&repo, "HEAD^", "HEAD").expect("committed source");
+    use crate::executor::tests::TempDirectory;
+
+    let source_repo = repository_root();
+    let fixture = TempDirectory::new("pre-heavy-public-audit-source");
+    let repo = fixture.path().join("repository");
+    let clone_status = Command::new("git")
+        .args(["clone", "--local", "--no-hardlinks", "--quiet"])
+        .arg(&source_repo)
+        .arg(&repo)
+        .status()
+        .expect("clone committed source");
+    assert!(clone_status.success(), "committed source clone");
+    let source_venv = source_repo.join(".venv");
+    assert!(source_venv.is_dir(), "repository-local Python environment");
+    std::os::unix::fs::symlink(&source_venv, repo.join(".venv"))
+        .expect("bind repository-local Python environment");
+    fs::write(repo.join(".git/info/exclude"), "/.venv\n")
+        .expect("exclude bound Python environment");
+    let clone_status = Command::new("git")
+        .args([
+            "status",
+            "--porcelain=v1",
+            "-z",
+            "--untracked-files=all",
+            "--",
+        ])
+        .current_dir(&repo)
+        .output()
+        .expect("inspect committed source clone");
+    assert!(
+        clone_status.stdout.is_empty(),
+        "committed source clone must be clean: {:?}",
+        String::from_utf8_lossy(&clone_status.stdout)
+    );
+    let source = observe_committed(&repo, "HEAD^", "HEAD").unwrap_or_else(|error| {
+        let status = Command::new("git")
+            .args([
+                "status",
+                "--porcelain=v1",
+                "-z",
+                "--untracked-files=all",
+                "--",
+            ])
+            .current_dir(&repo)
+            .output()
+            .expect("inspect rejected committed source clone");
+        panic!(
+            "committed source: {error:?}; status: {:?}",
+            String::from_utf8_lossy(&status.stdout)
+        );
+    });
     let authorized_paths = source
         .changes
         .iter()

@@ -40,3 +40,15 @@ Logs and exit-code files:
 - `logs/phase3-workspace-full.{log,exit-code}`
 
 Order-3 quality transition remains pending.
+
+## Snapshot-Isolation Correction
+
+- Exact public-audit consumer under `--cfg coverage`: `PASS`, `107.072s`.
+- Exact clean-root repeat: `PASS`, `106.686s`.
+- Exact consumer with deliberate untracked shared-root probe: `PASS`,
+  `105.465s`; probe removed.
+- Committed/dirty observation negative guard: `PASS`.
+- Gate-planner lib/tests warnings-denied Clippy: `PASS`.
+- Rustfmt and diff validation: `PASS`.
+- Independent implementation review: `PASS`, no findings.
+- Independent security review: `PASS`, no findings.

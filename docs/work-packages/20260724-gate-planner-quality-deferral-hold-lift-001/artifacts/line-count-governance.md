@@ -9,6 +9,7 @@ Measured after implementation:
 | `src/executor.rs` | 2,941 | WARN |
 | `src/planner.rs` | 2,463 | WARN |
 | `src/verifier.rs` | 2,794 | WARN |
+| `src/pre_heavy_coverage_tests.rs` | 484 | PASS |
 
 All three files remain below the 3,000-line blocking ceiling. This correction
 adds only one 12-line exactness helper to `planner.rs`; the executor and

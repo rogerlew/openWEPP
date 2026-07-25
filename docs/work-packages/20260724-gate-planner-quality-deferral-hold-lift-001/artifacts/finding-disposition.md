@@ -11,10 +11,11 @@ Open closure-blocking findings: `0`.
 | Authority-checkout/reconstruction interpretation | `accepted / corrected` | Evidence now identifies `repo.path()` as the monitored execution checkout and retains positive mutation presence. |
 | Terminal quality-disposition drift | `accepted / fixed` | Semantic reconciliation requires exact whole-value equality and returns typed `GATE-TERMINAL-QUALITY-DISPOSITION`. |
 | Stale review/evidence narrative | `accepted / fixed` | Both reviewers confirmed current package and gate evidence are truthful. |
+| Public-audit coverage test observed shared checkout | `accepted / fixed` | The real consumer uses a disposable no-hardlink committed clone with exact venv exclusion; two clean passes and one ambient-dirt pass prove isolation. |
 
 Implementation review: `PASS`.
 
 Security/fail-closed review: `PASS`.
 
-Terminal gate authorization: `READY` after committing this reviewed candidate
-and confirming an exact clean checkout.
+Terminal gate authorization: `READY` after committing the reviewed isolated
+consumer and confirming an exact clean checkout.

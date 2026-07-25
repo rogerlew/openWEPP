@@ -2,7 +2,7 @@
 
 Package ID: `20260724-quality-observatory-merged-coverage-001`
 
-Status: `ACTIVE / BLOCKED / ORDER-3`
+Status: `ACTIVE / READY / ORDER-3`
 
 ## Objective
 
@@ -204,3 +204,8 @@ shared execution checkout. Final observatory identity remained exact. The
 gate-planner prerequisite is reopened to move that content-independence proof
 onto its own committed no-hardlink clone. See the prerequisite artifact
 `artifacts/attempt-12-repository-snapshot-isolation.md`.
+
+The isolated real consumer subsequently passed twice from a clean source and
+once while deliberate ambient untracked dirt existed. Both independent
+reviews passed with no findings. Fresh collection is authorized after
+committing the reviewed correction.
