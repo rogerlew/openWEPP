@@ -2,7 +2,38 @@
 
 Package ID: `20260724-testgate-quality-observatory-qualification-001`
 
-Status: `QUEUED / ORDER-6`
+Status: `ACTIVE / QUALIFICATION / ORDER-6`
+
+## Pre-Execution Intent
+
+Risk: `CRITICAL`.
+
+This package performs the roadmap's one changed-head functional TESTGATE
+qualification. Before publication or dispatch it will run the repository-owned
+cheap source/schema/focused checks, reconcile the exact base-to-head authority
+chain, record the current provider queue state, and retain a dispatch-intent
+artifact binding:
+
+- active scaffold/base commit
+  `907222635e281a2e135b7f83bdf41eef9656a2d6`;
+- this exact intent package path;
+- the final pushed `main` head; and
+- exactly one authorized TESTGATE workflow dispatch.
+
+The workflow itself owns LIGHT execution, the canonical ten-check pre-heavy
+audit, forest1 HEAVY admission, receipt production, hosted independent
+verification, and retained recovery evidence. The parent does not execute
+heavy gates locally. The authorized comparator runner monitors provider state
+and retained artifacts read-only.
+
+If the attempt exposes an in-scope repository tooling defect, evidence is
+retained and the defect is corrected before a changed-head retry. An unchanged
+failure is never rerun. No QA, coverage, CRAP, or CQR workflow is selected.
+
+Terminal acceptance requires the exact receipt and plan to prove
+`DEFERRED_TO_QUALITY_CI`, no quality execution node, truthful
+`LOCAL_UNTRUSTED`, valid recovery/archive/ledger evidence, and explicit
+rejection of incompatible pre-split evidence.
 
 ## Objective
 
@@ -36,6 +67,9 @@ direct functional evidence.
 - `docs/work-packages/20260724-testgate-quality-observatory-qualification-001/**`
 - `docs/work-packages/20260724-cqr-testgate-coverage-reconstruction-001/**`
 - `docs/work-packages/README.md`
+- `docs/work-packages/testgate-quality-observatory-roadmap.md` (Order-6
+  closeout routing only)
+- `docs/ROADMAP.md` (Order-6/Order-7 routing only)
 
 ## Dependencies
 
