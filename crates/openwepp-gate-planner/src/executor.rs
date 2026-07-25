@@ -2856,7 +2856,7 @@ pub(crate) mod tests {
             "e2e-mutation-repo",
             &[
                 fixture_gate_definition(&["./tools/mutate.sh"], &[]),
-                gate_definition("fixture-independent-v1", &["./tools/mark.sh"], &[]),
+                gate_definition("fixture-secondary-v1", &["./tools/mark.sh"], &[]),
             ],
         );
         let artifacts = TempDirectory::new("e2e-mutation-artifacts");

@@ -7,7 +7,7 @@ This Defect-Closure ExecPlan is a living document governed by
 
 Package ID: `20260724-gate-planner-quality-deferral-hold-lift-001`
 
-Status: `ACTIVE / SCAFFOLD`
+Status: `ACTIVE / TERMINAL-GATES`
 
 ## Purpose / Big Picture
 
@@ -24,8 +24,13 @@ pass independent terminal verification.
 - [x] 2026-07-24: Retain the exact seven-test failure set and durable attempt-3
   evidence.
 - [x] 2026-07-24: Scaffold this prerequisite before gate-policy or Rust edits.
-- [ ] Reproduce and attribute all seven failures to named mechanisms.
-- [ ] Correct policy fixtures/tests without weakening production guards.
+- [x] 2026-07-24: Reproduce all seven on the clean scaffold head; three exact
+  checkout cases pass and four failures reduce to three owned mechanisms.
+- [x] 2026-07-24: Correct policy fixtures/tests without weakening production
+  guards; ordinary crate, Clippy, source-contract, and documentation edit-loop
+  gates pass.
+- [x] 2026-07-24: Close one independent-review HIGH mutation-order finding and
+  pass both implementation and security re-reviews with zero open findings.
 - [ ] Pass focused, owning-crate, review, and full-workspace gates.
 - [ ] Lift Order 3, run fresh merged coverage, and verify publication twice.
 - [ ] Reconcile and close both packages.
@@ -174,7 +179,21 @@ durable log paths. Repository write access for all subagents is read-only.
 
 ## Surprises & Discoveries
 
-- None beyond the retained attempt-3 failure set at scaffold time.
+- Three exact-checkout cases passed on the clean scaffold head. Their attempt-3
+  failures correctly rejected the observatory's admitted dirty checkout rather
+  than exposing independent planner defects.
+- Two failures used the prohibited retired `adjudicated-crap-v1` identity in
+  otherwise ordinary HEAVY fixtures.
+- The mutation test's intended out-of-manifest mutator was initially hidden by
+  deterministic node order. It must mutate the monitored execution checkout,
+  invalidate its source digest, and globally block the later node.
+- Terminal reconciliation relied on public schema validation for quality
+  disposition exactness; the private semantic boundary now enforces that
+  invariant independently.
+- Independent security review caught a second mutation-fixture defect:
+  deterministic lexical ordering ran `fixture-independent-v1` before the
+  primary mutator. The prerequisite-free secondary fixture now has a later
+  identity so the intended mutation runs first.
 
 ## Decision Log
 

@@ -736,7 +736,7 @@ fn ready_audited_heavy_preserves_import_and_final_receipt_bindings() {
         gate_definition("documentation-lint-v1", &["markdown-doc", "lint"], &[]);
     let light_definition = gate_definition("fixture-light-v1", &["./tools/pass.sh"], &[]);
     let mut heavy_definition = gate_definition(
-        "adjudicated-crap-v1",
+        "fixture-heavy-v1",
         &["./tools/pass.sh"],
         &["fixture-light-v1"],
     );

@@ -80,6 +80,7 @@ pub fn reconcile_intent_terminal(
 
 fn reconcile_semantics(intent: &Value, terminal: &Value) -> Result<Reconciliation> {
     verify_reconciliation_link(intent, terminal)?;
+    verify_quality_disposition_exact(intent, terminal)?;
     let intended = changed_paths(intent)?;
     let actual = changed_paths(terminal)?;
     verify_terminal_authorization(intent, terminal, &actual)?;
@@ -94,6 +95,17 @@ fn reconcile_semantics(intent: &Value, terminal: &Value) -> Result<Reconciliatio
         removed_paths,
         risk_escalated: terminal_risk > intent_risk,
     })
+}
+
+fn verify_quality_disposition_exact(intent: &Value, terminal: &Value) -> Result<()> {
+    if intent["quality_disposition"] != terminal["quality_disposition"] {
+        return Err(GatePolicyError::new(
+            ErrorClass::Planning,
+            "GATE-TERMINAL-QUALITY-DISPOSITION",
+            "terminal quality disposition differs from accepted intent",
+        ));
+    }
+    Ok(())
 }
 
 fn verify_reconciliation_link(intent: &Value, terminal: &Value) -> Result<()> {

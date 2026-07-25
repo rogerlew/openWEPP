@@ -919,7 +919,7 @@
         semantic_error(
             &intent_with_path,
             &mismatched_proof,
-            "GATE-TERMINAL-UNAUTHORIZED-PATH",
+            "GATE-TERMINAL-QUALITY-DISPOSITION",
         );
 
         let mut invalid_intent_risk = intent_with_path.clone();
