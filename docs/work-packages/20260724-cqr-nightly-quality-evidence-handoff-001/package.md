@@ -69,6 +69,8 @@ evidence is stale, malformed, incomplete, or identity-incompatible.
 - `docs/work-packages/20260724-cqr-nightly-quality-evidence-handoff-001/**`
 - `docs/work-packages/README.md`
 - `Cargo.toml` (exact Order-5 integration-test registration only)
+- `gate-policy/v1/impact-map.json` (exact inherited Order-4 testing-strategy
+  digest correction only)
 - `tools/local_ci/**`
 - `tools/release/**`
 - `tests/integration/cqr_*`
@@ -76,6 +78,11 @@ evidence is stale, malformed, incomplete, or identity-incompatible.
 ## Dependencies
 
 - Orders 3 and 4 complete with a stable report schema and workflow identity.
+- Inherited baseline correction: Order 4 updated the canonical testing
+  strategy during closeout without refreshing the impact-map
+  `policy_sha256`. Order 5 must restore that exact digest binding before its
+  selected existing TESTGATE contract can pass; no matcher or gate semantics
+  may change.
 
 ## Phase Plan
 
