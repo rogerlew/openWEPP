@@ -33,6 +33,14 @@ Current correction gates:
 - Attempt 11 final read-only identity: 291 executable rows and working tree
   equal admission.
 - Attempt 11 publication: not reached; 0 files and no evidence ID.
+- Science confinement and TESTGATE scheduling checks: `PASS`, 2/2.
+- Unlisted ordinary-path adversarial probe: expected `FAIL`, exact path
+  reported.
+- Nested allowed-suffix collision probe: expected `FAIL`, exit 100, exact
+  unlisted path reported.
+- Science-confinement Rustfmt and warnings-denied Clippy: `PASS`.
+- Science-confinement implementation re-review: `PASS`, no findings.
+- Science-confinement security re-review: one `HIGH` fixed and closed; final
+  `PASS`, no findings.
 
-Science-confinement correction, fresh complete transition, and terminal
-verification remain pending.
+Fresh complete transition and terminal verification remain pending.

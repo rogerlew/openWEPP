@@ -6,6 +6,7 @@ Evidence class: Ran / Static.
 |---|---:|---|
 | `tools/local_ci/quality_observatory.py` | 2,398 | WARN |
 | `tests/integration/quality_observatory_merged_coverage_contract.rs` | 145 | PASS |
+| `tests/integration/snowdensity03_physics_bulk_offline_contract.rs` | 143 | PASS |
 
 The Python collector remains below the 3,000-line blocking ceiling. The
 follow-on adds one narrow Git-metadata helper and behavioral self-test.

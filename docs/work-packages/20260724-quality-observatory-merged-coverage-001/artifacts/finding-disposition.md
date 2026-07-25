@@ -2,7 +2,7 @@
 
 Evidence class: Static / Ran.
 
-Open closure-blocking findings: `1`.
+Open closure-blocking findings: `0`.
 
 | Finding | Disposition | Resolution |
 | --- | --- | --- |
@@ -26,12 +26,13 @@ Open closure-blocking findings: `1`.
 | Broad pre-existing local exclude can hide drift | `accepted / fixed` | Security re-review proved the helper overwrites rather than preserves policy; adversarial `*` setup no longer hides another untracked file. |
 | Runtime assurance consumer extends admitted target | `accepted / fixed` | Admission primes the exact locked/offline binary before sealing; its declaration is admission/payload/terminal bound and manifest equality remains exact. |
 | Final manifest check precedes target-using finalization | `accepted / fixed` | Exact execution identity is rechecked after CRAP/evaluator/snowbench work immediately before PASS publication; executable-growth self-test rejects drift. |
-| Governance-only science binary name rejected by confinement allowlist | `accepted / correction authorized` | Attempt 11 proved the older exact-path allowlist omitted the Order-2 TESTGATE source-contract consumer. Add only that integration-test path, prove another unlisted path still fails, and rerun the complete transition. |
+| Governance-only science binary name rejected by confinement allowlist | `accepted / fixed` | The exact governance path is allowed; ordinary and nested suffix-collision unlisted paths remain rejected. |
+| Confinement allowlist used suffix rather than exact path matching | `accepted / fixed` | Security re-review found a `HIGH` nested-path bypass. The walker now compares normalized repository-relative paths by equality, and an adversarial suffix collision fails with its exact path. |
 
 Review A final disposition: `PASS`.
 
 Review B final disposition: `PASS`.
 
-Heavy collection authorization: `BLOCKED` pending the narrow attempt-11
-science-confinement correction, focused negative-path proof, and both
-independent re-reviews.
+Heavy collection authorization: `READY`. The attempt-11 confinement correction
+passes positive, ordinary-negative, and suffix-collision-negative proofs;
+both independent re-reviews pass with zero open findings.

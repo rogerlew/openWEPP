@@ -2,7 +2,7 @@
 
 Package ID: `20260724-quality-observatory-merged-coverage-001`
 
-Status: `ACTIVE / CORRECTION / ORDER-3`
+Status: `ACTIVE / READY / ORDER-3`
 
 ## Objective
 
@@ -192,4 +192,8 @@ The Order-2 TESTGATE source contract legitimately names the science binary to
 prove profile partitioning; that governance-only test path is not a runtime
 consumer. See `artifacts/heavy-attempt-11-science-confinement.md`. This package
 amends its write set before implementation for the exact confinement test and
-authorizes only the narrow allowlist correction plus negative-path proof.
+authorizes only the narrow allowlist correction plus negative-path proof. The
+correction passes both reviews after closing a security-review `HIGH`
+suffix-collision bypass in the older matcher. Exact repository-relative
+equality now admits the one governance path and rejects ordinary and nested
+unlisted paths. Fresh collection is authorized after committing this evidence.
