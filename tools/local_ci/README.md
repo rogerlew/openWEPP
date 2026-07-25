@@ -41,6 +41,18 @@ python tools/local_ci/nextest_timing.py sweep \
 The latest summary is written to `target/local-ci-history/latest.md`; the full
 append-only log is `target/local-ci-history/nextest-runs.jsonl`.
 
+## CQR Quality-Evidence Intake
+
+Before CQR target selection, validate the exact quality-observatory publication
+with `cqr_quality_evidence.py inspect`. Supply its complete control receipt and
+expected `quality_evidence_id`; retain the canonical output in the batch
+package. Only `CURRENT` may select modules.
+
+The tool reconstructs registry adjudication and actionable module ranking from
+exact compact rows and launches no measurement. Fresh acquisition requires
+`authorize-recollection`, a retained `STALE`/`INVALID` receipt, and the explicit
+operator CQR directive.
+
 ## CQR Aggregate Admission
 
 Before the first implementation edit in a multi-package CQR batch, commit an

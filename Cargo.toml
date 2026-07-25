@@ -722,6 +722,10 @@ path = "tests/integration/assurance_v2_publication_contract.rs"
 name = "assurance_v2_groundwater_report_contract"
 path = "tests/integration/assurance_v2_groundwater_report_contract.rs"
 
+[[test]]
+name = "cqr_quality_evidence_handoff_contract"
+path = "tests/integration/cqr_quality_evidence_handoff_contract.rs"
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

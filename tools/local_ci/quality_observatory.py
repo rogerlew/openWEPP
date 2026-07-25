@@ -1919,7 +1919,11 @@ def exact_row_key(row: dict[str, Any]) -> tuple[Any, ...]:
 
 
 def verify_compact_crap(
-    repo: Path, report: dict[str, Any], payload: dict[str, Any]
+    repo: Path,
+    report: dict[str, Any],
+    payload: dict[str, Any],
+    *,
+    check_current_registry: bool = True,
 ) -> None:
     raw = report.get("raw_over_threshold")
     adjudicated = report.get("adjudicated")
@@ -1950,15 +1954,14 @@ def verify_compact_crap(
         raise QualityError("compact CRAP counts do not match exact rows")
     if report.get("invalid_adjudications"):
         raise QualityError("compact CRAP report contains invalid adjudications")
-    registry = repo / "tools/release/adjudicated_crap_exceptions.json"
     crap_binding = payload.get("crap")
     if not isinstance(crap_binding, dict):
         raise QualityError("payload lacks CRAP identity")
     if (
-        report.get("adjudication_registry_sha256") != sha256_file(registry)
-        or crap_binding.get("registry_sha256") != sha256_file(registry)
+        report.get("adjudication_registry_sha256")
+        != crap_binding.get("registry_sha256")
     ):
-        raise QualityError("CRAP registry identity is invalid")
+        raise QualityError("CRAP registry bindings disagree")
     if report.get("crap_json_sha256") != crap_binding.get("workspace_crap_sha256"):
         raise QualityError("workspace CRAP source digest is invalid")
     if report.get("lcov_sha256") != payload.get("coverage", {}).get(
@@ -1975,6 +1978,11 @@ def verify_compact_crap(
         raise QualityError("CRAP report is not a completed observation")
     if report.get("schema_version") != "openwepp-adjudicated-crap-report-v1":
         raise QualityError("compact CRAP report schema is unsupported")
+    if not check_current_registry:
+        return
+    registry = repo / "tools/release/adjudicated_crap_exceptions.json"
+    if crap_binding.get("registry_sha256") != sha256_file(registry):
+        raise QualityError("CRAP registry identity is stale")
     registry_payload = read_object(registry)
     try:
         adjudications, invalid = load_crap_module(repo)._load_adjudications(
@@ -2089,6 +2097,7 @@ def verify_published(
     *,
     independent_inventory: bool = True,
     check_source: bool = True,
+    check_current_controls: bool = True,
 ) -> str:
     ensure_no_symlink_path(published.absolute())
     if not published.is_dir() or published.is_symlink():
@@ -2158,19 +2167,21 @@ def verify_published(
     ):
         raise QualityError("quality payload toolchain/execution identity is invalid")
     admitted = validate_admission_binding(admission_path, payload)
-    if identity_versions(repo) != payload["toolchain"]:
-        raise QualityError("terminal toolchain differs from admitted toolchain")
-    if sha256_file(Path(__file__).resolve()) != payload["control_inputs"].get(
-        "collector_sha256"
-    ):
-        raise QualityError("terminal collector differs from admitted collector")
-    workflow_path = repo / ".github/workflows/quality-observatory.yml"
-    if (
-        payload["subject"]["workflow_revision"] != payload["head_commit"]
-        or not workflow_path.is_file()
-        or sha256_file(workflow_path) != payload["subject"]["workflow_sha256"]
-    ):
-        raise QualityError("terminal workflow identity differs from admission")
+    if payload["subject"]["workflow_revision"] != payload["head_commit"]:
+        raise QualityError("published workflow revision differs from subject HEAD")
+    if check_current_controls:
+        if identity_versions(repo) != payload["toolchain"]:
+            raise QualityError("terminal toolchain differs from admitted toolchain")
+        if sha256_file(Path(__file__).resolve()) != payload["control_inputs"].get(
+            "collector_sha256"
+        ):
+            raise QualityError("terminal collector differs from admitted collector")
+        workflow_path = repo / ".github/workflows/quality-observatory.yml"
+        if (
+            not workflow_path.is_file()
+            or sha256_file(workflow_path) != payload["subject"]["workflow_sha256"]
+        ):
+            raise QualityError("terminal workflow identity differs from admission")
     envelope = read_object(published / "quality-envelope.json")
     if (published / "quality-envelope.json").read_bytes() != canonical_bytes(
         envelope
@@ -2249,7 +2260,12 @@ def verify_published(
         if payload["junit"].get(profile) != expected:
             raise QualityError(f"payload {profile} JUnit binding is invalid")
     report = read_object(published / "adjudicated-crap-report.json")
-    verify_compact_crap(repo, report, payload)
+    verify_compact_crap(
+        repo,
+        report,
+        payload,
+        check_current_registry=check_current_controls,
+    )
     if payload.get("crap", {}).get("raw_count") != report.get(
         "raw_over_threshold_count"
     ):
@@ -2266,15 +2282,18 @@ def verify_published(
     snowbench = coverage.get("snowbench_rows")
     if not isinstance(snowbench, list) or len(snowbench) != 18:
         raise QualityError("coverage summary lacks the exact 18-row snowbench proof")
-    ledger = read_object(
-        repo
-        / "docs/work-packages/20260724-quality-observatory-merged-coverage-001"
-        / "artifacts/snowbench-full-only-row-ledger.json"
-    )
     if coverage.get("snowbench_ledger_sha256") != admitted.get(
         "snowbench_ledger_sha256"
-    ) or [row.get("historical") for row in snowbench] != ledger.get("rows"):
-        raise QualityError("snowbench proof does not reproduce the historical ledger")
+    ):
+        raise QualityError("snowbench proof does not bind the admitted ledger")
+    if check_current_controls:
+        ledger = read_object(
+            repo
+            / "docs/work-packages/20260724-quality-observatory-merged-coverage-001"
+            / "artifacts/snowbench-full-only-row-ledger.json"
+        )
+        if [row.get("historical") for row in snowbench] != ledger.get("rows"):
+            raise QualityError("snowbench proof does not reproduce the historical ledger")
     if coverage.get("snowbench_gate_status") != "PASS":
         raise QualityError("snowbench coverage contribution requires review")
     for row in snowbench:

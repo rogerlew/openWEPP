@@ -148,8 +148,11 @@ and report the blocked commit boundary.
 4. Populate `artifacts/required-reading-map.md` with path, tier, rationale,
    applicability trigger, and read status for all kickoff required reading.
 5. Verify and extract the target rows from the batch's current
-   `quality_evidence_id`. Recollection is allowed only after typed
-   `STALE`/`INVALID` evidence under the CQR ExecPlan.
+   `quality_evidence_id` using the retained canonical
+   `quality-evidence-intake.json`. Require `CURRENT` and
+   `collection_launched=false`. Recollection is allowed only after a retained
+   typed `STALE`/`INVALID` intake receipt and
+   `recollection-authorization.json` under the CQR ExecPlan.
 6. Summarize raw and actionable target rows separately in
    `artifacts/crap-before.md` and
    `artifacts/coverage-before.md`.

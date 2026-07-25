@@ -1,6 +1,6 @@
 # CQR Nightly Burndown ExecPlan
 
-Status: **transition HOLD until quality-observatory Order 5**
+Status: **ACTIVE / exact quality-evidence intake required**
 Dispatch surface: **main** unless the operator explicitly authorizes a branch.
 Owner: maintainers.
 Last updated: 2026-07-24.
@@ -9,7 +9,7 @@ This ExecPlan defines the operator shorthand:
 
 `execute cqr nightly for <N> modules`
 
-After Order 5, the command means: verify one current `quality_evidence_id`,
+The command means: verify one current `quality_evidence_id`,
 select the top `N` eligible production modules from its compact raw/
 adjudicated/actionable rows, scaffold one
 ordinary work package per selected module, commit each scaffold, execute each
@@ -77,11 +77,36 @@ science, contract, defect-closure, or feature package.
 
 ## Target Selection
 
-Until Order 5 implements exact QA-evidence intake, stop in `HOLD`; do not
-reconstruct the old full-only baseline. After Order 5, verify the operator-
-supplied `quality_evidence_id` and derive selection from its compact exact rows.
+Do not reconstruct the old full-only baseline. Verify the operator-supplied
+`quality_evidence_id` and derive selection from its compact exact rows:
+
+```bash
+python tools/local_ci/cqr_quality_evidence.py inspect \
+  --repo . \
+  --published-dir <exact-11-file-observation> \
+  --control-receipt <quality-control-receipt.json> \
+  --expected-id <quality_evidence_id> \
+  --limit <N> \
+  --output <batch-package>/artifacts/quality-evidence-intake.json
+```
+
+The complete control receipt supplies the independently bound admission object;
+the locator itself is not authority. Preserve the canonical `CURRENT` receipt
+and selected exact rows in the aggregate and first module package. Intake
+launches no measurement command.
+
 Only typed `STALE` or `INVALID` evidence plus the explicit CQR directive permits
-fresh recollection.
+fresh recollection. Before collection, retain the intake receipt and run:
+
+```bash
+python tools/local_ci/cqr_quality_evidence.py authorize-recollection \
+  --intake-receipt <quality-evidence-intake.json> \
+  --operator-directive "execute cqr nightly for <N> modules" \
+  --output <batch-package>/artifacts/recollection-authorization.json
+```
+
+Missing evidence is `INVALID`, never current. A locator error without the typed
+receipt and explicit authorization does not permit collection.
 
 Candidate files are production Rust modules under `crates/**/src/`, excluding
 test-only modules. Preserve the raw CRAP table, then classify every unique row

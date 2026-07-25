@@ -59,6 +59,12 @@ Reduce every eligible production function above CRAP `30` to `<= 30`, or record
 an ADR-0021-style disposition and hold when behavior-preserving CQR cannot close
 the target safely.
 
+Quality evidence: consume the package-retained `CURRENT`
+`quality-evidence-intake.json` bound to `{{quality_evidence_id}}`. Do not launch
+coverage recollection from a locator or missing report. Recollection requires
+both a retained typed `STALE`/`INVALID` intake receipt and the canonical
+authorization bound to this explicit operator directive.
+
 Eligibility gate: before implementation, preserve the raw CRAP rows and write
 `artifacts/eligibility-classification.md`. Classify each row at exact
 file/function/line granularity as `E-SCIENCE`, `E-PRODUCTION`, an `R-*`

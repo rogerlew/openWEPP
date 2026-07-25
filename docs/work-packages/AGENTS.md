@@ -257,9 +257,11 @@
   production modules, and scaffold one package per module from
   `docs/work-packages/templates/cqr-nightly-package.md`, and execute each package
   end-to-end.
-- Until Order 5 of the ratified quality-observatory roadmap implements exact
-  QA-evidence intake, new CQR Nightly dispatch is `HOLD`. After Order 5, fresh
-  recollection is allowed only after typed `STALE`/`INVALID` evidence and an
+- CQR Nightly intake must run
+  `tools/local_ci/cqr_quality_evidence.py inspect` against the exact compact
+  observation, complete control receipt, and expected evidence ID. Only a
+  `CURRENT` receipt may seed selection. Fresh recollection is allowed only
+  after `authorize-recollection` binds a typed `STALE`/`INVALID` receipt to an
   explicit operator CQR directive.
 - Treat each new imperative CQR-nightly request as authorization for a **fresh,
   separately numbered batch**, even when a completed nightly batch is already
