@@ -27,6 +27,9 @@ INVENTORY_SCHEMA = "openwepp-quality-observatory-inventory-v1"
 COVERAGE_SCHEMA = "openwepp-quality-observatory-coverage-summary-v1"
 ENVELOPE_SCHEMA = "openwepp-quality-observatory-envelope-v1"
 PROFILES = ("full", "science-manual")
+RUNTIME_CARGO_ARTIFACTS = (
+    {"package": "openwepp-assurance", "binary": "openwepp-assurance"},
+)
 PUBLISHED_FILES = {
     "quality-envelope.json",
     "quality-payload.json",
@@ -709,6 +712,54 @@ def instrumented_artifact_manifest(target: Path) -> list[dict[str, Any]]:
     return rows
 
 
+def prime_runtime_cargo_artifacts(
+    repo: Path, target: Path, env: dict[str, str]
+) -> list[dict[str, str]]:
+    artifacts = [dict(item) for item in RUNTIME_CARGO_ARTIFACTS]
+    for artifact in artifacts:
+        run(
+            [
+                "cargo",
+                "build",
+                "--locked",
+                "--offline",
+                "--config",
+                "net.offline=true",
+                "--package",
+                artifact["package"],
+                "--bin",
+                artifact["binary"],
+                "--target-dir",
+                str(target),
+            ],
+            cwd=repo,
+            env=env,
+        )
+        executable = target / "debug" / artifact["binary"]
+        if (
+            executable.is_symlink()
+            or not executable.is_file()
+            or not executable.stat().st_mode & stat.S_IXUSR
+        ):
+            raise QualityError(
+                f"runtime Cargo artifact is not a plain executable: {executable}"
+            )
+    return artifacts
+
+
+def require_execution_identity(
+    repo: Path,
+    target: Path,
+    expected_artifacts: list[dict[str, Any]],
+    expected_working_tree: str,
+    context: str,
+) -> None:
+    if instrumented_artifact_manifest(target) != expected_artifacts:
+        raise QualityError(f"instrumented build changed {context}")
+    if working_tree_identity(repo) != expected_working_tree:
+        raise QualityError(f"execution snapshot changed {context}")
+
+
 def admit(args: argparse.Namespace) -> int:
     global _ACTIVE_ADMISSION_ID
     ensure_no_symlink_path(args.attempt_root.absolute())
@@ -750,6 +801,9 @@ def admit(args: argparse.Namespace) -> int:
         repo, "full", config, target, instrumented_env, canonical=True
     )
     validate_inventory_partition(full, science, workspace)
+    runtime_artifacts = prime_runtime_cargo_artifacts(
+        repo, target, instrumented_env
+    )
     for inventory in (full, science, workspace):
         write_json(local / f"admitted-inventory-{inventory['inventory']}.json", inventory)
     registry = repo / "tools/release/adjudicated_crap_exceptions.json"
@@ -762,6 +816,7 @@ def admit(args: argparse.Namespace) -> int:
         "coverage_mode": "workspace-default-features-instrument-coverage-cfg-coverage",
         "features": [],
         "instrumented_target": str(target),
+        "runtime_cargo_artifacts": runtime_artifacts,
         "llvm_environment": {
             key: llvm_exports[key]
             for key in sorted(llvm_exports)
@@ -894,6 +949,10 @@ def validate_admission(repo: Path, attempt_root: Path) -> dict[str, Any]:
         raise QualityError("source or Git index changed after quality admission")
     if identity_versions(repo) != payload["build_identity"]["toolchain"]:
         raise QualityError("toolchain changed after quality admission")
+    if payload["build_identity"].get("runtime_cargo_artifacts") != [
+        dict(item) for item in RUNTIME_CARGO_ARTIFACTS
+    ]:
+        raise QualityError("runtime Cargo artifact declaration changed")
     config = attempt_root / "local/nextest.toml"
     if config.is_symlink() or not config.is_file():
         raise QualityError("admitted Nextest config is missing or unsafe")
@@ -1040,10 +1099,13 @@ def execute_profile(
         env=profile_env,
         stdout_path=log,
     )
-    if instrumented_artifact_manifest(target) != expected_artifacts:
-        raise QualityError(f"instrumented build changed while executing {profile}")
-    if working_tree_identity(repo) != expected_working_tree:
-        raise QualityError(f"execution snapshot changed while executing {profile}")
+    require_execution_identity(
+        repo,
+        target,
+        expected_artifacts,
+        expected_working_tree,
+        f"while executing {profile}",
+    )
     return profraw_index(raw_dir)
 
 
@@ -1480,10 +1542,13 @@ def collect(args: argparse.Namespace) -> int:
         [full_index, science_index],
         payload["build_identity"]["working_tree_identity"],
     )
-    if instrumented_artifact_manifest(target) != payload["build_identity"]["artifacts"]:
-        raise QualityError("instrumented build changed during coverage derivation")
-    if working_tree_identity(repo) != payload["build_identity"]["working_tree_identity"]:
-        raise QualityError("execution snapshot changed during coverage derivation")
+    require_execution_identity(
+        repo,
+        target,
+        payload["build_identity"]["artifacts"],
+        payload["build_identity"]["working_tree_identity"],
+        "during coverage derivation",
+    )
     science_crap = local / "science-manual-crap.json"
     merged_crap = local / "merged-workspace-crap.json"
     cargo_crap(
@@ -1538,6 +1603,13 @@ def collect(args: argparse.Namespace) -> int:
         "snowbench_rows": snowbench_rows,
     }
     write_json(published / "coverage-summary.json", coverage_summary)
+    require_execution_identity(
+        repo,
+        target,
+        payload["build_identity"]["artifacts"],
+        payload["build_identity"]["working_tree_identity"],
+        "during quality finalization",
+    )
     if source_manifest(repo) != payload["source_manifest"]:
         raise QualityError("execution snapshot changed during quality collection")
     if source_manifest(source_repo) != payload["source_manifest"]:
@@ -1575,6 +1647,9 @@ def collect(args: argparse.Namespace) -> int:
         "instrumented_build_id": payload["instrumented_build_id"],
         "coverage_mode": payload["build_identity"]["coverage_mode"],
         "features": payload["build_identity"]["features"],
+        "runtime_cargo_artifacts": payload["build_identity"][
+            "runtime_cargo_artifacts"
+        ],
         "toolchain": payload["build_identity"]["toolchain"],
         "control_inputs": {
             "registry_sha256": payload["registry_sha256"],
@@ -1852,6 +1927,9 @@ def validate_admission_binding(
         "ordered_profiles": admitted.get("ordered_profiles"),
         "coverage_mode": admitted.get("build_identity", {}).get("coverage_mode"),
         "features": admitted.get("build_identity", {}).get("features"),
+        "runtime_cargo_artifacts": admitted.get("build_identity", {}).get(
+            "runtime_cargo_artifacts"
+        ),
         "toolchain": admitted.get("build_identity", {}).get("toolchain"),
         "inventories": admitted.get("inventories"),
         "registry_sha256": admitted.get("registry_sha256"),
@@ -1877,6 +1955,7 @@ def validate_admission_binding(
         "ordered_profiles": payload.get("ordered_profiles"),
         "coverage_mode": payload.get("coverage_mode"),
         "features": payload.get("features"),
+        "runtime_cargo_artifacts": payload.get("runtime_cargo_artifacts"),
         "toolchain": payload.get("toolchain"),
         "inventories": payload.get("inventories"),
         "registry_sha256": payload.get("crap", {}).get("registry_sha256"),
@@ -1927,8 +2006,12 @@ def verify_published(
         payload.get("coverage_mode")
         != "workspace-default-features-instrument-coverage-cfg-coverage"
         or payload.get("features") != []
+        or payload.get("runtime_cargo_artifacts")
+        != [dict(item) for item in RUNTIME_CARGO_ARTIFACTS]
     ):
-        raise QualityError("quality payload coverage mode/features are invalid")
+        raise QualityError(
+            "quality payload coverage mode/features/runtime artifacts are invalid"
+        )
     toolchain = payload.get("toolchain")
     execution = payload.get("execution")
     if (
@@ -2213,6 +2296,35 @@ def self_test() -> int:
         saved_info.rename(git_info)
         if working_tree_identity(snapshot) != second_identity:
             raise QualityError("restored Git metadata did not restore identity")
+        target = root / "instrumented-target"
+        target.mkdir()
+        executable = target / "admitted-tool"
+        executable.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+        executable.chmod(0o755)
+        expected_artifacts = instrumented_artifact_manifest(target)
+        expected_working_tree = working_tree_identity(snapshot)
+        require_execution_identity(
+            snapshot,
+            target,
+            expected_artifacts,
+            expected_working_tree,
+            "during self-test",
+        )
+        added = target / "runtime-growth"
+        added.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+        added.chmod(0o755)
+        try:
+            require_execution_identity(
+                snapshot,
+                target,
+                expected_artifacts,
+                expected_working_tree,
+                "during self-test",
+            )
+        except QualityError:
+            pass
+        else:
+            raise QualityError("post-admission executable growth was accepted")
         row = {
             "crate": "example",
             "file": str(root / "crates/example/src/lib.rs"),

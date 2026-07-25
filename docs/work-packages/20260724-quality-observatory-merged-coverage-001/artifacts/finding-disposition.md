@@ -24,10 +24,12 @@ Open closure-blocking findings: `0`.
 | Predecessor gate-planner regression | `accepted / fixed by prerequisite` | Package `20260724-gate-planner-quality-deferral-hold-lift-001` passed both reviews, the exact seven, complete coverage-configured gate-planner library, and selected full workspace on clean committed head `0342b9f8`. |
 | Execution clone exposes identity-bound `.venv` as Git dirt | `accepted / fixed` | The clone uses exact local policy `/.venv\n`; the target and policy bytes remain identity-bound, all metadata types fail closed, and other untracked drift remains visible. |
 | Broad pre-existing local exclude can hide drift | `accepted / fixed` | Security re-review proved the helper overwrites rather than preserves policy; adversarial `*` setup no longer hides another untracked file. |
+| Runtime assurance consumer extends admitted target | `accepted / fixed` | Admission primes the exact locked/offline binary before sealing; its declaration is admission/payload/terminal bound and manifest equality remains exact. |
+| Final manifest check precedes target-using finalization | `accepted / fixed` | Exact execution identity is rechecked after CRAP/evaluator/snowbench work immediately before PASS publication; executable-growth self-test rejects drift. |
 
 Review A final disposition: `PASS`.
 
 Review B final disposition: `PASS`.
 
-Heavy collection authorization: `READY` after committing the reviewed
-correction and proving a fresh exact clean admission.
+Heavy collection authorization: `BLOCKED` pending the required committed
+admitted-snapshot downstream-consumer unchanged-manifest probe.

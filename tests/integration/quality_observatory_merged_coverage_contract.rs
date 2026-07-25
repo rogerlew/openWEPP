@@ -42,6 +42,28 @@ fn collector_source_encodes_sequential_profiles_and_merged_only_crap() {
     assert!(source.contains("invoke_observational_crap("));
     assert!(source.contains("merged_crap,\n        merged_lcov,"));
     assert!(!source.contains("full_lcov,\n        source_manifest_path"));
+    let runtime_prime = source
+        .find("runtime_artifacts = prime_runtime_cargo_artifacts(")
+        .expect("runtime Cargo artifacts are primed");
+    let manifest_seal = source
+        .find("\"artifacts\": instrumented_artifact_manifest(target)")
+        .expect("instrumented artifact manifest");
+    assert!(
+        runtime_prime < manifest_seal,
+        "runtime Cargo artifacts must be primed before manifest sealing"
+    );
+    assert!(source.contains("\"package\": \"openwepp-assurance\""));
+    assert!(source.contains("\"binary\": \"openwepp-assurance\""));
+    assert!(source.contains("\"runtime_cargo_artifacts\": payload[\"build_identity\"]"));
+    assert!(source.contains("runtime Cargo artifact declaration changed"));
+    let final_identity = source
+        .rfind("\"during quality finalization\"")
+        .expect("final execution identity check");
+    let crap = source
+        .rfind("invoke_observational_crap(")
+        .expect("observational evaluator call");
+    let run_status = source.find("run_status = {").expect("PASS run status");
+    assert!(crap < final_identity && final_identity < run_status);
 }
 
 #[test]
@@ -76,6 +98,7 @@ fn collector_source_guards_identity_inventory_and_publication() {
     assert!(source.contains("exact .venv exclude hid other untracked drift"));
     assert!(source.contains("Git exclude-policy drift was accepted"));
     assert!(source.contains("Git info-directory symlink was accepted"));
+    assert!(source.contains("post-admission executable growth was accepted"));
 }
 
 #[test]

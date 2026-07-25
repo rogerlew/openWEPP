@@ -112,3 +112,23 @@ Selected correction gates:
 - clean committed exact-checkout gate-planner cases and fresh delegated
   one-process observatory transition;
 - two independent terminal verifications of any publication.
+
+## Attempt-7 Follow-On Intent
+
+Evidence class: Ran / Static.
+
+Attempt 7 passed all 2,279 full-profile tests, then the executable-manifest
+guard found 11 additions created by legitimate assurance publication tests'
+`cargo run -p openwepp-assurance` consumer. No admitted artifact changed.
+
+The smallest fail-closed correction is to prime that exact repository-owned
+runtime binary under the same LLVM environment and target during admission,
+before `instrumented_artifact_manifest` is sealed. The typed runtime artifact
+declaration enters build identity. Post-profile manifest equality remains
+exact; runtime additions are not allowlisted after admission. Exact execution
+identity is rechecked after Cargo CRAP/evaluator work and immediately before
+PASS status/payload publication.
+
+Selected gates add a focused admitted-snapshot assurance-publication probe that
+must leave the executable manifest unchanged, dual re-review, and a fresh
+complete transition.

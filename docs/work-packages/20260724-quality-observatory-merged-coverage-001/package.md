@@ -2,7 +2,7 @@
 
 Package ID: `20260724-quality-observatory-merged-coverage-001`
 
-Status: `ACTIVE / READY / ORDER-3`
+Status: `ACTIVE / PROBE / ORDER-3`
 
 ## Objective
 
@@ -172,3 +172,12 @@ exact-checkout tests rejected the clone. See
 `artifacts/heavy-attempt-05-venv-git-exclude.md`. The scoped correction and
 both re-reviews now pass with zero open findings; fresh admission is authorized
 after committing the reviewed correction.
+
+Attempt 7 subsequently passed the complete 2,279-test full profile, including
+all exact-checkout regressions, then correctly rejected 11 runtime Cargo
+artifacts added by assurance publication tests after admission. See
+`artifacts/heavy-attempt-07-runtime-cargo-artifacts.md`. Collection is blocked
+until that exact runtime consumer is primed and identity-bound before manifest
+sealing. The correction and both re-reviews now pass with zero open findings;
+the committed admitted-snapshot downstream-consumer probe remains required
+before fresh collection.

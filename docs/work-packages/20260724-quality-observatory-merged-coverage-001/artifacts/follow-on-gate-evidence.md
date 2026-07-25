@@ -16,5 +16,10 @@ Current correction gates:
   empty Git status.
 - Three attempt-5 exact-checkout identities in that snapshot: 3 passed,
   3 slow, 177 skipped; `1265.185s`.
+- Runtime-artifact Python compile/self-test and focused contract: `PASS`, 5/5.
+- Runtime-artifact measurement re-review: `PASS`, no findings.
+- Runtime-artifact security re-review: `PASS`; one HIGH accepted, fixed, and
+  closed.
 
-Fresh complete transition and terminal verification remain pending.
+Committed downstream-consumer unchanged-manifest probe, fresh complete
+transition, and terminal verification remain pending.
