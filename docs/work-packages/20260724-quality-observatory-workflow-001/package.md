@@ -95,6 +95,9 @@ evidence.
 - `docs/standards/testing-and-gate-strategy.md`
 - `docs/work-packages/20260724-quality-observatory-workflow-001/**`
 - `docs/work-packages/README.md`
+- `docs/work-packages/testgate-quality-observatory-roadmap.md` (Order-4
+  closeout routing only)
+- `docs/ROADMAP.md` (Order-4/Order-5 queue routing only)
 
 ## Dependencies
 
