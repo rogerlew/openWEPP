@@ -63,11 +63,15 @@ evidence is stale, malformed, incomplete, or identity-incompatible.
 ## Declared Write Set
 
 - `docs/ROADMAP.md`
+- `docs/standards/testing-and-gate-strategy.md` (Order-5 CQR intake hold lift
+  only)
 - `docs/work-packages/AGENTS.md`
 - `docs/work-packages/cqr-nightly-burndown-execplan.md`
 - `docs/work-packages/templates/cqr-nightly-*`
 - `docs/work-packages/20260724-cqr-nightly-quality-evidence-handoff-001/**`
 - `docs/work-packages/README.md`
+- `docs/work-packages/testgate-quality-observatory-roadmap.md` (Order-5
+  closeout routing only)
 - `Cargo.toml` (exact Order-5 integration-test registration only)
 - `gate-policy/v1/impact-map.json` (exact inherited Order-4 testing-strategy
   digest correction only)
