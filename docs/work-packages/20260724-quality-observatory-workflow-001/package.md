@@ -2,7 +2,32 @@
 
 Package ID: `20260724-quality-observatory-workflow-001`
 
-Status: `QUEUED / ORDER-4`
+Status: `ACTIVE / IMPLEMENTATION / ORDER-4`
+
+## Pre-Implementation Intent
+
+Risk: `CRITICAL`.
+
+This package changes a trusted self-hosted workflow, queue normalization,
+priority yielding, subprocess supervision, and evidence publication. The
+implementation is limited to:
+
+1. one manual-only workflow with an exact source-SHA input and a concurrency
+   identity distinct from TESTGATE;
+2. one repository-owned local controller for fail-closed occupancy
+   normalization, nonblocking lease acquisition, bounded child supervision,
+   typed deferral receipts, and compact publication indexing;
+3. focused local-only integration and controller tests using recorded provider
+   fixtures and fake children;
+4. the minimum TESTGATE source contract and governance updates needed to prove
+   priority and non-blocking semantics.
+
+Selected increment gates are Python compilation and controller self-tests,
+focused workflow/controller integration tests, TESTGATE workflow source
+contracts, Rustfmt and warnings-denied Clippy for touched Rust tests,
+documentation lint, diff/write-set/prompt/line-count reconciliation, two
+independent read-only reviews, and two independent read-only terminal
+verifications. No live workflow or heavy run is selected.
 
 ## Objective
 
