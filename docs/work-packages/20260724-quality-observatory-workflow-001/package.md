@@ -22,6 +22,20 @@ implementation is limited to:
 4. the minimum TESTGATE source contract and governance updates needed to prove
    priority and non-blocking semantics.
 
+Deferred and partial execution evidence uses a separate control artifact
+containing only `quality-control-receipt.json` and, when a child started,
+`quality-partial-index.json`. Its total ceiling is 1 MiB. It is never written
+under the canonical `published/` directory, never receives a
+`quality_evidence_id`, and is never named or uploaded as a complete quality
+observation.
+
+The versioned defunct Omarchy predicate is exact: repository identity matches,
+the run names the retired `.github/workflows/testgate-conservative.yml`, and
+its queued job labels include `omarchy` but not `forest1`. Age, queue duration,
+and queued state alone never establish this classification. A current
+`testgate-shadow.yml` run or any job labeled `forest1` remains live occupancy
+when queued or in progress.
+
 Selected increment gates are Python compilation and controller self-tests,
 focused workflow/controller integration tests, TESTGATE workflow source
 contracts, Rustfmt and warnings-denied Clippy for touched Rust tests,

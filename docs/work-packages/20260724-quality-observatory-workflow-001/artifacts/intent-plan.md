@@ -31,6 +31,12 @@ distinct from TESTGATE.
   on TESTGATE occupancy, and allowed at most 60 seconds for finalization.
 - Partial evidence is retained locally but cannot use the complete publication
   artifact name or status.
+- Deferred/partial control evidence is confined to
+  `quality-control-receipt.json` plus optional `quality-partial-index.json`,
+  outside `published/`, with a 1 MiB ceiling and no `quality_evidence_id`.
+- Defunct Omarchy classification requires the exact retired conservative
+  workflow plus an `omarchy` job label and absence of `forest1`; age or queued
+  duration is never sufficient.
 - The exact 11-file allowlist and 100 MiB ceiling are checked before upload.
 - Metric debt does not fail execution integrity; identity, collection,
   occupancy, or publication corruption does.
