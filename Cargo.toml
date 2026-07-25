@@ -463,6 +463,10 @@ name = "quality_observatory_merged_coverage_contract"
 path = "tests/integration/quality_observatory_merged_coverage_contract.rs"
 
 [[test]]
+name = "quality_observatory_workflow_contract"
+path = "tests/integration/quality_observatory_workflow_contract.rs"
+
+[[test]]
 name = "testgate_assure_campaign_currency_contract"
 path = "tests/integration/testgate_assure_campaign_currency_contract.rs"
 

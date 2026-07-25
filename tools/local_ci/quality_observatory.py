@@ -333,6 +333,37 @@ def required_identity(value: str, field: str) -> str:
     return value
 
 
+def required_sha(value: str, field: str, pattern: re.Pattern[str]) -> str:
+    if not pattern.fullmatch(value):
+        raise QualityError(f"{field} has an invalid digest")
+    return value
+
+
+def source_tree(repo: Path) -> str:
+    value = tool_output(["git", "rev-parse", "HEAD^{tree}"], repo)
+    return required_sha(value, "source tree", re.compile(r"^[0-9a-f]{40}$"))
+
+
+def require_priority_clear(path: Path | None, boundary: str) -> None:
+    if path is not None and path.exists():
+        raise QualityError(f"TESTGATE priority requested {boundary}")
+
+
+def final_current_main(repo: Path, head: str, workflow_mode: bool) -> bool:
+    if not workflow_mode:
+        return True
+    output = tool_output(
+        ["git", "ls-remote", "--exit-code", "origin", "refs/heads/main"], repo
+    )
+    fields = output.split()
+    if len(fields) != 2 or fields[1] != "refs/heads/main":
+        raise QualityError("current main lookup is malformed")
+    current = required_sha(
+        fields[0], "current main", re.compile(r"^[0-9a-f]{40}$")
+    )
+    return current == head
+
+
 def changed_paths(repo: Path) -> list[str]:
     tracked = subprocess.run(
         ["git", "diff", "--name-only", "-z", "HEAD"],
@@ -775,8 +806,58 @@ def admit(args: argparse.Namespace) -> int:
     run_attempt = required_identity(args.run_attempt, "run attempt")
     local, _ = safe_fresh_attempt(attempt_root)
     paths = changed_paths(source_repo)
-    validate_write_set(source_repo, paths)
-    light_receipts = run_light_gates(source_repo, local, paths)
+    admission_mode = args.admission_mode
+    if admission_mode == "development":
+        validate_write_set(source_repo, paths)
+        light_receipts = run_light_gates(source_repo, local, paths)
+    elif admission_mode == "workflow":
+        if paths:
+            raise QualityError("workflow admission requires an exact clean checkout")
+        run(
+            [
+                sys.executable,
+                "-m",
+                "py_compile",
+                "tools/local_ci/quality_observatory.py",
+                "tools/local_ci/quality_observatory_workflow.py",
+            ],
+            cwd=source_repo,
+        )
+        run(
+            [
+                sys.executable,
+                "tools/local_ci/quality_observatory_workflow.py",
+                "self-test",
+            ],
+            cwd=source_repo,
+        )
+        light_receipts = {
+            "workflow-admission": {
+                "status": "PASS",
+                "evidence": "clean exact checkout and compiled controller self-test",
+            }
+        }
+    else:
+        raise QualityError("quality admission mode is unsupported")
+    head = tool_output(["git", "rev-parse", "HEAD"], source_repo)
+    tree = source_tree(source_repo)
+    if admission_mode == "workflow":
+        workflow_revision = required_sha(
+            args.workflow_revision,
+            "workflow revision",
+            re.compile(r"^[0-9a-f]{40}$"),
+        )
+        workflow_sha256 = required_sha(
+            args.workflow_sha256, "workflow SHA-256", SHA256_RE
+        )
+        if workflow_revision != head:
+            raise QualityError("workflow revision differs from source head")
+    else:
+        workflow_revision = head
+        workflow_path = source_repo / ".github/workflows/quality-observatory.yml"
+        workflow_sha256 = (
+            sha256_file(workflow_path) if workflow_path.is_file() else "0" * 64
+        )
     admitted_source = source_manifest(source_repo)
     repo = create_execution_snapshot(source_repo, local, paths, admitted_source)
     if source_manifest(source_repo) != admitted_source:
@@ -832,10 +913,14 @@ def admit(args: argparse.Namespace) -> int:
     admission_payload = {
         "schema_version": ADMISSION_SCHEMA,
         "status": "READY",
+        "admission_mode": admission_mode,
         "repo": str(repo),
         "source_repo": str(source_repo),
         "execution_root": str(repo),
         "head_commit": manifest["head_commit"],
+        "source_tree": tree,
+        "workflow_revision": workflow_revision,
+        "workflow_sha256": workflow_sha256,
         "source_manifest": manifest,
         "source_manifest_sha256": manifest_sha256(manifest),
         "ordered_profiles": list(PROFILES),
@@ -1474,6 +1559,7 @@ def collect(args: argparse.Namespace) -> int:
         payload["build_identity"]["artifacts"],
         payload["build_identity"]["working_tree_identity"],
     )
+    require_priority_clear(args.priority_sentinel, "before science-manual")
     science_index = execute_profile(
         repo,
         "science-manual",
@@ -1485,6 +1571,7 @@ def collect(args: argparse.Namespace) -> int:
         payload["build_identity"]["artifacts"],
         payload["build_identity"]["working_tree_identity"],
     )
+    require_priority_clear(args.priority_sentinel, "after science-manual")
     junit_results: dict[str, dict[str, Any]] = {}
     for profile in PROFILES:
         source = local / "nextest" / profile / "junit.xml"
@@ -1506,6 +1593,7 @@ def collect(args: argparse.Namespace) -> int:
         published / "inventory-workspace.json",
     )
     package_arguments = workspace_package_arguments(repo)
+    require_priority_clear(args.priority_sentinel, "before CRAP/report work")
     full_lcov = local / "full-only.lcov"
     science_lcov = local / "science-manual-only.lcov"
     merged_lcov = local / "merged.lcov"
@@ -1610,6 +1698,7 @@ def collect(args: argparse.Namespace) -> int:
         payload["build_identity"]["working_tree_identity"],
         "during quality finalization",
     )
+    require_priority_clear(args.priority_sentinel, "before complete publication")
     if source_manifest(repo) != payload["source_manifest"]:
         raise QualityError("execution snapshot changed during quality collection")
     if source_manifest(source_repo) != payload["source_manifest"]:
@@ -1643,6 +1732,17 @@ def collect(args: argparse.Namespace) -> int:
         "closure_eligible": False,
         "admission_id": admission["admission_id"],
         "head_commit": payload["head_commit"],
+        "subject": {
+            "source_commit": payload["head_commit"],
+            "source_tree": payload["source_tree"],
+            "workflow_revision": payload["workflow_revision"],
+            "workflow_sha256": payload["workflow_sha256"],
+            "current_main": final_current_main(
+                source_repo,
+                payload["head_commit"],
+                payload.get("admission_mode") == "workflow",
+            ),
+        },
         "source_manifest_sha256": payload["source_manifest_sha256"],
         "instrumented_build_id": payload["instrumented_build_id"],
         "coverage_mode": payload["build_identity"]["coverage_mode"],
@@ -2002,6 +2102,26 @@ def verify_published(
         raise QualityError("quality payload schema is unsupported")
     if payload.get("ordered_profiles") != list(PROFILES):
         raise QualityError("quality payload profile order is invalid")
+    subject = payload.get("subject")
+    if (
+        not isinstance(subject, dict)
+        or set(subject)
+        != {
+            "source_commit",
+            "source_tree",
+            "workflow_revision",
+            "workflow_sha256",
+            "current_main",
+        }
+        or subject.get("source_commit") != payload.get("head_commit")
+        or not re.fullmatch(r"[0-9a-f]{40}", str(subject.get("source_tree", "")))
+        or not re.fullmatch(
+            r"[0-9a-f]{40}", str(subject.get("workflow_revision", ""))
+        )
+        or not SHA256_RE.fullmatch(str(subject.get("workflow_sha256", "")))
+        or not isinstance(subject.get("current_main"), bool)
+    ):
+        raise QualityError("quality payload subject identity is invalid")
     if (
         payload.get("coverage_mode")
         != "workspace-default-features-instrument-coverage-cfg-coverage"
@@ -2190,6 +2310,8 @@ def verify_published(
             raise QualityError("quality evidence is stale for current source")
         if current.get("head_commit") != payload.get("head_commit"):
             raise QualityError("quality evidence HEAD does not match current source")
+        if source_tree(repo) != subject.get("source_tree"):
+            raise QualityError("quality evidence source tree does not match current source")
     return quality_id
 
 
@@ -2362,6 +2484,14 @@ def parser() -> argparse.ArgumentParser:
     admission.add_argument("--workflow", required=True)
     admission.add_argument("--run-id", required=True)
     admission.add_argument("--run-attempt", required=True)
+    admission.add_argument(
+        "--admission-mode",
+        choices=("development", "workflow"),
+        default="development",
+    )
+    admission.add_argument("--workflow-revision", default="")
+    admission.add_argument("--workflow-sha256", default="")
+    admission.add_argument("--priority-sentinel", type=Path)
     admission.set_defaults(function=admit)
     collection = subcommands.add_parser("collect")
     collection.add_argument("--repo", type=Path, default=Path(__file__).parents[2])
@@ -2374,6 +2504,14 @@ def parser() -> argparse.ArgumentParser:
     combined.add_argument("--workflow", required=True)
     combined.add_argument("--run-id", required=True)
     combined.add_argument("--run-attempt", required=True)
+    combined.add_argument(
+        "--admission-mode",
+        choices=("development", "workflow"),
+        default="development",
+    )
+    combined.add_argument("--workflow-revision", default="")
+    combined.add_argument("--workflow-sha256", default="")
+    combined.add_argument("--priority-sentinel", type=Path)
     combined.set_defaults(function=transition)
     verification = subcommands.add_parser("verify")
     verification.add_argument("--repo", type=Path, default=Path(__file__).parents[2])

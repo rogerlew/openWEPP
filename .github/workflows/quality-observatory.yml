@@ -1,0 +1,158 @@
+name: quality-observatory
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_sha:
+        description: "Exact current main commit to observe"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: openwepp-forest1-quality-observatory
+  cancel-in-progress: false
+
+jobs:
+  priority-preflight:
+    name: openwepp/quality-priority-preflight
+    runs-on: ubuntu-24.04
+    outputs:
+      disposition: ${{ steps.occupancy.outputs.disposition }}
+    steps:
+      - name: Validate exact source input
+        env:
+          SOURCE_SHA: ${{ inputs.source_sha }}
+        run: |
+          set -euo pipefail
+          [[ "${SOURCE_SHA}" =~ ^[0-9a-f]{40}$ ]]
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ inputs.source_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Admit current main and inspect TESTGATE priority
+        id: occupancy
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_SHA: ${{ inputs.source_sha }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin main
+          test "$(git rev-parse HEAD)" = "${SOURCE_SHA}"
+          test "$(git rev-parse refs/remotes/origin/main)" = "${SOURCE_SHA}"
+          python3 tools/local_ci/quality_observatory_workflow.py preflight \
+            --repository "${GITHUB_REPOSITORY}" \
+            --output "${RUNNER_TEMP}/quality-control-receipt.json"
+          disposition="$(jq -r '.disposition' \
+            "${RUNNER_TEMP}/quality-control-receipt.json")"
+          echo "disposition=${disposition}" >> "${GITHUB_OUTPUT}"
+      - name: Upload typed preflight deferral
+        if: ${{ steps.occupancy.outputs.disposition != 'READY' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: quality-observatory-control-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/quality-control-receipt.json
+          if-no-files-found: error
+          overwrite: false
+          retention-days: 30
+
+  observe:
+    name: openwepp/quality-observation
+    needs: priority-preflight
+    if: ${{ needs.priority-preflight.outputs.disposition == 'READY' }}
+    runs-on: [self-hosted, Linux, X64, openwepp, forest1, trusted]
+    timeout-minutes: 120
+    env:
+      GH_TOKEN: ${{ github.token }}
+      CARGO_TARGET_DIR: /t
+      QUALITY_HISTORY_ROOT: /testgate-history/quality-observatory
+      QUALITY_ATTEMPT_ROOT: /testgate-history/quality-observatory/${{ github.run_id }}-${{ github.run_attempt }}
+      QUALITY_CONTROL_ROOT: /testgate-history/quality-observatory-control/${{ github.run_id }}-${{ github.run_attempt }}
+      QUALITY_FOREST1_LEASE: /testgate-history/forest1-heavy.lock
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ inputs.source_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Recheck exact source before setup
+        env:
+          SOURCE_SHA: ${{ inputs.source_sha }}
+        run: |
+          set -euo pipefail
+          [[ "${SOURCE_SHA}" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "${SOURCE_SHA}"
+      - name: Run supervised observational collection
+        id: observe
+        env:
+          SOURCE_SHA: ${{ inputs.source_sha }}
+        run: |
+          set -euo pipefail
+          mkdir -p "${QUALITY_HISTORY_ROOT}"
+          workflow_sha256="$(sha256sum \
+            .github/workflows/quality-observatory.yml | awk '{print $1}')"
+          export QUALITY_WORKFLOW_SHA256="${workflow_sha256}"
+          python3 tools/local_ci/quality_observatory_workflow.py supervise \
+            --repo . \
+            --repository "${GITHUB_REPOSITORY}" \
+            --source-sha "${SOURCE_SHA}" \
+            --workflow-revision "${SOURCE_SHA}" \
+            --workflow-sha256 "${workflow_sha256}" \
+            --attempt-root "${QUALITY_ATTEMPT_ROOT}" \
+            --control-root "${QUALITY_CONTROL_ROOT}" \
+            --lease "${QUALITY_FOREST1_LEASE}" \
+            -- \
+            bash tools/local_ci/run_quality_observatory_child.sh
+          if [[ -d "${QUALITY_ATTEMPT_ROOT}/published" ]]; then
+            echo "complete=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "complete=false" >> "${GITHUB_OUTPUT}"
+          fi
+      - name: Upload complete quality observation
+        if: ${{ steps.observe.outputs.complete == 'true' }}
+        id: upload
+        env:
+          PUBLISHED: ${{ env.QUALITY_ATTEMPT_ROOT }}/published
+          CONTROL: ${{ env.QUALITY_CONTROL_ROOT }}
+        run: |
+          set -euo pipefail
+          python3 tools/local_ci/quality_observatory_workflow.py verify-upload \
+            --published "${PUBLISHED}" \
+            --control "${CONTROL}"
+      - name: Publish complete quality observation
+        if: ${{ steps.observe.outputs.complete == 'true' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: quality-observatory-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.QUALITY_ATTEMPT_ROOT }}/published
+          if-no-files-found: error
+          include-hidden-files: false
+          overwrite: false
+          retention-days: 30
+      - name: Upload deferred or failed control evidence
+        if: ${{ always() && steps.observe.outputs.complete != 'true' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: quality-observatory-control-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.QUALITY_CONTROL_ROOT }}
+          if-no-files-found: error
+          include-hidden-files: false
+          overwrite: false
+          retention-days: 30
+      - name: Summarize observational result
+        if: ${{ always() }}
+        run: |
+          set -euo pipefail
+          if [[ -f "${QUALITY_ATTEMPT_ROOT}/published/run-status.json" ]]; then
+            jq -r '"quality evidence: \(.quality_evidence_id)\nexecution: \(.execution_integrity)\ndebt: \(.debt_status)\nclosure eligible: \(.closure_eligible)"' \
+              "${QUALITY_ATTEMPT_ROOT}/published/run-status.json" \
+              >> "${GITHUB_STEP_SUMMARY}"
+          elif [[ -f "${QUALITY_CONTROL_ROOT}/quality-control-receipt.json" ]]; then
+            jq -r '"quality control disposition: \(.disposition)"' \
+              "${QUALITY_CONTROL_ROOT}/quality-control-receipt.json" \
+              >> "${GITHUB_STEP_SUMMARY}"
+          fi
