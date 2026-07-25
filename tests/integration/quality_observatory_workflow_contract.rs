@@ -112,6 +112,69 @@ fn workflow_controller_self_test_and_python_compile_pass() {
 }
 
 #[test]
+fn failed_large_profile_log_retains_digest_and_bounded_tail() {
+    let temp = scratch("failed-log-tail");
+    let fixture = temp.join("clear.json");
+    write_fixture(
+        &fixture,
+        r#"{"schema_version":"openwepp-quality-occupancy-v1","runs":[]}"#,
+    );
+    let attempt = temp.join("attempt");
+    let control = temp.join("control");
+    let head = Command::new("git")
+        .args(["rev-parse", "HEAD"])
+        .current_dir(root())
+        .output()
+        .expect("resolve head");
+    let head = String::from_utf8(head.stdout)
+        .expect("UTF-8 head")
+        .trim()
+        .to_owned();
+    let status = Command::new(root().join(".venv/bin/python"))
+        .arg(root().join("tools/local_ci/quality_observatory_workflow.py"))
+        .args([
+            "supervise",
+            "--repo",
+            ".",
+            "--repository",
+            "openwepp/openwepp",
+            "--source-sha",
+            &head,
+            "--workflow-revision",
+            &head,
+            "--workflow-sha256",
+            "0000000000000000000000000000000000000000000000000000000000000000",
+        ])
+        .arg("--attempt-root")
+        .arg(&attempt)
+        .arg("--control-root")
+        .arg(&control)
+        .arg("--lease")
+        .arg(temp.join("forest1.lock"))
+        .arg("--occupancy-fixture")
+        .arg(&fixture)
+        .args([
+            "--",
+            "bash",
+            "-c",
+            "mkdir -p \"$1/local\"; head -c 300000 /dev/zero > \"$1/local/nextest-full.log\"; printf diagnostic-tail >> \"$1/local/nextest-full.log\"; exit 2",
+            "_",
+        ])
+        .arg(&attempt)
+        .current_dir(root())
+        .status()
+        .expect("run failed child fixture");
+    assert!(!status.success());
+    let index = fs::read_to_string(control.join("quality-partial-index.json"))
+        .expect("read retained partial index");
+    assert!(index.contains("\"sha256\":\""));
+    assert!(!index.contains("\"sha256\":null"));
+    assert!(index.contains("\"tail_base64\":\""));
+    assert!(index.contains("\"tail_bytes\":32768"));
+    fs::remove_dir_all(temp).expect("remove failed-log scratch");
+}
+
+#[test]
 fn occupancy_preflight_defers_live_and_unknown_but_ignores_exact_omarchy() {
     let temp = scratch("preflight");
     let script = root().join("tools/local_ci/quality_observatory_workflow.py");

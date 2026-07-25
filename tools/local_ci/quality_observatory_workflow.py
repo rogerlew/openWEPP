@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import base64
 import fcntl
 import hashlib
 import json
@@ -43,6 +44,7 @@ PUBLISHED_FILES = {
 }
 MAX_PUBLISHED_BYTES = 100 * 1024 * 1024
 MAX_CONTROL_BYTES = 1024 * 1024
+PARTIAL_TAIL_BYTES = 32 * 1024
 FINALIZATION_SECONDS = 54.0
 OCCUPANCY_SNAPSHOT_SECONDS = 5.0
 SHA40 = re.compile(r"^[0-9a-f]{40}$")
@@ -574,13 +576,53 @@ def validate_control(control: Path) -> dict[str, Any]:
     partial_path = control / "quality-partial-index.json"
     if partial_path.exists():
         partial = read_object(partial_path)
+        partial_files = partial.get("files")
         if (
             partial_path.read_bytes() != canonical_bytes(partial) + b"\n"
             or partial.get("schema_version") != SCHEMA
-            or not isinstance(partial.get("files"), list)
+            or not isinstance(partial_files, list)
             or disposition == "COMPLETE"
         ):
             raise WorkflowError("partial index is malformed or attached to COMPLETE")
+        allowed_partial = {
+            "local/nextest-full.log",
+            "local/nextest-science-manual.log",
+            "local/cargo-crap-science.log",
+            "local/cargo-crap-merged.log",
+            "published/run-status.json",
+        }
+        for item in partial_files:
+            if not isinstance(item, dict) or set(item) != {
+                "path",
+                "size",
+                "sha256",
+                "tail_base64",
+                "tail_bytes",
+                "tail_sha256",
+            }:
+                raise WorkflowError("partial index file entry is malformed")
+            if (
+                item["path"] not in allowed_partial
+                or not isinstance(item["size"], int)
+                or item["size"] < 0
+                or not isinstance(item["sha256"], str)
+                or not SHA256.fullmatch(item["sha256"])
+                or not isinstance(item["tail_bytes"], int)
+                or item["tail_bytes"] != min(item["size"], PARTIAL_TAIL_BYTES)
+                or not isinstance(item["tail_sha256"], str)
+                or not SHA256.fullmatch(item["tail_sha256"])
+                or not isinstance(item["tail_base64"], str)
+            ):
+                raise WorkflowError("partial index file identity is malformed")
+            try:
+                tail = base64.b64decode(item["tail_base64"], validate=True)
+            except (ValueError, base64.binascii.Error) as error:
+                raise WorkflowError("partial index tail is not canonical base64") from error
+            if (
+                len(tail) != item["tail_bytes"]
+                or hashlib.sha256(tail).hexdigest() != item["tail_sha256"]
+            ):
+                raise WorkflowError("partial index tail identity mismatches")
     return receipt
 
 
@@ -598,12 +640,20 @@ def partial_index(attempt: Path, control: Path) -> None:
         if not path.is_file() or path.is_symlink():
             continue
         size = path.stat().st_size
-        if size > 256 * 1024:
-            files.append({"path": relative, "size": size, "sha256": None})
-        else:
-            files.append(
-                {"path": relative, "size": size, "sha256": sha256_file(path)}
-            )
+        with path.open("rb") as stream:
+            if size > PARTIAL_TAIL_BYTES:
+                stream.seek(-PARTIAL_TAIL_BYTES, os.SEEK_END)
+            tail = stream.read()
+        files.append(
+            {
+                "path": relative,
+                "size": size,
+                "sha256": sha256_file(path),
+                "tail_base64": base64.b64encode(tail).decode("ascii"),
+                "tail_bytes": len(tail),
+                "tail_sha256": hashlib.sha256(tail).hexdigest(),
+            }
+        )
     compact = {"schema_version": SCHEMA, "files": files}
     encoded = canonical_bytes(compact) + b"\n"
     if len(encoded) > MAX_CONTROL_BYTES:
