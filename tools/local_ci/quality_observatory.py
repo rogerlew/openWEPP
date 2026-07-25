@@ -21,11 +21,11 @@ from pathlib import Path
 from typing import Any
 
 
-SCHEMA = "openwepp-quality-observatory-v1"
+SCHEMA = "openwepp-quality-observatory-v2"
 ADMISSION_SCHEMA = "openwepp-quality-observatory-admission-v1"
 INVENTORY_SCHEMA = "openwepp-quality-observatory-inventory-v1"
 COVERAGE_SCHEMA = "openwepp-quality-observatory-coverage-summary-v1"
-ENVELOPE_SCHEMA = "openwepp-quality-observatory-envelope-v1"
+ENVELOPE_SCHEMA = "openwepp-quality-observatory-envelope-v2"
 PROFILES = ("full", "science-manual")
 RUNTIME_CARGO_ARTIFACTS = (
     {"package": "openwepp-assurance", "binary": "openwepp-assurance"},
@@ -2047,6 +2047,12 @@ def validate_admission_binding(
             "run_id": admitted.get("run_id"),
             "run_attempt": admitted.get("run_attempt"),
         },
+        "subject": {
+            "source_commit": admitted.get("head_commit"),
+            "source_tree": admitted.get("source_tree"),
+            "workflow_revision": admitted.get("workflow_revision"),
+            "workflow_sha256": admitted.get("workflow_sha256"),
+        },
     }
     observed = {
         "head_commit": payload.get("head_commit"),
@@ -2061,6 +2067,15 @@ def validate_admission_binding(
         "registry_sha256": payload.get("crap", {}).get("registry_sha256"),
         "control_inputs": payload.get("control_inputs"),
         "execution": payload.get("execution"),
+        "subject": {
+            key: payload.get("subject", {}).get(key)
+            for key in (
+                "source_commit",
+                "source_tree",
+                "workflow_revision",
+                "workflow_sha256",
+            )
+        },
     }
     if observed != expected:
         raise QualityError("published identity differs from admitted identity")
@@ -2149,6 +2164,13 @@ def verify_published(
         "collector_sha256"
     ):
         raise QualityError("terminal collector differs from admitted collector")
+    workflow_path = repo / ".github/workflows/quality-observatory.yml"
+    if (
+        payload["subject"]["workflow_revision"] != payload["head_commit"]
+        or not workflow_path.is_file()
+        or sha256_file(workflow_path) != payload["subject"]["workflow_sha256"]
+    ):
+        raise QualityError("terminal workflow identity differs from admission")
     envelope = read_object(published / "quality-envelope.json")
     if (published / "quality-envelope.json").read_bytes() != canonical_bytes(
         envelope

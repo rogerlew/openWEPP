@@ -25,17 +25,22 @@ implementation is limited to:
 Deferred and partial execution evidence uses a separate control artifact
 containing only `quality-control-receipt.json` and, when a child started,
 `quality-partial-index.json`. Its total ceiling is 1 MiB. It is never written
-under the canonical `published/` directory, never receives a
-`quality_evidence_id`, and is never named or uploaded as a complete quality
-observation.
+under the canonical `published/` directory or named as a complete quality
+observation. A deferred/partial receipt has no `quality_evidence_id`.
+
+A complete run also uploads the separate bounded control receipt. That receipt
+binds the verified quality evidence ID and embeds the exact admission object
+needed for downstream independent verification; it does not add a twelfth file
+to the canonical observation artifact.
 
 The versioned defunct Omarchy predicate is exact: repository identity matches;
 the run ID is one of `29673299308`, `29672334757`, or `29672149962`; the run
-names the retired `.github/workflows/testgate-conservative.yml`; it remains
-queued; and provider inspection reports zero jobs and zero artifacts. Any
-field drift, new ID, job, artifact, or forest1 label is occupancy-unknown or
-live, never ignored. Age, queue duration, and queued state alone never
-establish this classification.
+names `.github/workflows/testgate-shadow.yml`; its head is respectively
+`850f7f6f`, `d4420b2`, or `4ee31784`; its event is `workflow_dispatch`; its
+provider state is `completed/cancelled`; and inspection reports zero jobs and
+zero artifacts. Any field drift, new ID, job, artifact, or forest1 label is
+occupancy-unknown or live, never ignored. Age or queue duration alone never
+establishes this classification.
 
 Selected increment gates are Python compilation and controller self-tests,
 focused workflow/controller integration tests, TESTGATE workflow source

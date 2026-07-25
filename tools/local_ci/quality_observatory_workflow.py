@@ -23,8 +23,11 @@ from typing import Any
 SCHEMA = "openwepp-quality-workflow-control-v1"
 OCCUPANCY_SCHEMA = "openwepp-quality-occupancy-v1"
 CURRENT_WORKFLOW = ".github/workflows/testgate-shadow.yml"
-RETIRED_OMARCHY_WORKFLOW = ".github/workflows/testgate-conservative.yml"
-DEFUNCT_OMARCHY_RUN_IDS = {29673299308, 29672334757, 29672149962}
+DEFUNCT_OMARCHY_RUNS = {
+    29673299308: "850f7f6f10044c078299718d8e9c46b77d278a86",
+    29672334757: "d4420b2431558dab0619c08a7bdcd7ac497ae229",
+    29672149962: "4ee31784044694f856a2eef855b9864beac9f3cf",
+}
 PUBLISHED_FILES = {
     "quality-envelope.json",
     "quality-payload.json",
@@ -124,7 +127,17 @@ def classify_occupancy(snapshot: dict[str, Any], repository: str) -> dict[str, A
     for item in runs:
         if not isinstance(item, dict):
             raise WorkflowError("occupancy run must be an object")
-        required = {"id", "repository", "workflow", "status", "jobs", "artifacts"}
+        required = {
+            "id",
+            "repository",
+            "workflow",
+            "event",
+            "head_sha",
+            "status",
+            "conclusion",
+            "jobs",
+            "artifacts",
+        }
         if set(item) != required:
             raise WorkflowError("occupancy run fields are not exact")
         run_id = item["id"]
@@ -134,30 +147,21 @@ def classify_occupancy(snapshot: dict[str, Any], repository: str) -> dict[str, A
             not isinstance(run_id, int)
             or not isinstance(item["repository"], str)
             or not isinstance(workflow, str)
+            or item["repository"] != repository
+            or item["event"] != "workflow_dispatch"
+            or not isinstance(item["head_sha"], str)
+            or not SHA40.fullmatch(item["head_sha"])
             or status
-            not in {
-                "requested",
-                "waiting",
-                "pending",
-                "queued",
-                "in_progress",
-                "completed",
-                "cancelled",
-                "failure",
-                "success",
-            }
+            not in {"requested", "waiting", "pending", "queued", "in_progress", "completed"}
+            or (
+                item["conclusion"] is not None
+                and not isinstance(item["conclusion"], str)
+            )
             or not isinstance(item["jobs"], list)
             or not isinstance(item["artifacts"], int)
             or item["artifacts"] < 0
         ):
             raise WorkflowError("occupancy run field type is invalid")
-        if item["repository"] != repository or status in {
-            "completed",
-            "cancelled",
-            "failure",
-            "success",
-        }:
-            continue
         jobs: list[dict[str, Any]] = []
         for job in item["jobs"]:
             if not isinstance(job, dict) or set(job) != {"name", "status", "labels"}:
@@ -175,20 +179,36 @@ def classify_occupancy(snapshot: dict[str, Any], repository: str) -> dict[str, A
             and job["status"] in {"queued", "in_progress"}
             for job in jobs
         )
-        retired_omarchy = (
-            run_id in DEFUNCT_OMARCHY_RUN_IDS
-            and workflow == RETIRED_OMARCHY_WORKFLOW
-            and status == "queued"
-            and not jobs
-            and item["artifacts"] == 0
-        )
-        if retired_omarchy:
+        if run_id in DEFUNCT_OMARCHY_RUNS:
+            retired_omarchy = (
+                workflow == CURRENT_WORKFLOW
+                and item["head_sha"] == DEFUNCT_OMARCHY_RUNS[run_id]
+                and status == "completed"
+                and item["conclusion"] == "cancelled"
+                and item["event"] == "workflow_dispatch"
+                and item["repository"] == repository
+                and not jobs
+                and item["artifacts"] == 0
+            )
+            if not retired_omarchy:
+                raise WorkflowError("defunct Omarchy record metadata drifted")
             ignored_omarchy.append(run_id)
             continue
-        if workflow == CURRENT_WORKFLOW and (
-            forest1_live
-            or status in {"requested", "waiting", "pending", "queued", "in_progress"}
-        ):
+        if status == "completed":
+            if item["conclusion"] is None:
+                raise WorkflowError("completed run lacks a conclusion")
+            continue
+        if item["conclusion"] is not None:
+            raise WorkflowError("nonterminal run has a conclusion")
+        if workflow != CURRENT_WORKFLOW:
+            raise WorkflowError("nonterminal run workflow path is unexpected")
+        if forest1_live or status in {
+            "requested",
+            "waiting",
+            "pending",
+            "queued",
+            "in_progress",
+        }:
             live.append({"id": run_id, "status": status})
     return {
         "status": "LIVE_TESTGATE" if live else "CLEAR",
@@ -199,7 +219,8 @@ def classify_occupancy(snapshot: dict[str, Any], repository: str) -> dict[str, A
 
 def live_snapshot(repository: str) -> dict[str, Any]:
     runs: list[dict[str, Any]] = []
-    for status in ("queued", "in_progress"):
+    seen: set[int] = set()
+    for status in ("requested", "waiting", "pending", "queued", "in_progress"):
         pages = json.loads(
             run_text(
                 [
@@ -209,7 +230,7 @@ def live_snapshot(repository: str) -> dict[str, Any]:
                     "GET",
                     "--paginate",
                     "--slurp",
-                    f"repos/{repository}/actions/runs",
+                    f"repos/{repository}/actions/workflows/testgate-shadow.yml/runs",
                     "-f",
                     "event=workflow_dispatch",
                     "-f",
@@ -238,6 +259,9 @@ def live_snapshot(repository: str) -> dict[str, Any]:
             run_status = run.get("status")
             if not isinstance(run_id, int):
                 raise WorkflowError("GitHub run ID is malformed")
+            if run_id in seen:
+                raise WorkflowError("GitHub run ID appeared in multiple pages/states")
+            seen.add(run_id)
             jobs_payload = json.loads(
                 run_text(
                     [
@@ -253,7 +277,12 @@ def live_snapshot(repository: str) -> dict[str, Any]:
                 )
             )
             raw_jobs = jobs_payload.get("jobs")
-            if not isinstance(raw_jobs, list):
+            job_count = jobs_payload.get("total_count")
+            if (
+                not isinstance(raw_jobs, list)
+                or not isinstance(job_count, int)
+                or job_count != len(raw_jobs)
+            ):
                 raise WorkflowError("GitHub jobs response is malformed")
             jobs = [
                 {
@@ -285,7 +314,10 @@ def live_snapshot(repository: str) -> dict[str, Any]:
                     "id": run_id,
                     "repository": repo_name,
                     "workflow": path,
+                    "event": run.get("event"),
+                    "head_sha": run.get("head_sha"),
                     "status": run_status,
+                    "conclusion": run.get("conclusion"),
                     "jobs": jobs,
                     "artifacts": artifact_count,
                 }
@@ -294,9 +326,12 @@ def live_snapshot(repository: str) -> dict[str, Any]:
 
 
 class OccupancySource:
-    def __init__(self, repository: str, fixture: Path | None) -> None:
+    def __init__(
+        self, repository: str, fixture: Path | None, watch_root: Path | None = None
+    ) -> None:
         self.repository = repository
         self.fixture = fixture
+        self.watch_root = watch_root
         self.index = 0
         self.payload = read_object(fixture) if fixture else None
 
@@ -308,6 +343,26 @@ class OccupancySource:
             if not isinstance(snapshots, list) or not snapshots:
                 raise WorkflowError("fixture snapshots must be a nonempty array")
             snapshot = snapshots[min(self.index, len(snapshots) - 1)]
+            if isinstance(snapshot, dict) and set(snapshot) == {
+                "after_path",
+                "snapshot",
+            }:
+                if self.watch_root is None:
+                    raise WorkflowError("watched fixture requires a watch root")
+                after_path = snapshot["after_path"]
+                if (
+                    not isinstance(after_path, str)
+                    or after_path.startswith("/")
+                    or ".." in Path(after_path).parts
+                ):
+                    raise WorkflowError("watched fixture path is unsafe")
+                if not (self.watch_root / after_path).exists():
+                    return {
+                        "status": "CLEAR",
+                        "live_runs": [],
+                        "ignored_omarchy_runs": [],
+                    }
+                snapshot = snapshot["snapshot"]
             self.index += 1
             if not isinstance(snapshot, dict):
                 raise WorkflowError("fixture snapshot must be an object")
@@ -318,7 +373,7 @@ class OccupancySource:
     def classify_fail_closed(self) -> dict[str, Any]:
         try:
             return self.classify()
-        except WorkflowError as error:
+        except (WorkflowError, OSError, ValueError, TypeError, KeyError) as error:
             return {"status": "UNKNOWN", "reason": str(error)}
 
 
@@ -343,6 +398,8 @@ def control_receipt(
     occupancy: dict[str, Any],
     child_exit: int | None = None,
     publication: dict[str, Any] | None = None,
+    admission: dict[str, Any] | None = None,
+    quality_evidence_id: str | None = None,
 ) -> None:
     receipt = {
         "schema_version": SCHEMA,
@@ -354,6 +411,8 @@ def control_receipt(
         "occupancy": occupancy,
         "child_exit": child_exit,
         "publication": publication,
+        "admission": admission,
+        "quality_evidence_id": quality_evidence_id,
     }
     write_json(control / "quality-control-receipt.json", receipt)
     total = sum(path.stat().st_size for path in control.iterdir() if path.is_file())
@@ -363,19 +422,24 @@ def control_receipt(
 
 def partial_index(attempt: Path, control: Path) -> None:
     files: list[dict[str, Any]] = []
-    for root_name in ("local", "published"):
-        root = attempt / root_name
-        if not root.exists():
+    allowed = (
+        "local/nextest-full.log",
+        "local/nextest-science-manual.log",
+        "local/cargo-crap-science.log",
+        "local/cargo-crap-merged.log",
+        "published/run-status.json",
+    )
+    for relative in allowed:
+        path = attempt / relative
+        if not path.is_file() or path.is_symlink():
             continue
-        for path in sorted(root.rglob("*")):
-            if path.is_file() and not path.is_symlink():
-                files.append(
-                    {
-                        "path": path.relative_to(attempt).as_posix(),
-                        "size": path.stat().st_size,
-                        "sha256": sha256_file(path),
-                    }
-                )
+        size = path.stat().st_size
+        if size > 256 * 1024:
+            files.append({"path": relative, "size": size, "sha256": None})
+        else:
+            files.append(
+                {"path": relative, "size": size, "sha256": sha256_file(path)}
+            )
     compact = {"schema_version": SCHEMA, "files": files}
     encoded = canonical_bytes(compact) + b"\n"
     if len(encoded) > MAX_CONTROL_BYTES:
@@ -420,6 +484,7 @@ def verify_publication(published: Path) -> tuple[dict[str, Any], str]:
     if (
         status.get("execution_integrity") != "PASS"
         or status.get("closure_eligible") is not False
+        or status.get("debt_status") not in {"PASS", "FAIL"}
     ):
         raise WorkflowError("canonical run status is not observational PASS")
     evidence_id = status.get("quality_evidence_id")
@@ -432,8 +497,24 @@ def verify_upload(args: argparse.Namespace) -> int:
     receipt = read_object(args.control / "quality-control-receipt.json")
     if receipt.get("disposition") != "COMPLETE":
         raise WorkflowError("control receipt is not complete")
-    if receipt.get("publication") != publication_manifest(args.published):
+    source_manifest_value = publication_manifest(args.published)
+    if receipt.get("publication") != source_manifest_value:
         raise WorkflowError("publication changed after supervision")
+    occupancy = OccupancySource(
+        args.repository, args.occupancy_fixture
+    ).classify_fail_closed()
+    disposition = deferral_for(occupancy)
+    if disposition:
+        receipt["disposition"] = disposition
+        receipt["occupancy"] = occupancy
+        receipt["publication"] = None
+        write_json(args.control / "quality-control-receipt.json", receipt)
+        raise WorkflowError(f"upload deferred: {disposition}")
+    args.staging.mkdir(parents=True, exist_ok=False)
+    for name in sorted(PUBLISHED_FILES):
+        shutil.copyfile(args.published / name, args.staging / name)
+    if publication_manifest(args.staging) != source_manifest_value:
+        raise WorkflowError("private upload staging differs from verified publication")
     print("quality-workflow-upload-verification: PASS")
     return 0
 
@@ -446,6 +527,64 @@ def remove_raw(attempt: Path, keep_publication: bool) -> None:
         published = attempt / "published"
         if published.exists():
             shutil.rmtree(published)
+
+
+def group_alive(process_group: int) -> bool:
+    try:
+        os.killpg(process_group, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError as error:
+        raise WorkflowError("cannot inspect supervised process group") from error
+    return True
+
+
+def terminate_group(child: subprocess.Popen[Any], grace_seconds: float) -> None:
+    deadline = time.monotonic() + grace_seconds
+    if group_alive(child.pid):
+        os.killpg(child.pid, signal.SIGTERM)
+    while group_alive(child.pid) and time.monotonic() < deadline:
+        child.poll()
+        time.sleep(0.05)
+    if group_alive(child.pid):
+        os.killpg(child.pid, signal.SIGKILL)
+    try:
+        child.wait(timeout=1)
+    except subprocess.TimeoutExpired as error:
+        raise WorkflowError("supervised process group did not quiesce") from error
+    if group_alive(child.pid):
+        raise WorkflowError("supervised descendants survived SIGKILL")
+
+
+def monitor_child(
+    child: subprocess.Popen[Any],
+    occupancy_source: OccupancySource,
+    control: Path,
+    poll_seconds: float,
+    grace_seconds: float,
+) -> tuple[int, dict[str, Any], str | None]:
+    occupancy: dict[str, Any] = {"status": "CLEAR"}
+    while child.poll() is None:
+        time.sleep(poll_seconds)
+        occupancy = occupancy_source.classify_fail_closed()
+        disposition = deferral_for(occupancy)
+        if disposition:
+            write_json(
+                control / "priority-stop.json",
+                {
+                    "schema_version": SCHEMA,
+                    "disposition": disposition,
+                    "occupancy": occupancy,
+                },
+            )
+            terminate_group(child, grace_seconds)
+            return child.returncode or 0, occupancy, disposition
+    if group_alive(child.pid):
+        terminate_group(child, grace_seconds)
+        return child.returncode or 2, occupancy, "EXECUTION_FAILED"
+    occupancy = occupancy_source.classify_fail_closed()
+    disposition = deferral_for(occupancy)
+    return child.returncode or 0, occupancy, disposition
 
 
 def preflight(args: argparse.Namespace) -> int:
@@ -478,7 +617,9 @@ def supervise(args: argparse.Namespace) -> int:
     if attempt == control or attempt in control.parents or control in attempt.parents:
         raise WorkflowError("attempt and control roots must be separate")
     control.mkdir(parents=True, exist_ok=False)
-    occupancy_source = OccupancySource(args.repository, args.occupancy_fixture)
+    occupancy_source = OccupancySource(
+        args.repository, args.occupancy_fixture, attempt
+    )
     occupancy = occupancy_source.classify_fail_closed()
     disposition = deferral_for(occupancy)
     if disposition:
@@ -533,78 +674,129 @@ def supervise(args: argparse.Namespace) -> int:
         child = subprocess.Popen(
             args.child, cwd=repo, env=child_env, start_new_session=True
         )
-        deferred = False
-        while child.poll() is None:
-            time.sleep(args.poll_seconds)
-            occupancy = occupancy_source.classify_fail_closed()
-            disposition = deferral_for(occupancy)
+        active = child
+        try:
+            child_exit, occupancy, disposition = monitor_child(
+                child,
+                occupancy_source,
+                control,
+                args.poll_seconds,
+                args.grace_seconds,
+            )
             if disposition:
-                deferred = True
-                write_json(
-                    control / "priority-stop.json",
-                    {
-                        "schema_version": SCHEMA,
-                        "disposition": disposition,
-                        "occupancy": occupancy,
-                    },
+                partial_index(attempt, control)
+                remove_raw(attempt, keep_publication=False)
+                (control / "priority-stop.json").unlink(missing_ok=True)
+                control_receipt(
+                    control,
+                    disposition=disposition,
+                    source_sha=source_sha,
+                    source_tree=source_tree,
+                    workflow_revision=workflow_revision,
+                    workflow_sha256=workflow_sha256,
+                    occupancy=occupancy,
+                    child_exit=child_exit,
                 )
-                os.killpg(child.pid, signal.SIGTERM)
-                try:
-                    child.wait(timeout=args.grace_seconds)
-                except subprocess.TimeoutExpired:
-                    os.killpg(child.pid, signal.SIGKILL)
-                    child.wait()
-                break
-        if deferred:
-            partial_index(attempt, control)
-            remove_raw(attempt, keep_publication=False)
+                print(f"quality-workflow: {disposition}")
+                return 0 if disposition.startswith("DEFERRED_") else 2
+            if child_exit:
+                raise WorkflowError(f"quality child failed with exit {child_exit}")
+            verifier_python = repo / ".venv/bin/python"
+            if not verifier_python.is_file():
+                verifier_python = Path(sys.executable)
+            verifier_env = {
+                **os.environ,
+                "TMPDIR": str(attempt.parent / f"{attempt.name}-verify-tmp"),
+            }
+            Path(verifier_env["TMPDIR"]).mkdir(parents=True, exist_ok=False)
+            verifier = subprocess.Popen(
+                [
+                    str(verifier_python),
+                    "tools/local_ci/quality_observatory.py",
+                    "verify",
+                    "--repo",
+                    ".",
+                    "--published-dir",
+                    str(attempt / "published"),
+                    "--admission",
+                    str(attempt / "local/pre-heavy-admission.json"),
+                ],
+                cwd=repo,
+                env=verifier_env,
+                start_new_session=True,
+            )
+            active = verifier
+            verify_exit, occupancy, disposition = monitor_child(
+                verifier,
+                occupancy_source,
+                control,
+                args.poll_seconds,
+                args.grace_seconds,
+            )
+            shutil.rmtree(verifier_env["TMPDIR"], ignore_errors=True)
+            if disposition:
+                partial_index(attempt, control)
+                remove_raw(attempt, keep_publication=False)
+                (control / "priority-stop.json").unlink(missing_ok=True)
+                control_receipt(
+                    control,
+                    disposition=disposition,
+                    source_sha=source_sha,
+                    source_tree=source_tree,
+                    workflow_revision=workflow_revision,
+                    workflow_sha256=workflow_sha256,
+                    occupancy=occupancy,
+                    child_exit=verify_exit,
+                )
+                print(f"quality-workflow: {disposition}")
+                return 0 if disposition.startswith("DEFERRED_") else 2
+            if verify_exit:
+                raise WorkflowError(
+                    f"independent quality verification failed with exit {verify_exit}"
+                )
+            publication, evidence_id = verify_publication(attempt / "published")
+            admission = read_object(attempt / "local/pre-heavy-admission.json")
+            remove_raw(attempt, keep_publication=True)
             control_receipt(
                 control,
-                disposition=disposition or "DEFERRED_OCCUPANCY_UNKNOWN",
+                disposition="COMPLETE",
                 source_sha=source_sha,
                 source_tree=source_tree,
                 workflow_revision=workflow_revision,
                 workflow_sha256=workflow_sha256,
                 occupancy=occupancy,
-                child_exit=child.returncode,
+                child_exit=child_exit,
+                publication=publication,
+                admission=admission,
+                quality_evidence_id=evidence_id,
             )
             print(
-                "quality-workflow: "
-                f"{disposition or 'DEFERRED_OCCUPANCY_UNKNOWN'}"
+                f"quality-workflow: PASS id={evidence_id} "
+                f"files={len(PUBLISHED_FILES)} bytes={publication['total_bytes']}"
             )
             return 0
-        if child.returncode:
-            partial_index(attempt, control)
-            remove_raw(attempt, keep_publication=False)
-            control_receipt(
-                control,
-                disposition="EXECUTION_FAILED",
-                source_sha=source_sha,
-                source_tree=source_tree,
-                workflow_revision=workflow_revision,
-                workflow_sha256=workflow_sha256,
-                occupancy=occupancy,
-                child_exit=child.returncode,
-            )
-            return child.returncode
-        publication, evidence_id = verify_publication(attempt / "published")
-        remove_raw(attempt, keep_publication=True)
-        control_receipt(
-            control,
-            disposition="COMPLETE",
-            source_sha=source_sha,
-            source_tree=source_tree,
-            workflow_revision=workflow_revision,
-            workflow_sha256=workflow_sha256,
-            occupancy=occupancy,
-            child_exit=child.returncode,
-            publication=publication,
-        )
-        print(
-            f"quality-workflow: PASS id={evidence_id} "
-            f"files={len(PUBLISHED_FILES)} bytes={publication['total_bytes']}"
-        )
-        return 0
+        except BaseException as error:
+            if group_alive(active.pid):
+                terminate_group(active, args.grace_seconds)
+            try:
+                partial_index(attempt, control)
+            finally:
+                remove_raw(attempt, keep_publication=False)
+                (control / "priority-stop.json").unlink(missing_ok=True)
+            if not (control / "quality-control-receipt.json").exists():
+                control_receipt(
+                    control,
+                    disposition="EXECUTION_FAILED",
+                    source_sha=source_sha,
+                    source_tree=source_tree,
+                    workflow_revision=workflow_revision,
+                    workflow_sha256=workflow_sha256,
+                    occupancy=occupancy,
+                    child_exit=child.returncode,
+                )
+            if isinstance(error, (KeyboardInterrupt, SystemExit)):
+                raise
+            raise WorkflowError(str(error)) from error
 
 
 def self_test() -> int:
@@ -621,7 +813,10 @@ def self_test() -> int:
                 "id": 1,
                 "repository": repository,
                 "workflow": CURRENT_WORKFLOW,
+                "event": "workflow_dispatch",
+                "head_sha": "1" * 40,
                 "status": "queued",
+                "conclusion": None,
                 "jobs": [],
                 "artifacts": 0,
             }
@@ -634,8 +829,11 @@ def self_test() -> int:
             {
                 "id": 29673299308,
                 "repository": repository,
-                "workflow": RETIRED_OMARCHY_WORKFLOW,
-                "status": "queued",
+                "workflow": CURRENT_WORKFLOW,
+                "event": "workflow_dispatch",
+                "head_sha": DEFUNCT_OMARCHY_RUNS[29673299308],
+                "status": "completed",
+                "conclusion": "cancelled",
                 "jobs": [],
                 "artifacts": 0,
             }
@@ -654,6 +852,7 @@ def self_test() -> int:
             {
                 "execution_integrity": "PASS",
                 "closure_eligible": False,
+                "debt_status": "FAIL",
                 "quality_evidence_id": "0" * 64,
             },
         )
@@ -709,6 +908,9 @@ def parser() -> argparse.ArgumentParser:
     upload = commands.add_parser("verify-upload")
     upload.add_argument("--published", type=Path, required=True)
     upload.add_argument("--control", type=Path, required=True)
+    upload.add_argument("--staging", type=Path, required=True)
+    upload.add_argument("--repository", required=True)
+    upload.add_argument("--occupancy-fixture", type=Path)
     upload.set_defaults(function=verify_upload)
     return root
 

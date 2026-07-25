@@ -99,17 +99,32 @@ fn occupancy_preflight_defers_live_and_unknown_but_ignores_exact_omarchy() {
     let cases = [
         (
             "live",
-            r#"{"schema_version":"openwepp-quality-occupancy-v1","runs":[{"id":7,"repository":"openwepp/openwepp","workflow":".github/workflows/testgate-shadow.yml","status":"queued","jobs":[],"artifacts":0}]}"#,
+            r#"{"schema_version":"openwepp-quality-occupancy-v1","runs":[{"id":7,"repository":"openwepp/openwepp","workflow":".github/workflows/testgate-shadow.yml","event":"workflow_dispatch","head_sha":"1111111111111111111111111111111111111111","status":"queued","conclusion":null,"jobs":[],"artifacts":0}]}"#,
             "DEFERRED_TESTGATE_PRIORITY",
         ),
         (
             "omarchy",
-            r#"{"schema_version":"openwepp-quality-occupancy-v1","runs":[{"id":29673299308,"repository":"openwepp/openwepp","workflow":".github/workflows/testgate-conservative.yml","status":"queued","jobs":[],"artifacts":0}]}"#,
+            r#"{"schema_version":"openwepp-quality-occupancy-v1","runs":[{"id":29673299308,"repository":"openwepp/openwepp","workflow":".github/workflows/testgate-shadow.yml","event":"workflow_dispatch","head_sha":"850f7f6f10044c078299718d8e9c46b77d278a86","status":"completed","conclusion":"cancelled","jobs":[],"artifacts":0}]}"#,
             "READY",
         ),
         (
             "unknown",
             r#"{"schema_version":"wrong","runs":[]}"#,
+            "DEFERRED_OCCUPANCY_UNKNOWN",
+        ),
+        (
+            "requested",
+            r#"{"schema_version":"openwepp-quality-occupancy-v1","runs":[{"id":8,"repository":"openwepp/openwepp","workflow":".github/workflows/testgate-shadow.yml","event":"workflow_dispatch","head_sha":"1111111111111111111111111111111111111111","status":"requested","conclusion":null,"jobs":[],"artifacts":0}]}"#,
+            "DEFERRED_TESTGATE_PRIORITY",
+        ),
+        (
+            "repo-drift",
+            r#"{"schema_version":"openwepp-quality-occupancy-v1","runs":[{"id":8,"repository":"spoof/openwepp","workflow":".github/workflows/testgate-shadow.yml","event":"workflow_dispatch","head_sha":"1111111111111111111111111111111111111111","status":"queued","conclusion":null,"jobs":[],"artifacts":0}]}"#,
+            "DEFERRED_OCCUPANCY_UNKNOWN",
+        ),
+        (
+            "omarchy-drift",
+            r#"{"schema_version":"openwepp-quality-occupancy-v1","runs":[{"id":29673299308,"repository":"openwepp/openwepp","workflow":".github/workflows/testgate-shadow.yml","event":"workflow_dispatch","head_sha":"850f7f6f10044c078299718d8e9c46b77d278a86","status":"completed","conclusion":"cancelled","jobs":[],"artifacts":1}]}"#,
             "DEFERRED_OCCUPANCY_UNKNOWN",
         ),
     ];
@@ -146,7 +161,7 @@ fn supervisor_yields_to_testgate_and_removes_partial_publication() {
         r#"{"snapshots":[
 {"schema_version":"openwepp-quality-occupancy-v1","runs":[]},
 {"schema_version":"openwepp-quality-occupancy-v1","runs":[]},
-{"schema_version":"openwepp-quality-occupancy-v1","runs":[{"id":9,"repository":"openwepp/openwepp","workflow":".github/workflows/testgate-shadow.yml","status":"in_progress","jobs":[{"name":"openwepp/execute-increment","status":"in_progress","labels":["self-hosted","Linux","X64","openwepp","forest1","trusted"]}],"artifacts":0}]}
+{"after_path":"stage-full.done","snapshot":{"schema_version":"openwepp-quality-occupancy-v1","runs":[{"id":9,"repository":"openwepp/openwepp","workflow":".github/workflows/testgate-shadow.yml","event":"workflow_dispatch","head_sha":"1111111111111111111111111111111111111111","status":"in_progress","conclusion":null,"jobs":[{"name":"openwepp/execute-increment","status":"in_progress","labels":["self-hosted","Linux","X64","openwepp","forest1","trusted"]}],"artifacts":0}]}}
 ]}"#,
     );
     let attempt = temp.join("attempt");
@@ -193,7 +208,7 @@ fn supervisor_yields_to_testgate_and_removes_partial_publication() {
             "--",
             "bash",
             "-c",
-            "mkdir -p \"$1/published\"; printf partial > \"$1/published/raw.lcov\"; sleep 10",
+            "mkdir -p \"$1/published\"; printf partial > \"$1/published/raw.lcov\"; touch \"$1/stage-full.done\"; sleep 10",
             "_",
         ])
         .arg(&attempt)
@@ -207,6 +222,146 @@ fn supervisor_yields_to_testgate_and_removes_partial_publication() {
     assert!(receipt.contains("\"disposition\":\"DEFERRED_TESTGATE_PRIORITY\""));
     assert!(control.join("quality-partial-index.json").is_file());
     fs::remove_dir_all(temp).expect("remove supervisor scratch");
+}
+
+#[test]
+fn supervisor_yields_after_science_before_crap() {
+    let temp = scratch("before-crap");
+    let fixture = temp.join("race.json");
+    write_fixture(
+        &fixture,
+        r#"{"snapshots":[
+{"schema_version":"openwepp-quality-occupancy-v1","runs":[]},
+{"schema_version":"openwepp-quality-occupancy-v1","runs":[]},
+{"after_path":"stage-science.done","snapshot":{"schema_version":"openwepp-quality-occupancy-v1","runs":[{"id":10,"repository":"openwepp/openwepp","workflow":".github/workflows/testgate-shadow.yml","event":"workflow_dispatch","head_sha":"1111111111111111111111111111111111111111","status":"queued","conclusion":null,"jobs":[],"artifacts":0}]}}
+]}"#,
+    );
+    let attempt = temp.join("attempt");
+    let control = temp.join("control");
+    let lease = temp.join("forest1.lock");
+    let head_output = Command::new("git")
+        .args(["rev-parse", "HEAD"])
+        .current_dir(root())
+        .output()
+        .expect("resolve head");
+    let head = String::from_utf8(head_output.stdout)
+        .expect("UTF-8 head")
+        .trim()
+        .to_owned();
+    let status = Command::new(root().join(".venv/bin/python"))
+        .arg(root().join("tools/local_ci/quality_observatory_workflow.py"))
+        .args([
+            "supervise",
+            "--repo",
+            ".",
+            "--repository",
+            "openwepp/openwepp",
+            "--source-sha",
+            &head,
+            "--workflow-revision",
+            &head,
+            "--workflow-sha256",
+            "0000000000000000000000000000000000000000000000000000000000000000",
+            "--poll-seconds",
+            "0.01",
+            "--grace-seconds",
+            "0.1",
+        ])
+        .arg("--attempt-root")
+        .arg(&attempt)
+        .arg("--control-root")
+        .arg(&control)
+        .arg("--lease")
+        .arg(&lease)
+        .arg("--occupancy-fixture")
+        .arg(&fixture)
+        .args([
+            "--",
+            "bash",
+            "-c",
+            "mkdir -p \"$1/local\"; touch \"$1/stage-science.done\"; sleep 10",
+            "_",
+        ])
+        .arg(&attempt)
+        .current_dir(root())
+        .status()
+        .expect("run before-CRAP race fixture");
+    assert!(status.success());
+    let receipt = fs::read_to_string(control.join("quality-control-receipt.json"))
+        .expect("read control receipt");
+    assert!(receipt.contains("\"disposition\":\"DEFERRED_TESTGATE_PRIORITY\""));
+    let names = fs::read_dir(&control)
+        .expect("read control directory")
+        .map(|entry| entry.expect("control entry").file_name())
+        .collect::<Vec<_>>();
+    assert_eq!(names.len(), 2, "control artifact set must remain exact");
+    fs::remove_dir_all(temp).expect("remove before-CRAP scratch");
+}
+
+#[test]
+fn corrupt_complete_candidate_fails_closed_and_cleans_raw_state() {
+    let temp = scratch("corrupt");
+    let fixture = temp.join("clear.json");
+    write_fixture(
+        &fixture,
+        r#"{"schema_version":"openwepp-quality-occupancy-v1","runs":[]}"#,
+    );
+    let attempt = temp.join("attempt");
+    let control = temp.join("control");
+    let head_output = Command::new("git")
+        .args(["rev-parse", "HEAD"])
+        .current_dir(root())
+        .output()
+        .expect("resolve head");
+    let head = String::from_utf8(head_output.stdout)
+        .expect("UTF-8 head")
+        .trim()
+        .to_owned();
+    let status = Command::new(root().join(".venv/bin/python"))
+        .arg(root().join("tools/local_ci/quality_observatory_workflow.py"))
+        .args([
+            "supervise",
+            "--repo",
+            ".",
+            "--repository",
+            "openwepp/openwepp",
+            "--source-sha",
+            &head,
+            "--workflow-revision",
+            &head,
+            "--workflow-sha256",
+            "0000000000000000000000000000000000000000000000000000000000000000",
+            "--poll-seconds",
+            "0.01",
+            "--grace-seconds",
+            "0.1",
+        ])
+        .arg("--attempt-root")
+        .arg(&attempt)
+        .arg("--control-root")
+        .arg(&control)
+        .arg("--lease")
+        .arg(temp.join("forest1.lock"))
+        .arg("--occupancy-fixture")
+        .arg(&fixture)
+        .args([
+            "--",
+            "bash",
+            "-c",
+            "mkdir -p \"$1/local\" \"$1/published\"; printf raw > \"$1/local/raw.lcov\"; printf '{}' > \"$1/published/run-status.json\"",
+            "_",
+        ])
+        .arg(&attempt)
+        .current_dir(root())
+        .status()
+        .expect("run corrupt publication fixture");
+    assert!(!status.success());
+    assert!(!attempt.join("local").exists());
+    assert!(!attempt.join("published").exists());
+    let receipt = fs::read_to_string(control.join("quality-control-receipt.json"))
+        .expect("read failure receipt");
+    assert!(receipt.contains("\"disposition\":\"EXECUTION_FAILED\""));
+    fs::remove_dir_all(temp).expect("remove corrupt scratch");
 }
 
 #[test]
