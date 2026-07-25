@@ -43,6 +43,7 @@ PUBLISHED_FILES = {
 }
 MAX_PUBLISHED_BYTES = 100 * 1024 * 1024
 MAX_CONTROL_BYTES = 1024 * 1024
+FINALIZATION_SECONDS = 54.0
 SHA40 = re.compile(r"^[0-9a-f]{40}$")
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
 
@@ -241,15 +242,7 @@ def live_snapshot(repository: str) -> dict[str, Any]:
                 Path.cwd(),
             )
         )
-        if not isinstance(pages, list):
-            raise WorkflowError("GitHub paginated runs response is malformed")
-        workflow_runs: list[Any] = []
-        for payload in pages:
-            if not isinstance(payload, dict) or not isinstance(
-                payload.get("workflow_runs"), list
-            ):
-                raise WorkflowError("GitHub runs response is malformed")
-            workflow_runs.extend(payload["workflow_runs"])
+        workflow_runs = flatten_run_pages(pages)
         for run in workflow_runs:
             if not isinstance(run, dict):
                 raise WorkflowError("GitHub run is malformed")
@@ -325,6 +318,29 @@ def live_snapshot(repository: str) -> dict[str, Any]:
     return {"schema_version": OCCUPANCY_SCHEMA, "runs": runs}
 
 
+def flatten_run_pages(pages: Any) -> list[Any]:
+    if not isinstance(pages, list):
+        raise WorkflowError("GitHub paginated runs response is malformed")
+    workflow_runs: list[Any] = []
+    expected_total: int | None = None
+    for payload in pages:
+        if not isinstance(payload, dict) or not isinstance(
+            payload.get("workflow_runs"), list
+        ):
+            raise WorkflowError("GitHub runs response is malformed")
+        page_total = payload.get("total_count")
+        if not isinstance(page_total, int) or page_total < 0:
+            raise WorkflowError("GitHub run total_count is malformed")
+        if expected_total is None:
+            expected_total = page_total
+        elif expected_total != page_total:
+            raise WorkflowError("GitHub paginated run totals disagree")
+        workflow_runs.extend(payload["workflow_runs"])
+    if expected_total is None or len(workflow_runs) != expected_total:
+        raise WorkflowError("GitHub run pagination is incomplete")
+    return workflow_runs
+
+
 class OccupancySource:
     def __init__(
         self, repository: str, fixture: Path | None, watch_root: Path | None = None
@@ -373,7 +389,14 @@ class OccupancySource:
     def classify_fail_closed(self) -> dict[str, Any]:
         try:
             return self.classify()
-        except (WorkflowError, OSError, ValueError, TypeError, KeyError) as error:
+        except (
+            WorkflowError,
+            OSError,
+            ValueError,
+            TypeError,
+            KeyError,
+            AttributeError,
+        ) as error:
             return {"status": "UNKNOWN", "reason": str(error)}
 
 
@@ -401,6 +424,14 @@ def control_receipt(
     admission: dict[str, Any] | None = None,
     quality_evidence_id: str | None = None,
 ) -> None:
+    existing = list(control.iterdir())
+    if any(
+        path.name != "quality-partial-index.json"
+        or path.is_symlink()
+        or not path.is_file()
+        for path in existing
+    ):
+        raise WorkflowError("control evidence contains an unexpected entry")
     receipt = {
         "schema_version": SCHEMA,
         "disposition": disposition,
@@ -414,10 +445,58 @@ def control_receipt(
         "admission": admission,
         "quality_evidence_id": quality_evidence_id,
     }
+    encoded = canonical_bytes(receipt) + b"\n"
+    existing_bytes = sum(path.stat().st_size for path in existing)
+    if existing_bytes + len(encoded) > MAX_CONTROL_BYTES:
+        raise WorkflowError("control evidence exceeds 1 MiB")
     write_json(control / "quality-control-receipt.json", receipt)
-    total = sum(path.stat().st_size for path in control.iterdir() if path.is_file())
+    allowed = {"quality-control-receipt.json"}
+    if (control / "quality-partial-index.json").exists():
+        allowed.add("quality-partial-index.json")
+    entries = list(control.iterdir())
+    if {
+        path.name
+        for path in entries
+        if path.is_file() and not path.is_symlink()
+    } != allowed or any(
+        path.is_symlink() or not path.is_file() for path in entries
+    ):
+        raise WorkflowError("control evidence file set is not exact")
+    total = sum(path.stat().st_size for path in entries)
     if total > MAX_CONTROL_BYTES:
         raise WorkflowError("control evidence exceeds 1 MiB")
+
+
+def validate_control(control: Path) -> dict[str, Any]:
+    if not control.is_dir() or control.is_symlink():
+        raise WorkflowError("control evidence directory is missing or unsafe")
+    entries = list(control.iterdir())
+    names = {path.name for path in entries}
+    if (
+        "quality-control-receipt.json" not in names
+        or not names.issubset(
+            {"quality-control-receipt.json", "quality-partial-index.json"}
+        )
+        or any(
+            path.is_symlink()
+            or not path.is_file()
+            or path.stat().st_nlink != 1
+            for path in entries
+        )
+        or sum(path.stat().st_size for path in entries) > MAX_CONTROL_BYTES
+    ):
+        raise WorkflowError("control evidence file set or size is invalid")
+    receipt = read_object(control / "quality-control-receipt.json")
+    disposition = receipt.get("disposition")
+    if not isinstance(disposition, str):
+        raise WorkflowError("control receipt disposition is missing")
+    if disposition.startswith("DEFERRED_") and (
+        receipt.get("quality_evidence_id") is not None
+        or receipt.get("admission") is not None
+        or receipt.get("publication") is not None
+    ):
+        raise WorkflowError("deferred control receipt carries complete evidence")
+    return receipt
 
 
 def partial_index(attempt: Path, control: Path) -> None:
@@ -494,7 +573,7 @@ def verify_publication(published: Path) -> tuple[dict[str, Any], str]:
 
 
 def verify_upload(args: argparse.Namespace) -> int:
-    receipt = read_object(args.control / "quality-control-receipt.json")
+    receipt = validate_control(args.control)
     if receipt.get("disposition") != "COMPLETE":
         raise WorkflowError("control receipt is not complete")
     source_manifest_value = publication_manifest(args.published)
@@ -508,7 +587,12 @@ def verify_upload(args: argparse.Namespace) -> int:
         receipt["disposition"] = disposition
         receipt["occupancy"] = occupancy
         receipt["publication"] = None
+        receipt["quality_evidence_id"] = None
+        receipt["admission"] = None
         write_json(args.control / "quality-control-receipt.json", receipt)
+        remove_raw(args.published.parent, keep_publication=False)
+        if args.staging.exists():
+            shutil.rmtree(args.staging)
         raise WorkflowError(f"upload deferred: {disposition}")
     args.staging.mkdir(parents=True, exist_ok=False)
     for name in sorted(PUBLISHED_FILES):
@@ -519,14 +603,44 @@ def verify_upload(args: argparse.Namespace) -> int:
     return 0
 
 
-def remove_raw(attempt: Path, keep_publication: bool) -> None:
+def verify_control(args: argparse.Namespace) -> int:
+    validate_control(args.control)
+    print("quality-workflow-control-verification: PASS")
+    return 0
+
+
+def remove_raw(
+    attempt: Path, keep_publication: bool, deadline: float | None = None
+) -> None:
     local = attempt / "local"
     if local.exists():
-        shutil.rmtree(local)
+        bounded_rmtree(local, deadline)
     if not keep_publication:
         published = attempt / "published"
         if published.exists():
-            shutil.rmtree(published)
+            bounded_rmtree(published, deadline)
+
+
+def bounded_rmtree(path: Path, deadline: float | None) -> None:
+    if deadline is None:
+        shutil.rmtree(path)
+        return
+    remaining = deadline - time.monotonic()
+    if remaining <= 0:
+        raise WorkflowError("priority cleanup deadline expired")
+    cleanup = subprocess.Popen(
+        ["rm", "-rf", "--", str(path)],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        start_new_session=True,
+    )
+    try:
+        cleanup.wait(timeout=remaining)
+    except subprocess.TimeoutExpired:
+        terminate_group(cleanup, 0)
+        raise WorkflowError("priority cleanup exceeded finalization deadline")
+    if cleanup.returncode:
+        raise WorkflowError("priority cleanup failed")
 
 
 def group_alive(process_group: int) -> bool:
@@ -562,7 +676,7 @@ def monitor_child(
     control: Path,
     poll_seconds: float,
     grace_seconds: float,
-) -> tuple[int, dict[str, Any], str | None]:
+) -> tuple[int, dict[str, Any], str | None, float | None]:
     occupancy: dict[str, Any] = {"status": "CLEAR"}
     while child.poll() is None:
         time.sleep(poll_seconds)
@@ -578,13 +692,21 @@ def monitor_child(
                 },
             )
             terminate_group(child, grace_seconds)
-            return child.returncode or 0, occupancy, disposition
+            return (
+                child.returncode or 0,
+                occupancy,
+                disposition,
+                time.monotonic()
+                + max(0.0, FINALIZATION_SECONDS - grace_seconds),
+            )
     if group_alive(child.pid):
         terminate_group(child, grace_seconds)
-        return child.returncode or 2, occupancy, "EXECUTION_FAILED"
+        return child.returncode or 2, occupancy, "EXECUTION_FAILED", None
     occupancy = occupancy_source.classify_fail_closed()
     disposition = deferral_for(occupancy)
-    return child.returncode or 0, occupancy, disposition
+    return child.returncode or 0, occupancy, disposition, (
+        time.monotonic() + FINALIZATION_SECONDS if disposition else None
+    )
 
 
 def preflight(args: argparse.Namespace) -> int:
@@ -675,8 +797,9 @@ def supervise(args: argparse.Namespace) -> int:
             args.child, cwd=repo, env=child_env, start_new_session=True
         )
         active = child
+        finalization_deadline: float | None = None
         try:
-            child_exit, occupancy, disposition = monitor_child(
+            child_exit, occupancy, disposition, finalization_deadline = monitor_child(
                 child,
                 occupancy_source,
                 control,
@@ -685,7 +808,11 @@ def supervise(args: argparse.Namespace) -> int:
             )
             if disposition:
                 partial_index(attempt, control)
-                remove_raw(attempt, keep_publication=False)
+                remove_raw(
+                    attempt,
+                    keep_publication=False,
+                    deadline=finalization_deadline,
+                )
                 (control / "priority-stop.json").unlink(missing_ok=True)
                 control_receipt(
                     control,
@@ -726,7 +853,7 @@ def supervise(args: argparse.Namespace) -> int:
                 start_new_session=True,
             )
             active = verifier
-            verify_exit, occupancy, disposition = monitor_child(
+            verify_exit, occupancy, disposition, finalization_deadline = monitor_child(
                 verifier,
                 occupancy_source,
                 control,
@@ -736,7 +863,11 @@ def supervise(args: argparse.Namespace) -> int:
             shutil.rmtree(verifier_env["TMPDIR"], ignore_errors=True)
             if disposition:
                 partial_index(attempt, control)
-                remove_raw(attempt, keep_publication=False)
+                remove_raw(
+                    attempt,
+                    keep_publication=False,
+                    deadline=finalization_deadline,
+                )
                 (control / "priority-stop.json").unlink(missing_ok=True)
                 control_receipt(
                     control,
@@ -781,7 +912,8 @@ def supervise(args: argparse.Namespace) -> int:
             try:
                 partial_index(attempt, control)
             finally:
-                remove_raw(attempt, keep_publication=False)
+                if finalization_deadline is None:
+                    remove_raw(attempt, keep_publication=False)
                 (control / "priority-stop.json").unlink(missing_ok=True)
             if not (control / "quality-control-receipt.json").exists():
                 control_receipt(
@@ -843,8 +975,22 @@ def self_test() -> int:
     assert result["status"] == "CLEAR" and result["ignored_omarchy_runs"] == [
         29673299308
     ]
+    assert flatten_run_pages(
+        [
+            {"total_count": 2, "workflow_runs": [{"id": 1}]},
+            {"total_count": 2, "workflow_runs": [{"id": 2}]},
+        ]
+    ) == [{"id": 1}, {"id": 2}]
+    try:
+        flatten_run_pages([{"total_count": 2, "workflow_runs": [{"id": 1}]}])
+    except WorkflowError:
+        pass
+    else:
+        raise WorkflowError("truncated run pagination was accepted")
     with tempfile.TemporaryDirectory(prefix="quality-workflow-self-test-") as raw:
-        published = Path(raw)
+        test_root = Path(raw)
+        published = test_root / "published"
+        published.mkdir()
         for name in PUBLISHED_FILES:
             write_json(published / name, {})
         write_json(
@@ -877,6 +1023,128 @@ def self_test() -> int:
             pass
         else:
             raise WorkflowError("oversize publication was accepted")
+        victim.unlink()
+        write_json(victim, {})
+        control = test_root / "control"
+        control.mkdir()
+        complete_manifest, evidence_id = verify_publication(published)
+        control_receipt(
+            control,
+            disposition="COMPLETE",
+            source_sha="1" * 40,
+            source_tree="2" * 40,
+            workflow_revision="1" * 40,
+            workflow_sha256="3" * 64,
+            occupancy={"status": "CLEAR"},
+            publication=complete_manifest,
+            admission={"admission_id": "fixture"},
+            quality_evidence_id=evidence_id,
+        )
+        fixture = test_root / "live.json"
+        write_json(
+            fixture,
+            {
+                "schema_version": OCCUPANCY_SCHEMA,
+                "runs": [
+                    {
+                        "id": 77,
+                        "repository": repository,
+                        "workflow": CURRENT_WORKFLOW,
+                        "event": "workflow_dispatch",
+                        "head_sha": "1" * 40,
+                        "status": "queued",
+                        "conclusion": None,
+                        "jobs": [],
+                        "artifacts": 0,
+                    }
+                ],
+            },
+        )
+        try:
+            verify_upload(
+                argparse.Namespace(
+                    control=control,
+                    published=published,
+                    staging=test_root / "staging",
+                    repository=repository,
+                    occupancy_fixture=fixture,
+                )
+            )
+        except WorkflowError:
+            pass
+        else:
+            raise WorkflowError("late TESTGATE priority allowed upload")
+        deferred_receipt = validate_control(control)
+        if (
+            deferred_receipt.get("quality_evidence_id") is not None
+            or deferred_receipt.get("admission") is not None
+            or published.exists()
+        ):
+            raise WorkflowError("late deferral retained complete evidence")
+    with tempfile.TemporaryDirectory(prefix="quality-control-self-test-") as raw:
+        control = Path(raw)
+        control_receipt(
+            control,
+            disposition="DEFERRED_TESTGATE_PRIORITY",
+            source_sha="1" * 40,
+            source_tree="2" * 40,
+            workflow_revision="1" * 40,
+            workflow_sha256="3" * 64,
+            occupancy={"status": "LIVE_TESTGATE"},
+        )
+        validate_control(control)
+        (control / "unexpected").mkdir()
+        try:
+            validate_control(control)
+        except WorkflowError:
+            pass
+        else:
+            raise WorkflowError("unexpected control directory was accepted")
+    with tempfile.TemporaryDirectory(prefix="quality-acquire-self-test-") as raw:
+        root = Path(raw)
+        fixture = root / "race.json"
+        clear_snapshot = {"schema_version": OCCUPANCY_SCHEMA, "runs": []}
+        live_snapshot_value = {
+            "schema_version": OCCUPANCY_SCHEMA,
+            "runs": [
+                {
+                    "id": 88,
+                    "repository": repository,
+                    "workflow": CURRENT_WORKFLOW,
+                    "event": "workflow_dispatch",
+                    "head_sha": "1" * 40,
+                    "status": "queued",
+                    "conclusion": None,
+                    "jobs": [],
+                    "artifacts": 0,
+                }
+            ],
+        }
+        write_json(
+            fixture,
+            {"snapshots": [clear_snapshot, live_snapshot_value]},
+        )
+        repo = Path.cwd()
+        head = run_text(["git", "rev-parse", "HEAD"], repo)
+        marker = root / "child-started"
+        result = supervise(
+            argparse.Namespace(
+                source_sha=head,
+                workflow_revision=head,
+                workflow_sha256="0" * 64,
+                repo=repo,
+                attempt_root=root / "attempt",
+                control_root=root / "control",
+                repository=repository,
+                occupancy_fixture=fixture,
+                lease=root / "lease",
+                poll_seconds=0.01,
+                grace_seconds=0.1,
+                child=["touch", str(marker)],
+            )
+        )
+        if result != 0 or marker.exists():
+            raise WorkflowError("post-lock priority guard started the child")
     print("quality-workflow-self-test: PASS")
     return 0
 
@@ -902,7 +1170,7 @@ def parser() -> argparse.ArgumentParser:
     run.add_argument("--lease", type=Path, required=True)
     run.add_argument("--occupancy-fixture", type=Path)
     run.add_argument("--poll-seconds", type=float, default=30.0)
-    run.add_argument("--grace-seconds", type=float, default=60.0)
+    run.add_argument("--grace-seconds", type=float, default=30.0)
     run.add_argument("child", nargs=argparse.REMAINDER)
     run.set_defaults(function=supervise)
     upload = commands.add_parser("verify-upload")
@@ -912,6 +1180,9 @@ def parser() -> argparse.ArgumentParser:
     upload.add_argument("--repository", required=True)
     upload.add_argument("--occupancy-fixture", type=Path)
     upload.set_defaults(function=verify_upload)
+    control = commands.add_parser("verify-control")
+    control.add_argument("--control", type=Path, required=True)
+    control.set_defaults(function=verify_control)
     return root
 
 

@@ -55,6 +55,9 @@ fn quality_workflow_is_manual_forest1_specific_and_nonblocking() {
     assert!(workflow.contains("runs-on: [self-hosted, Linux, X64, openwepp, forest1, trusted]"));
     assert!(workflow.contains("actions: read"));
     assert!(workflow.contains("[[ \"${SOURCE_SHA}\" =~ ^[0-9a-f]{40}$ ]]"));
+    assert!(workflow.contains("WORKFLOW_SHA: ${{ github.workflow_sha }}"));
+    assert!(workflow.contains("WORKFLOW_REF: ${{ github.workflow_ref }}"));
+    assert!(workflow.contains("test \"${WORKFLOW_SHA}\" = \"${SOURCE_SHA}\""));
     assert!(workflow.contains("test \"$(git rev-parse HEAD)\" = \"${SOURCE_SHA}\""));
     assert!(workflow.contains("test \"$(git rev-parse refs/remotes/origin/main)\""));
     assert!(workflow.contains("quality_observatory_workflow.py preflight"));
@@ -388,7 +391,8 @@ fn workflow_contract_keeps_exact_publication_and_bounded_priority_intervals() {
     assert!(controller.contains("MAX_PUBLISHED_BYTES = 100 * 1024 * 1024"));
     assert!(controller.contains("MAX_CONTROL_BYTES = 1024 * 1024"));
     assert!(controller.contains("default=30.0"));
-    assert!(controller.contains("default=60.0"));
+    assert!(controller.contains("default=30.0"));
+    assert!(controller.contains("FINALIZATION_SECONDS = 54.0"));
     assert!(controller.contains("signal.SIGTERM"));
     assert!(controller.contains("signal.SIGKILL"));
     assert!(controller.contains("DEFERRED_OCCUPANCY_UNKNOWN"));
