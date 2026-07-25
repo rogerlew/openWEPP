@@ -2,7 +2,7 @@
 
 Package ID: `20260724-quality-observatory-merged-coverage-001`
 
-Status: `ACTIVE / READY / ORDER-3`
+Status: `EXECUTED / COMPLETE / ORDER-3`
 
 ## Objective
 
@@ -209,3 +209,12 @@ The isolated real consumer subsequently passed twice from a clean source and
 once while deliberate ambient untracked dirt existed. Both independent
 reviews passed with no findings. Fresh collection is authorized after
 committing the reviewed correction.
+
+Attempt 13 executed the complete transition from exact head `32022d8c`: all
+2,279 full and 36 science-manual tests passed, their disjoint union exactly
+matched the 2,315-test workspace inventory, all 18 historical snowbench rows
+proved science-manual contribution, and merged CRAP reported two adjudicated
+and zero actionable rows. The exact 11-file, 1,421,222-byte publication has
+quality evidence ID `f641feeda798047dac30ad7ef760bbadc31b71265e32415353be71b53e8b5544`.
+Both independent terminal verifiers passed against that unchanged publication
+and head with zero findings. Order 3 is complete.

@@ -29,10 +29,12 @@ Open closure-blocking findings: `0`.
 | Governance-only science binary name rejected by confinement allowlist | `accepted / fixed` | The exact governance path is allowed; ordinary and nested suffix-collision unlisted paths remain rejected. |
 | Confinement allowlist used suffix rather than exact path matching | `accepted / fixed` | Security re-review found a `HIGH` nested-path bypass. The walker now compares normalized repository-relative paths by equality, and an adversarial suffix collision fails with its exact path. |
 | Coverage-only public-audit test observes shared checkout | `accepted / fixed by prerequisite` | The real consumer now uses a private no-hardlink committed clone and passes with clean or deliberately dirty ambient source; production guards remain unchanged. |
+| Terminal verifier temporary filesystem exhausted | `accepted / infrastructure remediated` | Both first verifier runs failed before a verdict when `/tmp` exhausted space. Redirecting only `TMPDIR` to an empty mode-0700 `/home` scratch root preserved the exact command and inputs; both independent reruns passed and cleaned their reconstruction roots. |
 
 Review A final disposition: `PASS`.
 
 Review B final disposition: `PASS`.
 
-Heavy collection authorization: `READY` after committing the isolated-clone
-correction. The exact downstream consumer and both independent reviews pass.
+Heavy collection disposition: `PASS`. Attempt 13 published exact merged
+coverage evidence, and both independent terminal verifiers passed with zero
+findings.

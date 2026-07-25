@@ -54,4 +54,19 @@ Current correction gates:
 - Snapshot-isolation implementation/security reviews: both `PASS`, no
   findings.
 
-Fresh complete transition and terminal verification remain pending.
+- Attempt 13 admission: `READY`; exact 2,279 / 36 / 2,315 inventories.
+- Attempt 13 `full`: `PASS`; 2,279 passed, 16 slow, 31 skipped;
+  `3473.738s`.
+- Attempt 13 `science-manual`: `PASS`; 36 passed, 1 slow, 2,286 skipped;
+  `482.897s`.
+- Merged snowbench gate: `PASS`; all 18 rows prove science-manual
+  contribution and none remain false debt.
+- Adjudicated CRAP: `PASS`; 11,432 production entries, 2 raw rows,
+  2 adjudicated rows, and 0 actionable rows.
+- Publication: 11 regular files, 1,421,222 bytes; evidence ID
+  `f641feeda798047dac30ad7ef760bbadc31b71265e32415353be71b53e8b5544`.
+- Terminal verifier A: `PASS` after infrastructure-only ENOSPC remediation;
+  exact inventories, head, publication, and evidence ID.
+- Terminal verifier B: `PASS` after the same independent remediation; exact
+  inventories, head, publication, and evidence ID.
+- Final findings: none.

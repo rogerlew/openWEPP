@@ -7,7 +7,7 @@ This Defect-Closure ExecPlan is a living document governed by
 
 Package ID: `20260724-gate-planner-quality-deferral-hold-lift-001`
 
-Status: `ACTIVE / TERMINAL-GATES`
+Status: `EXECUTED / COMPLETE`
 
 ## Purpose / Big Picture
 
@@ -35,8 +35,9 @@ pass independent terminal verification.
   review, and full-workspace gates on clean committed head `0342b9f8`.
 - [x] 2026-07-25: Isolate the coverage-only public-audit consumer from the shared
   execution checkout after the attempt-12 transient exactness failure.
-- [ ] Lift Order 3, run fresh merged coverage, and verify publication twice.
-- [ ] Reconcile and close both packages.
+- [x] 2026-07-25: Lift Order 3, run fresh merged coverage, and verify
+  publication twice.
+- [x] 2026-07-25: Reconcile and close both packages.
 
 ## Objective
 
@@ -218,7 +219,12 @@ durable log paths. Repository write access for all subagents is read-only.
 
 ## Outcomes & Retrospective
 
-Pending execution.
+The seven gate-planner regressions and the later shared-checkout public-audit
+failure are closed without weakening production exactness guards. Order 3
+attempt 13 passed all 2,279 full and 36 science-manual tests, published the
+exact bounded merged-coverage evidence with zero actionable CRAP rows, and
+passed two independent terminal verifications. Defect `QOBS-HOLD-LIFT-01` is
+closed.
 
 ## Idempotence And Recovery
 

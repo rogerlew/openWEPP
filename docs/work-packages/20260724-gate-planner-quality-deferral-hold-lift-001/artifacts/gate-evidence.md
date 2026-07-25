@@ -39,7 +39,7 @@ Logs and exit-code files:
 - `logs/phase2-gate-planner-lib.{log,exit-code}`
 - `logs/phase3-workspace-full.{log,exit-code}`
 
-Order-3 quality transition remains pending.
+The prerequisite correctness gates authorized the Order-3 quality transition.
 
 ## Snapshot-Isolation Correction
 
@@ -52,3 +52,21 @@ Order-3 quality transition remains pending.
 - Rustfmt and diff validation: `PASS`.
 - Independent implementation review: `PASS`, no findings.
 - Independent security review: `PASS`, no findings.
+
+## Order-3 Hold Lift
+
+- Attempt 13 exact head:
+  `32022d8cc4bd3e56c62233552b5886bf2648c1bd`.
+- Full profile: `PASS`, 2,279 / 2,279.
+- Science-manual profile: `PASS`, 36 / 36.
+- Canonical workspace inventory: exact 2,315-test disjoint union.
+- Merged snowbench ledger: `PASS`, 18 / 18 science-manual contributions.
+- CRAP debt: `PASS`, 2 raw, 2 adjudicated, 0 actionable.
+- Publication: 11 files, 1,421,222 bytes.
+- Evidence ID:
+  `f641feeda798047dac30ad7ef760bbadc31b71265e32415353be71b53e8b5544`.
+- Independent terminal verifiers A and B: both `PASS`, no findings.
+
+The initial verifier runs were infrastructure-blocked by ENOSPC before issuing
+a verdict. Both exact reruns passed after redirecting only `TMPDIR` to an empty
+`/home` scratch root. The repository and publication remained unchanged.

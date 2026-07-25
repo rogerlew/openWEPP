@@ -11,11 +11,12 @@
 
 ## Reusable Execution Plans And Templates
 
-- `20260724-gate-planner-quality-deferral-hold-lift-001/` is the active
-  prerequisite for merged quality observatory Order 3. It owns seven
-  gate-planner fixtures left inconsistent with the Order-2 quality deferral,
-  the selected correctness regression, and the complete Order-3 hold lift
-  through fresh merged-coverage publication and terminal verification.
+- `20260724-gate-planner-quality-deferral-hold-lift-001/` and
+  `20260724-quality-observatory-merged-coverage-001/` completed merged quality
+  observatory Order 3. The prerequisite closed seven gate-planner regressions
+  and isolated the public-audit consumer; attempt 13 then passed 2,279 full and
+  36 science-manual tests, published 11 compact files with zero actionable
+  CRAP rows, and passed two independent terminal verifications.
 - `20260724-testgate-quality-deferral-001/` completed roadmap Order 2.
   Ordinary TESTGATE and routine release validation now execute no coverage/CRAP
   subprocess and emit the independently verified, closure-eligible
