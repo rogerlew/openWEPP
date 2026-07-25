@@ -34,9 +34,11 @@ distinct from TESTGATE.
 - Deferred/partial control evidence is confined to
   `quality-control-receipt.json` plus optional `quality-partial-index.json`,
   outside `published/`, with a 1 MiB ceiling and no `quality_evidence_id`.
-- Defunct Omarchy classification requires the exact retired conservative
-  workflow plus an `omarchy` job label and absence of `forest1`; age or queued
-  duration is never sufficient.
+- Defunct Omarchy classification requires one of the three durable retired run
+  IDs, the exact conservative workflow, queued state, and zero jobs/artifacts;
+  any field drift is unknown or live, and age is never sufficient.
+- Provider authentication, pagination, API, JSON, or schema ambiguity is typed
+  `DEFERRED_OCCUPANCY_UNKNOWN`; it never admits work.
 - The exact 11-file allowlist and 100 MiB ceiling are checked before upload.
 - Metric debt does not fail execution integrity; identity, collection,
   occupancy, or publication corruption does.

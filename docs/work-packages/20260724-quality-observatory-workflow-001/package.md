@@ -29,12 +29,13 @@ under the canonical `published/` directory, never receives a
 `quality_evidence_id`, and is never named or uploaded as a complete quality
 observation.
 
-The versioned defunct Omarchy predicate is exact: repository identity matches,
-the run names the retired `.github/workflows/testgate-conservative.yml`, and
-its queued job labels include `omarchy` but not `forest1`. Age, queue duration,
-and queued state alone never establish this classification. A current
-`testgate-shadow.yml` run or any job labeled `forest1` remains live occupancy
-when queued or in progress.
+The versioned defunct Omarchy predicate is exact: repository identity matches;
+the run ID is one of `29673299308`, `29672334757`, or `29672149962`; the run
+names the retired `.github/workflows/testgate-conservative.yml`; it remains
+queued; and provider inspection reports zero jobs and zero artifacts. Any
+field drift, new ID, job, artifact, or forest1 label is occupancy-unknown or
+live, never ignored. Age, queue duration, and queued state alone never
+establish this classification.
 
 Selected increment gates are Python compilation and controller self-tests,
 focused workflow/controller integration tests, TESTGATE workflow source
@@ -71,6 +72,7 @@ evidence.
 
 - `.github/workflows/quality-observatory.yml`
 - `.github/workflows/testgate-shadow.yml`
+- `Cargo.toml` (exact Order-4 integration-test registration only)
 - `gate-policy/v1/**`
 - `tools/local_ci/**`
 - `tools/release/**`
