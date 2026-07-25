@@ -1282,6 +1282,13 @@ activity. The observation:
 - emits `closure_eligible=false` with debt status separate from execution
   integrity.
 
+The manual workflow is implemented by
+`.github/workflows/quality-observatory.yml`. It uses a distinct nonblocking
+forest1 lease, fail-closed TESTGATE occupancy checks, bounded process-group
+supervision, and the canonical compact publication. A priority deferral
+performs no forest artifact upload; an ordinary failure may publish only its
+typed bounded control evidence.
+
 Actionable debt does not fail the measured source or any increment, campaign,
 or release transition. Collector corruption, identity mismatch, incomplete
 inventory, malformed evidence, or publication failure invalidates the

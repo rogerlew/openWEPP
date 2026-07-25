@@ -2,7 +2,7 @@
 
 Package ID: `20260724-quality-observatory-workflow-001`
 
-Status: `ACTIVE / IMPLEMENTATION / ORDER-4`
+Status: `COMPLETE / ORDER-4`
 
 ## Pre-Implementation Intent
 
@@ -129,7 +129,7 @@ evidence.
   between the two profiles, and before CRAP/report publication.
 - While a QA child is active, the supervisor polls exact forest1 TESTGATE
   occupancy at most every 30 seconds. On a live TESTGATE it terminates the QA
-  child, allows at most 60 seconds for compact partial-evidence finalization and
+  child, uses one shared 54-second deadline for compact finalization and
   cleanup, releases the lease, and emits `DEFERRED_TESTGATE_PRIORITY`. Thus QA
   yields within 90 seconds; partial coverage is never published as complete.
 - Defunct Omarchy records are ignored without cancellation or waiting.

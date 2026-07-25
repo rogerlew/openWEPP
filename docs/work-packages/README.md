@@ -11,6 +11,11 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260724-quality-observatory-workflow-001/` completed roadmap Order 4.
+  The optional manual forest1 workflow now yields fail closed to TESTGATE,
+  supervises the Order-3 merged collector, and restricts publication to the
+  verified 11-file observational contract. Both corrected reviews and both
+  terminal verifications passed; no live or heavy workflow was dispatched.
 - `20260724-gate-planner-quality-deferral-hold-lift-001/` and
   `20260724-quality-observatory-merged-coverage-001/` completed merged quality
   observatory Order 3. The prerequisite closed seven gate-planner regressions
