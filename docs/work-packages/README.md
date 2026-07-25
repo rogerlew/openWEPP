@@ -11,6 +11,11 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260724-cqr-nightly-quality-evidence-handoff-001/` completed roadmap Order
+  5. CQR Nightly now verifies exact current compact QA evidence, reconstructs
+  review-required candidate ranking without recollection, and authorizes fresh
+  acquisition only from a reproducible typed noncurrent receipt plus explicit
+  operator direction. Corrected dual review and terminal verification passed.
 - `20260724-quality-observatory-workflow-001/` completed roadmap Order 4.
   The optional manual forest1 workflow now yields fail closed to TESTGATE,
   supervises the Order-3 merged collector, and restricts publication to the

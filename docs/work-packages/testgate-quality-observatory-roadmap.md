@@ -1,6 +1,6 @@
 # TESTGATE And Quality Observatory Roadmap
 
-Status: `RATIFIED / EXECUTING / ORDER-5-NEXT`
+Status: `RATIFIED / EXECUTING / ORDER-6-NEXT`
 
 Owner: maintainers
 
@@ -31,7 +31,10 @@ the other.
 - Order 4 completed at implementation head `4c0b6cf4`; its manual forest1
   workflow, TESTGATE-first yield, and compact publication contracts passed
   dual review and terminal verification without a live or heavy dispatch.
-- Order 5, `20260724-cqr-nightly-quality-evidence-handoff-001`, is next.
+- Order 5 completed at implementation head `c87adad3`; exact current evidence
+  intake, candidate ranking, and typed recollection authorization passed dual
+  review and terminal verification.
+- Order 6, `20260724-testgate-quality-observatory-qualification-001`, is next.
 
 ## Outcome
 
@@ -76,8 +79,8 @@ caches remain local-only even when compressed.
 | 2 | `COMPLETE` | `20260724-testgate-quality-deferral-001` | Removed quality execution nodes from TESTGATE and issued a verified `DEFERRED_TO_QUALITY_CI` receipt state. | Order 1 |
 | 3 | `COMPLETE` | `20260724-quality-observatory-merged-coverage-001` | Produce one valid merged `full` plus `science-manual` coverage identity and prove snowbench is measured. | Order 2 |
 | 4 | `COMPLETE` | `20260724-quality-observatory-workflow-001` | Implement the optional forest1 QA workflow, TESTGATE-first deferral, compact artifacts, and non-blocking result contract. | Orders 2-3 |
-| 5 | `NEXT / QUEUED` | `20260724-cqr-nightly-quality-evidence-handoff-001` | Make CQR Nightly consume an exact current QA report and recollect only with typed stale/invalid evidence plus an explicit operator directive. | Orders 3-4 |
-| 6 | `QUEUED` | `20260724-testgate-quality-observatory-qualification-001` | Prove changed-head TESTGATE succeeds on forest1 without quality execution and with typed deferral. | Orders 1-5 |
+| 5 | `COMPLETE` | `20260724-cqr-nightly-quality-evidence-handoff-001` | Make CQR Nightly consume an exact current QA report and recollect only with typed stale/invalid evidence plus an explicit operator directive. | Orders 3-4 |
+| 6 | `NEXT / QUEUED` | `20260724-testgate-quality-observatory-qualification-001` | Prove changed-head TESTGATE succeeds on forest1 without quality execution and with typed deferral. | Orders 1-5 |
 | 7 | `QUEUED` | `20260724-quality-observatory-cqr-qualification-001` | Prove optional QA and exact-report CQR intake work end-to-end after TESTGATE. | Orders 5-6 |
 
 Orders 2 and 3 are serialized because their tooling/test write sets overlap.

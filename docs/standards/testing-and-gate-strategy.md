@@ -1307,11 +1307,12 @@ surface. It must satisfy its package-local thresholds and owned actionable-row
 target before claiming that metric objective complete. Unrelated workspace
 debt remains visible and non-blocking.
 
-Until Order 5 of the ratified quality-observatory roadmap implements exact
-evidence intake, new CQR Nightly dispatch is `HOLD`. After Order 5, CQR consumes
-one verified current `quality_evidence_id` for baseline selection and ranking
-without recollection. Only typed `STALE` or `INVALID` evidence plus an explicit
-operator CQR directive permits fresh acquisition.
+CQR Nightly consumes one verified current `quality_evidence_id`, its exact
+11-file publication, and complete control receipt through
+`tools/local_ci/cqr_quality_evidence.py` for candidate baseline selection and
+ranking without recollection. Final target selection still requires the CQR
+ExecPlan's two reviews. Only a reproducible typed `STALE` or `INVALID` receipt
+plus an explicit operator CQR directive permits fresh acquisition.
 
 Campaign and release may display or retain a quality observation, but do not
 require its presence or currency and do not reduce its debt verdict into a

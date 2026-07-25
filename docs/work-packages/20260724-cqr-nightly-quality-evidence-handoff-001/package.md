@@ -2,7 +2,7 @@
 
 Package ID: `20260724-cqr-nightly-quality-evidence-handoff-001`
 
-Status: `ACTIVE / CLOSEOUT / ORDER-5`
+Status: `COMPLETE / ORDER-5`
 
 ## Pre-Implementation Intent
 
