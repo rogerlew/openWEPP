@@ -4,16 +4,27 @@ Evidence class: Static.
 
 - Workflow: `.github/workflows/testgate-shadow.yml`
 - Ref: `main`
-- Base/scaffold:
-  `907222635e281a2e135b7f83bdf41eef9656a2d6`
+- Base/active authority:
+  `f01ab161b3ba135a04cb82b1934141577e21b641`
 - Intent package:
   `docs/work-packages/20260724-testgate-quality-observatory-qualification-001/package.md`
-- Dispatch count authorized: exactly one stable-head attempt
+- Dispatch count authorized: one attempt per corrected stable head
 - Forest runner: exact `openwepp`, `forest1`, `trusted` label set
 - Concurrency: `openwepp-forest1-testgate`
 
-The final head and provider run ID will be added only after cheap gates pass,
-the stable increment is pushed, current forest1 occupancy is clear, and the
-dispatch succeeds.
+Attempt 1 bound head
+`37eeee9a045ad15e3afe2c534ec132551dfbc81c` to provider run
+[`30164861346`](https://github.com/rogerlew/openWEPP/actions/runs/30164861346).
+It failed closed before planning with
+`GATE-PACKAGE-CHAIN-ANCHOR-INACTIVE`: the dispatched scaffold base
+`907222635e281a2e135b7f83bdf41eef9656a2d6` still recorded this package as
+`QUEUED`. The authenticated recovery artifact retained the same typed cause.
+The unchanged head will not be rerun.
+
+Attempt 2 will use the first commit whose parent-authority text records this
+package as active,
+`f01ab161b3ba135a04cb82b1934141577e21b641`. Its final head and provider run ID
+will be recorded only after focused gates pass, the correction is pushed, and
+current forest1 occupancy is clear.
 
 No QA, coverage, CRAP, or CQR workflow is authorized.

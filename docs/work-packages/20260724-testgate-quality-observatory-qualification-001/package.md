@@ -14,11 +14,11 @@ cheap source/schema/focused checks, reconcile the exact base-to-head authority
 chain, record the current provider queue state, and retain a dispatch-intent
 artifact binding:
 
-- active scaffold/base commit
-  `907222635e281a2e135b7f83bdf41eef9656a2d6`;
+- active authority/base commit
+  `f01ab161b3ba135a04cb82b1934141577e21b641`;
 - this exact intent package path;
 - the final pushed `main` head; and
-- exactly one authorized TESTGATE workflow dispatch.
+- one TESTGATE workflow dispatch per corrected stable head.
 
 The workflow itself owns LIGHT execution, the canonical ten-check pre-heavy
 audit, forest1 HEAVY admission, receipt production, hosted independent
