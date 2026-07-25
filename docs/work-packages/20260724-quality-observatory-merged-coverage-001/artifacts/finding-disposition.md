@@ -22,10 +22,12 @@ Open closure-blocking findings: `0`.
 | Read-only fixture mode propagation | `accepted / superseded correction` | Attempt `S67HdA` exposed read-only fixture copies. Preserving fixture file modes fixed that symptom, but attempt `NuumUF` proved directory freezing remained incompatible. Tooling defect 02 replaces the permission strategy with a writable, identity-guarded clone. |
 | Repository-relative scratch blocked | `accepted / fixed` | Attempt `NuumUF` ran the complete full inventory but failed 26 valid tests because all checkout directories were read-only. The implementation now preserves a writable no-hardlink clone and enforces the exact admitted identity at every profile/LCOV boundary. Both reviewers passed the correction; a 22-test affected-path probe passed and restored the exact fresh-clone identity. |
 | Predecessor gate-planner regression | `accepted / fixed by prerequisite` | Package `20260724-gate-planner-quality-deferral-hold-lift-001` passed both reviews, the exact seven, complete coverage-configured gate-planner library, and selected full workspace on clean committed head `0342b9f8`. |
+| Execution clone exposes identity-bound `.venv` as Git dirt | `accepted / fixed` | The clone uses exact local policy `/.venv\n`; the target and policy bytes remain identity-bound, all metadata types fail closed, and other untracked drift remains visible. |
+| Broad pre-existing local exclude can hide drift | `accepted / fixed` | Security re-review proved the helper overwrites rather than preserves policy; adversarial `*` setup no longer hides another untracked file. |
 
 Review A final disposition: `PASS`.
 
 Review B final disposition: `PASS`.
 
-Heavy collection authorization: `READY` for a fresh admission after the
-hold-lift evidence is committed.
+Heavy collection authorization: `READY` after committing the reviewed
+correction and proving a fresh exact clean admission.

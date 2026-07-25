@@ -82,3 +82,33 @@ root and are rejected from publication even when compressed.
 The instrumented `full` profile is the selected full-workspace correctness
 regression. Metric debt is observational; every identity, inventory, execution,
 merge, source-freeze, compactness, or verification defect blocks closure.
+
+## Attempt-5 Follow-On Intent
+
+Evidence class: Ran / Static.
+
+Attempt 5 admitted clean committed head `a5722028`, then exactly three
+gate-planner tests rejected the execution clone because its sole Git-status
+entry was the observatory-created, separately identity-bound `.venv` symlink.
+A local clone does not inherit the source checkout's `.git/info/exclude`.
+
+The correction is limited to replacing the execution clone's local Git exclude
+metadata with exact bytes `/.venv\n` immediately after creating the required
+symlink. Broad inherited/local rules are not preserved. The symlink target
+remains explicitly hashed by
+`working_tree_identity`; the exact local-exclude bytes are also identity-bound
+so later ignore-policy drift fails. Tracked bytes, index metadata, and every
+other nonignored untracked file remain identity-bound and fail-closed.
+
+Selected correction gates:
+
+- behavioral self-test proving `.venv` is Git-clean while symlink-target drift
+  changes working-tree identity, other untracked drift stays visible, broad
+  rules are removed, and intermediate metadata symlinks fail;
+- focused quality-observatory integration/source-contract tests;
+- Python compile/self-test, Rustfmt, warnings-denied contract Clippy, docs and
+  diff checks;
+- two independent revised-candidate measurement/security reviews;
+- clean committed exact-checkout gate-planner cases and fresh delegated
+  one-process observatory transition;
+- two independent terminal verifications of any publication.

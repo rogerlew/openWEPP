@@ -53,6 +53,7 @@ fn collector_source_guards_identity_inventory_and_publication() {
         "JUnit does not equal admitted inventory",
         "instrumented build identity changed after admission",
         "execution snapshot has test-incompatible directories",
+        "execution snapshot .venv is not Git-clean",
         "execution snapshot changed during quality collection",
         "source checkout changed during quality collection",
         "published file set mismatch",
@@ -67,6 +68,14 @@ fn collector_source_guards_identity_inventory_and_publication() {
         !source.contains("path.chmod(") && !source.contains("snapshot.chmod("),
         "the observatory must not break valid repo-relative scratch writes"
     );
+    assert!(source.contains("exclude_bound_venv_from_git(snapshot)"));
+    assert!(
+        source.contains("excluded .venv symlink-target drift did not change working-tree identity")
+    );
+    assert!(source.contains("broad pre-existing Git exclude policy survived"));
+    assert!(source.contains("exact .venv exclude hid other untracked drift"));
+    assert!(source.contains("Git exclude-policy drift was accepted"));
+    assert!(source.contains("Git info-directory symlink was accepted"));
 }
 
 #[test]

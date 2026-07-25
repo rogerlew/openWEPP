@@ -553,6 +553,7 @@ def create_execution_snapshot(
     if venv.exists() or venv.is_symlink():
         raise QualityError("execution snapshot unexpectedly contains .venv")
     venv.symlink_to(source_repo / ".venv", target_is_directory=True)
+    exclude_bound_venv_from_git(snapshot)
     observed = source_manifest(snapshot)
     if observed != expected_manifest:
         raise QualityError("execution snapshot does not equal admitted source manifest")
@@ -573,7 +574,44 @@ def create_execution_snapshot(
     return snapshot
 
 
+def exclude_bound_venv_from_git(repo: Path) -> None:
+    git_directory = repo / ".git"
+    git_info = git_directory / "info"
+    exclude = git_info / "exclude"
+    if git_directory.is_symlink() or not git_directory.is_dir():
+        raise QualityError("execution snapshot Git metadata is unsafe")
+    if git_info.is_symlink() or not git_info.is_dir():
+        raise QualityError("execution snapshot Git info metadata is unsafe")
+    if exclude.is_symlink() or not exclude.is_file():
+        raise QualityError("execution snapshot Git exclude metadata is unsafe")
+    exclude.write_bytes(b"/.venv\n")
+    observed = run(
+        [
+            "git",
+            "status",
+            "--porcelain=v1",
+            "--untracked-files=all",
+            "--",
+            ".venv",
+        ],
+        cwd=repo,
+    )
+    if observed:
+        raise QualityError("execution snapshot .venv is not Git-clean")
+
+
 def working_tree_identity(repo: Path) -> str:
+    git_directory = repo / ".git"
+    git_info = git_directory / "info"
+    local_exclude = git_info / "exclude"
+    if git_directory.is_symlink() or not git_directory.is_dir():
+        raise QualityError("snapshot Git metadata changed type")
+    if git_info.is_symlink() or not git_info.is_dir():
+        raise QualityError("snapshot Git info metadata changed type")
+    if local_exclude.is_symlink() or not local_exclude.is_file():
+        raise QualityError("snapshot Git exclude metadata changed type")
+    if local_exclude.read_bytes() != b"/.venv\n":
+        raise QualityError("snapshot Git exclude policy is not exact")
     index = subprocess.run(
         ["git", "ls-files", "--stage", "-z"],
         cwd=repo,
@@ -595,6 +633,11 @@ def working_tree_identity(repo: Path) -> str:
         "kind": "symlink",
         "path": ".venv",
         "sha256": sha256_bytes(os.readlink(venv).encode("utf-8")),
+    }
+    exclude_row = {
+        "kind": "git-local-exclude",
+        "path": ".git/info/exclude",
+        "sha256": sha256_file(local_exclude),
     }
     tracked_rows: list[dict[str, Any]] = []
     for token in index.stdout.split(b"\0"):
@@ -641,7 +684,9 @@ def working_tree_identity(repo: Path) -> str:
         if path.is_symlink() or not path.is_file():
             raise QualityError(f"snapshot untracked path is unsafe: {name}")
         untracked_rows.append({"path": name, "sha256": sha256_file(path)})
-    return sha256_bytes(canonical_bytes([venv_row, tracked_rows, untracked_rows]))
+    return sha256_bytes(
+        canonical_bytes([venv_row, exclude_row, tracked_rows, untracked_rows])
+    )
 
 
 def instrumented_artifact_manifest(target: Path) -> list[dict[str, Any]]:
@@ -2110,6 +2155,64 @@ def self_test() -> int:
         raise QualityError("publication contract drifted")
     with tempfile.TemporaryDirectory(prefix="openwepp-quality-self-test-") as temporary:
         root = Path(temporary)
+        snapshot = root / "snapshot"
+        snapshot.mkdir()
+        run(["git", "init", "--quiet"], cwd=snapshot)
+        first_venv = root / "first-venv"
+        second_venv = root / "second-venv"
+        first_venv.mkdir()
+        second_venv.mkdir()
+        (snapshot / ".venv").symlink_to(first_venv, target_is_directory=True)
+        (snapshot / ".git/info/exclude").write_text("*\n", encoding="utf-8")
+        exclude_bound_venv_from_git(snapshot)
+        if (snapshot / ".git/info/exclude").read_bytes() != b"/.venv\n":
+            raise QualityError("broad pre-existing Git exclude policy survived")
+        if run(
+            ["git", "status", "--porcelain=v1", "--untracked-files=all"],
+            cwd=snapshot,
+        ):
+            raise QualityError("identity-bound .venv left the snapshot Git-dirty")
+        first_identity = working_tree_identity(snapshot)
+        visible_drift = snapshot / "must-remain-visible.rs"
+        visible_drift.write_text("drift\n", encoding="utf-8")
+        if "must-remain-visible.rs" not in run(
+            ["git", "status", "--porcelain=v1", "--untracked-files=all"],
+            cwd=snapshot,
+        ):
+            raise QualityError("exact .venv exclude hid other untracked drift")
+        if working_tree_identity(snapshot) == first_identity:
+            raise QualityError("other untracked drift did not change working-tree identity")
+        visible_drift.unlink()
+        (snapshot / ".venv").unlink()
+        (snapshot / ".venv").symlink_to(second_venv, target_is_directory=True)
+        if working_tree_identity(snapshot) == first_identity:
+            raise QualityError(
+                "excluded .venv symlink-target drift did not change working-tree identity"
+            )
+        second_identity = working_tree_identity(snapshot)
+        with (snapshot / ".git/info/exclude").open("a", encoding="utf-8") as exclude:
+            exclude.write("/hidden-drift\n")
+        try:
+            working_tree_identity(snapshot)
+        except QualityError:
+            pass
+        else:
+            raise QualityError("Git exclude-policy drift was accepted")
+        (snapshot / ".git/info/exclude").write_bytes(b"/.venv\n")
+        git_info = snapshot / ".git/info"
+        saved_info = snapshot / ".git/info-real"
+        git_info.rename(saved_info)
+        git_info.symlink_to(saved_info, target_is_directory=True)
+        try:
+            working_tree_identity(snapshot)
+        except QualityError:
+            pass
+        else:
+            raise QualityError("Git info-directory symlink was accepted")
+        git_info.unlink()
+        saved_info.rename(git_info)
+        if working_tree_identity(snapshot) != second_identity:
+            raise QualityError("restored Git metadata did not restore identity")
         row = {
             "crate": "example",
             "file": str(root / "crates/example/src/lib.rs"),

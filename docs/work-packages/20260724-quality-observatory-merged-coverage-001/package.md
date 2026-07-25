@@ -165,5 +165,10 @@ configured owning crate, dual review, and selected full workspace on clean
 committed head `0342b9f8`.
 
 See `artifacts/gate-planner-hold-lift.md`. The predecessor hold is lifted and a
-fresh one-process transition is authorized after this evidence is committed
-and a new admission proves the exact execution state.
+fresh one-process transition was authorized after this evidence was committed.
+Attempt 5 then exposed a separate execution-clone compatibility defect: the
+required, identity-bound `.venv` symlink was not locally Git-excluded, so three
+exact-checkout tests rejected the clone. See
+`artifacts/heavy-attempt-05-venv-git-exclude.md`. The scoped correction and
+both re-reviews now pass with zero open findings; fresh admission is authorized
+after committing the reviewed correction.
