@@ -11,10 +11,10 @@ Evidence class: Static.
 - QA concurrency: `openwepp-forest1-quality-observatory`
 - TESTGATE concurrency: distinct `openwepp-forest1-testgate`
 
-No QA dispatch is authorized while the workflow's current-main admission
-contradicts the package's qualified-subject/evidence-only-closeout rule.
-Corrections require a new committed and pushed head plus exact successful
-TESTGATE qualification before one QA attempt.
+The preflight defect is corrected prospectively by requiring a successful
+exact-repository/path/head TESTGATE run ID in addition to current-main source
+admission. The correction requires a new committed and pushed head plus exact
+successful TESTGATE qualification before one QA attempt.
 
 No CQR collection or module implementation is authorized. CQR work in this
 package is selection-only intake of the exact successful QA publication.

@@ -50,16 +50,30 @@ fn quality_workflow_is_manual_forest1_specific_and_nonblocking() {
         .expect("required source SHA");
     assert_eq!(source.get("required"), Some(&serde_yaml::Value::Bool(true)));
     assert!(!source.contains_key("default"));
+    let qualification_run = dispatch
+        .get("inputs")
+        .and_then(serde_yaml::Value::as_mapping)
+        .and_then(|inputs| inputs.get("qualification_run_id"))
+        .and_then(serde_yaml::Value::as_mapping)
+        .expect("required qualification run ID");
+    assert_eq!(
+        qualification_run.get("required"),
+        Some(&serde_yaml::Value::Bool(true))
+    );
+    assert!(!qualification_run.contains_key("default"));
     assert!(workflow.contains("group: openwepp-forest1-quality-observatory"));
     assert!(!workflow.contains("group: openwepp-forest1-testgate"));
     assert!(workflow.contains("runs-on: [self-hosted, Linux, X64, openwepp, forest1, trusted]"));
     assert!(workflow.contains("actions: read"));
     assert!(workflow.contains("[[ \"${SOURCE_SHA}\" =~ ^[0-9a-f]{40}$ ]]"));
+    assert!(workflow.contains("[[ \"${QUALIFICATION_RUN_ID}\" =~ ^[1-9][0-9]*$ ]]"));
     assert!(workflow.contains("WORKFLOW_SHA: ${{ github.workflow_sha }}"));
     assert!(workflow.contains("WORKFLOW_REF: ${{ github.workflow_ref }}"));
     assert!(workflow.contains("test \"${WORKFLOW_SHA}\" = \"${SOURCE_SHA}\""));
     assert!(workflow.contains("test \"$(git rev-parse HEAD)\" = \"${SOURCE_SHA}\""));
     assert!(workflow.contains("test \"$(git rev-parse refs/remotes/origin/main)\""));
+    assert!(workflow.contains(".path == \".github/workflows/testgate-shadow.yml\""));
+    assert!(workflow.contains(".head_sha == $source_sha"));
     assert!(workflow.contains("quality_observatory_workflow.py preflight"));
     assert!(workflow.contains("quality_observatory_workflow.py supervise"));
     assert!(workflow.contains("priority-stop.json"));

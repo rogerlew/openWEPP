@@ -7,6 +7,10 @@ on:
         description: "Exact current main commit to observe"
         required: true
         type: string
+      qualification_run_id:
+        description: "Successful exact-head TESTGATE run ID"
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -26,11 +30,13 @@ jobs:
       - name: Validate exact source input
         env:
           SOURCE_SHA: ${{ inputs.source_sha }}
+          QUALIFICATION_RUN_ID: ${{ inputs.qualification_run_id }}
           WORKFLOW_SHA: ${{ github.workflow_sha }}
           WORKFLOW_REF: ${{ github.workflow_ref }}
         run: |
           set -euo pipefail
           [[ "${SOURCE_SHA}" =~ ^[0-9a-f]{40}$ ]]
+          [[ "${QUALIFICATION_RUN_ID}" =~ ^[1-9][0-9]*$ ]]
           [[ "${WORKFLOW_SHA}" =~ ^[0-9a-f]{40}$ ]]
           test "${WORKFLOW_SHA}" = "${SOURCE_SHA}"
           [[ "${WORKFLOW_REF}" == "${GITHUB_REPOSITORY}/.github/workflows/quality-observatory.yml@refs/heads/main" ]]
@@ -43,12 +49,27 @@ jobs:
         id: occupancy
         env:
           GH_TOKEN: ${{ github.token }}
+          QUALIFICATION_RUN_ID: ${{ inputs.qualification_run_id }}
           SOURCE_SHA: ${{ inputs.source_sha }}
         run: |
           set -euo pipefail
           git fetch --no-tags origin main
           test "$(git rev-parse HEAD)" = "${SOURCE_SHA}"
           test "$(git rev-parse refs/remotes/origin/main)" = "${SOURCE_SHA}"
+          qualification="$(gh api --method GET \
+            "repos/${GITHUB_REPOSITORY}/actions/runs/${QUALIFICATION_RUN_ID}")"
+          jq -e \
+            --arg source_sha "${SOURCE_SHA}" \
+            --arg repository "${GITHUB_REPOSITORY}" \
+            '
+              .event == "workflow_dispatch" and
+              .status == "completed" and
+              .conclusion == "success" and
+              .head_sha == $source_sha and
+              .head_branch == "main" and
+              .path == ".github/workflows/testgate-shadow.yml" and
+              .repository.full_name == $repository
+            ' <<<"${qualification}"
           python3 tools/local_ci/quality_observatory_workflow.py preflight \
             --repository "${GITHUB_REPOSITORY}" \
             --output "${RUNNER_TEMP}/quality-control-receipt.json"
