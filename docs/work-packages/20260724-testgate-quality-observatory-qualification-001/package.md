@@ -14,8 +14,8 @@ cheap source/schema/focused checks, reconcile the exact base-to-head authority
 chain, record the current provider queue state, and retain a dispatch-intent
 artifact binding:
 
-- active authority/base commit
-  `086244c889c20de823fd1fa5b02d3527ecffa236`;
+- qualification scaffold/base commit
+  `907222635e281a2e135b7f83bdf41eef9656a2d6`;
 - this exact intent package path;
 - the final pushed `main` head; and
 - one TESTGATE workflow dispatch per corrected stable head.

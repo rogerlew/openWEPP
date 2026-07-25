@@ -1129,6 +1129,7 @@ fn status_authorizes(status: &str) -> bool {
     matches!(
         status,
         "ACTIVE"
+            | "ACTIVE / QUALIFICATION / ORDER-6"
             | "ACTIVE / READY-QUALIFICATION"
             | "ACTIVE / READY-REPOSITORY-ATTESTATION"
             | "ACTIVE / REVIEW"
@@ -1139,6 +1140,7 @@ fn status_authorizes(status: &str) -> bool {
             | "IMPLEMENTED / REVIEW PENDING"
             | "IMPLEMENTED-REVIEW-PENDING"
             | "QUEUED"
+            | "QUEUED / ORDER-6"
             | "SCAFFOLDED"
             | "TERMINAL-VERIFICATION-PENDING"
             | "VERIFYING"
@@ -1825,6 +1827,8 @@ mod tests {
             assert!(parse_write_set(malformed).is_err());
         }
         assert!(status_authorizes("ACTIVE / READY-REPOSITORY-ATTESTATION"));
+        assert!(status_authorizes("ACTIVE / QUALIFICATION / ORDER-6"));
+        assert!(status_authorizes("QUEUED / ORDER-6"));
         assert!(status_authorizes("IMPLEMENTED / REVIEW PENDING"));
         assert!(!status_authorizes("COMPLETE"));
         assert!(!status_authorizes(
