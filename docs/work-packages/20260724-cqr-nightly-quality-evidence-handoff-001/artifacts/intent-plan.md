@@ -23,9 +23,12 @@ Evidence class: Static.
 - Reject summary-only evidence, duplicates, non-production paths, row drift,
   and partition mismatch.
 - Rank modules by excess CRAP, unique function count, maximum CRAP, then path.
-- Retain the exact selected rows, module aggregates, source identity, evidence
-  ID, and input digests.
-- Invoke no coverage, CRAP, Nextest, or collection subprocess.
+- Retain the exact candidate rows, module aggregates, source identity,
+  evidence ID, and input digests; dual reviews remain required before final
+  selection.
+- Invoke no test execution, coverage, CRAP, or collection subprocess.
+  Exact-current verification may run `cargo nextest list` and the associated
+  instrumented inventory compilation through the adopted verifier.
 
 ## Recollection
 
