@@ -2,7 +2,7 @@
 
 Package ID: `20260724-quality-observatory-merged-coverage-001`
 
-Status: `ACTIVE / HOLD / ORDER-3`
+Status: `ACTIVE / READY / ORDER-3`
 
 ## Objective
 
@@ -156,12 +156,14 @@ expected outputs are profile/inventory, provenance, and report-integrity
 artifacts; write access is read-only. Any selected heavy collection must be
 delegated to `comparator_suite_runner`.
 
-## Current Hold
+## Hold Lift
 
-Corrected attempt 3 proved the observatory permission defects closed but found
-seven predecessor gate-planner regression failures. See
-`artifacts/heavy-attempt-03-gate-planner-blocker.md`. The required full
-correctness gate is `FAIL`; downstream science-manual, merge, CRAP,
-publication, and terminal verification are `NOT RUN`. This package cannot
-advance to complete until an authorized prerequisite package aligns those
-out-of-write-set fixtures and a fresh admitted attempt passes.
+Attempt 3 remains retained failure evidence. Prerequisite package
+`20260724-gate-planner-quality-deferral-hold-lift-001` corrected the seven
+gate-planner regressions and passed the exact seven, complete coverage-
+configured owning crate, dual review, and selected full workspace on clean
+committed head `0342b9f8`.
+
+See `artifacts/gate-planner-hold-lift.md`. The predecessor hold is lifted and a
+fresh one-process transition is authorized after this evidence is committed
+and a new admission proves the exact execution state.

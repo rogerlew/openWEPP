@@ -19,5 +19,24 @@ Evidence class: Ran.
 
 ## Terminal Gates
 
-Pending clean-head execution, delegated full-workspace regression, and Order-3
-quality transition.
+Executed head:
+`0342b9f8c6611d2ba7e1a95ea35b213179dcef3d`.
+
+Initial and final `git status --porcelain` were empty.
+
+| Gate | Result | Metrics |
+|---|---|---|
+| Exact seven under `--cfg coverage` | `PASS` | 7 passed, 6 slow, 173 skipped; `1852.497s`; exit 0 |
+| Complete coverage-configured gate-planner lib | `PASS` | 178 passed, 9 slow, 2 skipped; `2635.919s`; exit 0 |
+| Full workspace profile | `PASS` | 2,267 passed across 194 binaries, 11 slow, 43 skipped; `519.233s`; exit 0 |
+
+Durable evidence root:
+`/home/workdir/openWEPP-quality-history/20260724-hold-lift-0342b9f8`.
+
+Logs and exit-code files:
+
+- `logs/phase1-exact-seven.{log,exit-code}`
+- `logs/phase2-gate-planner-lib.{log,exit-code}`
+- `logs/phase3-workspace-full.{log,exit-code}`
+
+Order-3 quality transition remains pending.

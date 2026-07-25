@@ -2,7 +2,7 @@
 
 Evidence class: Static / Ran.
 
-Open closure-blocking findings: `1`.
+Open closure-blocking findings: `0`.
 
 | Finding | Disposition | Resolution |
 | --- | --- | --- |
@@ -21,11 +21,11 @@ Open closure-blocking findings: `1`.
 | Identical cargo-crap duplicate rows | `accepted / fixed` | Identical exact rows deduplicate; conflicting metrics fail, with self-test coverage. |
 | Read-only fixture mode propagation | `accepted / superseded correction` | Attempt `S67HdA` exposed read-only fixture copies. Preserving fixture file modes fixed that symptom, but attempt `NuumUF` proved directory freezing remained incompatible. Tooling defect 02 replaces the permission strategy with a writable, identity-guarded clone. |
 | Repository-relative scratch blocked | `accepted / fixed` | Attempt `NuumUF` ran the complete full inventory but failed 26 valid tests because all checkout directories were read-only. The implementation now preserves a writable no-hardlink clone and enforces the exact admitted identity at every profile/LCOV boundary. Both reviewers passed the correction; a 22-test affected-path probe passed and restored the exact fresh-clone identity. |
-| Predecessor gate-planner regression | `external to write set / hold` | Corrected attempt `LuBliP` ran all 2,279 full tests: 2,272 passed and seven Order-2 gate-planner schema/exact-checkout fixtures failed. The failing surfaces are outside this package's declared write set and last changed in `8ce1ab22`. |
+| Predecessor gate-planner regression | `accepted / fixed by prerequisite` | Package `20260724-gate-planner-quality-deferral-hold-lift-001` passed both reviews, the exact seven, complete coverage-configured gate-planner library, and selected full workspace on clean committed head `0342b9f8`. |
 
 Review A final disposition: `PASS`.
 
 Review B final disposition: `PASS`.
 
-Heavy collection authorization: `BLOCKED` pending a prerequisite gate-planner
-tooling package and authorized fresh admission.
+Heavy collection authorization: `READY` for a fresh admission after the
+hold-lift evidence is committed.
