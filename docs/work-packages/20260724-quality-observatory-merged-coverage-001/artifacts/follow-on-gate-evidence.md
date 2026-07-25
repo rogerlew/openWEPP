@@ -12,6 +12,9 @@ Current correction gates:
 - Diff whitespace check: `PASS`.
 - Independent measurement re-review: `PASS`, no findings.
 - Independent security re-review: `PASS`; one HIGH accepted, fixed, and closed.
+- Fresh real execution-snapshot admission: `READY`; exact `/.venv\n` policy and
+  empty Git status.
+- Three attempt-5 exact-checkout identities in that snapshot: 3 passed,
+  3 slow, 177 skipped; `1265.185s`.
 
-Clean-head exact-checkout proof, fresh transition, and terminal verification
-remain pending.
+Fresh complete transition and terminal verification remain pending.

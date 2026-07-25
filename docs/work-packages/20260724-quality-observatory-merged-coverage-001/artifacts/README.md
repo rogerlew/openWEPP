@@ -8,6 +8,7 @@ Present:
 - two permission-mode tooling-defect records;
 - retained attempt-3 full-regression blocker evidence;
 - attempt-4 wrapper-preflight and attempt-5 venv-exclude defect evidence;
+- attempt-6 admitted execution-snapshot preflight;
 - follow-on focused gate, dual-review, and line-count records.
 
 Not yet produced because the required full profile failed: science-manual
