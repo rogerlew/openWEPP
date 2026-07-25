@@ -22,16 +22,23 @@ implementation is limited to:
 4. the minimum TESTGATE source contract and governance updates needed to prove
    priority and non-blocking semantics.
 
-Deferred and partial execution evidence uses a separate control artifact
+Deferred and partial execution evidence uses a separate control record
 containing only `quality-control-receipt.json` and, when a child started,
 `quality-partial-index.json`. Its total ceiling is 1 MiB. It is never written
 under the canonical `published/` directory or named as a complete quality
-observation. A deferred/partial receipt has no `quality_evidence_id`.
+observation. A deferred/partial receipt has no `quality_evidence_id`. Hosted
+preflight deferrals and forest1 failures without a newly observed TESTGATE
+priority upload that record as a control artifact. A forest1 priority deferral
+retains it in the durable history root and performs no artifact upload, so the
+runner is not held behind publication work.
 
-A complete run also uploads the separate bounded control receipt. That receipt
-binds the verified quality evidence ID and embeds the exact admission object
-needed for downstream independent verification; it does not add a twelfth file
-to the canonical observation artifact.
+A complete run validates and retains the separate bounded control receipt
+locally, while the single canonical artifact carries the identity-bound
+11-file observation. The receipt binds the verified quality evidence ID and
+embeds the exact admission object needed for downstream independent
+verification; it is not added as a twelfth canonical file. This one-upload
+limit and its one-minute action timeout preserve the 90-second forest1 yield
+bound after a newly observed TESTGATE priority.
 
 The versioned defunct Omarchy predicate is exact: repository identity matches;
 the run ID is one of `29673299308`, `29672334757`, or `29672149962`; the run

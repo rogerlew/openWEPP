@@ -28,19 +28,22 @@ distinct from TESTGATE.
 - Occupancy after `full`, after `science-manual`, or before report work starts
   no next stage and records `DEFERRED_TESTGATE_PRIORITY`.
 - Active children are polled at no more than 30-second intervals, terminated
-  on TESTGATE occupancy, and allowed at most 60 seconds for finalization.
+  on TESTGATE occupancy, and use one shared 54-second finalization deadline.
 - Partial evidence is retained locally but cannot use the complete publication
   artifact name or status.
 - Deferred/partial control evidence is confined to
   `quality-control-receipt.json` plus optional `quality-partial-index.json`,
   outside `published/`, with a 1 MiB ceiling and no `quality_evidence_id`.
+  Priority deferrals retain this record locally without extending forest1
+  occupancy for an artifact upload.
 - Defunct Omarchy classification requires one of the three durable retired
   ID/head pairs, the exact shadow workflow, workflow-dispatch event,
   completed/cancelled state, and zero jobs/artifacts; any field drift is
   unknown or live, and age is never sufficient.
 - Provider authentication, pagination, API, JSON, or schema ambiguity is typed
   `DEFERRED_OCCUPANCY_UNKNOWN`; it never admits work.
-- The exact 11-file allowlist and 100 MiB ceiling are checked before upload.
+- The exact 11-file allowlist and 100 MiB ceiling are checked before the
+  single, one-minute-bounded complete artifact upload.
 - Metric debt does not fail execution integrity; identity, collection,
   occupancy, or publication corruption does.
 

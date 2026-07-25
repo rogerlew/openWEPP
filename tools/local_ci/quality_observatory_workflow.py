@@ -487,15 +487,79 @@ def validate_control(control: Path) -> dict[str, Any]:
     ):
         raise WorkflowError("control evidence file set or size is invalid")
     receipt = read_object(control / "quality-control-receipt.json")
+    receipt_path = control / "quality-control-receipt.json"
+    if receipt_path.read_bytes() != canonical_bytes(receipt) + b"\n":
+        raise WorkflowError("control receipt is not canonical JSON")
+    expected_fields = {
+        "schema_version",
+        "disposition",
+        "source_sha",
+        "source_tree",
+        "workflow_revision",
+        "workflow_sha256",
+        "occupancy",
+        "child_exit",
+        "publication",
+        "admission",
+        "quality_evidence_id",
+    }
+    if set(receipt) != expected_fields or receipt.get("schema_version") != SCHEMA:
+        raise WorkflowError("control receipt schema or fields are invalid")
     disposition = receipt.get("disposition")
-    if not isinstance(disposition, str):
-        raise WorkflowError("control receipt disposition is missing")
+    allowed_dispositions = {
+        "COMPLETE",
+        "DEFERRED_TESTGATE_PRIORITY",
+        "DEFERRED_OCCUPANCY_UNKNOWN",
+        "DEFERRED_FOREST1_LEASE",
+        "EXECUTION_FAILED",
+    }
+    if (
+        disposition not in allowed_dispositions
+        or not isinstance(receipt.get("source_sha"), str)
+        or not SHA40.fullmatch(receipt["source_sha"])
+        or not isinstance(receipt.get("source_tree"), str)
+        or not SHA40.fullmatch(receipt["source_tree"])
+        or not isinstance(receipt.get("workflow_revision"), str)
+        or not SHA40.fullmatch(receipt["workflow_revision"])
+        or not isinstance(receipt.get("workflow_sha256"), str)
+        or not SHA256.fullmatch(receipt["workflow_sha256"])
+        or not isinstance(receipt.get("occupancy"), dict)
+        or (
+            receipt.get("child_exit") is not None
+            and not isinstance(receipt.get("child_exit"), int)
+        )
+    ):
+        raise WorkflowError("control receipt identity or disposition is invalid")
     if disposition.startswith("DEFERRED_") and (
         receipt.get("quality_evidence_id") is not None
         or receipt.get("admission") is not None
         or receipt.get("publication") is not None
     ):
         raise WorkflowError("deferred control receipt carries complete evidence")
+    if disposition == "COMPLETE" and (
+        receipt.get("child_exit") != 0
+        or not isinstance(receipt.get("publication"), dict)
+        or not isinstance(receipt.get("admission"), dict)
+        or not isinstance(receipt.get("quality_evidence_id"), str)
+        or not SHA256.fullmatch(receipt["quality_evidence_id"])
+        or "quality-partial-index.json" in names
+    ):
+        raise WorkflowError("complete control receipt is incomplete or partial")
+    if disposition == "EXECUTION_FAILED" and any(
+        receipt.get(field) is not None
+        for field in ("publication", "admission", "quality_evidence_id")
+    ):
+        raise WorkflowError("failed control receipt carries complete evidence")
+    partial_path = control / "quality-partial-index.json"
+    if partial_path.exists():
+        partial = read_object(partial_path)
+        if (
+            partial_path.read_bytes() != canonical_bytes(partial) + b"\n"
+            or partial.get("schema_version") != SCHEMA
+            or not isinstance(partial.get("files"), list)
+            or disposition == "COMPLETE"
+        ):
+            raise WorkflowError("partial index is malformed or attached to COMPLETE")
     return receipt
 
 
@@ -676,6 +740,7 @@ def monitor_child(
     control: Path,
     poll_seconds: float,
     grace_seconds: float,
+    deadline_state: dict[str, float | None],
 ) -> tuple[int, dict[str, Any], str | None, float | None]:
     occupancy: dict[str, Any] = {"status": "CLEAR"}
     while child.poll() is None:
@@ -683,6 +748,8 @@ def monitor_child(
         occupancy = occupancy_source.classify_fail_closed()
         disposition = deferral_for(occupancy)
         if disposition:
+            deadline = time.monotonic() + FINALIZATION_SECONDS
+            deadline_state["deadline"] = deadline
             write_json(
                 control / "priority-stop.json",
                 {
@@ -691,21 +758,27 @@ def monitor_child(
                     "occupancy": occupancy,
                 },
             )
-            terminate_group(child, grace_seconds)
+            terminate_group(
+                child,
+                min(grace_seconds, max(0.0, deadline - time.monotonic())),
+            )
             return (
                 child.returncode or 0,
                 occupancy,
                 disposition,
-                time.monotonic()
-                + max(0.0, FINALIZATION_SECONDS - grace_seconds),
+                deadline,
             )
     if group_alive(child.pid):
         terminate_group(child, grace_seconds)
         return child.returncode or 2, occupancy, "EXECUTION_FAILED", None
     occupancy = occupancy_source.classify_fail_closed()
     disposition = deferral_for(occupancy)
+    deadline = None
+    if disposition:
+        deadline = time.monotonic() + FINALIZATION_SECONDS
+        deadline_state["deadline"] = deadline
     return child.returncode or 0, occupancy, disposition, (
-        time.monotonic() + FINALIZATION_SECONDS if disposition else None
+        deadline
     )
 
 
@@ -798,6 +871,7 @@ def supervise(args: argparse.Namespace) -> int:
         )
         active = child
         finalization_deadline: float | None = None
+        deadline_state: dict[str, float | None] = {"deadline": None}
         try:
             child_exit, occupancy, disposition, finalization_deadline = monitor_child(
                 child,
@@ -805,6 +879,7 @@ def supervise(args: argparse.Namespace) -> int:
                 control,
                 args.poll_seconds,
                 args.grace_seconds,
+                deadline_state,
             )
             if disposition:
                 partial_index(attempt, control)
@@ -859,8 +934,11 @@ def supervise(args: argparse.Namespace) -> int:
                 control,
                 args.poll_seconds,
                 args.grace_seconds,
+                deadline_state,
             )
-            shutil.rmtree(verifier_env["TMPDIR"], ignore_errors=True)
+            verifier_tmp = Path(verifier_env["TMPDIR"])
+            if verifier_tmp.exists():
+                bounded_rmtree(verifier_tmp, finalization_deadline)
             if disposition:
                 partial_index(attempt, control)
                 remove_raw(
@@ -907,8 +985,23 @@ def supervise(args: argparse.Namespace) -> int:
             )
             return 0
         except BaseException as error:
+            if finalization_deadline is None:
+                finalization_deadline = deadline_state["deadline"]
+            termination_error: WorkflowError | None = None
             if group_alive(active.pid):
-                terminate_group(active, args.grace_seconds)
+                termination_budget = args.grace_seconds
+                if finalization_deadline is not None:
+                    termination_budget = max(
+                        0.0, finalization_deadline - time.monotonic()
+                    )
+                try:
+                    terminate_group(active, termination_budget)
+                except WorkflowError as failure:
+                    termination_error = failure
+                    try:
+                        os.killpg(active.pid, signal.SIGKILL)
+                    except ProcessLookupError:
+                        pass
             try:
                 partial_index(attempt, control)
             finally:
@@ -928,6 +1021,10 @@ def supervise(args: argparse.Namespace) -> int:
                 )
             if isinstance(error, (KeyboardInterrupt, SystemExit)):
                 raise
+            if termination_error is not None:
+                raise WorkflowError(
+                    f"{error}; final termination failed: {termination_error}"
+                ) from error
             raise WorkflowError(str(error)) from error
 
 
@@ -1036,6 +1133,7 @@ def self_test() -> int:
             workflow_revision="1" * 40,
             workflow_sha256="3" * 64,
             occupancy={"status": "CLEAR"},
+            child_exit=0,
             publication=complete_manifest,
             admission={"admission_id": "fixture"},
             quality_evidence_id=evidence_id,
@@ -1100,6 +1198,18 @@ def self_test() -> int:
             pass
         else:
             raise WorkflowError("unexpected control directory was accepted")
+    with tempfile.TemporaryDirectory(prefix="quality-forged-control-") as raw:
+        control = Path(raw)
+        write_json(
+            control / "quality-control-receipt.json",
+            {"disposition": "COMPLETE"},
+        )
+        try:
+            validate_control(control)
+        except WorkflowError:
+            pass
+        else:
+            raise WorkflowError("forged complete control receipt was accepted")
     with tempfile.TemporaryDirectory(prefix="quality-acquire-self-test-") as raw:
         root = Path(raw)
         fixture = root / "race.json"

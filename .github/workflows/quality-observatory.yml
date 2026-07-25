@@ -124,6 +124,15 @@ jobs:
           else
             echo "complete=false" >> "${GITHUB_OUTPUT}"
           fi
+          disposition="$(jq -r '.disposition // empty' \
+            "${QUALITY_CONTROL_ROOT}/quality-control-receipt.json" 2>/dev/null || true)"
+          if [[ "${disposition}" == DEFERRED_* ]]; then
+            echo "deferred=true" >> "${GITHUB_OUTPUT}"
+            printf 'quality control disposition: %s\n' "${disposition}" \
+              >> "${GITHUB_STEP_SUMMARY}"
+          else
+            echo "deferred=false" >> "${GITHUB_OUTPUT}"
+          fi
       - name: Upload complete quality observation
         if: ${{ steps.observe.outputs.complete == 'true' }}
         id: upload
@@ -139,6 +148,7 @@ jobs:
             --repository "${GITHUB_REPOSITORY}"
       - name: Publish complete quality observation
         if: ${{ steps.observe.outputs.complete == 'true' }}
+        timeout-minutes: 1
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: quality-observatory-${{ github.run_id }}-${{ github.run_attempt }}
@@ -149,13 +159,14 @@ jobs:
           retention-days: 30
       - name: Upload deferred or failed control evidence
         id: control
-        if: ${{ always() }}
+        if: ${{ always() && steps.observe.outputs.deferred != 'true' && steps.observe.outputs.complete != 'true' }}
         run: |
           set -euo pipefail
           python3 tools/local_ci/quality_observatory_workflow.py verify-control \
             --control "${QUALITY_CONTROL_ROOT}"
       - name: Publish control evidence
         if: ${{ always() && steps.control.outcome == 'success' }}
+        timeout-minutes: 1
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: quality-observatory-control-${{ github.run_id }}-${{ github.run_attempt }}
@@ -167,7 +178,7 @@ jobs:
           overwrite: false
           retention-days: 30
       - name: Summarize observational result
-        if: ${{ always() }}
+        if: ${{ always() && steps.observe.outputs.deferred != 'true' }}
         run: |
           set -euo pipefail
           if [[ -f "${QUALITY_CONTROL_ROOT}/quality-control-receipt.json" ]] && \

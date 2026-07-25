@@ -393,6 +393,14 @@ fn workflow_contract_keeps_exact_publication_and_bounded_priority_intervals() {
     assert!(controller.contains("default=30.0"));
     assert!(controller.contains("default=30.0"));
     assert!(controller.contains("FINALIZATION_SECONDS = 54.0"));
+    let deadline = controller
+        .find("deadline_state[\"deadline\"] = deadline")
+        .expect("priority deadline assignment");
+    let termination = controller[deadline..]
+        .find("terminate_group(")
+        .expect("bounded priority termination");
+    assert!(termination > 0);
+    assert!(controller.contains("forged complete control receipt was accepted"));
     assert!(controller.contains("signal.SIGTERM"));
     assert!(controller.contains("signal.SIGKILL"));
     assert!(controller.contains("DEFERRED_OCCUPANCY_UNKNOWN"));
