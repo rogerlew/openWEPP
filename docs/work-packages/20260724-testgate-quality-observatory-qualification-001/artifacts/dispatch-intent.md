@@ -4,8 +4,8 @@ Evidence class: Static.
 
 - Workflow: `.github/workflows/testgate-shadow.yml`
 - Ref: `main`
-- Base/qualification scaffold:
-  `907222635e281a2e135b7f83bdf41eef9656a2d6`
+- Base/active authority:
+  `086244c889c20de823fd1fa5b02d3527ecffa236`
 - Intent package:
   `docs/work-packages/20260724-testgate-quality-observatory-qualification-001/package.md`
 - Dispatch count authorized: one attempt per corrected stable head
@@ -31,10 +31,11 @@ activation base narrowed the increment to three documentation files and
 selected only documentation lint. The passing receipt therefore does not
 close the package's declared critical changed-head qualification.
 
-Attempt 3 will retain the original scaffold base and use the corrected exact
-status grammar to authenticate its `QUEUED / ORDER-6` anchor. That preserves
-the full quality-separation increment for selection. Its final head and
-provider run ID will be recorded only after focused gates pass, the correction
-is pushed, and current forest1 occupancy is clear.
+Attempt 3 will retain the active authority base and include the exact-status
+parser correction in its changed increment. The gate-planner production change
+must reconcile the declared critical intent and select the applicable
+correctness path. Its final head and provider run ID will be recorded only
+after focused gates pass, the correction is pushed, and current forest1
+occupancy is clear.
 
 No QA, coverage, CRAP, or CQR workflow is authorized.

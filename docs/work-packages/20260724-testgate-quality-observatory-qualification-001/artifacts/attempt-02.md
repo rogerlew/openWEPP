@@ -23,7 +23,8 @@ documentation-lint node, so it did not reconcile with the package's declared
 `CRITICAL` intent or exercise the heavy correctness path over the quality
 separation implementation.
 
-The exact status grammar will recognize the already-retained scaffold status
-`QUEUED / ORDER-6`. A later corrected head may therefore restore base
-`907222635e281a2e135b7f83bdf41eef9656a2d6` and qualify the complete changed
-increment. This successful head will not be rerun unchanged.
+The exact status grammar correction changes gate-planner production code. A
+later head based on active authority commit
+`086244c889c20de823fd1fa5b02d3527ecffa236` can therefore reconcile the
+package's critical intent and exercise the applicable correctness path. This
+successful documentation-only head will not be rerun unchanged.
