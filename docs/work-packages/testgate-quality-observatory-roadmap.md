@@ -34,7 +34,10 @@ the other.
 - Order 5 completed at implementation head `c87adad3`; exact current evidence
   intake, candidate ranking, and typed recollection authorization passed dual
   review and terminal verification.
-- Order 6, `20260724-testgate-quality-observatory-qualification-001`, is next.
+- Order 6 completed at exact qualification head `95535844`; TESTGATE run
+  `30165527516` passed its 12-node critical path with typed quality deferral
+  and fresh rejection of incompatible pre-split receipts.
+- Order 7, `20260724-quality-observatory-cqr-qualification-001`, is next.
 
 ## Outcome
 
@@ -80,8 +83,8 @@ caches remain local-only even when compressed.
 | 3 | `COMPLETE` | `20260724-quality-observatory-merged-coverage-001` | Produce one valid merged `full` plus `science-manual` coverage identity and prove snowbench is measured. | Order 2 |
 | 4 | `COMPLETE` | `20260724-quality-observatory-workflow-001` | Implement the optional forest1 QA workflow, TESTGATE-first deferral, compact artifacts, and non-blocking result contract. | Orders 2-3 |
 | 5 | `COMPLETE` | `20260724-cqr-nightly-quality-evidence-handoff-001` | Make CQR Nightly consume an exact current QA report and recollect only with typed stale/invalid evidence plus an explicit operator directive. | Orders 3-4 |
-| 6 | `NEXT / QUEUED` | `20260724-testgate-quality-observatory-qualification-001` | Prove changed-head TESTGATE succeeds on forest1 without quality execution and with typed deferral. | Orders 1-5 |
-| 7 | `QUEUED` | `20260724-quality-observatory-cqr-qualification-001` | Prove optional QA and exact-report CQR intake work end-to-end after TESTGATE. | Orders 5-6 |
+| 6 | `COMPLETE` | `20260724-testgate-quality-observatory-qualification-001` | Changed-head TESTGATE passed its critical correctness path with typed quality deferral and no quality execution. | Orders 1-5 |
+| 7 | `NEXT / QUEUED` | `20260724-quality-observatory-cqr-qualification-001` | Prove optional QA and exact-report CQR intake work end-to-end after TESTGATE. | Orders 5-6 |
 
 Orders 2 and 3 are serialized because their tooling/test write sets overlap.
 Order 6 qualifies the exact final implementation head after Orders 1-5; Order 7

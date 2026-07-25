@@ -38,4 +38,14 @@ correctness path. Its final head and provider run ID will be recorded only
 after focused gates pass, the correction is pushed, and current forest1
 occupancy is clear.
 
+Attempt 3 bound head
+`955358449381ab38378d28dac93ba7b21b496d14` to provider run
+[`30165527516`](https://github.com/rogerlew/openWEPP/actions/runs/30165527516).
+All execution, independent verification, and final authority jobs passed.
+Receipt
+`bd23f0956a2a851d224d73d72121c7e8f71ce5deb43a636422bab82065f50f68`
+records six LIGHT and six HEAVY nodes passing, all ten pre-heavy checks
+`READY`, typed quality deferral, and fresh rejection of eleven retained
+pre-split receipts. This is the terminal qualification candidate.
+
 No QA, coverage, CRAP, or CQR workflow is authorized.

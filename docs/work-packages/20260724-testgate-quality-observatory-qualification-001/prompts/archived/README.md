@@ -1,3 +1,3 @@
 # Archived Prompts
 
-No archived prompt at scaffold time.
+`kickoff.md` is the byte-preserved executed Order 6 prompt.

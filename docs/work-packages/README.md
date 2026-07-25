@@ -11,6 +11,12 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260724-testgate-quality-observatory-qualification-001/` completed roadmap
+  Order 6. Exact changed-head TESTGATE run `30165527516` passed six LIGHT and
+  six HEAVY nodes plus the ten-check pre-heavy audit, emitted
+  `DEFERRED_TO_QUALITY_CI` without quality execution, truthfully retained
+  `LOCAL_UNTRUSTED`, and freshly rejected eleven pre-split quality receipts.
+  Dual review and terminal verification passed.
 - `20260724-cqr-nightly-quality-evidence-handoff-001/` completed roadmap Order
   5. CQR Nightly now verifies exact current compact QA evidence, reconstructs
   review-required candidate ranking without recollection, and authorizes fresh
