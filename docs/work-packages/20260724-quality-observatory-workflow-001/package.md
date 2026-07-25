@@ -38,7 +38,9 @@ locally, while the single canonical artifact carries the identity-bound
 embeds the exact admission object needed for downstream independent
 verification; it is not added as a twelfth canonical file. This one-upload
 limit and its one-minute action timeout preserve the 90-second forest1 yield
-bound after a newly observed TESTGATE priority.
+bound after a newly observed TESTGATE priority. Each provider occupancy
+snapshot has a five-second total deadline; provider timeout is fail-closed
+occupancy and therefore triggers the same yield path.
 
 The versioned defunct Omarchy predicate is exact: repository identity matches;
 the run ID is one of `29673299308`, `29672334757`, or `29672149962`; the run

@@ -44,6 +44,7 @@ PUBLISHED_FILES = {
 MAX_PUBLISHED_BYTES = 100 * 1024 * 1024
 MAX_CONTROL_BYTES = 1024 * 1024
 FINALIZATION_SECONDS = 54.0
+OCCUPANCY_SNAPSHOT_SECONDS = 5.0
 SHA40 = re.compile(r"^[0-9a-f]{40}$")
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
 
@@ -87,10 +88,22 @@ def read_object(path: Path) -> dict[str, Any]:
     return value
 
 
-def run_text(arguments: list[str], cwd: Path) -> str:
-    result = subprocess.run(
-        arguments, cwd=cwd, check=False, capture_output=True, text=True
-    )
+def run_text(
+    arguments: list[str], cwd: Path, timeout: float | None = None
+) -> str:
+    try:
+        result = subprocess.run(
+            arguments,
+            cwd=cwd,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=timeout,
+        )
+    except subprocess.TimeoutExpired as error:
+        raise WorkflowError(
+            f"command exceeded its deadline: {' '.join(arguments)}"
+        ) from error
     if result.returncode:
         raise WorkflowError(
             f"command failed ({result.returncode}): {' '.join(arguments)}: "
@@ -221,9 +234,17 @@ def classify_occupancy(snapshot: dict[str, Any], repository: str) -> dict[str, A
 def live_snapshot(repository: str) -> dict[str, Any]:
     runs: list[dict[str, Any]] = []
     seen: set[int] = set()
+    deadline = time.monotonic() + OCCUPANCY_SNAPSHOT_SECONDS
+
+    def api_text(arguments: list[str]) -> str:
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise WorkflowError("GitHub occupancy snapshot deadline expired")
+        return run_text(arguments, Path.cwd(), timeout=remaining)
+
     for status in ("requested", "waiting", "pending", "queued", "in_progress"):
         pages = json.loads(
-            run_text(
+            api_text(
                 [
                     "gh",
                     "api",
@@ -238,8 +259,7 @@ def live_snapshot(repository: str) -> dict[str, Any]:
                     f"status={status}",
                     "-f",
                     "per_page=100",
-                ],
-                Path.cwd(),
+                ]
             )
         )
         workflow_runs = flatten_run_pages(pages)
@@ -256,7 +276,7 @@ def live_snapshot(repository: str) -> dict[str, Any]:
                 raise WorkflowError("GitHub run ID appeared in multiple pages/states")
             seen.add(run_id)
             jobs_payload = json.loads(
-                run_text(
+                api_text(
                     [
                         "gh",
                         "api",
@@ -265,8 +285,7 @@ def live_snapshot(repository: str) -> dict[str, Any]:
                         f"repos/{repository}/actions/runs/{run_id}/jobs",
                         "-f",
                         "per_page=100",
-                    ],
-                    Path.cwd(),
+                    ]
                 )
             )
             raw_jobs = jobs_payload.get("jobs")
@@ -286,7 +305,7 @@ def live_snapshot(repository: str) -> dict[str, Any]:
                 for job in raw_jobs
             ]
             artifacts_payload = json.loads(
-                run_text(
+                api_text(
                     [
                         "gh",
                         "api",
@@ -295,8 +314,7 @@ def live_snapshot(repository: str) -> dict[str, Any]:
                         f"repos/{repository}/actions/runs/{run_id}/artifacts",
                         "-f",
                         "per_page=100",
-                    ],
-                    Path.cwd(),
+                    ]
                 )
             )
             artifact_count = artifacts_payload.get("total_count")
@@ -426,7 +444,8 @@ def control_receipt(
 ) -> None:
     existing = list(control.iterdir())
     if any(
-        path.name != "quality-partial-index.json"
+        path.name
+        not in {"quality-partial-index.json", "priority-stop.json"}
         or path.is_symlink()
         or not path.is_file()
         for path in existing
@@ -453,6 +472,8 @@ def control_receipt(
     allowed = {"quality-control-receipt.json"}
     if (control / "quality-partial-index.json").exists():
         allowed.add("quality-partial-index.json")
+    if (control / "priority-stop.json").exists():
+        allowed.add("priority-stop.json")
     entries = list(control.iterdir())
     if {
         path.name
@@ -668,7 +689,9 @@ def verify_upload(args: argparse.Namespace) -> int:
 
 
 def verify_control(args: argparse.Namespace) -> int:
-    validate_control(args.control)
+    receipt = validate_control(args.control)
+    if receipt.get("disposition") == "COMPLETE":
+        raise WorkflowError("complete control evidence is local-only")
     print("quality-workflow-control-verification: PASS")
     return 0
 
@@ -888,7 +911,6 @@ def supervise(args: argparse.Namespace) -> int:
                     keep_publication=False,
                     deadline=finalization_deadline,
                 )
-                (control / "priority-stop.json").unlink(missing_ok=True)
                 control_receipt(
                     control,
                     disposition=disposition,
@@ -899,6 +921,7 @@ def supervise(args: argparse.Namespace) -> int:
                     occupancy=occupancy,
                     child_exit=child_exit,
                 )
+                (control / "priority-stop.json").unlink(missing_ok=True)
                 print(f"quality-workflow: {disposition}")
                 return 0 if disposition.startswith("DEFERRED_") else 2
             if child_exit:
@@ -946,7 +969,6 @@ def supervise(args: argparse.Namespace) -> int:
                     keep_publication=False,
                     deadline=finalization_deadline,
                 )
-                (control / "priority-stop.json").unlink(missing_ok=True)
                 control_receipt(
                     control,
                     disposition=disposition,
@@ -957,6 +979,7 @@ def supervise(args: argparse.Namespace) -> int:
                     occupancy=occupancy,
                     child_exit=verify_exit,
                 )
+                (control / "priority-stop.json").unlink(missing_ok=True)
                 print(f"quality-workflow: {disposition}")
                 return 0 if disposition.startswith("DEFERRED_") else 2
             if verify_exit:
@@ -1007,7 +1030,7 @@ def supervise(args: argparse.Namespace) -> int:
             finally:
                 if finalization_deadline is None:
                     remove_raw(attempt, keep_publication=False)
-                (control / "priority-stop.json").unlink(missing_ok=True)
+                    (control / "priority-stop.json").unlink(missing_ok=True)
             if not (control / "quality-control-receipt.json").exists():
                 control_receipt(
                     control,
@@ -1138,6 +1161,12 @@ def self_test() -> int:
             admission={"admission_id": "fixture"},
             quality_evidence_id=evidence_id,
         )
+        try:
+            verify_control(argparse.Namespace(control=control))
+        except WorkflowError:
+            pass
+        else:
+            raise WorkflowError("complete control was accepted for artifact upload")
         fixture = test_root / "live.json"
         write_json(
             fixture,

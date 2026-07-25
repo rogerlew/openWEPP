@@ -29,6 +29,8 @@ distinct from TESTGATE.
   no next stage and records `DEFERRED_TESTGATE_PRIORITY`.
 - Active children are polled at no more than 30-second intervals, terminated
   on TESTGATE occupancy, and use one shared 54-second finalization deadline.
+  Each provider snapshot is bounded to five seconds, keeping detection plus
+  finalization below 90 seconds even when the provider stalls.
 - Partial evidence is retained locally but cannot use the complete publication
   artifact name or status.
 - Deferred/partial control evidence is confined to

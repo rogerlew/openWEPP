@@ -108,6 +108,7 @@ jobs:
           workflow_sha256="$(sha256sum \
             .github/workflows/quality-observatory.yml | awk '{print $1}')"
           export QUALITY_WORKFLOW_SHA256="${workflow_sha256}"
+          set +e
           python3 tools/local_ci/quality_observatory_workflow.py supervise \
             --repo . \
             --repository "${GITHUB_REPOSITORY}" \
@@ -119,6 +120,8 @@ jobs:
             --lease "${QUALITY_FOREST1_LEASE}" \
             -- \
             bash tools/local_ci/run_quality_observatory_child.sh
+          supervisor_exit="$?"
+          set -e
           if [[ -d "${QUALITY_ATTEMPT_ROOT}/published" ]]; then
             echo "complete=true" >> "${GITHUB_OUTPUT}"
           else
@@ -126,13 +129,18 @@ jobs:
           fi
           disposition="$(jq -r '.disposition // empty' \
             "${QUALITY_CONTROL_ROOT}/quality-control-receipt.json" 2>/dev/null || true)"
-          if [[ "${disposition}" == DEFERRED_* ]]; then
+          priority_disposition="$(jq -r '.disposition // empty' \
+            "${QUALITY_CONTROL_ROOT}/priority-stop.json" 2>/dev/null || true)"
+          if [[ "${disposition}" == DEFERRED_* ]] || \
+             [[ "${priority_disposition}" == DEFERRED_* ]]; then
             echo "deferred=true" >> "${GITHUB_OUTPUT}"
-            printf 'quality control disposition: %s\n' "${disposition}" \
+            printf 'quality control disposition: %s\n' \
+              "${priority_disposition:-${disposition}}" \
               >> "${GITHUB_STEP_SUMMARY}"
           else
             echo "deferred=false" >> "${GITHUB_OUTPUT}"
           fi
+          exit "${supervisor_exit}"
       - name: Upload complete quality observation
         if: ${{ steps.observe.outputs.complete == 'true' }}
         id: upload

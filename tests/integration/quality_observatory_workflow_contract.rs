@@ -62,6 +62,10 @@ fn quality_workflow_is_manual_forest1_specific_and_nonblocking() {
     assert!(workflow.contains("test \"$(git rev-parse refs/remotes/origin/main)\""));
     assert!(workflow.contains("quality_observatory_workflow.py preflight"));
     assert!(workflow.contains("quality_observatory_workflow.py supervise"));
+    assert!(workflow.contains("priority-stop.json"));
+    assert!(workflow.contains("supervisor_exit=\"$?\""));
+    assert!(workflow.contains("exit \"${supervisor_exit}\""));
+    assert!(workflow.contains("steps.observe.outputs.deferred != 'true'"));
     assert!(workflow.contains("run_quality_observatory_child.sh"));
     assert!(workflow.contains("actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02"));
     assert!(workflow.contains("overwrite: false"));
@@ -225,6 +229,74 @@ fn supervisor_yields_to_testgate_and_removes_partial_publication() {
     assert!(receipt.contains("\"disposition\":\"DEFERRED_TESTGATE_PRIORITY\""));
     assert!(control.join("quality-partial-index.json").is_file());
     fs::remove_dir_all(temp).expect("remove supervisor scratch");
+}
+
+#[test]
+fn priority_marker_survives_control_finalization_failure() {
+    let temp = scratch("priority-failure");
+    let fixture = temp.join("race.json");
+    write_fixture(
+        &fixture,
+        r#"{"snapshots":[
+{"schema_version":"openwepp-quality-occupancy-v1","runs":[]},
+{"schema_version":"openwepp-quality-occupancy-v1","runs":[]},
+{"after_path":"priority-ready","snapshot":{"schema_version":"openwepp-quality-occupancy-v1","runs":[{"id":19,"repository":"openwepp/openwepp","workflow":".github/workflows/testgate-shadow.yml","event":"workflow_dispatch","head_sha":"1111111111111111111111111111111111111111","status":"in_progress","conclusion":null,"jobs":[{"name":"openwepp/execute-increment","status":"in_progress","labels":["self-hosted","Linux","X64","openwepp","forest1","trusted"]}],"artifacts":0}]}}
+]}"#,
+    );
+    let attempt = temp.join("attempt");
+    let control = temp.join("control");
+    let head = Command::new("git")
+        .args(["rev-parse", "HEAD"])
+        .current_dir(root())
+        .output()
+        .expect("resolve head");
+    let head = String::from_utf8(head.stdout)
+        .expect("UTF-8 head")
+        .trim()
+        .to_owned();
+    let status = Command::new(root().join(".venv/bin/python"))
+        .arg(root().join("tools/local_ci/quality_observatory_workflow.py"))
+        .args([
+            "supervise",
+            "--repo",
+            ".",
+            "--repository",
+            "openwepp/openwepp",
+            "--source-sha",
+            &head,
+            "--workflow-revision",
+            &head,
+            "--workflow-sha256",
+            "0000000000000000000000000000000000000000000000000000000000000000",
+            "--poll-seconds",
+            "0.01",
+            "--grace-seconds",
+            "0.1",
+        ])
+        .arg("--attempt-root")
+        .arg(&attempt)
+        .arg("--control-root")
+        .arg(&control)
+        .arg("--lease")
+        .arg(temp.join("forest1.lock"))
+        .arg("--occupancy-fixture")
+        .arg(&fixture)
+        .args([
+            "--",
+            "bash",
+            "-c",
+            "mkdir -p \"$1\" \"$(dirname \"$QUALITY_PRIORITY_SENTINEL\")/unexpected\"; touch \"$1/priority-ready\"; sleep 10",
+            "_",
+        ])
+        .arg(&attempt)
+        .current_dir(root())
+        .status()
+        .expect("run priority failure fixture");
+    assert!(!status.success());
+    let marker =
+        fs::read_to_string(control.join("priority-stop.json")).expect("priority marker survives");
+    assert!(marker.contains("\"disposition\":\"DEFERRED_TESTGATE_PRIORITY\""));
+    fs::remove_dir_all(temp).expect("remove priority failure scratch");
 }
 
 #[test]
@@ -393,6 +465,7 @@ fn workflow_contract_keeps_exact_publication_and_bounded_priority_intervals() {
     assert!(controller.contains("default=30.0"));
     assert!(controller.contains("default=30.0"));
     assert!(controller.contains("FINALIZATION_SECONDS = 54.0"));
+    assert!(controller.contains("OCCUPANCY_SNAPSHOT_SECONDS = 5.0"));
     let deadline = controller
         .find("deadline_state[\"deadline\"] = deadline")
         .expect("priority deadline assignment");
@@ -401,6 +474,7 @@ fn workflow_contract_keeps_exact_publication_and_bounded_priority_intervals() {
         .expect("bounded priority termination");
     assert!(termination > 0);
     assert!(controller.contains("forged complete control receipt was accepted"));
+    assert!(controller.contains("complete control evidence is local-only"));
     assert!(controller.contains("signal.SIGTERM"));
     assert!(controller.contains("signal.SIGKILL"));
     assert!(controller.contains("DEFERRED_OCCUPANCY_UNKNOWN"));
