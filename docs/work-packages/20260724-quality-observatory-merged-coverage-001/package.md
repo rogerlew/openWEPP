@@ -2,7 +2,7 @@
 
 Package ID: `20260724-quality-observatory-merged-coverage-001`
 
-Status: `ACTIVE / READY / ORDER-3`
+Status: `ACTIVE / CORRECTION / ORDER-3`
 
 ## Objective
 
@@ -37,6 +37,7 @@ is represented rather than reported as false 0% debt.
 - `tools/release/**`
 - `tests/integration/quality_observatory_*`
 - `tests/integration/testgate_*`
+- `tests/integration/snowdensity03_physics_bulk_offline_contract.rs`
 - `crates/openwepp-runner/tests/**`
 - `docs/work-packages/20260724-quality-observatory-merged-coverage-001/**`
 - `docs/work-packages/README.md`
@@ -184,3 +185,11 @@ probe with 3/3 tests and preserved all 291 admitted executable rows and the
 working-tree identity. See
 `artifacts/heavy-attempt-10-runtime-consumer-probe.md`. Fresh collection is
 authorized after committing this evidence.
+
+Attempt 11 passed the complete 2,279-test full profile, then ran all 36
+science-manual tests and exposed one stale exact-path confinement allowlist.
+The Order-2 TESTGATE source contract legitimately names the science binary to
+prove profile partitioning; that governance-only test path is not a runtime
+consumer. See `artifacts/heavy-attempt-11-science-confinement.md`. This package
+amends its write set before implementation for the exact confinement test and
+authorizes only the narrow allowlist correction plus negative-path proof.

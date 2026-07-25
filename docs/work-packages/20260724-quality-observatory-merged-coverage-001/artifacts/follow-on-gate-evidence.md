@@ -25,5 +25,14 @@ Current correction gates:
 - Exact assurance publication consumer probe: `PASS`; 3 passed in `47.951s`.
 - Admitted executable manifest: 291 rows before and after, exact equality.
 - Admitted working-tree identity: exact equality before and after.
+- Attempt 11 admission: `READY`; exact 2,279 / 36 / 2,315 inventories.
+- Attempt 11 `full`: `PASS`; 2,279 passed, 15 slow, 31 skipped;
+  `2299.240s`.
+- Attempt 11 `science-manual`: `FAIL`; 35 passed, 1 failed, 1 slow;
+  `480.503s`.
+- Attempt 11 final read-only identity: 291 executable rows and working tree
+  equal admission.
+- Attempt 11 publication: not reached; 0 files and no evidence ID.
 
-Fresh complete transition and terminal verification remain pending.
+Science-confinement correction, fresh complete transition, and terminal
+verification remain pending.
