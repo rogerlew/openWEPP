@@ -4,8 +4,8 @@ Evidence class: Static.
 
 - Workflow: `.github/workflows/testgate-shadow.yml`
 - Ref: `main`
-- Base/active authority:
-  `f01ab161b3ba135a04cb82b1934141577e21b641`
+- Base/active authority: the commit that first records the exact authoritative
+  package status `ACTIVE`; its SHA will be bound after that correction commits.
 - Intent package:
   `docs/work-packages/20260724-testgate-quality-observatory-qualification-001/package.md`
 - Dispatch count authorized: one attempt per corrected stable head
@@ -21,10 +21,9 @@ It failed closed before planning with
 `QUEUED`. The authenticated recovery artifact retained the same typed cause.
 The unchanged head will not be rerun.
 
-Attempt 2 will use the first commit whose parent-authority text records this
-package as active,
-`f01ab161b3ba135a04cb82b1934141577e21b641`. Its final head and provider run ID
-will be recorded only after focused gates pass, the correction is pushed, and
-current forest1 occupancy is clear.
+Attempt 2 will use the first commit whose package text records the exact
+planner-authoritative status `ACTIVE`. Its base SHA, final head, and provider
+run ID will be recorded only after focused gates pass, the correction is
+pushed, and current forest1 occupancy is clear.
 
 No QA, coverage, CRAP, or CQR workflow is authorized.

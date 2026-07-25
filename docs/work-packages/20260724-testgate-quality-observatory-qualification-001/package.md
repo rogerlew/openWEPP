@@ -2,7 +2,7 @@
 
 Package ID: `20260724-testgate-quality-observatory-qualification-001`
 
-Status: `ACTIVE / QUALIFICATION / ORDER-6`
+Status: `ACTIVE`
 
 ## Pre-Execution Intent
 
@@ -14,8 +14,7 @@ cheap source/schema/focused checks, reconcile the exact base-to-head authority
 chain, record the current provider queue state, and retain a dispatch-intent
 artifact binding:
 
-- active authority/base commit
-  `f01ab161b3ba135a04cb82b1934141577e21b641`;
+- the package activation commit recorded in the dispatch intent;
 - this exact intent package path;
 - the final pushed `main` head; and
 - one TESTGATE workflow dispatch per corrected stable head.

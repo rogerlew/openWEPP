@@ -25,8 +25,9 @@ unsigned orchestration error and pre-receipt failure carry the same typed
 cause; the recovery artifact contains authenticated recovery predicate,
 attestation, and verification records.
 
-Disposition: repository-owned dispatch-binding defect. The first active
-authority commit is
-`f01ab161b3ba135a04cb82b1934141577e21b641`; a new committed and pushed head may
-be dispatched against that corrected base. The failed head is not eligible for
-an unchanged rerun.
+Disposition: repository-owned dispatch-binding defect. The intended activation
+commit used the unrecognized composite status
+`ACTIVE / QUALIFICATION / ORDER-6`; the package must first record the exact
+planner-authoritative status `ACTIVE`. A later committed and pushed head may be
+dispatched against that corrected activation commit. The failed head is not
+eligible for an unchanged rerun.
