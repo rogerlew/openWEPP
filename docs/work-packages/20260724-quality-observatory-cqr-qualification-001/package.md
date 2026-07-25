@@ -2,7 +2,31 @@
 
 Package ID: `20260724-quality-observatory-cqr-qualification-001`
 
-Status: `QUEUED / ORDER-7`
+Status: `ACTIVE`
+
+## Pre-Execution Intent
+
+Risk: `CRITICAL`.
+
+The package will first run source, schema, inventory, report-contract, CQR
+intake, occupancy, documentation, and authority-chain checks. Live execution
+is limited to one QA attempt per corrected stable head. The qualified source
+must have exact successful TESTGATE evidence; QA never overlaps current
+TESTGATE work.
+
+Initial static preflight found that the workflow requires `source_sha` to equal
+both the workflow revision and current `main`, while this package requires the
+Order-6 qualified subject
+`955358449381ab38378d28dac93ba7b21b496d14` and permits later evidence-only
+documentation commits without relabeling that subject. No QA dispatch is
+authorized until this contradiction is corrected or an exact current subject
+is freshly TESTGATE-qualified. Any workflow/tooling correction must be
+committed, pushed, and pass exact-head TESTGATE before QA.
+
+The terminal diff will be mechanically reconciled against the declared write
+set. The package will retain every live attempt, run CQR selection-only intake
+without collection, reject stale/tampered evidence, complete dual reviews and
+verifications, then close the roadmap.
 
 ## Objective
 
@@ -42,6 +66,8 @@ prove CQR Nightly consumes that exact report without recollecting coverage.
 - `docs/work-packages/20260724-quality-observatory-cqr-qualification-001/**`
 - `docs/work-packages/20260724-cqr-testgate-coverage-reconstruction-001/**`
 - `docs/work-packages/README.md`
+- `docs/work-packages/testgate-quality-observatory-roadmap.md` (Order-7
+  closeout routing only)
 - `docs/ROADMAP.md`
 
 ## Dependencies
