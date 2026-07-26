@@ -9,3 +9,6 @@ CAL03-INV-007,MODEL_OUTPUT,CAL03-MOD-HB-001..CAL03-MOD-SEF-003,7,CAL02 paired re
 CAL03-INV-008,GAP,GAP-CAL04-INDEPENDENT-PHENOLOGY-HOLDOUT,1,No retained exact research object supplies an independent quantitative timing series,MISSING_REQUIRED,Hard blocker before CAL04 parameter fitting
 CAL03-INV-009,GAP,GAP-CAL04-NUMERIC-PRIORS,1,No retained evidence admits probability priors for native parameters,MISSING_REQUIRED,Bounds may use contract domains but priors cannot be invented
 CAL03-INV-010,GAP,GAP-CAL05-SOURCE-COMPOSITION,1,No site-matched measured leaf needle and fine-woody flux composition is retained,MISSING_REQUIRED,CAL05 may test source sufficiency but cannot hide missing inputs in decay
+CAL0405-INV-001,OBSERVATION,CAL0405-HB-*,932,Hubbard Brook EDI 51.16,ADMITTED_CALIBRATION,Weekly interval-censored P3 half-expansion transitions for three shared species through protected fixture year 2024
+CAL0405-INV-002,OBSERVATION,CAL0405-HF-*,319,Harvard Forest HF003 v37,INDEPENDENT_HOLDOUT,Independent raw 50 percent leaf-fall brackets; 1992 excluded per EML
+CAL0405-INV-003,OBSERVATION,CAL0405-PARTIAL-HF161|CAL0405-PARTIAL-HF324,2,Harvard Forest HF161/HF324,PARTIAL_CAL05,Leaf/needle and pooled nonfoliar plus companion stock; fine wood unresolved

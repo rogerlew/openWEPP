@@ -1,0 +1,1302 @@
+year,archive,contact,project,type,size,lat,long,obs.exp,treatment,treat.year,tract,site,plot,nbasket,bask.area,foliar.gcm2,nonfoliar.gcm2,total.gcm2,notes
+1989,hf008,frey,chronicN,conifer,900,42.54,-72.18,obs,PC,NA,PH,red pine plantation,PC,9,0.2345,169.35,NA,NA,9 baskets averaged
+1989,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PL,1988-2009,PH,red pine plantation,PL,9,0.2345,195.3,NA,NA,9 baskets averaged
+1989,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PNS,1988-2009,PH,red pine plantation,PNS,7,0.2345,177.95,NA,NA,7 baskets averaged
+1989,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PH,1988-2005,PH,red pine plantation,PH,9,0.2345,198.55,NA,NA,9 baskets averaged
+1989,hf008,frey,chronicN,hardwood,900,42.54,-72.18,obs,HC,NA,PH,mixed hardwood,HC,8,0.2345,143.15,NA,NA,8 baskets averaged
+1989,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HL,1988-ongoing,PH,mixed hardwood,HL,8,0.2345,128.5,NA,NA,8 baskets averaged
+1989,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HNS,1988-ongoing,PH,mixed hardwood,HNS,9,0.2345,139.05,NA,NA,9 baskets averaged
+1989,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HH,1988-ongoing,PH,mixed hardwood,HH,9,0.2345,145.05,NA,NA,9 baskets averaged
+1990,hf008,frey,chronicN,conifer,900,42.54,-72.18,obs,PC,NA,PH,red pine plantation,PC,9,0.2345,157.8,NA,NA,9 baskets averaged
+1990,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PL,1988-2009,PH,red pine plantation,PL,9,0.2345,179.25,NA,NA,9 baskets averaged
+1990,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PNS,1988-2009,PH,red pine plantation,PNS,9,0.2345,185.9,NA,NA,9 baskets averaged
+1990,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PH,1988-2005,PH,red pine plantation,PH,9,0.2345,184.45,NA,NA,9 baskets averaged
+1990,hf008,frey,chronicN,hardwood,900,42.54,-72.18,obs,HC,NA,PH,mixed hardwood,HC,8,0.2345,133.1,NA,NA,8 baskets averaged
+1990,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HL,1988-ongoing,PH,mixed hardwood,HL,9,0.2345,138,NA,NA,9 baskets averaged
+1990,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HNS,1988-ongoing,PH,mixed hardwood,HNS,9,0.2345,136.55,NA,NA,9 baskets averaged
+1990,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HH,1988-ongoing,PH,mixed hardwood,HH,9,0.2345,142.4,NA,NA,9 baskets averaged
+1991,hf008,frey,chronicN,conifer,900,42.54,-72.18,obs,PC,NA,PH,red pine plantation,PC,9,0.2345,144.55,NA,NA,9 baskets averaged
+1991,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PL,1988-2009,PH,red pine plantation,PL,9,0.2345,145.75,NA,NA,9 baskets averaged
+1991,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PNS,1988-2009,PH,red pine plantation,PNS,9,0.2345,188.85,NA,NA,9 baskets averaged
+1991,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PH,1988-2005,PH,red pine plantation,PH,9,0.2345,194.55,NA,NA,9 baskets averaged
+1991,hf008,frey,chronicN,hardwood,900,42.54,-72.18,obs,HC,NA,PH,mixed hardwood,HC,9,0.2345,154.3,NA,NA,9 baskets averaged
+1991,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HL,1988-ongoing,PH,mixed hardwood,HL,9,0.2345,168.3,NA,NA,9 baskets averaged
+1991,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HNS,1988-ongoing,PH,mixed hardwood,HNS,9,0.2345,154.8,NA,NA,9 baskets averaged
+1991,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HH,1988-ongoing,PH,mixed hardwood,HH,9,0.2345,190.35,NA,NA,9 baskets averaged
+1992,hf008,frey,chronicN,conifer,900,42.54,-72.18,obs,PC,NA,PH,red pine plantation,PC,7,0.2345,162,NA,NA,7 baskets averaged
+1992,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PL,1988-2009,PH,red pine plantation,PL,9,0.2345,208.9,NA,NA,9 baskets averaged
+1992,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PNS,1988-2009,PH,red pine plantation,PNS,9,0.2345,218.05,NA,NA,9 baskets averaged
+1992,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PH,1988-2005,PH,red pine plantation,PH,9,0.2345,236.85,NA,NA,9 baskets averaged
+1992,hf008,frey,chronicN,hardwood,900,42.54,-72.18,obs,HC,NA,PH,mixed hardwood,HC,9,0.2345,136.45,NA,NA,9 baskets averaged
+1992,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HL,1988-ongoing,PH,mixed hardwood,HL,9,0.2345,138.45,NA,NA,9 baskets averaged
+1992,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HNS,1988-ongoing,PH,mixed hardwood,HNS,9,0.2345,130.85,NA,NA,9 baskets averaged
+1992,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HH,1988-ongoing,PH,mixed hardwood,HH,9,0.2345,151.85,NA,NA,9 baskets averaged
+1993,hf008,frey,chronicN,conifer,900,42.54,-72.18,obs,PC,NA,PH,red pine plantation,PC,9,0.2345,156.35,NA,NA,9 baskets averaged
+1993,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PL,1988-2009,PH,red pine plantation,PL,9,0.2345,187.55,NA,NA,9 baskets averaged
+1993,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PNS,1988-2009,PH,red pine plantation,PNS,9,0.2345,185.3,NA,NA,9 baskets averaged
+1993,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PH,1988-2005,PH,red pine plantation,PH,9,0.2345,206.1,NA,NA,9 baskets averaged
+1993,hf008,frey,chronicN,hardwood,900,42.54,-72.18,obs,HC,NA,PH,mixed hardwood,HC,9,0.2345,151.1,NA,NA,9 baskets averaged
+1993,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HL,1988-ongoing,PH,mixed hardwood,HL,9,0.2345,154.6,NA,NA,9 baskets averaged
+1993,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HNS,1988-ongoing,PH,mixed hardwood,HNS,9,0.2345,184.5,NA,NA,9 baskets averaged
+1993,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HH,1988-ongoing,PH,mixed hardwood,HH,9,0.2345,183.45,NA,NA,9 baskets averaged
+1994,hf008,frey,chronicN,conifer,900,42.54,-72.18,obs,PC,NA,PH,red pine plantation,PC,9,0.2345,155.6,NA,NA,9 baskets averaged
+1994,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PL,1988-2009,PH,red pine plantation,PL,9,0.2345,164.75,NA,NA,9 baskets averaged
+1994,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PNS,1988-2009,PH,red pine plantation,PNS,9,0.2345,204.7,NA,NA,9 baskets averaged
+1994,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PH,1988-2005,PH,red pine plantation,PH,9,0.2345,193.35,NA,NA,9 baskets averaged
+1994,hf008,frey,chronicN,hardwood,900,42.54,-72.18,obs,HC,NA,PH,mixed hardwood,HC,9,0.2345,158.05,NA,NA,9 baskets averaged
+1994,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HL,1988-ongoing,PH,mixed hardwood,HL,9,0.2345,173.95,NA,NA,9 baskets averaged
+1994,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HNS,1988-ongoing,PH,mixed hardwood,HNS,9,0.2345,169.7,NA,NA,9 baskets averaged
+1994,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HH,1988-ongoing,PH,mixed hardwood,HH,9,0.2345,193.7,NA,NA,9 baskets averaged
+1995,hf008,frey,chronicN,conifer,900,42.54,-72.18,obs,PC,NA,PH,red pine plantation,PC,9,0.2345,221.25,NA,NA,9 baskets averaged
+1995,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PL,1988-2009,PH,red pine plantation,PL,9,0.2345,273.35,NA,NA,9 baskets averaged
+1995,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PNS,1988-2009,PH,red pine plantation,PNS,9,0.2345,285.6,NA,NA,9 baskets averaged
+1995,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PH,1988-2005,PH,red pine plantation,PH,9,0.2345,307.1,NA,NA,9 baskets averaged
+1995,hf008,frey,chronicN,hardwood,900,42.54,-72.18,obs,HC,NA,PH,mixed hardwood,HC,9,0.2345,157.5,NA,NA,9 baskets averaged
+1995,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HL,1988-ongoing,PH,mixed hardwood,HL,9,0.2345,176.5,NA,NA,9 baskets averaged
+1995,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HNS,1988-ongoing,PH,mixed hardwood,HNS,7,0.2345,198,NA,NA,7 baskets averaged
+1995,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HH,1988-ongoing,PH,mixed hardwood,HH,9,0.2345,196.3,NA,NA,9 baskets averaged
+1996,hf008,frey,chronicN,conifer,900,42.54,-72.18,obs,PC,NA,PH,red pine plantation,PC,9,0.2345,113.65,NA,NA,9 baskets averaged
+1996,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PL,1988-2009,PH,red pine plantation,PL,9,0.2345,145.55,NA,NA,9 baskets averaged
+1996,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PNS,1988-2009,PH,red pine plantation,PNS,9,0.2345,154.6,NA,NA,9 baskets averaged
+1996,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PH,1988-2005,PH,red pine plantation,PH,9,0.2345,164.1,NA,NA,9 baskets averaged
+1996,hf008,frey,chronicN,hardwood,900,42.54,-72.18,obs,HC,NA,PH,mixed hardwood,HC,9,0.2345,155.05,NA,NA,9 baskets averaged
+1996,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HL,1988-ongoing,PH,mixed hardwood,HL,9,0.2345,150.9,NA,NA,9 baskets averaged
+1996,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HNS,1988-ongoing,PH,mixed hardwood,HNS,9,0.2345,190.5,NA,NA,9 baskets averaged
+1996,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HH,1988-ongoing,PH,mixed hardwood,HH,9,0.2345,139.1,NA,NA,9 baskets averaged
+1997,hf008,frey,chronicN,conifer,900,42.54,-72.18,obs,PC,NA,PH,red pine plantation,PC,9,0.2345,176.1,NA,NA,9 baskets averaged
+1997,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PL,1988-2009,PH,red pine plantation,PL,9,0.2345,217.8,NA,NA,9 baskets averaged
+1997,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PNS,1988-2009,PH,red pine plantation,PNS,9,0.2345,223.95,NA,NA,9 baskets averaged
+1997,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PH,1988-2005,PH,red pine plantation,PH,8,0.2345,202.15,NA,NA,8 baskets averaged
+1997,hf008,frey,chronicN,hardwood,900,42.54,-72.18,obs,HC,NA,PH,mixed hardwood,HC,9,0.2345,148.9,NA,NA,9 baskets averaged
+1997,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HL,1988-ongoing,PH,mixed hardwood,HL,6,0.2345,152.95,NA,NA,6 baskets averaged
+1997,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HNS,1988-ongoing,PH,mixed hardwood,HNS,8,0.2345,159.25,NA,NA,8 baskets averaged
+1997,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HH,1988-ongoing,PH,mixed hardwood,HH,9,0.2345,135.25,NA,NA,9 baskets averaged
+1998,hf008,frey,chronicN,conifer,900,42.54,-72.18,obs,PC,NA,PH,red pine plantation,PC,9,0.2345,169.65,NA,NA,9 baskets averaged
+1998,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PL,1988-2009,PH,red pine plantation,PL,9,0.2345,196.5,NA,NA,9 baskets averaged
+1998,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PNS,1988-2009,PH,red pine plantation,PNS,9,0.2345,209.75,NA,NA,9 baskets averaged
+1998,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PH,1988-2005,PH,red pine plantation,PH,9,0.2345,171.5,NA,NA,9 baskets averaged
+1998,hf008,frey,chronicN,hardwood,900,42.54,-72.18,obs,HC,NA,PH,mixed hardwood,HC,9,0.2345,149.2,NA,NA,9 baskets averaged
+1998,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HL,1988-ongoing,PH,mixed hardwood,HL,9,0.2345,165.2,NA,NA,9 baskets averaged
+1998,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HNS,1988-ongoing,PH,mixed hardwood,HNS,9,0.2345,169.6,NA,NA,9 baskets averaged
+1998,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HH,1988-ongoing,PH,mixed hardwood,HH,9,0.2345,152.5,NA,NA,9 baskets averaged
+1999,hf008,frey,chronicN,conifer,900,42.54,-72.18,obs,PC,NA,PH,red pine plantation,PC,9,0.2345,151.55,NA,NA,9 baskets averaged
+1999,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PL,1988-2009,PH,red pine plantation,PL,9,0.2345,189.45,NA,NA,9 baskets averaged
+1999,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PNS,1988-2009,PH,red pine plantation,PNS,9,0.2345,190.75,NA,NA,9 baskets averaged
+1999,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PH,1988-2005,PH,red pine plantation,PH,9,0.2345,176.4,NA,NA,9 baskets averaged
+1999,hf008,frey,chronicN,hardwood,900,42.54,-72.18,obs,HC,NA,PH,mixed hardwood,HC,9,0.2345,163.4,NA,NA,9 baskets averaged
+1999,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HL,1988-ongoing,PH,mixed hardwood,HL,9,0.2345,177.85,NA,NA,9 baskets averaged
+1999,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HNS,1988-ongoing,PH,mixed hardwood,HNS,9,0.2345,162.6,NA,NA,9 baskets averaged
+1999,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HH,1988-ongoing,PH,mixed hardwood,HH,9,0.2345,170.55,NA,NA,9 baskets averaged
+2001,hf008,frey,chronicN,conifer,900,42.54,-72.18,obs,PC,NA,PH,red pine plantation,PC,9,0.2345,164.25,NA,NA,9 baskets averaged
+2001,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PL,1988-2009,PH,red pine plantation,PL,9,0.2345,187.3,NA,NA,9 baskets averaged
+2001,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PNS,1988-2009,PH,red pine plantation,PNS,9,0.2345,211.5,NA,NA,9 baskets averaged
+2001,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PH,1988-2005,PH,red pine plantation,PH,9,0.2345,145.9,NA,NA,9 baskets averaged
+2001,hf008,frey,chronicN,hardwood,900,42.54,-72.18,obs,HC,NA,PH,mixed hardwood,HC,9,0.2345,176.35,NA,NA,9 baskets averaged
+2001,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HL,1988-ongoing,PH,mixed hardwood,HL,9,0.2345,182.5,NA,NA,9 baskets averaged
+2001,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HNS,1988-ongoing,PH,mixed hardwood,HNS,9,0.2345,175.35,NA,NA,9 baskets averaged
+2001,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HH,1988-ongoing,PH,mixed hardwood,HH,9,0.2345,161.75,NA,NA,9 baskets averaged
+2000,hf008,frey,chronicN,conifer,900,42.54,-72.18,obs,PC,NA,PH,red pine plantation,PC,9,0.2345,126.65,NA,NA,9 baskets averaged
+2000,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PL,1988-2009,PH,red pine plantation,PL,9,0.2345,145.15,NA,NA,9 baskets averaged
+2000,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PNS,1988-2009,PH,red pine plantation,PNS,9,0.2345,159.7,NA,NA,9 baskets averaged
+2000,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PH,1988-2005,PH,red pine plantation,PH,9,0.2345,131.6,NA,NA,9 baskets averaged
+2000,hf008,frey,chronicN,hardwood,900,42.54,-72.18,obs,HC,NA,PH,mixed hardwood,HC,9,0.2345,162.65,NA,NA,9 baskets averaged
+2000,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HL,1988-ongoing,PH,mixed hardwood,HL,8,0.2345,172.7,NA,NA,8 baskets averaged
+2000,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HNS,1988-ongoing,PH,mixed hardwood,HNS,9,0.2345,157.9,NA,NA,9 baskets averaged
+2000,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HH,1988-ongoing,PH,mixed hardwood,HH,9,0.2345,151.85,NA,NA,9 baskets averaged
+2002,hf008,frey,chronicN,conifer,900,42.54,-72.18,obs,PC,NA,PH,red pine plantation,PC,9,0.2345,146.15,NA,NA,9 baskets averaged
+2002,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PL,1988-2009,PH,red pine plantation,PL,9,0.2345,196.75,NA,NA,9 baskets averaged
+2002,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PNS,1988-2009,PH,red pine plantation,PNS,9,0.2345,188.3,NA,NA,9 baskets averaged
+2002,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PH,1988-2005,PH,red pine plantation,PH,9,0.2345,107.35,NA,NA,9 baskets averaged
+2002,hf008,frey,chronicN,hardwood,900,42.54,-72.18,obs,HC,NA,PH,mixed hardwood,HC,9,0.2345,147.85,NA,NA,9 baskets averaged
+2002,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HL,1988-ongoing,PH,mixed hardwood,HL,7,0.2345,141.85,NA,NA,7 baskets averaged
+2002,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HNS,1988-ongoing,PH,mixed hardwood,HNS,8,0.2345,151.1,NA,NA,8 baskets averaged
+2002,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HH,1988-ongoing,PH,mixed hardwood,HH,7,0.2345,135.55,NA,NA,7 baskets averaged
+2003,hf008,frey,chronicN,hardwood,900,42.54,-72.18,obs,HC,NA,PH,mixed hardwood,HC,9,0.2345,231.905,NA,NA,9 baskets averaged
+2003,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HH,1988-ongoing,PH,mixed hardwood,HH,9,0.2345,244.935,NA,NA,9 baskets averaged
+2003,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HL,1988-ongoing,PH,mixed hardwood,HL,9,0.2345,224.715,NA,NA,9 baskets averaged
+2003,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HNS,1988-ongoing,PH,mixed hardwood,HNS,9,0.2345,218.77,NA,NA,9 baskets averaged
+2003,hf008,frey,chronicN,conifer,900,42.54,-72.18,obs,PC,NA,PH,red pine plantation,PC,9,0.2345,201.45,NA,NA,9 baskets averaged
+2003,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PH,1988-2005,PH,red pine plantation,PH,9,0.2345,243.59,NA,NA,9 baskets averaged
+2003,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PL,1988-2009,PH,red pine plantation,PL,9,0.2345,259.11,NA,NA,9 baskets averaged
+2003,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PNS,1988-2009,PH,red pine plantation,PNS,9,0.2345,239.08,NA,NA,9 baskets averaged
+2004,hf008,frey,chronicN,hardwood,900,42.54,-72.18,obs,HC,NA,PH,mixed hardwood,HC,9,0.2345,216.365,NA,NA,9 baskets averaged
+2004,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HH,1988-ongoing,PH,mixed hardwood,HH,9,0.2345,218.745,NA,NA,9 baskets averaged
+2004,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HL,1988-ongoing,PH,mixed hardwood,HL,9,0.2345,260.185,NA,NA,9 baskets averaged
+2004,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HNS,1988-ongoing,PH,mixed hardwood,HNS,9,0.2345,232.735,NA,NA,9 baskets averaged
+2004,hf008,frey,chronicN,conifer,900,42.54,-72.18,obs,PC,NA,PH,red pine plantation,PC,9,0.2345,204.015,NA,NA,9 baskets averaged
+2004,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PH,1988-2005,PH,red pine plantation,PH,9,0.2345,196.455,NA,NA,9 baskets averaged
+2004,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PL,1988-2009,PH,red pine plantation,PL,9,0.2345,265.68,NA,NA,9 baskets averaged
+2004,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PNS,1988-2009,PH,red pine plantation,PNS,9,0.2345,254.86,NA,NA,9 baskets averaged
+2006,hf008,frey,chronicN,hardwood,900,42.54,-72.18,obs,HC,NA,PH,mixed hardwood,HC,9,0.2345,208.535,NA,NA,9 baskets averaged
+2006,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HH,1988-ongoing,PH,mixed hardwood,HH,9,0.2345,210.29,NA,NA,9 baskets averaged
+2006,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HL,1988-ongoing,PH,mixed hardwood,HL,9,0.2345,205.37,NA,NA,9 baskets averaged
+2006,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HNS,1988-ongoing,PH,mixed hardwood,HNS,9,0.2345,201.945,NA,NA,9 baskets averaged
+2006,hf008,frey,chronicN,conifer,900,42.54,-72.18,obs,PC,NA,PH,red pine plantation,PC,9,0.2345,200.275,NA,NA,9 baskets averaged
+2006,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PH,1988-2005,PH,red pine plantation,PH,9,0.2345,232.065,NA,NA,9 baskets averaged
+2006,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PL,1988-2009,PH,red pine plantation,PL,9,0.2345,221.29,NA,NA,9 baskets averaged
+2006,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PNS,1988-2009,PH,red pine plantation,PNS,9,0.2345,268.445,NA,NA,9 baskets averaged
+2007,hf008,frey,chronicN,hardwood,900,42.54,-72.18,obs,HC,NA,PH,mixed hardwood,HC,9,0.2345,201.37,NA,NA,9 baskets averaged
+2007,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HH,1988-ongoing,PH,mixed hardwood,HH,9,0.2345,201.48,NA,NA,9 baskets averaged
+2007,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HL,1988-ongoing,PH,mixed hardwood,HL,9,0.2345,198.26,NA,NA,9 baskets averaged
+2007,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HNS,1988-ongoing,PH,mixed hardwood,HNS,9,0.2345,211.92,NA,NA,9 baskets averaged
+2007,hf008,frey,chronicN,conifer,900,42.54,-72.18,obs,PC,NA,PH,red pine plantation,PC,9,0.2345,301.09,NA,NA,9 baskets averaged
+2007,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PH,1988-2005,PH,red pine plantation,PH,9,0.2345,181.805,NA,NA,9 baskets averaged
+2007,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PL,1988-2009,PH,red pine plantation,PL,9,0.2345,305.68,NA,NA,9 baskets averaged
+2007,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PNS,1988-2009,PH,red pine plantation,PNS,9,0.2345,271,NA,NA,9 baskets averaged
+2008,hf008,frey,chronicN,hardwood,900,42.54,-72.18,obs,HC,NA,PH,mixed hardwood,HC,9,0.2345,232.695,NA,NA,9 baskets averaged
+2008,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HH,1988-ongoing,PH,mixed hardwood,HH,9,0.2345,251.675,NA,NA,9 baskets averaged
+2008,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HL,1988-ongoing,PH,mixed hardwood,HL,9,0.2345,244.16,NA,NA,9 baskets averaged
+2008,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HNS,1988-ongoing,PH,mixed hardwood,HNS,9,0.2345,229.775,NA,NA,9 baskets averaged
+2008,hf008,frey,chronicN,conifer,900,42.54,-72.18,obs,PC,NA,PH,red pine plantation,PC,9,0.2345,241.38,NA,NA,9 baskets averaged
+2008,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PH,1988-2005,PH,red pine plantation,PH,9,0.2345,248.835,NA,NA,9 baskets averaged
+2008,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PL,1988-2009,PH,red pine plantation,PL,9,0.2345,365.12,NA,NA,9 baskets averaged
+2008,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PNS,1988-2009,PH,red pine plantation,PNS,9,0.2345,367.195,NA,NA,9 baskets averaged
+2009,hf008,frey,chronicN,hardwood,900,42.54,-72.18,obs,HC,NA,PH,mixed hardwood,HC,9,0.2345,203.16,NA,NA,9 baskets averaged
+2009,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HH,1988-ongoing,PH,mixed hardwood,HH,9,0.2345,230,NA,NA,9 baskets averaged
+2009,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HL,1988-ongoing,PH,mixed hardwood,HL,9,0.2345,223.755,NA,NA,9 baskets averaged
+2009,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HNS,1988-ongoing,PH,mixed hardwood,HNS,9,0.2345,220.12,NA,NA,9 baskets averaged
+2009,hf008,frey,chronicN,conifer,900,42.54,-72.18,obs,PC,NA,PH,red pine plantation,PC,9,0.2345,211.65,NA,NA,9 baskets averaged
+2009,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PH,1988-2005,PH,red pine plantation,PH,9,0.2345,176.195,NA,NA,9 baskets averaged
+2009,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PL,1988-2009,PH,red pine plantation,PL,9,0.2345,157.205,NA,NA,9 baskets averaged
+2009,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PNS,1988-2009,PH,red pine plantation,PNS,9,0.2345,211.15,NA,NA,9 baskets averaged
+2010,hf008,frey,chronicN,hardwood,900,42.54,-72.18,obs,HC,NA,PH,mixed hardwood,HC,9,0.2345,236.94,NA,NA,9 baskets averaged
+2010,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HH,1988-ongoing,PH,mixed hardwood,HH,9,0.2345,248.475,NA,NA,9 baskets averaged
+2010,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HL,1988-ongoing,PH,mixed hardwood,HL,9,0.2345,239.785,NA,NA,9 baskets averaged
+2010,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HNS,1988-ongoing,PH,mixed hardwood,HNS,9,0.2345,263.155,NA,NA,9 baskets averaged
+2010,hf008,frey,chronicN,conifer,900,42.54,-72.18,obs,PC,NA,PH,red pine plantation,PC,9,0.2345,223.565,NA,NA,9 baskets averaged
+2010,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PH,1988-2005,PH,red pine plantation,PH,9,0.2345,192.69,NA,NA,9 baskets averaged
+2010,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PL,1988-2009,PH,red pine plantation,PL,9,0.2345,275.385,NA,NA,9 baskets averaged
+2010,hf008,frey,chronicN,conifer,900,42.54,-72.18,exp,PNS,1988-2009,PH,red pine plantation,PNS,9,0.2345,236.955,NA,NA,9 baskets averaged
+2011,hf008,frey,chronicN,hardwood,900,42.54,-72.18,obs,HC,NA,PH,mixed hardwood,HC,9,0.2345,174.615,NA,NA,9 baskets averaged
+2011,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HH,1988-ongoing,PH,mixed hardwood,HH,9,0.2345,182.75,NA,NA,9 baskets averaged
+2011,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HL,1988-ongoing,PH,mixed hardwood,HL,9,0.2345,184.62,NA,NA,9 baskets averaged
+2011,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HNS,1988-ongoing,PH,mixed hardwood,HNS,9,0.2345,188.06,NA,NA,9 baskets averaged
+2012,hf008,frey,chronicN,hardwood,900,42.54,-72.18,obs,HC,NA,PH,mixed hardwood,HC,9,0.2345,221.765,NA,NA,9 baskets averaged
+2012,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HH,1988-ongoing,PH,mixed hardwood,HH,9,0.2345,239.045,NA,NA,9 baskets averaged
+2012,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HL,1988-ongoing,PH,mixed hardwood,HL,9,0.2345,219.635,NA,NA,9 baskets averaged
+2012,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HNS,1988-ongoing,PH,mixed hardwood,HNS,9,0.2345,259.62,NA,NA,9 baskets averaged
+2013,hf008,frey,chronicN,hardwood,900,42.54,-72.18,obs,HC,NA,PH,mixed hardwood,HC,9,0.2345,158.29,NA,NA,9 baskets averaged
+2013,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HH,1988-ongoing,PH,mixed hardwood,HH,9,0.2345,185.24,NA,NA,9 baskets averaged
+2013,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HL,1988-ongoing,PH,mixed hardwood,HL,9,0.2345,178.905,NA,NA,9 baskets averaged
+2013,hf008,frey,chronicN,hardwood,900,42.54,-72.18,exp,HNS,1988-ongoing,PH,mixed hardwood,HNS,9,0.2345,174.035,NA,NA,9 baskets averaged
+1998,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A1,3,0.1295,161.7902188,NA,NA,NA
+1998,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A2,3,0.1295,147.4800515,NA,NA,NA
+1998,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A3,3,0.1295,133.957529,NA,NA,NA
+1998,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A4,3,0.1295,124.9343629,NA,NA,NA
+1998,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A5,3,0.1295,109.7619048,NA,NA,NA
+1998,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B1,3,0.1295,147.8326898,NA,NA,NA
+1998,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B2,3,0.1295,141.3217503,NA,NA,NA
+1998,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B3,3,0.1295,134.3500644,NA,NA,NA
+1998,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B4,3,0.1295,146.5006435,NA,NA,NA
+1998,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B5,3,0.1295,117.9407979,NA,NA,NA
+1998,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C1,3,0.1295,154.5122265,NA,NA,NA
+1998,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C2,3,0.1295,144.1389961,NA,NA,NA
+1998,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C3,3,0.1295,149.027027,NA,NA,NA
+1998,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C4,3,0.1295,123.9253539,NA,NA,NA
+1998,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C5,3,0.1295,147.048906,NA,NA,NA
+1998,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D1,3,0.1295,132.1621622,NA,NA,NA
+1998,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D2,3,0.1295,141.98713,NA,NA,NA
+1998,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D3,3,0.1295,125.5984556,NA,NA,NA
+1998,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D4,3,0.1295,149.5842986,NA,NA,NA
+1998,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D5,3,0.1295,142.5070785,NA,NA,NA
+1998,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E1,3,0.1295,132.8558559,NA,NA,NA
+1998,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E2,3,0.1295,114.1763192,NA,NA,NA
+1998,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E3,3,0.1295,122.7709138,NA,NA,NA
+1998,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E4,3,0.1295,124.6669241,NA,NA,NA
+1998,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E5,3,0.1295,91.05534106,NA,NA,NA
+1998,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F1,3,0.1295,134.5160875,NA,NA,NA
+1998,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F2,3,0.1295,128.045045,NA,NA,NA
+1998,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F3,3,0.1295,121.7940798,NA,NA,NA
+1998,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F4,3,0.1295,131.4414414,NA,NA,NA
+1998,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F5,3,0.1295,93.69240669,NA,NA,NA
+1998,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G1,3,0.1295,84.09137709,NA,NA,NA
+1998,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G2,3,0.1295,67.41698842,NA,NA,NA
+1998,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G3,3,0.1295,78.41312741,NA,NA,NA
+1998,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G4,3,0.1295,81.13642214,NA,NA,NA
+1998,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G5,3,0.1295,83.41570142,NA,NA,NA
+1998,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H1,3,0.1295,125.7168597,NA,NA,NA
+1998,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H2,3,0.1295,91.23552124,NA,NA,NA
+1998,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H3,3,0.1295,64.39124839,NA,NA,NA
+1998,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H4,3,0.1295,31.90862291,NA,NA,NA
+1998,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H5,3,0.1295,84.28056628,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A1,3,0.1295,174.6975547,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A2,3,0.1295,126.2277992,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A3,3,0.1295,143.4375804,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,exp,harvest,2001,PH,harv,A4,3,0.1295,124.3281853,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,exp,harvest,2001,PH,harv,A5,3,0.1295,177.3745174,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B1,3,0.1295,177.1750322,NA,NA,doy.229 1999 one basket contained birds' nests that had been built in the traps
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B2,3,0.1295,192.4555985,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B3,3,0.1295,104.2741313,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B4,3,0.1295,175.6177606,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,exp,harvest,2001,PH,harv,B5,3,0.1295,144.1904762,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C1,3,0.1295,153.5881596,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C2,3,0.1295,139.4378378,NA,NA,doy.229 1999 one basket contained birds' nests that had been built in the traps
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C3,3,0.1295,158.4491634,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C4,3,0.1295,173.2638353,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C5,3,0.1295,172.8120978,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D1,3,0.1295,149.007722,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D2,3,0.1295,151.9382239,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D3,3,0.1295,146.5495495,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D4,3,0.1295,123.4800515,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D5,3,0.1295,181.5341055,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E1,3,0.1295,139.7683398,NA,NA,doy.229 1999 one basket contained birds' nests that had been built in the traps
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E2,3,0.1295,161.034749,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E3,3,0.1295,120.032175,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E4,3,0.1295,150.1106821,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E5,3,0.1295,135.3552124,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F1,3,0.1295,167.8996139,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F2,3,0.1295,144.5804376,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F3,3,0.1295,122.6061776,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F4,3,0.1295,183.3371943,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F5,3,0.1295,118.367825,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G1,3,0.1295,185.7940798,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G2,3,0.1295,92.3976834,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G3,3,0.1295,80.01287001,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G4,3,0.1295,121.1196911,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G5,3,0.1295,118.0785071,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H1,3,0.1295,148.7734878,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H2,3,0.1295,109.2857143,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H3,3,0.1295,65.5984556,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H4,3,0.1295,30.18532819,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H5,3,0.1295,103.2226512,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,exp,harvest,2001,PH,harv,X1,3,0.1295,103.7052767,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,exp,harvest,2001,PH,harv,X2,3,0.1295,110.3397683,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,exp,harvest,2001,PH,harv,X3,3,0.1295,102.9176319,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,exp,harvest,2001,PH,harv,X4,3,0.1295,95.66151866,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,exp,harvest,2001,PH,harv,X5,3,0.1295,115.6795367,NA,NA,NA
+1999,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,exp,harvest,2001,PH,harv,X6,3,0.1295,85.66666667,NA,NA,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A1,3,0.1295,141.7387387,15.91505792,157.6537967,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A2,3,0.1295,156.6048906,101.6782497,258.2831403,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A3,3,0.1295,110.048906,33.45559846,143.5045045,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,exp,harvest,2001,PH,harv,A4,3,0.1295,90.81595882,19.45045045,110.2664093,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,exp,harvest,2001,PH,harv,A5,3,0.1295,87.2960103,6.001287001,93.2972973,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B1,3,0.1295,160.2509653,16.77734878,177.028314,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B2,3,0.1295,124.8468468,14.61261261,139.4594595,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B3,3,0.1295,131.01287,40.66924067,171.6821107,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B4,3,0.1295,137.6190476,9.64993565,147.2689833,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,exp,harvest,2001,PH,harv,B5,3,0.1295,84.7992278,6.312741313,91.11196911,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C1,3,0.1295,129.8507079,26.19047619,156.041184,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C2,3,0.1295,149.4015444,106.7709138,256.1724582,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C3,3,0.1295,163.5765766,7.227799228,170.8043758,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C4,3,0.1295,94.9009009,57.63063063,152.5315315,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C5,3,0.1295,137.7915058,12.87001287,150.6615187,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D1,3,0.1295,147.0566281,22.3989704,169.4555985,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D2,3,0.1295,150.2239382,20.12870013,170.3526384,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D3,3,0.1295,97.62419562,19.85328185,117.4774775,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D4,3,0.1295,134.0939511,13.54311454,147.6370656,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D5,3,0.1295,129.4195624,21.90733591,151.3268983,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E1,3,0.1295,143.5585586,63.26126126,206.8198198,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E2,3,0.1295,127.1518662,40.42728443,167.5791506,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E3,3,0.1295,139.1685972,40.55727156,179.7258687,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E4,3,0.1295,140.5804376,60.4993565,201.0797941,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E5,3,0.1295,120.6525097,59.65637066,180.3088803,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F1,3,0.1295,144.3449163,33.51222651,177.8571429,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F2,3,0.1295,133.9498069,28.88674389,162.8365508,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F3,3,0.1295,115.5830116,15.4980695,131.0810811,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F4,3,0.1295,131.4208494,46.85714286,178.2779923,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F5,3,0.1295,159.8391248,50.58172458,210.4208494,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G1,3,0.1295,127.1891892,43.42985843,170.6190476,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G2,3,0.1295,67.95109395,60.4028314,128.3539254,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G4,3,0.1295,73.1029601,14.16216216,87.26512227,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G5,3,0.1295,109.1003861,24.8030888,133.9034749,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H1,3,0.1295,122.014157,46.07850708,168.0926641,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H2,3,0.1295,83.60617761,31.55469755,115.1608752,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H5,3,0.1295,91.48391248,48.80952381,140.2934363,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,exp,harvest,2001,PH,harv,X1,3,0.1295,107.4543115,13.87387387,121.3281853,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,exp,harvest,2001,PH,harv,X2,3,0.1295,106.7065637,14.61518662,121.3217503,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,exp,harvest,2001,PH,harv,X3,3,0.1295,67.03861004,9.898326898,76.93693694,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,exp,harvest,2001,PH,harv,X4,3,0.1295,53.40669241,33.24967825,86.65637066,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,exp,harvest,2001,PH,harv,X5,3,0.1295,97.64092664,6.962676963,104.6036036,NA
+2000,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,exp,harvest,2001,PH,harv,X6,3,0.1295,71.09009009,23.17117117,94.26126126,NA
+2001,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A1,3,0.1295,185.4504505,13.33204633,198.7824968,NA
+2001,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A2,3,0.1295,178.1518662,112.1209781,290.2728443,NA
+2001,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A3,3,0.1295,149.1364221,64.09395109,213.2303732,NA
+2001,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,A4,3,0.1295,89.01287001,5.243243243,94.25611326,NA
+2001,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,A5,3,0.1295,109.5727156,3.487773488,113.0604891,NA
+2001,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B1,3,0.1295,174.7387387,34.16731017,208.9060489,NA
+2001,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B2,3,0.1295,197.6061776,67.17117117,264.7773488,NA
+2001,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B3,3,0.1295,144.9124839,100.5019305,245.4144144,NA
+2001,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B4,3,0.1295,127.1274131,33.6036036,160.7310167,NA
+2001,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,B5,3,0.1295,112.4285714,118.9214929,231.3500644,NA
+2001,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C1,3,0.1295,151.8442728,45.41570142,197.2599743,NA
+2001,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C2,3,0.1295,139.4131274,68.07207207,207.4851995,NA
+2001,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C3,3,0.1295,170.3616474,6.845559846,177.2072072,NA
+2001,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C4,3,0.1295,117.9073359,66.19176319,184.0990991,NA
+2001,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C5,3,0.1295,158.7052767,57.37451737,216.0797941,NA
+2001,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D1,3,0.1295,130.6177606,80.30888031,210.9266409,NA
+2001,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D2,3,0.1295,111.4092664,38.82239382,150.2316602,NA
+2001,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D3,3,0.1295,155.4272844,32.04633205,187.4736165,NA
+2001,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D4,3,0.1295,128.0926641,6.314028314,134.4066924,NA
+2001,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D5,3,0.1295,167.1724582,9.503217503,176.6756757,NA
+2001,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E1,3,0.1295,149.6988417,62.77477477,212.4736165,NA
+2001,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E2,3,0.1295,155.7760618,35.47747748,191.2535393,NA
+2001,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E3,3,0.1295,119.8391248,65.05405405,184.8931789,NA
+2001,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E4,3,0.1295,223.5315315,27.63449163,251.1660232,NA
+2001,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E5,3,0.1295,115.5186615,39.21879022,154.7374517,NA
+2001,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F1,3,0.1295,132.024453,28.02831403,160.0527671,NA
+2001,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F2,3,0.1295,144.6537967,67.37194337,212.02574,NA
+2001,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F3,3,0.1295,130.6846847,33.72329472,164.4079794,NA
+2001,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F4,3,0.1295,147.3140283,96.44787645,243.7619048,NA
+2001,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F5,3,0.1295,129.7631918,34.90604891,164.6692407,NA
+2001,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G1,3,0.1295,149.8211068,57.64350064,207.4646075,NA
+2001,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G2,3,0.1295,104.3474903,46.55984556,150.9073359,NA
+2001,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G4,3,0.1295,65.64864865,1.985842986,67.63449163,NA
+2001,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G5,3,0.1295,116.2458172,45.17503218,161.4208494,NA
+2001,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H1,3,0.1295,150.5173745,41.26512227,191.7824968,NA
+2001,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H2,3,0.1295,120.8211068,38.66537967,159.4864865,NA
+2001,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H5,3,0.1295,87.53796654,27.93050193,115.4684685,NA
+2001,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,X1,2.4,0.1295,105.0682111,15.11454311,120.1827542,NA
+2001,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,X2,3,0.1295,70.5032175,35.31917632,105.8223938,NA
+2001,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,X3,3,0.1295,64.58429858,7.720720721,72.30501931,NA
+2001,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,X4,3,0.1295,112.8249678,6.768339768,119.5933076,NA
+2001,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,X5,3,0.1295,54.96010296,8.24967825,63.20978121,NA
+2001,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,X6,3,0.1295,108.8468468,2.447876448,111.2947233,NA
+2002,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A1,3,0.1295,153.8801802,86.83521236,240.7153925,NA
+2002,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A2,3,0.1295,135.5518662,34.95688546,170.5087516,NA
+2002,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A3,3,0.1295,138.8671815,73.79253539,212.6597169,NA
+2002,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,A4,3,0.1295,105.8810811,32.86422136,138.7453024,NA
+2002,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,A5,3,0.1295,99.17501931,22.72072072,121.89574,NA
+2002,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B1,3,0.1295,166.8953668,44.95907336,211.8544402,NA
+2002,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B2,3,0.1295,104.2543115,51.68047619,155.9347876,NA
+2002,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B3,3,0.1295,158.4253539,44.80939511,203.234749,NA
+2002,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B4,3,0.1295,148.0633205,41.87258687,189.9359073,NA
+2002,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,B5,3,0.1295,109.4496782,54.84504505,164.2947233,NA
+2002,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C1,3,0.1295,151.2732304,28.32741313,179.6006435,NA
+2002,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C2,3,0.1295,155.6317889,101.0566667,256.6884556,NA
+2002,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C3,3,0.1295,113.1751609,20.61055341,133.7857143,NA
+2002,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C4,3,0.1295,128.2432432,86.4954955,214.7387387,NA
+2002,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C5,3,0.1295,152.016731,32.83783784,184.8545689,NA
+2002,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D1,3,0.1295,109.8099099,58.02213642,167.8320463,NA
+2002,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D2,3,0.1295,162.175547,77.36422136,239.5397683,NA
+2002,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D3,3,0.1295,118.1561133,65.63577864,183.7918919,NA
+2002,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D4,3,0.1295,153.6123552,25.0971686,178.7095238,NA
+2002,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D5,3,0.1295,207.8619048,43.61454311,251.4764479,NA
+2002,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E1,3,0.1295,119.5783784,110.51287,230.0912484,NA
+2002,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E2,3,0.1295,122.6602317,44.77091377,167.4311454,NA
+2002,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E3,3,0.1295,158.9445302,63.64285714,222.5873874,NA
+2002,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E4,3,0.1295,179.4772201,43.01557272,222.4927928,NA
+2002,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E5,3,0.1295,107.5611326,71.55984556,179.1209781,NA
+2002,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F1,3,0.1295,179.4594595,67.86615187,247.3256113,NA
+2002,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F2,3,0.1295,86.66924067,43.56628057,130.2355212,NA
+2002,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F3,3,0.1295,158.1187902,83.55727156,241.6760618,NA
+2002,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F4,3,0.1295,122.4890605,47.64221364,170.1312741,NA
+2002,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F5,3,0.1295,154.1857143,56.47232947,210.6580438,NA
+2002,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G1,3,0.1295,160.1081081,78.96267696,239.0707851,NA
+2002,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G2,3,0.1295,103.8055341,143.2563707,247.0619048,NA
+2002,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G4,3,0.1295,53.17297297,28.01480051,81.18777349,NA
+2002,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G5,3,0.1295,139.2163449,95.58957529,234.8059202,NA
+2002,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H1,3,0.1295,191.7824968,121.8043758,313.5868726,NA
+2002,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H2,3,0.1295,121.2804376,42.26241956,163.5428571,NA
+2002,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H5,3,0.1295,25.32046332,94.24581725,119.5662806,NA
+2002,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,X1,2,0.1295,70.40328185,43.85019305,114.2534749,NA
+2002,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,X2,3,0.1295,64.57953668,25.53655084,90.11608752,NA
+2002,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,X3,3,0.1295,95.33423423,14.32754183,109.6617761,NA
+2002,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,X5,3,0.1295,125.3674389,52.56486486,177.9323037,NA
+2002,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,X6,3,0.1295,110.8032175,30.67709138,141.4803089,NA
+2003,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A1,3,0.1295,177.2960103,57.02445302,234.3204633,NA
+2003,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A2,3,0.1295,179.2072072,27.24066924,206.4478764,NA
+2003,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A3,3,0.1295,167.1544402,58.43758044,225.5920206,NA
+2003,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,A4,3,0.1295,124.4054054,42.6988417,167.1042471,NA
+2003,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,A5,3,0.1295,145.6177606,33.50836551,179.1261261,NA
+2003,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B1,3,0.1295,166.8519949,36.0952381,202.9472329,NA
+2003,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B2,3,0.1295,132.8249678,11.71814672,144.5431145,NA
+2003,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B3,3,0.1295,147.6344916,20.65637066,168.2908623,NA
+2003,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B4,3,0.1295,184.4581725,47.19047619,231.6486486,NA
+2003,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,B5,3,0.1295,173.0720721,25.28314028,198.3552124,NA
+2003,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C1,3,0.1295,146.3024453,69.38481338,215.6872587,NA
+2003,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C2,3,0.1295,152.2792793,142.1737452,294.4530245,NA
+2003,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C3,3,0.1295,165.1029601,6.342342342,171.4453024,NA
+2003,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C4,3,0.1295,90.8018018,30.57915058,121.3809524,NA
+2003,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C5,3,0.1295,154.975547,71.56885457,226.5444015,NA
+2003,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D1,3,0.1295,148.5469755,78.46460746,227.011583,NA
+2003,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D2,3,0.1295,173.6138996,26.31274131,199.9266409,NA
+2003,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D3,3,0.1295,163.9189189,15.86486486,179.7837838,NA
+2003,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D4,3,0.1295,236.6100386,18.94079794,255.5508366,NA
+2003,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D5,3,0.1295,167.5765766,48.12355212,215.7001287,NA
+2003,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E1,3,0.1295,124.6885457,47.65250965,172.3410553,NA
+2003,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E2,3,0.1295,143.3848134,52.66023166,196.045045,NA
+2003,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E3,3,0.1295,161.0643501,42.21879022,203.2831403,NA
+2003,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E4,3,0.1295,171.6344916,81.89317889,253.5276705,NA
+2003,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E5,3,0.1295,113.993565,50.49163449,164.4851995,NA
+2003,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F1,3,0.1295,153.1068211,47.58687259,200.6936937,NA
+2003,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F2,3,0.1295,151.4350064,46.23809524,197.6731017,NA
+2003,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F3,3,0.1295,155.7413127,22.92535393,178.6666667,NA
+2003,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F4,3,0.1295,143.969112,49.55341055,193.5225225,NA
+2003,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F5,3,0.1295,131.6525097,23.42213642,155.0746461,NA
+2003,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G1,3,0.1295,152.7670528,54.8957529,207.6628057,NA
+2003,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G2,3,0.1295,95.54182754,139.015444,234.5572716,NA
+2003,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G4,3,0.1295,81.73616474,15.08494208,96.82110682,NA
+2003,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G5,3,0.1295,110.1621622,58.17760618,168.3397683,NA
+2003,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H1,2,0.1295,141.023166,62.81660232,203.8397683,NA
+2003,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H2,3,0.1295,133.9176319,35.6036036,169.5212355,NA
+2003,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H5,3,0.1295,120.983269,28.06048906,149.043758,NA
+2003,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,X1,2,0.1295,120.0965251,31.66988417,151.7664093,NA
+2003,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,X2,3,0.1295,94.64221364,40.66409266,135.3063063,NA
+2003,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,X3,3,0.1295,114.6409266,17.8957529,132.5366795,NA
+2003,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,X5,3,0.1295,87.89189189,27.72844273,115.6203346,NA
+2003,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,X6,3,0.1295,130.3963964,29.79021879,160.1866152,NA
+2004,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A1,3,0.1295,183.4568855,7.293436293,190.7503218,NA
+2004,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A2,3,0.1295,179.3166023,16.70785071,196.024453,NA
+2004,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A3,3,0.1295,155.3127413,52.37323037,207.6859717,NA
+2004,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,A4,3,0.1295,131.7400257,6.135135135,137.8751609,NA
+2004,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,A5,3,0.1295,135.8764479,8.045045045,143.9214929,NA
+2004,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B1,3,0.1295,174.014157,19.31788932,193.3320463,NA
+2004,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B2,2,0.1295,174.1679537,16.54054054,190.7084942,NA
+2004,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B3,3,0.1295,128.2625483,18.21879022,146.4813385,NA
+2004,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B4,3,0.1295,203.4131274,14.68339768,218.0965251,NA
+2004,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,B5,3,0.1295,132.003861,10.1016731,142.1055341,NA
+2004,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C1,3,0.1295,149.6357786,34.05405405,183.6898327,NA
+2004,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C2,3,0.1295,150.7091377,16.80694981,167.5160875,NA
+2004,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C3,3,0.1295,152.9472329,11.81081081,164.7580438,NA
+2004,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C4,3,0.1295,148.8262548,22.2033462,171.029601,NA
+2004,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C5,3,0.1295,153.8610039,9.979407979,163.8404118,NA
+2004,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D1,3,0.1295,144.1879022,26.66924067,170.8571429,NA
+2004,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D2,3,0.1295,138.0566281,9.301158301,147.3577864,NA
+2004,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D3,3,0.1295,134.1055341,7.911196911,142.016731,NA
+2004,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D4,3,0.1295,128.4324324,11.55598456,139.988417,NA
+2004,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D5,3,0.1295,140.5276705,13.7966538,154.3243243,NA
+2004,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E1,3,0.1295,146.8378378,12.64607465,159.4839125,NA
+2004,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E2,3,0.1295,130.7490347,14.41827542,145.1673102,NA
+2004,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E3,3,0.1295,114.4311454,15.43500644,129.8661519,NA
+2004,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E4,3,0.1295,156.4594595,29.66409266,186.1235521,NA
+2004,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E5,3,0.1295,122.036036,32.87516088,154.9111969,NA
+2004,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F1,3,0.1295,125.969112,20.15444015,146.1235521,NA
+2004,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F2,3,0.1295,120.9111969,16.38738739,137.2985843,NA
+2004,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F3,3,0.1295,140.2960103,8.992277992,149.2882883,NA
+2004,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F4,3,0.1295,153.6537967,16.34877735,170.002574,NA
+2004,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F5,3,0.1295,162.7323037,17.6010296,180.3333333,NA
+2004,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G1,3,0.1295,140.997426,22.29472329,163.2921493,NA
+2004,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G2,3,0.1295,85.5958816,50.4993565,136.0952381,NA
+2004,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G4,3,0.1295,82.76962677,2.927927928,85.6975547,NA
+2004,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G5,3,0.1295,127.1994852,34.48005148,161.6795367,NA
+2004,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H1,3,0.1295,133.6164736,16.67696268,150.2934363,NA
+2004,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H2,3,0.1295,121.4054054,21.85971686,143.2651223,NA
+2004,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H5,3,0.1295,110.5495495,31.14285714,141.6924067,NA
+2004,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,X1,2,0.1295,142.5752896,33.88610039,176.46139,NA
+2004,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,X2,3,0.1295,102.3359073,15.47876448,117.8146718,NA
+2004,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,X3,3,0.1295,100.8404118,12.78507079,113.6254826,NA
+2004,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,X5,3,0.1295,109.8597169,11.21235521,121.0720721,NA
+2004,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,X6,3,0.1295,119.2792793,12.37065637,131.6499356,NA
+2005,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A1,3,0.1295,200.6306306,15.32175032,215.952381,NA
+2005,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A2,3,0.1295,182.8043758,37.28314028,220.0875161,NA
+2005,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A3,3,0.1295,185.6486486,42.31788932,227.966538,NA
+2005,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,A4,3,0.1295,151.8481338,5.213642214,157.0617761,NA
+2005,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,A5,3,0.1295,129.998713,8.826254826,138.8249678,NA
+2005,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B1,3,0.1295,172.7953668,27.0952381,199.8906049,NA
+2005,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B2,2,0.1295,176.9633205,27.72007722,204.6833977,NA
+2005,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B3,3,0.1295,187.4285714,73.72586873,261.1544402,NA
+2005,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B4,3,0.1295,185.0888031,19.76447876,204.8532819,NA
+2005,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,B5,3,0.1295,169.2767053,22.28571429,191.5624196,NA
+2005,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C1,3,0.1295,159.9073359,14.40540541,174.3127413,NA
+2005,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C2,3,0.1295,170.3410553,32.47876448,202.8198198,NA
+2005,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C3,3,0.1295,167.2754183,6.55984556,173.8352638,NA
+2005,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C4,3,0.1295,207.2342342,84.72329472,291.957529,NA
+2005,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C5,3,0.1295,162.011583,10.76319176,172.7747748,NA
+2005,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D1,3,0.1295,139.5649936,37.71943372,177.2844273,NA
+2005,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D2,3,0.1295,189.985843,54.23809524,244.2239382,NA
+2005,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D3,3,0.1295,197.8893179,31.4980695,229.3873874,NA
+2005,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D4,3,0.1295,181.8893179,8.232947233,190.1222651,NA
+2005,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D5,3,0.1295,169.3873874,26.00643501,195.3938224,NA
+2005,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E1,3,0.1295,164.2303732,44.37323037,208.6036036,NA
+2005,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E2,3,0.1295,168.8931789,54.14285714,223.036036,NA
+2005,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E3,3,0.1295,148.6628057,23.87902188,172.5418275,NA
+2005,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E4,3,0.1295,170.1389961,33.46975547,203.6087516,NA
+2005,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E5,3,0.1295,125.5585586,55.63963964,181.1981982,NA
+2005,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F1,3,0.1295,152.6743887,41.45431145,194.1287001,NA
+2005,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F2,3,0.1295,137.028314,88.55019305,225.5785071,NA
+2005,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F3,3,0.1295,134.7220077,76.35649936,211.0785071,NA
+2005,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F4,3,0.1295,155.1879022,40.93436293,196.1222651,NA
+2005,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F5,3,0.1295,147.8700129,26.89189189,174.7619048,NA
+2005,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G1,3,0.1295,162.6460746,73.1994852,235.8455598,NA
+2005,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G2,3,0.1295,115.6280566,62.58815959,178.2162162,NA
+2005,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G4,3,0.1295,87.46589447,3.765765766,91.23166023,NA
+2005,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G5,3,0.1295,125.9060489,37.42213642,163.3281853,NA
+2005,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H1,3,0.1295,166.8043758,25.50836551,192.3127413,NA
+2005,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H2,3,0.1295,135.4465894,34.42471042,169.8712999,NA
+2005,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H5,3,0.1295,114.7902188,33.47619048,148.2664093,NA
+2005,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,X1,2,0.1295,166.1023166,20.36872587,186.4710425,NA
+2005,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,X2,3,0.1295,89.28185328,58.94079794,148.2226512,NA
+2005,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,X3,3,0.1295,117.4350064,11.68983269,129.1248391,NA
+2005,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,X5,3,0.1295,114.2355212,17.32046332,131.5559846,NA
+2005,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,X6,3,0.1295,163.5199485,16.13384813,179.6537967,NA
+2006,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A1,3,0.1295,171.6833977,68.37580438,240.0592021,NA
+2006,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A2,3,0.1295,188.7992278,19.30759331,208.1068211,NA
+2006,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A3,3,0.1295,174.5637066,36.47876448,211.042471,NA
+2006,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,A4,3,0.1295,166.5765766,29.76962677,196.3462033,NA
+2006,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,A5,2.8,0.1295,125.8082368,33.78893179,159.5971686,2 baskets 4/23/07
+2006,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B1,3,0.1295,194.02574,28.7953668,222.8211068,NA
+2006,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B2,3,0.1295,158.8648649,32.74517375,191.6100386,NA
+2006,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B3,3,0.1295,161.8378378,21.67953668,183.5173745,NA
+2006,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B4,3,0.1295,168.8108108,43.89060489,212.7014157,NA
+2006,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,B5,3,0.1295,160.7593308,44.93564994,205.6949807,NA
+2006,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C1,3,0.1295,141.7129987,23.24581725,164.958816,NA
+2006,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C2,2.8,0.1295,131.8294723,71.5019305,203.3314028,2 baskets 4/23/07
+2006,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C3,3,0.1295,160.1492921,22.22522523,182.3745174,NA
+2006,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C4,3,0.1295,158.8712999,74.70527671,233.5765766,NA
+2006,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C5,3,0.1295,168.8918919,34.27927928,203.1711712,NA
+2006,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D1,3,0.1295,141.3114543,49.63835264,190.9498069,NA
+2006,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D2,3,0.1295,157.5109395,64.51480051,222.02574,NA
+2006,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D3,3,0.1295,144.998713,23.6023166,168.6010296,NA
+2006,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D4,3,0.1295,164.3294723,19.36293436,183.6924067,NA
+2006,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D5,3,0.1295,156.6344916,13.46460746,170.0990991,NA
+2006,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E1,3,0.1295,171.4259974,38.84298584,210.2689833,NA
+2006,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E2,3,0.1295,219.1827542,47.52380952,266.7065637,NA
+2006,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E3,3,0.1295,134.7490347,26.34620335,161.0952381,NA
+2006,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E4,3,0.1295,150.9420849,47.50965251,198.4517375,NA
+2006,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E5,3,0.1295,143.4761905,73.28571429,216.7619048,NA
+2006,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F1,3,0.1295,175.966538,49.71943372,225.6859717,NA
+2006,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F2,3,0.1295,148.2226512,32.59330759,180.8159588,NA
+2006,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F3,3,0.1295,154.1016731,43.67310167,197.7747748,NA
+2006,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F4,3,0.1295,146.1879022,40.38738739,186.5752896,NA
+2006,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F5,3,0.1295,158.7477477,28.28442728,187.032175,NA
+2006,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G1,3,0.1295,175.01287,98.00514801,273.018018,NA
+2006,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G2,3,0.1295,107.8442728,84.33075933,192.1750322,NA
+2006,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G4,3,0.1295,86.83526384,10.70785071,97.54311454,NA
+2006,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G5,3,0.1295,115.2921493,28.74646075,144.03861,NA
+2006,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H1,3,0.1295,154.7554698,92.5984556,247.3539254,NA
+2006,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H2,3,0.1295,108.3423423,50.17503218,158.5173745,NA
+2006,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H5,3,0.1295,112.0630631,74.4967825,186.5598456,NA
+2006,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,X1,2.6,0.1295,144.6087516,23.85714286,168.4658945,1 basket 4/23/07
+2006,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,X2,3,0.1295,119.7528958,43.48262548,163.2355212,NA
+2006,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,X3,3,0.1295,92.62676963,27.43243243,120.0592021,NA
+2006,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,X5,3,0.1295,122.9163449,29.98712999,152.9034749,NA
+2006,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,X6,3,0.1295,149.5392535,58.67181467,208.2110682,NA
+2007,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A1,3,0.1295,244.0720721,4.166409266,248.2384813,NA
+2007,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A2,3,0.1295,217.8330759,8.589060489,226.4221364,NA
+2007,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A3,3,0.1295,198.696139,31.52110682,230.2172458,NA
+2007,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,A4,3,0.1295,40.94465894,10.10810811,51.05276705,NA
+2007,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,A5,3,0.1295,43.27927928,15.30630631,58.58558559,NA
+2007,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B1,3,0.1295,204.2172458,3.203989704,207.4212355,NA
+2007,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B2,3,0.1295,164.0947233,22.84903475,186.943758,NA
+2007,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B3,3,0.1295,177.4788932,9.554826255,187.0337194,NA
+2007,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B4,3,0.1295,182.2675676,8.866023166,191.1335907,NA
+2007,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,B5,3,0.1295,40.85585586,21.73873874,62.59459459,NA
+2007,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C1,3,0.1295,168.2504505,24.98326898,193.2337194,NA
+2007,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C2,3,0.1295,192.9307593,43.64182754,236.5725869,NA
+2007,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C3,3,0.1295,199.4945946,6.52960103,206.0241956,NA
+2007,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C4,3,0.1295,193.4989704,55.34144144,248.8404118,NA
+2007,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C5,3,0.1295,162.3110682,9.915830116,172.2268983,NA
+2007,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D1,3,0.1295,171.6254826,24.31930502,195.9447876,NA
+2007,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D2,3,0.1295,173.551094,17.39279279,190.9438867,NA
+2007,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D3,3,0.1295,171.6303732,16.40566281,188.036036,NA
+2007,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D4,3,0.1295,162.3602317,3.187258687,165.5474903,NA
+2007,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D5,3,0.1295,177.8279279,12.78185328,190.6097812,NA
+2007,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E1,3,0.1295,180.3293436,38.28674389,218.6160875,NA
+2007,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E2,3,0.1295,162.3393822,16.28983269,178.6292149,NA
+2007,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E3,3,0.1295,139.6655084,8.820592021,148.4861004,NA
+2007,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E4,3,0.1295,199.067825,25.29086229,224.3586873,NA
+2007,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E5,3,0.1295,176.4777349,33.28957529,209.7673102,NA
+2007,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F1,3,0.1295,166.3150579,28.93796654,195.2530245,NA
+2007,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F2,3,0.1295,158.058816,11.64247104,169.701287,NA
+2007,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F3,3,0.1295,174.2954955,25.56254826,199.8580438,NA
+2007,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F4,3,0.1295,179.1416988,33.76409266,212.9057915,NA
+2007,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F5,3,0.1295,150.114157,28.79009009,178.9042471,NA
+2007,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G1,3,0.1295,171.792278,66.39330759,238.1855856,NA
+2007,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G2,3,0.1295,134.7459459,38.67142857,173.4173745,NA
+2007,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G4,3,0.1295,100.5795367,1.327027027,101.9065637,NA
+2007,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G5,3,0.1295,146.1198198,29.3047619,175.4245817,NA
+2007,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H1,3,0.1295,164.3956242,33.36885457,197.7644788,NA
+2007,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H2,3,0.1295,151.8693694,35.25250965,187.121879,NA
+2007,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H5,3,0.1295,124.0344916,50.88352638,174.918018,NA
+2007,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,X1,3,0.1295,62.32303732,6.951093951,69.27413127,NA
+2007,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,X2,3,0.1295,62.42767053,23.69446589,86.12213642,NA
+2007,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,X3,3,0.1295,72.33333333,12.01801802,84.35135135,NA
+2007,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,X5,3,0.1295,65.04247104,12.53024453,77.57271557,NA
+2007,hf069,munger,ems,hardwood,706.8583,42.54,-72.17,exp,harvest,2001,PH,harv,X6,3,0.1295,56.17760618,10.05148005,66.22908623,NA
+2008,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A1,3,0.1295,190.8970399,19.27027027,210.1673102,NA
+2008,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A2,3,0.1295,193.8301158,23.26383526,217.0939511,NA
+2008,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A3,3,0.1295,156.8610039,36.5032175,193.3642214,NA
+2008,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B1,3,0.1295,200.8416988,38.38095238,239.2226512,NA
+2008,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B2,3,0.1295,247.1119691,23.07979408,270.1917632,NA
+2008,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B3,3,0.1295,175.5559846,40.89060489,216.4465894,NA
+2008,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B4,3,0.1295,192.6319176,9.850707851,202.4826255,NA
+2008,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C1,3,0.1295,202.5418275,32.57271557,235.1145431,NA
+2008,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C2,3,0.1295,169.8738739,59.97168597,229.8455598,NA
+2008,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C3,3,0.1295,187.1003861,14.38867439,201.4890605,NA
+2008,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C4,3,0.1295,174.3075933,38.53667954,212.8442728,NA
+2008,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C5,3,0.1295,159.6936937,17.31402831,177.007722,NA
+2008,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D1,3,0.1295,139.1248391,18.4980695,157.6229086,NA
+2008,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D2,3,0.1295,191.7220077,22.06821107,213.7902188,NA
+2008,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D3,3,0.1295,165.6254826,11.75160875,177.3770914,NA
+2008,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D4,3,0.1295,166.019305,18.07593308,184.0952381,NA
+2008,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D5,3,0.1295,193.4723295,12.29214929,205.7644788,NA
+2008,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E1,3,0.1295,172.2329472,30.99099099,203.2239382,NA
+2008,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E2,3,0.1295,181.7310167,68.48391248,250.2149292,NA
+2008,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E3,3,0.1295,129.0501931,18.99099099,148.041184,NA
+2008,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E4,3,0.1295,164.6010296,22.21750322,186.8185328,NA
+2008,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E5,3,0.1295,155.8211068,22.01673102,177.8378378,NA
+2008,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F1,3,0.1295,189.005148,56.04247104,245.047619,NA
+2008,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F2,3,0.1295,153.7516088,33.5958816,187.3474903,NA
+2008,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F3,3,0.1295,96.12870013,22.59073359,118.7194337,NA
+2008,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F4,3,0.1295,184.3256113,16.6975547,201.023166,NA
+2008,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F5,3,0.1295,136.4157014,22.14543115,158.5611326,NA
+2008,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G1,3,0.1295,228.3848134,107.6087516,335.993565,NA
+2008,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G2,3,0.1295,124.990991,57.66023166,182.6512227,NA
+2008,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G4,3,0.1295,30.46203346,1.501930502,31.96396396,NA
+2008,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G5,3,0.1295,133.3758044,26.81338481,160.1891892,NA
+2008,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H1,3,0.1295,158.6319176,28.04118404,186.6731017,NA
+2008,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H2,3,0.1295,147.8712999,20.28957529,168.1608752,NA
+2008,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H5,3,0.1295,118.2042471,19.35907336,137.5633205,NA
+2009,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A1,3,0.1295,155.7876448,57.61647362,213.4041184,NA
+2009,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A2,3,0.1295,173.0707851,66.86357786,239.9343629,NA
+2009,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A3,3,0.1295,189.6164736,47.58687259,237.2033462,NA
+2009,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B1,3,0.1295,171.4890605,34.43886744,205.9279279,NA
+2009,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B2,3,0.1295,141.6435006,20.83268983,162.4761905,NA
+2009,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B3,3,0.1295,143.1647362,49.99356499,193.1583012,NA
+2009,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B4,3,0.1295,206.1454311,60.05019305,266.1956242,NA
+2009,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C1,3,0.1295,165.1325611,48.96396396,214.0965251,NA
+2009,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C2,3,0.1295,153.7477477,97.62805663,251.3758044,NA
+2009,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C3,3,0.1295,146.4414414,11.79407979,158.2355212,NA
+2009,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C4,3,0.1295,148.4465894,82.40797941,230.8545689,NA
+2009,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C5,3,0.1295,153.9137709,54.96653797,208.8803089,NA
+2009,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D1,3,0.1295,148.7052767,69.11840412,217.8236808,NA
+2009,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D2,3,0.1295,150.3178893,43.45688546,193.7747748,NA
+2009,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D3,3,0.1295,175.1750322,83.8043758,258.979408,NA
+2009,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D4,3,0.1295,157.9227799,15.03861004,172.96139,NA
+2009,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D5,3,0.1295,128.2406692,43.38610039,171.6267696,NA
+2009,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E1,3,0.1295,162.5083655,106.6100386,269.1184041,NA
+2009,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E2,3,0.1295,146.1737452,56.47104247,202.6447876,NA
+2009,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E3,3,0.1295,147.7413127,40.86486486,188.6061776,NA
+2009,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E4,3,0.1295,174.6537967,36.7001287,211.3539254,NA
+2009,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E5,3,0.1295,131.6653797,126.993565,258.6589447,NA
+2009,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F1,3,0.1295,172.7104247,56.45688546,229.1673102,NA
+2009,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F2,3,0.1295,154.9498069,66.01029601,220.960103,NA
+2009,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F3,3,0.1295,139.1171171,63.88674389,203.003861,NA
+2009,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F4,3,0.1295,148.4633205,82.60617761,231.0694981,NA
+2009,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F5,3,0.1295,142.5122265,56.17503218,198.6872587,NA
+2009,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G1,3,0.1295,168.6936937,213.7644788,382.4581725,NA
+2009,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G2,3,0.1295,113.009009,75.67181467,188.6808237,NA
+2009,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G4,3,0.1295,60.81081081,22.82625483,83.63706564,NA
+2009,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G5,3,0.1295,93.62419562,79.37966538,173.003861,NA
+2009,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H1,3,0.1295,128.1338481,70.5006435,198.6344916,NA
+2009,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H2,3,0.1295,138.8030888,75.75675676,214.5598456,NA
+2009,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H5,3,0.1295,91.15186615,31.10553411,122.2574003,NA
+2010,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A1,3,0.1295,194.1338481,50.39382239,244.5276705,NA
+2010,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A2,3,0.1295,189.6010296,63.71299871,253.3140283,NA
+2010,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A3,3,0.1295,167.962677,41.56499356,209.5276705,NA
+2010,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B1,3,0.1295,197.7245817,44.98455598,242.7091377,NA
+2010,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B2,3,0.1295,183.3204633,26.996139,210.3166023,NA
+2010,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B3,3,0.1295,164.9176319,52.72329472,217.6409266,NA
+2010,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B4,3,0.1295,205.018018,58.73359073,263.7516088,NA
+2010,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C1,3,0.1295,160.4568855,52.03088803,212.4877735,NA
+2010,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C2,3,0.1295,148.5006435,104.1608752,252.6615187,NA
+2010,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C3,3,0.1295,168.4504505,17.6023166,186.0527671,NA
+2010,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C4,3,0.1295,165.8481338,42.02831403,207.8764479,NA
+2010,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C5,3,0.1295,180.7915058,65.27413127,246.0656371,NA
+2010,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D1,3,0.1295,154.7142857,99.75546976,254.4697555,NA
+2010,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D2,3,0.1295,166.8687259,94.68983269,261.5585586,NA
+2010,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D3,3,0.1295,154.5508366,38.9047619,193.4555985,NA
+2010,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D4,3,0.1295,153.9420849,84.27413127,238.2162162,NA
+2010,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D5,3,0.1295,162.985843,50.04633205,213.032175,NA
+2010,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E1,3,0.1295,143.3835264,61.40540541,204.7889318,NA
+2010,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E2,3,0.1295,170.981982,51.94079794,222.9227799,NA
+2010,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E3,3,0.1295,161.03861,33.75546976,194.7940798,NA
+2010,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E4,3,0.1295,183.1454311,51.85971686,235.005148,NA
+2010,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E5,3,0.1295,139.2303732,37.56628057,176.7966538,NA
+2010,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F1,3,0.1295,139.1814672,46.32689833,185.5083655,NA
+2010,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F2,3,0.1295,131.007722,48.47104247,179.4787645,NA
+2010,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F3,3,0.1295,145.3938224,79.55598456,224.9498069,NA
+2010,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F4,3,0.1295,148.7245817,31.40540541,180.1299871,NA
+2010,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F5,3,0.1295,171.7619048,60.20592021,231.967825,NA
+2010,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G1,3,0.1295,104.2496782,55.83268983,160.0823681,NA
+2010,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G2,3,0.1295,103.1505792,78.44401544,181.5945946,NA
+2010,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G5,3,0.1295,96.97039897,62.39382239,159.3642214,NA
+2010,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H1,3,0.1295,160.6846847,84.15057915,244.8352638,NA
+2010,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H2,3,0.1295,131.5366795,38.31917632,169.8558559,NA
+2010,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H5,3,0.1295,105.9369369,24.08751609,130.024453,NA
+2011,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A1,3,0.1295,163.6048906,16.14671815,179.7516088,NA
+2011,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A2,3,0.1295,171.0733591,20.4993565,191.5727156,NA
+2011,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,A3,3,0.1295,158.2574003,17.89317889,176.1505792,NA
+2011,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B1,3,0.1295,162.980695,54.75546976,217.7361647,NA
+2011,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B2,3,0.1295,229.1119691,30.56241956,259.6743887,NA
+2011,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B3,3,0.1295,226.1003861,17.87387387,243.97426,NA
+2011,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,B4,3,0.1295,183.2908623,35.62162162,218.9124839,NA
+2011,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C1,3,0.1295,158.7027027,38.98069498,197.6833977,NA
+2011,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C2,3,0.1295,174.6113256,24.86615187,199.4774775,NA
+2011,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C3,3,0.1295,163.009009,16.03732304,179.046332,NA
+2011,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C4,3,0.1295,194.0952381,36.38996139,230.4851995,NA
+2011,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,C5,3,0.1295,216.7799228,11.82882883,228.6087516,NA
+2011,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D1,3,0.1295,154.7876448,48.2046332,202.992278,NA
+2011,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D2,3,0.1295,191.4993565,26.21621622,217.7155727,NA
+2011,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D3,3,0.1295,158.3191763,34.58172458,192.9009009,NA
+2011,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D4,3,0.1295,150.5379665,30.38610039,180.9240669,NA
+2011,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,D5,3,0.1295,155.6666667,8.967824968,164.6344916,NA
+2011,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E1,3,0.1295,136.984556,49.73230373,186.7168597,NA
+2011,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E2,3,0.1295,143.1956242,15.58429858,158.7799228,NA
+2011,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E3,3,0.1295,281.0566281,24.23552124,305.2921493,NA
+2011,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E4,3,0.1295,184.0875161,60.28700129,244.3745174,NA
+2011,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,E5,3,0.1295,165.3719434,67.23680824,232.6087516,NA
+2011,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F1,3,0.1295,197.1274131,66.41184041,263.5392535,NA
+2011,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F2,3,0.1295,159.0978121,46.42985843,205.5276705,NA
+2011,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F3,3,0.1295,139.036036,37.75418275,176.7902188,NA
+2011,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F4,3,0.1295,159.7902188,24.07464607,183.8648649,NA
+2011,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,F5,3,0.1295,125.8867439,30.48005148,156.3667954,NA
+2011,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G1,3,0.1295,142.5238095,40.05276705,182.5765766,NA
+2011,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G2,3,0.1295,94.78249678,71.6962677,166.4787645,NA
+2011,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G4,3,0.1295,44.01158301,5.19047619,49.2020592,NA
+2011,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,G5,3,0.1295,96.02702703,37.67181467,133.6988417,NA
+2011,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H1,3,0.1295,149.7091377,26.4041184,176.1132561,NA
+2011,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H2,3,0.1295,122.4285714,94.9034749,217.3320463,NA
+2011,hf069,munger,ems,hardwood,314.1593,42.54,-72.17,obs,NA,NA,PH,ems,H5,3,0.1295,103.8507079,42.49420849,146.3449163,NA
+1989,hf101,barker-plotkin,sim-hurricane,hardwood,6000,42.49,-72.2,obs,NA,NA,TS,TS,C,11,0.2345,NA,NA,198.8,excludes basket 11
+1990,hf101,barker-plotkin,sim-hurricane,hardwood,6000,42.49,-72.2,obs,NA,NA,TS,TS,C,12,0.2345,NA,NA,202.5,NA
+1991,hf101,barker-plotkin,sim-hurricane,hardwood,6000,42.49,-72.2,obs,NA,NA,TS,TS,C,11,0.2345,NA,NA,203.35,excludes basket 7
+1992,hf101,barker-plotkin,sim-hurricane,hardwood,6000,42.49,-72.2,obs,NA,NA,TS,TS,C,11,0.2345,NA,NA,215.9,excludes basket 2
+1993,hf101,barker-plotkin,sim-hurricane,hardwood,6000,42.49,-72.2,obs,NA,NA,TS,TS,C,12,0.2345,NA,NA,225.85,NA
+1994,hf101,barker-plotkin,sim-hurricane,hardwood,6000,42.49,-72.2,obs,NA,NA,TS,TS,C,12,0.2345,NA,NA,218.05,NA
+1995,hf101,barker-plotkin,sim-hurricane,hardwood,6000,42.49,-72.2,obs,NA,NA,TS,TS,C,12,0.2345,NA,NA,209.25,NA
+1996,hf101,barker-plotkin,sim-hurricane,hardwood,6000,42.49,-72.2,obs,NA,NA,TS,TS,C,12,0.2345,NA,NA,194,NA
+1997,hf101,barker-plotkin,sim-hurricane,hardwood,6000,42.49,-72.2,obs,NA,NA,TS,TS,C,12,0.2345,NA,NA,199.2,NA
+1998,hf101,barker-plotkin,sim-hurricane,hardwood,6000,42.49,-72.2,obs,NA,NA,TS,TS,C,12,0.2345,NA,NA,231,NA
+1999,hf101,barker-plotkin,sim-hurricane,hardwood,6000,42.49,-72.2,obs,NA,NA,TS,TS,C,12,0.2345,NA,NA,215,NA
+2000,hf101,barker-plotkin,sim-hurricane,hardwood,6000,42.49,-72.2,obs,NA,NA,TS,TS,C,12,0.2345,NA,NA,190.05,NA
+2001,hf101,barker-plotkin,sim-hurricane,hardwood,6000,42.49,-72.2,obs,NA,NA,TS,TS,C,12,0.2345,NA,NA,240,NA
+2002,hf101,barker-plotkin,sim-hurricane,hardwood,6000,42.49,-72.2,obs,NA,NA,TS,TS,C,12,0.2345,NA,NA,189.95,NA
+2003,hf101,barker-plotkin,sim-hurricane,hardwood,6000,42.49,-72.2,obs,NA,NA,TS,TS,C,12,0.2345,NA,NA,238.1,NA
+2004,hf101,barker-plotkin,sim-hurricane,hardwood,6000,42.49,-72.2,obs,NA,NA,TS,TS,C,12,0.2345,NA,NA,199.45,NA
+2005,hf101,barker-plotkin,sim-hurricane,hardwood,6000,42.49,-72.2,obs,NA,NA,TS,TS,C,11,0.2345,NA,NA,211.05,excludes basket 7
+2006,hf101,barker-plotkin,sim-hurricane,hardwood,6000,42.49,-72.2,obs,NA,NA,TS,TS,C,8,0.2345,NA,NA,174.95,excludes baskets 4; 7; 8 and 10
+2007,hf101,barker-plotkin,sim-hurricane,hardwood,6000,42.49,-72.2,obs,NA,NA,TS,TS,C,11,0.2345,NA,NA,187.8,excludes basket 10
+2008,hf101,barker-plotkin,sim-hurricane,hardwood,6000,42.49,-72.2,obs,NA,NA,TS,TS,C,10,0.2345,NA,NA,209.25,excludes baskets 1 and 7
+2009,hf101,barker-plotkin,sim-hurricane,hardwood,6000,42.49,-72.2,obs,NA,NA,TS,TS,C,12,0.2345,NA,NA,278.6,NA
+2010,hf101,barker-plotkin,sim-hurricane,hardwood,6000,42.49,-72.2,obs,NA,NA,TS,TS,C,8,0.2345,NA,NA,185.75,excludes baskets 1; 3; 4 and 6
+2011,hf101,barker-plotkin,sim-hurricane,hardwood,6000,42.49,-72.2,obs,NA,NA,TS,TS,C,12,0.2345,NA,NA,183.75,NA
+2012,hf101,barker-plotkin,sim-hurricane,hardwood,6000,42.49,-72.2,obs,NA,NA,TS,TS,C,11,0.2345,NA,NA,190.15,excludes basket 9
+2013,hf101,barker-plotkin,sim-hurricane,hardwood,6000,42.49,-72.2,obs,NA,NA,TS,TS,C,10,0.2345,NA,NA,190.6,excludes baskets 7 & 12
+2014,hf101,barker-plotkin,sim-hurricane,hardwood,6000,42.49,-72.2,obs,NA,NA,TS,TS,C,12,0.2345,NA,NA,221.6,NA
+2015,hf101,barker-plotkin,sim-hurricane,hardwood,6000,42.49,-72.2,obs,NA,NA,TS,TS,C,11,0.2345,NA,NA,204.7,excludes basket 6
+1989,hf101,barker-plotkin,sim-hurricane,hardwood,8000,42.49,-72.2,exp,pulldown,1990,TS,TS,B,12,0.2345,NA,NA,168.65,basket 13 not yet in study
+1990,hf101,barker-plotkin,sim-hurricane,hardwood,8000,42.49,-72.2,exp,pulldown,1990,TS,TS,B,NA,0.2345,NA,NA,NA,no collection
+1991,hf101,barker-plotkin,sim-hurricane,hardwood,8000,42.49,-72.2,exp,pulldown,1990,TS,TS,B,13,0.2345,NA,NA,101.75,no June collection for baskets 3; 4; 8 and 12
+1992,hf101,barker-plotkin,sim-hurricane,hardwood,8000,42.49,-72.2,exp,pulldown,1990,TS,TS,B,13,0.2345,NA,NA,113.1,NA
+1993,hf101,barker-plotkin,sim-hurricane,hardwood,8000,42.49,-72.2,exp,pulldown,1990,TS,TS,B,13,0.2345,NA,NA,137.1,NA
+1994,hf101,barker-plotkin,sim-hurricane,hardwood,8000,42.49,-72.2,exp,pulldown,1990,TS,TS,B,13,0.2345,NA,NA,148.25,NA
+1995,hf101,barker-plotkin,sim-hurricane,hardwood,8000,42.49,-72.2,exp,pulldown,1990,TS,TS,B,11,0.2345,NA,NA,144.35,excludes baskets 3 and 5
+1996,hf101,barker-plotkin,sim-hurricane,hardwood,8000,42.49,-72.2,exp,pulldown,1990,TS,TS,B,13,0.2345,NA,NA,155.8,NA
+1997,hf101,barker-plotkin,sim-hurricane,hardwood,8000,42.49,-72.2,exp,pulldown,1990,TS,TS,B,13,0.2345,NA,NA,177.7,NA
+1998,hf101,barker-plotkin,sim-hurricane,hardwood,8000,42.49,-72.2,exp,pulldown,1990,TS,TS,B,13,0.2345,NA,NA,165.35,NA
+1999,hf101,barker-plotkin,sim-hurricane,hardwood,8000,42.49,-72.2,exp,pulldown,1990,TS,TS,B,13,0.2345,NA,NA,155.05,NA
+2000,hf101,barker-plotkin,sim-hurricane,hardwood,8000,42.49,-72.2,exp,pulldown,1990,TS,TS,B,13,0.2345,NA,NA,187.05,NA
+2001,hf101,barker-plotkin,sim-hurricane,hardwood,8000,42.49,-72.2,exp,pulldown,1990,TS,TS,B,13,0.2345,NA,NA,234.45,NA
+2002,hf101,barker-plotkin,sim-hurricane,hardwood,8000,42.49,-72.2,exp,pulldown,1990,TS,TS,B,12,0.2345,NA,NA,210.1,excludes basket 11
+2003,hf101,barker-plotkin,sim-hurricane,hardwood,8000,42.49,-72.2,exp,pulldown,1990,TS,TS,B,13,0.2345,NA,NA,177.55,NA
+2004,hf101,barker-plotkin,sim-hurricane,hardwood,8000,42.49,-72.2,exp,pulldown,1990,TS,TS,B,13,0.2345,NA,NA,186.5,NA
+2005,hf101,barker-plotkin,sim-hurricane,hardwood,8000,42.49,-72.2,exp,pulldown,1990,TS,TS,B,13,0.2345,NA,NA,163.55,NA
+2006,hf101,barker-plotkin,sim-hurricane,hardwood,8000,42.49,-72.2,exp,pulldown,1990,TS,TS,B,10,0.2345,NA,NA,189.5,excludes baskets 3; 10 and 12
+2007,hf101,barker-plotkin,sim-hurricane,hardwood,8000,42.49,-72.2,exp,pulldown,1990,TS,TS,B,11,0.2345,NA,NA,193.85,excludes baskets 9 and 12
+2008,hf101,barker-plotkin,sim-hurricane,hardwood,8000,42.49,-72.2,exp,pulldown,1990,TS,TS,B,13,0.2345,NA,NA,189.15,NA
+2009,hf101,barker-plotkin,sim-hurricane,hardwood,8000,42.49,-72.2,exp,pulldown,1990,TS,TS,B,13,0.2345,NA,NA,248.1,NA
+2010,hf101,barker-plotkin,sim-hurricane,hardwood,8000,42.49,-72.2,exp,pulldown,1990,TS,TS,B,11,0.2345,NA,NA,158.5,excludes baskets 1 and 9
+2011,hf101,barker-plotkin,sim-hurricane,hardwood,8000,42.49,-72.2,exp,pulldown,1990,TS,TS,B,12,0.2345,NA,NA,167.15,excludes basket 7
+2012,hf101,barker-plotkin,sim-hurricane,hardwood,8000,42.49,-72.2,exp,pulldown,1990,TS,TS,B,11,0.2345,NA,NA,162.8,excludes baskets 7 & 9
+2013,hf101,barker-plotkin,sim-hurricane,hardwood,8000,42.49,-72.2,exp,pulldown,1990,TS,TS,B,12,0.2345,NA,NA,173.8,excludes basket 6
+2014,hf101,barker-plotkin,sim-hurricane,hardwood,8000,42.49,-72.2,exp,pulldown,1990,TS,TS,B,11,0.2345,NA,NA,189.85,excludes baskets 6 & 8
+2015,hf101,barker-plotkin,sim-hurricane,hardwood,8000,42.49,-72.2,exp,pulldown,1990,TS,TS,B,11,0.2345,NA,NA,187.7,excludes baskets 1 & 10
+2003,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,195 - 100,1,0.1297,203.8550501,NA,NA,NA
+2003,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,195 - 200,1,0.1297,164.0709329,NA,NA,NA
+2003,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,210 - 100,1,0.1297,219.1210486,NA,NA,NA
+2003,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,210 - 200,1,0.1297,312.7987664,NA,NA,NA
+2003,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,225 - 100,1,0.1297,178.7586739,NA,NA,NA
+2003,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,225 - 200,1,0.1297,160.5628373,NA,NA,NA
+2003,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,225 - 300,1,0.1297,148.1495759,4.356206631,152.5057826,NA
+2003,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,240 - 100,1,0.1297,198.8049345,NA,NA,NA
+2003,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,240 - 200,1,0.1297,222.2821897,NA,NA,NA
+2003,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,240 - 300,1,0.1297,148.843485,32.84502699,181.688512,NA
+2003,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,255 - 100,1,0.1297,180.4163454,NA,NA,NA
+2003,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,255 - 200,1,0.1297,202.0046261,NA,NA,NA
+2003,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,255 - 300,1,0.1297,134.695451,21.27987664,155.9753277,NA
+2003,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,270 - 100,1,0.1297,215.998458,NA,NA,NA
+2003,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,270 - 200,1,0.1297,140.0154202,35.23515806,175.2505783,NA
+2003,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,270 - 300,1,0.1297,216.3454125,138.9745567,355.3199692,NA
+2003,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,285 - 100,1,0.1297,158.9051658,NA,NA,NA
+2003,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,285 - 200,1,0.1297,114.9190439,88.74325366,203.6622976,NA
+2003,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,285 - 300,1,0.1297,152.7370856,29.37548188,182.1125675,NA
+2003,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,300 - 100,1,0.1297,175.5204318,NA,NA,NA
+2003,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,300 - 200,1,0.1297,215.9599075,8.211256746,224.1711642,NA
+2003,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,300 - 300,1,0.1297,215.38165,26.86969931,242.2513493,NA
+2003,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,315 - 100,1,0.1297,184.309946,NA,NA,NA
+2003,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,315 - 200,1,0.1297,172.8604472,12.72166538,185.5821126,NA
+2003,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,315 - 300,1,0.1297,164.5720894,83.69313801,248.2652274,NA
+2003,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,330 - 100,1,0.1297,173.8242097,NA,NA,NA
+2003,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,330 - 200,1,0.1297,108.2112567,13.87818042,122.0894372,NA
+2006,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 100,1,0.1385,157.5812274,26.13718412,183.7184116,NA
+2006,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 150,1,0.1385,189.0974729,203.465704,392.5631769,NA
+2006,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 200,1,0.1385,164.5848375,18.98916968,183.5740072,NA
+2006,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 50,1,0.1385,64.87364621,66.67870036,131.5523466,NA
+2006,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 100,1,0.1385,142.7436823,44.18772563,186.9314079,NA
+2006,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,225 - 100,1,0.1297,119.8535081,7.01619121,126.8696993,NA
+2006,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 150,1,0.1385,194.0433213,83.64620939,277.6895307,NA
+2006,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 200,1,0.1385,213.6101083,75.81227437,289.4223827,NA
+2006,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,225 - 200,1,0.1297,250.3469545,14.57208944,264.9190439,NA
+2006,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,225 - 300,1,0.1297,194.0632228,68.65844256,262.7216654,NA
+2006,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,225 - 400,1,0.1976,167.1305668,11.99392713,179.1244939,NA
+2006,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 50,1,0.1385,245.1263538,51.44404332,296.5703971,NA
+2006,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,240 - 100,1,0.1297,149.9036237,8.789514264,158.693138,NA
+2006,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,240 - 200,1,0.1297,308.3654588,0,308.3654588,NA
+2006,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,240 - 300,1,0.1297,152.1973786,39.39861218,191.5959907,NA
+2006,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,240 - 400,1,0.1976,150.0506073,28.97267206,179.0232794,NA
+2006,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 100,1,0.1385,167.4729242,69.49458484,236.967509,NA
+2006,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,255 - 100,1,0.1297,112.5289129,1.34926754,113.8781804,NA
+2006,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 150,1,0.1385,261.9855596,56.24548736,318.2310469,NA
+2006,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 160,1,0.1385,153.7545126,24.44043321,178.1949458,NA
+2006,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,255 - 200,1,0.1297,191.1333847,19.04394757,210.1773323,NA
+2006,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,255 - 300,1,0.1297,113.4155744,10.40863531,123.8242097,NA
+2006,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,255 - 400,1,0.1976,131.7813765,92.48481781,224.2661943,NA
+2006,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 50,1,0.1385,207.1480144,58.95306859,266.101083,NA
+2006,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,270 - 100,1,0.1297,168.9282961,1.811873554,170.7401696,NA
+2006,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,270 - 200,1,0.1297,170.1233616,25.90593678,196.0292984,NA
+2006,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,270 - 300,1,0.1976,164.2459514,18.72469636,182.9706478,NA
+2006,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,270 - 400,1,0.1976,92.3582996,1.49291498,93.85121457,NA
+2006,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,285 - 100,1,0.1297,204.9730146,3.045489591,208.0185042,NA
+2006,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,285 - 200,1,0.1297,142.2513493,67.69468003,209.9460293,NA
+2006,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,285 - 300,1,0.1297,206.0524287,26.7925983,232.845027,NA
+2006,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,285 - 400,1,0.1976,170.0151822,35.50101215,205.5161943,NA
+2006,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,300 - 100,1,0.1297,148.535081,2.814186584,151.3492675,NA
+2006,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,300 - 300,1,0.1976,153.0617409,15.18218623,168.2439271,NA
+2006,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,300 - 400,1,0.1976,106.6801619,42.66194332,149.3421053,NA
+2006,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,315 - 100,1,0.1297,166.0370085,9.868928296,175.9059368,NA
+2006,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,315 - 200,1,0.1297,180.3777949,4.047802621,184.4255975,NA
+2006,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,315 - 300,1,0.1297,190.2467232,17.96453354,208.2112567,NA
+2006,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,315 - 400,1,0.1976,141.2196356,11.38663968,152.6062753,NA
+2006,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,330 - 100,1,0.1297,164.5720894,14.10948342,178.6815729,NA
+2006,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,330 - 200,1,0.1297,150.848111,12.41326137,163.2613724,NA
+2006,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,330 - 300,1,0.1297,240.0154202,58.67386276,298.689283,NA
+2006,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,330 - 400,1,0.1976,139.8026316,3.238866397,143.041498,NA
+2006,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,345 - 100,1,0.1297,204.3176561,13.3770239,217.69468,NA
+2006,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,345 - 200,1,0.1976,102.1761134,1.442307692,103.6184211,NA
+2006,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,345 - 300,1,0.1297,234.695451,76.44564379,311.1410948,NA
+2006,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,345 - 400,1,0.1976,118.5222672,20.92611336,139.4483806,NA
+2007,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 100,1,0.1385,160.9963899,43.72202166,204.7184116,NA
+2007,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 150,1,0.1385,188.3646209,98.85920578,287.2238267,NA
+2007,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 200,1,0.1385,175.4981949,46.32490975,221.8231047,NA
+2007,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 50,1,0.1385,187.9783394,132.6642599,320.6425993,NA
+2007,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 100,1,0.1385,45.93140794,87.03249097,132.9638989,NA
+2007,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,225 - 100,1,0.1297,141.5612953,9.622205089,151.1835004,NA
+2007,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 150,1,0.1385,177.0036101,126.7075812,303.7111913,NA
+2007,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 200,1,0.1385,212.3249097,89.63898917,301.9638989,NA
+2007,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,225 - 200,1,0.1976,168.4387652,25.67813765,194.1169028,NA
+2007,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,225 - 300,1,0.1976,157.2267206,107.2064777,264.4331984,NA
+2007,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,225 - 400,1,0.1976,180.2859312,75.6604251,255.9463563,NA
+2007,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 50,1,0.1385,391.4729242,123.9819495,515.4548736,NA
+2007,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,240 - 100,1,0.1297,173.4965305,18.3153431,191.8118736,NA
+2007,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,240 - 200,1,0.1976,199.534413,84.05364372,283.5880567,NA
+2007,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,240 - 300,1,0.1976,139.2054656,28.88663968,168.0921053,NA
+2007,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,240 - 400,1,0.1976,152.6568826,33.42611336,186.082996,NA
+2007,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 100,1,0.1385,207.101083,91.07942238,298.1805054,NA
+2007,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,255 - 100,1,0.1976,122.8036437,7.021761134,129.8254049,NA
+2007,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 150,1,0.1385,271.4873646,230.2490975,501.7364621,NA
+2007,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 160,1,0.1385,159.8411552,48.37184116,208.2129964,NA
+2007,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,255 - 200,1,0.1976,139.8254049,7.980769231,147.8061741,NA
+2007,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,255 - 300,1,0.1976,85.75910931,31.41953441,117.1786437,NA
+2007,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,255 - 400,1,0.1976,159.7899798,34.1548583,193.9448381,NA
+2007,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 50,1,0.1385,132.4729242,79.23104693,211.7039711,NA
+2007,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,270 - 100,1,0.1297,153.3346184,11.90439476,165.2390131,NA
+2007,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,270 - 200,1,0.1464,162.3155738,25.09562842,187.4112022,NA
+2007,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,270 - 300,1,0.1976,164.7975709,37.78087045,202.5784413,NA
+2007,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,270 - 400,1,0.1976,163.5172065,111.1589069,274.6761134,NA
+2007,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,285 - 100,1,0.1976,132.5885628,5.609817814,138.1983806,NA
+2007,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,285 - 200,1,0.1464,96.08606557,73.41188525,169.4979508,NA
+2007,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,285 - 300,1,0.1976,115.9665992,41.56882591,157.5354251,NA
+2007,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,285 - 400,1,0.1976,166.73583,7.031882591,173.7677126,NA
+2007,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,300 - 100,1,0.1297,187.9414032,11.5073246,199.4487278,NA
+2007,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,300 - 300,1,0.1976,153.8841093,13.40334008,167.2874494,NA
+2007,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,300 - 400,1,0.1976,195.6300607,36.08046559,231.7105263,NA
+2007,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,315 - 100,1,0.1464,176.1509563,39.65846995,215.8094262,NA
+2007,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,315 - 200,1,0.1297,159.8650732,15.89822668,175.7632999,NA
+2007,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,315 - 300,1,0.1297,157.6445644,13.66229761,171.306862,NA
+2007,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,315 - 400,1,0.1976,158.9068826,11.1082996,170.0151822,NA
+2007,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,330 - 100,1,0.1297,165.0886662,25.75173477,190.8404009,NA
+2007,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,330 - 200,1,0.1976,98.59311741,2.54048583,101.1336032,NA
+2007,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,330 - 300,1,0.1297,224.5990748,60.0925212,284.691596,NA
+2007,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,330 - 400,1,0.1976,106.1082996,3.767712551,109.8760121,NA
+2007,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,345 - 100,1,0.1297,160.2004626,52.33230532,212.5327679,NA
+2007,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,345 - 200,1,0.1297,168.6083269,32.02390131,200.6322282,NA
+2007,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,345 - 300,1,0.1976,175.5490891,31.91295547,207.4620445,NA
+2008,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 100,1,0.1385,135.7725632,33.77978339,169.5523466,NA
+2008,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 150,1,0.1385,173.5559567,53.3465704,226.9025271,NA
+2008,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 200,1,0.1385,118.5920578,13.33574007,131.9277978,NA
+2008,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 50,1,0.1385,172.4476534,28.72202166,201.1696751,NA
+2008,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 100,1,0.1385,161.8231047,18.2166065,180.0397112,NA
+2008,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,225 - 100,1,0.1297,140.5898227,17.41711642,158.0069391,NA
+2008,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 150,1,0.1385,182.1913357,104.5559567,286.7472924,NA
+2008,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 200,1,0.1385,203.1913357,44.94223827,248.133574,NA
+2008,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,225 - 200,1,0.1976,140.457996,19.78744939,160.2454453,NA
+2008,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,225 - 300,1,0.1976,132.8618421,1.75354251,134.6153846,NA
+2008,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 50,1,0.1385,195.9783394,35.89530686,231.8736462,NA
+2008,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,240 - 100,1,0.1297,160.6090979,57.47879722,218.0878951,NA
+2008,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,240 - 200,1,0.1976,211.3259109,61.14625506,272.472166,NA
+2008,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,240 - 300,1,0.1976,142.6492915,4.949392713,147.5986842,NA
+2008,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,240 - 400,1,0.1976,156.4271255,2.05465587,158.4817814,NA
+2008,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 100,1,0.1385,171.3357401,98.15162455,269.4873646,NA
+2008,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,255 - 100,1,0.1976,147.229251,28.26417004,175.4934211,NA
+2008,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 150,1,0.1385,279.1191336,55.90252708,335.0216606,NA
+2008,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 160,1,0.1385,155.0433213,79.94223827,234.9855596,NA
+2008,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,255 - 200,1,0.1976,134.5647773,19.46862348,154.0334008,NA
+2008,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,255 - 300,1,0.1976,91.83704453,10.83248988,102.6695344,NA
+2008,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,255 - 400,1,0.1976,153.1452429,29.4888664,182.6341093,NA
+2008,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 50,1,0.1385,111.4476534,28.1732852,139.6209386,NA
+2008,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,270 - 100,1,0.1297,142.1241326,46.85813416,188.9822668,NA
+2008,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,270 - 200,1,0.1464,155.2151639,36.97062842,192.1857923,NA
+2008,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,270 - 300,1,0.1976,161.0981781,3.208502024,164.3066802,NA
+2008,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,285 - 100,1,0.1976,127.0394737,15.24797571,142.2874494,NA
+2008,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,285 - 200,1,0.1464,137.1687158,37.12773224,174.2964481,NA
+2008,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,285 - 300,1,0.1976,130.0480769,13.16548583,143.2135628,NA
+2008,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,285 - 400,1,0.1976,181.3663968,35.63259109,216.9989879,NA
+2008,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,300 - 100,1,0.1297,185.9907479,1.950655359,187.9414032,NA
+2008,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,300 - 200,1,0.1976,131.8117409,0.17965587,131.9913968,NA
+2008,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,300 - 300,1,0.1976,176.8066802,130.298583,307.1052632,NA
+2008,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,300 - 400,1,0.1976,107.5683198,3.803137652,111.3714575,NA
+2008,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,315 - 100,1,0.1464,162.1721311,18.92418033,181.0963115,NA
+2008,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,315 - 200,1,0.1297,198.0107941,36.12567463,234.1364688,NA
+2008,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,315 - 300,1,0.1297,155.9406322,111.4687741,267.4094063,NA
+2008,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,315 - 400,1,0.1976,163.8461538,13.18066802,177.0268219,NA
+2008,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,330 - 100,1,0.1297,165.3238242,9.872783346,175.1966076,NA
+2008,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,330 - 200,1,0.1976,148.1148785,4.863360324,152.9782389,NA
+2008,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,330 - 300,1,0.1297,222.4248265,56.48804934,278.9128759,NA
+2008,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,330 - 400,1,0.1976,141.2525304,5.612348178,146.8648785,NA
+2008,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,345 - 100,1,0.1297,124.6222051,14.13261372,138.7548188,NA
+2008,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,345 - 300,1,0.1976,155.5743927,10.02530364,165.5996964,NA
+2009,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 100,1,0.1385,165.0902527,441.4079422,606.4981949,NA
+2009,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 150,1,0.1385,171.8411552,54.87364621,226.7148014,NA
+2009,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 200,1,0.1385,189.8555957,45.70397112,235.5595668,NA
+2009,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 50,1,0.1385,197.3285199,74.4765343,271.8050542,NA
+2009,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 100,1,0.1385,166.4981949,159.4223827,325.9205776,NA
+2009,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,225 - 100,1,0.1297,179.8380879,62.72166538,242.5597533,NA
+2009,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 150,1,0.1385,187.3285199,60.32490975,247.6534296,NA
+2009,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 200,1,0.1385,182.7797834,92.27436823,275.0541516,NA
+2009,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,225 - 200,1,0.1976,159.4129555,25.8097166,185.2226721,NA
+2009,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,225 - 300,1,0.1976,180.0860324,29.93421053,210.0202429,NA
+2009,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,225 - 400,1,0.1976,121.5334008,NA,NA,NA
+2009,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 50,1,0.1385,153.8267148,220.0361011,373.8628159,NA
+2009,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,240 - 100,1,0.1297,155.0115652,42.71395528,197.7255204,NA
+2009,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,240 - 200,1,0.1976,204.0991903,32.43927126,236.5384615,NA
+2009,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,240 - 300,1,0.1976,157.3633603,94.78744939,252.1508097,NA
+2009,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,240 - 400,1,0.1976,162.5,36.94331984,199.4433198,NA
+2009,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 100,1,0.1385,332.3826715,302.2382671,634.6209386,NA
+2009,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,255 - 100,1,0.1976,167.2823887,51.03744939,218.3198381,NA
+2009,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 150,1,0.1385,391.1913357,346.8592058,738.0505415,NA
+2009,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 160,1,0.1385,161.4440433,20.93862816,182.3826715,NA
+2009,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,255 - 200,1,0.1976,135.5516194,71.71052632,207.2621457,NA
+2009,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,255 - 300,1,0.1976,127.6568826,153.8461538,281.5030364,NA
+2009,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,255 - 400,1,0.1976,140.2327935,116.4726721,256.7054656,NA
+2009,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 50,1,0.1385,182.3104693,59.74729242,242.0577617,NA
+2009,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,270 - 100,1,0.1297,177.4094063,91.24903624,268.6584426,NA
+2009,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,270 - 200,1,0.1464,129.3715847,40.06147541,169.4330601,NA
+2009,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,270 - 300,1,0.1976,162.5,147.5708502,310.0708502,NA
+2009,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,270 - 400,1,0.1976,117.0293522,77.85931174,194.888664,NA
+2009,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,285 - 100,1,0.1976,145.7489879,27.4291498,173.1781377,NA
+2009,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,285 - 200,1,0.1464,143.784153,234.4262295,378.2103825,NA
+2009,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,285 - 300,1,0.1976,142.1052632,52.98582996,195.0910931,NA
+2009,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,285 - 400,1,0.1976,182.2368421,91.21963563,273.4564777,NA
+2009,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,300 - 100,1,0.1297,128.2960678,28.45026985,156.7463377,NA
+2009,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,300 - 200,1,0.1976,174.645749,42.48481781,217.1305668,NA
+2009,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,300 - 300,1,0.1976,152.7327935,132.667004,285.3997976,NA
+2009,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,300 - 400,1,0.1976,137.8795547,41.77631579,179.6558704,NA
+2009,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,315 - 100,1,0.1464,156.8989071,38.7636612,195.6625683,NA
+2009,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,315 - 200,1,0.1297,173.5929067,58.59676176,232.1896685,NA
+2009,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,315 - 300,1,0.1297,231.5728604,36.6229761,268.1958365,NA
+2009,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,315 - 400,1,0.1976,165.5870445,27.75809717,193.3451417,NA
+2009,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,330 - 100,1,0.1297,225.3662298,29.10562837,254.4718581,NA
+2009,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,330 - 200,1,0.1976,181.1234818,13.84109312,194.9645749,NA
+2009,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,330 - 300,1,0.1297,221.7810332,108.2498072,330.0308404,NA
+2009,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,330 - 400,1,0.1976,146.2803644,NA,NA,NA
+2009,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,345 - 100,1,0.1297,230.3392444,173.1303007,403.4695451,NA
+2009,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,345 - 200,1,0.1976,126.6953441,19.25607287,145.951417,NA
+2009,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,345 - 300,1,0.1976,141.8016194,46.96356275,188.7651822,NA
+2010,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 100,1,0.1385,134.9819495,51.51624549,186.4981949,NA
+2010,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 150,1,0.1385,174.2599278,78.98916968,253.2490975,NA
+2010,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 200,1,0.1385,181.732852,66.24548736,247.9783394,NA
+2010,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 50,1,0.1385,152.2382671,41.94945848,194.1877256,NA
+2010,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 100,1,0.1385,142.0577617,75.37906137,217.4368231,NA
+2010,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,225 - 100,1,0.1297,137.2012336,13.80107941,151.002313,NA
+2010,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 150,1,0.1385,143.9711191,119.2779783,263.2490975,NA
+2010,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 200,1,0.1385,169.0613718,125.631769,294.6931408,NA
+2010,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,225 - 200,1,0.1976,136.007085,35.95647773,171.9635628,NA
+2010,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,225 - 300,1,0.1976,160.3491903,50.05060729,210.3997976,NA
+2010,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,225 - 400,1,0.1976,198.3046559,112.7783401,311.082996,NA
+2010,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 50,1,0.1385,156.2815884,108.9891697,265.2707581,NA
+2010,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,240 - 100,1,0.1297,30.60909792,40.74787972,71.35697764,NA
+2010,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,240 - 100,1,0.1976,67.51012146,NA,NA,NA
+2010,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,240 - 200,1,0.1976,121.6852227,71.30566802,192.9908907,NA
+2010,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,240 - 300,1,0.1976,135.0961538,28.44129555,163.5374494,NA
+2010,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,240 - 400,1,0.1976,131.9838057,34.4888664,166.4726721,NA
+2010,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 100,1,0.1385,154.4043321,75.37906137,229.7833935,NA
+2010,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,255 - 100,1,0.1976,51.97368421,1.518218623,53.49190283,NA
+2010,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 150,1,0.1385,218.0505415,201.0469314,419.0974729,NA
+2010,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 200,1,0.1385,165.9205776,52.49097473,218.4115523,NA
+2010,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,255 - 200,1,0.1976,131.8825911,31.55364372,163.4362348,NA
+2010,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,255 - 300,1,0.1976,100.8856275,104.0738866,204.9595142,NA
+2010,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,255 - 400,1,0.1976,172.6467611,55.08603239,227.7327935,NA
+2010,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 50,1,0.1385,90.28880866,38.33935018,128.6281588,NA
+2010,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,270 - 100,1,0.1297,183.538936,59.36777178,242.9067078,NA
+2010,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,270 - 200,1,0.1464,120.6625683,54.26912568,174.931694,NA
+2010,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,270 - 300,1,0.1976,166.5738866,167.9149798,334.4888664,NA
+2010,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,270 - 400,1,0.1976,131.6295547,73.53238866,205.1619433,NA
+2010,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,285 - 100,1,0.1976,143.1427126,48.07692308,191.2196356,NA
+2010,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,285 - 200,1,0.1464,149.5560109,188.8319672,338.3879781,NA
+2010,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,285 - 300,1,0.1976,124.2408907,29.4534413,153.694332,NA
+2010,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,285 - 400,1,0.1976,185.2226721,48.86133603,234.0840081,NA
+2010,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,300 - 100,1,0.1297,136.7771781,25.40478026,162.1819584,NA
+2010,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,300 - 200,1,0.1976,130.5161943,113.4362348,243.9524291,NA
+2010,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,300 - 300,1,0.1976,137.3987854,18.42105263,155.8198381,NA
+2010,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,300 - 400,1,0.1976,152.6062753,56.55364372,209.159919,NA
+2010,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,315 - 100,1,0.1464,162.636612,29.81557377,192.4521858,NA
+2010,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,315 - 200,1,0.1297,159.7532768,18.73554356,178.4888204,NA
+2010,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,315 - 300,1,0.1297,237.2397841,207.0161912,444.2559753,NA
+2010,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,315 - 400,1,0.1976,167.0040486,3.694331984,170.6983806,NA
+2010,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,330 - 100,1,0.1297,71.39552814,NA,NA,NA
+2010,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,330 - 200,1,0.1976,168.9271255,16.80161943,185.7287449,NA
+2010,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,330 - 300,1,0.1297,323.4772552,79.02852737,402.5057826,NA
+2010,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,330 - 400,1,0.1976,165.2327935,7.717611336,172.9504049,NA
+2010,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,345 - 100,1,0.1297,233.538936,183.07633,416.615266,NA
+2010,hf151,nicoll,lph,hardwood,113.0973355,42.54,-72.1825,obs,NA,NA,PH,LPH,345 - 200,1,0.1976,103.1123482,23.55769231,126.6700405,NA
+2011,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 100,1,0.1385,178.1588448,132.2382671,310.3971119,NA
+2011,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 150,1,0.1385,197.9061372,125.7039711,323.6101083,NA
+2011,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 200,1,0.1385,146.967509,58.95306859,205.9205776,NA
+2011,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 50,1,0.1385,193.1046931,71.11913357,264.2238267,NA
+2011,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 100,1,0.1385,278.0505415,200.1805054,478.2310469,NA
+2011,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 150,1,0.1385,135.7761733,149.133574,284.9097473,NA
+2011,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 200,1,0.1385,43.32129964,59.35018051,102.6714801,NA
+2011,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 50,1,0.1385,241.4801444,136.1732852,377.6534296,NA
+2011,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 100,1,0.1385,187.7256318,147.6895307,335.4151625,NA
+2011,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 150,1,0.1385,288.0144404,60.10830325,348.1227437,NA
+2011,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 160,1,0.1385,209.6389892,53.6101083,263.2490975,NA
+2011,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 50,1,0.1385,147.9061372,44.51263538,192.4187726,NA
+2012,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 100,1,0.1385,152.1299639,45.19855596,197.3285199,NA
+2012,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 150,1,0.1385,177.7256318,72.59927798,250.3249097,NA
+2012,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 200,1,0.1385,179.2418773,64.98194946,244.2238267,NA
+2012,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 50,1,0.1385,169.8194946,63.14079422,232.9602888,NA
+2012,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 100,1,0.1385,157.5812274,52.59927798,210.1805054,NA
+2012,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 150,1,0.1385,180.7581227,136.8592058,317.6173285,NA
+2012,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 200,1,0.1385,178.4476534,82.92418773,261.3718412,NA
+2012,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 50,1,0.1385,198.9530686,65.41516245,264.368231,NA
+2012,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 100,1,0.1385,172.6714801,63.06859206,235.7400722,NA
+2012,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 150,1,0.1385,258.4837545,33.39350181,291.8772563,NA
+2012,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 160,1,0.1385,159.6028881,39.13357401,198.7364621,NA
+2012,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 50,1,0.1385,122.2743682,62.81588448,185.0902527,NA
+2013,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 100,1,0.1385,92.31046931,37.03971119,129.3501805,NA
+2013,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 150,1,0.1385,128.1588448,45.12635379,173.2851986,NA
+2013,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 200,1,0.1385,125.5234657,22.74368231,148.267148,NA
+2013,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 50,1,0.1385,131.8772563,36.75090253,168.6281588,NA
+2013,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 100,1,0.1385,79.7833935,666.7870036,746.5703971,NA
+2013,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 150,1,0.1385,168.6281588,43.89891697,212.5270758,NA
+2013,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 200,1,0.1385,141.299639,48.77256318,190.0722022,NA
+2013,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 50,1,0.1385,105.234657,59.27797834,164.5126354,NA
+2013,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 100,1,0.1385,122.7797834,35.70397112,158.4837545,NA
+2013,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 150,1,0.1385,230.7942238,27.50902527,258.3032491,NA
+2013,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 160,1,0.1385,128.1949458,24.07942238,152.2743682,NA
+2013,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 50,1,0.1385,99.74729242,22.74368231,122.4909747,NA
+2014,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 100,1,0.1385,48.48375451,10.64981949,59.13357401,NA
+2014,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 150,1,0.1385,66.42599278,17.50902527,83.93501805,NA
+2014,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 200,1,0.1385,44.54873646,13.71841155,58.26714801,NA
+2014,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 50,1,0.1385,60.90252708,11.80505415,72.70758123,NA
+2014,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 100,1,0.1385,35.01805054,13.97111913,48.98916968,NA
+2014,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 150,1,0.1385,49.67509025,13.21299639,62.88808664,NA
+2014,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 200,1,0.1385,59.49458484,28.01444043,87.50902527,NA
+2014,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 50,1,0.1385,53.68231047,11.62454874,65.30685921,NA
+2014,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 100,1,0.1385,70.18050542,16.31768953,86.49819495,NA
+2014,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 150,1,0.1385,54.87364621,27.32851986,82.20216606,NA
+2014,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 160,1,0.1385,39.92779783,24.72924188,64.65703971,NA
+2014,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 50,1,0.1385,57.22021661,19.566787,76.78700361,NA
+2015,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 100,1,0.1385,168.7725632,39.67509025,208.4476534,NA
+2015,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 150,1,0.1385,196.534296,60.75812274,257.2924188,NA
+2015,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 200,1,0.1385,249.3862816,25.92057762,275.3068592,NA
+2015,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 50,1,0.1385,232.4187726,110.3610108,342.7797834,NA
+2015,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 100,1,0.1385,220.1083032,35.37906137,255.4873646,NA
+2015,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 150,1,0.1385,292.9241877,100.6137184,393.5379061,NA
+2015,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 160,1,0.1385,4.76534296,NA,NA,NA
+2015,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 200,1,0.1385,282.3104693,105.7400722,388.0505415,NA
+2015,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 50,1,0.1385,306.2454874,137.9783394,444.2238267,NA
+2015,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 100,1,0.1385,245.9566787,196.4620939,442.4187726,NA
+2015,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 150,1,0.1385,399.9638989,66.24548736,466.2093863,NA
+2015,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 160,1,0.1385,283.2129964,41.40794224,324.6209386,NA
+2015,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 50,1,0.1385,134.2238267,113.9711191,248.1949458,NA
+2015,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 50,1,NA,NA,NA,NA,NA
+2016,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 100,1,0.1385,89.67509025,31.40794224,121.0830325,NA
+2016,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 150,1,0.1385,29.89169675,3.285198556,33.17689531,NA
+2016,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 200,1,0.1385,56.02888087,53.03249097,109.0613718,NA
+2016,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,195 - 50,1,0.1385,102.9602888,9.711191336,112.6714801,NA
+2016,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 100,1,0.1385,22.3465704,15.59566787,37.94223827,NA
+2016,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 150,1,0.1385,106.3176895,7.725631769,114.0433213,NA
+2016,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 200,1,0.1385,47.14801444,5.342960289,52.49097473,NA
+2016,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,225 - 50,1,0.1385,137.833935,33.89891697,171.732852,NA
+2016,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 100,1,0.1385,118.4837545,72.5631769,191.0469314,NA
+2016,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 150,1,0.1385,153.465704,32.96028881,186.4259928,NA
+2016,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 160,1,0.1385,138.9891697,12.85198556,151.8411552,NA
+2016,hf151,nicoll,hk,conifer,113.0973355,42.54,-72.1825,obs,NA,NA,PH,HK,255 - 50,1,0.1385,51.80505415,12.85198556,64.65703971,NA
+2005,hf161,barker-plotkin,hf-here,conifer,7650,42.475,-72.215,exp,girdled,2005,SIMES,simes,1,4.666666667,0.111,222.4954955,42.43243243,264.9009009,NA
+2005,hf161,barker-plotkin,hf-here,conifer,7225,42.475,-72.215,exp,logged,2005,SIMES,simes,2,5,0.111,62.73873874,10.86486486,73.56756757,NA
+2005,hf161,barker-plotkin,hf-here,conifer,7650,42.475,-72.215,obs,hemlock control,NA,SIMES,simes,3,5,0.111,144.036036,55.3963964,199.4234234,NA
+2005,hf161,barker-plotkin,hf-here,conifer,8100,42.475,-72.215,exp,logged,2005,SIMES,simes,4,5,0.111,63.52252252,30.31531532,93.81981982,NA
+2005,hf161,barker-plotkin,hf-here,conifer,8100,42.475,-72.215,exp,girdled,2005,SIMES,simes,5,5,0.111,261.1081081,72.5045045,333.5675676,NA
+2005,hf161,barker-plotkin,hf-here,conifer,8100,42.475,-72.215,obs,hemlock control,NA,SIMES,simes,6,5,0.111,161.6396396,50.67567568,212.3063063,NA
+2005,hf161,barker-plotkin,hf-here,hardwood,8100,42.475,-72.215,obs,hardwood control,NA,SIMES,simes,7,5,0.111,171.027027,59.21621622,230.2162162,NA
+2005,hf161,barker-plotkin,hf-here,hardwood,8100,42.475,-72.215,obs,hardwood control,NA,SIMES,simes,8,5,0.111,182.5135135,25.10810811,207.5945946,NA
+2006,hf161,barker-plotkin,hf-here,conifer,7650,42.475,-72.215,exp,girdled,2005,SIMES,simes,1,5,0.111,124.3153153,126.972973,251.2882883,NA
+2006,hf161,barker-plotkin,hf-here,conifer,7225,42.475,-72.215,exp,logged,2005,SIMES,simes,2,5,0.111,79.3963964,18.16216216,97.56756757,NA
+2006,hf161,barker-plotkin,hf-here,conifer,7650,42.475,-72.215,obs,hemlock control,NA,SIMES,simes,3,5,0.111,132.6036036,69.72072072,202.3243243,NA
+2006,hf161,barker-plotkin,hf-here,conifer,8100,42.475,-72.215,exp,logged,2005,SIMES,simes,4,5,0.111,78.28828829,32.59459459,110.8828829,NA
+2006,hf161,barker-plotkin,hf-here,conifer,8100,42.475,-72.215,exp,girdled,2005,SIMES,simes,5,5,0.111,135.0990991,58.89189189,193.990991,NA
+2006,hf161,barker-plotkin,hf-here,conifer,8100,42.475,-72.215,obs,hemlock control,NA,SIMES,simes,6,5,0.111,139.5315315,70.85585586,210.3873874,NA
+2006,hf161,barker-plotkin,hf-here,hardwood,8100,42.475,-72.215,obs,hardwood control,NA,SIMES,simes,7,4.5,0.111,185.1351351,51.41141141,236.5465465,NA
+2006,hf161,barker-plotkin,hf-here,hardwood,8100,42.475,-72.215,obs,hardwood control,NA,SIMES,simes,8,5,0.111,194.2972973,27.27927928,221.5765766,NA
+2007,hf161,barker-plotkin,hf-here,conifer,7650,42.475,-72.215,exp,girdled,2005,SIMES,simes,1,4.5,0.111,77.75675676,39.52552553,117.2822823,NA
+2007,hf161,barker-plotkin,hf-here,conifer,7225,42.475,-72.215,exp,logged,2005,SIMES,simes,2,5,0.111,74.9009009,10.96396396,85.86486486,NA
+2007,hf161,barker-plotkin,hf-here,conifer,7650,42.475,-72.215,obs,hemlock control,NA,SIMES,simes,3,5,0.111,148,80.73873874,228.7387387,NA
+2007,hf161,barker-plotkin,hf-here,conifer,8100,42.475,-72.215,exp,logged,2005,SIMES,simes,4,4.5,0.111,79.93018018,31.38288288,111.3130631,NA
+2007,hf161,barker-plotkin,hf-here,conifer,8100,42.475,-72.215,exp,girdled,2005,SIMES,simes,5,5,0.111,94.43243243,48.5045045,142.9369369,NA
+2007,hf161,barker-plotkin,hf-here,conifer,8100,42.475,-72.215,obs,hemlock control,NA,SIMES,simes,6,5,0.111,154.9279279,40,194.9279279,NA
+2007,hf161,barker-plotkin,hf-here,hardwood,8100,42.475,-72.215,obs,hardwood control,NA,SIMES,simes,7,5,0.111,173.2162162,37.7027027,210.9189189,NA
+2007,hf161,barker-plotkin,hf-here,hardwood,8100,42.475,-72.215,obs,hardwood control,NA,SIMES,simes,8,5,0.111,170.027027,24.62162162,194.6486486,NA
+2008,hf161,barker-plotkin,hf-here,conifer,7650,42.475,-72.215,exp,girdled,2005,SIMES,simes,1,4.75,0.111,94.98423423,48.05405405,143.0292793,NA
+2008,hf161,barker-plotkin,hf-here,conifer,7225,42.475,-72.215,exp,logged,2005,SIMES,simes,2,5,0.111,98.6036036,24.79279279,123.3873874,NA
+2008,hf161,barker-plotkin,hf-here,conifer,7650,42.475,-72.215,obs,hemlock control,NA,SIMES,simes,3,4.75,0.111,152.6846847,63.85135135,216.527027,NA
+2008,hf161,barker-plotkin,hf-here,conifer,8100,42.475,-72.215,exp,logged,2005,SIMES,simes,4,5,0.111,107.9369369,12.2972973,120.1891892,NA
+2008,hf161,barker-plotkin,hf-here,conifer,8100,42.475,-72.215,exp,girdled,2005,SIMES,simes,5,5,0.111,101.5405405,89.46846847,191.009009,NA
+2008,hf161,barker-plotkin,hf-here,conifer,8100,42.475,-72.215,obs,hemlock control,NA,SIMES,simes,6,5,0.111,164.4864865,42.54954955,206.990991,NA
+2008,hf161,barker-plotkin,hf-here,hardwood,8100,42.475,-72.215,obs,hardwood control,NA,SIMES,simes,7,5,0.111,174.9189189,118.9099099,293.8288288,NA
+2008,hf161,barker-plotkin,hf-here,hardwood,8100,42.475,-72.215,obs,hardwood control,NA,SIMES,simes,8,4.75,0.111,175.9954955,33.40315315,209.3648649,NA
+2009,hf161,barker-plotkin,hf-here,conifer,7650,42.475,-72.215,exp,girdled,2005,SIMES,simes,1,5,0.111,113.9009009,71.63963964,185.5405405,NA
+2009,hf161,barker-plotkin,hf-here,conifer,7225,42.475,-72.215,exp,logged,2005,SIMES,simes,2,5,0.111,124.8378378,17.82882883,142.6666667,NA
+2009,hf161,barker-plotkin,hf-here,conifer,7650,42.475,-72.215,obs,hemlock control,NA,SIMES,simes,3,5,0.111,150.1171171,55.71171171,205.8288288,NA
+2009,hf161,barker-plotkin,hf-here,conifer,8100,42.475,-72.215,exp,logged,2005,SIMES,simes,4,4.5,0.111,115.6779279,29.13738739,144.8153153,NA
+2009,hf161,barker-plotkin,hf-here,conifer,8100,42.475,-72.215,exp,girdled,2005,SIMES,simes,5,5,0.111,116.9459459,98.23423423,215.1801802,NA
+2009,hf161,barker-plotkin,hf-here,conifer,8100,42.475,-72.215,obs,hemlock control,NA,SIMES,simes,6,5,0.111,162.2792793,64.21621622,226.4954955,NA
+2009,hf161,barker-plotkin,hf-here,hardwood,8100,42.475,-72.215,obs,hardwood control,NA,SIMES,simes,7,4,0.111,189.972973,42.89489489,232.8678679,NA
+2009,hf161,barker-plotkin,hf-here,hardwood,8100,42.475,-72.215,obs,hardwood control,NA,SIMES,simes,8,5,0.111,200.4864865,24.32432432,224.8108108,NA
+2010,hf161,barker-plotkin,hf-here,conifer,7650,42.475,-72.215,exp,girdled,2005,SIMES,simes,1,4.75,0.111,125.7117117,24.77747748,150.4873874,NA
+2010,hf161,barker-plotkin,hf-here,conifer,7225,42.475,-72.215,exp,logged,2005,SIMES,simes,2,5,0.111,129.8738739,8.469369369,138.3432432,NA
+2010,hf161,barker-plotkin,hf-here,conifer,7650,42.475,-72.215,obs,hemlock control,NA,SIMES,simes,3,4.75,0.111,152.731982,42.35495495,195.0869369,NA
+2010,hf161,barker-plotkin,hf-here,conifer,8100,42.475,-72.215,exp,logged,2005,SIMES,simes,4,4.5,0.111,109.4774775,17.84804805,127.3255255,NA
+2010,hf161,barker-plotkin,hf-here,conifer,8100,42.475,-72.215,exp,girdled,2005,SIMES,simes,5,5,0.111,131.5945946,101.6234234,233.218018,NA
+2010,hf161,barker-plotkin,hf-here,conifer,8100,42.475,-72.215,obs,hemlock control,NA,SIMES,simes,6,5,0.111,157.4054054,42.60540541,200.0108108,NA
+2010,hf161,barker-plotkin,hf-here,hardwood,6000,42.475,-72.215,obs,hardwood control,NA,SIMES,simes,7,3,0.111,185.3003003,35.25375375,220.5540541,NA
+2010,hf161,barker-plotkin,hf-here,hardwood,8100,42.475,-72.215,obs,hardwood control,NA,SIMES,simes,8,5,0.111,178.6779279,14.07207207,188.2747748,NA
+2011,hf161,barker-plotkin,hf-here,conifer,7650,42.475,-72.215,exp,girdled,2005,SIMES,simes,1,5,0.111,126.5855856,57.16576577,183.7513514,NA
+2011,hf161,barker-plotkin,hf-here,conifer,7225,42.475,-72.215,exp,logged,2005,SIMES,simes,2,5,0.111,128.7207207,32.05135135,160.7720721,NA
+2011,hf161,barker-plotkin,hf-here,conifer,7650,42.475,-72.215,obs,hemlock control,NA,SIMES,simes,3,4.75,0.111,142.1599099,84.65788288,226.8177928,NA
+2011,hf161,barker-plotkin,hf-here,conifer,8100,42.475,-72.215,exp,logged,2005,SIMES,simes,4,5,0.111,86.37837838,31.1990991,117.5774775,NA
+2011,hf161,barker-plotkin,hf-here,conifer,8100,42.475,-72.215,exp,girdled,2005,SIMES,simes,5,5,0.111,120.7117117,115.3882883,236.1,NA
+2011,hf161,barker-plotkin,hf-here,conifer,8100,42.475,-72.215,obs,hemlock control,NA,SIMES,simes,6,5,0.111,138.2432432,90.13963964,228.3828829,NA
+2011,hf161,barker-plotkin,hf-here,hardwood,6000,42.475,-72.215,obs,hardwood control,NA,SIMES,simes,7,3,0.111,160.1051051,62.70870871,222.8138138,NA
+2011,hf161,barker-plotkin,hf-here,hardwood,8100,42.475,-72.215,obs,hardwood control,NA,SIMES,simes,8,5,0.111,155.2252252,49.27477477,204.5,NA
+2012,hf161,barker-plotkin,hf-here,conifer,7650,42.475,-72.215,exp,girdled,2005,SIMES,simes,1,5,0.111,128.2342342,101.1405405,229.3747748,NA
+2012,hf161,barker-plotkin,hf-here,conifer,7225,42.475,-72.215,exp,logged,2005,SIMES,simes,2,4.75,0.111,136.6013514,26.72657658,163.3279279,NA
+2012,hf161,barker-plotkin,hf-here,conifer,7650,42.475,-72.215,obs,hemlock control,NA,SIMES,simes,3,4.75,0.111,148.0698198,74.77162162,222.8414414,NA
+2012,hf161,barker-plotkin,hf-here,conifer,8100,42.475,-72.215,exp,logged,2005,SIMES,simes,4,4.75,0.111,117.6936937,33.87792793,151.5716216,NA
+2012,hf161,barker-plotkin,hf-here,conifer,8100,42.475,-72.215,exp,girdled,2005,SIMES,simes,5,4.5,0.111,153.2882883,52.03288288,205.3211712,NA
+2012,hf161,barker-plotkin,hf-here,conifer,8100,42.475,-72.215,obs,hemlock control,NA,SIMES,simes,6,4.75,0.111,159.0810811,55.79189189,214.872973,NA
+2012,hf161,barker-plotkin,hf-here,hardwood,6000,42.475,-72.215,obs,hardwood control,NA,SIMES,simes,7,2.75,0.111,206.8768769,102.6291291,309.506006,NA
+2012,hf161,barker-plotkin,hf-here,hardwood,8100,42.475,-72.215,obs,hardwood control,NA,SIMES,simes,8,5,0.111,156.4234234,59.54594595,215.9693694,NA
+2013,hf161,barker-plotkin,hf-here,conifer,7650,42.475,-72.215,exp,girdled,2005,SIMES,simes,1,5,0.111,145.7117117,33.83153153,179.5396396,NA
+2013,hf161,barker-plotkin,hf-here,conifer,7225,42.475,-72.215,exp,logged,2005,SIMES,simes,2,4.25,0.111,152.6246246,7.144894895,159.7755255,NA
+2013,hf161,barker-plotkin,hf-here,conifer,7650,42.475,-72.215,obs,hemlock control,NA,SIMES,simes,3,5,0.111,143.0810811,53.41621622,196.4954955,NA
+2013,hf161,barker-plotkin,hf-here,conifer,8100,42.475,-72.215,exp,logged,2005,SIMES,simes,4,4.5,0.111,140.2162162,19.59797297,159.8220721,NA
+2013,hf161,barker-plotkin,hf-here,conifer,8100,42.475,-72.215,exp,girdled,2005,SIMES,simes,5,4.75,0.111,137.1463964,27.39887387,164.5486486,NA
+2013,hf161,barker-plotkin,hf-here,conifer,8100,42.475,-72.215,obs,hemlock control,NA,SIMES,simes,6,5,0.111,165.3333333,43.97297297,209.3099099,NA
+2013,hf161,barker-plotkin,hf-here,hardwood,6000,42.475,-72.215,obs,hardwood control,NA,SIMES,simes,7,3.5,0.111,197.6186186,55.94984985,253.572973,NA
+2013,hf161,barker-plotkin,hf-here,hardwood,8100,42.475,-72.215,obs,hardwood control,NA,SIMES,simes,8,4.75,0.111,172.1261261,34.60540541,206.7369369,NA
+2014,hf161,barker-plotkin,hf-here,hardwood,7650,42.475,-72.215,exp,girdled,2005,SIMES,simes,1,5,0.111,125.1081081,41.37117117,128.9576577,NA
+2014,hf161,barker-plotkin,hf-here,hardwood,7225,42.475,-72.215,exp,logged,2005,SIMES,simes,2,5,0.111,157.1801802,24.91441441,158.5216216,NA
+2014,hf161,barker-plotkin,hf-here,conifer,7650,42.475,-72.215,obs,hemlock control,NA,SIMES,simes,3,4.5,0.111,160.5990991,57.00337838,166.5934685,NA
+2014,hf161,barker-plotkin,hf-here,hardwood,8100,42.475,-72.215,exp,logged,2005,SIMES,simes,4,5,0.111,133.1621622,25.59099099,134.3648649,NA
+2014,hf161,barker-plotkin,hf-here,hardwood,8100,42.475,-72.215,exp,girdled,2005,SIMES,simes,5,5,0.111,151.6936937,50.47027027,159.0918919,NA
+2014,hf161,barker-plotkin,hf-here,conifer,8100,42.475,-72.215,obs,hemlock control,NA,SIMES,simes,6,5,0.111,155.7027027,48.87117117,162.6063063,NA
+2014,hf161,barker-plotkin,hf-here,hardwood,6000,42.475,-72.215,obs,hardwood control,NA,SIMES,simes,7,5,0.111,184.981982,53.2981982,190.5522523,NA
+2014,hf161,barker-plotkin,hf-here,hardwood,8100,42.475,-72.215,obs,hardwood control,NA,SIMES,simes,8,5,0.111,184.7657658,26.53153153,187.7162162,NA
+2015,hf161,barker-plotkin,hf-here,conifer,7650,42.475,-72.215,exp,girdled,2005,SIMES,simes,1,5,0.111,127.4684685,13.64594595,141.1144144,NA
+2015,hf161,barker-plotkin,hf-here,conifer,7225,42.475,-72.215,exp,logged,2005,SIMES,simes,2,4.666666667,0.111,133.0045045,18.90518018,151.9096847,NA
+2015,hf161,barker-plotkin,hf-here,conifer,7650,42.475,-72.215,obs,hemlock control,NA,SIMES,simes,3,5,0.111,120.4774775,53.85765766,174.3351351,NA
+2015,hf161,barker-plotkin,hf-here,conifer,8100,42.475,-72.215,exp,logged,2005,SIMES,simes,4,4.333333333,0.111,136.3993994,16.47717718,152.9036036,NA
+2015,hf161,barker-plotkin,hf-here,conifer,8100,42.475,-72.215,exp,girdled,2005,SIMES,simes,5,5,0.111,147.2522523,98.0981982,245.3504505,NA
+2015,hf161,barker-plotkin,hf-here,conifer,8100,42.475,-72.215,obs,hemlock control,NA,SIMES,simes,6,4.666666667,0.111,149.1531532,38.62702703,187.7801802,NA
+2015,hf161,barker-plotkin,hf-here,hardwood,6000,42.475,-72.215,obs,hardwood control,NA,SIMES,simes,7,4.666666667,0.111,166.2995495,58.58783784,224.8873874,NA
+2015,hf161,barker-plotkin,hf-here,hardwood,8100,42.475,-72.215,obs,hardwood control,NA,SIMES,simes,8,4.666666667,0.111,156.6666667,27.87117117,184.5648649,NA
+2007,hf180,brzostek,prot-enz,hardwood,201.06176,42.87,-72.45,obs,NA,NA,PISGAH,ACSA,ASCA1,2,0.125,195.54,NA,NA,NA
+2007,hf180,brzostek,prot-enz,hardwood,201.06176,42.87,-72.45,obs,NA,NA,PISGAH,ACSA,ASCA2,2,0.125,208.08,NA,NA,NA
+2007,hf180,brzostek,prot-enz,hardwood,201.06176,42.87,-72.45,obs,NA,NA,PISGAH,ACSA,ASCA3,2,0.125,259,NA,NA,NA
+2007,hf180,brzostek,prot-enz,hardwood,201.06176,42.87,-72.45,obs,NA,NA,PISGAH,ACSA,ASCA4,2,0.125,210.62,NA,NA,NA
+2007,hf180,brzostek,prot-enz,hardwood,201.06176,42.87,-72.45,obs,NA,NA,PISGAH,ACSA,ASCA5,2,0.125,223.72,NA,NA,NA
+2007,hf180,brzostek,prot-enz,hardwood,201.06176,42.87,-72.45,obs,NA,NA,PISGAH,ACSA,ASCA6,2,0.125,192.48,NA,NA,NA
+2007,hf180,brzostek,prot-enz,hardwood,201.06176,42.87,-72.45,obs,NA,NA,PISGAH,FAGR,FAGR1,2,0.125,131.08,NA,NA,NA
+2007,hf180,brzostek,prot-enz,hardwood,201.06176,42.87,-72.45,obs,NA,NA,PISGAH,FAGR,FAGR2,2,0.125,128.62,NA,NA,NA
+2007,hf180,brzostek,prot-enz,hardwood,201.06176,42.87,-72.45,obs,NA,NA,PISGAH,FAGR,FAGR3,2,0.125,141.6,NA,NA,NA
+2007,hf180,brzostek,prot-enz,hardwood,201.06176,42.87,-72.45,obs,NA,NA,PISGAH,FAGR,FAGR4,2,0.125,140.86,NA,NA,NA
+2007,hf180,brzostek,prot-enz,hardwood,201.06176,42.87,-72.45,obs,NA,NA,PISGAH,FAGR,FAGR5,2,0.125,143.3,NA,NA,NA
+2007,hf180,brzostek,prot-enz,hardwood,201.06176,42.87,-72.45,obs,NA,NA,PISGAH,FAGR,FAGR6,2,0.125,139.02,NA,NA,NA
+2007,hf180,brzostek,prot-enz,hardwood,201.06176,42.539171,-72.193363,obs,NA,NA,PH,FRAM,FRAM1,2,0.125,159.92,NA,NA,earthworms present in plot
+2007,hf180,brzostek,prot-enz,hardwood,201.06176,42.539171,-72.193363,obs,NA,NA,PH,FRAM,FRAM2,2,0.125,199.7,NA,NA,earthworms present in plot
+2007,hf180,brzostek,prot-enz,hardwood,201.06176,42.539171,-72.193363,obs,NA,NA,PH,FRAM,FRAM3,2,0.125,159.36,NA,NA,earthworms present in plot
+2007,hf180,brzostek,prot-enz,hardwood,201.06176,42.539171,-72.193363,obs,NA,NA,PH,FRAM,FRAM4,2,0.125,210.54,NA,NA,earthworms present in plot
+2007,hf180,brzostek,prot-enz,hardwood,201.06176,42.539171,-72.193363,obs,NA,NA,PH,FRAM,FRAM5,2,0.125,199.34,NA,NA,earthworms present in plot
+2007,hf180,brzostek,prot-enz,hardwood,201.06176,42.539171,-72.193363,obs,NA,NA,PH,FRAM,FRAM6,2,0.125,208.2,NA,NA,earthworms present in plot
+2007,hf180,brzostek,prot-enz,conifer,201.06176,42.545013,-72.177819,obs,NA,NA,PH,TSCA,TSCA1,2,0.125,93.82,NA,NA,NA
+2007,hf180,brzostek,prot-enz,conifer,201.06176,42.545013,-72.177819,obs,NA,NA,PH,TSCA,TSCA2,2,0.125,82.32,NA,NA,NA
+2007,hf180,brzostek,prot-enz,conifer,201.06176,42.545013,-72.177819,obs,NA,NA,PH,TSCA,TSCA3,2,0.125,128.36,NA,NA,NA
+2007,hf180,brzostek,prot-enz,conifer,201.06176,42.545013,-72.177819,obs,NA,NA,PH,TSCA,TSCA4,2,0.125,109.76,NA,NA,NA
+2007,hf180,brzostek,prot-enz,conifer,201.06176,42.545013,-72.177819,obs,NA,NA,PH,TSCA,TSCA5,2,0.125,86.24,NA,NA,NA
+2007,hf180,brzostek,prot-enz,conifer,201.06176,42.545013,-72.177819,obs,NA,NA,PH,TSCA,TSCA6,2,0.125,125.02,NA,NA,NA
+2008,hf180,brzostek,prot-enz,hardwood,201.06176,42.87,-72.45,obs,NA,NA,PISGAH,ACSA,ASCA1,2,0.125,226.08,NA,NA,NA
+2008,hf180,brzostek,prot-enz,hardwood,201.06176,42.87,-72.45,obs,NA,NA,PISGAH,ACSA,ASCA2,2,0.125,230.64,NA,NA,NA
+2008,hf180,brzostek,prot-enz,hardwood,201.06176,42.87,-72.45,obs,NA,NA,PISGAH,ACSA,ASCA3,2,0.125,258.94,NA,NA,NA
+2008,hf180,brzostek,prot-enz,hardwood,201.06176,42.87,-72.45,obs,NA,NA,PISGAH,ACSA,ASCA4,2,0.125,250.06,NA,NA,NA
+2008,hf180,brzostek,prot-enz,hardwood,201.06176,42.87,-72.45,obs,NA,NA,PISGAH,ACSA,ASCA5,2,0.125,241.3,NA,NA,NA
+2008,hf180,brzostek,prot-enz,hardwood,201.06176,42.87,-72.45,obs,NA,NA,PISGAH,ACSA,ASCA6,2,0.125,215.74,NA,NA,NA
+2008,hf180,brzostek,prot-enz,hardwood,201.06176,42.87,-72.45,obs,NA,NA,PISGAH,FAGR,FAGR1,2,0.125,207.6,NA,NA,NA
+2008,hf180,brzostek,prot-enz,hardwood,201.06176,42.87,-72.45,obs,NA,NA,PISGAH,FAGR,FAGR2,2,0.125,174.82,NA,NA,NA
+2008,hf180,brzostek,prot-enz,hardwood,201.06176,42.87,-72.45,obs,NA,NA,PISGAH,FAGR,FAGR3,2,0.125,163.52,NA,NA,NA
+2008,hf180,brzostek,prot-enz,hardwood,201.06176,42.87,-72.45,obs,NA,NA,PISGAH,FAGR,FAGR4,2,0.125,208.44,NA,NA,NA
+2008,hf180,brzostek,prot-enz,hardwood,201.06176,42.87,-72.45,obs,NA,NA,PISGAH,FAGR,FAGR5,2,0.125,214.18,NA,NA,NA
+2008,hf180,brzostek,prot-enz,hardwood,201.06176,42.87,-72.45,obs,NA,NA,PISGAH,FAGR,FAGR6,2,0.125,169.76,NA,NA,NA
+2008,hf180,brzostek,prot-enz,hardwood,201.06176,42.539171,-72.193363,obs,NA,NA,PH,FRAM,FRAM1,2,0.125,180.72,NA,NA,earthworms present in plot
+2008,hf180,brzostek,prot-enz,hardwood,201.06176,42.539171,-72.193363,obs,NA,NA,PH,FRAM,FRAM2,2,0.125,222.04,NA,NA,earthworms present in plot
+2008,hf180,brzostek,prot-enz,hardwood,201.06176,42.539171,-72.193363,obs,NA,NA,PH,FRAM,FRAM3,2,0.125,176.22,NA,NA,earthworms present in plot
+2008,hf180,brzostek,prot-enz,hardwood,201.06176,42.539171,-72.193363,obs,NA,NA,PH,FRAM,FRAM4,2,0.125,248.16,NA,NA,earthworms present in plot
+2008,hf180,brzostek,prot-enz,hardwood,201.06176,42.539171,-72.193363,obs,NA,NA,PH,FRAM,FRAM5,2,0.125,216.26,NA,NA,earthworms present in plot
+2008,hf180,brzostek,prot-enz,hardwood,201.06176,42.539171,-72.193363,obs,NA,NA,PH,FRAM,FRAM6,2,0.125,198.9,NA,NA,earthworms present in plot
+2008,hf180,brzostek,prot-enz,conifer,201.06176,42.545013,-72.177819,obs,NA,NA,PH,TSCA,TSCA1,2,0.125,180.06,NA,NA,NA
+2008,hf180,brzostek,prot-enz,conifer,201.06176,42.545013,-72.177819,obs,NA,NA,PH,TSCA,TSCA2,2,0.125,146.04,NA,NA,NA
+2008,hf180,brzostek,prot-enz,conifer,201.06176,42.545013,-72.177819,obs,NA,NA,PH,TSCA,TSCA3,2,0.125,176.76,NA,NA,NA
+2008,hf180,brzostek,prot-enz,conifer,201.06176,42.545013,-72.177819,obs,NA,NA,PH,TSCA,TSCA4,2,0.125,213.68,NA,NA,NA
+2008,hf180,brzostek,prot-enz,conifer,201.06176,42.545013,-72.177819,obs,NA,NA,PH,TSCA,TSCA5,2,0.125,229.96,NA,NA,NA
+2008,hf180,brzostek,prot-enz,conifer,201.06176,42.545013,-72.177819,obs,NA,NA,PH,TSCA,TSCA6,2,0.125,228.24,NA,NA,NA
+2010,hf257,raymer,hem-chrono,conifer,900,42.47,-72.22,exp,girdled,2005,SIMES,2G,1,2,0.11945896,116.881145,NA,NA,Oct 2010-Aug 2011
+2010,hf257,raymer,hem-chrono,conifer,900,42.47,-72.22,exp,girdled,2005,SIMES,2G,2,2,0.11945896,127.8451615,NA,NA,Oct 2010-Aug 2011
+2010,hf257,raymer,hem-chrono,conifer,900,42.47,-72.22,exp,girdled,2005,SIMES,2G,3,1.75,0.11945896,168.0702732,NA,NA,Oct 2010-Aug 2011
+2010,hf257,raymer,hem-chrono,conifer,900,42.47,-72.22,exp,girdled,2005,SIMES,2G,4,1.75,0.11945896,151.2444109,NA,NA,Oct 2010-Aug 2011
+2010,hf257,raymer,hem-chrono,hardwood,900,42.47,-72.22,obs,NA,NA,SIMES,Gdl,1,2,0.11945896,65.62086273,NA,NA,Oct 2010-Aug 2011
+2010,hf257,raymer,hem-chrono,hardwood,900,42.47,-72.22,obs,NA,NA,SIMES,Gdl,2,1.75,0.11945896,134.062778,NA,NA,Oct 2010-Aug 2011
+2010,hf257,raymer,hem-chrono,hardwood,900,42.47,-72.22,obs,NA,NA,SIMES,Gdl,3,2,0.11945896,62.97141726,NA,NA,Oct 2010-Aug 2011
+2010,hf257,raymer,hem-chrono,hardwood,900,42.47,-72.22,obs,NA,NA,SIMES,Gdl,4,2,0.11945896,66.80118441,NA,NA,Oct 2010-Aug 2011
+2010,hf257,raymer,hem-chrono,conifer,900,42.54,-72.18,obs,NA,NA,PH,OG,1,2,0.11945896,113.8884855,NA,NA,Oct 2010-Aug 2011
+2010,hf257,raymer,hem-chrono,conifer,900,42.54,-72.18,obs,NA,NA,PH,OG,2,2,0.11945896,105.8103974,NA,NA,Oct 2010-Aug 2011
+2010,hf257,raymer,hem-chrono,conifer,900,42.54,-72.18,obs,NA,NA,PH,OG,3,2,0.11945896,123.7872825,NA,NA,Oct 2010-Aug 2011
+2010,hf257,raymer,hem-chrono,conifer,900,42.54,-72.18,obs,NA,NA,PH,OG,4,2,0.11945896,122.9292473,NA,NA,Oct 2010-Aug 2011
+2011,hf257,raymer,hem-chrono,conifer,900,42.47,-72.22,exp,girdled,2005,SIMES,2G,1,2,0.11945896,56.6093997,NA,NA,not full year; exclude?
+2011,hf257,raymer,hem-chrono,conifer,900,42.47,-72.22,exp,girdled,2005,SIMES,2G,2,2,0.11945896,71.97032368,NA,NA,not full year; exclude?
+2011,hf257,raymer,hem-chrono,conifer,900,42.47,-72.22,exp,girdled,2005,SIMES,2G,3,2,0.11945896,60.83679295,NA,NA,not full year; exclude?
+2011,hf257,raymer,hem-chrono,conifer,900,42.47,-72.22,exp,girdled,2005,SIMES,2G,4,2,0.11945896,92.70966383,NA,NA,not full year; exclude?
+2011,hf257,raymer,hem-chrono,hardwood,900,42.47,-72.22,obs,NA,NA,SIMES,Gdl,1,2,0.11945896,63.18069415,NA,NA,not full year; exclude?
+2011,hf257,raymer,hem-chrono,hardwood,900,42.47,-72.22,obs,NA,NA,SIMES,Gdl,2,2,0.11945896,69.41714558,NA,NA,not full year; exclude?
+2011,hf257,raymer,hem-chrono,hardwood,900,42.47,-72.22,obs,NA,NA,SIMES,Gdl,3,2,0.11945896,46.68967495,NA,NA,not full year; exclude?
+2011,hf257,raymer,hem-chrono,hardwood,900,42.47,-72.22,obs,NA,NA,SIMES,Gdl,4,2,0.11945896,45.58050741,NA,NA,not full year; exclude?
+2011,hf257,raymer,hem-chrono,conifer,900,42.54,-72.18,obs,NA,NA,PH,OG,1,2,0.11945896,43.21567851,NA,NA,not full year; exclude?
+2011,hf257,raymer,hem-chrono,conifer,900,42.54,-72.18,obs,NA,NA,PH,OG,2,2,0.11945896,50.14274369,NA,NA,not full year; exclude?
+2011,hf257,raymer,hem-chrono,conifer,900,42.54,-72.18,obs,NA,NA,PH,OG,3,2,0.11945896,38.33952689,NA,NA,not full year; exclude?
+2011,hf257,raymer,hem-chrono,conifer,900,42.54,-72.18,obs,NA,NA,PH,OG,4,2,0.11945896,51.37747736,NA,NA,not full year; exclude?
+2006,hf018,melillo,barre-woods,hardwood,900,42.48,-72.18,obs,NA,NA,SC,Barre Woods,control,12,0.2145,131.8337218,NA,NA, baskets averaged
+2006,hf018,melillo,barre-woods,hardwood,900,42.48,-72.18,exp,heated,2003-ongoing,SC,Barre Woods,heated,10,0.2145,140.6620047,NA,NA, baskets averaged
+2007,hf018,melillo,barre-woods,hardwood,900,42.48,-72.18,obs,NA,NA,SC,Barre Woods,control,12,0.2145,166.1227661,NA,NA, baskets averaged
+2007,hf018,melillo,barre-woods,hardwood,900,42.48,-72.18,exp,heated,2003-ongoing,SC,Barre Woods,heated,10,0.2145,198.020979,NA,NA, baskets averaged
+2008,hf018,melillo,barre-woods,hardwood,900,42.48,-72.18,obs,NA,NA,SC,Barre Woods,control,12,0.2145,192.6320901,NA,NA, baskets averaged
+2008,hf018,melillo,barre-woods,hardwood,900,42.48,-72.18,exp,heated,2003-ongoing,SC,Barre Woods,heated,10,0.2145,200.2494172,NA,NA, baskets averaged
+2009,hf018,melillo,barre-woods,hardwood,900,42.48,-72.18,obs,NA,NA,SC,Barre Woods,control,12,0.2145,182.2066822,NA,NA, baskets averaged
+2009,hf018,melillo,barre-woods,hardwood,900,42.48,-72.18,exp,heated,2003-ongoing,SC,Barre Woods,heated,10,0.2145,195.6433566,NA,NA, baskets averaged
+2010,hf018,melillo,barre-woods,hardwood,900,42.48,-72.18,obs,NA,NA,SC,Barre Woods,control,12,0.2145,157.6243201,NA,NA, baskets averaged
+2010,hf018,melillo,barre-woods,hardwood,900,42.48,-72.18,exp,heated,2003-ongoing,SC,Barre Woods,heated,10,0.2145,176.8484848,NA,NA, baskets averaged
+2011,hf018,melillo,barre-woods,hardwood,900,42.48,-72.18,obs,NA,NA,SC,Barre Woods,control,12,0.2145,131.5947941,NA,NA, baskets averaged
+2011,hf018,melillo,barre-woods,hardwood,900,42.48,-72.18,exp,heated,2003-ongoing,SC,Barre Woods,heated,10,0.2145,143.5594406,NA,NA, baskets averaged
+2012,hf018,melillo,barre-woods,hardwood,900,42.48,-72.18,obs,NA,NA,SC,Barre Woods,control,12,0.2145,182.1794872,NA,NA, baskets averaged
+2012,hf018,melillo,barre-woods,hardwood,900,42.48,-72.18,exp,heated,2003-ongoing,SC,Barre Woods,heated,10,0.2145,196.4778555,NA,NA, baskets averaged
+2013,hf018,melillo,barre-woods,hardwood,900,42.48,-72.18,obs,NA,NA,SC,Barre Woods,control,12,0.2145,155.549728,NA,NA, baskets averaged
+2013,hf018,melillo,barre-woods,hardwood,900,42.48,-72.18,exp,heated,2003-ongoing,SC,Barre Woods,heated,10,0.2145,170.6223776,NA,NA, baskets averaged

@@ -1,1 +1,5 @@
 candidate_id,gap_id,exclusion_code,reason,access_state,reconsideration_trigger,review_state
+CAND-003,GAP-CAL04-INDEPENDENT-PHENOLOGY-HOLDOUT,REDUNDANT_AND_LOGIN_REQUIRED,Field datasets already provide stronger direct authority,EARTHDATA_LOGIN,Need for orthogonal canopy-scale validation,REVIEWED_EXCLUDED
+CAND-008,GAP-CAL05-SOURCE-COMPOSITION,MATERIAL_PARTITION_ABSENT,Publication treats all basket mass as foliar and no raw component object was found,PUBLIC_PAPER,Underlying sorted raw tables supplied,REVIEWED_EXCLUDED
+SANTEE-GRESHAM,GAP-CAL05-SOURCE-COMPOSITION,SITE_AND_MATERIAL_MISMATCH,Hobcaw flux is not Santee stock and wood is pooled with fruit,PUBLIC_PAPER,Co-located stock plus separable underlying tissue mass,REVIEWED_EXCLUDED
+MARCELL-SPRUCE-PHENO,GAP-CAL04-INDEPENDENT-PHENOLOGY-HOLDOUT,FOREST_CLASS_MISMATCH,Peatland spruce/shrub observations do not match upland fixture,PUBLIC_METADATA,Matched upland series identified,REVIEWED_EXCLUDED

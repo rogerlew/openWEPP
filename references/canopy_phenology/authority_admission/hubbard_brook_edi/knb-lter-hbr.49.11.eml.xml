@@ -1,0 +1,1581 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<eml:eml packageId="knb-lter-hbr.49.11"
+  system="https://pasta.edirepository.org"
+  xmlns:eml="https://eml.ecoinformatics.org/eml-2.2.0"
+  xmlns:stmml="http://www.xml-cml.org/schema/stmml-1.2"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://eml.ecoinformatics.org/eml-2.2.0 https://eml.ecoinformatics.org/eml-2.2.0/eml.xsd">
+   <access
+    authSystem="https://pasta.edirepository.org/authentication"
+    order="allowFirst" scope="document"
+      system="https://pasta.edirepository.org">
+      <allow>
+         <principal>uid=HBR,o=EDI,dc=edirepository,dc=org</principal>
+         <permission>all</permission>
+      </allow>
+      <allow>
+         <principal>public</principal>
+         <permission>read</permission>
+      </allow>
+   </access>
+   <dataset>
+      <alternateIdentifier
+        system="https://doi.org">doi:10.6073/pasta/31ad6747253027339ad615652495d6e3</alternateIdentifier><title>Fine Litterfall Data at the Hubbard Brook Experimental Forest, 1992 - ongoing</title>
+      <creator>
+         <individualName>
+            <givenName>Timothy</givenName>
+            <givenName>J</givenName>
+            <surName>Fahey</surName>
+         </individualName>
+         <organizationName>Cornell University</organizationName>
+         <electronicMailAddress>tjf5@cornell.edu</electronicMailAddress>
+         <userId
+        directory="https://orcid.org">0000-0003-1283-1162</userId>
+         <userId
+        directory="https://ror.org/">https://ror.org/05bnh6r87</userId>
+      </creator>
+      <creator>
+         <individualName>
+            <givenName>Natalie</givenName>
+            <surName>Cleavitt</surName>
+         </individualName>
+         <organizationName>Cornell University</organizationName>
+         <electronicMailAddress>nlc4@cornell.edu</electronicMailAddress>
+         <userId
+        directory="https://orcid.org">0000-0003-0425-2486</userId>
+         <userId
+      directory="https://ror.org/">https://ror.org/05bnh6r87</userId>
+      </creator>
+      <associatedParty>
+         <individualName>
+            <givenName>Cynthia</givenName>
+            <surName>Wood</surName>
+         </individualName>
+         <organizationName>Cornell University</organizationName>
+         <role>AssociatedParty</role>
+      </associatedParty>
+      <pubDate>2025-05-24</pubDate>
+      <abstract>
+         <para>Fine litterfall (leaves, twigs, fruits, seeds, etc.) is collected in Watershed 1, Watershed 5, the Throughfall plots and the Bear Brook Watershed reference forest, located to the west of Watershed 6, to quantify carbon and nutrient flux associated with this important pathway. These measurements have facilitated quantification of ice storm effects and species declines (paper birch, sugar maple).</para>
+         <para>These data were gathered as part of the Hubbard Brook Ecosystem Study (HBES). The HBES is a collaborative effort at the Hubbard Brook Experimental Forest, which is operated and maintained by the USDA Forest Service, Northern Research Station.</para>
+      </abstract>
+      <keywordSet>
+         <keyword>HBR</keyword>
+         <keyword>Hubbard Brook LTER</keyword>
+         <keyword>Hubbard Brook Experimental Forest</keyword>
+         <keyword>Hubbard Brook Ecosystem Study</keyword>
+         <keyword>HBES</keyword>
+         <keyword>HBEF</keyword>
+         <keyword>New Hampshire</keyword>
+         <keyword>NH</keyword>
+         <keyword>White Mountain National Forest</keyword>
+         <keyword>HBEF Watershed 1</keyword>
+         <keyword>HBEF Watershed 5</keyword>
+         <keyword>HBEF Bear Brook Watershed</keyword>
+         <keyword>HBEF Throughfall Plots</keyword>
+         <keywordThesaurus>HBES Vocabulary</keywordThesaurus>
+      </keywordSet>
+      <keywordSet>
+         <keyword>biota</keyword>
+         <keyword>climatologyMeteorologyAtmosphere</keyword>
+         <keywordThesaurus>ISO 19115 Topic Category</keywordThesaurus>
+      </keywordSet>
+      <keywordSet>
+         <keyword>ecosystems</keyword>
+         <keyword>forests</keyword>
+         <keyword>watersheds</keyword>
+         <keyword>elevation</keyword>
+         <keyword>foliage</keyword>
+         <keyword>leaves</keyword>
+         <keyword>leaf area</keyword>
+         <keyword>litterfall</keyword>
+         <keyword>seeds</keyword>
+         <keyword>trees</keyword>
+         <keyword>vegetation</keyword>
+         <keywordThesaurus>LTER Controlled Vocabulary</keywordThesaurus>
+      </keywordSet>
+      <keywordSet>
+         <keyword>disturbance</keyword>
+         <keywordThesaurus>LTER Core Research Area</keywordThesaurus>
+      </keywordSet>
+      <keywordSet>
+         <keyword>primary production</keyword>
+         <keywordThesaurus>LTER Core Research Areas</keywordThesaurus>
+      </keywordSet>
+      <keywordSet>
+         <keyword>Climate change</keyword>
+         <keyword>Climate change effects</keyword>
+         <keyword>Ecology, Ecosystems, &amp; Environment</keyword>
+         <keywordThesaurus>National Research &amp; Development Taxonomy</keywordThesaurus>
+      </keywordSet>
+      <intellectualRights>
+         <para>This information is released under the Creative Commons license - Attribution - CC BY (https://creativecommons.org/licenses/by/4.0/). The consumer of these data ("Data User" herein) is required to cite it appropriately in any publication that results from its use. The Data User should realize that these data may be actively used by others for ongoing research and that coordination may be necessary to prevent duplicate publication. The Data User is urged to contact the authors of these data if any questions about methodology or results occur. Where appropriate, the Data User is encouraged to consider collaboration or co-authorship with the authors. The Data User should realize that misinterpretation of data may occur if used out of context of the original study. While substantial efforts are made to ensure the accuracy of data and associated documentation, complete accuracy of data sets cannot be guaranteed. All data are made available "as is." The Data User should be aware, however, that data are updated periodically and it is the responsibility of the Data User to check for new versions of the data. The data authors and the repository where these data were obtained shall not be liable for damages resulting from any use or misinterpretation of the data. Thank you.</para>
+      </intellectualRights>
+      <distribution
+      id="10.6073/pasta/31ad6747253027339ad615652495d6e3" scope="system"
+          system="https://pasta.edirepository.org"><online><url
+            function="information">https://doi.org/10.6073/pasta/31ad6747253027339ad615652495d6e3</url></online></distribution><coverage>
+         <geographicCoverage>
+            <geographicDescription>Hubbard Brook Experimental Forest</geographicDescription>
+            <boundingCoordinates>
+               <westBoundingCoordinate>-71.8062</westBoundingCoordinate>
+               <eastBoundingCoordinate>-71.7022</eastBoundingCoordinate>
+               <northBoundingCoordinate>43.959</northBoundingCoordinate>
+               <southBoundingCoordinate>43.914</southBoundingCoordinate>
+            </boundingCoordinates>
+         </geographicCoverage>
+         <geographicCoverage>
+            <geographicDescription>Watershed 1 sites</geographicDescription>
+            <boundingCoordinates>
+               <westBoundingCoordinate>-71.731</westBoundingCoordinate>
+               <eastBoundingCoordinate>-71.726</eastBoundingCoordinate>
+               <northBoundingCoordinate>43.9594</northBoundingCoordinate>
+               <southBoundingCoordinate>43.9521</southBoundingCoordinate>
+            </boundingCoordinates>
+         </geographicCoverage>
+         <geographicCoverage>
+            <geographicDescription>Watershed 5 sites</geographicDescription>
+            <boundingCoordinates>
+               <westBoundingCoordinate>-71.739</westBoundingCoordinate>
+               <eastBoundingCoordinate>-71.731</eastBoundingCoordinate>
+               <northBoundingCoordinate>43.9572</northBoundingCoordinate>
+               <southBoundingCoordinate>43.9489</southBoundingCoordinate>
+            </boundingCoordinates>
+         </geographicCoverage>
+         <geographicCoverage>
+            <geographicDescription>Bear Brook sites</geographicDescription>
+            <boundingCoordinates>
+               <westBoundingCoordinate>-71.743</westBoundingCoordinate>
+               <eastBoundingCoordinate>-71.736</eastBoundingCoordinate>
+               <northBoundingCoordinate>43.957</northBoundingCoordinate>
+               <southBoundingCoordinate>43.9499</southBoundingCoordinate>
+            </boundingCoordinates>
+         </geographicCoverage>
+         <geographicCoverage>
+            <geographicDescription>Throughfall sites</geographicDescription>
+            <boundingCoordinates>
+               <westBoundingCoordinate>-71.7401</westBoundingCoordinate>
+               <eastBoundingCoordinate>-71.7398</eastBoundingCoordinate>
+               <northBoundingCoordinate>43.9576</northBoundingCoordinate>
+               <southBoundingCoordinate>43.9573</southBoundingCoordinate>
+            </boundingCoordinates>
+         </geographicCoverage>
+         <temporalCoverage>
+            <rangeOfDates>
+               <beginDate>
+                  <calendarDate>1992</calendarDate>
+               </beginDate>
+               <endDate>
+                  <calendarDate>2025</calendarDate>
+               </endDate>
+            </rangeOfDates>
+         </temporalCoverage>
+         <taxonomicCoverage>
+            <taxonomicClassification>
+               <taxonRankName>Kingdom</taxonRankName>
+               <taxonRankValue>Plantae</taxonRankValue>
+               <commonName>plants</commonName>
+               <taxonId
+              provider="https://www.itis.gov">202422</taxonId>
+               <taxonomicClassification>
+                  <taxonRankName>Subkingdom</taxonRankName>
+                  <taxonRankValue>Viridiplantae</taxonRankValue>
+                  <commonName>green plants</commonName>
+                  <taxonId
+                provider="https://www.itis.gov">954898</taxonId>
+                  <taxonomicClassification>
+                     <taxonRankName>Infrakingdom</taxonRankName>
+                     <taxonRankValue>Streptophyta</taxonRankValue>
+                     <commonName>land plants</commonName>
+                     <taxonId
+                  provider="https://www.itis.gov">846494</taxonId>
+                     <taxonomicClassification>
+                        <taxonRankName>Division</taxonRankName>
+                        <taxonRankValue>Tracheophyta</taxonRankValue>
+                        <commonName>vascular plants</commonName>
+                        <taxonId
+                    provider="https://www.itis.gov">846496</taxonId>
+                        <taxonomicClassification>
+                           <taxonRankName>Subdivision</taxonRankName>
+                           <taxonRankValue>Spermatophytina</taxonRankValue>
+                           <commonName>spermatophytes</commonName>
+                           <taxonId
+                      provider="https://www.itis.gov">846504</taxonId>
+                           <taxonomicClassification>
+                              <taxonRankName>Class</taxonRankName>
+                              <taxonRankValue>Magnoliopsida</taxonRankValue>
+                              <taxonId
+                        provider="https://www.itis.gov">18063</taxonId>
+                              <taxonomicClassification>
+                                 <taxonRankName>Superorder</taxonRankName>
+                                 <taxonRankValue>Rosanae</taxonRankValue>
+                                 <taxonId
+                          provider="https://www.itis.gov">846548</taxonId>
+                                 <taxonomicClassification>
+                                    <taxonRankName>Order</taxonRankName>
+                                    <taxonRankValue>Sapindales</taxonRankValue>
+                                    <taxonId
+                            provider="https://www.itis.gov">28643</taxonId>
+                                    <taxonomicClassification>
+                                       <taxonRankName>Family</taxonRankName>
+                                       <taxonRankValue>Sapindaceae</taxonRankValue>
+                                       <commonName>soapberries</commonName>
+                                       <taxonId
+                              provider="https://www.itis.gov">28657</taxonId>
+                                       <taxonomicClassification>
+                                          <taxonRankName>Genus</taxonRankName>
+                                          <taxonRankValue>Acer</taxonRankValue>
+                                          <commonName>maples</commonName>
+                                          <taxonId
+                                provider="https://www.itis.gov">28727</taxonId>
+                                          <taxonomicClassification>
+                                             <taxonRankName>Species</taxonRankName>
+                                             <taxonRankValue>Acer rubrum</taxonRankValue>
+                                             <commonName>red maple</commonName>
+                                             <taxonId
+            provider="https://www.itis.gov">28728</taxonId>
+                                          </taxonomicClassification>
+                                       </taxonomicClassification>
+                                    </taxonomicClassification>
+                                 </taxonomicClassification>
+                              </taxonomicClassification>
+                           </taxonomicClassification>
+                        </taxonomicClassification>
+                     </taxonomicClassification>
+                  </taxonomicClassification>
+               </taxonomicClassification>
+            </taxonomicClassification>
+         </taxonomicCoverage>
+         <taxonomicCoverage>
+            <taxonomicClassification>
+               <taxonRankName>Kingdom</taxonRankName>
+               <taxonRankValue>Plantae</taxonRankValue>
+               <commonName>plants</commonName>
+               <taxonId
+              provider="https://www.itis.gov">202422</taxonId>
+               <taxonomicClassification>
+                  <taxonRankName>Subkingdom</taxonRankName>
+                  <taxonRankValue>Viridiplantae</taxonRankValue>
+                  <commonName>green plants</commonName>
+                  <taxonId
+                provider="https://www.itis.gov">954898</taxonId>
+                  <taxonomicClassification>
+                     <taxonRankName>Infrakingdom</taxonRankName>
+                     <taxonRankValue>Streptophyta</taxonRankValue>
+                     <commonName>land plants</commonName>
+                     <taxonId
+                  provider="https://www.itis.gov">846494</taxonId>
+                     <taxonomicClassification>
+                        <taxonRankName>Division</taxonRankName>
+                        <taxonRankValue>Tracheophyta</taxonRankValue>
+                        <commonName>vascular plants</commonName>
+                        <taxonId
+                    provider="https://www.itis.gov">846496</taxonId>
+                        <taxonomicClassification>
+                           <taxonRankName>Subdivision</taxonRankName>
+                           <taxonRankValue>Spermatophytina</taxonRankValue>
+                           <commonName>spermatophytes</commonName>
+                           <taxonId
+                      provider="https://www.itis.gov">846504</taxonId>
+                           <taxonomicClassification>
+                              <taxonRankName>Class</taxonRankName>
+                              <taxonRankValue>Magnoliopsida</taxonRankValue>
+                              <taxonId
+                        provider="https://www.itis.gov">18063</taxonId>
+                              <taxonomicClassification>
+                                 <taxonRankName>Superorder</taxonRankName>
+                                 <taxonRankValue>Rosanae</taxonRankValue>
+                                 <taxonId
+                          provider="https://www.itis.gov">846548</taxonId>
+                                 <taxonomicClassification>
+                                    <taxonRankName>Order</taxonRankName>
+                                    <taxonRankValue>Sapindales</taxonRankValue>
+                                    <taxonId
+                            provider="https://www.itis.gov">28643</taxonId>
+                                    <taxonomicClassification>
+                                       <taxonRankName>Family</taxonRankName>
+                                       <taxonRankValue>Sapindaceae</taxonRankValue>
+                                       <commonName>soapberries</commonName>
+                                       <taxonId
+                              provider="https://www.itis.gov">28657</taxonId>
+                                       <taxonomicClassification>
+                                          <taxonRankName>Genus</taxonRankName>
+                                          <taxonRankValue>Acer</taxonRankValue>
+                                          <commonName>maples</commonName>
+                                          <taxonId
+                                provider="https://www.itis.gov">28727</taxonId>
+                                          <taxonomicClassification>
+                                             <taxonRankName>Species</taxonRankName>
+                                             <taxonRankValue>Acer saccharum</taxonRankValue>
+                                             <commonName>sugar maple</commonName>
+                                             <taxonId
+            provider="https://www.itis.gov">28731</taxonId>
+                                          </taxonomicClassification>
+                                       </taxonomicClassification>
+                                    </taxonomicClassification>
+                                 </taxonomicClassification>
+                              </taxonomicClassification>
+                           </taxonomicClassification>
+                        </taxonomicClassification>
+                     </taxonomicClassification>
+                  </taxonomicClassification>
+               </taxonomicClassification>
+            </taxonomicClassification>
+         </taxonomicCoverage>
+         <taxonomicCoverage>
+            <taxonomicClassification>
+               <taxonRankName>Kingdom</taxonRankName>
+               <taxonRankValue>Plantae</taxonRankValue>
+               <commonName>plants</commonName>
+               <taxonId
+              provider="https://www.itis.gov">202422</taxonId>
+               <taxonomicClassification>
+                  <taxonRankName>Subkingdom</taxonRankName>
+                  <taxonRankValue>Viridiplantae</taxonRankValue>
+                  <commonName>green plants</commonName>
+                  <taxonId
+                provider="https://www.itis.gov">954898</taxonId>
+                  <taxonomicClassification>
+                     <taxonRankName>Infrakingdom</taxonRankName>
+                     <taxonRankValue>Streptophyta</taxonRankValue>
+                     <commonName>land plants</commonName>
+                     <taxonId
+                  provider="https://www.itis.gov">846494</taxonId>
+                     <taxonomicClassification>
+                        <taxonRankName>Division</taxonRankName>
+                        <taxonRankValue>Tracheophyta</taxonRankValue>
+                        <commonName>vascular plants</commonName>
+                        <taxonId
+                    provider="https://www.itis.gov">846496</taxonId>
+                        <taxonomicClassification>
+                           <taxonRankName>Subdivision</taxonRankName>
+                           <taxonRankValue>Spermatophytina</taxonRankValue>
+                           <commonName>spermatophytes</commonName>
+                           <taxonId
+                      provider="https://www.itis.gov">846504</taxonId>
+                           <taxonomicClassification>
+                              <taxonRankName>Class</taxonRankName>
+                              <taxonRankValue>Magnoliopsida</taxonRankValue>
+                              <taxonId
+                        provider="https://www.itis.gov">18063</taxonId>
+                              <taxonomicClassification>
+                                 <taxonRankName>Superorder</taxonRankName>
+                                 <taxonRankValue>Rosanae</taxonRankValue>
+                                 <taxonId
+                          provider="https://www.itis.gov">846548</taxonId>
+                                 <taxonomicClassification>
+                                    <taxonRankName>Order</taxonRankName>
+                                    <taxonRankValue>Sapindales</taxonRankValue>
+                                    <taxonId
+                            provider="https://www.itis.gov">28643</taxonId>
+                                    <taxonomicClassification>
+                                       <taxonRankName>Family</taxonRankName>
+                                       <taxonRankValue>Sapindaceae</taxonRankValue>
+                                       <commonName>soapberries</commonName>
+                                       <taxonId
+                              provider="https://www.itis.gov">28657</taxonId>
+                                       <taxonomicClassification>
+                                          <taxonRankName>Genus</taxonRankName>
+                                          <taxonRankValue>Acer</taxonRankValue>
+                                          <commonName>maples</commonName>
+                                          <taxonId
+                                provider="https://www.itis.gov">28727</taxonId>
+                                          <taxonomicClassification>
+                                             <taxonRankName>Species</taxonRankName>
+                                             <taxonRankValue>Acer pensylvanicum</taxonRankValue>
+                                             <commonName>moosewood</commonName>
+                                             <taxonId
+            provider="https://www.itis.gov">28754</taxonId>
+                                          </taxonomicClassification>
+                                       </taxonomicClassification>
+                                    </taxonomicClassification>
+                                 </taxonomicClassification>
+                              </taxonomicClassification>
+                           </taxonomicClassification>
+                        </taxonomicClassification>
+                     </taxonomicClassification>
+                  </taxonomicClassification>
+               </taxonomicClassification>
+            </taxonomicClassification>
+         </taxonomicCoverage>
+         <taxonomicCoverage>
+            <taxonomicClassification>
+               <taxonRankName>Kingdom</taxonRankName>
+               <taxonRankValue>Plantae</taxonRankValue>
+               <commonName>plants</commonName>
+               <taxonId
+              provider="https://www.itis.gov">202422</taxonId>
+               <taxonomicClassification>
+                  <taxonRankName>Subkingdom</taxonRankName>
+                  <taxonRankValue>Viridiplantae</taxonRankValue>
+                  <commonName>green plants</commonName>
+                  <taxonId
+                provider="https://www.itis.gov">954898</taxonId>
+                  <taxonomicClassification>
+                     <taxonRankName>Infrakingdom</taxonRankName>
+                     <taxonRankValue>Streptophyta</taxonRankValue>
+                     <commonName>land plants</commonName>
+                     <taxonId
+                  provider="https://www.itis.gov">846494</taxonId>
+                     <taxonomicClassification>
+                        <taxonRankName>Division</taxonRankName>
+                        <taxonRankValue>Tracheophyta</taxonRankValue>
+                        <commonName>vascular plants</commonName>
+                        <taxonId
+                    provider="https://www.itis.gov">846496</taxonId>
+                        <taxonomicClassification>
+                           <taxonRankName>Subdivision</taxonRankName>
+                           <taxonRankValue>Spermatophytina</taxonRankValue>
+                           <commonName>spermatophytes</commonName>
+                           <taxonId
+                      provider="https://www.itis.gov">846504</taxonId>
+                           <taxonomicClassification>
+                              <taxonRankName>Class</taxonRankName>
+                              <taxonRankValue>Magnoliopsida</taxonRankValue>
+                              <taxonId
+                        provider="https://www.itis.gov">18063</taxonId>
+                              <taxonomicClassification>
+                                 <taxonRankName>Superorder</taxonRankName>
+                                 <taxonRankValue>Asteranae</taxonRankValue>
+                                 <taxonId
+                          provider="https://www.itis.gov">846535</taxonId>
+                                 <taxonomicClassification>
+                                    <taxonRankName>Order</taxonRankName>
+                                    <taxonRankValue>Lamiales</taxonRankValue>
+                                    <taxonId
+                            provider="https://www.itis.gov">31632</taxonId>
+                                    <taxonomicClassification>
+                                       <taxonRankName>Family</taxonRankName>
+                                       <taxonRankValue>Oleaceae</taxonRankValue>
+                                       <commonName>olives</commonName>
+                                       <taxonId
+                              provider="https://www.itis.gov">32927</taxonId>
+                                       <taxonomicClassification>
+                                          <taxonRankName>Genus</taxonRankName>
+                                          <taxonRankValue>Fraxinus</taxonRankValue>
+                                          <commonName>ash</commonName>
+                                          <taxonId
+                                provider="https://www.itis.gov">32928</taxonId>
+                                          <taxonomicClassification>
+                                             <taxonRankName>Species</taxonRankName>
+                                             <taxonRankValue>Fraxinus americana</taxonRankValue>
+                                             <commonName>white ash</commonName>
+                                             <taxonId
+            provider="https://www.itis.gov">32931</taxonId>
+                                          </taxonomicClassification>
+                                       </taxonomicClassification>
+                                    </taxonomicClassification>
+                                 </taxonomicClassification>
+                              </taxonomicClassification>
+                           </taxonomicClassification>
+                        </taxonomicClassification>
+                     </taxonomicClassification>
+                  </taxonomicClassification>
+               </taxonomicClassification>
+            </taxonomicClassification>
+         </taxonomicCoverage>
+         <taxonomicCoverage>
+            <taxonomicClassification>
+               <taxonRankName>Kingdom</taxonRankName>
+               <taxonRankValue>Plantae</taxonRankValue>
+               <commonName>plants</commonName>
+               <taxonId
+              provider="https://www.itis.gov">202422</taxonId>
+               <taxonomicClassification>
+                  <taxonRankName>Subkingdom</taxonRankName>
+                  <taxonRankValue>Viridiplantae</taxonRankValue>
+                  <commonName>green plants</commonName>
+                  <taxonId
+                provider="https://www.itis.gov">954898</taxonId>
+                  <taxonomicClassification>
+                     <taxonRankName>Infrakingdom</taxonRankName>
+                     <taxonRankValue>Streptophyta</taxonRankValue>
+                     <commonName>land plants</commonName>
+                     <taxonId
+                  provider="https://www.itis.gov">846494</taxonId>
+                     <taxonomicClassification>
+                        <taxonRankName>Division</taxonRankName>
+                        <taxonRankValue>Tracheophyta</taxonRankValue>
+                        <commonName>vascular plants</commonName>
+                        <taxonId
+                    provider="https://www.itis.gov">846496</taxonId>
+                        <taxonomicClassification>
+                           <taxonRankName>Subdivision</taxonRankName>
+                           <taxonRankValue>Spermatophytina</taxonRankValue>
+                           <commonName>spermatophytes</commonName>
+                           <taxonId
+                      provider="https://www.itis.gov">846504</taxonId>
+                           <taxonomicClassification>
+                              <taxonRankName>Class</taxonRankName>
+                              <taxonRankValue>Magnoliopsida</taxonRankValue>
+                              <taxonId
+                        provider="https://www.itis.gov">18063</taxonId>
+                              <taxonomicClassification>
+                                 <taxonRankName>Superorder</taxonRankName>
+                                 <taxonRankValue>Rosanae</taxonRankValue>
+                                 <taxonId
+                          provider="https://www.itis.gov">846548</taxonId>
+                                 <taxonomicClassification>
+                                    <taxonRankName>Order</taxonRankName>
+                                    <taxonRankValue>Fagales</taxonRankValue>
+                                    <taxonId
+                            provider="https://www.itis.gov">19273</taxonId>
+                                    <taxonomicClassification>
+                                       <taxonRankName>Family</taxonRankName>
+                                       <taxonRankValue>Fagaceae</taxonRankValue>
+                                       <taxonId
+                              provider="https://www.itis.gov">19275</taxonId>
+                                       <taxonomicClassification>
+                                          <taxonRankName>Genus</taxonRankName>
+                                          <taxonRankValue>Fagus</taxonRankValue>
+                                          <commonName>beech</commonName>
+                                          <taxonId
+                                provider="https://www.itis.gov">19461</taxonId>
+                                          <taxonomicClassification>
+                                             <taxonRankName>Species</taxonRankName>
+                                             <taxonRankValue>Fagus grandifolia</taxonRankValue>
+                                             <commonName>American beech</commonName>
+                                             <taxonId
+            provider="https://www.itis.gov">19462</taxonId>
+                                          </taxonomicClassification>
+                                       </taxonomicClassification>
+                                    </taxonomicClassification>
+                                 </taxonomicClassification>
+                              </taxonomicClassification>
+                           </taxonomicClassification>
+                        </taxonomicClassification>
+                     </taxonomicClassification>
+                  </taxonomicClassification>
+               </taxonomicClassification>
+            </taxonomicClassification>
+         </taxonomicCoverage>
+         <taxonomicCoverage>
+            <taxonomicClassification>
+               <taxonRankName>Kingdom</taxonRankName>
+               <taxonRankValue>Plantae</taxonRankValue>
+               <commonName>plants</commonName>
+               <taxonId
+              provider="https://www.itis.gov">202422</taxonId>
+               <taxonomicClassification>
+                  <taxonRankName>Subkingdom</taxonRankName>
+                  <taxonRankValue>Viridiplantae</taxonRankValue>
+                  <commonName>green plants</commonName>
+                  <taxonId
+                provider="https://www.itis.gov">954898</taxonId>
+                  <taxonomicClassification>
+                     <taxonRankName>Infrakingdom</taxonRankName>
+                     <taxonRankValue>Streptophyta</taxonRankValue>
+                     <commonName>land plants</commonName>
+                     <taxonId
+                  provider="https://www.itis.gov">846494</taxonId>
+                     <taxonomicClassification>
+                        <taxonRankName>Division</taxonRankName>
+                        <taxonRankValue>Tracheophyta</taxonRankValue>
+                        <commonName>vascular plants</commonName>
+                        <taxonId
+                    provider="https://www.itis.gov">846496</taxonId>
+                        <taxonomicClassification>
+                           <taxonRankName>Subdivision</taxonRankName>
+                           <taxonRankValue>Spermatophytina</taxonRankValue>
+                           <commonName>spermatophytes</commonName>
+                           <taxonId
+                      provider="https://www.itis.gov">846504</taxonId>
+                           <taxonomicClassification>
+                              <taxonRankName>Class</taxonRankName>
+                              <taxonRankValue>Magnoliopsida</taxonRankValue>
+                              <taxonId
+                        provider="https://www.itis.gov">18063</taxonId>
+                              <taxonomicClassification>
+                                 <taxonRankName>Superorder</taxonRankName>
+                                 <taxonRankValue>Rosanae</taxonRankValue>
+                                 <taxonId
+                          provider="https://www.itis.gov">846548</taxonId>
+                                 <taxonomicClassification>
+                                    <taxonRankName>Order</taxonRankName>
+                                    <taxonRankValue>Fagales</taxonRankValue>
+                                    <taxonId
+                            provider="https://www.itis.gov">19273</taxonId>
+                                    <taxonomicClassification>
+                                       <taxonRankName>Family</taxonRankName>
+                                       <taxonRankValue>Betulaceae</taxonRankValue>
+                                       <commonName>alder</commonName>
+                                       <taxonId
+                              provider="https://www.itis.gov">19465</taxonId>
+                                       <taxonomicClassification>
+                                          <taxonRankName>Genus</taxonRankName>
+                                          <taxonRankValue>Betula</taxonRankValue>
+                                          <commonName>birch</commonName>
+                                          <taxonId
+                                provider="https://www.itis.gov">19478</taxonId>
+                                          <taxonomicClassification>
+                                             <taxonRankName>Species</taxonRankName>
+                                             <taxonRankValue>Betula papyrifera</taxonRankValue>
+                                             <commonName>paper birch</commonName>
+                                             <taxonId
+            provider="https://www.itis.gov">19489</taxonId>
+                                          </taxonomicClassification>
+                                       </taxonomicClassification>
+                                    </taxonomicClassification>
+                                 </taxonomicClassification>
+                              </taxonomicClassification>
+                           </taxonomicClassification>
+                        </taxonomicClassification>
+                     </taxonomicClassification>
+                  </taxonomicClassification>
+               </taxonomicClassification>
+            </taxonomicClassification>
+         </taxonomicCoverage>
+         <taxonomicCoverage>
+            <taxonomicClassification>
+               <taxonRankName>Kingdom</taxonRankName>
+               <taxonRankValue>Plantae</taxonRankValue>
+               <commonName>plants</commonName>
+               <taxonId
+              provider="https://www.itis.gov">202422</taxonId>
+               <taxonomicClassification>
+                  <taxonRankName>Subkingdom</taxonRankName>
+                  <taxonRankValue>Viridiplantae</taxonRankValue>
+                  <commonName>green plants</commonName>
+                  <taxonId
+                provider="https://www.itis.gov">954898</taxonId>
+                  <taxonomicClassification>
+                     <taxonRankName>Infrakingdom</taxonRankName>
+                     <taxonRankValue>Streptophyta</taxonRankValue>
+                     <commonName>land plants</commonName>
+                     <taxonId
+                  provider="https://www.itis.gov">846494</taxonId>
+                     <taxonomicClassification>
+                        <taxonRankName>Division</taxonRankName>
+                        <taxonRankValue>Tracheophyta</taxonRankValue>
+                        <commonName>vascular plants</commonName>
+                        <taxonId
+                    provider="https://www.itis.gov">846496</taxonId>
+                        <taxonomicClassification>
+                           <taxonRankName>Subdivision</taxonRankName>
+                           <taxonRankValue>Spermatophytina</taxonRankValue>
+                           <commonName>spermatophytes</commonName>
+                           <taxonId
+                      provider="https://www.itis.gov">846504</taxonId>
+                           <taxonomicClassification>
+                              <taxonRankName>Class</taxonRankName>
+                              <taxonRankValue>Magnoliopsida</taxonRankValue>
+                              <taxonId
+                        provider="https://www.itis.gov">18063</taxonId>
+                              <taxonomicClassification>
+                                 <taxonRankName>Superorder</taxonRankName>
+                                 <taxonRankValue>Rosanae</taxonRankValue>
+                                 <taxonId
+                          provider="https://www.itis.gov">846548</taxonId>
+                                 <taxonomicClassification>
+                                    <taxonRankName>Order</taxonRankName>
+                                    <taxonRankValue>Fagales</taxonRankValue>
+                                    <taxonId
+                            provider="https://www.itis.gov">19273</taxonId>
+                                    <taxonomicClassification>
+                                       <taxonRankName>Family</taxonRankName>
+                                       <taxonRankValue>Betulaceae</taxonRankValue>
+                                       <commonName>alder</commonName>
+                                       <taxonId
+                              provider="https://www.itis.gov">19465</taxonId>
+                                       <taxonomicClassification>
+                                          <taxonRankName>Genus</taxonRankName>
+                                          <taxonRankValue>Betula</taxonRankValue>
+                                          <commonName>birch</commonName>
+                                          <taxonId
+                                provider="https://www.itis.gov">19478</taxonId>
+                                          <taxonomicClassification>
+                                             <taxonRankName>Species</taxonRankName>
+                                             <taxonRankValue>Betula alleghaniensis</taxonRankValue>
+                                             <commonName>yellow birch</commonName>
+                                             <taxonId
+            provider="https://www.itis.gov">19481</taxonId>
+                                          </taxonomicClassification>
+                                       </taxonomicClassification>
+                                    </taxonomicClassification>
+                                 </taxonomicClassification>
+                              </taxonomicClassification>
+                           </taxonomicClassification>
+                        </taxonomicClassification>
+                     </taxonomicClassification>
+                  </taxonomicClassification>
+               </taxonomicClassification>
+            </taxonomicClassification>
+         </taxonomicCoverage>
+         <taxonomicCoverage>
+            <taxonomicClassification>
+               <taxonRankName>Kingdom</taxonRankName>
+               <taxonRankValue>Plantae</taxonRankValue>
+               <commonName>plants</commonName>
+               <taxonId
+              provider="https://www.itis.gov">202422</taxonId>
+               <taxonomicClassification>
+                  <taxonRankName>Subkingdom</taxonRankName>
+                  <taxonRankValue>Viridiplantae</taxonRankValue>
+                  <commonName>green plants</commonName>
+                  <taxonId
+                provider="https://www.itis.gov">954898</taxonId>
+                  <taxonomicClassification>
+                     <taxonRankName>Infrakingdom</taxonRankName>
+                     <taxonRankValue>Streptophyta</taxonRankValue>
+                     <commonName>land plants</commonName>
+                     <taxonId
+                  provider="https://www.itis.gov">846494</taxonId>
+                     <taxonomicClassification>
+                        <taxonRankName>Division</taxonRankName>
+                        <taxonRankValue>Tracheophyta</taxonRankValue>
+                        <commonName>vascular plants</commonName>
+                        <taxonId
+                    provider="https://www.itis.gov">846496</taxonId>
+                        <taxonomicClassification>
+                           <taxonRankName>Subdivision</taxonRankName>
+                           <taxonRankValue>Spermatophytina</taxonRankValue>
+                           <commonName>spermatophytes</commonName>
+                           <taxonId
+                      provider="https://www.itis.gov">846504</taxonId>
+                           <taxonomicClassification>
+                              <taxonRankName>Class</taxonRankName>
+                              <taxonRankValue>Magnoliopsida</taxonRankValue>
+                              <taxonId
+                        provider="https://www.itis.gov">18063</taxonId>
+                              <taxonomicClassification>
+                                 <taxonRankName>Superorder</taxonRankName>
+                                 <taxonRankValue>Rosanae</taxonRankValue>
+                                 <taxonId
+                          provider="https://www.itis.gov">846548</taxonId>
+                                 <taxonomicClassification>
+                                    <taxonRankName>Order</taxonRankName>
+                                    <taxonRankValue>Rosales</taxonRankValue>
+                                    <taxonId
+                            provider="https://www.itis.gov">24057</taxonId>
+                                    <taxonomicClassification>
+                                       <taxonRankName>Family</taxonRankName>
+                                       <taxonRankValue>Rosaceae</taxonRankValue>
+                                       <commonName>roses</commonName>
+                                       <taxonId
+                              provider="https://www.itis.gov">24538</taxonId>
+                                       <taxonomicClassification>
+                                          <taxonRankName>Genus</taxonRankName>
+                                          <taxonRankValue>Prunus</taxonRankValue>
+                                          <commonName>chokecherry</commonName>
+                                          <taxonId
+                                provider="https://www.itis.gov">24762</taxonId>
+                                          <taxonomicClassification>
+                                             <taxonRankName>Species</taxonRankName>
+                                             <taxonRankValue>Prunus pensylvanica</taxonRankValue>
+                                             <commonName>pin cherry</commonName>
+                                             <taxonId
+            provider="https://www.itis.gov">24799</taxonId>
+                                          </taxonomicClassification>
+                                       </taxonomicClassification>
+                                    </taxonomicClassification>
+                                 </taxonomicClassification>
+                              </taxonomicClassification>
+                           </taxonomicClassification>
+                        </taxonomicClassification>
+                     </taxonomicClassification>
+                  </taxonomicClassification>
+               </taxonomicClassification>
+            </taxonomicClassification>
+         </taxonomicCoverage>
+         <taxonomicCoverage>
+            <taxonomicClassification>
+               <taxonRankName>Kingdom</taxonRankName>
+               <taxonRankValue>Plantae</taxonRankValue>
+               <commonName>plants</commonName>
+               <taxonId
+              provider="https://www.itis.gov">202422</taxonId>
+               <taxonomicClassification>
+                  <taxonRankName>Subkingdom</taxonRankName>
+                  <taxonRankValue>Viridiplantae</taxonRankValue>
+                  <commonName>green plants</commonName>
+                  <taxonId
+                provider="https://www.itis.gov">954898</taxonId>
+                  <taxonomicClassification>
+                     <taxonRankName>Infrakingdom</taxonRankName>
+                     <taxonRankValue>Streptophyta</taxonRankValue>
+                     <commonName>land plants</commonName>
+                     <taxonId
+                  provider="https://www.itis.gov">846494</taxonId>
+                     <taxonomicClassification>
+                        <taxonRankName>Division</taxonRankName>
+                        <taxonRankValue>Tracheophyta</taxonRankValue>
+                        <commonName>vascular plants</commonName>
+                        <taxonId
+                    provider="https://www.itis.gov">846496</taxonId>
+                        <taxonomicClassification>
+                           <taxonRankName>Subdivision</taxonRankName>
+                           <taxonRankValue>Spermatophytina</taxonRankValue>
+                           <commonName>spermatophytes</commonName>
+                           <taxonId
+                      provider="https://www.itis.gov">846504</taxonId>
+                           <taxonomicClassification>
+                              <taxonRankName>Class</taxonRankName>
+                              <taxonRankValue>Magnoliopsida</taxonRankValue>
+                              <taxonId
+                        provider="https://www.itis.gov">18063</taxonId>
+                              <taxonomicClassification>
+                                 <taxonRankName>Superorder</taxonRankName>
+                                 <taxonRankValue>Rosanae</taxonRankValue>
+                                 <taxonId
+                          provider="https://www.itis.gov">846548</taxonId>
+                                 <taxonomicClassification>
+                                    <taxonRankName>Order</taxonRankName>
+                                    <taxonRankValue>Malpighiales</taxonRankValue>
+                                    <taxonId
+                            provider="https://www.itis.gov">822428</taxonId>
+                                    <taxonomicClassification>
+                                       <taxonRankName>Family</taxonRankName>
+                                       <taxonRankValue>Salicaceae</taxonRankValue>
+                                       <commonName>willows</commonName>
+                                       <taxonId
+                              provider="https://www.itis.gov">22443</taxonId>
+                                       <taxonomicClassification>
+                                          <taxonRankName>Genus</taxonRankName>
+                                          <taxonRankValue>Populus</taxonRankValue>
+                                          <commonName>cottonwood</commonName>
+                                          <taxonId
+        provider="https://www.itis.gov">22444</taxonId>
+                                       </taxonomicClassification>
+                                    </taxonomicClassification>
+                                 </taxonomicClassification>
+                              </taxonomicClassification>
+                           </taxonomicClassification>
+                        </taxonomicClassification>
+                     </taxonomicClassification>
+                  </taxonomicClassification>
+               </taxonomicClassification>
+            </taxonomicClassification>
+         </taxonomicCoverage>
+      </coverage>
+      <maintenance>
+         <description>knb-lter-hbr.49.11; addition of data through May 2025 knb-lter-hbr.49.10; new litter years added, qudt annotations added<para/>
+         </description>
+         <maintenanceUpdateFrequency>annually</maintenanceUpdateFrequency>
+      </maintenance>
+      <contact>
+         <positionName>Information Manager, Hubbard Brook LTER</positionName>
+         <address>
+            <deliveryPoint>234 Mirror Lake Road</deliveryPoint>
+            <city>North Woodstock</city>
+            <administrativeArea>NH</administrativeArea>
+            <postalCode>03262</postalCode>
+            <country>USA</country>
+         </address>
+         <phone
+        phonetype="voice">(603) 726-8902</phone>
+         <electronicMailAddress>hbr-im@lternet.edu</electronicMailAddress>
+         <onlineUrl>http://www.hubbardbrook.org</onlineUrl>
+      </contact>
+      <contact>
+         <individualName>
+            <givenName>Timothy</givenName>
+            <givenName>J</givenName>
+            <surName>Fahey</surName>
+         </individualName>
+         <organizationName>Cornell University</organizationName>
+         <electronicMailAddress>tjf5@cornell.edu</electronicMailAddress>
+         <userId
+        directory="https://orcid.org">0000-0003-1283-1162</userId>
+         <userId
+        directory="https://ror.org/">https://ror.org/05bnh6r87</userId>
+      </contact>
+      <contact>
+         <individualName>
+            <givenName>Natalie</givenName>
+            <surName>Cleavitt</surName>
+         </individualName>
+         <organizationName>Cornell University</organizationName>
+         <electronicMailAddress>nlc4@cornell.edu</electronicMailAddress>
+         <userId
+        directory="https://orcid.org">0000-0003-0425-2486</userId>
+         <userId
+        directory="https://ror.org/">https://ror.org/05bnh6r87</userId>
+      </contact>
+      <publisher>
+         <organizationName>Environmental Data Initiative</organizationName>
+         <electronicMailAddress>info@edirepository.org</electronicMailAddress>
+         <onlineUrl>https://edirepository.org</onlineUrl>
+         <userId
+          directory="https://ror.org">0330j0z60</userId>
+      </publisher>
+      <pubPlace>Environmental Data Initiative</pubPlace>
+      <methods>
+         <methodStep>
+            <description>
+               <para>LOCATION DESCRIPTIONS</para>
+               <para>Fine Litterfall is collected at 4 different locations.</para>
+               <para>Watershed 1 Sites:</para>
+               <para>These sites are located along the W1 trail at the elevations provided below. There are twelve collectors per site arranged along two transects, with five 0.097 m2 collectors on each transect. Collections on W1 began in 1997.</para>
+               <para>Low, hardwood – elevation 520 m</para>
+               <para>Mid, hardwood – elevation 600 m</para>
+               <para>Upper, hardwood – elevation 710 m</para>
+               <para>High, spruce/fir – elevation 740 m</para>
+               <para>Watershed 5 Sites:</para>
+               <para>Location and dimensions of collectors (leaf collection baskets) in W5 were changed after May 1993. Before 1993 collectors (43 x 43 cm) were located in the twenty permanent vegetation plots. A map of these plots is filed in Durham, NH with the data manager. After May 1993 new sites and collectors (0.097 m2) were initiated. Twenty traps are positioned randomly within four elevation zones, distributed with four collectors in each of five grid cells in W5. Grid cell numbers refer to the W5 grid; the watershed is gridded into 25 x 25 m cells, the corners of which are marked with orange poles, the pole in the northwest corner bearing the grid cell number. Contact the data manager for the grid cell map of W5.</para>
+               <para>Low, hardwood – elevation 530 m</para>
+               <para>Mid, hardwood – elevation 610 m</para>
+               <para>Upper, hardwood – elevation 690 m</para>
+               <para>High, hardwood – elevation 750 m</para>
+               <para>Bear Brook Sites:</para>
+               <para>West of W6: 0.097 m2 collectors are randomly situated along three 100 m long transects (325 degrees) which are approximately 25 m apart. Originally 20 collectors per elevation were set out; there are currently twelve per elevation at all but the high elevation where fifteen remain.</para>
+               <para>Low, hardwood - southwest of W6 weir, west of tower platform - elevation 525 m</para>
+               <para>Mid, hardwood - west of Throughfall collector sites - elevation 585 m</para>
+               <para>Upper, hardwood - west of tower site and seep - elevation 725 m</para>
+               <para>High, hardwood - west of rain gauge 9 - elevation 830 m</para>
+               <para>Throughfall Sites:</para>
+               <para>These sites are located along the W6 trail except for the lower site which is located within the "wedge" area east of W5: ten collections per elevation (two 0.097 m2 collectors randomly situated along five transects):</para>
+               <para>Low, hardwood - elevation 520 m</para>
+               <para>Mid, hardwood - elevation 580 m</para>
+               <para>Upper, hardwood - elevation 730 m</para>
+               <para>High, spruce/fir - elevation 790 m</para>
+               <para>DATA DESCRIPTION</para>
+               <para>Fine litterfall (foliage, buds, seeds, fruits, bark and twigs/branches &lt;2 cm diameter) is collected three times each year: soon after snowmelt (May), late summer before leaf fall (September), and late autumn after leaf fall (November). Note: Coarse litterfall is collected from cleared plots at a subset of the sites (see Hubbard Brook Coarse Litterfall Data). Spring and Summer collections are dried and weighed, Fall collections are sorted by species and tissue. Tree leaves are counted for each trap and seeds (except birch) are counted. A subsample of leaves of each species is taken for measurement of area per leaf. Leaf area index is estimated for each trap as the product of average area per leaf and leaf number. The whole sample is dried and weighed. All data except LAI are expressed per trap (0.097 m2) in the data set. Values found under species headings are leaf counts.</para>
+               <para>SAMPLING DESIGN</para>
+               <para>The location of the 16 plots (four each in W1, W5, Bear Brook (west of W6), and Throughfall collection sites) have been chosen to stratify the sampling by elevation zones. These sites are co-located with sampling for soil CO2 flux, fine root biomass, throughfall, soil solutions, microbial biomass and microarthropods. Within sites, collectors are positioned randomly.</para>
+            </description>
+         </methodStep>
+      </methods>
+      <project>
+         <title>Long-term Ecological Research (LTER) at the Hubbard Brook Experimental Forest</title>
+         <personnel>
+            <individualName>
+               <givenName>Timothy</givenName>
+               <givenName>J</givenName>
+               <surName>Fahey</surName>
+            </individualName>
+            <organizationName>Cornell University</organizationName>
+            <electronicMailAddress>tjf5@cornell.edu</electronicMailAddress>
+            <userId
+          directory="https://orcid.org">0000-0003-1283-1162</userId>
+            <role>Principal Investigator</role>
+         </personnel>
+         <personnel>
+            <individualName>
+               <givenName>Natalie</givenName>
+               <surName>Cleavitt</surName>
+            </individualName>
+            <organizationName>Cornell University</organizationName>
+            <electronicMailAddress>nlc4@cornell.edu</electronicMailAddress>
+            <userId
+          directory="https://orcid.org">0000-0003-0425-2486</userId>
+            <userId
+      directory="https://ror.org/">https://ror.org/05bnh6r87</userId>
+            <role>Investigator</role>
+         </personnel>
+         <award>
+            <funderName>National Science Foundation</funderName>
+            <funderIdentifier>https://ror.org/021nxhr62</funderIdentifier>
+            <awardNumber>1637685</awardNumber>
+            <title>LTER: Long Term Ecological Research at the Hubbard Brook Experimental Forest (2016)</title>
+            <awardUrl>https://www.nsf.gov/awardsearch/showAward?AWD_ID=1637685</awardUrl>
+         </award>
+         <award>
+            <funderName>National Science Foundation</funderName>
+            <funderIdentifier>https://ror.org/021nxhr62</funderIdentifier>
+            <awardNumber>1633026</awardNumber>
+            <title>Long-Term Ecological Research at the Hubbard Brook Experimental Forest (2016b)</title>
+            <awardUrl>https://www.nsf.gov/awardsearch/showAward?AWD_ID=1633026</awardUrl>
+         </award>
+         <award>
+            <funderName>National Science Foundation</funderName>
+            <funderIdentifier>https://ror.org/021nxhr62</funderIdentifier>
+            <awardNumber>1114804</awardNumber>
+            <title>Long-Term Ecological Research at Hubbard Brook Experimental Forest (2010)</title>
+            <awardUrl>https://www.nsf.gov/awardsearch/showAward?AWD_ID=1114804</awardUrl>
+         </award>
+         <award>
+            <funderName>National Science Foundation</funderName>
+            <funderIdentifier>https://ror.org/021nxhr62</funderIdentifier>
+            <awardNumber>0423259</awardNumber>
+            <title>Long-Term Ecological Research (LTER) at Hubbard Brook Experimental Forest (HBR-LTER) (2005)</title>
+            <awardUrl>https://www.nsf.gov/awardsearch/showAward?AWD_ID=0423259</awardUrl>
+         </award>
+         <award>
+            <funderName>National Science Foundation</funderName>
+            <funderIdentifier>https://ror.org/021nxhr62</funderIdentifier>
+            <awardNumber>9810221</awardNumber>
+            <title>LTER: Hubbard Brook Experimental Forest (1998)</title>
+            <awardUrl>https://www.nsf.gov/awardsearch/showAward?AWD_ID=9810221</awardUrl>
+         </award>
+         <award>
+            <funderName>National Science Foundation</funderName>
+            <funderIdentifier>https://ror.org/021nxhr62</funderIdentifier>
+            <awardNumber>9211768</awardNumber>
+            <title>Long-term Ecological Research (LTER) at the Hubbard Brook Experimental Forest (1992)</title>
+            <awardUrl>https://www.nsf.gov/awardsearch/showAward?AWD_ID=9211768</awardUrl>
+         </award>
+         <award>
+            <funderName>National Science Foundation</funderName>
+            <funderIdentifier>https://ror.org/021nxhr62</funderIdentifier>
+            <awardNumber>2224545</awardNumber>
+            <title>LTER: Long Term Ecological Research at the Hubbard Brook Experimental Forest (2022)</title>
+            <awardUrl>https://www.nsf.gov/awardsearch/showAward?AWD_ID=2224545</awardUrl>
+         </award>
+      </project>
+      <dataTable
+      id="4b55c69068b625ec15027f1d28604e45" scope="document"
+          system="https://pasta.edirepository.org">
+         <entityName>HBEF_fine_litter_1992-2024</entityName>
+         <entityDescription>Fine litter data in four watersheds at the Hubbard Brook Experimental Forest: litter years 1992-2024 (collections through May 2025)</entityDescription>
+         <physical>
+            <objectName>HBEF_fine_litter_1992-2024.csv</objectName>
+            <size
+          unit="byte">2050919</size>
+            <authentication
+              method="MD5">6d52a6b2f0c167c0425492a673cd4082</authentication>
+            <dataFormat>
+               <textFormat>
+                  <numHeaderLines>1</numHeaderLines>
+                  <recordDelimiter>\r\n</recordDelimiter>
+                  <attributeOrientation>column</attributeOrientation>
+                  <simpleDelimited>
+                     <fieldDelimiter>,</fieldDelimiter>
+                     <quoteCharacter>"</quoteCharacter>
+                  </simpleDelimited>
+               </textFormat>
+            </dataFormat>
+            <distribution>
+               <online>
+                  <url
+          function="download">https://pasta.lternet.edu/package/data/eml/knb-lter-hbr/49/11/4b55c69068b625ec15027f1d28604e45</url>
+               </online>
+            </distribution>
+         </physical>
+         <attributeList>
+            <attribute
+          id="TRTMT-1">
+               <attributeName>TRTMT</attributeName>
+               <attributeDefinition>Indicates if collection site received Calcium additions</attributeDefinition>
+               <storageType>string</storageType>
+               <measurementScale>
+                  <nominal>
+                     <nonNumericDomain>
+                        <enumeratedDomain>
+                           <codeDefinition>
+                              <code>Ca</code>
+                              <definition>Calcium addition (W1 only)</definition>
+                           </codeDefinition>
+                           <codeDefinition>
+                              <code>noCA</code>
+                              <definition>No calcium addition</definition>
+                           </codeDefinition>
+                        </enumeratedDomain>
+                     </nonNumericDomain>
+                  </nominal>
+               </measurementScale>
+            </attribute>
+            <attribute
+          id="COMP-2">
+               <attributeName>COMP</attributeName>
+               <attributeDefinition>Forest species composition</attributeDefinition>
+               <storageType>string</storageType>
+               <measurementScale>
+                  <nominal>
+                     <nonNumericDomain>
+                        <enumeratedDomain>
+                           <codeDefinition>
+                              <code>HW</code>
+                              <definition>Mixed hardwood</definition>
+                           </codeDefinition>
+                           <codeDefinition>
+                              <code>SF</code>
+                              <definition>Spruce-Fir</definition>
+                           </codeDefinition>
+                        </enumeratedDomain>
+                     </nonNumericDomain>
+                  </nominal>
+               </measurementScale>
+            </attribute>
+            <attribute
+          id="SITE-3">
+               <attributeName>SITE</attributeName>
+               <attributeDefinition>Location where litterfall was collected</attributeDefinition>
+               <storageType>string</storageType>
+               <measurementScale>
+                  <nominal>
+                     <nonNumericDomain>
+                        <enumeratedDomain>
+                           <codeDefinition>
+                              <code>BB</code>
+                              <definition>Bear Brook Watershed site</definition>
+                           </codeDefinition>
+                           <codeDefinition>
+                              <code>TF</code>
+                              <definition>Throughfall site</definition>
+                           </codeDefinition>
+                           <codeDefinition>
+                              <code>W1</code>
+                              <definition>Watershed 1 sites</definition>
+                           </codeDefinition>
+                           <codeDefinition>
+                              <code>W5</code>
+                              <definition>Watershed 5 site</definition>
+                           </codeDefinition>
+                        </enumeratedDomain>
+                     </nonNumericDomain>
+                  </nominal>
+               </measurementScale>
+            </attribute>
+            <attribute
+          id="ELEV-4">
+               <attributeName>ELEV</attributeName>
+               <attributeDefinition>Elevation</attributeDefinition>
+               <storageType>string</storageType>
+               <measurementScale>
+                  <nominal>
+                     <nonNumericDomain>
+                        <enumeratedDomain>
+                           <codeDefinition>
+                              <code>Low</code>
+                              <definition>Low elevation</definition>
+                           </codeDefinition>
+                           <codeDefinition>
+                              <code>Mid</code>
+                              <definition>Mid elevation</definition>
+                           </codeDefinition>
+                           <codeDefinition>
+                              <code>Upper</code>
+                              <definition>Upper elevation</definition>
+                           </codeDefinition>
+                           <codeDefinition>
+                              <code>High</code>
+                              <definition>High elevation</definition>
+                           </codeDefinition>
+                        </enumeratedDomain>
+                     </nonNumericDomain>
+                  </nominal>
+               </measurementScale>
+            </attribute>
+            <attribute
+          id="YEAR-5">
+               <attributeName>YEAR</attributeName>
+               <attributeDefinition>Autumn to which all litterfall is attributed. See Methods</attributeDefinition>
+               <storageType>date</storageType>
+               <measurementScale>
+                  <dateTime>
+                     <formatString>YYYY</formatString>
+                     <dateTimeDomain/>
+                  </dateTime>
+               </measurementScale>
+            </attribute>
+            <attribute
+          id="DATE-6">
+               <attributeName>DATE</attributeName>
+               <attributeDefinition>Sample collection month of seasonal sample collections</attributeDefinition>
+               <storageType>date</storageType>
+               <measurementScale>
+                  <dateTime>
+                     <formatString>YYYY-MM</formatString>
+                     <dateTimeDomain/>
+                  </dateTime>
+               </measurementScale>
+            </attribute>
+            <attribute
+          id="CELL-7">
+               <attributeName>CELL</attributeName>
+               <attributeDefinition>Grid cell number where sample was collected (W1 and W5 only)</attributeDefinition>
+               <storageType>string</storageType>
+               <measurementScale>
+                  <nominal>
+                     <nonNumericDomain>
+                        <textDomain>
+                           <definition>text</definition>
+                        </textDomain>
+                     </nonNumericDomain>
+                  </nominal>
+               </measurementScale>
+            </attribute>
+            <attribute
+          id="TAG-8">
+               <attributeName>TAG</attributeName>
+               <attributeDefinition>Tag number</attributeDefinition>
+               <storageType>string</storageType>
+               <measurementScale>
+                  <nominal>
+                     <nonNumericDomain>
+                        <textDomain>
+                           <definition>text</definition>
+                        </textDomain>
+                     </nonNumericDomain>
+                  </nominal>
+               </measurementScale>
+            </attribute>
+            <attribute
+              id="DRYMASS-9">
+               <attributeName>DRY_MASS</attributeName>
+               <attributeDefinition>Oven dry weight of sample</attributeDefinition>
+               <storageType>float</storageType>
+               <measurementScale>
+                  <ratio>
+                     <unit>
+                        <standardUnit>gram</standardUnit>
+                     </unit>
+                     <numericDomain>
+                        <numberType>real</numberType>
+                     </numericDomain>
+                  </ratio>
+               </measurementScale>
+               <missingValueCode>
+                  <code>-9999</code>
+                  <codeExplanation>No data available</codeExplanation>
+               </missingValueCode>
+               <annotation>
+                  <propertyURI
+              label="has unit">http://qudt.org/schema/qudt/hasUnit</propertyURI>
+                  <valueURI
+          label="Gram">http://qudt.org/vocab/unit/GM</valueURI>
+               </annotation>
+            </attribute>
+            <attribute
+              id="MCOUNT-10">
+               <attributeName>M_COUNT</attributeName>
+               <attributeDefinition>Sugar maple leaf count</attributeDefinition>
+               <storageType>float</storageType>
+               <measurementScale>
+                  <ratio>
+                     <unit>
+                        <standardUnit>number</standardUnit>
+                     </unit>
+                     <numericDomain>
+                        <numberType>whole</numberType>
+                     </numericDomain>
+                  </ratio>
+               </measurementScale>
+               <missingValueCode>
+                  <code>-9999</code>
+                  <codeExplanation>No data available</codeExplanation>
+               </missingValueCode>
+               <annotation>
+                  <propertyURI
+              label="has unit">http://qudt.org/schema/qudt/hasUnit</propertyURI>
+                  <valueURI
+          label="Number">http://qudt.org/vocab/unit/NUM</valueURI>
+               </annotation>
+            </attribute>
+            <attribute
+              id="MMASS-11">
+               <attributeName>M_MASS</attributeName>
+               <attributeDefinition>Oven dry weight of Sugar Maple</attributeDefinition>
+               <storageType>float</storageType>
+               <measurementScale>
+                  <ratio>
+                     <unit>
+                        <standardUnit>gram</standardUnit>
+                     </unit>
+                     <numericDomain>
+                        <numberType>real</numberType>
+                     </numericDomain>
+                  </ratio>
+               </measurementScale>
+               <missingValueCode>
+                  <code>-9999</code>
+                  <codeExplanation>No data available</codeExplanation>
+               </missingValueCode>
+               <annotation>
+                  <propertyURI
+              label="has unit">http://qudt.org/schema/qudt/hasUnit</propertyURI>
+                  <valueURI
+          label="Gram">http://qudt.org/vocab/unit/GM</valueURI>
+               </annotation>
+            </attribute>
+            <attribute
+              id="fCOUNT-12">
+               <attributeName>f_COUNT</attributeName>
+               <attributeDefinition>Red maple leaf count</attributeDefinition>
+               <storageType>float</storageType>
+               <measurementScale>
+                  <ratio>
+                     <unit>
+                        <standardUnit>number</standardUnit>
+                     </unit>
+                     <numericDomain>
+                        <numberType>whole</numberType>
+                     </numericDomain>
+                  </ratio>
+               </measurementScale>
+               <missingValueCode>
+                  <code>-9999</code>
+                  <codeExplanation>No data available</codeExplanation>
+               </missingValueCode>
+               <annotation>
+                  <propertyURI
+              label="has unit">http://qudt.org/schema/qudt/hasUnit</propertyURI>
+                  <valueURI
+          label="Number">http://qudt.org/vocab/unit/NUM</valueURI>
+               </annotation>
+            </attribute>
+            <attribute
+              id="tCOUNT-13">
+               <attributeName>t_COUNT</attributeName>
+               <attributeDefinition>Striped maple leaf count</attributeDefinition>
+               <storageType>float</storageType>
+               <measurementScale>
+                  <ratio>
+                     <unit>
+                        <standardUnit>number</standardUnit>
+                     </unit>
+                     <numericDomain>
+                        <numberType>whole</numberType>
+                     </numericDomain>
+                  </ratio>
+               </measurementScale>
+               <missingValueCode>
+                  <code>-9999</code>
+                  <codeExplanation>No data available</codeExplanation>
+               </missingValueCode>
+               <annotation>
+                  <propertyURI
+              label="has unit">http://qudt.org/schema/qudt/hasUnit</propertyURI>
+                  <valueURI
+          label="Number">http://qudt.org/vocab/unit/NUM</valueURI>
+               </annotation>
+            </attribute>
+            <attribute
+              id="QCOUNT-14">
+               <attributeName>Q_COUNT</attributeName>
+               <attributeDefinition>Ash leaf count</attributeDefinition>
+               <storageType>float</storageType>
+               <measurementScale>
+                  <ratio>
+                     <unit>
+                        <standardUnit>number</standardUnit>
+                     </unit>
+                     <numericDomain>
+                        <numberType>whole</numberType>
+                     </numericDomain>
+                  </ratio>
+               </measurementScale>
+               <missingValueCode>
+                  <code>-9999</code>
+                  <codeExplanation>No data available</codeExplanation>
+               </missingValueCode>
+               <annotation>
+                  <propertyURI
+              label="has unit">http://qudt.org/schema/qudt/hasUnit</propertyURI>
+                  <valueURI
+          label="Number">http://qudt.org/vocab/unit/NUM</valueURI>
+               </annotation>
+            </attribute>
+            <attribute
+              id="BCOUNT-15">
+               <attributeName>B_COUNT</attributeName>
+               <attributeDefinition>Beech leaf count</attributeDefinition>
+               <storageType>float</storageType>
+               <measurementScale>
+                  <ratio>
+                     <unit>
+                        <standardUnit>number</standardUnit>
+                     </unit>
+                     <numericDomain>
+                        <numberType>whole</numberType>
+                     </numericDomain>
+                  </ratio>
+               </measurementScale>
+               <missingValueCode>
+                  <code>-9999</code>
+                  <codeExplanation>No data available</codeExplanation>
+               </missingValueCode>
+               <annotation>
+                  <propertyURI
+              label="has unit">http://qudt.org/schema/qudt/hasUnit</propertyURI>
+                  <valueURI
+          label="Number">http://qudt.org/vocab/unit/NUM</valueURI>
+               </annotation>
+            </attribute>
+            <attribute
+              id="BMASS-16">
+               <attributeName>B_MASS</attributeName>
+               <attributeDefinition>Oven dry weight of Beech</attributeDefinition>
+               <storageType>float</storageType>
+               <measurementScale>
+                  <ratio>
+                     <unit>
+                        <standardUnit>gram</standardUnit>
+                     </unit>
+                     <numericDomain>
+                        <numberType>real</numberType>
+                     </numericDomain>
+                  </ratio>
+               </measurementScale>
+               <missingValueCode>
+                  <code>-9999</code>
+                  <codeExplanation>No data available</codeExplanation>
+               </missingValueCode>
+               <annotation>
+                  <propertyURI
+              label="has unit">http://qudt.org/schema/qudt/hasUnit</propertyURI>
+                  <valueURI
+          label="Gram">http://qudt.org/vocab/unit/GM</valueURI>
+               </annotation>
+            </attribute>
+            <attribute
+              id="WCOUNT-17">
+               <attributeName>W_COUNT</attributeName>
+               <attributeDefinition>White birch leaf count</attributeDefinition>
+               <storageType>float</storageType>
+               <measurementScale>
+                  <ratio>
+                     <unit>
+                        <standardUnit>number</standardUnit>
+                     </unit>
+                     <numericDomain>
+                        <numberType>whole</numberType>
+                     </numericDomain>
+                  </ratio>
+               </measurementScale>
+               <missingValueCode>
+                  <code>-9999</code>
+                  <codeExplanation>No data available</codeExplanation>
+               </missingValueCode>
+               <annotation>
+                  <propertyURI
+              label="has unit">http://qudt.org/schema/qudt/hasUnit</propertyURI>
+                  <valueURI
+          label="Number">http://qudt.org/vocab/unit/NUM</valueURI>
+               </annotation>
+            </attribute>
+            <attribute
+              id="YCOUNT-18">
+               <attributeName>Y_COUNT</attributeName>
+               <attributeDefinition>Yellow birch leaf count</attributeDefinition>
+               <storageType>float</storageType>
+               <measurementScale>
+                  <ratio>
+                     <unit>
+                        <standardUnit>number</standardUnit>
+                     </unit>
+                     <numericDomain>
+                        <numberType>whole</numberType>
+                     </numericDomain>
+                  </ratio>
+               </measurementScale>
+               <missingValueCode>
+                  <code>-9999</code>
+                  <codeExplanation>No data available</codeExplanation>
+               </missingValueCode>
+               <annotation>
+                  <propertyURI
+              label="has unit">http://qudt.org/schema/qudt/hasUnit</propertyURI>
+                  <valueURI
+          label="Number">http://qudt.org/vocab/unit/NUM</valueURI>
+               </annotation>
+            </attribute>
+            <attribute
+              id="YMASS-19">
+               <attributeName>Y_MASS</attributeName>
+               <attributeDefinition>Oven dry weight of Yellow Birch</attributeDefinition>
+               <storageType>float</storageType>
+               <measurementScale>
+                  <ratio>
+                     <unit>
+                        <standardUnit>gram</standardUnit>
+                     </unit>
+                     <numericDomain>
+                        <numberType>real</numberType>
+                     </numericDomain>
+                  </ratio>
+               </measurementScale>
+               <missingValueCode>
+                  <code>-9999</code>
+                  <codeExplanation>No data available</codeExplanation>
+               </missingValueCode>
+               <annotation>
+                  <propertyURI
+              label="has unit">http://qudt.org/schema/qudt/hasUnit</propertyURI>
+                  <valueURI
+          label="Gram">http://qudt.org/vocab/unit/GM</valueURI>
+               </annotation>
+            </attribute>
+            <attribute
+              id="PCOUNT-20">
+               <attributeName>P_COUNT</attributeName>
+               <attributeDefinition>Pin cherry leaf count</attributeDefinition>
+               <storageType>float</storageType>
+               <measurementScale>
+                  <ratio>
+                     <unit>
+                        <standardUnit>number</standardUnit>
+                     </unit>
+                     <numericDomain>
+                        <numberType>whole</numberType>
+                     </numericDomain>
+                  </ratio>
+               </measurementScale>
+               <missingValueCode>
+                  <code>-9999</code>
+                  <codeExplanation>No data available</codeExplanation>
+               </missingValueCode>
+               <annotation>
+                  <propertyURI
+              label="has unit">http://qudt.org/schema/qudt/hasUnit</propertyURI>
+                  <valueURI
+          label="Number">http://qudt.org/vocab/unit/NUM</valueURI>
+               </annotation>
+            </attribute>
+            <attribute
+              id="aCOUNT-21">
+               <attributeName>a_COUNT</attributeName>
+               <attributeDefinition>Aspen leaf count</attributeDefinition>
+               <storageType>float</storageType>
+               <measurementScale>
+                  <ratio>
+                     <unit>
+                        <standardUnit>number</standardUnit>
+                     </unit>
+                     <numericDomain>
+                        <numberType>whole</numberType>
+                     </numericDomain>
+                  </ratio>
+               </measurementScale>
+               <missingValueCode>
+                  <code>-9999</code>
+                  <codeExplanation>No data available</codeExplanation>
+               </missingValueCode>
+               <annotation>
+                  <propertyURI
+              label="has unit">http://qudt.org/schema/qudt/hasUnit</propertyURI>
+                  <valueURI
+          label="Number">http://qudt.org/vocab/unit/NUM</valueURI>
+               </annotation>
+            </attribute>
+            <attribute
+        id="COMMENT-22">
+               <attributeName>COMMENT</attributeName>
+               <attributeDefinition>Comment</attributeDefinition>
+               <storageType>string</storageType>
+               <measurementScale>
+                  <nominal>
+                     <nonNumericDomain>
+                        <textDomain>
+                           <definition>text</definition>
+                        </textDomain>
+                     </nonNumericDomain>
+                  </nominal>
+               </measurementScale>
+            </attribute>
+         </attributeList>
+         <caseSensitive>no</caseSensitive>
+         <numberOfRecords>17889</numberOfRecords>
+      </dataTable>
+   </dataset>
+   <additionalMetadata>
+      <metadata>
+         <fetchedFromEDI
+        dateFetched="2025-05-23"
+        packageID="knb-lter-hbr.49.10"/>
+      </metadata>
+   </additionalMetadata>
+   <additionalMetadata>
+      <metadata>
+         <importedFromXML
+        dateImported="2025-05-23" filename="knb-lter-hbr.49.10.xml"
+        taxonomicCoverageExempt="True"/>
+      </metadata>
+   </additionalMetadata>
+   <additionalMetadata>
+      <metadata>
+         <emlEditor
+        app="ezEML" release="2025.05.14"/>
+      </metadata>
+   </additionalMetadata>
+</eml:eml>

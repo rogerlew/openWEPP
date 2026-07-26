@@ -308,12 +308,12 @@
 State as of `2026-07-26 UTC`:
 
 - `20260726-canopy-cal-04-05-authority-evidence-admission-001/` -
-  QUEUED: search for and prospectively admit independent quantitative
-  phenology timing evidence, resolve the CAL-04 probability-prior question,
-  and seek site-matched leaf/needle/fine-woody litter-source composition for
-  CAL-05. The package requires explicit operator-assistance requests whenever
-  a promising resource is inaccessible to the agent. No calibration or
-  production-physics change is authorized.
+  EXECUTED / HOLD: CAL-04 timing authority is lifted with Hubbard Brook
+  calibration and an independent Harvard Forest holdout, and CAL-04 adopts a
+  prior-free deterministic identifiability design. CAL-05 is partially lifted
+  but remains pending operator assistance for tissue-separated fine-wood,
+  bark, and reproductive litter mass on a stock-compatible basis. No
+  calibration or production-physics change was made.
 - `20260726-canopy-cal-01-source-target-ledger-001/` -
   COMPLETE / PASS: canopy assurance roadmap Order 1
   preserves 19 hash-bound sources and a 140-row typed ledger, preserves the

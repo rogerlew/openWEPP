@@ -1,1 +1,7 @@
 source_object_id,path,sha256,candidate_id,terms_state,retention_state,notes
+SRC-HB-PHENO-EDI-51-16,references/canopy_phenology/authority_admission/hubbard_brook_edi/HBEF_pheno_1989-2025.csv,6f0e3dda50cadd6fcd8a9636cfac36471c9ca19bd5171a57a82b8ec0bf395d81,CAND-001,CC_BY_4_0,RETAINED,EML retained separately
+SRC-HF-PHENO-HF003-V37,references/canopy_phenology/authority_admission/harvard_forest_hf003/hf003-fall-raw.csv,a700258e62fc62812ec6d0529ee04522cdf3467e59451bfa19cbcd8fdbb468a0,CAND-002,CC0_1_0,RETAINED,Admitted holdout raw object; EML and companion tables also checksum-bound
+SRC-HF-LITTER-HF161-V20,references/canopy_phenology/authority_admission/harvard_forest_hf161/hf161-01-litterfall.csv,bbd80c9948e6e8f813c5e7fd6b5744bb2dd68ba80d4cc3407646bfb6298b8b30,CAND-004,CC0_1_0,RETAINED,Partial CAL05 authority
+SRC-HF-CARBON-HF324-V5,references/canopy_phenology/authority_admission/harvard_forest_hf324/hf324-02-litterfall.csv,cbf44bc03ba3bf569b30d2bbb12b07b72970a4805b8611cda9bf2e24b32c93f0,CAND-005,CC0_1_0,RETAINED,Companion stock and fine-wood tables retained
+SRC-HB-FINE-LITTER-49-11,references/canopy_phenology/authority_admission/hubbard_brook_edi/HBEF_fine_litter_1992-2024.csv,04edf34fe4568ba89d1c0a11323646994d178f69497b71e46a43bb6ceb5f56e7,CAND-006,CC_BY_4_0,RETAINED,Partial CAL05 authority
+SRC-HB-COARSE-LITTER-50-10,references/canopy_phenology/authority_admission/hubbard_brook_edi/HBEF_coarse_litter_1996-2024.csv,3517e8b1042fc7189a621898bfc0e17e88572123987caa0cfebc031f2c5caf88,CAND-007,CC_BY_4_0,RETAINED,Partial CAL05 authority

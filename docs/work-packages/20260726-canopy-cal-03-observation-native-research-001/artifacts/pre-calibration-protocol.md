@@ -164,3 +164,37 @@ Retain materially equifinal solutions; a single best vector is insufficient.
 
 No status can be converted to `PASS_BOUNDED` from ordering, visual agreement,
 legacy parity, or self-consistency alone.
+
+## Prospective authority amendment: 2026-07-26
+
+The independently reviewed
+`20260726-canopy-cal-04-05-authority-evidence-admission-001` package supersedes
+two CAL-04 gap statements before fitting:
+
+- Hubbard Brook EDI `knb-lter-hbr.51.16` spring P3 is the quantitative timing
+  calibration authority for the three species shared with Harvard. The
+  scoreable modeled transition is the first upward 0.5 crossing of research
+  trace `/gsi/gsi21`, with no subdaily interpolation.
+- Harvard Forest HF003 v37 is the independent site/study holdout for shared
+  sugar maple, yellow birch, and beech 50% leaf fall. The modeled transition is
+  the first downward 0.5 crossing of `/gsi/gsi21`. Budbreak, leaf-size, and
+  color remain unscored because native CP2 lacks direct equivalents. Fall 1992
+  is excluded because the EML says no campaign occurred that year.
+- Calibration minimizes the equal-year interval-distance RMSE frozen in the
+  admission package and reports
+  species RMSE, median absolute distance, coverage, and failed members. Missing
+  required crossings invalidate a candidate with infinite objective. The
+  Hubbard and Harvard observations bind respectively to the protected
+  `hubbardbrook_deciduous_nh` and `harvard_deciduous_ma` fixture traces; 2025
+  Hubbard observations are excluded because the protected member ends in 2024.
+  Identical holdout statistics are computed only after the accepted range and
+  all choices are frozen.
+- CAL-04 uses a deterministic grid/profile design with no probability prior.
+  Contract/schema domains are search domains, not scientific priors.
+
+The CAL-05 source-composition gap is only partially lifted. Harvard and Hubbard
+objects admit leaf/needle and aggregate nonfoliar/coarse evidence, but no
+retained object separately weighs fine woody input from bark, cones, seeds,
+flowers, or fruit on a compatible stock basis. Source-sufficiency analysis may
+proceed with that term explicit and unknown; decomposition fitting and source
+adequacy remain `AUTHORITY_BLOCKED`.

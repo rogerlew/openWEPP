@@ -1,4 +1,4 @@
-gap_id,stage,required_evidence,current_state,terminal_state,evidence_ids,rationale
-GAP-CAL04-INDEPENDENT-PHENOLOGY-HOLDOUT,CAL04_GSI_TIMING,Quantitative timing calibration and independent holdout authority,AUTHORITY_BLOCKED,NOT_EVALUATED,,
-GAP-CAL04-NUMERIC-PRIORS,CAL04_ALL,Evidence-supported priors or prospectively reviewed prior-free design,AUTHORITY_BLOCKED,NOT_EVALUATED,,
-GAP-CAL05-SOURCE-COMPOSITION,CAL05_LITTER_SOURCE,Site-matched separated litter-source flux and comparable forest-floor stock,AUTHORITY_BLOCKED,NOT_EVALUATED,,
+gap_id,stage,required_evidence,prior_state,terminal_state,evidence_ids,rationale
+GAP-CAL04-INDEPENDENT-PHENOLOGY-HOLDOUT,CAL04_GSI_TIMING,Quantitative timing calibration and independent holdout authority,AUTHORITY_BLOCKED,LIFTED,SRC-HB-PHENO-EDI-51-16|SRC-HF-PHENO-HF003-V37,Hubbard calibration and independent Harvard holdout are open primary objects with source-defined transitions
+GAP-CAL04-NUMERIC-PRIORS,CAL04_ALL,Evidence-supported priors or prospectively reviewed prior-free design,AUTHORITY_BLOCKED,LIFTED,DESIGN-CAL04-PRIOR-FREE-001,Prospectively frozen deterministic grid/profile design uses no probability prior
+GAP-CAL05-SOURCE-COMPOSITION,CAL05_LITTER_SOURCE,Site-matched separated litter-source flux and comparable forest-floor stock,AUTHORITY_BLOCKED,PARTIALLY_LIFTED,SRC-HF-LITTER-HF161-V20|SRC-HF-CARBON-HF324-V5|SRC-HB-FINE-LITTER-49-11|SRC-HB-COARSE-LITTER-50-10,Open objects resolve foliar/needle and aggregate nonfoliar or coarse inputs but not fine wood separately from bark/cones/seeds/fruit

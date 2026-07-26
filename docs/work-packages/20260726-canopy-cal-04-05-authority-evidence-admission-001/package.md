@@ -2,7 +2,7 @@
 
 Package ID: `20260726-canopy-cal-04-05-authority-evidence-admission-001`
 
-Status: `QUEUED`
+Status: `EXECUTED / HOLD — CAL-04 LIFTED; CAL-05 PENDING OPERATOR`
 
 Date opened: `2026-07-26`
 
@@ -31,25 +31,37 @@ plausible source is authoritative merely because it is convenient.
 
 - [x] (2026-07-26) Scaffolded the package, evidence criteria, operator-help
   protocol, write set, active prompt, and queued artifacts.
-- [ ] Read the complete required-reading set and record exact identities.
-- [ ] Inventory existing local and resolvable external candidate sources.
-- [ ] Evaluate CAL-04 quantitative calibration and independent timing-holdout
+- [x] (2026-07-26) Read the complete required-reading set and recorded exact
+  identities.
+- [x] (2026-07-26) Inventoried existing local and resolvable external candidate
+  sources.
+- [x] (2026-07-26) Evaluated CAL-04 quantitative calibration and independent timing-holdout
   candidates.
-- [ ] Adjudicate the no-prior deterministic-search alternative prospectively.
-- [ ] Evaluate CAL-05 site-matched litter-source and forest-floor-stock
+- [x] (2026-07-26) Adjudicated the no-prior deterministic-search alternative
+  prospectively.
+- [x] (2026-07-26) Evaluated CAL-05 site-matched litter-source and forest-floor-stock
   candidates.
-- [ ] Request operator assistance for every promising resource the agent
+- [x] (2026-07-26) Requested operator assistance for every promising resource the agent
   cannot lawfully or technically access.
-- [ ] Retain admitted objects and complete provenance, license, transformation,
+- [x] (2026-07-26) Retained admitted objects and completed provenance, license, transformation,
   uncertainty, matching, and immutable-role records.
-- [ ] Amend the frozen protocol and ledgers only for independently supported
+- [x] (2026-07-26) Amended the frozen protocol and ledgers only for independently supported
   admissions.
-- [ ] Complete selected gates, two independent reviews, finding disposition,
-  two independent terminal verifications, and final disposition.
+- [x] (2026-07-26) Completed selected gates, two independent reviews, finding
+  disposition, two independent terminal verifications, and final disposition.
 
 ## Surprises & Discoveries
 
-None at scaffold time.
+- Hubbard Brook and Harvard Forest expose strong, open phenology series with
+  distinct sites and source-defined endpoints, so CAL-04 does not need invented
+  dates or a same-site year split.
+- Open CAL-05 objects contain useful site-matched litter and stock evidence but
+  pool fine wood with bark and reproductive material. The public Hubbard Brook
+  table also omits the complete tissue-mass partition described by its methods.
+- The local `wctl doc-lint` and `wctl doc-mv` wrappers are configured against
+  a different project root: lint scanned zero staged openWEPP files and move
+  rejected both relative and absolute existing paths. Direct `markdown-doc`
+  lint and an explicit patch move completed the operations.
 
 ## Decision Log
 
@@ -68,10 +80,30 @@ None at scaffold time.
   Rationale: deterministic grids, profiles, or bounded ensembles can assess
   identifiability without inventing a scientific probability distribution.
   Date/Author: 2026-07-26 / Codex.
+- Decision: Admit Hubbard Brook phenology for calibration and Harvard Forest
+  HF003 only for independent holdout.
+  Rationale: the sites and research objects are independent, while keeping
+  their source-specific transition definitions separate avoids false endpoint
+  equivalence.
+  Date/Author: 2026-07-26 / Codex.
+- Decision: Keep CAL-05 on hold and request operator assistance.
+  Rationale: no retained open object separately weighs fine wood, bark, and
+  reproductive material on a basis comparable with the forest-floor stock.
+  Date/Author: 2026-07-26 / Codex.
 
 ## Outcomes & Retrospective
 
-Queued. No authority blocker is lifted by this scaffold.
+CAL-04's timing and probability-prior blockers are lifted prospectively.
+Hubbard Brook supplies the calibration observations, Harvard Forest supplies
+the independent holdout, and CAL-04 must use a deterministic prior-free
+identifiability design.
+
+CAL-05 is partially lifted for source-sufficiency analysis but remains
+`PENDING_OPERATOR` and unauthorized for decomposition fitting. The requested
+resource is a lawful tissue-separated annual dry-mass table distinguishing
+leaves, needles, fine wood under 2 cm, bark, and reproductive material with
+site/plot/year identifiers and reuse terms. Until supplied, the package
+truthfully closes `HOLD`.
 
 ## Context and Orientation
 

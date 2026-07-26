@@ -1,0 +1,381 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<eml:eml packageId="knb-lter-hbr.50.10"
+  system="https://pasta.edirepository.org"
+  xmlns:eml="https://eml.ecoinformatics.org/eml-2.2.0"
+  xmlns:stmml="http://www.xml-cml.org/schema/stmml-1.2"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://eml.ecoinformatics.org/eml-2.2.0 https://eml.ecoinformatics.org/eml-2.2.0/eml.xsd">
+   <access
+    authSystem="https://pasta.edirepository.org/authentication"
+    order="allowFirst" scope="document"
+      system="https://pasta.edirepository.org">
+      <allow>
+         <principal>uid=HBR,o=EDI,dc=edirepository,dc=org</principal>
+         <permission>all</permission>
+      </allow>
+      <allow>
+         <principal>public</principal>
+         <permission>read</permission>
+      </allow>
+   </access>
+   <dataset>
+      <alternateIdentifier
+        system="https://doi.org">doi:10.6073/pasta/8400119b4173ef7aaa0d3843ecdf32a8</alternateIdentifier><title>Coarse Litterfall Data at the Hubbard Brook Experimental Forest, 1996 - ongoing</title>
+      <creator>
+         <individualName>
+            <givenName>Timothy</givenName>
+            <givenName>J</givenName>
+            <surName>Fahey</surName>
+         </individualName>
+         <organizationName>Cornell University</organizationName>
+         <electronicMailAddress>tjf5@cornell.edu</electronicMailAddress>
+         <userId
+        directory="https://orcid.org">0000-0003-1283-1162</userId>
+         <userId
+        directory="https://ror.org/">https://ror.org/05bnh6r87</userId>
+      </creator>
+      <creator>
+         <individualName>
+            <givenName>Natalie</givenName>
+            <surName>Cleavitt</surName>
+         </individualName>
+         <organizationName>Cornell University</organizationName>
+         <electronicMailAddress>nlc4@cornell.edu</electronicMailAddress>
+         <userId
+        directory="https://orcid.org">0000-0003-0425-2486</userId>
+         <userId
+      directory="https://ror.org/">https://ror.org/05bnh6r87</userId>
+      </creator>
+      <associatedParty>
+         <individualName>
+            <givenName>Cindy</givenName>
+            <surName>Wood</surName>
+         </individualName>
+         <role>associated researcher</role>
+      </associatedParty>
+      <pubDate>2025-12-03</pubDate>
+      <abstract>
+         <para>Coarse litterfall (woody litter greater than 2 cm diameter) was collected from cleared plots in the same sites as fine litterfall to quantify total aboveground litterfall in the reference forest. These collections are for quantifying CWD inputs from live standing trees rather than all CWD inputs. Tree mortality and fall rates are used for dead tree inputs. All together these data are used to calculate aboveground production and forest carbon and nutrient budgets.</para>
+         <para>These data were gathered as part of the Hubbard Brook Ecosystem Study (HBES). The HBES is a collaborative effort at the Hubbard Brook Experimental Forest, which is operated and maintained by the USDA Forest Service, Northern Research Station.</para>
+      </abstract>
+      <keywordSet>
+         <keyword>HBR</keyword>
+         <keyword>Hubbard Brook LTER</keyword>
+         <keyword>Hubbard Brook Experimental Forest</keyword>
+         <keyword>Hubbard Brook Ecosystem Study</keyword>
+         <keyword>HBES</keyword>
+         <keyword>HBEF</keyword>
+         <keyword>New Hampshire</keyword>
+         <keyword>NH</keyword>
+         <keyword>White Mountain National Forest</keyword>
+         <keyword>twig</keyword>
+         <keywordThesaurus>HBES Vocabulary</keywordThesaurus>
+      </keywordSet>
+      <keywordSet>
+         <keyword>biota</keyword>
+         <keywordThesaurus>ISO 19115 Topic Category</keywordThesaurus>
+      </keywordSet>
+      <keywordSet>
+         <keyword>ecosystems</keyword>
+         <keyword>forests</keyword>
+         <keyword>watersheds</keyword>
+         <keyword>leaves</keyword>
+         <keyword>litter</keyword>
+         <keyword>trees</keyword>
+         <keyword>vegetation</keyword>
+         <keywordThesaurus>LTER Controlled Vocabulary</keywordThesaurus>
+      </keywordSet>
+      <keywordSet>
+         <keyword>organic matter</keyword>
+         <keyword>primary production</keyword>
+         <keyword>disturbance patterns</keyword>
+         <keywordThesaurus>LTER Core Research Area</keywordThesaurus>
+      </keywordSet>
+      <keywordSet>
+         <keyword>Ecology, Ecosystems, &amp; Environment</keyword>
+         <keywordThesaurus>National Research &amp; Development Taxonomy</keywordThesaurus>
+      </keywordSet>
+      <intellectualRights>
+         <para>This information is released under the Creative Commons license - Attribution - CC BY (https://creativecommons.org/licenses/by/4.0/). The consumer of these data ("Data User" herein) is required to cite it appropriately in any publication that results from its use. The Data User should realize that these data may be actively used by others for ongoing research and that coordination may be necessary to prevent duplicate publication. The Data User is urged to contact the authors of these data if any questions about methodology or results occur. Where appropriate, the Data User is encouraged to consider collaboration or co-authorship with the authors. The Data User should realize that misinterpretation of data may occur if used out of context of the original study. While substantial efforts are made to ensure the accuracy of data and associated documentation, complete accuracy of data sets cannot be guaranteed. All data are made available "as is." The Data User should be aware, however, that data are updated periodically and it is the responsibility of the Data User to check for new versions of the data. The data authors and the repository where these data were obtained shall not be liable for damages resulting from any use or misinterpretation of the data. Thank you.</para>
+      </intellectualRights>
+      <distribution
+      id="10.6073/pasta/8400119b4173ef7aaa0d3843ecdf32a8" scope="system"
+          system="https://pasta.edirepository.org"><online><url
+        function="information">https://doi.org/10.6073/pasta/8400119b4173ef7aaa0d3843ecdf32a8</url></online></distribution><coverage>
+         <geographicCoverage>
+            <geographicDescription>Watershed 5. Co-located with Fine Litterfall Collection sites</geographicDescription>
+            <boundingCoordinates>
+               <westBoundingCoordinate>-71.739375</westBoundingCoordinate>
+               <eastBoundingCoordinate>-71.731253</eastBoundingCoordinate>
+               <northBoundingCoordinate>43.957167</northBoundingCoordinate>
+               <southBoundingCoordinate>43.948942</southBoundingCoordinate>
+            </boundingCoordinates>
+         </geographicCoverage>
+         <geographicCoverage>
+            <geographicDescription>Bear Brook Reference Watershed sites. Co-located with Fine Litterfall Collection sites.</geographicDescription>
+            <boundingCoordinates>
+               <westBoundingCoordinate>-71.743462</westBoundingCoordinate>
+               <eastBoundingCoordinate>-71.735649</eastBoundingCoordinate>
+               <northBoundingCoordinate>43.957001</northBoundingCoordinate>
+               <southBoundingCoordinate>43.949928</southBoundingCoordinate>
+            </boundingCoordinates>
+         </geographicCoverage>
+         <temporalCoverage>
+            <rangeOfDates>
+               <beginDate>
+                  <calendarDate>1996-01-01</calendarDate>
+               </beginDate>
+               <endDate>
+                  <calendarDate>2024-12-31</calendarDate>
+               </endDate>
+            </rangeOfDates>
+         </temporalCoverage>
+      </coverage>
+      <maintenance>
+         <description>
+            <para>knb-lter-hbr.50.10; corrected table description to reflect 2024 update</para>
+            <para>knb-lter-hbr.50.9; addition of 2024 data</para>
+         </description>
+         <maintenanceUpdateFrequency>annually</maintenanceUpdateFrequency>
+      </maintenance>
+      <contact>
+         <organizationName>Hubbard Brook Ecosystem Study</organizationName>
+         <electronicMailAddress>hbr-im@lternet.edu</electronicMailAddress>
+      </contact>
+      <publisher>
+         <organizationName>Environmental Data Initiative</organizationName>
+         <electronicMailAddress>info@edirepository.org</electronicMailAddress>
+         <onlineUrl>https://edirepository.org</onlineUrl>
+         <userId
+          directory="https://ror.org">0330j0z60</userId>
+      </publisher>
+      <pubPlace>Environmental Data Initiative</pubPlace>
+      <methods>
+         <methodStep>
+            <description>
+               <para>DATA DESCRIPTION: Each 6.25 m2 plot was cleared of woody debris in fall 1995 and first measured in 1996. Dry weight of coarse litterfall (&gt;2 cm diameter) deposited in the plots from live trees is measured each year (May-June). CWD from dead or fallen trees is not collected. Spruce/fir zone plots were established in 2001 and first measured in 2002. Samples are dried for a week at 60C.</para>
+               <para>SAMPLING DESIGN: Six plots, each 2.5 x 2.5 m (6.26 m2), are located adjacent to fine litterfall collectors. Locations of the five sample sites were chosen to stratify the sampling by elevation zone.</para>
+            </description>
+         </methodStep>
+      </methods>
+      <project>
+         <title>Long-Term Ecological Research at Hubbard Brook Experimental Forest - Coarse litterfall</title>
+         <personnel>
+            <individualName>
+               <givenName>Timothy</givenName>
+               <givenName>J</givenName>
+               <surName>Fahey</surName>
+            </individualName>
+            <organizationName>Cornell University</organizationName>
+            <electronicMailAddress>tjf5@cornell.edu</electronicMailAddress>
+            <userId
+          directory="https://orcid.org">https://orcid.org/0000-0003-1283-1162</userId>
+            <role>Principal Investigator</role>
+         </personnel>
+         <personnel>
+            <individualName>
+               <givenName>Natalie</givenName>
+               <givenName>L</givenName>
+               <surName>Cleavitt</surName>
+            </individualName>
+            <organizationName>Cornell University</organizationName>
+            <electronicMailAddress>nlc4@cornell.edu</electronicMailAddress>
+            <userId
+          directory="https://orcid.org">orcid logo https://orcid.org/0000-0003-0425-2486</userId>
+            <userId
+      directory="https://ror.org/">https://ror.org/05bnh6r87</userId>
+            <role>Investigator</role>
+         </personnel>
+         <award>
+            <funderName>National Science Foundation</funderName>
+            <funderIdentifier>https://ror.org/021nxhr62</funderIdentifier>
+            <awardNumber>2224545</awardNumber>
+            <title>LTER: Long Term Ecological Research at the Hubbard Brook Experimental Forest (2022)</title>
+            <awardUrl>https://www.nsf.gov/awardsearch/showAward?AWD_ID=2224545</awardUrl>
+         </award>
+         <award>
+            <funderName>National Science Foundation</funderName>
+            <funderIdentifier>https://ror.org/021nxhr62</funderIdentifier>
+            <awardNumber>1637685</awardNumber>
+            <title>LTER: Long Term Ecological Research at the Hubbard Brook Experimental Forest (2016)</title>
+            <awardUrl>https://www.nsf.gov/awardsearch/showAward?AWD_ID=1637685</awardUrl>
+         </award>
+         <award>
+            <funderName>National Science Foundation</funderName>
+            <funderIdentifier>https://ror.org/021nxhr62</funderIdentifier>
+            <awardNumber>1633026</awardNumber>
+            <title>Long-Term Ecological Research at the Hubbard Brook Experimental Forest (2016b)</title>
+            <awardUrl>https://www.nsf.gov/awardsearch/showAward?AWD_ID=1633026</awardUrl>
+         </award>
+         <award>
+            <funderName>National Science Foundation</funderName>
+            <funderIdentifier>https://ror.org/021nxhr62</funderIdentifier>
+            <awardNumber>1114804</awardNumber>
+            <title>Long-Term Ecological Research at Hubbard Brook Experimental Forest (2010)</title>
+            <awardUrl>https://www.nsf.gov/awardsearch/showAward?AWD_ID=1114804</awardUrl>
+         </award>
+         <award>
+            <funderName>National Science Foundation</funderName>
+            <funderIdentifier>https://ror.org/021nxhr62</funderIdentifier>
+            <awardNumber>0423259</awardNumber>
+            <title>Long-Term Ecological Research (LTER) at Hubbard Brook Experimental Forest (HBR-LTER) (2005)</title>
+            <awardUrl>https://www.nsf.gov/awardsearch/showAward?AWD_ID=0423259</awardUrl>
+         </award>
+         <award>
+            <funderName>National Science Foundation</funderName>
+            <funderIdentifier>https://ror.org/021nxhr62</funderIdentifier>
+            <awardNumber>9810221</awardNumber>
+            <title>LTER: Hubbard Brook Experimental Forest (1998)</title>
+            <awardUrl>https://www.nsf.gov/awardsearch/showAward?AWD_ID=9810221</awardUrl>
+         </award>
+         <award>
+            <funderName>National Science Foundation</funderName>
+            <funderIdentifier>https://ror.org/021nxhr62</funderIdentifier>
+            <awardNumber>9211768</awardNumber>
+            <title>Long-term Ecological Research (LTER) at the Hubbard Brook Experimental Forest (1992)</title>
+            <awardUrl>https://www.nsf.gov/awardsearch/showAward?AWD_ID=9211768</awardUrl>
+         </award>
+      </project>
+      <dataTable
+      id="200bb5c2a611ae62d45b449369222c18" scope="document"
+          system="https://pasta.edirepository.org">
+         <entityName>CWD_1996_2024_wts</entityName>
+         <entityDescription>Hubbard Brook coarse woody debris data</entityDescription>
+         <physical>
+            <objectName>CWD_1996_2024_wts.csv</objectName>
+            <size
+          unit="byte">13126</size>
+            <authentication
+              method="MD5">56933dfcfc7eddf21fb4b0dbb057c5e7</authentication>
+            <dataFormat>
+               <textFormat>
+                  <numHeaderLines>1</numHeaderLines>
+                  <recordDelimiter>\n</recordDelimiter>
+                  <attributeOrientation>column</attributeOrientation>
+                  <simpleDelimited>
+                     <fieldDelimiter>,</fieldDelimiter>
+                     <quoteCharacter>"</quoteCharacter>
+                  </simpleDelimited>
+               </textFormat>
+            </dataFormat>
+            <distribution>
+               <online>
+                  <url
+          function="download">https://pasta.lternet.edu/package/data/eml/knb-lter-hbr/50/10/200bb5c2a611ae62d45b449369222c18</url>
+               </online>
+            </distribution>
+         </physical>
+         <attributeList>
+            <attribute
+          id="b9bc5eba-2835-4bcb-8483-a7d6868bd559">
+               <attributeName>SITE</attributeName>
+               <attributeDefinition>Zone where litterfall was collected</attributeDefinition>
+               <storageType>string</storageType>
+               <measurementScale>
+                  <nominal>
+                     <nonNumericDomain>
+                        <enumeratedDomain>
+                           <codeDefinition>
+                              <code>BB-High</code>
+                              <definition>West of rain guage 9 (800 m)</definition>
+                           </codeDefinition>
+                           <codeDefinition>
+                              <code>BB-Low</code>
+                              <definition>Southwest of WS6 weir (525 m elevation)</definition>
+                           </codeDefinition>
+                           <codeDefinition>
+                              <code>BB-Mid</code>
+                              <definition>West of WS6 trail and lysimeter plot (585 m )</definition>
+                           </codeDefinition>
+                           <codeDefinition>
+                              <code>BB-Upper</code>
+                              <definition>West of tower site and seep (725 m)</definition>
+                           </codeDefinition>
+                           <codeDefinition>
+                              <code>SF-TF</code>
+                              <definition>Spruce-fir zone, located along WS6 trail (790 m)</definition>
+                           </codeDefinition>
+                        </enumeratedDomain>
+                     </nonNumericDomain>
+                  </nominal>
+               </measurementScale>
+            </attribute>
+            <attribute
+          id="79099765-b197-4fe1-96f3-9e6db5c2c962">
+               <attributeName>PLOT</attributeName>
+               <attributeDefinition>Sample plot</attributeDefinition>
+               <storageType>string</storageType>
+               <measurementScale>
+                  <nominal>
+                     <nonNumericDomain>
+                        <textDomain>
+                           <definition>text</definition>
+                        </textDomain>
+                     </nonNumericDomain>
+                  </nominal>
+               </measurementScale>
+            </attribute>
+            <attribute
+          id="c5546ca0-8c6d-4609-bdd8-fd6e440e044b">
+               <attributeName>YEAR</attributeName>
+               <attributeDefinition>Year samples were collected</attributeDefinition>
+               <storageType>date</storageType>
+               <measurementScale>
+                  <dateTime>
+                     <formatString>YYYY</formatString>
+                     <dateTimeDomain/>
+                  </dateTime>
+               </measurementScale>
+            </attribute>
+            <attribute
+              id="ff3b1597-fc05-4027-936a-7a73d0e9f7d5">
+               <attributeName>DRY_WT</attributeName>
+               <attributeDefinition>Sample dry weight</attributeDefinition>
+               <storageType>float</storageType>
+               <measurementScale>
+                  <ratio>
+                     <unit>
+                        <standardUnit>gramPerMeterSquared</standardUnit>
+                     </unit>
+                     <numericDomain>
+                        <numberType>real</numberType>
+                     </numericDomain>
+                  </ratio>
+               </measurementScale>
+               <missingValueCode>
+                  <code>-9999</code>
+                  <codeExplanation>Not sampled</codeExplanation>
+               </missingValueCode>
+               <annotation>
+                  <propertyURI
+              label="has unit">http://qudt.org/schema/qudt/hasUnit</propertyURI>
+                  <valueURI
+        label="Gram Per Square Meter">http://qudt.org/vocab/unit/GM-PER-M2</valueURI>
+               </annotation>
+            </attribute>
+         </attributeList>
+         <caseSensitive>no</caseSensitive>
+         <numberOfRecords>607</numberOfRecords>
+      </dataTable>
+   </dataset>
+   <additionalMetadata>
+      <metadata>
+         <fetchedFromEDI
+        dateFetched="2025-12-03"
+        packageID="knb-lter-hbr.50.9"/>
+      </metadata>
+   </additionalMetadata>
+   <additionalMetadata>
+      <metadata>
+         <importedFromXML
+        dateImported="2025-12-03" filename="knb-lter-hbr.50.9.xml"
+        taxonomicCoverageExempt="True"/>
+      </metadata>
+   </additionalMetadata>
+   <additionalMetadata>
+      <metadata>
+         <emlEditor
+        app="ezEML" release="2025.09.10"/>
+      </metadata>
+   </additionalMetadata>
+</eml:eml>

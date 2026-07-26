@@ -1,1 +1,9 @@
 search_id,timestamp_utc,gap_id,venue,query_or_local_path,result_count,candidate_ids,notes
+SEARCH-001,2026-07-26T22:55:00Z,ALL,LOCAL,repository canopy phenology litter biomass forest-floor paths,18,CAND-006|CAND-007|CAND-008,No new quantitative timing object
+SEARCH-002,2026-07-26T23:02:00Z,GAP-CAL04-INDEPENDENT-PHENOLOGY-HOLDOUT,HUBBARD_CATALOG,phenology leaf-out senescence,2,CAND-001,Exact open EDI field series found
+SEARCH-003,2026-07-26T23:08:00Z,GAP-CAL04-INDEPENDENT-PHENOLOGY-HOLDOUT,HARVARD_ARCHIVE,woody species phenology dates,2,CAND-002,Independent open HF003 series found
+SEARCH-004,2026-07-26T23:14:00Z,GAP-CAL04-INDEPENDENT-PHENOLOGY-HOLDOUT,NEON_ORNL,Harvard PhenoCam phenology,2,CAND-003,Redundant secondary candidates
+SEARCH-005,2026-07-26T23:20:00Z,GAP-CAL05-SOURCE-COMPOSITION,HUBBARD_EDI,litterfall leaves twigs coarse forest floor,5,CAND-006|CAND-007,Material partition incomplete
+SEARCH-006,2026-07-26T23:27:00Z,GAP-CAL05-SOURCE-COMPOSITION,HARVARD_ARCHIVE,litterfall needles nonfoliar organic stock,4,CAND-004|CAND-005,Strong exact-site partial evidence
+SEARCH-007,2026-07-26T23:34:00Z,GAP-CAL05-SOURCE-COMPOSITION,USDA_FOREST_SERVICE,Marcell litterfall forest floor,3,CAND-008,Same-site publication lacks material split/raw object
+SEARCH-008,2026-07-26T23:40:00Z,GAP-CAL05-SOURCE-COMPOSITION,SANTEE_AND_CLEMSON,Santee litterfall needles twigs forest floor,3,SANTEE-GRESHAM,Flux/stock sites differ and wood pooled with fruit

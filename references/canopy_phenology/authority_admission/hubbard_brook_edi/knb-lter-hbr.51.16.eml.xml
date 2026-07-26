@@ -1,0 +1,708 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<eml:eml packageId="knb-lter-hbr.51.16"
+  system="https://pasta.edirepository.org"
+  xmlns:eml="https://eml.ecoinformatics.org/eml-2.2.0"
+  xmlns:stmml="http://www.xml-cml.org/schema/stmml-1.2"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="https://eml.ecoinformatics.org/eml-2.2.0/eml.xsd https://eml.ecoinformatics.org/eml-2.2.0/eml.xsd">
+   <access
+    authSystem="https://pasta.edirepository.org/authentication"
+    order="allowFirst" scope="document"
+      system="https://pasta.edirepository.org">
+      <allow>
+         <principal>uid=HBR,o=EDI,dc=edirepository,dc=org</principal>
+         <permission>all</permission>
+      </allow>
+      <allow>
+         <principal>public</principal>
+         <permission>read</permission>
+      </allow>
+   </access>
+   <dataset>
+      <alternateIdentifier
+        system="https://doi.org">doi:10.6073/pasta/8c4197a0759a3c8b7957113dd8344074</alternateIdentifier><title>Hubbard Brook Experimental Forest: Routine Seasonal Phenology Measurements, 1989 - present</title>
+      <creator>
+         <organizationName>USDA Forest Service, Northern Research Station</organizationName>
+      </creator>
+      <associatedParty>
+         <individualName>
+            <givenName>Amey</givenName>
+            <surName>Bailey</surName>
+         </individualName>
+         <organizationName>USDA Forest Service, Northern Research Station</organizationName>
+         <userId
+      directory="https://orcid.org">https://orcid.org/0000-0003-3848-8550</userId>
+         <role>Associated Party</role>
+      </associatedParty>
+      <pubDate>2025-12-16</pubDate>
+      <abstract>
+         <para>Spring and Fall leaf phenology observations have been made at 9 locations at the Hubbard Brook Experimental Forest since 1989. Timing and progression of spring leaf out and fall senescence are recorded for 3 dominant tree species, sugar maple, yellow birch, and beech, in treated and untreated watersheds and high and low elevations. Weekly measurements are taken during the active period of the fall or spring season. These data were gathered at the Hubbard Brook Experimental Forest in North Woodstock, NH, which is operated and maintained by the USDA Forest Service, Northern Research Station. &#xd;
+</para>
+      </abstract>
+      <keywordSet>
+         <keyword>ecosystems</keyword>
+         <keyword>forests</keyword>
+         <keyword>watersheds</keyword>
+         <keyword>phenology</keyword>
+         <keywordThesaurus>LTER Controlled Vocabulary</keywordThesaurus>
+      </keywordSet>
+      <keywordSet>
+         <keyword>disturbance</keyword>
+         <keywordThesaurus>LTER Core Research Area</keywordThesaurus>
+      </keywordSet>
+      <keywordSet>
+         <keyword>HBR</keyword>
+         <keyword>Hubbard Brook LTER</keyword>
+         <keyword>Hubbard Brook Experimental Forest</keyword>
+         <keyword>Hubbard Brook Ecosystem Study</keyword>
+         <keyword>HBES</keyword>
+         <keyword>HBEF</keyword>
+         <keyword>New Hampshire</keyword>
+         <keyword>NH</keyword>
+         <keyword>White Mountain National Forest</keyword>
+         <keywordThesaurus>HBES Vocabulary</keywordThesaurus>
+      </keywordSet>
+      <keywordSet>
+         <keyword>biota</keyword>
+         <keyword>climatologyMeteorologyAtmosphere</keyword>
+         <keywordThesaurus>ISO 19115 Topic Category</keywordThesaurus>
+      </keywordSet>
+      <keywordSet>
+         <keyword>Ecology, Ecosystems, &amp; Environment</keyword>
+         <keywordThesaurus>National Research &amp; Development Taxonomy</keywordThesaurus>
+      </keywordSet>
+      <intellectualRights>
+         <para>This information is released under the Creative Commons license - Attribution - CC BY (https://creativecommons.org/licenses/by/4.0/). The consumer of these data ("Data User" herein) is required to cite it appropriately in any publication that results from its use. The Data User should realize that these data may be actively used by others for ongoing research and that coordination may be necessary to prevent duplicate publication. The Data User is urged to contact the authors of these data if any questions about methodology or results occur. Where appropriate, the Data User is encouraged to consider collaboration or co-authorship with the authors. The Data User should realize that misinterpretation of data may occur if used out of context of the original study. While substantial efforts are made to ensure the accuracy of data and associated documentation, complete accuracy of data sets cannot be guaranteed. All data are made available "as is." The Data User should be aware, however, that data are updated periodically and it is the responsibility of the Data User to check for new versions of the data. The data authors and the repository where these data were obtained shall not be liable for damages resulting from any use or misinterpretation of the data. Thank you.
+</para>
+      </intellectualRights>
+      <distribution
+      id="10.6073/pasta/8c4197a0759a3c8b7957113dd8344074" scope="system"
+          system="https://pasta.edirepository.org"><online><url
+            function="information">https://doi.org/10.6073/pasta/8c4197a0759a3c8b7957113dd8344074</url></online></distribution><coverage>
+         <geographicCoverage>
+            <geographicDescription>Hubbard Brook Experimental Forest</geographicDescription>
+            <boundingCoordinates>
+               <westBoundingCoordinate>-71.8062</westBoundingCoordinate>
+               <eastBoundingCoordinate>-71.7022</eastBoundingCoordinate>
+               <northBoundingCoordinate>43.959</northBoundingCoordinate>
+               <southBoundingCoordinate>43.914</southBoundingCoordinate>
+            </boundingCoordinates>
+         </geographicCoverage>
+         <geographicCoverage>
+            <geographicDescription>Phenology plot 1B (elevation 1549 feet)</geographicDescription>
+            <boundingCoordinates>
+               <westBoundingCoordinate>-71.725558</westBoundingCoordinate>
+               <eastBoundingCoordinate>-71.725558</eastBoundingCoordinate>
+               <northBoundingCoordinate>43.952022</northBoundingCoordinate>
+               <southBoundingCoordinate>43.952022</southBoundingCoordinate>
+            </boundingCoordinates>
+         </geographicCoverage>
+         <geographicCoverage>
+            <geographicDescription>Phenology plot 6T (elevation 2518 feet)</geographicDescription>
+            <boundingCoordinates>
+               <westBoundingCoordinate>-71.742178</westBoundingCoordinate>
+               <eastBoundingCoordinate>-71.742178</eastBoundingCoordinate>
+               <northBoundingCoordinate>43.955547</northBoundingCoordinate>
+               <southBoundingCoordinate>43.955547</southBoundingCoordinate>
+            </boundingCoordinates>
+         </geographicCoverage>
+         <geographicCoverage>
+            <geographicDescription>Phenology plot 4B (elevation 1733 feet)</geographicDescription>
+            <boundingCoordinates>
+               <westBoundingCoordinate>-71.728739</westBoundingCoordinate>
+               <eastBoundingCoordinate>-71.728739</eastBoundingCoordinate>
+               <northBoundingCoordinate>43.950917</northBoundingCoordinate>
+               <southBoundingCoordinate>43.950917</southBoundingCoordinate>
+            </boundingCoordinates>
+         </geographicCoverage>
+         <geographicCoverage>
+            <geographicDescription>Phenology plot 4T (elevation 1996 feet)</geographicDescription>
+            <boundingCoordinates>
+               <westBoundingCoordinate>-71.731661</westBoundingCoordinate>
+               <eastBoundingCoordinate>-71.731661</eastBoundingCoordinate>
+               <northBoundingCoordinate>43.958947</northBoundingCoordinate>
+               <southBoundingCoordinate>43.958947</southBoundingCoordinate>
+            </boundingCoordinates>
+         </geographicCoverage>
+         <geographicCoverage>
+            <geographicDescription>Phenology plot 5B (elevation 1556 feet)</geographicDescription>
+            <boundingCoordinates>
+               <westBoundingCoordinate>-71.731831</westBoundingCoordinate>
+               <eastBoundingCoordinate>-71.731831</eastBoundingCoordinate>
+               <northBoundingCoordinate>43.949128</northBoundingCoordinate>
+               <southBoundingCoordinate>43.949128</southBoundingCoordinate>
+            </boundingCoordinates>
+         </geographicCoverage>
+         <geographicCoverage>
+            <geographicDescription>Phenology plot 5T (elevation 2385 feet)</geographicDescription>
+            <boundingCoordinates>
+               <westBoundingCoordinate>-71.736869</westBoundingCoordinate>
+               <eastBoundingCoordinate>-71.736869</eastBoundingCoordinate>
+               <northBoundingCoordinate>43.9574</northBoundingCoordinate>
+               <southBoundingCoordinate>43.9574</southBoundingCoordinate>
+            </boundingCoordinates>
+         </geographicCoverage>
+         <geographicCoverage>
+            <geographicDescription>Phenology plot 7B (elevation 1985 feet)</geographicDescription>
+            <boundingCoordinates>
+               <westBoundingCoordinate>-71.765647</westBoundingCoordinate>
+               <eastBoundingCoordinate>-71.765647</eastBoundingCoordinate>
+               <northBoundingCoordinate>43.928928</northBoundingCoordinate>
+               <southBoundingCoordinate>43.928928</southBoundingCoordinate>
+            </boundingCoordinates>
+         </geographicCoverage>
+         <geographicCoverage>
+            <geographicDescription>Phenology plot 7T (elevation 2700 feet)</geographicDescription>
+            <boundingCoordinates>
+               <westBoundingCoordinate>-71.769733</westBoundingCoordinate>
+               <eastBoundingCoordinate>-71.769733</eastBoundingCoordinate>
+               <northBoundingCoordinate>43.918358</northBoundingCoordinate>
+               <southBoundingCoordinate>43.918358</southBoundingCoordinate>
+            </boundingCoordinates>
+         </geographicCoverage>
+         <geographicCoverage>
+            <geographicDescription>Phenology plot HQ (elevation 750 feet)</geographicDescription>
+            <boundingCoordinates>
+               <westBoundingCoordinate>-71.700975</westBoundingCoordinate>
+               <eastBoundingCoordinate>-71.700975</eastBoundingCoordinate>
+               <northBoundingCoordinate>43.945733</northBoundingCoordinate>
+               <southBoundingCoordinate>43.945733</southBoundingCoordinate>
+            </boundingCoordinates>
+         </geographicCoverage>
+         <temporalCoverage>
+            <rangeOfDates>
+               <beginDate>
+                  <calendarDate>1989-04-24</calendarDate>
+               </beginDate>
+               <endDate>
+                  <calendarDate>2025-11-03</calendarDate>
+               </endDate>
+            </rangeOfDates>
+         </temporalCoverage>
+         <taxonomicCoverage>
+            <taxonomicClassification>
+               <taxonRankName>kingdom</taxonRankName>
+               <taxonRankValue>Plantae</taxonRankValue>
+               <commonName>plants</commonName>
+               <taxonId
+              provider="https://itis.gov">202422</taxonId>
+               <taxonomicClassification>
+                  <taxonRankName>subkingdom</taxonRankName>
+                  <taxonRankValue>Viridiplantae</taxonRankValue>
+                  <commonName>green plants</commonName>
+                  <taxonId
+                provider="https://itis.gov">954898</taxonId>
+                  <taxonomicClassification>
+                     <taxonRankName>infrakingdom</taxonRankName>
+                     <taxonRankValue>Streptophyta</taxonRankValue>
+                     <commonName>land plants</commonName>
+                     <taxonId
+                  provider="https://itis.gov">846494</taxonId>
+                     <taxonomicClassification>
+                        <taxonRankName>superdivision</taxonRankName>
+                        <taxonRankValue>Embryophyta</taxonRankValue>
+                        <taxonId
+                    provider="https://itis.gov">954900</taxonId>
+                        <taxonomicClassification>
+                           <taxonRankName>division</taxonRankName>
+                           <taxonRankValue>Tracheophyta</taxonRankValue>
+                           <commonName>vascular plants</commonName>
+                           <commonName>tracheophytes</commonName>
+                           <taxonId
+                      provider="https://itis.gov">846496</taxonId>
+                           <taxonomicClassification>
+                              <taxonRankName>subdivision</taxonRankName>
+                              <taxonRankValue>Spermatophytina</taxonRankValue>
+                              <commonName>spermatophytes</commonName>
+                              <commonName>seed plants</commonName>
+                              <taxonId
+                        provider="https://itis.gov">846504</taxonId>
+                              <taxonomicClassification>
+                                 <taxonRankName>class</taxonRankName>
+                                 <taxonRankValue>Magnoliopsida</taxonRankValue>
+                                 <taxonId
+                          provider="https://itis.gov">18063</taxonId>
+                                 <taxonomicClassification>
+                                    <taxonRankName>superorder</taxonRankName>
+                                    <taxonRankValue>Rosanae</taxonRankValue>
+                                    <taxonId
+                            provider="https://itis.gov">846548</taxonId>
+                                    <taxonomicClassification>
+                                       <taxonRankName>order</taxonRankName>
+                                       <taxonRankValue>Sapindales</taxonRankValue>
+                                       <taxonId
+                              provider="https://itis.gov">28643</taxonId>
+                                       <taxonomicClassification>
+                                          <taxonRankName>family</taxonRankName>
+                                          <taxonRankValue>Sapindaceae</taxonRankValue>
+                                          <commonName>soapberries</commonName>
+                                          <taxonId
+                                provider="https://itis.gov">28657</taxonId>
+                                          <taxonomicClassification>
+                                             <taxonRankName>genus</taxonRankName>
+                                             <taxonRankValue>Acer</taxonRankValue>
+                                             <commonName>maples</commonName>
+                                             <taxonId
+                                  provider="https://itis.gov">28727</taxonId>
+                                             <taxonomicClassification>
+                                                <taxonRankName>species</taxonRankName>
+                                                <taxonRankValue>Acer saccharum</taxonRankValue>
+                                                <commonName>sugar maple</commonName>
+                                                <taxonId
+            provider="https://itis.gov">28731</taxonId>
+                                             </taxonomicClassification>
+                                          </taxonomicClassification>
+                                       </taxonomicClassification>
+                                    </taxonomicClassification>
+                                 </taxonomicClassification>
+                              </taxonomicClassification>
+                           </taxonomicClassification>
+                        </taxonomicClassification>
+                     </taxonomicClassification>
+                  </taxonomicClassification>
+               </taxonomicClassification>
+            </taxonomicClassification>
+            <taxonomicClassification>
+               <taxonRankName>kingdom</taxonRankName>
+               <taxonRankValue>Plantae</taxonRankValue>
+               <commonName>plants</commonName>
+               <taxonId
+              provider="https://itis.gov">202422</taxonId>
+               <taxonomicClassification>
+                  <taxonRankName>subkingdom</taxonRankName>
+                  <taxonRankValue>Viridiplantae</taxonRankValue>
+                  <commonName>green plants</commonName>
+                  <taxonId
+                provider="https://itis.gov">954898</taxonId>
+                  <taxonomicClassification>
+                     <taxonRankName>infrakingdom</taxonRankName>
+                     <taxonRankValue>Streptophyta</taxonRankValue>
+                     <commonName>land plants</commonName>
+                     <taxonId
+                  provider="https://itis.gov">846494</taxonId>
+                     <taxonomicClassification>
+                        <taxonRankName>superdivision</taxonRankName>
+                        <taxonRankValue>Embryophyta</taxonRankValue>
+                        <taxonId
+                    provider="https://itis.gov">954900</taxonId>
+                        <taxonomicClassification>
+                           <taxonRankName>division</taxonRankName>
+                           <taxonRankValue>Tracheophyta</taxonRankValue>
+                           <commonName>vascular plants</commonName>
+                           <commonName>tracheophytes</commonName>
+                           <taxonId
+                      provider="https://itis.gov">846496</taxonId>
+                           <taxonomicClassification>
+                              <taxonRankName>subdivision</taxonRankName>
+                              <taxonRankValue>Spermatophytina</taxonRankValue>
+                              <commonName>spermatophytes</commonName>
+                              <commonName>seed plants</commonName>
+                              <taxonId
+                        provider="https://itis.gov">846504</taxonId>
+                              <taxonomicClassification>
+                                 <taxonRankName>class</taxonRankName>
+                                 <taxonRankValue>Magnoliopsida</taxonRankValue>
+                                 <taxonId
+                          provider="https://itis.gov">18063</taxonId>
+                                 <taxonomicClassification>
+                                    <taxonRankName>superorder</taxonRankName>
+                                    <taxonRankValue>Rosanae</taxonRankValue>
+                                    <taxonId
+                            provider="https://itis.gov">846548</taxonId>
+                                    <taxonomicClassification>
+                                       <taxonRankName>order</taxonRankName>
+                                       <taxonRankValue>Fagales</taxonRankValue>
+                                       <taxonId
+                              provider="https://itis.gov">19273</taxonId>
+                                       <taxonomicClassification>
+                                          <taxonRankName>family</taxonRankName>
+                                          <taxonRankValue>Fagaceae</taxonRankValue>
+                                          <taxonId
+                                provider="https://itis.gov">19275</taxonId>
+                                          <taxonomicClassification>
+                                             <taxonRankName>genus</taxonRankName>
+                                             <taxonRankValue>Fagus</taxonRankValue>
+                                             <commonName>beech</commonName>
+                                             <taxonId
+                                  provider="https://itis.gov">19461</taxonId>
+                                             <taxonomicClassification>
+                                                <taxonRankName>species</taxonRankName>
+                                                <taxonRankValue>Fagus grandifolia</taxonRankValue>
+                                                <commonName>American beech</commonName>
+                                                <taxonId
+            provider="https://itis.gov">19462</taxonId>
+                                             </taxonomicClassification>
+                                          </taxonomicClassification>
+                                       </taxonomicClassification>
+                                    </taxonomicClassification>
+                                 </taxonomicClassification>
+                              </taxonomicClassification>
+                           </taxonomicClassification>
+                        </taxonomicClassification>
+                     </taxonomicClassification>
+                  </taxonomicClassification>
+               </taxonomicClassification>
+            </taxonomicClassification>
+            <taxonomicClassification>
+               <taxonRankName>kingdom</taxonRankName>
+               <taxonRankValue>Plantae</taxonRankValue>
+               <commonName>plants</commonName>
+               <taxonId
+              provider="https://itis.gov">202422</taxonId>
+               <taxonomicClassification>
+                  <taxonRankName>subkingdom</taxonRankName>
+                  <taxonRankValue>Viridiplantae</taxonRankValue>
+                  <commonName>green plants</commonName>
+                  <taxonId
+                provider="https://itis.gov">954898</taxonId>
+                  <taxonomicClassification>
+                     <taxonRankName>infrakingdom</taxonRankName>
+                     <taxonRankValue>Streptophyta</taxonRankValue>
+                     <commonName>land plants</commonName>
+                     <taxonId
+                  provider="https://itis.gov">846494</taxonId>
+                     <taxonomicClassification>
+                        <taxonRankName>superdivision</taxonRankName>
+                        <taxonRankValue>Embryophyta</taxonRankValue>
+                        <taxonId
+                    provider="https://itis.gov">954900</taxonId>
+                        <taxonomicClassification>
+                           <taxonRankName>division</taxonRankName>
+                           <taxonRankValue>Tracheophyta</taxonRankValue>
+                           <commonName>vascular plants</commonName>
+                           <commonName>tracheophytes</commonName>
+                           <taxonId
+                      provider="https://itis.gov">846496</taxonId>
+                           <taxonomicClassification>
+                              <taxonRankName>subdivision</taxonRankName>
+                              <taxonRankValue>Spermatophytina</taxonRankValue>
+                              <commonName>spermatophytes</commonName>
+                              <commonName>seed plants</commonName>
+                              <taxonId
+                        provider="https://itis.gov">846504</taxonId>
+                              <taxonomicClassification>
+                                 <taxonRankName>class</taxonRankName>
+                                 <taxonRankValue>Magnoliopsida</taxonRankValue>
+                                 <taxonId
+                          provider="https://itis.gov">18063</taxonId>
+                                 <taxonomicClassification>
+                                    <taxonRankName>superorder</taxonRankName>
+                                    <taxonRankValue>Rosanae</taxonRankValue>
+                                    <taxonId
+                            provider="https://itis.gov">846548</taxonId>
+                                    <taxonomicClassification>
+                                       <taxonRankName>order</taxonRankName>
+                                       <taxonRankValue>Sapindales</taxonRankValue>
+                                       <taxonId
+                              provider="https://itis.gov">28643</taxonId>
+                                       <taxonomicClassification>
+                                          <taxonRankName>family</taxonRankName>
+                                          <taxonRankValue>Sapindaceae</taxonRankValue>
+                                          <commonName>soapberries</commonName>
+                                          <taxonId
+                                provider="https://itis.gov">28657</taxonId>
+                                          <taxonomicClassification>
+                                             <taxonRankName>genus</taxonRankName>
+                                             <taxonRankValue>Acer</taxonRankValue>
+                                             <commonName>maples</commonName>
+                                             <taxonId
+                                  provider="https://itis.gov">28727</taxonId>
+                                             <taxonomicClassification>
+                                                <taxonRankName>species</taxonRankName>
+                                                <taxonRankValue>Acer rubrum</taxonRankValue>
+                                                <commonName>red maple</commonName>
+                                                <taxonId
+        provider="https://itis.gov">28728</taxonId>
+                                             </taxonomicClassification>
+                                          </taxonomicClassification>
+                                       </taxonomicClassification>
+                                    </taxonomicClassification>
+                                 </taxonomicClassification>
+                              </taxonomicClassification>
+                           </taxonomicClassification>
+                        </taxonomicClassification>
+                     </taxonomicClassification>
+                  </taxonomicClassification>
+               </taxonomicClassification>
+            </taxonomicClassification>
+         </taxonomicCoverage>
+      </coverage>
+      <maintenance>
+         <description>ongoing</description>
+      </maintenance>
+      <contact>
+         <individualName>
+            <givenName>Nina</givenName>
+            <surName>Lany</surName>
+         </individualName>
+         <organizationName>USDA Forest Service, Northern Research Station</organizationName>
+         <electronicMailAddress>nina.lany@usda.gov</electronicMailAddress>
+         <userId
+        directory="https://orcid.org">https://orcid.org/0000-0003-0868-266X</userId>
+      </contact>
+      <publisher>
+         <organizationName>Environmental Data Initiative</organizationName>
+         <electronicMailAddress>info@edirepository.org</electronicMailAddress>
+         <onlineUrl>https://edirepository.org</onlineUrl>
+         <userId
+      directory="https://ror.org">0330j0z60</userId>
+      </publisher>
+      <pubPlace>Environmental Data Initiative</pubPlace>
+      <methods>
+         <methodStep>
+            <description>
+               <para>SAMPLING DESIGN</para>
+               <para>Routine observations of phenology at HBEF began in the spring of 1989 at all watershed sites; observations at HQ began in 1993. The objective of the observations is to provide repeatable, quantified phenology data in a way that takes little time. Each location as described above (1B, 6T, etc) is a specific point along the weekly watershed rounds route which is permanently marked. Visible from each location are three dominant or codominant trees of each of the three species: sugar maple, yellow birch, and beech. These individual trees are permanently marked on the side toward the "location" mark. When possible, their crowns are visible from the location itself to minimize the amount of moving around that is necessary.</para>
+               <para>Over time, sugar maple health has declined at several of the phenology plots. Beginning in fall 2024, red maple observations were added at sites with advanced sugar maple decline, if possible. </para>
+               <para>DATA DESCRIPTION</para>
+               <para>For each tree at each location, one index value is recorded weekly during the seasonal transition periods in spring and autumn. The index value reflects the stage of leaf-out or scenescense as described in the data table below. The index is averaged for the three trees of one species at a location and this averaged value is recorded as the phenology index for a given date in the phenology database. Observations are not needed in winter or in summer unless insect attack causes premature senescence or leaffall. </para>
+               <para>Phenology Codes:</para>
+               <para>SPRING:</para>
+               <para>[0]     No change from winter conditions, unexpanded buds only</para>
+               <para>[1]     Bud swelling noticeable</para>
+               <para>[2]     Small leaves or flowers visible, initial stages of leaf expansion, leaves about 1 cm long</para>
+               <para>[3]     Leaves 1/2 of final length, leaves obscure half of sky as seen through crowns</para>
+               <para>[3.5]  Leaves 3/4 expanded, sky mostly obscured through crown, crowns not yet in summer condition</para>
+               <para>[4]    Canopy appears in summer condition leaves fully expanded little sky visible through crowns</para>
+               <para>FALL:</para>
+               <para>[0]     All leaves have fallen except remnants on beech, winter condition</para>
+               <para>[0.5]  Most leaves fallen</para>
+               <para>[1]     No more green in canopy, half of leaves have fallen, leaves still obscure half of sky as seen through crown</para>
+               <para>[2]     Most leaves yellow, red or colored, few leaves have fallen, leaves still obscure most of the sky as seen through crown</para>
+               <para>[3]     Many leaves have noticeable reddening or yellowing, much green still present </para>
+               <para>[4]     Canopy appears in summer condition only scattered leaves or branches have any color change </para>
+               <para/>
+            </description>
+         </methodStep>
+      </methods>
+      <project>
+         <title>Long Term Hubbard Brook Phenology Measurements</title>
+         <personnel>
+            <organizationName>USDA Forest Service, Northern Research Station</organizationName>
+            <role>Principal Investigator</role>
+         </personnel>
+         <funding>USDA Forest Service, Northern Research Station</funding>
+      </project>
+      <dataTable
+      id="9f623c83fb1da7595c6d2d498bde15df" scope="document"
+          system="https://pasta.edirepository.org">
+         <entityName>HBEF_Phenology</entityName>
+         <entityDescription>Hubbard Brook phenology measurements</entityDescription>
+         <physical>
+            <objectName>HBEF_Phenology_longform.csv</objectName>
+            <size
+          unit="bytes">638815</size>
+            <authentication
+              method="MD5">4b08f1b2a700b26e522c6fa359533bfd</authentication>
+            <dataFormat>
+               <textFormat>
+                  <numHeaderLines>1</numHeaderLines>
+                  <recordDelimiter>\r\n</recordDelimiter>
+                  <attributeOrientation>column</attributeOrientation>
+                  <simpleDelimited>
+                     <fieldDelimiter>,</fieldDelimiter>
+                  </simpleDelimited>
+               </textFormat>
+            </dataFormat>
+            <distribution>
+               <online>
+                  <url
+          function="download">https://pasta.lternet.edu/package/data/eml/knb-lter-hbr/51/16/9f623c83fb1da7595c6d2d498bde15df</url>
+               </online>
+            </distribution>
+         </physical>
+         <attributeList>
+            <attribute
+          id="YEAR-1">
+               <attributeName>YEAR</attributeName>
+               <attributeDefinition>Year of observation</attributeDefinition>
+               <storageType>date</storageType>
+               <measurementScale>
+                  <dateTime>
+                     <formatString>YYYY</formatString>
+                     <dateTimeDomain/>
+                  </dateTime>
+               </measurementScale>
+            </attribute>
+            <attribute
+          id="DATE-2">
+               <attributeName>DATE</attributeName>
+               <attributeDefinition>Date of observation</attributeDefinition>
+               <storageType>date</storageType>
+               <measurementScale>
+                  <dateTime>
+                     <formatString>YYYY-MM-DD</formatString>
+                     <dateTimeDomain/>
+                  </dateTime>
+               </measurementScale>
+            </attribute>
+            <attribute
+                    id="DAY-3">
+               <attributeName>DAY</attributeName>
+               <attributeDefinition>Day of year</attributeDefinition>
+               <storageType>float</storageType>
+               <measurementScale>
+                  <ratio>
+                     <unit>
+                        <standardUnit>dimensionless</standardUnit>
+                     </unit>
+                     <numericDomain>
+                        <numberType>natural</numberType>
+                        <bounds>
+                           <minimum
+                    exclusive="false">93</minimum>
+                           <maximum
+              exclusive="false">323</maximum>
+                        </bounds>
+                     </numericDomain>
+                  </ratio>
+               </measurementScale>
+               <annotation>
+                  <propertyURI
+              label="has unit">http://qudt.org/schema/qudt/hasUnit</propertyURI>
+                  <valueURI
+          label="Unitless">http://qudt.org/vocab/unit/UNITLESS</valueURI>
+               </annotation>
+            </attribute>
+            <attribute
+          id="SEASON-4">
+               <attributeName>SEASON</attributeName>
+               <attributeDefinition>Season (spring vs fall)</attributeDefinition>
+               <storageType>string</storageType>
+               <measurementScale>
+                  <nominal>
+                     <nonNumericDomain>
+                        <enumeratedDomain>
+                           <codeDefinition>
+                              <code>SPRING</code>
+                              <definition>SPRING</definition>
+                           </codeDefinition>
+                           <codeDefinition>
+                              <code>FALL</code>
+                              <definition>FALL</definition>
+                           </codeDefinition>
+                        </enumeratedDomain>
+                     </nonNumericDomain>
+                  </nominal>
+               </measurementScale>
+            </attribute>
+            <attribute
+          id="SPECIES-5">
+               <attributeName>SPECIES</attributeName>
+               <attributeDefinition>Species</attributeDefinition>
+               <storageType>string</storageType>
+               <measurementScale>
+                  <nominal>
+                     <nonNumericDomain>
+                        <enumeratedDomain>
+                           <codeDefinition>
+                              <code>FAGR</code>
+                              <definition>American Beech</definition>
+                           </codeDefinition>
+                           <codeDefinition>
+                              <code>ACSA3</code>
+                              <definition>Sugar Maple</definition>
+                           </codeDefinition>
+                           <codeDefinition>
+                              <code>BEAL2</code>
+                              <definition>Yellow Birch</definition>
+                           </codeDefinition>
+                           <codeDefinition>
+                              <code>ACRU</code>
+                              <definition>Red maple</definition>
+                           </codeDefinition>
+                        </enumeratedDomain>
+                     </nonNumericDomain>
+                  </nominal>
+               </measurementScale>
+            </attribute>
+            <attribute
+          id="SITE-6">
+               <attributeName>SITE</attributeName>
+               <attributeDefinition>Sampling site</attributeDefinition>
+               <storageType>string</storageType>
+               <measurementScale>
+                  <nominal>
+                     <nonNumericDomain>
+                        <enumeratedDomain>
+                           <codeDefinition>
+                              <code>1B</code>
+                              <definition>Trees located at the bottom of WS1</definition>
+                           </codeDefinition>
+                           <codeDefinition>
+                              <code>6T</code>
+                              <definition>Trees located at the top of WS6</definition>
+                           </codeDefinition>
+                           <codeDefinition>
+                              <code>4B</code>
+                              <definition>Tree located at the bottom of WS4, oldest strips</definition>
+                           </codeDefinition>
+                           <codeDefinition>
+                              <code>4T</code>
+                              <definition>Trees located at the top of WS4, oldest strips</definition>
+                           </codeDefinition>
+                           <codeDefinition>
+                              <code>5B</code>
+                              <definition>Trees located at the bottom of WS5</definition>
+                           </codeDefinition>
+                           <codeDefinition>
+                              <code>5T</code>
+                              <definition>Trees located at the top of WS5</definition>
+                           </codeDefinition>
+                           <codeDefinition>
+                              <code>7B</code>
+                              <definition>Trees located at the bottom of WS7 (or 8)</definition>
+                           </codeDefinition>
+                           <codeDefinition>
+                              <code>7T</code>
+                              <definition>Trees located at the top of WS7 (or 8)</definition>
+                           </codeDefinition>
+                           <codeDefinition>
+                              <code>HQ</code>
+                              <definition>Trees located near the Headquarters building</definition>
+                           </codeDefinition>
+                        </enumeratedDomain>
+                     </nonNumericDomain>
+                  </nominal>
+               </measurementScale>
+            </attribute>
+            <attribute
+                    id="PhenologyStage-7">
+               <attributeName>Phenology_Stage</attributeName>
+               <attributeDefinition>Average value of phenology stage codes. See full code descripition in methods</attributeDefinition>
+               <storageType>float</storageType>
+               <measurementScale>
+                  <ratio>
+                     <unit>
+                        <standardUnit>dimensionless</standardUnit>
+                     </unit>
+                     <numericDomain>
+                        <numberType>real</numberType>
+                        <bounds>
+                           <minimum
+                    exclusive="false">0</minimum>
+                           <maximum
+              exclusive="false">4</maximum>
+                        </bounds>
+                     </numericDomain>
+                  </ratio>
+               </measurementScale>
+               <annotation>
+                  <propertyURI
+              label="has unit">http://qudt.org/schema/qudt/hasUnit</propertyURI>
+                  <valueURI label="Unitless">http://qudt.org/vocab/unit/UNITLESS</valueURI>
+               </annotation>
+            </attribute>
+         </attributeList>
+         <numberOfRecords>14430</numberOfRecords>
+      </dataTable>
+   </dataset>
+   <additionalMetadata>
+      <metadata>
+         <emlEditor>
+            <app>EMLassemblyline</app>
+            <release>3.5.8</release>
+         </emlEditor>
+      </metadata>
+   </additionalMetadata>
+</eml:eml>

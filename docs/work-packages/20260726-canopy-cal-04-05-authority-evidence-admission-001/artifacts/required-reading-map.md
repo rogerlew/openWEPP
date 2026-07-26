@@ -1,9 +1,10 @@
 # Required Reading Map
 
-Status: `QUEUED`
+Status: `COMPLETE`
 
-The executor must replace this scaffold with exact path identities, byte
-counts, and applicable instruction chains before evidence admission begins.
+Applicable instructions are `AGENTS.md` and
+`docs/work-packages/AGENTS.md`. `tools/agents/find-agents` confirmed that
+chain for package and catalog edits. No science-contract edit trigger fired.
 
 Core reading:
 
@@ -25,3 +26,7 @@ Conditional reading:
   this package.
 - repository license or source-retention guidance when source terms are
   unclear.
+
+The core reading set totals approximately 184 KiB from the paths enumerated at
+intake. The executor also read each retained EML object used for admission,
+including methods, attributes, missing values, coordinates, and rights.
