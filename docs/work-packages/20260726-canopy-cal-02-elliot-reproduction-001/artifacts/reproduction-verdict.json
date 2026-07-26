@@ -1,0 +1,18 @@
+{
+  "schema_version": 2,
+  "package_id": "20260726-canopy-cal-02-elliot-reproduction-001",
+  "verdict": "NOT_REPRODUCIBLE",
+  "package_disposition": "COMPLETE",
+  "classifications": {
+    "hubbard_process_results": "PARTIALLY_REPRODUCED_BOUNDED",
+    "santee_process_results": "CONTRADICTED",
+    "hydrology_sediment_context": "CONTRADICTED_BOUNDED",
+    "daily_runoff_return_periods": "MIXED_MOSTLY_CONTRADICTED_BOUNDED",
+    "peak_runoff_return_periods": "MIXED_MOSTLY_CONTRADICTED_BOUNDED",
+    "hubbard_92_95_branch": "RESOLVED_IN_FAVOR_OF_0.95"
+  },
+  "soil_boundary": "WEPPpy SSURGO 2006.2 serializations for mukeys 665220 and 131976 are not Bill's missing byte-identical Windows soils.",
+  "cal03_may_claim_exact_reproduction": false,
+  "cal03_may_use_bill_outputs_as_independent_targets": false,
+  "unmet_gates": []
+}

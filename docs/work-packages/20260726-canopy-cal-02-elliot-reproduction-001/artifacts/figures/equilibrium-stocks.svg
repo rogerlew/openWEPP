@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="360" viewBox="0 0 760 360">
+<rect width="760" height="360" fill="white"/>
+<text x="380" y="24" text-anchor="middle" font-family="sans-serif" font-size="18">Years 91–100 mean year-end stocks</text>
+<line x1="70" y1="300" x2="735" y2="300" stroke="black"/>
+<line x1="70" y1="45" x2="70" y2="300" stroke="black"/>
+<rect x="95" y="297.95" width="42" height="2.05" fill="#3977b8"/>
+<rect x="140" y="282.69" width="42" height="17.31" fill="#c87935"/>
+<text x="138" y="320" text-anchor="middle" font-family="sans-serif" font-size="10">HB constant</text>
+<rect x="225" y="64.11" width="42" height="235.89" fill="#3977b8"/>
+<rect x="270" y="234.00" width="42" height="66.00" fill="#c87935"/>
+<text x="268" y="320" text-anchor="middle" font-family="sans-serif" font-size="10">HB 0.95</text>
+<rect x="355" y="156.19" width="42" height="143.81" fill="#3977b8"/>
+<rect x="400" y="233.38" width="42" height="66.62" fill="#c87935"/>
+<text x="398" y="320" text-anchor="middle" font-family="sans-serif" font-size="10">HB 0.92</text>
+<rect x="485" y="297.95" width="42" height="2.05" fill="#3977b8"/>
+<rect x="530" y="282.69" width="42" height="17.31" fill="#c87935"/>
+<text x="528" y="320" text-anchor="middle" font-family="sans-serif" font-size="10">SE constant</text>
+<rect x="615" y="51.88" width="42" height="248.12" fill="#3977b8"/>
+<rect x="660" y="252.71" width="42" height="47.29" fill="#c87935"/>
+<text x="658" y="320" text-anchor="middle" font-family="sans-serif" font-size="10">SE mixed</text>
+<text x="18" y="175" transform="rotate(-90 18 175)" font-family="sans-serif" font-size="12">kg/m²</text>
+</svg>

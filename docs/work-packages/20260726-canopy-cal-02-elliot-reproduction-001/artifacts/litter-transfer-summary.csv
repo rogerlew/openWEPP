@@ -1,0 +1,6 @@
+arm_id,site,method,dropfc,mean_annual_transfer_kg_m2,mean_years_91_100_transfer_kg_m2,max_formula_vs_daily_decline_abs_diff_kg_m2
+hubbard_constant,HUBBARD_BROOK,constant-cover arm; no senescence transfer,,0.0,0.0,0.0
+hubbard_hardwood_095,HUBBARD_BROOK,max daily live biomass * (1 - dropfc); grow.for perennial senescence delvd authority,0.95,0.8249880000000007,0.9932300000000008,0.0008000000000023544
+hubbard_hardwood_092,HUBBARD_BROOK,max daily live biomass * (1 - dropfc); grow.for perennial senescence delvd authority,0.92,0.8989007999999995,1.0004239999999995,0.0008000000000013552
+santee_constant,SANTEE,constant-cover arm; no senescence transfer,,0.0,0.0,0.0
+santee_mixed,SANTEE,max daily live biomass * (1 - dropfc); grow.for perennial senescence delvd authority,0.93,1.304428999999999,1.494065999999999,0.0008999999999976804

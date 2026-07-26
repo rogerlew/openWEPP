@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "execution_status": "ALL_ARMS_COMPLETE",
+  "runner_role": "comparator_suite_runner",
+  "local_run_root": "/tmp/openwepp-cal02-linux-9002-260725-final",
+  "executable": {
+    "path": "/workdir/wepp-forest_260430_baseline/release/wepp_260725",
+    "sha256_before": "7e0ccad2a79cebf63ad821b140ef3007ca5846ca9b646e87559448c38e4d0d91",
+    "sha256_after": "7e0ccad2a79cebf63ad821b140ef3007ca5846ca9b646e87559448c38e4d0d91"
+  },
+  "runtime": {
+    "soil_format": "9002 source-native",
+    "wepp_ui_txt": "present; hourly water-balance activation confirmed once in each stdout",
+    "wepp_observe_on": "present; fixed-callsite logs retained outside Git"
+  },
+  "arms": [
+    {"arm_id": "hubbard_constant", "exit_code": 0, "daily_rows": 36525, "input_manifest_sha256": "ea88d4e53d8175435ccdcf33e0ff344f8eabcfc8482e6aca4352df9cd213a39a", "output_manifest_sha256": "16a8f2ce42bf91f5bf1a05856b089e72a1335d2f5187da0f5874e5f1ed40aed6"},
+    {"arm_id": "hubbard_hardwood_095", "exit_code": 0, "daily_rows": 36525, "input_manifest_sha256": "37cc611965ae40114519d30b6ff6b7e621276d5a5814639df0607afe1b5364fb", "output_manifest_sha256": "51683bb8082af06937df84cd34b66211fd648c534479f0deda41c88db854d697"},
+    {"arm_id": "hubbard_hardwood_092", "exit_code": 0, "daily_rows": 36525, "input_manifest_sha256": "e7a72ccf1dd0c3f4ca27165a8d23371b1d49058de37595267f3dc6558063f270", "output_manifest_sha256": "d68b5934748a39e3b49a716515fb639c1435600b3a042c78e7d303f11fca484e"},
+    {"arm_id": "santee_constant", "exit_code": 0, "daily_rows": 36525, "input_manifest_sha256": "e3dbf7a0ba0141a6a1c1f70ec5b0bafca047bee375e881f904b6f066863adca0", "output_manifest_sha256": "5c88fd15d217da7cf7a41393c256927b7c388d792de92c74add108ac0f0525f9"},
+    {"arm_id": "santee_mixed", "exit_code": 0, "daily_rows": 36525, "input_manifest_sha256": "21dd0b52286d86a0ac9e4a8c9a8cdfb9b51877073faf71c9ae0cf4c082f9d1cb", "output_manifest_sha256": "ff4a7123f4e019f096cd1b286136f8c5cea24122d02f978af1502f33116f82c7"}
+  ]
+}

@@ -1,6 +1,6 @@
 # Required Reading Map
 
-Evidence class: `Static scaffold`
+Evidence class: `Ran instruction discovery plus static source reading`
 
 | Tier | Path | Purpose |
 | --- | --- | --- |
@@ -28,12 +28,12 @@ Evidence class: `Static scaffold`
 | On-demand | `docs/specifications/science-contracts/contracts/SC-PLANT-001.md` | Canonical plant units/definitions if output aliases are disputed. |
 | On-demand | `docs/specifications/science-contracts/contracts/SC-RESIDUE-001.md` | Canonical residue units/definitions if output aliases are disputed. |
 
-`tools/agents/find-agents --for` reports that package/catalog paths inherit
+`tools/agents/find-agents --for` was run at intake and reports that package/catalog paths inherit
 `AGENTS.md` plus `docs/work-packages/AGENTS.md`; future tool paths inherit root
 governance; future fixture paths inherit `AGENTS.md`, `tests/AGENTS.md`, and
 `tests/fixtures/AGENTS.md`.
 
-Required-reading budget must be recomputed before CAL-02 intent admission. The
+The required-reading budget was recomputed before CAL-02 intent admission. The
 commissioned report, CAL-01 admission/ledger, fixture README/manifests, exact
 run controls, and management operands are load-bearing; large climate and
 output files are execution inputs rather than prose reading.

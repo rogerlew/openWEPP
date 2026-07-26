@@ -1,13 +1,15 @@
 # Canopy Phenology Assurance Roadmap
 
-Status: **prospective scientific campaign roadmap** (2026-07-26).
+Status: **active scientific campaign roadmap** (2026-07-26).
 
-Evidence mode: **Static synthesis** of the completed `CANOPY-PHENOLOGY-01` GSI
-kernel, completed `CANOPY-PHENOLOGY-02` native integration, the installed
-canopy-gradient fixtures, the commissioned William J. Elliot hardwood and mixed
-forest study, and the active scientific-assurance lifecycle. This roadmap is
-planning guidance, not equation or parameter authority. Canonical process
-authority remains in `SC-PLANT-001`, `SC-RESIDUE-001`,
+Evidence mode: **Ran evidence plus static synthesis** of the completed
+`CANOPY-PHENOLOGY-01` GSI kernel, completed `CANOPY-PHENOLOGY-02` native
+integration, completed `CANOPY-CAL-01` source ledger, completed
+`CANOPY-CAL-02` Elliot reproduction, installed canopy-gradient fixtures, the
+commissioned William J. Elliot hardwood and mixed-forest study, and the active
+scientific-assurance lifecycle. This roadmap is planning guidance, not equation
+or parameter authority. Canonical process authority remains in `SC-PLANT-001`,
+`SC-RESIDUE-001`,
 `SC-INFILE-MANAGEMENT-YAML-001`, and downstream consumer contracts until an
 authorized work package amends them.
 
@@ -28,10 +30,20 @@ reproducible scientific assurance report that explains and demonstrates:
    erosion without using downstream compensation to hide an upstream process
    error.
 
-`CANOPY-PHENOLOGY-02` is mechanically complete. The remaining work is an
+`CANOPY-PHENOLOGY-02` is mechanically complete, and `CANOPY-CAL-01..02`
+completed the Elliot source/reproduction phase. The remaining work is an
 empirical calibration, adjudication, and assurance campaign. A passing unit
-test, exact mass ledger, synthetic hemisphere transform, or visually plausible
-canopy curve is necessary evidence but is not sufficient for the final report.
+test, exact mass ledger, legacy match, synthetic hemisphere transform, or
+visually plausible canopy curve is necessary evidence but is not sufficient
+for the final report.
+
+The campaign now explicitly preserves **Elliot's staged methodology rather
+than his numerical outputs**. His useful method is to establish vegetation
+stocks and seasonality, quantify gross annual live-to-residue transfer, run
+long enough to characterize forest-floor equilibrium, and only then inspect
+hydrology and erosion. His reported biomass, residue, runoff, sediment, and
+return-period values are not native CP2 calibration or validation targets
+unless separately supported by independent observational authority.
 
 ## 1. Completed Foundation
 
@@ -76,6 +88,48 @@ dynamic surface-residue mass, residue depth, and the frost thermal path.
 The current native production state has one aggregate surface-residue pool.
 Bill Elliot's current/previous/old pools are therefore comparison diagnostics,
 not native production states.
+
+### 1.4 Elliot source ledger and reproduction
+
+`20260726-canopy-cal-01-source-target-ledger-001` bound the commissioned
+report, delivered managements, exact source identities, target classes,
+uncertainties, and the Hubbard `dropfc=0.92` report versus `0.95` delivered-file
+discrepancy.
+
+`20260726-canopy-cal-02-elliot-reproduction-001` completed two five-arm,
+100-year legacy lanes:
+
+- Windows WEPP 2012.800 with WEPPpy SSURGO `2006.2` soils built from exact
+  site mukeys; and
+- Linux WEPP 260725 with source-native 9002 soils, hourly water balance, and
+  fixed-callsite Observe enabled.
+
+Both lanes support `NOT_REPRODUCIBLE`. In the Linux 9002 lane, 9 of 64
+predeclared target comparisons pass bounded tolerances and 55 are
+contradicted. The delivered Hubbard `dropfc=0.95` branch reproduces the
+approximately `19 kg/m2` live-biomass trajectory, but residue and most Santee,
+hydrology, sediment, and recurrence targets remain contradicted. The
+report-described `dropfc=0.92` branch does not reproduce that live stock.
+
+The Linux release has no litter-specific Observe callsite. Pinned producer
+source nevertheless establishes the perennial gross-transfer formula, and the
+rounded daily crop output reconstructs gross aboveground
+live-to-current-residue transfer within its `0.001 kg/m2` publication
+precision. The operator accepted that bound for campaign use. It is legacy
+mechanism characterization, not a direct flux observation, exact internal
+operand, foliage-only litterfall estimate, or independent field target.
+
+The retained legacy reference values are approximately:
+
+| Lane / arm | 100-year gross transfer | Years 91--100 | Unit |
+| --- | ---: | ---: | --- |
+| Linux 260725 / Hubbard hardwood 0.95 | 0.82563 | 0.99403 | kg/m2/year |
+| Linux 260725 / Hubbard hardwood 0.92 | 0.89957 | 1.00124 | kg/m2/year |
+| Linux 260725 / Santee mixed 0.93 | 1.42949 | 1.63683 | kg/m2/year |
+
+These values may define legacy comparison and sensitivity envelopes. They
+must not be fitted as observations. The complete verdict and handoff live in
+`../work-packages/20260726-canopy-cal-02-elliot-reproduction-001/artifacts/`.
 
 ## 2. Scientific Questions
 
@@ -138,9 +192,10 @@ claim can be promoted.
   current realization, but no needle-turnover, woody-litter, smoothing,
   threshold, canopy, or decomposition law enters production before canonical
   contract amendment and an authorized implementation package.
-- **Reproduce before translating.** Reconstruct Bill Elliot's analysis in its
-  original perennial WEPP representation before mapping its targets into native
-  CP2 operands.
+- **Method, not legacy numbers.** `CANOPY-CAL-02` completed the required legacy
+  reconstruction and found it not reproducible. Preserve Elliot's staged
+  stock-transfer-equilibrium-downstream method, but do not fit native CP2 to
+  his model-derived values.
 - **Parameters are not observations.** `dropfc`, `oratea`, `bb`, and native YAML
   values remain fitted or interpreted operands. They cannot be presented as
   field measurements.
@@ -154,8 +209,11 @@ claim can be promoted.
 - **Separate hillslope from watershed evidence.** Hillslope surface runoff is
   not directly compared with watershed discharge containing lateral flow,
   baseflow, roads, or channels.
-- **Separate soil formats.** The 7777-versus-2006.5 effect identified by Bill is
-  crossed explicitly or held fixed; it cannot be attributed to management.
+- **Separate soil formats.** Bill's delivered managements were intended for
+  WEPPcloud 7778/9000-series soils. CAL-02 explicitly separated source-native
+  9002 from WEPPpy SSURGO 2006.2. Future comparisons must cross a
+  scientifically like-for-like representation explicitly or hold soil fixed;
+  no soil-format effect may be attributed to management.
 - **No synthetic-only Southern Hemisphere claim.** Phase symmetry proves
   implementation invariance. It does not replace independent observations.
 - **No downstream compensation.** Hydrology and erosion are validation
@@ -176,22 +234,23 @@ wepppy/docs/work-packages/
   20260626_deciduous_mixed_forest_managements/references/
 ```
 
-The source ledger records redistribution permission, exact hashes, normalized
-filenames, and the unresolved Hubbard Brook discrepancy: the report describes
+The completed source ledger records redistribution permission, exact hashes,
+normalized filenames, and the Hubbard Brook discrepancy: the report describes
 `92%` biomass retention while the delivered management contains
 `dropfc=0.95`.
 
-Campaign intake must:
+The completed CAL-01/CAL-02 evidence:
 
-1. bind the exact source hashes into openWEPP campaign evidence;
-2. preserve both the `0.92` and `0.95` Hubbard branches;
-3. obtain Bill's original `.run`, climate, soil, slope, constant-cover
-   management, and machine outputs if available; and
-4. label any chart-digitized values with uncertainty derived from figure
-   resolution.
+1. binds the exact source hashes into openWEPP campaign evidence;
+2. preserves both the `0.92` and `0.95` Hubbard branches;
+3. records the missing Windows soil/project and machine-output boundary;
+4. retains separate Windows/WEPPpy-2006.2 and Linux/source-native-9002 lanes;
+   and
+5. labels chart-derived targets and their uncertainty.
 
 The report's unsourced or AI-attributed hydrology and sediment values are
-context only and cannot carry validation.
+context only and cannot carry calibration or validation. Further recovery of
+Bill's missing byte-identical Windows project is not a campaign prerequisite.
 
 ### 4.2 Canopy-gradient fixtures
 
@@ -239,9 +298,9 @@ identities, and exact producer-to-consumer lineage.
 
 ## 5. Analytical Design
 
-### 5.1 Bill Elliot reproduction
+### 5.1 Completed Elliot reproduction and retained method
 
-For Hubbard Brook and Santee, reproduce:
+CAL-02 reproduced or bounded, for Hubbard Brook and Santee:
 
 - live aboveground biomass trajectories;
 - annual biomass-to-residue transfer;
@@ -251,9 +310,24 @@ For Hubbard Brook and Santee, reproduce:
 - constant-cover versus perennial annual runoff and sediment; and
 - daily-runoff and peak-flow return-period tables.
 
-Run the exact delivered management plus the report-described Hubbard
-`dropfc=0.92` branch. Determine which, if either, reproduces the report figures.
-Do not reconcile them by editing the preserved sources.
+It ran the exact delivered management plus the report-described Hubbard
+`dropfc=0.92` branch without editing preserved sources. The resulting
+`NOT_REPRODUCIBLE` verdict closes legacy recovery as a campaign objective.
+
+The following analytical sequence remains binding for native work:
+
+1. establish phenology timing and seasonal vegetation stocks;
+2. partition total aboveground biomass into persistent structure and foliage;
+3. quantify annual gross source transfer separately by leaf, needle, and woody
+   material where evidence permits;
+4. characterize residue equilibrium, seasonal range, time to equilibrium, and
+   drift before tuning decomposition;
+5. freeze accepted upstream parameters; and
+6. evaluate interception, ET, snow, frost, runoff, and erosion as downstream
+   consequences rather than fitting targets.
+
+Every native result must distinguish an independent observation, a fitted
+operand, a derived diagnostic, a legacy comparison, and a model output.
 
 ### 5.2 Native parameter translation
 
@@ -286,9 +360,10 @@ and period:
 4. native CP2 with field-derived foliar/structural partitioning; and
 5. native CP2 plus analysis-only needle and fine-woody litter shadow fluxes.
 
-Cross the selected arms with 7777 and 2006.5 soil representations where a
-scientifically like-for-like conversion is available. Keep watershed/channel
-comparisons outside the hillslope-management verdict.
+Cross selected arms with source-native 9002 and WEPPpy SSURGO 2006.2 only
+where a scientifically like-for-like comparison is available and useful.
+Otherwise hold soil identity fixed. Keep watershed/channel comparisons outside
+the hillslope-management verdict.
 
 ### 5.4 Residue cohort shadow ledger
 
@@ -322,19 +397,127 @@ credible.
 
 ## 6. Ordered Work Packages
 
-Each row is prospective. It requires its own declared scope, evidence identity,
-gate plan, and disposition before execution.
+Orders 1 and 2 are complete; later rows are prospective. Every prospective row
+requires its own declared scope, evidence identity, gate plan, and disposition
+before execution.
 
 | Order | Prospective package | Outcome | Advancement gate |
 | --- | --- | --- | --- |
-| 1 | [`CANOPY-CAL-01` source and target ledger](../work-packages/20260726-canopy-cal-01-source-target-ledger-001/package.md) | Bind Bill's exact sources, primary literature targets, units, uncertainties, comparison scales, and the 92/95 discrepancy. | No unsourced or cross-scale target carries calibration or validation. |
-| 2 | [`CANOPY-CAL-02` Elliot reproduction](../work-packages/20260726-canopy-cal-02-elliot-reproduction-001/package.md) | Reproduce or truthfully bound the Hubbard and Santee biomass, residue, equilibrium, and downstream comparisons. | Machine-readable runs and figures explain any mismatch with Bill's report. |
+| 1 | [`CANOPY-CAL-01` source and target ledger](../work-packages/20260726-canopy-cal-01-source-target-ledger-001/package.md) — **complete** | Bind Bill's exact sources, primary literature targets, units, uncertainties, comparison scales, and the 92/95 discrepancy. | Passed: no unsourced or cross-scale target carries calibration or validation. |
+| 2 | [`CANOPY-CAL-02` Elliot reproduction](../work-packages/20260726-canopy-cal-02-elliot-reproduction-001/package.md) — **complete / not reproducible** | Reproduce or truthfully bound the Hubbard and Santee biomass, residue, equilibrium, and downstream comparisons. | Passed: machine-readable runs and figures explain the mismatches; legacy recovery is closed. |
 | 3 | `CANOPY-CAL-03` observation corpus, native fixtures, and research outputs | Install provenance-bound phenology/LAI/canopy/litter observations, native YAML counterparts for selected canopy-gradient lanes, and a stable daily research-output surface. | Calibration/holdout assignments and unchanged forcing/soil/slope bindings are explicit; assurance values do not depend solely on test-only traces. |
 | 4 | `CANOPY-CAL-04` process calibration and identifiability | Evaluate GSI thresholds, `Bf,max`, `Bs`, `fe`, `xmxlai`, `Cs`, and `bb` in process order. | Timing, amplitude, biomass partition, and canopy closure pass without hydrologic fitting. |
 | 5 | `CANOPY-CAL-05` litter-source and decomposition adjudication | Test leaf-only CP2, cohort reconstruction, needle turnover, fine-woody input, and decomposition equifinality. | Decide whether CP2 is sufficient or a contract amendment is required; no missing source is hidden in decay. |
 | 6 | `CANOPY-CAL-06` canopy-gradient congruence | Run conifer-mixed-deciduous-open within-site comparisons through canopy, ET/interception, snow, residue, frost, runoff, and erosion consumers. | Prespecified ordering and quantitative cells pass or are bounded with retained contrary evidence. |
 | 7 | `CANOPY-CAL-07` Southern Hemisphere robustness | Combine synthetic phase invariance with independent SH observational lanes and real downstream consumers. | Timing, phase, amplitude, mass closure, and consumer chronology pass without fixed dates or NH-only tuning. |
 | 8 | `CANOPY-ASSURE-01` report and supplement | Author, reproduce, review, and publish the complete canopy-phenology assurance product. | Exact research objects, independent reproduction, accountable scientific and publication review, finding disposition, approval, and release transfer pass. |
+
+### 6.1 CANOPY-CAL-03 execution contract
+
+CAL-03 is the immediate next package. It is an evidence and observability
+package, not a calibration package. A fresh executor must be able to complete
+it without reopening CAL-02 or inferring requirements from conversation
+history.
+
+CAL-03 must deliver all of the following:
+
+1. **Observation corpus and target ledger.**
+   - Retain primary-source data or exact resolvable research objects for
+     phenology dates, seasonal LAI or declared proxy, leaf-on/leaf-off canopy
+     cover or gap fraction, foliar and persistent woody biomass, annual litter
+     by material class, and forest-floor mass.
+   - Record site, coordinates, forest class, period, temporal support, spatial
+     support, units, uncertainty, transformations, license, source identity,
+     and missing-value semantics.
+   - Classify every quantity as `OBSERVATION`, `FITTED_OPERAND`,
+     `DERIVED_DIAGNOSTIC`, `LEGACY_COMPARISON`, or `MODEL_OUTPUT`.
+   - Assign calibration and holdout roles before any parameter fitting.
+     Holdout sites or years may not be selected after viewing fitted
+     performance.
+   - Carry Bill-derived values only as `LEGACY_COMPARISON`. The CAL-02 values
+     and scorecard may test continuity with the legacy mechanism but may not
+     carry native acceptance.
+
+2. **Native paired fixtures.**
+   - Create native YAML counterparts for the selected Marcell, Harvard, and
+     Hubbard Brook canopy-gradient lanes.
+   - Preserve climate, soil, slope, simulation period, initial-state, and
+     observation bindings across each legacy/native pair. Every intentional
+     difference must be machine-readable and reviewed.
+   - Include deciduous, mixed, evergreen/conifer, and open controls wherever
+     the source site supplies them. Do not manufacture a missing stratum.
+   - Keep soil representations fixed within a management comparison. A
+     deliberate soil-format crossover is a separately labeled sensitivity
+     axis, never a canopy effect.
+
+3. **Stable daily research-output surface.**
+   - Publish date/year/day, site/arm identity, GSI temperature/VPD/photoperiod
+     indicators, instantaneous GSI, GSI21, structural biomass, evergreen and
+     deciduous foliar biomass, total foliar and aboveground live biomass, LAI,
+     canopy cover, leaf-on allocation, leaf-off transfer, aggregate surface
+     residue, decomposition loss, residue depth, and the values actually
+     consumed by interception/ET, snow, frost, runoff, and erosion.
+   - Preserve units, chronology, producer identity, null/overflow semantics,
+     and exact producer-to-consumer lineage. Test-only traces are insufficient.
+   - Prefer a campaign-confined diagnostic artifact unless a public output is
+     independently justified. A public schema or new production physics
+     requires its own contract authority and package.
+   - Emit machine-readable manifests and deterministic tidy outputs suitable
+     for independent rebuilding of every later table and figure.
+
+4. **Bill-method diagnostics for native CP2.**
+   - Compute annual gross leaf-on and leaf-off, net foliar change, seasonal
+     amplitude, phenology churn ratio, residue equilibrium mass, seasonal
+     range, time to practical equilibrium, and year-over-year drift.
+   - Add an analysis-only current/previous/old cohort ledger driven from the
+     exact native daily litter source and declared decay. Its sum must
+     reconcile to the aggregate production residue whenever the assumed decay
+     equations are equivalent.
+   - Keep leaf, needle, fine-woody, and total litter distinct. CAL-03 may
+     inventory missing source terms and support shadow diagnostics; it may not
+     add unratified production turnover.
+
+5. **Pre-calibration protocol.**
+   - Freeze objective functions, uncertainty-aware tolerances, parameter
+     bounds/priors, calibration/holdout partitions, missing-data rules,
+     equilibrium rule, and failure classifications for CAL-04 and CAL-05.
+   - Declare the process order: GSI timing; foliar/structural partition;
+     evergreen fraction; LAI; canopy floor/closure; litter source; then
+     decomposition. Downstream hydrology and erosion remain evaluation-only.
+   - Specify identifiability outputs, including parameter correlations,
+     profile or ensemble uncertainty, boundary hits, failed runs, and
+     equifinality. A single best-fit parameter vector is insufficient.
+
+CAL-03 advances only when independent review verifies the observation
+authority and role assignments, paired fixtures preserve all protected
+forcings, daily outputs exercise real production consumers, the native mass
+and cohort ledgers close, deterministic rebuild passes, and no calibration or
+new physics has been smuggled into the evidence package.
+
+### 6.2 CAL-04 and CAL-05 execution discipline
+
+CAL-04 must calibrate in process order rather than jointly fitting every
+operand:
+
+1. fit GSI thresholds to independent timing observations;
+2. constrain `Bf,max` and `Bs` from foliar and persistent structural biomass,
+   using total biomass only as a partition sum;
+3. constrain `fe` from evergreen/mixed seasonal persistence;
+4. constrain `xmxlai` from peak LAI;
+5. constrain `Cs` and `bb` from winter floor and summer canopy closure; and
+6. freeze accepted upstream ranges before downstream evaluation.
+
+Each stage must report identifiability and retained failures. It may revisit an
+earlier stage only through an explicit finding and renewed joint fit plan.
+Runoff, erosion, snow, and frost residuals cannot select canopy parameters.
+
+CAL-05 then applies Elliot's source-to-equilibrium method to the frozen canopy
+ensemble. It must adjudicate leaf-only CP2, recurring needle turnover,
+fine-woody input, and decomposition separately. Source-flux sufficiency is
+decided before decay is fitted to forest-floor stock. If no supported source
+composition can reproduce both annual litter inputs and equilibrium storage,
+CAL-05 must recommend a contract package rather than compensate with
+unrealistic foliar mass or decay.
 
 If `CANOPY-CAL-05` identifies missing production physics, insert a bounded
 contract-and-implementation package before Orders 6-8. The roadmap does not
@@ -353,6 +536,10 @@ pre-authorize that change or presume its outcome.
   field quantities and units.
 - Daily and annual foliar allocation/litter ledgers close.
 - Phenology churn is reported and adjudicated.
+- Calibration and holdout scores are reported separately; no holdout member
+  contributes to fitting, parameter selection, or tolerance relaxation.
+- Parameter uncertainty, correlations, boundary hits, and materially
+  equifinal solutions are retained rather than collapsed into one optimum.
 
 ### 7.2 Litter and residue cells
 
@@ -418,8 +605,9 @@ hydrologists, forest managers, model developers, and WEPP users. It must include
    decomposition, residue depth, and consumer chronology.
 3. **Parameter authority** - units, ecological meaning, defaults, fitted
    values, priors or bounds, correlations, and identifiability.
-4. **Bill Elliot reproduction** - source integrity, 92/95 resolution, biomass
-   and residue trajectories, equilibrium comparison, and limitations.
+4. **Bill Elliot method and reproduction** - source integrity, 92/95
+   resolution, `NOT_REPRODUCIBLE` result, retained staged methodology, biomass
+   and residue trajectories, equilibrium comparison, and claim limitations.
 5. **Mass and state assurance** - daily closure, annual transfer, no-drift,
    cohort reconstruction, and churn.
 6. **Canopy-gradient evaluation** - site/stratum design, canopy and LAI results,
@@ -479,9 +667,33 @@ the snow/frost campaign.
 
 ## 10. Immediate Next Action
 
-Scaffold `CANOPY-CAL-01` as a documentation-and-evidence intake package. Its
-first deliverable is the exact target ledger and reproduction manifest, not a
-parameter change. It should bind the commissioned Elliot sources, enumerate
-missing run artifacts, audit every field target back to a primary source, and
-predeclare which targets are observations, Bill-derived assumptions,
-management operands, or model outputs.
+Scaffold `CANOPY-CAL-03` as the observation-corpus, paired-fixture, and
+research-output package defined in Section 6.1. Its first increment must remain
+pre-calibration and make no parameter or physics change.
+
+A fresh package author must begin from:
+
+- this roadmap;
+- completed
+  `../work-packages/20260726-canopy-cal-01-source-target-ledger-001/package.md`;
+- completed
+  `../work-packages/20260726-canopy-cal-02-elliot-reproduction-001/package.md`;
+- CAL-02
+  `../work-packages/20260726-canopy-cal-02-elliot-reproduction-001/artifacts/cal03-handoff.md`,
+  `../work-packages/20260726-canopy-cal-02-elliot-reproduction-001/artifacts/reproduction-verdict.md`,
+  `../work-packages/20260726-canopy-cal-02-elliot-reproduction-001/artifacts/result-schema.md`,
+  and
+  `../work-packages/20260726-canopy-cal-02-elliot-reproduction-001/artifacts/litter-transfer-provenance.md`;
+- `tests/fixtures/cancov_forest/` and its nearest agent guidance;
+- the native management YAML and daily consumer implementations governed by
+  `SC-PLANT-001`, `SC-RESIDUE-001`, and
+  `SC-INFILE-MANAGEMENT-YAML-001`; and
+- the scientific-assurance v2 lifecycle and current testing/gate strategy.
+
+Before implementation, CAL-03 must inventory candidate observations and
+fixtures, propose immutable calibration/holdout assignments, choose a
+campaign-confined versus public research-output surface, declare its complete
+write set, and authenticate its gate plan. The package is complete only when
+another agent can run the retained native fixtures, regenerate the tidy daily
+records and Bill-method diagnostics, trace every accepted target to authority,
+and reproduce the pre-calibration evidence without conversational context.

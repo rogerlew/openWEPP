@@ -1,0 +1,16 @@
+lane,arm_id,site,forcing,management,dropfc,soil_format,mukey,years,status,claim_class
+initial,hubbard_constant,HUBBARD_BROOK,exact source climate and slope,exact source p1.man,,9002,665220,100,FAILED_INPUT_CONVERSION,NOT_REPRODUCIBLE
+initial,hubbard_hardwood_095,HUBBARD_BROOK,exact source climate and slope,exact delivered hardwood,0.95,9002,665220,100,FAILED_INPUT_CONVERSION,NOT_REPRODUCIBLE
+initial,hubbard_hardwood_092,HUBBARD_BROOK,exact source climate and slope,delivered hardwood with one dropfc token changed,0.92,9002,665220,100,FAILED_INPUT_CONVERSION,NOT_REPRODUCIBLE
+initial,santee_constant,SANTEE,exact source climate and slope,exact source p2.man,,9002,131976,100,FAILED_INPUT_CONVERSION,NOT_REPRODUCIBLE
+initial,santee_mixed,SANTEE,exact source climate and slope,exact delivered mixed forest,0.93,9002,131976,100,FAILED_INPUT_CONVERSION,NOT_REPRODUCIBLE
+reconstruction,hubbard_constant,HUBBARD_BROOK,exact source climate and slope,exact source p1.man,,WEPPpy SSURGO 2006.2,665220,100,COMPLETE,BOUNDED
+reconstruction,hubbard_hardwood_095,HUBBARD_BROOK,exact source climate and slope,exact delivered hardwood,0.95,WEPPpy SSURGO 2006.2,665220,100,COMPLETE,BOUNDED
+reconstruction,hubbard_hardwood_092,HUBBARD_BROOK,exact source climate and slope,delivered hardwood with one dropfc token changed,0.92,WEPPpy SSURGO 2006.2,665220,100,COMPLETE,BOUNDED
+reconstruction,santee_constant,SANTEE,exact source climate and slope,exact source p2.man,,WEPPpy SSURGO 2006.2,131976,100,COMPLETE,BOUNDED
+reconstruction,santee_mixed,SANTEE,exact source climate and slope,exact delivered mixed forest,0.93,WEPPpy SSURGO 2006.2,131976,100,COMPLETE,BOUNDED
+linux_9002,hubbard_constant,HUBBARD_BROOK,exact source climate and slope,exact source p1.man,,9002 source-native,665220,100,COMPLETE,LINUX_PAIRED
+linux_9002,hubbard_hardwood_095,HUBBARD_BROOK,exact source climate and slope,exact delivered hardwood,0.95,9002 source-native,665220,100,COMPLETE,LINUX_PAIRED
+linux_9002,hubbard_hardwood_092,HUBBARD_BROOK,exact source climate and slope,delivered hardwood with one dropfc token changed,0.92,9002 source-native,665220,100,COMPLETE,LINUX_PAIRED
+linux_9002,santee_constant,SANTEE,exact source climate and slope,exact source p2.man,,9002 source-native,131976,100,COMPLETE,LINUX_PAIRED
+linux_9002,santee_mixed,SANTEE,exact source climate and slope,exact delivered mixed forest,0.93,9002 source-native,131976,100,COMPLETE,LINUX_PAIRED

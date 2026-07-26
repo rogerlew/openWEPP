@@ -2,7 +2,7 @@
 
 Package ID: `20260726-canopy-cal-02-elliot-reproduction-001`
 
-Status: `SCAFFOLDED / SOURCE BUNDLE RECOVERED`
+Status: `COMPLETE / NOT_REPRODUCIBLE / HOLD LIFTED`
 
 Date opened: `2026-07-26`
 
@@ -41,16 +41,29 @@ fit native parameters.
   BLARHG Windows executable.
 - [x] (2026-07-26) Consumed the superseding CANOPY-CAL-01 `READY_BOUNDED`
   admission record.
-- [ ] Admit exact run inventory, executable lineage, result schema, tolerances,
+- [x] (2026-07-26) Admitted exact run inventory, executable lineage, result schema, tolerances,
   and gate plan.
-- [ ] Build deterministic fixtures and a reproduction harness.
-- [ ] Run Hubbard and Santee management arms and reconstruct Bill's process
-  trajectories.
-- [ ] Reproduce or bound constant-cover, hydrology, sediment, and return-period
-  comparisons.
-- [ ] Issue the final reproduction verdict and CAL-03 handoff.
-- [ ] Complete independent review, finding disposition, verification, and
-  final package disposition.
+- [x] (2026-07-26) Built and focused-tested the deterministic reproduction harness.
+- [x] (2026-07-26) Recorded the superseded initial comparator attempt; WEPP 2012.800
+  rejected the exact source-native 9002 soil before the first simulation.
+- [x] (2026-07-26) Recorded the superseded initial process, hydrology, sediment, and return-period
+  surfaces as `NOT_REPRODUCIBLE` or `NOT_EVALUATED` without crossing scales.
+- [x] (2026-07-26) Issued the superseded initial `NOT_REPRODUCIBLE` verdict and CAL-03 handoff.
+- [x] (2026-07-26) Completed the superseded initial review, finding disposition,
+  verification, and final `EXECUTED_HOLD` package disposition.
+- [x] (2026-07-26) Reopened under operator authority, built paired WEPPpy
+  `2006.2` soils from mukeys 665220 and 131976, and completed all five arms.
+- [x] (2026-07-26) Reconstructed daily, annual, equilibrium, hydrology,
+  sediment, and daily-runoff return-period surfaces.
+- [x] (2026-07-26) Issued the `NOT_REPRODUCIBLE` scientific verdict from a
+  successful bounded reconstruction.
+- [x] (2026-07-26) Executed the operator-authorized Linux WEPP 260725 lane with
+  source-native 9002 soils, `wepp_ui.txt`, and `wepp_observe.on`.
+- [x] (2026-07-26) Reconstructed annual gross aboveground live-to-current-residue
+  transfer from the authoritative producer formula and rounded daily biomass;
+  the operator accepted the bounded precision and lifted the sole hold.
+- [x] (2026-07-26) Corrected review findings and passed two independent
+  scientific reviews and two independent terminal verifications.
 
 ## Objective
 
@@ -121,6 +134,10 @@ aggregate and shadow-cohort analysis belongs to later roadmap packages.
 - Install deterministic Hubbard Brook and Santee reproduction fixtures from
   CAL-01-admitted source-native inputs.
 - Preserve source-native files plus manifests; document every transformation.
+- Derive a diagnostic run control from each preserved source control by
+  enabling only WEPP's existing daily plant/residue output and assigning its
+  arm-local output path. This output-only switch does not alter forcing,
+  management, soil, slope, or process physics.
 - Build a deterministic analysis harness under `tools/canopy_phenology/`.
 - Record exact executable identity, build/provenance, run commands, environment,
   and output paths.
@@ -136,6 +153,18 @@ aggregate and shadow-cohort analysis belongs to later roadmap packages.
   equivalence as unavailable.
 - Keep 7777 and 2006.5 soil representations separate. Run paired soil-format
   arms only when CAL-01 authorizes a like-for-like conversion or exact source.
+- Operator follow-on authorization on 2026-07-26 admits a bounded, paired
+  WEPPpy SSURGO `2006.2` serialization for exact mukeys `665220` and `131976`.
+  This may lift the executable-format hold but may not be described as Bill's
+  byte-identical manually transcribed Windows soil.
+- Operator follow-on authorization also admits a separate Linux lane using
+  `/workdir/wepp-forest_260430_baseline/release/wepp_260725`, exact source-native
+  9002 soils, an empty `wepp_ui.txt` hourly-water-balance switch, and
+  `wepp_observe.on`. This lane must remain separate from Windows/2006.2 results.
+  Observe logs may support litter-transfer extraction only when a real
+  producer callsite is demonstrated. The operator subsequently accepted a
+  producer-authoritative reconstruction bounded by the crop output's
+  `0.001 kg/m2` precision as close enough for this campaign.
 - Parse daily live biomass, LAI, canopy, current/previous/old/total residue,
   runoff, peak runoff, and sediment surfaces where the admitted executable
   publishes them.
@@ -271,7 +300,11 @@ that prepares isolated run directories, applies only declared branch edits,
 invokes the exact executable, captures stdout/stderr and output identities, and
 parses machine results into stable tidy tables. The `0.92` branch must be
 derived visibly from the preserved delivered management; the source file
-itself remains byte-identical.
+itself remains byte-identical. The harness may derive an arm-local run control
+that changes only the source control's plant/residue output answer from `No` to
+`Yes` and inserts the corresponding confined output filename. This prospective
+analysis-only amendment is required because the preserved source control does
+not request the daily crop/residue surface used by Bill's analysis.
 
 ### Milestone 3: process reproduction
 
@@ -423,6 +456,13 @@ affecting another arm.
   `For no growth, no decomp, no senescence`; Bill states that his Windows
   constant-cover comparison transcribed the WEPPcloud mature-forest
   management. Hubbard and Santee differ only in initial residue mass.
+- Observation: the recovered source run controls do not request WEPP's daily
+  plant/residue output.
+  Evidence: source control line 12 is `No`; pinned legacy `outfil.for` maps that
+  answer to the existing `crop` diagnostic, whose header publishes daily live
+  biomass plus current, previous, and old flat-residue pools. The package was
+  prospectively amended before harness implementation to enable only that
+  diagnostic surface.
 
 ## Decision Log
 
@@ -448,14 +488,49 @@ affecting another arm.
   verdict.
   Rationale: Bill identified both as large confounders.
   Date/Author: 2026-07-26 / Codex.
+- Decision: enable the existing daily plant/residue diagnostic in a derived run
+  control.
+  Rationale: it is the minimum output-only transformation needed to reconstruct
+  Bill's process trajectories; it changes no forcing or physics and leaves the
+  source control byte-identical.
+  Date/Author: 2026-07-26 / Codex.
+- Decision: reopen CAL-02 with WEPPpy-built SSURGO 2006.2 soil arms.
+  Rationale: operator supplied the exact recovery route and the mukeys already
+  bind the admitted sites. This is a bounded format reconstruction, not
+  historical byte equivalence.
+  Date/Author: 2026-07-26 / operator and Codex.
+- Decision: add a Linux WEPP 260725/source-native-9002 lane and accept its
+  gross-transfer reconstruction at crop-output precision.
+  Rationale: the native soils match the intended WEPPcloud management context;
+  the operator explicitly judged the `0.001 kg/m2` publication precision close
+  enough for this campaign. This does not authorize a direct or exact claim.
+  Date/Author: 2026-07-26 / operator and Codex.
 
 ## Outcomes & Retrospective
 
-Not executed. At scaffold time CAL-02 remains blocked on CAL-01 admission and
-claims no reproduced result, runnable fixture, or executable evidence.
+The source-native 9002 attempt failed at soil input conversion, after which
+operator authority admitted exact-mukey WEPPpy `2006.2` reconstruction. All
+five 100-year arms then completed. The delivered Hubbard 0.95 management
+reproduces live biomass but not total residue; the report's 0.92 branch does
+not reproduce live biomass. Santee stocks and the compared hydrology,
+sediment, and daily-runoff return levels differ materially from Bill's report.
+The useful campaign conclusion is `NOT_REPRODUCIBLE` from a successful bounded
+reconstruction: sufficient to stop historical recovery and advance the next
+characterization step, but not Bill's missing byte-identical project and not
+independent calibration authority.
+
+The additional Linux 260725/source-native-9002 matrix also completed all five
+arms and preserved the verdict: 9 of 64 targets pass bounded tolerances and 55
+are contradicted. Hourly water balance activated in every arm. Observe exposed
+no litter-specific tag, but pinned release source and rounded crop output
+reconstruct gross aboveground live-to-current-residue transfer to publication
+precision, independently agreeing within `0.00088 kg/m2/year`. The operator
+accepted that bound; dual review and terminal verification passed.
 
 ## Revision Note
 
 2026-07-26: initial scaffold created to implement roadmap Order 2 with an
 explicit dependency gate, bounded characterization verdicts, and no production
-physics authority.
+physics authority. Before implementation, execution amended the package to
+authorize the minimum output-only run-control derivation needed for WEPP's
+daily plant/residue diagnostic.

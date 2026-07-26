@@ -1,0 +1,6 @@
+arm_id,site,window,mean_year_end_live_biomass_kg_m2,mean_year_end_flat_residue_kg_m2,mean_year_end_current_residue_kg_m2,mean_year_end_previous_residue_kg_m2,mean_year_end_old_residue_kg_m2,live_biomass_range_kg_m2,flat_residue_range_kg_m2
+hubbard_constant,HUBBARD_BROOK,years_91_100,0.164,1.38504,1.38504,0.0,0.0,0.0,0.00029999999999996696
+hubbard_hardwood_095,HUBBARD_BROOK,years_91_100,18.8714,5.2800899999999995,0.9722200000000001,0.79475,3.51312,0.23300000000000054,0.10269999999999957
+hubbard_hardwood_092,HUBBARD_BROOK,years_91_100,11.504900000000001,5.32984,0.9792799999999999,0.80124,3.5493200000000003,0.26399999999999935,0.08750000000000036
+santee_constant,SANTEE,years_91_100,0.164,1.38504,1.38504,0.0,0.0,0.0,0.00029999999999996696
+santee_mixed,SANTEE,years_91_100,19.8497,3.78337,1.4090799999999999,0.88461,1.48968,0.47900000000000276,0.06309999999999993

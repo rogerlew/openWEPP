@@ -308,11 +308,11 @@ State as of `2026-07-26 UTC`:
   sources. The operator confirmed redistribution permission for Bill's
   commissioned files and the retained third-party reference set.
 - `20260726-canopy-cal-02-elliot-reproduction-001/` -
-  SCAFFOLDED / SOURCE BUNDLE RECOVERED: canopy assurance roadmap Order 2 has
-  exact report-linked 100-year Hubbard `p1`/`H1` and Santee `p2`/`H2`
-  WEPPcloud sources plus the hash-identified BLARHG Windows executable. It will
-  reproduce Bill's biomass, residue, hydrology, sediment, and return-period
-  analysis without changing native canopy physics or fitting parameters.
+  COMPLETE / NOT_REPRODUCIBLE / HOLD LIFTED: five Windows/2006.2 and five
+  Linux-260725/source-native-9002 arms completed. The Linux lane reconstructs
+  gross annual litter transfer from pinned perennial senescence operands and
+  independently checks it against daily live decline. Hubbard 0.95 reproduces
+  live biomass, but load-bearing residue and Santee results remain contradicted.
 
 - `20260724-cqr-testgate-coverage-reconstruction-001/` -
   EXECUTED-HOLD / QUALIFICATION-HANDOFF-ORDER-6: retains its completed

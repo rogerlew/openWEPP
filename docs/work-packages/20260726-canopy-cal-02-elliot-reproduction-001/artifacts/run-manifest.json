@@ -1,0 +1,29 @@
+{
+  "schema_version": 2,
+  "execution_status": "ALL_ARMS_COMPLETE",
+  "runner_role": "comparator_suite_runner",
+  "local_run_root": "/tmp/openwepp-cal02-20260726-210036-9897",
+  "remote_run_root": "C:/Users/roger/AppData/Local/Temp/openwepp-cal02-20260726-210036-9897",
+  "soil_source": {
+    "serializer": "WEPPpy SSURGO 2006.2",
+    "hubbard_mukey": 665220,
+    "hubbard_sha256": "b355411acf4f0e774b7e1d1d686f45c1c15c6ee5fa94f9857f1638934fa6d6af",
+    "santee_mukey": 131976,
+    "santee_sha256": "69ac7512339e978c6bbc70ff6d81ccbe37b8a05b09bbc8435d099ad3a34ed1fe"
+  },
+  "executable": {
+    "host": "BLARHG",
+    "path": "C:\\WEPP\\wepp\\wepp_2012.exe",
+    "pre_run_sha256": "6104a3440624ad54aa6c3660794280adfd600d4a11b98559c6205a73cd47fc3f",
+    "post_run_sha256": "6104a3440624ad54aa6c3660794280adfd600d4a11b98559c6205a73cd47fc3f"
+  },
+  "arms": [
+    {"arm_id": "hubbard_constant", "exit_code": 0, "daily_rows": 36525, "years": 100, "stderr_bytes": 0},
+    {"arm_id": "hubbard_hardwood_095", "exit_code": 0, "daily_rows": 36525, "years": 100, "stderr_bytes": 0},
+    {"arm_id": "hubbard_hardwood_092", "exit_code": 0, "daily_rows": 36525, "years": 100, "stderr_bytes": 0},
+    {"arm_id": "santee_constant", "exit_code": 0, "daily_rows": 36525, "years": 100, "stderr_bytes": 0},
+    {"arm_id": "santee_mixed", "exit_code": 0, "daily_rows": 36525, "years": 100, "stderr_bytes": 0}
+  ],
+  "historical_failed_attempt": "failure-receipt.json",
+  "production_service_mutation": "none"
+}

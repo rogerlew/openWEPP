@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "arms": [
+    {
+      "arm_id": "hubbard_constant",
+      "source": "hubbard_constant/output/p1.crop.dat",
+      "source_sha256": "4220f056e1fcf630844f9d8e7bebcfc2c9a87a9591fb8bf34c7b4e30629ef1b3",
+      "normalized_rows": 36525,
+      "canopy_height_overflow_rows": 0,
+      "lai_overflow_rows": 36525
+    },
+    {
+      "arm_id": "hubbard_hardwood_095",
+      "source": "hubbard_hardwood_095/output/p1.crop.dat",
+      "source_sha256": "1cd6dfe7667461afd4f8c33776d9b7b1f446ed029325f7fc097dc04be314e697",
+      "normalized_rows": 36525,
+      "canopy_height_overflow_rows": 36525,
+      "lai_overflow_rows": 0
+    },
+    {
+      "arm_id": "hubbard_hardwood_092",
+      "source": "hubbard_hardwood_092/output/p1.crop.dat",
+      "source_sha256": "4362199c0f64a13099b200ab5ec1bb985f85e468f6924825bed3a062798a63e6",
+      "normalized_rows": 36525,
+      "canopy_height_overflow_rows": 36525,
+      "lai_overflow_rows": 0
+    },
+    {
+      "arm_id": "santee_constant",
+      "source": "santee_constant/output/p2.crop.dat",
+      "source_sha256": "82c8544c3e6fb7260641dbb0ea4fd4a59dd956d5331e75a12e9664f5a25445eb",
+      "normalized_rows": 36525,
+      "canopy_height_overflow_rows": 0,
+      "lai_overflow_rows": 36525
+    },
+    {
+      "arm_id": "santee_mixed",
+      "source": "santee_mixed/output/p2.crop.dat",
+      "source_sha256": "fef41caae7ee997e02533127d64de39fbc3c7c8698d656f64df1f66df59990df",
+      "normalized_rows": 36525,
+      "canopy_height_overflow_rows": 36525,
+      "lai_overflow_rows": 36525
+    }
+  ]
+}
