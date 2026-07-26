@@ -1,8 +1,8 @@
 # Execute CANOPY-CAL-02 Elliot Reproduction
 
-Scope: local repository scientific characterization; flat-file reads/edits and
-confined local executable runs only; no external systems, network actions, or
-service mutations are required.
+Scope: repository scientific characterization; flat-file reads/edits, confined
+local openWEPP runs, and isolated WEPP 2012 runs on BLARHG using the exact
+hash-bound executable. Do not modify WEPPcloud production runs.
 
 Execution mode: package-end-to-end.
 
@@ -22,10 +22,9 @@ Required reading:
 - On-demand: native operand lineage and canonical plant/residue contracts only
   when resolving units or rejected aliases.
 
-Required-reading budget: `7225123` scaffold-time local bytes,
-`REQUIRES-JUSTIFICATION`; this total uses the exact sibling WEPPcloud report as
-the byte-equivalent source because CAL-01 outputs do not yet exist. The report
-and complete CAL-01 evidence are load-bearing. Recompute after CAL-01 closes.
+Required-reading budget: recompute from the completed CAL-01 evidence, retained
+selected source fixtures, and report before execution. The report, admission,
+source fixture README/manifests, and exact run controls are load-bearing.
 Map:
 `artifacts/required-reading-map.md`.
 
@@ -33,10 +32,10 @@ Files: edit only the declared write set in `package.md`. Treat CAL-01 evidence,
 commissioned references, existing fixtures, contracts, production crates, and
 the sibling WEPPcloud repository as read-only.
 
-Task: admit and execute the five-arm Elliot reproduction matrix, build
-deterministic fixtures and analysis tooling, reconstruct process and downstream
-results, issue the structured reproduction verdict, and complete the CAL-03
-handoff, review, verification, and disposition.
+Task: verify the recovered source manifests and execute the five-arm Elliot
+reproduction matrix, build deterministic analysis tooling, reconstruct process
+and downstream results, issue the structured reproduction verdict, and
+complete the CAL-03 handoff, review, verification, and disposition.
 
 Constraints: no model or physics changes; exact executable/input provenance;
 separate 7777 from 2006.5 soils; separate hillslope, watershed, and channel

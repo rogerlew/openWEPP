@@ -411,10 +411,11 @@ so reruns either produce identical bytes or a reviewable source-driven diff.
 
 Executed. The package preserves 19 hash-bound sources, a 140-row typed target
 ledger, parameter and comparison-scale lineage, the report/file `0.92` versus
-`0.95` branch, and a deterministic `READY_BOUNDED` admission. CAL-02 may
-replicate Bill's analytical stock-flow approach under common Hubbard forcing,
-but may not claim exact rerun, site-specific Santee reproduction, 100-year
-equilibrium reproduction, constant cover, or chart/table equivalence.
+`0.95` branch, and a deterministic `READY_BOUNDED` admission. Post-closeout
+source recovery upgraded the admitted experiment to exact report-linked
+site-specific 100-year WEPPcloud forcing and selected outputs for both sites.
+CAL-02 still may not claim Bill's exact Windows rerun, constant cover, or
+Windows chart/table equivalence.
 
 No additional literature gap presently blocks the scientific analysis. Exact
 reproduction still requires Bill's full per-site Windows run bundles. The
@@ -427,3 +428,10 @@ redistribution-permission confirmation.
 installation, operator-supplied literature expanded the declared reference
 boundary from the commissioned subtree to the complete canopy-phenology
 reference family; production and contract boundaries remain unchanged.
+
+2026-07-26: post-closeout operator evidence identified the report-linked
+WEPPcloud run IDs and the BLARHG Windows executable. Exact selected source
+fixtures were preserved and the bounded CAL-02 admission was superseded from
+common forcing to site-specific 100-year source forcing. The verdict remains
+`READY_BOUNDED` because Bill's manually converted Windows projects and outputs
+are absent.

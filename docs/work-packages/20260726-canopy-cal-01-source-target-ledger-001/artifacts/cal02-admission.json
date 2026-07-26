@@ -7,37 +7,42 @@
   "exact_reproduction_authorized": false,
   "bounded_reconstruction_authorized": true,
   "substitution_plan": {
-    "physical_forcing_fixture": "tests/fixtures/cancov_forest/hubbardbrook_deciduous_nh",
-    "required_fixture_files": [
-      "p10.run",
-      "p10.cli",
-      "p10.sol",
-      "p10.slp",
-      "p10.man",
-      "gwcoeff.txt",
-      "pmetpara.txt",
-      "snow.txt"
-    ],
-    "fixture_period": "1980-2024 inclusive as encoded by p10.run",
-    "fixture_identity_rule": "CAL-02 must copy the files into its declared fixture subtree and record source and destination SHA-256 identities before any transformation",
+    "fixture_root": "tests/fixtures/canopy_phenology/elliot_reproduction/source/weppcloud",
+    "hubbard_fixture": "hubbard_brook_unassailable_sensuousness",
+    "santee_fixture": "santee_clean_burning_griddle",
+    "hubbard_surface": "p1 inputs and H1 outputs",
+    "santee_surface": "p2 inputs and H2 outputs",
+    "fixture_period": "100 years encoded by both source-native run files",
+    "cligen_identity": "CLIGEN 5.32300 with seed 12345 in both exact climate headers",
+    "fixture_identity_rule": "CAL-02 must verify both site SHA256SUMS manifests before any transformation and record identities of every derived file",
     "management_sources": {
       "hubbard_delivered": "references/canopy_phenology/elliot_2026/bill_elliot_2026_hardwood_forest.man",
       "santee_delivered": "references/canopy_phenology/elliot_2026/bill_elliot_2026_santee_mixed_forest.man",
-      "fixture_baseline_control": "tests/fixtures/cancov_forest/hubbardbrook_deciduous_nh/p10.man"
+      "hubbard_source_baseline": "tests/fixtures/canopy_phenology/elliot_reproduction/source/weppcloud/hubbard_brook_unassailable_sensuousness/inputs/p1.man",
+      "santee_source_baseline": "tests/fixtures/canopy_phenology/elliot_reproduction/source/weppcloud/santee_clean_burning_griddle/inputs/p2.man"
+    },
+    "windows_executable": {
+      "host": "BLARHG",
+      "path": "C:\\WEPP\\wepp\\wepp_2012.exe",
+      "sha256": "6104a3440624ad54aa6c3660794280adfd600d4a11b98559c6205a73cd47fc3f",
+      "size_bytes": 1597440,
+      "modified_local": "2012-09-18 12:57"
     },
     "allowed_transformations": [
-      "replace only the fixture management input with an exact commissioned management file",
+      "copy each site's exact source-native input set into an isolated run directory",
+      "replace only that site's management input with the corresponding exact commissioned management file",
       "derive the Hubbard report branch from the copied delivered hardwood management by changing only dropfc from 0.95 to 0.92",
-      "retain the original fixture p10.man byte-for-byte as the seasonal-deciduous fixture-baseline control",
+      "retain each source-native p1.man or p2.man byte-for-byte as its site baseline",
       "rewrite only run-file-relative paths required by the isolated CAL-02 fixture layout"
     ],
     "experiment_arms": [
-      "Hubbard common forcing plus original seasonal-deciduous p10.man baseline",
-      "Hubbard common forcing plus delivered hardwood dropfc=0.95",
-      "Hubbard common forcing plus derived hardwood dropfc=0.92",
-      "Hubbard common forcing plus delivered Santee mixed-forest management"
+      "Hubbard exact source forcing plus source-native p1.man baseline",
+      "Hubbard exact source forcing plus delivered hardwood dropfc=0.95",
+      "Hubbard exact source forcing plus derived hardwood dropfc=0.92",
+      "Santee exact source forcing plus source-native p2.man baseline",
+      "Santee exact source forcing plus delivered mixed-forest management"
     ],
-    "comparison_purpose": "common-forcing management-process and stock-flow sensitivity only"
+    "comparison_purpose": "site-specific source-forcing management-process and stock-flow sensitivity plus exact WEPPcloud selected-output reconstruction"
   },
   "required_branches": [
     {
@@ -55,16 +60,15 @@
   "claim_limits": [
     "No exact reproduction claim",
     "No constant-cover reproduction or comparator claim",
-    "No site-specific Santee reconstruction claim",
-    "No reproduction claim for Bill's 100-year climate or reported equilibrium horizon",
-    "The p10.man control is a seasonal deciduous fixture baseline and not constant cover",
-    "The Santee arm uses Hubbard physical forcing only to isolate management-process behavior",
-    "No machine-output byte identity claim",
+    "No claim that source-native WEPPcloud soil and slope files equal Bill's manually transcribed Windows files",
+    "No claim that source-native p1.man or p2.man is Bill's missing Windows constant-cover comparator",
+    "No Windows-output byte identity claim until Bill's Windows project/output bundle is recovered",
+    "No claim that the BLARHG executable alone reconstructs Bill's missing Windows run controls or runtime libraries",
     "No hillslope-to-watershed goodness-of-fit claim",
     "No annual leaf-fall validation using Yang 7.6 Mg/ha",
     "No calibration adjustment in CANOPY-CAL-02"
   ],
-  "report_targets_use": "Bill's chart and table values are directional or discrepancy targets under this bounded design; they are not pass/fail equivalence targets for substituted physical forcing",
+  "report_targets_use": "Exact retained WEPPcloud selected outputs may be checked byte-for-byte and analytically; Bill's Windows chart and table values remain directional or discrepancy targets until his converted Windows project and outputs are recovered",
   "missing_bundle_record": "artifacts/missing-source-bundle.md",
   "target_ledger": "artifacts/target-ledger.csv",
   "comparison_scale_ledger": "artifacts/comparison-scale-ledger.md"

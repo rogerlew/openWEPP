@@ -11,10 +11,14 @@ Evidence class: `Static scaffold`
 | Core | `docs/work-packages/20260726-canopy-cal-02-elliot-reproduction-001/package.md` | Active package scope and acceptance. |
 | Core | `docs/planning/canopy-phenology-assurance-roadmap.md` | Campaign Order 2 and final evidence purpose. |
 | Core | `docs/work-packages/20260726-canopy-cal-01-source-target-ledger-001/package.md` | Dependency contract. |
-| Core | `docs/work-packages/20260726-canopy-cal-01-source-target-ledger-001/artifacts/cal02-admission.json` | Exact execution admission; absent until CAL-01 completes. |
-| Core | `docs/work-packages/20260726-canopy-cal-01-source-target-ledger-001/artifacts/target-ledger.csv` | Accepted targets and roles; absent until CAL-01 completes. |
-| Core | `references/canopy_phenology/elliot_2026/README.md` | Installed source provenance; absent until CAL-01 completes. |
-| Core | `references/canopy_phenology/elliot_2026/bill_elliot_2026_modeling_hardwood_and_mixed_forests_in_wepp.pdf` | Report figures/tables and method; absent until CAL-01 completes. |
+| Core | `docs/work-packages/20260726-canopy-cal-01-source-target-ledger-001/artifacts/cal02-admission.json` | Current bounded execution admission. |
+| Core | `docs/work-packages/20260726-canopy-cal-01-source-target-ledger-001/artifacts/target-ledger.csv` | Accepted targets and evidence roles. |
+| Core | `docs/work-packages/20260726-canopy-cal-02-elliot-reproduction-001/artifacts/source-recovery.md` | Production recovery path, selected Topaz mapping, and retained-byte boundary. |
+| Core | `tests/fixtures/canopy_phenology/elliot_reproduction/README.md` | Recovered source-fixture identity and scope. |
+| Core | `tests/fixtures/canopy_phenology/elliot_reproduction/source/weppcloud/hubbard_brook_unassailable_sensuousness/SHA256SUMS` | Hubbard source identities. |
+| Core | `tests/fixtures/canopy_phenology/elliot_reproduction/source/weppcloud/santee_clean_burning_griddle/SHA256SUMS` | Santee source identities. |
+| Core | `references/canopy_phenology/elliot_2026/README.md` | Installed commissioned-source provenance. |
+| Core | `references/canopy_phenology/elliot_2026/bill_elliot_2026_modeling_hardwood_and_mixed_forests_in_wepp.pdf` | Report figures/tables and method. |
 | Conditional | `docs/standards/testing-and-gate-strategy.md` | Intent/terminal plan and campaign gate selection. |
 | Conditional | `docs/standards/prompt-wording-guidance.md` | Prompt changes and required delegation wording. |
 | Conditional | `tools/owcmp/AGENTS.md` | Read if the admitted harness uses or extends `owcmp`. |
@@ -27,9 +31,7 @@ Evidence class: `Static scaffold`
 governance; future fixture paths inherit `AGENTS.md`, `tests/AGENTS.md`, and
 `tests/fixtures/AGENTS.md`.
 
-Required-reading budget: `7225123` current local bytes,
-`REQUIRES-JUSTIFICATION`. This scaffold-time total uses the exact sibling
-WEPPcloud PDF as the byte-equivalent source because the CAL-01 installed copy
-and CAL-01 result artifacts do not yet exist. The commissioned PDF and complete
-CAL-01 evidence are load-bearing reproduction inputs. Recompute this total
-after CAL-01 closes and before CAL-02 intent admission.
+Required-reading budget must be recomputed before CAL-02 intent admission. The
+commissioned report, CAL-01 admission/ledger, fixture README/manifests, exact
+run controls, and management operands are load-bearing; large climate and
+output files are execution inputs rather than prose reading.

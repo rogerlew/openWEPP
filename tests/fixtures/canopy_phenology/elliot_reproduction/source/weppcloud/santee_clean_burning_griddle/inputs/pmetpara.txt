@@ -1,0 +1,9 @@
+8
+Tah_4899,0.95,0.8,1,sand_loam-forest
+Tah_4899,0.95,0.8,2,sand_loam-forest
+Tah_4899,0.95,0.8,3,sand_loam-forest
+Tah_4899,0.95,0.8,4,sand_loam-forest
+Tah_4899,0.95,0.8,5,sand_loam-forest
+Tah_4899,0.95,0.8,6,sand_loam-forest
+Tah_4899,0.95,0.8,7,sand_loam-forest
+Tah_4899,0.95,0.8,8,sand_loam-forest

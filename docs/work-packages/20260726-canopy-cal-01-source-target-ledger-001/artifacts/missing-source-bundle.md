@@ -5,7 +5,13 @@ Evidence class: `Executed reproduction-input inventory`
 ## Present
 
 - exact commissioned report and both delivered perennial managements;
-- report-identified WEPPcloud run URLs and selected hillslope numbers;
+- exact report-linked WEPPcloud runs for Hubbard `p1`/`H1` and Santee
+  `p2`/`H2`, including 100-year climate, run, management, slope, soil,
+  sidecars, selected hillslope outputs, controller metadata, and both
+  return-period JSON variants;
+- exact CLIGEN `5.32300` headers and seed `12345` for both sites;
+- accessible report-era Windows executable on BLARHG with path, size, modified
+  time, and SHA-256 identity;
 - retained primary literature for every load-bearing field value except the
   two explicitly excluded AI-attributed values;
 - official Dun and Srivastava papers;
@@ -14,20 +20,18 @@ Evidence class: `Executed reproduction-input inventory`
 
 ## Missing for exact reproduction
 
-- the exact 100-year Hubbard and Santee `.cli` files, including stochastic
-  realization/seed and Bill’s line-3 edits;
 - the exact WEPP Windows 2006.5-format `.sol` and `.slp` inputs;
 - the WEPP Windows `.run` files and all run-option flags;
 - the exported constant-cover comparator managements and supporting initial
   condition/plant templates;
-- the exact WEPP Windows 2012.8 executable, binary hash, runtime libraries, and
-  operating-system identity;
-- source-native main, water, winter, plant/residue, event, and return-period
-  output files;
-- the script or interface procedure used to rank events and calculate return
-  periods;
-- an immutable archive/hash of each WEPPcloud run bundle and the WEPPcloud/WEPP
-  executable/data commits used in April 2026;
+- the runtime-library identity and exact 2026 operating-system state used for
+  Bill's original Windows execution;
+- Bill's Windows source-native main, water, winter, plant/residue, event, and
+  return-period output files;
+- Bill's Windows script or interface procedure used to rank events and
+  calculate return periods;
+- the WEPPcloud/WEPP executable and data commits used for the April 2026
+  source runs;
 - exact chart data behind the screenshots.
 
 ## Request to Bill
@@ -40,13 +44,8 @@ Ask Bill to identify whether the Hubbard screenshots used `dropfc=0.92` or the
 delivered `0.95`, and whether a separate Santee decomposition value was ever
 run.
 
-This missing bundle does not prevent a declared bounded reconstruction using
-the exact pre-existing Hubbard fixture as common physical forcing. The bounded
-design is fully prescribed in `cal02-admission.json`: it permits only
-hash-bound management replacement, the isolated `dropfc=0.92` branch, and
-necessary relative-path rewrites. It does not reproduce the Santee site,
-Bill's 100-year stochastic forcing, or Bill's missing constant-cover file. The
-fixture's original `p10.man` is a seasonal deciduous baseline and may not be
-described as constant cover. Both report-style constant-cover arms and all
-claims based on them remain blocked until a superseding source bundle is
-admitted.
+The recovered sources admit site-specific 100-year Hubbard and Santee
+management-process experiments and exact checks against the retained selected
+WEPPcloud outputs. They do not reconstruct Bill's manual Windows conversion.
+Both report-style Windows constant-cover arms and all exact Windows-output
+claims remain blocked until a superseding source bundle is admitted.

@@ -92,3 +92,21 @@ structure, target typing, documentation, local packaging, and LFS routing.
   were rerun over the completed artifact set: 25 Markdown files with 0 lint
   errors, 0 warnings, and 0 validation errors; 18/18 required artifacts; JSON
   pass; CSV 140/140 unique; credential, placeholder, and diff checks pass.
+
+## Post-closeout source recovery
+
+Operator evidence identified the report-linked runs as
+`unassailable-sensuousness/disturbed9002` for Hubbard Brook and
+`clean-burning-griddle/disturbed9002` for Santee. Live read-only inspection on
+`wepp1` confirmed the coordinates, selected `p1`/`H1` and `p2`/`H2` surfaces,
+100-year run controls, exact climate seed `12345`, selected outputs, and
+WEPPcloud return-period JSON.
+
+The retained 60 source-native files total `33,389,530` bytes and pass both site
+`SHA256SUMS` manifests. Live read-only inspection on BLARHG identifies
+`C:\WEPP\wepp\wepp_2012.exe` as `1,597,440` bytes with SHA-256
+`6104a3440624ad54aa6c3660794280adfd600d4a11b98559c6205a73cd47fc3f`.
+
+This evidence supersedes the common-forcing substitution with exact
+site-specific source forcing while preserving `READY_BOUNDED`: Bill's manually
+converted Windows project and Windows outputs remain missing.

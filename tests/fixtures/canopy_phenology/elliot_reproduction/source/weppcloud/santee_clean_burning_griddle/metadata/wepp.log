@@ -1,0 +1,71 @@
+2026-03-28 03:53:57 [INFO] wepppy.run.clean-burning-griddle.wepp: Running Wepp
+
+2026-03-28 03:54:01 [INFO] wepppy.run.clean-burning-griddle.wepp:     wepp_bin:wepp_dcc52a6
+2026-03-28 03:54:03 [INFO] wepppy.run.clean-burning-griddle.wepp:     _prep_managements... 
+2026-03-28 03:54:03 [INFO] wepppy.run.clean-burning-griddle.wepp: _prep_climates...
+2026-03-28 03:54:03 [INFO] wepppy.run.clean-burning-griddle.wepp: wepp.prep_climates(translator=<wepppy.topo.watershed_abstraction.wepp_top_translator.WeppTopTranslator object at 0x72397030e5a0>)
+2026-03-28 03:54:03 [INFO] wepppy.run.clean-burning-griddle.wepp:  (1/8) topaz_id: 22 | climate/sc381544.cli -> /wc1/runs/cl/clean-burning-griddle/wepp/runs/p1.cli
+2026-03-28 03:54:03 [INFO] wepppy.run.clean-burning-griddle.wepp:  (2/8) topaz_id: 23 | climate/sc381544.cli -> /wc1/runs/cl/clean-burning-griddle/wepp/runs/p2.cli
+2026-03-28 03:54:03 [INFO] wepppy.run.clean-burning-griddle.wepp:  (3/8) topaz_id: 31 | climate/sc381544.cli -> /wc1/runs/cl/clean-burning-griddle/wepp/runs/p3.cli
+2026-03-28 03:54:03 [INFO] wepppy.run.clean-burning-griddle.wepp:  (4/8) topaz_id: 32 | climate/sc381544.cli -> /wc1/runs/cl/clean-burning-griddle/wepp/runs/p4.cli
+2026-03-28 03:54:03 [INFO] wepppy.run.clean-burning-griddle.wepp:  (5/8) topaz_id: 33 | climate/sc381544.cli -> /wc1/runs/cl/clean-burning-griddle/wepp/runs/p5.cli
+2026-03-28 03:54:03 [INFO] wepppy.run.clean-burning-griddle.wepp:  (6/8) topaz_id: 41 | climate/sc381544.cli -> /wc1/runs/cl/clean-burning-griddle/wepp/runs/p6.cli
+2026-03-28 03:54:03 [INFO] wepppy.run.clean-burning-griddle.wepp:  (7/8) topaz_id: 42 | climate/sc381544.cli -> /wc1/runs/cl/clean-burning-griddle/wepp/runs/p7.cli
+2026-03-28 03:54:03 [INFO] wepppy.run.clean-burning-griddle.wepp:  (8/8) topaz_id: 43 | climate/sc381544.cli -> /wc1/runs/cl/clean-burning-griddle/wepp/runs/p8.cli
+2026-03-28 03:54:03 [INFO] wepppy.run.clean-burning-griddle.wepp: _prep_climates... done. (0.08s)
+2026-03-28 03:54:04 [INFO] wepppy.run.clean-burning-griddle.wepp:     _prep_managements:22:131961-sand loam-forest - 43... 
+2026-03-28 03:54:04 [INFO] wepppy.run.clean-burning-griddle.wepp:      meoization_key: ('131961-sand loam-forest', '43', 'forest') -> /wc1/runs/cl/clean-burning-griddle/wepp/runs/p1.man
+2026-03-28 03:54:04 [INFO] wepppy.run.clean-burning-griddle.wepp:     _prep_managements:41:131976-sand loam-forest - 43... 
+2026-03-28 03:54:04 [INFO] wepppy.run.clean-burning-griddle.wepp:      meoization_key: ('131976-sand loam-forest', '43', 'forest') -> /wc1/runs/cl/clean-burning-griddle/wepp/runs/p6.man
+2026-03-28 03:54:04 [INFO] wepppy.run.clean-burning-griddle.wepp:     _prep_managemen2026-03-28 03:54:09 [INFO] wepppy.run.clean-burning-griddle.wepp:   Waiting on soil prep tasks (pending=8, 5.0s since last completion).
+2026-03-28 03:54:14 [INFO] wepppy.run.clean-burning-griddle.wepp:   Waiting on soil prep tasks (pending=8, 10.0s since last completion).
+2026-03-28 03:54:16 [INFO] wepppy.run.clean-burning-griddle.wepp:   (1/8) Completed soil prep for 33 in 0.33222317695617676s
+2026-03-28 03:54:16 [INFO] wepppy.run.clean-burning-griddle.wepp:   (2/8) Completed soil prep for 41 in 0.29624390602111816s
+2026-03-28 03:54:17 [INFO] wepppy.run.clean-burning-griddle.wepp:   (3/8) Completed soil prep for 32 in 0.23133635520935059s
+2026-03-28 03:54:17 [INFO] wepppy.run.clean-burning-griddle.wepp:   (4/8) Completed soil prep for 42 in 0.2325749397277832s
+2026-03-28 03:54:17 [INFO] wepppy.run.clean-burning-griddle.wepp:   (5/8) Completed soil prep for 22 in 0.20430374145507812s
+2026-03-28 03:54:17 [INFO] wepppy.run.clean-burning-griddle.wepp:   (6/8) Completed soil prep for 23 in 0.23484468460083008s
+2026-03-28 03:54:17 [INFO] wepppy.run.clean-burning-griddle.wepp:   (7/8) Completed soil prep for 31 in 0.16262292861938477s
+2026-03-28 03:54:17 [INFO] wepppy.run.clean-burning-griddle.wepp:   (8/8) Completed soil prep for 43 in 0.24882197380065918s
+forest - 43... 
+2026-03-28 03:54:04 [INFO] wepppy.run.clean-burning-griddle.wepp:      copying build_d['('131976-sand loam-forest', '43', 'forest')'] -> /wc1/runs/cl/clean-burning-griddle/wepp/runs/p2.man
+2026-03-28 03:54:04 [INFO] wepppy.run.clean-burning-griddle.wepp:     _prep_managements:32:131976-sand loam-forest - 43... 
+2026-03-28 03:54:04 [INFO] wepppy.run.clean-burning-griddle.wepp:      copying build_d['('131976-sand loam-forest', '43', 'forest')'] -> /wc1/runs/cl/clean-burning-griddle/wepp/runs/p4.man
+2026-03-28 03:54:20 [INFO] wepppy.run.clean-burning-griddle.wepp:     Prepping _make_hillslope_runs... 
+2026-03-28 03:54:20 [INFO] wepppy.run.clean-burning-griddle.wepp: nodb.Wepp._prep_pmet::disturbed routine
+2026-03-28 03:54:22 [INFO] wepppy.run.clean-burning-griddle.wepp: wepp.run_hillslopes()
+2026-03-28 03:54:22 [INFO] wepppy.run.clean-burning-griddle.wepp: Running Hillslopes with max_workers=32
+2026-03-28 03:54:22 [INFO] wepppy.run.clean-burning-griddle.wepp:     wepp_bin:wepp_dcc52a6
+2026-03-28 03:54:22 [INFO] wepppy.run.clean-burning-griddle.wepp:   Submitting 8 hillslope runs to ThreadPoolExecutor - no SS batch
+2026-03-28 03:54:22 [INFO] wepppy.run.clean-burning-griddle.wepp:   submitting 22 to executor
+2026-03-28 03:54:22 [INFO] wepppy.run.clean-burning-griddle.wepp:   using wepp_dcc52a6 for 22 (forest)
+2026-03-28 03:54:22 [INFO] wepppy.run.clean-burning-griddle.wepp:   submitting 23 to executor
+2026-03-28 03:54:22 [INFO] wepppy.run.clean-burning-griddle.wepp:   using wepp_dcc52a6 for 23 (forest)
+2026-03-28 03:54:22 [INFO] wepppy.run.clean-burning-griddle.wepp:   submitting 31 to executor
+2026-03-28 03:54:22 [INFO] wepppy.run.clean-burning-griddle.wepp:   using wepp_dcc52a6 for 31 (forest)
+2026-03-28 03:54:22 [INFO] wepppy.run.clean-burning-griddle.wepp:   submitting 32 to executor
+2026-03-28 03:54:22 [INFO] wepppy.run.clean-burning-griddle.wepp:   using wepp_dcc52a6 for 32 (forest)
+2026-03-28 03:54:22 [INFO] wepppy.run.clean-burning-griddle.wepp:   submitting 33 to executor
+2026-03-28 03:54:22 [INFO] wepppy.run.clean-burning-griddle.wepp:   using wepp_dcc52a6 for 33 (forest)
+2026-03-28 03:54:22 [INFO] wepppy.run.clean-burning-griddle.wepp:   submitting 41 to executor
+2026-03-28 03:54:22 [INFO] wepppy.run.clean-burning-griddle.wepp:   using wepp_dcc52a6 for 41 (forest)
+2026-03-28 03:54:22 [INFO] wepppy.run.clean-burning-griddle.wepp:   submitting 42 to executor
+2026-03-28 03:54:22 [INFO] wepppy.run.clean-burning-griddle.wepp:   using wepp_dcc52a6 for 42 (forest)
+2026-03-28 03:54:22 [INFO] wepppy.run.clean-burning-griddle.wepp:   submitting 43 to executor
+2026-03-28 03:54:22 [INFO] wepppy.run.clean-burning-griddle.wepp:   using wepp_dcc52a6 for 43 (forest)
+2026-03-28 03:54:24 [INFO] wepppy.run.clean-burning-griddle.wepp:   (1/8)  wepp hillslope 3 completed in 2.031586170196533s with status=True
+2026-03-28 03:54:24 [INFO] wepppy.run.clean-burning-griddle.wepp:   (2/8)  wepp hillslope 2 completed in 2.1717803478240967s with status=True
+2026-03-28 03:54:25 [INFO] wepppy.run.clean-burning-griddle.wepp:   (3/8)  wepp hillslope 7 completed in 2.305065631866455s with status=True
+2026-03-28 03:54:25 [INFO] wepppy.run.clean-burning-griddle.wepp:   (4/8)  wepp hillslope 1 completed in 2.310999631881714s with status=True
+2026-03-28 03:54:25 [INFO] wepppy.run.clean-burning-griddle.wepp:   (5/8)  wepp hillslope 4 completed in 2.309161424636841s with status=True
+2026-03-28 03:54:25 [INFO] wepppy.run.clean-burning-griddle.wepp:   (6/8)  wepp hillslope 8 completed in 2.3526179790496826s with status=True
+2026-03-28 03:54:25 [INFO] wepppy.run.clean-burning-griddle.wepp:   (7/8)  wepp hillslope 6 completed in 2.355739116668701s with status=True
+2026-03-28 03:54:25 [INFO] wepppy.run.clean-burning-griddle.wepp:   (8/8)  wepp hillslope 5 completed in 2.3966052532196045s with status=True
+2026-03-28 03:54:27 [INFO] wepppy.run.clean-burning-griddle.wepp: Prepping Watershed... 
+2026-03-28 03:54:27 [INFO] wepppy.run.clean-burning-griddle.wepp:     Prepping _prep_structure... 
+2026-03-28 03:54:27 [INFO] wepppy.run.clean-burning-griddle.wepp: nodb.Wepp._prep_channel_chn::erodibility = None, critical_shear = 19.0 
+2026-03-28 03:54:27 [INFO] wepppy.run.clean-burning-griddle.wepp: nodb.Wepp._prep_channel_soils::erodibility = None, critical_shear = 19.0 
+2026-03-28 03:54:38 [INFO] wepppy.run.clean-burning-griddle.wepp: _build_totalwatsed3...
+2026-03-28 03:54:39 [INFO] wepppy.run.clean-burning-griddle.wepp: _build_totalwatsed3... done. (1.27s)
+2026-03-28 03:54:49 [INFO] wepppy.run.clean-burning-griddle.wepp: _run_hillslope_watbal...
+2026-03-28 03:54:50 [INFO] wepppy.run.clean-burning-griddle.wepp: _run_hillslope_watbal... done. (0.32s)

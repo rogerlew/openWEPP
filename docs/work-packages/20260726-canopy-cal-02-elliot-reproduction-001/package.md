@@ -2,7 +2,7 @@
 
 Package ID: `20260726-canopy-cal-02-elliot-reproduction-001`
 
-Status: `SCAFFOLDED / BLOCKED ON CANOPY-CAL-01 ADMISSION`
+Status: `SCAFFOLDED / SOURCE BUNDLE RECOVERED`
 
 Date opened: `2026-07-26`
 
@@ -36,7 +36,11 @@ fit native parameters.
 ## Progress
 
 - [x] (2026-07-26) Scaffolded the package and dependency boundary.
-- [ ] Consume a complete CANOPY-CAL-01 admission record.
+- [x] (2026-07-26) Located Bill's two report-linked WEPPcloud runs, preserved
+  the selected 100-year source inputs/outputs, and identified the exact
+  BLARHG Windows executable.
+- [x] (2026-07-26) Consumed the superseding CANOPY-CAL-01 `READY_BOUNDED`
+  admission record.
 - [ ] Admit exact run inventory, executable lineage, result schema, tolerances,
   and gate plan.
 - [ ] Build deterministic fixtures and a reproduction harness.
@@ -93,9 +97,18 @@ aboveground live biomass plus current, previous, and old residue pools over
 sediment delivery, daily-runoff return periods, and peak-flow return periods
 against constant-cover WEPP Windows and WEPPcloud results.
 
-The commissioned report is not a complete executable bundle. CAL-01 determines
-whether missing climate, soil, slope, constant-cover management, run-control,
-version, and output artifacts permit exact or only bounded reproduction.
+The report-linked WEPPcloud runs are `unassailable-sensuousness/disturbed9002`
+for Hubbard Brook and `clean-burning-griddle/disturbed9002` for Santee. The
+selected report surfaces are Hubbard `p1`/`H1` and Santee `p2`/`H2`. Their
+exact 100-year source inputs, selected outputs, metadata, and WEPPcloud
+return-period JSON are preserved under this package's fixture subtree.
+
+BLARHG exposes `C:\WEPP\wepp\wepp_2012.exe`, the report-era Windows executable,
+with SHA-256
+`6104a3440624ad54aa6c3660794280adfd600d4a11b98559c6205a73cd47fc3f`.
+Bill's manually transcribed Windows soil/slope projects, Windows run controls,
+constant-cover management files, and Windows text outputs are still absent, so
+the package remains bounded rather than exact.
 
 The openWEPP production native canopy has one aggregate residue pool. This
 package reproduces Bill in the admitted legacy/perennial representation; native
@@ -110,11 +123,14 @@ aggregate and shadow-cohort analysis belongs to later roadmap packages.
 - Record exact executable identity, build/provenance, run commands, environment,
   and output paths.
 - Run these minimum management arms:
-  - Hubbard constant cover;
+  - Hubbard source-native WEPPcloud baseline;
   - Hubbard delivered hardwood (`dropfc=0.95`);
   - Hubbard report-described hardwood (`dropfc=0.92`);
-  - Santee constant cover; and
+  - Santee source-native WEPPcloud baseline; and
   - Santee delivered mixed forest.
+- Treat Bill's Windows constant-cover rows as report-only targets until an
+  actual hash-bound comparator is delivered. Never relabel either source-native
+  seasonal forest management as constant cover.
 - Keep 7777 and 2006.5 soil representations separate. Run paired soil-format
   arms only when CAL-01 authorizes a like-for-like conversion or exact source.
 - Parse daily live biomass, LAI, canopy, current/previous/old/total residue,
@@ -159,6 +175,8 @@ aggregate and shadow-cohort analysis belongs to later roadmap packages.
 - `docs/work-packages/20260726-canopy-cal-02-elliot-reproduction-001/**`
 - `tools/canopy_phenology/**`
 - `tests/fixtures/canopy_phenology/elliot_reproduction/**`
+- `.gitattributes` for path-confined Git LFS routing of large source-native
+  climate and selected output files.
 
 CAL-01 artifacts and references, existing canopy-gradient fixtures, production
 code, contracts, schemas, other tests, and the sibling WEPPcloud repository are
@@ -383,10 +401,19 @@ affecting another arm.
 
 ## Surprises & Discoveries
 
-- Observation: exact reproduction readiness is unknown until CAL-01 executes.
-  Evidence: the report and management files are present, but the source-native
-  WEPP Windows climate, 2006.5 soil, slope, constant-cover management, run file,
-  executable identity, and machine outputs have not yet been admitted.
+- Observation: Bill's report-linked WEPPcloud runs remain intact and expose the
+  exact selected source inputs and outputs.
+  Evidence: source recovery resolved Hubbard `p1`/`H1` to Topaz ID `22` and
+  Santee `p2`/`H2` to Topaz ID `23`, with 100-year controls and hash-bound
+  climate, slope, soil, management, output, and controller metadata.
+- Observation: the WEPP 2012 Windows executable is still present on BLARHG.
+  Evidence: live read-only inspection identifies
+  `C:\WEPP\wepp\wepp_2012.exe` by SHA-256
+  `6104a3440624ad54aa6c3660794280adfd600d4a11b98559c6205a73cd47fc3f`.
+- Observation: this recovery does not recreate Bill's manually transcribed
+  Windows project.
+  Evidence: his Windows 2006.5 soil/slope/run files, constant-cover comparator,
+  machine outputs, and original runtime-library state remain absent.
 
 ## Decision Log
 

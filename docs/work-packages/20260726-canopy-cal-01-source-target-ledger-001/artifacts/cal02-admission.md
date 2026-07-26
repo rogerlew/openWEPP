@@ -2,37 +2,34 @@
 
 Verdict: `READY_BOUNDED`
 
-CANOPY-CAL-02 may execute a bounded, deterministic common-forcing analytical
-reconstruction. It must copy and hash-bind the complete existing fixture
-`tests/fixtures/cancov_forest/hubbardbrook_deciduous_nh/`, whose `p10.run`
-encodes the 1980–2024 period. The fixture's physical inputs are the only
-admitted forcing surface.
+CANOPY-CAL-02 may execute a bounded, deterministic site-specific analytical
+reconstruction using the exact report-linked WEPPcloud source fixtures under
+`tests/fixtures/canopy_phenology/elliot_reproduction/source/weppcloud/`.
+Hubbard Brook is bound to `unassailable-sensuousness` `p1`/`H1`; Santee is
+bound to `clean-burning-griddle` `p2`/`H2`. Both run files encode 100 years,
+and both exact climate headers identify CLIGEN `5.32300` with seed `12345`.
 
 The admitted arms are:
 
-- the fixture unchanged, including its exact seasonal-deciduous `p10.man`, as
-  the fixture-baseline control;
-- the same physical forcing with Bill's delivered hardwood management
+- Hubbard source forcing with its exact `p1.man` baseline;
+- Hubbard source forcing with Bill's delivered hardwood management
   (`dropfc=0.95`);
-- the same physical forcing with a branch derived from that delivered file by
+- Hubbard source forcing with a branch derived from that delivered file by
   changing only `dropfc` to `0.92`; and
-- the same physical forcing with Bill's delivered Santee mixed-forest
-  management.
+- Santee source forcing with its exact `p2.man` baseline; and
+- Santee source forcing with Bill's delivered mixed-forest management.
 
 Only management replacement, the single `dropfc` branch edit, and run-file
 relative-path rewrites required by an isolated CAL-02 fixture are authorized.
-CAL-02 must record source and destination SHA-256 identities before running.
-No calibration or other operand edit is admitted.
+CAL-02 must verify both site `SHA256SUMS` manifests and record every derived
+identity before running. No calibration or other operand edit is admitted.
 
-It may not claim an exact rerun. Bill’s exact climates, converted soils/slopes,
-constant-cover files, run controls, executable identity, machine outputs, and
-return-period inputs were not delivered. The Santee arm is not a site-specific
-Santee reconstruction: using the Hubbard physical fixture isolates management
-process behavior under common forcing. The fixture `p10.man` describes a
-seasonal deciduous canopy with winter retention and is not constant cover or a
-substitute for Bill's missing WEPP Windows comparator. The 45-year fixture is
-not a substitute for Bill's 100-year stochastic realization or reported
-equilibrium horizon.
+The exact report-era executable is accessible on BLARHG at
+`C:\WEPP\wepp\wepp_2012.exe`, SHA-256
+`6104a3440624ad54aa6c3660794280adfd600d4a11b98559c6205a73cd47fc3f`.
+This does not make the Windows rerun exact: Bill's manually transcribed
+2006.5-format soils/slopes, Windows run files, constant-cover files, runtime
+libraries, and Windows text outputs remain absent.
 
 The reconstruction must:
 
@@ -46,15 +43,13 @@ The reconstruction must:
 - exclude the two AI-attributed field values; and
 - make no parameter-selection or production-default change.
 
-Bill's chart and table values may be used to expose direction and discrepancy,
-but not as pass/fail equivalence targets under substituted forcing. A
-site-specific Santee experiment or a 100-year/result-table reproduction
-requires a new superseding admission record.
+The retained selected WEPPcloud outputs and return-period JSON may be checked
+byte-for-byte and analytically. Bill's Windows chart/table values may expose
+direction and discrepancy, but are not exact equivalence targets until his
+converted Windows project and output bundle is recovered.
 
-CAL-02's scaffolded five-arm language currently requires Hubbard and Santee
-constant-cover arms. Before execution CAL-02 must consume this admission and
-amend those requirements to `BLOCKED_SOURCE_BUNDLE`, unless a superseding
-CAL-01 record admits a real hash-bound constant-cover management. The
-deciduous fixture baseline must never be relabeled constant cover.
+Neither source-native management is constant cover. Bill's Windows
+constant-cover comparison remains `BLOCKED_SOURCE_BUNDLE` unless a superseding
+record admits a real hash-bound comparator.
 
 The machine-readable authority is `cal02-admission.json`.
