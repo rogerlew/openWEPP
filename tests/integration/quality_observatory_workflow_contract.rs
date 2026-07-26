@@ -542,7 +542,13 @@ fn workflow_contract_keeps_exact_publication_and_bounded_priority_intervals() {
     assert!(controller.contains("default=30.0"));
     assert!(controller.contains("default=30.0"));
     assert!(controller.contains("FINALIZATION_SECONDS = 54.0"));
-    assert!(controller.contains("OCCUPANCY_SNAPSHOT_SECONDS = 5.0"));
+    assert!(controller.contains("OCCUPANCY_SNAPSHOT_SECONDS = 20.0"));
+    assert!(controller.contains(
+        "for status in (\"requested\", \"waiting\", \"pending\", \"queued\", \"in_progress\")"
+    ));
+    assert!(
+        controller.contains("raise WorkflowError(\"GitHub occupancy snapshot deadline expired\")")
+    );
     let deadline = controller
         .find("deadline_state[\"deadline\"] = deadline")
         .expect("priority deadline assignment");

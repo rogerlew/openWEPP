@@ -46,7 +46,11 @@ MAX_PUBLISHED_BYTES = 100 * 1024 * 1024
 MAX_CONTROL_BYTES = 1024 * 1024
 PARTIAL_TAIL_BYTES = 32 * 1024
 FINALIZATION_SECONDS = 54.0
-OCCUPANCY_SNAPSHOT_SECONDS = 5.0
+# One snapshot makes five bounded workflow-status API calls and may additionally
+# inspect jobs for a live run. Five seconds proved too short for ordinary
+# provider latency on forest1. Keep the aggregate deadline bounded and
+# fail-closed without manufacturing occupancy-unknown stops.
+OCCUPANCY_SNAPSHOT_SECONDS = 20.0
 SHA40 = re.compile(r"^[0-9a-f]{40}$")
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
 

@@ -28,5 +28,24 @@ Attempt 2 will use a changed head that retains full diagnostic digests and
 bounded tails. It requires a new exact successful TESTGATE qualification
 before QA dispatch.
 
+QA attempt 2 bound corrected head
+`c17f49d9bda46f2f6ea4d64fc9db5e41dbd4093b` and TESTGATE run `30177394609`
+to provider run
+[`30179148269`](https://github.com/rogerlew/openWEPP/actions/runs/30179148269).
+It failed in `full` when the linker terminated with signal 7 while nested
+fixtures built `openwepp-runner`. Corrected diagnostics retained the exact
+full-log digest and bounded failure tail.
+
+One unchanged infrastructure-only retry is authorized by canonical policy. No
+second unchanged retry is allowed.
+
+QA attempt 3 was that sole unchanged retry. Provider run
+[`30180877189`](https://github.com/rogerlew/openWEPP/actions/runs/30180877189)
+ended in typed `DEFERRED_OCCUPANCY_UNKNOWN` after the five-second aggregate
+GitHub occupancy snapshot deadline expired. The supervisor terminated
+collection fail-closed and published no evidence. No further unchanged retry
+is authorized. The in-scope deadline defect requires a changed head, a fresh
+exact-head TESTGATE qualification, and one new QA attempt.
+
 No CQR collection or module implementation is authorized. CQR work in this
 package is selection-only intake of the exact successful QA publication.
