@@ -100,7 +100,7 @@ has published global and Harvard Forest evaluation. This increment owns the
 equations, typed domains, state/history semantics, hemisphere invariants, and
 process-level tests. It does not claim a canopy-cover or biomass realization.
 
-### Increment 3 (active) — native canopy, biomass, litter, and consumer integration
+### Increment 3 (complete) — native canopy, biomass, litter, and consumer integration
 
 Map the verified signal into native deciduous and mixed-forest seasonal canopy
 state. Ratify the winter/summer canopy envelope, foliar versus persistent
@@ -109,6 +109,12 @@ annual no-drift law before changing production. Re-anchor the existing litter
 window and prove real snow, evapotranspiration, and erosion consumers read the
 dynamic canopy. Legacy compatibility inputs remain unchanged unless explicitly
 migrated to the native authority.
+
+Completed by `20260719-canopy-phenology-native-integration-001`. Empirical
+calibration, canopy-gradient congruence, litter-source adjudication, independent
+Southern Hemisphere observations, and the final assurance product are sequenced
+by the
+[canopy phenology assurance roadmap](../planning/canopy-phenology-assurance-roadmap.md).
 
 ### Already delivered — ground-side litter / residue
 

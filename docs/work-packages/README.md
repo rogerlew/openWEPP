@@ -298,7 +298,19 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-07-24 UTC`:
+State as of `2026-07-26 UTC`:
+
+- `20260726-canopy-cal-01-source-target-ledger-001/` -
+  COMPLETE / PASS: canopy assurance roadmap Order 1
+  preserves 19 hash-bound sources and a 140-row typed ledger, preserves the
+  Hubbard 92/95 discrepancy, and admits only a deterministic common-forcing
+  CAL-02 experiment. The operator confirmed redistribution permission for
+  Bill's commissioned files and the retained third-party reference set.
+- `20260726-canopy-cal-02-elliot-reproduction-001/` -
+  SCAFFOLDED / BLOCKED ON CAL-01 ADMISSION: canopy assurance roadmap Order 2.
+  It will turn Bill's manual 40/100-year biomass, residue, hydrology, sediment,
+  and return-period analysis into deterministic machine-readable evidence
+  without changing native canopy physics or fitting parameters.
 
 - `20260724-cqr-testgate-coverage-reconstruction-001/` -
   EXECUTED-HOLD / QUALIFICATION-HANDOFF-ORDER-6: retains its completed

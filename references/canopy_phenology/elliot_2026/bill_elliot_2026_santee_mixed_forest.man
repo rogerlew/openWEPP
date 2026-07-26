@@ -1,0 +1,819 @@
+98.4
+#
+#
+#
+#
+
+1 # number of OFE's
+100 # (total) years in simulation
+
+#######################
+# Plant Section       #
+#######################
+
+1  # Number of plant scenarios
+
+
+Har_7310
+Mixed Forest perennial file
+W. Elliot
+March, 2026
+1  #landuse
+WeppWillSet
+5.00000 23.00000 17.00000 10.00000 5.00000 30.00000 0.10000 0.15200 0.50000 0.50000
+0.85000 0.93000 0.65000 0.99000 12.00000 0.00000 0.90000 51.00000
+2  # mfo - <non fragile>
+0.00210 0.00210 25.00000 0.00000 6.00000 3.00000 0.33000 3.40000 60 32.00000
+-40.00000 10.00000 0.00000
+
+#######################
+# Operation Section   #
+#######################
+
+0  # Number of operation scenarios
+
+
+
+
+###############################
+# Initial Conditions Section  #
+###############################
+
+1  # Number of initial scenarios
+
+
+Har_7425
+To support Perennial Mixed Forest File
+W. Elliot
+March, 2026
+1  #landuse
+1.10000 1.00000 200 92 0.00000 1.00000
+1 # iresd  <Har_7310>
+2 # mang perennial
+500.00000 0.02000 1.00000 0.02000 0.00000
+1  # rtyp - temporary
+0.00000 0.00000 0.10000 0.20000 0.00000
+0.20000 0.00000
+
+
+
+
+############################
+# Surface Effects Section  #
+############################
+
+0  # Number of Surface Effects Scenarios
+
+
+
+#######################
+# Contouring Section  #
+#######################
+
+0  # Number of contour scenarios
+
+
+#######################
+# Drainage Section    #
+#######################
+
+0  # Number of drainage scenarios
+
+
+#######################
+# Yearly Section      #
+#######################
+
+1  # looper; number of Yearly Scenarios
+#
+# Yearly scenario 1 of 1
+#
+Year 1 
+
+
+
+1  # landuse <cropland>
+1  # plant growth scenario
+0  # surface effect scenario
+0  # contour scenario
+0  # drainage scenario
+2 # management <perennial>
+   270 # senescence date 
+   0 # perennial plant date --- 0 /0
+   0 # perennial stop growth date --- 0/0
+   0.0000  # row width
+   3  # neither cut or grazed
+
+
+#######################
+# Management Section  #
+#######################
+
+Manage
+description 1
+description 2
+description 3
+1   # number of OFE's
+    1   # initial condition index
+100  # rotation repeats
+1  # years in rotation
+
+#
+# Rotation 1: year 1 to 1
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 2: year 2 to 2
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 3: year 3 to 3
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 4: year 4 to 4
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 5: year 5 to 5
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 6: year 6 to 6
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 7: year 7 to 7
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 8: year 8 to 8
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 9: year 9 to 9
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 10: year 10 to 10
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 11: year 11 to 11
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 12: year 12 to 12
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 13: year 13 to 13
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 14: year 14 to 14
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 15: year 15 to 15
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 16: year 16 to 16
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 17: year 17 to 17
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 18: year 18 to 18
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 19: year 19 to 19
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 20: year 20 to 20
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 21: year 21 to 21
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 22: year 22 to 22
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 23: year 23 to 23
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 24: year 24 to 24
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 25: year 25 to 25
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 26: year 26 to 26
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 27: year 27 to 27
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 28: year 28 to 28
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 29: year 29 to 29
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 30: year 30 to 30
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 31: year 31 to 31
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 32: year 32 to 32
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 33: year 33 to 33
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 34: year 34 to 34
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 35: year 35 to 35
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 36: year 36 to 36
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 37: year 37 to 37
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 38: year 38 to 38
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 39: year 39 to 39
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 40: year 40 to 40
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 41: year 41 to 41
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 42: year 42 to 42
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 43: year 43 to 43
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 44: year 44 to 44
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 45: year 45 to 45
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 46: year 46 to 46
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 47: year 47 to 47
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 48: year 48 to 48
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 49: year 49 to 49
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 50: year 50 to 50
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 51: year 51 to 51
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 52: year 52 to 52
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 53: year 53 to 53
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 54: year 54 to 54
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 55: year 55 to 55
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 56: year 56 to 56
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 57: year 57 to 57
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 58: year 58 to 58
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 59: year 59 to 59
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 60: year 60 to 60
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 61: year 61 to 61
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 62: year 62 to 62
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 63: year 63 to 63
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 64: year 64 to 64
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 65: year 65 to 65
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 66: year 66 to 66
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 67: year 67 to 67
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 68: year 68 to 68
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 69: year 69 to 69
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 70: year 70 to 70
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 71: year 71 to 71
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 72: year 72 to 72
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 73: year 73 to 73
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 74: year 74 to 74
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 75: year 75 to 75
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 76: year 76 to 76
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 77: year 77 to 77
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 78: year 78 to 78
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 79: year 79 to 79
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 80: year 80 to 80
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 81: year 81 to 81
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 82: year 82 to 82
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 83: year 83 to 83
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 84: year 84 to 84
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 85: year 85 to 85
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 86: year 86 to 86
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 87: year 87 to 87
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 88: year 88 to 88
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 89: year 89 to 89
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 90: year 90 to 90
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 91: year 91 to 91
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 92: year 92 to 92
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 93: year 93 to 93
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 94: year 94 to 94
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 95: year 95 to 95
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 96: year 96 to 96
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 97: year 97 to 97
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 98: year 98 to 98
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 99: year 99 to 99
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index
+
+#
+# Rotation 100: year 100 to 100
+#
+
+   1	#  <plants/yr 1> - OFE: 1>
+      1	# year index

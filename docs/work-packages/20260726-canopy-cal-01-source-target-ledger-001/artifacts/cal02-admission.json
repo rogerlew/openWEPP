@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "package_id": "20260726-canopy-cal-01-source-target-ledger-001",
+  "downstream_package": "20260726-canopy-cal-02-elliot-reproduction-001",
+  "verdict": "READY_BOUNDED",
+  "issued_on": "2026-07-26",
+  "exact_reproduction_authorized": false,
+  "bounded_reconstruction_authorized": true,
+  "substitution_plan": {
+    "physical_forcing_fixture": "tests/fixtures/cancov_forest/hubbardbrook_deciduous_nh",
+    "required_fixture_files": [
+      "p10.run",
+      "p10.cli",
+      "p10.sol",
+      "p10.slp",
+      "p10.man",
+      "gwcoeff.txt",
+      "pmetpara.txt",
+      "snow.txt"
+    ],
+    "fixture_period": "1980-2024 inclusive as encoded by p10.run",
+    "fixture_identity_rule": "CAL-02 must copy the files into its declared fixture subtree and record source and destination SHA-256 identities before any transformation",
+    "management_sources": {
+      "hubbard_delivered": "references/canopy_phenology/elliot_2026/bill_elliot_2026_hardwood_forest.man",
+      "santee_delivered": "references/canopy_phenology/elliot_2026/bill_elliot_2026_santee_mixed_forest.man",
+      "fixture_baseline_control": "tests/fixtures/cancov_forest/hubbardbrook_deciduous_nh/p10.man"
+    },
+    "allowed_transformations": [
+      "replace only the fixture management input with an exact commissioned management file",
+      "derive the Hubbard report branch from the copied delivered hardwood management by changing only dropfc from 0.95 to 0.92",
+      "retain the original fixture p10.man byte-for-byte as the seasonal-deciduous fixture-baseline control",
+      "rewrite only run-file-relative paths required by the isolated CAL-02 fixture layout"
+    ],
+    "experiment_arms": [
+      "Hubbard common forcing plus original seasonal-deciduous p10.man baseline",
+      "Hubbard common forcing plus delivered hardwood dropfc=0.95",
+      "Hubbard common forcing plus derived hardwood dropfc=0.92",
+      "Hubbard common forcing plus delivered Santee mixed-forest management"
+    ],
+    "comparison_purpose": "common-forcing management-process and stock-flow sensitivity only"
+  },
+  "required_branches": [
+    {
+      "site": "HUBBARD_BROOK",
+      "parameter": "dropfc",
+      "values": [0.92, 0.95],
+      "reason": "report/delivered-management discrepancy"
+    }
+  ],
+  "excluded_validation_targets": [
+    "HB-FIELD-006 as annual leaf fall",
+    "SEF-UNSRC-001",
+    "HB-UNSRC-001"
+  ],
+  "claim_limits": [
+    "No exact reproduction claim",
+    "No constant-cover reproduction or comparator claim",
+    "No site-specific Santee reconstruction claim",
+    "No reproduction claim for Bill's 100-year climate or reported equilibrium horizon",
+    "The p10.man control is a seasonal deciduous fixture baseline and not constant cover",
+    "The Santee arm uses Hubbard physical forcing only to isolate management-process behavior",
+    "No machine-output byte identity claim",
+    "No hillslope-to-watershed goodness-of-fit claim",
+    "No annual leaf-fall validation using Yang 7.6 Mg/ha",
+    "No calibration adjustment in CANOPY-CAL-02"
+  ],
+  "report_targets_use": "Bill's chart and table values are directional or discrepancy targets under this bounded design; they are not pass/fail equivalence targets for substituted physical forcing",
+  "missing_bundle_record": "artifacts/missing-source-bundle.md",
+  "target_ledger": "artifacts/target-ledger.csv",
+  "comparison_scale_ledger": "artifacts/comparison-scale-ledger.md"
+}
