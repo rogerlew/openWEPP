@@ -107,8 +107,10 @@ BLARHG exposes `C:\WEPP\wepp\wepp_2012.exe`, the report-era Windows executable,
 with SHA-256
 `6104a3440624ad54aa6c3660794280adfd600d4a11b98559c6205a73cd47fc3f`.
 Bill's manually transcribed Windows soil/slope projects, Windows run controls,
-constant-cover management files, and Windows text outputs are still absent, so
-the package remains bounded rather than exact.
+and Windows text outputs are still absent, so historical Windows byte/output
+equivalence remains bounded. They do not block the analytical comparison:
+source-native `p1.man` and `p2.man` are the hash-bound site-specific
+constant-cover comparators described by Bill's method.
 
 The openWEPP production native canopy has one aggregate residue pool. This
 package reproduces Bill in the admitted legacy/perennial representation; native
@@ -123,14 +125,15 @@ aggregate and shadow-cohort analysis belongs to later roadmap packages.
 - Record exact executable identity, build/provenance, run commands, environment,
   and output paths.
 - Run these minimum management arms:
-  - Hubbard source-native WEPPcloud baseline;
+  - Hubbard source-native `p1.man` constant cover;
   - Hubbard delivered hardwood (`dropfc=0.95`);
   - Hubbard report-described hardwood (`dropfc=0.92`);
-  - Santee source-native WEPPcloud baseline; and
+  - Santee source-native `p2.man` constant cover; and
   - Santee delivered mixed forest.
-- Treat Bill's Windows constant-cover rows as report-only targets until an
-  actual hash-bound comparator is delivered. Never relabel either source-native
-  seasonal forest management as constant cover.
+- Use exact source-native `p1.man` and `p2.man` as the hash-bound,
+  site-specific constant-cover comparators. Compare their analytical results
+  with Bill's Windows rows while labeling historical Windows byte/output
+  equivalence as unavailable.
 - Keep 7777 and 2006.5 soil representations separate. Run paired soil-format
   arms only when CAL-01 authorizes a like-for-like conversion or exact source.
 - Parse daily live biomass, LAI, canopy, current/previous/old/total residue,
@@ -412,8 +415,14 @@ affecting another arm.
   `6104a3440624ad54aa6c3660794280adfd600d4a11b98559c6205a73cd47fc3f`.
 - Observation: this recovery does not recreate Bill's manually transcribed
   Windows project.
-  Evidence: his Windows 2006.5 soil/slope/run files, constant-cover comparator,
-  machine outputs, and original runtime-library state remain absent.
+  Evidence: his Windows 2006.5 soil/slope/run files, machine outputs, and
+  original runtime-library state remain absent.
+- Observation: the recovered source managements are sufficient to build the
+  constant-cover arms.
+  Evidence: both files say `With no Senescence or decomposition` and
+  `For no growth, no decomp, no senescence`; Bill states that his Windows
+  constant-cover comparison transcribed the WEPPcloud mature-forest
+  management. Hubbard and Santee differ only in initial residue mass.
 
 ## Decision Log
 
@@ -425,6 +434,12 @@ affecting another arm.
   Rationale: the report and delivered management conflict; the experiment, not
   an editorial choice, should determine which reproduces the reported plots.
   Date/Author: 2026-07-26 / Codex.
+- Decision: admit source-native `p1.man` and `p2.man` as constant-cover
+  comparators.
+  Rationale: they are exact site inputs, encode the constant-cover mechanism,
+  and implement the source that Bill says he transcribed. A Windows-builder
+  serialization is unnecessary for reproducing the analytical approach.
+  Date/Author: 2026-07-26 / Codex from operator direction.
 - Decision: allow a complete `BOUNDED_NOT_EXACT` characterization verdict.
   Rationale: missing source-native inputs can be a valid scientific finding, but
   must narrow downstream claims and cannot be called exact reproduction.

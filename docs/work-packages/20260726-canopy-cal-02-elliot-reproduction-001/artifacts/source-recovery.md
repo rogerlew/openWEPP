@@ -53,7 +53,9 @@ The selected source soils are SSURGO-derived sand loams:
 
 This bundle recreates the exact report-linked WEPPcloud source surfaces. It
 does not recreate Bill's manually transcribed Windows WEPP project. Those
-converted slope, soil, management/run, and output files were not stored in the
-WEPPcloud projects. The BLARHG executable is documented separately so CAL-02
-can run controlled Windows comparisons without conflating those comparisons
-with Bill's missing original project.
+converted slope, soil, run, and output files were not stored in the WEPPcloud
+projects. The recovered `p1.man` and `p2.man` files are sufficient, exact
+constant-cover comparators for the analytical experiment. The BLARHG
+executable is documented separately so CAL-02 can run controlled Windows
+comparisons without conflating those comparisons with Bill's missing original
+project.

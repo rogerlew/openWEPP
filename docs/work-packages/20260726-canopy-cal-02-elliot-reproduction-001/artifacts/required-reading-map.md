@@ -14,7 +14,9 @@ Evidence class: `Static scaffold`
 | Core | `docs/work-packages/20260726-canopy-cal-01-source-target-ledger-001/artifacts/cal02-admission.json` | Current bounded execution admission. |
 | Core | `docs/work-packages/20260726-canopy-cal-01-source-target-ledger-001/artifacts/target-ledger.csv` | Accepted targets and evidence roles. |
 | Core | `docs/work-packages/20260726-canopy-cal-02-elliot-reproduction-001/artifacts/source-recovery.md` | Production recovery path, selected Topaz mapping, and retained-byte boundary. |
+| Core | `docs/work-packages/20260726-canopy-cal-02-elliot-reproduction-001/artifacts/constant-cover-comparators.md` | Admits exact source-native constant-cover operands and their claim boundary. |
 | Core | `tests/fixtures/canopy_phenology/elliot_reproduction/README.md` | Recovered source-fixture identity and scope. |
+| Core | `tests/fixtures/canopy_phenology/elliot_reproduction/constant-cover-comparators.json` | Machine-readable constant-cover paths, hashes, operands, and invariants. |
 | Core | `tests/fixtures/canopy_phenology/elliot_reproduction/source/weppcloud/hubbard_brook_unassailable_sensuousness/SHA256SUMS` | Hubbard source identities. |
 | Core | `tests/fixtures/canopy_phenology/elliot_reproduction/source/weppcloud/santee_clean_burning_griddle/SHA256SUMS` | Santee source identities. |
 | Core | `references/canopy_phenology/elliot_2026/README.md` | Installed commissioned-source provenance. |

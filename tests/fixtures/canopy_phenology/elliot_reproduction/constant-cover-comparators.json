@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "purpose": "Site-specific constant-cover comparator inputs for CANOPY-CAL-02",
+  "method_authority": "Bill Elliot's April 2026 report, pp. 1, 12-13, 17-18, and 23",
+  "comparators": [
+    {
+      "site": "HUBBARD_BROOK",
+      "run_id": "unassailable-sensuousness",
+      "surface": "p1",
+      "management": "source/weppcloud/hubbard_brook_unassailable_sensuousness/inputs/p1.man",
+      "sha256": "839407d2cc294722a1053e7a6e172d93d12b508355d5378d88c41a4118c8595e",
+      "initial_residue_kg_m2": 1.0,
+      "canopy_cover_fraction": 0.9,
+      "interrill_cover_fraction": 1.0,
+      "rill_cover_fraction": 1.0
+    },
+    {
+      "site": "SANTEE",
+      "run_id": "clean-burning-griddle",
+      "surface": "p2",
+      "management": "source/weppcloud/santee_clean_burning_griddle/inputs/p2.man",
+      "sha256": "e71e883556f60785da429cfb77324db22cc00be09a3e5a5f3035176070335a6d",
+      "initial_residue_kg_m2": 1.45,
+      "canopy_cover_fraction": 0.9,
+      "interrill_cover_fraction": 1.0,
+      "rill_cover_fraction": 1.0
+    }
+  ],
+  "invariants": [
+    "no plant growth",
+    "no senescence",
+    "no decomposition",
+    "no management operations",
+    "fixed canopy cover",
+    "fixed interrill cover",
+    "fixed rill cover"
+  ],
+  "claim_boundary": "Analytical comparator identity, not WEPP Windows-builder byte identity"
+}

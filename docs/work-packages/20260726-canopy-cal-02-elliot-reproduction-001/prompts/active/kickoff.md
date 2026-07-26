@@ -33,9 +33,11 @@ commissioned references, existing fixtures, contracts, production crates, and
 the sibling WEPPcloud repository as read-only.
 
 Task: verify the recovered source manifests and execute the five-arm Elliot
-reproduction matrix, build deterministic analysis tooling, reconstruct process
-and downstream results, issue the structured reproduction verdict, and
-complete the CAL-03 handoff, review, verification, and disposition.
+reproduction matrix, using exact source-native `p1.man` and `p2.man` as the
+site-specific constant-cover arms; build deterministic analysis tooling,
+reconstruct process and downstream results, issue the structured reproduction
+verdict, and complete the CAL-03 handoff, review, verification, and
+disposition.
 
 Constraints: no model or physics changes; exact executable/input provenance;
 separate 7777 from 2006.5 soils; separate hillslope, watershed, and channel

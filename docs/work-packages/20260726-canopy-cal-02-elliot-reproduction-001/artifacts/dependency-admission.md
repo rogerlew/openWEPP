@@ -12,8 +12,10 @@ site-specific 100-year reproduction work from:
 - the exact hash-identified WEPP 2012 executable on BLARHG.
 
 Both source fixtures must pass their `SHA256SUMS` manifests before execution.
-Neither source-native baseline management is constant cover.
+Their source-native `p1.man` and `p2.man` files are the admitted site-specific
+constant-cover comparators.
 
-The dependency remains bounded because Bill's manually transcribed Windows
-soil/slope projects, Windows run files, constant-cover comparators, runtime
-library identity, and Windows output files are absent.
+The dependency remains bounded only for historical Windows byte/output
+equivalence because Bill's manually transcribed Windows soil/slope projects,
+Windows run files, runtime-library identity, and Windows output files are
+absent. Those artifacts do not block the analytical constant-cover experiment.

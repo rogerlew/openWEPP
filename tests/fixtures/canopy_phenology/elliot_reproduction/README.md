@@ -28,6 +28,14 @@ Each site directory contains:
   centroids, and elevations; and
 - a `SHA256SUMS` manifest over every retained source-native file.
 
+The exact `p1.man` and `p2.man` inputs are the site-specific constant-cover
+comparators. Both disable plant growth, senescence, and decomposition while
+holding canopy, rill cover, and interrill cover fixed. Their only byte-level
+parameter difference is initial residue mass: `1.00 kg/m2` at Hubbard Brook
+and `1.45 kg/m2` at Santee. `constant-cover-comparators.json` provides the
+machine-readable path, identity, operands, and invariants for the CAL-02
+harness.
+
 The fixture does not claim to be Bill's WEPP Windows project. Bill manually
 transcribed WEPPcloud slope and soil information through the Windows file
 builder; those converted files and his Windows output files were not present in

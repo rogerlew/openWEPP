@@ -8,5 +8,6 @@ verdict, CAL-03 handoff, intent/gate evidence, independent reviews, finding
 disposition, independent verifications, and final disposition required by
 `../package.md`.
 
-The source fixture, dependency admission, and executable-provenance records are
-populated. No reproduction run, harness, result, or verdict is claimed.
+The source fixture, dependency admission, constant-cover comparator admission,
+and executable-provenance records are populated. No reproduction run, harness,
+result, or verdict is claimed.

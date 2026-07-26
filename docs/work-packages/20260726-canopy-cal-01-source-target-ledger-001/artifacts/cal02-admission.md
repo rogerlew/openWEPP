@@ -11,12 +11,12 @@ and both exact climate headers identify CLIGEN `5.32300` with seed `12345`.
 
 The admitted arms are:
 
-- Hubbard source forcing with its exact `p1.man` baseline;
+- Hubbard source forcing with its exact `p1.man` constant-cover comparator;
 - Hubbard source forcing with Bill's delivered hardwood management
   (`dropfc=0.95`);
 - Hubbard source forcing with a branch derived from that delivered file by
   changing only `dropfc` to `0.92`; and
-- Santee source forcing with its exact `p2.man` baseline; and
+- Santee source forcing with its exact `p2.man` constant-cover comparator; and
 - Santee source forcing with Bill's delivered mixed-forest management.
 
 Only management replacement, the single `dropfc` branch edit, and run-file
@@ -27,9 +27,10 @@ identity before running. No calibration or other operand edit is admitted.
 The exact report-era executable is accessible on BLARHG at
 `C:\WEPP\wepp\wepp_2012.exe`, SHA-256
 `6104a3440624ad54aa6c3660794280adfd600d4a11b98559c6205a73cd47fc3f`.
-This does not make the Windows rerun exact: Bill's manually transcribed
-2006.5-format soils/slopes, Windows run files, constant-cover files, runtime
-libraries, and Windows text outputs remain absent.
+This does not make the historical Windows rerun byte-exact: Bill's manually
+transcribed 2006.5-format soils/slopes, Windows run files, runtime libraries,
+and Windows text outputs remain absent. Those files are not required for the
+site-specific analytical comparison admitted here.
 
 The reconstruction must:
 
@@ -48,8 +49,11 @@ byte-for-byte and analytically. Bill's Windows chart/table values may expose
 direction and discrepancy, but are not exact equivalence targets until his
 converted Windows project and output bundle is recovered.
 
-Neither source-native management is constant cover. Bill's Windows
-constant-cover comparison remains `BLOCKED_SOURCE_BUNDLE` unless a superseding
-record admits a real hash-bound comparator.
+The source-native `p1.man` and `p2.man` files are the admitted constant-cover
+comparators. They disable growth, senescence, and decomposition and retain
+fixed canopy/rill/interrill conditions. Bill's report says he transcribed the
+WEPPcloud mature-forest management for his Windows comparison. CAL-02 may
+therefore reproduce the analytical constant-cover comparison while keeping
+historical Windows byte/output equivalence outside its claim.
 
 The machine-readable authority is `cal02-admission.json`.

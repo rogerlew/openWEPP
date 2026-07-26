@@ -414,8 +414,9 @@ ledger, parameter and comparison-scale lineage, the report/file `0.92` versus
 `0.95` branch, and a deterministic `READY_BOUNDED` admission. Post-closeout
 source recovery upgraded the admitted experiment to exact report-linked
 site-specific 100-year WEPPcloud forcing and selected outputs for both sites.
-CAL-02 still may not claim Bill's exact Windows rerun, constant cover, or
-Windows chart/table equivalence.
+CAL-02 still may not claim Bill's exact Windows rerun or Windows chart/table
+equivalence. The recovered source-native `p1.man` and `p2.man` files are
+admitted as the analytical constant-cover comparators.
 
 No additional literature gap presently blocks the scientific analysis. Exact
 reproduction still requires Bill's full per-site Windows run bundles. The
@@ -435,3 +436,10 @@ fixtures were preserved and the bounded CAL-02 admission was superseded from
 common forcing to site-specific 100-year source forcing. The verdict remains
 `READY_BOUNDED` because Bill's manually converted Windows projects and outputs
 are absent.
+
+2026-07-26: the operator confirmed the Windows project is not required for the
+campaign and directed use of buildable constant-cover files. Source inspection
+established that recovered `p1.man` and `p2.man` already encode the
+site-specific constant-cover mechanism described in Bill's report. They are
+now admitted as exact analytical comparators; missing Windows serialization
+and outputs limit only historical byte/output equivalence.

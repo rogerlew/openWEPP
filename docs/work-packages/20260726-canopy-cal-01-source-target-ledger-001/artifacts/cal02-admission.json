@@ -8,6 +8,7 @@
   "bounded_reconstruction_authorized": true,
   "substitution_plan": {
     "fixture_root": "tests/fixtures/canopy_phenology/elliot_reproduction/source/weppcloud",
+    "constant_cover_manifest": "tests/fixtures/canopy_phenology/elliot_reproduction/constant-cover-comparators.json",
     "hubbard_fixture": "hubbard_brook_unassailable_sensuousness",
     "santee_fixture": "santee_clean_burning_griddle",
     "hubbard_surface": "p1 inputs and H1 outputs",
@@ -32,14 +33,14 @@
       "copy each site's exact source-native input set into an isolated run directory",
       "replace only that site's management input with the corresponding exact commissioned management file",
       "derive the Hubbard report branch from the copied delivered hardwood management by changing only dropfc from 0.95 to 0.92",
-      "retain each source-native p1.man or p2.man byte-for-byte as its site baseline",
+      "retain each source-native p1.man or p2.man byte-for-byte as its site-specific constant-cover comparator",
       "rewrite only run-file-relative paths required by the isolated CAL-02 fixture layout"
     ],
     "experiment_arms": [
-      "Hubbard exact source forcing plus source-native p1.man baseline",
+      "Hubbard exact source forcing plus source-native p1.man constant-cover comparator",
       "Hubbard exact source forcing plus delivered hardwood dropfc=0.95",
       "Hubbard exact source forcing plus derived hardwood dropfc=0.92",
-      "Santee exact source forcing plus source-native p2.man baseline",
+      "Santee exact source forcing plus source-native p2.man constant-cover comparator",
       "Santee exact source forcing plus delivered mixed-forest management"
     ],
     "comparison_purpose": "site-specific source-forcing management-process and stock-flow sensitivity plus exact WEPPcloud selected-output reconstruction"
@@ -59,9 +60,8 @@
   ],
   "claim_limits": [
     "No exact reproduction claim",
-    "No constant-cover reproduction or comparator claim",
     "No claim that source-native WEPPcloud soil and slope files equal Bill's manually transcribed Windows files",
-    "No claim that source-native p1.man or p2.man is Bill's missing Windows constant-cover comparator",
+    "No claim that the admitted source-native constant-cover comparators are byte-identical to Bill's Windows-builder transcriptions",
     "No Windows-output byte identity claim until Bill's Windows project/output bundle is recovered",
     "No claim that the BLARHG executable alone reconstructs Bill's missing Windows run controls or runtime libraries",
     "No hillslope-to-watershed goodness-of-fit claim",

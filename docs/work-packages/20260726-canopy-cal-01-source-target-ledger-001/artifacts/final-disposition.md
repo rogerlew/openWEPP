@@ -21,7 +21,6 @@ surfaces and identified the BLARHG Windows executable. The experiment preserves
 both Hubbard `dropfc` branches. It cannot claim:
 
 - Bill's exact Windows rerun;
-- a constant-cover reproduction or comparator;
 - Windows output-byte or chart/table equivalence; or
 - hillslope/watershed or surface-runoff/hill-streamflow equivalence.
 
@@ -30,9 +29,10 @@ independent review initially held third-party publication. On 2026-07-26 the
 operator explicitly confirmed redistribution permission for the retained
 third-party set and directed commit/push, superseding that hold.
 
-Exact Windows reproduction still needs Bill's manually converted project and
-output bundle described in `missing-source-bundle.md`. No further literature
-article is currently a scientific blocker.
+Exact historical Windows reproduction still needs Bill's manually converted
+project and output bundle described in `missing-source-bundle.md`. The
+analytical constant-cover comparison does not. No further literature article
+is currently a scientific blocker.
 
 Independent review and terminal verification both closed without a remaining
 P1/P2 scientific or source-integrity finding. Both verifiers returned
@@ -41,5 +41,6 @@ rights confirmation resolves the sole hold and yields `COMPLETE / PASS`.
 
 Post-closeout evidence note: the recovered WEPPcloud fixture and executable
 identity strengthen `READY_BOUNDED` from substituted common forcing to exact
-site-specific source forcing without changing the completed scientific
-classification.
+site-specific source forcing. A subsequent operator decision admits the exact
+source-native `p1.man` and `p2.man` files as the constant-cover comparators
+without changing the completed scientific classification.

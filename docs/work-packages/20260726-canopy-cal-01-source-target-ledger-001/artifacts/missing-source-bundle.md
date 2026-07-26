@@ -22,8 +22,6 @@ Evidence class: `Executed reproduction-input inventory`
 
 - the exact WEPP Windows 2006.5-format `.sol` and `.slp` inputs;
 - the WEPP Windows `.run` files and all run-option flags;
-- the exported constant-cover comparator managements and supporting initial
-  condition/plant templates;
 - the runtime-library identity and exact 2026 operating-system state used for
   Bill's original Windows execution;
 - Bill's Windows source-native main, water, winter, plant/residue, event, and
@@ -45,7 +43,7 @@ delivered `0.95`, and whether a separate Santee decomposition value was ever
 run.
 
 The recovered sources admit site-specific 100-year Hubbard and Santee
-management-process experiments and exact checks against the retained selected
-WEPPcloud outputs. They do not reconstruct Bill's manual Windows conversion.
-Both report-style Windows constant-cover arms and all exact Windows-output
-claims remain blocked until a superseding source bundle is admitted.
+management-process experiments, exact constant-cover comparators, and exact
+checks against the retained selected WEPPcloud outputs. They do not reconstruct
+Bill's manual Windows conversion. Historical Windows byte/output-equivalence
+claims remain unavailable, but they do not block the analytical experiment.

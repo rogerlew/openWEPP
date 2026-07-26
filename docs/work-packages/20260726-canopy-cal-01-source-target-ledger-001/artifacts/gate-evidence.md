@@ -110,3 +110,10 @@ The retained 60 source-native files total `33,389,530` bytes and pass both site
 This evidence supersedes the common-forcing substitution with exact
 site-specific source forcing while preserving `READY_BOUNDED`: Bill's manually
 converted Windows project and Windows outputs remain missing.
+
+Subsequent operator direction established that the Windows project is not a
+campaign prerequisite. Inspection confirms the retained `p1.man` and `p2.man`
+files disable growth, senescence, and decomposition and are the exact
+site-specific WEPPcloud constant-cover inputs Bill describes transcribing.
+They are admitted as analytical comparators; the missing Windows artifacts now
+limit only historical byte/output-equivalence claims.
