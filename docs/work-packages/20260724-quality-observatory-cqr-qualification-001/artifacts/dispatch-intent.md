@@ -67,5 +67,14 @@ failures require a changed head: shorten the disk-backed attempt root for Unix
 socket path safety, and make the nested CQR self-test globally exclusive to
 avoid PID-limit competition.
 
+QA attempt 6 bound changed head
+`a8a94a6d67013310d9a44db58ba012d718ed0a07` and TESTGATE run `30188752174`
+to provider run
+[`30190531969`](https://github.com/rogerlew/openWEPP/actions/runs/30190531969).
+The socket and linker failures remained corrected, but the exclusive CQR
+self-test's nested Cargo inventory alone incremented the PID-limit counter and
+failed to spawn. The next changed head adds the source-bound nested Cargo
+build-job cap identified by the prior resource diagnosis.
+
 No CQR collection or module implementation is authorized. CQR work in this
 package is selection-only intake of the exact successful QA publication.

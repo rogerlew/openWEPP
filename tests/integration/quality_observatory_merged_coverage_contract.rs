@@ -94,6 +94,16 @@ fn nested_cqr_fixture_is_globally_exclusive() {
 }
 
 #[test]
+fn nested_cargo_builds_have_an_admission_bound_pid_cap() {
+    let source = text("tools/local_ci/quality_observatory.py");
+    assert!(source.contains("QUALITY_CARGO_BUILD_JOBS = 2"));
+    assert!(source.contains("base_env[\"CARGO_BUILD_JOBS\"] = str(QUALITY_CARGO_BUILD_JOBS)"));
+    assert!(source.contains("environment[\"CARGO_BUILD_JOBS\"] = str(QUALITY_CARGO_BUILD_JOBS)"));
+    assert!(source.contains("\"cargo_build_jobs\": QUALITY_CARGO_BUILD_JOBS"));
+    assert!(source.contains("quality Cargo build-job cap changed after admission"));
+}
+
+#[test]
 fn collector_source_guards_identity_inventory_and_publication() {
     let source = text("tools/local_ci/quality_observatory.py");
     for required in [

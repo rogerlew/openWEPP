@@ -37,3 +37,9 @@ attempt root to `/testgate-history/q/<run>-<attempt>`. It assigns only the CQR
 self-test to the existing globally exclusive repository-snapshot cohort,
 preventing its nested Cargo inventory from competing for the 8,192-process
 container limit.
+
+Exclusive scheduling proved necessary but insufficient: the CQR test's own
+nested Cargo graph still hit the PID ceiling once. The second-line correction
+binds `CARGO_BUILD_JOBS=2` into the QA build identity and both execution
+environments. It limits nested compiler/linker process fan-out while retaining
+the same exact test inventory and Nextest schedule.
