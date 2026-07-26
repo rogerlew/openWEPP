@@ -1,0 +1,5 @@
+
+Elmt_ID Chan_ID Contributing_Area (ha) Channel_Type
+    9    1            12.70                perennial 
+   10    2            57.93                perennial 
+   11    3            97.51                perennial 

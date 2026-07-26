@@ -1,0 +1,916 @@
+2026-03-20 04:59:38 [INFO] wepppy.run.unassailable-sensuousness.wepp: Running Wepp
+
+2026-03-20 04:59:42 [INFO] wepppy.run.unassailable-sensuousness.wepp:     wepp_bin:wepp_dcc52a6
+2026-03-20 04:59:44 [INFO] wepppy.run.unassailable-sensuousness.wepp:     Prepping _prep_slopes... 
+2026-03-20 04:59:44 [INFO] wepppy.run.unassailable-sensuousness.wepp:     Prepping _prep_slopes_peridot... 
+O] wepppy.run.unassailable-sensuousness.wepp: wepp.prep_climates(translator=<wepppy.topo.watershed_abstraction.wepp_top_translator.WeppTopTranslator object at 0x76ba11156990>)
+2026-03-20 04:59:44 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (1/22) topaz_id: 22 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p1.cli
+2026-03-20 04:59:44 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (2/22) topaz_id: 23 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p2.cli
+2026-03-20 04:59:44 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (3/22) topaz_id: 32 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p3.cli
+2026-03-20 04:59:44 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (4/22) topaz_id: 33 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p4.cli
+2026-03-20 04:59:44 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (5/22) topaz_id: 41 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p5.cli
+2026-03-20 04:59:44 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (6/22) topaz_id: 42 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p6.cli
+2026-03-20 04:59:44 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (7/22) topaz_id: 43 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p7.cli
+2026-03-20 04:59:44 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (8/22) topaz_id: 51 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p8.cli
+2026-03-20 04:59:44 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (9/22) topaz_id: 52 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p9.cli
+2026-03-20 04:59:44 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (10/22) topaz_id: 53 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p10.cli
+2026-03-20 04:59:44 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (11/22) topaz_id: 63 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p11.cli
+2026-03-20 04:59:44 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (12/22) topaz_id: 71 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p12.cli
+2026-03-20 04:59:44 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (13/22) topaz_id: 72 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p13.cli
+2026-03-20 04:59:44 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (14/22) topaz_id: 73 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p14.cli
+2026-03-20 04:59:44 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (15/22) topaz_id: 82 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p15.cli
+2026-03-20 04:59:44 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (16/22) topaz_id: 83 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p16.cli
+2026-03-20 04:59:44 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (17/22) topaz_id: 91 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p17.cli
+2026-03-20 04:59:44 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (18/22) topaz_id: 92 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p18.cli
+2026-03-20 04:59:44 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (19/22) topaz_id: 93 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p19.cli
+2026-03-20 04:59:44 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (20/22) topaz_id: 101 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p20.cli
+2026-03-20 04:59:44 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (21/22) topaz_id: 102 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p21.cli
+2026-03-20 04:59:44 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (22/22) topaz_id: 103 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p22.cli
+2026-03-20 04:59:44 [INFO] wepppy.run.unassailable-sensuousness.wepp: _prep_climates... done. (0.21s)
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp: wepp.prep_soils(translator=<wepppy.topo.watershed_abstraction.wepp_top_translator.WeppTopTranslator object at 0x76ba11156930>)
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:   Using max_workers=56 for soil prep
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:   run_concurrent=1
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:   Submitting soils for `prep_soil` to ProcessPoolExecutor
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:41:665220-sand loam-forest - 41... 
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:      meoization_key: ('665220-sand loam-forest', '41', 'forest') -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p5.man
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:23:665220-sand loam-forest - 41... 
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p2.man
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:103:665220-sand loam-forest - 41... 
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p22.man
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:22:665220-sand loam-forest - 41... 
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p1.man
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:51:665220-sand loam-forest - 41... 
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p8.man
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:33:665220-sand loam-forest - 41... 
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p4.man
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:82:665220-sand loam-forest - 41... 
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p15.man
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:42:665220-sand loam-forest - 41... 
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p6.man
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:52:665220-sand loam-forest - 41... 
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p9.man
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:91:665220-sand loam-forest - 41... 
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p17.man
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:92:665220-sand loam-forest - 41... 
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p18.man
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:73:665220-sand loam-forest - 41... 
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p14.man
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:32:665220-sand loam-forest - 41... 
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p3.man
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:93:665220-sand loam-forest - 41... 
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p19.man
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:63:665220-sand loam-forest - 41... 
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p11.man
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:71:665220-sand loam-forest - 41... 
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p12.man
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:43:665220-sand loam-forest - 41... 
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p7.man
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:53:665220-sand loam-forest - 41... 
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p10.man
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:101:665220-sand loam-forest - 41... 
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p20.man
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:102:665220-sand loam-forest - 41... 
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p21.man
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:72:665220-sand loam-forest - 41... 
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p13.man
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:83:665220-sand loam-forest - 41... 
+2026-03-20 04:59:45 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p16.man
+2026-03-20 04:59:50 [INFO] wepppy.run.unassailable-sensuousness.wepp:   Waiting on soil prep tasks (pending=22, 5.1s since last completion).
+2026-03-20 04:59:55 [INFO] wepppy.run.unassailable-sensuousness.wepp:   Waiting on soil prep tasks (pending=22, 10.1s since last completion).
+2026-03-20 05:00:00 [INFO] wepppy.run.unassailable-sensuousness.wepp:   Waiting on soil prep tasks (pending=22, 15.1s since last completion).
+2026-03-20 05:00:02 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (1/22) Completed soil prep for 82 in 0.32185840606689453s
+2026-03-20 05:00:04 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (2/22) Completed soil prep for 53 in 0.34058332443237305s
+2026-03-20 05:00:04 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (3/22) Completed soil prep for 91 in 0.3400096893310547s
+2026-03-20 05:00:05 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (4/22) Completed soil prep for 52 in 0.4628596305847168s
+2026-03-20 05:00:05 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (5/22) Completed soil prep for 103 in 0.4939546585083008s
+2026-03-20 05:00:05 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (6/22) Completed soil prep for 43 in 0.28128862380981445s
+2026-03-20 05:00:05 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (7/22) Completed soil prep for 23 in 0.3728036880493164s
+2026-03-20 05:00:05 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (8/22) Completed soil prep for 22 in 0.41457438468933105s
+2026-03-20 05:00:05 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (9/22) Completed soil prep for 33 in 0.39879274368286133s
+2026-03-20 05:00:05 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (10/22) Completed soil prep for 73 in 0.4286215305328369s
+2026-03-20 05:00:05 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (11/22) Completed soil prep for 42 in 0.40361809730529785s
+2026-03-20 05:00:05 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (12/22) Completed soil prep for 92 in 0.38208913803100586s
+2026-03-20 05:00:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (13/22) Completed soil prep for 63 in 0.41583871841430664s
+2026-03-20 05:00:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (14/22) Completed soil prep for 93 in 0.4075620174407959s
+2026-03-20 05:00:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (15/22) Completed soil prep for 51 in 0.4062926769256592s
+2026-03-20 05:00:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (16/22) Completed soil prep for 32 in 0.41388678550720215s
+2026-03-20 05:00:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (17/22) Completed soil prep for 41 in 0.37992167472839355s
+2026-03-20 05:00:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (18/22) Completed soil prep for 102 in 0.3545536994934082s
+2026-03-20 05:00:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (19/22) Completed soil prep for 83 in 0.3529512882232666s
+2026-03-20 05:00:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (20/22) Completed soil prep for 71 in 0.34608983993530273s
+2026-03-20 05:00:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (21/22) Completed soil prep for 72 in 0.30124688148498535s
+2026-03-20 05:00:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (22/22) Completed soil prep for 101 in 0.30222654342651367s
+2026-03-20 05:00:09 [INFO] wepppy.run.unassailable-sensuousness.wepp:     Prepping _make_hillslope_runs... 
+2026-03-20 05:00:10 [INFO] wepppy.run.unassailable-sensuousness.wepp: nodb.Wepp._prep_pmet::disturbed routine
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp: wepp.run_hillslopes()
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp: Running Hillslopes with max_workers=32
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:     wepp_bin:wepp_dcc52a6
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   Submitting 22 hillslope runs to ThreadPoolExecutor - no SS batch
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 22 to executor
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 22 (forest)
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 23 to executor
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 23 (forest)
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 32 to executor
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 32 (forest)
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 33 to executor
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 33 (forest)
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 41 to executor
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 41 (forest)
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 42 to executor
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 42 (forest)
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 43 to executor
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 43 (forest)
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 51 to executor
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 51 (forest)
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 52 to executor
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 52 (forest)
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 53 to executor
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 53 (forest)
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 63 to executor
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 63 (forest)
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 71 to executor
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 71 (forest)
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 72 to executor
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 72 (forest)
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 73 to executor
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 73 (forest)
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 82 to executor
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 82 (forest)
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 83 to executor
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 83 (forest)
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 91 to executor
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 91 (forest)
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 92 to executor
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 92 (forest)
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 93 to executor
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 93 (forest)
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 101 to executor
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 101 (forest)
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 102 to executor
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 102 (forest)
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 103 to executor
+2026-03-20 05:00:12 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 103 (forest)
+2026-03-20 05:00:14 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (1/22)  wepp hillslope 4 completed in 2.706449031829834s with status=True
+2026-03-20 05:00:15 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (2/22)  wepp hillslope 3 completed in 3.0936672687530518s with status=True
+2026-03-20 05:00:15 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (3/22)  wepp hillslope 10 completed in 3.7398526668548584s with status=True
+2026-03-20 05:00:15 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (4/22)  wepp hillslope 8 completed in 3.7530949115753174s with status=True
+2026-03-20 05:00:16 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (5/22)  wepp hillslope 20 completed in 4.055061101913452s with status=True
+2026-03-20 05:00:16 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (6/22)  wepp hillslope 6 completed in 4.119358062744141s with status=True
+2026-03-20 05:00:16 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (7/22)  wepp hillslope 18 completed in 4.1513800621032715s with status=True
+2026-03-20 05:00:16 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (8/22)  wepp hillslope 13 completed in 4.299106597900391s with status=True
+2026-03-20 05:00:16 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (9/22)  wepp hillslope 15 completed in 4.300247430801392s with status=True
+2026-03-20 05:00:16 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (10/22)  wepp hillslope 2 completed in 4.368507146835327s with status=True
+2026-03-20 05:00:16 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (11/22)  wepp hillslope 16 completed in 4.486402988433838s with status=True
+2026-03-20 05:00:16 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (12/22)  wepp hillslope 21 completed in 4.5024003982543945s with status=True
+2026-03-20 05:00:16 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (13/22)  wepp hillslope 1 completed in 4.536138534545898s with status=True
+2026-03-20 05:00:16 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (14/22)  wepp hillslope 5 completed in 4.560484409332275s with status=True
+2026-03-20 05:00:16 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (15/22)  wepp hillslope 17 completed in 4.5870361328125s with status=True
+2026-03-20 05:00:16 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (16/22)  wepp hillslope 19 completed in 4.635613918304443s with status=True
+2026-03-20 05:00:16 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (17/22)  wepp hillslope 7 completed in 4.645372629165649s with status=True
+2026-03-20 05:00:16 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (18/22)  wepp hillslope 11 completed in 4.679263353347778s with status=True
+2026-03-20 05:00:16 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (19/22)  wepp hillslope 14 completed in 4.698911428451538s with status=True
+2026-03-20 05:00:16 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (20/22)  wepp hillslope 9 completed in 4.702779293060303s with status=True
+2026-03-20 05:00:16 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (21/22)  wepp hillslope 12 completed in 4.701106786727905s with status=True
+2026-03-20 05:00:16 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (22/22)  wepp hillslope 22 completed in 4.702274560928345s with status=True
+2026-03-20 05:00:19 [INFO] wepppy.run.unassailable-sensuousness.wepp: Prepping Watershed... 
+2026-03-20 05:00:19 [INFO] wepppy.run.unassailable-sensuousness.wepp:     Prepping _prep_structure... 
+2026-03-20 05:00:19 [INFO] wepppy.run.unassailable-sensuousness.wepp: nodb.Wepp._prep_channel_chn::erodibility = None, critical_shear = 19.0 
+2026-03-20 05:00:19 [INFO] wepppy.run.unassailable-sensuousness.wepp: nodb.Wepp._prep_channel_soils::erodibility = None, critical_shear = 19.0 
+2026-03-20 05:00:31 [INFO] wepppy.run.unassailable-sensuousness.wepp: _build_totalwatsed3...
+2026-03-20 05:00:33 [INFO] wepppy.run.unassailable-sensuousness.wepp: _build_totalwatsed3... done. (1.98s)
+2026-03-20 05:01:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:     moving .out files...
+2026-03-20 05:01:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:     moving tc_out.txt...
+2026-03-20 05:01:26 [INFO] wepppy.run.unassailable-sensuousness.wepp: _run_hillslope_watbal...
+2026-03-20 05:01:27 [INFO] wepppy.run.unassailable-sensuousness.wepp: _run_hillslope_watbal... done. (1.49s)
+2026-03-21 21:46:48 [INFO] wepppy.run.unassailable-sensuousness.wepp: Running Wepp
+
+2026-03-21 21:46:53 [INFO] wepppy.run.unassailable-sensuousness.wepp:     wepp_bin:wepp_dcc52a6
+2026-03-21 21:46:55 [INFO] wepppy.run.unassailable-sensuousness.wepp: _prep_climates...
+2026-03-21 21:46:55 [INFO] wepppy.run.unassailable-sensuousness.wepp: wepp.prep_climates(translator=<wepppy.topo.watershed_abstraction.wepp_top_translator.WeppTopTranslator object at 0x7dabac58b590>)
+2026-03-21 21:46:55 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (1/22) topaz_id: 22 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p1.cli
+2026-03-21 21:46:55 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (2/22) topaz_id: 23 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p2.cli
+2026-03-21 21:46:55 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (3/22) topaz_id: 32 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p3.cli
+2026-03-21 21:46:55 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (4/22) topaz_id: 33 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p4.cli
+2026-03-21 21:46:55 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (5/22) topaz_id: 41 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p5.cli
+2026-03-21 21:46:55 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (6/22) topaz_id: 42 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p6.cli
+2026-03-21 21:46:55 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (7/22) topaz_id: 43 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p7.cli
+2026-03-21 21:46:55 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (8/22) topaz_id: 51 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p8.cli
+2026-03-21 21:46:55 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (9/22) topaz_id: 52 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p9.cli
+2026-03-21 21:46:55 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (10/22) topaz_id: 53 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p10.cli
+2026-03-21 21:46:55 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (11/22) topaz_id: 63 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p11.cli
+2026-03-21 21:46:55 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (12/22) topaz_id: 71 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p12.cli
+2026-03-21 21:46:55 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (13/22) topaz_id: 72 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p13.cli
+2026-03-21 21:46:55 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (14/22) topaz_id: 73 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p14.cli
+2026-03-21 21:46:55 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (15/22) topaz_id: 82 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p15.cli
+2026-03-21 21:46:55 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (16/22) topaz_id: 83 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p16.cli
+2026-03-21 21:46:55 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (17/22) topaz_id: 91 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p17.cli
+2026-03-21 21:46:55 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (18/22) topaz_id: 92 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p18.cli
+2026-03-21 21:46:55 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (19/22) topaz_id: 93 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p19.cli
+2026-03-21 21:46:55 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (20/22) topaz_id: 101 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p20.cli
+2026-03-21 21:46:55 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (21/22) topaz_id: 102 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p21.cli
+2026-03-21 21:46:55 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (22/22) topaz_id: 103 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p22.cli
+2026-03-21 21:46:55 [INFO] wepppy.run.unassailable-sensuousness.wepp: _prep_climates... done. (0.10s)
+2026-03-21 21:46:55 [INFO] wepppy.run.unassailable-sensuousness.wepp: wepp.prep_soils(translator=<wepppy.topo.watershed_abstraction.wepp_top_translator.WeppTopTranslator object at 0x7f9d97592b10>)
+2026-03-21 21:46:55 [INFO] wepppy.run.unassailable-sensuousness.wepp:   Using max_workers=56 for soil prep
+2026-03-21 21:46:55 [INFO] wepppy.run.unassailable-sensuousness.wepp:   run_concurrent=1
+2026-03-21 21:46:55 [INFO] wepppy.run.unassailable-sensuousness.wepp:     Prepping _prep_slopes... 
+2026-03-21 21:46:55 [INFO] wepppy.run.unassailable-sensuousness.wepp:   Submitting soils for `prep_soil` to ProcessPoolExecutor
+2026-03-21 21:46:55 [INFO] wepppy.run.unassailable-sensuousness.wepp:     Prepping _prep_slopes_peridot... 
+2026-03-21 21:46:55 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements... 
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:41:665220-sand loam-forest - 41... 
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:      meoization_key: ('665220-sand loam-forest', '41', 'forest') -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p5.man
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:23:665220-sand loam-forest - 41... 
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p2.man
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:103:665220-sand loam-forest - 41... 
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p22.man
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:22:665220-sand loam-forest - 41... 
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p1.man
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:51:665220-sand loam-forest - 41... 
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p8.man
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:33:665220-sand loam-forest - 41... 
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p4.man
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:82:665220-sand loam-forest - 41... 
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p15.man
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:42:665220-sand loam-forest - 41... 
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p6.man
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:52:665220-sand loam-forest - 41... 
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p9.man
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:91:665220-sand loam-forest - 41... 
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p17.man
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:92:665220-sand loam-forest - 41... 
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p18.man
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:73:665220-sand loam-forest - 41... 
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p14.man
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:32:665220-sand loam-forest - 41... 
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p3.man
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:93:665220-sand loam-forest - 41... 
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p19.man
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:63:665220-sand loam-forest - 41... 
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p11.man
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:71:665220-sand loam-forest - 41... 
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p12.man
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:43:665220-sand loam-forest - 41... 
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p7.man
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:53:665220-sand loam-forest - 41... 
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p10.man
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:101:665220-sand loam-forest - 41... 
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p20.man
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:102:665220-sand loam-forest - 41... 
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p21.man
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:72:665220-sand loam-forest - 41... 
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p13.man
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:83:665220-sand loam-forest - 41... 
+2026-03-21 21:46:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p16.man
+2026-03-21 21:47:00 [INFO] wepppy.run.unassailable-sensuousness.wepp:   Waiting on soil prep tasks (pending=22, 5.0s since last completion).
+2026-03-21 21:47:05 [INFO] wepppy.run.unassailable-sensuousness.wepp:   Waiting on soil prep tasks (pending=22, 10.2s since last completion).
+2026-03-21 21:47:10 [INFO] wepppy.run.unassailable-sensuousness.wepp:   Waiting on soil prep tasks (pending=22, 15.2s since last completion).
+2026-03-21 21:47:14 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (1/22) Completed soil prep for 92 in 0.796215295791626s
+2026-03-21 21:47:15 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (2/22) Completed soil prep for 83 in 0.37915873527526855s
+2026-03-21 21:47:16 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (3/22) Completed soil prep for 91 in 0.3940868377685547s
+2026-03-21 21:47:16 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (4/22) Completed soil prep for 32 in 0.2893342971801758s
+2026-03-21 21:47:16 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (5/22) Completed soil prep for 101 in 0.34424328804016113s
+2026-03-21 21:47:17 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (6/22) Completed soil prep for 33 in 0.44259142875671387s
+2026-03-21 21:47:18 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (7/22) Completed soil prep for 102 in 0.6640224456787109s
+2026-03-21 21:47:18 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (8/22) Completed soil prep for 43 in 0.5931177139282227s
+2026-03-21 21:47:18 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (9/22) Completed soil prep for 53 in 0.5294597148895264s
+2026-03-21 21:47:18 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (10/22) Completed soil prep for 72 in 0.58251953125s
+2026-03-21 21:47:18 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (11/22) Completed soil prep for 82 in 0.5274465084075928s
+2026-03-21 21:47:18 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (12/22) Completed soil prep for 41 in 0.568946361541748s
+2026-03-21 21:47:18 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (13/22) Completed soil prep for 22 in 0.5605604648590088s
+2026-03-21 21:47:18 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (14/22) Completed soil prep for 23 in 0.2895939350128174s
+2026-03-21 21:47:18 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (15/22) Completed soil prep for 63 in 0.434171199798584s
+2026-03-21 21:47:18 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (16/22) Completed soil prep for 103 in 0.5466568470001221s
+2026-03-21 21:47:18 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (17/22) Completed soil prep for 51 in 0.41862034797668457s
+2026-03-21 21:47:18 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (18/22) Completed soil prep for 52 in 0.41742944717407227s
+2026-03-21 21:47:18 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (19/22) Completed soil prep for 93 in 0.40135884284973145s
+2026-03-21 21:47:18 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (20/22) Completed soil prep for 73 in 0.26550889015197754s
+2026-03-21 21:47:19 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (21/22) Completed soil prep for 71 in 0.3673088550567627s
+2026-03-21 21:47:19 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (22/22) Completed soil prep for 42 in 0.4369204044342041s
+2026-03-21 21:47:23 [INFO] wepppy.run.unassailable-sensuousness.wepp:     Prepping _make_hillslope_runs... 
+2026-03-21 21:47:24 [INFO] wepppy.run.unassailable-sensuousness.wepp: nodb.Wepp._prep_pmet::disturbed routine
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp: wepp.run_hillslopes()
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp: Running Hillslopes with max_workers=32
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:     wepp_bin:wepp_dcc52a6
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   Submitting 22 hillslope runs to ThreadPoolExecutor - no SS batch
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 22 to executor
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 22 (forest)
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 23 to executor
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 23 (forest)
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 32 to executor
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 32 (forest)
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 33 to executor
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 33 (forest)
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 41 to executor
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 41 (forest)
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 42 to executor
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 42 (forest)
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 43 to executor
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 43 (forest)
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 51 to executor
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 51 (forest)
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 52 to executor
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 52 (forest)
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 53 to executor
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 53 (forest)
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 63 to executor
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 63 (forest)
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 71 to executor
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 71 (forest)
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 72 to executor
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 72 (forest)
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 73 to executor
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 73 (forest)
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 82 to executor
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 82 (forest)
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 83 to executor
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 83 (forest)
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 91 to executor
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 91 (forest)
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 92 to executor
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 92 (forest)
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 93 to executor
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 93 (forest)
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 101 to executor
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 101 (forest)
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 102 to executor
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 102 (forest)
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 103 to executor
+2026-03-21 21:47:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 103 (forest)
+2026-03-21 21:47:28 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (1/22)  wepp hillslope 1 completed in 2.1822726726531982s with status=True
+2026-03-21 21:47:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (2/22)  wepp hillslope 3 completed in 2.4946627616882324s with status=True
+2026-03-21 21:47:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (3/22)  wepp hillslope 13 completed in 2.8621506690979004s with status=True
+2026-03-21 21:47:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (4/22)  wepp hillslope 11 completed in 3.345054864883423s with status=True
+2026-03-21 21:47:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (5/22)  wepp hillslope 4 completed in 3.3748254776000977s with status=True
+2026-03-21 21:47:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (6/22)  wepp hillslope 6 completed in 3.3844399452209473s with status=True
+2026-03-21 21:47:30 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (7/22)  wepp hillslope 5 completed in 3.828261613845825s with status=True
+2026-03-21 21:47:30 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (8/22)  wepp hillslope 14 completed in 3.8453528881073s with status=True
+2026-03-21 21:47:30 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (9/22)  wepp hillslope 15 completed in 3.8481132984161377s with status=True
+2026-03-21 21:47:30 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (10/22)  wepp hillslope 18 completed in 3.9219446182250977s with status=True
+2026-03-21 21:47:30 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (11/22)  wepp hillslope 12 completed in 3.9647529125213623s with status=True
+2026-03-21 21:47:30 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (12/22)  wepp hillslope 16 completed in 3.9661829471588135s with status=True
+2026-03-21 21:47:30 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (13/22)  wepp hillslope 20 completed in 4.007023811340332s with status=True
+2026-03-21 21:47:30 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (14/22)  wepp hillslope 10 completed in 4.07113790512085s with status=True
+2026-03-21 21:47:30 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (15/22)  wepp hillslope 8 completed in 4.0786778926849365s with status=True
+2026-03-21 21:47:30 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (16/22)  wepp hillslope 17 completed in 4.095387935638428s with status=True
+2026-03-21 21:47:30 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (17/22)  wepp hillslope 22 completed in 4.110697984695435s with status=True
+2026-03-21 21:47:30 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (18/22)  wepp hillslope 19 completed in 4.113953113555908s with status=True
+2026-03-21 21:47:30 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (19/22)  wepp hillslope 21 completed in 4.117289066314697s with status=True
+2026-03-21 21:47:30 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (20/22)  wepp hillslope 9 completed in 4.133808135986328s with status=True
+2026-03-21 21:47:30 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (21/22)  wepp hillslope 2 completed in 4.142559289932251s with status=True
+2026-03-21 21:47:30 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (22/22)  wepp hillslope 7 completed in 4.151879072189331s with status=True
+2026-03-21 21:47:32 [INFO] wepppy.run.unassailable-sensuousness.wepp: Prepping Watershed... 
+2026-03-21 21:47:32 [INFO] wepppy.run.unassailable-sensuousness.wepp:     Prepping _prep_structure... 
+2026-03-21 21:47:32 [INFO] wepppy.run.unassailable-sensuousness.wepp: nodb.Wepp._prep_channel_chn::erodibility = None, critical_shear = 19.0 
+2026-03-21 21:47:32 [INFO] wepppy.run.unassailable-sensuousness.wepp: nodb.Wepp._prep_channel_soils::erodibility = None, critical_shear = 19.0 
+2026-03-21 21:47:44 [INFO] wepppy.run.unassailable-sensuousness.wepp: _build_totalwatsed3...
+2026-03-21 21:47:45 [INFO] wepppy.run.unassailable-sensuousness.wepp: _build_totalwatsed3... done. (1.43s)
+2026-03-21 21:48:30 [INFO] wepppy.run.unassailable-sensuousness.wepp:     moving .out files...
+2026-03-21 21:48:30 [INFO] wepppy.run.unassailable-sensuousness.wepp:     moving tc_out.txt...
+2026-03-21 21:48:31 [INFO] wepppy.run.unassailable-sensuousness.wepp: _run_hillslope_watbal...
+2026-03-21 21:48:32 [INFO] wepppy.run.unassailable-sensuousness.wepp: _run_hillslope_watbal... done. (1.36s)
+2026-03-21 21:49:19 [INFO] wepppy.run.unassailable-sensuousness.wepp: Running Wepp
+
+2026-03-21 21:49:23 [INFO] wepppy.run.unassailable-sensuousness.wepp:     wepp_bin:wepp_dcc52a6
+2026-03-21 21:49:25 [INFO] wepppy.run.unassailable-sensuousness.wepp:     Prepping _prep_slopes... 
+2026-03-21 21:49:25 [INFO] wepppy.run.unassailable-sensuousness.wepp:     Prepping _prep_slopes_peridot... 
+O] wepppy.run.unassailable-sensuousness.wepp: wepp.prep_climates(translator=<wepppy.topo.watershed_abstraction.wepp_top_translator.WeppTopTranslator object at 0x7f9d97594b60>)
+2026-03-21 21:49:25 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (1/22) topaz_id: 22 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p1.cli
+2026-03-21 21:49:25 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (2/22) topaz_id: 23 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p2.cli
+2026-03-21 21:49:25 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (3/22) topaz_id: 32 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p3.cli
+2026-03-21 21:49:25 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (4/22) topaz_id: 33 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p4.cli
+2026-03-21 21:49:25 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (5/22) topaz_id: 41 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p5.cli
+2026-03-21 21:49:25 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (6/22) topaz_id: 42 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p6.cli
+2026-03-21 21:49:25 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (7/22) topaz_id: 43 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p7.cli
+2026-03-21 21:49:25 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (8/22) topaz_id: 51 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p8.cli
+2026-03-21 21:49:25 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (9/22) topaz_id: 52 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p9.cli
+2026-03-21 21:49:25 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (10/22) topaz_id: 53 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p10.cli
+2026-03-21 21:49:25 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (11/22) topaz_id: 63 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p11.cli
+2026-03-21 21:49:25 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (12/22) topaz_id: 71 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p12.cli
+2026-03-21 21:49:25 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (13/22) topaz_id: 72 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p13.cli
+2026-03-21 21:49:25 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (14/22) topaz_id: 73 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p14.cli
+2026-03-21 21:49:25 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (15/22) topaz_id: 82 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p15.cli
+2026-03-21 21:49:25 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (16/22) topaz_id: 83 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p16.cli
+2026-03-21 21:49:25 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (17/22) topaz_id: 91 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p17.cli
+2026-03-21 21:49:25 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (18/22) topaz_id: 92 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p18.cli
+2026-03-21 21:49:25 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (19/22) topaz_id: 93 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p19.cli
+2026-03-21 21:49:25 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (20/22) topaz_id: 101 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p20.cli
+2026-03-21 21:49:25 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (21/22) topaz_id: 102 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p21.cli
+2026-03-21 21:49:25 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (22/22) topaz_id: 103 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p22.cli
+2026-03-21 21:49:25 [INFO] wepppy.run.unassailable-sensuousness.wepp: _prep_climates... done. (0.06s)
+2026-03-21 21:49:25 [INFO] wepppy.run.unassailable-sensuousness.wepp: wepp.prep_soils(translator=<wepppy.topo.watershed_abstraction.wepp_top_translator.WeppTopTranslator object at 0x7f9d978f2e40>)
+2026-03-21 21:49:25 [INFO] wepppy.run.unassailable-sensuousness.wepp:   Using max_workers=56 for soil prep
+2026-03-21 21:49:25 [INFO] wepppy.run.unassailable-sensuousness.wepp:   run_concurrent=1
+2026-03-21 21:49:25 [INFO] wepppy.run.unassailable-sensuousness.wepp:   Submitting soils for `prep_soil` to ProcessPoolExecutor
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:41:665220-sand loam-forest - 41... 
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:      meoization_key: ('665220-sand loam-forest', '41', 'forest') -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p5.man
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:23:665220-sand loam-forest - 41... 
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p2.man
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:103:665220-sand loam-forest - 41... 
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p22.man
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:22:665220-sand loam-forest - 41... 
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p1.man
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:51:665220-sand loam-forest - 41... 
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p8.man
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:33:665220-sand loam-forest - 41... 
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p4.man
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:82:665220-sand loam-forest - 41... 
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p15.man
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:42:665220-sand loam-forest - 41... 
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p6.man
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:52:665220-sand loam-forest - 41... 
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p9.man
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:91:665220-sand loam-forest - 41... 
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p17.man
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:92:665220-sand loam-forest - 41... 
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p18.man
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:73:665220-sand loam-forest - 41... 
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p14.man
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:32:665220-sand loam-forest - 41... 
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p3.man
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:93:665220-sand loam-forest - 41... 
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p19.man
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:63:665220-sand loam-forest - 41... 
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p11.man
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:71:665220-sand loam-forest - 41... 
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p12.man
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:43:665220-sand loam-forest - 41... 
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p7.man
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:53:665220-sand loam-forest - 41... 
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p10.man
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:101:665220-sand loam-forest - 41... 
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p20.man
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:102:665220-sand loam-forest - 41... 
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p21.man
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:72:665220-sand loam-forest - 41... 
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p13.man
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:83:665220-sand loam-forest - 41... 
+2026-03-21 21:49:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p16.man
+2026-03-21 21:49:31 [INFO] wepppy.run.unassailable-sensuousness.wepp:   Waiting on soil prep tasks (pending=22, 5.5s since last completion).
+2026-03-21 21:49:36 [INFO] wepppy.run.unassailable-sensuousness.wepp:   Waiting on soil prep tasks (pending=22, 10.5s since last completion).
+2026-03-21 21:49:41 [INFO] wepppy.run.unassailable-sensuousness.wepp:   Waiting on soil prep tasks (pending=22, 15.5s since last completion).
+2026-03-21 21:49:46 [INFO] wepppy.run.unassailable-sensuousness.wepp:   Waiting on soil prep tasks (pending=22, 20.5s since last completion).
+2026-03-21 21:49:46 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (1/22) Completed soil prep for 92 in 0.6621110439300537s
+2026-03-21 21:49:48 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (2/22) Completed soil prep for 83 in 0.6916465759277344s
+2026-03-21 21:49:48 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (3/22) Completed soil prep for 33 in 0.5846035480499268s
+2026-03-21 21:49:49 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (4/22) Completed soil prep for 22 in 1.0999610424041748s
+2026-03-21 21:49:50 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (5/22) Completed soil prep for 71 in 0.3891439437866211s
+2026-03-21 21:49:50 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (6/22) Completed soil prep for 41 in 0.3916945457458496s
+2026-03-21 21:49:51 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (7/22) Completed soil prep for 82 in 0.6990211009979248s
+2026-03-21 21:49:51 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (8/22) Completed soil prep for 93 in 0.7365763187408447s
+2026-03-21 21:49:51 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (9/22) Completed soil prep for 43 in 0.6963975429534912s
+2026-03-21 21:49:51 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (10/22) Completed soil prep for 51 in 0.6105306148529053s
+2026-03-21 21:49:52 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (11/22) Completed soil prep for 32 in 1.0743579864501953s
+2026-03-21 21:49:52 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (12/22) Completed soil prep for 23 in 1.0206866264343262s
+2026-03-21 21:49:52 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (13/22) Completed soil prep for 52 in 1.025238037109375s
+2026-03-21 21:49:52 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (14/22) Completed soil prep for 101 in 1.0242204666137695s
+2026-03-21 21:49:52 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (15/22) Completed soil prep for 63 in 1.0288875102996826s
+2026-03-21 21:49:52 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (16/22) Completed soil prep for 42 in 1.0335288047790527s
+2026-03-21 21:49:52 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (17/22) Completed soil prep for 91 in 1.0963685512542725s
+2026-03-21 21:49:52 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (18/22) Completed soil prep for 53 in 0.9757697582244873s
+2026-03-21 21:49:52 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (19/22) Completed soil prep for 102 in 1.034452199935913s
+2026-03-21 21:49:52 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (20/22) Completed soil prep for 73 in 0.23979830741882324s
+2026-03-21 21:49:52 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (21/22) Completed soil prep for 103 in 0.4481065273284912s
+2026-03-21 21:49:52 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (22/22) Completed soil prep for 72 in 0.2245194911956787s
+2026-03-21 21:49:56 [INFO] wepppy.run.unassailable-sensuousness.wepp:     Prepping _make_hillslope_runs... 
+2026-03-21 21:49:56 [INFO] wepppy.run.unassailable-sensuousness.wepp: nodb.Wepp._prep_pmet::disturbed routine
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp: wepp.run_hillslopes()
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp: Running Hillslopes with max_workers=32
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:     wepp_bin:wepp_dcc52a6
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   Submitting 22 hillslope runs to ThreadPoolExecutor - no SS batch
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 22 to executor
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 22 (forest)
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 23 to executor
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 23 (forest)
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 32 to executor
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 32 (forest)
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 33 to executor
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 33 (forest)
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 41 to executor
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 41 (forest)
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 42 to executor
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 42 (forest)
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 43 to executor
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 43 (forest)
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 51 to executor
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 51 (forest)
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 52 to executor
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 52 (forest)
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 53 to executor
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 53 (forest)
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 63 to executor
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 63 (forest)
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 71 to executor
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 71 (forest)
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 72 to executor
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 72 (forest)
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 73 to executor
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 73 (forest)
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 82 to executor
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 82 (forest)
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 83 to executor
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 83 (forest)
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 91 to executor
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 91 (forest)
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 92 to executor
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 92 (forest)
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 93 to executor
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 93 (forest)
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 101 to executor
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 101 (forest)
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 102 to executor
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 102 (forest)
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 103 to executor
+2026-03-21 21:49:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 103 (forest)
+2026-03-21 21:50:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (1/22)  wepp hillslope 2 completed in 2.6507556438446045s with status=True
+2026-03-21 21:50:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (2/22)  wepp hillslope 4 completed in 2.9026947021484375s with status=True
+2026-03-21 21:50:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (3/22)  wepp hillslope 1 completed in 3.067378044128418s with status=True
+2026-03-21 21:50:02 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (4/22)  wepp hillslope 13 completed in 3.4953315258026123s with status=True
+2026-03-21 21:50:02 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (5/22)  wepp hillslope 10 completed in 3.903550148010254s with status=True
+2026-03-21 21:50:02 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (6/22)  wepp hillslope 6 completed in 4.092684268951416s with status=True
+2026-03-21 21:50:03 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (7/22)  wepp hillslope 8 completed in 4.419467926025391s with status=True
+2026-03-21 21:50:03 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (8/22)  wepp hillslope 15 completed in 4.7894675731658936s with status=True
+2026-03-21 21:50:03 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (9/22)  wepp hillslope 18 completed in 4.821346759796143s with status=True
+2026-03-21 21:50:03 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (10/22)  wepp hillslope 21 completed in 4.8204028606414795s with status=True
+2026-03-21 21:50:03 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (11/22)  wepp hillslope 14 completed in 4.8262779712677s with status=True
+2026-03-21 21:50:03 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (12/22)  wepp hillslope 7 completed in 4.836028099060059s with status=True
+2026-03-21 21:50:03 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (13/22)  wepp hillslope 17 completed in 4.833786249160767s with status=True
+2026-03-21 21:50:03 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (14/22)  wepp hillslope 22 completed in 4.854769229888916s with status=True
+2026-03-21 21:50:03 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (15/22)  wepp hillslope 20 completed in 4.892172574996948s with status=True
+2026-03-21 21:50:03 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (16/22)  wepp hillslope 11 completed in 4.8993353843688965s with status=True
+2026-03-21 21:50:03 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (17/22)  wepp hillslope 12 completed in 4.899071216583252s with status=True
+2026-03-21 21:50:03 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (18/22)  wepp hillslope 19 completed in 4.896540880203247s with status=True
+2026-03-21 21:50:03 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (19/22)  wepp hillslope 5 completed in 4.928185939788818s with status=True
+2026-03-21 21:50:03 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (20/22)  wepp hillslope 16 completed in 4.938258409500122s with status=True
+2026-03-21 21:50:03 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (21/22)  wepp hillslope 3 completed in 4.946516275405884s with status=True
+2026-03-21 21:50:03 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (22/22)  wepp hillslope 9 completed in 4.945905685424805s with status=True
+2026-03-21 21:50:05 [INFO] wepppy.run.unassailable-sensuousness.wepp: Prepping Watershed... 
+2026-03-21 21:50:05 [INFO] wepppy.run.unassailable-sensuousness.wepp:     Prepping _prep_structure... 
+2026-03-21 21:50:05 [INFO] wepppy.run.unassailable-sensuousness.wepp: nodb.Wepp._prep_channel_chn::erodibility = None, critical_shear = 19.0 
+2026-03-21 21:50:05 [INFO] wepppy.run.unassailable-sensuousness.wepp: nodb.Wepp._prep_channel_soils::erodibility = None, critical_shear = 19.0 
+2026-03-21 21:50:17 [INFO] wepppy.run.unassailable-sensuousness.wepp: _build_totalwatsed3...
+2026-03-21 21:50:18 [INFO] wepppy.run.unassailable-sensuousness.wepp: _build_totalwatsed3... done. (1.39s)
+2026-03-21 21:51:05 [INFO] wepppy.run.unassailable-sensuousness.wepp:     moving .out files...
+2026-03-21 21:51:05 [INFO] wepppy.run.unassailable-sensuousness.wepp:     moving tc_out.txt...
+done. (1.20s)
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             2026-03-23 07:27:05 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements... 
+2026-03-23 07:27:05 [INFO] wepppy.run.unassailable-sensuousness.wepp:     Prepping _prep_slopes... 
+2026-03-23 07:27:05 [INFO] wepppy.run.unassailable-sensuousness.wepp:     Prepping _prep_slopes_peridot... 
+2026-03-23 07:27:05 [INFO] wepppy.run.unassailable-sensuousness.wepp: _prep_climates...
+2026-03-23 07:27:05 [INFO] wepppy.run.unassailable-sensuousness.wepp: wepp.prep_climates(translator=<wepppy.topo.watershed_abstraction.wepp_top_translator.WeppTopTranslator object at 0x7f9d978f30e0>)
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (1/22) topaz_id: 22 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p1.cli
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (2/22) topaz_id: 23 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p2.cli
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (3/22) topaz_id: 32 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p3.cli
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (4/22) topaz_id: 33 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p4.cli
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (5/22) topaz_id: 41 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p5.cli
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (6/22) topaz_id: 42 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p6.cli
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (7/22) topaz_id: 43 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p7.cli
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (8/22) topaz_id: 51 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p8.cli
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (9/22) topaz_id: 52 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p9.cli
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (10/22) topaz_id: 53 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p10.cli
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (11/22) topaz_id: 63 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p11.cli
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (12/22) topaz_id: 71 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p12.cli
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (13/22) topaz_id: 72 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p13.cli
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (14/22) topaz_id: 73 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p14.cli
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (15/22) topaz_id: 82 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p15.cli
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (16/22) topaz_id: 83 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p16.cli
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (17/22) topaz_id: 91 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p17.cli
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (18/22) topaz_id: 92 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p18.cli
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:91:665220-sand loam-forest - 41... 
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (19/22) topaz_id: 93 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p19.cli
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (20/22) topaz_id: 101 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p20.cli
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (21/22) topaz_id: 102 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p21.cli
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (22/22) topaz_id: 103 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p22.cli
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp: _prep_climates... done. (0.35s)
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:      meoization_key: ('665220-sand loam-forest', '41', 'forest') -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p17.man
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:92:665220-sand loam-forest - 41... 
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p18.man
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:73:665220-sand loam-forest - 41... 
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p14.man
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:41:665220-sand loam-forest - 41... 
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p5.man
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:51:665220-sand loam-forest - 41... 
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p8.man
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:82:665220-sand loam-forest - 41... 
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p15.man
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:22:665220-sand loam-forest - 41... 
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p1.man
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:32:665220-sand loam-forest - 41... 
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p3.man
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:23:665220-sand loam-forest - 41... 
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p2.man
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:102:665220-sand loam-forest - 41... 
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p21.man
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:53:665220-sand loam-forest - 41... 
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p10.man
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:103:665220-sand loam-forest - 41... 
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p22.man
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:63:665220-sand loam-forest - 41... 
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p11.man
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:52:665220-sand loam-forest - 41... 
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p9.man
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:43:665220-sand loam-forest - 41... 
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p7.man
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:101:665220-sand loam-forest - 41... 
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p20.man
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:83:665220-sand loam-forest - 41... 
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p16.man
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:72:665220-sand loam-forest - 41... 
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p13.man
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:71:665220-sand loam-forest - 41... 
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p12.man
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:93:665220-sand loam-forest - 41... 
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p19.man
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:42:665220-sand loam-forest - 41... 
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p6.man
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:33:665220-sand loam-forest - 41... 
+2026-03-23 07:27:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p4.man
+2026-03-23 07:27:10 [INFO] wepppy.run.unassailable-sensuousness.wepp:   Waiting on soil prep tasks (pending=22, 5.0s since last completion).
+2026-03-23 07:27:15 [INFO] wepppy.run.unassailable-sensuousness.wepp:   Waiting on soil prep tasks (pending=22, 10.0s since last completion).
+2026-03-23 07:27:19 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (1/22) Completed soil prep for 23 in 0.6074793338775635s
+2026-03-23 07:27:19 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (2/22) Completed soil prep for 92 in 0.3194000720977783s
+2026-03-23 07:27:20 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (3/22) Completed soil prep for 32 in 0.316387414932251s
+2026-03-23 07:27:20 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (4/22) Completed soil prep for 52 in 0.39356207847595215s
+2026-03-23 07:27:20 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (5/22) Completed soil prep for 91 in 0.19397664070129395s
+2026-03-23 07:27:20 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (6/22) Completed soil prep for 83 in 0.1858973503112793s
+2026-03-23 07:27:20 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (7/22) Completed soil prep for 73 in 0.23926472663879395s
+2026-03-23 07:27:20 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (8/22) Completed soil prep for 41 in 0.3546931743621826s
+2026-03-23 07:27:20 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (9/22) Completed soil prep for 53 in 0.3368220329284668s
+2026-03-23 07:27:20 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (10/22) Completed soil prep for 102 in 0.3463459014892578s
+2026-03-23 07:27:20 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (11/22) Completed soil prep for 71 in 0.3168954849243164s
+2026-03-23 07:27:20 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (12/22) Completed soil prep for 82 in 0.33281779289245605s
+2026-03-23 07:27:20 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (13/22) Completed soil prep for 51 in 0.3387136459350586s
+2026-03-23 07:27:21 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (14/22) Completed soil prep for 103 in 0.18657422065734863s
+2026-03-23 07:27:21 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (15/22) Completed soil prep for 63 in 0.18517422676086426s
+2026-03-23 07:27:21 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (16/22) Completed soil prep for 22 in 0.1892697811126709s
+2026-03-23 07:27:21 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (17/22) Completed soil prep for 43 in 0.1946413516998291s
+2026-03-23 07:27:21 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (18/22) Completed soil prep for 72 in 0.18287396430969238s
+2026-03-23 07:27:21 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (19/22) Completed soil prep for 93 in 0.19357728958129883s
+2026-03-23 07:27:21 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (20/22) Completed soil prep for 42 in 0.18293094635009766s
+2026-03-23 07:27:21 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (21/22) Completed soil prep for 101 in 0.2576611042022705s
+2026-03-23 07:27:21 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (22/22) Completed soil prep for 33 in 0.21538925170898438s
+2026-03-23 07:27:24 [INFO] wepppy.run.unassailable-sensuousness.wepp:     Prepping _make_hillslope_runs... 
+2026-03-23 07:27:25 [INFO] wepppy.run.unassailable-sensuousness.wepp: nodb.Wepp._prep_pmet::disturbed routine
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp: wepp.run_hillslopes()
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp: Running Hillslopes with max_workers=32
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:     wepp_bin:wepp_dcc52a6
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   Submitting 22 hillslope runs to ThreadPoolExecutor - no SS batch
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 22 to executor
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 22 (forest)
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 23 to executor
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 23 (forest)
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 32 to executor
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 32 (forest)
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 33 to executor
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 33 (forest)
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 41 to executor
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 41 (forest)
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 42 to executor
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 42 (forest)
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 43 to executor
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 43 (forest)
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 51 to executor
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 51 (forest)
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 52 to executor
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 52 (forest)
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 53 to executor
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 53 (forest)
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 63 to executor
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 63 (forest)
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 71 to executor
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 71 (forest)
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 72 to executor
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 72 (forest)
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 73 to executor
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 73 (forest)
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 82 to executor
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 82 (forest)
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 83 to executor
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 83 (forest)
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 91 to executor
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 91 (forest)
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 92 to executor
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 92 (forest)
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 93 to executor
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 93 (forest)
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 101 to executor
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 101 (forest)
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 102 to executor
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 102 (forest)
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 103 to executor
+2026-03-23 07:27:27 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 103 (forest)
+2026-03-23 07:27:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (1/22)  wepp hillslope 2 completed in 2.666975498199463s with status=True
+2026-03-23 07:27:30 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (2/22)  wepp hillslope 4 completed in 3.3436663150787354s with status=True
+2026-03-23 07:27:31 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (3/22)  wepp hillslope 11 completed in 3.8867716789245605s with status=True
+2026-03-23 07:27:31 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (4/22)  wepp hillslope 3 completed in 3.9151217937469482s with status=True
+2026-03-23 07:27:31 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (5/22)  wepp hillslope 18 completed in 4.010320425033569s with status=True
+2026-03-23 07:27:31 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (6/22)  wepp hillslope 7 completed in 4.274461030960083s with status=True
+2026-03-23 07:27:31 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (7/22)  wepp hillslope 5 completed in 4.290857553482056s with status=True
+2026-03-23 07:27:31 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (8/22)  wepp hillslope 17 completed in 4.3989105224609375s with status=True
+2026-03-23 07:27:31 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (9/22)  wepp hillslope 12 completed in 4.406724452972412s with status=True
+2026-03-23 07:27:31 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (10/22)  wepp hillslope 19 completed in 4.406335115432739s with status=True
+2026-03-23 07:27:31 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (11/22)  wepp hillslope 9 completed in 4.43153715133667s with status=True
+2026-03-23 07:27:31 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (12/22)  wepp hillslope 8 completed in 4.432802438735962s with status=True
+2026-03-23 07:27:31 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (13/22)  wepp hillslope 14 completed in 4.495527267456055s with status=True
+2026-03-23 07:27:31 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (14/22)  wepp hillslope 15 completed in 4.542450189590454s with status=True
+2026-03-23 07:27:31 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (15/22)  wepp hillslope 20 completed in 4.5662782192230225s with status=True
+2026-03-23 07:27:31 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (16/22)  wepp hillslope 6 completed in 4.666075944900513s with status=True
+2026-03-23 07:27:31 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (17/22)  wepp hillslope 13 completed in 4.663721799850464s with status=True
+2026-03-23 07:27:31 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (18/22)  wepp hillslope 1 completed in 4.673691272735596s with status=True
+2026-03-23 07:27:31 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (19/22)  wepp hillslope 22 completed in 4.664631128311157s with status=True
+2026-03-23 07:27:31 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (20/22)  wepp hillslope 10 completed in 4.680021047592163s with status=True
+2026-03-23 07:27:31 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (21/22)  wepp hillslope 16 completed in 4.678286552429199s with status=True
+2026-03-23 07:27:32 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (22/22)  wepp hillslope 21 completed in 4.689786434173584s with status=True
+2026-03-23 07:27:33 [INFO] wepppy.run.unassailable-sensuousness.wepp: Prepping Watershed... 
+2026-03-23 07:27:33 [INFO] wepppy.run.unassailable-sensuousness.wepp:     Prepping _prep_structure... 
+2026-03-23 07:27:34 [INFO] wepppy.run.unassailable-sensuousness.wepp: nodb.Wepp._prep_channel_chn::erodibility = None, critical_shear = 19.0 
+2026-03-23 07:27:34 [INFO] wepppy.run.unassailable-sensuousness.wepp: nodb.Wepp._prep_channel_soils::erodibility = None, critical_shear = 19.0 
+2026-03-23 07:27:48 [INFO] wepppy.run.unassailable-sensuousness.wepp: _build_totalwatsed3...
+2026-03-23 07:27:50 [INFO] wepppy.run.unassailable-sensuousness.wepp: _build_totalwatsed3... done. (1.86s)
+2026-03-23 07:28:31 [INFO] wepppy.run.unassailable-sensuousness.wepp:     moving .out files...
+2026-03-23 07:28:33 [INFO] wepppy.run.unassailable-sensuousness.wepp: _run_hillslope_watbal... done. (1.43s)
+2026-03-26 04:21:53 [INFO] wepppy.run.unassailable-sensuousness.wepp: Running Wepp
+
+2026-03-26 04:21:58 [INFO] wepppy.run.unassailable-sensuousness.wepp:     wepp_bin:wepp_dcc52a6
+2026-03-26 04:22:00 [INFO] wepppy.run.unassailable-sensuousness.wepp: wepp.prep_soils(translator=<wepppy.topo.watershed_abstraction.wepp_top_translator.WeppTopTranslator object at 0x7ea2b7982630>)
+2026-03-26 04:22:00 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements... 
+2026-03-26 04:22:00 [INFO] wepppy.run.unassailable-sensuousness.wepp:   Using max_workers=56 for soil prep
+2026-03-26 04:22:00 [INFO] wepppy.run.unassailable-sensuousness.wepp:   run_concurrent=1
+2026-03-26 04:22:00 [INFO] wepppy.run.unassailable-sensuousness.wepp:   Submitting soils for `prep_soil` to ProcessPoolExecutor
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:     Prepping _prep_slopes... 
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:     Prepping _prep_slopes_peridot... 
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp: _prep_climates...
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp: wepp.prep_climates(translator=<wepppy.topo.watershed_abstraction.wepp_top_translator.WeppTopTranslator object at 0x7ea2b7982870>)
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (1/22) topaz_id: 22 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p1.cli
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (2/22) topaz_id: 23 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p2.cli
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (3/22) topaz_id: 32 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p3.cli
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (4/22) topaz_id: 33 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p4.cli
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (5/22) topaz_id: 41 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p5.cli
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (6/22) topaz_id: 42 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p6.cli
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (7/22) topaz_id: 43 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p7.cli
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (8/22) topaz_id: 51 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p8.cli
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (9/22) topaz_id: 52 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p9.cli
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (10/22) topaz_id: 53 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p10.cli
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (11/22) topaz_id: 63 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p11.cli
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (12/22) topaz_id: 71 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p12.cli
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (13/22) topaz_id: 72 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p13.cli
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (14/22) topaz_id: 73 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p14.cli
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (15/22) topaz_id: 82 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p15.cli
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (16/22) topaz_id: 83 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p16.cli
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (17/22) topaz_id: 91 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p17.cli
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (18/22) topaz_id: 92 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p18.cli
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (19/22) topaz_id: 93 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p19.cli
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (20/22) topaz_id: 101 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p20.cli
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (21/22) topaz_id: 102 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p21.cli
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:  (22/22) topaz_id: 103 | climate/nh275639.cli -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p22.cli
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp: _prep_climates... done. (0.21s)
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:41:665220-sand loam-forest - 41... 
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:      meoization_key: ('665220-sand loam-forest', '41', 'forest') -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p5.man
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:103:665220-sand loam-forest - 41... 
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p22.man
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:42:665220-sand loam-forest - 41... 
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p6.man
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:92:665220-sand loam-forest - 41... 
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p18.man
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:43:665220-sand loam-forest - 41... 
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p7.man
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:91:665220-sand loam-forest - 41... 
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p17.man
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:22:665220-sand loam-forest - 41... 
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p1.man
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:82:665220-sand loam-forest - 41... 
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p15.man
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:72:665220-sand loam-forest - 41... 
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p13.man
+2026-03-26 04:22:01 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:93:665220-sand loam-forest - 41... 
+2026-03-26 04:22:02 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p19.man
+2026-03-26 04:22:02 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:23:665220-sand loam-forest - 41... 
+2026-03-26 04:22:02 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p2.man
+2026-03-26 04:22:02 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:53:665220-sand loam-forest - 41... 
+2026-03-26 04:22:02 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p10.man
+2026-03-26 04:22:02 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:71:665220-sand loam-forest - 41... 
+2026-03-26 04:22:02 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p12.man
+2026-03-26 04:22:02 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:63:665220-sand loam-forest - 41... 
+2026-03-26 04:22:02 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p11.man
+2026-03-26 04:22:02 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:102:665220-sand loam-forest - 41... 
+2026-03-26 04:22:02 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p21.man
+2026-03-26 04:22:02 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:33:665220-sand loam-forest - 41... 
+2026-03-26 04:22:02 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p4.man
+2026-03-26 04:22:02 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:73:665220-sand loam-forest - 41... 
+2026-03-26 04:22:02 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p14.man
+2026-03-26 04:22:02 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:83:665220-sand loam-forest - 41... 
+2026-03-26 04:22:02 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p16.man
+2026-03-26 04:22:02 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:101:665220-sand loam-forest - 41... 
+2026-03-26 04:22:02 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p20.man
+2026-03-26 04:22:02 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:32:665220-sand loam-forest - 41... 
+2026-03-26 04:22:02 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p3.man
+2026-03-26 04:22:02 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:52:665220-sand loam-forest - 41... 
+2026-03-26 04:22:02 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p9.man
+2026-03-26 04:22:02 [INFO] wepppy.run.unassailable-sensuousness.wepp:     _prep_managements:51:665220-sand loam-forest - 41... 
+2026-03-26 04:22:02 [INFO] wepppy.run.unassailable-sensuousness.wepp:      copying build_d['('665220-sand loam-forest', '41', 'forest')'] -> /wc1/runs/un/unassailable-sensuousness/wepp/runs/p8.man
+2026-03-26 04:22:06 [INFO] wepppy.run.unassailable-sensuousness.wepp:   Waiting on soil prep tasks (pending=22, 5.1s since last completion).
+2026-03-26 04:22:11 [INFO] wepppy.run.unassailable-sensuousness.wepp:   Waiting on soil prep tasks (pending=22, 10.1s since last completion).
+2026-03-26 04:22:16 [INFO] wepppy.run.unassailable-sensuousness.wepp:   Waiting on soil prep tasks (pending=22, 15.1s since last completion).
+2026-03-26 04:22:17 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (1/22) Completed soil prep for 63 in 0.2523176670074463s
+2026-03-26 04:22:17 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (2/22) Completed soil prep for 41 in 0.22990012168884277s
+2026-03-26 04:22:18 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (3/22) Completed soil prep for 102 in 0.35808348655700684s
+2026-03-26 04:22:20 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (4/22) Completed soil prep for 51 in 0.2005016803741455s
+2026-03-26 04:22:21 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (5/22) Completed soil prep for 33 in 0.18268203735351562s
+2026-03-26 04:22:21 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (6/22) Completed soil prep for 22 in 0.31059956550598145s
+2026-03-26 04:22:21 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (7/22) Completed soil prep for 32 in 0.28524231910705566s
+2026-03-26 04:22:21 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (8/22) Completed soil prep for 42 in 0.3149597644805908s
+2026-03-26 04:22:21 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (9/22) Completed soil prep for 103 in 0.4041426181793213s
+2026-03-26 04:22:21 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (10/22) Completed soil prep for 101 in 0.41411757469177246s
+2026-03-26 04:22:21 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (11/22) Completed soil prep for 72 in 0.3897550106048584s
+2026-03-26 04:22:21 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (12/22) Completed soil prep for 93 in 0.37696337699890137s
+2026-03-26 04:22:21 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (13/22) Completed soil prep for 83 in 0.36122822761535645s
+2026-03-26 04:22:22 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (14/22) Completed soil prep for 82 in 0.33795762062072754s
+2026-03-26 04:22:22 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (15/22) Completed soil prep for 92 in 0.2894759178161621s
+2026-03-26 04:22:22 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (16/22) Completed soil prep for 52 in 0.34247517585754395s
+2026-03-26 04:22:22 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (17/22) Completed soil prep for 91 in 0.3344697952270508s
+2026-03-26 04:22:22 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (18/22) Completed soil prep for 71 in 0.2612645626068115s
+2026-03-26 04:22:22 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (19/22) Completed soil prep for 23 in 0.9113743305206299s
+2026-03-26 04:22:22 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (20/22) Completed soil prep for 53 in 0.8758916854858398s
+2026-03-26 04:22:23 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (21/22) Completed soil prep for 43 in 0.8554928302764893s
+2026-03-26 04:22:23 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (22/22) Completed soil prep for 73 in 0.19164824485778809s
+2026-03-26 04:22:26 [INFO] wepppy.run.unassailable-sensuousness.wepp:     Prepping _make_hillslope_runs... 
+2026-03-26 04:22:26 [INFO] wepppy.run.unassailable-sensuousness.wepp: nodb.Wepp._prep_pmet::disturbed routine
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp: wepp.run_hillslopes()
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp: Running Hillslopes with max_workers=56
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:     wepp_bin:wepp_dcc52a6
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   Submitting 22 hillslope runs to ThreadPoolExecutor - no SS batch
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 22 to executor
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 22 (forest)
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 23 to executor
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 23 (forest)
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 32 to executor
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 32 (forest)
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 33 to executor
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 33 (forest)
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 41 to executor
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 41 (forest)
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 42 to executor
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 42 (forest)
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 43 to executor
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 43 (forest)
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 51 to executor
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 51 (forest)
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 52 to executor
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 52 (forest)
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 53 to executor
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 53 (forest)
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 63 to executor
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 63 (forest)
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 71 to executor
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 71 (forest)
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 72 to executor
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 72 (forest)
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 73 to executor
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 73 (forest)
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 82 to executor
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 82 (forest)
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 83 to executor
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 83 (forest)
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 91 to executor
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 91 (forest)
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 92 to executor
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 92 (forest)
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 93 to executor
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 93 (forest)
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 101 to executor
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 101 (forest)
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 102 to executor
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 102 (forest)
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   submitting 103 to executor
+2026-03-26 04:22:29 [INFO] wepppy.run.unassailable-sensuousness.wepp:   using wepp_dcc52a6 for 103 (forest)
+2026-03-26 04:22:31 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (1/22)  wepp hillslope 17 completed in 2.403367280960083s with status=True
+2026-03-26 04:22:32 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (2/22)  wepp hillslope 7 completed in 3.3766164779663086s with status=True
+2026-03-26 04:22:33 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (3/22)  wepp hillslope 16 completed in 3.566671133041382s with status=True
+2026-03-26 04:22:33 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (4/22)  wepp hillslope 19 completed in 3.5912981033325195s with status=True
+2026-03-26 04:22:33 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (5/22)  wepp hillslope 22 completed in 3.604100227355957s with status=True
+2026-03-26 04:22:33 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (6/22)  wepp hillslope 4 completed in 3.8624825477600098s with status=True
+2026-03-26 04:22:33 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (7/22)  wepp hillslope 11 completed in 4.2141029834747314s with status=True
+2026-03-26 04:22:33 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (8/22)  wepp hillslope 1 completed in 4.225829839706421s with status=True
+2026-03-26 04:22:33 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (9/22)  wepp hillslope 10 completed in 4.449713230133057s with status=True
+2026-03-26 04:22:34 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (10/22)  wepp hillslope 13 completed in 4.547955513000488s with status=True
+2026-03-26 04:22:34 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (11/22)  wepp hillslope 12 completed in 4.614571571350098s with status=True
+2026-03-26 04:22:34 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (12/22)  wepp hillslope 8 completed in 4.865403652191162s with status=True
+2026-03-26 04:22:34 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (13/22)  wepp hillslope 5 completed in 4.8793158531188965s with status=True
+2026-03-26 04:22:34 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (14/22)  wepp hillslope 9 completed in 4.8896684646606445s with status=True
+2026-03-26 04:22:34 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (15/22)  wepp hillslope 2 completed in 4.916887998580933s with status=True
+2026-03-26 04:22:34 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (16/22)  wepp hillslope 15 completed in 4.939228534698486s with status=True
+2026-03-26 04:22:34 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (17/22)  wepp hillslope 18 completed in 4.941270112991333s with status=True
+2026-03-26 04:22:34 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (18/22)  wepp hillslope 14 completed in 4.946489095687866s with status=True
+2026-03-26 04:22:34 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (19/22)  wepp hillslope 20 completed in 4.96096134185791s with status=True
+2026-03-26 04:22:34 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (20/22)  wepp hillslope 3 completed in 5.004616737365723s with status=True
+2026-03-26 04:22:34 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (21/22)  wepp hillslope 21 completed in 4.984877824783325s with status=True
+2026-03-26 04:22:34 [INFO] wepppy.run.unassailable-sensuousness.wepp:   (22/22)  wepp hillslope 6 completed in 5.00322413444519s with status=True
+2026-03-26 04:22:37 [INFO] wepppy.run.unassailable-sensuousness.wepp: Prepping Watershed... 
+2026-03-26 04:22:37 [INFO] wepppy.run.unassailable-sensuousness.wepp:     Prepping _prep_structure... 
+2026-03-26 04:22:37 [INFO] wepppy.run.unassailable-sensuousness.wepp: nodb.Wepp._prep_channel_chn::erodibility = None, critical_shear = 19.0 
+2026-03-26 04:22:37 [INFO] wepppy.run.unassailable-sensuousness.wepp: nodb.Wepp._prep_channel_soils::erodibility = None, critical_shear = 19.0 
+2026-03-26 04:22:51 [INFO] wepppy.run.unassailable-sensuousness.wepp: _build_totalwatsed3...
+2026-03-26 04:22:52 [INFO] wepppy.run.unassailable-sensuousness.wepp: _build_totalwatsed3... done. (1.44s)
+2026-03-26 04:23:36 [INFO] wepppy.run.unassailable-sensuousness.wepp:     moving .out files...
+2026-03-26 04:23:37 [INFO] wepppy.run.unassailable-sensuousness.wepp: _run_hillslope_watbal...
+2026-03-26 04:23:37 [INFO] wepppy.run.unassailable-sensuousness.wepp:     moving tc_out.txt...
+2026-03-26 04:23:37 [INFO] wepppy.run.unassailable-sensuousness.wepp: _run_hillslope_watbal... done. (0.45s)

@@ -1,0 +1,674 @@
+[run_hillslope] wepp_id=2 runs_dir=/wc1/runs/cl/clean-burning-griddle/wepp/runs run_file=/wc1/runs/cl/clean-burning-griddle/wepp/runs/p2.run err_file=/wc1/runs/cl/clean-burning-griddle/wepp/runs/p2.err cmd="/workdir/wepppy/wepp_runner/bin/wepp_dcc52a6_hill" timeout=60s timeout_retries=3
+[run_hillslope] attempt 1/4 start
+->Gwcoeff parameters set
+->WEPP hourly water seepage update set (UI code)
+********************************************************************
+*                                                                  *
+*                                                                  *
+*              USDA - WATER EROSION PREDICTION PROJECT             *
+*                                                                  *
+*                    HILLSLOPE PROFILE - WATERSHED                 *
+*                           EROSION MODEL                          *
+*                                                                  *
+*                    CONTINUOUS SIMULATION AND                     *
+*                       SINGLE STORM OPTIONS                       *
+*                 MAXIMUM WATERSHED CHANNELS: 3600                 *
+*              PHOSPHORUS AND BASEFLOW - JULY 19, 2018             *
+*                                                                  *
+*                          VERSION 2020.500                        *
+*                                                                  *
+*                        May 1,         2020                       *
+*                                                                  *
+*                                                                  *
+*                                                                  *
+********************************************************************
+Do you wish to output [e]nglish or [m]etric units for
+the average annual summary output file?
+Enter [e] or [m] --> [m]etric default
+Metric units selected
+Do you wish to drop out of the model upon invalid input and
+write over identical output file names? (batch mode)
+Enter N to run watershed option (not a SHELL option).
+Enter Y or N --> [Y]
+Continuous or single event option
+---------------------------------
+1 - continuous simulation
+2 - single storm
+Enter option (1 or 2) --> [1]
+Model version option
+--------------------
+1 - hillslope version (single hillslope only)
+2 - hillslope/watershed version
+(multiple hillslopes, channels, and impoundments)
+3 - watershed version (channels and impoundments)
+(option 2 or 3 must be previously selected)
+Enter option (1,2 or 3) --> [1]
+Do you want hillslope pass file output (Y/N)? [N] -->
+Enter name of hillslope pass file -->
+file name read in: ../output/H2.pass.dat
+Soil loss output options for continuous simulation
+---- ---- ------ ------- --- ---------- ----------
+[1] - Abbreviated annual
+2  - Detailed annual
+3  - Abbreviated event by event
+4  - Detailed event by event
+5  - Monthly
+--------------------------------------------------
+Enter Soil Loss output option [1]
+Do you want initial condition scenario output (Y/N)? [N] -->
+Enter file name for soil loss output -->
+file name read in: ../output/H2.loss.dat
+Do you want water balance output (Y/N)? [N] -->
+Enter file name for water balance output -->
+file name read in: ../output/H2.wat.dat
+Do you want crop output (Y/N)? [N] -->
+Do you want soil output (Y/N)? [N] -->
+Enter file name for soil output -->
+file name read in: ../output/H2.soil.dat
+Do you want distance and sediment loss output (Y/N)? [N] -->
+Enter file name for plotting output -->
+file name read in: ../output/H2.plot.dat
+Do you want large graphics output (Y/N)? [N] -->
+Do you want event by event output (Y/N)? [N] -->
+Enter file name for event by event summary -->
+file name read in: ../output/H2.ebe.dat
+Do you want element output (Y/N)? [N] -->
+Enter file name for variable OFE line summary -->
+file name read in: ../output/H2.element.dat
+Do you want final summary output (Y/N)? [N] -->
+Do you want daily winter output (Y/N)? [N] -->
+Do you want plant yield output (Y/N)? [N] -->
+Enter name of file containing management data -->
+file name read in: p2.man
+FAO Penman-Monteith ET Method Implemented
+1.000000000000000E-005  1.000000000000000E-005  0.500000000000000
+Enter name of file containing slope data -->
+file name read in: p2.slp
+Enter name of file containing storm data -->
+file name read in: p2.cli
+Enter name of file containing soil data -->
+file name read in: p2.sol
+Please enter the irrigation option
+----------------------------------
+[0] no irrigation
+1  sprinkler, fixed date
+2  sprinkler, depletion level
+3  sprinkler, combination
+4  furrow,    fixed date
+5  furrow,    depletion
+6  furrow,    combination
+-----------------------------------
+Enter irrigation option [0]
+NO IRRIGATION SELECTED.
+Enter number of years to simulate -->
+To bypass erosion calculations for very small events, enter 1
+Otherwise, to route all events enter 0   (Small events have
+runoff less than 10 mm and peak runoff less than 10 mm/hr) [0] -->
+SIMULATION YEAR =           1
+20 sep    1  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =           2
+1 jan    2  routing runoff & erosion event on OFE 1 of hillslope    1
+12 jan    2  routing runoff & erosion event on OFE 1 of hillslope    1
+23 jun    2  routing runoff & erosion event on OFE 1 of hillslope    1
+23 jul    2  routing runoff & erosion event on OFE 1 of hillslope    1
+15 aug    2  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =           3
+13 sep    3  routing runoff & erosion event on OFE 1 of hillslope    1
+27 oct    3  routing runoff & erosion event on OFE 1 of hillslope    1
+25 nov    3  routing runoff & erosion event on OFE 1 of hillslope    1
+26 nov    3  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =           4
+12 aug    4  routing runoff & erosion event on OFE 1 of hillslope    1
+15 aug    4  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =           5
+30 may    5  routing runoff & erosion event on OFE 1 of hillslope    1
+18 jun    5  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =           6
+1 aug    6  routing runoff & erosion event on OFE 1 of hillslope    1
+1 sep    6  routing runoff & erosion event on OFE 1 of hillslope    1
+13 sep    6  routing runoff & erosion event on OFE 1 of hillslope    1
+22 oct    6  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =           7
+1 apr    7  routing runoff & erosion event on OFE 1 of hillslope    1
+18 jun    7  routing runoff & erosion event on OFE 1 of hillslope    1
+25 aug    7  routing runoff & erosion event on OFE 1 of hillslope    1
+31 oct    7  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =           8
+24 may    8  routing runoff & erosion event on OFE 1 of hillslope    1
+21 sep    8  routing runoff & erosion event on OFE 1 of hillslope    1
+17 oct    8  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =           9
+11 jan    9  routing runoff & erosion event on OFE 1 of hillslope    1
+2 feb    9  routing runoff & erosion event on OFE 1 of hillslope    1
+6 aug    9  routing runoff & erosion event on OFE 1 of hillslope    1
+7 aug    9  routing runoff & erosion event on OFE 1 of hillslope    1
+14 aug    9  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          10
+5 apr   10  routing runoff & erosion event on OFE 1 of hillslope    1
+30 jul   10  routing runoff & erosion event on OFE 1 of hillslope    1
+31 jul   10  routing runoff & erosion event on OFE 1 of hillslope    1
+8 aug   10  routing runoff & erosion event on OFE 1 of hillslope    1
+29 aug   10  routing runoff & erosion event on OFE 1 of hillslope    1
+3 oct   10  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          11
+29 jan   11  routing runoff & erosion event on OFE 1 of hillslope    1
+17 may   11  routing runoff & erosion event on OFE 1 of hillslope    1
+22 may   11  routing runoff & erosion event on OFE 1 of hillslope    1
+28 jun   11  routing runoff & erosion event on OFE 1 of hillslope    1
+1 jul   11  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          12
+4 feb   12  routing runoff & erosion event on OFE 1 of hillslope    1
+6 feb   12  routing runoff & erosion event on OFE 1 of hillslope    1
+27 jul   12  routing runoff & erosion event on OFE 1 of hillslope    1
+26 aug   12  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          13
+10 jul   13  routing runoff & erosion event on OFE 1 of hillslope    1
+17 jul   13  routing runoff & erosion event on OFE 1 of hillslope    1
+10 sep   13  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          14
+13 jun   14  routing runoff & erosion event on OFE 1 of hillslope    1
+14 jun   14  routing runoff & erosion event on OFE 1 of hillslope    1
+20 jun   14  routing runoff & erosion event on OFE 1 of hillslope    1
+28 jun   14  routing runoff & erosion event on OFE 1 of hillslope    1
+3 sep   14  routing runoff & erosion event on OFE 1 of hillslope    1
+26 sep   14  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          15
+21 jan   15  routing runoff & erosion event on OFE 1 of hillslope    1
+28 mar   15  routing runoff & erosion event on OFE 1 of hillslope    1
+31 mar   15  routing runoff & erosion event on OFE 1 of hillslope    1
+15 oct   15  routing runoff & erosion event on OFE 1 of hillslope    1
+9 dec   15  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          16
+27 aug   16  routing runoff & erosion event on OFE 1 of hillslope    1
+30 aug   16  routing runoff & erosion event on OFE 1 of hillslope    1
+2 oct   16  routing runoff & erosion event on OFE 1 of hillslope    1
+1 dec   16  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          17
+3 aug   17  routing runoff & erosion event on OFE 1 of hillslope    1
+20 nov   17  routing runoff & erosion event on OFE 1 of hillslope    1
+27 nov   17  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          18
+18 jun   18  routing runoff & erosion event on OFE 1 of hillslope    1
+1 jul   18  routing runoff & erosion event on OFE 1 of hillslope    1
+19 aug   18  routing runoff & erosion event on OFE 1 of hillslope    1
+20 aug   18  routing runoff & erosion event on OFE 1 of hillslope    1
+21 sep   18  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          19
+10 feb   19  routing runoff & erosion event on OFE 1 of hillslope    1
+12 jun   19  routing runoff & erosion event on OFE 1 of hillslope    1
+14 jul   19  routing runoff & erosion event on OFE 1 of hillslope    1
+16 jul   19  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          20
+16 jan   20  routing runoff & erosion event on OFE 1 of hillslope    1
+29 jul   20  routing runoff & erosion event on OFE 1 of hillslope    1
+11 sep   20  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          21
+3 jun   21  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          22
+2 jan   22  routing runoff & erosion event on OFE 1 of hillslope    1
+4 jun   22  routing runoff & erosion event on OFE 1 of hillslope    1
+11 sep   22  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          23
+8 feb   23  routing runoff & erosion event on OFE 1 of hillslope    1
+6 aug   23  routing runoff & erosion event on OFE 1 of hillslope    1
+22 sep   23  routing runoff & erosion event on OFE 1 of hillslope    1
+23 sep   23  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          24
+15 may   24  routing runoff & erosion event on OFE 1 of hillslope    1
+22 jul   24  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          25
+9 jun   25  routing runoff & erosion event on OFE 1 of hillslope    1
+31 aug   25  routing runoff & erosion event on OFE 1 of hillslope    1
+23 sep   25  routing runoff & erosion event on OFE 1 of hillslope    1
+20 nov   25  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          26
+9 mar   26  routing runoff & erosion event on OFE 1 of hillslope    1
+31 may   26  routing runoff & erosion event on OFE 1 of hillslope    1
+1 jun   26  routing runoff & erosion event on OFE 1 of hillslope    1
+3 jun   26  routing runoff & erosion event on OFE 1 of hillslope    1
+26 jul   26  routing runoff & erosion event on OFE 1 of hillslope    1
+7 aug   26  routing runoff & erosion event on OFE 1 of hillslope    1
+16 oct   26  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          27
+7 jun   27  routing runoff & erosion event on OFE 1 of hillslope    1
+2 jul   27  routing runoff & erosion event on OFE 1 of hillslope    1
+7 jul   27  routing runoff & erosion event on OFE 1 of hillslope    1
+15 aug   27  routing runoff & erosion event on OFE 1 of hillslope    1
+27 sep   27  routing runoff & erosion event on OFE 1 of hillslope    1
+30 sep   27  routing runoff & erosion event on OFE 1 of hillslope    1
+2 oct   27  routing runoff & erosion event on OFE 1 of hillslope    1
+4 oct   27  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          28
+3 may   28  routing runoff & erosion event on OFE 1 of hillslope    1
+30 may   28  routing runoff & erosion event on OFE 1 of hillslope    1
+25 jun   28  routing runoff & erosion event on OFE 1 of hillslope    1
+26 aug   28  routing runoff & erosion event on OFE 1 of hillslope    1
+27 aug   28  routing runoff & erosion event on OFE 1 of hillslope    1
+29 aug   28  routing runoff & erosion event on OFE 1 of hillslope    1
+24 oct   28  routing runoff & erosion event on OFE 1 of hillslope    1
+26 oct   28  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          29
+10 aug   29  routing runoff & erosion event on OFE 1 of hillslope    1
+28 aug   29  routing runoff & erosion event on OFE 1 of hillslope    1
+30 aug   29  routing runoff & erosion event on OFE 1 of hillslope    1
+31 aug   29  routing runoff & erosion event on OFE 1 of hillslope    1
+1 sep   29  routing runoff & erosion event on OFE 1 of hillslope    1
+6 sep   29  routing runoff & erosion event on OFE 1 of hillslope    1
+5 dec   29  routing runoff & erosion event on OFE 1 of hillslope    1
+7 dec   29  routing runoff & erosion event on OFE 1 of hillslope    1
+24 dec   29  routing runoff & erosion event on OFE 1 of hillslope    1
+25 dec   29  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          30
+2 jan   30  routing runoff & erosion event on OFE 1 of hillslope    1
+2 feb   30  routing runoff & erosion event on OFE 1 of hillslope    1
+3 feb   30  routing runoff & erosion event on OFE 1 of hillslope    1
+15 jul   30  routing runoff & erosion event on OFE 1 of hillslope    1
+8 oct   30  routing runoff & erosion event on OFE 1 of hillslope    1
+28 oct   30  routing runoff & erosion event on OFE 1 of hillslope    1
+6 nov   30  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          31
+12 jul   31  routing runoff & erosion event on OFE 1 of hillslope    1
+17 sep   31  routing runoff & erosion event on OFE 1 of hillslope    1
+18 sep   31  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          32
+19 may   32  routing runoff & erosion event on OFE 1 of hillslope    1
+15 nov   32  routing runoff & erosion event on OFE 1 of hillslope    1
+29 nov   32  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          33
+16 jun   33  routing runoff & erosion event on OFE 1 of hillslope    1
+16 aug   33  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          34
+4 mar   34  routing runoff & erosion event on OFE 1 of hillslope    1
+12 mar   34  routing runoff & erosion event on OFE 1 of hillslope    1
+13 mar   34  routing runoff & erosion event on OFE 1 of hillslope    1
+21 may   34  routing runoff & erosion event on OFE 1 of hillslope    1
+9 jun   34  routing runoff & erosion event on OFE 1 of hillslope    1
+10 jun   34  routing runoff & erosion event on OFE 1 of hillslope    1
+18 jun   34  routing runoff & erosion event on OFE 1 of hillslope    1
+19 jun   34  routing runoff & erosion event on OFE 1 of hillslope    1
+8 jul   34  routing runoff & erosion event on OFE 1 of hillslope    1
+6 sep   34  routing runoff & erosion event on OFE 1 of hillslope    1
+20 sep   34  routing runoff & erosion event on OFE 1 of hillslope    1
+5 oct   34  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          35
+6 jun   35  routing runoff & erosion event on OFE 1 of hillslope    1
+17 jul   35  routing runoff & erosion event on OFE 1 of hillslope    1
+23 sep   35  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          36
+14 sep   36  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          37
+7 jan   37  routing runoff & erosion event on OFE 1 of hillslope    1
+24 jan   37  routing runoff & erosion event on OFE 1 of hillslope    1
+17 jun   37  routing runoff & erosion event on OFE 1 of hillslope    1
+3 jul   37  routing runoff & erosion event on OFE 1 of hillslope    1
+4 jul   37  routing runoff & erosion event on OFE 1 of hillslope    1
+11 jul   37  routing runoff & erosion event on OFE 1 of hillslope    1
+20 jul   37  routing runoff & erosion event on OFE 1 of hillslope    1
+23 dec   37  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          38
+7 feb   38  routing runoff & erosion event on OFE 1 of hillslope    1
+8 mar   38  routing runoff & erosion event on OFE 1 of hillslope    1
+16 aug   38  routing runoff & erosion event on OFE 1 of hillslope    1
+17 aug   38  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          39
+15 jul   39  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          40
+13 jul   40  routing runoff & erosion event on OFE 1 of hillslope    1
+19 aug   40  routing runoff & erosion event on OFE 1 of hillslope    1
+23 aug   40  routing runoff & erosion event on OFE 1 of hillslope    1
+18 sep   40  routing runoff & erosion event on OFE 1 of hillslope    1
+19 sep   40  routing runoff & erosion event on OFE 1 of hillslope    1
+20 sep   40  routing runoff & erosion event on OFE 1 of hillslope    1
+2 oct   40  routing runoff & erosion event on OFE 1 of hillslope    1
+23 oct   40  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          41
+4 mar   41  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          42
+24 jan   42  routing runoff & erosion event on OFE 1 of hillslope    1
+30 mar   42  routing runoff & erosion event on OFE 1 of hillslope    1
+25 apr   42  routing runoff & erosion event on OFE 1 of hillslope    1
+4 jun   42  routing runoff & erosion event on OFE 1 of hillslope    1
+8 nov   42  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          43
+23 may   43  routing runoff & erosion event on OFE 1 of hillslope    1
+13 aug   43  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          44
+26 jul   44  routing runoff & erosion event on OFE 1 of hillslope    1
+6 aug   44  routing runoff & erosion event on OFE 1 of hillslope    1
+10 aug   44  routing runoff & erosion event on OFE 1 of hillslope    1
+21 sep   44  routing runoff & erosion event on OFE 1 of hillslope    1
+21 oct   44  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          45
+1 jun   45  routing runoff & erosion event on OFE 1 of hillslope    1
+26 aug   45  routing runoff & erosion event on OFE 1 of hillslope    1
+25 sep   45  routing runoff & erosion event on OFE 1 of hillslope    1
+29 sep   45  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          46
+16 feb   46  routing runoff & erosion event on OFE 1 of hillslope    1
+15 may   46  routing runoff & erosion event on OFE 1 of hillslope    1
+17 aug   46  routing runoff & erosion event on OFE 1 of hillslope    1
+2 sep   46  routing runoff & erosion event on OFE 1 of hillslope    1
+16 oct   46  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          47
+9 mar   47  routing runoff & erosion event on OFE 1 of hillslope    1
+4 jun   47  routing runoff & erosion event on OFE 1 of hillslope    1
+5 jul   47  routing runoff & erosion event on OFE 1 of hillslope    1
+21 sep   47  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          48
+15 jun   48  routing runoff & erosion event on OFE 1 of hillslope    1
+6 aug   48  routing runoff & erosion event on OFE 1 of hillslope    1
+10 aug   48  routing runoff & erosion event on OFE 1 of hillslope    1
+18 aug   48  routing runoff & erosion event on OFE 1 of hillslope    1
+11 oct   48  routing runoff & erosion event on OFE 1 of hillslope    1
+23 oct   48  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          49
+7 mar   49  routing runoff & erosion event on OFE 1 of hillslope    1
+4 jun   49  routing runoff & erosion event on OFE 1 of hillslope    1
+5 jun   49  routing runoff & erosion event on OFE 1 of hillslope    1
+8 sep   49  routing runoff & erosion event on OFE 1 of hillslope    1
+15 oct   49  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          50
+20 may   50  routing runoff & erosion event on OFE 1 of hillslope    1
+4 jul   50  routing runoff & erosion event on OFE 1 of hillslope    1
+22 jul   50  routing runoff & erosion event on OFE 1 of hillslope    1
+2 sep   50  routing runoff & erosion event on OFE 1 of hillslope    1
+15 sep   50  routing runoff & erosion event on OFE 1 of hillslope    1
+21 sep   50  routing runoff & erosion event on OFE 1 of hillslope    1
+1 dec   50  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          51
+11 jul   51  routing runoff & erosion event on OFE 1 of hillslope    1
+26 jul   51  routing runoff & erosion event on OFE 1 of hillslope    1
+25 dec   51  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          52
+15 apr   52  routing runoff & erosion event on OFE 1 of hillslope    1
+29 jun   52  routing runoff & erosion event on OFE 1 of hillslope    1
+21 jul   52  routing runoff & erosion event on OFE 1 of hillslope    1
+6 aug   52  routing runoff & erosion event on OFE 1 of hillslope    1
+23 aug   52  routing runoff & erosion event on OFE 1 of hillslope    1
+24 aug   52  routing runoff & erosion event on OFE 1 of hillslope    1
+25 sep   52  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          53
+26 aug   53  routing runoff & erosion event on OFE 1 of hillslope    1
+1 oct   53  routing runoff & erosion event on OFE 1 of hillslope    1
+2 oct   53  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          54
+12 feb   54  routing runoff & erosion event on OFE 1 of hillslope    1
+1 jun   54  routing runoff & erosion event on OFE 1 of hillslope    1
+16 jun   54  routing runoff & erosion event on OFE 1 of hillslope    1
+24 jul   54  routing runoff & erosion event on OFE 1 of hillslope    1
+19 oct   54  routing runoff & erosion event on OFE 1 of hillslope    1
+9 nov   54  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          55
+16 jul   55  routing runoff & erosion event on OFE 1 of hillslope    1
+17 jul   55  routing runoff & erosion event on OFE 1 of hillslope    1
+27 aug   55  routing runoff & erosion event on OFE 1 of hillslope    1
+10 oct   55  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          56
+11 mar   56  routing runoff & erosion event on OFE 1 of hillslope    1
+6 apr   56  routing runoff & erosion event on OFE 1 of hillslope    1
+18 jun   56  routing runoff & erosion event on OFE 1 of hillslope    1
+18 jul   56  routing runoff & erosion event on OFE 1 of hillslope    1
+29 oct   56  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          57
+23 jan   57  routing runoff & erosion event on OFE 1 of hillslope    1
+3 feb   57  routing runoff & erosion event on OFE 1 of hillslope    1
+15 jul   57  routing runoff & erosion event on OFE 1 of hillslope    1
+16 jul   57  routing runoff & erosion event on OFE 1 of hillslope    1
+6 aug   57  routing runoff & erosion event on OFE 1 of hillslope    1
+13 aug   57  routing runoff & erosion event on OFE 1 of hillslope    1
+5 nov   57  routing runoff & erosion event on OFE 1 of hillslope    1
+29 dec   57  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          58
+11 mar   58  routing runoff & erosion event on OFE 1 of hillslope    1
+14 mar   58  routing runoff & erosion event on OFE 1 of hillslope    1
+16 jul   58  routing runoff & erosion event on OFE 1 of hillslope    1
+26 aug   58  routing runoff & erosion event on OFE 1 of hillslope    1
+5 oct   58  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          59
+5 may   59  routing runoff & erosion event on OFE 1 of hillslope    1
+27 may   59  routing runoff & erosion event on OFE 1 of hillslope    1
+23 sep   59  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          60
+SIMULATION YEAR =          61
+3 mar   61  routing runoff & erosion event on OFE 1 of hillslope    1
+9 mar   61  routing runoff & erosion event on OFE 1 of hillslope    1
+2 jun   61  routing runoff & erosion event on OFE 1 of hillslope    1
+2 sep   61  routing runoff & erosion event on OFE 1 of hillslope    1
+6 sep   61  routing runoff & erosion event on OFE 1 of hillslope    1
+19 oct   61  routing runoff & erosion event on OFE 1 of hillslope    1
+17 dec   61  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          62
+9 mar   62  routing runoff & erosion event on OFE 1 of hillslope    1
+10 mar   62  routing runoff & erosion event on OFE 1 of hillslope    1
+12 mar   62  routing runoff & erosion event on OFE 1 of hillslope    1
+13 mar   62  routing runoff & erosion event on OFE 1 of hillslope    1
+9 jul   62  routing runoff & erosion event on OFE 1 of hillslope    1
+10 jul   62  routing runoff & erosion event on OFE 1 of hillslope    1
+13 jul   62  routing runoff & erosion event on OFE 1 of hillslope    1
+1 aug   62  routing runoff & erosion event on OFE 1 of hillslope    1
+6 sep   62  routing runoff & erosion event on OFE 1 of hillslope    1
+8 sep   62  routing runoff & erosion event on OFE 1 of hillslope    1
+17 sep   62  routing runoff & erosion event on OFE 1 of hillslope    1
+3 dec   62  routing runoff & erosion event on OFE 1 of hillslope    1
+4 dec   62  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          63
+19 aug   63  routing runoff & erosion event on OFE 1 of hillslope    1
+24 sep   63  routing runoff & erosion event on OFE 1 of hillslope    1
+24 oct   63  routing runoff & erosion event on OFE 1 of hillslope    1
+8 dec   63  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          64
+29 mar   64  routing runoff & erosion event on OFE 1 of hillslope    1
+22 may   64  routing runoff & erosion event on OFE 1 of hillslope    1
+2 jul   64  routing runoff & erosion event on OFE 1 of hillslope    1
+20 oct   64  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          65
+20 jun   65  routing runoff & erosion event on OFE 1 of hillslope    1
+4 jul   65  routing runoff & erosion event on OFE 1 of hillslope    1
+24 oct   65  routing runoff & erosion event on OFE 1 of hillslope    1
+2 nov   65  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          66
+19 mar   66  routing runoff & erosion event on OFE 1 of hillslope    1
+12 sep   66  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          67
+28 jan   67  routing runoff & erosion event on OFE 1 of hillslope    1
+15 jun   67  routing runoff & erosion event on OFE 1 of hillslope    1
+11 aug   67  routing runoff & erosion event on OFE 1 of hillslope    1
+20 aug   67  routing runoff & erosion event on OFE 1 of hillslope    1
+21 aug   67  routing runoff & erosion event on OFE 1 of hillslope    1
+28 sep   67  routing runoff & erosion event on OFE 1 of hillslope    1
+29 sep   67  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          68
+8 apr   68  routing runoff & erosion event on OFE 1 of hillslope    1
+6 jul   68  routing runoff & erosion event on OFE 1 of hillslope    1
+7 jul   68  routing runoff & erosion event on OFE 1 of hillslope    1
+8 jul   68  routing runoff & erosion event on OFE 1 of hillslope    1
+9 jul   68  routing runoff & erosion event on OFE 1 of hillslope    1
+24 jul   68  routing runoff & erosion event on OFE 1 of hillslope    1
+27 jul   68  routing runoff & erosion event on OFE 1 of hillslope    1
+11 sep   68  routing runoff & erosion event on OFE 1 of hillslope    1
+9 oct   68  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          69
+4 apr   69  routing runoff & erosion event on OFE 1 of hillslope    1
+6 apr   69  routing runoff & erosion event on OFE 1 of hillslope    1
+3 aug   69  routing runoff & erosion event on OFE 1 of hillslope    1
+13 oct   69  routing runoff & erosion event on OFE 1 of hillslope    1
+1 dec   69  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          70
+4 feb   70  routing runoff & erosion event on OFE 1 of hillslope    1
+19 apr   70  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          71
+27 mar   71  routing runoff & erosion event on OFE 1 of hillslope    1
+1 jun   71  routing runoff & erosion event on OFE 1 of hillslope    1
+1 dec   71  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          72
+28 apr   72  routing runoff & erosion event on OFE 1 of hillslope    1
+17 jul   72  routing runoff & erosion event on OFE 1 of hillslope    1
+28 jul   72  routing runoff & erosion event on OFE 1 of hillslope    1
+16 sep   72  routing runoff & erosion event on OFE 1 of hillslope    1
+30 sep   72  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          73
+25 apr   73  routing runoff & erosion event on OFE 1 of hillslope    1
+30 apr   73  routing runoff & erosion event on OFE 1 of hillslope    1
+7 may   73  routing runoff & erosion event on OFE 1 of hillslope    1
+21 jun   73  routing runoff & erosion event on OFE 1 of hillslope    1
+7 aug   73  routing runoff & erosion event on OFE 1 of hillslope    1
+28 aug   73  routing runoff & erosion event on OFE 1 of hillslope    1
+13 oct   73  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          74
+11 mar   74  routing runoff & erosion event on OFE 1 of hillslope    1
+21 jun   74  routing runoff & erosion event on OFE 1 of hillslope    1
+26 oct   74  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          75
+29 jun   75  routing runoff & erosion event on OFE 1 of hillslope    1
+22 sep   75  routing runoff & erosion event on OFE 1 of hillslope    1
+9 oct   75  routing runoff & erosion event on OFE 1 of hillslope    1
+26 oct   75  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          76
+2 jul   76  routing runoff & erosion event on OFE 1 of hillslope    1
+2 aug   76  routing runoff & erosion event on OFE 1 of hillslope    1
+24 sep   76  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          77
+6 feb   77  routing runoff & erosion event on OFE 1 of hillslope    1
+21 apr   77  routing runoff & erosion event on OFE 1 of hillslope    1
+19 jul   77  routing runoff & erosion event on OFE 1 of hillslope    1
+6 sep   77  routing runoff & erosion event on OFE 1 of hillslope    1
+12 nov   77  routing runoff & erosion event on OFE 1 of hillslope    1
+13 nov   77  routing runoff & erosion event on OFE 1 of hillslope    1
+18 dec   77  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          78
+31 jan   78  routing runoff & erosion event on OFE 1 of hillslope    1
+4 feb   78  routing runoff & erosion event on OFE 1 of hillslope    1
+6 feb   78  routing runoff & erosion event on OFE 1 of hillslope    1
+17 mar   78  routing runoff & erosion event on OFE 1 of hillslope    1
+7 oct   78  routing runoff & erosion event on OFE 1 of hillslope    1
+8 nov   78  routing runoff & erosion event on OFE 1 of hillslope    1
+13 nov   78  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          79
+4 jul   79  routing runoff & erosion event on OFE 1 of hillslope    1
+18 aug   79  routing runoff & erosion event on OFE 1 of hillslope    1
+20 aug   79  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          80
+16 jun   80  routing runoff & erosion event on OFE 1 of hillslope    1
+26 jun   80  routing runoff & erosion event on OFE 1 of hillslope    1
+8 aug   80  routing runoff & erosion event on OFE 1 of hillslope    1
+26 aug   80  routing runoff & erosion event on OFE 1 of hillslope    1
+6 dec   80  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          81
+28 jan   81  routing runoff & erosion event on OFE 1 of hillslope    1
+29 mar   81  routing runoff & erosion event on OFE 1 of hillslope    1
+5 may   81  routing runoff & erosion event on OFE 1 of hillslope    1
+20 sep   81  routing runoff & erosion event on OFE 1 of hillslope    1
+28 sep   81  routing runoff & erosion event on OFE 1 of hillslope    1
+30 sep   81  routing runoff & erosion event on OFE 1 of hillslope    1
+4 oct   81  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          82
+9 sep   82  routing runoff & erosion event on OFE 1 of hillslope    1
+26 sep   82  routing runoff & erosion event on OFE 1 of hillslope    1
+31 dec   82  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          83
+8 aug   83  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          84
+24 feb   84  routing runoff & erosion event on OFE 1 of hillslope    1
+12 jun   84  routing runoff & erosion event on OFE 1 of hillslope    1
+19 aug   84  routing runoff & erosion event on OFE 1 of hillslope    1
+7 sep   84  routing runoff & erosion event on OFE 1 of hillslope    1
+18 sep   84  routing runoff & erosion event on OFE 1 of hillslope    1
+13 dec   84  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          85
+16 feb   85  routing runoff & erosion event on OFE 1 of hillslope    1
+23 mar   85  routing runoff & erosion event on OFE 1 of hillslope    1
+24 may   85  routing runoff & erosion event on OFE 1 of hillslope    1
+12 jun   85  routing runoff & erosion event on OFE 1 of hillslope    1
+27 jun   85  routing runoff & erosion event on OFE 1 of hillslope    1
+8 jul   85  routing runoff & erosion event on OFE 1 of hillslope    1
+25 jul   85  routing runoff & erosion event on OFE 1 of hillslope    1
+1 aug   85  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          86
+9 may   86  routing runoff & erosion event on OFE 1 of hillslope    1
+29 jul   86  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          87
+17 jun   87  routing runoff & erosion event on OFE 1 of hillslope    1
+12 jul   87  routing runoff & erosion event on OFE 1 of hillslope    1
+27 aug   87  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          88
+28 feb   88  routing runoff & erosion event on OFE 1 of hillslope    1
+24 may   88  routing runoff & erosion event on OFE 1 of hillslope    1
+28 jun   88  routing runoff & erosion event on OFE 1 of hillslope    1
+21 nov   88  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          89
+18 apr   89  routing runoff & erosion event on OFE 1 of hillslope    1
+13 jul   89  routing runoff & erosion event on OFE 1 of hillslope    1
+22 sep   89  routing runoff & erosion event on OFE 1 of hillslope    1
+5 nov   89  routing runoff & erosion event on OFE 1 of hillslope    1
+30 dec   89  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          90
+13 feb   90  routing runoff & erosion event on OFE 1 of hillslope    1
+18 jul   90  routing runoff & erosion event on OFE 1 of hillslope    1
+27 jul   90  routing runoff & erosion event on OFE 1 of hillslope    1
+6 aug   90  routing runoff & erosion event on OFE 1 of hillslope    1
+7 aug   90  routing runoff & erosion event on OFE 1 of hillslope    1
+20 aug   90  routing runoff & erosion event on OFE 1 of hillslope    1
+29 sep   90  routing runoff & erosion event on OFE 1 of hillslope    1
+21 oct   90  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          91
+25 mar   91  routing runoff & erosion event on OFE 1 of hillslope    1
+15 oct   91  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          92
+6 jun   92  routing runoff & erosion event on OFE 1 of hillslope    1
+11 jul   92  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          93
+22 jul   93  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          94
+19 jul   94  routing runoff & erosion event on OFE 1 of hillslope    1
+12 aug   94  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          95
+8 apr   95  routing runoff & erosion event on OFE 1 of hillslope    1
+12 may   95  routing runoff & erosion event on OFE 1 of hillslope    1
+9 jul   95  routing runoff & erosion event on OFE 1 of hillslope    1
+30 oct   95  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          96
+14 mar   96  routing runoff & erosion event on OFE 1 of hillslope    1
+3 apr   96  routing runoff & erosion event on OFE 1 of hillslope    1
+5 aug   96  routing runoff & erosion event on OFE 1 of hillslope    1
+11 aug   96  routing runoff & erosion event on OFE 1 of hillslope    1
+19 aug   96  routing runoff & erosion event on OFE 1 of hillslope    1
+20 aug   96  routing runoff & erosion event on OFE 1 of hillslope    1
+14 nov   96  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          97
+12 jul   97  routing runoff & erosion event on OFE 1 of hillslope    1
+14 jul   97  routing runoff & erosion event on OFE 1 of hillslope    1
+10 aug   97  routing runoff & erosion event on OFE 1 of hillslope    1
+11 aug   97  routing runoff & erosion event on OFE 1 of hillslope    1
+19 sep   97  routing runoff & erosion event on OFE 1 of hillslope    1
+25 dec   97  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          98
+5 feb   98  routing runoff & erosion event on OFE 1 of hillslope    1
+6 feb   98  routing runoff & erosion event on OFE 1 of hillslope    1
+22 may   98  routing runoff & erosion event on OFE 1 of hillslope    1
+26 jun   98  routing runoff & erosion event on OFE 1 of hillslope    1
+22 jul   98  routing runoff & erosion event on OFE 1 of hillslope    1
+12 sep   98  routing runoff & erosion event on OFE 1 of hillslope    1
+24 sep   98  routing runoff & erosion event on OFE 1 of hillslope    1
+5 oct   98  routing runoff & erosion event on OFE 1 of hillslope    1
+23 oct   98  routing runoff & erosion event on OFE 1 of hillslope    1
+9 dec   98  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =          99
+21 apr   99  routing runoff & erosion event on OFE 1 of hillslope    1
+21 oct   99  routing runoff & erosion event on OFE 1 of hillslope    1
+SIMULATION YEAR =         100
+24 jan  100  routing runoff & erosion event on OFE 1 of hillslope    1
+
+********************************************************
+*** WARNING ***
+*Leap year detected with 28 days in February           *
+*please modify your climate file by adding 1 day       *
+*to February in year  100.  Leap year annual values    *
+*will not be output.                                   *
+*** WARNING ***
+*                                                      *
+********************************************************
+14 jul  100  routing runoff & erosion event on OFE 1 of hillslope    1
+15 jul  100  routing runoff & erosion event on OFE 1 of hillslope    1
+22 nov  100  routing runoff & erosion event on OFE 1 of hillslope    1
+Hillslope SUCCESSFUL simulation - returning to DOS
+WEPP COMPLETED HILLSLOPE SIMULATION SUCCESSFULLY

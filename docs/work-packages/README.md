@@ -298,7 +298,21 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-07-24 UTC`:
+State as of `2026-07-26 UTC`:
+
+- `20260726-canopy-cal-01-source-target-ledger-001/` -
+  COMPLETE / PASS: canopy assurance roadmap Order 1
+  preserves 19 hash-bound sources and a 140-row typed ledger, preserves the
+  Hubbard 92/95 discrepancy, and now admits deterministic site-specific
+  100-year CAL-02 experiments from the recovered report-linked WEPPcloud
+  sources. The operator confirmed redistribution permission for Bill's
+  commissioned files and the retained third-party reference set.
+- `20260726-canopy-cal-02-elliot-reproduction-001/` -
+  SCAFFOLDED / SOURCE BUNDLE RECOVERED: canopy assurance roadmap Order 2 has
+  exact report-linked 100-year Hubbard `p1`/`H1` and Santee `p2`/`H2`
+  WEPPcloud sources plus the hash-identified BLARHG Windows executable. It will
+  reproduce Bill's biomass, residue, hydrology, sediment, and return-period
+  analysis without changing native canopy physics or fitting parameters.
 
 - `20260724-cqr-testgate-coverage-reconstruction-001/` -
   EXECUTED-HOLD / QUALIFICATION-HANDOFF-ORDER-6: retains its completed
