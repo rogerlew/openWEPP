@@ -76,5 +76,14 @@ self-test's nested Cargo inventory alone incremented the PID-limit counter and
 failed to spawn. The next changed head adds the source-bound nested Cargo
 build-job cap identified by the prior resource diagnosis.
 
+QA attempt 7 bound changed head
+`7268c13c7bdd87bf067392ee1f24920f4fb2fc1c` and TESTGATE run `30192814397`
+to provider run
+[`30194820456`](https://github.com/rogerlew/openWEPP/actions/runs/30194820456).
+The live global Cargo cap did not prevent recursive coverage-wrapper PID
+exhaustion and caused five nested fixture timeouts. It is rejected. The next
+changed head instead sanitizes inherited LLVM coverage wrappers only at the
+independent inventory boundary.
+
 No CQR collection or module implementation is authorized. CQR work in this
 package is selection-only intake of the exact successful QA publication.

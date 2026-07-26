@@ -94,13 +94,13 @@ fn nested_cqr_fixture_is_globally_exclusive() {
 }
 
 #[test]
-fn nested_cargo_builds_have_an_admission_bound_pid_cap() {
+fn independent_inventory_drops_recursive_coverage_wrappers() {
     let source = text("tools/local_ci/quality_observatory.py");
-    assert!(source.contains("QUALITY_CARGO_BUILD_JOBS = 2"));
-    assert!(source.contains("base_env[\"CARGO_BUILD_JOBS\"] = str(QUALITY_CARGO_BUILD_JOBS)"));
-    assert!(source.contains("environment[\"CARGO_BUILD_JOBS\"] = str(QUALITY_CARGO_BUILD_JOBS)"));
-    assert!(source.contains("\"cargo_build_jobs\": QUALITY_CARGO_BUILD_JOBS"));
-    assert!(source.contains("quality Cargo build-job cap changed after admission"));
+    assert!(source.contains("def without_llvm_cov_wrappers("));
+    assert!(source.contains("key not in LLVM_COV_AMBIENT_KEYS"));
+    assert!(source.contains("not key.startswith(\"__CARGO_LLVM_COV_\")"));
+    assert!(source.contains("environment = without_llvm_cov_wrappers(dict(os.environ))"));
+    assert!(!source.contains("QUALITY_CARGO_BUILD_JOBS"));
 }
 
 #[test]

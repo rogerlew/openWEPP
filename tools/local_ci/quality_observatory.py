@@ -27,7 +27,14 @@ INVENTORY_SCHEMA = "openwepp-quality-observatory-inventory-v1"
 COVERAGE_SCHEMA = "openwepp-quality-observatory-coverage-summary-v1"
 ENVELOPE_SCHEMA = "openwepp-quality-observatory-envelope-v2"
 PROFILES = ("full", "science-manual")
-QUALITY_CARGO_BUILD_JOBS = 2
+LLVM_COV_AMBIENT_KEYS = {
+    "CARGO_LLVM_COV",
+    "CARGO_LLVM_COV_BUILD_DIR",
+    "CARGO_LLVM_COV_SHOW_ENV",
+    "CARGO_LLVM_COV_TARGET_DIR",
+    "LLVM_PROFILE_FILE",
+    "RUSTC_WRAPPER",
+}
 RUNTIME_CARGO_ARTIFACTS = (
     {"package": "openwepp-assurance", "binary": "openwepp-assurance"},
 )
@@ -180,6 +187,15 @@ def parse_export_lines(output: str) -> dict[str, str]:
     if not required.issubset(exports):
         raise QualityError("cargo llvm-cov environment is incomplete")
     return exports
+
+
+def without_llvm_cov_wrappers(environment: dict[str, str]) -> dict[str, str]:
+    return {
+        key: value
+        for key, value in environment.items()
+        if key not in LLVM_COV_AMBIENT_KEYS
+        and not key.startswith("__CARGO_LLVM_COV_")
+    }
 
 
 def inventory_from_nextest(payload: dict[str, Any], name: str) -> dict[str, Any]:
@@ -871,7 +887,6 @@ def admit(args: argparse.Namespace) -> int:
     versions = identity_versions(repo)
     manifest = source_manifest(repo)
     base_env = dict(os.environ)
-    base_env["CARGO_BUILD_JOBS"] = str(QUALITY_CARGO_BUILD_JOBS)
     base_env["CARGO_TARGET_DIR"] = str(target)
     base_env["TMPDIR"] = str(temporary_root)
     llvm_exports = parse_export_lines(
@@ -900,7 +915,6 @@ def admit(args: argparse.Namespace) -> int:
     )
     build_identity = {
         "coverage_mode": "workspace-default-features-instrument-coverage-cfg-coverage",
-        "cargo_build_jobs": QUALITY_CARGO_BUILD_JOBS,
         "features": [],
         "instrumented_target": str(target),
         "runtime_cargo_artifacts": runtime_artifacts,
@@ -1046,8 +1060,6 @@ def validate_admission(repo: Path, attempt_root: Path) -> dict[str, Any]:
         dict(item) for item in RUNTIME_CARGO_ARTIFACTS
     ]:
         raise QualityError("runtime Cargo artifact declaration changed")
-    if payload["build_identity"].get("cargo_build_jobs") != QUALITY_CARGO_BUILD_JOBS:
-        raise QualityError("quality Cargo build-job cap changed after admission")
     config = attempt_root / "local/nextest.toml"
     if config.is_symlink() or not config.is_file():
         raise QualityError("admitted Nextest config is missing or unsafe")
@@ -1544,7 +1556,6 @@ def collect(args: argparse.Namespace) -> int:
     target = local / "target"
     temporary_root = local / "tmp"
     environment = dict(os.environ)
-    environment["CARGO_BUILD_JOBS"] = str(QUALITY_CARGO_BUILD_JOBS)
     environment["CARGO_TARGET_DIR"] = str(target)
     environment["TMPDIR"] = str(temporary_root)
     llvm_exports = parse_export_lines(
@@ -1873,7 +1884,7 @@ def independent_inventory_partition(repo: Path) -> dict[str, dict[str, Any]]:
         target = root / "target"
         target.mkdir()
         config = prepare_nextest_config(repo, root)
-        environment = dict(os.environ)
+        environment = without_llvm_cov_wrappers(dict(os.environ))
         environment["CARGO_TARGET_DIR"] = str(target)
         environment.update(
             parse_export_lines(
@@ -2389,6 +2400,26 @@ def verify_command(args: argparse.Namespace) -> int:
 
 
 def self_test() -> int:
+    cleaned = without_llvm_cov_wrappers(
+        {
+            "CARGO_BUILD_JOBS": "3",
+            "CARGO_TARGET_DIR": "/disk/target",
+            "TMPDIR": "/disk/tmp",
+            "RUSTC_WRAPPER": "/bin/cargo-llvm-cov",
+            "CARGO_LLVM_COV": "1",
+            "CARGO_LLVM_COV_SHOW_ENV": "1",
+            "CARGO_LLVM_COV_TARGET_DIR": "/outer/target",
+            "CARGO_LLVM_COV_BUILD_DIR": "/outer/target",
+            "LLVM_PROFILE_FILE": "/outer/%p.profraw",
+            "__CARGO_LLVM_COV_RUSTC_WRAPPER": "1",
+            "__CARGO_LLVM_COV_RUSTC_WRAPPER_RUSTFLAGS": "coverage",
+        }
+    )
+    assert cleaned == {
+        "CARGO_BUILD_JOBS": "3",
+        "CARGO_TARGET_DIR": "/disk/target",
+        "TMPDIR": "/disk/tmp",
+    }
     first = {"z": 1, "a": ["x", False]}
     second = {"a": ["x", False], "z": 1}
     if canonical_bytes(first) != canonical_bytes(second):

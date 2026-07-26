@@ -43,3 +43,12 @@ nested Cargo graph still hit the PID ceiling once. The second-line correction
 binds `CARGO_BUILD_JOBS=2` into the QA build identity and both execution
 environments. It limits nested compiler/linker process fan-out while retaining
 the same exact test inventory and Nextest schedule.
+
+Live qualification rejected that global cap: five nested planner fixtures
+timed out at 720 seconds, while the CQR fixture still hit the PID ceiling
+because it recursively inherited outer `cargo-llvm-cov` wrappers. The next
+correction removes the cap and sanitizes only the independent inventory base
+environment. It removes `RUSTC_WRAPPER`, `LLVM_PROFILE_FILE`, public
+`CARGO_LLVM_COV*`, and private `__CARGO_LLVM_COV_*` variables before requesting
+one fresh coverage environment. Target, temporary-root, and unrelated
+environment bindings remain intact.
