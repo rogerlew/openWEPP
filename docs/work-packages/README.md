@@ -11,6 +11,13 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260726-canopy-cal-03-observation-native-research-001/` completed the
+  pre-calibration canopy evidence package. It installs immutable observation
+  roles, source-supplied Marcell/Harvard/Hubbard native pairs, a default-off
+  production-consumer JSONL research trace, Bill-method diagnostics, and the
+  frozen CAL-04/CAL-05 protocol. All nine fixture lanes and both independent
+  reviews/verifications passed. CAL-04 remains authority-blocked until an
+  independent quantitative phenology-timing holdout is admitted.
 - `20260724-quality-observatory-cqr-qualification-001/` completed roadmap
   Order 7. Exact-head TESTGATE run `30203702249` passed 12/12 nodes; optional
   QA run `30205750420` passed 2,332 tests and published an exact canonical

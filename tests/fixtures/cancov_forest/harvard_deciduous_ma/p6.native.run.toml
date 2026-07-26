@@ -1,0 +1,15 @@
+schema = "openwepp-hillslope-runfile-v1"
+run_name = "cal03-harvard-deciduous-p6-native"
+unit_system = "metric"
+
+[inputs]
+soil = "p6.sol"
+management = "p6.man.yaml"
+slope = "p6.slp"
+climate = "p6.cli"
+wepp_ui = false
+
+[outputs]
+pass = "output/native/H6.hbp"
+loss = "output/native/H6.loss.json"
+wat = "output/native/H6.wat.parquet"

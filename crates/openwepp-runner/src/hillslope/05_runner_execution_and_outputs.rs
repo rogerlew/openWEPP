@@ -222,6 +222,11 @@ fn execute_direct_publication_stream(
                     .map_err(|error| direct_publication_day_input_build_error(&error))
             },
             |row, day_frame| {
+                day_input_builder
+                    .maybe_write_canopy_research_trace(day_frame)
+                    .map_err(|error| DirectRuntimeError::PublicationSinkFailure {
+                        detail: error.to_string(),
+                    })?;
                 #[cfg(test)]
                 record_native_canopy_consumer_trace(day_frame);
                 if let Some(collector) = laned_shadow.as_mut() {

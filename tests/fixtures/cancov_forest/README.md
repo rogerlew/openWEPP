@@ -118,10 +118,47 @@ Each directory: `pN.{run,man,slp,sol,cli}` + hillslope sidecars `snow.txt`,
 `pmetpara.txt`, `gwcoeff.txt`, and a `manifest.md`. Watershed-scoped files
 (`chan.inp`, `chntyp.txt`, `tc.txt`, `wepp_ui.txt`) are excluded.
 
+The nine source-supplied Marcell, Harvard, and Hubbard Brook gradient lanes also
+contain CAL03 native counterparts:
+
+- `pN.man.yaml`, first generated from `pN.man` by
+  `openwepp-landuse-migrate` with the documented stratum (`forest`,
+  `deciduous forest`, `mixed forest`, or `short grass`) as explicit
+  disturbed-class authority. The seven forest lanes are then promoted from the
+  migrator's legacy-compatible `native_cropland` representation to schema-native
+  `native_forest`; the two open controls remain `native_cropland`;
+- `pN.native.run.toml`, an `openwepp-hillslope-runfile-v1` CLI runfile that
+  changes only the management binding to `pN.man.yaml` and places native run
+  products under `output/native/`.
+
+The native pairing does not add strata. Marcell retains four lanes, Harvard
+retains three (no pure hemlock/conifer model lane), and Hubbard Brook retains
+two (no pure conifer or open model lane). Climate, soil, slope, simulation
+period, and observation relationships remain bound to each original fixture
+directory. The original management and its initial conditions remain adjacent
+as `pN.man`. CAL03's machine-readable pair manifest and SHA-256 evidence are
+retained in its work-package artifacts.
+
+The native-forest promotion is an observability substrate, not a calibration.
+Its growth, decomposition, community, initial-condition, biomass, structure,
+and GSI threshold values are the canonical native-forest fixture's seed
+operands and are all classified `FITTED_OPERAND` / `uncalibrated`. Evergreen
+fraction is the only class-specific seed: conifer `1.0`, mixed `0.5`, and
+deciduous `0.0`. Those fractions are categorical research-arm definitions, not
+field estimates. Routing coefficients and the yearly `itype`, `jdharv`,
+`jdplt`, `jdstop`, and `rw` values retain exact schema mappings from the
+migrated source. The legacy cropland growth and initial-condition arrays have
+no authoritative one-to-one native-forest mapping and are therefore retained
+only in the adjacent `pN.man` source, not presented as equivalent native
+operands.
+
 ## Running
 
 ```
-openwepp-cli-hill <fixture_dir> pN.run   # produces HBP shard + parquet
+openwepp-cli-hill \
+  --run-dir <fixture_dir> \
+  --run-file pN.native.run.toml \
+  --output-dir <output_dir>
 ```
 
 ## Notes

@@ -1,0 +1,345 @@
+format: openwepp-management-yaml
+schema_version: 1
+datver: ow-lanuse-1
+topology:
+  nofes: 1
+  total_years: 45
+metadata:
+  name: Manage
+  description:
+  - description 1
+  - description 2
+  - description 3
+  provenance:
+    source_path: tests/fixtures/cancov_forest/marcell_conifer_mn/p8.man
+    source_datver: '98.4'
+    migrator: openwepp-landuse-migrate 0.1.0
+plants:
+- landuse: native_forest
+  name: Tah_4899
+  description:
+  - With no Senescence or decomposition
+  - (null)
+  - W. Elliot 05/10
+  forest_class: forest
+  growth:
+    bb: 14.0
+    bbb: 3.0
+    beinp: 0.0
+    btemp: 2.0
+    otemp: 20.0
+    gddmax: 0.1
+    dlai: 0.5
+    dropfc: 1.0
+    decfct: 1.0
+    spriod: 90.0
+    extnct: 0.45
+    flivmx: 17.0
+    hmax: 0.2
+    hi: 0.42
+    pltol: 0.0
+    xmxlai: 2.0
+    rsr: 0.33
+    rtmmax: 0.2
+    rdmax: 0.3
+  phenology:
+    model: generalized_gsi_v1
+    summer_foliar_biomass_kg_m2: 0.2
+    evergreen_fraction: 1.0
+    structural_canopy_cover_fraction: 0.2
+    structural_biomass_kg_m2: 0.1
+    minimum_temperature_inactive_c: -2.0
+    minimum_temperature_unconstrained_c: 5.0
+    vapor_pressure_deficit_unconstrained_pa: 900.0
+    vapor_pressure_deficit_inactive_pa: 4100.0
+    photoperiod_inactive_hours: 10.0
+    photoperiod_unconstrained_hours: 11.0
+  cf: 5.0
+  diam: 0.005
+  decomposition:
+    oratea: 0.0
+    orater: 0.0
+  community:
+    tempmn: -5.0
+    gtemp: 5.0
+    plive: 0.2
+    wood: 0.1
+    grass: {coeff: 0.0, diam: 0.0, hgt: 0.0, pop: 0.0}
+    shrub: {coeff: 0.0, diam: 0.0, hgt: 0.0, pop: 0.0}
+    tree: {coeff: 0.02, diam: 2.0, hgt: 8.0, pop: 500.0}
+  routing_coefficients:
+    k_o: 410.0
+    form_c_d: 0.95
+    d_r_m: 0.06
+    lambda: 0.2
+    vegetation_c_d: 0.75
+    authority:
+      source: disturbed-route-coefficients
+      version: ADR-0014-2026-07-07
+      checksum: sha256:55b0d88fe89a968a4d19c80b55f766a16c0c92c84ba97e97366ea664ac3cd051
+      disturbed_class: forest
+      source_authority: ADR-0014; openWEPP WP 20260707-laned-router-d16-hybrid-disturbed-route-coeff-source-acquisition-001
+operations: []
+initial_conditions:
+- landuse: native_forest
+  name: Tah_4089
+  description:
+  - For no growth, no decomp, no senescence
+  - (null)
+  - W. Elliot  05/10
+  cancov: 0.4
+  inrcov: 0.3
+  rilcov: 0.3
+  rrinit: 0.06
+  iresd: 1
+  imngmt: 2
+  sumrtm: 0.1
+  sumsrm: 0.2
+  tillay1: 0.1
+  tillay2: 0.2
+surface_effects: []
+contours: []
+drains: []
+yearly_scenarios:
+- landuse: native_forest
+  name: Year 1
+  description:
+  - (null)
+  - (null)
+  - (null)
+  itype: 1
+  jdharv: 0
+  jdplt: 0
+  jdstop: 0
+  rw: 0.0
+schedule:
+  ofe_initial_refs:
+  - 1
+  rotation_repeats: 1
+  rotation_years: 45
+  slots:
+  - rotation_index: 1
+    year_in_rotation: 1
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 2
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 3
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 4
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 5
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 6
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 7
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 8
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 9
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 10
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 11
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 12
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 13
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 14
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 15
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 16
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 17
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 18
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 19
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 20
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 21
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 22
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 23
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 24
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 25
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 26
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 27
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 28
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 29
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 30
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 31
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 32
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 33
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 34
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 35
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 36
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 37
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 38
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 39
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 40
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 41
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 42
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 43
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 44
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 45
+    ofe_index: 1
+    yearly_refs:
+    - 1

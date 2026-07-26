@@ -1,0 +1,15 @@
+schema = "openwepp-hillslope-runfile-v1"
+run_name = "cal03-hubbardbrook-deciduous-p10-native"
+unit_system = "metric"
+
+[inputs]
+soil = "p10.sol"
+management = "p10.man.yaml"
+slope = "p10.slp"
+climate = "p10.cli"
+wepp_ui = false
+
+[outputs]
+pass = "output/native/H10.hbp"
+loss = "output/native/H10.loss.json"
+wat = "output/native/H10.wat.parquet"

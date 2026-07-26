@@ -12,6 +12,7 @@ struct DirectProductionDayInputBuilder<'a> {
     residue_cover_state: std::cell::RefCell<Vec<DirectProductionResidueCoverState>>,
     forest_canopy_state:
         std::cell::RefCell<Vec<Option<openwepp_plant_phenology::ForestCanopyState>>>,
+    canopy_research_pending: std::cell::RefCell<Vec<Option<NativeCanopyBuilderTrace>>>,
     winter_hourly_geometry: DirectProductionWinterHourlyGeometry,
     sturm_climate_class: Option<openwepp_hillslope_orchestrator::SnowClimateClass>,
 }
@@ -308,17 +309,25 @@ struct DirectProductionForestPhenologyAuthority {
     photoperiod_unconstrained_hours: f64,
 }
 
-#[cfg(test)]
 #[derive(Clone, Copy, Debug)]
 struct NativeCanopyBuilderTrace {
     day_index: usize,
     lane_index: usize,
+    year: i32,
+    month: i32,
+    day_of_month: i32,
+    daily: openwepp_plant_phenology::ForestCanopyDailyResult,
+    #[cfg(test)]
     canopy: openwepp_plant_phenology::ForestCanopyRealization,
     snow_canopy_cover_fraction: f64,
     interception_inputs: DirectCanopyInterceptionInputs,
+    #[cfg(test)]
     interception_state: openwepp_hillslope_orchestrator::DirectCanopyInterceptionState,
+    #[cfg(test)]
     projected_surface_residue_kg_m2: f64,
+    #[cfg(test)]
     projected_residue_depth_m: f64,
+    #[cfg(test)]
     frost_residue_depth_m: Option<f64>,
 }
 

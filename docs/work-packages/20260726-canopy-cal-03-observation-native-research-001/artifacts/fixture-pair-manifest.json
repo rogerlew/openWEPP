@@ -1,0 +1,307 @@
+{
+  "schema": "openwepp-canopy-cal03-fixture-pairs-v1",
+  "status": "generated-promoted-and-validated",
+  "generation": {
+    "management_tool": "openwepp-landuse-migrate",
+    "target": "ow-lanuse-1",
+    "command_pattern": "openwepp-landuse-migrate <legacy_management> --to ow-lanuse-1 --disturbed-class <documented_stratum>",
+    "checksum_algorithm": "sha256",
+    "post_migration_promotion": "Forest lanes are schema-promoted from the migrator's legacy-compatible native_cropland output to native_forest. Open controls remain byte-identical migrator output.",
+    "migrator_output_provenance_preserved": true
+  },
+  "invariants": {
+    "native_runfile_schema": "openwepp-hillslope-runfile-v1",
+    "unchanged_bindings": [
+      "climate",
+      "soil",
+      "slope",
+      "simulation_period",
+      "initial_condition_source",
+      "observation_relationship"
+    ],
+    "native_management_suffix": ".man.yaml",
+    "native_output_subdirectory": "output/native",
+    "manufactured_strata": false,
+    "forest_fixtures": [
+      "marcell_conifer_mn",
+      "marcell_deciduous_mn",
+      "marcell_mixed_mn",
+      "harvard_deciduous_ma",
+      "harvard_mixed_ma",
+      "hubbardbrook_deciduous_nh",
+      "hubbardbrook_mixed_nh"
+    ],
+    "open_control_fixtures": [
+      "marcell_open_mn",
+      "harvard_open_ma"
+    ]
+  },
+  "native_forest_operand_posture": {
+    "classification": "FITTED_OPERAND",
+    "calibration_status": "uncalibrated",
+    "fitness_for_use": "CAL03 observability and protocol rehearsal only; not accepted calibration or field authority",
+    "seed_source": {
+      "path": "tests/fixtures/infile/management/canonical_forest_nonzero_ow_lanuse_1.man.yaml",
+      "sha256": "2e3f752d5afb0b7db7c252ba83d5ec32b19249ab6a8aef0836e64549088aee25"
+    },
+    "canonical_seed_fields": [
+      "growth.bb",
+      "growth.bbb",
+      "growth.beinp",
+      "growth.btemp",
+      "growth.otemp",
+      "growth.gddmax",
+      "growth.dlai",
+      "growth.dropfc",
+      "growth.decfct",
+      "growth.spriod",
+      "growth.extnct",
+      "growth.flivmx",
+      "growth.hmax",
+      "growth.hi",
+      "growth.pltol",
+      "growth.xmxlai",
+      "growth.rsr",
+      "growth.rtmmax",
+      "growth.rdmax",
+      "phenology.summer_foliar_biomass_kg_m2",
+      "phenology.structural_canopy_cover_fraction",
+      "phenology.structural_biomass_kg_m2",
+      "phenology.minimum_temperature_inactive_c",
+      "phenology.minimum_temperature_unconstrained_c",
+      "phenology.vapor_pressure_deficit_unconstrained_pa",
+      "phenology.vapor_pressure_deficit_inactive_pa",
+      "phenology.photoperiod_inactive_hours",
+      "phenology.photoperiod_unconstrained_hours",
+      "cf",
+      "diam",
+      "decomposition.oratea",
+      "decomposition.orater",
+      "community.tempmn",
+      "community.gtemp",
+      "community.plive",
+      "community.wood",
+      "community.grass.coeff",
+      "community.grass.diam",
+      "community.grass.hgt",
+      "community.grass.pop",
+      "community.shrub.coeff",
+      "community.shrub.diam",
+      "community.shrub.hgt",
+      "community.shrub.pop",
+      "community.tree.coeff",
+      "community.tree.diam",
+      "community.tree.hgt",
+      "community.tree.pop",
+      "initial_conditions.cancov",
+      "initial_conditions.inrcov",
+      "initial_conditions.rilcov",
+      "initial_conditions.rrinit",
+      "initial_conditions.sumrtm",
+      "initial_conditions.sumsrm",
+      "initial_conditions.tillay1",
+      "initial_conditions.tillay2"
+    ],
+    "class_seed_field": {
+      "field": "phenology.evergreen_fraction",
+      "classification": "FITTED_OPERAND",
+      "calibration_status": "uncalibrated",
+      "values": {
+        "conifer": 1.0,
+        "mixed": 0.5,
+        "deciduous": 0.0
+      },
+      "authority_limit": "categorical research-arm definition; not a field estimate"
+    },
+    "exact_source_mappings_retained": [
+      "routing_coefficients",
+      "initial_conditions.iresd",
+      "initial_conditions.imngmt",
+      "yearly_scenarios.itype",
+      "yearly_scenarios.jdharv",
+      "yearly_scenarios.jdplt",
+      "yearly_scenarios.jdstop",
+      "yearly_scenarios.rw",
+      "schedule"
+    ],
+    "non_equivalence_notice": "Legacy cropland growth/canopy/residue/terminal arrays and initial-condition arrays have no authoritative one-to-one native_forest mapping. They remain in pN.man as source evidence and are not represented as equivalent native operands."
+  },
+  "coverage_limits": {
+    "marcell": "four source-supplied lanes: conifer, deciduous, mixed, open",
+    "harvard": "three source-supplied lanes: deciduous, mixed, open; no pure hemlock/conifer model lane",
+    "hubbard_brook": "two source-supplied lanes: deciduous, mixed; no pure conifer or open model lane"
+  },
+  "pairs": [
+    {
+      "site": "marcell",
+      "arm": "conifer",
+      "fixture": "marcell_conifer_mn",
+      "source_run": "juvenile-separatist",
+      "topaz_id": 52,
+      "wepp_id": "p8",
+      "disturbed_class": "forest",
+      "period": "1980-2024",
+      "observation_binding": "Marcell conifer stratum, USFS RDS-2021-0016",
+      "files": {
+        "legacy_management": {"path": "tests/fixtures/cancov_forest/marcell_conifer_mn/p8.man", "sha256": "9e937ca7cdf7b28fec2dc326eadcc66d9a0c841f6bc144d9b20653a8ad224e25"},
+        "native_management": {"path": "tests/fixtures/cancov_forest/marcell_conifer_mn/p8.man.yaml", "sha256": "5b592a479211418ccc7d6a3390b51294cc67a6e1f1db53f4af8f527ef3126175"},
+        "native_runfile": {"path": "tests/fixtures/cancov_forest/marcell_conifer_mn/p8.native.run.toml", "sha256": "6d3c56cfaa011d87f645ab8722cc6cc1e1bd4528abfb92e7f08fe0ac4958b8c1"},
+        "climate": {"path": "tests/fixtures/cancov_forest/marcell_conifer_mn/p8.cli", "sha256": "5270b9a94ee7ce311d1b69095e25a322fe30a5b6bb04bb9ef5a65b17bb01fcbb"},
+        "soil": {"path": "tests/fixtures/cancov_forest/marcell_conifer_mn/p8.sol", "sha256": "3c7fcf2ef34c35d550d4bd78566fbe8ed6628b9876f10da046c01ad1523a9918"},
+        "slope": {"path": "tests/fixtures/cancov_forest/marcell_conifer_mn/p8.slp", "sha256": "486224c4b558de17f4f205da79b050f11e0da3564cfc109a0ef791e005edcbae"}
+      }
+    },
+    {
+      "site": "marcell",
+      "arm": "deciduous",
+      "fixture": "marcell_deciduous_mn",
+      "source_run": "juvenile-separatist",
+      "topaz_id": 73,
+      "wepp_id": "p15",
+      "disturbed_class": "deciduous forest",
+      "period": "1980-2024",
+      "observation_binding": "Marcell deciduous stratum, USFS RDS-2021-0016",
+      "files": {
+        "legacy_management": {"path": "tests/fixtures/cancov_forest/marcell_deciduous_mn/p15.man", "sha256": "a2312978933beebd4647a7dd298c88f08d10485da30f1c97e7bc877a4a932f8a"},
+        "native_management": {"path": "tests/fixtures/cancov_forest/marcell_deciduous_mn/p15.man.yaml", "sha256": "fd9ea2401372b1ad715fb1661c419e2e27e2e969ab19136bc678da2f0ac9618d"},
+        "native_runfile": {"path": "tests/fixtures/cancov_forest/marcell_deciduous_mn/p15.native.run.toml", "sha256": "7ff6cb90787964e171f8ac5746351b4df870440b5c2d145a2eb99ef96a139ed2"},
+        "climate": {"path": "tests/fixtures/cancov_forest/marcell_deciduous_mn/p15.cli", "sha256": "9008e6069cd4ef704a074b37c32396d671d16ce61e3ac0d528b1ee2510553194"},
+        "soil": {"path": "tests/fixtures/cancov_forest/marcell_deciduous_mn/p15.sol", "sha256": "18c8151ecabda00a22e6fcd9cad0788e817ce581d20e431932bf974be6aef4ff"},
+        "slope": {"path": "tests/fixtures/cancov_forest/marcell_deciduous_mn/p15.slp", "sha256": "3581254098e567e3ae288bccdf8407e14ff3c41a43da5e98b3e8477ef4d0dc9a"}
+      }
+    },
+    {
+      "site": "marcell",
+      "arm": "mixed",
+      "fixture": "marcell_mixed_mn",
+      "source_run": "juvenile-separatist",
+      "topaz_id": 61,
+      "wepp_id": "p10",
+      "disturbed_class": "mixed forest",
+      "period": "1980-2024",
+      "observation_binding": "within-site mixed canopy contrast; no direct Marcell mixed observation stratum",
+      "files": {
+        "legacy_management": {"path": "tests/fixtures/cancov_forest/marcell_mixed_mn/p10.man", "sha256": "b6a82500f6f85c930aeab6a785268451ccbb0d846ea9bb340c884a1b3f2cd752"},
+        "native_management": {"path": "tests/fixtures/cancov_forest/marcell_mixed_mn/p10.man.yaml", "sha256": "a0fc11090e5262f4ec84b3b74e9a39678639ea5e9c199a5ff744121c10fd3d3e"},
+        "native_runfile": {"path": "tests/fixtures/cancov_forest/marcell_mixed_mn/p10.native.run.toml", "sha256": "814e281102191e4b235d7f6e682c66aea914172c393be9152e665bf0e8fce027"},
+        "climate": {"path": "tests/fixtures/cancov_forest/marcell_mixed_mn/p10.cli", "sha256": "7eb4f334008ac3fe0e590b489471d1aff58416bd9cc8bbed59c7de5852cc0fcb"},
+        "soil": {"path": "tests/fixtures/cancov_forest/marcell_mixed_mn/p10.sol", "sha256": "d2cd0cc02312828736a303e282d357ef4b0eb5281d5004a64c623422bd617f5f"},
+        "slope": {"path": "tests/fixtures/cancov_forest/marcell_mixed_mn/p10.slp", "sha256": "52c9374bbbcced78a0298013e2b40144f21e178f49bf52e1c5c3e8f7938134e9"}
+      }
+    },
+    {
+      "site": "marcell",
+      "arm": "open",
+      "fixture": "marcell_open_mn",
+      "source_run": "juvenile-separatist",
+      "topaz_id": 42,
+      "wepp_id": "p6",
+      "disturbed_class": "short grass",
+      "period": "1980-2024",
+      "observation_binding": "Marcell open stratum, USFS RDS-2021-0016",
+      "files": {
+        "legacy_management": {"path": "tests/fixtures/cancov_forest/marcell_open_mn/p6.man", "sha256": "6aed0b084976b4c1289c711d913173599f6ed84b36c6f7b608bdfe06ac0f80ef"},
+        "native_management": {"path": "tests/fixtures/cancov_forest/marcell_open_mn/p6.man.yaml", "sha256": "f1ac9e278d5c900230202347d1464161d0294ed05356bcab5197a58dbbf46a1b"},
+        "native_runfile": {"path": "tests/fixtures/cancov_forest/marcell_open_mn/p6.native.run.toml", "sha256": "652c42744d45bf10904ae4a47fcdbffce50646230ccedb57f44d0274313cf315"},
+        "climate": {"path": "tests/fixtures/cancov_forest/marcell_open_mn/p6.cli", "sha256": "7d18fb2ca693c1961f4255146d793660d8f4d36b4591792f9aeff344f626b520"},
+        "soil": {"path": "tests/fixtures/cancov_forest/marcell_open_mn/p6.sol", "sha256": "66dff7fc6583412c2d88abb8298cf10e9dbac40c71dc4d84370386f93904474d"},
+        "slope": {"path": "tests/fixtures/cancov_forest/marcell_open_mn/p6.slp", "sha256": "62cdefe4a08260cf89ec387c79bc8874131d7cb8140d767375889f87eecf81ed"}
+      }
+    },
+    {
+      "site": "harvard",
+      "arm": "deciduous",
+      "fixture": "harvard_deciduous_ma",
+      "source_run": "undescended-conserve",
+      "topaz_id": 41,
+      "wepp_id": "p6",
+      "disturbed_class": "deciduous forest",
+      "period": "1980-2024",
+      "observation_binding": "Harvard HF237 hardwood stratum",
+      "files": {
+        "legacy_management": {"path": "tests/fixtures/cancov_forest/harvard_deciduous_ma/p6.man", "sha256": "5ee7f9ca0a9521a892982f371599d71fb1e8efc4d27ca7e968ba5ba6e03a7343"},
+        "native_management": {"path": "tests/fixtures/cancov_forest/harvard_deciduous_ma/p6.man.yaml", "sha256": "8f2258b052706ec949adfd63fb99555dbb347996c38b8c3bdf1b2a98d3a1431a"},
+        "native_runfile": {"path": "tests/fixtures/cancov_forest/harvard_deciduous_ma/p6.native.run.toml", "sha256": "1ddc0833a914f04153bb149b1c7535de2f7588fc53cdd66e695fa0fa60a98997"},
+        "climate": {"path": "tests/fixtures/cancov_forest/harvard_deciduous_ma/p6.cli", "sha256": "cc880f5f704896c9c66f0109daae5deaa2d65fc8103f133036111eb32986c71d"},
+        "soil": {"path": "tests/fixtures/cancov_forest/harvard_deciduous_ma/p6.sol", "sha256": "cfe7532f6e2c4bfbb8e3d74f71f881ffb48c33c3da107214e8ae3e6143e7aaef"},
+        "slope": {"path": "tests/fixtures/cancov_forest/harvard_deciduous_ma/p6.slp", "sha256": "5f88d590c65322f4c47e1c8b9bef507bc7483a825b35451a3ceb1431d20eee1a"}
+      }
+    },
+    {
+      "site": "harvard",
+      "arm": "mixed",
+      "fixture": "harvard_mixed_ma",
+      "source_run": "undescended-conserve",
+      "topaz_id": 43,
+      "wepp_id": "p8",
+      "disturbed_class": "mixed forest",
+      "period": "1980-2024",
+      "observation_binding": "closest model counterpart to Harvard HF237 hemlock; not a pure hemlock lane",
+      "files": {
+        "legacy_management": {"path": "tests/fixtures/cancov_forest/harvard_mixed_ma/p8.man", "sha256": "e6275ffa23036d2c0c8c007cf3eb709c3923af42e302cd0eb5e43ac4013f2952"},
+        "native_management": {"path": "tests/fixtures/cancov_forest/harvard_mixed_ma/p8.man.yaml", "sha256": "af7dab598ef006075be0b20d6559bd85837ef8530514f0f2eb181ea1a12d6b49"},
+        "native_runfile": {"path": "tests/fixtures/cancov_forest/harvard_mixed_ma/p8.native.run.toml", "sha256": "30314b61555c385386ff2d242bf71afea3a253baa4a355a2c593ed08c9166d63"},
+        "climate": {"path": "tests/fixtures/cancov_forest/harvard_mixed_ma/p8.cli", "sha256": "09a8a3821243846cee907490c47773918367837b0e70dbdc1cfa6c1fc4daa881"},
+        "soil": {"path": "tests/fixtures/cancov_forest/harvard_mixed_ma/p8.sol", "sha256": "7efda78b82c672ab7d8dc28bbc65acbaf2ac0e46f09317c1db68aa97bcf0a132"},
+        "slope": {"path": "tests/fixtures/cancov_forest/harvard_mixed_ma/p8.slp", "sha256": "e85fb61b5b0958f6d7321939bb7ae46f7a3248527cfdb0f07b2ebf97949a2016"}
+      }
+    },
+    {
+      "site": "harvard",
+      "arm": "open",
+      "fixture": "harvard_open_ma",
+      "source_run": "undescended-conserve",
+      "topaz_id": 31,
+      "wepp_id": "p3",
+      "disturbed_class": "short grass",
+      "period": "1980-2024",
+      "observation_binding": "Harvard HF237 open stratum",
+      "files": {
+        "legacy_management": {"path": "tests/fixtures/cancov_forest/harvard_open_ma/p3.man", "sha256": "1dbd0bb1fc89fd71ef122bb00d91c84a5ea19e7f193ff88dae046e0155dd7d4f"},
+        "native_management": {"path": "tests/fixtures/cancov_forest/harvard_open_ma/p3.man.yaml", "sha256": "e0f0ed78c62ffd6ce04eda89e81155a66df7da6aaabb1861d1939695eacf14ff"},
+        "native_runfile": {"path": "tests/fixtures/cancov_forest/harvard_open_ma/p3.native.run.toml", "sha256": "c4427fadf13364c4c7b75bcc17bd2878ef920550ce44388d6e656d5e412212c8"},
+        "climate": {"path": "tests/fixtures/cancov_forest/harvard_open_ma/p3.cli", "sha256": "2dddb70908d6a734160be1f10e46a2309e0f29ffd1caebaeea9fccd89253317b"},
+        "soil": {"path": "tests/fixtures/cancov_forest/harvard_open_ma/p3.sol", "sha256": "f469881faa17fdb602cf6428abe433a3af104fbfa4f98d9483a1232e758dd198"},
+        "slope": {"path": "tests/fixtures/cancov_forest/harvard_open_ma/p3.slp", "sha256": "36415f29d6607298217608f47d5a27e9429219ef72047af3e17605528de35f02"}
+      }
+    },
+    {
+      "site": "hubbard_brook",
+      "arm": "deciduous",
+      "fixture": "hubbardbrook_deciduous_nh",
+      "source_run": "scabby-demographic",
+      "topaz_id": 62,
+      "wepp_id": "p10",
+      "disturbed_class": "deciduous forest",
+      "period": "1980-2024",
+      "observation_binding": "Hubbard Brook deciduous forest physiology and snow records",
+      "files": {
+        "legacy_management": {"path": "tests/fixtures/cancov_forest/hubbardbrook_deciduous_nh/p10.man", "sha256": "d34fa66829319febcdf14e5cec328d1e423dea9403c8ca49abd60c137f7a7b2c"},
+        "native_management": {"path": "tests/fixtures/cancov_forest/hubbardbrook_deciduous_nh/p10.man.yaml", "sha256": "70c5aff2de0afea86f87ec7adf15e9ad98c7fe5a2ff83e50c63dfb5c5daaaf25"},
+        "native_runfile": {"path": "tests/fixtures/cancov_forest/hubbardbrook_deciduous_nh/p10.native.run.toml", "sha256": "7938bd6fa16614230bf38b02d746ba3d8d2af9ad185bc71f78c659d49c4e1498"},
+        "climate": {"path": "tests/fixtures/cancov_forest/hubbardbrook_deciduous_nh/p10.cli", "sha256": "130c2df000c4885bba09cb294e989364f983b028db84a0dd458a5f5613df9335"},
+        "soil": {"path": "tests/fixtures/cancov_forest/hubbardbrook_deciduous_nh/p10.sol", "sha256": "6a08131ee94dda200ceea34163708065e04a46f0081533b3d1818c85de7d4318"},
+        "slope": {"path": "tests/fixtures/cancov_forest/hubbardbrook_deciduous_nh/p10.slp", "sha256": "f6be469b94e4f8b8b5f22d426070a65b0a5742441e64c96ab4aae822f6025716"}
+      }
+    },
+    {
+      "site": "hubbard_brook",
+      "arm": "mixed",
+      "fixture": "hubbardbrook_mixed_nh",
+      "source_run": "scabby-demographic",
+      "topaz_id": 33,
+      "wepp_id": "p4",
+      "disturbed_class": "mixed forest",
+      "period": "1980-2024",
+      "observation_binding": "within-site mixed-canopy contrast to Hubbard Brook deciduous lane",
+      "files": {
+        "legacy_management": {"path": "tests/fixtures/cancov_forest/hubbardbrook_mixed_nh/p4.man", "sha256": "c37a51540d9e1d9c166078243784c92d3688c713fe688add4013afdad3fd759a"},
+        "native_management": {"path": "tests/fixtures/cancov_forest/hubbardbrook_mixed_nh/p4.man.yaml", "sha256": "d89e24ee6d3fae239f83ac57838864b3fa863cb06808e250201ba5a908983649"},
+        "native_runfile": {"path": "tests/fixtures/cancov_forest/hubbardbrook_mixed_nh/p4.native.run.toml", "sha256": "0ab4768aad22059dd7c18bbe00d958c863ab19d21c032ce62f770e73bba6e9da"},
+        "climate": {"path": "tests/fixtures/cancov_forest/hubbardbrook_mixed_nh/p4.cli", "sha256": "fae432032cac544a1b748088fa6233b48c3371f9830f090a19f7d06958936fff"},
+        "soil": {"path": "tests/fixtures/cancov_forest/hubbardbrook_mixed_nh/p4.sol", "sha256": "5dfb87f6a483a88d0dd87bf5096481d7ad21a02ec8739fddd1cfe4ac274604c0"},
+        "slope": {"path": "tests/fixtures/cancov_forest/hubbardbrook_mixed_nh/p4.slp", "sha256": "a6915ecf6af59bd55ab9f4c8bb48782fcbf84c418cffaa1f069b21d157b06416"}
+      }
+    }
+  ]
+}

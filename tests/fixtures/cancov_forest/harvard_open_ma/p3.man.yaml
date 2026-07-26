@@ -1,0 +1,381 @@
+format: openwepp-management-yaml
+schema_version: 1
+datver: ow-lanuse-1
+topology:
+  nofes: 1
+  total_years: 45
+metadata:
+  name: Manage
+  description:
+  - description 1
+  - description 2
+  - description 3
+  provenance:
+    source_path: tests/fixtures/cancov_forest/harvard_open_ma/p3.man
+    source_datver: '98.4'
+    migrator: openwepp-landuse-migrate 0.1.0
+plants:
+- landuse: native_cropland
+  name: Mou_4129
+  description:
+  - Mountain Big Sagebrush-up to 1 m tall
+  - jml 4-10-01
+  - (null)
+  crunit: WeppWillSet
+  canopy_line:
+  - 5.0
+  - 5.0
+  - 5.0
+  - 10.0
+  - 5.0
+  - 30.0
+  - 0.05
+  - 0.0001
+  - 1.0
+  - 0.005
+  growth_line:
+  - 0.85
+  - 1.0
+  - 0.65
+  - 0.99
+  - 12.0
+  - 0.0
+  - 0.9
+  - 1.0
+  mfocod: 2
+  residue_line:
+  - 0.00001
+  - 0.00001
+  - 25.0
+  - 0.25
+  - 0.006
+  - 0.3
+  - 0.33
+  - 0.34
+  - 14.0
+  - 30.0
+  terminal_line:
+  - -50.0
+  - 4.0
+  - 0.0
+  routing_coefficients:
+    k_o: 460.0
+    form_c_d: 0.34
+    d_r_m: 0.014
+    lambda: 0.07
+    vegetation_c_d: 0.24
+    authority:
+      source: disturbed-route-coefficients
+      version: ADR-0014-2026-07-07
+      checksum: sha256:55b0d88fe89a968a4d19c80b55f766a16c0c92c84ba97e97366ea664ac3cd051
+      disturbed_class: short grass
+      source_authority: ADR-0014; openWEPP WP 20260707-laned-router-d16-hybrid-disturbed-route-coeff-source-acquisition-001
+operations: []
+initial_conditions:
+- landuse: native_cropland
+  name: Mou_4482
+  description:
+  - Mountain Big Sagebrush
+  - jml 4-10-01
+  - '3'
+  base_line:
+  - 1.48
+  - 0.6
+  - 20000.0
+  - 20000.0
+  - 0.0
+  - 0.3
+  iresd: 1
+  imngmt: 2
+  residue_line:
+  - 700.02399
+  - 0.017
+  - 0.3
+  - 0.008
+  - 0.0
+  rtyp: 1
+  thaw_line:
+  - 0.0
+  - 0.0
+  - 0.1
+  - 0.0
+  - 0.0
+  terminal_line:
+  - 0.19997
+  - 0.0
+surface_effects: []
+contours: []
+drains: []
+yearly_scenarios:
+- landuse: native_cropland
+  name: Year 1
+  description:
+  - (null)
+  - (null)
+  - (null)
+  itype: 1
+  tilseq: 0
+  conset: 0
+  drset: 0
+  imngmt: 2
+  branch:
+    type: perennial
+    jdharv: 0
+    jdplt: 0
+    jdstop: 0
+    rw: 0.0
+    mgtopt: 3
+    cut_days: []
+    grazing_cycles: []
+- landuse: native_cropland
+  name: Year 2
+  description:
+  - (null)
+  - (null)
+  - (null)
+  itype: 1
+  tilseq: 0
+  conset: 0
+  drset: 0
+  imngmt: 2
+  branch:
+    type: perennial
+    jdharv: 0
+    jdplt: 0
+    jdstop: 0
+    rw: 0.0
+    mgtopt: 1
+    cut_days:
+    - 243
+    grazing_cycles: []
+schedule:
+  ofe_initial_refs:
+  - 1
+  rotation_repeats: 1
+  rotation_years: 45
+  slots:
+  - rotation_index: 1
+    year_in_rotation: 1
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 2
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 3
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 4
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 5
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 6
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 7
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 8
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 9
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 10
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 11
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 12
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 13
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 14
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 15
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 16
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 17
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 18
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 19
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 20
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 21
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 22
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 23
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 24
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 25
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 26
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 27
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 28
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 29
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 30
+    ofe_index: 1
+    yearly_refs:
+    - 2
+  - rotation_index: 1
+    year_in_rotation: 31
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 32
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 33
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 34
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 35
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 36
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 37
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 38
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 39
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 40
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 41
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 42
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 43
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 44
+    ofe_index: 1
+    yearly_refs:
+    - 1
+  - rotation_index: 1
+    year_in_rotation: 45
+    ofe_index: 1
+    yearly_refs:
+    - 1

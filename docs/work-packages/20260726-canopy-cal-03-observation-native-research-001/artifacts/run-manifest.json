@@ -1,0 +1,22 @@
+{
+  "annual_sha256": "e21a917c8e0c3c7dc37512a8c997ea0be1b55f8b0e5b12a5f8c5c2f199cd90b3",
+  "arm_id": "deciduous",
+  "base_commit": "90177512c5f9f640aeb7aa5283dd7eb53e7464fb",
+  "command": "OPENWEPP_CANOPY_RESEARCH_TRACE_PATH=<fresh-root>/canopy-research.jsonl OPENWEPP_CANOPY_RESEARCH_SITE_ID=hubbard_brook OPENWEPP_CANOPY_RESEARCH_ARM_ID=deciduous target/release/openwepp-cli-hill --run-dir <fresh-root> --run-file p10.native.run.toml --output-dir <fresh-root>/output --legacy-sidecar-discovery --direct-production-executor",
+  "cohorts_sha256": "f34c3daba5910efd614b5ca38740b76e86f44c4e72ea5c9c1e66f90a185bdacd",
+  "executable_sha256": "4a73dc634112f1bad4499dcbac9a718b46309156dfc415a2f1b118c19e3fe2fc",
+  "fixture_hashes": {
+    "climate": "130c2df000c4885bba09cb294e989364f983b028db84a0dd458a5f5613df9335",
+    "management": "70c5aff2de0afea86f87ec7adf15e9ad98c7fe5a2ff83e50c63dfb5c5daaaf25",
+    "runfile": "7938bd6fa16614230bf38b02d746ba3d8d2af9ad185bc71f78c659d49c4e1498",
+    "slope": "f6be469b94e4f8b8b5f22d426070a65b0a5742441e64c96ab4aae822f6025716",
+    "soil": "6a08131ee94dda200ceea34163708065e04a46f0081533b3d1818c85de7d4318"
+  },
+  "fixture": "tests/fixtures/cancov_forest/hubbardbrook_deciduous_nh",
+  "generated_trace_retention": "checksum-bound external object; not committed",
+  "record_count": 16437,
+  "schema": "openwepp-canopy-research-rebuild-v1",
+  "site_id": "hubbard_brook",
+  "trace": "/tmp/openwepp-cal03-proof-1Trzv1vt/hubbardbrook_deciduous_nh/canopy-research.jsonl",
+  "trace_sha256": "2bbc2de3f6865c6b21e57d0970c17620edcd03714633a09ded8cae9b89305852"
+}

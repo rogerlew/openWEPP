@@ -4,6 +4,70 @@ const SNOWDENSITY1037_MELT_MODEL_ENV: &str = "OPENWEPP_SNOWDENSITY1037_MELT_MODE
 const SNOWDENSITY1038_MELT_MODEL_ENV: &str = "OPENWEPP_SNOWDENSITY1038_MELT_MODEL";
 const PARADIGM2_STAGE3_LIQUID_MODEL_ENV: &str = "OPENWEPP_PARADIGM2_STAGE3_LIQUID_MODEL";
 
+#[derive(Clone, Debug)]
+struct CanopyResearchTraceConfig {
+    path: std::ffi::OsString,
+    site_id: String,
+    arm_id: String,
+}
+
+#[cfg(test)]
+fn canopy_research_trace_test_config(
+) -> &'static std::sync::Mutex<Option<CanopyResearchTraceConfig>> {
+    static CONFIG: std::sync::OnceLock<std::sync::Mutex<Option<CanopyResearchTraceConfig>>> =
+        std::sync::OnceLock::new();
+    CONFIG.get_or_init(|| std::sync::Mutex::new(None))
+}
+
+#[cfg(test)]
+fn set_canopy_research_trace_test_config(config: Option<CanopyResearchTraceConfig>) {
+    *canopy_research_trace_test_config()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner) = config;
+}
+
+fn canopy_research_trace_config_from_values(
+    path: Option<std::ffi::OsString>,
+    site_id: Option<String>,
+    arm_id: Option<String>,
+) -> Result<Option<CanopyResearchTraceConfig>, HillslopeCliError> {
+    let Some(path) = path.filter(|value| !value.is_empty()) else {
+        return Ok(None);
+    };
+    let required_identity = |name: &'static str, value: Option<String>| {
+        value
+            .filter(|identity| !identity.trim().is_empty())
+            .ok_or_else(|| HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "canopy_research_trace",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} enabled canopy research trace requires nonempty {name}"
+                ),
+            })
+    };
+    Ok(Some(CanopyResearchTraceConfig {
+        path,
+        site_id: required_identity("OPENWEPP_CANOPY_RESEARCH_SITE_ID", site_id)?,
+        arm_id: required_identity("OPENWEPP_CANOPY_RESEARCH_ARM_ID", arm_id)?,
+    }))
+}
+
+fn canopy_research_trace_config(
+) -> Result<Option<CanopyResearchTraceConfig>, HillslopeCliError> {
+    #[cfg(test)]
+    if let Some(config) = canopy_research_trace_test_config()
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner)
+        .clone()
+    {
+        return Ok(Some(config));
+    }
+    canopy_research_trace_config_from_values(
+        std::env::var_os("OPENWEPP_CANOPY_RESEARCH_TRACE_PATH"),
+        std::env::var("OPENWEPP_CANOPY_RESEARCH_SITE_ID").ok(),
+        std::env::var("OPENWEPP_CANOPY_RESEARCH_ARM_ID").ok(),
+    )
+}
+
 fn direct_native_forest_vpd_pa(
     forcing: &HillslopeDirectClimateDayForcing,
 ) -> Result<f64, HillslopeCliError> {
@@ -36,6 +100,7 @@ struct DirectProductionGrowthBuildState {
     growth_state_before: DirectGrowthStateSurface,
     growth_state_for_publication: DirectGrowthStateSurface,
     native_canopy: Option<openwepp_plant_phenology::ForestCanopyRealization>,
+    native_canopy_daily: Option<openwepp_plant_phenology::ForestCanopyDailyResult>,
 }
 
 #[allow(dead_code)]
@@ -68,12 +133,14 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             .map(|authority| authority.residue_cover.initial_state())
             .collect::<Vec<_>>();
         let forest_canopy_state = vec![None; lane_authority.len()];
+        let canopy_research_pending = vec![None; lane_authority.len()];
         Ok(Self {
             climate_request,
             climate_span,
             lane_authority,
             residue_cover_state: std::cell::RefCell::new(residue_cover_state),
             forest_canopy_state: std::cell::RefCell::new(forest_canopy_state),
+            canopy_research_pending: std::cell::RefCell::new(canopy_research_pending),
             winter_hourly_geometry: seed_authority.winter_hourly_geometry,
             sturm_climate_class,
         })
@@ -100,6 +167,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             growth_state_before,
             growth_state_for_publication,
             native_canopy,
+            native_canopy_daily,
         } = self.growth_state_for_build(
             authority,
             &day,
@@ -171,23 +239,38 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
         };
         let interception_state = compute_direct_canopy_interception(interception_inputs)
             .map_err(|source| direct_publication_runtime_error(&source))?;
-        #[cfg(test)]
-        if let Some(canopy) = native_canopy {
-            record_native_canopy_builder_trace(NativeCanopyBuilderTrace {
+        if let Some(daily) = native_canopy_daily {
+            let trace = NativeCanopyBuilderTrace {
                 day_index,
                 lane_index,
-                canopy,
+                year: day.year,
+                month: day.month,
+                day_of_month: day.day_of_month,
+                daily,
+                #[cfg(test)]
+                canopy: daily.canopy,
                 snow_canopy_cover_fraction: growth_state_for_publication.canopy_cover_fraction,
                 interception_inputs,
+                #[cfg(test)]
                 interception_state,
+                #[cfg(test)]
                 projected_surface_residue_kg_m2: residue_cover_projection
                     .state_after
                     .surface_residue_kg_m2,
+                #[cfg(test)]
                 projected_residue_depth_m: residue_cover_projection.state_after.residue_depth_m,
+                #[cfg(test)]
                 frost_residue_depth_m: frost_context
                     .as_ref()
                     .map(|context| context.compute_inputs.thermal.residue_depth_m),
-            });
+            };
+            let mut pending = self.canopy_research_pending.borrow_mut();
+            if lane_index >= pending.len() {
+                pending.resize(lane_index + 1, None);
+            }
+            pending[lane_index] = Some(trace);
+            #[cfg(test)]
+            record_native_canopy_builder_trace(trace);
         }
         maybe_write_r7h_direct_production_wb15_trace(
             day_index,
@@ -332,7 +415,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             &perennial_growth_inputs,
             growth_state_before,
         )?;
-        let (growth_state_for_publication, native_canopy) = self
+        let (growth_state_for_publication, native_canopy_daily) = self
             .native_forest_growth_state_for_build(
                 authority,
                 *day,
@@ -341,6 +424,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
                 forcing,
                 baseline_growth_state_for_publication,
             )?;
+        let native_canopy = native_canopy_daily.map(|daily| daily.canopy);
         if native_canopy.is_some() {
             if perennial_growth_inputs.active_context.is_active() {
                 perennial_growth_inputs.state_before = growth_state_for_publication;
@@ -361,6 +445,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             growth_state_before,
             growth_state_for_publication,
             native_canopy,
+            native_canopy_daily,
         })
     }
 
@@ -455,7 +540,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
     ) -> Result<
         (
             DirectGrowthStateSurface,
-            Option<openwepp_plant_phenology::ForestCanopyRealization>,
+            Option<openwepp_plant_phenology::ForestCanopyDailyResult>,
         ),
         HillslopeCliError,
     > {
@@ -511,15 +596,108 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
                 direct_growth_failure("native forest GSI state initialization failed")
             })?
         };
-        let canopy = state
+        let daily = state
             .advance(parameters, gsi_forcing)
-            .map_err(|source| direct_growth_failure(source.to_string()))?
-            .canopy;
+            .map_err(|source| direct_growth_failure(source.to_string()))?;
+        let canopy = daily.canopy;
         growth_state.live_biomass_kg_m2 = canopy.live_foliar_biomass_kg_m2;
         growth_state.interception_live_biomass_kg_m2 = canopy.live_foliar_biomass_kg_m2;
         growth_state.leaf_area_index = canopy.leaf_area_index;
         growth_state.canopy_cover_fraction = canopy.canopy_cover_fraction;
-        Ok((growth_state, Some(canopy)))
+        Ok((growth_state, Some(daily)))
+    }
+
+    fn maybe_write_canopy_research_trace(
+        &self,
+        day_frame: &openwepp_hillslope_orchestrator::DirectDayFrame,
+    ) -> Result<(), HillslopeCliError> {
+        let Some(config) = canopy_research_trace_config()? else {
+            return Ok(());
+        };
+        let builder = self
+            .canopy_research_pending
+            .borrow()
+            .get(day_frame.lane_index)
+            .and_then(|trace| *trace)
+            .filter(|trace| trace.day_index == day_frame.day_index);
+        let Some(builder) = builder else {
+            return Ok(());
+        };
+        let growth_state_after = if day_frame.perennial_growth_inputs.active_context.is_active() {
+            day_frame.perennial_growth.state_after
+        } else {
+            day_frame.annual_growth.state_after
+        };
+        let surface_before_decay_kg_m2 =
+            day_frame.decomposition.surface_residue_seed_kg_m2
+                + day_frame.decomposition.surface_litter_input_kg_m2;
+        let decomposition_loss_kg_m2 =
+            surface_before_decay_kg_m2 * (1.0 - day_frame.decomposition.surface_decay_factor);
+        let gsi = builder.daily.gsi;
+        let canopy = builder.daily.canopy;
+        let value = serde_json::json!({
+            "schema": "openwepp-canopy-research-daily-v1",
+            "date": format!("{:04}-{:02}-{:02}", builder.year, builder.month, builder.day_of_month),
+            "year": builder.year,
+            "day_of_year": self.climate_span.days[builder.day_index].julian_day,
+            "day_index": builder.day_index,
+            "lane_index": builder.lane_index,
+            "site_id": config.site_id,
+            "arm_id": config.arm_id,
+            "gsi": {
+                "minimum_temperature_indicator": gsi.indicators.minimum_temperature,
+                "vapor_pressure_deficit_indicator": gsi.indicators.vapor_pressure_deficit,
+                "photoperiod_indicator": gsi.indicators.photoperiod,
+                "photoperiod_hours": gsi.indicators.photoperiod_hours,
+                "instantaneous": gsi.indicators.instantaneous_gsi,
+                "gsi21": gsi.growing_season_index,
+                "sample_count": gsi.sample_count
+            },
+            "canopy": {
+                "structural_biomass_kg_m2": canopy.structural_biomass_kg_m2,
+                "evergreen_foliar_biomass_kg_m2": canopy.evergreen_foliar_biomass_kg_m2,
+                "deciduous_foliar_biomass_kg_m2": canopy.deciduous_foliar_biomass_kg_m2,
+                "total_foliar_biomass_kg_m2": canopy.live_foliar_biomass_kg_m2,
+                "total_aboveground_live_biomass_kg_m2": canopy.live_foliar_biomass_kg_m2 + canopy.structural_biomass_kg_m2,
+                "leaf_area_index_m2_m2": canopy.leaf_area_index,
+                "cover_fraction": canopy.canopy_cover_fraction,
+                "leaf_on_allocation_kg_m2": canopy.leaf_on_allocation_kg_m2,
+                "leaf_off_transfer_kg_m2": canopy.leaf_off_litter_kg_m2
+            },
+            "consumers": {
+                "growth_live_foliar_biomass_kg_m2": growth_state_after.live_biomass_kg_m2,
+                "snow_canopy_cover_fraction": builder.snow_canopy_cover_fraction,
+                "interception_leaf_area_index_m2_m2": builder.interception_inputs.leaf_area_index,
+                "interception_canopy_cover_fraction": builder.interception_inputs.canopy_cover_fraction,
+                "interception_live_biomass_kg_m2": builder.interception_inputs.interception_live_biomass_kg_m2,
+                "interception_m": day_frame.interception_m,
+                "et_leaf_area_index_m2_m2": day_frame.evapotranspiration_compute_inputs.leaf_area_index,
+                "et_canopy_cover_fraction": day_frame.evapotranspiration_compute_inputs.canopy_cover_fraction,
+                "runoff_m": day_frame.water.runoff_m,
+                "erosion_canopy_cover_fraction": day_frame.erosion_canopy_cover_fraction_consumed,
+                "frost_residue_depth_m": day_frame.frost_residue_depth_m_consumed
+            },
+            "residue": {
+                "leaf_litter_input_kg_m2": day_frame.decomposition.surface_litter_input_kg_m2,
+                "needle_litter_input_kg_m2": serde_json::Value::Null,
+                "fine_woody_litter_input_kg_m2": serde_json::Value::Null,
+                "total_litter_input_kg_m2": day_frame.decomposition.surface_litter_input_kg_m2,
+                "surface_residue_before_kg_m2": day_frame.decomposition.surface_residue_seed_kg_m2,
+                "surface_residue_after_kg_m2": day_frame.decomposition.surface_residue_kg_m2,
+                "decomposition_loss_kg_m2": decomposition_loss_kg_m2,
+                "surface_decay_factor": day_frame.decomposition.surface_decay_factor,
+                "residue_depth_m": day_frame.decomposition.residue_depth_m
+            }
+        });
+        validate_canopy_research_trace_value(&value)?;
+        let mut line = serde_json::to_string(&value).map_err(|error| {
+            HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "canopy_research_trace",
+                detail: format!("{SIMOUT_GUARD_ID} failed serializing canopy research trace: {error}"),
+            }
+        })?;
+        line.push('\n');
+        write_canopy_research_trace_line(&config.path, line.as_bytes())
     }
 
     fn lane_authority(
@@ -572,6 +750,166 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
         let _ = lane_index;
         Ok(())
     }
+}
+
+fn validate_canopy_research_trace_value(
+    value: &serde_json::Value,
+) -> Result<(), HillslopeCliError> {
+    const REQUIRED_STRINGS: &[&str] = &["/schema", "/date", "/site_id", "/arm_id"];
+    const REQUIRED_NULLABLE_NUMBERS: &[&str] = &[
+        "/consumers/erosion_canopy_cover_fraction",
+        "/consumers/frost_residue_depth_m",
+        "/residue/needle_litter_input_kg_m2",
+        "/residue/fine_woody_litter_input_kg_m2",
+    ];
+    const REQUIRED_NUMBERS: &[&str] = &[
+        "/year",
+        "/day_of_year",
+        "/day_index",
+        "/lane_index",
+        "/gsi/minimum_temperature_indicator",
+        "/gsi/vapor_pressure_deficit_indicator",
+        "/gsi/photoperiod_indicator",
+        "/gsi/photoperiod_hours",
+        "/gsi/instantaneous",
+        "/gsi/gsi21",
+        "/gsi/sample_count",
+        "/canopy/structural_biomass_kg_m2",
+        "/canopy/evergreen_foliar_biomass_kg_m2",
+        "/canopy/deciduous_foliar_biomass_kg_m2",
+        "/canopy/total_foliar_biomass_kg_m2",
+        "/canopy/total_aboveground_live_biomass_kg_m2",
+        "/canopy/leaf_area_index_m2_m2",
+        "/canopy/cover_fraction",
+        "/canopy/leaf_on_allocation_kg_m2",
+        "/canopy/leaf_off_transfer_kg_m2",
+        "/consumers/growth_live_foliar_biomass_kg_m2",
+        "/consumers/snow_canopy_cover_fraction",
+        "/consumers/interception_leaf_area_index_m2_m2",
+        "/consumers/interception_canopy_cover_fraction",
+        "/consumers/interception_live_biomass_kg_m2",
+        "/consumers/interception_m",
+        "/consumers/et_leaf_area_index_m2_m2",
+        "/consumers/et_canopy_cover_fraction",
+        "/consumers/runoff_m",
+        "/residue/leaf_litter_input_kg_m2",
+        "/residue/total_litter_input_kg_m2",
+        "/residue/surface_residue_before_kg_m2",
+        "/residue/surface_residue_after_kg_m2",
+        "/residue/decomposition_loss_kg_m2",
+        "/residue/surface_decay_factor",
+        "/residue/residue_depth_m",
+    ];
+    for path in REQUIRED_STRINGS {
+        if !value
+            .pointer(path)
+            .and_then(serde_json::Value::as_str)
+            .is_some_and(|text| !text.is_empty())
+        {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "canopy_research_trace",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} canopy research trace required string {path} is missing or empty"
+                ),
+            });
+        }
+    }
+    for path in REQUIRED_NUMBERS {
+        if !value
+            .pointer(path)
+            .and_then(serde_json::Value::as_f64)
+            .is_some_and(f64::is_finite)
+        {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "canopy_research_trace",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} canopy research trace required number {path} is missing or nonfinite"
+                ),
+            });
+        }
+    }
+    for path in REQUIRED_NULLABLE_NUMBERS {
+        match value.pointer(path) {
+            Some(serde_json::Value::Null) => {}
+            Some(serde_json::Value::Number(number))
+                if number.as_f64().is_some_and(f64::is_finite) => {}
+            _ => {
+                return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                    surface: "canopy_research_trace",
+                    detail: format!(
+                        "{SIMOUT_GUARD_ID} canopy research trace nullable number {path} is missing or invalid"
+                    ),
+                });
+            }
+        }
+    }
+    fn visit(value: &serde_json::Value, path: &str) -> Result<(), HillslopeCliError> {
+        match value {
+            serde_json::Value::Null
+                if matches!(
+                    path,
+                    "/consumers/erosion_canopy_cover_fraction"
+                        | "/consumers/frost_residue_depth_m"
+                        | "/residue/needle_litter_input_kg_m2"
+                        | "/residue/fine_woody_litter_input_kg_m2"
+                ) =>
+            {
+                Ok(())
+            }
+            serde_json::Value::Null => Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "canopy_research_trace",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} canopy research trace required value {path} is null or nonfinite"
+                ),
+            }),
+            serde_json::Value::Number(number)
+                if number.as_f64().is_some_and(f64::is_finite) =>
+            {
+                Ok(())
+            }
+            serde_json::Value::Number(_) => Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "canopy_research_trace",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} canopy research trace numeric value {path} is nonfinite"
+                ),
+            }),
+            serde_json::Value::Array(values) => values
+                .iter()
+                .enumerate()
+                .try_for_each(|(index, child)| visit(child, &format!("{path}/{index}"))),
+            serde_json::Value::Object(values) => values
+                .iter()
+                .try_for_each(|(key, child)| visit(child, &format!("{path}/{key}"))),
+            serde_json::Value::String(_) | serde_json::Value::Bool(_) => Ok(()),
+        }
+    }
+    visit(value, "")
+}
+
+fn write_canopy_research_trace_line(
+    path: &std::ffi::OsStr,
+    line: &[u8],
+) -> Result<(), HillslopeCliError> {
+        let mut file = std::fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(path)
+            .map_err(|error| HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "canopy_research_trace",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} failed opening canopy research trace {}: {error}",
+                    std::path::PathBuf::from(path).display()
+                ),
+            })?;
+    std::io::Write::write_all(&mut file, line).map_err(|error| {
+        HillslopeCliError::RuntimeSurfaceFailure {
+            surface: "canopy_research_trace",
+            detail: format!(
+                "{SIMOUT_GUARD_ID} failed writing canopy research trace {}: {error}",
+                std::path::PathBuf::from(path).display()
+            ),
+        }
+    })
 }
 
 fn maybe_write_r7h_direct_production_snow_trace(

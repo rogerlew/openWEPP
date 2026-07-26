@@ -151,6 +151,53 @@ mod tests {
     }
 
     #[test]
+    fn canopy_research_trace_configuration_and_io_fail_closed() {
+        assert!(
+            canopy_research_trace_config_from_values(None, None, None)
+                .expect("an absent selector should be valid")
+                .is_none(),
+            "the research trace must remain default-off"
+        );
+        let path = Some(std::ffi::OsString::from("trace.jsonl"));
+        let missing_site =
+            canopy_research_trace_config_from_values(path.clone(), None, Some("arm".to_string()))
+                .expect_err("an enabled trace without site identity must fail");
+        assert!(missing_site.to_string().contains("SITE_ID"));
+        let missing_arm =
+            canopy_research_trace_config_from_values(path, Some("site".to_string()), None)
+                .expect_err("an enabled trace without arm identity must fail");
+        assert!(missing_arm.to_string().contains("ARM_ID"));
+
+        let invalid_parent = std::env::temp_dir()
+            .join("openwepp-canopy-research-missing-parent")
+            .join("trace.jsonl");
+        let io_error = write_canopy_research_trace_line(
+            invalid_parent.as_os_str(),
+            b"{\"schema\":\"probe\"}\n",
+        )
+        .expect_err("a missing trace parent must fail closed");
+        assert!(io_error.to_string().contains("failed opening"));
+
+        let nonfinite = serde_json::json!({
+            "required": serde_json::Value::Null,
+            "residue": {
+                "needle_litter_input_kg_m2": serde_json::Value::Null,
+                "fine_woody_litter_input_kg_m2": serde_json::Value::Null
+            },
+            "consumers": {
+                "erosion_canopy_cover_fraction": serde_json::Value::Null,
+                "frost_residue_depth_m": serde_json::Value::Null
+            }
+        });
+        assert!(
+            validate_canopy_research_trace_value(&nonfinite)
+                .expect_err("a null required number must fail")
+                .to_string()
+                .contains("required")
+        );
+    }
+
+    #[test]
     #[allow(clippy::too_many_lines)]
     fn native_forest_yaml_executes_through_the_direct_production_consumer() {
         let _execution_guard = runner_execution_lock()
@@ -205,6 +252,12 @@ mod tests {
         )
         .expect("native forest climate cycle should be explicit");
 
+        let research_trace_path = temp_run_dir.join("canopy-research.jsonl");
+        set_canopy_research_trace_test_config(Some(CanopyResearchTraceConfig {
+            path: research_trace_path.clone().into_os_string(),
+            site_id: "test_site".to_string(),
+            arm_id: "native_forest".to_string(),
+        }));
         reset_direct_runtime_audit_counters();
         reset_native_canopy_runtime_traces();
         let report = execute_hillslope_run_with_runtime_policy(
@@ -220,8 +273,38 @@ mod tests {
             HillslopeRuntimeSelectionPolicy::default(),
         )
         .expect("native GSI forest should execute through direct production");
+        set_canopy_research_trace_test_config(None);
 
         assert!(report.output_pass.is_file());
+        let research_text = fs::read_to_string(&research_trace_path)
+            .expect("enabled research trace must exercise the actual JSONL writer");
+        let first_research: serde_json::Value = serde_json::from_str(
+            research_text
+                .lines()
+                .next()
+                .expect("enabled research trace must contain a daily record"),
+        )
+        .expect("research trace must be valid JSON");
+        assert_eq!(
+            first_research.pointer("/schema").and_then(serde_json::Value::as_str),
+            Some("openwepp-canopy-research-daily-v1")
+        );
+        assert_eq!(
+            first_research.pointer("/site_id").and_then(serde_json::Value::as_str),
+            Some("test_site")
+        );
+        assert_eq!(
+            first_research.pointer("/arm_id").and_then(serde_json::Value::as_str),
+            Some("native_forest")
+        );
+        assert_eq!(
+            first_research.pointer("/canopy/total_foliar_biomass_kg_m2"),
+            first_research.pointer("/consumers/growth_live_foliar_biomass_kg_m2")
+        );
+        assert_eq!(
+            first_research.pointer("/canopy/leaf_off_transfer_kg_m2"),
+            first_research.pointer("/residue/leaf_litter_input_kg_m2")
+        );
         let manifest = read_manifest_json(&report);
         assert_eq!(
             manifest
