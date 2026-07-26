@@ -1,0 +1,686 @@
+<section id="{{SECTION_ID}}" role="img" aria-label="{{ARIA_LABEL}}">
+<style>
+#{{SECTION_ID}} {
+  color-scheme: dark;
+  --bg: #0b0c10;
+  --panel: #101219;
+  --track: #1b1e27;
+  --line: #242835;
+  --ink: #e6e8ee;
+  --ink2: #9aa1b2;
+  --muted: #8b93a7;
+  --accent: #f0d9a8;
+  --add: #7ee2ad;
+  --del: #f4816a;
+  box-sizing: border-box;
+  display: block;
+  overflow: hidden;
+  margin: 2rem 0;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--bg);
+  color: var(--ink2);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: left;
+}
+#{{SECTION_ID}} * { box-sizing: border-box; }
+#{{SECTION_ID}} .owct-mono {
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+}
+#{{SECTION_ID}} .owct-num { font-variant-numeric: tabular-nums; }
+
+#{{SECTION_ID}} .owct-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  padding: 1.1rem 1.4rem 0;
+}
+#{{SECTION_ID}} .owct-badge {
+  border: 1px solid #d4794a66;
+  border-radius: 999px;
+  padding: 3px 10px;
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+#{{SECTION_ID}} .owct-range {
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+#{{SECTION_ID}} .owct-stats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem 2rem;
+  padding: 0.85rem 1.4rem 1.1rem;
+}
+#{{SECTION_ID}} .owct-pos {
+  color: var(--ink);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+#{{SECTION_ID}} .owct-pos span { display: inline-block; min-width: 5ch; }
+#{{SECTION_ID}} .owct-pos small {
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 400;
+}
+#{{SECTION_ID}} .owct-churn { font-size: 13px; margin-top: 0.2rem; }
+#{{SECTION_ID}} .owct-churn .owct-a { color: var(--add); }
+#{{SECTION_ID}} .owct-churn .owct-d { color: var(--del); margin-left: 0.75rem; }
+#{{SECTION_ID}} .owct-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+}
+#{{SECTION_ID}} button {
+  border: 1px solid #3a4050;
+  border-radius: 7px;
+  background: #171a23;
+  padding: 6px 13px;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+#{{SECTION_ID}} button:hover { border-color: #5a6274; }
+#{{SECTION_ID}} button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* Fixed width: the clock is the last item in a right-aligned row, so letting it
+   size to its content would shove the replay button sideways every tick. */
+#{{SECTION_ID}} .owct-clock {
+  display: inline-block;
+  width: 23ch;
+  color: var(--accent);
+  font-size: 13px;
+}
+
+#{{SECTION_ID}} .owct-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  padding: 0 1.4rem;
+}
+#{{SECTION_ID}} .owct-pane {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel);
+  min-width: 0;
+}
+#{{SECTION_ID}} .owct-pane-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--line);
+  padding: 6px 11px;
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+#{{SECTION_ID}} .owct-unit {
+  flex: none;
+  letter-spacing: 0.1em;
+  opacity: 0.7;
+  text-transform: none;
+}
+/* Bottom-anchored: the height is set from the tables at runtime, so whatever
+   does not fit must overflow off the TOP — the newest commit stays visible. */
+#{{SECTION_ID}} .owct-log {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  height: 9rem;
+  overflow: hidden;
+  padding: 6px 11px;
+  font-size: 11px;
+  line-height: 1.65;
+  /* Fade the clipped edge, so a half-height top row reads as history
+     scrolling past rather than as a rendering fault. */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 26px);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 26px);
+}
+#{{SECTION_ID}} .owct-log > div { flex: none; }
+#{{SECTION_ID}} .owct-log div {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#{{SECTION_ID}} .owct-log .owct-a { color: var(--add); }
+#{{SECTION_ID}} .owct-log .owct-d { color: var(--del); }
+#{{SECTION_ID}} .owct-log .owct-s { color: var(--ink2); }
+
+#{{SECTION_ID}} .owct-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  align-items: start;
+  gap: 1rem;
+  min-width: 0;
+}
+#{{SECTION_ID}} .owct-group { min-width: 0; }
+#{{SECTION_ID}} .owct-rows { padding: 7px 11px; }
+#{{SECTION_ID}} .owct-row {
+  display: grid;
+  grid-template-columns: minmax(0, 8.5rem) minmax(3rem, 1fr) 3.9rem;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 1.5px 0;
+  font-size: 11px;
+}
+#{{SECTION_ID}} .owct-row { transition: opacity 0.4s ease-out; }
+#{{SECTION_ID}} .owct-row.owct-idle { opacity: 0.34; }
+#{{SECTION_ID}} .owct-label {
+  overflow: hidden;
+  color: var(--ink2);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#{{SECTION_ID}} .owct-track {
+  height: 7px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: var(--track);
+}
+/* No width transition: the sweep repaints every frame, so a transition would
+   only make each bar lag the number printed beside it. */
+#{{SECTION_ID}} .owct-fill {
+  width: 0;
+  height: 100%;
+  border-radius: 4px;
+}
+#{{SECTION_ID}} .owct-val { color: var(--ink); text-align: right; }
+#{{SECTION_ID}} .owct-total {
+  margin-top: 5px;
+  border-top: 1px solid var(--line);
+  padding-top: 6px;
+}
+#{{SECTION_ID}} .owct-total .owct-label {
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+#{{SECTION_ID}} .owct-total .owct-val { font-weight: 700; }
+
+#{{SECTION_ID}} .owct-counters { padding: 1rem 1.4rem 0; }
+#{{SECTION_ID}} .owct-counter {
+  display: grid;
+  grid-template-columns: minmax(0, 8.5rem) minmax(2rem, 1fr) 8rem;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 12px;
+}
+#{{SECTION_ID}} .owct-counter .owct-track { height: 9px; }
+#{{SECTION_ID}} .owct-counter .owct-val { text-align: right; }
+
+#{{SECTION_ID}} .owct-caption {
+  margin: 1.1rem 0 0;
+  border-top: 1px solid var(--line);
+  padding: 0.8rem 1.4rem 1rem;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+@media (max-width: 520px) {
+  #{{SECTION_ID}} .owct-head,
+  #{{SECTION_ID}} .owct-stats,
+  #{{SECTION_ID}} .owct-body,
+  #{{SECTION_ID}} .owct-counters,
+  #{{SECTION_ID}} .owct-caption { padding-left: 1rem; padding-right: 1rem; }
+  #{{SECTION_ID}} .owct-row,
+  #{{SECTION_ID}} .owct-counter {
+    grid-template-columns: minmax(0, 6.5rem) minmax(2rem, 1fr) 3.5rem;
+    gap: 0.4rem;
+  }
+  #{{SECTION_ID}} .owct-counter { grid-template-columns: minmax(0, 6.5rem) minmax(2rem, 1fr) 5.5rem; }
+  #{{SECTION_ID}} .owct-pos { font-size: 24px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #{{SECTION_ID}} .owct-row { transition: none; }
+}
+</style>
+
+<div class="owct-head">
+  <span class="owct-badge">✻ {{TITLE}} · work in progress</span>
+  <span class="owct-range owct-mono" data-range></span>
+</div>
+
+<div class="owct-stats">
+  <div>
+    <div class="owct-pos owct-mono owct-num" aria-hidden="true">
+      <span data-pos>0</span><small> / <span data-total></span> commits</small>
+    </div>
+    <div class="owct-churn owct-mono owct-num" aria-hidden="true">
+      <span class="owct-a" data-add>+0</span><span class="owct-d" data-del>−0</span>
+    </div>
+  </div>
+  <div class="owct-controls">
+    <button type="button" data-play>▶ play</button>
+    <span class="owct-clock owct-mono owct-num" data-clock aria-hidden="true"></span>
+  </div>
+</div>
+
+<div class="owct-body">
+  <div class="owct-pane">
+    <div class="owct-pane-head">git log</div>
+    <div class="owct-log owct-mono" data-log aria-hidden="true"></div>
+  </div>
+  <div class="owct-groups" data-groups></div>
+</div>
+
+<div class="owct-counters" data-counters></div>
+
+<p class="owct-caption" data-caption></p>
+</section>
+<script>
+(() => {
+  "use strict";
+
+  const DATA = JSON.parse('{{DATA_JSON}}');
+  const DUR = 26000;        // sweep length in ms, independent of commit count
+  const PACING = "index";   // "index" | "time" — see specification.md 7.1
+  const SCALE = "per-lane"; // "per-lane" | "per-group" — see specification.md 4.2
+  const DENOM = "head";     // "head" | "peak" — see specification.md 4.2
+  const UNIT = "net LOC";   // unit of every lane value — see specification.md 4.1
+  const LOG_RATIO = 0.4;    // git log height as a fraction of the tables' height
+  const LOG_ROWS = 24;      // upper bound; the pane clips from the top
+
+  const num = (n) => n.toLocaleString("en-US");
+  const clamp01 = (n) => (n < 0 ? 0 : n > 1 ? 1 : n);
+
+  function boot(fn) {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", fn);
+    } else {
+      fn();
+    }
+  }
+
+  function onView(root, cb) {
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (!e.isIntersecting) continue;
+        if (e.intersectionRatio >= 0.4 || e.intersectionRect.height >= innerHeight * 0.5) {
+          io.disconnect();
+          cb();
+          return;
+        }
+      }
+    }, { threshold: [0.1, 0.25, 0.4, 0.6] });
+    io.observe(root);
+  }
+
+  boot(() => {
+    const root = document.getElementById("{{SECTION_ID}}");
+    if (!root) return;
+
+    const meta = DATA.meta;
+    const commits = DATA.commits;
+    const lanes = meta.lanes;
+    const counters = meta.counters;
+    const N = commits.length;
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const q = (sel) => root.querySelector(sel);
+    const posEl = q("[data-pos]");
+    const totalEl = q("[data-total]");
+    const addEl = q("[data-add]");
+    const delEl = q("[data-del]");
+    const clockEl = q("[data-clock]");
+    const logEl = q("[data-log]");
+    const btn = q("[data-play]");
+
+    const groupColor = {};
+    for (const g of meta.groups) groupColor[g.key] = g.color;
+
+    // --- scaling denominators -------------------------------------------
+    // Under DENOM "head" a lane that shrank after its peak pins at full while
+    // its number falls; under "peak" it recedes visibly and ends short of full.
+    const denom = lanes.map((l) => (DENOM === "peak" ? Math.max(l.peak, l.head) : l.head));
+    if (SCALE === "per-group") {
+      for (const g of meta.groups) {
+        const [s, e] = g.laneRange;
+        let peak = 1;
+        for (let i = s; i < e; i++) peak = Math.max(peak, lanes[i].head);
+        for (let i = s; i < e; i++) denom[i] = peak;
+      }
+    }
+
+    // --- build lane rows from meta.lanes --------------------------------
+    const rowEls = [], fillEls = [], valEls = [];
+    const gFillEls = [], gValEls = [], gDenom = [];
+    const laneGroup = new Array(lanes.length).fill(0);
+    const groupsBox = q("[data-groups]");
+    meta.groups.forEach((g, gi) => {
+      const [start, end] = g.laneRange;
+      if (start >= end) return;
+      const pane = document.createElement("div");
+      pane.className = "owct-group owct-pane";
+      const head = document.createElement("div");
+      head.className = "owct-pane-head";
+      const headName = document.createElement("span");
+      headName.textContent = g.label;
+      const headUnit = document.createElement("span");
+      headUnit.className = "owct-unit";
+      headUnit.textContent = UNIT;
+      head.append(headName, headUnit);
+      const rows = document.createElement("div");
+      rows.className = "owct-rows";
+      for (let i = start; i < end; i++) {
+        const row = document.createElement("div");
+        row.className = "owct-row owct-idle";
+        const label = document.createElement("div");
+        label.className = "owct-label";
+        label.textContent = lanes[i].label;
+        label.title = lanes[i].key;
+        const track = document.createElement("div");
+        track.className = "owct-track";
+        const fill = document.createElement("div");
+        fill.className = "owct-fill";
+        fill.style.backgroundColor = groupColor[g.key];
+        track.appendChild(fill);
+        const val = document.createElement("div");
+        val.className = "owct-val owct-mono owct-num";
+        val.textContent = "0";
+        row.append(label, track, val);
+        rows.appendChild(row);
+        rowEls[i] = row;
+        fillEls[i] = fill;
+        valEls[i] = val;
+        laneGroup[i] = gi;
+      }
+
+      // Group total: same row geometry as a lane so the bar and the number
+      // stay in the same two columns the lanes above them use.
+      const tRow = document.createElement("div");
+      tRow.className = "owct-row owct-total";
+      const tLabel = document.createElement("div");
+      tLabel.className = "owct-label";
+      tLabel.textContent = "total";
+      const tTrack = document.createElement("div");
+      tTrack.className = "owct-track";
+      const tFill = document.createElement("div");
+      tFill.className = "owct-fill";
+      tFill.style.backgroundColor = groupColor[g.key];
+      tTrack.appendChild(tFill);
+      const tVal = document.createElement("div");
+      tVal.className = "owct-val owct-mono owct-num";
+      tVal.textContent = "0";
+      tRow.append(tLabel, tTrack, tVal);
+      rows.appendChild(tRow);
+      gFillEls[gi] = tFill;
+      gValEls[gi] = tVal;
+      gDenom[gi] = DENOM === "peak" ? Math.max(g.peak, g.head) : g.head;
+
+      pane.append(head, rows);
+      groupsBox.appendChild(pane);
+    });
+
+    // --- build counter rows ---------------------------------------------
+    const cFillEls = [], cValEls = [];
+    const countersBox = q("[data-counters]");
+    counters.forEach((c, i) => {
+      const row = document.createElement("div");
+      row.className = "owct-counter owct-mono";
+      const label = document.createElement("div");
+      label.className = "owct-label";
+      label.textContent = c.label;
+      const track = document.createElement("div");
+      track.className = "owct-track";
+      const fill = document.createElement("div");
+      fill.className = "owct-fill";
+      fill.style.backgroundColor = "#38a86f";
+      track.appendChild(fill);
+      const val = document.createElement("div");
+      val.className = "owct-val owct-num";
+      val.textContent = "0 / " + num(c.head);
+      row.append(label, track, val);
+      countersBox.appendChild(row);
+      cFillEls[i] = fill;
+      cValEls[i] = val;
+    });
+
+    // --- git log height tracks the tables --------------------------------
+    // Lane count is discovered from the data, so the tables' height is not
+    // known until they are built. Derive the log height from it rather than
+    // hardcoding one that goes wrong the moment a crate is added.
+    function syncLogHeight() {
+      const h = groupsBox.getBoundingClientRect().height;
+      if (h <= 0) return;
+      const want = Math.round(h * LOG_RATIO) + "px";
+      if (logEl.style.height !== want) logEl.style.height = want;
+    }
+    syncLogHeight();
+    if (typeof ResizeObserver === "function") {
+      new ResizeObserver(syncLogHeight).observe(groupsBox);
+    } else {
+      addEventListener("resize", syncLogHeight);
+    }
+
+    // --- static text -----------------------------------------------------
+    const dateFmt = new Intl.DateTimeFormat("en-US", {
+      timeZone: meta.tz, year: "numeric", month: "short", day: "numeric",
+    });
+    const clockFmt = new Intl.DateTimeFormat("en-US", {
+      timeZone: meta.tz, weekday: "short", month: "short", day: "numeric",
+      hour: "numeric", minute: "2-digit",
+    });
+    const firstMs = Date.parse(meta.firstDate);
+    const headMs = Date.parse(meta.headDate);
+    totalEl.textContent = num(N);
+    q("[data-range]").textContent =
+      dateFmt.format(firstMs) + " → " + dateFmt.format(headMs);
+    q("[data-caption]").textContent =
+      "Each bar is scaled to that lane's own size at " + meta.headShort + " (" +
+      dateFmt.format(headMs) + "), so every bar reaches full at the end of the " +
+      "sweep. That end state is a snapshot of ongoing work, not progress toward " +
+      "a finish, and bar lengths are not comparable between lanes — the numbers " +
+      "are. Lane value is net lines (additions minus deletions). The +/− figures " +
+      "in the header cover every path in the repository, while the lanes and " +
+      "their group totals cover crates and documentation only — work-package " +
+      "artifacts are counted in the header and excluded from the bars. Merge " +
+      "commits are excluded throughout.";
+
+    // --- player state ----------------------------------------------------
+    const cum = new Array(lanes.length).fill(0);
+    const cCum = new Array(counters.length).fill(0);
+    const gCum = new Array(meta.groups.length).fill(0);
+    let cursor = 0, addSum = 0, delSum = 0;
+    let raf = 0, playing = false, played = false;
+
+    function paintLane(i) {
+      const pct = clamp01(cum[i] / (denom[i] || 1)) * 100;
+      fillEls[i].style.width = pct.toFixed(2) + "%";
+      valEls[i].textContent = num(cum[i]);
+      if (cum[i] !== 0) rowEls[i].classList.remove("owct-idle");
+    }
+
+    function paintGroup(gi) {
+      if (!gFillEls[gi]) return;
+      gFillEls[gi].style.width =
+        (clamp01(gCum[gi] / (gDenom[gi] || 1)) * 100).toFixed(2) + "%";
+      gValEls[gi].textContent = num(gCum[gi]);
+    }
+
+    function paintCounter(i) {
+      cFillEls[i].style.width =
+        (clamp01(cCum[i] / (counters[i].head || 1)) * 100).toFixed(2) + "%";
+      cValEls[i].textContent = num(cCum[i]) + " / " + num(counters[i].head);
+    }
+
+    function paintHeader(index) {
+      posEl.textContent = num(index);
+      addEl.textContent = "+" + num(addSum);
+      delEl.textContent = "−" + num(delSum);
+      clockEl.textContent = index > 0
+        ? clockFmt.format(meta.t0 + commits[index - 1][0])
+        : clockFmt.format(firstMs);
+    }
+
+    function paintLog(index) {
+      const start = Math.max(0, index - LOG_ROWS);
+      const frag = document.createDocumentFragment();
+      for (let i = start; i < index; i++) {
+        const c = commits[i];
+        const div = document.createElement("div");
+        const a = document.createElement("span");
+        a.className = "owct-a";
+        a.textContent = "+" + c[1];
+        const d = document.createElement("span");
+        d.className = "owct-d";
+        d.textContent = " −" + c[2];
+        const s = document.createElement("span");
+        s.className = "owct-s";
+        s.textContent = "  " + c[5];
+        div.append(a, d, s);
+        frag.appendChild(div);
+      }
+      logEl.replaceChildren(frag);
+    }
+
+    // Advance the model to `target` commits applied, then paint once. All DOM
+    // work is coalesced into a single frame regardless of how many commits the
+    // frame covers, so per-frame cost stays bounded as history grows.
+    function advanceTo(target) {
+      if (target <= cursor) return;
+      const dirty = new Set();
+      const cDirty = new Set();
+      const gDirty = new Set();
+      for (let i = cursor; i < target; i++) {
+        const c = commits[i];
+        addSum += c[1];
+        delSum += c[2];
+        const cd = c[3];
+        for (let k = 0; k < cd.length; k++) {
+          if (cd[k]) { cCum[k] += cd[k]; cDirty.add(k); }
+        }
+        const ld = c[4];
+        for (let k = 0; k < ld.length; k++) {
+          const li = ld[k][0];
+          cum[li] += ld[k][1];
+          gCum[laneGroup[li]] += ld[k][1];
+          dirty.add(li);
+          gDirty.add(laneGroup[li]);
+        }
+      }
+      cursor = target;
+      for (const i of dirty) paintLane(i);
+      for (const i of gDirty) paintGroup(i);
+      for (const i of cDirty) paintCounter(i);
+      paintHeader(cursor);
+      paintLog(cursor);
+    }
+
+    // Author timestamps are not strictly increasing in history order — a rebase
+    // or cherry-pick can carry an older author date forward. Time pacing walks a
+    // high-water mark so the sweep can never stall on one of those.
+    let monoDt = null;
+    if (PACING === "time") {
+      monoDt = new Array(N);
+      let hi = 0;
+      for (let i = 0; i < N; i++) {
+        if (commits[i][0] > hi) hi = commits[i][0];
+        monoDt[i] = hi;
+      }
+    }
+
+    function targetFor(p) {
+      if (PACING === "time") {
+        const cutoff = p * meta.spanMs;
+        let i = cursor;
+        while (i < N && monoDt[i] <= cutoff) i++;
+        return i;
+      }
+      return Math.round(p * N);
+    }
+
+    function finalState() {
+      advanceTo(N);
+      // Land on the recorded snapshot rather than the accumulated running sum,
+      // so no rounding or batching artifact can leave the end state off.
+      for (let i = 0; i < lanes.length; i++) {
+        cum[i] = lanes[i].head;
+        paintLane(i);
+      }
+      for (let i = 0; i < meta.groups.length; i++) {
+        gCum[i] = meta.groups[i].head;
+        paintGroup(i);
+      }
+      for (let i = 0; i < counters.length; i++) {
+        cCum[i] = counters[i].head;
+        paintCounter(i);
+      }
+      addSum = meta.totals.add;
+      delSum = meta.totals.del;
+      paintHeader(N);
+      clockEl.textContent = clockFmt.format(headMs);
+    }
+
+    function stop() {
+      playing = false;
+      if (raf) cancelAnimationFrame(raf);
+      raf = 0;
+    }
+
+    function rewind() {
+      stop();
+      cursor = 0;
+      addSum = 0;
+      delSum = 0;
+      cum.fill(0);
+      cCum.fill(0);
+      gCum.fill(0);
+      for (let i = 0; i < lanes.length; i++) {
+        fillEls[i].style.width = "0%";
+        valEls[i].textContent = "0";
+        rowEls[i].classList.add("owct-idle");
+      }
+      for (let i = 0; i < meta.groups.length; i++) paintGroup(i);
+      for (let i = 0; i < counters.length; i++) paintCounter(i);
+      paintHeader(0);
+      logEl.replaceChildren();
+    }
+
+    function play() {
+      if (!btn.style.minWidth) {
+        btn.style.minWidth = btn.getBoundingClientRect().width + "px";
+      }
+      btn.textContent = "↻ replay";
+      played = true;
+      rewind();
+      if (reduced) { finalState(); return; }
+      playing = true;
+      const start = performance.now();
+      const step = (now) => {
+        if (!playing) return;
+        const p = Math.min(1, (now - start) / DUR);
+        advanceTo(targetFor(p));
+        if (p < 1) {
+          raf = requestAnimationFrame(step);
+        } else {
+          playing = false;
+          raf = 0;
+          finalState();
+        }
+      };
+      raf = requestAnimationFrame(step);
+    }
+
+    btn.addEventListener("click", play);
+    rewind();
+    if (!reduced) onView(root, () => { if (!played) play(); });
+  });
+})();
+</script>

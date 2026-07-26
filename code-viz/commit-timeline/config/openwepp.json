@@ -1,0 +1,44 @@
+{
+  "title": "openWEPP",
+  "repo": "rogerlew/openWEPP",
+  "tz": "America/Los_Angeles",
+  "labelStrip": ["openwepp-"],
+  "excludeFromLanes": ["docs/work-packages/"],
+  "groups": [
+    {
+      "key": "crates",
+      "label": "crates",
+      "lanes": [
+        {
+          "key": "tests-integration",
+          "label": "tests/integration",
+          "paths": ["tests/integration/"]
+        }
+      ],
+      "autoDiscover": { "kind": "dir-children", "path": "crates/" },
+      "sharedLaneLabel": "crates (shared)"
+    },
+    {
+      "key": "docs",
+      "label": "documentation",
+      "lanes": [
+        {
+          "key": "usersum",
+          "label": "usersum",
+          "paths": ["usersum/"]
+        }
+      ],
+      "autoDiscover": { "kind": "dir-children", "path": "docs/" },
+      "sharedLaneLabel": "docs (loose files)"
+    }
+  ],
+  "counters": [
+    {
+      "key": "workPackages",
+      "label": "work packages",
+      "kind": "dir-count",
+      "path": "docs/work-packages/",
+      "exclude": ["series"]
+    }
+  ]
+}
