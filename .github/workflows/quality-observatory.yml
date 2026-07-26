@@ -96,7 +96,9 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       CARGO_TARGET_DIR: /t
       QUALITY_HISTORY_ROOT: /testgate-history/quality-observatory
-      QUALITY_ATTEMPT_ROOT: /testgate-history/quality-observatory/${{ github.run_id }}-${{ github.run_attempt }}
+      # Keep TMPDIR descendants within Unix-domain socket path budgets while
+      # retaining the attempt on disk-backed /testgate-history.
+      QUALITY_ATTEMPT_ROOT: /testgate-history/q/${{ github.run_id }}-${{ github.run_attempt }}
       QUALITY_CONTROL_ROOT: /testgate-history/quality-observatory-control/${{ github.run_id }}-${{ github.run_attempt }}
       QUALITY_STAGING_ROOT: /testgate-history/quality-observatory-staging/${{ github.run_id }}-${{ github.run_attempt }}
       QUALITY_FOREST1_LEASE: /testgate-history/forest1-heavy.lock

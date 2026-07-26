@@ -29,3 +29,11 @@ Admission creates `local/tmp` under the disk-backed quality attempt root, sets
 absolute root plus policy identifier into the instrumented build identity.
 Heavy validation fails closed if the directory, path, or policy changes.
 Ordinary failure cleanup removes it with the attempt-local tree.
+
+The first disk-backed qualification proved all three former linker failures
+pass, but exposed a Unix-socket path-budget failure and PID exhaustion in the
+nested CQR self-test. The follow-up retains disk backing while shortening the
+attempt root to `/testgate-history/q/<run>-<attempt>`. It assigns only the CQR
+self-test to the existing globally exclusive repository-snapshot cohort,
+preventing its nested Cargo inventory from competing for the 8,192-process
+container limit.

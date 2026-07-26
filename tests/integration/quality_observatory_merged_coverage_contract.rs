@@ -77,6 +77,23 @@ fn nested_fixture_scratch_is_disk_backed_and_admission_bound() {
 }
 
 #[test]
+fn nested_cqr_fixture_is_globally_exclusive() {
+    let config = text(".config/nextest.toml");
+    let group = config
+        .find("[test-groups.repository-snapshot]")
+        .expect("repository snapshot group");
+    let override_start = config[group..]
+        .find("[[profile.default.overrides]]")
+        .map(|offset| group + offset)
+        .expect("repository snapshot override");
+    let override_text = &config[override_start..];
+    assert!(override_text.contains("binary(cqr_quality_evidence_handoff_contract)"));
+    assert!(override_text.contains("test(cqr_quality_evidence_self_test_passes)"));
+    assert!(override_text.contains("test-group = \"repository-snapshot\""));
+    assert!(override_text.contains("threads-required = \"num-test-threads\""));
+}
+
+#[test]
 fn collector_source_guards_identity_inventory_and_publication() {
     let source = text("tools/local_ci/quality_observatory.py");
     for required in [

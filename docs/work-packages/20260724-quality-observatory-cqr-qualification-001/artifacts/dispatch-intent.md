@@ -58,5 +58,14 @@ qualified on a changed head. Diagnosis proved the failing tests were already
 globally exclusive, so the correction instead moves their nested scratch and
 Cargo targets from `/tmp` tmpfs to the disk-backed attempt-local root.
 
+QA attempt 5 bound changed head
+`46ee538e95b87e919e0f4c59e2bc90b4e48d1761` and TESTGATE run `30185142429`
+to provider run
+[`30186661261`](https://github.com/rogerlew/openWEPP/actions/runs/30186661261).
+The three recurring linker failures passed. Two newly exposed environment
+failures require a changed head: shorten the disk-backed attempt root for Unix
+socket path safety, and make the nested CQR self-test globally exclusive to
+avoid PID-limit competition.
+
 No CQR collection or module implementation is authorized. CQR work in this
 package is selection-only intake of the exact successful QA publication.
