@@ -1,6 +1,11 @@
 # Artifacts
 
-Queued: required-reading map, dispatch intent, occupancy preflight, QA attempt
-ledger, profile inventories/JUnits, canonical quality manifest, artifact size
-inventory, snowbench proof, observational-debt disposition, CQR intake proof,
-stale/tamper rejection, reviews, verification, and final disposition.
+Status: complete.
+
+This directory retains required reading and dispatch intent; all TESTGATE and
+QA attempts; tooling-defect corrections; exact terminal qualification,
+publication, measurement, occupancy, and CQR intake evidence; CURRENT and
+tampered selection-only receipts; dual result reviews; security review;
+terminal finding dispositions; dual terminal verification; and final
+disposition. Large provider evidence remains at the external retained paths
+named by the attempt artifacts.

@@ -2,7 +2,7 @@
 
 Package ID: `20260724-quality-observatory-cqr-qualification-001`
 
-Status: `ACTIVE`
+Status: `COMPLETE`
 
 ## Pre-Execution Intent
 

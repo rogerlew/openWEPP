@@ -1,6 +1,6 @@
 # TESTGATE And Quality Observatory Roadmap
 
-Status: `RATIFIED / EXECUTING / ORDER-6-NEXT`
+Status: `COMPLETE`
 
 Owner: maintainers
 
@@ -37,7 +37,10 @@ the other.
 - Order 6 completed at exact qualification head `95535844`; TESTGATE run
   `30165527516` passed its 12-node critical path with typed quality deferral
   and fresh rejection of incompatible pre-split receipts.
-- Order 7, `20260724-quality-observatory-cqr-qualification-001`, is next.
+- Order 7 completed at exact qualification head `c97eca96`. TESTGATE run
+  `30203702249` passed 12/12 nodes; QA run `30205750420` passed 2,332 tests,
+  published exact canonical evidence, and CQR accepted that identity as
+  `CURRENT` without recollection while rejecting a tampered copy.
 
 ## Outcome
 
@@ -84,7 +87,7 @@ caches remain local-only even when compressed.
 | 4 | `COMPLETE` | `20260724-quality-observatory-workflow-001` | Implement the optional forest1 QA workflow, TESTGATE-first deferral, compact artifacts, and non-blocking result contract. | Orders 2-3 |
 | 5 | `COMPLETE` | `20260724-cqr-nightly-quality-evidence-handoff-001` | Make CQR Nightly consume an exact current QA report and recollect only with typed stale/invalid evidence plus an explicit operator directive. | Orders 3-4 |
 | 6 | `COMPLETE` | `20260724-testgate-quality-observatory-qualification-001` | Changed-head TESTGATE passed its critical correctness path with typed quality deferral and no quality execution. | Orders 1-5 |
-| 7 | `NEXT / QUEUED` | `20260724-quality-observatory-cqr-qualification-001` | Prove optional QA and exact-report CQR intake work end-to-end after TESTGATE. | Orders 5-6 |
+| 7 | `COMPLETE` | `20260724-quality-observatory-cqr-qualification-001` | Optional QA and selection-only exact-report CQR intake passed end-to-end after exact-head TESTGATE qualification. | Orders 5-6 |
 
 Orders 2 and 3 are serialized because their tooling/test write sets overlap.
 Order 6 qualifies the exact final implementation head after Orders 1-5; Order 7
@@ -146,7 +149,7 @@ Order 1 dispositioned
 profile inventory corrections remain valid historical inputs; its failed
 global CRAP result remains unchanged and is not rewritten as a pass.
 
-After Order 7 passes, remove this campaign from `docs/ROADMAP.md`, record each
-completed package in `docs/work-packages/README.md`, and return the priority
-queue to science work. Quality CI and CQR Nightly then remain operator-directed
+Order 7 passed. The campaign is removed from `docs/ROADMAP.md`, every completed
+package is recorded in `docs/work-packages/README.md`, and the priority queue
+returns to science work. Quality CI and CQR Nightly remain operator-directed
 recurring maintenance, not prerequisites to routine science-package closure.

@@ -11,6 +11,12 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260724-quality-observatory-cqr-qualification-001/` completed roadmap
+  Order 7. Exact-head TESTGATE run `30203702249` passed 12/12 nodes; optional
+  QA run `30205750420` passed 2,332 tests and published an exact canonical
+  11-file evidence set. CQR classified that identity `CURRENT` with no
+  recollection and rejected a tampered copy. Dual review and terminal
+  verification passed.
 - `20260724-testgate-quality-observatory-qualification-001/` completed roadmap
   Order 6. Exact changed-head TESTGATE run `30165527516` passed six LIGHT and
   six HEAVY nodes plus the ten-check pre-heavy audit, emitted
@@ -39,6 +45,11 @@
   `DEFERRED_TO_QUALITY_CI` disposition. Exact terminal qualification passed
   12/12 nodes and 2,288/2,288 inventory items, including 2,262 full-workspace
   nextest tests; no live workflow was dispatched.
+- `20260724-testgate-quality-authority-separation-001/` completed roadmap
+  Order 1. ADR-0041 and canonical gate governance separate blocking TESTGATE
+  correctness from optional observational coverage/CRAP, and predecessor
+  quality obligations were explicitly dispositioned. Dual review and terminal
+  verification passed.
 - `testgate-quality-observatory-roadmap.md` is the authorized seven-package
   implementation and qualification sequence that restores TESTGATE to blocking
   correctness admission, moves workspace coverage/CRAP to optional
