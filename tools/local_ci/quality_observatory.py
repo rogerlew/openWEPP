@@ -1501,6 +1501,8 @@ def invoke_observational_crap(
         ],
         cwd=repo,
     )
+    report_path = published / "adjudicated-crap-report.json"
+    write_json(report_path, read_object(report_path))
 
 
 def inventory_payload(path: Path) -> dict[str, Any]:
@@ -1736,7 +1738,10 @@ def collect(args: argparse.Namespace) -> int:
         raise QualityError("execution snapshot changed during quality collection")
     if source_manifest(source_repo) != payload["source_manifest"]:
         raise QualityError("source checkout changed during quality collection")
-    report = read_object(published / "adjudicated-crap-report.json")
+    report_path = published / "adjudicated-crap-report.json"
+    report = read_object(report_path)
+    if report_path.read_bytes() != canonical_bytes(report) + b"\n":
+        raise QualityError("compact CRAP report is not canonical JSON")
     if report.get("closure_eligible") is not False:
         raise QualityError("observational CRAP report is incorrectly closure eligible")
     run_status = {
@@ -2292,7 +2297,10 @@ def verify_published(
         }
         if payload["junit"].get(profile) != expected:
             raise QualityError(f"payload {profile} JUnit binding is invalid")
-    report = read_object(published / "adjudicated-crap-report.json")
+    report_path = published / "adjudicated-crap-report.json"
+    report = read_object(report_path)
+    if report_path.read_bytes() != canonical_bytes(report) + b"\n":
+        raise QualityError("compact CRAP report is not canonical JSON")
     verify_compact_crap(
         repo,
         report,

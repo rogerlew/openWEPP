@@ -85,5 +85,13 @@ exhaustion and caused five nested fixture timeouts. It is rejected. The next
 changed head instead sanitizes inherited LLVM coverage wrappers only at the
 independent inventory boundary.
 
+QA attempt 8 bound changed head
+`1168bae1dfb21dd1a3be840d4381877aa54d9795` and TESTGATE run `30198502723`
+to successful provider run
+[`30200514260`](https://github.com/rogerlew/openWEPP/actions/runs/30200514260).
+CQR selection-only intake rejected the resulting evidence because the external
+CRAP report JSON was not canonical. The next changed head canonicalizes that
+publication before identity binding and adds independent rejection.
+
 No CQR collection or module implementation is authorized. CQR work in this
 package is selection-only intake of the exact successful QA publication.

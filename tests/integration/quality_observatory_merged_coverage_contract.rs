@@ -118,6 +118,7 @@ fn collector_source_guards_identity_inventory_and_publication() {
         "published file set mismatch",
         "quality evidence ID does not match canonical payload",
         "quality payload contains its derived ID",
+        "compact CRAP report is not canonical JSON",
         "100 * 1024 * 1024",
         "RETAINED_OBSERVATIONAL_DEBT_REQUIRES_REVIEW",
     ] {
@@ -136,6 +137,20 @@ fn collector_source_guards_identity_inventory_and_publication() {
     assert!(source.contains("Git exclude-policy drift was accepted"));
     assert!(source.contains("Git info-directory symlink was accepted"));
     assert!(source.contains("post-admission executable growth was accepted"));
+}
+
+#[test]
+fn crap_publication_is_canonicalized_before_identity_binding() {
+    let source = text("tools/local_ci/quality_observatory.py");
+    let invocation = source
+        .find("def invoke_observational_crap(")
+        .expect("observational CRAP invocation");
+    let canonicalize = source[invocation..]
+        .find("write_json(report_path, read_object(report_path))")
+        .map(|offset| invocation + offset)
+        .expect("CRAP report canonicalization");
+    let collection = source.find("def collect(").expect("quality collection");
+    assert!(canonicalize < collection);
 }
 
 #[test]
