@@ -1,0 +1,4 @@
+gap_id,stage,required_evidence,current_state,terminal_state,evidence_ids,rationale
+GAP-CAL04-INDEPENDENT-PHENOLOGY-HOLDOUT,CAL04_GSI_TIMING,Quantitative timing calibration and independent holdout authority,AUTHORITY_BLOCKED,NOT_EVALUATED,,
+GAP-CAL04-NUMERIC-PRIORS,CAL04_ALL,Evidence-supported priors or prospectively reviewed prior-free design,AUTHORITY_BLOCKED,NOT_EVALUATED,,
+GAP-CAL05-SOURCE-COMPOSITION,CAL05_LITTER_SOURCE,Site-matched separated litter-source flux and comparable forest-floor stock,AUTHORITY_BLOCKED,NOT_EVALUATED,,
