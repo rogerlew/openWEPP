@@ -67,6 +67,16 @@ fn collector_source_encodes_sequential_profiles_and_merged_only_crap() {
 }
 
 #[test]
+fn nested_fixture_scratch_is_disk_backed_and_admission_bound() {
+    let source = text("tools/local_ci/quality_observatory.py");
+    assert!(source.contains("temporary_root = local / \"tmp\""));
+    assert!(source.contains("base_env[\"TMPDIR\"] = str(temporary_root)"));
+    assert!(source.contains("environment[\"TMPDIR\"] = str(temporary_root)"));
+    assert!(source.contains("\"temporary_root_policy\": \"attempt-local-disk-backed-v1\""));
+    assert!(source.contains("quality temporary-root policy changed after admission"));
+}
+
+#[test]
 fn collector_source_guards_identity_inventory_and_publication() {
     let source = text("tools/local_ci/quality_observatory.py");
     for required in [

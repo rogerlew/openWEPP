@@ -864,11 +864,14 @@ def admit(args: argparse.Namespace) -> int:
         raise QualityError("source changed while constructing execution snapshot")
     target = local / "target"
     target.mkdir()
+    temporary_root = local / "tmp"
+    temporary_root.mkdir()
     config = prepare_nextest_config(repo, local)
     versions = identity_versions(repo)
     manifest = source_manifest(repo)
     base_env = dict(os.environ)
     base_env["CARGO_TARGET_DIR"] = str(target)
+    base_env["TMPDIR"] = str(temporary_root)
     llvm_exports = parse_export_lines(
         run(["cargo", "llvm-cov", "show-env", "--sh"], cwd=repo, env=base_env)
     )
@@ -904,6 +907,8 @@ def admit(args: argparse.Namespace) -> int:
             if key != "LLVM_PROFILE_FILE"
         },
         "nextest_config_sha256": sha256_file(config),
+        "temporary_root": str(temporary_root),
+        "temporary_root_policy": "attempt-local-disk-backed-v1",
         "source_manifest_sha256": manifest_sha256(manifest),
         "toolchain": versions,
         "artifacts": instrumented_artifact_manifest(target),
@@ -1048,6 +1053,15 @@ def validate_admission(repo: Path, attempt_root: Path) -> dict[str, Any]:
         raise QualityError("instrumented build artifacts changed after admission")
     if working_tree_identity(repo) != payload["build_identity"]["working_tree_identity"]:
         raise QualityError("execution snapshot working tree changed after admission")
+    temporary_root = attempt_root / "local/tmp"
+    if (
+        payload["build_identity"].get("temporary_root") != str(temporary_root)
+        or payload["build_identity"].get("temporary_root_policy")
+        != "attempt-local-disk-backed-v1"
+        or temporary_root.is_symlink()
+        or not temporary_root.is_dir()
+    ):
+        raise QualityError("quality temporary-root policy changed after admission")
     registry = repo / "tools/release/adjudicated_crap_exceptions.json"
     if sha256_file(registry) != payload.get("registry_sha256"):
         raise QualityError("adjudication registry changed after quality admission")
@@ -1523,8 +1537,10 @@ def collect(args: argparse.Namespace) -> int:
         raise QualityError("source checkout changed before heavy execution")
     config = local / "nextest.toml"
     target = local / "target"
+    temporary_root = local / "tmp"
     environment = dict(os.environ)
     environment["CARGO_TARGET_DIR"] = str(target)
+    environment["TMPDIR"] = str(temporary_root)
     llvm_exports = parse_export_lines(
         run(["cargo", "llvm-cov", "show-env", "--sh"], cwd=repo, env=environment)
     )

@@ -47,5 +47,16 @@ collection fail-closed and published no evidence. No further unchanged retry
 is authorized. The in-scope deadline defect requires a changed head, a fresh
 exact-head TESTGATE qualification, and one new QA attempt.
 
+QA attempt 4 bound changed head
+`31911e922418aa66b149106484aab25ae5a81ddc` and TESTGATE run `30181516854`
+to provider run
+[`30183194732`](https://github.com/rogerlew/openWEPP/actions/runs/30183194732).
+It failed during `full` when three nested fixture links terminated with the
+same signal-7 infrastructure cause observed in attempt 2. Recurrence blocks
+another expensive attempt until the QA resource schedule is corrected and
+qualified on a changed head. Diagnosis proved the failing tests were already
+globally exclusive, so the correction instead moves their nested scratch and
+Cargo targets from `/tmp` tmpfs to the disk-backed attempt-local root.
+
 No CQR collection or module implementation is authorized. CQR work in this
 package is selection-only intake of the exact successful QA publication.
