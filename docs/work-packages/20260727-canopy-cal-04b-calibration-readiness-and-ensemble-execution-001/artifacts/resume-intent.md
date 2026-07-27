@@ -1,6 +1,6 @@
 # Resume Intent
 
-Status: `PROSPECTIVE / REVIEW REQUIRED`
+Status: `PRE-HEAVY PASS / DUAL REVIEW REQUIRED`
 
 Evidence class: `Static`
 
@@ -33,3 +33,29 @@ Pre-execution acceptance:
 Heavy execution ownership remains with the authorized
 `comparator_suite_runner`. Freeze verification and terminal review/verification
 remain independent and read-only.
+
+## Restart Evidence
+
+- Historical object tree: moved byte-preservingly to
+  `/home/workdir/cal04b-objects-pre-resume-005` (1.4 GB).
+- Fresh attempt root: `/home/workdir/cal04b-objects`; empty before execution.
+- Restart commit: `66506b553b30356f0174c51dd7174450d9ab5278`.
+- Observed `prepare`: `PASS`, 9,261 candidates, 27,783 saturation rows,
+  82,059 forcing rows.
+- Prepare receipt:
+  `/home/workdir/cal04b-objects/execution-ledger/1-prepare.receipt.csv`,
+  SHA-256
+  `8d0e0f8f8efe505ab192aebdba4dae453ae4aa67dd4c6dd1b0ebe95fce9aeee5`.
+- Freeze manifest and verifier receipts were prospectively restored from the
+  historical native-proof HOLD sentinels to uniform `SEALED`/`pending` state.
+- Daymet checksum verification: `PASS`, all nine sources plus README.
+- Scaffold validator: `PASS`, 14 accepted controls, sealed pre-heavy lifecycle.
+- Executor validator: `PASS`, 9,261 candidates, 27,783 saturation rows,
+  18 commands.
+- Executor tests: `PASS`, 22 tests.
+- Warnings-denied executor Clippy: `PASS`.
+- Executor cargo-deny: `PASS` with only unmatched-allowance/advisory warnings;
+  advisories, bans, licenses, and sources all `ok`.
+- Markdown lint and diff hygiene: `PASS`.
+
+Harvard remains `SEALED`. No Hubbard population command has run.
