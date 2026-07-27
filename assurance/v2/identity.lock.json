@@ -7,9 +7,9 @@
     "base_ref": "15763d7f6d5d4125333d9b7583424c714f5f5ea4",
     "legacy_catalog_sha256": "063bfb0d3b63b1aa5abccdf877e97ffd3fa447b08458aced723963e8461c3a64"
   },
-  "previous_generation_id": "1b3c92574e68c675010548f339ca9ebf52f0ff039a6f9d1595a9223c8478d3f5",
+  "previous_generation_id": "bc2679767c6dc8197af6a3dd3072602cdae195718e89a81a6cb7f77f0106d71a",
   "sources": {
-    "assurance/v2/README.md": "bd74c295ee327f6330a219419a6bfb922a04c5cd1ab1e539aa9a28068d909760",
+    "assurance/v2/README.md": "8f673b6e792b87c533ab5e4b3978eb29bed29bd3fe0f00dd3b8e4e79211c93c2",
     "assurance/v2/catalog.yaml": "acf64ce807cc6ccdda61b6affedeed4683d633247262c1012cb19e71cf6c0160",
     "assurance/v2/principals.yaml": "3cf97c15f0c0cbd50d514caf95de2a79daa4ad096598b652236cced4add48ba5",
     "assurance/v2/reports/linear-groundwater-reservoir-recurrence/evidence/agent-assistance-packet.json": "bbe0a0734975c095ef0477d84955376f5a7d2fff013dc5fe065f48039449f974",
@@ -79,5 +79,5 @@
     "assurance/v2/reports/linear-groundwater-reservoir-recurrence/review.lock.json": "2136d8fcf0ee158cb5d4514b2f5bfc0724a852cf6f11568330c8dab94168a4df",
     "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review.lock.json": "a297a11dd01815c3e3be595ab601a24683cded2a54564261cca8cb5fa8804008"
   },
-  "generation_id": "bc2679767c6dc8197af6a3dd3072602cdae195718e89a81a6cb7f77f0106d71a"
+  "generation_id": "b0a85461c9ea2523db992d8098ad2b1aaea1eda76b5e49b24f32b22dfea802c8"
 }

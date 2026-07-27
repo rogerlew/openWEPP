@@ -99,6 +99,24 @@ calculates complete consumers and invalidation, validates an isolated candidate,
 atomically exchanges the generation, and writes one deterministic receipt. No
 operator or agent edits hashes or copies roots.
 
+When one already-declared external `local_content` dependency has changed, use
+the source-adoption transaction:
+
+```bash
+target/release/openwepp-assurance amend adopt-report-source \
+  --report <report-id> \
+  --path <declared-relative-path> \
+  --check
+```
+
+Apply the same command with `--apply` only after reviewing the complete
+candidate. Adoption accepts exactly one drifted dependency, refuses internal or
+undeclared paths, returns an `IN_REVIEW` report to `DRAFT`, clears its review
+authority, and invalidates its active review events. It does not create a human
+decision or edit the external source. This is a `scientific-full` transition;
+run the package-selected implementation and full gates rather than the focused
+report-data receipt runner.
+
 After an applied report-data-only transaction, run its receipt-authorized gate:
 
 ```bash
