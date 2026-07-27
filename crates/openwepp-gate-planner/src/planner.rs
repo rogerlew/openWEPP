@@ -2459,5 +2459,184 @@ fn load_json(path: &Path) -> Result<Value> {
 
 #[cfg(test)]
 mod tests {
+    struct Auth11Inventory;
+
+    impl super::InventoryProvider for Auth11Inventory {
+        fn inventory(
+            &self,
+            _repo: &std::path::Path,
+            definition: &crate::policy::GateDefinition,
+            target: &str,
+        ) -> crate::error::Result<Vec<String>> {
+            if definition.gate_definition_id == "authority-required-suite-obligation-guards-v1" {
+                Ok(vec![
+                    "auth11_all_active_required_suite_targets_exist_and_are_registered".to_owned(),
+                    "auth11_obligations_schema_and_anchor_bindings_are_enforced".to_owned(),
+                    "auth11_registry_posture_and_protocol_guard_paths_exist".to_owned(),
+                ])
+            } else {
+                Ok(vec![format!("{}:{target}", definition.gate_definition_id)])
+            }
+        }
+    }
+
+    fn auth11_change(path: &str) -> crate::repository::ObservedChange {
+        crate::repository::ObservedChange {
+            path: path.to_owned(),
+            change_kind: "MODIFY".to_owned(),
+            object_kind: "REGULAR".to_owned(),
+            old_mode: Some("100644".to_owned()),
+            new_mode: Some("100644".to_owned()),
+        }
+    }
+
+    fn assert_auth11_plan_contract(repo: &std::path::Path) {
+        let head = std::process::Command::new("git")
+            .args(["rev-parse", "HEAD"])
+            .current_dir(repo)
+            .output()
+            .expect("git rev-parse");
+        let request = super::PlanRequest {
+            stage: super::PlanningStage::Intent,
+            predecessor_intent_plan_id: None,
+            boundary: "INCREMENT".to_owned(),
+            campaign_id: Some("AUTH11-NODE-TEST".to_owned()),
+            authorized_paths: vec!["gate-policy/v1/gate-definitions.json".to_owned()],
+            package_authority_chain_id: "aa".repeat(32),
+            intent_package_path: "docs/work-packages/fixture/package.md".to_owned(),
+            source: crate::repository::ObservedSource {
+                base_commit: String::from_utf8(head.stdout)
+                    .expect("UTF-8 head")
+                    .trim()
+                    .to_owned(),
+                head_commit: None,
+                dirty_tree_digest: Some("11".repeat(32)),
+                index_digest: Some("22".repeat(32)),
+                worktree_digest: Some("33".repeat(32)),
+                untracked_digest: Some("44".repeat(32)),
+                changes: vec![auth11_change("gate-policy/v1/gate-definitions.json")],
+            },
+        };
+        let plan = super::Planner::new(Auth11Inventory)
+            .build(repo, &request)
+            .expect("AUTH11 plan");
+        let nodes = plan["nodes"].as_array().expect("nodes");
+        let auth11_nodes = nodes
+            .iter()
+            .filter(|node| {
+                node["gate_definition_id"] == "authority-required-suite-obligation-guards-v1"
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(auth11_nodes.len(), 1);
+        assert_eq!(
+            auth11_nodes[0]["arguments"],
+            serde_json::json!([
+                "cargo",
+                "nextest",
+                "run",
+                "--test",
+                "auth11_required_suite_obligation_guards_contract"
+            ])
+        );
+        assert_eq!(
+            auth11_nodes[0]["expected_inventory"]["ids"],
+            serde_json::json!([
+                "auth11_all_active_required_suite_targets_exist_and_are_registered",
+                "auth11_obligations_schema_and_anchor_bindings_are_enforced",
+                "auth11_registry_posture_and_protocol_guard_paths_exist"
+            ])
+        );
+        let definition_ids = nodes
+            .iter()
+            .map(|node| node["gate_definition_id"].as_str().expect("definition ID"))
+            .collect::<Vec<_>>();
+        let position = |id: &str| {
+            definition_ids
+                .iter()
+                .position(|candidate| *candidate == id)
+                .unwrap_or_else(|| panic!("missing node {id}"))
+        };
+        assert!(position("authority-admission-v1") < position("authority-antievasion-v1"));
+        assert!(
+            position("authority-antievasion-v1")
+                < position("authority-required-suite-obligation-guards-v1")
+        );
+        assert!(
+            position("authority-required-suite-obligation-guards-v1")
+                < position("gate-policy-schema-consistency-v1")
+        );
+        assert!(
+            position("authority-required-suite-obligation-guards-v1")
+                < position("workspace-full-nextest-v1")
+        );
+    }
+
+    #[test]
+    fn auth11_required_suite_node_is_selected_once_for_authority_surfaces() {
+        let repo = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+        let policy = crate::policy::PolicyBundle::load(&repo).expect("policy bundle");
+        let graph = crate::repository::CargoGraph::load_current(&repo).expect("Cargo graph");
+        let positive_paths = [
+            "docs/specifications/external-authority/registry.yaml",
+            "docs/specifications/external-authority/required-suite-obligations.json",
+            "docs/specifications/external-authority/suites/constitutive.md",
+            "docs/specifications/external-authority/promotion-protocol.md",
+            "tests/integration/auth/required_suite_obligation_guards_contract.rs",
+            "tests/fixtures/constitutive/cohort.json",
+            "tests/fixtures/infile/cohort.json",
+            "tools/release/check_authority_suite_antievasion.sh",
+            "gate-policy/v1/gate-definitions.json",
+        ];
+        for path in positive_paths {
+            let selection = super::select(&policy, &graph, &[auth11_change(path)]);
+            assert_eq!(
+                selection
+                    .explicit_definitions
+                    .iter()
+                    .filter(|definition| {
+                        definition.as_str() == "authority-required-suite-obligation-guards-v1"
+                    })
+                    .count(),
+                1,
+                "{path}"
+            );
+            assert!(
+                selection
+                    .reason_codes
+                    .iter()
+                    .any(|reason| reason == "AUTHORITY_REQUIRED_SUITE_OBLIGATION_CHANGED"),
+                "{path}"
+            );
+            assert!(
+                selection
+                    .reason_codes
+                    .iter()
+                    .any(|reason| reason == "SEMANTIC_SURFACE:external-authority-required-suite"),
+                "{path}"
+            );
+        }
+        assert_auth11_plan_contract(&repo);
+    }
+
+    #[test]
+    fn auth11_required_suite_node_is_not_selected_for_unrelated_critical_diff() {
+        let repo = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+        let policy = crate::policy::PolicyBundle::load(&repo).expect("policy bundle");
+        let graph = crate::repository::CargoGraph::load_current(&repo).expect("Cargo graph");
+        let selection = super::select(
+            &policy,
+            &graph,
+            &[auth11_change(
+                "crates/openwepp-hillslope-orchestrator/src/direct_runtime/03_executor.rs",
+            )],
+        );
+        assert_eq!(selection.risk.as_str(), "CRITICAL");
+        assert!(
+            !selection.explicit_definitions.iter().any(|definition| {
+                definition == "authority-required-suite-obligation-guards-v1"
+            })
+        );
+    }
+
     include!("planner_coverage_tests.rs");
 }

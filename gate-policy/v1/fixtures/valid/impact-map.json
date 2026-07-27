@@ -18,7 +18,10 @@
     "contracts": [],
     "authority_suites": [],
     "assurance_watches": [],
-    "gate_definition_ids": ["gate-policy-schema-consistency-v1"],
+    "gate_definition_ids": [
+      "authority-required-suite-obligation-guards-v1",
+      "gate-policy-schema-consistency-v1"
+    ],
     "documentation_paths": ["docs/standards/testing-and-gate-strategy.md"]
   }]
 }

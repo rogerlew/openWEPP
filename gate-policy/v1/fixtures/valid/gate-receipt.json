@@ -34,10 +34,10 @@
   "dag_nodes": [{
     "node_id": "8888888888888888888888888888888888888888888888888888888888888888",
     "plan_node_sha256": "8989898989898989898989898989898989898989898989898989898989898989",
-    "gate_definition_id": "gate-policy-schema-consistency-v1",
-    "gate_family": "source-quality",
+    "gate_definition_id": "authority-required-suite-obligation-guards-v1",
+    "gate_family": "correctness-authority",
     "execution_cost_class": "LIGHT",
-    "target": "testgate_align_authority_contract",
+    "target": "auth11_required_suite_obligation_guards_contract",
     "features": [],
     "authority_class": "NONE",
     "outcome_policy": "BLOCKING",
@@ -50,7 +50,7 @@
       "version": "cargo-nextest-0.9",
       "adapter_sha256": null
     },
-    "arguments": ["cargo", "nextest", "run", "--test", "testgate_align_authority_contract"],
+    "arguments": ["cargo", "nextest", "run", "--test", "auth11_required_suite_obligation_guards_contract"],
     "working_directory": ".",
     "environment_allowlist": ["PATH"],
     "prerequisites": [],
@@ -58,8 +58,12 @@
     "reuse_class": "NON_REUSABLE",
     "expected_inventory": {
       "mode": "EXACT",
-      "ids": ["schemas_and_fixtures_are_closed_and_valid"],
-      "minimum_count": 1
+      "ids": [
+        "auth11_all_active_required_suite_targets_exist_and_are_registered",
+        "auth11_obligations_schema_and_anchor_bindings_are_enforced",
+        "auth11_registry_posture_and_protocol_guard_paths_exist"
+      ],
+      "minimum_count": 3
     },
     "acceptance": {
       "kind": "EXIT_CODE",
@@ -70,9 +74,9 @@
     "timeout_seconds": 300,
     "retry": { "maximum_attempts": 1, "permitted_reasons": [] },
     "artifact_contract": "nextest-junit-v1",
-    "output_paths": ["target/testgate-align/junit.xml"],
+    "output_paths": ["target/gate-plan/authority-required-suite-obligation-guards.xml"],
     "blocks_transition": "INCREMENT",
-    "identity_breakers": ["rust-toolchain", "target-triple"],
+    "identity_breakers": ["authority-registry", "authority-fixtures", "rust-toolchain"],
     "matrix": { "target": "x86_64-unknown-linux-gnu" },
     "shard": { "index": 0, "total": 1 }
   }],
@@ -80,7 +84,7 @@
   "attempts": [{
     "node_id": "8888888888888888888888888888888888888888888888888888888888888888",
     "attempt": 1,
-    "arguments": ["cargo", "nextest", "run", "--test", "testgate_align_authority_contract"],
+    "arguments": ["cargo", "nextest", "run", "--test", "auth11_required_suite_obligation_guards_contract"],
     "started_at": "2026-07-17T12:00:00Z",
     "finished_at": "2026-07-17T12:01:00Z",
     "exit_code": 0,
@@ -88,8 +92,16 @@
     "result": "PASS",
     "retry_reason": null
   }],
-  "planned_inventory": ["schemas_and_fixtures_are_closed_and_valid"],
-  "executed_inventory": ["schemas_and_fixtures_are_closed_and_valid"],
+  "planned_inventory": [
+    "auth11_all_active_required_suite_targets_exist_and_are_registered",
+    "auth11_obligations_schema_and_anchor_bindings_are_enforced",
+    "auth11_registry_posture_and_protocol_guard_paths_exist"
+  ],
+  "executed_inventory": [
+    "auth11_all_active_required_suite_targets_exist_and_are_registered",
+    "auth11_obligations_schema_and_anchor_bindings_are_enforced",
+    "auth11_registry_posture_and_protocol_guard_paths_exist"
+  ],
   "tools": [{
     "tool_id": "cargo-nextest",
     "version": "0.9.100",
@@ -105,9 +117,9 @@
   },
   "started_at": "2026-07-17T12:00:00Z",
   "finished_at": "2026-07-17T12:01:00Z",
-  "counts": { "passed": 1, "failed": 0, "skipped": 0, "blocked": 0, "retried": 0 },
+  "counts": { "passed": 3, "failed": 0, "skipped": 0, "blocked": 0, "retried": 0 },
   "authority_outcomes": [{
-    "gate_id": "gate-policy-schema-consistency-v1",
+    "gate_id": "authority-required-suite-obligation-guards-v1",
     "authority_class": "NONE",
     "execution_integrity": "PASS",
     "admission_outcome": null,
@@ -118,7 +130,7 @@
   "artifacts": [{
     "artifact_id": "junit",
     "kind": "JUNIT",
-    "path": "target/testgate-align/junit.xml",
+    "path": "target/gate-plan/authority-required-suite-obligation-guards.xml",
     "sha256": "cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd"
   }],
   "unavailable_items": [],

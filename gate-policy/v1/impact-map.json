@@ -2,7 +2,7 @@
   "schema_version": "openwepp-gate-impact-map-v1",
   "policy_id": "ADR-0039",
   "policy_sha256": "74203b294dcea4c7f3ecb5fe4110a425d938d2ec75bde60cfc646a54fea3f5e9",
-  "generation": 16,
+  "generation": 17,
   "enforcement_status": "BLOCKING",
   "unknown_path_action": "ESCALATE_CRITICAL",
   "entries": [
@@ -53,6 +53,87 @@
       "assurance_watches": [],
       "gate_definition_ids": ["gate-policy-schema-consistency-v1"],
       "documentation_paths": ["docs/standards/testing-and-gate-strategy.md"]
+    },
+    {
+      "entry_id": "auth11-registry",
+      "matcher": { "kind": "exact_path", "value": "docs/specifications/external-authority/registry.yaml" },
+      "owner": "openwepp-maintainers", "semantic_surface": "external-authority-required-suite", "risk_floor": "CRITICAL",
+      "reason_codes": ["AUTHORITY_REQUIRED_SUITE_OBLIGATION_CHANGED"], "affected_packages": ["openwepp"],
+      "test_targets": ["auth11_required_suite_obligation_guards_contract"], "covering_test_targets": ["auth11_required_suite_obligation_guards_contract"],
+      "contracts": [], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["authority-required-suite-obligation-guards-v1"], "documentation_paths": []
+    },
+    {
+      "entry_id": "auth11-obligations",
+      "matcher": { "kind": "exact_path", "value": "docs/specifications/external-authority/required-suite-obligations.json" },
+      "owner": "openwepp-maintainers", "semantic_surface": "external-authority-required-suite", "risk_floor": "CRITICAL",
+      "reason_codes": ["AUTHORITY_REQUIRED_SUITE_OBLIGATION_CHANGED"], "affected_packages": ["openwepp"],
+      "test_targets": ["auth11_required_suite_obligation_guards_contract"], "covering_test_targets": ["auth11_required_suite_obligation_guards_contract"],
+      "contracts": [], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["authority-required-suite-obligation-guards-v1"], "documentation_paths": []
+    },
+    {
+      "entry_id": "auth11-suite-docs",
+      "matcher": { "kind": "path_prefix", "value": "docs/specifications/external-authority/suites/" },
+      "owner": "openwepp-maintainers", "semantic_surface": "external-authority-required-suite", "risk_floor": "CRITICAL",
+      "reason_codes": ["AUTHORITY_REQUIRED_SUITE_OBLIGATION_CHANGED"], "affected_packages": ["openwepp"],
+      "test_targets": ["auth11_required_suite_obligation_guards_contract"], "covering_test_targets": ["auth11_required_suite_obligation_guards_contract"],
+      "contracts": [], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["authority-required-suite-obligation-guards-v1"], "documentation_paths": []
+    },
+    {
+      "entry_id": "auth11-promotion-protocol",
+      "matcher": { "kind": "exact_path", "value": "docs/specifications/external-authority/promotion-protocol.md" },
+      "owner": "openwepp-maintainers", "semantic_surface": "external-authority-required-suite", "risk_floor": "CRITICAL",
+      "reason_codes": ["AUTHORITY_REQUIRED_SUITE_OBLIGATION_CHANGED"], "affected_packages": ["openwepp"],
+      "test_targets": ["auth11_required_suite_obligation_guards_contract"], "covering_test_targets": ["auth11_required_suite_obligation_guards_contract"],
+      "contracts": [], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["authority-required-suite-obligation-guards-v1"], "documentation_paths": []
+    },
+    {
+      "entry_id": "auth11-integration-contracts",
+      "matcher": { "kind": "path_prefix", "value": "tests/integration/auth" },
+      "owner": "openwepp-maintainers", "semantic_surface": "external-authority-required-suite", "risk_floor": "CRITICAL",
+      "reason_codes": ["AUTHORITY_REQUIRED_SUITE_OBLIGATION_CHANGED"], "affected_packages": ["openwepp"],
+      "test_targets": ["auth11_required_suite_obligation_guards_contract"], "covering_test_targets": ["auth11_required_suite_obligation_guards_contract"],
+      "contracts": [], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["authority-required-suite-obligation-guards-v1"], "documentation_paths": []
+    },
+    {
+      "entry_id": "auth11-constitutive-cohorts",
+      "matcher": { "kind": "path_prefix", "value": "tests/fixtures/constitutive/" },
+      "owner": "openwepp-maintainers", "semantic_surface": "external-authority-required-suite", "risk_floor": "CRITICAL",
+      "reason_codes": ["AUTHORITY_REQUIRED_SUITE_OBLIGATION_CHANGED"], "affected_packages": ["openwepp"],
+      "test_targets": ["auth11_required_suite_obligation_guards_contract"], "covering_test_targets": ["auth11_required_suite_obligation_guards_contract"],
+      "contracts": [], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["authority-required-suite-obligation-guards-v1"], "documentation_paths": []
+    },
+    {
+      "entry_id": "auth11-infile-cohorts",
+      "matcher": { "kind": "path_prefix", "value": "tests/fixtures/infile/" },
+      "owner": "openwepp-maintainers", "semantic_surface": "external-authority-required-suite", "risk_floor": "CRITICAL",
+      "reason_codes": ["AUTHORITY_REQUIRED_SUITE_OBLIGATION_CHANGED"], "affected_packages": ["openwepp"],
+      "test_targets": ["auth11_required_suite_obligation_guards_contract"], "covering_test_targets": ["auth11_required_suite_obligation_guards_contract"],
+      "contracts": [], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["authority-required-suite-obligation-guards-v1"], "documentation_paths": []
+    },
+    {
+      "entry_id": "auth11-antievasion-tool",
+      "matcher": { "kind": "exact_path", "value": "tools/release/check_authority_suite_antievasion.sh" },
+      "owner": "openwepp-maintainers", "semantic_surface": "external-authority-required-suite", "risk_floor": "CRITICAL",
+      "reason_codes": ["AUTHORITY_REQUIRED_SUITE_OBLIGATION_CHANGED"], "affected_packages": ["openwepp"],
+      "test_targets": ["auth11_required_suite_obligation_guards_contract"], "covering_test_targets": ["auth11_required_suite_obligation_guards_contract"],
+      "contracts": [], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["authority-required-suite-obligation-guards-v1"], "documentation_paths": []
+    },
+    {
+      "entry_id": "auth11-gate-policy",
+      "matcher": { "kind": "path_prefix", "value": "gate-policy/" },
+      "owner": "openwepp-maintainers", "semantic_surface": "external-authority-required-suite", "risk_floor": "CRITICAL",
+      "reason_codes": ["AUTHORITY_REQUIRED_SUITE_OBLIGATION_CHANGED"], "affected_packages": ["openwepp"],
+      "test_targets": ["auth11_required_suite_obligation_guards_contract"], "covering_test_targets": ["auth11_required_suite_obligation_guards_contract"],
+      "contracts": [], "authority_suites": [], "assurance_watches": [],
+      "gate_definition_ids": ["authority-required-suite-obligation-guards-v1"], "documentation_paths": []
     },
     {
       "entry_id": "canopy-phenology-direct-core-frames",
