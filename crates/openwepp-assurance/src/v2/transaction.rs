@@ -85,7 +85,7 @@ pub(super) fn apply_candidate(
                 "active assurance generation changed before exchange".to_owned(),
             ));
         }
-        inject_external_drift(&root, &external)?;
+        inject_external_drift(&root, &external, &candidate.allowed_preexisting_drift)?;
         verify_external_read_set(&root, &external)?;
         verify_compare_and_swap(&root, &candidate)?;
         inject_fault(TestFault::BeforeExchange)
@@ -271,14 +271,23 @@ fn inject_fault(_point: TestFault) -> Result<()> {
 }
 
 #[cfg(test)]
-fn inject_external_drift(root: &Path, expected: &ExternalSnapshot) -> Result<()> {
+fn inject_external_drift(
+    root: &Path,
+    expected: &ExternalSnapshot,
+    allowed_preexisting_drift: &std::collections::BTreeSet<String>,
+) -> Result<()> {
     if TEST_FAULT.get() == Some(TestFault::ExternalDrift) {
-        let path = expected.entries.keys().next().ok_or_else(|| {
-            AssuranceError::Invalid("external drift fixture has no regular input".to_owned())
-        })?;
+        let path = allowed_preexisting_drift
+            .iter()
+            .map(PathBuf::from)
+            .find(|path| expected.entries.contains_key(path))
+            .or_else(|| expected.entries.keys().next().cloned())
+            .ok_or_else(|| {
+                AssuranceError::Invalid("external drift fixture has no regular input".to_owned())
+            })?;
         fs::OpenOptions::new()
             .append(true)
-            .open(root.join(path))
+            .open(root.join(&path))
             .and_then(|mut file| {
                 use std::io::Write as _;
                 file.write_all(b"\n")
@@ -290,7 +299,11 @@ fn inject_external_drift(root: &Path, expected: &ExternalSnapshot) -> Result<()>
 
 #[cfg(not(test))]
 #[allow(clippy::unnecessary_wraps)]
-fn inject_external_drift(_root: &Path, _expected: &ExternalSnapshot) -> Result<()> {
+fn inject_external_drift(
+    _root: &Path,
+    _expected: &ExternalSnapshot,
+    _allowed_preexisting_drift: &std::collections::BTreeSet<String>,
+) -> Result<()> {
     Ok(())
 }
 
@@ -604,7 +617,7 @@ mod tests {
     use std::sync::atomic::{AtomicU64, Ordering};
 
     use super::{NEXT_ROOT, TEST_FAULT, TestFault, V2_ROOT, verify_generation_tree};
-    use crate::v2::amendment::{V2AmendMode, amend_attribution};
+    use crate::v2::amendment::{V2AmendMode, adopt_report_source, amend_attribution};
     use crate::v2::fixture::copy_v2_test_fixture;
 
     #[test]
@@ -631,6 +644,38 @@ mod tests {
             assert_eq!(before, capture_files(&fixture.path.join(V2_ROOT)));
             assert!(!fixture.path.join(NEXT_ROOT).exists());
         }
+    }
+
+    #[test]
+    fn adoption_selected_source_race_preserves_the_active_generation() {
+        let fixture = Fixture::new("assurance-adoption-external-race");
+        copy_v2_test_fixture(&repository_root(), &fixture.path).expect("copy fixture");
+        let selected = Path::new("tests/fixtures/cancov_forest/README.md");
+        fs::OpenOptions::new()
+            .append(true)
+            .open(fixture.path.join(selected))
+            .and_then(|mut file| {
+                use std::io::Write as _;
+                file.write_all(b"\nsource adoption initial drift\n")
+            })
+            .expect("create selected source drift");
+        let before = capture_files(&fixture.path.join(V2_ROOT));
+        TEST_FAULT.set(Some(TestFault::ExternalDrift));
+        let result = adopt_report_source(
+            &fixture.path,
+            "snow-and-frozen-soil-process-evaluation",
+            selected,
+            V2AmendMode::Apply,
+        );
+        TEST_FAULT.set(None);
+        assert!(
+            result
+                .expect_err("selected-source race must fail")
+                .to_string()
+                .contains("external assurance read set changed before exchange")
+        );
+        assert_eq!(before, capture_files(&fixture.path.join(V2_ROOT)));
+        assert!(!fixture.path.join(NEXT_ROOT).exists());
     }
 
     #[test]

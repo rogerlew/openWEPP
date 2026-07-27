@@ -369,18 +369,22 @@ pub fn adopt_report_source_at_generation(
     let exceptions = BTreeSet::from([selected]);
     previous.verify_files_except(root, &exceptions)?;
     let observed = sha256_bytes(&read_regular(root, path)?);
+    let current_review = load_review_lock(root, report_id)?;
     if observed == *expected {
-        return no_op_receipt(
-            root,
-            "adopt-report-source",
-            "scientific-full",
-            vec![report_id.to_owned()],
-            if_generation,
-        );
+        let reset_repair_required =
+            requires_adoption_reset_repair(&report, &current_review, report_id)?;
+        if !reset_repair_required {
+            return no_op_receipt(
+                root,
+                "adopt-report-source",
+                "scientific-full",
+                vec![report_id.to_owned()],
+                if_generation,
+            );
+        }
     }
 
     reset_report_to_draft(&mut report)?;
-    let current_review = load_review_lock(root, report_id)?;
     let event_updates = if current_review.event_ids.is_empty() {
         BTreeMap::new()
     } else {
@@ -405,6 +409,53 @@ pub fn adopt_report_source_at_generation(
         BTreeSet::from([selected.to_owned()]),
         BTreeMap::from([(selected.to_owned(), observed)]),
     )
+}
+
+fn requires_adoption_reset_repair(
+    report: &serde_yaml::Value,
+    review_lock: &ReviewLock,
+    report_id: &str,
+) -> Result<bool> {
+    let review = report
+        .get("review")
+        .and_then(serde_yaml::Value::as_mapping)
+        .ok_or_else(|| AssuranceError::Invalid("report review is missing".to_owned()))?;
+    let findings = review.get(yaml_key("findings"));
+    let approvals = review.get(yaml_key("approvals"));
+    if findings.is_none() && approvals.is_none() {
+        return Ok(false);
+    }
+    let empty_sequence = |value: Option<&serde_yaml::Value>| {
+        value.is_none_or(|value| value.as_sequence().is_some_and(Vec::is_empty))
+    };
+    let exact_defective_reset = report.get("lifecycle").and_then(serde_yaml::Value::as_str)
+        == Some("DRAFT")
+        && report
+            .get("agent_assistance")
+            .and_then(|value| value.get("review_entry_authorized"))
+            .and_then(serde_yaml::Value::as_bool)
+            == Some(false)
+        && report
+            .get("authorship")
+            .and_then(|value| value.get("scientific_approver"))
+            .is_some_and(serde_yaml::Value::is_null)
+        && review
+            .get(yaml_key("state"))
+            .and_then(serde_yaml::Value::as_str)
+            == Some("DRAFT")
+        && review
+            .get(yaml_key("decision"))
+            .and_then(serde_yaml::Value::as_str)
+            == Some("not_started")
+        && review_lock.event_ids.is_empty()
+        && empty_sequence(findings)
+        && empty_sequence(approvals);
+    if !exact_defective_reset {
+        return Err(AssuranceError::Invalid(format!(
+            "report '{report_id}' has noncanonical review authority fields outside the repairable DRAFT reset"
+        )));
+    }
+    Ok(true)
 }
 
 fn all_report_ids(root: &Path) -> Result<Vec<String>> {
@@ -446,9 +497,9 @@ fn require_declared_external_local_content(
             "source '{selected}' must be a local_content dependency"
         )));
     }
-    if selected.starts_with("assurance/v2/") {
+    if selected.starts_with("assurance/") {
         return Err(AssuranceError::Invalid(format!(
-            "adopted report source '{selected}' must be outside assurance/v2"
+            "adopted report source '{selected}' must be outside assurance"
         )));
     }
     Ok(())
@@ -495,11 +546,11 @@ fn reset_report_to_draft(report: &mut serde_yaml::Value) -> Result<()> {
             "material_producer_ids",
             serde_yaml::Value::Sequence(Vec::new()),
         ),
-        ("findings", serde_yaml::Value::Sequence(Vec::new())),
-        ("approvals", serde_yaml::Value::Sequence(Vec::new())),
     ] {
         review.insert(yaml_key(field), value);
     }
+    review.remove(yaml_key("findings"));
+    review.remove(yaml_key("approvals"));
     Ok(())
 }
 

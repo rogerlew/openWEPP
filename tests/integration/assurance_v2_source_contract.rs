@@ -41,7 +41,7 @@ fn real_source_and_cli_validate_named_and_all_deterministically() {
     assert!(!all.reports[0].fixture_only);
     assert_eq!(all.reports[1].id, SNOW_REPORT_ID);
     assert_eq!(all.reports[1].version, "1.0.0");
-    assert_eq!(all.reports[1].lifecycle, "IN_REVIEW");
+    assert_eq!(all.reports[1].lifecycle, "DRAFT");
     assert!(!all.reports[1].fixture_only);
 
     let rendered = all.render();

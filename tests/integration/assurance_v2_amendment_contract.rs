@@ -353,6 +353,8 @@ fn report_source_adoption_is_read_only_deterministic_and_invalidates_review_auth
             .unwrap()
             .is_empty()
     );
+    assert!(report["review"].get("findings").is_none());
+    assert!(report["review"].get("approvals").is_none());
     assert_eq!(
         report["review"]["independence_assessment"].as_str(),
         Some("not_assessed")
@@ -498,18 +500,16 @@ fn report_source_adoption_rejects_wrong_kind_and_assurance_internal_dependencies
     );
 
     let internal = current_unverified_fixture("assurance-adopt-report-source-internal");
-    let internal_path =
-        Path::new("assurance/v2/reports/snow-and-frozen-soil-process-evaluation/manuscript.md");
+    let internal_path = Path::new("assurance/README.md");
     rewrite_canopy_dependency(&internal.path, |dependency| {
         dependency["path"] =
             serde_yaml::Value::String(internal_path.to_string_lossy().into_owned());
     });
-    openwepp_assurance::rebind_invalid_v2_test_fixture(&internal.path).unwrap();
     assert!(
         adopt_report_source(&internal.path, SNOW, internal_path, V2AmendMode::Check,)
             .unwrap_err()
             .to_string()
-            .contains("outside assurance/v2")
+            .contains("outside assurance")
     );
 }
 
