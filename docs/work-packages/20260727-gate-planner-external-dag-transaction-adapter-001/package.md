@@ -116,10 +116,16 @@ The exact retained reproducer and disposition are in
 - `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/test_publish_results.py`
 - `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/test_validate_calibration.py`
 - `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/test_validate_scaffold.py`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/executor/src/bin/reconstruct.rs`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/executor/src/bin/verify_reconstruct.rs`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/executor/src/bin/readiness.rs`
 - `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/artifacts/external-dag-transaction-plan.json`
 - `docs/work-packages/20260727-gate-planner-external-dag-transaction-adapter-001/**`
 
 No other path is writable without a prospective amendment and scaffold review.
+The three package-local Rust binaries are authorized only to replace hard-coded
+derived output roots with required, plan-bound output-root operands; algorithms,
+observations, objectives, acceptance, and reconstruction math remain frozen.
 
 ## Security And Trust Invariants
 

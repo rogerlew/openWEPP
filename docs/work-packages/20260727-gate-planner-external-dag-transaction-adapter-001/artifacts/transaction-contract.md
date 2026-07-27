@@ -49,6 +49,13 @@ interface. Cargo build nodes receive an exact plan-bound `CARGO_TARGET_DIR`
 below the attempt root; all downstream binary operands are mechanically rebound
 to its manifest paths.
 
+The package-local `reconstruct`, `verify-reconstruct`, and `readiness` Rust
+binaries likewise gain required plan-bound derived-output-root operands for
+their currently hard-coded `primary`, `verification`, and `readiness` receipt
+paths. This is path injection only: candidate evaluation, reconstruction,
+verification, readiness logic, and serialized scientific values are
+behavior-preserving under path substitution.
+
 ## Output Remapping
 
 Execution never writes the source checkout.
