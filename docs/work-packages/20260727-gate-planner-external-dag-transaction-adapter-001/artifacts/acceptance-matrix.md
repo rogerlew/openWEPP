@@ -19,6 +19,7 @@ Evidence class: `Static`
 | Partial or interrupted publication | journaled non-accepted state; deterministic rollback or completion required before retry |
 | Publication collision or destination drift | reject before install |
 | Missing or changed declared output | FAIL/INVALID by typed cause |
+| Historical versus injected root for reconstruct/verify/readiness fixture | identical exit/failure, inventory/cardinality, and scientific/result bytes; only enumerated normalized path receipt fields may differ |
 | Prerequisite receipt/output drift | reject dependent node |
 | First transition audit reused after verifier handoff | reject |
 | Fresh second transition with exact freeze/verifier receipts | holdout may be admitted |

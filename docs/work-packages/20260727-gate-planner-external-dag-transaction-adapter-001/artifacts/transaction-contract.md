@@ -56,6 +56,16 @@ paths. This is path injection only: candidate evaluation, reconstruction,
 verification, readiness logic, and serialized scientific values are
 behavior-preserving under path substitution.
 
+`test_external_paths.py` executes each of these three binaries twice against
+the same fixed fixture: once with its historical derived root and once with the
+injected root. It requires identical exit/failure behavior, output inventory
+and cardinality, and byte-identical scientific/result files. Receipt comparison
+normalizes only an explicitly enumerated path-field allowlist; every numeric,
+membership, objective, diagnostic, status, and non-path serialized byte must be
+identical. `verify-reconstruct` derives its primary evidence path from its
+existing admitted `--primary-components` operand rather than accepting a
+redundant authority.
+
 ## Output Remapping
 
 Execution never writes the source checkout.
