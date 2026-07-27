@@ -35,3 +35,11 @@ Selected increment gates:
 
 No current-scope gate is deferred. Coverage/CRAP is
 `DEFERRED_TO_QUALITY_CI` under ADR-0041.
+
+Prospective terminal amendment at `df40f94f`: the first unfiltered run found
+that `tests/integration/assurance_v2_source_contract.rs` still asserts the
+pre-transaction `IN_REVIEW` production lifecycle and reports that the
+transaction-installed DRAFT report does not satisfy the declared JSON schema.
+That owning test is admitted to distinguish stale expectation from incomplete
+DRAFT reset and to correct the contract/test pair without weakening schema
+validation. The full profile must be rerun from a new exact head.

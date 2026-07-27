@@ -51,6 +51,8 @@ reviewed bytes.
 - `crates/openwepp-assurance/src/lib.rs`
 - `crates/openwepp-assurance/src/cli.rs`
 - `tests/integration/assurance_v2_amendment_contract.rs`
+- `tests/integration/assurance_v2_source_contract.rs` only for production
+  lifecycle/schema expectations mechanically changed by the governed reset
 - adjacent CLI/unit tests in `crates/openwepp-assurance/src/cli.rs`
 - `assurance/v2/README.md`
 - generated transaction output under `assurance/v2/transactions/`
@@ -79,6 +81,8 @@ reviewed bytes.
   for the report that declares the adopted source;
 - add contract-derived transaction, rollback, CLI, negative-path, and
   idempotence tests;
+- update the production source contract's lifecycle/schema expectation to the
+  transaction-installed DRAFT state without weakening schema validation;
 - update lifecycle documentation and package evidence.
 
 ### Protected boundaries
@@ -226,6 +230,10 @@ considered in-envelope routes, and the next defect.
 - The lifecycle correction exposed two integration tests whose terminal-event
   setup had implicitly depended on the production report being `IN_REVIEW`.
   Their fixtures now enter review explicitly before withdrawal/supersession.
+- The first exact-head full profile exposed a stale production-source lifecycle
+  assertion and a schema rejection of the mechanically reset DRAFT report.
+  The owning source-contract test is prospectively admitted for diagnosis and
+  correction before the full profile is rerun.
 - The exact release build was verified by timestamp, size, SHA-256, and command
   surface before apply after an earlier concurrent build attempt left the old
   binary untouched.
