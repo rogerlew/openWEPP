@@ -23,12 +23,20 @@ executing CAL-04B population or opening Harvard data.
 
 The superseded adapter package cannot authorize heavy closure because its
 write set was widened after its original scaffold. Independent re-review also
-found three executable defects:
+found eight executable defects:
 
 - Generation B consumes verifier capabilities before LIGHT and attempts to
   consume them again during READY audit construction;
 - audit construction reconstructs the same external source inventory twice;
-- audit construction admits the same durable ledger twice.
+- audit construction admits the same durable ledger twice;
+- audit/preflight evaluation precedes HEAVY STARTED, leaving early failures
+  outside the required balanced lifecycle;
+- publication recovery uses pathname-based restore/delete operations rather
+  than descriptor-relative no-follow custody;
+- verifier attestations have no enforced dispatch/transaction freshness;
+- exact CSV reconstruction does not reject unknown or malformed headers; and
+- external error classification depends on string matching and collapses
+  distinct receipt, custody, ledger, and identity failures.
 
 The retained reproducer is the independent review of clean commit
 `76fc06a65a5a5f4305ff5130913e969387fc0aa3`.
@@ -38,6 +46,11 @@ The retained reproducer is the independent review of clean commit
 - one compatible verifier-capability verification/consumption transition;
 - one independent audit inventory reconstruction;
 - one canonical ledger admission and one verification of its resulting proof;
+- STARTED-before-audit ordering with exactly one terminal record on every
+  representable failure;
+- descriptor-relative no-follow publication recovery with root-swap races;
+- verifier-attestation freshness, exact CSV-header rejection, and typed
+  external errors;
 - adversarial and real consumer-path regression tests for those corrections;
 - canonical package-chain validation from this prospective scaffold;
 - focused gates, canonical pre-heavy audit, one fresh exact-head full-workspace
@@ -61,6 +74,21 @@ The retained reproducer is the independent review of clean commit
 - `crates/openwepp-gate-planner/src/external_dag/audit.rs`
 - `crates/openwepp-gate-planner/src/external_dag/custody.rs`
 - `crates/openwepp-gate-planner/src/external_dag/tests.rs`
+- `crates/openwepp-gate-planner/src/external_outputs.rs`
+- `crates/openwepp-gate-planner/src/pre_heavy.rs`
+- `crates/openwepp-gate-planner/src/publication.rs`
+- `gate-policy/v1/schemas/external-dag-plan.schema.json`
+- `gate-policy/v1/schemas/external-verifier-attestation.schema.json`
+- `gate-policy/v1/schemas/publication-receipt.schema.json`
+- `gate-policy/v1/schemas/holdout-opening-token-receipt.schema.json`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/artifacts/external-dag-transaction-plan.json`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/execute-prefix.py`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/custody.py`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/freeze-verify.py`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/publish-results.py`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/test_execute_prefix.py`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/test_freeze_custody.py`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/test_publish_results.py`
 - `docs/work-packages/20260727-gate-planner-external-dag-transaction-adapter-001/package.md`
 - `docs/work-packages/20260727-gate-planner-external-dag-transaction-adapter-001/prompts/active/execute.md`
 - `docs/work-packages/20260727-gate-planner-external-dag-transaction-adapter-001/prompts/archived/**`
@@ -79,8 +107,14 @@ requires a new prospective package; this package's write set must not widen.
 ## Security And Science Invariants
 
 - The Rust planner remains the sole READY authority.
-- Capabilities are verified without mutation until the one canonical
-  consumption point; every required capability is consumed exactly once.
+- Pre-LIGHT custody admission verifies capabilities without mutation. The
+  READY audit owns the sole rename from `capabilities/` to
+  `consumed-capabilities/`, returns an immutable consumed-root proof, and HEAVY
+  verifies that proof without re-consumption.
+- If LIGHT fails before audit consumption, capabilities remain reusable. After
+  audit consumption, the attempt is non-retryable with those capabilities;
+  restart requires distinct newly dispatched capabilities and retains the
+  prior attempt's terminal disposition.
 - The audit independently reconstructs source inventory exactly once.
 - Durable ledger admission is evaluated exactly once and the returned proof is
   verified without re-admission.
@@ -96,17 +130,20 @@ requires a new prospective package; this package's write set must not widen.
 
 1. Commit this scaffold without production edits and obtain two independent
    read-only scaffold reviews.
-2. Add red adversarial fixtures that reproduce double capability consumption,
-   duplicate inventory reconstruction, and duplicate ledger admission.
-3. Implement the smallest typed correction in the declared Rust files.
-4. Run focused Nextest, warnings-denied Clippy, CAL Python integration tests,
+2. Before Rust edits, update the catalog and roadmap so this successor is the
+   only active adapter authority; retain the invalid predecessor bytes as
+   evidence and record its non-executable disposition here.
+3. Add named red adversarial fixtures that reproduce every defect and retain
+   counter, ledger, capability-tree, and race outputs.
+4. Implement the smallest typed correction in the declared files.
+5. Run focused Nextest, warnings-denied Clippy, CAL Python integration tests,
    formatting, schema, documentation, diff, and line-count checks.
-5. Obtain dual independent implementation review and close every finding.
-6. Commit the complete intended closure state and run canonical
+6. Obtain dual independent implementation review and close every finding.
+7. Commit the complete intended closure state and run canonical
    `validate-package-chain` from this scaffold to that exact head.
-7. Construct canonical READY and delegate the selected full-workspace and
+8. Construct canonical READY and delegate the selected full-workspace and
    anti-evasion heavy gates once to the comparator runner.
-8. Reconcile the exact terminal diff, obtain dual terminal verification,
+9. Reconcile the exact terminal diff, obtain dual terminal verification,
    disposition the superseded package, archive prompts, and close.
 
 ## Prospective Gates
@@ -125,7 +162,7 @@ requires a new prospective package; this package's write set must not widen.
 
 ## Exit Criteria
 
-- All three executable defects have direct adversarial and consumer-path proof.
+- All eight executable defects have direct adversarial and consumer-path proof.
 - The package chain and pre-heavy audit pass at the exact admitted commit.
 - Every selected focused and heavy gate passes with retained receipts.
 - The superseded package is truthfully closed as `HOLD/INVALID` and points to

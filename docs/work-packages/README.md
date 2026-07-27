@@ -324,9 +324,12 @@ State as of `2026-07-27 UTC`:
   the canonical same-process pre-heavy trust contract. Prior attempts remain
   evidence only and Harvard remains sealed.
 - `20260727-gate-planner-external-dag-transaction-adapter-001/` -
-  SCAFFOLD / REVIEW REQUIRED: owns canonical Rust support for manifest-driven
-  external-output DAG transactions and the second authenticated transition
-  required after CAL-04B's independent freeze-verifier handoff.
+  HOLD / INVALID / SUPERSEDED: its scaffold authority and independent
+  implementation review failed closed; it cannot authorize heavy execution.
+- `20260727-gate-planner-external-dag-closeout-correction-001/` -
+  ACTIVE / SCAFFOLD REVIEW: prospectively owns the bounded lifecycle, custody,
+  inventory, ledger, publication-recovery, CSV, and error-taxonomy corrections
+  required before CAL-04B can restart.
 - `20260727-science-implementation-calibration-readiness-governance-001/` -
   COMPLETE / GOVERNANCE ADMITTED: ADR-0042 and canonical contract/package rules
   separate authoritative science implementation, calibration-role data,
