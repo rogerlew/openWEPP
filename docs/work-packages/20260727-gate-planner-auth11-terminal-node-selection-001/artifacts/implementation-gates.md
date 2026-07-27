@@ -70,10 +70,11 @@ node. The now-correct `auth11-gate-policy` selection requires exactly three
 AUTH11 items, so planning fails closed with `GATE-INVENTORY-EMPTY`. The
 production inventory and focused AUTH11 tests are correct. Prospective
 successor
-`20260727-gate-planner-auth11-fixed-inventory-test-provider-001` now owns the
-test-only correction. Its uncommitted exact diff passes the reproducer and full
-planner suite 227/227; clean-commit review and terminal verification remain
-pending.
+`20260727-gate-planner-auth11-fixed-inventory-test-provider-001` owns the
+test-only correction at exact commit
+`6abed886f1fbb8a7c0d597964aa021d4c49e4cc1`. The reproducer and full planner
+suite 227/227 pass, and dual implementation review is GO. Terminal verification
+remains pending.
 
 Independent `cargo nextest list --test
 auth11_required_suite_obligation_guards_contract` enumerated exactly:

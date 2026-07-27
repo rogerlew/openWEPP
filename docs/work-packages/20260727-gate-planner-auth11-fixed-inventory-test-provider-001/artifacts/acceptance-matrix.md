@@ -1,6 +1,6 @@
 # Acceptance Matrix
 
-Status: `SCAFFOLD REVIEW REQUIRED`
+Status: `IMPLEMENTATION REVIEW GO / TERMINAL VERIFICATION PENDING`
 
 Evidence class: `Static + Ran`
 

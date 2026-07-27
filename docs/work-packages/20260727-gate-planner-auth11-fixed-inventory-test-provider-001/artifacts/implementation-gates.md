@@ -1,6 +1,7 @@
 # Implementation Gate Evidence
 
-Exact implementation state: pending clean commit.
+Exact implementation commit:
+`6abed886f1fbb8a7c0d597964aa021d4c49e4cc1`.
 
 ## Static
 
@@ -31,7 +32,5 @@ execution occurred.
 
 ## Pending
 
-- clean implementation commit;
-- dual implementation review and finding disposition;
 - dual terminal verification;
 - predecessor AUTH11 exact terminal reconstruction and canonical admission.
