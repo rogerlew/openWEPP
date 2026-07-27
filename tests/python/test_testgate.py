@@ -8,6 +8,7 @@ import tempfile
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
+from types import SimpleNamespace
 from unittest import mock
 
 
@@ -115,8 +116,29 @@ class TestGateTest(unittest.TestCase):
                     self.assertTrue(TESTGATE.stat.S_ISREG(ledger.lstat().st_mode))
                     self.assertEqual(ledger.stat().st_mode & 0o777, 0o600)
                     self.assertGreaterEqual(fsync.call_count, 2)
+                    self.assertEqual(
+                        [call.args[0] for call in fsync.call_args_list[-2:]],
+                        [
+                            guard._file_descriptor,
+                            guard._directories[-1][0],
+                        ],
+                    )
                 finally:
                     guard.close()
+
+    def test_ledger_bootstrap_fails_when_required_primitives_are_unavailable(self) -> None:
+        cases = (
+            mock.patch.object(TESTGATE.os, "O_NOFOLLOW", None),
+            mock.patch.object(TESTGATE.os, "supports_dir_fd", set()),
+            mock.patch.object(TESTGATE.os, "supports_follow_symlinks", set()),
+        )
+        for unavailable in cases:
+            with self.subTest(unavailable=unavailable):
+                with tempfile.TemporaryDirectory() as directory, unavailable:
+                    with self.assertRaises(TESTGATE.TestgateError):
+                        TESTGATE._open_ledger_guard(
+                            Path(directory) / "attempts.jsonl", create=True
+                        )
 
     def test_ledger_bootstrap_preserves_valid_existing_bytes(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -200,7 +222,14 @@ class TestGateTest(unittest.TestCase):
                     raise FileExistsError
                 return real_open(path, flags, *args, **kwargs)
 
-            with mock.patch.object(TESTGATE.os, "open", side_effect=collide):
+            with (
+                mock.patch.object(TESTGATE.os, "open", side_effect=collide),
+                mock.patch.object(
+                    TESTGATE.os,
+                    "supports_dir_fd",
+                    {*TESTGATE.os.supports_dir_fd, TESTGATE.os.open},
+                ),
+            ):
                 with self.assertRaisesRegex(
                     TESTGATE.TestgateError, "exclusive creation collided"
                 ):
@@ -269,6 +298,72 @@ class TestGateTest(unittest.TestCase):
                     )
                 self.assertFalse((outside / "attempts.jsonl").exists())
                 self.assertEqual((moved / "attempts.jsonl").read_bytes(), b"")
+            finally:
+                guard.close()
+
+    def test_ledger_ancestor_swap_is_rejected_before_finalization(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            history = root / "history"
+            ledger = history / "attempts.jsonl"
+            guard = TESTGATE._open_ledger_guard(ledger, create=True)
+            outside = root / "outside"
+            outside.mkdir()
+            moved = root / "retained-history"
+            history.rename(moved)
+            history.symlink_to(outside, target_is_directory=True)
+            artifacts = root / "artifacts"
+            artifacts.mkdir()
+            try:
+                with self.assertRaises(TESTGATE.AttemptFinalizationError):
+                    TESTGATE._finalize_attempt_archive(ledger, artifacts, guard)
+                self.assertFalse((outside / "attempts.jsonl").exists())
+                self.assertEqual((moved / "attempts.jsonl").read_bytes(), b"")
+            finally:
+                guard.close()
+
+    def test_observe_closes_only_guard_it_acquires_on_success_and_error(self) -> None:
+        for failure in (False, True):
+            with self.subTest(failure=failure):
+                with tempfile.TemporaryDirectory() as directory:
+                    args = SimpleNamespace()
+                    guard = TESTGATE._open_ledger_guard(
+                        Path(directory) / "attempts.jsonl", create=True
+                    )
+
+                    def implementation(_args: object) -> dict:
+                        _args._history_ledger_guard = guard
+                        if failure:
+                            raise TESTGATE.TestgateError("injected")
+                        return {"result": "PASS"}
+
+                    with mock.patch.object(
+                        TESTGATE, "_observe", side_effect=implementation
+                    ):
+                        if failure:
+                            with self.assertRaises(TESTGATE.TestgateError):
+                                TESTGATE.observe(args)
+                        else:
+                            self.assertEqual(
+                                TESTGATE.observe(args), {"result": "PASS"}
+                            )
+                    with self.assertRaisesRegex(
+                        TESTGATE.TestgateError, "authority is closed"
+                    ):
+                        guard.validate()
+
+    def test_observe_does_not_close_caller_owned_guard(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            guard = TESTGATE._open_ledger_guard(
+                Path(directory) / "attempts.jsonl", create=True
+            )
+            args = SimpleNamespace(_history_ledger_guard=guard)
+            try:
+                with mock.patch.object(
+                    TESTGATE, "_observe", return_value={"result": "PASS"}
+                ):
+                    self.assertEqual(TESTGATE.observe(args), {"result": "PASS"})
+                guard.validate()
             finally:
                 guard.close()
 

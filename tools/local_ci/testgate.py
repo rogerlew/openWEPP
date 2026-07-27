@@ -71,20 +71,30 @@ class _LedgerGuard:
         """Reject substitution of the file or any selected path ancestor."""
         if self._file_descriptor < 0:
             raise TestgateError("history ledger authority is closed")
-        for descriptor, identity in self._directories:
+        for index, (descriptor, identity) in enumerate(self._directories):
             current = os.fstat(descriptor)
             _require_identity(current, identity, "history ledger ancestor")
-            try:
-                visible = identity.path.lstat()
-            except FileNotFoundError as error:
-                raise TestgateError(
-                    f"history ledger ancestor was replaced: {identity.path}"
-                ) from error
-            _require_identity(visible, identity, "history ledger ancestor")
+            if index:
+                parent_descriptor = self._directories[index - 1][0]
+                try:
+                    visible = os.stat(
+                        identity.path.name,
+                        dir_fd=parent_descriptor,
+                        follow_symlinks=False,
+                    )
+                except FileNotFoundError as error:
+                    raise TestgateError(
+                        f"history ledger ancestor was replaced: {identity.path}"
+                    ) from error
+                _require_identity(visible, identity, "history ledger ancestor")
         current_file = os.fstat(self._file_descriptor)
         _require_identity(current_file, self._file_identity, "history ledger")
         try:
-            visible_file = self.path.lstat()
+            visible_file = os.stat(
+                self.path.name,
+                dir_fd=self._directories[-1][0],
+                follow_symlinks=False,
+            )
         except FileNotFoundError as error:
             raise TestgateError(f"history ledger was replaced: {self.path}") from error
         _require_identity(visible_file, self._file_identity, "history ledger")
@@ -142,9 +152,15 @@ def _lexical_absolute_path(raw: Path) -> Path:
 
 def _open_ledger_guard(raw: Path, *, create: bool) -> _LedgerGuard:
     """Open a ledger and its full path chain without following symlinks."""
+    if not isinstance(getattr(os, "O_NOFOLLOW", None), int):
+        raise TestgateError("history ledger requires O_NOFOLLOW")
+    if os.open not in os.supports_dir_fd or os.stat not in os.supports_dir_fd:
+        raise TestgateError("history ledger requires descriptor-relative filesystem calls")
+    if os.stat not in os.supports_follow_symlinks:
+        raise TestgateError("history ledger requires no-follow stat")
     path = _lexical_absolute_path(raw)
     directory_flags = os.O_RDONLY | os.O_DIRECTORY
-    nofollow = getattr(os, "O_NOFOLLOW", 0)
+    nofollow = os.O_NOFOLLOW
     directory_flags |= nofollow
     descriptors: list[tuple[int, _PathIdentity]] = []
     file_descriptor = -1
@@ -873,7 +889,7 @@ def _final_observation(
     }
 
 
-def observe(args: argparse.Namespace) -> dict[str, Any]:
+def _observe(args: argparse.Namespace) -> dict[str, Any]:
     repo = args.repo.resolve()
     artifact_root = args.artifact_root.resolve()
     if artifact_root == repo or repo in artifact_root.parents:
@@ -1084,6 +1100,18 @@ def observe(args: argparse.Namespace) -> dict[str, Any]:
         _atomic_json(artifact_root / "attestation-predicate.json", predicate)
     _finalize_attempt_archive(ledger, artifact_root, ledger_guard)
     return observation
+
+
+def observe(args: argparse.Namespace) -> dict[str, Any]:
+    """Observe one transaction and close only guards acquired by this call."""
+    supplied = getattr(args, "_history_ledger_guard", None)
+    try:
+        return _observe(args)
+    finally:
+        acquired = getattr(args, "_history_ledger_guard", None)
+        if isinstance(acquired, _LedgerGuard) and acquired is not supplied:
+            acquired.close()
+            delattr(args, "_history_ledger_guard")
 
 
 def _parse_args() -> argparse.Namespace:
