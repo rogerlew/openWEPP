@@ -96,15 +96,32 @@ No other path is writable. This write set must not widen.
   scripts and before `gate-policy-schema-consistency-v1`, HEAVY nodes, and
   workspace full regression.
 - Positive impact entries use reason
-  `AUTHORITY_REQUIRED_SUITE_OBLIGATION_CHANGED` and semantic surface
-  `external-authority-required-suite` for exact/path-prefix matchers covering
-  the authority registry, required-suite obligation tests, authority/cohort
-  fixtures, required-case bindings, lane-control/protocol tooling, and
-  `gate-policy/` selection controls.
+  `AUTHORITY_REQUIRED_SUITE_OBLIGATION_CHANGED`, semantic surface
+  `external-authority-required-suite`, and these literal IDs/matchers:
+  `auth11-registry` exact
+  `docs/specifications/external-authority/registry.yaml`;
+  `auth11-obligations` exact
+  `docs/specifications/external-authority/required-suite-obligations.json`;
+  `auth11-suite-docs` prefix
+  `docs/specifications/external-authority/suites/`;
+  `auth11-promotion-protocol` exact
+  `docs/specifications/external-authority/promotion-protocol.md`;
+  `auth11-integration-contracts` prefix `tests/integration/auth`;
+  `auth11-constitutive-cohorts` prefix `tests/fixtures/constitutive/`;
+  `auth11-infile-cohorts` prefix `tests/fixtures/infile/`;
+  `auth11-antievasion-tool` exact
+  `tools/release/check_authority_suite_antievasion.sh`; and
+  `auth11-gate-policy` prefix `gate-policy/`.
 - `planner::tests::auth11_required_suite_node_is_selected_once_for_authority_surfaces`
   covers every positive path class and exact ordered node/inventory behavior.
 - `planner::tests::auth11_required_suite_node_is_not_selected_for_unrelated_critical_diff`
-  proves an unrelated CRITICAL science/runtime diff does not select AUTH11.
+  uses
+  `crates/openwepp-hillslope-orchestrator/src/direct_runtime/03_executor.rs`
+  and proves an unrelated CRITICAL science/runtime diff does not select AUTH11.
+- AUTH11 independently enumerated inventory must equal this exact sorted set:
+  `auth11_all_active_required_suite_targets_exist_and_are_registered`,
+  `auth11_obligations_schema_and_anchor_bindings_are_enforced`, and
+  `auth11_registry_posture_and_protocol_guard_paths_exist`.
 - Red plan remains exactly 12 nodes / 2,376 inventory. Green reconstruction
   must preserve those exact nodes/inventory and add one AUTH11 node with three
   independently enumerated tests: exactly 13 nodes / 2,379 inventory.
