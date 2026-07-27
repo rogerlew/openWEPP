@@ -16,6 +16,6 @@ Core:
 
 On demand:
 
-- ADR-0039
+- `docs/decisions/0039-campaign-scoped-risk-based-testing-and-assurance-gates.md`
 - gate planner policy/assurance source and owning tests
 - current assurance registry/catalog/review locks read-only
