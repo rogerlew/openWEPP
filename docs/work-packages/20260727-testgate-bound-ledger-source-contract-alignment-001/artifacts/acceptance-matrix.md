@@ -13,3 +13,5 @@ Evidence class: `Static + Ran`
 | BL-05 | Full regression restored | 2,361-test full profile |
 | BL-06 | Independent closure | A/B review, terminal, receipt artifacts |
 | BL-07 | Exact canonical acceptance | fresh PASS receipt and ledger |
+| BL-08 | Autonomous evidence scaffold | reading map and queued placeholders |
+| BL-09 | Prospective and terminal gate authority | intent and terminal plans |
