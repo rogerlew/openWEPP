@@ -27,9 +27,21 @@ Evidence class: `Ran + Static`
   `1b691e6ec134f103408c44fcc48a87883ada8be0cd81544810e6cb3b66d8813e`.
 - Repeat source-adoption and implementation-rebind checks: `changed:false`;
   no recovery directory remains.
+- Review-found serializer repair used the corrected exact release binary,
+  SHA-256
+  `d70b0cc372664e8c3c357e562c7cee9efa02ac4c95327da8497fa5f260733357`.
+  Its read-only check and apply removed only the two schema-invalid empty
+  `review.findings`/`review.approvals` keys, advanced generation
+  `b0a85461...` to
+  `94df966626df18d8231227f83dacb9c617198553c0676d7ba21eacb931fc4160`,
+  and wrote receipt
+  `assurance/v2/transactions/2b73f43f14e2cf0d2a2957b70bd83660c4af4dc64c0a12d7f0597b5e7e577570.json`
+  (SHA-256
+  `bd60d22a2d260fd5e4955504478981931ea73d02dca86672b2105a51b6c157e3`).
+  A repeat check is `changed:false`.
 - Generation-chain verification:
   `target/release/openwepp-assurance verify-generation --base-ref
-  15763d7f6d5d4125333d9b7583424c714f5f5ea4` — `PASS`, 19 transitions.
+  15763d7f6d5d4125333d9b7583424c714f5f5ea4` — `PASS`, 20 transitions.
 
 ## Focused and consumer gates
 
@@ -42,6 +54,11 @@ Evidence class: `Ran + Static`
 - `cargo test -p openwepp --test assurance_v2_amendment_contract
   -- --test-threads=1`: `PASS`, 15 passed and two fixture generators ignored.
 - `cargo nextest run -p openwepp-assurance`: `PASS`, 25/25.
+- Post-review assurance crate run: `PASS`, 27/27, run
+  `d5bb2ea3-1897-41cb-8237-7dcd1ea84955`, including the
+  adoption-specific selected-source race.
+- Production source contract suite: `PASS`, 12/12, independent QA run
+  `bde239ec-ad7e-4737-9d4c-9badef973369`.
 - `cargo clippy -p openwepp-assurance --all-targets -- -D warnings`:
   `PASS` after accepting and correcting two style findings.
 - `cargo fmt --all -- --check`: `PASS`.
@@ -55,6 +72,14 @@ that had relied on production snow report lifecycle being `IN_REVIEW`.
 Commit `02f05234` made those fixture preconditions explicit; the terminal
 15/15 run passes. The first warnings-denied Clippy run exposed an obfuscated
 conditional and an oversized CLI unit test; commit `749847fd` corrected both.
+
+The first unfiltered full profile at `df40f94f` stopped red after detecting two
+production-source contract failures: a stale `IN_REVIEW` assertion and the
+schema-invalid empty review keys written by the initial reset. The run was
+interrupted after diagnosis and is not closure evidence. Commits `d6c2837b`
+and `3b24155f`, plus corrective generation `94df9666...`, close those findings.
+The selected-source race, full `assurance/` namespace rejection, exact defective
+reset envelope, schema acceptance, and no-op behavior now have focused tests.
 
 ## Pending
 

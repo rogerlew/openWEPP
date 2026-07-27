@@ -548,6 +548,7 @@ fn report_source_adoption_rejects_noncanonical_unchanged_reset_repair() {
         serde_yaml::from_slice(&fs::read(&report_path).unwrap()).unwrap();
     report["review"]["review_charge"] =
         serde_yaml::Value::String("Noncanonical retained authority.".to_owned());
+    report["review"]["findings"] = serde_yaml::Value::Sequence(Vec::new());
     fs::write(&report_path, serde_yaml::to_string(&report).unwrap()).unwrap();
     openwepp_assurance::rebind_invalid_v2_test_fixture(&fixture.path).unwrap();
     let before = capture_tree(&fixture.path);

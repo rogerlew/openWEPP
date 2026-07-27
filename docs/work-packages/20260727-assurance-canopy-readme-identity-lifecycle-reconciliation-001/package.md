@@ -241,6 +241,13 @@ considered in-envelope routes, and the next defect.
 - The exact release build was verified by timestamp, size, SHA-256, and command
   surface before apply after an earlier concurrent build attempt left the old
   binary untouched.
+- Independent review found that the initial reset incorrectly serialized empty
+  event-ledger fields inside the schema-closed `review` object. A narrowly
+  constrained corrective successor removed only those keys; the report schema,
+  source contract, and repeat no-op now pass.
+- QA found that a generic external-race test did not exercise the adopted
+  source's unique CAS exception. The transaction fault injector and owning test
+  now race that selected path directly and prove no assurance exchange occurs.
 
 ## Decision Log
 
