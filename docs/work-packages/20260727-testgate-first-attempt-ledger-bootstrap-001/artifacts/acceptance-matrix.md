@@ -14,6 +14,9 @@ Evidence class: `Static + Ran`
 | LB-06 | Directory/FIFO/non-regular fail closed | focused adversarial tests |
 | LB-07 | Bootstrap failure never invokes transition | mocked `_invoke` regression |
 | LB-08 | Substitution before transition/append/finalization fails closed | final/ancestor path-swap tests; outside target unchanged |
-| LB-09 | Rust preflight and record schema unchanged | exact terminal diff/security review |
-| LB-10 | Full regression | planner 227/227 and canonical exact-head receipt |
-| LB-11 | Independent acceptance | dual review, terminal verification, and receipt verification |
+| LB-09 | Inherited FD binds Rust transition to admitted inode | Python pass-fd and Rust bound-handle tests |
+| LB-10 | Invalid/mismatched FD fails before LIGHT | missing/malformed/closed/directory/mismatch tests |
+| LB-11 | Post-admission path swap cannot redirect Rust I/O | final/ancestor race tests; replacement untouched |
+| LB-12 | Original path authority and schema remain exact | path-hash/recovery tests and security review |
+| LB-13 | Full regression | planner 227/227 and canonical exact-head receipt |
+| LB-14 | Independent acceptance | dual review, terminal verification, and receipt verification |
