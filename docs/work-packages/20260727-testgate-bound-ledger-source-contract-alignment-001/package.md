@@ -164,8 +164,9 @@ refactor thresholds.
 - [x] (2026-07-27, Codex) Full-profile defect reproduced exactly.
 - [x] (2026-07-27, Codex) Initial scaffold reviewed; both reviewers returned
   governance `HOLD`.
-- [ ] (2026-07-27, Codex) Amended scaffold requires exact-head dual review.
-- [ ] Scaffold base bound and dual-reviewed.
+- [x] (2026-07-27, Codex) Amended scaffold passed exact-head dual review.
+- [x] (2026-07-27, Codex) Scaffold base bound and dual-reviewed.
+- [x] (2026-07-27, Codex) Pre-implementation intent accepted prospectively.
 - [ ] Implementation and exact gates complete.
 - [ ] Dual implementation review and terminal verification complete.
 - [ ] Canonical PASS and dual receipt verification complete.
