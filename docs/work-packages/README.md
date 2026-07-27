@@ -307,6 +307,25 @@
 
 State as of `2026-07-26 UTC`:
 
+- `20260727-science-implementation-calibration-readiness-governance-001/` -
+  COMPLETE / GOVERNANCE ADMITTED: ADR-0042 and canonical contract/package rules
+  separate authoritative science implementation, calibration-role data,
+  held-out validation, readiness, and identifiability. Data scarcity now limits
+  claims rather than authoritative implementation, with an auditable readiness
+  matrix and explicit synthetic-recovery limits.
+- `20260726-canopy-cal-04a-best-available-evidence-daymet-001/` -
+  COMPLETE / DESIGN AUTHORITY ADMITTED: nine checksum-bound Daymet sources,
+  native-algebra VPD/photoperiod, exact Hubbard joins, elevation/confounding
+  analyses, and a model-result-blind 9,261-vector sensitivity design lift the
+  finite-domain blocker. Search support is explicitly an execution assumption,
+  not a physiological bound; Harvard results remain sealed.
+- `20260726-canopy-cal-04-process-calibration-identifiability-001/` -
+  EXECUTED / HOLD: the admitted timing windows rebuilt byte-identically, but
+  contracts provide input-validity domains rather than finite GSI calibration
+  bounds. No candidate or Harvard result was opened. Later stages retain the
+  frozen biomass partition-sum and mature-LAI roles but lack sufficient
+  separating authority and finite search bounds. A prospectively reviewed
+  authority amendment is required before calibration.
 - `20260726-canopy-cal-04-05-authority-evidence-admission-001/` -
   EXECUTED / HOLD: CAL-04 timing authority is lifted with Hubbard Brook
   calibration and an independent Harvard Forest holdout, and CAL-04 adopts a

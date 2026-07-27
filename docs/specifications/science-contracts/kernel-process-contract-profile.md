@@ -1,7 +1,7 @@
 # Kernel Process Contract Profile
 
 Status: Active
-Last updated: 2026-06-03
+Last updated: 2026-07-27
 Scope: openWEPP kernel-authority contracts and kernel-adjacent runtime projection
 contracts (`SC-*` files that define executable process behavior)
 
@@ -86,10 +86,21 @@ titles may vary slightly, but content obligations are mandatory):
     - conversion helpers and raw-literal exceptions,
     - output metadata linkage for published symbols.
 11. Tolerance and numeric notes.
-12. Test-vector obligations:
+12. Calibration and identifiability posture:
+    - applicability or explicit `CALIBRATION_NOT_APPLICABLE` rationale,
+    - calibratable/fixed/external parameters and units,
+    - validity domains versus evidence bounds versus execution assumptions,
+    - observation operator, identifiable combinations, evidence gaps, and
+      prohibited claims,
+    - orthogonal science-implementation, calibration-evidence, and
+      identifiability status fields,
+    - readiness matrix dispositions, evidence paths, and skip rationales,
+    - calibration-readiness and synthetic-recovery obligations where
+      structurally meaningful.
+13. Test-vector obligations:
     - minimum scenario families,
     - expected observable outputs/invariants.
-13. Gap register and promotability labels.
+14. Gap register and promotability labels.
 
 ## Algorithm Detail Requirements (Normative)
 
@@ -124,7 +135,9 @@ conformance. Minimum required checklist items:
 3. Algorithm steps and branch table updated for changed behavior.
 4. Guard/error mapping updated and aligned with code errors.
 5. Unit-governance map completed for touched dimensional surfaces.
-6. Test-vector obligations reflected in tests and evidence.
+6. Calibration/identifiability posture and readiness matrix are complete, or
+   calibration is explicitly not applicable.
+7. Test-vector obligations reflected in tests and evidence.
 
 ## Non-Compliance Rule
 

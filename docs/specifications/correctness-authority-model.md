@@ -1,7 +1,7 @@
 # Correctness Authority Model
 
 Status: Active
-Last updated: 2026-06-18
+Last updated: 2026-07-27
 Scope: openWEPP kernel/process correctness adjudication and gate authority
 
 ## Purpose
@@ -48,6 +48,41 @@ Work-package artifacts remain evidence only and do not replace either plane.
 5. `A6` (legacy comparator) cannot be used as a sole acceptance oracle.
 6. Legacy-only deviations (`A2`/`A6`) route to investigation/disposition; they
    do not override passing `A0/A1/A3` outcomes.
+
+## Science Authority, Data Authority, and Calibration Readiness
+
+ADR-0042 governs their separation:
+
+1. Passing A0/A1 and applicable A3 establishes implementation correctness
+   within the canonical science authority envelope. Missing or insufficient A4
+   measured data does not invalidate that implementation.
+2. Measured-data authority is broader than A4 and assigns immutable roles:
+   `CALIBRATION`, `INDEPENDENT_VALIDATION`, or `DIAGNOSTIC_ONLY`. Calibration
+   observations may estimate parameters and identifiability; A4 is reserved
+   for prospectively held-out external validation. The same observation cannot
+   carry both calibration and independent-validation authority. Any reuse
+   requires a prospectively justified, independently reviewed exception and
+   forfeits the independence claim.
+3. When calibration is scientifically applicable, insufficient
+   `CALIBRATION`-role measured data requires a truthful data-limited
+   disposition plus calibration-readiness evidence. Missing A4
+   `INDEPENDENT_VALIDATION` data separately limits external-validation and
+   transferability claims; it does not change `calibration_evidence_status`.
+   Neither limitation justifies holding authoritative in-scope implementation
+   work.
+4. Calibration readiness requires an executable parameter/configuration
+   surface, defined observation operator and units/scale, deterministic
+   execution/objective reconstruction, and applicable sensitivity,
+   identifiability, synthetic-recovery, boundary, failure, and equifinality
+   evidence.
+5. Synthetic recovery demonstrates machinery and structural recoverability
+   only. It supplies neither A4 authority nor empirical parameter estimates.
+6. ADR-0024 and ADR-0028 remain valid A0 authority-admission routes. A package
+   may hold for missing/contradictory authority only when no applicable route
+   has succeeded, for failing required A1/A3 gates, or for an unresolved
+   required calibration-readiness defect. Sparse, correlated,
+   interval-censored, scale-mismatched, or non-identifying data alone limits
+   claims rather than implementation.
 
 ## ADR-0017 Comparator-Flag Adjudication (Normative)
 

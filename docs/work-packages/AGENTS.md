@@ -71,6 +71,52 @@
   that was not a current required gate. If it was a current required gate, that
   phrase must be paired with a hold disposition and blocker rationale.
 
+## Science Implementation And Calibration Readiness
+
+- ADR-0042 distinguishes science authority, data authority, and calibration
+  readiness. When authoritative process science exists and is in scope,
+  implement it even if observations are insufficient for unique calibration.
+- Data limitations constrain empirical calibration, identifiability,
+  validation, uncertainty, and transferability claims. They do not authorize
+  proxy physics, silent defaults, invented physiological bounds, or an
+  implementation `HOLD`.
+- Parameterized-science packages must declare intent before edits:
+  `implementation`, `calibration-readiness`, `empirical-calibration`,
+  `independent-validation`, or an explicit combination.
+- When empirical calibration cannot close for lack of suitable data, continue
+  through applicable readiness work: typed/enumerable parameters, a
+  unit/scale-defined observation operator, deterministic candidate execution
+  and objective reconstruction, sensitivity/identifiability analysis,
+  boundary/failure/equifinality reporting, and synthetic recovery where
+  structurally meaningful.
+- Synthetic recovery proves only that suitable information can pass through
+  the implementation and calibration machinery. It is not empirical
+  calibration, real-world identification, external validation, or
+  transferability evidence.
+- Values or bounds introduced only to execute a demonstration must be labeled
+  `ASSUMED_FOR_EXECUTION`; never label them observations, probability priors,
+  physiological bounds, or calibrated results.
+- Report three orthogonal fields in `artifacts/calibration-readiness-matrix.md`
+  or its machine-readable equivalent:
+  `science_implementation_status` (`IMPLEMENTED`, `NOT_IMPLEMENTED`,
+  `AUTHORITY_MISSING`), `calibration_evidence_status`
+  (`EMPIRICALLY_CALIBRATED`, `CALIBRATION_READY_DATA_LIMITED`,
+  `NOT_CALIBRATION_READY`, `NOT_APPLICABLE`), and
+  `identifiability_status` (`IDENTIFIED`, `PARTIALLY_IDENTIFIABLE`,
+  `NONIDENTIFIABLE`, `NOT_ASSESSED`, `NOT_APPLICABLE`).
+- The readiness matrix must disposition every obligation named by
+  `docs/specifications/science-contract-spec.md` as `PASS`, `BLOCKED`, or
+  `NOT_APPLICABLE`, with evidence path and rationale. A required current-scope
+  `BLOCKED` row forces `NOT_CALIBRATION_READY` and package `HOLD`.
+- Assign measured observations prospectively to `CALIBRATION`,
+  `INDEPENDENT_VALIDATION`, or `DIAGNOSTIC_ONLY`. Do not reuse calibration data
+  as independent validation; a reviewed exception forfeits independence.
+- Missing, sparse, correlated, interval-censored, scale-mismatched, or
+  non-identifying data alone is not a legitimate hold boundary when
+  authoritative implementation and in-scope readiness work remain possible.
+- ADR-0024 and ADR-0028 authority-admission routes remain available. Hold for
+  missing science authority only when no applicable route has succeeded.
+
 ## Pre-Heavy Closure Audit And Tooling Correction
 
 - Before full workspace regression, global coverage/CRAP, broad Clippy/deny,

@@ -103,6 +103,28 @@ requirement, not optional package style guidance.
   artifacts, including owner/sunset metadata for any approved `3000+`
   generated/fixture exception.
 - Require truthfulness labeling in evidence artifacts (`Static:` vs `Ran:`).
+- For parameterized science, declare whether the package performs
+  implementation, calibration readiness, empirical calibration, independent
+  validation, or an explicit combination. Apply ADR-0042 and the
+  `Science Implementation And Calibration Readiness` rule in
+  `docs/work-packages/AGENTS.md`.
+- Distinguish mathematical validity domains, evidence-supported calibration
+  bounds, and `ASSUMED_FOR_EXECUTION` demonstration bounds. Never infer
+  physiological or probability authority from a finite execution grid.
+- If measured data are insufficient, require applicable deterministic
+  parameter execution, observation-operator/objective proof,
+  sensitivity/identifiability diagnostics, boundary/failure/equifinality
+  reporting, and synthetic recovery where structurally meaningful. Do not
+  represent synthetic recovery as empirical calibration.
+- Require `artifacts/calibration-readiness-matrix.md` or a machine-readable
+  equivalent. Disposition every readiness obligation from
+  `docs/specifications/science-contract-spec.md` with status, evidence path,
+  and applicability rationale; unresolved required rows block completion.
+- Freeze measured-data roles as `CALIBRATION`, `INDEPENDENT_VALIDATION`, or
+  `DIAGNOSTIC_ONLY` before result-bearing execution. Calibration data cannot
+  carry an independent-validation claim.
+- Do not encode a hold solely for unavailable or non-identifying data when
+  authoritative in-scope science and calibration-readiness work can proceed.
 
 4. Make physics authority explicit in canonical contracts
 - For legacy migration packages, physics must be implemented in canonical

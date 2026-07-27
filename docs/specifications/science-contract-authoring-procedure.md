@@ -1,7 +1,7 @@
 # Science Contract Authoring Procedure
 
 Status: Active
-Last updated: 2026-06-08
+Last updated: 2026-07-27
 Scope: openWEPP process-based science contracts (`SC-<DOMAIN>-<NNN>`)
 
 ## Purpose
@@ -56,6 +56,18 @@ This procedure is normative for contract promotion readiness and complements:
    implementations for in-scope migrated physics must port baseline-authoritative
    behavior. Surrogate/proxy/heuristic formulas are not promotable closure unless
    explicitly documented as non-promotable research branches under `HOLD`.
+10. Science authority, data authority, and calibration readiness remain
+    distinct under ADR-0042. Insufficient measured data limits calibration,
+    identifiability, validation, and transferability claims; it does not
+    authorize proxy physics or block implementation of available authoritative
+    science.
+11. Applicable parameterized contracts must state calibration applicability,
+    observation requirements/operator, identifiable combinations, evidence
+    gaps, readiness obligations, and prohibited claims. Synthetic recovery and
+    execution assumptions must never be labeled empirical calibration.
+12. Calibration, independent-validation, and diagnostic observation roles must
+    be assigned prospectively. Calibration evidence cannot also carry an
+    independent-validation claim.
 
 ## Canonical Locations
 
@@ -99,6 +111,13 @@ and commit SHA under review.
 6. Update work-package evidence truthfully using `Static:` and `Ran:` labels.
 7. Do not close a package while known invariant, closure, or contract violations
    remain unresolved.
+8. When authoritative science exists but measured data are insufficient,
+   implement the science and complete applicable calibration-readiness
+   obligations. Use a data-limited disposition rather than a science-authority
+   hold unless a required readiness defect remains unresolved.
+9. Retain a readiness matrix with every schema obligation marked `PASS`,
+   `BLOCKED`, or `NOT_APPLICABLE`, plus evidence path and rationale. A required
+   current-scope `BLOCKED` row prevents completion.
 
 ## Binding Exposure Workflow
 

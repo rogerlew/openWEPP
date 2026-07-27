@@ -45,6 +45,7 @@ Each ADR documents a decision that constrains future work. Format follows the li
 | [0039](0039-campaign-scoped-risk-based-testing-and-assurance-gates.md) | Campaign-scoped, risk-based testing and assurance gates | Accepted 2026-07-17 |
 | [0040](0040-accelerated-testgate-cutover-on-trusted-self-hosted-runner.md) | Accelerate TESTGATE cutover on a trusted self-hosted runner | Accepted 2026-07-18 |
 | [0041](0041-separate-testgate-from-observational-quality-ci.md) | Separate TESTGATE admission from optional observational quality CI | Accepted 2026-07-24 |
+| [0042](0042-science-implementation-and-calibration-readiness.md) | Implement authoritative science and preserve calibration readiness when data are limited | Accepted 2026-07-27 |
 
 At its 2026-07-18 cutover boundary, ADR-0040 amended ADR-0039's transition
 policy: TESTGATE cutover became event-driven after trusted self-hosted runner
@@ -57,6 +58,12 @@ ADR-0041 supersedes ADR-0021/ADR-0039/ADR-0040 only where coverage or CRAP is
 made a transition gate. TESTGATE remains blocking correctness admission;
 coverage/CRAP move to optional observational QA and remain binding only for an
 explicit metric-focused CQR or module test-enhancement package.
+
+ADR-0042 distinguishes science authority, data authority, and calibration
+readiness. Missing or non-identifying measured data restrict empirical claims
+but do not block implementation of available authoritative science; applicable
+data-limited implementations must remain calibration-ready without presenting
+execution assumptions or synthetic recovery as empirical calibration.
 
 ADR-0025 was ratified 2026-06-18 and is the accepted hot-path runtime authority. ADR-0023's dense-authority
 principle is retained; its incremental symbol/phase migration application is superseded — no further

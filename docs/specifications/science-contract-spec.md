@@ -1,7 +1,7 @@
 # Science Contract Artifact Specification
 
 Status: Active
-Last updated: 2026-06-08
+Last updated: 2026-07-27
 Scope: canonical artifact schema for openWEPP science contracts (`SC-*`)
 
 ## Purpose
@@ -52,9 +52,11 @@ Field requirement vocabulary: `yes` means required for all contracts; `target` m
 
 ## Required Section Order
 
-Each canonical contract must contain, in order, these logical sections. Exact
-heading wording may vary slightly when legacy files are being migrated, but the
-content obligations are mandatory.
+Each new contract and each existing contract materially amended after
+ADR-0042 must contain, in order, these logical sections. Exact heading wording
+may vary slightly during migration. Existing contracts remain conformant under
+the legacy baseline until their next material scientific amendment; backfill
+is tracked by the owning governance package.
 
 1. Purpose.
 2. Scientific scope and explicit out-of-scope boundaries.
@@ -71,10 +73,11 @@ content obligations are mandatory.
 11. Constants and parameters with provenance anchors.
 12. Unit-governance map.
 13. Tolerance and numeric notes.
-14. Test-vector obligations.
-15. Binding Exposure Index when addenda or provenance sidecars exist.
-16. Gap register and promotability labels.
-17. Change log.
+14. Calibration and identifiability posture when scientifically applicable.
+15. Test-vector obligations.
+16. Binding Exposure Index when addenda or provenance sidecars exist.
+17. Gap register and promotability labels.
+18. Change log.
 
 Kernel-affecting contracts must also satisfy
 `docs/specifications/science-contracts/kernel-process-contract-profile.md`.
@@ -97,8 +100,64 @@ A draft is review-ready only when it contains:
 11. Symbol alias map when canonical WEPP symbols and openWEPP boundary/API names
     differ.
 12. Binding Exposure Index when sidecar or addendum material exists.
+13. Calibration and identifiability posture, or an explicit
+    `CALIBRATION_NOT_APPLICABLE` rationale.
 
 The draft must exist at the canonical `SC-*` path before dual-agent review.
+
+## Calibration and Identifiability Schema
+
+Contracts with one or more parameters eligible for empirical estimation must
+include a substantive `Calibration and Identifiability` section. Contracts
+whose parameters are fixed entirely by science authority, external inputs, or
+non-empirical specification may declare `CALIBRATION_NOT_APPLICABLE` only with
+a short rationale. Applicable sections must identify:
+
+1. calibratable, fixed, and externally supplied parameters with units;
+2. mathematical validity domains separately from evidence-supported bounds and
+   execution assumptions;
+3. required observation types, temporal/spatial scale, units, uncertainty, and
+   admission authority;
+4. the observation operator mapping model state/output to observations;
+5. parameters or combinations expected to be identifiable, partially
+   identifiable, confounded, or non-identifiable;
+6. calibration objective and holdout/validation posture when defined;
+7. minimum calibration-readiness obligations, including deterministic
+   parameter execution, objective reconstruction, sensitivity, boundary and
+   failure reporting, and synthetic recovery where structurally meaningful;
+8. evidence gaps and the additional observations needed to strengthen
+   identification or validation; and
+9. prohibited claims, including treating execution assumptions, comparator
+   agreement, or synthetic recovery as empirical calibration.
+
+The section must also bind the three package-reporting fields defined by
+ADR-0042: `science_implementation_status`, `calibration_evidence_status`, and
+`identifiability_status`.
+
+Every calibration/readiness package must carry a readiness matrix with one row
+for each obligation below:
+
+| Obligation | Allowed disposition |
+|---|---|
+| typed/enumerable parameter surface | `PASS`, `BLOCKED`, `NOT_APPLICABLE` |
+| observation operator with units and scale | `PASS`, `BLOCKED`, `NOT_APPLICABLE` |
+| deterministic candidate execution | `PASS`, `BLOCKED`, `NOT_APPLICABLE` |
+| objective reconstruction | `PASS`, `BLOCKED`, `NOT_APPLICABLE` |
+| sensitivity analysis | `PASS`, `BLOCKED`, `NOT_APPLICABLE` |
+| identifiability/confounding analysis | `PASS`, `BLOCKED`, `NOT_APPLICABLE` |
+| boundary, saturation, and failure reporting | `PASS`, `BLOCKED`, `NOT_APPLICABLE` |
+| equifinality/uncertainty retention | `PASS`, `BLOCKED`, `NOT_APPLICABLE` |
+| synthetic recovery | `PASS`, `BLOCKED`, `NOT_APPLICABLE` |
+| additional-data inventory | `PASS`, `BLOCKED`, `NOT_APPLICABLE` |
+
+Each row requires an evidence path and rationale. `NOT_APPLICABLE` requires
+contract- or structure-backed justification. Any `BLOCKED` row that is a
+required current-scope gate forces `calibration_evidence_status =
+NOT_CALIBRATION_READY` and ordinary package `HOLD`.
+
+Numeric fitted results and dataset-specific candidate ensembles remain
+work-package evidence. Canonical parameter meaning, domains, observation
+mapping, and claim limits remain in the contract.
 
 ## Invariant Table Schema
 

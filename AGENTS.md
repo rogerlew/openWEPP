@@ -59,7 +59,7 @@
 - For work-package preparation, execution, review, verification, or closure, read `docs/work-packages/AGENTS.md`.
 - For prompt wording and reusable standards, read `docs/standards/AGENTS.md` plus the referenced standard.
 - Canonical process contract authority lives in `docs/specifications/science-contracts/contracts/SC-<DOMAIN>-<NNN>.md`.
-- Work-package artifacts are evidence, not authority replacement.
+- Work-package artifacts are evidence, not authority replacement; authoritative science remains an implementation obligation when calibration data are limited, with claims governed by ADR-0042 and `docs/work-packages/AGENTS.md`.
 - Do not implement provisional, surrogate, or heuristic process-physics math in production kernel/runtime publication paths.
 - For legacy migration, implementation target is baseline-authoritative physics migration from `/workdir/wepp-forest_260430_baseline`, not behavioral approximation.
 
