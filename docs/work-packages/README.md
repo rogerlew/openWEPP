@@ -11,6 +11,10 @@
 
 ## Reusable Execution Plans And Templates
 
+- `20260727-testgate-bound-ledger-source-contract-alignment-001/` is the active
+  exact successor to the assurance-Clippy full-profile HOLD. It updates one
+  stale source-level executor assertion to require the bound-text resume API
+  and retained ledger read, then repeats full and canonical verification.
 - `20260727-assurance-v2-amendment-contract-clippy-line-disposition-001/` is the
   active narrow successor to the ledger-bootstrap canonical HOLD. It owns only
   the function-scoped Clippy line disposition on the cohesive assurance-v2
