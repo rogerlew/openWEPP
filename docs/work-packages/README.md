@@ -327,9 +327,13 @@ State as of `2026-07-27 UTC`:
   HOLD / INVALID / SUPERSEDED: its scaffold authority and independent
   implementation review failed closed; it cannot authorize heavy execution.
 - `20260727-gate-planner-external-dag-closeout-correction-001/` -
-  ACTIVE / SCAFFOLD REVIEW: prospectively owns the bounded lifecycle, custody,
+  ACTIVE / PRE-HEAVY BLOCKED: the bounded lifecycle, custody,
   inventory, ledger, publication-recovery, CSV, and error-taxonomy corrections
-  required before CAL-04B can restart.
+  pass dual implementation review, but canonical planning omitted the separate
+  AUTH11 obligation-guard node.
+- `20260727-gate-planner-auth11-terminal-node-selection-001/` -
+  ACTIVE / SCAFFOLD REVIEW: prospectively owns the missing AUTH11 terminal-node
+  selection; the incomplete 12-node plan remains unexecuted.
 - `20260727-science-implementation-calibration-readiness-governance-001/` -
   COMPLETE / GOVERNANCE ADMITTED: ADR-0042 and canonical contract/package rules
   separate authoritative science implementation, calibration-role data,

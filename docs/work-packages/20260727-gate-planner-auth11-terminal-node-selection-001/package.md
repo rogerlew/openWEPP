@@ -57,8 +57,6 @@ HEAVY execution occurred.
 - `gate-policy/v1/fixtures/valid/gate-receipt.json`
 - `gate-policy/v1/fixtures/valid/impact-map.json`
 - `crates/openwepp-gate-planner/src/planner.rs`
-- `crates/openwepp-gate-planner/src/planner/**`
-- `crates/openwepp-gate-planner/src/main.rs`
 - `docs/work-packages/README.md`
 - `docs/planning/canopy-phenology-assurance-roadmap.md`
 - `docs/work-packages/20260727-gate-planner-external-dag-closeout-correction-001/artifacts/implementation-gates.md`
@@ -70,8 +68,8 @@ No other path is writable. This write set must not widen.
 
 1. Commit this prospective scaffold and obtain two independent read-only
    scaffold reviews before policy or Rust edits.
-2. Freeze a red planner fixture that reconstructs the blocked external-DAG
-   correction diff and proves AUTH11 is absent.
+2. Before production edits, add this package to the catalog/roadmap and freeze
+   the named red/green planner fixtures below.
 3. Add the smallest gate-definition/impact-map correction and update canonical
    fixtures/tests.
 4. Run gate-planner Nextest, warnings-denied Clippy, JSON/schema checks, exact
@@ -84,11 +82,34 @@ No other path is writable. This write set must not widen.
 
 ## Acceptance
 
-- Exact terminal arguments include
-  `cargo nextest run --test auth11_required_suite_obligation_guards_contract`.
-- The node is selected exactly once and ordered consistently with existing
-  authority checks.
-- Its exact independently enumerated inventory is bound into the plan.
+- Gate definition ID is `authority-required-suite-obligation-guards-v1`;
+  target is the static
+  `auth11_required_suite_obligation_guards_contract`; arguments are exactly
+  `cargo nextest run --test
+  auth11_required_suite_obligation_guards_contract`.
+- The node is `LIGHT`, `BLOCKING`, `HARD_FAIL`, `NON_REUSABLE`,
+  `REPOSITORY_REVIEWED`, timeout 300 seconds, maximum attempts 1, no retry
+  reasons, `nextest-junit-v1`, exact inventory source
+  `NEXTEST_TEST_TARGET`, minimum/exact count 3, and blocks `INCREMENT`.
+- Prerequisites are `authority-admission-v1` and
+  `authority-antievasion-v1`; stable ordering is after those two authority
+  scripts and before `gate-policy-schema-consistency-v1`, HEAVY nodes, and
+  workspace full regression.
+- Positive impact entries use reason
+  `AUTHORITY_REQUIRED_SUITE_OBLIGATION_CHANGED` and semantic surface
+  `external-authority-required-suite` for exact/path-prefix matchers covering
+  the authority registry, required-suite obligation tests, authority/cohort
+  fixtures, required-case bindings, lane-control/protocol tooling, and
+  `gate-policy/` selection controls.
+- `planner::tests::auth11_required_suite_node_is_selected_once_for_authority_surfaces`
+  covers every positive path class and exact ordered node/inventory behavior.
+- `planner::tests::auth11_required_suite_node_is_not_selected_for_unrelated_critical_diff`
+  proves an unrelated CRITICAL science/runtime diff does not select AUTH11.
+- Red plan remains exactly 12 nodes / 2,376 inventory. Green reconstruction
+  must preserve those exact nodes/inventory and add one AUTH11 node with three
+  independently enumerated tests: exactly 13 nodes / 2,379 inventory.
+- Red and green plan IDs and the exact retained JSON path/hash are recorded in
+  package evidence.
 - Existing anti-evasion, alignment, and workspace nodes remain selected.
 - The previously blocked external-DAG package receives a fresh canonical plan;
   the incomplete plan is retained but never executed.
