@@ -329,6 +329,8 @@ struct NativeCanopyBuilderTrace {
     projected_residue_depth_m: f64,
     #[cfg(test)]
     frost_residue_depth_m: Option<f64>,
+    #[cfg(test)]
+    frost_canopy_height_m: Option<f64>,
 }
 
 #[cfg(test)]
@@ -338,12 +340,17 @@ struct NativeCanopyConsumerTrace {
     growth_state_after: DirectGrowthStateSurface,
     et_leaf_area_index: f64,
     et_canopy_cover_fraction: f64,
+    et_canopy_height_m: f64,
+    erosion_canopy_height_m: Option<f64>,
     interception_m: f64,
     decomposition_litter_kg_m2: f64,
     decomposition_surface_residue_kg_m2: f64,
     decomposition_residue_depth_m: f64,
     frost_residue_depth_m_consumed: Option<f64>,
+    frost_canopy_height_m_consumed: Option<f64>,
     erosion_canopy_cover_fraction: Option<f64>,
+    laned_active_canopy_height_m_consumed: Option<f64>,
+    laned_shadow_canopy_height_m_consumed: f64,
 }
 
 #[cfg(test)]
@@ -403,6 +410,18 @@ fn record_native_canopy_consumer_trace(
     } else {
         day_frame.annual_growth.state_after
     };
+    let laned_shadow_canopy_height_m_consumed = build_laned_shadow_lane_day_operands(
+        day_frame.lane_index,
+        day_frame.day_index,
+        day_frame.wb14_hourly_rainfall_m,
+        *day_frame
+            .snow_coupling_downstream_operands
+            .hourly_routed_melt_m,
+        day_frame.evapotranspiration_compute_inputs.leaf_area_index,
+        Some(day_frame.evapotranspiration_compute_inputs.canopy_height_m),
+    )
+    .expect("native canopy trace must pass the real Lane D shadow operand seam")
+    .canopy_height_m;
     native_canopy_consumer_traces()
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner)
@@ -413,12 +432,20 @@ fn record_native_canopy_consumer_trace(
             et_canopy_cover_fraction: day_frame
                 .evapotranspiration_compute_inputs
                 .canopy_cover_fraction,
+            et_canopy_height_m: day_frame.evapotranspiration_compute_inputs.canopy_height_m,
+            erosion_canopy_height_m: day_frame.erosion_canopy_height_m_consumed,
             interception_m: day_frame.interception_m,
             decomposition_litter_kg_m2: day_frame.decomposition_inputs.surface_litter_input_kg_m2,
             decomposition_surface_residue_kg_m2: day_frame.decomposition.surface_residue_kg_m2,
             decomposition_residue_depth_m: day_frame.decomposition.residue_depth_m,
             frost_residue_depth_m_consumed: day_frame.frost_residue_depth_m_consumed,
+            frost_canopy_height_m_consumed: day_frame.frost_canopy_height_m_consumed,
             erosion_canopy_cover_fraction: day_frame.erosion_canopy_cover_fraction_consumed,
+            laned_active_canopy_height_m_consumed: day_frame
+                .laned_active_routing
+                .as_ref()
+                .and_then(|routing| routing.canopy_height_m_consumed),
+            laned_shadow_canopy_height_m_consumed,
         });
 }
 
@@ -593,6 +620,7 @@ struct DirectProductionFrostTypedComputeContext<'a> {
     frost_lane_state: &'a DirectFrostLaneState,
     typed_authority: &'a DirectProductionFrostTypedAuthority,
     residue_depth_m_override: Option<f64>,
+    canopy_height_m_override: Option<f64>,
     hourly: [DirectFrostHourlyForcing;
         openwepp_hillslope_orchestrator::DIRECT_WINTER_HOURLY_FORCING_COUNT],
 }

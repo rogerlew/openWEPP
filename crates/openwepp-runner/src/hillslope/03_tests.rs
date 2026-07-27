@@ -199,6 +199,190 @@ mod tests {
 
     #[test]
     #[allow(clippy::too_many_lines)]
+    fn native_height_contract_vectors_advance_real_gsi_state() {
+        use openwepp_plant_phenology::{
+            ForestCanopyParameters, ForestCanopyState, GsiDailyForcing, GsiDate, GsiParameters,
+        };
+
+        let parameters = |evergreen_fraction: f64, structural_biomass_kg_m2: f64| {
+            ForestCanopyParameters {
+                gsi: GsiParameters {
+                    minimum_temperature_inactive_c: 0.0,
+                    minimum_temperature_unconstrained_c: 10.0,
+                    vapor_pressure_deficit_unconstrained_pa: 1_000.0,
+                    vapor_pressure_deficit_inactive_pa: 4_000.0,
+                    photoperiod_inactive_hours: 0.0,
+                    photoperiod_unconstrained_hours: 12.0,
+                },
+                summer_foliar_biomass_kg_m2: 0.8,
+                maximum_leaf_area_index: 5.0,
+                evergreen_fraction,
+                structural_canopy_cover_fraction: 0.0,
+                structural_biomass_kg_m2,
+                canopy_cover_coefficient_m2_kg: 2.0,
+            }
+        };
+        let forcing = |ordinal_day: u16, minimum_temperature_c: f64| GsiDailyForcing {
+            minimum_temperature_c,
+            vapor_pressure_deficit_pa: 500.0,
+            latitude_degrees: 0.0,
+            date: GsiDate {
+                year: 2027,
+                ordinal_day,
+            },
+        };
+        let independent_height = |foliar: f64, structural: f64| {
+            (1.0 - (-3.0_f64 * (foliar + structural)).exp()) * 0.2
+        };
+
+        let mut deciduous = ForestCanopyState::new_uninitialized();
+        let off = deciduous
+            .advance(parameters(0.0, 0.0), forcing(1, -1.0))
+            .expect("TV-PLANT-GSI-HC-001 exact inactive state");
+        assert_eq!(off.gsi.growing_season_index.to_bits(), 0.0_f64.to_bits());
+        assert_eq!(off.canopy.leaf_area_index.to_bits(), 0.0_f64.to_bits());
+        let off_height = openwepp_hillslope_orchestrator::direct_native_canopy_height_m(
+            off.canopy.live_foliar_biomass_kg_m2,
+            off.canopy.structural_biomass_kg_m2,
+            3.0,
+            0.2,
+        )
+        .expect("inactive deciduous height");
+        assert_eq!(off_height.to_bits(), 0.0_f64.to_bits());
+
+        let on = deciduous
+            .advance(parameters(0.0, 0.0), forcing(2, 10.0))
+            .expect("TV-PLANT-GSI-HC-001 exact zero-to-positive transition");
+        assert!(on.gsi.growing_season_index > 0.0);
+        assert!(on.canopy.leaf_area_index > 0.0);
+        let on_height = openwepp_hillslope_orchestrator::direct_native_canopy_height_m(
+            on.canopy.live_foliar_biomass_kg_m2,
+            on.canopy.structural_biomass_kg_m2,
+            3.0,
+            0.2,
+        )
+        .expect("active deciduous height");
+        assert_eq!(
+            on_height.to_bits(),
+            independent_height(
+                on.canopy.live_foliar_biomass_kg_m2,
+                on.canopy.structural_biomass_kg_m2,
+            )
+            .to_bits()
+        );
+        assert!(on_height > 0.0);
+
+        let mut leaf_off = on;
+        for ordinal_day in 3..=23 {
+            leaf_off = deciduous
+                .advance(parameters(0.0, 0.0), forcing(ordinal_day, -1.0))
+                .expect("TV-PLANT-GSI-HC-002 positive-to-zero sequence");
+        }
+        assert_eq!(
+            leaf_off.gsi.growing_season_index.to_bits(),
+            0.0_f64.to_bits()
+        );
+        assert!(leaf_off.canopy.leaf_off_litter_kg_m2 > 0.0);
+        assert_eq!(leaf_off.canopy.leaf_area_index.to_bits(), 0.0_f64.to_bits());
+        let leaf_off_height = openwepp_hillslope_orchestrator::direct_native_canopy_height_m(
+            leaf_off.canopy.live_foliar_biomass_kg_m2,
+            leaf_off.canopy.structural_biomass_kg_m2,
+            3.0,
+            0.2,
+        )
+        .expect("deciduous leaf-off height");
+        assert_eq!(leaf_off_height.to_bits(), 0.0_f64.to_bits());
+
+        let mut structural = ForestCanopyState::new_uninitialized();
+        let structural_off = structural
+            .advance(parameters(0.0, 0.1), forcing(1, -1.0))
+            .expect("TV-PLANT-GSI-HC-002 structural leaf-off");
+        assert_eq!(
+            structural_off.canopy.leaf_area_index.to_bits(),
+            0.0_f64.to_bits()
+        );
+        let structural_height = openwepp_hillslope_orchestrator::direct_native_canopy_height_m(
+            structural_off.canopy.live_foliar_biomass_kg_m2,
+            structural_off.canopy.structural_biomass_kg_m2,
+            3.0,
+            0.2,
+        )
+        .expect("structural leaf-off height");
+        assert!(structural_height > 0.0);
+
+        let mut evergreen = ForestCanopyState::new_uninitialized();
+        let evergreen_off = evergreen
+            .advance(parameters(0.25, 0.1), forcing(1, -1.0))
+            .expect("TV-PLANT-GSI-HC-003 evergreen GSI21-zero floor");
+        assert_eq!(
+            evergreen_off.gsi.growing_season_index.to_bits(),
+            0.0_f64.to_bits()
+        );
+        assert!(evergreen_off.canopy.live_foliar_biomass_kg_m2 > 0.0);
+        assert!(evergreen_off.canopy.leaf_area_index > 0.0);
+        let evergreen_height = openwepp_hillslope_orchestrator::direct_native_canopy_height_m(
+            evergreen_off.canopy.live_foliar_biomass_kg_m2,
+            evergreen_off.canopy.structural_biomass_kg_m2,
+            3.0,
+            0.2,
+        )
+        .expect("evergreen floor height");
+        assert!(evergreen_height > 0.0);
+    }
+
+    #[test]
+    fn structural_height_underflow_leaves_native_gsi_state_uncommitted() {
+        use openwepp_plant_phenology::{
+            ForestCanopyParameters, ForestCanopyState, GsiDailyForcing, GsiDate, GsiParameters,
+        };
+
+        let original = ForestCanopyState::new_uninitialized();
+        let snapshot = original.clone();
+        let mut candidate = original.clone();
+        let daily = candidate
+            .advance(
+                ForestCanopyParameters {
+                    gsi: GsiParameters::generalized(),
+                    summer_foliar_biomass_kg_m2: f64::MIN_POSITIVE,
+                    maximum_leaf_area_index: 1.0,
+                    evergreen_fraction: 0.0,
+                    structural_canopy_cover_fraction: 0.0,
+                    structural_biomass_kg_m2: f64::MIN_POSITIVE,
+                    canopy_cover_coefficient_m2_kg: 1.0,
+                },
+                GsiDailyForcing {
+                    minimum_temperature_c: -100.0,
+                    vapor_pressure_deficit_pa: 0.0,
+                    latitude_degrees: 0.0,
+                    date: GsiDate {
+                        year: 2027,
+                        ordinal_day: 1,
+                    },
+                },
+            )
+            .expect("the provisional GSI candidate itself is valid");
+        assert_eq!(daily.canopy.leaf_area_index.to_bits(), 0.0_f64.to_bits());
+        let error = openwepp_hillslope_orchestrator::direct_native_canopy_height_m(
+            daily.canopy.live_foliar_biomass_kg_m2,
+            daily.canopy.structural_biomass_kg_m2,
+            f64::MIN_POSITIVE,
+            0.2,
+        )
+        .expect_err("TV-PLANT-GSI-HC-005 structural-only underflow must fail");
+        assert!(matches!(
+            error,
+            openwepp_hillslope_orchestrator::DirectRuntimeError::DirectDomainViolation {
+                field: "growth.native_canopy_height_m"
+            }
+        ));
+        assert_eq!(
+            original, snapshot,
+            "failed provisional height must not mutate the committed GSI state"
+        );
+    }
+
+    #[test]
+    #[allow(clippy::too_many_lines)]
     fn native_forest_yaml_executes_through_the_direct_production_consumer() {
         let _execution_guard = runner_execution_lock()
             .lock()
@@ -360,6 +544,17 @@ mod tests {
                 trace.growth_state_after.canopy_cover_fraction,
                 canopy.canopy_cover_fraction,
             );
+            let total_aboveground_biomass_kg_m2 =
+                canopy.live_foliar_biomass_kg_m2 + canopy.structural_biomass_kg_m2;
+            assert!(total_aboveground_biomass_kg_m2.is_finite());
+            let expected_canopy_height_m =
+                (1.0 - (-3.0 * total_aboveground_biomass_kg_m2).exp()) * 0.2;
+            assert!(expected_canopy_height_m.is_finite());
+            assert_close(
+                "growth canopy height",
+                trace.growth_state_after.canopy_height_m,
+                expected_canopy_height_m,
+            );
             assert_close(
                 "snow canopy argument",
                 trace.builder.snow_canopy_cover_fraction,
@@ -407,6 +602,28 @@ mod tests {
                 canopy.canopy_cover_fraction,
             );
             assert_close(
+                "ET canopy height",
+                trace.et_canopy_height_m,
+                expected_canopy_height_m,
+            );
+            assert_close(
+                "Lane D shadow canopy height",
+                trace.laned_shadow_canopy_height_m_consumed,
+                expected_canopy_height_m,
+            );
+            if let Some(laned_active_height_m) = trace.laned_active_canopy_height_m_consumed {
+                assert_close(
+                    "Lane D active canopy height",
+                    laned_active_height_m,
+                    expected_canopy_height_m,
+                );
+                assert_close(
+                    "Lane D active/shadow canopy height",
+                    laned_active_height_m,
+                    trace.laned_shadow_canopy_height_m_consumed,
+                );
+            }
+            assert_close(
                 "leaf-off litter decomposition handoff",
                 trace.decomposition_litter_kg_m2,
                 canopy.leaf_off_litter_kg_m2,
@@ -425,6 +642,9 @@ mod tests {
                 let consumed = trace
                     .frost_residue_depth_m_consumed
                     .expect("the real frost span must consume the traced thermal inputs");
+                let canopy_height_consumed = trace
+                    .frost_canopy_height_m_consumed
+                    .expect("the real frost span must consume dynamic canopy height");
                 assert_close(
                     "frost thermal residue depth",
                     consumed,
@@ -434,6 +654,19 @@ mod tests {
                     "frost builder/consumer residue depth",
                     consumed,
                     frost_residue_depth_m,
+                );
+                assert_close(
+                    "frost dynamic canopy height",
+                    canopy_height_consumed,
+                    expected_canopy_height_m,
+                );
+                assert_close(
+                    "frost builder/consumer canopy height",
+                    canopy_height_consumed,
+                    trace
+                        .builder
+                        .frost_canopy_height_m
+                        .expect("active frost builder must expose canopy height"),
                 );
                 if canopy.leaf_off_litter_kg_m2 > 1.0e-12 {
                     observed_leaf_off_frost_consumer = true;
@@ -445,6 +678,13 @@ mod tests {
                     "erosion canopy cover",
                     erosion_canopy_cover_fraction,
                     canopy.canopy_cover_fraction,
+                );
+                assert_close(
+                    "erosion canopy height",
+                    trace
+                        .erosion_canopy_height_m
+                        .expect("active erosion must consume post-growth canopy height"),
+                    expected_canopy_height_m,
                 );
             }
         }

@@ -539,6 +539,7 @@ impl DirectFrameExecutor {
         if trace_enabled {
             day_frame.laned_active_routing =
                 Some(Box::new(laned_active::DirectLanedActiveDayRouting {
+                    canopy_height_m_consumed: None,
                     source_m3: 0.0,
                     outlet_m3: 0.0,
                     mesh_end_storage_m3: 0.0,
@@ -1319,6 +1320,8 @@ impl DirectFrameExecutor {
     ) -> Result<(), DirectRuntimeError> {
         day_frame.frost_residue_depth_m_consumed =
             winter_frost_compute_inputs.map(|inputs| inputs.thermal.residue_depth_m);
+        day_frame.frost_canopy_height_m_consumed =
+            winter_frost_compute_inputs.map(|inputs| inputs.thermal.canopy_height_m);
         record_direct_span_report!(counters, day_frame.run_r5b_normalization_phase());
         record_direct_span_report!(counters, day_frame.run_r5b_storage_bounds_phase());
         record_direct_span_report!(counters, day_frame.run_r5c_decomposition_phase());

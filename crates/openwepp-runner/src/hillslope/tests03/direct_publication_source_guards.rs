@@ -501,13 +501,18 @@ fn laned_shadow_consumes_live_dynamic_friction_operands() {
 }
 
 #[test]
+#[allow(clippy::too_many_lines)]
 fn canopy_phenology_02_real_consumers_share_the_typed_native_state() {
     let builder =
         include_str!("../direct_publication/day_input_and_helpers/00c_day_input_builder_impl.rs",);
+    let frost =
+        include_str!("../direct_publication/day_input_and_helpers/00a_snow_frost_authority_impl.rs",);
     let residue =
         include_str!("../direct_publication/day_input_and_helpers/00d_authority_runtime_impl.rs",);
     let growth =
         include_str!("../../../../openwepp-hillslope-orchestrator/src/direct_runtime/growth.rs",);
+    let erosion =
+        include_str!("../../../../openwepp-hillslope-orchestrator/src/direct_runtime/erosion.rs",);
 
     let growth_state_position = builder
         .find("self.growth_state_for_build(")
@@ -565,6 +570,19 @@ fn canopy_phenology_02_real_consumers_share_the_typed_native_state() {
                 ),
             "the executor must publish the typed state to its real downstream consumers"
         );
+    assert!(
+        erosion.contains("canopy_height_m: growth.canopy_height_m")
+            && !erosion.contains(
+                "pmet_compute\n            .as_ref()\n            .map_or(0.0, |pmet| pmet.canopy_height_m)",
+            ),
+        "active erosion must consume post-growth height without an optional-PMET zero fallback"
+    );
+    assert!(
+        builder.contains("Some(growth_state_for_publication.canopy_height_m)")
+            && frost.contains("canopy_height_m_override")
+            && frost.contains(".unwrap_or(context.typed_authority.canopy_height_m)"),
+        "active frost must receive post-growth height as the explicit thermal override"
+    );
 
     let native_litter_position = residue
         .find("if let Some(native_litter) = native_leaf_off_litter_kg_m2")

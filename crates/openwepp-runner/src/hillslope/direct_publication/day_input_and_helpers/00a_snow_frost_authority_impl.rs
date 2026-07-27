@@ -95,6 +95,7 @@ impl DirectProductionSnowFrostAuthority {
         winter_hourly_geometry: DirectProductionWinterHourlyGeometry,
         clear_no_final_hydrology_layers: bool,
         residue_depth_m_override: Option<f64>,
+        canopy_height_m_override: Option<f64>,
     ) -> Result<Option<DirectProductionFrostDayContext>, HillslopeCliError> {
         let frost_lane_state = self.current_frost_lane_state(lane);
         let frost_runtime_depth_m = frost_lane_state.dfrost_m;
@@ -132,6 +133,7 @@ impl DirectProductionSnowFrostAuthority {
             frost_lane_state: &frost_lane_state,
             typed_authority,
             residue_depth_m_override,
+            canopy_height_m_override,
             hourly: frost_hourly,
         };
         let compute_inputs = Self::typed_winter_frost_compute_inputs(&typed_context)?;
@@ -254,13 +256,24 @@ impl DirectProductionSnowFrostAuthority {
                 ),
             });
         }
+        let canopy_height_m = context
+            .canopy_height_m_override
+            .unwrap_or(context.typed_authority.canopy_height_m);
+        if !canopy_height_m.is_finite() || canopy_height_m < 0.0 {
+            return Err(HillslopeCliError::RuntimeSurfaceFailure {
+                surface: "direct_production_frost_canopy_height",
+                detail: format!(
+                    "{SIMOUT_GUARD_ID} direct production frost canopy height must be finite and nonnegative, observed {canopy_height_m}"
+                ),
+            });
+        }
         Ok(DirectFrostThermalInputs {
             snow_depth_m,
             snow_density_kg_m3,
             residue_depth_m,
             wind_m_s: context.forcing.vwind_m_s,
             albedo: context.typed_authority.albedo,
-            canopy_height_m: context.typed_authority.canopy_height_m,
+            canopy_height_m,
             random_roughness_m: context.typed_authority.random_roughness_m,
             day_of_year: f64::from(context.day.julian_day),
             seasonal_temperature_curve: context.typed_authority.seasonal_temperature_curve,

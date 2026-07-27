@@ -227,6 +227,7 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
             self.winter_hourly_geometry,
             rainfall_input_m > 1.0e-12 || snow_liquid.routed_melt_m > 1.0e-12,
             Some(residue_cover_projection.state_after.residue_depth_m),
+            Some(growth_state_for_publication.canopy_height_m),
         )?;
         let interception_inputs = DirectCanopyInterceptionInputs {
             hyetograph_rainfall_m: snow_liquid.post_winter_rain_m,
@@ -263,6 +264,10 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
                 frost_residue_depth_m: frost_context
                     .as_ref()
                     .map(|context| context.compute_inputs.thermal.residue_depth_m),
+                #[cfg(test)]
+                frost_canopy_height_m: frost_context
+                    .as_ref()
+                    .map(|context| context.compute_inputs.thermal.canopy_height_m),
             };
             let mut pending = self.canopy_research_pending.borrow_mut();
             if lane_index >= pending.len() {

@@ -1319,8 +1319,12 @@ pub struct DirectDayFrame {
     pub erosion_shadow_projection: Option<DirectErosionShadowProjection>,
     /// Exact canopy value read by the active erosion daily-state assembly.
     pub erosion_canopy_cover_fraction_consumed: Option<f64>,
+    /// Exact canopy height read by the active erosion daily-state assembly.
+    pub erosion_canopy_height_m_consumed: Option<f64>,
     /// Exact residue-depth value read by the active frost thermal compute.
     pub frost_residue_depth_m_consumed: Option<f64>,
+    /// Exact canopy height read by the active frost thermal compute.
+    pub frost_canopy_height_m_consumed: Option<f64>,
     pub frost_layer_carry_projection: Option<Vec<DirectFrostLayerCarryProjection>>,
     pub winter_column: Box<DirectWinterColumnState>,
     pub snow_runtime_carry: Option<DirectSnowRuntimeCarry>,
@@ -1473,7 +1477,9 @@ impl DirectDayFrame {
             erosion_downstream_operands: DirectErosionDownstreamOperands::zero(),
             erosion_shadow_projection: None,
             erosion_canopy_cover_fraction_consumed: None,
+            erosion_canopy_height_m_consumed: None,
             frost_residue_depth_m_consumed: None,
+            frost_canopy_height_m_consumed: None,
             frost_layer_carry_projection: None,
             winter_column: Box::new(DirectWinterColumnState::zero()),
             snow_runtime_carry: None,

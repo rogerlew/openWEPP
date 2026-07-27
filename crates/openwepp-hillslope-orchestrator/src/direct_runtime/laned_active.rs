@@ -401,6 +401,8 @@ pub struct DirectLanedActiveStepTraceRecord {
 /// row consumer can fold the manifest `laned_active` block.
 #[derive(Debug, Clone, PartialEq)]
 pub struct DirectLanedActiveDayRouting {
+    /// Exact post-growth canopy height consumed by active Lane D.
+    pub canopy_height_m_consumed: Option<f64>,
     pub source_m3: f64,
     pub outlet_m3: f64,
     pub mesh_end_storage_m3: f64,
@@ -1095,6 +1097,7 @@ pub(crate) fn laned_active_route_lane(
         .map_or(0.0, |subsurface| subsurface.lateral_flow_m * area_m2);
 
     day_frame.laned_active_routing = Some(Box::new(DirectLanedActiveDayRouting {
+        canopy_height_m_consumed: Some(dynamic_operands.canopy_height_m),
         source_m3,
         outlet_m3,
         mesh_end_storage_m3: mesh_storage_m3,
@@ -1793,7 +1796,9 @@ mod tests {
 
     #[test]
     fn active_route_uses_post_growth_canhgt_not_static_lane_config() {
-        let mut day = vegetated_day_with_post_growth_canhgt(0.45);
+        let native_height_m = crate::direct_native_canopy_height_m(0.05, 0.10, 3.0, 0.2)
+            .expect("contract-valid native post-growth height");
+        let mut day = vegetated_day_with_post_growth_canhgt(native_height_m);
         let mut books = DirectLanedActiveDayBooks::default();
         laned_active_route_lane(
             &mut day,
@@ -1809,6 +1814,14 @@ mod tests {
             false,
         )
         .expect("positive post-growth canhgt should satisfy the vegetated guard");
+        assert_eq!(
+            day.laned_active_routing
+                .as_ref()
+                .and_then(|routing| routing.canopy_height_m_consumed)
+                .expect("active Lane D must record the exact height consumed")
+                .to_bits(),
+            native_height_m.to_bits()
+        );
         let trace_detail = day
             .laned_active_routing
             .as_ref()

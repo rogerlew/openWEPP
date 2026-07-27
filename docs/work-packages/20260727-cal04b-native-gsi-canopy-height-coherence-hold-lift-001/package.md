@@ -93,6 +93,11 @@ In-scope correction surfaces:
 - `crates/openwepp-runner/src/hillslope/direct_publication/**`
 - `crates/openwepp-runner/src/hillslope/tests03/**`
 - `crates/openwepp-hillslope-orchestrator/src/direct_runtime/growth.rs`
+- `crates/openwepp-hillslope-orchestrator/src/direct_runtime/erosion.rs`
+- `crates/openwepp-hillslope-orchestrator/src/direct_runtime/00_core_frames.rs`
+  only to expose the exact post-growth height consumed by erosion and frost
+- `crates/openwepp-hillslope-orchestrator/src/direct_runtime/03_executor.rs`
+  only to record the exact dynamic height consumed by active frost
 - `crates/openwepp-hillslope-orchestrator/src/direct_runtime/laned_active.rs`
   only for contract-derived tests or required integration, not guard weakening
 - adjacent owning tests required to prove the same production state
@@ -191,6 +196,8 @@ contract decision; do not synthesize a formula.
 - directly owning adjacent tests selected by the authenticated intent plan
 - `docs/work-packages/20260727-cal04b-native-gsi-canopy-height-coherence-hold-lift-001/**`
 - CAL-04B status/handoff artifacts and `docs/work-packages/README.md`
+- the frozen CAL-04B `artifacts/native-consumer-proof.csv` output only, as
+  current hold-lift replay evidence and not a calibration/result claim
 - `docs/planning/canopy-phenology-assurance-roadmap.md`
 
 Any wider production or contract surface requires a prospective package

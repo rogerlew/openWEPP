@@ -26,6 +26,9 @@ fn direct_growth_canopy_height_m(
         canopy_height_coefficient_m2_kg,
     )?;
     validate_nonnegative_direct_m("growth.maximum_canopy_height_m", maximum_canopy_height_m)?;
+    if total_aboveground_biomass_kg_m2 == 0.0 || maximum_canopy_height_m == 0.0 {
+        return Ok(0.0);
+    }
     let exponent_magnitude = canopy_height_coefficient_m2_kg * total_aboveground_biomass_kg_m2;
     validate_finite(
         "growth.canopy_height_exponent_magnitude",
@@ -1814,6 +1817,42 @@ mod cqr_row6_growth_tests {
     }
 
     #[test]
+    fn native_canopy_height_reprojects_gsi_transition_states() {
+        let deciduous_off = direct_native_canopy_height_m(0.0, 0.0, 3.0, 0.2)
+            .expect("TV-PLANT-GSI-HC-001 pre-transition state");
+        let deciduous_on = direct_native_canopy_height_m(0.05, 0.0, 3.0, 0.2)
+            .expect("TV-PLANT-GSI-HC-001 zero-to-positive state");
+        assert_eq!(deciduous_off.to_bits(), 0.0_f64.to_bits());
+        assert_eq!(
+            deciduous_on.to_bits(),
+            ((1.0 - (-3.0_f64 * 0.05).exp()) * 0.2).to_bits()
+        );
+        assert!(deciduous_on > deciduous_off);
+
+        let deciduous_leaf_off = direct_native_canopy_height_m(0.0, 0.0, 3.0, 0.2)
+            .expect("TV-PLANT-GSI-HC-002 deciduous leaf-off state");
+        let structural_leaf_off = direct_native_canopy_height_m(0.0, 0.10, 3.0, 0.2)
+            .expect("TV-PLANT-GSI-HC-002 structural leaf-off state");
+        assert_eq!(deciduous_leaf_off.to_bits(), 0.0_f64.to_bits());
+        assert!(structural_leaf_off > 0.0);
+
+        let evergreen_floor = direct_native_canopy_height_m(0.02, 0.10, 3.0, 0.2)
+            .expect("TV-PLANT-GSI-HC-003 GSI21-zero evergreen floor");
+        assert!(evergreen_floor > structural_leaf_off);
+    }
+
+    #[test]
+    fn legacy_canopy_height_preserves_exact_zero_short_circuits() {
+        let zero_biomass = direct_growth_canopy_height_m(0.0, f64::MAX, 0.2)
+            .expect("zero legacy biomass bypasses exponent arithmetic");
+        assert_eq!(zero_biomass.to_bits(), 0.0_f64.to_bits());
+
+        let zero_height = direct_growth_canopy_height_m(f64::MAX, f64::MAX, -0.0)
+            .expect("zero legacy maximum height bypasses exponent arithmetic");
+        assert_eq!(zero_height.to_bits(), 0.0_f64.to_bits());
+    }
+
+    #[test]
     fn native_canopy_height_is_monotone_and_allows_finite_saturation() {
         let low = direct_native_canopy_height_m(0.01, 0.0, 3.0, 0.2)
             .expect("TV-PLANT-GSI-HC-004 low endpoint");
@@ -1842,6 +1881,45 @@ mod cqr_row6_growth_tests {
                 direct_native_canopy_height_m(foliar, structural, bbb, hmax).is_err(),
                 "TV-PLANT-GSI-HC-005 must reject ({foliar}, {structural}, {bbb}, {hmax})"
             );
+        }
+
+        for (inputs, expected_field) in [
+            (
+                (0.1, 0.0, 0.0, 0.2),
+                "growth.native_canopy_height_coefficient_m2_kg",
+            ),
+            (
+                (0.1, 0.0, 3.0, 0.0),
+                "growth.native_maximum_canopy_height_m",
+            ),
+            (
+                (f64::MIN_POSITIVE, 0.0, f64::MIN_POSITIVE, 0.2),
+                "growth.native_canopy_height_m",
+            ),
+        ] {
+            let error = direct_native_canopy_height_m(inputs.0, inputs.1, inputs.2, inputs.3)
+                .expect_err("TV-PLANT-GSI-HC-005 typed field must reject");
+            assert!(matches!(
+                error,
+                DirectRuntimeError::DirectDomainViolation { field } if field == expected_field
+            ));
+        }
+        for (inputs, expected_field) in [
+            (
+                (f64::MAX, f64::MAX, 1.0, 0.2),
+                "growth.native_total_aboveground_biomass_kg_m2",
+            ),
+            (
+                (f64::MAX, 0.0, 2.0, 0.2),
+                "growth.canopy_height_exponent_magnitude",
+            ),
+        ] {
+            let error = direct_native_canopy_height_m(inputs.0, inputs.1, inputs.2, inputs.3)
+                .expect_err("TV-PLANT-GSI-HC-005 non-finite field must reject");
+            assert!(matches!(
+                error,
+                DirectRuntimeError::NonFiniteDirectValue { field } if field == expected_field
+            ));
         }
     }
 }

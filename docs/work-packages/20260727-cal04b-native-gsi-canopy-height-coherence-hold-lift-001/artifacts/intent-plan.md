@@ -53,6 +53,11 @@ gate complete.
 - runner direct-publication code and owning tests named by `package.md`
 - orchestrator growth/Lane D code only for a centralized projection or
   contract-derived tests; the positive-LAI/positive-height guard is protected
+- orchestrator erosion daily-state assembly and owning frame fields only to
+  replace the discovered optional-PMET zero fallback with the same post-growth
+  height and expose the exact value consumed by active erosion
+- orchestrator executor trace assignment only to record the exact dynamic
+  canopy height consumed by active frost
 - this package's artifacts, prompt custody, CAL-04B handoff/status, catalog,
   and canopy assurance roadmap
 

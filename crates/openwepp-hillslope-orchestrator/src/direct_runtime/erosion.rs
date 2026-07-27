@@ -523,11 +523,6 @@ impl DirectDayFrame {
         } else {
             &self.annual_growth.state_after
         };
-        let canopy_height_m = self
-            .evapotranspiration_compute_inputs
-            .pmet_compute
-            .as_ref()
-            .map_or(0.0, |pmet| pmet.canopy_height_m);
         let residue = &self.residue_partition;
         let seed = &self.erosion_inputs.wave1_operand_seed;
         let precipitation_m = self.forcing.precipitation_m;
@@ -543,7 +538,7 @@ impl DirectDayFrame {
                 &self.wb14_hourly_rainfall_m,
             ),
             canopy_cover_fraction: growth.canopy_cover_fraction,
-            canopy_height_m,
+            canopy_height_m: growth.canopy_height_m,
             // GAP-SED-009 closure: the covcal covers from the evolved
             // ground pools (formerly both read a zero composite).
             interrill_cover_fraction: residue.interrill_cover_fraction,
@@ -562,6 +557,7 @@ impl DirectDayFrame {
         };
 
         self.erosion_canopy_cover_fraction_consumed = Some(daily.canopy_cover_fraction);
+        self.erosion_canopy_height_m_consumed = Some(daily.canopy_height_m);
 
         let continuity = assemble_wave1_continuity_inputs(seed, &daily)?;
 
