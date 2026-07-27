@@ -1,6 +1,6 @@
 # Required Reading Map
 
-Status: `QUEUED / WARN BUDGET`
+Status: `ACTIVE / WARN BUDGET`
 
 Evidence class: `Static`
 
@@ -28,3 +28,20 @@ Evidence class: `Static`
 The exact fixed local Core + Conditional set, including the current package,
 totals 588,326 bytes. That is above 400,000 and below 800,000 bytes: `WARN`.
 On-demand sources are progressively disclosed at their triggers.
+
+## Instruction Discovery
+
+Ran:
+
+`tools/agents/find-agents --for docs/specifications/science-contracts/contracts/SC-PLANT-001.md crates/openwepp-runner/src/hillslope/direct_publication/day_input_and_helpers/00c_day_input_builder_impl.rs crates/openwepp-runner/src/hillslope/tests03 crates/openwepp-hillslope-orchestrator/src/direct_runtime/growth.rs crates/openwepp-hillslope-orchestrator/src/direct_runtime/laned_active.rs docs/work-packages/20260727-cal04b-native-gsi-canopy-height-coherence-hold-lift-001/package.md`
+
+Applicable instruction chain:
+
+- root `AGENTS.md`
+- `docs/specifications/science-contracts/AGENTS.md`
+- `crates/AGENTS.md`
+- `docs/work-packages/AGENTS.md`
+
+All four were read before package or production edits. The package also uses
+the local docs-maintainer workflow for Markdown validation; openWEPP's own
+Markdown tooling remains the validation authority.

@@ -4,7 +4,7 @@ title: Plant Growth Process Contract
 status: approved
 maturity: active
 owner: openWEPP maintainers + hydrology reviewer
-contract_version: 23
+contract_version: 24
 producer_scope:
   - Plant state evolution for cropland and rangeland growth submodels
   - Plant to water-balance coupling surfaces (LAI, root depth, plant biomass/residue descriptors)
@@ -16,7 +16,7 @@ consumer_scope:
   - Residue decomposition and management surfaces consuming plant-to-residue transfers
   - Scheduler and PL kernel boundaries consuming projected management transition controls
 evidence_level: static
-last_reviewed: 2026-07-20
+last_reviewed: 2026-07-27
 supersedes: []
 superseded_by: []
 ---
@@ -56,6 +56,7 @@ Out of scope:
 | REF-PLANT-CH8-INTRO | `references/50201000/chap8.pdf` §8.1 | Declares plant outputs and cross-domain coupling to Chapters 5, 9, 11. | `[DIRECT][Static]` |
 | REF-PLANT-CH8-PHENO | `chap8.pdf` §8.2, Eq. [8.2.1]-[8.2.2] | Cropland heat-unit and maturity-index semantics. | `[DIRECT][Static]` |
 | REF-PLANT-CH8-GROWTH | `chap8.pdf` §8.2.1, Eq. [8.2.3]-[8.2.5] | Potential biomass and daily biomass accumulation semantics. | `[DIRECT][Static]` |
+| REF-PLANT-CH8-CANOPY | `references/50201000/chap8.pdf` §8.2.2, Eq. [8.2.6]-[8.2.8] | Cropland canopy cover, LAI, and canopy-height equations; Eq. [8.2.8] is the primary height-law citation. | `[DIRECT][Static]` |
 | REF-PLANT-CH8-STRESS | `chap8.pdf` §8.2.4, Eq. [8.2.14]-[8.2.16] | Water/temperature stress boundedness and growth regulation. | `[DIRECT][Static]` |
 | REF-PLANT-CH8-SENESCENCE | `chap8.pdf` §8.2.3, Eq. [8.2.9]-[8.2.13] | Canopy decline and live-biomass to flat-residue transfer semantics. | `[DIRECT][Static]` |
 | REF-PLANT-CH8-ROOT | `chap8.pdf` §8.2.7, Eq. [8.2.20]-[8.2.25] | Root biomass partitioning and root-depth upper bounds. | `[DIRECT][Static]` |
@@ -91,6 +92,7 @@ Out of scope:
 | `HU` | `degC day` | Daily heat-unit increment. | plant growth | phenology logic |
 | `HUI` | `fraction` | Heat-unit index (`0` at planting, `1` at physiological maturity). | plant growth | growth/senescence/yield logic |
 | `Bm` | `kg m^-2` | Live above-ground biomass. | plant growth | yield, senescence, management, ET coupling |
+| `Bt` | `kg m^-2` | Native total above-ground canopy biomass, `Bs+Bf`. | native forest phenology | internal native canopy-height projection only |
 | `Brt` | `kg m^-2` | Total live root biomass. | plant growth | root partitioning, coupling checks |
 | `Rd` | `m` | Root depth. | plant growth | ET root-zone distribution (Chapter 5) |
 | `LAI` | `m^2 m^-2` | Leaf area index. | plant growth | ET and interception components |
@@ -289,9 +291,10 @@ algorithm.
 11. Update canopy and LAI from equation-driven biomass state:
     - canopy: `cancov = 1 - exp(-bb * vdmt_effective)` (bounded to `[0,0.999]`);
     - canopy height: `canhgt = (1 - exp(-bbb * vdmt)) * hmax` using total
-      above-ground dry biomass, as in legacy WEPP Equation 8.2.6; `canhgt`
-      must be finite and non-negative and is zero only when biomass or
-      maximum-height authority is zero;
+      above-ground dry biomass, as in Chapter 8 Equation 8.2.8; pinned
+      `grow.for` carries the historical comment “WEPP Equation 8.2.6” for this
+      same expression. `canhgt` must be finite and non-negative and is zero
+      only when biomass or maximum-height authority is zero;
     - annual LAI uses vegetative biomass (`vdmt*(1-hia)`) with chapter-form
       denominator constants;
     - perennial LAI uses total biomass formulation.
@@ -336,6 +339,7 @@ algorithm.
 | `BR-PL-TC-PERENNIAL-CUT` | `mgtopt=1` | `ncut`, `cutday[1..ncut]` | runtime | typed hard-fail on cardinality/index closure violation |
 | `BR-PL-TC-PERENNIAL-GRAZE` | `mgtopt=2` | `ncycle`, `gday/gend/payload[1..ncycle]` | runtime | typed hard-fail on cardinality/index or day-window violation |
 | `BR-PL-TC-LANUSE` | unsupported `lanuse` branch | `lanuse` | governance + runtime | explicit unsupported typed failure; no fallback projection |
+| `BR-PL-NATIVE-GSI-HEIGHT` | complete active `generalized_gsi_v1` forest block after same-day GSI realization | same-day `Bf`, persistent `Bs`, projected `bbb`, projected `hmax` | checked arithmetic + runtime coherence | validate finite/positive parameters, checked `Bt=Bs+Bf`, finite bounded `Hc`, and positive-`Bt`/positive-`Hc` coherence before typed-state mutation/publication; compatibility/non-native inputs do not enter this branch and no static/fallback height is allowed |
 
 ## Invariants
 
@@ -373,11 +377,12 @@ algorithm.
 | INV-PLANT-030 | GSI photoperiod and hemisphere law: photoperiod is computed from finite signed latitude and runtime day using FAO-56 solar declination and sunset-hour-angle geometry, remains in `[0,24]` hours including polar day/night, and preserves opposite seasonal phase at equal-magnitude Northern/Southern latitudes. | hard-fail | REF-PLANT-FAO56-DAYLIGHT, REF-PLANT-JOLLY-GSI | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PLANT-031 | GSI failure and scope law: invalid latitude/day, non-finite forcing, negative VPD, unordered thresholds, or malformed history hard-fails with a typed error. GSI is a foliar-phenology signal only until a later contract amendment ratifies canopy, LAI, biomass, litter, and downstream-consumer mapping. | hard-fail | REF-PLANT-JOLLY-GSI, REF-PLANT-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PLANT-032 | GSI chronology and restart law: stateful admission accepts only the calendar day immediately following the newest retained sample, including Gregorian year rollover. Repeated, skipped, reversed, or year-invalid dates hard-fail before state mutation. Exact restart restores both ordered history and its newest calendar date. | hard-fail | REF-PLANT-JOLLY-GSI, REF-PLANT-PHYS-BOUNDS | `[INFERENCE][Static]` |
-| INV-PLANT-033 | Native forest phenology authority: an active native forest must provide a complete typed `generalized_gsi_v1` block containing explicit GSI thresholds, summer foliar biomass, evergreen fraction, persistent structural cover, and structural biomass. Native `xmxlai` and `bb` are finite and strictly positive. The native forest schedule is continuous (`jdplt=0` and `jdstop=0`) so GSI advances on every chronological climate day; seasonally inactive/reactivated native schedules are invalid. Missing, non-finite, negative, unordered, skipped-date, or out-of-domain operands hard-fail before daily state mutation; compatibility forest inputs do not silently acquire this authority. | hard-fail | REF-PLANT-JOLLY-GSI, REF-PLANT-PHYS-BOUNDS, SC-INFILE-MANAGEMENT-YAML-001#INV-MANAGEMENT-YAML-006 | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-PLANT-033 | Native forest phenology authority: an active native forest must provide a complete typed `generalized_gsi_v1` block containing explicit GSI thresholds, summer foliar biomass, evergreen fraction, persistent structural cover, and structural biomass. Native YAML/runtime `xmxlai` and `bb` are finite and strictly positive; existing selected-crop PL projections `bbb` and `hmax` are independently required and validated as finite and strictly positive at the runtime projection boundary before GSI state mutation. The native forest schedule is continuous (`jdplt=0` and `jdstop=0`) so GSI advances on every chronological climate day; seasonally inactive/reactivated native schedules are invalid. Missing, non-finite, negative, unordered, skipped-date, or out-of-domain operands hard-fail before daily state mutation; compatibility forest inputs do not silently acquire this authority. | hard-fail | REF-PLANT-JOLLY-GSI, REF-PLANT-LEGACY-GROW, REF-PLANT-PHYS-BOUNDS, SC-INFILE-MANAGEMENT-YAML-001#INV-MANAGEMENT-YAML-006 | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PLANT-034 | Native foliar-state law: for `g=GSI21`, `f=fe+(1-fe)g`, `Bf=Bf,max*f`, and `LAI=xmxlai*f`, where `fe` is the evergreen foliar fraction. Persistent structural biomass does not transfer seasonally. Canopy is `max(Cs, 1-exp(-bb*Bf))` within the existing finite canopy cap. The diagnostic `g=0.5` crossing is never a production branch. | hard-fail | REF-PLANT-JOLLY-GSI, REF-PLANT-LEGACY-GROW, REF-PLANT-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PLANT-035 | Native daily foliar mass closure: after initialization, `Bf_after = Bf_before + A_leaf - L_leaf`, where `A_leaf=max(Bf_after-Bf_before,0)` is explicit leaf-on allocation and `L_leaf=max(Bf_before-Bf_after,0)` is same-day leaf-off litter transfer. On the first realized native day, no authoritative prior foliar boundary exists: set `Bf_before=Bf_after` and publish `A_leaf=L_leaf=0`; aggregate PL `vdmt`, structural biomass, or initial canopy cannot seed `Bf_before`. All operands are finite and non-negative, the closure is exact within roundoff, and a repeated forcing cycle returns bit-identical endpoint and annual transfer totals without accumulated canopy-state drift. | hard-fail | REF-PLANT-CH8-SENESCENCE, REF-PLANT-CH9-COUPLING, REF-PLANT-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PLANT-036 | Native real-consumer ordering: one post-phenology daily state supplies snow canopy attenuation, ET LAI/canopy, WB15 interception, erosion-facing canopy, and the plant-to-residue litter handoff before residue depth/frost publication. Static initial canopy, crop-GDD senescence, producer-only shadow state, and `jdharv` litter windows cannot carry the native integration claim. | hard-fail | REF-PLANT-CH5-COUPLING, REF-PLANT-CH9-COUPLING, REF-PLANT-CH11-COUPLING | `[DIRECT][Static] + [INFERENCE][Static]` |
 | INV-PLANT-037 | Hemisphere phase-transform law: over a complete cyclic year, negating latitude and shifting an identical NH daily forcing sequence by one half-year (182 days for a 365-day vector, with cyclic wrap) shifts the native GSI/canopy trajectory to the corresponding SH seasonal phase. Full post-warmup canopy values remain within the declared numeric tolerance and the first leaf-on and leaf-off limbs map within one transformed calendar day with order preserved. This is a deterministic symmetry test, not independent SH observational validation. | hard-fail | REF-PLANT-FAO56-DAYLIGHT, REF-PLANT-JOLLY-GSI | `[DIRECT][Static] + [INFERENCE][Static]` |
+| INV-PLANT-038 | Native canopy-height coherence law: the current native total above-ground canopy biomass is the checked sum `Bt=Bs+Bf`, where `Bs` is the persistent structural pool and `Bf` is the same-day post-GSI foliar pool. The same projection computes `Hc=(1-exp(-bbb*Bt))*hmax` before consumer publication. Native `bbb` and `hmax` are finite and strictly positive; checked addition and multiplication must reject overflow/non-finite intermediates; and the result must be finite in `[0,hmax]` under floating-point evaluation (the real-valued equation is `<hmax`). Exact `Bt=0` publishes `Hc=0`; any `Bt>0` must publish `Hc>0` or hard-fail, including positive-product underflow to zero. `Bt` is an internal height-projection operand, while `Bf` remains the foliar/interception biomass handoff. Pre-GSI height, static seeds, compatibility values, and fallback height cannot carry the native claim. | hard-fail | REF-PLANT-CH8-CANOPY, REF-PLANT-LEGACY-GROW, REF-PLANT-LEGACY-INITGR, REF-PLANT-PHYS-BOUNDS | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Allowed Degenerate States
 
@@ -423,6 +428,7 @@ algorithm.
 - OBL-PLANT-P-012: Advance one year-aware GSI state per active native-forest lane and publish evergreen, deciduous, aggregate foliar, structural, LAI, canopy, allocation, and litter surfaces before daily consumers execute. `[DIRECT][Static] + [INFERENCE][Static]`
 - OBL-PLANT-P-013: Derive daily atmospheric VPD as `((es(Tmax)+es(Tmin))/2)-ea(Tdew)` in pascals using the same climate saturation-vapor-pressure lineage already consumed by PMET; every negative or non-finite result hard-fails. No zero clamp or bounded negative normalization is authorized. `[DIRECT][Static] + [INFERENCE][Static]`
 - OBL-PLANT-P-014: Preserve exact per-lane GSI chronology and foliar-mass carry across every simulated day and fail closed when the climate date is nonconsecutive. `[INFERENCE][Static]`
+- OBL-PLANT-P-015: Derive checked native `Bt` as an internal height-projection operand and publish `Hc/canhgt` from the same post-phenology realization as `Bf`, `Bs`, `LAI`, and `Cc` before snow, ET, WB15 interception, erosion, Lane D routing, residue, and frost consumers execute. Preserve `Bf`, not `Bt`, on foliar/interception biomass surfaces. `[DIRECT][Static] + [INFERENCE][Static]`
 
 ## Consumer Obligations
 
@@ -489,6 +495,7 @@ algorithm.
 | `INV-PLANT-035` | runtime | Forest canopy daily transition and residue handoff | Typed hard error on non-finite, negative, or non-closing foliar mass transfer | CP-GSI02 conservation gate | `[INFERENCE][Static]` |
 | `INV-PLANT-036` | runtime + integration | Direct-production day builder and downstream consumer calls | Package `HOLD` if any real consumer reads pre-phenology/static/fixed-date state | CP-GSI02 consumer gate | `[INFERENCE][Static]` |
 | `INV-PLANT-037` | contract test | Phase-shifted forcing at negated latitude | Test failure on phase/order mismatch; no empirical verdict | CP-GSI02 hemisphere gate | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `INV-PLANT-038` | runtime + integration | Native canopy realization, direct-production state builder, and real-consumer handoff | Typed hard failure on missing/non-finite/non-positive `bbb` or `hmax`, checked-sum/product overflow, non-finite/negative `Bt` or `Hc`, or `Bt>0` with `Hc<=0`; package `HOLD` if a consumer reads stale/static/compatibility height | CP-GSI02 height-coherence gate | `[DIRECT][Static] + [INFERENCE][Static]` |
 
 ## Symbol Alias Map
 
@@ -501,11 +508,12 @@ states required deterministic alias mapping for transition-control projections.
 | `HU` | `HU` (identity) | plant daily phenology surface | `degC day` -> `degC day` | `[DIRECT][Static]` |
 | `HUI` | `HUI` (identity) | plant daily phenology surface | `fraction` -> `fraction` | `[DIRECT][Static]` |
 | `Bm` | `Bm` (identity) | plant state export surface | `kg m^-2` -> `kg m^-2` | `[DIRECT][Static]` |
+| `Bt` | direct-production `native_total_aboveground_biomass_kg_m2` projection operand | native post-GSI canopy-height biomass basis; `Bf` remains the separate foliar consumer handoff | `kg m^-2` -> `kg m^-2` | `[INFERENCE][Static]` |
 | `Brt` | `Brt` (identity) | plant state export surface | `kg m^-2` -> `kg m^-2` | `[DIRECT][Static]` |
 | `Rd` | `Rd` (canonical) / `rtd` (runtime growth-state alias) | plant->ET root-depth coupling surface | `m` -> `m` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `LAI` | `LAI` (identity) | plant->ET/erosion coupling surface | `m^2 m^-2` -> `m^2 m^-2` | `[DIRECT][Static]` |
 | `Cc` | `Cc` (identity) | plant->erosion coupling surface | `fraction` -> `fraction` | `[DIRECT][Static]` |
-| `Hc` | `Hc` (canonical) / `canhgt` (runtime growth-state alias) | plant->erosion/interception/routing coupling surface | `m` -> `m` | `[DIRECT][Static] + [INFERENCE][Static]` |
+| `Hc` | `Hc` (canonical) / `DirectGrowthStateSurface::canopy_height_m` / `canhgt` | plant->snow/ET/erosion/interception/routing coupling surface | `m` -> `m` | `[DIRECT][Static] + [INFERENCE][Static]` |
 | `YLD` | `YLD` (identity) | output/reporting surface | `kg m^-2` -> `kg m^-2` | `[DIRECT][Static]` |
 | `Mf` | `Mf` (identity) | plant->residue coupling surface | `kg m^-2` -> `kg m^-2` | `[DIRECT][Static]` |
 | `Ms` | `Ms` (identity) | plant->residue coupling surface | `kg m^-2` -> `kg m^-2` | `[DIRECT][Static]` |
@@ -591,8 +599,8 @@ states required deterministic alias mapping for transition-control projections.
 |---|---|---|---|
 | Native YAML phenology parameters | Strict typed fields in `openwepp-management-schema`; projection symbols remain validated scalar exceptions pending a typed PL boundary replacement | Identity for `kg m^-2`, fractions, `degC`, `Pa`, and hours | Input authority only; not a public output |
 | Climate VPD input | Typed `HillslopeDirectClimateDayForcing` temperatures/dewpoint to typed `GsiDailyForcing::vapor_pressure_deficit_pa` | `saturation_vapor_pressure_kpa`; explicit `kPa * 1000 = Pa` in `direct_native_forest_vpd_pa` | Internal process input; not published |
-| `Bfe`, `Bfd`, `Bf`, `Bs` | Typed `ForestCanopyRealization` fields; `Bf` alone crosses into typed growth state | Identity `kg m^-2` | No new public output metadata in this package |
-| Native LAI and canopy cover | Typed realization and `DirectGrowthStateSurface`; unitless/fraction guards at every consumer | Identity | Existing internal ET/snow/interception/erosion surfaces; no output-schema change |
+| `Bfe`, `Bfd`, `Bf`, `Bs`, `Bt` | Typed `ForestCanopyRealization` fields for component pools; `Bt=Bs+Bf` is a checked local post-GSI height operand and does not replace `Bf` in typed growth/interception biomass state | Identity `kg m^-2`; checked sum for `Bt` | No new public output metadata in this package |
+| Native LAI, canopy cover, and canopy height | Typed realization/projection and `DirectGrowthStateSurface`; unit/fraction guards at every consumer | Identity for LAI/fraction; Chapter 8 Eq. 8.2.8 publishes metres from `m^2 kg^-1`, `kg m^-2`, and `m` operands | Existing internal ET/snow/interception/erosion/routing surfaces; no output-schema change |
 | `A_leaf`, `L_leaf` | Typed daily realization fluxes; `L_leaf` crosses directly into typed decomposition input | Identity `kg m^-2` per daily step; no annualization | No new public output; conservation evidence is test/artifact only |
 | Residue mass and depth | Typed decomposition/residue state | Existing `residue_depth_conversion_m_per_kg_m2` converts `kg m^-2` to `m` | Internal frost thermal input; no output-schema change |
 
@@ -865,6 +873,8 @@ inputs retain their prior behavior. The 0.5 crossing remains diagnostic.
 | `Bs` | `kg m^-2` | finite, `>=0` | Persistent structural biomass, excluded from seasonal transfer. |
 | `xmxlai` | `m^2 m^-2` | finite, `>0` | Existing full-leaf maximum LAI. |
 | `bb` | `m^2 kg^-1` | finite, `>0` | Existing WEPP canopy-cover coefficient. |
+| `bbb` | `m^2 kg^-1` | finite, `>0` | Existing WEPP canopy-height coefficient applied to native total above-ground biomass. |
+| `hmax` | `m` | finite, `>0` | Existing maximum community height for the selected native management crop. |
 
 The native block also carries all six `GsiParameters` thresholds explicitly.
 There is no hidden generalized fallback at the parser/runtime boundary.
@@ -880,8 +890,16 @@ There is no hidden generalized fallback at the parser/runtime boundary.
    deciduous foliar mass `Bfd=Bf,max*(1-fe)*GSI21`, aggregate `Bf=Bfe+Bfd`, and
    `LAI=xmxlai*f`.
 4. Compute `Cc=max(Cs,1-exp(-bb*Bf))`, then apply only the existing finite
-   `0.999` canopy boundary. Invalid operands hard-fail before this step; the cap
-   is not input normalization.
+   `0.999` canopy boundary. Define native total above-ground canopy biomass
+   checked sum `Bt=Bs+Bf` and compute `Hc=(1-exp(-bbb*Bt))*hmax` using
+   Chapter 8 Equation 8.2.8 and the identical pinned `grow.for` expression
+   historically labeled 8.2.6 in source. The `Bt` mapping is the explicit
+   native realization of the equation's total-above-ground-dry-weight operand;
+   foliar-only `Bf`, pre-GSI PL biomass, cover inversion, static height, and
+   fallback height are invalid substitutes. Reject non-finite checked sums,
+   products, exponentials, and final results before state mutation or
+   publication. Invalid operands hard-fail before this step; the canopy cap is
+   not input normalization.
 5. On the first realized native day, set `Bf_prev=Bf` and publish zero
    allocation and litter. On later days, against the prior day's `Bf`, publish
    `A_leaf=max(Bf-Bf_prev,0)` and
@@ -890,9 +908,11 @@ There is no hidden generalized fallback at the parser/runtime boundary.
 6. Route `L_leaf` to same-day surface litter before decomposition and dynamic
    residue-depth/frost construction. `A_leaf` is the explicit plant production
    allocation flux; `Bs` is unchanged.
-7. Publish one post-phenology `Bf/LAI/Cc` state to snow, ET, WB15 interception,
-   and erosion-facing day inputs. Native forest does not run crop heat-unit
-   senescence or the `jdharv` litter publication window.
+7. Publish one post-phenology `Bf/Bs/LAI/Cc/Hc` realization to snow, ET, WB15
+   interception, erosion-facing day inputs, and Lane D routing. `Bt` remains
+   the checked internal height operand and must not replace `Bf` on
+   foliar/interception biomass surfaces. Native forest does not run crop
+   heat-unit senescence or the `jdharv` litter publication window.
 
 ### Contract-Test Vectors
 
@@ -913,6 +933,35 @@ There is no hidden generalized fallback at the parser/runtime boundary.
 6. A real direct-production native forest run proves post-phenology canopy/LAI
    reaches snow, ET, WB15 interception, erosion-facing day input, and leaf-off
    litter reaches surface residue/depth/frost on the same day.
+7. `TV-PLANT-GSI-HC-001`: an exact deciduous zero-to-positive transition
+   independently reconstructs `Bt` and `Hc`; positive `LAI` has positive
+   `Hc`.
+8. `TV-PLANT-GSI-HC-002`: positive-to-zero leaf-off with `Bs=0` reaches zero
+   height, while `Bs>0` retains the structural height implied by Chapter 8
+   Equation 8.2.8.
+9. `TV-PLANT-GSI-HC-003`: the evergreen floor at `GSI21=0` preserves positive
+   `Bf`, `Bt`, `LAI`, and `Hc`.
+10. `TV-PLANT-GSI-HC-004`: the `Bt=0` boundary and increasing finite endpoints
+    reconstruct a monotone height in floating-point `[0,hmax]`, with equality
+    at `hmax` allowed only as finite exponential saturation.
+11. `TV-PLANT-GSI-HC-005`: missing, zero, negative, NaN, or infinite
+    `bbb/hmax`; finite-input overflow in `Bs+Bf` or `bbb*Bt`; non-finite
+    exponent/result; and any positive-`Bt` underflow to zero `Hc`, including a
+    structural-only `Bs>0` state with `LAI=0`, fail before state mutation or
+    consumer publication. Finite exponential saturation at `Hc=hmax` remains
+    valid.
+12. `TV-PLANT-GSI-HC-006`: retained `GSI-5557` and the frozen native-proof
+    plan prove every named real consumer reads its fields from the identical
+    post-phenology realization, while ET, erosion, and active/shadow Lane D
+    read the identical same-day `Hc`; stale/static/compatibility height is
+    rejected.
+
+## Binding Exposure Index
+
+| Entry ID | Source | Status | Binding classification | Canonical binding IDs | Review gate | Notes |
+|---|---|---|---|---|---|---|
+| `BEI-PLANT-GSI01` | `CP-GSI01` generalized GSI equation, history, hemisphere, scope, and chronology addendum | `active` | `maps-to-existing-INV` | `INV-PLANT-028, INV-PLANT-029, INV-PLANT-030, INV-PLANT-031, INV-PLANT-032, OBL-PLANT-P-013, OBL-PLANT-P-014` | `none` | Existing CP-GSI01 runtime and contract-test gates carry these bindings. |
+| `BEI-PLANT-GSI02` | `CP-GSI02` native forest canopy, height, litter, chronology, and real-consumer integration addendum | `active` | `maps-to-existing-INV` | `INV-PLANT-033, INV-PLANT-034, INV-PLANT-035, INV-PLANT-036, INV-PLANT-037, INV-PLANT-038, OBL-PLANT-P-012, OBL-PLANT-P-014, OBL-PLANT-P-015, OBL-PLANT-C-007` | `flagged-binding-addition` | Revision 24 adds the explicit native `Bt/Hc` binding and requires independent science review. |
 
 ## Gap Register
 
@@ -932,6 +981,7 @@ There is no hidden generalized fallback at the parser/runtime boundary.
 
 | Date UTC | Version | Author | Change |
 |---|---|---|---|
+| `2026-07-27` | `24` | `Codex` | CAL04B-NATIVE-001 contract-first amendment: defined checked native total above-ground biomass `Bt=Bs+Bf`, bound Chapter 8 Eq. 8.2.8 and the pinned source expression to same-day native `Hc`, required positive `bbb/hmax`, added `INV-PLANT-038`, explicit native branch/checked-arithmetic/producer/guard/alias/unit obligations, six height vectors, and the missing GSI Binding Exposure Index. |
 | `2026-07-20` | `23` | `Codex` | Review amendment: defined no-transfer first realization without aggregate-`vdmt` aliasing, continuous native schedules, strict positive `bb`, fail-on-any-negative VPD, full wrapped NH-to-SH phase evidence, and bit-identical repeated-cycle totals. |
 | `2026-07-19` | `22` | `Codex` | CP-GSI02 contract-first amendment: authorized explicit native GSI operands, evergreen/deciduous/structural state, baseline canopy relation, exact leaf-on/leaf-off mass ledger, same-day litter handoff, real-consumer ordering, and operator-selected phase-shifted SH symmetry validation. |
 | `2026-07-17` | `21` | `Codex` | CP-GSI01 amendment: added Jolly GSI and FAO-56 daylight authority, `INV-PLANT-028..032`, exact indicator/window/hemisphere/chronology laws, contract vectors, explicit cold-start inference, and a hold on canopy/biomass/litter and downstream integration. |

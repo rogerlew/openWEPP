@@ -44,7 +44,13 @@ def main(argv: list[str]) -> int:
     if "## Binding Exposure Index" not in text:
         print(f"FAIL {path}: missing Binding Exposure Index")
         return 1
-    core_ids = set(re.findall(r"\b(?:INV|OBL)-[A-Z0-9]+-\d+\b", text))
+    core_text = text.split("## Binding Exposure Index", maxsplit=1)[0]
+    core_ids = set(
+        re.findall(
+            r"\b(?:INV-[A-Z0-9]+-\d+|OBL-[A-Z0-9]+(?:-[A-Z0-9]+)?-\d+)\b",
+            core_text,
+        )
+    )
     in_index = False
     rows = []
     failures = []

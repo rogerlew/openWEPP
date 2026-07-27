@@ -8,7 +8,7 @@ This Defect-Closure ExecPlan is a living document governed by
 Package ID:
 `20260727-cal04b-native-gsi-canopy-height-coherence-hold-lift-001`
 
-Status: `QUEUED / PREREQUISITE HOLD LIFT`
+Status: `ACTIVE / AUTHORITY ADJUDICATION`
 
 Execution mode: `package-end-to-end`
 
@@ -55,8 +55,11 @@ authority to close end-to-end.
 - [x] 2026-07-27: Retain CAL-04B attempt 004 and exact `GSI-5557` reproducer.
 - [x] 2026-07-27: Localize the incoherent generalized-GSI override and scaffold
   this hold-lift package before production edits.
-- [ ] Authenticate authority and write the pre-implementation intent plan.
-- [ ] Amend canonical authority if the current-day height law or transition
+- [x] 2026-07-27: Authenticate the declared write set and write the
+  pre-implementation intent plan at base `f4b3db6c`.
+- [x] 2026-07-27: Resolve the native height-basis authority gap: legacy PL16 height uses
+  total above-ground biomass, while CP-GSI02 `Bf` is foliar-only.
+- [x] 2026-07-27: Amend canonical authority if the current-day height law or transition
   ordering is not already explicit.
 - [ ] Add contract-derived zero-to-positive transition tests and run the
   pre-implementation contract gate.
@@ -177,6 +180,10 @@ contract decision; do not synthesize a formula.
 
 - `docs/specifications/science-contracts/contracts/SC-PLANT-001.md`
 - `docs/specifications/science-contracts/index.md`
+- `tools/check_sc_binding_exposure.py` only to preserve canonical
+  `OBL-<DOMAIN>-<ROLE>-<NNN>` IDs in the newly required Binding Exposure Index
+- `tests/python/test_check_sc_binding_exposure.py` for valid role-qualified and
+  absent-core-ID checker regressions
 - `crates/openwepp-runner/src/hillslope/direct_publication/**`
 - `crates/openwepp-runner/src/hillslope/tests03/**`
 - `crates/openwepp-hillslope-orchestrator/src/direct_runtime/growth.rs`
