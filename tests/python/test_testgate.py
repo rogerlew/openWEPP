@@ -1021,6 +1021,17 @@ class TestGateTest(unittest.TestCase):
             with self.assertRaises(TESTGATE.TestgateError):
                 TESTGATE._invoke(["gate"], ROOT)
 
+    def test_invoke_transports_only_explicit_inherited_descriptors(self) -> None:
+        completed = subprocess.CompletedProcess(
+            args=["gate"], returncode=0, stdout='{"result":"PASS"}', stderr=""
+        )
+        with mock.patch.object(
+            TESTGATE.subprocess, "run", return_value=completed
+        ) as run:
+            value = TESTGATE._invoke(["gate"], ROOT, pass_fds=(17,))
+        self.assertEqual(value["result"], "PASS")
+        self.assertEqual(run.call_args.kwargs["pass_fds"], (17,))
+
     def test_main_reports_verified_nonpass_as_failure_visible(self) -> None:
         observation = {
             "execution_requested": True,

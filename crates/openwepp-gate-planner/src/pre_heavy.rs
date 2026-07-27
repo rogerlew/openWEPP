@@ -1,9 +1,9 @@
 //! Canonical admission artifact for the LIGHT-to-HEAVY execution transition.
 
 use std::collections::BTreeSet;
-use std::fs::{self, OpenOptions};
-use std::io::Write;
-use std::path::Path;
+use std::fs::{self, File, OpenOptions};
+use std::io::{Read, Seek, SeekFrom, Write};
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use serde::{Deserialize, Serialize};
@@ -43,6 +43,98 @@ const FAILURE_CHECK_INDEX_RULES: &[(&[&str], usize)] = &[
     (&["ORDER", "RETRY", "HANDOFF"], 7),
     (&["LEDGER"], 8),
 ];
+
+/// Transition-owned ledger descriptor paired with its immutable audit path.
+#[derive(Debug)]
+pub struct BoundAttemptLedger {
+    authority_path: PathBuf,
+    file: File,
+}
+
+impl BoundAttemptLedger {
+    /// Bind a safely duplicated inherited descriptor to the validated path identity.
+    ///
+    /// # Errors
+    ///
+    /// Returns a typed error when the path or descriptor is unsafe, non-regular,
+    /// ephemeral, mismatched, unreadable, or contains an invalid ledger chain.
+    pub fn new(authority_path: PathBuf, file: File) -> Result<Self> {
+        validate_ledger_path_nofollow(&authority_path)?;
+        let path_metadata = fs::metadata(&authority_path)
+            .map_err(|error| audit_error("GATE-AUDIT-LEDGER-MISSING", error.to_string()))?;
+        let file_metadata = file
+            .metadata()
+            .map_err(|error| audit_error("GATE-AUDIT-LEDGER-MISSING", error.to_string()))?;
+        if !path_metadata.is_file() || !file_metadata.is_file() {
+            return Err(audit_error(
+                "GATE-AUDIT-LEDGER-FD-TYPE",
+                "ledger must be regular",
+            ));
+        }
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::MetadataExt;
+            if path_metadata.dev() != file_metadata.dev()
+                || path_metadata.ino() != file_metadata.ino()
+            {
+                return Err(audit_error(
+                    "GATE-AUDIT-LEDGER-FD-IDENTITY",
+                    authority_path.display().to_string(),
+                ));
+            }
+        }
+        let ledger = Self {
+            authority_path,
+            file,
+        };
+        let absolute = ledger
+            .authority_path
+            .canonicalize()
+            .map_err(|error| audit_error("GATE-AUDIT-LEDGER-MISSING", error.to_string()))?;
+        if absolute.starts_with("/tmp") || absolute.starts_with("/t") {
+            return Err(audit_error(
+                "GATE-AUDIT-LEDGER-EPHEMERAL",
+                absolute.display().to_string(),
+            ));
+        }
+        durable_ledger_bound(&ledger)?;
+        Ok(ledger)
+    }
+
+    #[must_use]
+    pub fn authority_path(&self) -> &Path {
+        &self.authority_path
+    }
+
+    /// Read the current retained-inode ledger bytes as UTF-8.
+    ///
+    /// # Errors
+    ///
+    /// Returns a typed ledger-read error when duplication, seeking, or reading fails.
+    pub fn read_text(&self) -> Result<String> {
+        let mut file = self
+            .file
+            .try_clone()
+            .map_err(|error| audit_error("GATE-AUDIT-LEDGER-READ", error.to_string()))?;
+        file.seek(SeekFrom::Start(0))
+            .map_err(|error| audit_error("GATE-AUDIT-LEDGER-READ", error.to_string()))?;
+        let mut text = String::new();
+        file.read_to_string(&mut text)
+            .map_err(|error| audit_error("GATE-AUDIT-LEDGER-READ", error.to_string()))?;
+        Ok(text)
+    }
+
+    fn append_bytes(&self, bytes: &[u8]) -> Result<()> {
+        let mut file = self
+            .file
+            .try_clone()
+            .map_err(|error| audit_error("GATE-AUDIT-LEDGER-APPEND", error.to_string()))?;
+        file.seek(SeekFrom::End(0))
+            .and_then(|_| file.write_all(bytes))
+            .and_then(|()| file.sync_all())
+            .map_err(|error| audit_error("GATE-AUDIT-LEDGER-APPEND", error.to_string()))
+    }
+}
 
 /// An audit value constructed by the repository-owned implementation.
 ///
@@ -107,6 +199,73 @@ pub fn construct_audit(
         }
     };
     Ok(ConstructedAudit(audit))
+}
+
+/// Construct an audit using only the transition-retained ledger inode.
+///
+/// # Errors
+///
+/// Returns a typed audit error when any bound input or audit invariant fails.
+pub fn construct_bound_audit(
+    repo: &Path,
+    plan: &Value,
+    light_receipt: &Value,
+    artifact_root: &Path,
+    ledger: &BoundAttemptLedger,
+) -> Result<ConstructedAudit> {
+    let audit = match build_bound_audit(repo, plan, light_receipt, artifact_root, ledger) {
+        Ok(audit) => audit,
+        Err(failure) => {
+            build_bound_failure_audit(repo, plan, light_receipt, artifact_root, ledger, &failure)?
+        }
+    };
+    Ok(ConstructedAudit(audit))
+}
+
+fn build_bound_audit(
+    repo: &Path,
+    plan: &Value,
+    light_receipt: &Value,
+    artifact_root: &Path,
+    ledger: &BoundAttemptLedger,
+) -> Result<Value> {
+    verify_plan_identity(plan)?;
+    validate_stage_receipt(repo, plan, light_receipt, artifact_root, true)?;
+    let text = ledger.read_text()?;
+    verify_ledger_chain_text(&text)?;
+    let ledger_head_sha256 = ledger_head_text(&text)?;
+    let package_admission = package_admission(repo, plan)?;
+    let quality_disposition = plan["quality_disposition"].clone();
+    let mut checks =
+        audit_check_prefix(repo, plan, light_receipt, artifact_root, &package_admission)?;
+    checks.extend(audit_check_middle(
+        plan,
+        light_receipt,
+        artifact_root,
+        &quality_disposition,
+    )?);
+    checks.extend(audit_check_suffix_bound(
+        plan,
+        ledger,
+        ledger_head_sha256.as_deref(),
+    )?);
+    let reason_codes = audit_reason_codes(&checks);
+    let status = audit_status(&checks);
+    seal_audit(
+        repo,
+        audit_document(AuditDocumentInputs {
+            plan,
+            light_receipt,
+            artifact_root,
+            ledger: ledger.authority_path(),
+            ledger_head_sha256,
+            package_admission,
+            checks,
+            quality_disposition,
+            status,
+            reason_codes,
+        })?,
+    )
 }
 
 /// Build the only artifact that may authorize the heavy execution stage.
@@ -286,6 +445,44 @@ fn audit_check_suffix(
     ])
 }
 
+fn audit_check_suffix_bound(
+    plan: &Value,
+    ledger: &BoundAttemptLedger,
+    ledger_head_sha256: Option<&str>,
+) -> Result<Vec<Value>> {
+    let path = ledger.authority_path();
+    let text = ledger.read_text()?;
+    Ok(vec![
+        check(
+            CHECK_IDS[7],
+            valid_stage_order(plan),
+            json!({"nodes": node_manifest(plan)?}),
+        )?,
+        check(
+            CHECK_IDS[8],
+            durable_ledger_bound(ledger),
+            json!({"ledger_path_sha256": path_digest(path)}),
+        )?,
+        check(
+            CHECK_IDS[9],
+            reject_open_tooling_defects(tooling_defect_statuses(&text)?).and_then(|()| {
+                if ledger_head_text(&text)?.as_deref() == ledger_head_sha256 {
+                    Ok(())
+                } else {
+                    Err(audit_error(
+                        "GATE-AUDIT-LEDGER-DRIFT",
+                        "bound ledger changed during audit construction",
+                    ))
+                }
+            }),
+            json!({
+                "ledger_path_sha256": path_digest(path),
+                "ledger_head_sha256": ledger_head_sha256,
+            }),
+        )?,
+    ])
+}
+
 fn audit_reason_codes(checks: &[Value]) -> Vec<String> {
     checks
         .iter()
@@ -387,6 +584,47 @@ pub fn build_failure_audit(
     ledger: &Path,
     failure: &GatePolicyError,
 ) -> Result<Value> {
+    let head = ledger_head(ledger).ok().flatten();
+    build_failure_audit_with_head(
+        repo,
+        plan,
+        light_receipt,
+        artifact_root,
+        ledger,
+        head.as_deref(),
+        failure,
+    )
+}
+
+fn build_bound_failure_audit(
+    repo: &Path,
+    plan: &Value,
+    light_receipt: &Value,
+    artifact_root: &Path,
+    ledger: &BoundAttemptLedger,
+    failure: &GatePolicyError,
+) -> Result<Value> {
+    let head = ledger_head_text(&ledger.read_text()?).ok().flatten();
+    build_failure_audit_with_head(
+        repo,
+        plan,
+        light_receipt,
+        artifact_root,
+        ledger.authority_path(),
+        head.as_deref(),
+        failure,
+    )
+}
+
+fn build_failure_audit_with_head(
+    repo: &Path,
+    plan: &Value,
+    light_receipt: &Value,
+    artifact_root: &Path,
+    ledger: &Path,
+    ledger_head_sha256: Option<&str>,
+    failure: &GatePolicyError,
+) -> Result<Value> {
     let plan_sha = digest(plan)?;
     let plan_id = plan["plan_id"]
         .as_str()
@@ -428,7 +666,7 @@ pub fn build_failure_audit(
         "light_stage_receipt_id": light_id,
         "artifact_root_sha256": path_digest(artifact_root),
         "ledger_path_sha256": path_digest(ledger),
-        "ledger_head_sha256": ledger_head(ledger).ok().flatten(),
+        "ledger_head_sha256": ledger_head_sha256,
         "node_manifest": node_manifest(plan).unwrap_or_else(|_| Value::Array(Vec::new())),
         "package_admission": null,
         "checks": checks,
@@ -823,6 +1061,40 @@ pub fn validate_resume_ledger(
     )
 }
 
+/// Validate HEAVY resume authority against the retained transition inode.
+///
+/// # Errors
+///
+/// Returns a typed error for audit, chain, tooling-defect, or successor drift.
+pub fn validate_bound_resume_ledger(
+    repo: &Path,
+    plan: &Value,
+    audit: &Value,
+    artifact_root: &Path,
+    ledger: &BoundAttemptLedger,
+    started_entry_sha256: &str,
+    claims: &ExecutionClaims,
+) -> Result<()> {
+    validate_audit(repo, plan, audit, artifact_root)?;
+    if audit["ledger_path_sha256"] != path_digest(ledger.authority_path()) {
+        return Err(audit_error(
+            "GATE-AUDIT-LEDGER-SUBSTITUTION",
+            ledger.authority_path().display().to_string(),
+        ));
+    }
+    durable_ledger_bound(ledger)?;
+    let text = ledger.read_text()?;
+    reject_open_tooling_defects(tooling_defect_statuses(&text)?)?;
+    validate_started_successor_text(
+        plan,
+        audit,
+        artifact_root,
+        &text,
+        started_entry_sha256,
+        claims,
+    )
+}
+
 /// Admit only the caller-selected durable append target before a HEAVY
 /// transaction is recorded. Full audit and resume admission happens after the
 /// balanced lifecycle has begun.
@@ -833,6 +1105,15 @@ pub fn validate_resume_ledger(
 /// an invalid predecessor chain.
 pub fn admit_attempt_ledger(ledger: &Path) -> Result<()> {
     admit_attempt_ledger_with_proof(ledger).map(|_| ())
+}
+
+/// Admit the already identity-bound transition ledger.
+///
+/// # Errors
+///
+/// Returns a typed error when the retained inode or chain is invalid.
+pub fn admit_bound_attempt_ledger(ledger: &BoundAttemptLedger) -> Result<()> {
+    durable_ledger_bound(ledger)
 }
 
 /// Immutable evidence returned by the sole durable-ledger admission.
@@ -986,6 +1267,58 @@ pub fn record_heavy_failure(path: &Path, record: Value, cause_key: &str) -> Resu
     Ok(())
 }
 
+/// Record a HEAVY failure on the retained transition inode.
+///
+/// # Errors
+///
+/// Returns a typed error when history cannot be parsed or durably appended.
+pub fn record_bound_heavy_failure(
+    ledger: &BoundAttemptLedger,
+    record: Value,
+    cause_key: &str,
+) -> Result<()> {
+    let text = ledger.read_text()?;
+    let prior = failed_cause_count(&text, cause_key)?;
+    append_bound_attempt_record(ledger, record)?;
+    let class = failure_class(cause_key);
+    if class == "TOOLING" || prior >= 1 {
+        let defect_key = sha256_bytes(cause_key.as_bytes());
+        append_bound_attempt_record(
+            ledger,
+            json!({
+                "record_type": "TOOLING_DEFECT",
+                "defect_id": format!("AUTO-{}", &defect_key[..16]),
+                "status": "OPEN",
+                "cause_key": cause_key,
+                "failure_class": class,
+                "reason_code": if prior >= 1 {"SAME_CAUSE_RECURRED_AFTER_ONE_RETRY"} else {"TOOLING_FAILURE_REQUIRES_CORRECTION"},
+                "owner": "openwepp-maintainers",
+                "reproducer": cause_key,
+                "impact": "HEAVY admission or execution is not trustworthy",
+                "correction_boundary": "resolve before the next pre-heavy audit",
+            }),
+        )?;
+    }
+    Ok(())
+}
+
+fn failed_cause_count(text: &str, cause_key: &str) -> Result<usize> {
+    Ok(text
+        .lines()
+        .filter(|line| !line.trim().is_empty())
+        .map(|line| parse_strict(line.as_bytes()))
+        .collect::<Result<Vec<_>>>()?
+        .into_iter()
+        .filter(|item| {
+            matches!(
+                item["record_type"].as_str(),
+                Some("STAGE_ATTEMPT" | "EXTERNAL_TRANSACTION")
+            ) && item["status"] == "FAILED"
+                && item["cause_key"] == cause_key
+        })
+        .count())
+}
+
 fn failure_class(cause_key: &str) -> &'static str {
     if cause_key.contains("SPAWN")
         || cause_key.contains("TIMEOUT")
@@ -1065,6 +1398,72 @@ pub fn reconcile_orphaned_attempts(path: &Path) -> Result<usize> {
     Ok(orphaned.len())
 }
 
+/// Reconcile orphaned attempts using only the retained transition inode.
+///
+/// # Errors
+///
+/// Returns a typed error when history is invalid or reconciliation cannot persist.
+pub fn reconcile_bound_orphaned_attempts(ledger: &BoundAttemptLedger) -> Result<usize> {
+    let text = ledger.read_text()?;
+    verify_ledger_chain_text(&text)?;
+    let records = text
+        .lines()
+        .filter(|line| !line.trim().is_empty())
+        .map(|line| parse_strict(line.as_bytes()))
+        .collect::<Result<Vec<_>>>()?;
+    let terminal = records
+        .iter()
+        .filter_map(|item| item["started_entry_sha256"].as_str())
+        .collect::<BTreeSet<_>>();
+    let orphaned = records
+        .iter()
+        .filter(|item| {
+            matches!(
+                item["record_type"].as_str(),
+                Some("STAGE_ATTEMPT" | "EXTERNAL_TRANSACTION")
+            ) && item["status"] == "STARTED"
+                && item["stage"] == "HEAVY"
+                && item["phase"] == "ADMISSION"
+        })
+        .filter(|item| {
+            item["entry_sha256"]
+                .as_str()
+                .is_some_and(|entry| !terminal.contains(entry))
+        })
+        .cloned()
+        .collect::<Vec<_>>();
+    for started in &orphaned {
+        let cause = "GATE-ATTEMPT-PREVIOUS-PROCESS-TERMINATED";
+        record_bound_heavy_failure(
+            ledger,
+            json!({
+                "record_type": started["record_type"],
+                "status": "FAILED",
+                "stage": "HEAVY",
+                "plan_id": started["plan_id"],
+                "audit_id": started["audit_id"],
+                "artifact_root": started["artifact_root"],
+                "attempt_root": started["attempt_root"],
+                "transaction_id": started["transaction_id"],
+                "recovery_root": started["recovery_root"],
+                "workflow": started["workflow"],
+                "job": started["job"],
+                "runner": started["runner"],
+                "attempt": started["attempt"],
+                "result": null,
+                "error_code": cause,
+                "error_message": "the admitted HEAVY process ended without a terminal record",
+                "cause_key": cause,
+                "failure_class": "INFRASTRUCTURE",
+                "wall_time_ms": null,
+                "started_entry_sha256": started["entry_sha256"],
+            }),
+            cause,
+        )?;
+    }
+    Ok(orphaned.len())
+}
+
 /// Durably append one predecessor-bound execution-attempt record.
 ///
 /// # Errors
@@ -1110,6 +1509,48 @@ pub fn append_attempt_record(path: &Path, mut record: Value) -> Result<String> {
         .write_all(&bytes)
         .and_then(|()| stream.sync_all())
         .map_err(|error| audit_error("GATE-AUDIT-LEDGER-APPEND", error.to_string()))?;
+    Ok(entry)
+}
+
+/// Append one predecessor-bound record to the retained transition inode.
+///
+/// # Errors
+///
+/// Returns a typed error when the chain, record, or durable append is invalid.
+pub fn append_bound_attempt_record(
+    ledger: &BoundAttemptLedger,
+    mut record: Value,
+) -> Result<String> {
+    let text = ledger.read_text()?;
+    verify_ledger_chain_text(&text)?;
+    let object = record
+        .as_object_mut()
+        .ok_or_else(|| audit_error("GATE-AUDIT-LEDGER-RECORD", "record must be an object"))?;
+    if object.contains_key("previous_entry_sha256") || object.contains_key("entry_sha256") {
+        return Err(audit_error(
+            "GATE-AUDIT-LEDGER-RECORD",
+            "record contains reserved chain fields",
+        ));
+    }
+    let previous = text
+        .lines()
+        .rev()
+        .find(|line| !line.trim().is_empty())
+        .map(|line| parse_strict(line.as_bytes()))
+        .transpose()?
+        .and_then(|item| item["entry_sha256"].as_str().map(str::to_owned));
+    object.insert(
+        "previous_entry_sha256".to_owned(),
+        previous.map_or(Value::Null, Value::String),
+    );
+    let entry = digest(&record)?;
+    record
+        .as_object_mut()
+        .ok_or_else(|| audit_error("GATE-AUDIT-LEDGER-RECORD", "record must be an object"))?
+        .insert("entry_sha256".to_owned(), Value::String(entry.clone()));
+    let mut bytes = canonical_bytes(&record)?;
+    bytes.push(b'\n');
+    ledger.append_bytes(&bytes)?;
     Ok(entry)
 }
 
@@ -1720,6 +2161,20 @@ fn durable_ledger(path: &Path) -> Result<()> {
     }
 }
 
+fn durable_ledger_bound(ledger: &BoundAttemptLedger) -> Result<()> {
+    let metadata = ledger
+        .file
+        .metadata()
+        .map_err(|error| audit_error("GATE-AUDIT-LEDGER-MISSING", error.to_string()))?;
+    if !metadata.is_file() {
+        return Err(audit_error(
+            "GATE-AUDIT-LEDGER-FD-TYPE",
+            "bound ledger is not regular",
+        ));
+    }
+    verify_ledger_chain_text(&ledger.read_text()?)
+}
+
 fn validate_ledger_path_nofollow(path: &Path) -> Result<()> {
     if !path.is_absolute()
         || path.components().any(|component| {
@@ -1754,6 +2209,11 @@ fn ledger_head(path: &Path) -> Result<Option<String>> {
     verify_ledger_chain(path)?;
     let text = fs::read_to_string(path)
         .map_err(|error| audit_error("GATE-AUDIT-LEDGER-READ", error.to_string()))?;
+    ledger_head_text(&text)
+}
+
+fn ledger_head_text(text: &str) -> Result<Option<String>> {
+    verify_ledger_chain_text(text)?;
     text.lines()
         .rev()
         .find(|line| !line.trim().is_empty())
@@ -1774,6 +2234,24 @@ fn validate_started_successor(
 ) -> Result<()> {
     let text = fs::read_to_string(ledger)
         .map_err(|error| audit_error("GATE-AUDIT-LEDGER-READ", error.to_string()))?;
+    validate_started_successor_text(
+        plan,
+        audit,
+        artifact_root,
+        &text,
+        started_entry_sha256,
+        claims,
+    )
+}
+
+fn validate_started_successor_text(
+    plan: &Value,
+    audit: &Value,
+    artifact_root: &Path,
+    text: &str,
+    started_entry_sha256: &str,
+    claims: &ExecutionClaims,
+) -> Result<()> {
     let started = text
         .lines()
         .rev()
@@ -1809,6 +2287,10 @@ fn validate_started_successor(
 fn verify_ledger_chain(path: &Path) -> Result<()> {
     let text = fs::read_to_string(path)
         .map_err(|error| audit_error("GATE-AUDIT-LEDGER-READ", error.to_string()))?;
+    verify_ledger_chain_text(&text)
+}
+
+fn verify_ledger_chain_text(text: &str) -> Result<()> {
     let mut previous: Option<String> = None;
     for line in text.lines().filter(|line| !line.trim().is_empty()) {
         let mut item = parse_strict(line.as_bytes())?;
@@ -2046,6 +2528,117 @@ fn audit_error(code: &'static str, message: impl Into<String>) -> GatePolicyErro
 #[cfg(test)]
 #[path = "pre_heavy_coverage_tests.rs"]
 mod coverage_tests;
+
+#[cfg(all(test, target_os = "linux"))]
+mod bound_ledger_tests {
+    use std::fs::{self, File};
+    use std::os::fd::AsRawFd;
+    use std::path::PathBuf;
+
+    use serde_json::json;
+
+    use super::{BoundAttemptLedger, append_bound_attempt_record};
+
+    fn root(label: &str) -> PathBuf {
+        PathBuf::from("/home/workdir").join(format!(
+            "openwepp-bound-ledger-{label}-{}",
+            std::process::id()
+        ))
+    }
+
+    fn inherited(file: &File) -> File {
+        File::options()
+            .read(true)
+            .write(true)
+            .open(format!("/proc/self/fd/{}", file.as_raw_fd()))
+            .expect("duplicate inherited fd")
+    }
+
+    #[test]
+    fn bound_ledger_rejects_mismatched_descriptor_identity() {
+        let root = root("mismatch");
+        fs::create_dir_all(&root).expect("root");
+        let selected = root.join("selected.jsonl");
+        let other = root.join("other.jsonl");
+        fs::write(&selected, "").expect("selected");
+        fs::write(&other, "").expect("other");
+        let other_file = File::options()
+            .read(true)
+            .write(true)
+            .open(&other)
+            .expect("other fd");
+        let error = BoundAttemptLedger::new(selected, inherited(&other_file))
+            .expect_err("mismatched fd must fail");
+        assert_eq!(error.code, "GATE-AUDIT-LEDGER-FD-IDENTITY");
+        fs::remove_dir_all(root).expect("cleanup");
+    }
+
+    #[test]
+    fn bound_ledger_appends_to_retained_inode_after_final_path_swap() {
+        let root = root("final-swap");
+        fs::create_dir_all(&root).expect("root");
+        let selected = root.join("attempts.jsonl");
+        let retained = root.join("retained.jsonl");
+        fs::write(&selected, "").expect("selected");
+        let selected_file = File::options()
+            .read(true)
+            .write(true)
+            .open(&selected)
+            .expect("fd");
+        let ledger =
+            BoundAttemptLedger::new(selected.clone(), inherited(&selected_file)).expect("bind");
+        fs::rename(&selected, &retained).expect("retain inode");
+        fs::write(&selected, "replacement\n").expect("replacement");
+        append_bound_attempt_record(&ledger, json!({"record_type":"ATTEMPT","status":"CLOSED"}))
+            .expect("bound append");
+        assert_eq!(
+            fs::read_to_string(&selected).expect("replacement"),
+            "replacement\n"
+        );
+        assert!(!fs::read_to_string(&retained).expect("retained").is_empty());
+        fs::remove_dir_all(root).expect("cleanup");
+    }
+
+    #[test]
+    fn bound_ledger_appends_to_retained_inode_after_ancestor_swap() {
+        let root = root("ancestor-swap");
+        let history = root.join("history");
+        let retained_history = root.join("retained-history");
+        let outside = root.join("outside");
+        fs::create_dir_all(&history).expect("history");
+        fs::create_dir_all(&outside).expect("outside");
+        let selected = history.join("attempts.jsonl");
+        fs::write(&selected, "").expect("selected");
+        let selected_file = File::options()
+            .read(true)
+            .write(true)
+            .open(&selected)
+            .expect("fd");
+        let ledger = BoundAttemptLedger::new(selected, inherited(&selected_file)).expect("bind");
+        fs::rename(&history, &retained_history).expect("move history");
+        std::os::unix::fs::symlink(&outside, &history).expect("outside alias");
+        append_bound_attempt_record(&ledger, json!({"record_type":"ATTEMPT","status":"CLOSED"}))
+            .expect("bound append");
+        assert!(
+            !retained_history
+                .join("attempts.jsonl")
+                .read_text()
+                .is_empty()
+        );
+        assert!(!outside.join("attempts.jsonl").exists());
+        fs::remove_dir_all(root).expect("cleanup");
+    }
+
+    trait ReadText {
+        fn read_text(&self) -> String;
+    }
+
+    impl ReadText for PathBuf {
+        fn read_text(&self) -> String {
+            fs::read_to_string(self).expect("read text")
+        }
+    }
+}
 
 #[cfg(test)]
 #[path = "pre_heavy_tests.rs"]

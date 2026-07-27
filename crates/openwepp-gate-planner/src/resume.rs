@@ -103,6 +103,40 @@ pub fn load_candidate_after_ready_audit(
     )
 }
 
+/// Load recovery evidence from caller-retained ledger bytes after READY.
+///
+/// # Errors
+///
+/// Returns a typed recovery error for invalid audit binding, history, or evidence.
+pub fn load_candidate_after_ready_audit_text(
+    repo: &Path,
+    plan: &Value,
+    ledger: &Path,
+    ledger_text: &str,
+    claims: &ExecutionClaims,
+    audit: &ConstructedAudit,
+    current_started_entry_sha256: &str,
+) -> Result<Option<ResumeCandidate>> {
+    if audit.as_value()["status"] != "READY"
+        || audit.as_value()["plan_id"] != plan["plan_id"]
+        || audit.as_value()["plan_sha256"] != digest(plan)?
+    {
+        return Err(resume_error(
+            "GATE-RESUME-AUDIT-BINDING",
+            "recovery fast path requires the current constructed READY audit",
+        ));
+    }
+    load_candidate_internal_text(
+        repo,
+        plan,
+        ledger,
+        ledger_text,
+        claims,
+        true,
+        Some(current_started_entry_sha256),
+    )
+}
+
 fn load_candidate_internal(
     repo: &Path,
     plan: &Value,
@@ -113,6 +147,26 @@ fn load_candidate_internal(
 ) -> Result<Option<ResumeCandidate>> {
     let text = fs::read_to_string(ledger)
         .map_err(|error| resume_error("GATE-RESUME-LEDGER", error.to_string()))?;
+    load_candidate_internal_text(
+        repo,
+        plan,
+        ledger,
+        &text,
+        claims,
+        current_plan_admitted,
+        excluded_entry_sha256,
+    )
+}
+
+fn load_candidate_internal_text(
+    repo: &Path,
+    plan: &Value,
+    ledger: &Path,
+    text: &str,
+    claims: &ExecutionClaims,
+    current_plan_admitted: bool,
+    excluded_entry_sha256: Option<&str>,
+) -> Result<Option<ResumeCandidate>> {
     let records = text
         .lines()
         .filter(|line| !line.trim().is_empty())

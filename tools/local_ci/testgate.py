@@ -121,6 +121,18 @@ class _LedgerGuard:
             view = view[written:]
         os.fsync(self._file_descriptor)
 
+    def fileno(self) -> int:
+        self.validate()
+        if os.name != "posix" or not Path("/proc/self/fd").is_dir():
+            raise TestgateError("transition descriptor transport is unavailable")
+        descriptor_path = Path(f"/proc/self/fd/{self._file_descriptor}")
+        try:
+            transported = descriptor_path.stat()
+        except OSError as error:
+            raise TestgateError("transition descriptor transport is unavailable") from error
+        _require_identity(transported, self._file_identity, "history ledger descriptor")
+        return self._file_descriptor
+
 
 def _identity(path: Path, value: os.stat_result) -> _PathIdentity:
     return _PathIdentity(path, value.st_dev, value.st_ino, value.st_mode)
@@ -860,9 +872,20 @@ def _intent_authorization(
 
 
 def _invoke(
-    arguments: list[str], repo: Path, *, allow_nonpass: bool = False
+    arguments: list[str],
+    repo: Path,
+    *,
+    allow_nonpass: bool = False,
+    pass_fds: tuple[int, ...] = (),
 ) -> dict[str, Any]:
-    result = subprocess.run(arguments, cwd=repo, check=False, capture_output=True, text=True)
+    result = subprocess.run(
+        arguments,
+        cwd=repo,
+        check=False,
+        capture_output=True,
+        text=True,
+        pass_fds=pass_fds,
+    )
     try:
         value = json.loads(result.stdout)
     except json.JSONDecodeError as error:
@@ -1006,17 +1029,20 @@ def _observe(args: argparse.Namespace) -> dict[str, Any]:
             )
             if has_heavy:
                 ledger_guard.validate()
+                ledger_descriptor = ledger_guard.fileno()
                 execution_result = _invoke(
                     [
                         str(args.binary.resolve()), "run", *execution_arguments,
                         "--stage", "transition",
                         "--resume", str(ledger),
+                        "--resume-fd", str(ledger_descriptor),
                         "--light-output", str(light_receipt_path),
                         "--audit-output", str(audit_path),
                         "--output", str(receipt_path),
                     ],
                     repo,
                     allow_nonpass=True,
+                    pass_fds=(ledger_descriptor,),
                 )
             else:
                 ledger_guard.validate()

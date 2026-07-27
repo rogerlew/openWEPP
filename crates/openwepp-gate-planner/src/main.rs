@@ -15,9 +15,10 @@ use openwepp_gate_planner::package_validation::{validate_package, validate_packa
 use openwepp_gate_planner::planner::reconcile_intent_terminal;
 use openwepp_gate_planner::planner::{NextestInventory, PlanRequest, Planner, PlanningStage};
 use openwepp_gate_planner::pre_heavy::{
-    ConstructedAudit, admit_attempt_ledger, append_attempt_record, build_audit,
-    build_failure_audit, close_tooling_defect, construct_audit, reconcile_orphaned_attempts,
-    record_heavy_failure, validate_resume_ledger,
+    BoundAttemptLedger, ConstructedAudit, admit_attempt_ledger, admit_bound_attempt_ledger,
+    append_bound_attempt_record, build_audit, build_failure_audit, close_tooling_defect,
+    construct_bound_audit, reconcile_bound_orphaned_attempts, reconcile_orphaned_attempts,
+    record_bound_heavy_failure, validate_bound_resume_ledger,
 };
 use openwepp_gate_planner::publication::{
     PublicationPlan, PublicationStatus, RecoveryAction, publish, recover,
@@ -25,7 +26,7 @@ use openwepp_gate_planner::publication::{
 use openwepp_gate_planner::repository::{
     ObservedSource, observe_committed, observe_dirty, require_exact_ancestor_commit,
 };
-use openwepp_gate_planner::resume::{ResumeCandidate, load_candidate_after_ready_audit};
+use openwepp_gate_planner::resume::{ResumeCandidate, load_candidate_after_ready_audit_text};
 use openwepp_gate_planner::verifier::{
     DirectoryArtifacts, verify_receipt, verify_receipt_after_ready_audit, verify_receipt_envelope,
 };
@@ -71,6 +72,7 @@ const COMMANDS: [CommandDefinition; 15] = [
             "stage",
             "audit",
             "resume",
+            "resume-fd",
             "light-output",
             "audit-output",
         ],
@@ -319,6 +321,9 @@ fn staged_run_command(
     if stage == "transition" {
         return trusted_transition_command(repo, options, plan, artifact_root, claims);
     }
+    if options.contains_key("resume-fd") {
+        return Err(usage_error());
+    }
     if stage == "light" {
         let receipt = execute_plan_stage(repo, plan, artifact_root, claims, "LIGHT", None, None)?;
         let output = persist_plan(repo, options, &receipt)?;
@@ -352,11 +357,34 @@ fn trusted_transition_command(
     finish_transition(repo, options, plan, artifact_root, claims, &ledger, &audit)
 }
 
-fn prepare_transition(repo: &Path, options: &BTreeMap<String, String>) -> Result<PathBuf> {
+fn prepare_transition(
+    repo: &Path,
+    options: &BTreeMap<String, String>,
+) -> Result<BoundAttemptLedger> {
     validate_transition_outputs(repo, options)?;
-    let ledger = PathBuf::from(required(options, "resume")?);
-    admit_attempt_ledger(&ledger)?;
-    reconcile_orphaned_attempts(&ledger)?;
+    let path = PathBuf::from(required(options, "resume")?);
+    let descriptor = required(options, "resume-fd")?
+        .parse::<u32>()
+        .map_err(|error| {
+            GatePolicyError::new(ErrorClass::Cli, "GATE-CLI-RESUME-FD", error.to_string())
+        })?;
+    #[cfg(target_os = "linux")]
+    let file = fs::OpenOptions::new()
+        .read(true)
+        .write(true)
+        .open(format!("/proc/self/fd/{descriptor}"))
+        .map_err(|error| {
+            GatePolicyError::new(ErrorClass::Io, "GATE-CLI-RESUME-FD", error.to_string())
+        })?;
+    #[cfg(not(target_os = "linux"))]
+    return Err(GatePolicyError::new(
+        ErrorClass::Io,
+        "GATE-CLI-RESUME-FD-UNSUPPORTED",
+        "transition descriptor binding is unavailable",
+    ));
+    let ledger = BoundAttemptLedger::new(path, file)?;
+    admit_bound_attempt_ledger(&ledger)?;
+    reconcile_bound_orphaned_attempts(&ledger)?;
     Ok(ledger)
 }
 
@@ -366,12 +394,12 @@ fn execute_light_transition(
     plan: &Value,
     artifact_root: &Path,
     claims: &ExecutionClaims,
-    ledger: &Path,
+    ledger: &BoundAttemptLedger,
 ) -> Result<Value> {
     let light_started = Instant::now();
     let light = execute_plan_stage(repo, plan, artifact_root, claims, "LIGHT", None, None)?;
     persist_named(repo, options, "light-output", &light)?;
-    append_attempt_record(
+    append_bound_attempt_record(
         ledger,
         json!({
             "record_type": "STAGE_ATTEMPT",
@@ -393,9 +421,9 @@ fn construct_transition_audit(
     plan: &Value,
     light: &Value,
     artifact_root: &Path,
-    ledger: &Path,
+    ledger: &BoundAttemptLedger,
 ) -> Result<ConstructedAudit> {
-    let audit = construct_audit(repo, plan, light, artifact_root, ledger)?;
+    let audit = construct_bound_audit(repo, plan, light, artifact_root, ledger)?;
     persist_named(repo, options, "audit-output", audit.as_value())?;
     Ok(audit)
 }
@@ -406,7 +434,7 @@ fn finish_transition(
     plan: &Value,
     artifact_root: &Path,
     claims: &ExecutionClaims,
-    ledger: &Path,
+    ledger: &BoundAttemptLedger,
     audit: &ConstructedAudit,
 ) -> Result<Value> {
     if audit.as_value()["status"] != "READY" {
@@ -471,7 +499,7 @@ fn trusted_heavy_run(
     plan: &Value,
     artifact_root: &Path,
     claims: &ExecutionClaims,
-    ledger: &Path,
+    ledger: &BoundAttemptLedger,
     audit: &ConstructedAudit,
 ) -> Result<Value> {
     let inputs = HeavyAttemptInputs {
@@ -494,7 +522,7 @@ struct HeavyAttemptInputs<'a> {
     plan: &'a Value,
     artifact_root: &'a Path,
     claims: &'a ExecutionClaims,
-    ledger: &'a Path,
+    ledger: &'a BoundAttemptLedger,
     audit: &'a ConstructedAudit,
 }
 
@@ -511,7 +539,7 @@ fn begin_heavy_attempt(inputs: &HeavyAttemptInputs<'_>) -> Result<HeavyAttemptCo
         .map(PathBuf::from)
         .map_or(Value::Null, |path| json!(path.display().to_string()));
     let submitted_audit_id = inputs.audit.as_value()["audit_id"].clone();
-    let started_entry_sha256 = append_attempt_record(
+    let started_entry_sha256 = append_bound_attempt_record(
         inputs.ledger,
         json!({
             "record_type": "STAGE_ATTEMPT",
@@ -565,11 +593,11 @@ fn admit_heavy_resume(
     plan: &Value,
     artifact_root: &Path,
     claims: &ExecutionClaims,
-    ledger: &Path,
+    ledger: &BoundAttemptLedger,
     audit: &ConstructedAudit,
     started_entry_sha256: &str,
 ) -> Result<Option<ResumeCandidate>> {
-    validate_resume_ledger(
+    validate_bound_resume_ledger(
         repo,
         plan,
         audit.as_value(),
@@ -578,7 +606,15 @@ fn admit_heavy_resume(
         started_entry_sha256,
         claims,
     )?;
-    load_candidate_after_ready_audit(repo, plan, ledger, claims, audit, started_entry_sha256)
+    load_candidate_after_ready_audit_text(
+        repo,
+        plan,
+        ledger.authority_path(),
+        &ledger.read_text()?,
+        claims,
+        audit,
+        started_entry_sha256,
+    )
 }
 
 fn execute_and_verify_heavy(
@@ -630,7 +666,7 @@ fn close_heavy_attempt(
     inputs: &HeavyAttemptInputs<'_>,
     context: &HeavyAttemptContext,
 ) -> Result<Value> {
-    append_attempt_record(
+    append_bound_attempt_record(
         inputs.ledger,
         json!({
             "record_type": "STAGE_ATTEMPT",
@@ -659,7 +695,7 @@ fn fail_heavy_attempt(
     context: &HeavyAttemptContext,
 ) -> Result<Value> {
     let cause_key = error.code;
-    record_heavy_failure(
+    record_bound_heavy_failure(
         inputs.ledger,
         json!({
             "record_type": "STAGE_ATTEMPT",
@@ -1361,13 +1397,17 @@ fn usage_error() -> GatePolicyError {
 mod tests {
     use std::collections::BTreeMap;
     use std::fs;
+    #[cfg(target_os = "linux")]
+    use std::fs::File;
+    #[cfg(target_os = "linux")]
+    use std::os::fd::AsRawFd;
     use std::path::{Path, PathBuf};
     use std::process::Command;
     use std::sync::atomic::{AtomicU64, Ordering};
 
     use super::{
         close_tooling_defect_command, package_authority, parse_options, plan_request,
-        require_exact_package_authority, run_arguments, staged_run_command,
+        prepare_transition, require_exact_package_authority, run_arguments, staged_run_command,
         validate_package_chain_command, validate_transition_outputs, write_plan_confined,
     };
     use openwepp_gate_planner::executor::ExecutionClaims;
@@ -1613,6 +1653,97 @@ mod tests {
             "rejected transport is not an admitted attempt"
         );
         fs::remove_dir_all(root).expect("remove test root");
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn transition_requires_valid_matching_inherited_ledger_descriptor() {
+        let repo = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
+        let root = PathBuf::from("/home/workdir")
+            .join(format!("testgate-transition-fd-{}", std::process::id()));
+        if root.exists() {
+            fs::remove_dir_all(&root).expect("stale root");
+        }
+        fs::create_dir_all(&root).expect("root");
+        let ledger = root.join("attempts.jsonl");
+        let other = root.join("other.jsonl");
+        let plan = root.join("plan.json");
+        fs::write(&ledger, "").expect("ledger");
+        fs::write(&other, "").expect("other");
+        fs::write(&plan, "{}").expect("plan");
+        let base = BTreeMap::from([
+            ("resume".to_owned(), ledger.display().to_string()),
+            ("plan".to_owned(), plan.display().to_string()),
+            (
+                "light-output".to_owned(),
+                root.join("light.json").display().to_string(),
+            ),
+            (
+                "audit-output".to_owned(),
+                root.join("audit.json").display().to_string(),
+            ),
+            (
+                "output".to_owned(),
+                root.join("receipt.json").display().to_string(),
+            ),
+        ]);
+        let missing = prepare_transition(&repo, &base).expect_err("fd is mandatory");
+        assert_eq!(missing.code, "GATE-CLI-USAGE");
+
+        let mut malformed = base.clone();
+        malformed.insert("resume-fd".to_owned(), "not-a-fd".to_owned());
+        let malformed_error =
+            prepare_transition(&repo, &malformed).expect_err("fd must be numeric");
+        assert_eq!(malformed_error.code, "GATE-CLI-RESUME-FD");
+
+        let closed_descriptor = {
+            let closed = File::options()
+                .read(true)
+                .write(true)
+                .open(&ledger)
+                .expect("temporary fd");
+            closed.as_raw_fd()
+        };
+        let mut closed = base.clone();
+        closed.insert("resume-fd".to_owned(), closed_descriptor.to_string());
+        let closed_error = prepare_transition(&repo, &closed).expect_err("closed fd must fail");
+        assert_eq!(closed_error.code, "GATE-CLI-RESUME-FD");
+
+        let other_file = File::options()
+            .read(true)
+            .write(true)
+            .open(&other)
+            .expect("other fd");
+        let mut mismatched = base.clone();
+        mismatched.insert("resume-fd".to_owned(), other_file.as_raw_fd().to_string());
+        let mismatch =
+            prepare_transition(&repo, &mismatched).expect_err("fd identity must match path");
+        assert_eq!(mismatch.code, "GATE-AUDIT-LEDGER-FD-IDENTITY");
+
+        let ledger_file = File::options()
+            .read(true)
+            .write(true)
+            .open(&ledger)
+            .expect("ledger fd");
+        let mut valid = base;
+        valid.insert("resume-fd".to_owned(), ledger_file.as_raw_fd().to_string());
+        prepare_transition(&repo, &valid).expect("matching fd is admitted");
+        fs::remove_dir_all(root).expect("cleanup");
+    }
+
+    #[test]
+    fn resume_fd_is_rejected_outside_transition_stage() {
+        let options = BTreeMap::from([("resume-fd".to_owned(), "3".to_owned())]);
+        let error = staged_run_command(
+            Path::new("."),
+            &options,
+            &json!({}),
+            Path::new("."),
+            &ExecutionClaims::default(),
+            "light",
+        )
+        .expect_err("resume fd is transition-only");
+        assert_eq!(error.code, "GATE-CLI-USAGE");
     }
 
     #[test]
