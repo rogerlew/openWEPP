@@ -1,6 +1,6 @@
 # Acceptance Matrix
 
-Status: `TERMINAL VERIFICATION REQUIRED`
+Status: `CANONICAL HEAVY HOLD`
 
 Evidence class: `Static + Ran`
 
