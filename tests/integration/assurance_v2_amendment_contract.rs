@@ -128,6 +128,7 @@ attestation:
 #[test]
 fn principal_and_lifecycle_checks_recalculate_identical_candidates() {
     let fixture = fixture("assurance-amend-deterministic-candidates");
+    enter_snow_review(&fixture.path);
     let principal = br"schema_version: 1
 principal_id: roger-lew
 display_name: Roger Lew, deterministic fixture
@@ -166,6 +167,7 @@ predecessor_event_ids: []
 #[test]
 fn supersession_is_terminal_and_requires_a_named_successor() {
     let fixture = fixture("assurance-amend-supersession");
+    enter_snow_review(&fixture.path);
     let missing = br"schema_version: 1
 event_type: supersession
 principal_id: roger-lew
@@ -892,6 +894,11 @@ fn current_unverified_fixture(label: &str) -> Scratch {
     fs::write(&lock_path, lock_text).unwrap();
     openwepp_assurance::rebind_invalid_v2_test_fixture(&target.path).unwrap();
     openwepp_assurance::rebind_v2_test_fixture(&target.path).unwrap();
+    enter_snow_review(&target.path);
+    target
+}
+
+fn enter_snow_review(root: &Path) {
     let review_entry = br"schema_version: 1
 event_type: review_entry
 principal_id: roger-lew
@@ -907,8 +914,7 @@ material_producer_ids:
 independence_assessment: Integration fixture authority is intentionally pending.
 scientific_approver_id: roger-lew
 ";
-    amend_lifecycle(&target.path, SNOW, review_entry, V2AmendMode::Apply).unwrap();
-    target
+    amend_lifecycle(root, SNOW, review_entry, V2AmendMode::Apply).unwrap();
 }
 
 fn rewrite_canopy_dependency(root: &Path, rewrite: impl FnOnce(&mut serde_yaml::Value)) {
