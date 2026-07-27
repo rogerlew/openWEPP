@@ -4,7 +4,7 @@ id: snow-and-frozen-soil-process-evaluation
 version: 1.0.0
 title: Observational Evaluation of openWEPP Snow and Frozen-Soil Processes
 owner: openWEPP scientific assurance maintainers
-lifecycle: IN_REVIEW
+lifecycle: DRAFT
 trust_domain: production
 fixture_only: false
 reader_metadata:
@@ -48,7 +48,7 @@ agent_assistance:
   limitations: Hidden model/runtime configuration is unavailable and agent assistance cannot supply accountable human authorship or approval.
   independent_review: ASSURE-06 internal coding-agent review is package evidence and is not external scientific peer review.
   provenance_complete: true
-  review_entry_authorized: true
+  review_entry_authorized: false
 manuscript:
   id: SF-MANUSCRIPT
   title: Snow and frozen-soil process-evaluation manuscript
@@ -3324,14 +3324,14 @@ review:
   id: SF-REVIEW
   title: Scientific and publication review state
   owner: openWEPP assurance steward
-  state: IN_REVIEW
-  decision: pending
-  independence_assessment: Roger Lew is report lead and a material snow/frost producer and is excluded from scientific and reproduction/publication approval roles. Codex is draft author, material producer, and build maintainer and is also excluded. Independent human reviewers and the assurance steward are not yet assigned; review remains pending.
-  review_charge: Independently assess scientific claims, formulation and prior knowledge, dataset suitability, development/evaluation separation, methods and metrics, uncertainty and contrary evidence, conclusion support, limitations, and transfer language; independently reconstruct material results and review audience fit, accessibility, cross-references, and public research-object completeness.
-  build_maintainer_id: codex-agent-assure05
-  material_producer_ids:
-  - roger-lew
-  - codex-agent-assure05
+  state: DRAFT
+  decision: not_started
+  independence_assessment: not_assessed
+  review_charge: null
+  build_maintainer_id: null
+  material_producer_ids: []
+  findings: []
+  approvals: []
 publication:
   id: SF-PUBLICATION
   title: Publication authorization state

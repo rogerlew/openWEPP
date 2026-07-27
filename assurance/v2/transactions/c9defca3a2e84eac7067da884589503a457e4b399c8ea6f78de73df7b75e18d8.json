@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "operation": "adopt-report-source",
+  "impact_class": "scientific-full",
+  "changed": true,
+  "old_generation_id": "1b3c92574e68c675010548f339ca9ebf52f0ff039a6f9d1595a9223c8478d3f5",
+  "new_generation_id": "bc2679767c6dc8197af6a3dd3072602cdae195718e89a81a6cb7f77f0106d71a",
+  "affected_reports": [
+    "linear-groundwater-reservoir-recurrence",
+    "snow-and-frozen-soil-process-evaluation"
+  ],
+  "affected_paths": [
+    "assurance/v2/identity.lock.json",
+    "assurance/v2/reports/linear-groundwater-reservoir-recurrence/review.lock.json",
+    "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/report.yaml",
+    "assurance/v2/reports/snow-and-frozen-soil-process-evaluation/review.lock.json",
+    "tests/fixtures/cancov_forest/README.md"
+  ],
+  "invalidated_authority": [
+    "prior_review_events:snow-and-frozen-soil-process-evaluation"
+  ],
+  "gate_ids": [
+    "assurance-implementation-package-v1"
+  ],
+  "gate_argv": []
+}
