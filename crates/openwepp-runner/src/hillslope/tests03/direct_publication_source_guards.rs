@@ -536,26 +536,33 @@ fn canopy_phenology_02_real_consumers_share_the_typed_native_state() {
     let native_height_parameter_validation = builder
         .find("validate_direct_native_canopy_height_parameters(")
         .expect("native bbb/hmax validation must be explicit");
-    let native_state_mutation = builder
-        .find(".advance(parameters, gsi_forcing)")
+    let native_transaction_start = builder
+        .find("fn advance_native_canopy_with_checked_height(")
+        .expect("native state transaction helper");
+    let native_transaction = &builder[native_transaction_start..];
+    let native_state_mutation = native_transaction
+        .find(".advance(parameters, forcing)")
         .expect("native GSI state mutation");
-    let native_height_projection = builder
+    let native_height_projection = native_transaction
         .find("direct_native_canopy_height_m(")
         .expect("same-day native height projection");
-    let native_state_commit = builder
-        .find("states[lane_index] = Some(candidate_state);")
+    let native_state_commit = native_transaction
+        .find("*committed_state = Some(candidate_state);")
         .expect("validated native GSI state commit");
+    let native_transaction_call = builder[..native_transaction_start]
+        .find("advance_native_canopy_with_checked_height(")
+        .expect("native state transaction call");
     let native_height_publication = builder
         .find("growth_state.canopy_height_m =")
         .expect("same-day native height publication");
     assert!(
-        native_height_parameter_validation < native_state_mutation,
-        "native bbb/hmax validation must precede GSI state mutation"
+        native_height_parameter_validation < native_transaction_call
+            && native_transaction_call < native_height_publication,
+        "native parameter validation and checked transaction must precede publication"
     );
     assert!(
         native_state_mutation < native_height_projection
-            && native_height_projection < native_state_commit
-            && native_state_commit < native_height_publication,
+            && native_height_projection < native_state_commit,
         "native state mutation must remain provisional until height validation succeeds"
     );
     assert!(
@@ -597,7 +604,7 @@ fn canopy_phenology_02_real_consumers_share_the_typed_native_state() {
         "native litter must return directly before aggregate biomass loss and jdharv logic"
     );
     assert!(
-        builder.contains("ForestCanopyState::new_uninitialized()"),
+        builder.contains("ForestCanopyState::new_uninitialized"),
         "native canopy must cold-start without an aggregate foliar seed"
     );
     assert!(

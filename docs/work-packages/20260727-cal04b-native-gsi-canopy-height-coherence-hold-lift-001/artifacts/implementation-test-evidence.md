@@ -30,6 +30,8 @@ Ran:
 
 - orchestrator native/legacy height focus: `5 passed`;
 - runner source-order and real-production consumer focus: `2 passed`;
+- stateful GSI/atomic/real-consumer/source focus: `4 passed`;
+- exact active Lane D native-height route: `1 passed`;
 - real native production traversal independently reconstructs height and
   proves exact growth, ET, erosion, and frost consumption while retaining snow,
   WB15, residue/litter, and frost-residue proofs;
@@ -39,11 +41,14 @@ Ran:
 - SC-PLANT binding, SC-ROUTE non-regression, contract/unit governance, Rustfmt,
   focused warnings-denied Clippy, and runner `cargo check`: `PASS`.
 
-The height tests cover `TV-PLANT-GSI-HC-001..005`: deciduous zero-to-positive,
-deciduous and structural leaf-off, evergreen floor, exact zero/monotonic/
-saturation boundaries, legacy zero parity, typed parameter-domain failures,
-checked-sum/product overflow taxonomy, and positive-biomass underflow.
+The height tests cover `TV-PLANT-GSI-HC-001..005`: real moving-window GSI
+deciduous zero-to-positive and positive-to-zero transitions, structural
+leaf-off, the GSI21-zero evergreen floor, exact zero/monotonic/saturation
+boundaries, legacy zero parity, typed parameter-domain failures,
+checked-sum/product overflow taxonomy, and structural-only underflow through
+the exact production transaction helper with unchanged committed state.
 
 `TV-PLANT-GSI-HC-006` is carried by the frozen 12-case native replay plus the
-real-consumer traversal and active/shadow Lane D negative source/runtime
-guards. Its terminal replay receipt is recorded in `gate-results.md`.
+real-consumer traversal, an executed active-route exact-height trace, the real
+shadow operand-builder seam, and the shadow operand-to-cell source guard. Its
+terminal replay receipt is recorded in `gate-results.md`.

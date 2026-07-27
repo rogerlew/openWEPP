@@ -597,23 +597,14 @@ impl<'a> DirectProductionDayInputBuilder<'a> {
         if lane_index >= states.len() {
             states.resize(lane_index + 1, None);
         }
-        let mut candidate_state = if let Some(state) = &states[lane_index] {
-            state.clone()
-        } else {
-            openwepp_plant_phenology::ForestCanopyState::new_uninitialized()
-        };
-        let daily = candidate_state
-            .advance(parameters, gsi_forcing)
-            .map_err(|source| direct_growth_failure(source.to_string()))?;
-        let canopy = daily.canopy;
-        let canopy_height_m = openwepp_hillslope_orchestrator::direct_native_canopy_height_m(
-            canopy.live_foliar_biomass_kg_m2,
-            canopy.structural_biomass_kg_m2,
+        let (daily, canopy_height_m) = advance_native_canopy_with_checked_height(
+            &mut states[lane_index],
+            parameters,
+            gsi_forcing,
             selection.crop.bbb,
             selection.crop.hmax,
-        )
-        .map_err(|source| direct_growth_failure(source.to_string()))?;
-        states[lane_index] = Some(candidate_state);
+        )?;
+        let canopy = daily.canopy;
         growth_state.live_biomass_kg_m2 = canopy.live_foliar_biomass_kg_m2;
         growth_state.interception_live_biomass_kg_m2 = canopy.live_foliar_biomass_kg_m2;
         growth_state.leaf_area_index = canopy.leaf_area_index;
@@ -1592,6 +1583,36 @@ fn direct_production_growth_state_for_publication(
             .map_err(|source| direct_publication_runtime_error(&source));
     }
     Ok(growth_state_before)
+}
+
+fn advance_native_canopy_with_checked_height(
+    committed_state: &mut Option<openwepp_plant_phenology::ForestCanopyState>,
+    parameters: openwepp_plant_phenology::ForestCanopyParameters,
+    forcing: openwepp_plant_phenology::GsiDailyForcing,
+    canopy_height_coefficient_m2_kg: f64,
+    maximum_canopy_height_m: f64,
+) -> Result<
+    (
+        openwepp_plant_phenology::ForestCanopyDailyResult,
+        f64,
+    ),
+    HillslopeCliError,
+> {
+    let mut candidate_state = committed_state
+        .clone()
+        .unwrap_or_else(openwepp_plant_phenology::ForestCanopyState::new_uninitialized);
+    let daily = candidate_state
+        .advance(parameters, forcing)
+        .map_err(|source| direct_growth_failure(source.to_string()))?;
+    let canopy_height_m = openwepp_hillslope_orchestrator::direct_native_canopy_height_m(
+        daily.canopy.live_foliar_biomass_kg_m2,
+        daily.canopy.structural_biomass_kg_m2,
+        canopy_height_coefficient_m2_kg,
+        maximum_canopy_height_m,
+    )
+    .map_err(|source| direct_growth_failure(source.to_string()))?;
+    *committed_state = Some(candidate_state);
+    Ok((daily, canopy_height_m))
 }
 
 fn build_laned_shadow_lane_day_operands(

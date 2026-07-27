@@ -336,47 +336,48 @@ mod tests {
             ForestCanopyParameters, ForestCanopyState, GsiDailyForcing, GsiDate, GsiParameters,
         };
 
-        let original = ForestCanopyState::new_uninitialized();
-        let snapshot = original.clone();
-        let mut candidate = original.clone();
-        let daily = candidate
-            .advance(
-                ForestCanopyParameters {
-                    gsi: GsiParameters::generalized(),
-                    summer_foliar_biomass_kg_m2: f64::MIN_POSITIVE,
-                    maximum_leaf_area_index: 1.0,
-                    evergreen_fraction: 0.0,
-                    structural_canopy_cover_fraction: 0.0,
-                    structural_biomass_kg_m2: f64::MIN_POSITIVE,
-                    canopy_cover_coefficient_m2_kg: 1.0,
-                },
-                GsiDailyForcing {
-                    minimum_temperature_c: -100.0,
-                    vapor_pressure_deficit_pa: 0.0,
-                    latitude_degrees: 0.0,
-                    date: GsiDate {
-                        year: 2027,
-                        ordinal_day: 1,
-                    },
-                },
-            )
+        let parameters = ForestCanopyParameters {
+            gsi: GsiParameters::generalized(),
+            summer_foliar_biomass_kg_m2: f64::MIN_POSITIVE,
+            maximum_leaf_area_index: 1.0,
+            evergreen_fraction: 0.0,
+            structural_canopy_cover_fraction: 0.0,
+            structural_biomass_kg_m2: f64::MIN_POSITIVE,
+            canopy_cover_coefficient_m2_kg: 1.0,
+        };
+        let forcing = GsiDailyForcing {
+            minimum_temperature_c: -100.0,
+            vapor_pressure_deficit_pa: 0.0,
+            latitude_degrees: 0.0,
+            date: GsiDate {
+                year: 2027,
+                ordinal_day: 1,
+            },
+        };
+        let mut preview = ForestCanopyState::new_uninitialized();
+        let daily = preview
+            .advance(parameters, forcing)
             .expect("the provisional GSI candidate itself is valid");
         assert_eq!(daily.canopy.leaf_area_index.to_bits(), 0.0_f64.to_bits());
-        let error = openwepp_hillslope_orchestrator::direct_native_canopy_height_m(
-            daily.canopy.live_foliar_biomass_kg_m2,
-            daily.canopy.structural_biomass_kg_m2,
+        assert_eq!(
+            daily.canopy.live_foliar_biomass_kg_m2.to_bits(),
+            0.0_f64.to_bits()
+        );
+        assert!(daily.canopy.structural_biomass_kg_m2 > 0.0);
+
+        let mut committed = Some(ForestCanopyState::new_uninitialized());
+        let snapshot = committed.clone();
+        let error = advance_native_canopy_with_checked_height(
+            &mut committed,
+            parameters,
+            forcing,
             f64::MIN_POSITIVE,
             0.2,
         )
         .expect_err("TV-PLANT-GSI-HC-005 structural-only underflow must fail");
-        assert!(matches!(
-            error,
-            openwepp_hillslope_orchestrator::DirectRuntimeError::DirectDomainViolation {
-                field: "growth.native_canopy_height_m"
-            }
-        ));
+        assert!(error.to_string().contains("growth.native_canopy_height_m"));
         assert_eq!(
-            original, snapshot,
+            committed, snapshot,
             "failed provisional height must not mutate the committed GSI state"
         );
     }
