@@ -40,12 +40,16 @@ not a retry authorization.
 
 ## Included Scope
 
-- a no-follow, create-once durable ledger bootstrap before heavy transition;
+- lexical, no-follow path selection without `Path.resolve()` or equivalent
+  symlink traversal;
+- a no-follow, create-once durable ledger bootstrap before transition;
 - preservation and chain validation of an existing regular ledger;
-- rejection of symlink, directory, non-regular, and malformed existing ledger
-  inputs;
-- focused Python regression tests for fresh, existing, malformed, and symlink
-  cases;
+- rejection of final-component or ancestor symlinks, directories, non-regular
+  files, malformed chains, and path-identity swaps throughout bootstrap,
+  transition, append, and failure finalization;
+- file and containing-directory durability before transition;
+- focused Python regression tests for fresh, existing, malformed, symlink,
+  collision, and path-swap cases;
 - canonical exact-head admission and one comparator-owned execution after dual
   review.
 
@@ -60,7 +64,7 @@ not a retry authorization.
 ## Declared Write Set
 
 - `tools/local_ci/testgate.py`
-- `tools/local_ci/test_testgate.py`
+- `tests/python/test_testgate.py`
 - `tools/local_ci/README.md`
 - `docs/work-packages/README.md`
 - `docs/planning/canopy-phenology-assurance-roadmap.md`
@@ -73,8 +77,12 @@ No other path is writable. This write set must not widen.
 
 1. Commit this prospective scaffold and obtain two independent read-only
    scaffold reviews before tooling edits.
-2. Add the smallest secure bootstrap helper and focused tests.
-3. Run Python tests, compile check, diff hygiene, documentation lint, focused
+2. Add the smallest secure bootstrap helper and focused tests. Operate on the
+   raw selected path lexically, validate every existing ancestor without
+   following links, create with `O_CREAT|O_EXCL|O_NOFOLLOW`, and retain enough
+   identity information to reject substitution before every later ledger use.
+3. Run `.venv/bin/python -m unittest tests.python.test_testgate`, compile
+   check, diff hygiene, documentation lint, focused
    gate-planner/authority checks, and full planner 227/227.
 4. Commit one exact implementation state and obtain dual implementation review
    with explicit finding disposition.
@@ -88,27 +96,45 @@ No other path is writable. This write set must not widen.
 ## Acceptance
 
 - A fresh ledger is created as a regular file with no-follow, exclusive-create
-  semantics before `--stage transition` is invoked.
+  semantics before `--stage transition` is invoked. Its bytes and parent
+  directory entry are durably synchronized first.
+- The raw operator-selected path is handled lexically without resolving
+  symlinks. Every existing ancestor and the final component are checked without
+  following links.
 - Existing regular ledgers are not truncated or replaced and pass strict
-  predecessor/hash-chain validation before reuse.
-- Symlink, directory, non-regular, and malformed existing ledgers fail before
-  transition.
+  predecessor/hash-chain validation before reuse. The selected file and parent
+  identities are revalidated before transition, history append, and failure
+  finalization.
+- Final-component symlinks, ancestor symlinks, directories, FIFOs or other
+  non-regular files, malformed JSON/hash/predecessor chains, exclusive-create
+  collisions, and path substitution fail closed without modifying an outside
+  target or competing file.
 - Bootstrap failure is typed as a helper failure and does not launch gates.
 - `_append_history` remains the sole attempt-record appender; record schema and
   digest chaining do not change.
-- Focused tests cover fresh creation, byte preservation, invalid-chain
-  rejection, and symlink rejection.
+- Focused tests cover fresh creation and durability, existing-byte
+  preservation, final and ancestor symlink rejection, directory and FIFO
+  rejection where supported, malformed JSON/hash/predecessor rejection,
+  exclusive-create collision preservation, bootstrap failure with transition
+  `_invoke` never called, and path swaps before append/failure finalization
+  with outside targets untouched.
 - The retained original failure and invalid wrong-campaign root remain
-  unmodified and are never admitted.
+  byte-identical to the immutable evidence-file baselines in
+  `artifacts/failed-root-baselines.md` and are never admitted. The original
+  unindexed `execution/.work/**` reconstruction cache is disposable and is not
+  evidence.
 - Full focused and exact-head canonical gates pass; dual review, dual terminal
   verification, and dual receipt verification pass.
 
 ## Security-Impact Gate
 
-The change may create only the exact selected ledger file and missing parent
-directories. It must not follow symlinks, truncate existing bytes, accept
-malformed history, relax Rust preflight, or create a ledger outside the
-operator-selected path. Any such behavior is `FAIL`.
+The change may create only the exact lexically selected ledger file and missing
+parent directories. It must not resolve or follow final or ancestor symlinks,
+truncate existing bytes, accept malformed history, overwrite an exclusive
+create collision, continue after path substitution, relax Rust preflight, or
+create/write a ledger outside the operator-selected path. These obligations
+apply during bootstrap, verification, transition preparation, append, and
+failure finalization. Any such behavior is `FAIL`.
 
 Harvard remains sealed and CAL population remains prohibited.
 
