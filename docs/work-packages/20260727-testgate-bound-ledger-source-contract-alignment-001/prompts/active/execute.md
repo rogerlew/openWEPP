@@ -19,12 +19,13 @@ Required reading:
 - On-demand: the predecessor gate evidence, the target integration test, and
   `crates/openwepp-gate-planner/src/main.rs` only for the touched mechanism.
 
-Required-reading budget: 55,887 core local bytes, `OK`; tier details and
-conditional/on-demand totals are in `artifacts/required-reading-map.md`.
+Required-reading budget: 55,809 core local bytes, `OK`; tier routing is in
+`artifacts/required-reading-map.md`.
 
 Execute the exact stale source-contract alignment through focused/full gates,
 dual review, dual terminal verification, one comparator-owned canonical
-transaction, dual receipt verification, and predecessor closeout.
+transaction, dual receipt verification, and update of only the named
+predecessor hold artifact.
 
 Only replace the obsolete pathname resume assertion with exact bound-text API
 and retained-ledger-read assertions. Do not change production behavior, CAL

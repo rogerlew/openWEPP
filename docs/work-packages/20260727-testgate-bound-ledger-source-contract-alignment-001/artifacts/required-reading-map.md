@@ -4,9 +4,9 @@ Status: `SCAFFOLD`
 
 Evidence class: `Static`
 
-Core reading before edits totals 55,887 bytes and is `OK`: `AGENTS.md`
+Core reading before edits totals 55,809 bytes and is `OK`: `AGENTS.md`
 (12,488), `docs/work-packages/AGENTS.md` (27,243), `tests/AGENTS.md` (4,684),
-`package.md` (10,045), and this map (1,427).
+`package.md` (10,045), and this map (1,349).
 
 Conditional reading is `docs/standards/testing-and-gate-strategy.md` (99,370)
 before gate planning/execution and `docs/defect_closure_execplans.md` (24,803)
