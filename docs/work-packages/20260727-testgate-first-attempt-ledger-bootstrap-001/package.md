@@ -80,10 +80,9 @@ No other path is writable. This write set must not widen.
 2. Add the smallest secure bootstrap helper and focused tests. Operate on the
    raw selected path lexically, validate every existing ancestor without
    following links, create with `O_CREAT|O_EXCL|O_NOFOLLOW`, and retain enough
-   identity information to reject substitution before every later ledger use.
-3. Run `.venv/bin/python -m unittest tests.python.test_testgate`, compile
-   check, diff hygiene, documentation lint, focused
-   gate-planner/authority checks, and full planner 227/227.
+   identity information for the file and every ancestor to reject substitution
+   before every later ledger use.
+3. Run every exact command in `Validation Commands`.
 4. Commit one exact implementation state and obtain dual implementation review
    with explicit finding disposition.
 5. Obtain dual terminal verification of the exact diff and failed-attempt
@@ -102,9 +101,9 @@ No other path is writable. This write set must not widen.
   symlinks. Every existing ancestor and the final component are checked without
   following links.
 - Existing regular ledgers are not truncated or replaced and pass strict
-  predecessor/hash-chain validation before reuse. The selected file and parent
-  identities are revalidated before transition, history append, and failure
-  finalization.
+  predecessor/hash-chain validation before reuse. The selected file, its
+  parent, and every ancestor identity are revalidated before transition,
+  history append, and failure finalization.
 - Final-component symlinks, ancestor symlinks, directories, FIFOs or other
   non-regular files, malformed JSON/hash/predecessor chains, exclusive-create
   collisions, and path substitution fail closed without modifying an outside
@@ -116,8 +115,8 @@ No other path is writable. This write set must not widen.
   preservation, final and ancestor symlink rejection, directory and FIFO
   rejection where supported, malformed JSON/hash/predecessor rejection,
   exclusive-create collision preservation, bootstrap failure with transition
-  `_invoke` never called, and path swaps before append/failure finalization
-  with outside targets untouched.
+  `_invoke` never called, and final/ancestor path swaps before transition,
+  append, and failure finalization with outside targets untouched.
 - The retained original failure and invalid wrong-campaign root remain
   byte-identical to the immutable evidence-file baselines in
   `artifacts/failed-root-baselines.md` and are never admitted. The original
@@ -135,6 +134,18 @@ create collision, continue after path substitution, relax Rust preflight, or
 create/write a ledger outside the operator-selected path. These obligations
 apply during bootstrap, verification, transition preparation, append, and
 failure finalization. Any such behavior is `FAIL`.
+
+## Validation Commands
+
+```text
+.venv/bin/python -m unittest tests.python.test_testgate
+.venv/bin/python -m py_compile tools/local_ci/testgate.py tests/python/test_testgate.py
+bash tools/release/check_authority_suite_antievasion.sh
+cargo nextest run --test auth11_required_suite_obligation_guards_contract
+cargo nextest run -p openwepp-gate-planner
+markdown-doc lint --path docs/work-packages/20260727-testgate-first-attempt-ledger-bootstrap-001
+git diff --check
+```
 
 Harvard remains sealed and CAL population remains prohibited.
 
