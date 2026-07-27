@@ -51,7 +51,7 @@ fn construct_audit_report(
         if identity == attempt_identity {
             Ok(json!(identity))
         } else {
-            Err(policy_error(
+            Err(identity_error(
                 "GATE-EXTERNAL-ROOT-REPLACED",
                 "attempt root changed during audit construction",
             ))
