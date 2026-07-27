@@ -73,8 +73,10 @@ successor
 `20260727-gate-planner-auth11-fixed-inventory-test-provider-001` owns the
 test-only correction at exact commit
 `6abed886f1fbb8a7c0d597964aa021d4c49e4cc1`. The reproducer and full planner
-suite 227/227 pass, and dual implementation review is GO. Terminal verification
-remains pending.
+suite 227/227 pass, dual implementation review is GO, and two independent
+terminal verifiers PASS the exact predecessor reconstruction at plan
+`653b2631e4df6dd7c2bc1686c6dacd6705949d458ab9571b81e29a440dd25b81`.
+Canonical admitted heavy execution remains pending.
 
 Independent `cargo nextest list --test
 auth11_required_suite_obligation_guards_contract` enumerated exactly:

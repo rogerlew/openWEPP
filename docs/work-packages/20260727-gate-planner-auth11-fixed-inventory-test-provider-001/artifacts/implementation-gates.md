@@ -32,5 +32,6 @@ execution occurred.
 
 ## Pending
 
-- dual terminal verification;
-- predecessor AUTH11 exact terminal reconstruction and canonical admission.
+- final exact-head canonical admission after terminal-verification evidence is
+  committed;
+- comparator-owned admitted heavy execution and closeout.
