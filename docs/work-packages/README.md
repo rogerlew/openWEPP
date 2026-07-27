@@ -307,6 +307,10 @@
 
 State as of `2026-07-27 UTC`:
 
+- `20260727-testgate-assurance-historical-root-decoupling-001/` -
+  ACTIVE: decouples immutable historical assurance assessment roots from
+  mutable current DRAFT review-lock roots so gate planning can emit required
+  campaign impacts without moving the assessed baseline.
 - `20260727-assurance-canopy-readme-identity-lifecycle-reconciliation-001/` -
   ACTIVE: closes `ASSURANCE-CANOPY-README-IDENTITY-001` through a typed
   report-source adoption that invalidates stale review authority, resets the
