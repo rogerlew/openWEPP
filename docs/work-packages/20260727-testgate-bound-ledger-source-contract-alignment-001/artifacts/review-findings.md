@@ -12,4 +12,6 @@ budget arithmetic, and bounded predecessor claims. They were corrected in
 Both final reviewers returned `GO` with no findings at the exact latter head.
 No finding is rejected, deferred, follow-up, or undispositioned.
 
-Implementation-review findings remain queued.
+Both implementation reviewers returned `GO` with no findings at exact subject
+`966432d528e2abe39fb4acdb06f7f8a7ae442249`. No implementation finding is
+accepted, rejected, deferred, follow-up, or undispositioned.

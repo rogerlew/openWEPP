@@ -167,8 +167,11 @@ refactor thresholds.
 - [x] (2026-07-27, Codex) Amended scaffold passed exact-head dual review.
 - [x] (2026-07-27, Codex) Scaffold base bound and dual-reviewed.
 - [x] (2026-07-27, Codex) Pre-implementation intent accepted prospectively.
-- [ ] Implementation and exact gates complete.
-- [ ] Dual implementation review and terminal verification complete.
+- [x] (2026-07-27, worker) Exact two-assertion implementation and focused gate
+  complete.
+- [x] (2026-07-27, reviewers A/B) Dual implementation review passed.
+- [ ] Exact terminal plan and remaining gates complete.
+- [ ] Dual terminal verification complete.
 - [ ] Canonical PASS and dual receipt verification complete.
 
 ## Surprises & Discoveries
