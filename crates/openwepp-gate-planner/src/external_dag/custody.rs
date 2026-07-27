@@ -182,6 +182,12 @@ pub(super) fn verify_custody_files(
         )?;
     }
     if !attestations.is_empty() {
+        verify_attestation_freshness(
+            &attestations
+                .iter()
+                .map(|(_, attestation)| attestation.clone())
+                .collect::<Vec<_>>(),
+        )?;
         verify_independent_attestations(
             &attestations
                 .iter()
@@ -191,6 +197,32 @@ pub(super) fn verify_custody_files(
         authenticate_verifier_custody(options, &canonical_root, &attestations)?;
     }
     Ok(imported)
+}
+
+fn verify_attestation_freshness(attestations: &[ExternalVerifierAttestation]) -> Result<()> {
+    let now = time::OffsetDateTime::now_utc()
+        .format(&time::format_description::well_known::Rfc3339)
+        .map_err(|error| custody_error("GATE-EXTERNAL-ATTESTATION-FRESHNESS", error))?;
+    let today = now.get(..10).ok_or_else(|| {
+        custody_error(
+            "GATE-EXTERNAL-ATTESTATION-FRESHNESS",
+            "current UTC date",
+        )
+    })?;
+    let current_utc_day = attestations.iter().all(|item| {
+        item.created_at.len() >= 20
+            && item.created_at.get(..10) == Some(today)
+            && item.created_at.as_bytes().get(10) == Some(&b'T')
+            && (item.created_at.ends_with('Z') || item.created_at.ends_with("+00:00"))
+    });
+    if current_utc_day {
+        Ok(())
+    } else {
+        Err(custody_error(
+            "GATE-EXTERNAL-ATTESTATION-FRESHNESS",
+            "attestations must be created on the current UTC dispatch day",
+        ))
+    }
 }
 
 fn verify_independent_attestations(attestations: &[ExternalVerifierAttestation]) -> Result<()> {
@@ -284,6 +316,10 @@ fn authenticate_verifier_custody(
 /// This is the only custody operation which mutates either capability directory.
 /// The returned proof is suitable for embedding in the READY audit and for
 /// mutation-free verification by HEAVY execution and independent verification.
+#[allow(
+    clippy::too_many_lines,
+    reason = "the atomic dispatch-scoped custody transition keeps preflight, rename, and immutable proof construction in one auditable sequence"
+)]
 pub(super) fn consume_custody_capabilities(
     options: &ExternalTransitionOptions,
     transaction: &ExternalTransaction,
@@ -300,15 +336,28 @@ pub(super) fn consume_custody_capabilities(
     })?;
     let custody_root = fs::canonicalize(custody_root)
         .map_err(|error| external_error("GATE-EXTERNAL-CUSTODY-ROOT", error))?;
-    let consumed_root = custody_root.join("consumed-capabilities");
-    match fs::create_dir(&consumed_root) {
-        Ok(()) => FileSync::sync_parent(&consumed_root)?,
+    let attestations = read_transaction_attestations(&custody_root, transaction)?;
+    let dispatch_id = attestations
+        .first()
+        .map(|item| item.parent_dispatch_id.clone())
+        .ok_or_else(|| {
+            policy_error(
+                "GATE-EXTERNAL-CUSTODY-CARDINALITY",
+                &transaction.transaction_id,
+            )
+        })?;
+    let consumed_parent = custody_root.join("consumed-capabilities");
+    match fs::create_dir(&consumed_parent) {
+        Ok(()) => FileSync::sync_parent(&consumed_parent)?,
         Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => {}
         Err(error) => return Err(external_error("GATE-EXTERNAL-CAPABILITY-DIR", error)),
     }
-    require_capability_directory(&consumed_root)?;
+    require_capability_directory(&consumed_parent)?;
+    let scope_id = sha256_bytes(
+        format!("{dispatch_id}\0{}", transaction.transaction_id).as_bytes(),
+    );
+    let consumed_root = consumed_parent.join(scope_id);
 
-    let attestations = read_transaction_attestations(&custody_root, transaction)?;
     for (relative, attestation) in transaction.custody_prerequisites.iter().zip(&attestations) {
         let command_id = Path::new(relative)
             .file_stem()
@@ -321,48 +370,52 @@ pub(super) fn consume_custody_capabilities(
         }
     }
     verify_independent_attestations(&attestations)?;
-    let mut moves = Vec::with_capacity(attestations.len());
-    for attestation in &attestations {
-        let name = format!("{}.cap", attestation.capability_hash);
-        let source = custody_root.join("capabilities").join(&name);
-        let destination = consumed_root.join(&name);
-        require_capability_file(&source, &attestation.capability_hash)?;
-        if destination
-            .try_exists()
-            .map_err(|error| external_error("GATE-EXTERNAL-CAPABILITY-CONSUME-PREFLIGHT", error))?
-        {
-            return Err(policy_error(
-                "GATE-EXTERNAL-CAPABILITY-ALREADY-CONSUMED",
-                &attestation.parent_dispatch_id,
-            ));
-        }
-        moves.push((source, destination, attestation));
+    if consumed_root
+        .try_exists()
+        .map_err(|error| external_error("GATE-EXTERNAL-CAPABILITY-CONSUME-PREFLIGHT", error))?
+    {
+        return Err(policy_error(
+            "GATE-EXTERNAL-CAPABILITY-ALREADY-CONSUMED",
+            &dispatch_id,
+        ));
     }
-    for (source, destination, _) in &moves {
-        rustix::fs::renameat_with(
-            rustix::fs::CWD,
-            source,
-            rustix::fs::CWD,
-            destination,
-            rustix::fs::RenameFlags::NOREPLACE,
-        )
-        .map_err(|error| external_error("GATE-EXTERNAL-CAPABILITY-CONSUME", error))?;
-        FileSync::sync_parent(destination)?;
-    }
-    let dispatch_id = attestations
-        .first()
-        .map(|item| item.parent_dispatch_id.clone())
-        .ok_or_else(|| {
-            policy_error(
-                "GATE-EXTERNAL-CUSTODY-CARDINALITY",
-                &transaction.transaction_id,
-            )
-        })?;
-    let entries = moves
+    let active_root = custody_root.join("capabilities");
+    let expected_names = attestations
         .iter()
-        .map(|(_, destination, attestation)| {
+        .map(|attestation| format!("{}.cap", attestation.capability_hash))
+        .collect::<BTreeSet<_>>();
+    let active_names = fs::read_dir(&active_root)
+        .map_err(|error| external_error("GATE-EXTERNAL-CAPABILITY-DIR", error))?
+        .map(|entry| {
+            entry
+                .map_err(|error| external_error("GATE-EXTERNAL-CAPABILITY-DIR", error))
+                .and_then(|entry| {
+                    entry.file_name().into_string().map_err(|_| {
+                        policy_error("GATE-EXTERNAL-CAPABILITY-PATH", "non-UTF-8 entry")
+                    })
+                })
+        })
+        .collect::<Result<BTreeSet<_>>>()?;
+    if active_names != expected_names {
+        return Err(policy_error(
+            "GATE-EXTERNAL-CAPABILITY-INVENTORY",
+            &transaction.transaction_id,
+        ));
+    }
+    rustix::fs::renameat_with(
+        rustix::fs::CWD,
+        &active_root,
+        rustix::fs::CWD,
+        &consumed_root,
+        rustix::fs::RenameFlags::NOREPLACE,
+    )
+    .map_err(|error| external_error("GATE-EXTERNAL-CAPABILITY-CONSUME", error))?;
+    FileSync::sync_parent(&consumed_root)?;
+    let entries = attestations
+        .iter()
+        .map(|attestation| {
             json!({
-                "name": destination.file_name().and_then(|name| name.to_str()),
+                "name": format!("{}.cap", attestation.capability_hash),
                 "capability_hash": attestation.capability_hash,
                 "attestation_id": attestation.attestation_id,
             })
@@ -421,17 +474,14 @@ pub(super) fn verify_consumed_custody_proof(
     })?;
     let custody_root = fs::canonicalize(custody_root)
         .map_err(|error| external_error("GATE-EXTERNAL-CUSTODY-ROOT", error))?;
-    let consumed_root = custody_root.join("consumed-capabilities");
-    require_capability_directory(&consumed_root)?;
-    if proof["custody_root"] != custody_root.display().to_string()
-        || proof["consumed_root"] != consumed_root.display().to_string()
-        || proof["consumed_root_identity"] != directory_identity(&consumed_root)?
-    {
-        return Err(custody_error(
-            "GATE-EXTERNAL-CONSUMED-PROOF-ROOT",
-            &transaction.transaction_id,
-        ));
-    }
+    let proof_dispatch_id = proof["parent_dispatch_id"]
+        .as_str()
+        .ok_or_else(|| {
+            custody_error(
+                "GATE-EXTERNAL-CONSUMED-PROOF",
+                "parent dispatch identity",
+            )
+        })?;
     let attestations = read_transaction_attestations(&custody_root, transaction)?;
     let dispatch_id = attestations
         .first()
@@ -442,10 +492,23 @@ pub(super) fn verify_consumed_custody_proof(
                 &transaction.transaction_id,
             )
         })?;
-    if proof["parent_dispatch_id"] != dispatch_id {
+    if proof_dispatch_id != dispatch_id {
         return Err(custody_error(
             "GATE-EXTERNAL-ATTESTATION-FRESHNESS",
             dispatch_id,
+        ));
+    }
+    let scope_id =
+        sha256_bytes(format!("{dispatch_id}\0{}", transaction.transaction_id).as_bytes());
+    let consumed_root = custody_root.join("consumed-capabilities").join(scope_id);
+    require_capability_directory(&consumed_root)?;
+    if proof["custody_root"] != custody_root.display().to_string()
+        || proof["consumed_root"] != consumed_root.display().to_string()
+        || proof["consumed_root_identity"] != directory_identity(&consumed_root)?
+    {
+        return Err(custody_error(
+            "GATE-EXTERNAL-CONSUMED-PROOF-ROOT",
+            &transaction.transaction_id,
         ));
     }
     let expected = attestations
@@ -460,18 +523,18 @@ pub(super) fn verify_consumed_custody_proof(
         .collect::<BTreeSet<_>>();
     let observed_entries = proof["entries"]
         .as_array()
-        .ok_or_else(|| policy_error("GATE-EXTERNAL-CONSUMED-PROOF", &transaction.transaction_id))?;
+        .ok_or_else(|| custody_error("GATE-EXTERNAL-CONSUMED-PROOF", &transaction.transaction_id))?;
     let observed = observed_entries
         .iter()
         .map(|entry| {
             let name = entry["name"]
                 .as_str()
-                .ok_or_else(|| policy_error("GATE-EXTERNAL-CONSUMED-PROOF", "entry name"))?;
+                .ok_or_else(|| custody_error("GATE-EXTERNAL-CONSUMED-PROOF", "entry name"))?;
             let hash = entry["capability_hash"]
                 .as_str()
-                .ok_or_else(|| policy_error("GATE-EXTERNAL-CONSUMED-PROOF", "entry hash"))?;
+                .ok_or_else(|| custody_error("GATE-EXTERNAL-CONSUMED-PROOF", "entry hash"))?;
             let attestation_id = entry["attestation_id"].as_str().ok_or_else(|| {
-                policy_error("GATE-EXTERNAL-CONSUMED-PROOF", "attestation identity")
+                custody_error("GATE-EXTERNAL-CONSUMED-PROOF", "attestation identity")
             })?;
             Ok((name.to_owned(), hash.to_owned(), attestation_id.to_owned()))
         })
@@ -483,7 +546,7 @@ pub(super) fn verify_consumed_custody_proof(
                 .map_err(|error| external_error("GATE-EXTERNAL-CAPABILITY-DIR", error))
                 .and_then(|entry| {
                     entry.file_name().into_string().map_err(|_| {
-                        policy_error("GATE-EXTERNAL-CONSUMED-PROOF", "non-UTF-8 entry")
+                        custody_error("GATE-EXTERNAL-CONSUMED-PROOF", "non-UTF-8 entry")
                     })
                 })
         })
@@ -491,7 +554,7 @@ pub(super) fn verify_consumed_custody_proof(
     if observed != expected
         || disk_names != expected.iter().map(|(name, _, _)| name.clone()).collect()
     {
-        return Err(policy_error(
+        return Err(custody_error(
             "GATE-EXTERNAL-CONSUMED-PROOF-INVENTORY",
             &transaction.transaction_id,
         ));
@@ -500,7 +563,7 @@ pub(super) fn verify_consumed_custody_proof(
         require_capability_file(&consumed_root.join(name), hash)?;
     }
     serde_json::from_value(proof["imported_receipts"].clone())
-        .map_err(|error| external_error("GATE-EXTERNAL-CONSUMED-PROOF", error))
+        .map_err(|error| custody_error("GATE-EXTERNAL-CONSUMED-PROOF", error))
 }
 
 fn read_transaction_attestations(

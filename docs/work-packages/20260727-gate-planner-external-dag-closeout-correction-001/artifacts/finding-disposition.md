@@ -15,5 +15,12 @@ Evidence class: `Ran + Static`
 | DC-F07 | CSV headers not authoritative | Exact ordered header validation rejects unknown, missing, or reordered columns |
 | DC-F08 | Heuristic error taxonomy | Typed receipt, trust, ledger, identity, policy, and I/O classifications with assertions |
 
+First implementation review additionally required real Generation-B
+orchestration, dispatch-scoped atomic consumption and same-root redispatch,
+actual `created_at` freshness and consumer-path error classes,
+interruption-idempotent restore, dynamic destination-ancestor races, and
+reduction of `publication.rs` below 3,000 lines. All are implemented with
+focused passing evidence and await exact-commit re-review.
+
 Independent implementation review must confirm these dispositions against the
 actual consumer paths before canonical heavy admission.

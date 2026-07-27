@@ -609,7 +609,7 @@ pub fn verify_external_transaction(plan_path: &Path, receipt: &Value) -> Result<
     let attempt_root = PathBuf::from(
         receipt["attempt_root"]
             .as_str()
-            .ok_or_else(|| policy_error("GATE-EXTERNAL-RECEIPT-SHAPE", "attempt_root"))?,
+            .ok_or_else(|| receipt_error("GATE-EXTERNAL-RECEIPT-SHAPE", "attempt_root"))?,
     );
     let options = ExternalTransitionOptions {
         repo,
@@ -619,7 +619,7 @@ pub fn verify_external_transaction(plan_path: &Path, receipt: &Value) -> Result<
         ledger: PathBuf::from(
             receipt["ledger"]
                 .as_str()
-                .ok_or_else(|| policy_error("GATE-EXTERNAL-RECEIPT-SHAPE", "ledger"))?,
+                .ok_or_else(|| receipt_error("GATE-EXTERNAL-RECEIPT-SHAPE", "ledger"))?,
         ),
         receipt_path: PathBuf::new(),
         custody_root: receipt["custody_root"].as_str().map(PathBuf::from),
@@ -629,7 +629,8 @@ pub fn verify_external_transaction(plan_path: &Path, receipt: &Value) -> Result<
     let ledger_proof: AttemptLedgerAdmissionProof =
         serde_json::from_value(receipt["audit"]["ledger_admission_proof"].clone())
             .map_err(|error| ledger_error("GATE-EXTERNAL-LEDGER-PROOF", error))?;
-    verify_attempt_ledger_admission_proof(&options.ledger, &ledger_proof)?;
+    verify_attempt_ledger_admission_proof(&options.ledger, &ledger_proof)
+        .map_err(|error| ledger_error(error.code, error.message))?;
     verify_node_sources(&options.repo, transaction)?;
     verify_custody(transaction)?;
     let custody_receipts = verify_consumed_custody_proof(
@@ -677,7 +678,7 @@ pub fn verify_external_transaction(plan_path: &Path, receipt: &Value) -> Result<
         || receipt["source_before"] != receipt["source_after"]
         || receipt["source_after"] != json!(repository_identity(&options.repo)?)
     {
-        return Err(policy_error(
+        return Err(receipt_error(
             "GATE-EXTERNAL-RECEIPT-AUDIT",
             "embedded READY audit or source identity mismatch",
         ));
@@ -717,9 +718,9 @@ fn verify_receipt_stage(
 ) -> Result<()> {
     let receipts = receipts
         .as_array()
-        .ok_or_else(|| policy_error("GATE-EXTERNAL-RECEIPT-SHAPE", stage))?;
+        .ok_or_else(|| receipt_error("GATE-EXTERNAL-RECEIPT-SHAPE", stage))?;
     if receipts.len() != nodes.len() {
-        return Err(policy_error("GATE-EXTERNAL-RECEIPT-INVENTORY", stage));
+        return Err(receipt_error("GATE-EXTERNAL-RECEIPT-INVENTORY", stage));
     }
     for (node, value) in nodes.iter().zip(receipts) {
         let receipt: ExternalNodeReceipt = serde_json::from_value(value.clone())
@@ -772,7 +773,10 @@ fn verify_receipt_stage(
             || receipt.result != "PASS"
             || receipt.exit_code != 0
         {
-            return Err(policy_error("GATE-EXTERNAL-RECEIPT-NODE", &node.command_id));
+            return Err(receipt_error(
+                "GATE-EXTERNAL-RECEIPT-NODE",
+                &node.command_id,
+            ));
         }
         declared_so_far.extend(node.declared_outputs.iter().map(PathBuf::from));
         verify_historical_manifest(&options.attempt_root, &receipt.output_manifest)?;
@@ -817,7 +821,7 @@ fn verify_external_ledger_chain(
     receipt: &Value,
 ) -> Result<()> {
     let bytes =
-        fs::read(&options.ledger).map_err(|error| external_error("GATE-EXTERNAL-LEDGER", error))?;
+        fs::read(&options.ledger).map_err(|error| ledger_error("GATE-EXTERNAL-LEDGER", error))?;
     let records = bytes
         .split(|byte| *byte == b'\n')
         .filter(|line| !line.is_empty())
@@ -826,21 +830,21 @@ fn verify_external_ledger_chain(
     let mut previous = Value::Null;
     for record in &records {
         if record["previous_entry_sha256"] != previous {
-            return Err(policy_error(
+            return Err(ledger_error(
                 "GATE-EXTERNAL-LEDGER-CHAIN",
                 "previous entry mismatch",
             ));
         }
         let claimed = record["entry_sha256"]
             .as_str()
-            .ok_or_else(|| policy_error("GATE-EXTERNAL-LEDGER-CHAIN", "entry_sha256"))?;
+            .ok_or_else(|| ledger_error("GATE-EXTERNAL-LEDGER-CHAIN", "entry_sha256"))?;
         let mut unsigned = record.clone();
         unsigned
             .as_object_mut()
-            .ok_or_else(|| policy_error("GATE-EXTERNAL-LEDGER-CHAIN", "record"))?
+            .ok_or_else(|| ledger_error("GATE-EXTERNAL-LEDGER-CHAIN", "record"))?
             .remove("entry_sha256");
         if digest(&unsigned)? != claimed {
-            return Err(policy_error(
+            return Err(ledger_error(
                 "GATE-EXTERNAL-LEDGER-CHAIN",
                 "entry digest mismatch",
             ));
@@ -888,7 +892,7 @@ fn verify_external_ledger_chain(
         || terminal["result"] != receipt["result"]
         || !terminal["reason_code"].is_null()
     {
-        return Err(policy_error(
+        return Err(ledger_error(
             "GATE-EXTERNAL-LEDGER-TERMINAL",
             "terminal record does not exactly close the audited STARTED record",
         ));

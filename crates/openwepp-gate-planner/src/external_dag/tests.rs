@@ -9,7 +9,7 @@ fn audit_failure_records_started_then_one_terminal() {
     let package = "docs/work-packages/integration/package.md";
     fixture.write(
         package,
-        "# Integration\n\nStatus: `ACTIVE`\n\n## Intended Write Set\n\n- `evidence/**`\n- `plan/**`\n- `tools/**`\n",
+        "# Integration\n\nStatus: `ACTIVE`\n\n## Intended Write Set\n\n- `docs/**`\n- `evidence/**`\n- `plan/**`\n- `tools/**`\n",
     );
     fixture.copy_policy_schema("package-audit.schema.json");
     let base = fixture.commit("scaffold external transition package");
@@ -316,6 +316,309 @@ fn audit_failure_records_started_then_one_terminal() {
         ),
         "unexpected error: {error:?}"
     );
+}
+
+#[test]
+#[allow(
+    clippy::too_many_lines,
+    reason = "the Generation-B consumer-path fixture keeps parent authority, custody dispatch, execution, and independent verification contiguous"
+)]
+fn generation_b_run_external_transition_consumes_once_and_verifies_final_receipt() {
+    let fixture = TransitionFixture::new();
+    let package = "docs/work-packages/integration/package.md";
+    fixture.write(
+        package,
+        "# Integration\n\nStatus: `ACTIVE`\n\n## Intended Write Set\n\n- `docs/**`\n- `evidence/**`\n- `plan/**`\n- `tools/**`\n",
+    );
+    fixture.copy_policy_schema("package-audit.schema.json");
+    let base = fixture.commit("scaffold Generation-B integration package");
+    fixture.write("evidence/cheap.txt", "focused gates passed\n");
+    fixture.write_executable(
+        "tools/light.sh",
+        "#!/bin/sh\nset -eu\nmkdir -p \"$(dirname \"$1\")\"\nprintf 'light-output\\n' > \"$1\"\n",
+    );
+    fixture.write_executable(
+        "tools/heavy.sh",
+        "#!/bin/sh\nset -eu\ntest \"$(cat \"$1\")\" = light-output\nprintf 'heavy-output\\n' > \"$2\"\n",
+    );
+    fixture.write_executable(
+        "docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/freeze-verify.py",
+        "#!/usr/bin/env python3\n",
+    );
+    fixture.write(
+        "plan/source.csv",
+        &format!(
+            "order,command_id,source_path,argv,environment,working_directory,inputs,outputs,harvard_access,cost_class\n\
+             1,light,tools/light.sh,tools/light.sh ${{OBJECTS_ROOT}}/light.txt,default,{},seed,light.txt,FORBIDDEN,QUICK\n\
+             2,heavy,tools/heavy.sh,tools/heavy.sh ${{OBJECTS_ROOT}}/light.txt ${{OBJECTS_ROOT}}/heavy.txt,default,{},light output,heavy.txt,FORBIDDEN,HEAVY\n",
+            fixture.root.path.display(),
+            fixture.root.path.display(),
+        ),
+    );
+    fixture.write(
+        "plan/contract.csv",
+        concat!(
+            "command_id,prerequisites,receipt_outputs\n",
+            "light,-,objects/light.txt\n",
+            "heavy,light,objects/heavy.txt\n",
+        ),
+    );
+    let transaction = json!({
+        "transaction_id": "generation-b-transition",
+        "light": [integration_node(&fixture.root.path, "light", 1, "QUICK")],
+        "heavy": [integration_node(&fixture.root.path, "heavy", 2, "HEAVY")],
+        "custody_prerequisites": [],
+        "custody_receipts": [],
+    });
+    let mut parent = json!({
+        "schema": EXTERNAL_PLAN_SCHEMA,
+        "plan_id": "0".repeat(64),
+        "generation": "A",
+        "parent_plan": null,
+        "source_identity": null,
+        "source_plan": fixture.binding("plan/source.csv"),
+        "source_contract": fixture.binding("plan/contract.csv"),
+        "authority": {
+            "package_path": package,
+            "base_commit": base,
+            "cheap_gate_evidence": [fixture.binding("evidence/cheap.txt")],
+        },
+        "transactions": [transaction],
+        "custody_commands": [],
+    });
+    parent["plan_id"] =
+        json!(derived_id(&parent, "plan_id").expect("derive Generation-A parent identity"));
+    fixture.write_json("plan/parent.json", &parent);
+    fixture.commit("bind Generation-A parent authority");
+
+    let external = TempDirectory::new("openwepp-generation-b-orchestration");
+    let plan_path = external.path.join("generation-b.json");
+    let mut child = parent.clone();
+    child["generation"] = json!("B");
+    child["parent_plan"] = json!({
+        "path": fixture.root.path.join("plan/parent.json").display().to_string(),
+        "sha256": file_sha256(&fixture.root.path.join("plan/parent.json"))
+            .expect("parent plan digest"),
+        "plan_id": parent["plan_id"],
+    });
+    child["source_identity"] =
+        serde_json::to_value(repository_identity(&fixture.root.path).expect("source identity"))
+            .expect("serialize source identity");
+    child["transactions"][0]["custody_prerequisites"] =
+        json!(["freeze_verify_a.json", "freeze_verify_b.json"]);
+    child["plan_id"] = json!("0".repeat(64));
+    child["plan_id"] = json!(derived_id(&child, "plan_id").expect("derive Generation-B identity"));
+    fs::write(
+        &plan_path,
+        canonical_bytes(&child).expect("canonical Generation-B plan"),
+    )
+    .expect("write Generation-B plan");
+
+    let custody_root = external.path.join("custody");
+    let first_options = integration_options(
+        &fixture.root.path,
+        &plan_path,
+        &external.path.join("attempt-1"),
+        &external.path.join("ledger-1.jsonl"),
+        &external.path.join("receipt-1.json"),
+        &custody_root,
+        1,
+    );
+    let stale_options = integration_options(
+        &fixture.root.path,
+        &plan_path,
+        &external.path.join("attempt-stale"),
+        &external.path.join("ledger-stale.jsonl"),
+        &external.path.join("receipt-stale.json"),
+        &custody_root,
+        4,
+    );
+    fs::write(&stale_options.ledger, []).expect("stale ledger");
+    install_custody_dispatch(&stale_options, "dispatch-stale", b"stale");
+    for name in ["freeze_verify_a.json", "freeze_verify_b.json"] {
+        let path = custody_root.join(name);
+        let mut stale = parse_strict(&fs::read(&path).expect("fresh attestation"))
+            .expect("fresh attestation JSON");
+        stale["created_at"] = json!("2000-01-01T00:00:00Z");
+        stale["attestation_id"] =
+            json!(derived_id(&stale, "attestation_id").expect("stale attestation identity"));
+        fs::write(
+            path,
+            canonical_bytes(&stale).expect("canonical stale attestation"),
+        )
+        .expect("write stale attestation");
+    }
+    let stale_error = run_external_transition(&stale_options)
+        .expect_err("orchestration must reject an old same-dispatch attestation");
+    assert_eq!(
+        stale_error.code, "GATE-EXTERNAL-ATTESTATION-FRESHNESS",
+        "{stale_error:?}"
+    );
+    assert_eq!(stale_error.class, ErrorClass::Trust);
+    assert!(
+        fs::read(&stale_options.ledger)
+            .expect("stale ledger")
+            .is_empty()
+    );
+    fs::remove_dir_all(custody_root.join("capabilities")).expect("remove stale capabilities");
+    fs::write(&first_options.ledger, []).expect("first ledger");
+    install_custody_dispatch(&first_options, "dispatch-one", b"first");
+    let before = capability_tree_at(&custody_root);
+    reset_inventory_reconstruction_count();
+    crate::pre_heavy::reset_ledger_admission_count();
+
+    let receipt = run_external_transition(&first_options).unwrap_or_else(|error| {
+        let audit = fs::read_to_string(first_options.receipt_path.with_extension("audit.json"))
+            .unwrap_or_else(|_| "<no audit>".to_owned());
+        panic!("Generation-B orchestration must pass: {error:?}; audit={audit}");
+    });
+    let after = capability_tree_at(&custody_root);
+    assert_eq!(before.active.len(), 2);
+    assert!(
+        after.active.is_empty(),
+        "original capabilities are not reusable"
+    );
+    assert_eq!(after.consumed.len(), 2);
+    assert_eq!(
+        receipt["audit"]["consumed_custody_proof"]["entries"]
+            .as_array()
+            .map(Vec::len),
+        Some(2)
+    );
+    assert_eq!(inventory_reconstruction_count(), 1);
+    assert_eq!(crate::pre_heavy::ledger_admission_count(), 1);
+
+    let ledger_records = fs::read_to_string(&first_options.ledger)
+        .expect("first ledger")
+        .lines()
+        .map(|line| serde_json::from_str::<Value>(line).expect("ledger record"))
+        .collect::<Vec<_>>();
+    assert_eq!(
+        ledger_records
+            .iter()
+            .map(|record| (record["stage"].as_str(), record["status"].as_str()))
+            .collect::<Vec<_>>(),
+        vec![
+            (Some("LIGHT"), Some("CLOSED")),
+            (Some("HEAVY"), Some("STARTED")),
+            (Some("HEAVY"), Some("CLOSED")),
+        ]
+    );
+    verify_external_transaction(&plan_path, &receipt)
+        .expect("independent final receipt verification");
+    assert_eq!(
+        crate::pre_heavy::ledger_admission_count(),
+        1,
+        "independent proof verification must not re-admit the ledger"
+    );
+    let mut malformed_receipt = receipt.clone();
+    malformed_receipt["light"] = Value::Null;
+    malformed_receipt["receipt_id"] =
+        json!(derived_id(&malformed_receipt, "receipt_id").expect("malformed receipt identity"));
+    let receipt_error = verify_external_transaction(&plan_path, &malformed_receipt)
+        .expect_err("actual verifier must type receipt shape failures");
+    assert_eq!(receipt_error.class, ErrorClass::Receipt);
+
+    let mut forged_custody = receipt.clone();
+    forged_custody["audit"]["consumed_custody_proof"]["entries"]
+        .as_array_mut()
+        .expect("consumed entries")
+        .pop();
+    forged_custody["audit"]["consumed_custody_proof"]["proof_id"] = json!(
+        derived_id(
+            &forged_custody["audit"]["consumed_custody_proof"],
+            "proof_id"
+        )
+        .expect("forged custody proof identity")
+    );
+    forged_custody["audit"]["audit_id"] =
+        json!(derived_id(&forged_custody["audit"], "audit_id").expect("forged audit identity"));
+    forged_custody["receipt_id"] =
+        json!(derived_id(&forged_custody, "receipt_id").expect("forged receipt identity"));
+    let custody_error = verify_external_transaction(&plan_path, &forged_custody)
+        .expect_err("actual verifier must type custody inventory failures");
+    assert_eq!(custody_error.class, ErrorClass::Trust);
+
+    let original_ledger = fs::read(&first_options.ledger).expect("original ledger");
+    let mut forged_records = ledger_records.clone();
+    forged_records[2]["previous_entry_sha256"] = Value::Null;
+    let mut forged_ledger = Vec::new();
+    for record in &forged_records {
+        forged_ledger.extend(canonical_bytes(record).expect("canonical forged ledger record"));
+        forged_ledger.push(b'\n');
+    }
+    fs::write(&first_options.ledger, forged_ledger).expect("write forged ledger");
+    let ledger_error = verify_external_transaction(&plan_path, &receipt)
+        .expect_err("actual verifier must type ledger chain failures");
+    assert_eq!(
+        ledger_error.class,
+        ErrorClass::Ledger,
+        "unexpected ledger verifier error: {ledger_error:?}"
+    );
+    fs::write(&first_options.ledger, original_ledger).expect("restore ledger");
+
+    let retry_options = integration_options(
+        &fixture.root.path,
+        &plan_path,
+        &external.path.join("attempt-retry"),
+        &external.path.join("ledger-retry.jsonl"),
+        &external.path.join("receipt-retry.json"),
+        &custody_root,
+        2,
+    );
+    fs::write(&retry_options.ledger, []).expect("retry ledger");
+    let retry_error =
+        run_external_transition(&retry_options).expect_err("consumed dispatch cannot be restarted");
+    assert_eq!(retry_error.code, "GATE-EXTERNAL-CAPABILITY-MISSING");
+    assert!(
+        fs::read(&retry_options.ledger)
+            .expect("retry ledger")
+            .is_empty()
+    );
+
+    let second_options = integration_options(
+        &fixture.root.path,
+        &plan_path,
+        &external.path.join("attempt-2"),
+        &external.path.join("ledger-2.jsonl"),
+        &external.path.join("receipt-2.json"),
+        &custody_root,
+        3,
+    );
+    fs::write(&second_options.ledger, []).expect("second ledger");
+    install_custody_dispatch(&second_options, "dispatch-two", b"second");
+    let second_receipt = run_external_transition(&second_options)
+        .expect("new dispatch in the same custody root must pass");
+    verify_external_transaction(&plan_path, &second_receipt)
+        .expect("independently verify second dispatch");
+    let after_second = capability_tree_at(&custody_root);
+    assert!(after_second.active.is_empty());
+    assert_eq!(after_second.consumed.len(), 4);
+    assert_ne!(
+        receipt["audit"]["consumed_custody_proof"]["consumed_root"],
+        second_receipt["audit"]["consumed_custody_proof"]["consumed_root"]
+    );
+}
+
+#[test]
+fn capability_consumption_destination_collision_is_atomic_and_fail_closed() {
+    let fixture = CustodyFixture::new("holdout-v1");
+    let before = fixture.capability_tree();
+    let scope = sha256_bytes(b"dispatch\0holdout-v1");
+    fs::create_dir_all(
+        fixture
+            .custody
+            .path
+            .join("consumed-capabilities")
+            .join(scope),
+    )
+    .expect("pre-existing dispatch scope");
+    let error = consume_custody_capabilities(&fixture.options, &fixture.transaction)
+        .expect_err("scope collision must fail before the atomic directory rename");
+    assert_eq!(error.code, "GATE-EXTERNAL-CAPABILITY-ALREADY-CONSUMED");
+    let after = fixture.capability_tree();
+    assert_eq!(after.active, before.active);
+    assert!(after.consumed.is_empty());
 }
 
 #[test]
@@ -1165,6 +1468,155 @@ fn attestation_argv_must_bind_python_verifier_context() {
     assert_eq!(error.code, "GATE-EXTERNAL-CUSTODY-ARGV");
 }
 
+fn integration_node(repo: &Path, command_id: &str, order: u64, cost_class: &str) -> Value {
+    let (argv, source_inputs, prerequisites, output) = if command_id == "light" {
+        (
+            vec![
+                "${REPO}/tools/light.sh".to_owned(),
+                "${OBJECTS_ROOT}/light.txt".to_owned(),
+            ],
+            vec!["seed"],
+            Vec::<&str>::new(),
+            "objects/light.txt",
+        )
+    } else {
+        (
+            vec![
+                "${REPO}/tools/heavy.sh".to_owned(),
+                "${OBJECTS_ROOT}/light.txt".to_owned(),
+                "${OBJECTS_ROOT}/heavy.txt".to_owned(),
+            ],
+            vec!["light output"],
+            vec!["light"],
+            "objects/heavy.txt",
+        )
+    };
+    json!({
+        "order": order,
+        "command_id": command_id,
+        "argv": argv,
+        "env": {},
+        "cwd": repo.display().to_string(),
+        "source_working_directory": repo.display().to_string(),
+        "source_inputs": source_inputs,
+        "prerequisites": prerequisites,
+        "cost_class": cost_class,
+        "source_path": format!("tools/{command_id}.sh"),
+        "declared_outputs": [output],
+        "timeout_seconds": 10,
+        "max_attempts": 1,
+        "handoff": if command_id == "light" { "READY audit" } else { "terminal receipt" },
+        "harvard_access": "NONE",
+    })
+}
+
+fn integration_options(
+    repo: &Path,
+    plan_path: &Path,
+    attempt_root: &Path,
+    ledger: &Path,
+    receipt_path: &Path,
+    custody_root: &Path,
+    attempt: u64,
+) -> ExternalTransitionOptions {
+    ExternalTransitionOptions {
+        repo: repo.to_owned(),
+        plan_path: plan_path.to_owned(),
+        transaction_id: "generation-b-transition".to_owned(),
+        attempt_root: attempt_root.to_owned(),
+        ledger: ledger.to_owned(),
+        receipt_path: receipt_path.to_owned(),
+        custody_root: Some(custody_root.to_owned()),
+        opening_token: None,
+        claims: ExecutionClaims {
+            principal: "integration-test".to_owned(),
+            repository: "local/generation-b".to_owned(),
+            source_event: "test".to_owned(),
+            source_ref: "refs/heads/main".to_owned(),
+            workflow: "generation-b-integration".to_owned(),
+            job: format!("dispatch-{attempt}"),
+            runner: "local-test".to_owned(),
+            attempt,
+        },
+    }
+}
+
+fn install_custody_dispatch(
+    options: &ExternalTransitionOptions,
+    dispatch_id: &str,
+    capability_prefix: &[u8],
+) {
+    let custody = options.custody_root.as_ref().expect("custody root");
+    fs::create_dir_all(custody.join("capabilities")).expect("active capability root");
+    fs::create_dir_all(custody.join("freeze-receipts")).expect("receipt root");
+    let script = options.repo.join(
+        "docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/freeze-verify.py",
+    );
+    for (suffix, task, principal, job) in [
+        ("a", "task-a", "alice", "job-a"),
+        ("b", "task-b", "bob", "job-b"),
+    ] {
+        let verifier_id = format!("verifier_{suffix}");
+        let mut capability_bytes = capability_prefix.to_vec();
+        capability_bytes.extend_from_slice(suffix.as_bytes());
+        let capability_hash = sha256_bytes(&capability_bytes);
+        fs::write(
+            custody
+                .join("capabilities")
+                .join(format!("{capability_hash}.cap")),
+            capability_bytes,
+        )
+        .expect("capability");
+        let mut value = attestation(task, principal, job, &capability_hash);
+        value.transaction_id.clone_from(&options.transaction_id);
+        value.parent_dispatch_id = dispatch_id.to_owned();
+        value.attempt = options.claims.attempt;
+        value.script_sha256 = file_sha256(&script).expect("script digest");
+        value.argv = verifier_argv(options, &script, &value, &verifier_id);
+        let command = format!(
+            "PYTHONDONTWRITEBYTECODE=1 .venv/bin/python {} --execution-root {} --verifier-id {verifier_id}",
+            script
+                .strip_prefix(&options.repo)
+                .expect("relative verifier script")
+                .display(),
+            options.attempt_root.join("objects").display()
+        );
+        let receipt = format!(
+            "verifier_id,freeze_digest,verifier_script_sha256,command,command_sha256,timestamp,state\n{verifier_id},{},{},{},{},2026-07-27T00:00:00+00:00,PASS\n",
+            value.freeze_digest,
+            value.script_sha256,
+            command,
+            sha256_bytes(command.as_bytes())
+        );
+        value.receipt_sha256 = sha256_bytes(receipt.as_bytes());
+        let mut attestation_value =
+            serde_json::to_value(&value).expect("serialize integration attestation");
+        attestation_value["attestation_id"] = json!(
+            derived_id(&attestation_value, "attestation_id")
+                .expect("integration attestation identity")
+        );
+        fs::write(
+            custody
+                .join("freeze-receipts")
+                .join(format!("{verifier_id}.csv")),
+            receipt,
+        )
+        .expect("verifier receipt");
+        fs::write(
+            custody.join(format!("freeze_verify_{suffix}.json")),
+            canonical_bytes(&attestation_value).expect("canonical integration attestation"),
+        )
+        .expect("attestation");
+    }
+}
+
+fn capability_tree_at(custody_root: &Path) -> CapabilityTree {
+    CapabilityTree {
+        active: directory_entries(&custody_root.join("capabilities")),
+        consumed: directory_entries(&custody_root.join("consumed-capabilities")),
+    }
+}
+
 fn custody_options() -> ExternalTransitionOptions {
     ExternalTransitionOptions {
         repo: PathBuf::from("/repo"),
@@ -1201,7 +1653,9 @@ fn attestation(
         argv: vec!["verify".to_owned()],
         receipt_sha256: "2".repeat(64),
         freeze_digest: "3".repeat(64),
-        created_at: "2026-07-27T00:00:00Z".to_owned(),
+        created_at: time::OffsetDateTime::now_utc()
+            .format(&time::format_description::well_known::Rfc3339)
+            .expect("format current attestation time"),
     }
 }
 
@@ -1326,20 +1780,30 @@ fn directory_entries(path: &Path) -> Vec<String> {
     if !path.exists() {
         return vec![];
     }
-    let mut entries = fs::read_dir(path)
-        .expect("read capability directory")
-        .map(|entry| {
-            let entry = entry.expect("capability entry");
-            let bytes = fs::read(entry.path()).expect("capability bytes");
-            format!(
-                "{}:{}",
-                entry.file_name().to_string_lossy(),
-                sha256_bytes(&bytes)
-            )
-        })
-        .collect::<Vec<_>>();
+    let mut entries = Vec::new();
+    collect_directory_entries(path, path, &mut entries);
     entries.sort();
     entries
+}
+
+fn collect_directory_entries(root: &Path, path: &Path, entries: &mut Vec<String>) {
+    for entry in fs::read_dir(path).expect("read capability directory") {
+        let entry = entry.expect("capability entry");
+        let entry_path = entry.path();
+        if entry.file_type().expect("capability file type").is_dir() {
+            collect_directory_entries(root, &entry_path, entries);
+        } else {
+            let bytes = fs::read(&entry_path).expect("capability bytes");
+            entries.push(format!(
+                "{}:{}",
+                entry_path
+                    .strip_prefix(root)
+                    .expect("relative capability path")
+                    .display(),
+                sha256_bytes(&bytes)
+            ));
+        }
+    }
 }
 
 fn verifier_argv(

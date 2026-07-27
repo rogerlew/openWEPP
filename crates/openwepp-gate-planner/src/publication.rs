@@ -1,10 +1,4 @@
-//! Journaled publication of authenticated external transaction outputs.
-//!
-//! Publication is deliberately separate from execution.  This module never
-//! upgrades an execution receipt: it verifies an exact source manifest and an
-//! exact destination baseline, records durable intent, then installs staged
-//! bytes.  A process failure can therefore leave only an explicit,
-//! recoverable `NON_ACCEPTED` transaction.
+//! Journaled, recoverable publication of authenticated external transaction outputs.
 
 use std::collections::BTreeSet;
 use std::fs::{self, File, OpenOptions};
@@ -35,7 +29,7 @@ pub struct PublicationEntry {
     pub destination_baseline_sha256: Option<String>,
 }
 
-/// Complete authority for one publication transaction.
+/// Complete authority for one publication.
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct PublicationPlan {
     pub publication_id: String,
@@ -125,8 +119,7 @@ pub enum PublicationStatus {
     Restored,
 }
 
-/// Observable result. `NonAccepted` is a durable partial transaction, not an
-/// accepted receipt and not permission to retry publication.
+/// Observable publication result.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct PublicationOutcome {
     pub status: PublicationStatus,
@@ -140,13 +133,10 @@ pub enum RecoveryAction {
     Restore,
 }
 
-/// Verify, journal, stage, and install all files in the plan.
+/// Verify, journal, stage, and install all files; typed failures precede mutation where possible.
 ///
 /// # Errors
-///
-/// Returns a typed error before mutation for malformed plans, source drift,
-/// destination collisions, an existing transaction, or filesystem failures.
-/// Failures after the first durable journal record return `NON_ACCEPTED`.
+/// Returns typed authority, identity, receipt, policy, or I/O failures.
 pub fn publish(plan: &PublicationPlan) -> Result<PublicationOutcome> {
     let started_at = now()?;
     validate_plan(plan)?;
@@ -176,12 +166,10 @@ pub fn publish(plan: &PublicationPlan) -> Result<PublicationOutcome> {
     finish_accepted(plan, installed, &started_at)
 }
 
-/// Deterministically complete or restore one journaled partial transaction.
+/// Complete or restore a journaled partial transaction with typed failures.
 ///
 /// # Errors
-///
-/// Returns a typed error if the journal is absent, malformed, belongs to
-/// another plan, or if source, installed, baseline, or backup bytes drifted.
+/// Returns typed journal, identity, policy, receipt, or I/O failures.
 pub fn recover(plan: &PublicationPlan, action: RecoveryAction) -> Result<PublicationOutcome> {
     validate_plan(plan)?;
     verify_producing_transaction(plan)?;
@@ -200,11 +188,10 @@ pub fn recover(plan: &PublicationPlan, action: RecoveryAction) -> Result<Publica
     }
 }
 
-/// Independently verify a receipt and the complete destination manifest.
+/// Independently verify a receipt and destination manifest with typed failures.
 ///
 /// # Errors
-///
-/// Returns a typed receipt or identity error for any mismatch.
+/// Returns typed receipt, identity, authority, policy, or I/O failures.
 pub fn verify_receipt(plan: &PublicationPlan, receipt: &PublicationReceipt) -> Result<()> {
     validate_plan(plan)?;
     verify_producing_transaction(plan)?;
@@ -463,17 +450,9 @@ fn copy_destination_backup(
 }
 
 #[cfg(not(target_os = "linux"))]
-fn copy_destination_backup(
-    _plan: &PublicationPlan,
-    _entry: &PublicationEntry,
-    _backup: &Path,
-    _expected: Option<&str>,
-) -> Result<()> {
-    Err(publication_error(
-        ErrorClass::Policy,
-        "GATE-PUBLICATION-DESCRIPTOR-UNAVAILABLE",
-        "descriptor-relative publication backups are required",
-    ))
+#[rustfmt::skip]
+fn copy_destination_backup(_plan: &PublicationPlan, _entry: &PublicationEntry, _backup: &Path, _expected: Option<&str>) -> Result<()> {
+    descriptor_unavailable()
 }
 
 #[cfg(target_os = "linux")]
@@ -745,18 +724,107 @@ fn open_parent_beneath(root: &rustix::fd::OwnedFd, relative: &Path) -> Result<ru
     })
 }
 
-#[cfg(not(target_os = "linux"))]
-fn copy_source_to_stage(
-    _plan: &PublicationPlan,
-    _entry: &PublicationEntry,
-    _staged: &Path,
-    _before_root_recheck: impl FnOnce(),
+#[cfg(target_os = "linux")]
+fn require_parent_attached(
+    root: &rustix::fd::OwnedFd,
+    relative: &Path,
+    retained_parent: &rustix::fd::OwnedFd,
+    code: &'static str,
 ) -> Result<()> {
-    Err(publication_error(
-        ErrorClass::Policy,
-        "GATE-PUBLICATION-DESCRIPTOR-UNAVAILABLE",
-        "descriptor-relative publication source reads are required",
-    ))
+    let retained = rustix::fs::fstat(retained_parent)
+        .map_err(|error| publication_error(ErrorClass::Io, code, error.to_string()))?;
+    let current_parent = open_parent_beneath(root, relative)?;
+    let current = rustix::fs::fstat(&current_parent)
+        .map_err(|error| publication_error(ErrorClass::Io, code, error.to_string()))?;
+    if (retained.st_dev, retained.st_ino) == (current.st_dev, current.st_ino) {
+        Ok(())
+    } else {
+        Err(publication_error(
+            ErrorClass::Identity,
+            code,
+            format!("destination parent was displaced: {}", relative.display()),
+        ))
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn destination_hash_descriptor_relative(
+    plan: &PublicationPlan,
+    relative: &Path,
+) -> Result<Option<String>> {
+    use rustix::fs::{Mode, OFlags, ResolveFlags, openat2};
+
+    let root = openat2(
+        rustix::fs::CWD,
+        &plan.destination_root,
+        OFlags::PATH | OFlags::DIRECTORY | OFlags::CLOEXEC,
+        Mode::empty(),
+        ResolveFlags::NO_MAGICLINKS | ResolveFlags::NO_SYMLINKS,
+    )
+    .map_err(|error| {
+        io_error(
+            "GATE-PUBLICATION-RECOVERY-DESTINATION-OPEN",
+            &plan.destination_root,
+            error,
+        )
+    })?;
+    let descriptor = match openat2(
+        &root,
+        relative,
+        OFlags::RDONLY | OFlags::CLOEXEC,
+        Mode::empty(),
+        ResolveFlags::BENEATH | ResolveFlags::NO_MAGICLINKS | ResolveFlags::NO_SYMLINKS,
+    ) {
+        Ok(descriptor) => descriptor,
+        Err(error) if error == rustix::io::Errno::NOENT => return Ok(None),
+        Err(error) => {
+            return Err(io_error(
+                "GATE-PUBLICATION-RECOVERY-DESTINATION-FILE",
+                &plan.destination_root.join(relative),
+                error,
+            ));
+        }
+    };
+    let mut file = File::from(descriptor);
+    let metadata = file.metadata().map_err(|error| {
+        io_error(
+            "GATE-PUBLICATION-RECOVERY-DESTINATION-STAT",
+            &plan.destination_root.join(relative),
+            error,
+        )
+    })?;
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::MetadataExt;
+        if !metadata.is_file() || metadata.nlink() != 1 {
+            return Err(publication_error(
+                ErrorClass::Identity,
+                "GATE-PUBLICATION-RECOVERY-DESTINATION-TYPE",
+                "recovery destination must be a singly linked regular file",
+            ));
+        }
+    }
+    let mut bytes = Vec::new();
+    file.read_to_end(&mut bytes).map_err(|error| {
+        io_error(
+            "GATE-PUBLICATION-RECOVERY-DESTINATION-READ",
+            &plan.destination_root.join(relative),
+            error,
+        )
+    })?;
+    Ok(Some(sha256_bytes(&bytes)))
+}
+
+#[cfg(not(target_os = "linux"))]
+#[rustfmt::skip]
+fn destination_hash_descriptor_relative(_plan: &PublicationPlan, _relative: &Path) -> Result<Option<String>> {
+    descriptor_unavailable()
+}
+
+#[cfg(not(target_os = "linux"))]
+#[rustfmt::skip]
+fn copy_source_to_stage(_plan: &PublicationPlan, _entry: &PublicationEntry, _staged: &Path, _before_root_recheck: impl FnOnce()) -> Result<()> {
+    descriptor_unavailable()
 }
 
 #[cfg(target_os = "linux")]
@@ -939,6 +1007,12 @@ fn install_staged_destination(
             "publication root identity changed before installation",
         ));
     }
+    require_parent_attached(
+        &destination_root,
+        &entry.relative_path,
+        &destination_parent,
+        "GATE-PUBLICATION-DESTINATION-ANCESTOR-RACE",
+    )?;
 
     if let Some(baseline) = baseline_identity {
         let current = statat(
@@ -1014,17 +1088,9 @@ fn install_staged_destination(
 }
 
 #[cfg(not(target_os = "linux"))]
-fn install_staged_destination(
-    _plan: &PublicationPlan,
-    _entry: &PublicationEntry,
-    _staged: &Path,
-    _before_install: impl FnOnce(),
-) -> Result<()> {
-    Err(publication_error(
-        ErrorClass::Policy,
-        "GATE-PUBLICATION-DESCRIPTOR-UNAVAILABLE",
-        "descriptor-relative publication is required",
-    ))
+#[rustfmt::skip]
+fn install_staged_destination(_plan: &PublicationPlan, _entry: &PublicationEntry, _staged: &Path, _before_install: impl FnOnce()) -> Result<()> {
+    descriptor_unavailable()
 }
 
 fn restore_entry(plan: &PublicationPlan, record: &PublicationJournalRecord) -> Result<()> {
@@ -1035,6 +1101,11 @@ fn restore_entry(plan: &PublicationPlan, record: &PublicationJournalRecord) -> R
         &record.backup_relative_path,
     ) {
         (Some(expected), Some(relative)) => {
+            if destination_hash_descriptor_relative(plan, &record.relative_path)?.as_deref()
+                == Some(expected.as_str())
+            {
+                return Ok(());
+            }
             let staged = confined_join(
                 &plan.transaction_root.join("restore-staged"),
                 &record.relative_path,
@@ -1073,6 +1144,10 @@ fn append_restore_record(plan: &PublicationPlan, prior: &PublicationJournalRecor
 }
 
 #[cfg(target_os = "linux")]
+#[allow(
+    clippy::too_many_lines,
+    reason = "authenticated recovery reuse keeps backup read, existing-stage verification, and root identity checks in one custody boundary"
+)]
 fn copy_transaction_file_to_stage(
     plan: &PublicationPlan,
     source_relative: &Path,
@@ -1159,16 +1234,50 @@ fn copy_transaction_file_to_stage(
         )
     })?;
     ensure_relative_parent_at(&root, staged_relative, staged)?;
-    let mut output = File::from(
-        openat2(
-            &root,
-            staged_relative,
-            OFlags::WRONLY | OFlags::CREATE | OFlags::EXCL | OFlags::CLOEXEC,
-            Mode::RUSR | Mode::WUSR,
-            ResolveFlags::BENEATH | ResolveFlags::NO_MAGICLINKS | ResolveFlags::NO_SYMLINKS,
-        )
-        .map_err(|error| io_error("GATE-PUBLICATION-RECOVERY-STAGE-CREATE", staged, error))?,
-    );
+    let output_descriptor = match openat2(
+        &root,
+        staged_relative,
+        OFlags::WRONLY | OFlags::CREATE | OFlags::EXCL | OFlags::CLOEXEC,
+        Mode::RUSR | Mode::WUSR,
+        ResolveFlags::BENEATH | ResolveFlags::NO_MAGICLINKS | ResolveFlags::NO_SYMLINKS,
+    ) {
+        Ok(descriptor) => descriptor,
+        Err(error) if error == rustix::io::Errno::EXIST => {
+            let existing = openat2(
+                &root,
+                staged_relative,
+                OFlags::RDONLY | OFlags::CLOEXEC,
+                Mode::empty(),
+                ResolveFlags::BENEATH | ResolveFlags::NO_MAGICLINKS | ResolveFlags::NO_SYMLINKS,
+            )
+            .map_err(|error| io_error("GATE-PUBLICATION-RECOVERY-STAGE-REOPEN", staged, error))?;
+            let mut file = File::from(existing);
+            let mut existing_bytes = Vec::new();
+            file.read_to_end(&mut existing_bytes)
+                .map_err(|error| io_error("GATE-PUBLICATION-RECOVERY-STAGE-READ", staged, error))?;
+            if sha256_bytes(&existing_bytes) != expected {
+                return Err(publication_error(
+                    ErrorClass::Identity,
+                    "GATE-PUBLICATION-RECOVERY-STAGE-DRIFT",
+                    "existing recovery stage differs from the authenticated backup",
+                ));
+            }
+            return require_unchanged_root(
+                &plan.transaction_root,
+                identity.st_dev,
+                identity.st_ino,
+                "GATE-PUBLICATION-RECOVERY-ROOT-RACE",
+            );
+        }
+        Err(error) => {
+            return Err(io_error(
+                "GATE-PUBLICATION-RECOVERY-STAGE-CREATE",
+                staged,
+                error,
+            ));
+        }
+    };
+    let mut output = File::from(output_descriptor);
     output
         .write_all(&bytes)
         .and_then(|()| output.sync_all())
@@ -1182,17 +1291,9 @@ fn copy_transaction_file_to_stage(
 }
 
 #[cfg(not(target_os = "linux"))]
-fn copy_transaction_file_to_stage(
-    _plan: &PublicationPlan,
-    _source_relative: &Path,
-    _staged: &Path,
-    _expected: &str,
-) -> Result<()> {
-    Err(publication_error(
-        ErrorClass::Policy,
-        "GATE-PUBLICATION-DESCRIPTOR-UNAVAILABLE",
-        "descriptor-relative recovery is required",
-    ))
+#[rustfmt::skip]
+fn copy_transaction_file_to_stage(_plan: &PublicationPlan, _source_relative: &Path, _staged: &Path, _expected: &str) -> Result<()> {
+    descriptor_unavailable()
 }
 
 #[cfg(target_os = "linux")]
@@ -1204,6 +1305,10 @@ fn remove_installed_descriptor_relative(
 }
 
 #[cfg(target_os = "linux")]
+#[allow(
+    clippy::too_many_lines,
+    reason = "recovery deletion keeps descriptor authentication and the single unlink boundary visibly contiguous"
+)]
 fn remove_installed_descriptor_relative_with_hook(
     plan: &PublicationPlan,
     record: &PublicationJournalRecord,
@@ -1281,6 +1386,12 @@ fn remove_installed_descriptor_relative_with_hook(
         ));
     }
     before_recheck();
+    require_parent_attached(
+        &root,
+        &record.relative_path,
+        &parent,
+        "GATE-PUBLICATION-RECOVERY-DESTINATION-ANCESTOR-RACE",
+    )?;
     let current = statat(&parent, name, AtFlags::SYMLINK_NOFOLLOW).map_err(|error| {
         io_error(
             "GATE-PUBLICATION-RECOVERY-DESTINATION-RECHECK",
@@ -1315,6 +1426,11 @@ fn remove_installed_descriptor_relative(
     _plan: &PublicationPlan,
     _record: &PublicationJournalRecord,
 ) -> Result<()> {
+    descriptor_unavailable()
+}
+
+#[cfg(not(target_os = "linux"))]
+fn descriptor_unavailable<T>() -> Result<T> {
     Err(publication_error(
         ErrorClass::Policy,
         "GATE-PUBLICATION-DESCRIPTOR-UNAVAILABLE",
@@ -2152,6 +2268,12 @@ mod tests {
         }
     }
 
+    fn fresh(name: &str) -> PathBuf {
+        let root = scratch(name);
+        remove_scratch(&root);
+        root
+    }
+
     fn write(path: &Path, bytes: &[u8]) {
         fs::create_dir_all(path.parent().expect("test path parent")).expect("test parent");
         fs::write(path, bytes).expect("test write");
@@ -2174,234 +2296,124 @@ mod tests {
             .to_owned()
     }
 
+    #[rustfmt::skip]
+    fn recovery_plan(root: &Path, destination_root: PathBuf, transaction_root: PathBuf) -> PublicationPlan {
+        PublicationPlan {
+            publication_id: "recovery-test".to_owned(),
+            external_plan_path: root.join("plan"), transaction_receipt_path: root.join("receipt"),
+            transaction_receipt_id: "0".repeat(64), transaction_receipt_sha256: "0".repeat(64),
+            source_manifest_id: "0".repeat(64), source_manifest_sha256: "0".repeat(64),
+            destination_baseline_sha256: "0".repeat(64), source_root: root.join("source"),
+            destination_root,
+            journal_path: transaction_root.join("journal/publication.jsonl"), receipt_path: transaction_root.join("receipt/publication.json"),
+            transaction_root, entries: Vec::new(),
+        }
+    }
+
     #[allow(
         clippy::too_many_lines,
         reason = "fixture constructs a complete authenticated publication authority"
     )]
+    #[rustfmt::skip]
     fn plan(root: &Path, destination_baseline: Option<&[u8]>) -> PublicationPlan {
         let source = root.join("source");
         let destination = root.join("destination");
-        if source.exists() {
-            fs::remove_dir_all(&source).expect("replace publication source root");
-        }
+        if source.exists() { fs::remove_dir_all(&source).expect("replace publication source root"); }
         let transaction_receipt_path = root.join("transaction-receipt.json");
-        for receipt in [
-            transaction_receipt_path.clone(),
-            transaction_receipt_path.with_extension("light.json"),
-            transaction_receipt_path.with_extension("audit.json"),
-        ] {
-            if let Err(error) = fs::remove_file(receipt) {
-                assert_eq!(error.kind(), std::io::ErrorKind::NotFound);
-            }
+        for receipt in [transaction_receipt_path.clone(), transaction_receipt_path.with_extension("light.json"), transaction_receipt_path.with_extension("audit.json")] {
+            if let Err(error) = fs::remove_file(receipt) { assert_eq!(error.kind(), std::io::ErrorKind::NotFound); }
         }
-        if let Some(bytes) = destination_baseline {
-            write(&destination.join("objects/artifacts/result.json"), bytes);
-        } else {
-            fs::create_dir_all(&destination).expect("destination root");
-        }
+        if let Some(bytes) = destination_baseline { write(&destination.join("objects/artifacts/result.json"), bytes); }
+        else { fs::create_dir_all(&destination).expect("destination root"); }
         let authority_repo = root.join("authority-repo");
-        if authority_repo.exists() {
-            fs::remove_dir_all(&authority_repo).expect("replace authority repository");
-        }
+        if authority_repo.exists() { fs::remove_dir_all(&authority_repo).expect("replace authority repository"); }
         fs::create_dir_all(&authority_repo).expect("authority repository");
         git(&authority_repo, &["init", "--quiet"]);
         git(&authority_repo, &["config", "user.name", "openWEPP test"]);
-        git(
-            &authority_repo,
-            &["config", "user.email", "openwepp-test@example.invalid"],
-        );
+        git(&authority_repo, &["config", "user.email", "openwepp-test@example.invalid"]);
         let package_path = "docs/work-packages/publication-fixture/package.md";
-        write(
-            &authority_repo.join(package_path),
-            b"# Publication fixture\n\nStatus: `ACTIVE`\n\n## Intended Write Set\n\n- `evidence/**`\n- `plan/**`\n- `tools/**`\n",
-        );
-        write(
-            &authority_repo.join("gate-policy/v1/schemas/package-audit.schema.json"),
-            include_bytes!("../../../gate-policy/v1/schemas/package-audit.schema.json"),
-        );
+        write(&authority_repo.join(package_path), b"# Publication fixture\n\nStatus: `ACTIVE`\n\n## Intended Write Set\n\n- `evidence/**`\n- `plan/**`\n- `tools/**`\n");
+        write(&authority_repo.join("gate-policy/v1/schemas/package-audit.schema.json"),
+            include_bytes!("../../../gate-policy/v1/schemas/package-audit.schema.json"));
         git(&authority_repo, &["add", "."]);
-        git(
-            &authority_repo,
-            &["commit", "--quiet", "-m", "publication fixture scaffold"],
-        );
+        git(&authority_repo, &["commit", "--quiet", "-m", "publication fixture scaffold"]);
         let base_commit = git(&authority_repo, &["rev-parse", "HEAD"]);
-        write(
-            &authority_repo.join("evidence/cheap.txt"),
-            b"focused gates passed\n",
-        );
-        write(
-            &authority_repo.join("tools/light.sh"),
-            b"#!/bin/sh\nset -eu\nmkdir -p \"$(dirname \"$1\")\"\nprintf 'new-result' > \"$1\"\n",
-        );
-        write(
-            &authority_repo.join("tools/heavy.sh"),
-            b"#!/bin/sh\nset -eu\ntest \"$(cat \"$1\")\" = new-result\n",
-        );
+        write(&authority_repo.join("evidence/cheap.txt"), b"focused gates passed\n");
+        write(&authority_repo.join("tools/light.sh"), b"#!/bin/sh\nset -eu\nmkdir -p \"$(dirname \"$1\")\"\nprintf 'new-result' > \"$1\"\n");
+        write(&authority_repo.join("tools/heavy.sh"), b"#!/bin/sh\nset -eu\ntest \"$(cat \"$1\")\" = new-result\n");
         #[cfg(unix)]
         for script in ["tools/light.sh", "tools/heavy.sh"] {
             use std::os::unix::fs::PermissionsExt;
-            fs::set_permissions(
-                authority_repo.join(script),
-                fs::Permissions::from_mode(0o755),
-            )
-            .expect("executable fixture script");
+            fs::set_permissions(authority_repo.join(script), fs::Permissions::from_mode(0o755)).expect("executable fixture script");
         }
-        let source_csv = format!(
-            "order,command_id,source_path,argv,environment,working_directory,inputs,outputs,harvard_access,cost_class\n\
+        let source_csv = format!("order,command_id,source_path,argv,environment,working_directory,inputs,outputs,harvard_access,cost_class\n\
              1,light,tools/light.sh,tools/light.sh ${{OBJECTS_ROOT}}/artifacts/result.json,default,{},seed,objects/artifacts/result.json,FORBIDDEN,QUICK\n\
              2,heavy,tools/heavy.sh,tools/heavy.sh ${{OBJECTS_ROOT}}/artifacts/result.json,default,{},light output,,FORBIDDEN,HEAVY\n",
-            authority_repo.display(),
-            authority_repo.display(),
-        );
-        write(
-            &authority_repo.join("plan/source.csv"),
-            source_csv.as_bytes(),
-        );
-        write(
-            &authority_repo.join("plan/contract.csv"),
-            b"command_id,prerequisites,receipt_outputs\nlight,-,objects/artifacts/result.json\nheavy,light,-\n",
-        );
-        let binding = |path: &str| {
-            serde_json::json!({
-                "path": path,
-                "sha256": sha256_bytes(&fs::read(authority_repo.join(path)).expect("binding bytes"))
-            })
-        };
+            authority_repo.display(), authority_repo.display());
+        write(&authority_repo.join("plan/source.csv"), source_csv.as_bytes());
+        write(&authority_repo.join("plan/contract.csv"),
+            b"command_id,prerequisites,receipt_outputs\nlight,-,objects/artifacts/result.json\nheavy,light,-\n");
+        let binding = |path: &str| serde_json::json!({"path": path,
+            "sha256": sha256_bytes(&fs::read(authority_repo.join(path)).expect("binding bytes"))});
         let external_plan_path = authority_repo.join("plan/external.json");
+        let light = serde_json::json!({
+            "order": 1, "command_id": "light", "argv": ["${REPO}/tools/light.sh", "${OBJECTS_ROOT}/artifacts/result.json"],
+            "env": {}, "cwd": authority_repo.display().to_string(), "source_working_directory": authority_repo.display().to_string(),
+            "source_inputs": ["seed"], "prerequisites": [], "cost_class": "QUICK", "source_path": "tools/light.sh",
+            "declared_outputs": ["objects/artifacts/result.json"], "timeout_seconds": 10, "max_attempts": 1, "handoff": "READY audit", "harvard_access": "NONE"
+        });
+        let heavy = serde_json::json!({
+            "order": 2, "command_id": "heavy", "argv": ["${REPO}/tools/heavy.sh", "${OBJECTS_ROOT}/artifacts/result.json"],
+            "env": {}, "cwd": authority_repo.display().to_string(), "source_working_directory": authority_repo.display().to_string(),
+            "source_inputs": ["light output"], "prerequisites": ["light"], "cost_class": "HEAVY", "source_path": "tools/heavy.sh",
+            "declared_outputs": [], "timeout_seconds": 10, "max_attempts": 1, "handoff": "terminal receipt", "harvard_access": "NONE"
+        });
         let mut external_plan = serde_json::json!({
-            "schema": "openwepp-external-dag-plan-v1",
-            "plan_id": "0".repeat(64),
-            "generation": "A",
-            "parent_plan": null,
-            "source_identity": null,
-            "source_plan": binding("plan/source.csv"),
-            "source_contract": binding("plan/contract.csv"),
-            "authority": {
-                "package_path": package_path,
-                "base_commit": base_commit,
-                "cheap_gate_evidence": [binding("evidence/cheap.txt")]
-            },
-            "transactions": [{
-                "transaction_id": "publication-source",
-                "light": [{
-                    "order": 1,
-                    "command_id": "light",
-                    "argv": ["${REPO}/tools/light.sh", "${OBJECTS_ROOT}/artifacts/result.json"],
-                    "env": {},
-                    "cwd": authority_repo.display().to_string(),
-                    "source_working_directory": authority_repo.display().to_string(),
-                    "source_inputs": ["seed"],
-                    "prerequisites": [],
-                    "cost_class": "QUICK",
-                    "source_path": "tools/light.sh",
-                    "declared_outputs": ["objects/artifacts/result.json"],
-                    "timeout_seconds": 10,
-                    "max_attempts": 1,
-                    "handoff": "READY audit",
-                    "harvard_access": "NONE"
-                }],
-                "heavy": [{
-                    "order": 2,
-                    "command_id": "heavy",
-                    "argv": ["${REPO}/tools/heavy.sh", "${OBJECTS_ROOT}/artifacts/result.json"],
-                    "env": {},
-                    "cwd": authority_repo.display().to_string(),
-                    "source_working_directory": authority_repo.display().to_string(),
-                    "source_inputs": ["light output"],
-                    "prerequisites": ["light"],
-                    "cost_class": "HEAVY",
-                    "source_path": "tools/heavy.sh",
-                    "declared_outputs": [],
-                    "timeout_seconds": 10,
-                    "max_attempts": 1,
-                    "handoff": "terminal receipt",
-                    "harvard_access": "NONE"
-                }],
-                "custody_prerequisites": [],
-                "custody_receipts": []
-            }],
+            "schema": "openwepp-external-dag-plan-v1", "plan_id": "0".repeat(64), "generation": "A", "parent_plan": null, "source_identity": null,
+            "source_plan": binding("plan/source.csv"), "source_contract": binding("plan/contract.csv"),
+            "authority": {"package_path": package_path, "base_commit": base_commit, "cheap_gate_evidence": [binding("evidence/cheap.txt")]},
+            "transactions": [{"transaction_id": "publication-source", "light": [light], "heavy": [heavy], "custody_prerequisites": [], "custody_receipts": []}],
             "custody_commands": []
         });
-        external_plan["plan_id"] =
-            serde_json::Value::String(derived_id(&external_plan, "plan_id").expect("plan ID"));
-        write(
-            &external_plan_path,
-            &canonical_bytes(&external_plan).expect("canonical external plan"),
-        );
+        external_plan["plan_id"] = serde_json::Value::String(derived_id(&external_plan, "plan_id").expect("plan ID"));
+        write(&external_plan_path, &canonical_bytes(&external_plan).expect("canonical external plan"));
         git(&authority_repo, &["add", "."]);
-        git(
-            &authority_repo,
-            &["commit", "--quiet", "-m", "bind publication transaction"],
-        );
-        let ledger = std::env::current_dir()
-            .expect("publication fixture cwd")
-            .join("target/publication-fixture-ledgers")
-            .join(root.file_name().expect("publication fixture root name"))
-            .join("execution-ledger.jsonl");
+        git(&authority_repo, &["commit", "--quiet", "-m", "bind publication transaction"]);
+        let ledger = std::env::current_dir().expect("publication fixture cwd")
+            .join("target/publication-fixture-ledgers").join(root.file_name().expect("publication fixture root name")).join("execution-ledger.jsonl");
         write(&ledger, b"");
+        let claims = ExecutionClaims {
+            principal: "publication-test".to_owned(), repository: "local/publication".to_owned(), source_event: "test".to_owned(),
+            source_ref: "refs/heads/main".to_owned(), workflow: "publication-fixture".to_owned(), job: "light-ready-heavy".to_owned(),
+            runner: "local-test".to_owned(), attempt: 1,
+        };
         let transaction_receipt = run_external_transition(&ExternalTransitionOptions {
-            repo: authority_repo.clone(),
-            plan_path: external_plan_path.clone(),
-            transaction_id: "publication-source".to_owned(),
-            attempt_root: source.clone(),
-            ledger,
-            receipt_path: transaction_receipt_path.clone(),
-            custody_root: None,
-            opening_token: None,
-            claims: ExecutionClaims {
-                principal: "publication-test".to_owned(),
-                repository: "local/publication".to_owned(),
-                source_event: "test".to_owned(),
-                source_ref: "refs/heads/main".to_owned(),
-                workflow: "publication-fixture".to_owned(),
-                job: "light-ready-heavy".to_owned(),
-                runner: "local-test".to_owned(),
-                attempt: 1,
-            },
-        })
-        .expect("execute authenticated publication source transaction");
-        let transaction_receipt_bytes =
-            fs::read(&transaction_receipt_path).expect("persisted transaction receipt");
-        let source_manifest =
-            manifest_declared_outputs(&source, &[PathBuf::from("objects/artifacts/result.json")])
-                .expect("source manifest");
-        let source_manifest_sha256 =
-            digest(&serde_json::to_value(&source_manifest).expect("source manifest JSON"))
-                .expect("source manifest digest");
+            repo: authority_repo.clone(), plan_path: external_plan_path.clone(),
+            transaction_id: "publication-source".to_owned(), attempt_root: source.clone(), ledger,
+            receipt_path: transaction_receipt_path.clone(), custody_root: None, opening_token: None, claims,
+        }).expect("execute authenticated publication source transaction");
+        let transaction_receipt_bytes = fs::read(&transaction_receipt_path).expect("persisted transaction receipt");
+        let relative_path = PathBuf::from("objects/artifacts/result.json");
+        let source_manifest = manifest_declared_outputs(&source, std::slice::from_ref(&relative_path)).expect("source manifest");
+        let source_manifest_sha256 = digest(&serde_json::to_value(&source_manifest).expect("source manifest JSON")).expect("source manifest digest");
+        let entry = PublicationEntry { relative_path, source_sha256: sha256_bytes(b"new-result"),
+            destination_baseline_sha256: destination_baseline.map(sha256_bytes) };
         PublicationPlan {
-            publication_id: "publication-1".to_owned(),
-            external_plan_path,
-            transaction_receipt_path,
-            transaction_receipt_id: transaction_receipt["receipt_id"]
-                .as_str()
-                .expect("receipt ID string")
-                .to_owned(),
+            publication_id: "publication-1".to_owned(), external_plan_path, transaction_receipt_path,
+            transaction_receipt_id: transaction_receipt["receipt_id"].as_str().expect("receipt ID string").to_owned(),
             transaction_receipt_sha256: sha256_bytes(&transaction_receipt_bytes),
-            source_manifest_id: source_manifest.manifest_id,
-            source_manifest_sha256,
-            destination_baseline_sha256: destination_baseline_digest(&[PublicationEntry {
-                relative_path: PathBuf::from("objects/artifacts/result.json"),
-                source_sha256: sha256_bytes(b"new-result"),
-                destination_baseline_sha256: destination_baseline.map(sha256_bytes),
-            }])
-            .expect("baseline digest"),
-            source_root: source,
-            destination_root: destination,
+            source_manifest_id: source_manifest.manifest_id, source_manifest_sha256,
+            destination_baseline_sha256: destination_baseline_digest(std::slice::from_ref(&entry)).expect("baseline digest"),
+            source_root: source, destination_root: destination,
             transaction_root: root.join("transaction"),
-            journal_path: root.join("transaction/journal/publication.jsonl"),
-            receipt_path: root.join("transaction/receipt/publication.json"),
-            entries: vec![PublicationEntry {
-                relative_path: PathBuf::from("objects/artifacts/result.json"),
-                source_sha256: sha256_bytes(b"new-result"),
-                destination_baseline_sha256: destination_baseline.map(sha256_bytes),
-            }],
+            journal_path: root.join("transaction/journal/publication.jsonl"), receipt_path: root.join("transaction/receipt/publication.json"),
+            entries: vec![entry],
         }
     }
 
     #[test]
     fn publishes_exact_manifest_and_emits_receipt() {
-        let root = scratch("accept");
-        remove_scratch(&root);
+        let root = fresh("accept");
         let plan = plan(&root, None);
         let outcome = publish(&plan).expect("publication");
         assert_eq!(outcome.status, PublicationStatus::Accepted);
@@ -2419,8 +2431,7 @@ mod tests {
 
     #[test]
     fn rejects_source_drift_and_destination_collision_before_journal() {
-        let root = scratch("drift");
-        remove_scratch(&root);
+        let root = fresh("drift");
         let mut publication_plan = plan(&root, None);
         fs::write(
             publication_plan
@@ -2455,8 +2466,7 @@ mod tests {
 
     #[test]
     fn rejects_forged_transaction_claims_before_publication_mutation() {
-        let root = scratch("forged-transaction");
-        remove_scratch(&root);
+        let root = fresh("forged-transaction");
         let mut publication_plan = plan(&root, None);
         publication_plan.transaction_receipt_id = "a".repeat(64);
         assert_eq!(
@@ -2482,8 +2492,7 @@ mod tests {
 
     #[test]
     fn rejects_valid_receipt_bound_to_a_different_source_manifest() {
-        let root = scratch("foreign-manifest");
-        remove_scratch(&root);
+        let root = fresh("foreign-manifest");
         let mut publication_plan = plan(&root, None);
         publication_plan.source_manifest_id = "b".repeat(64);
         assert_eq!(
@@ -2498,8 +2507,7 @@ mod tests {
 
     #[test]
     fn recovery_restores_journal_bound_prior_bytes() {
-        let root = scratch("restore");
-        remove_scratch(&root);
+        let root = fresh("restore");
         let plan = plan(&root, Some(b"old-result"));
         prepare_transaction_directories(&plan).expect("transaction dirs");
         install_entry(&plan, &plan.entries[0], 1, false).expect("partial install");
@@ -2517,8 +2525,7 @@ mod tests {
 
     #[test]
     fn recovery_completes_a_journaled_partial_transaction() {
-        let root = scratch("complete");
-        remove_scratch(&root);
+        let root = fresh("complete");
         let plan = plan(&root, None);
         prepare_transaction_directories(&plan).expect("transaction dirs");
         install_entry(&plan, &plan.entries[0], 1, false).expect("first install");
@@ -2536,8 +2543,7 @@ mod tests {
     #[cfg(target_os = "linux")]
     #[test]
     fn rejects_destination_root_replacement_at_install_boundary_without_overwrite() {
-        let root = scratch("root-install-race");
-        remove_scratch(&root);
+        let root = fresh("root-install-race");
         let publication_plan = plan(&root, None);
         prepare_transaction_directories(&publication_plan).expect("transaction dirs");
         let entry = &publication_plan.entries[0];
@@ -2575,8 +2581,7 @@ mod tests {
     #[cfg(target_os = "linux")]
     #[test]
     fn rejects_destination_inode_replacement_at_install_boundary_without_overwrite() {
-        let root = scratch("destination-install-race");
-        remove_scratch(&root);
+        let root = fresh("destination-install-race");
         let publication_plan = plan(&root, Some(b"old-result"));
         prepare_transaction_directories(&publication_plan).expect("transaction dirs");
         let entry = &publication_plan.entries[0];
@@ -2611,8 +2616,7 @@ mod tests {
     #[cfg(target_os = "linux")]
     #[test]
     fn rejects_source_root_replacement_after_descriptor_read_without_staging() {
-        let root = scratch("source-read-race");
-        remove_scratch(&root);
+        let root = fresh("source-read-race");
         let publication_plan = plan(&root, None);
         prepare_transaction_directories(&publication_plan).expect("transaction dirs");
         let entry = &publication_plan.entries[0];
@@ -2645,8 +2649,7 @@ mod tests {
     #[cfg(target_os = "linux")]
     #[test]
     fn rejects_transaction_root_replacement_before_staged_install() {
-        let root = scratch("transaction-install-race");
-        remove_scratch(&root);
+        let root = fresh("transaction-install-race");
         let publication_plan = plan(&root, None);
         prepare_transaction_directories(&publication_plan).expect("transaction dirs");
         let entry = &publication_plan.entries[0];
@@ -2693,8 +2696,7 @@ mod tests {
     #[cfg(target_os = "linux")]
     #[test]
     fn rejects_transaction_root_replacement_during_journal_append() {
-        let root = scratch("journal-root-race");
-        remove_scratch(&root);
+        let root = fresh("journal-root-race");
         let publication_plan = plan(&root, None);
         prepare_transaction_directories(&publication_plan).expect("transaction dirs");
         let entry = &publication_plan.entries[0];
@@ -2741,8 +2743,7 @@ mod tests {
     fn rejects_symlinked_staging_subtree_without_external_write() {
         use std::os::unix::fs::symlink;
 
-        let root = scratch("staging-subtree-race");
-        remove_scratch(&root);
+        let root = fresh("staging-subtree-race");
         let publication_plan = plan(&root, None);
         prepare_transaction_directories(&publication_plan).expect("transaction dirs");
         fs::remove_dir_all(publication_plan.transaction_root.join("staged"))
@@ -2776,8 +2777,7 @@ mod tests {
     fn rejects_symlinked_backup_subtree_without_external_write() {
         use std::os::unix::fs::symlink;
 
-        let root = scratch("backup-subtree-race");
-        remove_scratch(&root);
+        let root = fresh("backup-subtree-race");
         let publication_plan = plan(&root, Some(b"old-result"));
         prepare_transaction_directories(&publication_plan).expect("transaction dirs");
         let external = root.join("external-backups");
@@ -2812,27 +2812,11 @@ mod tests {
     #[cfg(target_os = "linux")]
     #[test]
     fn recovery_delete_rejects_destination_root_swap_without_redirection() {
-        let root = scratch("recovery-destination-root-swap");
-        remove_scratch(&root);
+        let root = fresh("recovery-destination-root-swap");
         let destination_root = root.join("destination");
         let relative_path = PathBuf::from("objects/artifacts/result.json");
         write(&destination_root.join(&relative_path), b"new-result");
-        let plan = PublicationPlan {
-            publication_id: "recovery-test".to_owned(),
-            external_plan_path: root.join("plan"),
-            transaction_receipt_path: root.join("receipt"),
-            transaction_receipt_id: "0".repeat(64),
-            transaction_receipt_sha256: "0".repeat(64),
-            source_manifest_id: "0".repeat(64),
-            source_manifest_sha256: "0".repeat(64),
-            destination_baseline_sha256: "0".repeat(64),
-            source_root: root.join("source"),
-            destination_root: destination_root.clone(),
-            transaction_root: root.join("transaction"),
-            journal_path: root.join("transaction/journal/publication.jsonl"),
-            receipt_path: root.join("transaction/receipt/publication.json"),
-            entries: Vec::new(),
-        };
+        let plan = recovery_plan(&root, destination_root.clone(), root.join("transaction"));
         let record = PublicationJournalRecord {
             schema_version: JOURNAL_SCHEMA.to_owned(),
             publication_id: plan.publication_id.clone(),
@@ -2864,8 +2848,7 @@ mod tests {
     fn recovery_backup_read_rejects_swapped_ancestor_without_external_read() {
         use std::os::unix::fs::symlink;
 
-        let root = scratch("recovery-backup-ancestor-swap");
-        remove_scratch(&root);
+        let root = fresh("recovery-backup-ancestor-swap");
         let transaction_root = root.join("transaction");
         fs::create_dir_all(&transaction_root).expect("transaction root");
         let external = root.join("external-backups");
@@ -2874,22 +2857,7 @@ mod tests {
             b"old-result",
         );
         symlink(&external, transaction_root.join("backups")).expect("swap backup ancestor");
-        let plan = PublicationPlan {
-            publication_id: "recovery-test".to_owned(),
-            external_plan_path: root.join("plan"),
-            transaction_receipt_path: root.join("receipt"),
-            transaction_receipt_id: "0".repeat(64),
-            transaction_receipt_sha256: "0".repeat(64),
-            source_manifest_id: "0".repeat(64),
-            source_manifest_sha256: "0".repeat(64),
-            destination_baseline_sha256: "0".repeat(64),
-            source_root: root.join("source"),
-            destination_root: root.join("destination"),
-            transaction_root: transaction_root.clone(),
-            journal_path: transaction_root.join("journal/publication.jsonl"),
-            receipt_path: transaction_root.join("receipt/publication.json"),
-            entries: Vec::new(),
-        };
+        let plan = recovery_plan(&root, root.join("destination"), transaction_root.clone());
         let staged = transaction_root.join("restore-staged/objects/artifacts/result.json");
         let error = copy_transaction_file_to_stage(
             &plan,
@@ -2904,6 +2872,107 @@ mod tests {
             fs::read(external.join("objects/artifacts/result.json")).expect("external backup"),
             b"old-result"
         );
+        remove_scratch(&root);
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn recovery_restore_resumes_authenticated_existing_stage() {
+        let root = fresh("recovery-resume-stage");
+        let plan = plan(&root, Some(b"old-result"));
+        prepare_transaction_directories(&plan).expect("transaction dirs");
+        install_entry(&plan, &plan.entries[0], 1, false).expect("partial publication");
+        let records = load_journal(&plan).expect("install journal");
+        let install = &records[0];
+        let backup = install
+            .backup_relative_path
+            .as_ref()
+            .expect("backup binding");
+        let staged = plan
+            .transaction_root
+            .join("restore-staged")
+            .join(&install.relative_path);
+        copy_transaction_file_to_stage(
+            &plan,
+            backup,
+            &staged,
+            install
+                .destination_baseline_sha256
+                .as_deref()
+                .expect("baseline digest"),
+        )
+        .expect("interrupted restore stage");
+        append_restore_record(&plan, install).expect("interrupted restore journal");
+
+        let outcome = recover(&plan, RecoveryAction::Restore).expect("resume restore");
+        assert_eq!(outcome.status, PublicationStatus::Restored);
+        assert_eq!(
+            fs::read(plan.destination_root.join(&install.relative_path)).expect("restored bytes"),
+            b"old-result"
+        );
+        remove_scratch(&root);
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn install_rejects_dynamic_destination_ancestor_swap() {
+        let root = fresh("install-ancestor-swap");
+        let plan = plan(&root, None);
+        prepare_transaction_directories(&plan).expect("transaction dirs");
+        let entry = &plan.entries[0];
+        let source = plan.source_root.join(&entry.relative_path);
+        let staged = plan
+            .transaction_root
+            .join("staged")
+            .join(&entry.relative_path);
+        copy_verified(&source, &staged, Some(&entry.source_sha256)).expect("stage source");
+        let destination = plan.destination_root.join(&entry.relative_path);
+        ensure_parent(&destination).expect("destination parent");
+        let parent = destination.parent().expect("destination parent").to_owned();
+        let displaced = root.join("destination-parent-displaced");
+
+        let error = install_staged_destination(&plan, entry, &staged, || {
+            fs::rename(&parent, &displaced).expect("displace destination ancestor");
+            fs::create_dir_all(&parent).expect("replacement destination ancestor");
+        })
+        .expect_err("ancestor swap must reject");
+        assert_eq!(error.code, "GATE-PUBLICATION-DESTINATION-ANCESTOR-RACE");
+        assert!(!destination.exists());
+        assert!(!displaced.join("result.json").exists());
+        remove_scratch(&root);
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn recovery_delete_rejects_dynamic_destination_ancestor_swap() {
+        let root = fresh("recovery-delete-ancestor-swap");
+        let plan = plan(&root, None);
+        let entry = &plan.entries[0];
+        let destination = plan.destination_root.join(&entry.relative_path);
+        write(&destination, b"new-result");
+        let record = PublicationJournalRecord {
+            schema_version: JOURNAL_SCHEMA.to_owned(),
+            publication_id: plan.publication_id.clone(),
+            sequence: 1,
+            operation: JournalOperation::Install,
+            relative_path: entry.relative_path.clone(),
+            source_sha256: entry.source_sha256.clone(),
+            destination_baseline_sha256: None,
+            backup_relative_path: None,
+        };
+        let parent = destination.parent().expect("destination parent").to_owned();
+        let displaced = root.join("recovery-delete-parent-displaced");
+        let error = remove_installed_descriptor_relative_with_hook(&plan, &record, || {
+            fs::rename(&parent, &displaced).expect("displace delete ancestor");
+            fs::create_dir_all(&parent).expect("replacement delete ancestor");
+        })
+        .expect_err("delete ancestor swap must reject");
+        assert_eq!(
+            error.code,
+            "GATE-PUBLICATION-RECOVERY-DESTINATION-ANCESTOR-RACE"
+        );
+        assert!(displaced.join("result.json").exists());
+        assert!(!destination.exists());
         remove_scratch(&root);
     }
 }

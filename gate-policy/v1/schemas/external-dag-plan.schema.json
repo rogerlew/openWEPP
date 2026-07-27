@@ -99,8 +99,8 @@
       "additionalProperties": false,
       "required": ["head", "tree", "diff_sha256"],
       "properties": {
-        "head": {"$ref": "#/$defs/digest"},
-        "tree": {"$ref": "#/$defs/digest"},
+        "head": {"type": "string", "pattern": "^[0-9a-f]{40}$|^[0-9a-f]{64}$"},
+        "tree": {"type": "string", "pattern": "^[0-9a-f]{40}$|^[0-9a-f]{64}$"},
         "diff_sha256": {"$ref": "#/$defs/digest"}
       }
     },
@@ -110,7 +110,7 @@
       "required": ["package_path", "base_commit", "cheap_gate_evidence"],
       "properties": {
         "package_path": {"$ref": "#/$defs/path"},
-        "base_commit": {"type": "string", "pattern": "^[0-9a-f]{7,40}$"},
+        "base_commit": {"type": "string", "pattern": "^[0-9a-f]{7,64}$"},
         "cheap_gate_evidence": {
           "type": "array",
           "minItems": 1,
