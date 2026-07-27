@@ -336,9 +336,13 @@ State as of `2026-07-27 UTC`:
   selection; production review findings are corrected, but the full planner
   suite exposed one out-of-scope synthetic inventory-provider defect.
 - `20260727-gate-planner-auth11-fixed-inventory-test-provider-001/` -
-  ACTIVE / SCAFFOLD REVIEW: prospectively owns only the shared coverage-test
-  provider correction required by AUTH11's exact three-item inventory. No
-  production planner or policy behavior is writable.
+  ACTIVE / CANONICAL BOOTSTRAP HOLD: the test-only provider correction and
+  terminal verification pass, but its first canonical transition exposed an
+  absent-ledger bootstrap defect before LIGHT.
+- `20260727-testgate-first-attempt-ledger-bootstrap-001/` -
+  ACTIVE / SCAFFOLD REVIEW: prospectively owns secure creation/validation of a
+  fresh durable history ledger before Rust transition preflight. The failed
+  roots remain unexecuted evidence.
 - `20260727-science-implementation-calibration-readiness-governance-001/` -
   COMPLETE / GOVERNANCE ADMITTED: ADR-0042 and canonical contract/package rules
   separate authoritative science implementation, calibration-role data,
