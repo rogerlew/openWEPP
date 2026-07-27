@@ -332,8 +332,13 @@ State as of `2026-07-27 UTC`:
   pass dual implementation review, but canonical planning omitted the separate
   AUTH11 obligation-guard node.
 - `20260727-gate-planner-auth11-terminal-node-selection-001/` -
-  ACTIVE / SCAFFOLD REVIEW: prospectively owns the missing AUTH11 terminal-node
-  selection; the incomplete 12-node plan remains unexecuted.
+  ACTIVE / FOCUSED HOLD: prospectively owns the missing AUTH11 terminal-node
+  selection; production review findings are corrected, but the full planner
+  suite exposed one out-of-scope synthetic inventory-provider defect.
+- `20260727-gate-planner-auth11-fixed-inventory-test-provider-001/` -
+  ACTIVE / SCAFFOLD REVIEW: prospectively owns only the shared coverage-test
+  provider correction required by AUTH11's exact three-item inventory. No
+  production planner or policy behavior is writable.
 - `20260727-science-implementation-calibration-readiness-governance-001/` -
   COMPLETE / GOVERNANCE ADMITTED: ADR-0042 and canonical contract/package rules
   separate authoritative science implementation, calibration-role data,

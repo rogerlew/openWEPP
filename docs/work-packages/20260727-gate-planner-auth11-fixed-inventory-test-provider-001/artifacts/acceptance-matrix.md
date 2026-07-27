@@ -1,0 +1,14 @@
+# Acceptance Matrix
+
+Status: `SCAFFOLD REVIEW REQUIRED`
+
+Evidence class: `Static + Ran`
+
+| ID | Obligation | Evidence |
+|---|---|---|
+| TP-01 | Exact failure retained | predecessor implementation-gates artifact and Nextest run `b47dca9b-8772-46fe-a596-c5efc464851f` |
+| TP-02 | Test-only correction | exact terminal diff contains only declared paths |
+| TP-03 | Exact AUTH11 inventory | fixed provider and deterministic-plan assertion |
+| TP-04 | Production enforcement unchanged | no production path diff; focused negative/positive tests green |
+| TP-05 | Full suite restored | gate-planner Nextest 227/227 |
+| TP-06 | Independent acceptance | dual implementation review |
