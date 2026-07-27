@@ -305,8 +305,12 @@
 
 ## Current Active/Held Packages
 
-State as of `2026-07-26 UTC`:
+State as of `2026-07-27 UTC`:
 
+- `20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/` -
+  QUEUED: execute CAL-04A's 9,261-vector GSI ensemble, freeze and score Harvard
+  once, and close every remaining Order 4 operand through empirical calibration
+  or auditable ADR-0042 calibration readiness.
 - `20260727-science-implementation-calibration-readiness-governance-001/` -
   COMPLETE / GOVERNANCE ADMITTED: ADR-0042 and canonical contract/package rules
   separate authoritative science implementation, calibration-role data,
@@ -320,12 +324,11 @@ State as of `2026-07-26 UTC`:
   finite-domain blocker. Search support is explicitly an execution assumption,
   not a physiological bound; Harvard results remain sealed.
 - `20260726-canopy-cal-04-process-calibration-identifiability-001/` -
-  EXECUTED / HOLD: the admitted timing windows rebuilt byte-identically, but
+  CLOSED / EXECUTED HOLD: the admitted timing windows rebuilt byte-identically,
+  but
   contracts provide input-validity domains rather than finite GSI calibration
-  bounds. No candidate or Harvard result was opened. Later stages retain the
-  frozen biomass partition-sum and mature-LAI roles but lack sufficient
-  separating authority and finite search bounds. A prospectively reviewed
-  authority amendment is required before calibration.
+  bounds. No candidate or Harvard result was opened. CAL-04A admitted the
+  finite design; CAL-04B is the sole result-bearing successor.
 - `20260726-canopy-cal-04-05-authority-evidence-admission-001/` -
   EXECUTED / HOLD: CAL-04 timing authority is lifted with Hubbard Brook
   calibration and an independent Harvard Forest holdout, and CAL-04 adopts a

@@ -49,3 +49,13 @@ separating observation authority and finite operand search bounds, while
 retaining the existing partition-sum and LAI roles. Harvard must remain sealed
 until a nonempty accepted calibration ensemble and exact analysis/command
 identities are frozen.
+
+## Lifecycle Closure
+
+Lifecycle: `CLOSED` on `2026-07-27`.
+
+The `EXECUTED / HOLD` result remains the truthful terminal result for this
+package and is not superseded retroactively. CAL-04A subsequently admitted the
+finite GSI sensitivity design, and CAL-04B is the sole successor authorized to
+execute candidates, demonstrate calibration readiness for data-limited
+operands, freeze the accepted ensemble, and open the Harvard modeled holdout.

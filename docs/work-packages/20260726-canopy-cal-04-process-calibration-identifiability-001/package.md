@@ -4,6 +4,13 @@ Package ID: `20260726-canopy-cal-04-process-calibration-identifiability-001`
 
 Status: `EXECUTED / HOLD`
 
+Lifecycle: `CLOSED`
+
+Successors:
+
+- `20260726-canopy-cal-04a-best-available-evidence-daymet-001`
+- `20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001`
+
 Date opened: `2026-07-26`
 
 Execution mode: `package-end-to-end`
@@ -96,6 +103,12 @@ No candidate, parameter range, model failure, accepted ensemble, Harvard
 result, or downstream result is established. A follow-on requires
 prospectively admitted finite GSI bounds/grid and sufficient separating
 authority for later stages.
+
+Closure note (2026-07-27): this historical disposition is final and is not
+reopened. CAL-04A admitted the finite, model-result-blind GSI sensitivity
+design. CAL-04B owns candidate execution, calibration readiness, partial
+identifiability, independent holdout evaluation, and the remaining Order 4
+stage dispositions under ADR-0042.
 
 ## Context and Orientation
 

@@ -406,7 +406,7 @@ before execution.
 | 1 | [`CANOPY-CAL-01` source and target ledger](../work-packages/20260726-canopy-cal-01-source-target-ledger-001/package.md) — **complete** | Bind Bill's exact sources, primary literature targets, units, uncertainties, comparison scales, and the 92/95 discrepancy. | Passed: no unsourced or cross-scale target carries calibration or validation. |
 | 2 | [`CANOPY-CAL-02` Elliot reproduction](../work-packages/20260726-canopy-cal-02-elliot-reproduction-001/package.md) — **complete / not reproducible** | Reproduce or truthfully bound the Hubbard and Santee biomass, residue, equilibrium, and downstream comparisons. | Passed: machine-readable runs and figures explain the mismatches; legacy recovery is closed. |
 | 3 | [`CANOPY-CAL-03` observation corpus, native fixtures, and research outputs](../work-packages/20260726-canopy-cal-03-observation-native-research-001/package.md) — **complete; CAL-04/05 authority blockers retained** | Installed provenance-bound phenology/LAI/canopy/litter observations, native YAML counterparts for selected canopy-gradient lanes, and a stable daily research-output surface. | Passed for CAL-03: immutable roles, protected bindings, real production consumers, mass/cohort closure, and deterministic rebuild. CAL-04 timing fitting and affected CAL-05 source/decay claims remain authority-blocked pending new independent evidence. |
-| 4 | [`CANOPY-CAL-04` process calibration and identifiability](../work-packages/20260726-canopy-cal-04-process-calibration-identifiability-001/package.md) — **executed / hold before candidates**; [`CAL-04A` best-available evidence and Daymet](../work-packages/20260726-canopy-cal-04a-best-available-evidence-daymet-001/package.md) — **complete / design authority admitted** | CAL-04 retained timing authority but stopped because validity domains were not finite calibration bounds. CAL-04A adds checksum-bound plot Daymet forcing, native-algebra VPD/photoperiod, elevation/confounding analysis, and a 9,261-vector coarse sensitivity ensemble. Forcing support is an explicit execution assumption, not a physiological bound. | Passed for design authority: the finite ensemble is reproducible and model-result-blind; every operand has a truthful evidence class and sensitivity obligation. Candidate execution and Harvard opening require the next package. |
+| 4 | [`CANOPY-CAL-04`](../work-packages/20260726-canopy-cal-04-process-calibration-identifiability-001/package.md) — **closed / executed hold**; [`CAL-04A`](../work-packages/20260726-canopy-cal-04a-best-available-evidence-daymet-001/package.md) — **complete / design authority admitted**; [`CAL-04B`](../work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/package.md) — **queued** | CAL-04 preserves the historical pre-candidate authority hold. CAL-04A admits checksum-bound Daymet forcing and the model-result-blind 9,261-vector GSI design. CAL-04B executes the ensemble, freezes and evaluates Harvard once, and empirically calibrates supported combinations or proves ADR-0042 readiness for data-limited later operands. | Pending CAL-04B: deterministic ensemble/objective reconstruction, separate Hubbard calibration and Harvard validation, stage-level orthogonal statuses, readiness matrix, equifinality/failure retention, and additional-data inventory pass without holdout/downstream selection. |
 | 5 | `CANOPY-CAL-05` litter-source and decomposition adjudication — [authority package on hold](../work-packages/20260726-canopy-cal-04-05-authority-evidence-admission-001/package.md) | Retained Harvard and Hubbard Brook objects support source-sufficiency analysis, but decomposition fitting waits for tissue-separated fine-wood, bark, and reproductive litter mass on a stock-compatible basis. | Operator-supplied evidence resolves the pooled-material blocker; no unknown source is treated as zero or hidden in decay. |
 | 6 | `CANOPY-CAL-06` canopy-gradient congruence | Run conifer-mixed-deciduous-open within-site comparisons through canopy, ET/interception, snow, residue, frost, runoff, and erosion consumers. | Prespecified ordering and quantitative cells pass or are bounded with retained contrary evidence. |
 | 7 | `CANOPY-CAL-07` Southern Hemisphere robustness | Combine synthetic phase invariance with independent SH observational lanes and real downstream consumers. | Timing, phase, amplitude, mass closure, and consumer chronology pass without fixed dates or NH-only tuning. |
@@ -496,7 +496,8 @@ new physics has been smuggled into the evidence package.
 
 ### 6.2 CAL-04 and CAL-05 execution discipline
 
-CAL-04 must calibrate in process order rather than jointly fitting every
+CAL-04B must calibrate or demonstrate readiness in process order rather than
+jointly fitting every
 operand:
 
 1. fit GSI thresholds to independent timing observations;
@@ -507,8 +508,12 @@ operand:
 5. constrain `Cs` and `bb` from winter floor and summer canopy closure; and
 6. freeze accepted upstream ranges before downstream evaluation.
 
-Each stage must report identifiability and retained failures. It may revisit an
-earlier stage only through an explicit finding and renewed joint fit plan.
+Each stage must report the ADR-0042 science-implementation,
+calibration-evidence, and identifiability fields plus retained failures. It may
+revisit an earlier stage only through an explicit finding and renewed joint
+fit plan. When admitted data cannot separate an operand, CAL-04B must complete
+the readiness matrix, sensitivity/synthetic-recovery evidence, equifinality,
+and additional-data inventory rather than stopping solely for data scarcity.
 Runoff, erosion, snow, and frost residuals cannot select canopy parameters.
 
 CAL-05 then applies Elliot's source-to-equilibrium method to the frozen canopy
