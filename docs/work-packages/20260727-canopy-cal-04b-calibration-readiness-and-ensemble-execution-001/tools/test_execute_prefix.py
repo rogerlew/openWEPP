@@ -142,6 +142,7 @@ class ExecutePrefixTest(unittest.TestCase):
                 "schema": "openwepp-external-verifier-attestation-v1",
                 "attestation_id": "",
                 "capability_hash": capability_hash,
+                "transaction_id": "holdout-v1",
                 "parent_dispatch_id": "dispatch-1",
                 "agent_task_id": f"task-{suffix}",
                 "principal": principal,
@@ -258,6 +259,24 @@ class ExecutePrefixTest(unittest.TestCase):
                 )
             receipt = custody / "freeze-receipts/verifier_a.csv"
             receipt.write_text("state\nDRIFT\n", encoding="utf-8")
+            with self.assertRaises(ValueError):
+                MODULE.build_generation_b(
+                    base_plan, calibration, freeze, attestations, custody, planner
+                )
+
+    def test_generation_b_rejects_stale_transaction_attestation(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            custody, calibration, attestations, freeze, base_plan, planner = (
+                self.generation_fixture(root)
+            )
+            value = json.loads(attestations[0].read_text(encoding="utf-8"))
+            value["transaction_id"] = "calibration-v1"
+            value["attestation_id"] = MODULE.derived_id(value, "attestation_id")
+            attestations[0].write_text(
+                json.dumps(value, sort_keys=True, separators=(",", ":")),
+                encoding="utf-8",
+            )
             with self.assertRaises(ValueError):
                 MODULE.build_generation_b(
                     base_plan, calibration, freeze, attestations, custody, planner

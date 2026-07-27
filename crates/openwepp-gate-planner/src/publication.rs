@@ -724,6 +724,27 @@ fn ensure_relative_parent_at(
     Ok(())
 }
 
+#[cfg(target_os = "linux")]
+fn open_parent_beneath(root: &rustix::fd::OwnedFd, relative: &Path) -> Result<rustix::fd::OwnedFd> {
+    use rustix::fs::{Mode, OFlags, ResolveFlags, openat2};
+
+    let parent = relative.parent().unwrap_or_else(|| Path::new("."));
+    openat2(
+        root,
+        parent,
+        OFlags::PATH | OFlags::DIRECTORY | OFlags::CLOEXEC,
+        Mode::empty(),
+        ResolveFlags::BENEATH | ResolveFlags::NO_MAGICLINKS | ResolveFlags::NO_SYMLINKS,
+    )
+    .map_err(|error| {
+        publication_error(
+            ErrorClass::Io,
+            "GATE-PUBLICATION-RECOVERY-PARENT-OPEN",
+            format!("{}: {error}", relative.display()),
+        )
+    })
+}
+
 #[cfg(not(target_os = "linux"))]
 fn copy_source_to_stage(
     _plan: &PublicationPlan,
@@ -1014,32 +1035,24 @@ fn restore_entry(plan: &PublicationPlan, record: &PublicationJournalRecord) -> R
         &record.backup_relative_path,
     ) {
         (Some(expected), Some(relative)) => {
-            let backup = confined_join(&plan.transaction_root, relative)?;
-            require_hash(&backup, expected)?;
             let staged = confined_join(
                 &plan.transaction_root.join("restore-staged"),
                 &record.relative_path,
             )?;
-            copy_verified(&backup, &staged, Some(expected))?;
+            copy_transaction_file_to_stage(plan, relative, &staged, expected)?;
             append_restore_record(plan, record)?;
-            ensure_parent(&destination)?;
-            fs::rename(&staged, &destination).map_err(|error| {
-                io_error("GATE-PUBLICATION-RESTORE-RENAME", &destination, error)
-            })?;
+            let restore_entry = PublicationEntry {
+                relative_path: record.relative_path.clone(),
+                source_sha256: expected.clone(),
+                destination_baseline_sha256: Some(record.source_sha256.clone()),
+            };
+            install_staged_destination(plan, &restore_entry, &staged, || {})?;
             sync_parent(&destination)?;
             require_hash(&destination, expected)
         }
         (None, None) => {
             append_restore_record(plan, record)?;
-            match fs::remove_file(&destination) {
-                Ok(()) => sync_parent(&destination),
-                Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
-                Err(error) => Err(io_error(
-                    "GATE-PUBLICATION-RESTORE-REMOVE",
-                    &destination,
-                    error,
-                )),
-            }
+            remove_installed_descriptor_relative(plan, record)
         }
         _ => Err(publication_error(
             ErrorClass::Ledger,
@@ -1057,6 +1070,256 @@ fn append_restore_record(plan: &PublicationPlan, prior: &PublicationJournalRecor
             ..prior.clone()
         },
     )
+}
+
+#[cfg(target_os = "linux")]
+fn copy_transaction_file_to_stage(
+    plan: &PublicationPlan,
+    source_relative: &Path,
+    staged: &Path,
+    expected: &str,
+) -> Result<()> {
+    use rustix::fs::{Mode, OFlags, ResolveFlags, openat2};
+
+    let root = openat2(
+        rustix::fs::CWD,
+        &plan.transaction_root,
+        OFlags::PATH | OFlags::DIRECTORY | OFlags::CLOEXEC,
+        Mode::empty(),
+        ResolveFlags::NO_MAGICLINKS | ResolveFlags::NO_SYMLINKS,
+    )
+    .map_err(|error| {
+        io_error(
+            "GATE-PUBLICATION-RECOVERY-ROOT-OPEN",
+            &plan.transaction_root,
+            error,
+        )
+    })?;
+    let identity = rustix::fs::fstat(&root).map_err(|error| {
+        io_error(
+            "GATE-PUBLICATION-RECOVERY-ROOT-STAT",
+            &plan.transaction_root,
+            error,
+        )
+    })?;
+    let mut source = File::from(
+        openat2(
+            &root,
+            source_relative,
+            OFlags::RDONLY | OFlags::CLOEXEC,
+            Mode::empty(),
+            ResolveFlags::BENEATH | ResolveFlags::NO_MAGICLINKS | ResolveFlags::NO_SYMLINKS,
+        )
+        .map_err(|error| {
+            io_error(
+                "GATE-PUBLICATION-RECOVERY-BACKUP-OPEN",
+                &plan.transaction_root.join(source_relative),
+                error,
+            )
+        })?,
+    );
+    let metadata = source.metadata().map_err(|error| {
+        io_error(
+            "GATE-PUBLICATION-RECOVERY-BACKUP-STAT",
+            &plan.transaction_root.join(source_relative),
+            error,
+        )
+    })?;
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::MetadataExt;
+        if !metadata.is_file() || metadata.nlink() != 1 {
+            return Err(publication_error(
+                ErrorClass::Identity,
+                "GATE-PUBLICATION-RECOVERY-BACKUP-TYPE",
+                "recovery backup must be a singly linked regular file",
+            ));
+        }
+    }
+    let mut bytes = Vec::new();
+    source.read_to_end(&mut bytes).map_err(|error| {
+        io_error(
+            "GATE-PUBLICATION-RECOVERY-BACKUP-READ",
+            &plan.transaction_root.join(source_relative),
+            error,
+        )
+    })?;
+    if sha256_bytes(&bytes) != expected {
+        return Err(publication_error(
+            ErrorClass::Identity,
+            "GATE-PUBLICATION-RECOVERY-BACKUP-DRIFT",
+            "recovery backup bytes differ from the journal baseline",
+        ));
+    }
+    let staged_relative = staged.strip_prefix(&plan.transaction_root).map_err(|_| {
+        publication_error(
+            ErrorClass::Policy,
+            "GATE-PUBLICATION-RECOVERY-STAGE-CONFINEMENT",
+            "recovery stage is outside the transaction root",
+        )
+    })?;
+    ensure_relative_parent_at(&root, staged_relative, staged)?;
+    let mut output = File::from(
+        openat2(
+            &root,
+            staged_relative,
+            OFlags::WRONLY | OFlags::CREATE | OFlags::EXCL | OFlags::CLOEXEC,
+            Mode::RUSR | Mode::WUSR,
+            ResolveFlags::BENEATH | ResolveFlags::NO_MAGICLINKS | ResolveFlags::NO_SYMLINKS,
+        )
+        .map_err(|error| io_error("GATE-PUBLICATION-RECOVERY-STAGE-CREATE", staged, error))?,
+    );
+    output
+        .write_all(&bytes)
+        .and_then(|()| output.sync_all())
+        .map_err(|error| io_error("GATE-PUBLICATION-RECOVERY-STAGE-WRITE", staged, error))?;
+    require_unchanged_root(
+        &plan.transaction_root,
+        identity.st_dev,
+        identity.st_ino,
+        "GATE-PUBLICATION-RECOVERY-ROOT-RACE",
+    )
+}
+
+#[cfg(not(target_os = "linux"))]
+fn copy_transaction_file_to_stage(
+    _plan: &PublicationPlan,
+    _source_relative: &Path,
+    _staged: &Path,
+    _expected: &str,
+) -> Result<()> {
+    Err(publication_error(
+        ErrorClass::Policy,
+        "GATE-PUBLICATION-DESCRIPTOR-UNAVAILABLE",
+        "descriptor-relative recovery is required",
+    ))
+}
+
+#[cfg(target_os = "linux")]
+fn remove_installed_descriptor_relative(
+    plan: &PublicationPlan,
+    record: &PublicationJournalRecord,
+) -> Result<()> {
+    remove_installed_descriptor_relative_with_hook(plan, record, || {})
+}
+
+#[cfg(target_os = "linux")]
+fn remove_installed_descriptor_relative_with_hook(
+    plan: &PublicationPlan,
+    record: &PublicationJournalRecord,
+    before_recheck: impl FnOnce(),
+) -> Result<()> {
+    use rustix::fs::{AtFlags, Mode, OFlags, ResolveFlags, openat2, statat, unlinkat};
+    use std::os::unix::fs::MetadataExt;
+
+    let root = openat2(
+        rustix::fs::CWD,
+        &plan.destination_root,
+        OFlags::PATH | OFlags::DIRECTORY | OFlags::CLOEXEC,
+        Mode::empty(),
+        ResolveFlags::NO_MAGICLINKS | ResolveFlags::NO_SYMLINKS,
+    )
+    .map_err(|error| {
+        io_error(
+            "GATE-PUBLICATION-RECOVERY-DESTINATION-OPEN",
+            &plan.destination_root,
+            error,
+        )
+    })?;
+    let identity = rustix::fs::fstat(&root).map_err(|error| {
+        io_error(
+            "GATE-PUBLICATION-RECOVERY-DESTINATION-STAT",
+            &plan.destination_root,
+            error,
+        )
+    })?;
+    let parent = open_parent_beneath(&root, &record.relative_path)?;
+    let name = record.relative_path.file_name().ok_or_else(|| {
+        publication_error(
+            ErrorClass::Schema,
+            "GATE-PUBLICATION-PATH",
+            "missing recovery file name",
+        )
+    })?;
+    let mut file = File::from(
+        openat2(
+            &parent,
+            name,
+            OFlags::RDONLY | OFlags::CLOEXEC,
+            Mode::empty(),
+            ResolveFlags::NO_MAGICLINKS | ResolveFlags::NO_SYMLINKS,
+        )
+        .map_err(|error| {
+            io_error(
+                "GATE-PUBLICATION-RECOVERY-DESTINATION-FILE",
+                &plan.destination_root.join(&record.relative_path),
+                error,
+            )
+        })?,
+    );
+    let metadata = file.metadata().map_err(|error| {
+        io_error(
+            "GATE-PUBLICATION-RECOVERY-DESTINATION-STAT",
+            &plan.destination_root.join(&record.relative_path),
+            error,
+        )
+    })?;
+    let mut bytes = Vec::new();
+    file.read_to_end(&mut bytes).map_err(|error| {
+        io_error(
+            "GATE-PUBLICATION-RECOVERY-DESTINATION-READ",
+            &plan.destination_root.join(&record.relative_path),
+            error,
+        )
+    })?;
+    if !metadata.is_file() || metadata.nlink() != 1 || sha256_bytes(&bytes) != record.source_sha256
+    {
+        return Err(publication_error(
+            ErrorClass::Identity,
+            "GATE-PUBLICATION-RECOVERY-DESTINATION-DRIFT",
+            "installed destination differs from the journaled source",
+        ));
+    }
+    before_recheck();
+    let current = statat(&parent, name, AtFlags::SYMLINK_NOFOLLOW).map_err(|error| {
+        io_error(
+            "GATE-PUBLICATION-RECOVERY-DESTINATION-RECHECK",
+            &plan.destination_root.join(&record.relative_path),
+            error,
+        )
+    })?;
+    if (metadata.dev(), metadata.ino()) != (current.st_dev, current.st_ino) {
+        return Err(publication_error(
+            ErrorClass::Identity,
+            "GATE-PUBLICATION-RECOVERY-DESTINATION-RACE",
+            "installed destination inode changed before recovery delete",
+        ));
+    }
+    require_unchanged_root(
+        &plan.destination_root,
+        identity.st_dev,
+        identity.st_ino,
+        "GATE-PUBLICATION-RECOVERY-DESTINATION-ROOT-RACE",
+    )?;
+    unlinkat(&parent, name, AtFlags::empty()).map_err(|error| {
+        io_error(
+            "GATE-PUBLICATION-RESTORE-REMOVE",
+            &plan.destination_root.join(&record.relative_path),
+            error,
+        )
+    })
+}
+
+#[cfg(not(target_os = "linux"))]
+fn remove_installed_descriptor_relative(
+    _plan: &PublicationPlan,
+    _record: &PublicationJournalRecord,
+) -> Result<()> {
+    Err(publication_error(
+        ErrorClass::Policy,
+        "GATE-PUBLICATION-DESCRIPTOR-UNAVAILABLE",
+        "descriptor-relative recovery is required",
+    ))
 }
 
 fn validate_plan(plan: &PublicationPlan) -> Result<()> {
@@ -1652,6 +1915,7 @@ fn verify_installed_manifest(plan: &PublicationPlan) -> Result<()> {
     Ok(())
 }
 
+#[cfg(test)]
 fn copy_verified(source: &Path, destination: &Path, expected: Option<&str>) -> Result<()> {
     reject_symlink_or_special_if_present(source)?;
     ensure_parent(destination)?;
@@ -1983,7 +2247,7 @@ mod tests {
             .expect("executable fixture script");
         }
         let source_csv = format!(
-            "order,command_id,source_path,command,environment,working_directory,inputs,outputs,harvard_access,cost_class\n\
+            "order,command_id,source_path,argv,environment,working_directory,inputs,outputs,harvard_access,cost_class\n\
              1,light,tools/light.sh,tools/light.sh ${{OBJECTS_ROOT}}/artifacts/result.json,default,{},seed,objects/artifacts/result.json,FORBIDDEN,QUICK\n\
              2,heavy,tools/heavy.sh,tools/heavy.sh ${{OBJECTS_ROOT}}/artifacts/result.json,default,{},light output,,FORBIDDEN,HEAVY\n",
             authority_repo.display(),
@@ -1995,7 +2259,7 @@ mod tests {
         );
         write(
             &authority_repo.join("plan/contract.csv"),
-            b"command_id,prerequisites,outputs\nlight,-,objects/artifacts/result.json\nheavy,light,-\n",
+            b"command_id,prerequisites,receipt_outputs\nlight,-,objects/artifacts/result.json\nheavy,light,-\n",
         );
         let binding = |path: &str| {
             serde_json::json!({
@@ -2541,6 +2805,104 @@ mod tests {
                 .next()
                 .is_none(),
             "external backup target remains untouched"
+        );
+        remove_scratch(&root);
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn recovery_delete_rejects_destination_root_swap_without_redirection() {
+        let root = scratch("recovery-destination-root-swap");
+        remove_scratch(&root);
+        let destination_root = root.join("destination");
+        let relative_path = PathBuf::from("objects/artifacts/result.json");
+        write(&destination_root.join(&relative_path), b"new-result");
+        let plan = PublicationPlan {
+            publication_id: "recovery-test".to_owned(),
+            external_plan_path: root.join("plan"),
+            transaction_receipt_path: root.join("receipt"),
+            transaction_receipt_id: "0".repeat(64),
+            transaction_receipt_sha256: "0".repeat(64),
+            source_manifest_id: "0".repeat(64),
+            source_manifest_sha256: "0".repeat(64),
+            destination_baseline_sha256: "0".repeat(64),
+            source_root: root.join("source"),
+            destination_root: destination_root.clone(),
+            transaction_root: root.join("transaction"),
+            journal_path: root.join("transaction/journal/publication.jsonl"),
+            receipt_path: root.join("transaction/receipt/publication.json"),
+            entries: Vec::new(),
+        };
+        let record = PublicationJournalRecord {
+            schema_version: JOURNAL_SCHEMA.to_owned(),
+            publication_id: plan.publication_id.clone(),
+            sequence: 1,
+            operation: JournalOperation::Install,
+            relative_path: relative_path.clone(),
+            source_sha256: sha256_bytes(b"new-result"),
+            destination_baseline_sha256: None,
+            backup_relative_path: None,
+        };
+        let displaced = root.join("destination-displaced");
+        let attacker = destination_root.join(&relative_path);
+        let error = remove_installed_descriptor_relative_with_hook(&plan, &record, || {
+            fs::rename(&destination_root, &displaced).expect("swap destination root");
+            write(&attacker, b"new-result");
+        })
+        .expect_err("root swap must reject");
+        assert_eq!(
+            error.code,
+            "GATE-PUBLICATION-RECOVERY-DESTINATION-ROOT-RACE"
+        );
+        assert_eq!(fs::read(&attacker).expect("attacker file"), b"new-result");
+        assert!(displaced.join(&relative_path).exists());
+        remove_scratch(&root);
+    }
+
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn recovery_backup_read_rejects_swapped_ancestor_without_external_read() {
+        use std::os::unix::fs::symlink;
+
+        let root = scratch("recovery-backup-ancestor-swap");
+        remove_scratch(&root);
+        let transaction_root = root.join("transaction");
+        fs::create_dir_all(&transaction_root).expect("transaction root");
+        let external = root.join("external-backups");
+        write(
+            &external.join("objects/artifacts/result.json"),
+            b"old-result",
+        );
+        symlink(&external, transaction_root.join("backups")).expect("swap backup ancestor");
+        let plan = PublicationPlan {
+            publication_id: "recovery-test".to_owned(),
+            external_plan_path: root.join("plan"),
+            transaction_receipt_path: root.join("receipt"),
+            transaction_receipt_id: "0".repeat(64),
+            transaction_receipt_sha256: "0".repeat(64),
+            source_manifest_id: "0".repeat(64),
+            source_manifest_sha256: "0".repeat(64),
+            destination_baseline_sha256: "0".repeat(64),
+            source_root: root.join("source"),
+            destination_root: root.join("destination"),
+            transaction_root: transaction_root.clone(),
+            journal_path: transaction_root.join("journal/publication.jsonl"),
+            receipt_path: transaction_root.join("receipt/publication.json"),
+            entries: Vec::new(),
+        };
+        let staged = transaction_root.join("restore-staged/objects/artifacts/result.json");
+        let error = copy_transaction_file_to_stage(
+            &plan,
+            Path::new("backups/objects/artifacts/result.json"),
+            &staged,
+            &sha256_bytes(b"old-result"),
+        )
+        .expect_err("swapped backup ancestor must reject");
+        assert_eq!(error.code, "GATE-PUBLICATION-RECOVERY-BACKUP-OPEN");
+        assert!(!staged.exists());
+        assert_eq!(
+            fs::read(external.join("objects/artifacts/result.json")).expect("external backup"),
+            b"old-result"
         );
         remove_scratch(&root);
     }

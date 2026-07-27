@@ -1,3 +1,8 @@
+#[allow(
+    clippy::too_many_arguments,
+    clippy::too_many_lines,
+    reason = "the ten-check audit keeps each independently evaluated authority and its immutable lifecycle proofs contiguous"
+)]
 fn construct_audit_report(
     options: &ExternalTransitionOptions,
     plan: &ExternalDagPlan,
@@ -5,6 +10,8 @@ fn construct_audit_report(
     light: &[ExternalNodeReceipt],
     source_before: &RepositoryIdentity,
     attempt_identity: &str,
+    ledger_proof: &AttemptLedgerAdmissionProof,
+    started_entry_sha256: &str,
 ) -> Result<Value> {
     let package_result = (|| {
         require_base_ancestor(&options.repo, &plan.authority.base_commit)?;
@@ -28,10 +35,12 @@ fn construct_audit_report(
         verify_cheap_evidence(&options.repo, &plan.authority.cheap_gate_evidence)?;
         Ok(json!(source_before))
     })();
-    let plan_result =
-        reconstruct_source_inventory(&options.repo, plan).map(|()| json!(plan.plan_id));
-    let inventory_result = reconstruct_source_inventory(&options.repo, plan)
-        .map(|()| json!(transaction.light.len() + transaction.heavy.len()));
+    let inventory_result = reconstruct_source_inventory(&options.repo, plan).map(|()| {
+        json!({
+            "plan_id": plan.plan_id,
+            "node_count": transaction.light.len() + transaction.heavy.len(),
+        })
+    });
     let light_result =
         verify_light_receipts(options, transaction, light).map(|()| json!(light.len()));
     let node_result = collect_node_identities(options, transaction).map(|value| json!(value));
@@ -49,12 +58,30 @@ fn construct_audit_report(
         }
     });
     let separation_result = verify_root_separation(options).map(|()| json!("VERIFIED"));
-    let custody_result = verify_custody_files(options, transaction, true).map(|value| json!(value));
     let ledger_result = (|| {
-        admit_attempt_ledger(&options.ledger)?;
-        verify_ledger_admission(&options.ledger)?;
-        ledger_head(&options.ledger)
+        verify_attempt_ledger_admission_proof(&options.ledger, ledger_proof)?;
+        verify_ledger_state_without_admission(&options.ledger)?;
+        Ok(json!(ledger_proof))
     })();
+    let non_custody_ready = package_result.is_ok()
+        && source_result.is_ok()
+        && inventory_result.is_ok()
+        && light_result.is_ok()
+        && node_result.is_ok()
+        && root_result.is_ok()
+        && separation_result.is_ok()
+        && ledger_result.is_ok();
+    let custody_result = if non_custody_ready {
+        consume_custody_capabilities(options, transaction)
+    } else {
+        Err(policy_error(
+            "GATE-EXTERNAL-CUSTODY-NOT-ADMITTED",
+            "non-custody audit checks must pass before capability consumption",
+        ))
+    };
+    let consumed_custody_proof = custody_result
+        .as_ref()
+        .map_or_else(|_| Value::Null, Clone::clone);
     let node_check = match node_result {
         Ok(evidence) => {
             json!({"check_id": "toolchain_environment", "result": "PASS", "evidence": evidence})
@@ -70,9 +97,9 @@ fn construct_audit_report(
     let checks = vec![
         evaluated_check("package_authority", package_result),
         evaluated_check("source_identity", source_result),
-        evaluated_check("plan_identity", plan_result),
+        evaluated_check_ref("plan_identity", &inventory_result),
         evaluated_check("light_receipts", light_result),
-        evaluated_check("inventory_order", inventory_result),
+        evaluated_check_ref("inventory_order", &inventory_result),
         node_check,
         evaluated_check("fresh_external_root", root_result),
         evaluated_check("root_separation", separation_result),
@@ -90,17 +117,35 @@ fn construct_audit_report(
         "attempt_root_identity": attempt_identity,
         "ledger": options.ledger.display().to_string(),
         "custody_root": options.custody_root.as_ref().map(|path| path.display().to_string()),
-        "ledger_head_sha256": ledger_head(&options.ledger)?,
+        "ledger_head_sha256": ledger_proof.admitted_head_sha256,
+        "ledger_admission_proof": ledger_proof,
+        "started_entry_sha256": started_entry_sha256,
         "claims": claims_value(&options.claims),
         "source_identity": source_before,
         "package_audit": package_audit,
         "node_identities": node_identities,
+        "consumed_custody_proof": consumed_custody_proof,
         "light_receipts": light,
         "checks": checks,
     });
     let audit_id = derived_id(&audit, "audit_id")?;
     audit["audit_id"] = Value::String(audit_id);
     Ok(audit)
+}
+
+fn evaluated_check_ref(check_id: &str, result: &Result<Value>) -> Value {
+    match result {
+        Ok(evidence) => {
+            json!({"check_id": check_id, "result": "PASS", "evidence": evidence})
+        }
+        Err(error) => json!({
+            "check_id": check_id,
+            "result": "FAIL",
+            "evidence": null,
+            "reason_code": error.code,
+            "reason": error.message,
+        }),
+    }
 }
 
 fn evaluated_check(check_id: &str, result: Result<Value>) -> Value {
@@ -153,6 +198,8 @@ fn verify_cheap_evidence(repo: &Path, bindings: &[SourceBinding]) -> Result<()> 
 }
 
 fn reconstruct_source_inventory(repo: &Path, plan: &ExternalDagPlan) -> Result<()> {
+    #[cfg(test)]
+    INVENTORY_RECONSTRUCTION_COUNT.with(|count| count.set(count.get() + 1));
     let repo =
         fs::canonicalize(repo).map_err(|error| external_error("GATE-EXTERNAL-REPO", error))?;
     let mut all_nodes = plan
@@ -164,6 +211,28 @@ fn reconstruct_source_inventory(repo: &Path, plan: &ExternalDagPlan) -> Result<(
     all_nodes.sort_by_key(|node| node.order);
     let mut reader = csv::Reader::from_path(repo.join(&plan.source_plan.path))
         .map_err(|error| external_error("GATE-EXTERNAL-SOURCE-CSV", error))?;
+    let expected_headers = csv::StringRecord::from(vec![
+        "order",
+        "command_id",
+        "source_path",
+        "argv",
+        "environment",
+        "working_directory",
+        "inputs",
+        "outputs",
+        "harvard_access",
+        "cost_class",
+    ]);
+    if reader
+        .headers()
+        .map_err(|error| external_error("GATE-EXTERNAL-SOURCE-CSV-HEADER", error))?
+        != &expected_headers
+    {
+        return Err(schema_error(
+            "GATE-EXTERNAL-SOURCE-CSV-HEADER",
+            "executor command CSV headers must match the frozen authority exactly",
+        ));
+    }
     let rows = reader
         .records()
         .collect::<std::result::Result<Vec<_>, _>>()
@@ -213,6 +282,23 @@ fn reconstruct_source_inventory(repo: &Path, plan: &ExternalDagPlan) -> Result<(
         }
     }
     verify_contract_inventory(&repo, plan, &all_nodes)
+}
+
+#[cfg(test)]
+thread_local! {
+    static INVENTORY_RECONSTRUCTION_COUNT: std::cell::Cell<usize> = const {
+        std::cell::Cell::new(0)
+    };
+}
+
+#[cfg(test)]
+fn reset_inventory_reconstruction_count() {
+    INVENTORY_RECONSTRUCTION_COUNT.with(|count| count.set(0));
+}
+
+#[cfg(test)]
+fn inventory_reconstruction_count() -> usize {
+    INVENTORY_RECONSTRUCTION_COUNT.with(std::cell::Cell::get)
 }
 
 fn canonical_source_working_directory(repo: &Path, working_directory: &str) -> String {
@@ -446,6 +532,18 @@ fn verify_contract_inventory(
 ) -> Result<()> {
     let mut reader = csv::Reader::from_path(repo.join(&plan.source_contract.path))
         .map_err(|error| external_error("GATE-EXTERNAL-CONTRACT-CSV", error))?;
+    let expected_headers =
+        csv::StringRecord::from(vec!["command_id", "prerequisites", "receipt_outputs"]);
+    if reader
+        .headers()
+        .map_err(|error| external_error("GATE-EXTERNAL-CONTRACT-CSV-HEADER", error))?
+        != &expected_headers
+    {
+        return Err(schema_error(
+            "GATE-EXTERNAL-CONTRACT-CSV-HEADER",
+            "observed command contract headers must match the frozen authority exactly",
+        ));
+    }
     let rows = reader
         .records()
         .collect::<std::result::Result<Vec<_>, _>>()
@@ -614,7 +712,7 @@ fn verify_root_separation(options: &ExternalTransitionOptions) -> Result<()> {
     let attempt = fs::canonicalize(&options.attempt_root)
         .map_err(|error| external_error("GATE-EXTERNAL-ROOT", error))?;
     let ledger = fs::canonicalize(&options.ledger)
-        .map_err(|error| external_error("GATE-EXTERNAL-LEDGER", error))?;
+        .map_err(|error| ledger_error("GATE-EXTERNAL-LEDGER", error))?;
     if attempt.starts_with(&repo)
         || ledger.starts_with(&repo)
         || ledger.starts_with(&attempt)
@@ -629,10 +727,9 @@ fn verify_root_separation(options: &ExternalTransitionOptions) -> Result<()> {
     Ok(())
 }
 
-fn verify_ledger_admission(path: &Path) -> Result<()> {
-    admit_attempt_ledger(path)?;
+fn verify_ledger_state_without_admission(path: &Path) -> Result<()> {
     let text =
-        fs::read_to_string(path).map_err(|error| external_error("GATE-EXTERNAL-LEDGER", error))?;
+        fs::read_to_string(path).map_err(|error| ledger_error("GATE-EXTERNAL-LEDGER", error))?;
     let mut defect_statuses = BTreeMap::new();
     for line in text.lines().filter(|line| !line.is_empty()) {
         let value = parse_strict(line.as_bytes())?;
@@ -681,8 +778,9 @@ fn validate_ready(
             "READY context changed before HEAVY admission",
         ));
     }
+    verify_consumed_custody_proof(options, transaction, &value["consumed_custody_proof"])?;
     let bytes =
-        fs::read(&options.ledger).map_err(|error| external_error("GATE-EXTERNAL-LEDGER", error))?;
+        fs::read(&options.ledger).map_err(|error| ledger_error("GATE-EXTERNAL-LEDGER", error))?;
     let last = bytes
         .split(|byte| *byte == b'\n')
         .rev()
@@ -693,7 +791,9 @@ fn validate_ready(
         || started["previous_entry_sha256"] != value["ledger_head_sha256"]
         || started["status"] != "STARTED"
         || started["stage"] != "HEAVY"
-        || started["audit_id"] != value["audit_id"]
+        || !started["audit_id"].is_null()
+        || value["started_entry_sha256"] != started_entry_sha256
+        || started["admitted_ledger_head_sha256"] != value["ledger_head_sha256"]
         || started["plan_id"] != plan.plan_id
         || started["transaction_id"] != transaction.transaction_id
     {

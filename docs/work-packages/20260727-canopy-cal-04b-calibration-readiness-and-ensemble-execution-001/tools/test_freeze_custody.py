@@ -30,6 +30,7 @@ class FreezeCustodyTest(unittest.TestCase):
             MODULE.write_attestation(
                 attestation,
                 capability_hash=capability_hash,
+                transaction_id="holdout-v1",
                 parent_dispatch_id="dispatch-a",
                 agent_task_id="task-a",
                 principal="principal-a",
@@ -46,6 +47,7 @@ class FreezeCustodyTest(unittest.TestCase):
             self.assertEqual(
                 value["attestation_id"], MODULE.derived_id(value, "attestation_id")
             )
+            self.assertEqual(value["transaction_id"], "holdout-v1")
 
     def test_capability_identity_rejects_links_and_short_preimages(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

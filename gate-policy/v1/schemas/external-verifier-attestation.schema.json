@@ -9,6 +9,7 @@
     "attestation_id",
     "capability_hash",
     "parent_dispatch_id",
+    "transaction_id",
     "agent_task_id",
     "principal",
     "workflow",
@@ -32,6 +33,9 @@
       "$ref": "#/$defs/digest"
     },
     "parent_dispatch_id": {
+      "$ref": "#/$defs/id"
+    },
+    "transaction_id": {
       "$ref": "#/$defs/id"
     },
     "agent_task_id": {

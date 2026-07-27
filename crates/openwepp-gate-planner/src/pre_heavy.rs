@@ -6,6 +6,7 @@ use std::io::Write;
 use std::path::Path;
 use std::process::Command;
 
+use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 
 use crate::canonical::{
@@ -831,7 +832,112 @@ pub fn validate_resume_ledger(
 /// Returns a typed error when the selected ledger is absent, ephemeral, or has
 /// an invalid predecessor chain.
 pub fn admit_attempt_ledger(ledger: &Path) -> Result<()> {
-    durable_ledger(ledger)
+    admit_attempt_ledger_with_proof(ledger).map(|_| ())
+}
+
+/// Immutable evidence returned by the sole durable-ledger admission.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct AttemptLedgerAdmissionProof {
+    pub path: String,
+    pub device: u64,
+    pub inode: u64,
+    pub admitted_len: u64,
+    pub admitted_prefix_sha256: String,
+    pub admitted_head_sha256: Option<String>,
+}
+
+/// Admit a durable ledger exactly once and retain an immutable prefix proof.
+///
+/// # Errors
+///
+/// Returns a typed ledger error when durability, ancestry, identity, or chain
+/// verification fails.
+pub fn admit_attempt_ledger_with_proof(ledger: &Path) -> Result<AttemptLedgerAdmissionProof> {
+    durable_ledger(ledger)?;
+    #[cfg(test)]
+    LEDGER_ADMISSION_COUNT.with(|count| count.set(count.get() + 1));
+    let bytes = fs::read(ledger)
+        .map_err(|error| audit_error("GATE-AUDIT-LEDGER-READ", error.to_string()))?;
+    let metadata = fs::metadata(ledger)
+        .map_err(|error| audit_error("GATE-AUDIT-LEDGER-MISSING", error.to_string()))?;
+    #[cfg(unix)]
+    let (device, inode) = {
+        use std::os::unix::fs::MetadataExt;
+        (metadata.dev(), metadata.ino())
+    };
+    #[cfg(not(unix))]
+    let (device, inode) = (0, metadata.len());
+    Ok(AttemptLedgerAdmissionProof {
+        path: ledger.display().to_string(),
+        device,
+        inode,
+        admitted_len: u64::try_from(bytes.len())
+            .map_err(|error| audit_error("GATE-AUDIT-LEDGER-LENGTH", error.to_string()))?,
+        admitted_prefix_sha256: sha256_bytes(&bytes),
+        admitted_head_sha256: ledger_head(ledger)?,
+    })
+}
+
+/// Verify a prior admission proof without re-running ledger admission.
+///
+/// Later balanced lifecycle records may extend the ledger, but the admitted
+/// prefix and ledger inode must remain exact.
+///
+/// # Errors
+///
+/// Returns a typed identity or ledger error when the prefix, inode, path, or
+/// predecessor chain changed.
+pub fn verify_attempt_ledger_admission_proof(
+    ledger: &Path,
+    proof: &AttemptLedgerAdmissionProof,
+) -> Result<()> {
+    validate_ledger_path_nofollow(ledger)?;
+    verify_ledger_chain(ledger)?;
+    if proof.path != ledger.display().to_string() {
+        return Err(audit_error("GATE-AUDIT-LEDGER-PROOF-PATH", &proof.path));
+    }
+    let metadata = fs::metadata(ledger)
+        .map_err(|error| audit_error("GATE-AUDIT-LEDGER-MISSING", error.to_string()))?;
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::MetadataExt;
+        if metadata.dev() != proof.device || metadata.ino() != proof.inode {
+            return Err(audit_error(
+                "GATE-AUDIT-LEDGER-PROOF-IDENTITY",
+                ledger.display().to_string(),
+            ));
+        }
+    }
+    let bytes = fs::read(ledger)
+        .map_err(|error| audit_error("GATE-AUDIT-LEDGER-READ", error.to_string()))?;
+    let admitted_len = usize::try_from(proof.admitted_len)
+        .map_err(|error| audit_error("GATE-AUDIT-LEDGER-LENGTH", error.to_string()))?;
+    if bytes.get(..admitted_len).map(sha256_bytes).as_deref()
+        != Some(proof.admitted_prefix_sha256.as_str())
+    {
+        return Err(audit_error(
+            "GATE-AUDIT-LEDGER-PROOF-PREFIX",
+            ledger.display().to_string(),
+        ));
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+thread_local! {
+    static LEDGER_ADMISSION_COUNT: std::cell::Cell<usize> = const {
+        std::cell::Cell::new(0)
+    };
+}
+
+#[cfg(test)]
+pub(crate) fn reset_ledger_admission_count() {
+    LEDGER_ADMISSION_COUNT.with(|count| count.set(0));
+}
+
+#[cfg(test)]
+pub(crate) fn ledger_admission_count() -> usize {
+    LEDGER_ADMISSION_COUNT.with(std::cell::Cell::get)
 }
 
 /// Append a terminal HEAVY failure. Tooling failures open a defect immediately;

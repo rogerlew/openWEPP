@@ -158,7 +158,7 @@ def confined_custody_path(root: Path, path: Path) -> str:
 
 
 def verified_attestation(
-    custody_root: Path, path: Path, freeze_digest: str
+    custody_root: Path, path: Path, freeze_digest: str, transaction_id: str
 ) -> tuple[str, dict[str, object]]:
     relative = confined_custody_path(custody_root, path)
     raw, value = read_canonical_json(path)
@@ -166,6 +166,7 @@ def verified_attestation(
         value.get("schema") != "openwepp-external-verifier-attestation-v1"
         or value.get("attestation_id") != derived_id(value, "attestation_id")
         or value.get("freeze_digest") != freeze_digest
+        or value.get("transaction_id") != transaction_id
     ):
         raise ValueError(f"verifier attestation identity differs: {path}")
     command_id = Path(relative).stem
@@ -269,7 +270,7 @@ def build_generation_b(
     if len(attestation_paths) != 2:
         raise ValueError("exactly two verifier attestations are required")
     attestations = [
-        verified_attestation(custody_root, path, freeze_digest)
+        verified_attestation(custody_root, path, freeze_digest, "holdout-v1")
         for path in attestation_paths
     ]
     values = [value for _relative, value in attestations]

@@ -64,6 +64,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--validate-barrier", action="store_true")
     parser.add_argument("--capability", type=Path)
     parser.add_argument("--attestation-out", type=Path)
+    parser.add_argument("--transaction-id")
     parser.add_argument("--parent-dispatch-id")
     parser.add_argument("--agent-task-id")
     parser.add_argument("--principal")
@@ -114,6 +115,7 @@ def main(argv: list[str] | None = None) -> int:
     claims = (
         options.capability,
         options.attestation_out,
+        options.transaction_id,
         options.parent_dispatch_id,
         options.agent_task_id,
         options.principal,
@@ -164,6 +166,7 @@ def main(argv: list[str] | None = None) -> int:
     write_attestation(
         attestation,
         capability_hash=capability_hash,
+        transaction_id=options.transaction_id,
         parent_dispatch_id=options.parent_dispatch_id,
         agent_task_id=options.agent_task_id,
         principal=options.principal,

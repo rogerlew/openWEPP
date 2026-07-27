@@ -19,7 +19,8 @@ use crate::external_outputs::{
 };
 use crate::package_validation::validate_package;
 use crate::pre_heavy::{
-    ConstructedAudit, admit_attempt_ledger, append_attempt_record, reconcile_orphaned_attempts,
+    AttemptLedgerAdmissionProof, ConstructedAudit, admit_attempt_ledger_with_proof,
+    append_attempt_record, reconcile_orphaned_attempts, verify_attempt_ledger_admission_proof,
 };
 
 pub const EXTERNAL_PLAN_SCHEMA: &str = "openwepp-external-dag-plan-v1";
@@ -129,6 +130,7 @@ pub struct ExternalVerifierAttestation {
     pub attestation_id: String,
     pub capability_hash: String,
     pub parent_dispatch_id: String,
+    pub transaction_id: String,
     pub agent_task_id: String,
     pub principal: String,
     pub workflow: String,
@@ -432,7 +434,7 @@ pub fn run_external_transition(options: &ExternalTransitionOptions) -> Result<Va
     verify_source_bindings(&options.repo, &plan)?;
     verify_node_sources(&options.repo, transaction)?;
     verify_custody(transaction)?;
-    let custody_receipts = verify_custody_files(options, transaction, true)?;
+    let custody_receipts = verify_custody_files(options, transaction, false)?;
     let source_before = repository_identity(&options.repo)?;
     let light = execute_stage(
         options,
@@ -462,20 +464,24 @@ pub fn run_external_transition(options: &ExternalTransitionOptions) -> Result<Va
         &options.receipt_path.with_extension("light.json"),
         &light_value,
     )?;
-    let audit_report = construct_audit_report(
-        options,
-        &plan,
-        transaction,
-        &light,
-        &source_before,
-        &attempt_identity,
-    )?;
-    persist_exclusive(
-        &options.receipt_path.with_extension("audit.json"),
-        &audit_report,
-    )?;
-    let started = append_started(options, &plan, &audit_report)?;
+    let ledger_proof = admit_attempt_ledger_with_proof(&options.ledger)?;
+    let started = append_started(options, &plan, &ledger_proof)?;
+    let mut audit_report = Value::Null;
     let outcome = (|| {
+        audit_report = construct_audit_report(
+            options,
+            &plan,
+            transaction,
+            &light,
+            &source_before,
+            &attempt_identity,
+            &ledger_proof,
+            &started,
+        )?;
+        persist_exclusive(
+            &options.receipt_path.with_extension("audit.json"),
+            &audit_report,
+        )?;
         let audit = ConstructedAudit::from_external(audit_report.clone())?;
         execute_heavy_after_started(
             options,
@@ -587,14 +593,14 @@ pub fn verify_external_transaction(plan_path: &Path, receipt: &Value) -> Result<
         || derived_id(receipt, "receipt_id")? != receipt["receipt_id"]
         || receipt["plan_id"] != plan.plan_id
     {
-        return Err(policy_error(
+        return Err(receipt_error(
             "GATE-EXTERNAL-RECEIPT-IDENTITY",
             "external receipt identity or result mismatch",
         ));
     }
     let transaction_id = receipt["transaction_id"]
         .as_str()
-        .ok_or_else(|| policy_error("GATE-EXTERNAL-RECEIPT-SHAPE", "transaction_id"))?;
+        .ok_or_else(|| receipt_error("GATE-EXTERNAL-RECEIPT-SHAPE", "transaction_id"))?;
     let transaction = plan
         .transactions
         .iter()
@@ -620,9 +626,17 @@ pub fn verify_external_transaction(plan_path: &Path, receipt: &Value) -> Result<
         opening_token: receipt["opening_token"].as_str().map(PathBuf::from),
         claims: execution_claims_from_value(&receipt["claims"])?,
     };
+    let ledger_proof: AttemptLedgerAdmissionProof =
+        serde_json::from_value(receipt["audit"]["ledger_admission_proof"].clone())
+            .map_err(|error| ledger_error("GATE-EXTERNAL-LEDGER-PROOF", error))?;
+    verify_attempt_ledger_admission_proof(&options.ledger, &ledger_proof)?;
     verify_node_sources(&options.repo, transaction)?;
     verify_custody(transaction)?;
-    let custody_receipts = verify_custody_files(&options, transaction, false)?;
+    let custody_receipts = verify_consumed_custody_proof(
+        &options,
+        transaction,
+        &receipt["audit"]["consumed_custody_proof"],
+    )?;
     if receipt["attempt_root_identity"] != directory_identity(&options.attempt_root)? {
         return Err(policy_error(
             "GATE-EXTERNAL-ROOT-REPLACED",
@@ -709,7 +723,7 @@ fn verify_receipt_stage(
     }
     for (node, value) in nodes.iter().zip(receipts) {
         let receipt: ExternalNodeReceipt = serde_json::from_value(value.clone())
-            .map_err(|error| external_error("GATE-EXTERNAL-RECEIPT-SHAPE", error))?;
+            .map_err(|error| receipt_error("GATE-EXTERNAL-RECEIPT-SHAPE", error))?;
         let mut expected_argv = node
             .argv
             .iter()
@@ -842,10 +856,12 @@ fn verify_external_ledger_chain(
                 && record["stage"] == "HEAVY"
                 && record["plan_id"] == plan.plan_id
                 && record["transaction_id"] == options.transaction_id
-                && record["audit_id"] == audit["audit_id"]
+                && record["audit_id"].is_null()
                 && record["attempt_root"] == receipt["attempt_root"]
                 && record["claims"] == receipt["claims"]
                 && record["previous_entry_sha256"] == audit["ledger_head_sha256"]
+                && record["admitted_ledger_head_sha256"] == audit["ledger_head_sha256"]
+                && record["entry_sha256"] == audit["started_entry_sha256"]
         })
         .ok_or_else(|| {
             policy_error(
@@ -1087,9 +1103,9 @@ fn execute_node(
     attempt_identity: &str,
 ) -> Result<ExternalNodeReceipt> {
     if directory_identity(&options.attempt_root)? != attempt_identity {
-        return Err(policy_error(
+        return Err(identity_error(
             "GATE-EXTERNAL-ROOT-REPLACED",
-            &options.attempt_root.display().to_string(),
+            options.attempt_root.display(),
         ));
     }
     let mut argv = node
@@ -1377,7 +1393,7 @@ include!("external_dag/audit.rs");
 fn append_started(
     options: &ExternalTransitionOptions,
     plan: &ExternalDagPlan,
-    audit: &Value,
+    ledger_proof: &AttemptLedgerAdmissionProof,
 ) -> Result<String> {
     append_attempt_record(
         &options.ledger,
@@ -1388,7 +1404,8 @@ fn append_started(
             "phase": "ADMISSION",
             "plan_id": plan.plan_id,
             "transaction_id": options.transaction_id,
-            "audit_id": audit["audit_id"],
+            "audit_id": null,
+            "admitted_ledger_head_sha256": ledger_proof.admitted_head_sha256,
             "attempt_root": options.attempt_root.display().to_string(),
             "claims": claims_value(&options.claims),
         }),
@@ -1520,18 +1537,6 @@ fn git_bytes(repo: &Path, arguments: &[&str]) -> Result<Vec<u8>> {
     Ok(output.stdout)
 }
 
-fn ledger_head(path: &Path) -> Result<Value> {
-    let bytes = fs::read(path).map_err(|error| external_error("GATE-EXTERNAL-LEDGER", error))?;
-    let last = bytes
-        .split(|byte| *byte == b'\n')
-        .rev()
-        .find(|line| !line.is_empty());
-    match last {
-        Some(line) => Ok(parse_strict(line)?["entry_sha256"].clone()),
-        None => Ok(Value::Null),
-    }
-}
-
 fn remap_cwd(repo: &Path, root: &Path, cwd: &str) -> Result<PathBuf> {
     let source = PathBuf::from(cwd);
     if source.is_absolute() {
@@ -1598,38 +1603,27 @@ fn sha256_bytes(bytes: &[u8]) -> String {
 }
 
 fn external_error(code: &'static str, error: impl std::fmt::Display) -> GatePolicyError {
-    let class = if code.contains("SCHEMA") {
-        ErrorClass::Schema
-    } else if code.contains("JSON")
-        || code.contains("CSV")
-        || code.contains("UTF8")
-        || code.contains("SERIALIZE")
-        || code.contains("SHAPE")
-    {
-        ErrorClass::Json
-    } else if code.contains("IDENTITY")
-        || code.contains("DIGEST")
-        || code.contains("HASH")
-        || code.contains("REPLACED")
-        || code.contains("DRIFT")
-    {
-        ErrorClass::Identity
-    } else if code.contains("LEDGER") {
-        ErrorClass::Ledger
-    } else if code.contains("RECEIPT") || code.contains("CUSTODY") {
-        ErrorClass::Receipt
-    } else if code.contains("READ")
-        || code.contains("WRITE")
-        || code.contains("OPEN")
-        || code.contains("DIR")
-        || code.contains("FILE")
-        || code.contains("PERSIST")
-    {
-        ErrorClass::Io
-    } else {
-        ErrorClass::Execution
-    };
-    GatePolicyError::new(class, code, error.to_string())
+    GatePolicyError::new(ErrorClass::Io, code, error.to_string())
+}
+
+fn schema_error(code: &'static str, message: impl std::fmt::Display) -> GatePolicyError {
+    GatePolicyError::new(ErrorClass::Schema, code, message.to_string())
+}
+
+fn receipt_error(code: &'static str, message: impl std::fmt::Display) -> GatePolicyError {
+    GatePolicyError::new(ErrorClass::Receipt, code, message.to_string())
+}
+
+fn custody_error(code: &'static str, message: impl std::fmt::Display) -> GatePolicyError {
+    GatePolicyError::new(ErrorClass::Trust, code, message.to_string())
+}
+
+fn ledger_error(code: &'static str, message: impl std::fmt::Display) -> GatePolicyError {
+    GatePolicyError::new(ErrorClass::Ledger, code, message.to_string())
+}
+
+fn identity_error(code: &'static str, message: impl std::fmt::Display) -> GatePolicyError {
+    GatePolicyError::new(ErrorClass::Identity, code, message.to_string())
 }
 
 fn policy_error(code: &'static str, message: &str) -> GatePolicyError {
