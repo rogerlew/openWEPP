@@ -1,6 +1,6 @@
 # Acceptance Matrix
 
-Status: `SCAFFOLD REVIEW REQUIRED`
+Status: `FULL REGRESSION HOLD`
 
 Evidence class: `Static + Ran`
 
