@@ -8,7 +8,7 @@ This Defect-Closure ExecPlan is a living document governed by
 Package ID:
 `20260727-cal04b-native-gsi-canopy-height-coherence-hold-lift-001`
 
-Status: `ACTIVE / AUTHORITY ADJUDICATION`
+Status: `ACTIVE / TERMINAL HOLD — PRE-EXISTING ASSURANCE IDENTITY DRIFT`
 
 Execution mode: `package-end-to-end`
 
@@ -63,8 +63,10 @@ authority to close end-to-end.
   ordering is not already explicit.
 - [x] 2026-07-27: Add contract-derived zero-to-positive transition tests and run the
   pre-implementation contract gate.
-- [ ] Correct production projection and prove all named real consumers.
-- [ ] Pass critical gates, dual review, finding disposition, and dual terminal
+- [x] Correct production projection and prove all named real consumers.
+- [x] Reconcile the exact 44-path diff and pass two independent terminal-HOLD
+  legitimacy reviews.
+- [ ] Pass the blocked unfiltered critical gate and dual terminal
   verification.
 - [ ] Lift the CAL-04B production prerequisite and close this package.
 
@@ -190,9 +192,16 @@ contract decision; do not synthesize a formula.
 - `tests/python/test_check_sc_binding_exposure.py` for valid role-qualified and
   absent-core-ID checker regressions
 - `crates/openwepp-runner/src/hillslope/direct_publication/**`
+- `crates/openwepp-runner/src/hillslope/03_tests.rs`
 - `crates/openwepp-runner/src/hillslope/tests03/**`
+- `crates/openwepp-hillslope-orchestrator/src/direct_runtime.rs`
 - `crates/openwepp-hillslope-orchestrator/src/direct_runtime/growth.rs`
+- `crates/openwepp-hillslope-orchestrator/src/direct_runtime/erosion.rs`
+- `crates/openwepp-hillslope-orchestrator/src/direct_runtime/00_core_frames.rs`
+- `crates/openwepp-hillslope-orchestrator/src/direct_runtime/03_executor.rs`
 - `crates/openwepp-hillslope-orchestrator/src/direct_runtime/laned_active.rs`
+- `crates/openwepp-hillslope-orchestrator/src/lib.rs`
+- `crates/openwepp-hillslope-orchestrator/src/tests/tests_mod/direct_runtime.rs`
 - directly owning adjacent tests selected by the authenticated intent plan
 - `docs/work-packages/20260727-cal04b-native-gsi-canopy-height-coherence-hold-lift-001/**`
 - CAL-04B status/handoff artifacts and `docs/work-packages/README.md`
@@ -314,6 +323,16 @@ disposition, hold audit, and worker handoff.
   zero-to-positive transition.
 - The correct runtime guard converted a latent incoherent state into an exact
   production-path failure before calibration population work.
+- Active erosion had two additional stale-height seams: native erosion used an
+  optional PMET zero fallback, while frost retained management-seed height.
+  Both now consume the checked post-growth native height.
+- The frozen invalid-case verifier recognized only runtime threshold wording,
+  not the canonical typed parser wording. A bounded recognizer repair left the
+  case plan, input, expectation, and production behavior unchanged.
+- The exact native replay passes 12/12 and the non-assurance full profile
+  passes 2,180/2,180, but the declared full-workspace gate is blocked by
+  assurance identity drift predating this package: the generated lock binds
+  the predecessor hash of `tests/fixtures/cancov_forest/README.md`.
 
 ## Decision Log
 
@@ -325,7 +344,16 @@ disposition, hold audit, and worker handoff.
 
 ## Outcomes & Retrospective
 
-Queued. No production edit or hold lift is claimed.
+The production defect and every named native consumer are corrected and
+proven, including the retained `GSI-5557` transition and the complete frozen
+12-case replay. No calibration population or Harvard command ran.
+
+The package cannot close or lift the CAL-04B prerequisite because its mandatory
+full-workspace gate remains red on pre-existing assurance dossier identity
+drift. Canonical assurance governance forbids adopting report-evidence drift
+through an implementation rebind. A separately authorized assurance lifecycle
+correction must reconcile that evidence source, after which this package must
+rerun the unfiltered full profile and terminal review/verification.
 
 ## Idempotence And Recovery
 
@@ -335,6 +363,25 @@ reproducer. An observed semantic failure is not retried unchanged.
 
 ## Defect-Shaped Handoff
 
-First actionable item: close defect `CAL04B-NATIVE-001` by authenticating and,
-if necessary, amending the canonical current-day GSI canopy-height authority
-before any production edit.
+First actionable item: close defect
+`ASSURANCE-CANOPY-README-IDENTITY-001` under separately authorized assurance
+lifecycle authority. The observable failure is the unfiltered full profile's
+typed generated-identity drift for
+`tests/fixtures/cancov_forest/README.md`. Commit `502dd745` changed that admitted
+`IN_REVIEW` report dependency without a corresponding governed assurance
+transaction, leaving `assurance/v2/identity.lock.json` bound to the predecessor
+hash.
+
+The new package must own the affected assurance report, review lock, generated
+identity transaction, and directly required evidence surfaces; read
+`assurance/v2/README.md`, the snow/frozen-soil report and review lock, and the
+assurance amendment contracts before mutation. Its acceptance target is a
+governed, review-valid identity reconciliation followed by a passing exact-head
+unfiltered full profile. Manual hash editing, `rebind-implementation` adoption
+of report evidence, reverting the prior research-documentation change, or
+merely inspecting the next assurance function are forbidden relay routes.
+
+After that separate defect closes, return to this package for its still-pending
+full-profile pass, dual terminal verification, prompt archival, prerequisite
+lift, and closure. No calibration population or Harvard execution is
+authorized by this handoff.

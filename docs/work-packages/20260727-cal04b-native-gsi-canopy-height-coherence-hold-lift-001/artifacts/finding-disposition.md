@@ -24,6 +24,15 @@ Evidence class: `Static + Ran`
 | R-06 WARN-size owning aggregates require explicit disposition | accepted | line-count artifact records exact counts, bounded additions, and retained structural follow-up |
 | R-07 active/shadow Lane D exact height was not traced | accepted | active routing records its consumed height and the real shadow operand seam is executed from the same native day frame; exact equality is asserted |
 | R-08 structural-only underflow lacked behavioral atomicity proof | accepted | real `ForestCanopyState` candidate advances, fails height with `Bs>0/Bf=LAI=0`, and the retained state remains exactly equal to its snapshot |
+| T-01 native erosion correction changed legacy non-native sediment behavior | accepted | post-growth height is selected only for `TypedStateOverride`; legacy PMET semantics and the P61 sediment regression pass |
+| T-02 frozen invalid case rejected canonical typed parser wording | accepted | verifier recognizes both canonical intake and runtime wording; regression and unchanged 12-case replay pass |
+| T-03 full workspace blocked by stale assurance identity | confirmed external blocker | mismatch predates authenticated base; manual hash/rebind evasion prohibited; separate assurance lifecycle action required before closure |
+| H-01 HOLD legitimacy audit remained queued | accepted | populated boundary, evidence, in-envelope routes, and the separate assurance authority requirement |
+| H-02 exact diff/write-set reconciliation was incomplete | accepted | intended write set now names every orchestrator/runner surface and the exact owned-file manifest is populated |
+| H-03 full-profile evidence mixed pre-fix and exact-head failures | accepted | gate chronology distinguishes the earlier frame/P61 failures, their fixes, the 2,180-test pass, and the exact-head unfiltered rerun |
+| H-04 defect-shaped handoff was stale | accepted | first item now closes named defect `ASSURANCE-CANOPY-README-IDENTITY-001` with authority, evidence, acceptance, and forbidden routes |
+| H-05 required-case verifier edit lacked anti-evasion gates | accepted | source anti-evasion guard and three-test AUTH11 obligation suite pass |
+| H-06 queued review/verification artifacts were ambiguous | accepted | review findings are recorded; terminal verification is explicitly blocked/not run until the full gate is repaired |
 
-No contract or implementation-review finding remains open. Terminal findings,
-if any, will be appended and dispositioned before closure.
+No contract or implementation finding remains open. `T-03` is a current
+non-deferrable terminal blocker, so closure is not claimed.

@@ -308,10 +308,12 @@
 State as of `2026-07-27 UTC`:
 
 - `20260727-cal04b-native-gsi-canopy-height-coherence-hold-lift-001/` -
-  QUEUED / PREREQUISITE HOLD LIFT: close `CAL04B-NATIVE-001` contract-first so
-  every valid generalized-GSI zero-to-positive transition publishes coherent
-  same-day foliar mass, LAI, cover, and canopy height through the real
-  production consumers without weakening the fail-closed guard.
+  ACTIVE / TERMINAL HOLD: `CAL04B-NATIVE-001` production and its 12-case frozen
+  replay pass, including retained `GSI-5557`, but the mandatory unfiltered
+  full-workspace gate is blocked by pre-existing assurance identity drift for
+  the canopy-fixture README. A separate assurance lifecycle correction is
+  required before terminal closure verification, hold lift, or fresh
+  calibration; two independent reviewers passed the HOLD legitimacy record.
 - `20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/` -
   COMPLETE / HOLD / PRODUCTION PARAMETER PATH BLOCKED: the reviewed reworked
   scaffold passed pre-heavy gates, but frozen interior vector `GSI-5557`
