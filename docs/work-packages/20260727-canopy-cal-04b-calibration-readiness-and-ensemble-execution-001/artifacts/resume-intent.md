@@ -79,15 +79,9 @@ root with reuse disposition `INVALIDATED_BY_OBSERVER_AND_ADMISSION_SCHEMA`.
 The active root will then be recreated empty and execution will restart at
 `prepare`; no successful result-bearing population receipt is being discarded.
 
-This correction remains inside the declared package write set. It adds a
-repository-owned pre-heavy audit, separates LIGHT execution from HEAVY
-admission, upgrades observed receipts to bind the exact execution identities,
-and adds focused fail-closed tests. Heavy execution remains forbidden until
-the corrected tools pass focused gates, are committed, and two independent
-read-only reviewers return `GO` at that exact commit.
-
-Further inspection proved that the correction cannot remain inside this
-package's write set. The canonical `openwepp-pre-heavy-audit-v1` authority and
+Initial review proposed a package-local correction. Further inspection proved
+that it cannot remain inside this package's write set. The canonical
+`openwepp-pre-heavy-audit-v1` authority and
 same-process transition live in `openwepp-gate-planner`; CAL-04B's CSV executor
 cannot synthesize or transport equivalent authority. The canonical executor
 also rejects repository mutation, while the legacy CAL-04B DAG publishes

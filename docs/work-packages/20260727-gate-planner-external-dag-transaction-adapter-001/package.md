@@ -11,6 +11,32 @@ strategy, scaffold rework, delegated review, and finding disposition.
 
 This ExecPlan is maintained under `docs/codex_exec_plans.md`.
 
+## Progress
+
+- [x] Identify the CAL-04B pre-heavy trust defect before population execution.
+- [x] Freeze the defect inventory and initial adversarial matrix.
+- [x] Commit the prerequisite scaffold at `9bf3f344`.
+- [x] Complete first dual scaffold review; both reviewers returned `HOLD`.
+- [ ] Close every scaffold finding and obtain dual `GO`.
+- [ ] Freeze red fixtures and implement the adapter.
+- [ ] Execute focused and campaign-strength gates through canonical admission.
+- [ ] Complete dual implementation review, dual terminal verification, and
+  package closeout.
+
+## Context And Orientation
+
+`crates/openwepp-gate-planner/src/pre_heavy.rs` owns the only valid
+`openwepp-pre-heavy-audit-v1` construction. `executor.rs` owns the trusted
+same-process transition and source-mutation check. `verifier.rs` owns receipt
+verification. Policy schemas live under `gate-policy/v1/`.
+
+CAL-04B's frozen command authority remains
+`artifacts/executor-command-plan.csv` and
+`artifacts/observed-command-contract.csv` in its package. The adapter imports
+those committed controls as data; it does not reinterpret calibration science.
+The exact transaction, output-remap, publication, and custody contract is
+`artifacts/transaction-contract.md`.
+
 ## Objective
 
 Extend the canonical Rust gate planner so a frozen, repository-owned external
@@ -44,8 +70,8 @@ The exact retained reproducer and disposition are in
 - a second authenticated transaction whose LIGHT stage consumes independently
   produced custody receipts before a later HEAVY node;
 - CAL-04B package-local integration that writes result-bearing execution
-  outputs outside the repository and imports them only after authenticated
-  execution;
+  outputs outside the repository and publishes them only through the separate
+  authenticated publication protocol;
 - focused unit, schema, integration, adversarial, and source anti-evasion
   tests; and
 - documentation, dual review, dual verification, and CAL-04B handoff evidence.
@@ -69,7 +95,13 @@ The exact retained reproducer and disposition are in
 - `docs/standards/testing-and-gate-strategy.md`
 - `docs/work-packages/README.md`
 - `docs/planning/canopy-phenology-assurance-roadmap.md`
-- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/**`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/execute-prefix.py`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/observe.py`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/publish-results.py`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/test_execute_prefix.py`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/test_observe.py`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/tools/test_publish_results.py`
+- `docs/work-packages/20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/artifacts/external-dag-transaction-plan.json`
 - `docs/work-packages/20260727-gate-planner-external-dag-transaction-adapter-001/**`
 
 No other path is writable without a prospective amendment and scaffold review.
@@ -82,6 +114,10 @@ No other path is writable without a prospective amendment and scaffold review.
   persistence occur in one trusted process.
 - Every STARTED record has exactly one typed terminal record, including
   preflight and audit failures.
+- HEAVY appends its audit-, plan-, claims-, attempt-, and root-bound STARTED
+  record before audit validation, resume admission, executable checks, or
+  subprocess preparation. Admission occurs only after the ledger equals the
+  audited head followed by that exact STARTED record.
 - The durable ledger must equal the audited head plus the exact current STARTED
   record before subprocess preparation.
 - Source checkout bytes remain unchanged throughout a transaction.
@@ -90,10 +126,35 @@ No other path is writable without a prospective amendment and scaffold review.
 - A later HEAVY stage after an independent process handoff requires a new
   same-process transition and cannot reuse an earlier audit as standalone
   authority.
+- No BLOCKED, INVALID, audit-failure, or pre-spawn path may create the Harvard
+  opening token or read Harvard content. The second HEAVY transaction creates
+  the exclusive token immediately before its first Harvard open, records
+  `OPENED_ONCE`, and is never retryable after that state.
+
+## Deliverables And Interfaces
+
+- `gate-policy/v1/schemas/external-dag-plan.schema.json`
+- `gate-policy/v1/schemas/external-output-manifest.schema.json`
+- `gate-policy/v1/schemas/publication-receipt.schema.json`
+- typed Rust modules `external_dag.rs`, `external_outputs.rs`, and
+  `publication.rs`; existing 2,000+ line modules receive only narrow hooks;
+- CLI `openwepp-gate-plan run-external-transition` accepting committed plan,
+  transaction ID, fresh attempt root, durable ledger, output paths, and
+  execution claims;
+- CLI `openwepp-gate-plan publish-external-results` accepting a passing
+  transaction receipt, exact source/destination manifest, clean destination
+  baseline, and publication receipt path;
+- independent verifier support for external transaction, output manifest, and
+  publication receipts; and
+- package evidence `implementation-gates.md`, `review-a.md`, `review-b.md`,
+  `finding-disposition.md`, `verification-a.md`, `verification-b.md`,
+  `line-count-governance.md`, `worker-handoff.md`, and
+  `final-disposition.md`.
 
 ## Implementation Plan
 
-1. Freeze schema, lifecycle, artifact, and two-transaction acceptance fixtures.
+1. Freeze schema, lifecycle, artifact, publication, and two-transaction
+   acceptance fixtures.
 2. Add external-DAG typed plan reconstruction and schema validation.
 3. Add confined execution and exhaustive external-output preservation.
 4. Integrate canonical audit, ledger, receipts, verifier, and recovery rules.
@@ -112,12 +173,62 @@ No other path is writable without a prospective amendment and scaffold review.
 - gate-planner focused Nextest and warnings-denied Clippy;
 - relevant integration and anti-evasion tests;
 - canonical pre-heavy READY audit for this package's own selected heavy gates;
+- fresh exact-head `cargo nextest run --workspace --profile full`;
+- `bash tools/release/check_authority_suite_antievasion.sh` and
+  `cargo nextest run --test auth11_required_suite_obligation_guards_contract`;
 - exact-diff terminal reconciliation;
 - two independent implementation reviews and two terminal verifications.
 
-Full workspace correctness is campaign evidence already current at
-`7e79049d-0871-4142-a9f7-86ac7ac714be`; the authenticated terminal plan decides
-whether the implementation diff invalidates and reruns it.
+The prior full-workspace receipt is prerequisite history only. Gate-planner,
+receipt, verifier, and anti-evasion edits are critical and require a fresh
+exact-head campaign-strength full-workspace run.
+
+## Concrete Execution And Expected Results
+
+1. Run package/schema/diff/documentation checks; expect no findings.
+2. Run frozen red fixtures before production edits; expect every GED case to
+   fail with its typed reason.
+3. Run gate-planner focused Nextest and warnings-denied Clippy during edits;
+   expect all focused tests and adversarial cases to pass after implementation.
+4. Commit the complete intended closure state, construct canonical READY, and
+   delegate selected heavy gates once; expect READY plus passing receipts.
+5. Run the fresh exact-head full workspace and anti-evasion gates; expect zero
+   failures.
+6. Obtain two independent implementation reviews, close findings, then obtain
+   two independent terminal verifications at one exact commit.
+
+## Dependencies
+
+- authenticated scaffold base `9bf3f344`;
+- canonical audit, ledger, receipt, verifier, and package-admission code already
+  present in `openwepp-gate-planner`;
+- CAL-04B's committed frozen plan/contract and sealed Harvard controls; and
+- current Rust/Python toolchains recorded by the terminal plan.
+
+## Decisions And Discoveries
+
+- Decision: a Python-only READY report is prohibited because it duplicates
+  policy and cannot authenticate standalone HEAVY.
+- Decision: CAL-04B uses two transactions separated by independent freeze
+  verification; the second audit is fresh.
+- Decision: all scientific execution output remains external until a separate
+  publication receipt installs it.
+- Discovery: the canonical executor rejects checkout mutation, so repository
+  result paths must be remapped, not exempted.
+- Discovery: `executor.rs` is already near 3,000 lines; implementation must add
+  modules instead of growing it through that threshold.
+
+## Line-Count Governance
+
+Every touched production file at or above 2,000 lines requires explicit
+decomposition review. No touched file may end above 3,000 lines. New adapter
+modules target at most 1,000 lines each. The package must split a touched
+over-limit module before closure rather than recording warning-only debt.
+
+## Outcomes And Retrospective
+
+Populate at closeout with achieved behavior, gate receipts, residual risks,
+and reusable lessons. This section is not evidence until terminal disposition.
 
 ## Exit Criteria
 
@@ -140,4 +251,3 @@ read-only reviewers, two independent read-only terminal verifiers, and the
 are code/evidence within the declared write set and compact read-only findings,
 receipts, artifact paths, and verdicts. Workers receive disjoint ownership and
 must not revert concurrent edits.
-
