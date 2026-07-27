@@ -8,7 +8,7 @@ Exact worktree base: `9dd2c5a340d8c083d0297facebad767fab988186`
 
 | Gate | Result |
 |---|---|
-| Gate-planner Nextest | PASS, 225/225; 14 skipped; run `2fc94126-b277-493b-ae48-26aec9e4f7c0` |
+| Gate-planner Nextest | PASS, 225/225; 14 skipped; run `8777103a-75e9-4407-942e-e6525b440619` |
 | Gate-planner all-target/all-feature Clippy with warnings denied | PASS |
 | CAL Python discovery | PASS, 29/29 |
 | Publication focused suite | PASS, 20/20 |
@@ -47,6 +47,12 @@ authenticated RESTORE progress with final all-entry baseline verification,
 future/older-than-24-hour rejection, receipt-bound exact attestation time, and
 actual root-replacement `Identity` classification. Focused evidence is green
 and awaits final exact-commit review.
+
+The final Rust review required durability of absent-baseline unlink at the
+actual retained parent plus direct multi-entry replay and absent-branch
+attachment-race evidence. Recovery now fsyncs that parent before success; the
+expanded tests pass and `publication.rs` was reduced to preserve line-count
+headroom.
 
 Campaign-strength full workspace and anti-evasion gates remain prohibited until
 the corrected implementation is committed, receives dual implementation

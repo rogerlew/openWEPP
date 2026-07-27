@@ -27,5 +27,9 @@ authenticated RESTORE progress/final baseline proof, exact receipt-bound time
 freshness with future rejection, and consumer-path identity classification.
 Those corrections also have focused passing evidence.
 
+Final review additionally required parent-directory durability for
+absent-baseline unlink, multi-entry restore/replay, and the absent/NOENT
+dynamic-ancestor branch. These are implemented and focused-green.
+
 Independent implementation review must confirm these dispositions against the
 actual consumer paths before canonical heavy admission.

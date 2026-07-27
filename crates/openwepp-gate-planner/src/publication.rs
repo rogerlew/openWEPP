@@ -713,7 +713,7 @@ fn open_parent_beneath(root: &rustix::fd::OwnedFd, relative: &Path) -> Result<ru
     openat2(
         root,
         parent,
-        OFlags::PATH | OFlags::DIRECTORY | OFlags::CLOEXEC,
+        OFlags::RDONLY | OFlags::DIRECTORY | OFlags::CLOEXEC,
         Mode::empty(),
         ResolveFlags::BENEATH | ResolveFlags::NO_MAGICLINKS | ResolveFlags::NO_SYMLINKS,
     )
@@ -1448,6 +1448,13 @@ fn remove_installed_descriptor_relative_with_hook(
         io_error(
             "GATE-PUBLICATION-RESTORE-REMOVE",
             &plan.destination_root.join(&record.relative_path),
+            error,
+        )
+    })?;
+    File::from(parent).sync_all().map_err(|error| {
+        io_error(
+            "GATE-PUBLICATION-RESTORE-PARENT-SYNC",
+            &plan.destination_root,
             error,
         )
     })
@@ -2772,138 +2779,75 @@ mod tests {
 
     #[cfg(target_os = "linux")]
     #[test]
+    #[rustfmt::skip]
     fn rejects_symlinked_staging_subtree_without_external_write() {
         use std::os::unix::fs::symlink;
-
-        let root = fresh("staging-subtree-race");
-        let publication_plan = plan(&root, None);
+        let root = fresh("staging-subtree-race"); let publication_plan = plan(&root, None);
         prepare_transaction_directories(&publication_plan).expect("transaction dirs");
-        fs::remove_dir_all(publication_plan.transaction_root.join("staged"))
-            .expect("remove staging directory");
-        let external = root.join("external-staging");
-        fs::create_dir_all(&external).expect("external staging");
-        symlink(&external, publication_plan.transaction_root.join("staged"))
-            .expect("replace staging subtree");
-        let entry = &publication_plan.entries[0];
-        let staged = publication_plan
-            .transaction_root
-            .join("staged")
-            .join(&entry.relative_path);
-
+        fs::remove_dir_all(publication_plan.transaction_root.join("staged")).expect("remove staging directory");
+        let external = root.join("external-staging"); fs::create_dir_all(&external).expect("external staging");
+        symlink(&external, publication_plan.transaction_root.join("staged")).expect("replace staging subtree");
+        let entry = &publication_plan.entries[0]; let staged = publication_plan.transaction_root.join("staged").join(&entry.relative_path);
         let error = copy_source_to_stage(&publication_plan, entry, &staged, || {})
             .expect_err("symlinked staging subtree must reject");
-
         assert_eq!(error.code, "GATE-PUBLICATION-TRANSACTION-DIR-OPEN");
-        assert!(
-            fs::read_dir(&external)
-                .expect("external directory")
-                .next()
-                .is_none(),
-            "external staging target remains untouched"
-        );
-        remove_scratch(&root);
+        assert!(fs::read_dir(&external).expect("external directory").next().is_none()); remove_scratch(&root);
     }
 
     #[cfg(target_os = "linux")]
     #[test]
+    #[rustfmt::skip]
     fn rejects_symlinked_backup_subtree_without_external_write() {
         use std::os::unix::fs::symlink;
-
-        let root = fresh("backup-subtree-race");
-        let publication_plan = plan(&root, Some(b"old-result"));
+        let root = fresh("backup-subtree-race"); let publication_plan = plan(&root, Some(b"old-result"));
         prepare_transaction_directories(&publication_plan).expect("transaction dirs");
-        let external = root.join("external-backups");
-        fs::create_dir_all(&external).expect("external backups");
-        symlink(&external, publication_plan.transaction_root.join("backups"))
-            .expect("replace backup subtree");
-        let entry = &publication_plan.entries[0];
-        let backup = publication_plan
-            .transaction_root
-            .join("backups")
-            .join(&entry.relative_path);
-
-        let error = copy_destination_backup(
-            &publication_plan,
-            entry,
-            &backup,
-            entry.destination_baseline_sha256.as_deref(),
-        )
-        .expect_err("symlinked backup subtree must reject");
-
+        let external = root.join("external-backups"); fs::create_dir_all(&external).expect("external backups");
+        symlink(&external, publication_plan.transaction_root.join("backups")).expect("replace backup subtree");
+        let entry = &publication_plan.entries[0]; let backup = publication_plan.transaction_root.join("backups").join(&entry.relative_path);
+        let error = copy_destination_backup(&publication_plan, entry, &backup, entry.destination_baseline_sha256.as_deref())
+            .expect_err("symlinked backup subtree must reject");
         assert_eq!(error.code, "GATE-PUBLICATION-TRANSACTION-DIR-OPEN");
-        assert!(
-            fs::read_dir(&external)
-                .expect("external directory")
-                .next()
-                .is_none(),
-            "external backup target remains untouched"
-        );
-        remove_scratch(&root);
+        assert!(fs::read_dir(&external).expect("external directory").next().is_none()); remove_scratch(&root);
     }
 
     #[cfg(target_os = "linux")]
     #[test]
+    #[rustfmt::skip]
     fn recovery_delete_rejects_destination_root_swap_without_redirection() {
-        let root = fresh("recovery-destination-root-swap");
-        let destination_root = root.join("destination");
+        let root = fresh("recovery-destination-root-swap"); let destination_root = root.join("destination");
         let relative_path = PathBuf::from("objects/artifacts/result.json");
         write(&destination_root.join(&relative_path), b"new-result");
         let plan = recovery_plan(&root, destination_root.clone(), root.join("transaction"));
         let record = PublicationJournalRecord {
-            schema_version: JOURNAL_SCHEMA.to_owned(),
-            publication_id: plan.publication_id.clone(),
-            sequence: 1,
-            operation: JournalOperation::Install,
-            relative_path: relative_path.clone(),
-            source_sha256: sha256_bytes(b"new-result"),
-            destination_baseline_sha256: None,
-            backup_relative_path: None,
+            schema_version: JOURNAL_SCHEMA.to_owned(), publication_id: plan.publication_id.clone(), sequence: 1,
+            operation: JournalOperation::Install, relative_path: relative_path.clone(),
+            source_sha256: sha256_bytes(b"new-result"), destination_baseline_sha256: None, backup_relative_path: None,
         };
-        let displaced = root.join("destination-displaced");
-        let attacker = destination_root.join(&relative_path);
+        let displaced = root.join("destination-displaced"); let attacker = destination_root.join(&relative_path);
         let error = remove_installed_descriptor_relative_with_hook(&plan, &record, || {
             fs::rename(&destination_root, &displaced).expect("swap destination root");
             write(&attacker, b"new-result");
-        })
-        .expect_err("root swap must reject");
-        assert_eq!(
-            error.code,
-            "GATE-PUBLICATION-RECOVERY-DESTINATION-ROOT-RACE"
-        );
+        }).expect_err("root swap must reject");
+        assert_eq!(error.code, "GATE-PUBLICATION-RECOVERY-DESTINATION-ROOT-RACE");
         assert_eq!(fs::read(&attacker).expect("attacker file"), b"new-result");
-        assert!(displaced.join(&relative_path).exists());
-        remove_scratch(&root);
+        assert!(displaced.join(&relative_path).exists()); remove_scratch(&root);
     }
 
     #[cfg(target_os = "linux")]
     #[test]
+    #[rustfmt::skip]
     fn recovery_backup_read_rejects_swapped_ancestor_without_external_read() {
         use std::os::unix::fs::symlink;
-
-        let root = fresh("recovery-backup-ancestor-swap");
-        let transaction_root = root.join("transaction");
-        fs::create_dir_all(&transaction_root).expect("transaction root");
-        let external = root.join("external-backups");
-        write(
-            &external.join("objects/artifacts/result.json"),
-            b"old-result",
-        );
+        let root = fresh("recovery-backup-ancestor-swap"); let transaction_root = root.join("transaction");
+        fs::create_dir_all(&transaction_root).expect("transaction root"); let external = root.join("external-backups");
+        write(&external.join("objects/artifacts/result.json"), b"old-result");
         symlink(&external, transaction_root.join("backups")).expect("swap backup ancestor");
         let plan = recovery_plan(&root, root.join("destination"), transaction_root.clone());
         let staged = transaction_root.join("restore-staged/objects/artifacts/result.json");
-        let error = copy_transaction_file_to_stage(
-            &plan,
-            Path::new("backups/objects/artifacts/result.json"),
-            &staged,
-            &sha256_bytes(b"old-result"),
-        )
-        .expect_err("swapped backup ancestor must reject");
+        let error = copy_transaction_file_to_stage(&plan, Path::new("backups/objects/artifacts/result.json"), &staged,
+            &sha256_bytes(b"old-result")).expect_err("swapped backup ancestor must reject");
         assert_eq!(error.code, "GATE-PUBLICATION-RECOVERY-BACKUP-OPEN");
-        assert!(!staged.exists());
-        assert_eq!(
-            fs::read(external.join("objects/artifacts/result.json")).expect("external backup"),
-            b"old-result"
-        );
+        assert!(!staged.exists()); assert_eq!(fs::read(external.join("objects/artifacts/result.json")).expect("external backup"), b"old-result");
         remove_scratch(&root);
     }
 
@@ -2970,13 +2914,21 @@ mod tests {
     #[test]
     #[rustfmt::skip]
     fn recovery_retry_after_successful_absent_unlink_is_idempotent() {
-        let root = fresh("recovery-absent-retry"); let plan = plan(&root, None);
+        let root = fresh("recovery-absent-retry"); let mut plan = plan(&root, None);
+        let second = PublicationEntry { relative_path: PathBuf::from("objects/second.json"),
+            source_sha256: sha256_bytes(b"new-second"), destination_baseline_sha256: Some(sha256_bytes(b"old-second")) };
+        plan.entries.push(second.clone());
         prepare_transaction_directories(&plan).expect("transaction dirs");
-        install_entry(&plan, &plan.entries[0], 1, false).expect("partial publication");
-        let install = load_journal(&plan).expect("journal").remove(0);
-        restore_entry(&plan, &install).expect("first unlink");
-        assert!(!plan.destination_root.join(&install.relative_path).exists());
+        install_entry(&plan, &plan.entries[0], 1, false).expect("first publication");
+        write(&plan.source_root.join(&second.relative_path), b"new-second");
+        write(&plan.destination_root.join(&second.relative_path), b"old-second");
+        install_entry(&plan, &second, 2, false).expect("second publication");
+        let installs = load_journal(&plan).expect("journal");
+        restore_entry(&plan, &installs[0]).expect("first unlink checkpoint");
+        assert!(!plan.destination_root.join(&installs[0].relative_path).exists());
         assert_eq!(recover(&plan, RecoveryAction::Restore).expect("retry").status, PublicationStatus::Restored);
+        assert!(!plan.destination_root.join(&installs[0].relative_path).exists());
+        assert_eq!(fs::read(plan.destination_root.join(&second.relative_path)).expect("second baseline"), b"old-second");
         remove_scratch(&root);
     }
 
@@ -2986,13 +2938,13 @@ mod tests {
     fn final_baseline_check_rejects_dynamic_ancestor_attachment_race() {
         let root = fresh("recovery-final-attachment"); let plan = plan(&root, None);
         let relative = &plan.entries[0].relative_path; let destination = plan.destination_root.join(relative);
-        write(&destination, b"new-result");
+        ensure_parent(&destination).expect("absent baseline parent");
         let parent = destination.parent().expect("parent").to_owned(); let displaced = root.join("final-parent-displaced");
         let error = destination_hash_descriptor_relative_with_hook(&plan, relative, || {
             fs::rename(&parent, &displaced).expect("displace final parent");
-            fs::create_dir_all(&parent).expect("replacement parent");
+            write(&destination, b"attacker-file");
         }).expect_err("attachment race");
         assert_eq!(error.code, "GATE-PUBLICATION-RECOVERY-FINAL-ANCESTOR-RACE");
-        assert!(displaced.join("result.json").exists()); remove_scratch(&root);
+        assert_eq!(fs::read(&destination).expect("replacement file"), b"attacker-file"); remove_scratch(&root);
     }
 }
