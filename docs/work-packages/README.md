@@ -307,6 +307,10 @@
 
 State as of `2026-07-27 UTC`:
 
+- `20260727-assurance-canopy-readme-identity-lifecycle-reconciliation-001/` -
+  ACTIVE: closes `ASSURANCE-CANOPY-README-IDENTITY-001` through a typed
+  report-source adoption that invalidates stale review authority, resets the
+  affected report to DRAFT, and unblocks CAL04B-NATIVE terminal verification.
 - `20260727-cal04b-native-gsi-canopy-height-coherence-hold-lift-001/` -
   ACTIVE / TERMINAL HOLD: `CAL04B-NATIVE-001` production and its 12-case frozen
   replay pass, including retained `GSI-5557`, but the mandatory unfiltered
