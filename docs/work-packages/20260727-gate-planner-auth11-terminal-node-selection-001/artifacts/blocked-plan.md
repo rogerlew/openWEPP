@@ -50,7 +50,13 @@ Missing:
 Disposition: `BLOCKED BEFORE LIGHT`. No audit, ledger, receipt, heavy process,
 CAL population, or Harvard access occurred.
 
-Green expectation: preserve all 12 ordered nodes and their 2,376 inventory
-entries, add exactly one AUTH11 LIGHT node with three independently enumerated
-tests, and produce exactly 13 nodes / 2,379 inventory with a new canonical plan
-ID.
+The red plan has 2,376 globally unique inventory IDs and 3,090 summed per-node
+entries. Its workspace-full node has 2,350 tests.
+
+Corrected green expectation: preserve the 12-node set and add exactly one
+AUTH11 LIGHT node with three independently enumerated tests. Those three test
+IDs already occur in the workspace-full inventory, while the two new planner
+tests are new globally unique IDs. The exact green cardinalities are therefore
+13 nodes, 2,378 globally unique IDs, 3,095 summed per-node entries, and 2,352
+workspace tests. The earlier 2,379 expectation double-counted the already
+present AUTH11 tests and is rejected as an acceptance-model defect.

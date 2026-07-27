@@ -106,7 +106,8 @@ No other path is writable. This write set must not widen.
   `docs/specifications/external-authority/suites/`;
   `auth11-promotion-protocol` exact
   `docs/specifications/external-authority/promotion-protocol.md`;
-  `auth11-integration-contracts` prefix `tests/integration/auth`;
+  `auth11-integration-contracts` exact
+  `tests/integration/auth11_required_suite_obligation_guards_contract.rs`;
   `auth11-constitutive-cohorts` prefix `tests/fixtures/constitutive/`;
   `auth11-infile-cohorts` prefix `tests/fixtures/infile/`;
   `auth11-antievasion-tool` exact
@@ -122,9 +123,18 @@ No other path is writable. This write set must not widen.
   `auth11_all_active_required_suite_targets_exist_and_are_registered`,
   `auth11_obligations_schema_and_anchor_bindings_are_enforced`, and
   `auth11_registry_posture_and_protocol_guard_paths_exist`.
-- Red plan remains exactly 12 nodes / 2,376 inventory. Green reconstruction
-  must preserve those exact nodes/inventory and add one AUTH11 node with three
-  independently enumerated tests: exactly 13 nodes / 2,379 inventory.
+- Red plan remains exactly 12 nodes, 2,376 globally unique inventory IDs,
+  3,090 summed per-node inventory entries, and 2,350 workspace tests. Green
+  reconstruction must preserve those nodes and add one AUTH11 node with three
+  independently enumerated tests. Because those three tests already occur in
+  the workspace inventory, the green cardinalities are exactly 13 nodes, 2,378
+  globally unique inventory IDs, 3,095 summed per-node entries, and 2,352
+  workspace tests. Artificial padding or double-counting is prohibited.
+- The AUTH11 generated node binds the exact generated node IDs for both
+  declared prerequisites. Relative array position without prerequisite edges
+  is insufficient.
+- The unrelated CRITICAL negative test builds a plan and proves the AUTH11 node
+  is absent, rather than inspecting only explicit impact selection.
 - Red and green plan IDs and the exact retained JSON path/hash are recorded in
   package evidence.
 - Existing anti-evasion, alignment, and workspace nodes remain selected.

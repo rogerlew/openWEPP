@@ -1,6 +1,7 @@
 # Implementation Gate Evidence
 
-Exact implementation state: pending clean commit.
+Reviewed implementation state: `0c71782ad447953ec6006549050bbc2806f356ae`
+is `HOLD`; its retained terminal plan must not execute.
 
 ## Static
 
@@ -12,8 +13,9 @@ Exact implementation state: pending clean commit.
   auth11_required_suite_obligation_guards_contract`.
 - Its inventory source is `NEXTEST_TEST_TARGET`, with exact/minimum count
   three.
-- Nine literal impact entries select the node for the frozen external-authority
-  surfaces.
+- Eight literal impact entries select their real external-authority surfaces.
+  Review found the integration matcher used a fictitious directory path; its
+  corrected exact real-file matcher is pending.
 - The valid policy fixtures bind the new node, arguments, inventory, and
   receipt shape.
 - `planner.rs` is 2,642 lines: above the 2,000-line warning threshold and below
@@ -47,8 +49,10 @@ auth11_required_suite_obligation_guards_contract` enumerated exactly:
 ## Pending
 
 - exact clean implementation commit;
-- canonical terminal reconstruction proving 13 nodes / 2,379 inventory;
-- dual implementation review;
+- prerequisite-key, bounded-selection, real matcher, and fixture corrections;
+- canonical terminal reconstruction proving 13 nodes, 2,378 globally unique
+  IDs, 3,095 summed per-node entries, and 2,352 workspace tests;
+- fresh dual implementation review;
 - canonical package-chain and pre-heavy admission;
 - admitted heavy execution and dual terminal verification.
 
