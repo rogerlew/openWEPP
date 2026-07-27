@@ -319,10 +319,10 @@
 State as of `2026-07-27 UTC`:
 
 - `20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001/` -
-  COMPLETE / HISTORICAL HOLD / PREREQUISITE RESOLVED: attempt 004 remains
-  retained evidence rather than a result. `CAL04B-NATIVE-001` and its assurance
-  correction chain are complete, so a fresh reviewed empty-root CAL-04B rerun
-  is next. Hubbard did not run and Harvard remains sealed.
+  ACTIVE / RESUMED: the production, assurance, and TESTGATE prerequisite chain
+  is complete. The frozen CAL-04B design is reopened for a fresh reviewed
+  empty-root restart from `prepare`; prior attempts remain evidence only, and
+  Harvard remains sealed through the freeze-verifier barrier.
 - `20260727-science-implementation-calibration-readiness-governance-001/` -
   COMPLETE / GOVERNANCE ADMITTED: ADR-0042 and canonical contract/package rules
   separate authoritative science implementation, calibration-role data,

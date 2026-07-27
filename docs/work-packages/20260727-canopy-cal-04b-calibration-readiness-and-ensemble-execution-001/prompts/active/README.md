@@ -1,3 +1,4 @@
 # Active Prompts
 
-No active prompt. The executed kickoff is archived with the terminal package.
+`kickoff.md` is the active byte-identical restart prompt after the production
+prerequisite lift.

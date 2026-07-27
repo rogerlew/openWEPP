@@ -3,7 +3,7 @@
 Package ID:
 `20260727-canopy-cal-04b-calibration-readiness-and-ensemble-execution-001`
 
-Status: `COMPLETE / HOLD / PRODUCTION PARAMETER PATH BLOCKED`
+Status: `ACTIVE / RESUMED AFTER PRODUCTION PREREQUISITE LIFT`
 
 Date opened: `2026-07-27`
 
@@ -300,6 +300,37 @@ results/logs plus the exact checksum-bound external object paths under
 `/home/workdir/cal04b-objects/` enumerated by
 `artifacts/executor-command-plan.csv`.
 
+## Resume Increment — 2026-07-27
+
+User direction reopened this package after
+`20260727-cal04b-native-gsi-canopy-height-coherence-hold-lift-001`, the typed
+assurance identity correction, and the TESTGATE historical-root correction all
+closed. Exact prerequisite evidence includes the corrected 12-case native
+proof, dual terminal verification, and full-workspace run
+`7e79049d-0871-4142-a9f7-86ac7ac714be` with 2,301/2,301 tests passing.
+
+The resume increment preserves every frozen design, operator, domain,
+acceptance rule, stopping rule, command, and Harvard custody boundary. Before
+result-bearing execution it must:
+
+- archive the current `/home/workdir/cal04b-objects/` tree byte-preservingly;
+- create a new empty `/home/workdir/cal04b-objects/` attempt root;
+- rebind source, binary, command, repository-head, and prerequisite identities;
+- rerun the scaffold/executor pre-heavy gates and dual read-only restart review;
+- restart the observed DAG from `prepare`, never from an intermediate receipt;
+- keep Harvard sealed through complete Hubbard production, dual reconstruction,
+  readiness, freeze, and two independent freeze-verifier PASS receipts.
+
+Resume progress:
+
+- [x] production, assurance, and TESTGATE prerequisite chain closed;
+- [x] package and byte-identical kickoff prompt reactivated;
+- [ ] fresh attempt root and identities reviewed;
+- [ ] observed pre-freeze prefix passed from `prepare`;
+- [ ] freeze and dual verifier barrier passed;
+- [ ] one-time Harvard holdout and post-holdout summary completed;
+- [ ] terminal validation, review, verification, and closeout passed.
+
 ## Minimum Gates
 
 ```text
@@ -336,9 +367,8 @@ and then exposed `CAL04B-NATIVE-001`: the frozen interior `GSI-5557` vector
 publishes positive LAI before the production post-growth path provides positive
 canopy height, so the required rev-21/rev-36 guard fails closed.
 
-This is a broken real parameter path and therefore a package hold boundary.
-Production correction is outside the declared write set. The full Hubbard
-ensemble, later readiness stages, freeze, and Harvard holdout did not run.
-Harvard remains sealed. `artifacts/hold-legitimacy-audit.md` and
-`artifacts/worker-handoff.md` define the evidence and separately authorized
-defect-closure target.
+That broken real parameter path was a legitimate historical hold boundary.
+The separately authorized native, assurance, and TESTGATE packages closed it
+without changing this package's frozen calibration design. This package is now
+reopened for a fresh empty-root restart. The prior four attempts remain
+historical evidence; their outputs cannot seed the resumed population.
