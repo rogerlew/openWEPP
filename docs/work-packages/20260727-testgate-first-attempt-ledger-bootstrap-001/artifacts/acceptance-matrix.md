@@ -20,3 +20,4 @@ Evidence class: `Static + Ran`
 | LB-12 | Original path authority and schema remain exact | path-hash/recovery tests and security review |
 | LB-13 | Full regression | planner 236/236 and canonical exact-head receipt |
 | LB-14 | Independent acceptance | dual review, terminal verification, and receipt verification |
+| LB-15 | Rust line-count governance | `line-count-disposition.md`; 2,762-line WARN with follow-on split intent |
