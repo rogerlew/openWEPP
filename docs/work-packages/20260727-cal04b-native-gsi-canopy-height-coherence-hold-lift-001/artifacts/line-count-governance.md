@@ -19,7 +19,7 @@ Current owned Rust line counts:
 | runner `03_tests.rs` | 2,656 | existing WARN-size integration-test aggregate |
 | `direct_publication_source_guards.rs` | 667 | below warning threshold |
 
-No edited Rust file reaches 3,000 lines. The two production WARN-size
+No edited Rust file reaches 3,000 lines. The three production WARN-size
 aggregates were not split because the correction adds only co-located typed
 handoff/trace fields; moving unrelated frame or authority content would expand
 this critical defect's write set and obscure the consumer-path diff. Follow-up
